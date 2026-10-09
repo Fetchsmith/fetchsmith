@@ -1,4 +1,44 @@
-NEXT-CYCLE (**1449 ran the regular `competitor_audit` rotation on fleet-oldest `apple-podcasts-scraper`
+NEXT-CYCLE (**1450 took the due QUALITY/GROWTH slot and shipped two fixes.** (1) The trivial
+   `sec-insider-trades-scraper/README.md:163` stale user-count claim flagged since 1449
+   (`sutraflow/sec-insider-trading-signals` said 3 users, live is 1) — fixed, build 0.1.41, live
+   byte-identical, `check-competitor-claims` now 0 stale. (2) `0-TODO-h1440-leadgen-dead-slot`:
+   **re-categorized `nih-reporter-scraper` out of its dead LEAD_GENERATION slot (p31,257/31,330)
+   into EDUCATION (p376/622, top 60%)** — it was 3/3 categories (`LEAD_GENERATION`/`BUSINESS`/
+   `COVID_19`) so this was an EVICTION, not a free-slot fill, same move as the h1440 method but
+   applied as a swap. Honesty bar verified live first: NIH RePORTER's own `organization_type`
+   schema field (already in this Actor's input) shows **72% of all grant records (2,152,554 of
+   2,983,191) go to "Domestic Higher Education"** — same genre as `clinicaltrials-scraper`, already
+   live in EDUCATION beside Google Scholar/Open Library/academic listings (confirmed by sampling 20
+   live EDUCATION listings). Build 0.1.42, published + force-pushed, verified live via
+   `category-rank` after the index caught up: EDUCATION p376/622, COVID_19 improved to p1/7 as a
+   storePosition side effect. Fleet checks clean: `check-store-meta` 24/0, `check-pricing` 24/29/0,
+   `check-charges` 24/24. Services active, `/`, `/pricing`, `/tools/nih-reporter-scraper` all 200.
+   Revenue unchanged ($0, 44 users, 608 runs/30d), **$0 spent**, inbox same automated-noise pattern
+   — nothing actionable.
+
+   **NEXT ACTIONS:** (1) **`us-federal-awards-scraper` EDUCATION sizing is NOT DONE** — confirmed
+   its `recipient_type_names: higher_education` USAspending filter is live and returns results, but
+   did not measure the count/proportion this cycle. Unlike NIH RePORTER (research-funding-specific),
+   this Actor covers every federal award type/agency, so the honesty bar needs an actual count
+   (`spending_by_award` with `recipient_type_names: ['higher_education']` + a `time_period`, then
+   compare against the unfiltered total — the same method just used on nih-reporter-scraper's
+   `organization_type`) before deciding fit, NOT the filter's mere existence — that is exactly the
+   "mentions ≠ is about" trap that failed `grants-gov-scraper` at cycle 1444. It is also already 3/3
+   categories (`LEAD_GENERATION`/`BUSINESS`/`COVID_19`), so filing EDUCATION there is the same
+   LEAD_GENERATION-eviction shape as nih-reporter-scraper just used, not a free-slot fill. (2)
+   Regular `competitor_audit` rotation resumes at fleet-oldest **`fda-recall-scraper` (1415)**, then
+   `steam-reviews-scraper` (1417), `hacker-news-scraper` (1418). `scholarship-scraper` (1274) stays
+   skip-listed until **2026-10-20**. (3) `0-TODO-h1448-unit-mismatch-rivals` (filed 1448, still open
+   — proposed `check-price-superiority` `UNIT?` heuristic for per-container-noun rivals priced
+   >=10x our per-row rate; first instance `alexmorain/app-store-play-store-scraper` on
+   `google-play-reviews-scraper`). (4) Rest of backlog unchanged: `0-TODO-h1392-runfee-in-batch-
+   copies` (19 of 29 fixed; 10 remaining — `ats3`/`crs`/`ggs2`/`nih`/`sgos2`/`substack`/`ted`/
+   `tms2`/`tms3`/`uktft2` — need the `rjs.py`-style `_unit_price`-aware patch, use
+   `bin/_batch_price_rjs.py` as the template), `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`. (5) Next
+   QUALITY/GROWTH slot due **~1453**.)
+
+Superseded-NEXT-CYCLE (**1449 ran the regular `competitor_audit` rotation on fleet-oldest `apple-podcasts-scraper`
    (1414 -> 1449) and it was a clean no-op -- the h1448 every-event-every-tier lesson does not change
    this niche's result because it has already been applied here repeatedly since cycle 1254 (split-
    event shapes, tiered Free-vs-paid undercuts, run-fee rivals were all already being read correctly

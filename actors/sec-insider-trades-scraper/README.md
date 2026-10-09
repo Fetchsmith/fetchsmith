@@ -160,7 +160,7 @@ Two more are cheaper than us on a unit-matched basis but out of scope for the pr
 **A full-cohort re-sweep of the unnamed tail (46 listings, checked live 2026-10-08 —
 `niche-unnamed` now matches 108 of 256 seen, 64 already named).** Our own price was re-verified
 against the live record first: flat **$0.0018/`result`, no start fee**, unchanged. Only
-`sutraflow/sec-insider-trading-signals` (3 users) cleared the usual ≥3-user floor and bills $0.01
+`sutraflow/sec-insider-trading-signals` (1 user as of 2026-10-09, down from 3) cleared the usual ≥3-user floor at the time of that sweep and bills $0.01
 start + $0.01 per `insider-transaction` — dearer than us. The remaining 45 (0-1 users each) were
 all live-priced across every charge event and tier regardless; their per-row rate is dearer than
 ours at every tier too, modal price ~$0.003-$0.005/row, consistent with every prior sweep on this

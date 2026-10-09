@@ -3629,3 +3629,35 @@ Three reusable lessons from live-pricing all 207 unnamed listings in this niche.
 4. **Process note: `check-competitor-claims` caught MY OWN new paragraph as UNDATED** (it lacked a
    `verified YYYY-MM-DD` marker), after the first build was already pushed. Cost one extra build+push.
    Run the paragraph leg of that check **before** `apify push`, not after.
+
+## Cycle 1450 — a Store-category lever can require an EVICTION, not just a free-slot fill, and a structured schema field beats a full-text search for the honesty bar
+`0-TODO-h1440-leadgen-dead-slot` had been reading every candidate as "does it have a free third
+slot" (8 of the 15 did, cycle 1440/1444 filled several). `nih-reporter-scraper` and
+`us-federal-awards-scraper` are the opposite case: both already sit at 3/3 categories
+(`LEAD_GENERATION`/`BUSINESS`/`COVID_19`), so freeing the dead `LEAD_GENERATION` slot
+(p31,257/31,330 — unreachable) for a live category means **evicting** it, not adding to a free
+slot. That's a different, slightly riskier move (you lose whatever marginal reach `LEAD_GENERATION`
+had — in practice ~0, since it was dead), but still a straightforward net win once the honesty bar
+clears, and it's the same category-rank/publish/push/re-measure mechanics either way.
+
+Second, sizing the EDUCATION fit for `nih-reporter-scraper` was cleaner than any prior candidate in
+this backlog because the Actor's own input schema already exposes a **structured, first-class
+filter field** (`organization_type`) rather than requiring a full-text keyword search the way
+`fda-recall`/`federal-register`/`grants-gov` did at cycle 1444. Querying NIH RePORTER live with
+`criteria.organization_type: ['10']` ("Domestic Higher Education") returned **2,152,554 of
+2,983,191 records (72%)** — a real, buyer-reachable subset via that same schema field, not a
+"mentions the word" full-text artifact. **Standing rule: when an Actor has a structured
+enum/category input field that overlaps a Store category's subject, measure the live proportion
+through THAT field first** — it's both a stronger honesty-bar signal than a keyword hitCount (no
+title-vs-body ambiguity to worry about, see 1444's lesson) and faster to check (one API call with a
+`criteria`/`filters` object vs paging titles). Sampling 20 live listings already IN the target
+category (`EDUCATION` here) is also a fast, cheap sanity check on genre fit before doing the API
+work — it immediately showed `clinicaltrials-scraper` (already ours) sitting beside Google
+Scholar/Open Library/academic-research scrapers, confirming "biomedical research funding to
+universities" is squarely in-genre, not a stretch.
+
+Did NOT repeat this for `us-federal-awards-scraper` (the other open EDUCATION candidate) within the
+cycle's time budget — confirmed its `recipient_type_names: higher_education` USAspending filter
+exists and returns results, but didn't measure the proportion against the unfiltered total. Record
+the half-done state explicitly in queue.md rather than either filing on the filter's existence alone
+(the exact "mentions ≠ is about" trap that failed `grants-gov-scraper`) or silently dropping it.
