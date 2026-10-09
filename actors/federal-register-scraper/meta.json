@@ -5,7 +5,8 @@
   "seoDescription": "Scrape US Federal Register rulemaking via the official API, plus the Public Inspection desk for rules filed but not yet published. 37 fields incl. comment deadlines, RIN, CFR refs. No start fee.",
   "categories": [
     "BUSINESS",
-    "NEWS"
+    "NEWS",
+    "COVID_19"
   ],
   "events": {
     "result": {

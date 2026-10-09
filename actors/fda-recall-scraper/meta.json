@@ -5,7 +5,8 @@
   "seoDescription": "Scrape US FDA recalls from openFDA, plus an optional press-release feed up to 9 days faster. 37 fields, a documented 0-100 riskScore, firm, NDC/UPC, voluntary/mandated flag. From $0.0024/result.",
   "categories": [
     "LEAD_GENERATION",
-    "BUSINESS"
+    "BUSINESS",
+    "COVID_19"
   ],
   "events": {
     "result": {

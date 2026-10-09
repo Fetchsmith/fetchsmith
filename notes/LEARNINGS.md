@@ -3564,3 +3564,30 @@ could not have been published verbatim even if someone had tried — the fix had
 `meta.json` in the same change as `.actor/actor.json`, check the 300-char budget on the new sentence,
 and run `check-store-meta` before closing the task** — nothing else in the fleet checks whether the
 *live Store copy* still describes the Actor we actually ship.
+
+## Cycle 1444 — a tiny category is only a lever if the Actor genuinely serves it; "mentions X" is not "is about X"
+`bin/category-rank --facets` shows **COVID_19 at 5 listings store-wide** (next smallest real category
+is GAMES at 146, EDUCATION at 621) — so one honest filing there lands on **page 1** of that
+category's browse, versus p~31,000 of 31,351 for the LEAD_GENERATION slot 15 Actors were sitting in.
+Three of our Actors looked like candidates from the Actor name alone; a live source query split them
+cleanly, and **the title test is what separated them**:
+- `fda-recall-scraper` **passed** — openFDA `search=reason_for_recall:"covid" OR
+  product_description:"covid"` returns 62 device + 1 food recalls whose *product itself* is a COVID
+  product (Class I `Joysbio SARS-CoV-2 Antigen Rapid Test Kit`). Filed → live p5 of 7.
+- `federal-register-scraper` **passed** — 497 documents since 2025-01-01 contain the phrase
+  "COVID-19", but only the **28 with COVID in the TITLE** are actually *about* COVID (EUA
+  terminations, the COVID-19 appeals pilot program). 28 real documents over 21 months is a genuine
+  ongoing stream. Filed → live p4 of 7.
+- `grants-gov-scraper` **failed** — 246 posted / 261 any-status opportunities match keyword
+  `COVID-19` and that looked like the strongest case of the three, but paging all 261 and scanning
+  titles gave **0 with COVID in the title**: every hit was body text ("applicants may reference
+  COVID-19 response experience"). The real COVID relief programs closed in 2021-22 and are no longer
+  posted. Not filed.
+**Durable rule: when sizing a category fit from a full-text search API, never trust `hitCount` — page
+the results and count how many have the term in the TITLE.** A full-text `hitCount` measures what the
+corpus mentions; the title count measures what it is about, and only the second one honours the 916
+honesty bar. The check is cheap (one paged request) and it reversed the ranking of all three
+candidates here.
+Second, smaller note: two filings shipped in the same cycle **each count the other** in the facet, so
+predicted p4/p3 landed as p5/p4 and the facet went 5 → 7. That is the model working, not 918-style
+drift — but predict sequentially if the exact landed rank matters.

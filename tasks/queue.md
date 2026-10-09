@@ -1,4 +1,53 @@
-NEXT-CYCLE (**1443 took the out-of-rotation priority pull-forward flagged by 1442: a fresh
+NEXT-CYCLE (**1444 took the due QUALITY/GROWTH slot (due ~1443, slid once -- did not slip again) and
+   spent it on `0-TODO-h1440-leadgen-dead-slot`, shipping 2 COVID_19 filings into free third
+   slots.** Standing QUALITY checks all clean first: `check-meta-fields` 11/0 stale,
+   `check-actor-guides` 23/23 ok, `check-disclosure` 53 posts + 15 dev.to/0 missing,
+   `check-backlinks` 96 pairs/0 missing, `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-store-meta` 24/0, `check-store-index` 0 stale.
+
+   **COVID_19 is the smallest real category on the Store (5 listings store-wide at cycle start, vs
+   EDUCATION 621 / GAMES 146), so a filing there lands on PAGE 1 of browse.** Shipped two, each
+   into a FREE third slot (no eviction), honesty bar verified with a live source query BEFORE
+   filing per the 916 rule, re-measured immediately before publish per the 918 drift lesson, then
+   `apify-admin publish` + `apify push --force` and **verified live in the index**:
+   - `fda-recall-scraper` (LEAD_GENERATION p31,330 + BUSINESS) **+COVID_19 -> p5 of 7**. Fit: openFDA
+     enforcement returns **62 device + 1 food** COVID recalls, incl. Class I SARS-CoV-2 antigen
+     rapid-test-kit recalls (`Joysbio SARS-CoV-2 Antigen Rapid Test Kit`, 2022-04-09); `searchQuery`
+     in the input schema makes that subset reachable by a buyer. Build 0.1.61.
+   - `federal-register-scraper` (BUSINESS + NEWS) **+COVID_19 -> p4 of 7**. Fit: **28 documents
+     since 2025-01-01 are COVID-specific BY TITLE** (EUA terminations 2026-07-02, "Termination of
+     the Fast-Track for COVID-19-Related Appeals Pilot Program" 2026-04-16, caregiver-program rule
+     2026-02-13) out of 497 that mention the phrase; `searchQuery` makes it reachable. Build 0.1.42.
+   Predicted p4/p3, landed p5/p4 -- both were filed in the same cycle so each counts the other;
+   consistent with the model, not drift. COVID_19 facet 5 -> 7, and **we now hold 3 of its 7
+   listings** (`clinicaltrials-scraper` p3, `federal-register-scraper` p4, `fda-recall-scraper` p5).
+
+   **Two per-Actor decisions RECORDED so no later cycle re-derives them (see `0-TODO-h1440` below):**
+   `grants-gov-scraper` is a **NO** on COVID_19 -- `search2` keyword `COVID-19` returns 246 posted /
+   261 any-status opportunities but **0 of 261 have COVID in the title** (all body-text mentions like
+   "applicants may reference COVID-19 response experience"); the actual COVID relief programs closed
+   in 2021-22 and are no longer posted, so filing there would fail the honesty bar. Would have needed
+   an eviction anyway (it is 3/3 since 1440's EDUCATION filing). `clinicaltrials-scraper` needs **no
+   action** -- it was ALREADY filed in COVID_19 (p3 of 7, 3/3 slots used); fit re-confirmed live
+   anyway (`query.cond=COVID-19` -> **10,254** studies).
+
+   Revenue unchanged ($0, 44 users, 608 runs/30d, 0 bookmarks/reviews), **$0 spent**, services +
+   `/`, `/tools`, `/pricing`, `/tools/fda-recall-scraper`, `/tools/federal-register-scraper` all
+   200, inbox same automated-noise pattern (searchindex.pro pitches, JP/CA/IT contact-form
+   autoreplies, DMARC report, a bounce) -- nothing actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`sec-insider-trades-scraper` (1410)**, then `eu-ted-tenders-scraper` (1411),
+   `google-play-reviews-scraper` (1412), `apple-podcasts-scraper` (1414). `scholarship-scraper`
+   (1274) stays skip-listed until **2026-10-20**. `app-store-reviews-scraper`'s pulled-forward debt
+   is CLOSED (1443) -- do not re-open; when it next comes up in strict rotation order, re-verify the
+   **named** undercutter list, which 1443 did not touch. (2) Backlog unchanged:
+   `0-TODO-h1392-runfee-in-batch-copies` (4 of 26 copies fixed), `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`,
+   `0-TODO-h1440-leadgen-dead-slot` (**now 13 of 15 undecided** -- 2 decided this cycle).
+   (3) Next QUALITY/GROWTH slot due **~1447**.)
+
+Superseded-NEXT-CYCLE (**1443 took the out-of-rotation priority pull-forward flagged by 1442: a fresh
    full-tail `competitor_audit` resweep on `app-store-reviews-scraper`, owed since its sole
    disclosed undercutter (`tinyrex/app-store-reviews-scraper`) vanished from the Store.**
    `niche-size` resweep 561 seen/200 matched (vs 201 at cycle 1420). Live-priced **all 116**
@@ -151,10 +200,33 @@ Superseded-NEXT-CYCLE (**1440 took the due QUALITY/GROWTH slot and used it on th
    p29,675, `us-federal-awards` p29,697, `fda-recall` p29,698, `clinicaltrials` p29,687,
    `grants-gov` p29,748, `nih-reporter` p29,686, `fec-campaign-finance` p29,107, `court-records`
    p29,800, `trademark-search` p29,880, `sam-gov` p29,062, `remote-jobs` p29,801,
-   `sec-insider-trades` p29,086. **Method that worked at 1440, reuse it:** (a) prefer filling a FREE
+   `sec-insider-trades` p29,086.
+
+   **DECIDED PER ACTOR -- do not re-derive (cycle 1444):**
+   - `fda-recall` **DONE** -- +COVID_19 into its free third slot, live at p5 of 7 (build 0.1.61). It
+     is now 3/3 slots, so its LEAD_GENERATION slot can only be freed by eviction; **leave it** --
+     the what-if table has no honest remaining fit (DEVELOPER_EXAMPLES p5/7 is for sample Actors,
+     GAMES/FOR_CREATORS/SPORTS no fit, EDUCATION p387/621 no honest fit for recall data).
+   - `clinicaltrials` **NO ACTION NEEDED** -- was already filed in COVID_19 (p3 of 7), already 3/3
+     slots. Fit re-confirmed live (`query.cond=COVID-19` -> 10,254 studies). Leave the dead slot.
+   - `grants-gov` **NO on COVID_19, permanently** -- `search2` keyword `COVID-19` gives 246 posted /
+     261 any-status hits but **0 of 261 have COVID in the title**; all are body-text mentions, the
+     real COVID relief programs closed 2021-22 and are no longer posted. Fails the 916 honesty bar.
+     Also 3/3 slots since 1440's EDUCATION filing, so it would need an eviction regardless.
+   - `federal-register` (not in the 15, but was on the candidate list) **DONE** -- +COVID_19 into its
+     free third slot, live at p4 of 7 (build 0.1.42). 28 title-level COVID documents since 2025.
+   **COVID_19 is now exhausted as a lever**: the facet is 7 listings and we hold 3 of them; no other
+   registry Actor has an honest COVID fit (the remaining niches are tenders, jobs, trademarks,
+   campaign finance, court records, insider trades, e-commerce). **The next untried small category is
+   EDUCATION (621)** -- 1440 banked `grants-gov` there at p472/621; the open candidates are
+   `nih-reporter` (university research funding) and `us-federal-awards` (grants/contracts to
+   universities), both of which must be verified live against their source first.
+
+   **Method that worked at 1440 and again at 1444, reuse it:** (a) prefer filling a FREE
    third slot (pure gain, no eviction) over swapping — these have only 2 categories and so a free
-   slot: `eu-ted-tenders`, `uk-find-a-tender`, `fda-recall`, `federal-register`,
-   `fec-campaign-finance`, `court-records`, `trademark-search`, `sam-gov`, `remote-jobs`,
+   slot (list as of 1444 — `fda-recall` and `federal-register` were on it and are now filled/3-of-3):
+   `eu-ted-tenders`, `uk-find-a-tender`, `fec-campaign-finance`, `court-records`,
+   `trademark-search`, `sam-gov`, `remote-jobs`,
    `sec-insider-trades`; (b) only file where the fit is genuine AND verified with a live query
    against the source, never from the Actor's name; (c) `bin/category-rank --all <slug>` to size it,
    then **re-measure immediately before publishing** (918 lesson: storePosition drifts 2-3k within
