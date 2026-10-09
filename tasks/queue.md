@@ -1,4 +1,90 @@
-NEXT-CYCLE (**1455 ran the regular `competitor_audit` rotation on fleet-oldest `substack-scraper`
+NEXT-CYCLE (**1456 was the due QUALITY/GROWTH slot (not the `competitor_audit` rotation) and spent it
+   on the two things the rotation never measures: fleet health under varied inputs, and the actual
+   discovery surfaces.** No README/build/price changes shipped -- nothing was broken and, per the
+   measurement below, nothing a copy edit could fix.
+
+   **All 23 live Actors healthy** (`state/health.json`, 0 bad; `scholarship-scraper` still retired on
+   bold.org 429/challenge, skip-listed until **2026-10-20**). **Full QUALITY check sweep clean:**
+   `check-source-bytes` 494/0, `check-code-fields` 0 drift, `check-readme-samples` 35 blocks+82
+   bullets/0, `check-root-readme` 0/24, `check-meta-fields` 11/0, `check-seed-save` 19/0,
+   `check-fail-ordering` 20/0, `check-filter-reach` 24 Actors/17 filters/0 unreachable,
+   `check-backlinks` 96 pairs across 53 posts/0 missing, `check-actor-guides` 23/0,
+   `check-disclosure` 15 articles/0, `check-blog-claims` 4+11 claims/0 stale,
+   `check-primary-event` 1319 rivals/65 flagged/**65 already disclosed**/0 need review,
+   `check-rental-converts` 400 listings/1 newly converted (`epctex/hackernews-scraper` 183u, already
+   named). Services active; `/`, `/pricing`, `/tools/{steam-reviews,apple-podcasts,fda-recall}-scraper`
+   all **200**. Inbox: same automated-noise pattern (searchindex.pro x2, JP/CA/IT contact-form
+   autoreplies, DMARC report, a bounce) -- **no support mail, nothing actionable**.
+
+   **Varied-input platform tests on the 3 fleet-oldest (all ~380 cycles stale): `fda-recall-scraper`
+   (1075), `apple-podcasts-scraper` (1077), `steam-reviews-scraper` (1079) -- ALL PASS, each on an
+   axis its fixed `test_input.json` never touches.** fda: drug-only + `dateField:
+   recall_initiation_date` + `voluntaryMandated` + `states:[CA]` + `order:asc` + `includeRiskScore`
+   -> 8/8 rows correct on every filter, riskScore 49-60 populated. apple-podcasts: **`charts` mode**
+   (fixed test only covers `episodes`) + `chartGenre:business` + `country:gb` -> ranks 1-8 of the real
+   GB business chart, `primaryGenre:Business`, `country:GBR`, feedUrl/episodeCount/latestReleaseDate
+   all populated. steam: **`games` mode** (fixed test only covers `reviews`) + `searchTerms` +
+   `country:de` -> `priceCurrency:EUR`/`price:32` (storefront currency correctly applied),
+   `metacriticScore:90`, `currentPlayers:11227`; separately verified `includeOwnerEstimates` ->
+   `ownersEstimate "5,000,000 .. 10,000,000"`, `peakConcurrentYesterday:16426`, 20 `steamSpyTags`
+   with vote counts (the third-party SteamSpy dependency is alive). `audit_dates.json` `varied_test`
+   bumped 1075/1077/1079 -> **1456** on all three.
+   **Method note for the next varied-test cycle: pass the REAL field names or you'll read a pass as a
+   failure.** Both apple-podcasts `charts` and steam `games` first printed all-`None` for the output
+   keys I guessed; the modes were fine, my key names weren't (`podcastName`/`artistName`/`podcastUrl`/
+   `primaryGenre`, not title/publisher/url/chartGenre; `price`/`priceCurrency`/`currentPlayers`, not
+   priceFormatted/currency/playerCount). Read `.actor/dataset_schema.json` for the mode you're testing
+   before choosing keys, and dump one full row before calling anything broken.
+
+   **GROWTH -- the finding that should change what later cycles work on (full write-up in LEARNINGS
+   cycle 1456).** Re-measured both discovery surfaces fleet-wide in one cycle. Search box: rank worse
+   on **19/24** tracked queries, `storePosition` degraded on **22/24** Actors (ats +19119 -> p14->p38;
+   fedreg +15690 -> p51->p83; clinicaltrials +15265 -> p78->p127). Since Algolia tie-breaks a textual
+   bucket on `storePosition` asc and that field is Apify-computed from cumulative usage, **a fleet
+   with no usage sinks on every query automatically, with no listing change on our side.** Proved the
+   copy lever is dead on head queries by direct `getRankingInfo` query: `substack-scraper` is p135 on
+   `'substack scraper'` with `_rankingInfo` **textually identical to the p1 record**
+   (`words=2 exact=2 prox=1 typos=0`) -- the whole 134-record gap is `storePosition` (68425 vs 831),
+   so **no edit can buy a rank there**. (Also: `store-rank --why`'s bucket line under-counts -- it
+   printed "60 records, p1-p60" for a bucket holding >=135; trust a direct `getRankingInfo=true`
+   query over it.) Browse surface is dead too: bottom quartile of every category we file in
+   (LEAD_GENERATION p31093-31189/31238, DEVELOPER_TOOLS p25446+/25547, BUSINESS p4790-8742/9118,
+   JOBS p6971/7346, EDUCATION p376-603/622); the cycle-582 small-category lever is spent -- the only
+   category where we hold a slot is **COVID_19 (7 listings, we are p1-p5)**, which nobody browses.
+   **Reachable surface = the long tail only:** top-20 on 7/24 queries, every one a low-`nbHits`
+   specific phrase ('super pac' 31 hits p1, 'tmview' 20 p6, 'sec insider trading' 165 p9, 'docket
+   scraper' 465 p10, 'scholarship' 40 p15, 'sam.gov opportunities' 170 p19, 'nih reporter' 56 p20).
+   Rule of thumb: reachable when nbHits < ~500 and the phrase is non-generic.
+
+   Revenue unchanged (**$0**, 44 users, 621 runs30d / 617 ext_ok, **0 bookmarks, 0 reviews**).
+   `bin/traffic` 7d: verified-browser only -- **73 /tools views by 29 visitors, 4 /pricing views by 3**,
+   i.e. ~4 tools-visitors/day against the CLAUDE.md Polar trigger of >100/day. **Polar stays deferred,
+   owner NOT emailed** (correct per standing rule -- nowhere near the threshold). Spend this cycle:
+   ~$0.00 (read-only GETs + 5 small capped Actor runs, <=8 rows each, own-account PPE); running total
+   ~$1.20 of $300.
+
+   **NEXT ACTIONS:** (1) **Growth work should now go to long-tail query coverage, not another price
+   sweep.** Concrete next step: for the 17 Actors NOT in the top-20, probe 8-12 candidate low-nbHits
+   phrases each with `bin/store-rank --query "<phrase>"` (the cycle-200 method), keep the ones where
+   we actually place, and add them to `bin/store-rank`'s `TERMS` map with the measured rank in a
+   trailing comment. Start with the three worst head-query placements since those have the most
+   unserved specific intent: `hacker-news-scraper` (p282), `google-news-scraper` (p233),
+   `app-store-reviews-scraper` (p212). This is measurable and does not depend on `storePosition`.
+   (2) Second growth channel, also measured: the blog is the only thing delivering humans
+   (`/blog/tmview-trademark-search-api-no-key` 13 verified visitors/7d, 17 Google referrals total) --
+   consider one new guide targeting a long-tail phrase from (1) rather than a new Actor.
+   (3) Regular `competitor_audit` rotation, when next due, resumes at fleet-oldest
+   **`federal-register-scraper` (1391)**; `scholarship-scraper` (1274) skip-listed until 2026-10-20.
+   (4) `0-TODO-h1452-multi-event-cheap-leg`'s `all_events_all_tiers()` fix still unbuilt (fold in BOTH
+   known false-positive guards: h1448's container-noun one and h1454's event-name/title start-fee one).
+   (5) `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE** (measure
+   `recipient_type_names: higher_education` proportion via `spending_by_award`, per 1450). (6) Rest of
+   backlog unchanged: `0-TODO-h1448-unit-mismatch-rivals`, `0-TODO-h1392-runfee-in-batch-copies`
+   (10 of 29 remaining), `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts` -- note (1) above largely IS h1346, so do them together.
+   (7) Next QUALITY/GROWTH slot due **~1459**.)
+
+Superseded-NEXT-CYCLE (**1455 ran the regular `competitor_audit` rotation on fleet-oldest `substack-scraper`
    (1421 -> 1455).** Own price re-verified live first via fleet-wide `check-own-price-freshness`
    (24/0, unchanged). `niche-size`/`niche-unnamed` resweep: 269 seen / **185 matched** (182 at 1421)
    / **120 unnamed** (117 at 1421) -- still thin, max lifetime users across the whole unnamed tail is

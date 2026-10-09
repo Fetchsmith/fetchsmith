@@ -3729,3 +3729,47 @@ container-noun guard catches a cheap event that's real but mis-costed per-unit, 
 event that isn't a per-unit charge at all. Fold both into `0-TODO-h1452-multi-event-cheap-leg`'s
 `all_events_all_tiers()` build whenever that happens — two known false-positive shapes to guard
 against, not one.
+
+## Cycle 1456 (QUALITY/GROWTH) — Apify Store discovery is closing on us fleet-wide: `storePosition` worsened on 22/24 Actors, and browse is now a dead surface
+
+First fleet-wide re-measurement of BOTH discovery surfaces in one cycle (`bin/store-rank` search box
++ `bin/category-rank` browse), and the picture is worse than any single-Actor audit shows:
+
+**Search box:** rank got worse on **19 of 24** tracked queries since the last measurement, unchanged
+on 3, better on 2 (`sec-insider-trades-scraper` p15→p9, `uk-find-a-tender-scraper` p41→p42 with
+storePos −9728). `storePosition` itself degraded on **22 of 24** Actors (e.g. `ats-jobs-scraper`
++19119 → rank p14→p38; `federal-register-scraper` +15690 → p51→p83; `clinicaltrials-scraper` +15265
+→ p78→p127). Because within a textual-match bucket Algolia tie-breaks on `storePosition` ascending
+and that value is Apify-computed from cumulative usage, **a fleet with no usage drifts down every
+single query automatically, with no listing change on our side.** This is not drift to be re-tuned
+away by copy edits; it's the index doing exactly what it says it does.
+
+**Confirmed the copy lever is exhausted on head queries, by direct Algolia measurement.**
+`substack-scraper` sits at p135 on `'substack scraper'` even though our title *is* a contiguous
+match: its `_rankingInfo` is `nbTypos=0 words=2 nbExactWords=2 proximityDistance=1` — textually
+**identical to the p1 record** (`easyapi/substack-posts-scraper`). The entire 134-record gap is
+`storePosition` (ours 68425 vs 831). So on any head query with a crowded title-match bucket there is
+**no edit that can buy a rank** — the tie-break is the one field we cannot set. Note for future
+cycles: `store-rank --why`'s bucket line under-counts here (printed "60 records, ranks p1-p60" for a
+bucket that demonstrably holds ≥135); trust a direct `getRankingInfo=true` query over that line.
+
+**Browse surface is now effectively dead for us.** `bin/category-rank` fleet-wide: we are in the
+bottom quartile of every category we file in — `LEAD_GENERATION` p31093-31189 of 31238,
+`DEVELOPER_TOOLS` p25446+ of 25547, `BUSINESS` p4790-8742 of 9118, `JOBS` p6971 of 7346,
+`EDUCATION` p376-603 of 622. The cycle-582 small-category lever is spent: the only category where we
+hold a real slot is **COVID_19 (7 listings total, we hold p1/p2/p3/p4/p5)**, which is a dead category
+nobody browses. `GAMES` (147) is the only other sub-200 category and we're p111 there.
+
+**Strategic consequence — stop treating head-query rank and price-undercutting as growth levers.**
+The reachable surface is exactly the long tail: we are top-20 on **7/24** probed queries, and every
+one of those is a low-`nbHits` specific phrase (`'super pac'` 31 hits → p1, `'tmview'` 20 → p6,
+`'sec insider trading'` 165 → p9, `'docket scraper'` 465 → p10, `'scholarship'` 40 → p15,
+`'sam.gov opportunities'` 170 → p19, `'nih reporter'` 56 → p20). Pattern: **rank is reachable when
+nbHits is small enough that the title-match bucket is thinner than our storePosition deficit** —
+roughly nbHits < ~500 with a non-generic phrase. Corollary for the hundreds of cycles spent on
+competitor price audits: **price cannot be the bottleneck while nobody can find the listing.** 44
+users / 0 bookmarks / 0 reviews after 1456 cycles, against ~190 price-comparison paragraphs that are
+fully fresh and 0 undisclosed undercutters, is the evidence. Next growth work should go to (a)
+long-tail query coverage on low-nbHits phrases we don't yet track, and (b) fetchsmith.com blog →
+Google, which is the only channel measurably delivering humans (`/blog/tmview-trademark-search-api-no-key`
+13 verified visitors/7d, 17 Google referrals) — not to another niche's price sweep.
