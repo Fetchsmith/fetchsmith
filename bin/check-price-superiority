@@ -195,6 +195,18 @@ def all_tiers(act_data, now):
     return up.tiers_of(event), name
 
 
+def all_events(act_data, now):
+    """Every live charge event for act_data's current pricing record, raw ({name: event}),
+    or {} if not a live PAY_PER_EVENT record. Shared data source for the advisory
+    multi-event scan in main() (closes 0-TODO-h1452-multi-event-cheap-leg) -- deliberately
+    does not touch headline_price's or all_tiers's own event reads, so neither existing
+    verdict can move."""
+    cur = effective(act_data.get("pricingInfos"), now)
+    if cur is None or cur.get("pricingModel") != "PAY_PER_EVENT":
+        return {}
+    return cur.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+
+
 def tier_price_at(tiers, tier):
     """This side's price at `tier`. A flat (single-rung) ladder charges the same number
     regardless of the buyer's Apify plan, so it applies at every tier; a genuinely
@@ -329,9 +341,13 @@ def main():
           f"{len(wanted)} unique live Actor record(s) to fetch", file=sys.stderr, flush=True)
     prefetch(sorted(wanted), headers)
 
+    sys.path.insert(0, os.path.join(ROOT, "bin"))
+    import _unit_price as up
+
     compared = cheaper_found = flagged = 0
     runfee_seen = runfee_flagged = 0
     tier_checked = tier_flagged = 0
+    unit_checked = unit_advised = 0
     for n, slug in enumerate(live, 1):
         path = os.path.join(ROOT, "actors", slug, "README.md")
         if not os.path.exists(path):
@@ -427,12 +443,46 @@ def main():
                               f"${tier_price_at(our_tiers, best):g} there) -- cheaper at a "
                               f"lower tier, but no paragraph in this file discloses it")
 
+            # Multi-event advisory scan (cycle 1462, closes 0-TODO-h1452-multi-event-
+            # cheap-leg): every check above looks at ONE event -- whichever `_select_event`
+            # picks, which for a multi-mode rival (e.g. a store-AND-reviews scraper) is
+            # naturally its DEAREST leg -- so a cheap secondary event's own ladder stays
+            # invisible even when it genuinely undercuts us. Scan every OTHER recurring
+            # event's tiers too. Strictly MORE SENSITIVE than the checks above, not more
+            # correct: 0-TODO-h1448-unit-mismatch-rivals' container-noun shape means a cheap
+            # secondary event is very often a DIFFERENT unit (a flat per-poll "monitoring
+            # check", not a per-row rate), so this never auto-flags -- it prints an advisory
+            # UNIT? line carrying the event's own eventTitle and leaves the unit judgement to
+            # whoever reads it, same spirit as check-comparison-breadth's NARROW. Not counted
+            # into `flagged`/the exit code, and headline_price/all_tiers/runfee_price above
+            # are untouched, so no existing verdict can move.
+            if our_tiers:
+                sel_name, _ = all_tiers(rival, now)
+                for ev_name, ev_title, ev_tiers, ev_start in up.all_events_all_tiers(all_events(rival, now)):
+                    if ev_start or ev_name == sel_name or not ev_tiers:
+                        continue
+                    unit_checked += 1
+                    undercuts = {t: p for t, p in ev_tiers.items()
+                                 if tier_price_at(our_tiers, t) is not None
+                                 and p + EPSILON < tier_price_at(our_tiers, t)}
+                    if undercuts and not disclosed_anywhere[ident]:
+                        unit_advised += 1
+                        best = min(undercuts, key=undercuts.get)
+                        print(f"UNIT? {slug}/README.md:{lineno}  {ident} event `{ev_name}` "
+                              f"({ev_title or 'untitled'}) prices ${undercuts[best]:g} at "
+                              f"{best} vs our ${tier_price_at(our_tiers, best):g} there -- "
+                              f"NOT auto-flagged: read eventTitle/the Store description and "
+                              f"decide whether this is really the same per-row unit before "
+                              f"disclosing (0-TODO-h1448 container-noun false-positive risk)")
+
     print(f"check-price-superiority: {compared} named-rival price(s) compared, "
           f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README "
           f"({runfee_seen} run-fee-only rival(s) held out of the per-row comparison, "
           f"{runfee_flagged} of them undisclosed under the {RUNFEE_CROSSOVER_ROWS}-row "
           f"crossover floor; {tier_checked} tiered-rival ladder(s) also checked at every "
-          f"rung, {tier_flagged} undisclosed only below the FREE rung) "
+          f"rung, {tier_flagged} undisclosed only below the FREE rung; "
+          f"{unit_checked} secondary event(s) advisory-scanned, {unit_advised} UNIT? "
+          f"advisories -- not auto-flagged, go read eventTitle) "
           f"({time.time() - started:.0f}s)")
     return 1 if flagged else 0
 

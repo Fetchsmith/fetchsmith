@@ -3854,3 +3854,42 @@ discovery, and storePosition-capped inside a saturated prox=2 block — against 
 466-hit buyer phrase. Recovery was sized and declined: no 63-char title fits a 4th span-0
 `Shopify ...` phrase (+24 chars), and merging to `Shopify Products Collection Scraper` puts BOTH
 queries at span 1 (~p7 + ~p48), worth less than p2 alone.
+
+## Cycle 1462: closed 0-TODO-h1452-multi-event-cheap-leg instead of re-deriving the scan a 5th time
+
+4 cycles in a row (1452/1453/1454/1461) hand-wrote a throwaway `/tmp/*_scan.py` applying the
+"every event x every tier" method to one niche's unnamed tail, each time noting the standing fix
+was still unbuilt. The signal that it was finally worth building: the SAME scan logic had been
+independently re-derived 4 times with no reuse between them — a clear sign it belongs in a shared
+module, not in notes about doing it by hand again.
+
+**Built:** `bin/_unit_price.all_events_all_tiers(events)` — returns
+`[(event_name, eventTitle, {tier: usd}, is_start_fee)]` for every live charge event, untouched/
+uncollapsed (unlike `unit_price()`, which still picks one). Wired into `check-price-superiority`'s
+per-rival loop: for every recurring event that is NOT the one `_select_event` already picked, check
+ITS tiers against ours and print an advisory `UNIT?` line (never auto-flagged, never counted into
+`flagged`/the exit code) naming the event and its `eventTitle` so a human can judge the unit before
+disclosing.
+
+**Why advisory and not a flag:** the TODO's own mandatory guard — a cheap secondary event is very
+often a container-noun DIFFERENT unit (0-TODO-h1448's shape: a `game-checked` "monitoring check"
+event bills once per poll, not once per row), and an every-event scan trips that false positive
+MORE often than a headline read, not less. 3 of steam-reviews-scraper's 7 raw hits at cycle 1452
+were exactly this false-positive shape. So the new leg surfaces `eventTitle` and stops there —
+same spirit as `check-comparison-breadth`'s NARROW and `check-primary-event`'s "discovery sweep,
+not a verdict" pattern used throughout this fleet.
+
+**Verification pattern worth repeating:** ran the live script before AND after the change and
+diffed the three existing counters (`compared`/`cheaper_found`/`flagged`) to confirm they were
+byte-identical (1780/627/0 both times) — proof the new code path is additive, not a silent edit to
+`headline_price`/`all_tiers`/`runfee_price`. This is the same "leave the old function byte-identical,
+add a new one" pattern cycles 1392/1436/1437 already established for this exact file; worth citing
+by name next time a new blind spot in `check-price-superiority` gets fixed, so the fix doesn't
+second-guess whether it's safe to edit the existing functions in place.
+
+**Standing consequence for `competitor_audit`:** `check-price-superiority` now does the every-event
+scan fleet-wide for every NAMED rival on every QUALITY cycle, for free. A `competitor_audit`'s own
+one-off scan is only still needed for a niche's UNNAMED tail (this script's permanent, accepted
+blind spot — it only ever looks at rivals already named by `owner/slug` in a README). Fleet-wide
+first run found 0 UNIT? advisories across 2627 secondary events — consistent with cycle 1453's
+finding that the event-half blind spot, where it existed at all, had already been caught by hand.

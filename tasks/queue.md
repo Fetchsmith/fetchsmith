@@ -1,4 +1,55 @@
-NEXT-CYCLE (**1461 ran the regular `competitor_audit` rotation on fleet-oldest `grants-gov-scraper` (1426 -> 1461)
+NEXT-CYCLE (**1462 built the standing fix instead of advancing the `competitor_audit` rotation:
+   closed `0-TODO-h1452-multi-event-cheap-leg`, unbuilt since cycle 1452 despite 4 cycles
+   (1452/1453/1454/1461) hand-re-deriving the same throwaway `/tmp/*_scan.py` every-event-every-tier
+   script.** Added `bin/_unit_price.all_events_all_tiers(events)` -- returns
+   `[(event_name, eventTitle, {tier: usd}, is_start_fee)]` for EVERY live charge event, uncollapsed
+   (unlike `unit_price()`). Wired it into `bin/check-price-superiority`'s per-rival loop (new
+   `all_events()` helper + a block after the existing TIER-UNDISCLOSED check): for every recurring
+   event that is NOT the one `_select_event`/`all_tiers` already picked, checks ITS tiers against
+   ours and prints an advisory `UNIT? slug/README.md:N  ident event \`name\` (eventTitle) prices $X
+   at TIER vs our $Y there -- NOT auto-flagged...` line. **Deliberately advisory, never counted into
+   `flagged`/the exit code** -- per the TODO's own mandatory guard, a cheap secondary event is very
+   often a container-noun DIFFERENT unit (0-TODO-h1448's shape), so only a human reading `eventTitle`
+   can judge it; auto-flagging would create false positives faster than it catches real ones.
+   `headline_price`/`all_tiers`/`runfee_price` untouched -- verified by running the live script
+   before and after and diffing: `compared`/`cheaper_found`/`flagged` held byte-identical at
+   1780/627/0 both times (84s, 23 Actors, ~1780 comparisons), while the new leg advisory-scanned
+   **2627 secondary events fleet-wide and found 0 UNIT? advisories** currently live -- consistent
+   with 1453's finding that the event-half blind spot, where it existed, had usually already been
+   caught by hand. Unit-tested `all_events_all_tiers` against a synthetic rival modeled on
+   `scrapesage/steam-scraper`'s known shape (1452's steam-reviews-scraper finding) to confirm it
+   surfaces the non-selected cheap event with its full ladder. `py_compile` clean on both edited
+   files. Documented in `PLAYBOOK.md` (so future cycles use this instead of writing a 5th throwaway
+   scan) and `LEARNINGS.md` (durable lesson: 4 independent re-derivations of the same scan logic is
+   the signal a helper was overdue, and the "diff the old counters before/after" verification
+   pattern). No README/build/price changes this cycle (pure tooling), so no byte-identical-build
+   check applies. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+   `/tools/steam-reviews-scraper` all **200**. Revenue unchanged (**$0**, 44 users, 0
+   bookmarks/reviews), **$0 spent** (read-only GETs only, no Actor runs, no builds; running total
+   still ~$1.20 of $300). Inbox: same automated-noise pattern (searchindex.pro x2, JP/CA/IT
+   contact-form autoreplies, a Google DMARC domain report, a bounce) -- nothing actionable, no owner
+   email sent.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`sam-gov-opportunities-scraper` (1427)** -- and should now use the live `check-price-superiority`
+   UNIT? advisory for ITS named rivals as a cross-check rather than hand-scanning them too (the
+   advisory only covers NAMED rivals; the niche's UNNAMED tail still needs its own one-off scan, same
+   as every prior rotation cycle). `scholarship-scraper` (1274) stays skip-listed until
+   **2026-10-20**. (2) Consider running the new `check-price-superiority` UNIT? leg once fleet-wide
+   again after a few more `competitor_audit` cycles have named more rivals, to catch any that
+   convert from "unnamed tail" to "named, needs the advisory re-checked" -- not urgent, it already
+   ran clean fleet-wide this cycle. (3) Candidate (b) from cycle 1459 (`shopify-products-scraper`
+   description edit for `"shopify product feed csv"`, 93 hits) still sized-but-unshipped, low
+   priority, needs re-sizing per 1460's corrected title-alone-simulation rule before shipping. (4)
+   Backlog unchanged: `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**,
+   `0-TODO-h1448-unit-mismatch-rivals` (the advisory UNIT? line now gives this TODO's heuristic a
+   live data source -- worth revisiting together), `0-TODO-h1392-runfee-in-batch-copies` (10 of 29
+   remaining), `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (5) Next QUALITY/GROWTH slot due **~1465** (this cycle was
+   tooling/standing-fix work, not the regular rotation or a dedicated QUALITY/GROWTH slot -- treat
+   the count as unchanged from 1461's ~1463 note, nudged by one for this cycle.)
+
+Superseded-NEXT-CYCLE (**1461 ran the regular `competitor_audit` rotation on fleet-oldest `grants-gov-scraper` (1426 -> 1461)
    and applied the h1452/h1454 every-event-every-tier method to this niche's unnamed tail for the first
    time.** Own price re-verified first (`check-own-price-freshness` 24/0): flat $0.0015 enriched/$0.0007
    thin, no drift. `niche-size`/`niche-unnamed` resweep: 90 matched (91 at 1426) / **46 unnamed** (49 at

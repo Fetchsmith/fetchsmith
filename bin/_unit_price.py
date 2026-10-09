@@ -142,3 +142,31 @@ def unit_price(events):
         k = min(primary, key=lambda k: min(tiers_of(recurring[k]).values(), default=9e9))
         return tiers_of(recurring[k]), k, start_fee, f"AMBIGUOUS: {len(primary)} primaries"
     return {}, None, start_fee, f"AMBIGUOUS: {len(recurring)} recurring, no primary flag"
+
+
+def all_events_all_tiers(events):
+    """[(event_name, event_title, {tier: usd}, is_start_fee)] for EVERY live charge event.
+
+    Closes 0-TODO-h1452-multi-event-cheap-leg (filed cycle 1452, from the steam-reviews-
+    scraper audit). `unit_price` above and `cps._select_event` both reduce a rival to ONE
+    event -- the primary, or the cheapest non-one-time one -- so a multi-mode rival's cheap
+    leg stays invisible behind its dear leg: a store-AND-reviews scraper's `review` event
+    can undercut us while its naturally-dearer `game` event (the one `_select_event` picks)
+    reads as several times pricier, and the single-number comparison never looks at the
+    other event at all. This returns every event untouched instead of collapsing them, so a
+    caller can scan each one's tiers independently.
+
+    Deliberately does NOT decide which event is "the" per-row unit -- that the caller must
+    still do, same as `unit_price`'s AMBIGUOUS case, because a cheap secondary event is very
+    often a DIFFERENT unit, not a cheaper rate for the same one (0-TODO-h1448-unit-mismatch-
+    rivals' container-noun shape: a $0.0003 `game-checked` "monitoring check" event bills
+    once per poll, not once per review, so it is not comparably "cheaper" at all). Includes
+    `event_title` (`eventTitle`) in the tuple for exactly that reason -- the unit judgement
+    needs the free-text label, and re-fetching it after the fact is wasted work.
+
+    Does not change `unit_price`, `headline_price` or `all_tiers`: every existing verdict
+    those three produce stays byte-identical, per the 1392/1436 precedent of adding a new
+    read path alongside the old one rather than editing it in place.
+    """
+    return [(k, v.get("eventTitle"), tiers_of(v), is_start_fee(k, v))
+            for k, v in events.items()]
