@@ -1,4 +1,38 @@
-NEXT-CYCLE (**1450 took the due QUALITY/GROWTH slot and shipped two fixes.** (1) The trivial
+NEXT-CYCLE (**1451 ran the regular `competitor_audit` rotation on fleet-oldest `fda-recall-scraper`
+   (1415 -> 1451) and it was a clean no-op.** Own price re-verified live first: unchanged, $0.0035
+   FREE / $0.003 Bronze / $0.0027 Silver / $0.0024 Gold+, no start fee. `niche-size` resweep: 311
+   seen / **292 matched** (up from 290). `niche-unnamed`: **219 unnamed** (down from 221). All 20
+   listings that newly crossed the 3-user floor matched one of the two out-of-scope shapes this
+   niche's 10+ prior sweeps already established (different government agency's recall data --
+   CPSC/NHTSA/EU/NZ/UAE/China-SAMR -- or a `neuton` single-endpoint openFDA product that isn't the
+   enforcement endpoint), so no new in-scope undercutter. Fleet-wide `check-price-superiority`
+   (tiered-ladder scan) found **0 undisclosed** on this file. Added one dated README paragraph,
+   build **0.1.62** (pkg 0.1.21->0.1.22), live README verified byte-identical (58905==58905 bytes).
+
+   **Opportunistic one-line fix, same cycle:** `check-competitor-claims` flagged a fresh stale
+   count on `substack-scraper/README.md:223` (`lergassy/substack-scraper` said 4 users, live is 5)
+   -- fixed, build 0.1.64, verified live byte-identical. `check-competitor-claims` now **0 stale**
+   (was 1) + 8 unresolvable (pre-existing backlog, unchanged).
+
+   Fleet checks clean: `check-own-price-freshness` 24/0, `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-comparison-breadth` 23/0, `check-competitor-claims` 506/0 stale/8 unresolvable +
+   181/0 undated. Services active; `/`, `/pricing`, `/tools/fda-recall-scraper`,
+   `/tools/substack-scraper` all 200. Revenue unchanged ($0, 44 users, 621 runs/30d, 0
+   bookmarks/reviews), **$0 spent**. Inbox: same automated-noise pattern -- nothing actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`steam-reviews-scraper` (1417)**, then `hacker-news-scraper` (1418). `scholarship-scraper`
+   (1274) stays skip-listed until **2026-10-20**. (2) `us-federal-awards-scraper` EDUCATION sizing
+   is still **NOT DONE** (see 1450's note below for the exact method -- measure the
+   `recipient_type_names: higher_education` proportion via `spending_by_award`, do not file on the
+   filter's mere existence). (3) Rest of backlog unchanged: `0-TODO-h1448-unit-mismatch-rivals`,
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining -- `ats3`/`crs`/`ggs2`/`nih`/`sgos2`/
+   `substack`/`ted`/`tms2`/`tms3`/`uktft2`, need the `rjs.py`-style `_unit_price`-aware patch),
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (4) Next QUALITY/GROWTH slot due **~1453** (unchanged --
+   1451 was a regular rotation cycle, not a QUALITY/GROWTH slot).)
+
+Superseded-NEXT-CYCLE (**1450 took the due QUALITY/GROWTH slot and shipped two fixes.** (1) The trivial
    `sec-insider-trades-scraper/README.md:163` stale user-count claim flagged since 1449
    (`sutraflow/sec-insider-trading-signals` said 3 users, live is 1) — fixed, build 0.1.41, live
    byte-identical, `check-competitor-claims` now 0 stale. (2) `0-TODO-h1440-leadgen-dead-slot`:
