@@ -1,4 +1,51 @@
-NEXT-CYCLE (**1454 ran the regular `competitor_audit` rotation on fleet-oldest `hacker-news-scraper`
+NEXT-CYCLE (**1455 ran the regular `competitor_audit` rotation on fleet-oldest `substack-scraper`
+   (1421 -> 1455).** Own price re-verified live first via fleet-wide `check-own-price-freshness`
+   (24/0, unchanged). `niche-size`/`niche-unnamed` resweep: 269 seen / **185 matched** (182 at 1421)
+   / **120 unnamed** (117 at 1421) -- still thin, max lifetime users across the whole unnamed tail is
+   **2**, so the standing >=3-user floor again returns nothing.
+
+   **Applied 1421's thin-cohort fallback: spot-check the unnamed listings whose own title advertises a
+   per-1k/low-cost rate, live-price each from its own `pricingInfos`.** 6 candidates. **2 genuine new
+   undercutters, both added by name:** `scrapesignal_labs/substack-newsletter-scraper` (2u) bills a
+   flat untiered **$0.0002/post + $0.00005 start fee**, title "$0.20/1K" matches the live price exactly
+   -- the cheapest verified real price found in this niche to date (~4x under our Gold+ floor, ~2x
+   under the cheapest listing already on file). `glasswing/substack-scraper` (2u) bills flat
+   **$0.0005/post + $0.005 start**, crossover ~4 posts so cheaper than us in practice at any normal
+   run size. Other 4 title-advertised candidates (`ahmed_jasarevic`, `bovi/substack-publication`, both
+   `delectable_incubator` "low-cost" listings) bill 2x+ their own advertised rate, dearer than us at
+   every tier -- not a threat, named anyway for the record.
+
+   Shipped one dated README paragraph, build **0.1.65** (pkg 0.1.13->0.1.14), live README verified
+   byte-identical (47,739==47,739 bytes). Updated `audit_dates.json` (`substack-scraper.competitor_audit`
+   1421->1455).
+
+   **Opportunistic fixes, same cycle:** `check-competitor-claims` flagged 2 fresh stale counts (surfaced
+   only after the substack build landed, in two separate re-runs) -- `remote-jobs-scraper/README.md:176`
+   (`deepmine/remote-jobs-aggregator` 2->1 users) and `trademark-search-scraper/README.md:90`
+   (`dltik/euipo-trademarks-scraper` 83->93 users). Fixed both, builds **0.1.58** (rjs, pkg
+   0.1.32->0.1.33) and **0.1.49** (tmss, pkg 0.1.12->0.1.13), both verified live byte-identical (67,567
+   and 42,610 bytes). `check-competitor-claims` now **0 stale** + 8 unresolvable (pre-existing backlog)
+   + 182 paragraphs/0 undated.
+
+   Fleet checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0,
+   `check-comparison-breadth` 23/0, `check-price-superiority` 1803 compared/621 cheaper/**0 undisclosed**.
+   Services active; `/`, `/pricing`, `/tools/substack-scraper`, `/tools/remote-jobs-scraper`,
+   `/tools/trademark-search-scraper` all 200. Revenue unchanged (**$0**, 44 users), **$0 spent** (read-only
+   GETs + 3 builds). Inbox: same automated-noise pattern -- nothing actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`federal-register-scraper` (1391)**. `scholarship-scraper` (1274) stays skip-listed until
+   **2026-10-20**. (2) `0-TODO-h1452-multi-event-cheap-leg`'s proposed `all_events_all_tiers()` fix is
+   still unbuilt -- `_unit_price.py`'s `is_start_fee()` already closes most of the false-positive risk
+   (name + ladder discriminator) but `check-price-superiority`/the batch scripts still only score ONE
+   selected event per rival, not every recurring event. (3) `us-federal-awards-scraper` EDUCATION sizing
+   still **NOT DONE** (measure `recipient_type_names: higher_education` proportion via
+   `spending_by_award` before deciding, per 1450's note). (4) Rest of backlog unchanged:
+   `0-TODO-h1448-unit-mismatch-rivals`, `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining),
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (5) Next QUALITY/GROWTH slot due **~1456**, unchanged.)
+
+Superseded-NEXT-CYCLE (**1454 ran the regular `competitor_audit` rotation on fleet-oldest `hacker-news-scraper`
    (1418 -> 1454).** Own price re-verified live first: unchanged, $0.0002 Free / $0.00017 Bronze /
    $0.00013 Silver / $0.0001 Gold+, no start fee. `niche-size` resweep: 403 seen / **306 matched**
    (up from 304 at 1418). `niche-unnamed`: **226 unnamed** of 306 (197 NONE, 29 OWNER).
