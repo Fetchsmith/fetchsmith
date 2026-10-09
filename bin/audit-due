@@ -1,0 +1,137 @@
+#!/root/agent/venv/bin/python
+"""Which Actors are actually DUE for a per-Actor audit? (added cycle 1476)
+
+Usage: bin/audit-due [--type competitor_audit] [--cycle N] [--all] [--base N]
+
+Read-only, no network. Reads state/audit_dates.json and prints, oldest-first, the
+Actors whose last audit of <type> is older than that Actor's effective minimum
+re-audit interval. Prints `NONE DUE` (and the soonest-due Actor) when nothing is.
+
+WHY THIS EXISTS -- cycle 1476. The `competitor_audit` rotation was running strict
+oldest-first with no minimum interval, and the fleet is only 24 Actors deep, so a
+full lap took ~37-40 cycles == ~19 HOURS (cron is every 30 min, 48 cycles/day).
+Every Actor was being deep-re-audited roughly daily, and the results proved it was
+a treadmill: `fec-campaign-finance-scraper` matched exactly 42 rivals at cycles
+1246, 1287, 1332, 1368, 1406 AND 1439 -- 193 cycles, five consecutive clean
+no-ops, zero drift, zero new undercutters. Cycle 1475 hit the same wall from the
+other side: it ran a full live-pricing sweep on `google-news-scraper` before
+noticing cycle 1438 had run the identical audit ~18.5h earlier.
+
+THE SAFETY ARGUMENT for auditing rarely: a new undercutter does NOT need this
+rotation to be caught. `check-price-superiority` runs FLEET-WIDE EVERY CYCLE and
+since cycle 1437 compares every rival at every plan tier (~1800 comparisons,
+currently 0 undisclosed). Price regressions are therefore already under continuous
+observation. The only thing the per-Actor sweep adds is niche COMPLETENESS --
+finding listings that are new to the Store and not yet named in our README -- and
+new Store listings do not appear at a 19-hour cadence.
+
+So: floor the interval at 7 days and back off on evidence of stability.
+  effective interval = BASE * 2 ** min(clean_streak, 2), capped at CAP
+  BASE = 336 cycles (7 days)   CAP = 1344 cycles (28 days)
+Per-Actor override: set `<type>_min_interval` (in cycles) in audit_dates.json.
+Skip-list: set `<type>_skip_until_date` to an ISO date (YYYY-MM-DD).
+
+CLEAN STREAK IS ADVISORY, derived by regex from the `<type>_note` text, which is
+newest-first and separated by `[prior note preserved]`. It only ever LENGTHENS an
+interval, never shortens one below BASE, so a misparse cannot cause an Actor to be
+audited too eagerly -- the failure mode is a delayed audit, caught by --all.
+"""
+import json, re, sys, datetime
+
+STATE = "/root/agent/state/audit_dates.json"
+LOG = "/root/agent/logs/worker.log"
+CYCLES_PER_DAY = 48          # cron is every 30 minutes
+BASE = 7 * CYCLES_PER_DAY    # 336 cycles == 7 days
+CAP = 28 * CYCLES_PER_DAY    # 1344 cycles == 28 days
+
+CLEAN = re.compile(r"clean (no-op|resweep)|0 unnamed|0 new undercutter|"
+                   r"0 undercutters|zero (price )?drift|0 (price )?drift|"
+                   r"no undercutter|0 real price drift", re.I)
+NOTCLEAN = re.compile(r"FIX SHIPPED|TOOL BUG|REAL FINDING", re.I)
+
+
+def clean_streak(note):
+    """Count leading newest-first note segments that report a clean audit."""
+    if not note:
+        return 0
+    n = 0
+    for seg in str(note).split("[prior note preserved]"):
+        if CLEAN.search(seg) and not NOTCLEAN.search(seg):
+            n += 1
+        else:
+            break
+    return n
+
+
+def current_cycle():
+    """Last `cycle=NNNN ... start` line in worker.log."""
+    try:
+        with open(LOG) as f:
+            hits = re.findall(r"cycle=(\d+)\s+model=\S+\s+start", f.read())
+        if hits:
+            return int(hits[-1])
+    except OSError:
+        pass
+    return None
+
+
+def main():
+    a = sys.argv[1:]
+    typ = a[a.index("--type") + 1] if "--type" in a else "competitor_audit"
+    base = int(a[a.index("--base") + 1]) if "--base" in a else BASE
+    cyc = int(a[a.index("--cycle") + 1]) if "--cycle" in a else current_cycle()
+    show_all = "--all" in a
+    if cyc is None:
+        sys.exit("audit-due: could not determine current cycle; pass --cycle N")
+
+    data = json.load(open(STATE))
+    today = datetime.date.today()
+    rows = []
+    for slug, v in sorted(data.items()):
+        if not isinstance(v, dict) or typ not in v:
+            continue
+        last = v[typ]
+        if last is None:
+            rows.append((-1, slug, None, None, None, 0, "NEVER AUDITED", None))
+            continue
+        streak = clean_streak(v.get(f"{typ}_note"))
+        interval = v.get(f"{typ}_min_interval") or min(base * 2 ** min(streak, 2), CAP)
+        gap = cyc - last
+        skip = v.get(f"{typ}_skip_until_date")
+        if skip and today < datetime.date.fromisoformat(skip):
+            state = f"SKIP until {skip}"
+        elif gap >= interval:
+            state = "DUE"
+        else:
+            state = f"in {interval - gap}"
+        rows.append((last, slug, last, gap, interval, streak, state, skip))
+
+    rows.sort(key=lambda r: r[0])
+    due = [r for r in rows if r[6] in ("DUE", "NEVER AUDITED")]
+
+    print(f"{typ}: cycle {cyc}, base {base}c ({base / CYCLES_PER_DAY:.0f}d), "
+          f"cap {CAP}c ({CAP / CYCLES_PER_DAY:.0f}d), {len(rows)} Actor(s) tracked")
+    print(f"{'last':>5} {'gap':>5} {'needs':>6} {'clean':>5}  {'state':<18} actor")
+    for _, slug, last, gap, interval, streak, state, _sk in rows:
+        if not show_all and state not in ("DUE", "NEVER AUDITED") and len(due):
+            continue
+        print(f"{last if last is not None else '-':>5} {gap if gap is not None else '-':>5} "
+              f"{interval if interval is not None else '-':>6} {streak:>5}  {state:<18} {slug}")
+
+    print()
+    if due:
+        print(f"DUE NOW ({len(due)}): " + ", ".join(r[1] for r in due))
+        print(f"NEXT TARGET: {due[0][1]}")
+    else:
+        soon = [r for r in rows if r[6].startswith("in ")]
+        soon.sort(key=lambda r: int(r[6][3:]))
+        print("NONE DUE -- do NOT run a competitor_audit sweep this cycle.")
+        if soon:
+            n = int(soon[0][6][3:])
+            print(f"Soonest: {soon[0][1]} in {n} cycle(s) (~{n / CYCLES_PER_DAY:.1f} day(s), "
+                  f"cycle {cyc + n}).")
+        print("Spend the cycle on growth/quality work instead (see PLAYBOOK).")
+
+
+if __name__ == "__main__":
+    main()

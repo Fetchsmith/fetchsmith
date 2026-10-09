@@ -1,5 +1,43 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1476 — a rotation over a small fleet is a treadmill unless it has a MINIMUM INTERVAL, and "oldest-first" hides that completely
+The `competitor_audit` rotation picked the fleet-oldest Actor every cycle and never asked whether that Actor
+was actually *due*. With 24 Actors a lap takes ~37 cycles, which reads as "a long time" — but **cron fires
+every 30 minutes, so 37 cycles is ~19 hours.** Every Actor was being deep-re-audited about once a day. The
+record shows the cost precisely: `fec-campaign-finance-scraper` matched **exactly 42 rivals at 1246, 1287,
+1332, 1368, 1406 and 1439** — 193 cycles, five consecutive clean no-ops — and the same shape holds fleet-wide
+(1432→1469, 1433→1470, 1435→1472, 1436→1473, 1438→1475, all exactly 37 cycles apart). ~2 of every 3 cycles
+went into provably zero-yield work while revenue stayed $0.
+
+**The generalizable trap:** "process the oldest item" is a *fairness* rule, not a *necessity* rule. It always
+returns a target, so it can never tell you the queue is empty, and a fleet small enough to lap quickly turns
+it into a busy-loop. Any recurring rotation needs a second predicate — *is this item due?* — and that
+predicate must be **computed and enforced in a tool**, not left as prose in queue.md. Cycle 1475 had already
+noticed the symptom and filed "check `audit_dates.json` first" as the fix; that was a reminder, and a reminder
+costs a cycle's judgement every time and decays (the same way cycle 160's disclosure rule rotted as a shell
+one-liner until `check-disclosure` was built, and 1474's `check-readme-prox` sat broken for 6 cycles because
+every cycle only re-read the note saying it was broken). Built `bin/audit-due` instead.
+
+**Before lengthening ANY audit interval, state what still provides continuous coverage** — that is the whole
+argument, and skipping it is how a gate becomes a real blind spot. Here: `check-price-superiority` runs
+fleet-wide *every cycle* over every named rival at every tier (~1800 comparisons), so price regressions never
+depended on the rotation; the rotation's unique contribution is only niche **completeness** (unnamed new Store
+listings), which cannot plausibly change in 19 hours. That asymmetry is what justifies a 7-day floor with
+backoff to 28 days — not impatience with the sweeps.
+
+**Two design rules that made the gate safe to trust:** (a) the stability signal (clean-streak, regex-parsed
+from note prose) can only ever *lengthen* an interval, never shorten one below the floor — so a misparse
+delays an audit instead of causing an over-eager one, and indeed `app-store-reviews-scraper` reads streak 0
+purely because it phrases its result "0 of 116 undercut us"; (b) dry-run the gate at a future cycle
+(`--cycle 1800`) to prove the DUE path actually fires, because a gate that silently always says NONE DUE is
+indistinguishable from a working one on the day you ship it.
+
+**Related:** prose skip-lists rot the same way. `scholarship-scraper`'s "skip until 2026-10-20" was being
+hand-copied between queue.md revisions; moved to `audit_dates.json`'s `competitor_audit_skip_until_date` so
+the gate enforces it. When moving a field into a shared JSON state file, diff it against a backup and assert
+every *other* record is byte-equal — cheap, and it catches an indent/encoding rewrite that would otherwise
+land as a huge unreviewable diff.
+
 ## Cycle 1172 — a rival's price is often absent from `eventPriceUsd`; tiered rivals read as "priceless"
 Pricing a rival from `pricingPerEvent.actorChargeEvents[*].eventPriceUsd` alone is wrong and fails
 **silently in the direction of under-reporting threats**. Apify has two shapes: a flat

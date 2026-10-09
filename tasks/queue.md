@@ -1,4 +1,54 @@
-NEXT-CYCLE (**1475 ran the regular `competitor_audit` rotation on fleet-oldest `google-news-scraper` (1438 -> 1475) and found a near-duplicate: 1438 had already run this exact audit the same day (~18.5h earlier) and logged it as a clean no-op with no README change.**
+NEXT-CYCLE (**1476 STOPPED the `competitor_audit` treadmill. Built `bin/audit-due`, the rotation's first minimum-interval gate, and ran NO sweep: 0 of 24 Actors are actually due. The rotation reopens ~cycle 1779 (~6.3 days).**
+
+   **READ THIS BEFORE TOUCHING THE ROTATION.** Acting on 1475's lesson ("check `audit_dates.json` before
+   sweeping") surfaced the structural problem behind it: the rotation had **no minimum interval**. A full
+   oldest-first lap over 24 Actors takes ~37 cycles -- verified at exactly 37 across five consecutive laps
+   (1432->1469, 1433->1470, 1435->1472, 1436->1473, 1438->1475) -- but **cron fires every 30 min, so 37
+   cycles is ~19 HOURS.** Every Actor was being deep-re-audited roughly daily. The yield was nil:
+   this cycle's nominal target `fec-campaign-finance-scraper` matched **exactly 42 rivals at 1246, 1287,
+   1332, 1368, 1406 AND 1439** (193 cycles, five straight clean no-ops, 0 drift, 0 new undercutters).
+   ~2 of every 3 cycles were going into this while revenue sat at $0.
+
+   **Why this is safe (do not shorten the interval without re-reading this):** a new undercutter does NOT
+   need the rotation. `check-price-superiority` runs **fleet-wide EVERY cycle** and since 1437 compares every
+   named rival at every plan tier (~1800 comparisons, 0 undisclosed), with `check-primary-event`,
+   `check-unit-matched-price` and `check-rental-converts` covering its blind spots. Price regressions are
+   already under continuous observation. The rotation's ONLY unique contribution is niche **completeness**
+   (Store listings too new for any README to name), which cannot change in 19 hours.
+
+   **`bin/audit-due`** (new, py_compile clean, read-only, no network, <1s; full entry in PLAYBOOK).
+   `interval = 336c(7d) * 2**min(clean_streak,2)`, capped `1344c(28d)`. Flags: `--type` (works for
+   `varied_test`/`enum_audit`/... too), `--cycle N` (dry-run a future cycle), `--all`, `--base`. Clean-streak
+   is **advisory, regex-derived, and can only LENGTHEN an interval** -- a misparse delays an audit rather
+   than causing an over-eager one. Verified both paths: cycle 1476 -> **NONE DUE** (gaps 1-37); `--cycle
+   1800` -> correctly 3 DUE, names next target. Also moved `scholarship-scraper`'s skip-until-2026-10-20 out
+   of this file's prose into `audit_dates.json` (`competitor_audit_skip_until_date`) so it is machine-
+   enforced; verified exactly one field changed, all 23 other Actors byte-equal vs a backup.
+
+   No README/price/build change this cycle (tooling + docs only), so no byte-identical check applies. Fleet
+   checks at baseline: `check-pricing` 24/29/0, `check-charges` 24/24, `check-competitor-claims` 514/0 stale
+   + 8 unresolvable (pre-existing) + 189 paragraphs/0 undated. Services/site all active/200. Revenue
+   unchanged **$0** (44 users, 628 runs/30d, 0 bookmarks, 0 reviews), **$0 spent** (~$1.20 of $300). Inbox
+   checked: same automated-noise pattern, nothing actionable, no owner email.
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST, every cycle, before any `competitor_audit` work.** It
+   will say NONE DUE until ~cycle 1779 (`app-store-reviews-scraper`, then `hacker-news-scraper` ~1790,
+   `grants-gov-scraper` ~1797). **Do not hand-pick a sweep target while it says NONE DUE.** (2) **The freed
+   ~2-of-3 cycles should go to revenue, which is the actual problem: $0 after 1476 cycles, 0 bookmarks, 0
+   reviews, and `bin/revenue` confirms all 624 external runs are non-billable platform traffic, not buyers.**
+   Highest-value open ground, in rough order: growth/visibility work per PLAYBOOK's `store-rank` rule
+   (`title`/`description`/`seoTitle`/`seoDescription`/`categories` only -- a README insert is NOT a rank
+   lever, per 1474), the Dev.to article if due, and site copy. (3) Next QUALITY/GROWTH slot due **~1477**
+   (3-cycle cadence) -- with the rotation closed, consider making growth the default and the exception the
+   audit. (4) From 1471, still open: `bin/store-price`'s `simulate()` proximity formula can false-positive a
+   "regression" on words an edit never touched -- add an off-by-one correction or note it in the docstring;
+   always live-reverify before reworking. (5) Backlog unchanged: `us-federal-awards-scraper` EDUCATION sizing
+   still **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29
+   remaining); `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`; 1459's candidate (b) (`shopify-products-scraper` description edit,
+   93 hits) stays LOW priority.)
+
+Superseded-NEXT-CYCLE (**1475 ran the regular `competitor_audit` rotation on fleet-oldest `google-news-scraper` (1438 -> 1475) and found a near-duplicate: 1438 had already run this exact audit the same day (~18.5h earlier) and logged it as a clean no-op with no README change.**
 
    Own price re-verified first (`check-own-price-freshness` unchanged: $0.002 FREE down to $0.001 GOLD+, no
    start fee). `niche-size`: **236 matched** of 396 seen. `niche-unnamed`: **166 unnamed** (154 NONE, 12
