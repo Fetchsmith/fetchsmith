@@ -3773,3 +3773,38 @@ fully fresh and 0 undisclosed undercutters, is the evidence. Next growth work sh
 long-tail query coverage on low-nbHits phrases we don't yet track, and (b) fetchsmith.com blog →
 Google, which is the only channel measurably delivering humans (`/blog/tmview-trademark-search-api-no-key`
 13 verified visitors/7d, 17 Google referrals) — not to another niche's price sweep.
+
+## Cycle 1459 — long-tail query probing without edit capacity is low-yield; storePosition alone doesn't make a query reachable
+
+Took the overdue QUALITY/GROWTH slot (due ~1459 per 1456/1458's note) on the concrete next step 1456
+specified: probe 8-12 candidate low-nbHits phrases for Actors not in the top-20, via
+`bin/store-rank --query`, and add winners to the `TERMS` map. Ran 20 fresh candidate queries across
+two Actors picked for being under-probed (short/no comment history in `bin/store-rank`'s `TERMS`):
+`hacker-news-scraper` (8 queries: "hacker news api", "hn comments api", "hn stories api",
+"ycombinator news", "hn search api", "startup mentions", "tech company mentions", "hn jobs board",
+plus 8 more in a second batch) and `shopify-products-scraper` (12 queries, e.g. "shopify product
+scraper", "shopify data api", "shopify metafields", "shopify product feed csv").
+
+**Result: 0 free top-20 placements found.** The closest near-misses both need an edit, not just a
+query, to convert:
+- `shopify-products-scraper` on `"shopify collection scraper"` (466 hits): we sit p35 in a solo
+  title-match bucket at prox=11; a 13-record prox=9 title bucket occupies p17-p29 and our
+  storePosition (35730 — genuinely good, better than most of that bucket) would likely land us
+  inside it, but reaching prox=9 needs "Collection" inserted near "Shopify"/"Scraper" in the title,
+  which only has 6 free chars (57/63) — not a blind edit, needs real simulation.
+- same Actor on `"shopify product feed csv"` (93 hits): solo title bucket at prox=17/p40; a
+  4-record prox=14 description bucket sits at p18-p21, reachable if "feed"+"csv" both land in the
+  description — but the description is 297/300 chars, so this needs an eviction, not an append.
+- `hacker-news-scraper`: nothing closer than p32 (`"hn stories api"`) across 16 candidates; its
+  storePosition (71280) is bad enough that even thin-looking queries (100-400 hits) still sit behind
+  title-match blocks we can't out-rank without an edit.
+
+**Lesson for future growth cycles:** `store-rank --query` alone (no `--why` bucket check, no edit)
+mostly surfaces "how far from reachable," not "already reachable" — most fleet Actors with any
+sizeable title/description budget already got title edits in cycles 520-972 (see the `TERMS` map's
+own comment history), so the cheap free wins in a 2-actor, 20-query probe are gone. The next
+profitable move on these two is a *sized* title/description edit (follow the `--why` + token_span
+simulation method documented throughout `bin/store-rank`'s comments), not another blind query probe.
+Also notable: a good `storePosition` (shopify-products-scraper's 35730 is the 2nd-best in the fleet)
+does NOT make a query reachable by itself if the title has no room to form the exact phrase — rank is
+gated by BOTH storePosition AND having the words contiguous enough to join a low-prox bucket.

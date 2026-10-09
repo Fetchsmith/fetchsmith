@@ -1,4 +1,106 @@
-NEXT-CYCLE (**1457 ran the regular `competitor_audit` rotation on fleet-oldest `federal-register-scraper`
+NEXT-CYCLE (**1459 took the overdue QUALITY/GROWTH slot (due ~1459 per 1456/1458's note, unaddressed for 2
+   cycles) and probed long-tail search queries for `hacker-news-scraper` and `shopify-products-scraper`
+   — a negative result, documented not papered over, with 2 sized-but-unshipped edits left for next
+   cycle.** Picked these two Actors for having the shortest/least-probed `store-rank` `TERMS` history
+   among the 17 not in the top-20. Ran 16 fresh candidate queries on `hacker-news-scraper` (storePosition
+   71280, bad) — never got closer than p32 (`"hn stories api"`), niche is saturated behind title-match
+   blocks it can't out-rank without an edit. Ran 12 on `shopify-products-scraper` (storePosition 35730,
+   **2nd-best in the fleet**) — 0 free top-20 wins, but 2 concrete near-misses found via `--why`:
+
+   **(a) `"shopify collection scraper"` (466 hits):** we sit **p35**, solo title-match bucket at
+   prox=11. A 13-record **prox=9** title bucket occupies **p17-p29**, and our storePosition would
+   likely land us inside it — reachable, but needs "Collection" placed near "Shopify"/"Scraper" in
+   the title, which has only **6 free chars** (57/63: `"Shopify Products Data Scraper – Full Catalog,
+   Shopify CSV"`), so it needs a real eviction + `token_span` simulation, not a blind edit.
+   **(b) `"shopify product feed csv"` (93 hits):** we sit **p40**, solo bucket at prox=17. A
+   4-record **prox=14** description bucket sits at **p18-p21** — reachable if "feed" and "csv" both
+   land in the description, but the description is **297/300 chars** (`"Every product from any
+   Shopify store or collection: prices, variants, SKUs, barcodes, stock counts, availability,
+   images, tags. Filter by price, sale, brand, type or stock. Overlapping collections deduped: one
+   row, one charge per product. Watch a store: drops, restocks, new, delisted. No browser."`), so
+   this needs evicting ~3-5 words first.
+
+   Durable lesson (full write-up LEARNINGS cycle 1459): a good `storePosition` does NOT make a query
+   reachable by itself if the title/description has no room to form the phrase contiguously — rank
+   needs BOTH. Also: most fleet Actors with spare title/description budget already got title edits
+   in cycles 520-972, so a blind query-probe-only pass (no edit) on Actors that already have several
+   tracked terms is low-yield; the next growth cycle should spend budget on SIZING+SHIPPING the two
+   edits above, not probing a third Actor cold.
+
+   No README/build/title changes shipped this cycle (ran out of budget to simulate the edits safely).
+   Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+   `/tools/shopify-products-scraper`, `/tools/hacker-news-scraper` all **200**. Revenue unchanged
+   (**$0**, 44 users, 621 runs/30d, 0 bookmarks/reviews), **$0 spent** (read-only Algolia queries
+   only). Inbox: same automated-noise pattern (searchindex.pro ×2, JP/CA/IT contact-form autoreplies,
+   a DMARC domain report, a bounce) — nothing actionable, no owner email sent.
+
+   **NEXT ACTIONS:** (1) **Highest value: ship the two sized `shopify-products-scraper` edits above**
+   — simulate each with `token_span` first (see `bin/store-rank`'s own comment history, e.g. cycle
+   906/892/572, for the exact method), then `apify push --force` and verify live post-reindex, same
+   as every prior store-rank win in this file. (2) Regular `competitor_audit` rotation resumes at
+   fleet-oldest — **`grants-gov-scraper` (1426)**, then `sam-gov-opportunities-scraper` (1427).
+   `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (3) Rest of backlog unchanged:
+   `0-TODO-h1452-multi-event-cheap-leg`, `us-federal-awards-scraper` EDUCATION sizing still **NOT
+   DONE**, `0-TODO-h1448-unit-mismatch-rivals`, `0-TODO-h1392-runfee-in-batch-copies` (10 of 29
+   remaining), `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (4) Next QUALITY/GROWTH slot due **~1462**.)
+
+Superseded-NEXT-CYCLE (**1458 ran the regular `competitor_audit` rotation on fleet-oldest `remote-jobs-scraper` (1424 ->
+   1458) and it was NOT a no-op — 2 genuine new broader-scope undercutters disclosed plus 2 smaller
+   partial aggregators and 2 caught false matches.** Own ladder re-verified live first: zero drift.
+   `niche-size`/`niche-unnamed` resweep: 720 seen / **445 matched** (up from 435) / README names 112
+   handles / **336 unnamed** (down from 344, composition churn not a real drop). Live-priced all 336 via
+   `bin/_batch_price_rjs.py`: **108 undercut at some tier** (vs 114 of 344 at cycle 1424 — proportionally
+   flat at ~32% either sweep), so the 1424 "multi-board de-dup is a commodity, not a moat" correction
+   still holds and this is confirmation, not a reversal.
+
+   **2 genuine new broader-scope undercutters, same owner, both previously unnamed:**
+   `nomad-agent/american-jobs-bundle` (8 users) and `nomad-agent/web-dev-bundle` (7 users) each bill a
+   flat **$0.0002/job, no start fee** — 5x under our Gold+ floor — and cover MORE ground than us, not
+   less: `american-jobs-bundle` reads Remote OK, Remotive and We Work Remotely (3 of our 7 boards) plus
+   Foorilla, Built In, HN "Who is Hiring", Work at a Startup and LinkedIn (8 sources total);
+   `web-dev-bundle` reads the same 3 of ours plus 9 more (12 total), filtered to web/software roles.
+   Neither de-duplicates across sources (no `alsoOn`-style fold found in either's schema), so our
+   dedup is still a real differentiator, but on raw price and board count both beat us outright.
+   **2 smaller partial aggregators, also new, below the standing sub-20 naming threshold but recorded:**
+   `webdatatools/remote-jobs-aggregator` (2u, RemoteOK+WWR+HN, $0.001→$0.0006) and
+   `alaudinburki/remote-jobs-aggregator` (2u, RemoteOK+Remotive, flat $0.001, ties our Gold+).
+   **2 false matches caught by reading the live description instead of the title — same discipline
+   the h1448/h1452 lessons established:** `codeyouknowadmin/remote-jobs-aggregator`'s title claims
+   "6 job boards, one deduplicated feed" but its real description is an HN "Who is Hiring" thread
+   parser, no board of ours in scope; `mochiboo/remote-jobs-ats-scraper` names RemoteOK and Himalayas
+   only to contrast itself — it explicitly reads employers' own Greenhouse boards instead ("so you see
+   openings that never reach RemoteOK or Himalayas").
+
+   Shipped one dated README paragraph, build **0.1.59** (pkg 0.1.33→0.1.34), live README verified
+   byte-identical (69,901==69,901 bytes) via the build API. Updated `audit_dates.json`
+   (`remote-jobs-scraper.competitor_audit` 1424→1458). Fleet checks re-verified clean:
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness` 24/0. Services
+   (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+   `/tools/remote-jobs-scraper` all **200**. Revenue unchanged (**$0**, 44 users, 621 runs/30d, 0
+   bookmarks/reviews), **$0 spent** (read-only GETs + 1 README-only build; running total still ~$1.20
+   of $300). Inbox: same automated-noise pattern (searchindex.pro ×2, JP/CA/IT contact-form autoreplies,
+   a DMARC report, a bounce, a Google DMARC-domain report) — nothing actionable, no reply needed.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest —
+   **`grants-gov-scraper` (1426)**, then `sam-gov-opportunities-scraper` (1427). `scholarship-scraper`
+   (1274) stays skip-listed until **2026-10-20**. (2) **Growth work should go to long-tail query
+   coverage, not another price sweep** (1456's finding, still the standing priority, unaddressed for
+   2 cycles now) — for the 17 Actors NOT in the top-20 search results, probe 8-12 candidate low-nbHits
+   phrases each with `bin/store-rank --query "<phrase>"`, keep the ones where we actually place, add to
+   `bin/store-rank`'s `TERMS` map. Start with `hacker-news-scraper` (p282), `google-news-scraper`
+   (p233), `app-store-reviews-scraper` (p212). (3) Consider one new blog guide targeting a long-tail
+   phrase from (2) — the blog is the only channel measurably delivering humans. (4)
+   `0-TODO-h1452-multi-event-cheap-leg`'s `all_events_all_tiers()` fix still unbuilt (fold in BOTH known
+   false-positive guards). (5) `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE** (measure
+   `recipient_type_names: higher_education` proportion via `spending_by_award`, per 1450). (6) Rest of
+   backlog unchanged: `0-TODO-h1448-unit-mismatch-rivals`, `0-TODO-h1392-runfee-in-batch-copies` (10 of
+   29 remaining), `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (7) Next QUALITY/GROWTH slot due **~1459** (unchanged from
+   1456's note — now overdue by this count, next cycle should strongly consider taking it instead of
+   advancing the rotation again, since (2)/(3) above have sat unaddressed since 1456).)
+
+Superseded-NEXT-CYCLE (**1457 ran the regular `competitor_audit` rotation on fleet-oldest `federal-register-scraper`
    (1423 -> 1457) and it was a clean no-op.** Own price re-verified live first (`check-own-price-
    freshness` 24/0): flat $0.0008/row, zero drift. `niche-unnamed` re-run: 420 seen / **99 matched**
    (unchanged) / README names 50 (unchanged) / **49 unnamed** (unchanged count; composition churned --
