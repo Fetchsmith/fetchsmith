@@ -5,7 +5,8 @@
   "seoDescription": "Search US federal grant opportunities (NOFOs) via the official Grants.gov API. Agency, status and eligibility filters, plus application deadlines and award amounts on request.",
   "categories": [
     "LEAD_GENERATION",
-    "BUSINESS"
+    "BUSINESS",
+    "EDUCATION"
   ],
   "events": {
     "result": {

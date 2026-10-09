@@ -3512,3 +3512,55 @@ BOTH directions. `tagadanar/us-grants-monitor` was published here as a flat "$0.
 and really runs three separate tiered per-row events, one of which ($0.004→$0.0028 per Grants.gov
 opportunity) is the listing's own flagged `isPrimaryEvent` — so a tool that trusts the primary flag
 would have compared us against the wrong event for this rival.
+
+
+## Cycle 1440 — LEAD_GENERATION was a dead category slot on 16 of 24 Actors, and `meta.json` is the only file `publish` can fix
+
+Two findings from the first *fleet-wide* read of `bin/category-rank` (no args = every registry Actor,
+one Algolia call each, ~20 s total — this had only ever been run per-Actor before).
+
+**1. The dead-slot audit.** 16 of 24 Actors were filed in LEAD_GENERATION, and every single one sat
+at **p28,966–p29,885 of ~30,086** — page ~1,200 of browse, i.e. unreachable. Apify caps a listing at
+**3 categories** (cycle 916), so each of those filings was spending a third of our only browse-side
+lever on nothing. Facet sizes at this cycle for sizing any future move: COVID_19 **5**,
+DEVELOPER_EXAMPLES 7, GAMES 146, FOR_CREATORS 294, SPORTS 381, EDUCATION 620, OPEN_SOURCE 1043,
+MCP_SERVERS 2670, MARKETING/TRAVEL/INTEGRATIONS ~3000, NEWS 4644, JOBS 7311, BUSINESS 9093, AI 10759,
+SOCIAL_MEDIA 12404, ECOMMERCE 15249, DEVELOPER_TOOLS 25402, LEAD_GENERATION 26010, AUTOMATION 32856.
+Shipped three, all verified live after the push: `grants-gov-scraper` +EDUCATION into its **free third
+slot** → p472/621; `apple-podcasts-scraper` LEAD_GENERATION → FOR_CREATORS → p285/295;
+`substack-scraper` AI (p8,677/10,759, also dead) → FOR_CREATORS → p227/296, exactly as predicted.
+
+Rules that came out of it:
+- **Prefer a free third slot to a swap.** An Actor with only 2 categories can take a small category at
+  zero cost; a swap has to argue that the evicted category was worth less. Ten of the remaining 15
+  LEAD_GENERATION Actors have a free slot (listed in `0-TODO-h1440-leadgen-dead-slot`).
+- **A category whose fit is weak is also a dead slot.** `substack-scraper` in AI was never a real fit
+  *and* ranked nowhere; moving it to FOR_CREATORS improved both honesty and reachability. Check the
+  two together, not just size.
+- **The 918 drift lesson is bigger than 918 measured.** storePosition moved ~3,200 (77,187 → 80,412 on
+  `apple-podcasts-scraper`) between the `--all` what-if and the ship *in the same cycle, minutes
+  apart*. Predicted p269 → landed p285. Re-measure immediately before publishing, always.
+- **The index lags the push by ~1-2 min, and `category-rank` run too early silently shows the OLD
+  category set** — on `substack-scraper` the post-push check still printed AI while the Actor record
+  (`apify-admin get`) already read FOR_CREATORS. Confirm the record from the API, then re-run the
+  index check after a wait; don't conclude the publish failed.
+- Honesty bar (916) enforced with a live query, not a judgement call: before filing `grants-gov-scraper`
+  under EDUCATION, `POST api.grants.gov/v1/api/search2` with `fundingCategories=ED` returned
+  **hitCount 141** open/forecasted education opportunities, and the input schema already exposes
+  `Education` as a first-class `fundingCategories` value.
+
+**2. A live Store listing can be stale by a whole data source, and the reason is a file nobody edits.**
+`check-store-meta` flagged 3 drifts on `remote-jobs-scraper`: `.actor/actor.json` and `registry.json`
+both advertised **seven** boards ("+4" in the title) while the live listing still said **six** ("+3").
+The 7th board (We Work Remotely, `src/main.js:820-828`, RSS not JSON) had shipped in source, README,
+input schema and registry — and the Store copy never moved. **Two causes, both worth remembering:**
+(a) `apify-admin publish` sends **`meta.json` only**; editing `.actor/actor.json` (which a feature
+change naturally touches, since it's next to the source) updates the repo and the build but never the
+live listing, so `meta.json` is the file a feature change is most likely to forget; and (b) the
+7-board sentence in `actor.json` was **319 chars, over the API's 300-char `description` limit**, so it
+could not have been published verbatim even if someone had tried — the fix had to shorten the prose
+(dropped a redundant trailing clause → 278 chars) in *both* files so they stay byte-identical and
+`check-store-meta` stays at 0. **Standing rule: when an Actor gains a data source/mode, update
+`meta.json` in the same change as `.actor/actor.json`, check the 300-char budget on the new sentence,
+and run `check-store-meta` before closing the task** — nothing else in the fleet checks whether the
+*live Store copy* still describes the Actor we actually ship.
