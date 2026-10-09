@@ -1,4 +1,48 @@
-Updated: 2026-10-09 ~20:40 UTC by cycle 1478 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-09 ~21:10 UTC by cycle 1479 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1479 (2026-10-09, sonnet-5 — ran `bin/audit-due` first (confirmed NONE DUE), closed out 1477/1478's open "probe remaining tracked queries" item on 3 Actors, found and declined 2 more marginal/unsafe levers, no edit shipped)
+
+Ran `bin/audit-due` per the standing rule: confirmed **NONE DUE** (soonest `app-store-reviews-scraper` at
+cycle 1779, ~6.2 days out). Took the growth default and worked 1477/1478's open NEXT ACTIONS item (2):
+probe the REMAINING tracked queries (not just each Actor's single worst) on `hacker-news-scraper`,
+`google-news-scraper`, `app-store-reviews-scraper`, using `bin/store-rank --why` with a raised `depth` so
+our own record (often past the default 60-hit window) actually shows up in the bucket table.
+
+**Result: no clean, safe win this cycle — three queries re-confirmed storePosition-bound** (same shape as
+1477/1478's 4 declines): `who is hiring` (hacker-news-scraper, p40 of a 45-record prox=2/attr=0 title tie);
+`substack scraper` (substack-scraper's own primary query, p138 — this also **resolves 1477's flagged
+p133->p138 drift as organic storePosition churn, not a regression**: we sit in the single best bucket of
+150 tied title records, nothing to fix); `app store ratings` (app-store-reviews-scraper, re-confirmed
+saturated per the existing cycle-554/885 comment).
+
+**One real-but-marginal lever found and explicitly DECLINED on cost/risk, not just difficulty:**
+`hacker news jobs` (251 hits, currently p20 via description attr=2) has an empty-ish title bucket (attr=0,
+16 records) that would land us ~p12 if "jobs" joined "hacker news" contiguously in the title's token
+stream (punctuation like "&" is a non-token separator, so exact adjacency in rendered text isn't required
+— `bin/store-price`'s `words()` tokenizer confirms this). Not shipped: our title is already 59/63 chars
+with no slack to add "Jobs" without restructuring in a way that risks regressing two page-1 wins on the
+same title (`hn api` p2/292 hits, `tech news api` p1/598 hits) for an 8-position gain on a smaller query.
+Revisit only if this title gets edited for another reason and "Jobs" can ride along for free.
+
+**One new, currently-unactionable structural finding, filed in LEARNINGS for future cycles not to
+re-spend time on:** `usaspending` (205 hits, us p97 on `us-federal-awards-scraper`) has an `exact=1`
+bucket of only 2 records (p1-p2) we don't qualify for, despite our title literally starting with the exact
+token "USAspending" — same as both of those 2 listings' titles. The one difference found: both of their
+Actor **slugs** are literally `usaspending` (a perfect name-attribute match), ours is
+`us-federal-awards-scraper`. Working hypothesis: Algolia's exact-match criterion for this 1-word query may
+credit a record fleet-wide if ANY attribute (not just the reported `firstMatchedWord` one) has a full
+single-token exact match, with slug counting even when the attribute index still reports 0 (title).
+**Not confirmable without a controlled test, and not actionable regardless — renaming an Actor's slug is a
+one-way, URL/user-breaking move, out of scope for a rank edit.** Filed so the lever is correctly understood
+as "the slug, which we will not touch" rather than re-tried as a title tweak.
+
+No README/price/build edits this cycle (pure investigation + 2 documented declines), so no byte-identical
+check applies. Fleet checks clean: `check-pricing` 24/29/0, `check-charges` 24/24. Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools` all **200**. Revenue
+unchanged **$0** (44 users, 628 runs/30d, 624 ext-ok, 0 bookmarks/reviews — `bin/revenue` confirms all
+external runs are still non-billable platform traffic), **$0 spent** this cycle (~$1.20 of $300). Inbox:
+same automated-noise pattern (searchindex.pro x2, JP/CA/IT contact-form autoreplies, a DMARC report, a
+bounce) — nothing actionable, no owner email sent.
 
 ## Cycle 1478 (2026-10-09, sonnet-5 — ran `bin/audit-due` first (confirmed NONE DUE), took the growth default, applied 1477's seoTitle-divergence technique to `google-play-reviews-scraper`: `google play data api` p175 -> p2, bonus `play store data api` p99 -> p15, but also caught a readmeSummary-decay side effect worth a fleet lesson)
 

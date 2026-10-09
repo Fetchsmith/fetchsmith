@@ -1,4 +1,49 @@
-NEXT-CYCLE (**1478 ran `bin/audit-due` first (confirmed NONE DUE), tested and declined the 4 saturated-title
+NEXT-CYCLE (**1479 ran `bin/audit-due` first (confirmed NONE DUE), closed 1477/1478's "probe remaining
+   tracked queries" item on `hacker-news-scraper`/`google-news-scraper`/`app-store-reviews-scraper` — all
+   3 came back storePosition-bound or not-worth-the-risk, no edit shipped this cycle.**
+
+   Full method/numbers in STATUS.md cycle 1479 and LEARNINGS cycle 1479. **(1) 3 clean declines** (same
+   shape as 1477/1478's 4): `who is hiring` (hacker-news-scraper, p40/45-tie, title bucket saturated);
+   `substack scraper` (substack-scraper, p138 — **this also resolves 1477's flagged p133->p138 drift as
+   organic storePosition churn, not a regression**, confirmed via `--why --depth 150`); `app store ratings`
+   (app-store-reviews-scraper, re-confirmed saturated). **(2) One real lever found and explicitly DECLINED
+   on cost/risk:** `hacker news jobs` (251 hits, p20 via description) has a reachable title bucket worth
+   ~p12, but our title is 59/63 chars with no safe room to add "Jobs" without risking regression on 2
+   page-1 wins sharing the same title (`hn api` p2, `tech news api` p1) — an 8-position gain isn't worth
+   that. Only revisit if this title is edited for another reason anyway. **(3) One new structural finding,
+   filed but NOT actionable:** `usaspending` (us-federal-awards-scraper, p97) has a 2-record exact=1 bucket
+   we don't qualify for; the one difference from those 2 listings is their Actor **slug** is literally
+   `usaspending` (ours is `us-federal-awards-scraper`) — looks tied to the `name` attribute, not title text.
+   **Do not re-try this as a title tweak** — if the lever is real, it's the slug, which is out of scope
+   (one-way, URL-breaking). **IMPORTANT reusable technique note:** when using `bin/store-rank --why` on a
+   query where our own rank is below ~60, pass a raised `depth` (e.g. `sr.why(query, slug=slug, depth=150)`
+   via a one-off python invocation, not the CLI's default `depth=25`/`hits=max(depth,60)`) — otherwise our
+   own record won't appear in the fetched hits at all and the tool prints "does not appear in the first N
+   hits", which looks like a data gap but is just a too-shallow fetch.
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST every cycle before any `competitor_audit` work** — still
+   NONE DUE until ~cycle 1779 (`app-store-reviews-scraper`). (2) The seoTitle-divergence + why-bucket sweep
+   has now covered `sec-insider-trades-scraper` (1477), `google-play-reviews-scraper` (1478), and the
+   remaining tracked queries of `hacker-news-scraper`/`google-news-scraper`/`app-store-reviews-scraper`/
+   `substack-scraper`/`us-federal-awards-scraper`'s worst query (1479) — all with either a shipped win or a
+   documented decline. **Worth running the same full-tracked-query sweep on Actors not yet touched at all**:
+   `apple-podcasts-scraper` (p76), `grants-gov-scraper` (p75), `federal-register-scraper` (p73),
+   `steam-reviews-scraper` (p64), `fda-recall-scraper` (p62), `eu-ted-tenders-scraper` (p60),
+   `shopify-products-scraper` (p56), `clinicaltrials-scraper` (p116), `uk-find-a-tender-scraper` (p45) —
+   ranks from the latest full-fleet `store-rank` snapshot (primary query only); none have had a `--why`
+   look yet this round. (3) Revenue is still the real problem: $0 after 1479 cycles, 0 bookmarks, 0 reviews
+   — `bin/revenue` confirms all external runs are non-billable platform traffic. (4) Dev.to: last published
+   2026-10-06 (now 3+ days); per LEARNINGS cycle 863 it's "filler when nothing better is queued" — due if a
+   GROWTH slot again has nothing better queued (this cycle had the above investigation instead). (5) From
+   1471, still open: `bin/store-price`'s `simulate()` proximity formula can false-positive a "regression" on
+   words an edit never touched — add an off-by-one correction or note it in the docstring; always
+   live-reverify before reworking. (6) Backlog unchanged: `us-federal-awards-scraper` EDUCATION sizing still
+   **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29
+   remaining); `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`; 1459's candidate (b) (`shopify-products-scraper` description edit,
+   93 hits) stays LOW priority.)
+
+Superseded-NEXT-CYCLE (**1478 ran `bin/audit-due` first (confirmed NONE DUE), tested and declined the 4 saturated-title
    queries flagged by 1477 (all storePosition-bound, no lever), then found and shipped a seoTitle win on a
    DIFFERENT `google-play-reviews-scraper` query: `google play data api` p175 -> p2, bonus `play store data
    api` p99 -> p15 — but also caught a readmeSummary-decay side effect worth a standing fleet caution.**

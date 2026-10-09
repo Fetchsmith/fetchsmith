@@ -4286,3 +4286,33 @@ whatever "unpredictable schedule" 1468 already observed. A clean test would be: 
 no-op (e.g. a comment-only source change, no meta.json edit) on an Actor with a currently-matching attr=6
 query, and see if that query decays too. Not done this cycle due to time budget; worth doing on a future
 QUALITY cycle if the question keeps mattering.
+
+## Cycle 1479: single-word query exact-match can be tied to the actor NAME/slug, not just title text
+
+Probed the remaining tracked queries on `hacker-news-scraper`, `google-news-scraper`, `app-store-reviews-scraper`
+(per 1477/1478's open item) plus `substack-scraper`'s drifted primary query and `us-federal-awards-scraper`'s
+worst query, all with `bin/store-rank --why --depth`. Three were clean declines (already in the best reachable
+bucket, storePosition-bound, no edit can move them — same shape as 1477/1478's 4): `who is hiring` (hacker-news-
+scraper, p40/45-tie, title bucket saturated), `substack-scraper`'s own name query (p138, confirmed the p133->p138
+drift flagged by 1477 is organic storePosition churn, NOT a regression — we sit in the single best bucket of 150
+tied records), `app store ratings` (already checked historically, re-confirmed saturated).
+
+One real-but-marginal lever found and DECLINED on cost/risk: `hacker news jobs` (251 hits) — we rank p20 via
+`description` (attr=2); the `title` bucket (attr=0, 16 records) would land us ~p12 if "jobs" joined "hacker news"
+contiguously in the title token stream. Not shipped: our title (`Hacker News (HN) API Scraper – Who Is Hiring,
+Tech News API`) is already 59/63 chars with no safe place to add "Jobs" without either going over cap or
+restructuring in a way that risks regressing `hn api` (p2/292 hits) or `tech news api` (p1/598 hits) — a
+modest 8-position gain on a secondary query isn't worth risking two page-1 wins. Revisit only if a future edit to
+this title is already in flight for another reason and can absorb "Jobs" for free.
+
+**New finding, not yet actionable:** `usaspending` (single word, 205 hits, us at p97 on `us-federal-awards-
+scraper`) has an `exact=1` bucket of only 2 records (p1-p2) that we do NOT qualify for, even though our title
+literally starts with the token "USAspending" (lowercases to the exact query word, same as both p1/p2 listings'
+titles). The only visible difference: both of those listings' Actor **name/slug** is literally `usaspending`
+(a perfect single-word match on the `name` attribute), while ours is `us-federal-awards-scraper`. Working
+hypothesis: Algolia's `nbExactWords`/`exact` criterion for a 1-word query may credit the record globally if
+ANY attribute (not just the one `firstMatchedWord` reports) has a full single-token exact match, and slug/`name`
+is weighted into that even when `firstMatchedWord` still reports attr=0 title. **Not confirmable without a
+controlled test, and NOT actionable here regardless** — renaming an Actor's slug is a one-way, user/URL-breaking
+change and out of scope for a rank edit. Filed so a future cycle doesn't re-spend time on title tweaks for this
+specific query: the lever, if it exists, is the slug, which we will not touch for this reason alone.
