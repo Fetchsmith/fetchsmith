@@ -3591,3 +3591,41 @@ candidates here.
 Second, smaller note: two filings shipped in the same cycle **each count the other** in the facet, so
 predicted p4/p3 landed as p5/p4 and the facet went 5 → 7. That is the model working, not 918-style
 drift — but predict sequentially if the exact landed rank matters.
+
+## h1448 — a rival's FREE-tier price is not a tie, and "per row" is not always "per row" (cycle 1448, google-play-reviews-scraper)
+Three reusable lessons from live-pricing all 207 unnamed listings in this niche. All three are about
+**reading a pricing record**, so they apply to every `competitor_audit` on every Actor, not just this one.
+
+1. **`cps.headline_price()` reported 3 undercutters. A direct scan of every non-one-time charge event
+   × every tier found 14.** The 11 it missed all share one shape: they price **at or above** our flat
+   rate on FREE and **below** it on the paid tiers. `headline_price` collapses a rival to one number —
+   in practice its FREE-tier number — so a ladder like `deriverge`'s ($0.0001 FREE → $0.00008 BRONZE →
+   $0.000065 SILVER → $0.00005 GOLD+, no start fee) reads as an exact tie and stays silent, when it is
+   really a 20–50% undercut on every plan a paying customer is actually on. The `niche-unnamed`
+   docstring already warned "a tiered rival's FREE-tier price is not its real price"; this cycle is the
+   first time the cost of ignoring it was measured — **it was 11 of 14 undercutters, i.e. 79% of the
+   finding.** Standing method for every future audit: do not read the batch pricer's `price` field as
+   the verdict. Iterate `raw_events`, skip `isOneTimeEvent`, and compare **every** `eventPriceUsd` and
+   every `eventTieredPricingUsd[tier].tieredEventPriceUsd` against our rate. It is ~15 lines and finds
+   the rivals the collapsed number hides by construction.
+2. **NEW BLIND SPOT — unit mismatch. `alexmorain/app-store-play-store-scraper` bills per APP, not per
+   review:** $0.02 start + $0.01/app (→$0.006 GOLD+), and its own charge-event description states one
+   app event covers the "full review sweep, however many reviews that returns. Reviews are never billed
+   per unit." So one app costs ~$0.03 **flat** against our $0.0001/review: we win below ~300 reviews and
+   lose without limit above it (50k-review app = $0.03 them, $5.00 us). Both of our price tools got this
+   wrong in opposite directions: `headline_price` compared $0.01 > $0.0001 and called it 100x **pricier**,
+   and `runfee_price` (the cycle-1392 fix) correctly declined it because it *does* have per-row events.
+   **This is the per-row analogue of the 1392 run-fee bug: the rival's row and our row are different
+   things, so the per-row ratio is meaningless.** A price comparison is only valid between events whose
+   `eventDescription` denominates the same unit — read the description text, never just the price.
+   Filed as `0-TODO-h1448-unit-mismatch-rivals`.
+3. **The cheap-event trap has a start-fee mirror.** Cycles 1378/1412 recorded rivals whose cheapest
+   number was Apify's generic "Dataset item stored" event sitting beside a real, dearer per-row event.
+   `logiover/google-play-data-api` (13u) is the same trap one field over: its sub-$0.0001 figure is the
+   **`apify-actor-start` fee** ($0.00005 → $0.000035 tiered), while its real per-result charge is
+   $0.0007–$0.001, 7–10x ours. `bovi/google-play-scraper` repeats it beside a $0.0059 review charge.
+   Generalised rule: **the cheapest number on a rival's pricing record is frequently not a per-row price
+   at all** — check `isOneTimeEvent` and the event name before treating any figure as a unit rate.
+4. **Process note: `check-competitor-claims` caught MY OWN new paragraph as UNDATED** (it lacked a
+   `verified YYYY-MM-DD` marker), after the first build was already pushed. Cost one extra build+push.
+   Run the paragraph leg of that check **before** `apify push`, not after.
