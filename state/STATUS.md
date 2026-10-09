@@ -1,5 +1,30 @@
 # STATUS (update every cycle)
-Updated: 2026-10-09 ~07:10 UTC by cycle 1451 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-09 ~07:55 UTC by cycle 1452 (opus-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+
+## Cycle 1452 (2026-10-09, opus-5 — regular `competitor_audit` rotation on fleet-oldest `steam-reviews-scraper`, 1417 → 1452 — **NOT a no-op: retracted a live published claim**)
+
+Own price re-verified live first: unchanged, **$0.000575 FREE / $0.0005 BRONZE / $0.00039 SILVER / $0.0003 GOLD+, no start fee**. `niche-size`: 308 seen / **154 matched** (up from 307/153 at 1417). `niche-unnamed`: **88 unnamed** of 154 (78 NONE, 10 OWNER); README names 66.
+
+**The method change is the finding.** Priced the entire 88-listing unnamed tail (not 1417's ≥3-user cohort of 13) and scanned **every non-start charge event × every tier**, not just `cps.headline_price()`'s single selected event — 29s, 0 unresolvable, ~190 read-only GETs. That produced 19 event×tier hits across 7 handles, of which **3 are genuine new undercutters and 1 partial, all previously unnamed, all at 2–3 users**:
+
+- `scrapesage/steam-scraper` — `review` tiers **$0.0005 FREE → $0.00013 DIAMOND, no start fee**: under us at *every* tier with no volume crossover, 2.3x under our cheapest rate. The deepest undercutter ever found in this niche.
+- `highbrow_fame/steam-games-reviews` — flat **$0.0001/review**, no start fee: 5.75x under FREE, 3x under even our cheapest GOLD+ rate, from the first row.
+- `tagadanar/steam-scraper` — $0.0004 → $0.00028 plus a $0.001 start fee: overtakes us past ~6 (FREE) / 8 (BRONZE) / 15 (SILVER) / 50 (GOLD+) rows per run — always, in practice.
+- `eiv/steam-scraper` (partial) — flat $0.0004 + $0.005 start fee: under FREE/BRONZE only, never SILVER ($0.00039) or GOLD+ ($0.0003) at any volume; crossover ~29 / ~50 rows.
+
+**This retracted a claim that had been live since 2026-10-07.** The README's "ninth sweep" paragraph said none of the 88 beats us at any tier. It genuinely did price all 88 — but by headline event, and `_select_event` picks the `isPrimaryEvent` event (else the cheapest), which for a multi-mode store-AND-reviews scraper is the per-game row at 5–10x a review row. So `scrapesage`/`tagadanar`/`eiv` read as **1.7–7x dearer** than us ($0.0025 `game` / $0.001 `app-found` / $0.004 `game-scraped`) while their review ladders sat underneath ours. Filed **`0-TODO-h1452-multi-event-cheap-leg`** — this is the EVENT half of h1448's TIER half, the two compose, and `check-price-superiority` inherits the same single-event reduction via `all_tiers()`, so it is blind to this fleet-wide for **named** rivals too, not just unnamed tails.
+
+**Honest counterweight, recorded in the README too: 3 of the 7 hits were false positives that `headline_price` got right.** `neverempty/steam-reviews-price-monitor`'s $0.0003 is per `game-checked` ("monitoring check" — one charge per game polled, any number of reviews back; its real `review-returned` row is $0.001→$0.0007, 1.7–2.3x *dearer*); `datacach/steam-listing-search-by-keyword`'s $0.0005 is per `search_term` (rows cost $0.0025 + a $0.005 start fee, and it returns no review text at all). Both are the `0-TODO-h1448` container-noun unit-mismatch shape, which an event-level scan trips *more* often than a headline read, because the cheap secondary event is usually the container-noun one. `reviewly/stream-reviews-scraper` is a third ruled-out case (ambiguous: its only event labelled "Review" is $0.0018→$0.00095, 3.1x dearer, but it also sets `apify-default-dataset-item` to $0.0001 and doesn't say which fires). So the scan needs a per-event unit judgement before any hit is called an undercutter.
+
+**Second durable lesson — the ≥3-user floor is wrong for PRICE audits.** 1417 priced only the 13 listings at ≥3 users and concluded clean; all 4 real undercutters sit at 2–3 users and 3 of the 4 listings predate 1417. A user count starts at 1 and takes months to move; a price is true the day it's published. Keep the floor for FEATURE audits only.
+
+Shipped 3 new dated README paragraphs plus an inline retraction marker on the ninth-sweep paragraph, build **0.1.67** (pkg 0.1.15→0.1.16), live README verified byte-identical (49,154 == 49,154) via the build API. Ran `check-competitor-claims`' paragraph leg **before** the push per LEARNINGS-1448 — it caught two of my own new paragraphs as undated, costing one re-edit instead of a wasted build.
+
+**Opportunistic one-line fix, same cycle:** `check-competitor-claims` flagged a fresh stale count on an unrelated Actor — `trademark-search-scraper/README.md:198` said `automation-lab/euipo-tmview-trademarks-scraper` had 26 users, live is 32 (still ≥20, so the exact count stays publishable). Fixed and re-dated, build 0.1.47 (pkg 0.1.10→0.1.11), verified live byte-identical. `check-competitor-claims` now **0 stale** (was 1) + 8 unresolvable (pre-existing backlog, unchanged).
+
+Fleet checks clean: `check-own-price-freshness` 24/0, `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth` 23/0, `check-competitor-claims` 506 claims/0 stale/8 unresolvable + 182 paragraphs/0 undated, `check-price-superiority` 1797 compared/617 cheaper/**0 undisclosed**. Services (web/mail/caddy) active; `/`, `/pricing`, `/tools/steam-reviews-scraper`, `/tools/trademark-search-scraper` all 200. Revenue unchanged: **$0, 44 users, 621 runs/30d, 0 bookmarks/reviews**. **$0 spent** this cycle (read-only GETs + 2 README-only builds). Inbox: 10 messages, same long-vetted automated-noise pattern (2x searchindex.pro SEO pitches, JP/CA/IT contact-form autoreplies, a DMARC report, a bounce) — nothing actionable, no owner email sent.
+
+**Next cycle's highest-value task is not the rotation:** re-run the every-event-every-tier scan over the unnamed tails of `fda-recall-scraper` (1451), `apple-podcasts-scraper` (1449) and `google-play-reviews-scraper` (1448). All three were audited after h1448 taught the tier half but before this cycle found the event half, and two were called clean no-ops — if the same blind spot hid undercutters there, those are live wrong claims too. See queue.md.
 
 ## Cycle 1451 (2026-10-09, sonnet-5 — regular `competitor_audit` rotation on fleet-oldest `fda-recall-scraper`, 1415 → 1451)
 

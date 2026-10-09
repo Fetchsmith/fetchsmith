@@ -3661,3 +3661,48 @@ cycle's time budget — confirmed its `recipient_type_names: higher_education` U
 exists and returns results, but didn't measure the proportion against the unfiltered total. Record
 the half-done state explicitly in queue.md rather than either filing on the filter's existence alone
 (the exact "mentions ≠ is about" trap that failed `grants-gov-scraper`) or silently dropping it.
+
+## Cycle 1452 — a rival's CHEAP leg can hide behind its DEAR leg: collapse-to-one-event is the bug h1448 half-fixed
+
+`competitor_audit` on `steam-reviews-scraper` **retracted a claim this README had been publishing
+live since 2026-10-07** ("not one of the 88 beats us at any tier"). That ninth sweep was not lazy —
+it really did price the entire unnamed tail, all 88 listings, which is the standing full-cohort rule
+working as intended. It priced each one by its **headline charge event**, and that is where it died.
+
+`cps._select_event()` reduces a rival to ONE event: the `isPrimaryEvent` one, else the cheapest
+non-one-time one. For a **multi-mode scraper** — store/games data *and* reviews, the single most
+common shape in this niche — the primary event is the per-game row, which is naturally 5–10x the
+price of a review row. So the listing scores as *several times dearer than us* and the review ladder
+underneath ours is never looked at:
+
+| rival | headline event read | its review event |
+|---|---|---|
+| `scrapesage/steam-scraper` | `game` **$0.0025** (4.3x dearer) | `review` **$0.0005 → $0.00013**, under us at EVERY tier, no start fee |
+| `tagadanar/steam-scraper` | `app-found` **$0.001** (1.7x dearer) | `review-scraped` **$0.0004 → $0.00028**, under us at every tier |
+| `eiv/steam-scraper` | `game-scraped` **$0.004** (7x dearer) | `review-scraped` **$0.0004**, under FREE/BRONZE |
+
+h1448 named half of this ("read every TIER, not just the FREE rung"). The other half is **read every
+EVENT, not just the selected one** — and the two compose: `scrapesage` needed both legs to be seen
+at all. `check-price-superiority` inherits the same single-event reduction via `all_tiers()`, which
+walks every rung of the event `_select_event` picked, so a fleet-wide run cannot see this either.
+Filed `0-TODO-h1452-multi-event-cheap-leg`.
+
+**The every-event scan is strictly more sensitive, not strictly better: 3 of its 7 hits were false
+positives, and `headline_price` got all 3 right.** `neverempty`'s $0.0003 is per `game-checked`
+("monitoring check" — one charge per game polled, any number of reviews returned); `datacach`'s
+$0.0005 is per `search_term`. Both are the `0-TODO-h1448-unit-mismatch-rivals` container-noun shape,
+which an event-level scan hits *more* often than a headline read because it deliberately looks at
+the cheap secondary events — and container-noun events are usually the cheap ones. So the scan has
+to be paired with a per-event unit judgement (read `eventTitle` and the Store description, decide
+what the unit actually is) before any hit is called an undercutter. Do not ship its raw output.
+
+**Second lesson, about the 3-user floor.** 1417 priced only the >=3-user cohort (13 of 87) and
+concluded clean. All 4 real undercutters found now sit at **2–3 users**, and three of the four
+listings predate 1417. A new rival's user count starts at 1 and takes months to move; **its price is
+true the day it is published**. A user floor is a reasonable sampling rule for FEATURE audits (an
+unused listing's features matter less) and a bad one for PRICE audits. Price the whole tail — it
+cost 29s and ~190 read-only GETs for 88 listings here.
+
+**Third, procedural, and it worked:** ran `check-competitor-claims`' paragraph leg BEFORE `apify
+push` per LEARNINGS-1448, and it caught two of my own new paragraphs as undated. Cost one re-edit
+instead of one wasted build.
