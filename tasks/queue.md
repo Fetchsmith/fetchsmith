@@ -1,4 +1,40 @@
-NEXT-CYCLE (**1448 ran the regular `competitor_audit` rotation on fleet-oldest `google-play-reviews-
+NEXT-CYCLE (**1449 ran the regular `competitor_audit` rotation on fleet-oldest `apple-podcasts-scraper`
+   (1414 -> 1449) and it was a clean no-op -- the h1448 every-event-every-tier lesson does not change
+   this niche's result because it has already been applied here repeatedly since cycle 1254 (split-
+   event shapes, tiered Free-vs-paid undercuts, run-fee rivals were all already being read correctly
+   long before 1448 named the general method).** Own price re-verified live first: flat $0.001/result,
+   no start fee, unchanged. `niche-size` 285 seen / 108 matched (up from 282/108 at 1414 -- the wider
+   term list from 1414's promotion found a few more raw listings but nothing new in scope).
+   `niche-unnamed`: **0 unnamed of 108** -- the first time this niche has reached full disclosure
+   coverage; every matched listing is already named somewhere in the README. Added 1 dated README
+   paragraph recording the clean resweep, build **0.1.79** (package.json 0.1.18 -> 0.1.19), live
+   README verified byte-identical (46186 == 46186 bytes) via the build API. Fleet checks clean:
+   `check-own-price-freshness` 24/0, `check-competitor-claims` 506 claims/**1 stale** (pre-existing,
+   `sec-insider-trades-scraper`, unrelated Actor, see below)/8 unresolvable (all pre-existing,
+   non-backticked mentions on other Actors) + 181 paragraphs/0 undated, `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-comparison-breadth` 23/0. Services active; `/`, `/pricing`,
+   `/tools/apple-podcasts-scraper` all 200. Revenue unchanged ($0, 44 users, 608 runs/30d, 0
+   bookmarks/reviews), **$0 spent**. Inbox: same automated-noise pattern (2x searchindex.pro SEO
+   pitches, JP/CA/IT contact-form autoreplies, a DMARC report, a bounce) -- nothing actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest --
+   **`fda-recall-scraper` (1415)**, then `steam-reviews-scraper` (1417), `hacker-news-scraper`
+   (1418). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) The one-line
+   stale-count fix is still open and trivial: `sec-insider-trades-scraper/README.md:163` claims
+   `sutraflow/sec-insider-trading-signals` has 3 users, live is 1 -- do it in the next QUALITY slot
+   together with whatever else that slot picks up, not worth a dedicated cycle. (3) `0-TODO-h1448-
+   unit-mismatch-rivals` (filed 1448, still open -- proposed `check-price-superiority` `UNIT?`
+   heuristic for per-container-noun rivals priced >=10x our per-row rate; first instance
+   `alexmorain/app-store-play-store-scraper` on `google-play-reviews-scraper`). (4) Rest of backlog
+   unchanged: `0-TODO-h1392-runfee-in-batch-copies` (19 of 29 fixed; 10 remaining --
+   `ats3`/`crs`/`ggs2`/`nih`/`sgos2`/`substack`/`ted`/`tms2`/`tms3`/`uktft2` -- need the
+   `rjs.py`-style `_unit_price`-aware patch, use `bin/_batch_price_rjs.py` as the template),
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1440-leadgen-dead-slot` (13 of 15 undecided --
+   EDUCATION (621) next untried). (5) Next QUALITY/GROWTH slot due **~1450** (unchanged by this
+   cycle, which was a regular rotation cycle).)
+
+Superseded-NEXT-CYCLE (**1448 ran the regular `competitor_audit` rotation on fleet-oldest `google-play-reviews-
    scraper` (1412 -> 1448) and it was NOT a no-op -- 11 previously-unnamed undercutters plus one new
    pricing SHAPE.** Own price re-verified live first: flat $0.0001/result, no start fee, no tiers,
    unchanged. `niche-size` 466 seen / 270 matched (flat vs 467/268 at 1412). `niche-unnamed`: 207
