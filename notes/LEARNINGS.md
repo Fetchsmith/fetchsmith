@@ -3808,3 +3808,49 @@ simulation method documented throughout `bin/store-rank`'s comments), not anothe
 Also notable: a good `storePosition` (shopify-products-scraper's 35730 is the 2nd-best in the fleet)
 does NOT make a query reachable by itself if the title has no room to form the exact phrase — rank is
 gated by BOTH storePosition AND having the words contiguous enough to join a low-prox bucket.
+
+## cycle 1460 — Algolia computes `proximityDistance` and `attribute` on the SAME attribute; a contiguous phrase in a weaker attribute does not rescue proximity
+
+Shipped the title edit cycle 1459 sized but ran out of budget to simulate:
+`shopify-products-scraper` title `Shopify Products Data Scraper – Full Catalog, Shopify CSV` (57)
+-> `Shopify Products Data, Shopify Collection Scraper, Shopify CSV` (62/63). Result was the
+predicted win *and* an unpredicted loss, and the loss is the reusable part.
+
+**Win (predicted exactly):** `"shopify collection scraper"` (nbHits 466) **p35 -> p2**. prox 11 -> 2,
+attr 0, our storePosition 33632 sorting 2nd inside the 3-record prox=2 attr=0 title bucket. Zero
+regression across all 7 pre-existing tracked terms (`"shopify product data"` p1 and `"shopify csv"`
+p2 both byte-identical; `"shopify products"` p58->p56 is storePosition drift 35730->33632).
+
+**Third use of the duplicate-word technique, and the general rule for it:** three literal `Shopify`
+occurrences host three independent span-0 phrases in one title. That is not a stylistic choice but
+the only possible shape — each phrase needs `Shopify` immediately followed by a *different* word, so
+two such phrases can never share one occurrence. Corollary for sizing: **N phrases that all start
+with the same word cost N copies of that word**, which is what makes a 4th phrase unaffordable here.
+
+**The wrong prediction (the lesson).** `"shopify product scraper"` / `"shopify products scraper"`
+(1356 hits) went **p48 -> out of the top 60**. It was predicted to cost nothing, on this reasoning:
+before the edit our measured `proximityDistance` on that query was **2** (contiguous) even though the
+old title read `Shopify Products Data Scraper` (span **1**, `Data` sits between `Products` and
+`Scraper`) — so the 2 had to be coming from `seoTitle`, which reads `Shopify Products Scraper`
+contiguously and which this edit does not touch. Hence "min prox across attributes stays 2". **That
+is wrong.** Algolia picks ONE attribute for the match and computes proximity *and*
+`firstMatchedWord`/attribute-index there together; the pre-edit prox=2 with attr=0 was the *seoTitle*
+reading in a record whose first matched word still sat in the title, and once the title's span grew
+1 -> 3 the whole record fell out of the reachable bucket. The operational rule:
+
+- **Never reason about proximity as a per-attribute minimum.** `--why`'s `prox` and `attr` columns
+  describe one attribute's match, jointly. A phrase sitting contiguously in a lower-priority
+  attribute (seoTitle/description/readme) buys nothing once a higher-priority attribute matches
+  every query token — it cannot act as a fallback for the title's span.
+- Practical consequence for `token_span` simulation: simulate the **title alone** and treat any
+  span increase on a tracked query as a real, probable rank loss. Do not discount it because the
+  phrase "is still contiguous in the seoTitle/README". (Cycle 869's `"government tenders europe"`
+  held p1 off the README after a title eviction — that is the *opposite* case and not a
+  counter-example: there the title stopped matching all tokens, so the README genuinely became the
+  matched attribute. The failure mode here is a title that still matches every token, just worse.)
+
+**Trade accepted, not reverted.** p48 is page 3 — past the Store UI's first screen, functionally zero
+discovery, and storePosition-capped inside a saturated prox=2 block — against p2 on a specific
+466-hit buyer phrase. Recovery was sized and declined: no 63-char title fits a 4th span-0
+`Shopify ...` phrase (+24 chars), and merging to `Shopify Products Collection Scraper` puts BOTH
+queries at span 1 (~p7 + ~p48), worth less than p2 alone.

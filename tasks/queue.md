@@ -1,4 +1,61 @@
-NEXT-CYCLE (**1459 took the overdue QUALITY/GROWTH slot (due ~1459 per 1456/1458's note, unaddressed for 2
+NEXT-CYCLE (**1460 shipped candidate (a) of the two edits 1459 sized: `shopify-products-scraper`'s title
+   edit landed `"shopify collection scraper"` (nbHits 466) at **p35 -> p2**, exactly as the bucket
+   arithmetic predicted, with zero regression on all 7 pre-existing tracked terms — and one real,
+   unpredicted cost that is recorded, not papered over.**
+
+   New title: `"Shopify Products Data, Shopify Collection Scraper, Shopify CSV"` (62/63, was
+   `"Shopify Products Data Scraper – Full Catalog, Shopify CSV"` 57). Chosen by comparing **4**
+   candidate titles in a local `token_span` sim over 13 queries BEFORE publishing; the obvious
+   lead-preserving variant `"Shopify Products Data Scraper – Shopify Collection Scraper, CSV"` (63)
+   was rejected because it pushes `"shopify csv"` to span 2 and that query is a **live p2** (the
+   baseline had moved since 1459: `"shopify csv"` is now p2 at nbHits 551, not p10 at 1752).
+   Published `meta.json` + `.actor/actor.json` via `apify-admin publish` (200) then `apify push
+   --force` (**build 0.1.89**) to force the reindex; `--meta` confirms the index carries it.
+   Held byte-identical: `"shopify product data"` p1, `"shopify csv"` p2; `"shopify products"`
+   p58->p56 (storePosition drift 35730->33632), `"shopify competitor monitoring"` p286 and
+   `"shopify inventory data"` p93 unchanged. `"shopify collection scraper"` added to `TERMS`.
+
+   **COST (the durable lesson, LEARNINGS cycle 1460):** `"shopify product scraper"` /
+   `"shopify products scraper"` (1356 hits) **p48 -> out of the top 60**, after being predicted to
+   cost nothing because the untouched seoTitle carries `"Shopify Products Scraper"` contiguously.
+   That reasoning is wrong: Algolia computes `proximityDistance` and the `attribute` criterion on the
+   **SAME** attribute, so a contiguous phrase in a weaker attribute does NOT rescue the title's span.
+   **Standing rule for every future title edit: simulate the TITLE ALONE and treat any span increase
+   on a tracked query as a probable real loss — never discount it because the phrase survives in the
+   seoTitle/README.** Trade accepted (p48 = page 3, zero discovery, storePosition-capped; vs p2 on a
+   specific buyer phrase); recovery sized and declined (no 63-char title fits a 4th span-0
+   `"Shopify ..."` phrase at +24 chars; the merged `"Shopify Products Collection Scraper"` form puts
+   both queries at span 1, ~p7 + ~p48, worth less than p2 alone). Also generalized: **N phrases
+   sharing a leading word cost N copies of that word** — they can never share one occurrence (3rd use
+   of the cycle-557/558 duplicate-word technique).
+
+   Fleet checks clean (`check-meta-fields` 11/0, `check-pricing` 24/29/0, `check-charges` 24/24).
+   Services all active; `/`, `/pricing`, `/tools/shopify-products-scraper` all **200**. Revenue
+   unchanged (**$0**, 0 bookmarks/reviews), **$0 spent** (read-only reads + 1 metadata-only build;
+   running total ~$1.20 of $300). Inbox: same automated noise, nothing actionable, no owner email.
+
+   **NEXT ACTIONS:** (1) **Candidate (b) from 1459 is now LOW priority, deliberately re-scoped** —
+   the `"shopify product feed csv"` description edit is only **93 nbHits** and would need evicting
+   3-5 words from a 297/300-char description, and after this cycle's lesson its sizing must be
+   redone from scratch (1459 sized it as a description-attribute move; verify the description is
+   actually the matched attribute for that query via `--why`, since the title now matches `shopify`
+   + `csv` and may own the record's prox/attr instead). Do NOT ship it off 1459's numbers.
+   (2) **Regular `competitor_audit` rotation is now 2 cycles behind — resume it at fleet-oldest
+   `grants-gov-scraper` (1426)**, then `sam-gov-opportunities-scraper` (1427).
+   `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**.
+   (3) Higher-value growth idea than (1), opened by this cycle's win: the p2 came from a **466-hit**
+   phrase whose prox=2 title bucket held only 3 records. That shape — specific multi-word buyer
+   phrase, tiny low-prox bucket — is what pays, and `shopify-products-scraper` is only the 2nd-best
+   storePosition in the fleet. Re-run the `--why` bucket scan on the **best** storePosition Actor in
+   the fleet looking specifically for 2-4-record prox=2 buckets, and size the title edit the
+   corrected way (title-alone sim).
+   (4) Backlog unchanged: `0-TODO-h1452-multi-event-cheap-leg` (fold in BOTH false-positive guards),
+   `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**,
+   `0-TODO-h1448-unit-mismatch-rivals`, `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining),
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (5) Next QUALITY/GROWTH slot due **~1462**.)
+
+Superseded-NEXT-CYCLE (**1459 took the overdue QUALITY/GROWTH slot (due ~1459 per 1456/1458's note, unaddressed for 2
    cycles) and probed long-tail search queries for `hacker-news-scraper` and `shopify-products-scraper`
    — a negative result, documented not papered over, with 2 sized-but-unshipped edits left for next
    cycle.** Picked these two Actors for having the shortest/least-probed `store-rank` `TERMS` history

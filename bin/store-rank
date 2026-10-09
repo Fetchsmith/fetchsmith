@@ -735,7 +735,39 @@ TERMS = {
     # (p130 -> p119, storePosition drift only). Cost: "shopify scraper" span 1->2
     # and "shopify catalog" span 3->4 (neither was a targeted query, both already
     # deep in the ranks either way).
-    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data"],
+    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "shopify collection scraper", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data"],
+    # cycle 1460: shipped the title edit cycle 1459 sized but could not fit. Title
+    # "Shopify Products Data Scraper – Full Catalog, Shopify CSV" (57) ->
+    # "Shopify Products Data, Shopify Collection Scraper, Shopify CSV" (62/63) using the
+    # cycle-557/558 duplicate-word technique a THIRD time in one string: three literal
+    # "Shopify" occurrences host three independent span-0 phrases ("Shopify Products Data",
+    # "Shopify Collection Scraper", "Shopify CSV"), which is the only possible shape --
+    # each phrase needs "Shopify" immediately followed by a DIFFERENT word, so they cannot
+    # share an occurrence. Local token_span simulation over 13 queries before publishing
+    # (4 candidate titles compared side by side) picked this over 3 rejected variants;
+    # "Shopify Products Data Scraper – Shopify Collection Scraper, CSV" (63) was rejected
+    # because it pushes "shopify csv" to span 2 and that query is a live p2.
+    # Published via `apify-admin publish` + `apify push --force` (build 0.1.89), measured
+    # live ~100s post-reindex: "shopify collection scraper" (nbHits 466) **p35 -> p2**,
+    # exactly the bucket arithmetic (prox 11 -> 2, attr=0, our storePosition 33632 sorts
+    # 2nd inside the 3-record prox=2 attr=0 title bucket behind scrapeai's 24461).
+    # Zero regression on the 7 pre-existing TERMS: "shopify product data" p1 and
+    # "shopify csv" p2 both held byte-identical, "shopify products" p58->p56 (organic
+    # storePosition drift 35730->33632), "shopify competitor monitoring" p286 and
+    # "shopify inventory data" p93 unchanged, the 2 readme-only wins still >1000.
+    # **One real, measured cost, recorded not papered over:** "shopify product scraper" /
+    # "shopify products scraper" (1356 hits) p48 -> OUT of the top 60. This was predicted
+    # NOT to cost anything, and that prediction was wrong -- see the LEARNINGS cycle 1460
+    # lesson: `proximityDistance` and the `attribute` criterion are computed on the SAME
+    # attribute, so a contiguous phrase in a LOWER-priority attribute (here seoTitle's
+    # "Shopify Products Scraper") does NOT rescue proximity once a higher-priority
+    # attribute matches every token. Judged a good trade anyway and not reverted: p48 is
+    # page 3 (past the Store UI's first screen, functionally zero discovery) and was
+    # storePosition-capped inside a saturated prox=2 block, versus p2 on a specific
+    # 466-hit buyer phrase. Recovery was sized and declined: no 63-char title hosts a
+    # FOURTH span-0 "Shopify ..." phrase (+24 chars), and the merged
+    # "Shopify Products Collection Scraper" form puts BOTH at span 1 (~p7 + ~p48), which
+    # is worth less than p2 alone.
     # cycle 966: h904 readme-proximity-scan continued. Pre-screen confirmed the 3 original
     # TERMS are dead ends unreachable via readme: "shopify products" (p112, already prox=1
     # attr=0 title -- readme can't beat title) and "shopify csv" (p7, same) both already
