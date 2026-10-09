@@ -372,6 +372,23 @@ per-run-fee product with no per-review rate at all. (The one future-dated cut na
 *named* listing and so sits outside this unnamed-cohort sweep; it is still pending as of today and
 remains 20x our rate after it lands.)
 
+**Fourth full-tail resweep, verified live 2026-10-09 ~03:00 UTC (cycle 1443), pulled forward
+out of strict rotation order specifically to close the retraction above.** Same method again:
+561 listings seen, 200 matched (vs 201 at 1420 — one net listing fewer, consistent with churn in
+a niche this new-listing-heavy rather than a count regression), 84 already named here, and all
+**116 unnamed ones live-priced** (0 unresolvable, 1 ambiguous). Result: **5 tie our $0.0001/review
+exactly, 110 are dearer, and `tinyrex`'s vacancy was not backfilled — 0 of the 116 undercut us.**
+The one ambiguous listing, `transparent_meteorite/app-store-reviews`, has two recurring per-row
+events with neither flagged primary (`review-returned` and `app-details` both $0.0005+/row, title
+line advertises "$0.50/1k" i.e. $0.0005/review) — dearer than us 5x over under either reading, so
+the ambiguity doesn't change the verdict. This sweep only re-prices the **unnamed** tail, same as
+the three before it — the named undercutters already disclosed above
+(`deriverge/app-store-reviews-scraper`, `silentflow`, `riadh_chebbi`, and the cycle-1264/1300 cohort)
+were not re-verified this cycle and stand as last priced; this paragraph retracts `tinyrex` without
+claiming the niche's price floor as a whole has moved. Read every figure in this README against its
+own timestamp — this niche added and priced a new undercutter within 12 minutes of the previous
+sweep (`tinyrex`, cycle 1420).
+
 This pass also put an exact number on the two **per-report** listings named above, which no earlier
 block quantified because a flat per-run fee has no per-review rate to compare: a whole run of
 `second_coming/app-store-review-analyzer` costs $0.02 (one `scan` event, billed at most once per
