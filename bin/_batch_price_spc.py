@@ -38,6 +38,7 @@ def price_one(h):
     if not d:
         return {"handle": h, "error": "unresolvable"}
     price, label = cps.headline_price(d, NOW)
+    runfee, runfee_label = cps.runfee_price(d, NOW)
     cur = cps.effective(d.get("pricingInfos"), NOW) or {}
     events = (cur.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
     return {
@@ -46,6 +47,8 @@ def price_one(h):
         "users": (d.get("stats") or {}).get("totalUsers"),
         "price": price,
         "label": label,
+        "runfee": runfee,
+        "runfee_label": runfee_label,
         "model": cur.get("pricingModel"),
         "events": {k: {"usd": cps.price_of(v), "primary": v.get("isPrimaryEvent"),
                        "onetime": v.get("isOneTimeEvent"), "title": v.get("eventTitle")}

@@ -38,6 +38,7 @@ for i, h in enumerate(handles, 1):
         out.append({"handle": h, "error": "unresolvable"})
         continue
     price, label = cps.headline_price(d, NOW)
+    runfee, runfee_label = cps.runfee_price(d, NOW)
     cur = cps.effective(d.get("pricingInfos"), NOW) or {}
     events = (cur.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
     out.append({
@@ -46,6 +47,8 @@ for i, h in enumerate(handles, 1):
         "users": (d.get("stats") or {}).get("totalUsers"),
         "price": price,
         "label": label,
+        "runfee": runfee,
+        "runfee_label": runfee_label,
         "model": cur.get("pricingModel"),
         # full event map so start fees / secondary charges are visible, not just the headline
         "events": {k: {"usd": cps.price_of(v), "primary": v.get("isPrimaryEvent"),
