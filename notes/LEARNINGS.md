@@ -4065,3 +4065,34 @@ attributes once the phrase was absent from the indexed summary. Cycle 958's
   that undercut us at every tier are consistently narrower in platform scope (3/7 or fewer), never
   broader + cheaper + full-scope at once. Rivals matching 6+ of our 7 platforms (`steadydata`) have
   so far only ever crossed under us at the top tier, never the whole ladder.
+
+## Cycle 1471: the h1468 "re-aim at verbatim attributes" correction pays off first try — description edit, not title, was the right lever
+
+- Cycle 1468's QUALITY/GROWTH slot found that README inserts don't reliably reach the Store search
+  index (it indexes an LLM-paraphrased `readmeSummary`, not our README text) and that the durable
+  levers are the length-capped, verbatim-indexed fields: `title`/`description`/`seoTitle`/
+  `seoDescription`. This cycle tested that correction on the exact candidate it left queued
+  (`federal-register-scraper`, `regulatory data api`, 972 hits, empty floor bucket) and it landed
+  **exactly as predicted: p1**, measured live ~90s after `apify push --force`.
+- The title had only 2 free chars and already carried 2 protected contiguous phrases at span 0
+  (`public inspection`, `proposed rules scraper`), so a title edit would have required evicting one
+  of them — a real trade against two high-value terms. The **description** was the better target:
+  it was 300/300 but contained the stray pair "official government" right before the existing word
+  "API" — replacing just those two words with "regulatory data" (net **-4 chars**) made "regulatory
+  data API" contiguous for free, without touching any other part of the description. Lesson: before
+  treating a maxed-out attribute as blocked, check whether the target phrase can be built by
+  **reusing a word already present** (here, "API" was already in the sentence) rather than
+  requiring a full fresh insertion — this is cheaper than evicting a tracked phrase elsewhere.
+- `bin/store-price --desc` flagged a predicted regression on `comment deadline` (p21 -> "WORSE",
+  prox 1->2) that did NOT happen live (confirmed p21 unchanged post-push). The edit never touched
+  the words "comment-close deadline" at all — only words earlier in the string changed, which
+  shouldn't affect the relative gap between "comment" and "deadline". The false alarm traces to
+  `simulate()`'s proximity formula (`max(combo)-min(combo)`, no off-by-one correction) differing
+  from Algolia's real `(gap - 1)`-style computation for some multi-word matches — consistent with
+  the tool's own documented pessimistic-bias limits (cycle 896). **Rule: when `store-price --desc`/
+  `--title` flags a regression on a phrase whose exact words you did NOT move or remove, trust a
+  live re-measurement over the simulator before discarding or reworking an otherwise-clean edit.**
+- Full verification: all 4 pre-existing TERMS (`federal register` p73, `public inspection` p2,
+  `comment deadline` p21, `proposed rules scraper` p1) held byte-identical live post-push; bonus
+  secondary win, `regulations data api` (328 hits) now ranks p14 (not targeted, picked up from the
+  same inserted phrase). Fleet checks (`check-pricing` 24/29/0, `check-charges` 24/24) clean.
