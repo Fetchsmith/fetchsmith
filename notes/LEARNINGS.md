@@ -3950,3 +3950,16 @@ would see it as already retracted. Caught only because the checker was re-run af
 trusting the diff on sight. **Rule: when retracting a dead competitor, rewrite the count out of that
 shape entirely** (e.g. "...which had been 4 users,") rather than leaving `` `owner/slug` (N users) ``
 followed by a past-tense clause — the regex cannot read tense.
+
+## Cycle 1467 — check-competitor-claims' DATED regex needs the literal word, not just a nearby date
+`bin/check-competitor-claims`'s freshness leg matches `(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})` —
+a paragraph can read as obviously fresh to a human ("Cycle 1458 (2026-10-09) resweep:", "Full-niche
+recheck 2026-10-09:") and still flag UNDATED, because "resweep"/"recheck" don't contain the literal
+substrings "verified"/"checked"/"re-verified"/"rechecked" ("recheck" is missing the "-ed"). Both
+`remote-jobs-scraper:183` and `uk-find-a-tender-scraper:140` had carried a real, current date for 7-9
+cycles while still printing UNDATED every run — nobody reads the word choice, only the checker does.
+Fixed both with a one-word change ("resweep" → "(verified ...) resweep", "recheck" → "rechecked") that
+changes no claim, just the prose shape the regex needs. **Rule: when dating a new audit paragraph, use
+one of the checker's literal trigger words next to the date** — "resweep 2026-10-09" or "recheck
+2026-10-09" reads fine to a human but is invisible to the tool that exists specifically to keep these
+paragraphs honest.

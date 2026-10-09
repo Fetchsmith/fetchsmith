@@ -184,7 +184,8 @@ Three share the shape already disclosed above for `crawlerbros/importyeti-scrape
 importyeti-scraper`, `alwaysprimedev/importyeti-scraper` and `devilscrapes/importyeti-alternative-
 scraper` all carry a `trademarks` field inside US import/export trade data, not a register search.
 The other ten match this niche only via disclaimer boilerplate or a trademark field buried inside
-an unrelated product — `piotrv1001/ziprecruiter-jobs-scraper` (job listings), `parseforge/sunbiz-
+an unrelated product — `piotrv1001/ziprecruiter-jobs-scraper` and `parseforge/ziprecruiter-scraper`
+(both job listings), `parseforge/sunbiz-
 florida-business-scraper` and `rl1987/fl-sunbiz-mcp` (Florida business registry, trademark is one
 of nine search types), `scrapesage/redfin-scraper` (real estate), `gio21/instacart-storefront-
 scraper` (grocery items), `zentrafoundry/company-name-normalizer` (GLEIF legal-name lookup),
@@ -192,6 +193,8 @@ scraper` (grocery items), `zentrafoundry/company-name-normalizer` (GLEIF legal-n
 courtlistener-case-search` (US case law and dockets), `crawlerbros/hawaii-business-express-
 scraper` (Hawaii business registry) and `ivosandoval/datamon-premium` (Spanish public-data
 aggregator, OEPM trademarks is one of six sources) — none of them searches a trademark register.
+(`parseforge/ziprecruiter-scraper`, 2026-10-09 sweep, same disclaimer-boilerplate shape as
+`piotrv1001`'s listing and no relation to `parseforge`'s genuine trademark products named above.)
 **Bottom line: the undercutter set grows by exactly one.** `thriftykiwi` joins `crawlerbros/
 importyeti-scraper` (partial, GOLD+ and above only) as the niche's only two undercuts; every
 full-register competitor still prices at or above our $0.002/result.

@@ -1,4 +1,43 @@
-NEXT-CYCLE (**1466 recovered cycle 1465's work after it timed out (`rc=124`) before committing.**
+NEXT-CYCLE (**1467 ran the overdue regular `competitor_audit` rotation on fleet-oldest `trademark-search-scraper`
+   (1430 -> 1467; cycles 1465/1466 had only point-fixed it, not a full resweep) and separately root-caused
+   both standing UNDATED items instead of just re-dating them.** Own price re-verified first
+   (`check-own-price-freshness` 24/0). `niche-size --strict`: 89 real trademark products. `niche-unnamed`:
+   113 matched, README names 111, **1 unnamed** (OWNER-flagged) — `parseforge/ziprecruiter-scraper`
+   (1 user), verified live as the same disclaimer-boilerplate false-match shape already excluded for
+   `piotrv1001/ziprecruiter-jobs-scraper` (title "Job Postings Scraper for ZipRecruiter", description ends
+   "All trademarks belong to their respective owners", no register search) — added to the existing
+   exclusion sentence, no new paragraph. Shipped build **0.1.52**, verified byte-identical live
+   (42,653 chars both sides via Python `len()` — `wc -c` disagreed only because of multi-byte em-dashes,
+   not a real diff). Updated `audit_dates.json` (`trademark-search-scraper.competitor_audit` 1430->1467).
+
+   **Closed both standing UNDATED paragraphs** (`remote-jobs-scraper:183`, `uk-find-a-tender-scraper:140`,
+   queued since 1464/1465) by finding the actual cause: `check-competitor-claims`'s `DATED` regex requires
+   the literal substring `verified|checked|re-verified|rechecked` within 40 chars of the date, and both
+   paragraphs said "resweep 2026-10-09" / "recheck 2026-10-09" — a real, current date the regex could not
+   see because neither word contains "verified"/"checked"/"rechecked". One-word fix each (no claim
+   changed), shipped builds `remote-jobs-scraper` **0.1.60** and `uk-find-a-tender-scraper` **0.1.67**, both
+   verified byte-identical live. Lesson filed in LEARNINGS cycle 1467 (use a literal trigger word next to
+   the date in future audit paragraphs).
+
+   Final `check-competitor-claims`: **504 checked/0 stale/8 unresolvable** (pre-existing, unrelated) +
+   **186 paragraphs/0 undated** (down from 2). Fleet checks clean: `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-comparison-breadth` 23/0. Services/site all 200 (`/`, `/pricing`, and all 3 touched
+   `/tools/*` pages). Revenue unchanged (**$0**, 44 users, 624 runs/30d), **$0 spent** (read-only reads + 3
+   README-only builds; running total ~$1.20 of $300). Inbox: same automated-noise pattern, nothing
+   actionable, no owner email.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest —
+   **`court-records-scraper` (1432)**, then `ats-jobs-scraper` (1433). `scholarship-scraper` (1274) stays
+   skip-listed until **2026-10-20**. (2) **QUALITY/GROWTH slot due ~1468 (next cycle)** — per
+   1456/1458/1459's standing note, long-tail search-query coverage is still the highest-value lever (search
+   box ranks worse on 19/24 tracked queries; browse surface dead everywhere but COVID_19); candidate (b)
+   from 1459 (`shopify-products-scraper` description edit, 93 hits, needs re-sizing per 1460's title-alone
+   rule) is a good fit if no stronger candidate turns up. (3) Backlog unchanged: `us-federal-awards-scraper`
+   EDUCATION sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`;
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining); `0-TODO-h1368-newly-visible-stale`;
+   `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+Superseded-NEXT-CYCLE (**1466 recovered cycle 1465's work after it timed out (`rc=124`) before committing.**
    Verified all 8 of 1465's claimed builds were genuinely live at the exact versions claimed, and the
    uncommitted working-tree diff matched the described `crawlerbros` retraction content exactly — so
    the work was real, only the final `git commit` was missing. Added the one gap found (1465's
