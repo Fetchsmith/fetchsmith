@@ -178,6 +178,17 @@ any issuer with the low per-filing activity this page's own MSFT/JPM sample foun
 because a buyer who only ever pulls high-activity issuers like Apple would pay less at either one
 than here.
 
+**Fifth full-cohort resweep (43 unnamed listings, checked live 2026-10-09 — `niche-unnamed` now
+matches 108 of 256 seen, 68 already named).** Our own price was re-verified against the live
+record first: flat **$0.0018/`result`, no start fee**, unchanged. Not one of the 43 cleared the
+usual ≥3-user floor (all sit at 1-2 users), so per the standing full-cohort rule all 43 were
+live-priced regardless, across every charge event and tier. **0 of 43 undercut us** — the two
+closest, `dobus/sec-filing-events-insider-signals` ($0.002/row flat) and
+`devilscrapes/sec-form-4-insider-trades-scraper` ($0.0025/row flat), are both dearer on the per-row
+rate alone and carry a $0.01 and $0.20 one-time Actor-start fee respectively on top; the rest sit
+at $0.003-$0.025/row, consistent with every prior sweep's modal range on this niche. No new rival
+worth naming.
+
 ## Notes on the source
 
 - **Filings older than June 2003 are not machine-readable at all, and this Actor says so rather
