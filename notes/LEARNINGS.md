@@ -4349,3 +4349,47 @@ of this round.
    up within this attribute" — not "is there a cheaper attribute I'm absent from entirely". A query showing
    `live = -` (not matching) is the highest-value signal on the board, not a dead end: it means every
    attribute is still open. Re-read the 9 Actors flagged in 1479 with that lens before trusting their ranks.
+
+## Cycle 1484 — the simulator anchors on the FIRST occurrence of a query word; real Algolia picks the best window
+
+Best single edit of the attr=4/5 sweep so far: one seoDescription rewrite on `steam-reviews-scraper`
+(155 -> 199 chars, build 0.1.68) moved **three** queries at once with 0 regressions —
+`video game data api` (1009 hits) NOT MATCHING -> **p1**, `gaming data api` (299) NOT MATCHING -> **p2**,
+`steam games list` (796) **p53 -> p7**. Top-20 coverage 6/11 -> 9/11.
+
+1. **`bin/store-price`'s documented "non-contiguous predicted pessimistically" limit has a second, sharper
+   cause worth naming: the simulator scores the proposed text from the FIRST occurrence of each query word,
+   while Algolia scores the BEST window.** The appended tail read `... Steam games list.`, a perfectly
+   contiguous 3-word match, but `steam` also appears in the text's opening clause (`Scrape Steam reviews`),
+   so the simulator built its window off that early `steam` and reported `exact=2 prox=2 -> p81` — WORSE
+   than the live p53. Shipping it anyway landed **p7**. **Rule: when a proposed phrase reuses a word that
+   already appears earlier in the same attribute, the simulator's prediction for that phrase is a floor to
+   ignore, not a reason to drop the phrase** — as long as the row still says `(live pN from attr X still
+   holds)`, i.e. no `!! LOSES`. The regression column is trustworthy; the gain column is not.
+2. **Three phrases fit where the first draft fit two, by trimming filler instead of evicting keywords.**
+   Draft 1 (194 chars) carried `video game data api` + `steam games list`. Compressing `owner estimates and
+   tags` -> `owners, tags` (-12 chars, no tracked query touched — `steam tags` is carried by attr 6/readme,
+   confirmed unchanged at p12) bought the third phrase. **Shop the filler for char budget before concluding
+   a phrase doesn't fit;** prose like "owner estimates and" is pure cost in an attribute priced per word.
+3. **`--desc "<text>" --attr 5` is the correct invocation to simulate a seoDescription edit.** `--desc`
+   alone silently sets attr=2 and simulates REPLACING the real 300-char description — which reports loud
+   false `!! LOSES` regressions (it did here on `steam review data`/`steam store api`, both actually carried
+   by the untouched description). The flags are processed in order, so the trailing `--attr 5` overrides
+   attr/cap while keeping the text. Order matters: `--attr 5 --desc "<text>"` would be reset back to attr=2.
+4. **`federal-register-scraper` — CLOSED, no lever** (same verdict as `apple-podcasts-scraper` at 1483).
+   Only 4 tracked queries, all 4 already matching; attr=4 priced strictly worse on every one (`federal
+   register` p73 -> pred p131). Its bucket table at depth=200 has exactly ONE bucket above us: our own
+   `(typos=0, words=2, exact=2, prox=1, attr=0)`, holding 100 records — the best bucket reachable, so p73
+   is pure storePosition. Do not re-probe barring a structural change.
+5. **A forced rebuild nudges `storePosition` itself.** `storePosition` went 68335 -> 66910 across this push,
+   which moved two queries we did NOT target (`steam reviews` p64->p57, `steam api` p3->p2, `steam review
+   data` p2->p1). Worth remembering when attributing a rank change to a copy edit: re-measure the untargeted
+   queries too, or a build-freshness effect gets miscredited to the wording.
+6. **A saturated title can be the correct answer — price the eviction, don't assume it.** `fda-recall-
+   scraper`'s `food recall` (192 hits) is the fleet's worst tracked rank (p117) AND has genuine upside
+   (p26 via a contiguous title match), which looks like an obvious buy. It isn't: the title is 63/63
+   chars and `bin/store-price --title` on the best 62-char reword shows it evicts `Database`, losing
+   `recall database` p3 and `fda database` p2 outright plus breaking `enforcement report` p6. **`--title`
+   simulation is cheap and the regression column is the trustworthy one — run it before writing off OR
+   buying any title edit.** A title earning three contiguous top-6 matches in 63 chars is already
+   optimally packed; the worst rank on the board is not automatically the best lever.
