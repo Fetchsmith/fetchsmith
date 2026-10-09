@@ -101,6 +101,29 @@ NICHE_TERMS = {
 # its auto-generated sweep has been read closely and better terms identified --
 # this is how cycle 1124's federal-register list earned its place.
 TERM_VARIANTS = {
+    # Promoted by cycle 1441. Not the usual case for this slot -- the base phrase
+    # "usaspending federal awards" already contains the niche's own name, so the no-space
+    # or wrong-name bugs below do not apply. The real gap: auto_variants() appends each
+    # MODIFIER onto the full 3-word phrase (e.g. "usaspending federal awards scraper"),
+    # and the Store search's relevance ranking under that longer, more specific phrase
+    # pushes plenty of real same-niche listings (titled e.g. "USAspending Scraper" or
+    # "Federal Spending Search", no "awards" in the title at all) below the API's
+    # per-query result cutoff. This Actor's own README documents this exact failure mode
+    # being rediscovered and worked around by hand on every one of 6 prior audit cycles
+    # (1167/1193/1218/1248/1289/1333), each widening the match ad hoc (narrowest: 5 terms,
+    # widest: "any of usaspending/federal award/federal spending/government spending/
+    # federal contract/federal grant as a substring") rather than landing in this table --
+    # so niche-size's own OWN TOOL reported 126 the whole time while the README's running
+    # tally reached 144 seen / 124 matched at 1333. Terms below are the union of every term
+    # those 6 cycles actually used, short and single-concept on purpose (short phrases rank
+    # a wider, more relevant result set than one long compound phrase ever can).
+    "us-federal-awards-scraper": [
+        "usaspending", "usaspending scraper", "usaspending api", "usaspending gov",
+        "usaspending.gov", "usa spending", "federal award", "federal awards",
+        "federal spending", "federal spending data", "federal contract awards",
+        "federal contracts grants", "government spending", "federal grant",
+        "federal contract", "federal award data",
+    ],
     # Promoted by cycle 1418's competitor_audit, the same no-space/abbreviated-form bug as
     # the steam-reviews/google-play-reviews entries below. The base phrase "hacker news" is
     # two contiguous words, so the plain auto_variants() fallback (11 modifiers on that one

@@ -1,4 +1,37 @@
-NEXT-CYCLE (**1440 took the due QUALITY/GROWTH slot and used it on the CATEGORY-BROWSE lever, which
+NEXT-CYCLE (**1441 ran the regular `competitor_audit` rotation on fleet-oldest `us-federal-awards-
+   scraper` (1407 -> 1441) and closed `0-TODO-h1400-unpromoted-niches`.** This Actor's 6 prior full
+   sweeps (1167-1333) had each widened the Store-search match by hand because the niche was never
+   promoted into `bin/niche-size`'s `TERM_VARIANTS` table, so the standing tool kept reporting a
+   stale ~126 matched. Promoted it (16 short single-concept terms replacing the old 3-word
+   compound-phrase `auto_variants()` fallback, same fix 1400 used on `court-records-scraper`):
+   matched 126 -> 133. **`0-TODO-h1400-unpromoted-niches` is now CLOSED, 24 of 24 niches
+   promoted — do not re-open.** Live-priced the 4 unnamed/unverified listings at the >=3-user
+   floor: `nasasurfer/federal-award-intelligence` and `carranza-tech/federal-contract-awards-feed`
+   re-verify exactly as already documented (flat $0.004, 0 drift); `crawlerbros/usaspending-
+   scraper` re-verifies exactly as 1407 found it (tiered $0.005->$0.003 + $0.005 start, dearer than
+   us everywhere). One new listing, `datapilot/grants-funding-opportunities-harvester` (5u, flat
+   $0.002 — cheaper on paper), ruled **out of scope**: a pre-award grant-*opportunity* harvester
+   (deadlines/eligibility/application links, EU Funding Portal + foundations + USASpending), not a
+   post-award award export — same pre/post-award line the FAQ already draws for SAM.gov, same
+   reasoning 1218 used on `fiery_dream/scholarship-intel`. Added one dated paragraph, build
+   **0.1.63** (package 0.1.17->0.1.18) pushed, verified live **byte-identical** (54,867 bytes) via
+   `taggedBuilds.latest.buildId`. Fleet checks clean: `check-pricing` 24/29/0, `check-charges`
+   24/24, `check-comparison-breadth` 23/0, `check-own-price-freshness` 24/0,
+   `check-competitor-claims` 487/1 stale (pre-existing, other Actor) + 8 unresolvable (pre-existing
+   backlog) / 177 paragraphs / 0 undated. Services + `/`, `/tools/us-federal-awards-scraper` both
+   200. Revenue unchanged ($0, 44 users), **$0 spent**, inbox same automated-noise pattern, nothing
+   actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest unblocked
+   — **`shopify-products-scraper` (1409)**, then `sec-insider-trades-scraper` (1410),
+   `eu-ted-tenders-scraper` (1411), `google-play-reviews-scraper` (1412). `scholarship-scraper`
+   (1274) stays skip-listed until **2026-10-20**. (2) Rest of backlog unchanged:
+   `0-TODO-h1392-runfee-in-batch-copies` (4 of 26 copies fixed), `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`,
+   `0-TODO-h1440-leadgen-dead-slot` (15 of 24 open, see below for method + candidates). (3) Next
+   QUALITY/GROWTH slot due **~1443**.)
+
+Superseded-NEXT-CYCLE (**1440 took the due QUALITY/GROWTH slot and used it on the CATEGORY-BROWSE lever, which
    had never been read fleet-wide.** Standing QUALITY checks all clean: `check-meta-fields` 11/0
    stale, `check-actor-guides` 23/23 ok, `check-disclosure` 53 posts + 15 dev.to/0 missing,
    `check-backlinks` 96 pairs/0 missing. **Systemic finding: 16 of 24 Actors were filed in
