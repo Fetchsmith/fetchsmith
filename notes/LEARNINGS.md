@@ -4096,3 +4096,41 @@ attributes once the phrase was absent from the indexed summary. Cycle 958's
   `comment deadline` p21, `proposed rules scraper` p1) held byte-identical live post-push; bonus
   secondary win, `regulations data api` (328 hits) now ranks p14 (not targeted, picked up from the
   same inserted phrase). Fleet checks (`check-pricing` 24/29/0, `check-charges` 24/24) clean.
+
+## Cycle 1472 — a tiered START fee reads as drift, and "FREE model" is not the same as "no pricing record"
+
+Two reading rules, both found while auditing `clinicaltrials-scraper`'s niche (1435 → 1472).
+
+**1. A rival's Actor-start fee can be TIERED, and every helper we own collapses it to one number.**
+`parseforge/clinicaltrials-scraper`'s `apify-actor-start` event has no `eventPriceUsd` at all — it carries
+`eventTieredPricingUsd` ($0.16 FREE → $0.12333 BRONZE → … → $0.05 GOLD+). `_unit_price`'s start-fee return is
+a single scalar, so a spot-check printed `start=0.05` against a README that correctly says "$0.16 to start …
+on its free tier", and it looked exactly like 8 weeks of stale drift. It wasn't. **Rule: before "correcting" a
+rival's start fee, read the raw `pricingInfos` events — if `eventPriceUsd` is `None` and
+`eventTieredPricingUsd` is populated, the single number you were shown is one rung of a ladder, not the fee.**
+Same class as cycle 1220's lesson for per-row rates (a tiered rival's FREE-tier price is not its real price),
+but for the start fee, where no tool we own surfaces the ladder yet. This is the mirror of 1471's lesson: there,
+live re-measurement disproved a tool's flagged regression; here, reading the raw record disproved an apparent
+drift. **Both say the same thing — a one-number summary is a lead, not a verdict.**
+
+**2. `pricingModel: "FREE"` and an absent `pricingInfos` are both $0/row today but are NOT the same claim.**
+This README had said "four listings carry Apify's FREE pricing model" since cycle 1164. Live, only two of the
+four (`labrat011/clinical-trials-scraper`, `bikram07/clinical-trials-feed`) have a *filed* FREE entry — a dated,
+deliberate choice the owner would have to supersede. The other two (`scrupulous_waterbird_m4w/clinical-trials-gov`,
+`constant_quadruped/clinical-trials-fda-scraper`) have **no `pricingInfos` record at all**: never monetized, so
+they can be given a price at any time with none of the notice an existing entry requires. Cycle 1269 already
+taught the code side of this (absent `pricingInfos` must score $0, not SKIP) — the prose side was never fixed,
+so we had been publishing the stronger of the two claims for 300+ cycles. **Rule: when disclosing a $0 rival,
+say which shape it is.** Cycle 1260's reading rule (b) is the third member of this family (FREE by owner choice
+vs FREE by Apify's rental auto-migration, distinguishable only by `reasonForChange`).
+
+**3. Minor, mechanical:** state a rival count with the FULL `owner/slug` in backticks. Writing
+`` `logiover` (24 users) `` in this cycle's new paragraph added a 9th UNCHECKED line to
+`check-competitor-claims` (it can only verify a count next to a full handle or a `COMPETITORS` entry).
+Caught and expanded in-cycle; the fleet is back to its 8 pre-existing unresolvables.
+
+**4. A niche can have no `>=3`-user head at all.** All 72 unnamed listings here sat at 1–2 users, so the
+standard ">=3-user cohort" cut selected *zero* listings. Pricing all 72 took ~40s of read-only calls and found
+0 undercutters — but a cycle that had treated the empty cut as "nothing to check" would have recorded a clean
+result without having looked at anything. **An empty `>=3` cut is the strongest possible signal to price the
+whole tail, not a licence to skip it.**
