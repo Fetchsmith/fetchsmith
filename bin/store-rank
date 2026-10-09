@@ -34,6 +34,38 @@ Conclusion: rank improves from (a) real cumulative usage, (b) targeting low-nbHi
 long-tail queries where we already land in the top 20, and (c) getting the query's
 exact head-word into the TITLE for queries worth winning.
 
+*** READ THIS BEFORE SIZING ANY attr=6 ("readme") EDIT -- CYCLE 1468 ***
+`ATTR_INDEX[6] = "readme"` BELOW IS A MISNOMER AND `--why`'s attr=6 PREDICTIONS ARE
+UNSAFE. The Store's Algolia record has **no `readme` field at all** (verified 1468 by
+retrieving a full record with no `attributesToRetrieve` filter). What it carries is
+**`readmeSummary`**, ~1,900-3,400 chars, and it is an **LLM PARAPHRASE, not a
+truncation** -- `federal-register-scraper`'s opens "Collects US Federal Register
+documents ... and normalizes rich regulatory metadata", wording found NOWHERE in our
+README. So a phrase you write into README.md is NOT reliably in the indexed text, and
+a predicted attr=6 rank is conditional on surviving a paraphrase you do not control.
+
+Cycle 1468 shipped the method correctly and it did not land: `regulatory data api`
+(972 hits, floor prox=2 attr=6 bucket AND every title bucket below prox=6 EMPTY ->
+predicted p1) inserted contiguously at ~word 70, build 0.1.43, README verified
+byte-identical live -- stayed absent from the top 60, phrase absent from the summary.
+Then re-measured 5 historical "readme-lever wins"; survival tracks the paraphrase
+EXACTLY: `contract data api` p14->absent, `play store data api` p1->absent,
+`rfp data api` p2->p48, `grant data api` p13->p28 (all 4 phrases ABSENT from their
+current `readmeSummary`); only `bids and tenders` -- still PRESENT in its summary, and
+the only one of the five that was a REWORDING of existing prose rather than an
+appended API-flavoured sentence -- still ranks (p11->p26 is its own storePosition
+drift 51701->68029). This also CLOSES cycle 976's open mechanism: there was no
+positional cutoff because position was never the variable, paraphrase survival was.
+
+Durable levers are only the attributes the index stores VERBATIM: `title`,
+`description`, `seoTitle`, `seoDescription`, plus `categories`/`storePosition` -- which
+is exactly why the title/description wins (546/554/557/782/871/892/898/1460) still rank
+while every readme win rotted. Do NOT spend a GROWTH slot on a README insert to win a
+query. README edits are still worth making for HUMANS and for the Google-crawled Store
+page (which renders the real README server-side) -- just never score one as a search win.
+The TERMS comments below still describe the 5 decayed wins as current; they are
+annotated history, not a live playbook (see `0-TODO-h1468-correct-the-readme-lever-record`).
+
 Usage:
   bin/store-rank              # all registry Actors on their primary query
   bin/store-rank <slug>       # one Actor, all its terms

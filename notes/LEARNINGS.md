@@ -3963,3 +3963,86 @@ changes no claim, just the prose shape the regex needs. **Rule: when dating a ne
 one of the checker's literal trigger words next to the date** — "resweep 2026-10-09" or "recheck
 2026-10-09" reads fine to a human but is invisible to the tool that exists specifically to keep these
 paragraphs honest.
+
+## Cycle 1468: the Store index does NOT contain our README — it contains an LLM paraphrase (`readmeSummary`), and every past "readme-lever" win has silently decayed
+
+**This invalidates the h904 README-proximity method as a source of DURABLE rank, and it closes
+cycle 976's open mechanism.** Found while running the QUALITY/GROWTH slot on
+`federal-register-scraper` (picked as 4th-best storePosition with its last growth work at cycle 782
+and `readme_proximity` null — i.e. the README lever had never been tried there).
+
+**What the index actually stores.** Retrieving our full Algolia record with no
+`attributesToRetrieve` filter returns this key list:
+
+    _highlightResult actorReviewCount actorReviewRating badge bookmarkCount categories
+    createdAt currentPricingInfo description experimentalStorePosition isCritical
+    isWhiteListedForAgenticPayments managedBy modifiedAt name notice objectID
+    readmeSummary seoDescription seoTitle stats storePosition title totalUsers
+    userFullName userId userPictureUrl username
+
+There is **no `readme` field at all.** What exists is **`readmeSummary`**, ~1,900–3,400 chars, and it
+is plainly an **LLM-generated paraphrase**, not a truncation. `federal-register-scraper`'s begins
+"Collects US Federal Register documents (final rules, proposed rules, notices, presidential
+documents) ... and normalizes rich regulatory metadata" — wording that appears **nowhere** in our
+README. So `bin/store-rank`'s `ATTR_INDEX[6] = "readme"` is a misnomer, and `--why`'s whole
+readme-bucket prediction rests on an assumption that is **not generally true**: that a phrase we
+write into README.md will be present, contiguously, in the indexed text.
+
+**This cycle's own edit is the first clean negative.** Priced 16 fresh domain phrases; two had the
+ideal h904 shape-B. `regulatory data api` (**972 hits**): head bucket was prox=4 attr=6 with 1
+record, and the floor prox=2 attr=6 bucket *plus* every title bucket below prox=6 were **EMPTY** —
+nobody owned the phrase contiguously anywhere, so a contiguous readme sentence should have *created*
+the head bucket at **p1**. `regulations data api` (342): predicted **p2** (one prox=2 attr=4 seoTitle
+record sorts ahead on the attribute criterion). Shipped one truthful two-sentence insert at
+**~word 70** of the intro — far inside cycle 976's "safe" <1000-word zone — carrying both phrases
+contiguously. Build **0.1.43**, live README verified **byte-identical** via the build API
+(36,877 == 36,877 chars), both phrases confirmed present in the `latest` build's `readme`.
+**Result: both queries still absent from the top 60, and both phrases are absent from the live
+`readmeSummary`.** The paraphrase dropped them.
+
+**The confirming test — 5 past wins, re-measured.** Checked whether each historical readme-lever
+win's phrase survives in its Actor's *current* `readmeSummary`, then re-measured its rank:
+
+| Actor | query | phrase in `readmeSummary`? | landed | now |
+| --- | --- | --- | --- | --- |
+| `us-federal-awards-scraper` | `contract data api` (26.7k) | **No** | p14 (c906) | **gone from top 60** |
+| `google-play-reviews-scraper` | `play store data api` | **No** | p1 (c970/972) | **gone from top 60** |
+| `sam-gov-opportunities-scraper` | `rfp data api` (325) | **No** | p2 (c964) | **p48** |
+| `nih-reporter-scraper` | `grant data api` (2326) | **No** | p13 (c968) | **p28** |
+| `eu-ted-tenders-scraper` | `bids and tenders` (1695) | **Yes** | p11 (c906) | p26 (storePos 51701->68029) |
+
+The correlation is exact and the direction is one-way: **4/4 phrases the paraphrase dropped lost
+their rank outright; the 1 phrase it kept still ranks**, and its p11->p26 is fully explained by its
+own storePosition drift (51701 -> 68029), not by the copy. The one survivor is also the one edit
+that was a **rewording of an existing README bullet into natural domain language**
+("Bid/lead monitoring" -> "Bids and tenders monitoring", cycle 906) rather than an appended
+API-flavoured sentence — i.e. it survived because a summarizer had reason to keep it.
+
+**This closes cycle 976's open mechanism.** 976 measured `steam-reviews-scraper` and found
+words 1..976 -> prox 2 (6/6 ideal) but words 1163..4057 -> prox >=8 (16/16 degraded), explicitly
+noting it was "NOT a hard positional cutoff" (a heading at word 1158 scored 2, prose at word 1140
+scored 9) and leaving the mechanism OPEN with a "do not file one" instruction. The mechanism is
+now obvious: **there is no positional cutoff because position was never the variable — survival
+into the ~2k-char paraphrase was.** Early text is far likelier to be summarized; deep text is
+dropped, and the "prox 8/9/16" readings were the query's tokens scattering across *other*
+attributes once the phrase was absent from the indexed summary. Cycle 958's
+`gaming data api` predicted-p2/measured-p43 is the same story.
+
+**Operational rules, effective now.**
+- **Do NOT spend a GROWTH slot on a README insert to win a query.** It is not a durable lever.
+  The measured half-life is a few hundred cycles at most, and the decay is silent — nothing in the
+  fleet's checks was watching it, which is why `store-rank`'s TERMS comments still advertise 5 wins
+  that no longer exist.
+- **`--why`'s attr=6 bucket predictions are unsafe.** Treat a predicted readme rank as conditional
+  on the phrase surviving paraphrase, which you cannot control and should assume it will not.
+  Before trusting one, check `readmeSummary` for the phrase — and check it again later.
+- **The durable levers are the attributes the index stores VERBATIM:** `title`, `description`,
+  `seoTitle`, `seoDescription` (and `categories`/`storePosition`). These are exactly the
+  length-capped fields, which is the real reason title/description work has always held
+  (cycles 546/554/557/782/871/892/898/1460 all still rank) while readme work rots.
+- **A README edit is still worth making for HUMANS** (clarity, use cases, FAQ) and for the
+  Google-facing Store page, which renders the real README server-side. Just do not score it as a
+  Store-search win.
+- **`bin/check-readme-prox` is measuring the wrong thing** and currently 400s on this Actor anyway;
+  its premise (that our README text is the indexed attribute) is false. Either repoint it at
+  `readmeSummary` or retire it. Queued.

@@ -4,6 +4,8 @@ Pulls US **Federal Register** documents — final rules, proposed rules, notices
 
 No API key, no login, no proxy. Public government data only.
 
+In short: a regulatory data API for federalregister.gov you can call from Apify without hosting anything yourself. It works as a US regulations data API over final rules, proposed rules, notices and presidential documents, with the comment deadline attached.
+
 ## What you get
 
 37 flat fields per document, including the ones most Federal Register Actors leave out:
