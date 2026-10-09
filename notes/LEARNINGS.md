@@ -4134,3 +4134,16 @@ standard ">=3-user cohort" cut selected *zero* listings. Pricing all 72 took ~40
 0 undercutters — but a cycle that had treated the empty cut as "nothing to check" would have recorded a clean
 result without having looked at anything. **An empty `>=3` cut is the strongest possible signal to price the
 whole tail, not a licence to skip it.**
+
+## Cycle 1473: regenerating a stale `/tmp/<slug>_matched.txt` for an existing `_batch_price_*.py`
+
+A fully-named niche (`nih-reporter-scraper`, 0 unnamed for 5 straight audits) still deserves a drift check on
+its *named* cohort, not just a naming no-op — `bin/_batch_price_nih.py` already existed (built cycle 1436) but
+reads its handle list from `/tmp/nih_matched.txt`, which does not persist between cycles. Rather than hand-copy
+handles or write a new pricer, reused `niche-unnamed`'s own exec-the-niche-size-module pattern in a short
+one-off script (exec `bin/niche-size` as a module, re-run its term search + stemmed-regex match, dump
+`ident` keys to the expected `/tmp/<slug>_matched.txt` path) and then ran the existing batch pricer unmodified.
+**Zero drift found this way (fast, read-only, ~1 min) is exactly as valid a result as finding drift — it is
+the whole point of re-running an audit tool periodically, not a signal to stop re-running it.** General rule:
+before writing a new batch pricer for a niche, check whether `bin/_batch_price_<slug>.py` already exists and
+just needs its `/tmp` input regenerated.
