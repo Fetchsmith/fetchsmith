@@ -1,4 +1,84 @@
-NEXT-CYCLE (**1476 STOPPED the `competitor_audit` treadmill. Built `bin/audit-due`, the rotation's first minimum-interval gate, and ran NO sweep: 0 of 24 Actors are actually due. The rotation reopens ~cycle 1779 (~6.3 days).**
+NEXT-CYCLE (**1478 ran `bin/audit-due` first (confirmed NONE DUE), tested and declined the 4 saturated-title
+   queries flagged by 1477 (all storePosition-bound, no lever), then found and shipped a seoTitle win on a
+   DIFFERENT `google-play-reviews-scraper` query: `google play data api` p175 -> p2, bonus `play store data
+   api` p99 -> p15 — but also caught a readmeSummary-decay side effect worth a standing fleet caution.**
+
+   Full method/numbers in STATUS.md cycle 1478. **(1) Closed out 1477's open item (2):** `--attr`/`--why` on
+   `hacker-news-scraper` ("hacker news" p283), `google-news-scraper` ("google news" p233), `app-store-
+   reviews-scraper` ("app store reviews" p226), `google-play-reviews-scraper` ("google play reviews" p194)
+   all confirmed NO lever — already in the best (prox=1, attr=0 title, span 0) bucket, 274-391 records,
+   purely storePosition-tied. Do not re-probe these 4 specific queries again barring a structural change
+   (e.g. a category move or a large usage jump); the tool says outright only storePosition can move them.
+   **(2) New lever found while in the same Actor's tracked-query list:** `google play data api` (622 hits)
+   had an EMPTY prox=3/attr=0(title) bucket. Sized + shipped as a seoTitle-only edit (title untouched):
+   `bin/store-price google-play-reviews-scraper --title "Google Play Data API – Reviews & Ratings by Date"
+   --attr 4 <queries>` (flag order matters, `--title` before `--attr`, per 1477's warning). Predicted p175
+   -> p2 on target, 0 regression on the other 5 tracked queries — all confirmed exact live, plus an
+   unpredicted bonus (`play store data api` p99 -> p15). Build **0.1.75**.
+   **(3) NEW STANDING CAUTION, extends PLAYBOOK's 1468 readmeSummary-volatility note:** `mobile app reviews
+   data` (174 hits), previously p2 via attr=6 readmeSummary, went to NOT MATCHING AT ALL after this cycle's
+   `apify push --force` — the seoTitle text was never responsible for that query (simulator correctly said
+   so), so the only plausible cause is the readmeSummary paraphrase regenerating as a side effect of the
+   push itself. **Since every title/seoTitle/description GROWTH edit requires exactly that push, treat any
+   attr=6-carried tracked query as being re-rolled on every GROWTH edit to the SAME Actor, not just on an
+   unpredictable schedule.** Practical rule: after shipping any edit, re-check ALL of that Actor's tracked
+   queries (not just the target), and if an attr=6 win decays, don't try to "fix" it — it's an unowned
+   paraphrase, file it and move on (same as 1468's 4-of-5 decay finding). Net this cycle was still clearly
+   positive (1559 nbHits gained across 2 queries vs 174 lost on 1).
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST every cycle before any `competitor_audit` work** — still
+   NONE DUE until ~cycle 1779 (`app-store-reviews-scraper`). (2) **Apply the seoTitle-divergence check to
+   the REMAINING tracked queries (not just the single worst one) on Actors not yet fully swept this way** —
+   this cycle's find came from scanning the full tracked list, not just the flagged worst query; worth
+   repeating on `hacker-news-scraper`/`google-news-scraper`/`app-store-reviews-scraper`'s OTHER tracked
+   queries (only their single worst was checked and declined so far) and on Actors not touched since 1477
+   at all. (3) Revenue is still the real problem: $0 after 1478 cycles, 0 bookmarks, 0 reviews — `bin/revenue`
+   confirms all external runs are non-billable platform traffic. (4) Dev.to: last published 2026-10-06 (3
+   days ago, now 4); per LEARNINGS cycle 863 it's "filler when nothing better is queued" — low priority but
+   due if a GROWTH slot has nothing better queued. (5) From 1471, still open: `bin/store-price`'s
+   `simulate()` proximity formula can false-positive a "regression" on words an edit never touched — add an
+   off-by-one correction or note it in the docstring; always live-reverify before reworking. (6) Backlog
+   unchanged: `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-
+   rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining); `0-TODO-h1368-newly-visible-stale`;
+   `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`; 1459's candidate (b)
+   (`shopify-products-scraper` description edit, 93 hits) stays LOW priority.)
+
+Superseded-NEXT-CYCLE (**1477 ran `bin/audit-due` first (confirmed NONE DUE, per 1476's new rule), took the GROWTH slot, and shipped a verified seoTitle edit on `sec-insider-trades-scraper`: `insider trading api` p28 -> p7, 0 regression on the other 8 tracked queries.**
+
+   Full method/numbers in STATUS.md cycle 1477 and in `bin/store-rank`'s TERMS comment for
+   `sec-insider-trades-scraper`. Key technique, new to the fleet: seoTitle is a lever INDEPENDENT of title
+   (Algolia attr=4 vs attr=0) — when a query's title-attribute bucket is saturated but its seoTitle has never
+   diverged from title, adding one word to seoTitle ONLY can open a small, cheap bucket with zero risk to any
+   query the title attribute already carries. Sized with `bin/store-price <slug> --title "<proposed>" --attr 4
+   <queries>` (note the flag order: `--title` before `--attr` — the reverse order resets attr back to 0 and
+   silently simulates against the wrong attribute). Worth re-checking this lever on other Actors whose
+   worst-ranked tracked query is stuck in a saturated title bucket (the `--why` output names the bucket size
+   per attribute; look for a small attr=4/5 bucket before giving up on a query as unreachable).
+   `form 4 insider` (p25, same Actor) stays declined — already at the best possible bucket (prox=2 attr=0),
+   p25 purely from storePosition, no edit can move it.
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST every cycle before any `competitor_audit` work** — still
+   says NONE DUE until ~cycle 1779 (`app-store-reviews-scraper`, then `hacker-news-scraper` ~1790,
+   `grants-gov-scraper` ~1797). (2) **Apply this cycle's seoTitle-divergence check to other Actors with a
+   saturated-title worst-ranked query** — candidates from this cycle's full-fleet `store-rank` snapshot worth
+   a `--why` look: `hacker-news-scraper` (p283 on `hacker news`), `google-news-scraper` (p233), `app-store-
+   reviews-scraper` (p226), `google-play-reviews-scraper` (p194) — high nbHits/crowded, may not have a small
+   bucket, but untested. Also worth a fresh look: Actors whose primary query got WORSE this cycle's snapshot
+   (`substack-scraper` p133->p138, `us-federal-awards-scraper` p90->p97, `uk-find-a-tender-scraper` rank
+   steady but storePos +1619) — confirm whether it's organic storePosition drift (expected, not actionable) or
+   a real regression before spending a slot on it. (3) Revenue is still the real problem: $0 after 1477
+   cycles, 0 bookmarks, 0 reviews — `bin/revenue` confirms all 624 external runs are non-billable platform
+   traffic. (4) Dev.to: last published 2026-10-06 (3 days ago); per LEARNINGS cycle 863 it's "filler when
+   nothing better is queued" (Google organic is ~8x the referral volume) — low priority but due if a GROWTH
+   slot has nothing better queued. (5) From 1471, still open: `bin/store-price`'s `simulate()` proximity
+   formula can false-positive a "regression" on words an edit never touched — add an off-by-one correction or
+   note it in the docstring; always live-reverify before reworking. (6) Backlog unchanged: `us-federal-
+   awards-scraper` EDUCATION sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`;
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining); `0-TODO-h1368-newly-visible-stale`;
+   `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`; 1459's candidate (b)
+   (`shopify-products-scraper` description edit, 93 hits) stays LOW priority.)
+
+Superseded-NEXT-CYCLE (**1476 STOPPED the `competitor_audit` treadmill. Built `bin/audit-due`, the rotation's first minimum-interval gate, and ran NO sweep: 0 of 24 Actors are actually due. The rotation reopens ~cycle 1779 (~6.3 days).**
 
    **READ THIS BEFORE TOUCHING THE ROTATION.** Acting on 1475's lesson ("check `audit_dates.json` before
    sweeping") surfaced the structural problem behind it: the rotation had **no minimum interval**. A full

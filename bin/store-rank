@@ -1157,6 +1157,28 @@ TERMS = {
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
     "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data"],
+    # cycle 1477 (GROWTH slot, fresh lever after niche churn: `insider trading api`'s nbHits had
+    # dropped 704 (cycle 948) -> 127, reshuffling the bucket table and opening a path cycle
+    # 914 explicitly found "too crowded" at the time). `--why "insider trading api"` showed us
+    # at p28 in the saturated title prox=9 bucket (22 records), but a NEW attr=4 (seoTitle)
+    # bucket at prox=2 held only 8 records -- reachable because seoTitle had never carried the
+    # word "API" (it was byte-identical to title: "...Scraper - Form 4..."). `bin/store-price
+    # sec-insider-trades-scraper --title "SEC Insider Trading API - Form 4 Insider Trades & Buys"
+    # --attr 4 <9 tracked queries>` (note the `--title`-before-`--attr` flag order -- the other
+    # order resets attr back to 0) predicted p28->p7 on the target query and explicitly confirmed
+    # 0 regression on all 8 other tracked queries (all carried by attr=0 title, which this edit
+    # does not touch). Shipped: meta.json seoTitle only, title left untouched
+    # ("SEC Insider Trading Scraper - Form 4 Insider Trades & Buys" unchanged). `apify-admin
+    # publish` (200) + `apify push --force` (build 0.1.42, metadata-only). Measured live ~100s
+    # post-reindex: **p28 -> p7, exact match to prediction**; all 8 other tracked queries
+    # byte-identical to their pre-edit rank (p10/p8/p14/p25/p19/p3/p7/p9) -- confirms seoTitle is
+    # a real, isolated lever independent of title, consistent with the GROWTH-SLOT RULE above.
+    # `form 4 insider` (p25) re-checked with `--why` and declined: already at prox=2 attr=0
+    # (title), the best possible bucket, 41-record tie-break group -- we sit p25 purely on
+    # storePosition with no cheap edit available (same "saturated head bucket, skip" shape as
+    # h904's rule). Lesson for future cycles on this Actor: `--why`'s bucket table can change
+    # shape between cycles as competitor nbHits churns, so a query declined once (914, 888) is
+    # worth re-checking after a growth-slot gap rather than treated as permanently closed.
     # cycle 948 (GROWTH, README-lever, h904 method on this Actor's TERMS list — 2nd Actor fully
     # screened after fda-recall at 946). Screen result on the 7 PRE-EXISTING terms: a clean
     # negative, zero levers. All 7 were already at their query's FLOOR prox (n-1) in an attribute

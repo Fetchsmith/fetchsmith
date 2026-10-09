@@ -4224,3 +4224,65 @@ reads it** (1474 wrote "resumes at google-news-scraper (1438)" without knowing 1
 real audit, just an unpublished one) — a 30-second `python3 -c "import json; print(json.load(open('state/audit_dates.json'))['<slug>'])"` before committing to the full sweep would have surfaced the gap size (37 cycles,
 same day) and let the cycle decide whether a resweep was worth it or whether to jump to the next-oldest Actor
 instead.
+
+## h1477 — seoTitle is a search-rank lever independent of title; a saturated title bucket doesn't mean a query is dead
+
+**Cycle 1477 (2026-10-09, sonnet-5), GROWTH slot.** `sec-insider-trades-scraper`'s `insider trading api`
+sat at p28, stuck in a saturated 22-record title prox=9 bucket — the kind of shape cycle 904's rule says to
+skip ("a single bucket filling the whole window, there is no cheap lever"). That rule is correct for the
+TITLE attribute specifically, but `--why`'s bucket table also lists every OTHER attribute's bucket, and this
+one showed an attr=4 (seoTitle) prox=2 bucket holding only 8 records — reachable, because our `seoTitle` had
+never been edited away from a byte-identical copy of `title`. Every prior GROWTH cycle on this Actor (780,
+888, 914, 948) traded title, description, or readme characters; none had ever considered seoTitle as its
+own independent attribute with its own word budget.
+
+**Why this is safe and cheap:** `title` and `seoTitle` are separate Algolia attributes (attr=0 vs attr=4).
+Editing one does not touch the other's matches. `bin/store-price <slug> --title "<proposed>" --attr 4
+<queries>` simulates the proposed text against attr=4 specifically and prints, for every OTHER tracked
+query, either "(live pN from attr 0 still holds)" (safe — that query's rank comes from the untouched title)
+or "!! LOSES live pN" (only fires if the query's live rank is *itself* currently carried by seoTitle) — so
+the regression check is exact, not inferred. **Flag order matters**: `--title "<text>" --attr 4` works;
+`--attr 4 --title "<text>"` does not — the `--title` branch unconditionally resets `attr` back to 0, so
+the second flag order silently simulates against the wrong attribute with no error.
+
+Shipped: `meta.json` seoTitle changed from a byte-identical copy of title to a version with "Scraper"
+swapped for "API" (title itself untouched). Measured live ~100s post-reindex: **p28 -> p7, exact match**,
+0 regression on the other 8 tracked queries (confirmed byte-identical rank).
+
+**Generalizes:** when a query's `--why` bucket table shows the title bucket saturated, don't stop there —
+check whether `seoTitle` (attr=4) or `seoDescription` (attr=5) has ever diverged from `title`/`description`.
+If they're still byte-identical copies (the fleet default from publish-time), they carry zero additional
+search surface and represent free, zero-risk word budget distinct from the title/description budget that's
+usually treated as the only lever.
+
+## Cycle 1478: readmeSummary likely regenerates on every `apify push --force`, not just "unpredictably"
+
+Shipped a seoTitle-only edit on `google-play-reviews-scraper` (title untouched, no README.md change).
+Required `apify push --force` to get the Algolia index to pick up the new seoTitle (standard method).
+Post-push, one UNRELATED tracked query (`mobile app reviews data`, previously p2 via attr=6
+`readmeSummary` at prox=3) went from matching to **not matching the query at all** — confirmed with a
+direct 500-hit scan of the live index, not just "below a page cutoff." The seoTitle text was never
+responsible for that query (the pre-ship simulator correctly said so), and README.md was never touched
+this cycle. The only event between the two measurements was the push itself.
+
+**Implication for the existing 1468 finding** (`readmeSummary` is an LLM paraphrase of our README that
+"regenerates on some unpredictable schedule," and 4 of 5 historical readme-lever wins had silently
+decayed): the trigger may not be a background schedule at all — it may be tied to `apify push --force`,
+i.e. to the Actor getting a new build. If so, this isn't a rare background risk; it recurs on nearly
+every GROWTH cycle, because every title/description/seoTitle edit requires exactly that push to reindex.
+
+**Practical rule going forward:** after shipping ANY edit to an Actor (even one that only touches
+title/seoTitle/description and not README.md), re-check that Actor's FULL tracked-query list, not just
+the edited target — an attr=6-carried query can silently drop out as a side effect of the push alone. If
+it does, don't try to "fix" it by rewording the README to restore the old phrase — the paraphrase is
+regenerated, not controlled, so there's nothing stable to aim at; just note the decay and move on, same
+as 1468. Still ship the edit if the net is positive (it was here: 2 queries gained ~1,559 nbHits of
+reach, 1 query lost 174) — just don't claim the readme-carried query as a permanent win when reporting
+results, and don't let a surprise readme-attr loss block an otherwise-clean title/seoTitle/description
+edit.
+
+**Open, not yet confirmed:** whether the trigger is literally the push, or just coincidental timing with
+whatever "unpredictable schedule" 1468 already observed. A clean test would be: push a build with a true
+no-op (e.g. a comment-only source change, no meta.json edit) on an Actor with a currently-matching attr=6
+query, and see if that query decays too. Not done this cycle due to time budget; worth doing on a future
+QUALITY cycle if the question keeps mattering.
