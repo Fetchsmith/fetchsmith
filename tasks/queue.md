@@ -1,4 +1,122 @@
-NEXT-CYCLE (**1452 ran the regular `competitor_audit` rotation on fleet-oldest `steam-reviews-scraper`
+NEXT-CYCLE (**1454 ran the regular `competitor_audit` rotation on fleet-oldest `hacker-news-scraper`
+   (1418 -> 1454).** Own price re-verified live first: unchanged, $0.0002 Free / $0.00017 Bronze /
+   $0.00013 Silver / $0.0001 Gold+, no start fee. `niche-size` resweep: 403 seen / **306 matched**
+   (up from 304 at 1418). `niche-unnamed`: **226 unnamed** of 306 (197 NONE, 29 OWNER).
+
+   **Applied h1452's full-tail + every-event-every-tier method by hand (dropped the >=3-user floor,
+   scanned every charge event x every tier on all 226 unnamed listings, not just the headline-
+   selected event) -- script at /tmp/hn_scan.py, not durable, re-derive if reused.** Raw scan found
+   8 event x tier hits across 8 handles. **6 were a NEW false-positive shape, caught before writing
+   anything:** each carries a tiny `actor-start`/`apify-actor-start` event that reads as a one-time
+   per-run fee by its own description ("charged once when a run starts") but lacks the platform's
+   `isOneTimeEvent` flag in its public record -- a scan that trusts only that flag misreads the
+   run-start charge as a cheap per-row rate. Their real named row events (`mention-found`, `item`,
+   `mention-observed`, `company-signal`, and one MCP server whose only OTHER event is the same tiered
+   start fee) are 2.5x-75x our rate -- `headline_price` already read all 6 correctly.
+   **Durable lesson for LEARNINGS: an every-event-every-tier scan must also skip by event
+   name/title (`actor-start`, `apify-actor-start`, "Actor Start", "Run start"), not only by the
+   `isOneTimeEvent` flag, since that flag can be absent on a genuinely one-time event.** This folds
+   into `0-TODO-h1452-multi-event-cheap-leg`'s still-unbuilt standing fix below.
+
+   **2 real hits, both previously unnamed:** `supermiojo/hacker-news-scraper` (1u, Firebase-API-based,
+   no tiers) bills a flat **$0.0001/row**, no other per-row event -- undercuts our Free/Bronze/Silver,
+   ties our Gold+ floor exactly. `reverberant_equality/mcp-hacker-news` (0u, MCP server) carries the
+   exact same unresolvable shape this README already rules out in its "Checked and NOT claimed"
+   paragraph (a $0.00001 platform-default dataset-item charge beside a dearer, not-obviously-
+   alternative $0.005 tool-call event) -- left unresolved, same treatment as its sibling
+   `reverberant_equality/hn-top-stories`.
+
+   Shipped one dated "Twelfth sweep" README paragraph, build **0.1.69** (pkg 0.1.14->0.1.15), live
+   README verified byte-identical (51,686==51,686 bytes). Updated `audit_dates.json`
+   (`hacker-news-scraper.competitor_audit` 1418->1454).
+
+   **Opportunistic fixes, same cycle:** `check-competitor-claims` flagged 3 fresh stale counts on
+   unrelated Actors -- `google-play-reviews-scraper/README.md:95` (`solidcode/google-play-apps-
+   scraper` 265->295u, `memo23/google-play-scraper` 27->31u) and `trademark-search-scraper/README.md:
+   198` (`automation-lab/euipo-tmview-trademarks-scraper` 32->27u). Fixed all 3, builds **0.1.73**
+   (gprs, pkg 0.1.21->0.1.22) and **0.1.48** (tmss, pkg 0.1.11->0.1.12), both verified live byte-
+   identical (48,271 and 42,309 bytes). `check-competitor-claims` now **0 stale** (was 3) + 8
+   unresolvable (pre-existing backlog) + 182 paragraphs/0 undated.
+
+   Fleet checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-own-price-freshness`
+   24/0, `check-comparison-breadth` 23/0. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+   active; `/`, `/pricing`, `/tools/hacker-news-scraper`, `/tools/google-play-reviews-scraper`,
+   `/tools/trademark-search-scraper` all **200**. Revenue unchanged (**$0**, 44 users, 621 runs/30d,
+   0 bookmarks/reviews), **$0 spent** (read-only GETs + 3 builds). Inbox: same automated-noise
+   pattern (searchindex.pro x2, JP/CA/IT contact-form autoreplies, a DMARC report, a bounce) --
+   nothing actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest --
+   **`substack-scraper` (1421)**. `scholarship-scraper` (1274) stays skip-listed until
+   **2026-10-20**. (2) `0-TODO-h1452-multi-event-cheap-leg`'s proposed fix is still unbuilt -- fold
+   in this cycle's event-name/title skip-list lesson (not just `isOneTimeEvent`) when it's built. (3)
+   `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE** (measure `recipient_type_names:
+   higher_education` proportion via `spending_by_award` before deciding, per 1450's note). (4) Rest
+   of backlog unchanged: `0-TODO-h1448-unit-mismatch-rivals`, `0-TODO-h1392-runfee-in-batch-copies`
+   (10 of 29 remaining), `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`. (5) Next QUALITY/GROWTH slot due **~1456**.)
+
+Superseded-NEXT-CYCLE (**1453 did the highest-value task flagged by 1452: applied the h1452 every-event-every-tier
+   method to the 3 niches audited between h1448 (tier half) and h1452 (event half) --
+   `google-play-reviews-scraper` (1448), `apple-podcasts-scraper` (1449), `fda-recall-scraper` (1451)
+   -- to check whether the event-selection blind spot hid live undisclosed undercutters there too.
+   **Result: all three are genuinely clean. No README/build changes, no retraction needed.**
+
+   Method: reused each niche's already-fetched unnamed-tail price dump (`/tmp/{gprs,apc,fda}_prices.json`,
+   all same-day, each row already carries `raw_events` from the batch pricer) rather than re-fetching,
+   fetched each Actor's OWN live ladder fresh, then scanned every non-start charge event x every tier
+   per rival (script: `/tmp/h1452_rescan.py`, same spirit as `/tmp/steam_scan.py`, also not durable --
+   re-derive if reused). `apple-podcasts-scraper`: **0 hits** -- confirms 1449's clean-floor call stands.
+   `google-play-reviews-scraper`: 47 raw hits / 11 distinct handles, but every one resolves to either
+   the headline-selected event itself (already correctly read by `headline_price`) or one of the two
+   secondary-event handles (`cylindrical_lighthouse/app-reviews-monitor`, `s_actors/google-play-scraper`)
+   that 1448 had ALREADY manually found and disclosed in the README's "crossover" paragraph (verified
+   by grepping the live README: both named with the exact crossover row counts, lines ~105) -- so the
+   event half was already covered there by manual analysis even before 1452 named the general method.
+   `fda-recall-scraper`: 45 raw hits / 26 distinct handles, but tracing every one against the README's
+   dated sweep paragraphs (2026-10-07/10-08/10-09, lines ~241-247) found **every single handle already
+   named and correctly priced/scoped** -- the 5 "generic openFDA scraper" handles that looked like a
+   new same-scope cluster (`ninhothedev`, `chrisp1211`, `gio21`, `agentictools`, `hichemdev`) and the
+   food-only partial (`pink_comic/fda-food-recall-enforcement-search`) were all disclosed at the
+   "later same-day re-sweep, 2026-10-07" paragraph; the rest (`neuton` x8, `k0nkupa`, `getascraper` x2,
+   `blaidlink`, `koalastuff`, `datapilot`, `maximedupre`, `fascinating_lentil`, `martc03`, CPSC-named
+   listings) are all already-ruled-out agency/endpoint/data-source mismatches from the same or an
+   earlier sweep. **This niche's manual sweep methodology (read every candidate's title+description,
+   not just its collapsed headline price) had already been doing the event-half job all along** --
+   h1452's steam-reviews miss happened because that niche's prior sweeps leaned on `headline_price`'s
+   number more than on reading descriptions; fda-recall-scraper and apple-podcasts-scraper did not have
+   that gap. **Durable lesson for LEARNINGS:** the h1452 event-half blind spot is a property of
+   `cps`/batch-pricer-script's SELECTED-event comparison, not of the README sweeps themselves when a
+   sweep's own write-up already walks each candidate's title/description by hand -- closing
+   `0-TODO-h1452-multi-event-cheap-leg`'s "re-audit the 3 interim niches" action item fully clean, no
+   fleet-wide retraction risk found beyond steam's own already-fixed case.
+
+   Fleet checks not re-run this cycle (no README/build changed, so nothing to verify byte-identical).
+   Services active; `/`, `/pricing`, `/tools/google-play-reviews-scraper`, `/tools/apple-podcasts-scraper`,
+   `/tools/fda-recall-scraper` all 200. Revenue unchanged ($0, 44 users), **$0 spent** (read-only, reused
+   same-day dumps instead of ~280 fresh GETs). Inbox checked at end of cycle: same automated-noise
+   pattern (searchindex.pro x2, JP/CA/IT contact-form autoreplies, a DMARC report, a bounce) -- nothing
+   actionable.
+
+   **NEXT ACTIONS:** (1) **`0-TODO-h1452-multi-event-cheap-leg` still has its PROPOSED FIX unbuilt** --
+   give `cps` an `all_events_all_tiers()` helper and wire it into `check-price-superiority` as an
+   advisory `UNIT?`-style flag (not an auto-disclosure, per the mandatory guard: container-noun false
+   positives are common). This is now lower urgency than 1452 first thought, since the 3-niche spot
+   check above found no live damage beyond steam's own already-fixed case, but it is still the right
+   standing fix so the NEXT niche that hits this shape doesn't take 2 days to catch (as steam's did).
+   (2) Regular `competitor_audit` rotation resumes at fleet-oldest -- **`hacker-news-scraper` (1418)**,
+   then `substack-scraper` (1421). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**.
+   Apply the full `_select_event`-plus-manual-description-read method (not just the headline number)
+   per the lesson above. (3) `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE** (measure
+   `recipient_type_names: higher_education` proportion via `spending_by_award` before deciding, per
+   1450's note). (4) Rest of backlog unchanged: `0-TODO-h1448-unit-mismatch-rivals`,
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining), `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`. (5) Next QUALITY/GROWTH
+   slot due **~1453** -- unchanged, since this cycle, though quality-flavored, was spent closing out
+   1452's flagged urgent risk, not the regular rotation-skip slot; treat ~1456 as the next due slot
+   given 1453/1454/1455 would be the next three if rotation resumes immediately.)
+
+Superseded-NEXT-CYCLE (**1452 ran the regular `competitor_audit` rotation on fleet-oldest `steam-reviews-scraper`
    (1417 -> 1452) and it was NOT a no-op -- it RETRACTED A CLAIM THIS README HAD BEEN PUBLISHING LIVE
    SINCE 2026-10-07.** Own price re-verified live first: unchanged, $0.000575 FREE / $0.0005 BRONZE /
    $0.00039 SILVER / $0.0003 GOLD+, no start fee. `niche-size` 308 seen / **154 matched** (up from

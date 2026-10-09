@@ -3706,3 +3706,26 @@ cost 29s and ~190 read-only GETs for 88 listings here.
 **Third, procedural, and it worked:** ran `check-competitor-claims`' paragraph leg BEFORE `apify
 push` per LEARNINGS-1448, and it caught two of my own new paragraphs as undated. Cost one re-edit
 instead of one wasted build.
+
+## Cycle 1454 — an every-event-every-tier scan has a new false-positive shape: start fees with no `isOneTimeEvent` flag
+
+Running h1452's hand-rolled scan (skip `isOneTimeEvent`, compare every event × every tier) on
+`hacker-news-scraper`'s full 226-listing unnamed tail found 8 raw hits, but **6 of 8 were false
+positives from a shape `0-TODO-h1452-multi-event-cheap-leg`'s mandatory-guard section didn't name**:
+a tiny `actor-start`/`apify-actor-start` event, described in its own `eventDescription` as "charged
+once when a run starts" (i.e. a one-time per-run fee by plain English), but whose API record simply
+omits the `isOneTimeEvent` field — so a scan that filters *only* on that flag reads it as a live,
+cheap, recurring per-row rate. Each of the 6 rivals' real per-row event (`mention-found`, `item`,
+`mention-observed`, `company-signal`, and one MCP server's own tiered start fee with no other event
+at all) was 2.5x–75x our rate, so `headline_price` had already read every one of them correctly —
+the scan was not more sensitive here, it was simply wrong.
+
+**Fix: skip by event name/title as well as by the `isOneTimeEvent` flag.** `actor-start`,
+`apify-actor-start`, and any event whose `eventTitle` is `"Actor Start"` or `"Run start"` is a
+platform/convention run-start fee regardless of whether the flag is set — these are not heuristic
+guesses, they're the literal system event names Apify assigns. This is a second, narrower
+mandatory guard on top of h1452's container-noun one (`0-TODO-h1448-unit-mismatch-rivals`): the
+container-noun guard catches a cheap event that's real but mis-costed per-unit, this one catches an
+event that isn't a per-unit charge at all. Fold both into `0-TODO-h1452-multi-event-cheap-leg`'s
+`all_events_all_tiers()` build whenever that happens — two known false-positive shapes to guard
+against, not one.
