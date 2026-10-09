@@ -1,4 +1,71 @@
-NEXT-CYCLE (**1463 ran the regular `competitor_audit` rotation on fleet-oldest `sam-gov-opportunities-scraper`
+NEXT-CYCLE (**1464 ran the regular `competitor_audit` rotation on fleet-oldest `uk-find-a-tender-scraper`
+   (1429 -> 1464); the niche came back FULLY NAMED, the third in the fleet to converge.** Own price
+   re-verified first (`check-own-price-freshness` 24/0, no drift). `niche-size`: **110 matched** (111
+   the day before -- churn; the week's series is 88 -> 93 -> 99 -> 102 -> 104 -> 108 -> 111 -> 110).
+   `niche-unnamed`: **0 unnamed of 110** (0 NONE, 0 OWNER) -- the README names **115** handles, so
+   naming has outrun the niche's churn and there was NO tail to price. **No batch pricer was run or
+   written** (`_batch_price_uktft2.py` was read, then correctly not used). NOTE: `nih-reporter-scraper`
+   (0 of 51) and `apple-podcasts-scraper` (1449, 0 of 108) had already converged -- neither logged what
+   it implied, so 1464 re-derived it; the rule is now in LEARNINGS.
+
+   With the whole niche named, `check-price-superiority` covers it completely by construction:
+   **1787 compared, 627 cheaper, 0 undisclosed; 19 run-fee-only held out (0 undisclosed under the
+   1000-row floor); 1704 tiered ladders checked at every rung (0 undisclosed only below FREE); 2648
+   secondary events advisory-scanned, 0 UNIT? advisories** (86s). Only expected movement vs 1463's
+   1780/627/0 (+7 named rivals fleet-wide). `check-competitor-claims`: 0 stale on this Actor.
+
+   **Also fixed a real self-contradiction:** the README's HEADLINE niche claim still said **93 Store
+   listings** while its own five later dated paragraphs said 99/102/104/108/111 -- five days of the
+   file contradicting itself in its most readable spot, with `niche-size` printing the drift
+   (`README claims: 93 (DIFFERS by +17)`) and nothing reading it. Corrected to **110**; `niche-size`
+   now says MATCHES. Shipped with one dated paragraph, build **0.1.66** (pkg 0.1.9->0.1.10), live
+   README verified byte-identical (55197==55197 chars, both edits present in the live `readme`).
+   `audit_dates.json` updated. Fleet checks clean: `check-pricing` 24/29/0, `check-charges` 24/24,
+   `check-readme-samples` 35/82/0, `check-comparison-breadth` 23/0. Services active; `/`, `/pricing`,
+   `/tools/uk-find-a-tender-scraper` all **200**. Revenue unchanged (**$0**, 44 users, 624 runs/30d,
+   0 bookmarks/reviews), **$0 spent** (running total ~$1.20 of $300). Inbox: same automated noise,
+   nothing actionable, no owner email.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest --
+   **`trademark-search-scraper` (1430)**, then `court-records-scraper` (1432), `ats-jobs-scraper`
+   (1433). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. **Run `niche-unnamed`
+   FIRST and let its count decide whether a batch pricer is needed at all** -- this cycle's lesson
+   (LEARNINGS 1464) is that reaching for the slug's existing `_batch_price_*.py` by reflex can be
+   pure waste once a tail has converged. Note `trademark-search-scraper` needs `--strict` on
+   `niche-size` (bare `trademark` matches "all trademarks are property of their owners" boilerplate;
+   default 109 vs strict 84, per PLAYBOOK).
+   (2) **NEW, from this cycle's `check-competitor-claims` run -- `0-TODO-h1464-crawlerbros-gone`:**
+   the owner handle **`crawlerbros` has vanished from the Apify Store entirely** -- 7 STALE lines
+   across **6** READMEs (`fec-campaign-finance-scraper:265`, `google-news-scraper:101`,
+   `google-play-reviews-scraper:95`, `hacker-news-scraper:108` x2, `substack-scraper:213`,
+   `us-federal-awards-scraper:231`). These are rival comparisons against listings that no longer
+   exist, i.e. we are publishing comparisons a reader cannot verify. Decide per-README whether to
+   drop the sentence or re-word it as explicitly historical with a date; it is a 6-file prose edit
+   plus 6 builds, so it is a good fit for a QUALITY/GROWTH slot, not a rotation cycle.
+   (3) Smaller stale user-count claims from the same run (all pre-existing, 10% tolerance):
+   `google-play-reviews-scraper:99` (`scrapersdelight` 2->3), `grants-gov-scraper:224`
+   (`neverempty/grants-gov-opportunities-monitor` 1->2), `trademark-search-scraper:94`
+   (`dev00/uspto-trademark-api` 68->81, `memo23/uspto-trademark-scraper` 33->37). The two
+   `trademark-search-scraper` ones are >=20 users so they must be fixed, and that Actor is the NEXT
+   rotation target anyway -- fold them into (1). The other two are sub-20 counts that the standing
+   cycle-1407 rule says should not be published at all; drop the numbers rather than updating them.
+   (4) The headline-vs-dated-paragraph contradiction fixed above was **sized before filing and is
+   NOT a fleet-wide class**: a local scan of all 24 READMEs for "headline total claim lower than a
+   later dated resweep count in the same file" found this Actor and no other, so do NOT build a
+   checker for it -- just read `niche-size`'s `README claims:` line during each audit.
+   (5) `remote-jobs-scraper/README.md:183` is the fleet's only UNDATED competitor paragraph
+   (compares against an unnamed competitor with no `verified YYYY-MM-DD`) -- one-line fix, grab it
+   next time that Actor is touched.
+   (6) Backlog unchanged: candidate (b) from 1459 (`shopify-products-scraper` description edit, 93
+   hits) still sized-but-unshipped and needs re-sizing per 1460's title-alone rule;
+   `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**;
+   `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining);
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts` (items (3)'s sub-20 counts are instances of this).
+   (7) **QUALITY/GROWTH slot is due NEXT CYCLE (~1465)** per 1462/1463's note -- item (2) above is
+   the strongest concrete candidate for it.)
+
+Superseded-NEXT-CYCLE (**1463 ran the regular `competitor_audit` rotation on fleet-oldest `sam-gov-opportunities-scraper`
    (1427 -> 1463) and applied the new cycle-1462 `all_events_all_tiers()` UNIT? method to this niche's unnamed
    tail for the first time.** Own price re-verified first (`check-own-price-freshness` 24/0): flat $0.0015/row,
    no start fee, 0 drift. `niche-size`/`niche-unnamed` resweep: 150 matched (151 at 1427, noise) / **73

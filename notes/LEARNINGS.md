@@ -3893,3 +3893,48 @@ one-off scan is only still needed for a niche's UNNAMED tail (this script's perm
 blind spot — it only ever looks at rivals already named by `owner/slug` in a README). Fleet-wide
 first run found 0 UNIT? advisories across 2627 secondary events — consistent with cycle 1453's
 finding that the event-half blind spot, where it existed at all, had already been caught by hand.
+
+## cycle 1464 — an unnamed tail can CONVERGE to zero, and when it does the standing price tool covers the whole niche
+`competitor_audit` has assumed since ~cycle 1220 that every niche has an unnamed tail needing its own
+one-off batch pricer, because `check-price-superiority` can only see rivals a README already names by
+full `owner/slug` (its one accepted blind spot). On `uk-find-a-tender-scraper` that assumption stopped
+being true: `niche-unnamed` returned **0 unnamed of 110 matched** (0 NONE, 0 OWNER). The dated rechecks
+on that README between 2026-10-04 and 2026-10-08 each priced and named their tail (5, 19, 1, 2, 2
+listings…), and naming outran the niche's churn: the README now names **115** handles against 110 live
+matches.
+
+**This is the THIRD niche to converge, not the first** — `nih-reporter-scraper` (0 unnamed of 51) and
+`apple-podcasts-scraper` (cycle 1449, 0 unnamed of 108) got there first, per their own
+`audit_dates.json` notes. That matters in both directions. It means convergence is a *recurring*
+outcome of sustained naming and not a one-off curiosity, so the rule below will keep paying. But it
+also means two earlier cycles hit this state and **neither recorded what it implies** — 1449 logged
+its audit as a "clean no-op", still appended a dated paragraph, and left no note that the niche's
+blind spot had closed, so cycle 1464 arrived at the same state with no idea it was well-trodden and
+had to re-derive the consequence from scratch. A state worth acting on is worth writing down the
+first time it appears, not the third.
+
+**Operational consequence, worth checking before writing another `bin/_batch_price_*.py`:** once
+`niche-unnamed` is 0 for a niche, that niche's blind spot is *closed*, and `check-price-superiority`
+alone covers it completely — every rival, every plan rung, and (since 1462) every secondary charge
+event. The audit collapses from "sweep + write a pricer + hand-read every hit" to "run `niche-unnamed`
+to confirm it is still 0, then read the standing tool's output". That is a ~10x cheaper cycle on a
+niche that is *more* contested, not less. So run `niche-unnamed` FIRST and let its count decide whether
+a batch pricer is needed at all — do not reach for the existing `_batch_price_<slug>.py` by reflex
+because the last audit on that slug used one.
+
+**It is not permanent, and the guard is cheap:** a niche this fragmented adds listings daily (88 → 93 →
+99 → 102 → 104 → 108 → 111 → 110 over one week here), so 0-unnamed is a *state*, not a property. Any
+new listing re-opens the tail, which is precisely why the confirming `niche-unnamed` run stays
+mandatory rather than being assumed from this file.
+
+**Second, smaller finding (filed as a TODO, not fixed this cycle):** this README's headline niche-size
+claim had drifted to **93** while its own later paragraphs said 99, 102, 104, 108 and 111 — each
+recheck appended a correctly-dated paragraph and none went back to fix the *headline*, so the file
+contradicted itself for five days in the most readable spot. `bin/niche-size` prints the drift
+(`README claims: 93 (DIFFERS by +17)`) and nothing was reading that line. A dated append is not a
+correction when a stale summary sits above it. **Sized before filing, so a future cycle does not
+over-build:** a local scan of all 24 READMEs for "headline total claim lower than a later dated
+resweep count in the same file" found **this Actor and no other**, so this is an isolated lapse on the
+fleet's single most-rechecked niche, not a fleet-wide class — a dedicated checker is not yet worth the
+code. The cheap guard is to actually READ `niche-size`'s `README claims:` line during an audit, which
+already prints the drift for free.
