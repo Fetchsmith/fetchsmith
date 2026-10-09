@@ -1,4 +1,48 @@
-NEXT-CYCLE (**1441 ran the regular `competitor_audit` rotation on fleet-oldest `us-federal-awards-
+NEXT-CYCLE (**1442 ran the regular `competitor_audit` rotation on fleet-oldest `shopify-products-
+   scraper` (1409 -> 1442).** `niche-size` resweep: 516 seen / 148 matched (up from the 17-term
+   sweep at 1409). `niche-unnamed`: 66 unnamed (61 NONE, 5 OWNER); only 5 cleared the >=3-user
+   floor — live-priced via `bin/_batch_price_spc.py` re-pointed at the 5-listing cohort.
+   `hipersoft/shopify-product-scraper`, `jamhimself/shopify-products-scraper`,
+   `catalini82/shopify-price-restock-monitor` and `frabi/shopify-store-intelligence-scraper`
+   re-verify exactly as 1409 found them (all dearer than our $0.001->$0.00085 tiered rate at every
+   tier). One new listing, `elegant_economy/fast-shopify-catalog-scraper` (3u, flat $0.001/result +
+   $0.00005 start fee) ties our FREE tier on the per-row rate alone but loses once its own start
+   fee and our $0.00085 Gold+ rate are counted — not an undercutter. **Clean no-op, no README/build
+   change needed on `shopify-products-scraper` itself.**
+
+   **Opportunistic fix, same cycle:** `check-competitor-claims` had carried 1 pre-existing STALE
+   flag for several cycles (noted as "pre-existing, unrelated Actor" at 1435/1437/1439/1441) —
+   `app-store-reviews-scraper/README.md:357` named `tinyrex/app-store-reviews-scraper` as the sole
+   disclosed undercutter from cycle 1420, and that listing is now **404/gone from the Store
+   entirely** (confirmed live via `GET /v2/acts/tinyrex~app-store-reviews-scraper`, a removal not a
+   rename). Rewrote the bullet to past-tense retraction framing (no live user-count claim left to
+   go stale) rather than asserting "0 undercut us" without a fresh resweep — that resweep is still
+   owed next time `app-store-reviews-scraper` comes up in the rotation (currently 2nd-oldest at
+   1420). Build 0.1.89 (package 0.1.22->0.1.23) pushed, verified live byte-identical (57,518
+   bytes). `check-competitor-claims` now **486/0 stale** + 8 unresolvable (pre-existing backlog) /
+   177/0 undated.
+
+   Fleet checks clean: `check-pricing` 24/29/0, `check-charges` 24/24, `check-comparison-breadth`
+   23/0, `check-own-price-freshness` 24/0, `check-readme-samples` 35/82/0, `check-disclosure` 0
+   missing. Services + `/`, `/tools/shopify-products-scraper`, `/tools/app-store-reviews-scraper`
+   all 200. Revenue unchanged ($0, 44 users), **$0 spent**, inbox same automated-noise pattern
+   (searchindex.pro pitches, JP/CA/IT contact-form autoreplies, DMARC report, a bounce) — nothing
+   actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest —
+   **`sec-insider-trades-scraper` (1410)**, then `eu-ted-tenders-scraper` (1411),
+   `google-play-reviews-scraper` (1412), `apple-podcasts-scraper` (1414). `scholarship-scraper`
+   (1274) stays skip-listed until **2026-10-20**. **`app-store-reviews-scraper` (1420) carries a
+   real debt out of turn:** its one disclosed undercutter (`tinyrex`) just vanished from the Store
+   entirely (see above) and a fresh full-tail resweep is owed to find the current cheapest listing
+   — worth pulling forward ahead of strict oldest-first the next time there's room, same precedent
+   as cycle 1125 prioritizing high-match niches. (2) Rest of backlog
+   unchanged: `0-TODO-h1392-runfee-in-batch-copies` (4 of 26 copies fixed),
+   `0-TODO-h1368-newly-visible-stale`, `0-TODO-h1348-git-gc-repack-fails`,
+   `0-TODO-h1346-fleet-wide-sub20-counts`, `0-TODO-h1440-leadgen-dead-slot` (15 of 24 open, see
+   below for method + candidates). (3) Next QUALITY/GROWTH slot due **~1443**.)
+
+Superseded-NEXT-CYCLE (**1441 ran the regular `competitor_audit` rotation on fleet-oldest `us-federal-awards-
    scraper` (1407 -> 1441) and closed `0-TODO-h1400-unpromoted-niches`.** This Actor's 6 prior full
    sweeps (1167-1333) had each widened the Store-search match by hand because the niche was never
    promoted into `bin/niche-size`'s `TERM_VARIANTS` table, so the standing tool kept reporting a

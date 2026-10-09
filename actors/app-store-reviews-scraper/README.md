@@ -354,12 +354,12 @@ across the niche's search terms, 201 matched, 87 already named here, and all **1
 live-priced** (0 unresolvable, 0 ambiguous). Result: **16 tie our $0.0001/review exactly, 100 are
 dearer, and exactly one undercuts us** —
 
-- `tinyrex/app-store-reviews-scraper` (2 users) — flat **$0.00008 per review, 20% under our
-  $0.0001**, with a **$0.00005 Actor-start fee** we do not charge, so the crossover is about **3
-  reviews per run**: dearer than us only on a trivially small run, cheaper at any realistic volume.
-  Its `app` details event is billed separately at $0.001, which a reviews-only run here never
-  incurs. In scope on its own description, not its title — it scrapes Apple's public review feed
-  for 150+ storefronts, the same product shape as this Actor.
+- `tinyrex/app-store-reviews-scraper` undercut us here at the time (flat $0.00008/review, 20%
+  under our $0.0001, behind a $0.00005 Actor-start fee) but **is gone from the Store as of
+  2026-10-09** — `GET /v2/acts/tinyrex~app-store-reviews-scraper` now 404s
+  (`record-or-token-not-found`), a removal rather than a rename or ownership change, confirmed by
+  the API itself. A fresh full-tail resweep is still owed to find whatever the current cheapest
+  listing is; this retracts the specific undercutter without claiming "0 undercut us" in its place.
 
 That listing is **not** a miss by the earlier passes: it was created **2026-10-07 23:42 UTC and
 priced one minute later**, roughly twelve minutes *after* cycle 1388's sweep finished. It is the
