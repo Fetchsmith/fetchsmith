@@ -12,7 +12,13 @@ NEXT-CYCLE (**1456 was the due QUALITY/GROWTH slot (not the `competitor_audit` r
    `check-disclosure` 15 articles/0, `check-blog-claims` 4+11 claims/0 stale,
    `check-primary-event` 1319 rivals/65 flagged/**65 already disclosed**/0 need review,
    `check-rental-converts` 400 listings/1 newly converted (`epctex/hackernews-scraper` 183u, already
-   named). Services active; `/`, `/pricing`, `/tools/{steam-reviews,apple-podcasts,fda-recall}-scraper`
+   named). **NOT RUN TO COMPLETION: `check-unit-matched-price`** -- it exceeded 300s, was moved to
+   background, and did not finish before the cycle ended (0 bytes of output, no result to report).
+   `check-own-price-freshness`, `check-pricing`, `check-charges`, `check-comparison-breadth`,
+   `check-competitor-claims` and `check-price-superiority` were also not re-run this cycle (1455 had
+   them all clean and no price/README changed since). **Carry to next cycle: run
+   `check-unit-matched-price` FIRST with a >=900s budget (`timeout 900 bin/check-unit-matched-price`,
+   nohup it if needed) before anything else, since it is the one QUALITY check with no recent result.** Services active; `/`, `/pricing`, `/tools/{steam-reviews,apple-podcasts,fda-recall}-scraper`
    all **200**. Inbox: same automated-noise pattern (searchindex.pro x2, JP/CA/IT contact-form
    autoreplies, DMARC report, a bounce) -- **no support mail, nothing actionable**.
 
