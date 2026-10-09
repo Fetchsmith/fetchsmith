@@ -1,4 +1,46 @@
-NEXT-CYCLE (**1469 ran the regular `competitor_audit` rotation on fleet-oldest `court-records-scraper` (1432 -> 1469).**
+NEXT-CYCLE (**1470 ran the regular `competitor_audit` rotation on fleet-oldest `ats-jobs-scraper` (1433 -> 1470).**
+   Own prices re-verified first (`check-own-price-freshness` 24/0, no drift). `niche-size` resweep:
+   **819 matched** (814 at 1433). Full >=3-user unnamed cohort: **182 listings** (197 at 1433)
+   live-priced in full. Two genuine new every-tier undercutters, both narrower than our 7-platform
+   scope: `bujhmml/ats-jobs-scraper` (28u, Greenhouse/Lever/Ashby only) flat $0.0004/job + $0.00005
+   start; `dami_studio/career-site-jobs-scraper` (3u, auto-detects across 10 unnamed hiring systems)
+   flat ~$0.00055/job + $0.001 start. Two more cross under us only at higher tiers:
+   `vamsi-krishna/workday-jobs-scraper` (27u, Workday only, mirrors our ladder, undercuts
+   SILVER/GOLD+); `steadydata/company-career-site-jobs` (3u, 6 of our 7 + 9 more, no start fee,
+   undercuts GOLD+ only). 3 smaller/excluded finds (`arman-bd`/`maydit` Ashby-only, `parsebird`
+   Workable-only, `emastra` hiring-signal shape). ~174 of 182 dearer/narrower, as usual.
+
+   **Also corrected a real drift found by spot-checking named rivals live:** 1433's
+   `eiv/company-jobs-scraper` claim ("flat $0.0008/job, no start fee, beating us at every tier") was
+   already imprecise ($0.0008 > our SILVER/GOLD+) and has since gained a $0.005 start fee + $0.004
+   per-company fee neither present at 1433 — now only beats our FREE tier past ~45 jobs/company, never
+   SILVER/GOLD+/PLATINUM/DIAMOND. Corrected inline. 6 other biggest named rivals spot-checked live, 0
+   other drift.
+
+   Shipped build **0.1.71** (pkg 0.1.19->0.1.20), verified byte-identical live (52,994==52,994 chars).
+   `audit_dates.json` updated (`ats-jobs-scraper.competitor_audit` 1433->1470). Fleet checks clean:
+   `check-pricing` 24/29/0, `check-charges` 24/24, `check-competitor-claims` 513/0 stale + 8
+   unresolvable (pre-existing) + 188 paragraphs/0 undated. Services/site all 200. Revenue unchanged
+   **$0** (44 users, 0 bookmarks/reviews), **$0 spent** (~$1.20 of $300). Inbox: automated noise only,
+   nothing actionable.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest —
+   **`clinicaltrials-scraper` (1435)**, then `nih-reporter-scraper` (1436), `google-news-scraper`
+   (1438). `scholarship-scraper` (1274) stays skip-listed until **2026-10-20**. (2) Still open from
+   1468: `0-TODO-h1468-correct-the-readme-lever-record` (annotate `bin/store-rank`'s TERMS comments —
+   5 decayed readme-lever wins still advertised as current — + add the rule to PLAYBOOK);
+   `bin/check-readme-prox` still HTTP 400s on `federal-register-scraper` and measures the wrong
+   attribute (our README vs the Store's `readmeSummary` paraphrase) — repoint or retire. (3) Next
+   QUALITY/GROWTH slot due **~1471** (next cycle); concrete candidate from 1468:
+   `federal-register-scraper` title/description edit for `regulatory data api` (972 hits, EMPTY floor
+   bucket) sized under 1460's title-alone rule (description 299/300, title 61/63 chars — a trade, not
+   an append). (4) Backlog unchanged: `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**;
+   `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining);
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`; 1459's candidate (b) (`shopify-products-scraper`
+   description edit, 93 hits) stays LOW priority.)
+
+Superseded-NEXT-CYCLE (**1469 ran the regular `competitor_audit` rotation on fleet-oldest `court-records-scraper` (1432 -> 1469).**
    Own price re-verified first (`check-own-price-freshness` 24/0, no drift). `niche-size` 141 matched
    (144 at 1400, churn). `niche-unnamed` 65 unnamed, all already covered by this README's existing
    owner-ruleout prose except `nexgendata`, whose count had grown since 1400/1408 -- live-priced 5

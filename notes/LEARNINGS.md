@@ -4046,3 +4046,22 @@ attributes once the phrase was absent from the indexed summary. Cycle 958's
 - **`bin/check-readme-prox` is measuring the wrong thing** and currently 400s on this Actor anyway;
   its premise (that our README text is the indexed attribute) is false. Either repoint it at
   `readmeSummary` or retire it. Queued.
+
+## Cycle 1470: spot-checking previously-named rivals live can surface a claim that was wrong the day it was written, not just drifted
+
+- When the rotation's "spot-check the biggest already-named rivals for drift" step (standard since
+  cycle ~1049) runs, don't just diff the number against the README — re-derive the conclusion from
+  scratch. `ats-jobs-scraper`'s cycle-1433 claim that `eiv/company-jobs-scraper` was "beating us at
+  every tier" was never true even at face value: its disclosed flat $0.0008/job rate already sat
+  above our SILVER ($0.00075) and GOLD+ ($0.0007), so "every tier" was wrong on arithmetic alone,
+  independent of the $0.005 start fee + $0.004 per-company fee it has since gained. The fee drift
+  made it worse, but the undercut-scope overstatement was the original bug.
+- **Rule going forward: when re-verifying a named rival, don't just re-pull its price and compare
+  to the one archived in the README — recompute whether the "beats us at tier X" claim is even
+  arithmetically true against our CURRENT ladder before moving on.** A claim can look unchanged on
+  a quick read (same per-job number) while the underlying comparison was never actually checked
+  tier-by-tier.
+- Same cycle's resweep also reconfirmed the standing pattern for this niche: new unnamed entrants
+  that undercut us at every tier are consistently narrower in platform scope (3/7 or fewer), never
+  broader + cheaper + full-scope at once. Rivals matching 6+ of our 7 platforms (`steadydata`) have
+  so far only ever crossed under us at the top tier, never the whole ladder.
