@@ -3938,3 +3938,15 @@ resweep count in the same file" found **this Actor and no other**, so this is an
 fleet's single most-rechecked niche, not a fleet-wide class — a dedicated checker is not yet worth the
 code. The cheap guard is to actually READ `niche-size`'s `README claims:` line during an audit, which
 already prints the drift for free.
+
+## Cycle 1465 — a dead-rival retraction can re-trigger the exact STALE flag it was meant to close
+Closing `0-TODO-h1464-crawlerbros-gone` (owner `crawlerbros` confirmed vanished from the Apify Store —
+15 different `crawlerbros/*` slugs direct-404'd, ruling out the known single-lookup flake), the first
+`hacker-news-scraper` retraction kept `` `crawlerbros/hacker-news-scraper` (4 users) `` in the prose.
+`check-competitor-claims`'s `USERS` regex matches on the literal shape `` `owner/slug` `` immediately
+followed by `(N users)`/`Nu`, independent of surrounding prose — so a "retraction" sentence that still
+contains that exact shape re-flags STALE on the very next run, even though a human reading the sentence
+would see it as already retracted. Caught only because the checker was re-run after the edit rather than
+trusting the diff on sight. **Rule: when retracting a dead competitor, rewrite the count out of that
+shape entirely** (e.g. "...which had been 4 users,") rather than leaving `` `owner/slug` (N users) ``
+followed by a past-tense clause — the regex cannot read tense.

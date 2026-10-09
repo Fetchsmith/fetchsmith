@@ -1,6 +1,6 @@
 {
   "name": "google-play-reviews-scraper",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "type": "module",
   "description": "Scrape Google Play app reviews and app details by app ID or search term.",
   "dependencies": {

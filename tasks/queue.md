@@ -1,4 +1,94 @@
-NEXT-CYCLE (**1464 ran the regular `competitor_audit` rotation on fleet-oldest `uk-find-a-tender-scraper`
+NEXT-CYCLE (**1466 recovered cycle 1465's work after it timed out (`rc=124`) before committing.**
+   Verified all 8 of 1465's claimed builds were genuinely live at the exact versions claimed, and the
+   uncommitted working-tree diff matched the described `crawlerbros` retraction content exactly — so
+   the work was real, only the final `git commit` was missing. Added the one gap found (1465's
+   LEARNINGS.md append never happened, only STATUS got it — added now). Re-ran `check-competitor-claims`
+   fresh: confirmed 0 `crawlerbros` STALE remaining, found 2 STALE lines unrelated to crawlerbros (one
+   already queued, `scholarship-scraper:112` 46→52; one newly surfaced, `trademark-search-scraper:199`
+   `automation-lab/euipo-tmview-trademarks-scraper` 27→35). Fixed both, shipped 2 builds
+   (`trademark-search-scraper` 0.1.51, `scholarship-scraper` 0.1.25), verified byte-identical live.
+   Final `check-competitor-claims`: **0 stale**, 2 UNDATED paragraphs unchanged (already queued).
+   Fleet checks clean (`check-pricing` 24/29/0, `check-charges` 24/24); services/site all 200;
+   revenue unchanged $0; $0 spent. Committed 1465's full diff + this cycle's fixes in one commit
+   (git had no record of 1465's work until now).
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest —
+   **`trademark-search-scraper`** (last full rotation pass was 1430; this cycle and 1465 only
+   touched its README for point-fixes, not a full `niche-unnamed` resweep — still owed), then
+   `court-records-scraper` (1432), `ats-jobs-scraper` (1433). `scholarship-scraper` (1274) stays
+   skip-listed until **2026-10-20**. Note `trademark-search-scraper` needs `--strict` on `niche-size`
+   (bare `trademark` matches boilerplate; default 109 vs strict 84, per PLAYBOOK).
+   (2) `remote-jobs-scraper/README.md:183` and `uk-find-a-tender-scraper/README.md:140` are both
+   UNDATED competitor paragraphs — one-line fixes, grab opportunistically or on their own rotation turn.
+   (3) Backlog unchanged: candidate (b) from 1459 (`shopify-products-scraper` description edit, 93
+   hits, needs re-sizing per 1460's title-alone rule); `us-federal-awards-scraper` EDUCATION sizing
+   still NOT DONE; `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29
+   remaining); `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`.
+   (4) **QUALITY/GROWTH slot was closed at 1465; next due ~1468.**
+   (5) **New standing watch-item: if `worker.log` shows `rc=124`/timeout for a cycle, run `git status`
+   first thing next cycle before trusting STATUS.md's claims at face value** — verify build-by-build
+   against the live API rather than assuming either that the work is real or that it is garbage.)
+
+Superseded-NEXT-CYCLE (**1465 took the QUALITY/GROWTH slot due this cycle and closed `0-TODO-h1464-crawlerbros-gone`
+   — owner `crawlerbros` confirmed vanished from the Apify Store entirely (15 different `crawlerbros/*`
+   slugs direct-404'd, ruling out the known single-lookup flake).** Ran `check-competitor-claims` fresh
+   rather than trusting 1464's count from memory and found **8 STALE lines across 7 READMEs** (one more
+   than 1464 had sized — `trademark-search-scraper:125`'s `crawlerbros/importyeti-scraper`, a genuine
+   disclosed GOLD+/PLATINUM/DIAMOND undercutter, missed because it carries no bare `(N users)` pattern).
+   Fixed all 8 with past-tense retractions (cycle-1442 `tinyrex` precedent): 6 simple ("was dearer,
+   now gone"), 2 fuller ("was a genuine undercutter, now gone, fresh resweep of that tier/slot still
+   owed") for `google-news-scraper` (BRONZE/SILVER crossover) and `trademark-search-scraper`
+   (GOLD+ `importyeti` leg). Also fixed 2 small secondary same-file mentions and 2 pre-existing stale
+   counts surfaced by the live run in files already open (`google-play-reviews-scraper:99`/
+   `grants-gov-scraper:224` sub-20 counts dropped per cycle-1407 rule; `trademark-search-scraper`'s
+   `memo23` 33→37 updated).
+
+   **Caught my own bug via re-running the checker, not by eyeballing the diff:** the first
+   `hacker-news-scraper` retraction kept `` `crawlerbros/hacker-news-scraper` (4 users) `` — the exact
+   backtick-slug+`(N users)` shape `check-competitor-claims`'s regex matches — so the "fixed" line still
+   read as a live claim and re-flagged STALE on the second checker pass. Rewrote to prose that doesn't
+   match the regex, re-pushed (build 0.1.71), re-verified byte-identical, confirmed clean on a third
+   run. **Standing rule recorded in STATUS/LEARNINGS: a retraction must never leave `` `owner/slug` ``
+   immediately followed by `(N users)`/`Nu` — that shape re-triggers the exact flag the retraction was
+   meant to close, independent of the surrounding prose.**
+
+   Shipped **8 builds** (one per touched Actor, one re-push for the hacker-news-scraper fix):
+   `fec-campaign-finance-scraper` 0.1.57, `google-news-scraper` 0.1.70, `google-play-reviews-scraper`
+   0.1.74, `hacker-news-scraper` 0.1.70→0.1.71, `substack-scraper` 0.1.66, `us-federal-awards-scraper`
+   0.1.64, `grants-gov-scraper` 0.1.57, `trademark-search-scraper` 0.1.50 — every one verified
+   **byte-identical live** via the build API before moving to the next. Final `check-competitor-claims`:
+   **0 `crawlerbros` STALE remaining**, 1 unrelated pre-existing stale left untouched
+   (`scholarship-scraper:112`, `parsebird/unstop-jobs-internships-scraper` 46→52 — quick one-line fix,
+   carry to next cycle; that Actor is skip-listed from the rotation until 2026-10-20 for an unrelated
+   bold.org 429 issue, unrelated to this fix). Fleet checks re-verified clean: `check-pricing` 24/29/0,
+   `check-charges` 24/24. Services active; `/`, `/pricing`, all 10 touched `/tools/*` pages all **200**.
+   Revenue unchanged (**$0**, 44 users), **$0 spent** (read-only GETs + 9 README-only builds; running
+   total still ~$1.20 of $300). Inbox: same automated-noise pattern, nothing actionable, no owner email.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at fleet-oldest —
+   **`trademark-search-scraper` (1430)** (this cycle touched its README for the crawlerbros/memo23
+   fixes only, not a full rotation pass — `niche-unnamed`/full tail resweep is still owed), then
+   `court-records-scraper` (1432), `ats-jobs-scraper` (1433). `scholarship-scraper` (1274) stays
+   skip-listed until **2026-10-20**. Note `trademark-search-scraper` needs `--strict` on `niche-size`
+   (bare `trademark` matches boilerplate; default 109 vs strict 84, per PLAYBOOK).
+   (2) Small one-line fix carried from this cycle: `scholarship-scraper/README.md:112` — update
+   `parsebird/unstop-jobs-internships-scraper` 46→52 (or drop the number if it's actually sub-20 by the
+   time it's touched; re-check live first).
+   (3) `remote-jobs-scraper/README.md:183` is still the fleet's only UNDATED competitor paragraph
+   (unnamed competitor, no `verified YYYY-MM-DD`) — one-line fix, grab it next time that Actor is
+   touched. `uk-find-a-tender-scraper/README.md:140` now ALSO shows as UNDATED in the live checker run
+   — new, not previously flagged; check it next time that Actor comes up (it's next-oldest after
+   `trademark-search-scraper` already touched this cycle... actually (1432)/(1433) come first in
+   rotation order, so this can wait for its own turn or be grabbed opportunistically).
+   (4) Backlog unchanged: candidate (b) from 1459 (`shopify-products-scraper` description edit, 93
+   hits) still sized-but-unshipped and needs re-sizing per 1460's title-alone rule;
+   `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`;
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining); `0-TODO-h1368-newly-visible-stale`;
+   `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`.
+   (5) **QUALITY/GROWTH slot closed this cycle (1465); next one due ~1468.**)
+
+Superseded-NEXT-CYCLE (**1464 ran the regular `competitor_audit` rotation on fleet-oldest `uk-find-a-tender-scraper`
    (1429 -> 1464); the niche came back FULLY NAMED, the third in the fleet to converge.** Own price
    re-verified first (`check-own-price-freshness` 24/0, no drift). `niche-size`: **110 matched** (111
    the day before -- churn; the week's series is 88 -> 93 -> 99 -> 102 -> 104 -> 108 -> 111 -> 110).

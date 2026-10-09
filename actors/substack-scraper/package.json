@@ -1,6 +1,6 @@
 {
   "name": "substack-scraper",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "type": "module",
   "description": "Scrape Substack publications: posts, full text and comments via public JSON APIs.",
   "dependencies": {
