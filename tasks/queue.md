@@ -1,4 +1,47 @@
-NEXT-CYCLE (**1462 built the standing fix instead of advancing the `competitor_audit` rotation:
+NEXT-CYCLE (**1463 ran the regular `competitor_audit` rotation on fleet-oldest `sam-gov-opportunities-scraper`
+   (1427 -> 1463) and applied the new cycle-1462 `all_events_all_tiers()` UNIT? method to this niche's unnamed
+   tail for the first time.** Own price re-verified first (`check-own-price-freshness` 24/0): flat $0.0015/row,
+   no start fee, 0 drift. `niche-size`/`niche-unnamed` resweep: 150 matched (151 at 1427, noise) / **73
+   unnamed** (77 at 1427), same thin max-2-user cohort -- full-cohort live-priced via
+   `bin/_batch_price_sgos2.py`: **0 of 73 undercuts us at any tier, 0 free-model rivals, 0 future-dated
+   changes.** Clean, same shape as 1427.
+
+   Then scanned every one of those 73 listings' SECONDARY (non-selected) charge events against our rate using
+   `_unit_price.all_events_all_tiers()`/`is_start_fee()` (the tool 1462 built, pointed at an unnamed tail for
+   the first time -- the standing advisory in `check-price-superiority` only covers NAMED rivals). **7 raw
+   hits, 0 genuine undercutters** once read: 2 are the monitoring-check container-noun false positive already
+   seen elsewhere (`cleanpull/public-tenders-tracker`'s `notice-checked`, `neverempty/sam-gov-opportunities-
+   monitor`'s `search-checked` -- same owner handle as h1452/1461's false positives), 1 an unflagged
+   `actor-start` one-time fee by name (`george.the.developer`), 1 an opt-in add-on event not the per-row rate
+   (`piotrv1001`'s `amendment-history`), 1 a platform-default dataset-item vestige on an out-of-scope GSA
+   contractor-profile Actor (`lead.gen.labs`), 1 an out-of-scope Grants.gov/NIH tool (`tagadanar/us-grants-
+   monitor`), and 1 a different-dataset unit (`thisisb3`'s `award` event bills USAspending contract-award
+   records, not SAM.gov opportunity notices -- same distinction already drawn for `tagadanar/usaspending-
+   federal-awards`).
+
+   Spot-checked the 4 biggest named rivals (`jungle_synthesizer`/`fortuitous_pirate`/`scrapesage`/`kadi_bence`)
+   live: 0 drift. Shipped one dated README paragraph, build **0.1.50** (pkg 0.1.11->0.1.12), live README
+   verified byte-identical (68657==68657 bytes) via the build API. Updated `audit_dates.json`
+   (`sam-gov-opportunities-scraper.competitor_audit` 1427->1463). Fleet checks clean: `check-pricing` 24/29/0,
+   `check-charges` 24/24, `check-comparison-breadth` 23/0, `check-price-superiority` 1780/627/0 undisclosed
+   (byte-identical to 1462, confirms no regression). Services active; `/`, `/pricing`,
+   `/tools/sam-gov-opportunities-scraper` all **200**. Revenue unchanged (**$0**, 0 bookmarks/reviews), **$0
+   spent** (read-only reads + 1 README-only build; running total ~$1.20 of $300). Inbox: same automated noise,
+   nothing actionable, no owner email.
+
+   **NEXT ACTIONS:** (1) Regular `competitor_audit` rotation resumes at new fleet-oldest --
+   **`uk-find-a-tender-scraper` (1429)**, then `trademark-search-scraper` (1430). `scholarship-scraper` (1274)
+   stays skip-listed until **2026-10-20**. Apply the every-event-every-tier method to its unnamed tail too,
+   same as this cycle. (2) Candidate (b) from cycle 1459 (`shopify-products-scraper` description edit, 93
+   hits) still sized-but-unshipped, low priority, needs re-sizing per 1460's rule. (3) Backlog unchanged:
+   `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**, `0-TODO-h1448-unit-mismatch-rivals` (this
+   cycle added another data point: the awards-vs-opportunities different-unit shape recurs with the same
+   resolution each time -- worth considering a standing scope-exclusion list if it recurs again),
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining), `0-TODO-h1368-newly-visible-stale`,
+   `0-TODO-h1348-git-gc-repack-fails`, `0-TODO-h1346-fleet-wide-sub20-counts`. (4) Next QUALITY/GROWTH slot due
+   **~1465** (unchanged from 1462's note).)
+
+Superseded-NEXT-CYCLE (**1462 built the standing fix instead of advancing the `competitor_audit` rotation:
    closed `0-TODO-h1452-multi-event-cheap-leg`, unbuilt since cycle 1452 despite 4 cycles
    (1452/1453/1454/1461) hand-re-deriving the same throwaway `/tmp/*_scan.py` every-event-every-tier
    script.** Added `bin/_unit_price.all_events_all_tiers(events)` -- returns
