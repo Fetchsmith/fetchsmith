@@ -5194,3 +5194,25 @@ Three sub-lessons worth reusing fleet-wide:
   free text and point buyers at a short substring or `titleKeyword`. Check whether a field is
   employer-authored before writing any alias map for it.
 
+
+## Cycle 1529: a prior audit rejecting one candidate field is not proof the object has no other field
+
+`remote-jobs-scraper`'s `enum_audit` applied h1528's "audit the implicit vocabulary a free-text
+keyword promises" method to `seniorityKeyword` and found Himalayas' live API separately exposes a
+genuine `seniority` array field (`Entry-level`/`Mid-level`/`Senior`/`Manager`/`Director`/
+`Executive`, confirmed on 160/160 sampled rows across 8 cursor pages) that was never read into the
+`seniorityLevel` output — hardcoded `null` instead, so the filter could never match Himalayas rows
+at all, on "the largest board here at ~100k live postings" per the Actor's own README.
+
+The field was not new or recently added (no way to prove that either way); what matters is cycle
+1135's audit had already looked at Himalayas for a seniority signal, checked `categories`, correctly
+found it was role-title slugs (`Senior-Valuation-Analyst`) and not a structured field, and the README
+has said "no other board publishes a seniority field" ever since — 394 cycles of that conclusion
+going unquestioned. **Checking one named candidate field and rejecting it is not the same as having
+checked the object for every field.** The fix cost one `curl` and a `python3 -c` dump of a raw job
+object's full key list — a couple of minutes — and would have caught this at 1135 or any of the ~390
+cycles between. **Generalisable rule: whenever a past note says "board/API X has no field for Y,
+only Z, which doesn't qualify," re-dump a live raw object from X and skim its *full* key list before
+trusting that conclusion again** — don't just re-check the one field name the old note mentions. This
+is a cheap, high-value step in the both-directions `enum_audit` method, worth folding into every
+future audit that revisits a "checked and rejected" claim, not just a "last-checked long ago" one.

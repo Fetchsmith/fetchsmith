@@ -796,10 +796,11 @@ async function fromHimalayas() {
         category: asArray(j.parentCategories).join(', ') || null,
         tags: asArray(j.categories),
         // Himalayas' categories are role-title slugs ("Senior-Valuation-Analyst",
-        // "Software-Engineer"), not a clean seniority enum -- a seniority word sometimes
-        // rides along inside the slug, but there is no separate field to read it from, so
-        // this stays null rather than regex-guessing a level out of a job title.
-        seniorityLevel: null,
+        // "Software-Engineer"), not a seniority field -- but the API separately exposes a
+        // genuine `seniority` array (Mid-level/Senior/Manager/Entry-level/Director/Executive,
+        // confirmed live 2026-10-10 on 160/160 sampled rows) that cycle 1135's audit missed
+        // (it only checked `categories`). Read that instead of guessing from a title/slug.
+        seniorityLevel: asArray(j.seniority).join(', ') || null,
         salaryText: null,
         salaryMin: num(j.minSalary),
         salaryMax: num(j.maxSalary),
@@ -897,9 +898,9 @@ function keep(row) {
   // field at all — see README), so a null row never matches a non-empty jobTypeKeyword rather
   // than being silently kept or guessed at.
   if (jobTypeKeyword && !String(row.jobType ?? '').toLowerCase().includes(jobTypeKeyword)) return false;
-  // seniorityLevel is only ever non-null on Jobicy rows (see fromJobicy) -- every other
-  // board's row has it null and therefore never matches a non-empty filter, dropped rather
-  // than guessed at, same rule as jobTypeKeyword above.
+  // seniorityLevel is non-null on Jobicy (see fromJobicy) and Himalayas (see fromHimalayas)
+  // rows; the other five boards' rows have it null and therefore never match a non-empty
+  // filter, dropped rather than guessed at, same rule as jobTypeKeyword above.
   if (seniorityKeyword && !String(row.seniorityLevel ?? '').toLowerCase().includes(seniorityKeyword)) return false;
   if (salaryOnly && !(row.salaryText || row.salaryMin || row.salaryMax)) return false;
   if (minSalaryAnnual != null) {

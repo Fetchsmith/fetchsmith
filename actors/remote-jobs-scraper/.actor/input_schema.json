@@ -44,7 +44,7 @@
     "seniorityKeyword": {
       "title": "Seniority filter",
       "type": "string",
-      "description": "Only keep postings whose seniority-level field contains this text (case-insensitive), e.g. \"senior\" or \"entry\". Only Jobicy publishes a clean seniority field distinct from job type (\"Any\", \"Entry-Level, Junior\", \"Senior\", \"Director\"); the other six boards carry no such field, so their rows never match a non-empty filter here (dropped, not guessed at from the job title). Leave empty for all seniority levels.",
+      "description": "Only keep postings whose seniority-level field contains this text (case-insensitive), e.g. \"senior\" or \"entry\". Two boards publish a clean seniority field distinct from job type: Jobicy (\"Any\", \"Entry-Level, Junior\", \"Senior\", \"Director\") and Himalayas (\"Entry-level\", \"Mid-level\", \"Senior\", \"Manager\", \"Director\", \"Executive\"). The other five boards carry no such field, so their rows never match a non-empty filter here (dropped, not guessed at from the job title). Leave empty for all seniority levels.",
       "editor": "textfield"
     },
     "postedAfter": {
