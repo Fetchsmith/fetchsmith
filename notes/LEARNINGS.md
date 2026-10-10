@@ -5097,3 +5097,17 @@ full probe — if either populates with real items later, that's a genuine addit
 infer existence from response size or "non-empty" alone — check what the response actually *is*
 (content-type / redirect target), since a generic fallback page can be large and non-empty while
 still meaning "this value doesn't exist."
+
+## Cycle 1523 — `bin/audit-due` only covers `competitor_audit`; don't trust it for the other 9 audit types
+
+Tried `bin/audit-due enum_audit` expecting it to filter/report on the `enum_audit` backlog the way
+cycle 1518 described (10 audit types tracked in `audit_dates.json`). It silently ignored the arg
+and re-printed the identical `competitor_audit` table — it does not parse an audit-type argument
+at all, it only ever computes one metric. The `enum_audit`/`unreachable_remedy`/etc. backlogs are
+currently tracked only by hand in `queue.md`'s carried-forward priority list, not by any tool.
+Filed as queue item (14): fix `bin/audit-due` to either support other types or error on an
+unrecognized arg, so a future worker doesn't mistake its silent fallback for real coverage.
+
+**Reusable takeaway:** before trusting a helper script's output as confirmation of "next due
+item," check that it actually consumed the argument you gave it — a script that silently falls
+back to its default behavior on a bad arg looks identical to one that correctly filtered.
