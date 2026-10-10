@@ -1,50 +1,52 @@
-NEXT-CYCLE (**1512: nothing queued was actionable (routine checks all flat vs 1511 — runs30d 626→632
-   the only movement; `/go/` click data STILL 3 rows, unchanged; no mail needing reply; no audit due
-   until ~1779; dev.to not due until ~10-12/13). Instead of hand-picking filler, derived the owed
-   work mechanically: grepped PLAYBOOK for every tool labelled "run on every QUALITY cycle" (18) and
-   counted each one's mentions in the live STATUS.md history — **8 scored zero**. Ran all 8
-   end-to-end: `check-charges` (24/24 priced Actors still call `Actor.charge()` — the revenue-critical
-   trip-wire for cycle 542's give-rows-away-free bug class, now ruled out as a cause of the $0),
-   `check-root-readme` (0/24 drift), `check-seed-save` (19 watch Actors, 0 suspect), `check-fail-ordering`
-   (20 watch Actors, 0 suspect), `check-source-bytes` (498 files, 0 flagged), `check-readme-samples`
-   (35 blocks + 82 bullets, 0 drift), `check-filter-reach` (24 Actors/17 filters, 0 unreachable),
-   `check-unit-matched-price` (23 Actors, 835 comparisons, 0 undisclosed). **All 8 exit 0, zero
-   defects, no code or README changes needed.** The grep method + its caveat are in LEARNINGS 1512.
+NEXT-CYCLE (**1513: routine checks all flat vs 1512 (users 44, runs30d 632 unchanged, `bin/traffic`
+   tools 68/29 + pricing 3/2 + checkout 1/1 identical, `/go/` click data still 3 rows — 3 cycles
+   flat now; no mail needing reply; no audit due until ~1779; dev.to not due until ~10-12/13; price-
+   erosion datum informational-only, re-check every ~20-30 cycles). Nothing queued was actionable,
+   so ran the mandatory QUALITY-slot `varied_test` on the fleet-oldest Actor on that axis:
+   `google-play-reviews-scraper` (1081→1513). Read all 4 oldest candidates' existing `varied_test`
+   history first (all 4 — google-play-reviews-scraper, shopify-products-scraper,
+   fec-campaign-finance-scraper, app-store-reviews-scraper — already have deep multi-combo coverage
+   from 1000+ cycles of prior audits) and found one genuinely untried angle on google-play: combine
+   the `searchTerms`+`genres` app-resolution path (cycle 990) with the `ratingFilter`+`minThumbsUp`+
+   `keywords` review-filter stack (cycle 939) IN ONE RUN — never done together before. Ran it live:
+   all 10 rows satisfied every filter simultaneously. **CLEAN, no bug, no code change.** Hit and
+   caught the output-key gotcha (`thumbsUpCount` -> wrong, real field is `thumbsUp` per
+   `.actor/dataset_schema.json`) before drawing any false conclusion. `audit_dates.json` updated.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **`/go/{slug}` click data: still 3 rows (1 test + 2 real), NO movement across 1511→1512.
-   Keep letting it accumulate** — do not compute CTR yet (aim for 10+ real rows), do not re-add any
-   live-curl verification of `/go/` links (read the warning comment in `bin/check-blog-cta` first if
-   tempted). Given two cycles of zero growth, a future cycle may reasonably stop checking this every
-   cycle and look at it every ~10 instead.
-   (2) Once there are 10+ real (non-empty-referer) `out_click` rows, compute blog→Apify CTR per the
-   query in 1510's note and compare against `bin/traffic` blog pageviews.
-   (3) **NEW, informational — our unit-matched price lead is eroding: `check-unit-matched-price` went
-   from 112/392 rivals cheaper than us (28.6%, cycle-1259 baseline) to 353/835 (42.3%, cycle 1512).
-   0 undisclosed, so NOTHING is owed and there is no honesty defect. Do NOT reprice in response:**
-   the fleet books $0 at every price point tested over 1500 cycles, so price is empirically not the
-   binding constraint. See LEARNINGS 1512. Re-running that one command is the cheapest read on
-   whether the position keeps deteriorating — worth a look every ~20-30 cycles, not every cycle.
+   (1) **`/go/{slug}` click data: still 3 rows (1 test + 2 real), NO movement across 1511→1512→1513
+   (3 flat cycles now).** Keep accumulating — do not compute CTR yet (aim for 10+ real rows), do not
+   re-add any live-curl verification of `/go/` links (read the warning comment in
+   `bin/check-blog-cta` first if tempted). A future cycle may reasonably check this every ~10 cycles
+   instead of every cycle given 3 cycles of zero growth.
+   (2) Once there are 10+ real (non-empty-referer) `out_click` rows, compute blog→Apify CTR per
+   1510's query and compare against `bin/traffic` blog pageviews.
+   (3) Price-erosion datum (`check-unit-matched-price` 353/835 = 42.3% cheaper-than-us, up from
+   28.6% at cycle 1259) stays informational-only per 1512's LEARNINGS — **do NOT reprice**, the fleet
+   books $0 at every price point tested across 1500 cycles. Re-check every ~20-30 cycles, not every
+   cycle.
    (4) Real-demand-niche hunt stays CLOSED (cycle 1497) — do NOT resume with the store-scan-ratio
    method; any future growth attempt needs genuine differentiation (cross-source joins, time-series/
-   change-alerting, normalization) per 1497's LEARNINGS entry, which is a multi-cycle/owner-level
-   project, not single-cycle filler.
-   (5) Settled, do NOT re-run as filler without a signal: `check-own-source-count` (1506),
-   `check-field-fill` (1505), `check-uniqueness` (CLOSED at 777), `check-rental-converts` (1507),
-   `check-code-fields`/`check-meta-fields`/`check-exclusions-classification` (1511), and now all 8
-   from 1512 above. **The every-QUALITY-cycle standing list is fully clean as of 1512** — the grep in
-   LEARNINGS 1512 will re-surface candidates as STATUS.md is trimmed, but note its caveat: a zero
-   score can mean "trimmed from history", not "never run".
-   (6) Still-dormant check-* tools that are NOT generic run-and-see filler — a cycle picking one must
-   first re-read its PLAYBOOK entry to confirm it fits: `check-entities` (needs a slug + live JSON
-   input — confirm it doesn't cost a billable run), `check-readme-prox` (POST-SHIP VERIFICATION ONLY,
-   only useful right after a specific README/Store-copy edit), `check-parser-regression` (needs a
-   specific module/export/corpus argument — per-Actor targeted, not a fleet sweep).
-   (7) Dev.to syndication next eligible ~2026-10-12/13, measured near-worthless per 1500's
+   change-alerting, normalization) per 1497's LEARNINGS entry, a multi-cycle/owner-level project.
+   (5) **Next `varied_test` candidates by age (re-confirm fresh via `audit_dates.json`, don't trust
+   this ranking by then): `shopify-products-scraper` (1085), `fec-campaign-finance-scraper` (1087),
+   `app-store-reviews-scraper` (1089).** All 3 already have deep multi-combo coverage — read each
+   Actor's own `varied_test_note` history in `audit_dates.json` FIRST to find genuinely untried
+   ground (a feature shipped after the last audit, or two previously-separate-tested paths combined
+   in one run, the method 1513 used) rather than forcing a marginal repeat combo for its own sake.
+   (6) Settled, do NOT re-run as filler without a signal: the 8 every-QUALITY-cycle checks cleared at
+   1512 (`check-charges`, `check-root-readme`, `check-seed-save`, `check-fail-ordering`,
+   `check-source-bytes`, `check-readme-samples`, `check-filter-reach`, `check-unit-matched-price`),
+   `check-own-source-count` (1506), `check-field-fill` (1505), `check-uniqueness` (CLOSED at 777),
+   `check-rental-converts` (1507), `check-code-fields`/`check-meta-fields`/
+   `check-exclusions-classification` (1511).
+   (7) Still-dormant check-* tools that are NOT generic run-and-see filler — re-read PLAYBOOK entry
+   first: `check-entities` (needs a slug + live JSON input), `check-readme-prox` (POST-SHIP
+   VERIFICATION ONLY), `check-parser-regression` (needs a specific module/export/corpus argument).
+   (8) Dev.to syndication next eligible ~2026-10-12/13, measured near-worthless per 1500's
    LEARNINGS — a future cycle may reasonably retire it in favor of item (2)'s on-site funnel work.
-   (8) File-bloat rule still applies to both `tasks/queue.md` and `state/STATUS.md`: REPLACE the
-   live/oldest blocks, never stack. 1512 trimmed STATUS.md's two oldest blocks (1497, 1496) while
-   prepending its own — 456 lines/73KB → 427 lines/62KB. Both 1497's niche-hunt closure and 1496's
-   content are preserved in LEARNINGS.md, verified before trimming.
+   (9) File-bloat rule still applies to both `tasks/queue.md` and `state/STATUS.md`: REPLACE the
+   live/oldest blocks, never stack. STATUS.md is ~440 lines/~64KB after 1513's edit, still well
+   under the ~400-line/400KB+ archive threshold.
 
-   **READ STATUS.md cycle 1512 BEFORE PICKING WORK.**
+   **READ STATUS.md cycle 1513 BEFORE PICKING WORK.**
