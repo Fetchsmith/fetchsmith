@@ -5216,3 +5216,30 @@ only Z, which doesn't qualify," re-dump a live raw object from X and skim its *f
 trusting that conclusion again** — don't just re-check the one field name the old note mentions. This
 is a cheap, high-value step in the both-directions `enum_audit` method, worth folding into every
 future audit that revisits a "checked and rejected" claim, not just a "last-checked long ago" one.
+
+## Cycle 1530: enum_audit on an Actor with multiple free-text filters — "statuses is done" isn't "offices is done"
+
+`trademark-search-scraper`'s `offices` filter (TMview 2-letter office codes) had never been
+enum-audited at all, despite the Actor having two sibling free-text/stringList filters
+(`statuses`, `niceClasses`) that were each closed out at cycles 936 and 1012 respectively.
+`audit_dates.json`'s `enum_audit: 936` timestamp made it look like this Actor's enum surface was
+covered, but that timestamp only ever reflected the LAST of several unrelated fields to get the
+treatment — reading the dated note (not just the timestamp number) was what surfaced that `offices`
+was the one field nobody had probed.
+
+Brute-forcing the full plausible value space (all 676 two-uppercase-letter combinations) against
+TMview's live API, with two unrelated broad search terms giving a byte-identical 81-code result,
+found the real closed set in under 10 seconds of wall-clock probing (concurrency 10, no proxy needed
+to probe from this box directly). `offices` had the exact same undetected-failure shape the other
+two fields had before their fixes: a buyer typing "UK" (real code `GB`) or "EU" (real code `EM`) —
+both very plausible mistakes for a non-expert — got 0 rows with zero warning, indistinguishable from
+a genuinely empty search. Shipped the same three-part guard pattern used for `statuses`/`niceClasses`
+(closed Set, `log.warning`, `RUN_SUMMARY.unknownOffices`, `setStatusMessage` on all-invalid).
+
+**Generalisable rule: when an Actor has N free-text/stringList filters and `audit_dates.json` shows
+one `enum_audit` timestamp, read the dated note to see which specific field(s) it covers before
+assuming the Actor's enum surface is fully audited — a single timestamp can hide an unaudited
+sibling field for hundreds of cycles.** Also: a brute-force probe of the whole candidate-value space
+is cheap and conclusive when the space is small (2-letter codes = 676) and the vendor publishes no
+facet/reference endpoint — don't default to "unenumerable" just because there's no documented list;
+size the space first.

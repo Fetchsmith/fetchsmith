@@ -13,7 +13,7 @@
     "offices": {
       "title": "Trademark offices",
       "type": "array",
-      "description": "Two-letter office codes to search, e.g. US (USPTO), EM (EUIPO), GB, DE, FR, JP, CN, WO (WIPO). Case-insensitive -- a lowercase or mixed-case code is corrected for you (TMview itself matches office codes case-sensitively). Leave empty to search all 70+ offices in TMview.",
+      "description": "Two-letter office codes to search, e.g. US (USPTO), EM (EUIPO), GB, DE, FR, JP, CN, WO (WIPO). Case-insensitive -- a lowercase or mixed-case code is corrected for you (TMview itself matches office codes case-sensitively). TMview covers exactly 81 offices; a code outside that set (e.g. \"UK\" instead of \"GB\", or \"EU\" instead of \"EM\") matches no trademark at all, so the run warns and tells you in its status message instead of just returning an empty dataset. Leave empty to search all 81 offices in TMview.",
       "editor": "stringList",
       "default": ["US", "EM"]
     },

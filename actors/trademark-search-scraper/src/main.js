@@ -12,16 +12,42 @@ const PAGE_SIZE = 50; // verified server-side: pageSize 50 returns 50 rows
 
 const searchTerm = String(input.searchTerm ?? '').trim();
 // TMview's `fOffices` param is case-sensitive (live-verified: "us"/"de"/"Em" each return 0 rows
-// where "US"/"DE"/"EM" return real ones). Unlike TM_STATUSES below, every office code TMview
-// publishes is a plain ISO-3166-1-alpha-2 country code or WO/EM -- always two uppercase letters,
-// with no legitimate mixed-case form -- so a blanket uppercase is safe here.
+// where "US"/"DE"/"EM" return real ones). Every office code TMview publishes is a plain
+// ISO-3166-1-alpha-2 country code or WO/EM/BX/OA -- always two uppercase letters, with no
+// legitimate mixed-case form -- so a blanket uppercase is safe here.
+// Same failure shape as TM_STATUSES/NICE_CLASS_COUNT below, found and fixed this cycle (936's
+// enum_audit covered `statuses`, 1012's covered `niceClasses`, neither touched `offices`): a
+// brute-force probe of all 676 two-uppercase-letter combinations against TMview's live API, with
+// two unrelated broad search terms giving a byte-identical result both times, found exactly 81
+// offices that return any rows at all. A code outside that set -- including plausible buyer
+// mistakes like "UK" (the real code is GB) or "EU" (the real code is EM) -- silently returns 0
+// rows with no warning, indistinguishable from a genuinely empty search.
+const OFFICES = [
+  'AL', 'AP', 'AR', 'AT', 'AU', 'BA', 'BG', 'BN', 'BR', 'BX', 'BZ', 'CA', 'CH', 'CL', 'CN', 'CO',
+  'CR', 'CU', 'CY', 'CZ', 'DE', 'DK', 'DO', 'EE', 'EG', 'EM', 'ES', 'FI', 'FR', 'GB', 'GE', 'GR',
+  'HR', 'HU', 'IE', 'IL', 'IN', 'IS', 'IT', 'JO', 'JP', 'KH', 'KR', 'LA', 'LI', 'LT', 'LV', 'MA',
+  'MC', 'MD', 'ME', 'MK', 'MT', 'MX', 'MY', 'NO', 'NZ', 'OA', 'PE', 'PH', 'PL', 'PT', 'PY', 'RO',
+  'RS', 'RU', 'SE', 'SI', 'SK', 'SM', 'TH', 'TN', 'TR', 'TT', 'UA', 'UG', 'US', 'UY', 'VN', 'WO',
+  'ZM',
+];
+const OFFICE_SET = new Set(OFFICES);
+const unknownOffices = [];
 const offices = (Array.isArray(input.offices) ? input.offices : [])
   .map((o) => String(o).trim()).filter(Boolean)
   .map((o) => {
     const upper = o.toUpperCase();
     if (upper !== o) log.info(`Trademark office "${o}" matched TMview's "${upper}" — TMview's office codes are case-sensitive, so it was corrected for you.`);
+    if (!OFFICE_SET.has(upper)) unknownOffices.push(o);
     return upper;
   });
+// Forward-compatible: an unknown value is still sent (TMview may add offices), but say so.
+if (unknownOffices.length) {
+  log.warning(
+    `Trademark office ${unknownOffices.map((o) => `"${o}"`).join(', ')} is not one of the ${OFFICES.length} offices `
+    + `TMview currently covers — common mix-ups are "UK" (use "GB") and "EU" (use "EM"). TMview matches no marks at `
+    + 'all against an unrecognised code, so this narrows your results rather than widening them. Fix it or drop it.',
+  );
+}
 // The Nice Classification is a closed set of 45 classes (1-34 goods, 35-45 services), so a value
 // outside it can never match a mark. Same failure shape as `statuses` below, verified live this
 // cycle: `niceClasses:["46"]` returns 0 rows with no explanation, indistinguishable in the Console
@@ -516,6 +542,7 @@ await Actor.setValue('RUN_SUMMARY', {
   error: runError,
   unknownStatuses,
   unknownNiceClasses,
+  unknownOffices,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
   watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
@@ -533,6 +560,12 @@ if (pushed === 0 && statuses.length > 0 && unknownStatuses.length === statuses.l
   await Actor.setStatusMessage(
     `0 results because the Nice class filter ${unknownNiceClasses.map((c) => `"${c}"`).join(', ')} matches nothing — `
     + `the Nice Classification only has classes 1-${NICE_CLASS_COUNT} (1-34 goods, 35-45 services). `
+    + 'This is a filter-value problem, not an empty search.',
+  );
+} else if (pushed === 0 && offices.length > 0 && unknownOffices.length === offices.length) {
+  await Actor.setStatusMessage(
+    `0 results because the office filter ${unknownOffices.map((o) => `"${o}"`).join(', ')} matches nothing in TMview — `
+    + `it only covers ${OFFICES.length} offices (common mix-ups: "UK" should be "GB", "EU" should be "EM"). `
     + 'This is a filter-value problem, not an empty search.',
   );
 } else if (stoppedByCap) {
