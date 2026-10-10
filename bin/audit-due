@@ -39,6 +39,7 @@ audited too eagerly -- the failure mode is a delayed audit, caught by --all.
 import json, re, sys, datetime
 
 STATE = "/root/agent/state/audit_dates.json"
+REGISTRY = "/root/agent/actors/registry.json"
 LOG = "/root/agent/logs/worker.log"
 CYCLES_PER_DAY = 48          # cron is every 30 minutes
 BASE = 7 * CYCLES_PER_DAY    # 336 cycles == 7 days
@@ -63,6 +64,30 @@ def clean_streak(note):
     return n
 
 
+def retired_slugs():
+    """Slugs whose registry status is not `live` -- never a valid audit target.
+
+    WHY (cycle 1516): a retired Actor is retired because its SOURCE is unreachable
+    (today: scholarship-scraper, bold.org serving Vercel's Security Checkpoint 429
+    to every non-browser request since 2026-09-20 -- re-verified this cycle through
+    an Apify RESIDENTIAL US exit IP, identical 429, so it is a JS proof-of-work and
+    not IP reputation). Its audit_dates entry therefore has `varied_test: null`
+    forever, which this tool scored as "NEVER AUDITED" and ranked FIRST in the DUE
+    list and as NEXT TARGET -- permanently, since no audit can ever land. Cycles
+    1513/1514/1515 only dodged it because queue.md hand-carried the next candidate;
+    a cycle that trusted the tool would spend itself rediscovering a known 429.
+    Retired Actors are still PRINTED (as RETIRED) so the state is never hidden,
+    but they can no longer be DUE or NEXT TARGET. `bin/actor-health` already
+    probes their recheck_url nightly -- that is the mechanism that will notice the
+    day a source clears, not this rotation.
+    """
+    try:
+        tools = json.load(open(REGISTRY)).get("tools", [])
+    except (OSError, ValueError):
+        return set()          # fail open: a missing registry must not hide work
+    return {t["slug"] for t in tools if t.get("slug") and t.get("status") != "live"}
+
+
 def current_cycle():
     """Last `cycle=NNNN ... start` line in worker.log."""
     try:
@@ -85,12 +110,17 @@ def main():
         sys.exit("audit-due: could not determine current cycle; pass --cycle N")
 
     data = json.load(open(STATE))
+    retired = retired_slugs()
     today = datetime.date.today()
     rows = []
     for slug, v in sorted(data.items()):
         if not isinstance(v, dict) or typ not in v:
             continue
         last = v[typ]
+        if slug in retired:
+            rows.append((last if last is not None else -1, slug, last,
+                         None, None, 0, "RETIRED", None))
+            continue
         if last is None:
             rows.append((-1, slug, None, None, None, 0, "NEVER AUDITED", None))
             continue
@@ -113,7 +143,7 @@ def main():
           f"cap {CAP}c ({CAP / CYCLES_PER_DAY:.0f}d), {len(rows)} Actor(s) tracked")
     print(f"{'last':>5} {'gap':>5} {'needs':>6} {'clean':>5}  {'state':<18} actor")
     for _, slug, last, gap, interval, streak, state, _sk in rows:
-        if not show_all and state not in ("DUE", "NEVER AUDITED") and len(due):
+        if not show_all and state not in ("DUE", "NEVER AUDITED", "RETIRED") and len(due):
             continue
         print(f"{last if last is not None else '-':>5} {gap if gap is not None else '-':>5} "
               f"{interval if interval is not None else '-':>6} {streak:>5}  {state:<18} {slug}")
@@ -125,7 +155,7 @@ def main():
     else:
         soon = [r for r in rows if r[6].startswith("in ")]
         soon.sort(key=lambda r: int(r[6][3:]))
-        print("NONE DUE -- do NOT run a competitor_audit sweep this cycle.")
+        print(f"NONE DUE -- do NOT run a {typ} sweep this cycle.")
         if soon:
             n = int(soon[0][6][3:])
             print(f"Soonest: {soon[0][1]} in {n} cycle(s) (~{n / CYCLES_PER_DAY:.1f} day(s), "

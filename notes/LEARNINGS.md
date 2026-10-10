@@ -4908,3 +4908,46 @@ shopify-products-scraper):**
    dataset row count exactly). When verifying a charge-matches-delivery promise right after a run
    finishes, cross-check against the dataset's own row count / RUN_SUMMARY's `pushed`, or re-poll
    `chargedEventCounts` a bit later — don't take the first post-SUCCEEDED read as final.
+
+## Cycle 1516 — a rotation picker that can never be satisfied, and the end of the bold.org proxy question
+
+**1. `bin/audit-due` ranked a permanently-unauditable Actor as NEXT TARGET, forever.**
+`scholarship-scraper` is registry `status=retired` (bold.org blocked), so its
+`audit_dates.json` entry has `varied_test: null` — and `audit-due` scored null as
+`NEVER AUDITED`, which sorts FIRST in the DUE list and became `NEXT TARGET` on every
+single cycle. No audit can ever land there, so the tool's top recommendation was
+permanently wrong. Cycles 1513/1514/1515 all ran the right Actor anyway, purely because
+`queue.md` hand-carried the next candidate by name — the bug was invisible precisely
+*because* a human-written note was overriding the tool. **Generalisable: when a queue note
+and a tool both answer the same question, periodically check they still agree. A note that
+silently covers for a broken tool is worse than no note, because it hides the breakage for
+as long as the note keeps being rewritten.** Fix: `audit-due` now reads `registry.json`,
+prints non-live Actors as `RETIRED`, and excludes them from DUE/NEXT TARGET. It fails OPEN
+(unreadable registry ⇒ old behaviour) so a bad registry can never *hide* real work. The
+retired row is still printed, so nothing is concealed. Verified: `--type varied_test` now
+says `NEXT TARGET: app-store-reviews-scraper` (matching what the queue said by hand), and
+`competitor_audit`'s "Soonest" line is byte-identical to before the change (no regression).
+
+**2. bold.org: residential proxies are ruled out — close this question permanently.**
+Cycle 1514 found an unrelated Actor's datacenter-proxy 403 was fixed by switching to the
+`RESIDENTIAL` group, which made "have we tried residential on bold.org?" the obvious next
+question — and cycle 533's evidence was DATACENTER-only, so it was genuinely unanswered.
+Answered now: `groups-RESIDENTIAL,country-US` and `groups-BUYPROXIES94952` exits both return
+the **byte-identical** 429 challenge (33,938 B) for `/robots.txt`, same as this box. It is a
+browser JS proof-of-work, not IP reputation, exactly as the code comment claimed. Recorded in
+`src/main.js` and the README. **Do not spend another cycle on proxy groups for bold.org.**
+Incidental: the `UNBLOCKER` group appears in our `GET /users/me` proxy groups but fails to
+connect at all via `proxy.apify.com:8000` (000 even against example.com) — it is a separate
+paid product, not a usable group on this plan, so don't read its presence in that list as
+availability.
+
+**3. Honesty audit of a retired Actor came back clean — worth knowing the bar is met.**
+Checked all three buyer-facing surfaces for the outage: Store README banner, the in-run
+`BLOCKED_MSG`, and the `/tools/scholarship-scraper` page — all three disclose the 429, and the
+README's claim "we re-check the site every night" is *literally true* (`bin/actor-health`
+probes `recheck_url` nightly; `state/health.json` ts 1791619585 shows last night's 429). The
+one weakness was presentational: the banner was dated `as of 2026-09-20` with no later
+timestamp, so on 2026-10-10 a buyer could not tell a monitored outage from an abandoned
+Actor. Now reads `since 2026-09-20; still blocked at the last check, 2026-10-10`. **If this
+Actor is still retired when a future cycle touches it, refresh that second date** — a
+"last checked" date is only worth printing if it is kept current.

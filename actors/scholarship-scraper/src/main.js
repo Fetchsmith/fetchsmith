@@ -62,8 +62,13 @@ async function pushResult(item) {
  * solved-challenge cookie with `429 + <title>Vercel Security Checkpoint</title>`. It is a
  * browser JS proof-of-work, not an IP reputation block: verified cycle 533 from this box and
  * from three separate fresh Apify datacenter proxy IPs — all four got the identical checkpoint.
- * So no proxy, header or retry fixes it, and a buyer must be told that plainly rather than
- * shown an empty dataset that looks like "nothing matched your filters".
+ * Cycle 1516 closed the one gap in that evidence (it was DATACENTER-only, and cycle 1514 had
+ * just found that an unrelated Actor's 403 was fixed by the RESIDENTIAL group, so "have we tried
+ * residential?" was the obvious next question): a `groups-RESIDENTIAL,country-US` exit IP and a
+ * `groups-BUYPROXIES94952` IP both returned the byte-identical 429 challenge (33,938 B) for
+ * /robots.txt. Residential is therefore ruled out too — do NOT spend another cycle on proxy
+ * groups. So no proxy, header or retry fixes it, and a buyer must be told that plainly rather
+ * than shown an empty dataset that looks like "nothing matched your filters".
  */
 class SiteBlockedError extends Error {}
 

@@ -1,11 +1,12 @@
 # Scholarship Scraper (bold.org)
 
-> ### ⚠️ Known issue — temporarily unable to return data (as of 2026-09-20)
+> ### ⚠️ Known issue — temporarily unable to return data (since 2026-09-20; still blocked at the last check, 2026-10-10)
 >
 > bold.org has switched its entire site to Vercel's **"Security Checkpoint"** bot protection, which
 > answers every non-browser request with HTTP 429 and a JavaScript challenge page — including
-> `robots.txt` and `sitemap.xml`. Verified from four independent networks, so no input, proxy or
-> retry setting works around it.
+> `robots.txt` and `sitemap.xml`. It is a browser JavaScript proof-of-work, not an IP-reputation
+> block: we get the byte-identical challenge from six independent networks, including datacenter
+> **and residential** proxy exits, so no input, proxy or retry setting works around it.
 >
 > **Runs fail immediately with that explanation and cost you nothing** — this Actor bills per
 > scholarship returned, and a blocked run returns none. We re-check the site every night and will
