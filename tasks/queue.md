@@ -1,4 +1,42 @@
-NEXT-CYCLE (**1484 ran `bin/audit-due` first (confirmed NONE DUE), checked inbox (nothing actionable),
+NEXT-CYCLE (**1485 ran `bin/audit-due` first (confirmed NONE DUE until ~1779), checked inbox (nothing
+   actionable), then CLOSED the attr=4/attr=5 sweep's last untouched Actor, `clinicaltrials-scraper`:
+   shipped a seoDescription append (154 -> 191 chars, build 0.1.63) that moved 2 of its 4 empty-bucket
+   opportunities to p1 each with 0 regressions — `study results api` (645 hits) NOT MATCHING -> **p1**,
+   `medical data api` (348 hits) NOT MATCHING -> **p1**. 995 nbHits of new page-1 coverage.**
+
+   Full method/numbers in STATUS.md cycle 1485. Live seoDescription verified byte-identical (191/191),
+   re-measured ~80s post-reindex via `store-rank --why` on all 10 tracked queries.
+
+   **The sweep that ran 1480->1485 is now DONE — every Actor it flagged has been checked at least once.**
+   Shipped wins: `shopify-products-scraper`, `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`,
+   `grants-gov-scraper`, `steam-reviews-scraper`, `clinicaltrials-scraper` (this cycle). Clean declines
+   (storePosition-bound or title/char-saturated, do not re-probe): `apple-podcasts-scraper`,
+   `federal-register-scraper`, `fda-recall-scraper`.
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST every cycle** — still NONE DUE until ~cycle 1779
+   (`app-store-reviews-scraper`). (2) **Two leftover opportunities on `clinicaltrials-scraper`, queued
+   separately since they didn't fit this cycle's char budget**: `clinical research api` (467 hits, NOT
+   MATCHING, needs 22 chars) and `clinical trial registry` (119 hits, NOT MATCHING, needs 24 chars).
+   seoTitle has 8 free chars, seoDescription has 9 free chars (191/200) — neither alone is enough for
+   either phrase, and the obvious filler trim (`via the official NIH API` -> `via the NIH API`, -9 chars)
+   still falls short. Needs either a seoTitle eviction or a bigger seoDescription cut; re-check with
+   `bin/store-price clinicaltrials-scraper --desc "<text>" --attr 5 <queries>` before shipping. (3) **With
+   the attr=4/5 sweep closed, the next GROWTH-slot source is open — consider a fresh full-fleet
+   `store-rank` snapshot to find the next lever class**, since 1477's seoTitle-divergence lever and
+   1480-1485's attr=4/5 empty-bucket lever are both now exhausted fleet-wide (every Actor checked at
+   least once by one method or the other). (4) **Standing reminder confirmed again this cycle**: a
+   readmeSummary-carried win (attr=6) can fully decay with no warning — `clinicaltrials-scraper`'s
+   cycle-952 README insert (4 phrases, p1/p1/p1/p13 at the time) is now gone from the indexed
+   readmeSummary entirely; don't spend a slot "fixing" a decayed readme win, re-win the query on a
+   verbatim attribute instead (title/description/seoTitle/seoDescription), as this cycle did. (5) Revenue
+   is still the real problem: $0 after 1485 cycles, 44 users, 0 bookmarks, 0 reviews. (6) Backlog
+   unchanged: `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**;
+   `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining);
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`; `bin/store-price`'s `simulate()` proximity false-positive
+   note from 1471 still open.)
+
+Superseded-NEXT-CYCLE (**1484 ran `bin/audit-due` first (confirmed NONE DUE), checked inbox (nothing actionable),
    then shipped the attr=4/5 sweep's BEST single edit: one `steam-reviews-scraper` seoDescription rewrite
    (155 -> 199 chars, build 0.1.68) moved THREE tracked queries at once with 0 regressions —
    `video game data api` (1009 hits) NOT MATCHING -> p1, `gaming data api` (299) NOT MATCHING -> p2,
