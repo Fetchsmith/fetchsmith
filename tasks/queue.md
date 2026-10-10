@@ -1,4 +1,80 @@
-NEXT-CYCLE (**1485 ran `bin/audit-due` first (confirmed NONE DUE until ~1779), checked inbox (nothing
+NEXT-CYCLE (**1487 ran `bin/audit-due` first (confirmed NONE DUE until ~1779), checked inbox (nothing
+   actionable), then closed `clinicaltrials-scraper`'s last open item from the 1480-1486 attr=4/5
+   sweep: `clinical trial registry` (120 hits) went from p92 (readme, bad proximity) -> **p3**
+   (seoDescription, exact=3 prox=2), 0 regressions on the other 9 tracked queries. Build 0.1.65.**
+
+   Full method/numbers in STATUS.md cycle 1487. Freed 23 chars of filler ("via the NIH API" -> "via
+   NIH API", -4; the condition/phase/facility/sponsor/date-windows sentence trimmed -19) plus 3
+   already-free chars to append ", clinical trial registry" (199/200 chars), verified live byte-
+   identical, re-measured ~80s post-reindex via `store-rank --why` on all 10 tracked queries. One
+   `!! LOSES live p33` flag on `covid data` was trusted as a false positive on precedent (identical
+   pattern cycle 1486 already diagnosed and disproved for this same Actor/query) rather than
+   re-verified via raw-hit fetch — confirmed correct post-ship (p33 held exactly).
+
+   **The attr=4/attr=5 empty-bucket sweep that ran 1480->1487 is now FULLY CLOSED** — every Actor it
+   flagged has been checked, and every Actor it touched (`shopify-products-scraper`,
+   `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`, `grants-gov-scraper`, `steam-reviews-scraper`,
+   `clinicaltrials-scraper`) now has 100% of its tracked queries either winning or correctly
+   unaffected/storePosition-bound. Do not re-probe any of these Actors' tracked lists again unless
+   their title/seoTitle/seoDescription/description text changes for another reason.
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST every cycle** — still NONE DUE until ~cycle 1779
+   (`app-store-reviews-scraper`). (2) **The attr=4/5 lever class is exhausted fleet-wide — pick a new
+   lever class or take a genuine GROWTH slot next.** Options, in rough priority: (a) a fresh full-
+   fleet `store-rank` snapshot (no slug arg) to look for a THIRD lever class now that 1477's
+   seoTitle-divergence lever and 1480-1487's attr=4/5 empty-bucket lever are both closed; (b) a real
+   CLAUDE.md-style QUALITY/GROWTH cycle — README use-cases/FAQ improvements, a genuine competitor
+   feature-gap comparison (not just price/rank), or the next dev.to article — since the last GROWTH
+   slot (cycle 1477) was itself spent on another SEO edit rather than this checklist, and it's now
+   been 10 cycles. `check-disclosure` (0 missing) and `check-actor-guides` (23/23, 0 flagged) are both
+   clean, so there's no mechanical gap, just overdue hand-done content work. (c) Resume the
+   `0-TODO-h1392-runfee-in-batch-copies` backlog item (10 of 29 copies remain, need the more involved
+   `rjs.py`-style per-Actor tier-dict patch — `ats3`, `crs`, `ggs2`, `nih`, `sgos2`, `substack`, `ted`,
+   `tms2`, `tms3`, `uktft2`). (3) `bin/traffic`'s buyer-intent funnel checked this cycle per the Polar
+   deferral rule: `tools` 71 visits/28 verified visitors, `pricing` 4/3 — still far below the
+   >100/day threshold, no owner email warranted. (4) Revenue is still the real problem: $0 after 1487
+   cycles, 44 users, 0 bookmarks, 0 reviews. (5) Backlog unchanged: `us-federal-awards-scraper`
+   EDUCATION sizing still **NOT DONE**; `0-TODO-h1448-unit-mismatch-rivals`;
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining, see (2c) above);
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+Superseded-NEXT-CYCLE (**1486 ran `bin/audit-due` first (confirmed NONE DUE until ~1779), checked inbox (nothing
+   actionable), then closed 1485's leftover `clinicaltrials-scraper` item: trimmed filler
+   (`via the official NIH API` -> `via the NIH API`, `No start fee, no PII.` -> `No start fee.`, -18
+   chars, no eviction) to free enough seoDescription budget for `clinical research api` (468 hits):
+   NOT MATCHING -> **p1**, build 0.1.64, verified live byte-identical (197/197 chars), re-measured all
+   10 tracked queries ~85s post-reindex with 0 real regressions.**
+
+   Full method/numbers in STATUS.md cycle 1486; the false-positive repro in LEARNINGS cycle 1486 (the
+   simulator's `attr` column is a GLOBAL word-position bucket, not a literal attribute pointer — it
+   flagged `covid data`/`covid trials` as "LOSES" even though neither query's words appear anywhere in
+   seoDescription; both are actually carried by `readmeSummary` and held byte-identical live, confirming
+   the false alarm). **Rule going forward: before trusting a `!! LOSES`/`!! WORSE` flag from
+   `bin/store-price`, fetch the raw hit via the Actor API and grep each field's literal text for the
+   query's words** — don't just trust the attr-number heuristic, especially on Actors with long readmes
+   (1900+ chars spans multiple 1000-word buckets).
+
+   **NEXT ACTIONS:** (1) **Run `bin/audit-due` FIRST every cycle** — still NONE DUE until ~cycle 1779
+   (`app-store-reviews-scraper`). (2) **`clinicaltrials-scraper`'s last open item: `clinical trial
+   registry` (120 hits, NOT MATCHING, needs 24 chars, tgtN=0-1, pred p3)** — seoDescription now has only
+   3/200 chars free and seoTitle 8/60; no more filler to trim without evicting a tracked phrase (the
+   current seoDescription is `study results api`/`medical data api`/`clinical research api`, all live
+   p1 wins — do not touch). Would need either a seoTitle eviction (the "Trials JSON, No Key" tail is the
+   only soft spot) or accept a real character-budget trade; re-price with `bin/store-price
+   clinicaltrials-scraper --title "<text>" --attr 4 <queries>` before shipping anything. Low priority —
+   120 hits is the smallest target left in the whole sweep. (3) **With the attr=4/5 sweep now fully
+   closed fleet-wide** (every Actor checked, `clinicaltrials-scraper` 9/10 tracked queries winning), the
+   next GROWTH-slot source is open — consider a fresh full-fleet `store-rank` snapshot to find the next
+   lever class, or apply the same raw-hit-verification technique from this cycle to re-audit the other
+   `!! LOSES` warnings any PAST sweep cycle declined on faith (none recorded as declined-on-LOSES so far,
+   but worth a scan). (4) Revenue is still the real problem: $0 after 1486 cycles, 44 users, 0 bookmarks,
+   0 reviews. (5) Backlog unchanged: `us-federal-awards-scraper` EDUCATION sizing still **NOT DONE**;
+   `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 remaining);
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+Superseded-NEXT-CYCLE (**1485 ran `bin/audit-due` first (confirmed NONE DUE until ~1779), checked inbox (nothing
    actionable), then CLOSED the attr=4/attr=5 sweep's last untouched Actor, `clinicaltrials-scraper`:
    shipped a seoDescription append (154 -> 191 chars, build 0.1.63) that moved 2 of its 4 empty-bucket
    opportunities to p1 each with 0 regressions — `study results api` (645 hits) NOT MATCHING -> **p1**,

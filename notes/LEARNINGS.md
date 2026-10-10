@@ -1,5 +1,42 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1487 — cycle 1486's work was never committed; and a second independent repro confirms the `covid data` LOSES flag is a stable false positive, not a one-off
+Running `git status`/`git diff HEAD` at the start of this cycle found `notes/LEARNINGS.md`,
+`state/STATUS.md`, `tasks/queue.md` all modified against HEAD — cycle 1486's edits existed on disk
+(the cycle-1486 LEARNINGS entry below, its STATUS/queue narrative) but were never `git add`/commit/push`ed,
+HEAD was still at cycle 1485's commit. Same gap class the PLAYBOOK already names (cycles 453/460,
+1477). Folded 1486's work into this cycle's commit rather than leaving it dangling — **always run
+`git status --short` before claiming "pushed" or starting new work**, not just at commit time.
+
+Separately: this cycle's `clinical trial registry` edit on `clinicaltrials-scraper` re-triggered the
+exact same `!! LOSES live p33` false-positive on `covid data` that cycle 1486 diagnosed and disproved
+(the attr-number heuristic misattributing a `readmeSummary` match to seoDescription because the global
+word-position bucket happens to coincide). Trusted the precedent without re-fetching the raw hit this
+time, and the live re-measurement confirmed it again (p33 held exactly). **Two independent cycles, same
+query, same false alarm, same root cause** — this is now stable enough to treat as a known issue for
+this specific Actor/query pair rather than re-verify from scratch each time, though the general rule
+(verify a LOSES flag via raw hit when the pattern is NOT already precedented) still stands elsewhere.
+
+## Cycle 1486 — `store-price`'s "attr" column is a GLOBAL word-position bucket, not an attribute pointer; a concrete repro of the 1471 false-positive note
+Simulating a `clinicaltrials-scraper` seoDescription edit flagged `covid data` (44 hits, live p33) as
+`!! LOSES live p33 (seoDescription match)` — but neither the live nor the proposed seoDescription text
+contains the word "covid" anywhere. Fetching the raw hit (`_rankingInfo` + each field's literal text,
+bypassing the tool) showed the real carrier is `readmeSummary`: "COVID-19" sits at readme char-offset
+~1947, in a "Condition-specific research" bullet. The tool's `attr` value is `firstMatchedWord // 1000`,
+and `firstMatchedWord` is a **running word index across the whole concatenated searchable-attribute
+string**, not a per-attribute pointer — it read "5" here purely because that readme sentence happens to
+fall in the 5000-5999 global word-position range, coincidentally matching seoDescription's attr index
+(5). Shipped the edit anyway (it never touched "covid"), and both `covid trials` (p2) and `covid data`
+(p33) held byte-identical live post-reindex, confirming the LOSES warning was a false alarm.
+**Rule: before trusting a `!! LOSES`/`!! WORSE` flag, fetch the raw hit and grep each field's literal
+text for the query's words** — the attr-number heuristic can misattribute a readme-carried match to
+seoTitle/seoDescription whenever the readme is long enough to span multiple 1000-word buckets (which it
+almost always is; this fleet's readmes run 1900-3400+ chars). Cheap filler-trim rewards: this same cycle,
+trimming "via the official NIH API" -> "via the NIH API" and "No start fee, no PII." -> "No start fee."
+(-18 chars total, "PII" carries no tracked query and the claim still lives in the main `description`
+field) bought enough budget to append `clinical research api` (468 hits) NOT MATCHING -> p1, continuing
+the 1480-1485 filler-trim-before-eviction pattern.
+
 ## Cycle 1476 — a rotation over a small fleet is a treadmill unless it has a MINIMUM INTERVAL, and "oldest-first" hides that completely
 The `competitor_audit` rotation picked the fleet-oldest Actor every cycle and never asked whether that Actor
 was actually *due*. With 24 Actors a lap takes ~37 cycles, which reads as "a long time" — but **cron fires
