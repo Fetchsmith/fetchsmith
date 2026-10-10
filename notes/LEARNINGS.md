@@ -4992,3 +4992,50 @@ in queue.md, run `bin/audit-due --type <t>` for every key in `audit_dates.json`'
 to enumerate them), not just the 1-2 types the last few cycles happened to use** — a rotation
 with zero traffic for 500+ cycles doesn't show up unless someone asks it directly, and
 `audit-due`'s own "NONE DUE" message only ever reports on the one `--type` you passed it.
+
+## Cycle 1520 — `enum_audit` must check for values we DON'T offer, not only that ours still exist
+
+The `enum_audit` methodology as practiced at cycles 1518 and 1519 was **one-directional**: take each
+declared schema enum, confirm every value still exists upstream and still returns live rows. Both
+cycles came back clean and cost a cycle each to prove a no-op. That direction only ever catches
+*drift* (a value upstream retired). It structurally cannot catch the more valuable failure:
+**a vocabulary that GREW, where the new values are commercially bigger than the ones we shipped.**
+
+`us-federal-awards-scraper`'s `defCodes` is the case in point. The 7 declared codes
+(L/M/N/O/P/U/V) were still exactly USAspending's `disaster=covid_19` set — 0 drift in 691 cycles,
+fail-closed still intact, a perfect clean result in the old direction. But the same reference
+endpoint (`/api/v2/references/def_codes/`) returns **52 accepted codes, 9 of them flagged**, and the
+2 we never offered — `1` and `Z`, both `disaster=infrastructure` (IIJA, P.L. 117-58) — are now the
+**larger** program: `1`+`Z` match ~296k awards (157k grants, 120k direct payments, 18k contracts)
+against ~92k for the CARES Act code `N` (`spending_by_award_count`, 2021-11-15..2026-10-10). The
+Actor was shipped in a COVID-era framing and silently stayed there while the money moved.
+
+**Standing method for every remaining `enum_audit` (15 Actors still queued):**
+1. Fetch the upstream vocabulary's **full accepted list**, not just the values in our schema. Two
+   reliable ways, both cheap: the site's own reference endpoint, and a **deliberate bad value** —
+   USAspending answers a bogus code with `400 Field 'filters|def_codes' is outside valid values
+   [...52 codes...]`, which is the authoritative list handed over for free. (OpenFEC does the same
+   with its 422 "Must be one of:" text — cycle 1519 used this, but only to confirm our own values.)
+2. Diff **both directions**: `ours - upstream` = drift/dead values (the old check), and
+   `upstream - ours` = coverage gap (the new one, and the one that found real money here).
+3. For anything in `upstream - ours`, **size it before deciding**. A gap only matters if buyers want
+   it: a per-value live count call separated "2 codes we skipped" from "the biggest funding program
+   in the dataset". Don't add values just because they exist — most of the 52 DEFC codes are
+   unflagged appropriation codes with no published program meaning and were correctly left out.
+4. Check whether the gap is **deliberate**. The field title said "COVID-19 relief funding only", so
+   this was an honest scope choice, not a bug — the audit's job was to notice the scope had gone
+   stale, not to treat it as a defect. Widening it needed the title/description/README rewritten to
+   match, which was most of the work; the enum edit itself was 2 values.
+
+Also re-confirmed: a well-built pass-through filter costs nothing to extend. `defCodes` goes
+straight to `filters.def_codes` with only `.trim().toUpperCase()` applied, so adding `1`/`Z` needed
+**no code-logic change at all** (and `.toUpperCase()` is a correct no-op on the digit `1`). When an
+audit finds a coverage gap on a pass-through filter, the fix is usually schema + docs only.
+
+**Process note, cost me ~2 min:** PLAYBOOK step 4 says use `CRAWLEE_STORAGE_DIR`, not
+`APIFY_LOCAL_STORAGE_DIR`, for local runs. I used the latter first and got a **successful-looking
+run that silently ignored my INPUT.json** and re-ran the previous `storage/` input (logged
+`categories=[contracts] maxResults=100` instead of my `grants`/`defCodes=[1,Z]`/15). This is the
+exact trap LEARNINGS cycle 138 already documents. The tell is the Actor's own opening INFO line
+echoing the resolved inputs — **read it and confirm it matches what you set** before trusting any
+local run, rather than reading only the final "Done." line.

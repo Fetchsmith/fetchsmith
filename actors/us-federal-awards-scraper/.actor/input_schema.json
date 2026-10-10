@@ -154,14 +154,14 @@
       ]
     },
     "defCodes": {
-      "title": "COVID-19 relief funding only (DEFC)",
+      "title": "COVID-19 relief or infrastructure (IIJA) funding only (DEFC)",
       "type": "array",
-      "description": "Restrict to awards funded under one or more COVID-19 Disaster Emergency Fund Codes (DEFC) — a structural flag USAspending stamps on the award's own funding line, not a keyword match against the description. Leave empty to search every award regardless of funding source. Multiple values are ORed. Works across every award category (contracts, grants, loans, direct payments, IDVs, sub-awards) since it filters on the funding line, not the award type. An unrecognised code is rejected by USAspending with a 400 naming the valid list, verified live 2026-09-28 — this field can never silently no-op. In sub-award mode (\"awardLevel\":\"subaward\") the filter still narrows correctly (matches the underlying prime award's funding line), but the output row has no `disasterEmergencyFundCodes` field at all — USAspending's own sub-award endpoint returns a null code even when explicitly requested, verified live 2026-09-28. Use \"awardLevel\":\"prime\" if you need the matched code visible on the row.",
+      "description": "Restrict to awards funded under one or more Disaster Emergency Fund Codes (DEFC) — a structural flag USAspending stamps on the award's own funding line, not a keyword match against the description. Covers both of USAspending's flagged funding programs: the 7 COVID-19 relief codes (L/M/N/O/P/U/V) and the 2 Infrastructure Investment and Jobs Act codes (1 = non-emergency P.L. 117-58, Z = emergency P.L. 117-58). IIJA is the larger of the two today — ~296k awards vs ~92k for the CARES Act code alone, mostly grants and direct payments (live-counted 2026-10-10). Leave empty to search every award regardless of funding source. Multiple values are ORed, including across the two programs. Works across every award category (contracts, grants, loans, direct payments, IDVs, sub-awards) since it filters on the funding line, not the award type. An unrecognised code is rejected by USAspending with a 400 naming the valid list, re-verified live 2026-10-10 — this field can never silently no-op. In sub-award mode (\"awardLevel\":\"subaward\") the filter still narrows correctly (matches the underlying prime award's funding line), but the output row has no `disasterEmergencyFundCodes` field at all — USAspending's own sub-award endpoint returns a null code even when explicitly requested, verified live 2026-09-28. Use \"awardLevel\":\"prime\" if you need the matched code visible on the row.",
       "editor": "select",
       "default": [],
       "items": {
         "type": "string",
-        "enum": ["L", "M", "N", "O", "P", "U", "V"],
+        "enum": ["L", "M", "N", "O", "P", "U", "V", "1", "Z"],
         "enumTitles": [
           "L — Coronavirus Preparedness and Response Act 2020",
           "M — Families First Coronavirus Response Act",
@@ -169,7 +169,9 @@
           "O — CARES/PPP/Consolidated Approp. 2021/ARPA (shared non-emergency code)",
           "P — Paycheck Protection Program and Health Care Enhancement Act",
           "U — Consolidated Appropriations Act 2021",
-          "V — American Rescue Plan Act of 2021"
+          "V — American Rescue Plan Act of 2021",
+          "1 — Infrastructure Investment and Jobs Act (non-emergency P.L. 117-58)",
+          "Z — Infrastructure Investment and Jobs Act (emergency P.L. 117-58)"
         ]
       }
     },

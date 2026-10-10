@@ -295,11 +295,14 @@ const badPsc = pscCodes.find((c) => !/^[A-Z0-9]{1,4}$/.test(c));
 if (badPsc) {
   throw new Error(`"pscCodes" entry ${JSON.stringify(badPsc)} is not a PSC code — must be 1 to 4 letters/digits, e.g. "R425" (leaf), "R4" or "10" (prefix group), "R" (whole category).`);
 }
-// COVID-19 Disaster Emergency Fund Codes (verified live against api.usaspending.gov/api/v2/references/def_codes/,
-// 2026-09-28): L/M/N/O/P/U/V are the only codes whose `disaster` field is "covid_19". Restricted to
-// the Apify UI's enum, so unlike every other filter above this one cannot be sent misspelled --
-// USAspending itself fails CLOSED (400, names the valid list) on any value outside this set, so no
-// canary probe is needed in guardedFilters() below.
+// Disaster Emergency Fund Codes (re-verified live against api.usaspending.gov/api/v2/references/def_codes/,
+// 2026-10-10): of the API's 52 accepted codes, exactly 9 carry a `disaster` flag -- L/M/N/O/P/U/V are
+// "covid_19" and 1/Z are "infrastructure" (IIJA, P.L. 117-58 non-emergency/emergency). The schema enum
+// is those 9; the other 43 codes are unflagged appropriation codes we deliberately do not surface.
+// Restricted to the Apify UI's enum, so unlike every other filter above this one cannot be sent
+// misspelled -- USAspending itself fails CLOSED (400, names the valid list) on any value outside its
+// 52, so no canary probe is needed in guardedFilters() below. Note `1` is a digit, not a letter:
+// the .toUpperCase() normalization below is a no-op for it, which is correct.
 const defCodes = (input.defCodes ?? []).map((c) => String(c).trim().toUpperCase()).filter(Boolean);
 const minAwardAmount = input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
 const maxAwardAmount = input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
