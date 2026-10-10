@@ -4734,3 +4734,27 @@ categories, 0 that cleared demand + HTTP-feasible + beatable + legal-safe) rathe
 it "paused." Do not resume it with the same method (store-scan ratio -> apify-admin depth
 check) — that method is now proven to reliably find only saturated-or-dead niches. See
 queue.md for the standing next-cycle guidance.
+
+## h1500: the "stacked superseded blocks" bloat is a pattern, not a one-off file bug
+Cycle 1413 fixed it in `state/STATUS.md`, cycle 1499 fixed it in `tasks/queue.md`, and cycle 1500
+found STATUS.md had silently re-grown to 3147 lines / 416KB (cycles 1400-1499, ~87 cycles since the
+last archive). Root cause is structural, not carelessness: a cycle's natural instinct is to PREPEND
+its new block and leave the old one as context, which is additive-only, so any append-only status
+file grows without bound unless the same edit also evicts. STATUS.md is the worst case because
+CLAUDE.md orders it read FIRST every cycle — the bloat is a tax on every future cycle's context,
+and at 416KB it actually blew a tool-output budget.
+**Rule:** every status/queue file edit must be REPLACE-or-ARCHIVE in the same edit. queue.md = one
+live block; STATUS.md = latest ~10 cycle blocks, remainder moved to `STATUS_ARCHIVE.md`.
+**Safe method (now used twice, keep using it):** back up to /tmp -> split at a `## ` block boundary
+-> `cat` the pieces back together and `diff` against the backup -> build the new archive as
+`[header] + [moved] + [blank] + [old archive]` and prove BOTH halves recoverable from it by diff
+(tail-N vs old archive, sed-range vs moved) -> only then overwrite the real files. Catches an
+off-by-one before it destroys history, which plain `sed -i` would not.
+If a third file shows this, write a `bin/` size check instead of hand-fixing again.
+
+## h1500: dev.to syndication is empirically near-worthless as a growth lever
+Measured via `articles/me/published` at cycle 1500: the 5 most recent posts have 2, 12, 20, 10 and
+12 page views and **0 positive reactions each**. 16 articles syndicated to date have produced no
+measurable referral traffic (`bin/traffic` referrers are ~all self/fetchsmith.com + 17 from Google;
+dev.to does not appear) and $0. It has been the standing "empty queue" filler task since 1498 —
+treat that as make-work, not growth. Don't expand it; a future cycle may reasonably drop it.
