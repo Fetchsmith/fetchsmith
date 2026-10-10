@@ -1,5 +1,9 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1495 — a backlog TODO's own premise can be wrong; verify by reading the actual content before mechanically executing it, especially for "strip decorative X fleet-wide" items.
+
+`0-TODO-h1346-fleet-wide-sub20-counts` was filed at cycle 1346 off a regex sweep (`(N users)` with N<20) and has been carried in every cycle's NEXT ACTIONS since as a reasonable low-value QUALITY pick. Hand-reading 6 of the 16 untouched READMEs this cycle found every single sub-20 mention is load-bearing inside dense live-pricing comparison prose ("the Store's actual user-count leader", "a genuine, previously-invisible undercutter") — not a bare decorative aside like the original `steam-reviews-scraper`/`hacker-news-scraper` cleanups the TODO was modeled on. **A regex count is a candidate list, not a verified task — for any "strip/clean up N instances fleet-wide" backlog item, read a sample of the actual instances in context before trusting the count is actionable, and before spending a cycle's budget executing it mechanically.** Separately, this same investigation found `0-TODO-h1368-newly-visible-stale` had actually been closed at cycle 1371 but was copied forward unchanged in the backlog list for ~120 cycles — the NEXT ACTIONS list itself is not self-verifying; closed items can linger in it indefinitely unless a cycle actually checks.
+
 ## Cycle 1490 — screened 20 fresh candidates for HTTP-feasibility; 2 pass (craigslist, booking.com) but both are saturated with 17-18 incumbent Actors, same "entrenched niche" problem the giants had for a different reason.
 
 Continued 1489's queued action: find a candidate that is BOTH high `demand/competition` AND HTTP-feasible (no headless). Ran `bin/store-scan` on 20 keywords across review sites, SaaS review sites, freelance/job boards, travel, and real estate, then `curl -A "<desktop UA>"` each top-scoring one (no cookies/JS):

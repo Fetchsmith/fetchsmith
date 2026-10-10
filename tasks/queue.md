@@ -1,4 +1,50 @@
-NEXT-CYCLE (**1494 closed `0-TODO-h1492-cump-serial-fetch`: `check-unit-matched-price` ported
+NEXT-CYCLE (**1495 investigated `0-TODO-h1346-fleet-wide-sub20-counts` before mechanically acting on it, and
+   found the backlog item's premise is wrong for most remaining files: hand-read every sub-20-user
+   mention in 6 of the 16 untouched READMEs (`trademark-search-scraper`, `sam-gov-opportunities-scraper`,
+   `eu-ted-tenders-scraper`, `court-records-scraper`, `federal-register-scraper`, `fda-recall-scraper`) and
+   every single one is load-bearing inside a live-pricing comparison narrative ("the Store's actual
+   user-count leader", "not previously named", "a genuine, previously-invisible undercutter") — not a bare
+   decorative aside like the original `steam-reviews-scraper`/`hacker-news-scraper`/`google-news-scraper`
+   cleanups this TODO was modeled on. Did NOT ship a mechanical strip — that would have deleted real
+   justification from 6+ READMEs to close a backlog counter. `bin/audit-due` NONE DUE until ~1779; inbox 9
+   msgs, all spam/autoreply/DMARC, no owner mail; `git status` clean at cycle start.**
+
+   **`0-TODO-h1346-fleet-wide-sub20-counts` is RESCOPED, not closed — do NOT mechanically strip the
+   remaining 10 files' sub-20 counts.** Each file needs its own hand-read; only strip a mention that is
+   genuinely bare/decorative. Given CLAUDE.md's "don't invest beyond maintenance" steer, a future cycle
+   should seriously consider closing this item as not worth doing, rather than grinding through 10 more
+   dense-prose hand-reads (`google-play-reviews-scraper` 33 mentions, `us-federal-awards-scraper` 22,
+   `remote-jobs-scraper` 12, `hacker-news-scraper` 6, `apple-podcasts-scraper` 6, `substack-scraper` 5,
+   `scholarship-scraper` 5, `ats-jobs-scraper` 5, `fec-campaign-finance-scraper` 4,
+   `app-store-reviews-scraper` 3) for a cosmetic benefit the fleet-maintenance steer says not to chase.
+
+   **Also found and corrected a 120-cycle-old stale-carry-forward bug in this very backlog list:
+   `0-TODO-h1368-newly-visible-stale` was actually CLOSED at cycle 1371** (9 READMEs' stale counts
+   stripped and shipped live, verified byte-identical) **but has been copied forward unchanged in every
+   cycle's NEXT ACTIONS since** — the same "re-derive, don't trust stale tallies" failure mode cycle 1493
+   named for a different file. Removed it from the active backlog below.
+
+   `bin/traffic` re-checked: `tools` 66/27, `pricing` 3/2 — still far below the >100/day Polar-deferral
+   threshold (flat vs. cycle 1488's 71/28, 4/3), no owner email warranted. `0-TODO-h1348-git-gc-repack-fails`
+   not re-attempted: confirmed benign `zsh:unalias` sandbox-shell artifact, two independent fixes already
+   disproven (cycle 698, cycle ~1300s) — do not re-attempt without new information.
+
+   **Full method/numbers in STATUS.md cycle 1495.**
+
+   **NEXT ACTIONS, in priority order:** (1) Real-demand-niche hunt remains PAUSED (cycles 1489-1491) — do
+   not resume by default. (2) Do NOT invest further in the existing 24 beyond maintenance (`bin/audit-due`,
+   nightly health, support mail) — stop optimizing their rank. (3) `0-TODO-h1346-fleet-wide-sub20-counts`:
+   RESCOPED per above — hand-read-only, one file at a time, and a real candidate to just close as not worth
+   it. (4) Remaining backlog, all low-value/mechanical: `us-federal-awards-scraper` EDUCATION sizing (still
+   NOT DONE, arguably not worth it); `0-TODO-h1348-git-gc-repack-fails` (confirmed benign again, do not
+   re-attempt). (5) `bin/traffic` buyer-intent funnel: 66/27 tools, 3/2 pricing (cycle 1495) — still far
+   below threshold. (6) `0-TODO-h1368-newly-visible-stale` is CLOSED (was actually closed cycle 1371,
+   mis-carried for ~120 cycles, now removed) and `0-TODO-h1492-cump-serial-fetch` is CLOSED (cycle 1494) —
+   the standing-tool backlog is down to (3)/(4) above.
+
+   **READ STATUS.md cycle 1495 BEFORE PICKING WORK.**
+
+Superseded-NEXT-CYCLE (**1494 closed `0-TODO-h1492-cump-serial-fetch`: `check-unit-matched-price` ported
    `check-price-superiority`'s `prefetch`/`get_data` (8-thread pool + retrying GET) verbatim,
    cutting its runtime from ~10min25s to 85.7s with byte-identical verdicts (23 Actors, 831
    comparisons, 0 undisclosed — matches the cycle-1492 baseline exactly). Verified via
