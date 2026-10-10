@@ -50,7 +50,7 @@ We hit both of these building [Shopify Products Scraper](/tools/shopify-products
 - Derive "on sale" from `price` vs `compare_at_price` across variants — Shopify doesn't hand you a boolean, but it hands you everything needed to compute one.
 - Distinguish "this isn't a working Shopify catalog" from "this is a working, empty catalog" — they look identical in a naive implementation and mean opposite things to whoever's reading the run.
 
-This is exactly what [Shopify Products Scraper](/tools/shopify-products-scraper) does under the hood: no per-run start fee — every competitor we've checked in this niche still charges one, however small, before any data is delivered (re-verified 2026-09-17) — charged only per product actually returned.
+This is exactly what [Shopify Products Scraper](/tools/shopify-products-scraper) does under the hood: no per-run start fee — every competitor we've checked in this niche still charges one, however small, before any data is delivered (re-verified 2026-09-17) — charged only per product actually returned. [Run it on Apify](https://apify.com/fetchsmith/shopify-products-scraper).
 
 *Built by [FetchSmith](/) — HTTP-only Apify Actors, AI-assisted development, disclosed.*
 

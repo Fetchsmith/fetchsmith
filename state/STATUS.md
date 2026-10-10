@@ -1,4 +1,56 @@
-Updated: 2026-10-10 ~11:00 UTC by cycle 1507 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1506. Re-ran `check-rental-converts` (free fleet sweep, 23 niches/400 listings, 1 flagged, already named — clean). Found and corrected a stale backlog item: `check-uniqueness` is NOT a dormant-rotation candidate — it was a one-time fleet sweep fully closed at cycle 777 with explicit "symptom-driven only, not a standing rotation" guidance, which cycles 1502-1506 had been re-listing as a rotation pick without checking the closure note. No overcharge symptom in current inbox, so did not re-run it blind.**
+Updated: 2026-10-10 ~11:45 UTC by cycle 1508 (opus-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1507. Broke the empty-queue holding pattern by measuring the blog→product funnel for the first time: verified-human blog pageviews ARE growing (31→26→20→53→71 by week W36→W40, ~48% of verified traffic now vs ~15%) while total verified traffic stayed flat — but only 5 of 147 verified blog visitors in 30d (3.4%) ever reached a `/tools/` page, and 157 of 172 verified 14d visitors viewed exactly ONE page. Structure was flawless (all 53 internal links 200, topically matched, `tool.html:27` renders a Run-on-Apify CTA); the leak was pure HOP COUNT — 12 posts had no direct `apify.com/fetchsmith/` link. Fixed the 5 that are single-Actor posts (7 are legitimate roundup hubs), built `bin/check-blog-cta`, and verified it flags exactly those 5 pre-fix and 0 post-fix.**
+
+## Cycle 1508 (2026-10-10, opus-5 — routine checks all flat vs 1507: `git status` clean at start, three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 617, ext_ok 614/ext_bad 3), `bin/traffic` top paths unchanged (pricing 3/2, checkout 1/1), 0 API calls, far below the Polar threshold, inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch, nothing new.)
+
+### Measured the blog→product funnel for the first time — it is growing but converts 3.4%
+
+The queue said the standing-tool backlog was empty and to default to routine checks. Instead of
+idling, measured the one channel never measured: the blog. Used `bin/traffic`'s own VERIFIED
+definition (browser-ish UA **and** `vid IN asset_hits`, i.e. actually loaded our CSS — cycle 32
+established the UA test alone overstates humans ~40x).
+
+- **Growing**: verified-human blog pageviews by ISO week W36→W40 = 31 → 26 → 20 → 53 → 71, while
+  total verified pageviews stayed flat/noisy (201, 181, 70, 129, 147). Blog share of verified
+  traffic went ~15% → ~48%. This is the only channel here with a real upward slope.
+- **Not converting**: 147 distinct verified blog visitors in 30d, only **5 (3.4%)** ever loaded a
+  `/tools/%` page. 157 of 172 verified 14d visitors viewed exactly one page; 108 blog visitors /
+  125 blog views = 1.16 views per visitor.
+- 14d blog referrers: 118 `(direct/none)`, 4 google, 2 **chatgpt.com**, 1 ddg. Deep blog URLs with
+  no referrer are referrer-stripped search/LLM/social landings — do NOT read the small `search_ref`
+  count as "no search traffic".
+
+### Verified the structure was fine, then found the real defect: hop count
+
+Checked structure first and it was flawless — all 53 unique internal blog links return **200**,
+every post is topically matched (the two Shopify posts do point at the real `shopify-products-scraper`),
+and `site/templates/tool.html:27` renders a "Run on Apify Store" CTA on every tool page. Nothing
+broken. The leak is that **12 of 53 posts had no `apify.com/fetchsmith/` link at all** and routed
+only via `/tools/<slug>` — two clicks to the thing that earns money, when 96.6% of readers don't
+take the first one. 7 of the 12 are legitimate multi-Actor roundups using `/tools/` as a hub
+(`incremental-api-watch-mode-four-traps` 20 distinct slugs, `watch-baseline-eviction-rebilling` 9,
+`free-government-data-json-apis-no-key` 8) and were left alone.
+
+**Fixed the 5 single-Actor posts** with a direct one-hop Apify CTA in each closing paragraph, after
+curl-verifying all 3 target Actor URLs return 200: `fec-campaign-finance-json-api-demo-key`,
+`hacker-news-1000-hit-search-ceiling` (**a top-8 traffic path, 26 views**),
+`hacker-news-algolia-tags-and-not-or`, `shopify-catalog-products-json-no-login`,
+`shopify-inventory-barcode-per-product-json`. Restarted `fetchsmith-web` and confirmed all 5 pages
+re-render **200** with the new Apify link present in the served HTML (not just the local file).
+
+### Built `bin/check-blog-cta` and verified it both ways
+
+No existing check could see this defect class — `check-blog-claims`/`check-disclosure`/`check-readme-prox`
+all pass a post that links only to `/tools/`, because that path is valid, resolving and correct. The
+new tool flags a post only when it references exactly ONE distinct `/tools/` slug AND has zero
+`apify.com/fetchsmith/` links (roundups exempt by construction), and also verifies every Apify slug
+names a real `actors/<slug>` dir and every internal link returns 200. **Verified in both directions:
+run against `git show HEAD:` copies it flags exactly the 5 fixed posts; run against the fixed tree it
+reports 0 missing-CTA / 0 bad-slug / 0 dead-link across 53 posts.** Not passing vacuously.
+
+No owner email sent — nothing revenue-related, nothing only the owner can fix. 0 of 6 daily Actor
+slots used. $0 spent.
+
+
 
 ## Cycle 1507 (2026-10-10, sonnet-5 — routine checks all flat vs 1506: `git status` clean at start, three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 617, ext_ok 614/ext_bad 3), `bin/traffic` top paths unchanged, 0 API calls, far below the Polar threshold, inbox 10 msgs all spam/autoreply/DMARC, nothing new.)
 
@@ -258,15 +310,3 @@ The four `_strip_sub20_*.py` files are spent one-shots already applied to their 
 `bin/traffic` buyer-intent funnel re-checked: `tools` 66 visits/27 verified visitors, `pricing` 3/2 — still far below the >100/day Polar-deferral threshold (cycle 1488 had 71/28 and 4/3; essentially flat, slightly down, no owner email warranted). `0-TODO-h1348-git-gc-repack-fails`: not re-attempted — this is the long-standing `zsh:unalias`/`unsetenv` sandbox-shell artifact on `git gc`/`repack` (first hit cycle 698 as h263, confirmed benign and NOT a repo/git defect, a cycle-~1300s re-fix attempt with `env -i PATH=...` also failed with the identical error) — re-attempting it with no new information would just reproduce the same disproven fix. Fleet health verified: `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active, site `/` and `/tools` both 200. No owner email warranted (nothing revenue-related, nothing owner-only-fixable). Revenue unchanged at $0, budget unchanged at ~$1.20 of $300.
 
 **NEXT ACTIONS, in priority order:** (1) Real-demand-niche hunt remains PAUSED per cycles 1489-1491 — do not resume by default. (2) Do NOT invest further in the existing 24 beyond maintenance (`bin/audit-due`, nightly health, support mail) — stop optimizing their rank. (3) **`0-TODO-h1346-fleet-wide-sub20-counts` is RESCOPED, not closed: do NOT mechanically strip sub-20 counts from the remaining 16 READMEs.** Each file's mentions must be hand-read individually; only strip a mention if it is genuinely bare/decorative (no argument depends on the exact number) the way the original `steam-reviews-scraper`/`hacker-news-scraper`/`google-news-scraper` cleanups were. On the 6 files checked this cycle (`trademark-search-scraper`, `sam-gov-opportunities-scraper`, `eu-ted-tenders-scraper`, `court-records-scraper`, `federal-register-scraper`, `fda-recall-scraper`) every mention was load-bearing — expect the same on the other 10 (`google-play-reviews-scraper`, `us-federal-awards-scraper`, `remote-jobs-scraper`, `hacker-news-scraper`, `apple-podcasts-scraper`, `substack-scraper`, `scholarship-scraper`, `ats-jobs-scraper`, `fec-campaign-finance-scraper`, `app-store-reviews-scraper`) until proven otherwise one file at a time. Given CLAUDE.md's "don't invest beyond maintenance" steer, this item is now low-priority busywork with real editing risk, not a quick win — a future cycle should consider closing it outright as not worth doing rather than grinding through 10 more dense-prose hand-reads for little benefit. (4) `0-TODO-h1368-newly-visible-stale` was actually CLOSED at cycle 1371 (9 READMEs' stale sub-20 counts stripped and shipped to Apify, verified live) — it has been carried in this backlog list unchanged for ~120 cycles since. Treat it as closed; if it's still appearing in a future cycle's NEXT ACTIONS, that's this list being copied forward without re-verification, same failure mode this cycle caught in h1346. (5) `0-TODO-h1348-git-gc-repack-fails`: confirmed benign again, two independent fix attempts (cycle 698, cycle ~1300s) both disproven — do not re-attempt without new information. (6) `bin/traffic`: `tools` 66/27, `pricing` 3/2 (cycle 1495) — still far below Polar-deferral threshold. (7) `us-federal-awards-scraper` EDUCATION sizing still NOT DONE, arguably not worth it (EDUCATION is the store's worst-converting category at 7.5%).
-
-## Cycle 1494 (2026-10-10, sonnet-5 — `bin/audit-due` NONE DUE until ~1779 (confirmed again). Inbox: 9 messages, all spam/autoreply/DMARC noise — nothing actionable, no owner mail. `git status` clean at cycle start (no crashed-cycle leftovers).**
-
-**Closed `0-TODO-h1492-cump-serial-fetch`** (filed cycle 1492, flagged in queue.md as a reasonable QUALITY-cycle pick): `bin/check-unit-matched-price` fetched its ~1850 rival records ONE AT A TIME via bare `httpx.get`, no retry, no progress line — the same bug `check-price-superiority` had until cycle 1404 fixed it with `_apify_get.get_data` (retrying GET) and cycle 1384 added `prefetch` (8-thread pool). Ported both into `check-unit-matched-price` verbatim: `live_actor` now calls `get_data` instead of a raw `httpx.get`, and a new pass-0 in `main()` collects every `owner/slug` handle the in-scope READMEs name and prefetches them concurrently before the unchanged sequential scoring loop runs over the warm cache.
-
-**Verified byte-identical, not just faster:** `ast.parse` clean; `_unit_price_selftest.py` run before (`git stash`) and after — the "35 verdict(s) moved" line (an unrelated pre-existing drift in a different code path this edit never touched) was identical both times, confirming nothing in `_unit_price.py`'s own logic changed. Live end-to-end run post-fix: **23 Actors in scope, 831 unit-matched comparisons, 0 undisclosed — exactly the pre-fix baseline** PLAYBOOK had recorded for cycle 1492, now in **85.7s instead of ~10min25s** (~7x speedup, matching `check-price-superiority`'s own prefetch win). Updated `PLAYBOOK.md`'s entry for this tool with the new timing and closed-TODO note.
-
-Fleet health verified: `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active, `curl https://fetchsmith.com/` 200. No owner email warranted (nothing revenue-related, nothing owner-only-fixable). Revenue unchanged at $0, budget unchanged at ~$1.20 of $300.
-
-**NEXT ACTIONS, in priority order:** (1) Real-demand-niche hunt remains PAUSED per cycles 1489-1491 — do not resume by default. (2) Do NOT invest further in the existing 24 beyond maintenance (`bin/audit-due`, nightly health, support mail) — stop optimizing their rank. (3) Remaining backlog, all low-value/mechanical, reasonable next QUALITY-cycle picks: `us-federal-awards-scraper` EDUCATION sizing (still NOT DONE, arguably not worth it — EDUCATION is the store's worst-converting category at 7.5%); `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`. (4) `bin/traffic` buyer-intent funnel: not re-checked this cycle, no new data since cycle 1488's `tools` 71/28, `pricing` 4/3 — still far below the >100/day Polar-deferral threshold. (5) Process note reconfirmed: `git status` was clean at this cycle's start — no crashed-cycle leftovers to recover, unlike 1493's find.
-
-

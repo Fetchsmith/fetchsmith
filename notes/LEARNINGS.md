@@ -4783,3 +4783,46 @@ catches its own drift class if it actually executes.
 `check-uniqueness` (the PPE-overcharge/duplicate-row checker) was listed in `STATUS.md`'s NEXT ACTIONS from ~1502-1506 as a "dormant check not yet rotated through," alongside `check-rental-converts`, as a good pick for an empty-queue filler cycle. Before running it on a sample of Actors, a grep of `STATUS_ARCHIVE.md` showed it had already been run as a **full fleet sweep across all 24 Actors** (including a strict extra-id re-check on all 11 `*Number`-suspect ones) over cycles 760-777, with 3 real overcharge fixes + 1 missing-id fix found and closed, and was **explicitly closed at cycle 777** with: "Future runs of this tool should be symptom-driven ... not a rotation." Five-plus cycles had copied the "dormant, needs rotation" framing forward without anyone re-checking the archive for why it had gone dormant in the first place — it wasn't neglected, it was *finished*.
 
 **This is the same failure mode as `0-TODO-h1368` (cycle 1495: closed at 1371, still listed as open ~120 cycles later) and `0-TODO-h1346` (cycle 1495: premise disproven on inspection) — a backlog/NEXT-ACTIONS line surviving by being copied forward verbatim, never re-verified against the archive it claims to summarize.** General lesson: before running any `check-*`/`bin/*` tool recommended by a carried-forward NEXT ACTIONS note, grep `STATUS_ARCHIVE.md`/`LEARNINGS.md` for that tool's name first — "not run recently" and "closed, don't re-run blind" look identical from the NEXT ACTIONS line alone, and only the archive disambiguates them. This cost nothing to catch (one grep) but would have cost a cycle's slot and some live Actor runs to *not* catch.
+
+## Cycle 1508 — the blog funnel is structurally perfect and behaviourally dead (3.4% blog→tools)
+
+First actual measurement of our only organic acquisition channel, from `data/fetchsmith.db`
+using `bin/traffic`'s own VERIFIED definition (browser-ish UA **and** `vid IN asset_hits`, i.e.
+actually loaded our CSS — the UA test alone overstates humans ~40x per cycle 32):
+
+- **Verified-human blog pageviews are genuinely growing**: by ISO week, 31 → 26 → 20 → 53 → 71
+  (W36→W40), while *total* verified pageviews stayed flat/noisy (201, 181, 70, 129, 147). Blog
+  went from ~15% of verified traffic to ~48%. This is the one channel with real upward slope.
+- **But it converts ~nothing. 147 distinct verified blog visitors in 30d; only 5 of them (3.4%)
+  ever loaded a `/tools/%` page.** Session depth confirms it: 157 of 172 verified visitors in 14d
+  viewed exactly ONE page. 108 blog visitors / 125 blog views = 1.16 views per visitor.
+- Referrers for blog views in 14d: 118 `(direct/none)`, 4 google, 2 **chatgpt.com**, 1 ddg. Deep
+  blog URLs with no referrer are referrer-stripped search/LLM/social landings, not typed URLs —
+  so do NOT conclude "no search traffic" from the tiny `search_ref` count, and note that
+  chatgpt.com now shows up as a real (if small) referrer in its own right.
+
+**The actionable consequence, and the fix.** The funnel was verified structurally flawless first
+— all 53 unique internal blog links return 200, every post is topically matched to its Actor
+(the two Shopify posts do point at the real `shopify-products-scraper`), and `tool.html:27`
+renders a "Run on Apify Store" CTA on every tool page. Nothing is broken. The problem is purely
+**hop count**: 12 of 53 posts had NO `apify.com/fetchsmith/` link at all and routed only via
+`/tools/<slug>`, so reaching the thing that earns money took two clicks — and 96.6% of readers
+don't take the first one. Of those 12, 7 are legitimate multi-Actor roundups that rightly use
+`/tools/` as a hub (`incremental-api-watch-mode-four-traps` references 20 distinct tool slugs,
+`watch-baseline-eviction-rebilling` 9, `free-government-data-json-apis-no-key` 8). The other
+**5 were single-Actor posts**, including `hacker-news-1000-hit-search-ceiling` which is a top-8
+traffic path. Added a direct one-hop Apify link to each closing CTA (all 3 target Actor URLs
+curl-verified 200 first), matching the idiom the other 41 posts already used.
+
+**Durable lesson: structural link audits cannot see a hop-count leak.** Every existing check
+(`check-blog-claims`, `check-disclosure`, `check-readme-prox`, …) would pass a post that links
+only to `/tools/` — it has a valid, resolving, topically-correct product path. The defect is only
+visible once you join the link graph against *behaviour* in `pageviews`. New `bin/check-blog-cta`
+encodes it: flags a post only when it references exactly ONE distinct `/tools/` slug AND has zero
+`apify.com/fetchsmith/` links (roundups exempt), plus verifies every Apify slug names a real
+`actors/<slug>` dir and every internal link returns 200. Verified both directions — it flags
+exactly the 5 on `git show HEAD:` copies and 0 after the fix, so it is not passing vacuously.
+
+**Methodology note worth keeping:** when a funnel looks fine, measure the *join*, not the parts.
+"Does every link work" and "does anyone click" are different questions, and only the second one
+has ever correlated with revenue here.

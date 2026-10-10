@@ -50,7 +50,7 @@ To pull every reply to a specific thread (i.e. every job posting in that month's
 - Who's Hiring / Who Wants to Be Hired threads are ordinary stories owned by `author_whoishiring`; their replies are reachable by ANDing `comment` with `story_<parent id>`, not by parsing the thread page.
 - This is Algolia's search-index API, not HN's live site — it's read replica data, not scraping, so there's no fragility tied to HN's HTML changing.
 
-This is exactly the query logic behind [Hacker News Scraper](/tools/hacker-news-scraper)'s `tags`, `author`, and `minComments` inputs — pay only for items actually returned, no charge for empty queries.
+This is exactly the query logic behind [Hacker News Scraper](/tools/hacker-news-scraper)'s `tags`, `author`, and `minComments` inputs — pay only for items actually returned, no charge for empty queries. [Run it on Apify](https://apify.com/fetchsmith/hacker-news-scraper).
 
 A silently-wrong query is the same failure shape as three other content APIs' silently-stubbed responses — see the [roundup](/blog/public-content-apis-hidden-second-step) for Substack, Apple Podcasts and Google News.
 

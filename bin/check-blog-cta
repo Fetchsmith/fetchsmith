@@ -1,0 +1,51 @@
+#!/bin/sh
+# check-blog-cta (cycle 1508) -- audits the blog -> product funnel, our only organic channel.
+#
+# Why this exists: cycle 1508 measured the real funnel from data/fetchsmith.db and found
+# 147 verified-human blog visitors in 30d but only 5 (3.4%) ever reached a /tools/ page.
+# A post whose only product path is /tools/<slug> therefore needs TWO clicks to reach the
+# thing that earns money, and ~97% of readers don't take the first one. Single-Actor posts
+# should carry a DIRECT apify.com/fetchsmith/<slug> link so the product is one click away.
+#
+# Flags a post only when BOTH hold:
+#   - it references exactly ONE distinct /tools/<slug> (a single-Actor post, not a roundup)
+#   - it has NO apify.com/fetchsmith/ link at all
+# Multi-Actor roundups legitimately use /tools/ as a hub and are NOT flagged.
+#
+# Also verifies every internal link resolves and every apify.com/fetchsmith/<slug> names a
+# real Actor dir -- a dead link in the only acquisition channel is a silent revenue leak.
+set -e
+cd "$(dirname "$0")/.."
+BLOG=site/content/blog
+BASE=${BASE:-https://fetchsmith.com}
+
+flag=0; checked=0
+echo "== single-Actor posts missing a direct Apify CTA"
+for f in "$BLOG"/*.md; do
+  checked=$((checked+1))
+  slugs=$(grep -ohE '/tools/[a-z0-9-]+' "$f" | sort -u)
+  n=$(printf '%s' "$slugs" | grep -c . || true)
+  apify=$(grep -cE 'apify\.com/fetchsmith/' "$f" || true)
+  if [ "$n" = "1" ] && [ "$apify" = "0" ]; then
+    echo "  FLAG $(basename "$f") -> ${slugs##*/} (two-hop only; add a direct Apify link)"
+    flag=$((flag+1))
+  fi
+done
+[ "$flag" = "0" ] && echo "  none -- every single-Actor post links straight to its Actor"
+
+echo "== apify.com/fetchsmith/<slug> links that name no local Actor dir"
+bad=0
+for s in $(grep -rohE 'apify\.com/fetchsmith/[a-z0-9-]+' "$BLOG" | sed 's#.*/##' | sort -u); do
+  [ -d "actors/$s" ] || { echo "  FLAG unknown Actor slug: $s"; bad=$((bad+1)); }
+done
+[ "$bad" = "0" ] && echo "  none"
+
+echo "== internal links that do not return 200"
+dead=0
+for p in $(grep -rohE '\]\((/(tools|blog|docs|pricing)[^)#]*)' "$BLOG" | sed 's/^](//' | sort -u); do
+  c=$(curl -s -o /dev/null -w '%{http_code}' "$BASE$p")
+  [ "$c" = "200" ] || { echo "  FLAG $c $p"; dead=$((dead+1)); }
+done
+[ "$dead" = "0" ] && echo "  none"
+
+echo "== $checked posts checked; $flag missing-CTA, $bad bad-slug, $dead dead-link"

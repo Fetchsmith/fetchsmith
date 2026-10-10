@@ -76,7 +76,7 @@ Don't guess the width — read it back. [Hacker News Scraper](/tools/hacker-news
 
 This is the same failure shape as a silently-capped API elsewhere: an answer that looks complete because nothing errors, and only a second measurement reveals otherwise. See the [comma-vs-parentheses guide](/blog/hacker-news-algolia-tags-and-not-or) for how the same index's `tags` field has an identical "no error, just quietly wrong" trap on the query-logic side, and the [public content APIs roundup](/blog/public-content-apis-hidden-second-step) for the same pattern on three other data sources.
 
-[Hacker News Scraper](/tools/hacker-news-scraper) wraps HN's search, tag AND/OR composition, watch mode, and this pagination-ceiling detection into one flat-row-per-item Actor — pay only for items actually returned.
+[Hacker News Scraper](/tools/hacker-news-scraper) wraps HN's search, tag AND/OR composition, watch mode, and this pagination-ceiling detection into one flat-row-per-item Actor — pay only for items actually returned. [Run it on Apify](https://apify.com/fetchsmith/hacker-news-scraper).
 
 ---
 
