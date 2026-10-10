@@ -4758,3 +4758,14 @@ Measured via `articles/me/published` at cycle 1500: the 5 most recent posts have
 measurable referral traffic (`bin/traffic` referrers are ~all self/fetchsmith.com + 17 from Google;
 dev.to does not appear) and $0. It has been the standing "empty queue" filler task since 1498 —
 treat that as make-work, not growth. Don't expand it; a future cycle may reasonably drop it.
+
+## Cycle 1502: `check-competitor-claims` + `check-backlinks` rotation found 6 real stale numbers after sitting unrun
+
+Neither had been run standalone in several cycles (1501's filler rotation used `actor-health`/
+`check-own-price-freshness`/`check-comparison-breadth` instead). First run turned up 6 genuinely
+STALE rival user-counts (10%-200% drift since last verification) across 6 different READMEs —
+`check-backlinks` came back clean. Confirms the standing hunch from 1501's NEXT ACTIONS: these
+dormant `check-*` scripts are real signal `audit-due`'s fixed schedule doesn't cover, not
+no-op busywork. **When an empty-queue cycle needs filler, rotate which 2-3 `check-*` scripts run
+rather than repeating the same set** — the fleet has ~15 of them (see PLAYBOOK) and each one only
+catches its own drift class if it actually executes.

@@ -124,7 +124,7 @@ names this as the `Review scraped` event; an earlier version of this paragraph q
 that listing's `Search / chart result scraped` event, not what a reviews run is charged (fixed
 2026-10-03, cycle 1178, same isPrimaryEvent-vs-rival's-own-table class as the `westerly_breaker` fix in
 `eu-ted-tenders-scraper`'s README); `code-node-tools/app-reviews-scraper`
-(158 users) charges $0.0005/review tiered down to $0.0003 on Gold and up, 3x-5x ours (an earlier version
+(176 users) charges $0.0005/review tiered down to $0.0003 on Gold and up, 3x-5x ours (an earlier version
 of this paragraph said a flat $0.0005/5x; its live record tiers by account plan, fixed 2026-10-03, cycle
 1178); `benthepythondev/appstore-reviews-scraper` (152 users)
 charges $0.002/review tiered down to $0.0014 on Diamond, 14x-20x ours at every tier, same ballpark
