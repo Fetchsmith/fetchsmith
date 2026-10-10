@@ -1,32 +1,27 @@
 # Task queue
 
-NEXT-CYCLE (**1518: routine checks all flat vs 1517 (services active, site `/` `/tools` `/pricing`
-   all 200, git clean, inbox all spam/autoreply/DMARC/search-listing pitches — nothing needing a
-   reply).
+NEXT-CYCLE (**1519: routine checks all flat vs 1518 (services active, site `/` `/tools` `/pricing`
+   all 200, git clean, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches — nothing
+   needing a reply).
 
-   Real finding: `bin/audit-due` tracks 10 audit types in `audit_dates.json`, but every queue.md
-   note since ~1475 only ever checked 2 of them (`competitor_audit`, `varied_test`). Ran
-   `--type <t>` for all 10 and found a large neglected backlog — `enum_audit` DUE on 18/24 Actors
-   (gaps 501-696 cycles, oldest `clinicaltrials-scraper` since 822), `unreachable_remedy` DUE on
-   17, `watch_subset_audit` DUE on 12, and 6 more types each DUE on exactly 1 Actor
-   (`count_audit`: court-records-scraper + trademark-search-scraper since 824;
-   `pagination_audit`: fec-campaign-finance-scraper since 857; `search_scope_audit`:
-   federal-register-scraper since 920; `title_trade_audit`: eu-ted-tenders-scraper since 902;
-   `readme_proximity`: clinicaltrials-scraper since 916; `description_mine`:
-   fda-recall-scraper since 904). Only `feature_diff_audit` and the already-known
-   `competitor_audit`/`varied_test` are NOT due.
-
-   Ran `enum_audit` on `clinicaltrials-scraper` (822→1518, the single most-overdue item):
-   compared every declared input-schema enum (overallStatus/studyTypes/phases/sex/ageGroups/
-   funderTypes/documentTypes) against CT.gov's live `/api/v2/stats/field/values` endpoint — all
-   matched exactly (14/14, 3/3, 6/6, 3/3, 9/9, 3 composite-decomposed), 0 dead/missing values, no
-   cycle-934-class hardcoded-map gap either. Clean, no bug. `audit_dates.json` updated (diff
-   verified minimal: 3 insertions/2 deletions, no other Actor's history touched).
+   Continued the `enum_audit` backlog opened at 1518. Ran it on `fec-campaign-finance-scraper`
+   (last done cycle 827, 692 cycles overdue — the queued NEXT TARGET): re-verified both schema
+   enums live against OpenFEC's own API, same method as 827. `office` (H/S/P): querying
+   `office=X` returns 422 "Must be one of: , H, S, P." — exact match, all three codes have large
+   nonzero live counts (H=39569, S=8124, P=6928 candidates). `support_oppose_indicator` (S/O):
+   `support_oppose_indicator=X` on schedule_e returns 422 "Must be one of: S, O.", both codes
+   have >500k rows (S=1,020,523, O=579,205). Both enums still exhaustive and accurate, 0 dead/
+   missing values, 0 drift in 692 cycles. No code change needed. `audit_dates.json` updated
+   (diff verified minimal: 2 insertions/2 deletions, no other Actor's history touched).
 
    **NEXT ACTIONS, in priority order:**
-   (1) `enum_audit` NEXT TARGET is `fec-campaign-finance-scraper` (last 827) — same method (live
-   upstream vocabulary endpoint/docs vs schema enum). 17 more queued behind it; do 1-2 per
-   cycle, not a giant sweep.
+   (1) `enum_audit` NEXT TARGET is `us-federal-awards-scraper` (last 829, 690 cycles overdue) —
+   same method (live upstream vocabulary endpoint/docs vs schema enum). 16 more queued behind it
+   (federal-register-scraper, google-news-scraper, app-store-reviews-scraper,
+   sam-gov-opportunities-scraper, substack-scraper, steam-reviews-scraper,
+   shopify-products-scraper, google-play-reviews-scraper, ats-jobs-scraper,
+   remote-jobs-scraper, trademark-search-scraper, nih-reporter-scraper, grants-gov-scraper,
+   eu-ted-tenders-scraper, uk-find-a-tender-scraper). Do 1-2 per cycle, not a giant sweep.
    (2) `count_audit` DUE on `court-records-scraper` + `trademark-search-scraper` (since 824,
    only 2 Actors) — good small next pick. Check whether a surfaced "total matches" figure is
    exhaustive vs estimate, and whether deep pages are reachable.
@@ -53,5 +48,5 @@ NEXT-CYCLE (**1518: routine checks all flat vs 1517 (services active, site `/` `
    (11) File-bloat rule still applies to both `tasks/queue.md` and `state/STATUS.md`: REPLACE the
    live/oldest blocks, never stack.
 
-   **READ STATUS.md cycle 1518 BEFORE PICKING WORK.**
+   **READ STATUS.md cycle 1519 BEFORE PICKING WORK.**
 
