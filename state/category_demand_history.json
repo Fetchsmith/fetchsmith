@@ -169,5 +169,176 @@
     "exhaustive": true
    }
   ]
+ },
+ {
+  "measured": "2026-10-10T01:31:41Z",
+  "min_users30d": 2,
+  "cohort": "totalUsers 2..20",
+  "base_cohort": 37154,
+  "base_converts": 24497,
+  "base_rate": 65.9,
+  "rows": [
+   {
+    "category": "SOCIAL_MEDIA",
+    "cohort": 6910,
+    "converts": 2225,
+    "rate": 32.2,
+    "exhaustive": true
+   },
+   {
+    "category": "MCP_SERVERS",
+    "cohort": 1277,
+    "converts": 379,
+    "rate": 29.7,
+    "exhaustive": true
+   },
+   {
+    "category": "FOR_CREATORS",
+    "cohort": 217,
+    "converts": 64,
+    "rate": 29.5,
+    "exhaustive": true
+   },
+   {
+    "category": "SPORTS",
+    "cohort": 277,
+    "converts": 80,
+    "rate": 28.9,
+    "exhaustive": true
+   },
+   {
+    "category": "MARKETING",
+    "cohort": 2310,
+    "converts": 638,
+    "rate": 27.6,
+    "exhaustive": true
+   },
+   {
+    "category": "VIDEOS",
+    "cohort": 2373,
+    "converts": 606,
+    "rate": 25.5,
+    "exhaustive": true
+   },
+   {
+    "category": "AGENTS",
+    "cohort": 2509,
+    "converts": 613,
+    "rate": 24.4,
+    "exhaustive": true
+   },
+   {
+    "category": "JOBS",
+    "cohort": 5077,
+    "converts": 1225,
+    "rate": 24.1,
+    "exhaustive": true
+   },
+   {
+    "category": "REAL_ESTATE",
+    "cohort": 3648,
+    "converts": 841,
+    "rate": 23.1,
+    "exhaustive": true
+   },
+   {
+    "category": "TRAVEL",
+    "cohort": 2044,
+    "converts": 464,
+    "rate": 22.7,
+    "exhaustive": true
+   },
+   {
+    "category": "INTEGRATIONS",
+    "cohort": 1647,
+    "converts": 361,
+    "rate": 21.9,
+    "exhaustive": true
+   },
+   {
+    "category": "ECOMMERCE",
+    "cohort": 10754,
+    "converts": 2238,
+    "rate": 20.8,
+    "exhaustive": false
+   },
+   {
+    "category": "LEAD_GENERATION",
+    "cohort": 19239,
+    "converts": 3942,
+    "rate": 20.5,
+    "exhaustive": false
+   },
+   {
+    "category": "SEO_TOOLS",
+    "cohort": 3734,
+    "converts": 728,
+    "rate": 19.5,
+    "exhaustive": true
+   },
+   {
+    "category": "NEWS",
+    "cohort": 3554,
+    "converts": 689,
+    "rate": 19.4,
+    "exhaustive": true
+   },
+   {
+    "category": "AUTOMATION",
+    "cohort": 22327,
+    "converts": 4254,
+    "rate": 19.1,
+    "exhaustive": false
+   },
+   {
+    "category": "AI",
+    "cohort": 7603,
+    "converts": 1395,
+    "rate": 18.3,
+    "exhaustive": true
+   },
+   {
+    "category": "DEVELOPER_TOOLS",
+    "cohort": 19053,
+    "converts": 3307,
+    "rate": 17.4,
+    "exhaustive": false
+   },
+   {
+    "category": "BUSINESS",
+    "cohort": 7352,
+    "converts": 1282,
+    "rate": 17.4,
+    "exhaustive": true
+   },
+   {
+    "category": "OTHER",
+    "cohort": 4992,
+    "converts": 838,
+    "rate": 16.8,
+    "exhaustive": true
+   },
+   {
+    "category": "GAMES",
+    "cohort": 134,
+    "converts": 17,
+    "rate": 12.7,
+    "exhaustive": true
+   },
+   {
+    "category": "OPEN_SOURCE",
+    "cohort": 733,
+    "converts": 69,
+    "rate": 9.4,
+    "exhaustive": true
+   },
+   {
+    "category": "EDUCATION",
+    "cohort": 531,
+    "converts": 40,
+    "rate": 7.5,
+    "exhaustive": true
+   }
+  ]
  }
 ]

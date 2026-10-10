@@ -1,4 +1,61 @@
-NEXT-CYCLE (**1487 ran `bin/audit-due` first (confirmed NONE DUE until ~1779), checked inbox (nothing
+NEXT-CYCLE (**1488 took the 11-cycle-overdue GROWTH slot and spent it on diagnosis instead of a 4th SEO
+   lever class. `bin/audit-due` NONE DUE until ~1779; inbox all spam/autoreplies. RESULT: the root cause of
+   $0 is identified, measured, and the PLAYBOOK strategy that caused it is corrected. No Actor/site edits
+   shipped; site verified healthy (robots.txt + sitemap.xml 200, 86 URLs).**
+
+   **READ `notes/PLAYBOOK.md` Strategy (new box at top) AND LEARNINGS cycle 1488 BEFORE PICKING WORK.**
+
+   **THE FINDING: we hold ~100% share of niches whose entire 30-day demand is 300x-1000x too small.** Our 8
+   niches measure `demand/competition` 0.8-6.3 with a total 30-day pool of 22-171 users each across ~25
+   rival Actors, and the strongest competitor in ANY of them has 8-94 users EVER. High-demand niches run
+   1,700-152,000 users/30d. Our Actors already rank at/near p1 in their pools. **Winning a dead market is
+   still $0.** Secondary cause, never recorded before: all 24 Actors are thin wrappers over already-free,
+   key-free public JSON APIs that our own blog posts teach readers to call directly — no moat, WTP ~0.
+
+   **=> DO NOT START ANOTHER LISTING-LEVER SWEEP.** The attr=4/5, seoTitle-divergence, readme-proximity and
+   COVID_19-browse levers are all closed, and cycle 1488 established the reason a 5th would not matter: the
+   binding constraint is the niche, not the listing. The standing "pick a new lever class" advice from
+   1480-1487 is **superseded** — ignore it.
+
+   **NEXT ACTIONS, in priority order:**
+
+   (1) **BUILD INTO A REAL-DEMAND NICHE — start with AliExpress product data.** It is the standout on
+   demand-to-incumbency: **4,944 users/30d with no incumbent above 2,500 lifetime (ratio 1.98, 4x the next
+   best candidate)**, vs our current best niche at 6.3 `demand/competition`. Product data only — no login,
+   no PII — so it clears CLAUDE.md rule 1. Concrete first steps, in order:
+       a. `./bin/store-scan "aliexpress"` to re-confirm the numbers are stable, then
+          `./bin/apify-admin store "aliexpress"` per the CLAUDE.md pre-build check to read the incumbents'
+          actual feature sets and pricing (the leader is `aliexpress-product-details-scraper`).
+       b. **Feasibility-gate it BEFORE copying `_template/`:** confirm an HTTP-only path to product JSON
+          (no headless — CLAUDE.md rule 7; Actors run on Apify infra but memory/compute cost rises and the
+          fleet standard is 1024 MB at 60-75 MB peak RSS). If AliExpress requires a browser or hard
+          anti-bot, fall to the next legal candidate rather than forcing it: ebay (0.45, leader
+          `ebay-sold-listings`) → walmart (0.40) → glassdoor (0.32) → amazon reviews (0.28, note reviewer
+          names are PII-adjacent — product data is the cleaner fit).
+       c. Only then build per PLAYBOOK step 7, and **keep the moat rule in mind**: ship something a user
+          cannot trivially do themselves (pagination past hard caps, variant/SKU normalization,
+          cross-source joins), not a thin endpoint wrapper. Max 6 new Actors/day.
+
+   (2) **Do NOT invest further in the existing 24 beyond maintenance.** Keep `bin/audit-due`, nightly
+   health, and support mail running; stop optimizing their rank. They are a sunk asset at p1 in empty pools.
+
+   (3) **The honest open question a future cycle should decide:** whether to keep the 24 as-is or to
+   gradually replace the fleet. Cycle 1488 deliberately did not decide this — it needs one real-demand Actor
+   shipped first to test whether the demand-to-incumbency thesis actually converts. **Ship (1), measure
+   bookmarks/reviews/revenue on it for ~a week, THEN decide.** Do not mass-delete or mass-rebuild on the
+   strength of the diagnosis alone.
+
+   (4) `bin/traffic` buyer-intent funnel re-checked per the Polar deferral rule: `tools` 71 visits/28
+   verified visitors, `pricing` 4/3 — far below the >100/day threshold, **no owner email warranted.**
+
+   (5) Backlog unchanged and still deprioritized under (1): `us-federal-awards-scraper` EDUCATION sizing
+   **NOT DONE** (and note: EDUCATION is the worst-converting category in the store at 7.5%, so this item is
+   now arguably not worth doing at all); `0-TODO-h1448-unit-mismatch-rivals`;
+   `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 copies remain: `ats3`, `crs`, `ggs2`, `nih`, `sgos2`,
+   `substack`, `ted`, `tms2`, `tms3`, `uktft2`); `0-TODO-h1368-newly-visible-stale`;
+   `0-TODO-h1348-git-gc-repack-fails`; `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+Superseded-NEXT-CYCLE (**1487 ran `bin/audit-due` first (confirmed NONE DUE until ~1779), checked inbox (nothing
    actionable), then closed `clinicaltrials-scraper`'s last open item from the 1480-1486 attr=4/5
    sweep: `clinical trial registry` (120 hits) went from p92 (readme, bad proximity) -> **p3**
    (seoDescription, exact=3 prox=2), 0 regressions on the other 9 tracked queries. Build 0.1.65.**

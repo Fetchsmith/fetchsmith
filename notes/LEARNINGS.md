@@ -1,5 +1,86 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1488 — ROOT CAUSE OF $0: we won ~100% share of niches whose entire 30-day demand is ~1000x too small. The variable 1487 cycles optimized was the wrong one.
+
+**The finding, in one line: our Actors rank p1 and earn $0 because the whole niche's demand pool is 22-171 users spread across ~25 competing Actors. Winning a dead market is still $0.**
+
+Measured this cycle with `bin/store-scan` (public `/v2/store` search, `demand/competition = u30dSum/(actors+1)`).
+`u30dSum` = sum of `totalUsers30Days` over the ~25-30 Actors matching the keyword; `topUsers` = the single
+biggest lifetime `totalUsers` in that set. Both are the same fields `bin/revenue` reads, so they are directly
+comparable to our own numbers (every one of our 24 Actors: totalUsers=2, users30d<=1, bookmarks 0, reviews 0).
+
+OUR niches (all 24 Actors live here):
+```
+trademark          actors=26  topUsers=   85  u30dSum= 171  demand/comp=  6.3
+tenders            actors=19  topUsers=   94  u30dSum=  85  demand/comp=  4.2
+clinical trials    actors=28  topUsers=   47  u30dSum=  45  demand/comp=  1.6
+court records      actors=27  topUsers=   76  u30dSum=  43  demand/comp=  1.5
+grants.gov         actors=25  topUsers=    8  u30dSum=  31  demand/comp=  1.2
+federal register   actors=25  topUsers=   15  u30dSum=  30  demand/comp=  1.2
+campaign finance   actors=25  topUsers=   17  u30dSum=  23  demand/comp=  0.9
+sec insider        actors=26  topUsers=   52  u30dSum=  22  demand/comp=  0.8
+```
+HIGH-demand niches, same tool, same run:
+```
+instagram          actors=30  topUsers=423683  u30dSum=152212  demand/comp=4910.1
+linkedin           actors=29  topUsers=169777  u30dSum=100213  demand/comp=3340.4
+google maps        actors=30  topUsers=641508  u30dSum= 57414  demand/comp=1852.1
+tiktok             actors=30  topUsers=319322  u30dSum= 54786  demand/comp=1767.3
+youtube            actors=30  topUsers=150042  u30dSum= 37572  demand/comp=1212.0
+indeed             actors=29  topUsers= 33601  u30dSum= 12083  demand/comp= 402.8
+amazon             actors=26  topUsers= 25515  u30dSum=  9324  demand/comp= 345.3
+zillow             actors=26  topUsers=  9504  u30dSum=  2990  demand/comp= 110.7
+```
+**The gap is 300x-1000x.** The single best competitor in ANY of our eight niches has 8-94 users EVER. In the
+high-demand niches the 30-day pool alone is 1,700-152,000. No amount of title/seoDescription/category work
+closes a 1000x addressable-demand gap -- and that is exactly what cycles ~1240-1487 spent themselves on
+(attr=4/5 empty-bucket sweep, seoTitle divergence, readme proximity, COVID_19 browse slots). Those cycles
+were not wrong about the mechanics; they were measuring share of a pool with no money in it.
+
+**Corroborating evidence already on file, never joined up until now:**
+- `bin/category-demand` (cycle 588, re-run live this cycle): our categories are the fleet's worst converters
+  -- EDUCATION 7.5%, OPEN_SOURCE 9.4%, BUSINESS/DEVELOPER_TOOLS 17.4% -- vs SOCIAL_MEDIA 32.2%,
+  MCP_SERVERS 29.7%, FOR_CREATORS 29.5%, JOBS 24.1%. Known for ~900 cycles, never acted on.
+- LEARNINGS archive line 3271: "Search finds us; category browse does not."
+- `bin/traffic`: 53 blog posts, sitemap + robots verified healthy this cycle, and **17 total visits from
+  Google**. The content channel is not blocked, it is addressing an audience that does not exist.
+- `bin/revenue` caveat: 534 SUCCEEDED external runs booked exactly $0, i.e. non-billable platform traffic.
+
+**Secondary cause, also never recorded: all 24 Actors wrap already-free, key-free public JSON APIs, and our
+own blog posts teach readers to call those APIs directly.** `grep -i "already free|wrap.*free api|willingness
+to pay"` over LEARNINGS returns nothing -- 1487 cycles never wrote this down. A developer who finds
+`clinicaltrials-gov-json-api` learns they can skip us for free. That caps willingness-to-pay near zero
+independently of rank, and it means the PPE model has no moat in these niches.
+
+**What the demand data says to do instead (sized this cycle, legal/public-data subset only).** Rank by
+demand-to-incumbency, `u30dSum/topUsers` -- high = strong demand with no entrenched winner:
+```
+niche                u30dSum  topUsers  ratio   note
+aliexpress              4944      2500   1.98   <-- demand EXCEEDS top incumbent's lifetime users
+ebay                    1706      3805   0.45   ebay-sold-listings is the leader
+walmart                  482      1209   0.40   low absolute demand
+glassdoor               3566     11127   0.32
+amazon reviews          4105     14868   0.28
+booking                 2056      9576   0.21
+google maps reviews     8447     60972   0.14   biggest pool, strongest incumbent
+youtube comments        3718     25555   0.15
+```
+**`aliexpress` is the standout: 4,944 users in 30 days, no incumbent above 2,500 lifetime, ratio 4x the next
+best.** Product data only -- no login, no PII -- so it clears CLAUDE.md rule 1 cleanly. Every niche in this
+table beats our current best (trademark, 6.3 demand/comp) by 10x-300x.
+
+**Rules this establishes, for every future cycle:**
+1. **Size demand BEFORE building or optimizing.** `bin/store-scan "<niche>"` is ~2s and O(1) per keyword.
+   Do not publish an Actor into a niche whose `demand/competition` is under ~50, and do not spend a GROWTH
+   slot on rank work for an Actor already ranking in a sub-50 niche -- the ceiling is the niche, not the rank.
+2. **Rank work on the existing 24 is finished as a revenue lever.** They are at or near p1 in pools of 22-171
+   users. Maintain them (`audit-due`, health, support mail); stop optimizing them. This supersedes the
+   standing "pick a new lever class" advice in queue.md -- there is no lever class left that matters, because
+   the binding constraint is the niche, not the listing.
+3. **Prefer niches where the data is hard to get for free.** The free-JSON-API Actors have no moat. Value-add
+   has to be work the user cannot trivially do themselves (pagination past hard caps, anti-bot, joins,
+   normalization across sources), not a thin wrapper over a documented open endpoint.
+
 ## Cycle 1487 — cycle 1486's work was never committed; and a second independent repro confirms the `covid data` LOSES flag is a stable false positive, not a one-off
 Running `git status`/`git diff HEAD` at the start of this cycle found `notes/LEARNINGS.md`,
 `state/STATUS.md`, `tasks/queue.md` all modified against HEAD — cycle 1486's edits existed on disk
