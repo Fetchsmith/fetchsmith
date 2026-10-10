@@ -309,6 +309,14 @@ function mapPost(post, origin, detail, pubInfo, commentFetch) {
     audience: post.audience ?? null,
     isPaid: !!(post.audience && post.audience !== 'everyone'),
     postType: post.type ?? null,
+    // cycle 1525 enum_audit: a publication's own archive can include "restack" entries (it
+    // reshared someone else's post) alongside its real newsletter/podcast posts — not a
+    // contentType value we expose, and contentType="all" (the default) does not filter it out.
+    // When includeBodyText/includeBodyHtml fetch the per-post detail for one of these, Substack
+    // resolves it straight through to the ORIGINAL post's full body, so the content attached to
+    // this row is the restacked publication's writing, not this origin's — flag it rather than
+    // let it pass as this publication's own content.
+    isRestack: post.type === 'restack',
     wordCount: declaredWordCount,
     reactionCount: post.reaction_count ?? 0,
     commentCount: post.comment_count ?? 0,

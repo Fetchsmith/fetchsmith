@@ -162,6 +162,11 @@
           "null"
         ]
       },
+      "isRestack": {
+        "title": "IsRestack",
+        "example": false,
+        "type": "boolean"
+      },
       "wordCount": {
         "title": "WordCount",
         "example": 1040,

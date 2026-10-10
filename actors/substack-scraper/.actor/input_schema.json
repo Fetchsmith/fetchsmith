@@ -117,7 +117,7 @@
     "contentType": {
       "title": "Content type",
       "type": "string",
-      "description": "Filter posts by type: regular newsletter posts or podcast episodes. \"Threads\" is kept for compatibility but, in live testing across many publications (2026-09-29), no post of that type has ever appeared in Substack's archive API — Notes/threads live on a separate surface this Actor does not fetch, so it is very likely to return 0 rows.",
+      "description": "Filter posts by type: regular newsletter posts or podcast episodes. Leaving this as \"all\" also lets through a publication's own \"restacks\" (reshares of someone else's post) — check the output's isRestack field if you use \"all\" and want to tell them apart from the publication's own writing. \"Threads\" is kept for compatibility but, in live testing across many publications (2026-09-29), no post of that type has ever appeared in Substack's archive API — Notes/threads live on a separate surface this Actor does not fetch, so it is very likely to return 0 rows.",
       "editor": "select",
       "enum": [
         "all",

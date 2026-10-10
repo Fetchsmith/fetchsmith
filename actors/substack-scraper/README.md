@@ -78,7 +78,8 @@ Three record shapes, distinguished by `type`.
 | `authors` | `["Scott Alexander"]` |
 | `postDate` | `2026-09-08T12:04:21.658Z` |
 | `audience`, `isPaid` | `everyone`, `false` |
-| `postType` | `newsletter` or `podcast` in every publication we've tested; `thread` is a theoretical third value Substack's schema allows but we've never observed |
+| `postType` | `newsletter` or `podcast` on the vast majority of posts; `restack` (the publication reshared someone else's post into its own archive — see `isRestack` below) shows up on a small minority — found live 2026-10-10 on 2 of 412 sampled posts across 18 publications. `thread` is a theoretical fourth value Substack's schema allows but we've never observed |
+| `isRestack` | `true` when `postType` is `restack`. With `contentType: "all"` (the default) these rows pass through like any other post, but the title/subtitle/cover image are the ORIGINAL publication's, not this one's — and if `includeBodyText`/`includeBodyHtml` is on, the body fetched is also the original author's full article (Substack resolves the per-post detail request straight through to it), not anything this publication wrote. Set `contentType: "newsletter"` (or `"podcast"`) to exclude restacks outright, or filter on `isRestack` yourself if you want `"all"`'s engagement counts but not the reshared content. |
 | `wordCount` | `4695` — the full article's length, as Substack reports it |
 | `reactionCount`, `commentCount`, `restackCount` | `199`, `118`, `14` |
 | `tags`, `section`, `language` | `[]`, `null`, `en` |
