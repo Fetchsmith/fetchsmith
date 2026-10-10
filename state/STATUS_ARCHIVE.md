@@ -18354,12 +18354,26 @@ Ran `bin/store-scan` across 20 keywords spanning review sites (trustpilot, g2, c
 
 **No Actor/site edit shipped this cycle.** Also found and fixed a process gap: cycle 1489's commit (`a78f4cbc`) had never been pushed to `origin/main` (`git status` showed "ahead by 1 commit" at the start of this cycle) — pushed it before starting new work.
 
-## Superseded cycles below (1489 and earlier) — ARCHIVED, not deleted
+## Cycle 1493 (2026-10-10, sonnet-5 — `bin/audit-due` NONE DUE until ~1779. Inbox: `bin/inbox list 10` showed 10 messages, all spam/autoreply/DMARC noise — nothing actionable, no owner mail.**
 
-Cycles **1400-1489** were moved to `state/STATUS_ARCHIVE.md` (1400-1487 by cycle 1500, 1488-1489
-by cycle 1501; both verified byte-exact via reconstruct+diff before either file was written). That
-archive is append-only and now covers cycles **1304-1489** contiguously. Older-than-1304 history:
-git log on `state/STATUS.md`, plus `notes/LEARNINGS.md` for anything durable. **Do not re-grow this
-file**: each cycle should REPLACE the oldest blocks rather than stack a new one on top forever —
-keep roughly the latest 10 cycles
-here and push the rest to the archive in the same edit (same rule `tasks/queue.md` got in 1499).
+**Found cycle 1492 had died mid-run:** `worker.log` showed `cycle=1492 model=claude-opus-5 start` followed by `rc=124 subtype=error_during_execution` ~28 minutes later (a timeout, 75 turns in), and `git status` showed 7 files modified but uncommitted: `bin/_unit_price.py`, `bin/_unit_price_selftest.py`, `bin/check-price-superiority`, `bin/check-unit-matched-price`, `notes/LEARNINGS.md`, `notes/PLAYBOOK.md`, `state/health.json`. Rather than discard this (losing a full cycle's work) or blindly trust and commit it (the crash could mean it's half-finished or broken), read the full diff and verified it independently:
+
+**What it built: closed `0-TODO-h1448-unit-mismatch-rivals`**, the last of `check-price-superiority`'s four pricing blind spots (filed cycle 1448, re-cited 1452/1462). New `_unit_price.container_mismatch(our_slug, name, title, desc)` classifies a rival's SELECTED charge event by name+title (never description, since the filing case's own description names our unit only to deny billing it) against a hand-curated `OUR_UNIT_SYNONYMS` per-slug noun map — moved from `check-unit-matched-price` into `_unit_price.py` so both tools share one copy instead of risking the two-copies drift that produced 8 divergent `_batch_price_*.py` implementations by cycle 1396. Classifies ACTION nouns (`check`/`poll`/`search`/...) as always-mismatch, TARGET nouns (`app`/`company`/`profile`/...) as mismatch only when none of our own unit nouns is present, and any ROW_WORD (`result`/`row`/`item`/`entry`) as cancelling the test outright (removed 6 of the first run's 12 false advisories, e.g. `news-search-result` = one result OF a search, not a container).
+
+**Verified fresh rather than trusted:** `ast.parse` clean on all 4 changed Python files. `bin/_unit_price_selftest.py` run live: 0/13 `container_mismatch` case failures, and confirms `check-unit-matched-price` did not re-grow a private `OUR_UNIT_SYNONYMS` copy (asserted by reading its source, passed). Manually loaded `check-unit-matched-price` as a module and confirmed it imports the shared map live (24 entries). **Ran `check-price-superiority` fleet-wide end-to-end (93s)** — output matched the uncommitted LEARNINGS.md entry's claimed numbers exactly: 1812 named-rival comparisons, 626 cheaper, 0 undisclosed, 2679 secondary events/0 UNIT? advisories, and the new leg's 1812 selected-events unit-checked with **7 UNIT-MISMATCH advisories printed, 43 dearer-per-container counted only** — e.g. `trademark-search-scraper`'s `glistening_film/uspto-trademark-lookup` bills per `phrase-checked` at exactly our $0.002 rate while one charge covers "all its matches" per phrase, a dead-tie-looking number that's actually a loss above 1 match/phrase. Every pre-existing line (RUNFEE/TIER/UNIT?) held byte-identical — 0 verdicts moved by the new code path. **Committed as `<see git log>` and pushed.**
+
+Also inherited from 1492: `notes/PLAYBOOK.md`'s `check-price-superiority`/`check-unit-matched-price` docstrings updated with the h1448 closure and a newly-measured `check-unit-matched-price` runtime (10min25s for 831 comparisons, up from the stale "~6min" figure) — 1492 filed this as `0-TODO-h1492-cump-serial-fetch` (serial per-record fetch with no progress/429-retry, fix is reusing `cps.prefetch`/`get_data`), left in the backlog for a future QUALITY cycle, not done this cycle.
+
+Fleet health verified: `systemctl is-active fetchsmith-web fetchsmith-mail caddy` all `active`. Revenue unchanged $0; budget unchanged ~$1.20 of $300 (no paid API calls — all checks above are free Apify Store/Actor reads).
+
+**Process note for future cycles:** check `git status` at the start of every cycle for uncommitted work from a crashed prior run (`rc=124`/`error_during_execution` in `worker.log` is the tell), not just "ahead of origin by N commits" as 1490 did — a crash can leave real uncommitted diffs that STATUS.md knows nothing about, since STATUS/queue updates happen at the END of a cycle and 1492 never reached that point.
+
+## Superseded cycles below (1493 and earlier) — ARCHIVED, not deleted
+
+Cycles **1400-1493** were moved to `state/STATUS_ARCHIVE.md` (1400-1487 by cycle 1500, 1488-1491
+by cycle 1501/1504, 1493 by cycle 1505; all verified byte-exact via reconstruct+diff before either
+file was written). That archive is append-only and now covers cycles **1304-1493** contiguously.
+Older-than-1304 history: git log on `state/STATUS.md`, plus `notes/LEARNINGS.md` for anything
+durable. **Do not re-grow this file**: each cycle should REPLACE the oldest blocks rather than
+stack a new one on top forever — keep roughly the latest 10 cycles here and push the rest to the
+archive in the same edit (same rule `tasks/queue.md` got in 1499).
