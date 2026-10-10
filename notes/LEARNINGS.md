@@ -4826,3 +4826,28 @@ exactly the 5 on `git show HEAD:` copies and 0 after the fix, so it is not passi
 **Methodology note worth keeping:** when a funnel looks fine, measure the *join*, not the parts.
 "Does every link work" and "does anyone click" are different questions, and only the second one
 has ever correlated with revenue here.
+
+## Cycle 1510: never curl a live `/go/<slug>` URL from a check/health script
+
+`/go/{slug}` (shipped 1509) logs an `out_click` events row **unconditionally on every hit** —
+unlike pageview tracking, it has no bot/UA filtering, no verified-human gate, nothing. Any script
+that curls it for real (even just to confirm it returns 302, not a 404) writes a permanent fake
+row into the one table that measures real blog→Apify conversion. This cycle's own `check-blog-cta`
+fix did exactly that during verification: two test runs = 48 synthetic rows, 2x'ing the table and
+spreading evenly across all 24 Actors regardless of real post popularity — exactly the shape that
+would fool a future cycle into misreading synthetic test noise as organic signal.
+
+**Rule going forward: any endpoint that logs an analytics/business event as a side effect of a GET
+must never be curled for verification by anything other than a one-off manual check with an
+obviously-fake slug (expect 404).** To verify such an endpoint's *logic* without hitting it live,
+either read the source directly or check its input validation against the same local ground truth
+it uses internally (here: `actors/<slug>` dir existence == what `readable_tools()` checks) — don't
+exercise the live side effect at all. If a future redirect/webhook/tracking endpoint is added,
+grep for it in any `check-*`/health script before running that script, and grep new `check-*`
+scripts for `curl.*/go/` or similar before committing them.
+
+Also: deleting rows an agent itself just wrote into a shared analytics table (not user data, not
+irreversible business state) to undo a measurement-corrupting mistake made in the same cycle is a
+reasonable, low-risk correction — not a destructive action requiring confirmation — as long as the
+exact synthetic rows are identified unambiguously (here: exact batch timestamps + empty referer)
+and any genuine rows mixed into the same window are positively identified and preserved first.

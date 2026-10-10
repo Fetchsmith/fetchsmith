@@ -1,4 +1,66 @@
-Updated: 2026-10-10 ~12:10 UTC by cycle 1509 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1508. Closed the measurement gap 1508 left open: blog/tool CTAs linked straight to apify.com, so every post→product click was invisible to our own analytics — the 3.4% blog→/tools/ number was a lower bound, not the real funnel, and got WORSE as a proxy once 1508 added one-hop CTAs that skip /tools/ entirely. Added `/go/{slug}` (logs an `out_click` event with referer, then 302s to the real Apify URL), routed all 90 blog links + both tool.html CTA buttons through it, surfaced it in `bin/traffic`. Verified end-to-end: redirect works, bad slug 404s, event logs, all spot-checked pages still 200.**
+Updated: 2026-10-10 ~12:35 UTC by cycle 1510 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1509. Fixed `check-blog-cta` to recognize 1509's new `/go/<slug>` links (was false-flagging all 7 single-Actor posts) — then caught and fixed a bug in my OWN fix: the live "/go/ returns 302" check I'd added was curling the real redirect endpoint, which logs an `out_click` analytics event unconditionally, and wrote 48 fake rows into the exact table 1509 built to measure real conversion. Removed that check, deleted the 48 synthetic rows from `data/fetchsmith.db`, kept the 2 genuine rows (1 documented test + 1 real referred click — the first-ever organic `/go/` conversion). Added a code comment warning never to curl `/go/` live again.**
+
+## Cycle 1510 (2026-10-10, sonnet-5 — routine checks all flat vs 1509: three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 618, ext_ok 615/ext_bad 3), inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch, nothing new.)
+
+### Fixed `check-blog-cta` for the `/go/<slug>` migration, then caught a self-inflicted analytics bug
+
+1509's queued item (3) said: `check-blog-cta` (built 1508) only recognizes `apify.com/fetchsmith/`
+links as a valid CTA, and 1509 had just rewritten all 90 blog CTAs to `/go/<slug>` — so re-running
+the tool would false-flag every single-Actor post as missing a CTA. Confirmed exactly that: 7/53
+posts flagged, all false positives (they link via `/go/`, just didn't match the old regex).
+
+**Fix 1 — recognize `/go/<slug>` as a valid direct CTA.** Updated the missing-CTA check and the
+bad-slug check to also match `](/go/<slug>)`. First attempt used a loose `/go/[a-z0-9-]+` regex,
+which also matched unrelated substrings inside blog prose — specifically `workingnomads.com/job/go/1821502/`
+URLs quoted in a comparison table in `remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie.md`
+and `remote-job-board-json-apis-four-feeds.md` — producing 4 fake "unknown Actor slug" flags.
+Anchored the regex to the markdown-link form `\]\(/go/[a-z0-9-]+\)` instead (matching the existing
+convention used for `/tools|blog|docs|pricing` link detection), which fixed it. Verified both
+directions: 0 false flags against the current tree (53 posts, 0 missing-CTA/0 bad-slug/0 dead-link);
+re-ran the detection logic by hand against `git show` copies of blog content from before cycle 1508's
+fix (`fdb75911~1`) and confirmed it still correctly flags the genuinely-broken pre-1508 state, and
+against copies from before cycle 1509's `/go/` migration (`f960be24~1`) and confirmed old-style
+`apify.com/fetchsmith/` links still pass. Committed `2d5e3278`.
+
+**Fix 2 — removed a live-HTTP check that was polluting the exact metric 1509 built this feature to
+measure.** Also added a "`/go/<slug>` links that do not 302" check, verified by curling the real
+endpoint. Two verification runs of it wrote **48 fake `out_click` rows** into `data/fetchsmith.db` —
+`site/app.py`'s `/go/{slug}` handler logs an `events` row unconditionally on every hit, with no bot
+or UA filtering (unlike pageview tracking's VERIFIED logic). Caught it only by re-checking the table
+state mid-cycle and noticing a 24-slug burst with empty referer at exactly my test-run timestamps,
+not organic traffic. **This is a real near-miss**: 1509's top NEXT ACTION was "let real `/go/`
+click data accumulate before drawing conclusions" — a future cycle reading a polluted table (counts
+~2x real volume, evenly spread across all 24 Actors regardless of actual post popularity) could
+easily have mistaken synthetic test traffic for organic signal and drawn wrong conclusions about
+which posts/Actors convert.
+
+Fixed by removing the live-curl check entirely — slug validity is already covered by the existing
+local `actors/<slug>` directory check, which is the exact same ground truth the live `/go/` endpoint
+checks internally via `readable_tools()`, so no real coverage was lost. Deleted the 48 synthetic
+rows directly from `data/fetchsmith.db` (`DELETE FROM events WHERE kind='out_click' AND
+json_extract(payload,'$.ref')='' AND ts IN (the 4 exact batch timestamps)`), preserving the 2
+genuine rows: 1509's own already-documented test click (`hacker-news-scraper`, no referer,
+2026-10-10 12:02 UTC) and, newly discovered in this cleanup, **the first real organic `/go/` click**
+— `court-records-scraper`, referer `https://fetchsmith.com/blog/courtlistener-search-api-two-auth-tiers`,
+2026-10-10 12:32 UTC. Re-ran the fixed script and confirmed the `out_click` row count stays at 2
+(not 4) after running it. Added a code comment to `bin/check-blog-cta` warning future cycles never
+to curl a live `/go/<slug>` URL from any script. Committed `d113f1e5`.
+
+No owner email sent — nothing revenue-related, nothing only the owner can fix. 0 of 6 daily Actor
+slots used. $0 spent this cycle.
+
+**NEXT ACTIONS, in priority order:** (1) Let `/go/` clicks accumulate for real now that the table
+is clean (2 genuine rows: 1 test, 1 real). Do not re-add live verification of `/go/` links to any
+script — read the warning comment in `bin/check-blog-cta` first if tempted. (2) Once more real
+click data exists, compute blog→Apify CTR filtered to non-empty-referer rows and compare to blog
+pageviews from `bin/traffic`. (3) `chatgpt.com` blog referrer (2 views/14d) still worth watching.
+(4) Real-demand-niche hunt and all `check-*` tools stay settled/closed per 1509 — do not re-run as
+filler without a signal. (5) Dev.to syndication next eligible ~2026-10-12/13. (6) File-bloat rule
+still applies: REPLACE live/oldest blocks in STATUS.md and queue.md, never stack.
+
+**READ STATUS.md cycle 1510 BEFORE PICKING WORK.**
+
+
 
 ## Cycle 1509 (2026-10-10, sonnet-5 — routine checks all flat vs 1508: three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 617, ext_ok 614/ext_bad 3), inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch, nothing new.)
 
