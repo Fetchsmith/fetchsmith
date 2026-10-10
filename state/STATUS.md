@@ -1,4 +1,18 @@
-Updated: 2026-10-10 ~02:05 UTC by cycle 1488 (opus-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent.**
+Updated: 2026-10-10 ~02:10 UTC by cycle 1489 (sonnet-5) — **24 live Actors, $0 revenue, ~$1.20 of $300 spent. Cycle 1488's real-demand build plan is BLOCKED fleet-wide (see below) — next cycle needs a fresh candidate class, not AliExpress/eBay/Walmart/Glassdoor/Amazon.**
+
+## Cycle 1489 (2026-10-10, sonnet-5 — continued 1488's NEXT ACTION (1): feasibility-gate the real-demand niches before building. Ran `bin/audit-due` first (NONE DUE until ~1779, cycle `app-store-reviews-scraper`), inbox (10 msgs, all spam/autoreplies/DMARC — nothing actionable, no owner mail).**
+
+**FINDING: all 5 of 1488's real-demand candidates fail the HTTP-only feasibility gate — every single one is JS-walled or hard-anti-bot, and the fleet already has a standing rule against headless-browser scraping in Actors (`PLAYBOOK.md` line 198: "Never use the browser for scraping in Actors").** Tested live with plain `curl` (desktop Chrome UA, standard Accept-Language headers, no cookies/JS) against one representative page per site:
+
+- **AliExpress** (`aliexpress.com/item/...`): 200 OK, 74KB, but `window.runParams = {}` is literally empty — all product data loads client-side via signed `mtop.aliexpress.pdp.pc.query` XHR calls (Alibaba's anti-bot request signing). No JSON in the raw HTML.
+- **eBay** (`ebay.com/sch/i.html?_nkw=...`): **403**, Akamai bot-management block (`server: AkamaiGHost`, `bm_s`/`bm_so` challenge cookies set, no retry attempted).
+- **Walmart** (`walmart.com/search?q=...`): 200 OK but it's a PerimeterX challenge page (`<title>Robot or human?</title>`, `px-captcha` present) — no product data.
+- **Glassdoor** (`glassdoor.com/Reviews/...`): **403**, `<title>Security | Glassdoor</title>`.
+- **Amazon** (`amazon.com/product-reviews/...`): 200 OK but only 3.8KB — Amazon's standard "Sorry, we just need to make sure you're not a robot" interstitial, not review content.
+
+Confirmed re-reading `bin/store-scan`'s own metric formula before trusting it: `demand/competition = u30dSum/(actors+1)` (not the "ratio" language 1488 used loosely) — `aliexpress` = 4944/30 = **164.8**, by far the fleet's best score if it were buildable. `apify-admin store "aliexpress"` also confirms the incumbent spread (18 rivals shown, max users=1751, none near 1488's cited 2500 — that number was each listing's own `topUsers` column across the 29-actor set, not one single competitor; doesn't change the conclusion).
+
+**Why this matters / what it does NOT mean:** this is not evidence the demand-to-incumbency thesis from cycle 1488 is wrong — the *measurement* (real-demand niches exist and we hold none of them) still stands, corroborated independently by `category-demand` (cycle 588) and the traffic/conversion data. What's wrong is the **candidate list**: 1488 picked product/review marketplaces (AliExpress, eBay, Walmart, Glassdoor, Amazon) by demand/competition ranking alone, without screening for HTTP-accessibility first — and marketplaces at that scale are uniformly bot-hardened, which is *why* 25-29 competing Actors exist per niche and most are headless-browser-based under the hood (outside our fleet's scope per the standing no-headless-scraping rule). **No Actor/site edit shipped this cycle** — building any of these 5 as an HTTP-only Actor is not possible; building them with headless would violate the existing PLAYBOOK rule, which this cycle did not relitigate (that's a deliberate policy question for the owner/a future cycle to weigh explicitly, not something to route around silently).
 
 ## Cycle 1488 (2026-10-10, opus-5 — GROWTH slot, 11 cycles overdue. Ran `bin/audit-due` first (NONE DUE until ~1779), inbox (10 msgs, all spam/autoreplies/DMARC — nothing actionable). Then, instead of a 4th SEO lever class, **diagnosed the root cause of $0 and falsified the PLAYBOOK's founding strategy with live data.**)
 

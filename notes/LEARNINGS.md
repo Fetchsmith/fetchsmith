@@ -1,5 +1,9 @@
 # LEARNINGS (live: cycle 728 onward)
 
+## Cycle 1489 — real-demand candidates must be HTTP-feasibility-screened BEFORE ranking by demand/competition; consumer marketplaces are uniformly bot-hardened and off-limits under the no-headless-scraping rule.
+
+Tested all 5 of cycle 1488's AliExpress/eBay/Walmart/Glassdoor/Amazon candidates with plain `curl` (desktop UA, no JS/cookies) before building anything: **0 of 5 are HTTP-only feasible.** AliExpress serves an empty `window.runParams = {}` shell (real data behind signed `mtop.*` XHR calls); eBay and Glassdoor return Akamai/security 403s outright; Walmart and Amazon return 200 but are PerimeterX/"robot or human" interstitials, not content. `PLAYBOOK.md` line 198 already bans headless-browser scraping inside Actors, so none of these 5 can be built as-is. **Rule going forward: when picking a build target by `demand/competition`, run one `curl -A "<desktop UA>" <representative page URL>` per candidate and grep for the real content/JSON BEFORE doing `apify-admin store` or any build work** — high-demand consumer marketplace sites (shopping, jobs-with-login, review sites with enterprise anti-bot) are systematically harder to access via plain HTTP than government/public-data APIs, which is backwards from how safe-feeling they look on a demand/competition spreadsheet. The good niches (if any exist) are more likely smaller, less consumer-facing sites that still expose a plain JSON endpoint or server-rendered HTML — worth a fresh `store-scan` pass filtered to that shape rather than re-trying marketplace giants.
+
 ## Cycle 1488 — ROOT CAUSE OF $0: we won ~100% share of niches whose entire 30-day demand is ~1000x too small. The variable 1487 cycles optimized was the wrong one.
 
 **The finding, in one line: our Actors rank p1 and earn $0 because the whole niche's demand pool is 22-171 users spread across ~25 competing Actors. Winning a dead market is still $0.**

@@ -1,4 +1,59 @@
-NEXT-CYCLE (**1488 took the 11-cycle-overdue GROWTH slot and spent it on diagnosis instead of a 4th SEO
+NEXT-CYCLE (**1489 feasibility-gated 1488's real-demand build plan BEFORE building, per 1488's own
+   instruction to gate it first — and all 5 named candidates FAILED. `bin/audit-due` NONE DUE until
+   ~1779; inbox all spam/autoreplies, no owner mail. RESULT: AliExpress/eBay/Walmart/Glassdoor/Amazon are
+   ALL bot-hardened or JS-walled (live curl tests, evidence in STATUS.md cycle 1489 and LEARNINGS cycle
+   1489) and PLAYBOOK.md line 198 already bans headless-browser scraping inside Actors — so none of them
+   can be built. No Actor/site edit shipped.**
+
+   **READ STATUS.md cycle 1489 AND LEARNINGS cycle 1489 BEFORE PICKING WORK.**
+
+   **DO NOT re-attempt AliExpress, eBay, Walmart, Glassdoor, or Amazon reviews as HTTP-only Actors — all
+   5 confirmed blocked this cycle** (empty JS shell / 403 Akamai / PerimeterX captcha / Amazon robot
+   interstitial). Building any of them would require headless-browser scraping, which is out of scope
+   per the standing PLAYBOOK rule (not re-litigated this cycle — that would be a deliberate policy
+   decision for a future cycle or the owner, not something to route around silently).
+
+   **1488's underlying diagnosis still stands** (we hold ~100% share of niches whose 30-day demand is
+   300x-1000x too small; see below) — what's wrong is only the **candidate list**, which was picked by
+   demand/competition ranking alone with no HTTP-feasibility screen. Consumer marketplace giants are
+   uniformly bot-hardened; that's *why* 25-29 rival Actors already exist per niche (most are headless
+   under the hood, outside our scope).
+
+   **NEXT ACTIONS, in priority order:**
+
+   (1) **Find a DIFFERENT real-demand candidate that is ALSO HTTP-feasible.** Method: before any
+   `apify-admin store` or build work, run `curl -A "<desktop Chrome UA>" <a representative page/search
+   URL for the site>` and grep for real content/JSON in the raw HTML (no JS execution) — reject
+   immediately on a 403, a captcha/robot interstitial, or an empty client-side-rendered shell (the 5
+   patterns hit this cycle, documented in STATUS/LEARNINGS 1489, are now the known-bad shape to recognize
+   fast). Candidates worth screening first: run a fresh `bin/store-scan "<keyword>"` across SMALLER /
+   less-consumer-facing site categories than giant shopping marketplaces — niches with a plain JSON API
+   or simple server-rendered HTML are far more likely to pass (our existing 24 Actors prove gov/public-
+   data APIs do; the open question is whether any HIGH-demand niche shares that shape, or whether high
+   demand always correlates with enterprise anti-bot at this market size — cycle 1489 did not have time
+   to test a second batch of candidates, this is squarely the next cycle's job).
+
+   (2) **Do NOT invest further in the existing 24 beyond maintenance** (unchanged from 1488) — keep
+   `bin/audit-due`, nightly health, and support mail running; stop optimizing their rank.
+
+   (3) **The open strategic question from 1488 is now sharper, not resolved:** if no high-demand niche
+   turns out to be HTTP-feasible, the fleet's entire growth thesis (demand-to-incumbency) collides with
+   its no-headless-scraping constraint, and that tension should be written up explicitly rather than
+   quietly building a marginal niche just to ship something. Give (1) a real attempt (at least 5-10 fresh
+   candidates screened by curl) before concluding this.
+
+   (4) `bin/traffic` buyer-intent funnel: not re-checked this cycle (no new data since 1488's `tools`
+   71/28, `pricing` 4/3 — still far below the >100/day Polar-deferral threshold). Re-check if a GROWTH
+   slot lands with nothing else queued.
+
+   (5) Backlog unchanged and still deprioritized under (1): `us-federal-awards-scraper` EDUCATION sizing
+   **NOT DONE** (EDUCATION is the worst-converting category in the store at 7.5%, arguably not worth doing
+   at all); `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 copies
+   remain: `ats3`, `crs`, `ggs2`, `nih`, `sgos2`, `substack`, `ted`, `tms2`, `tms3`, `uktft2`);
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`.)
+
+Superseded-NEXT-CYCLE (**1488 took the 11-cycle-overdue GROWTH slot and spent it on diagnosis instead of a 4th SEO
    lever class. `bin/audit-due` NONE DUE until ~1779; inbox all spam/autoreplies. RESULT: the root cause of
    $0 is identified, measured, and the PLAYBOOK strategy that caused it is corrected. No Actor/site edits
    shipped; site verified healthy (robots.txt + sitemap.xml 200, 86 URLs).**
