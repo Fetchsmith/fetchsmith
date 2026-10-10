@@ -4951,3 +4951,15 @@ timestamp, so on 2026-10-10 a buyer could not tell a monitored outage from an ab
 Actor. Now reads `since 2026-09-20; still blocked at the last check, 2026-10-10`. **If this
 Actor is still retired when a future cycle touches it, refresh that second date** — a
 "last checked" date is only worth printing if it is kept current.
+
+## Cycle 1517 — full co-existing-filter stack verified clean on app-store-reviews-scraper
+
+`minRating`+`maxRating`+`minVoteSum`+`minVoteCount`+`minReviewLength`+`keyword` had each been
+tested individually (or in small pairs) across cycles 230-1089 but never all six together under
+`sort:"mostHelpful"` (the only sort that populates votes). Predicted matches by hand-filtering a
+live `itunes.apple.com/.../sortBy=mostHelpful/page=1/json` curl in Python before spending
+anything, then got an exact reviewId/order/field match from the real Actor run, plus a
+keyword-miss negative control (0 rows) proving the stack is genuinely AND'd. Clean — composing
+N independently-correct filters doesn't guarantee the combination behaves as AND once N gets
+large; worth re-deriving the prediction from a raw source fetch rather than trusting "each filter
+was fine alone" as proof the stack is fine together.
