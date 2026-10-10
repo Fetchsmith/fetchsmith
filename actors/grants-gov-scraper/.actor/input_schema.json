@@ -39,7 +39,7 @@
         "agencies": {
             "title": "Agency codes",
             "type": "array",
-            "description": "Grants.gov agency codes, e.g. \"NSF\", \"DOD-AMC\", \"USDA-NIFA\". Leave empty for all agencies. Codes are validated against the live agency list; an unrecognised code is dropped with a warning rather than silently returning zero results.",
+            "description": "Grants.gov agency codes, e.g. \"NSF\", \"ED\", \"HHS-CDC\", \"USDA-NIFA\". Leave empty for all agencies. Codes are validated against the live agency list for ALL four statuses (712 codes), so agencies with only closed/archived opportunities are accepted too. A parent code like \"USDA\" or \"DOS\" is expanded to every one of its sub-agencies. An unrecognised code is dropped with a warning (see RUN_SUMMARY.unknownAgencies); if NO code you supply is recognised the run fails fast rather than quietly dropping the filter and billing you for every agency's opportunities.",
             "editor": "stringList",
             "uniqueItems": true
         },

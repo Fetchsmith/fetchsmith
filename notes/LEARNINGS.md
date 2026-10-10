@@ -5260,3 +5260,41 @@ noting for future brute-force probes: a plausible-looking code that returns a re
 `total:0` is a genuine negative, not a rate-limit artifact to retry forever — confirmed `AA`/`AE`/`AP`
 (US military/diplomatic ZIP prefixes) and `NB`/`NT`/`NU`/`YT` (Canadian jurisdictions with no NIH-
 funded org on record) are true zeros, not errors, by re-checking them explicitly after the retry pass.
+
+## Cycle 1532 — a "validated at runtime" filter is NOT an audited filter (grants-gov-scraper `agencies`)
+
+Two enum_audits (828, 1016) both skipped `agencies` for the same reason, and both were wrong to.
+It is not a schema enum, so 828's facet-diff method had nothing to diff; and it is not
+facet-less, so 1016's "free-text with no authority" hunt passed it over. It sat in the gap: a
+free-text field with runtime validation against a live list. **The code that validates a filter is
+itself an unaudited claim.** When picking an enum_audit scope, list every filter field and classify
+it as (a) schema enum, (b) free-text with no authority, or (c) free-text validated at runtime — and
+audit (c) by asking *what the validator can see*, not whether it exists.
+
+Here the validator could see 163 of 712 real agency codes, because **a facet list is scoped to the
+query that asked for it**. The probe sent no `oppStatuses`, so it inherited the vendor's own
+`forecasted|posted` default and only ever learned about agencies with a currently-open grant.
+Generalisable: *any* probe used to build a validation allowlist must pin every filter to its
+widest value, or the allowlist silently inherits the vendor's defaults. Check every facet-backed
+allowlist in the fleet for this.
+
+Three compounding lessons worth more than the fix:
+
+1. **"Unrecognised value is dropped with a warning" is only safe if dropping it narrows the
+   search.** Here the dropped filter was never sent, and an absent `agencies` param means *all
+   agencies* — so one typo turned a 1,600-row query into a 73,376-row one, charged per row under
+   PPE. Any `if (x) params.x = x` on a validated filter needs the all-invalid case to fail loudly
+   instead. A thrown run costs the buyer nothing, which is strictly what they'd pick.
+2. **A vendor's hierarchy can list a parent as its own child.** 15 of 46 Grants.gov parents appear
+   inside their own `subAgencyOptions`, so a single-pass "set parent, then set each sub" index
+   overwrote the parent's expansion with a bare `[parent]`. Build hierarchy maps in two passes,
+   children first, parents last. This bug was live for DOD/DOC/NASA — the Actor's own documented
+   examples — and nobody noticed because the symptom is "fewer rows", never an error.
+3. **Sizing a brute-force probe is not the same as characterising a cliff.** The fix widened
+   parent expansion, which walked into an undocumented vendor cap: 193 codes/1574 chars works,
+   194/1582 returns `hitCount 0` + `errorcode 0` + `"Webservice Succeeds"`. It is neither a char
+   limit (141 codes/1611 chars is fine) nor a count limit (120 codes/1892 chars fails) nor a
+   poisoned value (all 712 codes tested pairwise against an NSF baseline, none reduce it). When a
+   limit resists characterisation, stop trying to predict it: guard well inside the
+   measured-good point and say so in the error. Not every finding has to be explained to be
+   handled — but a silent zero-row cliff must never be passed through to a buyer as "no matches".

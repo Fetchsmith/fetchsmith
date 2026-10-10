@@ -223,17 +223,41 @@ const PAGE_SIZE = 1000; // No row cap was found (5000 verified in one call), but
 // (verified live: "USDA" alone -> 0 hits even though 26 real USDA-* opportunities exist under
 // sub-agency codes like "USDA-NIFA"). A parent code is expanded to itself plus every one of its
 // sub-agency codes so a user who reasonably types "USDA" still gets USDA-NIFA/USDA-FS/etc.
+//
+// The probe MUST pin oppStatuses to all four values (cycle 1532). The agencies facet is scoped to
+// the statuses being searched, and /search2's own default is "forecasted|posted" -- so a probe
+// that omits oppStatuses only ever sees agencies with a CURRENTLY OPEN opportunity. Measured live
+// 2026-10-10: that default probe returns 163 agency codes, all four statuses return 712. The 549
+// invisible codes included household names (ED = Department of Education, 1673 opportunities;
+// HHS-CDC 1728; USAID 763; SBA 253), and 15 of the 23 then-visible PARENT codes also under-expanded
+// (DOS resolved to 40 of its real 219 sub-agencies, USDA 9 of 84, DOD 28 of 75). Both bugs
+// silently mangled any historical search: a dropped code is not just a lost filter here, it
+// un-filters the run (see the all-unrecognised throw below). Extra codes in the pipe list are
+// harmless -- the API ANDs agencies with oppStatuses, verified live: the full 219-code DOS list and
+// the 40-code open-only list both return exactly 24 for oppStatuses=posted.
+const ALL_OPP_STATUSES = 'forecasted|posted|closed|archived';
 async function loadAgencyIndex() {
-    const probe = await apiPost('/search2', { rows: 1 });
+    const probe = await apiPost('/search2', { rows: 1, oppStatuses: ALL_OPP_STATUSES });
     const list = probe?.data?.agencies;
     const index = new Map(); // code (upper) -> [expanded codes]
     if (!Array.isArray(list)) return index;
+    // TWO passes, sub-agencies first, and the order is the whole point (cycle 1532). Grants.gov
+    // lists some parents as a sub-agency OF THEMSELVES -- 15 of 46 across all four statuses (DOS,
+    // USDA, USAID, DOD, DOI, DOT, VA, DHS, USDOJ, DOE, ...) and 3 of 23 even on the old
+    // open-only probe (DOD, DOC, NASA). In a single pass the inner sub-agency loop then overwrote
+    // the parent's own entry with [parent] alone, collapsing its expansion to a bare parent code --
+    // and a bare parent code matches almost nothing here, which is the entire reason the expansion
+    // exists. So {"agencies":["DOD"]} was silently resolving to just "DOD" (its 27 sub-agencies
+    // dropped) even before this cycle widened the facet probe. Parents are written last so a code
+    // that is both a parent and a sub always expands to the full tree.
     for (const parent of list) {
-        const subCodes = (parent.subAgencyOptions ?? []).map((s) => s.value).filter(Boolean);
-        index.set(String(parent.value).toUpperCase(), [parent.value, ...subCodes]);
         for (const sub of parent.subAgencyOptions ?? []) {
             if (sub.value) index.set(String(sub.value).toUpperCase(), [sub.value]);
         }
+    }
+    for (const parent of list) {
+        const subCodes = (parent.subAgencyOptions ?? []).map((s) => s.value).filter(Boolean);
+        index.set(String(parent.value).toUpperCase(), Array.from(new Set([parent.value, ...subCodes])));
     }
     return index;
 }
@@ -254,7 +278,41 @@ if (unknownAgencies.length) {
         + 'a parent code like "USDA" or "DOD" is automatically expanded to its sub-agencies.',
     );
 }
+// An agency code that resolves to nothing does not merely weaken the filter here -- it DELETES it,
+// because an empty `agencies` string is never sent and /search2 then matches every agency. Before
+// cycle 1532 a single typo therefore turned "archived grants from ED" into "all 73,376 archived
+// grants" (measured live), billed per row under PPE. Partially-valid lists still run on the codes
+// that did resolve (warned above); only a list where NOTHING resolved is refused, and a thrown run
+// is charged nothing at all, which is the outcome the buyer would have picked.
+if (wantedAgencies.length && !resolvedAgencies.length) {
+    throw new Error(
+        `None of the ${wantedAgencies.length} agency code(s) you supplied (${wantedAgencies.join(', ')}) exist on `
+        + 'Grants.gov, so the agency filter would have been dropped and the run would have returned EVERY '
+        + 'agency\'s opportunities instead. Refusing to run rather than bill you for the wrong rows. Copy an '
+        + 'exact code from https://www.grants.gov/search-grants (e.g. "NSF", "ED", "HHS-CDC", "USDA-NIFA").',
+    );
+}
+// Vendor-side cap on the pipe-joined `agencies` param, found while fixing the facet-scope bug above
+// (cycle 1532). Deterministic and silent: a 193-code / 1574-char list returns 7058 hits, adding one
+// more code (194 / 1582 chars) returns hitCount 0 with errorcode 0 / "Webservice Succeeds" -- i.e.
+// indistinguishable from an empty search, 3/3 runs each. Not caused by any single code (no code
+// zeroes an "NSF|<code>" pair) and not a pure char or pure count limit (141 codes / 1611 chars is
+// fine), so it is an internal limit we can only avoid, not predict. Only DOS (219 codes) exceeds
+// this cap today; the next largest parents are USDA 84, USAID 80, DOD 75. Chunking the list into
+// several searches and merging is the real fix and is queued -- until then this is a loud error
+// instead of a silent zero-row run.
+const AGENCY_LIST_MAX_CODES = 150; // both limits sit well inside the measured 193/1574 that works
+const AGENCY_LIST_MAX_CHARS = 1200;
 const agencies = Array.from(new Set(resolvedAgencies)).join('|');
+const agencyCodesQueried = agencies ? agencies.split('|').length : 0;
+if (agencyCodesQueried > AGENCY_LIST_MAX_CODES || agencies.length > AGENCY_LIST_MAX_CHARS) {
+    throw new Error(
+        `Your agency filter expands to ${agencyCodesQueried} codes (${agencies.length} chars), which is past the `
+        + `limit Grants.gov's API silently fails at (it returns zero results, not an error). Parent codes expand to `
+        + 'every sub-agency, and "DOS" alone is 219 of them. Name the specific sub-agency codes you need '
+        + '(e.g. "DOS-IND", "DOS-DRL") instead of the parent, or run one parent per run.',
+    );
+}
 
 // Exclusive lookup mode. Verified live: oppNum is ANDed with every other filter INCLUDING the
 // server's own default oppStatuses ("forecasted|posted"), so a bare {"oppNum": "..."} lookup of
@@ -1263,6 +1321,12 @@ const runSummary = {
     // checked" (no cfda set, rows were returned, or the check itself failed) and must NOT be read
     // as "the cfda is fine". 0 here is the machine-readable form of "the cfda emptied this run".
     cfdaMatchesAnyStatus,
+    // Machine-readable form of the unrecognised-agency warning. A partially-valid agency list runs
+    // on the codes that did resolve, so a scheduled caller needs to be able to assert this is empty
+    // before trusting that the filter it asked for is the filter that ran. agencyCodesQueried is
+    // the post-expansion count actually sent (a parent code becomes all of its sub-agencies).
+    unknownAgencies,
+    agencyCodesQueried,
     failedOppNums,
     baselineSize: watchMode ? watchSeen.size : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
