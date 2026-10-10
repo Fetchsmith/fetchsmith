@@ -9,6 +9,11 @@ price outright ("No Login, $3/1k", "$3.5/1k", "$5/1k").
 
 OURS: FLAT $0.0015/result on every plan tier, single `result` event, NO start fee --
 re-verified live at the top of this cycle via check-own-price-freshness (24 Actors, 0 flags).
+
+Cycle 1491: this copy postdates the 0-TODO-h1392-runfee-in-batch-copies backlog item
+(created cycle 1472, after the tracked "29 total" count) and was never caught by it --
+ports the same fix (get_data retry, cps.runfee_price, runfee_crossover_rows) anyway,
+since it has the identical silent-failure gap.
 """
 import datetime
 import importlib.machinery
@@ -16,8 +21,6 @@ import importlib.util
 import json
 import os
 import sys
-
-import httpx
 
 ROOT = "/root/agent"
 _path = os.path.join(ROOT, "bin/check-price-superiority")
@@ -27,12 +30,14 @@ spec.loader.exec_module(cps)
 
 sys.path.insert(0, os.path.join(ROOT, "bin"))
 import _unit_price as up  # noqa: E402
+from _apify_get import ApifyGetError, get_data  # noqa: E402
 
 H = {"Authorization": "Bearer " + cps.token()}
 API = "https://api.apify.com/v2"
 NOW = datetime.datetime.now(datetime.timezone.utc)
 
 OURS = {t: 0.0015 for t in ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")}
+OURS_GOLD = OURS["GOLD"]
 
 tiers_of = up.tiers_of
 unit_price = up.unit_price
@@ -42,9 +47,8 @@ out = []
 for h in handles:
     u, n = h.split("/", 1)
     try:
-        r = httpx.get(f"{API}/acts/{u}~{n}", headers=H, timeout=30)
-        d = r.json().get("data") if r.status_code == 200 else None
-    except Exception as e:
+        d = get_data(f"{API}/acts/{u}~{n}", headers=H)
+    except ApifyGetError as e:
         d = None
         print(f"ERR {h}: {e}", file=sys.stderr)
     if not d:
@@ -62,6 +66,10 @@ for h in handles:
               for p in (d.get("pricingInfos") or [])
               if p.get("startedAt") and p["startedAt"] > NOW.isoformat()]
     undercuts = sorted(t for t in ut if t in OURS and ut[t] < OURS[t])
+    # h1392: a PURE run-fee rival has no per-row event at all, so `ut`/`undercuts` are
+    # silent about a flat fee that buys a whole run.
+    runfee, runfee_label = cps.runfee_price(d, NOW)
+    crossover = round(runfee / OURS_GOLD) if runfee else None
     out.append({
         "handle": h,
         "title": d.get("title"),
@@ -72,13 +80,17 @@ for h in handles:
         "start_fee": fee,
         "note": note,
         "undercuts_tiers": undercuts,
+        "runfee": runfee,
+        "runfee_label": runfee_label,
+        "runfee_crossover_rows": crossover,
         "every_tier": bool(ut) and all(t in OURS and ut[t] < OURS[t] for t in ut),
         "future_pricing": future,
         "desc": (d.get("description") or "")[:500],
     })
 
 json.dump(out, open("/tmp/cts_prices.json", "w"), indent=1)
-print(f"priced {len(out)} listings -> /tmp/cts_prices.json")
+rf = [o for o in out if o.get("runfee")]
+print(f"priced {len(out)} listings -> /tmp/cts_prices.json ({len(rf)} pure run-fee)")
 for o in out:
     print(o["handle"], o.get("users"), o.get("model"), o.get("unit_tiers"),
           o.get("undercuts_tiers"), o.get("start_fee"), o.get("note"))

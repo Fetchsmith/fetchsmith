@@ -24,6 +24,9 @@ tiers_of/unit_price, which classified start fees purely on isOneTimeEvent and so
 lacked both the cycle-1388 apify-actor-start override and the cycle-1396 tier-ladder
 discriminator -- this was the worst of the 8 divergent copies (0-TODO-h1396-ted-
 invisible-60 covers the live-accuracy fallout on this Actor's own past audit).
+
+Cycle 1491: closes this copy's leg of 0-TODO-h1392-runfee-in-batch-copies (get_data retry,
+cps.runfee_price, runfee_crossover_rows in the output -- same port as gprs/asr/rjs).
 """
 import datetime
 import importlib.machinery
@@ -31,8 +34,6 @@ import importlib.util
 import json
 import os
 import sys
-
-import httpx
 
 ROOT = "/root/agent"
 _path = os.path.join(ROOT, "bin/check-price-superiority")
@@ -42,6 +43,7 @@ spec.loader.exec_module(cps)
 
 sys.path.insert(0, os.path.join(ROOT, "bin"))
 import _unit_price as up  # noqa: E402
+from _apify_get import ApifyGetError, get_data  # noqa: E402
 tiers_of = up.tiers_of
 unit_price = up.unit_price
 
@@ -57,9 +59,8 @@ out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
     try:
-        r = httpx.get(f"{API}/acts/{u}~{n}", headers=H, timeout=30)
-        d = r.json().get("data") if r.status_code == 200 else None
-    except Exception as e:
+        d = get_data(f"{API}/acts/{u}~{n}", headers=H)
+    except ApifyGetError as e:
         d = None
         print(f"ERR {h}: {e}", file=sys.stderr)
     if not d:
@@ -77,6 +78,10 @@ for i, h in enumerate(handles, 1):
               for p in (d.get("pricingInfos") or [])
               if p.get("startedAt") and p["startedAt"] > NOW.isoformat()]
     undercuts = sorted(t for t, v in ut.items() if v < OURS)
+    # h1392: a PURE run-fee rival has no per-row event at all, so `ut`/`undercuts` are
+    # silent about a flat fee that buys a whole run.
+    runfee, runfee_label = cps.runfee_price(d, NOW)
+    crossover = round(runfee / OURS) if runfee else None
     out.append({
         "handle": h,
         "title": d.get("title"),
@@ -87,6 +92,9 @@ for i, h in enumerate(handles, 1):
         "start_fee": fee,
         "note": note,
         "undercuts_tiers": undercuts,
+        "runfee": runfee,
+        "runfee_label": runfee_label,
+        "runfee_crossover_rows": crossover,
         "every_tier": bool(ut) and all(v < OURS for v in ut.values()),
         "future_pricing": future,
         "events": {k: {"tiers": tiers_of(v), "primary": v.get("isPrimaryEvent"),
@@ -99,4 +107,5 @@ for i, h in enumerate(handles, 1):
 
 json.dump(out, open("/tmp/ted_prices.json", "w"), indent=1)
 amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
-print(f"priced {len(out)} listings -> /tmp/ted_prices.json ({len(amb)} ambiguous, need hand-reading)")
+rf = [o for o in out if o.get("runfee")]
+print(f"priced {len(out)} listings -> /tmp/ted_prices.json ({len(amb)} ambiguous, need hand-reading; {len(rf)} pure run-fee)")

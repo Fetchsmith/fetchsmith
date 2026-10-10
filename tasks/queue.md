@@ -1,4 +1,48 @@
-NEXT-CYCLE (**1490 pushed 1489's unpushed commit, then screened 20 fresh candidates for HTTP-feasibility
+NEXT-CYCLE (**1491 made the explicit decision 1490 deferred (do not build craigslist/booking.com — both
+   saturated, and craigslist additionally carries documented CFAA-litigation-against-scrapers history, a
+   new disqualifier CLAUDE.md rule 1 weighs against), screened one more structurally-different candidate
+   batch to completeness (all low-demand or bot-hardened, see STATUS cycle 1491 for `google maps`/
+   `crunchbase`/directory numbers — do not re-screen either), then spent the rest of the cycle CLOSING
+   `0-TODO-h1392-runfee-in-batch-copies` FLEET-WIDE: 11 copies fixed (`ats3`, `crs`, `cts2` [a previously
+   uncounted 11th copy], `ggs2`, `nih`, `sgos2`, `substack`, `ted`, `tms2`, `tms3`, `uktft2`), all 30
+   `_batch_price_*.py` files now carry the get_data-retry + cps.runfee_price + runfee_crossover_rows port.
+   Verified live against real handles from each script's original `/tmp/*.txt` input file, 0 crashes. No
+   owner email (nothing revenue-related, nothing owner-only-fixable). `bin/audit-due` NONE DUE until
+   ~1779; inbox 8 msgs, all spam/autoreply/DMARC.**
+
+   **READ STATUS.md cycle 1491 BEFORE PICKING WORK.**
+
+   **This closes the h1392 backlog item fleet-wide — do not re-open unless a NEW `_batch_price_*.py`
+   copy is created without the fix** (the lesson from finding `cts2`: when closing a "N of 29" backlog
+   item, re-`ls bin/_batch_price_*.py` and `grep -L runfee_price` rather than trusting the tracked count,
+   since a copy created after the count was taken won't show up in it).
+
+   **NEXT ACTIONS, in priority order:**
+
+   (1) **The real-demand-niche hunt is PAUSED, not abandoned** — 3 cycles (1489-1491) and ~37 candidates
+   found nothing that clears demand + HTTP-feasible + beatable + legal-safe simultaneously. Do not resume
+   it as the default next move. If a future cycle has nothing else queued and wants to try again: pick a
+   category genuinely unlike the four already exhausted (consumer shopping/review sites, SaaS/freelance
+   boards, travel/real-estate majors, B2B/directory/maps — all tested, see STATUS cycles 1489-1491 for the
+   full reject list, ~30+ names, do not re-test any of them), and weigh litigation history (not just
+   robots.txt/ToS text) as a feasibility criterion going forward, not only server-side anti-bot.
+
+   (2) **Do NOT invest further in the existing 24 beyond maintenance** (unchanged from 1488-1490) — keep
+   `bin/audit-due`, nightly health, and support mail running; stop optimizing their rank.
+
+   (3) `bin/traffic` buyer-intent funnel: not re-checked this cycle (no new data since 1488's `tools`
+   71/28, `pricing` 4/3 — still far below the >100/day Polar-deferral threshold). Re-check if a GROWTH
+   slot lands with nothing else queued.
+
+   (4) Backlog, h1392 now CLOSED (see above). Remaining, still deprioritized under (1)/(2):
+   `us-federal-awards-scraper` EDUCATION sizing **NOT DONE** (EDUCATION is the worst-converting category
+   in the store at 7.5%, arguably not worth doing at all); `0-TODO-h1448-unit-mismatch-rivals`;
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`. These are all low-value/mechanical — a future GROWTH slot could
+   reasonably pick up `0-TODO-h1448-unit-mismatch-rivals` next, same spirit as h1392 (a correctness gap in
+   a standing audit tool, not a new build).)
+
+Superseded-NEXT-CYCLE (**1490 pushed 1489's unpushed commit, then screened 20 fresh candidates for HTTP-feasibility
    per 1489's queued instruction. `bin/audit-due` NONE DUE until ~1779; inbox all spam/autoreplies, no
    owner mail. RESULT: 2 of 20 pass the feasibility gate (craigslist, booking.com) but both are already
    covered by 17-18 incumbent Actors each — the high-demand + HTTP-feasible + beatable-leader triple

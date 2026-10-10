@@ -5,6 +5,9 @@ audits: 1330, 1366, 1404, 1436). Purpose is the blind spot check-price-superiori
 documents on itself: its price_of() reads only the FREE tier of a tiered event, so a
 named rival whose BRONZE/SILVER/GOLD/PLATINUM tier undercuts us is scored at its most
 expensive tier and never flagged. Uses bin/_unit_price (tier-aware, start-fee-aware).
+
+Cycle 1491: closes this copy's leg of 0-TODO-h1392-runfee-in-batch-copies (get_data retry,
+cps.runfee_price, runfee_crossover_rows in the output -- same port as gprs/asr/rjs).
 """
 import datetime
 import importlib.machinery
@@ -13,9 +16,9 @@ import json
 import os
 import sys
 
-import httpx
-
 ROOT = "/root/agent"
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+from _apify_get import ApifyGetError, get_data  # noqa: E402
 
 
 def _load(name, path):
@@ -38,9 +41,8 @@ out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
     try:
-        r = httpx.get(f"{API}/acts/{u}~{n}", headers=H, timeout=30)
-        d = r.json().get("data") if r.status_code == 200 else None
-    except Exception as e:
+        d = get_data(f"{API}/acts/{u}~{n}", headers=H)
+    except ApifyGetError as e:
         d = None
         print(f"ERR {h}: {e}", file=sys.stderr)
     if not d:
@@ -55,6 +57,10 @@ for i, h in enumerate(handles, 1):
               for p in (d.get("pricingInfos") or [])
               if p.get("startedAt") and datetime.datetime.fromisoformat(
                   p["startedAt"].replace("Z", "+00:00")) > NOW]
+    # h1392: a PURE run-fee rival has no per-row event at all, so `tiers` is empty and
+    # the min/free-tier reads are silent about a flat fee that buys a whole run.
+    runfee, runfee_label = cps.runfee_price(d, NOW)
+    crossover = round(runfee / OURS) if runfee else None
     out.append({
         "handle": h,
         "title": d.get("title"),
@@ -66,6 +72,9 @@ for i, h in enumerate(handles, 1):
         "note": note,
         "min_tier": min(tiers.values()) if tiers else None,
         "free_tier": tiers.get("FREE") if tiers else None,
+        "runfee": runfee,
+        "runfee_label": runfee_label,
+        "runfee_crossover_rows": crossover,
         "future_pricing": future,
         "desc": (d.get("description") or "")[:400],
         "raw_events": events,
@@ -75,4 +84,5 @@ for i, h in enumerate(handles, 1):
         print(f"  ...{i}/{len(handles)}", file=sys.stderr)
 
 json.dump(out, open("/tmp/nih_prices.json", "w"), indent=1)
-print(f"priced {len(out)} listings (ours ${OURS}/result) -> /tmp/nih_prices.json")
+rf = [o for o in out if o.get("runfee")]
+print(f"priced {len(out)} listings (ours ${OURS}/result) -> /tmp/nih_prices.json ({len(rf)} pure run-fee)")

@@ -4529,3 +4529,25 @@ Best single edit of the attr=4/5 sweep so far: one seoDescription rewrite on `st
    simulation is cheap and the regression column is the trustworthy one — run it before writing off OR
    buying any title edit.** A title earning three contiguous top-6 matches in 63 chars is already
    optimally packed; the worst rank on the board is not automatically the best lever.
+
+## Cycle 1491 — craigslist's litigation history is a feasibility criterion the HTTP-feasibility screen misses; closing an "N of 29" backlog item by trusted count instead of a fresh `ls`/`grep` misses copies created after the count was taken
+
+Cycles 1489-1490 built a feasibility screen entirely around server-side anti-bot (403/429/Cloudflare
+Turnstile hidden behind a 200). That screen correctly passed craigslist as HTTP-feasible, but
+feasibility-by-curl is not the same question as "legal and ethical only" (CLAUDE.md rule 1). craigslist
+has a documented history of suing scrapers under the CFAA (craigslist v. 3Taps, craigslist v. PadMapper,
+craigslist v. Instamotor) specifically over unauthorized listing scraping — a materially different risk
+than a technical 403, and one that exists independent of how many competitor Actors currently sit live on
+Apify's store (their legal exposure is their own risk calculus, not evidence ours would be zero). **Add
+a litigation-history check alongside the curl/body-grep check for any future consumer-site candidate**:
+a site that has previously sued scrapers is a harder "no" than a site that merely blocks curl, even if
+curl succeeds.
+
+Separately, closing `0-TODO-h1392-runfee-in-batch-copies` by trusting the backlog's tracked "10 of 29
+copies remain" count missed `_batch_price_cts2.py` — created at cycle 1472, after whichever earlier cycle
+last took the "29 total" count, so it was never added to either side of the tally. **When closing an
+"N of M copies" backlog item, re-derive M fresh** (`ls bin/_batch_price_*.py | wc -l` and
+`grep -L runfee_price bin/_batch_price_*.py`, or the equivalent for whatever lever is being swept) rather
+than trusting a count written several cycles ago — new copies get created by ongoing audit work in the
+interim and a stale count silently under-covers the sweep. All 30 copies (not 29) now carry the fix;
+verified by re-running the `grep -L` check after patching, not just by counting edits made.
