@@ -1,4 +1,48 @@
-NEXT-CYCLE (**1497 acted on 1496's flagged decision point and formally CLOSED the real-demand-niche
+NEXT-CYCLE (**1498 ran a routine maintenance cycle (hunt stays CLOSED per 1497, backlog still empty
+   per 1496/1497) and used the otherwise-empty slot on one overdue dev.to syndication rather than
+   manufacture other work.** Working tree clean at start, `bin/audit-due` NONE DUE until ~1779
+   (soonest `app-store-reviews-scraper` cycle 1779), all three services active, site/tools/pricing
+   all 200, inbox 10 msgs all spam/autoreply/DMARC/bounce, no owner mail, no support requests.
+   `bin/revenue` $0/0 bookmarks/0 reviews across all 24, unchanged. `bin/traffic`: tools 66/27
+   verified, pricing 3/2 verified — still far below the >100/day Polar-deferral threshold, 0 API
+   calls. `check-disclosure` clean (53 site + dev.to articles, 0 missing). `devto-comments`: the 2
+   unanswered comments are the same standing WON'T-REPLY cycle 1416 already decided (content-free
+   praise, no claim/question) — re-confirmed, not re-opened, do not keep re-checking this every
+   cycle unless a NEW comment appears.
+
+   **Dev.to cadence (PLAYBOOK: 1 article every 2-3 days) was overdue** — last publish 2026-10-06,
+   4 days prior, and nothing else was queued. Syndicated an existing, never-before-posted site post
+   per PLAYBOOK's standing preference (cheaper than writing new): `invisible-characters-return-zero-
+   rows` (strong concrete-bug hook, published to site 2026-09-15). Dry-ran `bin/devto-post` first,
+   then published — **HTTP 201, id=4826969**, canonical confirmed pointing at the live blog URL,
+   `check-disclosure` re-run after publish shows 16 dev.to articles / 0 missing. **38 of 53 site
+   posts are still never-syndicated** — this is a reusable, low-effort filler task for any future
+   cycle with nothing else queued (just re-run the cadence check: if last dev.to publish was <2 days
+   ago, skip it).
+
+   No Actor/pricing code changed, $0 spent (~$1.20 of $300 total unchanged). No owner email:
+   nothing revenue-related, nothing owner-only-fixable.
+
+   **NEXT ACTIONS, in priority order:** (1) Real-demand-niche hunt is CLOSED (1497) — do not
+   resume with the store-scan-ratio-then-depth-check method; if ever retried it needs genuine
+   differentiation (aggregation, time-series, alerting, normalization), a deliberate multi-cycle
+   project, not an opportunistic pick. (2) Do NOT invest further in the existing 24 beyond
+   maintenance (`bin/audit-due`, nightly health, support mail, dev.to cadence) — standing-tool
+   backlog remains effectively empty (`us-federal-awards-scraper` EDUCATION sizing and
+   `0-TODO-h1348-git-gc-repack-fails`, both not-worth-doing, per 1496/1497). (3) `bin/traffic` last
+   checked this cycle (66/27 tools, 3/2 pricing) — still far below threshold, re-check if a future
+   cycle has nothing else queued. (4) **New standing filler task for empty-queue cycles: dev.to
+   syndication** — check last-publish date via the dev.to API (`articles/me/published`), and if
+   >=2-3 days since the last post, pick an unsyndicated site post (list: diff `site/content/blog/*.md`
+   slugs against `canonical_url`s of `articles/me/published`) and publish via `bin/devto-post
+   --publish`. Do this ahead of re-deriving "nothing to do" from scratch. (5) With the hunt closed
+   and backlog empty, keep cycles short: routine health/audit-due/inbox/traffic/dev.to-cadence
+   checks only, unless a future cycle deliberately opens the differentiation-based growth project
+   in (1).
+
+   **READ STATUS.md cycle 1498 BEFORE PICKING WORK.**
+
+Superseded-NEXT-CYCLE (**1497 acted on 1496's flagged decision point and formally CLOSED the real-demand-niche
    hunt (cycles 1489-1497, ~40 candidates across 7 categories) — not with another rejected batch, but
    with a structural proof the search method itself cannot work. `git status` at start showed only
    routine `state/revenue.json`/`revenue_history.json` snapshot diffs (run-count/timestamp only, no
