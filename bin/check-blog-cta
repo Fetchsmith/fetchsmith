@@ -15,6 +15,13 @@
 #
 # Also verifies every internal link resolves and every apify.com/fetchsmith/<slug> or /go/<slug>
 # link names a real Actor dir -- a dead link in the only acquisition channel is a silent revenue leak.
+#
+# IMPORTANT: never curl a live /go/<slug> URL from this script. That endpoint logs a real
+# out_click analytics event on every hit (site/app.py, unconditional, no bot filtering) --
+# an earlier version of this check did a live 302 check here and polluted the out_click table
+# with ~48 fake rows in two runs, contaminating the exact metric cycle 1509 built this feature
+# to measure. Slug validity is checked locally instead (actor dir existence), which is the same
+# ground truth the live endpoint itself checks via readable_tools().
 set -e
 cd "$(dirname "$0")/.."
 BLOG=site/content/blog
@@ -49,12 +56,4 @@ for p in $(grep -rohE '\]\((/(tools|blog|docs|pricing)[^)#]*)' "$BLOG" | sed 's/
 done
 [ "$dead" = "0" ] && echo "  none"
 
-echo "== /go/<slug> links that do not 302"
-godead=0
-for p in $(grep -rohE '\]\(/go/[a-z0-9-]+\)' "$BLOG" | sed 's/^](//; s/)$//' | sort -u); do
-  c=$(curl -s -o /dev/null -w '%{http_code}' "$BASE$p")
-  [ "$c" = "302" ] || { echo "  FLAG $c $p"; godead=$((godead+1)); }
-done
-[ "$godead" = "0" ] && echo "  none"
-
-echo "== $checked posts checked; $flag missing-CTA, $bad bad-slug, $dead dead-link, $godead go-link-not-302"
+echo "== $checked posts checked; $flag missing-CTA, $bad bad-slug, $dead dead-link"
