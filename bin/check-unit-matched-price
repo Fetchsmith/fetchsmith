@@ -40,11 +40,14 @@ import json
 import os
 import re
 import sys
-
-import httpx
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://api.apify.com/v2"
+
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+from _apify_get import get_data  # noqa: E402  (shared retrying GET, cycle 1404)
 FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
 DISCLOSED = re.compile(
     r"cheap|undercut|lower|beats?\b|crossover|do not claim|genuine|free pricing model|\$0\b",
@@ -57,7 +60,6 @@ EPSILON = 1e-9
 # OUR_UNIT_SYNONYMS comment). check-price-superiority's h1448 container-mismatch leg
 # reads the same map, and two copies of a map keyed by our own slugs would diverge the
 # first time an Actor is added to one and not the other.
-sys.path.insert(0, os.path.join(ROOT, "bin"))
 from _unit_price import OUR_UNIT_SYNONYMS  # noqa: E402
 
 
@@ -144,12 +146,43 @@ def unit_matched_price(act_data, now, synonyms):
     return p, name
 
 
-def live_actor(ident, headers, cache={}):
+CACHE = {}
+
+
+def live_actor(ident, headers, cache=CACHE):
+    """Live record for a rival handle, or None if the handle is genuinely gone.
+
+    Was `r.json().get("data") if r.status_code == 200 else None` -- one GET at a time, no
+    retry. Ported cycle 1494 from check-price-superiority's identical fix (cycle 1404, for
+    the identical reason): a transient 429 on one rival silently read as "no live record"
+    and dropped that rival out of the comparison, and with ~1850 GETs this is the fleet's
+    most rate-limit-exposed path after check-price-superiority itself. `get_data` retries
+    429/5xx/network/non-JSON and still returns None for a real 404 (delisted rival stays
+    None, not retried).
+    """
     if ident not in cache:
         u, n = ident.split("/")
-        r = httpx.get(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
-        cache[ident] = r.json().get("data") if r.status_code == 200 else None
+        cache[ident] = get_data(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
     return cache[ident]
+
+
+def prefetch(idents, headers, workers=8):
+    """Warm CACHE for every handle concurrently; the scoring pass below then reads it.
+
+    Ported cycle 1494 from check-price-superiority's `prefetch` (cycle 1384) -- closes
+    `0-TODO-h1492-cump-serial-fetch`. The scoring loop is unchanged and still sequential;
+    this only moves the ~1850 blocking GETs it used to make one at a time into a small
+    thread pool, so verdicts are byte-identical but the wall clock is not. `idents` is
+    deduped by the caller, so no handle is fetched twice.
+    """
+    todo = [i for i in idents if i not in CACHE]
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for _ in pool.map(lambda i: live_actor(i, headers), todo):
+            done += 1
+            if done % 100 == 0 or done == len(todo):
+                print(f"  ...prefetched {done}/{len(todo)} live Actor records",
+                      file=sys.stderr, flush=True)
 
 
 def main():
@@ -157,6 +190,24 @@ def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
     live = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
+
+    # Pass 0: collect every handle this run will need, then fetch them all concurrently
+    # (same two-pass shape as check-price-superiority's prefetch, cycle 1384/1494).
+    wanted = set()
+    in_scope = []
+    for slug in live:
+        synonyms = OUR_UNIT_SYNONYMS.get(slug)
+        path = os.path.join(ROOT, "actors", slug, "README.md")
+        if synonyms is None or not os.path.exists(path):
+            continue
+        in_scope.append(slug)
+        wanted.add(f"fetchsmith/{slug}")
+        wanted.update(FULL_HANDLE.findall(open(path).read()))
+    started = time.time()
+    print(f"check-unit-matched-price: {len(in_scope)} Actor(s) in scope, "
+          f"{len(wanted)} unique live Actor record(s) to fetch", file=sys.stderr, flush=True)
+    prefetch(sorted(wanted), headers)
+    print(f"  ...fetched in {time.time() - started:.1f}s", file=sys.stderr, flush=True)
 
     checked = multi_event = compared = cheaper_found = flagged = 0
     for slug in live:

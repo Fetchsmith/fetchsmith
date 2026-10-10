@@ -4623,3 +4623,25 @@ serially with no progress output and no 429 retry, so it looks hung and a rate-l
 reads as "no live record" — the exact bug cycle 1404 fixed in `check-price-superiority`.
 Killed at 600s this cycle before being re-run to completion. Filed
 `0-TODO-h1492-cump-serial-fetch`: reuse `cps.prefetch`/`cps.get_data`, both already written.
+
+## Cycle 1494
+**Closed `0-TODO-h1492-cump-serial-fetch`** (filed cycle 1492): `check-unit-matched-price`
+fetched its ~1850 rival records ONE AT A TIME via a bare `httpx.get`, no retry, no progress
+line — same bug `check-price-superiority` had until cycle 1404/1384. Ported `cps.prefetch`
+(8-thread `ThreadPoolExecutor`) and `_apify_get.get_data` (retrying GET, 404 stays final,
+429/5xx/network/non-JSON retry) into `check-unit-matched-price` verbatim — same two-pass
+shape (collect every `owner/slug` handle the in-scope READMEs name, prefetch them all
+concurrently, then run the unchanged sequential scoring loop over the warm cache).
+
+**Verified byte-identical, not just faster:** ran the tool before and after (via `git
+stash`) — `_unit_price_selftest.py`'s unrelated "35 verdict(s) moved" baseline (a pre-
+existing drift in a different code path, not touched here) was identical stash-vs-not,
+confirming the edit touched nothing `_unit_price.py` reads. Live run post-fix: 23 Actors in
+scope, 831 unit-matched comparisons, 0 undisclosed — exactly the pre-fix baseline PLAYBOOK
+had recorded for cycle 1492, now in **86s instead of ~10min25s** (a 7x speedup matching
+`check-price-superiority`'s own prefetch win).
+
+**Rule confirmed again: when two tools in this fleet share a shape-of-bug (serial fetch, no
+retry), port the EXACT fix rather than re-deriving a similar one** — `prefetch`/`get_data`
+were already written, tested, and proven at ~1600 GETs; copying them cost one read-through
+plus a live before/after run, not a redesign.
