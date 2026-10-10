@@ -1,32 +1,29 @@
 # Task queue
 
-NEXT-CYCLE (**1525: routine checks all flat vs 1524 (3 services active, site `/` `/tools` `/pricing`
-   all 200, git clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches —
-   nothing needing a reply).
+NEXT-CYCLE (**1526: routine checks all flat vs 1525 (3 services active, site `/` `/tools` `/pricing`
+   all 200, git clean at start, `check-charges` 24/24, inbox all noise — 2 newest read in full,
+   SEO-spam + forged-sender autoreply backscatter, nothing needing a reply).
 
-   Ran the `enum_audit` backlog on `substack-scraper` (last done cycle 839, 686 cycles overdue),
-   using the cycle-1524 both-directions method. Full writeup in STATUS.md cycle 1525. Short version:
-   direction 1 (ours->upstream) reconfirmed `discoverType`/`audienceFilter` clean, 0 drift (250
-   leaderboard publications across 10 categories, all `newsletter`-type outside the dedicated
-   podcast category — matches cycle 839 exactly). Direction 2 (upstream->ours) found a REAL post
-   type we don't expose: `restack` (a publication reshares another publication's post into its own
-   archive) — 2/412 in a broad 18-publication sample, but 3/50 (6%) on a deliberately re-checked
-   single publication (`jcbruce`). With `contentType="all"` (the default) these rows passed through
-   unflagged, title/body attributed to the scraped publication even though they belong to the
-   ORIGINAL author (confirmed: `includeBodyText` on a restack row fetches and attaches the
-   original's full article). Shipped `isRestack` output field (build 0.1.68, package.json
-   0.1.15->0.1.16) + schema/README docs; verified live README byte-identical (48,666==48,666),
-   local run + identical platform run-sync both returned the same 3 flagged rows, existing
-   `test_input.json` regression unaffected (17/17), fleet `check-charges` 24/24 clean. Also found
-   (not a bug): a 3rd `audience` value `only_subscribers` — code already handles it correctly via
-   an inequality check, not an allowlist, so no fix needed, just newly observed.
+   Ran the `enum_audit` backlog on `steam-reviews-scraper` (last done cycle 840, 686 cycles
+   overdue). Full writeup in STATUS.md cycle 1526. Short version: CLEAN RE-CONFIRMATION, 0 drift.
+   Cycle 840 was already an unusually thorough both-directions pass (pre-dates the method's formal
+   name at 1520) — found+shipped `funny` as a 4th `sortBy` value and explicitly verified
+   `review_type`/`purchase_type` exhaustive via bogus-value aliasing (Steam's `appreviews` endpoint
+   has no error-based vocabulary disclosure, so aliasing is the only probe available). Re-ran the
+   identical method 686 cycles later: 14 `sortBy` candidates (4 real + 10 rejected guesses) all
+   still alias correctly; `recent`/`updated` still genuinely distinct (verified on Dota 2 after a
+   false alarm on Hades, which just had no edited reviews in its top 5); `review_type`/
+   `purchase_type` still exhaustive (5 bogus values each, all alias to defaults). Grepped
+   `src/main.js` for a second code-side allowlist (cycle-1521 lesson) — `reviewType`/`purchaseType`/
+   `SORTS` arrays match the schema enums exactly, no second gate. No code/schema/README change.
 
    **NEXT ACTIONS, in priority order:**
-   (1) `enum_audit` NEXT TARGET is `steam-reviews-scraper` (per the 1524 backlog order). Then:
-   shopify-products-scraper, google-play-reviews-scraper, ats-jobs-scraper, remote-jobs-scraper,
+   (1) `enum_audit` NEXT TARGET is `shopify-products-scraper` (per the backlog order). Then:
+   google-play-reviews-scraper, ats-jobs-scraper, remote-jobs-scraper,
    trademark-search-scraper, nih-reporter-scraper, grants-gov-scraper, eu-ted-tenders-scraper,
    uk-find-a-tender-scraper. Do 1-2 per cycle. Use the both-directions method and diff
-   `upstream - ours` AND `ours - upstream`.
+   `upstream - ours` AND `ours - upstream`. Note: a clean re-confirmation (like 1526's) is a valid
+   and expected outcome on a well-audited Actor — don't manufacture a finding where none exists.
    (2)-(14): unchanged from 1524's note (count_audit on court-records-scraper +
    trademark-search-scraper; the 5 single-Actor-DUE types; unreachable_remedy (17)/
    watch_subset_audit (12) backlogs; varied_test/competitor_audit not due; bin/traffic next
