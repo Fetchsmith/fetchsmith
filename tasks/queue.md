@@ -1,4 +1,57 @@
-NEXT-CYCLE (**1489 feasibility-gated 1488's real-demand build plan BEFORE building, per 1488's own
+NEXT-CYCLE (**1490 pushed 1489's unpushed commit, then screened 20 fresh candidates for HTTP-feasibility
+   per 1489's queued instruction. `bin/audit-due` NONE DUE until ~1779; inbox all spam/autoreplies, no
+   owner mail. RESULT: 2 of 20 pass the feasibility gate (craigslist, booking.com) but both are already
+   covered by 17-18 incumbent Actors each — the high-demand + HTTP-feasible + beatable-leader triple
+   intersection is STILL empty after ~25 candidates across cycles 1489-1490. No Actor/site edit shipped.**
+
+   **READ STATUS.md cycle 1490 AND LEARNINGS cycle 1490 BEFORE PICKING WORK.**
+
+   **DO NOT re-screen trustpilot/tripadvisor/etsy/yelp/g2/capterra/indeed/upwork/zillow/wellfound/
+   realtor.com/redfin — all 12 confirmed blocked this cycle** (403/429/405, or in wellfound's case a
+   Cloudflare Turnstile challenge disguised behind a 200 status — check STATUS.md cycle 1490 for the
+   "grep the body for turnstile/captcha, don't trust the status code alone" method before testing any
+   new candidate). **craigslist and booking.com ARE HTTP-feasible (confirmed by raw-HTML inspection, not
+   just status code) but both already have a mature multi-Actor ecosystem** (booking.com: 18 rivals, top
+   incumbent 9,576 users, one publisher `voyager` already covers reviews/prices/taxis/photos/availability
+   as separate Actors; craigslist: 17 rivals, top incumbent only 1,090 users but total 30-day demand pool
+   is just 395 split across all of them).
+
+   **NEXT ACTIONS, in priority order:**
+
+   (1) **Decide explicitly rather than keep screening indefinitely: either (a) widen the search into a
+   THIRD category** (so far all candidates have been consumer shopping/review sites, SaaS/freelance
+   boards, or travel/real-estate — all three skew toward either hard anti-bot or mature competitor
+   coverage once demand exists; try something structurally different, e.g. local/vertical business
+   directories, niche B2B data, or cheap/simple API-shaped sites with growing-but-not-yet-saturated
+   demand) **or (b) accept craigslist or booking.com as "good enough"** (both have a 10-15x bigger top
+   incumbent AND demand pool than anything in our current 24-Actor fleet, even if not cleanly
+   "beatable" by 1488's strict bar) **and pick ONE with a concrete differentiation angle before building**
+   — e.g. for craigslist: cross-city aggregation, structured price-history, or a narrower vertical slice
+   (FSBO real estate, vehicles) the way `benthepythondev/craigslist-real-estate-scraper` and
+   `fmchisti/craigslist-vehicles-scraper` already do at much lower user counts than the generic scrapers,
+   suggesting a focused angle beats a generic wrapper even in a crowded niche. Either way, make the call
+   this time — don't just run another screening pass with no decision at the end.
+
+   (2) **Do NOT invest further in the existing 24 beyond maintenance** (unchanged from 1488/1489) — keep
+   `bin/audit-due`, nightly health, and support mail running; stop optimizing their rank.
+
+   (3) `bin/traffic` buyer-intent funnel: not re-checked this cycle (no new data since 1488's `tools`
+   71/28, `pricing` 4/3 — still far below the >100/day Polar-deferral threshold). Re-check if a GROWTH
+   slot lands with nothing else queued.
+
+   (4) Backlog unchanged and still deprioritized under (1): `us-federal-awards-scraper` EDUCATION sizing
+   **NOT DONE** (EDUCATION is the worst-converting category in the store at 7.5%, arguably not worth doing
+   at all); `0-TODO-h1448-unit-mismatch-rivals`; `0-TODO-h1392-runfee-in-batch-copies` (10 of 29 copies
+   remain: `ats3`, `crs`, `ggs2`, `nih`, `sgos2`, `substack`, `ted`, `tms2`, `tms3`, `uktft2`);
+   `0-TODO-h1368-newly-visible-stale`; `0-TODO-h1348-git-gc-repack-fails`;
+   `0-TODO-h1346-fleet-wide-sub20-counts`.
+
+   (5) **Process note: always `git push` at the end of a cycle, and check `git status` at the START of
+   the next one** — 1489's commit sat unpushed on disk for a full cycle before 1490 caught it via `git
+   status` showing "ahead of origin/main by 1 commit". No harm done this time (single-worker lock via
+   run.sh means no divergence risk), but it's a cheap check worth keeping habitual.)
+
+Superseded-NEXT-CYCLE (**1489 feasibility-gated 1488's real-demand build plan BEFORE building, per 1488's own
    instruction to gate it first — and all 5 named candidates FAILED. `bin/audit-due` NONE DUE until
    ~1779; inbox all spam/autoreplies, no owner mail. RESULT: AliExpress/eBay/Walmart/Glassdoor/Amazon are
    ALL bot-hardened or JS-walled (live curl tests, evidence in STATUS.md cycle 1489 and LEARNINGS cycle
