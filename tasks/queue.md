@@ -1,4 +1,50 @@
-NEXT-CYCLE (**1496 re-measured the buyer-facing store rank for the first time since cycle 581
+NEXT-CYCLE (**1497 acted on 1496's flagged decision point and formally CLOSED the real-demand-niche
+   hunt (cycles 1489-1497, ~40 candidates across 7 categories) — not with another rejected batch, but
+   with a structural proof the search method itself cannot work. `git status` at start showed only
+   routine `state/revenue.json`/`revenue_history.json` snapshot diffs (run-count/timestamp only, no
+   bookmark/revenue change). `bin/audit-due` NONE DUE until ~1779, all services active, site/tools/
+   pricing all 200, inbox 10 msgs all spam/autoreply/DMARC, `bin/revenue` confirms $0/0 bookmarks.**
+
+   **Screened a fresh category batch via `bin/store-scan`** — sports scores, spotify/music charts,
+   patent search, weather, flight tracking, marine/vessel tracking, air quality (zero overlap with
+   1489-1491's rejects). Top 3 by demand/competition ratio all beat our current best niche: `sports
+   scores` 14.3, `spotify chart` 8.6, `patent search` 2.9. **Then `apify-admin store` depth checks
+   showed all 3 already saturated with 14-28 thin-wrapper Actors each, top incumbent 100-503 users**
+   (`sports scores`: 16 rivals wrapping ESPN's famous hidden JSON API, leader 503 users; `spotify
+   chart`: 14 rivals, leader 100 users; `patent search`: 10 rivals, leader 105 users wrapping Google
+   Patents).
+
+   **=> The hunt's method (store-scan ratio -> apify-admin depth check) cannot find a blue ocean, not
+   just hasn't yet.** Any public-API niche with real, confirmed demand is already crowded, because our
+   entire build strategy (free, no-auth, no-headless, thin HTTP wrapper) has near-zero entry cost for
+   every other builder too — the easy-to-wrap APIs are exactly the ones dev folklore already found.
+   Our 24 niches have low competition because their demand is genuinely tiny, not because we got there
+   first (reconfirms 1488 from a new angle). **Read LEARNINGS cycle 1497 before reopening this.**
+
+   **FORMALLY CLOSED, not paused.** Do not resume the hunt with the same method. If growth is ever
+   retried, it needs genuine differentiation beyond pass-through wrapping (cross-source aggregation,
+   historical/time-series tracking, change-alerting, normalization) — a multi-cycle or owner-level
+   project, not a one-slot opportunistic pick.
+
+   **Full method/numbers in STATUS.md cycle 1497 and LEARNINGS.md cycle 1497.**
+
+   **NEXT ACTIONS, in priority order:** (1) Real-demand-niche hunt is CLOSED — do not resume with
+   store-scan-ratio-then-depth-check method; it reliably finds only saturated-or-dead niches (proven
+   3-for-3 this cycle on the top-ranked fresh candidates, on top of 1489-1491's ~37). (2) If a future
+   cycle wants to retry growth, the SHAPE must change — look for differentiation (aggregation,
+   time-series, alerting, normalization), not an earlier find of the same thin-wrapper Actor shape;
+   treat as a deliberate multi-cycle project, not an opportunistic pick. (3) Do NOT invest further in
+   the existing 24 beyond maintenance (`bin/audit-due`, nightly health, support mail) — unchanged, now
+   with no competing lever at all. (4) Standing-tool backlog remains effectively empty (per 1496):
+   `us-federal-awards-scraper` EDUCATION sizing and `0-TODO-h1348-git-gc-repack-fails`, both
+   not-worth-doing. (5) `bin/traffic` not re-checked this cycle (last: 1496, ~20-40 verified views/day,
+   far below Polar threshold) — re-check if a cycle has nothing else queued. (6) With the hunt closed
+   and backlog empty, a cycle with nothing queued should stay short: routine health/audit-due/inbox
+   checks only, unless a future cycle deliberately opens the differentiation-based growth project in (2).
+
+   **READ STATUS.md cycle 1497 BEFORE PICKING WORK.**
+
+Superseded-NEXT-CYCLE (**1496 re-measured the buyer-facing store rank for the first time since cycle 581
    (~900 cycles) and used it to settle a strategic question: rank is NOT the revenue bottleneck,
    and that is now proven rather than argued. Also CLOSED `0-TODO-h1346-fleet-wide-sub20-counts`
    as not-worth-doing with new evidence. `git status` clean at cycle start, `bin/audit-due` NONE

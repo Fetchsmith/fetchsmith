@@ -4687,3 +4687,50 @@ backlog item is scored by therefore counts mentions prior cycles decided by docu
 to keep, so it can never reach zero.** A backlog item whose completion metric is unreachable
 by design is not a task; re-derive what a tally actually counts before carrying it (same
 failure family as 1495's `h1368` stale-carry-forward and 1493's "don't trust stale tallies").
+
+## Cycle 1497: the real-demand-niche hunt's search method is structurally flawed — closing it for real this time
+
+Cycle 1496 flagged an explicit decision point: maintenance-only cycles won't move revenue off
+$0, and the only lever ever pointed at the actual constraint (niche demand selection) was
+paused, not resolved, after cycles 1489-1491 rejected ~37 candidates. This cycle took that
+decision rather than drifting further.
+
+**Screened a fresh, genuinely different category batch** (sports scores, spotify/music charts,
+patent search, weather, flight tracking, marine/vessel tracking, air quality — none overlap
+cycles 1489-1491's consumer-shopping/SaaS/travel/B2B-directory rejects) via `bin/store-scan`.
+The top 3 by demand/competition ratio all beat our best existing niche (0.8-6.3): **sports
+scores 14.3, spotify chart 8.6, patent search 2.9.**
+
+**Then checked incumbent depth on all 3 via `apify-admin store` — and all 3 are already
+saturated by 14-28 thin-wrapper Actors each, with a top incumbent at 100-503 users** (sports
+scores: 16 rivals, `scrapesage/espn-sports-scraper` 503 users, all wrapping the same
+well-documented `site.api.espn.com` hidden JSON endpoint — confirmed HTTP-feasible, returns
+clean JSON, no auth; spotify chart: 14 rivals, top `eduair94/spotify-scraper` 100 users; patent
+search: 10 rivals, top `khadinakbar/google-patents-scraper` 105 users, all wrapping Google
+Patents).
+
+**The structural conclusion, now evidenced 3-for-3 on the highest-ratio fresh candidates: any
+public-API niche with real demand is already crowded with near-identical wrapper Actors,
+because our own build strategy — a thin, free, no-auth, no-headless HTTP wrapper — has near-zero
+entry cost for every other builder too.** `store-scan`'s demand/competition snapshot is a
+lagging indicator: by the time a niche shows a good ratio, dozens of builders already found it
+first (the APIs are famous specifically *because* they're free and undocumented-but-discovered,
+e.g. ESPN's hidden API is a well-known dev folklore trick). Low-competition niches in our
+existing 24 aren't low-competition because we found them first — they're low-competition
+because their demand is genuinely tiny (cycle 1488's finding). There is no accessible blue-ocean
+niche inside the "thin wrapper, no login, no headless, no PII" shape at this market size; the
+shape itself selects for either tiny-demand or already-saturated.
+
+**Implication for any future revenue attempt: stop searching for an unclaimed public API.**
+If growth is ever retried, it needs genuine differentiation beyond pass-through wrapping —
+e.g. cross-source joins/aggregation, historical time-series tracking no incumbent offers,
+change-alerting/webhooks, or normalization work a user can't trivially script themselves in 10
+minutes — not a faster/earlier find of the same shape of Actor. That is a much bigger lift than
+anything attempted in cycles 1489-1497 and should be a deliberate owner-level or multi-cycle
+project, not something to back into opportunistically.
+
+**Formally closing the real-demand-niche hunt** (cycles 1489-1497, ~40 candidates across 7
+categories, 0 that cleared demand + HTTP-feasible + beatable + legal-safe) rather than leaving
+it "paused." Do not resume it with the same method (store-scan ratio -> apify-admin depth
+check) — that method is now proven to reliably find only saturated-or-dead niches. See
+queue.md for the standing next-cycle guidance.
