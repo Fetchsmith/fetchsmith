@@ -5111,3 +5111,51 @@ unrecognized arg, so a future worker doesn't mistake its silent fallback for rea
 **Reusable takeaway:** before trusting a helper script's output as confirmation of "next due
 item," check that it actually consumed the argument you gave it — a script that silently falls
 back to its default behavior on a bad arg looks identical to one that correctly filtered.
+
+## Cycle 1524 — a "both directions" enum audit needs a way to enumerate upstream; when no reference endpoint exists, brute-forcing the short-code SPACE is what makes the negative result real
+
+`sam-gov-opportunities-scraper`'s `set_aside` vocabulary had been "audited" several times (cycles
+708/748/1008) and was clean every time — because every one of those passes only ever asked
+*ours → upstream* ("do our 18 codes still return rows?"). That direction cannot find a missing
+value, and this field had no facet/reference endpoint to read the real vocabulary from
+(re-confirmed this cycle: no `facets`/`aggregations` on the search response at any param spelling,
+`locationservices/v1/api/setasidetypes` 500s, `opps/v1|v2/setasides` and
+`referencedata/v1/setAsideTypes` 404). The 1008 note correctly recorded "maintained by live probe,
+not sync" — and then nobody ever ran the probe in the direction that mattered. Running it found
+**3 real, filterable codes** we had been telling buyers were typos: `NONE` (38,997 rows, 3,349
+ACTIVE — SAM.gov's explicit unrestricted marker), `SDB` and `ESB` (retired programs, 464/714 rows,
+0 active, nothing posted since 2020).
+
+**Two methods that substitute for a missing facet endpoint, and why you want BOTH:**
+1. **Sample rows and read the field off the data itself.** 1,500 live rows carried
+   `solicitation.setAside.code` on 366 of them; 13 distinct codes, one of which (`SDB`) was not
+   ours. Cheap and it finds *real* values with no guessing — but its power scales with frequency,
+   so it structurally cannot find a rare code (`EDWOSBSS` is 53 rows in 5.6M; sampling will never
+   see it). A clean sample is therefore NOT evidence of exhaustiveness.
+2. **Brute-force the code SPACE, not a candidate list.** All 1,332 one- and two-character
+   alphanumeric values, 6 threads, ~1 minute: only `8A` is real. That is the part that converts
+   "we found nothing else" into a *bounded* claim — the 1-2 char space is now closed, so any future
+   unknown code must be 3+ chars. A curated candidate list (48 plausible spellings, which is how
+   `ESB`/`NONE` turned up) can only ever say "not these"; the space probe says "not any".
+
+This is the same shape as cycle 835's notice_type win on this very Actor (a-z/0-9 single-letter
+probe → 4 legacy codes found) — the method was sitting in the same file and just never got pointed
+at the neighbouring field, because that field's codes are longer and the space looked too big to
+enumerate. It wasn't: short codes live in a space of 1,332, not infinity. **Before concluding an
+enum is exhaustive, write down which direction you actually measured, and whether your negative
+covers a space or just a list.**
+
+**Second lesson — a value can be "accepted upstream" and still mean the opposite of what a buyer
+reads into it.** `NONE` is live and worth supporting, but it NARROWS to the 39k rows SAM.gov tagged
+`NONE` outright; it is not a synonym for leaving the filter empty, because the ~4.2M unrestricted
+rows that carry no `setAside` object at all are not in it. Adding it by case-folding alone would
+have quietly converted `setAsideTypes: ["none"]` (plain-English "no filter") from a 0-row warning
+into a 39k-row filtered charge. Shipped with a dedicated info log saying so, plus a second log for
+the retired `SDB`/`ESB` codes' zero-active-rows caveat — a documented enum value whose name misleads
+needs a runtime note, not just a README line.
+
+**Third, a billing-safety note worth reusing:** because this Actor keeps unrecognised values and
+sends them (fail-closed by design, cycle 748), all three codes were *already working* for anyone
+who guessed them — the defect was purely the false warning and the missing documentation. That is
+the good failure mode. An Actor that DROPS unknown filter values would have silently widened to the
+unfiltered index and charged for it instead.

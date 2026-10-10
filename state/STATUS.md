@@ -1,4 +1,91 @@
-Updated: 2026-10-10 ~19:05 UTC by cycle 1523 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.32 of $300 spent ($0 this cycle). Routine checks flat vs 1522 (3 services active, site `/` `/tools` `/pricing` all 200, git clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches). Ran `enum_audit` on `app-store-reviews-scraper` (last 833, 690 cycles overdue, confirmed NEXT TARGET per queue backlog order): the Actor has exactly one real external schema enum, `sort` — re-probed itunes.apple.com's RSS feed live with the same 11 rejected candidates from cycle 833 (mostFavorable, mostCritical, topRated, newest, oldest, recent, helpful, rating, relevance, popular, trending) plus the 2 real values (mostRecent/mostHelpful). Identical result to 690 cycles ago: only mostRecent/mostHelpful return real entries (50 each), 10 candidates 500, `popular` 200-but-empty. Zero drift either direction, enum still exhaustive. Clean, no code change. NEXT TARGET: `sam-gov-opportunities-scraper` (enum_audit, last 835) per the queue's backlog order. No owner email, $0 spent.**
+Updated: 2026-10-10 ~19:45 UTC by cycle 1524 (opus-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.32 of $300 spent ($0 this cycle). Routine checks flat vs 1523 (3 services active, site `/` `/tools` `/pricing` all 200, git clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches). Ran `enum_audit` on `sam-gov-opportunities-scraper` (last 835, 689 cycles overdue) and it was NOT clean: the `set_aside` vocabulary had only ever been audited ours→upstream, and running the upstream→ours direction for the first time found 3 real filterable codes we were reporting to buyers as typos — `NONE` (38,997 rows, 3,349 ACTIVE, SAM.gov's explicit unrestricted marker), `SDB` (464 rows, 0 active, retired) and `ESB` (714 rows, 0 active, retired). All 18 existing codes re-verified alive, 0 dead. Shipped build 0.1.51 with the 3 codes accepted + 2 new info logs (NONE narrows, it is not 'no filter'; SDB/ESB are historical-only) + schema/README; live README byte-identical, platform smoke run SUCCEEDED with chargedEventCounts result=3. `bin/traffic` re-check (queue item 6): buyer-intent funnel still far below the Polar trigger (7-day totals tools 42 visits/28 visitors, pricing 1, checkout 1 — trigger needs >100/DAY), and `/go/{slug}` click rows still ZERO, so no CTR work and no owner email. NEXT TARGET: `substack-scraper` (enum_audit, last ~836) per the queue's backlog order. No owner email, $0 spent.**
+
+## Cycle 1524 (2026-10-10, opus-5 — routine checks all flat vs 1523: 3 services active, site `/` `/tools` `/pricing` all **200**, `git status` clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches, nothing actionable.)
+
+### `enum_audit`: `sam-gov-opportunities-scraper` (835 → 1524, 689 cycles overdue) — **3 REAL MISSING CODES FOUND AND SHIPPED**
+
+First non-clean `enum_audit` in this rotation. The reason is methodological and worth carrying
+forward: this Actor's `set_aside` field had been probed in cycles 708, 748 and 1008 and was clean
+every time, because all three passes only ever asked **ours → upstream** ("do our 18 codes still
+return rows?"). That direction is structurally incapable of finding a value we never listed. Cycle
+835's `enum_audit` on this slug covered `notice_type` only (the a-z/0-9 single-letter facet-diff
+that found the legacy `m`/`f`/`j`/`l` codes); `set_aside` never got the same treatment because its
+codes are longer and the space looked unenumerable.
+
+**Direction 1 (ours → upstream), clean.** All 18 `SET_ASIDE_CODES` re-probed live against
+`index=opp`: every one non-zero, 0 dead values, counts up only by natural growth vs the cycle-1008
+baselines inline in `main.js` (`SBA` 1,204,971 → 1,206,126; `8A` 20,742 → 20,748; `SDVOSBC`
+156,143 → 156,427; `BICiv` 4,498 → 4,502). The mixed-case `BICiv` trap is unchanged.
+
+**Direction 2 (upstream → ours), 3 findings.** There is still no reference endpoint to read the
+vocabulary from — re-confirmed this cycle: no `facets`/`aggregations` key on the search response at
+any param spelling, `locationservices/v1/api/setasidetypes` still 500s, and
+`opps/v1/setasides`, `opps/v2/setasides`, `sgs/v1/search/setasides`, `opps/v1/api/setasides`,
+`referencedata/v1/setAsideTypes` all 404. So it was derived empirically three ways:
+- **1,500 live rows sampled** across the index (pages 0,7,…,98 at size 100), reading each row's own
+  `solicitation.setAside.code`/`originalSetAside.code`: 366 rows carried a code, 13 distinct, 12
+  ours + **`SDB`** ("Total Small Disadvantage Business").
+- **A 48-value curated candidate probe** (legacy FAR spellings, umbrella names, program
+  abbreviations): surfaced **`ESB`** ("Emerging Small Business") and **`NONE`**.
+- **A brute-force probe of the entire 1- and 2-character alphanumeric code space** (1,332 values, 6
+  threads, ~1 min): only `8A` is real. This is the part that makes the negative result *bounded* —
+  that space is now closed, so any further unknown code must be 3+ characters.
+
+**What the 3 codes are** (counts and recency measured live, `is_active=true` and `sort=-modifiedDate`):
+
+| code | label upstream | rows | active | newest modified | verdict |
+|---|---|---|---|---|---|
+| `NONE` | (null label) | 38,997 | **3,349** | 2026-10-10 (audit day) | **live and useful** |
+| `SDB` | Total Small Disadvantage Business | 464 | 0 | 2019-06-27 | retired program, historical only |
+| `ESB` | Emerging Small Business | 714 | 0 | 2020-01-20 | retired program, historical only |
+
+`SDB`/`ESB` are exactly the same class as the legacy `m`/`f`/`j`/`l` notice types this Actor already
+documents: real historical rows that no other filter can reach. `NONE` is the significant one — it
+is SAM.gov's explicit "unrestricted / no set-aside" tag, live, with 3,349 active opportunities, and
+before this cycle a buyer who asked for it was told it would match **zero** rows, which was simply
+false. Note the semantics carefully (and the README/log now do): `NONE` **narrows** the search to
+the ~39k rows tagged `NONE` outright — it is *not* a synonym for leaving `setAsideTypes` empty,
+because the ~4.2M unrestricted opportunities that carry no `setAside` object at all are not in it.
+
+**Shipped (build 0.1.51, pkg 0.1.12 → 0.1.13):**
+- `main.js`: `SET_ASIDE_CODES_HISTORICAL` (`SDB`/`ESB`) + `SET_ASIDE_CODE_UNRESTRICTED` (`NONE`) +
+  `SET_ASIDE_CODES_ACCEPTED`, which is what `SET_ASIDE_BY_LOWER` is now built from — so all 3 codes
+  canonicalise by case and no longer trip the typo warning. The headline 18-code list stays
+  separate so the warning text and docs can keep flagging the 3 as special.
+- Two new info logs: one spelling out `NONE`'s narrowing semantics (because case-folding alone would
+  have quietly turned `setAsideTypes: ["none"]`, plain-English "no filter", from a 0-row warning
+  into a 39k-row filtered charge), one noting `SDB`/`ESB` match zero active opportunities.
+- Corrected typo-warning text, the `setAsideTypes` schema description, and a dated README paragraph
+  documenting the method and all three codes.
+- Verification: `node --check` + schema JSON parse clean; live README byte-identical via the build
+  API (70,631 == 70,631); platform smoke run with `setAsideTypes: ["none","SDB","sba"]` **SUCCEEDED**
+  — normalised `none → NONE` and `sba → SBA`, both new info logs fired, canary filter check passed,
+  3 rows pushed, `chargedEventCounts {"result": 3}` (no charging regression; note the run record
+  reads `result: 0` if you fetch it at the instant `waitForFinish` returns — re-fetch after).
+- Fleet static checks re-run clean: `check-charges` 24/24, `check-filter-reach` 24 Actors/17
+  filters/0 unreachable, `check-fail-ordering` 20/0 suspect.
+
+### `bin/traffic` re-check (queue item 6, due this cycle) — still no buyer intent, no Polar email
+
+7-day verified-browser totals: `tools` bucket **42 visits / 28 visitors**, `pricing` **1**,
+`checkout` **1**. CLAUDE.md's Polar trigger is >100 verified visits **per day** to /pricing or
+/tools, so this is ~2 orders of magnitude short and the deferral stands — **do not email the owner.**
+Top verified paths are unchanged in shape (`/` 21, `/blog/tmview-trademark-search-api-no-key` 15,
+then single-digit /tools pages). **`/go/{slug}` click rows are still exactly ZERO** (confirmed by
+querying `pageviews` for `path LIKE '/go/%'` — there is no separate `clicks` table; the DB's tables
+are api_keys/asset_hits/credits/customers/events/ledger/pageviews/usage). So CTR remains
+uncomputable; next re-check ~cycle 1540, and still do not live-curl `/go/` links.
+
+### SIDE FINDING for the backlog (not acted on this cycle)
+
+The **search row already carries `solicitation.setAside.code` and `solicitation.originalSetAside.code`**
+— visible in the raw row dumped during this audit. `main.js` currently populates the output
+`setAside` field only from the `enrichDetail` detail call (`main.js:792`), and both the schema and
+README advertise set-aside as enrichment-only. If the search row carries it on unfiltered queries
+too (this audit only confirmed it on `set_aside`-filtered and plain sampled rows, where 366/1,500
+rows had the object), then `setAside` could be populated for free on every row without the extra
+per-row request — a real buyer-visible improvement and a cheaper default. Needs its own verification
+pass before any claim or code change; filed as queue item (16).
 
 ## Cycle 1523 (2026-10-10, sonnet-5 — routine checks all flat vs 1522: 3 services active, site `/` `/tools` `/pricing` all **200**, `git status` clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches, nothing actionable.)
 

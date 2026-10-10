@@ -96,14 +96,35 @@ const NOTICE_TYPE_CODES = {
 // uppercasing would have broken the one code that was previously working for anyone who copied it
 // correctly. Hence a canonical map keyed by lowercase, emitting the platform's exact spelling.
 //
-// Every code below was verified non-zero live against index=opp in cycle 1008. SAM.gov publishes no
-// facet/reference endpoint for this vocabulary (checked: no `facets` in the search response,
-// `locationservices/v1/api/setasidetypes` 500s), so this list is maintained by live probe, not sync.
+// Every code below was verified non-zero live against index=opp in cycle 1008, and re-verified
+// non-zero (0 dead values, counts within natural growth) in cycle 1524. SAM.gov publishes no
+// facet/reference endpoint for this vocabulary (re-checked cycle 1524: still no `facets`/
+// `aggregations` in the search response at any param spelling; `locationservices/v1/api/
+// setasidetypes` still 500s; opps/v1|v2/setasides and referencedata/v1/setAsideTypes all 404), so
+// this list is maintained by live probe, not sync.
 const SET_ASIDE_CODES = [
     'SBA', 'SBP', '8A', '8AN', 'HZC', 'HZS', 'SDVOSBC', 'SDVOSBS',
     'WOSB', 'WOSBSS', 'EDWOSB', 'EDWOSBSS', 'LAS', 'IEE', 'ISBEE', 'BICiv', 'VSA', 'VSS',
 ];
-const SET_ASIDE_BY_LOWER = new Map(SET_ASIDE_CODES.map((c) => [c.toLowerCase(), c]));
+// Cycle 1524 ran the OTHER direction of this audit for the first time (upstream - ours, not just
+// ours - upstream: every prior pass only re-verified that OUR 18 codes still return rows). With no
+// facet endpoint to read the vocabulary from, it was derived empirically two ways: (a) 1,500 live
+// search rows sampled across the index, reading each row's own `solicitation.setAside.code`, and
+// (b) a brute-force probe of the whole 1- and 2-character alphanumeric code space (1,332 values --
+// only `8A` is real, so that space is now closed and any further unknown code must be 3+ chars).
+// That surfaced 3 real, filterable codes this list never had. Two are retired programs with zero
+// active rows -- same class as the legacy m/f/j/l notice types above, real historical rows that no
+// other filter can reach: SDB "Total Small Disadvantage Business" (464 rows, newest modified
+// 2019-06-27) and ESB "Emerging Small Business" (714 rows, newest 2020-01-20). The third, NONE, is
+// very much alive (38,997 rows, 3,349 of them active, newest modified the day of the audit) and is
+// SAM.gov's explicit "no set-aside / unrestricted" marker -- it is NOT a synonym for leaving this
+// filter empty, because the ~4.2M unrestricted rows that carry no setAside object at all are not
+// in it. Before this, all three were treated as typos: still sent (fail-closed by design) and so
+// still working, but the run warned they would match ZERO rows, which was simply false.
+const SET_ASIDE_CODES_HISTORICAL = ['SDB', 'ESB'];
+const SET_ASIDE_CODE_UNRESTRICTED = 'NONE';
+const SET_ASIDE_CODES_ACCEPTED = [...SET_ASIDE_CODES, SET_ASIDE_CODE_UNRESTRICTED, ...SET_ASIDE_CODES_HISTORICAL];
+const SET_ASIDE_BY_LOWER = new Map(SET_ASIDE_CODES_ACCEPTED.map((c) => [c.toLowerCase(), c]));
 // Aliases for the umbrella names the README's own use-cases advertise ("8(a) / SDVOSB capture"),
 // which are NOT codes this backend accepts. Each expands to the real code(s) it covers -- SAM.gov
 // splits SDVOSB and HUBZone into separate competitive/sole-source codes, and a buyer asking for
@@ -143,12 +164,31 @@ function canonSetAsides(values) {
     if (expanded.length) {
         log.info(`setAsideTypes normalised to SAM.gov's case-sensitive codes: ${expanded.join('; ')}.`);
     }
+    // NONE is the one accepted value whose plain-English reading ("no set-aside filter") is the
+    // opposite of what it does upstream, so say so rather than letting it look like a no-op.
+    if (out.includes(SET_ASIDE_CODE_UNRESTRICTED)) {
+        log.info(
+            'setAsideTypes includes NONE, SAM.gov\'s explicit "unrestricted / no set-aside" marker. This NARROWS '
+            + 'the search to the ~39k opportunities SAM.gov tagged NONE outright -- it is not the same as leaving '
+            + 'setAsideTypes empty, which searches every opportunity including the millions that carry no '
+            + 'set-aside field at all.',
+        );
+    }
+    const historical = out.filter((c) => SET_ASIDE_CODES_HISTORICAL.includes(c));
+    if (historical.length) {
+        log.info(
+            `setAsideTypes includes retired set-aside program(s) ${historical.join(', ')}. These match real `
+            + 'historical opportunities (SDB ~464, ESB ~714) but ZERO active ones -- nothing has posted under '
+            + 'either since 2020. Useful for research, not for a current-bid pipeline.',
+        );
+    }
     if (unknown.length) {
         log.warning(
             `setAsideTypes value(s) ${unknown.map((v) => `"${v}"`).join(', ')} are not SAM.gov set-aside codes. `
             + 'They are still sent, and SAM.gov fails closed on an unrecognised value, so they will match ZERO '
             + 'opportunities rather than widening your results. If you expected matches, use one of: '
-            + `${SET_ASIDE_CODES.join(', ')} (or the aliases 8(a), SDVOSB, HUBZone).`,
+            + `${SET_ASIDE_CODES.join(', ')} (or the aliases 8(a), SDVOSB, HUBZone; or NONE for explicitly `
+            + `unrestricted, or the retired ${SET_ASIDE_CODES_HISTORICAL.join('/')} for historical rows only).`,
         );
     }
     return [...new Set(out)];

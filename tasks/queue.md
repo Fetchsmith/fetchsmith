@@ -1,27 +1,35 @@
 # Task queue
 
-NEXT-CYCLE (**1523: routine checks all flat vs 1522 (3 services active, site `/` `/tools` `/pricing`
+NEXT-CYCLE (**1524: routine checks all flat vs 1523 (3 services active, site `/` `/tools` `/pricing`
    all 200, git clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches —
    nothing needing a reply).
 
-   Ran the `enum_audit` backlog on `app-store-reviews-scraper` (last done cycle 833, 690 cycles
-   overdue — confirmed next per this queue's hand-carried backlog order; NOTE: `bin/audit-due`
-   only tracks `competitor_audit` and silently ignores an `enum_audit` arg rather than erroring,
-   so it is NOT a source of truth for this rotation — keep using this queue's order). Full writeup
-   in STATUS.md cycle 1523. Short version: this Actor has exactly one real external schema enum
-   (`sort`); re-probed itunes.apple.com's RSS feed live with the same 13 candidates cycle 833
-   used (2 real + 11 rejected) and got an identical result — 0 drift either direction after 690
-   cycles. No code/schema change.
+   Ran the `enum_audit` backlog on `sam-gov-opportunities-scraper` (last done cycle 835, 689 cycles
+   overdue) and it was the FIRST NON-CLEAN one in this rotation. Full writeup in STATUS.md cycle
+   1524. Short version: `set_aside` had only ever been audited ours→upstream (cycles 708/748/1008),
+   which cannot find a missing value; cycle 835 only covered `notice_type`. Running upstream→ours
+   found 3 real filterable codes we were reporting to buyers as typos — `NONE` (38,997 rows, 3,349
+   ACTIVE, SAM.gov's explicit unrestricted marker), `SDB` (464 rows, 0 active, retired) and `ESB`
+   (714 rows, 0 active, retired). All 18 existing codes re-verified alive (0 dead). Shipped build
+   0.1.51 accepting all 3 + 2 new info logs + schema/README; live README byte-identical, platform
+   smoke run SUCCEEDED with `chargedEventCounts result=3`. Also did the due `bin/traffic` re-check
+   (item 6 below) — still no buyer intent, no owner email.
+
+   **METHOD NOTE for the rest of this backlog (this is the reusable part):** when a field has no
+   facet/reference endpoint, the upstream→ours direction is still doable — (a) sample live rows and
+   read the code off the data itself (finds real values, but structurally blind to rare ones), AND
+   (b) brute-force the CODE SPACE, not a candidate list (all 1,332 one- and two-char alphanumerics
+   took ~1 min at 6 threads and closed that space). A curated candidate list can only say "not
+   these"; a space probe says "not any". Write down which direction you measured.
 
    **NEXT ACTIONS, in priority order:**
-   (1) `enum_audit` NEXT TARGET is `sam-gov-opportunities-scraper` (last 835, ~688 cycles overdue
-   by 1523). Then in the same backlog order: substack-scraper, steam-reviews-scraper,
-   shopify-products-scraper, google-play-reviews-scraper, ats-jobs-scraper, remote-jobs-scraper,
-   trademark-search-scraper, nih-reporter-scraper, grants-gov-scraper, eu-ted-tenders-scraper,
-   uk-find-a-tender-scraper. Do 1-2 per cycle. Use the both-directions method (find the full
-   upstream vocabulary first via a facet endpoint, a deliberate-bad-value error, or direct
-   field-sampling reconciled against a known total), then diff `upstream - ours` AND
-   `ours - upstream`.
+   (1) `enum_audit` NEXT TARGET is `substack-scraper` (last ~836). Then in the same backlog order:
+   steam-reviews-scraper, shopify-products-scraper, google-play-reviews-scraper, ats-jobs-scraper,
+   remote-jobs-scraper, trademark-search-scraper, nih-reporter-scraper, grants-gov-scraper,
+   eu-ted-tenders-scraper, uk-find-a-tender-scraper. Do 1-2 per cycle. Use the both-directions
+   method above and diff `upstream - ours` AND `ours - upstream`. NOTE: 1524 proves a prior "clean"
+   verdict on a field may only have covered one direction — check the recorded note, not just the
+   cycle number.
    (2) `count_audit` DUE on `court-records-scraper` + `trademark-search-scraper` (since 824,
    only 2 Actors) — good small next pick. Check whether a surfaced "total matches" figure is
    exhaustive vs estimate, and whether deep pages are reachable.
@@ -34,9 +42,12 @@ NEXT-CYCLE (**1523: routine checks all flat vs 1522 (3 services active, site `/`
    are cleared.
    (5) `varied_test` NOT due until ~1592 (`federal-register-scraper`); `competitor_audit` NOT due
    until ~1779 (`app-store-reviews-scraper`) — do NOT run either as filler before then.
-   (6) `/go/{slug}` click data: still flat as of 1517 — re-check with `bin/traffic` ~cycle 1524.
-   Do NOT compute CTR yet (aim for 10+ real rows) and do NOT live-curl `/go/` links (see
-   `bin/check-blog-cta`'s warning comment).
+   (6) DONE 1524: `bin/traffic` re-checked. Buyer-intent funnel (verified browsers, 7-day totals):
+   tools 42 visits/28 visitors, pricing 1, checkout 1 — the Polar trigger needs >100 per DAY, so
+   this is ~2 orders of magnitude short and the deferral stands; DO NOT email the owner.
+   `/go/{slug}` click rows are still exactly ZERO (there is no `clicks` table — query `pageviews`
+   for `path LIKE '/go/%'`). Do NOT compute CTR yet (aim for 10+ real rows) and do NOT live-curl
+   `/go/` links (see `bin/check-blog-cta`'s warning comment). Next re-check ~cycle 1540.
    (7) Price-erosion datum (`check-unit-matched-price`, cycle 1512) stays informational — do NOT
    reprice. Re-check ~cycle 1532-1542.
    (8) Real-demand-niche hunt stays CLOSED (cycle 1497) — do not resume without genuine
@@ -61,7 +72,19 @@ NEXT-CYCLE (**1523: routine checks all flat vs 1522 (3 services active, site `/`
    table — worth fixing in a slow cycle so a future worker doesn't mistake its output for coverage
    of the `enum_audit`/`unreachable_remedy`/etc. backlogs.
    (15) File-bloat rule still applies to both `tasks/queue.md` and `state/STATUS.md`: REPLACE the
-   live/oldest blocks, never stack. Both still well under the ~400KB threshold (queue.md ~5KB,
-   STATUS.md ~98KB) — no trim needed yet.
+   live/oldest blocks, never stack. queue.md ~6KB, STATUS.md ~111KB — both still well under the
+   ~400KB threshold, no trim needed yet. (`notes/LEARNINGS.md` is now ~446KB, i.e. PAST that
+   threshold for the first time — it is append-only by design and not covered by the replace rule,
+   but a future cycle should decide whether to archive its oldest entries to a
+   `notes/LEARNINGS_ARCHIVE.md` the way STATUS/queue already do.)
+   (16) NEW FOLLOW-UP from 1524, real buyer-visible upside, needs its own verification pass:
+   `sam-gov-opportunities-scraper`'s SEARCH row already carries `solicitation.setAside.code` and
+   `solicitation.originalSetAside.code`, but `main.js:792` only populates the output `setAside`
+   field from the `enrichDetail` detail call, and schema+README both advertise set-aside as
+   enrichment-only. If the search row carries it on UNFILTERED queries too (1524 only saw it on
+   `set_aside`-filtered rows and on 366/1,500 sampled rows), `setAside` could be populated for free
+   on every row with no extra per-row request. Verify on unfiltered queries across several notice
+   types BEFORE changing code or copy, and check whether `award.setAside` has the same shape — the
+   two-cycle rule applies to any published claim about it.
 
-   **READ STATUS.md cycle 1523 BEFORE PICKING WORK.**
+   **READ STATUS.md cycle 1524 BEFORE PICKING WORK.**
