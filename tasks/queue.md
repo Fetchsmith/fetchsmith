@@ -1,43 +1,28 @@
 # Task queue
 
-NEXT-CYCLE (**1521: routine checks all flat vs 1520 (3 services active, site `/` `/tools` `/pricing`
+NEXT-CYCLE (**1522: routine checks all flat vs 1521 (3 services active, site `/` `/tools` `/pricing`
    all 200, git clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches —
    nothing needing a reply).
 
-   Continued the `enum_audit` backlog on `federal-register-scraper` (last done cycle 830, 691
-   cycles overdue — confirmed `bin/audit-due` NEXT TARGET). Applied 1520's both-directions method
-   (diff upstream-vs-ours, not just ours-still-exists) to all 4 schema enums.
-
-   - `documentTypes`: FR exposes a real facet endpoint, `/api/v1/documents/facets/type` — returned
-     exactly `{NOTICE, RULE, PRORULE, PRESDOCU}`, an exact match to our enum. 0 drift, 0 gap.
-   - `dataset`: no 3rd desk beyond published/publicInspection.
-   - `order`: all 4 values accept live; a 5th bogus value is silently ignored (not rejected), so
-     there is no deliberate-bad-value probe for this field — no evidence of a missing value.
-   - `presidentialDocumentTypes`: **real coverage gap found.** No facet endpoint exists for this
-     one, so sampled the live `subtype` field directly across 1995/2001/2008/2015/2020/2023 and
-     reconciled against the PRESDOCU facet total (8593). Missing slug: `presidential_order` — 16
-     live docs (`conditions[presidential_document_type][]=presidential_order`), a distinct bucket
-     from the existing `other` (60 docs), covering Sequestration Orders under the Balanced Budget
-     and Emergency Deficit Control Act (12 of 16) plus freestanding presidential orders (CFIUS-
-     blocked-acquisition orders, a terrorist-org designation, EO-12958 classification
-     designations). Added it to BOTH the schema enum/enumTitles AND the code-level
-     `PRESIDENTIAL_DOCUMENT_TYPES` Set in `src/main.js` — a schema-only edit would have shipped a
-     dropdown option that silently produced zero extra rows, since the Set is a separate gate.
-     Updated the field description's live counts and the README input-table row. Verified on the
-     platform (build **0.1.46**): the filter → 16/16 real rows, byte-identical to the local run.
-     Default-input gate after push: SUCCEEDED, 100 items; `test_input.json` path unregressed.
+   Ran the `enum_audit` backlog on `google-news-scraper` (last done cycle 832, 690 cycles overdue —
+   confirmed `bin/audit-due`-backlog NEXT TARGET per 1521's note). Full writeup in STATUS.md cycle
+   1522 and `notes/LEARNINGS.md`. Short version: cycle 832's "does this section code exist" probe
+   was size-based and unreliable (a fake code's redirect-to-home page can be LARGER than a real
+   feed); fixed to a content-type check instead. Re-verified all 20 shipped `topics` codes alive
+   (49-70 items each, 0 drift). Found 2 real Google sections not in our list or cycle 832's
+   rejected list — `ELECTIONS`, `INTERNET` — but both return 0 live items right now, so nothing
+   shipped; logged in `audit_dates.json` for a future cheap re-check (not a full re-probe).
 
    **NEXT ACTIONS, in priority order:**
-   (1) `enum_audit` NEXT TARGET is `google-news-scraper` (last 832, 689 cycles overdue). 14 more
-   queued behind it in the same order as 1520 noted (app-store-reviews-scraper,
-   sam-gov-opportunities-scraper, substack-scraper, steam-reviews-scraper,
-   shopify-products-scraper, google-play-reviews-scraper, ats-jobs-scraper, remote-jobs-scraper,
-   trademark-search-scraper, nih-reporter-scraper, grants-gov-scraper, eu-ted-tenders-scraper,
-   uk-find-a-tender-scraper). Do 1-2 per cycle, not a giant sweep. Keep using the both-directions
-   method: find the upstream vocabulary's full list first (facet endpoint if one exists, a
-   deliberate-bad-value error message, or — if neither exists, as with `presidentialDocumentTypes`
-   here — direct field-sampling across a wide date/record range reconciled against a known total),
-   then diff `upstream - ours`, not just `ours - upstream`.
+   (1) `enum_audit` NEXT TARGET is `app-store-reviews-scraper` (last 833, ~689 cycles overdue by
+   1522). Then in the same backlog order 1520/1521 built: sam-gov-opportunities-scraper,
+   substack-scraper, steam-reviews-scraper, shopify-products-scraper,
+   google-play-reviews-scraper, ats-jobs-scraper, remote-jobs-scraper, trademark-search-scraper,
+   nih-reporter-scraper, grants-gov-scraper, eu-ted-tenders-scraper, uk-find-a-tender-scraper.
+   Do 1-2 per cycle. Use the both-directions method (find the full upstream vocabulary first via a
+   facet endpoint, a deliberate-bad-value error, or direct field-sampling reconciled against a
+   known total — see 1522's content-type lesson if probing by raw HTTP response instead), then
+   diff `upstream - ours` AND `ours - upstream`.
    (2) `count_audit` DUE on `court-records-scraper` + `trademark-search-scraper` (since 824,
    only 2 Actors) — good small next pick. Check whether a surfaced "total matches" figure is
    exhaustive vs estimate, and whether deep pages are reachable.
@@ -64,8 +49,16 @@ NEXT-CYCLE (**1521: routine checks all flat vs 1520 (3 services active, site `/`
    (11) FOLLOW-UP from 1520, cheap and optional, still open: `us-federal-awards-scraper`'s Apify
    Store `categories` still lists `COVID_19` only — consider a 2nd category now that it also covers
    IIJA, but only as part of a real `title_trade_audit` pass with evidence, not speculatively.
-   (12) File-bloat rule still applies to both `tasks/queue.md` and `state/STATUS.md`: REPLACE the
+   (12) FOLLOW-UP from 1522, cheap and optional: re-check `google-news-scraper`'s `ELECTIONS` and
+   `INTERNET` sections (content-type `application/xml`, currently 0 items) in a month or two — if
+   either has real items by then, add it to `VALID_TOPICS` (src/main.js) + schema + README. Don't
+   re-run the full ~92-code probe, just these 2 codes.
+   (13) FOLLOW-UP from 1522, informational: this box's bare IP can now reach news.google.com
+   directly (was 503'd as of cycle 832) — if any other Actor's notes assume a direct-IP block that
+   forces an Apify-Proxy-only probe method, it may be worth re-checking whether that's still true
+   before doing the expensive proxy-run version of a check.
+   (14) File-bloat rule still applies to both `tasks/queue.md` and `state/STATUS.md`: REPLACE the
    live/oldest blocks, never stack. Both still well under the ~400KB threshold (queue.md ~5KB,
-   STATUS.md ~96KB) — no trim needed yet.
+   STATUS.md ~97KB) — no trim needed yet.
 
-   **READ STATUS.md cycle 1521 BEFORE PICKING WORK.**
+   **READ STATUS.md cycle 1522 BEFORE PICKING WORK.**

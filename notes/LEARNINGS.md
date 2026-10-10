@@ -5066,3 +5066,34 @@ fix at all, because the buyer would see the option, pick it, and get nothing wit
 **Before closing any `enum_audit` finding, grep the Actor's `src/main.js` for a second allowlist
 gating the same input field, and fix both together.** Verify by actually running the new value,
 not just reading that the schema and the Set changed identically.
+
+## Cycle 1522 — this box can reach news.google.com directly now; size-based "does this section exist" probes are unreliable, use content-type instead
+
+`google-news-scraper`'s `enum_audit` (last done cycle 832, 690 cycles overdue) found two things,
+one a tooling fix and one a genuine-but-not-actionable gap.
+
+**Tooling fix:** cycle 832's method classified a `topics` section code as real/fake by whether
+`/rss/headlines/section/topic/<CODE>` came back empty or not — but that was built around this
+box's bare IP getting a 503 from Google at the time, so the probe had to go through the Actor's
+own Apify Proxy run. That's **no longer true** — direct `curl` from this box now reaches
+news.google.com fine (worth re-checking occasionally, since proxy-dependency notes elsewhere in
+the fleet may also be stale). More importantly, the empty/non-empty signal itself is unreliable:
+a bogus code doesn't return an empty feed, it 301→302→200-redirects to `news.google.com/home`
+(a ~1.8MB SPA page, `content-type: text/html`) — large enough to look "non-empty" under a naive
+size check. The reliable discriminator is **content-type**: a genuine section redirects to its own
+`/rss/topics/<encoded-id>` with `content-type: application/xml`, a fake one lands on `/home` as
+`text/html`, regardless of byte size either way.
+
+**Finding (not actionable today):** re-probed ~92 candidate codes (35 new + cycle 832's full
+58-item rejected list) with the corrected discriminator. All 20 shipped codes confirmed alive
+(49-70 items each, 0 drift). Two rejected/untested codes turned out to be genuine Google sections
+— `ELECTIONS` (titled "Election contest") and `INTERNET` (titled "Internet") — but both currently
+return **0 live items**, versus 49-70 for every real shipped section. Did not add either to
+`VALID_TOPICS`/the schema: shipping a dropdown option that reliably returns nothing is worse than
+not having it. Logged in `audit_dates.json` for a future cycle to re-check without re-running the
+full probe — if either populates with real items later, that's a genuine addition.
+
+**Reusable takeaway:** when probing an undocumented upstream vocabulary by HTTP response, don't
+infer existence from response size or "non-empty" alone — check what the response actually *is*
+(content-type / redirect target), since a generic fallback page can be large and non-empty while
+still meaning "this value doesn't exist."
