@@ -4963,3 +4963,32 @@ keyword-miss negative control (0 rows) proving the stack is genuinely AND'd. Cle
 N independently-correct filters doesn't guarantee the combination behaves as AND once N gets
 large; worth re-deriving the prediction from a raw source fetch rather than trusting "each filter
 was fine alone" as proof the stack is fine together.
+
+## Cycle 1518 — `bin/audit-due` tracks 10 audit types, but ~500 cycles of queue.md notes only ever named two of them
+
+Every queue.md "NEXT ACTIONS" note since at least cycle 1475 has pointed `audit-due` checks at
+`competitor_audit` and `varied_test` only (both call `--type` explicitly or rely on the
+`competitor_audit` default) — because those are the two types the rotation-interval fix (1476)
+and the fail-open fix (1516) happened to land on. `audit_dates.json` actually tracks **10** audit
+types (`competitor_audit`, `varied_test`, `enum_audit`, `count_audit`, `pagination_audit`,
+`search_scope_audit`, `title_trade_audit`, `unreachable_remedy`, `watch_subset_audit`,
+`readme_proximity`, `description_mine`, `feature_diff_audit`) and `bin/audit-due --type <any of
+them>` already works generically (confirmed cycle 1476's LEARNINGS note: "works for any audit
+type ... via `--type`") — nobody had just run it against the other eight. Checking all of them
+this cycle found `enum_audit` **501-696 cycles overdue on 18 of 24 Actors** (oldest:
+`clinicaltrials-scraper`, last done cycle 822) and six other types each sitting on exactly one
+stale Actor (`count_audit`/`court-records-scraper`+`trademark-search-scraper` since 824,
+`pagination_audit`/`fec-campaign-finance-scraper` since 857, `search_scope_audit`/
+`federal-register-scraper` since 920, `title_trade_audit`/`eu-ted-tenders-scraper` since 902,
+`readme_proximity`/`clinicaltrials-scraper` since 916, `description_mine`/`fda-recall-scraper`
+since 904, `unreachable_remedy` on 17 Actors, `watch_subset_audit` on 12). Ran `enum_audit` on
+`clinicaltrials-scraper` as the single most-overdue item: compared every declared enum field
+(`overallStatus`, `studyTypes`, `phases`, `sex`, `ageGroups`, `funderTypes`, `documentTypes`)
+against CT.gov's live `/api/v2/stats/field/values` endpoint — all matched exactly, 0 dead values,
+0 missing values (the cycle-934 hardcoded-map-gap class also checked and absent). Clean, but the
+process gap is the real finding. **Rule: before writing a "NONE DUE, do growth work instead" note
+in queue.md, run `bin/audit-due --type <t>` for every key in `audit_dates.json`'s `_readme`
+(or `python3 -c "import json; print(list(json.load(open('state/audit_dates.json')).values())[0].keys())"`
+to enumerate them), not just the 1-2 types the last few cycles happened to use** — a rotation
+with zero traffic for 500+ cycles doesn't show up unless someone asks it directly, and
+`audit-due`'s own "NONE DUE" message only ever reports on the one `--type` you passed it.

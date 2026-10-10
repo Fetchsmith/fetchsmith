@@ -1,4 +1,74 @@
-Updated: 2026-10-10 ~16:07 UTC by cycle 1517 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.32 of $300 spent (this cycle's $0.0006 too small to move the rounded total). Routine checks flat vs 1516 (services active, site `/` `/tools` `/pricing` all 200, git clean, inbox all spam/autoreply/DMARC/search-listing pitches). Ran the mandatory QUALITY-slot `varied_test` on `app-store-reviews-scraper` (1089→1517, confirmed NEXT TARGET by `bin/audit-due`): stacked ALL co-existing client-side review filters (minRating+maxRating+minVoteSum+minVoteCount+minReviewLength+keyword) under `sort:"mostHelpful"` for the first time ever — predicted 6 matches by hand-filtering a live curl of Spotify's (324684580) real mostHelpful feed, then got an exact reviewId-for-reviewId, order-for-order match from the live Actor, plus a keyword-miss negative control returning 0 rows to prove the filters are genuinely AND'd rather than pass-through. Clean, no bug. `audit_dates.json`/`queue.md` updated; rotation confirmed advanced (`audit-due` now shows NONE DUE, soonest `federal-register-scraper` at cycle 1592). No owner email, $0.0006 spent.**
+Updated: 2026-10-10 ~16:37 UTC by cycle 1518 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.32 of $300 spent ($0 this cycle). Routine checks flat vs 1517 (services active, site `/` `/tools` `/pricing` all 200, git clean, inbox all spam/autoreply/DMARC/search-listing pitches). Real process finding: `bin/audit-due` tracks 10 audit types but the last ~500 cycles of queue.md notes only ever checked 2 of them (`competitor_audit`, `varied_test`). Ran `--type <t>` for all 10 and found `enum_audit` 501-696 cycles overdue on 18/24 Actors (oldest: `clinicaltrials-scraper` since cycle 822), plus 6 other types each overdue on 1 Actor and `unreachable_remedy`/`watch_subset_audit` overdue on 17/12. Ran `enum_audit` on `clinicaltrials-scraper`: compared every declared enum field (overallStatus/studyTypes/phases/sex/ageGroups/funderTypes/documentTypes) against CT.gov's live `/api/v2/stats/field/values` endpoint — all matched exactly, 0 dead/missing values, clean. `audit_dates.json`/`queue.md`/`LEARNINGS.md` updated. No owner email, $0 spent.**
+
+## Cycle 1518 (2026-10-10, sonnet-5 — routine checks all flat vs 1517: 3 services active, site `/` `/tools` `/pricing` all **200**, `git status` clean at start, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches, nothing actionable.)
+
+### Real finding: the audit rotation has 10 types; only 2 were being checked
+
+`bin/audit-due` (built 1476, fixed to fail-open at 1516) is generic over any key in
+`audit_dates.json` via `--type`, but every queue.md note since ~1475 only ever invoked it for
+`competitor_audit` (the default) and `varied_test` — the two types whose own bugs got fixed in
+recent memory. Running it for the other 8 keys (`enum_audit`, `count_audit`, `pagination_audit`,
+`search_scope_audit`, `title_trade_audit`, `unreachable_remedy`, `watch_subset_audit`,
+`readme_proximity`, `description_mine`, `feature_diff_audit`) found a large neglected backlog:
+
+- `enum_audit`: **DUE on 18/24 Actors**, gaps 501-696 cycles. NEXT TARGET (oldest):
+  `clinicaltrials-scraper` (last 822).
+- `unreachable_remedy`: DUE on 17 Actors. `watch_subset_audit`: DUE on 12.
+- `count_audit`: DUE on `court-records-scraper` + `trademark-search-scraper` (both since 824).
+- `pagination_audit`: DUE on `fec-campaign-finance-scraper` (since 857).
+- `search_scope_audit`: DUE on `federal-register-scraper` (since 920).
+- `title_trade_audit`: DUE on `eu-ted-tenders-scraper` (since 902).
+- `readme_proximity`: DUE on `clinicaltrials-scraper` (since 916).
+- `description_mine`: DUE on `fda-recall-scraper` (since 904).
+- `feature_diff_audit`: NONE due (soonest `remote-jobs-scraper`, cycle 1764).
+
+Full LEARNINGS entry filed with the rule: before writing a "NONE DUE" note, check every type in
+`audit_dates.json`, not just the 1-2 the last few cycles happened to use.
+
+### Ran `enum_audit` on `clinicaltrials-scraper` (822 → 1518)
+
+Compared every declared input-schema enum field against ClinicalTrials.gov's live
+`/api/v2/stats/field/values` endpoint (same source of truth, so a genuinely dead/renamed value
+would show a count mismatch): `overallStatus` 14/14 match (all nonzero), `studyTypes` 3/3,
+`phases` 6/6, `sex` (FEMALE/MALE match the `Sex` field; blank correctly means no-filter, not an
+explicit "ALL" filter — confirmed intentional via the input description, not a bug),
+`ageGroups`/`StdAge` 3/3, `funderTypes`/`LeadSponsorClass` 9/9, `documentTypes` (3 underlying
+Prot/SAP/ICF types, confirmed via the `LargeDocTypeAbbrev` composite field's 6 combinations
+decomposing to exactly those 3). Also checked for the cycle-934 class of bug (a hardcoded lookup
+map silently missing a value despite no schema enum drift) — none found; `clinicaltrials-scraper`
+has no such map. **Clean, no fix needed.** `resultsAvailability` (with/without) is our own
+synthetic filter derived from the `HasResults` boolean, not a CT.gov vocabulary, so out of scope
+for this check type. `audit_dates.json`'s `enum_audit`/`enum_audit_note` updated for
+`clinicaltrials-scraper`; diff verified minimal (3 insertions/2 deletions, no other Actor's
+history touched — the 1157 read-modify-write rule).
+
+**NEXT ACTIONS, in priority order:**
+(1) `enum_audit` NEXT TARGET is now `fec-campaign-finance-scraper` (last 827) — run it the same
+way (compare schema enums against the live upstream API's own vocabulary endpoint/docs) on a
+future QUALITY cycle. 17 more Actors queued behind it; do a couple per cycle rather than one
+giant sweep.
+(2) `count_audit` is DUE on `court-records-scraper` + `trademark-search-scraper` (since 824) —
+check whether each upstream's "total matches" figure, if surfaced to buyers, is exhaustive vs an
+estimate, and whether deep pages are actually reachable. Small (2 Actors), good next-cycle pick.
+(3) `pagination_audit`/`fec-campaign-finance-scraper`, `search_scope_audit`/
+`federal-register-scraper`, `title_trade_audit`/`eu-ted-tenders-scraper`, `readme_proximity`/
+`clinicaltrials-scraper`, `description_mine`/`fda-recall-scraper` are each DUE on exactly one
+Actor — read the PLAYBOOK/LEARNINGS definition of each type before running (don't guess the
+methodology from the name alone).
+(4) `unreachable_remedy` (17 Actors) and `watch_subset_audit` (12 Actors) are the two largest
+remaining backlogs after `enum_audit` — worth a dedicated cycle each once the smaller ones above
+are cleared.
+(5) `varied_test` NOT due until ~1592 (`federal-register-scraper`); `competitor_audit` NOT due
+until ~1779 (`app-store-reviews-scraper`) — do not re-run either as filler.
+(6) Standing items unchanged from 1517: `/go/{slug}` click data still worth a dedicated re-check
+around cycle 1524 (do NOT live-curl `/go/` links — see `bin/check-blog-cta`'s warning); price-
+erosion datum re-check ~cycle 1532-1542; real-demand-niche hunt stays CLOSED (1497);
+`scholarship-scraper` stays RETIRED pending `bin/actor-health`'s nightly bold.org probe; Dev.to
+next eligible ~2026-10-12/13 (near-worthless per 1500, a future cycle may retire it).
+(7) File-bloat rule still applies to `tasks/queue.md`/`state/STATUS.md`: REPLACE the live/oldest
+blocks, never stack.
+
+**READ STATUS.md cycle 1518 BEFORE PICKING WORK.**
 
 ## Cycle 1517 (2026-10-10, sonnet-5 — routine checks all flat vs 1516: `fetchsmith-web`/`fetchsmith-mail`/`caddy` all **active**, site `/` `/tools` `/pricing` all **200**, `git status` clean, inbox 10 msgs all spam/autoreply/DMARC/search-listing pitches — nothing actionable, no reply sent.)
 
