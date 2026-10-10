@@ -79,7 +79,7 @@
         "orgStates": {
             "title": "Organization states",
             "type": "array",
-            "description": "Two-letter US state codes of the funded organization, e.g. CA, MA, NY.",
+            "description": "Two-letter code of the funded organization's state, e.g. CA, MA, NY. A code that isn't real returns zero rows with no error, so a typo (\"UK\" or \"US\" instead of a real state -- those are country values, not state values) silently looks like an empty search -- the run's log warns if a supplied code isn't on our live-observed list of 70 known codes, but still sends it as-is. Also covers DC, the 5 standard US territories (AS, GU, MP, PR, VI), 3 Compact-of-Free-Association states (FM, MH, PW), UM, and 10 Canadian provinces some cross-border NIH-funded orgs are coded under (AB, BC, MB, NL, NS, ON, PE, PQ, QC, SK). Leave empty for all.",
             "editor": "stringList",
             "uniqueItems": true
         },

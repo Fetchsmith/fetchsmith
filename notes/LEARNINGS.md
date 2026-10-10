@@ -5243,3 +5243,20 @@ sibling field for hundreds of cycles.** Also: a brute-force probe of the whole c
 is cheap and conclusive when the space is small (2-letter codes = 676) and the vendor publishes no
 facet/reference endpoint — don't default to "unenumerable" just because there's no documented list;
 size the space first.
+
+## Cycle 1531: brute-forcing a 676-combo value space hits 429s under concurrency 10 — retry the failures serially, don't abandon
+
+Confirms 1530's finding on a second vendor (NIH RePORTER's `/v2/projects/search`, after TMview):
+brute-forcing all 676 two-uppercase-letter combinations with `ThreadPoolExecutor(max_workers=10)`
+got ~15% (101/676) rate-limited (HTTP 429) partway through, concentrated wherever the thread pool
+happened to be mid-flight when the vendor's limiter tripped — NOT a clean prefix/suffix of the
+alphabet, so don't assume the failures are contiguous. Fix: collect the failed codes, re-run just
+those serially (concurrency 1) with a short sleep + exponential backoff between attempts; all 101
+resolved cleanly on the second pass with zero further 429s. Net result for nih-reporter-scraper's
+`orgStates` field: a 70-code closed set (50 states + DC + 5 US territories + 3 Compact-of-Free-
+Association states + UM + 10 Canadian provinces — NIH funds some cross-border collaborations and
+codes them by province, e.g. both `PQ` and `QC` are live for Quebec simultaneously). Also worth
+noting for future brute-force probes: a plausible-looking code that returns a real, reproducible
+`total:0` is a genuine negative, not a rate-limit artifact to retry forever — confirmed `AA`/`AE`/`AP`
+(US military/diplomatic ZIP prefixes) and `NB`/`NT`/`NU`/`YT` (Canadian jurisdictions with no NIH-
+funded org on record) are true zeros, not errors, by re-checking them explicitly after the retry pass.

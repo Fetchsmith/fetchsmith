@@ -195,6 +195,31 @@ const ACTIVITY_CODES = [
     'ZIF', 'ZIG', 'ZIH', 'ZII', 'ZIJ',
 ];
 
+// `org_states` (the funded organization's state, cycle 1531's enum_audit target) is a free-text
+// criteria field with NO declared schema enum -- same implicit-vocabulary shape as agencyIcCodes/
+// activityCodes above, and the audit note at cycle 1015 only covered those two, not this sibling
+// field (exactly the coverage gap cycle 1530 flagged on trademark-search-scraper's `offices`).
+// NIH RePORTER has no reference endpoint for this either, so the closed set was found the TMview
+// way (cycle 1530): brute-force every two-uppercase-letter combination (676) against the live API
+// and keep the ones with a nonzero total. Result: the 50 states + DC + 5 standard US territories
+// (AS/GU/MP/PR/VI) + 3 Compact-of-Free-Association states (FM/MH/PW) + UM (US Minor Outlying
+// Islands) + 10 Canadian provinces/territories that some NIH-funded orgs (mostly cross-border
+// research collaborations) are coded under -- AB/BC/MB/NL/NS/ON/PE/PQ/QC/SK. Both "PQ" and "QC"
+// are live for Quebec (NIH's own data has both spellings in use, not a scrape artifact). Verified
+// confirmed-INVALID, not just untested: military/diplomatic ZIP codes AA/AE/AP, and the 4 Canadian
+// jurisdictions with no NIH-funded org on record (NB, NT, NU, YT) -- all return a real, re-checked
+// total:0, same as a plain typo. Exactly the same silent-zero-rows trap as agencyIcCodes/
+// activityCodes: "ca" (lowercase) returns 0 (fixed below by uppercasing, already done at
+// `orgStates` construction), and "UK" instead of "GB"-shaped mistakes like a stray "US" (not a
+// real org_state value -- the country field, not the state field) also return 0 with no error.
+const ORG_STATE_CODES = [
+    'AB', 'AK', 'AL', 'AR', 'AS', 'AZ', 'BC', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'FM', 'GA', 'GU',
+    'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MB', 'MD', 'ME', 'MH', 'MI', 'MN', 'MO',
+    'MP', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NL', 'NM', 'NS', 'NV', 'NY', 'OH', 'OK', 'ON',
+    'OR', 'PA', 'PE', 'PQ', 'PR', 'PW', 'QC', 'RI', 'SC', 'SD', 'SK', 'TN', 'TX', 'UM', 'UT', 'VA',
+    'VI', 'VT', 'WA', 'WI', 'WV', 'WY',
+];
+
 const listOf = (v) => (Array.isArray(v) ? v.filter((x) => x !== null && x !== undefined && x !== '') : []);
 const strList = (v) => listOf(v).map((x) => String(x).trim()).filter(Boolean);
 
@@ -330,6 +355,17 @@ if (unknownActivityCodes.length) {
         + 'code is NOT rejected by NIH RePORTER -- it just returns zero rows, indistinguishable from a genuinely '
         + 'empty search. They are still sent as-is (in case this is a real, rare code missed by our live sample), '
         + `but double-check the spelling. Recognised codes: ${ACTIVITY_CODES.join(', ')}.`,
+    );
+}
+
+const unknownOrgStates = orgStates.filter((c) => !ORG_STATE_CODES.includes(c));
+if (unknownOrgStates.length) {
+    log.warning(
+        `Unrecognised org state code(s): ${unknownOrgStates.join(', ')}. NIH RePORTER does not reject an invalid `
+        + 'state code -- it just returns zero rows, same as a genuinely empty search. Common mistakes: "UK" and '
+        + '"US" are not real org_state values (the country, not the state), and the full state name ("California") '
+        + 'does not work, only the 2-letter code. They are still sent as-is, but double-check the spelling. '
+        + `Recognised codes: ${ORG_STATE_CODES.join(', ')}.`,
     );
 }
 
