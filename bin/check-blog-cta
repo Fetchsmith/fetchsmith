@@ -9,11 +9,12 @@
 #
 # Flags a post only when BOTH hold:
 #   - it references exactly ONE distinct /tools/<slug> (a single-Actor post, not a roundup)
-#   - it has NO apify.com/fetchsmith/ link at all
+#   - it has NO direct Apify CTA link at all (either raw apify.com/fetchsmith/<slug>, or the
+#     logged /go/<slug> redirect shipped in cycle 1509 -- both count as one-hop)
 # Multi-Actor roundups legitimately use /tools/ as a hub and are NOT flagged.
 #
-# Also verifies every internal link resolves and every apify.com/fetchsmith/<slug> names a
-# real Actor dir -- a dead link in the only acquisition channel is a silent revenue leak.
+# Also verifies every internal link resolves and every apify.com/fetchsmith/<slug> or /go/<slug>
+# link names a real Actor dir -- a dead link in the only acquisition channel is a silent revenue leak.
 set -e
 cd "$(dirname "$0")/.."
 BLOG=site/content/blog
@@ -25,7 +26,7 @@ for f in "$BLOG"/*.md; do
   checked=$((checked+1))
   slugs=$(grep -ohE '/tools/[a-z0-9-]+' "$f" | sort -u)
   n=$(printf '%s' "$slugs" | grep -c . || true)
-  apify=$(grep -cE 'apify\.com/fetchsmith/' "$f" || true)
+  apify=$(grep -cE 'apify\.com/fetchsmith/|\]\(/go/[a-z0-9-]+\)' "$f" || true)
   if [ "$n" = "1" ] && [ "$apify" = "0" ]; then
     echo "  FLAG $(basename "$f") -> ${slugs##*/} (two-hop only; add a direct Apify link)"
     flag=$((flag+1))
@@ -33,9 +34,9 @@ for f in "$BLOG"/*.md; do
 done
 [ "$flag" = "0" ] && echo "  none -- every single-Actor post links straight to its Actor"
 
-echo "== apify.com/fetchsmith/<slug> links that name no local Actor dir"
+echo "== apify.com/fetchsmith/<slug> or /go/<slug> links that name no local Actor dir"
 bad=0
-for s in $(grep -rohE 'apify\.com/fetchsmith/[a-z0-9-]+' "$BLOG" | sed 's#.*/##' | sort -u); do
+for s in $(grep -rohE 'apify\.com/fetchsmith/[a-z0-9-]+|\]\(/go/[a-z0-9-]+\)' "$BLOG" | sed 's#.*/##; s/)$//' | sort -u); do
   [ -d "actors/$s" ] || { echo "  FLAG unknown Actor slug: $s"; bad=$((bad+1)); }
 done
 [ "$bad" = "0" ] && echo "  none"
@@ -48,4 +49,12 @@ for p in $(grep -rohE '\]\((/(tools|blog|docs|pricing)[^)#]*)' "$BLOG" | sed 's/
 done
 [ "$dead" = "0" ] && echo "  none"
 
-echo "== $checked posts checked; $flag missing-CTA, $bad bad-slug, $dead dead-link"
+echo "== /go/<slug> links that do not 302"
+godead=0
+for p in $(grep -rohE '\]\(/go/[a-z0-9-]+\)' "$BLOG" | sed 's/^](//; s/)$//' | sort -u); do
+  c=$(curl -s -o /dev/null -w '%{http_code}' "$BASE$p")
+  [ "$c" = "302" ] || { echo "  FLAG $c $p"; godead=$((godead+1)); }
+done
+[ "$godead" = "0" ] && echo "  none"
+
+echo "== $checked posts checked; $flag missing-CTA, $bad bad-slug, $dead dead-link, $godead go-link-not-302"
