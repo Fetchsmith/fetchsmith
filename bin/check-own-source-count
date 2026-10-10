@@ -1,0 +1,147 @@
+#!/root/agent/venv/bin/python
+"""Flag Actor READMEs whose spelled-out source/board/platform/endpoint count has
+drifted from the actual list in the Actor's own code.
+
+Same bug class as check-blog-claims and check-competitor-claims, one step further
+in: a count describing OUR OWN Actor's data-source coverage, hand-typed in prose,
+whose real owner is a constant in src/main.js. Proposed at cycle 1504 after
+remote-jobs-scraper was found saying "six" boards for 185 cycles after a seventh
+board (WWR) was added — invisible to every existing check because none of them
+read source-list constants.
+
+Cycle 1505 scoped this deliberately narrow: there is NO existing registry field for
+"source count" the way registry.json's output_fields covers field counts, and
+hand-maintaining a parallel source-count list here would recreate the exact
+staleness bug this tool exists to catch. So SOURCES below only lists Actors where
+the ground truth already lives in a structured, greppable JS constant (an array of
+boards/platforms/endpoints) -- found by grepping every Actor's src/*.js for
+`^(const|let|var) SOME_CAPS_NAME = [` ANDed with a source/board/platform/ATS/
+endpoint/site keyword in the name. Do not add an Actor here without that constant;
+if a future niche needs this and has no such constant, add the constant to the
+Actor's own code first (it's useful for the Actor itself, not just this check).
+
+Each entry gives one or more (constant name, number-word regex) pairs -- the regex
+matches the way the count is actually phrased in that Actor's own README, including
+"N non-X" phrasing (e.g. ats-jobs-scraper's "6 non-Workday platforms" against a
+7-item list, which is correct, not a mismatch -- so the expected count is whatever
+the regex's own capture implies, not always len(list)).
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+WORDS = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+    "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+}
+
+
+def num(token):
+    token = token.lower()
+    return WORDS.get(token, int(token) if token.isdigit() else None)
+
+
+def const_len(path, const_name):
+    """Count top-level elements in `const NAME = [...]` or `= {...}` in a JS file."""
+    src = open(path).read()
+    m = re.search(r"\b(?:const|let|var)\s+" + re.escape(const_name) + r"\s*=\s*([\[{])", src)
+    if not m:
+        return None
+    open_ch = m.group(1)
+    close_ch = "]" if open_ch == "[" else "}"
+    start = m.end() - 1
+    depth = 0
+    end = None
+    for i in range(start, len(src)):
+        if src[i] == open_ch:
+            depth += 1
+        elif src[i] == close_ch:
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    if end is None:
+        return None
+    body = src[start + 1:end]
+    # strip string literals first so commas/colons inside URLs etc. (e.g. "https://...")
+    # don't get miscounted as structural
+    stripped = re.sub(r"'[^']*'|\"[^\"]*\"|`[^`]*`", "''", body)
+    if open_ch == "[":
+        items = [x for x in re.split(r",", stripped) if x.strip()]
+        return len(items)
+    # object literal: count top-level `key:` occurrences (depth-0 colons)
+    depth2 = 0
+    keys = 0
+    i = 0
+    while i < len(stripped):
+        c = stripped[i]
+        if c in "[{(":
+            depth2 += 1
+        elif c in "]})":
+            depth2 -= 1
+        elif c == ":" and depth2 == 0:
+            keys += 1
+        i += 1
+    return keys
+
+
+# slug -> (js_file_relative_to_actor_dir, const_name, [README regexes])
+# Each README regex must have exactly one capture group: the number/word claiming the count.
+SOURCES = {
+    "remote-jobs-scraper": [
+        ("src/main.js", "ALL_SOURCES", [
+            r"\b(\w+)\s+public remote-job boards\b",
+            r"\bfrom\s+(\w+)\s+documented, public, no-login job-board\b",
+        ]),
+    ],
+    "ats-jobs-scraper": [
+        ("src/main.js", "SUPPORTED_ATS", [
+            r"\bacross\s+(\w+)\s+different ATSes\b",
+            r"\binto\s+(\w+)\s+separate scrapers\b",
+        ]),
+        ("src/main.js", "AUTO_DETECT_ATS", [
+            r"\ball\s+(\w+)\s+non-Workday platforms\b",
+        ]),
+    ],
+    "fda-recall-scraper": [
+        ("src/main.js", "ENDPOINTS", [
+            r"\ball\s+(\w+)\s+endpoints\b",
+            r"\ball\s+(\w+)\s+enforcement endpoints\b",
+        ]),
+    ],
+}
+
+flagged = 0
+checked = 0
+for slug, entries in SOURCES.items():
+    actor_dir = os.path.join(ROOT, "actors", slug)
+    readme_path = os.path.join(actor_dir, "README.md")
+    if not os.path.isfile(readme_path):
+        print(f"MISSING README: {slug}")
+        continue
+    readme = open(readme_path).read()
+    for js_rel, const_name, patterns in entries:
+        js_path = os.path.join(actor_dir, js_rel)
+        if not os.path.isfile(js_path):
+            print(f"MISSING JS: {slug}/{js_rel}")
+            continue
+        truth = const_len(js_path, const_name)
+        if truth is None:
+            print(f"COULD NOT PARSE: {slug}/{js_rel} const {const_name}")
+            continue
+        for pat in patterns:
+            for m in re.finditer(pat, readme):
+                checked += 1
+                claimed = num(m.group(1)) if m.groups() else None
+                if claimed is None:
+                    continue  # pattern matched but captured non-numeric text (fixed phrasing, not a count)
+                if claimed != truth and claimed != truth - 1:
+                    flagged += 1
+                    lineno = readme.count("\n", 0, m.start()) + 1
+                    print(f"{slug}: README.md:{lineno} claims {claimed!r} but {const_name} has {truth} entries")
+                    print(f"  context: {m.group(0)!r}")
+
+print(f"\nchecked {checked} count phrase(s) across {len(SOURCES)} Actor(s) with structured source lists, {flagged} flagged")
+sys.exit(1 if flagged else 0)
