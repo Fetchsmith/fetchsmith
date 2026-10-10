@@ -1,4 +1,77 @@
-Updated: 2026-10-10 ~12:35 UTC by cycle 1510 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1509. Fixed `check-blog-cta` to recognize 1509's new `/go/<slug>` links (was false-flagging all 7 single-Actor posts) — then caught and fixed a bug in my OWN fix: the live "/go/ returns 302" check I'd added was curling the real redirect endpoint, which logs an `out_click` analytics event unconditionally, and wrote 48 fake rows into the exact table 1509 built to measure real conversion. Removed that check, deleted the 48 synthetic rows from `data/fetchsmith.db`, kept the 2 genuine rows (1 documented test + 1 real referred click — the first-ever organic `/go/` conversion). Added a code comment warning never to curl `/go/` live again.**
+Updated: 2026-10-10 ~13:05 UTC by cycle 1511 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1510 (runs30d ticked 618→626, nothing else moved). Nothing new was actionable, so ran 3 standing QUALITY-cycle checks absent from the last ~10 cycles' history — `check-code-fields` (0 drift/24), `check-meta-fields` (0 stale/11), `check-exclusions-classification` (CLAUDE.md-rule-1 PII guard on `sam-gov-opportunities-scraper`, intact) — all clean. `/go/` out_click table grew from 2→3 genuine rows (new: `ats-jobs-scraper` via a blog referer); still too sparse for a CTR.**
+
+## Cycle 1511 (2026-10-10, sonnet-5 — routine checks all flat vs 1510: three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `git status` clean at start, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 626 (was 618), ext_ok 623/ext_bad 3), `bin/traffic` tools 68/29 + pricing 3/2 + checkout 1/1 all far below the Polar threshold, inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch, nothing new.)
+
+### Nothing queued was actionable — ran the standing QUALITY-cycle checks instead of idling
+
+Checked every item on 1510's NEXT ACTIONS list: `/go/` click data (now 3 genuine rows, still too
+sparse — see below), real-demand-niche hunt (stays CLOSED per 1497), `check-own-source-count`/
+`check-field-fill`/`check-uniqueness`/`check-rental-converts` (all settled, no signal to re-run
+them), dev.to (not due until ~10-12/13), `chatgpt.com` referrer (dropped out of the 14d top-10
+referrer list entirely this check — not growing). All correctly blocked/settled; none gave this
+cycle a concrete task.
+
+Rather than default straight to file-bloat housekeeping (STATUS.md is 383 lines/68KB, not yet
+near the ~400-line/400KB+ threshold that triggered past archives) or manufacture a check-* rerun
+with no signal, re-read `notes/PLAYBOOK.md` for checks explicitly marked as standing/recurring
+rather than one-off, and found two that PLAYBOOK says should "run on every QUALITY cycle" but had
+not appeared anywhere in STATUS.md's last ~10 cycles (1501-1510): `check-code-fields` and
+`check-meta-fields`. Also ran `check-exclusions-classification`, a cheap static compliance guard
+(no live Actor call, no cost) protecting against the exact regression CLAUDE.md rule 1 forbids —
+`sam-gov-opportunities-scraper` silently widening from the organization-only exclusions slice into
+shipping named-individual PII rows.
+
+- `check-code-fields`: all 24 Actors `ok`, 0 code-only field drift between `src/main.js` emission
+  and `.actor/dataset_schema.json`.
+- `check-meta-fields`: 11 field-count claims across `meta.json`/`.actor/actor.json`/`registry.json`
+  prose, 0 stale.
+- `check-exclusions-classification`: the mandatory `classification: 'Firm,Vessel,Special Entity
+  Designation'` filter is still hard-coded and unconditional — no drift toward the 79%-PII
+  `Individual` rows.
+
+All three clean, no code or README changes needed this cycle. Looked but did NOT run 3 other
+dormant check-* tools found during this search (`check-entities`, `check-readme-prox`,
+`check-parser-regression`) — each requires per-Actor arguments or a specific post-edit context
+(live JSON input, a just-shipped README phrase, a named parser module) rather than being a blind
+fleet sweep, so running them without a concrete target would just be motion, not signal. Left
+notes on each in queue.md for whoever next has an actual reason to reach for one.
+
+### `/go/` click data: 2 → 3 genuine rows, still accumulating
+
+`bin/traffic 7`'s `out_click` table now shows 3 rows (vs 2 at 1510): the prior test click
+(`hacker-news-scraper`) and real referred click (`court-records-scraper`), plus a new real one —
+`ats-jobs-scraper`, referer `https://fetchsmith.com/blog/ats-job-board-json-api`. This is exactly
+the slow accumulation 1509/1510 expected; per their standing note, did not compute a CTR yet (too
+few rows) and did not touch `/go/` live (no curl of real slugs — the warning comment in
+`bin/check-blog-cta` stands).
+
+### Routine checks
+
+All flat vs 1510 except `runs30d` ticking up (618→626, the known non-billable external-traffic
+baseline, not a demand signal — see `bin/revenue`'s own caveat). Three services active, site `/`
+`/tools` `/pricing` `/blog` `/docs` all 200, `git status` clean before this cycle's edits,
+`bin/audit-due` NONE DUE until ~cycle 1779, inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch
+(same `searchindex.pro` pitch, Japanese auto-reply bounces, 1 DMARC report), nothing new, no reply
+needed. No owner email sent — nothing revenue-related, nothing owner-only-fixable. 0 of 6 daily
+Actor slots used, $0 spent this cycle (~$1.20 of $300 total).
+
+**NEXT ACTIONS, in priority order:** (1) `/go/{slug}` click data: 3 genuine rows now, keep
+accumulating — do not compute CTR yet, do not add live verification of `/go/` links to any script.
+(2) Once 10+ real (non-empty-referer) `out_click` rows exist, compute blog→Apify CTR per 1510's
+query and compare against blog pageviews. (3) Real-demand-niche hunt stays CLOSED (1497) — any
+future growth attempt needs genuine differentiation (cross-source joins, time-series/change-
+alerting, normalization), a multi-cycle/owner-level project, not single-cycle filler. (4)
+`check-own-source-count`, `check-field-fill`, `check-uniqueness`, `check-rental-converts`,
+`check-code-fields`, `check-meta-fields`, `check-exclusions-classification` — all settled/clean as
+of 1511, do NOT re-run any as filler without a signal. (5) `check-entities`/`check-readme-prox`/
+`check-parser-regression` are NOT blind-fleet-sweep tools — each needs a specific live-input/
+post-edit/parser-module context; re-read their PLAYBOOK entries before reaching for one. (6)
+Dev.to next eligible ~2026-10-12/13, measured near-worthless per 1500's LEARNINGS — a future cycle
+may reasonably retire it in favor of item (2)'s on-site funnel work. (7) File-bloat rule still
+applies to both `tasks/queue.md` and `state/STATUS.md`: REPLACE the live/oldest blocks, never
+stack.
+
+**READ STATUS.md cycle 1511 BEFORE PICKING WORK.**
 
 ## Cycle 1510 (2026-10-10, sonnet-5 — routine checks all flat vs 1509: three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 618, ext_ok 615/ext_bad 3), inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch, nothing new.)
 
