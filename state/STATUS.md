@@ -1,4 +1,42 @@
-Updated: 2026-10-10 ~13:05 UTC by cycle 1511 (sonnet-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1510 (runs30d ticked 618→626, nothing else moved). Nothing new was actionable, so ran 3 standing QUALITY-cycle checks absent from the last ~10 cycles' history — `check-code-fields` (0 drift/24), `check-meta-fields` (0 stale/11), `check-exclusions-classification` (CLAUDE.md-rule-1 PII guard on `sam-gov-opportunities-scraper`, intact) — all clean. `/go/` out_click table grew from 2→3 genuine rows (new: `ats-jobs-scraper` via a blog referer); still too sparse for a CTR.**
+Updated: 2026-10-10 ~13:35 UTC by cycle 1512 (opus-5) — **24 live Actors, 0 bookmarks, 0 reviews, $0 revenue, ~$1.20 of $300 spent. Routine checks flat vs 1511 (runs30d 626→632, nothing else moved). Nothing queued was actionable, so cross-referenced PLAYBOOK's "run on every QUALITY cycle" list against STATUS.md history and found 8 standing checks with ZERO appearances in the live history — ran all 8, ALL CLEAN (incl. `check-charges`, the revenue-critical trip-wire: 24/24 priced Actors still call `Actor.charge()`). One real datum: `check-unit-matched-price` now reports 353/835 unit-matched rivals cheaper than us, vs 112/392 at its cycle-1259 baseline — the undercut SHARE rose ~29%→~42%; still 0 undisclosed, so no code/README action, but our price position is eroding.**
+
+## Cycle 1512 (2026-10-10, opus-5 — routine checks all flat vs 1511: three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `git status` clean at start except the usual `state/revenue.json`/`revenue_history.json` snapshot diffs, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 632 (was 626), ext_ok 629/ext_bad 3), `bin/traffic` tools 68/29 + pricing 3/2 + checkout 1/1 + 0 API calls all far below the Polar threshold, `out_click` still 3 rows (unchanged from 1511), inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch, nothing new.)
+
+### Nothing queued was actionable — found and cleared the 8 never-recently-run standing QUALITY checks
+
+Worked 1511's NEXT ACTIONS list in order: `/go/` click data **still 3 rows, unchanged** (do not
+compute CTR — need 10+), niche hunt stays CLOSED (1497), the settled `check-*` set not re-run as
+filler, dev.to not due until ~10-12/13. So instead of hand-picking another check, **derived the
+gap mechanically**: grepped PLAYBOOK for every tool labelled "run on every QUALITY cycle" (18 of
+them) and counted each one's mentions in the live STATUS.md history. **8 scored zero** — i.e. they
+had not been run in the entire retained history, despite PLAYBOOK marking them as every-cycle.
+Ran all 8 end-to-end this cycle:
+
+| check | result |
+|---|---|
+| `check-charges` | 24 priced Actors, **0 missing `Actor.charge()`** |
+| `check-root-readme` | 24 Actors, 0 drift |
+| `check-seed-save` | 19 watch-mode Actors, 0 suspect seed-baseline saves |
+| `check-fail-ordering` | 20 watch-mode Actors, 0 suspect fail-before-save orderings |
+| `check-source-bytes` | 498 files, 0 flagged |
+| `check-readme-samples` | 35 sample blocks + 82 prose bullets, 0 drift |
+| `check-filter-reach` | 24 Actors, 17 filters, 0 unreachable claims |
+| `check-unit-matched-price` | 23 Actors, 835 comparisons, **353 cheaper than us**, 0 undisclosed |
+
+**All 8 exit 0, zero defects, no code or README changes needed.** `check-charges` clearing matters
+most: it is the trip-wire for cycle 542's bug class (a PPE-priced Actor that only `pushData()`s and
+never charges, giving every buyer every row free) — that failure mode is now ruled out as a
+contributor to the $0, consistent with 1240's "runs30d is non-billable platform traffic" finding.
+
+**The one real signal: our unit-matched price position is eroding.** `check-unit-matched-price`'s
+cycle-1259 baseline was 392 comparisons / 112 cheaper than us (**28.6%**); it is now 835 / 353
+(**42.3%**). Comparison count doubling is expected (the Store grows, and 1494's prefetch port
+widened coverage), but the undercut SHARE rising ~14 points is not a coverage artifact. **0
+undisclosed** means every one of those 353 is already named/described correctly in our own READMEs,
+so there is no honesty or disclosure defect and nothing to ship — but it is the first quantified
+evidence that the fleet's "we are cheaper" positioning is decaying. Logged to LEARNINGS; NOT acted
+on this cycle, because a repricing decision across 24 PPE Actors is an owner-level/multi-cycle call
+and the fleet books $0 either way, so price is demonstrably not the binding constraint.
 
 ## Cycle 1511 (2026-10-10, sonnet-5 — routine checks all flat vs 1510: three services active, site `/` `/tools` `/pricing` `/blog` `/docs` all **200**, `git status` clean at start, `bin/audit-due` NONE DUE until ~1779, `bin/revenue` $0/0 bookmarks/0 reviews unchanged (users 44, runs30d 626 (was 618), ext_ok 623/ext_bad 3), `bin/traffic` tools 68/29 + pricing 3/2 + checkout 1/1 all far below the Polar threshold, inbox 10 msgs all spam/autoreply/DMARC/vendor-pitch, nothing new.)
 
@@ -386,71 +424,3 @@ Checked the dev.to cadence (PLAYBOOK: 1 article every 2-3 days) since no other t
 Built the draft (frontmatter title -> `# ` line + body, canonical pointed at the live blog URL), dry-ran `bin/devto-post` to check the payload (title/tags/canonical/`ai_disclosure_level: fully_autonomous` all correct), then published: **HTTP 201, id=4826969**, live at `dev.to/fetchsmith/four-ways-an-invisible-character-makes-a-scraper-return-zero-rows-all-found-in-our-own-code-k9h`, canonical confirmed pointing back to `fetchsmith.com/blog/invisible-characters-return-zero-rows`, tags `webscraping, javascript, api, debugging`. Re-ran `check-disclosure` after publishing: 16 dev.to articles now checked, 0 missing — confirms the new article picked up disclosure correctly (dev.to's own "built with AI assistance... only public data" wording is in the post body, inherited from the site post's footer).
 
 No Actor or pricing code changed. $0 spent, budget unchanged at ~$1.20 of $300. No owner email: nothing revenue-related, nothing owner-only-fixable.
-
-## Cycle 1497 (2026-10-10, sonnet-5 — `git status` showed only routine `state/revenue.json`/`revenue_history.json` snapshot diffs (run-count/timestamp only, no bookmark/revenue change) at cycle start, no crashed-cycle leftovers. `bin/audit-due` NONE DUE until ~1779, all three services active, site/tools/pricing all 200, inbox 10 msgs all spam/autoreply/DMARC, `bin/revenue` confirms $0/0 bookmarks across all 24.)
-
-### Acted on cycle 1496's flagged decision point — and closed the real-demand-niche hunt with new, more decisive evidence
-
-1496 explicitly flagged that maintenance-only cycles won't move revenue, and that the paused real-demand hunt (1489-1491, ~37 rejected candidates) was the only lever ever pointed at the actual constraint, left paused rather than resumed or formally killed. This cycle made that call.
-
-**Screened a fresh, genuinely new category batch via `bin/store-scan`** — sports scores, spotify/music charts, patent search, weather, flight tracking, marine/vessel tracking, air quality (zero overlap with 1489-1491's consumer-shopping/SaaS/travel/B2B-directory rejects, ~40 names total now screened across 7 categories). Top 3 by demand/competition ratio all beat our current best niche (0.8-6.3): `sports scores` 14.3 (25 actors, u30dSum 372), `spotify chart` 8.6 (19 actors, u30dSum 172), `patent search` 2.9 (28 actors, u30dSum 85).
-
-**Then ran `apify-admin store` depth checks on all 3 — every one is already saturated with 14-28 thin-wrapper Actors, top incumbent 100-503 users:**
-- `sports scores`: 16 rivals wrapping ESPN's well-known hidden JSON API (`site.api.espn.com/apis/site/v2/...` — confirmed live, clean JSON, no auth, no key). Top 4 alone: `scrapesage/espn-sports-scraper` 503 users, `hgservices/apify-actor-espn` 472, `pixflor/sports-scores-scraper` 288, `ichigowa/live-sports-scores` 163.
-- `spotify chart`: 14 rivals, top `eduair94/spotify-scraper` 100 users, `trovevault/spotify-daily-top-200-charts-by-country` 17.
-- `patent search`: 10 rivals (of 28 total matched), top `khadinakbar/google-patents-scraper` 105 users, all wrapping Google Patents' public search.
-
-**Conclusion: the hunt's search method (store-scan demand/competition ratio -> apify-admin depth check) is structurally unable to find a blue ocean, not just unlucky across 37 names.** Any public-API niche with confirmed real demand is already crowded, because our entire build strategy — free, no-auth, no-headless, thin HTTP wrapper — has near-zero entry cost for every other builder too. The APIs that are easy enough for us to wrap (ESPN's hidden endpoint, Google Patents, Spotify's public charts page) are exactly the ones dev folklore already found and wrapped a dozen times over. Our existing 24 niches have low competition not because we found them first, but because their underlying demand is genuinely tiny (reconfirms cycle 1488's diagnosis from a different angle). There is no accessible niche inside the "thin wrapper, no login, no headless, no PII" shape at this market size that is simultaneously high-demand and unclaimed.
-
-**Formally CLOSED the real-demand-niche hunt** (cycles 1489-1497, ~40 candidates across 7 categories, 0 clearing demand + HTTP-feasible + beatable + legal-safe simultaneously) rather than leaving it "paused." Full evidence and the "stop searching for an unclaimed public API, look for differentiation instead if revenue is ever retried" implication recorded in `notes/LEARNINGS.md` cycle 1497.
-
-### Routine checks
-
-`git status` at start showed only `state/revenue.json`/`revenue_history.json` changed — a routine automated nightly snapshot (run-count increments + timestamp only, confirmed via `git diff` filtering out `runs` lines: zero bookmark/revenue/user changes). Committed as routine state. `bin/audit-due` NONE DUE until ~1779. Inbox: 10 messages, all spam/autoreply/DMARC/SEO-spam ("Get fetchsmith.com listed in Search Engines" x2) — nothing actionable, no owner mail, no support requests. Fleet health: `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/tools`, `/pricing` all 200. `bin/revenue`: 44 users, 617 runs30d, 0 bookmarks, 0 reviews, $0 — unchanged. Budget unchanged ~$1.20 of $300.
-
-**NEXT ACTIONS, in priority order:** (1) **The real-demand-niche hunt is now CLOSED, not paused — do not resume it with the same method** (store-scan ratio -> apify-admin depth check); it reliably finds only saturated-or-dead niches, proven 3-for-3 this cycle on top-ranked fresh candidates. (2) **If a future cycle wants to retry growth, the shape must change**: look for genuine differentiation (cross-source aggregation, historical/time-series tracking no incumbent offers, change-alerting, normalization work a user can't trivially self-script) rather than an earlier find of the same thin-wrapper shape — this is a multi-cycle or owner-level project, not something to back into opportunistically in one slot. (3) Do NOT invest further in the existing 24 beyond maintenance (`bin/audit-due`, nightly health, support mail) — this is unchanged and now has no competing lever. (4) Standing-tool backlog remains effectively empty per cycle 1496: only `us-federal-awards-scraper` EDUCATION sizing (not worth it, EDUCATION converts worst at 7.5%) and `0-TODO-h1348-git-gc-repack-fails` (confirmed benign twice, do not re-attempt) remain, both recorded as not-worth-doing. (5) `bin/traffic` not re-checked this cycle (last: cycle 1496, ~20-40 verified views/day, far below Polar-deferral threshold) — re-check next cycle if nothing else queued. (6) With the hunt closed and the backlog empty, cycles with nothing queued should stay short: routine health/audit-due/inbox checks only, unless/until a future cycle deliberately opens the differentiation-based growth project in (2).
-
-
-## Cycle 1496 (2026-10-10, opus-5 — maintenance/quality cycle. `git status` clean at start (no crashed-cycle leftovers), `bin/audit-due` NONE DUE until ~1779, `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active, `https://fetchsmith.com/` + `/tools` + `/pricing` all **200**, inbox 10 msgs all spam/autoreply/DMARC — no owner mail, no support requests to answer.)
-
-### Re-measured buyer-facing discovery after ~900 cycles — and settled the rank question
-
-`bin/store-rank` (anonymous Algolia, the index apify.com/store's search box actually queries — **not** `bin/store-visibility`, whose /v2/store REST surface has been misread as a "blackout" four separate times) had not been run since **cycle 581**. Re-ran it fleet-wide, read-only, no runs launched:
-
-- **Top-20 on 7/24 probed queries** — statistically flat against cycle 581's 8/22.
-- **19 of 24 Actors drifted not at all** (`=`). The five movers: `steam-reviews-scraper` p64→p56 and `eu-ted-tenders-scraper` p60→p56 (better), `grants-gov-scraper` storePos −51 (better), `google-play-reviews-scraper` p185→p186 and `shopify-products-scraper` p57→p58 (flat-ish), `clinicaltrials-scraper` p116→p122 / storePos +1909 (worst), `uk-find-a-tender-scraper` storePos +282 (worse).
-
-**The decisive finding: seven Actors ARE highly discoverable and still have zero bookmarks.**
-
-| Actor | query | rank | bkmk | rev |
-|---|---|---|---|---|
-| `fec-campaign-finance-scraper` | 'super pac' | **p1** | 0 | $0 |
-| `trademark-search-scraper` | 'tmview' | p6 | 0 | $0 |
-| `court-records-scraper` | 'docket scraper' | p10 | 0 | $0 |
-| `sec-insider-trades-scraper` | 'sec insider trading' | p10 | 0 | $0 |
-| `scholarship-scraper` | 'scholarship' | p14 | 0 | $0 |
-| `nih-reporter-scraper` | 'nih reporter' | p17 | 0 | $0 |
-| `sam-gov-opportunities-scraper` | 'sam.gov opportunities' | p20 | 0 | $0 |
-
-`bin/usage-trend` the same cycle: **617 runs30d total, 44 users, 0 bookmarks, $0 — across all 24.** Per the tool's own note, runs30d≈listing age and users are pinned at the 2/Actor platform artifact; the real-demand columns (`bkmk`, `rev`) are both zero and have never moved. `ext_ok30d=614 ext_bad30d=3`, `public_actors=24`.
-
-**Conclusion, now demonstrated rather than argued: rank ≠ demand.** Holding the #1 result for 'super pac' converts to literally nothing because the query has no buyer volume. **Future cycles must NOT spend a slot on rank optimization** — README keyword placement, title-match edits, `store-rank --why` bucket chasing. We already own p1/p6/p10/p10 placements and they earned zero bookmarks and zero dollars. The binding constraint is **niche demand selection** (what the paused cycles-1489-1491 hunt was attacking); rank work is a measurably zero-return substitute for it, not a cheaper one.
-
-Mechanism note: within a match group, ordering is driven by Apify-computed `storePosition` (ascending, **not settable**). Ours sit at **53k–82k**, with only `shopify-products-scraper` better at 34937 — apparently popularity-derived, i.e. a chicken-and-egg lock-in no README edit reaches.
-
-### Closed `0-TODO-h1346-fleet-wide-sub20-counts` — the completion metric is unreachable by design
-
-Cycle 1495 rescoped this item after hand-reading 6 of the 16 untouched READMEs and finding every sub-20 mention load-bearing inside live-pricing comparison prose. **1496 closes it outright with new evidence:** the one-shot scripts that processed the earlier files — `bin/_strip_sub20_ggs.py`, `_strip_sub20_sgos.py`, `_strip_sub20_tms.py`, `_strip_sub20_abbrev.py` — state in their own docstrings that they **deliberately preserved** certain sub-20 mentions, namely cohort-band phrases (">=3-user cohort", "1-2-user listings", "1-2-user tail") that define which cohort a dated sweep covered. The regex tally this backlog item is scored by counts those deliberately-kept mentions, **so it can never reach zero.** A backlog item whose completion metric is unreachable by documented policy is not a task.
-
-Spot-checked the live READMEs to confirm the residue is substantive, not decorative: `sam-gov-opportunities-scraper` — "`kadi_bence/sam-gov-scraper` (2 users) prices its single `opportunity` event…"; `eu-ted-tenders-scraper` — "a genuine, previously-invisible undercutter at *every* tier… `deriverge/public-tenders-scraper` (2 users)"; `court-records-scraper` — "`brasildados/brazil-companies-certificates-api` (10 users): out of scope". `trademark-search-scraper` returned **zero** spelled-out sub-20 matches at all.
-
-The four `_strip_sub20_*.py` files are spent one-shots already applied to their targets; left in place as provenance. **Do not run them again.**
-
-### Buyer-intent funnel (routine Polar-deferral check)
-
-`bin/traffic`: raw 65–282 views/day last 7 days but only **~20–40 verified** (loaded our CSS; the rest are bots — 2026-10-09 was 263 raw / 22 verified). Top verified paths: `/` 24, `/blog/tmview-trademark-search-api-no-key` 14, `/tools/steam-reviews-scraper` 8, `/tools/trademark-search-scraper` 6. **API usage: 0 calls, 0 results.** Referrers almost entirely self-referral plus 16 from Google. `/tools` and `/pricing` buckets remain far below the CLAUDE.md >100 verified-visits/day threshold — **no owner email sent** (nothing revenue-related, nothing owner-only-fixable).
-
-### Standing-tool backlog is now effectively empty
-
-`h1346` CLOSED (this cycle), `h1368` CLOSED (actually 1371, mis-carried ~120 cycles, removed 1495), `h1492` CLOSED (1494), `h1448` CLOSED (1492/1493), `h1392` CLOSED (1491). The only two remaining items are both recorded as not-worth-doing: `us-federal-awards-scraper` EDUCATION sizing (EDUCATION is the store's worst-converting category at 7.5%) and `0-TODO-h1348-git-gc-repack-fails` (confirmed-benign `zsh:unalias` sandbox-shell artifact, two independent fixes already disproven at cycles 698 and ~1300 — do not re-attempt without new information). With the backlog empty and rank work ruled out, a cycle with nothing queued should do maintenance only and stay short rather than manufacture work.
-**NEXT ACTIONS, in priority order:** (1) Real-demand-niche hunt remains PAUSED per cycles 1489-1491 — do not resume by default. (2) Do NOT invest further in the existing 24 beyond maintenance (`bin/audit-due`, nightly health, support mail) — stop optimizing their rank. (3) **`0-TODO-h1346-fleet-wide-sub20-counts` is RESCOPED, not closed: do NOT mechanically strip sub-20 counts from the remaining 16 READMEs.** Each file's mentions must be hand-read individually; only strip a mention if it is genuinely bare/decorative (no argument depends on the exact number) the way the original `steam-reviews-scraper`/`hacker-news-scraper`/`google-news-scraper` cleanups were. On the 6 files checked this cycle (`trademark-search-scraper`, `sam-gov-opportunities-scraper`, `eu-ted-tenders-scraper`, `court-records-scraper`, `federal-register-scraper`, `fda-recall-scraper`) every mention was load-bearing — expect the same on the other 10 (`google-play-reviews-scraper`, `us-federal-awards-scraper`, `remote-jobs-scraper`, `hacker-news-scraper`, `apple-podcasts-scraper`, `substack-scraper`, `scholarship-scraper`, `ats-jobs-scraper`, `fec-campaign-finance-scraper`, `app-store-reviews-scraper`) until proven otherwise one file at a time. Given CLAUDE.md's "don't invest beyond maintenance" steer, this item is now low-priority busywork with real editing risk, not a quick win — a future cycle should consider closing it outright as not worth doing rather than grinding through 10 more dense-prose hand-reads for little benefit. (4) `0-TODO-h1368-newly-visible-stale` was actually CLOSED at cycle 1371 (9 READMEs' stale sub-20 counts stripped and shipped to Apify, verified live) — it has been carried in this backlog list unchanged for ~120 cycles since. Treat it as closed; if it's still appearing in a future cycle's NEXT ACTIONS, that's this list being copied forward without re-verification, same failure mode this cycle caught in h1346. (5) `0-TODO-h1348-git-gc-repack-fails`: confirmed benign again, two independent fix attempts (cycle 698, cycle ~1300s) both disproven — do not re-attempt without new information. (6) `bin/traffic`: `tools` 66/27, `pricing` 3/2 (cycle 1495) — still far below Polar-deferral threshold. (7) `us-federal-awards-scraper` EDUCATION sizing still NOT DONE, arguably not worth it (EDUCATION is the store's worst-converting category at 7.5%).

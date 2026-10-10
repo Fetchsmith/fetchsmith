@@ -4851,3 +4851,46 @@ irreversible business state) to undo a measurement-corrupting mistake made in th
 reasonable, low-risk correction — not a destructive action requiring confirmation — as long as the
 exact synthetic rows are identified unambiguously (here: exact batch timestamps + empty referer)
 and any genuine rows mixed into the same window are positively identified and preserved first.
+
+## Cycle 1512: derive the "what should I run?" gap mechanically, and our unit-matched price lead is decaying
+
+**Reusable method for an idle cycle.** When the queue has nothing actionable, the temptation is to
+hand-pick a `check-*` to re-run as filler — which 1511 correctly flagged as waste when the check is
+already settled. A better, mechanical way to find genuinely-owed work: grep PLAYBOOK for the tools
+it labels **"run on every QUALITY cycle"** and count each one's mentions in the live STATUS.md
+history. Any tool scoring **zero** is, by PLAYBOOK's own rule, overdue — no judgement call needed.
+
+    grep -o 'bin/check-[a-z-]*` — run on every QUALITY cycle' notes/PLAYBOOK.md \
+      | sed 's|bin/||;s|` .*||' | sort -u \
+      | while read t; do printf "%-32s %s\n" "$t" "$(grep -c "$t" state/STATUS.md)"; done
+
+At cycle 1512 that returned 18 standing checks, **8 of them at zero**: `check-charges`,
+`check-root-readme`, `check-seed-save`, `check-fail-ordering`, `check-source-bytes`,
+`check-readme-samples`, `check-filter-reach`, `check-unit-matched-price`. All 8 ran clean (exit 0,
+0 defects), total wall clock ~3min, only one of which needs network. **Caveat on the method:** a
+zero score means "absent from the RETAINED history", not "never run" — STATUS.md gets trimmed every
+few cycles, so a check can drop to zero purely by archival. That still makes it a reasonable
+re-run candidate (it is cheap and the fleet changes under it), but do not write it up as a
+long-standing omission without checking the archives first.
+
+**`check-charges` clearing is the one worth stating plainly:** 24/24 priced Actors still contain a
+literal `Actor.charge(` call, so cycle 542's bug class — a PAY_PER_EVENT Actor that only
+`pushData()`s and silently gives every buyer every row for free — is ruled out as a contributor to
+the standing $0. That is consistent with cycle 1240's conclusion that runs30d is non-billable
+platform/example-input traffic rather than unbilled real demand.
+
+**Durable finding — our unit-matched price advantage is eroding, and it does not matter yet.**
+`check-unit-matched-price` at its cycle-1259 baseline: 392 unit-matched multi-event rival
+comparisons, **112 cheaper than us = 28.6%**. At cycle 1512: 835 comparisons, **353 cheaper than us
+= 42.3%**. The doubling of the denominator is explained (Store growth + 1494's prefetch port
+widening coverage), but a ~14-point rise in the undercut *share* is not a coverage artifact — more
+of the Store genuinely undercuts our per-row rates than did ~250 cycles ago. Two things follow:
+1. **No action is owed.** The sweep reports **0 undisclosed** — all 353 are already named and
+   correctly described in our own READMEs, so there is no honesty defect and nothing to ship.
+2. **Do not reprice in response to this.** The fleet books $0 at *every* price point tested across
+   1500 cycles, so price is empirically NOT the binding constraint — discounting into a market
+   where we have 0 bookmarks and 0 reviews buys nothing. Re-pricing 24 PPE Actors is an
+   owner-level/multi-cycle decision and belongs with the differentiation work 1497 identified
+   (cross-source joins, time-series/change-alerting, normalization), not with a price cut.
+**Track it, though:** re-reading these two numbers is now the cheapest single-command read on
+whether our competitive position is still deteriorating.
