@@ -5159,3 +5159,38 @@ sends them (fail-closed by design, cycle 748), all three codes were *already wor
 who guessed them — the defect was purely the false warning and the missing documentation. That is
 the good failure mode. An Actor that DROPS unknown filter values would have silently widened to the
 unfiltered index and charged for it instead.
+
+## An Actor with no upstream input enum can still fail an enum audit on its OUTPUT vocabulary (cycle 1528)
+`ats-jobs-scraper` has no upstream-vocabulary input enum — `watchEvents` is self-defined, the `ats`
+list is our own support set — so by the h1527 `shopify-products-scraper` rule it was a clean
+structural no-op and the cycle could have ended in two minutes. Pivoting instead to the vocabulary
+the Actor *does* surface from upstream (the per-ATS `employmentType` output field that
+`employmentTypeKeyword` matches against) found a real bug in ~15 minutes. **Generalisable rule: when
+an Actor has no input enum, ask which upstream vocabulary a keyword/substring filter is
+*implicitly* promising, and audit that instead.** A free-text input filter over a vendor-controlled
+value set is an enum audit wearing a different hat — and it is *less* protected than a real enum,
+because a schema enum at least forces the valid values into the Console UI, while a textfield lets a
+buyer type a value that can never match and get a silent zero-row, fully-billed-for-nothing run.
+
+Three sub-lessons worth reusing fleet-wide:
+- **Use the vendor's own facet endpoint as the authority, not your sample.** Workday's `/wday/cxs/
+  <tenant>/<site>/jobs` response carries a `facets` array that enumerates each filterable field's
+  complete value set with counts. That turned "we have only ever seen `Full time`" into the far
+  stronger, claimable "`timeType` is a closed `{Full time, Part time}` pair", confirmed identically
+  on three unrelated tenants. **Where a facet/aggregation endpoint exists, an enum audit should read
+  it before probing rows** — same lesson SAM.gov taught from the other side at h1524 (no facet
+  endpoint, so brute force was the only option and cost a whole cycle).
+- **Label sample-derived vocabulary claims as samples.** The first draft of the README table listed
+  Workable `Contract`/`Temporary`/`Internship` and SmartRecruiters `Contractor` from memory of what
+  those vendors document. Live measurement found only `Full-time` on Workable (1 board, 7 postings)
+  and no `Contractor` anywhere. Shipping the draft would have been exactly the h1138 false-
+  exclusivity class — a plausible claim nobody had measured. The fix is not to measure harder, it is
+  to say which column is a sample and which is a whole vocabulary.
+- **"Free text the employer types" is a distinct, worse shape than "a vocabulary we don't share."**
+  Lever's `commitment` returned 18 distinct values over 8 boards including `Remote`,
+  `International EOR` and `International Office Entity` — not employment types at all — plus four
+  spellings of full-time. No normalisation or alias map can fix that (unlike h887's `normalizeCountry`,
+  where the upstream value set was small and closed); the only honest move is to document it as
+  free text and point buyers at a short substring or `titleKeyword`. Check whether a field is
+  employer-authored before writing any alias map for it.
+

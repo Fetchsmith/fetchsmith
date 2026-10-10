@@ -1042,6 +1042,9 @@ const SMARTRECRUITERS_DEFERRED = ['description'];
 // geography. Reproduced live: okgov (bare county names) went from 10/10 rows with
 // `country: "United States"` unfiltered to 0 rows with `locationKeyword: "United States"` set.
 const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'published', 'location'];
+// Workday's closed `timeType` vocabulary, already stripSep'd/lowercased to compare against
+// employmentTypeKeyword directly — see the warning at the company loop for the live evidence.
+const WORKDAY_TIME_TYPES = ['fulltime', 'parttime'];
 
 function passesFilters(job, deferred = []) {
   const ready = (field) => !deferred.includes(field);
@@ -1115,6 +1118,23 @@ try {
       log.warning(`greenhouse:${slug} — Greenhouse boards do not publish employment type, so`
         + ` employmentTypeKeyword ("${employmentTypeKeyword}") drops every posting on this board.`
         + ' Use titleKeyword/descriptionKeyword for Greenhouse companies instead.');
+    }
+    // Workday's `timeType` — the only employment-type field its job detail payload carries — is a
+    // CLOSED two-value vocabulary, not free text: its own `timeType` facet reports exactly
+    // {Full time, Part time} and nothing else (measured cycle 1528 on three unrelated tenants:
+    // okgov 443/81, nvidia 2674/2, salesforce 1521/14). The contract/intern/temporary dimension
+    // buyers actually mean lives in a SEPARATE `workerSubType` facet (Regular/Temporary/Seasonal/
+    // Intern/Contractor/Fixed Term/Apprentice) that Workday publishes ONLY as a facet — it is
+    // absent from both the list rows and the job detail payload, so there is no per-posting value
+    // to map and nothing to fix here. So e.g. employmentTypeKeyword "contract" or "intern" cannot
+    // match a Workday posting however the board is configured: same upstream-caused silent
+    // zero-row shape as the Greenhouse case above, so warn rather than return a quiet empty set.
+    if (employmentTypeKeyword && (result.detectedAts ?? ats) === 'workday'
+      && !WORKDAY_TIME_TYPES.some((t) => t.includes(employmentTypeKeyword))) {
+      log.warning(`workday:${slug} — Workday only publishes employment type as "Full time" or`
+        + ` "Part time", so employmentTypeKeyword ("${employmentTypeKeyword}") drops every posting`
+        + ' on this board. Its contract/intern/temporary classification (workerSubType) is not'
+        + ' exposed per posting. Use titleKeyword/descriptionKeyword for Workday companies instead.');
     }
     let scannedForCompany = 0;
     let deliveredForCompany = 0;

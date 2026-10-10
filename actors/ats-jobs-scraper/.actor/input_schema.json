@@ -66,7 +66,7 @@
     "employmentTypeKeyword": {
       "title": "Employment type filter",
       "type": "string",
-      "description": "Only keep postings whose employmentType field contains this text, matched case- and separator-insensitively (spaces/hyphens/underscores ignored on both sides, so \"full-time\" matches Ashby's \"FullTime\"), e.g. \"full-time\" or \"contract\". Leave empty for all employment types. Not every ATS publishes this field; postings where the ATS never exposes it are dropped when this filter is set.",
+      "description": "Only keep postings whose employmentType field contains this text, matched case- and separator-insensitively (spaces/hyphens/underscores ignored on both sides, so \"full-time\" matches Ashby's \"FullTime\", Workable/SmartRecruiters' \"Full-time\", Recruitee's \"fulltime_permanent\" and Lever's \"Full Time Employee\" alike). \"full-time\" and \"part-time\" are the only values that work on every ATS that publishes the field at all — each ATS uses its OWN vocabulary beyond that, so check the README's employment-type table before filtering on anything else. In particular \"contract\" matches nothing on Workday (which only ever publishes \"Full time\"/\"Part time\") or Recruitee (whose codes are fulltime/parttime x permanent/fixed_term — try \"fixed-term\" instead), and on Lever the value is free text the employer types, so it varies board to board. Leave empty for all employment types. Not every ATS publishes this field; postings where the ATS never exposes it are dropped when this filter is set, and the run logs a warning naming the board when the filter cannot possibly match it.",
       "editor": "textfield"
     },
     "departmentKeyword": {
