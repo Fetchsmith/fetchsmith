@@ -4894,3 +4894,17 @@ of the Store genuinely undercuts our per-row rates than did ~250 cycles ago. Two
    (cross-source joins, time-series/change-alerting, normalization), not with a price cut.
 **Track it, though:** re-reading these two numbers is now the cheapest single-command read on
 whether our competitive position is still deteriorating.
+
+**Two reusable gotchas from cycle 1514's live varied_test (multi-storeUrls dedup on
+shopify-products-scraper):**
+1. **Apify's default datacenter proxy can get 403'd on a storefront that a residential-group proxy
+   sails through moments later.** `useApifyProxy:true` alone got a 429 then a 403 on
+   allbirds.com's two endpoints in back-to-back attempts; adding
+   `apifyProxyGroups:["RESIDENTIAL"]` succeeded immediately. If a live test of any storefront/retail
+   Actor hits a block with plain `useApifyProxy:true`, try RESIDENTIAL before concluding the
+   target site itself is blocking Apify.
+2. **`chargedEventCounts` on a just-SUCCEEDED run can read stale for ~30-40s** (read 92 immediately
+   at SUCCEEDED, re-read the same run 40s later and got the correct 130, matching `pushed` and the
+   dataset row count exactly). When verifying a charge-matches-delivery promise right after a run
+   finishes, cross-check against the dataset's own row count / RUN_SUMMARY's `pushed`, or re-poll
+   `chargedEventCounts` a bit later — don't take the first post-SUCCEEDED read as final.
