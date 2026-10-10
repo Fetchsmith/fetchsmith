@@ -49,7 +49,7 @@
         "presidentialDocumentTypes": {
             "title": "Presidential document subtypes",
             "type": "array",
-            "description": "Narrow \"Presidential document\" (PRESDOCU) results to one or more subtypes — e.g. only Executive Orders, not the proclamations/memoranda/determinations/notices also filed under that same document type. Server-side filter (verified live 2026-09-26: executive_order=1567, proclamation=4436, memorandum=807, notice=784, determination=801, other=60 real documents). Leave empty for all subtypes. Ignored on the Public Inspection desk (not supported there) and has no effect unless PRESDOCU is among the Document types above.",
+            "description": "Narrow \"Presidential document\" (PRESDOCU) results to one or more subtypes — e.g. only Executive Orders, not the proclamations/memoranda/determinations/notices also filed under that same document type. Server-side filter (verified live 2026-10-10: executive_order=1571, proclamation=4440, memorandum=807, notice=785, determination=802, presidential_order=16, other=60 real documents — this is the API's full subtype vocabulary, confirmed by sampling subtypes across 1995-2023 and reconciling against the PRESDOCU total). Leave empty for all subtypes. Ignored on the Public Inspection desk (not supported there) and has no effect unless PRESDOCU is among the Document types above.",
             "editor": "select",
             "items": {
                 "type": "string",
@@ -59,6 +59,7 @@
                     "memorandum",
                     "notice",
                     "determination",
+                    "presidential_order",
                     "other"
                 ],
                 "enumTitles": [
@@ -67,6 +68,7 @@
                     "Memorandum",
                     "Notice",
                     "Determination",
+                    "Presidential order",
                     "Other presidential document"
                 ]
             },

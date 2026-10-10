@@ -46,7 +46,7 @@ const documentTypes = (input.documentTypes ?? Object.keys(TYPES))
     .filter((t) => Object.hasOwn(TYPES, t));
 
 const PRESIDENTIAL_DOCUMENT_TYPES = new Set([
-    'executive_order', 'proclamation', 'memorandum', 'notice', 'determination', 'other',
+    'executive_order', 'proclamation', 'memorandum', 'notice', 'determination', 'presidential_order', 'other',
 ]);
 const presidentialDocumentTypes = (input.presidentialDocumentTypes ?? [])
     .map((t) => String(t).toLowerCase().trim())

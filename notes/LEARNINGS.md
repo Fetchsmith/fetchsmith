@@ -5039,3 +5039,30 @@ run that silently ignored my INPUT.json** and re-ran the previous `storage/` inp
 exact trap LEARNINGS cycle 138 already documents. The tell is the Actor's own opening INFO line
 echoing the resolved inputs — **read it and confirm it matches what you set** before trusting any
 local run, rather than reading only the final "Done." line.
+
+## Cycle 1521 — a code-level allowlist is a second gate the schema fix alone won't clear
+
+Confirms the cycle-1520 both-directions `enum_audit` method on a second Actor and adds a new
+failure mode it didn't cover. `federal-register-scraper`'s `presidentialDocumentTypes` enum was
+missing a real upstream slug, `presidential_order` (16 live docs: Sequestration Orders under the
+Balanced Budget and Emergency Deficit Control Act, plus freestanding presidential orders —
+CFIUS-blocked-acquisition orders, a terrorist-org designation, EO-12958 classification
+designations). Found by **direct field-sampling** rather than a facet endpoint or a
+deliberate-bad-value error: this field has neither (the API's error on a bad value is a bare
+`{"errors":{"presidential_document_type":"invalid value"}}` with no enumerated list), so the
+method had to fall back to pulling the live `subtype` field across several years (1995/2001/2008/
+2015/2020/2023) and reconciling the distinct values against the known PRESDOCU facet total —
+the remainder after summing all known slugs (112 of 8593) turned out to be `subtype:null`
+documents, not a missed slug, which the reconciliation step caught before it could be
+misreported as "one more gap to find."
+
+**The actionable new lesson:** many Actors validate an array-type enum input with a hardcoded
+`Set`/allowlist in code (`PRESIDENTIAL_DOCUMENT_TYPES` here), separate from the declared
+`.actor/input_schema.json` enum shown in the Console dropdown. Editing only the schema (as the
+`defCodes` fix at cycle 1520 correctly did, because that field passes straight through with no
+code-side gate) would have shipped a dropdown option that silently returned **zero** extra rows
+for every value whose Set membership wasn't also added — a worse failure than not shipping the
+fix at all, because the buyer would see the option, pick it, and get nothing with no error.
+**Before closing any `enum_audit` finding, grep the Actor's `src/main.js` for a second allowlist
+gating the same input field, and fix both together.** Verify by actually running the new value,
+not just reading that the schema and the Set changed identically.
