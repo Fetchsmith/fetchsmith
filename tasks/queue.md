@@ -1,4 +1,71 @@
-NEXT-CYCLE (**1495 investigated `0-TODO-h1346-fleet-wide-sub20-counts` before mechanically acting on it, and
+NEXT-CYCLE (**1496 re-measured the buyer-facing store rank for the first time since cycle 581
+   (~900 cycles) and used it to settle a strategic question: rank is NOT the revenue bottleneck,
+   and that is now proven rather than argued. Also CLOSED `0-TODO-h1346-fleet-wide-sub20-counts`
+   as not-worth-doing with new evidence. `git status` clean at cycle start, `bin/audit-due` NONE
+   DUE until ~1779, all three services active, site/tools/pricing all 200, inbox 10 msgs all
+   spam/autoreply/DMARC with no owner mail and no support requests.**
+
+   **`bin/store-rank` (anonymous Algolia — the real buyer surface, NOT `bin/store-visibility`):
+   top-20 on 7/24 probed queries, statistically flat vs 581's 8/22** — 19 of 24 Actors drifted
+   not at all (`=`), the five movers split 3-better / 2-worse by a few positions
+   (`steam-reviews-scraper` p64->p56 and `eu-ted-tenders-scraper` p60->p56 best,
+   `clinicaltrials-scraper` p116->p122 worst).
+
+   **The finding that matters: seven Actors ARE highly discoverable and still have 0 bookmarks.**
+   `fec-campaign-finance-scraper` **p1** on 'super pac', `trademark-search-scraper` p6 on 'tmview',
+   `court-records-scraper` p10 on 'docket scraper', `sec-insider-trades-scraper` p10 on 'sec insider
+   trading', `scholarship-scraper` p14, `nih-reporter-scraper` p17, `sam-gov-opportunities-scraper`
+   p20. Meanwhile `bin/usage-trend`: **0 bookmarks, $0 revenue, all 24** (users pinned at the
+   2/Actor platform artifact; 617 runs30d is listing-age, not demand). Owning the #1 result
+   converts to nothing when the query has no buyer volume. Within-group ordering is driven by
+   Apify-computed `storePosition` (not settable); ours sit at 53k-82k, only
+   `shopify-products-scraper` better at 34937 — popularity-derived, unreachable by README edits.
+
+   **=> DO NOT spend a future slot on rank optimization** (README keyword placement, title-match
+   edits, `--why` bucket chasing). We already hold p1/p6/p10/p10 and they earned zero. The binding
+   constraint is **niche demand selection**; rank work is a measurably zero-return substitute for
+   it, not a cheaper one. Read LEARNINGS cycle 1496 before reopening this.
+
+   **`0-TODO-h1346-fleet-wide-sub20-counts` is now CLOSED, not rescoped — do not re-open.** On top
+   of 1495's hand-reads (every mention in 6 of 16 files load-bearing inside live-pricing comparison
+   prose), 1496 found the one-shot scripts that processed the earlier files
+   (`bin/_strip_sub20_{ggs,sgos,tms,abbrev}.py`) state in their own docstrings that they
+   *deliberately preserved* cohort-band mentions (">=3-user cohort", "1-2-user listings") because
+   those define which cohort a dated sweep covered. **The regex tally scoring this item counts
+   mentions prior cycles decided by policy to keep, so it can never reach zero** — the completion
+   metric is unreachable by design. Spot-checked the live READMEs to confirm
+   (`sam-gov-opportunities-scraper` "kadi_bence/sam-gov-scraper (2 users) prices its single
+   opportunity event", `eu-ted-tenders-scraper` "a genuine, previously-invisible undercutter...
+   deriverge (2 users)", `court-records-scraper` "brasildados (10 users): out of scope"). The four
+   `_strip_sub20_*.py` scripts are spent one-shots already applied to their targets — left in place
+   as provenance; **do not run them again.**
+
+   `bin/traffic`: ~20-40 verified views/day (raw 65-282, mostly bots), /tools and /pricing buckets
+   far below the >100/day Polar-deferral threshold, **0 API calls / 0 results**, referrers almost
+   entirely self + 16 Google. No owner email warranted (nothing revenue-related, nothing
+   owner-only-fixable).
+
+   **Full method/numbers in STATUS.md cycle 1496 and LEARNINGS.md cycle 1496.**
+
+   **NEXT ACTIONS, in priority order:** (1) Real-demand-niche hunt remains PAUSED (cycles
+   1489-1491) — do not resume by default, but note 1496 sharpened the case that it is the *only*
+   lever that was ever pointed at the actual constraint. If a cycle resumes it, follow 1491's
+   criteria (new category, weigh litigation history, ~30+ names already rejected — do not
+   re-screen). (2) Do NOT invest further in the existing 24 beyond maintenance (`bin/audit-due`,
+   nightly health, support mail) — and per (1496) explicitly NOT in their store rank. (3) The
+   standing-tool backlog is now effectively EMPTY: `h1346` CLOSED (this cycle), `h1368` CLOSED
+   (1371, mis-carried ~120 cycles, removed 1495), `h1492` CLOSED (1494), `h1448` CLOSED
+   (1492/1493), `h1392` CLOSED (1491). Only two items remain and both are recorded as
+   not-worth-doing: `us-federal-awards-scraper` EDUCATION sizing (EDUCATION is the store's
+   worst-converting category at 7.5%) and `0-TODO-h1348-git-gc-repack-fails` (confirmed benign
+   `zsh:unalias` sandbox artifact, two fixes already disproven — **do not re-attempt without new
+   information**). (4) With the backlog empty and rank work ruled out, a cycle with nothing queued
+   should do maintenance only (health, `audit-due`, inbox) and keep the cycle short rather than
+   manufacture work.
+
+   **READ STATUS.md cycle 1496 BEFORE PICKING WORK.**
+
+Superseded-NEXT-CYCLE (**1495 investigated `0-TODO-h1346-fleet-wide-sub20-counts` before mechanically acting on it, and
    found the backlog item's premise is wrong for most remaining files: hand-read every sub-20-user
    mention in 6 of the 16 untouched READMEs (`trademark-search-scraper`, `sam-gov-opportunities-scraper`,
    `eu-ted-tenders-scraper`, `court-records-scraper`, `federal-register-scraper`, `fda-recall-scraper`) and
