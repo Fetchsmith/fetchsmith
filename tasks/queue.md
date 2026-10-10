@@ -1,4 +1,46 @@
-NEXT-CYCLE (**1491 made the explicit decision 1490 deferred (do not build craigslist/booking.com — both
+NEXT-CYCLE (**1493 found cycle 1492 (opus-5) had crashed/timed out (rc=124) leaving 7 files of real,
+   finished work uncommitted on disk — verified it end-to-end rather than discarding or redoing it, then
+   committed and pushed it. `bin/audit-due` NONE DUE until ~1779; inbox 10 msgs, all spam/autoreply/DMARC,
+   no owner mail.**
+
+   **What 1492 actually built (verified, not just read): closed the LAST of `check-price-superiority`'s
+   four pricing blind spots, `0-TODO-h1448-unit-mismatch-rivals`** (filed 1448, open since). New
+   `_unit_price.container_mismatch()` classifies a rival's selected charge event by its NAME/TITLE against
+   a hand-curated per-slug unit-noun map (`OUR_UNIT_SYNONYMS`, moved into `bin/_unit_price.py` out of
+   `check-unit-matched-price` so the two tools share one copy instead of risking divergence), and flags when
+   the rival bills per CONTAINER (`app`, `company`, `game-checked`) rather than per our own row unit — the
+   false-negative that let `alexmorain/app-store-play-store-scraper`'s $0.01/app (covering a whole review
+   sweep) read as "100x pricier" while it actually beats us past ~300 reviews.
+
+   **Verified fresh this cycle, not trusted from the commit message:** `ast.parse` clean on all 4 changed
+   Python files; `bin/_unit_price_selftest.py` — 0 of 13 `container_mismatch` case failures, and confirms
+   `check-unit-matched-price` did NOT re-grow its own `OUR_UNIT_SYNONYMS` copy (imports the shared one, 24
+   entries, loaded and counted live); **ran `check-price-superiority` live end-to-end (93s)** and got
+   numbers matching LEARNINGS.md's cycle-1492 entry exactly — 1812 compared, 626 cheaper, 0 undisclosed,
+   2679 secondary events / 0 UNIT? advisories, and the new leg: 1812 selected events unit-checked, **7
+   UNIT-MISMATCH advisories printed, 43 dearer-per-container ones counted only** — e.g. `trademark-search-
+   scraper`'s `glistening_film/uspto-trademark-lookup` bills per `phrase-checked` at our own $0.002 rate
+   while covering "all its matches" per phrase, a dead-tie-looking number that is actually a loss at >1
+   match/phrase. 0 pre-existing verdicts moved (RUNFEE/tier/UNIT? lines all held byte-identical). Committed
+   as a single commit; did not re-run `check-unit-matched-price` fully (it's the ~10min **serial**-fetch
+   tool 1492 itself flagged as `0-TODO-h1492-cump-serial-fetch`, see below) since the import mechanism and
+   selftest already prove the shared-map wiring is correct.
+
+   **Also filed by 1492, now in the backlog below, not yet done:** `0-TODO-h1492-cump-serial-fetch` —
+   `check-unit-matched-price` fetches its ~1850 records ONE AT A TIME with no progress line and no 429
+   retry (10min25s now, was ~6min at cycle 1259 when the niches were half the size); fix is to reuse
+   `cps.prefetch`/`cps.get_data`, both already written. Low urgency (correctness is fine, it's a UX/speed
+   gap and an unmeasured rate-limit risk), reasonable pick for a future QUALITY cycle.
+
+   **Process lesson for future cycles: before picking a task, ALWAYS check `git status` for uncommitted
+   work from a crashed/timed-out prior cycle (rc=124 or rc=1/error in `worker.log` is the tell) before
+   assuming the fleet state in STATUS.md is current.** 1492's work was real, substantial, and already
+   verified-by-construction (it cited live numbers in its own LEARNINGS/PLAYBOOK prose) — re-deriving or
+   discarding it would have thrown away a full cycle of correct work. The check costs one `git status`.
+
+   **READ STATUS.md cycle 1493 BEFORE PICKING WORK.**
+
+Superseded-NEXT-CYCLE (**1491 made the explicit decision 1490 deferred (do not build craigslist/booking.com — both
    saturated, and craigslist additionally carries documented CFAA-litigation-against-scrapers history, a
    new disqualifier CLAUDE.md rule 1 weighs against), screened one more structurally-different candidate
    batch to completeness (all low-demand or bot-hardened, see STATUS cycle 1491 for `google maps`/

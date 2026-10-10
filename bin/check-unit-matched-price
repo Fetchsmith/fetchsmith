@@ -52,34 +52,13 @@ DISCLOSED = re.compile(
 )
 EPSILON = 1e-9
 
-# One short tuple of nouns per slug, read off that Actor's OWN meta.json event
-# description -- the thing we actually bill per row, not what a rival calls it.
-OUR_UNIT_SYNONYMS = {
-    "apple-podcasts-scraper": ("episode", "review", "podcast"),
-    "app-store-reviews-scraper": ("review",),
-    "ats-jobs-scraper": ("job", "posting"),
-    "clinicaltrials-scraper": ("study", "trial"),
-    "court-records-scraper": ("docket", "opinion", "case"),
-    "eu-ted-tenders-scraper": ("tender", "procurement", "notice"),
-    "fda-recall-scraper": ("recall",),
-    "fec-campaign-finance-scraper": ("candidate", "contribution", "filing", "committee"),
-    "federal-register-scraper": ("document", "rule", "notice"),
-    "google-news-scraper": ("article", "news"),
-    "google-play-reviews-scraper": ("review",),
-    "grants-gov-scraper": ("opportunity", "grant"),
-    "hacker-news-scraper": ("story", "comment"),
-    "nih-reporter-scraper": ("project", "grant", "award"),
-    "remote-jobs-scraper": ("job", "posting"),
-    "sam-gov-opportunities-scraper": ("opportunity", "contract", "record"),
-    "scholarship-scraper": ("scholarship",),
-    "sec-insider-trades-scraper": ("transaction", "trade", "filing", "form"),
-    "shopify-products-scraper": ("product",),
-    "steam-reviews-scraper": ("review", "game"),
-    "substack-scraper": ("post",),
-    "trademark-search-scraper": ("trademark",),
-    "uk-find-a-tender-scraper": ("tender", "procurement", "notice"),
-    "us-federal-awards-scraper": ("award", "grant", "contract"),
-}
+# The hand-curated per-slug unit nouns this tool was built around now live in
+# bin/_unit_price.py (moved cycle 1492, values unchanged -- see that module's
+# OUR_UNIT_SYNONYMS comment). check-price-superiority's h1448 container-mismatch leg
+# reads the same map, and two copies of a map keyed by our own slugs would diverge the
+# first time an Actor is added to one and not the other.
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+from _unit_price import OUR_UNIT_SYNONYMS  # noqa: E402
 
 
 def token():

@@ -4551,3 +4551,75 @@ last took the "29 total" count, so it was never added to either side of the tall
 than trusting a count written several cycles ago — new copies get created by ongoing audit work in the
 interim and a stale count silently under-covers the sweep. All 30 copies (not 29) now carry the fix;
 verified by re-running the `grep -L` check after patching, not just by counting edits made.
+
+## Cycle 1492 — h1448 closed: "per row" is a two-sided claim, and a word classifier needs its false-positive cases on file
+`0-TODO-h1448-unit-mismatch-rivals` was the last of `check-price-superiority`'s four pricing
+blind spots (h1356/h1392 run-fee, h1436 tier ladder, h1452 cheap secondary leg, h1448 unit
+mismatch). The bug: every leg divides a rival's selected-event price by ours, which says
+nothing unless both sides bill the same unit. `alexmorain/app-store-play-store-scraper`
+bills per APP ("full review sweep, however many reviews that returns"), so it read as 100x
+PRICIER and was never flagged while ~$0.03/app beats our $0.0001/review past ~300 reviews
+and then wins without bound. Four lessons, three of which only surfaced because the first
+implementation was run fleet-wide and its output READ rather than just counted:
+
+1. **Classify the unit from the event's NAME and TITLE, never its DESCRIPTION.** The first
+   version scanned all three fields for one of our own unit nouns and declared a match a
+   non-mismatch. It went silent on the exact listing that filed the TODO: that description
+   says "however many REVIEWS that returns. Reviews are never billed per unit" — it names
+   our unit precisely to DENY billing it. Prose mentions every noun in the neighbourhood;
+   only the name/title denominate the charge. Keep the description as the excerpt a human
+   reads, never as classifier input.
+2. **Apify event names are participial, so a plural-only `\b<noun>s?\b` regex misses most
+   of them.** `game-checked`, `app-scraped`, `review-returned`, `company-crawled`. The
+   cycle-1452 case this function exists to catch (`game-checked`) classified as "no
+   container noun present" until the suffix set grew to `(s|es|ed|ing|ned|ning)`. An
+   explicit suffix list, not `\w{0,3}` — that would match `app` inside "appeal".
+3. **A noun's meaning flips with the verb beside it, and no syntax tells you which.**
+   `game-checked` (one monitoring poll of a game, rows unbilled) and `job-scanned` (one job
+   row) are grammatically identical. Resolved by splitting the word list by what the word
+   DOES — ACTION nouns (`check`/`poll`/`monitor`/`search`/`request`) fire even beside one of
+   our own unit nouns, TARGET nouns (`app`/`company`/`profile`/`feed`) only when none of
+   ours is present — and by dropping `scan` from ACTION entirely: as a participle it is a
+   row-production verb like `scraped`, and the one real per-`scan` rival is run-scoped and
+   already held out by `runfee_price`, so including it bought no coverage and cost a false
+   positive on every `*-scanned` per-row event.
+4. **The decisive rule came from reading the first run's output, not from design.** 6 of
+   the 12 advisories the first fleet-wide run printed were genuine per-row events whose
+   names merely mentioned an operation — `news-search-result` ("Charged per article returned
+   by a News Search query") is one result OF a search. Hence ROW_WORDS
+   (`result`/`row`/`item`/`entry`) cancelling the test outright, checked first. `record` is
+   deliberately NOT one: a `company-record` is a dossier holding many of our award rows.
+   **Generalisable: a hand-curated word classifier is not done when it fires on the filing
+   case — it is done when its output has been read line by line on live data.** Counting
+   advisories would have shown "12 found, working"; reading them showed half were noise.
+
+**Two process lessons worth more than the fix:**
+
+* **Signal budget.** The first version printed all 69 mismatches; every one was "disclosed"
+  under the deliberately-loose `DISCLOSED` regex (`\$0\b` matches any price), so 69
+  advisory lines would have buried the UNDISCLOSED/TIER/RUNFEE flags this script exists to
+  surface. Now printed only when the handle is undisclosed OR the container price is at-or-
+  below our per-row rate — the strict-worst shape (cheaper per charge AND many rows per
+  charge, so they win from row 1) — and the dearer-per-container majority is counted in the
+  summary. 7 printed, 43 counted. **An advisory leg that prints more lines than the flags it
+  sits next to has negative value.**
+* **A hand-curated classifier with no cohort to replay must carry its cases.** `unit_price`
+  has `_unit_price_selftest.py` replaying 30 saved `/tmp/*_prices*.json` cohorts;
+  `container_mismatch` has nothing comparable, so its 13 real-listing cases (each commented
+  with the handle it came from, both directions represented) went INTO the selftest, which
+  also now asserts `check-unit-matched-price` has not re-grown its own copy of the
+  `OUR_UNIT_SYNONYMS` map that moved into `_unit_price.py` this cycle — the same two-copies
+  drift that produced 8 divergent `unit_price` implementations by cycle 1396.
+
+**Verification pattern reused from 1392/1436/1462 and worth keeping as the house rule for
+touching this script:** add a NEW read path, leave `headline_price`/`all_tiers`/
+`runfee_price` byte-identical, then diff the whole run output against the pre-change
+baseline. `compared`/`cheaper_found`/`flagged` held at 1812/626/0 and every pre-existing
+line was identical, so the claim "no existing verdict moved" is checked, not asserted.
+
+**Incidental finding — `bin/check-unit-matched-price` takes 10min25s, not the "~6min" the
+PLAYBOOK claimed** (831 comparisons now, up from 1259's ~400). It fetches ~1850 records
+serially with no progress output and no 429 retry, so it looks hung and a rate-limited rival
+reads as "no live record" — the exact bug cycle 1404 fixed in `check-price-superiority`.
+Killed at 600s this cycle before being re-run to completion. Filed
+`0-TODO-h1492-cump-serial-fetch`: reuse `cps.prefetch`/`cps.get_data`, both already written.

@@ -348,6 +348,7 @@ def main():
     runfee_seen = runfee_flagged = 0
     tier_checked = tier_flagged = 0
     unit_checked = unit_advised = 0
+    mismatch_checked = mismatch_advised = mismatch_quiet = 0
     for n, slug in enumerate(live, 1):
         path = os.path.join(ROOT, "actors", slug, "README.md")
         if not os.path.exists(path):
@@ -410,6 +411,56 @@ def main():
             if rival_price is None:
                 continue  # not comparable with a single number, see docstring
             compared += 1
+
+            # Unit-mismatch advisory (cycle 1492, closes 0-TODO-h1448-unit-mismatch-rivals,
+            # filed 1448 and re-cited 1452/1462). Every comparison below divides the rival's
+            # selected-event price by ours, which only means anything if both sides bill the
+            # same unit. When the selected event is denominated in a CONTAINER of our row --
+            # alexmorain/app-store-play-store-scraper's $0.01 per APP covering a whole
+            # review sweep -- the ratio is meaningless and the error points the dangerous
+            # way: it read as "100x pricier", so nothing was flagged, while ~$0.03 flat per
+            # app beats our $0.0001/review past ~300 reviews and then wins without bound.
+            # The crossover is the per-row analogue of the RUNFEE line above and is derived
+            # the same way, but it is only a FLOOR, not exact: a one-time fee bills at most
+            # once per run whereas a container event bills once per container, and one run
+            # can sweep several containers (2 apps = 2x the fee). Advisory and uncounted on
+            # purpose -- cycle 1452 hand-ruled TWO such rivals NOT undercutters (their real
+            # per-row rate was 1.7-4.3x dearer), so the direction cannot be inferred from the
+            # noun alone; only the event's free text says which it is, so it is printed.
+            if our_price > 0:
+                sel = all_events(rival, now).get(rival_label) or {}
+                noun, why = up.container_mismatch(
+                    slug, rival_label, sel.get("eventTitle"), sel.get("eventDescription"))
+                mismatch_checked += 1
+                if noun:
+                    rows = rival_price / our_price
+                    # A container priced at or UNDER our per-row rate is the strict-worst
+                    # shape: cheaper per charge AND each charge covers many of our rows, so
+                    # it wins from row 1 and the margin only widens. Those print even when
+                    # the handle is "disclosed", because DISCLOSED is deliberately loose
+                    # (`\$0\b` matches any price, so nearly every pricing paragraph passes)
+                    # and a paragraph that merely names a price has not disclosed THIS. The
+                    # dearer-per-container majority is counted but not printed when
+                    # disclosed -- 69 advisory lines fleet-wide at cycle 1492, which would
+                    # bury the flags this script exists to surface.
+                    strictly_worse = rows <= 1 + EPSILON
+                    if strictly_worse or not disclosed_anywhere[ident]:
+                        mismatch_advised += 1
+                        margin = ("prices at or BELOW our per-row rate while each charge "
+                                  "covers many of our rows -- cheaper than us from row 1, "
+                                  "widening with volume" if strictly_worse else
+                                  f"beats us past ~{rows:.0f} row(s) per `{noun}` if one "
+                                  f"`{noun}` returns many rows (floor: one container per "
+                                  f"run, and a run can sweep several)")
+                        print(f"UNIT-MISMATCH {slug}/README.md:{lineno}  {ident} bills its "
+                              f"selected event per `{noun}`, not per {our_label}: "
+                              f"${rival_price:g}/{rival_label} vs our ${our_price:g} -- the "
+                              f"per-row ratio is NOT comparable, and it {margin}"
+                              f"{'; handle disclosed elsewhere in the file' if disclosed_anywhere[ident] else ''}"
+                              f". NOT auto-flagged -- read it: \"{why}\"")
+                    else:
+                        mismatch_quiet += 1
+
             free_rung_flagged = False
             if rival_price + EPSILON < our_price:
                 cheaper_found += 1
@@ -482,7 +533,10 @@ def main():
           f"crossover floor; {tier_checked} tiered-rival ladder(s) also checked at every "
           f"rung, {tier_flagged} undisclosed only below the FREE rung; "
           f"{unit_checked} secondary event(s) advisory-scanned, {unit_advised} UNIT? "
-          f"advisories -- not auto-flagged, go read eventTitle) "
+          f"advisories -- not auto-flagged, go read eventTitle; "
+          f"{mismatch_checked} selected event(s) unit-checked against our own row noun, "
+          f"{mismatch_advised} UNIT-MISMATCH advisories printed and {mismatch_quiet} "
+          f"dearer-per-container one(s) counted only -- also not auto-flagged) "
           f"({time.time() - started:.0f}s)")
     return 1 if flagged else 0
 
