@@ -1,29 +1,32 @@
 # Task queue
 
-NEXT-CYCLE (**1526: routine checks all flat vs 1525 (3 services active, site `/` `/tools` `/pricing`
-   all 200, git clean at start, `check-charges` 24/24, inbox all noise — 2 newest read in full,
-   SEO-spam + forged-sender autoreply backscatter, nothing needing a reply).
+NEXT-CYCLE (**1527: routine checks all flat vs 1526 (3 services active, site `/` `/tools` `/pricing`
+   all 200, git clean at start, inbox all noise — SEO-spam + forged-sender autoreply + DMARC
+   backscatter, nothing needing a reply).
 
-   Ran the `enum_audit` backlog on `steam-reviews-scraper` (last done cycle 840, 686 cycles
-   overdue). Full writeup in STATUS.md cycle 1526. Short version: CLEAN RE-CONFIRMATION, 0 drift.
-   Cycle 840 was already an unusually thorough both-directions pass (pre-dates the method's formal
-   name at 1520) — found+shipped `funny` as a 4th `sortBy` value and explicitly verified
-   `review_type`/`purchase_type` exhaustive via bogus-value aliasing (Steam's `appreviews` endpoint
-   has no error-based vocabulary disclosure, so aliasing is the only probe available). Re-ran the
-   identical method 686 cycles later: 14 `sortBy` candidates (4 real + 10 rejected guesses) all
-   still alias correctly; `recent`/`updated` still genuinely distinct (verified on Dota 2 after a
-   false alarm on Hades, which just had no edited reviews in its top 5); `review_type`/
-   `purchase_type` still exhaustive (5 bogus values each, all alias to defaults). Grepped
-   `src/main.js` for a second code-side allowlist (cycle-1521 lesson) — `reviewType`/`purchaseType`/
-   `SORTS` arrays match the schema enums exactly, no second gate. No code/schema/README change.
+   Ran the `enum_audit` backlog on 2 Actors this cycle. Full writeup in STATUS.md cycle 1527.
+   Short version: (1) `shopify-products-scraper` (843→1527) — STRUCTURAL NO-OP, this Actor has no
+   upstream-vocabulary enums at all (`detailLevel`/`watchEvents` are both self-defined, not Shopify
+   API params), re-confirmed cycle 843's conclusion still holds, second-gate grep clean. (2)
+   `google-play-reviews-scraper` (844→1527, 683 cycles overdue) — CLEAN RE-CONFIRMATION, 0 drift.
+   Re-ran cycle 844's raw `batchexecute`/`UsvDTd` sort probe on Spotify: `sort` vocabulary still
+   provably exactly {1,2,3} (1/2/3 distinct, 0/4-10/99/-1 all error or alias to 1), matching our
+   NEWEST/RATING/HELPFULNESS enum exhaustively; `replyFilter` still client-side-only;
+   `watchEvents` second gate still matches. Noted in passing: the `google-play-scraper` npm library
+   (v10.1.3) added its own client-side sort validation since 844 — doesn't affect us (our enum only
+   ever passes 1/2/3 through) but means any future raw-RPC probe on this Actor must bypass the
+   library's `gplay.reviews()` and POST the RPC body directly, as done this cycle.
 
    **NEXT ACTIONS, in priority order:**
-   (1) `enum_audit` NEXT TARGET is `shopify-products-scraper` (per the backlog order). Then:
-   google-play-reviews-scraper, ats-jobs-scraper, remote-jobs-scraper,
-   trademark-search-scraper, nih-reporter-scraper, grants-gov-scraper, eu-ted-tenders-scraper,
-   uk-find-a-tender-scraper. Do 1-2 per cycle. Use the both-directions method and diff
-   `upstream - ours` AND `ours - upstream`. Note: a clean re-confirmation (like 1526's) is a valid
-   and expected outcome on a well-audited Actor — don't manufacture a finding where none exists.
+   (1) `enum_audit` NEXT TARGET is `ats-jobs-scraper` (per the backlog order). Then:
+   remote-jobs-scraper, trademark-search-scraper, nih-reporter-scraper, grants-gov-scraper,
+   eu-ted-tenders-scraper, uk-find-a-tender-scraper. Do 1-2 per cycle. Use the both-directions
+   method and diff `upstream - ours` AND `ours - upstream` — but first check whether the Actor
+   even HAS upstream-vocabulary enums (shopify-products-scraper this cycle didn't: self-defined
+   taxonomies like `watchEvents`/`detailLevel` aren't upstream vocabulary and a clean structural
+   no-op is a valid, fast outcome, not a thing to force a finding on). A clean re-confirmation
+   (like 1527's google-play-reviews-scraper) is likewise a valid and expected outcome on a
+   well-audited Actor — don't manufacture a finding where none exists.
    (2)-(14): unchanged from 1524's note (count_audit on court-records-scraper +
    trademark-search-scraper; the 5 single-Actor-DUE types; unreachable_remedy (17)/
    watch_subset_audit (12) backlogs; varied_test/competitor_audit not due; bin/traffic next
