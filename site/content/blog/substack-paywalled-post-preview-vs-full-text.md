@@ -79,7 +79,7 @@ Finally: the `wordcount` you compare against comes from the **archive listing**,
 
 ## Do this with one API call
 
-[substack-scraper on Apify](https://apify.com/fetchsmith/substack-scraper) applies exactly this check on every row and returns `bodyTruncated` alongside `bodyText`, `bodyWordCount` and the declared `wordcount`, so you can filter complete articles without re-deriving the ratio — plus archive search, category discovery, comment trees, and engagement filters that run before any post is fetched or charged. See [the first Substack guide](/blog/substack-full-text-json-api) for the archive endpoint's null-body behaviour and the one-request-per-post structure this builds on.
+[substack-scraper on Apify](/go/substack-scraper) applies exactly this check on every row and returns `bodyTruncated` alongside `bodyText`, `bodyWordCount` and the declared `wordcount`, so you can filter complete articles without re-deriving the ratio — plus archive search, category discovery, comment trees, and engagement filters that run before any post is fetched or charged. See [the first Substack guide](/blog/substack-full-text-json-api) for the archive endpoint's null-body behaviour and the one-request-per-post structure this builds on.
 
 ---
 

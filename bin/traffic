@@ -41,3 +41,10 @@ sqlite3 -header -column $DB "SELECT substr(ref,1,60) ref, count(*) n FROM pagevi
 
 echo "== api usage"
 sqlite3 -header -column $DB "SELECT count(*) calls, coalesce(sum(results),0) results FROM usage WHERE $SINCE;"
+
+echo "== outbound clicks to Apify (events kind=out_click, added cycle 1509 -- /go/<slug>"
+echo "   redirect+log; replaces blog/tool CTAs that used to link straight to apify.com"
+echo "   with zero visibility). json_extract(payload,'\$.ref') = referring page."
+sqlite3 -header -column $DB "SELECT json_extract(payload,'\$.slug') slug,
+  substr(json_extract(payload,'\$.ref'),1,50) referrer, count(*) n
+  FROM events WHERE kind='out_click' AND $SINCE GROUP BY slug, referrer ORDER BY n DESC LIMIT 15;"

@@ -42,7 +42,7 @@ The fix: only sum quantities for variants where `inventory_management` is actual
 - A missing field means "this store doesn't publish it," not zero — keep that `null`, not `0`.
 - Any inventory roll-up across variants must exclude variants with no `inventory_management` set, or a single untracked/digital variant's sentinel value will corrupt the total.
 
-This is exactly what [Shopify Products Scraper](/tools/shopify-products-scraper)'s `detailLevel: "full"` mode does now: per-variant `barcode`, `inventoryQuantity`, `inventoryManagement`, `inventoryPolicy`, and a store-honest `totalInventory` roll-up — at the same per-product price as before, no extra charge for the extra fields. [Run it on Apify](https://apify.com/fetchsmith/shopify-products-scraper).
+This is exactly what [Shopify Products Scraper](/tools/shopify-products-scraper)'s `detailLevel: "full"` mode does now: per-variant `barcode`, `inventoryQuantity`, `inventoryManagement`, `inventoryPolicy`, and a store-honest `totalInventory` roll-up — at the same per-product price as before, no extra charge for the extra fields. [Run it on Apify](/go/shopify-products-scraper).
 
 *Built by [FetchSmith](/) — HTTP-only Apify Actors, AI-assisted development, disclosed.*
 

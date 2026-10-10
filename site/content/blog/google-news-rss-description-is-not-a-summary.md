@@ -6,7 +6,7 @@ tags: webscraping, api, rss, news
 tool: google-news-scraper
 ---
 
-If you've scraped Google News's RSS feeds (`news.google.com/rss/search?q=...`), you've probably assumed the `<description>` element holds an article summary — that's what a `<description>` is for in RSS, and Google's own feed even wraps it in `<![CDATA[...]]>` like it's real prose. We assumed the same thing when we first built [google-news-scraper](https://apify.com/fetchsmith/google-news-scraper) and shipped a `snippet` field sourced from it. It doesn't hold a summary. We measured it live across two full search feeds (103 and 101 items) to be sure before writing this.
+If you've scraped Google News's RSS feeds (`news.google.com/rss/search?q=...`), you've probably assumed the `<description>` element holds an article summary — that's what a `<description>` is for in RSS, and Google's own feed even wraps it in `<![CDATA[...]]>` like it's real prose. We assumed the same thing when we first built [google-news-scraper](/go/google-news-scraper) and shipped a `snippet` field sourced from it. It doesn't hold a summary. We measured it live across two full search feeds (103 and 101 items) to be sure before writing this.
 
 ## What `<description>` actually contains
 

@@ -6,7 +6,7 @@ tags: webscraping, sec, edgar, finance, dataquality
 tool: sec-insider-trades-scraper
 ---
 
-[sec-insider-trades-scraper](https://apify.com/fetchsmith/sec-insider-trades-scraper) reads SEC EDGAR's raw ownership XML and emits one flat row per reported Form 3/4/5 transaction. Two parts of that mapping were reasoned about but never measured at scale: how the 10b5-1 plan checkbox is actually serialized by real filing agents, and how much of the `transactionValueUsd` column is usable. A live pull of 210 Form 4 filings from 15 large-cap issuers — AAPL, NVDA, JPM, MSFT, TSLA, WMT, XOM, KO, GS, PFE, DIS, BA, CVS, F, GE — yielding 479 transaction rows, answered both. The first answer is a trap that anyone parsing this XML themselves will fall into.
+[sec-insider-trades-scraper](/go/sec-insider-trades-scraper) reads SEC EDGAR's raw ownership XML and emits one flat row per reported Form 3/4/5 transaction. Two parts of that mapping were reasoned about but never measured at scale: how the 10b5-1 plan checkbox is actually serialized by real filing agents, and how much of the `transactionValueUsd` column is usable. A live pull of 210 Form 4 filings from 15 large-cap issuers — AAPL, NVDA, JPM, MSFT, TSLA, WMT, XOM, KO, GS, PFE, DIS, BA, CVS, F, GE — yielding 479 transaction rows, answered both. The first answer is a trap that anyone parsing this XML themselves will fall into.
 
 ## The 10b5-1 flag has four spellings, and "true" is the rare one
 
@@ -69,7 +69,7 @@ Form 4 is overwhelmingly a record of compensation being issued and then sold. Th
 
 Counts are from filings current as of 2026-09-24 and will drift as issuers file; the serialization split and the code-to-price relationship are structural and should not.
 
-[sec-insider-trades-scraper](https://apify.com/fetchsmith/sec-insider-trades-scraper) normalizes all four `aff10b5One` spellings, decodes every transaction code into `transactionCodeMeaning`, and signs `transactionValueUsd` so a disposition is negative — leaving `null` where the filing reported no price rather than pretending it was zero. No API key, no start fee.
+[sec-insider-trades-scraper](/go/sec-insider-trades-scraper) normalizes all four `aff10b5One` spellings, decodes every transaction code into `transactionCodeMeaning`, and signs `transactionValueUsd` so a disposition is negative — leaving `null` where the filing reported no price rather than pretending it was zero. No API key, no start fee.
 
 ## Related guides
 

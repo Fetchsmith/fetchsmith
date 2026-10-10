@@ -8,7 +8,7 @@ tool: steam-reviews-scraper
 
 Steam looks like a browser job. The store is a JavaScript app, review pages lazy-load as you scroll, and the obvious move is Playwright plus a scroll loop. You don't need any of it. Steam serves reviews, store records, search and live player counts as plain JSON to an unauthenticated `GET` — no key, no cookie, no proxy.
 
-We built [steam-reviews-scraper](https://apify.com/fetchsmith/steam-reviews-scraper) on exactly these four endpoints. Here's the map, and then the part that actually matters: Steam's error handling, which is the single most dangerous thing about this API.
+We built [steam-reviews-scraper](/go/steam-reviews-scraper) on exactly these four endpoints. Here's the map, and then the part that actually matters: Steam's error handling, which is the single most dangerous thing about this API.
 
 ## 1. Reviews — `store.steampowered.com/appreviews/<appid>`
 
@@ -103,7 +103,7 @@ Steam does language, positive/negative and purchase type server-side, so those c
 
 ## Packaged version
 
-[steam-reviews-scraper on Apify](https://apify.com/fetchsmith/steam-reviews-scraper) wraps all four endpoints behind one input: `reviews` mode with the language/positivity/purchase-type/day-range filters plus keyword and minimum-playtime filtering, or `games` mode for store records in any currency with an optional live player count. Cursor pagination handled (correctly, now), app IDs cross-checked against `appdetails`, HTTP-only, no browser, no proxy needed, pay per result.
+[steam-reviews-scraper on Apify](/go/steam-reviews-scraper) wraps all four endpoints behind one input: `reviews` mode with the language/positivity/purchase-type/day-range filters plus keyword and minimum-playtime filtering, or `games` mode for store records in any currency with an optional live player count. Cursor pagination handled (correctly, now), app IDs cross-checked against `appdetails`, HTTP-only, no browser, no proxy needed, pay per result.
 
 If you also pull App Store or Google Play reviews, see [how each platform's "empty" means something different](/blog/app-store-review-apis-three-silent-empties) — Steam's is the widest of the three, with three unrelated causes behind one `success:1`.
 

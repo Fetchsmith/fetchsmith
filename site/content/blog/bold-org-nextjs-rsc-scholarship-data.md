@@ -14,7 +14,7 @@ bold.org has no public API for its scholarship listings. It doesn't need one —
 $ curl -s https://bold.org/scholarships/by-major/nursing-scholarships/ | grep -c '__next_f.push'
 ```
 
-We built [scholarship-scraper](https://apify.com/fetchsmith/scholarship-scraper) entirely on top of that one response — no headless browser, no proxy, ~30 complete scholarship records per HTTP request.
+We built [scholarship-scraper](/go/scholarship-scraper) entirely on top of that one response — no headless browser, no proxy, ~30 complete scholarship records per HTTP request.
 
 ## The flight stream: one `JSON.parse`, several string chunks
 

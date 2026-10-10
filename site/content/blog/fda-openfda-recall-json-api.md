@@ -12,7 +12,7 @@ Every US product recall the FDA has classified — a spinach lot pulled for list
 GET https://api.fda.gov/drug/enforcement.json?search=classification:%22Class+I%22&limit=100&sort=report_date:desc
 ```
 
-No key, no login, no proxy — verified 200 from a plain datacenter IP with zero setup. There are three of these endpoints, one per FDA center (`food`, `drug`, `device`), each with the same shape and the same Lucene-style `search=` syntax. We built [fda-recall-scraper](https://apify.com/fetchsmith/fda-recall-scraper) to pull all three in one run. The API itself is trivial. Two things about the data aren't.
+No key, no login, no proxy — verified 200 from a plain datacenter IP with zero setup. There are three of these endpoints, one per FDA center (`food`, `drug`, `device`), each with the same shape and the same Lucene-style `search=` syntax. We built [fda-recall-scraper](/go/fda-recall-scraper) to pull all three in one run. The API itself is trivial. Two things about the data aren't.
 
 ## You cannot page past row 25,000
 
@@ -60,7 +60,7 @@ One more gotcha worth knowing before you filter by date: `report_date` — the f
 
 ## Packaged version
 
-[fda-recall-scraper on Apify](https://apify.com/fetchsmith/fda-recall-scraper) wraps all three endpoints into one schema: pick `food`, `drug` and/or `device` (interleaved, not one type after another), filter by classification, state, status or free text, and get back 39 flat fields with dates normalized to ISO and the drug-only `openfda` identifiers already flattened where they exist. The 25,000-row cap and its date-chunking workaround are handled internally — you just get more rows back on a wide query, automatically. No API key, no proxy, pay per result.
+[fda-recall-scraper on Apify](/go/fda-recall-scraper) wraps all three endpoints into one schema: pick `food`, `drug` and/or `device` (interleaved, not one type after another), filter by classification, state, status or free text, and get back 39 flat fields with dates normalized to ISO and the drug-only `openfda` identifiers already flattened where they exist. The 25,000-row cap and its date-chunking workaround are handled internally — you just get more rows back on a wide query, automatically. No API key, no proxy, pay per result.
 
 openFDA's 25,000-row skip cap is the same silent-truncation class we hit on ClinicalTrials.gov, NIH RePORTER and Contracts Finder — the cross-API comparison across all eight key-free government APIs we build against is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 

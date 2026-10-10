@@ -191,6 +191,27 @@ def tool_page(request: Request, slug: str):
         raise HTTPException(404)
     return render(request, "tool.html", t=t, guides=[p for p in load_posts() if p.get("tool") == slug])
 
+@app.get("/go/{slug}")
+def go(request: Request, slug: str):
+    """Outbound click-through to the Apify Store listing, logged as an `events`
+    row (kind=out_click) before redirecting. Added cycle 1509: blog CTAs linked
+    straight to apify.com, which meant every post->product click was invisible
+    to our own analytics (outbound links don't generate a pageview here). This
+    is now the only way blog/tool CTAs reach Apify, so bin/traffic can finally
+    see conversion instead of the /tools/ proxy metric.
+    """
+    if slug not in {t["slug"] for t in readable_tools()}:
+        raise HTTPException(404)
+    try:
+        with db() as c:
+            c.execute("INSERT INTO events(kind,payload,ts) VALUES(?,?,?)",
+                      ("out_click", json.dumps({"slug": slug, "path": str(request.url.path),
+                                                 "ref": request.headers.get("referer", "")[:200]}),
+                       int(time.time())))
+    except Exception:
+        pass
+    return RedirectResponse(f"https://apify.com/{env('APIFY_USERNAME', 'fetchsmith')}/{slug}", status_code=302)
+
 @app.get("/blog", response_class=HTMLResponse)
 def blog_index(request: Request):
     return render(request, "blog.html", posts=load_posts())

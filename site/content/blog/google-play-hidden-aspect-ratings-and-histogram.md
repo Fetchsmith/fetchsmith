@@ -44,7 +44,7 @@ The naming is Google's own — this isn't a value we're inferring. It reads as a
 
 ## Packaged version
 
-[google-play-reviews-scraper on Apify](https://apify.com/fetchsmith/google-play-reviews-scraper) returns both fields as part of every run at no extra cost — `histogram` on the one app-details row per app, `aspectRatings` on every review that carries one. See the [first Google Play guide](/blog/google-play-reviews-no-api-batchexecute) for the `num`/`country`/`language` behavior and the invalid-app-id error asymmetry, and [how each platform's "empty" means something different](/blog/app-store-review-apis-three-silent-empties) if you're also pulling App Store or Steam reviews.
+[google-play-reviews-scraper on Apify](/go/google-play-reviews-scraper) returns both fields as part of every run at no extra cost — `histogram` on the one app-details row per app, `aspectRatings` on every review that carries one. See the [first Google Play guide](/blog/google-play-reviews-no-api-batchexecute) for the `num`/`country`/`language` behavior and the invalid-app-id error asymmetry, and [how each platform's "empty" means something different](/blog/app-store-review-apis-three-silent-empties) if you're also pulling App Store or Steam reviews.
 
 ---
 

@@ -78,7 +78,7 @@ The lesson we'd actually pass on: **test the anti-bot theory before building mac
 
 ## Packaged version
 
-[app-store-reviews-scraper on Apify](https://apify.com/fetchsmith/app-store-reviews-scraper) does steps 1, 3, 4 and 5 today: full-range page scanning with hole skipping, dedupe by `reviewId`, automatic sort-order fallback (every row carries `sortUsed`), and an opt-in `countryFallback` that pulls from a working storefront when the requested one is genuinely empty (rows tagged `requestedCountry`/`fallbackUsed`). The dual-client-class sweep from step 2 is the finding above, measured today — it's going into the next build. Pay-per-review pricing, no browser, no proxy required.
+[app-store-reviews-scraper on Apify](/go/app-store-reviews-scraper) does steps 1, 3, 4 and 5 today: full-range page scanning with hole skipping, dedupe by `reviewId`, automatic sort-order fallback (every row carries `sortUsed`), and an opt-in `countryFallback` that pulls from a working storefront when the requested one is genuinely empty (rows tagged `requestedCountry`/`fallbackUsed`). The dual-client-class sweep from step 2 is the finding above, measured today — it's going into the next build. Pay-per-review pricing, no browser, no proxy required.
 
 If you also pull Google Play or Steam reviews, see [how each platform's "empty" means something different](/blog/app-store-review-apis-three-silent-empties) — Apple's is a paging hole, not an identity problem.
 

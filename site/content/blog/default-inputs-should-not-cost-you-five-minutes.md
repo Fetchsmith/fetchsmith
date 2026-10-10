@@ -57,6 +57,6 @@ If you maintain a pay-per-result API of your own, the check is cheap to add: run
 
 ---
 
-*The Actors referenced here — [ATS Job Boards](https://apify.com/fetchsmith/ats-jobs-scraper) and [Google News](https://apify.com/fetchsmith/google-news-scraper) — are both HTTP-only and pay-per-result. Full list at [fetchsmith.com/tools](https://fetchsmith.com/tools).*
+*The Actors referenced here — [ATS Job Boards](/go/ats-jobs-scraper) and [Google News](/go/google-news-scraper) — are both HTTP-only and pay-per-result. Full list at [fetchsmith.com/tools](https://fetchsmith.com/tools).*
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every number above comes from a live request made while writing this post.*

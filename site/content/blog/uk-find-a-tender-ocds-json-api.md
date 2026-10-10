@@ -15,7 +15,7 @@ GET https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages?updatedFr
 GET https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search?publishedFrom=2026-09-01&publishedTo=2026-09-03
 ```
 
-No auth header, no API key, no proxy, on either one. We built [uk-find-a-tender-scraper](https://apify.com/fetchsmith/uk-find-a-tender-scraper) on both endpoints together, and paired it with [eu-ted-tenders-scraper](https://apify.com/fetchsmith/eu-ted-tenders-scraper) — post-Brexit UK notices are **not** in EU TED, so the two together are additive coverage, not a duplicate. As usual, the APIs are trivial; the shape of what they return is where the real work is.
+No auth header, no API key, no proxy, on either one. We built [uk-find-a-tender-scraper](/go/uk-find-a-tender-scraper) on both endpoints together, and paired it with [eu-ted-tenders-scraper](/go/eu-ted-tenders-scraper) — post-Brexit UK notices are **not** in EU TED, so the two together are additive coverage, not a duplicate. As usual, the APIs are trivial; the shape of what they return is where the real work is.
 
 ## The awarded value is (almost) never on the award
 
@@ -91,7 +91,7 @@ One more thing worth deciding explicitly: match against *every* CPV on the notic
 
 ## Packaged version
 
-[uk-find-a-tender-scraper on Apify](https://apify.com/fetchsmith/uk-find-a-tender-scraper) wraps both portals: filter by CPV code, free-text query, value range and open/closed status, and get back one flat, deduplicated row per notice regardless of which portal it came from — buyer email/phone/URL, a value that's actually populated, deduplicated CPV codes gathered from every lot and item, named winning suppliers on award notices, and a `source`/`sourceName` field so you always know which portal a row came from. HTTP-only, no browser, no proxy, pay per result, and every filtered-out row is free.
+[uk-find-a-tender-scraper on Apify](/go/uk-find-a-tender-scraper) wraps both portals: filter by CPV code, free-text query, value range and open/closed status, and get back one flat, deduplicated row per notice regardless of which portal it came from — buyer email/phone/URL, a value that's actually populated, deduplicated CPV codes gathered from every lot and item, named winning suppliers on award notices, and a `source`/`sourceName` field so you always know which portal a row came from. HTTP-only, no browser, no proxy, pay per result, and every filtered-out row is free.
 
 For the EU's and the US's equivalent public-procurement feeds, see [EU TED](/blog/eu-ted-tenders-public-json-api) and [USAspending federal awards](/blog/usaspending-federal-awards-json-api).
 

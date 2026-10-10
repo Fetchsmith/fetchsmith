@@ -68,7 +68,7 @@ Comma-joining values ORs them correctly (`Firm,Vessel` → 9,609, matching 8,287
 
 ## Packaged version
 
-[sam-gov-opportunities-scraper on Apify](https://apify.com/fetchsmith/sam-gov-opportunities-scraper) wraps all seven of these into one Actor's `dataType` input — `opportunities` (default), `wage-determinations-dbra`, `wage-determinations-sca`, `wage-determinations-cba`, `assistance-listings`, and `exclusions` (the federal reference table, `fh`, isn't exposed as its own dataType — it's agency lookup data, not something a buyer searches directly). No API key, no login, pay per result returned, with a `watchLabel` mode that tracks what's new or changed since your last run on any of them.
+[sam-gov-opportunities-scraper on Apify](/go/sam-gov-opportunities-scraper) wraps all seven of these into one Actor's `dataType` input — `opportunities` (default), `wage-determinations-dbra`, `wage-determinations-sca`, `wage-determinations-cba`, `assistance-listings`, and `exclusions` (the federal reference table, `fh`, isn't exposed as its own dataType — it's agency lookup data, not something a buyer searches directly). No API key, no login, pay per result returned, with a `watchLabel` mode that tracks what's new or changed since your last run on any of them.
 
 Two more government-API deep dives if this kind of thing is useful: [USAspending's per-award-type field mapping](/blog/usaspending-federal-awards-json-api) and the wider [survey of eight key-free government JSON APIs](/blog/free-government-data-json-apis-no-key).
 

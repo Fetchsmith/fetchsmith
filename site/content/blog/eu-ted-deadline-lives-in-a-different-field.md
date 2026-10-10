@@ -6,7 +6,7 @@ tags: webscraping, api, procurement, opendata
 tool: eu-ted-tenders-scraper
 ---
 
-TED (Tenders Electronic Daily), the EU's official procurement journal, has one field that sounds like the obvious place to find a tender's submission deadline: `deadline-date-lot`. We built [eu-ted-tenders-scraper](https://apify.com/fetchsmith/eu-ted-tenders-scraper) reading exactly that field first — and shipped a version where `deadlineDate` came back `null` on almost every notice, because the actual date almost never lives there.
+TED (Tenders Electronic Daily), the EU's official procurement journal, has one field that sounds like the obvious place to find a tender's submission deadline: `deadline-date-lot`. We built [eu-ted-tenders-scraper](/go/eu-ted-tenders-scraper) reading exactly that field first — and shipped a version where `deadlineDate` came back `null` on almost every notice, because the actual date almost never lives there.
 
 ## Three fields, one concept
 
@@ -48,7 +48,7 @@ Zero out of 50. Not a data-quality gap — a result notice has nothing left to b
 
 `deadlineDate` is built by trying the three fields in the order the 50-notice measurement above justifies — tender-receipt first, then the generic field, then expressions-of-interest — and `deadlineType` on the output row says which of the three it actually came from, so you can tell a standard tender deadline apart from a shortlist-stage one without re-deriving it yourself. `daysUntilDeadline` is the whole-UTC-days countdown from that date, and `onlyOpenDeadlines`/`minDaysUntilDeadline` filter on it — so "give me tenders I can still bid on, with at least 2 weeks to prepare" is one filter, not a nested date check you write by hand.
 
-[eu-ted-tenders-scraper on Apify](https://apify.com/fetchsmith/eu-ted-tenders-scraper) wraps the full TED search API — buyer country, CPV code, notice type, publication date or a raw expert-query string — into one flat row per notice, with this deadline logic, deduplicated CPV/place arrays, a guarded `totalValue`, and the buyer's email/phone where TED publishes one. See [the first TED guide](/blog/eu-ted-tenders-public-json-api) for the multilingual-map shapes, the CPV-subtree matching trap, and the `-1`-as-null sentinel on `total-value`.
+[eu-ted-tenders-scraper on Apify](/go/eu-ted-tenders-scraper) wraps the full TED search API — buyer country, CPV code, notice type, publication date or a raw expert-query string — into one flat row per notice, with this deadline logic, deduplicated CPV/place arrays, a guarded `totalValue`, and the buyer's email/phone where TED publishes one. See [the first TED guide](/blog/eu-ted-tenders-public-json-api) for the multilingual-map shapes, the CPV-subtree matching trap, and the `-1`-as-null sentinel on `total-value`.
 
 If you need the UK's or the US's equivalent feed instead, see [UK Find a Tender / Contracts Finder](/blog/uk-find-a-tender-ocds-json-api) and [USAspending federal awards](/blog/usaspending-federal-awards-json-api).
 

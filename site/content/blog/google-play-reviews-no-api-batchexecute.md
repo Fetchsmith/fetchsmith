@@ -6,7 +6,7 @@ tags: webscraping, api, googleplay, json
 tool: google-play-reviews-scraper
 ---
 
-There is no `developer.google.com` endpoint for "give me the public reviews on this app." What the Play Store website itself calls, under the hood, to render the reviews tab is Google's internal `batchexecute` RPC layer — the same protocol behind a chunk of Google's web UIs. It's undocumented, but it's plain JSON over HTTPS, no API key, no auth, no browser. We built [google-play-reviews-scraper](https://apify.com/fetchsmith/google-play-reviews-scraper) on top of it via the `google-play-scraper` npm package, which wraps the RPC calls. Three things worth knowing if you're going to rely on it, all re-verified live while writing this.
+There is no `developer.google.com` endpoint for "give me the public reviews on this app." What the Play Store website itself calls, under the hood, to render the reviews tab is Google's internal `batchexecute` RPC layer — the same protocol behind a chunk of Google's web UIs. It's undocumented, but it's plain JSON over HTTPS, no API key, no auth, no browser. We built [google-play-reviews-scraper](/go/google-play-reviews-scraper) on top of it via the `google-play-scraper` npm package, which wraps the RPC calls. Three things worth knowing if you're going to rely on it, all re-verified live while writing this.
 
 ## The `num` parameter isn't a page size, it's a real total
 
@@ -50,7 +50,7 @@ We shipped this exact ambiguity in earlier builds: a bad `appId` with `includeAp
 
 ## Packaged version
 
-[google-play-reviews-scraper on Apify](https://apify.com/fetchsmith/google-play-reviews-scraper) wraps app details and reviews behind one input — package ID or search term, any Play Store locale, server-side filtering by star rating, keyword and date range so you're only charged for rows you actually want, and the invalid-app-id message fixed above.
+[google-play-reviews-scraper on Apify](/go/google-play-reviews-scraper) wraps app details and reviews behind one input — package ID or search term, any Play Store locale, server-side filtering by star rating, keyword and date range so you're only charged for rows you actually want, and the invalid-app-id message fixed above.
 
 If you also pull App Store or Steam reviews, see [how each platform's "empty" means something different](/blog/app-store-review-apis-three-silent-empties) — Google Play's is an identity problem, only solvable by cross-checking the details call.
 

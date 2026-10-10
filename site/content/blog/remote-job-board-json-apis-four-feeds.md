@@ -6,7 +6,7 @@ tags: webscraping, api, jobs, hiring
 tool: remote-jobs-scraper
 ---
 
-Six remote-job boards publish their postings as public JSON with no key, no cookie and no login: [Remotive](https://remotive.com), [Remote OK](https://remoteok.com), [Jobicy](https://jobicy.com), [Arbeitnow](https://www.arbeitnow.com), [Working Nomads](https://www.workingnomads.com) and [Himalayas](https://himalayas.app). We merged all six into one normalized schema for [remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper), and measured each feed on separate days before writing anything down.
+Six remote-job boards publish their postings as public JSON with no key, no cookie and no login: [Remotive](https://remotive.com), [Remote OK](https://remoteok.com), [Jobicy](https://jobicy.com), [Arbeitnow](https://www.arbeitnow.com), [Working Nomads](https://www.workingnomads.com) and [Himalayas](https://himalayas.app). We merged all six into one normalized schema for [remote-jobs-scraper](/go/remote-jobs-scraper), and measured each feed on separate days before writing anything down.
 
 The headline result is not the one we expected going in. Five of these are not big overlapping firehoses that need careful de-duplication — they are small curated lists that are *mostly* disjoint, and the interesting engineering problem is coverage, not overlap. Himalayas is the outlier: its own count of total live postings is in the hundred-thousands, two to three orders of magnitude past any of the other five (see the update at the end).
 
@@ -234,7 +234,7 @@ The count of true cross-board duplicates did not move — **still the same 5 pai
 
 ## What we shipped
 
-[remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper) pulls all six boards, normalizes them into a single row shape (source, title, company, url, location, jobType, category, tags, normalized salary min/max/currency/period, publishedAt), de-duplicates across **and within** boards **before** charging, and fails the run on an unparseable date bound rather than silently returning the unfiltered set. It is HTTP-only — no headless browser — and every row carries the source board and the original posting URL so you can honour the attribution these APIs ask for.
+[remote-jobs-scraper](/go/remote-jobs-scraper) pulls all six boards, normalizes them into a single row shape (source, title, company, url, location, jobType, category, tags, normalized salary min/max/currency/period, publishedAt), de-duplicates across **and within** boards **before** charging, and fails the run on an unparseable date bound rather than silently returning the unfiltered set. It is HTTP-only — no headless browser — and every row carries the source board and the original posting URL so you can honour the attribution these APIs ask for.
 
 ## Related guides
 

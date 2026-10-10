@@ -6,7 +6,7 @@ tags: webscraping, api, jobs, hiring
 tool: ats-jobs-scraper
 ---
 
-Almost every company's careers page is a thin wrapper around one of six applicant-tracking-system (ATS) vendors, and all six publish the underlying job postings as public JSON — no login, no key, the same data the "Apply" button itself fetches. We built [ats-jobs-scraper](https://apify.com/fetchsmith/ats-jobs-scraper) on top of all six. The interesting part wasn't finding the endpoints; it's that no two of them agree on the shape of a "job."
+Almost every company's careers page is a thin wrapper around one of six applicant-tracking-system (ATS) vendors, and all six publish the underlying job postings as public JSON — no login, no key, the same data the "Apply" button itself fetches. We built [ats-jobs-scraper](/go/ats-jobs-scraper) on top of all six. The interesting part wasn't finding the endpoints; it's that no two of them agree on the shape of a "job."
 
 ## Greenhouse: the description is HTML, but it's escaped HTML
 
@@ -80,7 +80,7 @@ Two narrower traps sit next to it. `new Date("2026-02-30")` doesn't fail — V8 
 
 The general rule, which we now apply to every filter input in the fleet: **judge a failed input parse by whether ignoring it narrows or widens the result set.** A narrowing fallback is safe — you return a subset of what was asked for and the buyer sees it immediately. A *widening* fallback is the worst possible behaviour under per-result pricing: the buyer pays for rows they explicitly asked to exclude, and nothing in the output looks wrong. So a bound that can't be parsed now stops the run with an error naming the offending input, and both bounds are inclusive whole days in UTC (`postedAfter` from `00:00:00.000`, `postedBefore` through `23:59:59.999`) so a one-month window is actually one month. We found the identical bug shape in a [date filter on CourtListener](/blog/courtlistener-search-api-two-auth-tiers) and in [CPV code matching on UK tenders](/blog/uk-find-a-tender-ocds-json-api) — different APIs, same failure: a filter that couldn't be honoured was deleted instead of refused.
 
-[ats-jobs-scraper](https://apify.com/fetchsmith/ats-jobs-scraper) wraps all six APIs behind one schema — company, ATS source, title, department, team, employment type, workplace type, remote flag, location, normalized salary (min/max/currency/**interval**), timestamps, apply URL and description — and skips companies that have moved off an ATS instead of failing the run. Pay per job posting returned, no start fee, no browser required for any of the six.
+[ats-jobs-scraper](/go/ats-jobs-scraper) wraps all six APIs behind one schema — company, ATS source, title, department, team, employment type, workplace type, remote flag, location, normalized salary (min/max/currency/**interval**), timestamps, apply URL and description — and skips companies that have moved off an ATS instead of failing the run. Pay per job posting returned, no start fee, no browser required for any of the six.
 
 ---
 

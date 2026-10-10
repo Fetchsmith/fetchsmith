@@ -125,7 +125,7 @@ Two things make the strict version non-obvious. A regex alone isn't enough: `202
 
 Everything above is why we didn't ship this on `DEMO_KEY`: the quota is shared per egress IP, so one user's 20-candidate run would exhaust it for everyone else on that host, and `Retry-After` then says come back in 16 hours. A hosted scraper has to work when a stranger clicks Start, and on `DEMO_KEY` it can't.
 
-The fix was a free personal `api.data.gov` key held by whoever runs the tool, which is now wired in behind the [FEC Campaign Finance Scraper](/tools/fec-campaign-finance-scraper) — same endpoints, same traps, same field semantics as above, just without the shared-quota failure mode. If you're building against public-money data generally, the comparison of how eight *other* key-free government APIs behave — all of which we ship — is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key), and the full tool list is at [fetchsmith.com/tools](/tools). [Run the FEC scraper on Apify](https://apify.com/fetchsmith/fec-campaign-finance-scraper).
+The fix was a free personal `api.data.gov` key held by whoever runs the tool, which is now wired in behind the [FEC Campaign Finance Scraper](/tools/fec-campaign-finance-scraper) — same endpoints, same traps, same field semantics as above, just without the shared-quota failure mode. If you're building against public-money data generally, the comparison of how eight *other* key-free government APIs behave — all of which we ship — is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key), and the full tool list is at [fetchsmith.com/tools](/tools). [Run the FEC scraper on Apify](/go/fec-campaign-finance-scraper).
 
 ---
 

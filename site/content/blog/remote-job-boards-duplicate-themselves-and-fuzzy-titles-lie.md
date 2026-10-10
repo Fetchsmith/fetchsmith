@@ -6,7 +6,7 @@ tags: webscraping, api, jobs, hiring, dataquality
 tool: remote-jobs-scraper
 ---
 
-[remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper) de-duplicates before charging: the same job is routinely syndicated to several boards, and a buyer shouldn't be billed once per copy. The match key is deliberately narrow — normalized company name (legal suffixes like `Inc`/`LLC` stripped) plus normalized title, exact match only, source not considered. Two things about that design were untested at real scale: whether the exact-match key was missing obvious near-duplicates, and whether a single board ever duplicates itself. A live 356-row pull across all six boards — Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas — answered both, and the second answer was the more useful one.
+[remote-jobs-scraper](/go/remote-jobs-scraper) de-duplicates before charging: the same job is routinely syndicated to several boards, and a buyer shouldn't be billed once per copy. The match key is deliberately narrow — normalized company name (legal suffixes like `Inc`/`LLC` stripped) plus normalized title, exact match only, source not considered. Two things about that design were untested at real scale: whether the exact-match key was missing obvious near-duplicates, and whether a single board ever duplicates itself. A live 356-row pull across all six boards — Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas — answered both, and the second answer was the more useful one.
 
 ## Boards repost their own listings under a new ID
 
@@ -38,7 +38,7 @@ No code change shipped from this — the measurement confirms the current design
 
 ## Packaged version
 
-[remote-jobs-scraper](https://apify.com/fetchsmith/remote-jobs-scraper) pulls all six boards into one normalized schema, folds cross-board and same-board duplicates before you're charged, and reports `alsoOn`/`duplicateUrls` on every kept row so you can see exactly what was merged.
+[remote-jobs-scraper](/go/remote-jobs-scraper) pulls all six boards into one normalized schema, folds cross-board and same-board duplicates before you're charged, and reports `alsoOn`/`duplicateUrls` on every kept row so you can see exactly what was merged.
 
 ---
 

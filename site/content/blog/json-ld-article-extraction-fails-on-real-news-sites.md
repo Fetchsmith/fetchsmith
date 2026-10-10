@@ -9,7 +9,7 @@ syndicated: https://dev.to/fetchsmith/we-tested-json-ld-only-article-extraction-
 
 If you're pulling article text out of news pages, the textbook approach is: fetch the page, find the `<script type="application/ld+json">` block with `"@type": "Article"` or `"@type": "NewsArticle"`, and read `articleBody`. It's clean, it's structured, and it's what schema.org was built for. Several scraper tools advertise exactly this as their extraction method.
 
-We tried it against 8 real publishers — BBC, The Guardian, NPR, Al Jazeera, UN News, Inside Climate News, ESG Dive, NextCity — while building full-text extraction into our [Google News Scraper](https://apify.com/fetchsmith/google-news-scraper). Result: **zero of eight** had `articleBody` populated in their JSON-LD. Publishers include the `Article` node — headline, author, datePublished, image — almost every field except the one with the actual text.
+We tried it against 8 real publishers — BBC, The Guardian, NPR, Al Jazeera, UN News, Inside Climate News, ESG Dive, NextCity — while building full-text extraction into our [Google News Scraper](/go/google-news-scraper). Result: **zero of eight** had `articleBody` populated in their JSON-LD. Publishers include the `Article` node — headline, author, datePublished, image — almost every field except the one with the actual text.
 
 That matches what publishers actually want structured data for: rich snippets in search results and social cards. Nobody's optimizing their JSON-LD for scrapers reading the body copy, so the field with the real payoff for a scraper is the one most commonly left out.
 

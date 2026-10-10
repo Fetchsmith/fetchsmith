@@ -21,7 +21,7 @@ Content-Type: application/json
 {"tradeMarks": [...], "page": 1, "totalPages": 30, "totalResults": 148}
 ```
 
-We build [trademark-search-scraper](https://apify.com/fetchsmith/trademark-search-scraper) on this endpoint. The API itself is a fifteen-minute integration. The three things below are what actually cost time, and two of them fail in ways that don't look like failures.
+We build [trademark-search-scraper](/go/trademark-search-scraper) on this endpoint. The API itself is a fifteen-minute integration. The three things below are what actually cost time, and two of them fail in ways that don't look like failures.
 
 ## 1. Without a User-Agent you get no HTTP response at all
 
@@ -104,7 +104,7 @@ A search that costs nothing per office is a different tool from one that costs a
 
 One caveat worth stating plainly: this is a screening index, not a clearance opinion. TMview is the offices' own data, but a real freedom-to-operate analysis weighs similar marks, not identical strings, and that is a trademark attorney's job.
 
-If you want the normalised version — 22 flat fields per mark, dates already sliced to calendar dates, the capital-L key already renamed, and the transport-failure retry already written — it is [trademark-search-scraper](https://apify.com/fetchsmith/trademark-search-scraper) on Apify, priced per returned mark.
+If you want the normalised version — 22 flat fields per mark, dates already sliced to calendar dates, the capital-L key already renamed, and the transport-failure retry already written — it is [trademark-search-scraper](/go/trademark-search-scraper) on Apify, priced per returned mark.
 
 The header-drop failure mode in section 1 is the same class as the silent empties we hit on Apple's review feed — see [Three ways a public review API returns an empty list instead of an error](/blog/app-store-review-apis-three-silent-empties) for the version of this that returns `200` and lies to you instead.
 

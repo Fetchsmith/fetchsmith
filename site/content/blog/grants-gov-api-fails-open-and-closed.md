@@ -93,7 +93,7 @@ The guard exists for the day Grants.gov renames or retires a parameter underneat
 3. Remember the parameters are plural (`oppStatuses`, `agencies`, `eligibilities`, `fundingCategories`, `fundingInstruments`) even though the data reads singular.
 4. `hitCount: 0` means your value was wrong. The full catalog means your *name* was wrong. Neither will ever be an error status.
 
-[grants-gov-scraper on Apify](https://apify.com/fetchsmith/grants-gov-scraper) handles all of this — live-resolved agency codes (a parent code like `USDA` expands to its sub-agencies), client-side absolute date ranges the API doesn't offer, and now a fail-open guard on every search page. $0.002/result thin, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
+[grants-gov-scraper on Apify](/go/grants-gov-scraper) handles all of this — live-resolved agency codes (a parent code like `USDA` expands to its sub-agencies), client-side absolute date ranges the API doesn't offer, and now a fail-open guard on every search page. $0.002/result thin, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
 
 ---
 

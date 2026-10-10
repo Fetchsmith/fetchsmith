@@ -12,7 +12,7 @@ Every rule, proposed rule, notice and presidential document the US government ha
 GET https://www.federalregister.gov/api/v1/documents.json?per_page=1000&conditions[type][]=PRORULE
 ```
 
-That's the machine-readable side of the *Federal Register* — the daily journal in which federal agencies publish everything they are legally required to publish. If a rule affecting your industry exists, it is in here, usually with the date by which you can still comment on it. We built [federal-register-scraper](https://apify.com/fetchsmith/federal-register-scraper) on this endpoint, and three things about it will quietly break a naive crawler.
+That's the machine-readable side of the *Federal Register* — the daily journal in which federal agencies publish everything they are legally required to publish. If a rule affecting your industry exists, it is in here, usually with the date by which you can still comment on it. We built [federal-register-scraper](/go/federal-register-scraper) on this endpoint, and three things about it will quietly break a naive crawler.
 
 ## `count` is clamped at 10,000, so never use it as a total
 
@@ -106,7 +106,7 @@ The general form, worth carrying to any government source: **before building cha
 
 ## Packaged version
 
-[federal-register-scraper on Apify](https://apify.com/fetchsmith/federal-register-scraper) wraps all of the above: cursor pagination past the 10,000-row wall, agency names or slugs resolved against the live 472-agency index before any request goes out, a `significantOnly` toggle, a comment-deadline filter, a `referencedCitations` field that pulls the `"NN FR NNNNN"` citations out of an amendment's own text so you can match it back to the rule it corrects, and 37 flat fields per document with each one documented against the type it actually appears on. No API key, no proxy, pay per result at $0.0008 — no start fee.
+[federal-register-scraper on Apify](/go/federal-register-scraper) wraps all of the above: cursor pagination past the 10,000-row wall, agency names or slugs resolved against the live 472-agency index before any request goes out, a `significantOnly` toggle, a comment-deadline filter, a `referencedCitations` field that pulls the `"NN FR NNNNN"` citations out of an amendment's own text so you can match it back to the rule it corrects, and 37 flat fields per document with each one documented against the type it actually appears on. No API key, no proxy, pay per result at $0.0008 — no start fee.
 
 The clamped `count` above is one of three distinct failure classes across the eight key-free government APIs we build against — the cross-API comparison and the assertions that catch each is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 

@@ -38,14 +38,14 @@ Google returns HTTP 429 on the decoding endpoint once a single IP has decoded a 
 
 ## Packaged version
 
-We turned this into an Apify Actor: [google-news-scraper](https://apify.com/fetchsmith/google-news-scraper). It supports search queries with all of Google's operators (`site:`, `when:7d`, `before:`/`after:`), or you can pass raw RSS feed URLs (topic pages, sections, publications) directly. Pay-per-article pricing ($0.002/article); decoding is on by default and can be turned off if you only need headlines. It can also fetch the [full article text](/blog/json-ld-article-extraction-fails-on-real-news-sites) for each result at no extra cost per row.
+We turned this into an Apify Actor: [google-news-scraper](/go/google-news-scraper). It supports search queries with all of Google's operators (`site:`, `when:7d`, `before:`/`after:`), or you can pass raw RSS feed URLs (topic pages, sections, publications) directly. Pay-per-article pricing ($0.002/article); decoding is on by default and can be turned off if you only need headlines. It can also fetch the [full article text](/blog/json-ld-article-extraction-fails-on-real-news-sites) for each result at no extra cost per row.
 
 Also live on the same account, all HTTP-only / no-browser and pay-per-result:
 
-- [hacker-news-scraper](https://apify.com/fetchsmith/hacker-news-scraper) — stories, comments, Ask/Show HN, Who's Hiring, via the official Algolia API
-- [app-store-reviews-scraper](https://apify.com/fetchsmith/app-store-reviews-scraper) — Apple App Store reviews by app + country storefront
-- [google-play-reviews-scraper](https://apify.com/fetchsmith/google-play-reviews-scraper) — Google Play reviews + app details by ID or search term
-- [shopify-products-scraper](https://apify.com/fetchsmith/shopify-products-scraper) — full product catalog of any Shopify store, no login needed
+- [hacker-news-scraper](/go/hacker-news-scraper) — stories, comments, Ask/Show HN, Who's Hiring, via the official Algolia API
+- [app-store-reviews-scraper](/go/app-store-reviews-scraper) — Apple App Store reviews by app + country storefront
+- [google-play-reviews-scraper](/go/google-play-reviews-scraper) — Google Play reviews + app details by ID or search term
+- [shopify-products-scraper](/go/shopify-products-scraper) — full product catalog of any Shopify store, no login needed
 
 Full catalog + docs: [fetchsmith.com/tools](/tools)
 

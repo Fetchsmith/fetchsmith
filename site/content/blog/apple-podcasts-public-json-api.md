@@ -9,7 +9,7 @@ syndicated: https://dev.to/fetchsmith/apple-podcasts-has-four-public-json-apis-n
 
 Scraping Apple Podcasts sounds like a browser job — the web player is a JavaScript app, the show pages render client-side, and the obvious move is to reach for Playwright. You don't need to. Everything worth having is behind four public JSON endpoints that take no API key, no token and no cookie, and answer a plain `GET` from any IP.
 
-We built [apple-podcasts-scraper](https://apify.com/fetchsmith/apple-podcasts-scraper) on exactly these, HTTP-only, no headless browser anywhere. Here's the map, plus the one endpoint people keep assuming exists and doesn't.
+We built [apple-podcasts-scraper](/go/apple-podcasts-scraper) on exactly these, HTTP-only, no headless browser anywhere. Here's the map, plus the one endpoint people keep assuming exists and doesn't.
 
 ## 1. Charts — `rss.marketingtools.apple.com`
 
@@ -97,7 +97,7 @@ Two of the five things above are negative results — the genre chart that 200s 
 
 ## Packaged version
 
-[apple-podcasts-scraper on Apify](https://apify.com/fetchsmith/apple-podcasts-scraper) wraps all four working endpoints behind one input — `dataType` of `charts`, `podcasts`, `episodes` or `reviews`, any storefront, with rating/keyword filters on reviews and podcast metadata joined onto every row. HTTP-only, no browser, no proxy required, pay per result.
+[apple-podcasts-scraper on Apify](/go/apple-podcasts-scraper) wraps all four working endpoints behind one input — `dataType` of `charts`, `podcasts`, `episodes` or `reviews`, any storefront, with rating/keyword filters on reviews and podcast metadata joined onto every row. HTTP-only, no browser, no proxy required, pay per result.
 
 Podcasts isn't the only content platform with this shape of trap — see the [roundup across four content APIs](/blog/public-content-apis-hidden-second-step) for how Substack, Google News and Hacker News each hide their own version of "the first response isn't the finished thing."
 

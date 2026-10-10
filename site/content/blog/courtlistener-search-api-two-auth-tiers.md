@@ -15,7 +15,7 @@ GET https://www.courtlistener.com/api/rest/v4/search/?q=patent+infringement&type
 {"count": 59685, "next": "...", "results": [{"absolute_url": "/opinion/2416294/...", "caseName": "...", ...}]}
 ```
 
-No key, no login, no cookies — that request just returned real data from a bare `curl` on a datacenter IP. We built [court-records-scraper](https://apify.com/fetchsmith/court-records-scraper) on this endpoint. Two things about it will trip up anyone building against it from the docs alone.
+No key, no login, no cookies — that request just returned real data from a bare `curl` on a datacenter IP. We built [court-records-scraper](/go/court-records-scraper) on this endpoint. Two things about it will trip up anyone building against it from the docs alone.
 
 ## The API has two auth tiers, and the docs lead with the one that needs a key
 
@@ -87,7 +87,7 @@ This is the same shape as [the CPV prefix trap](/blog/uk-find-a-tender-ocds-json
 
 ## Packaged version
 
-[court-records-scraper on Apify](https://apify.com/fetchsmith/court-records-scraper) is built directly on the anonymous search index — no account, no token, no captcha — and merges opinions and dockets with the fair-share split described above, so asking for `recordType: "both"` never silently drops one type. `is_available` ships on every filing entry so you can filter on document availability instead of assuming it. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
+[court-records-scraper on Apify](/go/court-records-scraper) is built directly on the anonymous search index — no account, no token, no captcha — and merges opinions and dockets with the fair-share split described above, so asking for `recordType: "both"` never silently drops one type. `is_available` ships on every filing entry so you can filter on document availability instead of assuming it. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
 
 ---
 

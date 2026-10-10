@@ -70,7 +70,7 @@ Leaving out `token=` (even empty) gets you a `400` for a missing required param 
 
 ## Packaged version
 
-[substack-scraper on Apify](https://apify.com/fetchsmith/substack-scraper) does the extra work this API needs: one archive call to find the posts, one follow-up call per post for the real `body_html` (cleaned to plain text, HTML kept optional), and a recursive flatten of the comment tree with a `parentCommentId` field added back in for you. `searchQuery` uses the working `sort=new&search=` combination automatically. Custom domains (`bigtechnology.com`, `astralcodexten.com`) work the same as the `<handle>.substack.com` form — no login, no browser, pay per result.
+[substack-scraper on Apify](/go/substack-scraper) does the extra work this API needs: one archive call to find the posts, one follow-up call per post for the real `body_html` (cleaned to plain text, HTML kept optional), and a recursive flatten of the comment tree with a `parentCommentId` field added back in for you. `searchQuery` uses the working `sort=new&search=` combination automatically. Custom domains (`bigtechnology.com`, `astralcodexten.com`) work the same as the `<handle>.substack.com` form — no login, no browser, pay per result.
 
 This "the list call isn't the finished content" trap isn't unique to Substack — see the [roundup across four content APIs](/blog/public-content-apis-hidden-second-step) for how Apple Podcasts, Google News and Hacker News each hide a version of the same problem.
 

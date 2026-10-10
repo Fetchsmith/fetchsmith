@@ -6,7 +6,7 @@ tags: webscraping, sec, edgar, dataquality
 tool: sec-insider-trades-scraper
 ---
 
-[sec-insider-trades-scraper](https://apify.com/fetchsmith/sec-insider-trades-scraper) reads SEC EDGAR's raw ownership XML directly, and [a 210-filing measurement](/blog/sec-form-4-10b5-1-flag-is-not-a-boolean) found the Rule 10b5-1 plan checkbox serialized four different ways in that XML — `0`, `1`, `true`, `false` — with the natural `=== 'true'` check wrong on 92% of real filings. That is the kind of bug that hides in plain sight: nothing throws, the field is always present, and the column looks fully populated either way.
+[sec-insider-trades-scraper](/go/sec-insider-trades-scraper) reads SEC EDGAR's raw ownership XML directly, and [a 210-filing measurement](/blog/sec-form-4-10b5-1-flag-is-not-a-boolean) found the Rule 10b5-1 plan checkbox serialized four different ways in that XML — `0`, `1`, `true`, `false` — with the natural `=== 'true'` check wrong on 92% of real filings. That is the kind of bug that hides in plain sight: nothing throws, the field is always present, and the column looks fully populated either way.
 
 The obvious next question is whether any of our other government-data Actors — `eu-ted-tenders-scraper`, `trademark-search-scraper`, `court-records-scraper` — could have the same trap sitting unnoticed in a boolean field somewhere. The honest way to answer that is not to re-read three Actors' worth of field-mapping code looking for a bug that might not be there. It's to check whether the *precondition* for the bug is even present.
 
@@ -36,7 +36,7 @@ grep -rl "xmlMode\s*:\s*true" */src/main.js       # only sec-insider-trades-scra
 grep -rl "cheerio" */src/main.js | xargs grep -L "xmlMode"   # everyone else, HTML mode
 ```
 
-[sec-insider-trades-scraper](https://apify.com/fetchsmith/sec-insider-trades-scraper) normalizes all four `aff10b5One` spellings so `rule10b5_1Plan` is correct regardless of which filing agent wrote the XML. No API key, no start fee, pay only per transaction row.
+[sec-insider-trades-scraper](/go/sec-insider-trades-scraper) normalizes all four `aff10b5One` spellings so `rule10b5_1Plan` is correct regardless of which filing agent wrote the XML. No API key, no start fee, pay only per transaction row.
 
 ## Related guides
 

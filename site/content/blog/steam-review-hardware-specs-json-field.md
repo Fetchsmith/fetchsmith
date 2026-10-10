@@ -45,7 +45,7 @@ At a 5-15% hit rate this is never going to be a primary key for anything, but it
 
 ## Packaged version
 
-[steam-reviews-scraper](https://apify.com/fetchsmith/steam-reviews-scraper) exposes this as five fields — `hardwareOs`, `hardwareCpu` (trimmed), `hardwareGpu`, `hardwareRamMb`, `hardwareVramMb` — `null` on every review where the author never opted in, real values on the rest. Same run, same price, no extra request: it's already inline on every review Steam returns.
+[steam-reviews-scraper](/go/steam-reviews-scraper) exposes this as five fields — `hardwareOs`, `hardwareCpu` (trimmed), `hardwareGpu`, `hardwareRamMb`, `hardwareVramMb` — `null` on every review where the author never opted in, real values on the rest. Same run, same price, no extra request: it's already inline on every review Steam returns.
 
 ---
 

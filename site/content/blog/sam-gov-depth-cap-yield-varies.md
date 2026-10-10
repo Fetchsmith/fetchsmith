@@ -31,7 +31,7 @@ The Actor's `RUN_SUMMARY` already reports the real, per-run truth — `duplicate
 
 ## Packaged version
 
-[sam-gov-opportunities-scraper on Apify](https://apify.com/fetchsmith/sam-gov-opportunities-scraper) queries SAM.gov's own public search backend directly — no API key, no login, covering contract opportunities plus wage determinations, CFDA assistance listings, and PII-safe exclusion records behind the same `index=` parameter. Every run's `RUN_SUMMARY` reports `declaredMatches`, `duplicateRowsDropped`, and `incompleteReason` so you can tell "got everything" apart from "hit the depth cap" without reading logs.
+[sam-gov-opportunities-scraper on Apify](/go/sam-gov-opportunities-scraper) queries SAM.gov's own public search backend directly — no API key, no login, covering contract opportunities plus wage determinations, CFDA assistance listings, and PII-safe exclusion records behind the same `index=` parameter. Every run's `RUN_SUMMARY` reports `declaredMatches`, `duplicateRowsDropped`, and `incompleteReason` so you can tell "got everything" apart from "hit the depth cap" without reading logs.
 
 ---
 

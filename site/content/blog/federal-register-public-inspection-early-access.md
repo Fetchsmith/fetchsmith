@@ -57,7 +57,7 @@ Combined with the immutability finding from [our first guide](/blog/federal-regi
 
 ---
 
-[federal-register-scraper on Apify](https://apify.com/fetchsmith/federal-register-scraper) supports both datasets: `dataset: "published"` (the full 1994-present archive, with `watchLabel` incremental mode) and `dataset: "publicInspection"` (documents filed but not yet official, with the same `filedAt`/`filingType`/`onPublicInspection` fields shown above). No API key, no proxy, pay per result at $0.0008 — no start fee.
+[federal-register-scraper on Apify](/go/federal-register-scraper) supports both datasets: `dataset: "published"` (the full 1994-present archive, with `watchLabel` incremental mode) and `dataset: "publicInspection"` (documents filed but not yet official, with the same `filedAt`/`filingType`/`onPublicInspection` fields shown above). No API key, no proxy, pay per result at $0.0008 — no start fee.
 
 ---
 

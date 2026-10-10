@@ -71,7 +71,7 @@ While in the page's JSON looking for this, it's tempting to also look for a way 
 
 ## Packaged version
 
-[app-store-reviews-scraper on Apify](https://apify.com/fetchsmith/app-store-reviews-scraper) now returns `ratingBreakdown` (`{ five, four, three, two, one }`) and `totalRatings` alongside every app's reviews when `includeAppInfo` is on — verified live, order-checked, sanity-guarded, and free: it rides the same request batch as the existing app lookup, so it costs no extra wall-clock and nothing extra beyond the existing per-review price.
+[app-store-reviews-scraper on Apify](/go/app-store-reviews-scraper) now returns `ratingBreakdown` (`{ five, four, three, two, one }`) and `totalRatings` alongside every app's reviews when `includeAppInfo` is on — verified live, order-checked, sanity-guarded, and free: it rides the same request batch as the existing app lookup, so it costs no extra wall-clock and nothing extra beyond the existing per-review price.
 
 If you're also pulling Google Play or Steam reviews, see [how each platform's "empty" result means something different](/blog/app-store-review-apis-three-silent-empties) — none of the three expose a ratings histogram this way, which is part of why it's worth having.
 

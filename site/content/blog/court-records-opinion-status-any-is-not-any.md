@@ -47,7 +47,7 @@ We could have left this as a README caveat — "any means these 2 of 7 statuses"
 
 ## Packaged version
 
-[court-records-scraper on Apify](https://apify.com/fetchsmith/court-records-scraper) queries CourtListener's anonymous search index directly — no account, no token. `opinionStatus` defaults to `published` (matching CourtListener's own default, so no existing run's row count changes), and `"any"` now genuinely means every status CourtListener tracks. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
+[court-records-scraper on Apify](/go/court-records-scraper) queries CourtListener's anonymous search index directly — no account, no token. `opinionStatus` defaults to `published` (matching CourtListener's own default, so no existing run's row count changes), and `"any"` now genuinely means every status CourtListener tracks. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
 
 ---
 

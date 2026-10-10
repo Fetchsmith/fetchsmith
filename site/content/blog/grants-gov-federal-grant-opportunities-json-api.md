@@ -15,7 +15,7 @@ Content-Type: application/json
 {"rows": 25, "oppStatuses": "forecasted|posted"}
 ```
 
-No key, no login, no proxy — verified 200 from a plain datacenter IP. We built [grants-gov-scraper](https://apify.com/fetchsmith/grants-gov-scraper) to wrap it because the field is thin: every real competitor on Apify tops out at 7 users, versus 40-90 in adjacent government-data niches. The API itself is simple. Trusting its error handling is the part that breaks people.
+No key, no login, no proxy — verified 200 from a plain datacenter IP. We built [grants-gov-scraper](/go/grants-gov-scraper) to wrap it because the field is thin: every real competitor on Apify tops out at 7 users, versus 40-90 in adjacent government-data niches. The API itself is simple. Trusting its error handling is the part that breaks people.
 
 ## A typo in your filter returns zero results, not an error
 
@@ -72,7 +72,7 @@ One more thing worth knowing before you build against this API directly: the `se
 
 ## Packaged version
 
-[grants-gov-scraper on Apify](https://apify.com/fetchsmith/grants-gov-scraper) handles all four of these: client-side enum validation against Grants.gov's own live facet lists (so a typo fails loudly instead of returning an empty dataset), automatic parent-agency-to-sub-agency expansion, an exclusive `oppNum` lookup mode that ignores the default status filter, and an `enrich` option that joins each result with the award/eligibility/synopsis fields from `fetchOpportunity`. Named individual program officers (a real risk in the free-text agency contact fields — see the Actor's README) are never emitted, only organisational agency data. No API key, no proxy, pay per result, cheaper than the largest pure-Grants.gov listing on Apify.
+[grants-gov-scraper on Apify](/go/grants-gov-scraper) handles all four of these: client-side enum validation against Grants.gov's own live facet lists (so a typo fails loudly instead of returning an empty dataset), automatic parent-agency-to-sub-agency expansion, an exclusive `oppNum` lookup mode that ignores the default status filter, and an `enrich` option that joins each result with the award/eligibility/synopsis fields from `fetchOpportunity`. Named individual program officers (a real risk in the free-text agency contact fields — see the Actor's README) are never emitted, only organisational agency data. No API key, no proxy, pay per result, cheaper than the largest pure-Grants.gov listing on Apify.
 
 Grants.gov's silent-zero behaviour is one of three distinct failure classes we've catalogued across the eight key-free government APIs we build against — the cross-API comparison and a four-assertion checklist that catches all of them is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 

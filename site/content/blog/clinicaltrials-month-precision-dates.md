@@ -78,7 +78,7 @@ While you're here, the same API has three louder traps — a silent `pageSize` c
 
 ## Packaged version
 
-[clinicaltrials-scraper](https://apify.com/fetchsmith/clinicaltrials-scraper) runs all six of these date windows as plain inputs, documents the month-precision rule on each one, and never ships the registry's investigator contact blocks. $0.0015/result on Apify, no start fee.
+[clinicaltrials-scraper](/go/clinicaltrials-scraper) runs all six of these date windows as plain inputs, documents the month-precision rule on each one, and never ships the registry's investigator contact blocks. $0.0015/result on Apify, no start fee.
 
 ---
 

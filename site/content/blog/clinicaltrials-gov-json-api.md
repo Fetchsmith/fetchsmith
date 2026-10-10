@@ -12,7 +12,7 @@ Every clinical trial registered in the United States — 602,520 of them and cou
 GET https://clinicaltrials.gov/api/v2/studies?query.cond=breast+cancer&pageSize=100
 ```
 
-That's ClinicalTrials.gov's official API v2, run by the NIH's National Library of Medicine. We built [clinicaltrials-scraper](https://apify.com/fetchsmith/clinicaltrials-scraper) on it, and three of its rougher edges are worth knowing before you write a client against it.
+That's ClinicalTrials.gov's official API v2, run by the NIH's National Library of Medicine. We built [clinicaltrials-scraper](/go/clinicaltrials-scraper) on it, and three of its rougher edges are worth knowing before you write a client against it.
 
 ## `pageSize=1001` doesn't error — it just gives you 1000 rows
 
@@ -63,11 +63,11 @@ Multiple conditions combine with `AND`/`OR` inside the same string — e.g. `ARE
 
 ## One more thing: don't ship the contact fields
 
-Two `centralContacts[]` and per-location `contacts[]` blocks come back on every study with named individuals and personal emails — a live sample turned up a `@gmail.com` address on a real trial coordinator. Several competitor Actors in this niche resell that as a "contact finder." [clinicaltrials-scraper](https://apify.com/fetchsmith/clinicaltrials-scraper) drops it entirely — facility name, city, state, country and geo-coordinates only, never a person's name, phone or email.
+Two `centralContacts[]` and per-location `contacts[]` blocks come back on every study with named individuals and personal emails — a live sample turned up a `@gmail.com` address on a real trial coordinator. Several competitor Actors in this niche resell that as a "contact finder." [clinicaltrials-scraper](/go/clinicaltrials-scraper) drops it entirely — facility name, city, state, country and geo-coordinates only, never a person's name, phone or email.
 
 ## Packaged version
 
-If you just want the rows — with phase/status/site filters, a `rowsPerStudy: "site"` mode for one-row-per-trial-site output, and the contact fields already stripped — [clinicaltrials-scraper](https://apify.com/fetchsmith/clinicaltrials-scraper) runs on Apify at $0.0015/result, no start fee.
+If you just want the rows — with phase/status/site filters, a `rowsPerStudy: "site"` mode for one-row-per-trial-site output, and the contact fields already stripped — [clinicaltrials-scraper](/go/clinicaltrials-scraper) runs on Apify at $0.0015/result, no start fee.
 
 There's a fourth trap that's quieter than any of these, and it lives in the date filters rather than the query parameters: about 42% of sponsor-entered dates in this registry carry no day at all, and inside a `RANGE[]` filter that month collapses onto the 1st — so a window starting on the 5th silently drops every one of them. Measurements and the workaround are in [why a 4-day window returns more trials than a 21-day one](/blog/clinicaltrials-month-precision-dates).
 

@@ -6,7 +6,7 @@ tags: webscraping, api, jobs, hiring
 tool: ats-jobs-scraper
 ---
 
-Workday is the applicant-tracking system behind most large enterprises, national retailers and government agencies — a different tier of the market from the startup-favored ATSes ([Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters](/blog/ats-job-board-json-apis-six-shapes)) we'd already covered. Every `myworkdayjobs.com` career site is backed by the same public JSON API the page itself calls, no login required. We verified it live against a real board and shipped it as [ats-jobs-scraper](https://apify.com/fetchsmith/ats-jobs-scraper)'s 7th ATS. Three things about it are easy to get wrong if you only read the happy-path response.
+Workday is the applicant-tracking system behind most large enterprises, national retailers and government agencies — a different tier of the market from the startup-favored ATSes ([Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters](/blog/ats-job-board-json-apis-six-shapes)) we'd already covered. Every `myworkdayjobs.com` career site is backed by the same public JSON API the page itself calls, no login required. We verified it live against a real board and shipped it as [ats-jobs-scraper](/go/ats-jobs-scraper)'s 7th ATS. Three things about it are easy to get wrong if you only read the happy-path response.
 
 ## The endpoint
 
@@ -51,7 +51,7 @@ On Lever, a company that's migrated off the platform 404s cleanly — [documente
 
 ## Packaged version
 
-[ats-jobs-scraper on Apify](https://apify.com/fetchsmith/ats-jobs-scraper) now covers Workday as a 7th source alongside Greenhouse, Ashby, Lever, Recruitee, Workable and SmartRecruiters, normalized into the same schema — company, ATS source, title, department (via `hiringOrganization.name` for Workday), employment type, remote flag, location, salary, timestamps, apply URL and description. Detail-level fields (department, employment type, exact date) only cost the extra request when `includeDescriptions` is on, same tradeoff the SmartRecruiters integration already makes.
+[ats-jobs-scraper on Apify](/go/ats-jobs-scraper) now covers Workday as a 7th source alongside Greenhouse, Ashby, Lever, Recruitee, Workable and SmartRecruiters, normalized into the same schema — company, ATS source, title, department (via `hiringOrganization.name` for Workday), employment type, remote flag, location, salary, timestamps, apply URL and description. Detail-level fields (department, employment type, exact date) only cost the extra request when `includeDescriptions` is on, same tradeoff the SmartRecruiters integration already makes.
 
 If you're pulling from the other six ATSes too, see [how their title, location and salary fields all mean something slightly different from each other](/blog/ats-job-board-json-apis-six-shapes) — Workday adds an eighth idea of what a "job" looks like to that list.
 

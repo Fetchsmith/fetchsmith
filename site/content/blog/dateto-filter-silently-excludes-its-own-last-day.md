@@ -20,11 +20,11 @@ We checked every Actor in our fleet with a `dateFrom`/`dateTo`-style range pair 
 
 | Actor | Upstream field | Time-of-day? | `dateTo` boundary behavior |
 |---|---|---|---|
-| [`clinicaltrials-scraper`](https://apify.com/fetchsmith/clinicaltrials-scraper) | `LastUpdatePostDate` | No | Inclusive of the last day |
-| [`eu-ted-tenders-scraper`](https://apify.com/fetchsmith/eu-ted-tenders-scraper) | `publication-date` | No | Inclusive of the last day |
-| [`fda-recall-scraper`](https://apify.com/fetchsmith/fda-recall-scraper) | `report_date` (and similar) | No | Inclusive of the last day |
-| [`federal-register-scraper`](https://apify.com/fetchsmith/federal-register-scraper) | `publication_date` | No | Inclusive of the last day |
-| [`uk-find-a-tender-scraper`](https://apify.com/fetchsmith/uk-find-a-tender-scraper) | `updatedAt` / `publishedAt` | **Yes** | **Excludes the last day** |
+| [`clinicaltrials-scraper`](/go/clinicaltrials-scraper) | `LastUpdatePostDate` | No | Inclusive of the last day |
+| [`eu-ted-tenders-scraper`](/go/eu-ted-tenders-scraper) | `publication-date` | No | Inclusive of the last day |
+| [`fda-recall-scraper`](/go/fda-recall-scraper) | `report_date` (and similar) | No | Inclusive of the last day |
+| [`federal-register-scraper`](/go/federal-register-scraper) | `publication_date` | No | Inclusive of the last day |
+| [`uk-find-a-tender-scraper`](/go/uk-find-a-tender-scraper) | `updatedAt` / `publishedAt` | **Yes** | **Excludes the last day** |
 
 For the first four, we verified the date-only claim directly rather than trusting field names — ClinicalTrials.gov's own API confirms it: `AREA[LastUpdatePostDate]RANGE[2025-01-15,2025-01-15]` returns studies dated exactly 2025-01-15. A same-value range matching its own boundary is only possible if the field has no finer resolution than a day. openFDA, TED and the Federal Register's filters behave the same way for the same reason — their date fields are genuinely dates, not timestamps, so `<=`/`RANGE` on a bare date is inclusive of the whole day by construction. There's no timezone to get wrong when the field itself has none.
 
