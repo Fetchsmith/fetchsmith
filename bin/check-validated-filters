@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+"""check-validated-filters -- fleet sweep for the cycle-1532 blind spot.
+
+Every filter field in an Actor's input schema falls into one of three buckets:
+
+  (a) SCHEMA_ENUM    -- the schema itself pins the vocabulary (`enum` / `items.enum`).
+                        Audited by enum_audit's facet-diff method.
+  (b) FREE_TEXT      -- free text with no authority anywhere; whatever the buyer types
+                        goes to the vendor as-is. Nothing to audit.
+  (c) RUNTIME_VALID  -- free text that OUR code validates at runtime against a list
+                        (fetched facet list, hardcoded table, regex, numeric range...).
+                        *** This is the blind spot. *** Two independent audits of
+                        grants-gov-scraper's `agencies` skipped it because it is neither
+                        (a) nor (b), and the validator could only see 163 of 712 real
+                        agency codes. The code that validates a filter is itself an
+                        unaudited claim.
+
+For every (c) field this prints the evidence lines so a cycle can ask the two questions
+that matter:
+  1. WHAT CAN THE VALIDATOR SEE?  If its list comes from a vendor probe, is every other
+     filter pinned to its widest value, or does the allowlist silently inherit the
+     vendor's defaults? (cycle 1532: an unpinned oppStatuses cost 549 of 712 codes.)
+  2. WHAT HAPPENS WHEN EVERYTHING IS DROPPED?  Dropping an unrecognised value is only
+     safe if dropping NARROWS the search. If an absent param means "match everything",
+     an all-invalid filter must fail loudly instead of billing the buyer for the fleet.
+
+Usage:
+  check-validated-filters                 # whole fleet, summary + (c) detail
+  check-validated-filters <slug> [...]    # named Actors only
+  check-validated-filters --all-buckets   # also print (a) and (b) listings
+"""
+import json
+import os
+import re
+import sys
+
+ACTORS = '/root/agent/actors'
+
+# Fields that are not filters: paging/limits/output/auth knobs. Classifying these would
+# bury the real filters in noise.
+NON_FILTER = re.compile(
+    r'^(maxResults|maxItems|maxRows|maxPages|max[A-Z]\w*|limit|offset|page|pageSize|'
+    r'perPage|startPage|sortBy|sortOrder|sort|order|proxy\w*|debug|verbose|dryRun|'
+    r'includeRaw|include[A-Z]\w*|outputFields|fields|csv\w*|datasetName|apiKey|token|'
+    r'concurrency|requestDelay\w*|delay\w*|timeout\w*|retries|retr\w*|minDelay|rateLimit\w*)$'
+)
+
+# Only a VOCABULARY-membership test counts as (c). A date parse or a numeric-range check
+# validates a *format*, not a vocabulary: there is no list of permitted values that could
+# turn out to be incomplete, which is the entire failure mode we are hunting. Including
+# them buried grants-gov's real `agencies` finding under 14 false positives.
+# A call expression, so we can tell `AGENCY_INDEX.get(code)` (the buyer's value looked up
+# in an authority) from `hay.includes(keyword)` (the buyer's value substring-matched
+# against row content). Only the first is a vocabulary that can be silently incomplete;
+# the second is just (b) free text doing its job, and reporting it drowns the signal.
+CALL_RE = re.compile(r'([A-Za-z_$][\w$]*(?:\.[\w$]+)*|\[[^\]\n]*\])\.(has|get|includes|indexOf)\(([^;]*)')
+# Receivers that are plausibly an authority list rather than row content.
+AUTHORITY_RE = re.compile(
+    r'(^\[)|(^[A-Z][A-Z0-9_]{2,}$)|(Set|Index|Lookup|Table|Vocab|Alias|Synonym|Codes|'
+    r'Allow|Valid|Known|Canon|Supported|Vocabulary|Options|Choices)', re.I)
+# Receivers that are definitely row content / the haystack side of a text search.
+HAYSTACK_RE = re.compile(r'^(hay\w*|text|body|title|name|desc\w*|String|row|item|r|s|u|blob|joined)\b', re.I)
+# Run bookkeeping -- dedup sets, watch-state maps, per-run tallies. These are keyed on ROW
+# ids, never on a buyer-supplied filter value, so a hit here is always a false positive.
+BOOKKEEPING_RE = re.compile(r'seen|deliver|dedup|visit|attempt|summar|snapshot|prev|'
+                            r'watchMeta|watchNow|reached|emitted|charged|counts?$', re.I)
+DROP_TOKENS = re.compile(r'\b(Ignoring|ignored|dropp?(ing|ed)?|skipp?(ing|ed)?)\b', re.I)
+THROW_TOKENS = re.compile(r'\bthrow\b')
+FACET_TOKENS = re.compile(r'\bawait\b|fetch\(|httpGet|apiGet|probe', re.I)
+
+
+def schema_filters(slug):
+    path = os.path.join(ACTORS, slug, '.actor', 'input_schema.json')
+    if not os.path.exists(path):
+        return None
+    props = json.load(open(path)).get('properties', {})
+    out = []
+    for name, spec in props.items():
+        if NON_FILTER.match(name):
+            continue
+        has_enum = bool(spec.get('enum')) or bool((spec.get('items') or {}).get('enum'))
+        out.append((name, spec.get('type'), has_enum, spec.get('editor')))
+    return out
+
+
+DECL_RE = re.compile(r'\b(?:const|let|var)\s+([\w$]+)\s*=')
+
+
+def statements(src):
+    """(name, rhs_text, start_offset) per declaration, RHS taken to its real end.
+
+    A regex stopping at the first `;` truncates `const offices = (input.offices ?? [])
+    .map((o) => { const upper = ...; if (!OFFICE_SET.has(upper)) ... })` right before the
+    validator -- which is exactly where trademark-search's real office check lives. Track
+    bracket depth so a multi-line callback body stays part of its own statement.
+    """
+    out = []
+    for m in DECL_RE.finditer(src):
+        i, depth = m.end(), 0
+        while i < len(src):
+            ch = src[i]
+            if ch in '([{':
+                depth += 1
+            elif ch in ')]}':
+                if depth == 0:
+                    break
+                depth -= 1
+            elif ch == ';' and depth == 0:
+                break
+            i += 1
+        out.append((m.group(1), src[m.end():i], m.end()))
+    return out
+FOR_OF_RE = re.compile(r'for\s*\(\s*(?:const|let|var)\s+([\w$]+)\s+of\s+([^)]*)\)')
+ARROW_PARAM_RE = re.compile(r'\(?\b([a-z_$][\w$]*)\b\)?\s*=>')
+
+
+def derived_vars(src, field):
+    """Names the buyer's value flows into, so we can follow it to its validator.
+
+    Proximity matching was wrong twice over: it missed grants-gov's real `agencies`
+    finding (the lookup happens on a loop variable two hops from `input.agencies`) and it
+    invented six for steam-reviews (unrelated consts that merely sit on adjacent lines).
+    Taint propagation over whole statements is the honest model -- follow the value.
+    """
+    names = {field}
+    assigns = [(n, e) for n, e, _ in statements(src)]
+    loops = FOR_OF_RE.findall(src)
+    seed = re.compile(r'\binput\.' + re.escape(field) + r'\b')
+    for name, expr in assigns:
+        if seed.search(expr):
+            names.add(name)
+    # Exactly two hops. Unbounded propagation taints nearly every local in a 900-line
+    # file (`seenIds`, `ids`, `summaries`...) and the report fills with dedup bookkeeping;
+    # two hops is what the real shape needs -- `input.agencies` -> `wantedAgencies` ->
+    # `for (const raw of wantedAgencies)` -> `agencyIndex.get(raw)`.
+    for _ in range(2):
+        var_re = re.compile(r'\b(' + '|'.join(re.escape(v) for v in sorted(names)) + r')\b')
+        hop = set()
+        for loopvar, iterable in loops:  # `for (const raw of wantedAgencies)`
+            if var_re.search(iterable):
+                hop.add(loopvar)
+        for name, expr in assigns:
+            if var_re.search(expr):
+                hop.add(name)
+        if hop <= names:
+            break
+        names |= hop
+    return names
+
+
+def classify(slug, filters, src):
+    lines = src.split('\n')
+    stmts = statements(src)
+    results = []
+    for name, typ, has_enum, editor in filters:
+        if has_enum:
+            results.append((name, typ, 'a:SCHEMA_ENUM', []))
+            continue
+        # A boolean or a number has no vocabulary to be incomplete about.
+        if typ in ('boolean', 'integer', 'number'):
+            results.append((name, typ, 'b:FREE_TEXT (no vocabulary)', []))
+            continue
+        vars_ = derived_vars(src, name)
+        var_re = re.compile(r'\b(' + '|'.join(re.escape(v) for v in sorted(vars_)) + r')\b')
+        evidence, seen = [], set()
+        # Pass 1, statement-scoped: a validator that runs inside the statement that reads
+        # the field, on a callback param of that statement. The param is deliberately NOT
+        # added to the global taint set -- names like `o`/`c`/`s` are reused by every other
+        # field's callbacks, and taking them globally made one Actor's `wantedStatuses`
+        # check show up as evidence against six unrelated date and keyword fields.
+        for sname, rhs, off in stmts:
+            if not (re.search(r'\binput\.' + re.escape(name) + r'\b', rhs) or sname in vars_):
+                continue
+            local = set(ARROW_PARAM_RE.findall(rhs)) | {n for n, _, _ in statements(rhs)}
+            if not local:
+                continue
+            local_re = re.compile(r'\b(' + '|'.join(re.escape(v) for v in sorted(local)) + r')\b')
+            for recv, meth, args in CALL_RE.findall(rhs):
+                if not (local_re.search(args) or var_re.search(args)):
+                    continue
+                tail = recv.split('.')[-1]
+                if HAYSTACK_RE.match(recv) or HAYSTACK_RE.match(tail) or BOOKKEEPING_RE.search(recv):
+                    continue
+                if not (AUTHORITY_RE.search(recv) or AUTHORITY_RE.search(tail)):
+                    continue
+                label = f'{recv}.{meth}()'
+                if label in seen:
+                    continue
+                seen.add(label)
+                lineno = src.count('\n', 0, off + rhs.find(recv + '.' + meth)) + 1
+                evidence.append((lineno, label, lines[lineno - 1].strip()[:110]))
+        for i, ln in enumerate(lines):
+            if ln.strip().startswith('//') or not var_re.search(ln):
+                continue
+            # A membership test on the buyer's own value sits on the line itself (or wraps
+            # onto the next), never 12 lines away.
+            window = ln + ' ' + (lines[i + 1] if i + 1 < len(lines) else '')
+            for recv, meth, args in CALL_RE.findall(window):
+                if not var_re.search(args):
+                    continue  # the buyer's value is not what is being looked up
+                tail = recv.split('.')[-1]
+                if HAYSTACK_RE.match(recv) or HAYSTACK_RE.match(tail):
+                    continue  # substring search against row content, not a vocabulary
+                if BOOKKEEPING_RE.search(recv):
+                    continue  # dedup/watch state keyed on row ids, not a vocabulary
+                if not (AUTHORITY_RE.search(recv) or AUTHORITY_RE.search(tail)):
+                    continue
+                label = f'{recv}.{meth}()'
+                if label in seen:
+                    continue
+                seen.add(label)
+                evidence.append((i + 1, label, ln.strip()[:110]))
+        if evidence:
+            ctx = '\n'.join(lines[max(0, evidence[0][0] - 25):evidence[0][0] + 30])
+            flags = []
+            if FACET_TOKENS.search(ctx):
+                flags.append('FETCHED-LIST?')
+            if DROP_TOKENS.search(ctx) and not THROW_TOKENS.search(ctx):
+                flags.append('DROPS-SILENTLY?')
+            tag = 'c:RUNTIME_VALID' + (' [' + ','.join(flags) + ']' if flags else '')
+            results.append((name, typ, tag, evidence))
+        else:
+            results.append((name, typ, 'b:FREE_TEXT', []))
+    return results
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    all_buckets = '--all-buckets' in sys.argv
+    slugs = args or sorted(d for d in os.listdir(ACTORS)
+                           if os.path.isdir(os.path.join(ACTORS, d)) and not d.startswith('_'))
+    totals = {'a': 0, 'b': 0, 'c': 0}
+    for slug in slugs:
+        filters = schema_filters(slug)
+        if filters is None:
+            continue
+        srcpath = os.path.join(ACTORS, slug, 'src', 'main.js')
+        if not os.path.exists(srcpath):
+            continue
+        src = open(srcpath).read()
+        res = classify(slug, filters, src)
+        cs = [r for r in res if r[2].startswith('c')]
+        for r in res:
+            totals[r[2][0]] += 1
+        print(f'\n=== {slug} ({len(filters)} filter fields: '
+              f"{sum(1 for r in res if r[2].startswith('a'))} enum, "
+              f"{sum(1 for r in res if r[2].startswith('b'))} free-text, "
+              f'{len(cs)} runtime-validated) ===')
+        for name, typ, tag, ev in res:
+            if not all_buckets and not tag.startswith('c'):
+                continue
+            print(f'  {name} ({typ}) -> {tag}')
+            for lineno, label, text in ev[:6]:
+                print(f'      L{lineno} [{label}] {text}')
+    print(f"\n--- FLEET TOTALS: {totals['a']} (a) schema-enum, {totals['b']} (b) free-text, "
+          f"{totals['c']} (c) runtime-validated ---")
+
+
+if __name__ == '__main__':
+    main()

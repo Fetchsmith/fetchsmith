@@ -1,0 +1,112 @@
+
+=== app-store-reviews-scraper (14 filter fields: 1 enum, 11 free-text, 2 runtime-validated) ===
+  apps (array) -> c:RUNTIME_VALID [FETCHED-LIST?]
+      L407 [pairFloors.get()] const floor = pairFloors.get(`${item.appId}::${item.country}`);
+  countries (array) -> c:RUNTIME_VALID [FETCHED-LIST?]
+      L406 [pairFloors.get()] if (watchMode && watchId != null) {
+      L802 [seedFloors.get()] const fk = `${appId}::${country}`;
+      L1039 [seededPairs.has()] const pairSeeding = watchMode && (seeding || !seededPairs.has(pairKey));
+      L1168 [saturatedPairs.includes()] recordPair(appId, country, res, delivered, status, watchMode && saturatedPairs.includes(pairKey) ? { watchWind
+
+=== apple-podcasts-scraper (16 filter fields: 4 enum, 10 free-text, 2 runtime-validated) ===
+  podcasts (array) -> c:RUNTIME_VALID [FETCHED-LIST?,DROPS-SILENTLY?]
+      L10 [['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes()] const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.d
+      L605 [infoCache.has()] if (infoCache.has(id)) return infoCache.get(id);
+      L627 [feedUrlCache.has()] async function getFeedUrlOnly(id) {
+      L714 [showEpisodesCache.has()] async function getShowEpisodeBundle(showId) {
+      L945 [bundle.episodes.get()] const bundle = showId ? await getShowEpisodeBundle(showId) : { info: null, episodes: new Map() };
+      L1008 [pushedFromSearch.has()] if (pushedFromSearch.has(id)) { dupSearchHits += 1; continue; }
+  country (string) -> c:RUNTIME_VALID [FETCHED-LIST?,DROPS-SILENTLY?]
+      L605 [infoCache.has()] if (infoCache.has(id)) return infoCache.get(id);
+      L627 [feedUrlCache.has()] async function getFeedUrlOnly(id) {
+      L714 [showEpisodesCache.has()] async function getShowEpisodeBundle(showId) {
+      L945 [bundle.episodes.get()] const bundle = showId ? await getShowEpisodeBundle(showId) : { info: null, episodes: new Map() };
+      L1008 [pushedFromSearch.has()] if (pushedFromSearch.has(id)) { dupSearchHits += 1; continue; }
+
+=== ats-jobs-scraper (17 filter fields: 1 enum, 15 free-text, 1 runtime-validated) ===
+  companies (array) -> c:RUNTIME_VALID [FETCHED-LIST?,DROPS-SILENTLY?]
+      L32 [SUPPORTED_ATS.includes()] .filter((c) => c.slug && (c.ats === 'auto' || SUPPORTED_ATS.includes(c.ats)))
+
+=== clinicaltrials-scraper (42 filter fields: 11 enum, 31 free-text, 0 runtime-validated) ===
+
+=== court-records-scraper (14 filter fields: 2 enum, 12 free-text, 0 runtime-validated) ===
+
+=== eu-ted-tenders-scraper (16 filter fields: 3 enum, 11 free-text, 2 runtime-validated) ===
+  watchLabel (string) -> c:RUNTIME_VALID [FETCHED-LIST?]
+      L439 [TRANSIENT_STATUS.has()] if (!TRANSIENT_STATUS.has(resp.statusCode)) break;
+  webhookUrl (string) -> c:RUNTIME_VALID [FETCHED-LIST?]
+      L439 [TRANSIENT_STATUS.has()] if (!TRANSIENT_STATUS.has(resp.statusCode)) break;
+
+=== fda-recall-scraper (20 filter fields: 5 enum, 15 free-text, 0 runtime-validated) ===
+
+=== fec-campaign-finance-scraper (21 filter fields: 3 enum, 18 free-text, 0 runtime-validated) ===
+
+=== federal-register-scraper (13 filter fields: 3 enum, 10 free-text, 0 runtime-validated) ===
+
+=== google-news-scraper (15 filter fields: 1 enum, 13 free-text, 1 runtime-validated) ===
+  topics (array) -> c:RUNTIME_VALID [FETCHED-LIST?,DROPS-SILENTLY?]
+      L38 [VALID_TOPICS.includes()] const topics = rawTopics.filter((t) => VALID_TOPICS.includes(t));
+
+=== google-play-reviews-scraper (18 filter fields: 2 enum, 12 free-text, 4 runtime-validated) ===
+  country (string) -> c:RUNTIME_VALID
+      L74 [genresWanted.has()] const name = String(app?.genre ?? '').toUpperCase().replace(/[\s&]+/g, '_');
+  language (string) -> c:RUNTIME_VALID
+      L74 [genresWanted.has()] const name = String(app?.genre ?? '').toUpperCase().replace(/[\s&]+/g, '_');
+  genres (array) -> c:RUNTIME_VALID
+      L75 [genresWanted.has()] if (genresWanted.has(id) || genresWanted.has(name)) return true;
+  ratingFilter (array) -> c:RUNTIME_VALID
+      L147 [STAR_RATINGS.includes()] const offRange = ratingFilter.filter((n) => !STAR_RATINGS.includes(n));
+
+=== grants-gov-scraper (20 filter fields: 4 enum, 15 free-text, 1 runtime-validated) ===
+  agencies (array) -> c:RUNTIME_VALID [FETCHED-LIST?]
+      L269 [agencyIndex.get()] for (const raw of wantedAgencies) {
+
+=== hacker-news-scraper (16 filter fields: 0 enum, 16 free-text, 0 runtime-validated) ===
+
+=== nih-reporter-scraper (19 filter fields: 1 enum, 15 free-text, 3 runtime-validated) ===
+  agencyIcCodes (array) -> c:RUNTIME_VALID [DROPS-SILENTLY?]
+      L343 [IC_CODES.includes()] const unknownIcs = agencyIcCodes.filter((c) => !IC_CODES.includes(c));
+  activityCodes (array) -> c:RUNTIME_VALID [DROPS-SILENTLY?]
+      L351 [ACTIVITY_CODES.includes()] const unknownActivityCodes = activityCodes.filter((c) => !ACTIVITY_CODES.includes(c));
+  orgStates (array) -> c:RUNTIME_VALID [DROPS-SILENTLY?]
+      L361 [ORG_STATE_CODES.includes()] const unknownOrgStates = orgStates.filter((c) => !ORG_STATE_CODES.includes(c));
+
+=== remote-jobs-scraper (15 filter fields: 2 enum, 13 free-text, 0 runtime-validated) ===
+
+=== sam-gov-opportunities-scraper (12 filter fields: 2 enum, 10 free-text, 0 runtime-validated) ===
+
+=== scholarship-scraper (8 filter fields: 2 enum, 6 free-text, 0 runtime-validated) ===
+
+=== sec-insider-trades-scraper (6 filter fields: 3 enum, 3 free-text, 0 runtime-validated) ===
+
+=== shopify-products-scraper (12 filter fields: 2 enum, 9 free-text, 1 runtime-validated) ===
+  storeUrls (array) -> c:RUNTIME_VALID [FETCHED-LIST?,DROPS-SILENTLY?]
+      L60 [WATCH_EVENTS.includes()] const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
+
+=== steam-reviews-scraper (16 filter fields: 4 enum, 11 free-text, 1 runtime-validated) ===
+  language (string) -> c:RUNTIME_VALID [FETCHED-LIST?]
+      L36 [['reviews', 'games'].includes()] const dataType = ['reviews', 'games'].includes(input.dataType) ? input.dataType : 'reviews';
+
+=== substack-scraper (15 filter fields: 4 enum, 11 free-text, 0 runtime-validated) ===
+
+=== trademark-search-scraper (7 filter fields: 0 enum, 5 free-text, 2 runtime-validated) ===
+  offices (array) -> c:RUNTIME_VALID [FETCHED-LIST?,DROPS-SILENTLY?]
+      L40 [OFFICE_SET.has()] if (!OFFICE_SET.has(upper)) unknownOffices.push(o);
+  statuses (array) -> c:RUNTIME_VALID [DROPS-SILENTLY?]
+      L91 [TM_STATUS_BY_LOWER.get()] const canonical = TM_STATUS_BY_LOWER.get(s.toLowerCase());
+
+=== uk-find-a-tender-scraper (14 filter fields: 2 enum, 10 free-text, 2 runtime-validated) ===
+  dateFrom (string) -> c:RUNTIME_VALID [DROPS-SILENTLY?]
+      L206 [FTS_STAGES.has()] if (stages.length && stages.every((s) => FTS_STAGES.has(s))) {
+  dateTo (string) -> c:RUNTIME_VALID [DROPS-SILENTLY?]
+      L206 [FTS_STAGES.has()] if (stages.length && stages.every((s) => FTS_STAGES.has(s))) {
+
+=== us-federal-awards-scraper (22 filter fields: 3 enum, 16 free-text, 3 runtime-validated) ===
+  endDate (string) -> c:RUNTIME_VALID
+      L267 [AGENCY_NAME_BY_LOWER.get()] const canonical = AGENCY_NAME_BY_LOWER.get(name.toLowerCase());
+  agencies (array) -> c:RUNTIME_VALID
+      L267 [AGENCY_NAME_BY_LOWER.get()] const canonical = AGENCY_NAME_BY_LOWER.get(name.toLowerCase());
+  fundingAgencies (array) -> c:RUNTIME_VALID
+      L267 [AGENCY_NAME_BY_LOWER.get()] const canonical = AGENCY_NAME_BY_LOWER.get(name.toLowerCase());
+
+--- FLEET TOTALS: 65 (a) schema-enum, 298 (b) free-text, 25 (c) runtime-validated ---

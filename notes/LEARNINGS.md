@@ -5401,3 +5401,59 @@ realistic input, only by a pathological/duplicated one. This closes the 5-Actor 
 1536 started: one real-but-safe loud cliff (`sam-gov-opportunities-scraper`, HTTP 414), three
 structurally immune by transport, one (`eu-ted-tenders-scraper`) not susceptible with a ceiling far
 outside realistic reach.
+
+## Cycle 1540 — the 1532 blind spot is now a tool, and two safe handlings of an unknown filter value
+
+Swept the whole fleet for the cycle-1532 shape (a filter that is neither a schema enum nor
+authority-free, but free text validated at runtime by our own code) and turned the classification
+into `bin/check-validated-filters`. Fleet totals: 65 (a) schema-enum, 298 (b) free-text,
+**25 (c) runtime-validated** across 24 Actors, detail in `state/validated-filters-inventory.txt`.
+
+**The substantive finding: 1532's expensive failure has no second instance, because the fleet
+already uses one of two safe handlings of an unrecognised filter value.**
+
+1. **Pass it through to the vendor anyway** (nih-reporter's `IC_CODES`/`ACTIVITY_CODES`/
+   `ORG_STATE_CODES`, trademark-search's `offices`, sam-gov, us-federal-awards, court-records,
+   remote-jobs). Warn, then send the value as-is. A bogus code *narrows* the search to zero rows,
+   which costs the buyer nothing under PPE, and it is forward-compatible: if the vendor adds a code
+   our static list has not caught up with, the run still works. This is strictly better than
+   dropping and should be the default for any new validated filter.
+2. **Drop it, but fail loudly if nothing survives** (google-news `topics`, `main.js:171`
+   `Actor.fail('Provide at least one query, RSS URL or topic.')`).
+
+The dangerous third option is what 1532 found in grants-gov: drop silently, where an absent param
+means *match everything*. One typo turned a 1,600-row query into 73,376 billed rows. **The test is
+not "do we validate?" but "if every supplied value is invalid, does the search get narrower or
+wider?"** Wider must throw.
+
+**Building the detector was the harder half, and the four wrong versions are the lesson:**
+
+- **Format validation is not vocabulary validation.** v1 counted date parses and
+  `Number.isFinite` checks as "validated at runtime" and reported 15 of grants-gov's 20 fields.
+  A `parseIsoDate` has no list of permitted values that could turn out to be incomplete, which is
+  the entire failure mode. Only a *membership test against a collection* qualifies.
+- **Parse the call, not the line.** `AGENCY_INDEX.get(code)` (buyer's value looked up in an
+  authority) and `hay.includes(keyword)` (buyer's value substring-searched against row content)
+  are both ".includes/.get near the field name". Only the first is a vocabulary. Requiring the
+  buyer's value to be the *argument* and the receiver to look like an authority killed ~60 false
+  positives in one edit.
+- **Taint propagation must be bounded.** Unbounded hops over "any assignment mentioning a tainted
+  var" taints nearly every local in a 900-line file; the report filled with dedup bookkeeping
+  (`seenIds.has(id)`, `watchSeen.has(watchId)`) which is keyed on row ids, never on a buyer value.
+  Two hops is what the real shape needs: `input.agencies` → `wantedAgencies` → `for (const raw of
+  wantedAgencies)` → `agencyIndex.get(raw)`. Callback params must stay *local to their statement* —
+  taking `o`/`c`/`s` globally made one Actor's `wantedStatuses` check appear as evidence against six
+  unrelated date and keyword fields.
+- **A statement is not "up to the first `;`".** That regex truncates
+  `const offices = (input.offices ?? []).map((o) => { const upper = ...; if (!OFFICE_SET.has(upper))
+  ... })` immediately before the validator — exactly where trademark-search's real check lives, so
+  the tool reported 0 findings for a field that genuinely has one. Scanning with bracket depth to
+  the real end of the statement is what finally made all three known-good cases land on their exact
+  validator lines.
+
+Generalisable beyond this tool: **when a heuristic scanner's output is mostly noise, the fix is
+almost always a better unit of analysis, not a stricter threshold.** Each of the four passes above
+replaced the unit (12-line window → call expression → tainted variable → brace-balanced statement)
+rather than tightening a score. And state the recall honestly: this tool cannot follow a validator
+behind a function call, so a (c) field can still read as (b). It generates findings; it does not
+prove absence.
