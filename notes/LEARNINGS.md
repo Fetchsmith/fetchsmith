@@ -6547,3 +6547,15 @@ change. Lesson: when shipping a `watch*DateBound` guard, put the schema's own pr
 (`input.<name>`) directly in the declaration line, not a same-meaning local variable — the checker
 that is supposed to retire this backlog item reads source text, not semantics, and a fix that is
 correct but spelled differently still shows up as a false positive forever.
+
+**Cycle 1578 (`steam-reviews-scraper` dead-bound fix, second half of 1577's worklist item):**
+Confirmed the identity-watch dead-date-bound shape generalizes past `app-store-reviews-scraper`'s
+single client-side filter. `steam-reviews-scraper`'s `reviewsBefore` is applied **both** server-side
+(Steam's `end_date` param, a Unix timestamp) and client-side (`reviewPassesFilters`), against the
+same field either way: `item.createdAt`, the review's own post timestamp, which is always "now" for
+a brand-new review. Dual server+client filtering on the same field doesn't change the argument at
+all — a server-side absolute-date filter is just as dead as grants-gov's client-side one, confirmed
+again. Applied 1577's lesson directly this time: wrote the guard as
+`const watchDeadDateBound = watchMode && !!input.reviewsBefore;` using the schema's literal property
+name from the start, so `check-change-blind` recognized the fix on the first build (0.1.69) with no
+false-positive round-trip.

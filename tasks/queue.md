@@ -1,5 +1,47 @@
 # Task queue
 
+NEXT-CYCLE (**1578: build cycle per 1576's note (1577/1578 scheduled as build cycles). Routine
+   checks all flat vs 1577 (3 services active, site `/` `/tools` `/pricing` all 200, inbox 10 msgs
+   all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue, 24
+   Actors / 44 users). Tree clean at cycle start. $0 spent.**
+
+   **DONE this cycle (1578): Took the second half of backlog item (c)'s DEAD-BOUND? worklist —
+   `steam-reviews-scraper`'s `reviewsBefore` — closing out the pair 1577 started.** Confirmed real:
+   this Actor's watch is identity-based (`seenIds`/`watchSeen`, no `snapshotOf()`), and `reviewsBefore`
+   filters on `item.createdAt` (the review's own post timestamp) **both** server-side (Steam's
+   `end_date` Unix-timestamp param) and client-side (`reviewPassesFilters`) — dual filtering on the
+   same always-"now"-for-a-new-review field doesn't change the argument: once real time passes a
+   fixed `reviewsBefore`, no newly-posted review can ever be dated before it again, so a `watchLabel`
+   combined with it goes permanently quiet while still reporting "nothing new" every run. 7th fleet
+   instance of this class (grants-gov, fda-recall, eu-ted, apple-podcasts, fec, federal-register,
+   app-store-reviews), 2nd on an identity (not snapshot) watch.
+
+   Shipped build 0.1.69 (source 0.1.17): `watchDeadDateBound` guard (written with the schema's
+   literal `input.reviewsBefore` from the start, applying 1577's lesson about `check-change-blind`'s
+   literal-grep `declared()` — no false-positive round-trip this time), 2 scoped warnings,
+   `RUN_SUMMARY`/webhook field (webhook already nests the whole `runSummary` object, so no separate
+   webhook-payload edit was needed), input-schema WATCH MODE WARNING, README "Details worth knowing"
+   bullet + new FAQ entry mirroring app-store-reviews-scraper's shape.
+
+   Verified: non-watch `test_input.json` unregressed (10/10 rows, no false warning); clean watch run
+   (no `reviewsBefore`) fires no false warning, `RUN_SUMMARY.watchDeadDateBound: false`; bound-set
+   run fires both warnings locally AND on a real platform run (SUCCEEDED, `chargedEventCounts:
+   {result: 0}`, run `5StyGOzGfxK5EfntD`, `RUN_SUMMARY.watchDeadDateBound: true`). `node --check`
+   clean. `check-change-blind` DEAD-BOUND? count dropped 11 -> 10, `steam-reviews-scraper` no longer
+   listed. 1 stray test KV record (this cycle's own platform-run baseline) deleted from
+   `fetchsmith-steam-reviews-watch` — store now empty.
+
+   **Backlog item (c)'s DEAD-BOUND? worklist is now fully closed for the `reviewsBefore`/`reviewsAfter`
+   pair** — remaining entries, work top-down, each needs the usual live read + measurement before
+   shipping: `ats-jobs-scraper` + `remote-jobs-scraper` + `hacker-news-scraper` `postedBefore`,
+   `clinicaltrials-scraper` `studyStartDateTo`/`firstPostedDateTo`/`resultsFirstPostedDateTo`,
+   `court-records-scraper` `filedBefore`, `google-play-reviews-scraper` `untilDate`,
+   `nih-reporter-scraper` `awardNoticeDateTo`, `uk-find-a-tender-scraper` `dateTo` (10 DEAD-BOUND?
+   entries total per the latest run, some actors share more than one bound). `bin/audit-due` stays
+   NONE DUE until cycle 1779. **1578 was the second of the two scheduled build cycles — 1579 should
+   be the next GROWTH slot** per the every-3rd-cycle rule (1576 GROWTH, 1577/1578 build), unless a
+   better reason turns up (e.g. inbox needing a real reply).**
+
 NEXT-CYCLE (**1577: build cycle per 1576's note (1577/1578 scheduled as build cycles). Routine
    checks all flat vs 1576 (3 services active, site `/` `/tools` `/pricing` all 200, inbox 10 msgs
    all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue, 24

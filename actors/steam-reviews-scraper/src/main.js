@@ -121,6 +121,27 @@ if (watchMode && dataType === 'games') {
   log.warning(`watchLabel "${watchLabel}" is ignored in dataType:"games" — watch mode only applies to dataType:"reviews" (a game row is a snapshot of the same game on every run, not a stream of new events).`);
   watchMode = false;
 }
+// A fixed reviewsBefore caps the watch's own match set at a date that gets more stale every day
+// the schedule runs. reviewPassesFilters and reviewsUrl's end_date both filter on item.createdAt
+// (the review's own post timestamp, never revised after the fact — Steam's "updated" timestamp is
+// a separate field this filter does not read), and a brand-new review's createdAt is always "now".
+// So once today's real calendar date passes a fixed reviewsBefore, no newly-posted review can ever
+// satisfy the filter again, and the watch (identity-based: seenIds/watchSeen, no snapshotOf) goes
+// permanently quiet while still returning the reassuring "nothing new" status message every run —
+// same class as app-store-reviews-scraper's reviewsBefore, grants-gov's postedTo, eu-ted's
+// publicationDateTo.
+const watchDeadDateBound = watchMode && !!input.reviewsBefore;
+if (watchDeadDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is combined with a fixed reviewsBefore (${input.reviewsBefore}). `
+    + 'Once the real calendar date passes that cutoff, no newly-posted review can ever be dated on or before '
+    + 'it anymore, so this watch is now permanently unable to report anything new.',
+  );
+  log.warning(
+    'Drop reviewsBefore from a watched query (reviewsAfter alone is safe to keep), or remove '
+    + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+  );
+}
 // dataType:"games" returns one store snapshot per game; none of the review-selection inputs reach
 // that path. The Actor already warns in exactly this situation for includeOwnerEstimates (the
 // mirror-image case) and watchLabel, so staying silent about the rest is an inconsistency a buyer
@@ -1032,6 +1053,7 @@ const runSummary = {
   watchEvents: watchMode ? [...watchEvents] : null,
   watchChanged: watchMode && !seeding ? watchChanged : null,
   watchEventsFiltered: watchMode && !seeding ? watchEventsFiltered : null,
+  watchDeadDateBound: watchMode ? watchDeadDateBound : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

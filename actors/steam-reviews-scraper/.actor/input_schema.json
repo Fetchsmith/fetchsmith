@@ -133,7 +133,7 @@
     "reviewsBefore": {
       "title": "Reviews before (ISO date)",
       "type": "string",
-      "description": "e.g. 2024-06-30. Keep only reviews created before this date. Combine with 'Reviews after' for an exact historical window (e.g. reviews from a specific patch or controversy). Forces Sort to 'Most recent'.",
+      "description": "e.g. 2024-06-30. Keep only reviews created before this date. Combine with 'Reviews after' for an exact historical window (e.g. reviews from a specific patch or controversy). Forces Sort to 'Most recent'. WATCH MODE WARNING: combined with watchLabel, a FIXED value here is a permanent dead end once the real date passes it — a newly-posted review's own createdAt is always \"now\", so no new review can ever be dated before an already-passed cutoff again. Leave it unset in a watched query; reviewsAfter alone is safe to keep. See README FAQ.",
       "editor": "textfield"
     },
     "minPlaytimeHours": {
