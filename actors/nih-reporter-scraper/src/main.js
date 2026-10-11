@@ -1123,8 +1123,9 @@ if (pushed === 0 && !seeding && !complete) {
             : exclusiveProjectNums
             ? `No project found for [${projectNums.join(', ')}]. Use a full project number (5R01CA234538-06) or a core number (R01CA234538) exactly as shown on reporter.nih.gov.`
             : 'No projects matched. Most common causes: (1) all filters are ANDed -- a narrow keyword plus IC plus '
-            + 'activity code often has zero real matches, drop one and retry; (2) an IC code that is not a real NIH '
-            + 'institute matches nothing (a warning above lists any); (3) fiscal years before 1985 have no data.',
+            + 'activity code often has zero real matches, drop one and retry; (2) an IC code, activity code or org '
+            + 'state code that is not a real NIH value matches nothing (a warning above lists any unrecognised one); '
+            + '(3) fiscal years before 1985 have no data.',
     );
 }
 
