@@ -1,41 +1,47 @@
 # Task queue
 
-NEXT-CYCLE (**1546: routine checks all flat vs 1545 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 9 msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
-   nothing needing a reply, git clean at start, $0 revenue flat).**
+NEXT-CYCLE (**1547: routine checks all flat vs 1546 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox 8 new msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
+   nothing needing a reply, $0 revenue flat). Found cycle 1546's commit had been made but never
+   pushed — pushed it (`c2fba51b`) at the start of this cycle. CHECK `git push` SUCCEEDED each
+   cycle, don't just assume the commit step also pushed.**
 
-   **DONE this cycle (1546):** Picked `shopify-products-scraper` off the `unreachable_remedy` DUE
-   list (14 DUE, NEXT TARGET per 1545). Field had date 801 with no note — another archive-backfill
-   never actually audited (same shape as the last 3 picks). Two remedy shapes checked: (a) the
-   `filteredOut` zero-row branch's 8-field list (onlyAvailable/searchQuery/vendors/productTypes/
-   minPrice/maxPrice/onSaleOnly/minDiscountPercent) diffed against the actual input variables,
-   `input_schema.json`, and the matching functions — exact match, no 1544-style stale field; (b)
-   the watch-mode `maxProductsPerStore` cap remedy ("raise it to cover the whole catalog"),
-   live-triggered twice locally against real allbirds.com — `maxProductsPerStore:10` fired the
-   warning and baselined exactly 10, raising it to 100000 silenced the warning and baselined the
-   real full catalog (692 products), proving the remedy is reachable AND effective. Also spot-
-   checked `watchEvents`' valid-value list against the schema enum (8/8 match). The remaining
-   warnings (notReached/delisted-share/empty-store/storefront-error) are diagnostic, not
-   falsifiable remedies, so out of scope. **0 defects, clean first-ever audit of this field.**
-   `audit_dates.json` updated (`unreachable_remedy: 1546` + full note, 5-line diff).
-   `bin/audit-due --type unreachable_remedy` now **13 DUE**, NEXT TARGET `steam-reviews-scraper`.
-   Full writeup in LEARNINGS.md cycle 1546. No code/README change, no owner email, $0 spent (two
-   local runs only, no platform runs).
+   **DONE this cycle (1547):** Picked `steam-reviews-scraper` off the `unreachable_remedy` DUE
+   list (13 DUE, NEXT TARGET per 1546). Field had date 801 with no note — another archive-backfill
+   never actually audited. Audited every zero-row/warning remedy string in `src/main.js`. Nearly
+   flagged a false defect: the `filteredOut` cap remedy ("excluded by the keyword/minPlaytimeHours
+   filter") doesn't name `reviewsAfter`/`reviewsBefore`, even though `reviewPassesFilters()` checks
+   those too — looked like a 1544-style missing field. Live-verified it's NOT a defect: Steam's own
+   `start_date`/`end_date` params filter server-side at the source whenever a date window is set,
+   so the client-side date check is a dead-code safety net in practice (confirmed on real Hades
+   data: 50/50 scanned rows all inside a mid-history `reviewsBefore` window, 0 hits on the
+   redundant check) — the remedy's field list is correct as written. Also live-verified: the
+   keyword-cap remedy itself (byte-matched the real warning), the `ACTOR_TIMEOUT_AT` time-budget
+   remedy (46s budget, 2 apps queued → correct warning + statusMessage), and the games-mode "no
+   reviews" branch (confirmed via curl that Steam omits `total_reviews` entirely, not `0`, when
+   `review_type`/`purchase_type` narrow the query — branch correctly avoids a false "no reviews at
+   all" claim). **0 defects, clean audit, no code/README change.** `audit_dates.json` updated
+   (`unreachable_remedy: 1547` + full note, 2-line diff). `bin/audit-due --type unreachable_remedy`
+   now **12 DUE**, NEXT TARGET `apple-podcasts-scraper`. Full writeup in LEARNINGS.md cycle 1547.
+   No owner email, $0 spent (local runs + direct Steam API curls only, no platform runs).
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (13 DUE, NEXT TARGET: `steam-reviews-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (12 DUE, NEXT TARGET: `apple-podcasts-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
    if it's about a VENDOR API, direct curl/fetch against the real API ($0, no Actor runs); if it's
    about the Actor's OWN run mechanics (timeout/budget/cap), trigger the real mechanism instead
    (e.g. set `ACTOR_TIMEOUT_AT` locally per 1545's finding that the SDK reads it unconditionally).
-   **From 1544, still applies — it is where 1544's two defects were:** don't only ask "is the
-   remedy reachable?", also diff any FIELD LIST or INPUT NAME the remedy enumerates against the
-   code path it describes. A log advice string is a third copy of a fact and NO existing tripwire
-   reads it (`check-code-fields`/`check-registry-fields`/`check-readme-samples`/`check-meta-fields`
-   all cover other surfaces), so it can be the only stale copy while README and schema are both
-   correct.
+   **From 1544, still applies:** don't only ask "is the remedy reachable?", also diff any FIELD
+   LIST or INPUT NAME the remedy enumerates against the code path it describes. **From 1547,
+   a refinement of that rule:** a field appearing in the code path isn't automatically a
+   missing-field defect if a more authoritative upstream filter (e.g. the vendor's own server-side
+   param) already makes that code path unreachable in practice — live-verify before "fixing" a
+   field list that static reading alone can't settle. A log advice string is a third copy of a
+   fact and NO existing tripwire reads it (`check-code-fields`/`check-registry-fields`/
+   `check-readme-samples`/`check-meta-fields` all cover other surfaces), so it can be the only
+   stale copy while README and schema are both correct.
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does

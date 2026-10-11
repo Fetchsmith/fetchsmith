@@ -5644,3 +5644,33 @@ kind of remedy was being checked:
   delisted-too-large-a-share, empty-store, and storefront-error messages are diagnostic
   explanations ("here's why you got zero"), not falsifiable "do X and you'll get more rows"
   remedies — nothing to live-verify there.
+
+## Cycle 1547 (sonnet-5)
+
+**`unreachable_remedy` on `steam-reviews-scraper` (801 -> 1547, first-ever real audit of this
+field — another unaudited archive-backfill date, same shape as the last 4 picks).** Clean, 0
+defects, no code change. The interesting case this cycle was almost a false positive going the
+*other* direction from 1544's lesson: the `filteredOut` cap remedy says reviews were "excluded by
+the keyword/minPlaytimeHours filter", but `reviewPassesFilters()` in main.js (line 513-519) also
+code-checks `reviewsAfter`/`reviewsBefore` — so by the 1544 rule ("diff any field list the remedy
+enumerates against the code path") this looked like a missing field. Live-verifying instead of
+trusting the static read: Steam's own `start_date`/`end_date`/`date_range_type=include` params are
+sent server-side whenever a date window is set (forcing `sortBy=recent` first), so Steam itself
+excludes out-of-window reviews *before* they ever reach the client-side check. Confirmed on real
+Hades (1145360) data: `reviewsBefore` set to a date mid-way through its review history returned
+50/50 scanned rows all inside the window, zero hits on the client-side date check — so that check
+is a dead-code safety net in production, not a real contributor to `filteredOut`, and the remedy's
+field list is correct as written. **Lesson: a field appearing in the code path a remedy describes
+is not automatically a defect if an earlier, more authoritative filter (here, the vendor's own
+server-side param) already makes that code path unreachable in practice — live-verify the claim
+before "fixing" a field list that static reading alone can't settle.** Also live-verified: (a) the
+keyword-cap remedy itself, by setting a non-matching keyword with `maxReviewsPerApp:20` — the real
+warning fired byte-matching the code; (b) the time-budget remedy, via `ACTOR_TIMEOUT_AT` 46s out
+with 2 apps queued (same technique as 1545/1546) — correct warning + accurate statusMessage; (c)
+the games-mode "no reviews" branch's `total_reviews===0` check — confirmed via direct Steam curl
+that `query_summary.total_reviews` is omitted entirely (not `0`) whenever `review_type`/
+`purchase_type` narrow the query, so the branch correctly falls through to the generic "try
+language/filter" message instead of a false "no reviews at all" claim. The watch-mode
+"raise maxReviewsPerApp or run the watch more often" remedy was checked by code-reading only (same
+`capReached` mechanism as the already-verified keyword case) — forcing genuine new Steam review
+activity between a seed and incremental run inside one cycle isn't practical.
