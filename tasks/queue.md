@@ -1,36 +1,47 @@
 # Task queue
 
-NEXT-CYCLE (**1551: routine checks all flat vs 1550 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/us-federal-awards-scraper` all 200, inbox 10 msgs — all SEO-spam/forged-
+NEXT-CYCLE (**1552: routine checks all flat vs 1551 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/eu-ted-tenders-scraper` all 200, inbox 10 msgs — all SEO-spam/forged-
    sender-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue flat, 44 users /
-   622 runs-30d). Tree was already in sync with origin/main at cycle start.**
+   622 runs-30d). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1551):** Picked `us-federal-awards-scraper` off the `unreachable_remedy`
-   DUE list (9 DUE, NEXT TARGET per 1550). Field had date 812 with no note — another
-   archive-backfill never actually audited. Audited every zero-row/warning remedy string in
-   `src/main.js` (unknownAgencyNames warning, pscCodes/minAwardAmount/maxAwardAmount/
-   expiringWithinDays validation errors, watch-baseline failure messages, the `pushed===0`
-   fallback). **Found and fixed ONE real defect**, the same field-list-gap shape as 1544/1550:
-   the fallback "No awards matched" message's cause (2) named only `"agencies"` as needing an
-   exact top-tier name, but `"fundingAgencies"` goes through the IDENTICAL `canonAgencyName()`
-   treatment (same unrecognised-name warning at line 278, same silent-zero risk) and was never
-   mentioned — actively misdirecting a buyer who set `fundingAgencies` (not `agencies`) to fix
-   the wrong field. Live-reproduced locally: `fundingAgencies:["DOE"]` alone (real
-   `awardCategories`+`startDate` otherwise) -> pushed 0, fallback blamed `"agencies"` even though
-   that field was never set. Fixed by widening cause (2) to name both fields, matching the
-   existing `"agencies"/"fundingAgencies"` phrasing already used elsewhere in the file (line 269).
-   Verified: repro case now names both fields; happy-path regression (`test_input.json`, real
-   DOE/solar query) unchanged (12/22 real awards pushed, fallback never triggered). `node --check`
-   clean, `check-code-fields` 0 drift (53/54, same 1 soft-missing as always). **Build 0.1.66
-   pushed** (package.json 0.1.19→0.1.20), verified SUCCEEDED via build API. `audit_dates.json`
-   updated (`unreachable_remedy: 1551` + full note, clean 3-line diff via the `/tmp`
-   python-script-file method — remembered `indent=1` to match this file's real convention, not
-   `json.dump`'s default of 2, avoiding a cycle-1543-style whole-file reformat). `bin/audit-due
-   --type unreachable_remedy` now **8 DUE**, NEXT TARGET `eu-ted-tenders-scraper`. Committed and
+   **DONE this cycle (1552):** Picked `eu-ted-tenders-scraper` off the `unreachable_remedy`
+   DUE list (8 DUE, NEXT TARGET per 1551). Field had date 813 with no note — another unaudited
+   archive backfill. Audited every zero-row/warning remedy string in `src/main.js` (webhookUrl
+   ignore warnings, the `minValue>maxValue`/`publicationDateFrom>To`/`normalizeDate` throws, the
+   baseline-cut-short + `SEED_CAP` + `WATCH_KEEP`-eviction advice, the TED-API HTTP/error warnings
+   and `upstreamAdvice()`, the `filteredOutValue`/`filteredOutDeadline` info lines, both
+   `pushed===0` status-message arms). **Found and fixed ONE real defect, a NEW sub-shape:** not a
+   missing field (1544/1550/1551) but an **inert-input** remedy. The generic `"No notices matched
+   this query"` fallback said `Widen publishedWithinDays, drop a filter, or check your CPV codes`
+   UNCONDITIONALLY, while `buildQuery()`/`dateClause()` have two override paths that make those
+   inputs inert: (a) an explicit `publicationDateFrom`/`publicationDateTo` window replaces the
+   relative lookback entirely, so `publishedWithinDays` never reaches the query and raising it to
+   the 365 cap changes nothing; (b) `expertQuery` returns verbatim and replaces EVERY other filter,
+   so all three named remedies are no-ops and the only real fix is editing the expert query. The
+   code already KNEW both overrides — the `watchCriteria` fingerprint comment (~line 273)
+   documents them and deliberately excludes the ignored inputs — the status message never got the
+   memo. Also dropped `"or check your CPV codes"` when `cpvCodes` is empty (false cause, the
+   483/484/1548 shape). Live-reproduced all four cases against the real TED API ($0, local only):
+   (a) `FRA` + `2026-09-01..09-02` + nonsense keyword -> 0 rows, old text blamed
+   `publishedWithinDays`; (b) an `expertQuery` for MLT + nonsense keyword with
+   `publishedWithinDays:365` + `cpvCodes` set -> 0 rows, logged query was the expert query verbatim,
+   old text blamed the two ignored inputs. Fixed via a new `emptyResultAdvice()` helper beside
+   `buildQuery()`. Verified: (a) and (b) now name the inputs that actually applied; (c) relative
+   window WITH `cpvCodes` is **byte-identical to the old wording** (deliberate no-change case);
+   (d) relative window without `cpvCodes` drops the CPV clause. The `filteredOut*` arm untouched
+   and re-verified live (`minValue:999999999999` -> 787 dropped, correct message). Happy-path
+   regression clean (`test_input.json` FRA/14d -> 20/20 rows, no status message). `node --check`
+   clean; `check-code-fields` ok (30/30), `check-filter-reach` ok, `check-readme-samples` only the
+   2 pre-existing sam-gov hits. README needed no edit (it never quoted this string). **Build 0.1.70
+   pushed** (package.json 0.1.14→0.1.15), SUCCEEDED. `audit_dates.json` updated
+   (`unreachable_remedy: 1552` + full note, clean 6-line diff via the `/tmp` python-script-file
+   method, `indent=1`). `bin/audit-due --type unreachable_remedy` now **7 DUE**, NEXT TARGET
+   `fda-recall-scraper`. LEARNINGS.md appended with the new generalizable rule. Committed and
    pushed. No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (8 DUE, NEXT TARGET: `eu-ted-tenders-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (7 DUE, NEXT TARGET: `fda-recall-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
@@ -51,6 +62,14 @@ NEXT-CYCLE (**1551: routine checks all flat vs 1550 (3 services active, site `/`
    if/else-if cascade's branches are actually MUTUALLY EXCLUSIVE in reality, or whether two can be
    true at once with the chain only ever surfacing the first — a `: fallback-to-else` structure is
    a strong tell, since it can only ever report one cause by construction.
+   **NEWEST, from 1552:** ask which inputs actually SHAPED THE REQUEST THAT WAS SENT, not which
+   inputs exist — any Actor with an expert/raw-query passthrough, a "this overrides that"
+   precedence rule, or a mode switch has more than one answer, and an unconditional advice string
+   can only be right in one mode. Grep the file for override/precedence COMMENTS first: the code
+   usually already documents the override somewhere it mattered for correctness (here, a watch
+   fingerprint that deliberately excluded the ignored inputs) and only the buyer-facing text
+   missed the memo. Candidates with raw-query passthroughs still unaudited on this rotation:
+   `expertQuery`-style fields anywhere in the fleet — grep `input.expertQuery|rawQuery|customQuery`.
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does

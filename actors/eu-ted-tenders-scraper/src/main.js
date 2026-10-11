@@ -94,6 +94,28 @@ function buildQuery() {
   return parts.join(' AND ');
 }
 
+// Remedy advice for "TED matched nothing". It may only name inputs that actually shaped the
+// query that was SENT: expertQuery replaces every other filter (see buildQuery) and an explicit
+// publicationDateFrom/To window overrides publishedWithinDays entirely (see dateClause), so
+// naming an ignored input is an unreachable remedy — the buyer can max it out and nothing
+// changes. Likewise cpvCodes is only a plausible cause when the buyer actually set one.
+function emptyResultAdvice() {
+  if (expertQueryInput) {
+    return 'Your "expertQuery" replaces every other filter, so publishedWithinDays, cpvCodes and the '
+      + 'other inputs had no effect on this run — widen the date clause inside the expert query itself, '
+      + 'or drop one of its terms.';
+  }
+  const parts = [
+    publicationDateFrom || publicationDateTo
+      ? 'Widen publicationDateFrom/publicationDateTo (an explicit window overrides publishedWithinDays, '
+        + 'which this run ignored)'
+      : 'Widen publishedWithinDays',
+    'drop a filter',
+  ];
+  if (cpvCodes.length) parts.push('or check your CPV codes');
+  return `${parts.join(', ')}.`;
+}
+
 // TED sends multilingual maps whose values are either a plain string (e.g. notice-title)
 // or an array of strings (e.g. buyer-name, description-lot). Prefer English, else the first language present.
 function firstValue(v) {
@@ -696,7 +718,7 @@ if (pushed === 0 && watchMode && !seeding) {
   ].filter(Boolean).join(' and ');
   await Actor.setStatusMessage(`No notices matched: ${filteredOutValue + filteredOutDeadline} notice(s) matched your TED query but were dropped after fetching (${dropped}). Widen or remove that filter.`);
 } else if (!pushed && !seeding) {
-  await Actor.setStatusMessage(`No notices matched this query (${query}). Widen publishedWithinDays, drop a filter, or check your CPV codes.`);
+  await Actor.setStatusMessage(`No notices matched this query (${query}). ${emptyResultAdvice()}`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never

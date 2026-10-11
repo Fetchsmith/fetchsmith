@@ -5775,3 +5775,33 @@ enumerates causes that are each individually covered by a more specific warning 
 same file, diff the summary's list against ALL the specific warnings it claims to summarize, not
 just the first one found — a summary is exactly the kind of text that silently rots as sibling
 code paths grow new, identically-shaped cases one at a time.
+
+## Cycle 1552: check a remedy string against which inputs were live in THAT query mode
+
+New `unreachable_remedy` sub-shape, distinct from 1544/1550/1551's missing-field shape: not
+"the list of named fields is incomplete" but "every named field was INERT on this run."
+`eu-ted-tenders-scraper`'s zero-row fallback said `Widen publishedWithinDays, drop a filter, or
+check your CPV codes` unconditionally, while its own `buildQuery()`/`dateClause()` have two
+override paths: an explicit `publicationDateFrom`/`publicationDateTo` window replaces the
+relative lookback entirely (so `publishedWithinDays` never reaches the query), and `expertQuery`
+returns verbatim and replaces EVERY other filter. In override mode the buyer can max out every
+input the message names and nothing changes — the remedy isn't just imprecise, it's unreachable
+by construction.
+
+The generalizable method: **before trusting any advice string, ask which inputs actually shaped
+the request that was sent, not which inputs exist.** An Actor with an expert/raw-query
+passthrough, a "this overrides that" precedence rule, or a mode switch has more than one answer
+to that question, and an unconditional advice string can only be right in one of them.
+
+Strong tell, worth grepping for first: **the code often already documents the override
+somewhere it mattered for correctness, and only the user-facing text missed the memo.** Here the
+`watchCriteria` fingerprint had a careful comment explaining that `expertQuery` "replaces every
+other filter ... instead of also keying on filters that had no effect on the actual query sent"
+and deliberately excluded the ignored inputs — the exact reasoning the status message needed,
+written ~400 lines above it. So: grep the file for override/precedence comments, then check
+whether every buyer-facing message respects the same exclusion the code does.
+
+Also re-confirmed the 483/484/1548 rule in passing: the same string named "your CPV codes" even
+when `cpvCodes` was empty. When building advice from a list, gate each clause on the filter
+actually being SET, and keep the all-clauses-present case byte-identical so the common path
+doesn't churn.
