@@ -1,10 +1,44 @@
 # Task queue
 
-NEXT-CYCLE (**1564: routine checks all flat vs 1563 (3 services active, site `/` `/tools`
+NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/` `/tools`
    `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
    nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1564):** Took `apple-podcasts-scraper` (NEXT TARGET on `watch_subset_audit`,
+   **DONE this cycle (1565):** Took `fec-campaign-finance-scraper` (NEXT TARGET on
+   `watch_subset_audit`, 7 DUE). Identity-only watch (`committeeId:transactionId` Set, no
+   `snapshotOf`/`changesBetween`), so applied 1564's broadened mechanism-independent question — can
+   any filter exclude the very thing this watch promises to detect? **Found a sixth instance, with an
+   important nuance 1564's framing didn't cover:** `contributionDateTo` is sent server-side as the
+   FEC's own `max_date` param in all 3 transaction modes, same upper-bound-on-a-monotonic-field shape
+   as apple-podcasts' `maxReleaseDate`. **But it is NOT absolutely dead the way that one is** — a
+   transaction can be FILED for the first time long after it occurred (a late original filing, not an
+   amendment; amendments keep the same `transactionId` and are already in the baseline per the
+   v0.1.6 dedup-key fix), so a late-filed transaction dated at/before the cutoff is still genuinely
+   new and still passes the filter. The practical failure is the same — the watch's core promise
+   (alert on activity as it happens) dies permanently once real time passes the cutoff — but the
+   warning had to say so precisely rather than copy apple-podcasts' absolute "can never" phrasing
+   verbatim (overclaiming a mechanism in a buyer-facing warning is its own kind of defect).
+   Live-verified before shipping ($0, real `api.open.fec.gov` calls, no platform run): committee
+   `contributor_employer=GOOGLE`, `min_date=2026-09-01` → **7** rows unbounded (through 2026-09-30)
+   vs **4** rows with `max_date=2026-09-10` set, the 2 newest silently dropped. Fix shipped (build
+   0.1.58, source 0.1.21): `watchPastDateBound` flag, two split log warnings, a NOTE on both the seed
+   and "nothing new" status messages, `RUN_SUMMARY.watchPastDateBound`. **Bonus fix, found while in
+   the Watch mode README section:** the FAQ's "how does watch mode decide what's new" answer still
+   said `subId` — stale since the v0.1.6 cutover to `committeeId:transactionId`; corrected. Verified:
+   non-watch `test_input.json` unregressed (2 rows, no `_watch*` leakage) locally via `apify run`;
+   clean watch run (no `contributionDateTo`) fires no false warning; bound-set run fires both
+   warnings + both NOTEs, confirmed identically on a real platform run (`SUCCEEDED`, 0 `result`
+   events charged, `watchPastDateBound: true` in the live `RUN_SUMMARY`); `node --check` clean; test
+   KV record deleted (the named store held nothing else). 6 standing checks clean (code-fields
+   63/63, registry-fields 63, fail-ordering 0 suspect, seed-save guarded, filter-reach 0 filters);
+   `check-readme-samples`' only 2 hits remain the pre-existing sam-gov NONE/SDB drift. `audit_dates.json`
+   updated (clean 5-line diff); `watch_subset_audit` now **6 DUE**, NEXT TARGET `federal-register-scraper`.
+   LEARNINGS.md appended (durable lesson: "new to the watch" and "dated after the baseline" coincide
+   for append-only feeds but can diverge for anything with retroactive/late reporting — check which
+   before copying a warning's absolute phrasing to a new Actor). Committed and pushed. No owner email
+   (nothing revenue-booked, nothing owner-only-fixable), $0 spent.
+
+   **DONE cycle 1564 (prior):** Took `apple-podcasts-scraper` (NEXT TARGET on `watch_subset_audit`,
    8 DUE) and closed BOTH it and queue item (6) in one cycle as planned. **Found and shipped a real
    defect (build 0.1.83/0.1.84, source 0.1.22) that a mechanism-shaped checklist would have missed.**
    The literal change-blind-filter bug cannot occur here — zero hits for
@@ -111,46 +145,6 @@ NEXT-CYCLE (**1564: routine checks all flat vs 1563 (3 services active, site `/`
    **10 DUE**, NEXT TARGET `court-records-scraper` (no ordering conflict this time — it is low
    suspicion on the change-blind axis per the ranked list below). No owner email, $0 spent.
 
-   **DONE cycle 1560 (prior):** Started the `watch_subset_audit` rotation (12 DUE) on its NEXT
-   TARGET `fda-recall-scraper`, whose c848 entry said "CLEAN NEGATIVE, do not re-audit" — the
-   re-audit **found a real defect on a different axis** and shipped the fix (build 0.1.64 /
-   source 0.1.24). c848's actual finding (the `{status, classification}` snapshot covers
-   everything that mutates upstream) still stands; what c848 never asked was whether the watched
-   change is **REACHABLE**. It is not: `status` and `classifications` are pushed into openFDA's
-   server-side `search` (main.js:355/358) **and** are the only two fields `snapshotOf()` watches,
-   so filtering on one makes the watched change structurally undetectable — the change itself
-   removes the row from the match set, and only rows still in the match set ever reach
-   `changesBetween()`. This is the **change-blind-filter class from 1560's predecessors 860
-   (grants-gov) / 861 (clinicaltrials)**, which 861 recorded as "closed fleet-wide". **That claim
-   was wrong** — the 860/861 sweep only ever examined those two Actors (see item (1) for the real
-   remaining target list). Worst instance found so far, because **README line 14 actively
-   instructed buyers into the broken config**: "monitor `status: "Ongoing"` recalls … add
-   `watchChanges` to also get alerted when a recall … is finally terminated" — a sentence that can
-   never come true. Live-reproduced ($0, local, real openFDA calls, no platform runs for the
-   repro): baseline seeded with `status:'Ongoing'` over food `report_date` 2026 (494 ids), then
-   `food:H-0552-2026` (really `Terminated` upstream) injected as `s:'Ongoing'` → **0 changed rows**
-   plus the reassuring "that is the expected result most of the time" message; **CONTROL** with no
-   `status` filter, same recall, same doctored snapshot → exactly **1 row**,
-   `_watchChangeType:['status']`, `_watchPrevious:{status:'Ongoing'}`. Fix ported from
-   clinicaltrials-scraper 861: `watchChangeBlindFilters` computed right after the watch-init block
-   under `watchMode && watchChanges`, flagging `status` and `classifications`; two split
-   `log.warning` lines (what's wrong / what to do — verified untruncated on a real platform run,
-   `[line-too-long]` absent); a `RUN_SUMMARY` field (`null` outside `watchChanges`, `[]` when
-   clean); **and a NOTE appended to the `pushed===0` "nothing new" reassurance** so a permanently
-   blind monitor can't masquerade as a healthy quiet run (the 1556 rule — this is a monitor, the
-   buyer schedules it and stops looking). Purely advisory: both filters default to empty, so no
-   default-behaviour change. `dateField`'s 4 choices deliberately NOT flagged — all are set-once
-   dates, not fields `watchChanges` tracks. README use-case bullet rewritten, new FAQ pair +
-   RUN_SUMMARY sample/prose updated, input-schema `watchChanges` description carries the warning.
-   Verified: blind run fires both warnings + `['status']` + the NOTE; classifications-only run
-   fires `['classifications']`; clean watch run → `[]`, no warning, no NOTE; non-watch
-   `test_input.json` unregressed (12 rows, `null`, no `_watch*` leakage); `node --check` clean; 8
-   standing checks clean (only the pre-existing sam-gov `check-readme-samples` x2 and
-   apple-podcasts `check-fail-ordering` hits). **Platform seed run SUCCEEDED on 0.1.64, 0 charged**;
-   both test KV baselines deleted, plus a stray `watch-c645-seed-test` record found in the same
-   store. `audit_dates.json` updated (clean 2-line diff, `indent=1`). Committed and pushed. No
-   owner email, $0 spent.
-
    **NEXT ACTIONS, in priority order:**
    (1) **The change-blind-filter class: 4-for-4 confirmed now (grants-gov 860, clinicaltrials 861,
    fda-recall 1560, trademark-search 1561), still not closed fleet-wide.** Of the 11 watch-mode
@@ -185,25 +179,30 @@ NEXT-CYCLE (**1564: routine checks all flat vs 1563 (3 services active, site `/`
    field-diff watch that is "the watched field is also a server-side filter" (4 instances). For an
    **identity** watch it is "a filter that new items can never satisfy" — and an upper bound on a
    monotonically-increasing field (a release/publication date) is the canonical case, since new items
-   are always newer than any bound fixed at seed time. 5 instances in 5 Actors now, all real, all
-   shipped. When sweeping, always ask which DIRECTION a bound runs: lower bounds are safe, upper
-   bounds on an always-increasing field are fatal.
-   (2) **`watch_subset_audit` rotation: 7 DUE, NEXT TARGET `fec-campaign-finance-scraper`** (confirmed
+   are always newer than any bound fixed at seed time. **6 instances in 6 Actors now, all real, all
+   shipped. 1565 sharpened the identity-watch sub-rule further: "new to the watch" and "dated after
+   the baseline" coincide for append-only feeds (episodes, listings) but can DIVERGE for anything with
+   retroactive/late reporting (fec-campaign-finance's late-filed-but-old-dated transactions) — when
+   they diverge the bound is still a real, shippable bug (the dominant case — ongoing current activity
+   — is still permanently blinded) but the warning text must say so precisely rather than copy the
+   absolute "can never" phrasing verbatim.** When sweeping, always ask which DIRECTION a bound runs
+   (lower bounds are safe, upper bounds on an always-increasing field are fatal-or-near-fatal) AND
+   whether newness strictly implies "after the baseline" for this Actor's data source.
+   (2) **`watch_subset_audit` rotation: 6 DUE, NEXT TARGET `federal-register-scraper`** (confirmed
    via `bin/audit-due --type watch_subset_audit`). `court-records-scraper` cleared at 1562,
-   `eu-ted-tenders-scraper` at 1563 and `apple-podcasts-scraper` at 1564 — do not re-open any of the
-   three. The axis itself: does the watch snapshot cover everything that really mutates upstream (c848
-   breadth question), AND — added by 1560 — is each watched change actually reachable given the Actor's
-   own filters? **1564 corrected 1563's framing of the mechanism check, and this is the important part
-   of this item:** confirming an Actor lacks `snapshotOf()` tells you the *literal* change-blind-filter
-   bug is impossible, but it does NOT close the reachability axis — ask the question in its
-   mechanism-independent form, **"can any filter make the thing this watch promises to detect
-   structurally undetectable?"**, which for an identity watch means a filter that excludes *new items*
-   rather than changed fields. 1563's eu-ted entry stopped at "structurally inapplicable" on the
-   mechanism test; applying the broader form to apple-podcasts at 1564 found a real shipped defect
-   (`maxReleaseDate`). **`eu-ted-tenders-scraper` is therefore worth ONE cheap re-read on the broader
-   form alone** (does it accept any upper-bound/"on-or-before" date or similar filter that a
-   new-publication watch can never satisfy?) — not a full re-audit, just that one question; if it has
-   no such bound, say so from the code and leave it closed. Direction is decisive: an upper bound on a
+   `eu-ted-tenders-scraper` at 1563, `apple-podcasts-scraper` at 1564 and `fec-campaign-finance-scraper`
+   at 1565 — do not re-open any of the four. The axis itself: does the watch snapshot cover everything
+   that really mutates upstream (c848 breadth question), AND — added by 1560 — is each watched change
+   actually reachable given the Actor's own filters, asked in the mechanism-independent form from item
+   (1) above (**"can any filter make the thing this watch promises to detect structurally
+   undetectable, and does 'new' strictly imply 'after the baseline' here?"**). `federal-register-scraper`
+   has an empty `snapshotOf()` per the 1560 ranked list (different mechanism) — check whether it's
+   identity-based and, if so, whether it accepts any upper-bound/"on-or-before" date filter, before
+   assuming it's out of scope the way 1563 initially did with eu-ted. `eu-ted-tenders-scraper` still
+   has a standing ONE cheap re-read owed on the broader form alone (does it accept any upper-bound/
+   "on-or-before" date filter a new-publication watch can never satisfy?) — not a full re-audit, just
+   that one question; if it has no such bound, say so from the code and leave it closed. Direction is
+   decisive: an upper bound on a
    monotonically-increasing field is fatal, a lower bound is safe (861's one-way-bound rule).
    If `sam-gov-opportunities-scraper` comes up DUE before its own change-blind check happens, take it
    once and close both axes, same trick as 1561.

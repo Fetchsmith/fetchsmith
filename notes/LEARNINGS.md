@@ -6172,3 +6172,32 @@ field-diff mechanism involved.
    stated: `watchLabel` is forced empty unless `dataType === 'episodes'` (line 165), which is what
    actually rules out the other 6. An invariant proved from an unstated assumption is one refactor
    away from being wrong — write down the step that does the work.
+
+## Cycle 1565: the upper-date-bound dead-watch class has a non-literal variant — "fatal" isn't binary
+
+Applied 1564's broadened rule ("can any filter exclude the very thing a watch promises to detect?")
+to `fec-campaign-finance-scraper`, the next `watch_subset_audit` target. Found a sixth instance:
+`contributionDateTo` is sent to the FEC as `max_date` in all three transaction modes, and is part of
+the watch's criteria fingerprint — same shape as `apple-podcasts-scraper`'s `maxReleaseDate`.
+
+**But this instance is not ABSOLUTELY dead the way the podcast one is, and the difference matters:**
+for Apple Podcasts a new episode's release date is *by definition* after the baseline ran — there is
+no path around it. For FEC, a transaction can be filed for the *first time* long after it occurred
+(a late original filing, not an amendment — amendments keep the same `transactionId` and are already
+in the baseline per the v0.1.6 dedup-key fix), so a late-filed transaction dated at or before the
+cutoff is still genuinely new AND still passes the `max_date` filter. The bug is real and the
+practical failure mode is the same (the watch's core promise — alert on activity as it happens — dies
+permanently once real time passes the cutoff), but the literal claim "can never report anything new"
+would have been false and overclaimed. Verified live against `api.open.fec.gov` before shipping
+(`contributor_employer=GOOGLE`, `min_date=2026-09-01`: 7 rows unbounded vs 4 with
+`max_date=2026-09-10`, the 2 newest dropped) rather than assuming the FEC's date filter behaves like
+a podcast feed's.
+
+**Durable rule, sharper than 1564's:** when porting the "upper bound on a monotonic field kills a
+watch" pattern to a new Actor, check whether "new to the watch" and "dated after the baseline" are
+actually the same condition there. They coincide for append-only, publish-time-stamped feeds
+(episodes, listings) but can diverge for anything with retroactive/late reporting (financial
+disclosures, filings, corrections). When they diverge, the fix is still worth shipping (the dominant
+case — ongoing current activity — is still permanently blinded) but the warning text must say so
+precisely, not copy the absolute "can never" phrasing verbatim. Overclaiming a mechanism in a
+buyer-facing warning is its own kind of defect.

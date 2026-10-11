@@ -259,6 +259,37 @@ if (watchMode) {
   }
 }
 
+// contributionDateTo is an UPPER bound on the transaction date and is sent to the FEC as its own
+// `max_date` param (see buildParams below) in all three transaction modes -- confirmed live
+// 2026-10-11 against api.open.fec.gov (contributor_employer=GOOGLE, min_date=2026-09-01: 7 rows
+// through 2026-09-30 unbounded vs 4 rows through 2026-09-10 with max_date=2026-09-10 set, the two
+// newest rows dropped). A watch's whole purpose is to catch activity AS IT HAPPENS, and real-world
+// contribution/disbursement/expenditure dates keep advancing with real time -- so once today's
+// date moves past contributionDateTo, every genuinely current transaction is excluded by the FEC's
+// own API before this Actor ever sees it, and the watch goes quiet for good. Unlike an upper bound
+// on a podcast's release date, this is not ABSOLUTELY dead: a transaction can be filed late (an
+// original filing, not an amendment -- amendments keep the same transaction_id and would already
+// be in watchSeen) with a date at or before the cutoff, and that would still be caught. But the
+// watch's main promise -- alerting on new activity going forward -- stops working permanently once
+// real time passes the bound. contributionDateFrom is safe in a watch run: a lower bound only
+// limits how far back the first baseline reaches (same rule as minReleaseDate in
+// apple-podcasts-scraper).
+const watchPastDateBound = watchMode && contributionDateTo != null;
+if (watchPastDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is set together with contributionDateTo "${input.contributionDateTo}". `
+    + 'contributionDateTo is an UPPER bound on the transaction date, sent to the FEC as `max_date`, so once '
+    + "today's date moves past it, every genuinely new contribution/disbursement/expenditure is excluded "
+    + 'before this Actor ever sees it -- the watch will go quiet and stay quiet. (A late-filed original '
+    + 'transaction dated at or before the cutoff can still be caught; ongoing new activity cannot.)',
+  );
+  log.warning(
+    'What to do: drop contributionDateTo from the watch run -- watch mode already returns only what is new, '
+    + 'so an upper date bound adds nothing but a future dead end. contributionDateFrom is safe to keep (a '
+    + 'lower bound only limits how far back the first baseline reaches).',
+  );
+}
+
 async function saveWatchRecord(status) {
   const all = Array.from(watchSeen);
   const ids = all.slice(-WATCH_KEEP);
@@ -913,6 +944,9 @@ if (watchMode && !skipBaselineSave) {
         // seed walk never reached is "new" to the first incremental run and gets charged.
         : `Baseline INCOMPLETE for watch label "${watchLabel}": ${watchSeen.size} contribution(s) recorded, 0 charged — ${incompleteReason}`
           + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Narrow the filters and re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`)
+      + (watchPastDateBound
+        ? ` NOTE: once today's date passes contributionDateTo (${input.contributionDateTo}), this watch can no longer report ongoing new activity (see the warnings in the log). Drop it.`
+        : '')
       + truncationNote(),
     );
   } else {
@@ -920,6 +954,9 @@ if (watchMode && !skipBaselineSave) {
     if (pushed === 0) {
       await Actor.setStatusMessage(
         `Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`
+        + (watchPastDateBound
+          ? ` NOTE: this run can no longer report ongoing new activity while contributionDateTo (${input.contributionDateTo}) is set and today's date is past it -- it is an upper bound on the transaction date, and current activity is newer than that. Drop it (see the warnings in the log).`
+          : '')
         + truncationNote(),
       );
     } else if (baselineTruncated > 0 || !complete) {
@@ -974,6 +1011,7 @@ const runSummary = {
   baselineTruncated: watchMode ? baselineTruncated : null,
   baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
   skippedSeen: watchMode && !seeding ? watchSkipped : null,
+  watchPastDateBound: watchMode ? watchPastDateBound : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

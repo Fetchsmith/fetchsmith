@@ -131,7 +131,7 @@
     "contributionDateTo": {
       "title": "Transaction date to (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return rows on or before this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference.",
+      "description": "Only return rows on or before this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference. WATCH MODE WARNING: combined with watchLabel, this is a permanent dead end once today’s date passes it — it is an upper bound sent to the FEC as max_date, and genuinely new activity is always newer than any bound fixed in the past, so the watch goes quiet for good (see README “Watch mode”). Leave it unset in a watch run; contributionDateFrom is safe to keep.",
       "editor": "textfield",
       "default": ""
     },
@@ -192,7 +192,7 @@
     "watchLabel": {
       "title": "Watch mode: label for a saved search (optional)",
       "type": "string",
-      "description": "Transaction modes only (contributions, disbursements, independentExpenditures). Set a name for this saved search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only rows that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior.",
+      "description": "Transaction modes only (contributions, disbursements, independentExpenditures). Set a name for this saved search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only rows that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior. Do not combine with contributionDateTo — that upper-bounds the transaction date and permanently kills the watch once today’s date passes it.",
       "editor": "textfield",
       "default": ""
     },
