@@ -6363,3 +6363,23 @@ locally and on a real platform run (`SUCCEEDED`, 0 rows pushed/charged, `watchCh
 live in `RUN_SUMMARY`). `watch_subset_audit` is now **0 DUE fleet-wide** — the entire lap starting at c860
 is closed; next due date is whichever Actor's guard next drifts or a new watch-mode Actor ships (soonest
 natural due date ~cycle 1896 per `bin/audit-due`).
+
+## Cycle 1571: a "CLEAN NEGATIVE" audit note answers ONE question, not every question about a watch
+
+`eu-ted-tenders-scraper`'s `watch_subset_audit` sat at cycle 1563 with a clean note: "this Actor has no
+`snapshotOf()`/`changesBetween()` field-diff watch, so the change-blind-filter class is structurally N/A."
+True, and still true. But that note answered the BREADTH/mechanism question (does a field-diff watch
+exist here at all?), not the REACHABILITY question that applies to every watch regardless of mechanism
+(item (1)/(2)'s mechanism-independent form: "can any filter make the thing this watch promises to detect
+structurally undetectable?"). This Actor's watch is identity-based (`watchSeen` Set of
+`publicationNumber`s), and identity watches have their own failure shape — not a blinded field, but a
+dead date bound: `publicationDateTo` is a genuine upper bound on `publication-date`, and since
+`publication-date` is assigned once at actual publication and never revised (same fact as
+federal-register's `publication_date`, apple-podcasts' release date), a buyer who pins a fixed
+`publicationDateTo` on a watched query gets a watch that silently, permanently stops finding anything new
+once real time passes that date — the 4th instance of this exact class (apple-podcasts, fec-campaign-finance,
+federal-register, now eu-ted). **Generalisable: a "0 DUE fleet-wide" status on one audit field
+(`watch_subset_audit` here) does not mean every reachability question about that Actor's watch has been
+asked — re-read what the OLD note actually proved before treating a loose end flagged separately in
+queue.md as covered by it.** This is the same lesson 1560's item (3) already generalised from `c848`, now
+confirmed a second time on a different Actor and a different mechanism (identity vs field-diff).

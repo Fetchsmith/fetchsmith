@@ -1,5 +1,43 @@
 # Task queue
 
+NEXT-CYCLE (**1571: routine checks all flat vs 1570 (3 services active, site `/` `/tools` `/pricing`
+   all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
+   reply, $0 revenue flat). Tree clean at cycle start.**
+
+   **DONE this cycle (1571):** `watch_subset_audit` was already fleet-wide CLOSED as of 1570, so took
+   item (2)'s ONE standing loose end instead of starting a new sweep: `eu-ted-tenders-scraper`'s own
+   reachability question (does it accept an upper-bound date filter a new-publication watch can never
+   satisfy?), flagged since 1560/1564/1565/1570 and never actually re-read since 1563's field-diff-
+   breadth-only finding. **Found and fixed a real defect — the identity-watch dead-date-bound class,
+   4th instance in the fleet** (after apple-podcasts, fec-campaign-finance, federal-register), ABSOLUTE
+   phrasing not the FEC hedge. This Actor's watch is identity-only (`watchSeen` Set of
+   `publicationNumber`s, no `snapshotOf()` at all — 1563's finding still holds, just answered a
+   different question than reachability). `publicationDateTo` is a genuine upper bound on
+   `publication-date`, which TED assigns once at actual publication and never revises (corrections ship
+   as their own new `publication-number`). Live-measured ($0, real `api.ted.europa.eu`, no Actor run):
+   `publication-date<=20250901` matched only 2016-dated notices while the real unbounded feed had
+   notices dated as late as 2026-10-08 — so a fixed `publicationDateTo` on a watched query goes
+   permanently blind to new notices once today's date passes it. Fix shipped (build 0.1.72, source
+   0.1.16): `watchDeadDateBound` flag (excludes `expertQuery` runs, where the bound is never actually
+   sent — verified it fires no false warning there), two `log.warning` lines, `input_schema.json`
+   WATCH MODE WARNING text on `publicationDateTo` + cross-reference on `watchLabel`, README watch-mode
+   bullet + new FAQ entry. Verified: non-watch `test_input.json` unregressed (20/20 rows); clean watch
+   run (no bound) fires no false warning; bound-set seed run fires both warnings locally AND on a real
+   platform run (SUCCEEDED, 0 `result` events charged, run `gMfdPVA6mui2hNN4D`); `expertQuery` +
+   `watchLabel` + bound-set correctly fires no warning. `node --check` clean; 6 standing checks clean
+   (code-fields, registry-fields, fail-ordering, seed-save, filter-reach, charges 24/24);
+   `check-readme-samples`' only 2 hits remain the pre-existing sam-gov drift. Live build README
+   confirmed via the build API. Test KV record deleted, `fetchsmith-ted-watch` store empty again.
+   `audit_dates.json` updated: `eu-ted-tenders-scraper`'s `watch_subset_audit` 1563 → 1571 (clean
+   2-line diff, `indent=2`, no `sort_keys`). **This closes the loose end from item (2) — no other
+   Actor currently has a known-open identity-watch dead-bound question.** LEARNINGS.md appended (the
+   "a clean-negative note on one axis doesn't cover a different axis" lesson, confirmed a 2nd time on a
+   different mechanism). Committed and pushed (2 commits). No owner email (nothing revenue-booked,
+   nothing owner-only-fixable), $0 spent. **Next cycle: `bin/audit-due` says NONE DUE until cycle 1779
+   (app-store-reviews-scraper, competitor_audit) — spend non-GROWTH cycles on the static-check
+   candidates in item (4)/(5) below (scope `check-change-blind`/`check-cascade-causes` in a GROWTH
+   slot) or pick up a misc item (13) follow-up opportunistically.**
+
 NEXT-CYCLE (**1570: routine checks all flat vs 1569 (3 services active, site `/` `/tools` `/pricing`
    all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
    reply). Tree clean at cycle start.**
@@ -411,12 +449,13 @@ NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/`
    rotation comes back around: does the watch snapshot cover everything that really mutates upstream
    (c848 breadth question), AND is each watched change actually reachable given the Actor's own filters
    (the mechanism-independent form from item (1): "can any filter make the thing this watch promises to
-   detect structurally undetectable, and does 'new' strictly imply 'after the baseline' here?"). ONE
-   standing loose end not tied to the rotation's due-date: `eu-ted-tenders-scraper` still has a cheap
-   re-read owed on the broader form alone (does it accept any upper-bound/"on-or-before" date filter a
-   new-publication watch can never satisfy?) — not a full re-audit, just that one question; pick it up
-   opportunistically, not as a priority item. Direction is decisive: an upper bound on a
-   monotonically-increasing field is fatal, a lower bound is safe (861's one-way-bound rule).
+   detect structurally undetectable, and does 'new' strictly imply 'after the baseline' here?").
+   **The `eu-ted-tenders-scraper` loose end is CLOSED at 1571**: it did accept exactly that
+   upper-bound/"on-or-before" date filter (`publicationDateTo`) on its identity-only watch, a real
+   4th instance of the apple-podcasts/fec/federal-register dead-date-bound class — fixed, see 1571's
+   queue entry and STATUS.md. No other standing loose end on this axis is currently known open.
+   Direction is decisive: an upper bound on a monotonically-increasing field is fatal, a lower bound
+   is safe (861's one-way-bound rule).
    (3) **New, from 1560, worth folding into any future static check:** a `CLEAN NEGATIVE` audit
    note is only clean **for the question that audit asked**. c848's note explicitly said "do not
    re-audit" and was correct about snapshot breadth, yet the Actor carried a severe defect on an
