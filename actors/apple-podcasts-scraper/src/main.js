@@ -243,6 +243,35 @@ if (watchMode) {
   }
 }
 
+// c1564: the identity-watch analogue of the change-blind-filter class (grants-gov 860,
+// clinicaltrials 861, fda-recall 1560, trademark-search 1561). Those four watch a FIELD and are
+// blinded when that same field is also a server-side filter. This Actor watches by IDENTITY, so
+// that exact bug cannot occur (no snapshotOf(), nothing tracked per id) — but the reachability
+// question behind it still applies: can a filter make a "new episode" structurally undetectable?
+// `maxReleaseDate` does exactly that. A genuinely new episode is, by definition, published AFTER
+// the baseline ran, so an upper bound at or before the seed date excludes every future episode
+// forever (episodeInDateWindow: `if (maxReleaseDate && d > maxReleaseDate) return false`). The
+// watch is then permanently dead while still reporting the reassuring "Nothing new … already been
+// delivered" message below — a monitor the buyer schedules and stops looking at (the 1556 rule).
+// Direction is everything, and it is the same one-way-bound reasoning 861 used to spare
+// `lastUpdatePostedDateFrom`: `minReleaseDate` is SAFE in a watch (release dates only ever move
+// forward, so a lower bound in the past can never exclude a newer episode) and is deliberately NOT
+// flagged. Purely advisory — `maxReleaseDate` defaults to null, so no default behaviour changes.
+const watchDeadDateBound = watchMode && maxReleaseDate != null;
+if (watchDeadDateBound) {
+  log.warning(
+    `This watch can never report a new episode: "maxReleaseDate" (${input.maxReleaseDate}) is an UPPER bound on `
+    + 'release date, and a new episode is by definition published after this baseline ran. Every future episode '
+    + 'is therefore excluded by the date window before the watch ever looks at it, so the run will keep saying '
+    + 'nothing was new no matter how much the show publishes.',
+  );
+  log.warning(
+    'What to do: drop "maxReleaseDate" from the watch run — watch mode already returns only what is new, so an '
+    + 'upper bound adds nothing. Use "minReleaseDate" instead if you want to limit how far back the baseline '
+    + 'reaches; a lower bound is safe here, because new episodes only ever get newer.',
+  );
+}
+
 async function saveWatchRecord(status) {
   const ids = Array.from(watchSeen).slice(-WATCH_KEEP);
   baselineTruncated = watchSeen.size - ids.length;
@@ -1223,9 +1252,18 @@ const evictionSuffix = watchMode && baselineTruncated > 0
 
 let statusMsg;
 if (watchMode && seeding) {
-  statusMsg = `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}${evictionSuffix}`;
+  // Same NOTE on the seed run: this message's "run it again later to get only what's new" promise is
+  // exactly what a maxReleaseDate bound makes impossible, and the seed is the run the buyer watches.
+  statusMsg = `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}${evictionSuffix}`
+    + (watchDeadDateBound
+      ? ` NOTE: as configured it will never find anything new — "maxReleaseDate" (${input.maxReleaseDate}) excludes everything published after this baseline. Drop it (see the warnings in the log).`
+      : '');
 } else if (watchMode && pushed === 0) {
-  statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${floorNote}${timeBudgetNote}${evictionSuffix}`;
+  // The NOTE (1556 rule): a permanently blind monitor must not masquerade as a healthy quiet run.
+  statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${floorNote}${timeBudgetNote}${evictionSuffix}`
+    + (watchDeadDateBound
+      ? ` NOTE: this run can never report a new episode while "maxReleaseDate" (${input.maxReleaseDate}) is set — it is an upper bound on release date, and anything published since the baseline is newer than that. Drop it (see the warnings in the log).`
+      : '');
 } else if (watchMode) {
   statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${floorNote}${timeBudgetNote}${evictionSuffix}`;
 } else if (pushed === 0 && timeBudgetExceeded) {
@@ -1285,6 +1323,8 @@ if (webhookUrl) {
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // true = this watch is structurally unable to ever report a new episode (see c1564 above).
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
   };
   try {
     const resp = await gotScraping({

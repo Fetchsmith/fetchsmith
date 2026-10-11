@@ -390,7 +390,7 @@
     "maxReleaseDate": {
       "title": "Episodes released on/before",
       "type": "string",
-      "description": "Episodes only: keep episodes released on or before this date (YYYY-MM-DD or full ISO). Same recent-window caveat as 'Episodes released on/after'.",
+      "description": "Episodes only: keep episodes released on or before this date (YYYY-MM-DD or full ISO). Same recent-window caveat as 'Episodes released on/after'. Do NOT combine this with a 'Watch label': it is an upper bound on release date, and anything published after the baseline is newer than it, so the watch can never report a new episode (the run warns you if you do).",
       "editor": "textfield"
     },
     "useRssForFullArchive": {
@@ -431,7 +431,7 @@
     "watchLabel": {
       "title": "Watch label (only new episodes since last run)",
       "type": "string",
-      "description": "Optional, dataType \"episodes\" only. Name a saved watch (e.g. \"my-daily-check\") and this run returns ONLY episodes not delivered under that same label and filter set before, instead of every episode every time. The first run for a label is a free baseline: it records which episodes already exist and returns zero rows. Run it again later — on a schedule, typically — to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded episodes as \"new\". Ignored for dataType other than \"episodes\".",
+      "description": "Optional, dataType \"episodes\" only. Name a saved watch (e.g. \"my-daily-check\") and this run returns ONLY episodes not delivered under that same label and filter set before, instead of every episode every time. The first run for a label is a free baseline: it records which episodes already exist and returns zero rows. Run it again later — on a schedule, typically — to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded episodes as \"new\". Leave \"Episodes released on/before\" (maxReleaseDate) empty in a watch run — an upper bound on release date makes the watch permanently unable to find anything new, since everything published after the baseline is newer than the bound; \"Episodes released on/after\" is safe. Ignored for dataType other than \"episodes\".",
       "editor": "textfield"
     }
   }

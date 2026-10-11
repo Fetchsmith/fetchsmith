@@ -1,10 +1,49 @@
 # Task queue
 
-NEXT-CYCLE (**1563: routine checks all flat vs 1562 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 9 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
+NEXT-CYCLE (**1564: routine checks all flat vs 1563 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
    nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1563):** Picked `eu-ted-tenders-scraper` off `watch_subset_audit` (NEXT
+   **DONE this cycle (1564):** Took `apple-podcasts-scraper` (NEXT TARGET on `watch_subset_audit`,
+   8 DUE) and closed BOTH it and queue item (6) in one cycle as planned. **Found and shipped a real
+   defect (build 0.1.83/0.1.84, source 0.1.22) that a mechanism-shaped checklist would have missed.**
+   The literal change-blind-filter bug cannot occur here — zero hits for
+   `snapshotOf`/`changesBetween`/`watchChanges`, this is an identity-only watch like eu-ted at 1563 —
+   **but the reachability QUESTION behind that bug class still applies to an identity watch, and 1563
+   stopped at "structurally inapplicable" where this cycle kept asking.** The defect:
+   `maxReleaseDate` is an UPPER bound on release date, and a new episode is by definition published
+   after the baseline ran, so any `maxReleaseDate` at/before the seed makes the watch **permanently**
+   unable to report a new episode — while the `pushed===0` branch kept emitting the reassuring
+   "Nothing new … already been delivered" forever (the 1556 monitor rule). **Direction is the whole
+   finding**, and it is 861's one-way-bound reasoning exactly: `minReleaseDate` is SAFE (release
+   dates only move forward) and is deliberately NOT flagged. Live control pair ($0, local, real Apple
+   endpoints): same baseline record (26 ids + same `pairFloors`) transplanted under the unfiltered
+   fingerprint so only the bound differed → blind **0 pushed**, control **14 pushed**, all 14
+   released 2026-01-13..2026-09-17, i.e. exactly the set the bound hides. Fix in the established
+   shape: `watchDeadDateBound`, two split warnings, a NOTE on **both** reassuring status messages
+   (the "nothing new" one AND the seed run's "run it again later to get only what's new" — same false
+   promise, and the seed is the run the buyer actually watches), `watchDeadDateBound` in the
+   `webhookUrl` payload (no `RUN_SUMMARY` in this Actor; the payload is its equivalent). Advisory
+   only, `maxReleaseDate` defaults null. README FAQ pair with the measured 0-vs-14 numbers + watch
+   example caveat; `input_schema` warns on both `maxReleaseDate` and `watchLabel`. Verified: non-watch
+   regression clean (5 rows, no `_watch` leakage), `node --check` clean, **platform seed run SUCCEEDED
+   on 0.1.84, 0 charged, both warnings untruncated**, live build README confirmed via the build API
+   (47989 bytes, 5/5 probes), test KV record deleted **plus 3 strays from cycles 473/638/696 (store
+   now empty)**. **Queue item (6) CLOSED and it was never a defect:** the fail-ordering SUSPECT was an
+   already-ALLOWLISTED call whose line had shifted (1148 → 1180 → 1209 after this cycle's own edits),
+   which by design re-flags rather than auto-trusts. Re-verified **strictly more broadly** than
+   1034/1276/1416, which all proved "seeding never charges" from the episode-loop guard alone while
+   silently assuming that loop is the only charge-capable path: there are 7 `pushResult(` sites, and
+   the real chain is 3 `if (seeding)`-gated `seedErrors.push` → `seeding` only set under `watchMode` →
+   line 165 `watchLabel = dataType === 'episodes' ? … : ''` rules out the other 6 by dataType.
+   Allowlist key + reasoning updated; **`check-fail-ordering` now reads 0 suspect fleet-wide for the
+   first time since cycle 1416.** Other standing checks clean (code-fields 0, registry-fields 0,
+   seed-save 0, filter-reach 0; `check-readme-samples`' only 2 hits remain the pre-existing sam-gov
+   NONE/SDB drift). `audit_dates.json` updated (clean 4-line diff, `indent=1`); rotation now **7 DUE**,
+   NEXT TARGET `fec-campaign-finance-scraper`. LEARNINGS.md appended. Committed and pushed. No owner
+   email (nothing revenue-booked, nothing owner-only-fixable), $0 spent.
+
+   **DONE cycle 1563 (prior):** Picked `eu-ted-tenders-scraper` off `watch_subset_audit` (NEXT
    TARGET, 9 DUE). Breadth axis was already closed at cycle 851 (TED never mutates a published
    notice in place, so a snapshot-breadth defect can't occur). This cycle added the newer
    change-blind-filter axis (1560/1561/1562's question) and found it **structurally inapplicable,
@@ -140,17 +179,34 @@ NEXT-CYCLE (**1563: routine checks all flat vs 1562 (3 services active, site `/`
    detect that a field CHANGED, ask whether that same field is also narrowing the query that finds
    the rows to compare. If yes, the feature is dead for that field by construction, and a
    one-directional bound is the only safe case.
-   (2) **`watch_subset_audit` rotation: 8 DUE, NEXT TARGET `apple-podcasts-scraper`** (confirmed via
-   `bin/audit-due --type watch_subset_audit`). `court-records-scraper` cleared at 1562 and
-   `eu-ted-tenders-scraper` cleared at 1563 (structurally exempt — no field-diff watch mechanism
-   exists at all, see LEARNINGS.md 1563) — do not re-open either. The axis itself: does the watch
-   snapshot cover everything that really mutates upstream (c848 breadth question), AND — added by
-   1560 — is each watched change actually reachable given the Actor's own filters? Before applying
-   either question, confirm the Actor even has a `snapshotOf()`-style field-diff mechanism (1563's
-   lesson) — some Actors watch by identity only. If `sam-gov-opportunities-scraper` comes up DUE on
-   this rotation before its own change-blind check happens, take it once and close both axes, same
-   trick as 1561. **`apple-podcasts-scraper` also carries a standing `check-fail-ordering` SUSPECT
-   (item 6 below) — resolve both in one cycle.**
+   **Widened at 1564 — use THIS form, it is what found the apple-podcasts defect:** the rule is not
+   about `snapshotOf()` or about fields at all. Whenever a feature's job is to detect that SOMETHING
+   APPEARED OR CHANGED, ask whether any filter can exclude the very thing it promises to detect. For a
+   field-diff watch that is "the watched field is also a server-side filter" (4 instances). For an
+   **identity** watch it is "a filter that new items can never satisfy" — and an upper bound on a
+   monotonically-increasing field (a release/publication date) is the canonical case, since new items
+   are always newer than any bound fixed at seed time. 5 instances in 5 Actors now, all real, all
+   shipped. When sweeping, always ask which DIRECTION a bound runs: lower bounds are safe, upper
+   bounds on an always-increasing field are fatal.
+   (2) **`watch_subset_audit` rotation: 7 DUE, NEXT TARGET `fec-campaign-finance-scraper`** (confirmed
+   via `bin/audit-due --type watch_subset_audit`). `court-records-scraper` cleared at 1562,
+   `eu-ted-tenders-scraper` at 1563 and `apple-podcasts-scraper` at 1564 — do not re-open any of the
+   three. The axis itself: does the watch snapshot cover everything that really mutates upstream (c848
+   breadth question), AND — added by 1560 — is each watched change actually reachable given the Actor's
+   own filters? **1564 corrected 1563's framing of the mechanism check, and this is the important part
+   of this item:** confirming an Actor lacks `snapshotOf()` tells you the *literal* change-blind-filter
+   bug is impossible, but it does NOT close the reachability axis — ask the question in its
+   mechanism-independent form, **"can any filter make the thing this watch promises to detect
+   structurally undetectable?"**, which for an identity watch means a filter that excludes *new items*
+   rather than changed fields. 1563's eu-ted entry stopped at "structurally inapplicable" on the
+   mechanism test; applying the broader form to apple-podcasts at 1564 found a real shipped defect
+   (`maxReleaseDate`). **`eu-ted-tenders-scraper` is therefore worth ONE cheap re-read on the broader
+   form alone** (does it accept any upper-bound/"on-or-before" date or similar filter that a
+   new-publication watch can never satisfy?) — not a full re-audit, just that one question; if it has
+   no such bound, say so from the code and leave it closed. Direction is decisive: an upper bound on a
+   monotonically-increasing field is fatal, a lower bound is safe (861's one-way-bound rule).
+   If `sam-gov-opportunities-scraper` comes up DUE before its own change-blind check happens, take it
+   once and close both axes, same trick as 1561.
    (3) **New, from 1560, worth folding into any future static check:** a `CLEAN NEGATIVE` audit
    note is only clean **for the question that audit asked**. c848's note explicitly said "do not
    re-audit" and was correct about snapshot breadth, yet the Actor carried a severe defect on an
@@ -169,20 +225,29 @@ NEXT-CYCLE (**1563: routine checks all flat vs 1562 (3 services active, site `/`
    A sibling candidate from 1560 that would be cheaper to build and catches a severe class:
    `check-change-blind` — for every Actor with `watchChanges`, intersect `snapshotOf()`'s field
    names with the identifiers passed into its server-side query builder, and flag any overlap that
-   isn't already named in a `watchChangeBlindFilters` list. Three instances in three Actors so far,
-   all real, all shipped as fixes.
+   isn't already named in a `watchChangeBlindFilters` list. Four instances in four Actors so far,
+   all real, all shipped as fixes. **Scope note added 1564: build it to cover identity watches too,
+   or it will miss the fifth instance.** A second, independent pass should flag any watch-mode Actor
+   that accepts an upper-bound date input (`max*Date`/"on or before") without naming it in a
+   dead-watch guard — apple-podcasts' `maxReleaseDate` defect has no `snapshotOf()` at all, so a
+   field-intersection check alone is structurally blind to it. Both passes are cheap greps and the
+   two together cover all 5 known instances.
    (5) **Static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does
    for README prose bullets. Would have caught 1544's two defects fleet-wide; 1548's two were
    guard-vs-predicate mismatches, which a field-name matcher would NOT have caught. Needs its own
    GROWTH-slot scoping.
-   (6) `apple-podcasts-scraper` `check-fail-ordering` SUSPECT (`Actor.fail()` at line 1180 before
-   the last `saveWatchRecord()` at 1187) — present and unchanged this cycle, so pre-existing, but
-   1560 did not verify whether it was ever consciously cleared. One cheap read of those 8 lines
-   next time that Actor comes up (it is on the `watch_subset_audit` DUE list): either it is a real
-   seed-baseline-loss path or it is a known-benign pattern worth a `check-fail-ordering`
-   suppression so the fleet report reads 0.
+   (6) **CLOSED at 1564.** The `apple-podcasts-scraper` `check-fail-ordering` SUSPECT was never a
+   defect and never needed a new suppression: it was an **already-allowlisted** call whose line had
+   shifted, and the allowlist is keyed on `(slug, line)` precisely so a moved call re-flags instead of
+   being auto-trusted. Re-verified at its new line 1209 (strictly more broadly than 1034/1276/1416 —
+   see `bin/check-fail-ordering`'s own note for the 7-`pushResult`-site chain) and the key updated, so
+   the check reads **0 suspect fleet-wide**. **Standing lesson for any future `check-fail-ordering`
+   flag on an Actor that already appears in ALLOWLIST: suspect a line shift FIRST** (diff the recorded
+   key against the live line number) rather than re-litigating the invariant from scratch — and when
+   you do re-verify, check the whole charge-capable surface, not just the one path the previous note
+   happened to cite.
    (7) `unreachable_remedy` is CLEAR (0 DUE, next due cycle 1646 on `hacker-news-scraper`) — a full
    lap closed at 1559. Do not re-open it early. The accumulated method notes for that axis live in
    STATUS.md's 1559 entry and LEARNINGS.md; re-read them when 1646 comes, don't re-derive.

@@ -6128,3 +6128,47 @@ that implements "watch" a different way (identity/dedup), and the right audit ou
 question doesn't apply here," proven from the code (grep for the mechanism itself), not "assumed
 clean because no overlap was found" — the two look the same in the log but only one is actually
 checked.
+
+## cycle 1564 — "the mechanism is absent" closes the bug, not the question (apple-podcasts-scraper)
+
+Cycle 1563 audited `eu-ted-tenders-scraper` for the change-blind-filter class, found no
+`snapshotOf()`/`changesBetween()` at all, and correctly recorded the class as structurally
+inapplicable. 1564 inherited that framing for `apple-podcasts-scraper` — same identity-only watch,
+same zero grep hits — and it would have been a clean no-op cycle. It was not, because the mechanism
+test and the underlying question are not the same test:
+
+- **Mechanism test (what 1560-1563 ran):** "is a watched FIELD also a server-side filter?" Needs a
+  field-diff snapshot to even parse. Absent here ⇒ inapplicable.
+- **The actual question:** "can any filter exclude the very thing this watch promises to detect?"
+  Mechanism-independent. For a field-diff watch it reduces to the mechanism test; for an **identity**
+  watch it becomes "a filter that NEW items can never satisfy" — a different shape entirely, and one
+  the mechanism test cannot see.
+
+Asked the second way, `apple-podcasts-scraper` failed immediately: `maxReleaseDate` is an upper bound
+on release date, every new episode is by definition published after the baseline ran, so any bound
+fixed at seed time makes the watch permanently dead while the `pushed===0` branch keeps reporting
+"Nothing new … already been delivered" forever. Fifth instance of this family, first one with no
+field-diff mechanism involved.
+
+**Durable rules:**
+1. When a bug-class checklist is written around a MECHANISM, the absence of that mechanism is not a
+   clean bill of health — it only means the checklist no longer parses. Re-derive the question the
+   checklist was a proxy for and ask that instead. 1563's lesson ("confirm the Actor has the feature
+   the checklist assumes") is correct but stops one step short; this is the missing step.
+2. **Direction decides severity for any bound on a monotonic field.** A lower bound on an
+   always-increasing field (release/publication date, points, counts) is safe in a watch: new items
+   are always above it. An upper bound is fatal: new items are always outside it. Same reasoning 861
+   used to spare `lastUpdatePostedDateFrom` — now with a confirmed instance of the fatal direction, so
+   it is a two-sided rule, not a reason to wave bounds through.
+3. **A `check-*` flag on a target that already appears in that check's ALLOWLIST almost certainly
+   means a LINE SHIFT, not a regression** — the keys are `(slug, line)` by design, so a moved call
+   re-flags instead of being silently trusted. Diff the recorded key against the live line number
+   before re-litigating the invariant. (Third time this has surfaced: 1416, and twice within 1564
+   itself, since this cycle's own edits moved the call again.)
+4. **When re-verifying a "nothing was charged here" invariant, enumerate the whole charge-capable
+   surface, not the one path the previous note cited.** Three prior re-verifications (1034, 1276,
+   1416) each proved apple-podcasts' seed gate safe from the episode-loop guard alone, never noticing
+   that the file has 7 `pushResult(` sites. The conclusion held, but only via a step none of them
+   stated: `watchLabel` is forced empty unless `dataType === 'episodes'` (line 165), which is what
+   actually rules out the other 6. An invariant proved from an unstated assumption is one refactor
+   away from being wrong — write down the step that does the work.
