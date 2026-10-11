@@ -5315,3 +5315,43 @@ tell that something changed: query the residual-after-NOT-known-codes count, not
 exactly 0 — a large nonzero residual sampled by hand (here: 1000 rows across 20 pages) separates
 "still the same two known noise shapes" from "a new code snuck in," and is cheap (unauthenticated,
 no auth, no charge) because it's the exact same request shape the original audit used.
+
+## Cycle 1536 — a vendor cliff you cannot predict is a chunking problem, and chunking needs an exclusivity proof
+
+`grants-gov-scraper`'s `agencies` param dies silently past ~193 pipe-joined codes (hitCount 0,
+errorcode 0, "Webservice Succeeds"). Cycle 1532 could only guard it; 1536 chunked it. Reusable
+lessons, in order of how much they would have cost to learn late:
+
+1. **Before merging results from N sub-queries, PROVE the partition is exclusive — do not assume it.**
+   The whole correctness of chunking a filter list rests on "an entity belongs to exactly one value
+   of this filter", which is a claim about the vendor's data model, not about our code. Two cheap
+   live checks settle it, and both are worth running: **count additivity** (whole-query hitCount ==
+   sum of chunk hitCounts; measured delta 0 on USDA/USAID/DOD) and **row-level set identity** (union
+   of chunk walks == single-query id set, zero overlap; measured on a full USDA/posted walk). Count
+   additivity alone is weaker than it looks — offsetting errors could cancel — so the id-set check is
+   what actually licenses the merge. Both are free: direct `curl`/`fetch`, no Actor run, no charge.
+2. **A declared-match count built by summing sub-queries understates itself the moment the walk stops
+   early.** `maxResults`/charge-limit truncation inside chunk 1 of 3 made the run report "delivered 5
+   of 4,662" for a filter really matching 7,639 — i.e. the one number that exists to answer "did I get
+   everything?" silently became an underestimate, and *more* wrong the more truncated the run. Fix is
+   cheap and belongs in any chunked walk: track which chunks contributed a count, and top up the
+   unvisited ones with a `rows=1` probe each at the end. Make a FAILED top-up visible
+   (`declaredMatchesPartial`) rather than rolling it in — a lower bound that reads as a total is the
+   same defect one level up.
+3. **Keep a safety net scoped to the new path only.** The cross-chunk id dedup fires only when
+   chunking is active, so every input that fits one chunk stays byte-identical and the change cannot
+   regress the 99% case. Give it its OWN counter too: `republishedRowsDropped` is a claim about the
+   vendor's data, `crossChunkDuplicateRows` is a claim about our chunking, and collapsing them would
+   hide the exact signal that the exclusivity proof in (1) has expired.
+4. **When a vendor limit is unpredictable in every dimension you can measure, the only defence is
+   distance.** 193 codes/1574 chars works, 194/1582 fails, 141/1611 works, 120/1892 fails — so it is
+   neither a char nor a code limit and cannot be computed. Chose ~half the known-bad value in both
+   dimensions. Accept and WRITE DOWN the residual risk: a chunk that trips the cliff contributes a
+   silent 0, and that is undetectable per chunk because most subsets legitimately match nothing.
+5. **Chunking silently changes sort semantics.** `sortBy` is applied server-side per query, so a
+   chunked run returns rows grouped by sub-search, and a *truncated* chunked run returns the earlier
+   sub-searches' top rows rather than the global top rows. Same rows, different order — warn, and say
+   which case is which, instead of letting a buyer assume a global sort they no longer get.
+6. **Fixing the defect means deleting the guard's docs too.** The README FAQ answered "why did my
+   filter fail with <error text>" for an error that no longer exists. A guard-era FAQ left in place
+   after the real fix tells buyers the product still cannot do the thing it now does.

@@ -298,20 +298,68 @@ if (wantedAgencies.length && !resolvedAgencies.length) {
 // indistinguishable from an empty search, 3/3 runs each. Not caused by any single code (no code
 // zeroes an "NSF|<code>" pair) and not a pure char or pure count limit (141 codes / 1611 chars is
 // fine), so it is an internal limit we can only avoid, not predict. Only DOS (219 codes) exceeds
-// this cap today; the next largest parents are USDA 84, USAID 80, DOD 75. Chunking the list into
-// several searches and merging is the real fix and is queued -- until then this is a loud error
-// instead of a silent zero-row run.
-const AGENCY_LIST_MAX_CODES = 150; // both limits sit well inside the measured 193/1574 that works
-const AGENCY_LIST_MAX_CHARS = 1200;
-const agencies = Array.from(new Set(resolvedAgencies)).join('|');
-const agencyCodesQueried = agencies ? agencies.split('|').length : 0;
-if (agencyCodesQueried > AGENCY_LIST_MAX_CODES || agencies.length > AGENCY_LIST_MAX_CHARS) {
-    throw new Error(
-        `Your agency filter expands to ${agencyCodesQueried} codes (${agencies.length} chars), which is past the `
-        + `limit Grants.gov's API silently fails at (it returns zero results, not an error). Parent codes expand to `
-        + 'every sub-agency, and "DOS" alone is 219 of them. Name the specific sub-agency codes you need '
-        + '(e.g. "DOS-IND", "DOS-DRL") instead of the parent, or run one parent per run.',
+// it today; the next largest parents are USDA 84, USAID 80, DOD 75.
+//
+// Cycle 1532 could only guard it (a loud throw past 150 codes, so `{"agencies":["DOS"]}` failed
+// instead of silently returning zero rows). Cycle 1536 fixes it: the code list is split into
+// chunks that sit well inside the cliff and the whole paging walk runs once per chunk, with the
+// results merged. That is only sound because agency membership here is EXCLUSIVE -- an
+// opportunity carries exactly one agency code -- which was measured live before writing this,
+// not assumed:
+//   * hitCount is exactly additive across chunks, delta 0 on every parent tested at two chunks
+//     (USDA 84 codes: whole 3001 = 2426+575; USAID 80: 3074 = 1896+1178; DOD 75: 4495 = 3446+1049),
+//     so the summed declared-match count below is exact, not an over-count.
+//   * row level, USDA/posted split into chunks of 42: the union of the chunk walks is the SAME
+//     25 ids as the single-query walk, zero ids in one but not the other, zero cross-chunk
+//     overlap -- so chunking neither loses nor duplicates an opportunity.
+// DOS, the one input the 1532 guard refused outright, now returns its real 7,639 matches across
+// three chunks instead of erroring (and instead of the vendor's silent 0 before the guard).
+// Both limits are roughly HALF the known-bad request (194 codes / 1582 chars), deliberately: the
+// cliff is not predictable from either dimension on its own (141 codes / 1611 chars works, so it is
+// not a char limit; 120 codes / 1892 chars fails, so it is not a code limit), which means the only
+// defence is distance from it. The residual risk is that a chunk itself trips the cliff and
+// contributes a silent 0 -- undetectable per chunk, since most agency subsets legitimately match
+// nothing for a narrow query. Measured chunk counts today: DOS 219 codes/1788 chars -> 3,
+// USDA 84/1213 -> 2, DOD 75/986 -> 2, USAID 80/795 -> 1, everything else 1.
+const AGENCY_CHUNK_MAX_CODES = 100;
+const AGENCY_CHUNK_MAX_CHARS = 900;
+const uniqueAgencies = Array.from(new Set(resolvedAgencies));
+const agencies = uniqueAgencies.join('|'); // full list, for the startup log line only
+const agencyCodesQueried = uniqueAgencies.length;
+// One entry per /search2 sub-search. `[null]` = no agency filter at all, i.e. exactly one walk
+// that never sends the param -- so every input whose list fits in a single chunk (everything
+// except a bare "DOS" today) runs byte-identically to before this change.
+const agencyChunks = [];
+for (let i = 0; i < uniqueAgencies.length;) {
+    const group = [];
+    let chars = 0;
+    while (i < uniqueAgencies.length && group.length < AGENCY_CHUNK_MAX_CODES) {
+        const next = uniqueAgencies[i];
+        const added = (group.length ? 1 : 0) + next.length; // the joining "|" counts too
+        if (group.length && chars + added > AGENCY_CHUNK_MAX_CHARS) break;
+        group.push(next); chars += added; i += 1;
+    }
+    agencyChunks.push(group.join('|'));
+}
+if (!agencyChunks.length) agencyChunks.push(null);
+const agencyChunked = agencyChunks.length > 1;
+if (agencyChunked) {
+    log.info(
+        `Agency filter expands to ${agencyCodesQueried} codes (${agencies.length} chars), past the per-query chunk `
+        + `size (${AGENCY_CHUNK_MAX_CODES} codes / ${AGENCY_CHUNK_MAX_CHARS} chars): `
+        + `running ${agencyChunks.length} sub-searches and merging them. Grants.gov's API silently returns ZERO rows `
+        + 'for a pipe-joined agency list past roughly 193 codes, so one query is not an option; agency membership is '
+        + 'exclusive (one code per opportunity, verified live), so the merge neither loses nor duplicates rows.',
     );
+    if (sortBy) {
+        log.warning(
+            `sortBy="${sortBy}" is applied by Grants.gov WITHIN each of the ${agencyChunks.length} sub-searches, not `
+            + 'across the merged set, because the sort happens server-side per query. The delivered rows are the same '
+            + 'rows either way, but they arrive grouped by sub-search -- sort them yourself if the global order '
+            + 'matters, and note that if maxResults truncates the run you get the top rows of the earlier '
+            + 'sub-searches, not the global top rows (the run is then marked incomplete).',
+        );
+    }
 }
 
 // Exclusive lookup mode. Verified live: oppNum is ANDed with every other filter INCLUDING the
@@ -617,7 +665,9 @@ function assertFiltersApplied(sent, page) {
     );
 }
 
-function baseParams() {
+// `agencyChunk` is one entry of `agencyChunks`: the pipe-joined code list for THIS sub-search,
+// or null when the run has no agency filter. Never the full list -- see the chunking note above.
+function baseParams(agencyChunk) {
     // exclusiveOppNum never reaches here -- it uses walkOppNums (one /search2 call per number,
     // since the API has no batch/joined form), not this filtered-search path.
     const p = {
@@ -627,7 +677,7 @@ function baseParams() {
         keyword,
         keywordEncoded: false,
     };
-    if (agencies) p.agencies = agencies;
+    if (agencyChunk) p.agencies = agencyChunk;
     if (eligibilities) p.eligibilities = eligibilities;
     if (fundingCategories) p.fundingCategories = fundingCategories;
     if (fundingInstruments) p.fundingInstruments = fundingInstruments;
@@ -865,7 +915,12 @@ log.info(
     exclusiveOppNum
         ? `Grants.gov: exact opportunity-number lookup, ${oppNums.length} number(s): ${oppNums.join(', ')} (all statuses, other filters ignored).`
         : `Grants.gov: keyword="${keyword || '(none)'}" oppStatuses=[${oppStatuses}] enrich=${enrich} maxResults=${maxResults}`
-        + (agencies ? ` agencies=[${agencies}]` : '')
+        // Truncated, not dropped: a parent code expands to hundreds of sub-agencies ("DOS" is 219)
+        // and printing the whole pipe list buried every other filter in the startup line. The exact
+        // list each sub-search sent is still visible per request, and the count is in RUN_SUMMARY.
+        + (agencies
+            ? ` agencies=[${agencyCodesQueried > 12 ? `${uniqueAgencies.slice(0, 12).join('|')}|... (${agencyCodesQueried} codes total)` : agencies}]`
+            : '')
         + (eligibilities ? ` eligibilities=[${eligibilities}]` : '')
         + (fundingCategories ? ` fundingCategories=[${fundingCategories}]` : '')
         + (fundingInstruments ? ` fundingInstruments=[${fundingInstruments}]` : '')
@@ -917,12 +972,22 @@ let skippedSeen = 0;
 // revision into its predecessor. Same defect class as `sam-gov-opportunities-scraper` cycle 761
 // and `uk-find-a-tender-scraper` cycle 760.
 let republishedRowsDropped = 0;
+// Separate from republishedRowsDropped on purpose: that counter means "Grants.gov published the
+// same opportunity twice under two ids", which is a statement about their data. This one means
+// "the same id came back in two of OUR agency sub-searches", which would be a statement about our
+// own chunking. Measured 0 (agency membership is exclusive), and only ever counted on the chunked
+// path -- a non-zero here is the signal that the exclusivity assumption has broken.
+let crossChunkDuplicateRows = 0;
 
 // Run-level completeness, written to the key-value store as RUN_SUMMARY at the end of the run
 // (and onto the webhook payload). `complete` is deliberately NOT folded into a status string: a
 // run can be perfectly successful AND truncated at the same time -- that is precisely the case
 // this record exists to make machine-readable, and collapsing the two loses it.
 let declaredMatches = null;
+// True only when the chunked path could not read one sub-search's own hitCount, which makes
+// declaredMatches a lower bound instead of a total. Reported rather than silently rolled in,
+// because "delivered 40 of 2113" is only checkable if the 2113 is known to be the whole number.
+let declaredMatchesPartial = false;
 let incompleteReason = null;
 let incompleteDetail = null;
 function markIncomplete(reason, detail) {
@@ -950,92 +1015,149 @@ function markIncomplete(reason, detail) {
 // stays on in that case even during seeding.
 async function walkMatches(onBatch, { thinOnly = false } = {}) {
     const needsEnrich = minAwardAmount !== null || maxAwardAmount !== null ? true : (thinOnly ? false : enrich);
-    let startRecordNum = 0;
     let keepGoing = true;
+    let aborted = false;
     // Scoped to this one walk (seeding and the real run never share a call, see the caller below),
-    // same shape as sam-gov-opportunities-scraper's republication guard.
+    // same shape as sam-gov-opportunities-scraper's republication guard. Both sets span every
+    // agency chunk, so a row cannot be delivered (or charged) twice across sub-searches.
     const seenContentHashes = new Set();
-    while (keepGoing) {
-        const params = { ...baseParams(), startRecordNum };
-        const page = await apiPost('/search2', params);
-        // A failed search page used to arrive as `null`, produce zero hits, and end the walk
-        // through the SAME `break` as a genuine last page -- so a 5xx on page 3 of 9 returned a
-        // third of the match set, said "Done. Pushed N", and the run SUCCEEDED. In watch seeding
-        // that also under-seeds the baseline, and the next incremental run then delivers and
-        // CHARGES everything past the failure point as "new".
-        if (page === null) {
-            markIncomplete('search-request-failed', `Grants.gov search failed at offset ${startRecordNum} (${lastApiFailure}).`);
-            break;
-        }
-        // The upstream's own count of everything that matched, read from the first page only:
-        // it is what makes "we delivered 40" checkable against "Grants.gov says 2,113 match".
-        if (declaredMatches === null && Number.isFinite(page?.data?.hitCount)) declaredMatches = page.data.hitCount;
-        assertFiltersApplied(params, page);
-        const pageHits = listOf(page?.data?.oppHits);
-        if (!pageHits.length) break;
-        scanned += pageHits.length;
+    const seenRowIds = new Set();
+    // One full offset-paging walk per agency chunk (exactly one iteration, with no `agencies`
+    // param, whenever the run has no agency filter or its list fits in one chunk). `maxResults`
+    // and the charge limit are TOTALS across chunks, not per chunk: both arrive here as a false
+    // `keepGoing` out of onBatch, which ends the inner walk and then this loop too.
+    // Which chunks we actually got a hitCount out of. `maxResults` or a charge limit can end the
+    // walk inside chunk 1 of 3, and then summing only the chunks we visited would UNDERSTATE
+    // declaredMatches -- i.e. "delivered 5 of 4,662" for a filter that really matches 7,639, which
+    // is exactly the "did I get everything?" question declaredMatches exists to answer. The
+    // unvisited chunks are counted after the walk instead (one rows=1 call each, chunked path only).
+    const chunksCounted = new Set();
+    for (const agencyChunk of agencyChunks) {
+        if (!keepGoing || aborted) break;
+        let startRecordNum = 0;
+        // Per chunk, because each sub-search declares its own hitCount and the total is their
+        // sum (exactly additive -- verified live, see the chunking note above).
+        let chunkDeclaredSeen = false;
+        while (keepGoing) {
+            const params = { ...baseParams(agencyChunk), startRecordNum };
+            const page = await apiPost('/search2', params);
+            // A failed search page used to arrive as `null`, produce zero hits, and end the walk
+            // through the SAME `break` as a genuine last page -- so a 5xx on page 3 of 9 returned a
+            // third of the match set, said "Done. Pushed N", and the run SUCCEEDED. In watch seeding
+            // that also under-seeds the baseline, and the next incremental run then delivers and
+            // CHARGES everything past the failure point as "new".
+            if (page === null) {
+                markIncomplete('search-request-failed', `Grants.gov search failed at offset ${startRecordNum} (${lastApiFailure})${agencyChunked ? ` in agency sub-search ${agencyChunks.indexOf(agencyChunk) + 1} of ${agencyChunks.length}` : ''}.`);
+                // Stops the remaining chunks too. A half-answered walk is already incomplete, and
+                // scanning on would bill for more rows while still owing the buyer a re-run.
+                aborted = true;
+                break;
+            }
+            // The upstream's own count of everything that matched, read from each sub-search's
+            // first page: it is what makes "we delivered 40" checkable against "Grants.gov says
+            // 2,113 match".
+            if (!chunkDeclaredSeen && Number.isFinite(page?.data?.hitCount)) {
+                chunkDeclaredSeen = true;
+                chunksCounted.add(agencyChunk);
+                declaredMatches = (declaredMatches ?? 0) + page.data.hitCount;
+            }
+            assertFiltersApplied(params, page);
+            const pageHits = listOf(page?.data?.oppHits);
+            if (!pageHits.length) break;
+            scanned += pageHits.length;
 
-        // Drop same-source byte-identical republications (new `id`, everything else unchanged)
-        // BEFORE enrichment, so a repeat costs neither an extra detail fetch nor a charge.
-        const hits = [];
-        for (const h of pageHits) {
-            const contentHash = [h.number, h.title, h.agencyCode, h.openDate, h.closeDate, h.docType].join('|');
-            if (seenContentHashes.has(contentHash)) { republishedRowsDropped += 1; continue; }
-            seenContentHashes.add(contentHash);
-            hits.push(h);
-        }
-
-        const thin = hits.map(normalizeThin);
-        let batch = thin;
-        if (needsEnrich) {
-            const details = await enrichBatch(hits);
-            batch = thin.map((row, i) => (details[i].fields
-                ? { ...row, ...details[i].fields, enrichment: 'ok', [ENRICHED]: true }
-                : { ...row, enrichment: details[i].status }));
-        } else {
-            batch = thin.map((row) => ({ ...row, enrichment: 'not-requested' }));
-        }
-        if (minAwardAmount !== null || maxAwardAmount !== null) {
-            batch = batch.filter((row) => {
-                if (typeof row.awardCeiling !== 'number') {
-                    // Two very different reasons, and only one of them is the buyer's filter
-                    // doing its job. A row whose detail lookup failed is dropped because we
-                    // do not KNOW its ceiling -- counting that as "agency set no ceiling"
-                    // would assert a cause we never observed.
-                    if (row.enrichment === 'fetch-failed') droppedUnknownAward += 1;
-                    else droppedNoAward += 1;
-                    return false;
+            // Drop same-source byte-identical republications (new `id`, everything else unchanged)
+            // BEFORE enrichment, so a repeat costs neither an extra detail fetch nor a charge.
+            const hits = [];
+            for (const h of pageHits) {
+                // Belt-and-braces for the chunked path only: agency membership measured exclusive
+                // (zero cross-chunk id overlap on a full USDA walk), so this should never fire --
+                // but if Grants.gov ever lets one opportunity carry two agency codes, the cost of
+                // being wrong is a double charge for a row the buyer already has. Kept off the
+                // single-chunk path so every existing input behaves byte-identically.
+                if (agencyChunked && h.id != null) {
+                    const rowId = String(h.id);
+                    if (seenRowIds.has(rowId)) { crossChunkDuplicateRows += 1; continue; }
+                    seenRowIds.add(rowId);
                 }
-                if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
-                if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
-                return true;
-            });
-        }
-        if (hasAbsoluteDateFilter && !exclusiveOppNum) {
-            batch = batch.filter((row) => {
-                const opened = parseUsDate(row.openDate);
-                if (opened === null) { droppedOutOfRange += 1; return false; }
-                if (postedFrom !== null && opened < postedFrom) return false;
-                if (postedTo !== null && opened > postedTo) return false;
-                return true;
-            });
-        }
-        if (hasEffectiveCloseDateFilter && !exclusiveOppNum) {
-            batch = batch.filter((row) => {
-                const closes = parseUsDate(row.closeDate);
-                if (closes === null) { droppedNoCloseDate += 1; return false; }
-                if (effectiveCloseDateFrom !== null && closes < effectiveCloseDateFrom) return false;
-                if (effectiveCloseDateTo !== null && closes > effectiveCloseDateTo) return false;
-                return true;
-            });
-        }
+                const contentHash = [h.number, h.title, h.agencyCode, h.openDate, h.closeDate, h.docType].join('|');
+                if (seenContentHashes.has(contentHash)) { republishedRowsDropped += 1; continue; }
+                seenContentHashes.add(contentHash);
+                hits.push(h);
+            }
 
-        keepGoing = await onBatch(batch);
-        // Advance by the RAW page size Grants.gov actually returned, not the post-dedup count --
-        // `startRecordNum` is a server-side offset into the underlying (undeduped) result list, so
-        // advancing by fewer than that would re-request rows already consumed on this page.
-        startRecordNum += pageHits.length;
-        if (pageHits.length < PAGE_SIZE) break; // last page
+            const thin = hits.map(normalizeThin);
+            let batch = thin;
+            if (needsEnrich) {
+                const details = await enrichBatch(hits);
+                batch = thin.map((row, i) => (details[i].fields
+                    ? { ...row, ...details[i].fields, enrichment: 'ok', [ENRICHED]: true }
+                    : { ...row, enrichment: details[i].status }));
+            } else {
+                batch = thin.map((row) => ({ ...row, enrichment: 'not-requested' }));
+            }
+            if (minAwardAmount !== null || maxAwardAmount !== null) {
+                batch = batch.filter((row) => {
+                    if (typeof row.awardCeiling !== 'number') {
+                        // Two very different reasons, and only one of them is the buyer's filter
+                        // doing its job. A row whose detail lookup failed is dropped because we
+                        // do not KNOW its ceiling -- counting that as "agency set no ceiling"
+                        // would assert a cause we never observed.
+                        if (row.enrichment === 'fetch-failed') droppedUnknownAward += 1;
+                        else droppedNoAward += 1;
+                        return false;
+                    }
+                    if (minAwardAmount !== null && row.awardCeiling < minAwardAmount) return false;
+                    if (maxAwardAmount !== null && row.awardCeiling > maxAwardAmount) return false;
+                    return true;
+                });
+            }
+            if (hasAbsoluteDateFilter && !exclusiveOppNum) {
+                batch = batch.filter((row) => {
+                    const opened = parseUsDate(row.openDate);
+                    if (opened === null) { droppedOutOfRange += 1; return false; }
+                    if (postedFrom !== null && opened < postedFrom) return false;
+                    if (postedTo !== null && opened > postedTo) return false;
+                    return true;
+                });
+            }
+            if (hasEffectiveCloseDateFilter && !exclusiveOppNum) {
+                batch = batch.filter((row) => {
+                    const closes = parseUsDate(row.closeDate);
+                    if (closes === null) { droppedNoCloseDate += 1; return false; }
+                    if (effectiveCloseDateFrom !== null && closes < effectiveCloseDateFrom) return false;
+                    if (effectiveCloseDateTo !== null && closes > effectiveCloseDateTo) return false;
+                    return true;
+                });
+            }
+    
+            keepGoing = await onBatch(batch);
+            // Advance by the RAW page size Grants.gov actually returned, not the post-dedup count --
+            // `startRecordNum` is a server-side offset into the underlying (undeduped) result list, so
+            // advancing by fewer than that would re-request rows already consumed on this page.
+            startRecordNum += pageHits.length;
+            if (pageHits.length < PAGE_SIZE) break; // last page
+        }
+    }
+    // Top up declaredMatches for any chunk the walk stopped before reaching (see chunksCounted).
+    // Skipped when the walk aborted on a failed request -- the API is not answering, so another
+    // call would just fail, and that run is already flagged search-request-failed. A probe that
+    // fails leaves declaredMatches short, so say so rather than let the number read as a total.
+    if (agencyChunked && !aborted) {
+        for (const agencyChunk of agencyChunks) {
+            if (chunksCounted.has(agencyChunk)) continue;
+            const probe = await apiPost('/search2', { ...baseParams(agencyChunk), rows: 1, startRecordNum: 0 });
+            const n = probe?.data?.hitCount;
+            if (Number.isFinite(n)) declaredMatches = (declaredMatches ?? 0) + n;
+            else {
+                declaredMatchesPartial = true;
+                log.warning(
+                    `Could not read the declared match count for one of the ${agencyChunks.length} agency sub-searches `
+                    + `(${lastApiFailure}), so "Grants.gov declared N match(es)" is a LOWER BOUND on this run, not the `
+                    + 'total. The rows that were delivered are unaffected.',
+                );
+            }
+        }
     }
 }
 
@@ -1295,6 +1417,7 @@ if (detailFetchFailures) {
 const runSummary = {
     finishedAt: new Date().toISOString(),
     declaredMatches,
+    declaredMatchesPartial,
     scanned,
     delivered: pushed,
     // A buyer asking "did I get everything that matched?" needs the answer to be a field, not a
@@ -1327,6 +1450,12 @@ const runSummary = {
     // the post-expansion count actually sent (a parent code becomes all of its sub-agencies).
     unknownAgencies,
     agencyCodesQueried,
+    // How many /search2 sub-searches the agency filter was split into (1 = not split, the normal
+    // case). >1 changes two things a machine consumer can otherwise only guess at: declaredMatches
+    // is the SUM of the sub-searches' own hitCounts (exact, because agency membership is
+    // exclusive -- verified live), and sortBy ordering is per sub-search, not global.
+    agencyChunks: agencyChunks.length,
+    crossChunkDuplicateRows,
     failedOppNums,
     baselineSize: watchMode ? watchSeen.size : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
@@ -1356,7 +1485,11 @@ log.info(
     + (pushed
         ? ` Charged ${pushed - thinCharged} as enriched "result" and ${thinCharged} at the cheaper "${THIN_EVENT}" rate.`
         : '')
-    + (declaredMatches !== null ? ` Grants.gov declared ${declaredMatches} total match(es) for these filters.` : '')
+    + (declaredMatches !== null
+        ? ` Grants.gov declared ${declaredMatchesPartial ? 'at least ' : ''}${declaredMatches} total match(es) for these filters`
+            + (agencyChunked ? ` (sum of ${agencyChunks.length} agency sub-searches; exact, agency membership is exclusive).` : '.')
+        : '')
+    + (crossChunkDuplicateRows ? ` ${crossChunkDuplicateRows} row(s) appeared in more than one agency sub-search and were dropped uncharged.` : '')
     + (incompleteReason !== null ? ` RESULT IS INCOMPLETE (${incompleteReason}).` : '')
     + (droppedNoAward ? ` Dropped ${droppedNoAward} row(s) whose agency set no award ceiling to compare against the amount filter.` : '')
     + (droppedUnknownAward ? ` Dropped ${droppedUnknownAward} row(s) whose award ceiling is UNKNOWN because their detail lookup failed.` : '')
