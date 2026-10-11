@@ -919,11 +919,32 @@ if (pushed === 0 && !seeding) {
               + '0 results. Fix them to exactly 8 digits, then re-check the other causes below if it still matches '
               + 'nothing. '
             : '';
+        // Cause (1) names whichever text filter the buyer actually set. `keywordsAny` can be the
+        // SOLE reason a run returns 0 rows (matches() rejects a row when no phrase hits), so the
+        // old searchQuery-only wording pointed a keywordsAny-only run at an input it never set.
+        // The field list must stay in sync with the matches() haystack -- "CPV description" is in
+        // it (populated on every row from both portals, verified live cycle 1544) and was missing
+        // here, though README and input_schema both listed it correctly.
+        const TEXT_FIELDS = 'the title, description, buyer name, CPV description or lot titles';
+        const WORD_START = 'each matched from a word start (so "ware" will not find "software")';
+        let textFilterCause;
+        if (searchWords.length && keywordsAny.length) {
+            textFilterCause = `the text filters are too specific — EVERY "searchQuery" word AND at least one `
+                + `"keywordsAny" phrase must appear in ${TEXT_FIELDS}, ${WORD_START}; drop one of the two filters `
+                + 'to see which is doing the excluding.';
+        } else if (searchWords.length) {
+            textFilterCause = `"searchQuery" is too specific — every word must appear in ${TEXT_FIELDS}, `
+                + `${WORD_START}; try one word, or a shorter stem.`;
+        } else if (keywordsAny.length) {
+            textFilterCause = `"keywordsAny" matched nothing — at least one phrase must appear in ${TEXT_FIELDS}, `
+                + `${WORD_START} and each phrase matched as a whole unit (so "IT support" needs those two words `
+                + 'adjacent); try a shorter phrase, or add more alternatives.';
+        } else {
+            textFilterCause = 'no text filter ("searchQuery"/"keywordsAny") was set, so that is not the cause here.';
+        }
         log.warning(
             `No notices matched. ${malformedCpvNote}Scanned ${scanned} releases over ${page} page(s) and filtered out `
-            + `${filtered}. Most common causes, in order: (1) "searchQuery" is too specific — every word must appear `
-            + 'in the title, description, buyer name or lot titles, each matched from a word start (so "ware" will '
-            + 'not find "software"); try one word, or a shorter stem. (2) "cpvCodes" does not match — both '
+            + `${filtered}. Most common causes, in order: (1) ${textFilterCause} (2) "cpvCodes" does not match — both `
             + 'portals use 8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
             + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
             + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '

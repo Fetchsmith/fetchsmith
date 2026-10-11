@@ -5540,3 +5540,72 @@ stop and check formatting, not just content, before trusting "I only changed one
 
 `bin/audit-due --type unreachable_remedy` now shows 16 DUE (was 17), NEXT TARGET
 `uk-find-a-tender-scraper`. $0 spent, no code/README change (nothing was broken), no owner email.
+
+## Cycle 1544 — uk-find-a-tender-scraper `unreachable_remedy`: two real defects in the zero-row advice
+
+**Context.** `unreachable_remedy` had date 553 with no note — an archive backfill, never actually
+audited, exactly the shape cycle 1543 found on `grants-gov-scraper`. Method as prescribed in
+queue.md: grep `src/main.js` for the zero-row/warning advice strings, then live-verify every
+suggested remedy against the real vendor API by direct curl (no Actor runs, $0).
+
+**The 4 remedies that checked out** (window 2026-10-09 -> 10-10, both portals):
+- cause (2) "both portals use 8-digit CPV codes, trailing-zero code like 72000000 matched as a
+  prefix": 165/165 sampled `classification`/`additionalClassifications`/item ids across
+  FTS-tender, CF-tender and CF-award were scheme `CPV` and **exactly 8 digits**, no exceptions.
+  Live CF-award rows carry `72000000` alongside `72600000`/`72610000`, so the prefix claim isn't
+  just arithmetically true, it's reachable on real data.
+- cause (3) "award notices have no future deadline — set stages to [tender]": 100/100 CF award
+  rows **do** carry `tender.tenderPeriod.endDate`, but 100/100 are in the PAST. The wording is
+  precisely right because it says no *future* deadline — had it said "no deadline" it would have
+  been wrong, since `matches()` rejects these at the `deadline <= now` test, not the `!deadlineDate`
+  test. Remedy reachable: 24/24 tender-stage rows (8 FTS + 16 CF) have FUTURE deadlines.
+- cause (4) "updatedWithinDays is too short": FTS tender 1-day window = 8 rows, 8-day = 33.
+- cause (5) portal volumes: FTS 8 tender-stage/day (claim ~7-8), CF 16 tender-stage/day (claim
+  ~18, ordinary variance), CF award 100 on page 1 **with `links.next` present** (claim 100+).
+
+**Defect (a): a remedy's field list drifted out of sync with the code's own haystack.** Cause (1)
+told the buyer "every word must appear in the title, description, buyer name or lot titles" —
+but `matches()` joins `[title, description, buyerName, cpvDescription, ...lotTitles]`. The
+Actor's README (line 47) and **three** separate `input_schema.json` descriptions all list "CPV
+description" correctly; only this one remedy string omitted it. That matters because the field is
+not redundant decoration: `cpvDescription` was populated on **24/24** live rows, and **5 of 8**
+FTS rows had a word in their CPV description that appears NOWHERE in title/description/buyer —
+e.g. `searchQuery="banking"` matches a notice titled *"The Provision of Investment Management
+Services..."* purely via its CPV description *"Banking and investment services"*. So the advice
+was actively misleading a buyer debugging a 0-row run: it told them a word is unmatched in
+fields where it does in fact match.
+
+**Defect (b): the remedy named an input the buyer may never have set.** Cause (1) addressed only
+`"searchQuery"`, yet `keywordsAny` is a first-class filter (its own `input_schema` entry, its own
+reject in `matches()`, part of the watch fingerprint) and can be the SOLE reason a run returns 0
+rows. A `keywordsAny`-only run therefore got a numbered cause list whose first and most-likely
+item pointed at an input it never used.
+
+**Fix.** Cause (1) is now a 4-branch dynamic string naming whichever text filter the buyer
+actually set — searchQuery-only / keywordsAny-only / both / neither — carrying the corrected
+5-field list, and for the keywordsAny branches the whole-unit-phrase caveat (verified against
+`atWordStart`: the needle is matched as a contiguous substring anchored to a word start, so
+`"IT support"` genuinely does need those two words adjacent). The **neither** branch is worth
+keeping rather than renumbering: it actively RULES OUT cause (1) instead of leaving a buyer with
+no text filter reading advice about one. All 4 branches rendered in a standalone harness and read
+correctly; `node --check` clean; build 0.1.70 pushed.
+
+**Durable lesson — a remedy string is a third copy of a fact, and nothing checks it.** The fleet
+has `check-code-fields` (code->schema), `check-registry-fields` (registry->schema),
+`check-readme-samples` (README->schema) and `check-meta-fields` (prose counts->registry), but a
+*log advice string* that enumerates which fields a filter searches is prose inside `main.js` that
+no check reads. Here the README and schema were BOTH right and only the advice string was stale,
+which is the reverse of the usual drift direction and invisible to every existing tripwire. When
+auditing `unreachable_remedy`, don't just ask "is this remedy reachable?" — also diff any field
+list / input name the remedy enumerates against the code path it describes. Candidate for a
+future static check: extract backticked input names and field lists from `log.warning` blocks and
+compare against the Actor's declared input+output fields, the same way `check-readme-samples`
+pass 2 does for README prose bullets.
+
+**Dev.to re-check (queue item 4).** Last post 2026-10-10T06:31Z = 1.0 days old, so NOT due on the
+2-3 day cadence (next eligible ~10-12 late/10-13); nothing written. Engagement still 0 reactions
+on every post, and the two "comments" that newly appeared are from `suppdevbot` posting "You need
+to verify your account" — a spam/phishing bot, NOT engagement. Do not read a rising comment count
+on this channel as traction without reading the commenter. Also: `GET /articles/me?per_page=3`
+returns 3 items because of `per_page`, not because we have 3 articles — don't quote that length
+as a total.
