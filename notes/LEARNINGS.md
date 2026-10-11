@@ -5832,3 +5832,39 @@ exact-identity lookup silently failing because of a stray unrelated filter is a 
 experience than the filter being quietly ignored, and the existing date-window-widening logic
 already treated lookup mode as a special case, so extending that was a natural, low-risk fix
 rather than a behavior change found nowhere else in the design.
+
+## Cycle 1554: a fleet's existing "structurally impossible combination" throws can be one-directional
+
+`federal-register-scraper` already had two hard-throws for combinations verified live as
+permanently zero-match: `documentTypes=["PRESDOCU"]` alone combined with `significantOnly`, or
+with `commentsOpenOnly` (presidential documents never carry either field). Auditing the
+`unreachable_remedy` backlog surfaced a third combination of the exact same shape that had no
+throw at all: `presidentialDocumentTypes` (which only ever matches rows of type Presidential
+Document) set while `documentTypes` is explicitly set and excludes `PRESDOCU`. Live-verified:
+identical publication-date window, `documentTypes=["RULE"]` alone returns 2,318 matches;
+`documentTypes=["RULE"]` + `presidentialDocumentTypes=["executive_order"]` returns 0. Mixing
+`PRESDOCU` into a multi-type list, or leaving `documentTypes` unset entirely, both work fine
+(verified both), so the dead shape is narrow and specific — not "any use of
+presidentialDocumentTypes", just "documentTypes is set and omits PRESDOCU".
+
+The README's own input-table row for `presidentialDocumentTypes` was *also* wrong in a way that
+undersold the bug: it said the field has "no effect" outside that scope, which reads as
+harmless-ignore, not guaranteed-zero. Fixed both: added a third throw matching the existing two's
+style and verification rigor, and rewrote the README row and FAQ entry to describe the throw.
+
+Generalizable check for any fleet that already has hard-throws for "these two filters can never
+both match": once you've found one such pair, ask whether the underlying API fact that makes it
+true also makes a DIFFERENT pairing true — here, "presidential_document_type only ever matches
+Presidential Document rows" is the single fact behind both the existing two throws (PRESDOCU-only
+excludes significance/comment-date) and the missing third one (presidentialDocumentTypes implies
+PRESDOCU, so excluding PRESDOCU from documentTypes while setting it is equally dead). One API fact
+can source more than one unreachable combination; enumerate all of them from the fact, not just
+the ones a previous cycle happened to write down.
+
+Second, smaller finding same cycle: the generic zero-row fallback message named 5 causes but
+never named `commentsOpenOnly`, even though it adds its own AND condition (`comment_date>=today`)
+independent of the publication-date window and narrows hard in practice (live: a ~90-day-old,
+1,003-document window dropped to 3 with `commentsOpenOnly` added) — the identical shape as
+`significantOnly` and `cfrTitle`/`cfrPart`, which already had their own numbered causes. A field
+list enumerated in a fallback message is worth diffing against every *other* filter with a
+documented non-obvious AND interaction, not just checking it's internally consistent.

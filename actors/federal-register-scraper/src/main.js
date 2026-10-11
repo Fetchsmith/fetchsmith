@@ -110,6 +110,22 @@ if (!publicInspection && presdocuOnly && significantOnly) {
         + 'PRORULE or NOTICE in documentTypes.',
     );
 }
+// Verified live: conditions[presidential_document_type] only ever matches rows of type Presidential
+// Document, regardless of what else is in conditions[type] — a documentTypes list that does NOT
+// include PRESDOCU, combined with presidentialDocumentTypes, is therefore a guaranteed zero-row
+// query (RULE alone: 2318 matches over a window; the same window + RULE + presidential_document_type
+// EO: 0). Mixing PRESDOCU with other types works fine (the result is just the presidential subset),
+// and leaving documentTypes unset (all types) also works, so the only unreachable shape is an
+// EXPLICIT non-empty documentTypes that excludes PRESDOCU.
+if (!publicInspection && presidentialDocumentTypes.length && documentTypes.length && !documentTypes.includes('PRESDOCU')) {
+    throw new Error(
+        'presidentialDocumentTypes can never match when documentTypes is set and does not include PRESDOCU — '
+        + 'the presidential-document-type filter only ever matches Presidential Documents, and every other type '
+        + "has no such field at all (verified live: identical window, RULE alone returns real matches, RULE plus "
+        + 'presidentialDocumentTypes returns 0). Include PRESDOCU in documentTypes (alone or mixed with others), '
+        + 'leave documentTypes unset, or drop presidentialDocumentTypes.',
+    );
+}
 
 const today = new Date();
 // Every date the Federal Register publishes is an EASTERN calendar date: issues go live at
@@ -797,7 +813,13 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'cause (2), not this. documentTypes limited to PRESDOCU alone throws before reaching this message. '
         + '(4) an agency value that was not recognised is dropped with a warning above, not guessed at. '
         + '(5) cfrTitle/cfrPart is an AND with every other filter — a narrow CFR part combined with '
-        + 'a short date window or a significantOnly flag often has zero real matches.',
+        + 'a short date window or a significantOnly flag often has zero real matches. '
+        + '(6) commentsOpenOnly adds a SEPARATE AND condition (comment period still open as of today) on top of '
+        + 'publicationDateFrom/To — most comment periods close within 30-90 days of publication, so pairing '
+        + 'commentsOpenOnly with a publication-date window more than a couple of months in the past often has '
+        + 'few or zero real matches even though the window itself is correct (verified live: a 1,003-document '
+        + 'window from ~90 days ago narrowed to 3 with commentsOpenOnly). presidentialDocumentTypes set without '
+        + 'PRESDOCU in documentTypes throws before reaching this message.',
     );
 }
 

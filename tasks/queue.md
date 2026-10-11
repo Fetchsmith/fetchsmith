@@ -1,45 +1,45 @@
 # Task queue
 
-NEXT-CYCLE (**1553: routine checks all flat vs 1552 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/fda-recall-scraper` all 200, inbox 9 msgs — all SEO-spam/forged-
+NEXT-CYCLE (**1554: routine checks all flat vs 1553 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/federal-register-scraper` all 200, inbox 10 msgs — all SEO-spam/forged-
    sender-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue flat, 44 users /
    622 runs-30d). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1553):** Picked `fda-recall-scraper` off the `unreachable_remedy` DUE
-   list (7 DUE, NEXT TARGET per 1552). Field had date 813 with no note — another unaudited
+   **DONE this cycle (1554):** Picked `federal-register-scraper` off the `unreachable_remedy`
+   DUE list (6 DUE, NEXT TARGET per 1553). Field had date 813 with no note — another unaudited
    archive backfill. Audited every zero-row/warning remedy string in `src/main.js`; most checked
-   out exactly against the README and the real openFDA API (states = recalling-firm's-state,
-   searchQuery's 3-field scope, brandName/genericName/manufacturerName drug-only restriction).
-   **Found and fixed ONE real defect, a NEW sub-shape: a documented OVERRIDE that did not exist
-   in the code.** README (line 33 + FAQ line 196) promises `recallNumber`/`eventId` "overrides
-   every filter above except `productTypes`" / "every other filter is ignored", but
-   `buildSearch()` only ever ANDed the lookup clause onto whatever else was set — `lookupMode`
-   was used solely to widen the date window and flag the RSS incompatibility, never to skip the
-   other clauses. Live-verified against the real openFDA API: a real recall number
-   (D-0860-2026, actual classification Class II) ANDed with a deliberately wrong classification
-   or state both returned the literal `{"error":{"code":"NOT_FOUND"}}` — a buyer doing an exact
-   lookup with any stray mismatched filter left set got silently zero rows, contradicting the
-   documented promise. Fixed `buildSearch()` to skip every filter clause except
-   `recall_number`/`event_id` (and the date window, separately documented as auto-widened rather
-   than ignored) whenever `lookupMode` is true, and added a dedicated lookup-mode zero-row
-   message (the old 5-cause generic message no longer applies once those filters are
-   suppressed), naming a typo or wrong `productTypes` as the two real causes. Verified live,
-   local only ($0): the exact repro case now pushes 1 row post-fix; a genuinely nonexistent
-   recall number hits the new warning; happy-path regression (`test_input.json`, no lookup
-   fields) unchanged at 12/12 rows; the generic 5-cause message still fires for a non-lookup
-   zero-row case. `node --check` clean; `check-code-fields` ok (39/39), `check-filter-reach` ok,
-   `check-readme-samples` only the 2 pre-existing sam-gov hits. README needed no edit — the
-   documented behavior was already correct, only the code was wrong. **Build 0.1.63 pushed**
-   (package.json 0.1.22→0.1.23), SUCCEEDED. `audit_dates.json` updated (`unreachable_remedy:
-   1553` + full note, clean 6-line diff via the `/tmp` python-script-file method, `indent=1`).
-   `bin/audit-due --type unreachable_remedy` now **6 DUE**, NEXT TARGET
-   `federal-register-scraper`. LEARNINGS.md appended with the new generalizable rule: a
-   documented "overrides"/"ignores" claim is a testable code claim, not just prose — grep the
-   request-assembling function for a matching gate. Committed and pushed. No owner email,
-   $0 spent.
+   out (webhookUrl ignores, PI-desk ignored-filter list, order=executive_order_number warning,
+   unknownAgencies, watch-baseline-cap warnings). **Found and fixed TWO real defects, both
+   live-verified against the real federalregister.gov API ($0, local only).**
+   (1) A guaranteed-zero combination with no gate — the mirror image of the Actor's own two
+   existing `presdocuOnly` hard-throws: `conditions[presidential_document_type]` only ever
+   matches Presidential Document rows regardless of `conditions[type]`, so `documentTypes` set
+   and excluding `PRESDOCU` while `presidentialDocumentTypes` is also set is always 0 (verified:
+   RULE alone = 2318 matches same window; RULE + presidentialDocumentTypes=[executive_order] =
+   0; PRESDOCU+RULE mixed and documentTypes-unset both still work correctly). Added a third
+   throw matching the existing two's style. The README's own `presidentialDocumentTypes` row
+   was also wrong — said "no effect" (sounds harmless) when it actually meant "guaranteed zero";
+   rewritten.
+   (2) The generic "No documents matched" fallback named 5 causes but never named
+   `commentsOpenOnly`, despite it adding its own AND condition (`comment_date>=today`)
+   independent of the publication-date window with the identical non-obvious-AND shape as
+   `significantOnly`/`cfrTitle` (which already had their own numbered causes) — verified live, a
+   1,003-doc ~90-day-old window narrowed to 3 with `commentsOpenOnly` added. Added as cause (6).
+   Verified: new throw fires correctly, no false positives on the two working shapes (mixed
+   PRESDOCU+other, documentTypes unset); the two existing presdocuOnly throws unregressed;
+   happy-path `test_input.json` unregressed (12/12 rows). `node --check` clean,
+   `check-code-fields` ok (37/37), `check-filter-reach` ok, `check-readme-samples` only the 2
+   pre-existing sam-gov hits. README updated (input-table row + FAQ entry). **Build 0.1.47
+   pushed** (package.json 0.1.10→0.1.11), SUCCEEDED (verified via build API). `audit_dates.json`
+   updated (`unreachable_remedy: 1554` + full note, clean 5-line diff, `indent=1`).
+   `bin/audit-due --type unreachable_remedy` now **5 DUE**, NEXT TARGET `substack-scraper`.
+   LEARNINGS.md appended: when a fleet already has hard-throws for "these two filters can never
+   both match", enumerate ALL dead combinations the same underlying API fact implies, not just
+   the one a previous cycle wrote down. Committed and pushed. No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (6 DUE, NEXT TARGET: `federal-register-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (5 DUE, NEXT TARGET: `substack-scraper` — also
+   fold in the small known `isRestack`-not-in-registry.json fix from item (3) below while there)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
@@ -78,6 +78,16 @@ NEXT-CYCLE (**1553: routine checks all flat vs 1552 (3 services active, site `/`
    Other Actors with a documented "exact lookup overrides other filters" mode worth a quick grep
    next time they come up: grants-gov-scraper's `oppNum`, uk-find-a-tender/eu-ted's exact-id
    lookups if any — check the claim against the code, don't assume it from the 1552 precedent.
+   **NEWEST, from 1554:** once a fleet already has an explicit hard-throw for "these two filters
+   can never both match" (verified live, same shape as `federal-register-scraper`'s two
+   `presdocuOnly` throws), ask whether the underlying API fact that makes it true also makes a
+   DIFFERENT pairing dead — one fact can source more than one unreachable combination. Here,
+   "`presidential_document_type` only ever matches Presidential Document rows" was the single
+   fact behind both the two known-good throws AND a third, missing one
+   (`presidentialDocumentTypes` set + `documentTypes` excluding `PRESDOCU`). Also: a README field
+   description saying a dead combination has "no effect" can itself be a defect if the real
+   behavior is "guaranteed zero" rather than "silently ignored" — those read very differently to
+   a buyer.
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does
