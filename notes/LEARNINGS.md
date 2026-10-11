@@ -5735,3 +5735,28 @@ with all filters in the original order; happy path (5 rows) and a mid-history wi
 **Process note:** when a fix changes a *message*, test the branch you did NOT change too. Half the
 confidence here came from proving the correct-case string is still byte-identical, which is what
 makes "fixed the wrong branch only" a checkable claim rather than a hope.
+
+## Cycle 1549 — a priority if/else-if chain over independent causes silently drops real ones
+
+`google-news-scraper`'s zero-row status message picked ONE cause for `pushed===0` via an
+if/else-if chain (erroredFeeds > dedupedFeeds > outOfWindow-only > emptyFeeds). The four buckets
+are genuinely independent — a run can have an unreachable RSS URL AND a query Google returns zero
+results for, in the same run, neither one causing the other. Live-reproduced ($0, local, a bad
+127.0.0.1:1 RSS URL + a real nonsense query): the message said only "the RSS request failed for:
+..." and never mentioned the query also needed a broader term. Fixed by collecting every
+applicable cause into a list and joining them, instead of picking the first match — this is the
+general fix for "priority chain over non-exclusive causes", distinct from 1548's "guard narrower
+than predicate" pattern (that one was about ONE cause being mis-attributed; this one is about
+MULTIPLE true causes with only one surfaced).
+
+**Reusable check for this rotation:** before trusting a `why`-style cascade, ask not just "is each
+branch's remedy reachable" but "are the branches' trigger conditions mutually exclusive in
+reality, or can two fire at once silently losing one?" A `: fallback-to-else` chain is a strong
+tell — it structurally can only ever report one cause.
+
+**Also worth noting:** this file already had a separate, always-appended `windowNote` (the
+date-window drop count) that fires independently of which `why` branch wins — so a second
+suspected interaction (dedup blame hiding a date-window cause) turned out to already be covered,
+not a second bug. Traced via code reading rather than a live repro (reproducing it would need a
+near-100% hit of the documented Google leak bug on one small feed — not practical in a quick
+check); worth a live check in a future cycle if ever in doubt.

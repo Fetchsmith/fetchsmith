@@ -1,6 +1,6 @@
 {
   "name": "google-news-scraper",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "type": "module",
   "description": "Google News scraper with resolved publisher URLs",
   "dependencies": {

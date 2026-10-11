@@ -443,17 +443,22 @@ const timeBudgetNote = timeBudgetExceeded
   ? ` Stopped before finishing all queries because the run was approaching its time limit — the ${pushed} article(s) already found are complete and charged normally; re-run with fewer queries, a lower "Max articles per query", or "Extract full article text" off to cover the rest.`
   : '';
 if (pushed === 0 && feeds.length && !timeBudgetExceeded) {
-  const why = erroredFeeds.length
-    ? `the RSS request failed for: ${erroredFeeds.join(', ')} (see log for the error)`
-    : dedupedFeeds.length && !emptyFeeds.length
-      ? `every item found was a duplicate already returned by another query/RSS URL: ${dedupedFeeds.join(', ')}`
-      : !emptyFeeds.length && outOfWindowDropped
-        // Items came back, but every one of them fell outside the requested date window. Saying
-        // "Google returned zero results" here would send the customer off to widen a query that
-        // is not the problem.
-        ? `every article Google returned fell outside your publishedAfter/publishedBefore window (try widening the dates)`
-        : `Google News returned zero results for: ${emptyFeeds.join(', ')} (try a broader query, different "country"/"language", or check the RSS URL)`;
-  await Actor.setStatusMessage(`No articles returned — ${why}.${windowNote}`);
+  // Each feed lands in exactly one of these three buckets (or pushes successfully), so they never
+  // double-count the same feed — but a run mixing an unreachable RSS URL with a query Google found
+  // nothing for has a REAL cause in both buckets. Reporting only the first (e.g. cycle 1549's
+  // live repro: one bad feed URL + one zero-result query) told the customer to fix the URL and
+  // said nothing about the query also needing a broader term. List every cause that applies.
+  const why = [];
+  if (erroredFeeds.length) why.push(`the RSS request failed for: ${erroredFeeds.join(', ')} (see log for the error)`);
+  if (emptyFeeds.length) why.push(`Google News returned zero results for: ${emptyFeeds.join(', ')} (try a broader query, different "country"/"language", or check the RSS URL)`);
+  if (dedupedFeeds.length) why.push(`every item found was a duplicate already returned by another query/RSS URL: ${dedupedFeeds.join(', ')}`);
+  if (!why.length && outOfWindowDropped) {
+    // Items came back, but every one of them fell outside the requested date window. Saying
+    // "Google returned zero results" here would send the customer off to widen a query that
+    // is not the problem.
+    why.push(`every article Google returned fell outside your publishedAfter/publishedBefore window (try widening the dates)`);
+  }
+  await Actor.setStatusMessage(`No articles returned — ${why.join('; ')}.${windowNote}`);
 } else if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No articles returned before the run approached its time limit.${timeBudgetNote}`);
 } else if (emptyFeeds.length || erroredFeeds.length || timeBudgetExceeded) {
