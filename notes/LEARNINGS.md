@@ -5382,3 +5382,22 @@ user list into one request) found real variation in how badly it bites:
    silently not landed. `git status --short` catches a dirty tree; it does NOT catch an unpushed
    HEAD. Check `git status` (for ahead/behind, not just clean/dirty) at the start of every cycle, not
    only when a summary explicitly says "committed and pushed."
+
+## Cycle 1538 — a flat marginal count during an additivity probe can be real overlap, not a cliff
+While probing `eu-ted-tenders-scraper`'s `cpvCodes` OR-group for 1536's "vendor silently zeroes an
+over-long filter list" cliff shape, growing a real-code OR group from 150→200 codes added exactly
+zero to `totalNoticeCount` across 10 individually-tested additions — the same symptom Grants.gov's
+agency cliff produced (a flat/zero marginal effect past some size). It was NOT a cliff: the 150-code
+base set already contained the broad parent code `39000000`, and every one of the 10 "silent" codes
+was an `39xxxxxx` child already covered by TED's documented CPV-subtree-matching behavior (one code
+matches its whole subtree, at every level — this Actor's own README already documents this for
+single-code queries). Lesson: before calling a flat marginal-count result a vendor cliff, check
+whether the filter vocabulary is hierarchical/subtree-matching and whether the base set already
+contains an ancestor of the "silent" addition — a real cliff reproduces on codes with NO shared
+ancestor in the base set; subtree overlap does not. Separately: TED's real ceiling on this field is a
+loud flat HTTP 413 (Payload Too Large) at ~21,000-42,000 OR clauses (~650KB-1.3MB body) — 2-4x the
+size of the entire real CPV vocabulary (~9,500 codes ≈ 294KB) — so it is not reachable by any
+realistic input, only by a pathological/duplicated one. This closes the 5-Actor cliff-shape sweep
+1536 started: one real-but-safe loud cliff (`sam-gov-opportunities-scraper`, HTTP 414), three
+structurally immune by transport, one (`eu-ted-tenders-scraper`) not susceptible with a ceiling far
+outside realistic reach.

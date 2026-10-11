@@ -399,16 +399,29 @@ const HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
 // re-running the same input will fail the same way forever. Telling the buyer "not a
 // problem with your input — re-run in a few minutes" (what every failure path said
 // before cycle 836) sends them into an infinite retry loop. The commonest cause by far
-// is an unsupported filter value: TED validates notice-type/procedure-type/buyer-country
-// server-side and answers 400 QUERY_UNSUPPORTED_FIELD_VALUE naming the bad value.
-const INPUT_ERROR_STATUS = new Set([400, 404, 422]);
+// is an unsupported filter value: TED validates notice-type/procedure-type/buyer-country/
+// classification-cpv server-side and answers 400 QUERY_UNSUPPORTED_FIELD_VALUE naming the
+// bad value (live-confirmed cycle 1538: an unrecognised cpvCodes entry 400s the same way
+// as the three fields already named below, but was missing from this advice).
+// 413 is also a rejected-input shape, not an outage: live-confirmed cycle 1538 that TED
+// rejects an oversized OR-group query body with a flat 413 (found at ~21k-42k comma/OR
+// clauses, ~650KB-1.3MB) rather than retrying or silently dropping clauses — unreachable
+// through realistic input (the entire real CPV vocabulary, ~9,500 codes, is one tenth that
+// size) but included so a pathological input (e.g. a duplicated or scripted cpvCodes list)
+// gets "shrink your filter lists" instead of a false "re-run in a few minutes".
+const INPUT_ERROR_STATUS = new Set([400, 404, 413, 422]);
 
 // Tail sentence for a failure message: blame the input or blame TED, never both.
 function upstreamAdvice(statusCode) {
+  if (statusCode === 413) {
+    return 'HTTP 413 means the query TED received was too large, so re-running the same input will not help — '
+      + 'shrink "cpvCodes", "countries", "noticeTypes" or "procedureType" (fewer or shorter values), or split the '
+      + 'run across several smaller filter sets, then run again.';
+  }
   return INPUT_ERROR_STATUS.has(statusCode)
     ? `HTTP ${statusCode} means TED REJECTED THE QUERY, so re-running the same input will not help — fix the input `
-      + 'shown in the message above (most often an unsupported "Notice types", "Procedure types" or "Buyer countries" '
-      + 'value, or an invalid "Expert query"), then run again.'
+      + 'shown in the message above (most often an unsupported "Notice types", "Procedure types", "Buyer countries" '
+      + 'or "CPV codes" value, or an invalid "Expert query"), then run again.'
     : `This is a TED-side outage or rate limit (HTTP ${statusCode}), not a problem with your input — please re-run `
       + 'in a few minutes.';
 }
