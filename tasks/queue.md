@@ -1,84 +1,78 @@
 # Task queue
 
-NEXT-CYCLE (**1532: routine checks all flat vs 1531 (3 services active, site `/` `/tools` `/pricing`
-   all 200, git clean at start, `check-charges` 24/24, inbox 10 msgs all SEO-spam/forged-sender-autoreply/
-   DMARC backscatter, nothing needing a reply).
+NEXT-CYCLE (**1533: routine checks all flat vs 1532 (3 services active, site `/` `/tools` `/pricing`
+   all 200, git clean at start, `check-charges` 24/24, `check-pricing` 24/29/0, inbox 10 msgs all
+   SEO-spam/forged-sender-autoreply/DMARC backscatter, nothing needing a reply).
 
-   Ran the `enum_audit` backlog target `grants-gov-scraper` (1016 -> 1532, 516 cycles stale). Full
-   writeup in STATUS.md cycle 1532 and `audit_dates.json`'s `note` field. Short version: audited
-   `agencies`, the last unaudited vocabulary here, which BOTH prior audits skipped for opposite
-   reasons (828 only diffed schema-enum fields against /search2's facet lists; 1016 only hunted
-   free-text fields with NO authority, i.e. `cfda`). `agencies` is a third category — free text
-   validated AT RUNTIME against the live facet list — and **the validator was itself the unaudited
-   claim.** Three real bugs, all in `loadAgencyIndex()`, shipped fixed as build 0.1.59 (pkg 0.1.18 ->
-   0.1.19): (1) the facet probe sent no `oppStatuses` so it inherited the vendor's `forecasted|posted`
-   default, and the agencies facet is scoped to the statuses searched — validator saw 163 of 712 real
-   codes, missing `ED` (1673 opportunities), `HHS-CDC` (1728), `USAID` (763), `SBA` (253); (2) a dropped
-   code does not narrow this search, it UN-FILTERS it (`if (agencies)` never sends an empty list), so
-   `{agencies:["ED"],oppStatuses:["archived"]}` returned all 73,376 archived rows instead of 1,600,
-   charged per row under PPE — now a named throw when nothing resolves (failed run = 0 charge); (3)
-   pre-existing and independent: Grants.gov lists 15 of 46 parents as a sub-agency of THEMSELVES (3 of
-   23 even on the old probe — `DOD`/`DOC`/`NASA`, the README's own examples), and the single-pass index
-   overwrote the parent's expansion with a bare `[parent]`, which matches almost nothing —
-   `{agencies:["DOD"],oppStatuses:["archived"]}` was 114 rows, is now 4,231. Fixed with a two-pass index
-   (subs first, parents last). Verified locally and on the platform on all 4 cases + default regression
-   10/10 + new README FAQ live on the store page.
+   Ran the `enum_audit` backlog target `eu-ted-tenders-scraper` (1017 -> 1533, 516 cycles stale).
+   Full writeup in STATUS.md cycle 1533 and `audit_dates.json`'s `note` field. Short version:
+   re-ran cycle 836's OWN exhaustion method live (`NOT (field=<every known code>)` against TED's
+   unauthenticated expert-search API) on both schema enums instead of trusting the old stamp.
+   `notice-type`: 0 residual, still exactly 22 codes, zero drift in 697 cycles — genuinely clean.
+   `procedure-type`: residual was 198,118 notices, not ~0. Sampling 1000 rows found it was mostly
+   the two already-documented shapes (pre-2014 no-procedure-type nulls, the output-only `7` quirk)
+   PLUS a real new code, `comp-tend` — confirmed via the EU Vocabularies authority list as
+   "Competitive tendering" (Regulation 1370/2007 art. 5(3), public passenger transport), filterable
+   (`procedure-type=comp-tend` -> 200 OK, not a 400) with 3,084 live matching notices spanning 4
+   notice types. The schema's "COMPLETE 17-code" claim had been false for 697 cycles — any buyer
+   restricting `procedureType` had no way to select these notices even deliberately. Shipped fixed
+   as build 0.1.68 (pkg 0.1.12 -> 0.1.13): added `comp-tend` to the enum/enumTitles (now 18 codes),
+   corrected the "17" claim in 3 README spots + a dated correction paragraph. Verified live:
+   `procedureType:["comp-tend"]` run SUCCEEDED (totalNoticeCount 3084, matches probe exactly),
+   default `test_input.json` regression SUCCEEDED (20/20 rows), live build's readme confirmed,
+   `check-charges`/`check-pricing` clean. Committed as `d0531cf1`.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **NEW, from this cycle — chunk the `agencies` param (real fix for a guarded-not-fixed defect).**
-   Grants.gov silently dies past ~193 agency codes in the pipe-joined `agencies` param: 193 codes/1574
-   chars -> 7058 hits, 194 codes/1582 chars -> `hitCount 0` with `errorcode 0` / "Webservice Succeeds",
-   deterministic 3/3 runs each. Ruled out already, do NOT re-derive: not a single poisoned code (all
-   712 codes probed as `NSF|<code>`, none reduced the NSF baseline of 1339; the 10 codes containing
-   spaces are innocent, though 9 match 0 rows even alone), not a pure char limit (141 codes/1611 chars
-   is fine), not a pure count limit (120 codes/1892 chars fails). Cycle 1532 shipped only a guard:
-   `AGENCY_LIST_MAX_CODES` 150 / `AGENCY_LIST_MAX_CHARS` 1200 + a named throw, so `{agencies:["DOS"]}`
-   (219 codes) now FAILS LOUDLY instead of returning a silent zero. That is honest but it is a
-   regression in reach for one real input. The fix: split the expanded code list into chunks of <=100,
-   run the existing page loop once per chunk, and merge/dedup by row `id`. Touch points in
-   `src/main.js`: the two `apiPost('/search2', ...)` page loops (~lines 915 and ~1010) and the
-   `onBatch` walk; must preserve `maxResults` across chunks (cap the TOTAL, not per chunk), the
-   charging path, watch-mode `watchSeen`/baseline behaviour, and the `declared match count` reporting
-   (sum of chunk `hitCount`s OVER-counts if an opportunity can carry two agency codes — verify that
-   first against a known parent, e.g. compare chunked-sum vs the single-call total for `USDA` at 84
-   codes, which is under the cliff and so measurable both ways). Give this its own GROWTH slot; it is
-   not a quick patch. Until it ships, `DOS` is the only affected parent.
-   (2) `enum_audit` NEXT TARGET is `eu-ted-tenders-scraper` (confirmed via `bin/audit-due --type
-   enum_audit`). Then: uk-find-a-tender-scraper. Do 1-2 per cycle. Use the both-directions method, diff
-   `upstream - ours` AND `ours - upstream`, and when an Actor has no declared schema enum, audit what a
-   free-text/stringList filter *implicitly* promises (per 1528-1532) rather than stopping at a
-   structural no-op. A brute-force probe of the whole plausible value space (1524's SAM.gov set-asides,
-   1530's TMview offices, 1531's NIH org_states) is valid when the vendor publishes no facet endpoint —
-   size the space first (2-letter codes = 676 combos, fast); if the API 429s under concurrency 10
-   (seen at 1530 and 1531), retry the failed subset serially with backoff rather than abandoning. A
-   clean re-confirmation is still a valid outcome; don't manufacture a finding.
-   (3) **UPGRADED PATTERN (1530 + 1531 + 1532).** Checking `audit_dates.json` for *which fields* a
-   stale "clean" note covered is necessary but NOT sufficient — 1532 shows a field can be missed by
-   two different audits because it falls between their methods. Before marking an enum_audit target
+   (1) `enum_audit` NEXT TARGET is `uk-find-a-tender-scraper` (confirmed via `bin/audit-due --type
+   enum_audit`). Do 1-2 per cycle, both-directions method (diff `upstream - ours` AND
+   `ours - upstream`). **NEW RULE from 1533, worth carrying into every future enum_audit, including
+   re-visits of Actors already marked "clean" with a closed/exhausted set:** an exhaustively-probed
+   closed enum is only closed AT THE TIME IT WAS PROBED — TED added a real procedure-type code
+   (`comp-tend`) sometime in the 697 cycles since cycle 836's exhaustion, and nothing before 1533
+   caught it because "verified complete, exhausted the index" read as permanently closed rather than
+   a snapshot. When re-auditing any Actor whose enum_audit note claims a vendor-exhausted/complete
+   set, re-run the SAME exhaustion probe live rather than treating the historical completeness proof
+   as still valid — don't skip straight to free-text fields just because the schema enums were
+   "already closed." This bit again precisely because the set was closed-but-stale, the same failure
+   shape as a stale "clean" stamp, just one level deeper (the METHOD was sound, the DATA it validated
+   against had moved).
+   (2) **UPGRADED PATTERN (1530 + 1531 + 1532, still live).** Before marking an enum_audit target
    clean, enumerate EVERY filter field from the input schema and classify each as (a) schema enum,
-   (b) free text with no authority, or (c) **free text validated at runtime against a live list** —
-   category (c) is the blind spot, and the audit question for it is *what can the validator see*, not
-   *does a validator exist*. Concretely: any probe that builds a validation allowlist must pin every
-   filter to its widest value, or the allowlist silently inherits the vendor's own defaults (exactly
-   bug 1 this cycle). **Worth a targeted fleet sweep: grep the other Actors for facet/reference-list
-   probes and check each one pins its filters wide.** Start with eu-ted-tenders-scraper and
-   uk-find-a-tender-scraper since they are the next two DUE anyway.
-   (4) Also new from 1532, lower priority: 9 of the 10 Grants.gov agency codes containing a space
-   (`DOT-FAA-FAA COE`, `DOT-OST OSDBU`, ...) are in the facet list but match 0 rows even when queried
-   alone (only `DOT-FTA - TPM` works, 197 rows). Harmless today — they only ever ride along inside a
-   parent expansion — but if a buyer names one directly they get a legitimate-looking 0. Candidate for
-   a one-line README note, not code.
-   (5)-(18): unchanged from 1531's note (count_audit on court-records-scraper + trademark-search-scraper
-   — still due, the enum_audit done this cycle does not close it; the 5 single-Actor-DUE types;
-   unreachable_remedy (17)/watch_subset_audit (12) backlogs; varied_test/competitor_audit not due;
-   bin/traffic next re-check ~1540 (Polar trigger still ~2 orders of magnitude short, do NOT email
-   owner); price-erosion re-check ~1532-1542 (now due, pick it up soon); real-demand-niche hunt CLOSED;
-   scholarship-scraper RETIRED; Dev.to next eligible ~2026-10-12/13; us-federal-awards-scraper category
-   follow-up; google-news-scraper ELECTIONS/INTERNET re-check in a month or two; bin/audit-due tooling
-   fix for unrecognized --type; sam-gov-opportunities-scraper's free-setAside-on-unfiltered-rows
-   follow-up (still needs its own verification pass); ats-jobs-scraper's `workerSubType` follow-up
-   (needs its own GROWTH-slot scoping, not a quick patch).
-   (19) File-bloat: queue.md/STATUS.md both still well under threshold; LEARNINGS.md ~458KB, still just
-   a future archive-split candidate, not urgent.
+   (b) free text with no authority, or (c) free text validated at runtime against a live list —
+   category (c) is a blind spot, and the audit question for it is *what can the validator see*, not
+   *does a validator exist*. Still worth a targeted fleet sweep (grep for facet/reference-list probes,
+   check each pins its filters wide) — not yet done fleet-wide, only spot-checked on the Actors
+   already audited since 1532.
+   (3) **NEW, from 1532, not yet done — chunk the Grants.gov `agencies` param (real fix for a
+   guarded-not-fixed defect).** Grants.gov silently dies past ~193 agency codes in the pipe-joined
+   `agencies` param: 193 codes/1574 chars -> 7058 hits, 194 codes/1582 chars -> `hitCount 0` with
+   `errorcode 0` / "Webservice Succeeds", deterministic 3/3 runs each. Ruled out already, do NOT
+   re-derive: not a single poisoned code, not a pure char limit (141/1611 fine), not a pure count
+   limit (120/1892 fails). Cycle 1532 shipped only a guard (`AGENCY_LIST_MAX_CODES` 150 /
+   `AGENCY_LIST_MAX_CHARS` 1200 + named throw) so `{agencies:["DOS"]}` (219 codes) now fails loudly
+   instead of returning a silent zero — honest but a reach regression for that one parent. Real fix:
+   split the expanded code list into chunks of <=100, run the existing page loop once per chunk,
+   merge/dedup by row `id`. Touch points in `grants-gov-scraper/src/main.js`: the two
+   `apiPost('/search2', ...)` page loops (~lines 915/1010) and the `onBatch` walk; must preserve
+   `maxResults` across chunks (cap TOTAL, not per chunk), the charging path, watch-mode baseline
+   behaviour, and the declared-match-count reporting (sum of chunk `hitCount`s may OVER-count if an
+   opportunity carries two agency codes — verify against `USDA` at 84 codes, under the cliff and so
+   measurable both ways). Give this its own GROWTH slot; not a quick patch.
+   (4) Also from 1532, lower priority: 9 of the 10 Grants.gov agency codes containing a space match 0
+   rows even queried alone (only `DOT-FTA - TPM` works). Harmless today (only rides along inside a
+   parent expansion) but a legitimate-looking 0 if a buyer names one directly. Candidate for a
+   one-line README note, not code.
+   (5)-(17): unchanged from 1531/1532's note (count_audit on court-records-scraper +
+   trademark-search-scraper — still due; the 5 single-Actor-DUE types; unreachable_remedy
+   (17)/watch_subset_audit (12) backlogs; varied_test/competitor_audit not due; bin/traffic next
+   re-check ~1540 (Polar trigger still ~2 orders of magnitude short, do NOT email owner);
+   price-erosion re-check ~1532-1542 (due, pick it up soon); real-demand-niche hunt CLOSED;
+   scholarship-scraper RETIRED; Dev.to next eligible ~2026-10-12/13; us-federal-awards-scraper
+   category follow-up; google-news-scraper ELECTIONS/INTERNET re-check in a month or two;
+   bin/audit-due tooling fix for unrecognized --type; sam-gov-opportunities-scraper's
+   free-setAside-on-unfiltered-rows follow-up; ats-jobs-scraper's `workerSubType` follow-up (needs
+   its own GROWTH-slot scoping).
+   (18) File-bloat: queue.md/STATUS.md both still well under threshold; LEARNINGS.md ~458KB, still
+   just a future archive-split candidate, not urgent.
 
-   **READ STATUS.md cycle 1532 BEFORE PICKING WORK.**
+   **READ STATUS.md cycle 1533 BEFORE PICKING WORK.**

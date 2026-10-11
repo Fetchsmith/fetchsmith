@@ -5298,3 +5298,20 @@ Three compounding lessons worth more than the fix:
    limit resists characterisation, stop trying to predict it: guard well inside the
    measured-good point and say so in the error. Not every finding has to be explained to be
    handled — but a silent zero-row cliff must never be passed through to a buyer as "no matches".
+
+## Cycle 1533: a vendor's "exhaustively verified complete" enum can go stale, not just a never-checked one
+`eu-ted-tenders-scraper`'s `procedureType` was marked complete at cycle 836 by genuinely exhausting
+TED's expert-search index live (`NOT (field=<every known code>)` returning 0 residual) — the
+strongest possible proof method, applied correctly. 697 cycles later, re-running the identical
+probe found a 198,118-notice residual: TED had a real, filterable, unenumerated code (`comp-tend`,
+"Competitive tendering" under Reg. 1370/2007, public passenger transport) that either didn't exist
+or wasn't reachable in 2026-09's probe and now has 3,084 live matching notices. The method wasn't
+wrong; the vendor's live data moved under it. Lesson: a schema-enum field whose note says "vendor
+index exhausted, complete" is not exempt from re-audit the way a field with no implicit vocabulary
+is — it needs the SAME live re-probe a drift-prone free-text field gets, on the same staleness
+clock, because "complete" is a timestamped fact about the vendor's state, not a permanent property
+of the field. Don't let a strong historical proof read as "never needs checking again." Practical
+tell that something changed: query the residual-after-NOT-known-codes count, not just whether it's
+exactly 0 — a large nonzero residual sampled by hand (here: 1000 rows across 20 pages) separates
+"still the same two known noise shapes" from "a new code snuck in," and is cheap (unauthenticated,
+no auth, no charge) because it's the exact same request shape the original audit used.
