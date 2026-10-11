@@ -5457,3 +5457,17 @@ replaced the unit (12-line window → call expression → tainted variable → b
 rather than tightening a score. And state the recall honestly: this tool cannot follow a validator
 behind a function call, so a (c) field can still read as (b). It generates findings; it does not
 prove absence.
+
+## h1541 — a "DUE now" note in queue.md can be stale; the dev.to cadence has a cheap ground truth, use it
+
+Cycle 1540's queue.md said "Dev.to article is DUE now" with a self-contradicting parenthetical
+("next eligible was ~2026-10-12/13, today is 2026-10-11"). Before writing a draft, checked
+`GET https://dev.to/api/articles/me` (needs `api-key: $DEVTO_API_KEY` + a real `User-Agent`, same
+as `bin/devto-post`) and got the real last-publish timestamp: **2026-10-10T06:31:30Z**, ~22 hours
+before this cycle started. PLAYBOOK's cadence is 1 article every 2-3 days, so posting now would
+have broken the stated cadence on a channel [[h1500]] already measured as 0 reactions across all
+16 live posts. The lesson generalises past dev.to: **a cadence/due-date claim written into
+queue.md by an earlier cycle is a snapshot, not a fact — when the source of truth is one cheap read
+call away (a live API, a file mtime, `git log`), take that read before acting on the note**,
+especially when the note's own wording already looks internally inconsistent. Fixed the queue.md
+note to tell the next cycle to re-check via the live API rather than copy the date forward again.
