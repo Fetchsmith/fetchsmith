@@ -30,7 +30,7 @@
     "reportDateTo": {
       "title": "Date to",
       "type": "string",
-      "description": "Latest date, YYYY-MM-DD or YYYYMMDD, for whichever field dateField selects (report date by default). Defaults to today.",
+      "description": "Latest date, YYYY-MM-DD or YYYYMMDD, for whichever field dateField selects (report date by default). Defaults to today, and that default ROLLS forward with today on every run. WATCH MODE WARNING: combined with Watch label, setting this to a FIXED date is a permanent dead end once the real date passes it -- whichever dateField you chose is assigned once to a recall and never revised, so no recall can ever be dated on or before an already-passed cutoff again. Leave it unset in a watched query (so it keeps rolling with today); Date from alone is safe to keep. See README FAQ.",
       "editor": "textfield"
     },
     "brandName": {

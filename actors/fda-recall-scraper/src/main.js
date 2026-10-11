@@ -337,6 +337,38 @@ if (watchMode && watchChanges) {
     }
 }
 
+// Dead date bound (same class as grants-gov-scraper c860's postedTo / eu-ted-tenders-scraper's
+// publicationDateTo / fec-filings-scraper's contributionDateTo / federal-register-scraper's
+// publicationDateTo -- the 6th fleet instance). reportDateTo defaults to a ROLLING window (today,
+// computed above), so there is no bug on a default run. The bug is a buyer explicitly pinning
+// reportDateTo to a literal date and combining it with watchLabel: the openFDA query clause is
+// `${dateField}:[${reportDateFrom} TO ${reportDateTo}]` (see buildSearch below). This does not
+// need the "assigned once, never revised" argument the other 5 instances rely on -- it holds
+// for whatever VALUE a never-yet-seen recall's dateField carries the first time our query can
+// see it, revised or not: report_date/recall_initiation_date are set at report/initiation time;
+// center_classification_date is FDA's own "date classified as Class I/II/III" (FDA's Enforcement
+// Report API Definitions page) and termination_date is null until termination then set to that
+// date -- so for every one of the 4 choices, a brand-new recall's relevant date is simply
+// whatever it is AT FIRST SIGHT, and once that is later than a FIXED reportDateTo, the row can
+// never satisfy the window on any future run. So once real time passes a FIXED reportDateTo, no
+// recall's dateField value -- whichever of the 4 is chosen -- can ever land inside the window
+// again, and this watch silently stops finding anything new while reporting a healthy "nothing
+// new" run.
+const watchDeadDateBound = watchMode && Boolean(input.reportDateTo);
+if (watchDeadDateBound) {
+    log.warning(
+        `watchLabel "${watchLabel}" is combined with a fixed reportDateTo (${input.reportDateTo}), filtering on `
+        + `dateField="${dateField}". Once today's date passes that fixed cutoff, no recall whose ${dateField} `
+        + 'falls after it can ever match this query -- true for all 4 dateField choices, not just report_date -- '
+        + 'and this watch will silently stop finding new recalls while still reporting a healthy run.',
+    );
+    log.warning(
+        'What to do: drop reportDateTo from a watched query (reportDateFrom alone is safe to keep -- it only '
+        + 'narrows how far back the baseline seed looks) and let the window keep rolling with today, or re-set '
+        + 'reportDateTo forward yourself before each scheduled run if you need an exact cutoff.',
+    );
+}
+
 // A bare `sort` is rejected unless the field exists on the endpoint; all 3 dateField choices
 // are valid sort fields on all three endpoints (verified live).
 const order = input.order === 'asc' ? 'asc' : 'desc';
@@ -1209,6 +1241,9 @@ const runSummary = {
     changedCount: watchMode && !seeding ? changedCount : null,
     // null outside watchChanges, [] when the watch run has no change-blind filter set.
     watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
+    // true when a watched query also pins a fixed reportDateTo -- a permanent dead end once
+    // today's date passes it, see the comment near watchDeadDateBound above.
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
     baselineSize: watchMode ? watchSeen.size : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
