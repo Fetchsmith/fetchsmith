@@ -178,21 +178,21 @@
     "minAwardAmount": {
       "title": "Minimum award amount (USD)",
       "type": "integer",
-      "description": "Only return awards at or above this obligated amount.",
+      "description": "Only return awards at or above this obligated amount. If you also use \"Also alert on award changes\", note that this bound is USAspending's own server-side amount filter on the same field that change-watch compares: an award whose amount drops below it (a de-obligation or descope) stops matching the query, so that change is never reported. Leave it off on a change-watch label and filter the delivered rows yourself.",
       "editor": "number",
       "minimum": 0
     },
     "maxAwardAmount": {
       "title": "Maximum award amount (USD)",
       "type": "integer",
-      "description": "Only return awards at or below this obligated amount.",
+      "description": "Only return awards at or below this obligated amount. If you also use \"Also alert on award changes\", note that this bound is USAspending's own server-side amount filter on the same field that change-watch compares: an award whose amount grows past it (a change order, an exercised option) stops matching the query, so the increase is never reported — the run just says nothing changed. Leave it off on a change-watch label and filter the delivered rows yourself.",
       "editor": "number",
       "minimum": 0
     },
     "expiringWithinDays": {
       "title": "Expiring within (days) — recompete finder",
       "type": "integer",
-      "description": "Only return awards whose period of performance ends within this many days from today (0 to N, never already-expired). Turns this into a recompete radar: contracts and grants coming up for re-bid or renewal. Applied client-side after fetching — USAspending's own filters can only search by award action date, not period-of-performance end date, so a broad, mostly-expired date range plus a tight amount/agency filter narrows the scan before this cuts it further. Not supported in awardLevel=\"subaward\" mode (sub-award records carry no period-of-performance end date), nor for the \"idvs\" and \"loans\" categories — USAspending reports no period-of-performance end date for either, so rows in those categories are always dropped. All three cases warn in the log rather than silently returning zero rows, and unmatched rows are never charged. Leave empty for a normal award search.",
+      "description": "Only return awards whose period of performance ends within this many days from today (0 to N, never already-expired). Turns this into a recompete radar: contracts and grants coming up for re-bid or renewal. Applied client-side after fetching — USAspending's own filters can only search by award action date, not period-of-performance end date, so a broad, mostly-expired date range plus a tight amount/agency filter narrows the scan before this cuts it further. Because it is applied before the change comparison, it does not combine with \"Also alert on award changes\": an award extended past this window is dropped rather than reported as extended, which is the very alert an expiring-contract watch wants — use a separate, unwindowed change-watch label for extensions (the run warns about this). Not supported in awardLevel=\"subaward\" mode (sub-award records carry no period-of-performance end date), nor for the \"idvs\" and \"loans\" categories — USAspending reports no period-of-performance end date for either, so rows in those categories are always dropped. All three cases warn in the log rather than silently returning zero rows, and unmatched rows are never charged. Leave empty for a normal award search.",
       "editor": "number",
       "minimum": 1
     },
@@ -268,7 +268,7 @@
     "watchChanges": {
       "title": "Also alert on award changes (prime mode only)",
       "type": "boolean",
-      "description": "Only used with watchLabel, and only in prime mode (awardLevel not set to \"subaward\"). When on, an award you were already alerted on is re-delivered (charged again) if USAspending's own Last Modified Date moves, or its amount, outlays or end date changes (e.g. a contract modification, an option exercised, a period of performance extended) — tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new awards/sub-awards, same as before this option existed.",
+      "description": "Only used with watchLabel, and only in prime mode (awardLevel not set to \"subaward\"). When on, an award you were already alerted on is re-delivered (charged again) if USAspending's own Last Modified Date moves, or its amount, outlays or end date changes (e.g. a contract modification, an option exercised, a period of performance extended) — tagged with _watchChangeType and _watchPrevious showing exactly what moved. Do not combine it with a filter on a field it watches: \"Minimum/Maximum award amount\" and \"Expiring within (days)\" both drop an award the moment the watched field moves out of range, so that change can never be reported (the run warns, names the blind fields, and flags them in its status message and webhook payload). Off by default, so a plain watchLabel only ever alerts on brand-new awards/sub-awards, same as before this option existed.",
       "default": false
     },
     "webhookUrl": {

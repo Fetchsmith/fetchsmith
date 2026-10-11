@@ -460,6 +460,64 @@ if (watchMode && watchChanges && isSubaward) {
     + 'reliable drift signal to compare against. Ignoring the flag; watch mode still alerts on genuinely new sub-awards.',
   );
 }
+// Change-blind filters (the cycle 860/861/1560/1561/1567 class): a filter whose job is to narrow
+// the query also decides which rows reach changesBetween() at all, so a filter ON A WATCHED FIELD
+// makes that field's change structurally undetectable -- the row simply stops matching and the run
+// reports nothing. Two instances here, and the second one is a NEW SUB-SHAPE for this class: it is
+// a CLIENT-side filter (passesExpiringFilter, applied at the top of the row loop, before the
+// already-seen/changed branch), not a server-side param. Same outcome either way -- the row is
+// dropped before the comparison -- so the question is "can any filter exclude the row", not "is it
+// sent to the API".
+//   1) minAwardAmount/maxAwardAmount -> USAspending's own `award_amounts` lower_bound/upper_bound,
+//      filtering exactly the 'Award Amount' field that snapshotOf() reads as awardAmount. Neither
+//      direction is safe, because an award amount is NOT monotonic: an upper bound blinds increases
+//      (change orders, option exercises, added obligations -- the dominant direction and the main
+//      reason to watch amounts at all), a lower bound blinds de-obligations/descopes. Live-measured
+//      at cycle 1568 ($0, real api.usaspending.gov): award 70T05026F5900N033, Award Amount
+//      $958,748.70, returns 1 row with upper_bound=1000000 and 0 rows with upper_bound=900000.
+//   2) expiringWithinDays/expiringAfterDays -> a window on period-of-performance end date, which
+//      snapshotOf() watches as endDate. An extension is exactly what moves endDate, and a long
+//      enough extension pushes the award out of the window, so the row is dropped and the
+//      extension -- "your recompete just slipped", the single most valuable alert this Actor's own
+//      expiring-contract use case promises -- is never reported.
+// Advisory only: all four inputs default to null, so a plain watchChanges run fires nothing.
+const watchChangeBlindFilters = [];
+if (watchMode && effectiveWatchChanges) {
+  if (minAwardAmount != null || maxAwardAmount != null) {
+    watchChangeBlindFilters.push('awardAmount');
+    log.warning(
+      'watchChanges cannot see an amount change that crosses your own amount bound: '
+      + `${[minAwardAmount != null ? `minAwardAmount=${minAwardAmount}` : null, maxAwardAmount != null ? `maxAwardAmount=${maxAwardAmount}` : null].filter(Boolean).join(' / ')}`
+      + ' is sent to USAspending as the server-side award_amounts filter on the same "Award Amount" '
+      + 'field this run watches for changes. An award whose amount moves out of your bound stops '
+      + 'matching the query entirely, so the change is never compared and never reported -- the run '
+      + 'just says nothing was new. Both directions are affected: an upper bound hides increases '
+      + '(change orders, option exercises), a lower bound hides de-obligations and descopes.',
+    );
+  }
+  // effectiveWatchChanges is already false in subaward mode, where expiringWithinDays is ignored
+  // with its own warning, so no isSubaward guard is needed here.
+  if (expiringWithinDays != null) {
+    watchChangeBlindFilters.push('endDate');
+    log.warning(
+      `watchChanges cannot see a period-of-performance extension past your own window: expiringWithinDays=${expiringWithinDays}`
+      + `${expiringAfterDays != null ? ` (with expiringAfterDays=${expiringAfterDays})` : ''} drops each award by its `
+      + 'end date before the change comparison runs, and endDate is also one of the fields this run '
+      + 'watches. An extension long enough to push the award out of the window makes the row vanish '
+      + 'instead of being reported as changed -- so the one alert you most likely wanted here, "this '
+      + 'recompete just slipped", is the one it cannot deliver.',
+    );
+  }
+  if (watchChangeBlindFilters.length) {
+    log.warning(
+      'What to do: run the watchChanges label WITHOUT the filter that overlaps the field you care '
+      + 'about (drop minAwardAmount/maxAwardAmount for amount drift, drop expiringWithinDays for '
+      + 'extensions) and filter the delivered rows yourself, or keep two labels -- a narrow one for '
+      + 'new awards and a wide one with watchChanges for drift on the awards you already track.',
+    );
+  }
+}
+
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
@@ -754,9 +812,18 @@ async function assertFiltersApplied() {
     const timePeriod = awardIds.length
         ? [{ start_date: EARLIEST, end_date: isoDay(today) }]
         : [{ start_date: effectiveStart, end_date: endDate }];
+    // Sub-Award mode has a completely separate field mapping: asking for 'Award ID' (or letting the
+    // API fall back to it as the default sort) is a hard 400 "not found in Sub-Award mappings", which
+    // made every probe below fail with a mere "could not verify" warning -- i.e. the fail-open guard
+    // this whole function exists to provide was silently INERT for every awardLevel="subaward" run,
+    // the one failure mode that would deliver and CHARGE the entire unfiltered index. Found and fixed
+    // at cycle 1568; sort is passed explicitly so the API never falls back to its own default.
+    const probeField = isSubaward ? 'Sub-Award ID' : 'Award ID';
     for (const [name, canaryValue] of probes) {
         const filters = { award_type_codes: codes, time_period: timePeriod, [name]: canaryValue };
-        const body = await postPage({ filters, fields: ['Award ID'], limit: 1, page: 1, subawards: isSubaward });
+        const body = await postPage({
+            filters, fields: [probeField], sort: probeField, order: 'desc', limit: 1, page: 1, subawards: isSubaward,
+        });
         if (!body) {
             // An upstream blip is not evidence of a dropped filter -- do not fail the run on it.
             log.warning(`Could not verify that USAspending still honours the "${name}" filter (probe request failed); continuing.`);
@@ -988,6 +1055,15 @@ for (const category of categories) {
     log.info(`${category}: pushed ${categoryRows} ${isSubaward ? 'sub-awards' : 'awards'}.`);
 }
 
+// Empty unless a change-blind filter is actually in play. Without this, a run that CAN NEVER report
+// one of its watched fields changing is byte-for-byte indistinguishable from a healthy quiet run --
+// and this is a monitor, so the buyer schedules it and stops reading the log (the 1556 monitor rule).
+function blindNote() {
+    if (!watchChangeBlindFilters.length) return '';
+    return ` NOTE: this run cannot report any ${watchChangeBlindFilters.join('/')} change at all`
+        + ' (see the change-blind-filter warning(s) in the log), so "nothing changed" is not evidence here.';
+}
+
 // Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
 function truncationNote() {
     if (baselineTruncated <= 0) return '';
@@ -1019,7 +1095,8 @@ if (watchMode && seedFailure) {
         );
         await Actor.setStatusMessage(
             `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing award(s)/sub-award(s) recorded, 0 charged. Run again later to get only what's new.`
-            + truncationNote(),
+            + truncationNote()
+            + blindNote(),
         );
     } else {
         log.info(
@@ -1030,7 +1107,8 @@ if (watchMode && seedFailure) {
         if (pushed === 0) {
             await Actor.setStatusMessage(
                 `Nothing new for watch label "${watchLabel}" since its last run -- every matching award/sub-award had already been delivered. That is the expected result most of the time; you were charged for nothing.`
-                + truncationNote(),
+                + truncationNote()
+                + blindNote(),
             );
         } else if (baselineTruncated > 0) {
             // A run that delivered rows would otherwise leave the default status message in place
@@ -1086,6 +1164,9 @@ if (webhookUrl) {
         // and re-charge them; the cumulative figure is the drift over the whole life of the label.
         baselineTruncated: watchMode ? baselineTruncated : null,
         baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+        // Watched fields this run's own filters make structurally undetectable -- a pipeline that
+        // treats "0 changed" as "nothing moved" must read this first. [] means the run was honest.
+        watchChangeBlindFilters: watchMode ? watchChangeBlindFilters : null,
     };
     try {
         const resp = await gotScraping({

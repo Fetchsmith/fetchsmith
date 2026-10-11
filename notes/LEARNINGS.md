@@ -6268,3 +6268,56 @@ Actor spans 4 record families: `watchChangeBlindFilters` array, `isActive` check
 blocks since the two filters' defaults differ enough to need different explanations, a NOTE on the
 nothing-new message, `RUN_SUMMARY.watchChangeBlindFilters`. `watch_subset_audit` now 4 DUE, next target
 `us-federal-awards-scraper` (also item (1)'s next-ranked change-blind-filter suspect).
+
+## Cycle 1568 — a change-blind filter does not have to be sent to the API (the first CLIENT-SIDE instance), and a canary probe can be inert in one mode only
+
+`us-federal-awards-scraper`'s `watch_subset_audit` (859 → 1568) turned up the 8th and 9th instances of
+the change-blind-filter class, plus a separate billing-exposure defect found only by running the mode
+nobody tests.
+
+**The durable lesson on the class:** every prior instance (grants-gov 860, clinicaltrials 861,
+fda-recall 1560, trademark-search 1561, sam-gov 1567 ×2) was a filter *sent to the upstream API*, so the
+2-step method had calcified into "grep `snapshotOf()` for watched fields, then grep the request builder
+for those names." That method finds instance (1) here — `minAwardAmount`/`maxAwardAmount` → USAspending's
+own `award_amounts` `lower_bound`/`upper_bound` on the exact `Award Amount` field the snapshot reads as
+`awardAmount` — and completely misses instance (2), which never touches the request at all:
+`expiringWithinDays`/`expiringAfterDays` is applied by `passesExpiringFilter(item)` at the **top of the
+row loop**, before the already-seen/changed branch, on the watched `endDate` field. The row is dropped
+before `changesBetween()` ever runs, so the outcome is byte-for-byte identical to a server-side filter.
+**Grep the row loop for `continue`/early-returns on a watched field, not just the request builder** — the
+question is "can any filter exclude the row", and the answer does not care where the filter lives.
+
+**Second lesson, direction again:** 861's one-way-bound rule (a lower bound is safe) only holds for a
+**monotonic** field. An award amount is not monotonic — change orders and exercised options push it up,
+de-obligations and descopes push it down — so *both* bounds are blinding here and the warning says so.
+Before sparing a bound as "safe", confirm the watched field can only move one way.
+
+**Third lesson, and the sharpest one about relevance:** the client-side instance blinds exactly the
+alert this Actor's headline use case sells. `expiringWithinDays` is the "recompete radar", and a
+period-of-performance extension is the single thing a recompete hunter needs to hear ("your recompete
+just slipped") — yet a windowed watch drops the award instead of reporting the extension. When a
+blind-filter instance lands on a *marketed* use case, write the warning in the buyer's words, not the
+field's.
+
+**Bonus defect, found by running the input nobody runs:** `assertFiltersApplied()`'s fail-open canary
+probe requested `fields: ['Award ID']` and passed no `sort`, so USAspending defaulted the sort to
+`Award ID` too — a hard 400 in `awardLevel="subaward"` mode ("not found in Sub-Award mappings", the
+sub-award endpoint has a wholly separate field mapping). Every probe therefore failed into the
+deliberately-soft `Could not verify that USAspending still honours the "<name>" filter … continuing`
+warning, which means **the guard against a dropped filter name — the one that would otherwise deliver
+and CHARGE the entire unfiltered award index — was silently INERT for every sub-award run**, while the
+log looked like an upstream blip. Generalisable: when a protective probe is allowed to fail SOFT by
+design, a mode in which it *always* fails is indistinguishable from bad luck. Any Actor with two
+upstream field mappings should be probe-tested in BOTH modes, and the soft-failure path deserves one
+hard look per mode rather than being trusted because the happy path is quiet.
+
+Fix shipped (build 0.1.68, source 0.1.21): `watchChangeBlindFilters` list, two distinct warnings plus a
+shared what-to-do, `blindNote()` appended to BOTH reassuring status messages (seed and nothing-new — the
+1556 monitor rule), `watchChangeBlindFilters` in the `webhookUrl` payload (this Actor has no
+`RUN_SUMMARY`; the payload is its equivalent, as on apple-podcasts), README Watch-mode subsection with
+the measured numbers, FAQ caveat, `input_schema` warnings on `minAwardAmount`/`maxAwardAmount`/
+`expiringWithinDays`/`watchChanges`, and the probe now using `Sub-Award ID` with an explicit sort.
+Live-measured before writing the copy ($0, real api.usaspending.gov, no Actor run): award
+`70T05026F5900N033`, Award Amount $958,748.70 — 1 row at `upper_bound=1000000`, **0 rows** at
+`upper_bound=900000`. `watch_subset_audit` now 3 DUE, next target `grants-gov-scraper` (one of the two
+known stale due-dates — confirm-and-bump, the guard shipped at c860).

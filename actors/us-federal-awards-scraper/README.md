@@ -133,6 +133,13 @@ Changing any filter (categories, keywords, agencies, recipients, states, NAICS/P
 
 **`watchChanges` (prime mode only)** turns on a second kind of alert: an award that was already delivered under this label is re-delivered (charged again) if it changed since you last saw it — USAspending's own `lastModifiedDate` moved, or `awardAmount`/`totalOutlays` (contracts and assistance), `loanValue`/`subsidyCost` (loans), or `endDate` differ from the stored snapshot. The re-delivered row is tagged with `_watchChangeType` (which field(s) moved) and `_watchPrevious` (their old value(s)), so you don't have to diff it against your own last-seen copy. Not offered in sub-award mode — a sub-award is a static FSRS filing with no reliable "this changed" signal to track, so setting the flag there is a no-op (logged, not silently ignored). Every award's snapshot is refreshed on every run regardless of the flag, so turning `watchChanges` on later only detects drift from that point forward, never a backlog against changes it never captured.
 
+**Don't filter on a field you're watching for changes.** A filter decides which awards come back at all, so a filter on a watched field hides exactly the change you asked to be told about — the award stops matching and the run reports nothing rather than reporting the change. Two inputs do this here, and `watchChanges` warns, names the blind field(s), and says so in both the run's status message and the `webhookUrl` payload (`watchChangeBlindFilters`) rather than letting a blind run look like a quiet one:
+
+- `minAwardAmount`/`maxAwardAmount` are sent to USAspending as its own server-side amount filter on the same `awardAmount` field being compared. Measured live: award `70T05026F5900N033` (Award Amount $958,748.70) comes back under `maxAwardAmount: 1000000` and is gone under `maxAwardAmount: 900000` — so if its amount had grown from $880k to $958k, the $900k watch would show no change at all. An upper bound hides increases (change orders, exercised options), a lower bound hides de-obligations and descopes.
+- `expiringWithinDays`/`expiringAfterDays` filter on period-of-performance end date, which is the watched `endDate`. An extension past the window drops the award instead of reporting it as extended — the "my recompete just slipped" alert is the one a windowed watch cannot deliver.
+
+Either way the fix is the same: keep two labels — a narrow one for new awards, and a wider one with `watchChanges` and no filter on the field you care about — and filter the delivered rows on your own side.
+
 ## Opportunity score
 
 Set `includeOpportunityScore` (prime mode only) to add a 0-100 `opportunityScore` field — a fixed, published formula, **never an AI/LLM call**, so it's fully reproducible from the row's own fields:
@@ -202,7 +209,7 @@ No. SAM.gov lists pre-award *opportunities* you can bid on; USAspending lists *a
 No. Plain HTTPS to a public government API, so runs are fast and cheap.
 
 **Can I get alerted when an award I already know about changes, not just when a new one appears?**
-Yes — set `watchChanges` alongside `watchLabel` (prime mode only). An award whose last-modified date, amount, outlays or end date has moved since you last saw it is re-delivered and charged again, tagged `_watchChangeType`/`_watchPrevious` with exactly what changed. Off by default, so a plain `watchLabel` only ever alerts on brand-new awards.
+Yes — set `watchChanges` alongside `watchLabel` (prime mode only). An award whose last-modified date, amount, outlays or end date has moved since you last saw it is re-delivered and charged again, tagged `_watchChangeType`/`_watchPrevious` with exactly what changed. Off by default, so a plain `watchLabel` only ever alerts on brand-new awards. One caveat worth knowing: don't also filter on a field you're watching — `minAwardAmount`/`maxAwardAmount` and `expiringWithinDays` drop an award the moment the watched field moves out of range, so that change can never be reported. The run warns and names the blind field(s); see [Watch mode](#watch-mode) for the measured example and the two-label fix.
 
 **Can I get alerted only when a new award appears, instead of re-pulling the same search?**
 Yes — set `watchLabel`, see [Watch mode](#watch-mode). The first run records a baseline for free; every run after that on the same label and filters returns only what's new, and skips (without charging) anything already delivered.
