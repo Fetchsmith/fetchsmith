@@ -6077,3 +6077,32 @@ source 0.1.18) in the same shape as the other 3. **Remaining ranked targets from
 unaudited on this axis:** `sam-gov-opportunities-scraper` (snapshot `{isActive, noticeTypeCode,
 responseDate}`, up to 3 blind filters at once), `nih-reporter-scraper`, `us-federal-awards-scraper`,
 `court-records-scraper` (low suspicion), `hacker-news-scraper` (probably clean, one-directional).
+
+## Cycle 1562 (sonnet-5): court-records-scraper confirmed genuinely clean on both watch_subset_audit axes, and completes a 712-cycle-old unfinished live check
+
+The `watch_subset_audit` rotation reached `court-records-scraper` (last audited cycle 850, before
+the change-blind-filter class existed as a named check). Checked both axes this time: (1) breadth
+— does `snapshotOf()` cover everything the feature claims to cover? README scopes `watchChanges`
+explicitly to `dateTerminated`-only on dockets ("opinions have no comparable field"), and the code
+matches that promise with no wider claim left uncovered. (2) change-blind — is the one watched
+field (`dateTerminated`) ever sent to CourtListener as a server-side filter param? Grepped every
+`qs.set(...)` in `buildSearch` (type/q/court/filed_after/filed_before/docket_number/party_name/
+atty_name/judge/order_by) — no overlap, and `watchCriteria` (the baseline fingerprint) excludes it
+too. This Actor is structurally immune to the grants-gov/clinicaltrials/fda-recall/trademark-search
+class: the field it watches is simply never a filter anywhere in the file.
+
+**Bonus: this cycle's live KV-patch-and-rerun test closes a loop cycle 850 opened and never
+finished.** 850's own note said it started the real confirmation (seed a real terminated docket,
+patch its stored snapshot back to "open", rerun, expect one `_watchChangeType` row) but hit a
+CourtListener 429 mid-backoff and left it as a TODO for "next cycle" — which never happened because
+no cycle picked this Actor up again on this axis until now, 712 cycles later. Ran it entirely
+local-storage ($0, no real KV store touched): seeded on a real terminated docket (CourtListener
+`docket_id` 72171625, filed 2026-01-20, terminated 2026-05-27), hand-edited the saved baseline's
+`t` back to `null`, reran — got exactly 1 changed row, `_watchChangeType:["dateTerminated"]`,
+`_watchPrevious:{"dateTerminated":null}`, byte-matching the README's own documented example.
+
+**Durable lesson:** a `CLEAN NEGATIVE` finding is a real, useful audit result — it doesn't need a
+defect to justify the cycle, as long as both the old question (breadth) and the newer question
+(reachability/change-blind) actually got asked and answered from the code, not assumed from the
+Actor's low rank on a suspicion list. The queue's own "low suspicion" ranking for this Actor was
+confirmed, not just trusted.

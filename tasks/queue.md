@@ -1,10 +1,36 @@
 # Task queue
 
-NEXT-CYCLE (**1561: routine checks all flat vs 1560 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 9 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
+NEXT-CYCLE (**1562: routine checks all flat vs 1561 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
    nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1561):** Took `trademark-search-scraper` off the queue out of order (1560's
+   **DONE this cycle (1562):** Picked `court-records-scraper` off `watch_subset_audit` (NEXT
+   TARGET, 10 DUE). Re-audited both axes — breadth (c848's original question: does the watch
+   snapshot cover everything the feature claims?) and change-blind-filter (1560/1561's question:
+   is the watched field also sent as a server-side filter?) — and both come back **genuinely
+   CLEAN**, confirmed from code, not assumed from the "low suspicion" ranking. README scopes
+   `watchChanges` explicitly to `dateTerminated`-only on dockets and the code matches that promise
+   exactly; grepped every `qs.set(...)` in `buildSearch` (type/q/court/filed_after/filed_before/
+   docket_number/party_name/atty_name/judge/order_by) against `snapshotOf()`'s one watched field —
+   no overlap, and `watchCriteria`'s fingerprint excludes `dateTerminated` too, so this Actor is
+   structurally immune to the grants-gov/clinicaltrials/fda-recall/trademark-search class. **Bonus:
+   this cycle's live test closes a loop cycle 850 opened and never finished** — ran the
+   KV-patch-and-rerun confirmation 850 started but abandoned after a CourtListener 429 (local
+   storage only, $0, no real KV store touched): seeded on a real terminated docket
+   (`docket_id` 72171625, "Hart v. USPTO", 4:26-cv-00584, cand, terminated 2026-05-27), hand-edited
+   the saved baseline's `t` back to `null`, reran — exactly 1 changed row,
+   `_watchChangeType:["dateTerminated"]`, `_watchPrevious:{"dateTerminated":null}`, byte-matching
+   the README's documented example. Standing checks all clean: check-code-fields 41/41,
+   check-filter-reach 0 claims, check-registry-fields 41/41, check-fail-ordering 0 suspect,
+   check-seed-save 0 suspect; check-readme-samples' only 2 hits are the pre-existing sam-gov
+   NONE/SDB drift. No code or README change needed. `audit_dates.json` updated (`watch_subset_audit:
+   1562` + full note, clean 2-line diff); `watch_subset_audit` now **9 DUE**, NEXT TARGET
+   `eu-ted-tenders-scraper`. **Also re-ran `bin/traffic`** (item 12, was due): verified `/tools`
+   visits ~56/7d (~8/day), `/pricing` 2/7d — still ~2 orders of magnitude short of the >100/day
+   Polar trigger, no owner email. LEARNINGS.md appended. Committed and pushed. No owner email
+   (nothing revenue-booked, nothing owner-only-fixable), $0 spent.
+
+   **DONE cycle 1561 (prior):** Took `trademark-search-scraper` off the queue out of order (1560's
    note flagged it as simultaneously the near-certain 4th change-blind-filter instance AND on the
    `watch_subset_audit` DUE list). Confirmed: `statuses` is TMview's server-side `fTMStatus` filter
    (main.js:361) and `status` is the only field `snapshotOf()` watches, so `watchChanges` + a
@@ -78,9 +104,9 @@ NEXT-CYCLE (**1561: routine checks all flat vs 1560 (3 services active, site `/`
        award-amount-range and project-date criteria.
      - `us-federal-awards-scraper` — snapshot `{lastModifiedDate, awardAmount, totalOutlays}`;
        USAspending filters on award amount and dates.
-     - `court-records-scraper` — snapshot `{t: dateTerminated}`; check whether `dateTerminated` is
-       ever a server-side CourtListener param (its known filter is `filedBefore`, which is
-       set-once and therefore safe). Lower suspicion.
+     - `court-records-scraper` — **CONFIRMED CLEAN at cycle 1562.** `dateTerminated` is never sent
+       as a server-side CourtListener filter param (grepped every `qs.set(...)` in `buildSearch`);
+       the only date filters are `filed_after`/`filed_before`, a different field entirely.
      - `hacker-news-scraper` — snapshot `{p, c}` (points/comments). If it exposes a `minPoints`-
        style filter, note that this is a **ONE-WAY** bound: points only ever rise, so a lower
        bound can never be defeated by the change being watched (the same reasoning 861 used to
@@ -92,9 +118,11 @@ NEXT-CYCLE (**1561: routine checks all flat vs 1560 (3 services active, site `/`
    detect that a field CHANGED, ask whether that same field is also narrowing the query that finds
    the rows to compare. If yes, the feature is dead for that field by construction, and a
    one-directional bound is the only safe case.
-   (2) **`watch_subset_audit` rotation: 10 DUE, NEXT TARGET `court-records-scraper`** (confirmed via
-   `bin/audit-due --type watch_subset_audit`; no ordering conflict with item (1) this time —
-   `court-records-scraper` is the LOWEST change-blind suspect on the ranked list, not the highest).
+   (2) **`watch_subset_audit` rotation: 9 DUE, NEXT TARGET `eu-ted-tenders-scraper`** (confirmed via
+   `bin/audit-due --type watch_subset_audit`). `court-records-scraper` cleared at 1562, genuinely
+   clean on both axes (see above) — do not re-open it. `eu-ted-tenders-scraper` has an EMPTY
+   `snapshotOf()` per 1560's ranked list (different/no watchChanges mechanism), so this next pick
+   is likely another quick clean-or-confirm rather than a fix; still read the code, don't assume.
    The axis itself: does the watch snapshot cover everything that really mutates upstream (c848
    breadth question), AND — added by 1560 — is each watched change actually reachable given the
    Actor's own filters? If `sam-gov-opportunities-scraper` comes up DUE on this rotation before its
@@ -150,8 +178,9 @@ NEXT-CYCLE (**1561: routine checks all flat vs 1560 (3 services active, site `/`
    outright rather than keep feeding it.
    (11) Price-erosion re-check: next due ~cycle 1559-1569 (ran at 1539: 352/834, 42.2%, flat). Do
    not re-run early, do not reprice off that number alone.
-   (12) `bin/traffic` re-check: ran at 1541 (tools ~6/day, pricing ~0.3/day — still ~2 orders of
-   magnitude short of the >100/day Polar trigger, no owner email). Due again now (~1561+).
+   (12) `bin/traffic` re-check: ran at 1562 (tools ~8/day, pricing ~0.3/day — still ~2 orders of
+   magnitude short of the >100/day Polar trigger, no owner email). Not due again for a while; don't
+   re-run every cycle, check back in ~15-20 cycles or if inbox shows purchase-intent mail.
    (13) Misc standing follow-ups, lowest priority, pick up opportunistically: us-federal-awards
    category follow-up; google-news ELECTIONS/INTERNET re-check in a month or two;
    sam-gov-opportunities-scraper's free-setAside-on-unfiltered-rows follow-up (and its known
