@@ -628,6 +628,32 @@ if (watchMode && watchChanges) {
     }
 }
 
+// A fixed postedTo caps the watch's own NEW-opportunity match set at a date that gets more stale
+// every day the schedule runs. openDate is assigned once when Grants.gov posts a synopsis under a
+// given `id` and is never revised in place -- a genuinely revised posting ships under a brand-new
+// `id` with its own openDate instead (see the republishedRowsDropped comment above: NNL10ZB1011C's
+// revision changed title AND openDate together under a new id, the old id's openDate untouched),
+// so there is no mechanism by which a real opportunity's openDate can later become <= an
+// already-passed postedTo. Same class as eu-ted-tenders-scraper's publicationDateTo /
+// federal-register-scraper's publicationDateTo / fec-campaign-finance-scraper's
+// contributionDateTo: once today's date passes a fixed postedTo, no future opportunity can ever
+// satisfy the client-side openDate<=postedTo check (line ~1120) again, so a watchLabel using it
+// goes permanently quiet while still logging the same reassuring "nothing new" message every
+// scheduled run.
+const watchDeadDateBound = watchMode && postedTo !== null;
+if (watchDeadDateBound) {
+    log.warning(
+        `watchLabel "${watchLabel}" is combined with a fixed postedTo (${input.postedTo}). Once the real `
+        + 'calendar date passes that cutoff, no opportunity can ever have an open (posted) date on or before '
+        + 'it anymore, so this watch is now permanently unable to report anything new.',
+    );
+    log.warning(
+        'Drop postedTo from a watched query (postedFrom alone is safe to keep, and postedWithinDays is a '
+        + 'rolling window so it is always safe), or remove watchLabel if you really do want a fixed historical '
+        + 'window instead of an ongoing watch.',
+    );
+}
+
 // Grants.gov has TWO opposite silent-failure modes, not the one the comment at the top of this
 // file recorded (measured live cycle 744, all counts from the same minute):
 //   * a known param with a garbage VALUE fails CLOSED -- errorcode 0, "Webservice Succeeds",
@@ -1463,6 +1489,9 @@ const runSummary = {
     // Machine-readable form of the change-blind-filter warning: a scheduled caller that never
     // reads the log can assert on this being empty before trusting "no changes this run".
     watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
+    // Machine-readable form of the dead-date-bound warning above: true means this watch's openDate
+    // upper bound (postedTo) can never again admit a new opportunity once real time passes it.
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

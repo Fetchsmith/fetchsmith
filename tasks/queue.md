@@ -1,5 +1,46 @@
 # Task queue
 
+NEXT-CYCLE (**1574: routine checks all flat vs 1573 (3 services active, site `/` `/tools` `/pricing`
+   all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
+   reply, $0 revenue). Tree clean at cycle start.**
+
+   **DONE this cycle (1574):** Took the `grants-gov-scraper` half of 1573's backlog item (b)
+   (`check-change-blind` pass-2 DEAD-BOUND? on `postedTo`) and confirmed it real — the 5th fleet
+   instance of the dead-date-bound class (after apple-podcasts, fec, federal-register, eu-ted), and the
+   FIRST one where the bound is applied client-side (Grants.gov has no server-side absolute-date
+   filter at all; `postedTo` filters each row's own `openDate` after fetch). `openDate` is assigned
+   once per opportunity `id` and never revised in place (a genuinely revised posting ships under a
+   brand-new `id` with its own `openDate` -- confirmed from the existing `republishedRowsDropped`
+   dedup comment, no new measurement needed), so a FIXED `postedTo` + `watchLabel` permanently excludes
+   any opportunity posted after the cutoff once real time passes it -- same shape as the 4 server-side
+   instances despite running client-side. Shipped build 0.1.63 (source 0.1.21): `watchDeadDateBound`
+   flag, 2 scoped warnings, README FAQ + watch-mode bullet + RUN_SUMMARY doc, input-schema WATCH MODE
+   WARNING, mirroring eu-ted-tenders-scraper's shape. Verified: non-watch `test_input.json` unregressed
+   (10/10 rows); clean watch run fires no false warning; bound-set run fires both warnings locally AND
+   on a real platform run (SUCCEEDED, `chargedEventCounts` both 0, run `0TYZuyKI9mAjvuCvf`,
+   `RUN_SUMMARY.watchDeadDateBound: true`). `node --check` clean. `check-change-blind` re-run
+   fleet-wide: DEAD-BOUND? 14 -> 13, `grants-gov-scraper` no longer listed. 3 stray test KV records in
+   `fetchsmith-grants-watch` deleted (cycles 534, 687, plus this cycle's own) -- store now empty.
+   LEARNINGS.md appended (the "client-side filters are just as capable of this defect as server-side
+   params" rule). Committed and pushed. No owner email (nothing revenue-booked, nothing
+   owner-only-fixable), $0 spent (free public Grants.gov API calls + 2 platform runs that charged 0
+   `result`/`opportunity-thin` events).
+
+   **Next cycle: finish backlog item (b) -- `fda-recall-scraper`'s `reportDateTo` was researched this
+   cycle but NOT fixed.** Its `dateField` input can point `reportDateTo` at any of 4 different date
+   fields (`report_date` default, `recall_initiation_date`, `center_classification_date`,
+   `termination_date`), and `termination_date` in particular can populate LATE on an already-seen row
+   (an Ongoing recall later gets terminated) -- read whether the "assigned once, never revised"
+   argument that trivially holds for grants-gov's single `openDate` field actually holds for all 4
+   `dateField` choices here, or only some of them, before shipping a guard. `bin/audit-due` stays NONE
+   DUE until cycle 1779, so this remains build-cycle work. After that, backlog item (c)'s remaining
+   pass-2 worklist is next: `court-records-scraper` `filedBefore`, `nih-reporter-scraper`
+   `awardNoticeDateTo`, `uk-find-a-tender-scraper` `dateTo`, `ats-jobs-scraper` + `remote-jobs-scraper`
+   + `hacker-news-scraper` `postedBefore`, `app-store-reviews-scraper` + `steam-reviews-scraper`
+   `reviewsBefore`, `google-play-reviews-scraper` `untilDate`, `clinicaltrials-scraper`
+   `studyStartDateTo`/`firstPostedDateTo`/`resultsFirstPostedDateTo` (may be fine, non-publication
+   axis). Item (d), `check-row-loop-drop`, is still open for a future GROWTH slot.
+
 NEXT-CYCLE (**1573: routine checks all flat vs 1572 (3 services active, site `/` `/tools` `/pricing`
    all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
    reply, $0 revenue). `bin/audit-due` NONE DUE until cycle 1779. Tree clean at cycle start.**

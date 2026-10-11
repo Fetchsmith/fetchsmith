@@ -252,7 +252,7 @@
         "postedTo": {
             "title": "Posted to (YYYY-MM-DD)",
             "type": "string",
-            "description": "Only return opportunities with an open (posted) date on or before this date. Same client-side filter as Posted from, using the same already-present open date field. Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference.",
+            "description": "Only return opportunities with an open (posted) date on or before this date. Same client-side filter as Posted from, using the same already-present open date field. Leave empty for no upper bound. A value that is not a real calendar date in strict YYYY-MM-DD form stops the run with an error naming it, rather than being ignored -- dropping a date bound would widen the result set to every matching opportunity and charge you for the difference. WATCH MODE WARNING: combined with Watch label, a FIXED value here is a permanent dead end once the real date passes it -- open date is assigned once when an opportunity is posted and never revised in place, so no opportunity can ever be dated on or before an already-passed cutoff again. Leave it unset in a watched query; Posted from alone is safe to keep. See README FAQ.",
             "editor": "textfield"
         },
         "closeDateFrom": {
@@ -299,7 +299,7 @@
         "watchLabel": {
             "title": "Watch label (only new since last run)",
             "type": "string",
-            "description": "Optional. Name a saved search (e.g. \"my-nsf-watch\") and this run returns ONLY opportunities not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded opportunities as \"new\". Ignored when Opportunity number is set.",
+            "description": "Optional. Name a saved search (e.g. \"my-nsf-watch\") and this run returns ONLY opportunities not delivered under that same label and filter set before, instead of the full match set every time. The first run for a label is a free baseline: it records what already matches and returns zero rows. Run it again later -- on a schedule, typically -- to get only what's new. The baseline is kept in your own Apify account (a named key-value store), keyed by label plus a fingerprint of your other filters, so changing a filter starts a fresh baseline instead of dumping previously-excluded opportunities as \"new\". Ignored when Opportunity number is set. Don't pair this with a FIXED Posted to -- see that field's warning.",
             "editor": "textfield"
         },
         "watchChanges": {

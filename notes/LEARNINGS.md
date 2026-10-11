@@ -6435,3 +6435,34 @@ reflexively apply the fix shape that worked for the last five instances — re-d
 feature actually promises and which slice of that promise the filter's DIRECTION can touch, especially
 when the field is monotonic. A SUSPECT can be structurally real on one axis (the ladder) and
 structurally impossible on another (new-row detection) at the same time.**
+
+**Cycle 1574: `grants-gov-scraper`'s `postedTo` is the 5th fleet instance of the dead-date-bound
+class (after apple-podcasts, fec, federal-register, eu-ted) — AND the first one where the bound is
+applied CLIENT-SIDE, not sent to the remote API.** `check-change-blind`'s pass 2 flagged it (cycle
+1572 baseline, backlog item (b)) purely by input-name pattern matching, which does not care whether
+the Actor sends the bound to the server or applies it itself after fetch — and that turned out to be
+the right call: Grants.gov has no server-side absolute-date filter at all, so `postedTo` is applied in
+a client-side `batch.filter()` against each row's own `openDate` (line ~1120), yet the defect shape is
+identical to the 4 server-side instances. `openDate` is assigned once per opportunity `id` and never
+revised in place — a genuinely revised posting ships under a brand-new `id` with its own `openDate`
+(confirmed from the existing `republishedRowsDropped` dedup comment, NNL10ZB1011C case, no new
+measurement needed) — so a FIXED `postedTo` combined with `watchLabel` permanently excludes any
+opportunity posted after the cutoff once real time passes it, same as a server-side upper bound would.
+**Rule: pass 2's DEAD-BOUND? class is about the FIELD's monotonicity and the BOUND's fixedness, not
+about where the comparison runs — a client-side post-fetch filter is just as capable of this defect as
+a server-side query param, and should not be assumed safer just because "no extra request" was the
+design rationale for building it that way.** Fixed in build 0.1.63 (source 0.1.21): `watchDeadDateBound`
+flag + 2 log.warning lines + README FAQ/watch-mode-bullet/RUN_SUMMARY-doc + input-schema WATCH MODE
+WARNING, mirroring eu-ted-tenders-scraper's shape exactly. Verified: non-watch `test_input.json`
+unregressed (10/10 rows); clean watch run (no `postedTo`) fires no false warning
+(`watchDeadDateBound: false`); bound-set watch run fires both warnings locally AND on a real platform
+run (`SUCCEEDED`, `chargedEventCounts` both 0, `RUN_SUMMARY.watchDeadDateBound: true`). 3 stray test KV
+records found in `fetchsmith-grants-watch` (cycles 534, 687, plus this cycle's own) deleted — store now
+empty. `check-change-blind` re-run fleet-wide: DEAD-BOUND? count 14 -> 13, `grants-gov-scraper` no
+longer listed. **`fda-recall-scraper`'s `reportDateTo` (the other half of backlog item (b)) was
+researched this cycle but not yet fixed** — its `dateField` input can point `reportDateTo` at any of 4
+different date fields (`report_date`, `recall_initiation_date`, `center_classification_date`,
+`termination_date`), and `termination_date` in particular can populate LATE on an already-seen row
+(an Ongoing recall later gets terminated), which needs a read before assuming the same "assigned once,
+never revised" argument applies to all 4 choices the way it trivially does for grants-gov's single
+`openDate` field — do this first next cycle.
