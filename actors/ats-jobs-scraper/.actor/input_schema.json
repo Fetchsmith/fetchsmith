@@ -120,7 +120,7 @@
     "postedBefore": {
       "title": "Posted before (ISO date)",
       "type": "string",
-      "description": "Only keep postings published on or before this date, e.g. 2026-09-01. The whole day named is INCLUDED (the bound ends at 23:59:59.999 UTC), so postedAfter 2026-08-01 + postedBefore 2026-08-31 is exactly August. Same strict parsing as \"Posted after\": an unparseable date stops the run rather than quietly widening your window. Pair with \"Posted after\" for a date window, e.g. everything a company opened during one quarter. Leave empty for no upper bound.",
+      "description": "Only keep postings published on or before this date, e.g. 2026-09-01. The whole day named is INCLUDED (the bound ends at 23:59:59.999 UTC), so postedAfter 2026-08-01 + postedBefore 2026-08-31 is exactly August. Same strict parsing as \"Posted after\": an unparseable date stops the run rather than quietly widening your window. Pair with \"Posted after\" for a date window, e.g. everything a company opened during one quarter. WATCH MODE WARNING: combined with watchLabel, a FIXED value here is a permanent dead end once the real date passes it — a newly-published posting's own publishedAt is always \"now\", so no new posting can ever be dated on or before an already-passed cutoff again. Leave it unset in a watched query; postedAfter alone is safe to keep. See README FAQ. Leave empty for no upper bound.",
       "editor": "textfield"
     },
     "includeDescriptions": {

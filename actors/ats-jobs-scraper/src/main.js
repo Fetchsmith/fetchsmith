@@ -198,6 +198,28 @@ function decodeMeta(code) {
 }
 
 const watchMode = watchLabel.length > 0;
+// A fixed UPPER date bound kills a watch dead (8th instance of this fleet class — grants-gov,
+// fda-recall, eu-ted, apple-podcasts, fec, federal-register, app-store-reviews, steam-reviews).
+// A newly-published posting's `publishedAt` IS its post time, so once the real calendar date
+// passes a fixed `postedBefore`, nothing new can ever be dated on or before it again — the watch
+// reports "nothing new" forever while still looking healthy. Measured live on this Actor
+// (greenhouse:airbnb / ashby:ramp / smartrecruiters:ElasticBandCompany, 52/52 rows carried a
+// `publishedAt`), so passesFilters' `&& job.publishedAt` truthiness gate does NOT soften it in
+// practice — it only spares postings whose board omits the field entirely.
+// Gated on the schema's literal input name, not the parsed `postedBefore` local, so the static
+// check-change-blind checker can see the guard (cycle 1577's lesson).
+const watchDeadDateBound = watchMode && !!input.postedBefore;
+if (watchDeadDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is combined with a fixed postedBefore (${input.postedBefore}). `
+    + 'Once the real calendar date passes that cutoff, no newly-published posting can ever be dated on or '
+    + 'before it anymore, so this watch is now permanently unable to report anything new.',
+  );
+  log.warning(
+    'Drop postedBefore from a watched query (postedAfter alone is safe to keep), or remove '
+    + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+  );
+}
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
@@ -1344,6 +1366,9 @@ if (webhookUrl) {
     // re-charge for rows already paid for once.
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // true means this watch is pinned to a fixed postedBefore and can no longer report anything
+    // new once today passes it — a "nothing new" result from such a run is meaningless.
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
   };
   try {
     const resp = await gotScraping({
