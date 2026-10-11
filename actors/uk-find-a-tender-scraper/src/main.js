@@ -161,11 +161,14 @@ if (webhookUrlRaw) {
 
 const PAGE_SIZE = 100; // hard API cap on both portals: limit=200 returns HTTP 400
 
-// Find a Tender's own "stages" filter only recognizes these 3 (verified cycle 838: probing
-// "contract"/"implementation"/every other real OCDS stage tag returns 0 rows with no error,
-// even over a decade-wide window, even though FTS's own data DOES carry contract- and
-// implementation-tagged releases — same "silently matches nothing" trap cycle 359 found for a
-// comma-joined multi-value stage). Contracts Finder's API doesn't 400 on "contract" or
+// Find a Tender's own "stages" filter only recognizes these 3 (re-verified live cycle 1534: FTS
+// now returns an explicit HTTP 400 "'stages' must be one of 'planning', 'tender', 'award'" for
+// "contract"/"implementation"/any other value — a FAILURE-MODE change since cycle 838, which
+// found the same 3-value set but via a silent 0-rows-no-error response, the same "silently
+// matches nothing" trap cycle 359 found for a comma-joined multi-value stage. The closed set
+// itself hasn't drifted in 696 cycles; only the error behaviour has, which is harmless here
+// because buildUrl() below never sends FTS a value outside FTS_STAGES in the first place.
+// Contracts Finder's API doesn't 400 on "contract" or
 // "implementation" either, but don't read that as support: live-verified cycle 891, both values
 // return the identical award/awardUpdate-tagged releases "award" itself returns, and CF's own
 // feed never emits a "contract" or "implementation" tag at all (0 of 800 sampled over a year) —
