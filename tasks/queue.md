@@ -1,36 +1,33 @@
 # Task queue
 
-NEXT-CYCLE (**1549: routine checks all flat vs 1548 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 10 msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
+NEXT-CYCLE (**1550: routine checks all flat vs 1549 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox 9 msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
    nothing needing a reply, $0 revenue flat, 44 users / 622 runs-30d). Tree was already in sync
    with origin/main at cycle start.**
 
-   **DONE this cycle (1549):** Picked `google-news-scraper` off the `unreachable_remedy` DUE
-   list (11 DUE, NEXT TARGET per 1548). Field had date 812 with no note — another archive-backfill
-   never actually audited. **Found and fixed ONE real defect** in the `pushed===0` status message
-   (src/main.js lines ~445-456): it built its explanation as an if/else-if PRIORITY CHAIN over 4
-   independent, non-mutually-exclusive causes (erroredFeeds / dedupedFeeds / outOfWindow-only /
-   emptyFeeds), so a run with TWO true causes silently reported only the first. Live-reproduced
-   ($0, local, direct connection): an unreachable RSS URL + a query Google genuinely returns 0
-   results for together produced "the RSS request failed for: ..." only — no mention the query
-   also needed a broader term. Fixed by collecting every applicable cause into a list and joining
-   them instead of picking one (kept the outOfWindow-only fallback's existing false-positive guard
-   unchanged). Verified live: mixed case now lists both causes; 3 regression cases (pure
-   emptyFeeds, pure erroredFeeds, happy-path) byte-identical to before. Traced (not live-forced)
-   that the separate `windowNote` already surfaces date-window drops regardless of which `why`
-   branch wins, so the originally-suspected dedup-hides-window interaction is already covered, not
-   a second bug. `node --check` clean, `check-code-fields` 0 drift. **Build 0.1.72 pushed**
-   (package.json 0.1.17→0.1.18), verified SUCCEEDED via build API. `audit_dates.json` updated
-   (`unreachable_remedy: 1549` + full note, clean 4-line diff — note a near-miss: the first attempt
-   wrote the note via `python3 -c "..."` inside double-quoted bash with backtick-wrapped code
-   terms in the text, and bash command-substituted them (`` `why` `` and `$0` got silently eaten);
-   caught via `git diff`, fixed by writing the JSON from a `/tmp` python script file instead of an
-   inline `-c` string — inline `python3 -c "..."` is unsafe whenever the string contains backticks
-   or `$`, write to a temp file instead). `bin/audit-due --type unreachable_remedy` now **10 DUE**,
-   NEXT TARGET `nih-reporter-scraper`. Writeup in LEARNINGS.md cycle 1549. No owner email, $0 spent.
+   **DONE this cycle (1550):** Picked `nih-reporter-scraper` off the `unreachable_remedy` DUE
+   list (10 DUE, NEXT TARGET per 1549). Field had date 812 with no note — another archive-backfill
+   never actually audited (this Actor is otherwise one of the most heavily audited in the fleet:
+   380/647/969/983/1013/1015/1531). Audited every zero-row/warning remedy string in `src/main.js`.
+   **Found and fixed ONE real defect**, a 1544-style field-list gap (not a priority-chain or
+   guard-mismatch bug this time): the generic `'No projects matched'` fallback message's cause (2)
+   named only "an IC code that is not a real NIH institute" even though `activityCodes` and
+   `orgStates` get the IDENTICAL warn-but-still-send unrecognised-value treatment
+   (`unknownActivityCodes`/`unknownOrgStates`) and can equally be the real zero-row cause.
+   Live-reproduced locally: `activityCodes:['ZZZ']` alone (real keyword+fiscalYear+IC otherwise)
+   -> fallback message named only "an IC code," not the activity code whose own warning fired right
+   above it; same with `orgStates:['ZZ']` alone. Fixed by widening cause (2) to name all three
+   fields. Verified: both repro cases now get the widened message; happy-path regression
+   (`test_input.json`) unchanged (1,084 real matches, fallback never triggered). `node --check`
+   clean, `check-code-fields` 0 drift (47/51, same 4 soft-missing as always). **Build 0.1.45
+   pushed** (package.json 0.1.9→0.1.10), verified SUCCEEDED via build API. `audit_dates.json`
+   updated (`unreachable_remedy: 1550` + full note, clean diff via the `/tmp` python-script-file
+   method — no shell-quoting mishap this time). `bin/audit-due --type unreachable_remedy` now
+   **9 DUE**, NEXT TARGET `us-federal-awards-scraper`. Committed and pushed (`df116ebb`). No owner
+   email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (10 DUE, NEXT TARGET: `nih-reporter-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (9 DUE, NEXT TARGET: `us-federal-awards-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —

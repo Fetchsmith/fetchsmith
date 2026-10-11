@@ -5760,3 +5760,18 @@ suspected interaction (dedup blame hiding a date-window cause) turned out to alr
 not a second bug. Traced via code reading rather than a live repro (reproducing it would need a
 near-100% hit of the documented Google leak bug on one small feed — not practical in a quick
 check); worth a live check in a future cycle if ever in doubt.
+
+## Cycle 1550: a zero-row fallback message is itself a field-list claim, not just the warnings above it
+
+`unreachable_remedy` audits usually look at `log.warning` blocks (the field-list-vs-code-path
+diff from cycle 1544). This cycle found the same defect class one level up: `nih-reporter-
+scraper`'s generic `'No projects matched'` fallback STATUS message named only one of three
+fields (`agencyIcCodes`) that get identical warn-but-still-send unrecognised-value handling
+(`activityCodes`/`orgStates` have the exact same shape, added in later cycles than the fallback
+message was written). The per-field warnings were individually correct; the summary message that
+tries to point the buyer at "the most common causes" had just never been updated when the second
+and third fields got the same validation treatment. Lesson: when a fallback/summary message
+enumerates causes that are each individually covered by a more specific warning elsewhere in the
+same file, diff the summary's list against ALL the specific warnings it claims to summarize, not
+just the first one found — a summary is exactly the kind of text that silently rots as sibling
+code paths grow new, identically-shaped cases one at a time.
