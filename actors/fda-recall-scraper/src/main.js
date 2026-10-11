@@ -342,25 +342,34 @@ function matchesPhrase(hay, phrase) {
 
 function buildSearch(from, to) {
     const clauses = [`${dateField}:[${from}+TO+${to}]`];
-    if (classifications.length) clauses.push(orClause('classification', classifications));
-    if (states.length) clauses.push(orClause('state', states));
-    if (countries.length) clauses.push(orClause('country', countries));
     if (recallNumber) clauses.push(`recall_number:${quote(recallNumber)}`);
     if (eventId) clauses.push(`event_id:${quote(eventId)}`);
-    if (status) clauses.push(`status:${quote(status)}`);
-    if (recallingFirm) clauses.push(`recalling_firm:${quote(recallingFirm)}`);
-    if (city) clauses.push(`city:${quote(city)}`);
-    // Valid on all three endpoints' index mappings but only ever populated on drug rows --
-    // food/device rows simply never match, same as any other filter with no data behind it,
-    // verified live (not a 400, a normal empty match set).
-    if (brandName) clauses.push(`openfda.brand_name:${quote(brandName)}`);
-    if (genericName) clauses.push(`openfda.generic_name:${quote(genericName)}`);
-    if (manufacturerName) clauses.push(`openfda.manufacturer_name:${quote(manufacturerName)}`);
-    if (voluntaryMandated) clauses.push(`voluntary_mandated:${quote(voluntaryMandated)}`);
-    if (searchQuery) {
-        // Free text spans the three fields a buyer actually searches on.
-        const q = quote(searchQuery);
-        clauses.push(`(product_description:${q}+OR+reason_for_recall:${q}+OR+recalling_firm:${q})`);
+    // README/FAQ promise recallNumber/eventId "overrides every filter above except
+    // productTypes" (an exact-identity lookup should not silently zero out because some
+    // unrelated filter also set on the input happens not to match that one recall) -- so in
+    // lookupMode skip every other filter clause below rather than AND-ing it in. Verified live
+    // against the real API (2026-10-11) that AND-ing them in, as this function used to do
+    // unconditionally, turns a real recall_number + a mismatched classification/state into
+    // openFDA's literal "No matches found!", i.e. the documented override did not actually exist.
+    if (!lookupMode) {
+        if (classifications.length) clauses.push(orClause('classification', classifications));
+        if (states.length) clauses.push(orClause('state', states));
+        if (countries.length) clauses.push(orClause('country', countries));
+        if (status) clauses.push(`status:${quote(status)}`);
+        if (recallingFirm) clauses.push(`recalling_firm:${quote(recallingFirm)}`);
+        if (city) clauses.push(`city:${quote(city)}`);
+        // Valid on all three endpoints' index mappings but only ever populated on drug rows --
+        // food/device rows simply never match, same as any other filter with no data behind it,
+        // verified live (not a 400, a normal empty match set).
+        if (brandName) clauses.push(`openfda.brand_name:${quote(brandName)}`);
+        if (genericName) clauses.push(`openfda.generic_name:${quote(genericName)}`);
+        if (manufacturerName) clauses.push(`openfda.manufacturer_name:${quote(manufacturerName)}`);
+        if (voluntaryMandated) clauses.push(`voluntary_mandated:${quote(voluntaryMandated)}`);
+        if (searchQuery) {
+            // Free text spans the three fields a buyer actually searches on.
+            const q = quote(searchQuery);
+            clauses.push(`(product_description:${q}+OR+reason_for_recall:${q}+OR+recalling_firm:${q})`);
+        }
     }
     return clauses.join('+AND+');
 }
@@ -1091,6 +1100,19 @@ if (pushed === 0 && watchMode && !seeding) {
     log.warning(
         `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching recall(s) `
         + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+    );
+} else if (pushed === 0 && !seeding && lookupMode) {
+    // The causes below this branch are all about OTHER filters narrowing the result -- moot here,
+    // since buildSearch() now skips every one of them in lookupMode (recallNumber/eventId is an
+    // exact-identity lookup, not a narrowing filter). A miss means the value itself, or the
+    // productTypes endpoint it was searched against, is wrong -- not a filter combination.
+    log.warning(
+        `No recall matched ${recallNumber ? `recallNumber="${recallNumber}"` : ''}`
+        + `${recallNumber && eventId ? ' / ' : ''}${eventId ? `eventId="${eventId}"` : ''}`
+        + ` across productTypes=[${productTypes.join(',')}] (full history, every other filter ignored as documented). `
+        + 'Most likely: (1) a typo in the exact value -- recall numbers look like "F-1233-2022", event ids are plain '
+        + 'numbers like "90105"; (2) the recall lives on a product type not selected here -- recall numbers are not '
+        + 'unique across food/drug/device, so set productTypes to all three (or leave it empty) if unsure which one.',
     );
 } else if (pushed === 0 && !seeding) {
     log.warning(

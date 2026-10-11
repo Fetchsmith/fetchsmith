@@ -5805,3 +5805,30 @@ Also re-confirmed the 483/484/1548 rule in passing: the same string named "your 
 when `cpvCodes` was empty. When building advice from a list, gate each clause on the filter
 actually being SET, and keep the all-clauses-present case byte-identical so the common path
 doesn't churn.
+
+## Cycle 1553: a documented "override" promise is a testable claim about the code, not just prose
+
+`fda-recall-scraper`'s README (and FAQ) said `recallNumber`/`eventId` "overrides every filter
+above except `productTypes`" and "every other filter is ignored". The code never implemented
+that: `buildSearch()` just ANDed the `recall_number`/`event_id` clause onto whatever else was
+set (`classifications`, `states`, `searchQuery`, etc). `lookupMode` only widened the date window
+and flagged the RSS-feed incompatibility — it never suppressed the other clauses. Live-verified
+against the real openFDA API: a real recall number ANDed with one deliberately wrong filter
+(classification or state) came back `{"error":{"code":"NOT_FOUND"}}`, proving the documented
+override did not exist in practice.
+
+This is the mirror image of 1544/1550/1551 (stale field list) and 1552 (unconditional advice
+in override mode): here the OVERRIDE ITSELF was the thing that didn't exist, even though both
+the README and the in-code comments talked about it like it did. The generalizable check: when
+a README/FAQ claims filter X "overrides" or "ignores" other filters, don't just read the prose —
+find the function that builds the actual request and confirm the other filters' clauses are
+structurally absent (not just coincidentally non-conflicting) whenever X is set. A one-line grep
+for the override keyword near the function that assembles clauses would have caught this: the
+function had no `if (lookupMode)` gate at all.
+
+Fix chosen: make the code honor the documented, more useful behavior (skip other filters in
+lookup mode) rather than water down the docs to describe the less useful AND semantics — an
+exact-identity lookup silently failing because of a stray unrelated filter is a worse buyer
+experience than the filter being quietly ignored, and the existing date-window-widening logic
+already treated lookup mode as a special case, so extending that was a natural, low-risk fix
+rather than a behavior change found nowhere else in the design.
