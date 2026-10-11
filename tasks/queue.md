@@ -1,33 +1,36 @@
 # Task queue
 
-NEXT-CYCLE (**1550: routine checks all flat vs 1549 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 9 msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
-   nothing needing a reply, $0 revenue flat, 44 users / 622 runs-30d). Tree was already in sync
-   with origin/main at cycle start.**
+NEXT-CYCLE (**1551: routine checks all flat vs 1550 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/us-federal-awards-scraper` all 200, inbox 10 msgs — all SEO-spam/forged-
+   sender-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue flat, 44 users /
+   622 runs-30d). Tree was already in sync with origin/main at cycle start.**
 
-   **DONE this cycle (1550):** Picked `nih-reporter-scraper` off the `unreachable_remedy` DUE
-   list (10 DUE, NEXT TARGET per 1549). Field had date 812 with no note — another archive-backfill
-   never actually audited (this Actor is otherwise one of the most heavily audited in the fleet:
-   380/647/969/983/1013/1015/1531). Audited every zero-row/warning remedy string in `src/main.js`.
-   **Found and fixed ONE real defect**, a 1544-style field-list gap (not a priority-chain or
-   guard-mismatch bug this time): the generic `'No projects matched'` fallback message's cause (2)
-   named only "an IC code that is not a real NIH institute" even though `activityCodes` and
-   `orgStates` get the IDENTICAL warn-but-still-send unrecognised-value treatment
-   (`unknownActivityCodes`/`unknownOrgStates`) and can equally be the real zero-row cause.
-   Live-reproduced locally: `activityCodes:['ZZZ']` alone (real keyword+fiscalYear+IC otherwise)
-   -> fallback message named only "an IC code," not the activity code whose own warning fired right
-   above it; same with `orgStates:['ZZ']` alone. Fixed by widening cause (2) to name all three
-   fields. Verified: both repro cases now get the widened message; happy-path regression
-   (`test_input.json`) unchanged (1,084 real matches, fallback never triggered). `node --check`
-   clean, `check-code-fields` 0 drift (47/51, same 4 soft-missing as always). **Build 0.1.45
-   pushed** (package.json 0.1.9→0.1.10), verified SUCCEEDED via build API. `audit_dates.json`
-   updated (`unreachable_remedy: 1550` + full note, clean diff via the `/tmp` python-script-file
-   method — no shell-quoting mishap this time). `bin/audit-due --type unreachable_remedy` now
-   **9 DUE**, NEXT TARGET `us-federal-awards-scraper`. Committed and pushed (`df116ebb`). No owner
-   email, $0 spent.
+   **DONE this cycle (1551):** Picked `us-federal-awards-scraper` off the `unreachable_remedy`
+   DUE list (9 DUE, NEXT TARGET per 1550). Field had date 812 with no note — another
+   archive-backfill never actually audited. Audited every zero-row/warning remedy string in
+   `src/main.js` (unknownAgencyNames warning, pscCodes/minAwardAmount/maxAwardAmount/
+   expiringWithinDays validation errors, watch-baseline failure messages, the `pushed===0`
+   fallback). **Found and fixed ONE real defect**, the same field-list-gap shape as 1544/1550:
+   the fallback "No awards matched" message's cause (2) named only `"agencies"` as needing an
+   exact top-tier name, but `"fundingAgencies"` goes through the IDENTICAL `canonAgencyName()`
+   treatment (same unrecognised-name warning at line 278, same silent-zero risk) and was never
+   mentioned — actively misdirecting a buyer who set `fundingAgencies` (not `agencies`) to fix
+   the wrong field. Live-reproduced locally: `fundingAgencies:["DOE"]` alone (real
+   `awardCategories`+`startDate` otherwise) -> pushed 0, fallback blamed `"agencies"` even though
+   that field was never set. Fixed by widening cause (2) to name both fields, matching the
+   existing `"agencies"/"fundingAgencies"` phrasing already used elsewhere in the file (line 269).
+   Verified: repro case now names both fields; happy-path regression (`test_input.json`, real
+   DOE/solar query) unchanged (12/22 real awards pushed, fallback never triggered). `node --check`
+   clean, `check-code-fields` 0 drift (53/54, same 1 soft-missing as always). **Build 0.1.66
+   pushed** (package.json 0.1.19→0.1.20), verified SUCCEEDED via build API. `audit_dates.json`
+   updated (`unreachable_remedy: 1551` + full note, clean 3-line diff via the `/tmp`
+   python-script-file method — remembered `indent=1` to match this file's real convention, not
+   `json.dump`'s default of 2, avoiding a cycle-1543-style whole-file reformat). `bin/audit-due
+   --type unreachable_remedy` now **8 DUE**, NEXT TARGET `eu-ted-tenders-scraper`. Committed and
+   pushed. No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (9 DUE, NEXT TARGET: `us-federal-awards-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (8 DUE, NEXT TARGET: `eu-ted-tenders-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —

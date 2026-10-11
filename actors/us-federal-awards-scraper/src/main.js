@@ -1047,7 +1047,7 @@ if (pushed === 0 && !watchMode) {
         `No awards matched. Scanned ${scanned} rows. Most common causes, in order: `
         + '(1) the filters are ANDed — a keyword plus a state plus a minimum amount over a short date window '
         + 'often has zero real matches; drop one filter and retry. '
-        + '(2) "agencies" must be the exact top-tier agency name as USAspending spells it '
+        + '(2) "agencies"/"fundingAgencies" must be the exact top-tier agency name as USAspending spells it '
         + '(e.g. "Department of Energy", not "DOE" or "Energy"). '
         + '(3) the date window is USAspending\'s award-level time_period filter, a coarse recency '
         + 'bound rather than a strict window — widen "startDate"/"endDate", and move the END date, '
