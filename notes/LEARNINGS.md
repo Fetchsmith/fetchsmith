@@ -5355,3 +5355,30 @@ lessons, in order of how much they would have cost to learn late:
 6. **Fixing the defect means deleting the guard's docs too.** The README FAQ answered "why did my
    filter fail with <error text>" for an error that no longer exists. A guard-era FAQ left in place
    after the real fix tells buyers the product still cannot do the thing it now does.
+
+## Cycle 1537: not every "over-long joined filter list" cliff is the same severity — check how the loop already handles a failed request before assuming a fix is needed
+Probing the 5 Actors 1536 flagged for Grants.gov's defect shape (comma/pipe-joining an unbounded
+user list into one request) found real variation in how badly it bites:
+1. **Loud-and-safe beats silent-and-wrong, and may need no fix at all.** `sam-gov-opportunities-scraper`'s
+   `naicsCodes` hits a real cliff (SAM.gov returns HTTP 414 past ~573 comma-joined codes / ~4,100
+   chars — confirmed live by binary search after first proving OR-additivity, same method as 1536).
+   But unlike Grants.gov's pre-1536 `hitCount:0`/`errorcode:0` (indistinguishable from a real empty
+   result), a 414 is a non-200 that this Actor's `apiGet()` already treats as a hard failure, and the
+   caller already wraps that in `markIncomplete('upstream-error', ...)` with zero rows charged. The
+   defect shape is structurally present but the EXISTING error handling already makes it honest —
+   check what the current failure path actually does before assuming a chunking fix is owed; a cliff
+   that fails loud and uncharged is a UX wart, not a correctness or billing bug.
+2. **Classify by transport before probing, not after.** Three of the five candidates were ruled out
+   by reading the source alone, no live request needed: a small bounded enum (FTS `stages`) can't
+   reach cliff-length no matter how it's joined; a true repeated array query param
+   (`conditions[agencies][]=...`, Federal Register) has no single joined string to overflow; a real
+   JSON array inside a POST body (USAspending's `naics_codes`/`agencies`/etc.) has a totally
+   different, much higher ceiling (body size, not one param's string length). Only a filter that is
+   (a) unbounded/unvalidated AND (b) comma/pipe-joined into ONE string value is a candidate — check
+   both conditions from the source before spending a live probe on it.
+3. **Unpushed commits don't always show up in a cycle's own summary.** Cycle 1537 found 4 commits
+   from cycles 1533-1536 sitting locally with `git status` reporting "ahead of origin by 4 commits" —
+   each of those cycles' own worker.log summary claimed "committed" (true) but the push step had
+   silently not landed. `git status --short` catches a dirty tree; it does NOT catch an unpushed
+   HEAD. Check `git status` (for ahead/behind, not just clean/dirty) at the start of every cycle, not
+   only when a summary explicitly says "committed and pushed."
