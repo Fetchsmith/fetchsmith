@@ -1,0 +1,279 @@
+#!/root/agent/venv/bin/python
+"""Surface watch-mode Actors whose own filter inputs can make their watch structurally
+unable to report the thing it sells -- the "change-blind filter" and "dead upper date
+bound" classes, statically, without a network call or an Actor run.
+
+Built cycle 1572 as the static-check candidate queue.md item (4) had been holding since
+1560/1564. Both classes were found ten-plus times by hand, one Actor per cycle, on the
+`watch_subset_audit` rotation (grants-gov c860, clinicaltrials c861, fda c?, trademark,
+google-play 1559, apple-podcasts, fec, federal-register 1566, sam-gov 1567,
+us-federal-awards 1568, nih-reporter 1570, eu-ted 1571). Nine out of nine Actors read on
+the 1549-1571 lap carried a real instance, so the prior is high and the grep is cheap:
+this script is the fleet-wide version of the two mechanical steps those cycles each did
+by hand.
+
+Two independent passes, because EITHER alone is structurally blind to half the instances:
+
+  PASS 1 -- change-blind filter (snapshot watches). Intersect the fields `snapshotOf()`
+  records with the Actor's own filter inputs. If a run narrows the query on the very
+  field `watchChanges` compares, a row whose field changes OUT of the filtered set is
+  dropped by the filter instead of reported as a change -- i.e. the alert the buyer
+  bought is the one alert that cannot fire.
+
+  PASS 2 -- dead upper date bound (ALL watch Actors, snapshot or identity). An upper
+  bound on a date the source assigns at publication and never revises goes permanently
+  blind to new records once real time passes the bound. apple-podcasts' `maxReleaseDate`
+  defect has NO `snapshotOf()` at all, so pass 1 is structurally incapable of seeing it
+  (the 1564 scope note in queue.md item (4) -- an identity watch is still a watch).
+
+Pass 1 ranks its hits instead of printing one undifferentiated list, because name
+matching has two genuinely different confidence levels and merging them buries the real
+ones:
+
+  SUSPECT -- the field and the input share a HEAD token (last non-generic token after
+  stemming): `awardAmount` ~ `maxAwardAmount` (head `amount`), `isActive` ~ `activeOnly`
+  (head `active`), `points` ~ `minPoints` (head `point`), `oppStatus` ~ `oppStatuses`
+  (head `status` after `-ses` stemming). Every mechanically-nominal instance the manual
+  cycles found lands here.
+
+  WEAK -- they share only a non-head token: `awardCeiling` ~ `maxAwardAmount` (both
+  `award`, heads `ceiling` vs `amount`). This tier is real -- grants-gov's confirmed
+  instance lives here -- but it also admits junk: nih-reporter's `projectEndDate` shares
+  `project` with the unrelated identity filter `projectNums`. Printed separately and
+  last, as a read-this-if-you-have-time list, not a worklist.
+
+Head matching alone would have missed grants-gov's `awardCeiling`; any-token matching
+alone buries it next to `projectNums`. Hence both tiers, labelled.
+
+Coverage: a field/input is CLEARED when its name appears in the Actor's existing guard --
+the string literals pushed into `watchChangeBlindFilters`, or a `watch*DateBound` flag
+for pass 2. That is deliberately name-based rather than semantic, so a guard that names
+the input (`minAwardAmount/maxAwardAmount`, grants-gov) and one that names the watched
+field (`awardAmount`, us-federal-awards) both count -- the fleet uses both conventions
+and neither is wrong.
+
+What this script CANNOT see, stated plainly so a future cycle doesn't trust a 0:
+
+1. Client-side row-loop drops. us-federal-awards' `expiringWithinDays` (1568, the first
+   client-side instance) and nih-reporter's `activeOnlyClientFilter` (1570, the second)
+   blind a watched field by `continue`-ing at the top of the row loop, not by narrowing
+   the server query. `expiringWithinDays` shares NO token with the watched `endDate`, so
+   no name matcher reaches it. Finding those still needs 1568's method: grep the row loop
+   for early `continue`s on a watched field. A third pass for that shape is scoped in
+   queue.md -- do not read this check's silence as that question being answered.
+2. Semantic relationships with no shared token at all, generally (`docType` narrowed by
+   `fundingInstruments`).
+3. Whether a flagged pair is ACTUALLY blind. Direction decides it, and direction is not
+   in the name: 861's one-way-bound rule says an upper bound on a monotonically
+   increasing field is fatal while a lower bound is safe, and 1568 found that an award
+   AMOUNT is not monotonic so both of its bounds are blind. That reasoning needs a human
+   read of the field's semantics plus, ideally, a live measurement -- the same two steps
+   every shipped fix in this class did. A hit here is a question, not a verdict.
+
+So: non-zero output is a worklist to read, zero output on pass 1 is weak evidence and
+zero output on pass 2 is strong evidence (its shape is purely nominal and the input
+schema is authoritative about which bounds exist).
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Tokens that carry no field identity: bound/qualifier words, units, and the generic
+# noun tails almost every field name ends in. Dropped BEFORE head selection, so
+# `projectEndDate`'s head is `end` and not `date` -- otherwise every date field in the
+# fleet would match every other one.
+GENERIC = {
+    'min', 'max', 'from', 'to', 'before', 'after', 'until', 'since', 'is', 'has', 'only',
+    'date', 'datetime', 'day', 'time', 'within', 'id', 'num', 'code', 'no', 'of', 'the', 'and',
+    'or', 'filter', 'field', 'mode', 'label', 'url', 'per', 'sort', 'by', 'include',
+    'exclude', 'all', 'any', 'query', 'search', 'raw',
+}
+# `end` and `start` are deliberately NOT generic: us-federal-awards watches `endDate` and
+# accepts a filter input literally named `endDate`, which is the whole point of pass 1.
+
+# Inputs that configure the watch itself or the run plumbing, never narrow the query.
+NOT_A_FILTER = re.compile(r'^(watch|webhook|proxy|maxResults|maxPages|startUrl|enrich|include|flatten|dedupe|output|sort|order|detailLevel|rowsPerStudy|dataType|dataset|searchMode|awardLevel)')
+
+# An upper bound on a date: `publicationDateTo`, `maxReleaseDate`, `reviewsBefore`,
+# `untilDate`, `postedBefore`, `dateTo`. Lower bounds (`...From`, `min...`, `...After`)
+# are deliberately NOT matched -- 861's rule: a lower bound only limits how far back the
+# first baseline reaches, which is safe in a watch.
+UPPER_DATE_BOUND = re.compile(
+    r'(?:date|posted|published|publication|release|review|report|updated|filed|modified|notice|close|until)[a-z0-9]*(?:to|before|until)$'
+    r'|^(?:max|until|before|to)[a-z0-9]*date'
+    r'|^until[a-z0-9]*$',
+    re.I,
+)
+
+
+def tokens(name):
+    """camelCase / snake_case -> lowercase word tokens, lightly stemmed.
+
+    Stemming matters more than it looks: `oppStatuses` must reduce to `status` to match
+    the watched `oppStatus`, and `classifications` to `classification`, or grants-gov and
+    fda-recall (both confirmed, both already fixed) would read as clean here and the
+    check's own validation set would silently shrink.
+    """
+    parts = re.findall(r'[A-Z]+(?![a-z])|[A-Z][a-z0-9]*|[a-z0-9]+', name.replace('_', ' '))
+    out = []
+    for p in parts:
+        t = p.lower()
+        if t.endswith('ses'):
+            t = t[:-2]
+        elif t.endswith('ies') and len(t) > 4:
+            t = t[:-3] + 'y'
+        # `us`/`is`/`ss` endings are not plurals: without this, `status` stems to `statu`
+        # while `statuses` stems to `status`, the two stop matching, and grants-gov's
+        # confirmed `oppStatus` ~ `oppStatuses` instance drops from SUSPECT to WEAK --
+        # caught by this script's own negative-control run, not by reading the code.
+        elif t.endswith('s') and not re.search(r'(?:ss|us|is)$', t) and len(t) > 3:
+            t = t[:-1]
+        out.append(t)
+    return out
+
+
+def meaningful(name):
+    return [t for t in tokens(name) if t not in GENERIC]
+
+
+def head(name):
+    toks = meaningful(name)
+    return toks[-1] if toks else None
+
+
+def snapshot_fields(src):
+    """Field names a snapshot watch compares, or [] for an identity watch.
+
+    Takes the UNION of the returned object's keys and the `<param>.<name>` reads inside
+    the body, because the fleet uses both conventions and they are not always the same
+    name: court-records stores `{ t: item.dateTerminated }` (key is a one-letter alias,
+    only the read is informative) while nih-reporter stores
+    `{ projectEndDate: row.project_end_date }` (the key is the normalized output name,
+    the read is the vendor's snake_case). Union is safe here -- a junk alias like `t`
+    has no meaningful token and so matches nothing downstream.
+    """
+    m = re.search(r'function snapshotOf\s*\(\s*([A-Za-z_$][\w$]*)\s*\)\s*\{', src)
+    if not m:
+        m = re.search(r'(?:const|let)\s+snapshotOf\s*=\s*\(?\s*([A-Za-z_$][\w$]*)\s*\)?\s*=>\s*\{?', src)
+        if not m:
+            return []
+    param = m.group(1)
+    # Body = from the signature to the first line-start `}` (top-level close).
+    tail = src[m.end():]
+    close = re.search(r'\n\}', tail)
+    body = tail[:close.start()] if close else tail[:2000]
+    reads = set(re.findall(rf'\b{re.escape(param)}\.([A-Za-z_$][\w$]*)', body))
+    keys = set(re.findall(r'^\s*([A-Za-z_$][\w$]*)\s*:', body, re.M))
+    return sorted(reads | keys)
+
+
+def declared(src):
+    """Names the Actor's own guards already call out, as a token-comparable set.
+
+    Pulls every identifier out of the string literals pushed into
+    `watchChangeBlindFilters` -- the fleet writes them as bare names
+    (`'awardAmount'`), slash pairs (`'minAwardAmount/maxAwardAmount'`) and prose with a
+    leading name (`'oppStatuses (excludes ...)'`), so a plain identifier scan over the
+    whole literal is the only form that covers all three.
+    """
+    names = set()
+    for lit in re.findall(r'watchChangeBlindFilters\.push\(\s*[`\'"](.*?)[`\'"]\s*\)', src, re.S):
+        names.update(re.findall(r'[A-Za-z_][A-Za-z0-9_]{2,}', lit))
+    for lit in re.findall(r'watch[A-Za-z]*DateBound[^;\n]*', src):
+        names.update(re.findall(r'[A-Za-z_][A-Za-z0-9_]{2,}', lit))
+    # Prose inside the guard's own log.warning lines names the input too (fec writes the
+    # bound's name only there, never in a push call).
+    if re.search(r'watch[A-Za-z]*DateBound', src):
+        for lit in re.findall(r'log\.warning\(\s*[`\'"](.*?)[`\'"]\s*[,)]', src, re.S):
+            if re.search(r'upper bound|go quiet|dead end|never (?:see|report)', lit):
+                names.update(re.findall(r'[A-Za-z_][A-Za-z0-9_]{2,}', lit))
+    return {norm(n) for n in names}
+
+
+def norm(name):
+    """Spelling-independent key for a field or input name.
+
+    Required, not cosmetic: nih-reporter's `snapshotOf()` reads the vendor's
+    `row.award_amount` / `row.is_active` while its guard names the normalized
+    `awardAmount` / `isActive`, so a raw `.lower()` comparison reported the fleet's
+    most recently FIXED Actor as a fresh SUSPECT on both of its known instances. Token
+    join collapses the two spellings (and the plural/singular stemming with them).
+    """
+    return ''.join(tokens(name))
+
+
+def covered(name, decl):
+    return norm(name) in decl
+
+
+def main():
+    registry = json.load(open(os.path.join(ROOT, 'actors/registry.json')))
+    live = sorted(t['slug'] for t in registry['tools'] if t['status'] == 'live')
+
+    suspects, weaks, bounds = {}, {}, []
+    watch_actors = snapshot_actors = 0
+
+    for slug in live:
+        main_js = os.path.join(ROOT, 'actors', slug, 'src/main.js')
+        schema = os.path.join(ROOT, 'actors', slug, '.actor/input_schema.json')
+        if not (os.path.exists(main_js) and os.path.exists(schema)):
+            continue
+        src = open(main_js).read()
+        if 'watchLabel' not in src:
+            continue
+        watch_actors += 1
+        props = list(json.load(open(schema)).get('properties', {}))
+        filters = [p for p in props if not NOT_A_FILTER.match(p)]
+        decl = declared(src)
+
+        # Pass 1 -- snapshot watches only.
+        fields = snapshot_fields(src)
+        if fields:
+            snapshot_actors += 1
+        for f in fields:
+            f_toks, f_head = set(meaningful(f)), head(f)
+            if not f_toks:
+                continue
+            hits = [p for p in filters if head(p) and head(p) == f_head]
+            soft = [p for p in filters if p not in hits and f_toks & set(meaningful(p))]
+            for tier, matched in (('SUSPECT', hits), ('WEAK', soft)):
+                matched = [p for p in matched if not covered(p, decl)]
+                if not matched or covered(f, decl):
+                    continue
+                # Keyed on norm(f) so one field spelled two ways in the same
+                # snapshotOf() -- nih-reporter's `{ projectEndDate: row.project_end_date }`
+                # -- reports once, under the normalized name a reader would grep for.
+                bucket = suspects if tier == 'SUSPECT' else weaks
+                key = (slug, norm(f), tuple(sorted(matched)))
+                if key not in bucket or '_' in bucket[key][1]:
+                    bucket[key] = (slug, f, sorted(matched))
+
+        # Pass 2 -- every watch Actor, identity or snapshot.
+        for p in filters:
+            if UPPER_DATE_BOUND.search(p) and not covered(p, decl):
+                bounds.append((slug, p))
+
+    for slug, f, matched in sorted(suspects.values()):
+        print(f"SUSPECT {slug}: watched field `{f}` shares its head token with filter "
+              f"input(s) {', '.join('`' + m + '`' for m in matched)} -- a change OUT of "
+              f"the filtered set is dropped, not reported")
+    for slug, p in bounds:
+        print(f"DEAD-BOUND? {slug}: `{p}` looks like an UPPER date bound with no "
+              f"watch*DateBound guard -- a watch pinned to it goes blind to new records "
+              f"once today passes it")
+    for slug, f, matched in sorted(weaks.values()):
+        print(f"WEAK {slug}: watched field `{f}` shares a non-head token with "
+              f"{', '.join('`' + m + '`' for m in matched)} -- read before trusting, this "
+              f"tier admits unrelated identity filters")
+
+    print(f"check-change-blind: {watch_actors} watch-mode Actor(s) checked "
+          f"({snapshot_actors} with snapshotOf), {len(suspects)} pass-1 SUSPECT, "
+          f"{len(bounds)} pass-2 DEAD-BOUND?, {len(weaks)} WEAK")
+    return 1 if suspects or bounds else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

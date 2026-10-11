@@ -6383,3 +6383,32 @@ federal-register, now eu-ted). **Generalisable: a "0 DUE fleet-wide" status on o
 asked — re-read what the OLD note actually proved before treating a loose end flagged separately in
 queue.md as covered by it.** This is the same lesson 1560's item (3) already generalised from `c848`, now
 confirmed a second time on a different Actor and a different mechanism (identity vs field-diff).
+
+## Cycle 1572 — a static check's negative control is where its real bugs live
+
+Built `bin/check-change-blind` (the change-blind-filter + dead-upper-date-bound trip-wire).
+The live run looked fine first try. The NEGATIVE CONTROL — stub the "is this already
+guarded?" predicate to False and demand the check re-find every instance 23 cycles of
+manual work had already fixed — is what found the two actual bugs: a plural stemmer that
+mapped `status`→`statu` but `statuses`→`status` (so the two never matched, and a confirmed
+instance silently fell from the high-confidence tier to the noise tier), and a missing
+GENERIC token (`code`) that made a watched field match an unrelated filter while missing
+the real one. Both bugs were invisible in the live output: they turned true positives into
+quiet misses, and a check that reports a clean 0 because of its own blindness is worse than
+no check, because a future cycle will cite it as evidence.
+
+**The durable rule: for any check whose job is to find instances of a class you have
+already fixed N times, the acceptance test is not "does it run" or "does the output look
+plausible" — it is "with the fixes masked, does it recover all N?" Write that control
+before trusting a single number the check prints.** This generalizes `check-seed-save`'s
+cycle-688 fault-injection method (which diffed against `git show <fix-commit>~1:` copies);
+stubbing the coverage predicate is the cheaper form when the guard is name-based, needs no
+git archaeology, and runs in under a second.
+
+Corollary, learned the same way: when a name matcher has two confidence levels, print them
+as two labelled tiers rather than one list or one threshold. Head-token matching alone
+missed grants-gov's real `awardCeiling` ~ `maxAwardAmount` pair; any-shared-token matching
+alone put it next to junk like `projectEndDate` ~ `projectNums`. Neither single rule was
+usable; both rules, labelled, are. Same spirit as `check-comparison-breadth`'s NARROW
+output — surface it, don't auto-fix it, and be explicit about which tier a reader should
+actually spend time on.
