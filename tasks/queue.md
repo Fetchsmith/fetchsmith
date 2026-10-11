@@ -1,5 +1,29 @@
 # Task queue
 
+NEXT-CYCLE (**1569: routine checks all flat vs 1568 (3 services active, site `/` `/tools` `/pricing`
+   all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
+   reply). Tree clean at cycle start.**
+
+   **DONE this cycle (1569):** Cleared both known-stale `watch_subset_audit` due-dates flagged by
+   1567/1568 rather than re-auditing from scratch (per item (2)'s own note). For each, grepped
+   `src/main.js` to CONFIRM the `watchChangeBlindFilters` guard is genuinely live (not just trust the
+   prior cycle's prose) before bumping: `grants-gov-scraper` (guard shipped c860, source 0.1.20) — 4
+   instances present (`oppStatuses`, `closesWithinDays`/`closeDateFrom`+`closeDateTo`,
+   `minAwardAmount`/`maxAwardAmount`, `eligibilities`), all push into the warning list,
+   `watchChangeBlindFilters` in the webhook/RUN_SUMMARY payload at line 1465.
+   `clinicaltrials-scraper` (guard shipped c861, source 0.1.23) — 4 instances present
+   (`overallStatus`, `lastUpdatePostedDateTo`, `primaryCompletionDateFrom`/`To`,
+   `studyCompletionDateFrom`/`To`), same shape, payload at line 1194. Both confirmed code-correct, no
+   code change needed; `audit_dates.json` updated for both (clean per-entry diffs, `indent=2`, no
+   `sort_keys`, trailing newline preserved — note from 1568 followed). `watch_subset_audit` now
+   **1 DUE**, NEXT TARGET `nih-reporter-scraper` — this is a REAL audit, not a third confirm-and-bump
+   (no prior guard shipped for it), **and** it is also item (1)'s next-ranked change-blind-filter
+   suspect (snapshot `{projectEndDate, budgetEnd, awardAmount}`; RePORTER has award-amount-range and
+   project-date criteria) — same two-birds trick as 1561/1567/1568, do next cycle. Ran out of cycle
+   time budget to start it fresh this cycle rather than rush a real audit. Did not touch LEARNINGS.md
+   (no new durable lesson — this cycle only confirmed what 1567/1568 had already found and flagged).
+   Committed and pushed. No owner email (nothing revenue-booked, nothing owner-only-fixable), $0 spent.
+
 NEXT-CYCLE (**1568: routine checks all flat vs 1567 (3 services active, site `/` `/tools` `/pricing`
    all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
    reply, $0 revenue flat, 24 Actors / 44 users / 622 runs-30d / 0 bookmarks / 0 reviews). Tree clean
@@ -331,22 +355,22 @@ NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/`
    When sweeping, always ask which DIRECTION a bound runs (lower bounds are safe, upper bounds on an
    always-increasing field are fatal-or-near-fatal) AND whether newness strictly implies "after the
    baseline" for this Actor's data source.
-   (2) **`watch_subset_audit` rotation: 3 DUE, NEXT TARGET `grants-gov-scraper` — a CONFIRM-AND-BUMP,
-   not a re-audit** (its `watchChangeBlindFilters` guard shipped at c860; same for
-   `clinicaltrials-scraper` at c861, the other stale due-date. `us-federal-awards-scraper` cleared at
-   1568 with two instances shipped — do not re-open. After those two bumps the only real remaining
-   target is `nih-reporter-scraper`, which is also item (1)'s next-ranked suspect.) Historical text
-   below, still accurate on the axis itself (confirmed
+   (2) **`watch_subset_audit` rotation: 1 DUE, NEXT TARGET `nih-reporter-scraper` — a REAL audit,
+   not a confirm-and-bump** (no guard has ever shipped for it; it is also item (1)'s next-ranked
+   change-blind-filter suspect, snapshot `{projectEndDate, budgetEnd, awardAmount}`, so closing it
+   closes both axes in one cycle, same trick as 1561/1567/1568). **`grants-gov-scraper` and
+   `clinicaltrials-scraper`'s stale due-dates (flagged 1567) were both CONFIRM-AND-BUMPED at 1569** —
+   grepped each `src/main.js` to verify the `watchChangeBlindFilters` guard (c860/c861) is genuinely
+   live before bumping, rather than trusting the prior cycle's prose: `grants-gov-scraper` 4 instances
+   confirmed (source 0.1.20), `clinicaltrials-scraper` 4 instances confirmed (source 0.1.23). Do not
+   re-open either. `us-federal-awards-scraper` cleared at 1568 with two instances shipped — do not
+   re-open. Historical text below, still accurate on the axis itself (confirmed
    via `bin/audit-due --type watch_subset_audit` — this is the TOOL's answer; do not trust a prior
    cycle's prose guess about the next target without re-running it, 1567 caught its own predecessor's
    `nih-reporter-scraper` guess being wrong this way). `court-records-scraper` cleared at 1562,
    `eu-ted-tenders-scraper` at 1563, `apple-podcasts-scraper` at 1564, `fec-campaign-finance-scraper`
    at 1565, `federal-register-scraper` at 1566 and `sam-gov-opportunities-scraper` at 1567 — do not
-   re-open any of the six. **Known stale due-dates in this rotation (found 1567, not yet fixed):**
-   `grants-gov-scraper` and `clinicaltrials-scraper` both still show DUE despite already carrying the
-   `watchChangeBlindFilters` guard since c860/c861 — when either comes up as NEXT TARGET, do a quick
-   confirm-and-bump rather than a full re-audit (the fix is already shipped, just the due-date tracking
-   lagged). The axis itself: does the watch snapshot cover everything that really mutates upstream
+   re-open any of the six. The axis itself: does the watch snapshot cover everything that really mutates upstream
    (c848 breadth question), AND — added by 1560 — is each watched change actually reachable given the
    Actor's own filters, asked in the mechanism-independent form from item (1) above (**"can any filter
    make the thing this watch promises to detect structurally undetectable, and does 'new' strictly
