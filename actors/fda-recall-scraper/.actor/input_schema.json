@@ -163,7 +163,7 @@
     "watchChanges": {
       "title": "Also alert on status/classification changes",
       "type": "boolean",
-      "description": "Only used with watchLabel. When on, a recall you were already alerted on is re-delivered (charged again) if its status changes (e.g. Ongoing -> Terminated) or FDA reclassifies its severity (e.g. Class II -> Class I), tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new recalls, same as before this option existed.",
+      "description": "Only used with watchLabel. When on, a recall you were already alerted on is re-delivered (charged again) if its status changes (e.g. Ongoing -> Terminated) or FDA reclassifies its severity (e.g. Class II -> Class I), tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new recalls, same as before this option existed. IMPORTANT: do not combine this with the status or classifications filters above -- those are server-side filters on the very fields this option watches, so a recall whose value moves out of your filter stops matching the query and its change can never be reported. The run warns you if you do; see the README FAQ \"don't filter on the field you're watching\".",
       "default": false
     },
     "webhookUrl": {

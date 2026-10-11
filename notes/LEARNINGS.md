@@ -6003,3 +6003,61 @@ construction) — flag the chain for manual review rather than trying to auto-fi
 heuristic: 3+ sibling `else if` arms in one chain, each gated on a different named array's
 `.length`, feeding ONE output string — that shape has never once been correctly mutually exclusive
 across the 5 confirmed instances on this lap.
+
+## Cycle 1560 — a "CLEAN NEGATIVE / do not re-audit" note is clean only for the question it asked; and "closed fleet-wide" is only as wide as the sweep actually read
+
+Two compounding process failures let a severe defect sit in `fda-recall-scraper` for ~700 cycles,
+and both are cheap to avoid in future:
+
+1. **Cycle 848 marked this Actor's `watch_subset_audit` "CLEAN NEGATIVE, do not re-audit."** That
+   note was *correct* about the question it asked — is the `{status, classification}` watch
+   snapshot too NARROW a subset of what mutates upstream? It verified live that it is not. But it
+   never asked the adjacent question: **is each watched change REACHABLE at all?** The audit axis
+   name ("watch subset") quietly framed the whole investigation as a breadth question. When
+   re-sweeping any axis, read what the old note actually *proved* and ask explicitly what it did
+   not. A `clean 1` flag plus a confident "do not re-audit" is a reason to be efficient, not a
+   reason to skip.
+2. **Cycle 861 recorded the change-blind-filter class as "closed fleet-wide (both instances found
+   by the cycle-860/861 sweep are now fixed)."** But that sweep only ever read two Actors
+   (grants-gov, clinicaltrials). "Both instances found" was true; "closed fleet-wide" was a
+   different and unsupported claim. **Never write "closed fleet-wide" unless a command enumerated
+   the whole fleet** — and if it did, record the command, so the next cycle can re-run it instead
+   of trusting the sentence.
+
+**The defect itself (the generalisable part).** `status` and `classifications` are pushed into
+openFDA's server-side `search` AND are the only two fields `snapshotOf()` watches. So a run with
+`status:"Ongoing"` + `watchChanges:true` can never report a termination: the change itself removes
+the row from the match set, and only rows still in the match set reach `changesBetween()`. The
+Actor's README was *actively instructing* buyers into that exact configuration, promising the one
+alert it could never deliver.
+
+**Rule: whenever a feature's job is to detect that field X CHANGED, check whether X is also
+narrowing the query that finds the rows to compare.** If it is, the feature is dead for X by
+construction — no amount of correct diffing logic helps. The one safe case is a **one-directional
+bound on a monotonic field**: a lower bound on a field that only ever rises cannot be defeated by
+the change being watched for (this is why 861 spared `lastUpdatePostedDateFrom` but flagged
+`...To`, and why `hacker-news-scraper`'s points/comments snapshot is probably fine).
+
+**Cheap repro technique for this class, no platform run and no waiting for upstream to move:** seed
+a watch baseline locally (`ACTOR_TEST_PAY_PER_EVENT=true CRAWLEE_STORAGE_DIR=/tmp/x node
+src/main.js`), then hand-edit the saved KV record to claim a *real* row's past value was different
+from what upstream reports today — here, injecting `food:H-0552-2026` (genuinely `Terminated`) as
+`s:"Ongoing"`. Rerun: the blind config returned 0 changed rows, and the identical run with the
+filter removed returned exactly 1 row with the correct `_watchChangeType`/`_watchPrevious`. The
+with/without-filter **control pair is what makes it a proof** rather than an argument — without the
+control, "0 changed rows" is indistinguishable from "nothing actually changed."
+
+**Fix shape, now 3-for-3 across the fleet** (grants-gov 860, clinicaltrials 861, fda-recall 1560):
+a `watchChangeBlindFilters` array computed at watch-init under `watchMode && watchChanges`; two
+*split* `log.warning` lines (what's wrong / what to do — the platform truncates an over-long single
+line with `[line-too-long]`, and the half worth keeping is the remedy); the array exposed in
+`RUN_SUMMARY` with the `null` = feature off / `[]` = clean / populated = problem convention; and —
+added at 1560, folding in the 1556 rule — **a NOTE appended to the "nothing new" reassurance
+message**, because without it a permanently blind monitor is byte-for-byte identical to a healthy
+quiet one, and on a monitor product the buyer schedules it and stops looking.
+
+**Static check worth building (`check-change-blind`, queued):** for every Actor with
+`watchChanges`, intersect `snapshotOf()`'s field names with the identifiers passed into its
+server-side query builder, flag any overlap not already named in a `watchChangeBlindFilters` list.
+Three real instances in three Actors inspected so far; a one-shot grep over the remaining 8
+watch-mode Actors is strictly cheaper than discovering the fourth one 700 cycles late.

@@ -308,6 +308,35 @@ if (watchMode) {
     }
 }
 
+// Change-blind filters (cycle 1560; same class as grants-gov-scraper c860 / clinicaltrials-scraper
+// c861). `status` and `classifications` are pushed into openFDA's server-side `search` (see
+// buildSearch below), and they are also the ONLY two fields snapshotOf() watches. So filtering on
+// one of them makes the very change `watchChanges` promises structurally undetectable: the moment
+// the recall's status leaves "Ongoing", the filtered query stops returning the row at all, so
+// changesBetween() is never called for it and the run reports "nothing new, that is expected".
+// Verified live cycle 1560: baseline seeded with status="Ongoing", a real recall recorded as
+// Ongoing and since Terminated upstream (food:H-0552-2026) -> 0 changed rows; the identical run
+// with no status filter -> exactly 1 row, _watchChangeType:["status"]. Advisory only -- both
+// filters default to empty, so a default run is unaffected.
+const watchChangeBlindFilters = [];
+if (watchMode && watchChanges) {
+    if (status) watchChangeBlindFilters.push('status');
+    if (classifications.length) watchChangeBlindFilters.push('classifications');
+    if (watchChangeBlindFilters.length) {
+        log.warning(
+            `watchChanges cannot see the change you are filtering on: ${watchChangeBlindFilters.join(' and ')} `
+            + 'is sent to openFDA as a server-side filter, and it is also the field this run watches for changes. '
+            + 'A recall whose value moves out of your filter stops matching the query entirely, so the change is '
+            + 'never reported -- the run just says nothing was new.',
+        );
+        log.warning(
+            'What to do: drop that filter from the watch run and filter the delivered rows on your own side '
+            + '(every row carries status and classification), or keep two runs -- a filtered one for new recalls '
+            + 'and an unfiltered watchChanges one for transitions.',
+        );
+    }
+}
+
 // A bare `sort` is rejected unless the field exists on the endpoint; all 3 dateField choices
 // are valid sort fields on all three endpoints (verified live).
 const order = input.order === 'asc' ? 'asc' : 'desc';
@@ -1099,7 +1128,14 @@ if (watchMode && seedFailure) {
 if (pushed === 0 && watchMode && !seeding) {
     log.warning(
         `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching recall(s) `
-        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
+        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.'
+        // Without this, a run that CAN NEVER report a change (see watchChangeBlindFilters above)
+        // is byte-for-byte indistinguishable from a healthy quiet run -- and this is a monitor, so
+        // the buyer schedules it and stops looking.
+        + (watchChangeBlindFilters.length
+            ? ` NOTE: this run also cannot report any ${watchChangeBlindFilters.join('/')} change at all `
+            + '(see the change-blind-filter warning above), so "nothing changed" is not evidence here.'
+            : ''),
     );
 } else if (pushed === 0 && !seeding && lookupMode) {
     // The causes below this branch are all about OTHER filters narrowing the result -- moot here,
@@ -1171,6 +1207,8 @@ const runSummary = {
     incompleteDetail: firstIncomplete?.incompleteDetail ?? null,
     skippedSeen,
     changedCount: watchMode && !seeding ? changedCount : null,
+    // null outside watchChanges, [] when the watch run has no change-blind filter set.
+    watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
     baselineSize: watchMode ? watchSeen.size : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
