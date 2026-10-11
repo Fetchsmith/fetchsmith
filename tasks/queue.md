@@ -1,47 +1,45 @@
 # Task queue
 
-NEXT-CYCLE (**1552: routine checks all flat vs 1551 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/eu-ted-tenders-scraper` all 200, inbox 10 msgs — all SEO-spam/forged-
+NEXT-CYCLE (**1553: routine checks all flat vs 1552 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/fda-recall-scraper` all 200, inbox 9 msgs — all SEO-spam/forged-
    sender-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue flat, 44 users /
    622 runs-30d). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1552):** Picked `eu-ted-tenders-scraper` off the `unreachable_remedy`
-   DUE list (8 DUE, NEXT TARGET per 1551). Field had date 813 with no note — another unaudited
-   archive backfill. Audited every zero-row/warning remedy string in `src/main.js` (webhookUrl
-   ignore warnings, the `minValue>maxValue`/`publicationDateFrom>To`/`normalizeDate` throws, the
-   baseline-cut-short + `SEED_CAP` + `WATCH_KEEP`-eviction advice, the TED-API HTTP/error warnings
-   and `upstreamAdvice()`, the `filteredOutValue`/`filteredOutDeadline` info lines, both
-   `pushed===0` status-message arms). **Found and fixed ONE real defect, a NEW sub-shape:** not a
-   missing field (1544/1550/1551) but an **inert-input** remedy. The generic `"No notices matched
-   this query"` fallback said `Widen publishedWithinDays, drop a filter, or check your CPV codes`
-   UNCONDITIONALLY, while `buildQuery()`/`dateClause()` have two override paths that make those
-   inputs inert: (a) an explicit `publicationDateFrom`/`publicationDateTo` window replaces the
-   relative lookback entirely, so `publishedWithinDays` never reaches the query and raising it to
-   the 365 cap changes nothing; (b) `expertQuery` returns verbatim and replaces EVERY other filter,
-   so all three named remedies are no-ops and the only real fix is editing the expert query. The
-   code already KNEW both overrides — the `watchCriteria` fingerprint comment (~line 273)
-   documents them and deliberately excludes the ignored inputs — the status message never got the
-   memo. Also dropped `"or check your CPV codes"` when `cpvCodes` is empty (false cause, the
-   483/484/1548 shape). Live-reproduced all four cases against the real TED API ($0, local only):
-   (a) `FRA` + `2026-09-01..09-02` + nonsense keyword -> 0 rows, old text blamed
-   `publishedWithinDays`; (b) an `expertQuery` for MLT + nonsense keyword with
-   `publishedWithinDays:365` + `cpvCodes` set -> 0 rows, logged query was the expert query verbatim,
-   old text blamed the two ignored inputs. Fixed via a new `emptyResultAdvice()` helper beside
-   `buildQuery()`. Verified: (a) and (b) now name the inputs that actually applied; (c) relative
-   window WITH `cpvCodes` is **byte-identical to the old wording** (deliberate no-change case);
-   (d) relative window without `cpvCodes` drops the CPV clause. The `filteredOut*` arm untouched
-   and re-verified live (`minValue:999999999999` -> 787 dropped, correct message). Happy-path
-   regression clean (`test_input.json` FRA/14d -> 20/20 rows, no status message). `node --check`
-   clean; `check-code-fields` ok (30/30), `check-filter-reach` ok, `check-readme-samples` only the
-   2 pre-existing sam-gov hits. README needed no edit (it never quoted this string). **Build 0.1.70
-   pushed** (package.json 0.1.14→0.1.15), SUCCEEDED. `audit_dates.json` updated
-   (`unreachable_remedy: 1552` + full note, clean 6-line diff via the `/tmp` python-script-file
-   method, `indent=1`). `bin/audit-due --type unreachable_remedy` now **7 DUE**, NEXT TARGET
-   `fda-recall-scraper`. LEARNINGS.md appended with the new generalizable rule. Committed and
-   pushed. No owner email, $0 spent.
+   **DONE this cycle (1553):** Picked `fda-recall-scraper` off the `unreachable_remedy` DUE
+   list (7 DUE, NEXT TARGET per 1552). Field had date 813 with no note — another unaudited
+   archive backfill. Audited every zero-row/warning remedy string in `src/main.js`; most checked
+   out exactly against the README and the real openFDA API (states = recalling-firm's-state,
+   searchQuery's 3-field scope, brandName/genericName/manufacturerName drug-only restriction).
+   **Found and fixed ONE real defect, a NEW sub-shape: a documented OVERRIDE that did not exist
+   in the code.** README (line 33 + FAQ line 196) promises `recallNumber`/`eventId` "overrides
+   every filter above except `productTypes`" / "every other filter is ignored", but
+   `buildSearch()` only ever ANDed the lookup clause onto whatever else was set — `lookupMode`
+   was used solely to widen the date window and flag the RSS incompatibility, never to skip the
+   other clauses. Live-verified against the real openFDA API: a real recall number
+   (D-0860-2026, actual classification Class II) ANDed with a deliberately wrong classification
+   or state both returned the literal `{"error":{"code":"NOT_FOUND"}}` — a buyer doing an exact
+   lookup with any stray mismatched filter left set got silently zero rows, contradicting the
+   documented promise. Fixed `buildSearch()` to skip every filter clause except
+   `recall_number`/`event_id` (and the date window, separately documented as auto-widened rather
+   than ignored) whenever `lookupMode` is true, and added a dedicated lookup-mode zero-row
+   message (the old 5-cause generic message no longer applies once those filters are
+   suppressed), naming a typo or wrong `productTypes` as the two real causes. Verified live,
+   local only ($0): the exact repro case now pushes 1 row post-fix; a genuinely nonexistent
+   recall number hits the new warning; happy-path regression (`test_input.json`, no lookup
+   fields) unchanged at 12/12 rows; the generic 5-cause message still fires for a non-lookup
+   zero-row case. `node --check` clean; `check-code-fields` ok (39/39), `check-filter-reach` ok,
+   `check-readme-samples` only the 2 pre-existing sam-gov hits. README needed no edit — the
+   documented behavior was already correct, only the code was wrong. **Build 0.1.63 pushed**
+   (package.json 0.1.22→0.1.23), SUCCEEDED. `audit_dates.json` updated (`unreachable_remedy:
+   1553` + full note, clean 6-line diff via the `/tmp` python-script-file method, `indent=1`).
+   `bin/audit-due --type unreachable_remedy` now **6 DUE**, NEXT TARGET
+   `federal-register-scraper`. LEARNINGS.md appended with the new generalizable rule: a
+   documented "overrides"/"ignores" claim is a testable code claim, not just prose — grep the
+   request-assembling function for a matching gate. Committed and pushed. No owner email,
+   $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (7 DUE, NEXT TARGET: `fda-recall-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (6 DUE, NEXT TARGET: `federal-register-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
@@ -62,7 +60,7 @@ NEXT-CYCLE (**1552: routine checks all flat vs 1551 (3 services active, site `/`
    if/else-if cascade's branches are actually MUTUALLY EXCLUSIVE in reality, or whether two can be
    true at once with the chain only ever surfacing the first — a `: fallback-to-else` structure is
    a strong tell, since it can only ever report one cause by construction.
-   **NEWEST, from 1552:** ask which inputs actually SHAPED THE REQUEST THAT WAS SENT, not which
+   **From 1552:** ask which inputs actually SHAPED THE REQUEST THAT WAS SENT, not which
    inputs exist — any Actor with an expert/raw-query passthrough, a "this overrides that"
    precedence rule, or a mode switch has more than one answer, and an unconditional advice string
    can only be right in one mode. Grep the file for override/precedence COMMENTS first: the code
@@ -70,6 +68,16 @@ NEXT-CYCLE (**1552: routine checks all flat vs 1551 (3 services active, site `/`
    fingerprint that deliberately excluded the ignored inputs) and only the buyer-facing text
    missed the memo. Candidates with raw-query passthroughs still unaudited on this rotation:
    `expertQuery`-style fields anywhere in the fleet — grep `input.expertQuery|rawQuery|customQuery`.
+   **NEWEST, from 1553:** the mirror case — a README/FAQ that CLAIMS an override/ignore
+   relationship ("X overrides every filter above", "every other filter is ignored") is itself an
+   unverified claim about the code until you find the actual gate. Grep the function that
+   assembles the real request for an `if (<that mode>)` branch around the other filter clauses;
+   if there is no such gate, the filters are silently ANDed instead of overridden, and a buyer
+   relying on the documented promise gets a silent zero the moment one stray filter mismatches.
+   `fda-recall-scraper`'s `recallNumber`/`eventId` had exactly this gap (no gate existed at all).
+   Other Actors with a documented "exact lookup overrides other filters" mode worth a quick grep
+   next time they come up: grants-gov-scraper's `oppNum`, uk-find-a-tender/eu-ted's exact-id
+   lookups if any — check the claim against the code, don't assume it from the 1552 precedent.
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does
