@@ -189,7 +189,7 @@ What we ship that the cheaper ones don't: real Recruitee/Workable coverage, Gree
 
 **A company I need isn't on any of these 7 ATSes — can it still be scraped?** Only if it uses one of the 7 (or a client-side board no ATS API backs, which this Actor can't reach). Message support@fetchsmith.com with the company's careers URL if you're unsure which ATS it runs on.
 
-**I set `watchLabel` and got zero results — is it broken?** No. Either it was the baseline run (the log says so explicitly, and you were charged nothing), or nothing new has been posted on those boards since your last run. For a watch, zero is the normal, expected, free result most of the time.
+**I set `watchLabel` and got zero results — is it broken?** Usually not: either it was the baseline run (the log says so explicitly, and you were charged nothing), or nothing new has been posted on those boards since your last run. For a watch, zero is the normal, expected, free result most of the time. **Read the run's status message to tell the two apart from a real problem** — a misspelled board slug or a filter that matches nothing produces a zero-result run that looks exactly the same every time, so the status message names those causes explicitly ("Why you got nothing: ...") instead of calling it normal. If it says nothing is wrong, nothing is wrong.
 
 **How do I reset a watch baseline?** Delete its record from the `fetchsmith-ats-watch` key-value store in your Apify account, or just use a new `watchLabel`. Changing any filter also starts a fresh baseline automatically.
 

@@ -330,6 +330,10 @@ function timeBudgetOk() {
 }
 
 let pushed = 0;
+// Set when the platform refuses a charge (the run's pay-per-event budget is already spent), which
+// produces a zero-row run on a perfectly healthy board — a cause the zero-row status message below
+// has no other way to tell apart from "nothing matched".
+let chargeBlocked = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 // Charges and pushes with no "already delivered" guard — used both by pushResult (a genuinely new
 // id, never seen before) and directly by the salaryAdded branch below (an id that IS already in
@@ -337,7 +341,7 @@ const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function chargeAndPush(item) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'job', count: 1 });
-    if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
+    if (r.chargedCount === 0) { chargeBlocked = true; return false; } // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
@@ -1095,6 +1099,12 @@ const notFoundCompanies = [];
 const erroredCompanies = [];
 const partialCompanies = []; // Workday: a later page failed after retries, so this company's jobs are an undercount, not a clean zero
 let runError = null;
+// Board sizes before filters, and how many postings passed passesFilters, summed over every
+// company. A zero-row run has to tell "no board answered" apart from "the boards are empty" and
+// "your filters dropped everything", and the per-company counters are gone by the time the status
+// message is built.
+let totalRawPostings = 0;
+let totalMatched = 0;
 
 try {
   for (const { ats, slug } of companies) {
@@ -1159,6 +1169,8 @@ try {
     // "0 postings, 0 kept after filters" for a real, populated board.
     log.info(`${ats}:${slug} — ${result.rawCount ?? result.jobs.length} postings, ${scannedForCompany} kept after filters`
       + (watchMode ? `, ${deliveredForCompany} delivered (new or salary-added).` : '.'));
+    totalRawPostings += result.rawCount ?? result.jobs.length;
+    totalMatched += scannedForCompany;
     if (pushed >= maxResults) break;
     // A seeding run pushes nothing, so the maxResults stop above can never fire for it.
     if (seeding && watchSeen.size >= SEED_CAP) break;
@@ -1235,10 +1247,72 @@ log.info(`Done. Pushed ${pushed} job postings from ${companies.length} companies
 const timeBudgetNote = timeBudgetExceeded
   ? ` Stopped before scanning all ${companies.length} companies because the run was approaching its time limit — postings already found are complete and charged normally; re-run to cover the rest, or narrow the company list.`
   : '';
+// Zero rows almost never has exactly one cause: a misspelled slug and an over-narrow filter can
+// both be true in the same run, so collect every applicable cause instead of asserting the first
+// one in a cascade (same shape as the cycle-1555 substack-scraper fix). Filter names are derived
+// from what this run actually SET rather than hard-coded, so the list can never drift out of sync
+// with passesFilters the way cycle 1544's enumerated field lists did.
+function activeFilterNames() {
+  const names = [];
+  if (titleKeyword) names.push('titleKeyword');
+  if (titleExcludeKeyword) names.push('titleExcludeKeyword');
+  if (locationKeyword) names.push('locationKeyword');
+  if (locationExcludeKeyword) names.push('locationExcludeKeyword');
+  if (employmentTypeKeyword) names.push('employmentTypeKeyword');
+  if (departmentKeyword) names.push('departmentKeyword');
+  if (descriptionKeyword) names.push('descriptionKeyword');
+  if (descriptionExcludeKeyword) names.push('descriptionExcludeKeyword');
+  if (hasSalary) names.push('hasSalary');
+  if (minSalary != null) names.push('minSalary');
+  if (maxSalary != null) names.push('maxSalary');
+  if (remoteOnly) names.push('remoteOnly');
+  if (postedAfter) names.push('postedAfter');
+  if (postedBefore) names.push('postedBefore');
+  return names;
+}
+function zeroRowCauses() {
+  const causes = [];
+  if (notFoundCompanies.length) {
+    causes.push(`${notFoundCompanies.length} of the ${companies.length} compan(ies) you listed are not on the ATS you named for them (${notFoundCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) — check the board slug in that company's own careers-page URL, or set "ats": "auto" to let the Actor detect which ATS it uses`);
+  }
+  if (erroredCompanies.length) {
+    causes.push(`${erroredCompanies.length} compan(ies) failed to answer after retries (${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) — re-run to retry just those`);
+  }
+  if (totalRawPostings > 0 && totalMatched === 0) {
+    const names = activeFilterNames();
+    causes.push(names.length
+      ? `every one of the ${totalRawPostings} open posting(s) on the board(s) that did answer was excluded by your filters (${names.join(', ')}) — widen or remove ${names.length === 1 ? 'it' : 'them'}`
+      : `none of the ${totalRawPostings} open posting(s) found could be delivered`);
+  }
+  // Only safe to claim the boards are empty when every one of them was actually reached: a run
+  // that failed outright, or stopped early on its time budget, never saw the rest of the list.
+  if (totalRawPostings === 0 && !notFoundCompanies.length && !erroredCompanies.length
+    && !runError && !timeBudgetExceeded && companies.length > 0) {
+    causes.push('the board(s) answered but have no open postings at all right now');
+  }
+  if (chargeBlocked) {
+    causes.push("this run's pay-per-event budget was already spent, so no posting could be charged for or delivered — raise the run's maximum cost in the Actor's billing settings");
+  }
+  return causes;
+}
+const zeroCauses = pushed === 0 ? zeroRowCauses() : [];
+const zeroCauseNote = zeroCauses.length ? ` Why you got nothing: ${zeroCauses.join('; ')}.` : '';
 if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}${timeBudgetNote}`);
+  // A baseline that recorded nothing is indistinguishable from a healthy one on the next run, so
+  // say why now rather than letting the buyer schedule a watch that can never fire.
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}${timeBudgetNote}${watchSeen.size === 0 ? zeroCauseNote : ''}`);
+} else if (watchMode && pushed === 0 && zeroCauses.length) {
+  // "Nothing new, and that's expected" is only true when every board answered and something
+  // actually matched. A bad slug or an over-narrow filter produces a byte-identical quiet run
+  // forever, so name the real cause instead of reassuring the buyer that nothing is wrong.
+  await Actor.setStatusMessage(`No new job postings for watch label "${watchLabel}" -- but this run also hit problem(s) that can hide real postings, so do not read it as the normal quiet "nothing new" result.${zeroCauseNote}${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && pushed === 0) {
   await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered and none of them gained a salary. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
+} else if (!watchMode && pushed === 0) {
+  // Before this, a plain zero-row run set NO status message at all: the run just ended SUCCEEDED
+  // with an empty dataset and the only clue (a not-found/fetch-error warning, or a "0 kept after
+  // filters" info line) buried in the log.
+  await Actor.setStatusMessage(`Pushed 0 job postings.${zeroCauseNote}${timeBudgetNote}`);
 } else if (watchMode && baselineTruncated > 0) {
   await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && timeBudgetExceeded) {

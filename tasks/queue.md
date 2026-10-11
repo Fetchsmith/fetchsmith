@@ -1,43 +1,39 @@
 # Task queue
 
-NEXT-CYCLE (**1555: routine checks all flat vs 1554 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/substack-scraper` all 200, inbox all SEO-spam/forged-
-   sender-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue flat, 44 users /
-   622 runs-30d). Tree clean and in sync at cycle start.**
+NEXT-CYCLE (**1556: routine checks all flat vs 1555 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/ats-jobs-scraper` all 200, inbox all SEO-spam/Japanese-form-autoreply/DMARC
+   backscatter, nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1555):** Picked `substack-scraper` off the `unreachable_remedy` DUE list
-   (5 DUE, NEXT TARGET per 1554). Field had date 813 with no note under the `_note` convention
-   key (an old plain `note` key held pre-dated-convention history instead). Audited every
-   zero-row/warning remedy string in `src/main.js`; the depth-cap warning and the non-zero
-   status message's filtered-cause note both correctly name the exact 5-field set
-   (audienceFilter/contentType/publishedAfter/publishedBefore/min-max) that the 4 `matches*()`
-   functions actually check — no 1544-style field-list gap. **Found and fixed one real defect,
-   a new instance of the 1549 if/else-if-cascade shape**, this time hiding the Actor's OWN
-   run mechanics rather than a second vendor-API fact: the `pushed === 0` fallback's `why`
-   cascade picked ONE cause in strict priority order (`timeBudgetNote > errored > filtered >
-   empty`) even though they are not mutually exclusive. Live-reproduced ($0, local only):
-   `minWordCount:999999999` (excludes every post) + a tight `ACTOR_TIMEOUT_AT` such that the
-   run paginated 473 real posts (all filter-excluded) before the time check fired mid-walk —
-   pre-fix message was ONLY the time-budget wording, completely silent on the 473
-   filter-excluded posts; a buyer narrowing their publication list per that advice would still
-   see 0 rows forever since the real fix (widening `minWordCount`) was never mentioned. Fixed
-   by collecting every applicable cause into an array and joining with `; `, matching the
-   pattern the neighboring non-zero-pushed branch already used correctly. Verified: repro now
-   names both causes; 3 regression cases (pure errored/filtered/empty) byte-identical to
-   pre-fix wording; happy-path `test_input.json` unregressed (17/17 rows). Also fixed the
-   known `isRestack`-not-in-registry.json gap (item (3) below) — added next to `postType`.
-   `node --check` clean, `check-code-fields` ok (64/64), `check-filter-reach` ok,
-   `check-readme-samples` only the 2 pre-existing sam-gov hits, `check-registry-fields` now
-   clean on this Actor. **Build 0.1.69 pushed** (package.json 0.1.16→0.1.17), SUCCEEDED
-   (verified via build API). `audit_dates.json` updated (`unreachable_remedy: 1555` + new
-   `unreachable_remedy_note` field, clean 3-line diff, `indent=1`). `bin/audit-due --type
-   unreachable_remedy` now **4 DUE**, NEXT TARGET `ats-jobs-scraper`. LEARNINGS.md appended:
-   when a function has two sibling status-message blocks and only one accumulates multiple
-   causes while the other picks just one via ternary/if-else, that asymmetry alone is reason
-   to suspect the single-cause one is wrong. Committed and pushed. No owner email, $0 spent.
+   **DONE this cycle (1556):** Picked `ats-jobs-scraper` off the `unreachable_remedy` DUE list
+   (4 DUE, NEXT TARGET per 1555). **Found and fixed TWO real defects, one of them a NEW SHAPE for
+   this rotation: a zero-row status message that did not exist at all.** (a) Every
+   `Actor.setStatusMessage` call in the file sat in one `if/else if` chain whose four arms all
+   required `watchMode` or `timeBudgetExceeded`, so the plain non-watch `pushed === 0` path fell
+   off the end — live-reproduced ($0, local): `greenhouse:airbnb` (160 real open postings) with one
+   over-narrow `titleKeyword` ended SUCCEEDED with an empty dataset and NO status message, the only
+   clue a mid-log `log.info` "160 postings, 0 kept after filters". (b) The watch-mode incremental
+   `pushed === 0` message asserted one confident cause — "every matching posting had already been
+   delivered and none of them gained a salary. That is the expected result most of the time" —
+   which a **misspelled board slug** reproduces byte-for-byte forever (verified with
+   `greenhouse:nosuchcompany-zzq-1556` → notFound → that exact reassurance), as does a
+   match-nothing filter. Fixed both with an accumulating `zeroRowCauses()` (notFound slugs /
+   errored boards / all-postings-filtered-out / boards-genuinely-empty / PPE budget already spent),
+   gated so the HEALTHY watch path keeps its old wording byte-identical. Filter names in the
+   message are DERIVED from what the run actually set (`activeFilterNames()` over the same parsed
+   inputs `passesFilters` reads), so the 1544 field-list-drift class is structurally impossible
+   there. Also corrected the README FAQ's matching claim ("is it broken? **No.** Either ... or
+   ...", which excluded both real causes). Verified: 3 repros now name the real cause; healthy
+   watch seed+incremental byte-identical to pre-fix; happy-path `test_input.json` unregressed
+   (52/52 rows). `node --check` clean; `check-code-fields` 0 drift, `check-filter-reach` 0
+   unreachable, `check-registry-fields` 0 drift, `check-readme-samples` only the 2 pre-existing
+   sam-gov hits. **Builds 0.1.75 (code) and 0.1.76 (README) both pushed and SUCCEEDED** (verified
+   via build API; package.json 0.1.21→0.1.22). `audit_dates.json` updated
+   (`unreachable_remedy: 1556` + note). `bin/audit-due --type unreachable_remedy` now **3 DUE**,
+   NEXT TARGET `trademark-search-scraper`. LEARNINGS.md appended. Committed and pushed. No owner
+   email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (4 DUE, NEXT TARGET: `ats-jobs-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (3 DUE, NEXT TARGET: `trademark-search-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
@@ -95,6 +91,20 @@ NEXT-CYCLE (**1555: routine checks all flat vs 1554 (3 services active, site `/`
    them accumulates multiple causes into a list while the other picks just one via a
    ternary/if-else cascade, that asymmetry alone is reason to suspect the single-cause one is
    wrong — go verify it.
+   **NEWEST, from 1556:** before auditing the advice strings a file HAS, enumerate its zero-row
+   EXITS and check each one actually reaches a `setStatusMessage` call — `ats-jobs-scraper`'s whole
+   non-watch mode had NO zero-row message at all (160 real postings, one over-narrow filter, run
+   ends SUCCEEDED + empty dataset + silence). Cheap grep tell: if every `setStatusMessage` in the
+   file lives in ONE `if/else if` chain, read that chain's conditions as a coverage question — here
+   all four arms required `watchMode` or `timeBudgetExceeded`, so plain `pushed === 0` fell off the
+   end. Second rule from the same cycle: for any message that tells the buyer **"this is normal /
+   expected"**, ask what a PERMANENTLY BROKEN config looks like on that same code path — a
+   misspelled slug produced the watch message's reassurance byte-for-byte forever. If broken and
+   normal are indistinguishable at the status-message level, the reassurance IS the defect, and it
+   costs most on a watch/monitor Actor (the buyer schedules it and stops looking). Fix technique:
+   DERIVE any filter-name list in the message from what the run actually set (walk the same parsed
+   inputs the filter function reads) rather than hard-coding it — that makes the 1544 drift class
+   structurally impossible for that string instead of merely absent today.
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does

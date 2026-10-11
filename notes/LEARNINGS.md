@@ -5892,3 +5892,29 @@ Also folded in a trivial, previously-flagged, unrelated fix while in this Actor:
 (added to `dataset_schema.json` at cycle 1525) was missing from `registry.json`'s
 `output_fields` list — a one-line add, caught by `check-registry-fields`, no live verification
 needed since it's a static list-membership fact.
+
+## Cycle 1556 — the zero-row status message that does not exist at all (ats-jobs-scraper)
+The `unreachable_remedy` rotation has so far assumed the advice string EXISTS and asked whether its
+remedy is reachable (1544 field lists, 1548 guard-vs-predicate, 1549/1555 single-cause cascades,
+1552 inert inputs, 1553/1554 README claims). `ats-jobs-scraper` had a shape none of those catch:
+**its primary mode had no zero-row status message at all.** A non-watch run over a real, populated
+board (greenhouse:airbnb, 160 open postings) with one over-narrow `titleKeyword` ended SUCCEEDED,
+empty dataset, and `Actor.setStatusMessage` was never called — the only clue was a `log.info` line
+("160 postings, 0 kept after filters") buried mid-log. Add this to the method: before auditing the
+advice strings a file HAS, enumerate the zero-row exits and check each one reaches a
+`setStatusMessage` call. A cheap grep tell: if every `setStatusMessage` call in the file is inside
+one `if/else if` chain, read the chain's conditions as a coverage question — here all four arms
+required `watchMode` or `timeBudgetExceeded`, so the plain `pushed === 0` path fell off the end.
+Second defect, same cycle, the 1548 "confident wrong sentence" in its purest form: the watch-mode
+`pushed === 0` message said "every matching posting had already been delivered and none of them
+gained a salary. That is the expected result most of the time; you were charged for nothing." A
+**misspelled board slug** produces a byte-identical run forever (reproduced: `greenhouse:
+nosuchcompany-zzq-1556` → notFound → that exact reassurance), as does a filter that matches nothing.
+Generalizable rule: for any status message that tells the buyer *"this is normal"*, ask what a
+PERMANENTLY BROKEN config looks like in the same code path — if broken and normal are
+indistinguishable at the status-message level, the reassurance is the defect, and a watch/monitor
+Actor is where it costs most (the buyer schedules it and stops looking).
+Technique worth reusing: when the fix needs to name which filters dropped the rows, DERIVE the list
+from what the run actually set (`activeFilterNames()` walking the same parsed inputs
+`passesFilters` reads) instead of hard-coding an enumeration — that makes the 1544 field-list drift
+class structurally impossible for that string rather than merely absent today.
