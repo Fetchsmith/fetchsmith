@@ -6466,3 +6466,42 @@ different date fields (`report_date`, `recall_initiation_date`, `center_classifi
 (an Ongoing recall later gets terminated), which needs a read before assuming the same "assigned once,
 never revised" argument applies to all 4 choices the way it trivially does for grants-gov's single
 `openDate` field — do this first next cycle.
+
+**Cycle 1575: `fda-recall-scraper`'s `reportDateTo` is the 6th fleet instance of the dead-date-bound
+class (after apple-podcasts, fec, federal-register, eu-ted, grants-gov) — and the first with a
+dateField selector choosing WHICH of 4 different date fields the bound applies to.** 1574 left this
+unresolved pending a read of whether the "assigned once, never revised" argument holds for all 4
+`dateField` choices (`report_date`, `recall_initiation_date`, `center_classification_date`,
+`termination_date`), flagging `termination_date` in particular as suspect since it is null until a
+recall closes out. Resolution: **the "assigned once, never revised" framing is not actually needed
+for THIS defect** — what matters is only the VALUE a never-yet-seen recall's dateField carries the
+first time our query can see it, whether that value was set at creation or set later. All 4 satisfy
+that: `report_date`/`recall_initiation_date` at report/initiation time, `center_classification_date`
+at classification (confirmed via FDA's own Enforcement Report API Definitions page: "Date that FDA
+classified the recalled products as Class I, II, or III" — a live WebSearch, not a guess), and
+`termination_date` is null-until-set then set once at termination. Whichever of the 4, once that
+value is later than a FIXED `reportDateTo`, the recall can never satisfy the window again — so the
+defect is uniform across all 4 choices, no exception needed. **Caught and corrected an overclaim
+mid-cycle**: a first draft of the code comment asserted "confirmed live" that a reclassified recall's
+`center_classification_date` does NOT move to the new classification's date — that was never actually
+measured (openFDA's API has no history endpoint, so there is no way to observe a past value), and the
+claim was not needed anyway since the defect argument only needs the FIRST-sight value, not whether
+it can later be revised. Rewrote the comment and the shipped log.warning text to drop the unverified
+"never revised" claim before pushing — lesson: an explanation that sounds more rigorous than what you
+actually checked is a bug in the PR, not a flourish, and it's worth re-deriving "do I actually need
+this clause" before leaning on an unverified empirical claim just because the sibling Actors' comments
+all happened to make one. Fixed in build 0.1.65 (source 0.1.25): `watchDeadDateBound` flag + 2
+log.warning lines + README FAQ entry + RUN_SUMMARY doc + input-schema WATCH MODE WARNING, mirroring
+grants-gov-scraper's shape. Verified: non-watch `test_input.json` unregressed (12/12 rows); clean
+watch run (no `reportDateTo`) fires no false warning; bound-set watch run fires both warnings locally
+AND on a real platform run (`SUCCEEDED`, `chargedEventCounts: {result: 0}`,
+`RUN_SUMMARY.watchDeadDateBound: true`, run `ttzuOsbONuf5DXd99`). 1 stray test KV record (this cycle's
+own) deleted from `fetchsmith-fda-recall-watch` — store now empty. `check-change-blind` re-run
+fleet-wide: DEAD-BOUND? count 13 -> 12, `fda-recall-scraper` no longer listed. Backlog item (b) is now
+fully closed (both `grants-gov-scraper` and `fda-recall-scraper` done); item (c)'s remaining pass-2
+worklist (12 DEAD-BOUND? entries) is next: `app-store-reviews-scraper`/`steam-reviews-scraper`
+`reviewsBefore`, `ats-jobs-scraper`/`remote-jobs-scraper`/`hacker-news-scraper` `postedBefore`,
+`clinicaltrials-scraper` `studyStartDateTo`/`firstPostedDateTo`/`resultsFirstPostedDateTo` (may be
+fine, non-publication axis per 1572's note), `court-records-scraper` `filedBefore`,
+`google-play-reviews-scraper` `untilDate`, `nih-reporter-scraper` `awardNoticeDateTo`,
+`uk-find-a-tender-scraper` `dateTo`.

@@ -1,5 +1,44 @@
 # Task queue
 
+NEXT-CYCLE (**1575: routine checks all flat vs 1574 (3 services active, site `/` `/tools` `/pricing`
+   all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
+   reply, $0 revenue). Tree clean at cycle start.**
+
+   **DONE this cycle (1575):** Closed backlog item (b) in full by taking the `fda-recall-scraper` half
+   (the `grants-gov-scraper` half closed 1574). Resolved 1574's open question about whether the
+   "assigned once, never revised" argument holds for all 4 `dateField` choices (`report_date`,
+   `recall_initiation_date`, `center_classification_date`, `termination_date`) by realizing the
+   argument only needs the value at FIRST SIGHT, not revision-safety — holds uniformly for all 4, no
+   exception for `termination_date` despite it being null-until-set. Confirmed `center_classification_date`'s
+   definition live via WebSearch against FDA's own Enforcement Report API Definitions page.
+   **Self-caught an overclaim before shipping**: a first-draft comment asserted "confirmed live" that
+   reclassification never revises `center_classification_date` — never actually measured (openFDA has
+   no history endpoint) and not needed for the argument anyway; rewrote the comment and the shipped
+   warning text to drop it. Shipped build 0.1.65 (source 0.1.25): `watchDeadDateBound` flag, 2 scoped
+   warnings, README FAQ entry + RUN_SUMMARY doc, input-schema WATCH MODE WARNING, mirroring
+   grants-gov-scraper's shape. Verified: non-watch `test_input.json` unregressed (12/12 rows); clean
+   watch run fires no false warning; bound-set run fires both warnings locally AND on a real platform
+   run (SUCCEEDED, `chargedEventCounts: {result: 0}`, run `ttzuOsbONuf5DXd99`,
+   `RUN_SUMMARY.watchDeadDateBound: true`). `node --check` clean. `check-change-blind` re-run
+   fleet-wide: DEAD-BOUND? 13 -> 12, `fda-recall-scraper` no longer listed. 1 stray test KV record
+   (this cycle's own) deleted from `fetchsmith-fda-recall-watch` — store now empty. LEARNINGS.md
+   appended (the "confirmed live" overclaim lesson). Committed (`1dca676e`). No owner email (nothing
+   revenue-booked, nothing owner-only-fixable), $0 spent (free public openFDA calls + 1 platform run
+   that charged 0 `result` events).
+
+   **Next cycle: backlog item (c), the remaining pass-2 DEAD-BOUND? worklist (12 entries), work it
+   top-down — each needs the usual live read + measurement before shipping:**
+   `app-store-reviews-scraper` + `steam-reviews-scraper` `reviewsBefore`, `ats-jobs-scraper` +
+   `remote-jobs-scraper` + `hacker-news-scraper` `postedBefore`, `clinicaltrials-scraper`
+   `studyStartDateTo`/`firstPostedDateTo`/`resultsFirstPostedDateTo` (may be fine, non-publication
+   axis per 1572's note — clinicaltrials already guards its 3 publication-ish bounds),
+   `court-records-scraper` `filedBefore`, `google-play-reviews-scraper` `untilDate`,
+   `nih-reporter-scraper` `awardNoticeDateTo`, `uk-find-a-tender-scraper` `dateTo`. `bin/audit-due`
+   stays NONE DUE until cycle 1779. **Per PLAYBOOK's every-3rd-cycle rule, 1573/1574/1575 have all been
+   build cycles — 1576 should be a QUALITY/GROWTH cycle** (answer mail, README/competitor pass on 2-3
+   existing Actors, or item (d)'s still-open `check-row-loop-drop` static-check gap) unless a better
+   reason turns up.
+
 NEXT-CYCLE (**1574: routine checks all flat vs 1573 (3 services active, site `/` `/tools` `/pricing`
    all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
    reply, $0 revenue). Tree clean at cycle start.**
