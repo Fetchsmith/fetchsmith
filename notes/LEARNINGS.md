@@ -5613,3 +5613,34 @@ to verify your account" — a spam/phishing bot, NOT engagement. Do not read a r
 on this channel as traction without reading the commenter. Also: `GET /articles/me?per_page=3`
 returns 3 items because of `per_page`, not because we have 3 articles — don't quote that length
 as a total.
+
+## Cycle 1546 (sonnet-5)
+
+**`unreachable_remedy` on `shopify-products-scraper` (801 -> 1546, never actually audited —
+archive-backfill date with no note, same shape as grants-gov@1543/uk-find-a-tender@1544/
+remote-jobs@1545).** Clean audit, 0 defects, no code change. Two methods used, matching which
+kind of remedy was being checked:
+- **Field-list remedy (the `filteredOut` zero-row branch, main.js ~796-815)** — static diff only,
+  no live calls needed. The branch's 8-name list (onlyAvailable/searchQuery/vendors/productTypes/
+  minPrice/maxPrice/onSaleOnly/minDiscountPercent) was cross-checked against (a) the 8 filter
+  variables actually read from `input` near the top of the file, (b) `input_schema.json`'s field
+  names, and (c) the functions that actually apply them (`matchesSearch`/`matchesVendorType`/
+  `passesShapedFilters`). All three matched exactly — this Actor's filter surface is small and
+  flat enough that the enumerated list and the real variable set are easy to keep in lockstep,
+  unlike 1544's uk-find-a-tender case where a 5th field (`cpvDescription`) was silently load-bearing
+  but missing from the advice string. Also checked `searchQuery`'s own "matches title, vendor,
+  product type or tags" claim against the actual haystack in `matchesSearch()` — agreed exactly.
+- **Own-mechanics remedy (watch-mode `maxProductsPerStore` cap, line 773, "raise it to cover the
+  whole catalog")** — live-triggered twice locally (same technique as 1545's `ACTOR_TIMEOUT_AT`
+  trick: don't reason about an own-mechanics remedy statically, actually make it fire). Ran against
+  the real allbirds.com storefront with `maxProductsPerStore:10` → warning fired, baselined exactly
+  10 products; raised to 100000 → no warning, baselined the Actor's actual full live catalog (692
+  products). Confirms the remedy is not just reachable but genuinely *effective* — raising the cap
+  really does get the whole catalog, not just silence the warning.
+- Spot-checked `watchEvents`' unknown-value warning (line 62, lists `WATCH_EVENTS`) against the
+  schema enum — exact 8/8 match, reconfirms cycle 1527's enum_audit finding rather than duplicating
+  it as new work.
+- **Scoped OUT of this audit, consistent with the established convention**: `notReached`,
+  delisted-too-large-a-share, empty-store, and storefront-error messages are diagnostic
+  explanations ("here's why you got zero"), not falsifiable "do X and you'll get more rows"
+  remedies — nothing to live-verify there.

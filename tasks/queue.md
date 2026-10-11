@@ -1,27 +1,29 @@
 # Task queue
 
-NEXT-CYCLE (**1545: routine checks all flat vs 1544 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 10 msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
+NEXT-CYCLE (**1546: routine checks all flat vs 1545 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox 9 msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
    nothing needing a reply, git clean at start, $0 revenue flat).**
 
-   **DONE this cycle (1545):** Picked `remote-jobs-scraper` off the `unreachable_remedy` DUE list
-   (15 DUE, NEXT TARGET per 1544). Field had date 801 with no note — another archive-backfill
-   never actually audited (same shape as grants-gov@1543/uk-find-a-tender@1544). This Actor's 4
-   remedy strings are all about its OWN run mechanics (time-budget + watch-baseline cap), not a
-   vendor API, so live-verification meant actually triggering the mechanism: set
-   `ACTOR_TIMEOUT_AT` 46s out and ran locally with all 7 sources + high `maxPagesPerSource` —
-   budget genuinely ran out after 2 sources, warning correctly named the 5 untouched boards
-   (`sourcesNotReached`) and pointed at two real input fields (`sources`, `maxPagesPerSource`)
-   plus "raise the run timeout" (a real Apify run option). Also confirmed the watch-baseline-cap
-   remedy ("narrow filters") is generically true, the failed-seeding-charges-nothing claim matches
-   `pushResult()`'s seeding branch (returns before `chargeAndPush()`), and spot-checked README's
-   "unknown source FAILS the run" claim against the `ALL_SOURCES.includes` throw. **0 defects,
-   clean re-confirmation, no code/README change.** `audit_dates.json` updated
-   (`unreachable_remedy: 1545` + full note, 7-line diff). `bin/audit-due --type unreachable_remedy`
-   now **14 DUE**, NEXT TARGET `shopify-products-scraper`. Full writeup in LEARNINGS.md cycle 1545.
+   **DONE this cycle (1546):** Picked `shopify-products-scraper` off the `unreachable_remedy` DUE
+   list (14 DUE, NEXT TARGET per 1545). Field had date 801 with no note — another archive-backfill
+   never actually audited (same shape as the last 3 picks). Two remedy shapes checked: (a) the
+   `filteredOut` zero-row branch's 8-field list (onlyAvailable/searchQuery/vendors/productTypes/
+   minPrice/maxPrice/onSaleOnly/minDiscountPercent) diffed against the actual input variables,
+   `input_schema.json`, and the matching functions — exact match, no 1544-style stale field; (b)
+   the watch-mode `maxProductsPerStore` cap remedy ("raise it to cover the whole catalog"),
+   live-triggered twice locally against real allbirds.com — `maxProductsPerStore:10` fired the
+   warning and baselined exactly 10, raising it to 100000 silenced the warning and baselined the
+   real full catalog (692 products), proving the remedy is reachable AND effective. Also spot-
+   checked `watchEvents`' valid-value list against the schema enum (8/8 match). The remaining
+   warnings (notReached/delisted-share/empty-store/storefront-error) are diagnostic, not
+   falsifiable remedies, so out of scope. **0 defects, clean first-ever audit of this field.**
+   `audit_dates.json` updated (`unreachable_remedy: 1546` + full note, 5-line diff).
+   `bin/audit-due --type unreachable_remedy` now **13 DUE**, NEXT TARGET `steam-reviews-scraper`.
+   Full writeup in LEARNINGS.md cycle 1546. No code/README change, no owner email, $0 spent (two
+   local runs only, no platform runs).
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (14 DUE, NEXT TARGET: `shopify-products-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (13 DUE, NEXT TARGET: `steam-reviews-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
