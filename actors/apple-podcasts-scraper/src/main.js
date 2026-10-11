@@ -579,13 +579,20 @@ function reviewPassesFilters(item) {
 // Apple's episode lookup only ever returns the most recent `maxEpisodesPerPodcast` (hard cap
 // 200) episodes — these filters narrow *within* that recent window, they cannot reach further
 // back into a show's archive than Apple already handed us. Documented in the README/schema.
+// Split out of episodePassesFilters so a zero-row archive walk can tell "the date window missed
+// the whole feed" apart from "the window matched, a non-date filter removed everything" — the two
+// have opposite remedies and the warning used to blame the window for both (h-cycle 1548).
+function episodeInDateWindow(e) {
+  if (!minReleaseDate && !maxReleaseDate) return true;
+  const d = e.releaseDate ? new Date(e.releaseDate) : null;
+  if (!d || Number.isNaN(d.getTime())) return false;
+  if (minReleaseDate && d < minReleaseDate) return false;
+  if (maxReleaseDate && d > maxReleaseDate) return false;
+  return true;
+}
+
 function episodePassesFilters(e) {
-  if (minReleaseDate || maxReleaseDate) {
-    const d = e.releaseDate ? new Date(e.releaseDate) : null;
-    if (!d || Number.isNaN(d.getTime())) return false;
-    if (minReleaseDate && d < minReleaseDate) return false;
-    if (maxReleaseDate && d > maxReleaseDate) return false;
-  }
+  if (!episodeInDateWindow(e)) return false;
   // Apple's own lookup API omits trackTimeMillis for a large, seemingly random share of
   // episodes regardless of actual length (measured ~50% null on a real 20-episode sample,
   // full-length flagship episodes included, not just short ones) — so an unknown duration is
@@ -652,6 +659,7 @@ async function pushEpisodeRows(rows, floorKey, wholeFeed = false) {
   let oldestScanned = null; // measured BEFORE the filters: a scanned-then-discarded episode still
   // proves the walk reached that date, and the filter set is part of the watch fingerprint anyway.
   let newestScanned = null;
+  let inWindow = 0; // rows the date window itself accepted, whatever the other filters then did
   for (const row of rows) {
     if (!keepGoing || (wholeFeed ? kept : got) >= perPodcastEpisodes) break;
     got += 1;
@@ -659,6 +667,7 @@ async function pushEpisodeRows(rows, floorKey, wholeFeed = false) {
     if (!Number.isNaN(releasedMs) && (oldestScanned == null || releasedMs < oldestScanned)) oldestScanned = releasedMs;
     if (!Number.isNaN(releasedMs) && (newestScanned == null || releasedMs > newestScanned)) newestScanned = releasedMs;
     if (minDurationSeconds != null && row.durationMs == null) unknownDurationKept += 1;
+    if (episodeInDateWindow(row)) inWindow += 1;
     if (!episodePassesFilters(row)) continue;
     kept += 1;
     if (watchMode) {
@@ -685,16 +694,32 @@ async function pushEpisodeRows(rows, floorKey, wholeFeed = false) {
     }
     keepGoing = await pushResult({ ...row, scrapedAt: new Date().toISOString() });
   }
-  // A whole-archive walk that kept nothing under a date window is the one case where the customer
-  // can act on the answer: the feed's real coverage is now known exactly, so name it instead of
-  // leaving them to guess whether the show, the storefront or the window is wrong.
-  if (wholeFeed && kept === 0 && got > 0 && (minReleaseDate || maxReleaseDate) && oldestScanned != null) {
-    log.warning(
-      `Walked all ${got} episode(s) in this show's RSS archive and none fell inside the requested `
-      + `minReleaseDate/maxReleaseDate window. The feed itself covers `
-      + `${new Date(oldestScanned).toISOString().slice(0, 10)} to ${new Date(newestScanned).toISOString().slice(0, 10)} `
-      + `— widen the window to that range. This is the show's own published archive, not a scrape limit.`,
-    );
+  // A whole-archive walk that kept nothing is the one case where the customer can act on the
+  // answer: the feed's real coverage is now known exactly, so name it instead of leaving them to
+  // guess whether the show, the storefront or the window is wrong. Which filter to blame matters —
+  // blaming the date window when the window matched and `minDurationSeconds`/`explicitFilter` did
+  // the excluding sends the buyer to widen a window that is already wide enough (reproduced live
+  // 2026-10-11 on the Lex Fridman feed: a 2000-01-01..2030-01-01 window plus explicitOnly printed
+  // "none fell inside the requested window … widen the window to 2018-08-26..2026-09-17", advice
+  // that is a no-op since the requested window already contains that range).
+  if (wholeFeed && kept === 0 && got > 0 && episodeFiltersSet.length && oldestScanned != null) {
+    const coverage = `The feed itself covers ${new Date(oldestScanned).toISOString().slice(0, 10)} `
+      + `to ${new Date(newestScanned).toISOString().slice(0, 10)}`;
+    archiveFilteredIds.push(String(floorKey));
+    if (nonDateEpisodeFiltersSet.length && (inWindow > 0 || !dateEpisodeFiltersSet.length)) {
+      log.warning(
+        `Walked all ${got} episode(s) in this show's RSS archive and your `
+        + `${nonDateEpisodeFiltersSet.join(' / ')} filter(s) removed every one of them`
+        + `${dateEpisodeFiltersSet.length ? ` — ${inWindow} of them DID fall inside your minReleaseDate/maxReleaseDate window, so widening the date window will not help` : ''}`
+        + `. ${coverage}. Relax the filter(s) above instead. This is the show's own published archive, not a scrape limit.`,
+      );
+    } else {
+      log.warning(
+        `Walked all ${got} episode(s) in this show's RSS archive and none fell inside the requested `
+        + `minReleaseDate/maxReleaseDate window. ${coverage} `
+        + `— widen the window to that range. This is the show's own published archive, not a scrape limit.`,
+      );
+    }
   }
   // Committed only for a podcast the baseline actually walked; one it never reached keeps the
   // run-wide `seedFloor` instead, which is the weaker (later) of the two and suppresses more.
@@ -895,14 +920,21 @@ const failedIds = []; // sources that returned nothing because the request broke
 const depthCapped = [];
 const feedCeilingIds = []; // Apple's review feed quit mid-walk after a FULL page (see scrapeReviews)
 const windowFilteredIds = []; // episodes: Apple's own lookup API window (not RSS) fetched rows but the filters removed all of them
+const archiveFilteredIds = []; // episodes: the WHOLE RSS archive was walked and the filters removed all of it
 // Declared before the loop (not just for the final status message) because the loop itself needs
 // it to tell "every episode filtered out" apart from "nothing to filter" while scraping each id.
-const episodeFiltersSet = [
+// Kept split by kind because a zero-row archive walk has to name the filter that actually did the
+// excluding: the date window and the rest have opposite remedies (widen the window vs relax the
+// others), so a single combined list cannot carry correct advice.
+const nonDateEpisodeFiltersSet = [
   explicitFilter !== 'all' ? `explicitFilter ("${explicitFilter}")` : null,
   minDurationSeconds != null ? `minDurationSeconds (${minDurationSeconds})` : null,
+].filter(Boolean);
+const dateEpisodeFiltersSet = [
   input.minReleaseDate ? `minReleaseDate (${input.minReleaseDate})` : null,
   input.maxReleaseDate ? `maxReleaseDate (${input.maxReleaseDate})` : null,
 ].filter(Boolean);
+const episodeFiltersSet = [...nonDateEpisodeFiltersSet, ...dateEpisodeFiltersSet];
 if (dataType === 'charts') {
   // Rank comes from array order in all cases.
   const url = chartGenre
@@ -1209,6 +1241,13 @@ if (watchMode && seeding) {
         ? `maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')} — raise maxReviewsPerPodcast to search deeper`
         : windowFilteredIds.length
           ? `Apple's lookup API only returned each show's recent episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed all of them — turn on "useRssForFullArchive" to search the full archive instead`
+        : archiveFilteredIds.length
+          // The full RSS archive WAS walked and the filters emptied it. Without this branch the
+          // chain fell through to "no valid podcast IDs could be parsed from your input", which is
+          // flatly wrong (a valid id was parsed and the show's entire archive was fetched under
+          // it) — the same class of wrong answer the lookup-path branch above fixed, which never
+          // covered the RSS path. Reproduced live 2026-10-11 before the fix.
+          ? `your ${episodeFiltersSet.join(' / ')} filter(s) removed every episode in the full RSS archive of: ${archiveFilteredIds.join(', ')} — the log names each feed's real date coverage; relax the filter(s) to match it`
           : dataType === 'reviews' && (keyword || minRating != null || maxRating != null)
             ? 'every review Apple returned was removed by your minRating/maxRating/keyword filters'
             : dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length

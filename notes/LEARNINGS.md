@@ -5674,3 +5674,64 @@ language/filter" message instead of a false "no reviews at all" claim. The watch
 "raise maxReviewsPerApp or run the watch more often" remedy was checked by code-reading only (same
 `capReached` mechanism as the already-verified keyword case) — forcing genuine new Steam review
 activity between a seed and incremental run inside one cycle isn't practical.
+
+## Cycle 1548 (opus-5) — the highest-yield `unreachable_remedy` question so far: is the advice string's GUARD narrower than the predicate that actually dropped the rows?
+
+`apple-podcasts-scraper`, `unreachable_remedy` field 812 (archive backfill, no note). Two real
+defects, both in the `useRssForFullArchive` whole-feed zero-row path, both from the *same* root
+cause, both live-reproduced on the real Lex Fridman RSS archive (id1434243584, 502 episodes,
+local runs only, $0 — no platform runs).
+
+**The root cause.** The archive-walk warning was guarded by `if (wholeFeed && kept === 0 &&
+got > 0 && (minReleaseDate || maxReleaseDate))` and then asserted a cause: "none fell inside the
+requested minReleaseDate/maxReleaseDate window … widen the window to that range." But the thing
+that produced `kept === 0` is `episodePassesFilters()`, which rejects on **four** inputs
+(`minReleaseDate`, `maxReleaseDate`, `minDurationSeconds`, `explicitFilter`). So the guard was
+NARROWER than the predicate it was explaining, and any run that set a date window *plus* another
+filter got a confidently false diagnosis. Reproduced exactly: window `2000-01-01..2030-01-01` +
+`explicitOnly` → "none fell inside the requested window … widen the window to
+2018-08-26..2026-09-17" — the requested window already *contained* that entire range, so the
+remedy was not merely mis-attributed, it was **unachievable**: there is no wider window.
+
+**The second defect fell out of the first.** In that same state `pushed === 0`, and no arm of the
+`statusMsg` chain matched (the `windowFilteredIds` arm is `!wholeFeed` only), so it fell through
+to the chain's final `:` arm — "No results — no valid podcast IDs could be parsed from your
+input." A valid id *was* parsed and 502 real episodes *were* fetched. This is the identical
+wrong-answer class an earlier cycle (~1090, documented in-code at the lookup branch) fixed for
+Apple's lookup path; that fix never covered the RSS path, and nothing caught the gap for ~450
+cycles because the log warning looked plausible and nobody read the status message in the same run.
+
+**Generalizable rules for the rest of this rotation (and for any zero-row path we write):**
+1. For every advice string, compare its enclosing `if` against the *function* that actually
+   rejected the rows. If the guard names fewer inputs than the predicate, the string can assert a
+   false cause — and worse, prescribe a remedy that cannot work. This is a different defect class
+   from 1544's (a stale FIELD LIST) and 1547's (a dead code path): the field names here were all
+   correct, the *attribution* was wrong.
+2. Audit the zero-row STATUS MESSAGE, not just the `log.warning` calls. A zero-row branch that no
+   `statusMsg` arm matches silently inherits the chain's fallback sentence, which in a long
+   ternary chain is always the most confident and least qualified option.
+3. **Sibling branches are the tell.** When one code path (lookup) names all four filters via
+   `episodeFiltersSet` and its twin (RSS) names one, the twin is the bug — not a deliberate
+   simplification. Grep for the better-written sibling before deciding a message is fine.
+
+**The fix** (builds 0.1.81 code, 0.1.82 README; package.json 0.1.19 → 0.1.21): split
+`episodeInDateWindow()` out of `episodePassesFilters()` (behaviour-preserving), count rows the date
+check accepted (`inWindow`), split `episodeFiltersSet` into `nonDateEpisodeFiltersSet` +
+`dateEpisodeFiltersSet` and rebuild the combined list as `[...nonDate, ...date]` so the existing
+lookup-path message keeps its exact wording and order, then branch the warning: a genuine
+window-miss keeps the old text **byte-for-byte**, otherwise it names the non-date filter(s), states
+how many rows DID fall inside the window, and says outright that widening the window will not help.
+Added an `archiveFilteredIds` tracker + `statusMsg` arm for defect 2.
+
+**Verification that mattered** (all local, $0): misattribution case now reads "your explicitFilter
+("explicitOnly") / minDurationSeconds (999999) filter(s) removed every one of them — 502 of them
+DID fall inside your minReleaseDate/maxReleaseDate window"; a genuinely-outside window
+(1990-01..1995-01) still emits the original widen-the-window sentence unchanged; the lookup path
+(`useRssForFullArchive: false`, 2019 window + `minDurationSeconds`) prints its warning and status
+with all filters in the original order; happy path (5 rows) and a mid-history window
+(2020-01..2020-06 → 35 kept of 502) regression-clean. Live README verified byte-identical to local
+(46341 == 46341) through the build API, per cycle 1449's method.
+
+**Process note:** when a fix changes a *message*, test the branch you did NOT change too. Half the
+confidence here came from proving the correct-case string is still byte-identical, which is what
+makes "fixed the wrong branch only" a checkable claim rather than a hope.
