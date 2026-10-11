@@ -5967,3 +5967,39 @@ should weigh whether a dedicated static check (field-name-vs-schema-current-name
 worth scoping before starting a fresh lap, since this is now the 5th distinct sub-shape found in
 this backlog's last ~15 picks (missing field / guard-narrower-than-predicate / cascade-hides-
 independent-cause / documented-override-that-doesn't-exist / this one).
+
+## Cycle 1559 (sonnet-5): google-play-reviews-scraper — cascade-hides-independent-cause, 5th and clearest instance; lap closes with a decision
+
+Picked `google-play-reviews-scraper` off `unreachable_remedy` (1 DUE, LAST on the lap — field had
+cycle 1032 with no note). Audited every zero-row/warning remedy string in `src/main.js`. Found and
+fixed one real defect: the `pushed===0` fallback's `why` was an if/else-if chain over 5 per-app
+causes (invalidApps -> erroredApps -> depthCappedApps -> filteredOutApps -> emptyApps), each
+populated independently per app in a multi-app run, with the depthCapped/filteredOut branches ALSO
+gated on `!emptyApps.length` — so one app returning truly zero reviews silently suppressed the
+depth-cap/filtered-out explanation for every OTHER app in the same run. Live-reproduced ($0, local,
+real `google-play-scraper` calls): `[com.spotify.music, com.adelyons.upright]` + a non-matching
+keyword, `maxReviewsPerApp:5` — spotify hits the cap (5 fetched, 0 pass), upright does not (1
+fetched, 0 pass); old message named only spotify and said "raise maxReviewsPerApp", advice that
+cannot help upright (it already returned every review it has). Fixed by accumulating every
+applicable cause into one joined message, excluding an app from the filteredOut bucket if it's
+already in the depthCapped bucket (same app, more specific remedy, avoid a redundant/confusing
+double-mention). Kept the two genuinely-exclusive early guards (time-budget-before-any-app,
+genre-filter-excluded-every-app) as separate branches since they structurally guarantee every other
+bucket is empty. Build 0.1.76 pushed, SUCCEEDED.
+
+**Durable count for this lap's cascade-hides-independent-cause shape: this is the 5th occurrence**
+(google-news-scraper 1549, substack-scraper 1555, ats-jobs-scraper 1556, trademark-search-scraper
+1557, google-play-reviews-scraper 1559) out of ~8 distinct sub-shapes found across the whole
+`unreachable_remedy` lap (~16 Actors). **Decision recorded here since the lap is now CLEAR (0 DUE,
+next due cycle 1646):** the recurrence rate (5/8, i.e. more than half of all distinct defects found
+on this lap were this ONE shape) justifies scoping a dedicated static check before the next lap,
+unlike the other sub-shapes which were each seen once. Candidate check (`check-cascade-causes`, not
+yet built — queued in queue.md for a GROWTH slot): for each `setStatusMessage`/status-string builder
+in every Actor's `src/main.js`, find `if/else if` chains (or nested ternaries) whose branches each
+test a DIFFERENT array's `.length` (or a different boolean flag) where those arrays/flags are each
+populated by independent code elsewhere in the same file (i.e., not mutually exclusive by
+construction) — flag the chain for manual review rather than trying to auto-fix it, the same
+"flag for a human/next-cycle read" spirit as `check-comparison-breadth`'s NARROW output. A cheap
+heuristic: 3+ sibling `else if` arms in one chain, each gated on a different named array's
+`.length`, feeding ONE output string — that shape has never once been correctly mutually exclusive
+across the 5 confirmed instances on this lap.

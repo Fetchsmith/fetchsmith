@@ -735,23 +735,36 @@ if (watchMode && seeding) {
   // Without this branch, timing out before any app was even queried fell into the final default
   // below with an empty emptyApps list, asserting "Google Play returned zero reviews for: " (blank)
   // -- a false claim about Google Play's data when the real cause is our own clock.
-  const why = timeBudgetExceeded && appsAttempted.size === 0
-    ? 'the run was approaching the platform run timeout and stopped before any app could be checked'
-    // Checked before the buckets below: when the "genres" filter took every app out, no review was
-    // ever fetched, so "Google Play returned zero reviews" (the default branch) would blame the
-    // source for our own filter.
-    : genreSkippedApps.length + genreUnknownApps.length > 0
-      && genreSkippedApps.length + genreUnknownApps.length >= appsAttempted.size
-    ? `your "genres" filter (${genres.join(', ')}) excluded every app${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}`
-    : invalidApps.length
-    ? `these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`
-    : erroredApps.length
-    ? `fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`
-    : depthCappedApps.length && !emptyApps.length
-      ? `maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')}${ratingSortUnreachable ? RATING_SORT_HINT : ' — raise maxReviewsPerApp to search deeper'}`
-    : filteredOutApps.length && !emptyApps.length
-      ? 'reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters'
-      : `Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`;
+  let why;
+  if (timeBudgetExceeded && appsAttempted.size === 0) {
+    why = 'the run was approaching the platform run timeout and stopped before any app could be checked';
+  } else if (genreSkippedApps.length + genreUnknownApps.length > 0
+    && genreSkippedApps.length + genreUnknownApps.length >= appsAttempted.size) {
+    // Checked before the per-app causes below: when the "genres" filter took every app out, no
+    // review was ever fetched, so blaming any of those causes would point at an app list none of
+    // this run's apps actually reached.
+    why = `your "genres" filter (${genres.join(', ')}) excluded every app${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}`;
+  } else {
+    // Each of these is an INDEPENDENT per-app cause -- a multi-app run can have one app that
+    // doesn't exist, another whose fetch errored, another that hit maxReviewsPerApp before any
+    // passing review, and another with reviews that were simply all filtered out, all in the same
+    // run. The old code picked the first true cause via an if/else-if chain (and fully suppressed
+    // the depth-cap/filtered-out causes whenever ANY app came back with zero reviews at all), so a
+    // buyer following the one remedy shown would still see 0 rows from every app it never named.
+    // Live-reproduced ($0, local): com.spotify.music (hits the 5-review cap, 0 pass) +
+    // com.adelyons.upright (1 review total, cap NOT hit, 0 pass) with a non-matching keyword --
+    // old message named only spotify and said "raise maxReviewsPerApp", advice that cannot help
+    // upright at all (it already returned every review it has).
+    const depthCappedSet = new Set(depthCappedApps);
+    const filteredOutOnlyApps = filteredOutApps.filter((a) => !depthCappedSet.has(a));
+    const causes = [];
+    if (invalidApps.length) causes.push(`these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`);
+    if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
+    if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')}${ratingSortUnreachable ? RATING_SORT_HINT : ' — raise maxReviewsPerApp to search deeper'}`);
+    if (filteredOutOnlyApps.length) causes.push(`reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${filteredOutOnlyApps.join(', ')}`);
+    if (emptyApps.length) causes.push(`Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`);
+    why = causes.length ? causes.join('; ') : 'no reviews were charged (check the log for the reason)';
+  }
   statusMsg = (`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedApps.length) {
   statusMsg = (`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : '; raise maxReviewsPerApp to search further'}.`);
