@@ -6201,3 +6201,32 @@ disclosures, filings, corrections). When they diverge, the fix is still worth sh
 case — ongoing current activity — is still permanently blinded) but the warning text must say so
 precisely, not copy the absolute "can never" phrasing verbatim. Overclaiming a mechanism in a
 buyer-facing warning is its own kind of defect.
+
+## Cycle 1566: federal-register-scraper is the 7th dead-watch-bound instance, and the absolute (apple-podcasts) shape, not the FEC shape
+
+Audited `federal-register-scraper` on the `watch_subset_audit` rotation using the mechanism-independent
+question from 1560/1564/1565: can any filter make the thing an identity watch promises to detect
+structurally undetectable? c858 had already closed the literal snapshot-diff question correctly (FR
+documents are immutable once published, so `watchChanges` cannot apply) but never asked reachability.
+`publicationDateTo` is sent server-side as `conditions[publication_date][lte]` — an upper bound on
+publication_date — and is explicit-only in the watch fingerprint (by design, so the default rolling
+90-day window doesn't reseed the baseline every day). A buyer who pins it to a fixed date gets a watch
+permanently blind to anything published after that date.
+
+**The useful distinction this cycle adds:** before assuming a dead-date-bound defect needs the FEC's
+"late-filed-but-old-dated" nuance (1565's sharpened rule), check whether the underlying field can ever
+be backdated at all. Federal Register's `publication_date` is assigned at the literal moment of
+publication and is never backdated (same immutability fact c858 already verified live — a
+correction/extension ships as a brand-new document, never an edit to the original's date). So this is
+the ABSOLUTE apple-podcasts shape ("can never report new" is literally true), not the FEC shape
+("mostly dies, but a late original filing can still slip through"). Verified live before writing
+warning copy: `conditions[publication_date][lte]=2026-09-01` maxed out exactly at that date while the
+real unbounded feed's newest document that same day was dated over a month later. Getting this
+direction wrong in either direction is a defect in the warning text itself — check which shape applies
+per Actor, don't default to one phrasing because it worked on the last two.
+
+Fix shipped in the established shape (build 0.1.48): `watchDeadDateBound` flag, two split warnings, a
+NOTE on both reassuring status messages, `watchDeadDateBound` in RUN_SUMMARY. 7 confirmed instances of
+this class now across two different sub-shapes (field-diff change-blind: grants-gov, clinicaltrials,
+fda-recall, trademark-search; identity-watch dead-date-bound: apple-podcasts, fec-campaign-finance,
+federal-register). `watch_subset_audit` now 5 DUE, next target `sam-gov-opportunities-scraper`.

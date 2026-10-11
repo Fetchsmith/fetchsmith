@@ -409,6 +409,32 @@ if (watchMode) {
     }
 }
 
+// A fixed publicationDateTo caps the watch's own match set at a date that gets more stale every
+// day the schedule runs. `publication_date` is immutable once assigned (same fact the comment
+// above `extractCitations` verified live: a correction ships as a brand-new document, never an
+// edit to the original's own publication_date) and a NEW document entering the feed is always
+// dated the current-or-a-just-announced day, never earlier -- verified live 2026-10-11:
+// `conditions[publication_date][lte]=2026-09-01` maxes out exactly at publication_date 2026-09-01,
+// while the real unbounded feed's newest document that same day was dated 2026-10-13. So once
+// today's Eastern date passes a fixed publicationDateTo, this watch can never see a new document
+// again -- while the pushed===0 branch below keeps emitting the reassuring "nothing new" message
+// forever (the 1556 monitor rule: the buyer schedules it and stops looking). Public Inspection
+// already drops publicationDateTo with its own "ignored" warning above, so it is excluded here.
+// Advisory only: publicationDateTo defaults to today's date on every run when left unset, which is
+// the common case and is unaffected -- this only fires when the buyer pins it to a fixed date.
+const watchDeadDateBound = watchMode && !publicInspection && watchCriteria.publicationDateTo != null;
+if (watchDeadDateBound) {
+    log.warning(
+        `watchLabel "${watchLabel}" is combined with a fixed publicationDateTo (${watchCriteria.publicationDateTo}). `
+        + "Once today's Eastern date passes that cutoff, no document can ever have a publication_date on or before "
+        + 'it anymore, so this watch is now permanently unable to report anything new.',
+    );
+    log.warning(
+        'Drop publicationDateTo from a watched query so each run defaults it to "today", or remove watchLabel if '
+        + 'you really do want a fixed historical window instead of an ongoing watch.',
+    );
+}
+
 // Seeding only needs the ids, so it asks for one field instead of 29. Same filters, same
 // cursor walk, a fraction of the bytes — and it never normalizes, pushes or charges.
 async function seedBaseline(state) {
@@ -769,7 +795,8 @@ if (watchMode && seeding && runState.failed) {
         );
         await Actor.setStatusMessage(
             `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing document(s) recorded, 0 charged. Run again later to get only what's new.`
-            + truncationNote(),
+            + truncationNote()
+            + (watchDeadDateBound ? ' NOTE: publicationDateTo is fixed, so this watch will stop finding anything new once today passes that date -- see the warning above.' : ''),
         );
     } else {
         log.info(
@@ -791,7 +818,8 @@ if (pushed === 0 && watchMode && !seeding) {
     );
     await Actor.setStatusMessage(
         `Nothing new for watch label "${watchLabel}" since its last run -- every matching document had already been delivered. That is the expected result most of the time; you were charged for nothing.`
-        + truncationNote(),
+        + truncationNote()
+        + (watchDeadDateBound ? ' NOTE: publicationDateTo is fixed on this watch, so "nothing new" may mean the date cutoff has made it permanently blind rather than the normal quiet result -- see the warning above.' : ''),
     );
 } else if (pushed === 0 && !seeding && publicInspection) {
     log.warning(
@@ -889,6 +917,7 @@ const runSummary = {
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

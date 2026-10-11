@@ -84,7 +84,7 @@
         "publicationDateTo": {
             "title": "Published to",
             "type": "string",
-            "description": "Latest publication date, YYYY-MM-DD. Defaults to today, Eastern calendar day (the Federal Register publishes its issue at 8:45 a.m. ET).",
+            "description": "Latest publication date, YYYY-MM-DD. Defaults to today, Eastern calendar day (the Federal Register publishes its issue at 8:45 a.m. ET). WATCH MODE WARNING: combined with watchLabel, a FIXED value here is a permanent dead end once today's date passes it — it is an upper bound sent to the Federal Register as conditions[publication_date][lte], and a newly published document is always dated on or after the day it is published, never before, so the watch goes quiet for good once real time passes the cutoff (see README FAQ). Leave it unset in a watched query — it then defaults to \"today\" on every run — publicationDateFrom is safe to keep.",
             "editor": "textfield"
         },
         "agencies": {
@@ -159,7 +159,7 @@
         "watchLabel": {
             "title": "Watch label (only new since last run)",
             "type": "string",
-            "description": "Optional. Name this saved query \u2014 e.g. \"epa-air-rules\" \u2014 and the Actor remembers which documents it has already delivered under that name, so a scheduled run returns ONLY what is new since last time. The first run with a new label is a free baseline: it records what already matches, returns zero results and charges nothing; every run after that returns just the new documents. Changing a filter starts a fresh baseline (a different filter is a different question). The default rolling 90-day date window is deliberately NOT part of that identity, so a daily schedule keeps one stable baseline. The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your own account.",
+            "description": "Optional. Name this saved query \u2014 e.g. \"epa-air-rules\" \u2014 and the Actor remembers which documents it has already delivered under that name, so a scheduled run returns ONLY what is new since last time. The first run with a new label is a free baseline: it records what already matches, returns zero results and charges nothing; every run after that returns just the new documents. Changing a filter starts a fresh baseline (a different filter is a different question). The default rolling 90-day date window is deliberately NOT part of that identity, so a daily schedule keeps one stable baseline. The baseline lives in a key-value store named `fetchsmith-fedreg-watch` on your own account. Don't pair this with a FIXED publicationDateTo — see that field's warning.",
             "editor": "textfield",
             "example": "epa-air-rules"
         },
