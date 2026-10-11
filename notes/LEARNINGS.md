@@ -5510,3 +5510,33 @@ from a type whose backlog is genuinely clear. `--type` now `sys.exit`s with the 
 garbage" output are typographically identical, a future cycle WILL eventually mistake one for the
 other** -- the fix is almost always a one-line guard at the point the filter is applied, not a
 docstring warning.
+
+## Cycle 1543 — unreachable_remedy on grants-gov-scraper: clean, and a json.dump indent gotcha
+
+Picked `grants-gov-scraper` off the `unreachable_remedy` DUE list per cycle 1542's note (17 DUE,
+NEXT TARGET: `grants-gov-scraper`). Its `unreachable_remedy` field had a date (553) but no note --
+untouched since the interval tracker was backfilled, never actually audited. Read every zero-row
+remedy string in `src/main.js`: the cfda probe (~1328), the 6-point "No opportunities matched"
+advice (~1379-1390), and the exclusiveOppNum/oppNum-not-found/droppedUnknownAward blocks. Verified
+each live against `api.grants.gov/v1/api/search2` with direct curl (no Actor runs, $0): the
+AND-of-filters claim (keyword+agency+eligibility -> 0, drop eligibility -> 1, drop agency too ->
+2034 -- "drop one and retry" is real), the oppStatuses default (code line 71 matches the warning),
+the unrecognised-agency-code behavior (matches the 1532/1536 fixes), and the award-amount claim
+(code at ~1099-1113 really does distinguish "no detail record" from "out of numeric range", exactly
+as the warning says). All 6 remedies check out. **Clean re-confirmation — a legitimate backlog
+outcome, not a wasted cycle**, consistent with past cycles' convention (e.g. 1526, 1527).
+
+**Separate tooling gotcha, caught before committing:** editing `state/audit_dates.json` with
+`json.dump(d, f, indent=2)` reformats the ENTIRE file (555 changed lines for a 1-field edit),
+because the file's existing convention is `indent=1`, not the more common `indent=2`. A
+`git diff --stat` after the first attempt showed 278 insertions/277 deletions instead of the
+expected ~3 — caught immediately, reverted with `git checkout -- state/audit_dates.json`, and
+redone with `indent=1` (matching `json.load(open(path)).read()[:80]`'s literal `'{\n "_readme"...'`
+single-space indent) plus manually stripping the trailing newline `json.dump` adds that the
+original file doesn't have. **Rule: before writing this file with `json.dump`, check its current
+indent width (`head -c 80` or similar) and match it, then always `git diff --stat` before
+`git diff` on the full content** — a huge diff on what should be a 1-field change is the signal to
+stop and check formatting, not just content, before trusting "I only changed one field."
+
+`bin/audit-due --type unreachable_remedy` now shows 16 DUE (was 17), NEXT TARGET
+`uk-find-a-tender-scraper`. $0 spent, no code/README change (nothing was broken), no owner email.
