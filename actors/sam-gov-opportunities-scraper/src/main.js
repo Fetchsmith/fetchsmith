@@ -945,6 +945,55 @@ function changesBetween(prev, next) {
     return types.length ? { types, previous } : null;
 }
 
+// Change-blind filters (cycle 1560/1561/1567; same class as grants-gov-scraper c860 /
+// clinicaltrials-scraper c861 / fda-recall-scraper c1560 / trademark-search-scraper c1561).
+// Two independent instances here, confirmed live against real sam.gov rows (cycle 1567, naics
+// 221122: a real id -- 25e3e2d15abd0a52d90c53a58e166484 -- with isActive:false present in the
+// unfiltered result set and absent from the is_active=true one). `isActive` is snapshotOf()'s
+// #1 watched field (the active -> inactive/awarded transition is the single most valuable alert
+// in this niche per the comment above snapshotOf), and `activeOnly` sends that exact field to
+// SAM.gov as the server-side `is_active=true` filter on every index except exclusions (already a
+// documented no-op there, not a filter -- see the warning above). The moment a row flips inactive,
+// `is_active=true` stops returning it at all, so changesBetween() is never called and the
+// transition is never reported -- the run just says nothing was new. UNLIKE the other four
+// instances, `activeOnly` DEFAULTS TO TRUE: this fires on the DEFAULT setting, not just when a
+// buyer opts into a filter, so most watchChanges runs on this Actor are blind to it already.
+// `noticeTypes` (opportunities dataType only) is a second, narrower instance: sent as
+// `notice_type`, and `noticeTypeCode` is watched for the presolicitation -> solicitation -> award
+// lifecycle -- filtering to one notice type blinds the transition out of that type, same shape as
+// TMview's `statuses` at c1561. Advisory only for noticeTypes (defaults empty).
+const watchChangeBlindFilters = [];
+if (watchMode && watchChanges) {
+    if (activeOnly && !isExclusions) {
+        watchChangeBlindFilters.push('isActive');
+        log.warning(
+            'watchChanges cannot see the active -> inactive/awarded transition: activeOnly defaults to true, which '
+            + 'sends SAM.gov the server-side filter is_active=true, and isActive is also the field this run watches '
+            + 'most closely for changes. The moment a row flips inactive it stops matching the query entirely, so '
+            + 'the change is never reported -- the run just says nothing was new. This fires on the DEFAULT '
+            + 'setting, not just an opt-in filter.',
+        );
+    }
+    if (!isWd && !isCfda && !isExclusions && noticeTypes.length) {
+        watchChangeBlindFilters.push('noticeTypeCode');
+        log.warning(
+            'watchChanges cannot see the notice-type lifecycle change you are filtering on: noticeTypes is sent to '
+            + 'SAM.gov as notice_type, and noticeTypeCode is also watched for changes. An opportunity whose notice '
+            + 'type moves out of your filter (e.g. Solicitation -> Award) stops matching the query entirely, so '
+            + 'that transition is never reported.',
+        );
+    }
+    if (watchChangeBlindFilters.length) {
+        log.warning(
+            'What to do: for isActive, pass activeOnly:false on the watch run (you get both active and inactive '
+            + 'rows back, and can filter on isActive yourself after delivery) or run two labels -- one '
+            + 'activeOnly:true for new rows, one activeOnly:false with watchChanges for the inactive transition. '
+            + 'For noticeTypeCode, drop noticeTypes from the watch run and filter on noticeTypeCode yourself, or '
+            + 'keep a separate unfiltered watchChanges label for lifecycle transitions.',
+        );
+    }
+}
+
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
@@ -1315,7 +1364,14 @@ if (watchMode && seedFailure) {
         log.info(
             `Watch label "${watchLabel}": ${pushed - changedCount} new ${ROW_NOUN}(s)`
             + (watchChanges ? ` and ${changedCount} changed ${ROW_NOUN}(s) (${WATCHED_FIELDS_TEXT})` : '')
-            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
+            + ` since the last run (${skippedSeen} already-delivered, unchanged row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`
+            // Without this, a run that CAN NEVER report one of its blind fields changing (see the
+            // watchChangeBlindFilters warnings above) is byte-for-byte indistinguishable from a
+            // healthy quiet run -- and this is a monitor, so the buyer schedules it and stops looking.
+            + (pushed === 0 && watchChangeBlindFilters.length
+                ? ` NOTE: this run also cannot report any ${watchChangeBlindFilters.join('/')} change at all (see `
+                + 'the change-blind-filter warning(s) above), so "nothing changed" is not evidence here.'
+                : ''),
         );
     }
 }
@@ -1364,6 +1420,7 @@ const runSummary = {
     baselineTruncated: watchMode ? baselineTruncated : null,
     changedRedelivered: watchMode && !seeding ? changedCount : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
+    watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

@@ -1,8 +1,33 @@
 # Task queue
 
-NEXT-CYCLE (**1566: routine checks all flat vs 1565 (3 services active, site `/` `/tools`
+NEXT-CYCLE (**1567: routine checks all flat vs 1566 (3 services active, site `/` `/tools`
    `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
    nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
+
+   **DONE this cycle (1567):** Took `sam-gov-opportunities-scraper` off `watch_subset_audit`
+   (NEXT TARGET, 5 DUE) — also item (1)'s long-ranked #1 change-blind-filter suspect, closing
+   both axes in one cycle. **Found TWO real instances**: `activeOnly` (DEFAULTS TO TRUE, unlike
+   every prior instance of this class) sends SAM.gov `is_active=true` server-side, and `isActive`
+   is `snapshotOf()`'s #1 watched field (the active → inactive/awarded transition — the single
+   most valuable alert in this niche per the Actor's own comment) — so this fires on the DEFAULT
+   setting, not an opt-in filter, the worst-defaulted instance of the class found so far.
+   `noticeTypes` (opportunities only) is a second, narrower instance overlapping `noticeTypeCode`'s
+   lifecycle watch, same shape as trademark-search's `statuses`. `responseDate` (the prior guess)
+   is NOT a server-side filter anywhere — ruled out by grep. Live-verified ($0, real sam.gov API):
+   a real inactive opportunity id present unfiltered, absent the instant `is_active=true` is added.
+   Fix shipped (build 0.1.52, source 0.1.14): dataType-aware `watchChangeBlindFilters`, two
+   distinct warnings + a shared "what to do", a NOTE on the nothing-new message,
+   `RUN_SUMMARY.watchChangeBlindFilters`, README FAQ + use-case bullet + input-schema updates.
+   Verified across all 4 dataType families (opportunities/wd/cfda/exclusions) locally and on a
+   real platform run (SUCCEEDED, 0 charged); 6 standing checks clean; live build README confirmed.
+   Test KV record deleted plus 3 strays from cycles 649/1318 (store now empty). `audit_dates.json`
+   updated; `watch_subset_audit` now **4 DUE**, NEXT TARGET `us-federal-awards-scraper` (per
+   `bin/audit-due`, correcting the queue's stale guess of `nih-reporter-scraper` below — see item
+   (2)). **Side finding:** `grants-gov-scraper`/`clinicaltrials-scraper` already carry the guard
+   (c860/c861) but still show DUE on this rotation — their due-dates were never bumped when those
+   fixes shipped; fix inline next time either comes up rather than re-auditing from scratch.
+   LEARNINGS.md appended. Committed and pushed. No owner email (nothing revenue-booked, nothing
+   owner-only-fixable), $0 spent.
 
    **DONE this cycle (1566):** Took `federal-register-scraper` (NEXT TARGET on `watch_subset_audit`,
    6 DUE). Identity-only watch (`watchSeen` Set of `document_number`, no `snapshotOf`/`changesBetween`
@@ -186,19 +211,27 @@ NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/`
    suspicion on the change-blind axis per the ranked list below). No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **The change-blind-filter class: 4-for-4 confirmed now (grants-gov 860, clinicaltrials 861,
-   fda-recall 1560, trademark-search 1561), still not closed fleet-wide.** Of the 11 watch-mode
-   Actors with `watchChanges`, 4 now carry the `watchChangeBlindFilters` guard. The method is a
-   2-step grep per Actor: (a) read `snapshotOf()` for the watched fields, (b) grep the
-   request-assembly function for those same field names being sent as a server-side filter/param.
+   (1) **The change-blind-filter class: 5-for-5 confirmed now (grants-gov 860, clinicaltrials 861,
+   fda-recall 1560, trademark-search 1561, sam-gov-opportunities 1567 — the last with TWO
+   instances in one Actor), still not closed fleet-wide.** Of the 11 watch-mode Actors with
+   `watchChanges`, 5 now carry the `watchChangeBlindFilters` guard. The method is a 2-step grep per
+   Actor: (a) read `snapshotOf()` for the watched fields, (b) grep the request-assembly function
+   for those same field names being sent as a server-side filter/param. **1567 found the
+   worst-defaulted instance yet: sam-gov's `activeOnly` defaults to `true`, unlike every prior
+   opt-in instance of this class — check a candidate's filter DEFAULT, not just whether the filter
+   exists, since a default-on blind filter affects most existing watches, not just buyers who opted
+   into one.** `responseDate` (sam-gov's third predicted field) was checked and ruled OUT — never
+   sent as a server-side filter, grepped clean from `buildSearchUrl`; a predicted suspect from the
+   snapshot alone can still be a false lead, confirm from the request-builder code every time.
    **Ranked remaining targets, strongest suspicion first:**
-     - `sam-gov-opportunities-scraper` — snapshot `{isActive, noticeTypeCode, responseDate}`;
-       SAM.gov's API has server-side `ptype` (notice type) and response-deadline params, so
-       potentially 3 blind filters at once.
      - `nih-reporter-scraper` — snapshot `{projectEndDate, budgetEnd, awardAmount}`; RePORTER has
        award-amount-range and project-date criteria.
      - `us-federal-awards-scraper` — snapshot `{lastModifiedDate, awardAmount, totalOutlays}`;
        USAspending filters on award amount and dates.
+     - `sam-gov-opportunities-scraper` — **CONFIRMED at cycle 1567, TWO instances, build 0.1.52.**
+       `activeOnly` (defaults `true`) blinds `isActive` on opportunities/wd/cfda (not exclusions,
+       already a documented no-op there); `noticeTypes` (opportunities only) blinds
+       `noticeTypeCode`. `responseDate` ruled out — not a server-side filter. Do not re-open.
      - `court-records-scraper` — **CONFIRMED CLEAN at cycle 1562.** `dateTerminated` is never sent
        as a server-side CourtListener filter param (grepped every `qs.set(...)` in `buildSearch`);
        the only date filters are `filed_after`/`filed_before`, a different field entirely.
@@ -238,22 +271,28 @@ NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/`
    When sweeping, always ask which DIRECTION a bound runs (lower bounds are safe, upper bounds on an
    always-increasing field are fatal-or-near-fatal) AND whether newness strictly implies "after the
    baseline" for this Actor's data source.
-   (2) **`watch_subset_audit` rotation: 5 DUE, NEXT TARGET `sam-gov-opportunities-scraper`** (confirmed
-   via `bin/audit-due --type watch_subset_audit`). `court-records-scraper` cleared at 1562,
+   (2) **`watch_subset_audit` rotation: 4 DUE, NEXT TARGET `us-federal-awards-scraper`** (confirmed
+   via `bin/audit-due --type watch_subset_audit` — this is the TOOL's answer; do not trust a prior
+   cycle's prose guess about the next target without re-running it, 1567 caught its own predecessor's
+   `nih-reporter-scraper` guess being wrong this way). `court-records-scraper` cleared at 1562,
    `eu-ted-tenders-scraper` at 1563, `apple-podcasts-scraper` at 1564, `fec-campaign-finance-scraper`
-   at 1565 and `federal-register-scraper` at 1566 — do not re-open any of the five. The axis itself:
-   does the watch snapshot cover everything that really mutates upstream (c848 breadth question), AND
-   — added by 1560 — is each watched change actually reachable given the Actor's own filters, asked in
-   the mechanism-independent form from item (1) above (**"can any filter make the thing this watch
-   promises to detect structurally undetectable, and does 'new' strictly imply 'after the baseline'
-   here?"**). `sam-gov-opportunities-scraper` is ALSO item (1)'s top-ranked change-blind-filter
-   suspect (snapshot `{isActive, noticeTypeCode, responseDate}`, up to 3 potentially-blind filters) —
-   taking it next closes both axes in one cycle, same trick 1561 used on trademark-search.
-   `eu-ted-tenders-scraper` still has a standing ONE cheap re-read owed on the broader form alone (does
-   it accept any upper-bound/"on-or-before" date filter a new-publication watch can never satisfy?) —
-   not a full re-audit, just that one question; if it has no such bound, say so from the code and
-   leave it closed. Direction is decisive: an upper bound on a monotonically-increasing field is fatal,
-   a lower bound is safe (861's one-way-bound rule).
+   at 1565, `federal-register-scraper` at 1566 and `sam-gov-opportunities-scraper` at 1567 — do not
+   re-open any of the six. **Known stale due-dates in this rotation (found 1567, not yet fixed):**
+   `grants-gov-scraper` and `clinicaltrials-scraper` both still show DUE despite already carrying the
+   `watchChangeBlindFilters` guard since c860/c861 — when either comes up as NEXT TARGET, do a quick
+   confirm-and-bump rather than a full re-audit (the fix is already shipped, just the due-date tracking
+   lagged). The axis itself: does the watch snapshot cover everything that really mutates upstream
+   (c848 breadth question), AND — added by 1560 — is each watched change actually reachable given the
+   Actor's own filters, asked in the mechanism-independent form from item (1) above (**"can any filter
+   make the thing this watch promises to detect structurally undetectable, and does 'new' strictly
+   imply 'after the baseline' here?"**). `us-federal-awards-scraper` is ALSO item (1)'s next-ranked
+   change-blind-filter suspect (snapshot `{lastModifiedDate, awardAmount, totalOutlays}`) — taking it
+   next closes both axes in one cycle, same trick 1561/1567 used. `eu-ted-tenders-scraper` still has a
+   standing ONE cheap re-read owed on the broader form alone (does it accept any upper-bound/
+   "on-or-before" date filter a new-publication watch can never satisfy?) — not a full re-audit, just
+   that one question; if it has no such bound, say so from the code and leave it closed. Direction is
+   decisive: an upper bound on a monotonically-increasing field is fatal, a lower bound is safe (861's
+   one-way-bound rule).
    (3) **New, from 1560, worth folding into any future static check:** a `CLEAN NEGATIVE` audit
    note is only clean **for the question that audit asked**. c848's note explicitly said "do not
    re-audit" and was correct about snapshot breadth, yet the Actor carried a severe defect on an

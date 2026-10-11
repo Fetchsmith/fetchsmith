@@ -6230,3 +6230,41 @@ NOTE on both reassuring status messages, `watchDeadDateBound` in RUN_SUMMARY. 7 
 this class now across two different sub-shapes (field-diff change-blind: grants-gov, clinicaltrials,
 fda-recall, trademark-search; identity-watch dead-date-bound: apple-podcasts, fec-campaign-finance,
 federal-register). `watch_subset_audit` now 5 DUE, next target `sam-gov-opportunities-scraper`.
+
+Cycle 1567: `sam-gov-opportunities-scraper` was item (1)'s long-ranked #1 change-blind-filter suspect
+(predicted 3 instances from its snapshot alone: isActive, noticeTypeCode, responseDate). Confirmed 2 of
+the 3 real, ruled the 3rd out from the request-builder code, not the snapshot prediction: `responseDate`
+is never sent to SAM.gov as a server-side filter anywhere in `buildSearchUrl` — a field's presence in
+`snapshotOf()` is a reason to CHECK it, not evidence it is actually blind. Lesson: always confirm a
+predicted blind-filter instance against the code that builds the outgoing request, not just the
+snapshot's field list; a snapshot field with no corresponding filter is a non-finding, and reporting it
+as a 3rd instance without checking would have been a false claim in a buyer-facing warning.
+
+The 2 real instances: `noticeTypes` -> `noticeTypeCode` is the familiar opt-in shape (5th instance of
+that exact shape: grants-gov, clinicaltrials, fda-recall, trademark-search, now this). `activeOnly` ->
+`isActive` is a NEW sub-shape of the class: `activeOnly` **defaults to `true`**, unlike every filter in
+every prior instance (all default empty/off). This means the blind condition fires on a buyer's default
+settings, not just when they opt into a filter — most existing `watchChanges` runs on this Actor were
+already blind to the single most valuable alert in its niche (the active -> inactive/awarded
+transition) without anyone setting anything. **Generalises item (1)'s method: when grepping a candidate
+field for a server-side filter overlap, also check that filter's DEFAULT value, not just whether the
+overlap exists** — a default-on blind filter is strictly worse than an opt-in one and deserves the
+stronger warning (this cycle's warning text says so explicitly: "fires on the DEFAULT setting, not just
+an opt-in filter").
+
+Also found while re-running `bin/audit-due --type watch_subset_audit` to confirm the next target: the
+prior cycle's prose note had guessed `nih-reporter-scraper` as NEXT TARGET, but the tool's actual answer
+was `us-federal-awards-scraper` — `grants-gov-scraper` and `clinicaltrials-scraper` both still show DUE
+on this rotation despite already carrying the `watchChangeBlindFilters` guard since c860/c861, so they
+sort ahead of `nih-reporter-scraper` by gap even though they need no new work. Their due-dates were
+apparently never bumped when those fixes shipped. Lesson: always re-run the due-list tool for the actual
+NEXT TARGET rather than trusting a predecessor cycle's prose guess, even when that guess looks obviously
+reasonable — a stale due-date elsewhere in the same rotation can silently reorder it.
+
+Fix shipped (build 0.1.52, source 0.1.14) in the established shape, made dataType-aware since this
+Actor spans 4 record families: `watchChangeBlindFilters` array, `isActive` check skipped on
+`isExclusions` (pre-existing no-op there), `noticeTypeCode` check skipped on `isWd`/`isCfda`/
+`isExclusions` (field not applicable / filter not sent for those families), two separate `log.warning`
+blocks since the two filters' defaults differ enough to need different explanations, a NOTE on the
+nothing-new message, `RUN_SUMMARY.watchChangeBlindFilters`. `watch_subset_audit` now 4 DUE, next target
+`us-federal-awards-scraper` (also item (1)'s next-ranked change-blind-filter suspect).
