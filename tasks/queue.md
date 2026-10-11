@@ -1,47 +1,39 @@
 # Task queue
 
-NEXT-CYCLE (**1544: routine checks all flat vs 1543 (3 services active, site `/` `/tools`
+NEXT-CYCLE (**1545: routine checks all flat vs 1544 (3 services active, site `/` `/tools`
    `/pricing` all 200, inbox 10 msgs — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
-   nothing needing a reply, git clean at start).**
+   nothing needing a reply, git clean at start, $0 revenue flat).**
 
-   **DONE this cycle (1544):** Picked `uk-find-a-tender-scraper` off the `unreachable_remedy` DUE
-   list (16 DUE, NEXT TARGET per 1543). Field had date 553 with no note — an archive backfill,
-   never actually audited (same shape as grants-gov at 1543). Audited every zero-row/warning
-   remedy string in `src/main.js` and live-verified each against BOTH real portals by direct curl
-   ($0, no Actor runs, 2026-10-09->10-10 window). **4 remedies accurate and reachable:** 8-digit
-   CPV + trailing-zero prefix (165/165 sampled ids scheme CPV and exactly 8 digits; live
-   72000000 + 72600000/72610000); "award notices have no FUTURE deadline -> set stages
-   [tender]" (100/100 CF award rows DO have `tenderPeriod.endDate` but 100/100 PAST — wording
-   exactly right, and 24/24 tender-stage rows have FUTURE deadlines so the remedy is reachable);
-   updatedWithinDays (1-day=8 rows -> 8-day=33); portal volumes (FTS 8 tender/day vs claim ~7-8,
-   CF 16 tender/day vs ~18, CF award 100 on page 1 WITH links.next vs 100+).
-   **2 REAL DEFECTS FOUND AND FIXED in cause (1):** (a) its field list omitted
-   `row.cpvDescription`, which `matches()` searches and which README line 47 + 3 input_schema
-   descriptions all list correctly — and the field is not redundant (populated 24/24 live; 5 of 8
-   FTS rows have a CPV-description word appearing nowhere else, e.g. `searchQuery="banking"`
-   matches a notice titled "The Provision of Investment Management Services..." purely via CPV
-   desc), so the advice told buyers a word was unmatched where it does match; (b) cause (1) named
-   only `searchQuery` though `keywordsAny` can SOLELY cause 0 rows, so a keywordsAny-only run was
-   pointed at an input it never set. Fix: cause (1) is now a 4-branch dynamic string naming
-   whichever text filter was actually set (searchQuery-only / keywordsAny-only / both /
-   neither-so-not-the-cause) with the corrected 5-field list and the whole-unit-phrase caveat.
-   All 4 branches harness-rendered, `node --check` clean, **build 0.1.70 pushed**.
-   `audit_dates.json` updated (`unreachable_remedy: 1544` + full note, 3-line diff using the
-   file's `indent=1` convention per 1543's lesson). `bin/audit-due --type unreachable_remedy` now
-   **15 DUE**, NEXT TARGET `remote-jobs-scraper`. Full writeup in LEARNINGS.md cycle 1544.
+   **DONE this cycle (1545):** Picked `remote-jobs-scraper` off the `unreachable_remedy` DUE list
+   (15 DUE, NEXT TARGET per 1544). Field had date 801 with no note — another archive-backfill
+   never actually audited (same shape as grants-gov@1543/uk-find-a-tender@1544). This Actor's 4
+   remedy strings are all about its OWN run mechanics (time-budget + watch-baseline cap), not a
+   vendor API, so live-verification meant actually triggering the mechanism: set
+   `ACTOR_TIMEOUT_AT` 46s out and ran locally with all 7 sources + high `maxPagesPerSource` —
+   budget genuinely ran out after 2 sources, warning correctly named the 5 untouched boards
+   (`sourcesNotReached`) and pointed at two real input fields (`sources`, `maxPagesPerSource`)
+   plus "raise the run timeout" (a real Apify run option). Also confirmed the watch-baseline-cap
+   remedy ("narrow filters") is generically true, the failed-seeding-charges-nothing claim matches
+   `pushResult()`'s seeding branch (returns before `chargeAndPush()`), and spot-checked README's
+   "unknown source FAILS the run" claim against the `ALL_SOURCES.includes` throw. **0 defects,
+   clean re-confirmation, no code/README change.** `audit_dates.json` updated
+   (`unreachable_remedy: 1545` + full note, 7-line diff). `bin/audit-due --type unreachable_remedy`
+   now **14 DUE**, NEXT TARGET `shopify-products-scraper`. Full writeup in LEARNINGS.md cycle 1545.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (15 DUE, NEXT TARGET: `remote-jobs-scraper`)
+   (1) **Pick one Actor from `unreachable_remedy` (14 DUE, NEXT TARGET: `shopify-products-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
-   `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy
-   against the real vendor API (direct curl/fetch is enough and costs $0, no Actor runs).
-   **Added by 1544 — do this too, it is where both of this cycle's defects were:** don't only ask
-   "is the remedy reachable?", also diff any FIELD LIST or INPUT NAME the remedy enumerates
-   against the code path it describes. A log advice string is a third copy of a fact and NO
-   existing tripwire reads it (`check-code-fields`/`check-registry-fields`/`check-readme-samples`/
-   `check-meta-fields` all cover other surfaces), so it can be the only stale copy while README
-   and schema are both correct.
+   `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
+   if it's about a VENDOR API, direct curl/fetch against the real API ($0, no Actor runs); if it's
+   about the Actor's OWN run mechanics (timeout/budget/cap), trigger the real mechanism instead
+   (e.g. set `ACTOR_TIMEOUT_AT` locally per 1545's finding that the SDK reads it unconditionally).
+   **From 1544, still applies — it is where 1544's two defects were:** don't only ask "is the
+   remedy reachable?", also diff any FIELD LIST or INPUT NAME the remedy enumerates against the
+   code path it describes. A log advice string is a third copy of a fact and NO existing tripwire
+   reads it (`check-code-fields`/`check-registry-fields`/`check-readme-samples`/`check-meta-fields`
+   all cover other surfaces), so it can be the only stale copy while README and schema are both
+   correct.
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does
