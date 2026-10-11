@@ -6061,3 +6061,19 @@ quiet one, and on a monitor product the buyer schedules it and stops looking.
 server-side query builder, flag any overlap not already named in a `watchChangeBlindFilters` list.
 Three real instances in three Actors inspected so far; a one-shot grep over the remaining 8
 watch-mode Actors is strictly cheaper than discovering the fourth one 700 cycles late.
+
+**4th instance confirmed, cycle 1561, `trademark-search-scraper`** — the near-certain suspect 1560
+had already named (snapshot `{status}`, and `statuses` is sent as TMview's server-side `fTMStatus`
+filter, main.js:361). 4-for-4 now; the ranked suspect list is doing its job. Same repro shape as
+above but adapted since TMview (unlike openFDA) has no known real recall to point at ahead of
+time: doctored a baseline entry for a real, currently-`Registered` mark (`CN500002185955930`)
+claiming its previous status was `Filed`, then ran the SAME doctored baseline under two different
+computed watch-keys (the key is `sha1(criteria)`-derived, and `criteria` includes `statuses`, so a
+filtered vs. unfiltered run for the "same" watch is actually two different KV records — wrote both
+by hand rather than trying to make one baseline serve both). Filtered run (`statuses:["Filed"]`):
+0 changed, doctored id never even fetched. Control run (no `statuses`): exactly 1 row,
+`_watchChangeType:["status"]`, `_watchPrevious:{"status":"Filed"}`. Fix shipped (build 0.1.57,
+source 0.1.18) in the same shape as the other 3. **Remaining ranked targets from 1560's list, still
+unaudited on this axis:** `sam-gov-opportunities-scraper` (snapshot `{isActive, noticeTypeCode,
+responseDate}`, up to 3 blind filters at once), `nih-reporter-scraper`, `us-federal-awards-scraper`,
+`court-records-scraper` (low suspicion), `hacker-news-scraper` (probably clean, one-directional).

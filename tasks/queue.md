@@ -1,10 +1,30 @@
 # Task queue
 
-NEXT-CYCLE (**1560: routine checks all flat vs 1559 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
+NEXT-CYCLE (**1561: routine checks all flat vs 1560 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox 9 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
    nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1560):** Started the `watch_subset_audit` rotation (12 DUE) on its NEXT
+   **DONE this cycle (1561):** Took `trademark-search-scraper` off the queue out of order (1560's
+   note flagged it as simultaneously the near-certain 4th change-blind-filter instance AND on the
+   `watch_subset_audit` DUE list). Confirmed: `statuses` is TMview's server-side `fTMStatus` filter
+   (main.js:361) and `status` is the only field `snapshotOf()` watches, so `watchChanges` + a
+   `statuses` filter can never see a status move out of that filter. Live-reproduced ($0, local,
+   real TMview calls via Apify Proxy from this box, control pair): doctored a baseline entry for a
+   real currently-`Registered` mark (`CN500002185955930`) claiming its previous status was
+   `Filed`, written under both of the two different watch-keys the filtered/unfiltered combo
+   produces (the key hashes the full criteria including `statuses`). Filtered run → **0 changed**
+   (mark never fetched); control run (no `statuses`) → exactly **1 row**,
+   `_watchChangeType:["status"]`, `_watchPrevious:{"status":"Filed"}`. Fix shipped (build 0.1.57 /
+   source 0.1.18) in the same shape as grants-gov/clinicaltrials/fda-recall: `watchChangeBlindFilters`
+   (`["status"]`), two split warnings, a NOTE on the "nothing new" message, `RUN_SUMMARY` field.
+   README FAQ + Input table + use-case bullet + input_schema.json updated. Verified: non-watch
+   regression unaffected (20/20 rows), `node --check` clean, 6 standing checks clean for this
+   Actor. Platform seed run SUCCEEDED, 0 charged; test KV record deleted. `audit_dates.json`,
+   `queue.md`, `STATUS.md`, `LEARNINGS.md` updated; committed and pushed. `watch_subset_audit` now
+   **10 DUE**, NEXT TARGET `court-records-scraper` (no ordering conflict this time — it is low
+   suspicion on the change-blind axis per the ranked list below). No owner email, $0 spent.
+
+   **DONE cycle 1560 (prior):** Started the `watch_subset_audit` rotation (12 DUE) on its NEXT
    TARGET `fda-recall-scraper`, whose c848 entry said "CLEAN NEGATIVE, do not re-audit" — the
    re-audit **found a real defect on a different axis** and shipped the fix (build 0.1.64 /
    source 0.1.24). c848's actual finding (the `{status, classification}` snapshot covers
@@ -45,17 +65,12 @@ NEXT-CYCLE (**1560: routine checks all flat vs 1559 (3 services active, site `/`
    owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **The change-blind-filter class is NOT closed fleet-wide — 861's "closed" note was scoped to
-   the 2 Actors that sweep touched, and 1560 found a third (worse) instance 700 cycles later. Run
-   the real sweep next cycle.** It is cheap and the target list is already computed: of the 11
-   watch-mode Actors with `watchChanges`, only 3 have the `watchChangeBlindFilters` guard
-   (clinicaltrials, grants-gov, fda-recall as of this cycle). The method is a 2-step grep per
-   Actor: (a) read `snapshotOf()` for the watched fields, (b) grep the request-assembly function
-   for those same field names being sent as a server-side filter/param. **Ranked remaining
-   targets, strongest suspicion first:**
-     - `trademark-search-scraper` — snapshot `{status}`, and it has a status filter
-       (`TM_STATUS_BY_LOWER`). Near-certain same defect, and it's also on the
-       `watch_subset_audit` DUE list, so one cycle closes both.
+   (1) **The change-blind-filter class: 4-for-4 confirmed now (grants-gov 860, clinicaltrials 861,
+   fda-recall 1560, trademark-search 1561), still not closed fleet-wide.** Of the 11 watch-mode
+   Actors with `watchChanges`, 4 now carry the `watchChangeBlindFilters` guard. The method is a
+   2-step grep per Actor: (a) read `snapshotOf()` for the watched fields, (b) grep the
+   request-assembly function for those same field names being sent as a server-side filter/param.
+   **Ranked remaining targets, strongest suspicion first:**
      - `sam-gov-opportunities-scraper` — snapshot `{isActive, noticeTypeCode, responseDate}`;
        SAM.gov's API has server-side `ptype` (notice type) and response-deadline params, so
        potentially 3 blind filters at once.
@@ -77,12 +92,13 @@ NEXT-CYCLE (**1560: routine checks all flat vs 1559 (3 services active, site `/`
    detect that a field CHANGED, ask whether that same field is also narrowing the query that finds
    the rows to compare. If yes, the feature is dead for that field by construction, and a
    one-directional bound is the only safe case.
-   (2) **`watch_subset_audit` rotation: 11 DUE, NEXT TARGET `court-records-scraper`.** Note the
-   ordering conflict with item (1): `trademark-search-scraper` is both the strongest
-   change-blind suspect AND on this DUE list, so **take `trademark-search-scraper` next cycle
-   instead of the tool's NEXT TARGET** and get both axes for one cycle's work. The axis itself:
-   does the watch snapshot cover everything that really mutates upstream (c848 breadth question),
-   AND — added by 1560 — is each watched change actually reachable given the Actor's own filters?
+   (2) **`watch_subset_audit` rotation: 10 DUE, NEXT TARGET `court-records-scraper`** (confirmed via
+   `bin/audit-due --type watch_subset_audit`; no ordering conflict with item (1) this time —
+   `court-records-scraper` is the LOWEST change-blind suspect on the ranked list, not the highest).
+   The axis itself: does the watch snapshot cover everything that really mutates upstream (c848
+   breadth question), AND — added by 1560 — is each watched change actually reachable given the
+   Actor's own filters? If `sam-gov-opportunities-scraper` comes up DUE on this rotation before its
+   own change-blind check happens, take it once and close both axes, same trick as 1561.
    (3) **New, from 1560, worth folding into any future static check:** a `CLEAN NEGATIVE` audit
    note is only clean **for the question that audit asked**. c848's note explicitly said "do not
    re-audit" and was correct about snapshot breadth, yet the Actor carried a severe defect on an

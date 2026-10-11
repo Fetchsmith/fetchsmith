@@ -49,7 +49,7 @@
     "watchChanges": {
       "title": "Watch mode: also alert on status changes",
       "type": "boolean",
-      "description": "Only used together with Watch label. When on, a run also re-delivers a mark you already have if its status has changed since you last saw it -- e.g. Filed -> Registered, or a move into Ended/Expired -- instead of only ever reporting brand-new filings. Charged at the same per-row price as a new mark. Each changed row is tagged with `_watchChangeType: [\"status\"]` plus the previous value under `_watchPrevious`. Off by default so existing watches keep their current behaviour.",
+      "description": "Only used together with Watch label. When on, a run also re-delivers a mark you already have if its status has changed since you last saw it -- e.g. Filed -> Registered, or a move into Ended/Expired -- instead of only ever reporting brand-new filings. Charged at the same per-row price as a new mark. Each changed row is tagged with `_watchChangeType: [\"status\"]` plus the previous value under `_watchPrevious`. Off by default so existing watches keep their current behaviour. IMPORTANT: do not combine this with the Trademark status filter above -- that is a server-side filter on the very field this option watches, so a mark whose status moves out of your filter stops matching the search and its change can never be reported. The run warns you if you do; see the README FAQ \"don't filter on the field you're watching\".",
       "default": false
     },
     "webhookUrl": {

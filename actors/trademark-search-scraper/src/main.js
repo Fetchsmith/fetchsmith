@@ -250,6 +250,30 @@ if (watchMode) {
   }
 }
 
+// Change-blind filter (cycle 1561; same class as grants-gov-scraper c860 / clinicaltrials-scraper
+// c861 / fda-recall-scraper c1560). `statuses` is pushed into TMview as the server-side filter
+// `fTMStatus` (see fetchPage below), and `status` is also the ONLY field snapshotOf() watches. So
+// filtering on it makes the very change `watchChanges` promises structurally undetectable: the
+// moment a mark's status moves out of the filtered set (e.g. Filed -> Registered while
+// statuses:["Filed"]), the filtered query stops returning the row at all, so changesBetween() is
+// never called for it and the run reports "nothing new, that is expected". Advisory only -- the
+// filter defaults to empty, so a default run is unaffected.
+const watchChangeBlindFilters = [];
+if (watchMode && watchChanges && statuses.length) {
+  watchChangeBlindFilters.push('status');
+  log.warning(
+    'watchChanges cannot see the change you are filtering on: status is sent to TMview as a server-side '
+    + 'filter (statuses), and it is also the only field this run watches for changes. A mark whose status '
+    + 'moves out of your filter stops matching the search entirely, so the change is never reported -- the '
+    + 'run just says nothing was new.',
+  );
+  log.warning(
+    'What to do: drop "statuses" from the watch run and filter the delivered rows on your own side (every '
+    + 'row carries status), or keep two runs -- a filtered one for new marks and an unfiltered watchChanges '
+    + 'one for status transitions.',
+  );
+}
+
 async function saveWatchRecord(status) {
   const all = Array.from(watchSeen.entries());
   const entries = all.slice(-WATCH_KEEP);
@@ -514,7 +538,15 @@ if (watchMode && !skipBaselineSave) {
       + ` since the last run (${watchSkipped} already-delivered mark(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionSuffix}`,
     );
     if (pushed === 0) {
-      await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`);
+      await Actor.setStatusMessage(
+        `Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`
+        // Without this, a run that CAN NEVER report a change (see watchChangeBlindFilters above)
+        // is byte-for-byte indistinguishable from a healthy quiet run -- and this is a monitor, so
+        // the buyer schedules it and stops looking.
+        + (watchChangeBlindFilters.length
+          ? ' NOTE: this run also cannot report any status change at all (see the change-blind-filter warning above), so "nothing changed" is not evidence here.'
+          : ''),
+      );
     } else if (baselineTruncated > 0) {
       await Actor.setStatusMessage(`Pushed ${pushed} new mark(s) for watch label "${watchLabel}".${evictionSuffix}`);
     }
@@ -547,6 +579,7 @@ await Actor.setValue('RUN_SUMMARY', {
   watchSeeding: watchMode ? seeding : null,
   watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
   watchChangedCount: watchMode && !seeding ? changedCount : null,
+  watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
 });
 // An empty dataset caused purely by an unrecognised filter value looks identical, from the
 // Console, to a search that genuinely has no matches -- so name the cause there, not just in the
