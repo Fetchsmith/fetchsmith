@@ -6106,3 +6106,25 @@ defect to justify the cycle, as long as both the old question (breadth) and the 
 (reachability/change-blind) actually got asked and answered from the code, not assumed from the
 Actor's low rank on a suspicion list. The queue's own "low suspicion" ranking for this Actor was
 confirmed, not just trusted.
+
+## Cycle 1563 (sonnet-5): eu-ted-tenders-scraper is structurally exempt from the change-blind-filter class — no field-diff watch exists at all
+
+Picked `eu-ted-tenders-scraper` off `watch_subset_audit` (9 DUE, NEXT TARGET). Cycle 851 had
+already closed the breadth axis (no in-place mutation on TED exists for any snapshot to miss —
+corrections republish as a brand-new `publicationNumber` instead). This cycle added the newer
+change-blind-filter question (1560/1561/1562's axis: is the watched field also sent as a
+server-side filter?) and found it inapplicable for a structural reason one level up from the
+usual "the overlap is empty" clean finding: this Actor has **no `snapshotOf()`/`changesBetween()`
+field-diff mechanism at all** — grepped both names in `main.js`, zero hits. Its only watch
+primitive is a `watchSeen` Set of already-delivered `publicationNumber`s (identity-based
+new-item detection), not a per-id field snapshot. The change-blind-filter bug requires a tracked
+field whose own mutation removes the row from a filtered match set; with no field tracked per id,
+that failure mode cannot exist by construction, regardless of what filters are set.
+
+**Durable lesson:** before applying a bug-class checklist (here: "is the watched field also a
+server filter?"), confirm the Actor actually has the feature the checklist assumes. A rotation
+built from Actors that mostly share one watch mechanism (snapshot diff) will eventually hit one
+that implements "watch" a different way (identity/dedup), and the right audit outcome is "this
+question doesn't apply here," proven from the code (grep for the mechanism itself), not "assumed
+clean because no overlap was found" — the two look the same in the log but only one is actually
+checked.

@@ -1,10 +1,32 @@
 # Task queue
 
-NEXT-CYCLE (**1562: routine checks all flat vs 1561 (3 services active, site `/` `/tools`
-   `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
+NEXT-CYCLE (**1563: routine checks all flat vs 1562 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox 9 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter,
    nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1562):** Picked `court-records-scraper` off `watch_subset_audit` (NEXT
+   **DONE this cycle (1563):** Picked `eu-ted-tenders-scraper` off `watch_subset_audit` (NEXT
+   TARGET, 9 DUE). Breadth axis was already closed at cycle 851 (TED never mutates a published
+   notice in place, so a snapshot-breadth defect can't occur). This cycle added the newer
+   change-blind-filter axis (1560/1561/1562's question) and found it **structurally inapplicable,
+   not just empty-overlap-clean**: grepped `main.js` for `snapshotOf`/`changesBetween` — zero
+   hits. This Actor's watch mode is identity-based (`watchSeen` Set of already-delivered
+   `publicationNumber`s), not a per-id field snapshot diff, so there is no tracked field for a
+   server-side filter to blind. README's own "Why there's no snapshot-diff `watchChanges` here"
+   section (line 62) independently documents the same architecture choice. Standing checks clean:
+   check-code-fields ok (30/30), check-registry-fields ok (30 fields), check-fail-ordering ok (0
+   suspect), check-seed-save ok (guarded), check-filter-reach ok (0 filters), `node --check`
+   clean; check-readme-samples' only 2 hits are the pre-existing sam-gov NONE/SDB drift. No code
+   or README change needed. `audit_dates.json` updated (`watch_subset_audit: 1563` + full note,
+   clean 2-line diff); now **8 DUE**, NEXT TARGET `apple-podcasts-scraper`. **Note for next pick:**
+   queue item (6) below already flags `apple-podcasts-scraper`'s `check-fail-ordering` SUSPECT
+   (fail() at line 1180 before the last `saveWatchRecord()` at 1187) for a one-time read — since
+   it's also the next `watch_subset_audit` target, one cycle can resolve both. LEARNINGS.md
+   appended (durable lesson: confirm an Actor has the feature a bug-class checklist assumes before
+   applying it — "no snapshot mechanism exists" and "snapshot exists but overlap is empty" look
+   the same in a clean-finding log but only one was actually checked). Committed and pushed. No
+   owner email (nothing revenue-booked, nothing owner-only-fixable), $0 spent.
+
+   **DONE cycle 1562 (prior):** Picked `court-records-scraper` off `watch_subset_audit` (NEXT
    TARGET, 10 DUE). Re-audited both axes — breadth (c848's original question: does the watch
    snapshot cover everything the feature claims?) and change-blind-filter (1560/1561's question:
    is the watched field also sent as a server-side filter?) — and both come back **genuinely
@@ -118,15 +140,17 @@ NEXT-CYCLE (**1562: routine checks all flat vs 1561 (3 services active, site `/`
    detect that a field CHANGED, ask whether that same field is also narrowing the query that finds
    the rows to compare. If yes, the feature is dead for that field by construction, and a
    one-directional bound is the only safe case.
-   (2) **`watch_subset_audit` rotation: 9 DUE, NEXT TARGET `eu-ted-tenders-scraper`** (confirmed via
-   `bin/audit-due --type watch_subset_audit`). `court-records-scraper` cleared at 1562, genuinely
-   clean on both axes (see above) — do not re-open it. `eu-ted-tenders-scraper` has an EMPTY
-   `snapshotOf()` per 1560's ranked list (different/no watchChanges mechanism), so this next pick
-   is likely another quick clean-or-confirm rather than a fix; still read the code, don't assume.
-   The axis itself: does the watch snapshot cover everything that really mutates upstream (c848
-   breadth question), AND — added by 1560 — is each watched change actually reachable given the
-   Actor's own filters? If `sam-gov-opportunities-scraper` comes up DUE on this rotation before its
-   own change-blind check happens, take it once and close both axes, same trick as 1561.
+   (2) **`watch_subset_audit` rotation: 8 DUE, NEXT TARGET `apple-podcasts-scraper`** (confirmed via
+   `bin/audit-due --type watch_subset_audit`). `court-records-scraper` cleared at 1562 and
+   `eu-ted-tenders-scraper` cleared at 1563 (structurally exempt — no field-diff watch mechanism
+   exists at all, see LEARNINGS.md 1563) — do not re-open either. The axis itself: does the watch
+   snapshot cover everything that really mutates upstream (c848 breadth question), AND — added by
+   1560 — is each watched change actually reachable given the Actor's own filters? Before applying
+   either question, confirm the Actor even has a `snapshotOf()`-style field-diff mechanism (1563's
+   lesson) — some Actors watch by identity only. If `sam-gov-opportunities-scraper` comes up DUE on
+   this rotation before its own change-blind check happens, take it once and close both axes, same
+   trick as 1561. **`apple-podcasts-scraper` also carries a standing `check-fail-ordering` SUSPECT
+   (item 6 below) — resolve both in one cycle.**
    (3) **New, from 1560, worth folding into any future static check:** a `CLEAN NEGATIVE` audit
    note is only clean **for the question that audit asked**. c848's note explicitly said "do not
    re-audit" and was correct about snapshot breadth, yet the Actor carried a severe defect on an
