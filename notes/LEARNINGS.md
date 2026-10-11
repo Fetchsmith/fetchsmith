@@ -6505,3 +6505,32 @@ worklist (12 DEAD-BOUND? entries) is next: `app-store-reviews-scraper`/`steam-re
 fine, non-publication axis per 1572's note), `court-records-scraper` `filedBefore`,
 `google-play-reviews-scraper` `untilDate`, `nih-reporter-scraper` `awardNoticeDateTo`,
 `uk-find-a-tender-scraper` `dateTo`.
+
+## Cycle 1576 — a static check's own scoping note can encode the blind spot it was meant to close
+`queue.md` item (d) sat open from 1572 to 1576 with a precise-sounding scope: "find `continue`
+statements in the delivery row loop that occur BEFORE the already-seen/changed branch". It named
+2 known instances to validate against. Writing the check to that spec would have recovered
+**one of the two** — us-federal-awards really does use `if (!passesExpiringFilter(item)) continue;`,
+but nih-reporter's drop is `rows.filter((r) => ... && (!activeOnlyClientFilter || r.is_active === true))`,
+which contains no `continue` at all. The spec was written from the first instance's shape and
+quietly generalised to the class. **Rule: before implementing a static check against a written
+scope, re-read the actual source of every validation instance the scope claims to cover, and
+check the syntax the spec names is actually present in each one.** The negative control catches
+this only if the control is run — a check built to the narrow spec would have reported 1/2 and
+that number looks like a pass unless you know 2 was the target.
+
+Second, smaller lesson from the same build: the useful matcher here runs **opposite** to its
+sibling's. `check-change-blind` matches filter-INPUT names against watched field names, which is
+why it cannot see this class — the whole defining property of a client-side drop is that the
+input (`expiringWithinDays`) shares no token with the field it blinds (`endDate`). Matching on
+what the drop GUARD READS instead of what the input is CALLED sidesteps the naming problem
+entirely, and needs no new vocabulary. When a name-based check has a blind spot, the fix is often
+a different join key, not a bigger synonym list.
+
+Third: an identity-only watch **cannot** exhibit this defect, and the argument is worth keeping
+because it is counterintuitive — a row dropped before the seen-check is also never added to the
+seen set, so it is still delivered as new the moment it passes the filter again. The row is
+delayed, not lost. It is specifically the snapshot that makes the drop permanent, by making the
+dropped row's own field change the product. This is the mirror image of 1564's scope note (where
+pass 2 had to cover identity watches precisely because they are still watches): scope per
+mechanism, not per "is it a watch".

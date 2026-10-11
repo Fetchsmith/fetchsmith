@@ -1,0 +1,206 @@
+#!/root/agent/venv/bin/python
+"""Surface CLIENT-SIDE row drops that blind a snapshot watch -- the third shape of the
+change-blind class, the one `bin/check-change-blind` is structurally incapable of seeing.
+
+Built cycle 1576 as queue.md item (d), open since 1572. Its sibling check matches FILTER
+INPUT names against watched field names, so it only ever sees drops that happen because
+the buyer narrowed the query. The two known client-side instances are invisible to that
+method by construction:
+
+  us-federal-awards-scraper (cycle 1568, 1st instance) -- `expiringWithinDays` drops rows
+  whose `endDate` is outside the window, via `if (!passesExpiringFilter(item)) continue;`
+  in the delivery row loop. The input name shares NO token with the watched `endDate`, so
+  no name matcher reaches it. An award whose period of performance is EXTENDED past the
+  window falls out of the filter, and the extension -- the exact change watchChanges
+  sells -- is the one change that cannot be reported.
+
+  nih-reporter-scraper (cycle 1570, 2nd instance) -- `activeOnlyClientFilter` drops rows
+  with `is_active !== true` inside `rows.filter(...)`, before the already-seen/changed
+  branch. A project going active -> inactive is a watched change that can never fire.
+
+So this check matches the other way round: it ignores input names entirely and looks at
+what the DROP GUARD ITSELF READS. If a row-loop drop tests a field that `snapshotOf()`
+compares, the row leaves the pipeline before the change branch can ever see it.
+
+Two drop shapes are recognised, because the two known instances use one each and
+item (d)'s original scoping ("find `continue` statements in the delivery row loop") only
+covered the first -- nih-reporter's `.filter()` is not a `continue` at all and would have
+been missed by this check's own stated purpose:
+
+  CONTINUE -- `if (<cond>) continue;` or `if (<cond>) { ... continue; }`
+  FILTER   -- `rows.filter((r) => <cond>)`, where the predicate keeps rather than drops
+
+Guards that delegate to a predicate function (`passesExpiringFilter(item)`) are followed
+ONE level: the callee's body reads are folded into the guard's reads. One level is enough
+for both known instances and stops short of whole-program dataflow; a guard that hides its
+field read two calls deep is a documented blind spot below, not a silent pass.
+
+Coverage: a drop is CLEARED when the watched field it reads is already named in the
+Actor's own guard literals (the `watchChangeBlindFilters` pushes / `watch*DateBound`
+flags), reusing `check-change-blind`'s `declared()`/`norm()` so the two checks agree about
+what "already guarded" means. Both known instances are fixed and so both read as clean
+here; the negative control (stub `covered()` to False) must recover 2/2 or this check has
+stopped working -- see PLAYBOOK.
+
+Scope: SNAPSHOT watches only. An identity-only watch (no `snapshotOf()`) cannot exhibit
+this defect, and the reasoning is worth stating because it is not obvious: a row dropped
+before the seen-check is also never ADDED to the seen set, so if it later passes the
+filter it still gets delivered as new. The row is delayed, not lost. It is specifically
+the snapshot that makes the drop permanent, by making the dropped row's own field change
+the product.
+
+What this CANNOT see, stated plainly so a future cycle doesn't trust a 0:
+
+1. Field reads more than one call level deep inside a guard.
+1b. `local_functions()` is deliberately loose about arrow assignments and will also bind a
+   name to a callback body it was never a function for (`const fresh = rows.filter((r) =>
+   ...)` registers `fresh`). Harmless -- the entry is only ever consulted when a guard
+   actually CALLS that name -- but it means this map is not a clean function table.
+2. Drops expressed as something other than `continue` / `.filter()` -- a `.find()`,
+   a `break`, an early `return` inside a per-row helper, a server-side page cursor that
+   skips rows.
+3. Whether a flagged drop is ACTUALLY blind. Direction decides it and direction is not in
+   the syntax: 861's one-way-bound rule, and 1573's finding that a near-monotonic field
+   makes the classic mechanism impossible for new-row detection. A hit here is a question,
+   not a verdict -- the same standard every shipped fix in this class was held to.
+"""
+import json
+import os
+import re
+import sys
+from importlib.machinery import SourceFileLoader
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Reuse the sibling check's tokenizer/coverage rather than reimplementing them: if the two
+# checks disagree about what `norm('is_active')` is, or about which guard literals count,
+# then one of them is wrong about the fleet and neither can be trusted.
+ccb = SourceFileLoader('ccb', os.path.join(ROOT, 'bin/check-change-blind')).load_module()
+
+
+def balanced(src, i, open_ch='(', close_ch=')'):
+    """Contents of the bracket group starting at src[i], or None if unterminated."""
+    depth = 0
+    for j in range(i, len(src)):
+        if src[j] == open_ch:
+            depth += 1
+        elif src[j] == close_ch:
+            depth -= 1
+            if depth == 0:
+                return src[i + 1:j], j
+    return None, None
+
+
+def local_functions(src):
+    """name -> body text, for one-level guard inlining.
+
+    Covers both fleet spellings: `function passesExpiringFilter(item) {` and
+    `const passes = (item) => {` / `=> expr`.
+    """
+    out = {}
+    for m in re.finditer(r'\bfunction\s+([A-Za-z_$][\w$]*)\s*\(', src):
+        _, close = balanced(src, src.index('(', m.end() - 1))
+        if close is None:
+            continue
+        brace = src.find('{', close)
+        if brace == -1:
+            continue
+        body, _ = balanced(src, brace, '{', '}')
+        if body:
+            out[m.group(1)] = body
+    for m in re.finditer(r'(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\(?[^)=;]*\)?\s*=>\s*', src):
+        rest = src[m.end():]
+        if rest.startswith('{'):
+            body, _ = balanced(src, m.end(), '{', '}')
+        else:
+            body = rest[:rest.find(';') if ';' in rest[:400] else 400]
+        if body:
+            out.setdefault(m.group(1), body)
+    return out
+
+
+def guard_reads(cond, funcs):
+    """Field names a drop guard tests, following called local predicates one level."""
+    reads = set(re.findall(r'\b[A-Za-z_$][\w$]*\.([A-Za-z_$][\w$]*)', cond))
+    for name in re.findall(r'\b([A-Za-z_$][\w$]*)\s*\(', cond):
+        if name in funcs:
+            reads.update(re.findall(r'\b[A-Za-z_$][\w$]*\.([A-Za-z_$][\w$]*)', funcs[name]))
+    return reads
+
+
+def drop_sites(src):
+    """(shape, condition, offset) for every recognised client-side row drop."""
+    sites = []
+    for m in re.finditer(r'\bif\s*\(', src):
+        cond, close = balanced(src, src.index('(', m.end() - 1))
+        if cond is None:
+            continue
+        rest = src[close + 1:].lstrip()
+        if rest.startswith('{'):
+            body, _ = balanced(src, src.index('{', close + 1), '{', '}')
+            body = body or ''
+        else:
+            # Single-statement `if` -- stop at the first `;` so the NEXT statement's
+            # `continue` is not misread as this guard's.
+            body = rest[:rest.find(';') + 1] if ';' in rest[:200] else rest[:200]
+        if re.search(r'\bcontinue\s*;', body):
+            sites.append(('CONTINUE', cond, m.start()))
+    for m in re.finditer(r'\.filter\s*\(', src):
+        cond, _ = balanced(src, src.index('(', m.end() - 1))
+        if cond:
+            sites.append(('FILTER', cond, m.start()))
+    return sites
+
+
+def main():
+    registry = json.load(open(os.path.join(ROOT, 'actors/registry.json')))
+    live = sorted(t['slug'] for t in registry['tools'] if t['status'] == 'live')
+
+    hits = []
+    watch_actors = snapshot_actors = sites_scanned = 0
+
+    for slug in live:
+        main_js = os.path.join(ROOT, 'actors', slug, 'src/main.js')
+        if not os.path.exists(main_js):
+            continue
+        src = open(main_js).read()
+        if 'watchLabel' not in src:
+            continue
+        watch_actors += 1
+        fields = ccb.snapshot_fields(src)
+        if not fields:
+            continue  # identity watch -- see the scope note in the docstring
+        snapshot_actors += 1
+        watched = {ccb.norm(f): f for f in fields}
+        decl = ccb.declared(src)
+        funcs = local_functions(src)
+        # Where the watch's own already-seen branch is. A drop BEFORE it is the dangerous
+        # ordering (the row never reaches the change comparison); a drop after it is
+        # reported too, labelled, because source order is a proxy for execution order and
+        # not a proof of it.
+        seen_at = min((m.start() for m in re.finditer(r'watchSeen\.(?:has|get)\s*\(', src)), default=None)
+
+        for shape, cond, off in drop_sites(src):
+            sites_scanned += 1
+            for f in sorted(guard_reads(cond, funcs)):
+                key = ccb.norm(f)
+                if key not in watched or ccb.covered(f, decl):
+                    continue
+                order = 'BEFORE' if seen_at is not None and off < seen_at else 'AFTER'
+                line = src.count('\n', 0, off) + 1
+                hits.append((slug, watched[key], shape, order, line,
+                             ' '.join(cond.split())[:70]))
+                break  # one report per drop site; the first watched field is enough
+
+    for slug, f, shape, order, line, cond in sorted(hits):
+        print(f"ROW-DROP? {slug}:{line} {shape} guard `{cond}` drops rows on watched "
+              f"field `{f}` ({order} the already-seen branch) -- a row whose `{f}` moves "
+              f"out of range is dropped, not reported as a change")
+
+    print(f"check-row-loop-drop: {watch_actors} watch-mode Actor(s) checked "
+          f"({snapshot_actors} with snapshotOf, {sites_scanned} drop site(s) scanned), "
+          f"{len(hits)} ROW-DROP?")
+    return 1 if hits else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
