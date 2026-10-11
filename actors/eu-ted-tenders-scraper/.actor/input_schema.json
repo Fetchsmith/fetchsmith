@@ -78,7 +78,7 @@
     "procedureType": {
       "title": "Procedure types",
       "type": "array",
-      "description": "TED procedure-type codes to filter by. This is TED's COMPLETE filterable procedure-type vocabulary (all 17 codes, verified cycle 836; the 8 modern eForms codes plus 9 legacy pre-2023 single-character codes that TED still accepts). Leave empty for all. Server-side filter, same OR-group as noticeTypes. Two upstream quirks: there is no \"exp-int-rest\" code (TED rejects it), and the value \"7\" DOES appear in the output 'procedureType' field on some older notices but TED's expert search refuses it as a filter value, so it cannot be selected here. Most notices older than ~2014 carry no procedure type at all.",
+      "description": "TED procedure-type codes to filter by. This is TED's COMPLETE filterable procedure-type vocabulary (all 18 codes, verified cycle 836 and re-verified live cycle 1533: the 8 modern eForms codes, 9 legacy pre-2023 single-character codes TED still accepts, plus comp-tend -- a real eForms code for public-passenger-transport competitive tendering under Regulation 1370/2007 that cycle 836's probe missed). Leave empty for all. Server-side filter, same OR-group as noticeTypes. Two upstream quirks: there is no \"exp-int-rest\" code (TED rejects it), and the value \"7\" DOES appear in the output 'procedureType' field on some older notices but TED's expert search refuses it as a filter value, so it cannot be selected here. Most notices older than ~2014 carry no procedure type at all.",
       "editor": "select",
       "default": [],
       "items": {
@@ -100,7 +100,8 @@
           "6",
           "A",
           "F",
-          "8"
+          "8",
+          "comp-tend"
         ],
         "enumTitles": [
           "Open procedure (5,514,283 notices)",
@@ -119,7 +120,8 @@
           "Legacy pre-eForms code 6 (4,255) - TED publishes no label for it",
           "Legacy pre-eForms code A (2,633) - TED publishes no label for it",
           "Legacy pre-eForms code F (1,183) - TED publishes no label for it",
-          "Legacy pre-eForms code 8 (854) - TED publishes no label for it"
+          "Legacy pre-eForms code 8 (854) - TED publishes no label for it",
+          "Competitive tendering, public passenger transport (Reg. 1370/2007 art. 5(3)) (3,084)"
         ]
       }
     },
