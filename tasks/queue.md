@@ -1,44 +1,43 @@
 # Task queue
 
-NEXT-CYCLE (**1556: routine checks all flat vs 1555 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/ats-jobs-scraper` all 200, inbox all SEO-spam/Japanese-form-autoreply/DMARC
-   backscatter, nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle start.**
+NEXT-CYCLE (**1557: routine checks all flat vs 1556 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/trademark-search-scraper` all 200, inbox all SEO-spam/Japanese-form-autoreply/
+   DMARC backscatter, nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle
+   start.**
 
-   **DONE this cycle (1556):** Picked `ats-jobs-scraper` off the `unreachable_remedy` DUE list
-   (4 DUE, NEXT TARGET per 1555). **Found and fixed TWO real defects, one of them a NEW SHAPE for
-   this rotation: a zero-row status message that did not exist at all.** (a) Every
-   `Actor.setStatusMessage` call in the file sat in one `if/else if` chain whose four arms all
-   required `watchMode` or `timeBudgetExceeded`, so the plain non-watch `pushed === 0` path fell
-   off the end — live-reproduced ($0, local): `greenhouse:airbnb` (160 real open postings) with one
-   over-narrow `titleKeyword` ended SUCCEEDED with an empty dataset and NO status message, the only
-   clue a mid-log `log.info` "160 postings, 0 kept after filters". (b) The watch-mode incremental
-   `pushed === 0` message asserted one confident cause — "every matching posting had already been
-   delivered and none of them gained a salary. That is the expected result most of the time" —
-   which a **misspelled board slug** reproduces byte-for-byte forever (verified with
-   `greenhouse:nosuchcompany-zzq-1556` → notFound → that exact reassurance), as does a
-   match-nothing filter. Fixed both with an accumulating `zeroRowCauses()` (notFound slugs /
-   errored boards / all-postings-filtered-out / boards-genuinely-empty / PPE budget already spent),
-   gated so the HEALTHY watch path keeps its old wording byte-identical. Filter names in the
-   message are DERIVED from what the run actually set (`activeFilterNames()` over the same parsed
-   inputs `passesFilters` reads), so the 1544 field-list-drift class is structurally impossible
-   there. Also corrected the README FAQ's matching claim ("is it broken? **No.** Either ... or
-   ...", which excluded both real causes). Verified: 3 repros now name the real cause; healthy
-   watch seed+incremental byte-identical to pre-fix; happy-path `test_input.json` unregressed
-   (52/52 rows). `node --check` clean; `check-code-fields` 0 drift, `check-filter-reach` 0
-   unreachable, `check-registry-fields` 0 drift, `check-readme-samples` only the 2 pre-existing
-   sam-gov hits. **Builds 0.1.75 (code) and 0.1.76 (README) both pushed and SUCCEEDED** (verified
-   via build API; package.json 0.1.21→0.1.22). `audit_dates.json` updated
-   (`unreachable_remedy: 1556` + note). `bin/audit-due --type unreachable_remedy` now **3 DUE**,
-   NEXT TARGET `trademark-search-scraper`. LEARNINGS.md appended. Committed and pushed. No owner
-   email, $0 spent.
+   **DONE this cycle (1557):** Picked `trademark-search-scraper` off the `unreachable_remedy` DUE
+   list (3 DUE, NEXT TARGET per 1556). **Found and fixed one real defect — the 1549/1555/1556
+   if/else-if-cascade-over-independent-causes shape, recurring a 4th time**, here among three
+   closed-set filter guards (`statuses` cycle 936, `niceClasses` cycle 1012, `offices` cycle 1530)
+   each bolted onto the `pushed===0` fallback as its own `else if` arm. Live-reproduced ($0, local):
+   `offices:["UK"]` + `niceClasses:["99"]` + `statuses:["Opposed"]` together (all three
+   independently all-invalid) → 0 rows, old message named only the status cause, silently hiding
+   the office and Nice-class problems — a buyer fixing one and re-running would pay again to
+   discover the next. Fixed by collecting every applicable cause into one array and joining into a
+   single message. Verified: 3-cause repro now names all three; single-cause case unchanged in
+   substance ("1 invalid filter value"); happy-path `test_input.json` unregressed (20/20 rows,
+   `stoppedByCap` message intact). `node --check` clean; `check-code-fields`/`check-filter-reach`/
+   `check-registry-fields`/`check-readme-samples` all clean (readme-samples' only 2 hits are the
+   pre-existing sam-gov ones). No README change needed. **Build 0.1.56 pushed (package.json
+   0.1.16→0.1.17), SUCCEEDED** (verified via build API). `audit_dates.json` updated
+   (`unreachable_remedy: 1557` + note). `bin/audit-due --type unreachable_remedy` now **2 DUE**,
+   NEXT TARGET `clinicaltrials-scraper`. LEARNINGS.md appended: the cascade-over-independent-causes
+   bug recurs anywhere a file accreted several independent all-X-invalid guards one cycle at a
+   time, each bolted on as a new `else if` arm instead of a shared accumulator — cheap tell is 2+
+   sibling `unknownX.length === x.length` checks feeding the same `setStatusMessage` via `else if`.
+   Committed and pushed. No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (3 DUE, NEXT TARGET: `trademark-search-scraper`)
-   or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
-   real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
-   `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
-   if it's about a VENDOR API, direct curl/fetch against the real API ($0, no Actor runs); if it's
-   about the Actor's OWN run mechanics (timeout/budget/cap/filters), trigger the real mechanism
+   (1) **Pick one Actor from `unreachable_remedy` (2 DUE, NEXT TARGET: `clinicaltrials-scraper`,
+   then `google-play-reviews-scraper`) or `watch_subset_audit` (12 DUE, NEXT TARGET:
+   `fda-recall-scraper`) next cycle** — both are real multi-Actor rotations, not 1-off axes. NOTE:
+   `unreachable_remedy` is now down to its last 2 Actors on this lap — the cycle that clears it
+   should check whether a full lap turned up enough of a durable pattern (4 of the last 6 hits were
+   the if/else-if-cascade shape) to warrant a dedicated static check before starting a fresh lap,
+   rather than assuming the rotation just continues unchanged. Method for `unreachable_remedy`: grep
+   the Actor's `src/main.js` for its zero-row/error advice strings, then live-verify each suggested
+   remedy — if it's about a VENDOR API, direct curl/fetch against the real API ($0, no Actor runs);
+   if it's about the Actor's OWN run mechanics (timeout/budget/cap/filters), trigger the real mechanism
    instead (locally, `ACTOR_TEST_PAY_PER_EVENT=true CRAWLEE_STORAGE_DIR=./storage node src/main.js`
    with a crafted INPUT.json — per 1545 the SDK also reads `ACTOR_TIMEOUT_AT` unconditionally; per
    1549, when testing a "request failed" branch, set `proxyConfiguration: {useApifyProxy: false}`

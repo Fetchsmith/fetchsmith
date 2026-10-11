@@ -5918,3 +5918,22 @@ Technique worth reusing: when the fix needs to name which filters dropped the ro
 from what the run actually set (`activeFilterNames()` walking the same parsed inputs
 `passesFilters` reads) instead of hard-coding an enumeration — that makes the 1544 field-list drift
 class structurally impossible for that string rather than merely absent today.
+
+## Cycle 1557 — same single-cause cascade bug, a fourth time, in a different Actor's filter-validation guards (trademark-search-scraper)
+`trademark-search-scraper` has three independent closed-set filter guards shipped across three
+earlier cycles (936 `statuses`, 1012 `niceClasses`, 1530 `offices`), each adding its own
+`unknownX.length === x.length` all-invalid check. The `pushed===0` fallback that reports them was
+written as an if/else-if cascade checking statuses, then niceClasses, then offices — exactly the
+1549/1555/1556 shape, just with filter-value causes instead of time-budget/watch causes. Live-
+reproduced: `offices:["UK"]` + `niceClasses:["99"]` + `statuses:["Opposed"]` together (all three
+independently all-invalid, no valid values anywhere) produced 0 rows while the message named only
+the status cause, because it was first in the chain. A buyer would fix the status value, re-run,
+pay again, and only then learn about the office problem, then the Nice-class problem — three paid
+round trips for one that should've been one. Fixed the same way as 1549/1555/1556: collect every
+applicable cause into one array, join into a single message. The generalizable point this adds:
+**the if/else-if-cascade-over-independent-causes bug is not tied to one bug family (time budget,
+watch mode) — it recurs anywhere a file accreted several independent all-X-invalid guards one
+cycle at a time, each bolted onto the same fallback message as a new `else if` arm instead of a
+shared accumulator.** Cheap tell before touching the API at all: grep the function for 2+ sibling
+`unknownX.length === x.length` checks feeding the SAME `setStatusMessage` call via `else if` —
+that shape alone is worth a live multi-cause repro, regardless of what domain the causes are in.

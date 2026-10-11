@@ -548,25 +548,38 @@ await Actor.setValue('RUN_SUMMARY', {
   watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
   watchChangedCount: watchMode && !seeding ? changedCount : null,
 });
-// An empty dataset caused purely by an unrecognised status filter looks identical, from the
+// An empty dataset caused purely by an unrecognised filter value looks identical, from the
 // Console, to a search that genuinely has no matches -- so name the cause there, not just in the
-// log. Only when EVERY supplied status is unknown: a mixed list still returns its valid branches.
-if (pushed === 0 && statuses.length > 0 && unknownStatuses.length === statuses.length) {
-  await Actor.setStatusMessage(
-    `0 results because the status filter ${unknownStatuses.map((s) => `"${s}"`).join(', ')} matches nothing in TMview — `
-    + `it only recognises ${TM_STATUSES.join(', ')} (case-sensitive). This is a filter-value problem, not an empty search.`,
+// log. Only when EVERY supplied value for a given field is unknown: a mixed list still returns
+// its valid branches. These three are independent (one buyer mistake per field, e.g. "UK" for
+// office is explicitly flagged above as a common mix-up) and CAN all be true in the same run --
+// live-reproduced this cycle with offices:["UK"], niceClasses:["99"], statuses:["Opposed"]
+// together, which produced 0 results while only the status cause got reported. An if/else-if
+// cascade here would silently drop the other two, so the buyer "fixes" one, reruns, and pays
+// again to discover the next -- collect every applicable cause into one message instead.
+const zeroRowFilterCauses = [];
+if (statuses.length > 0 && unknownStatuses.length === statuses.length) {
+  zeroRowFilterCauses.push(
+    `the status filter ${unknownStatuses.map((s) => `"${s}"`).join(', ')} (TMview only recognises `
+    + `${TM_STATUSES.join(', ')}, case-sensitive)`,
   );
-} else if (pushed === 0 && niceClasses.length > 0 && unknownNiceClasses.length === niceClasses.length) {
-  await Actor.setStatusMessage(
-    `0 results because the Nice class filter ${unknownNiceClasses.map((c) => `"${c}"`).join(', ')} matches nothing — `
-    + `the Nice Classification only has classes 1-${NICE_CLASS_COUNT} (1-34 goods, 35-45 services). `
-    + 'This is a filter-value problem, not an empty search.',
+}
+if (niceClasses.length > 0 && unknownNiceClasses.length === niceClasses.length) {
+  zeroRowFilterCauses.push(
+    `the Nice class filter ${unknownNiceClasses.map((c) => `"${c}"`).join(', ')} (the Nice Classification `
+    + `only has classes 1-${NICE_CLASS_COUNT}: 1-34 goods, 35-45 services)`,
   );
-} else if (pushed === 0 && offices.length > 0 && unknownOffices.length === offices.length) {
+}
+if (offices.length > 0 && unknownOffices.length === offices.length) {
+  zeroRowFilterCauses.push(
+    `the office filter ${unknownOffices.map((o) => `"${o}"`).join(', ')} (TMview only covers ${OFFICES.length} `
+    + 'offices; common mix-ups: "UK" should be "GB", "EU" should be "EM")',
+  );
+}
+if (pushed === 0 && zeroRowFilterCauses.length > 0) {
   await Actor.setStatusMessage(
-    `0 results because the office filter ${unknownOffices.map((o) => `"${o}"`).join(', ')} matches nothing in TMview — `
-    + `it only covers ${OFFICES.length} offices (common mix-ups: "UK" should be "GB", "EU" should be "EM"). `
-    + 'This is a filter-value problem, not an empty search.',
+    `0 results because of ${zeroRowFilterCauses.length} invalid filter value${zeroRowFilterCauses.length > 1 ? 's' : ''}: `
+    + `${zeroRowFilterCauses.join('; ')}. This is a filter-value problem, not an empty search.`,
   );
 } else if (stoppedByCap) {
   await Actor.setStatusMessage(
