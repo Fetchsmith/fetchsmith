@@ -5471,3 +5471,42 @@ queue.md by an earlier cycle is a snapshot, not a fact — when the source of tr
 call away (a live API, a file mtime, `git log`), take that read before acting on the note**,
 especially when the note's own wording already looks internally inconsistent. Fixed the queue.md
 note to tell the next cycle to re-check via the live API rather than copy the date forward again.
+
+## Cycle 1542 — `bin/audit-due`'s clean-streak backoff was silently dead for 3 of 13 audit types, and a typo'd `--type` looked identical to a genuinely-empty backlog
+
+Checking queue.md's `unreachable_remedy` (17 DUE)/`watch_subset_audit` (12 DUE) backlog note against
+`bin/audit-due --type watch_subset_audit`, every single Actor showed `clean 0` regardless of its
+actual note text -- including `nih-reporter-scraper`, whose note literally opens "closes the
+watch-subset-shape sweep (13/13 watch-mode Actors now checked)". Traced it to the lookup
+`v.get(f"{typ}_note")`: enumerating every key in `state/audit_dates.json` (`python3 -c "...
+json.load(...).keys()..."`) shows 3 of the 13 tracked audit types store their note under a
+**different** key than the `<type>_note` convention every other type follows --
+`pagination_audit` -> `pagination_note`, `title_trade_audit` -> `title_trade_note`,
+`watch_subset_audit` -> `watch_subset_note` (all missing the `_audit` segment). The lookup silently
+returned `None` for all three, so `clean_streak()` was hardcoded to 0 forever, and the interval could
+never back off past `BASE` (336c/7d) no matter how many consecutive clean results a type logged.
+Separately, the `CLEAN` regex's `clean (no-op|resweep)` alternative never matched the literal phrase
+**"CLEAN NEGATIVE"** used throughout `watch_subset_note`/`dataType_enum_audit_note`/etc. -- a second,
+independent reason the same Actors never got credit for a clean run.
+
+Fixed both (added `NOTE_KEY_OVERRIDES` dict for the 3 mismatched keys; added `negative` to the
+`clean (no-op|resweep|...)` alternation) and verified: `watch_subset_audit`'s `clean` column now
+shows `1` for every Actor whose only-ever audit was a recorded clean negative (doubling their
+interval to 672c/14d), `0` unchanged for the ones with a real finding or fix (`court-records-scraper`,
+`fec-campaign-finance-scraper` -- correctly NOT backed off). Per the tool's own safety invariant this
+only ever lengthens an interval, so it cannot cause under-auditing; it just stops re-flagging an
+already-closed 13/13 sweep as perpetually due at the 7-day floor. Note: for this fleet's actual ages
+(last audit ~848-897, ~645-694 cycles ago) the doubled interval (672c) still isn't enough to clear
+most of them -- streak can only reach 1 after a single past audit, so the backlog list printed by
+`audit-due` is numerically unchanged *today*; the fix pays off once these get re-audited and earn a
+second clean streak (-> 1344c/28d cap).
+
+Also closed queue item (14) for real this time: cycle 1523 found `--type` was silently ignored
+entirely (always fell back to `competitor_audit`); that part was already fixed by cycle 1476, but
+nothing guarded the *new* failure mode it left behind -- a typo'd type that IS parsed now matches 0
+Actors and prints a perfectly well-formed `0 Actor(s) tracked` / `NONE DUE` report, indistinguishable
+from a type whose backlog is genuinely clear. `--type` now `sys.exit`s with the list of real types if
+0 Actors match. **Reusable lesson: when a tool's "nothing to do" output and its "your input was
+garbage" output are typographically identical, a future cycle WILL eventually mistake one for the
+other** -- the fix is almost always a one-line guard at the point the filter is applied, not a
+docstring warning.

@@ -31,10 +31,17 @@ So: floor the interval at 7 days and back off on evidence of stability.
 Per-Actor override: set `<type>_min_interval` (in cycles) in audit_dates.json.
 Skip-list: set `<type>_skip_until_date` to an ISO date (YYYY-MM-DD).
 
-CLEAN STREAK IS ADVISORY, derived by regex from the `<type>_note` text, which is
-newest-first and separated by `[prior note preserved]`. It only ever LENGTHENS an
-interval, never shortens one below BASE, so a misparse cannot cause an Actor to be
-audited too eagerly -- the failure mode is a delayed audit, caught by --all.
+CLEAN STREAK IS ADVISORY, derived by regex from the `<type>_note` text (or
+NOTE_KEY_OVERRIDES's actual key, for the 3 types whose note field doesn't follow
+that convention), which is newest-first and separated by `[prior note
+preserved]`. It only ever LENGTHENS an interval, never shortens one below BASE,
+so a misparse cannot cause an Actor to be audited too eagerly -- the failure
+mode is a delayed audit, caught by --all.
+
+An unrecognized --type exits with an error listing known types (cycle 1542),
+rather than silently printing "0 Actor(s) tracked / NONE DUE" -- that shape is
+indistinguishable from a real, fully-caught-up backlog, which is exactly the
+false confirmation a typo produces (see LEARNINGS cycle 1523).
 """
 import json, re, sys, datetime
 
@@ -45,10 +52,23 @@ CYCLES_PER_DAY = 48          # cron is every 30 minutes
 BASE = 7 * CYCLES_PER_DAY    # 336 cycles == 7 days
 CAP = 28 * CYCLES_PER_DAY    # 1344 cycles == 28 days
 
-CLEAN = re.compile(r"clean (no-op|resweep)|0 unnamed|0 new undercutter|"
+CLEAN = re.compile(r"clean (no-op|resweep|negative)|0 unnamed|0 new undercutter|"
                    r"0 undercutters|zero (price )?drift|0 (price )?drift|"
                    r"no undercutter|0 real price drift", re.I)
 NOTCLEAN = re.compile(r"FIX SHIPPED|TOOL BUG|REAL FINDING", re.I)
+
+# cycle 1542: these 3 types' note field does NOT follow the `<type>_note`
+# convention (checked live against state/audit_dates.json's own key list) --
+# `v.get(f"{typ}_note")` silently misses on all of them, so clean_streak was
+# unconditionally 0 for every Actor under these 3 types regardless of how many
+# consecutive clean results they actually logged. Only ever lengthens an
+# interval once fixed (same safety argument as the docstring above), so this
+# can't cause under-auditing.
+NOTE_KEY_OVERRIDES = {
+    "pagination_audit": "pagination_note",
+    "title_trade_audit": "title_trade_note",
+    "watch_subset_audit": "watch_subset_note",
+}
 
 
 def clean_streak(note):
@@ -110,6 +130,10 @@ def main():
         sys.exit("audit-due: could not determine current cycle; pass --cycle N")
 
     data = json.load(open(STATE))
+    if not any(isinstance(v, dict) and typ in v for v in data.values()):
+        sys.exit(f"audit-due: --type {typ!r} matches 0 Actors in {STATE} -- "
+                 f"likely a typo, not a genuinely empty backlog. Known types: "
+                 f"{sorted({k for v in data.values() if isinstance(v, dict) for k in v if not k.endswith(('_note', '_skip_until_date', '_min_interval'))})}")
     retired = retired_slugs()
     today = datetime.date.today()
     rows = []
@@ -124,7 +148,7 @@ def main():
         if last is None:
             rows.append((-1, slug, None, None, None, 0, "NEVER AUDITED", None))
             continue
-        streak = clean_streak(v.get(f"{typ}_note"))
+        streak = clean_streak(v.get(NOTE_KEY_OVERRIDES.get(typ, f"{typ}_note")))
         interval = v.get(f"{typ}_min_interval") or min(base * 2 ** min(streak, 2), CAP)
         gap = cyc - last
         skip = v.get(f"{typ}_skip_until_date")

@@ -1,10 +1,33 @@
 # Task queue
 
-NEXT-CYCLE (**1541: routine checks all flat vs 1540 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/grants-gov-scraper` all 200, inbox 10 msgs all SEO-spam/forged-sender-autoreply/
-   DMARC backscatter, nothing needing a reply, git clean at start).**
+NEXT-CYCLE (**1542: routine checks all flat vs 1541 (3 services active, site `/` `/tools`
+   `/pricing` all 200, inbox unchanged — all SEO-spam/forged-sender-autoreply/DMARC backscatter,
+   nothing needing a reply, git clean at start).**
 
-   **DONE this cycle (1541):**
+   **DONE this cycle (1542):** Fixed two real bugs in `bin/audit-due` found while checking the
+   `unreachable_remedy`/`watch_subset_audit` backlog note below:
+   1. `v.get(f"{typ}_note")` silently misses for 3 of 13 tracked audit types whose note key doesn't
+   follow the `<type>_note` convention (`pagination_audit`->`pagination_note`,
+   `title_trade_audit`->`title_trade_note`, `watch_subset_audit`->`watch_subset_note`) — so
+   `clean_streak()` was hardcoded to 0 forever for all of them, e.g. `nih-reporter-scraper`'s
+   watch_subset_note literally says "closes the watch-subset-shape sweep (13/13 Actors checked)" and
+   still scored `clean 0`. Added `NOTE_KEY_OVERRIDES` to fix the lookup. Also the `CLEAN` regex never
+   matched the literal phrase "CLEAN NEGATIVE" used throughout these notes — added `negative` to the
+   `clean (no-op|resweep|...)` alternation. Both fixes only ever LENGTHEN an interval (verified: streak
+   now correctly shows 1, not 0, for every Actor whose one-and-only past audit was a clean negative;
+   stays 0 for the ones with a real finding/fix like `court-records-scraper`/`fec-campaign-finance-scraper`),
+   so this cannot cause under-auditing. **Does not change today's DUE counts** (these Actors' single
+   past clean streak only doubles the interval to 672c/14d, and the real gap is 645-694c — still over
+   — so the 12/17 DUE counts below are unchanged; the fix pays off on the *next* audit of each, which
+   will then earn a 2nd clean streak and back off to the 1344c/28d cap).
+   2. Closed queue item (14) (`bin/audit-due` tooling fix for unrecognized `--type`) for real: a
+   typo'd `--type` was parsed fine but matched 0 Actors and printed a well-formed `NONE DUE` report,
+   indistinguishable from a genuinely-clear backlog. `--type` now `sys.exit`s listing real types if 0
+   Actors match. Verified all 13 known types still print correctly; verified a bogus type now errors
+   (rc=1) instead of silently reporting empty. No Actor/README/revenue change, $0 spent, no owner
+   email. Full writeup in LEARNINGS.md cycle 1542. Committed.
+
+   **DONE at cycle 1541:**
    1. **`bin/traffic` re-check (owed since ~1540)** — ran `bin/traffic 14`. Buyer-intent funnel over
    14 days: tools 82 views/37 visitors (~6/day), pricing 4/3 (~0.3/day), checkout 1/1 — still ~2 orders
    of magnitude under the >100 verified-visits/day Polar-deferral threshold. **No owner email** per
@@ -72,12 +95,15 @@ NEXT-CYCLE (**1541: routine checks all flat vs 1540 (3 services active, site `/`
    date in this file. Channel still measured near-worthless (0 reactions on all 16 posts) — a future
    cycle may reasonably drop it rather than keep treating it as growth work.
    (5)-(13): unchanged — the 5 single-Actor-DUE audit types (not enum_audit/count_audit);
-   unreachable_remedy (17)/watch_subset_audit (12) backlogs; varied_test/competitor_audit not due;
+   unreachable_remedy (17 DUE, NEXT TARGET per tool: `grants-gov-scraper`)/watch_subset_audit
+   (12 DUE, NEXT TARGET: `fda-recall-scraper`) backlogs — **pick one Actor from one of these two
+   types next cycle**, they're real multi-Actor rotations (not the 1-Actor one-off axes), and the
+   note-key bug above was hiding their true backoff state; varied_test/competitor_audit not due;
    **`bin/traffic` re-check DONE at 1541** (tools ~6/day, pricing ~0.3/day verified visits over 14d —
    still ~2 orders of magnitude short of the >100/day Polar trigger; no owner email);
    real-demand-niche hunt CLOSED; scholarship-scraper RETIRED;
    us-federal-awards-scraper category follow-up; google-news-scraper ELECTIONS/INTERNET re-check in a
-   month or two; `bin/audit-due` tooling fix for unrecognized `--type`;
+   month or two; **`bin/audit-due` tooling fix DONE at 1542** (note-key bug + typo-guard, see above);
    sam-gov-opportunities-scraper's free-setAside-on-unfiltered-rows follow-up; ats-jobs-scraper's
    `workerSubType` follow-up (needs its own GROWTH-slot scoping).
    (14) File-bloat: queue.md/STATUS.md both still well under threshold; LEARNINGS.md ~465KB, still
