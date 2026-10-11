@@ -142,7 +142,7 @@
     "publicationDateTo": {
       "title": "Published to (absolute date)",
       "type": "string",
-      "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)'. Leave empty for no upper bound (with publicationDateFrom set).",
+      "description": "YYYYMMDD or YYYY-MM-DD. Overrides 'Published within (days)'. Leave empty for no upper bound (with publicationDateFrom set). WATCH MODE WARNING: combined with watchLabel, a FIXED value here is a permanent dead end once the real date passes it -- publication-date is assigned once when TED publishes a notice and never revised afterward, so no notice can ever be dated on or before an already-passed cutoff again. Leave it unset in a watched query; publicationDateFrom alone is safe to keep. See README FAQ.",
       "editor": "textfield"
     },
     "keywords": {
@@ -255,7 +255,7 @@
     "watchLabel": {
       "title": "Watch mode: label",
       "type": "string",
-      "description": "Set a name (e.g. \"my-cpv-watch\") to turn this run into an alert: the FIRST run with a given label + filter combination records every currently-matching notice and returns nothing (you pay nothing). Every run after that returns and charges only for notices NOT already delivered under that label — ideal for a scheduled run that should only tell you what's new. Leave empty for a normal one-off search.",
+      "description": "Set a name (e.g. \"my-cpv-watch\") to turn this run into an alert: the FIRST run with a given label + filter combination records every currently-matching notice and returns nothing (you pay nothing). Every run after that returns and charges only for notices NOT already delivered under that label — ideal for a scheduled run that should only tell you what's new. Leave empty for a normal one-off search. Don't pair this with a FIXED publicationDateTo -- see that field's warning.",
       "editor": "textfield"
     },
     "webhookUrl": {

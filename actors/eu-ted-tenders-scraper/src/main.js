@@ -370,6 +370,29 @@ if (watchMode) {
   }
 }
 
+// A fixed publicationDateTo caps the watch's own match set at a date that gets more stale every
+// day the schedule runs. `publication-date` is assigned once at the moment TED publishes the
+// notice in the OJS supplement and is never revised afterward — a correction ships as its own new
+// publication-number with its own new publication-date (the `change-reason-description` field is
+// on the correction notice, not an edit to the original), the same fact verified live for
+// federal-register's `publication_date`. Live-measured 2026-10-11: `publication-date<=20250901`
+// returns only 2016-dated notices (the match set is capped there), while the real unbounded feed
+// (`publication-date>=today(-3)`) has 7,539 notices dated as late as 2026-10-08 — so once today's
+// date passes a fixed publicationDateTo, no notice can ever satisfy the query again and this watch
+// goes permanently quiet while still emitting the reassuring "nothing new" message every run.
+const watchDeadDateBound = watchMode && !expertQueryInput && publicationDateTo != null;
+if (watchDeadDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is combined with a fixed publicationDateTo (${publicationDateTo}). `
+    + 'Once the real calendar date passes that cutoff, no notice can ever have a publication-date on or before '
+    + 'it anymore, so this watch is now permanently unable to report anything new.',
+  );
+  log.warning(
+    'Drop publicationDateTo from a watched query (publicationDateFrom alone is safe to keep), or remove '
+    + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+  );
+}
+
 let pushed = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {

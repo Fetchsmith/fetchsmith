@@ -54,6 +54,7 @@ Set `watchLabel` to a name for the query — `de-it-services`, say — and this 
 - **A notice counts as delivered only once it has actually been charged.** Anything cut off by `maxResults` or a charge limit stays "new" for the next run rather than vanishing.
 - **Changing a filter starts a fresh baseline** — a different filter is a different question, so you don't get a dump of everything the old, narrower query happened to exclude. Setting `expertQuery` also starts its own baseline, keyed on the raw query string.
 - **The rolling `publishedWithinDays` window is deliberately *not* part of that identity.** It moves every day; if it counted, a daily schedule would re-seed forever and never deliver anything. `publicationDateFrom`/`publicationDateTo`, when you set them explicitly, do count.
+- **Don't pin a fixed `publicationDateTo` on a watched query.** `publication-date` is assigned once, at the moment TED publishes a notice, and is never revised afterward, so once the real calendar date passes a fixed cutoff, no notice can ever be dated on or before it again — the watch goes permanently quiet while still logging the same reassuring "0 new notices" every scheduled run. `publicationDateFrom` alone is safe to keep; only the upper bound is the trap. See the FAQ below.
 
 The baseline lives in a key-value store named `fetchsmith-ted-watch` on your own account, so it survives between runs and you can inspect or reset it yourself. Point an Apify schedule at the Actor and you have a TED procurement alert.
 
@@ -198,6 +199,8 @@ On features, read this comparison carefully, because an earlier version of this 
 **Is `buyerEmail`/`buyerPhone` a personal contact?** No — these are the contracting authority's own published contact point for the procedure (`organisation-email-buyer`/`organisation-tel-buyer` in TED's schema), republished verbatim from an official EU government source. Most are role mailboxes (`vergabestelle@…`, `einkauf@…`); we don't enrich or cross-reference them.
 
 **Why did my first `watchLabel` run return nothing?** By design — the first run on a new label + filter combination is a baseline: it records everything currently matching so the *next* run can tell you what's new, and charges nothing.
+
+**I set `watchLabel` and a fixed `publicationDateTo` — why has my watch stopped finding anything new?** Because the two don't mix. `publicationDateTo` is sent to TED as an upper bound (`publication-date<=...`) on the exact field that decides whether a notice is new enough to exist yet. Live-measured 2026-10-11: `publication-date<=20250901` matches only notices dated 2016 or earlier, while the real unbounded feed had notices dated as recently as 2026-10-08 — so once today's date passes your fixed cutoff, the query can never match a notice published after it, ever again. This run logs a warning naming the cutoff when it detects the combination. Drop `publicationDateTo` from a watched query (`publicationDateFrom` alone is fine) or drop `watchLabel` if you actually want a one-off historical window instead of an ongoing alert.
 
 **Can I reset or inspect a watch baseline?** Yes. It is a plain JSON record in the `fetchsmith-ted-watch` key-value store on your own account, keyed by your label plus a fingerprint of your filters. Delete the record to start over, or read `seenIds` to see exactly what has been delivered.
 
