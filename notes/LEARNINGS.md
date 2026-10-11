@@ -6534,3 +6534,16 @@ delayed, not lost. It is specifically the snapshot that makes the drop permanent
 dropped row's own field change the product. This is the mirror image of 1564's scope note (where
 pass 2 had to cover identity watches precisely because they are still watches): scope per
 mechanism, not per "is it a watch".
+
+**Cycle 1577 (`app-store-reviews-scraper` dead-bound fix):** `check-change-blind`'s `declared()`
+only extracts identifiers off the literal source line matching `watch[A-Za-z]*DateBound[^;\n]*`
+— it does not evaluate the expression, it greps the line. Writing the guard as
+`const watchDeadDateBound = watchMode && reviewsBeforeDate != null;` (a derived variable, following
+the file's own naming for the parsed date) shipped a real, working warning that `check-change-blind`
+still flagged as uncovered, because "reviewsBeforeDate" is not "reviewsBefore" — the schema's actual
+filter name never appeared on that line for `declared()` to pick up. Rewriting the condition to
+reference the literal input name (`watchMode && !!input.reviewsBefore`) fixed it with no behavior
+change. Lesson: when shipping a `watch*DateBound` guard, put the schema's own property name
+(`input.<name>`) directly in the declaration line, not a same-meaning local variable — the checker
+that is supposed to retire this backlog item reads source text, not semantics, and a fix that is
+correct but spelled differently still shows up as a false positive forever.

@@ -115,7 +115,7 @@
     "reviewsBefore": {
       "title": "Reviews before (ISO date)",
       "type": "string",
-      "description": "Only keep reviews posted on or before this date (e.g. 2026-06-01), inclusive of that day. A bare date like 2026-06-01 means that whole calendar day as the storefront itself dates it — the same date you see at the start of each review's \"updatedAt\" — so a window never delivers or drops a review that disagrees with its own date. Pass a full timestamp (2026-06-01T12:00:00Z) instead if you need an exact instant. Combine with \"Reviews after\" for a date range. Unlike \"Reviews after\" this cannot cut pagination short (the newest reviews sort first), so it filters rather than saves scanning.",
+      "description": "Only keep reviews posted on or before this date (e.g. 2026-06-01), inclusive of that day. A bare date like 2026-06-01 means that whole calendar day as the storefront itself dates it — the same date you see at the start of each review's \"updatedAt\" — so a window never delivers or drops a review that disagrees with its own date. Pass a full timestamp (2026-06-01T12:00:00Z) instead if you need an exact instant. Combine with \"Reviews after\" for a date range. Unlike \"Reviews after\" this cannot cut pagination short (the newest reviews sort first), so it filters rather than saves scanning. WATCH MODE WARNING: combined with watchLabel, a FIXED value here is a permanent dead end once the real date passes it — a newly-posted review's own timestamp is always \"now\", so no new review can ever be on or before an already-passed cutoff again. Leave it unset in a watched query; reviewsAfter alone is safe to keep. See README FAQ.",
       "editor": "textfield"
     },
     "minVoteSum": {

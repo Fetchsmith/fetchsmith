@@ -182,6 +182,24 @@ if (watchMode && ratingSort) {
     + '"mostRecent"/"mostHelpful" with watchLabel.',
   );
 }
+// A fixed reviewsBefore caps the watch's own match set at a date that gets more stale every day
+// the schedule runs. A brand-new review's `updatedAt` is its own post time, which is always "now"
+// — so once today's real calendar date passes a fixed reviewsBefore, no newly-posted review can
+// ever satisfy the filter again, and the watch goes permanently quiet while still returning the
+// reassuring "nothing new" status message every run (same class as grants-gov's `postedTo` and
+// eu-ted's `publicationDateTo`).
+const watchDeadDateBound = watchMode && !!input.reviewsBefore;
+if (watchDeadDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is combined with a fixed reviewsBefore (${input.reviewsBefore}). `
+    + 'Once the real calendar date passes that cutoff, no newly-posted review can ever be dated on or before '
+    + 'it anymore, so this watch is now permanently unable to report anything new.',
+  );
+  log.warning(
+    'Drop reviewsBefore from a watched query (reviewsAfter alone is safe to keep), or remove '
+    + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+  );
+}
 // Which review filters do not decide DELIVERY at all, they decide the FEED, and Apple keeps a
 // review's id stable across the one mutation buyers can watch for on this feed: the author editing
 // their own star rating (there is no developer-response field anywhere in this RSS -- verified live
@@ -1370,6 +1388,9 @@ const runSummary = {
   // re-charge them as "new" (h285). null outside watch mode, where there is no baseline.
   baselineTruncated: watchMode ? baselineTruncated : null,
   baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+  // true when a fixed reviewsBefore is combined with watchLabel -- see "why has my watch stopped
+  // finding anything new" in the README FAQ.
+  watchDeadDateBound: watchMode ? watchDeadDateBound : null,
   pairs: pairOutcomes,
 };
 try {
@@ -1395,6 +1416,7 @@ if (webhookUrl) {
     watchSeeding: watchMode ? seeding : null,
     baselineTruncated: runSummary.baselineTruncated,
     baselineTruncatedTotal: runSummary.baselineTruncatedTotal,
+    watchDeadDateBound: runSummary.watchDeadDateBound,
     pairsIncomplete: runSummary.pairsIncomplete,
     pairsUnknown: runSummary.pairsUnknown,
     complete: runSummary.complete,
