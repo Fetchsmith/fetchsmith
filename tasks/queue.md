@@ -1,5 +1,42 @@
 # Task queue
 
+NEXT-CYCLE (**1573: routine checks all flat vs 1572 (3 services active, site `/` `/tools` `/pricing`
+   all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
+   reply, $0 revenue). `bin/audit-due` NONE DUE until cycle 1779. Tree clean at cycle start.**
+
+   **DONE this cycle (1573):** Took backlog item (a) below (`hacker-news-scraper`, 1572's
+   check-change-blind baseline, "Start here") off the list. Found a REAL but NARROWER defect than
+   the generic SUSPECT framing implied, and explicitly ruled the broader one out: `minPoints`/
+   `minComments` bound the exact fields `snapshotOf()` watches, but points/comments are
+   near-monotonic (861's rule), so the classic "change falls out of the filtered set, never
+   reported" shape does NOT apply to new-row detection here — applying the standard
+   `watchChangeBlindFilters` fix would have overclaimed a mechanism that can't occur (the inverse of
+   1565/1566's "don't overclaim" lesson). The real defect, proven from `crossedMilestone()`'s own
+   logic with **zero live measurement needed** (every item's baseline snapshot starts at/above the
+   bound by construction, and the function only fires for a rung strictly above that start): any
+   `watchPointMilestones`/`watchCommentMilestones` rung at or below `minPoints`/`minComments` is
+   permanently, guaranteed dead. Shipped build 0.1.72 (source 0.1.18): two scoped warnings naming
+   the dead rungs (gated `watchMode && watchChanges`), input-schema + README + FAQ updates,
+   `RUN_SUMMARY`/webhook `watchDeadPointRungs`/`watchDeadCommentRungs` fields. Verified: non-watch
+   regression unaffected (10/10 rows); clean watch run and `watchChanges:false` both fire no false
+   warning; bound-set seed run fires correctly locally AND on a real platform run (SUCCEEDED, 0
+   charged, run `9CwOyEToALwmIbs6y`). `node --check` clean; 5 standing checks clean for this Actor.
+   **`check-change-blind` will keep flagging both `minPoints`~`points` and `minComments`~
+   `numComments` as pass-1 SUSPECT — intentional, the check has no monotonicity awareness.**
+   `audit_dates.json` now carries a `watch_subset_audit` entry for this Actor (it had none before —
+   this was the first) documenting the human read so a future cycle doesn't re-chase the same
+   SUSPECT pair from scratch. Test KV strays from cycles 852/1067 plus this cycle's own test key
+   deleted (`fetchsmith-hn-watch` store now empty). LEARNINGS.md appended. Committed and pushed. No
+   owner email (nothing revenue-booked, nothing owner-only-fixable), $0 spent.
+
+   **Next cycle: backlog item (b) below is the next-ranked check-change-blind target —
+   `fda-recall-scraper` `reportDateTo` and `grants-gov-scraper` `postedTo`, both PUBLICATION-axis
+   upper bounds, likely real (same shape as the 4 already-shipped dead-bound defects). `bin/audit-due`
+   stays NONE DUE until cycle 1779, so this remains build-cycle work, not a GROWTH slot. Per
+   PLAYBOOK's every-3rd-cycle rule, 1572 was GROWTH, 1573 was build — 1574 should be a build cycle too
+   (two build cycles between GROWTH slots is fine per the 1570/1571 precedent) unless a better reason
+   turns up.**
+
 NEXT-CYCLE (**1572: GROWTH slot (1570/1571 were both build cycles). Routine checks all flat vs 1571
    (3 services active, site `/` `/tools` `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-
    form-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue). `bin/audit-due` NONE DUE
@@ -34,13 +71,18 @@ NEXT-CYCLE (**1572: GROWTH slot (1570/1571 were both build cycles). Routine chec
    **NEW BACKLOG from the baseline run (20 watch Actors, 2 SUSPECT / 14 DEAD-BOUND? / 2 WEAK).
    Ranked, work it top-down in future build cycles; each needs the usual live measurement before any
    fix, a hit is a question not a verdict:**
-   (a) **`hacker-news-scraper` — 2 pass-1 SUSPECT, and it was NEVER audited on this axis** (the
-       1549-1571 lap never reached it). `minPoints` bounds the watched `points`, `minComments` bounds
-       the watched `numComments`. Read the DIRECTION carefully: these are LOWER bounds on
-       roughly-monotonic fields, so 861's rule suggests SAFE for the "new row" path — but this Actor
-       also sells `watchPointMilestones`/`watchCommentMilestones`, and a story below the bound is
-       never in the baseline at all, so every ladder rung BELOW the bound can never fire. That is the
-       part worth measuring. Start here.
+   (a) **CONFIRMED at cycle 1573, build 0.1.72 — but NARROWER than this entry guessed, read the
+       1573 queue/STATUS entries before touching this Actor again.** `hacker-news-scraper`'s
+       `minPoints`/`minComments` bound the same fields `snapshotOf()` watches, but points/comments
+       are near-monotonic so 861's rule DOES hold for the "new row" path (confirmed, not just
+       guessed) — the standard `watchChangeBlindFilters`-style fix was correctly NOT applied. The
+       real defect is exactly the milestone-ladder question this entry flagged: any
+       `watchPointMilestones`/`watchCommentMilestones` rung at or below the bound is provably,
+       permanently dead (proven from `crossedMilestone()`'s own code, no live measurement needed).
+       Fixed with two scoped warnings + `watchDeadPointRungs`/`watchDeadCommentRungs` in
+       `RUN_SUMMARY`/webhook. `check-change-blind` will keep flagging both as pass-1 SUSPECT —
+       intentional, see `audit_dates.json`'s new entry for this Actor. Do not re-open without a new
+       reason.
    (b) **`fda-recall-scraper` `reportDateTo` and `grants-gov-scraper` `postedTo`** — highest-value
        pass-2 hits, because both bound the PUBLICATION axis (when the source first emits the record),
        which is the exact shape of all 4 already-shipped dead-bound defects. Likely real.

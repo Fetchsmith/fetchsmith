@@ -1,5 +1,5 @@
 {
- "ts": 1791745811,
+ "ts": 1791749242,
  "date": "2026-10-11",
  "apify": {
   "google-news-scraper": {
@@ -25,103 +25,8 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 26,
-   "runs": 707,
-   "ext_ok30d": 26,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 26,
-    "TIMED-OUT": 0,
-    "TOTAL": 26
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "shopify-products-scraper": {
-   "public": true,
-   "users": 3,
-   "users30d": 0,
-   "runs30d": 28,
-   "runs": 720,
-   "ext_ok30d": 28,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 28,
-    "TIMED-OUT": 0,
-    "TOTAL": 28
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "hacker-news-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 26,
-   "runs": 689,
-   "ext_ok30d": 26,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 26,
-    "TIMED-OUT": 0,
-    "TOTAL": 26
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "google-play-reviews-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 26,
-   "runs": 665,
-   "ext_ok30d": 26,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 26,
-    "TIMED-OUT": 0,
-    "TOTAL": 26
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "substack-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 26,
-   "runs": 679,
-   "ext_ok30d": 26,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 26,
-    "TIMED-OUT": 0,
-    "TOTAL": 26
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "apple-podcasts-scraper": {
-   "public": true,
-   "users": 1,
-   "users30d": 0,
    "runs30d": 27,
-   "runs": 685,
+   "runs": 707,
    "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -135,20 +40,115 @@
    "reviews": 0,
    "rating": 0
   },
-  "steam-reviews-scraper": {
+  "shopify-products-scraper": {
    "public": true,
-   "users": 2,
-   "users30d": 1,
-   "runs30d": 26,
-   "runs": 673,
-   "ext_ok30d": 26,
+   "users": 3,
+   "users30d": 0,
+   "runs30d": 29,
+   "runs": 720,
+   "ext_ok30d": 29,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 26,
+    "SUCCEEDED": 29,
     "TIMED-OUT": 0,
-    "TOTAL": 26
+    "TOTAL": 29
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "hacker-news-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 27,
+   "runs": 690,
+   "ext_ok30d": 27,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 27,
+    "TIMED-OUT": 0,
+    "TOTAL": 27
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "google-play-reviews-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 27,
+   "runs": 665,
+   "ext_ok30d": 27,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 27,
+    "TIMED-OUT": 0,
+    "TOTAL": 27
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "substack-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 27,
+   "runs": 679,
+   "ext_ok30d": 27,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 27,
+    "TIMED-OUT": 0,
+    "TOTAL": 27
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "apple-podcasts-scraper": {
+   "public": true,
+   "users": 1,
+   "users30d": 0,
+   "runs30d": 28,
+   "runs": 685,
+   "ext_ok30d": 28,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 28,
+    "TIMED-OUT": 0,
+    "TOTAL": 28
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "steam-reviews-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 27,
+   "runs": 673,
+   "ext_ok30d": 27,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 27,
+    "TIMED-OUT": 0,
+    "TOTAL": 27
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -196,16 +196,16 @@
    "public": true,
    "users": 2,
    "users30d": 2,
-   "runs30d": 39,
+   "runs30d": 40,
    "runs": 657,
-   "ext_ok30d": 39,
+   "ext_ok30d": 40,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 39,
+    "SUCCEEDED": 40,
     "TIMED-OUT": 0,
-    "TOTAL": 39
+    "TOTAL": 40
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -215,16 +215,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 26,
+   "runs30d": 27,
    "runs": 630,
-   "ext_ok30d": 26,
+   "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 26,
+    "SUCCEEDED": 27,
     "TIMED-OUT": 0,
-    "TOTAL": 26
+    "TOTAL": 27
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -234,16 +234,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 26,
-   "runs": 607,
-   "ext_ok30d": 26,
+   "runs30d": 27,
+   "runs": 608,
+   "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 26,
+    "SUCCEEDED": 27,
     "TIMED-OUT": 0,
-    "TOTAL": 26
+    "TOTAL": 27
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -291,16 +291,16 @@
    "public": true,
    "users": 1,
    "users30d": 1,
-   "runs30d": 27,
+   "runs30d": 28,
    "runs": 539,
-   "ext_ok30d": 27,
+   "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 27,
+    "SUCCEEDED": 28,
     "TIMED-OUT": 0,
-    "TOTAL": 27
+    "TOTAL": 28
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -367,16 +367,16 @@
    "public": true,
    "users": 1,
    "users30d": 1,
-   "runs30d": 51,
+   "runs30d": 52,
    "runs": 201,
-   "ext_ok30d": 50,
+   "ext_ok30d": 51,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 50,
+    "SUCCEEDED": 51,
     "TIMED-OUT": 1,
-    "TOTAL": 51
+    "TOTAL": 52
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -405,16 +405,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 18,
+   "runs30d": 19,
    "runs": 122,
-   "ext_ok30d": 18,
+   "ext_ok30d": 19,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 18,
+    "SUCCEEDED": 19,
     "TIMED-OUT": 0,
-    "TOTAL": 18
+    "TOTAL": 19
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -424,16 +424,16 @@
    "public": true,
    "users": 1,
    "users30d": 1,
-   "runs30d": 18,
+   "runs30d": 19,
    "runs": 111,
-   "ext_ok30d": 18,
+   "ext_ok30d": 19,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 18,
+    "SUCCEEDED": 19,
     "TIMED-OUT": 0,
-    "TOTAL": 18
+    "TOTAL": 19
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -463,8 +463,8 @@
  "apify_totals": {
   "public_actors": 24,
   "users": 44,
-  "runs30d": 625,
-  "ext_ok30d": 622,
+  "runs30d": 639,
+  "ext_ok30d": 636,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,

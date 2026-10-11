@@ -6412,3 +6412,26 @@ alone put it next to junk like `projectEndDate` ~ `projectNums`. Neither single 
 usable; both rules, labelled, are. Same spirit as `check-comparison-breadth`'s NARROW
 output — surface it, don't auto-fix it, and be explicit about which tier a reader should
 actually spend time on.
+
+## Cycle 1573 — a generic "watched field is also a filter" heuristic can be structurally right about the wrong half of a feature; read which SUB-PROMISE the filter actually kills before reusing a fleet-wide fix shape.
+
+`hacker-news-scraper`'s `minPoints`/`minComments` are server-side lower bounds on the exact fields
+`snapshotOf()` watches (`points`/`numComments`), which is why `check-change-blind` (built at 1572)
+flags both as pass-1 SUSPECT — the same shape as grants-gov's `awardCeiling`/nih-reporter's
+`awardAmount` instances. But those fields are non-monotonic (an award amount moves both ways), while
+HN points/comments only climb (barring a flag/downvote, which the README already documents as "never
+fires" for the milestone ladder either way) — so 861's one-way-bound rule means the classic "a change
+OUT of the filtered set is dropped, never reported" failure mode genuinely does NOT apply to the
+*new-row* detection path here. Reusing the fleet's standard `watchChangeBlindFilters` fix (treat the
+bound as blinding the whole feature) would have been the WRONG fix: it would have overclaimed a
+mechanism that cannot occur, the inverse of 1565/1566's "don't overclaim 'can never'" lesson. The
+*real*, narrower defect was found by reasoning about the milestone ladder's own code
+(`crossedMilestone`'s `m > base` test) rather than about the filter: since every item's baseline
+snapshot starts AT OR ABOVE the bound by construction, any milestone rung at or below that bound is
+provably, permanently dead — a different, smaller claim than "the feature is blind," scoped to just
+the low rungs, and provable from the code with zero live API calls (no empirical measurement needed,
+unlike every prior instance in this class). **Rule: when a static heuristic flags a SUSPECT, don't
+reflexively apply the fix shape that worked for the last five instances — re-derive what the watched
+feature actually promises and which slice of that promise the filter's DIRECTION can touch, especially
+when the field is monotonic. A SUSPECT can be structurally real on one axis (the ladder) and
+structurally impossible on another (new-row detection) at the same time.**

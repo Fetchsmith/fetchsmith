@@ -29,8 +29,10 @@ const includeComments = input.includeComments !== false;
 const numericFilters = [];
 if (input.postedAfter) numericFilters.push(`created_at_i>${Math.floor(new Date(input.postedAfter).getTime() / 1000)}`);
 if (input.postedBefore) numericFilters.push(`created_at_i<${Math.floor(new Date(input.postedBefore).getTime() / 1000)}`);
-if (input.minPoints) numericFilters.push(`points>=${Number(input.minPoints)}`);
-if (input.minComments) numericFilters.push(`num_comments>=${Number(input.minComments)}`);
+const minPointsNum = input.minPoints ? Number(input.minPoints) : null;
+const minCommentsNum = input.minComments ? Number(input.minComments) : null;
+if (minPointsNum != null) numericFilters.push(`points>=${minPointsNum}`);
+if (minCommentsNum != null) numericFilters.push(`num_comments>=${minCommentsNum}`);
 const author = input.author ? String(input.author).trim() : null;
 const usernames = [...new Set((input.usernames ?? []).map((u) => String(u).trim()).filter((u) => u.length))];
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -54,6 +56,18 @@ function parseMilestones(raw, fallback) {
 }
 const pointMilestones = parseMilestones(input.watchPointMilestones, '25,50,100,250,500,1000,2500,5000');
 const commentMilestones = parseMilestones(input.watchCommentMilestones, '25,50,100,250,500,1000');
+// minPoints/minComments are server-side lower bounds on the SAME fields the milestone ladders
+// watch, so every item this query can ever return already has points/numComments >= the bound
+// at the moment it is first captured into the baseline (seeding or first sight alike --
+// pushResult() snapshots unconditionally). crossedMilestone() only fires for a rung strictly
+// above that baseline value, so any rung <= the bound can mathematically never clear it for ANY
+// item, ever -- not a live-data guess, a property of crossedMilestone()'s own `m > base` test
+// combined with the filter guaranteeing base >= the bound. This is sharper than the general
+// "a story already at 80 points when first seen silently skips the 25/50 rungs" case the comment
+// above documents: that one is down to luck of timing, this one is a GUARANTEE for every item,
+// for as long as the bound and the rung both stand.
+const deadPointRungs = minPointsNum != null ? pointMilestones.filter((m) => m <= minPointsNum) : [];
+const deadCommentRungs = minCommentsNum != null ? commentMilestones.filter((m) => m <= minCommentsNum) : [];
 const enrichGithubLinks = input.enrichGithubLinks === true;
 const excludeKeywords = [...new Set((input.excludeKeywords ?? []).map((k) => String(k).trim().toLowerCase()).filter((k) => k.length))];
 const domainFilter = [...new Set((input.domainFilter ?? []).map((d) => String(d).trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '')).filter((d) => d.length))];
@@ -135,6 +149,24 @@ if (watchChanges && !watchMode) {
   log.warning('watchChanges is on but no watchLabel is set — it only applies to watch mode and does nothing here. Set a watchLabel to use it.');
 } else if (watchChanges && !pointMilestones.length && !commentMilestones.length) {
   log.warning('watchChanges is on but BOTH milestone ladders are empty, so nothing can ever re-fire. Set watchPointMilestones and/or watchCommentMilestones (comma-separated numbers) or turn watchChanges off.');
+}
+if (watchMode && watchChanges && deadPointRungs.length) {
+  log.warning(
+    `minPoints is set to ${minPointsNum}, which is >= these points milestone(s): ${deadPointRungs.join(', ')}. `
+    + 'Every item this query can return already has points >= minPoints the moment it first enters the baseline, '
+    + `so ${deadPointRungs.length > 1 ? 'those rungs' : 'that rung'} can NEVER fire -- not a timing fluke, a `
+    + 'guaranteed consequence of the filter. Remove them from watchPointMilestones or lower minPoints to get an '
+    + 'alert for them.',
+  );
+}
+if (watchMode && watchChanges && deadCommentRungs.length) {
+  log.warning(
+    `minComments is set to ${minCommentsNum}, which is >= these comment-count milestone(s): ${deadCommentRungs.join(', ')}. `
+    + 'Every item this query can return already has numComments >= minComments the moment it first enters the '
+    + `baseline, so ${deadCommentRungs.length > 1 ? 'those rungs' : 'that rung'} can NEVER fire -- not a timing `
+    + 'fluke, a guaranteed consequence of the filter. Remove them from watchCommentMilestones or lower minComments '
+    + 'to get an alert for them.',
+  );
 }
 let watchStore = null;
 let watchKey = null;
@@ -856,6 +888,8 @@ await Actor.setValue('RUN_SUMMARY', {
   watchSeeding: watchMode ? seeding : null,
   watchChanges: watchMode ? watchChanges : null,
   watchChangedCount: watchMode && !seeding && watchChanges ? watchChangedCount : null,
+  watchDeadPointRungs: watchMode && watchChanges && deadPointRungs.length ? deadPointRungs : null,
+  watchDeadCommentRungs: watchMode && watchChanges && deadCommentRungs.length ? deadCommentRungs : null,
   baselineTruncated: watchMode ? baselineTruncated : null,
   baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
 });
@@ -878,6 +912,8 @@ if (webhookUrl) {
     watchNewCount: watchMode && !seeding ? pushed - watchChangedCount : null,
     watchChangedCount: watchMode && !seeding && watchChanges ? watchChangedCount : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    watchDeadPointRungs: watchMode && watchChanges && deadPointRungs.length ? deadPointRungs : null,
+    watchDeadCommentRungs: watchMode && watchChanges && deadCommentRungs.length ? deadCommentRungs : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     complete: truncatedSummaries.length === 0 && notReachedSummaries.length === 0 && notReachedUsers.length === 0,
