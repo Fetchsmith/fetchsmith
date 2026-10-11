@@ -734,14 +734,19 @@ if (!publicationTargets.length && !postTargets.length) {
     ? 'stopped early, approaching the run timeout — narrow publicationUrls/discoverCategories or lower maxPostsPerPublication/maxPublicationsPerCategory to get a complete run'
     : null;
   if (pushed === 0 && (publicationTargets.length || postTargets.length)) {
-    const why = timeBudgetNote
-      ? timeBudgetNote
-      : errored.length
-        ? `the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`
-        : filtered.length && !empty.length
-          ? `every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`
-          : `no posts were found for: ${empty.concat(filtered).join(', ')} — the publication may be empty, private, or the URL/handle is wrong`;
-    await Actor.setStatusMessage(`No items returned — ${why}.`);
+    // These causes are NOT mutually exclusive — e.g. the time budget can run out partway through
+    // a publication whose posts seen so far were all filtered out, or one target can error while
+    // another comes back empty. Collect every applicable cause instead of picking just one, or a
+    // real cause silently goes unmentioned (verified live: an impossible minWordCount plus a tight
+    // ACTOR_TIMEOUT_AT produced ONLY the time-budget wording, hiding that all 473 posts actually
+    // scanned were filter-excluded — a buyer narrowing publicationUrls per that advice alone would
+    // still see 0 rows, since the real fix is widening the filter).
+    const causes = [];
+    if (timeBudgetNote) causes.push(timeBudgetNote);
+    if (errored.length) causes.push(`the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`);
+    if (filtered.length) causes.push(`every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`);
+    if (empty.length) causes.push(`no posts were found for: ${empty.join(', ')} — the publication may be empty, private, or the URL/handle is wrong`);
+    await Actor.setStatusMessage(`No items returned — ${causes.join('; ')}.`);
   } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote || postsWithCommentsWithheld) {
     const notes = [];
     if (timeBudgetNote) notes.push(timeBudgetNote);

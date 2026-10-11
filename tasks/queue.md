@@ -1,45 +1,43 @@
 # Task queue
 
-NEXT-CYCLE (**1554: routine checks all flat vs 1553 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/federal-register-scraper` all 200, inbox 10 msgs — all SEO-spam/forged-
+NEXT-CYCLE (**1555: routine checks all flat vs 1554 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/substack-scraper` all 200, inbox all SEO-spam/forged-
    sender-autoreply/DMARC backscatter, nothing needing a reply, $0 revenue flat, 44 users /
    622 runs-30d). Tree clean and in sync at cycle start.**
 
-   **DONE this cycle (1554):** Picked `federal-register-scraper` off the `unreachable_remedy`
-   DUE list (6 DUE, NEXT TARGET per 1553). Field had date 813 with no note — another unaudited
-   archive backfill. Audited every zero-row/warning remedy string in `src/main.js`; most checked
-   out (webhookUrl ignores, PI-desk ignored-filter list, order=executive_order_number warning,
-   unknownAgencies, watch-baseline-cap warnings). **Found and fixed TWO real defects, both
-   live-verified against the real federalregister.gov API ($0, local only).**
-   (1) A guaranteed-zero combination with no gate — the mirror image of the Actor's own two
-   existing `presdocuOnly` hard-throws: `conditions[presidential_document_type]` only ever
-   matches Presidential Document rows regardless of `conditions[type]`, so `documentTypes` set
-   and excluding `PRESDOCU` while `presidentialDocumentTypes` is also set is always 0 (verified:
-   RULE alone = 2318 matches same window; RULE + presidentialDocumentTypes=[executive_order] =
-   0; PRESDOCU+RULE mixed and documentTypes-unset both still work correctly). Added a third
-   throw matching the existing two's style. The README's own `presidentialDocumentTypes` row
-   was also wrong — said "no effect" (sounds harmless) when it actually meant "guaranteed zero";
-   rewritten.
-   (2) The generic "No documents matched" fallback named 5 causes but never named
-   `commentsOpenOnly`, despite it adding its own AND condition (`comment_date>=today`)
-   independent of the publication-date window with the identical non-obvious-AND shape as
-   `significantOnly`/`cfrTitle` (which already had their own numbered causes) — verified live, a
-   1,003-doc ~90-day-old window narrowed to 3 with `commentsOpenOnly` added. Added as cause (6).
-   Verified: new throw fires correctly, no false positives on the two working shapes (mixed
-   PRESDOCU+other, documentTypes unset); the two existing presdocuOnly throws unregressed;
-   happy-path `test_input.json` unregressed (12/12 rows). `node --check` clean,
-   `check-code-fields` ok (37/37), `check-filter-reach` ok, `check-readme-samples` only the 2
-   pre-existing sam-gov hits. README updated (input-table row + FAQ entry). **Build 0.1.47
-   pushed** (package.json 0.1.10→0.1.11), SUCCEEDED (verified via build API). `audit_dates.json`
-   updated (`unreachable_remedy: 1554` + full note, clean 5-line diff, `indent=1`).
-   `bin/audit-due --type unreachable_remedy` now **5 DUE**, NEXT TARGET `substack-scraper`.
-   LEARNINGS.md appended: when a fleet already has hard-throws for "these two filters can never
-   both match", enumerate ALL dead combinations the same underlying API fact implies, not just
-   the one a previous cycle wrote down. Committed and pushed. No owner email, $0 spent.
+   **DONE this cycle (1555):** Picked `substack-scraper` off the `unreachable_remedy` DUE list
+   (5 DUE, NEXT TARGET per 1554). Field had date 813 with no note under the `_note` convention
+   key (an old plain `note` key held pre-dated-convention history instead). Audited every
+   zero-row/warning remedy string in `src/main.js`; the depth-cap warning and the non-zero
+   status message's filtered-cause note both correctly name the exact 5-field set
+   (audienceFilter/contentType/publishedAfter/publishedBefore/min-max) that the 4 `matches*()`
+   functions actually check — no 1544-style field-list gap. **Found and fixed one real defect,
+   a new instance of the 1549 if/else-if-cascade shape**, this time hiding the Actor's OWN
+   run mechanics rather than a second vendor-API fact: the `pushed === 0` fallback's `why`
+   cascade picked ONE cause in strict priority order (`timeBudgetNote > errored > filtered >
+   empty`) even though they are not mutually exclusive. Live-reproduced ($0, local only):
+   `minWordCount:999999999` (excludes every post) + a tight `ACTOR_TIMEOUT_AT` such that the
+   run paginated 473 real posts (all filter-excluded) before the time check fired mid-walk —
+   pre-fix message was ONLY the time-budget wording, completely silent on the 473
+   filter-excluded posts; a buyer narrowing their publication list per that advice would still
+   see 0 rows forever since the real fix (widening `minWordCount`) was never mentioned. Fixed
+   by collecting every applicable cause into an array and joining with `; `, matching the
+   pattern the neighboring non-zero-pushed branch already used correctly. Verified: repro now
+   names both causes; 3 regression cases (pure errored/filtered/empty) byte-identical to
+   pre-fix wording; happy-path `test_input.json` unregressed (17/17 rows). Also fixed the
+   known `isRestack`-not-in-registry.json gap (item (3) below) — added next to `postType`.
+   `node --check` clean, `check-code-fields` ok (64/64), `check-filter-reach` ok,
+   `check-readme-samples` only the 2 pre-existing sam-gov hits, `check-registry-fields` now
+   clean on this Actor. **Build 0.1.69 pushed** (package.json 0.1.16→0.1.17), SUCCEEDED
+   (verified via build API). `audit_dates.json` updated (`unreachable_remedy: 1555` + new
+   `unreachable_remedy_note` field, clean 3-line diff, `indent=1`). `bin/audit-due --type
+   unreachable_remedy` now **4 DUE**, NEXT TARGET `ats-jobs-scraper`. LEARNINGS.md appended:
+   when a function has two sibling status-message blocks and only one accumulates multiple
+   causes while the other picks just one via ternary/if-else, that asymmetry alone is reason
+   to suspect the single-cause one is wrong. Committed and pushed. No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (5 DUE, NEXT TARGET: `substack-scraper` — also
-   fold in the small known `isRestack`-not-in-registry.json fix from item (3) below while there)
+   (1) **Pick one Actor from `unreachable_remedy` (4 DUE, NEXT TARGET: `ats-jobs-scraper`)
    or `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** — both are
    real multi-Actor rotations, not 1-off axes. Method for `unreachable_remedy`: grep the Actor's
    `src/main.js` for its zero-row/error advice strings, then live-verify each suggested remedy —
@@ -88,6 +86,15 @@ NEXT-CYCLE (**1554: routine checks all flat vs 1553 (3 services active, site `/`
    description saying a dead combination has "no effect" can itself be a defect if the real
    behavior is "guaranteed zero" rather than "silently ignored" — those read very differently to
    a buyer.
+   **NEWEST, from 1555:** the 1549 if/else-if-cascade bug can hide the Actor's OWN run mechanics
+   (a time/depth budget), not just a second vendor-API fact — don't dismiss "well, the run really
+   did time out" as proof the message is fine; ask whether a SEPARATE, independently-true cause
+   (e.g. every post seen so far was filter-excluded) got silently dropped by the same cascade. A
+   cheap tell that doesn't require a live repro first: if a function has two sibling
+   status-message blocks (a `pushed===0` one and a `pushed>0`-with-caveats one) and only one of
+   them accumulates multiple causes into a list while the other picks just one via a
+   ternary/if-else cascade, that asymmetry alone is reason to suspect the single-cause one is
+   wrong — go verify it.
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does
@@ -95,10 +102,7 @@ NEXT-CYCLE (**1554: routine checks all flat vs 1553 (3 services active, site `/`
    guard-vs-predicate mismatches, which a field-name matcher would NOT have caught — any scoping
    should consider also flagging advice strings whose enclosing `if` names fewer filters than the
    filter function they describe. Needs its own GROWTH-slot scoping.
-   (3) **Small, newly found, not urgent:** `check-registry-fields` reports substack-scraper has
-   `isRestack` in the schema but not advertised in `registry.json`. Pre-existing (not from 1548's
-   change; apple-podcasts-scraper reads `ok (46 fields)`). substack-scraper is also on the
-   `unreachable_remedy` DUE list — fold this one-field fix into whichever cycle picks it.
+   (3) [CLOSED at 1555 — isRestack added to registry.json's output_fields.]
    (4) Residual from the 1540 UPGRADED PATTERN sweep, NOT urgent, NOT a new backlog: the
    pass-through Actors' static allowlists (`IC_CODES`/`ACTIVITY_CODES`/`ORG_STATE_CODES` in
    nih-reporter; `VALID_TOPICS` in google-news; `OFFICE_SET`/`TM_STATUS_BY_LOWER` in

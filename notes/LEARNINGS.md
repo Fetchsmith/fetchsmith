@@ -5868,3 +5868,27 @@ independent of the publication-date window and narrows hard in practice (live: a
 `significantOnly` and `cfrTitle`/`cfrPart`, which already had their own numbered causes. A field
 list enumerated in a fallback message is worth diffing against every *other* filter with a
 documented non-obvious AND interaction, not just checking it's internally consistent.
+
+## Cycle 1555 (substack-scraper, unreachable_remedy)
+
+Another instance of the 1549 if/else-if-cascade shape, but this time the hidden cause was the
+Actor's OWN run mechanics (time budget), not a second vendor-API fact — worth noting because that
+makes it easy to dismiss as "well, the run really did time out, so the message isn't wrong." It
+told the truth about one cause while completely hiding another that was equally true in the same
+run: `pushed === 0` picked `timeBudgetNote > errored > filtered > empty` in strict priority order,
+so whenever the run ran out of time *while* every post seen so far had already been filtered out,
+the buyer only ever saw the time-budget wording ("narrow publicationUrls... or lower
+maxPostsPerPublication") and never learned that the real, fixable cause was their own filter
+(`minWordCount` etc.) excluding everything — narrowing the publication list fixes nothing there.
+Live-reproduced by setting `ACTOR_TIMEOUT_AT` tight enough that a `minWordCount:999999999` run
+paginated 473 real posts (all filter-excluded) before the time check fired mid-archive-walk.
+Fixed by collecting every applicable cause into an array and joining them, the same pattern
+already used one block down for the *non-zero*-pushed status message — which is itself a tell
+worth generalizing: if a function has two sibling status-message blocks and only one of them
+accumulates multiple causes while the other picks just one via ternary/if-else, that asymmetry is
+itself a reason to suspect the single-cause one is wrong, even before finding a live repro.
+
+Also folded in a trivial, previously-flagged, unrelated fix while in this Actor: `isRestack`
+(added to `dataset_schema.json` at cycle 1525) was missing from `registry.json`'s
+`output_fields` list — a one-line add, caught by `check-registry-fields`, no live verification
+needed since it's a static list-membership fact.

@@ -475,6 +475,7 @@
         "audience",
         "isPaid",
         "postType",
+        "isRestack",
         "wordCount",
         "reactionCount",
         "commentCount",
