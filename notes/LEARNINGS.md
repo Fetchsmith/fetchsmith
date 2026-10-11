@@ -6321,3 +6321,45 @@ Live-measured before writing the copy ($0, real api.usaspending.gov, no Actor ru
 `70T05026F5900N033`, Award Amount $958,748.70 — 1 row at `upper_bound=1000000`, **0 rows** at
 `upper_bound=900000`. `watch_subset_audit` now 3 DUE, next target `grants-gov-scraper` (one of the two
 known stale due-dates — confirm-and-bump, the guard shipped at c860).
+
+## cycle 1570 — nih-reporter-scraper closes the watch_subset_audit lap: 9th/10th change-blind-filter instances, and the first non-date-field client-side one outside us-federal-awards
+
+`nih-reporter-scraper` was the last REAL target on the `watch_subset_audit` rotation that started with
+grants-gov at c860 (everything else on the rotation was either already fixed or a confirm-and-bump of a
+stale due-date). `snapshotOf()` watches 4 fields: `projectEndDate`, `budgetEnd`, `awardAmount`,
+`isActive`. The first two have **no filter input anywhere in this Actor** — grepped the input schema and
+`buildCriteria()` and confirmed there is no `projectEndDateFrom/To` or `budgetEndFrom/To` at all, only
+`awardNoticeDateFrom/To` (a different field entirely). Clean, confirmed from code, not inferred from the
+absence of an obvious candidate name.
+
+The other two both blind, for different reasons:
+1. `minAwardAmount`/`maxAwardAmount` → NIH's own server-side `award_amount_range` bound on the exact
+   `award_amount` field `snapshotOf()` watches as `awardAmount`. Live-measured ($0, real
+   `api.reporter.nih.gov`): appl_id 10827889, award $957,843 — 1 row at `max_amount=2000000`, 0 rows at
+   `max_amount=900000`. Treated as non-monotonic (both directions blind), same reasoning as
+   us-federal-awards' amount bound (1568): a no-cost extension/administrative supplement raises it, a
+   de-obligation lowers it.
+2. `activeOnly` blinds watched `isActive` through **two different mechanisms depending on whether
+   `fiscalYears` is also set** — and this Actor's own code (cycle 969/983) already branches on exactly
+   that distinction for an unrelated reason (NIH unions `include_active_projects` with `fiscal_years`
+   server-side instead of intersecting, so the Actor avoids sending it and filters client-side instead
+   when both are set). Without `fiscalYears`: server-side `include_active_projects`. With `fiscalYears`:
+   this Actor's own `activeOnlyClientFilter` drop in `walkChunk`'s `fresh` computation, applied **before**
+   the already-seen/changed branch — the second client-side instance of this bug class in the fleet (the
+   first was us-federal-awards' `expiringWithinDays` at 1568), and the first one that isn't a date-window
+   filter. Live-measured ($0, same appl_id, `is_active:false`): `include_active_projects:true` returns 0
+   rows for it, no filter returns 1. **Generalisable: when an Actor already branches its request-building
+   logic on two different code paths for an unrelated upstream quirk, check whether a change-blind-filter
+   guard needs to describe BOTH paths separately — the warning text has to name which mechanism is live,
+   not just that the field is blinded, or a buyer debugging via the log can't tell whether to expect a
+   server response change or a silent client-side drop.**
+
+Fix shipped in the established shape (build 0.1.46, source 0.1.11): `watchChangeBlindFilters` array, two
+`log.warning` blocks (the `activeOnly` one names which of the two mechanisms this run is using) plus a
+shared what-to-do, `blindNote()` on all 3 reassuring status messages (seed, incremental, "nothing new" —
+the 1556 monitor rule applies to all three here since the seed run's own message also promises future
+detection), `watchChangeBlindFilters` in `RUN_SUMMARY`, README FAQ + `input_schema` warnings. Verified
+locally and on a real platform run (`SUCCEEDED`, 0 rows pushed/charged, `watchChangeBlindFilters` present
+live in `RUN_SUMMARY`). `watch_subset_audit` is now **0 DUE fleet-wide** — the entire lap starting at c860
+is closed; next due date is whichever Actor's guard next drifts or a new watch-mode Actor ships (soonest
+natural due date ~cycle 1896 per `bin/audit-due`).

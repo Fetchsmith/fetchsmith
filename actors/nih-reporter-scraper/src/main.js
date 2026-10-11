@@ -692,6 +692,77 @@ const watchSeen = new Map();
 let baselineTruncated = 0;
 let baselineTruncatedTotal = 0;
 
+// `watchChangeBlindFilters`: same class as grants-gov/clinicaltrials/sam-gov/us-federal-awards --
+// a filter that narrows the query to rows matching a VALUE of one of the 4 fields snapshotOf()
+// watches makes a change away from that value permanently unreportable, because the row simply
+// stops matching the query before changesBetween() ever runs on it. projectEndDate and budgetEnd
+// have no filter input anywhere in this Actor (grepped the input schema and buildCriteria), so
+// only the other two are reachable:
+//   1) minAwardAmount/maxAwardAmount -> sent as award_amount_range, NIH's own server-side bound
+//      on the same award_amount field this run watches as awardAmount. Live-measured (cycle 1570,
+//      $0, real api.reporter.nih.gov, no Actor run): appl_id 10827889, award_amount $957,843 --
+//      1 row at max_amount=2000000, 0 rows at max_amount=900000. Both directions are affected, the
+//      same as us-federal-awards' amount bound (cycle 1568): an NCE or administrative supplement
+//      raises the amount, a de-obligation lowers it, and award_amount is not monotonic either way.
+//   2) activeOnly -> blinds the watched isActive field through TWO different mechanisms depending
+//      on whether fiscalYears is also set (see the cycle-969/983 comment above `unknownIcs`):
+//      without fiscalYears it is NIH's server-side include_active_projects filter; with fiscalYears
+//      it is this Actor's own client-side `activeOnlyClientFilter` drop in walkChunk's `fresh`
+//      computation, applied before the already-seen/changed branch. Either way an is_active:false
+//      row never matches the query, so the one transition isActive exists to watch for -- a project
+//      going active -> inactive -- is the one it can never report. Live-measured (cycle 1570, $0,
+//      same appl_id, is_active:false): include_active_projects:true returns 0 rows for it, no
+//      filter returns 1.
+// Advisory only: minAwardAmount, maxAwardAmount and activeOnly all default to unset/false, so a
+// plain watchChanges run with no amount or activeOnly filter fires none of this.
+const watchChangeBlindFilters = [];
+if (watchMode && watchChanges) {
+    if (minAwardAmount !== null || maxAwardAmount !== null) {
+        watchChangeBlindFilters.push('awardAmount');
+        log.warning(
+            'watchChanges cannot see an award-amount change that crosses your own amount bound: '
+            + `${[minAwardAmount !== null ? `minAwardAmount=${minAwardAmount}` : null, maxAwardAmount !== null ? `maxAwardAmount=${maxAwardAmount}` : null].filter(Boolean).join(' / ')} `
+            + 'is sent to NIH RePORTER as the server-side award_amount_range filter on the same award_amount '
+            + 'field this run watches for changes. An award whose amount moves out of your bound stops matching '
+            + 'the query entirely, so the change is never compared and never reported -- the run just says '
+            + 'nothing was new. Both directions are affected: a no-cost extension or administrative supplement '
+            + 'can raise the amount past an upper bound, a de-obligation can lower it past a lower bound.',
+        );
+    }
+    if (input.activeOnly === true) {
+        watchChangeBlindFilters.push('isActive');
+        log.warning(
+            'watchChanges cannot see a project go active -> inactive while activeOnly is set: '
+            + (activeOnlyClientFilter
+                ? 'with fiscalYears also set, this run filters is_active=true on the results itself after fetching them'
+                : 'this run sends NIH RePORTER the server-side include_active_projects filter')
+            + ', and isActive is one of the 4 fields this run watches for changes. The moment a project your '
+            + 'watch already delivered reaches the end of its active period, it stops matching an activeOnly '
+            + 'query and the active -> inactive transition -- the single most useful alert isActive exists to '
+            + 'deliver -- is never reported; the run just says nothing was new.',
+        );
+    }
+    if (watchChangeBlindFilters.length) {
+        log.warning(
+            'What to do: run the watchChanges label WITHOUT minAwardAmount/maxAwardAmount (for amount drift) '
+            + 'or activeOnly (for the active -> inactive transition) and filter the delivered rows yourself, '
+            + 'or keep two labels -- a narrow one for new projects and a wide one with watchChanges for drift '
+            + 'on projects you already track.',
+        );
+    }
+}
+
+// Empty unless a change-blind filter is actually in play. Without this, a run that CAN NEVER
+// report one of its watched fields changing is byte-for-byte indistinguishable from a healthy
+// quiet run -- and this is a monitor, so the buyer schedules it and stops reading the log (the
+// 1556 monitor rule).
+function blindNote() {
+    return watchChangeBlindFilters.length
+        ? ` NOTE: this run cannot report any ${watchChangeBlindFilters.join('/')} change at all `
+        + '(see the change-blind-filter warning(s) above), so "nothing changed" is not evidence here.'
+        : '';
+}
+
 function truncationNote() {
     return baselineTruncated > 0
         ? ` WARNING: the baseline exceeded the ${WATCH_KEEP}-project cap and dropped ${baselineTruncated} `
@@ -1092,14 +1163,16 @@ if (watchMode && seedFailure) {
                 + 'Narrow the query (a fiscal year, IC or state) so the whole result set fits, or the first incremental '
                 + 'run will report older projects past the cap as new.'
                 : '')
-            + truncationNote(),
+            + truncationNote()
+            + blindNote(),
         );
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed - changedCount} new project(s)`
             + (watchChanges ? ` and ${changedCount} changed project(s) (end date/budget end/award amount/active flag)` : '')
             + ` since the last run; baseline now holds ${watchSeen.size}.`
-            + truncationNote(),
+            + truncationNote()
+            + blindNote(),
         );
     }
 }
@@ -1117,6 +1190,7 @@ if (pushed === 0 && !seeding && !complete) {
         watchMode
             ? `Nothing new for watch label "${watchLabel}" since its last run -- every matching project had already been `
             + 'delivered. That is the expected result most of the time; you were charged for nothing.'
+            + blindNote()
             : searchId
             ? `The saved search ${searchId} resolved, but matched no projects. That is what reporter.nih.gov itself `
             + 'would show for this link right now -- open it in a browser to confirm, then widen the search there.'
@@ -1166,6 +1240,7 @@ const runSummary = {
     changedRedelivered: watchMode && !seeding ? changedCount : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    watchChangeBlindFilters: watchMode ? watchChangeBlindFilters : null,
     requestedProjectNums: exclusiveProjectNums ? projectNums : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);

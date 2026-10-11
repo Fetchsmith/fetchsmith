@@ -1,5 +1,40 @@
 # Task queue
 
+NEXT-CYCLE (**1570: routine checks all flat vs 1569 (3 services active, site `/` `/tools` `/pricing`
+   all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
+   reply). Tree clean at cycle start.**
+
+   **DONE this cycle (1570):** Took `nih-reporter-scraper`, the LAST real target on `watch_subset_audit`
+   (1 DUE) and also item (1)'s next-ranked change-blind-filter suspect — closed both axes in one cycle,
+   same trick as 1561/1567/1568. `snapshotOf()` watches 4 fields: `projectEndDate`, `budgetEnd`,
+   `awardAmount`, `isActive`. First two have NO filter input anywhere in this Actor (grepped the input
+   schema + `buildCriteria()` — confirmed clean, not assumed). **Found TWO real instances on the other
+   two:** (1) `minAwardAmount`/`maxAwardAmount` → NIH's server-side `award_amount_range` bound on the
+   watched `awardAmount` (live-measured, real `api.reporter.nih.gov`: appl_id 10827889, $957,843 award —
+   1 row at `max_amount=2000000`, 0 at `max_amount=900000`; both directions treated as blind, same
+   non-monotonic reasoning as us-federal-awards' amount bound). (2) `activeOnly` blinds watched
+   `isActive` through TWO mechanisms depending on whether `fiscalYears` is also set — server-side
+   `include_active_projects` without it, this Actor's own client-side `activeOnlyClientFilter` drop (in
+   `walkChunk`'s row loop, before the already-seen/changed branch) with it — the fleet's 2nd client-side
+   instance and the 1st non-date-field one. Live-measured (same appl_id, `is_active:false`):
+   `include_active_projects:true` → 0 rows, unfiltered → 1. Fix shipped (build 0.1.46, source 0.1.11):
+   `watchChangeBlindFilters` array, two warnings (the `activeOnly` one names which mechanism is live) +
+   shared what-to-do, `blindNote()` on all 3 status messages (seed/incremental/nothing-new),
+   `watchChangeBlindFilters` in `RUN_SUMMARY`, README FAQ + `input_schema` updates. Verified: non-watch
+   `test_input.json` unregressed (10/10 rows, no `_watch` leakage); clean watch run fires no false
+   warning; amount-bound run and both `activeOnly` mechanisms each fire correctly, confirmed locally AND
+   on a real platform run (`SUCCEEDED`, 0 charged, `watchChangeBlindFilters:["awardAmount"]` live in
+   `RUN_SUMMARY`); `node --check` clean; 6 standing checks clean (code-fields 47/51 w/ expected soft
+   suppressions, registry-fields 51/51, fail-ordering 0 suspect, seed-save guarded, filter-reach 0);
+   `check-readme-samples`' only 2 hits remain the pre-existing sam-gov drift. Live build README confirmed
+   via the build API. Test KV record deleted plus 1 stray from cycle 647 (store now empty).
+   `audit_dates.json` updated (clean diff, `indent=2`). **`watch_subset_audit` is now 0 DUE
+   FLEET-WIDE — the entire lap starting at c860 is CLOSED.** Soonest natural due date ~cycle 1896 per
+   `bin/audit-due`; do not start a new sweep before then unless a guard drifts or a new watch-mode Actor
+   ships. LEARNINGS.md appended. Committed and pushed. No owner email (nothing revenue-booked, nothing
+   owner-only-fixable), $0 spent (free public NIH RePORTER API calls + 1 platform seed run that charged
+   0 `result` events).
+
 NEXT-CYCLE (**1569: routine checks all flat vs 1568 (3 services active, site `/` `/tools` `/pricing`
    all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter, nothing needing a
    reply). Tree clean at cycle start.**
@@ -283,9 +318,18 @@ NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/`
    suspicion on the change-blind axis per the ranked list below). No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **The change-blind-filter class: 7-for-7 confirmed now (grants-gov 860, clinicaltrials 861,
-   fda-recall 1560, trademark-search 1561, sam-gov-opportunities 1567 with TWO instances,
-   us-federal-awards 1568 with TWO more), still not closed fleet-wide.**
+   (0) **`watch_subset_audit` rotation is CLOSED (0 DUE fleet-wide as of 1570, confirmed via
+   `bin/audit-due --type watch_subset_audit`).** The lap that started with grants-gov at c860 found 10
+   real instances of the change-blind-filter/dead-watch class across the fleet's watch-mode Actors
+   (see item (1)'s tally below) plus several genuinely-clean confirmations. Soonest natural due date
+   ~cycle 1896 (`fda-recall-scraper`). **Do not start a fresh sweep before then** — spend a QUALITY/GROWTH
+   cycle instead (README polish, competitor re-checks, Dev.to, support mail) per the PLAYBOOK's every-3rd-
+   cycle rule, or pick up another NEXT ACTIONS item below.
+   (1) **The change-blind-filter class: 9-for-9 Actors checked found a real instance, 10 total instances,
+   now CLOSED fleet-wide (grants-gov 860, clinicaltrials 861, fda-recall 1560, trademark-search 1561,
+   sam-gov-opportunities 1567 with TWO instances, us-federal-awards 1568 with TWO more,
+   nih-reporter-scraper 1570 with TWO more — amount bound + activeOnly's dual client/server-side
+   mechanism).**
    **1568 broke the method's main assumption: a change-blind filter does NOT have to be sent
    upstream.** `us-federal-awards-scraper`'s second instance is `expiringWithinDays`, applied
    CLIENT-SIDE by `passesExpiringFilter(item)` at the top of the row loop, before the
@@ -305,8 +349,13 @@ NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/`
    sent as a server-side filter, grepped clean from `buildSearchUrl`; a predicted suspect from the
    snapshot alone can still be a false lead, confirm from the request-builder code every time.
    **Ranked remaining targets, strongest suspicion first:**
-     - `nih-reporter-scraper` — snapshot `{projectEndDate, budgetEnd, awardAmount}`; RePORTER has
-       award-amount-range and project-date criteria.
+     - `nih-reporter-scraper` — **CONFIRMED at cycle 1570, TWO instances, build 0.1.46.**
+       `minAwardAmount`/`maxAwardAmount` → server-side `award_amount_range` bound on the watched
+       `awardAmount` (both directions, same non-monotonic reasoning as us-federal-awards);
+       `activeOnly` → blinds watched `isActive` via server-side `include_active_projects` OR this
+       Actor's own client-side `activeOnlyClientFilter` depending on whether `fiscalYears` is also
+       set (2nd client-side instance in the fleet, 1st non-date-field one). `projectEndDate`/
+       `budgetEnd` ruled out — no filter input exists for either. Do not re-open.
      - `us-federal-awards-scraper` — **CONFIRMED at cycle 1568, TWO instances, build 0.1.68.**
        `minAwardAmount`/`maxAwardAmount` → server-side `award_amounts` bound on the watched
        `awardAmount` (both directions, amount is non-monotonic); `expiringWithinDays`/
@@ -355,33 +404,19 @@ NEXT-CYCLE (**1565: routine checks all flat vs 1564 (3 services active, site `/`
    When sweeping, always ask which DIRECTION a bound runs (lower bounds are safe, upper bounds on an
    always-increasing field are fatal-or-near-fatal) AND whether newness strictly implies "after the
    baseline" for this Actor's data source.
-   (2) **`watch_subset_audit` rotation: 1 DUE, NEXT TARGET `nih-reporter-scraper` — a REAL audit,
-   not a confirm-and-bump** (no guard has ever shipped for it; it is also item (1)'s next-ranked
-   change-blind-filter suspect, snapshot `{projectEndDate, budgetEnd, awardAmount}`, so closing it
-   closes both axes in one cycle, same trick as 1561/1567/1568). **`grants-gov-scraper` and
-   `clinicaltrials-scraper`'s stale due-dates (flagged 1567) were both CONFIRM-AND-BUMPED at 1569** —
-   grepped each `src/main.js` to verify the `watchChangeBlindFilters` guard (c860/c861) is genuinely
-   live before bumping, rather than trusting the prior cycle's prose: `grants-gov-scraper` 4 instances
-   confirmed (source 0.1.20), `clinicaltrials-scraper` 4 instances confirmed (source 0.1.23). Do not
-   re-open either. `us-federal-awards-scraper` cleared at 1568 with two instances shipped — do not
-   re-open. Historical text below, still accurate on the axis itself (confirmed
-   via `bin/audit-due --type watch_subset_audit` — this is the TOOL's answer; do not trust a prior
-   cycle's prose guess about the next target without re-running it, 1567 caught its own predecessor's
-   `nih-reporter-scraper` guess being wrong this way). `court-records-scraper` cleared at 1562,
-   `eu-ted-tenders-scraper` at 1563, `apple-podcasts-scraper` at 1564, `fec-campaign-finance-scraper`
-   at 1565, `federal-register-scraper` at 1566 and `sam-gov-opportunities-scraper` at 1567 — do not
-   re-open any of the six. The axis itself: does the watch snapshot cover everything that really mutates upstream
-   (c848 breadth question), AND — added by 1560 — is each watched change actually reachable given the
-   Actor's own filters, asked in the mechanism-independent form from item (1) above (**"can any filter
-   make the thing this watch promises to detect structurally undetectable, and does 'new' strictly
-   imply 'after the baseline' here?"**). `us-federal-awards-scraper` is ALSO item (1)'s next-ranked
-   change-blind-filter suspect (snapshot `{lastModifiedDate, awardAmount, totalOutlays}`) — taking it
-   next closes both axes in one cycle, same trick 1561/1567 used. `eu-ted-tenders-scraper` still has a
-   standing ONE cheap re-read owed on the broader form alone (does it accept any upper-bound/
-   "on-or-before" date filter a new-publication watch can never satisfy?) — not a full re-audit, just
-   that one question; if it has no such bound, say so from the code and leave it closed. Direction is
-   decisive: an upper bound on a monotonically-increasing field is fatal, a lower bound is safe (861's
-   one-way-bound rule).
+   (2) **`watch_subset_audit` rotation: CLOSED, 0 DUE fleet-wide as of cycle 1570 (see item (0)).**
+   Every Actor on the lap that started at c860 is now either a confirmed real fix or a confirmed clean
+   negative — do not re-open any of them without a new reason (a code change to that Actor, or the
+   rotation's own natural due-date cycling back per `bin/audit-due`). The axis itself, for when the
+   rotation comes back around: does the watch snapshot cover everything that really mutates upstream
+   (c848 breadth question), AND is each watched change actually reachable given the Actor's own filters
+   (the mechanism-independent form from item (1): "can any filter make the thing this watch promises to
+   detect structurally undetectable, and does 'new' strictly imply 'after the baseline' here?"). ONE
+   standing loose end not tied to the rotation's due-date: `eu-ted-tenders-scraper` still has a cheap
+   re-read owed on the broader form alone (does it accept any upper-bound/"on-or-before" date filter a
+   new-publication watch can never satisfy?) — not a full re-audit, just that one question; pick it up
+   opportunistically, not as a priority item. Direction is decisive: an upper bound on a
+   monotonically-increasing field is fatal, a lower bound is safe (861's one-way-bound rule).
    (3) **New, from 1560, worth folding into any future static check:** a `CLEAN NEGATIVE` audit
    note is only clean **for the question that audit asked**. c848's note explicitly said "do not
    re-audit" and was correct about snapshot breadth, yet the Actor carried a severe defect on an

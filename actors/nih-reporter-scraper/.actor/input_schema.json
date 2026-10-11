@@ -93,7 +93,7 @@
         "minAwardAmount": {
             "title": "Minimum award amount (USD)",
             "type": "integer",
-            "description": "Only projects whose award amount is at least this many dollars. Caveat: NIH RePORTER applies amount filtering as a range, so using either amount field excludes projects with no award amount recorded (~3% of rows in a measured FY2024 sample).",
+            "description": "Only projects whose award amount is at least this many dollars. Caveat: NIH RePORTER applies amount filtering as a range, so using either amount field excludes projects with no award amount recorded (~3% of rows in a measured FY2024 sample). WARNING if combined with watchChanges: this is sent as NIH's own server-side award_amount_range filter on the same field watchChanges watches for changes, so an award whose amount moves out of your bound is silently dropped from the comparison instead of being reported as changed.",
             "editor": "number",
             "minimum": 0,
             "maximum": 2147483647
@@ -101,7 +101,7 @@
         "maxAwardAmount": {
             "title": "Maximum award amount (USD)",
             "type": "integer",
-            "description": "Only projects whose award amount is at most this many dollars. Can be combined with the minimum for an exact band (e.g. 100000-500000). Same no-award-amount caveat as the minimum field.",
+            "description": "Only projects whose award amount is at most this many dollars. Can be combined with the minimum for an exact band (e.g. 100000-500000). Same no-award-amount caveat as the minimum field, and the same watchChanges WARNING: it blinds the award-amount change this run is supposed to detect.",
             "editor": "number",
             "minimum": 0,
             "maximum": 2147483647
@@ -128,7 +128,7 @@
         "activeOnly": {
             "title": "Active projects only",
             "type": "boolean",
-            "description": "Only projects that are currently active (within their project period).",
+            "description": "Only projects that are currently active (within their project period). WARNING if combined with watchChanges: this filters out any project whose active flag is false, which is also the field watchChanges watches for the active -> inactive transition -- so the moment a tracked project's period ends, it stops matching this filter and that transition is never reported.",
             "default": false
         },
         "newlyAddedOnly": {
@@ -147,7 +147,7 @@
         "watchChanges": {
             "title": "Also alert on project changes",
             "type": "boolean",
-            "description": "Only used with Watch label. When on, a project you were already alerted on is re-delivered (charged again) if its project end date, budget end date, award amount or active flag changes since you last saw it -- e.g. a no-cost extension pushing the end date out, an administrative supplement changing the award amount, or the project ending (active -> inactive). Tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new projects, same as before this option existed.",
+            "description": "Only used with Watch label. When on, a project you were already alerted on is re-delivered (charged again) if its project end date, budget end date, award amount or active flag changes since you last saw it -- e.g. a no-cost extension pushing the end date out, an administrative supplement changing the award amount, or the project ending (active -> inactive). Tagged with _watchChangeType and _watchPrevious showing exactly what moved. Off by default, so a plain watchLabel only ever alerts on brand-new projects, same as before this option existed. CAVEAT: minAwardAmount/maxAwardAmount and activeOnly each filter on a field this option watches for changes, so combining either with watchChanges makes that one change permanently unreportable -- see those fields' own warnings.",
             "default": false
         },
         "webhookUrl": {
