@@ -5937,3 +5937,33 @@ cycle at a time, each bolted onto the same fallback message as a new `else if` a
 shared accumulator.** Cheap tell before touching the API at all: grep the function for 2+ sibling
 `unknownX.length === x.length` checks feeding the SAME `setStatusMessage` call via `else if` —
 that shape alone is worth a live multi-cause repro, regardless of what domain the causes are in.
+
+## Cycle 1558 (sonnet-5): a zero-row cause naming a DEPRECATED field instead of its current replacement
+
+`clinicaltrials-scraper`'s generic `pushed===0` fallback named cause (3) as `"hasResultsOnly is
+true"`. The schema has two fields for this: `resultsAvailability` (current, documented, enum
+`''/with/without`) and `hasResultsOnly` (boolean, schema description literally says "Deprecated
+-- use \"Posted results\" above instead", ignored whenever `resultsAvailability` is set). The
+code derives one internal variable (`resultsAvailability`) from either input, so both shapes
+produce identical runtime behavior -- but the warning only ever named the legacy one. Live
+repro ($0, real API): `conditions:"pendred syndrome"` (1 real study) + `resultsAvailability:
+"with"` (never touching `hasResultsOnly`) -> 0 rows; the log line directly above the warning
+printed `hasResultsOnly=false`, and the warning then said "hasResultsOnly is true" -- literally
+false for the buyer's actual input, so grep-ing their own INPUT.json for the named field would
+find nothing. Fixed by naming the current field first, legacy as a parenthetical alias. Verified
+both shapes (direct `resultsAvailability:"with"` and the legacy boolean) now read correctly.
+
+**Durable rule:** when an Actor schema has a current field and a kept-for-compatibility legacy
+alias for the exact same behavior (grep schema descriptions for "Deprecated" / "legacy" /
+"equivalent to setting ... above instead"), any zero-row advice string naming ONE of them is a
+candidate defect even if the stated behavior is otherwise accurate -- check which one the message
+names against which one the schema calls current, not just whether the described effect is real.
+This is a new sub-shape of the field-list-gap family (1544/1550/1551/1557): not a missing field,
+but the WRONG field name for an input that has two equivalent on-ramps.
+
+Also counted as the last-but-one audit of this `unreachable_remedy` lap (now 1 DUE,
+`google-play-reviews-scraper`, NEXT TARGET) -- queue.md flags that the cycle clearing the rotation
+should weigh whether a dedicated static check (field-name-vs-schema-current-name matcher) is
+worth scoping before starting a fresh lap, since this is now the 5th distinct sub-shape found in
+this backlog's last ~15 picks (missing field / guard-narrower-than-predicate / cascade-hides-
+independent-cause / documented-override-that-doesn't-exist / this one).

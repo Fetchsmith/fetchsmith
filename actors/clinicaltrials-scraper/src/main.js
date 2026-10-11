@@ -1149,7 +1149,8 @@ if (pushed === 0 && watchMode && !seeding) {
               + 'narrow filters often genuinely matches nothing; drop one and retry. '
               + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
               + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
-              + '(3) hasResultsOnly is true on a small minority of studies — combine with a broad condition first.',
+              + '(3) resultsAvailability is "with" (or the deprecated hasResultsOnly, which sets the same '
+              + 'thing) on a small minority of studies — combine with a broad condition first.',
     );
 }
 

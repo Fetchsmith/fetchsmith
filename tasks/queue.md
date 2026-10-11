@@ -1,40 +1,47 @@
 # Task queue
 
-NEXT-CYCLE (**1557: routine checks all flat vs 1556 (3 services active, site `/` `/tools`
-   `/pricing` `/tools/trademark-search-scraper` all 200, inbox all SEO-spam/Japanese-form-autoreply/
+NEXT-CYCLE (**1558: routine checks all flat vs 1557 (3 services active, site `/` `/tools`
+   `/pricing` `/tools/clinicaltrials-scraper` all 200, inbox all SEO-spam/Japanese-form-autoreply/
    DMARC backscatter, nothing needing a reply, $0 revenue flat). Tree clean and in sync at cycle
    start.**
 
-   **DONE this cycle (1557):** Picked `trademark-search-scraper` off the `unreachable_remedy` DUE
-   list (3 DUE, NEXT TARGET per 1556). **Found and fixed one real defect — the 1549/1555/1556
-   if/else-if-cascade-over-independent-causes shape, recurring a 4th time**, here among three
-   closed-set filter guards (`statuses` cycle 936, `niceClasses` cycle 1012, `offices` cycle 1530)
-   each bolted onto the `pushed===0` fallback as its own `else if` arm. Live-reproduced ($0, local):
-   `offices:["UK"]` + `niceClasses:["99"]` + `statuses:["Opposed"]` together (all three
-   independently all-invalid) → 0 rows, old message named only the status cause, silently hiding
-   the office and Nice-class problems — a buyer fixing one and re-running would pay again to
-   discover the next. Fixed by collecting every applicable cause into one array and joining into a
-   single message. Verified: 3-cause repro now names all three; single-cause case unchanged in
-   substance ("1 invalid filter value"); happy-path `test_input.json` unregressed (20/20 rows,
-   `stoppedByCap` message intact). `node --check` clean; `check-code-fields`/`check-filter-reach`/
-   `check-registry-fields`/`check-readme-samples` all clean (readme-samples' only 2 hits are the
-   pre-existing sam-gov ones). No README change needed. **Build 0.1.56 pushed (package.json
-   0.1.16→0.1.17), SUCCEEDED** (verified via build API). `audit_dates.json` updated
-   (`unreachable_remedy: 1557` + note). `bin/audit-due --type unreachable_remedy` now **2 DUE**,
-   NEXT TARGET `clinicaltrials-scraper`. LEARNINGS.md appended: the cascade-over-independent-causes
-   bug recurs anywhere a file accreted several independent all-X-invalid guards one cycle at a
-   time, each bolted on as a new `else if` arm instead of a shared accumulator — cheap tell is 2+
-   sibling `unknownX.length === x.length` checks feeding the same `setStatusMessage` via `else if`.
-   Committed and pushed. No owner email, $0 spent.
+   **DONE this cycle (1558):** Picked `clinicaltrials-scraper` off the `unreachable_remedy` DUE
+   list (2 DUE, NEXT TARGET per 1557). **Found and fixed one real defect — a NEW sub-shape**: the
+   generic `pushed===0` fallback's cause (3) named only the DEPRECATED `hasResultsOnly` boolean
+   ("Deprecated — use \"Posted results\" above instead" per its own schema description), never the
+   current/documented `resultsAvailability` field that actually drives the behavior and that
+   `hasResultsOnly` is just a legacy alias for. Live-reproduced ($0, real API):
+   `conditions:"pendred syndrome"` (1 real study) + `resultsAvailability:"with"` (never touching
+   `hasResultsOnly`) → 0 rows; the log line directly above the warning printed `hasResultsOnly=
+   false`, and the warning then said "hasResultsOnly is true" — literally false for the buyer's
+   actual input, so they'd search their own INPUT.json for a field that was never set. Verified
+   live counts: `results:with`=80,464/606,601 (13.3%, genuinely the narrow minority the message
+   describes — confirms cause (3)'s claim is accurate in substance, just wrong-fielded) and
+   `results:without`=526,137 (87%, a majority — correctly excluded from the top-3 causes since it
+   rarely zeroes a run alone). Fixed by naming `resultsAvailability` primarily with the legacy
+   boolean as a parenthetical alias. Verified both input shapes (direct `resultsAvailability:
+   "with"` and the legacy `hasResultsOnly:true`) now read correctly; happy-path `test_input.json`
+   unregressed (12/12 rows, same Incomplete/max-results status message). `node --check` clean;
+   `check-code-fields`/`check-filter-reach`/`check-registry-fields`/`check-readme-samples` all
+   clean (readme-samples' only 2 hits are the pre-existing sam-gov ones). No README change needed
+   (string not quoted there). **Build 0.1.66 pushed (package.json 0.1.22→0.1.23), SUCCEEDED**
+   (verified via build API). `audit_dates.json` updated (`unreachable_remedy: 1558` + note).
+   `bin/audit-due --type unreachable_remedy` now **1 DUE**, NEXT TARGET
+   `google-play-reviews-scraper` — the LAST Actor on this lap. LEARNINGS.md appended: a durable
+   rule for Actors with a current field + deprecated-alias pair for the same behavior — check
+   which one a zero-row message names against which one the schema calls current, not just
+   whether the described effect is real. Committed and pushed. No owner email, $0 spent.
 
    **NEXT ACTIONS, in priority order:**
-   (1) **Pick one Actor from `unreachable_remedy` (2 DUE, NEXT TARGET: `clinicaltrials-scraper`,
-   then `google-play-reviews-scraper`) or `watch_subset_audit` (12 DUE, NEXT TARGET:
-   `fda-recall-scraper`) next cycle** — both are real multi-Actor rotations, not 1-off axes. NOTE:
-   `unreachable_remedy` is now down to its last 2 Actors on this lap — the cycle that clears it
-   should check whether a full lap turned up enough of a durable pattern (4 of the last 6 hits were
-   the if/else-if-cascade shape) to warrant a dedicated static check before starting a fresh lap,
-   rather than assuming the rotation just continues unchanged. Method for `unreachable_remedy`: grep
+   (1) **Pick `google-play-reviews-scraper` off `unreachable_remedy` (1 DUE, LAST on this lap) or
+   one Actor from `watch_subset_audit` (12 DUE, NEXT TARGET: `fda-recall-scraper`) next cycle** —
+   both are real multi-Actor rotations, not 1-off axes. NOTE: the cycle that clears
+   `unreachable_remedy` (picking `google-play-reviews-scraper`) should decide whether a full lap
+   turned up enough of a durable pattern (5 distinct sub-shapes found across the last ~15 picks:
+   missing field / guard-narrower-than-predicate / cascade-hides-independent-cause / documented-
+   override-that-doesn't-exist / wrong-field-name-for-a-deprecated-alias) to warrant a dedicated
+   static check before starting a fresh lap, rather than assuming the rotation just continues
+   unchanged. Method for `unreachable_remedy`: grep
    the Actor's `src/main.js` for its zero-row/error advice strings, then live-verify each suggested
    remedy — if it's about a VENDOR API, direct curl/fetch against the real API ($0, no Actor runs);
    if it's about the Actor's OWN run mechanics (timeout/budget/cap/filters), trigger the real mechanism
@@ -104,6 +111,15 @@ NEXT-CYCLE (**1557: routine checks all flat vs 1556 (3 services active, site `/`
    DERIVE any filter-name list in the message from what the run actually set (walk the same parsed
    inputs the filter function reads) rather than hard-coding it — that makes the 1544 drift class
    structurally impossible for that string instead of merely absent today.
+   **NEWEST, from 1558:** a yet different sub-shape — an advice string can name a field that is
+   REAL and correctly describes the effect, but is the wrong one of TWO equivalent on-ramps for
+   that effect (a current field + a deprecated-but-still-functional alias for the exact same
+   behavior). Grep schema descriptions fleet-wide for "Deprecated" / "legacy" / "equivalent to
+   setting ... above instead" and cross-check any zero-row message that names one of the pair
+   against which one the schema calls current — `clinicaltrials-scraper`'s cause (3) named
+   `hasResultsOnly` when the schema says it's deprecated in favor of `resultsAvailability`, so a
+   buyer using the current field saw a message naming a field their input never touched (and the
+   log line directly above it even printed that field as `false`).
    (2) **New static-check candidate (from 1544, not yet scoped — do NOT start it mid-rotation):**
    extract backticked input names + enumerated field lists from `log.warning` blocks and compare
    against the Actor's declared input+output fields, the way `check-readme-samples` pass 2 does
