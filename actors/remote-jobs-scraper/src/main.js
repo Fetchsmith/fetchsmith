@@ -178,6 +178,30 @@ const encodeMeta = (hasSalary) => (hasSalary === true ? 1 : hasSalary === false 
 const decodeMeta = (code) => (code === 1 ? true : code === 2 ? false : null);
 
 const watchMode = watchLabel.length > 0;
+// A fixed UPPER date bound kills a watch dead (9th instance of this fleet class — grants-gov,
+// fda-recall, eu-ted, apple-podcasts, fec, federal-register, app-store-reviews, steam-reviews,
+// ats-jobs). `keep()` filters each row's own `publishedAt` against `postedBefore`, and a
+// newly-published posting's `publishedAt` IS its post time, so once the real calendar date
+// passes a fixed `postedBefore`, nothing new can ever be dated on or before it again — the watch
+// reports "nothing new" forever while still looking healthy. Unlike ats-jobs-scraper's version of
+// this guard, there is no partial escape hatch here: `keep()` drops any row with no
+// `publishedAt` outright whenever either date bound is set (`if (!row.publishedAt) return
+// false;` below), so a dead `postedBefore` blinds every source's new postings without exception,
+// not just the ones that happen to carry the field.
+// Gated on the schema's literal input name, not the parsed `postedBefore` local, so the static
+// check-change-blind checker can see the guard (cycle 1577's lesson).
+const watchDeadDateBound = watchMode && !!input.postedBefore;
+if (watchDeadDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is combined with a fixed postedBefore (${input.postedBefore}). `
+    + 'Once the real calendar date passes that cutoff, no newly-published posting can ever be dated on or '
+    + 'before it anymore, so this watch is now permanently unable to report anything new.',
+  );
+  log.warning(
+    'Drop postedBefore from a watched query (postedAfter alone is safe to keep), or remove '
+    + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+  );
+}
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
@@ -1078,6 +1102,9 @@ if (webhookUrl) {
     watchEventsFilteredCount: watchMode && !seeding ? watchEventsFiltered : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // true means this watch is pinned to a fixed postedBefore and can no longer report anything
+    // new once today passes it — a "nothing new" result from such a run is meaningless.
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
   };
   try {
     const resp = await gotScraping({

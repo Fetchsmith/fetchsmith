@@ -56,7 +56,7 @@
     "postedBefore": {
       "title": "Posted on or before",
       "type": "string",
-      "description": "Only keep postings published on or before this date, in YYYY-MM-DD (UTC). The whole day is included (ends 23:59:59.999Z). Same strict parsing as \"Posted on or after\": a typo fails the run instead of silently widening the result set.",
+      "description": "Only keep postings published on or before this date, in YYYY-MM-DD (UTC). The whole day is included (ends 23:59:59.999Z). Same strict parsing as \"Posted on or after\": a typo fails the run instead of silently widening the result set. WATCH MODE WARNING: combined with watchLabel, a FIXED value here is a permanent dead end once the real date passes it — a newly-published posting's own publishedAt is always \"now\", so no new posting can ever be dated on or before an already-passed cutoff again. Leave it unset in a watched query; postedAfter alone is safe to keep. See README FAQ.",
       "editor": "textfield"
     },
     "salaryOnly": {
