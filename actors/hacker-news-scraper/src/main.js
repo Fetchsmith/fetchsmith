@@ -145,6 +145,30 @@ function watchKeyFor(label, criteria) {
 }
 
 const watchMode = watchLabel.length > 0;
+// A fixed UPPER date bound kills a watch dead (10th instance of this fleet class — grants-gov,
+// fda-recall, eu-ted, apple-podcasts, fec, federal-register, app-store-reviews, steam-reviews,
+// ats-jobs, remote-jobs). postedBefore becomes a server-side Algolia numericFilter
+// (`created_at_i<X`, line 31 above) applied to every search this watch repeats, and a
+// newly-posted story/comment's `created_at_i` IS its post time, so once the real calendar date
+// passes a fixed postedBefore, Algolia itself will never again return anything dated on or
+// before it — the watch reports "nothing new" forever while still looking healthy. No partial
+// escape hatch at all here (closer to remote-jobs-scraper than ats-jobs-scraper): this is a
+// server-side filter, not a client-side truthy gate on a sometimes-missing field, so every new
+// hit is blinded without exception.
+// Gated on the schema's literal input name, not the parsed `numericFilters`/derived locals, so
+// the static check-change-blind checker can see the guard (cycle 1577's lesson).
+const watchDeadDateBound = watchMode && !!input.postedBefore;
+if (watchDeadDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is combined with a fixed postedBefore (${input.postedBefore}). `
+    + 'Once the real calendar date passes that cutoff, no newly-posted story/comment/job can ever be dated on or '
+    + 'before it anymore, so this watch is now permanently unable to report anything new.',
+  );
+  log.warning(
+    'Drop postedBefore from a watched query (postedAfter alone is safe to keep), or remove '
+    + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+  );
+}
 if (watchChanges && !watchMode) {
   log.warning('watchChanges is on but no watchLabel is set — it only applies to watch mode and does nothing here. Set a watchLabel to use it.');
 } else if (watchChanges && !pointMilestones.length && !commentMilestones.length) {
@@ -888,6 +912,7 @@ await Actor.setValue('RUN_SUMMARY', {
   watchSeeding: watchMode ? seeding : null,
   watchChanges: watchMode ? watchChanges : null,
   watchChangedCount: watchMode && !seeding && watchChanges ? watchChangedCount : null,
+  watchDeadDateBound: watchMode ? watchDeadDateBound : null,
   watchDeadPointRungs: watchMode && watchChanges && deadPointRungs.length ? deadPointRungs : null,
   watchDeadCommentRungs: watchMode && watchChanges && deadCommentRungs.length ? deadCommentRungs : null,
   baselineTruncated: watchMode ? baselineTruncated : null,
@@ -912,6 +937,7 @@ if (webhookUrl) {
     watchNewCount: watchMode && !seeding ? pushed - watchChangedCount : null,
     watchChangedCount: watchMode && !seeding && watchChanges ? watchChangedCount : null,
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
     watchDeadPointRungs: watchMode && watchChanges && deadPointRungs.length ? deadPointRungs : null,
     watchDeadCommentRungs: watchMode && watchChanges && deadCommentRungs.length ? deadCommentRungs : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
