@@ -785,22 +785,34 @@ if (watchMode && seeding) {
     why = causes.length ? causes.join('; ') : 'no reviews were charged (check the log for the reason)';
   }
   statusMsg = (`No reviews returned — ${why}. See the log for details.`);
-} else if (depthCappedApps.length) {
-  statusMsg = (`Pushed ${pushed} items. maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : '; raise maxReviewsPerApp to search further'}.`);
-} else if (emptyApps.length || filteredOutApps.length) {
-  statusMsg = (`Pushed ${pushed} items. Zero reviews for: ${emptyApps.join(', ') || 'none'}${filteredOutApps.length ? `; filtered out entirely for: ${filteredOutApps.join(', ')}` : ''}.`);
-// A partial genre skip still delivered rows, but which apps were dropped (and that it was our
-// filter, not Google Play) is only visible in the log without this.
-} else if (genreSkippedApps.length || genreUnknownApps.length) {
-  statusMsg = (`Pushed ${pushed} items. Your "genres" filter skipped ${genreSkippedApps.length + genreUnknownApps.length} app(s)${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}.`);
-} else if (truncationNote) {
-  // A clean run that nothing else had to report, EXCEPT that it stopped early -- previously this
-  // was the case that set no status message at all and read as a complete run.
-  statusMsg = `Pushed ${pushed} items.`;
-} else if (watchMode && baselineTruncated > 0) {
-  // Same gap, other cause: an otherwise-clean delivering watch run whose baseline just lost ids
-  // to the record cap had no status message at all, so the re-charge risk stayed invisible.
-  statusMsg = `Pushed ${pushed} new item(s) for watch label "${watchLabel}".`;
+} else {
+  // Same cascade-hides-independent-cause shape as the pushed===0 branch above (fixed cycle 1559),
+  // found live in THIS branch at cycle 1591: depthCappedApps/filteredOutApps+emptyApps/
+  // genreSkippedApps+genreUnknownApps/erroredApps/invalidApps are each populated per-app,
+  // independently, so a multi-app run that still pushed rows (from OTHER apps) could have two or
+  // more of these simultaneously non-empty -- the old if/else-if chain reported only the first and
+  // silently dropped the rest, and erroredApps/invalidApps were not named in any pushed>0 branch at
+  // all, not even partially. Accumulate every applicable cause instead of picking one.
+  const depthCappedSet = new Set(depthCappedApps);
+  const filteredOutOnlyApps = filteredOutApps.filter((a) => !depthCappedSet.has(a));
+  const causes = [];
+  if (invalidApps.length) causes.push(`these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`);
+  if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
+  if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : '; raise maxReviewsPerApp to search further'}`);
+  if (filteredOutOnlyApps.length) causes.push(`reviews were found but every one was removed by your filters for: ${filteredOutOnlyApps.join(', ')}`);
+  if (emptyApps.length) causes.push(`zero reviews for: ${emptyApps.join(', ')}`);
+  if (genreSkippedApps.length || genreUnknownApps.length) causes.push(`your "genres" filter skipped ${genreSkippedApps.length + genreUnknownApps.length} app(s)${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}`);
+  if (causes.length) {
+    statusMsg = `Pushed ${pushed} items. ${causes.join('; ')}.`;
+  } else if (truncationNote) {
+    // A clean run that nothing else had to report, EXCEPT that it stopped early -- previously this
+    // was the case that set no status message at all and read as a complete run.
+    statusMsg = `Pushed ${pushed} items.`;
+  } else if (watchMode && baselineTruncated > 0) {
+    // Same gap, other cause: an otherwise-clean delivering watch run whose baseline just lost ids
+    // to the record cap had no status message at all, so the re-charge risk stayed invisible.
+    statusMsg = `Pushed ${pushed} new item(s) for watch label "${watchLabel}".`;
+  }
 }
 if (statusMsg) await Actor.setStatusMessage((statusMsg + truncationNote + evictionSuffix).slice(0, 1000));
 

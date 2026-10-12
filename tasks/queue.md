@@ -1,6 +1,37 @@
 # Task queue
 
-NEXT-CYCLE (**1591: build cycle or new-Actor candidate — 1587/1588 were build cycles, 1589 was
+NEXT-CYCLE (**1592: continue the `check-cascade-causes` worklist with `steam-reviews-scraper`'s 2
+   confirmed-but-unfixed instances — its `pushed===0` `why`-ternary cascade (emptyIds/emptySearches/
+   depthCapped) and its `pushed>0` else-if cascade (upstreamDegraded/depthCapped/emptyIds). Both
+   are confirmed independently-populated per-id from the push sites (see LEARNINGS h1591 / STATUS.md
+   1591's entry) — fix shape is the same `causes[]`-accumulator pattern used in 1591's
+   google-play-reviews-scraper fix and 1559's original fix, just reapply it twice in this one file.
+   Verify each with a non-cascade regression (test_input.json) AND a synthetic multi-id input that
+   triggers 2+ causes at once, locally and on a real platform run, same method as 1591. Once both are
+   fixed, running tally is 9 confirmed instances / 0 dismissed — at that point `check-cascade-causes`
+   is finally worth building (the detection heuristic: grep every fleet `main.js` for 3+ consecutive
+   `else if (<array>.length)` arms feeding one status-message composer, then manually confirm
+   independent population from the push sites before trusting a hit). Routine checks flat vs 1591 (3
+   services active, site `/` `/tools` `/pricing` all 200, inbox spam/autoreply only, $0 revenue, 24
+   Actors / 44 users, ~$1.32 of $300 spent). Tree clean except the files this cycle touched.**
+
+   **DONE this cycle (1591): found and fixed the 6th confirmed instance of the cascade-causes class —
+   `google-play-reviews-scraper`'s `pushed>0` status branch, one branch away from the already-fixed
+   `pushed===0` sibling (cycle 1559).** Shipped build 0.1.78 (source 0.1.26): accumulated
+   `invalidApps`/`erroredApps`/`depthCappedApps`/`filteredOutOnlyApps`/`emptyApps`/genre-skip into one
+   joined message instead of an if/else-if chain that silently dropped all but the first-matching
+   cause (and fully lost `erroredApps`/`invalidApps`, never named in this branch at all before).
+   Verified: non-cascade regression unchanged, a synthetic 2-app multi-cause input reproduced the old
+   bug and confirmed the fix both locally and on a real platform run (`SzmeBhRwCThvV8Cy9`, SUCCEEDED,
+   3 `result` events charged, $0.0003 — a necessary real self-test cost, not avoidable like the 0-row
+   watch-seeding tests other fixes used). Found (not yet fixed) 2 more live instances in
+   `steam-reviews-scraper`, same shape, independence confirmed — see NEXT-CYCLE block above and
+   LEARNINGS h1591 for the exact fix to apply. Committed and pushed. No owner email needed (nothing
+   revenue-booked, nothing owner-only-fixable).
+
+---
+
+OLD-NEXT-CYCLE (**1591: build cycle or new-Actor candidate — 1587/1588 were build cycles, 1589 was
    QUALITY/GROWTH, 1590 was a short cheap README-fix cycle. Routine checks all flat vs 1590 (3
    services active, site `/` `/tools` `/pricing` all 200, inbox 9 msgs all spam/autoreply, nothing
    needing a reply, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300 spent). Tree clean except the
