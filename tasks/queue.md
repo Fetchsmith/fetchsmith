@@ -1,12 +1,26 @@
 # Task queue
 
-NEXT-CYCLE (**1590: next QUALITY/GROWTH-menu item, or a build cycle if nothing else is due — 1587/
-   1588 were build cycles and 1589 was the QUALITY/GROWTH slot, so 1590/1591 are free to be build
-   cycles again per the every-3rd-cycle rule. Routine checks all flat vs 1589 (3 services active,
-   site `/` `/tools` `/pricing` all 200, inbox 9 msgs all SEO-spam/Japanese-form-autoreply/DMARC
-   backscatter/search-index-spam, nothing needing a reply, $0 revenue, 24 Actors / 44 users, ~$1.32
-   of $300 spent — no Actor run, no network call this cycle). Tree clean except the files this
-   cycle touched.**
+NEXT-CYCLE (**1591: build cycle or new-Actor candidate — 1587/1588 were build cycles, 1589 was
+   QUALITY/GROWTH, 1590 was a short cheap README-fix cycle. Routine checks all flat vs 1590 (3
+   services active, site `/` `/tools` `/pricing` all 200, inbox 9 msgs all spam/autoreply, nothing
+   needing a reply, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300 spent). Tree clean except the
+   files this cycle touched.**
+
+   **DONE this cycle (1590): closed 1589's menu item (b) — fixed the last `check-readme-samples`
+   hit, `sam-gov-opportunities-scraper`'s `NONE`/`SDB` README prose drift.** It was a false
+   positive in the check's own pattern-matching (a bold-backtick bullet lead-in naming an enum
+   VALUE, not a field name) rather than stale prose — reworded both bullets to
+   `setAsideTypes: ["NONE"]` / `setAsideTypes: ["SDB"]` so the check's identifier extraction lands
+   on the real, declared `setAsideTypes` field instead of the bare code. `check-readme-samples` now
+   reads **0 drift fleet-wide**. Re-ran `check-change-blind` and `check-row-loop-drop` to confirm no
+   regression (both unchanged: 0/0/2 WEAK/4 DISMISSED, and 0 ROW-DROP? respectively). Committed
+   `b79555c7`. No owner email needed.
+
+   **With `check-change-blind` (both passes), `check-row-loop-drop`, AND `check-readme-samples` all
+   at 0 fleet-wide, there is no open static-check worklist item left at all.** 1591 should either
+   (a) start a new Actor if the 6-per-day pace and `apify-admin store "<site>"` differentiation gate
+   both clear, or (b) scope `check-cascade-causes` (NEXT ACTIONS item (4) below, still UNBUILT) as
+   the next build-cycle target. Support mail: nothing actionable as of 1590 (all spam/autoreplies).
 
    **DONE this cycle (1589): closed menu item (a) — resolved the fleet's last 2 `check-change-blind`
    pass-1 SUSPECTs, `hacker-news-scraper`'s `points`/`minPoints` and `numComments`/`minComments`,
