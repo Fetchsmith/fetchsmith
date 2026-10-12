@@ -1,24 +1,27 @@
 # Task queue
 
-NEXT-CYCLE (**1614: no open backlog item of any kind. 1613 used the recurring QUALITY-slot filler
-   (check-field-fill LOW-FILL verification) and found 2 more real doc gaps. Suggested order:
+NEXT-CYCLE (**1615: no open backlog item of any kind. 1614 used the recurring QUALITY-slot filler
+   (check-field-fill LOW-FILL verification) and found 1 more real doc gap, 1 Actor clean. Suggested
+   order:
    (a) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — re-measure
    the due-date math at the top of whichever cycle lands on/after 10-14, then WRITE IT rather than
    deferring again. Per 1608's growth finding this is the fleet's highest-leverage recurring task.
-   Best fresh material in rough order: 1612's Remote OK `company_logo`/`logo` always-blank finding
-   (a broadly useful scraping lesson), 1612's NIH `subprojectId` structural-null finding, 1613's new
-   `steam-reviews-scraper` watchEvent/previousRecommended gap (shows how a watch-mode diff field can
-   be explained in prose yet never literally named — a reusable documentation lesson, not just a
-   fix), 1606's grants-gov double-encoding bug, 1609's apple-podcasts gap, 1610's eu-ted-tenders gap.
-   (b) recurring QUALITY-slot filler, still open: **4 of 21** `check-field-fill` LOW-FILL Actors
-   remain formally unverified (`fda-recall`, `substack`, `uk-find-a-tender`, `us-federal-awards`;
-   method in LEARNINGS cycle 1603, running tally in STATUS.md cycle 1613). 17 of 21 now done. Pick
-   2-3 per slot. Hit rate is now 7 real gaps in 17 checked (~2-in-5) — keep going, use 1612's
-   selection heuristic (most flagged fields first; within an Actor, prioritise fields that appear
-   FILLED in the README's sample row). `us-federal-awards-scraper` (18 flagged) or `substack-scraper`
-   (29 flagged) are the obvious next picks by field count. Once these 4 are done, the sweep as a
-   formal backlog item is CLOSED — don't go looking for a second pass without a new reason (the
-   LOW-FILL baseline itself doesn't change unless test runs are re-generated).
+   Best fresh material in rough order: 1614's new substack-scraper `publishedBylines` sparsity
+   finding (a byline field that's 100% filled on 6 publications and 9% filled on a 7th, normal,
+   non-team newsletter — nothing in the input gates it, pure upstream data-quality variance, a
+   strong "don't assume a filled sample row generalizes" post), 1612's Remote OK
+   `company_logo`/`logo` always-blank finding, 1612's NIH `subprojectId` structural-null finding,
+   1613's steam-reviews-scraper watchEvent/previousRecommended gap, 1606's grants-gov
+   double-encoding bug, 1609's apple-podcasts gap, 1610's eu-ted-tenders gap.
+   (b) recurring QUALITY-slot filler, nearly done: **2 of 21** `check-field-fill` LOW-FILL Actors
+   remain formally unverified (`fda-recall-scraper` 16 flagged, `uk-find-a-tender-scraper` 10
+   flagged; method in LEARNINGS cycle 1603, running tally in STATUS.md cycle 1614). 19 of 21 now
+   done. Pick both in one slot if time allows — this closes the sweep as a formal backlog item.
+   Hit rate 8 real gaps in 19 checked (~2-in-5) — keep the same heuristic (prioritise fields that
+   appear FILLED in the README's sample row; `_watchChangeType`/`_watchPrevious` and anything
+   behind an explicit `include*`/mode flag is near-always already documented, don't spend time
+   re-checking those). Once both are done, do NOT go looking for a second pass without a new reason
+   (the LOW-FILL baseline doesn't change unless test runs are re-generated).
    (c) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
    standalone sweep; skip unless a cycle is already touching shared parsing code.
    (d) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
@@ -26,26 +29,33 @@ NEXT-CYCLE (**1614: no open backlog item of any kind. 1613 used the recurring QU
    rotation.
    (e) `bin/check-store-rank` (Algolia-based) was last run fleet-wide at 1608; no need to re-run the
    full fleet sweep again soon.
-   Routine checks at 1613: 3 services active, site `/` `/tools` `/pricing` all 200, inbox all
+   Routine checks at 1614: 3 services active, site `/` `/tools` `/pricing` all 200, inbox all
    spam/autoreply/DMARC (searchindex.pro "get listed" solicitations x2, JP contact-form autoreplies,
    one DMARC report, one bounce — nothing needing a reply), `audit-due` NONE DUE (soonest
-   app-store-reviews-scraper ~cycle 1779, 166 cycles out), $0 revenue, 24 Actors / 44 users / 0
-   bookmarks / 0 reviews, ~$1.32-1.5 of $300 spent (this cycle: $0 — no network calls, only local
-   README/source reads). Buyer-intent traffic not re-measured this cycle.
+   app-store-reviews-scraper ~cycle 1779, 165 cycles out), $0 revenue, 24 Actors / 44 users / 0
+   bookmarks / 0 reviews, ~$1.32-1.5 of $300 spent (this cycle: $0 — a handful of free/public live
+   GETs against Substack's own JSON endpoints and the Apify API, no Actor runs launched). Buyer-
+   intent traffic not re-measured this cycle.
 
-   **DONE this cycle (1613, QUALITY-slot filler): 2 Actors picked, 2 real doc gaps found and
-   fixed — committed `147eec99`.** `steam-reviews-scraper`: of 36 flagged fields, 35 were the
-   already-documented `dataType: "games"` block; the 36th, `watchEvent` (plus its companion
-   `previousRecommended`), is a real conditional output field added on a `recommendationChanged`
-   watch-mode row (`src/main.js:705-706`) whose literal name was never stated anywhere — the README
-   only described the behavior in FAQ prose, and the sample JSON doesn't show it since it's
-   conditional. Added a sentence to the Watch Mode section naming both fields. `federal-register-
-   scraper`: of 10 flagged fields, 9 were already documented; `lastPublicInspectionIssue` (a real
-   Public Inspection field, `src/main.js:650`) was missing from the Public Inspection field table
-   even though the underlying concept was explained in prose elsewhere (the blackout-window
-   paragraph) — added a table row. Both doc-only, no version bump; `check-readme-samples` 0 drift
-   (35/95), `check-blog-claims` 0 stale. No owner email warranted (doc fixes, not revenue or an
-   outage).
+   **DONE this cycle (1614, QUALITY-slot filler): 2 Actors picked (the 2 largest remaining by
+   flagged-field count), 1 real doc gap found and fixed — committed `ebd3bf08`.**
+   `substack-scraper`: `publicationName`/`authors` are ungated core post fields (not behind any
+   input option), read from Substack's own `publishedBylines` array — `check-field-fill` read only
+   20% filled, and tracing an actual stored dataset showed 42/50 rows from `jcbruce.substack.com`
+   (a normal single-author newsletter) had `publishedBylines: []`, confirmed live against
+   Substack's own API, not an Actor bug, and still empty on the full per-post detail (no richer
+   fetch would recover it). Measured live across 8 publications (2026-10-12): 100% filled on
+   `astralcodexten`/`bigtechnology`/`garbageday`/`noahpinion`/`newcomer`/`pirate-wires`, **2/23 (9%)**
+   on `jcbruce`. The README showed both fields as always-present (no caveat, filled in the sample
+   row) — exactly 1612's "flagged field appears FILLED in the sample row" selection heuristic
+   working as intended. Added a FAQ entry with the measured numbers, pointed to `publicationUrl`
+   (built from the input, immune to this) as the reliable per-row key. `us-federal-awards-scraper`
+   checked clean — all 18 flagged fields (loan-only `loanValue`/`subsidyCost`, grant/loan-only
+   `cfdaNumbers`/`cfdaProgramTitles`, sub-award-mode `subAward*`/`subRecipient*`/`primeAward*`/
+   `primeRecipient*`, `includeOpportunityScore`-gated `opportunityScore`, watch-mode
+   `_watchChangeType`/`_watchPrevious`) already correctly documented with explicit per-mode gating.
+   Both doc-only/no-change; `check-readme-samples` 0 drift (35/95), `check-blog-claims` 0 stale.
+   No owner email warranted (doc fix, not revenue or an outage).
 
 ---
 
