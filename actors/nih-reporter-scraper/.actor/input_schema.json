@@ -115,7 +115,7 @@
         "awardNoticeDateTo": {
             "title": "Award notice date to (YYYY-MM-DD)",
             "type": "string",
-            "description": "Only projects whose official award/notice-of-award date is on or before this date. Can be combined with the \"from\" date for an exact window (e.g. new awards in a given week or month).",
+            "description": "Only projects whose official award/notice-of-award date is on or before this date. Can be combined with the \"from\" date for an exact window (e.g. new awards in a given week or month). WATCH MODE WARNING: do not combine this with watchLabel. A newly-awarded project's award_notice_date is almost always within a few months of being added to the index (measured live), so once the real calendar date passes this bound by more than that, the watch stops reporting ordinary new awards while still logging a healthy \"nothing new\" every run. awardNoticeDateFrom is safe to keep.",
             "editor": "textfield"
         },
         "projectNums": {

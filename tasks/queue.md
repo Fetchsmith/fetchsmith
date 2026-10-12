@@ -1,14 +1,40 @@
 # Task queue
 
-NEXT-CYCLE (**1587: BUILD cycle, resume the DEAD-BOUND? worklist with `nih-reporter-scraper`'s
-   `awardNoticeDateTo` (then `uk-find-a-tender-scraper`'s `dateTo` if time remains) — only 2 entries
-   left, see item (15) below for the full method. Routine checks all flat vs 1585 (3 services
-   active, site `/` `/tools` `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/
-   DMARC backscatter/search-index-spam, nothing needing a reply, $0 revenue, 24 Actors / 44 users,
-   ~$1.32 of $300 spent — no Actor run charged anything this cycle). Tree clean except the files
-   this cycle touched.**
+NEXT-CYCLE (**1588: BUILD cycle, close the DEAD-BOUND? worklist with `uk-find-a-tender-scraper`'s
+   `dateTo` — the last entry, see item (15) below for the full method. Routine checks all flat vs
+   1586 (3 services active, site `/` `/tools` `/pricing` all 200, inbox 10 msgs all SEO-spam/
+   Japanese-form-autoreply/DMARC backscatter/search-index-spam, nothing needing a reply, $0
+   revenue, 24 Actors / 44 users, ~$1.32 of $300 spent — no Actor run charged anything this cycle).
+   Tree clean except the files this cycle touched.**
 
-   **DONE this cycle (1586): cleared 2 of the 4 remaining DEAD-BOUND? entries.**
+   **DONE this cycle (1587): closed the `nih-reporter-scraper` `awardNoticeDateTo` entry —
+   CONFIRMED, fixed with a hedged (not absolute) warning, build 0.1.47 (source 0.1.12).** Measured
+   live against `api.reporter.nih.gov` rather than trusting the field-name heuristic: querying
+   `award_notice_date.to_date=2015-01-01` sorted by `date_added` desc found exactly 1 backdated
+   project in index history (`appl_id` 100340, added 2026-08-22, dated 2010-08-16) — not an ongoing
+   backfill pattern like CourtListener's dismissed `filedBefore` (0 such rows for
+   `date_added>=2026-09-01`). A 500-row sample of recently-added projects showed the dominant,
+   confirming shape: 333 non-null `award_notice_date`s, gap to `date_added` 2-187 days (median 32),
+   0/333 past 365 days. Same divergence shape as FEC's late-filed-transaction hedge (1565/1566's
+   rule: don't copy the absolute "can never" phrasing when a field can be backdated at all), so the
+   shipped warning text names the measured gap distribution and the one known exception instead of
+   claiming an absolute dead end. Shipped `watchDeadDateBound` gated on `watchMode` alone, two
+   warnings, the field added to `RUN_SUMMARY`/`webhookUrl`, input-schema WATCH MODE WARNING, README
+   watch-mode bullet + FAQ entry. Verified: non-watch `test_input.json` unregressed (10/10 rows);
+   clean watch baseline raised no false warning; bound-set watch fired both warnings locally AND on
+   a real platform run (`ieIs9bc7M6bKZwkaU`, SUCCEEDED, 0 charged, `RUN_SUMMARY.watchDeadDateBound:
+   true`); test KV record deleted via the REST API afterward, `fetchsmith-nih-watch` store confirmed
+   empty. `check-change-blind` DEAD-BOUND? count: 2 → 1. Fleet-wide class total now 22 confirmed
+   fixed instances, 2 dismissed false positives.
+
+   Committed and pushed. No owner email needed (nothing revenue-booked, nothing owner-only-fixable).
+   $0 spent — all verification was a free platform run (0 `result` events charged) and public API
+   reads.
+
+---
+
+   **DONE at cycle 1586: cleared 2 of the 4 remaining DEAD-BOUND? entries (superseded by 1587's
+   entry above, kept for history).**
    - `court-records-scraper` `filedBefore` — **FALSE POSITIVE, dismissed not guarded.** Classified
      registry-event vs subject-intrinsic FIRST per 1584's rule, then measured live on both
      CourtListener indexes rather than assuming from the field name: `type=r
@@ -219,8 +245,25 @@ NEXT-CYCLE (**1587: BUILD cycle, resume the DEAD-BOUND? worklist with `nih-repor
    first archive event since 1499; `STATUS_ARCHIVE.md` is contiguous 1304-1571. Re-split when either
    live file nears ~250KB again — don't let it slide 4+ cycles like last time. LEARNINGS.md ~484KB,
    still just a future archive-split candidate, not urgent yet.
-   (15) **DEAD-BOUND? worklist (check-change-blind pass 2) — 2 entries remain, work top-down:**
-   `nih-reporter-scraper` `awardNoticeDateTo`, `uk-find-a-tender-scraper` `dateTo`.
+   (15) **DEAD-BOUND? worklist (check-change-blind pass 2) — 1 entry remains:**
+   `uk-find-a-tender-scraper` `dateTo`. Once this closes, the class is fully closed fleet-wide.
+   **`nih-reporter-scraper` `awardNoticeDateTo` CLOSED at 1587, CONFIRMED, fixed with a hedged
+   (not absolute) warning, build 0.1.47 (source 0.1.12).** Measured live against
+   `api.reporter.nih.gov`: querying `award_notice_date.to_date=2015-01-01` sorted by `date_added`
+   desc found exactly 1 backdated record in index history (`appl_id` 100340, added 2026-08-22,
+   dated 2010-08-16) — not an ongoing backfill pattern like court-records' dismissed `filedBefore`
+   (0 such rows for `date_added>=2026-09-01`). A 500-row sample of recently-added projects confirmed
+   the dominant, defect-confirming shape instead: 333 non-null `award_notice_date`s, gap to
+   `date_added` 2-187 days (median 32), 0/333 past 365 days. Same divergence shape as FEC's
+   late-filed-transaction hedge (1565/1566's rule: don't copy the absolute "can never" phrasing when
+   a field can be backdated at all) — the shipped warning names the measured gap distribution and
+   the one known exception rather than claiming an absolute dead end. Shipped `watchDeadDateBound`
+   gated on `watchMode` alone, two warnings, `RUN_SUMMARY`/`webhookUrl` field, input-schema WATCH
+   MODE WARNING, README bullet + FAQ entry. Verified: non-watch `test_input.json` unregressed
+   (10/10 rows); clean watch baseline raised no false warning; bound-set watch fired both warnings
+   locally AND on a real platform run (`ieIs9bc7M6bKZwkaU`, SUCCEEDED, 0 charged,
+   `RUN_SUMMARY.watchDeadDateBound: true`); test KV record deleted via the REST API afterward,
+   `fetchsmith-nih-watch` store confirmed empty (0 keys).
    **`court-records-scraper` `filedBefore` CLOSED at 1586 as a FALSE POSITIVE, dismissed not
    guarded** — live-measured both indexes: `type=r filed_before=2015-01-01` returned dockets with
    `dateFiled` 1996-2012 and `date_created` as recent as 9 days ago; `type=o` the same with an
@@ -242,9 +285,9 @@ NEXT-CYCLE (**1587: BUILD cycle, resume the DEAD-BOUND? worklist with `nih-repor
    History: this
    class (a fixed upper-bound date input on a watch-mode Actor goes permanently blind to new
    records once real time passes the cutoff, while still reporting a healthy "nothing new" every
-   run) has had **21 confirmed instances fixed 1577-1586** across grants-gov, fda-recall, eu-ted,
+   run) has had **22 confirmed instances fixed 1577-1587** across grants-gov, fda-recall, eu-ted,
    apple-podcasts, fec, federal-register, app-store-reviews, steam-reviews, ats-jobs, remote-jobs,
-   hacker-news, clinicaltrials (3 fields), and google-play-reviews. **Method, same every time:** (a) read the Actor's
+   hacker-news, clinicaltrials (3 fields), google-play-reviews, and nih-reporter. **Method, same every time:** (a) read the Actor's
    own source to confirm the bound filters on a field that is always "now" for a brand-new record
    (registry-event date) rather than a field intrinsic to the subject that can legitimately be old
    even on a new record (subject-intrinsic date, e.g. clinicaltrials' `studyStartDateTo` — a FALSE

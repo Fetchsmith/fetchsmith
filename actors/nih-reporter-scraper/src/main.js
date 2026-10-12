@@ -752,6 +752,38 @@ if (watchMode && watchChanges) {
     }
 }
 
+// DEAD-BOUND GUARD (12th fleet instance; identity-watch, not change-blind -- see the block above
+// for that separate class). A fixed awardNoticeDateTo is an upper bound sent to NIH RePORTER as
+// award_notice_date.to_date. Measured live 2026-10-12 against api.reporter.nih.gov rather than
+// assumed from the field name: of the 500 most-recently-added projects (date_added >= 2026-09-15),
+// 333 already carry a non-null award_notice_date and its gap to date_added ranges 2-187 days
+// (median 32), 0 of 333 past 365 days -- so a genuinely new appl_id's award_notice_date is almost
+// always within the last few months, the same registry-adjacent shape as the other 11 instances.
+// UNLIKE those 11, this field is not airtight: querying award_notice_date.to_date=2015-01-01
+// sorted by date_added desc surfaced exactly 1 project (appl_id 100340) added 2026-08-22 with an
+// award_notice_date of 2010-08-16 -- a single backdated/corrected record in index history, not an
+// ongoing pattern (0 such rows for date_added>=2026-09-01). So the honest claim is the FEC-style
+// hedge (cycle 1565/1566's rule: ask whether the field can be backdated at all before copying the
+// absolute "can never" phrasing) -- a rare backdated correction can still slip past a fixed bound,
+// but ordinary ongoing award activity cannot.
+const watchDeadDateBound = watchMode && !!awardNoticeDateTo;
+if (watchDeadDateBound) {
+    log.warning(
+        `watchLabel "${watchLabel}" is combined with a fixed awardNoticeDateTo (${awardNoticeDateTo}). `
+        + 'A newly-awarded project\'s award_notice_date is almost always within a few months of being added to '
+        + 'the NIH RePORTER index (measured: 0 of 333 recently-added projects sampled had a gap past 365 days), '
+        + 'so once the real calendar date passes this cutoff by more than that, this watch will stop reporting '
+        + 'ordinary new awards -- while still logging a healthy "nothing new" every run. (A rare backdated or '
+        + 'corrected record can still slip past the bound; that measured exception does not rescue ongoing '
+        + 'new-award detection.)',
+    );
+    log.warning(
+        'Drop awardNoticeDateTo from a watched query (awardNoticeDateFrom alone is safe to keep -- it only '
+        + 'limits how far back the first baseline reaches), or remove watchLabel if you really do want a fixed '
+        + 'historical window instead of an ongoing watch.',
+    );
+}
+
 // Empty unless a change-blind filter is actually in play. Without this, a run that CAN NEVER
 // report one of its watched fields changing is byte-for-byte indistinguishable from a healthy
 // quiet run -- and this is a monitor, so the buyer schedules it and stops reading the log (the
@@ -1241,6 +1273,7 @@ const runSummary = {
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     watchChangeBlindFilters: watchMode ? watchChangeBlindFilters : null,
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
     requestedProjectNums: exclusiveProjectNums ? projectNums : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
