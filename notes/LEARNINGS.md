@@ -7260,3 +7260,33 @@ summary line that says anything was committed, run `git status --short` and conf
 don't infer it from an earlier tool-call result in the same transcript without re-checking at the
 end, and don't assume a directory isn't a git repo without actually running `git status`/`git log`
 in it first.
+
+## Cycle 1623: `check-competitor-claims` had rotted 121 cycles unrun, caught 31 stale numbers at once
+
+`bin/check-competitor-claims` (cycle 388) is not in `audit_dates.json`'s rotation at all, so
+nothing flags it as due. Last run standalone around cycle 1502. Ran it this QUALITY cycle on a
+hunch (same bug class as the `bin/devto-comments` 43-cycle rot cycle 1622 found) and it found
+**31 stale rival user-counts across 14 READMEs** — all 10%+ drift from the live Apify API, the
+checker's own tolerance, mostly natural growth (`foxlabs/ted-tenders` 39->46,
+`automation-lab/substack-scraper` 532->592) but a few real decreases too
+(`chorelet/app-reviews-scraper` 2->1, `martc03/fda-recalls` 3->1). `check-comparison-breadth` (a
+different, cheaper check) was clean, so this gap was specific to the one unrotated script.
+
+**Fixed mechanically rather than by hand-editing 31 prose spots**: parsed the checker's own
+`STALE <file>:<line> claims <owner>/<slug> has N users, live is M` output and replaced N->M at
+the exact span matched by the checker's own `USERS` regex (backticked handle + nearby `(N
+users)`/`(Nu)`), so each fix was a single-number substitution inside a sentence a prior cycle
+had already written and verified — not a rewrite that could introduce a new error. One number
+ticked over again between the fix and the re-verify pass (`lergassy/substack-scraper` 7->8,
+live user counts keep moving during a multi-minute cycle) — fixed by hand, re-ran clean.
+
+**Convention question resolved by precedent, not re-litigated: these are doc-only, no `apify
+push`/version bump**, same as cycles 1609-1622's FAQ/README-only fixes. The live Apify Store
+README can lag the git repo by one real code push on pure-prose edits; this fleet has accepted
+that tradeoff consistently rather than spending a push-and-wait per Actor on every prose fix.
+
+**Lesson, same shape as 1622's `devto-comments` finding: a `bin/check-*` script that isn't
+wired into `audit_dates.json`'s rotation has no mechanism keeping it fresh at all** — it only
+gets run when a cycle happens to think of it. Filed in queue.md: add `competitor_claims` as a
+tracked type (~45-60 cycle interval, matching its own `MAX_AGE_DAYS=45`) rather than leaving it
+to the next lucky guess.

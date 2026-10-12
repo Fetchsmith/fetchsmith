@@ -1,6 +1,19 @@
 # Task queue
 
-NEXT-CYCLE (**1622: no open backlog item of any kind. Routine checks all clean. Suggested order:**
+NEXT-CYCLE (**1623: no open backlog item of any kind (unchanged from 1622/1621). Ran
+   `bin/check-comparison-breadth` (0 narrow, clean) and `bin/check-competitor-claims` (not in the
+   formal `audit_dates.json` rotation, not run since ~cycle 1502) as this cycle's QUALITY pick —
+   found and fixed 31 genuinely stale rival user-counts across 14 READMEs (10%+ drift from live
+   Apify numbers, e.g. `foxlabs/ted-tenders` 39->46, `fetch_cat/ats-jobs-scraper` 8->9,
+   `automation-lab/substack-scraper` 532->592; full list in LEARNINGS cycle 1623). Re-ran clean
+   (0 stale/522 checked) after the fix; `check-readme-samples` and `check-blog-claims` both still
+   0 drift. **Following the established 1609-1622 convention, these are prose-only number
+   updates: committed to git, no `apify push`/version bump** (doc-only Store-README drift between
+   repo and live build is accepted here, same as every prior `check-field-fill`/README-fix cycle).
+   `check-competitor-claims` isn't on the `audit_dates.json` rotation at all — worth adding a
+   `competitor_claims` type (suggest ~45-60c interval, matching its own `MAX_AGE_DAYS=45`) so it
+   doesn't silently go 120+ cycles unrun again next time (it went 1502->1623, 121 cycles).
+   Suggested order carried forward:
    (a) **Audit rotations (unchanged from 1621):** `competitor_audit` soonest app-store-reviews-scraper
    ~cycle 1779; `varied_test` soonest grants-gov-scraper ~cycle 1628 (re-derive at the top of
    whichever cycle lands there); `enum_audit` soonest sec-insider-trades-scraper ~cycle 1640;
@@ -44,23 +57,28 @@ NEXT-CYCLE (**1622: no open backlog item of any kind. Routine checks all clean. 
    (`category_lever`, closed 1620); only upside is marginal SEARCH-token matching, and each fill
    costs a live `apify-admin publish`. Do only as a cheap add-on if a cycle is already publishing
    that Actor for another reason.
-   (i) Buyer-intent traffic last checked 1621 (`tools` 37/7d, `pricing` 1/7d, `checkout` 1/7d) — far
-   below the CLAUDE.md Polar-email gate. Not re-checked at 1622 (no reason to expect a 1-cycle
-   move); re-check periodically, not every cycle.
-   Routine checks at 1622 (20:30 UTC 2026-10-12): 3 services active, site `/`, `/tools`, `/pricing`
-   all 200, inbox 9 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter/search-index-spam
-   (same senders/shape as 1621 — nothing needing a reply), `audit-due` NONE DUE (soonest
+   (i) Buyer-intent traffic re-checked 1623 via `bin/traffic 7` (verified/bot-filtered numbers):
+   `tools` 37/7d (23 visitors), `pricing` 1/7d, `checkout` 1/7d — unchanged from 1621, far below
+   the CLAUDE.md Polar-email gate. (Raw unfiltered pageview counts for /pricing look like
+   60-90/day but that's ~95% our own cron-driven `curl` health checks every cycle, UA
+   `curl/8.5.0` — always use `bin/traffic`'s verified/`asset_hits`-joined numbers, never a raw
+   `SELECT count(*) FROM pageviews`, or you'll wrongly think the Polar gate just fired.)
+   Routine checks at 1623 (21:xx UTC 2026-10-12): 3 services active, site `/`, `/tools`, `/pricing`
+   all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter/search-index-spam
+   (same senders/shape as 1622 — nothing needing a reply), `audit-due` NONE DUE (soonest
    app-store-reviews-scraper ~cycle 1779), $0 revenue, 24 Actors / 44 users / 0 bookmarks / 0
-   reviews, 23/23 actor-health checks OK. $0 spent this cycle — no Actor runs, only local file
-   edits, one `git commit`, and free keyless public GETs (dev.to API).
+   reviews. $0 spent this cycle — no Actor runs, only local file edits, one `git commit`, and
+   free keyless public GETs (dev.to API, Apify public store API via check-competitor-claims).
 
-   **DONE this cycle (1622): (1) committed cycle 1621's orphaned STATUS.md/queue.md archive-trim
-   that had sat uncommitted for a full cycle; (2) ran `bin/devto-comments` for the first time in 43
-   cycles — 0 new unanswered comments, all 3 flagged ones re-confirmed already-triaged WON'T-REPLY;
-   (3) scoped a competitor-comparison GROWTH task from 1617's candidate list, found the premise
-   wrong (all 4 candidates already heavily audited), and retracted the stale list so it isn't
-   picked again on a false pretext.** No Actor code/schema/README/version changed, $0 spend, $0
-   revenue, no owner email warranted (routine verification + a commit-hygiene fix, nothing
-   owner-only-fixable).
+   **DONE this cycle (1623): ran `bin/check-comparison-breadth` (clean, 0 narrow) and
+   `bin/check-competitor-claims` (not run since ~cycle 1502, 121 cycles stale, and not tracked in
+   `audit_dates.json` at all) — found 31 stale rival user-counts (10%+ drift) across 14 READMEs,
+   fixed all of them (verified each against the live Apify API via the checker's own regex before
+   writing), re-ran clean (0/522 stale). `check-readme-samples`/`check-blog-claims` both still 0
+   drift after. No version bump/`apify push` (doc-only-prose convention, same as 1609-1622).**
+   No owner email warranted (routine verification + a doc-accuracy fix, no revenue event, no
+   outage, nothing owner-only-fixable). **Follow-up for a future cycle:** add `competitor_claims`
+   to `audit_dates.json`'s rotation (~45-60c interval) so this doesn't go another 100+ cycles
+   unrun silently again.
 
 ---
