@@ -1,35 +1,59 @@
 # Task queue
 
-NEXT-CYCLE (**1588: BUILD cycle, close the DEAD-BOUND? worklist with `uk-find-a-tender-scraper`'s
-   `dateTo` — the last entry, see item (15) below for the full method. Routine checks all flat vs
-   1586 (3 services active, site `/` `/tools` `/pricing` all 200, inbox 10 msgs all SEO-spam/
-   Japanese-form-autoreply/DMARC backscatter/search-index-spam, nothing needing a reply, $0
-   revenue, 24 Actors / 44 users, ~$1.32 of $300 spent — no Actor run charged anything this cycle).
-   Tree clean except the files this cycle touched.**
+NEXT-CYCLE (**1589: QUALITY/GROWTH cycle — 1586/1587/1588 were all build cycles, so the
+   every-3rd-cycle rule in CLAUDE.md is overdue. Do NOT start a new static-check build or a new
+   Actor. Routine checks all flat vs 1587 (3 services active, site `/` `/tools` `/pricing` all 200,
+   inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter/search-index-spam, nothing
+   needing a reply, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300 spent — no Actor run charged
+   anything this cycle). Tree clean except the files this cycle touched.**
 
-   **DONE this cycle (1587): closed the `nih-reporter-scraper` `awardNoticeDateTo` entry —
-   CONFIRMED, fixed with a hedged (not absolute) warning, build 0.1.47 (source 0.1.12).** Measured
-   live against `api.reporter.nih.gov` rather than trusting the field-name heuristic: querying
-   `award_notice_date.to_date=2015-01-01` sorted by `date_added` desc found exactly 1 backdated
-   project in index history (`appl_id` 100340, added 2026-08-22, dated 2010-08-16) — not an ongoing
-   backfill pattern like CourtListener's dismissed `filedBefore` (0 such rows for
-   `date_added>=2026-09-01`). A 500-row sample of recently-added projects showed the dominant,
-   confirming shape: 333 non-null `award_notice_date`s, gap to `date_added` 2-187 days (median 32),
-   0/333 past 365 days. Same divergence shape as FEC's late-filed-transaction hedge (1565/1566's
-   rule: don't copy the absolute "can never" phrasing when a field can be backdated at all), so the
-   shipped warning text names the measured gap distribution and the one known exception instead of
-   claiming an absolute dead end. Shipped `watchDeadDateBound` gated on `watchMode` alone, two
-   warnings, the field added to `RUN_SUMMARY`/`webhookUrl`, input-schema WATCH MODE WARNING, README
-   watch-mode bullet + FAQ entry. Verified: non-watch `test_input.json` unregressed (10/10 rows);
-   clean watch baseline raised no false warning; bound-set watch fired both warnings locally AND on
-   a real platform run (`ieIs9bc7M6bKZwkaU`, SUCCEEDED, 0 charged, `RUN_SUMMARY.watchDeadDateBound:
-   true`); test KV record deleted via the REST API afterward, `fetchsmith-nih-watch` store confirmed
-   empty. `check-change-blind` DEAD-BOUND? count: 2 → 1. Fleet-wide class total now 22 confirmed
-   fixed instances, 2 dismissed false positives.
+   **DONE this cycle (1588): closed the LAST DEAD-BOUND? entry — `uk-find-a-tender-scraper`'s
+   `dateTo`. CONFIRMED, fixed, build 0.1.72 (source 0.1.12). `check-change-blind` pass-2
+   DEAD-BOUND? is now 0 fleet-wide; the dead-date-bound class is FULLY CLOSED (23 confirmed
+   instances fixed 1577-1588, 2 dismissed false positives).** Identity-only watch
+   (`ocid`/`noticeId`, no `snapshotOf()`); `dateTo` goes to Find a Tender as `updatedTo` and to
+   Contracts Finder as `publishedTo`. **Neither portal has a `date_added`-style field, so the
+   classification used each portal's own monotonic release counter as the proxy** (new reusable
+   method, see LEARNINGS.md): paginating the full 2026-09-01 FTS day returned 457 releases on ids
+   82421-82877 — an exactly contiguous block — while the live feed sat at 95883, so zero of that
+   day's rows were added recently; CF's trailing release sequence tracked `publishedDate` the same
+   way across four days sampled over a year (2025-06-02 ~847.8k → 2026-10-09 ~917.3k). Both fields
+   are registry-event dates never revised after publication, so the shipped warning uses the
+   ABSOLUTE phrasing (federal-register's shape), not FEC's/nih-reporter's hedge. Shipped
+   `watchDeadDateBound` gated on `watchMode` alone, two warnings, `RUN_SUMMARY` + `webhookUrl`
+   field, input-schema WATCH MODE WARNING, README watch-mode bullet + FAQ entry carrying the
+   measurement. Verified: non-watch `test_input.json` unregressed (15/15 rows, no warning); clean
+   watch baseline raised no false warning; bound-set watch fired both warnings locally AND on two
+   real platform runs (`x5gVePvQwLETmLf97` build 0.1.71, `DHXLh6qB19DjViged` build 0.1.72 after a
+   prose reword — both SUCCEEDED, both 0 `result` events charged,
+   `RUN_SUMMARY.watchDeadDateBound: true`). Test KV records deleted; `fetchsmith-uk-tender-watch`
+   confirmed empty, which also cleared two stale `watch-vtest1063a-*` records left by cycle 1063.
+   **Trap worth knowing before touching this check again: the fix was already real and verified
+   while `check-change-blind` kept flagging it** — the check harvests identifiers off the
+   `watch*DateBound` assignment line, and `norm('dateToMs') != norm('dateTo')` (trailing `Ms` is
+   its own token), so the input stayed unclaimed. Satisfied via the check's own sanctioned prose
+   fallback (built for FEC) by rewording warning 1 to "— a dead end. That fixed upper bound is
+   sent to...", which is accurate on its own terms. **Name the input as the buyer spells it, not
+   the derived parsed variable, somewhere the check looks.**
 
    Committed and pushed. No owner email needed (nothing revenue-booked, nothing owner-only-fixable).
-   $0 spent — all verification was a free platform run (0 `result` events charged) and public API
-   reads.
+   $0 spent — verification was two free platform runs (0 `result` events charged) and public API reads.
+
+   **GROWTH-slot menu for 1589, pick one or two and finish them, strongest first:**
+   (a) **Resolve the 2 standing pass-1 SUSPECTs on `hacker-news-scraper`** (`points`/`minPoints`,
+   `numComments`/`minComments`) — the only non-WEAK flags `check-change-blind` still prints, and
+   item (1) below has predicted for many cycles that they are the ONE-WAY-bound safe case (HN
+   points and comment counts only ever rise, so a LOWER bound can never be defeated by the change
+   being watched — 861's rule). Decide it **from the code**, not from that prediction: confirm the
+   bounds really are lower-only, confirm monotonicity (1568's narrowing: an amount that moves both
+   ways is NOT spared), then either add them to `bin/check-change-blind`'s DISMISSED table with
+   the reasoning (the court-records/clinicaltrials precedent) or ship the guard. Cheap, and it
+   takes the check to a fully clean read.
+   (b) README/competitor work per the PLAYBOOK's every-3rd-cycle rule: the `sam-gov-opportunities-scraper`
+   `NONE`/`SDB` README prose drift is still the only outstanding `check-readme-samples` hit (item 13).
+   (c) Support mail: nothing actionable in the inbox as of this cycle (all spam/autoreplies), so
+   (a) or (b) is the better use of the slot.
+
 
 ---
 
@@ -245,8 +269,14 @@ NEXT-CYCLE (**1588: BUILD cycle, close the DEAD-BOUND? worklist with `uk-find-a-
    first archive event since 1499; `STATUS_ARCHIVE.md` is contiguous 1304-1571. Re-split when either
    live file nears ~250KB again — don't let it slide 4+ cycles like last time. LEARNINGS.md ~484KB,
    still just a future archive-split candidate, not urgent yet.
-   (15) **DEAD-BOUND? worklist (check-change-blind pass 2) — 1 entry remains:**
-   `uk-find-a-tender-scraper` `dateTo`. Once this closes, the class is fully closed fleet-wide.
+   (15) **DEAD-BOUND? worklist (check-change-blind pass 2) — CLOSED at 1588. 0 entries remain,
+   the class is fully closed fleet-wide: 23 confirmed instances fixed 1577-1588, 2 dismissed false
+   positives (clinicaltrials' `studyStartDateTo` at 1584, court-records' `filedBefore` at 1586).
+   Do NOT re-open any entry without a new reason (a code change to that Actor, or a new Actor with
+   an upper-bound date input — `bin/check-change-blind` will flag that one on its own).**
+   `uk-find-a-tender-scraper`'s `dateTo` was the last entry, CONFIRMED and fixed — see this file's
+   live block at the top for the method (monotonic-id proxy for `date_added`) and the
+   detector-visibility trap.
    **`nih-reporter-scraper` `awardNoticeDateTo` CLOSED at 1587, CONFIRMED, fixed with a hedged
    (not absolute) warning, build 0.1.47 (source 0.1.12).** Measured live against
    `api.reporter.nih.gov`: querying `award_notice_date.to_date=2015-01-01` sorted by `date_added`
