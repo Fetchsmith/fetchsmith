@@ -69,6 +69,23 @@ What this script CANNOT see, stated plainly so a future cycle doesn't trust a 0:
    AMOUNT is not monotonic so both of its bounds are blind. That reasoning needs a human
    read of the field's semantics plus, ideally, a live measurement -- the same two steps
    every shipped fix in this class did. A hit here is a question, not a verdict.
+   1589 found a SECOND safe shape beyond plain monotonicity, resolving hacker-news-
+   scraper's `points`/`minPoints` and `numComments`/`minComments` SUSPECTs (in
+   SUSPECT_DISMISSED below): even a field that is NOT strictly monotonic (HN points CAN
+   fall -- a flag or downvote) is safe under a lower bound if the watch diffs against the
+   last-CAPTURED snapshot rather than a continuous poll-by-poll diff, AND the feature only
+   fires on movement in the direction the bound doesn't block. Here `crossedMilestone()`
+   compares the current read against whatever snapshot is still sitting in `watchSeen`
+   from the last run that saw the item (never reset just because one run's filter excluded
+   it) and only fires on a net INCREASE past a rung -- so a bound-caused gap in which the
+   item dips below `minPoints` and climbs back never loses a rung crossed during the gap:
+   the next visible read is diffed against the pre-gap baseline, not against a missed
+   intermediate value. The one real defect this bound causes (a rung AT OR BELOW the
+   bound can never fire, because every baseline snapshot already starts there) is a
+   different mechanism entirely and was found and fixed independently at cycle 1572
+   (`deadPointRungs`/`deadCommentRungs`). Don't assume this shape transfers to another
+   Actor without re-deriving both halves (persistent-baseline diffing AND a one-directional
+   trigger) from its own code.
 
 So: non-zero output is a worklist to read, zero output on pass 1 is weak evidence and
 zero output on pass 2 is strong evidence (its shape is purely nominal and the input
@@ -138,6 +155,29 @@ DISMISSED = {
         'old); type=o filed_before=2015-01-01 returned a dateFiled=2014-12-31 opinion with '
         'date_created=2025-05-23. New-to-watch items keep arriving with old dateFiled forever, so a '
         'fixed filedBefore never goes dead.',
+}
+
+# Measured dismissals for pass 1 (change-blind filter on a snapshot watch): (slug, filter-input)
+# pairs where the name heuristic fires but the lower bound provably cannot drop a reportable
+# change, so no watchChangeBlindFilters guard should ever be written for them. Added cycle 1589,
+# same spirit as DISMISSED above -- a false alarm here could otherwise only be silenced by
+# shipping a guard that lies to the buyer ("this bound can hide a change" when it cannot).
+# Needs BOTH a direction argument (861's one-way-bound rule) AND, when the field is not strictly
+# monotonic, a persistence argument: does the watch diff against a snapshot that survives a
+# bound-caused gap, and does the feature it sells only fire in the direction the bound allows?
+SUSPECT_DISMISSED = {
+    ('hacker-news-scraper', 'minPoints'):
+        'points is a lower bound (one-way, 861\'s rule) on a near-monotonic field (README: can '
+        'fall on a flag/downvote, but crossedMilestone() only fires on a net INCREASE past a rung, '
+        'never on a fall). watchSeen snapshots persist in the KV baseline across any run where the '
+        'bound excludes the item, so a dip-then-climb is diffed against the pre-gap baseline, not a '
+        'missed intermediate value -- no rung crossed during a gap is ever lost. The one real '
+        'defect this bound causes (a rung AT OR BELOW minPoints can never fire, since every '
+        'baseline starts there) is a different, already-fixed mechanism (1572, deadPointRungs).',
+    ('hacker-news-scraper', 'minComments'):
+        'Same argument as minPoints, substituting numComments/commentMilestones/deadCommentRungs: '
+        'lower bound, net-increase-only trigger, persistent last-captured baseline survives a '
+        'bound-caused gap. The already-fixed dead-rung case is deadCommentRungs (1572).',
 }
 
 
@@ -246,6 +286,7 @@ def main():
     live = sorted(t['slug'] for t in registry['tools'] if t['status'] == 'live')
 
     suspects, weaks, bounds, dismissed = {}, {}, [], []
+    dismissed_suspects = []
     watch_actors = snapshot_actors = 0
 
     for slug in live:
@@ -273,6 +314,10 @@ def main():
             soft = [p for p in filters if p not in hits and f_toks & set(meaningful(p))]
             for tier, matched in (('SUSPECT', hits), ('WEAK', soft)):
                 matched = [p for p in matched if not covered(p, decl)]
+                for p in matched:
+                    if (slug, p) in SUSPECT_DISMISSED:
+                        dismissed_suspects.append((slug, p))
+                matched = [p for p in matched if (slug, p) not in SUSPECT_DISMISSED]
                 if not matched or covered(f, decl):
                     continue
                 # Keyed on norm(f) so one field spelled two ways in the same
@@ -306,14 +351,21 @@ def main():
 
     # Printed, not silent: a dismissal is a claim that can go stale if the upstream data model
     # changes, so it stays visible for re-checking instead of vanishing from the report.
+    seen_dismissed_suspects = set()
+    for slug, p in dismissed_suspects:
+        if (slug, p) in seen_dismissed_suspects:
+            continue
+        seen_dismissed_suspects.add((slug, p))
+        print(f"DISMISSED (pass 1) {slug}: `{p}` matches the change-blind-filter name heuristic "
+              f"but was measured unable to drop a reportable change -- {SUSPECT_DISMISSED[(slug, p)]}")
     for slug, p in dismissed:
-        print(f"DISMISSED {slug}: `{p}` matches the upper-date-bound name heuristic but was "
+        print(f"DISMISSED (pass 2) {slug}: `{p}` matches the upper-date-bound name heuristic but was "
               f"measured NOT dead -- {DISMISSED[(slug, p)]}")
 
     print(f"check-change-blind: {watch_actors} watch-mode Actor(s) checked "
           f"({snapshot_actors} with snapshotOf), {len(suspects)} pass-1 SUSPECT, "
           f"{len(bounds)} pass-2 DEAD-BOUND?, {len(weaks)} WEAK, "
-          f"{len(dismissed)} DISMISSED")
+          f"{len(seen_dismissed_suspects)} DISMISSED (pass 1), {len(dismissed)} DISMISSED (pass 2)")
     return 1 if suspects or bounds else 0
 
 
