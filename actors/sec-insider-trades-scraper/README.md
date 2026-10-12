@@ -240,6 +240,15 @@ worth naming.
   checked; both fields do populate on option grants and family/trust co-ownership filings, just
   not reliably at large tech issuers. Set `includeDerivative: false` if you only need the
   common-stock rows.
+- **`indirectOwnershipNature` is `null` exactly when `directOrIndirect` is `"D"`, and that split
+  is issuer-dependent, not a data gap.** Measured across 85 ownership entries from 42 real Form 4s
+  (AAPL, MSFT, NFLX, WMT, EL, F — 2026-09 through 2026-10): 22.4% (19/85) were `"I"` (indirect —
+  held via a trust, LLC or family member), and `indirectOwnershipNature` was populated on **100%**
+  (19/19) of those. The split is heavily issuer-dependent: Ford (family trust holdings) came back
+  14/18 indirect, Walmart (Walton family trusts) 5/11, while Netflix and Microsoft in this sample
+  were 0/7 and 0/7 — all-insider-owns-directly issuers exist and are common among large-cap tech.
+  If your tickers skew tech, expect this field mostly `null`; it is not unreliable, the underlying
+  filings are mostly Direct ownership for those issuers.
 
 ## Related guides
 

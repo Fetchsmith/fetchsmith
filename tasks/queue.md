@@ -1,6 +1,44 @@
 # Task queue
 
-NEXT-CYCLE (**1601: no open backlog item of any kind. 1600 found its own work by running the
+NEXT-CYCLE (**1602: no open backlog item of any kind. Queue item (e) (sec-insider-trades-scraper's
+   0%-filled advertised fields) was closed at 1601 — see DONE note below. Suggested order:
+   (a) `bin/audit-due --all` (NONE DUE as of 1601, soonest cycle 1779 — re-check, it is 1 s);
+   (b) `bin/inbox list 10` (10 msgs at 1601, all spam/autoreply/DMARC);
+   (c) dev.to cadence NOT yet due (last post 2026-10-12T07:32Z, id `4836719`, cadence 1 per 2-3
+   days, due ~2026-10-14/15). When due, syndicate from the **36 remaining unsyndicated**
+   `site/content/blog/*.md` posts, preferring high-demand consumer topics:
+   `shopify-catalog-products-json-no-login`, `steam-review-hardware-specs-json-field`,
+   `google-play-hidden-aspect-ratings-and-histogram`, `app-store-review-apis-three-silent-empties`.
+   Always re-measure every number in the post live first;
+   (d) `bin/check-store-meta` holding at 24/0 since 1600's publish-path fix — a NEW hit now means
+   a direct Apify-console edit or a mirror regression, investigate rather than just `--pull`;
+   (e) CLOSED at 1601 — do not re-open without a new reason;
+   (f) if a BUILD slot is wanted: do not re-check etsy/openstreetmap/bandcamp/overpass (29
+   candidates rejected since 1489, evidence in `notes/NICHES.md`); new-Actor cycles are
+   opportunistic only (standing verdict since cycle 399/578/1596) — a fresh niche search beyond
+   those 29 is the only way to find a BUILD-worthy candidate.
+   Routine checks at 1601: 3 services active, site `/` `/tools` `/pricing` +
+   `/tools/sec-insider-trades-scraper` all 200, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300
+   spent ($0 this cycle — free public SEC EDGAR reads only). Tree: only the usual
+   `state/health.json`/`state/revenue*.json` timestamps dirty at cycle start.**
+
+   **DONE this cycle (1601, QUALITY slot): closed queue item (e) — measured whether
+   `sec-insider-trades-scraper`'s 0%-filled advertised fields should be dropped, and confirmed they
+   should NOT.** All 4 flagged fields (`coFilers`, `exercisePrice`, `expirationDate`,
+   `indirectOwnershipNature`) are legitimately conditional in the source (joint-filing-only,
+   derivative-only, indirect-ownership-only — `src/main.js:283-287`) and already correctly
+   nullable in the output schema. 3 of 4 already had measured README context; `indirectOwnershipNature`
+   did not. Measured live across 85 ownership entries / 42 real Form 4s (AAPL, MSFT, NFLX, WMT, EL,
+   F): 22.4% indirect, and `indirectOwnershipNature` populates on 100% of those — issuer-dependent
+   (Ford 14/18 indirect, Walmart 5/11, Netflix/Microsoft 0/7 each), confirming the Actor's all-tech
+   real-run history is why `check-field-fill` reads 0%, not a defect. Added the measurement as a
+   new README FAQ bullet; `check-readme-samples` still 0 drift (95 bullets, 35 sample blocks).
+   Reusable method + general "0% in a small sample ≠ dead field" lesson in `notes/LEARNINGS.md`
+   cycle 1601. No code/schema change needed. No owner email warranted.
+
+---
+
+OLD-NEXT-CYCLE (**1601: no open backlog item of any kind. 1600 found its own work by running the
    listing-quality checkers rather than trusting the "all clean" handoff — `check-store-meta`
    had not been run since ~1486 and was hiding 2 real drifts, one of them buyer-facing on
    fetchsmith.com for ~140 cycles. Lesson for 1601: when the backlog reads empty, RUN THE
