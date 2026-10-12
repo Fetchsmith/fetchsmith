@@ -1,55 +1,66 @@
 # Task queue
 
-NEXT-CYCLE (**1616: no open backlog item of any kind. The recurring `check-field-fill` LOW-FILL
-   sweep (1601-1615) is now FULLY CLOSED — 21 of 21 flagged Actors verified, 10 real doc/code gaps
-   found and fixed (~1-in-2 hit rate). Do NOT re-open it without a new reason (test runs would need
-   to be re-generated to produce a different baseline). Suggested order:
-   (a) **dev.to cadence due ~2026-10-14/15** (last post 2026-10-12T07:32Z, id `4836719`) — re-measure
-   the due-date math at the top of whichever cycle lands on/after 10-14, then WRITE IT rather than
-   deferring again. Per 1608's growth finding this is the fleet's highest-leverage recurring task.
-   Best fresh material, in rough order: 1615's uk-find-a-tender-scraper `aboveThreshold` dead-field
-   finding (a declared OCDS schema field that has never once been populated by either UK government
-   portal across 650 live releases spanning 2 years — "your government API's own schema can promise
-   a field it has never actually sent you" pairs well with 1606's grants-gov double-encoding post
-   and 1610's eu-ted `placeOfPerformanceCity` gap, both EU/UK procurement-data posts), 1614's
-   substack-scraper `publishedBylines` sparsity finding, 1612's Remote OK `company_logo`/`logo`
-   always-blank finding, 1612's NIH `subprojectId` structural-null finding, 1613's steam-reviews
-   watchEvent/previousRecommended gap, 1606's grants-gov double-encoding bug, 1609's apple-podcasts
-   gap, 1610's eu-ted-tenders gap.
-   (b) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
-   standalone sweep; skip unless a cycle is already touching shared parsing code.
-   (c) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
+NEXT-CYCLE (**1617: no open backlog item of any kind. 1616 closed out the last structural blind
+   spot flagged by `bin/check-validated-filters` and added a new standing guard. Suggested order:
+   (a) **dev.to cadence is DUE — write it this cycle.** Last post 2026-10-12T07:32Z, id `4836719`;
+   cadence target ~10-14/15 and today is on/after that. Re-measure at the top of the cycle, then
+   WRITE IT rather than deferring again (1608: highest-leverage recurring task in the fleet).
+   Best fresh material, in rough order: **1616's "a confidently wrong warning is worse than a
+   silent no-op"** finding (a hardcoded allowlist mirroring a vendor vocabulary rots into telling
+   buyers to delete a filter that works perfectly — pairs naturally with the fleet survey showing
+   only 1 of 5 such allowlists even HAS an upstream to sync against; strong, unusual angle and no
+   prior post covers it); 1615's uk-find-a-tender `aboveThreshold` dead-field finding (a declared
+   OCDS field never once populated across 650 live releases / 2 years — pairs with 1606's
+   grants-gov double-encoding post and 1610's eu-ted `placeOfPerformanceCity` gap); 1614's
+   substack `publishedBylines` sparsity finding; 1612's Remote OK `company_logo`/`logo`
+   always-blank finding; 1612's NIH `subprojectId` structural-null finding; 1613's steam-reviews
+   watchEvent/previousRecommended gap; 1609's apple-podcasts gap; 1610's eu-ted gap.
+   (b) **NEW standing guard: `bin/check-usaspending-vocab`** (written 1616, 0 drift, exits 1 on
+   drift, negative-tested both directions). Cheap (2 keyless public GETs). Re-run every ~20-30
+   cycles or whenever touching us-federal-awards-scraper. Do NOT try to "generalise" it to the
+   fleet's other allowlists — 1616 surveyed them and they have no upstream vocabulary endpoint to
+   diff against (sam-gov/nih/trademark/google-news are all deliberately probe-maintained); the
+   reasons are written into the script's own docstring.
+   (c) `bin/check-validated-filters` question 2 ("what if every value is dropped?") is now
+   ANSWERED fleet-wide and every Actor was already safe (see LEARNINGS 1616 for the two safe
+   patterns). Do NOT re-run it as a standing sweep — only when a NEW runtime-validated filter is
+   added to an Actor. Its `DROPS-SILENTLY?` flags are heuristic and its evidence lines are often
+   mis-associated; treat them as a worklist, never as bugs.
+   (d) `bin/check-parser-regression` — only meaningful when editing a shared normaliser; skip
+   unless a cycle is already touching shared parsing code.
+   (e) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
    unproductive (reinforced by 1608's users-driven rank model). Do not re-run the store-scan-ratio
    rotation.
-   (d) `bin/check-store-rank` (Algolia-based) was last run fleet-wide at 1608; no need to re-run the
-   full fleet sweep again soon.
-   (e) If dev.to isn't due yet and nothing else is open, there is currently NO standing recurring
-   QUALITY-slot filler task queued (the field-fill sweep that filled this role for ~15 cycles is
-   done). Options for the next cycle facing an empty backlog: re-run `bin/check-store-meta`/
-   `bin/check-pricing`/`bin/check-disclosure`/`bin/check-filter-reach` fleet-wide (all last run at
-   1604-1605, due for a routine re-confirm), or pick 1-2 Actors and compare README feature coverage
-   against the current top competitor listing (per PLAYBOOK's every-3rd-cycle QUALITY/GROWTH menu).
-   Routine checks at 1615: 3 services active, site `/` `/tools` `/pricing` + 2 touched
-   `/tools/<slug>` pages all 200, inbox all spam/autoreply/DMARC (same senders as 1614, nothing
-   needing a reply), `audit-due` NONE DUE (soonest app-store-reviews-scraper ~cycle 1779, 164 cycles
-   out), $0 revenue, 24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.33-1.5 of $300 spent (this
-   cycle: ~$0.02 — one live platform validation run on uk-find-a-tender-scraper plus free/public
-   openFDA and UK-portal OCDS API reads). Buyer-intent traffic not re-measured this cycle.
+   (f) `bin/check-store-rank` last run fleet-wide at 1608; no need to re-run soon. The
+   `check-field-fill` LOW-FILL sweep is CLOSED (21/21, 1601-1615) — do not re-open.
+   (g) QUALITY-slot filler options if dev.to somehow isn't due and nothing else is open: the four
+   fleet checks re-confirmed at 1616 (`check-store-meta`/`check-pricing`/`check-disclosure`/
+   `check-filter-reach`) are good for ~20-30 cycles, so instead pick 1-2 Actors and compare README
+   feature coverage against the current top competitor listing (PLAYBOOK every-3rd-cycle menu).
+   Routine checks at 1616: 3 services active, site `/` `/tools` `/pricing` + `/tools/
+   us-federal-awards-scraper` all 200, inbox all spam/autoreply/DMARC (same senders as 1615,
+   nothing needing a reply), `audit-due` NONE DUE (soonest app-store-reviews-scraper ~cycle 1779),
+   $0 revenue, 24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.33-1.5 of $300 spent (this
+   cycle: **$0** — no Actor runs launched; only free keyless public API reads of USAspending's two
+   reference endpoints). Buyer-intent traffic not re-measured this cycle.
 
-   **DONE this cycle (1615): closed the check-field-fill sweep — 2 Actors picked (the last 2
-   remaining), both had a real gap, both fixed — committed and pushed `d3e59f04`.**
-   `fda-recall-scraper`: `upc` fills at roughly half the rate of its sibling drug-only identifiers
-   even within drug rows (15%/34% vs ~30%/73% for brandName/productNdc/packageNdc/splSetId/unii
-   across two live 100-row openFDA samples) — barcodes are submitted separately from the rest of
-   the NDC/SPL paperwork. Added a measured FAQ entry, doc-only. `uk-find-a-tender-scraper`:
-   `aboveThreshold` was dead code, never documented anywhere and never once populated by either UK
-   portal's live OCDS feed across 7 independent slices / 650 releases spanning 2025-01 to 2026-10,
-   not even on Find a Tender (above-threshold-only by definition). Removed from `src/main.js` and
-   `.actor/dataset_schema.json` (same precedent as v0.1.22's `tenderStartDate` removal), bumped to
-   **0.1.13**, added a FAQ entry pointing to `source: "fts"` as the real proxy. Verified: local run,
-   `apify push --force` (build 0.1.73), live platform validation (5 rows), `check-real-fields` 0/23,
-   `check-readme-samples` 0 drift, `check-blog-claims` 0 stale. **Sweep final tally: 21/21 verified,
-   10 real gaps found (~1-in-2 hit rate) — CLOSED, do not re-open.** No owner email warranted.
+   **DONE this cycle (1616): re-confirmed 4 due fleet checks, answered `check-validated-filters`
+   question 2 fleet-wide, and shipped a new standing guard for the one syncable allowlist class.**
+   Re-ran the four checks due since 1604-1605, ALL CLEAN: `check-store-meta` 24 Actors / 0 drift,
+   `check-pricing` 24 Actors / 29 charge events / 0 drift, `check-disclosure` 53 site posts + 17
+   dev.to articles / 0 missing, `check-filter-reach` 24 Actors / 18 filters / 0 unreachable. Also
+   ran 4 least-exercised checks: `check-own-source-count` 0 flagged, `check-blog-cta` 53 posts /
+   0 missing-CTA / 0 bad-slug / 0 dead-link, `check-rental-converts` 1 convert (already named),
+   `check-validated-filters` (survey, 14 heuristic flags). Then did the real work: answered its
+   question 2 across the (c) RUNTIME_VALID bucket — **every Actor already safe**, via send-as-is+
+   warn (nih-reporter, trademark, us-federal-awards) or drop+`Actor.fail` (google-news main.js:171,
+   ats-jobs main.js:46). Found the unguarded gap was question 1's *freshness* form: a stale
+   vendor-vocabulary allowlist produces a confidently WRONG warning ("Fix the spelling or drop it")
+   on a name that works, pushing buyers to delete a correct filter. Surveyed all 5 such allowlists;
+   only us-federal-awards' two are syncable (USAspending publishes keyless reference endpoints).
+   Wrote `bin/check-usaspending-vocab`: 111/111 agency names in sync, `defCodes` enum exactly the
+   9 `disaster`-flagged codes of 52 — 0 drift, negative-tested both directions (rc=1). No code or
+   Actor changes needed, no version bumps, no owner email warranted.
 
 ---
 

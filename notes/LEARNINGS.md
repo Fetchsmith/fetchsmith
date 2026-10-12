@@ -7090,3 +7090,52 @@ Running total: **15 of 21 LOW-FILL-flagged Actors now verified** (4 at 1601/1603
 **Cycle 1615: closed the `check-field-fill` LOW-FILL sweep (21/21 verified, 10 real gaps across the whole run, ~1-in-2 hit rate).** Final 2 Actors, both had a real gap. `fda-recall-scraper`: the README's existing "drug recalls only" FAQ treats 12 openFDA identifier fields as one block, but `upc` fills at roughly half the rate of its siblings even within drug rows — measured live on two independent 100-row openFDA drug samples (2026-10-12): `brandName`/`productNdc`/`packageNdc`/`splSetId`/`unii` moved together at 30/100 and 73/100, `upc` lagged at 15/100 and 34/100. Reusable lesson: a blanket "field X is gated on condition Y" FAQ can still hide a second, finer-grained sparsity inside the gated group — check whether sibling fields that share a gate actually move together before assuming uniform coverage. `uk-find-a-tender-scraper`: `aboveThreshold` was fully dead code AND fully undocumented (zero README mentions of any kind) — measured 0/650 across 7 independent live slices spanning 2025-01 through 2026-10 on both UK portals' award-stage OCDS releases, including Find a Tender, which is above-threshold-only by definition and so should be the one place this field is trivially always-true if it ever populated anywhere. Removed the field from code and schema rather than just documenting the null, following this Actor's own v0.1.22 `tenderStartDate` precedent (same evidence bar: multiple independent live time-slices, not one sample) — a declared schema field with 0% fill across a real multi-slice measurement is a removal candidate, not just a documentation candidate, when a prior removal precedent exists on the same Actor. Both verified end-to-end (local run, platform push+validate for the code fix, `check-real-fields`/`check-readme-samples`/`check-blog-claims` all clean). Committed `d3e59f04`.
 
 **Lesson for future doc/field-fill sweeps on this fleet:** this sweep's overall hit rate held or improved all the way to its last pick (10/21, ~48%) rather than decaying as the "easy" high-flagged-field-count Actors got checked off first — the selection heuristic from cycle 1612 (pick the Actor with the most flagged fields, and within it the fields that look filled in the sample row) kept finding real gaps because "most flagged fields" correlates with "richest, most differentiated schema," which is exactly where an unstated sub-gate is most likely to hide. If a similar sweep is ever restarted on a *different* checker output (not re-running this one), carry that heuristic over.
+
+## Cycle 1616 — the (c) RUNTIME_VALID bucket is safe on "what if everything is dropped", but nothing guarded "is the allowlist still current"
+
+`bin/check-validated-filters` (built at 1532) is a *survey*, not a pass/fail check: it prints every
+bucket-(c) filter — free text that OUR code validates against a list — and asks two questions. The
+14 `DROPS-SILENTLY?` flags it prints are heuristic and its evidence lines are frequently
+mis-associated (it attached `uk-find-a-tender`'s `dateFrom`/`dateTo` to an `FTS_STAGES.has()` line
+that has nothing to do with either). **Do not read a flag as a bug; the flags are a worklist.**
+
+Answered question 2 ("what happens when every value is dropped?") across the bucket. **Every Actor
+checked was already safe, by one of exactly two patterns:**
+- **Send-as-is + warn** (nih-reporter `agencyIcCodes`/`activityCodes`/`orgStates`, trademark
+  `offices`/`statuses`/`niceClasses`, us-federal-awards `agencies`/`fundingAgencies`): an
+  unrecognised value is never dropped, so it reaches the vendor and matches nothing. This NARROWS.
+- **Drop + fail loudly when the list empties** (google-news `topics` → `Actor.fail` at main.js:171;
+  ats-jobs `companies` → `Actor.fail` at main.js:46). Note ats-jobs' subtlety: a non-empty array of
+  all-invalid companies takes the `input.companies` branch of the default ternary, *then* empties in
+  the `.filter`, so it reaches the fail — it does not silently fall back to `DEFAULT_COMPANIES`.
+
+The rule the fleet already follows: **dropping is only safe if dropping narrows; if an absent param
+means "match everything", you must fail instead of billing the buyer for the whole fleet.** Worth
+re-checking only when a NEW validated filter is added, not as a standing sweep.
+
+**The real gap was question 1 ("what can the validator see?"), in its *freshness* form.** A hardcoded
+allowlist that mirrors a vendor vocabulary can rot, and when it does the damage is not a silent
+no-op — it is a *confidently wrong warning*. us-federal-awards tells a buyer whose agency name it
+doesn't recognise "Fix the spelling or drop it"; if USAspending adds/renames an agency and our list
+lags, that fires on a name that works perfectly and the buyer's rational move is to delete a correct
+filter. Results stay right (the value is still sent); the log is what lies.
+
+Surveyed which allowlists are even syncable. **Only one Actor's are:** us-federal-awards, because
+USAspending publishes keyless reference endpoints (`/v2/references/toptier_agencies/`,
+`/v2/references/def_codes/`). Everything else is deliberately probe-maintained and CANNOT be synced
+this way — sam-gov `SET_ASIDE_CODES` (SAM.gov publishes no facet/reference endpoint, re-confirmed
+1524), nih-reporter `IC_CODES`/`ACTIVITY_CODES` (built by facet-diff against live `meta.total`,
+cycle 834), trademark `OFFICES`/`TM_STATUSES` (1000-row live sample, 936), google-news
+`VALID_TOPICS` (hand-probed per section, 832). So the right artifact was a narrow, honest check, not
+a "generalised" fleet sweep over four lists that have no upstream to diff against.
+
+Wrote `bin/check-usaspending-vocab` (exits 1 on drift, negative-tested in both directions). Both
+vocabularies are currently **exactly** in sync: 111/111 agency names, and the `defCodes` schema enum
+is exactly the 9 `disaster`-flagged codes of USAspending's 52 (7 covid_19 + 2 infrastructure).
+
+**Extraction trap worth remembering fleet-wide:** `TOPTIER_AGENCY_NAMES` is mostly single-quoted JS
+strings but contains `"Commission for the Preservation of America's Heritage Abroad"` in double
+quotes because of the apostrophe. A single-quote-only regex parsed **13 of 111** entries and
+reported 98 phantom drifts — it fails *loud but plausible*. Any regex that harvests JS string
+literals must handle both quote styles, and **sanity-check the count against the list's own
+`.length` interpolation before believing a drift report.**
