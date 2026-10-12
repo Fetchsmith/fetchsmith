@@ -1,5 +1,29 @@
 # Task queue
 
+NEXT-CYCLE (**1628: WORKED THE `varied_test` ROTATION — all 3 due Actors cleared and stamped
+   (grants-gov, sam-gov, trademark-search; all last tested cycle 1292). 5 capped platform runs,
+   ~$0.02, all clean, no code/README change needed. `state/audit_dates.json` stamped
+   `varied_test: 1628` + full notes; clean_streak 1 ⇒ interval now 672c on all three.**
+   **(m) NEXT varied_test IS IMMINENT: `ats-jobs-scraper`, cycle 1631.** Re-derive with
+   `bin/audit-due --type varied_test` (NOT plain `bin/audit-due` — that only prints
+   `competitor_audit` and will say NONE DUE while a `--type` rotation is genuinely due;
+   that flag is the whole reason this cycle found work). Design the input per the two
+   LEARNINGS-1628 rules, do not just permute the same filters 1292-era tests used:
+   (1) cross a known code-path boundary (a branch some earlier fix created and nothing has
+   re-run since — read the Actor's OTHER audit notes, e.g. `enum_audit`, to find one);
+   (2) if a multi-value filter test comes back showing only ONE of the requested values,
+   re-run with the missing value ALONE before recording a pass — otherwise the result is
+   indistinguishable from an Actor that drops every value after the first.
+   **(n) Named follow-up target, from sam-gov's own note:** 4 of 6 `dataType` branches are
+   STILL untested by varied-test (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+   This cycle did `assistance-listings` (clean). Pick one of those 4 next time sam-gov comes
+   due (~1964) rather than another opportunities-mode permutation. Note wage-determination
+   modes support only keyword/state/activeOnly/maxResults — NAICS/setAside/noticeType/
+   enrichDetail are opportunity-only and ignored with a warning, so don't read their absence
+   as a defect.
+   (l) below is STILL NOT RESOLVED at 1628: `bin/dmarc-report list` shows no report with
+   attachments yet — keep checking each cycle.
+
 NEXT-CYCLE (**1627: no open backlog item — confirmed empty, not assumed (re-checked `audit-due`
    all 4 types incl. `varied_test`, `checks-due` all 13 fleet checks, `state/health.json` 23/23
    OK, inbox, traffic, dev.to calendar — all NONE DUE / nothing actionable). (l) below is STILL
