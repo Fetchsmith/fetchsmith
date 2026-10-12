@@ -6657,3 +6657,41 @@ back 0, it's probably time to either (a) formally close item (e) as "theoretical
 exhaustive live sampling, do not re-open without a concrete support/review signal," or (b) pivot the
 remaining effort to the NFKC side-effects audit instead of more sampling, since that's the half of
 the item that has had zero attention in both cycles so far.
+
+## cycle 1584 — not every "...DateTo" is a dead bound: registry-event vs subject-intrinsic dates
+
+11th instance of the dead-date-bound class (`clinicaltrials-scraper`), and the first one where the
+`check-change-blind` pass-2 heuristic was **partly wrong**. The checker flagged 3 fields; only 2 were
+real. The distinction generalizes to the whole fleet and is worth applying to the 4 remaining
+worklist entries before writing any guard:
+
+- **Registry-event date** = "when the upstream system did something" (`firstPostedDateTo`,
+  `resultsFirstPostedDateTo`, `lastUpdatePostedDateTo`, HN's `postedBefore`). Anything new always
+  carries today's date, so a fixed upper bound goes permanently dead. **Guard it.**
+- **Subject-intrinsic date** = "a date belonging to the thing itself" (`studyStartDateTo`,
+  `primaryCompletionDateTo`, `studyCompletionDateTo`). A record created today can carry an old
+  intrinsic date, so new rows keep arriving forever. **Do NOT guard it** — the warning would be a
+  lie. Measured, not argued: of 5,660 studies first posted on/after 2026-09-01, **80 have a
+  StartDate on/before 2020-01-01** (13 of those first posted on/after 2026-10-01).
+
+**The measurement trap I walked into first:** my opening test was
+`AREA[StudyFirstPostDate]RANGE[2026-09-01,MAX] AND AREA[StudyFirstPostDate]RANGE[MIN,2020-01-01]`
+— two disjoint ranges on the *same* area. It returned 0, which looks like proof of dead-boundness
+and is actually a tautology; the API just ANDs the clauses. **To test whether bound X blinds new
+records, the two clauses must be on DIFFERENT areas**: filter recency on the registry-event area and
+the bound on the area under test. Same family as 1580's "row count does not prove a bound applied".
+
+**Escape hatch, measured:** with `firstPostedDateTo`/`resultsFirstPostedDateTo` set, studies already
+inside the window that are merely revised still match, so `watchChanges` events keep flowing while
+the watch is blind to every new trial — 2,677 studies first posted on/before 2020-01-01 had an
+update posted on/after 2026-09-01 (62 for the results-posted equivalent). That makes this failure
+*harder* to spot than the previous 10. `lastUpdatePostedDateTo` has no hatch (it blinds revisions
+too) and was a checker **false negative** — legitimately `covered()` because the Actor's older
+`watchChangeBlindFilters` push already names it, but that warning is gated on `watchMode &&
+watchChanges`, so plain watch mode was unwarned. **Lesson: `covered()` proves a name is mentioned,
+not that the new-record defect is handled — check the gating of the guard you find.**
+
+**Tooling change:** `bin/check-change-blind` grew a `DISMISSED` table ((slug, input) -> measured
+reason, printed not silent). Before this, the only way to clear a pass-2 hit was to ship a guard,
+i.e. a false alarm could only be silenced by shipping a warning that lies to the buyer. Entries
+require a live measurement in the reason string.

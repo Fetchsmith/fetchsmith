@@ -215,7 +215,7 @@
         "lastUpdatePostedDateTo": {
             "title": "Last updated to",
             "type": "string",
-            "description": "Only studies whose ClinicalTrials.gov record was last updated on or before this date (YYYY-MM-DD).",
+            "description": "Only studies whose ClinicalTrials.gov record was last updated on or before this date (YYYY-MM-DD). WATCH MODE WARNING: do not combine this with watchLabel. This is a registry-event date, so anything new always carries today's date -- once the real calendar date passes this bound the watch can never report a new study again, while still logging a healthy \"nothing new\" every run. Use the matching ...From lower bound instead, which is safe in a watch.",
             "editor": "textfield"
         },
         "ageRangeFromYears": {
@@ -359,7 +359,7 @@
         "firstPostedDateTo": {
             "title": "First posted to",
             "type": "string",
-            "description": "Only studies first posted to ClinicalTrials.gov on or before this date (YYYY-MM-DD). Maps to AREA[StudyFirstPostDate].",
+            "description": "Only studies first posted to ClinicalTrials.gov on or before this date (YYYY-MM-DD). Maps to AREA[StudyFirstPostDate]. WATCH MODE WARNING: do not combine this with watchLabel. This is a registry-event date, so anything new always carries today's date -- once the real calendar date passes this bound the watch can never report a new study again, while still logging a healthy \"nothing new\" every run. Use the matching ...From lower bound instead, which is safe in a watch.",
             "editor": "textfield"
         },
         "resultsFirstPostedDateFrom": {
@@ -371,7 +371,7 @@
         "resultsFirstPostedDateTo": {
             "title": "Results first posted to",
             "type": "string",
-            "description": "Only studies whose results were first posted on or before this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate]. Only meaningful on studies that HAVE results: pair it with resultsAvailability \"with\" or leave that field blank. Combining it with \"without\" is rejected as a contradiction.",
+            "description": "Only studies whose results were first posted on or before this date (YYYY-MM-DD). Maps to AREA[ResultsFirstPostDate]. Only meaningful on studies that HAVE results: pair it with resultsAvailability \"with\" or leave that field blank. Combining it with \"without\" is rejected as a contradiction. WATCH MODE WARNING: do not combine this with watchLabel. This is a registry-event date, so anything new always carries today's date -- once the real calendar date passes this bound the watch can never report a new study again, while still logging a healthy \"nothing new\" every run. Use the matching ...From lower bound instead, which is safe in a watch.",
             "editor": "textfield"
         },
         "facilityName": {

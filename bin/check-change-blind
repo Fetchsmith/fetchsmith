@@ -108,6 +108,30 @@ UPPER_DATE_BOUND = re.compile(
     re.I,
 )
 
+# Measured dismissals: (slug, input) pairs where pass 2's name heuristic fires but the bound is
+# NOT dead, so no guard should ever be written for them. Added cycle 1584 -- before this, the only
+# way to clear a pass-2 hit was to ship a guard, which meant a FALSE alarm could only be silenced
+# by shipping a warning that lies to the buyer. Every entry needs a live measurement in the reason,
+# not an argument: the whole point of the tier is that names alone cannot tell these apart.
+#
+# The distinction that matters is REGISTRY-EVENT date vs SUBJECT-INTRINSIC date. An upper bound on
+# "when the registry did something" is dead, because anything new carries today's date. An upper
+# bound on "a date belonging to the thing itself" is fine, because a record created today can carry
+# an old intrinsic date and so new rows keep arriving forever.
+DISMISSED = {
+    ('clinicaltrials-scraper', 'studyStartDateTo'):
+        'StartDate is the trial\'s own start, not a registry event. Live 2026-10-12: of 5,660 studies '
+        'first posted on/after 2026-09-01, 80 have StartDate on/before 2020-01-01 (13 of those first '
+        'posted on/after 2026-10-01), so new rows still enter a fixed upper bound.',
+    ('clinicaltrials-scraper', 'primaryCompletionDateTo'):
+        'Trial-intrinsic readout date, same class as studyStartDateTo; a newly-posted study can carry a '
+        'past completion date. Already covered for the separate CHANGE-blind defect by the Actor\'s '
+        'watchChangeBlindFilters push.',
+    ('clinicaltrials-scraper', 'studyCompletionDateTo'):
+        'Trial-intrinsic completion date, same class as primaryCompletionDateTo, same existing '
+        'change-blind coverage.',
+}
+
 
 def tokens(name):
     """camelCase / snake_case -> lowercase word tokens, lightly stemmed.
@@ -213,7 +237,7 @@ def main():
     registry = json.load(open(os.path.join(ROOT, 'actors/registry.json')))
     live = sorted(t['slug'] for t in registry['tools'] if t['status'] == 'live')
 
-    suspects, weaks, bounds = {}, {}, []
+    suspects, weaks, bounds, dismissed = {}, {}, [], []
     watch_actors = snapshot_actors = 0
 
     for slug in live:
@@ -254,6 +278,9 @@ def main():
         # Pass 2 -- every watch Actor, identity or snapshot.
         for p in filters:
             if UPPER_DATE_BOUND.search(p) and not covered(p, decl):
+                if (slug, p) in DISMISSED:
+                    dismissed.append((slug, p))
+                    continue
                 bounds.append((slug, p))
 
     for slug, f, matched in sorted(suspects.values()):
@@ -269,9 +296,16 @@ def main():
               f"{', '.join('`' + m + '`' for m in matched)} -- read before trusting, this "
               f"tier admits unrelated identity filters")
 
+    # Printed, not silent: a dismissal is a claim that can go stale if the upstream data model
+    # changes, so it stays visible for re-checking instead of vanishing from the report.
+    for slug, p in dismissed:
+        print(f"DISMISSED {slug}: `{p}` matches the upper-date-bound name heuristic but was "
+              f"measured NOT dead -- {DISMISSED[(slug, p)]}")
+
     print(f"check-change-blind: {watch_actors} watch-mode Actor(s) checked "
           f"({snapshot_actors} with snapshotOf), {len(suspects)} pass-1 SUSPECT, "
-          f"{len(bounds)} pass-2 DEAD-BOUND?, {len(weaks)} WEAK")
+          f"{len(bounds)} pass-2 DEAD-BOUND?, {len(weaks)} WEAK, "
+          f"{len(dismissed)} DISMISSED")
     return 1 if suspects or bounds else 0
 
 

@@ -527,6 +527,75 @@ if (watchMode) {
     }
 }
 
+// DEAD DATE BOUNDS (cycle 1584, 11th fleet instance of this class). Separate defect from the
+// CHANGE-BLIND block below and gated on watchMode ALONE, not `watchMode && watchChanges`: a dead
+// upper bound blinds the watch to brand-new RECORDS, which is the core job of every watch run
+// whether or not change tracking is on. Every date filter here is one server-side
+// `AREA[<area>]RANGE[from,to]` clause, so the registry itself stops returning the row -- there is
+// no client-side field-presence gate to slip through (same shape as hacker-news-scraper's Algolia
+// numericFilter, unlike ats-jobs-scraper's truthy gate).
+//
+// ONLY REGISTRY-EVENT dates belong here -- the date the registry did something, which for anything
+// new is always "now" and never moves backwards afterwards. Measured live against the real API
+// before shipping rather than pattern-matched off the previous 10 instances:
+//   - firstPostedDateTo (StudyFirstPostDate): set when the record is first posted, immutable after.
+//   - resultsFirstPostedDateTo (ResultsFirstPostDate): set when a results section is first posted.
+//   - lastUpdatePostedDateTo (LastUpdatePostDate): an update only ever moves this LATER, so a fixed
+//     upper bound defeats both new registrations and every subsequent revision. Strictest of the
+//     three; it is also listed in the change-blind block below, but that one only fires when
+//     watchChanges is ON, so plain watch mode was previously unwarned.
+//
+// STUDY-INTRINSIC dates are deliberately NOT flagged (`studyStartDateTo`,
+// `primaryCompletionDateTo`, `studyCompletionDateTo`): they describe the trial's own timeline, not
+// a registry event, so a record posted today can perfectly well carry a start date from years ago
+// and a fixed upper bound on them still admits new rows forever. Measured 2026-10-12, not reasoned:
+// of 5,660 studies first posted on/after 2026-09-01, 80 have a StartDate on/before 2020-01-01 (13
+// of them first posted on/after 2026-10-01). A guard on those would be a false alarm.
+// Single flat line of the schema's LITERAL input names, deliberately not assembled from the table
+// below: cycle 1577's lesson is that the static check-change-blind checker can only see a guard
+// whose covered inputs are spelled out as string literals next to a `watch*DateBound` identifier.
+// Dynamic `.map()`-built names read as an unguarded Actor and the pass-2 hit never clears.
+const watchDeadDateBoundInputs = ['firstPostedDateTo', 'resultsFirstPostedDateTo', 'lastUpdatePostedDateTo'];
+const DEAD_BOUND_COPY = {
+    firstPostedDateTo: ['the date a study record was FIRST POSTED to the registry',
+        'a brand-new registration is first posted today, so it can never be dated on or before a cutoff already in the past'],
+    resultsFirstPostedDateTo: ['the date a study\'s RESULTS were first posted',
+        'a newly-posted results section is posted today, so it can never fall on or before a past cutoff'],
+    lastUpdatePostedDateTo: ['the date a record was LAST UPDATED',
+        'any new or freshly-revised record has a last-update date of today, so it can never fall on or before a past cutoff'],
+};
+const DEAD_DATE_BOUNDS = watchDeadDateBoundInputs
+    .filter((name) => DATE_RE.test(String(input[name] ?? '')))
+    .map((name) => [name, input[name], ...DEAD_BOUND_COPY[name]]);
+const watchDeadDateBounds = watchMode ? DEAD_DATE_BOUNDS.map(([name]) => name) : [];
+if (watchDeadDateBounds.length) {
+    for (const [name, value, means, why] of DEAD_DATE_BOUNDS) {
+        log.warning(
+            `watchLabel "${watchLabel}" is combined with a fixed ${name} (${value}), an upper bound on `
+            + `${means}. Because ${why}, this watch will never report a new study once the real calendar date `
+            + `passes that cutoff -- and it will keep reporting a healthy "nothing new" every run while blind.`,
+        );
+    }
+    log.warning(
+        `Drop ${watchDeadDateBounds.join(' / ')} from a watched query (the matching ...From lower bound is safe to `
+        + 'keep -- it only limits how far back the first baseline reaches), or remove watchLabel if you really do '
+        + 'want a fixed historical window rather than an ongoing watch.',
+    );
+    // Honest about the one escape hatch, measured rather than asserted: these bounds blind NEW
+    // registrations, but a study already inside the window that is merely revised still matches and
+    // still produces a watchChanges event. Live on 2026-10-12: 2,677 studies first posted on/before
+    // 2020-01-01 had an update posted on/after 2026-09-01 (62 for the results-posted equivalent).
+    // So a firstPostedDateTo watch goes quiet on new trials while change events keep flowing, which
+    // makes the failure even easier to mistake for a healthy watch. lastUpdatePostedDateTo has no
+    // such hatch -- it blinds the revisions too.
+    if (watchChanges && !watchDeadDateBounds.includes('lastUpdatePostedDateTo')) {
+        log.warning(
+            'Note: watchChanges events on studies ALREADY inside the window can still fire, so this run may look '
+            + 'healthy. It is specifically NEW studies that can no longer appear.',
+        );
+    }
+}
+
 // CHANGE-BLIND FILTERS (cycle 861, ported from grants-gov-scraper cycle 860). watchChanges can
 // only compare an already-delivered study against its snapshot if that study is still IN this
 // run's match set -- change detection lives inside the per-row walk, so a study the query no
@@ -1192,6 +1261,10 @@ const runSummary = {
     // Machine-readable form of the change-blind-filter warning: a scheduled caller that never
     // reads the log can assert on this being empty before trusting "no changes this run".
     watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
+    // Machine-readable form of the dead-date-bound warning. Non-empty means this watch can no
+    // longer surface NEW studies at all, however healthy "nothing new" looks -- a scheduled caller
+    // should alert on it rather than trust a quiet run.
+    watchDeadDateBounds: watchMode ? watchDeadDateBounds : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 
