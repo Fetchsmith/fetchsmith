@@ -779,6 +779,10 @@ const upstreamDegraded = [];
 // Apps where maxReviewsPerApp was hit while the keyword/minPlaytimeHours filter was still
 // discarding reviews — reviews deeper in Steam's feed were never scanned.
 const depthCapped = [];
+// Apps that DID return reviews but had every single one removed by the active filters. Kept apart
+// from emptyIds (Steam returned nothing at all) and depthCapped (the cap was hit mid-filter): all
+// three are different things for the buyer to do, and a run over several apps can hit them at once.
+const allFilteredIds = [];
 // Watch mode: apps where the whole scanned window was new, i.e. the scan may not reach back far
 // enough to cover everything posted since the last run.
 const saturatedApps = [];
@@ -859,6 +863,10 @@ if (dataType === 'games') {
       );
       depthCapped.push(id);
     }
+    // Every review this app returned was rejected by the filters (filteredOut counts only filter
+    // rejects). Watch mode is excluded because there "nothing delivered" is normally the
+    // already-seen baseline, not the filters, and watch runs use their own status branches.
+    if (!watchMode && got > 0 && filteredOut === got) allFilteredIds.push(id);
     if (degenerate) {
       upstreamDegraded.push(id);
       log.warning(
@@ -887,11 +895,43 @@ log.info(`Done. Pushed ${pushed} ${dataType === 'games' ? 'games' : 'reviews'}.$
 // Actor.fail() exits the process immediately, which would skip the watch-baseline save below and the
 // RUN_SUMMARY record entirely. Record the error, let the tail of the script persist state, and fail
 // at the very end instead.
+// Why a run delivered nothing, as an ACCUMULATED list rather than a first-match-wins chain: the
+// per-id buckets are filled independently inside one loop over the id list (plus a separate loop
+// for searchTerms), so a multi-app run routinely hits two or three of these at once and an
+// else-if/ternary cascade names the first and silently drops the rest. Same cascade-hides-
+// independent-cause defect fixed in google-play-reviews-scraper's two status branches (cycles 1559
+// and 1591). Order is most-specific-first; every entry names the apps/terms it applies to so the
+// buyer can act per app instead of guessing which cause covers which id.
+const zeroCauses = [];
+if (emptyIds.length) {
+  zeroCauses.push(`Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`);
+}
+if (emptySearches.length) {
+  zeroCauses.push(`your search terms matched no Steam games: ${emptySearches.join(', ')}`);
+}
+if (depthCapped.length) {
+  zeroCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit before any review passed your keyword/minPlaytimeHours filter for: ${depthCapped.join(', ')} — raise maxReviewsPerApp to search deeper`);
+}
+// Deduped against depthCapped, which is the more specific statement of the same shortfall for an
+// app that hit the cap (raise the cap) versus one whose whole feed was scanned and rejected
+// (loosen the filter) — naming an app under both causes would give contradictory advice.
+const filteredOutOnly = allFilteredIds.filter((id) => !depthCapped.includes(id));
+if (filteredOutOnly.length) {
+  zeroCauses.push(`every review Steam returned was removed by your keyword / minimum-playtime / date-window filters for: ${filteredOutOnly.join(', ')}`);
+}
+
 let runError = null;
 if (pushed === 0 && upstreamDegraded.length) {
   runError = `Steam's review API returned incomplete responses (success, but no reviews and no review `
     + `totals) for: ${upstreamDegraded.join(', ')} — after 2 retries each. This is an upstream Steam `
     + `fault, not a problem with your input; please re-run later.`;
+  // The other causes have to survive into the FAILED run's status message too: Actor.fail(runError)
+  // at the tail overwrites whatever status message the block below set, so without this a run where
+  // one app was degraded AND another genuinely has no reviews reads as a pure upstream fault and the
+  // buyer re-runs the hopeless app forever waiting for Steam to recover.
+  if (zeroCauses.length) {
+    runError += ` Separately, and not fixable by re-running: ${zeroCauses.join('; ')}.`;
+  }
   log.error(runError);
 }
 
@@ -959,8 +999,29 @@ const evictionSuffix = baselineTruncated > 0
 // Placed before watch mode's reassuring "nothing new" / "baseline recorded" messages, which would
 // otherwise misreport a timeout-truncated run as a clean, complete one (same lie class fixed in
 // app-store-reviews-scraper cycle 768 and google-play-reviews-scraper cycle 769).
+// The suffix has to name the reason the id list was actually truncated, not assume the clock:
+// idsNotReached is non-empty whenever the loop stopped early for ANY reason, so gating only on it
+// blamed "approaching the platform run timeout" for a list cut short by maxResults or the charge
+// limit (reproduced live on a real platform run, cycle 1592) and sent the buyer to raise a run
+// timeout that was never the constraint. Each variant ends with the advice that fixes ITS cause.
+// Capitalized at source: the suffix always starts a new sentence, and upper-casing it afterwards
+// would mangle the field name in the maxResults variant ("MaxResults=5").
+const truncationCause = timeBudgetExceeded
+  ? 'The run was approaching the platform run timeout and stopped before finishing the id list'
+  : chargeLimitReached
+    ? "The run's pay-per-event charge limit was reached before the id list was finished"
+    : pushed >= maxResults
+      ? `The "maxResults" limit of ${maxResults} was reached before the id list was finished`
+      : 'The run stopped before finishing the id list';
+const truncationAdvice = timeBudgetExceeded
+  ? ' Narrow the input (fewer apps/search terms, or a lower "maxReviewsPerApp"), raise the Actor\'s run timeout, or run the rest separately.'
+  : chargeLimitReached
+    ? ' Raise the run\'s charge limit, or run the remaining id(s) separately.'
+    : pushed >= maxResults
+      ? ' Raise "maxResults" to cover the whole id list, or run the remaining id(s) separately.'
+      : ' Re-run the remaining id(s) separately. See the log and RUN_SUMMARY for the stopping reason.';
 const timeoutSuffix = idsNotReached.length
-  ? ` The run was approaching the platform run timeout and stopped before finishing the id list — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}. Narrow the input (fewer apps/search terms, or a lower "maxReviewsPerApp"), raise the Actor's run timeout, or run the rest separately.`
+  ? ` ${truncationCause} — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}.${truncationAdvice}`
   : '';
 if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix} ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.`);
@@ -979,34 +1040,58 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   // into the final default below ("no valid Steam App IDs could be parsed from your input") -- a
   // false claim about the input when the real cause is our own clock (idsAttempted stays empty, so
   // emptyIds/emptySearches/depthCapped are all empty too, not because nothing matched).
+  // zeroCauses (built above, next to runError) accumulates every independently-populated cause
+  // instead of reporting only the first match. The filter cause is carried there as a per-app
+  // bucket (allFilteredIds), which also keeps the h988 guarantee that drove the old `idsAttempted`
+  // gate: an `apps` list where nothing parses as an App ID never reaches either fetch loop, so no
+  // bucket is filled, no cause is claimed, and the run falls through to the parse message instead
+  // of blaming a filter for a query Steam was never asked.
   const why = timeBudgetExceeded && idsAttempted.size === 0
     ? 'the run was approaching the platform run timeout and stopped before any id could be checked'
-    : emptyIds.length
-    ? `Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`
-    : emptySearches.length
-      ? `your search terms matched no Steam games: ${emptySearches.join(', ')}`
-      : depthCapped.length
-        ? `maxReviewsPerApp (${perAppReviews}) was hit before any review passed your keyword/minPlaytimeHours filter for: ${depthCapped.join(', ')} — raise maxReviewsPerApp to search deeper`
-        // idsAttempted gate (h988): an `apps` list where nothing parses as an App ID drops every
-        // entry with a per-entry warning and never reaches either fetch loop, so idsAttempted /
-        // emptyIds / emptySearches / depthCapped are ALL empty. Without this gate a run that also
-        // set a filter blamed the filter -- "every review Steam returned was removed by your
-        // keyword ... filters" -- for a run in which Steam was never asked for anything. Actively
-        // wrong, not just vague; same class as apple-podcasts-scraper's cycle-986 window bug. Also
-        // requires reviews mode: the filters do not run at all in dataType:"games".
-        : idsAttempted.size > 0 && dataType === 'reviews'
-          && (keyword || minPlaytimeHours != null || hasDateWindow)
-          ? 'every review Steam returned was removed by your keyword / minimum-playtime / date-window filters'
-          : 'no valid Steam App IDs could be parsed from your input';
+    : zeroCauses.length
+      ? zeroCauses.join('; ')
+      // Ids were attempted and no per-id cause fired, so the stop was ours, not the data's: saying
+      // "no valid App IDs" there would blame an input that parsed fine.
+      : idsAttempted.size > 0
+        ? (chargeLimitReached
+          ? "the run's pay-per-event charge limit was reached before any review could be returned — raise the limit"
+          : 'the run stopped before any review could be returned; see the log and RUN_SUMMARY for the stopping reason')
+        : 'no valid Steam App IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}`);
-} else if (upstreamDegraded.length) {
-  // Partial success: other apps produced rows, so the run is not a failure, but the user still
-  // needs to know these specific apps are missing for an upstream reason and are worth re-running.
-  await Actor.setStatusMessage(`Pushed ${pushed} results. Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; re-run those later.${timeoutSuffix}`);
-} else if (depthCapped.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results. maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.${timeoutSuffix}`);
-} else if (emptyIds.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results. Steam returned nothing for: ${emptyIds.join(', ')}.${timeoutSuffix}`);
+} else if (upstreamDegraded.length || depthCapped.length || allFilteredIds.length
+  || emptyIds.length || emptySearches.length) {
+  // Partial success: other apps produced rows, so the run is not a failure, but the buyer still
+  // needs to know which specific apps fell short and why. Accumulated for the same reason as
+  // zeroCauses above — these buckets are filled independently per id in one loop, so a run where
+  // one app was degraded, another hit the depth cap and a third has no reviews hits all three at
+  // once, and the else-if chain this replaced reported only the upstream fault and silently dropped
+  // the other two (cascade class, cycles 1559/1591).
+  const partialCauses = [];
+  if (upstreamDegraded.length) {
+    partialCauses.push(`Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input, so re-run those later`);
+  }
+  if (depthCapped.length) {
+    partialCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed, so raise maxReviewsPerApp to search further`);
+  }
+  // Same depthCapped dedupe as zeroCauses: raise-the-cap and loosen-the-filter are different advice.
+  const partialFilteredOnly = allFilteredIds.filter((id) => !depthCapped.includes(id));
+  if (partialFilteredOnly.length) {
+    partialCauses.push(`every review Steam returned was removed by your keyword / minimum-playtime / date-window filters for: ${partialFilteredOnly.join(', ')}`);
+  }
+  if (emptyIds.length) {
+    partialCauses.push(`Steam returned nothing for: ${emptyIds.join(', ')}`);
+  }
+  // emptySearches was never named in this branch at all before (not merely cascaded away): a run
+  // where one search term resolved to games and another matched nothing reported full success and
+  // left the buyer believing the dead term had been covered.
+  if (emptySearches.length) {
+    partialCauses.push(`your search term(s) matched no Steam games: ${emptySearches.join(', ')}`);
+  }
+  // '; ' join, same as zeroCauses — no cause string contains a semicolon of its own, so each
+  // separator is unambiguously a cause boundary.
+  // Em-dash prefix, matching the "No results — ..." style, so the lower-cased cause strings (which
+  // start with field names like `maxReviewsPerApp`) read as a continuation instead of a new sentence.
+  await Actor.setStatusMessage(`Pushed ${pushed} results — ${partialCauses.join('; ')}.${timeoutSuffix}`);
 } else if (timeBudgetExceeded) {
   await Actor.setStatusMessage(`Pushed ${pushed} results.${timeoutSuffix}`);
 } else if (!complete) {
@@ -1028,6 +1113,9 @@ const runSummary = {
   emptyIds,
   upstreamDegraded,
   depthCapped,
+  // Apps whose whole returned feed was rejected by the filters — distinct from emptyIds and
+  // depthCapped so a pipeline can tell "loosen the filter" from "no data" and "raise the cap".
+  allFiltered: allFilteredIds,
   timeBudgetExceeded,
   idsNotReached,
   saturatedApps: watchMode ? saturatedApps : null,

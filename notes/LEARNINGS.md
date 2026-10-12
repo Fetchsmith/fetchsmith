@@ -6739,3 +6739,34 @@ Fixed by converting the whole `pushed>0` tail into one `causes[]` accumulator (s
 Confirmed independent population for both: `depthCapped.push(id)` fires on `capReached && filteredOut > 0` unconditionally, while `upstreamDegraded.push(id)` (if `degenerate`) / `emptyIds.push(id)` (else if `got === 0`) are checked separately per id in the same loop — a multi-id run can have one id hit the depth cap and a DIFFERENT id come back degenerate or empty in the same run, and today only the first-checked cause is ever reported. Same fix shape applies (accumulate into a `causes[]` array); not done this cycle to keep the diff reviewable and keep one Actor's verification complete rather than two half-done.
 
 **Running tally for this class, now 7 confirmed instances across 2 Actors (5 pre-existing + 2 new today), 0 dismissed false positives so far** — every instance found so far has been real, which is a stronger hit rate than most other static-check classes got before being built (`check-change-blind`'s lap was 9-for-9 too, for comparison), so `check-cascade-causes` is worth building once `steam-reviews-scraper`'s two instances are also fixed and the detection heuristic (3+ sibling `else if` arms over different named `.length`s/flags feeding one message, reused across a quick grep of every Actor's `main.js`) has a few more confirmed hits to calibrate against for the "independently populated" check (which still needs a human/LLM read of the push sites, not a one-line regex, in every instance found so far).
+
+## h1592 — the cascade-causes class, and a lie the verification run itself exposed
+- `steam-reviews-scraper` held instances 7 and 8 of the cascade-hides-independent-cause class (running
+  tally: **8 confirmed, 0 dismissed** across `google-play-reviews-scraper` (1559, 1591) and this one).
+  Both are now fixed with the same `causes[]` accumulator pattern: collect every populated bucket into
+  an array, join with `'; '`, and keep a fallback only for the genuinely-no-cause case.
+- Two reusable refinements beyond 1591's pattern:
+  1. **Dedupe causes that give contradictory advice.** An app can be in `depthCapped` (cap hit
+     mid-filter → *raise the cap*) and in the new `allFiltered` bucket (whole returned feed rejected →
+     *loosen the filter*). Naming it under both tells the buyer to do two different things. Filter the
+     broader bucket against the more specific one (`allFiltered.filter(id => !depthCapped.includes(id))`).
+  2. **A cascade fix often needs a NEW per-app bucket, not just reordering.** Steam's old filter cause
+     was a *global* claim gated on `idsAttempted.size > 0 && (keyword || …)`, so it could not be stated
+     alongside per-app causes without lying ("every review Steam returned was removed by your filters"
+     for a run where one app returned nothing at all). Adding a per-id `allFiltered` bucket
+     (`!watchMode && got > 0 && filteredOut === got`) made it attributable and therefore accumulable —
+     and preserved the h988 guarantee for free, since an all-unparseable `apps` list fills no bucket.
+- **Punctuation is part of the fix.** Joined cause strings must not contain the join separator: two
+  causes had internal semicolons ("…deeper in the feed; raise maxReviewsPerApp"), which made a `'; '`
+  join unparseable; reworded to ", so …". Likewise prefer an em-dash lead-in (`Pushed N results — `)
+  over `. ` so lower-cased causes starting with a field name don't read as broken sentences, and
+  capitalize suffix strings at SOURCE rather than with `charAt(0).toUpperCase()` — that helper mangled
+  the field name into "MaxResults=5".
+- **The real-platform verification run is itself a detector.** The 0.1.70 platform run for this fix
+  surfaced an unrelated lie in the same message: `timeoutSuffix` was gated only on
+  `idsNotReached.length`, which is non-empty whenever the id loop stops early for ANY reason — so a
+  list truncated by `maxResults` was reported as "approaching the platform run timeout", sending the
+  buyer to raise a run timeout that was never the constraint. Fixed by keying the cause AND the advice
+  off the actual stop reason (`timeBudgetExceeded` / `chargeLimitReached` / `pushed >= maxResults`).
+  **Worth a fleet sweep:** grep for suffixes/messages gated on a *symptom* variable (ids-not-reached,
+  rows-short) while asserting a *specific cause* in their wording.
