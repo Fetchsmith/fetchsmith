@@ -1269,41 +1269,43 @@ if (watchMode && seeding) {
 } else if (pushed === 0 && timeBudgetExceeded) {
   statusMsg = `No results before the run approached its time limit.${timeBudgetNote}`;
 } else if (pushed === 0) {
-  const why = failedIds.length
-    ? `the request to Apple failed for: ${failedIds.join(', ')} — that is a fetch failure, not proof there is no data. Re-run it`
-    : emptyIds.length
-    ? emptySourceLabel(emptyIds)
-    : emptySearches.length
-      ? `your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`
-      : depthCapped.length
-        ? `maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')} — raise maxReviewsPerPodcast to search deeper`
-        : windowFilteredIds.length
-          ? `Apple's lookup API only returned each show's recent episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed all of them — turn on "useRssForFullArchive" to search the full archive instead`
-        : archiveFilteredIds.length
-          // The full RSS archive WAS walked and the filters emptied it. Without this branch the
-          // chain fell through to "no valid podcast IDs could be parsed from your input", which is
-          // flatly wrong (a valid id was parsed and the show's entire archive was fetched under
-          // it) — the same class of wrong answer the lookup-path branch above fixed, which never
-          // covered the RSS path. Reproduced live 2026-10-11 before the fix.
-          ? `your ${episodeFiltersSet.join(' / ')} filter(s) removed every episode in the full RSS archive of: ${archiveFilteredIds.join(', ')} — the log names each feed's real date coverage; relax the filter(s) to match it`
-          : dataType === 'reviews' && (keyword || minRating != null || maxRating != null)
-            ? 'every review Apple returned was removed by your minRating/maxRating/keyword filters'
-            : dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length
-              ? `every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`
-              : 'no valid podcast IDs could be parsed from your input';
+  // Every bucket below is populated independently (per-id loop lines 1082-1181 for
+  // failedIds/emptyIds/depthCapped/windowFilteredIds, per-term at line 935 for emptySearches,
+  // line 737 for archiveFilteredIds), so a multi-id/multi-term run can trip 2+ at once — name all
+  // of them instead of only the first match (h1593 cascade-hides-independent-cause class).
+  const causes = [];
+  if (failedIds.length) causes.push(`the request to Apple failed for: ${failedIds.join(', ')} — that is a fetch failure, not proof there is no data. Re-run it`);
+  if (emptyIds.length) causes.push(emptySourceLabel(emptyIds));
+  if (emptySearches.length) causes.push(`your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`);
+  if (depthCapped.length) causes.push(`maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')} — raise maxReviewsPerPodcast to search deeper`);
+  if (windowFilteredIds.length) causes.push(`Apple's lookup API only returned each show's recent episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed all of them — turn on "useRssForFullArchive" to search the full archive instead`);
+  // The full RSS archive WAS walked and the filters emptied it. Without this branch the chain
+  // fell through to "no valid podcast IDs could be parsed from your input", which is flatly wrong
+  // (a valid id was parsed and the show's entire archive was fetched under it) — the same class
+  // of wrong answer the lookup-path branch above fixed, which never covered the RSS path.
+  // Reproduced live 2026-10-11 before the fix.
+  if (archiveFilteredIds.length) causes.push(`your ${episodeFiltersSet.join(' / ')} filter(s) removed every episode in the full RSS archive of: ${archiveFilteredIds.join(', ')} — the log names each feed's real date coverage; relax the filter(s) to match it`);
+  if (dataType === 'reviews' && (keyword || minRating != null || maxRating != null)) causes.push('every review Apple returned was removed by your minRating/maxRating/keyword filters');
+  if (dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length) causes.push(`every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`);
+  const why = causes.length ? causes.join('; ') : 'no valid podcast IDs could be parsed from your input';
   statusMsg = `No results — ${why}. See the log for details.`;
-} else if (depthCapped.length) {
-  statusMsg = `Pushed ${pushed} results. maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further.${timeBudgetNote}`;
-} else if (windowFilteredIds.length) {
-  statusMsg = `Pushed ${pushed} results. Apple's lookup API returned only its recent-episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed everything in it for those show(s) — turn on "useRssForFullArchive" to search their full archive.${timeBudgetNote}`;
-} else if (emptyIds.length || failedIds.length || timeBudgetExceeded) {
-  const failedNote = failedIds.length ? ` The request to Apple failed for: ${failedIds.join(', ')} — re-run to get those.` : '';
-  statusMsg = `Pushed ${pushed} results.${emptyIds.length ? ` ${emptySourceLabel(emptyIds)}.` : ''}${failedNote}${timeBudgetNote}`;
-} else if (ceilingNote) {
-  // A run that nothing else had to report, EXCEPT that Apple's own feed ceiling cut it short.
-  // Previously this case set no status message at all and a run returning 100 of a show's 40k
-  // reviews read exactly like one that exhausted a 100-review show (h250/h255/h257 class).
-  statusMsg = `Pushed ${pushed} results.${timeBudgetNote}`;
+} else {
+  // Same independent-causes shape as the pushed===0 branch above, for a partially-successful run:
+  // depthCapped/windowFilteredIds/emptyIds/failedIds are each populated per-id in the same shared
+  // loop, so more than one can be true on a single multi-id run.
+  const pushCauses = [];
+  if (depthCapped.length) pushCauses.push(`maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further`);
+  if (windowFilteredIds.length) pushCauses.push(`Apple's lookup API returned only its recent-episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed everything in it for those show(s) — turn on "useRssForFullArchive" to search their full archive`);
+  if (emptyIds.length) pushCauses.push(emptySourceLabel(emptyIds));
+  if (failedIds.length) pushCauses.push(`the request to Apple failed for: ${failedIds.join(', ')} — re-run to get those`);
+  if (pushCauses.length || timeBudgetExceeded) {
+    statusMsg = `Pushed ${pushed} results.${pushCauses.length ? ` ${pushCauses.join('; ')}.` : ''}${timeBudgetNote}`;
+  } else if (ceilingNote) {
+    // A run that nothing else had to report, EXCEPT that Apple's own feed ceiling cut it short.
+    // Previously this case set no status message at all and a run returning 100 of a show's 40k
+    // reviews read exactly like one that exhausted a 100-review show (h250/h255/h257 class).
+    statusMsg = `Pushed ${pushed} results.${timeBudgetNote}`;
+  }
 }
 if (statusMsg) await Actor.setStatusMessage((statusMsg + ceilingNote).slice(0, 1000));
 
