@@ -6867,3 +6867,60 @@ With no open backlog item (routine checks all flat: `audit-due --all` NONE DUE, 
 - `ats-jobs-scraper`: `watchEvent`/`previousHasSalary` are watch-mode-only (line 140); `employmentType` is `null` by upstream design on every Greenhouse board (no such field in Greenhouse's API, line 84); `region`/`secondaryLocations` stay `null` whenever a posting's location text doesn't match the normalization vocabulary, a deliberate "wrong is worse than missing" choice (line 118).
 
 No fix needed in any of the three — all already correctly documented before this cycle. **Running total: 4 of 21 LOW-FILL-flagged Actors now explicitly verified clean** (sec-insider-trades-scraper at 1601, these 3 here). The remaining 17 (`apple-podcasts`, `app-store-reviews`, `clinicaltrials`, `court-records`, `eu-ted-tenders`, `fda-recall`, `federal-register`, `google-play-reviews`, `grants-gov`, `hacker-news`, `nih-reporter`, `remote-jobs`, `steam-reviews`, `substack`, `trademark-search`, `uk-find-a-tender`, `us-federal-awards`) are unverified — likely the same opt-in/watch-mode shape given the pattern holding 4/4 so far, but not yet individually confirmed. Good next QUALITY-slot filler whenever the backlog is otherwise empty: pick 2-3 more per slot rather than treating the 277-flag count as a single done/not-done item.
+
+## Cycle 1604 — an allowlist "re-verification" that never checked the invariant hid a live re-charge bug
+
+`bin/check-fail-ordering` (the h287 guard: `Actor.fail()` exiting before a watch Actor saves the
+baseline that already-charged rows are recorded in) read `1 suspect` fleet-wide. The suspect was
+`app-store-reviews-scraper`, and **one of the three flagged calls was a genuine, live, buyer-money
+bug** that had been sitting behind a wrong ALLOWLIST entry since at least cycle 845.
+
+**The bug.** `main.js` had `if (pairsAttempted > 0 && storefrontErrorPairs.length === pairsAttempted)
+await Actor.fail('... Nothing was scraped and nothing was charged. ...')`. The allowlist entry
+justified it as "every pair in this run errored, so nothing was ever pushed/charged to lose."
+That is false. `tally.storefrontError` is assigned **inside the per-page loop** of
+`scrapeAppCountrySort` — a permanent 4xx from ANY page sets it and `break`s — so pages 1..N-1 of
+that same pair can have already pushed and CHARGED rows via `chargeAndPush`. With a single pair in
+the run (the common watch-mode shape: one app, one storefront), `storefrontErrorPairs.length ===
+pairsAttempted` was satisfiable with `pushed > 0`. Then: rows charged → `Actor.fail()` exits →
+`saveWatchRecord()` at the bottom never runs → those review ids are absent from the baseline → the
+next scheduled watch run delivers and **charges for every one of them again**. The failure message
+also told the buyer "nothing was charged" while their card had been hit.
+
+**Why it survived.** The entry was "re-verified (still holds)" at cycles 845, 996 and 1276. Every
+one of those re-verifications did the same thing: re-read the guard *condition* and confirmed it had
+not changed. None asked the only question that matters — **does the condition imply `pushed === 0`?**
+The 1276 note even re-traced the charge-site chain for the *sibling* entry on the same Actor (the
+input-validation fail) and did not apply the same standard one entry below. The bug only surfaced
+now because the allowlist is keyed on `(slug, line)` and unrelated edits had shifted the line, so it
+re-flagged as a live suspect instead of silently passing — that keyed-on-line design is what caught
+this, and it is worth keeping.
+
+**Rule going forward (now written into the checker's own allowlist block):** an allowlist reason must
+prove the no-charge invariant **from the charge sites outward** — enumerate every `Actor.charge(`
+call site, every caller of each, and show the flagged `Actor.fail(` is unreachable after any of them.
+Re-reading the guard text proves only that the guard has not changed, which is a different claim.
+Cycle 1564's `apple-podcasts-scraper` re-verification is the good example to copy (it found its own
+three predecessors had assumed the episode loop was the only charge-capable path and never checked;
+there were seven `pushResult(` sites).
+
+**The fix** follows the house idiom from cycles 676/677 (`fec-campaign-finance-scraper`,
+`ats-jobs-scraper`): both inline fails became a deferred `runError`, the run fails at the very end
+of the file (after the baseline, `RUN_SUMMARY` and the webhook are persisted), the outage-probe
+branch got a `!runError` conjunct so the every-pair-refused verdict still wins as it did when that
+branch exited the process, the charged-rows case now gets a truthful message, and a failed
+incremental records `lastRunStatus: 'failed-incremental'` (eu-ted-tenders-scraper's convention)
+instead of a clean `incremental`. Verified locally on three paths — all-pairs-errored watch run
+(fails correctly, and now writes the record with `seededPairs: []`, so the refused pair is still not
+falsely baselined), happy non-watch run (8 real rows, no spurious failure), mixed good+bad pair watch
+baseline→incremental (150 ids baselined for the good pair only, `lastRunStatus: 'incremental'`,
+`runCount: 2`) — then pushed (build 0.1.94) and validated on the platform (5 real rows).
+`check-fail-ordering` now reads **0/20 suspects**.
+
+**Generalisable:** the never-run checkers are where the bugs are. `check-fail-ordering` had never
+once appeared in this file; neither have `check-entities`, `check-exclusions-classification`,
+`check-parser-regression`, `check-real-fields`, `check-store-rank`. Three of those were run this
+cycle and were clean (`check-exclusions-classification` ok, `check-real-fields` 23 actors/0 drift,
+plus `check-root-readme` 0/24, `check-disclosure` 0 missing, `check-filter-reach` 0 unreachable);
+the fourth found this. Also: a *silenced* check is more dangerous than an unrun one, because it
+reports `0` with confidence. Audit allowlists, not just outputs.

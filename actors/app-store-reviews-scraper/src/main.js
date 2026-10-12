@@ -1190,13 +1190,25 @@ for (const app of apps) {
 // attempt failing outright). Either way it is worth naming by pair and failing loudly, instead of
 // falling through to the outage probe (which would spend ~12 more requests on control apps that
 // are fine) or reporting it to the buyer as "no reviews found".
+// Deferred rather than failed on the spot (h287, same defect class as fec-campaign-finance-scraper
+// cycle 676 / ats-jobs-scraper cycle 677). A pair is refused MID-walk: scrapeAppCountrySort sets
+// `tally.storefrontError` and breaks on a permanent 4xx from ANY page, so pages already walked may
+// have pushed and CHARGED rows before the refusal. An Actor.fail() here exits the process before
+// saveWatchRecord() below, so those charged review ids never reach the baseline and the next
+// scheduled run delivers and charges for every one of them again. The run still ends FAILED --
+// the failure just happens at the end of the file, after the baseline is persisted.
+let runError = null;
 if (pairsAttempted > 0 && storefrontErrorPairs.length === pairsAttempted) {
-  await Actor.fail(
+  runError = (
     `Every app/storefront pair in this run failed (${storefrontErrorPairs.join(', ')}): ${storefrontErrorMessages.join(' ')} `
-    + 'Nothing was scraped and nothing was charged. If this names a bad storefront or app id, check "countries" '
+    + (pushed === 0
+      ? 'Nothing was scraped and nothing was charged. '
+      : `${pushed} review(s) had already been delivered and charged before the refusal(s), and are kept`
+        + `${watchMode ? ` in the watch baseline for "${watchLabel}" so they will not be charged again` : ' in the dataset'}. `)
+    + 'If this names a bad storefront or app id, check "countries" '
     + '(two-letter ISO-3166-1 alpha-2 codes — the UK is "gb", not "uk") and that the app ids really exist there. '
     + "If the message above says every fetch attempt failed rather than naming a storefront, it is Apple's side "
-    + '(a 5xx/rate-limit run of bad luck) — just re-run.',
+    + '(a 5xx/rate-limit run of bad luck) — just re-run.'
   );
 }
 // Nothing at all came out of Apple for any pair: before reporting that as an ordinary empty
@@ -1206,16 +1218,23 @@ if (pairsAttempted > 0 && storefrontErrorPairs.length === pairsAttempted) {
 // Skipped when our own timeout guard stopped the run: the probe spends ~12 requests over 3 attempts
 // with 5s sleeps between them, which is exactly the margin we just reserved to finish cleanly, and
 // "nothing served" is already explained by the run running out of clock rather than by an outage.
-if (pairsAttempted > 0 && feedServed === 0 && !timeBudgetExceeded && await reviewFeedIsDown()) {
-  await Actor.fail(
+// `!runError` keeps the every-pair-refused verdict above winning, exactly as it did when that
+// branch exited the process here: a run in which Apple REFUSED every pair is not an outage report,
+// and the probe would otherwise spend ~12 extra requests to relabel a cause we already know.
+if (!runError && pairsAttempted > 0 && feedServed === 0 && !timeBudgetExceeded && await reviewFeedIsDown()) {
+  runError = (
     "Apple's customer-review RSS feed (itunes.apple.com/.../rss/customerreviews) returned an empty feed for "
     + 'every app tried, including control apps that have hundreds of thousands of reviews — checked over 3 '
     + 'spaced attempts. That is an Apple-side fault (an outage, or Apple refusing this run\'s network), not '
     + 'your input and not a scrape failure: no filter, storefront or date change will help it, and nothing '
-    + 'was charged for this run. It normally clears on its own — re-run later.',
+    + 'was charged for this run. It normally clears on its own — re-run later.'
   );
 }
-if (watchMode) await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+// `failed-incremental` mirrors eu-ted-tenders-scraper: an incremental run that ended in failure must
+// not be recorded as a clean one, or the next run's own diagnostics read the wrong history. Seeding
+// keeps `seeded` -- refused pairs are deliberately never added to `seededPairs` (see the
+// storefrontError branch), so a partial baseline stays honest about which pairs it covers.
+if (watchMode) await saveWatchRecord(runError && !seeding ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
 // WATCH_KEEP record-cap eviction (h285) -- kept as its own note, deliberately not folded into
 // `truncationNote` below: that one is about THIS run's own early stop (maxResults/charge-limit/
 // SEED_CAP), a different failure that happens to want a similar name. Empty unless something was
@@ -1441,5 +1460,10 @@ if (webhookUrl) {
     log.warning(`webhookUrl POST failed (${err.message}); run result is unaffected.`);
   }
 }
+
+// The failure signal itself is unchanged — the run still ends FAILED. It just happens here, after
+// the watch baseline, RUN_SUMMARY and webhook have been persisted, instead of where Actor.fail's
+// immediate exit would have skipped all three (h287).
+if (runError) await Actor.fail(runError);
 
 await Actor.exit();
