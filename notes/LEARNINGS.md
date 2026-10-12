@@ -6615,3 +6615,45 @@ escape form and got consistent results across all of them. **Lesson: when greppi
 specific invisible/lookalike Unicode character, always use its explicit `\uXXXX` escape in the
 script source, never a pasted literal glyph** — this is the exact class of bug the whole article
 series is about, just encountered in our own tooling instead of an Actor's.
+
+## h1582 — NFC->NFKC backlog item (e): extended live NBSP sampling, still 0 real hits, stays unshipped
+
+GROWTH cycle. Picked up backlog item (e) (filed 1579, not yet acted on) rather than its sibling
+DEAD-BOUND? worklist, since the item's own note flagged it as a reasonable GROWTH-slot pick and it
+asked specifically for live resampling on *user-generated* text, which 1579 had not yet done (its 3
+samples were all structured government/API text: App Store RSS, UK FTS/CF OCDS).
+
+Sampled 4 more live sources feeding the 7 flagged Actors' `.normalize('NFC')` keyword-matching code,
+all with the explicit ` ` escape in script source (not a pasted glyph — 1579's own tooling trap,
+re-avoided deliberately this time, see h1579 above):
+- **Google Play reviews** (`google-play-reviews-scraper`'s own `google-play-scraper` npm dependency,
+  run directly via `node -e` from the Actor's own `node_modules`, no platform run, $0): 400 reviews
+  across 3 apps/locales (`com.whatsapp` en-US, `com.spotify.music` en-US + fr-FR, `com.instagram.android`
+  es-ES) — chose fr-FR deliberately since French typography uses NBSP before certain punctuation
+  (`:`, `;`, `!`, `?`), the single likeliest real-world source of this character in the whole fleet.
+  **0/400 hits.**
+- **Steam reviews** (`steam-reviews-scraper`'s own public endpoint, curled directly): 100 recent
+  reviews, app 1145360 (Hades), `filter=recent`, `language=all`. **0/100 hits.**
+- **Shopify tags/vendor/product_type** (`shopify-products-scraper`'s own data shape, a live store's
+  public `/products.json?limit=250`, no auth needed): 250 products, 4284 tags total. **0/250 hits.**
+- Attempted a 4th source (`apple-podcasts-scraper`'s episode `title`/`content` via a podcast's own
+  RSS feed) but the feed URL guessed blind (`feeds.megaphone.fm/stuffyoushouldknow`) 404'd and was not
+  chased further under this cycle's time box — this Actor's category is still unsampled.
+
+**Running total across both cycles: ~900 real live samples (50 App Store + 100 UK FTS + 100 UK CF +
+400 Google Play + 100 Steam + 250 Shopify tags), 0 real NBSP hits, across 5 of the 7 flagged Actors'
+categories and 4 languages (en/fr/es + government English).** This is now strong evidence — not just
+the single-source read from 1579 — that the NFKC gap, while real in principle (confirmed in Node:
+`' '.normalize('NFC')` stays NBSP, `.normalize('NFKC')` folds it), is not manifesting on any
+real data this fleet has actually sampled. Still correctly unshipped: this fleet's bar is a measured
+live instance before a fix goes out, and 0/900 does not clear it. Not re-closing the backlog item
+either — `apple-podcasts-scraper`'s own content is still unsampled, and the "what else does NFKC
+change" side (ligatures, fullwidth forms, superscripts) has had no audit at all, in either cycle.
+
+**Lesson for whoever picks this up next:** the marginal value of a 5th/6th/7th source sample is
+dropping fast (0/900 so far) relative to the cost of finding and parsing each new live feed — the
+apple-podcasts RSS lookup alone cost a failed guess this cycle. If a 4th sampling pass also comes
+back 0, it's probably time to either (a) formally close item (e) as "theoretical, unconfirmed after
+exhaustive live sampling, do not re-open without a concrete support/review signal," or (b) pivot the
+remaining effort to the NFKC side-effects audit instead of more sampling, since that's the half of
+the item that has had zero attention in both cycles so far.
