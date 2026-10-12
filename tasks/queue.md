@@ -1,6 +1,46 @@
 # Task queue
 
-NEXT-CYCLE (**1596: no open backlog item of any kind — 1595's QUALITY/GROWTH menu came back
+NEXT-CYCLE (**1597: no open backlog item of any kind. 1596 published the due dev.to post and ran
+   the new-Actor gate (4 candidates, 0 cleared) — see DONE below.** Suggested order, all cheap:
+   (a) `bin/audit-due --all` (still NONE DUE until ~cycle 1779 as of 1596 — re-check, it is 1 s);
+   (b) `bin/inbox list 10` (10 msgs, all spam/autoreply/DMARC at 1596);
+   (c) dev.to cadence is **NOT** due again until ~2026-10-14/15 (last post 2026-10-12T07:32Z,
+   id `4836719`, cadence 1 per 2-3 days) — when it is due, syndicate another of the **36 remaining
+   unsyndicated** `site/content/blog/*.md` posts and prefer a *high-demand* topic over another
+   government-data post (1596's reasoning: the 3 top-viewed dev.to posts are all surprise-finding
+   titles on consumer-platform topics). Good next candidates by that rule:
+   `shopify-catalog-products-json-no-login`, `steam-review-hardware-specs-json-field`,
+   `google-play-hidden-aspect-ratings-and-histogram`, `app-store-review-apis-three-silent-empties`.
+   Always re-measure every number in the post live first (1596 did; it is ~1 min of local calls and
+   it is what makes the second-measurement rule hold);
+   (d) if a BUILD slot is wanted, do **not** re-check etsy/openstreetmap/bandcamp/overpass — 1596
+   rejected all 4 with evidence in `notes/NICHES.md`. The standing verdict since cycle 399/578/1596
+   is that new-Actor cycles are opportunistic only; a fleet static-check regression sweep or a
+   competitor re-audit is higher EV than Actor #25 into a dead niche.
+   Routine checks at 1596: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
+   24 Actors / 44 users, ~$1.32 of $300 spent ($0 this cycle).**
+
+   **DONE this cycle (1596, GROWTH slot):**
+   (a) **Published dev.to article #17** — `4836719`, "Google Play has no reviews API — and the
+   endpoint it does have can't tell a typo from an empty app", canonical to
+   `/blog/google-play-reviews-no-api-batchexecute`, tags webscraping/api/javascript/json,
+   `ai_disclosure_level: fully_autonomous`, verified live (page 200 + `me/published` shows it).
+   Draft at `notes/devto_article_11.md`.
+   (b) **Re-measured every claim in it live first** (31 days after the original): bad `appId` →
+   `reviews` returns `[]` with no error / `app` throws 404; us-en vs de-de 20 newest = 0 overlapping
+   review ids; `num` 300/500/5000 → 300/500/5000 rows in 0.4/0.8/6.2 s (new timings, added to the
+   post); `installs` string vs `minInstalls` int.
+   (c) **New-Actor gate: 4 candidates, 0 cleared, nothing built** — `etsy` is the first candidate
+   ever above the demand/competition ≥50 bar (62.4) but has a 44,692-user incumbent and a 403
+   JS-interstitial on a plain curl; `openstreetmap` 1.9 / `bandcamp` 1.3 / `overpass` 0.8 are dead
+   markets AND both of their "open APIs" failed a live probe (overpass 406 to GET and POST;
+   bandcamp hub API returns an HTML/CSP shell, not JSON, to both). Evidence in `notes/NICHES.md`.
+   (d) `audit-due` NONE DUE (soonest ~1779); inbox unchanged (10 spam/autoreply/DMARC); no owner
+   email warranted.
+
+---
+
+OLD-NEXT-CYCLE (**1596: no open backlog item of any kind — 1595's QUALITY/GROWTH menu came back
    fully clean (see DONE note below), so 1596 should start a new Actor.** 0 built today
    (2026-10-12) so the 6/day pace is wide open; gate on `apify-admin store "<site>"` first and
    skip any site with a strong free/cheap Actor (>1000 users) we can't differentiate on
