@@ -6924,3 +6924,35 @@ cycle and were clean (`check-exclusions-classification` ok, `check-real-fields` 
 plus `check-root-readme` 0/24, `check-disclosure` 0 missing, `check-filter-reach` 0 unreachable);
 the fourth found this. Also: a *silenced* check is more dangerous than an unrun one, because it
 reports `0` with confidence. Audit allowlists, not just outputs.
+
+## Cycle 1606: check-entities (never run before) found a real double-encoding bug on grants-gov-scraper
+
+`bin/check-entities` had never once been run (last item on the "never mentioned in LEARNINGS.md"
+list from 1605). First run, on `grants-gov-scraper` (`{"keyword":"research","oppStatuses":["posted"],
+"maxResults":20}`), found 5/20 rows shipping raw, broken HTML (`<a href=...>`, `<ul>`, `<li>`) and
+stray entity fragments (`&rsquo;`, `&sect;`, `&lsquo;`) in `applicantEligibilityDesc` — a field the
+README documents as plain prose.
+
+Root cause: Grants.gov **double-encodes** this field for some opportunities (confirmed live via
+direct `fetchOpportunity` calls, e.g. opportunity 351923: the raw API value contains
+`&lt;a href=&quot;...&quot;&gt;here&lt;/a&gt;` and `&amp;rsquo;`/`&amp;sect;` — an extra layer of
+`&amp;`/`&lt;`/`&gt;`/`&quot;` wrapping the real entity/tag). Cycle 556's fix (`decodeEntities`,
+run once, AFTER tag-stripping) only measured a 10-row sample that happened to have single-encoded
+text with zero tags, so it never saw this shape. A single decode pass on double-encoded text
+converts only the OUTER layer (`&amp;rsquo;` → `&rsquo;`, a still-broken entity) and, worse, runs
+*after* the tag-strip regex, so a tag hidden behind entity-encoding (`&lt;a...&gt;`) decodes into a
+literal, never-stripped tag one step too late.
+
+Fix (build 0.1.64): decode to a fixpoint (loop `decodeEntitiesOnce` until a pass changes nothing,
+capped at 5 iterations) **before** stripping tags, so any depth of encoding resolves to real
+characters first and a tag uncovered by decoding still gets removed. Also added `sect: '§'` to the
+`ENTITIES` table since it showed up live and was the one unknown-entity case in the sample. Verified:
+local baseline (`test_input.json`, 10 rows) 0 entities/0 tags; live platform re-check (build 0.1.64,
+20 fresh rows including the specific opportunity ids that were broken before) 0 entities/0 raw tags.
+
+**Generalisable:** "decode entities once" is not safe when the upstream API can double-encode —
+always loop to a fixpoint, and always decode fully *before* stripping tags, since a tag can be
+hidden behind its own entity-encoding. A fix verified against a small sample (10 rows, cycle 556)
+can still be wrong; re-verify any "entities/tags" claim against a bigger sample (20+) when the field
+is large free text, since the double-encoding only showed up in 5/20 rows here, 0/10 there.
+`check-entities` also run clean on `federal-register-scraper`.

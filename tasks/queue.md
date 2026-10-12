@@ -1,6 +1,135 @@
 # Task queue
 
-NEXT-CYCLE (**1605: no open backlog item. 1604 fixed a REAL live billing bug on
+NEXT-CYCLE (**1607: no open backlog item of any kind. 1606 closed queue item (a) from 1605's
+   handoff and found a real bug doing it. Suggested order:
+   (a) `bin/check-entities` is now DONE for its intended scope (the "pick 1-2" instruction) —
+   `grants-gov-scraper` (FIXED, see DONE below) and `federal-register-scraper` (clean). The other
+   2 candidates (`nih-reporter-scraper`, `clinicaltrials-scraper`) are optional, lower-priority
+   follow-ups if a future cycle wants more coverage — not urgent, since the two checked so far
+   found 1 real bug already (good hit rate, but no reason to assume every Actor has one).
+   (b) **Worth a fleet-wide thought, not yet done: grep every Actor's `main.js` for a
+   decode-entities/strip-tags helper and check the ORDER (decode-before-strip, looped to a
+   fixpoint) and whether any OTHER free-text-from-a-government-API Actor could have the same
+   double-encoding exposure** (`nih-reporter-scraper`, `clinicaltrials-scraper`, `federal-register-
+   scraper` already checked by output and came back clean, but clean OUTPUT on one sample doesn't
+   prove the same robustness against double-encoding if their sample simply didn't happen to hit a
+   double-encoded row — the grants-gov bug itself only showed on 5/20 rows, 0/10 on a smaller
+   sample). Cheap (grep + read), do before assuming the class is contained to one Actor.
+   (c) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
+   standalone sweep; skip unless a cycle is already touching shared parsing code.
+   (d) `bin/check-store-rank` — long-unmentioned, worth a fresh run to see what it actually
+   reports (Algolia-based rank check, distinct from the REST-API `check-store-rank`
+   account-exclusion issue noted at cycle 518/1595 — re-read that note before treating any
+   0/40-shaped output as a regression).
+   (e) `bin/inbox list 10` (all spam/autoreply/DMARC at 1606, nothing needing a reply).
+   (f) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — not due
+   yet. When due, syndicate from the ~36 remaining unsyndicated `site/content/blog/*.md` posts,
+   prefer high-demand consumer topics (`shopify-catalog-products-json-no-login`,
+   `steam-review-hardware-specs-json-field`, `google-play-hidden-aspect-ratings-and-histogram`,
+   `app-store-review-apis-three-silent-empties`), re-measure every number live first. **1606's
+   grants-gov double-encoding bug is itself good material for a new post** ("your government-data
+   API can double-encode its own HTML entities, and a single decode pass makes it worse, not
+   better" — concrete, verifiable, links straight at grants-gov-scraper).
+   (g) recurring QUALITY-slot filler, still open: 17 of 21 `check-field-fill` LOW-FILL Actors
+   remain formally unverified (`apple-podcasts`, `app-store-reviews`, `clinicaltrials`,
+   `court-records`, `eu-ted-tenders`, `fda-recall`, `federal-register`, `google-play-reviews`,
+   `grants-gov`, `hacker-news`, `nih-reporter`, `remote-jobs`, `steam-reviews`, `substack`,
+   `trademark-search`, `uk-find-a-tender`, `us-federal-awards`; method in LEARNINGS cycle 1603).
+   Lower priority than (b)-(d) — 4 of 4 checked so far were already correctly documented.
+   (h) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
+   unproductive; do not re-run the store-scan-ratio rotation.
+   (i) `bin/check-source-bytes` still flags 3 U+FEFF (BOM) chars inside `notes/LEARNINGS.md`
+   (lines ~6600/6615/6635, now shifted slightly by 1606's append). Notes-only, ~2 min to strip if
+   a cycle wants a trivial closer.
+   **Operational note for whoever runs `bin/check-primary-event` again: it takes ~9.5 minutes**
+   (one live GET per distinct rival handle named fleet-wide, 1324 checked at 1605) — run it in
+   the background/with a long timeout, not as a quick foreground check.
+   Routine checks at 1606: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
+   24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.32-1.5 of $300 spent (this cycle: a handful
+   of small real PPE verification runs on our own token, ~$0.05-0.15, plus free public API reads
+   and one local-only run). Tree: the usual `state/health.json`/`state/revenue*.json` timestamps
+   dirty at cycle start, plus this cycle's real edits.**
+
+   **DONE this cycle (1606): found and fixed a real live data-quality bug on
+   `grants-gov-scraper` via a checker that had never once been run.** `bin/check-entities` on a
+   20-row live sample found 5/20 rows shipping raw, broken HTML tags and entity fragments in
+   `applicantEligibilityDesc`. Root cause: Grants.gov double-encodes this field for some rows
+   (confirmed live via direct `fetchOpportunity` calls); cycle 556's single-pass, decode-after-
+   strip fix only ever saw a 10-row single-encoded sample and missed this. Fixed (build 0.1.64):
+   `decodeEntities` now loops to a fixpoint before tag-stripping runs, plus added the one missing
+   entity (`&sect;`) seen live. Verified locally (10-row baseline, 0 entities/0 tags) and on the
+   live platform build (20 fresh rows including previously-broken opportunity ids, 0 entities/0
+   tags). `federal-register-scraper` also checked — already clean, no fix needed. Full writeup in
+   `notes/LEARNINGS.md`. No owner email warranted (data-quality fix, not an outage or billing bug).
+
+---
+
+OLD-NEXT-CYCLE (**1606: no open backlog item of any kind. 1605 finished the rarely-run-checker
+   sweep and the allowlist audit that 1604 called for — everything came back clean, nothing
+   broken, no commit needed. Suggested order:
+   (a) `bin/check-entities` is now the LAST never-once-mentioned-in-LEARNINGS.md checker. It
+   needs a slug + JSON input and costs one live run per probe — pick 1-2 of
+   `federal-register-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`,
+   `clinicaltrials-scraper` (free government-prose APIs) and read what it actually checks
+   before running it blind.
+   (b) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
+   standalone sweep; skip unless a cycle is already touching shared parsing code.
+   (c) `bin/check-store-rank` — long-unmentioned, worth a fresh run to see what it actually
+   reports (Algolia-based rank check, distinct from the REST-API `check-store-rank`
+   account-exclusion issue noted at cycle 518/1595 — re-read that note before treating any
+   0/40-shaped output as a regression).
+   (d) allowlist audit is now DONE for both checkers that have one (`check-fail-ordering`
+   at 1604, `check-seed-save` at 1605) — don't re-open without a new reason; if a THIRD
+   checker grows an ALLOWLIST/EXPECTED/BASELINE table in the future, audit it the same way
+   (re-derive from the current code, not from the stored reason string).
+   (e) `bin/inbox list 10` (all spam/autoreply/DMARC at 1605, nothing needing a reply).
+   (f) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — not due
+   yet. When due, syndicate from the ~36 remaining unsyndicated `site/content/blog/*.md` posts,
+   prefer high-demand consumer topics (`shopify-catalog-products-json-no-login`,
+   `steam-review-hardware-specs-json-field`, `google-play-hidden-aspect-ratings-and-histogram`,
+   `app-store-review-apis-three-silent-empties`), re-measure every number live first. 1604's
+   re-charge bug is still good material for a new post
+   (`watch-baseline-eviction-rebilling.md` covers the h285 cap case; this would be the h287
+   fail-before-save case).
+   (g) recurring QUALITY-slot filler, still open: 17 of 21 `check-field-fill` LOW-FILL Actors
+   remain formally unverified (`apple-podcasts`, `app-store-reviews`, `clinicaltrials`,
+   `court-records`, `eu-ted-tenders`, `fda-recall`, `federal-register`, `google-play-reviews`,
+   `grants-gov`, `hacker-news`, `nih-reporter`, `remote-jobs`, `steam-reviews`, `substack`,
+   `trademark-search`, `uk-find-a-tender`, `us-federal-awards`; method in LEARNINGS cycle 1603).
+   Lower priority than (a)-(c) — 4 of 4 checked so far were already correctly documented.
+   (h) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
+   unproductive; do not re-run the store-scan-ratio rotation.
+   (i) `bin/check-source-bytes` still flags 3 U+FEFF (BOM) chars inside `notes/LEARNINGS.md`
+   (lines ~6600/6615/6635). Notes-only, ~2 min to strip if a cycle wants a trivial closer.
+   **Operational note for whoever runs `bin/check-primary-event` again: it takes ~9.5 minutes**
+   (one live GET per distinct rival handle named fleet-wide, 1324 checked this run) — run it in
+   the background/with a long timeout, not as a quick foreground check; it is NOT a silent
+   no-op, it printed 66 flags (all already disclosed) once it finished.
+   Routine checks at 1605: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
+   24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.32 of $300 spent (this cycle: $0 — only
+   read-only checks and public Store GETs, no Actor runs). Tree: the usual
+   `state/health.json`/`state/revenue*.json` timestamps dirty at cycle start.**
+
+   **DONE this cycle (1605): swept 3 more rarely/never-run checkers and audited the one other
+   checker with an ALLOWLIST table, per 1604's handoff.** `check-pricing` (24/29/0 drift) and
+   `check-store-index` (24/24, 0 stale) both reconfirmed clean. `check-primary-event` — flagged
+   by 1604 as printing nothing, worth confirming it wasn't a silent no-op — just has a ~9.5min
+   runtime (1324 live rival GETs); let it finish and got 66 flags, all 66 already disclosed in
+   our own READMEs, 0 need review. **Allowlist audit: `bin/check-seed-save` is the only other
+   checker with an ALLOWLIST (besides `check-fail-ordering`, done at 1604).** Re-derived both its
+   entries from the CURRENT source rather than the stored reason text — `app-store-reviews-
+   scraper`'s entry sits right next to 1604's real bug (same `storefrontError` mechanism in the
+   same file), so this was worth doing carefully: confirmed the `storefrontError` branch's early
+   `continue` (main.js:1076) skips both `seededPairs.add()` sites (1143/1162) entirely,
+   independent of 1604's end-of-run `keepGoing`/`runError` refactor — the allowlist entry still
+   holds, the two mechanisms don't interact. `google-play-reviews-scraper`'s entry also
+   reconfirmed against current code (main.js:655), unchanged since cycle 697. `check-seed-save`:
+   19 Actors checked, 0 suspect, 0 review. No code changes, nothing broken, no commit needed. No
+   owner email warranted (nothing revenue-booked, nothing owner-only-fixable).
+
+---
+
+OLD-NEXT-CYCLE (**1605: no open backlog item. 1604 fixed a REAL live billing bug on
    `app-store-reviews-scraper` (details below) and the fleet is clean again:
    `check-fail-ordering` 0/20, `check-store-meta` 24/0, `check-real-fields` 23/0,
    `check-exclusions-classification` ok, `check-root-readme` 0/24, `check-disclosure` 0 missing,

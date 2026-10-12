@@ -716,15 +716,24 @@ function baseParams(agencyChunk) {
 // Grants.gov double-encodes its free text: the API returns HTML entities even in fields that
 // carry no tags at all. Measured live (cycle 556) on a 10-row enriched sample: 131 entities,
 // `&nbsp;` x120 plus `&amp;`/`&rsquo;`/`&ldquo;`/`&rdquo;`, and ZERO tags in synopsisText /
-// applicantEligibilityDesc. stripHtml removed tags but never decoded, so every enriched row has
-// been shipping `&nbsp;` noise into a field the README documents as plain prose. Decode after
-// tag removal, before the whitespace collapse, so a decoded `&nbsp;` folds into normal spacing.
+// applicantEligibilityDesc that cycle -- but cycle 1606 measured live again (20-row sample,
+// `bin/check-entities`) and found 5/20 rows DOUBLE-encoding this field, i.e. an entity-escaped
+// TAG: `&lt;a href=&quot;...&quot;&gt;here&lt;/a&gt;` and `&amp;rsquo;`/`&amp;sect;` (an extra
+// layer of `&amp;` wrapping the real entity), not the single layer cycle 556 saw. The old
+// single-pass decodeEntities, run AFTER tag-stripping, turned `&amp;rsquo;` into a left-over
+// literal `&rsquo;` (only the outer `&amp;` layer gets consumed in one pass) and turned
+// `&lt;a href=...&gt;` into a literal, never-stripped `<a href=...>` tag -- because decoding ran
+// after the tag-strip, so a tag hidden behind entity-encoding was never there to strip. Decode to
+// a fixpoint (loop until a pass changes nothing, bounded so a pathological input can't hang)
+// BEFORE stripping tags, so any depth of encoding resolves to real characters first and a tag
+// uncovered by decoding still gets stripped; then collapse whitespace (so a decoded `&nbsp;`
+// folds into normal spacing).
 const ENTITIES = {
     nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", ndash: '–', mdash: '—',
     rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', hellip: '…',
-    bull: '•', middot: '·', deg: '°', reg: '®', copy: '©', trade: '™',
+    bull: '•', middot: '·', deg: '°', reg: '®', copy: '©', trade: '™', sect: '§',
 };
-const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
+const decodeEntitiesOnce = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
     if (e[0] === '#') {
         const cp = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
         // Reject non-characters/out-of-range rather than throwing out of String.fromCodePoint.
@@ -733,8 +742,18 @@ const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][
     const key = e.toLowerCase();
     return Object.prototype.hasOwnProperty.call(ENTITIES, key) ? ENTITIES[key] : m; // unknown entity: leave verbatim
 });
-// Plain-text cleanup for a free-text field: drop tags, decode entities, collapse whitespace.
-const cleanText = (v) => (v ? decodeEntities(String(v).replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim() || null : null);
+const decodeEntities = (s) => {
+    let prev = String(s);
+    for (let i = 0; i < 5; i += 1) {
+        const next = decodeEntitiesOnce(prev);
+        if (next === prev) break;
+        prev = next;
+    }
+    return prev;
+};
+// Plain-text cleanup for a free-text field: decode entities (to a fixpoint) FIRST so any
+// entity-hidden tag becomes a real tag, then drop tags, then collapse whitespace.
+const cleanText = (v) => (v ? decodeEntities(String(v)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || null : null);
 const stripHtml = cleanText;
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 
