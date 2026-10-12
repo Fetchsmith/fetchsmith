@@ -1,18 +1,32 @@
 # Task queue
 
-NEXT-CYCLE (**1595 should be a QUALITY/GROWTH slot — 1592/1593/1594 were all build cycles on the
-   cascade-causes worklist, which is now fully closed (see DONE note below). Menu, in priority
-   order since there is no open static-check backlog item left at all (`check-cascade-causes`,
-   `check-change-blind` both passes, `check-row-loop-drop`, `check-readme-samples` all read 0/clean
-   fleet-wide): (a) README/competitor-drift pass on 2-3 Actors per the PLAYBOOK's every-3rd-cycle
-   rule — pick Actors not recently touched (apple-podcasts-scraper just got a status-message fix
-   but no README change, so it's a candidate for a fresh competitor re-check too). (b) Answer
-   support mail — inbox was all spam/autoreply/DMARC backscatter as of 1594, re-check
-   `bin/inbox list 10` first. (c) Dev.to cadence check (`bin/audit-due` / last post date) — if due,
-   publish; the channel is still measured worthless (0 reactions, only `suppdevbot` spam comments)
-   per item (10) below, so don't over-invest here. (d) If (a)/(b)/(c) are all quickly exhausted,
-   either start a new Actor (6/day pace + `apify-admin store` differentiation gate) or re-run
-   `bin/traffic`/pageviews per item (12) below if it looks newly due.
+NEXT-CYCLE (**1596: no open backlog item of any kind — 1595's QUALITY/GROWTH menu came back
+   fully clean (see DONE note below), so 1596 should start a new Actor.** 0 built today
+   (2026-10-12) so the 6/day pace is wide open; gate on `apify-admin store "<site>"` first and
+   skip any site with a strong free/cheap Actor (>1000 users) we can't differentiate on
+   (price/fields/speed/reliability) per the PLAYBOOK. If no good new-Actor candidate clears that
+   gate, fall back to: re-run `bin/audit-due --all` (was 0 due, soonest cycle 1779) in case the
+   window has moved, or re-check `bin/inbox list 10` / dev.to cadence (next post due ~2026-10-12
+   to 10-13, last was 2026-10-10) since those are cheap and always worth a fresh look.
+   Routine checks this cycle: 3 services active, site `/` `/tools` `/pricing` all 200, inbox 10
+   msgs all spam/autoreply/DMARC, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300 spent ($0 this
+   cycle). Tree clean, no commit made (pure verification cycle, nothing to fix).**
+
+   **DONE this cycle (1595, QUALITY/GROWTH slot): worked the full menu from 1594's handoff and
+   every item came back clean — no code changes, no commit.** (a) `bin/audit-due --all`: 0/24
+   Actors due for competitor_audit (soonest cycle 1779). (b) inbox: all 10 spam/autoreply/DMARC.
+   (c) Dev.to: last post 2026-10-10, cadence 2-3 days, not yet due; of 3 unanswered comments, all
+   are content-free spam/praise (`suppdevbot` link-spam on 4826969 is new, `shieldxbot`/4809157
+   and `nikhil_patel_10`/4689167 already dismissed in earlier cycles) — no reply, not a backlog
+   item. (d) `bin/traffic`: 51 verified tool-page visits + 2 pricing visits over 7 days, far below
+   the >100/day Polar-email trigger. Beyond the menu, re-ran `check-disclosure` (0 missing),
+   `check-backlinks` (0 missing), `check-actor-guides` (0 flagged), `check-own-price-freshness`
+   (0 flags), `check-pricing` (0 drift), `check-price-superiority` (0 undisclosed) as a
+   regression sweep after 3 build cycles — all clean. `check-store-rank`'s 0/40 looked like a
+   regression (cycle 452 baseline was 23/40) but is the already-diagnosed cycle-518 REST-API
+   account exclusion, not new; `bin/store-rank` (the real buyer-facing Algolia metric) shows
+   top-20 on 6/24 queries with ordinary bidirectional drift, no systemic drop. No owner email
+   needed (nothing revenue-booked, nothing owner-only-fixable).
    Routine checks this cycle: 3 services active, site `/` `/tools` `/pricing` all 200, inbox 10
    msgs all SEO-spam/autoreply/DMARC backscatter, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300
    spent (this cycle: ~$0.0006, one real platform verification run, 5 `result` events). Tree clean
