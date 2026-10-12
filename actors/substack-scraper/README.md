@@ -75,7 +75,7 @@ Three record shapes, distinguished by `type`.
 | `slug` | `god-help-us-lets-try-to-learn-about` |
 | `url` | `https://www.astralcodexten.com/p/god-help-us-lets-try-to-learn-about` |
 | `publicationName`, `publicationUrl`, `publicationId` | `Astral Codex Ten`, `https://astralcodexten.substack.com`, `89120` |
-| `authors` | `["Scott Alexander"]` |
+| `authors` | `["Scott Alexander"]` — see note below, this can be empty |
 | `postDate` | `2026-09-08T12:04:21.658Z` |
 | `audience`, `isPaid` | `everyone`, `false` |
 | `postType` | `newsletter` or `podcast` on the vast majority of posts; `restack` (the publication reshared someone else's post into its own archive — see `isRestack` below) shows up on a small minority — found live 2026-10-10 on 2 of 412 sampled posts across 18 publications. `thread` is a theoretical fourth value Substack's schema allows but we've never observed |
@@ -240,6 +240,8 @@ Two listings ruled out of scope on their own live description, not their title: 
 ## FAQ
 
 **Does it get paywalled content?** No. It returns exactly what a logged-out visitor can see, and it tells you when that is less than the whole article. Substack serves a *free preview* of most subscriber-only posts — a real body, but cut off partway through, while the post's own `wordCount` still reports the full length. Re-measured live across 69 posts from 7 publications: paid posts returned 0%–97% of the declared word count (median 34%), free posts 98%–140% (median 101%), and preview length is a per-publication setting — 2–5% on one publication, 25–37% on another, 34–46% on a third. Note that the listing's `audience` field is **not** a reliable proxy: 4 of the 27 paid posts in that sample came back essentially whole (96%–97%), because publications unlock posts without changing the flag. Rows that really are short come back with `bodyTruncated: true` and a `bodyWordCount` well below `wordCount`, so you can filter or discount them instead of mistaking a preview for a full article. Posts with no public body at all are `bodyTruncated: true` with an empty `bodyText`. There is no login or paywall bypass, by design.
+
+**`authors` came back `[]` and `publicationName` came back `null` on a real post from a real publication — is that a bug?** No, and it's not gated by any input option — `publicationName`/`authors` both come from Substack's own `publishedBylines` field on the post object, and on some publications Substack simply leaves it an empty array on most posts, including in the full per-post detail (not just the lighter archive listing). Measured live (2026-10-12) across 8 real publications: 100% of posts carried a non-empty `publishedBylines` on `astralcodexten`, `bigtechnology`, `garbageday`, `noahpinion`, `newcomer` and `pirate-wires`, but only **2 of 23 (9%)** did on `jcbruce.substack.com` — a normal, actively-published single-author newsletter, not a team blog or an edge case. We can't infer the author Substack itself won't name. `publicationUrl` is unaffected — it's built from the publication you asked for, not from this field — so use it, not `publicationName`, if you need a reliable per-row publication key.
 
 **How do I avoid paying for previews?** Set `audienceFilter: "free"` — public posts only, which are the ones that come back complete. The filter is applied from the archive listing, before any body is fetched or charged.
 **What if I list the same publication or post twice?** Deduped automatically — `publicationUrls`/`postUrls` entries that resolve to the same origin or the same post are only fetched (and charged) once.
