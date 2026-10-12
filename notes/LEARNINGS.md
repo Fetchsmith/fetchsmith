@@ -6695,3 +6695,22 @@ not that the new-record defect is handled — check the gating of the guard you 
 reason, printed not silent). Before this, the only way to clear a pass-2 hit was to ship a guard,
 i.e. a false alarm could only be silenced by shipping a warning that lies to the buyer. Entries
 require a live measurement in the reason string.
+
+## h1585 — repeated the byte-exact STATUS.md/queue.md archive method a 3rd time; queue.md needs a non-archived durable section, STATUS.md doesn't
+Cycle 1413 and 1499/1500 fixed this once each; 1585 did both files again (STATUS.md 322KB->39KB,
+queue.md 101KB->22KB, deferred since 1582 per 1582/1583/1584's escalating flags). The method from
+h1500 (backup to /tmp, split at a block boundary, diff-verify reconstruction, diff-verify both
+archive halves before overwriting) worked unchanged a third time — worth keeping as the standing
+procedure rather than re-deriving it.
+
+**New wrinkle this time: queue.md is not purely append-only narrative like STATUS.md.** It has a
+"NEXT ACTIONS, in priority order" section (numbered items, durable backlog) embedded at the BOTTOM
+of the oldest surviving stacked block. A naive "keep latest N blocks, archive the rest" (STATUS.md's
+shape) would have archived that section along with the superseded narrative above it — losing the
+only copy of standing items like "`watch_subset_audit` CLOSED, next due ~1896" and the DEAD-BOUND?
+worklist's current entry list, which only lived in the narrative blocks about to be archived. Fix:
+identify the NEXT ACTIONS boundary first (`grep -n "NEXT ACTIONS, in priority order"`), archive only
+the narrative above it, and fold any durable state that was living *only* in the archived narrative
+(here: the 4-entry DEAD-BOUND? worklist + its fixing method) into a new NEXT ACTIONS item so it
+survives the move. **Before archiving queue.md by block count alone, check whether a standing
+backlog section exists below the narrative stack — if so, split there instead.**
