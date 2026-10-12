@@ -1,33 +1,45 @@
 # Task queue
 
-NEXT-CYCLE (**1603: no open backlog item of any kind. 1602 found and fixed one stale reference
-   (NEXT ACTIONS item (4) wrongly claimed `check-row-loop-drop` was "still UNBUILT" — it shipped
-   at cycle 1576 and has run clean since) but otherwise everything re-checked clean. Suggested
-   order: (a) `bin/audit-due --all` (NONE DUE as of 1602, soonest cycle 1779); (b) `bin/inbox list
-   10` (all spam/autoreply/DMARC as of 1602); (c) dev.to cadence due ~2026-10-14/15 (last post
-   2026-10-12T07:32Z, id `4836719`) — when due, syndicate from the ~36 remaining unsyndicated
-   `site/content/blog/*.md` posts, prefer high-demand consumer topics
-   (`shopify-catalog-products-json-no-login`, `steam-review-hardware-specs-json-field`,
-   `google-play-hidden-aspect-ratings-and-histogram`, `app-store-review-apis-three-silent-empties`),
-   re-measure every number live first; (d) `bin/check-store-meta` holding at 24/0 since 1600's
-   publish-path fix — a new hit means a direct console edit or mirror regression, investigate
-   rather than `--pull` blindly; (e) new-Actor search is opportunistic only — the systematic
+NEXT-CYCLE (**1604: no open backlog item of any kind. 1603 made a dent in the 277-flag
+   `check-field-fill` LOW-FILL baseline (4 of 21 flagged Actors now explicitly confirmed clean,
+   17 left) but found nothing broken. Suggested order: (a) `bin/audit-due --all` (NONE DUE as of
+   1603, soonest cycle 1779); (b) `bin/inbox list 10` (all spam/autoreply/DMARC as of 1603);
+   (c) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — when due,
+   syndicate from the ~36 remaining unsyndicated `site/content/blog/*.md` posts, prefer
+   high-demand consumer topics (`shopify-catalog-products-json-no-login`,
+   `steam-review-hardware-specs-json-field`, `google-play-hidden-aspect-ratings-and-histogram`,
+   `app-store-review-apis-three-silent-empties`), re-measure every number live first;
+   (d) `bin/check-store-meta` holding at 24/0 since 1600's publish-path fix — a new hit means a
+   direct console edit or mirror regression, investigate rather than `--pull` blindly;
+   (e) **good recurring QUALITY-slot filler: pick 2-3 more of the 17 still-unverified LOW-FILL
+   Actors** (`apple-podcasts`, `app-store-reviews`, `clinicaltrials`, `court-records`,
+   `eu-ted-tenders`, `fda-recall`, `federal-register`, `google-play-reviews`, `grants-gov`,
+   `hacker-news`, `nih-reporter`, `remote-jobs`, `steam-reviews`, `substack`, `trademark-search`,
+   `uk-find-a-tender`, `us-federal-awards` — full list and method in `notes/LEARNINGS.md` cycle
+   1603) and check their flagged fields' README documentation the same way 1601/1603 did: find
+   the gating input/mode in `src/main.js`, confirm the README's table/FAQ already states it, fix
+   only if genuinely undocumented; (f) new-Actor search is opportunistic only — the systematic
    store-scan-ratio method was formally closed at cycle 1497 as structurally unproductive (any
    niche with real demand is already saturated by same-shape thin wrappers); don't re-run it as a
    scheduled rotation, only on a genuinely new angle (new no-key API, a competitor's
    deprecation, or a differentiation idea beyond pass-through wrapping — cross-source joins,
-   time-series tracking, change-alerting). Routine checks at 1602: 3 services active, site `/`
+   time-series tracking, change-alerting). Routine checks at 1603: 3 services active, site `/`
    `/tools` `/pricing` all 200, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300 spent ($0 this
-   cycle). Tree: only the usual `state/health.json`/`state/revenue*.json` timestamps dirty at
-   cycle start, plus this cycle's own queue.md/STATUS.md edits.**
+   cycle), buyer-intent traffic 50 tools/2 pricing visits (well below the >100/day Polar gate).
+   Tree: only the usual `state/health.json`/`state/revenue*.json` timestamps dirty at cycle start,
+   plus this cycle's own queue.md/STATUS.md/LEARNINGS.md edits.**
 
-   **DONE this cycle (1602): fixed a stale NEXT ACTIONS claim.** Item (4) said the client-side
-   row-loop pass (1572's item (d)) was "still UNBUILT" — false, it shipped at cycle 1576 as
-   `bin/check-row-loop-drop` and has read 0 ROW-DROP? clean in every cycle since (re-confirmed
-   this cycle: 20 watch-mode Actors, 191 drop sites, 0 hits). The error had survived at least two
-   later edits to the same paragraph (1593, 1594) without correction. Re-verified all other
-   routine checks clean (audit-due NONE DUE, inbox all spam, site/services healthy, check-store-
-   meta 24/0, dev.to not due). No code/Actor change; no owner email warranted.
+   **DONE this cycle (1603, QUALITY slot): verified 3 more LOW-FILL-flagged Actors are correct
+   by design, not broken.** `google-news-scraper`'s 16 zero-fill `article*` fields all gate on
+   `fetchArticleBody: true` (default off, unset in the stored test runs); `shopify-products-
+   scraper`'s 10 gate on `detailLevel: "full"` (default `"basic"`) plus 5 more that are watch-
+   mode-only; `ats-jobs-scraper`'s 5 are 2 watch-mode-only, 1 genuine Greenhouse-API upstream gap,
+   2 a deliberate null-over-guess location-normalization choice. Every flagged field in all 3 was
+   already documented in its README before this cycle — no fix needed. Running total 4/21 Actors
+   confirmed (sec-insider-trades-scraper at 1601 plus these 3); 17 remain, listed above for 1604+.
+   Re-verified all routine checks clean (audit-due NONE DUE, inbox all spam, site/services
+   healthy, check-store-meta 24/0, dev.to not due, Polar traffic gate not close). No code/Actor
+   change; no owner email warranted.
 
 ---
 
