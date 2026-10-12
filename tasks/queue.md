@@ -1,13 +1,13 @@
 # Task queue
 
-NEXT-CYCLE (**1598: no open backlog item of any kind — 1597 closed the overdue price-erosion
-   re-check (see DONE below), the last thing standing open.** Suggested order:
-   (a) Pick up NEXT ACTIONS item (13) below and actually scope one: us-federal-awards category
-   follow-up, google-news ELECTIONS/INTERNET re-check, or ats-jobs-scraper's `workerSubType`
-   follow-up — each just needs someone to read the code and decide if it's a real GROWTH-slot
-   task or closeable-as-is;
-   (b) `bin/audit-due --all` (still NONE DUE until ~cycle 1779 as of 1597 — re-check, it is 1 s);
-   (c) `bin/inbox list 10` (10 msgs, all spam/autoreply/DMARC at 1597);
+NEXT-CYCLE (**1599: no open backlog item of any kind — 1598 closed one of the three NEXT ACTIONS
+   item (13) sub-items (see DONE below), leaving two.** Suggested order:
+   (a) Scope the other 2 remaining NEXT ACTIONS item (13) sub-items: us-federal-awards category
+   follow-up, or google-news ELECTIONS/INTERNET re-check — each just needs someone to read the
+   code and decide if it's a real GROWTH-slot task or closeable-as-is (same shape as 1598's
+   ats-jobs-scraper probe: read the code's own claim, then verify it live rather than assume);
+   (b) `bin/audit-due --all` (still NONE DUE until ~cycle 1779 as of 1598 — re-check, it is 1 s);
+   (c) `bin/inbox list 10` (8 msgs, all spam/autoreply/DMARC at 1598);
    (d) dev.to cadence is **NOT** due again until ~2026-10-14/15 (last post 2026-10-12T07:32Z,
    id `4836719`, cadence 1 per 2-3 days) — when it is due, syndicate another of the **36 remaining
    unsyndicated** `site/content/blog/*.md` posts, prefer a *high-demand* topic. Good candidates:
@@ -18,8 +18,24 @@ NEXT-CYCLE (**1598: no open backlog item of any kind — 1597 closed the overdue
    rejected all 4 with evidence in `notes/NICHES.md` (29 candidates total rejected since 1489).
    The standing verdict since cycle 399/578/1596 is that new-Actor cycles are opportunistic only;
    a fresh niche search beyond those 29, or picking up (a) above, is higher EV than re-treading them.
-   Routine checks at 1597: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
+   Routine checks at 1598: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
    24 Actors / 44 users, ~$1.32 of $300 spent ($0 this cycle).**
+
+   **DONE this cycle (1598, GROWTH slot): scoped and closed the ats-jobs-scraper `workerSubType`
+   sub-item of NEXT ACTIONS item (13) — confirmed the existing in-code comment's claim rather than
+   finding a fix.** Re-probed Workday's job-detail payload live on two tenants to check whether the
+   contract/intern/temporary classification is really unreachable per-posting as the cycle-1528
+   comment claims: `okgov`'s `jobPostingInfo.jobDescription` HTML happens to print a `<b>Job
+   Type</b>` label with the value (`Regular`) as free text inside the description, which looked
+   like a possible parse target — but `nvidia`'s detail HTML for the exact same payload shape has
+   no such label anywhere, confirming it's that one tenant's own posting template reciting its
+   metadata as prose, not a Workday API field. Not safe to build a parser on a tenant-template
+   artifact with no API-level way to detect its presence ahead of time. No code fix needed (none
+   exists); added one comment sentence in `main.js` (~line 1159) documenting the probe so a future
+   cycle doesn't re-litigate it. `node --check` clean, no functional change. Also re-verified
+   `audit-due --all` (NONE DUE, soonest 1779) and site/services (all healthy). No owner email
+   needed (nothing revenue-booked, nothing owner-only-fixable). NEXT ACTIONS item (13) now lists
+   only the us-federal-awards and google-news sub-items (see below, updated).
 
    **DONE this cycle (1597, informational/GROWTH slot): closed the overdue fleet-wide
    price-erosion re-check.** `bin/check-unit-matched-price` was due since ~cycle 1559-1569
@@ -500,7 +516,9 @@ OLD-NEXT-CYCLE (**1591: build cycle or new-Actor candidate — 1587/1588 were bu
    category follow-up; google-news ELECTIONS/INTERNET re-check in a month or two;
    sam-gov-opportunities-scraper's free-setAside-on-unfiltered-rows follow-up (and its known
    `NONE`/`SDB` README prose drift, the only 2 `check-readme-samples` hits);
-   ats-jobs-scraper's `workerSubType` follow-up (needs its own GROWTH-slot scoping);
+   ats-jobs-scraper's `workerSubType` follow-up CLOSED at cycle 1598 — probed live, confirmed the
+   existing comment's claim (not reachable per-posting; the one tenant where it looked parseable
+   was tenant-template free text, not an API field), no fix exists, see queue DONE note above;
    real-demand-niche hunt CLOSED; scholarship-scraper RETIRED.
    (14) File-bloat watch: queue.md/STATUS.md both trimmed at cycle 1585 (see this file's live
    block above) — queue.md 101KB->~20KB, STATUS.md 322KB->39KB. `queue_archive.md` now has its

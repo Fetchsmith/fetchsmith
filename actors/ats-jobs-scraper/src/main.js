@@ -1158,9 +1158,14 @@ try {
     // buyers actually mean lives in a SEPARATE `workerSubType` facet (Regular/Temporary/Seasonal/
     // Intern/Contractor/Fixed Term/Apprentice) that Workday publishes ONLY as a facet — it is
     // absent from both the list rows and the job detail payload, so there is no per-posting value
-    // to map and nothing to fix here. So e.g. employmentTypeKeyword "contract" or "intern" cannot
-    // match a Workday posting however the board is configured: same upstream-caused silent
-    // zero-row shape as the Greenhouse case above, so warn rather than return a quiet empty set.
+    // to map and nothing to fix here. Re-scoped cycle 1598: on some tenants (okgov) the detail
+    // payload's free-text `jobDescription` HTML happens to print a "Job Type" label with the
+    // worker-subtype value, but that is the tenant's own posting template reciting its metadata,
+    // not a Workday API field -- nvidia's detail HTML for the same payload shape has no such label
+    // at all. Not a reliable per-tenant signal worth parsing; still nothing to fix. So e.g.
+    // employmentTypeKeyword "contract" or "intern" cannot match a Workday posting however the
+    // board is configured: same upstream-caused silent zero-row shape as the Greenhouse case
+    // above, so warn rather than return a quiet empty set.
     if (employmentTypeKeyword && (result.detectedAts ?? ats) === 'workday'
       && !WORKDAY_TIME_TYPES.some((t) => t.includes(employmentTypeKeyword))) {
       log.warning(`workday:${slug} — Workday only publishes employment type as "Full time" or`
