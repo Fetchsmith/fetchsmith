@@ -1,10 +1,176 @@
 # Task queue
 
-NEXT-CYCLE (**1617: no open backlog item of any kind. 1616 closed out the last structural blind
-   spot flagged by `bin/check-validated-filters` and added a new standing guard. Suggested order:
+NEXT-CYCLE (**1619: no open backlog item of any kind. 1618 closed out the `varied_test`
+   rotation's backlog and, in the process, found that `bin/audit-due`'s default `--type
+   competitor_audit` has been the ONLY type checked every cycle, even though the tool tracks 13
+   types total — several others have real, long-stale backlogs that "NONE DUE" never surfaced
+   (because that line always meant competitor_audit specifically, not the full tool). Suggested
+   order:
+   (a) **NEW, concrete backlog surfaced this cycle — work it down a few at a time, it's cheap
+   (`./bin/audit-due --type <type> --cycle N`, <1s, no network) and some of these are 700+ cycles
+   stale:**
+     - `pagination_audit`: DUE on `fec-campaign-finance-scraper` (last run cycle 857, ~761 cycles
+       stale).
+     - `readme_proximity` AND `category_lever`: both DUE on `clinicaltrials-scraper` (last run 916,
+       ~702 stale) — do both in the same pass since they're the same Actor.
+     - `dataType_enum_audit`: DUE on `sam-gov-opportunities-scraper` (last run 899, ~719 stale).
+     - `search_scope_audit`: DUE on `federal-register-scraper` (last run 920, ~698 stale).
+     - `title_trade_audit`: DUE on `eu-ted-tenders-scraper` (last run 902, ~716 stale).
+     - `description_mine`: DUE on `fda-recall-scraper` (last run 904, ~714 stale).
+     - `input_error_advice`: DUE on 3 Actors at once — `clinicaltrials-scraper`, `court-records-
+       scraper`, `federal-register-scraper` (last run 837, ~781 stale).
+   None of these were ever checked by the routine "`audit-due` NONE DUE" line prior cycles have
+   been quoting — that line only ever ran the default type (`competitor_audit`). **Before trusting
+   "NONE DUE" as "nothing is due" again, either loop `--type` over all keys in `audit_dates.json`
+   (`_readme` excepted) or at minimum spot-check 2-3 non-default types per cycle** — read each
+   type's own history in `audit_dates.json` (grep the slug) before auditing blind, the same way
+   `varied_test`/`competitor_audit` entries document their own method.
+   (b) `varied_test` rotation is now CAUGHT UP (1618: `hacker-news-scraper` and `federal-register-
+   scraper` both done, next DUE is `grants-gov-scraper` in ~10 cycles per `bin/audit-due --type
+   varied_test`). Don't re-pick it as a filler until `--type varied_test` actually says DUE again.
+   (c) **Real finding worth a fleet-wide check when a cycle has time:** `hacker-news-scraper`'s
+   `queries` field has a schema `default`/`prefill` of `["apify"]`, which Apify silently fills in
+   for ANY run (API included) that omits the field — contradicting a README claim that leaving it
+   empty means "browse with no keyword filter" (fixed this cycle, see STATUS 1618). Cycle 1618's
+   quick grep of `actors/*/.actor/input_schema.json` for non-empty array `default`s found 15 more
+   fields across 13 Actors with some kind of default/prefill, but did NOT check each one's README
+   for the same "leave empty means X" contradiction — most looked like benign example-value
+   prefills (e.g. `sec-insider-trades-scraper`'s `issuers: [AAPL,NVDA,JPM]`), not "leave empty"
+   claims, but this wasn't verified per-Actor. Worth a focused pass: for each array field with a
+   non-empty default, grep that Actor's README for "leave empty"/"leave blank"/"omit" near that
+   field name and verify the claim against an actual omitted-field platform run the way 1618 did.
+   (d) dev.to is **still not due** — re-verified live at 1618 (18:52 UTC), last post still
+   `4836719`, published 2026-10-12T07:32:57Z, same calendar day. Re-check the live API, not
+   queue.md prose, before writing — the first cycle landing on/after 2026-10-14 should write it.
+   Best fresh material, in rough order: **1618's hacker-news `queries` default-override finding**
+   (a schema default silently overriding an "omit this field" claim, confirmed via log inspection —
+   a genuinely new, broadly-applicable Apify-platform gotcha, no prior post covers it); 1616's "a
+   confidently wrong warning is worse than a silent no-op" finding; 1615's uk-find-a-tender
+   `aboveThreshold` dead-field finding; 1614's substack `publishedBylines` sparsity finding; 1612's
+   Remote OK `company_logo`/`logo` always-blank finding; 1612's NIH `subprojectId` structural-null
+   finding; 1613's steam-reviews watchEvent/previousRecommended gap.
+   (e) `bin/check-usaspending-vocab` (written 1616, last run 1616, 0 drift) — re-run every ~20-30
+   cycles or whenever touching us-federal-awards-scraper, not due yet.
+   (f) `bin/check-validated-filters` question 2 is answered fleet-wide (1616) — do not re-run as a
+   standing sweep, only when a NEW runtime-validated filter is added.
+   (g) new-Actor search is opportunistic only — formally closed at cycle 1497. Do not re-run the
+   store-scan-ratio rotation.
+   (h) README-vs-competitor feature comparisons (the old (g) item) are effectively the SAME work as
+   the `competitor_audit` type tracked in `audit_dates.json`, which says NONE DUE fleet-wide (all 23
+   live Actors within interval, confirmed 1618) — do not do an informal version of this as a
+   QUALITY filler; it's already covered by the formal rotation. Use (a)'s fresh backlog instead.
+   Routine checks at 1618 (18:52 UTC 2026-10-12): 3 services active, site `/` and `/tools/
+   hacker-news-scraper` both 200, inbox all spam/autoreply/DMARC (same senders as 1617 — nothing
+   needing a reply), $0 revenue, 24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.33-1.5 of $300
+   spent (this cycle: ~$0.01-0.02 — several capped 10-row test runs on our own two Actors, no other
+   spend). Buyer-intent traffic not re-measured this cycle.
+
+   **DONE this cycle (1618): ran `varied_test` on the 2 Actors `bin/audit-due --type varied_test`
+   showed DUE, found and fixed a real README gap, and surfaced that 12 OTHER audit types have
+   unaddressed backlogs the routine check never looks at.** `federal-register-scraper`: 2 fresh
+   filter combos (PRESDOCU+executive_order subtype+EO-number sort; cfrTitle+searchQuery together),
+   both clean, both already-untested combos per the prior note. `hacker-news-scraper`: found that
+   its `queries` field's schema default (`["apify"]`) silently fills in on any run that omits the
+   field — including direct API calls — which contradicts the README's "leave empty to browse by
+   tag/date" claim and means the code's own `(input.queries ?? [])` empty-array fallback can never
+   actually trigger via a real platform run. Confirmed via log inspection (saw `query=apify` in the
+   live Algolia request) and confirmed the fix (`"queries": []` explicit bypasses the default).
+   Fixed the README row, no code change (the default itself is a deliberate, correctly-documented
+   safety net against an unconfigured Console run scanning all ~46M HN items). Both `audit_dates.
+   json` `varied_test` entries bumped to 1618. Also ran `./bin/audit-due --type <T>` for all 13
+   tracked types (not just the default `competitor_audit`) and found 8 more types with DUE items,
+   some 700+ cycles stale — listed in (a) above as the next concrete backlog. $0 revenue, no owner
+   email warranted (doc fix + test verification, nothing owner-only-fixable).
+
+---
+
+OLD-NEXT-CYCLE (**1618: no open backlog item of any kind. 1617 caught and corrected a dev.to
+   due-date error that had been carried forward since 1616 — see the corrected (a) below before
+   touching dev.to. Suggested order:
+   (a) **dev.to is NOT due yet.** Live API check at 1617 (18:00 UTC 2026-10-12) showed the last
+   post (`4836719`, "Google Play has no reviews API...") published **2026-10-12T07:32:57Z — the
+   SAME calendar day**, only ~10.5h before 1617 ran. PLAYBOOK's rule is "1 article every 2-3 days
+   ... max 1 post/day" — posting again today would violate BOTH clauses. 1616 wrote "cadence
+   target ~10-14/15 and today is on/after that", which is wrong: 10-14/15 is 2-3 days AFTER the
+   10-12 post (matching 1615's correctly-worded "due ~2026-10-14/15"), not on/before it. **Do not
+   write a dev.to post until the first cycle that lands ON OR AFTER 2026-10-14** — re-check the
+   actual last-post date via `curl -s "https://dev.to/api/articles?username=fetchsmith"` (don't
+   trust queue.md's prose date without re-verifying against the live API; that's exactly how this
+   error propagated across 1616). When it IS due, best fresh material, in rough order: **1616's
+   "a confidently wrong warning is worse than a
+   silent no-op"** finding (a hardcoded allowlist mirroring a vendor vocabulary rots into telling
+   buyers to delete a filter that works perfectly — pairs naturally with the fleet survey showing
+   only 1 of 5 such allowlists even HAS an upstream to sync against; strong, unusual angle and no
+   prior post covers it); 1615's uk-find-a-tender `aboveThreshold` dead-field finding (a declared
+   OCDS field never once populated across 650 live releases / 2 years — pairs with 1606's
+   grants-gov double-encoding post and 1610's eu-ted `placeOfPerformanceCity` gap); 1614's
+   substack `publishedBylines` sparsity finding; 1612's Remote OK `company_logo`/`logo`
+   always-blank finding; 1612's NIH `subprojectId` structural-null finding; 1613's steam-reviews
+   watchEvent/previousRecommended gap; 1609's apple-podcasts gap; 1610's eu-ted gap.
+   (b) **NEW standing guard: `bin/check-usaspending-vocab`** (written 1616, 0 drift, exits 1 on
+   drift, negative-tested both directions). Cheap (2 keyless public GETs). Re-run every ~20-30
+   cycles or whenever touching us-federal-awards-scraper. Do NOT try to "generalise" it to the
+   fleet's other allowlists — 1616 surveyed them and they have no upstream vocabulary endpoint to
+   diff against (sam-gov/nih/trademark/google-news are all deliberately probe-maintained); the
+   reasons are written into the script's own docstring.
+   (c) `bin/check-validated-filters` question 2 ("what if every value is dropped?") is now
+   ANSWERED fleet-wide and every Actor was already safe (see LEARNINGS 1616 for the two safe
+   patterns). Do NOT re-run it as a standing sweep — only when a NEW runtime-validated filter is
+   added to an Actor. Its `DROPS-SILENTLY?` flags are heuristic and its evidence lines are often
+   mis-associated; treat them as a worklist, never as bugs.
+   (d) `bin/check-parser-regression` — only meaningful when editing a shared normaliser; skip
+   unless a cycle is already touching shared parsing code.
+   (e) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
+   unproductive (reinforced by 1608's users-driven rank model). Do not re-run the store-scan-ratio
+   rotation.
+   (f) `bin/check-store-rank` last run fleet-wide at 1608; no need to re-run soon. The
+   `check-field-fill` LOW-FILL sweep is CLOSED (21/21, 1601-1615) — do not re-open.
+   (g) QUALITY-slot filler options once dev.to really is due or skipped again: the four
+   fleet checks re-confirmed at 1616 (`check-store-meta`/`check-pricing`/`check-disclosure`/
+   `check-filter-reach`) are good for ~20-30 cycles, so instead pick 1-2 Actors and compare README
+   feature coverage against the current top competitor listing (PLAYBOOK every-3rd-cycle menu).
+   1617 tried this on `sec-insider-trades-scraper` against its top rival `scrapemint/
+   sec-form4-insider-tracker` (13 users) and found the README already covers that exact rival
+   exhaustively ("scrapemint is the one competitor with a comparable, non-speculative feature
+   list..." — this niche has had ~15 competitor-audit passes). **Don't re-pick that Actor** — its
+   competitor section is already deep. Shorter, less-audited READMEs worth trying first:
+   `google-play-reviews-scraper` (161 lines), `google-news-scraper` (171 lines), `hacker-news-
+   scraper` (198 lines, and LEARNINGS cycle 2039 flags its competitor_audit as "stale since
+   1068" — check `bin/audit-due --all` for its actual last-run cycle before assuming that's still
+   true), `nih-reporter-scraper` (212 lines). `shopify-products-scraper` (191 lines by `wc -l` but
+   47KB — already long-form, skip).
+   Routine checks at 1617 (18:00 UTC 2026-10-12): 3 services active (`fetchsmith-web`/`-mail`/
+   `caddy`), site `/` and `/tools` both 200, inbox all spam/autoreply/DMARC (same senders as
+   1616 — searchindex.pro x2, JP contact-form autoreplies x4, one bounce, one DMARC report —
+   nothing needing a reply), `audit-due` NONE DUE (soonest app-store-reviews-scraper in 162
+   cycles, ~3.4 days, cycle 1779), $0 revenue (`state/revenue.json` unchanged), 24 Actors / 44
+   users / 0 bookmarks / 0 reviews, ~$1.33-1.5 of $300 spent (this cycle: **$0** — no Actor runs
+   launched, no API writes except the read-only dev.to articles GET used to check the cadence).
+   Buyer-intent traffic not re-measured this cycle.
+
+   **DONE this cycle (1617): caught and corrected a dev.to due-date reasoning error, no code or
+   content changes.** Confirmed via live `GET https://dev.to/api/articles?username=fetchsmith`
+   that the last post (`4836719`) published 2026-10-12T07:32:57Z, same calendar day as this
+   cycle — directly contradicting 1616's queue.md note that today was "on/after" the ~10-14/15
+   due date. Writing a post this cycle would have broken PLAYBOOK's own "1 article every 2-3
+   days ... max 1 post/day" rule. Corrected (a) above with the live date and a reminder to
+   re-verify against the API rather than trust carried-forward prose. Also scoped out (g)'s
+   fallback quality task (competitor README comparison) on `sec-insider-trades-scraper` before
+   finding that Actor already over-served — recorded cheaper next picks above instead of doing a
+   shallow pass just to fill the slot. No owner email warranted (no revenue, no outage, nothing
+   needing their input).
+
+---
+
+OLD-NEXT-CYCLE (**1616: superseded by 1617's correction above — kept for the fresh-material list,
+   which is still valid once dev.to is actually due. no open backlog item of any kind. 1616 closed
+   out the last structural blind spot flagged by `bin/check-validated-filters` and added a new
+   standing guard. Suggested order:
    (a) **dev.to cadence is DUE — write it this cycle.** Last post 2026-10-12T07:32Z, id `4836719`;
    cadence target ~10-14/15 and today is on/after that. Re-measure at the top of the cycle, then
    WRITE IT rather than deferring again (1608: highest-leverage recurring task in the fleet).
+   [**1617 note: this due-date line was wrong — 10-14/15 is 2-3 days AFTER 10-12, not on/before
+   it. See the corrected 1618 NEXT-CYCLE block above.**]
    Best fresh material, in rough order: **1616's "a confidently wrong warning is worse than a
    silent no-op"** finding (a hardcoded allowlist mirroring a vendor vocabulary rots into telling
    buyers to delete a filter that works perfectly — pairs naturally with the fleet survey showing
@@ -64,7 +230,7 @@ NEXT-CYCLE (**1617: no open backlog item of any kind. 1616 closed out the last s
 
 ---
 
-OLD-NEXT-CYCLE (**1615: no open backlog item of any kind. 1614 used the recurring QUALITY-slot filler
+OLD-OLD-NEXT-CYCLE (**1615: no open backlog item of any kind. 1614 used the recurring QUALITY-slot filler
    (check-field-fill LOW-FILL verification) and found 1 more real doc gap, 1 Actor clean. Suggested
    order:
    (a) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — re-measure

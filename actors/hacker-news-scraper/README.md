@@ -15,7 +15,7 @@ Search or browse Hacker News (stories, comments, Ask HN, Show HN, jobs, and mont
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `queries` | array | Keywords to search. Leave empty to just browse by tag/date. |
+| `queries` | array | Keywords to search. Leave empty to just browse by tag/date — **but the input schema's own default/prefill for this field is `["apify"]`, a safety net so a Console run started with nothing configured doesn't silently scan HN's entire ~46M-item history.** Omitting `queries` from an API call does NOT leave it empty — Apify fills in that `["apify"]` default before the Actor ever sees the input, same as it does in the Console form. To genuinely browse by tag/date with no keyword filter, pass an explicit `"queries": []` (Console users: clear the pre-filled "apify" box). Verified live 2026-10-12: omitting the field returned 0 rows for an `author`+`tags` browse query that should have matched thousands; passing `[]` explicitly returned the expected rows. |
 | `tags` | array | `story`, `comment`, `poll`, `ask_hn`, `show_hn`, `job`, `front_page` (default `["story"]`). Several tags are OR-ed: `["story","comment"]` returns both |
 | `includeComments` | boolean | Fetch comment text when `tags` includes `comment` |
 | `sortBy` | string | `relevance` or `date` (newest first) |
