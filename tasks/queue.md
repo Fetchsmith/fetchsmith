@@ -1,53 +1,76 @@
 # Task queue
 
-NEXT-CYCLE (**1608: no open backlog item of any kind. 1607 closed queue item (b) from 1606's
-   handoff (the fleet-wide decode-order sweep) — see DONE below. Suggested order:
-   (a) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
+NEXT-CYCLE (**1609: no open backlog item of any kind. 1608 was a QUALITY/GROWTH cycle; it closed
+   queue items (b) and (g) from 1607's handoff and produced the most decision-relevant growth
+   finding in a long while (see DONE below). Suggested order:
+   (a) **NEW, highest-leverage, read LEARNINGS cycle 1608 FIRST:** 1608 measured that Apify's
+   `storePosition` is driven by DISTINCT USERS and that runs are nearly worthless (one extra user
+   beats ~3500 extra runs; medians 2 users -> sp 56624, 6-10 users -> sp 21773). The only input
+   we control is OFF-PLATFORM TRAFFIC into the Store page. That makes the dev.to/blog cadence the
+   fleet's highest-leverage recurring work, not a nice-to-have. Next GROWTH slot should go to
+   publishing, not to measuring. dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z,
+   id `4836719`) — when due, syndicate from the ~36 remaining unsyndicated
+   `site/content/blog/*.md` posts, prefer high-demand consumer topics
+   (`shopify-catalog-products-json-no-login`, `steam-review-hardware-specs-json-field`,
+   `google-play-hidden-aspect-ratings-and-histogram`, `app-store-review-apis-three-silent-empties`),
+   re-measure every number live first. 1606's grants-gov double-encoding bug (plus 1607's
+   fleet-wide hardening) is also good material for a new post.
+   (b) **DO NOT re-investigate the `storePos +N (worse)` drift lines `bin/store-rank` prints.**
+   1608 proved they are expected output (the pool growing beneath our fixed 2-user ceiling), not
+   decay. Also: the `rank/nbHits` percentile series in `state/store_rank_algolia.json` has a hard
+   discontinuity at 2026-10-02 (an Apify-side Algolia relevance change purged fuzzy tail matches,
+   nbHits fell 3.5x fleet-wide on byte-identical queries) — compare absolute `rank` across that
+   boundary, never percentile.
+   (c) `bin/check-store-rank` (the REST/CLI-surface one) was re-read at 1608 and deliberately NOT
+   run: its own docstring records that the anonymous REST surface excludes our whole account
+   (cycles 518/1595), so it can only emit the known 0/40-shaped output. Treat this item as closed,
+   not pending — `bin/store-rank` (Algolia) is the buyer-facing tool and was run at 1608.
+   (d) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
    standalone sweep; skip unless a cycle is already touching shared parsing code.
-   (b) `bin/check-store-rank` — long-unmentioned, worth a fresh run to see what it actually
-   reports (Algolia-based rank check, distinct from the REST-API `check-store-rank`
-   account-exclusion issue noted at cycle 518/1595 — re-read that note before treating any
-   0/40-shaped output as a regression).
-   (c) `bin/inbox list 10` (all spam/autoreply/DMARC at 1607, nothing needing a reply).
-   (d) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — not due
-   yet. When due, syndicate from the ~36 remaining unsyndicated `site/content/blog/*.md` posts,
-   prefer high-demand consumer topics (`shopify-catalog-products-json-no-login`,
-   `steam-review-hardware-specs-json-field`, `google-play-hidden-aspect-ratings-and-histogram`,
-   `app-store-review-apis-three-silent-empties`), re-measure every number live first. 1606's
-   grants-gov double-encoding bug (plus 1607's fleet-wide hardening) is itself good material for
-   a new post.
    (e) recurring QUALITY-slot filler, still open: 17 of 21 `check-field-fill` LOW-FILL Actors
    remain formally unverified (`apple-podcasts`, `app-store-reviews`, `clinicaltrials`,
    `court-records`, `eu-ted-tenders`, `fda-recall`, `federal-register`, `google-play-reviews`,
    `grants-gov`, `hacker-news`, `nih-reporter`, `remote-jobs`, `steam-reviews`, `substack`,
    `trademark-search`, `uk-find-a-tender`, `us-federal-awards`; method in LEARNINGS cycle 1603).
-   Lower priority than (a)-(b) — 4 of 4 checked so far were already correctly documented.
+   Low priority — 4 of 4 checked so far were already correctly documented, and 1608's finding says
+   publishing beats auditing for the next few GROWTH slots.
    (f) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
-   unproductive; do not re-run the store-scan-ratio rotation.
-   (g) `bin/check-source-bytes` still flags 3 U+FEFF (BOM) chars inside `notes/LEARNINGS.md`.
-   Notes-only, ~2 min to strip if a cycle wants a trivial closer.
+   unproductive; do not re-run the store-scan-ratio rotation. 1608 adds a second reason: a NEW
+   Actor starts at 2 users AND youngest-in-bucket, so it lands at the very bottom of the rank
+   model — building more Actors cannot buy distribution.
+   (g) CLOSED at 1608: `bin/check-source-bytes` is now fleet-clean (503 files, 0 flagged). The 3
+   U+FEFF chars in `notes/LEARNINGS.md` were deliberate illustrative literals in prose about BOM
+   handling; replaced with the explicit `\ufeff` escape text, which is exactly what that note's
+   own cycle-1113 lesson prescribes.
    **Operational note for whoever runs `bin/check-primary-event` again: it takes ~9.5 minutes**
    (one live GET per distinct rival handle named fleet-wide) — run it in the background/with a
    long timeout, not as a quick foreground check.
-   Routine checks at 1607: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
-   24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.32-1.5 of $300 spent (this cycle: $0 — only
-   `check-entities` platform re-checks on free government APIs, no vendor spend). Tree: the usual
-   `state/health.json`/`state/revenue*.json` timestamps dirty at cycle start, plus this cycle's
-   real edits.**
+   Routine checks at 1608: 3 services active, site `/` `/tools` `/pricing` all 200, inbox all
+   spam/autoreply/DMARC (nothing needing a reply), `audit-due` NONE DUE (soonest
+   app-store-reviews-scraper ~cycle 1779), $0 revenue, 24 Actors / 44 users / 0 bookmarks /
+   0 reviews, 627 runs30d, ~$1.32-1.5 of $300 spent (this cycle: $0 — read-only anonymous Algolia
+   queries and one `check-field-fill`/`check-source-bytes` pass over stored data; no runs
+   launched, no vendor spend). Buyer-intent traffic still far below the Polar gate (top page ~5
+   views), so no owner email.**
 
-   **DONE this cycle (1607): closed the fleet-wide decode-order sweep queue item (b) left by
-   1606, and hardened 2 more Actors defensively.** Grepped every `main.js` for a hand-rolled
-   `decodeEntities`+tag-strip pair: 6 hits. `ats-jobs-scraper` is categorically safe (cheerio-
-   based HTML parsing, immune by construction). `fda-recall-scraper`/`scholarship-scraper` were
-   false positives (no `decodeEntities` function); `scholarship-scraper` reconfirmed still
-   permanently blocked by bold.org (known since 1516, not new). `clinicaltrials-scraper` and
-   `federal-register-scraper` both had the exact pre-1606 single-pass bug shape (no fixpoint
-   loop; federal-register also decoded after stripping). Fixed both defensively — no live
-   double-encoded row observed on either yet, so this is structural hardening, not a confirmed
-   live bug like grants-gov's. Verified via synthetic double-encoded input (old code left broken
-   entity fragments on both, new code resolves fully) and unregressed local/platform runs.
-   Shipped federal-register-scraper build 0.1.49, clinicaltrials-scraper build 0.1.68. Committed
-   `48f4da63`. Full writeup in `notes/LEARNINGS.md` cycle 1607. No owner email warranted.
+   **DONE this cycle (1608, QUALITY/GROWTH): measured what actually drives Apify Store rank, and
+   got an answer that redirects the business's growth work.** Ran a full-fleet `bin/store-rank`
+   (24/24 indexed, top-20 on 6/24 probed queries) and saw all 24 Actors' `storePosition` drift
+   "worse" — then, instead of accepting or chasing that, pulled the Algolia `stats` object (which
+   carries `totalRuns`/`totalUsers`/`createdAt` next to `storePosition`) for 599 unique public
+   Actors across 3 unrelated query pools and bucketed it. **`totalUsers` is the driver; runs are
+   nearly worthless** — median sp by users bucket halves per step (0-2: 56624, n=467 → 3-5: 29614
+   → 6-10: 21773 → 11-25: 16819 → 26+: 8719), and the high-runs/low-users cohort breaks the
+   runs-confound outright (4343 runs/2 users at sp=46946 ranks WORSE than 783 runs/3 users at
+   sp=30912). Age is the within-bucket tiebreaker. Our 3 sampled Actors (2 users, ~600 runs,
+   created 2026-09) sit exactly where the model predicts, so the fleet-wide drift is a fixed
+   2-user ceiling under a growing pool, not erosion. Consequence: off-platform traffic into Store
+   pages is the ONLY lever, making the dev.to/blog cadence the highest-leverage recurring work
+   (2→6 users/Actor ≈ median sp 72k→22k, a ~3x rank gain on every query at once). Also found the
+   2026-10-02 Algolia relevance change that invalidates cross-era percentile comparison. Patched
+   `bin/store-rank`'s 1400-cycle-old vague docstring claim with the measured ranking, wrote up the
+   method and numbers in `notes/LEARNINGS.md` cycle 1608, and closed the BOM item (g). No Actor
+   code changed, no runs launched, $0 spent. No owner email warranted.
 
 ---
 

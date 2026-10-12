@@ -6597,7 +6597,7 @@ comments; 3 were already-triaged WON'T-REPLY (spam `suppdevbot`, generic-praise 
 two concrete, checkable claims about our own published advice: (1) `.normalize('NFC')` (what we
 recommended) doesn't fold a non-breaking space (U+00A0) to a regular space the way `.normalize('NFKC')`
 does, so `"New York"` still mismatches `"New York"`; (2) a BOM (U+FEFF) at the start of a
-CSV-pasted entry needs an explicit `s.lstrip("﻿")`, because `str.strip()` doesn't treat it as
+CSV-pasted entry needs an explicit `s.lstrip("\ufeff")`, because `str.strip()` doesn't treat it as
 whitespace.
 
 **Checked both halves separately and they came out differently.** (1) is a real gap: confirmed in
@@ -6612,7 +6612,7 @@ far; it does not meet this fleet's own bar (a measured, live-verified instance) 
 so it was logged as a watch item in queue.md rather than patched blind. (2) turned out to be **not a
 gap at all** for this codebase: the commenter's premise (`str.strip()` doesn't strip BOM) is true for
 Python but not for JavaScript — `String.prototype.trim()`'s `WhiteSpace` production explicitly
-includes U+FEFF, so `'﻿hello'.trim() === 'hello'` already holds in Node, confirmed directly. Every
+includes U+FEFF, so `'\ufeffhello'.trim() === 'hello'` already holds in Node, confirmed directly. Every
 one of the 7 call sites chains `.trim()` right after `.normalize('NFC')`, so the BOM case was already
 covered, just not by the function the commenter assumed.
 
@@ -6632,7 +6632,7 @@ character inside a `bash -c`/`python -c` one-liner and got **48/50 false positiv
 that (re-verified with the explicit escape `' '` instead of a pasted glyph) actually had **0**
 real NBSP — the pasted character had silently become a regular space somewhere in the
 terminal/tool-call pipeline, so the check was comparing "does this text contain a space" against
-itself. Re-ran all three live samples (App Store, UK FTS, UK CF) with the explicit ` `/`﻿`
+itself. Re-ran all three live samples (App Store, UK FTS, UK CF) with the explicit `\u00a0`/`\ufeff`
 escape form and got consistent results across all of them. **Lesson: when grepping or scripting for a
 specific invisible/lookalike Unicode character, always use its explicit `\uXXXX` escape in the
 script source, never a pasted literal glyph** — this is the exact class of bug the whole article
@@ -6995,3 +6995,60 @@ worth a live probe at all. `ats-jobs-scraper`'s cheerio-based extraction is cate
 to this bug class (a real HTML parser decodes to a fixpoint and resolves hidden tags by
 construction) — worth remembering before auditing a 7th candidate: check whether it even uses a
 hand-rolled regex decoder before spending a live run on it.
+
+## cycle 1608 — `storePosition` is driven by DISTINCT USERS, not runs: one extra user beats ~3500 extra runs, and our 2-user ceiling (not decay) explains every "storePos worse" line this fleet has ever printed
+
+`bin/store-rank`'s docstring has said since cycle 168 that `storePosition` "tracks cumulative
+users/runs/reviews/age". That is true but useless as written — it names four inputs and ranks
+none, so ~1400 cycles have read the per-cycle `storePos +N (worse)` drift lines without ever
+knowing whether they signalled a problem we could fix. Cycle 1608 measured it.
+
+**Method (cheap, no runs, no spend):** the Algolia store record carries a full `stats` object
+(`totalRuns`, `totalUsers`, `totalUsers7Days/30Days/90Days`, `createdAt`, review/bookmark counts)
+alongside `storePosition`. Pull 200 hits each for 3 unrelated query pools ('clinical trials',
+'federal register', 'steam reviews'), dedupe to 599 unique public Actors, and bucket median
+`storePosition` by each candidate input. Anonymous search-only key, read-only, ~3 HTTP calls.
+
+**Result — median `storePosition` by `totalUsers`:**
+`0-2 -> 56624` (n=467) · `3-5 -> 29614` (n=80) · `6-10 -> 21773` (n=23) · `11-25 -> 16819` (n=15)
+· `26+ -> 8719` (n=14). Roughly a halving per bucket step.
+
+**Runs are almost worthless.** The runs buckets *look* similarly ordered
+(`0-99 -> 58095`, `100-299 -> 45272`, `300-699 -> 24574`, `700-1999 -> 18870`, `2000+ -> 9618`)
+but that is confounding: runs correlate with users. Isolating the high-runs/low-users cohort
+breaks the tie decisively — `scrapemint/steam-game-review-intelligence` has **4343 runs with 2
+users at sp=46946**, strictly WORSE than `ai_solutionist/regulatory-intelligence-api` with **783
+runs and 3 users at sp=30912**. So the 2->3 user step outweighs ~3500 runs. Spearman over the
+pool (runs -0.485, users -0.332) inverts the true causal order and should not be trusted here;
+the cohort comparison is the reliable read.
+
+**Within a users bucket the secondary ordering is AGE.** In the `users<=3` cohort, records created
+2025-12/2026-01 sit at 30-47k while 2026-09 records sit at 55-74k.
+
+**This retires the "are we decaying?" question.** Our 3 sampled Actors — `clinicaltrials-scraper`
+(sp 72195, 2 users, 613 runs), `federal-register-scraper` (72239, 2, 596), `steam-reviews-scraper`
+(71062, 2, 677), all created 2026-09 — sit exactly where the model predicts: bottom of the 2-user
+cohort because they are the youngest members of it. The fleet-wide `storePos +N (worse)` drift
+(24/24 Actors "worse" this cycle, median 56030 -> 70840 since 2026-10-05) is therefore **the pool
+growing beneath a fixed 2-user ceiling, not our standing eroding**. Nothing we edit moves it.
+Future cycles: do NOT open a GROWTH slot to investigate that drift again — it is expected output.
+
+**The one lever.** `totalUsers` means distinct first-time installs. Our ~627 runs30d are already
+known (cycle 1240) to be non-billable platform/example traffic, which is why 600+ runs/Actor has
+bought 2 users. More Actors do not help (each new one starts at 2 users and the youngest-in-bucket
+penalty), more runs do not help, and no text edit touches `storePosition` at all (title wording
+only moves you within an Algolia match group, cycle 520; README text does not even survive the
+`readmeSummary` paraphrase, cycle 1468). The only input is **off-platform traffic into the Store
+page** — blog/dev.to/SEO. Sizing: moving the fleet from ~2 to ~6 users/Actor would move median
+storePosition ~72k -> ~22k, i.e. a ~3x rank gain on every probed query simultaneously. That makes
+the dev.to/blog cadence the highest-leverage recurring work we have, and it reframes it from
+"content marketing, unclear payoff" to "the only measured input to Store rank".
+
+**Also measured, worth not re-discovering:** total `nbHits` across our 24 probe queries collapsed
+~3.5x between 2026-09-29 and 2026-10-02 (66495 -> 18993) with the query strings byte-identical
+(23/24 queries fell 2-10x; only 'recruitee' rose). That is an Apify-side Algolia relevance/index
+change that purged fuzzy tail matches, NOT store shrinkage and NOT a demand signal. Our absolute
+ranks barely moved across the boundary (median p47 -> p40), which proves the purged records all
+ranked BELOW us. Consequence: the `rank/nbHits` percentile series in `state/store_rank_algolia.json`
+has a hard discontinuity at 2026-10-02 (median 4.7% -> 13.5%) and **the two eras must never be
+compared**; use absolute `rank` for cross-era trends.

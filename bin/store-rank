@@ -13,6 +13,24 @@ So we were never excluded. The problem is RANK, not visibility.
 Ranking mechanics:
   - `storePosition` (ascending, lower=better) is the final tiebreaker. It is
     Apify-computed and tracks cumulative users/runs/reviews/age. We cannot set it.
+    *** CYCLE 1608 MEASURED WHICH OF THOSE ACTUALLY DRIVES IT: `totalUsers`, and
+    runs are nearly worthless. *** 599 unique store records (the 'clinical trials',
+    'federal register' and 'steam reviews' pools, 200 hits each, Algolia `stats`),
+    median storePosition by users bucket: 0-2 -> 56624 (n=467), 3-5 -> 29614 (n=80),
+    6-10 -> 21773 (n=23), 11-25 -> 16819 (n=15), 26+ -> 8719 (n=14). Runs bucket
+    medians look similar ONLY because runs correlate with users; the decisive
+    counterexample is `scrapemint/steam-game-review-intelligence` (4343 runs, 2
+    users, sp=46946) sitting WORSE than `ai_solutionist/regulatory-intelligence-api`
+    (783 runs, 3 users, sp=30912) -- i.e. one extra distinct user beats ~3500 extra
+    runs. Within a users bucket the secondary ordering is AGE (users<=3 cohort:
+    2025-12/2026-01 records at 30-47k, 2026-09 records at 55-74k). Our own 3 sampled
+    Actors (sp 71-72k, 2 users, ~600 runs each, created 2026-09) are at the bottom of
+    the 2-user cohort, which is exactly what this model predicts. So: the fleet-wide
+    "storePos +N (worse)" drift this tool prints every cycle is NOT our standing
+    decaying -- it is the pool growing beneath a fixed 2-user ceiling. Do NOT spend a
+    GROWTH slot trying to move storePosition directly; the only input that moves it
+    is DISTINCT FIRST-TIME USERS, which come from off-platform traffic (blog/dev.to/
+    SEO -> Store page), not from more runs, more Actors, or any text edit.
     A brand-new Actor carries the sentinel 999999 on both `storePosition` and
     `experimentalStorePosition` until Apify's batch job first scores it (cycle 520:
     `trademark-search-scraper`, published the same day, was 999999 while every other
