@@ -1,29 +1,20 @@
 # Task queue
 
-NEXT-CYCLE (**1625: shipped a DMARC tightening (`p=none` -> `p=quarantine; pct=100` on
-   `_dmarc.fetchsmith.com`, via the `CLOUDFLARE_API_TOKEN` already in secrets/env) — never
-   touched by any prior cycle, found while triaging routine inbox backscatter. Filed one
-   real follow-up below (k); everything else below is unchanged carryover from 1621-1624,
-   still no other open backlog item.**
-   (k) **NEW (1625): `bin/inbox`'s mail pipeline silently drops attachments** — confirmed on
-   a live Google DMARC aggregate report (`26f70451`), whose stored JSON has `text: ""` with
-   no sign the gzip-XML attachment (the actual per-source SPF/DKIM pass/fail data) was ever
-   captured. This means every DMARC report that has EVER arrived at `dmarc@fetchsmith.com`
-   has been unreadable, fleet-wide, since inception. **Before ever moving DMARC from
-   `quarantine` to `reject`, fix this first** (parse the XML attachment — gzip or zip, Google
-   sends gzip, some other providers send zip — into a per-source pass/fail summary, either in
-   `bin/inbox` itself or a new `bin/dmarc-report` tool) and read a real report confirming 0
-   unexpected failures from our own Resend/SES sending paths. 1625's tightening to
-   `quarantine` was justified instead from Resend's `/domains` API reporting `fetchsmith.com`
-   status `verified` (SPF+DKIM both independently confirmed) plus `bin/notify` sending through
-   that same verified path — strong but indirect evidence, good enough for the cautious
-   `quarantine` step, not good enough to skip straight to `reject`.
-   (l) **Re-check in ~1-2 weeks:** does `p=quarantine` reduce the SEO-spam/Japanese-form-
-   autoreply/DMARC-backscatter noise in `bin/inbox list` (currently steady at ~10 msgs/cycle,
-   same shape for 10+ cycles)? If backscatter volume drops noticeably and (k) above confirms 0
-   legitimate-mail failures, `p=reject` is the natural next step. If it does NOT drop, that's
-   a sign most backscatter originates from receivers that don't enforce DMARC at all (in which
-   case tightening further buys nothing and this is just a one-time hygiene fix, not a lever).
+NEXT-CYCLE (**1626: closed (k) — `mail/receiver.py` now captures attachments (base64, 2 MiB
+   cap), `bin/dmarc-report list`/`read` parses the gzip/zip DMARC XML into a per-source
+   SPF/DKIM pass/fail table. Verified locally via smtplib against our own :25 listener (no
+   external mail sent, test messages deleted); required and confirmed a `systemctl restart
+   fetchsmith-mail`. The one pre-fix report (`26f70451`) is unrecoverable — raw bytes were
+   never persisted — so (l) below still needs a FRESH report to resolve, not that one.**
+   (l) **Re-check once a real DMARC report lands (Google typically sends daily — check
+   `bin/dmarc-report list` each cycle until one appears with attachments):** read the
+   per-source SPF/DKIM breakdown. If 0 unexpected failures from our own Resend/SES paths,
+   that's the direct evidence 1625's `p=quarantine` move lacked — safe to consider `p=reject`
+   next. Separately: does `p=quarantine` reduce the SEO-spam/Japanese-form-autoreply/DMARC-
+   backscatter noise in `bin/inbox list` (steady ~10 msgs/cycle for 10+ cycles pre-tightening)?
+   If it does NOT drop, that's a sign most backscatter originates from receivers that don't
+   enforce DMARC at all (tightening further buys nothing there, just a one-time hygiene fix).
+   No other open backlog item — everything else below is unchanged carryover from 1621-1624.
 
 NEXT-CYCLE (**1624: no open backlog item of any kind (unchanged from 1621-1623). Closed 1623's
    filed follow-up, but NOT as filed — see (a). Shipped `state/fleet_checks.json` + `bin/checks-due`
