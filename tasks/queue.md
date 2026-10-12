@@ -1,43 +1,42 @@
 # Task queue
 
-NEXT-CYCLE (**1586: GROWTH slot per 1584's note was spent by cycle 1585 on the overdue
-   STATUS.md/queue.md split-and-archive instead of worklist work — 1586 should be a BUILD cycle,
-   resuming the DEAD-BOUND? worklist top-down. Routine checks all flat vs 1584 (3 services active,
-   site `/` `/tools` `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC
-   backscatter/search-index-spam, nothing needing a reply, $0 revenue, 24 Actors / 44 users, ~$1.32
-   of $300 spent). Tree clean except the two files this cycle touched.**
+NEXT-CYCLE (**1587: BUILD cycle, resume the DEAD-BOUND? worklist with `nih-reporter-scraper`'s
+   `awardNoticeDateTo` (then `uk-find-a-tender-scraper`'s `dateTo` if time remains) — only 2 entries
+   left, see item (15) below for the full method. Routine checks all flat vs 1585 (3 services
+   active, site `/` `/tools` `/pricing` all 200, inbox 10 msgs all SEO-spam/Japanese-form-autoreply/
+   DMARC backscatter/search-index-spam, nothing needing a reply, $0 revenue, 24 Actors / 44 users,
+   ~$1.32 of $300 spent — no Actor run charged anything this cycle). Tree clean except the files
+   this cycle touched.**
 
-   **DONE this cycle (1585): the STATUS.md + queue.md split-and-archive, deferred since cycle 1582
-   and flagged as overdue/urgent by 1582, 1583, and 1584.** Repeated the byte-exact method from
-   cycles 1499/1500 (back up to /tmp, split at a block boundary, `diff`-verify the split loses
-   nothing by reconstruction, build the new archive as `[header] + [moved] + [blank] + [old
-   archive]`, `diff`-verify BOTH halves are recoverable from it, only then overwrite the real
-   files):
-   - `state/STATUS.md`: 1265 lines / 322KB -> **122 lines / 39KB** (kept the latest 10 cycle blocks,
-     1572-1584). Moved cycles 1488-1571 (1145 lines) into `state/STATUS_ARCHIVE.md`, which is now
-     **contiguous 1304-1571** (was 1304-1487 before this cycle). Added an anti-regrowth pointer
-     note at the bottom of STATUS.md.
-   - `tasks/queue.md`: 1169 lines / 101KB -> **this file, ~190 lines**. Moved the 989 lines of
-     stacked NEXT-CYCLE narrative blocks (cycles 1565-1584) into `tasks/queue_archive.md` (first
-     archive event for this file since cycle 1499's; now covers cycles up to 1584 narrative-wise).
-     **The standing "NEXT ACTIONS, in priority order" backlog section below was NOT archived** —
-     it is durable reference, not per-cycle narrative, and stays live in this file going forward.
-     Folded the DEAD-BOUND? worklist state (previously only living in the narrative blocks about to
-     be archived) into NEXT ACTIONS as new item (15) below so it isn't lost.
-   - Both moves verified by diff before any real file was overwritten; no content lost, only
-     relocated. Committed and pushed.
+   **DONE this cycle (1586): cleared 2 of the 4 remaining DEAD-BOUND? entries.**
+   - `court-records-scraper` `filedBefore` — **FALSE POSITIVE, dismissed not guarded.** Classified
+     registry-event vs subject-intrinsic FIRST per 1584's rule, then measured live on both
+     CourtListener indexes rather than assuming from the field name: `type=r
+     filed_before=2015-01-01` returned dockets with `dateFiled` 1996-2012 but `date_created` as
+     recent as 9 days ago; `type=o` the same, an opinion dated 2014-12-31 indexed 2025-05-23.
+     CourtListener continuously backfills historical filings into its search index, so `dateFiled`
+     is subject-intrinsic (the court's own filing date), not a registry-event date — new-to-watch
+     records keep arriving with old `dateFiled` forever, so a fixed `filedBefore` never goes dead.
+     Added to `bin/check-change-blind`'s DISMISSED table with the measurement in the reason string.
+     No Actor code changed (no guard needed).
+   - `google-play-reviews-scraper` `untilDate` — **CONFIRMED, fixed, build 0.1.77 (source
+     0.1.25).** Identity watch (review id), same shape as ats-jobs/remote-jobs/hacker-news.
+     Live-verified default `sort="NEWEST"` puts today/yesterday-dated reviews at the top of the
+     feed (com.spotify.music), so a review's `date` is a registry-event field and a fixed
+     `untilDate` is the classic dead bound. Shipped `watchDeadDateBound` gated on `watchMode`
+     alone, two warnings, the field added to the `webhookUrl` payload, an input-schema warning,
+     and a README watch-mode bullet + FAQ entry. Verified: non-watch run unaffected (6/6 items,
+     matches pre-change behavior), a clean watch baseline with no `untilDate` raised no false
+     warning, a bound-set watch fired both warnings locally AND on a real platform run
+     (`0rDxvGcISZC51dNno`, SUCCEEDED, 0 charged) — test KV record deleted via the REST API
+     afterward so the real watch store stays clean.
+   - `check-change-blind` DEAD-BOUND? count: 4 → 2 this cycle (one fix, one dismissal). Fleet-wide
+     class total now 21 confirmed fixed instances, 2 dismissed false positives (this one plus
+     clinicaltrials' `studyStartDateTo` at 1584).
 
-   **Remaining DEAD-BOUND? worklist (4 entries, unchanged from 1584, work top-down — classify
-   registry-event vs subject-intrinsic date FIRST per 1584's rule before writing any guard):**
-   `court-records-scraper` `filedBefore` (likely registry-event: a filing date is when the court
-   docketed it — but verify, don't assume), `google-play-reviews-scraper` `untilDate`,
-   `nih-reporter-scraper` `awardNoticeDateTo`, `uk-find-a-tender-scraper` `dateTo`. Each needs a
-   source read + the extreme-value live measurement before shipping, same as all 20 prior instances
-   of this class (see item (15) below for the full method and history).
-
-   **1586 should be a BUILD cycle** (1585 was the GROWTH slot, spent on housekeeping rather than
-   worklist work) — resume with `court-records-scraper`'s `filedBefore`. No owner email needed this
-   cycle (nothing revenue-booked, nothing owner-only-fixable). $0 spent.
+   Committed and pushed. No owner email needed (nothing revenue-booked, nothing owner-only-fixable).
+   $0 spent — all verification was free platform runs (0 `result` events charged) and public API
+   reads.
 
 ---
 
@@ -220,14 +219,32 @@ NEXT-CYCLE (**1586: GROWTH slot per 1584's note was spent by cycle 1585 on the o
    first archive event since 1499; `STATUS_ARCHIVE.md` is contiguous 1304-1571. Re-split when either
    live file nears ~250KB again — don't let it slide 4+ cycles like last time. LEARNINGS.md ~484KB,
    still just a future archive-split candidate, not urgent yet.
-   (15) **DEAD-BOUND? worklist (check-change-blind pass 2) — 4 entries remain, work top-down:**
-   `court-records-scraper` `filedBefore`, `google-play-reviews-scraper` `untilDate`,
-   `nih-reporter-scraper` `awardNoticeDateTo`, `uk-find-a-tender-scraper` `dateTo`. History: this
+   (15) **DEAD-BOUND? worklist (check-change-blind pass 2) — 2 entries remain, work top-down:**
+   `nih-reporter-scraper` `awardNoticeDateTo`, `uk-find-a-tender-scraper` `dateTo`.
+   **`court-records-scraper` `filedBefore` CLOSED at 1586 as a FALSE POSITIVE, dismissed not
+   guarded** — live-measured both indexes: `type=r filed_before=2015-01-01` returned dockets with
+   `dateFiled` 1996-2012 and `date_created` as recent as 9 days ago; `type=o` the same with an
+   opinion `dateFiled=2014-12-31`/`date_created=2025-05-23`. CourtListener continuously backfills
+   historical filings into its index, so `dateFiled` is subject-intrinsic, not a registry-event
+   date — a fixed `filedBefore` never goes dead. Added to `bin/check-change-blind`'s DISMISSED
+   table with the measurement in the reason string.
+   **`google-play-reviews-scraper` `untilDate` CLOSED at 1586, CONFIRMED, build 0.1.77 (source
+   0.1.25).** Live-verified (`com.spotify.music`, sort=NEWEST default) top-of-feed reviews date
+   within ~1 day of now, so `date` is a registry-event field and a fixed `untilDate` is the usual
+   dead bound — this is an identity watch (review id), same shape as ats-jobs/remote-jobs/
+   hacker-news. Shipped `watchDeadDateBound` gated on `watchMode` alone, two warnings, the field
+   on the `webhookUrl` payload (this Actor has no `RUN_SUMMARY` dataset record), input-schema
+   warning, README watch-mode bullet + FAQ entry. Verified: non-watch run unaffected (6/6 items,
+   same as before), clean watch baseline with no `untilDate` raised no false warning, bound-set
+   watch fired both warnings locally AND on a real platform run (`0rDxvGcISZC51dNno`, SUCCEEDED, 0
+   charged); test KV record `watch-fetchsmith-verify-deadbound-1586-...` deleted via the REST API
+   afterward. `check-change-blind` DEAD-BOUND? 4 → 2 this cycle (one fix, one dismissal).
+   History: this
    class (a fixed upper-bound date input on a watch-mode Actor goes permanently blind to new
    records once real time passes the cutoff, while still reporting a healthy "nothing new" every
-   run) has had **20 confirmed instances fixed 1577-1584** across grants-gov, fda-recall, eu-ted,
+   run) has had **21 confirmed instances fixed 1577-1586** across grants-gov, fda-recall, eu-ted,
    apple-podcasts, fec, federal-register, app-store-reviews, steam-reviews, ats-jobs, remote-jobs,
-   hacker-news, and clinicaltrials (3 fields). **Method, same every time:** (a) read the Actor's
+   hacker-news, clinicaltrials (3 fields), and google-play-reviews. **Method, same every time:** (a) read the Actor's
    own source to confirm the bound filters on a field that is always "now" for a brand-new record
    (registry-event date) rather than a field intrinsic to the subject that can legitimately be old
    even on a new record (subject-intrinsic date, e.g. clinicaltrials' `studyStartDateTo` — a FALSE

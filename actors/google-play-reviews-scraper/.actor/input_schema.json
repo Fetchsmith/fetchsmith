@@ -152,7 +152,7 @@
     "untilDate": {
       "title": "Until date",
       "type": "string",
-      "description": "Only keep reviews posted on/before this date (ISO 8601, e.g. 2026-06-01).",
+      "description": "Only keep reviews posted on/before this date (ISO 8601, e.g. 2026-06-01). WATCH MODE WARNING: combined with watchLabel, a FIXED value here is a permanent dead end once the real date passes it — a newly-posted review's own date is always \"now\" (with the default sort=\"NEWEST\"), so no new review can ever be dated on or before an already-passed cutoff again. Leave it unset in a watched query; sinceDate alone is safe to keep. See README FAQ.",
       "editor": "datepicker"
     },
     "watchLabel": {

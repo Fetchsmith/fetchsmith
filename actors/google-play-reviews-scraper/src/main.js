@@ -208,6 +208,25 @@ function watchKeyFor(label, criteria) {
 }
 
 const watchMode = watchLabel.length > 0;
+// A fixed UPPER date bound kills a watch dead (11th instance of this fleet class). With the
+// default sort="NEWEST" (verified live 2026-10-12 on com.spotify.music: top-of-feed reviews
+// dated within the last day), a brand-new review's own `date` IS its post time, so once the
+// real calendar date passes a fixed `untilDate`, no newly-posted review can ever fall on or
+// before that cutoff again -- the watch reports "nothing new" forever while still looking
+// healthy. Gated on the schema's literal input name, not the parsed `untilDate` local, so the
+// static check-change-blind checker can see the guard.
+const watchDeadDateBound = watchMode && !!input.untilDate;
+if (watchDeadDateBound) {
+  log.warning(
+    `watchLabel "${watchLabel}" is combined with a fixed untilDate (${input.untilDate}). `
+    + 'Once the real calendar date passes that cutoff, no newly-posted review can ever be dated on or '
+    + 'before it anymore, so this watch is now permanently unable to report anything new.',
+  );
+  log.warning(
+    'Drop untilDate from a watched query (sinceDate alone is safe to keep), or remove '
+    + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+  );
+}
 let watchStore = null;
 let watchKey = null;
 let watchRecord = null;
@@ -802,6 +821,9 @@ if (webhookUrl) {
     watchSeeding: watchMode ? seeding : null,
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
+    // true means this watch is pinned to a fixed untilDate and can no longer report anything
+    // new once today passes it — a "nothing new" result from such a run is meaningless.
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
   };
   try {
     const resp = await gotScraping({

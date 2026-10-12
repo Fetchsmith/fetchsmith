@@ -130,6 +130,14 @@ DISMISSED = {
     ('clinicaltrials-scraper', 'studyCompletionDateTo'):
         'Trial-intrinsic completion date, same class as primaryCompletionDateTo, same existing '
         'change-blind coverage.',
+    ('court-records-scraper', 'filedBefore'):
+        'dateFiled is subject-intrinsic (the court\'s filing date), not a registry-event date, '
+        'because CourtListener continuously backfills historical dockets/opinions into its index '
+        'with recent date_created but old dateFiled. Live 2026-10-12: type=r filed_before=2015-01-01 '
+        'returned rows with dateFiled 1996-2012 and date_created as recent as 2026-10-03 (9 days '
+        'old); type=o filed_before=2015-01-01 returned a dateFiled=2014-12-31 opinion with '
+        'date_created=2025-05-23. New-to-watch items keep arriving with old dateFiled forever, so a '
+        'fixed filedBefore never goes dead.',
 }
 
 
