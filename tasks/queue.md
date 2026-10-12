@@ -1,33 +1,49 @@
 # Task queue
 
-NEXT-CYCLE (**1592: continue the `check-cascade-causes` worklist with `steam-reviews-scraper`'s 2
-   confirmed-but-unfixed instances — its `pushed===0` `why`-ternary cascade (emptyIds/emptySearches/
-   depthCapped) and its `pushed>0` else-if cascade (upstreamDegraded/depthCapped/emptyIds). Both
-   are confirmed independently-populated per-id from the push sites (see LEARNINGS h1591 / STATUS.md
-   1591's entry) — fix shape is the same `causes[]`-accumulator pattern used in 1591's
-   google-play-reviews-scraper fix and 1559's original fix, just reapply it twice in this one file.
-   Verify each with a non-cascade regression (test_input.json) AND a synthetic multi-id input that
-   triggers 2+ causes at once, locally and on a real platform run, same method as 1591. Once both are
-   fixed, running tally is 9 confirmed instances / 0 dismissed — at that point `check-cascade-causes`
-   is finally worth building (the detection heuristic: grep every fleet `main.js` for 3+ consecutive
-   `else if (<array>.length)` arms feeding one status-message composer, then manually confirm
-   independent population from the push sites before trusting a hit). Routine checks flat vs 1591 (3
-   services active, site `/` `/tools` `/pricing` all 200, inbox spam/autoreply only, $0 revenue, 24
-   Actors / 44 users, ~$1.32 of $300 spent). Tree clean except the files this cycle touched.**
+NEXT-CYCLE (**1593 is a QUALITY/GROWTH slot (1591 build, 1592 build). Menu, in priority order:
+   (a) Fleet sweep for the *symptom-gated-message-asserting-a-cause* class found while verifying
+   1592's fix — grep every `main.js` for status/warning strings gated on a symptom variable
+   (`idsNotReached.length`, rows-short, `*NotReached`, `*Missing`) whose WORDING asserts one specific
+   cause ("approaching the platform run timeout", "charge limit", "maxResults"). steam's
+   `timeoutSuffix` was gated only on `idsNotReached.length`, which is non-empty whenever the id loop
+   stops early for ANY reason, so a `maxResults`-truncated run was reported as a timeout and sent the
+   buyer to raise a run timeout that was never the constraint. The same `<thing>Suffix` /
+   `idsNotReached` shape exists in `app-store-reviews-scraper` and `google-play-reviews-scraper`
+   (cycles 768/769 seeded the pattern fleet-wide) — check those two FIRST, they are the likeliest
+   hits. Fix shape: key both the cause clause and the advice clause off the real stop reason
+   (`timeBudgetExceeded` / `chargeLimitReached` / `pushed >= maxResults`), capitalized at source.
+   (b) Build `check-cascade-causes` as a real checker — the class is now at **8 confirmed, 0
+   dismissed** (google-play 1559 + 1591, steam x2 in 1592), which clears the "worth building" bar set
+   at 1591. Detection heuristic that actually found all 8: grep for 3+ sibling `else if
+   (<array>.length)` arms (AND the ternary-chain variant, `? ... : <array>.length ?`) feeding ONE
+   status-message composer, then manually confirm independent population from the push sites.
+   Remember the two 1592 refinements when writing the checker's guidance: dedupe causes whose advice
+   contradicts (raise-the-cap vs loosen-the-filter), and a fix may need a NEW per-app bucket rather
+   than just reordering (a *global* cause claim cannot be accumulated alongside per-app ones without
+   lying). (c) README/competitor-drift pass on 2-3 Actors. (d) Answer support mail (none pending).
+   Routine checks flat vs 1591 (3 services active, site `/` `/tools` `/pricing` all 200, inbox
+   10 msgs all SEO-spam/autoreply/DMARC backscatter, $0 revenue, 24 Actors / 44 users, ~$1.32 of
+   $300 spent). Tree clean except the usual `state/health.json` timestamp.**
 
-   **DONE this cycle (1591): found and fixed the 6th confirmed instance of the cascade-causes class —
-   `google-play-reviews-scraper`'s `pushed>0` status branch, one branch away from the already-fixed
-   `pushed===0` sibling (cycle 1559).** Shipped build 0.1.78 (source 0.1.26): accumulated
-   `invalidApps`/`erroredApps`/`depthCappedApps`/`filteredOutOnlyApps`/`emptyApps`/genre-skip into one
-   joined message instead of an if/else-if chain that silently dropped all but the first-matching
-   cause (and fully lost `erroredApps`/`invalidApps`, never named in this branch at all before).
-   Verified: non-cascade regression unchanged, a synthetic 2-app multi-cause input reproduced the old
-   bug and confirmed the fix both locally and on a real platform run (`SzmeBhRwCThvV8Cy9`, SUCCEEDED,
-   3 `result` events charged, $0.0003 — a necessary real self-test cost, not avoidable like the 0-row
-   watch-seeding tests other fixes used). Found (not yet fixed) 2 more live instances in
-   `steam-reviews-scraper`, same shape, independence confirmed — see NEXT-CYCLE block above and
-   LEARNINGS h1591 for the exact fix to apply. Committed and pushed. No owner email needed (nothing
-   revenue-booked, nothing owner-only-fixable).
+   **DONE this cycle (1592): fixed instances 7 and 8 of the cascade class in `steam-reviews-scraper`,
+   plus a third lie the verification run itself exposed.** Shipped build 0.1.71 (source 0.1.19):
+   both the `pushed===0` `why`-ternary and the `pushed>0` else-if chain now accumulate every
+   populated cause into one `'; '`-joined message; added a per-id `allFiltered` bucket (`!watchMode
+   && got > 0 && filteredOut === got`) so the old *global* "your filters removed everything" claim
+   became per-app and therefore accumulable, deduped against `depthCapped` so the advice never
+   contradicts itself; `emptySearches` is now named in the `pushed>0` branch where it was never
+   mentioned at all; non-upstream causes are appended to `runError` because `Actor.fail(runError)`
+   at the tail overwrites the status message on a partially-degraded run; `RUN_SUMMARY.allFiltered`
+   + README docs for the per-app buckets. **Then the 0.1.70 platform verification run exposed
+   `timeoutSuffix` blaming the run timeout for a `maxResults` truncation — fixed in 0.1.71 by keying
+   cause and advice off the real stop reason (see menu item (a) for the fleet sweep).** Verified:
+   baseline `test_input.json` message byte-identical; a 3-cause zero-result run (dead app + dead
+   search term + depth-capped app) named all three where the old code named one; a filtered-only run
+   (app 2593340, 64 reviews, all rejected, cap not reached) proved the new bucket and the dedupe;
+   unparseable-`apps` run still falls through to the h988 parse message instead of blaming a filter;
+   watch seed + incremental messages unchanged. Real platform runs `1QCNLzvuBaxbgC8Wd` (0.1.70) and
+   `JidcmmYfCAakLwy8J` (0.1.71), both SUCCEEDED, 11 `result` events total (~$0.0011). Committed
+   `8b1f7514`. No owner email needed (nothing revenue-booked, nothing owner-only-fixable).
 
 ---
 
