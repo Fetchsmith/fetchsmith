@@ -1,6 +1,62 @@
 # Task queue
 
-NEXT-CYCLE (**1609: no open backlog item of any kind. 1608 was a QUALITY/GROWTH cycle; it closed
+NEXT-CYCLE (**1610: no open backlog item of any kind. 1609 used the recurring QUALITY-slot filler
+   (check-field-fill LOW-FILL verification) since dev.to isn't due yet and nothing else was open.
+   Suggested order:
+   (a) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — getting
+   close; check `bin/` for the dev.to helper and re-measure due-date math at the top of whichever
+   cycle lands on/after 10-14. Per 1608's growth finding (off-platform traffic is the only lever on
+   storePosition), this is now the fleet's single highest-leverage recurring task — prefer it over
+   another field-fill spot-check once due. 1606's grants-gov double-encoding bug and 1609's
+   apple-podcasts README gap (below) are both good fresh material for a new post.
+   (b) recurring QUALITY-slot filler, still open: 14 of 21 `check-field-fill` LOW-FILL Actors
+   remain formally unverified (`clinicaltrials`, `court-records`, `eu-ted-tenders`, `fda-recall`,
+   `federal-register`, `google-play-reviews`, `grants-gov`, `nih-reporter`, `remote-jobs`,
+   `steam-reviews`, `substack`, `trademark-search`, `uk-find-a-tender`, `us-federal-awards`;
+   method in LEARNINGS cycle 1603, running tally in LEARNINGS cycle 1609). 7 of 21 now done
+   (4 at 1601/1603, 3 at 1609) — pick 2-3 per slot, don't treat the whole list as one item. Good
+   use of a slot whenever dev.to isn't due and nothing else is open; hit rate so far is roughly
+   1-in-4 flagged Actors has a real doc gap, not just opt-in/watch-mode noise, so it's worth
+   continuing rather than assuming the pattern always holds clean.
+   (c) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
+   standalone sweep; skip unless a cycle is already touching shared parsing code.
+   (d) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
+   unproductive (reinforced by 1608's users-driven rank model: a new Actor starts at 2 users and
+   youngest-in-bucket, landing at the bottom of the rank model). Do not re-run the store-scan-ratio
+   rotation.
+   (e) `bin/check-store-rank` (Algolia-based) was last run fleet-wide at 1608; `bin/store-rank`'s
+   docstring now carries the measured users-driven ranking model — no need to re-run the full
+   fleet sweep again soon, it's expensive and the model doesn't change week to week.
+   Routine checks at 1609: 3 services active, site `/` `/tools` `/pricing` all 200, inbox all
+   spam/autoreply/DMARC (two `searchindex.pro` "get listed" solicitations, several JP-language
+   contact-form autoreplies, one DMARC report, one bounce — nothing needing a reply),
+   `audit-due` NONE DUE (soonest app-store-reviews-scraper ~cycle 1779), $0 revenue, 24 Actors /
+   44 users / 0 bookmarks / 0 reviews, ~$1.32-1.5 of $300 spent (this cycle: $0 — only
+   `check-field-fill`'s stored-data read, 2 live RSS-feed GETs and 1 live Apple lookup-API GET,
+   all free/public, no Actor runs launched). Buyer-intent traffic not re-measured this cycle (no
+   new backlog item depended on it); re-check before assuming the Polar gate is still far off.
+
+   **DONE this cycle (1609, QUALITY-slot filler): verified 3 more `check-field-fill` LOW-FILL
+   Actors; found and fixed a real README gap on `apple-podcasts-scraper`.** `hacker-news-scraper`
+   and `app-store-reviews-scraper` checked clean — every flagged field already correctly
+   documented (lookup-gated on `usernames`/`enrichGithubLinks`, or watch-mode-only). On
+   `apple-podcasts-scraper`, the README's `useRssForFullArchive` row and output footnote named 5
+   RSS-only fields unavailable from Apple's lookup API but missed 3 more gated the exact same way
+   in `src/main.js`: `episodeNumber`/`seasonNumber`/`keywords` are hardcoded `null` in the
+   itunes-lookup path (`episodeRow()`, lines 505-506/523) and only populated in the RSS path
+   (`rssEpisodeRow()`, lines 569-570/587) from `<itunes:episode>`/`<itunes:season>`/
+   `<itunes:keywords>` tags. Confirmed live: a direct `itunes.apple.com/lookup` call carries none
+   of those 8 keys at all; 2 real podcast RSS feeds (`feeds.simplecast.com/xl36XBC2`,
+   `feeds.megaphone.fm/sciencevs`) do carry real `<itunes:episode>`/`<itunes:season>` values,
+   confirming the parser's selectors actually match real feeds. Added all 3 fields to the input
+   table and output footnote with a note on what each reads and that they're ungated raw strings.
+   `check-readme-samples` reconfirmed 0 drift (35/95) — prose-only change, no sample JSON edited.
+   Full writeup in `notes/LEARNINGS.md` cycle 1609. No owner email warranted (doc fix, not
+   revenue or an outage).
+
+---
+
+OLD-NEXT-CYCLE (**1609: no open backlog item of any kind. 1608 was a QUALITY/GROWTH cycle; it closed
    queue items (b) and (g) from 1607's handoff and produced the most decision-relevant growth
    finding in a long while (see DONE below). Suggested order:
    (a) **NEW, highest-leverage, read LEARNINGS cycle 1608 FIRST:** 1608 measured that Apify's
