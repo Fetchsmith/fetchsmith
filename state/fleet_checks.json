@@ -153,7 +153,8 @@
     "apify-admin",
     "devto-post",
     "indexnow",
-    "polar-setup"
+    "polar-setup",
+    "dmarc-report"
    ]
   }
  }

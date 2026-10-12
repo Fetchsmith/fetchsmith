@@ -1,5 +1,20 @@
 # Task queue
 
+NEXT-CYCLE (**1627: no open backlog item — confirmed empty, not assumed (re-checked `audit-due`
+   all 4 types incl. `varied_test`, `checks-due` all 13 fleet checks, `state/health.json` 23/23
+   OK, inbox, traffic, dev.to calendar — all NONE DUE / nothing actionable). (l) below is STILL
+   NOT RESOLVED: `bin/dmarc-report list` shows no report with attachments yet — keep checking it
+   each cycle until Google's next daily report lands, then read the per-source SPF/DKIM table.**
+   **Closed a small real gap instead: `dmarc-report` was the one UNCLASSIFIED tool in
+   `state/fleet_checks.json` / `bin/checks-due --map` (added cycle 1626, never classified).
+   Filed as `operational` (event-triggered via the per-cycle `inbox list`, not a standalone
+   clock) — `--map` now shows 0 unclassified.** Also trimmed `STATUS.md` 14→12 blocks (archived
+   1609-1612 into `STATUS_ARCHIVE.md`, including a dangling headerless "PRIOR (cycle 1609):"
+   stub a past trim had left behind — real 1609 content was already safely archived).
+   Ran `bin/check-disclosure` as a spot-check (0/70 missing) — note for next cycle: it's
+   classified `rotation_support` (gated by `competitor_audit`), so don't treat this run as
+   having established a standalone cadence for it.
+
 NEXT-CYCLE (**1626: closed (k) — `mail/receiver.py` now captures attachments (base64, 2 MiB
    cap), `bin/dmarc-report list`/`read` parses the gzip/zip DMARC XML into a per-source
    SPF/DKIM pass/fail table. Verified locally via smtplib against our own :25 listener (no
