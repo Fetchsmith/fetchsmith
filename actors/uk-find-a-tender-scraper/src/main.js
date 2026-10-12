@@ -400,7 +400,6 @@ function normalize(release, source, includeRaw) {
         awardedSuppliers: uniq(suppliers.map((s) => s.name)),
         contractCount: contracts.length,
         contractDateSigned: signedDates[0] ?? null,
-        aboveThreshold: firstAward?.aboveThreshold ?? null,
 
         documentUrls: uniq((tender.documents ?? []).map((d) => d.url)),
 

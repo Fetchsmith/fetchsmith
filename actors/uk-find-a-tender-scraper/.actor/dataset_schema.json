@@ -314,13 +314,6 @@
         ],
         "title": "Contract signed"
       },
-      "aboveThreshold": {
-        "type": [
-          "boolean",
-          "null"
-        ],
-        "title": "Above threshold"
-      },
       "documentUrls": {
         "type": "array",
         "title": "Document URLs"

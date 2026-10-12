@@ -148,6 +148,8 @@ Pay per result: **$0.0035 per recall on the free plan, dropping to $0.0024 on Go
 **Why are the NDC/UPC/brand-name fields empty on my food and device rows?**
 Because FDA only publishes them for drugs. The `openfda` block that carries those identifiers is populated on drug enforcement reports and empty on food and device ones — verified on live samples, not an assumption. The fields are always present in the schema so your CSV columns stay stable; they are simply `null` or `[]` outside drug rows.
 
+**Even within drug rows, `upc` is much sparser than its sibling identifiers — why?** Measured live against openFDA (two independent 100-row drug samples, 2026-10-12): `brandName`, `productNdc`, `packageNdc`, `splSetId` and `unii` all filled on **~30% and ~73%** of rows in the respective samples (moving together, since they come from the same manufacturer submission), while `upc` filled on only **15%** and **34%** in the same two samples — roughly half the rate of everything else in the `openfda` block. Barcodes are the one identifier FDA leaves to the manufacturer to submit separately from the rest of the NDC/SPL paperwork, so plenty of drug rows carry a full set of drug identifiers with no `upc` at all. Don't treat a missing `upc` next to a filled `brandName`/`productNdc` as a parsing bug — it is real upstream sparsity, worse than the rest of the drug-only block.
+
 **In what order do results come back?**
 Interleaved across the product types you selected — one row per type per round — so a small `maxResults` gives you a mix rather than filling the whole quota from `food`. Within each product type, rows are ordered by `reportDate`.
 

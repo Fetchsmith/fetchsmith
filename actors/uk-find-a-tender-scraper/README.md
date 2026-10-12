@@ -201,6 +201,9 @@ Because the buyer did not publish a value. Where a value exists it is usually at
 **Why isn't there a `tenderStartDate` field?**
 It used to exist (`tender.tenderPeriod.startDate` in the raw OCDS feed) but was removed as of v0.1.22 — measured 0/808 filled across 9 independent live slices spanning 2025-01 through 2026-08, on both Find a Tender and Contracts Finder, tender-stage and award-stage alike. UK buyers publish a submission deadline (`deadlineDate`) but essentially never publish a tender-window start date on either portal. `deadlineDate` remains, unaffected.
 
+**Why isn't there an `aboveThreshold` field on awards?**
+Same reason as `tenderStartDate` above: it used to exist on this Actor's award rows (`award.aboveThreshold` in the raw OCDS feed) but was removed as of v0.1.13 — measured 0/650 filled across 7 independent live slices spanning 2025-01 through 2026-10, on both portals' award-stage releases. Neither portal's OCDS feed has ever populated this key in any sample checked, not even on Find a Tender, whose entire portal is above-threshold-only by definition. If you need an above/below-threshold split, use `source` instead: every `fts` row is above-threshold by construction (that is Find a Tender's whole remit — see "What you get" above), while `cf` rows are a mix, so filtering `source: "fts"` is the reliable proxy this feed can actually support.
+
 **Do you need a proxy or an API key?**
 No. Both portals' OCDS APIs are free, key-free and open-licensed (Open Government Licence v3). The Actor self-throttles per portal to stay under each API's rate limit and backs off politely if it still hits one.
 
