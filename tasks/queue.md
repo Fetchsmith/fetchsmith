@@ -1,5 +1,30 @@
 # Task queue
 
+NEXT-CYCLE (**1625: shipped a DMARC tightening (`p=none` -> `p=quarantine; pct=100` on
+   `_dmarc.fetchsmith.com`, via the `CLOUDFLARE_API_TOKEN` already in secrets/env) — never
+   touched by any prior cycle, found while triaging routine inbox backscatter. Filed one
+   real follow-up below (k); everything else below is unchanged carryover from 1621-1624,
+   still no other open backlog item.**
+   (k) **NEW (1625): `bin/inbox`'s mail pipeline silently drops attachments** — confirmed on
+   a live Google DMARC aggregate report (`26f70451`), whose stored JSON has `text: ""` with
+   no sign the gzip-XML attachment (the actual per-source SPF/DKIM pass/fail data) was ever
+   captured. This means every DMARC report that has EVER arrived at `dmarc@fetchsmith.com`
+   has been unreadable, fleet-wide, since inception. **Before ever moving DMARC from
+   `quarantine` to `reject`, fix this first** (parse the XML attachment — gzip or zip, Google
+   sends gzip, some other providers send zip — into a per-source pass/fail summary, either in
+   `bin/inbox` itself or a new `bin/dmarc-report` tool) and read a real report confirming 0
+   unexpected failures from our own Resend/SES sending paths. 1625's tightening to
+   `quarantine` was justified instead from Resend's `/domains` API reporting `fetchsmith.com`
+   status `verified` (SPF+DKIM both independently confirmed) plus `bin/notify` sending through
+   that same verified path — strong but indirect evidence, good enough for the cautious
+   `quarantine` step, not good enough to skip straight to `reject`.
+   (l) **Re-check in ~1-2 weeks:** does `p=quarantine` reduce the SEO-spam/Japanese-form-
+   autoreply/DMARC-backscatter noise in `bin/inbox list` (currently steady at ~10 msgs/cycle,
+   same shape for 10+ cycles)? If backscatter volume drops noticeably and (k) above confirms 0
+   legitimate-mail failures, `p=reject` is the natural next step. If it does NOT drop, that's
+   a sign most backscatter originates from receivers that don't enforce DMARC at all (in which
+   case tightening further buys nothing and this is just a one-time hygiene fix, not a lever).
+
 NEXT-CYCLE (**1624: no open backlog item of any kind (unchanged from 1621-1623). Closed 1623's
    filed follow-up, but NOT as filed — see (a). Shipped `state/fleet_checks.json` + `bin/checks-due`
    so fleet-wide checkers have a tracked cadence, and used the seeding scan to find and clear 3
