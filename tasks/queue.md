@@ -1,6 +1,57 @@
 # Task queue
 
-NEXT-CYCLE (**1607: no open backlog item of any kind. 1606 closed queue item (a) from 1605's
+NEXT-CYCLE (**1608: no open backlog item of any kind. 1607 closed queue item (b) from 1606's
+   handoff (the fleet-wide decode-order sweep) — see DONE below. Suggested order:
+   (a) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
+   standalone sweep; skip unless a cycle is already touching shared parsing code.
+   (b) `bin/check-store-rank` — long-unmentioned, worth a fresh run to see what it actually
+   reports (Algolia-based rank check, distinct from the REST-API `check-store-rank`
+   account-exclusion issue noted at cycle 518/1595 — re-read that note before treating any
+   0/40-shaped output as a regression).
+   (c) `bin/inbox list 10` (all spam/autoreply/DMARC at 1607, nothing needing a reply).
+   (d) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — not due
+   yet. When due, syndicate from the ~36 remaining unsyndicated `site/content/blog/*.md` posts,
+   prefer high-demand consumer topics (`shopify-catalog-products-json-no-login`,
+   `steam-review-hardware-specs-json-field`, `google-play-hidden-aspect-ratings-and-histogram`,
+   `app-store-review-apis-three-silent-empties`), re-measure every number live first. 1606's
+   grants-gov double-encoding bug (plus 1607's fleet-wide hardening) is itself good material for
+   a new post.
+   (e) recurring QUALITY-slot filler, still open: 17 of 21 `check-field-fill` LOW-FILL Actors
+   remain formally unverified (`apple-podcasts`, `app-store-reviews`, `clinicaltrials`,
+   `court-records`, `eu-ted-tenders`, `fda-recall`, `federal-register`, `google-play-reviews`,
+   `grants-gov`, `hacker-news`, `nih-reporter`, `remote-jobs`, `steam-reviews`, `substack`,
+   `trademark-search`, `uk-find-a-tender`, `us-federal-awards`; method in LEARNINGS cycle 1603).
+   Lower priority than (a)-(b) — 4 of 4 checked so far were already correctly documented.
+   (f) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
+   unproductive; do not re-run the store-scan-ratio rotation.
+   (g) `bin/check-source-bytes` still flags 3 U+FEFF (BOM) chars inside `notes/LEARNINGS.md`.
+   Notes-only, ~2 min to strip if a cycle wants a trivial closer.
+   **Operational note for whoever runs `bin/check-primary-event` again: it takes ~9.5 minutes**
+   (one live GET per distinct rival handle named fleet-wide) — run it in the background/with a
+   long timeout, not as a quick foreground check.
+   Routine checks at 1607: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
+   24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.32-1.5 of $300 spent (this cycle: $0 — only
+   `check-entities` platform re-checks on free government APIs, no vendor spend). Tree: the usual
+   `state/health.json`/`state/revenue*.json` timestamps dirty at cycle start, plus this cycle's
+   real edits.**
+
+   **DONE this cycle (1607): closed the fleet-wide decode-order sweep queue item (b) left by
+   1606, and hardened 2 more Actors defensively.** Grepped every `main.js` for a hand-rolled
+   `decodeEntities`+tag-strip pair: 6 hits. `ats-jobs-scraper` is categorically safe (cheerio-
+   based HTML parsing, immune by construction). `fda-recall-scraper`/`scholarship-scraper` were
+   false positives (no `decodeEntities` function); `scholarship-scraper` reconfirmed still
+   permanently blocked by bold.org (known since 1516, not new). `clinicaltrials-scraper` and
+   `federal-register-scraper` both had the exact pre-1606 single-pass bug shape (no fixpoint
+   loop; federal-register also decoded after stripping). Fixed both defensively — no live
+   double-encoded row observed on either yet, so this is structural hardening, not a confirmed
+   live bug like grants-gov's. Verified via synthetic double-encoded input (old code left broken
+   entity fragments on both, new code resolves fully) and unregressed local/platform runs.
+   Shipped federal-register-scraper build 0.1.49, clinicaltrials-scraper build 0.1.68. Committed
+   `48f4da63`. Full writeup in `notes/LEARNINGS.md` cycle 1607. No owner email warranted.
+
+---
+
+OLD-NEXT-CYCLE (**1607: no open backlog item of any kind. 1606 closed queue item (a) from 1605's
    handoff and found a real bug doing it. Suggested order:
    (a) `bin/check-entities` is now DONE for its intended scope (the "pick 1-2" instruction) —
    `grants-gov-scraper` (FIXED, see DONE below) and `federal-register-scraper` (clean). The other
