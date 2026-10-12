@@ -1,0 +1,216 @@
+#!/root/agent/venv/bin/python
+"""Surface CASCADE-HIDES-INDEPENDENT-CAUSE status messages: an `else if` chain or ternary
+chain of 3+ arms, each testing a DIFFERENT array's `.length` (or similarly-shaped flag),
+feeding ONE status message -- when the arrays are populated independently elsewhere in
+the file (not mutually exclusive by construction), a multi-cause run reports only the
+first matching cause and silently drops the rest.
+
+Scoped at queue.md item (4)/NEXT ACTIONS (4), originally filed cycle 1544/1560, held back
+from being built until the class had enough confirmed instances to justify it (1591's
+bar). By cycle 1592 the class stood at 8 confirmed real instances across 2 Actors
+(google-news 1549, substack 1555, ats-jobs 1556, trademark-search 1557,
+google-play-reviews 1559 + 1591, steam-reviews x2 1592) -- 8/8 real, 0 dismissed -- found
+by hand every time with the exact heuristic this script automates: grep for 3+ sibling
+`else if (<array>.length)` arms, or the ternary-chain variant, feeding one message
+composer, then manually confirm independent population from the push sites.
+
+This script automates ONLY the grep half. Confirming independence (the arrays really are
+populated by separate, non-exclusive code, not a chain that is already mutually exclusive
+by construction) and confirming the fix shape (the branches need to ACCUMULATE, possibly
+into a new per-row/per-app bucket, not just reorder) both still need a human read of the
+push sites -- same "surface it, don't auto-fix it" spirit as `check-comparison-breadth`'s
+NARROW output and `check-row-loop-drop`'s ROW-DROP?. A CASCADE? hit is a question, not a
+verdict.
+
+Two shapes, because the 8 known instances split across both:
+
+  ELSEIF   -- `if (A.length) {...} else if (B.length) {...} else if (C.length) {...}`,
+  walked with balanced-brace matching (not a line-based regex) so a body containing its
+  own nested braces doesn't truncate the chain early.
+
+  TERNARY  -- `A.length ? val1 : B.length ? val2 : C.length ? val3`, detected by the fact
+  that each `<ident>.length ?` test (after the first) is immediately preceded -- skipping
+  only whitespace -- by the `:` of the previous arm. That one token is sufficient: it is
+  the alternate-branch marker of a ternary, and nothing else in JS syntax puts a bare `:`
+  directly before an identifier-dot-length-question sequence at statement level.
+
+Why the FIXED instances don't re-trigger this check, so a future 0 doesn't need
+re-litigating: every shipped fix (1559, 1591, both 1592 instances) replaced the chain with
+independent `if (X.length) causes.push(...)` statements -- plain sibling `if`s, not
+`else if`, and no ternary -- specifically so every populated cause fires. This check's
+ELSEIF shape requires the `else` keyword and its TERNARY shape requires the chained `:`,
+so neither shape matches an accumulator by construction; it is not a coincidence that the
+fix shape and the detector's blind spot are the same thing -- that is what makes "fixed"
+legible to a grep at all.
+
+Known blind spots, do not read a 0 fleet-wide as "the class is closed": (1) a cascade
+expressed via nested `if`/`return` early-exits rather than `else if`/ternary; (2) a chain
+where the per-branch test is a boolean flag rather than literally `<ident>.length`, e.g.
+`upstreamDegraded` with no `.length` suffix (steam's `pushed>0` instance before its 1592
+fix used `upstreamDegraded.length` -- if a future instance drops the `.length` and tests
+the array truthily instead, this misses it); (3) a chain spanning more than ~500 chars
+between TERNARY arms (the proximity guard exists to stop false-linking two unrelated
+ternaries that happen to share `:` and `.length` tokens far apart in the file).
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TERNARY_GAP_LIMIT = 500  # chars allowed between chained ternary arms before we stop linking them
+
+
+def balanced(src, i, open_ch='{', close_ch='}'):
+    """Contents of the bracket group starting at src[i], or (None, None) if unterminated."""
+    depth = 0
+    for j in range(i, len(src)):
+        if src[j] == open_ch:
+            depth += 1
+        elif src[j] == close_ch:
+            depth -= 1
+            if depth == 0:
+                return src[i + 1:j], j
+    return None, None
+
+
+def prev_word(src, pos):
+    """The identifier/keyword immediately before position `pos`, skipping whitespace."""
+    j = pos
+    while j > 0 and src[j - 1] in ' \t\n\r':
+        j -= 1
+    k = j
+    while k > 0 and (src[k - 1].isalnum() or src[k - 1] == '_' or src[k - 1] == '$'):
+        k -= 1
+    return src[k:j]
+
+
+def length_idents(cond):
+    """Every distinct identifier tested with `.length` inside one `if`/`else if` condition."""
+    return set(re.findall(r'\b([A-Za-z_$][\w$]*)\.length\b', cond))
+
+
+def elseif_chains(src):
+    """Maximal `if (...) {...} else if (...) {...} ...` chains, as lists of (cond, start_pos)."""
+    chains = []
+    for m in re.finditer(r'\bif\s*\(', src):
+        if prev_word(src, m.start()) == 'else':
+            continue  # continuation of an earlier chain, picked up from its real start
+        open_paren = m.end() - 1
+        cond, close = balanced(src, open_paren, '(', ')')
+        if cond is None:
+            continue
+        chain = [(cond, m.start())]
+        cursor = close + 1
+        while True:
+            rest = src[cursor:]
+            stripped = rest.lstrip()
+            lead = len(rest) - len(stripped)
+            if not stripped.startswith('{'):
+                break  # only braced arms are walked; a bare single-statement arm ends the chain here
+            _, bclose = balanced(src, cursor + lead, '{', '}')
+            if bclose is None:
+                break
+            after = bclose + 1
+            tail = src[after:]
+            tail_stripped = tail.lstrip()
+            em = re.match(r'else\s+if\s*\(', tail_stripped)
+            if not em:
+                break
+            off2 = after + (len(tail) - len(tail_stripped))
+            paren2 = off2 + em.end() - 1
+            cond2, close2 = balanced(src, paren2, '(', ')')
+            if cond2 is None:
+                break
+            chain.append((cond2, off2))
+            cursor = close2 + 1
+        chains.append(chain)
+    return chains
+
+
+def ternary_chains(src):
+    """Maximal chains of `<ident>.length ?` arms linked by an immediately-preceding `:`."""
+    tests = [(m.group(1), m.start(), m.end())
+             for m in re.finditer(r'([A-Za-z_$][\w$]*)\.length\s*\?', src)]
+    chains = []
+    current = []
+    for ident, start, end in tests:
+        chained = False
+        if current:
+            j = start
+            while j > 0 and src[j - 1] in ' \t\n\r':
+                j -= 1
+            chained = (j > 0 and src[j - 1] == ':'
+                       and start - current[-1][2] < TERNARY_GAP_LIMIT)
+        if chained:
+            current.append((ident, start, end))
+        else:
+            if len(current) >= 3:
+                chains.append(current)
+            current = [(ident, start, end)]
+    if len(current) >= 3:
+        chains.append(current)
+    return chains
+
+
+def main():
+    registry = json.load(open(os.path.join(ROOT, 'actors/registry.json')))
+    live = sorted(t['slug'] for t in registry['tools'] if t['status'] == 'live')
+
+    hits = []
+    actors_checked = elseif_scanned = ternary_scanned = 0
+
+    for slug in live:
+        main_js = os.path.join(ROOT, 'actors', slug, 'src/main.js')
+        if not os.path.exists(main_js):
+            continue
+        src = open(main_js).read()
+        actors_checked += 1
+
+        for chain in elseif_chains(src):
+            elseif_scanned += 1
+            per_arm_idents = [length_idents(cond) for cond, _ in chain]
+            # A real cascade can be embedded inside a longer chain that also has non-.length
+            # arms before/after it (apple-podcasts-scraper's `pushed>0` branch: watchMode/
+            # timeBudgetExceeded arms, THEN 3 straight .length arms) -- requiring every arm
+            # in the WHOLE chain to test .length would miss that run entirely, so scan for
+            # maximal CONSECUTIVE runs of .length-testing arms instead of an all-or-nothing match.
+            run = []
+            for i, idset in enumerate(per_arm_idents):
+                if idset:
+                    run.append(i)
+                    continue
+                if len(run) >= 3:
+                    idents = set().union(*(per_arm_idents[k] for k in run))
+                    if len(idents) >= len(run):
+                        line = src.count('\n', 0, chain[run[0]][1]) + 1
+                        hits.append((slug, line, 'ELSEIF', len(run), sorted(idents)))
+                run = []
+            if len(run) >= 3:
+                idents = set().union(*(per_arm_idents[k] for k in run))
+                if len(idents) >= len(run):
+                    line = src.count('\n', 0, chain[run[0]][1]) + 1
+                    hits.append((slug, line, 'ELSEIF', len(run), sorted(idents)))
+
+        for chain in ternary_chains(src):
+            ternary_scanned += 1
+            idents = {ident for ident, _, _ in chain}
+            if len(idents) < len(chain):
+                continue
+            line = src.count('\n', 0, chain[0][1]) + 1
+            hits.append((slug, line, 'TERNARY', len(chain), sorted(idents)))
+
+    for slug, line, shape, n, idents in sorted(hits):
+        print(f"CASCADE? {slug}:{line} {shape} chain of {n} arms over distinct .length "
+              f"tests on {', '.join(idents)} -- confirm independent population at the "
+              f"push sites before deciding whether this needs to accumulate causes "
+              f"instead of reporting only the first match")
+
+    print(f"check-cascade-causes: {actors_checked} Actor(s) checked "
+          f"({elseif_scanned} else-if chain(s), {ternary_scanned} ternary chain(s) of "
+          f"3+ arms scanned), {len(hits)} CASCADE?")
+    return 1 if hits else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

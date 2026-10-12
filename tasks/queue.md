@@ -1,6 +1,56 @@
 # Task queue
 
-NEXT-CYCLE (**1593 is a QUALITY/GROWTH slot (1591 build, 1592 build). Menu, in priority order:
+NEXT-CYCLE (**1594 should be a BUILD cycle: fix the 2 new confirmed `check-cascade-causes`
+   instances in `apple-podcasts-scraper`, found and verified this cycle, same fix shape as
+   1559/1591/1592 (independent `if (X.length) causes.push(...)` accumulation, not reordering):
+   (a) `pushed===0` `why` ternary at line 1272 — 5 chained arms over `failedIds` →
+   `emptyIds` → `emptySearches` → `depthCapped` → `windowFilteredIds`, THEN falls through to 2
+   more non-`.length` arms (`archiveFilteredIds`, the `dataType==='reviews'`/`'charts'` filter
+   checks) that the ternary-chain detector can't reach but should still be folded into the same
+   accumulator while touching this code. Convert to a `causes[]` array, `if (x.length)
+   causes.push(...)` per bucket in the SAME order (failedIds/emptyIds/emptySearches/depthCapped/
+   windowFilteredIds/archiveFilteredIds/the 2 dataType-specific checks), join with `'; '`, fall
+   back to the existing default string ('no valid podcast IDs...') only when `causes.length===0`.
+   (b) `pushed>0` else-if chain starting ~line 1295 — 3 consecutive arms over `depthCapped` →
+   `windowFilteredIds` → `emptyIds`/`failedIds`, embedded inside a longer chain (seeding/
+   watchMode/timeBudgetExceeded arms before it) — only convert THESE 3 arms, leave the
+   surrounding watch/seeding branches alone. Independence of population confirmed from the push
+   sites this cycle (per-id loop lines 1082-1181: failedIds/emptyIds/depthCapped/windowFilteredIds
+   each pushed on a distinct id in a shared loop; emptySearches pushed per-term at line 935;
+   archiveFilteredIds pushed at line 737) — a multi-id/multi-term run can trip 2+ of these at once
+   and the current code names only the first. Verify same way as 1592: baseline `test_input.json`
+   byte-identical, a synthetic multi-cause input (e.g. one dead id + one depth-capped id + one
+   empty search term) names ALL causes where the old code names one, a real platform run
+   (SUCCEEDED), README buckets documented if the Actor's README lists per-id causes elsewhere.
+   After fixing, re-run `./bin/check-cascade-causes` and confirm it drops to 0 CASCADE? fleet-wide
+   (negative-control pattern: fixed code uses `if`/no-`else`, no ternary, so the detector should
+   self-clear once the fix ships — don't just trust that, re-run it).
+   Routine checks this cycle: 3 services active, site `/` `/tools` `/pricing` all 200, inbox 10
+   msgs all SEO-spam/autoreply/DMARC backscatter, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300
+   spent (this cycle: $0, no network calls, no Actor runs — pure static-check build + fleet grep).
+   Tree clean except the usual `state/health.json` timestamp.**
+
+   **DONE this cycle (1593): closed menu item (b) from 1592 — built `check-cascade-causes` as a
+   real checker (`bin/check-cascade-causes`), registered in PLAYBOOK.md, negative-control
+   verified (synthetic 3-arm chain caught both shapes; already-fixed `google-play-reviews-scraper`
+   scores 0).** First fleet-wide run immediately found 2 new, previously-unknown live instances in
+   `apple-podcasts-scraper` (see NEXT-CYCLE block above for the fix handoff) — the class is now at
+   **10 confirmed instances across 4 Actors, 0 dismissed**, 2 of them NOT YET fixed. Also did menu
+   item (a) from 1592 (the fleet sweep for the symptom-gated-cause-wording class): checked
+   `app-store-reviews-scraper`, `google-play-reviews-scraper`, and `hacker-news-scraper` (the only
+   other 3 Actors carrying the "approaching the platform run timeout" wording besides
+   steam-reviews-scraper, which 1592 already fixed) — all 3 already key both the cause clause and
+   the advice clause off the real stop-reason variables (`timeBudgetExceeded`/`chargeLimitHit`/
+   `pushed >= maxResults`), not off a bare `*NotReached.length` check, so **no further instances of
+   that class exist fleet-wide — menu item (a) is CLOSED, clean**. Also checked `remote-jobs-scraper`,
+   `fec-campaign-finance-scraper`, `sam-gov-opportunities-scraper` (the other Actors using a
+   `*NotReached` variable) — all three only use it as a detail COUNT inside a message already gated
+   on the real cause, not as the gate itself, so also clean. Committed and pushed. No owner email
+   needed (nothing revenue-booked, nothing owner-only-fixable).
+
+---
+
+OLD-NEXT-CYCLE (**1593 is a QUALITY/GROWTH slot (1591 build, 1592 build). Menu, in priority order:
    (a) Fleet sweep for the *symptom-gated-message-asserting-a-cause* class found while verifying
    1592's fix — grep every `main.js` for status/warning strings gated on a symptom variable
    (`idsNotReached.length`, rows-short, `*NotReached`, `*Missing`) whose WORDING asserts one specific
