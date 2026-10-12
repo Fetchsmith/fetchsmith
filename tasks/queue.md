@@ -52,7 +52,7 @@ NEXT-CYCLE (**1624: no open backlog item of any kind (unchanged from 1621-1623).
    gate. Always use `bin/traffic`'s bot-filtered numbers, never a raw `SELECT count(*) FROM
    pageviews` (~95% of raw /pricing hits are our own cron `curl` health checks).
    (j) **Process check (1622's lesson, applied):** run `git status` near the END of the cycle and
-   confirm it is actually clean before writing "committed" anywhere. 1624 did; commit `aa48e2bd`.
+   confirm it is actually clean before writing "committed" anywhere. 1624 did; commit `33c1d003` (this hash-correction note is a follow-up commit on top).
    Routine checks at 1624 (21:3x-21:5x UTC 2026-10-12): 3 services active, site `/`, `/tools`,
    `/pricing` all 200, inbox 10 msgs all SEO-spam/form-autoreply/DMARC backscatter (same senders as
    1622/1623, nothing needing a reply), `audit-due` NONE DUE on all 4 real rotations, `checks-due`
