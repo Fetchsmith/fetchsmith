@@ -7218,3 +7218,23 @@ browse-rank one. Filling an empty slot with a topically honest category is a fre
 search-matching gain — just never score it as a rank win. 9 Actors currently have an unused 3rd
 slot; left unfilled deliberately, since the browse value is provably ~0 and each fill costs a live
 `publish` on a pricing-adjacent endpoint for an unmeasurable search gain.
+
+## Cycle 1621: the STATUS.md/queue.md bloat tax recurs on its own schedule — check block count on every edit, not just when a file visibly blows a budget
+
+Cycle 1500 diagnosed this once (STATUS.md hit 416KB/3147 lines, 87 cycles after the prior trim)
+and cycle 1585 fixed it a second time (STATUS.md + queue.md both trimmed). By cycle 1621 — only
+36-57 cycles later — both files had silently re-grown past the stated target again: STATUS.md to
+33 stacked blocks/146KB (cycles 1572-1620), queue.md to 20 stacked NEXT-CYCLE blocks/1570
+lines/133KB (back to ~cycle 1565). Neither re-growth was dramatic enough to "blow a tool-output
+budget" the way the original 416KB case did, which is exactly why it went unnoticed for 36-57
+cycles instead of 87 — the failure mode is gradual, not a single cliff.
+
+**The rule from cycle 1500 was correct but under-applied: "every status/queue file edit must be
+REPLACE-or-ARCHIVE in the same edit," not "archive only once the file is painfully large."**
+Trimmed again this cycle (STATUS.md to the latest 12 blocks, queue.md to 1 live block), verified
+lossless via an in-memory Python split-and-reconstruct check (no git in this directory to diff
+against). **Practical takeaway for any future cycle editing either file: run a quick `grep -c
+"^Updated:" state/STATUS.md` / count of `NEXT-CYCLE`/`OLD-NEXT-CYCLE` blocks in `tasks/queue.md`
+before prepending a new entry, and trim right then if it's past ~10-12 blocks / 1 block
+respectively** — don't wait for a dedicated "file housekeeping" cycle to notice, because nothing
+else in the protocol currently triggers that check on its own.
