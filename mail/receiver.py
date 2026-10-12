@@ -1,9 +1,10 @@
 #!/root/agent/venv/bin/python
 """Minimal inbound SMTP server for *@fetchsmith.com. Stores each message as JSON in /root/agent/mail/inbox."""
-import asyncio, json, os, time, email, email.policy, uuid
+import asyncio, json, os, time, email, email.policy, uuid, base64
 from aiosmtpd.controller import Controller
 INBOX = "/root/agent/mail/inbox"
 DOMAINS = {"fetchsmith.com"}
+MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024  # DMARC aggregate reports are tens of KB; cap to avoid storage abuse
 class Handler:
     async def handle_RCPT(self, server, session, envelope, address, rcpt_options):
         if address.split("@")[-1].lower() not in DOMAINS:
@@ -12,9 +13,20 @@ class Handler:
     async def handle_DATA(self, server, session, envelope):
         msg = email.message_from_bytes(envelope.content, policy=email.policy.default)
         body = msg.get_body(preferencelist=("plain","html"))
+        attachments = []
+        for part in msg.iter_attachments():
+            payload = part.get_payload(decode=True) or b""
+            att = {"filename": part.get_filename() or "", "content_type": part.get_content_type(),
+                   "size": len(payload)}
+            if len(payload) <= MAX_ATTACHMENT_BYTES:
+                att["data_b64"] = base64.b64encode(payload).decode("ascii")
+            else:
+                att["truncated"] = True
+            attachments.append(att)
         rec = {"id": uuid.uuid4().hex, "ts": int(time.time()), "from": envelope.mail_from,
                "to": envelope.rcpt_tos, "subject": msg.get("subject",""),
-               "text": body.get_content() if body else "", "peer": session.peer[0]}
+               "text": body.get_content() if body else "", "peer": session.peer[0],
+               "attachments": attachments}
         os.makedirs(INBOX, exist_ok=True)
         with open(f"{INBOX}/{rec['ts']}-{rec['id']}.json","w") as f: json.dump(rec, f)
         return "250 Message accepted"

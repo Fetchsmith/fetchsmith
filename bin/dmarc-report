@@ -1,0 +1,105 @@
+#!/root/agent/venv/bin/python
+"""Parse DMARC aggregate report attachments stored in mail/inbox/*.json.
+
+Context: mail/receiver.py only captured text/html bodies until cycle 1626 --
+every DMARC aggregate report ever received was unreadable (empty text, XML
+attachment silently dropped). Fixed in receiver.py; this tool reads the
+attachments it now captures (gzip, Google's format, or zip, some other
+senders' format) and prints a per-source-IP SPF/DKIM pass/fail summary so a
+future cycle can decide whether p=quarantine (or later p=reject) is safe.
+
+Usage: dmarc-report [list] | dmarc-report read <id-prefix>
+"""
+import sys, os, json, glob, gzip, io, zipfile
+import xml.etree.ElementTree as ET
+
+INBOX = "/root/agent/mail/inbox"
+
+
+def dmarc_messages():
+    for f in sorted(glob.glob(f"{INBOX}/*.json")):
+        m = json.load(open(f))
+        if "dmarc@fetchsmith.com" in m.get("to", []) and m.get("attachments"):
+            yield f, m
+
+
+def extract_xml(att):
+    if "data_b64" not in att:
+        return None  # truncated (over MAX_ATTACHMENT_BYTES) -- not expected for DMARC reports
+    import base64
+    raw = base64.b64decode(att["data_b64"])
+    name = (att.get("filename") or "").lower()
+    ctype = att.get("content_type", "")
+    if name.endswith(".gz") or "gzip" in ctype:
+        return gzip.decompress(raw)
+    if name.endswith(".zip") or "zip" in ctype:
+        zf = zipfile.ZipFile(io.BytesIO(raw))
+        return zf.read(zf.namelist()[0])
+    if name.endswith(".xml") or "xml" in ctype:
+        return raw
+    return None
+
+
+def summarize(xml_bytes):
+    root = ET.fromstring(xml_bytes)
+    org = root.findtext("report_metadata/org_name", "?")
+    begin = root.findtext("report_metadata/date_range/begin", "?")
+    end = root.findtext("report_metadata/date_range/end", "?")
+    rows = []
+    for record in root.findall("record"):
+        ip = record.findtext("row/source_ip", "?")
+        count = int(record.findtext("row/count", "0"))
+        dkim = record.findtext("row/policy_evaluated/dkim", "?")
+        spf = record.findtext("row/policy_evaluated/spf", "?")
+        hfrom = record.findtext("identifiers/header_from", "?")
+        rows.append({"ip": ip, "count": count, "dkim": dkim, "spf": spf, "header_from": hfrom})
+    return {"org": org, "begin": begin, "end": end, "rows": rows}
+
+
+def cmd_list():
+    found_any = False
+    for f, m in dmarc_messages():
+        found_any = True
+        print(f"{m['id'][:8]}  {m['ts']}  from={m['from']}")
+        any_xml = False
+        for att in m["attachments"]:
+            xml_bytes = extract_xml(att)
+            if xml_bytes is None:
+                print(f"  (attachment {att.get('filename')!r} not parseable/truncated)")
+                continue
+            any_xml = True
+            s = summarize(xml_bytes)
+            print(f"  org={s['org']} range={s['begin']}-{s['end']}")
+            fails = [r for r in s["rows"] if r["dkim"] != "pass" or r["spf"] != "pass"]
+            total = sum(r["count"] for r in s["rows"])
+            print(f"  {len(s['rows'])} source(s), {total} total msgs, {len(fails)} source(s) with a fail")
+            for r in s["rows"]:
+                flag = "FAIL" if r["dkim"] != "pass" or r["spf"] != "pass" else "ok"
+                print(f"    [{flag}] ip={r['ip']:16} count={r['count']:4} dkim={r['dkim']:4} spf={r['spf']:4} header_from={r['header_from']}")
+        if not any_xml:
+            print("  (no readable XML in this report -- received before the receiver.py fix, or genuinely unparseable)")
+    if not found_any:
+        print("No DMARC reports with attachments found in mail/inbox/.")
+
+
+def cmd_read(prefix):
+    for f, m in dmarc_messages():
+        if m["id"].startswith(prefix):
+            for att in m["attachments"]:
+                xml_bytes = extract_xml(att)
+                if xml_bytes:
+                    print(xml_bytes.decode("utf-8", "replace"))
+                    return
+            print("No readable attachment on this message.")
+            return
+    print("Not found.")
+
+
+if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "list"
+    if cmd == "list":
+        cmd_list()
+    elif cmd == "read":
+        cmd_read(sys.argv[2])
+    else:
+        print(__doc__)
