@@ -548,6 +548,38 @@ if (watchMode) {
     }
 }
 
+// A fixed dateTo on a WATCHED query is a dead end, the same defect class as
+// eu-ted-tenders-scraper's publicationDateTo and federal-register-scraper's
+// publicationDateTo. This Actor's watch is identity-only (ocid/noticeId, see watchSeen above),
+// so the only thing it can ever report is a notice it has not delivered before — and dateTo is
+// an upper bound on the one field that is always "now" for a brand-new notice. Measured live
+// 2026-10-12 on BOTH portals, using each portal's own monotonic release counter as a proxy for
+// "when did this row enter the feed": Find a Tender's 457 releases dated 2026-09-01 occupy
+// notice ids 82421-82877, an exactly contiguous block, while today's live feed is at 95883 —
+// not one old-dated release carries a recent id. Contracts Finder is the same shape on its
+// internal release sequence (2025-06-02 -> ~847.8k, 2026-01-05 -> ~877.3k, 2026-06-01 -> ~900.0k,
+// 2026-10-09 -> ~917.3k, strictly increasing with publishedDate). So FTS's `updated` and CF's
+// `published` are REGISTRY-EVENT dates assigned at publication, never backdated — this gets the
+// absolute phrasing (federal-register's shape), not the hedged "dominant case" wording FEC and
+// nih-reporter needed for fields that genuinely can be backdated.
+// Gated on watchMode alone: this Actor has no field-diff watch to also require, and new-notice
+// blindness is the core watch job either way (cycle 1584's lesson).
+const watchDeadDateBound = watchMode && dateToMs != null;
+if (watchDeadDateBound) {
+    log.warning(
+        `watchLabel "${watchLabel}" is combined with a fixed dateTo (${input.dateTo}) — a dead end. That fixed `
+        + 'upper bound is sent to Find a Tender as "updatedTo" and to Contracts Finder as "publishedTo", and both portals stamp those '
+        + 'dates at the moment of publication — so once the real calendar date passes the cutoff, no newly '
+        + 'published notice can ever satisfy the query again and this watch is permanently unable to report '
+        + 'anything new, while still finishing cleanly with a reassuring "nothing new" every run.',
+    );
+    log.warning(
+        'Drop dateTo from a watched query (dateFrom alone is safe to keep — a lower bound never goes dead, and '
+        + 'leaving both out just means "the last updatedWithinDays days", which moves with time), or remove '
+        + 'watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+    );
+}
+
 // First FREE_PER_RUN matching records of every run are free (matches the leading
 // competitor's trial hook) so a buyer can see real data shape before paying for any of it.
 const FREE_PER_RUN = 25;
@@ -1008,6 +1040,9 @@ const runSummary = {
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
+    // true means this watch is pinned behind a fixed dateTo upper bound and will go (or already
+    // is) permanently blind to newly published notices -- see the watchDeadDateBound warning.
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
     // Non-empty only when "stages" included "contract" and/or "implementation" -- see the
     // CF_BLIND_STAGES warning above. Contracts Finder's OCDS feed never tags a release either
     // way, so these values can only ever be matched via Find a Tender.
@@ -1064,6 +1099,7 @@ if (webhookUrl) {
         watchLabel: watchMode ? watchLabel : null,
         watchSeeding: watchMode ? seeding : null,
         watchNewCount: watchMode && !seeding ? pushed : null,
+        watchDeadDateBound: watchMode ? watchDeadDateBound : null,
         // Same object as the RUN_SUMMARY key-value record, so a webhook consumer and a
         // polling consumer read the identical completeness facts.
         summary: runSummary,

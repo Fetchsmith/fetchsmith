@@ -36,7 +36,7 @@
     "dateTo": {
       "title": "Published/updated to (absolute date)",
       "type": "string",
-      "description": "Optional absolute end of the date window, e.g. 2026-08-31 (or a full ISO datetime). Defaults to the run start time. Note a bare date means midnight, so 2026-08-31 excludes the 31st itself — use 2026-09-01 to include it.",
+      "description": "Optional absolute end of the date window, e.g. 2026-08-31 (or a full ISO datetime). Defaults to the run start time. Note a bare date means midnight, so 2026-08-31 excludes the 31st itself — use 2026-09-01 to include it. WATCH MODE WARNING: do not combine a FIXED value here with watchLabel. This bound goes to Find a Tender as 'updatedTo' and to Contracts Finder as 'publishedTo', and both portals stamp those dates at the moment of publication and never backdate them (verified live against each portal's own release counter), so once the real calendar date passes the cutoff no newly published notice can satisfy the query again — the watch goes permanently quiet while still reporting a healthy 'nothing new' every run. Leave it unset in a watched query; dateFrom alone is safe to keep. See README FAQ.",
       "editor": "textfield"
     },
     "cpvCodes": {
