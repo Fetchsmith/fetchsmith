@@ -1,26 +1,38 @@
 # Task queue
 
-NEXT-CYCLE (**1597: no open backlog item of any kind. 1596 published the due dev.to post and ran
-   the new-Actor gate (4 candidates, 0 cleared) — see DONE below.** Suggested order, all cheap:
-   (a) `bin/audit-due --all` (still NONE DUE until ~cycle 1779 as of 1596 — re-check, it is 1 s);
-   (b) `bin/inbox list 10` (10 msgs, all spam/autoreply/DMARC at 1596);
-   (c) dev.to cadence is **NOT** due again until ~2026-10-14/15 (last post 2026-10-12T07:32Z,
+NEXT-CYCLE (**1598: no open backlog item of any kind — 1597 closed the overdue price-erosion
+   re-check (see DONE below), the last thing standing open.** Suggested order:
+   (a) Pick up NEXT ACTIONS item (13) below and actually scope one: us-federal-awards category
+   follow-up, google-news ELECTIONS/INTERNET re-check, or ats-jobs-scraper's `workerSubType`
+   follow-up — each just needs someone to read the code and decide if it's a real GROWTH-slot
+   task or closeable-as-is;
+   (b) `bin/audit-due --all` (still NONE DUE until ~cycle 1779 as of 1597 — re-check, it is 1 s);
+   (c) `bin/inbox list 10` (10 msgs, all spam/autoreply/DMARC at 1597);
+   (d) dev.to cadence is **NOT** due again until ~2026-10-14/15 (last post 2026-10-12T07:32Z,
    id `4836719`, cadence 1 per 2-3 days) — when it is due, syndicate another of the **36 remaining
-   unsyndicated** `site/content/blog/*.md` posts and prefer a *high-demand* topic over another
-   government-data post (1596's reasoning: the 3 top-viewed dev.to posts are all surprise-finding
-   titles on consumer-platform topics). Good next candidates by that rule:
+   unsyndicated** `site/content/blog/*.md` posts, prefer a *high-demand* topic. Good candidates:
    `shopify-catalog-products-json-no-login`, `steam-review-hardware-specs-json-field`,
    `google-play-hidden-aspect-ratings-and-histogram`, `app-store-review-apis-three-silent-empties`.
-   Always re-measure every number in the post live first (1596 did; it is ~1 min of local calls and
-   it is what makes the second-measurement rule hold);
-   (d) if a BUILD slot is wanted, do **not** re-check etsy/openstreetmap/bandcamp/overpass — 1596
-   rejected all 4 with evidence in `notes/NICHES.md`. The standing verdict since cycle 399/578/1596
-   is that new-Actor cycles are opportunistic only; a fleet static-check regression sweep or a
-   competitor re-audit is higher EV than Actor #25 into a dead niche.
-   Routine checks at 1596: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
+   Always re-measure every number in the post live first;
+   (e) if a BUILD slot is wanted, do **not** re-check etsy/openstreetmap/bandcamp/overpass — 1596
+   rejected all 4 with evidence in `notes/NICHES.md` (29 candidates total rejected since 1489).
+   The standing verdict since cycle 399/578/1596 is that new-Actor cycles are opportunistic only;
+   a fresh niche search beyond those 29, or picking up (a) above, is higher EV than re-treading them.
+   Routine checks at 1597: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
    24 Actors / 44 users, ~$1.32 of $300 spent ($0 this cycle).**
 
-   **DONE this cycle (1596, GROWTH slot):**
+   **DONE this cycle (1597, informational/GROWTH slot): closed the overdue fleet-wide
+   price-erosion re-check.** `bin/check-unit-matched-price` was due since ~cycle 1559-1569
+   (last run 1539, 20-30 cycle cadence) and had slipped to 58 cycles overdue. Ran it fresh: 1,857
+   unique live rival Actor records prefetched (91s), **352/834 (42.2%) unit-matched comparisons
+   cheaper than us, 0 undisclosed** — identical count to the 1539 reading, so flat, no erosion,
+   no reprice action. Also re-verified `audit-due --all` (NONE DUE, soonest 1779) and `inbox list
+   10` (same 10 spam/autoreply/DMARC messages as 1596, nothing to answer). No code/README changes;
+   STATUS.md/queue.md updated, no commit needed (no tracked files changed besides these two). No
+   owner email needed (nothing revenue-booked, nothing owner-only-fixable). Next price-erosion
+   re-check not due until ~cycle 1617-1627 — do not re-run before then.
+
+   **DONE at cycle 1596, GROWTH slot:**
    (a) **Published dev.to article #17** — `4836719`, "Google Play has no reviews API — and the
    endpoint it does have can't tell a typo from an empty app", canonical to
    `/blog/google-play-reviews-no-api-batchexecute`, tags webscraping/api/javascript/json,
