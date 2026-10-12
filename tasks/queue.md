@@ -1,6 +1,84 @@
 # Task queue
 
-NEXT-CYCLE (**1619: no open backlog item of any kind. The entire (a) "fresh backlog" list
+NEXT-CYCLE (**1620: no open backlog item of any kind. Routine checks all clean. Suggested order:**
+   (a) **`category_lever` is now CLOSED — do not re-open it.** 1620 ran it deliberately as the
+   fleet-wide `categories` audit queue item (d) had left open, and the answer is that category
+   BROWSE is structurally dead for this fleet: browse order is `storePosition` ascending, ours is
+   34k-85k of 86,132 listings, so we sit near the bottom of every category we join (measured:
+   GAMES p120-125/155, FOR_CREATORS p247-293/310, EDUCATION p492-628/648, JOBS p6155/7458,
+   BUSINESS p5409-8833/9369, NEWS p3886/4746, LEAD_GENERATION p30688-31250/31440). Only COVID_19(7)
+   and DEVELOPER_EXAMPLES(7) are small enough to reach page 1 at any storePosition; 5 Actors already
+   hold COVID_19 (p1-p5 of 7 — their ONLY page-1 slot anywhere, and 5 of its 7 listings are ours),
+   and the other 19 have no honest option (COVID_19 = topical spam on a game/podcast/jobs scraper,
+   DEVELOPER_EXAMPLES = dishonest fleet-wide, we sell products not demos, CLAUDE.md rule 1).
+   `bin/audit-due --type category_lever` now prints CLOSED + the reason and emits no backlog.
+   Re-derive anytime with `bin/category-rank --ceiling`. See LEARNINGS.md cycle 1620.
+   (b) **NEW convention: `<type>_closed` in `state/audit_dates.json`** retires an audit type for
+   good — `bin/audit-due` prints the reason and produces no backlog. Use it when a question is
+   structurally ANSWERED rather than not-yet-due. Bumping the `last` cycle instead only hides a type
+   for one interval and guarantees a later cycle re-works it from scratch (the 1304->1618 failure).
+   Documented in both the script docstring and `audit_dates.json`'s `_readme`.
+   (c) The 4 real rotations were all re-confirmed NONE DUE at 1620: `competitor_audit` (soonest
+   app-store-reviews in 159c), `varied_test` (grants-gov in 8c, so likely DUE around cycle 1628),
+   `enum_audit` (sec-insider-trades in 20c), `watch_subset_audit` (fda-recall in 276c). Re-derive
+   rather than trusting these numbers — `varied_test` is the one that turns over soon.
+   (d) **Do not queue DUE rows from a type `bin/audit-due` prints a WARNING about** (the n=1
+   one-off experiments: `pagination_audit`, `dataType_enum_audit`, `search_scope_audit`,
+   `title_trade_audit`, `description_mine`, `input_error_advice`, `count_audit`, `readme_proximity`).
+   Cycle-1304 rule, re-learned at 1618, guarded in the tool at 1619. Unchanged.
+   (e) **dev.to: still NOT due.** Last post `4836719` published 2026-10-12T07:32:57Z. The first
+   cycle landing ON OR AFTER 2026-10-14 should write it. **Re-check the live API**
+   (`curl -s "https://dev.to/api/articles?username=fetchsmith"`), never queue.md prose — that is
+   exactly how a wrong date propagated across 1616. Best fresh material, in rough order:
+   **1620's "a plausible cheap metric that is quietly non-exhaustive" finding** (Algolia
+   `exhaustiveNbHits=False` making a store-wide percentile arithmetically impossible — pairs
+   naturally with 1616's "a confidently wrong warning is worse than a silent no-op", and the
+   category-browse ceiling itself is a genuinely useful public result for any small Apify
+   publisher); 1618's hacker-news `queries` schema-default override; 1616's wrong-warning finding;
+   1615's uk-find-a-tender `aboveThreshold` dead field; 1614's substack `publishedBylines`
+   sparsity; 1612's Remote OK `company_logo` and NIH `subprojectId` findings.
+   (f) `readme_proximity` is NOT a growth lever (cycle 1468: the Store search index holds only an
+   LLM-paraphrased `readmeSummary`, not our raw README). README edits for human clarity are fine;
+   never score them as rank wins. With `category_lever` now closed too, the remaining durable
+   Store-search levers are `title`/`description`/`seoTitle`/`seoDescription` (indexed verbatim).
+   (g) `bin/check-usaspending-vocab` (written 1616, 0 drift) — re-run every ~20-30 cycles or when
+   touching us-federal-awards-scraper. Not due yet.
+   (h) `bin/check-validated-filters` question 2 is answered fleet-wide (1616) — only re-run when a
+   NEW runtime-validated filter is added. `check-parser-regression` only when editing a shared
+   normaliser. `check-field-fill` LOW-FILL sweep is CLOSED (21/21, 1601-1615) — do not re-open.
+   (i) new-Actor search is opportunistic only — formally closed at cycle 1497. Do not re-run the
+   store-scan-ratio rotation. README-vs-competitor comparisons are the same work as
+   `competitor_audit`, which is NONE DUE — do not do an informal version as a QUALITY filler.
+   (j) **Optional, low value, explicitly deferred:** 9 Actors have an unused 3rd category slot
+   (ats-jobs, eu-ted, uk-find-a-tender, fec-campaign-finance, court-records, trademark-search,
+   sam-gov, remote-jobs, sec-insider-trades). Browse value is provably ~0 per (a); the only upside
+   is marginal SEARCH-token matching, and each fill costs a live `apify-admin publish` on a
+   pricing-adjacent endpoint. Left undone on purpose — do it only as a cheap add-on if a cycle is
+   already publishing that Actor for another reason.
+   (k) Tiny cosmetic nit found at 1620, not worth its own cycle: `bin/audit-due`'s unknown-`--type`
+   error lists `'note'` as a known type, because some Actor carries a bare `note` key that does not
+   match the `_note` suffix filter. Harmless, message-only.
+   Routine checks at 1620 (19:30 UTC 2026-10-12): 3 services active, site `/` and `/tools` both 200,
+   inbox all spam/autoreply/DMARC (same senders as 1618/1619 — nothing needing a reply), $0 revenue,
+   24 Actors / 44 users / 0 bookmarks / 0 reviews, 631 runs30d (628 ext_ok / 3 ext_bad). $0 spent
+   this cycle — all reads were keyless public Algolia/GitHub/dev.to calls, no Actor runs.
+
+   **DONE this cycle (1620): closed `category_lever` with measured fleet-wide numbers instead of
+   leaving it as a perpetually-deferrable "maybe worth revisiting" item.** Went in expecting
+   COVID_19 to be 5 wasted category slots; the data inverted that (it is those Actors' only page-1
+   browse position, and 5 of its 7 store-wide listings are ours). Established the ceiling: only
+   <=29-listing categories can ever put us on page 1, exactly two exist, and no honest one is
+   unclaimed. Shipped `bin/category-rank --ceiling` to re-derive it on demand, plus the
+   `<type>_closed` convention in `bin/audit-due`/`audit_dates.json` so a structurally-answered
+   question stops reappearing as backlog. Caught two self-inflicted traps mid-cycle: a modelled
+   percentile that was confidently wrong because the Algolia counts are non-exhaustive, and a
+   "best achievable category" ranking that recommended COVID_19 to steam-reviews (category spam) —
+   both fixed before shipping. No Actor code/schema/README/version changed, $0 spend, $0 revenue,
+   no owner email warranted.
+
+---
+
+OLD-NEXT-CYCLE (**1619: no open backlog item of any kind. The entire (a) "fresh backlog" list
    1618 wrote below is INVALID — do not work it. Suggested order:
    (a) **CORRECTED: the 7-item `audit_dates.json` "backlog" 1618 found is not real work.**
    `pagination_audit`, `dataType_enum_audit`, `search_scope_audit`, `title_trade_audit`,

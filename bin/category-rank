@@ -28,16 +28,56 @@ NOTE: the index takes ~1-2 minutes to reflect a category change after
 `apify-admin publish` + `apify push --force`. A query run immediately after can still
 show the old category set and the old facet count; re-run before concluding anything.
 
+CEILING / WHY THIS LEVER IS CLOSED (cycle 1620 -- read before "optimising" categories):
+browse rank is not a property of the category you pick, it tracks our Apify-computed
+`storePosition`, which is deep in the store's tail. Measured fleet-wide at 1620 -- every
+Actor's best rank among its own current categories, and what is reachable at all:
+
+    the ONLY page-1-feasible categories store-wide are COVID_19 (7 listings) and
+    DEVELOPER_EXAMPLES (7). Every other category runs 155 -> 32141 listings, and we
+    land near the bottom of each: GAMES p120-125/155, FOR_CREATORS p247-293/310,
+    EDUCATION p492-628/648, JOBS p6155/7458, BUSINESS p5409-8833/9369,
+    NEWS p3886/4746, LEAD_GENERATION p30688-31250/31440, DEVELOPER_TOOLS p24351+/24762.
+
+5 of 24 Actors hold a page-1 browse slot, all of them via COVID_19 (us-federal-awards p1,
+fda-recall p2, nih-reporter p3, clinicaltrials p4, federal-register p5 of 7 -- and 5 of
+those 7 listings are ours). For the other 19 there is no honest way to reach page 1:
+COVID_19 would be topical spam on a game/podcast/jobs scraper, and DEVELOPER_EXAMPLES is
+dishonest fleet-wide since we sell products, not demos (CLAUDE.md rule 1).
+
+=> `category_lever` is CLOSED: structurally exhausted, not "not yet due". Adding or
+swapping a category cannot improve browse reach until `storePosition` improves, and
+storePosition is Apify-computed from cumulative usage -- so it follows users, it cannot
+lead them. Run `--ceiling` to re-derive this from live numbers before disbelieving it.
+Categories still matter for the SEARCH index (indexed verbatim, cycle 1468), so filling
+an empty slot with a topically honest category is a free marginal search-matching gain
+-- just do not score it as a browse-rank win.
+
+DO NOT compute this from a store-wide storePosition percentile: those counts come back
+`exhaustiveNbHits=False` and are wrong, not merely noisy. Measured 1620:
+`storePosition<34312` reports 80472 of 86132 listings, impossible when only 69255
+listings sit outside ECOMMERCE and just 7092 ECOMMERCE members rank ahead of that same
+Actor. Small categories DO return exhaustive counts, so per-category ranks are sound;
+only the store-wide denominator is unusable. `--ceiling` probes real categories instead.
+
 Usage:
   bin/category-rank                 # every registry Actor: rank in each of its categories
   bin/category-rank <slug>          # one Actor
   bin/category-rank --all <slug>    # also score every OTHER category (what-if table)
   bin/category-rank --facets        # just the store-wide category sizes, smallest first
+  bin/category-rank --ceiling       # page-1 feasibility per Actor (re-derives the above)
 """
 import sys, json, urllib.request
 
 APP, KEY, IDX = "OW0O5I3QO7", "0ecccd09f50396a4dbbe5dbfb17f4525", "prod_PUBLIC_STORE"
 REG = "/root/agent/actors/registry.json"
+
+# --ceiling: how many of the smallest categories to probe per Actor (1 Algolia call each).
+K_PROBE = 8
+# Categories we will not file under even if they would rank well: our Actors are
+# commercial products, not demos, so DEVELOPER_EXAMPLES would be a deceptive listing
+# (CLAUDE.md rule 1). Flagged rather than silently dropped so the arithmetic stays visible.
+DISHONEST = {"DEVELOPER_EXAMPLES"}
 
 
 def algolia(body):
@@ -87,6 +127,52 @@ def main():
     recs = our_records()
     slugs = only or [a["slug"] for a in json.load(open(REG))["tools"]]
 
+    if "--ceiling" in args:
+        # Page-1 feasibility, MEASURED -- not modelled.
+        #
+        # Do NOT try to shortcut this with a store-wide storePosition percentile: those
+        # counts come back exhaustiveNbHits=False and are badly wrong, not just noisy.
+        # Measured 1620: `storePosition<34312` reported 80472 of 86132 listings, which is
+        # arithmetically impossible (only 69255 listings are outside ECOMMERCE, and just
+        # 7092 ECOMMERCE members rank ahead of that same Actor). Small categories DO come
+        # back exhaustive, so per-category ranks are sound -- only the store-wide
+        # denominator is unusable. Hence: probe the K smallest real categories directly.
+        PAGE = 24
+        probe = [c for _, c in sorted((n, c) for c, n in sizes.items())[:K_PROBE]]
+        micro = [c for c in probe if sizes[c] <= PAGE + 5]
+        print(f"store-wide: {store_total} listings;  browse page size assumed {PAGE}")
+        print(f"probing the {len(probe)} smallest categories: "
+              + ", ".join(f"{c}({sizes[c]})" for c in probe))
+        print("page-1-feasible categories store-wide (small enough for ANY storePosition): "
+              + ", ".join(f"{c}({sizes[c]})" for c in micro) + "\n")
+        print(f"{'actor':<32}{'storePos':>9}  {'best rank among its CURRENT cats':<34}page 1 now?")
+        for slug in slugs:
+            h = recs.get(slug)
+            if not h:
+                continue
+            sp = h.get("storePosition", 999999)
+            mine = h.get("categories") or []
+            scored = []
+            for cat in mine:
+                r, t = rank_in(cat, sp)
+                scored.append((r, t, cat))
+            if not scored:
+                print(f"{slug:<32}{sp:>9}  (no categories set)".ljust(79) + "no")
+                continue
+            r, t, cat = min(scored)
+            print(f"{slug:<32}{sp:>9}  {cat}: p{r} of {t}".ljust(79)
+                  + ("YES" if r <= PAGE else "no"))
+        print(f"""
+Any Actor reading "no" above can only reach page 1 by joining one of the micro-
+categories listed at the top -- every other category is orders of magnitude too large
+for our storePosition. That is a TOPICAL-FIT question, not a rank question, and this
+tool deliberately does not recommend one: COVID_19 is honest for the 5 health/gov
+Actors that already hold it and would be spam on e.g. steam-reviews, and
+DEVELOPER_EXAMPLES is dishonest fleet-wide (we sell products, not demos) -- CLAUDE.md
+rule 1. With no honest micro-category left unclaimed, category_lever is CLOSED:
+structurally exhausted, not "not yet due". See the CEILING docstring above.""")
+        return
+
     for slug in slugs:
         h = recs.get(slug)
         if not h:
@@ -108,7 +194,13 @@ def main():
                 r, t = rank_in(cat, sp)
                 rows.append((r, t, cat))
             for r, t, cat in sorted(rows)[:8]:
-                print(f"    {cat:<20} p{r} of {t}")
+                # Joining adds us to the category, so the member count grows by one.
+                note = "  <- DISHONEST for us (we sell products, not demos)" \
+                    if cat in DISHONEST else ""
+                print(f"    {cat:<20} p{r} of {t + 1}{note}")
+            print("    NOTE: a good rank here is NOT a reason to file under a category the")
+            print("    Actor does not genuinely belong to (CLAUDE.md rule 1); and per the")
+            print("    CEILING docstring, only the two 7-listing categories reach page 1.")
 
 
 if __name__ == "__main__":

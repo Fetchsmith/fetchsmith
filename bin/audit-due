@@ -48,6 +48,12 @@ preserved]`. It only ever LENGTHENS an interval, never shortens one below BASE,
 so a misparse cannot cause an Actor to be audited too eagerly -- the failure
 mode is a delayed audit, caught by --all.
 
+CLOSED TYPES (cycle 1620): `<type>_closed` = "<reason>" on any one Actor retires that
+type permanently -- this tool prints the reason and produces no backlog at all. Use it
+when a question is structurally ANSWERED, not merely not-yet-due; bumping the `last`
+cycle instead only hides the type for one interval and guarantees a later cycle re-works
+it from scratch. First use: `category_lever` (see bin/category-rank --ceiling).
+
 An unrecognized --type exits with an error listing known types (cycle 1542),
 rather than silently printing "0 Actor(s) tracked / NONE DUE" -- that shape is
 indistinguishable from a real, fully-caught-up backlog, which is exactly the
@@ -143,7 +149,22 @@ def main():
     if not any(isinstance(v, dict) and typ in v for v in data.values()):
         sys.exit(f"audit-due: --type {typ!r} matches 0 Actors in {STATE} -- "
                  f"likely a typo, not a genuinely empty backlog. Known types: "
-                 f"{sorted({k for v in data.values() if isinstance(v, dict) for k in v if not k.endswith(('_note', '_skip_until_date', '_min_interval'))})}")
+                 f"{sorted({k for v in data.values() if isinstance(v, dict) for k in v if not k.endswith(('_note', '_skip_until_date', '_min_interval', '_closed'))})}")
+    # A type can be CLOSED for good, which is different from "not due". Set
+    # `<type>_closed` to a reason string on ANY tracked Actor and this type stops
+    # producing a backlog forever. Added cycle 1620 for `category_lever`: bumping its
+    # `last` to the current cycle only hid it for one interval (336c) and left a future
+    # cycle to rediscover and re-work a lever that is structurally exhausted. Deferral is
+    # the wrong tool for "this question is permanently answered" -- say so explicitly.
+    closed = next((v[f"{typ}_closed"] for v in data.values()
+                   if isinstance(v, dict) and v.get(f"{typ}_closed")), None)
+    if closed:
+        print(f"{typ}: CLOSED -- do NOT run this sweep or queue it as backlog.\n")
+        print(f"  {closed}\n")
+        print("If you believe this should re-open, delete the "
+              f"`{typ}_closed` key and record why. Do not work it silently.")
+        return
+
     retired = retired_slugs()
     today = datetime.date.today()
     rows = []

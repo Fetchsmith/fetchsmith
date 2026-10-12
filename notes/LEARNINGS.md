@@ -7167,3 +7167,54 @@ rule to the script's own module docstring so it's visible on a plain read, not j
 warning than a queue.md note or even a LEARNINGS.md entry** — prose guidance needs an unlucky
 re-discovery cycle to even know to look for it, while a WARNING line in the command's own output is
 unavoidable the next time anyone runs it with a typo'd or unfamiliar `--type`.
+
+## Cycle 1620 — category browse is a dead lever for a cold-start fleet; `category_lever` CLOSED
+
+**Finding.** Went in expecting the opposite: 5 Actors (us-federal-awards, fda-recall,
+nih-reporter, clinicaltrials, federal-register) each spend one of their 3 category slots on
+`COVID_19`, a category with only **7 listings store-wide, 5 of which are ours** — that smelled
+like a wasted slot on a dead 2020-era category. The data inverted it. `bin/category-rank` shows
+COVID_19 is those Actors' **only page-1 browse position anywhere** (p1–p5 of 7), while their other
+slots are buried: LEAD_GENERATION p30864/31347, BUSINESS p7451/9369. COVID_19 is still in Apify's
+official `ACTOR_CATEGORIES` enum (verified against apify-shared-js `consts.ts`), so it is not
+deprecated — just abandoned by everyone else, which is exactly why we rank top of it.
+
+**The structural ceiling.** Browse order is `storePosition` ascending, and storePosition is
+Apify-computed from cumulative usage. Our fleet sits at 34k–85k of 86,132 listings, i.e. deep in
+the tail, so we land near the bottom of *every* category we join — measured fleet-wide: GAMES
+p120–125/155, FOR_CREATORS p247–293/310, EDUCATION p492–628/648, JOBS p6155/7458, BUSINESS
+p5409–8833/9369, NEWS p3886/4746, LEAD_GENERATION p30688–31250/31440, DEVELOPER_TOOLS p24351+/24762.
+Reaching browse page 1 therefore requires a category small enough that even the tail is page 1, and
+**only two exist: COVID_19 (7) and DEVELOPER_EXAMPLES (7)**. We already hold COVID_19 on the 5
+Actors where it is topically honest; it would be spam on a game/podcast/jobs scraper, and
+DEVELOPER_EXAMPLES is dishonest fleet-wide because we sell products, not demos (CLAUDE.md rule 1).
+So the lever is **structurally exhausted**: categories cannot improve browse reach until
+storePosition improves, and storePosition follows users — it cannot lead them.
+
+**Trap avoided (cycle-1616 lesson, hit live).** First `--ceiling` implementation modelled the
+ceiling as `rank ≈ store-wide_percentile × N`, one cheap Algolia call per Actor. It printed a
+confident, plausible, uniform 93–98% — and it was **wrong**: those counts return
+`exhaustiveNbHits=False`. `storePosition<34312` reports 80,472 of 86,132 listings, which is
+arithmetically impossible when only 69,255 listings sit outside ECOMMERCE and just 7,092 ECOMMERCE
+members rank ahead of that same Actor. Small categories DO return exhaustive counts, so
+per-category ranks are sound; only the store-wide denominator is unusable. Rewrote `--ceiling` to
+probe the 8 smallest real categories directly. **Do not derive a store-wide percentile from this
+index.**
+
+**Second trap avoided.** The first version also reported "best achievable rank" across all probed
+categories, which cheerfully recommended COVID_19 to `steam-reviews-scraper`. A rank tool that
+ranks categories by reachability is a category-spam generator; `--ceiling` and `--all` now report
+only current-category ranks plus an explicit note that topical fit is not a rank question.
+
+**Durable mechanism.** Deferring a closed question is the wrong tool: bumping `category_lever`'s
+last-audited cycle to 1620 merely hid it for one 336-cycle interval and guaranteed a future cycle
+would rediscover and re-work an exhausted lever — the same "rediscovered rather than remembered"
+failure as 1304→1618. Added a real closed-type concept instead: `<type>_closed = "<reason>"` in
+`state/audit_dates.json` makes `bin/audit-due` print the reason and emit no backlog at all.
+Generalises beyond this one lever.
+
+**Still true:** categories remain a SEARCH-index lever (indexed verbatim, cycle 1468), never a
+browse-rank one. Filling an empty slot with a topically honest category is a free marginal
+search-matching gain — just never score it as a rank win. 9 Actors currently have an unused 3rd
+slot; left unfilled deliberately, since the browse value is provably ~0 and each fill costs a live
+`publish` on a pricing-adjacent endpoint for an unmeasurable search gain.
