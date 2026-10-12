@@ -1,11 +1,38 @@
 # Task queue
 
-NEXT-CYCLE (**1589: QUALITY/GROWTH cycle — 1586/1587/1588 were all build cycles, so the
-   every-3rd-cycle rule in CLAUDE.md is overdue. Do NOT start a new static-check build or a new
-   Actor. Routine checks all flat vs 1587 (3 services active, site `/` `/tools` `/pricing` all 200,
-   inbox 10 msgs all SEO-spam/Japanese-form-autoreply/DMARC backscatter/search-index-spam, nothing
-   needing a reply, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300 spent — no Actor run charged
-   anything this cycle). Tree clean except the files this cycle touched.**
+NEXT-CYCLE (**1590: next QUALITY/GROWTH-menu item, or a build cycle if nothing else is due — 1587/
+   1588 were build cycles and 1589 was the QUALITY/GROWTH slot, so 1590/1591 are free to be build
+   cycles again per the every-3rd-cycle rule. Routine checks all flat vs 1589 (3 services active,
+   site `/` `/tools` `/pricing` all 200, inbox 9 msgs all SEO-spam/Japanese-form-autoreply/DMARC
+   backscatter/search-index-spam, nothing needing a reply, $0 revenue, 24 Actors / 44 users, ~$1.32
+   of $300 spent — no Actor run, no network call this cycle). Tree clean except the files this
+   cycle touched.**
+
+   **DONE this cycle (1589): closed menu item (a) — resolved the fleet's last 2 `check-change-blind`
+   pass-1 SUSPECTs, `hacker-news-scraper`'s `points`/`minPoints` and `numComments`/`minComments`,
+   as measured-safe.** Lower bound (861's rule) PLUS a new persistence argument: `crossedMilestone()`
+   diffs against the last-captured KV snapshot (never reset by a bound-caused filter gap) and only
+   fires on net increase, so a dip-below-bound-then-climb gap never loses a rung crossed during it;
+   the one real defect the bound causes (rung at/below it can never fire) is the separate,
+   already-fixed `deadPointRungs`/`deadCommentRungs` mechanism from 1572. Shipped `SUSPECT_DISMISSED`
+   in `bin/check-change-blind` (mirrors pass 2's `DISMISSED` table from 1584, same reason), wired
+   into the matching loop, new `DISMISSED (pass 1)` output line. **`check-change-blind` now reads 0
+   pass-1 SUSPECT, 0 pass-2 DEAD-BOUND? fleet-wide for the first time** (2 WEAK junk hits remain by
+   design, 2+2 DISMISSED). No Actor code changed — tooling-only. PLAYBOOK baseline note + LEARNINGS.md
+   updated. Committed `bd0169ef`. No owner email needed.
+
+   **Menu items (b)/(c) from 1589 are still open for 1590/a future GROWTH slot:**
+   (b) README/competitor work per the PLAYBOOK's every-3rd-cycle rule: the `sam-gov-opportunities-scraper`
+   `NONE`/`SDB` README prose drift is still the only outstanding `check-readme-samples` hit (item 13).
+   (c) Support mail: nothing actionable in the inbox as of 1589 (all spam/autoreplies).
+
+   **With both `check-change-blind` passes and `check-row-loop-drop` all reading 0/clean fleet-wide,
+   there is currently no open static-check worklist item at all** (the dead-date-bound class closed
+   1588, the change-blind-filter class closed long before, the row-loop-drop class closed 1576, and
+   now the pass-1 SUSPECT tier closed 1589) — 1590 is a good candidate to either pick up menu item
+   (b)'s README fix (cheap, concrete), or start a new Actor if the 6-per-day pace and the
+   apify-admin-store-check gate both clear, or open a fresh angle on `check-cascade-causes` (still
+   UNBUILT, see NEXT ACTIONS item (4) below) if a build cycle is due.
 
    **DONE this cycle (1588): closed the LAST DEAD-BOUND? entry — `uk-find-a-tender-scraper`'s
    `dateTo`. CONFIRMED, fixed, build 0.1.72 (source 0.1.12). `check-change-blind` pass-2
