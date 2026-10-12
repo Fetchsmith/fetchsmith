@@ -109,6 +109,24 @@ Unlike `salaryPeriod`, **`jobType` is passed through in each board's own words**
 
 `seniorityLevel` is populated from **Jobicy's `jobLevel` field** (`Any`, `Entry-Level, Junior`, `Senior`, `Director`, verified live 2026-10-02) and, added 2026-10-10, **Himalayas' `seniority` field** (`Entry-level`, `Mid-level`, `Senior`, `Manager`, `Director`, `Executive`, verified live on 160/160 sampled rows) — joined into a comma-separated string on the rare row with more than one tag. It is `null` on every other source. Himalayas' `categories` field sometimes also embeds a seniority word inside a role-title slug (`Senior-Valuation-Analyst`), which is a separate, noisier signal — `seniorityLevel` reads the clean `seniority` field instead, not the slug. No other board publishes a seniority field distinct from a job title or job type, so it is left `null` there rather than parsed out of a title with a regex that would eventually misfire on a title like `"Senior Living Coordinator"` (seniority of the job title, not the role). `seniorityKeyword` matches on this field, so it only ever narrows Jobicy and Himalayas rows; use `searchKeyword` against the title if you want a best-effort seniority word match across every board.
 
+### `companyLogo` and `category` are per-board, and `companyLogo` is the sparse one
+
+Both fields are read from whatever each board publishes and left `null` otherwise — never fetched from a third party, never guessed from a company name or job title. The sample row above is a Remotive row, which fills both; most rows are not Remotive, so **do not read that sample as universal coverage.** Measured live across all seven boards on 2026-10-12:
+
+| Board | `companyLogo` | `category` |
+| --- | --- | --- |
+| Remotive | `company_logo` — 15/15 | `category` — 15/15 |
+| Jobicy | `companyLogo` — 50/50 | `jobIndustry` array, joined — 50/50 |
+| Himalayas | `companyLogo` — 16/20 | `parentCategories` array, joined — 17/20 |
+| We Work Remotely | `<media:content url>` — **16/89** | `<category>` — 89/89 |
+| Remote OK | sends `""` on every row — **0/99** | no such field — always `null` |
+| Arbeitnow | no such field — always `null` | no such field — always `null` |
+| Working Nomads | no such field — always `null` | `category_name` — 49/49 |
+
+So `category` is dense (5 of 7 boards fill it on nearly every row) and `companyLogo` is not. Two boards publish no logo field at all, and **Remote OK — often the largest single source in a run — sends both `company_logo` and `logo` as empty strings on all 99 live rows sampled**, so its rows read `companyLogo: null` even though the keys exist in its API response. We Work Remotely only attaches a `<media:content>` image to about a fifth of its feed. If you need a logo on every row, filter to `source: "remotive"` or `"jobicy"`, or expect to fill the gap yourself from the company's own domain.
+
+`category` is each board's own vocabulary, not a shared taxonomy (Remotive's `"Design"` vs. Jobicy's `"Education & E-learning"` vs. Working Nomads' own list) — the same caveat as `jobType` above. Remote OK and Arbeitnow both publish `tags` but no category, and those tags are already carried in the `tags` output field rather than being promoted into `category`, which would mix a curated board category with a free-text keyword list in one column.
+
 ### Salary
 
 Every board publishes salary in exactly one shape and leaves the other empty: Remotive sends a free-text range only (`"$90k - $105k"`), Remote OK, Jobicy and Himalayas send numbers only, and Arbeitnow, Working Nomads and We Work Remotely publish none at all. **You get both columns filled from whichever one the board sent**, so you can sort and filter numerically across all sources and still show a human-readable range:
