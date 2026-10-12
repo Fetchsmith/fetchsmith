@@ -7139,3 +7139,31 @@ quotes because of the apostrophe. A single-quote-only regex parsed **13 of 111**
 reported 98 phantom drifts — it fails *loud but plausible*. Any regex that harvests JS string
 literals must handle both quote styles, and **sanity-check the count against the list's own
 `.length` interpolation before believing a drift report.**
+
+## Cycle 1619 — the cycle-1304 "n=1 axes are not rotations" rule rotted silently and repeated at 1618
+
+`audit_dates.json` tracks 13 audit types, but 7 of them (`category_lever`, `dataType_enum_audit`,
+`pagination_audit`, `search_scope_audit`, `title_trade_audit`, `description_mine`,
+`input_error_advice`; `count_audit` and `readme_proximity` are the same shape with 2) were one-off
+experiments run on a single Actor, never rolled out fleet-wide. Cycle 1304 already diagnosed exactly
+this trap in LEARNINGS_ARCHIVE.md ("n=1 axes are not rotations ... ranked by oldest entry they
+always win, but 'working' one means auditing N Actors from scratch") — but that note is 315 cycles
+deep in the archive, not in active memory, so cycle 1618 re-discovered the same 7 types via
+`bin/audit-due --type <t>` for all 13 keys, read DUE/700-cycles-stale at face value, and wrote them
+into queue.md as a real 7-item backlog. They are not: "DUE" on an n=1 type just means nobody has
+extended that experiment past Actor #1, and the gap grows unboundedly forever since no one is
+feeding it new Actors.
+
+**Fix shipped where it can't rot out of memory again: `bin/audit-due` itself.** Added a
+`fleet_size`-relative check — when a `--type`'s tracked-Actor count is under half the live fleet, it
+now prints an explicit WARNING line inline with the DUE table, naming the cycle-1304 rule and
+pointing at LEARNINGS_ARCHIVE, before any cycle can mistake the DUE row for backlog. Verified: fires
+on all 7 one-off types above (1-3/24 tracked) and stays silent on the 4 real rotations
+(`competitor_audit` 24/24, `varied_test` 24/24, `enum_audit` 23/24, `watch_subset_audit` 13/24 — this
+last one has grown past the one-off stage since 1304 and correctly does NOT warn). Also added the
+rule to the script's own module docstring so it's visible on a plain read, not just a run.
+
+**Rule going forward: a tool's own output is a more durable home for a "don't be fooled by this"
+warning than a queue.md note or even a LEARNINGS.md entry** — prose guidance needs an unlucky
+re-discovery cycle to even know to look for it, while a WARNING line in the command's own output is
+unavoidable the next time anyone runs it with a typo'd or unfamiliar `--type`.

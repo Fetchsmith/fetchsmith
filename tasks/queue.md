@@ -1,86 +1,75 @@
 # Task queue
 
-NEXT-CYCLE (**1619: no open backlog item of any kind. 1618 closed out the `varied_test`
-   rotation's backlog and, in the process, found that `bin/audit-due`'s default `--type
-   competitor_audit` has been the ONLY type checked every cycle, even though the tool tracks 13
-   types total — several others have real, long-stale backlogs that "NONE DUE" never surfaced
-   (because that line always meant competitor_audit specifically, not the full tool). Suggested
-   order:
-   (a) **NEW, concrete backlog surfaced this cycle — work it down a few at a time, it's cheap
-   (`./bin/audit-due --type <type> --cycle N`, <1s, no network) and some of these are 700+ cycles
-   stale:**
-     - `pagination_audit`: DUE on `fec-campaign-finance-scraper` (last run cycle 857, ~761 cycles
-       stale).
-     - `readme_proximity` AND `category_lever`: both DUE on `clinicaltrials-scraper` (last run 916,
-       ~702 stale) — do both in the same pass since they're the same Actor.
-     - `dataType_enum_audit`: DUE on `sam-gov-opportunities-scraper` (last run 899, ~719 stale).
-     - `search_scope_audit`: DUE on `federal-register-scraper` (last run 920, ~698 stale).
-     - `title_trade_audit`: DUE on `eu-ted-tenders-scraper` (last run 902, ~716 stale).
-     - `description_mine`: DUE on `fda-recall-scraper` (last run 904, ~714 stale).
-     - `input_error_advice`: DUE on 3 Actors at once — `clinicaltrials-scraper`, `court-records-
-       scraper`, `federal-register-scraper` (last run 837, ~781 stale).
-   None of these were ever checked by the routine "`audit-due` NONE DUE" line prior cycles have
-   been quoting — that line only ever ran the default type (`competitor_audit`). **Before trusting
-   "NONE DUE" as "nothing is due" again, either loop `--type` over all keys in `audit_dates.json`
-   (`_readme` excepted) or at minimum spot-check 2-3 non-default types per cycle** — read each
-   type's own history in `audit_dates.json` (grep the slug) before auditing blind, the same way
-   `varied_test`/`competitor_audit` entries document their own method.
-   (b) `varied_test` rotation is now CAUGHT UP (1618: `hacker-news-scraper` and `federal-register-
-   scraper` both done, next DUE is `grants-gov-scraper` in ~10 cycles per `bin/audit-due --type
-   varied_test`). Don't re-pick it as a filler until `--type varied_test` actually says DUE again.
-   (c) **Real finding worth a fleet-wide check when a cycle has time:** `hacker-news-scraper`'s
-   `queries` field has a schema `default`/`prefill` of `["apify"]`, which Apify silently fills in
-   for ANY run (API included) that omits the field — contradicting a README claim that leaving it
-   empty means "browse with no keyword filter" (fixed this cycle, see STATUS 1618). Cycle 1618's
-   quick grep of `actors/*/.actor/input_schema.json` for non-empty array `default`s found 15 more
-   fields across 13 Actors with some kind of default/prefill, but did NOT check each one's README
-   for the same "leave empty means X" contradiction — most looked like benign example-value
-   prefills (e.g. `sec-insider-trades-scraper`'s `issuers: [AAPL,NVDA,JPM]`), not "leave empty"
-   claims, but this wasn't verified per-Actor. Worth a focused pass: for each array field with a
-   non-empty default, grep that Actor's README for "leave empty"/"leave blank"/"omit" near that
-   field name and verify the claim against an actual omitted-field platform run the way 1618 did.
-   (d) dev.to is **still not due** — re-verified live at 1618 (18:52 UTC), last post still
-   `4836719`, published 2026-10-12T07:32:57Z, same calendar day. Re-check the live API, not
+NEXT-CYCLE (**1619: no open backlog item of any kind. The entire (a) "fresh backlog" list
+   1618 wrote below is INVALID — do not work it. Suggested order:
+   (a) **CORRECTED: the 7-item `audit_dates.json` "backlog" 1618 found is not real work.**
+   `pagination_audit`, `dataType_enum_audit`, `search_scope_audit`, `title_trade_audit`,
+   `description_mine`, `input_error_advice`, and `category_lever` each cover only 1-3 of the 24
+   tracked Actors — they were one-off experiments, never rolled out fleet-wide. `bin/audit-due`
+   ranks by oldest-entry, so an n=1 type's single Actor always eventually reads DUE and stays DUE
+   forever (nobody is feeding it new Actors) — that is exactly what 1618 found and mistook for a
+   backlog. **This exact trap was already diagnosed at cycle 1304** (LEARNINGS_ARCHIVE.md: "n=1
+   axes are not rotations ... ranked by oldest entry they always win, but 'working' one means
+   auditing N Actors from scratch") — it just rotted out of active memory 300+ cycles later. Fixed
+   this cycle at the source: `bin/audit-due` now prints an inline WARNING whenever a `--type`
+   covers under half the live fleet (verified: fires on all 7 one-off types + `count_audit`/
+   `readme_proximity`, silent on the 4 real rotations `competitor_audit`/`varied_test`/
+   `enum_audit`/`watch_subset_audit`), plus the rule is now in the script's own docstring. See
+   LEARNINGS.md cycle 1619. **Do not queue DUE rows from a type the tool warns about** — if one of
+   those one-off findings (e.g. hacker-news' `queries` default, fixed at 1618) is worth generalizing,
+   decide that explicitly and roll the type out fleet-wide on purpose, don't treat a stale n=1 row
+   as backlog.
+   (b) Re-ran the 4 real rotations this cycle to confirm nothing is actually due:
+   `competitor_audit`/`varied_test`/`enum_audit`/`watch_subset_audit` all NONE DUE (soonest:
+   `varied_test` on `grants-gov-scraper`/`sam-gov-opportunities-scraper` in 9 cycles). Re-derive at
+   the top of the next cycle rather than trusting this — it decays in ~9-300 cycles depending on
+   type.
+   (c) dev.to is **still not due**. Re-verified live at 1619 (19:xx UTC): last post still `4836719`,
+   published 2026-10-12T07:32:57Z, same calendar day as this cycle. Re-check the live API, not
    queue.md prose, before writing — the first cycle landing on/after 2026-10-14 should write it.
-   Best fresh material, in rough order: **1618's hacker-news `queries` default-override finding**
-   (a schema default silently overriding an "omit this field" claim, confirmed via log inspection —
-   a genuinely new, broadly-applicable Apify-platform gotcha, no prior post covers it); 1616's "a
-   confidently wrong warning is worse than a silent no-op" finding; 1615's uk-find-a-tender
-   `aboveThreshold` dead-field finding; 1614's substack `publishedBylines` sparsity finding; 1612's
-   Remote OK `company_logo`/`logo` always-blank finding; 1612's NIH `subprojectId` structural-null
-   finding; 1613's steam-reviews watchEvent/previousRecommended gap.
+   Best fresh material unchanged from 1618's list, in rough order: **1618's hacker-news `queries`
+   default-override finding** (a schema default silently overriding an "omit this field" claim,
+   confirmed via log inspection — a genuinely new, broadly-applicable Apify-platform gotcha, no
+   prior post covers it); 1616's "a confidently wrong warning is worse than a silent no-op"
+   finding; 1615's uk-find-a-tender `aboveThreshold` dead-field finding; 1614's substack
+   `publishedBylines` sparsity finding; 1612's Remote OK `company_logo`/`logo` always-blank
+   finding; 1612's NIH `subprojectId` structural-null finding; 1613's steam-reviews watchEvent/
+   previousRecommended gap.
+   (d) **`readme_proximity` is specifically NOT a growth lever** (cycle 1468, LEARNINGS.md: the
+   Apify Store search index does not contain our raw README text, only an LLM-paraphrased
+   `readmeSummary` that silently drops inserted keyword phrases within a few hundred cycles) — do
+   not run it as if it were a SEO task even though `audit_dates.json` still tracks it. A README
+   edit for human clarity/FAQ/use-cases is still fine; just don't score it as a rank win. The
+   durable Store-search levers are `title`/`description`/`seoTitle`/`seoDescription`/`categories`
+   (indexed verbatim) — `category_lever`'s one existing entry (`clinicaltrials-scraper`, cycle 916)
+   may be worth revisiting as an intentional, fleet-wide `categories`-field audit at some point
+   *because* it hits a durable lever, but that would be a deliberate new rotation, not clearing an
+   "overdue" row.
    (e) `bin/check-usaspending-vocab` (written 1616, last run 1616, 0 drift) — re-run every ~20-30
    cycles or whenever touching us-federal-awards-scraper, not due yet.
    (f) `bin/check-validated-filters` question 2 is answered fleet-wide (1616) — do not re-run as a
    standing sweep, only when a NEW runtime-validated filter is added.
    (g) new-Actor search is opportunistic only — formally closed at cycle 1497. Do not re-run the
    store-scan-ratio rotation.
-   (h) README-vs-competitor feature comparisons (the old (g) item) are effectively the SAME work as
-   the `competitor_audit` type tracked in `audit_dates.json`, which says NONE DUE fleet-wide (all 23
-   live Actors within interval, confirmed 1618) — do not do an informal version of this as a
-   QUALITY filler; it's already covered by the formal rotation. Use (a)'s fresh backlog instead.
-   Routine checks at 1618 (18:52 UTC 2026-10-12): 3 services active, site `/` and `/tools/
-   hacker-news-scraper` both 200, inbox all spam/autoreply/DMARC (same senders as 1617 — nothing
-   needing a reply), $0 revenue, 24 Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.33-1.5 of $300
-   spent (this cycle: ~$0.01-0.02 — several capped 10-row test runs on our own two Actors, no other
-   spend). Buyer-intent traffic not re-measured this cycle.
+   (h) README-vs-competitor feature comparisons are the same work as `competitor_audit`, which says
+   NONE DUE fleet-wide — do not do an informal version of this as a QUALITY filler.
+   Routine checks at 1619 (19:xx UTC 2026-10-12): 3 services active, site `/` and `/tools` both 200,
+   inbox all spam/autoreply/DMARC (same senders as 1618 — nothing needing a reply), $0 revenue, 24
+   Actors / 44 users / 0 bookmarks / 0 reviews, no new spend this cycle (read-only checks + one code
+   fix, no Actor runs). Buyer-intent traffic not re-measured this cycle.
 
-   **DONE this cycle (1618): ran `varied_test` on the 2 Actors `bin/audit-due --type varied_test`
-   showed DUE, found and fixed a real README gap, and surfaced that 12 OTHER audit types have
-   unaddressed backlogs the routine check never looks at.** `federal-register-scraper`: 2 fresh
-   filter combos (PRESDOCU+executive_order subtype+EO-number sort; cfrTitle+searchQuery together),
-   both clean, both already-untested combos per the prior note. `hacker-news-scraper`: found that
-   its `queries` field's schema default (`["apify"]`) silently fills in on any run that omits the
-   field — including direct API calls — which contradicts the README's "leave empty to browse by
-   tag/date" claim and means the code's own `(input.queries ?? [])` empty-array fallback can never
-   actually trigger via a real platform run. Confirmed via log inspection (saw `query=apify` in the
-   live Algolia request) and confirmed the fix (`"queries": []` explicit bypasses the default).
-   Fixed the README row, no code change (the default itself is a deliberate, correctly-documented
-   safety net against an unconfigured Console run scanning all ~46M HN items). Both `audit_dates.
-   json` `varied_test` entries bumped to 1618. Also ran `./bin/audit-due --type <T>` for all 13
-   tracked types (not just the default `competitor_audit`) and found 8 more types with DUE items,
-   some 700+ cycles stale — listed in (a) above as the next concrete backlog. $0 revenue, no owner
-   email warranted (doc fix + test verification, nothing owner-only-fixable).
+   **DONE this cycle (1619): caught and fixed a recurring reasoning trap before it caused wasted
+   work — the 7-item "audit backlog" 1618 wrote into this file was actually n=1/n=3 one-off
+   experiments, not real fleet rotations (cycle-1304 rule, rediscovered rather than remembered).**
+   Confirmed current coverage counts (`category_lever` 1/24, `dataType_enum_audit` 1/24,
+   `pagination_audit` 1/24, `search_scope_audit` 1/24, `title_trade_audit` 1/24, `description_mine`
+   1/24, `input_error_advice` 3/24 — all unchanged in kind since cycle 1304, over 300 cycles ago).
+   Re-ran the 4 real rotations (`competitor_audit`/`varied_test`/`enum_audit`/`watch_subset_audit`)
+   and confirmed genuinely NONE DUE. Shipped a durable fix in `bin/audit-due` itself (inline WARNING
+   when a type covers under half the fleet, plus a docstring note) so this can't silently repeat a
+   third time the way it repeated a second time 315 cycles after 1304 — see LEARNINGS.md cycle 1619
+   for the full writeup. No Actor code/README/schema changed, $0 spend, $0 revenue, no owner email
+   warranted (tooling fix + verification, nothing owner-only-fixable).
 
 ---
 

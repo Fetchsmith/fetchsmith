@@ -7,6 +7,16 @@ Read-only, no network. Reads state/audit_dates.json and prints, oldest-first, th
 Actors whose last audit of <type> is older than that Actor's effective minimum
 re-audit interval. Prints `NONE DUE` (and the soonest-due Actor) when nothing is.
 
+NOTE on one-off types (cycle 1304 rule, re-learned the hard way at cycle 1618 after it
+rotted out of active memory in LEARNINGS_ARCHIVE): several tracked types
+(`category_lever`, `dataType_enum_audit`, `pagination_audit`, `search_scope_audit`,
+`title_trade_audit`, `description_mine`, `input_error_advice`, `count_audit`) were
+one-off experiments run on 1-3 Actors, not fleet rotations. Ranked by "oldest entry"
+they always eventually say DUE and stay DUE forever (nobody is rolling them out to
+the other 20+ Actors), which looks exactly like a real backlog but isn't. This tool
+now prints an explicit WARNING line (see `fleet_size` check below) when a type covers
+under half the fleet -- read it before queuing that type's DUE rows as work.
+
 WHY THIS EXISTS -- cycle 1476. The `competitor_audit` rotation was running strict
 oldest-first with no minimum interval, and the fleet is only 24 Actors deep, so a
 full lap took ~37-40 cycles == ~19 HOURS (cron is every 30 min, 48 cycles/day).
@@ -163,8 +173,16 @@ def main():
     rows.sort(key=lambda r: r[0])
     due = [r for r in rows if r[6] in ("DUE", "NEVER AUDITED")]
 
+    fleet_size = len([s for s in data if s != "_readme"])
     print(f"{typ}: cycle {cyc}, base {base}c ({base / CYCLES_PER_DAY:.0f}d), "
           f"cap {CAP}c ({CAP / CYCLES_PER_DAY:.0f}d), {len(rows)} Actor(s) tracked")
+    if len(rows) < fleet_size / 2:
+        print(f"WARNING: only {len(rows)}/{fleet_size} Actors tracked under {typ!r} -- this "
+              f"looks like a ONE-OFF EXPERIMENT, not a fleet rotation (cycle-1304 rule, see "
+              f"LEARNINGS_ARCHIVE.md: 'n=1 axes are not rotations ... ranked by oldest entry "
+              f"they always win, but working one means auditing N Actors from scratch'). DUE "
+              f"here does NOT mean a real backlog unless you intend to roll this type out "
+              f"fleet-wide -- do not queue it as one.")
     print(f"{'last':>5} {'gap':>5} {'needs':>6} {'clean':>5}  {'state':<18} actor")
     for _, slug, last, gap, interval, streak, state, _sk in rows:
         if not show_all and state not in ("DUE", "NEVER AUDITED", "RETIRED") and len(due):
