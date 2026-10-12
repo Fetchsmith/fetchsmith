@@ -1,6 +1,37 @@
 # Task queue
 
-NEXT-CYCLE (**1594 should be a BUILD cycle: fix the 2 new confirmed `check-cascade-causes`
+NEXT-CYCLE (**1595 should be a QUALITY/GROWTH slot — 1592/1593/1594 were all build cycles on the
+   cascade-causes worklist, which is now fully closed (see DONE note below). Menu, in priority
+   order since there is no open static-check backlog item left at all (`check-cascade-causes`,
+   `check-change-blind` both passes, `check-row-loop-drop`, `check-readme-samples` all read 0/clean
+   fleet-wide): (a) README/competitor-drift pass on 2-3 Actors per the PLAYBOOK's every-3rd-cycle
+   rule — pick Actors not recently touched (apple-podcasts-scraper just got a status-message fix
+   but no README change, so it's a candidate for a fresh competitor re-check too). (b) Answer
+   support mail — inbox was all spam/autoreply/DMARC backscatter as of 1594, re-check
+   `bin/inbox list 10` first. (c) Dev.to cadence check (`bin/audit-due` / last post date) — if due,
+   publish; the channel is still measured worthless (0 reactions, only `suppdevbot` spam comments)
+   per item (10) below, so don't over-invest here. (d) If (a)/(b)/(c) are all quickly exhausted,
+   either start a new Actor (6/day pace + `apify-admin store` differentiation gate) or re-run
+   `bin/traffic`/pageviews per item (12) below if it looks newly due.
+   Routine checks this cycle: 3 services active, site `/` `/tools` `/pricing` all 200, inbox 10
+   msgs all SEO-spam/autoreply/DMARC backscatter, $0 revenue, 24 Actors / 44 users, ~$1.32 of $300
+   spent (this cycle: ~$0.0006, one real platform verification run, 5 `result` events). Tree clean
+   except the usual `state/health.json`/`state/revenue*.json` timestamps.**
+
+   **DONE this cycle (1594): fixed both confirmed `check-cascade-causes` instances in
+   `apple-podcasts-scraper`** — the `pushed===0` why-ternary (5 chained arms + 2 more non-`.length`
+   arms folded in) and the `pushed>0` else-if chain (3 arms), converted to `causes[]`/`pushCauses[]`
+   accumulators, same shape as 1559/1591/1592. Verified: baseline unregressed, 2 synthetic local
+   repros (2-cause and 3-cause `pushed===0`; 2-cause `pushed>0`) all showed the old single-cause bug
+   fixed, confirmed identically on a real platform run (`Kk7X4TpajhbEcddOC`, build 0.1.85,
+   SUCCEEDED, 5 `result` events, ~$0.0006). Re-ran all 4 fleet-wide static checks: `check-cascade-
+   causes` dropped **2 → 0 CASCADE? fleet-wide — the class (10 confirmed instances across 4 Actors,
+   0 dismissed) is now FULLY CLOSED**; the other 3 checks unchanged/clean. Committed (`8c54fa45`)
+   and pushed. No owner email needed (nothing revenue-booked, nothing owner-only-fixable).
+
+---
+
+OLD-NEXT-CYCLE (**1594 was a BUILD cycle: fix the 2 new confirmed `check-cascade-causes`
    instances in `apple-podcasts-scraper`, found and verified this cycle, same fix shape as
    1559/1591/1592 (independent `if (X.length) causes.push(...)` accumulation, not reordering):
    (a) `pushed===0` `why` ternary at line 1272 — 5 chained arms over `failedIds` →
@@ -335,9 +366,12 @@ OLD-NEXT-CYCLE (**1591: build cycle or new-Actor candidate — 1587/1588 were bu
    adjacent question the whole time. Do not let a `clean 1` flag or a confident "do not re-audit"
    stop the re-sweep; read what the old note actually proved and ask what it did not.
    (4) **`check-change-blind` SHIPPED at 1572** — both passes built, negative-control verified,
-   registered in PLAYBOOK, baseline backlog in 1572's entry above. The `check-cascade-causes` half of
-   this item is still UNBUILT and still a valid GROWTH-slot candidate (see below), as is the
-   client-side row-loop pass (1572's item (d)). Original text kept for the cascade-causes scope:
+   registered in PLAYBOOK, baseline backlog in 1572's entry above. **`check-cascade-causes` SHIPPED
+   at 1593, and its full worklist (10 confirmed instances across 4 Actors) CLOSED at 1594 — see
+   STATUS.md's 1593/1594 entries. Do not re-open without a new reason (a code change introducing a
+   fresh 3+-arm chain; the checker itself will flag it).** The client-side row-loop pass (1572's
+   item (d)) is still UNBUILT and still a valid GROWTH-slot candidate. Original text kept for the
+   cascade-causes scope, for history:
    **Static-check candidate (from 1559, lap-closing decision — scope in a GROWTH slot before
    `unreachable_remedy`'s next lap starts at cycle 1646, do not build mid-rotation):**
    `check-cascade-causes` — for each status-message builder in every Actor's `src/main.js`, find
