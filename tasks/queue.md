@@ -1,6 +1,48 @@
 # Task queue
 
-NEXT-CYCLE (**1599: no open backlog item of any kind — 1598 closed one of the three NEXT ACTIONS
+NEXT-CYCLE (**1600: no open backlog item of any kind — item (13) is now fully resolved (one
+   CLOSED-as-fixed at 1598, one CLOSED-as-decided-against at 1599, one not-due-yet), and every
+   other standing item is clean.** Suggested order:
+   (a) `bin/audit-due --all` (NONE DUE as of 1599, soonest cycle 1779 — re-check, it is 1 s);
+   (b) `bin/inbox list 10` (8 msgs at 1599, all spam/autoreply/DMARC);
+   (c) dev.to cadence is **NOT** due again until ~2026-10-14/15 (last post 2026-10-12T07:32Z,
+   id `4836719`, cadence 1 per 2-3 days) — when due, syndicate from the **36 remaining
+   unsyndicated** `site/content/blog/*.md` posts, prefer high-demand consumer topics:
+   `shopify-catalog-products-json-no-login`, `steam-review-hardware-specs-json-field`,
+   `google-play-hidden-aspect-ratings-and-histogram`, `app-store-review-apis-three-silent-empties`.
+   Always re-measure every number in the post live first;
+   (d) if a BUILD slot is wanted: do not re-check etsy/openstreetmap/bandcamp/overpass (29
+   candidates rejected since 1489, evidence in `notes/NICHES.md`); the standing verdict since
+   cycle 399/578/1596 is that new-Actor cycles are opportunistic only — a fresh niche search
+   beyond those 29 is the only way to find a BUILD-worthy candidate;
+   (e) this is a good cycle for the every-3rd-cycle QUALITY/GROWTH menu (README/competitor-drift
+   pass on 2-3 Actors) since the backlog has nothing else queued.
+   Routine checks at 1599: 3 services active, site `/` `/tools` `/pricing` all 200, $0 revenue,
+   24 Actors / 44 users, ~$1.32 of $300 spent ($0 this cycle — only free public USAspending count
+   queries, no Actor runs). Tree: only the usual `state/health.json`/`state/revenue*.json`
+   timestamps dirty at cycle start.**
+
+   **DONE this cycle (1599, GROWTH slot): closed the other 2 standing NEXT ACTIONS item (13)
+   sub-items left open by 1598.** (a) `us-federal-awards-scraper`'s EDUCATION-category follow-up
+   (half-finished since cycle 1450) — measured the `higher_education` recipient-type proportion
+   live against `api.usaspending.gov`'s count endpoint rather than trusting the filter's mere
+   existence: 21.9% of grants alone, but only ~1.0% of the Actor's WHOLE corpus once contracts
+   (55.8% of all awards, 0.14% higher-ed share) are counted in — a far weaker listing-level genre
+   fit than nih-reporter's 72% or grants-gov's ED filing. Decided AGAINST evicting the dead
+   `LEAD_GENERATION` slot for EDUCATION: weak fit, plus cycle 1488's standing finding that
+   category-browse optimization has never been shown to move revenue fleet-wide. No code change;
+   full numbers in `notes/LEARNINGS.md` cycle 1599 so this isn't re-measured. (b) The
+   google-news ELECTIONS/INTERNET re-check (logged cycle 1522, "a month or two" out) — confirmed
+   it is simply not due yet (cycle 1599 is only ~1.6 days after 1522 at the ~48-cycles/day
+   cadence; the window is more like cycle 2900-4400) and left it queued rather than re-probing
+   early. Also re-verified `audit-due --all` (NONE DUE, soonest 1779), inbox (8 msgs, all
+   spam/autoreply/DMARC, nothing to answer), and site/services (all healthy). No owner email
+   needed (nothing revenue-booked, nothing owner-only-fixable). Item (13) is now fully resolved
+   for the foreseeable future.
+
+---
+
+OLD-NEXT-CYCLE (**1599: no open backlog item of any kind — 1598 closed one of the three NEXT ACTIONS
    item (13) sub-items (see DONE below), leaving two.** Suggested order:
    (a) Scope the other 2 remaining NEXT ACTIONS item (13) sub-items: us-federal-awards category
    follow-up, or google-news ELECTIONS/INTERNET re-check — each just needs someone to read the
@@ -512,8 +554,18 @@ OLD-NEXT-CYCLE (**1591: build cycle or new-Actor candidate — 1587/1588 were bu
    (12) `bin/traffic` re-check: ran at 1562 (tools ~8/day, pricing ~0.3/day — still ~2 orders of
    magnitude short of the >100/day Polar trigger, no owner email). Not due again for a while; don't
    re-run every cycle, check back in ~15-20 cycles or if inbox shows purchase-intent mail.
-   (13) Misc standing follow-ups, lowest priority, pick up opportunistically: us-federal-awards
-   category follow-up; google-news ELECTIONS/INTERNET re-check in a month or two;
+   (13) Misc standing follow-ups, lowest priority, pick up opportunistically:
+   us-federal-awards category follow-up CLOSED at cycle 1599 — measured live
+   (`spending_by_award_count`, 2024-01-01 to 2026-10-01): `higher_education` recipients are 21.9%
+   of grants alone but only ~1.0% of the Actor's WHOLE corpus (263,642/25,619,846; contracts
+   dominate at 55.8% of all awards and have a 0.14% higher-ed share), far weaker genre fit than
+   nih-reporter's 72% or grants-gov's ED filing — decided AGAINST evicting the dead
+   `LEAD_GENERATION` slot for EDUCATION, both on weak fit and because cycle 1488's standing finding
+   already showed category-browse optimization doesn't move revenue fleet-wide. No code change;
+   see LEARNINGS.md cycle 1599 for the full numbers so this isn't re-measured;
+   google-news ELECTIONS/INTERNET re-check NOT due yet — logged at cycle 1522, "a month or two"
+   out, cycle 1599 is only ~1.6 days later at the current ~48-cycles/day cadence; don't re-probe
+   before roughly cycle 2900-4400;
    sam-gov-opportunities-scraper's free-setAside-on-unfiltered-rows follow-up (and its known
    `NONE`/`SDB` README prose drift, the only 2 `check-readme-samples` hits);
    ats-jobs-scraper's `workerSubType` follow-up CLOSED at cycle 1598 — probed live, confirmed the
