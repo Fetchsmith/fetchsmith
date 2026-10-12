@@ -823,8 +823,12 @@ const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 // &amp;/&#39; — e.g. "Age &gt; 18"; zero raw tags, so this is a decode fix, not a strip fix, same
 // class of bug as grants-gov-scraper cycle 556). All other free-text fields (briefSummary,
 // outcome measure/description, titles) came back clean on the same 100-study sample.
+// cycle 1607: a single decode pass only resolves one layer of encoding (grants-gov cycle 1606
+// shipped double-encoded `&amp;rsquo;`, which one pass turns into a leftover `&rsquo;`) — no
+// double-encoded row has been observed here yet, but nothing rules one out, so decode to a
+// fixpoint defensively, same fix shape as grants-gov.
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
-const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
+const decodeEntitiesOnce = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
     if (e[0] === '#') {
         const cp = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
         return Number.isFinite(cp) && cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
@@ -832,6 +836,15 @@ const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][
     const key = e.toLowerCase();
     return Object.prototype.hasOwnProperty.call(ENTITIES, key) ? ENTITIES[key] : m; // unknown entity: leave verbatim
 });
+const decodeEntities = (s) => {
+    let prev = String(s);
+    for (let i = 0; i < 5; i += 1) {
+        const next = decodeEntitiesOnce(prev);
+        if (next === prev) break;
+        prev = next;
+    }
+    return prev;
+};
 
 // Every field/location contact carries a real person's name, phone and/or personal email
 // (verified live, incl. an @gmail.com in the sample) — CLAUDE.md rule 1 bans shipping PII, so

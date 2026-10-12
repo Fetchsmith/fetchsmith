@@ -513,7 +513,7 @@ const ENTITIES = {
     bull: '•', deg: '°', plusmn: '±', micro: 'µ', times: '×',
     frac12: '½', reg: '®', copy: '©', trade: '™', sect: '§',
 };
-const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
+const decodeEntitiesOnce = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]{1,9});/g, (m, e) => {
     if (e[0] === '#') {
         const cp = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
         return Number.isFinite(cp) && cp > 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
@@ -521,12 +521,27 @@ const decodeEntities = (s) => String(s).replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][
     const key = e.toLowerCase();
     return Object.prototype.hasOwnProperty.call(ENTITIES, key) ? ENTITIES[key] : m; // unknown: verbatim
 });
-// Plain-text cleanup for one free-text field: drop markup, decode entities, collapse whitespace.
+// cycle 1607: decode to a fixpoint, same reason as grants-gov-scraper (cycle 1606) — a single
+// pass only resolves one layer, and a tag hidden behind entity-encoding (e.g. `&amp;lt;INF&amp;gt;`)
+// would never have been stripped because strip ran first. No double-encoded row has been observed
+// here yet (cycle 560's 1000-doc sample was single-layer), but the fix is defensive and free.
+const decodeEntities = (s) => {
+    let prev = String(s);
+    for (let i = 0; i < 5; i += 1) {
+        const next = decodeEntitiesOnce(prev);
+        if (next === prev) break;
+        prev = next;
+    }
+    return prev;
+};
+// Plain-text cleanup for one free-text field: decode entities (to a fixpoint) FIRST so any
+// entity-hidden tag becomes a real tag, THEN drop markup, then collapse whitespace.
 const cleanText = (v) => {
     if (v == null || v === '') return null;
-    const stripped = String(v).replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)(?:\s[^<>]*)?\/?>/g,
+    const decoded = decodeEntities(String(v));
+    const stripped = decoded.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)(?:\s[^<>]*)?\/?>/g,
         (m, tag) => (INLINE_TAGS.has(tag.toLowerCase()) ? '' : ' '));
-    return decodeEntities(stripped).replace(/\s+/g, ' ').trim() || null;
+    return stripped.replace(/\s+/g, ' ').trim() || null;
 };
 
 const listOf = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);

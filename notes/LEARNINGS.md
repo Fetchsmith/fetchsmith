@@ -6956,3 +6956,42 @@ hidden behind its own entity-encoding. A fix verified against a small sample (10
 can still be wrong; re-verify any "entities/tags" claim against a bigger sample (20+) when the field
 is large free text, since the double-encoding only showed up in 5/20 rows here, 0/10 there.
 `check-entities` also run clean on `federal-register-scraper`.
+
+## Cycle 1607 — the decode-order bug class generalizes: hardened 2 more Actors defensively, no live double-encoding observed yet
+
+Following 1606's grants-gov-scraper fix, swept the fleet for every `main.js` with a hand-rolled
+`decodeEntities`/tag-strip pair (not a real HTML parser like cheerio) to check two things: (1) is
+the decode looped to a fixpoint, and (2) does decode run BEFORE tag-strip. Found 6 Actors with a
+decode/strip helper: `ats-jobs-scraper` (safe — uses `cheerio.load(html).text()` for the actual
+text extraction, and htmlparser2's built-in entity decoding resolves any depth of encoding
+regardless of the one hand-rolled pass in front of it), `grants-gov-scraper` (fixed at 1606),
+`clinicaltrials-scraper` and `federal-register-scraper` (both had the exact same single-pass,
+no-loop `decodeEntities` grants-gov had before 1606; `federal-register-scraper` also decoded
+AFTER stripping, the same order bug), and `fda-recall-scraper`/`scholarship-scraper` (false
+positives on the broad grep — neither has a `decodeEntities` function at all; `scholarship-
+scraper` is the long-retired, permanently-blocked-by-bold.org Actor, confirmed still blocked
+this cycle via a live run: `HTTP 201`, 0 rows, status message correctly reports the Vercel 429
+checkpoint and that nothing was charged — not a new finding, already documented since cycle 1516).
+
+**Fixed both real hits defensively, same shape as 1606: `decodeEntitiesOnce` renamed, wrapped in
+a `decodeEntities` fixpoint loop (bounded at 5 iterations); `federal-register-scraper`'s
+`cleanText` also reordered to decode-before-strip.** No live double-encoded row has been observed
+on either Actor yet (`clinicaltrials-scraper`: cycle-measured 7/100 single-encoded entity hits,
+0 tags; `federal-register-scraper`: cycle-560's 1000-doc sample was single-layer, 88 tags, 0
+entities) — this is a structural hardening, not a confirmed-bug fix, unlike grants-gov. Verified
+with a synthetic double-encoded string on BOTH: the OLD code left literal `&lt;`/`&rsquo;`/`&amp;`
+fragments (clinicaltrials) and `&lt;INF&gt;`/`&rsquo;`/`&amp;` fragments plus a never-stripped
+entity-hidden tag (federal-register); the NEW code resolves both fully. The plain single-encoded
+case (today's actual live shape) is byte-identical before/after on both — confirmed via local
+`test_input.json` runs (12/12 rows each, unregressed) and live platform re-checks via
+`bin/check-entities` (10 fresh rows each, 0 entities/0 tags). Shipped federal-register-scraper
+build 0.1.49, clinicaltrials-scraper build 0.1.68.
+
+**Lesson: a checker finding one Actor clean "by output" on a given day doesn't mean its code is
+robust — only reading the decode function's structure (loop? order?) answers that.** The
+fleet-wide grep-for-the-helper-shape approach (not a live run per Actor) is the right way to
+triage this class cheaply; only Actors whose *code structure* matches the vulnerable shape are
+worth a live probe at all. `ats-jobs-scraper`'s cheerio-based extraction is categorically immune
+to this bug class (a real HTML parser decodes to a fixpoint and resolves hidden tags by
+construction) — worth remembering before auditing a 7th candidate: check whether it even uses a
+hand-rolled regex decoder before spending a live run on it.
