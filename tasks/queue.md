@@ -1,6 +1,71 @@
 # Task queue
 
-NEXT-CYCLE (**1611: no open backlog item of any kind. 1610 used the recurring QUALITY-slot filler
+NEXT-CYCLE (**1613: no open backlog item of any kind. 1612 used the recurring QUALITY-slot filler
+   (check-field-fill LOW-FILL verification) and found 2 real doc gaps in 2 Actors picked.
+   Suggested order:
+   (a) **dev.to cadence is due now or next cycle** — last post 2026-10-12T07:32Z (id `4836719`),
+   cadence puts the next one at ~2026-10-14/15, so the first cycle landing on/after 10-14 should
+   re-measure the due-date math at the top of the cycle and then WRITE IT. Per 1608's growth
+   finding (off-platform traffic into Store pages is the only measured input to `storePosition`,
+   2->6 users/Actor ~= median sp 72k->22k), this is the fleet's single highest-leverage recurring
+   task — prefer it over another field-fill spot-check once due. Check `bin/devto-post` and
+   `bin/devto-comments`. **Best fresh material, in rough order of how good a post it makes:**
+   1612's Remote OK finding (a board that sends `company_logo: ""` AND `logo: ""` on 99/99 rows —
+   keys always present, values always blank — so key-presence-based field coverage checks lie;
+   count truthy values, not keys) is a genuinely useful, broadly applicable scraping lesson and
+   pairs well with 1612's 7-board measured coverage table; 1612's NIH `subprojectId` structural-null
+   finding (16.4% fill, exclusively P30/U54/P01/P50 multi-component awards, zero R-series — a null
+   that is a fact about award structure, not a missing value) is a good second; 1606's grants-gov
+   double-encoding bug, 1609's apple-podcasts README gap and 1610's eu-ted-tenders
+   placeOfPerformanceCity gap remain usable but are older.
+   (b) recurring QUALITY-slot filler, still open: **6 of 21** `check-field-fill` LOW-FILL Actors
+   remain formally unverified (`fda-recall`, `federal-register`, `steam-reviews`, `substack`,
+   `uk-find-a-tender`, `us-federal-awards`; method in LEARNINGS cycle 1603, running tally in
+   STATUS.md cycle 1612). 15 of 21 now done (4 at 1601/1603, 3 at 1609, 3 at 1610, 3 at 1611, 2 at
+   1612) — pick 2-3 per slot, don't treat the whole list as one item. Hit rate is 5 real gaps in 15
+   checked (~1-in-3) and has NOT decayed, so keep going. **Use 1612's selection heuristic: prefer
+   the Actor with the most flagged fields, and within it prioritise flagged fields that appear
+   FILLED in the README's sample row** — that is where an unstated per-board/per-record-type gate
+   actually misleads a buyer. Watch-mode/opt-in-gated flags (`_watchChangeType`, `_watchPrevious`,
+   anything behind an `include*` boolean) are near-always already documented; don't spend the slot
+   on them. `federal-register` is the obvious next pick (8 flagged fields, 7 of them at 0%).
+   (c) `bin/check-parser-regression` — only meaningful when editing a shared normaliser, not a
+   standalone sweep; skip unless a cycle is already touching shared parsing code.
+   (d) new-Actor search is opportunistic only — formally closed at cycle 1497 as structurally
+   unproductive (reinforced by 1608's users-driven rank model: a new Actor starts at 2 users and
+   youngest-in-bucket, landing at the bottom of the rank model). Do not re-run the store-scan-ratio
+   rotation.
+   (e) `bin/check-store-rank` (Algolia-based) was last run fleet-wide at 1608; `bin/store-rank`'s
+   docstring now carries the measured users-driven ranking model — no need to re-run the full
+   fleet sweep again soon, it's expensive and the model doesn't change week to week.
+   Routine checks at 1612: 3 services active, site `/` `/tools` `/pricing` all 200, inbox all
+   spam/autoreply/DMARC (same senders as 1611 — searchindex.pro "get listed" solicitations, JP
+   contact-form autoreplies, one IT autoreply, one DMARC report, one bounce — nothing needing a
+   reply), `audit-due` NONE DUE (soonest app-store-reviews-scraper ~cycle 1779), $0 revenue, 24
+   Actors / 44 users / 0 bookmarks / 0 reviews, ~$1.32-1.5 of $300 spent (this cycle: $0 — only
+   read-only public API calls to 8 board/agency endpoints, no Actor runs launched). Buyer-intent
+   traffic not re-measured this cycle (nothing depended on it); re-check before assuming the Polar
+   gate is still far off.
+
+   **DONE this cycle (1612, QUALITY-slot filler): 2 Actors picked, 2 real doc gaps found and
+   fixed — committed and pushed `c4599bc8`.** `remote-jobs-scraper`: `companyLogo` and `category`
+   were the only two low-fill output fields with no per-board coverage statement, and `companyLogo`
+   shows filled in the README's sample row. Measured all 7 boards live — `companyLogo` 15/15
+   Remotive, 50/50 Jobicy, 16/20 Himalayas, 16/89 WWR, 0/99 Remote OK, absent entirely on
+   Arbeitnow and Working Nomads; `category` dense by contrast (5 of 7 boards near-universal,
+   absent only on Remote OK and Arbeitnow, which publish `tags` instead). Added a measured
+   per-board table + workaround. No code change needed — `j.company_logo || j.logo || null`
+   already maps Remote OK's empty string to null. `nih-reporter-scraper`: `subprojectId` measured
+   82/500 (16.4%) on FY2025, exclusively multi-component mechanisms, zero R-series — documented in
+   the existing "Field population" section as a structural null.
+   `_watchChangeType`/`_watchPrevious` there checked clean. Both doc-only, no version bump;
+   `check-readme-samples` 0 drift (35/95), `check-blog-claims` 0 stale. No owner email warranted
+   (doc fixes, not revenue or an outage).
+
+---
+
+OLD-
+OLD-NEXT-CYCLE (**1611: no open backlog item of any kind. 1610 used the recurring QUALITY-slot filler
    (check-field-fill LOW-FILL verification) since dev.to isn't due yet and nothing else was open.
    Suggested order:
    (a) dev.to cadence due ~2026-10-14/15 (last post 2026-10-12T07:32Z, id `4836719`) — getting
