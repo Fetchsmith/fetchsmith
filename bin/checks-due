@@ -1,0 +1,189 @@
+#!/root/agent/venv/bin/python
+"""Which FLEET-WIDE checkers are actually due this cycle? (added cycle 1624)
+
+Usage:
+  bin/checks-due [--cycle N] [--all]
+  bin/checks-due --ran <tool> [--cycle N] [--note "what it found"] [--interval N]
+  bin/checks-due --map                 # print the not_cadence classification too
+
+Read-only by default, no network. The per-ACTOR sibling of this tool is
+bin/audit-due (state/audit_dates.json); this one covers the checkers that take no
+Actor argument and sweep the whole fleet/site/blog in one run, which audit_dates.json
+structurally cannot hold (it is keyed per Actor -- a fleet sweep has no per-Actor row).
+
+WHY THIS EXISTS -- cycles 1622 and 1623 hit the same failure independently. The
+intended re-run cadence of every fleet-wide checker lived ONLY in queue.md prose, and
+queue.md is trimmed into tasks/queue_archive.md every ~40-60 cycles, so the instruction
+silently vanishes while the tool keeps looking maintained. Measured damage:
+bin/devto-comments went 43 cycles unrun despite an explicit PLAYBOOK instruction
+(1622); bin/check-competitor-claims went 121 cycles unrun, tracked in no file at all,
+and had accumulated 31 genuinely stale rival user-counts across 14 READMEs (1623).
+Prose is not a scheduler. state/fleet_checks.json is.
+
+DISCOVERY HOOK: bin/audit-due prints a one-line FLEET CHECKS footer on every run, and
+the CLAUDE.md cycle protocol runs audit-due every cycle. That is deliberate -- a
+registry nobody reads rots exactly like the prose it replaced, so the entry point is a
+command cycles already type, not a new habit.
+
+RECORDING A RUN: `bin/checks-due --ran check-foo --note "0 drift, 522 claims"` writes
+last_cycle + prepends the note (newest-first, `[prior note preserved]` separated, same
+convention as audit_dates.json). Do this in the SAME cycle you run the tool. An unknown
+tool name is an error, not a new entry -- a typo must not be able to create a ghost
+check that reads as never-run forever (the audit-due cycle-1542 lesson). Pass
+--interval N with --ran to deliberately add a new cadence entry, and put the measured
+justification for that interval in --note.
+"""
+import json, re, os, sys
+
+STATE = "/root/agent/state/fleet_checks.json"
+BIN = "/root/agent/bin"
+LOG = "/root/agent/logs/worker.log"
+CYCLES_PER_DAY = 48
+
+
+def current_cycle():
+    """Last `cycle=NNNN ... start` line in worker.log (same source as bin/audit-due)."""
+    try:
+        with open(LOG) as f:
+            hits = re.findall(r"cycle=(\d+)\s+model=\S+\s+start", f.read())
+        if hits:
+            return int(hits[-1])
+    except OSError:
+        pass
+    return None
+
+
+def load():
+    with open(STATE) as f:
+        return json.load(f)
+
+
+def save(data):
+    with open(STATE, "w") as f:
+        json.dump(data, f, indent=1)
+        f.write("\n")
+
+
+def due_rows(data, cyc):
+    """[(gap - interval, tool, last, gap, interval, state)], most-overdue first."""
+    rows = []
+    for tool, v in data["checks"].items():
+        interval = v["interval_cycles"]
+        last = v.get("last_cycle")
+        if last is None:
+            rows.append((10 ** 9, tool, None, None, interval, "NEVER RUN"))
+            continue
+        gap = cyc - last
+        state = "DUE" if gap >= interval else f"in {interval - gap}"
+        rows.append((gap - interval, tool, last, gap, interval, state))
+    rows.sort(key=lambda r: -r[0])
+    return rows
+
+
+def footer(cyc=None):
+    """One line for bin/audit-due to print. Never raises -- a broken registry must
+    not be able to take down the tool every cycle depends on."""
+    try:
+        data = load()
+        cyc = cyc or current_cycle()
+        if cyc is None:
+            return None
+        rows = due_rows(data, cyc)
+        hot = [r for r in rows if r[5] in ("DUE", "NEVER RUN")]
+        if hot:
+            return (f"FLEET CHECKS: {len(hot)} due ({', '.join(r[1] for r in hot[:4])}"
+                    f"{', ...' if len(hot) > 4 else ''}) -- see bin/checks-due")
+        soon = max(rows, key=lambda r: r[0]) if rows else None
+        if soon:
+            n = soon[4] - soon[3]
+            return (f"FLEET CHECKS: none due (soonest {soon[1]} in {n}c, "
+                    f"~{n / CYCLES_PER_DAY:.1f}d) -- bin/checks-due")
+        return None
+    except Exception as e:                       # noqa: BLE001 -- see docstring above
+        return f"FLEET CHECKS: registry unreadable ({e.__class__.__name__}) -- fix state/fleet_checks.json"
+
+
+def known_tools():
+    return {f for f in os.listdir(BIN) if not f.startswith(("_", "."))}
+
+
+def record(data, tool, cyc, note, interval):
+    if tool not in data["checks"]:
+        if interval is None:
+            sys.exit(f"checks-due: {tool!r} is not a tracked fleet check. Known: "
+                     f"{', '.join(sorted(data['checks']))}\n"
+                     f"If it genuinely belongs here, re-run with --interval N and a "
+                     f"--note justifying that interval from measured drift.")
+        if tool not in known_tools():
+            sys.exit(f"checks-due: no such tool {BIN}/{tool} -- refusing to create a "
+                     f"registry entry for a name that does not exist (a typo would "
+                     f"read as NEVER RUN forever).")
+        data["checks"][tool] = {"kind": "cadence", "interval_cycles": interval,
+                                "last_cycle": None, "note": ""}
+        print(f"added cadence entry {tool} (interval {interval}c)")
+    e = data["checks"][tool]
+    prev = e.get("last_cycle")
+    e["last_cycle"] = cyc
+    if interval is not None:
+        e["interval_cycles"] = interval
+    if note:
+        old = e.get("note") or ""
+        e["note"] = f"cycle {cyc}: {note}" + (f" [prior note preserved] {old}" if old else "")
+    save(data)
+    print(f"{tool}: last_cycle {prev} -> {cyc}, next due at cycle "
+          f"{cyc + e['interval_cycles']}")
+
+
+def main():
+    a = sys.argv[1:]
+    data = load()
+    cyc = int(a[a.index("--cycle") + 1]) if "--cycle" in a else current_cycle()
+    if cyc is None:
+        sys.exit("checks-due: could not determine current cycle; pass --cycle N")
+    note = a[a.index("--note") + 1] if "--note" in a else None
+    interval = int(a[a.index("--interval") + 1]) if "--interval" in a else None
+
+    if "--ran" in a:
+        return record(data, a[a.index("--ran") + 1], cyc, note, interval)
+
+    rows = due_rows(data, cyc)
+    hot = [r for r in rows if r[5] in ("DUE", "NEVER RUN")]
+    print(f"fleet checks: cycle {cyc}, {len(rows)} tracked "
+          f"({CYCLES_PER_DAY} cycles/day)")
+    print(f"{'last':>5} {'gap':>5} {'needs':>6}  {'state':<10} tool")
+    for _, tool, last, gap, interval_, state in rows:
+        if not ("--all" in a or "--map" in a) and hot and state not in ("DUE", "NEVER RUN"):
+            continue
+        print(f"{last if last is not None else '-':>5} "
+              f"{gap if gap is not None else '-':>5} {interval_:>6}  {state:<10} {tool}")
+    print()
+    if hot:
+        print(f"DUE NOW ({len(hot)}): " + ", ".join(r[1] for r in hot))
+        print(f"NEXT: {hot[0][1]} -- run it, then record it with "
+              f"`bin/checks-due --ran {hot[0][1]} --note '...'`")
+    else:
+        soonest = max(rows, key=lambda r: r[0]) if rows else None
+        print("NONE DUE -- do not re-run these this cycle; spend it on growth work.")
+        if soonest:
+            n = soonest[4] - soonest[3]
+            print(f"Soonest: {soonest[1]} in {n} cycle(s) "
+                  f"(~{n / CYCLES_PER_DAY:.1f} day(s), cycle {cyc + n}).")
+    if "--map" in a:
+        print("\n-- not_cadence (no due date by design, classified cycle 1624) --")
+        for group, v in data["not_cadence"].items():
+            if group.startswith("_"):
+                continue
+            print(f"\n{group}: {v['_why']}")
+            print("  " + ", ".join(v["tools"]))
+        missing = known_tools() - set(data["checks"]) - {
+            t for g, v in data["not_cadence"].items() if not g.startswith("_")
+            for t in v["tools"]}
+        if missing:
+            print(f"\nUNCLASSIFIED ({len(missing)}): {', '.join(sorted(missing))}")
+            print("  -> classify each as a cadence entry or into a not_cadence group "
+                  "when you next touch it; an unclassified tool is one nobody has "
+                  "decided about, which is how check-competitor-claims rotted.")
+
+
+if __name__ == "__main__":
+    main()

@@ -212,6 +212,31 @@ def main():
               f"{interval if interval is not None else '-':>6} {streak:>5}  {state:<18} {slug}")
 
     print()
+    # Cycle 1624: fleet-wide checkers (no Actor argument) can't live in audit_dates.json,
+    # which is keyed per Actor -- they lived in queue.md prose instead and rotted when it
+    # was trimmed (devto-comments 43 cycles unrun, check-competitor-claims 121). They now
+    # live in state/fleet_checks.json, and this footer is their discovery hook, because
+    # audit-due is the one due-date tool every cycle already runs. Soft import: a broken
+    # fleet registry must never break the per-Actor rotation.
+    try:
+        # NOTE: `bin/checks-due` has no .py suffix, so spec_from_file_location alone
+        # returns None (no loader matches the extension) -- hence the explicit
+        # SourceFileLoader. Importing it keeps the due-date logic in ONE place
+        # instead of a second copy here that could drift from the registry's rules.
+        import importlib.util
+        from importlib.machinery import SourceFileLoader
+        path = "/root/agent/bin/checks-due"
+        spec = importlib.util.spec_from_file_location(
+            "checks_due", path, loader=SourceFileLoader("checks_due", path))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        line = mod.footer(cyc)
+        if line:
+            print(line + "\n")
+    except Exception:          # noqa: BLE001 -- see comment above
+        print("FLEET CHECKS: footer unavailable (bin/checks-due broken?) -- "
+              "run bin/checks-due by hand\n")
+
     if due:
         print(f"DUE NOW ({len(due)}): " + ", ".join(r[1] for r in due))
         print(f"NEXT TARGET: {due[0][1]}")

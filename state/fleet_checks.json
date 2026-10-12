@@ -1,0 +1,160 @@
+{
+ "_readme": "Cadence index for FLEET-WIDE checkers in bin/ -- the ones that take no Actor argument and sweep the whole fleet/site/blog in one run. Added cycle 1624 to close the failure mode that cycles 1622 and 1623 both hit independently: these tools' intended re-run cadence lived ONLY in queue.md prose, and queue.md gets trimmed into tasks/queue_archive.md every ~40-60 cycles, so the instruction silently disappears. Measured damage: bin/devto-comments went 43 cycles unrun despite a PLAYBOOK instruction (found 1622), bin/check-competitor-claims went 121 cycles unrun and was tracked nowhere at all (found 1623, 31 genuinely stale rival user-counts across 14 READMEs). state/audit_dates.json does NOT cover these -- it is keyed per Actor, and a fleet-wide sweep has no per-Actor row to update. Read/update with bin/checks-due (`bin/checks-due` to see what is due, `bin/checks-due --ran <tool> --note '...'` to record a run). bin/audit-due prints a one-line FLEET CHECKS footer every time it runs, which is the discovery hook -- audit-due is run every cycle by the CLAUDE.md protocol, so a due fleet check can no longer hide.",
+ "_seed_provenance": "last_cycle values seeded cycle 1624 from HARD evidence, not prose: a scan of all 1442 session transcripts in /root/.claude/projects/-root/*.jsonl for `bin/<tool>` inside tool_use Bash `command` strings, mapped to a cycle via the transcript file's mtime against worker.log's `cycle=N ... start` timeline (script kept at /tmp/scan_tool_runs.py, re-derivable). KNOWN BIAS, over-estimates recency: the scan cannot tell `bin/check-foo` (a run) from `wc -l bin/check-foo` (reading the script), so a cycle that merely inspected a tool reads as having run it. Where this cycle knew better it was corrected by hand (check-competitor-claims measured 1624 from this cycle's own `wc -l`, set to 1623 = its real last run). Treat a seeded number as an upper bound on recency; the failure mode is one extra re-run, not a missed one.",
+ "_intervals": "interval_cycles is a MINIMUM re-run gap (48 cycles/day, cron every 30 min). Due = cycle - last_cycle >= interval_cycles. Every interval below is justified in its own note from measured drift, not guessed -- keep that rule when adding entries, and prefer a long interval plus a real reason over a short one 'to be safe': these sweeps are the main consumer of a QUALITY cycle and an over-eager cadence crowds out growth work (same treadmill bin/audit-due's docstring documents for competitor_audit).",
+ "checks": {
+  "check-competitor-claims": {
+   "kind": "cadence",
+   "interval_cycles": 144,
+   "last_cycle": 1623,
+   "note": "cycle 1624: 3 days. Rival user-counts hardcoded in our READMEs at verification time tick up continuously on the competitors' side, so this drifts with calendar time no matter what we do. Measured: 121 unrun cycles (1502->1623) produced 31 stale claims across 14 READMEs at the tool's own 10% tolerance. NOT the 45-60c that queue.md 1623 suggested -- that note read the tool's MAX_AGE_DAYS=45 as cycles; 45 days is 2160 cycles, and 144c (~31 stale/121c => ~10 expected per run) is the honest middle."
+  },
+  "devto-comments": {
+   "kind": "cadence",
+   "interval_cycles": 144,
+   "last_cycle": 1623,
+   "note": "cycle 1624: 3 days. Unanswered reader comments are the one item here with an outside party waiting, so cadence beats drift-rate; 3d bounds the reply delay. Went 43 cycles unrun (1579->1622) under a prose-only PLAYBOOK instruction, which is what motivated this file."
+  },
+  "check-blog-claims": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1623,
+   "note": "cycle 1624: 7 days. 0 drift at 1623. Blog numbers only move when we publish or when an Actor's fields change, both of which are our own actions, so calendar drift is low."
+  },
+  "check-readme-samples": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1623,
+   "note": "cycle 1624: 7 days. 0 drift at 1623, same argument as check-blog-claims (our own edits are the only drift source)."
+  },
+  "check-comparison-breadth": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1623,
+   "note": "cycle 1624: 7 days. Clean (0 narrow by rival count) at 1623. Moves only when the Store gains rivals in one of our niches, which is also what competitor_audit samples."
+  },
+  "check-blog-cta": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1624,
+   "note": "cycle 1624: 7 days. Run bare this cycle after 108 unrun cycles (last 1516): 53 posts checked, 0 missing-CTA, 0 bad-slug, 0 dead-link. Drift source is a new post or a renamed Actor dir, both ours; 7d bounds how long a dead product link can sit on the only organic channel. (This entry's note was briefly doubled when cycle 1624 exercised the `--ran` path against a note it had already hand-written; de-duplicated, no data lost.)"
+  },
+  "check-own-source-count": {
+   "kind": "cadence",
+   "interval_cycles": 480,
+   "last_cycle": 1624,
+   "note": "cycle 1624: 10 days. Run bare this cycle after 118 unrun cycles (last 1506): 7 count phrases across 3 Actors with structured source lists, 0 flagged. Only 3 Actors are in scope and the authority is a constant in src/main.js, so it can only drift when we edit that code -- a longer interval than its sibling count-checkers is correct here, not laziness."
+  },
+  "check-usaspending-vocab": {
+   "kind": "cadence",
+   "interval_cycles": 480,
+   "last_cycle": 1620,
+   "note": "cycle 1624: 10 days. DELIBERATE deviation from queue.md item (f), which asked for every 20-30 cycles (10-15 hours) -- that cadence was set at 1616 without a measured drift rate, and USAspending's award vocabulary is a published federal code list that does not move on an hourly scale (0 drift at 1616 and 1620). Shorten it again if a run ever comes back non-zero, and record the finding here."
+  },
+  "check-store-index": {
+   "kind": "cadence",
+   "interval_cycles": 672,
+   "last_cycle": 1621,
+   "note": "cycle 1624: 14 days. Clean at 1621. Structural site/Store-index check; drift needs either a publish or an Apify-side index change."
+  },
+  "check-root-readme": {
+   "kind": "cadence",
+   "interval_cycles": 672,
+   "last_cycle": 1621,
+   "note": "cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
+  },
+  "check-backlinks": {
+   "kind": "cadence",
+   "interval_cycles": 672,
+   "last_cycle": 1621,
+   "note": "cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
+  },
+  "check-actor-guides": {
+   "kind": "cadence",
+   "interval_cycles": 672,
+   "last_cycle": 1621,
+   "note": "cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
+  },
+  "check-rental-converts": {
+   "kind": "cadence",
+   "interval_cycles": 672,
+   "last_cycle": 1507,
+   "note": "cycle 1624: 14 days. Store sweep for rivals Apify converted off FLAT_PRICE_PER_MONTH at the 2026-10-01 rental deprecation. 117 cycles unrun at seed time (last 1507) -- inside the 672c interval, so NOT due at 1624. The interval is long because bin/check-price-superiority already re-prices every NAMED rival fleet-wide every QUALITY cycle; this sweep only adds the Store-wide hunt for newly-converted listings we have not named yet. Re-evaluate once the post-deprecation wave has clearly passed; it may be closeable outright."
+  }
+ },
+ "not_cadence": {
+  "_why": "Listed so the registry is a COMPLETE map of bin/ and a future cycle can tell 'deliberately has no cadence' from 'nobody has classified this yet'. These produce no due dates. Classification cycle 1624; last_cycle from the same transcript scan, shown for context only.",
+  "on_demand_per_actor": {
+   "_why": "Needs an Actor slug / input / phrase argument -- fires inside an audit rotation or after an edit to that Actor, never fleet-wide on a clock. Their cadence, where they have one, is state/audit_dates.json's job.",
+   "tools": [
+    "check-uniqueness",
+    "check-readme-prox",
+    "varied-test",
+    "store-test",
+    "check-parser-regression",
+    "check-filter-reach",
+    "check-change-blind",
+    "check-cascade-causes",
+    "check-seed-save",
+    "check-row-loop-drop",
+    "check-fail-ordering",
+    "check-exclusions-classification",
+    "check-entities",
+    "check-source-bytes",
+    "check-primary-event",
+    "check-code-fields",
+    "set-example-input",
+    "gen-output-schema",
+    "gen-actor-icons",
+    "gen-og-image",
+    "harvest-courtlistener-courts"
+   ]
+  },
+  "rotation_support": {
+   "_why": "Run as part of a competitor_audit / pricing sweep, i.e. gated by state/audit_dates.json, so a second clock here would double-book them.",
+   "tools": [
+    "niche-size",
+    "niche-unnamed",
+    "store-price",
+    "store-scan",
+    "store-gap",
+    "store-visibility",
+    "store-rank",
+    "check-store-rank",
+    "real-demand",
+    "category-rank",
+    "category-demand",
+    "check-price-superiority",
+    "check-own-price-freshness",
+    "check-unit-matched-price",
+    "check-pricing",
+    "check-charges",
+    "check-disclosure",
+    "check-field-fill",
+    "check-real-fields",
+    "check-meta-fields",
+    "check-registry-fields",
+    "check-validated-filters",
+    "check-store-meta"
+   ]
+  },
+  "operational": {
+   "_why": "Run every cycle by the CLAUDE.md protocol, by cron, or on a specific event -- a cadence entry would be noise.",
+   "tools": [
+    "inbox",
+    "notify",
+    "revenue",
+    "traffic",
+    "usage-trend",
+    "actor-health",
+    "watchdog",
+    "audit-due",
+    "checks-due",
+    "apify-admin",
+    "devto-post",
+    "indexnow",
+    "polar-setup"
+   ]
+  }
+ }
+}
