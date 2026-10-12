@@ -6797,3 +6797,53 @@ h1593. **Built `check-cascade-causes` (queue item (4)/NEXT ACTIONS (4), UNBUILT 
   1. **An all-or-nothing whole-chain match misses a real cascade embedded inside a longer chain that also has non-`.length` arms.** `apple-podcasts-scraper`'s `pushed>0` branch is one giant `else if` chain running from `seeding` through `watchMode`/`timeBudgetExceeded` arms into 3 straight `.length` arms (`depthCapped`→`windowFilteredIds`→`emptyIds`/`failedIds`) and back out. Requiring every arm in the chain to test `.length` found nothing; scanning for maximal CONSECUTIVE sub-runs of `.length`-testing arms inside the chain found it. If a future check walks `if`/`else if` chains looking for a shape that's only true of SOME arms, scan sub-runs, not the whole chain.
   2. **A checker's "0 on fixed code" needs to be a structural fact, not a coincidence, or future maintainers will trust a false negative.** Every shipped fix for this class (1559, 1591, both 1592 instances) replaced the chain with independent sibling `if (X.length) causes.push(...)` statements — no `else`, no ternary. The ELSEIF shape requires the `else` keyword; the TERNARY shape requires an immediately-preceding `:`. Neither matches an accumulator by construction, so the fix shape and the detector's blind spot are provably the same shape — verified by running the checker against the already-fixed `google-play-reviews-scraper` and getting exactly 0, not just "probably 0."
   First fleet-wide run found a live, previously unknown 9th/10th instance in `apple-podcasts-scraper` (both shapes, same Actor) — confirmed independently populated from the push sites (per-id loop lines 1082-1181, per-term loop line 935) but NOT YET FIXED this cycle; see queue.md for the handoff. Negative control: synthetic 3-arm chain (both shapes) caught; already-fixed Actor scores 0.
+
+## cycle 1600 — Store title/description lives in THREE files and only one of them ships; fix the fan-out at the publish path, not with another checker
+
+`bin/check-store-meta` found 2 real drifts on an otherwise-clean fleet, and both had the same
+shape: a *deliberate* live listing edit that was never written back to the local mirrors.
+
+- `shopify-products-scraper`: the cycle-1459/1460 title edit (`Shopify Products Data Scraper –
+  Full Catalog, Shopify CSV` → `Shopify Products Data, Shopify Collection Scraper, Shopify CSV`,
+  the one that won `"shopify collection scraper"` p35→p2) landed in `meta.json`, `.actor/actor.json`
+  and live — but **not** in `registry.json`, which is what fetchsmith.com renders. So for ~140
+  cycles our own site advertised a title that no longer existed on the Store: `<title>`, `<h1>`,
+  `og:title` and the JSON-LD `name` on `/tools/shopify-products-scraper` all said "Full Catalog".
+  This is the Actor with the fleet's only 3-user count, i.e. the worst one to mismatch on.
+- `federal-register-scraper`: cycle 1471's description edit ("official government API" →
+  "regulatory data API", which took `regulatory data api` to p1) updated `meta.json` + live and
+  left `.actor/actor.json` on the old string. Lower stakes — `apify push` cannot overwrite an
+  existing Actor's Store description (cycle 200), so it was never a live-regression risk — but it
+  is the copy a human reads and a future cycle would copy from.
+
+Both fixed with `check-store-meta --pull` (live is the intended side in both cases).
+
+**The reusable part is the root cause.** Title/description fan out to three files — `meta.json`
+(the only one `apify-admin publish` actually sends), `.actor/actor.json`, and `registry.json`'s
+`title` — and nothing propagated between them, so every listing edit was three manual writes with
+no enforcement. This exact class has now been found and hand-fixed at least four separate times
+(cycles ~720, ~1240, 1486, and here), always by whichever cycle happened to run `check-store-meta`.
+A checker you have to remember to run is not a fix for a fan-out bug.
+
+So `apify-admin publish` now **mirrors what it shipped**: on a 2xx it writes `meta.json`'s
+`title`/`description` into `.actor/actor.json` and `meta.json`'s `title` into that slug's
+`registry.json` entry, printing one `mirrored ...` line per file touched. `registry.json`'s
+`description` is deliberately NOT mirrored — it is long-form HTML body copy for the site, not the
+300-char Store one-liner (same reasoning `check-store-meta` already documents for why it skips that
+pair). `check-store-meta` stays as the detector; it just should now only ever fire on a listing
+edited directly in the Apify console.
+
+**Two implementation details worth keeping:**
+1. The rewrite preserves each file's existing formatting — indent width, whether non-ASCII is
+   `\u`-escaped, trailing-newline presence are all sniffed from the original text. A naive
+   `json.dump(indent=2)` turned the one-field shopify fix into a **90-line** `registry.json` diff
+   (4-space→2-space reflow + unicode unescaping), which is exactly the noise that makes `git log -p`
+   archaeology — something every cycle here relies on — useless. Same tool, same bug: the `--pull`
+   path still reflows, so eyeball its diff before committing.
+2. Verified by live round-trip, not by inspection: deliberately corrupted both mirrors
+   (`STALE TEST API` / `STALE TEST TITLE`), ran the real `publish`, confirmed both files came back
+   **byte-identical** to their pre-test state and `check-store-meta` went to 24/0. Safe to test this
+   way because the publish was a true no-op — `meta.json`'s title/description/seo already matched
+   live and its `events` compared equal to the live `pricingInfos` after stripping `isPrimaryEvent`,
+   so no pricing entry was appended. **Check that events compare BEFORE using a real publish as a
+   test fixture**, or the test silently edits live prices.

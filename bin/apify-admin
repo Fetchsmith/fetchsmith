@@ -7,11 +7,76 @@
   apify-admin store <query> [n]            -> search Apify Store (demand signal): users, runs, ratings
   apify-admin runs <name> [n]              -> recent runs (status, started, stats)
 """
-import sys, json, httpx
+import os, sys, json, httpx
 env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
 T = env["APIFY_TOKEN"]; H = {"Authorization": f"Bearer {T}"}; API = "https://api.apify.com/v2"
 def me(): return httpx.get(f"{API}/users/me", headers=H).json()["data"]["username"]
 def get(name): return httpx.get(f"{API}/acts/{me()}~{name}", headers=H).json()["data"]
+ROOT = "/root/agent"
+
+
+def _rewrite_json(path, mutate):
+    """Apply `mutate(obj)` to a JSON file, preserving its existing formatting.
+
+    Formatting is sniffed from the original text (indent width, whether non-ASCII
+    is \\u-escaped, trailing newline) so a one-field edit stays a one-line diff
+    instead of reflowing the whole file -- these files are read by `git log -p`
+    archaeology every cycle. Returns True if the file changed.
+    """
+    raw = open(path).read()
+    obj = json.loads(raw)
+    if not mutate(obj):
+        return False
+    import re
+    m = re.search(r"\n(\x20+)\S", raw)
+    indent = len(m.group(1)) if m else 2
+    out = json.dumps(obj, indent=indent, ensure_ascii="\\u" in raw)
+    if raw.endswith("\n"):
+        out += "\n"
+    open(path, "w").write(out)
+    return True
+
+
+def mirror_local(slug, meta):
+    """Propagate the title/description we just published into the two local mirrors.
+
+    WHY (cycle 1600): title/description live in THREE files -- `meta.json` (the only
+    one `publish` actually ships), `.actor/actor.json` (the local Apify-repo copy) and
+    `registry.json`'s `title` (what fetchsmith.com renders). Publishing touched only
+    the first, so every deliberate listing edit left the other two silently stale and
+    `bin/check-store-meta` only caught it whenever a cycle happened to run it. That
+    had happened at least four times (cycles ~720, ~1240, 1486, and 1600's own find:
+    shopify-products-scraper's site title had been wrong since the cycle-1459 edit,
+    ~140 cycles). Mirroring at the publish path closes the class at its source.
+
+    registry.json's `description` is deliberately NOT mirrored: it is long-form HTML
+    body copy for the site, not the 300-char Store one-liner -- same reasoning as
+    check-store-meta's. Only `title` is a field both files intend to hold identically.
+    """
+    for path, keys in (
+        (f"{ROOT}/actors/{slug}/.actor/actor.json", ("title", "description")),
+        (f"{ROOT}/actors/registry.json", ("title",)),
+    ):
+        if not os.path.exists(path):
+            continue
+
+        def mutate(obj, keys=keys):
+            target = obj
+            if "tools" in obj:  # registry.json: find this slug's entry
+                target = next((t for t in obj["tools"] if t.get("slug") == slug), None)
+                if target is None:
+                    return False
+            changed = False
+            for k in keys:
+                if k in meta and target.get(k) != meta[k]:
+                    target[k] = meta[k]
+                    changed = True
+            return changed
+
+        if _rewrite_json(path, mutate):
+            print(f"  mirrored published title/description into {path}")
+
+
 cmd = sys.argv[1]
 if cmd == "list":
     # /acts?my=true omits isPublic and most of stats (only totalRuns/lastRunStartedAt come
@@ -71,6 +136,8 @@ elif cmd == "publish":
     payload["isPublic"] = True
     r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json=payload)
     print(r.status_code, json.dumps(r.json())[:600])
+    if 200 <= r.status_code < 300:
+        mirror_local(sys.argv[2], meta)
 elif cmd == "unpublish":
     a = get(sys.argv[2]); r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json={"isPublic": False}); print(r.status_code)
 elif cmd == "store":
