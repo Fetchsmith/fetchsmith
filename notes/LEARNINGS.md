@@ -7851,3 +7851,60 @@ there the stale copy actively tells them the business hasn't launched. **General
 copy, grep the failure-path branches too, and judge each by the state that reaches it, not by how
 often it renders.** Replaced with copy that names the real condition and routes to Apify Store, which
 doesn't depend on the read that just failed; render-tested the branch directly with `tools=[]`.
+
+---
+
+## Cycle 1672 (2026-10-13, opus-5) — Apify Actor icons: the cycle-364 "read-only, period" verdict was half wrong, and 16 of 24 Actors have been iconless on the Store with nothing in STATUS saying so
+
+**1. `pictureUrl` is NOT read-only. `PUT /v2/acts/<id>` accepts it — the constraint is on *uploading*, not on
+*setting*.** Cycle 364 concluded "there is no way to set an Apify Actor icon from this box, period" and
+every cycle since has treated that as settled. It is wrong in an important way. Verified live this cycle on
+`fetchsmith~scholarship-scraper` (actorId `nT9KnaY4AwTVzXwoI`):
+
+- `PUT {"pictureUrl": "<URL of an object that ALREADY EXISTS in apify-image-uploads-prod under our userId>"}`
+  → **200, field set.** Re-fetched the record and diffed against the pre-PUT capture: **only `pictureUrl` and
+  `modifiedAt` changed** — `isPublic`, `categories`, `seoTitle`/`seoDescription`, `pricingInfos`, `taggedBuilds`
+  all untouched. So a partial PUT merges; it does not blank unspecified fields.
+- `PUT {"pictureUrl": "<same bucket + same userId prefix + the TARGET actor's own id + a fabricated key>"}`
+  → `{"type":"invalid-picture-url"}`. So the validator checks **the object exists**, not that the URL is
+  "owned by" this Actor — a URL minted for a *different* Actor of ours is accepted verbatim.
+- `PUT {"pictureUrl": null}` → 200, back to null. Fully reversible; the test was reverted in-cycle.
+
+**Why cycle 364 got it wrong:** it only ever tested *external* URLs (an unreachable one, and our own live
+`fetchsmith.com/static/og-image.png`), both correctly rejected, and generalised from that to "the field can't
+be written." The real rule is narrower: **the field is writable; the bucket is not.**
+
+**2. The upload side is genuinely blocked, and now proved from Apify's own spec instead of from guessing.**
+Cycle 364's evidence was "7 guessed paths, all 404". Stronger evidence, one request:
+`curl https://docs.apify.com/api/openapi.json` → **131 paths, ZERO containing `picture`/`image`/`upload`/`icon`.**
+There is no public upload endpoint, full stop. The Console flow (`POST <console-backend>/upload/actor-picture/<id>`
+→ presigned S3 PUT) still needs a UI token, which needs a browser login we don't have credentials for. So:
+**new images can only enter the bucket through the owner clicking in Console.** That half of cycle 364 holds.
+
+**3. Live state nobody had written down: 8 of 24 public Actors have a Store icon, 16 do not.** The 8 are the
+oldest (`google-news`, `app-store-reviews`, `shopify-products`, `hacker-news`, `google-play-reviews`,
+`substack`, `apple-podcasts`, `steam-reviews`); their bucket keys are numbered `-1` through `-7`, i.e. the
+owner uploaded them by hand in Console after the cycle-364 request and **this was never recorded in the
+current `STATUS.md`** (only in `STATUS_ARCHIVE`, and there as "blocked"). Everything published from
+`scholarship-scraper` onward has had a blank icon on its Store card since launch.
+
+**4. The obvious exploit of finding 1 is the wrong move, and the reason is worth recording.** Since any
+existing bucket object is accepted, we *could* point all 16 iconless Actors at one of the 8 existing images
+in a single loop. We must not: **all 8 are third-party brand marks** (verified by downloading and viewing
+them — the Google News, Shopify, HN, Google Play, Substack, App Store, Apple Podcasts and Steam logos), each
+deliberately matched to the site its own Actor scrapes. Pasting the Substack logo onto
+`sec-insider-trades-scraper` would misrepresent the data source to a buyer on the exact surface where they
+decide whether to trust us. A capability being unlocked is not a reason to use it with the wrong material.
+
+**Standing consequence:** the 16 missing icons are an **owner-only, Console-only** action, and the moment any
+new image lands in our bucket it can be attached to any Actor from this box with one `PUT` — no Console
+needed for the *assignment* step. Do not re-derive the API blocker; do not re-test external URLs.
+
+**5. Trap, same class as 1668's `publicActorRunStats30Days`: `GET /v2/acts?my=1` omits half the Actor record.**
+`categories`, `isPublic`, `seoTitle`, `seoDescription` and `pictureUrl` all come back **absent → `None` for all
+24 Actors** from the list endpoint. Read naively that says "no Actor is public and none has categories or SEO
+metadata" — a fleet-wide catastrophe that is entirely an artifact of the endpoint. Only `GET /v2/acts/<id>`
+returns the full record. **Rule (now hit twice in five cycles): when an ad-hoc probe reports a uniform
+zero/null across the whole fleet, suspect the probe before the platform.** Per-Actor fetch confirmed the
+reality: **24/24 public, 2-3 categories each, seoTitle 48-59 chars, seoDescription 151-200 chars,
+`exampleRunInput` set on all 24** — Store metadata is complete fleet-wide *except* the 16 icons.
