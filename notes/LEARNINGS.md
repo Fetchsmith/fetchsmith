@@ -7444,3 +7444,25 @@ RUN_SUMMARY/setStatusMessage pattern).
 body reports `chargedEventCounts: {result: 0}` even for a run that pushed and charged rows — the counter
 is a pre-finish snapshot. A follow-up `GET /v2/actor-runs/<id>` showed the true `{result: 2}`. Never read
 charge counts off the run-creation response; always re-GET the run record.
+
+## Cycle 1637 — a generic zero-row remedy can give actively wrong advice when a specific cause already fired (sec-insider-trades-scraper)
+Several Actors in this fleet have a two-tier zero-row message shape: a SPECIFIC warning that names the
+exact reason a filter combo can't match anything (e.g. "includeDerivative is off but transactionCodes
+selects C, which SEC only reports on derivative rows"), plus a GENERIC remedy that fires whenever
+`pushed===0 && dropped>0` regardless of which specific cause applied ("raise `maxFilingsPerIssuer` / widen
+`sinceDate` to look further back"). On `sec-insider-trades-scraper` the generic remedy fired *in addition
+to* the specific one even when the specific cause makes the generic advice useless — no amount of raising
+`maxFilingsPerIssuer` or widening `sinceDate` can ever produce a derivative-only code with derivative rows
+excluded; the structural block has nothing to do with how many filings were fetched.
+**Same bug class as eu-ted 1552 / remote-jobs 1632 (a zero-row remedy blaming the wrong knob), but a new
+shape: not a missing cause in an array of causes, but a generic catch-all that doesn't know when a more
+specific, unfixable-by-its-own-advice cause already explained the zero.**
+**Reusable rule (6th, extending the LEARNINGS-1628/1632/1633 varied_test design rules): whenever a
+zero-row path has both a specific-cause warning and a separate generic remedy, check whether the generic
+remedy can fire on top of the specific one — and if the specific cause is structural (no knob the generic
+remedy names can ever fix it), gate the generic remedy off in that case.** Fix shape: a boolean flag set
+at the point the specific warning fires (`derivativeCodesBlocked` here — true only when EVERY selected
+value triggering the specific warning is unfixable), ANDed into the generic remedy's firing condition.
+Verify BOTH branches live: the blocked-case repro should show only the specific warning, and a genuinely
+depth-limited zero (e.g. an impossible `minTransactionValue` floor) must still show the generic remedy —
+otherwise the gate could be over-suppressing a case where the advice was actually right.

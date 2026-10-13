@@ -76,7 +76,9 @@ the feed down **before anything is pushed or charged**:
   are selectable from the dropdown; the platform rejects anything else before the run starts.
   One interaction worth knowing: `C`, `X`, `O`, `E`, `H` and `K` are only ever reported on
   derivative rows, so selecting one of them with `includeDerivative` turned **off** matches
-  nothing. The run logs a warning naming the codes rather than handing back an empty dataset.
+  nothing. The run logs a warning naming the codes, and (verified live, 2026-10-13) the
+  zero-row remedy correctly skips its usual "raise `maxFilingsPerIssuer`/widen `sinceDate`"
+  advice in this case — no amount of widening either one can produce a match here.
 - **`minTransactionValue`** — a USD floor compared on the **absolute** value, so a $2M sale
   (`transactionValueUsd: -2000000`) passes a `500000` floor exactly like a $2M purchase. Rows with
   no reportable value — holdings, and grants filed with no price — cannot be shown to clear the

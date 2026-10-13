@@ -157,9 +157,14 @@ if (includeHoldings && (transactionCodes.length || minTransactionValue > 0)) {
 // warning above covers. Verified live (cycle 1304): the enum values themselves are reachable
 // with includeDerivative on (an M and an A both came back on derivative rows).
 const DERIVATIVE_ONLY_CODES = ['C', 'X', 'O', 'E', 'H', 'K'];
+// Set when every selected transactionCode is structurally unreachable with includeDerivative
+// off -- the zero-row remedy below must not blame maxFilingsPerIssuer/sinceDate in that case,
+// since no amount of widening either one can ever produce a match (verified live, cycle 1637).
+let derivativeCodesBlocked = false;
 if (!includeDerivative && transactionCodes.length) {
   const blocked = transactionCodes.filter((c) => DERIVATIVE_ONLY_CODES.includes(c));
   if (blocked.length) {
+    derivativeCodesBlocked = blocked.length === transactionCodes.length;
     log.warning(`includeDerivative is off but transactionCodes selects ${blocked.join('/')}, which SEC `
       + 'only reports on derivative rows: those codes cannot match anything while derivative rows are '
       + 'excluded. Turn includeDerivative on, or drop those codes.');
@@ -383,7 +388,7 @@ if (filtersActive) {
   log.info(`Filters dropped ${dropped} row(s) before charging `
     + `(codes=${transactionCodes.join('/') || 'any'}, minValue=${minTransactionValue || 'none'}, `
     + `roles=${insiderRoles.join('/') || 'any'}).`);
-  if (!pushed && dropped) {
+  if (!pushed && dropped && !derivativeCodesBlocked) {
     log.warning('Every parsed row was filtered out. The filters apply to the filings that '
       + 'maxFilingsPerIssuer already selected -- raise it (or widen sinceDate) to look further back.');
   }
