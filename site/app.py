@@ -199,6 +199,12 @@ def go(request: Request, slug: str):
     to our own analytics (outbound links don't generate a pageview here). This
     is now the only way blog/tool CTAs reach Apify, so bin/traffic can finally
     see conversion instead of the /tools/ proxy metric.
+
+    Cycle 1652: also record `ua` and `vid`, so out_clicks get the same bot
+    verification `pageviews` has had since cycle 32 (UA test + asset_hits). Without
+    them the metric ran ~2x inflated: of 232 /go/ hits in one 5-day access-log window
+    only 85 were human-looking -- 93 were declared crawlers walking every /go/ slug
+    (AI answer engines: OAI-SearchBot, PerplexityBot, Amazonbot) and 54 our own curl.
     """
     if slug not in {t["slug"] for t in readable_tools()}:
         raise HTTPException(404)
@@ -206,7 +212,9 @@ def go(request: Request, slug: str):
         with db() as c:
             c.execute("INSERT INTO events(kind,payload,ts) VALUES(?,?,?)",
                       ("out_click", json.dumps({"slug": slug, "path": str(request.url.path),
-                                                 "ref": request.headers.get("referer", "")[:200]}),
+                                                 "ref": request.headers.get("referer", "")[:200],
+                                                 "ua": request.headers.get("user-agent", "")[:200],
+                                                 "vid": visitor_token(request)}),
                        int(time.time())))
     except Exception:
         pass

@@ -7588,3 +7588,55 @@ clickable, billable destination and the price?"** — not keyword rank. Re-measu
 GROWTH cycle (the method is ~20 lines of json parsing over the Caddy log; the log rotates, so a
 window older than the current file needs the `.gz`). Do NOT scrape Google/Bing SERPs to estimate
 this — the access log is authoritative and the SERP scrape would violate their ToS.
+
+## Cycle 1652 — a metric added long after a bot-filtering lesson won't inherit it; check the consumer, not just the producer
+
+**`out_click` (the one conversion metric we have) was ~2x inflated by crawlers for 143 cycles, and
+the fix already existed in this codebase.** Cycle 32 learned the hard way that UA filtering alone
+overstates humans ~40x, and built a two-part test for `pageviews`: browser-ish UA **AND** a row in
+`asset_hits` (the client fetched our CSS, so it rendered the page). Cycle 1509 then added
+`/go/<slug>` + `events(kind='out_click')` as a brand-new metric and recorded only `slug/path/ref` —
+no `ua`, no `vid` — so none of that machinery could apply. Every cycle since has read
+`bin/traffic`'s out_click table as buyer behaviour.
+
+**Measured from the Caddy access log (232 `/go/` hits, 2026-10-08 16:40 → 10-13 11:30):
+85 human-looking, 93 declared crawlers, 54 our own `curl`. 63% non-buyer.** The crawler half has a
+giveaway shape: OAI-SearchBot, PerplexityBot and Amazonbot each hit **exactly 3** of *every* slug —
+a systematic walk of our CTA links, not interest in any product. A per-slug out_click ranking built
+on that is ranking nothing.
+
+**Fixed:** `go()` now records `ua` + `vid` (reusing `visitor_token()`, no new mechanism), and
+`bin/traffic` applies the same cycle-32 two-part test, reporting four buckets —
+`unclassifiable_pre1652` / `declared_bot` / `ua_ok_no_css` / `verified`. Verified live with three
+UAs (curl, OAI-SearchBot, Chrome-looking): bucketed 3 / 1 / 0 verified, correct on both halves (the
+Chrome-looking client never loaded CSS, so it is correctly NOT verified). **The 176 pre-existing
+rows carry no UA and are reported as unclassifiable rather than silently counted as human.**
+
+**Three transferable rules:**
+1. **When you add a metric, grep for an existing metric of the same shape and copy its filtering.**
+   The fix here was 3 lines because `visitor_token()`/`asset_hits` already existed; the cost was 143
+   cycles of a wrong number. A new table does not inherit an old table's hard-won guards.
+2. **Audit a metric at its producer AND its consumer.** `bin/traffic`'s header already warned
+   "crawler-inflated" about `pageviews` and printed verified-vs-raw for it — then printed out_clicks
+   raw with no caveat at all, in the same output. The inconsistency was visible on screen for 143
+   cycles and nobody read the two halves against each other.
+3. **A metric that can't be split can't be trusted retroactively.** Record the classifying field
+   (`ua`/`vid`) from day one even if you don't filter on it yet — you cannot reclassify rows later.
+
+**Corrected the AI-vs-search ratio too (item (s)): 736 AI vs 80 search = 9.20:1**, not the
+535 / 64 / 8.36:1 cycles 1648-1650 reported. **Both sides were undercounted by an incomplete UA
+list** — the AI side missed Amazonbot (105!), Bytespider (45), meta-externalagent (29), Applebot (9)
+and YouBot (4); the search side missed DuckDuckBot/Yandex/Baidu/Slurp. 1650 had already caught one
+case-sensitivity bug in this same count. **Standing fix: match a maintained list of bot substrings,
+and print the UA histogram of whatever you did NOT classify so a missing engine shows up as a big
+unknown row instead of vanishing.** Conclusion direction is unchanged (AI engines dominate), so no
+decision reverses — but the number quoted for 3 cycles was wrong.
+
+**Path-level finding, new (no prior cycle had broken the AI traffic down by URL): the BLOG is the
+answer-engine entry point, not the tool pages.** Top AI-fetched content paths are
+`/blog/tmview-trademark-search-api-no-key` (49) → `/tools/trademark-search-scraper` (20): the
+user-initiated `ChatGPT-User` fetches the post 37 times and the tool page 19 times, i.e. it reads
+the guide and then follows through to the product. Every one of the top ~25 AI-fetched paths is a
+blog post. ClaudeBot fetched *only* `/robots.txt` (55) and `/sitemap.xml` (55) — it indexes
+structure, never content. **So the lever is one good technical post per Actor, not more tool-page
+copy** — which is also the cheapest thing this box can produce.
