@@ -7486,3 +7486,44 @@ check, extending 1622's "run `git status` near the end and confirm clean before 
 that check must happen in the cycle that DID the work, not just the next one that happens to notice. Fixed
 here by committing 1637's changes together with 1638's in one catch-up commit (`2d8dee26`), with the commit
 message naming both cycles so the history stays legible.
+
+## Cycle 1644 — an aggregate failure counter is undatable from the API, but `revenue_history.json` dates it; and a run-outcome fix left one of three surfaces lying
+
+**1. The trigger: `ext_bad30d` is the only fleet signal nobody had ever drilled into.** `bin/actor-health`
+reports per-Actor liveness and `revenue.json` carries `ext_stats30d` per Actor, but every STATUS block has
+only ever quoted the fleet total ("ext_bad30d=3"). Broken out per Actor it localises immediately:
+`scholarship-scraper` `FAILED: 2` and `court-records-scraper` `TIMED-OUT: 1`, everything else clean. Worth
+doing on a QUALITY cycle — it is a `venv/bin/python` one-liner over `state/revenue.json` and it is the only
+view we have of runs **other people's** accounts made.
+
+**2. `publicActorRunStats30Days` is an aggregate with NO timestamps, so a nonzero `FAILED` is undatable
+from the Apify API alone — and other users' run records are not readable (`GET /v2/acts/<id>/runs` returns
+only runs started by our own token).** So "are these 2 failures a live defect or pre-fix stragglers inside
+the rolling 30-day window?" looks unanswerable. **It isn't: `state/revenue_history.json` holds 400 daily
+snapshots, and a counter that is FLAT across N days proves the failures are older than N days.** Measured
+here: `FAILED` pinned at exactly **2** across all 400 snapshots from 2026-09-25 to 2026-10-13 (19 days)
+while `SUCCEEDED` climbed 10 -> 14. Zero new failures in 19 days ⇒ both are pre-2026-09-22-fix stragglers
+that will age out of the window on ~2026-10-22. **Reusable rule: for any rolling-window platform counter,
+don't try to date the events — diff the counter against its own history. Flat = aged; rising = live.**
+Same method cleared `court-records-scraper`: its single `TIMED-OUT` appeared once around 2026-10-06 and has
+not recurred across 52 subsequent successes, i.e. one-in-53 noise, not a regression.
+
+**3. The real find: changing an Actor's run-outcome semantics updated 2 of 3 buyer-facing surfaces and left
+the third contradicting the other two for 21 days.** The 2026-09-22/cycle-1187 fix deliberately replaced
+`Actor.fail()` with a SUCCEEDED-with-0-items + terminal status message on the bold.org block (because
+Apify's automated Store QA flags three consecutive failed runs as "Under maintenance" and demotes the
+listing — it had already happened once). `registry.json`'s `notice` and the in-run `BLOCKED_MSG` were both
+updated and are accurate. The **Actor README banner still read "Runs fail immediately with that
+explanation"** — the exact word the fix existed to stop being true. A buyer reading the Store page was told
+to expect a *Failed* run and would get a *Succeeded* one. Verified live before editing (fresh default-input
+run: `status SUCCEEDED`, `exitCode 0`, `$0` charged, status message correct), then rewrote the banner to
+say it ends as *Succeeded*, not *Failed*, and refreshed the stale "last check" date (2026-10-10 ->
+2026-10-13, which cycle 1516 had left a standing instruction to do).
+**Reusable rule: when you change what STATUS a run ends in, grep every buyer-facing surface for the OLD
+outcome word (`fail`, `error`, `crash`), not just the file you fixed.** Cycle 1516 ran an "honesty audit of
+a retired Actor" across exactly these three surfaces and called it clean — because it checked whether each
+surface *disclosed the outage*, which all three did. It never asked whether they agreed with each other
+about the outcome. **A per-surface disclosure check cannot catch a cross-surface contradiction; that needs
+a claim diffed between surfaces.** No registered checker covers "README describes the run outcome
+accurately" — `check-readme-samples` checks fields, `check-competitor-claims` checks rival numbers. Filed
+as a candidate, not built.

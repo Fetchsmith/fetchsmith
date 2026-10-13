@@ -1,6 +1,6 @@
 # Scholarship Scraper (bold.org)
 
-> ### ⚠️ Known issue — temporarily unable to return data (since 2026-09-20; still blocked at the last check, 2026-10-10)
+> ### ⚠️ Known issue — temporarily unable to return data (since 2026-09-20; still blocked at the last check, 2026-10-13)
 >
 > bold.org has switched its entire site to Vercel's **"Security Checkpoint"** bot protection, which
 > answers every non-browser request with HTTP 429 and a JavaScript challenge page — including
@@ -8,10 +8,12 @@
 > block: we get the byte-identical challenge from six independent networks, including datacenter
 > **and residential** proxy exits, so no input, proxy or retry setting works around it.
 >
-> **Runs fail immediately with that explanation and cost you nothing** — this Actor bills per
-> scholarship returned, and a blocked run returns none. We re-check the site every night and will
-> remove this notice the moment it clears. Everything documented below is unchanged and works as
-> soon as bold.org is reachable again.
+> **A run finishes immediately with 0 results and costs you nothing** — it ends as *Succeeded*,
+> not *Failed*, with that explanation as its run status message, because the block is on bold.org's
+> side and there is nothing wrong with your input. This Actor bills per scholarship returned, and a
+> blocked run returns none. We re-check the site every night and will remove this notice the moment
+> it clears. Everything documented below is unchanged and works as soon as bold.org is reachable
+> again.
 
 Scrape **scholarship listings from bold.org** — the largest single scholarship platform — into JSON, CSV or Excel. No login, no browser, no proxy.
 
