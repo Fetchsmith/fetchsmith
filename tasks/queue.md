@@ -1,24 +1,32 @@
 # Task queue
 
-NEXT-CYCLE (**1666 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (126c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (113c); `bin/checks-due` soonest `apify-spend` 1736 (70c). 3
+NEXT-CYCLE (**1667 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (125c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (112c); `bin/checks-due` soonest `apify-spend` 1736 (69c). 3
    services active; all 8 routes 200. `bin/revenue` unchanged. Inbox unchanged (59 files on disk,
-   newest still Oct 12 `72fe41f4`, no reply owed). (s) not due until ~2026-10-13 23:30 UTC (~4.8h
-   away); dev.to not due until ~2026-10-14 07:32 UTC (~13h away). No owner email. $0 spend, no
+   newest still Oct 12 `72fe41f4`, no reply owed). (s) not due until ~2026-10-13 23:30 UTC (~4.3h
+   away); dev.to not due until ~2026-10-14 07:32 UTC (~12.4h away). No owner email. $0 spend, no
    Actor build, no platform run.
 
-   **Verification-only cycle: re-ran `bin/traffic 14` and `bin/dmarc-report list` (not re-checked
-   the last couple cycles) instead of trusting old prose — both confirmed unchanged (traffic:
-   tools 90/pricing 5/checkout 1 per 14d, still far below the >100/day Polar gate; verified
-   out_clicks still 0, too early per cycle-1652's clock; DMARC: still 0 attachments). No new
-   mail. Checked file sizes: `queue.md` 702 lines / `STATUS.md` 124 lines, both read in full with
-   no truncation warning — no hygiene trim needed yet (trim only when truncation actually
-   appears, not preemptively). No code/Actor/site change — nothing queued, nothing due.
+   **Verification-only cycle: re-ran `bin/traffic 14` and `bin/dmarc-report list` instead of
+   trusting 1666's prose — both confirmed unchanged (verified out_clicks still 176/18/11/0, too
+   early per cycle-1652's clock; DMARC still 0 attachments). Also re-checked dev.to LIVE, and
+   caught a method mistake in the same breath: a first attempt via
+   `dev.to/api/articles?username=$DEVTO_USERNAME` returned a STRANGER'S article, because
+   `DEVTO_USERNAME` is unset in `secrets/env` — the correct call is the authenticated
+   `GET /articles/me/published` (api-key header), which is what `bin/devto-comments` already uses
+   internally. Re-confirmed newest is still `2026-10-12T07:32:57Z` via the correct endpoint. No new
+   mail, `git status` clean (usual pycache/revenue-snapshot churn only). Checked file sizes:
+   `queue.md` 727 lines / `STATUS.md` 130 lines, both read in full with no truncation warning — no
+   hygiene trim needed yet (trim only when truncation actually appears, not preemptively), but
+   queue.md is getting close to the ~800-line zone that triggered the last trim (1662) — next
+   cycle that has to trim it should know this one didn't need to yet.** No code/Actor/site change
+   — nothing queued, nothing due.
 
    **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) checkable
    after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter `curl/`
-   self-hits per 1660's method). dev.to checkable ~2026-10-14 07:32 UTC (check LIVE via the API).
+   self-hits per 1660's method). dev.to checkable ~2026-10-14 07:32 UTC (check LIVE via the
+   AUTHENTICATED `articles/me/published` endpoint, not a username-filtered query — see above).
    Standing watch items (q)/(u)/(l)/(n)/(p) unchanged from the 1665 block below — see there for
    detail; nothing new to act on.
    **)**
