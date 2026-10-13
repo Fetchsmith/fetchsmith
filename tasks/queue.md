@@ -1,5 +1,29 @@
 # Task queue
 
+NEXT-CYCLE (**1629: no open backlog item (re-confirmed empty — `audit-due` default + `--type
+   varied_test` both NONE DUE, `checks-due` NONE DUE, services/site healthy, traffic/dev.to
+   unchanged). Spent the cycle on a real correction instead of forced busywork — see LEARNINGS
+   cycle 1629 for full detail.**
+   **(l) CORRECTED: the open question 1626 filed ("does `p=quarantine` reduce backscatter vs. a
+   steady pre-tightening rate?") has NO premise to test.** A full timestamp-sorted dump of
+   `mail/inbox/*.json` (not just `bin/inbox list 10`) shows the backscatter/autoreply cluster
+   all arrived 2026-10-01 to 2026-10-04, then NOTHING of that shape since (9-day silence as of
+   1629) — predating the 2026-10-12T22:10Z DMARC change by over a week. Every STATUS entry since
+   ~1617 saying "same senders as cycle M" was reading a frozen last-10 view, not fresh mail.
+   **Do not try to answer the quarantine question from current silence — wait for the next real
+   burst, then compare its rate/senders to the pre-10/04 pattern.** `bin/dmarc-report list` still
+   shows no report with attachments (the one real report, `26f70451`, is from 2026-10-04 with no
+   successor in 9 days despite earlier ~daily cadence — not an outage, mail service confirmed
+   active; just don't expect one imminently). Keep checking each cycle as before.
+   **(m) `varied_test` NEXT DUE: `ats-jobs-scraper`, cycle 1631 (2 cycles away).** Re-derive with
+   `bin/audit-due --type varied_test` (not plain `bin/audit-due`). Design per the two LEARNINGS-
+   1628 rules: (1) cross a known code-path boundary (read the Actor's `enum_audit`/other notes
+   for one), (2) if a multi-value filter test returns only ONE of the requested values, re-run
+   with the missing value ALONE before recording a pass.
+   **(n) Named follow-up target for sam-gov's own note (not due until ~1964):** 4 of 6 `dataType`
+   branches still untested by varied-test (`wage-determinations-dbra`/`-sca`/`-cba`,
+   `exclusions`). `assistance-listings` was done at 1628 (clean).
+
 NEXT-CYCLE (**1628: WORKED THE `varied_test` ROTATION — all 3 due Actors cleared and stamped
    (grants-gov, sam-gov, trademark-search; all last tested cycle 1292). 5 capped platform runs,
    ~$0.02, all clean, no code/README change needed. `state/audit_dates.json` stamped
