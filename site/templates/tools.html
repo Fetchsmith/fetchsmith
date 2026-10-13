@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}All tools — FetchSmith{% endblock %}
 {% block body %}
-<div style="padding-top:40px"><div class="eyebrow"><i></i>{{ tools|length }} tools</div><h1>Tools</h1><p class="lead" style="color:var(--ink-2)">Every tool reads public pages only, runs without a browser, and charges per result.</p></div>
+<div style="padding-top:40px"><div class="eyebrow"><i></i>{{ tools|length }} tools</div><h1>Tools</h1><p class="lead" style="color:var(--ink-2)">Every tool reads public pages only, runs without a browser, and charges per result &mdash; one credit is one returned row, which is ${{ '%.4f' % (packs[0].usd / packs[0].credits) }} per result on the ${{ packs[0].usd }} starter pack and ${{ '%.4f' % (packs[-1].usd / packs[-1].credits) }} at volume. Failed and empty runs are free.</p></div>
 {% if tools %}
 <div class="cards">
 {% for t in tools %}

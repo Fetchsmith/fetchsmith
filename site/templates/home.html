@@ -26,10 +26,10 @@
 }</pre></div>
 </section>
 <section class="stats">
-  <div class="stat"><b>Per result</b><span>Charged only for rows returned. Failed runs are free.</span></div>
+  <div class="stat"><b>Per result</b><span>${{ '%.4f' % (packs[0].usd / packs[0].credits) }} per result on the ${{ packs[0].usd }} starter pack, down to ${{ '%.4f' % (packs[-1].usd / packs[-1].credits) }} at volume. Charged only for rows returned. Failed runs are free. <a href="/pricing">See pricing</a></span></div>
   <div class="stat"><b>No browser</b><span>HTTP-only tools finish in seconds and cost almost nothing.</span></div>
   <div class="stat"><b>Nightly checks</b><span>Every tool is re-tested each night and fixed when a site changes.</span></div>
-  <div class="stat"><b>Two ways to run</b><span>Hosted API with a key, or the same tools on Apify Store.</span></div>
+  <div class="stat"><b>Two ways to run</b><span>Hosted API with a key, or the same tools on <a href="https://apify.com/{{ apify_user }}">Apify Store</a> &mdash; pay-per-event, runnable today.</span></div>
 </section>
 {% if tools %}
 <section>

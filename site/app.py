@@ -172,6 +172,9 @@ def render(request, name, status_code=200, **ctx):
     ctx.setdefault("support_email", SUPPORT_EMAIL)
     ctx.setdefault("apify_user", env("APIFY_USERNAME", "fetchsmith"))
     ctx.setdefault("checkout_live", bool(polar_products()))
+    # Available to every template so a page can quote a real $/result without hardcoding it
+    # (cycle 1660: `/` is our most AI-fetched page and carried no dollar figure at all).
+    ctx.setdefault("packs", CREDIT_PACKS)
     return tpl.TemplateResponse(request, name, ctx, status_code=status_code)
 
 def _best_blog_match(slug):
@@ -272,14 +275,38 @@ def robots():
 
 @app.get("/llms.txt", response_class=PlainTextResponse)
 def llms():
-    lines = ["# FetchSmith", "", "> Pay-per-result web data extraction tools: hosted APIs and Apify Actors. No subscription required; buy credits, call an endpoint, get JSON.", "", "## Tools"]
+    # Cycle 1660: every tool entry now carries its runnable apify.com/<user>/<slug> URL and its
+    # price. llms.txt is the one file we publish *for* answer engines, and it previously gave
+    # neither -- a model summarising it could name our tools but could not tell a buyer what a
+    # row costs or where to run one. Same gap cycle 1656 closed on `/` and `/tools`.
+    # The $/result figure is derived from CREDIT_PACKS (the hosted-credit product) -- do NOT
+    # restate it as the Apify price: the two are separate products with separate prices
+    # (LEARNINGS cycle 480). Apify gets a URL and the billing model, no dollar claim.
+    au = env("APIFY_USERNAME", "fetchsmith")
+    starter = next((p for p in CREDIT_PACKS if p["id"] == "starter"), None)
+    rate = (starter["usd"] / starter["credits"]) if starter else 0.0025
+    lines = ["# FetchSmith", "",
+             "> Pay-per-result web data extraction tools: hosted APIs and Apify Actors. No subscription required; buy credits, call an endpoint, get JSON."
+             f" Most tools cost 1 credit per returned result, i.e. about ${rate:.4f} per result on the smallest prepaid pack; you are charged only for rows actually returned, and failed or empty runs cost nothing."
+             f" Hosted checkout is opening shortly; every tool runs today on Apify Store under the FetchSmith publisher account (https://apify.com/{au}) with pay-per-event billing through your Apify account.",
+             "", "## Tools",
+             "Each entry gives the tool's documentation page, then its price and the Apify Actor URL you can run it from today."]
     for t in public_tools():
-        lines.append(f"- [{t['title']}]({SITE_URL}/tools/{t['slug']}): {t.get('summary','')}")
+        cpr = int(t.get("credits_per_result", 1) or 1)
+        price = f"{cpr} credit{'' if cpr == 1 else 's'} per returned result (about ${rate * cpr:.4f} per result on the smallest prepaid pack)"
+        lines.append(f"- [{t['title']}]({SITE_URL}/tools/{t['slug']}): {t.get('summary','')} "
+                     f"Price: {price}. Run it on Apify Store: https://apify.com/{au}/{t['slug']}")
+    lines += ["", "## Pricing",
+              "Prepaid credit packs for the hosted API (credits never expire, one credit is one returned result for most tools):"]
+    for p in CREDIT_PACKS:
+        lines.append(f"- {p['name']}: ${p['usd']} for {p['credits']:,} credits (${p['usd'] / p['credits']:.4f} per result) -- {p['blurb']} {SITE_URL}/pricing")
+    lines.append(f"- Usage-based alternative, available now: run any tool as an Apify Actor at https://apify.com/{au} and pay per event through your Apify account.")
     if load_posts():
         lines += ["", "## Guides"]
         for p in load_posts():
             lines.append(f"- [{p['title']}]({SITE_URL}/blog/{p['slug']}): {p['description']}")
-    lines += ["", "## Docs", f"- [API docs]({SITE_URL}/docs)", f"- [Pricing]({SITE_URL}/pricing)"]
+    lines += ["", "## Docs", f"- [API docs]({SITE_URL}/docs)", f"- [Pricing]({SITE_URL}/pricing)",
+              f"- [Apify Store profile (all {len(public_tools())} tools, runnable today)](https://apify.com/{au})"]
     return "\n".join(lines) + "\n"
 
 @app.get("/sitemap.xml")
