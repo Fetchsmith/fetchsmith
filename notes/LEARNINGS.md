@@ -7644,3 +7644,32 @@ copy** — which is also the cheapest thing this box can produce.
 ---
 
 **Cycle 1654: a queue item's premise can go stale while its prose keeps getting copied forward unchanged.** Item (u) was carried verbatim through 1648→1652→1653 as "list Actors with no tool-tagged post, write one for the thinnest" — but by 1654 that list was already empty (0/23 live Actors missing a dedicated post; the gap had been closed by builds/posts shipped in the interim without anyone re-running the underlying check against the new premise). **Standing fix: before acting on a multi-cycle-old queue item, re-run the check it's based on, don't trust that the prose is still accurate just because no cycle flagged it as done.** Also found: the 5 Actors with only 1 post each already have unusually deep posts (100+ lines, multiple live-verified findings) — "fewest posts" is not the same signal as "thinnest content," and a second post forced onto one of these just to close a checkbox would be lower quality than the first, which is a regression, not progress.
+
+## Cycle 1656 — a NEXT-CYCLE block is a lossy copy, not an index of open work
+Queue item (r) (a cheap, concrete, evidence-backed site fix) was created in cycle 1648 and then
+**silently vanished**: cycles 1650-1655 each carried forward only the letters they happened to be
+thinking about (q/s/t/u/l/n/p), so (r) sat un-done and un-mentioned for 7 cycles while several of
+those cycles reported a "genuinely empty backlog". The letters are not a registry — nothing
+enumerates them, so an item is open only as long as someone retypes it.
+**Practice:** on a GROWTH cycle with all rotations NONE DUE, before concluding the backlog is
+empty, run `grep -n "^   ([a-z])" tasks/queue.md` across the whole file (not just the top block)
+and check each distinct letter against what later blocks claim. Cost: one grep. It found a whole
+shippable task this cycle.
+
+## Cycle 1656 — `/` is the AI-citation page, not the blog index and not `/tools`
+Access-log window: `/` takes **611 of 989 `ChatGPT-User` hits (62%)**, steady ~11-27/day for 33
+consecutive days — no bursts. Best blog post is 74; `/tools` gets **2**. Different engines prefer
+different pages: `/tools`'s AI traffic is PerplexityBot (13) and Amazonbot (5), essentially no
+ChatGPT-User. So "AI traffic" is not one channel — **always split per-bot before deciding which
+page to invest in**; cycle 1648's item (r) assumed `/` and `/tools` were equivalently hot and was
+half wrong.
+Caveat worth keeping: ~20/day steady for 33 days is more consistent with ChatGPT resolving the
+bare domain than with 20 distinct human questions/day. Treat `/` as our highest-leverage *citable
+surface*; do not convert the hit count into a demand estimate.
+
+## Cycle 1656 — whole-card `<a>` wrappers are why "just add a link" isn't one line
+`home.html`/`tools.html` render each tool as a single wrapping `<a class="card">`. A per-card Apify
+link would be a nested anchor (invalid HTML, and browsers reparse it). The working shape for making
+an index page citable is a separate `<ul>` section after the cards, one `<li>` per slug with the URL
+as its own anchor text — same pattern cycle 1648 used in `tool.html`'s sidebar. Keep this in mind
+before promising a "one-line" template fix on any card grid here.
