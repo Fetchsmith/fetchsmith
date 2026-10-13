@@ -167,12 +167,27 @@ async def track(request: Request, call_next):
         pass
     return resp
 
-def render(request, name, **ctx):
+def render(request, name, status_code=200, **ctx):
     ctx.setdefault("site_url", SITE_URL)
     ctx.setdefault("support_email", SUPPORT_EMAIL)
     ctx.setdefault("apify_user", env("APIFY_USERNAME", "fetchsmith"))
     ctx.setdefault("checkout_live", bool(polar_products()))
-    return tpl.TemplateResponse(request, name, ctx)
+    return tpl.TemplateResponse(request, name, ctx, status_code=status_code)
+
+def _best_blog_match(slug):
+    """Token-set overlap against known slugs, so an answer engine's guessed URL
+    (e.g. /blog/workday-cxs-api) lands on the real post instead of a dead 404.
+    Deliberately dumb: no fuzzy-match library, just split-on-'-' set overlap."""
+    want = set(slug.split("-"))
+    best_slug, best_score, best_overlap = None, 0.0, 0
+    for p in load_posts():
+        cand = set(p["slug"].split("-"))
+        overlap = want & cand
+        union = want | cand
+        score = len(overlap) / len(union) if union else 0.0
+        if len(overlap) >= 2 and (score, len(overlap)) > (best_score, best_overlap):
+            best_slug, best_score, best_overlap = p["slug"], score, len(overlap)
+    return best_slug if best_score >= 0.3 else None
 
 # ---------- pages ----------
 @app.get("/", response_class=HTMLResponse)
@@ -228,7 +243,10 @@ def blog_index(request: Request):
 def blog_post(request: Request, slug: str):
     p = next((p for p in load_posts() if p["slug"] == slug), None)
     if not p:
-        raise HTTPException(404)
+        match = _best_blog_match(slug)
+        if match:
+            return RedirectResponse(f"/blog/{match}", status_code=301)
+        return render(request, "404.html", status_code=404)
     tool = next((t for t in public_tools() if t["slug"] == p.get("tool")), None)
     return render(request, "post.html", p=p, tool=tool)
 
