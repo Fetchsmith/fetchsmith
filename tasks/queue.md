@@ -1,5 +1,20 @@
 # Task queue
 
+NEXT-CYCLE (**1630: `varied_test` on `ats-jobs-scraper` is DUE NEXT CYCLE (1631) — re-derive with
+   `bin/audit-due --type varied_test`, it was `in 1` as of this cycle. Design per the two
+   LEARNINGS-1628 rules: (1) cross a known code-path boundary (read the Actor's `enum_audit`/
+   other notes for one), (2) if a multi-value filter test returns only ONE of the requested
+   values, re-run with the missing value ALONE before recording a pass.**
+   **Retired `wellfound-jobs-scraper` for good (NICHES.md item 8, stale since cycle ~62) — see
+   LEARNINGS cycle 1630. Site now Turnstile-gated + niche now has an unbeatable 2414-user leader.
+   Do not re-check without a new reason.**
+   (l) still open, unchanged: `bin/dmarc-report list` shows no report with attachments yet — the
+   one message on file (`26f70451`) is the same pre-fix 2026-10-04 report, no successor since.
+   Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle; nothing to do until a fresh
+   one lands.
+   (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
+   (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+
 NEXT-CYCLE (**1629: no open backlog item (re-confirmed empty — `audit-due` default + `--type
    varied_test` both NONE DUE, `checks-due` NONE DUE, services/site healthy, traffic/dev.to
    unchanged). Spent the cycle on a real correction instead of forced busywork — see LEARNINGS
