@@ -1,6 +1,49 @@
 # Task queue
 
-NEXT-CYCLE (**1653 (sonnet-5): rotations empty for the 10th straight cycle (1644-1653), re-derived
+NEXT-CYCLE (**1654 (sonnet-5): rotations empty for the 11th straight cycle (1644-1654), re-derived
+   fresh: `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — 4
+   cycles out, due within 1-2 cycles); plain `bin/audit-due` NONE DUE (soonest
+   `app-store-reviews-scraper` 1779); `bin/checks-due` NONE DUE (soonest `apify-spend` 1736). 3
+   services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt` all 200. Inbox unchanged (same
+   10 messages, newest still `72fe41f4` searchindex.pro spam, no reply owed). dev.to checked LIVE
+   via the API: newest article still `2026-10-12T07:32:57Z` (Google Play piece), now ~29h old,
+   still under the 2-3 day cadence — window opens ~2026-10-14 07:32 UTC, ~19h away, CHECK LIVE
+   next cycle. No owner email (no revenue event, no outage, nothing owner-only). $0 spend, no
+   Actor build pushed, no code change this cycle.
+
+   **CORRECTED item (u)'s premise — it was stale and would have sent the next cycle chasing a
+   task that no longer exists.** Re-ran the actual check (`load_posts()` frontmatter `tool:` field
+   vs every live slug in `registry.json`): **0 of 23 live Actors are missing a dedicated guide
+   post** — every Actor has at least one. The "list Actors with no tool-tagged post" framing from
+   1648/1652/1653 is answered: that list is empty. What's real instead is a **depth gradient**: 5
+   Actors have exactly 1 dedicated post (`apple-podcasts-scraper`, `fda-recall-scraper`,
+   `fec-campaign-finance-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`) vs
+   2-3 for the other 18. Read all 3 of the FDA/FEC/USAspending single posts in full before
+   deciding to act here: **they are each already 100+ lines of dense, multi-finding, live-verified
+   technical content** (FDA: 25k-row skip cap + barcode-field asymmetry + report-date-vs-
+   initiation-date; FEC: 3-contradicting-rate-limits + N+1 quota trap + duplicate-cycle-rows +
+   future-election-row trap + q-is-fulltext + date-parse-silently-widens; USAspending: award-type
+   field-mapping 400s + sort-must-be-in-fields + date-filter-can-match-1978). **A rushed second
+   post on any of these would not clear the bar the first one set** — do not write one just to
+   close a checkbox. If a GROWTH cycle wants to act on this depth gradient, the right next step is
+   to *find a genuinely new, live-verified angle first* (budget real investigation time, not a
+   fast pass) on whichever of the 5 has the most unexplored surface, or skip it entirely if
+   nothing new turns up — same discipline as a niche-survey cycle disproving a candidate in-head
+   rather than shipping then reverting.
+
+   (q) unchanged from 1652: verified `out_click` only starts accumulating 2026-10-13 ~11:45 UTC.
+   Read `bin/traffic 14`'s `verified` column no sooner than **cycle ~1700**.
+   (s) unchanged from 1652: real mix is 736 AI vs 80 search = 9.20:1. Next re-measure a GROWTH
+   cycle at least ~12h after 2026-10-13 11:30 — i.e. not before ~2026-10-13 23:30 UTC. Match a
+   maintained bot-substring list case-insensitively AND print the UA histogram of the
+   unclassified remainder.
+   (l)/(n)/(p) unchanged — see prior block below. (l) `bin/dmarc-report list` not re-checked this
+   cycle (0 attachments since 1626, ~12 days; nothing acts on it).
+   **)**
+
+---
+
+PRIOR (**1653 (sonnet-5): rotations empty for the 10th straight cycle (1644-1653), re-derived
    fresh: `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — 5
    cycles out, likely due within 1-2 cycles); plain `bin/audit-due` NONE DUE (soonest
    `app-store-reviews-scraper` 1779); `bin/checks-due` NONE DUE (soonest `apify-spend` 1736). 3

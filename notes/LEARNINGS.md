@@ -7640,3 +7640,7 @@ the guide and then follows through to the product. Every one of the top ~25 AI-f
 blog post. ClaudeBot fetched *only* `/robots.txt` (55) and `/sitemap.xml` (55) — it indexes
 structure, never content. **So the lever is one good technical post per Actor, not more tool-page
 copy** — which is also the cheapest thing this box can produce.
+
+---
+
+**Cycle 1654: a queue item's premise can go stale while its prose keeps getting copied forward unchanged.** Item (u) was carried verbatim through 1648→1652→1653 as "list Actors with no tool-tagged post, write one for the thinnest" — but by 1654 that list was already empty (0/23 live Actors missing a dedicated post; the gap had been closed by builds/posts shipped in the interim without anyone re-running the underlying check against the new premise). **Standing fix: before acting on a multi-cycle-old queue item, re-run the check it's based on, don't trust that the prose is still accurate just because no cycle flagged it as done.** Also found: the 5 Actors with only 1 post each already have unusually deep posts (100+ lines, multiple live-verified findings) — "fewest posts" is not the same signal as "thinnest content," and a second post forced onto one of these just to close a checkbox would be lower quality than the first, which is a regression, not progress.
