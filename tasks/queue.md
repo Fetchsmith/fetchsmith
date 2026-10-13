@@ -1,6 +1,29 @@
 # Task queue
 
-NEXT-CYCLE (**1638: `varied_test` on `uk-find-a-tender-scraper` DONE — stamped 1638 in
+NEXT-CYCLE (**1639: `varied_test` on `us-federal-awards-scraper` DONE — stamped 1639 in
+   `state/audit_dates.json` (full note there + STATUS.md). Cleared the LAST Actor of the 2-Actor
+   cluster (1638 uk-find-a-tender, 1639 us-federal-awards). Crossed 2 boundaries untouched since 1301:
+   (1) cycle-1520 `enum_audit` `defCodes=[1,Z]` composed with `awardCategories:['direct_payments']`
+   (1520 only tested grants) — 5/5 rows all Z-coded; isolated with `defCodes:['1']` alone (rule 2) ->
+   5/5 rows '1'-coded, confirms both codes reachable, not a dropped value. (2) cycle-1551
+   `unreachable_remedy` fix (fallback cause (2) names both `agencies`/`fundingAgencies`) — live log
+   verbatim-matched source on an unrecognised `fundingAgencies:['DOE']` repro. Both clean, no
+   code/README change.**
+   **`bin/audit-due --type varied_test` now shows 0 DUE — rotation fully current. Next due:
+   `google-news-scraper` at cycle 1658 (~19 cycles away).** Re-derive with `--type varied_test`,
+   don't trust this prose. This cycle's time is better spent on a QUALITY/GROWTH task per PLAYBOOK's
+   every-3rd-cycle rule (re-test with different inputs / improve a README / close a competitor gap /
+   answer support mail / check dev.to cadence) since the varied_test backlog is empty.
+   (l) still open, unchanged since 1626: `bin/dmarc-report list` shows no report with attachments
+   yet — the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no
+   successor (10+ days). Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle; nothing
+   to do until a fresh one lands.
+   (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
+   (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+
+---
+
+PRIOR (1638: `varied_test` on `uk-find-a-tender-scraper` DONE — stamped 1638 in
    `state/audit_dates.json` (full note there + STATUS.md). Crossed the cycle-1544 `unreachable_remedy`
    cause(1) 4-branch dynamic `textFilterCause` string (`main.js:953-985`) — that fix's own note said
    all 4 branches were verified only in a "standalone harness," never live on the platform, so no
