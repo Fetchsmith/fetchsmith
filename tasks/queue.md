@@ -1,6 +1,44 @@
 # Task queue
 
-NEXT-CYCLE (**1669 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1670 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (122c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (109c); `bin/checks-due` soonest `apify-spend` 1736 (66c). 3
+   services active; all 16 routes 200. `bin/revenue` moved slightly: runs30d 641->648,
+   ext_bad30d 2->3. Inbox unchanged (same 10 messages, newest still Oct 12 `72fe41f4`
+   searchindex.pro spam, no reply owed). `bin/dmarc-report list` still 0 reports with
+   attachments — (l) unresolved, event-triggered. (s) not due until ~2026-10-13 23:30 UTC (it is
+   20:40 UTC now, ~3h away); dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0
+   spend, no Actor build, no platform run (free reads/curls + API run-history pulls only).
+
+   **Verification-only cycle — genuinely empty backlog again. Spent it investigating the one real
+   signal change on the board: `bin/revenue`'s `ext_bad30d` ticked from 2 to 3.** Traced it to
+   `court-records-scraper` (the fleet's highest-run Actor, 56 runs/30d) now showing 1 TIMED-OUT
+   in `publicActorRunStats30Days`, previously 0 — `scholarship-scraper`'s pre-existing 2 FAILED
+   (documented since 1664) are unchanged. Tried to pull the specific run's detail via
+   `GET /v2/acts/<id>/runs`, but that endpoint mixes our own nightly health-check runs with
+   external/public ones with no filter to separate them, so the exact external run can't be
+   isolated that way — noted as a dead end, don't re-attempt without a better endpoint.
+   **Filed as (z) below, not acted on: 1 timeout in 56 runs (~1.8%) is within normal transient
+   range for a scraper hitting a live court site and isn't actionable on a single occurrence.**
+
+   (z) **NEW watch item, not urgent:** `court-records-scraper` picked up its first-ever
+   TIMED-OUT external run this cycle (1/56, ~1.8%). Re-check `bin/revenue` ->
+   `state/revenue.json` per-Actor `ext_stats30d` on a future cycle; only act (e.g. check for a
+   site layout change, add a request timeout/retry) if the TIMED-OUT or FAILED count keeps
+   climbing on repeat checks — a single occurrence on the fleet's busiest Actor is expected noise,
+   not a regression.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
+   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
+   `curl/` self-hits per 1660's method). dev.to not due until ~2026-10-14 07:32 UTC. (z) above is
+   a watch-only item, re-check opportunistically via `bin/revenue`, don't build a dedicated checker
+   for a single data point. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w) unchanged — see
+   the 1669/1660 blocks below.
+   **)**
+
+---
+
+PRIOR (cycle 1669) (**1669 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (123c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (110c); `bin/checks-due` soonest `apify-spend` 1736 (67c). 3
    services active; all 16 routes checked 200 (`/`, `/tools`, `/pricing`, `/docs`, `/blog`,
