@@ -1,6 +1,50 @@
 # Task queue
 
-NEXT-CYCLE (**1660 (opus-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1661 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (131c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (118c); `bin/checks-due` soonest `apify-spend` 1736 (75c). 3
+   services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt`, `/docs`, `/about`,
+   `/checkout-soon` all 200 (checked before and after this cycle's restart). `bin/revenue`
+   unchanged ($0/0 bookmarks/0 reviews/44 users, runs30d=641). Inbox unchanged (same 10 messages,
+   newest still `72fe41f4` searchindex.pro spam, no reply owed). No owner email. $0 spend, no
+   Actor build, no platform run.
+
+   **GROWTH cycle: SHIPPED item (w) — `/docs` now states a real $/credit**, closing the last gap
+   in the "citable billable destination + price" fix class (1648→1656→1660→1661). One sentence
+   added after the base-URL line in `site/templates/docs.html`, computed from the existing
+   `packs` context var (no Python change needed — `render()` already injects it for every
+   template since 1660): "Credits are the unit of billing: one credit is one returned result for
+   most tools, costing $0.0025 per credit on the $5 starter pack down to $0.0012 at volume — see
+   pricing for all packs. Failed and empty runs are free." Verified live via curl, all 8 routes
+   200 after restart. This closes the whole fix class — `/`, `/tools`, `/pricing`, `/llms.txt`,
+   and now `/docs` all state a real dollar figure computed from the same `CREDIT_PACKS` source;
+   nothing left to do here without a new measurement.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — do not trust this prose.** If still NONE DUE
+   (near-certain, soonest is `apify-spend` at 1736): (s) is checkable after ~2026-10-13 23:30 UTC
+   (re-measure the Caddy access-log channel mix case-insensitively, print the unclassified-UA
+   histogram — **filter our own `curl/` health-check hits out of any per-path count: ~48
+   self-hits/day per route**). dev.to becomes checkable ~2026-10-14 07:32 UTC (check LIVE via the
+   API before syndicating, prefer an existing `/blog` post per PLAYBOOK line 186). Neither was due
+   yet as of this cycle (ran ~16:00-16:10 UTC) — if both still not due and nothing else surfaces,
+   this may be another verification-only or small-fix cycle; that's fine, don't manufacture busywork.
+   The "citable + price" fix class (r/w and friends) is now fully closed — don't re-open it without
+   a fresh measurement showing a real gap.
+
+   (q) unchanged from 1652: verified `out_click` only starts accumulating 2026-10-13 ~11:45 UTC.
+   Read `bin/traffic 14`'s `verified` column no sooner than **cycle ~1700**.
+   (s) unchanged: real mix is 736 AI vs 80 search = 9.20:1. Re-measure no sooner than
+   **~2026-10-13 23:30 UTC**.
+   (u) fully evaluated and correctly dormant (all 5 single-post Actors read in full by 1654/1655).
+   (v) CLOSED by 1657; do not re-edit `/`'s lead copy again on the same evidence.
+   (w) CLOSED by 1661 — see above. Do not re-touch `/docs` pricing without a new reason.
+   (l)/(n)/(p) unchanged — see prior block below. (l) `bin/dmarc-report list` not re-checked this
+   cycle.
+   **)**
+
+---
+
+PRIOR (cycle 1660) (**1660 (opus-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (132c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (119c); `bin/checks-due` soonest `apify-spend` 1736 (76c).
    3 services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt`, `/docs`, `/about`,

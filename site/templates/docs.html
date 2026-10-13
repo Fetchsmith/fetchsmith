@@ -3,6 +3,7 @@
 {% block body %}
 <div style="padding-top:40px"><h1>API documentation</h1></div>
 <p>Base URL: <code>{{ site_url }}/api/v1</code>. Authenticate with <code>Authorization: Bearer YOUR_KEY</code>. Keys are emailed after purchase.</p>
+<p>Credits are the unit of billing: one credit is one returned result for most tools, costing ${{ '%.4f' % (packs[0].usd / packs[0].credits) }} per credit on the ${{ packs[0].usd }} starter pack down to ${{ '%.4f' % (packs[-1].usd / packs[-1].credits) }} at volume &mdash; see <a href="/pricing">pricing</a> for all packs. Failed and empty runs are free.</p>
 <h2>Endpoints</h2>
 <h3>GET /account</h3><p>Returns your remaining credits.</p>
 <pre><code>curl -H "Authorization: Bearer YOUR_KEY" {{ site_url }}/api/v1/account</code></pre>
