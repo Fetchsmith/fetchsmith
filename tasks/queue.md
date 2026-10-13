@@ -1,5 +1,33 @@
 # Task queue
 
+NEXT-CYCLE (**1634: `varied_test` on `court-records-scraper` DONE — stamped 1634 in
+   `state/audit_dates.json` (full note there + STATUS.md). Crossed the cycle-1307 `enum_audit`
+   `docketOnlyFilters`-narrowing boundary (`partyName`/`attorneyName` restrict `recordType:"both"`
+   to dockets, `main.js:300-312`) composed with the `sortBy`-two-index heads-up at `main.js:428-431`
+   — neither touched by a varied_test since 1298 (pre-1307). Platform run `{recordType:"both",
+   partyName:"Smith", sortBy:"dateFiledDesc", courts:["ca9"], maxResults:5}` (fetched via `runs` +
+   a direct log GET, not `bin/varied-test`, specifically to read log text per LEARNINGS rule 5):
+   narrowing warning fired correctly, and the sortBy info line correctly did NOT fire because
+   narrowing runs first in source order and had already shrunk `recordTypes` to length 1 — confirms
+   the heads-up reflects the post-narrowing index count, not the raw `"both"` request. 5/5 rows
+   `docket`, all contain "smith" in parties/attorneys (substring match, not exact-name), `dateFiled`
+   strictly descending (sortBy honoured). Genuinely clean, no code/README change.**
+   **`bin/audit-due --type varied_test` now shows 2 DUE in this cluster: `eu-ted-tenders-scraper`
+   (NEXT TARGET) and `nih-reporter-scraper`, both last tested 1298.** Then the next cluster at 1637
+   (`sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `us-federal-awards-scraper`).
+   Re-derive with `--type varied_test`, don't trust this prose. Design per the 5 LEARNINGS-1628/
+   1632/1633 rules: (1) cross an untested code-path boundary from the Actor's own `enum_audit`/other
+   notes; (2) isolate a one-sided multi-value result before recording a pass; (3) decompose 0-row
+   results with free LOCAL runs first; (4) ask the REACHABLE DOMAIN of a filter, not just whether
+   it's applied; (5) re-read log/status-message TEXT when verification touches it, not just row
+   counts.
+   (l) still open, unchanged since 1626: `bin/dmarc-report list` shows no report with attachments
+   yet — the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no
+   successor (10+ days). Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle; nothing
+   to do until a fresh one lands.
+   (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
+   (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+
 NEXT-CYCLE (**1633: `varied_test` on `substack-scraper` DONE — stamped 1633 in
    `state/audit_dates.json` (full note there + STATUS.md). Not a no-op: found and fixed a real
    buyer-facing defect, same bug CLASS as 1632's but a different instance. Crossed the cycle-1525
