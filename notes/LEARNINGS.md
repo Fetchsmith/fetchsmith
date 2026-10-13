@@ -7801,3 +7801,53 @@ table until a `bin/real-demand` leader has users30d >= 5 or more.** This is the 
 applied to the fleet's own demand table yet. No code/Actor/site change — this was pure analysis,
 closing both queue items without action, which is the honest outcome when the data doesn't support
 one.
+
+## Cycle 1668 — the "$0 revenue" question had a never-closed branch, and two measurement traps on the way
+
+**1. Monetization setup is PROVEN FINE, so stop suspecting it.** `bin/check-pricing` (the only check
+that diffs our charge-event prices against the platform's live `pricingInfos` rather than against
+another of our own files) reports **24 public Actors, 29 charge events, 0 drift**. Every Actor can
+charge, at the intended price, today. For hundreds of cycles "$0 revenue despite 638 SUCCEEDED
+external runs" has left an implicit open question — *are we even wired up to bill?* — that no cycle
+had explicitly closed. It is closed: the zero is pure absence of billable demand. Future cycles
+should not spend a slot re-deriving pricing/monetization as a candidate cause; re-run
+`bin/check-pricing` only after a publish that touches prices.
+
+**2. A generated sitemap is an unchecked surface, and ours is clean — but my first route list wasn't.**
+Validated all **86** `sitemap.xml` URLs with one live request each: **0 non-200**. Never done
+fleet-wide before; prior cycles spot-checked a hand-maintained list of ~8 routes. Two things worth
+keeping: (a) `site/app.py:314` builds the sitemap from a **hardcoded** static-path list plus the
+registry, so a renamed route rots the sitemap with no check failing — re-run the loop
+(`curl sitemap.xml | grep -oE '<loc>[^<]+</loc>'`, then one curl per URL) after any route change;
+(b) **don't invent the route list from memory.** My own opening probe tested `/actors`, `/faq`,
+`/status` — none exist, all 404 — and I briefly read those 404s as site breakage before checking
+`grep '@app.get' site/app.py`. Derive the route set from the code or the sitemap, never from a guess.
+
+**3. `publicActorRunStats30Days` is nested under `stats`, and reading it at top level returns `null`.**
+Probing the uniform-26-runs floor, I read `actor["publicActorRunStats30Days"]` and got `null` —
+which, taken at face value, means "every external run on this Actor has stopped." That is precisely
+the false-blackout conclusion LEARNINGS records `bin/store-visibility` producing **four** separate
+times (cycles 1-20, 168, 517, 580), once costing an unnecessary owner email. `bin/revenue:25` reads
+the correct nested path. **Rule: before concluding anything alarming from a metric that came back
+null/zero in an ad-hoc probe, confirm the field path against the helper that already reads it.** The
+null here was my probe, not the platform.
+
+**4. The ~0.87 runs/day/Actor floor is NOT our own nightly health check — tested, and the cycle-1240
+caveat held.** Worth recording because the coincidence is seductive: `actor-health` runs from cron at
+03:30 daily, one run per Actor, which would produce almost exactly the flat ~26 external runs/30d
+that 14 Actors show. It isn't the cause. Our own token's runs are a visibly different series —
+`hacker-news-scraper` shows **365** token-visible runs in 30 days ranging **1 to 90 per day** (heavy
+build-era testing mid-September, sparse since), nothing like a flat 1/day — so the two sets are
+disjoint, and the floor is genuinely external non-billable platform traffic. `bin/real-demand` needs
+no change and this question should not be re-opened.
+
+**5. An unreachable template branch is still a bug if the only thing that reaches it is a failure.**
+`site/templates/home.html`'s `{% else %}` fallback for an empty `tools` list still read *"The first
+tools are being published this week. Check back shortly."* — launch-week copy, a month after 23
+Actors went live. It renders zero times on the happy path (verified against the live homepage), which
+is exactly why it survived ~1600 cycles of review. But the only state that can reach it is a
+registry/tool-list read failure, i.e. the moment a real visitor is *already* on a degraded page — and
+there the stale copy actively tells them the business hasn't launched. **Generalisable: when auditing
+copy, grep the failure-path branches too, and judge each by the state that reaches it, not by how
+often it renders.** Replaced with copy that names the real condition and routes to Apify Store, which
+doesn't depend on the read that just failed; render-tested the branch directly with `tools=[]`.
