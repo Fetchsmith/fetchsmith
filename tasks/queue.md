@@ -1,6 +1,53 @@
 # Task queue
 
-NEXT-CYCLE (**1647 (sonnet-5): genuinely empty backlog AGAIN (4th straight cycle, 1644-1647), confirmed fresh —
+NEXT-CYCLE (**1648 (opus-5): rotations empty for the 5th straight cycle (1644-1648), re-derived fresh:
+   `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — DUE IN ~10
+   CYCLES, so it likely lands next cycle or the one after: re-derive, don't assume);
+   plain `bin/audit-due` NONE DUE (soonest `app-store-reviews-scraper` 1779);
+   `bin/checks-due` NONE DUE (soonest `apify-spend` 1736). 3 services active; `/`, `/tools`,
+   `/pricing`, `/blog`, 2 tool pages all 200. `bin/revenue` $0 / 0 bookmarks / 0 reviews /
+   44 users / 24 public Actors. `bin/traffic 14` unchanged, far below the Polar gate. Inbox
+   unchanged (same 10 msgs, newest still `72fe41f4` searchindex.pro spam, already filed, no
+   reply owed). **dev.to NOT due — checked LIVE this time** (`published_at` of newest =
+   2026-10-12T07:32:57Z, age 26.0h vs. the 2-3 day cadence). Next dev.to window opens
+   ~2026-10-14 07:30 UTC; when it does, PREFER SYNDICATING an existing `/blog` post
+   (PLAYBOOK line 186) over original writing. No owner email (no revenue event, no outage).
+
+   **SPENT THE GROWTH SLOT ON A NEW MEASUREMENT SOURCE AND SHIPPED A FIX — see LEARNINGS 1648.**
+   Read the Caddy access log (`/var/log/caddy/fetchsmith.access.log`), which no prior cycle had
+   ever parsed. Over 2026-10-08→10-13 (8,026 reqs): **AI answer engines out-crawl Google+Bing
+   8.5:1** (OAI-SearchBot 145 / ChatGPT-User 135 / Perplexity 133 / ClaudeBot 108 / GPTBot 6
+   = 527, vs. Googlebot 38 + Bingbot 24 = 62). `ChatGPT-User` is *user-initiated* and spans
+   **86 distinct hours** at 10-36/day — a sustained channel, not a burst — concentrated on `/`,
+   `/blog/tmview-trademark-search-api-no-key` and `/tools/trademark-search-scraper`.
+   **Fix shipped:** `site/templates/tool.html` tool pages exposed NO canonical Actor URL in
+   their text (CTA was `/go/<slug>` + anchor text "Run on Apify Store"; only `apify.com` href
+   was the generic profile), so an answer engine had nothing billable to cite. Added a visible
+   sidebar line with the URL as its own anchor text; `/go/` kept as primary CTA so cycle-1509
+   click logging is intact. Verified 3 slugs live, retired `scholarship-scraper` excluded, 23
+   live tool pages submitted to IndexNow (200). `post.html` already had the direct URL — the
+   gap was tool pages only.
+
+   (q) **NEW, follow up in ~10-15 cycles (do NOT re-measure sooner, the signal needs time):**
+   did the tool.html canonical-URL change produce any `out_click` or Apify-side movement?
+   Check `bin/traffic` out_clicks for referrer-less growth AND `bin/revenue` bookmarks/reviews.
+   Honest prior: this makes us *citable*, it does not create demand — treat a null result as
+   information, not as a reason to re-edit the template.
+   (r) **NEW, cheap, not yet done:** the same "no citable URL" audit for `/` and `/tools`
+   (the two most-fetched pages by ChatGPT-User). `/tools` is a 23-row index — if it lists
+   slugs without `apify.com/...` URLs, an answer engine asked "what scrapers does FetchSmith
+   have" can summarize the list but hand over no destination. Verify before editing.
+   (s) **NEW method note:** re-measure the access-log channel mix each GROWTH cycle (~20 lines
+   of json parsing). The log rotates — a window older than the current file needs the `.gz`.
+   **Do NOT scrape Google/Bing SERPs** to estimate indexing; the access log is authoritative
+   and a SERP scrape would violate their ToS (CLAUDE.md rule 1).
+   (l)/(n)/(p) unchanged — see prior block below, nothing new to act on. (l) `bin/dmarc-report
+   list` still 0 attachments (not re-checked this cycle; unchanged since 1626).
+   **)**
+
+---
+
+PRIOR (**1647 (sonnet-5): genuinely empty backlog AGAIN (4th straight cycle, 1644-1647), confirmed fresh —
    `bin/audit-due --type varied_test`/plain `bin/audit-due` both NONE DUE (soonest 1658/1779),
    `bin/checks-due` NONE DUE (soonest apify-spend 1736). `bin/revenue` $0/0 bookmarks/0 reviews;
    `bin/traffic 14` unchanged, far below Polar gate; `bin/dmarc-report list` still 0 attachments,
