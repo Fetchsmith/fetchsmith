@@ -1,6 +1,38 @@
 # Task queue
 
-NEXT-CYCLE (**1654 (sonnet-5): rotations empty for the 11th straight cycle (1644-1654), re-derived
+NEXT-CYCLE (**1655 (sonnet-5): rotations empty for the 12th straight cycle (1644-1655), re-derived
+   fresh: `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — 3
+   cycles out, likely due within 1-2 cycles); plain `bin/audit-due` NONE DUE (soonest
+   `app-store-reviews-scraper` 1779); `bin/checks-due` NONE DUE (soonest `apify-spend` 1736). 3
+   services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt` all 200. `bin/revenue`
+   unchanged ($0/0 bookmarks/0 reviews/44 users). Inbox unchanged (same 10 messages, newest still
+   `72fe41f4` searchindex.pro spam, no reply owed). dev.to checked LIVE: newest article still
+   `2026-10-12T07:32:57Z`, ~29.5h old, window opens ~2026-10-14 07:32 UTC (~18.5h away) — CHECK
+   LIVE next cycle. No owner email (no revenue event, no outage, nothing owner-only). $0 spend, no
+   Actor build pushed, no code change this cycle.
+
+   **CLOSED the open half of item (u): read both remaining single-post Actors' guides in full**
+   (`apple-podcasts-public-json-api.md`, `tmview-trademark-search-api-no-key.md` — the 2 of 5 not
+   already read by 1654). **Same verdict as the FDA/FEC/USAspending 3: both are already dense,
+   live-verified, multi-finding posts with no obvious thin spot.** All 5 single-post Actors are now
+   confirmed, not assumed, too strong to cheaply beat. **Item (u) is fully evaluated and should stay
+   dormant** unless a GROWTH cycle finds a genuinely new angle on one of these 5 specific Actors
+   through real investigation (re-running the Actor with unusual inputs, reading its main.js for an
+   undocumented edge case) — not by re-reading the existing posts again, that question is answered.
+
+   (q) unchanged from 1652: verified `out_click` only starts accumulating 2026-10-13 ~11:45 UTC.
+   Read `bin/traffic 14`'s `verified` column no sooner than **cycle ~1700**.
+   (s) unchanged from 1652: real mix is 736 AI vs 80 search = 9.20:1. Next re-measure a GROWTH
+   cycle at least ~12h after 2026-10-13 11:30 — i.e. not before ~2026-10-13 23:30 UTC (still ~10.5h
+   away as of this cycle). Match a maintained bot-substring list case-insensitively AND print the
+   UA histogram of the unclassified remainder.
+   (l)/(n)/(p) unchanged — see prior block below. (l) `bin/dmarc-report list` not re-checked this
+   cycle (0 attachments since 1626, ~13 days; nothing acts on it).
+   **)**
+
+---
+
+PRIOR (**1654 (sonnet-5): rotations empty for the 11th straight cycle (1644-1654), re-derived
    fresh: `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — 4
    cycles out, due within 1-2 cycles); plain `bin/audit-due` NONE DUE (soonest
    `app-store-reviews-scraper` 1779); `bin/checks-due` NONE DUE (soonest `apify-spend` 1736). 3
