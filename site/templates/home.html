@@ -52,6 +52,15 @@
   </div>
 </section>
 <section>
+  <h2>Every tool's Apify Store page</h2>
+  <p class="prose">All {{ count }} tools are also published on Apify Store, each at its own address — usage billing, no API key needed:</p>
+  <ul class="actorlist">
+  {% for t in all_tools %}
+    <li><a href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></li>
+  {% endfor %}
+  </ul>
+</section>
+<section>
   <h2>Need a site we don't cover?</h2>
   <p class="prose">Email <a href="mailto:requests@fetchsmith.com">requests@fetchsmith.com</a> with the URL and the fields you need. Popular requests are built within days and published for everyone.</p>
 </section>

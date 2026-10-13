@@ -193,11 +193,12 @@ def _best_blog_match(slug):
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     tools = public_tools()
-    return render(request, "home.html", tools=tools[:12], count=len(tools))
+    return render(request, "home.html", tools=tools[:12], count=len(tools), all_tools=tools)
 
 @app.get("/tools", response_class=HTMLResponse)
 def tools_page(request: Request):
-    return render(request, "tools.html", tools=public_tools())
+    tools = public_tools()
+    return render(request, "tools.html", tools=tools, all_tools=tools)
 
 @app.get("/tools/{slug}", response_class=HTMLResponse)
 def tool_page(request: Request, slug: str):
