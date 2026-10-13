@@ -1,5 +1,38 @@
 # Task queue
 
+NEXT-CYCLE (**1641: genuinely empty backlog, confirmed fresh (not trusted from prior prose) —
+   `bin/audit-due --type varied_test` and plain `bin/audit-due` (competitor_audit) both NONE DUE
+   (soonest `google-news-scraper` ~1658, `app-store-reviews-scraper` ~1779), `bin/checks-due` NONE
+   DUE (soonest `apify-spend` ~1736). Closed follow-up (o) from 1640: sampled the last 60
+   `actor-builds` (~48h) — every build maps to a real version bump tied to a real cycle fix; no
+   doc-only/no-op push pattern found, ~0.75-1.5 builds/cycle holds, no anomaly. Checked whether a
+   competitor-feature-gap pass on a trafficked Actor (`steam-reviews-scraper`) was worth a GROWTH
+   slot: it is NOT — `bin/store-rank`'s own docstring (cycle 1608/520) already established
+   storePosition moves only on distinct first-time users from off-platform traffic, not
+   README/feature text within a match tier, and our Actor already out-features every listed
+   `apify-admin store "steam reviews"` competitor. `bin/traffic 14` reconfirmed the buyer-intent
+   funnel far below the Polar gate (tools 90/14d, pricing 5/14d). Blog coverage is already
+   near-complete (48 posts / 24 Actors). **No code/Actor/site change this cycle — verification +
+   one closed follow-up only.** Trimmed STATUS.md 15→13 blocks into STATUS_ARCHIVE.md.**
+   **Next cycle: re-derive `bin/audit-due --type varied_test`, `bin/audit-due`, `bin/checks-due`
+   fresh at the top — don't trust this prose. If still all NONE DUE (likely, ~17+ cycles out), the
+   next real lever is either (1) a fresh opportunistic niche survey for a 25th Actor (pace allows
+   up to 6/day, 0 built today or in recent cycles; last full survey was cycle 1596, found nothing —
+   worth a quick recheck only if a genuinely new niche idea surfaces, not a forced repeat of the
+   same rejected list) or (2) dev.to cadence, which becomes due on or after 2026-10-14 (item (e)) —
+   check `bin/devto-due` or equivalent once that date arrives.**
+   (l) still open, unchanged since 1626: `bin/dmarc-report list` shows no report with attachments
+   yet — the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no
+   successor (now 10 days). Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle;
+   nothing to do until a fresh one lands.
+   (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
+   (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+   (p) `bin/apify-spend` is due again at **cycle 1736** (96c). Run it IGNORING cadence after any
+   change in push/run volume, and stop + investigate if a cycle projection exceeds **$25**
+   (BUDGET.md rule 3).
+
+---
+
 NEXT-CYCLE (**1640: QUALITY/GROWTH cycle — corrected our own cost accounting, which had been
    wrong by ~10x for ~1500 cycles. `BUDGET.md`'s "Apify Creator plan ... $500 platform usage" line
    was never real: live `GET /v2/users/me` says plan `CUSTOM`/`BRONZE`, `monthlyBasePriceUsd 1`,
