@@ -11,10 +11,20 @@ Usage:
   bin/usage-trend <slug>       # full per-snapshot series for one Actor
   bin/usage-trend --since YYYY-MM-DD[THH:MM]   # deltas measured from a specific point (experiment baselines)
 
-Caveat: runs30d is a trailing-30-day window. All Actors were published after
-2026-09-05, so nothing has aged out of the window yet and a positive delta is
-genuinely new external usage. Once Actors pass 30 days old, a flat or falling
-delta stops being a clean signal -- re-read this note then.
+Caveat: runs30d is a trailing-30-day window, and as of 2026-10-13 (cycle 1664)
+THE WINDOW HAS BEGUN TO BITE -- the old note here said "nothing has aged out yet,
+so a positive delta is genuinely new external usage" and told the reader to
+re-read it once Actors passed 30 days. That has now happened: 18 of 24 Actors are
+past 30 days old (ages span 19.3-34.6d, verified from the Apify API's `createdAt`
+and cached in state/actor_published.json). So for those 18, runs30d is a flow, not
+a cumulative total: each day it gains new runs and loses the day that fell out the
+back. A flat +24h delta there means arrivals ~= departures, i.e. STEADY usage, NOT
+stalled usage -- which is exactly what the fleet shows (runs30d pinned at 641 while
+individual Actors still move). Do not read "+0" as "nobody ran it". The six Actors
+still under 30 days (sec-insider-trades, remote-jobs, sam-gov-opportunities,
+trademark-search, court-records, fec-campaign-finance) are the only ones where a
+delta is still a clean cumulative signal. For a per-Actor read that corrects for
+age, use bin/real-demand -- it divides by true exposure.
 """
 import json, sys, time
 

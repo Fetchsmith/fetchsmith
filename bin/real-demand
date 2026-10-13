@@ -17,10 +17,33 @@ anything we do; treat it -- not runs30d -- as the demand signal.
 
   real-demand            -> per-Actor table + fleet totals
   real-demand --json     -> machine-readable
+  real-demand --refresh  -> re-fetch each Actor's createdAt from the Apify API into AGES
+
+AGE SOURCE (fixed cycle 1664 -- this was wrong for ~1440 cycles). Ages used to be
+derived from `revenue_history.json`: the first snapshot in which an Actor appeared
+with `public: true`. But history only starts 2026-09-25 and ALL 24 Actors were
+already public by then, so every Actor read the same `days_public` -- a flat 18.00
+fleet-wide -- when true ages span 19.3 to 34.6 days. Because `days` was an identical
+constant for every row, `expected = median(runs30d/days) * days` collapsed to
+`median(runs30d)` = 26 for EVERY Actor regardless of age, which is what hid the bug:
+the table looked plausible. It was wrong three ways. (1) The printed floor read
+1.44 runs/day when it is 0.87 -- overstated 1.66x, because it divided by 18 days of
+exposure instead of the 30-day window. (2) It scored the four YOUNGEST Actors
+(`sec-insider-trades` 19.3d, `remote-jobs` 22.3d, `sam-gov-opportunities` 23.4d,
+`trademark-search` 24.0d) at -9/-6/-5/-3 "below floor" when all four actually sit AT
+or above it (+0.3/+0.7/+0.7/+2.2) -- they simply had fewer days to accrue. The only
+genuinely below-floor Actor is `scholarship-scraper` (-9.0 at a full 30 days), which
+is also the only one carrying FAILED external runs. (3) The fleet total was wrong
+too, not just the ranking: +17.0 -> +47.4.
+Ages now come from the Apify API's own `createdAt`, cached in AGES. Note `createdAt`
+is <= the public date (publication followed within a day for all 24, checked at the
+fix), so it very slightly overestimates age and therefore underestimates rate --
+conservative, and irrelevant for anything past the 30-day window cap.
 """
-import json, statistics, sys, time
+import json, os, statistics, sys, time
 
 HIST = "/root/agent/state/revenue_history.json"
+AGES = "/root/agent/state/actor_published.json"
 WINDOW_DAYS = 30.0
 # An Actor needs to have been public this long before its rate is stable enough
 # to fold into the baseline estimate (a half-day-old Actor reads 1.85/day purely
@@ -28,19 +51,59 @@ WINDOW_DAYS = 30.0
 MIN_DAYS_FOR_BASELINE = 1.5
 
 
+def refresh_ages():
+    """Fetch createdAt for every owned Actor into AGES. Needs APIFY_TOKEN."""
+    import httpx
+    env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env")
+               if "=" in l and not l.startswith("#"))
+    H = {"Authorization": f"Bearer {env['APIFY_TOKEN']}"}
+    API = "https://api.apify.com/v2"
+    user = httpx.get(f"{API}/users/me", headers=H).json()["data"]["username"]
+    items = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
+    out = {}
+    for it in items:
+        a = httpx.get(f"{API}/acts/{user}~{it['name']}", headers=H).json()["data"]
+        out[it["name"]] = a.get("createdAt")
+    json.dump({"fetched": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+               "created_at": out}, open(AGES, "w"), indent=1)
+    return out
+
+
+def published_ts():
+    """slug -> unix ts of publication, from the cached Apify createdAt."""
+    if not os.path.exists(AGES):
+        return {}
+    created = (json.load(open(AGES)) or {}).get("created_at") or {}
+    return {n: time.mktime(time.strptime(v[:19], "%Y-%m-%dT%H:%M:%S"))
+            for n, v in created.items() if v}
+
+
 def load():
     hist = json.load(open(HIST))
+    # Fallback only: valid for an Actor first seen public AFTER history began.
+    # For anything already public in snapshot 0 this is a floor on the age, not
+    # the age -- see the AGE SOURCE note above.
     first_public = {}
     for snap in hist:
         for name, a in (snap.get("apify") or {}).items():
             if a.get("public") and name not in first_public:
                 first_public[name] = snap["ts"]
+    hist_start = hist[0]["ts"]
+    pub = published_ts()
+    ages, estimated = {}, set()
+    for name, ts in first_public.items():
+        if name in pub:
+            ages[name] = pub[name]
+        else:
+            ages[name] = ts
+            if ts <= hist_start:
+                estimated.add(name)  # age is a lower bound, flagged in output
     last = hist[-1]
-    return last, first_public
+    return last, ages, estimated
 
 
 def compute():
-    last, first_public = load()
+    last, published, estimated = load()
     now = last["ts"]
     rows = []
     for name, a in (last.get("apify") or {}).items():
@@ -48,8 +111,9 @@ def compute():
             continue
         # runs30d only counts the trailing 30 days, so an Actor public for longer
         # than the window has an effective exposure of exactly the window.
-        days = min((now - first_public.get(name, now)) / 86400.0, WINDOW_DAYS)
+        days = min((now - published.get(name, now)) / 86400.0, WINDOW_DAYS)
         rows.append({"actor": name, "days_public": days, "runs30d": a.get("runs30d", 0),
+                     "age_estimated": name in estimated,
                      "rate": a.get("runs30d", 0) / days if days > 0 else 0.0,
                      "users": a.get("users", 0), "users30d": a.get("users30d", 0)})
     stable = [r["rate"] for r in rows if r["days_public"] >= MIN_DAYS_FOR_BASELINE]
@@ -68,6 +132,10 @@ def compute():
 
 
 def main():
+    if "--refresh" in sys.argv:
+        got = refresh_ages()
+        if "--json" not in sys.argv:  # keep --json output parseable
+            print(f"refreshed createdAt for {len(got)} Actors into {AGES}")
     res = compute()
     if "--json" in sys.argv:
         print(json.dumps(res, indent=2))
@@ -77,6 +145,8 @@ def main():
     print(f"{'actor':32} {'days':>6} {'runs30d':>8} {'expect':>7} {'excess':>7} {'users':>6}")
     for r in res["actors"]:
         flag = "  <-- real demand" if r["excess"] >= 2 else ""
+        if r["age_estimated"]:
+            flag += "  [age unknown, lower bound -- run --refresh]"
         print(f"{r['actor']:32} {r['days_public']:6.2f} {r['runs30d']:8} "
               f"{r['expected']:7.1f} {r['excess']:+7.1f} {r['users']:6}{flag}")
     print(f"\nraw runs30d       {res['raw_runs30d']:8}")

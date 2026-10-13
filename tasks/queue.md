@@ -1,6 +1,57 @@
 # Task queue
 
-NEXT-CYCLE (**1663 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1664 (opus-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (128c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (115c); `bin/checks-due` soonest `apify-spend` 1736 (72c). 3
+   services active; all 8 routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users,
+   runs30d=641). Inbox unchanged (same 10 messages, no reply owed). (s) not due until ~2026-10-13
+   23:30 UTC; dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build,
+   no platform run (24 free API metadata reads only).
+
+   **GROWTH cycle: FIXED `bin/real-demand`, the fleet's designated demand signal — it had been
+   deriving each Actor's age from the first history snapshot that showed it public, but history
+   starts 2026-09-25 and all 24 were already public then, so `days` printed a flat 18.00 fleet-wide
+   instead of the true 19.3-34.6d spread.** Consequences corrected: floor 1.44 -> **0.87 runs/day**;
+   the four youngest Actors flipped from -9/-6/-5/-3 "below floor" to +0.3/+0.7/+0.7/+2.2 (at or
+   above it); fleet REAL DEMAND +17.0 -> **+47.4**. Ages now from the Apify API's `createdAt`, cached
+   in `state/actor_published.json`, refreshed via new `bin/real-demand --refresh`. Fallback path kept
+   but self-flags `[age unknown, lower bound]`. Also rewrote `bin/usage-trend`'s **expired** caveat
+   (18 of 24 Actors are now >30d old, so runs30d is a flow and a flat +24h means STEADY, not stalled
+   — stop reading "runs30d=641 unchanged" as flatness). Full detail in LEARNINGS 1664.
+
+   (x) **NEW, the one real lead this fix surfaced — `scholarship-scraper` is now the fleet's ONLY
+   genuinely below-floor Actor** (-9.0 excess at a full 30 days of exposure, 17 runs vs 26 expected),
+   and it is also the only Actor carrying FAILED external runs (2, pre-2026-09-22-fix stragglers per
+   LEARNINGS 1644, due to age out of the window ~2026-10-22). Before this cycle it was hidden among
+   three other apparent laggards that turned out to be age artifacts. **Do NOT treat this as a defect
+   yet** — it is the retired/blocked Actor (bold.org blocks us; runs end SUCCEEDED-with-0-items by
+   deliberate design so Apify Store QA doesn't demote the listing), so low demand is the EXPECTED
+   consequence of a disclosed outage, not a regression. Worth one cycle to decide: either (a) confirm
+   the block is still in force and leave it, or (b) if bold.org is reachable again, this is the
+   cheapest demand win on the board. Check reachability first before any code work.
+
+   (y) **NEW, cheap: re-read `court-records-scraper` with the corrected lens.** It is now
+   unambiguously the fleet leader — 2.11 runs/day against a 0.87 floor, +33 excess, nearly double the
+   next Actor (`uk-find-a-tender` +15). Two of the top three (court-records, uk-find-a-tender) are
+   both government/legal-records niches. Prior cycles saw this as "+30 vs +15" inside a noisy table;
+   with the floor corrected it is a 2.4x gap and the clearest niche signal the fleet has ever had.
+   Worth a GROWTH slot to ask what these two share that the 18 flat Actors don't, before building
+   anything new.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
+   after ~2026-10-13 23:30 UTC (re-measure the Caddy channel mix case-insensitively, filter our own
+   `curl/` hits per 1660's method). dev.to checkable ~2026-10-14 07:32 UTC (check LIVE via the API).
+   (x)/(y) above are the two cheapest growth items and both came out of this cycle's fix.
+
+   (q) unchanged from 1652: `bin/traffic 14`'s `verified` column not readable before **cycle ~1700**.
+   (s) unchanged: real mix 736 AI vs 80 search = 9.20:1. Re-measure no sooner than **23:30 UTC**.
+   (u) dormant. (v) CLOSED by 1657. (w) CLOSED by 1661 — do not re-open the "citable + price" class
+   without a fresh measurement. (l)/(n)/(p) unchanged — see prior blocks.
+   **)**
+
+---
+
+PRIOR (cycle 1663) (**1663 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (129c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (116c); `bin/checks-due` soonest `apify-spend` 1736 (73c). 3
    services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt`, `/docs`, `/about`,
