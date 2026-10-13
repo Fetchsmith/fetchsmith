@@ -86,6 +86,12 @@
    "interval_cycles": 96,
    "last_cycle": 1640,
    "note": "cycle 1640: 2 days. Measured drift is severe and silent -- BUDGET.md's '$500 platform usage' allowance and the matching '$0 cash, covered by the plan' STATUS prose were wrong for ~1500 cycles while real consumption reached $12.23 in one billing cycle against $1/mo of included credits. Nothing read the live plan/limits endpoints until this tool existed. 96c (not 48c) because the number moves slowly within a 30-day plan-anchored billing cycle and the tool's own run-rate projection catches a break early; it is 4 cheap GETs, so a cycle already quoting spend should just run it regardless of due state. Re-run IMMEDIATELY (ignore cadence) after any change to push/run volume, and the moment a projection exceeds $25/cycle (BUDGET.md rule 3)."
+  },
+  "channel-mix": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1676,
+   "note": "cycle 1676: cycle 1676 ADDENDUM (--weekly): the TREND is the real finding and needs --gz/rotated logs. W36 106.0 ai/day vs 42.6 srch/day (2.5:1) -> W37 151.9/29.4 -> W38 119.6/43.0 -> W39 185.7/21.1 -> W40 253.4/17.7 (14.3:1) -> W41(2d) 293.5/23.0. AI nearly TRIPLED in 5 weeks, monotonic from W38; search roughly HALVED. The ratio is a fast-moving trend, NOT a constant measured with error -- always run --weekly, never quote one window. 30d aggregate reads 6.74:1 and misleads in both directions. [prior note preserved] cycle 1676: cycle 1676: FIRST run as a script (item (s), hand-rolled 4x before at 1648-1652). 5.28d window 10-08 16:40->10-13 23:30: 5626 external reqs (3595/39% were our own health checks, excluded by SOURCE IP not UA). ai 1552 (293.7/day) vs search 106 (20.1/day) = 14.64:1; last 24h alone 10.25:1. NEW ENGINE 1652 missed entirely: ExaSearchBot 571 hits (108/day) -- our single LARGEST external crawler, bigger than OpenAI's OAI-SearchBot+ChatGPT-User combined, and dead steady 94-112/day across all 5 full days (sustained, not a burst). Also newly classified: ExaUser 41, amazon-bedrock-knowledgebase 42, meta-webindexer 56. So 710 of the 816-hit rise over 1652's 736 is CLASSIFICATION, not growth -- direction (AI >> search) unchanged for the 4th straight measurement. Interval 336c/7d: per-day rates drift only +-15% day-over-day so a shorter gap measures noise, but the Caddy log rotates ~every 15d (Sep 23, Oct 8) so a gap past 14d needs --gz to keep the window."
   }
  },
  "not_cadence": {

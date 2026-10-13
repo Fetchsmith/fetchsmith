@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""Channel mix from the Caddy access log: who is actually fetching fetchsmith.com.
+
+Usage: channel-mix [--days N] [--gz] [--paths] [--unknown N]
+  --days N    only count requests in the last N days (default: whole log window)
+  --gz        also read rotated /var/log/caddy/*.log.gz (slower; needed for old windows)
+  --paths     print the per-path breakdown of AI-engine fetches
+  --unknown N show the top N unclassified UAs (default 25)
+
+This is item (s) on the queue, re-measured each GROWTH cycle. It exists as a script
+because the same count was hand-rolled four times (cycles 1648-1652) and was wrong
+three of them:
+  - 1650: case-sensitive substring match dropped bots that vary their casing.
+  - 1652: an incomplete UA list undercounted BOTH sides -- the AI side missed
+    Amazonbot (105!), Bytespider, meta-externalagent, Applebot, YouBot; the search
+    side missed DuckDuckBot/Yandex/Baidu/Slurp. The number quoted for 3 cycles was wrong.
+  - 1676: ExaSearchBot (571 hits -- larger than any single bot 1652 counted) was
+    missing from the list entirely, as were ExaUser, meta-webindexer and Bedrock.
+So: match case-insensitively, and ALWAYS print the histogram of what you did NOT
+classify, so a missing engine shows up as a big unknown row instead of vanishing.
+When you add an engine here, say which cycle found it.
+
+Self-hits are identified by SOURCE IP, not UA: our own health checks are ~39% of the
+log (3593/9221 at cycle 1676) and all come from our public IP. UA-matching `curl/`
+would also sweep up genuine external curl users, and would miss our own non-curl probes.
+"""
+import argparse, collections, glob, gzip, json, subprocess, sys, time
+
+# Our own public IP: every self-hit in the log came from here (verified cycle 1676).
+# Derived live so the script keeps working if the box is ever re-addressed.
+def self_ips():
+    ips = {"127.0.0.1", "::1"}
+    try:
+        out = subprocess.run(["hostname", "-I"], capture_output=True, text=True, timeout=5).stdout
+        ips.update(out.split())
+    except Exception:
+        pass
+    try:
+        out = subprocess.run(["curl", "-s", "-m", "5", "https://api.ipify.org"],
+                             capture_output=True, text=True, timeout=8).stdout.strip()
+        if out and len(out) < 50:
+            ips.add(out)
+    except Exception:
+        pass
+    return {i for i in ips if i}
+
+# All matching is lowercase substring. Order matters only within a bucket (first hit wins
+# for the per-bot label); buckets are checked AI -> SEARCH -> OTHER_BOT.
+AI = [  # answer engines, LLM retrieval and AI training crawlers
+    "oai-searchbot", "chatgpt-user", "gptbot",          # OpenAI
+    "perplexitybot", "perplexity-user", "perplexity",   # Perplexity
+    "claudebot", "claude-user", "claude-searchbot", "anthropic-ai",
+    "exasearchbot", "exauser",                          # exa.ai AI search (found 1676)
+    "amazon-bedrock-knowledgebase",                     # AWS Bedrock RAG fetch (found 1676)
+    "amazonbot",                                        # Alexa/Rufus (1652)
+    "bytespider",                                       # ByteDance/Doubao (1652)
+    "meta-externalagent", "meta-webindexer",            # Meta AI (webindexer found 1676)
+    "applebot",                                         # Apple Intelligence/Siri (1652)
+    "youbot", "cohere-ai", "diffbot", "ccbot",
+    "google-extended", "googleother", "mistralai-user", "deepseekbot",
+]
+SEARCH = [  # classic index-and-rank search engines
+    "googlebot", "adsbot-google", "bingbot", "msnbot", "duckduckbot", "duckassistbot",
+    "yandexbot", "baiduspider", "slurp", "sogou", "seznambot", "petalbot",
+    "qwantify", "mojeekbot", "marginaliabot",
+]
+OTHER_BOT = [  # SEO/backlink/monitoring/directory crawlers -- neither a buyer nor a channel
+    "semrushbot", "ahrefsbot", "mj12bot", "dotbot", "barkrowler", "blexbot",
+    "dataforseo", "serpstatbot", "zoominfobot", "bomborabot", "linkdexbot",
+    "qlyzebot", "directorybot", "livelapbot", "nomorevibe", "dataprovider.com",
+    "uptimerobot", "pingdom", "statuscake", "censysinspect", "internet-measurement",
+    "paloaltonetworks", "expanse", "scrapy", "python-requests", "go-http-client",
+    "headlesschrome", "bot", "crawler", "spider",  # generic catch-alls LAST
+]
+
+
+def bucket(ua):
+    u = ua.lower()
+    for pats, name in ((AI, "ai"), (SEARCH, "search"), (OTHER_BOT, "other_bot")):
+        for p in pats:
+            if p in u:
+                return name, p
+    return "unclassified", None
+
+
+def lines(use_gz):
+    paths = ["/var/log/caddy/fetchsmith.access.log"]
+    if use_gz:
+        paths += sorted(glob.glob("/var/log/caddy/*.log.gz"))
+    for p in paths:
+        op = gzip.open if p.endswith(".gz") else open
+        try:
+            with op(p, "rt", errors="replace") as fh:
+                for line in fh:
+                    yield line
+        except OSError as e:
+            print(f"warn: {p}: {e}", file=sys.stderr)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--days", type=float)
+    ap.add_argument("--gz", action="store_true")
+    ap.add_argument("--paths", action="store_true")
+    ap.add_argument("--weekly", action="store_true",
+                    help="per-ISO-week ai/search rates (implies --gz; this is where the TREND is)")
+    ap.add_argument("--unknown", type=int, default=25)
+    a = ap.parse_args()
+    if a.weekly:
+        a.gz = True
+
+    mine = self_ips()
+    cutoff = time.time() - a.days * 86400 if a.days else 0
+    counts = collections.Counter()          # bucket -> hits
+    per_bot = collections.defaultdict(collections.Counter)
+    unknown = collections.Counter()
+    ai_paths = collections.Counter()
+    ai_hours = set()
+    weekly = collections.defaultdict(collections.Counter)
+    week_days = collections.defaultdict(set)
+    first = last = None
+    total = self_hits = 0
+
+    for line in lines(a.gz):
+        try:
+            d = json.loads(line)
+        except Exception:
+            continue
+        ts = d.get("ts", 0)
+        if ts < cutoff:
+            continue
+        r = d.get("request", {})
+        total += 1
+        first = ts if first is None else min(first, ts)
+        last = ts if last is None else max(last, ts)
+        if a.weekly:
+            # count days from ALL hits incl. self: a day we served only health checks is
+            # still a day the log covers, and dividing by a short count inflates the rate.
+            week_days[time.strftime("%Y-W%W", time.gmtime(ts))].add(ts // 86400)
+        if r.get("remote_ip") in mine:
+            self_hits += 1
+            continue
+        ua = (r.get("headers", {}).get("User-Agent") or ["-"])[0]
+        b, pat = bucket(ua)
+        counts[b] += 1
+        if pat:
+            per_bot[b][pat] += 1
+        else:
+            unknown[ua[:120]] += 1
+        if a.weekly:
+            weekly[time.strftime("%Y-W%W", time.gmtime(ts))][b] += 1
+        if b == "ai":
+            ai_paths[r.get("uri", "-")] += 1
+            ai_hours.add(int(ts // 3600))
+
+    def stamp(t):
+        return time.strftime("%Y-%m-%d %H:%M", time.gmtime(t)) if t else "?"
+
+    span_d = max((last - first) / 86400, 1e-9) if first else 1
+    print(f"== window {stamp(first)} -> {stamp(last)} UTC ({span_d:.2f} days)")
+    print(f"   {total} requests logged; {self_hits} ({100*self_hits/max(total,1):.0f}%) were our own "
+          f"health checks from {sorted(mine)} -- EXCLUDED below")
+    ext = total - self_hits
+    print(f"   {ext} external requests classified\n")
+
+    print("== channel mix (external only)")
+    for b in ("ai", "search", "other_bot", "unclassified"):
+        n = counts[b]
+        print(f"   {b:14s} {n:6d}  {100*n/max(ext,1):5.1f}%   {n/span_d:7.1f}/day")
+    ai, se = counts["ai"], counts["search"]
+    ratio = f"{ai/se:.2f}:1" if se else "n/a (zero search hits)"
+    print(f"\n   AI : SEARCH = {ratio}")
+
+    for b in ("ai", "search", "other_bot"):
+        if per_bot[b]:
+            print(f"\n== {b} breakdown")
+            for pat, n in per_bot[b].most_common():
+                print(f"   {pat:32s} {n:6d}  {n/span_d:7.1f}/day")
+
+    if a.weekly:
+        # Cycle 1676: the TREND is the finding, and it is invisible in a single ~5-day window of
+        # the current log file -- which is all every prior hand-rolled measurement ever looked at.
+        print("\n== per-week rates (partial first/last weeks are normal -- check the days column)")
+        print(f"   {'week':10s}{'days':>5s}{'ai/day':>9s}{'srch/day':>10s}   ratio")
+        for w in sorted(weekly):
+            nd = len(week_days[w]) or 1
+            ai_d, se_d = weekly[w]["ai"] / nd, weekly[w]["search"] / nd
+            print(f"   {w:10s}{nd:5d}{ai_d:9.1f}{se_d:10.1f}   "
+                  + (f"{ai_d/se_d:.1f}:1" if se_d else "n/a"))
+
+    if a.paths:
+        print(f"\n== top paths fetched by AI engines ({len(ai_hours)} distinct hours active)")
+        for p, n in ai_paths.most_common(20):
+            print(f"   {n:6d}  {p[:90]}")
+
+    print(f"\n== top {a.unknown} UNCLASSIFIED UAs -- read this every time; a big row here is a")
+    print("   missing engine, which is exactly how cycles 1650/1652/1676 got the count wrong")
+    for ua, n in unknown.most_common(a.unknown):
+        print(f"   {n:6d}  {ua}")
+    if not unknown:
+        print("   (none)")
+
+
+if __name__ == "__main__":
+    main()
