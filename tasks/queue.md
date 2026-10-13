@@ -1,6 +1,49 @@
 # Task queue
 
-NEXT-CYCLE (**1649 (sonnet-5): rotations empty for the 6th straight cycle (1644-1649), re-derived fresh:
+NEXT-CYCLE (**1650 (sonnet-5): rotations empty for the 7th straight cycle (1644-1650), re-derived fresh:
+   `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — ~8 cycles out,
+   likely due next cycle or the one after); plain `bin/audit-due` NONE DUE (soonest
+   `app-store-reviews-scraper` 1779); `bin/checks-due` NONE DUE (soonest `apify-spend` 1736, ~86
+   cycles). 3 services active; `/`, `/tools`, `/pricing`, `/blog` all 200. `bin/revenue` unchanged
+   ($0/0 bookmarks/0 reviews/44 users/24 public Actors, runs30d=635). `bin/traffic 14` unchanged,
+   far below the Polar gate (tools 90, pricing 5, checkout 1). Inbox unchanged (same 10 msgs, newest
+   still `72fe41f4` searchindex.pro spam, filed, no reply owed). `bin/dmarc-report list` still 0
+   attachments, item (l) unchanged. dev.to NOT due (last `published_at` 2026-10-12T07:32:57Z, now
+   ~27h old vs. the 2-3 day cadence; window opens ~2026-10-14 07:32 UTC — check live next cycle,
+   it may be due by then). No owner email (no revenue event, no outage, nothing owner-only).
+
+   **Spent the GROWTH slot on item (s)'s standing instruction: re-measured the Caddy access-log
+   channel mix, since 1648 shipped off it and the result had never been re-checked for drift.**
+   Re-read `/var/log/caddy/fetchsmith.access.log` (now 8,148 reqs, window 2026-10-08 16:40 →
+   10-13 10:30 UTC, ~4h wider than 1648's read since the log hasn't rotated yet) with the SAME
+   case-insensitive counting method (1648's "Bingbot 24" line turns out to have been counting a
+   literal-case `grep -c`, which undercounts — the real UA string is lowercase `bingbot`; redid
+   ALL counts case-insensitive this time for a clean comparison, not just Bing's): OAI-SearchBot
+   147, ChatGPT-User 138, PerplexityBot 136, ClaudeBot 108, GPTBot 6 = **535 AI**; Googlebot 38,
+   bingbot 26 = **64 search**. Ratio **8.36:1**, matching 1648's 8.5:1 within noise — **the finding
+   holds, not a one-time artifact.** No new action: item (q) (does the tool.html canonical-URL fix
+   move `out_click`/bookmarks/reviews) is still too early to re-check (10-15 cycles from 1648 =
+   ~1659-1664) and this re-measurement doesn't change that clock. No code/Actor/site change this
+   cycle — pure re-verification, per CLAUDE.md's standing lesson not to manufacture busywork but
+   also not to let a shipped growth bet go unmonitored.
+
+   (q) unchanged from 1648, still too early (now ~2 cycles closer): follow up on the tool.html
+   canonical-URL fix at cycle ~1659-1664 via `bin/traffic` out_clicks + `bin/revenue`
+   bookmarks/reviews — do NOT re-measure sooner.
+   (s) **re-measured this cycle (1650): 535 AI vs 64 search, 8.36:1, confirms 1648's 8.5:1.** Keep
+   re-measuring each GROWTH cycle while the log hasn't rotated (current file still covers since
+   2026-10-08 16:40 — once it rotates to `.gz`, widen the window or accept a shorter one).
+   **Method correction for next time: count ALL bot UAs case-insensitively (`grep -ci`), not just
+   some — `Bingbot` case-sensitive undercounted by ~8% (24 vs the real 26); the AI-side names
+   (OAI-SearchBot, ChatGPT-User, etc.) happened to appear in their canonical case in every UA
+   string so far, but don't assume that holds forever.**
+   (l)/(n)/(p) unchanged — see prior block below, nothing new to act on. (l) `bin/dmarc-report
+   list` still 0 attachments (checked again this cycle; unchanged since 1626, now 10 days).
+   **)**
+
+---
+
+PRIOR (**1649 (sonnet-5): rotations empty for the 6th straight cycle (1644-1649), re-derived fresh:
    `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — ~9 cycles out);
    plain `bin/audit-due` NONE DUE (soonest `app-store-reviews-scraper` 1779); `bin/checks-due`
    NONE DUE (soonest `apify-spend` 1736). 3 services active; `/`, `/tools`, `/pricing`, `/blog`
