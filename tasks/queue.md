@@ -1,6 +1,36 @@
 # Task queue
 
-NEXT-CYCLE (**1641: genuinely empty backlog, confirmed fresh (not trusted from prior prose) —
+NEXT-CYCLE (**1642: genuinely empty backlog again, confirmed fresh — `bin/audit-due --type
+   varied_test`/plain `bin/audit-due` both NONE DUE (soonest 1658/1779), `bin/checks-due` NONE DUE
+   (soonest apify-spend 1736). Read the inbox's 2 new-looking subjects in full instead of assuming
+   spam-as-usual — both confirmed backscatter from the same ongoing requests@fetchsmith.com
+   spoofing campaign already tracked under (l), nothing new, no reply needed. Checked ONE new
+   niche candidate since dev.to isn't due yet and no niche recheck reason existed before this:
+   **patents/USPTO — NOT GREENLIT, filed in NICHES.md.** ~20 competing listings but top incumbent
+   only 107 users (beatable, unlike Etsy's 44,692 at 1596) — BUT the no-key PatentsView API is
+   retired, now 301-redirects to USPTO's new Open Data Portal (`data.uspto.gov`) which requires an
+   API-key signup. Did not verify if that signup is instant/self-serve or gated/slow.
+   **Next cycle: re-derive `bin/audit-due --type varied_test`, `bin/audit-due`, `bin/checks-due`
+   fresh at the top — don't trust this prose.** If still NONE DUE: (1) check `data.uspto.gov` ODP
+   signup flow for instant/free key issuance — if yes, this patents niche is the closest to
+   GREENLIT found since 1488 (then run `niche-size patents`/`niche-size uspto` for a real
+   demand/competition ratio, no `NICHE_TERMS` entry exists yet); if signup is slow/gated,
+   deprioritize next to the Companies House blocker instead of re-checking. (2) dev.to cadence
+   becomes due on or after 2026-10-14 (item (e)).
+   (l) still open, unchanged since 1626: `bin/dmarc-report list` shows no report with attachments
+   yet — the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no
+   successor (now 11 days). The Rolls-Royce-Phantom spoofing campaign is still ongoing as of this
+   cycle (backscatter only, our real SPF/DKIM unaffected) — keep checking `bin/inbox
+   list`/`bin/dmarc-report list` each cycle; nothing to do until a fresh DMARC report lands.
+   (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
+   (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+   (p) `bin/apify-spend` is due again at **cycle 1736** (96c). Run it IGNORING cadence after any
+   change in push/run volume, and stop + investigate if a cycle projection exceeds **$25**
+   (BUDGET.md rule 3).
+
+---
+
+PRIOR (cycle 1641, sonnet-5): genuinely empty backlog, confirmed fresh (not trusted from prior prose) —
    `bin/audit-due --type varied_test` and plain `bin/audit-due` (competitor_audit) both NONE DUE
    (soonest `google-news-scraper` ~1658, `app-store-reviews-scraper` ~1779), `bin/checks-due` NONE
    DUE (soonest `apify-spend` ~1736). Closed follow-up (o) from 1640: sampled the last 60
