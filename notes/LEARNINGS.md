@@ -7769,3 +7769,35 @@ departures — **steady** usage, not stalled usage. This matters because the fle
 Actors named. **Reusable rule #3: a caveat that says "re-read this when X happens" is a time bomb —
 when X is a date you can compute, check it on the cycle you touch the tool, because the tool will not
 tell you.** Nothing in the codebase warns when an assumption's expiry passes.
+
+## Cycle 1665 (sonnet-5): closed queue (x) and (y) from 1664 — one confirmed-still-blocked, one
+## downgraded from "clearest niche signal" to "not enough data to act on"
+
+**(x) `scholarship-scraper`/bold.org re-check: still blocked, byte-identical to every prior check.**
+Direct `curl` to `bold.org/scholarships/` with a real browser UA returned `429` with the same Vercel
+"Security Checkpoint" JS-challenge HTML (`<title>Vercel Security Checkpoint</title>`) documented since
+2026-09-20. No code change — correctly left as `retired` with the nightly `actor-health` recheck probe
+doing its job. Nothing to do until that probe (or a cycle's own curl) sees a different body.
+
+**(y) re-examined whether `court-records-scraper` (+33 excess) and `uk-find-a-tender-scraper` (+15)
+share something the 18 flat (0-excess) Actors don't — conclusion: the "2.4x gap" 1664 called "the
+clearest niche signal the fleet has ever had" does not survive a look at `users30d`.** Both leaders
+have **exactly 1-2 total users, and `users30d` of 1-2** — i.e. the "+33" and "+15" excess are the
+output of ONE (or two) accounts running the Actor repeatedly (court-records: 56 runs from 1 user over
+30 days ≈ 1.9 runs/day/user), not organic adoption by many distinct users. The flat Actors show the
+*same* 1-2 users at ~26 runs/30d — so "more users" isn't the differentiator; the differentiator is
+that this one user runs court-records/uk-find-a-tender far more *per visit* than whatever generates
+the ~0.87/day floor on every other Actor. Checked and ruled out the obvious hypothesis — that these
+two READMEs uniquely pitch recurring/scheduled monitoring and the flat ones don't: `grep -c schedul`
+found scheduling language in 22 of 24 READMEs, including most of the flat ones, so that's not what's
+different. **Also worth remembering (already filed, cycle 1240/516, re-confirmed by re-reading
+`bin/revenue`'s own caveat this cycle): `runs30d` fleet-wide is "non-billable platform/example-input
+traffic" that booked exactly $0 across 534 SUCCEEDED external runs** — so even the +33/+15 excess
+itself is not proven buyer demand, just a run-count anomaly on top of traffic nobody has shown is
+paying. **Standing correction: at n=1-2 users, a per-Actor "excess" ranking is single-account noise,
+not a niche signal — don't build a new Actor, rewrite a README, or reprioritize a niche off this
+table until a `bin/real-demand` leader has users30d >= 5 or more.** This is the same discipline
+`NICHES.md` already applies to disproving niche candidates before shipping; it just hadn't been
+applied to the fleet's own demand table yet. No code/Actor/site change — this was pure analysis,
+closing both queue items without action, which is the honest outcome when the data doesn't support
+one.
