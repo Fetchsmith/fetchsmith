@@ -18,6 +18,10 @@ const input = (await Actor.getInput()) ?? {};
 
 const UA = 'FetchSmith remote-jobs-scraper (+https://fetchsmith.com)';
 const ALL_SOURCES = ['remotive', 'remoteok', 'jobicy', 'arbeitnow', 'workingnomads', 'himalayas', 'wwr'];
+// The only two boards whose depth `maxPagesPerSource` can move; the other five return their whole
+// feed in one request, so for them feed reach is a fixed property of the board (see
+// warnIfWindowBelowFeedReach, which only offers the deeper-crawl advice where it can actually help).
+const PAGINATED_SOURCES = ['arbeitnow', 'himalayas'];
 
 // Arbeitnow and Himalayas paginate up to `maxPagesPerSource` (max 20) sequential requests each,
 // on top of up to 6 sources and fetchJson's own 3 retry attempts per call — a slow run can
@@ -947,6 +951,39 @@ function keep(row) {
   return true;
 }
 
+// How far back a board's feed can actually be read varies by three orders of magnitude --
+// measured 2026-10-13 at the default maxPagesPerSource of 2: We Work Remotely reached 152 days,
+// Remote OK 72, Remotive/Working Nomads ~28, Arbeitnow 6, Jobicy 19 HOURS and Himalayas 2 (6 at
+// the maximum legal depth of 20 pages). So a two-sided historical window silently returns rows
+// only from the boards whose feeds reach that far, and a board contributing nothing looks
+// identical to a board that genuinely had no matching postings -- the buyer is never told the
+// difference. This warns when a board's own OLDEST reachable posting is still newer than the
+// requested `postedAfter`, i.e. the window extends below everything that board can serve.
+// Gated on rows.length so a board that failed or returned nothing stays the fetch loop's story.
+// The message is split on whether the board actually contributed: the first draft of this warning
+// (cycle 1632) used the "a zero or thin result is a feed-depth limit" wording unconditionally and
+// fired it on a board that had just returned 19 matching rows — true about the reach, but it reads
+// as an alarm when nothing is wrong. Both halves of the window matter to a buyer, though, so a
+// contributing board still gets told which slice of its window could not be read.
+function warnIfWindowBelowFeedReach(src, rows, keptCount) {
+  if (!postedAfter || !rows.length) return;
+  const dated = rows.map((r) => r.publishedAt).filter(Boolean).sort();
+  if (!dated.length) return;
+  const oldest = new Date(dated[0]);
+  if (!(oldest > postedAfter)) return;
+  const deeper = PAGINATED_SOURCES.includes(src) && maxPagesPerSource < 20
+    ? ` Raising "maxPagesPerSource" (currently ${maxPagesPerSource}, max 20) reads further back on this board.`
+    : '';
+  const consequence = keptCount === 0
+    ? 'so the zero result here is a feed-depth limit, not an empty search'
+    : `the ${keptCount} row(s) matched above are only the reachable part of your window, and `
+      + `postings between ${postedAfter.toISOString().slice(0, 10)} and that timestamp cannot be read on this board`;
+  log.warning(
+    `${src}: feed only reaches back to ${dated[0]} but postedAfter is ` +
+    `${postedAfter.toISOString().slice(0, 10)} — ${consequence}.${deeper}`,
+  );
+}
+
 // ---------------------------------------------------------------- main
 
 const sourcesNotReached = [];
@@ -963,6 +1000,7 @@ try {
       const rows = (await FETCHERS[src]()).map(normalizeSalary);
       const kept = rows.filter(keep);
       log.info(`${src}: fetched ${rows.length}, ${kept.length} match the filters.`);
+      warnIfWindowBelowFeedReach(src, rows, kept.length);
       collected.push(...kept);
     } catch (err) {
       // One dead board must not kill a multi-board run.

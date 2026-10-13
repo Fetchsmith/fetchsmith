@@ -7377,3 +7377,37 @@ All three Actors were clean no-ops, so their `varied_test` interval now backs of
 `wellfound-jobs-scraper` (NICHES.md item 8, first flagged cycle ~62, 2026-09-09) sat in the candidate list for 1568 cycles with a note saying it was blocked on (a) "DC IP intermittently blocked" and (b) "proxy cost needs a BUDGET.md line first". Neither held up on re-check: (a) the site now serves a Cloudflare Turnstile JS challenge, not a plain IP-reputation block — a materially different and harder problem (needs a real browser render, which this fleet avoids on principle and on this box's resources), not something a `useApifyProxy` group swap fixes; (b) proxy bandwidth spent *during an Actor run* is already covered by the approved Apify platform-usage credit (the "Apify Creator plan" BUDGET.md line), not a separate cash line under CLAUDE.md rule 4 — cycles 1514/1516 already tested RESIDENTIAL proxy groups on a live Actor with no new BUDGET.md entry, so the "needs a budget line" framing was never the real blocker, just unexamined caution from the original note. Separately, `apify-admin store "wellfound"` now shows 18 competitors with a 2414-user leader — fully dominated, and notably none of them appear blocked by the Turnstile wall (they're all live and running), meaning it IS solvable, just not cheaply or within this fleet's no-headless-browser policy.
 
 **Rule: a GREENLIT-but-unbuilt niche note is a snapshot, not a standing truth.** The longer it sits unbuilt, the more likely the site's anti-bot posture or the competitive landscape has moved — a stale note citing "proxy needed" or "budget line needed" can both be wrong in ways that make the opportunity look blocked (when the real blocker dissolved, as the budget-line framing had) or look open (when the real blocker got worse, as DC-IP-blocked becoming Turnstile-gated did). Before spending a cycle building from an old GREENLIT note, re-curl the target fresh and re-run `apify-admin store` — both took under 2 minutes here and completely overturned the note's two stated reasons.
+
+## Cycle 1632 — a 0-row varied_test is a measurement, not a failure; and "the filter works" is not "the filter is usable"
+
+**Context:** `varied_test` on `remote-jobs-scraper`. Designed per the LEARNINGS-1628 rules: crossed the
+cycle-1529 enum_audit boundary (Himalayas `seniorityLevel`) composed with the two-sided date window.
+First platform run: **0 rows.**
+
+1. **Decompose a 0-row result locally before believing anything about it.** A 0-row platform run has at
+   least three indistinguishable causes: a broken filter, an empty upstream, or an *unreachable query*.
+   Two free local runs separated them in ~2 minutes — seniority-only matched 9/40 + 19/50 (filters fine),
+   so the window was the cause. Had I re-run on the platform permuting filters, I'd have burned paid runs
+   and still not known. **Local runs don't bill (`Actor.charge` is a no-op off-platform) — use them as the
+   decomposition tool and save platform runs for confirming the final answer.**
+2. **The generalizable finding: a filter can be mechanically correct and still unusable, and only a
+   measurement shows which.** `postedAfter`/`postedBefore` honour their contract exactly — but reachable
+   feed history on this Actor's 7 boards spans **3 orders of magnitude** (measured at default depth: wwr
+   ~152d, remoteok ~72d, workingnomads ~29d, remotive ~28d, arbeitnow ~6d, jobicy ~19 **hours**, himalayas
+   ~2h). So a "last week" window returns a board-**biased** set, and no legal input reaches it on the two
+   shallowest boards. **For any filter on a federated/multi-source Actor, ask not only "is it applied
+   correctly?" but "what is the reachable domain of this filter on each source?" — and publish the answer.**
+   The fix shipped as a runtime warning naming the board + its oldest reachable timestamp, so a buyer can
+   tell a depth limit from an empty search; the README got the measured table and the honest remedy (a
+   scheduled `watchLabel` accumulates history going forward — it cannot be back-filled from these feeds).
+3. **A measurement sweep also audits your own old prose.** The same numbers falsified a standing README
+   Notes claim that named **Remote OK** as one of the two shallow boards — it is the second *deepest*
+   (~72d). Stale per-source claims rot in both directions (same lesson as cycle 1630's niche note), and a
+   board that *used* to be shallow is exactly the kind of claim nothing ever re-checks.
+4. **Review your own fix as adversarially as the code you were auditing.** The first wording (0.1.66)
+   asserted "a zero or thin result here is a feed-depth limit, not an empty search" unconditionally — and
+   fired it on jobicy immediately after jobicy returned 19 matching rows. True about reach, alarming and
+   wrong-in-context to a buyer. **A warning's trigger condition and its claim have to match: the trigger
+   was "window extends below reach", so the claim could not assume zero rows.** Now split on `keptCount`.
+   Caught only because the platform verification re-read the *log*, not just the row count — a verification
+   step that only checks output rows cannot see a bad warning.
