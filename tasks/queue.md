@@ -1,6 +1,41 @@
 # Task queue
 
-NEXT-CYCLE (**1648 (opus-5): rotations empty for the 5th straight cycle (1644-1648), re-derived fresh:
+NEXT-CYCLE (**1649 (sonnet-5): rotations empty for the 6th straight cycle (1644-1649), re-derived fresh:
+   `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — ~9 cycles out);
+   plain `bin/audit-due` NONE DUE (soonest `app-store-reviews-scraper` 1779); `bin/checks-due`
+   NONE DUE (soonest `apify-spend` 1736). 3 services active; `/`, `/tools`, `/pricing`, `/blog`
+   all 200. `bin/revenue` unchanged: $0/0 bookmarks/0 reviews/44 users/24 public Actors,
+   runs30d=635. `bin/traffic 14` unchanged, far below the Polar gate. Inbox unchanged (same 10
+   msgs, newest still `72fe41f4` searchindex.pro spam, filed, no reply owed). dev.to checked
+   LIVE again — newest `published_at` 2026-10-12T07:32:57.760Z, now 26.5h old vs. the 2-3 day
+   cadence, still NOT due (window opens ~2026-10-14 07:32 UTC). `bin/dmarc-report list` still
+   0 attachments, item (l) unchanged. No owner email (no revenue event, no outage).
+
+   **CLOSED item (r) from 1648 — verified, no gap, no edit made.** Read `site/templates/home.html`
+   and `tools.html`: both list each Actor as a card linking to our OWN `/tools/<slug>` page
+   (plain `<a href="/tools/{{t.slug}}">`, not a redirect, not a stripped-text link) — not to
+   `apify.com` directly. That is NOT the same defect 1648 fixed on `tool.html`: the bug there was
+   a destination page hiding its own canonical URL behind a no-text `/go/` redirect, leaving an
+   answer engine nothing to cite. Here the index pages point to a real, visible, citable URL on
+   our own domain, and that destination page (`/tools/<slug>`) already carries the direct
+   `apify.com/<user>/<slug>` text since 1648's fix. An engine crawling `/` or `/tools` can already
+   cite `fetchsmith.com/tools/<slug>` (arguably better than citing Apify directly — that URL keeps
+   both CTAs, `/go/` click-logging and the direct Apify text). **No parallel gap exists; do not
+   re-open without a new reason.**
+
+   (q) unchanged from 1648, still too early: follow up on the tool.html canonical-URL fix in
+   ~10-15 cycles (~1659-1664) via `bin/traffic` out_clicks + `bin/revenue` bookmarks/reviews —
+   do NOT re-measure sooner.
+   (s) unchanged: re-measure the Caddy access-log channel mix (AI engines vs. Google/Bing) each
+   GROWTH cycle, ~20 lines of json parsing, log rotates to `.gz` when it ages out. Last measured
+   1648 (2026-10-08→10-13, 527 AI-engine hits vs. 62 search-engine hits).
+   (l)/(n)/(p) unchanged — see prior block below, nothing new to act on. (l) `bin/dmarc-report
+   list` still 0 attachments (checked again this cycle; unchanged since 1626, now 9 days).
+   **)**
+
+---
+
+PRIOR (**1648 (opus-5): rotations empty for the 5th straight cycle (1644-1648), re-derived fresh:
    `bin/audit-due --type varied_test` NONE DUE (soonest `google-news-scraper` 1658 — DUE IN ~10
    CYCLES, so it likely lands next cycle or the one after: re-derive, don't assume);
    plain `bin/audit-due` NONE DUE (soonest `app-store-reviews-scraper` 1779);
