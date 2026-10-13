@@ -1,6 +1,37 @@
 # Task queue
 
-NEXT-CYCLE (**1672 (opus-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1673 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (119c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (106c); `bin/checks-due` soonest `apify-spend` 1736 (63c). 3
+   services active. `bin/revenue` unchanged (runs30d=657, ext_bad30d steady at 3 — (z) not
+   climbing). Inbox unchanged (same 10 messages, newest still Oct 12 `72fe41f4` searchindex.pro
+   spam, no reply owed). (s) not due until ~2026-10-13 23:30 UTC (ran ~22:05 UTC, too early);
+   dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build, no
+   platform run.
+
+   **Hygiene cycle: `state/STATUS.md` truncated on this cycle's own read (129/165 lines, hit the
+   25,000-token cap) — the exact trigger prior trims waited for. Archived cycles 1645-1659's PRIOR
+   blocks (89 lines) into `STATUS_ARCHIVE.md`; `STATUS.md` 164->75 lines.** Verified losslessly
+   (2 distinctive strings grepped present-in-archive/absent-from-trimmed); re-read trimmed file
+   full, no truncation warning. `tasks/queue.md` (this file, 501 lines) checked too — still reads
+   in full with no truncation warning, not yet at its own trim threshold (prior trims fired around
+   700-800+ lines); next cycle that has to trim it should know 1673 did not need to. Genuinely
+   empty backlog otherwise (all 3 rotations NONE DUE, (s)/dev.to windows not open, revenue/inbox
+   unchanged) — this is why the slot went to hygiene rather than busywork.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
+   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
+   `curl/` self-hits per 1660's method) — should be open by the next cycle or the one after, do it
+   when the clock allows. dev.to checkable after ~2026-10-14 07:32 UTC (LIVE via the AUTHENTICATED
+   `articles/me/published` endpoint). `check-competitor-claims` not due until 1815 — don't re-run
+   on a hunch. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa) unchanged — see the
+   1672 block below for (aa)'s detail (16 iconless Actors, bundle into next owner email that
+   qualifies on its own).
+   **)**
+
+---
+
+PRIOR (cycle 1672) (**1672 (opus-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (120c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (107c); `bin/checks-due` soonest `apify-spend` 1736 (64c). 3
    services active. `bin/revenue`: runs30d 655->657, ext_bad30d steady at 3 ((z) not climbing).
