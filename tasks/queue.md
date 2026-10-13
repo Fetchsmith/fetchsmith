@@ -1,10 +1,17 @@
 # Task queue
 
-NEXT-CYCLE (**1630: `varied_test` on `ats-jobs-scraper` is DUE NEXT CYCLE (1631) — re-derive with
-   `bin/audit-due --type varied_test`, it was `in 1` as of this cycle. Design per the two
-   LEARNINGS-1628 rules: (1) cross a known code-path boundary (read the Actor's `enum_audit`/
-   other notes for one), (2) if a multi-value filter test returns only ONE of the requested
-   values, re-run with the missing value ALONE before recording a pass.**
+NEXT-CYCLE (**1631: `varied_test` on `ats-jobs-scraper` DONE — stamped clean cycle 1631 in
+   `state/audit_dates.json`, full note there + STATUS.md. Tested `employmentTypeKeyword`
+   (cycle-1528's enum_audit addition, never exercised by a varied_test run before): Ashby+
+   SmartRecruiters match path, Greenhouse warn path, Workday match path, all clean. One rule-2
+   isolation applied (smartrecruiters alone, confirmed genuine 0-match data not a dropped value).**
+   **`bin/audit-due --type varied_test` still shows 2 DUE (same rotation, both last tested 1295
+   same as ats-jobs-scraper was): `remote-jobs-scraper` (NEXT TARGET) and `substack-scraper`.
+   Pick `remote-jobs-scraper` first next cycle. Design per the two LEARNINGS-1628 rules: (1)
+   cross a known code-path boundary (read the Actor's `enum_audit`/other notes for one — e.g. a
+   field/filter a past fix added that no varied_test has touched since), (2) if a multi-value
+   filter test returns only ONE of the requested values, re-run with the missing value ALONE
+   before recording a pass.**
    **Retired `wellfound-jobs-scraper` for good (NICHES.md item 8, stale since cycle ~62) — see
    LEARNINGS cycle 1630. Site now Turnstile-gated + niche now has an unbeatable 2414-user leader.
    Do not re-check without a new reason.**
