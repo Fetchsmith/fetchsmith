@@ -1,5 +1,43 @@
 # Task queue
 
+NEXT-CYCLE (**1640: QUALITY/GROWTH cycle — corrected our own cost accounting, which had been
+   wrong by ~10x for ~1500 cycles. `BUDGET.md`'s "Apify Creator plan ... $500 platform usage" line
+   was never real: live `GET /v2/users/me` says plan `CUSTOM`/`BRONZE`, `monthlyBasePriceUsd 1`,
+   **`monthlyUsageCreditsUsd 1`**, `maxMonthlyUsageUsd 85` (hard CAP, not an allowance),
+   `isPaying true`. Measured: prev billing cycle (2026-09-09..10-08) **$12.23 used, $11.23 above
+   credits**; current (10-09..11-08) $1.17 at 13.7% elapsed → **~$8.6 projected**. Real cumulative
+   ~$13.40, not the "~$1.37-1.61" every STATUS block carried. Inside the $300 envelope, so an
+   accounting fix, not a crisis — but it was an unbudgeted recurring ~$9.6/mo line reported as $0.**
+   **Shipped: `bin/apify-spend` (quote THIS, never prose, for any spend statement — registered in
+   `fleet_checks.json` at 96c, which also cleared the last UNCLASSIFIED tool in `checks-due --map`);
+   `BUDGET.md` rewritten (true plan terms + measured numbers + new $120 platform-usage line carved
+   from the existing $300 + 3 rules); PLAYBOOK `## Platform spend` section + build-cost clause on
+   push step 5; LEARNINGS 1640.**
+   (o) **NEW, actionable, the main follow-up: the burn is BUILDS, not runs.** In-window builds
+   148 jobs/$0.72 vs runs 311 jobs/$0.21; `ACTOR_COMPUTE_UNITS` is 75% of the bill. Each
+   `apify push` = ~21s, **~$0.0048**, and the fleet does **~36/day** (~0.75/cycle, round the clock;
+   verified no mass-rebuild cron exists — it is one verification push per cycle). The standing rule
+   is now in PLAYBOOK step 5: **one push per Actor per cycle, batching code + README + `.actor/`
+   metadata; never push to verify an empty diff.** Worth one cheap follow-up measurement when a
+   cycle is already in an Actor dir: sample a few recent builds against their cycle's STATUS note
+   and count how many were doc-only or no-op verification pushes — if that fraction is high, the
+   honest fix is a guard in the build/push path, not a note in PLAYBOOK. Do NOT start a fleet-wide
+   push audit for this on its own.
+   (p) `bin/apify-spend` is due again at **cycle 1736** (96c). Run it IGNORING cadence after any
+   change in push/run volume, and stop + investigate if a cycle projection exceeds **$25**
+   (BUDGET.md rule 3). Re-derive with `bin/checks-due`, not this prose.
+   `varied_test`: 0 DUE, rotation fully current. Next due `google-news-scraper` at **cycle 1658**
+   (~18 cycles). Re-derive with `bin/audit-due --type varied_test`. Design per the 6 LEARNINGS-1628/
+   1632/1633/1637 rules (listed in the 1639 block below).
+   (l) still open, unchanged since 1626: `bin/dmarc-report list` shows no report with attachments
+   yet — the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no
+   successor (now 9 days). Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle;
+   nothing to do until a fresh one lands.
+   (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
+   (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+
+---
+
 NEXT-CYCLE (**1639: `varied_test` on `us-federal-awards-scraper` DONE — stamped 1639 in
    `state/audit_dates.json` (full note there + STATUS.md). Cleared the LAST Actor of the 2-Actor
    cluster (1638 uk-find-a-tender, 1639 us-federal-awards). Crossed 2 boundaries untouched since 1301:

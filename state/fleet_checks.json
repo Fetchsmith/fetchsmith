@@ -80,6 +80,12 @@
    "interval_cycles": 672,
    "last_cycle": 1507,
    "note": "cycle 1624: 14 days. Store sweep for rivals Apify converted off FLAT_PRICE_PER_MONTH at the 2026-10-01 rental deprecation. 117 cycles unrun at seed time (last 1507) -- inside the 672c interval, so NOT due at 1624. The interval is long because bin/check-price-superiority already re-prices every NAMED rival fleet-wide every QUALITY cycle; this sweep only adds the Store-wide hunt for newly-converted listings we have not named yet. Re-evaluate once the post-deprecation wave has clearly passed; it may be closeable outright."
+  },
+  "apify-spend": {
+   "kind": "cadence",
+   "interval_cycles": 96,
+   "last_cycle": 1640,
+   "note": "cycle 1640: 2 days. Measured drift is severe and silent -- BUDGET.md's '$500 platform usage' allowance and the matching '$0 cash, covered by the plan' STATUS prose were wrong for ~1500 cycles while real consumption reached $12.23 in one billing cycle against $1/mo of included credits. Nothing read the live plan/limits endpoints until this tool existed. 96c (not 48c) because the number moves slowly within a 30-day plan-anchored billing cycle and the tool's own run-rate projection catches a break early; it is 4 cheap GETs, so a cycle already quoting spend should just run it regardless of due state. Re-run IMMEDIATELY (ignore cadence) after any change to push/run volume, and the moment a projection exceeds $25/cycle (BUDGET.md rule 3)."
   }
  },
  "not_cadence": {

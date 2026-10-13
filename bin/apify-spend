@@ -1,0 +1,95 @@
+#!/root/agent/venv/bin/python
+"""Real Apify platform spend: included credits vs actual usage, broken down by builds/runs/other.
+
+Added cycle 1640 because BUDGET.md and ~1500 cycles of STATUS.md prose claimed our Apify
+platform usage was covered by a "$500 platform usage" allowance on the Creator plan. The live
+API says otherwise: plan CUSTOM/BRONZE, monthlyBasePriceUsd 1, **monthlyUsageCreditsUsd 1**,
+maxMonthlyUsageUsd 85 (a hard cap, NOT an allowance). Measured spend in the first billing cycle
+(2026-09-09..2026-10-08) was $12.23 -- ~$11.2 above the included credit. So "this run cost $0,
+it's covered by the plan" was wrong by ~10x on the cumulative total.
+
+Quote THIS tool whenever a cycle states platform spend. Do not state a credit/allowance figure
+from BUDGET.md or STATUS prose.
+
+Usage:
+  bin/apify-spend            # current billing cycle: credits, usage, builds-vs-runs split
+  bin/apify-spend --prev     # also print the previous billing cycle's total (one extra GET)
+  bin/apify-spend --json     # machine-readable
+
+Caveats (read before quoting):
+- Apify exposes no invoice endpoint (/users/me/invoices and /billing-info are both 404), so this
+  measures *chargeable usage*, not a confirmed card charge. Overage above the included credit is
+  chargeable at the plan's listed unit prices; treat the number as "what we consumed", which is
+  the figure CLAUDE.md rule 4 cares about.
+- `usageTotalUsd` on a build/run is the platform's own costing of that job. Summing jobs will
+  slightly undercount the cycle total (storage/data-transfer accrue outside jobs, and the
+  builds/runs list endpoints are capped at `limit`), so the authoritative total is
+  /users/me/limits `current.monthlyUsageUsd`, which this tool prints first.
+- Usage cycles are plan-anchored (9th of the month here), NOT calendar months.
+"""
+import json, sys, time, httpx
+
+env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
+H = {"Authorization": f"Bearer {env['APIFY_TOKEN']}"}; API = "https://api.apify.com/v2"
+as_json = "--json" in sys.argv
+
+def get(path):
+    r = httpx.get(f"{API}/{path}", headers=H, timeout=30.0)
+    r.raise_for_status()
+    return r.json()["data"]
+
+me = get("users/me"); plan = me["plan"]
+lim = get("users/me/limits")
+cyc = lim["monthlyUsageCycle"]; cur = lim["current"]
+usage = get("users/me/usage/monthly")
+
+credits = plan.get("monthlyUsageCreditsUsd", 0)
+spent = cur["monthlyUsageUsd"]
+over = max(0.0, spent - credits)
+# Fraction of the cycle elapsed, for a run-rate projection.
+to_ts = lambda s: time.mktime(time.strptime(s[:19], "%Y-%m-%dT%H:%M:%S"))
+t0, t1 = to_ts(cyc["startAt"]), to_ts(cyc["endAt"]); now = time.time()
+frac = min(1.0, max(1e-6, (now - t0) / (t1 - t0)))
+
+# Job-level split. Builds have been the dominant line item (cycle 1640: ~85% of spend), which is
+# invisible in run-based accounting -- every `apify push` is a billable platform build.
+jobs = {}
+for kind, path in (("builds", "actor-builds"), ("runs", "actor-runs")):
+    items = get(f"{path}?limit=500&desc=1")["items"]
+    inwin = [j for j in items if j["startedAt"] >= cyc["startAt"]]
+    jobs[kind] = {"n": len(inwin), "usd": round(sum(j.get("usageTotalUsd") or 0 for j in inwin), 4),
+                  "truncated": len(items) == 500 and len(inwin) == len(items)}
+
+svc = {k: round(v.get("amountAfterVolumeDiscountUsd", 0), 4)
+       for k, v in (usage.get("monthlyServiceUsage") or {}).items() if v.get("quantity")}
+
+out = {"cycle": {"start": cyc["startAt"][:10], "end": cyc["endAt"][:10], "elapsed_pct": round(frac * 100, 1)},
+       "plan": {"id": plan.get("id"), "tier": plan.get("tier"), "base_usd_month": plan.get("monthlyBasePriceUsd"),
+                "included_credits_usd": credits, "hard_cap_usd": plan.get("maxMonthlyUsageUsd")},
+       "spent_usd": round(spent, 4), "over_credits_usd": round(over, 4),
+       "projected_cycle_usd": round(spent / frac, 2), "jobs": jobs,
+       "services_usd": dict(sorted(svc.items(), key=lambda kv: -kv[1]))}
+
+if "--prev" in sys.argv:
+    prev_date = time.strftime("%Y-%m-%d", time.localtime(t0 - 86400))
+    p = get(f"users/me/usage/monthly?date={prev_date}")
+    out["prev_cycle"] = {"start": p["usageCycle"]["startAt"][:10], "end": p["usageCycle"]["endAt"][:10],
+                         "spent_usd": round(p["totalUsageCreditsUsdAfterVolumeDiscount"], 4),
+                         "over_credits_usd": round(max(0.0, p["totalUsageCreditsUsdAfterVolumeDiscount"] - credits), 4)}
+
+if as_json:
+    print(json.dumps(out, indent=1)); sys.exit(0)
+
+c = out["cycle"]; pl = out["plan"]
+print(f"billing cycle {c['start']} .. {c['end']}  ({c['elapsed_pct']}% elapsed)")
+print(f"plan {pl['id']}/{pl['tier']}: ${pl['base_usd_month']}/mo base, ${pl['included_credits_usd']}/mo included credits, "
+      f"${pl['hard_cap_usd']} hard cap")
+print(f"USED ${out['spent_usd']}  ->  ${out['over_credits_usd']} ABOVE included credits"
+      f"   (cycle projection ${out['projected_cycle_usd']})")
+for k in ("builds", "runs"):
+    j = jobs[k]
+    print(f"  {k:7s} {j['n']:5d} jobs  ${j['usd']:<9}" + ("  (LIST TRUNCATED, undercount)" if j["truncated"] else ""))
+print("  by service: " + ", ".join(f"{k}=${v}" for k, v in list(out["services_usd"].items())[:6]))
+if "prev_cycle" in out:
+    p = out["prev_cycle"]
+    print(f"prev cycle {p['start']} .. {p['end']}: used ${p['spent_usd']} (${p['over_credits_usd']} above credits)")
