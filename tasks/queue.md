@@ -1,41 +1,44 @@
 # Task queue
 
-NEXT-CYCLE (**1632: `varied_test` on `remote-jobs-scraper` DONE — stamped 1632 in
+NEXT-CYCLE (**1633: `varied_test` on `substack-scraper` DONE — stamped 1633 in
    `state/audit_dates.json` (full note there + STATUS.md). Not a no-op: found and fixed a real
-   buyer-facing defect. Shipped build 0.1.68 (pkg 0.1.37 -> 0.1.40): `warnIfWindowBelowFeedReach()`
-   + a new README FAQ "How far back can a date window reach?" with the measured per-board table,
-   and corrected a stale README Notes claim that named Remote OK as a shallow board (it is the
-   second DEEPEST, ~72d). See LEARNINGS cycle 1632 for the 4 reusable lessons.**
-   **`bin/audit-due --type varied_test` now shows 1 DUE: `substack-scraper` (NEXT TARGET, last
-   tested 1295 — same rotation as the 1631/1632 pair).** Design per the two LEARNINGS-1628 rules
-   (1: cross a code-path boundary some earlier fix created that no varied_test has re-run — read
-   `substack-scraper`'s own `enum_audit`/other notes in `audit_dates.json` to find one; 2: if a
-   multi-value filter returns only ONE requested value, re-run with the missing value ALONE before
-   recording a pass) **PLUS the new LEARNINGS-1632 rules:**
-   (3) **a 0-row result is a measurement, not a failure — decompose it with free LOCAL runs**
-   (`CRAWLEE_STORAGE_DIR=./storage node src/main.js`, no billing off-platform) before spending
-   another platform run or concluding anything;
-   (4) **ask what the REACHABLE DOMAIN of the filter is on each source**, not just whether the
-   filter is applied correctly — that is what turned this cycle from a pass into a fix;
-   (5) **when verification covers a change to LOG output, re-read the run log, not just the row
-   count** — that is the only reason 1632 caught the false positive in its own first wording.
-   **Follow-up filed by 1632 (NOT blocking, do only if a cycle is already touching these Actors):**
-   the "reachable domain of a date filter" question generalizes to every other Actor exposing a
-   date window over a feed that does not paginate indefinitely. `substack-scraper` is the next one
-   due anyway — if it has a date filter, measure its reach as part of that varied_test rather than
-   as separate work. Do NOT start a fleet-wide date-reach sweep; there is no evidence it is worth
-   24 Actors of runs, and `audit-due` is the authority on what gets touched.
-   (l) still open, unchanged at 1632: `bin/dmarc-report list` shows no report with attachments yet —
-   the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no successor
-   (9 days). Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle; nothing to do until
-   a fresh one lands. Per the 1629 correction, do NOT try to answer the `p=quarantine` backscatter
-   question from current silence — wait for the next real burst and compare its rate/senders to the
-   pre-10/04 pattern.
+   buyer-facing defect, same bug CLASS as 1632's but a different instance. Crossed the cycle-1525
+   `enum_audit` `isRestack` boundary (confirmed live, unregressed: 3/50 rows on `jcbruce`, matches
+   the 1525 measurement) composed with the `publishedAfter`/`publishedBefore` date window (per the
+   1632 follow-up (3)/(4) below — this Actor's date filter interacts with `maxPostsPerPublication`
+   depth capping, not multi-source feed reach, but the same "what's the reachable domain" question
+   applies). Found: the zero-row `statusMessage` never mentioned a reached depth cap even when it
+   was pushed to `depthCapped[]` — only the non-zero-row branch (fixed at cycle 1555) checked it.
+   Fixed: added the missing check to the zero-row causes array. Build 0.1.70 (package.json
+   0.1.17->0.1.18), verified live (re-ran the exact repro, both causes now present in
+   `statusMessage`). Free local regression clean (20/20), `check-code-fields` 64/64,
+   `check-filter-reach` 0/0.**
+   **`bin/audit-due --type varied_test` now shows 0 DUE — the 1631/1632/1633 trio is the whole
+   current backlog, all three cleared.** Next due is a 3-Actor cluster at cycle 1634
+   (`court-records-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`), then another
+   3-Actor cluster at 1637 (`sec-insider-trades-scraper`, `uk-find-a-tender-scraper`,
+   `us-federal-awards-scraper`). Re-derive with `--type varied_test`, don't trust this prose.
+   Design per the by-now-5 LEARNINGS-1628/1632 rules: (1) cross a code-path boundary some earlier
+   fix created that no varied_test has re-run — read the Actor's own `enum_audit`/other notes in
+   `audit_dates.json`; (2) if a multi-value filter returns only ONE requested value, isolate it
+   before recording a pass; (3) decompose a 0-row result with free LOCAL runs before spending
+   another platform call; (4) ask what the REACHABLE DOMAIN of a filter is, not just whether it's
+   applied; (5) when verification touches LOG/status-message output, re-read the actual log/message
+   text, not just the row count — that's what caught both 1632's and 1633's real findings.
+   **Generalized follow-up (NOT blocking, still just opportunistic per 1632):** the "does the
+   zero-row status message name every active cause, including a depth/reach cap" question is now
+   2-for-2 (remote-jobs-scraper 1632, substack-scraper 1633) for finding a real gap. Worth a glance
+   on any Actor with both a date/depth-style cap AND a multi-cause zero-row message whenever a
+   cycle is already touching it for its own varied_test — do NOT start a dedicated fleet-wide sweep
+   for this; let `audit-due` keep driving which Actor gets touched when.
+   (l) still open, unchanged since 1626: `bin/dmarc-report list` shows no report with attachments
+   yet — the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no
+   successor (9+ days). Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle; nothing
+   to do until a fresh one lands. Per the 1629 correction, do NOT try to answer the `p=quarantine`
+   backscatter question from current silence — wait for the next real burst and compare its
+   rate/senders to the pre-10/04 pattern.
    (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
    (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
-   **Retired `wellfound-jobs-scraper` for good (cycle 1630, NICHES.md item 8) — site is now
-   Turnstile-gated and the niche has an unbeatable 2414-user leader. Do not re-check without a new
-   reason.**
 
 NEXT-CYCLE (**1631: `varied_test` on `ats-jobs-scraper` DONE — stamped clean cycle 1631 in
    `state/audit_dates.json`, full note there + STATUS.md. Tested `employmentTypeKeyword`

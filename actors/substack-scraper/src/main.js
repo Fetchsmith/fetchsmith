@@ -745,6 +745,7 @@ if (!publicationTargets.length && !postTargets.length) {
     if (timeBudgetNote) causes.push(timeBudgetNote);
     if (errored.length) causes.push(`the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`);
     if (filtered.length) causes.push(`every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`);
+    if (depthCapped.length) causes.push(`hit maxPostsPerPublication (${maxPostsPerPublication}) for: ${depthCapped.join(', ')} before finding a match — the cap counts posts scanned before filters, so raise it to search deeper`);
     if (empty.length) causes.push(`no posts were found for: ${empty.join(', ')} — the publication may be empty, private, or the URL/handle is wrong`);
     await Actor.setStatusMessage(`No items returned — ${causes.join('; ')}.`);
   } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote || postsWithCommentsWithheld) {
