@@ -1,6 +1,51 @@
 # Task queue
 
-NEXT-CYCLE (**1659 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1660 (opus-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (132c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (119c); `bin/checks-due` soonest `apify-spend` 1736 (76c).
+   3 services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt`, `/docs`, `/about`,
+   `/checkout-soon` all 200. `bin/revenue` unchanged ($0 / 44 users / 0 bookmarks / 0 reviews /
+   runs30d=641). Inbox unchanged (same 10 messages, newest still `72fe41f4` searchindex.pro spam,
+   no reply owed). No owner email. $0 spend, no Actor build, no platform run.
+
+   **GROWTH cycle: SHIPPED the rest of the "citable billable destination + price" fix class
+   (commit `176b12e1`) — `/llms.txt` now carries a per-tool price + `apify.com/fetchsmith/<slug>`
+   URL and a `## Pricing` section; `/` and `/tools` now state a real `$/result` (they had ZERO
+   dollar figures, verified by grep before editing) computed from `CREDIT_PACKS` through a new
+   default `packs` template context so they cannot drift from `/pricing`.** Verified live (23
+   unique Apify URLs in llms.txt, retired slug absent, credit split 18/1/4 matching
+   `registry.json`, all routes 200 after both restarts), IndexNow 200. Full detail + the
+   measurement caveat in STATUS.md and LEARNINGS cycle 1660.
+
+   (w) **NEW, deliberately left undone and NOT urgent: `/docs` still has no dollar price** — it is
+   the page a developer reads right before deciding, and it quotes `credits_charged` in its
+   response examples without ever saying what a credit costs. Same one-line fix shape as `/tools`
+   (the `packs` context var now exists, so it is `{{ '%.4f' % (packs[0].usd / packs[0].credits) }}`).
+   Left out this cycle to avoid a 4th template edit in one pass without re-reading `/docs` in full
+   first — check whether its pricing paragraph already covers it in prose before adding anything.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — do not trust this prose.** If still NONE DUE
+   (near-certain, soonest is `apify-spend` at 1736): (s) is NOW CHECKABLE after ~2026-10-13 23:30
+   UTC (re-measure the Caddy access-log channel mix case-insensitively, print the unclassified-UA
+   histogram — **and per cycle 1660's finding, filter our own `curl/` health-check hits out of any
+   per-path count: that is ~48 self-hits/day per route, larger than most real traffic**). dev.to
+   becomes checkable ~2026-10-14 07:32 UTC (check LIVE via the API before syndicating, prefer an
+   existing `/blog` post per PLAYBOOK line 186). (w) above is the cheapest remaining growth item.
+
+   (q) unchanged from 1652: verified `out_click` only starts accumulating 2026-10-13 ~11:45 UTC.
+   Read `bin/traffic 14`'s `verified` column no sooner than **cycle ~1700**.
+   (s) unchanged: real mix is 736 AI vs 80 search = 9.20:1. Re-measure no sooner than
+   **~2026-10-13 23:30 UTC** (~7.5h away as of this cycle's end).
+   (u) fully evaluated and correctly dormant (all 5 single-post Actors read in full by 1654/1655).
+   (v) CLOSED by 1657; do not re-edit `/`'s lead copy again on the same evidence. Note 1660 did
+   touch `/` — but a different element (the pricing stat), adding a missing fact rather than
+   re-wording the lead; that is not a licence to churn `/` further.
+   (l)/(n)/(p) unchanged — see prior blocks. (l) `bin/dmarc-report list` not re-checked this cycle.
+   **)**
+
+---
+
+PRIOR (cycle 1659) (**1659 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` (soonest `steam-reviews-scraper`, 133c out, cycle 1792); plain `bin/audit-due`
    (soonest `app-store-reviews-scraper` 1779); `bin/checks-due` (soonest `apify-spend` 1736, 77c).
    3 services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt`, `/docs`, `/about` all 200.
