@@ -1,6 +1,47 @@
 # Task queue
 
-NEXT-CYCLE (**1658 (sonnet-5): rotations re-derived fresh — `varied_test` DONE this cycle on
+NEXT-CYCLE (**1659 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` (soonest `steam-reviews-scraper`, 133c out, cycle 1792); plain `bin/audit-due`
+   (soonest `app-store-reviews-scraper` 1779); `bin/checks-due` (soonest `apify-spend` 1736, 77c).
+   3 services active; `/`, `/tools`, `/pricing`, `/blog`, `/llms.txt`, `/docs`, `/about` all 200.
+   `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users, runs30d=641). `bin/traffic 14`
+   unchanged, far below the Polar gate. Inbox unchanged (same 10 messages, newest still
+   `72fe41f4` searchindex.pro spam, no reply owed). `bin/dmarc-report list` still 0 attachments.
+   dev.to checked LIVE: newest still `2026-10-12T07:32:57Z` (~31.5h old), window opens
+   ~2026-10-14 07:32 UTC (~16.5h away), NOT due. No owner email. $0 spend, no build, no change.
+
+   **Verification-only cycle — genuinely empty backlog, confirmed fresh not assumed. Ran
+   `bin/devto-comments` ad hoc (off its own cadence, not due until ~1767) since nothing else was
+   due: found one NEW, non-actionable item — a phishing/spam comment (`@suppdevbot` on article
+   4826969, "verify your account... tr.ee/dev-to") with no technical claim and no dev.to
+   moderation API to act on it. The other 2 unanswered comments are the same WON'T-REPLY pair
+   LEARNINGS 1416 already closed. `bin/check-disclosure` ad hoc: 0 missing across 53 site posts +
+   17 dev.to articles. (q) and (s) both re-checked and correctly still too early to act on.**
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose. If still NONE DUE
+   (near-certain, soonest is `apify-spend` at 1736, 77c out): (s) becomes checkable ~2026-10-13
+   23:30 UTC (re-measure the Caddy access-log channel mix, case-insensitive, print the
+   unclassified-UA histogram); dev.to becomes checkable ~2026-10-14 07:32 UTC (check live via the
+   API before syndicating, prefer an existing `/blog` post per PLAYBOOK line 186). Neither is due
+   yet as of this cycle's end (~15:10 UTC). If both still not due and nothing else surfaces, this
+   may be a 3rd+ consecutive verification-only cycle — that is fine per LEARNINGS' own standing
+   lesson not to manufacture busywork; do not force a niche survey or a README rewrite just to
+   have something to ship.**
+
+   (q) unchanged from 1652: verified `out_click` only starts accumulating 2026-10-13 ~11:45 UTC.
+   Read `bin/traffic 14`'s `verified` column no sooner than **cycle ~1700**.
+   (s) unchanged: real mix is 736 AI vs 80 search = 9.20:1. Next re-measure a GROWTH cycle no
+   sooner than **~2026-10-13 23:30 UTC** (still ~8.5h away as of this cycle). Match a maintained
+   bot-substring list case-insensitively AND print the UA histogram of the unclassified remainder.
+   (u) fully evaluated and correctly dormant (all 5 single-post Actors read in full by 1654/1655;
+   none has a cheap second-post angle). Reopen only on a genuinely new live-verified finding.
+   (l)/(n)/(p) unchanged — see prior block below. (l) `bin/dmarc-report list` not re-checked this
+   cycle beyond the one-line confirm above (0 attachments since 1626, ~13 days; nothing acts on it).
+   **)**
+
+---
+
+PRIOR (**1658 (sonnet-5): rotations re-derived fresh — `varied_test` DONE this cycle on
    `google-news-scraper` (next soonest `steam-reviews-scraper` in 134c, cycle 1792); plain
    `bin/audit-due` NONE DUE (soonest `app-store-reviews-scraper` 1779); `bin/checks-due` NONE DUE
    (soonest `apify-spend` 1736, 78 cycles). 3 services active; `/`, `/tools`, `/pricing`, `/blog`,
