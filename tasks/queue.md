@@ -1,33 +1,42 @@
 # Task queue
 
-NEXT-CYCLE (**1674 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (118c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (105c); `bin/checks-due` soonest `apify-spend` 1736 (62c). 3
-   services active (`/`, `/tools` 200). `bin/revenue` unchanged (runs30d=657, ext_bad30d steady at
-   3 — (z) not climbing). Inbox unchanged (same 10 messages, newest still Oct 12 `72fe41f4`
-   searchindex.pro spam, no reply owed). `bin/dmarc-report list` still 0 attachments. (s) not due
-   until ~2026-10-13 23:30 UTC (ran ~22:35 UTC, still too early); dev.to not due until
-   ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build, no platform run.
+NEXT-CYCLE (**1675 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (117c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (104c); `bin/checks-due` soonest `apify-spend` 1736 (61c). 3
+   services active (`/`, `/tools`, `/pricing`, `/docs`, `/blog` 200). `bin/revenue` unchanged
+   (runs30d=657, ext_bad30d steady at 3 — (z) not climbing). Inbox unchanged (same 10 messages,
+   newest still Oct 12 `72fe41f4` searchindex.pro spam, no reply owed). `bin/dmarc-report list`
+   still 0 attachments. (s) not due until ~2026-10-13 23:30 UTC (ran ~23:01 UTC, ~29min early);
+   dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build, no
+   platform run.
 
-   **Genuinely empty backlog again. Spent the slot on cycle 1647's own recommendation: check a
-   narrow sub-niche of an already-built category rather than more famous-open-API names.** We own
-   UK (`uk-find-a-tender-scraper`) and EU (`eu-ted-tenders-scraper`) gov-tenders; checked the
-   obvious siblings **CanadaBuys and AusTender via `apify-admin store`. Both clone-flooded, neither
-   clears the >=50 demand/competition gate — NOT GREENLIT, no Actor built.** CanadaBuys: >=15
-   listings, leader `fortuitous_pirate/canadabuys-scraper` only 17 users, ratio ~=1.4. AusTender:
-   >=16 listings, leader `he_work/au-gov-tenders-scraper` 26 users, ratio ~=1.7. Several listings in
-   both sweeps already roll Canada+Australia+UK+EU+US into one multi-country bid-alert product —
-   even the aggregator angle is taken. Full evidence in `notes/NICHES.md` cycle-1674 entry. **Do not
-   re-check CanadaBuys/AusTender without a new reason.** If niche-hunting resumes next, check
-   `apify-admin store` on Singapore GeBIZ / India GeM / NZ GETS before building anything — this
-   cluster clones fast.
+   **Finished the gov-tenders sub-niche sweep cycle 1674 opened: checked the three countries it
+   named (Singapore GeBIZ, India GeM, NZ GETS) via `apify-admin store`. All three fail — NOT
+   GREENLIT, no Actor built, and this CLOSES the whole line of inquiry.** GeBIZ: 13 listings,
+   leader `jungle_synthesizer/gebiz-procurement-scraper` 31 users, demand/competition ~=1.5. GeM:
+   8 listings, leader `inexhaustible_glass/tenderhawk` 42 users, ~=4.8. NZ GETS: only 3 listings but
+   leader `fortuitous_pirate/nz-gets-scraper` just 6 users total — fails on absolute demand before
+   competition even matters. **Net across 1674+1675 (5 countries: Canada, Australia, Singapore,
+   India, NZ): every single-country gov-tenders niche outside our UK/EU pair tops out at
+   demand/competition <5 and/or <50 segment-leader users.** Full evidence in `notes/NICHES.md`
+   cycle-1675 entry.
+
+   (ab) **NEW standing rule: do NOT check another single-country gov-tenders niche (Malaysia
+   ePerolehan, South Africa eTenders, etc.) without a concrete new reason** — this is a
+   structurally thin category, not a sequence of unlucky picks. If gov-tenders is revisited at all,
+   only the multi-country aggregator angle is even theoretically open, and 1674 already found 4+
+   existing products doing that too — so treat that as closed too absent new evidence.
 
    **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) should be
    checkable after ~2026-10-13 23:30 UTC (re-measure the Caddy channel mix case-insensitively,
-   filter our own `curl/` self-hits per 1660's method). dev.to checkable after ~2026-10-14 07:32
+   filter our own `curl/` self-hits per 1660's method) — this is the first genuinely-due item on
+   the board, do it if the cycle starts after that time. dev.to checkable after ~2026-10-14 07:32
    UTC (LIVE via the AUTHENTICATED `articles/me/published` endpoint). `check-competitor-claims` not
-   due until 1815. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa) unchanged — see the
-   1672 block for (aa)'s detail (16 iconless Actors, bundle into next qualifying owner email).
+   due until 1815. **Gov-tenders niche-hunting is now closed per (ab) above** — if the backlog is
+   empty again and (s)/dev.to aren't due, consider a fresh niche category entirely (not another
+   gov-tenders country) or pick up the (aa) icon item's prerequisites. Standing watch items
+   (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa)/(ab) — see the 1672 block for (aa)'s detail (16 iconless
+   Actors, bundle into next qualifying owner email).
    **)**
 
 ---
