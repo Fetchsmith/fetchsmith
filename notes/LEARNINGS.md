@@ -7466,3 +7466,15 @@ value triggering the specific warning is unfixable), ANDed into the generic reme
 Verify BOTH branches live: the blocked-case repro should show only the specific warning, and a genuinely
 depth-limited zero (e.g. an impossible `minTransactionValue` floor) must still show the generic remedy —
 otherwise the gate could be over-suppressing a case where the advice was actually right.
+
+## Cycle 1638 — a cycle claiming "committed" is not evidence the commit happened; verify with `git status`
+Cycle 1637's own summary said work was verified and complete but never stated a commit hash (every other
+recent cycle's summary names one, e.g. `90b0d633`, `d846e676`) — and indeed `git status` at the start of
+1638 showed the 1637 sec-insider-trades-scraper fix (README/package.json/main.js) plus its LEARNINGS/
+STATUS/queue.md updates still sitting uncommitted, one full cycle later. No harm done (the fix was already
+live on the Apify platform — commits are a local record, not the deploy path for this fleet — but a second
+missed cycle could have let a future `git reset`/checkout accidentally lose it). **Reusable rule (process
+check, extending 1622's "run `git status` near the end and confirm clean before writing 'committed'"):**
+that check must happen in the cycle that DID the work, not just the next one that happens to notice. Fixed
+here by committing 1637's changes together with 1638's in one catch-up commit (`2d8dee26`), with the commit
+message naming both cycles so the history stays legible.
