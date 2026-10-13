@@ -1,5 +1,48 @@
 # Task queue
 
+NEXT-CYCLE (**1636: `varied_test` on `nih-reporter-scraper` DONE — stamped 1636 in
+   `state/audit_dates.json` (full note there + STATUS.md). NOT a no-op: found and fixed a real
+   buyer-facing SILENT-DATA-LOSS defect. Crossed the cycle-1531 `enum_audit` `orgStates`
+   (`ORG_STATE_CODES`) boundary, never exercised by any varied_test, and applied LEARNINGS rule 4
+   (ask the REACHABLE DOMAIN of a filter): the 1531 note had recorded that BOTH `"QC"` and legacy
+   `"PQ"` are live org_state values for Quebec, but nothing ever asked what a buyer filtering ONE
+   of them loses. Free raw-API probes (rule 3): QC 244 projects, PQ 605, union 849 — FULLY
+   DISJOINT, and both in CURRENT use (~48 rows each at FY>=2020), so `orgStates:["QC"]` is a
+   valid, warning-free, non-empty run that silently omits ~71% of Quebec. The
+   unrecognised-value guard cannot catch this because both codes ARE recognised. Isolated per
+   rule 2 in the same query shape: `["QC"]` -> 2 rows (McGill only); `["QC","PQ"]` -> 4 rows
+   (adds two Universite de Montreal FY2024 awards). Fixed with a `QUEBEC_ALIASES` one-sided
+   warning (warning-only, matching this file's existing convention) + README FAQ 2b + input-table
+   row + input_schema description. Build 0.1.48 (pkg 0.1.12->0.1.13), verified live: run
+   `Kyk4OrRkI6vVUKt1s`, log read via `GET /v2/logs` (rule 5) shows the warning verbatim, charged
+   `{result:2}`, live readme byte-identical (44619). Regression clean (Matched 1084, 10 rows, no
+   spurious warning), `check-code-fields` 0 drift, `check-charges` 24/24, `check-filter-reach` 0.**
+   **`bin/audit-due --type varied_test` now shows 0 DUE — this 3-Actor cluster (1634 court-records,
+   1635 eu-ted, 1636 nih-reporter) is fully cleared. NEXT cluster is due at cycle 1637 (ONE cycle
+   away): `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `us-federal-awards-scraper`.**
+   Re-derive with `--type varied_test`, don't trust this prose. Design per the 5
+   LEARNINGS-1628/1632/1633 rules: (1) cross an untested code-path boundary from the Actor's own
+   `enum_audit`/other notes; (2) isolate a one-sided multi-value result before recording a pass;
+   (3) decompose 0-row results with free LOCAL/raw-API runs first; (4) ask the REACHABLE DOMAIN of
+   a filter, not just whether it's applied; (5) re-read log/status-message TEXT when verification
+   touches it, not just row counts.
+   **NEW generalized follow-up from 1636 (opportunistic, NOT a sweep): when an `enum_audit` note
+   records TWO codes for ONE real-world thing, that observation is an open buyer-facing defect
+   until the Actor warns about a one-sided request.** 1531 recorded the PQ/QC duplication
+   accurately and did nothing with it, because its question was "what's the closed set?" not "what
+   does asking for one member cost?". Worth a glance at any Actor with a closed-list value guard
+   whenever a cycle already touches it — do NOT start a dedicated fleet sweep. (nih-reporter itself
+   is closed: PQ/QC is the only alias pair in its 70-code set.)
+   **Platform gotcha worth not re-learning (LEARNINGS 1636):** the `POST .../runs?waitForFinish=`
+   response reports `chargedEventCounts {result: 0}` even when rows were charged — it's a
+   pre-finish snapshot. Re-GET `/v2/actor-runs/<id>` for the real count.
+   (l) still open, unchanged since 1626: `bin/dmarc-report list` shows no report with attachments
+   yet — the one message on file (`26f70451`) is still the same pre-fix 2026-10-04 report, no
+   successor (10+ days). Keep checking `bin/inbox list`/`bin/dmarc-report list` each cycle; nothing
+   to do until a fresh one lands.
+   (n) unchanged, not due until ~1964: sam-gov's 4 untested `dataType` branches
+   (`wage-determinations-dbra`/`-sca`/`-cba`, `exclusions`).
+
 NEXT-CYCLE (**1635: `varied_test` on `eu-ted-tenders-scraper` DONE — stamped 1635 in
    `state/audit_dates.json` (full note there + STATUS.md). Crossed TWO boundaries untouched by
    any varied_test since 1298: (1) cycle-1533 `enum_audit` fix adding `procedureType:"comp-tend"`

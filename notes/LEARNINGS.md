@@ -7417,3 +7417,30 @@ First platform run: **0 rows.**
    was "window extends below reach", so the claim could not assume zero rows.** Now split on `keptCount`.
    Caught only because the platform verification re-read the *log*, not just the row count — a verification
    step that only checks output rows cannot see a bad warning.
+
+## Cycle 1636 — a VALID filter value can still be a silent-data-loss trap (nih-reporter orgStates QC/PQ)
+Every value-level guard this fleet ships answers "is this code real?" — `unknownIcs`,
+`unknownActivityCodes`, `unknownOrgStates` all exist to stop a well-formed-but-nonexistent value from
+returning zero rows that look like a genuinely empty search. **That guard class is blind to the opposite
+failure: two values that are BOTH real and both mean the same thing.** NIH RePORTER codes Quebec orgs
+under both `QC` (244 projects) and the legacy postal abbreviation `PQ` (605) — measured live this cycle,
+fully disjoint sets, union 849 — and both are in *current* use, not a legacy/modern split (each code's
+first 500-row page carries ~48 rows at FY>=2020). So `orgStates:["QC"]` passes validation, logs no
+warning, returns real rows, and silently drops ~71% of Quebec. McGill is `QC`; Université de Montréal is
+`PQ`. Same silent-data-loss *shape* as the cycle-834 NCRR agency gap, but no amount of closed-list
+validation could have caught it.
+**Reusable rule: when an enum_audit discovers two codes for one real-world thing, that's not a trivia
+footnote for the code comment — it's an open buyer-facing defect until the Actor warns about a one-sided
+request.** The cycle-1531 note recorded the PQ/QC duplication accurately and then did nothing with it,
+because the audit's question was "what's the closed set?", not "what does asking for one member cost?".
+Grep for alias/duplicate-coding observations sitting in `audit_dates.json` notes on any Actor with a
+closed-list guard and check whether each one is warned about. (Checked here: PQ/QC is the only alias pair
+in nih's 70-code set, so this instance is closed, not a sweep.)
+**Fix shape that fits this fleet:** a `<THING>_ALIASES` array + a `filter(asked).length === 1` check ->
+`log.warning` naming the missing code and the measured counts. Match the Actor's own convention
+(warning-only here, per 1531's deliberate choice not to copy trademark-search's heavier
+RUN_SUMMARY/setStatusMessage pattern).
+**Small platform gotcha, cost me a false alarm:** the `POST /v2/acts/<id>/runs?waitForFinish=` response
+body reports `chargedEventCounts: {result: 0}` even for a run that pushed and charged rows — the counter
+is a pre-finish snapshot. A follow-up `GET /v2/actor-runs/<id>` showed the true `{result: 2}`. Never read
+charge counts off the run-creation response; always re-GET the run record.

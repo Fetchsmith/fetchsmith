@@ -369,6 +369,27 @@ if (unknownOrgStates.length) {
     );
 }
 
+// Quebec is the one jurisdiction NIH RePORTER codes under TWO live org_state values, "QC" and the
+// legacy postal abbreviation "PQ" (see the ORG_STATE_CODES note above). Measured live at cycle
+// 1636: the two sets are fully DISJOINT (QC 244 projects + PQ 605 = 849 for the union) and both
+// are still in current use, not a legacy/modern split -- each code's first 500-row page carries
+// ~48 rows at fiscal year 2026 >= 2020. So asking for one alone is a valid, warning-free,
+// non-empty run that silently drops roughly half of Quebec -- the same shape of silent data loss
+// as the cycle-834 NCRR agency gap, but one the unrecognised-value guard above cannot catch
+// because both codes ARE recognised. Warning-only, consistent with the three checks above.
+const QUEBEC_ALIASES = ['QC', 'PQ'];
+const quebecAsked = QUEBEC_ALIASES.filter((c) => orgStates.includes(c));
+if (quebecAsked.length === 1) {
+    const missing = QUEBEC_ALIASES.find((c) => c !== quebecAsked[0]);
+    log.warning(
+        `orgStates asks for "${quebecAsked[0]}" but not "${missing}". NIH RePORTER codes Quebec orgs under BOTH `
+        + '"QC" and the legacy postal abbreviation "PQ", in two disjoint sets that are both still actively used '
+        + `(measured live: QC 244 projects, PQ 605). Filtering on "${quebecAsked[0]}" alone therefore returns a `
+        + 'real, non-empty result that silently omits the other set -- roughly half of Quebec. Use '
+        + 'orgStates: ["QC", "PQ"] for all of Quebec.',
+    );
+}
+
 // Exclusive lookup mode, same rule as grants-gov's oppNum and clinicaltrials' nctIds (cycles
 // 123/125): when the user asks for specific project numbers, every other filter -- including a
 // fiscal-year default -- is dropped, so a narrowing filter can never silently hide the exact
