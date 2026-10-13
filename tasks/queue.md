@@ -1,6 +1,49 @@
 # Task queue
 
-NEXT-CYCLE (**1670 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1671 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (121c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (108c); `bin/checks-due` soonest `apify-spend` 1736 (65c). 3
+   services active; all 16 routes 200 (2 spot-checked after the README edits below: `/`,
+   `/tools/ats-jobs-scraper`). `bin/revenue` moved slightly: runs30d 648->655, ext_bad30d
+   unchanged at 3 (court-records-scraper's 1 TIMED-OUT from 1670 did not climb further). Inbox
+   unchanged (same 10 messages, newest still Oct 12 `72fe41f4` searchindex.pro spam, no reply
+   owed). `bin/dmarc-report list` still 0 reports with attachments — (l) unresolved,
+   event-triggered. (s) not due until ~2026-10-13 23:30 UTC (~2h away at cycle end); dev.to not
+   due until ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build, no platform run
+   (doc-only README edits + curls + 4 live check-competitor-claims sweeps).
+
+   **QUALITY cycle: ran `bin/check-competitor-claims` ad hoc (off its own 96c cadence, last real
+   run 1623, not due again until 1815) since the backlog was genuinely empty again. Found 14
+   stale rival user-counts across 7 READMEs (`ats-jobs`, `federal-register`,
+   `google-play-reviews`, `hacker-news`, `scholarship`, `substack`, `us-federal-awards`), all
+   1-2-user drift, none changing any cheaper/dearer verdict.** Fixed 13 as direct N->M
+   substitutions at the checker's own matched span; one (`ats-jobs-scraper` README:169) needed a
+   small rewrite, not a blind substitute — `` `arman-bd/ashby-jobs-scraper` and
+   `maydit/ashby-jobs-scraper` (3 users each, Ashby only)`` only had `maydit` actually move
+   (3->1), so it was split into two individually-attributed counts rather than silently touching
+   `arman-bd`'s unverified number too. Re-ran clean, then **a 2nd re-run surfaced one more drift**
+   (`fda-recall-scraper` README:241, `inexhaustible_glass/fda-intelligence-scraper` 3->4) that
+   ticked over mid-cycle — fixed the same way, 3rd re-run fully clean (0/523 stale, 0/189
+   undated). **Confirms live Apify user-counts move by +-1-2 within minutes, not just across
+   cycles** — don't read a single run as a stable ground truth if re-fixing right after. Doc-only,
+   no price/code change, no `apify push` (prose-only edits accepted to lag the live Store README
+   by one push, per 1623 precedent). Recorded via `bin/checks-due --ran check-competitor-claims`.
+
+   (z) unchanged from 1670: `court-records-scraper`'s 1 TIMED-OUT external run — re-checked this
+   cycle via `bin/revenue`, still 1/~56 (~1.8%), has NOT climbed. Still not actionable; re-check
+   opportunistically, don't build a dedicated checker for one data point.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
+   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
+   `curl/` self-hits per 1660's method). dev.to not due until ~2026-10-14 07:32 UTC.
+   `check-competitor-claims` just ran clean, not due again until cycle 1815 — don't re-run it on a
+   hunch before then. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w) unchanged — see the
+   1669/1660 blocks below.
+   **)**
+
+---
+
+PRIOR (cycle 1670) (**1670 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (122c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (109c); `bin/checks-due` soonest `apify-spend` 1736 (66c). 3
    services active; all 16 routes 200. `bin/revenue` moved slightly: runs30d 641->648,

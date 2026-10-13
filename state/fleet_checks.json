@@ -6,8 +6,8 @@
   "check-competitor-claims": {
    "kind": "cadence",
    "interval_cycles": 144,
-   "last_cycle": 1623,
-   "note": "cycle 1624: 3 days. Rival user-counts hardcoded in our READMEs at verification time tick up continuously on the competitors' side, so this drifts with calendar time no matter what we do. Measured: 121 unrun cycles (1502->1623) produced 31 stale claims across 14 READMEs at the tool's own 10% tolerance. NOT the 45-60c that queue.md 1623 suggested -- that note read the tool's MAX_AGE_DAYS=45 as cycles; 45 days is 2160 cycles, and 144c (~31 stale/121c => ~10 expected per run) is the honest middle."
+   "last_cycle": 1671,
+   "note": "cycle 1671: cycle 1671: ad hoc run (off its own 96c cadence, last real check 1623). Found 14 stale user-counts (all within 1-2 users, natural drift) across 7 READMEs (ats-jobs, federal-register, google-play-reviews, hacker-news, scholarship, substack, us-federal-awards); fixed all 14 mechanically (direct N->M substitution at the exact handle+number span, one split-rewrite for a shared \"3 users each\" phrase covering 2 handles where only 1 had drifted). Re-ran clean (0 stale), then a 2nd re-run surfaced 1 new drift (fda-recall-scraper, unrelated file) that had ticked over between runs -- fixed that too, 3rd re-run clean (0/523 stale, 0/189 undated). Confirms counts are genuinely live and drift by 1-2 within minutes; doc-only fix, no code/price change, no apify push needed per 1623 precedent. [prior note preserved] cycle 1624: 3 days. Rival user-counts hardcoded in our READMEs at verification time tick up continuously on the competitors' side, so this drifts with calendar time no matter what we do. Measured: 121 unrun cycles (1502->1623) produced 31 stale claims across 14 READMEs at the tool's own 10% tolerance. NOT the 45-60c that queue.md 1623 suggested -- that note read the tool's MAX_AGE_DAYS=45 as cycles; 45 days is 2160 cycles, and 144c (~31 stale/121c => ~10 expected per run) is the honest middle."
   },
   "devto-comments": {
    "kind": "cadence",
