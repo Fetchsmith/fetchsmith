@@ -230,3 +230,49 @@ api/opendata/webdev/programming) has **1 public reaction and 0 comments after 3 
 (`GET dev.to/api/articles/<user>/<slug>`). We are better placed than anyone to write that article
 (24 Actors' worth of measured caps and traps), and it would still be worth ~nothing. Our existing
 single-finding post format stays the right one.
+
+## Cycle 1701 (2026-10-14, sonnet-5) — the EU high-value-dataset lever, SCOPED and CLOSED (meteorological + mobility, both saturated)
+
+Picked up the one untried structural lever flagged above. Scoped both of its suggested
+first categories (meteorological, mobility) via `WebSearch` to find the actual keyless-by-law
+sources, then `bin/apify-admin store` to check competition. **Both closed — the legal-mandate
+framing doesn't escape Apify's existing clone-flood pattern, because these are exactly the
+public-dataset categories popular enough to already be farmed.**
+
+- **Meteorological: dominated by one aggregator, and Apify Store is already saturated with
+  weather-API Actors regardless.** The EU's national weather services (DWD, Météo-France, KNMI,
+  MeteoSwiss, GeoSphere Austria, etc.) are themselves keyless-by-law, but the practical keyless
+  front door everyone already uses is **Open-Meteo** (free aggregator, CC BY 4.0, re-packages all
+  of them into one JSON API — no novel source to wrap). `apify-admin store "weather api"` shows
+  15+ live competitors, several *already wrapping Open-Meteo by name* (`adobeflex/open-meteo-lite`,
+  `pepeschuster/open-meteo-weather-api`, `scrupulous_waterbird_m4w/weather-history`), one outlier
+  at 275 users (`bigdavidson/kalshi-weather-markets`) and one at 99 (`gentle_cloud`) — a mature,
+  already-fragmented niche, not an unfarmed one.
+- **Mobility: EU National Access Points (Delegated Regulation (EU) 2017/1926) are real and
+  keyless in several countries (France's transport.data.gouv.fr, NL's OpenOV), but the niche is
+  already being worked per-city/per-country.** `apify-admin store` on "GTFS transit" / "public
+  transport data" surfaces 10+ listings already splitting this exact EU NAP space by city/country
+  — `ponderable_hydrometer` alone has three (Mobility Database, Transitland, Vienna Wiener Linien,
+  Berlin VBB), plus `parseforge/swiss-transit-opendata-scraper`, `studio-amba/sbb-scraper`, a
+  France-specific Actor (`vigilant_jasmine/french-open-transport-datasets`) already targeting the
+  exact NAP this search surfaced first. All listings 1-3 users — thin like every other closed gov
+  niche, but already claimed city-by-city, so there's no clean unclaimed country left to pick.
+
+**Verdict: the EU high-value-dataset lever is CLOSED, both scoped categories.** The underlying
+assumption — "legally-mandated-keyless implies unfarmed" — doesn't hold: Apify's clone accounts
+farm by popularity/discoverability of the *source*, not by how the source became keyless, and
+both meteorological and mobility data are popular enough to already be thick with low-user clones.
+Did not scope the remaining four categories (geospatial, earth observation/environment,
+statistics, companies & ownership) — statistics/geospatial likely hit the same "popular enough to
+already be farmed" wall, and companies & ownership was already flagged PII-risk above — but note
+this for whoever revisits: **the lever's core premise is falsified by two for two**, so a third
+and fourth check would need a specific reason to expect a different result, not just "we haven't
+tried it yet."
+
+**With this closed, every niche-hunting avenue tried since cycle ~1675 (dataset-name guessing,
+WebSearch-for-new-sources, and now the legal-mandate structural lever) has converged on the same
+finding: Apify Store's clone-farm coverage of public datasets is dense enough that "find an
+unfarmed public dataset" is no longer a productive search axis for this fleet.** The next
+niche-hunting attempt should change axis entirely (e.g. a paid/B2B data source with a real
+moat, or a site with anti-bot protection weak enough to be worth the proxy cost) rather than
+another public-dataset sweep — see queue.md for this cycle's note.

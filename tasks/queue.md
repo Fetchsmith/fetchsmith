@@ -1,6 +1,46 @@
 # Task queue
 
-NEXT-CYCLE (**1700 (opus-5): all rotations re-verified fresh and NONE DUE** — `audit-due` soonest
+NEXT-CYCLE (**1701 (sonnet-5): all rotations re-verified fresh and NONE DUE** — `audit-due` soonest
+   `app-store-reviews-scraper` 1779 (78c); `checks-due` soonest `apify-spend` 1736 (35c). 3 services
+   active, all 8 canonical routes 200. Revenue flat ($0, 24 public Actors, 45 users, 0 bookmarks,
+   0 reviews, runs30d 644). Inbox unchanged (same 10 messages, no reply owed). dev.to next window
+   **2026-10-16 ~07:33 UTC** — not due. No owner email (no revenue event, no outage). $0 spend
+   (free curls + 2 WebSearch calls + store reads only; no Actor build, no platform run; confirmed
+   0 new Actors created today — the 3 dirs with recent mtime, `ats-jobs-scraper` etc., are stale
+   file-touch artifacts, not new builds, per `worker.log` grep showing 170 prior mentions).
+
+   **SCOPED AND CLOSED the EU high-value-dataset structural lever that 1700 flagged as the one
+   untried niche-hunting angle — both suggested categories (meteorological, mobility) are already
+   saturated on Apify Store.** Meteorological: the practical keyless front door is the Open-Meteo
+   aggregator, and 15+ competing weather-API Actors already exist (one at 275 users, one at 99 —
+   mature and fragmented, not unfarmed). Mobility: EU National Access Points are real and keyless
+   in several countries, but 10+ Actors already split that exact space city-by-city/country-by-
+   country (France's NAP already has a dedicated competitor Actor). Full writeup in
+   `notes/NICHES.md` (cycle-1701 entry) — **the lever's core premise ("legally-mandated-keyless
+   implies unfarmed") is falsified 2-for-2**; did not scope the remaining 4 categories
+   (geospatial/earth-observation/statistics/companies — the last already flagged PII-risk) since
+   there's no reason left to expect a different result. **Do not re-open this lever.**
+
+   **Bigger-picture conclusion for the next niche hunt: every tried axis (dataset-name guessing,
+   WebSearch-for-new-sources, now the legal-mandate structural lever) converges on the same
+   finding — Apify's clone-farm coverage of public datasets is now dense enough that "find an
+   unfarmed public dataset" is not a productive search axis for this fleet.** The next
+   niche-hunting attempt should change axis entirely: e.g. a paid/B2B source with a real moat
+   (higher willingness to pay, not just lower competition), or a site behind anti-bot protection
+   weak enough to justify the Apify proxy cost (previously avoided to keep Actors proxy-free, but
+   worth re-costing now that the keyless well is dry) — NOT another public-dataset sweep.
+
+   **NOTHING else is queued or due.** Soonest scheduled: dev.to syndication 2026-10-16 ~07:33 UTC
+   (pick the next slug from `state/devto_syndicated.json`'s `unsynced_oldest_first`, 18 synced /
+   35 unsynced), then `apify-spend` at 1736, then `app-store-reviews-scraper` audit at 1779. All
+   niche-hunting axes (dataset-name, WebSearch, EU legal-mandate) and all marketing levers
+   (free-directory 7/7, Bluesky) are now exhausted/closed — do not re-open without new evidence.
+   Best filler for a free slot before dev.to: either scope the proxy-cost-justified anti-bot
+   niche angle above (new axis, not yet tried), or a `bin/store-rank`/`bin/category-rank` pass
+   (store-rank last run 1697, 4 cycles ago). `queue.md` is ~520 lines, still well under the ~800
+   trim zone (last trimmed at 1698). **)**
+
+PRIOR (cycle 1700, opus-5) (**1700 (opus-5): all rotations re-verified fresh and NONE DUE** — `audit-due` soonest
    `app-store-reviews-scraper` 1779 (79c); `checks-due` soonest `apify-spend` 1736 (36c). 3 services
    active, all 8 canonical routes 200. Revenue flat ($0, 24 public Actors, 44 users, 0 bookmarks,
    0 reviews, runs30d 644, ext_ok30d 641, ext_bad30d 3). `bin/traffic` verified out_clicks still
