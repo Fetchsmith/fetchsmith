@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+"""Search BOTH notes/LEARNINGS.md and notes/LEARNINGS_ARCHIVE.md.
+
+Exists because the live file only holds part of the record: cycles 1-1412 were moved to
+LEARNINGS_ARCHIVE.md over several trims (the latest by cycle 1684), while 24 scripts under bin/
+still cite cycle numbers in that range. Every cycle that grepped only LEARNINGS.md was one
+false "no prior lesson exists" away from redoing closed work -- this makes the two-file search
+the default instead of something you have to remember.
+
+    bin/learnings <pattern>      regex search across both files (case-insensitive)
+    bin/learnings -c <cycle>     print the full entry for a cycle number, wherever it lives
+    bin/learnings -l <pattern>   list only the matching entry headers (good for wide patterns)
+"""
+import re
+import sys
+from pathlib import Path
+
+NOTES = Path(__file__).resolve().parent.parent / "notes"
+FILES = [NOTES / "LEARNINGS.md", NOTES / "LEARNINGS_ARCHIVE.md"]
+HEADER = re.compile(r"^#{1,2} ")
+
+
+def entries(path):
+    """Yield (header, start_lineno, [lines]) per '## '-delimited entry."""
+    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    cur_hdr, cur_start, buf = "(file preamble)", 1, []
+    for i, line in enumerate(lines, 1):
+        if HEADER.match(line):
+            if buf:
+                yield cur_hdr, cur_start, buf
+            cur_hdr, cur_start, buf = line.lstrip("# ").rstrip(), i, [line]
+        else:
+            buf.append(line)
+    if buf:
+        yield cur_hdr, cur_start, buf
+
+
+def main():
+    args = sys.argv[1:]
+    if not args:
+        print(__doc__.strip())
+        return 2
+    mode, pattern = "grep", None
+    if args[0] in ("-c", "--cycle"):
+        if len(args) < 2:
+            print("error: -c needs a cycle number", file=sys.stderr)
+            return 2
+        mode, cycle = "cycle", args[1].lstrip("#")
+        if not cycle.isdigit():
+            print(f"error: not a cycle number: {args[1]}", file=sys.stderr)
+            return 2
+        # match "Cycle 976", "cycle 976", "h976", "976:" in a header -- all forms in use
+        pattern = re.compile(rf"(cycle[s]?[ -]0*{cycle}|(^|[^0-9a-z])h0*{cycle})([^0-9]|$)", re.I)
+    elif args[0] in ("-l", "--list"):
+        if len(args) < 2:
+            print("error: -l needs a pattern", file=sys.stderr)
+            return 2
+        mode, pattern = "list", re.compile(args[1], re.I)
+    else:
+        pattern = re.compile(args[0], re.I)
+
+    missing = [f for f in FILES if not f.exists()]
+    if missing:
+        print(f"error: missing {', '.join(str(m) for m in missing)}", file=sys.stderr)
+        return 1
+
+    hits = 0
+    for path in FILES:
+        tag = path.name
+        for hdr, start, body in entries(path):
+            target = hdr if mode == "cycle" else "\n".join(body)
+            if not pattern.search(target):
+                continue
+            hits += 1
+            if mode == "list":
+                print(f"{tag}:{start}: {hdr}")
+            elif mode == "cycle":
+                print(f"=== {tag}:{start} ===")
+                print("\n".join(body).rstrip())
+                print()
+            else:
+                print(f"=== {tag}:{start}: {hdr}")
+                for off, line in enumerate(body):
+                    if pattern.search(line):
+                        print(f"  {start + off}: {line.strip()}")
+                print()
+
+    if not hits:
+        print(f"no match in {' or '.join(f.name for f in FILES)}")
+        return 1
+    print(f"-- {hits} matching entr{'y' if hits == 1 else 'ies'} "
+          f"across {len(FILES)} files --")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

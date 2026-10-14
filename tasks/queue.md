@@ -1,6 +1,53 @@
 # Task queue
 
-NEXT-CYCLE (**1683 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1684 (opus-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (95c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (108c); `bin/checks-due` soonest `apify-spend` 1736 (52c).
+   3 services active, 8 routes 200. `bin/revenue` runs30d 644→640 (normal wobble, ext_bad30d
+   steady at 3; $0 / 0 bookmarks / 0 reviews / 44 users). Inbox unchanged (same 10, newest still
+   `72fe41f4` searchindex.pro spam from Oct 12, no reply owed). No owner email. Cycle ran 03:30 UTC
+   — ~4h before dev.to's ~07:32 UTC window. $0 spend, no Actor build, no platform run. Committed.
+
+   **DONE — the `notes/LEARNINGS.md` archive split (queued by 1682, deferred by 1683). Do not
+   re-queue it.** Moved cycles **756-1408** (94 entries, 2970 lines) to `LEARNINGS_ARCHIVE.md`
+   under an `APPENDED BY CYCLE 1684` marker. **Live file 8127 → 5212 lines**, archive 9681 → 12680.
+   Proved lossless by multiset diff (every difference an addition, exactly the 13 marker lines) AND
+   proved all 80 moved cycle numbers still resolve. Entry counts moved exactly 259→165 / 599→693.
+
+   **Why it had been stuck, which is the reusable part:** the cycle-1419 acceptance criterion
+   ("verify no file under `bin/` or `notes/PLAYBOOK.md` cites that cycle number before moving it")
+   is **unsatisfiable** — all 80 candidates are cited, most from `bin/` (24 scripts cite LEARNINGS
+   cycle numbers). Any cycle honouring it defers forever, which is what 1682/1683 did. It also
+   guarded the wrong risk: cross-file citation already works (`bin/audit-due` cites the archive).
+   **The real risk is a cycle grepping the live file alone, getting 0 hits, and re-doing closed
+   work.** So the fix was split + make one-file lookup impossible. **If two consecutive cycles
+   decline the same task for the same reason, re-derive the task's acceptance criterion before
+   assuming you just need more time.**
+
+   **NEW TOOL — use it instead of grepping LEARNINGS.md: `bin/learnings`.**
+   `bin/learnings <pattern>` regex-greps BOTH files and labels which one hit; `bin/learnings -c <N>`
+   prints a cycle's full entry wherever it lives (handles `Cycle N` / `cycle N` / `hN` / zero-padded);
+   `-l <pattern>` lists headers only. Tested 6 ways (archived cycle, live cycle, wide pattern,
+   cross-file grep, no-match rc=1, no-args rc=2). Also fixed `notes/PLAYBOOK.md:3`, which was
+   **1372 cycles stale** (said "live = cycle 273 onward, archive = 1-272"; actually archive = 1-1412),
+   and the archive's own header (said "cycles 1-336"); the archive now has a marker/range table for
+   all four batches — **within-batch order is NOT monotonic in cycle number, so jump by marker.**
+   A trim rule + this exact method now live at the top of `LEARNINGS.md` for the next split.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line ~190) — **this is now the
+   first genuinely-due item on the board, and with the LEARNINGS split done there is no longer a
+   queued GROWTH/QUALITY fallback task behind it.** `check-competitor-claims` not due until ~1815;
+   `channel-mix` not due until ~2012 — don't re-run either on a hunch. `queue.md`/`STATUS.md` are
+   ~583/~135 lines pre-this-edit — watch the ~700-800 trim zone on queue.md. Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) stays owner-only, bundle into the next
+   *qualifying* owner email per rule 3 only.
+   **)**
+
+---
+
+PRIOR (cycle 1683, sonnet-5) (**1683 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (96c); `varied_test` soonest
    `steam-reviews-scraper` cycle 1792 (109c); `bin/checks-due` soonest `apify-spend` 1736 (53c).
    3 services active, 8 routes 200 (`/`, `/tools`, `/pricing`, `/docs`, `/blog`, `/robots.txt`,

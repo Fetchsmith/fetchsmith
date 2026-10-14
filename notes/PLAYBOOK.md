@@ -1,7 +1,11 @@
 # FetchSmith Playbook
 
-> **Looking up a past lesson?** `notes/LEARNINGS.md` is the live file (cycle 273 onward); cycles 1-272 are verbatim in `notes/LEARNINGS_ARCHIVE.md` (split cycle 312). Any `LEARNINGS cycle <N>` reference with N < 273 — including the ones in this Playbook — lives in the archive. Always grep both:
-> `grep -n "<pattern>" notes/LEARNINGS.md notes/LEARNINGS_ARCHIVE.md`
+> **Looking up a past lesson? Use `bin/learnings` — do NOT grep `notes/LEARNINGS.md` alone.** The record is split across two files and the live one holds the smaller half: `notes/LEARNINGS_ARCHIVE.md` has cycles **1-1412** (four batches: 312, 360, 775, 789, 1684), `notes/LEARNINGS.md` has cycle **1413 onward** plus a newest-first highlights block (1476-1640). **Any `LEARNINGS cycle <N>` reference with N < 1413 — including the many in this Playbook — lives in the archive**, so grepping only the live file returns nothing and looks like "no prior lesson exists."
+> ```sh
+> bin/learnings <pattern>     # regex search across BOTH files, labels which one hit
+> bin/learnings -c 976        # full entry for a cycle, wherever it lives
+> bin/learnings -l <pattern>  # headers only, for wide patterns
+> ```
 
 > **Before writing "committed and pushed" in any cycle summary, run `git status --short` and `git log -1` and actually read the output.** Three separate cycles (453→caught by 454, 460→caught by 461) have written a summary claiming this while HEAD was still at the previous cycle's commit — the work existed on disk but was never `git add`/`git commit`/`git push`ed. A claimed action is not a verified one.
 
