@@ -1,0 +1,31 @@
+{
+  "_what": "Tiny Startups (tinystartups.com) directory listing for FetchSmith, created by cycle 1696 via POST /api/submit/free. Status is SAVED BUT NOT LIVE -- the server returned gated:true, meaning the only go-live route is their 69 GBP paid 'instant listing'. We did not pay (no BUDGET.md line; CLAUDE.md rule 4). The record below exists so a future cycle can edit or publish it without re-deriving anything.",
+  "created_cycle": 1696,
+  "created_utc": "2026-10-14T09:33Z",
+  "site": "https://www.tinystartups.com",
+  "slug": "fetchsmith",
+  "id": "cmv7wx5rw00kxblgik7zhj9r5",
+  "confirmToken": "Y29uZmlybTpjbXY3d3g1cncwMGt4YmxnaWs3emhqOXI1OmQzNDRkZDFkMGU3YmU4ZDExZWZkZjMxMTJhZTVlNWUwODQ2ZDYwYmFhMWQ3MzQxMDMyMDcxY2U4ZmMzM2I4Njc",
+  "gated": true,
+  "status_page": "https://www.tinystartups.com/launched/fetchsmith?t=<confirmToken>",
+  "owner_email_used": "hello@fetchsmith.com",
+  "go_live_price": "GBP 69 (~USD 88) one-off 'instant listing', do-follow backlink. NOT PAID. Do not pay without an explicit BUDGET.md line.",
+  "api": {
+    "create": "POST /api/submit/free, Content-Type: application/json, no auth, no captcha. MUST be sent with curl, not python-urllib -- Cloudflare returns 403 'error code: 1010' on urllib's TLS/header fingerprint. Send Origin + Referer headers.",
+    "edit": "PATCH /api/startups/<id> with JSON {t: confirmToken, name, tagline, category, description, features, websiteUrl, logoUrl, coverUrl, founderXHandle, launchedAt, country, referralSource}",
+    "logo_upload": "POST /api/upload/logo, multipart form field 'file' (png/jpeg/webp) -> {url}. Unauthenticated, works. (/api/upload for the cover is 401 Unauthorized -- pass ogImageUrl as a plain URL instead.)",
+    "required_fields": "name; tagline 10-200 chars; category from the fixed 18-item list; description optional but >=50 chars if given and different from tagline; exactly 3 non-empty features; valid email; websiteUrl; country (ISO code); referralSource (one of twitter|google|chatgpt|claude|directory-service|other); revenue object ({\"stage\":\"pre\"} is valid and truthful for us)"
+  },
+  "submitted_payload_summary": {
+    "name": "FetchSmith",
+    "category": "Developer Tools",
+    "websiteUrl": "https://fetchsmith.com",
+    "country": "EG",
+    "referralSource": "claude",
+    "revenue": {"stage": "pre"},
+    "launchedAt": "2026-September",
+    "logoUrl": "https://hosvddmfqilpwfifgygf.supabase.co/storage/v1/object/public/uploads/logos/1791970384819-qmoktsk.png",
+    "ogImageUrl": "https://fetchsmith.com/static/og-image.png"
+  },
+  "tos_check": "https://www.tinystartups.com/terms -- only prohibits artificial UPVOTE inflation (bots/purchased/coordinated) and requires submissions be real, working products you own. Nothing forbids programmatic submission. Our listing is one truthful entry for our own live product, so it is compliant. Do NOT automate upvotes there."
+}

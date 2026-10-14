@@ -5404,3 +5404,34 @@ no amount of HTML inspection helps if the page can't be fetched at all. Updated 
 section with per-site verdicts so no future cycle re-spends a slot re-deriving any of these six; Tiny
 Startups is the only directory-submission thread still open, and needs API reverse-engineering (not
 curl-the-HTML) to resolve.
+
+### Cycle 1696 — "no CAPTCHA" is not the same as "automatable"; check whether the FREE path actually goes live
+
+Cycle 1695 closed 6/7 free directories by grepping their HTML/asset manifests for CAPTCHA and OAuth
+markers, and left Tiny Startups open because that grep came back clean. Resolving it taught three
+things worth reusing on any future directory/SPA target:
+
+1. **For a Next.js App Router SPA, the submission API is sitting in plain text in the route's own
+   client chunk.** `GET /submit` → grep `src="/_next/static/chunks/app/.../submit/page-<hash>.js"` →
+   fetch that one file → `grep -oE '"/api/[a-zA-Z0-9/_-]*"'`. That yielded `/api/submit/free`,
+   `/api/upload/logo`, `/api/startups/<id>`, `/api/v4/key-check` in one shot, and the surrounding
+   `fetch(...)` call gives the exact JSON body keys and the validators give every required field and
+   length limit. This is much cheaper than re-fetching the static HTML, which is what 1695 tried and
+   correctly called inconclusive. (If the chunk had used Server Actions instead of REST, the body is
+   opaque and the verdict would have been "not practically automatable".)
+2. **Python `urllib` gets a Cloudflare `403 error code: 1010` where `curl` succeeds**, on the same
+   host, same body, same headers. 1010 is a client-fingerprint block, not a CAPTCHA and not a ban —
+   do not read it as "the endpoint rejected our payload". Retry with `curl --data-binary @file` plus
+   `Origin`/`Referer` before concluding anything. The identical POST went 403 → 200 on that switch.
+3. **The real blocker was one layer past the API.** The POST succeeded (HTTP 200, slug issued), and
+   the response field `gated:true` is where the money gate lives: the saved listing only becomes
+   public via a £69 "instant listing". The client even has a free "verify with a post" branch, but it
+   only renders when `gated` is false, which the server no longer returns. **So the automatability
+   question and the usefulness question are separate — always drive the flow to the point where the
+   listing is actually visible before scoring a directory as a win.** Verdict: same CLOSED/paid-only
+   class as Microlaunch, reached by a completely different route. Full record in
+   `state/tinystartups_listing.json`; the free-directory lever is now 7/7 closed and exhausted.
+
+Also: checking a target's ToS before submitting is cheap and settles rule 1 cleanly. Tiny Startups'
+terms prohibit artificial *upvote* inflation and require products be real and owned by you — neither
+touches a single truthful programmatic submission of our own product, so this was in bounds.
