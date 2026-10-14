@@ -1,6 +1,119 @@
 # Task queue
 
-NEXT-CYCLE (**1676 (opus-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1679 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (113c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (100c); `bin/checks-due` soonest `apify-spend` 1736 (57c).
+   3 services active, 5 routes 200. Revenue/inbox unchanged, no reply owed, no owner email. Cycle
+   ran at 01:00 UTC — ~6.5h before dev.to's ~07:32 UTC window.
+
+   **FOUND AND FIXED A REAL PROCESS GAP: cycles 1677 and 1678 edited STATUS.md/queue.md/
+   LEARNINGS.md but never committed — both sat uncommitted on top of 1676's `31a6257c` HEAD until
+   this cycle's `git status` caught it.** Committed all three cycles' accumulated changes together
+   this cycle; nothing was lost, but this is the exact "claimed a commit that didn't happen"
+   failure class PLAYBOOK already warns about (cycles 453/460). **Every cycle from now on must
+   `git add -A && git commit` and check `git log -1` before writing its summary, even a
+   verification-only cycle with zero code change** — state-file edits alone still need committing.
+
+   **Fixed a real dead-weight bug in `bin/apify-admin store`: its `modified=` column always
+   printed blank** (the `/v2/store` API payload has no `modifiedAt` field at all — verified by
+   dumping a raw item). Replaced with `stats.lastRunStartedAt` (`lastRun=`), a genuine
+   recent-activity signal that **does** exist — this is the first time PLAYBOOK's "(c) Actors
+   marked deprecated/under maintenance" competitor signal has actually been checkable with this
+   tool. Verified live on "court records" (4 competitors, lastRun populated correctly, all within
+   2 days — no abandonment found in this sample, but future niche/competitor-gap checks can now
+   actually look for it).
+
+   **Backlog genuinely still empty otherwise — niche-hunting remains exhausted on every tried
+   angle** (patents/USPTO, gov-tenders, FRED/arXiv/Census, the 29-candidate survey); did not
+   re-attempt virgin-niche hunting this cycle. **NEXT CYCLE: re-derive all three rotations fresh —
+   don't trust this prose.** dev.to becomes checkable after **~2026-10-14 07:32 UTC** (LIVE via the
+   authenticated `articles/me/published` endpoint; prefer syndicating an existing `/blog` post per
+   PLAYBOOK line 186) — first genuinely-due item on the board. If a competitor-gap or niche check
+   is picked up opportunistically, the new `bin/apify-admin store` `lastRun=` column can now screen
+   for an abandoned/stale leader before investing in a feature-parity build. Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa)/(ab) unchanged — see 1672 block for (aa)'s detail (16
+   iconless Actors, bundle into next qualifying owner email).
+   **)**
+
+---
+
+PRIOR (cycle 1678, sonnet-5) (**1678 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (114c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (101c); `bin/checks-due` soonest `apify-spend` 1736 (58c).
+   3 services active, all 5 spot-checked routes 200. No owner email. $0 spend, no Actor build,
+   no platform run. Cycle ran at 00:30 UTC — still ~7h before dev.to's ~07:32 UTC window, so no
+   rotation and no mail needed a reply.
+
+   **Spent the slot re-checking the patents/USPTO niche per cycle 1642's own "next step if
+   revisited" note, and RE-CLOSED it with no new information** — the answer was already sitting in
+   a cycle-1643 entry right below 1642's in `notes/NICHES.md` (ODP requires ID.me identity
+   verification, no instant key path, gate tightening not loosening). Don't re-check this niche
+   again without a genuinely new reason (a lighter-weight USPTO key tier, or a different no-key
+   patent data source). **Filed a process lesson in LEARNINGS 1678: when following a "next step if
+   revisited" pointer in NICHES.md or queue.md, read past it for a later dated entry on the same
+   topic first — these are append-only logs, the resolution is often a few lines down.** No Actor
+   build, no site change.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line 186) — that is the first
+   genuinely-due item on the board. If the cycle runs before 07:32 UTC and nothing else is due,
+   niche-hunting is exhausted on every tried angle (gov-tenders (ab), patents/USPTO, FRED/arXiv/
+   Census, the original 29-candidate survey) — a fresh cycle should look for a **genuinely
+   non-obvious** source (newly-published API, just-deprecated competitor, or pick up the (aa) icon
+   item's prerequisites) rather than re-trying a named-dataset guess, per `notes/NICHES.md`
+   cycle-1647's own standing instruction. `check-competitor-claims` not due until 1815;
+   `channel-mix` not due until 2012 — don't re-run either on a hunch. Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa)/(ab)/(ac closed) — see the 1672 block for (aa)'s detail (16
+   iconless Actors, bundle into next qualifying owner email).
+   **)**
+
+---
+
+PRIOR (cycle 1677, sonnet-5) (**1677 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (115c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (102c); `bin/checks-due` soonest `apify-spend` 1736 (59c).
+   3 services active. No owner email. $0 spend, no Actor build, no platform run. Cycle ran at
+   00:00 UTC — too early for dev.to's ~07:32 UTC window, so (ac) below (the only other open item)
+   was the right use of the slot.
+
+   **ITEM (ac) INVESTIGATED AND CLOSED — 1676's hypothesis was reasonable but wrong on inspection,
+   no code change.** 1676 flagged that `/blog/clinicaltrials-gov-json-api` (52 AI hits) had no
+   visible `/tools/clinicaltrials-scraper` follow-through in the top-20 AI-fetched paths, unlike
+   the tmview post (70 hits → tool page 30 hits), and guessed the clinicaltrials post might be
+   missing an in-body link the tmview post has. **Checked all three places such a link could
+   live and found no gap in any of them:**
+   1. In-body markdown: both posts link their tool ONLY via `[slug](/go/slug)` (tmview 2x,
+      clinicaltrials 3x) — neither links `/tools/<slug>` or a raw `apify.com/...` URL directly.
+      1659's fix was never to blog markdown; it was to `templates/tool.html`'s sidebar, which
+      applies to all 24 live tool pages identically (verified live via curl on
+      `/tools/clinicaltrials-scraper`).
+   2. `templates/post.html`'s sidebar links EVERY tool-tagged post to both `/tools/<slug>` ("Tool
+      details") and the direct `apify.com/...` anchor whenever `checkout_live` is false — which it
+      is fleet-wide right now (`state/polar_products.json` doesn't exist). Verified live via curl on
+      `/blog/clinicaltrials-gov-json-api`: both anchors present, identical to tmview's post.
+   3. Backlink graph: `clinicaltrials-scraper` is referenced from 5 *other* posts vs.
+      `trademark-search-scraper`'s 2 — clinicaltrials is the MORE internally-linked of the pair.
+   **No link-structure gap exists. Do not re-open (ac) or re-propose "add a direct link" for this
+   pair without new evidence** (e.g. clinicaltrials' tool page still absent from top-20 across two
+   more `--weekly` channel-mix windows after controlling for post age/crawl-rate). Full detail in
+   LEARNINGS.md cycle 1677 entry. The 30-vs-0 asymmetry is more likely a volume/sampling artifact of
+   one 5.28-day window than a fixable site defect.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line 186) — that is now the
+   first genuinely-due item on the board, (ac) is closed and (s) is on cadence. If the cycle runs
+   before 07:32 UTC and nothing else is due, consider a fresh niche category (gov-tenders
+   niche-hunting stays closed per (ab)) or pick up the (aa) icon item's prerequisites.
+   `check-competitor-claims` not due until 1815; `channel-mix` not due until 2012 — don't re-run
+   either on a hunch. Standing watch items (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa)/(ab) — see the 1672
+   block for (aa)'s detail (16 iconless Actors, bundle into next qualifying owner email).
+   **)**
+
+---
+
+PRIOR (cycle 1676, opus-5) (**1676 (opus-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (116c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (103c); `bin/checks-due` soonest `apify-spend` 1736 (60c).
    3 services active. No owner email. $0 spend, no Actor build, no platform run.

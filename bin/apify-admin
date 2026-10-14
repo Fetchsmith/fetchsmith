@@ -145,7 +145,10 @@ elif cmd == "store":
     r = httpx.get(f"{API}/store", params={"search": sys.argv[2], "limit": n, "sortBy": "relevance"}).json()["data"]["items"]
     for a in r:
         s = a.get("stats", {}); p = a.get("currentPricingInfo", {})
-        print(f"{a['username']}/{a['name']:38} users={s.get('totalUsers',0):6} u30d={s.get('totalUsers30Days',0):5} runs30d={s.get('totalRuns30Days',0):6} model={p.get('pricingModel','?'):14} modified={a.get('modifiedAt','')[:10]} title={a.get('title','')[:50]}")
+        print(f"{a['username']}/{a['name']:38} users={s.get('totalUsers',0):6} u30d={s.get('totalUsers30Days',0):5} runs30d={s.get('totalRuns30Days',0):6} model={p.get('pricingModel','?'):14} lastRun={s.get('lastRunStartedAt','')[:10]:10} title={a.get('title','')[:50]}")
+    # Cycle 1679: `modifiedAt` doesn't exist on this payload -- the old `modified=`
+    # column always printed blank (verified by dumping a raw item). `stats.lastRunStartedAt`
+    # does exist and is a real staleness/activity signal for a competitor.
     # Cycle 820: this is the /v2/store REST surface, NOT the buyer-facing search.
     # Our own Actors are absent from this unauthenticated list BY DESIGN -- five
     # cycles (1-20, 168, 517, 580, 820) have misread that absence as "we are

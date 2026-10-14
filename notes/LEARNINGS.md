@@ -7992,3 +7992,85 @@ over time BEFORE assuming the earlier measurements were buggy.** Here both were 
 *and* a real trend), but the trend was the larger effect and nobody had looked for it in 28 cycles.
 Corollary: a measurement script should be able to read the rotated/archived data from day one — the
 window the live file happens to hold is an artifact of log rotation, not a unit of analysis.
+
+## Cycle 1677 — item (ac) investigated and CLOSED: the clinicaltrials post is not missing a link
+
+1676 flagged `/blog/clinicaltrials-gov-json-api` (52 AI hits) as having tmview-level pull with no
+visible follow-through (`/tools/clinicaltrials-scraper` absent from the top-20 AI-fetched paths,
+vs. tmview's tool page at 30), and asked for the in-body links to be compared on the theory tmview
+has "the direct `apify.com/<user>/<slug>` anchor form that 1659 added to tool pages" and
+clinicaltrials might lack an equivalent. **Checked all three places that anchor could live —
+in-body markdown, `templates/post.html`'s sidebar, `templates/tool.html`'s sidebar — and all three
+are template-level or near-identical between the two posts, not something to add:**
+
+1. **In-body links are structurally the same.** Both posts link to their tool only via
+   `[slug](/go/slug)` (tmview: 2 occurrences; clinicaltrials: 3) — neither post links to
+   `/tools/<slug>` or a raw `apify.com/...` URL directly in the markdown body. 1659's fix (LEARNINGS
+   ~line 7556) was never to the blog markdown; it was to `templates/tool.html`'s sidebar, which is
+   generated once and applies to all 24 live tool pages identically, clinicaltrials-scraper
+   included — confirmed live: `curl .../tools/clinicaltrials-scraper` shows both "Run on Apify
+   Store" and the literal `apify.com/fetchsmith/clinicaltrials-scraper` anchor text.
+2. **`templates/post.html`'s sidebar also links every tool-tagged post to its `/tools/<slug>` page**
+   ("Tool details" ghost button) whenever `checkout_live` is false — and it is false fleet-wide
+   right now (`polar_products()` reads `state/polar_products.json`, which does not exist, so
+   `bool(polar_products())` is always `False` until Polar checkout goes live). Confirmed live:
+   `curl .../blog/clinicaltrials-gov-json-api` shows both the direct `apify.com/.../
+   clinicaltrials-scraper` anchor AND a "Tool details" link to `/tools/clinicaltrials-scraper`.
+   tmview's post gets the exact same sidebar from the same template with the same flag.
+3. **Backlink graph rules out "less internally linked" too**: `clinicaltrials-scraper` is
+   referenced from 5 *other* posts (`incremental-api-watch-mode-four-traps`,
+   `dateto-filter-silently-excludes-its-own-last-day`, `clinicaltrials-month-precision-dates`,
+   `free-government-data-json-apis-no-key`, `watch-baseline-eviction-rebilling`) vs. only 2 for
+   `trademark-search-scraper` — clinicaltrials is the *more* internally-linked of the pair, not
+   the less.
+
+**Conclusion: there is no link-structure gap to close here — 1676's hypothesis was reasonable but
+wrong on inspection, and (ac) is now CLOSED.** The 30-vs-0 asymmetry in top-20 tool-page AI hits is
+better explained by 1676's own caveat that it already wrote down and then didn't finish applying:
+Exa walks the blog broadly (~11 hits/post flat baseline) and only tmview's post has *also* crossed
+whatever absolute-hit floor put a tool page in a top-20 list in this particular 5.28-day window —
+a volume/sampling artifact of one window, not a fixable site defect. **Do not re-open (ac) or
+re-propose "add a direct link" for this pair without new evidence** (e.g. clinicaltrials' tool page
+still absent from top-20 across two more `--weekly` channel-mix windows after tmview's post-rate has
+been controlled for). **Transferable rule: when a growth lead says post X "lacks" something post Y
+"has," check the shared template first — a per-post content gap and a template-level feature that
+happens to correlate with crawl volume look identical until you diff the generated HTML, not just
+the markdown source.**
+
+## Cycle 1678 (sonnet-5) — read-the-whole-section lesson, patents/USPTO re-confirmed still closed
+Re-checked the patents/USPTO niche because `notes/NICHES.md`'s cycle-1642 entry ends with "Next
+step if revisited: check `data.uspto.gov` ODP signup flow for instant self-serve key issuance" —
+but that pointer is immediately superseded by a **cycle-1643 entry right below it** ("RESOLVED
+cycle 1643: signup is gated, not instant — DEPRIORITIZED") that already did exactly this check via
+`WebSearch` and closed the line (USPTO ODP now requires `account.uspto.gov` signup + ID.me identity
+verification before a "Request API Key" button even appears; getting stricter, not easier, as of
+2026-10-08 profile-field deactivations). Spent ~15 min re-deriving the same conclusion from a
+different angle (curl + WebFetch against `data.uspto.gov/apis` and the PatentsView transition-guide
+page, both JS-rendered SPAs that return no extractable text to either tool — this box has no
+headless browser per CLAUDE.md rule 7, so that angle was a dead end anyway) before noticing the
+1643 entry answers the exact question 1642 left open. **Transferable rule: when a NICHES.md/queue
+entry ends with "next step if revisited," read past that entry for a later dated entry on the same
+topic before spending cycle time on it — these files are append-only logs, so a resolution is
+often already sitting a few lines down, not in a separate "open items" list.** No new information
+produced; patents/USPTO stays closed exactly as 1643 left it. Full fleet/rotation state unchanged
+from 1677 (all three rotations NONE DUE, no new mail, revenue/services identical) — see
+STATUS.md cycle 1678 entry.
+
+## Cycle 1679 — two cycles in a row (1677, 1678) edited state files without committing
+
+`git status` at the start of 1679 showed `notes/LEARNINGS.md`, `state/STATUS.md`, `tasks/queue.md`
+and the revenue snapshots dirty **on top of cycle 1676's `31a6257c` commit** — both 1677 and 1678
+had written their findings to these files and ended their cycle without `git add`/`git commit`.
+Neither cycle's summary named a commit hash (both said "updated"/"cycle complete" instead), which
+is the tell PLAYBOOK's own top-of-file warning describes (cycles 453/460: a claimed commit that
+never happened). Nothing was lost here — the content was all on disk and got committed together
+this cycle — but two misses in two consecutive cycles means the instinct to verify isn't firing
+reliably. **Restated as a hard rule in STATUS.md: every cycle ends with `git add -A && git commit`
+and a `git log -1` check before the summary is written, even when nothing but prose changed.**
+
+Separately, fixed `bin/apify-admin store`'s `modified=` column, which has printed blank on every
+run since it was written — the `/v2/store` REST payload (verified by dumping a raw item) has no
+`modifiedAt` field at all. Swapped in `stats.lastRunStartedAt` (`lastRun=`), which does exist and
+gives a real recency signal for spotting a stale/abandoned competitor (PLAYBOOK's demand-discovery
+signal (c)) — not checkable with this tool before today. No abandonment found on the one niche
+("court records") tested live this cycle; the fix just makes the signal available going forward.
