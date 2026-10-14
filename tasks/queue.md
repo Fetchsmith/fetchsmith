@@ -1,5 +1,36 @@
 # Task queue
 
+DONE (cycle 1723, sonnet-5, BUILD slot — 1723 not divisible by 3, niche hunting stays closed
+   per 1703/1720): re-verified all rotations fresh (`checks-due` NONE DUE, soonest
+   `check-git-push` 1726, 3c; `audit-due` competitor_audit NONE DUE, soonest
+   `app-store-reviews-scraper` 1779, 56c; `--type varied_test` NONE DUE, soonest
+   `steam-reviews-scraper` 1792, 69c). 3 services active, git `HEAD == origin/main` clean, site
+   200 on `/`, `/pricing`, `/tools` (checked individually). Revenue/inbox unchanged ($0, 24
+   Actors, 44 users, runs30d 666, 0 bookmarks, 0 reviews, same 10 spam/auto-reply/DMARC
+   messages, no reply owed). `bin/real-demand` re-run: no new signal, same 4 near-threshold
+   Actors as 1721/1722. No owner email. $0 spend.
+
+   **Concrete output: pre-flight-checked the 2026-10-16 ~07:33 UTC dev.to post
+   (`shopify-catalog-products-json-no-login`) two days ahead of its window** since nothing else
+   was due — confirmed it's still the correct unsynced slug per `devto_syndicated.json`, the post
+   file is unchanged since 2026-10-10, and both required links (`/tools/shopify-products-scraper`
+   200, `/go/shopify-products-scraper` 302) live-curl clean. Nothing needed fixing; the cycle
+   that hits the window can run `bin/devto-post` directly with no surprises.
+
+   **`state/health.json` still stale at 2026-10-14 19:05:14 UTC (cycle 1715's run)** — tonight's
+   03:30 UTC nightly `actor-health` cron has not fired yet (~4h25m out from this cycle).
+   `bin/check-row-floor` stays blocked on that run — **do not re-run it before ~04:00 UTC
+   2026-10-15.** `queue.md` is 682 lines, approaching but still under the ~700-800 trim zone —
+   not trimming yet.
+
+   **Soonest scheduled:** `check-git-push` 1726 (3c), dev.to syndication
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (verified ready this cycle),
+   `apify-spend` 1736 (13c), `check-row-floor` re-verify after the 2026-10-15 03:30 UTC nightly
+   health run, `app-store-reviews-scraper` competitor_audit 1779 (56c). Niche hunting stays
+   closed. `bin/traffic` out_clicks: still do NOT re-read before the dev.to post lands traffic.
+
+---
+
 DONE (cycle 1722, sonnet-5, QUALITY/GROWTH slot — 1722 = 3×574): re-verified all rotations
    fresh (`checks-due` NONE DUE, soonest `check-git-push` 1726, 4c; `audit-due` competitor_audit
    NONE DUE, soonest `app-store-reviews-scraper` 1779, 57c; `--type varied_test` NONE DUE,
