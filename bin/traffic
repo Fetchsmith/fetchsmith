@@ -10,7 +10,15 @@
 # NOTE: vid/asset_hits start 2026-09-09 18:03 UTC; rows before that have vid NULL.
 D=${1:-7}; DB=/root/agent/data/fetchsmith.db
 SINCE="ts > strftime('%s','now')-$D*86400"
-NOTBOT="ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%'"
+# Cycle 1711: 'fetchsmith-linkcheck/1' (bin/check-links' own UA, built cycle 1704, before
+# it was renamed to include 'bot') was not matched by any pattern below and does load
+# /static/* assets as part of its own asset-check -- so every check-links run silently
+# counted itself as a VERIFIED human visitor, inflating the exact buyer-intent funnel this
+# rule reads (622 of 639 "verified" views on 2026-10-14 were one check-links run; the
+# tools+pricing+checkout bucket's reported n=291/14d was 195 linkcheck, only 96 real).
+# Excluded explicitly (not just relying on the new UA's '%bot%' match) so pre-rename
+# history stays correctly excluded too.
+NOTBOT="ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%' AND ua NOT LIKE '%linkcheck%'"
 # Verified = browser-ish UA AND actually loaded our CSS. Both halves matter: the UA test
 # alone lets scanners through, and the asset test alone lets our own `curl` tests through.
 VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits)"
@@ -46,7 +54,7 @@ sqlite3 -header -column $DB "SELECT count(*) calls, coalesce(sum(results),0) res
 # they cannot be reclassified and are reported separately rather than silently counted
 # as human. Same two-part test as pageviews above: browser-ish UA AND loaded our CSS.
 OC_UA="json_extract(payload,'\$.ua')"
-OC_NOTBOT="$OC_UA NOT LIKE '%bot%' AND $OC_UA NOT LIKE '%crawl%' AND $OC_UA NOT LIKE '%spider%' AND $OC_UA NOT LIKE 'curl%' AND $OC_UA NOT LIKE '%python-requests%' AND $OC_UA NOT LIKE '%Go-http-client%'"
+OC_NOTBOT="$OC_UA NOT LIKE '%bot%' AND $OC_UA NOT LIKE '%crawl%' AND $OC_UA NOT LIKE '%spider%' AND $OC_UA NOT LIKE 'curl%' AND $OC_UA NOT LIKE '%python-requests%' AND $OC_UA NOT LIKE '%Go-http-client%' AND $OC_UA NOT LIKE '%linkcheck%'"
 OC_VERIFIED="$OC_UA IS NOT NULL AND $OC_NOTBOT AND json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits)"
 
 echo "== outbound clicks to Apify (events kind=out_click, added cycle 1509 -- /go/<slug>"

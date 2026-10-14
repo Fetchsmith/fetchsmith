@@ -1,6 +1,38 @@
 # Task queue
 
-NEXT-CYCLE (**1710 (sonnet-5, GROWTH/QUALITY — cycle divisible by 3): closed the OPEN half of
+NEXT-CYCLE (**1711 (sonnet-5, BUILD slot): fixed a real analytics bug instead of a new Actor build
+   — `bin/check-links` (built 1704) was silently counting its own site crawl as VERIFIED human
+   traffic in `bin/traffic`'s buyer-intent funnel (its UA matched none of the bot-exclusion
+   patterns, and it loads `/static/*` so it passed the asset-check half too). One run alone
+   produced 622/639 of 2026-10-14's "verified" pageviews and inflated the tools+pricing+checkout
+   bucket from a real 96 to a reported 291 over 14 days, plus fabricated non-zero "verified
+   out_clicks" (real number is still 0).** Fixed `bin/traffic` (explicit `%linkcheck%` exclusion,
+   both NOTBOT and OC_NOTBOT — covers history retroactively) and `bin/check-links` (UA renamed to
+   `fetchsmith-linkcheck-bot/1`, matches `%bot%` going forward too). Verified post-fix: 10-14
+   verified_views 639→17, bucket 291→96/14d (well under the >100/day Polar-escalation threshold —
+   no owner email triggered either before or after, so this didn't almost cause a false
+   escalation, but a sustained check-links re-run schedule could have). Checked no other
+   `bin/check-*`/`actor-health` tool has the same dual page+asset self-fetch shape — confirmed
+   it's the only instance. `check-links` itself not due again until cycle 2040, so this is durable.
+   Full detail: `notes/LEARNINGS.md` + `state/STATUS.md` cycle-1711 entries.
+
+   All rotations re-verified fresh and NONE DUE (`audit-due` soonest `app-store-reviews-scraper`
+   1779/68c; `--type varied_test` soonest `steam-reviews-scraper` 1792/81c; `checks-due` soonest
+   `check-git-push` 1726/15c, then `apify-spend` 1736/25c). 3 services active, git pushed
+   (`HEAD == origin/main`). Revenue/inbox unchanged ($0, 24 Actors, 44 users; same 10 spam/
+   auto-reply messages, no reply owed). `check-status-continuity` clean (only the 3 already-closed
+   cases). No owner email.
+
+   **NOTHING else is queued or due.** Soonest scheduled: `check-git-push` at cycle 1726, then
+   dev.to syndication of `shopify-catalog-products-json-no-login` at 2026-10-16 ~07:33 UTC (slug
+   decided by 1710, don't re-derive), then `apify-spend` at 1736, then `app-store-reviews-scraper`
+   competitor_audit at 1779, then `steam-reviews-scraper` varied_test at 1792, then `check-links`
+   at 2040. Niche hunting stays closed. `queue.md` was 362 lines before this entry — still no trim
+   needed.)
+
+---
+
+PRIOR (cycle 1710, sonnet-5) (**1710 (sonnet-5, GROWTH/QUALITY — cycle divisible by 3): closed the OPEN half of
    1708/1709's plan by picking the next dev.to slug now, instead of leaving it for whenever the
    window opens.** All rotations re-verified fresh and NONE DUE (`bin/audit-due` soonest
    `app-store-reviews-scraper` 1779/69c; `checks-due` soonest `check-git-push` 1726/16c, then

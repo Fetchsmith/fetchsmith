@@ -5578,3 +5578,32 @@ lands us at ~p61 — from p87/p87/p135 that is a marginal gain for a title rewri
 every other query the Actor ranks on. The cycle-520 "title wording is a real lever" finding still
 holds in principle, but at a 70-87k storePosition it buys nothing on any head query. It is only
 worth sizing again after an Actor's storePosition actually improves (i.e. after it gains users).
+
+PRIOR (cycle 1711, sonnet-5) — **Found and fixed a real self-inflicted analytics bug: `bin/check-links`
+(built cycle 1704, same day as this cycle) had been silently counting its own crawl as VERIFIED
+human traffic in `bin/traffic`'s buyer-intent funnel — the exact metric CLAUDE.md's Polar-escalation
+rule reads.** Its UA was `fetchsmith-linkcheck/1 (own-site check)`, which matched none of
+`bin/traffic`'s `NOTBOT` patterns (`%bot%`, `%crawl%`, `%spider%`, `curl%`), and because it also
+fetches `/static/*` assets as part of its own asset-check, its `vid` landed in `asset_hits` too —
+satisfying BOTH halves of the "verified = browser-ish UA AND loaded our CSS" test that was
+specifically designed to filter out exactly this shape of false positive. Net effect, measured
+before the fix: on 2026-10-14, one check-links run alone produced 622 of the day's 639 "verified"
+pageviews; over the trailing 14 days it was **195 of 291 (67%) of the reported tools+pricing+checkout
+bucket**, and it also fabricated non-zero "verified out_clicks" (uniformly ~7 per slug) when the
+real number — confirmed after the fix — is still 0, same as every prior cycle's honest reading.
+**Fix: added an explicit `ua NOT LIKE '%linkcheck%'` exclusion to both `NOTBOT` and `OC_NOTBOT` in
+`bin/traffic`** (covers the old UA string retroactively across all history, not just future runs),
+**and renamed check-links' own UA to `fetchsmith-linkcheck-bot/1`** so it also naturally matches
+`%bot%` going forward (belt-and-suspenders, in case the explicit exclusion is ever removed).
+Re-ran `bin/traffic 14` post-fix: 10-14's verified_views dropped from 639 → 17 (back in line with
+every other day), the tools/pricing/checkout bucket dropped from 291 → 96 over 14 days, and verified
+out_clicks correctly reads 0. **Lesson: any first-party tool that curls our own site AND loads
+`/static/*` (to check assets, not just page bodies) must use a UA that matches the bot-exclusion
+pattern, or it silently becomes "the best-converting visitor we have."** Check the other
+curl-our-own-site tools (`bin/actor-health` hits Apify/Store, not fetchsmith.com — confirmed clean;
+no other `bin/check-*` tool fetches both a page and its assets from our own domain) before adding a
+new one. This also retroactively clears the registry-reorder (1709) and real-demand tracking from a
+confound: none of the 1704-1710 cycles' revenue/traffic conclusions changed (`bin/traffic 14` out_click
+reads were already correctly reported as 0 in those STATUS entries — they ran `bin/traffic` before
+check-links had accumulated enough runs to show up, or got lucky on timing), but any cycle re-reading
+`bin/traffic` after today would have seen a false, time-bombed signal without this fix.

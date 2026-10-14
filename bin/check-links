@@ -84,7 +84,7 @@ def normalise(page, raw):
 
 def main():
     client = httpx.Client(timeout=30, follow_redirects=False,
-                          headers={"User-Agent": "fetchsmith-linkcheck/1 (own-site check)"})
+                          headers={"User-Agent": "fetchsmith-linkcheck-bot/1 (own-site check)"})
 
     # Seed the crawl set with the sitemap, which is the site's own claim about what exists.
     pages = {normalise(BASE, p) for p in SEEDS}
