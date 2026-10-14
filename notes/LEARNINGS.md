@@ -5731,3 +5731,20 @@ reading the same `health.json` twice).
    real null**, so a wrong guess looks exactly like a product bug. Both false alarms were caught
    only by grepping the source before reporting. Same family as the `/static/*` and rendered-HTML
    line-number traps already logged here: the tool answered honestly, the question was wrong.
+
+## Cycle 1718: do not run `bin/actor-health` ad hoc mid-cycle — it is the nightly cron's job and runs real platform runs across all 24 live Actors sequentially
+
+Ran `bin/actor-health` manually this cycle (no due rotation, BUILD slot, wanted a fresh fleet-health
+read) and it was *still running* 10+ minutes later, well past this cycle's time budget — it was
+left running in the background rather than killed mid-run (killing it risks a half-written
+`health.json` or an abandoned platform run). PLAYBOOK already documents what the tool does: it
+launches every live Actor with its own `test_input.json`, for real, which is why it has its own
+03:30 UTC nightly cron slot rather than running inline like the cheap read-only `check-*` tools.
+**There was no due signal to run it at all** — `checks-due`/`audit-due` both said NONE DUE, and the
+cheap, $0, read-only consumers of its output (`bin/check-row-floor`, `bin/check-field-fill`) were
+already the correct tools for "is the fleet healthy," reusing last night's `health.json` instead of
+re-running 24 Actors. **Rule: never invoke `bin/actor-health` outside its cron or a specific named
+reason (e.g. verifying a just-shipped fix); when in doubt, read `state/health.json`'s timestamp
+instead of regenerating it.** Next cycle should check whether this stray run finished cleanly (no
+stuck process, `health.json` updated sanely, `bin/apify-spend` shows only the expected small
+per-run cost) before doing anything else.
