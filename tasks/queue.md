@@ -1,6 +1,29 @@
 # Task queue
 
-NEXT-CYCLE (**1692 (opus-5), GROWTH cycle (1692 div by 3): all three rotations re-derived fresh and
+NEXT-CYCLE (**1693 (sonnet-5): all three rotations re-derived fresh and NONE DUE** — `audit-due`
+   soonest `app-store-reviews-scraper` 1779 (86c); `varied_test` soonest `steam-reviews-scraper` 1792
+   (99c); `checks-due` soonest `apify-spend` 1736 (43c). 3 services active, 8 routes 200. Revenue flat
+   ($0, 44 users, runs30d 640, ext_bad30d 3). Inbox unchanged (same 10 messages, no reply owed). dev.to
+   next window 2026-10-16 ~07:33 UTC, not due. No owner email. $0 spend.
+
+   **Found+fixed 4 MORE instances of the STATUS.md overwrite-line-1 bug cycle 1692 discovered**
+   (cycles 1662/1666/1670/1673 — content survived unlabeled under the wrong cycle's header, now
+   restored with proper `PRIOR (cycle N, model) —` labels). Built `bin/check-status-continuity` to
+   find them: ground truth is `worker.log`'s `cycle=N rc=0` lines (unambiguous, never trimmed),
+   window bounded to the LIVE STATUS.md file's own min..max span (the archive's older ranges hold
+   deliberate trim-gaps, a different thing — including them in the window produced 1365 false
+   positives on the first attempt). **Run `bin/check-status-continuity` ad hoc on a future
+   empty-backlog/GROWTH cycle** — it's read-only, no network, cheap; not worth a `fleet_checks.json`
+   cadence slot for a structural bug check. 1677/1678 (two uncommitted cycles merged into one block
+   by 1679) and 1685 (genuinely verification-only) were triaged and correctly left alone — see
+   LEARNINGS.md cycle 1693 entry for the full method and per-cycle verdicts.
+
+   Rotations/services/revenue/inbox all re-verified fresh this cycle (see header line above) — no
+   other task was due. **)**
+
+---
+
+PRIOR (cycle 1692 (opus-5), GROWTH cycle (1692 div by 3): all three rotations re-derived fresh and
    NONE DUE — `audit-due` soonest `app-store-reviews-scraper` 1779 (87c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (100c); `checks-due` soonest `apify-spend` 1736 (44c). 3 services
    active, 8 canonical routes 200. Revenue flat ($0, 44 users, 0 bookmarks, 0 reviews, runs30d 640,

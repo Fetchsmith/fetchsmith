@@ -5307,3 +5307,47 @@ noting it was restored and why it was missing.
 **Generalises past STATUS.md:** any append-only memory file written by "edit the top in place" has
 this failure mode, and the loss is invisible precisely because the file still reads correctly. Prefer
 insert-above to rewrite-line-1 in `queue.md` too — same shape, same blindness.
+
+## Cycle 1693 (2026-10-14, sonnet-5) — the overwrite-line-1 bug from cycle 1692 was 2x more pervasive than 1692 found, and a bounded diff tool catches it cheaply
+
+Cycle 1692 found 4 instances of the STATUS.md overwrite-in-place bug (1678/1684/1685/1690) and restored
+the 2 that shipped real work. Its own queue note floated "diff cycle numbers in STATUS.md+ARCHIVE against
+git log subjects" as a future checker but called it unbuilt. Built it this cycle as `bin/check-status-continuity`
+and the FIRST naive version (comparing against git log subjects, window = min..max of STATUS.md+ARCHIVE
+headers combined) produced **1365 false positives** — because STATUS_ARCHIVE.md holds old trimmed-off
+ranges with large INTENTIONAL gaps (e.g. cycle 1673's "trim after it truncated on read" discarded whole
+batches on purpose), so including the archive's own span in the window flags centuries of deliberate
+compaction as if it were loss. git log subjects were also hopeless as ground truth: only 1110/2017 commit
+subjects follow the `^cycle N:` convention cleanly, the rest use `state: cycle N —`, `for cycle N handoff`,
+or mention an unrelated cycle N in prose.
+
+**Fix: use `logs/worker.log`'s `cycle=N rc=0` lines as ground truth (never trimmed, cycle 1 onward, totally
+unambiguous), and bound the checked window to the LIVE STATUS.md file's own min..max cycle** (not the
+archive's) — gaps inside that live, currently-dense window are anomalous; gaps in the archive's older
+ranges are deliberate trims, a different and already-understood phenomenon. That dropped the false-positive
+count from 1365 to **7**, all inside the current 1661-1692 live window.
+
+**Manually triaged all 7 by diffing each cycle N's successor commit for a `+PRIOR (cycle N` line
+(`git show <N+1's commit> -- state/STATUS.md | grep -c '^+PRIOR (cycle N'`, 0 = bug fired):**
+- **1662, 1666, 1670, 1673 — all 4 are real, previously-undetected instances of the exact same bug**
+  (successor cycle overwrote line 1 without demoting). Content was never deleted in any of them — it
+  survived as an unlabeled paragraph sitting under the WRONG cycle's header (e.g. cycle 1670's
+  court-records-scraper TIMED-OUT investigation was sitting unlabeled under cycle 1669's block, read by
+  every cycle since as if 1669 had written it). Restored all 4 with a `PRIOR (cycle N, model) —` label
+  plus a one-line "restored by 1693" note, same recipe as 1692's.
+- **1677/1678 — already known, and a different (worse) variant**: these two cycles edited STATUS.md but
+  never `git commit`ed (cycle 1679's own PROCESS FINDING), so their edits landed as uncommitted
+  overwrites on top of each other and then got git-committed as ONE combined block by 1679 with no
+  per-cycle attribution at all. Not re-litigated this cycle — 1679's own write-up already documents the
+  mechanism, and un-merging two bundled, unlabeled cycles' prose after the fact is unreliable guesswork,
+  not restoration.
+- **1685 — genuinely verification-only** (confirmed via worker.log's own cycle-1685 completion summary:
+  "Committed `758ede7b`, working tree clean... No owner email warranted"). Nothing of substance to
+  restore; left as accepted compaction, matching 1692's original call.
+
+**So the true count is now 8 known instances (1662/1666/1670/1673/1677/1678/1684/1690 lost or merged,
+1685 lost-but-empty), not 4** — the bug was firing roughly every other cycle through the 1660s-1670s, not
+a rare one-off. `bin/check-status-continuity` is a read-only, no-network, ~60-line script; run it any
+GROWTH/empty-backlog cycle as a standing option (it is NOT on `fleet_checks.json` cadence — it is cheap
+enough to just run ad hoc, and registering it would only matter if it needs repeating on a schedule, which
+a structural bug check doesn't).

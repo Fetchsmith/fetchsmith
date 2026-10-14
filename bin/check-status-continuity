@@ -1,0 +1,90 @@
+#!/root/agent/venv/bin/python
+"""Did any cycle that completed successfully end up with NO block in STATUS.md /
+STATUS_ARCHIVE.md? (added cycle 1693)
+
+Usage: bin/check-status-continuity
+
+Read-only, no network. Catches the bug class cycle 1692 found by hand: a cycle
+prepends its own block by overwriting the OLD top block's header line in place
+(instead of demoting it to a `PRIOR (cycle N, ...)` block below), silently deleting
+that cycle's entire record from both the live file and the archive. The file still
+reads perfectly well-formed afterwards -- it is just one cycle shorter -- so no
+existing checker (line-count watchers, grep-for-a-cycle-number lookups) notices
+unless someone goes looking, which is exactly what happened at 1678/1684/1685/1690.
+
+METHOD -- "ground truth" is worker.log, not git log. git log subjects have used at
+least half a dozen different "cycle N" phrasings over 1693 cycles (leading
+"cycle N:", "state: cycle N --", "for cycle N handoff", mentions of an unrelated
+cycle N inside prose...), so diffing against git log subjects the way 1692's queue
+note first proposed would flag a pile of false positives from format drift. Every
+cycle, by contrast, writes an unambiguous `cycle=N model=... start` / `cycle=N rc=0
+... turns=N` pair to logs/worker.log (never trimmed, cycle 1 onward) -- rc=0 means
+the cycle finished its run and should have committed a STATUS.md block per the
+CLAUDE.md protocol's step 3.
+
+STATUS.md/STATUS_ARCHIVE.md block headers are matched ANCHORED to line-start
+(`^Updated: ... by cycle N` and `^PRIOR (cycle N, ...)`) -- unanchored matching
+picks up stray "cycle N" mentions inside body prose (lesson references, "by cycle
+1514 found...") as false headers. Older cycles' blocks get intentionally discarded
+in periodic trims (e.g. cycle 1673's "Trim STATUS.md and queue.md back under the
+single-Read token cap"), so this only checks the window actually retained today
+(the min..max cycle number found across both files) -- a cycle outside that window
+missing its block is expected compaction, not a bug.
+"""
+import re
+import sys
+
+STATUS = "/root/agent/state/STATUS.md"
+ARCHIVE = "/root/agent/state/STATUS_ARCHIVE.md"
+LOG = "/root/agent/logs/worker.log"
+
+HEADER_RE = re.compile(r"^Updated:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)", re.MULTILINE)
+
+
+def header_cycles(path):
+    with open(path) as f:
+        text = f.read()
+    out = set()
+    for m in HEADER_RE.finditer(text):
+        out.add(int(m.group(1) or m.group(2)))
+    return out
+
+
+def completed_cycles():
+    with open(LOG) as f:
+        text = f.read()
+    return set(int(n) for n in re.findall(r"cycle=(\d+) rc=0", text))
+
+
+def main():
+    live = header_cycles(STATUS)
+    archived = header_cycles(ARCHIVE)
+    if not live:
+        print("No block headers found in STATUS.md -- check the regex, don't trust this run.")
+        sys.exit(1)
+    retained = live | archived
+    # Window is bounded by the LIVE file only. STATUS_ARCHIVE.md holds older
+    # trimmed-off ranges with large INTENTIONAL gaps (whole batches dropped in
+    # periodic trims, e.g. cycle 1673's "trim after it truncated on read") --
+    # including the archive's own min/max would flag hundreds of cycles that
+    # were deliberately discarded, not lost. The live file's own span is where
+    # one-cycle gaps are anomalous and worth flagging.
+    lo, hi = min(live), max(live)
+    done = completed_cycles()
+    expected = {c for c in done if lo <= c <= hi}
+    missing = sorted(expected - retained)
+
+    print(f"Retained block window: cycle {lo}..{hi} ({len(retained)} blocks found).")
+    print(f"Successfully-completed cycles in that window (worker.log rc=0): {len(expected)}.")
+    if missing:
+        print(f"\nMISSING -- {len(missing)} cycle(s) completed but have NO STATUS.md/ARCHIVE block:")
+        for c in missing:
+            print(f"  cycle {c}")
+        print("\nRecovery: git log --all --oneline | grep 'cycle <N>' then `git show <hash> -- state/STATUS.md`.")
+        sys.exit(1)
+    else:
+        print("\nNONE MISSING -- every completed cycle in the retained window has a block.")
+
+
+if __name__ == "__main__":
+    main()
