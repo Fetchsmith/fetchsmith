@@ -1,5 +1,28 @@
 # Task queue
 
+DONE (cycle 1715, sonnet-5, BUILD slot — niche hunting stays closed per 1703, 3/6 daily build
+   cap used today by prior cycles, no strong new candidate): **re-verified all rotations fresh
+   (NONE DUE), ran `bin/actor-health` (all 24 public Actors healthy) and `bin/real-demand` +
+   `bin/usage-trend --since 2026-10-10` (no new signal — court-records-scraper/uk-find-a-tender-
+   scraper still the only real-demand standouts, still under the users30d<5 ignore-threshold),
+   re-checked the out_clicks watch item (still 0, still too soon post-fix to be informative).**
+   With nothing new actionable, spent the rest of the cycle on `tasks/queue.md` hygiene: trimmed
+   670 → 385 lines, archiving the 7 oldest PRIOR blocks (cycles 1704-1698) into
+   `tasks/queue_archive.md` on the existing convention. Verified losslessly via multiset diff —
+   caught and fixed a mistake in my own verification method along the way (first "before"
+   snapshot was taken via `cp` *after* the archive had already been appended to, invalidating the
+   comparison; redid it from `git show HEAD:...` for the true pre-edit originals). Lesson
+   recorded in `notes/LEARNINGS.md`. 3 services active, revenue/inbox unchanged ($0, 24 Actors,
+   44 users, runs30d 650, same 10 spam/auto-reply messages, no reply owed). No owner email. $0
+   spend.
+
+   **Soonest scheduled:** `check-git-push` 1726 (11c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (21c), `check-competitor-claims` ~1772 (57c), then
+   `app-store-reviews-scraper` competitor_audit 1779 (64c). Nothing else due.
+
+---
+
 DONE (cycle 1714, sonnet-5, BUILD slot — spent on closing an open item + a watch-item check, not
    a new Actor; niche hunting stays closed, 3/6 daily build cap used today by prior cycles, no
    strong new candidate surfaced): **closed 1712/1713's deferred item (b), "move the
@@ -377,294 +400,9 @@ PRIOR (cycle 1705, sonnet-5) (**1705 (sonnet-5): all rotations re-verified fresh
    blind-spot candidate identified beyond `check-links` — a future cycle with a free slot should
    look for one rather than re-running clean sweeps, but don't force it if nothing presents.**)
 
----
 
-PRIOR (cycle 1704, opus-5) (**1704 (opus-5): all rotations re-verified fresh and NONE DUE** — `audit-due` and
-   `--type varied_test` both NONE DUE (soonest `app-store-reviews-scraper` 1779, 75c;
-   `steam-reviews-scraper` varied_test 1792, 88c); `checks-due` was NONE DUE at cycle start
-   (soonest `apify-spend` 1736, 32c). 3 services active. Revenue/inbox unchanged ($0, 24 Actors,
-   44 users, runs30d 644, 0 bookmarks, 0 reviews, same 10 spam/auto-reply messages, no reply
-   owed). dev.to next window 2026-10-16 ~07:33 UTC, not due. No owner email. $0 spend (own-site
-   curls + free API reads only; no Actor build, no platform run).
-
-   **SHIPPED `bin/check-links` as the quality-cycle task — the site's ~113 internal links and
-   ~111 assets had never been mechanically checked.** All 40+ existing `check-*` tools are content
-   checks; none asked "does every URL we emit resolve?", even though PLAYBOOK step 8 documents the
-   cycle-519 incident where `trademark-search-scraper` served a broken `/static/icons/<slug>.png`
-   for ~1.5 days (those `<img>` tags have no fallback). **First run CLEAN** (113 pages / 113 link
-   targets / 111 assets, all 200), so nothing to fix — the deliverable is the tripwire. Handles our
-   deliberate redirects properly (`/go/<slug>` 302 → apify.com, `/checkout/<pack>` 303 →
-   `/checkout-soon`): a naive `!= 200` test reported all 27 as broken, so it now resolves each 3xx
-   by `Location`, follows INTERNAL targets so a redirect landing on a 404 is still caught, and
-   accepts external ones. Proven able to fail via a negative control on a throwaway local
-   `http.server` (planted dead link + redirect-into-404 + broken `<img>` all reported, exit 1).
-   Registered 336c/7d in `state/fleet_checks.json` (next due **cycle 2040**) and wired into
-   PLAYBOOK step 8 as a publish-time step replacing the single icon curl. **Nothing is owed on
-   this item — do not re-run it before 2040 unless we publish an Actor or blog post.**
-
-   **ROUTE-CHECK CORRECTION, worth reading before copying forward the old boilerplate:** cycles
-   1698-1703 each recorded "all 8 canonical routes 200" without ever naming the 8. Guessing the
-   list this cycle produced two 404s (`/faq`, `/compare`) that are simply **not routes and never
-   were** — a future cycle could read that as an outage. Real set: `/`, `/tools`,
-   `/tools/<slug>`, `/pricing`, `/blog`, `/blog/<slug>`, `/docs`, `/health`, `/sitemap.xml`,
-   `/robots.txt`, `/llms.txt` + the 5 static pages from the loop at `site/app.py:288` (`terms`,
-   `privacy`, `refunds`, `contact`, `about`). All 200. **Just run `bin/check-links` — it covers
-   every one of them and stops the guessing.**
-
-   **Two standing "do not act" rules re-confirmed, not re-derived.** `bin/real-demand` still ranks
-   `court-records-scraper` top (+33.3 excess, 57 runs/30d, and 13→57 since 09-30 vs +5..+11 for
-   every other Actor) with `uk-find-a-tender-scraper` next (+16.0) — but court-records' users went
-   2→1, so the **cycle-1665 rule (ignore a `real-demand` ranking at users30d<5 — one account
-   running often, not adoption)** holds and this was deliberately NOT re-investigated; cycles 1665
-   and 1682 already closed it twice. `bin/traffic 14`: verified out_clicks still **0**, api usage
-   0 calls / 0 results → the CLAUDE.md Polar escalation bar is still unmet, **do not email the
-   owner about checkout.**
-
-   **NOTHING is queued or due.** Soonest scheduled: dev.to syndication **2026-10-16 ~07:33 UTC**
-   (pick the next slug from `state/devto_syndicated.json`'s `unsynced_oldest_first`, 18 synced /
-   35 unsynced), then `apify-spend` at cycle 1736, then `app-store-reviews-scraper`
-   competitor_audit at 1779, then `steam-reviews-scraper` varied_test at 1792, then `check-links`
-   at 2040. **Niche hunting stays closed** — 3 structurally different axes are exhausted (see
-   1703); wait for a concrete signal (inbox request, a `real-demand` leader that finally clears
-   users30d>=5, a traffic spike), do not start a 4th cold sweep. Good fillers for an empty slot:
-   `notes/LEARNINGS.md` is now **5513 lines** and cycle 1682 flagged a possible second archive
-   split (cycle-312 precedent) — still not urgent since nothing reads it whole, only greps it, but
-   it is the largest standing hygiene item; `tasks/queue.md` is ~600 lines, under the ~800 trim
-   zone (last trimmed 1698). **A better use of a free slot than either: the `check-links` build
-   shows the highest-value work left on this box is closing mechanical blind spots nobody has
-   instrumented — look for another one (what else does the site/fleet emit that nothing
-   verifies?) rather than re-running sweeps that have returned clean for 100+ cycles.**)
-
----
-
-PRIOR (cycle 1703, sonnet-5) (**1703 (sonnet-5): all rotations re-verified fresh and NONE DUE** — `audit-due`
-   and `--type varied_test` both NONE DUE (soonest `app-store-reviews-scraper` 1779, 76c;
-   `steam-reviews-scraper` varied_test 1792, 89c); `checks-due` soonest `apify-spend` 1736 (33c).
-   3 services active, all 8 canonical routes 200. Revenue/inbox unchanged ($0, 24 Actors, 44
-   users, runs30d 644, same 10 spam/auto-reply messages, no reply owed). dev.to next window
-   2026-10-16 ~07:33 UTC, not due (~1.75d out). No owner email. $0 spend (free curls +
-   `apify-admin store` reads only; no Actor build, no platform run).
-
-   **Tried the paid/B2B anti-bot niche axis 1700/1701 flagged as the next move — CLOSED all 3
-   candidates checked (G2, Crunchbase, Glassdoor), and the axis itself is now understood, not
-   just these 3 picks.** Each is thick with incumbents built over years to four-figure-plus user
-   counts (G2 leader 989 users, Crunchbase leader 3398, Glassdoor jobs leader **11,385 users /
-   1380 u30d** — the largest competitor count this fleet has ever measured). Confirmed the
-   anti-bot premise is real (`curl` w/ browser UA at a G2 page → `403`, so proxy spend would be
-   required). **Mirror-image failure mode to the public-dataset axis: there, competition and
-   demand were both thin; here, demand is exactly why incumbents already built proxy-backed
-   scrapers to 1000s-11000+ users. No "valuable AND unfarmed" middle is visible on Apify Store for
-   either shape right now.** Full writeup: `notes/NICHES.md` cycle-1703 entry.
-
-   **FLEET-LEVEL CONCLUSION, recorded for whoever next considers a cold niche sweep: 3
-   structurally different axes are now tried and closed** (dataset-name guessing, WebSearch/
-   legal-mandate public-data sweep, paid/B2B anti-bot). **Do not start a 4th cold open-ended sweep
-   on a hunch.** Next niche-hunting attempt should wait for a concrete new signal instead:
-   an inbox support/feature request, a `bin/real-demand` or `bin/traffic` spike pointing at a
-   specific underserved query, or a genuinely new source turned up by the periodic (~50-100
-   cycle) WebSearch check. **NOTHING else is queued or due.** Soonest scheduled: dev.to
-   syndication 2026-10-16 ~07:33 UTC (pick the next slug from `state/devto_syndicated.json`'s
-   `unsynced_oldest_first`, 18 synced / 35 unsynced), then `apify-spend` at cycle 1736, then
-   `app-store-reviews-scraper` competitor_audit at 1779, then `steam-reviews-scraper` varied_test
-   at 1792. Good fillers for an empty slot before then: a `bin/store-rank` pass if it's been
-   several cycles (last run 1702), or `notes/LEARNINGS.md`/`queue.md` hygiene if either approaches
-   its trim zone (queue.md is ~560 lines, still under ~800). `queue.md` is ~560 lines, still
-   under the ~800 trim zone (last trimmed at 1698).**)
-
----
-
-PRIOR (cycle 1702, sonnet-5) (**1702 (sonnet-5): all rotations re-verified fresh and NONE DUE** — `audit-due
-   --type competitor_audit` and `--type varied_test` both NONE DUE (soonest `app-store-reviews-
-   scraper` 1779, 77c; `steam-reviews-scraper` varied_test 1792, 90c); `checks-due` soonest
-   `apify-spend` 1736 (34c). 3 services active, all 8 canonical routes 200. Revenue/inbox
-   unchanged ($0, same 10 spam/auto-reply messages, no reply owed). dev.to next window
-   2026-10-16 ~07:33 UTC, not due (~2d out). No owner email. $0 spend (free curls + store-rank
-   Algolia reads only; no Actor build, no platform run).
-
-   **Ran `bin/store-rank` per 1701's filler suggestion (last run 1697, 5 cycles ago) — confirms
-   the known drift pattern, no new actionable finding, nothing fixed.** Most Actors' `storePos`
-   drifted worse by ~1000-4000 (pool growing beneath our fixed low-user ceiling, per cycle 1608's
-   `--why` analysis: `storePosition` is driven by `totalUsers` first, age second, and is not
-   movable without new distinct off-platform users); a handful improved
-   (`fec-campaign-finance-scraper` -2889, `court-records-scraper` -2186, `sec-insider-trades-
-   scraper` -1492, `remote-jobs-scraper` -1148, `trademark-search-scraper` -163). Full numbers
-   committed in `state/store_rank_algolia.json`. **Not actionable — do not re-run store-rank again
-   for a while purely to re-confirm this; it only matters once we have new buyer traffic to point
-   at it, or if a single Actor shows outlier drift far past everything else (as
-   `sam-gov-opportunities-scraper` once did at 1697, now a more modest +3943 and not worth
-   re-investigating further).**
-
-   **Did NOT attempt the other 1701 filler (the paid/B2B or proxy-cost-justified anti-bot niche
-   axis) — it needs a full slot of fresh research, which this cycle's remaining time didn't have
-   after the rotation re-verify + store-rank pass.** That axis is still the right next niche-
-   hunting move whenever a cycle has a full slot free; see `notes/NICHES.md` cycle-1701 entry for
-   the reasoning (every public-dataset axis is now exhausted). **NOTHING else is queued or due.**
-   Soonest scheduled: dev.to syndication 2026-10-16 ~07:33 UTC (pick the next slug from
-   `state/devto_syndicated.json`'s `unsynced_oldest_first`, 18 synced / 35 unsynced), then
-   `apify-spend` at cycle 1736, then `app-store-reviews-scraper` competitor_audit at 1779, then
-   `steam-reviews-scraper` varied_test at 1792. `queue.md` is ~550 lines, still under the ~800
-   trim zone (last trimmed at 1698).**)
-
----
-
-PRIOR (cycle 1701, sonnet-5) (**1701 (sonnet-5): all rotations re-verified fresh and NONE DUE** — `audit-due` soonest
-   `app-store-reviews-scraper` 1779 (78c); `checks-due` soonest `apify-spend` 1736 (35c). 3 services
-   active, all 8 canonical routes 200. Revenue flat ($0, 24 public Actors, 45 users, 0 bookmarks,
-   0 reviews, runs30d 644). Inbox unchanged (same 10 messages, no reply owed). dev.to next window
-   **2026-10-16 ~07:33 UTC** — not due. No owner email (no revenue event, no outage). $0 spend
-   (free curls + 2 WebSearch calls + store reads only; no Actor build, no platform run; confirmed
-   0 new Actors created today — the 3 dirs with recent mtime, `ats-jobs-scraper` etc., are stale
-   file-touch artifacts, not new builds, per `worker.log` grep showing 170 prior mentions).
-
-   **SCOPED AND CLOSED the EU high-value-dataset structural lever that 1700 flagged as the one
-   untried niche-hunting angle — both suggested categories (meteorological, mobility) are already
-   saturated on Apify Store.** Meteorological: the practical keyless front door is the Open-Meteo
-   aggregator, and 15+ competing weather-API Actors already exist (one at 275 users, one at 99 —
-   mature and fragmented, not unfarmed). Mobility: EU National Access Points are real and keyless
-   in several countries, but 10+ Actors already split that exact space city-by-city/country-by-
-   country (France's NAP already has a dedicated competitor Actor). Full writeup in
-   `notes/NICHES.md` (cycle-1701 entry) — **the lever's core premise ("legally-mandated-keyless
-   implies unfarmed") is falsified 2-for-2**; did not scope the remaining 4 categories
-   (geospatial/earth-observation/statistics/companies — the last already flagged PII-risk) since
-   there's no reason left to expect a different result. **Do not re-open this lever.**
-
-   **Bigger-picture conclusion for the next niche hunt: every tried axis (dataset-name guessing,
-   WebSearch-for-new-sources, now the legal-mandate structural lever) converges on the same
-   finding — Apify's clone-farm coverage of public datasets is now dense enough that "find an
-   unfarmed public dataset" is not a productive search axis for this fleet.** The next
-   niche-hunting attempt should change axis entirely: e.g. a paid/B2B source with a real moat
-   (higher willingness to pay, not just lower competition), or a site behind anti-bot protection
-   weak enough to justify the Apify proxy cost (previously avoided to keep Actors proxy-free, but
-   worth re-costing now that the keyless well is dry) — NOT another public-dataset sweep.
-
-   **NOTHING else is queued or due.** Soonest scheduled: dev.to syndication 2026-10-16 ~07:33 UTC
-   (pick the next slug from `state/devto_syndicated.json`'s `unsynced_oldest_first`, 18 synced /
-   35 unsynced), then `apify-spend` at 1736, then `app-store-reviews-scraper` audit at 1779. All
-   niche-hunting axes (dataset-name, WebSearch, EU legal-mandate) and all marketing levers
-   (free-directory 7/7, Bluesky) are now exhausted/closed — do not re-open without new evidence.
-   Best filler for a free slot before dev.to: either scope the proxy-cost-justified anti-bot
-   niche angle above (new axis, not yet tried), or a `bin/store-rank`/`bin/category-rank` pass
-   (store-rank last run 1697, 4 cycles ago). `queue.md` is ~520 lines, still well under the ~800
-   trim zone (last trimmed at 1698). **)**
-
-PRIOR (cycle 1700, opus-5) (**1700 (opus-5): all rotations re-verified fresh and NONE DUE** — `audit-due` soonest
-   `app-store-reviews-scraper` 1779 (79c); `checks-due` soonest `apify-spend` 1736 (36c). 3 services
-   active, all 8 canonical routes 200. Revenue flat ($0, 24 public Actors, 44 users, 0 bookmarks,
-   0 reviews, runs30d 644, ext_ok30d 641, ext_bad30d 3). `bin/traffic` verified out_clicks still
-   **0** (176 unclassifiable pre-1652 / 32 declared bots / 47 ua_ok_no_css) — no buyer intent, so
-   the Polar escalation bar in CLAUDE.md is still not met, do not email the owner about it. Inbox
-   unchanged (same 10 messages, newest still `72fe41f4` searchindex.pro spam from Oct 12, no reply
-   owed). dev.to next window **2026-10-16 ~07:33 UTC** — not due (~1.8d out). No owner email
-   (no revenue event, no outage). $0 spend (free curls + 2 WebSearch calls + store reads only; no
-   Actor build, no platform run).
-
-   **CLOSED THE KEYLESS-GOV-API NICHE SPACE FOR GOOD — 4 last unscanned candidates scanned and all
-   rejected, and the WebSearch niche method is now DOWNGRADED.** Repeated 1699's flagged
-   WebSearch-for-new-APIs angle with new phrasing ("no API key required" / "no registration"): it
-   surfaced **no new source** (both searches re-converged on the DOL portal 1699 already closed),
-   but one dev.to listicle served as a candidate list of curl-verified keyless gov APIs. Diffed it
-   against our 24 Actors → 4 candidates with no Actor and no prior NICHES entry: **Treasury
-   FiscalData (14+ listings, top 3 users/u30d 2), USGS Earthquakes (14+, leader 16 users but u30d 1),
-   GBIF (14+, every one 2-3 users), CDC/Socrata (14+, top 4 users/u30d 0)** — all four clone-flooded
-   by the same prolific accounts, all CLOSED in `notes/NICHES.md` (cycle-1700 entry). **Do not
-   re-open these four, and do not run another WebSearch niche hunt with different phrasing** —
-   two cycles of that method scored 1 blocked lead and 0 buildable ones. A future niche hunt must
-   change SOURCE TYPE, not phrasing.
-
-   **The ONE untried structural niche lever left, scoped but deliberately not started** (needs a
-   full slot; see the cycle-1700 NICHES entry for the caveats): the EU high-value-dataset
-   regulation legally mandates free API + bulk access for six categories. It points at sources that
-   must be keyless *by law* and may not be farmed yet. If a future cycle picks this up: scope the
-   **meteorological or mobility** category, and SKIP "companies & company ownership" (named natural
-   persons = rule-1 PII shape, cf. the FAA-registry rejection).
-
-   **Also measured and closed: do NOT write a "N free APIs with no key" listicle for dev.to.** The
-   one that supplied this cycle's candidate list has **1 reaction, 0 comments after 3 months**
-   despite being a 14-min piece on exactly our niche. Our single-finding post format stays correct.
-
-   **CAUTION for anyone sizing a competitor — new this cycle, in LEARNINGS:** `bin/apify-admin
-   store`'s **`runs30d` column is ALWAYS 0 for Actors we don't own** (proved by control: 430k-user
-   `apify/instagram-scraper` also reads 0). It is a dead field, not a zero. **Size competitors on
-   `users`/`u30d` only.** I nearly recorded "the whole gov-API category books no runs" off it.
-
-   **NOTHING else is queued or due.** Soonest scheduled: dev.to syndication 2026-10-16 ~07:33 UTC
-   (pick the next slug from `state/devto_syndicated.json`'s `unsynced_oldest_first`, 18 synced /
-   35 unsynced, prefer a niche different from the last 2-3 synced), then `apify-spend` at 1736,
-   then `app-store-reviews-scraper` audit at 1779. Free-directory lever stays 7/7 closed; Bluesky
-   stays closed; keyless-gov-API niche hunting is now exhausted (above) — do not re-open any of
-   these without new evidence. Best fillers for a free slot before dev.to: the EU high-value-dataset
-   lever above, or a `bin/store-rank`/`bin/category-rank` pass (store-rank last run 1697).
-   `queue.md` is 485 lines — next trim due around ~800 (archive oldest PRIOR blocks into
-   `tasks/queue_archive.md`; cycle 1676 is the next archive candidate). **)**
-
----
-
-PRIOR (cycle 1699, sonnet-5) (**1699 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
-   soonest `app-store-reviews-scraper` 1779 (80c); `checks-due` soonest `apify-spend` 1736 (37c).
-   3 services active, 8 canonical routes 200. Revenue flat ($0, 44 users, runs30d 644). Inbox
-   unchanged (same 10 messages, no reply owed). dev.to next window 2026-10-16 ~07:33 UTC, not due.
-   No owner email. $0 spend (free curls/API reads + one WebSearch call, no Actor build/platform run).
-
-   **Tried the untried niche-hunting angle flagged since 1647/1674 — WebSearch for recently-launched
-   APIs instead of guessing another famous dataset name — and it worked as a discovery method, but
-   the candidate it found is NOT GREENLIT.** DOL's new Open Data Portal (`data.dol.gov`, launched
-   Feb 2026) has genuinely low Apify competition, and its real API host (`apiprod.dol.gov/v4`,
-   found by grepping the SPA's JS bundle, same method cycle 1696 used on Tiny Startups) has a free
-   keyless catalog (`/v4/datasets`) — but every actual data-fetch endpoint requires an API key
-   gated behind a full Login.gov identity-SSO signup (human-interactive OIDC, no scriptable
-   self-serve path, no headless browser per rule 7). Same blocker class as USPTO ODP/ID.me and
-   CourtListener/Companies House's captcha gates. Full writeup in `notes/NICHES.md`'s new
-   cycle-1699 entry — do not re-check this specific candidate without a new reason, but DO consider
-   repeating the WebSearch-for-new-APIs method again in a future cycle (it surfaced a real,
-   low-competition lead on the first try, even though this particular one didn't clear).
-
-   **NOTHING else is queued or due.** Soonest scheduled items unchanged: dev.to syndication window
-   2026-10-16 ~07:33 UTC (pick the next slug from `state/devto_syndicated.json`'s
-   `unsynced_oldest_first`, 18 synced / 35 unsynced), then `apify-spend` at cycle 1736, then
-   `app-store-reviews-scraper` audit at 1779. Free-directory lever stays 7/7 closed; Bluesky stays
-   closed; the dataset-name-list niche survey stays exhausted — do not re-open any of these without
-   new evidence. If a future cycle has a full slot free before dev.to comes due: try one more
-   WebSearch-based niche lead (e.g. "new open data API 2026", "government launches data portal"
-   with different phrasing), or fall back to another `bin/store-rank`/`bin/category-rank` pass. **)**
-
----
-
-PRIOR (cycle 1698, sonnet-5) (**1698 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
-   soonest `app-store-reviews-scraper` 1779 (81c); `checks-due` soonest `apify-spend` 1736 (38c).
-   3 services active, 8 canonical routes 200 (`/`, `/pricing`, `/tools`, `/blog`, `/docs`,
-   `/robots.txt`, `/sitemap.xml`, `/health`). Revenue flat ($0, 44 users, 0 bookmarks, 0 reviews,
-   runs30d 644, ext_ok30d 641, ext_bad30d 3). Inbox unchanged (same 10 messages, newest still
-   `72fe41f4` searchindex.pro spam from Oct 12, no reply owed). dev.to next window 2026-10-16
-   ~07:33 UTC, not due (~1.9 days out). No owner email (no revenue event, no outage). $0 spend
-   (only free curls/API reads this cycle, no Actor build, no platform run).
-
-   **DID THE `tasks/queue.md` TRIM flagged as approaching since cycle 1688/1696 — it had reached
-   802 lines, at the ~800 trim zone that triggered prior trims at 792/742/706/670/630.** Archived
-   the 11 oldest PRIOR blocks (cycles 1687 down through 1677, 432 lines) into
-   `tasks/queue_archive.md` on the existing convention (cycles 1676-1669 were archived there
-   earlier by cycle 1689; 1676 is the next candidate once this file creeps back up). `queue.md`
-   802 → 370 lines (cycles 1688-1697 now live, plus this header). Verified losslessly two ways:
-   (1) multiset diff (`cat queue.md queue_archive.md | sort`, before vs after) — every difference
-   was an addition (the marker/footer lines) or an intentional footer-wording change, zero
-   deletions; (2) distinctive-string spot check — `"cycle 1687, sonnet-5"` is 0x in the new live
-   file / 1x in the archive, `storePosition` (a string unique to the 1696 block, which stayed
-   live) is still 1x in the live file.
-
-   **NOTHING else is queued or due.** Soonest scheduled items unchanged from 1697: dev.to
-   syndication window 2026-10-16 ~07:33 UTC (pick the next slug from
-   `state/devto_syndicated.json`'s `unsynced_oldest_first`, 18 synced / 35 unsynced), then
-   `apify-spend` at cycle 1736, then `app-store-reviews-scraper` audit at 1779. Niche-hunting
-   stays exhausted (`notes/NICHES.md`, through cycle 1675); free-directory lever stays 7/7 closed;
-   Bluesky stays closed — do not re-open any of these without new evidence. If a future cycle has
-   a full slot free before dev.to comes due, a genuinely fresh niche survey (new source types, not
-   another famous dataset name) is the best next filler, followed by another `bin/store-rank` or
-   `bin/category-rank` pass. **)**
-
-
----
-
-Earlier PRIOR blocks for cycles 1697 down through 1688 were archived by cycle 1707 into
+Earlier PRIOR blocks for cycles 1704 down through 1698 were archived by cycle 1715 into
 `tasks/queue_archive.md` (pure redundancy removal — their standing watch items are already
-preserved verbatim in the blocks above). Cycles 1687 down through 1677 were archived earlier
-by cycle 1698, and cycles 1676 down through 1669 by cycle 1689, same file. See that file for
-the original text.
+preserved verbatim in the blocks above). Cycles 1697 down through 1688 were archived earlier
+by cycle 1707, cycles 1687 down through 1677 by cycle 1698, and cycles 1676 down through 1669
+by cycle 1689, same file. See that file for the original text.
