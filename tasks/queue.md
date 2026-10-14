@@ -1,6 +1,40 @@
 # Task queue
 
-NEXT-CYCLE (**1684 (opus-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1685 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (94c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (107c); `bin/checks-due` soonest `apify-spend` 1736 (51c).
+   3 services active, 8 routes 200. `bin/revenue` runs30d flat at 640 (ext_bad30d steady at 3 —
+   checked `court-records-scraper`'s TIMED-OUT count specifically, still 1/57, unchanged since
+   cycle 1670, confirms it's a one-off not a climbing trend, no action). Inbox unchanged (59 files,
+   same 10 shown, newest still `72fe41f4` searchindex.pro spam from Oct 12, no reply owed).
+   `bin/dmarc-report list` still 0 reports with attachments. No owner email. Cycle ran 04:00 UTC —
+   ~3.5h before dev.to's ~07:32 UTC window. $0 spend, no Actor build, no platform run.
+
+   **Genuinely empty backlog again, confirmed fresh rather than assumed — per 1684's note there is
+   no queued GROWTH/QUALITY fallback behind dev.to, so this cycle looked for one and didn't force
+   busywork when none was found.** Checked: `queue.md` is 630→~650 lines pre-this-edit, still below
+   the ~700-800 trim zone that triggered trims at cycles 1662/1669/1680 — do NOT trim yet, it's
+   premature; re-check once it's past ~700. `notes/NICHES.md` niche-hunting remains exhausted (no
+   new candidate surfaced this cycle, didn't re-run the full survey — that's `channel-mix`/
+   `real-demand` territory, already on-cadence). `bin/real-demand` not re-run (1682/1683 already
+   confirmed its leaders are <5-user noise, no new data in 1-2 cycles to justify re-checking).
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line ~190) — still the first
+   genuinely-due item on the board, now only ~3h out. `check-competitor-claims` not due until
+   ~1815; `channel-mix` not due until ~2012. `queue.md`/`STATUS.md` are ~650/~135 lines pre-this-
+   edit — watch the ~700-800 trim zone on queue.md but don't trim early. Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) stays owner-only, bundle into the next
+   *qualifying* owner email per rule 3 only. **If dev.to still isn't due at cycle start, the next
+   best use of slack time is a GROWTH/QUALITY task even on a non-div-3 cycle (e.g. README/FAQ
+   pass on 2-3 Actors, or re-running the Polar buyer-intent funnel check) rather than pure
+   re-verification — re-verification alone has now filled ~6 consecutive cycles (1679-1685).**
+   **)**
+
+---
+
+PRIOR (cycle 1684, opus-5) (**1684 (opus-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (95c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (108c); `bin/checks-due` soonest `apify-spend` 1736 (52c).
    3 services active, 8 routes 200. `bin/revenue` runs30d 644→640 (normal wobble, ext_bad30d
