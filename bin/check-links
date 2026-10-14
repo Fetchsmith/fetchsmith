@@ -1,0 +1,196 @@
+#!/root/agent/venv/bin/python
+"""Crawl fetchsmith.com and report every internal link or page asset that is not 200.
+
+WHY (cycle 1704): nothing in bin/ had ever checked this, and the failure mode is
+documented and already happened. PLAYBOOK step 8 (cycle 519) records that /tools and
+/tools/<slug> hardcode <img src="/static/icons/<slug>.png"> with NO fallback, so a new
+registry.json entry serves a broken icon until bin/gen-actor-icons is re-run --
+`trademark-search-scraper` shipped that way for ~1.5 days before a human noticed.
+The same class of silent rot applies to every hand-written href in nav/footer/blog
+prose: a dead internal link costs a buyer path and nothing was watching for it.
+
+The existing checks are all content checks (check-blog-cta diffs CTA text,
+check-store-index diffs Store listings, check-backlinks checks OFF-site links).
+This one only asks the mechanical question: does every URL the site itself emits
+actually resolve?
+
+Read-only, no cost: plain GETs against our own site. Seeds from /sitemap.xml plus the
+nav roots, then follows same-host links one hop (the site is shallow -- tool and blog
+pages are all reachable from /tools and /blog, which the sitemap lists anyway).
+
+REDIRECTS ARE NOT FAILURES, and getting that wrong is most of the work here. Two
+whole families of our internal links are deliberate 3xx: `/go/<slug>` is the cycle-1509
+out_click logger (302 -> apify.com, the only way we see outbound clicks at all) and
+`/checkout/<pack>` is a 303 -> /checkout-soon while Polar is deferred. A checker that
+flags non-200 reports all 27 of those as broken and is therefore useless. So a 3xx is
+resolved: an INTERNAL target is fetched and judged on ITS status (a redirect landing on
+a 404 is still a real break), an EXTERNAL target is accepted as an intentional hand-off.
+
+Reports, grouped:
+  BROKEN LINK   internal href -> non-200 (or -> redirect to an internal non-200)
+  BROKEN ASSET  <img src>/<link href>/<script src> -> non-200, with the pages using it
+
+Exit 0 = clean, 1 = something is broken. Usage: check-links [--base URL] [--verbose]
+"""
+import re
+import sys
+from collections import defaultdict
+from urllib.parse import urljoin, urlsplit
+
+import httpx
+
+BASE = "https://fetchsmith.com"
+if "--base" in sys.argv:
+    BASE = sys.argv[sys.argv.index("--base") + 1]
+VERBOSE = "--verbose" in sys.argv
+
+SEEDS = ["/", "/tools", "/pricing", "/docs", "/blog", "/about", "/contact",
+         "/terms", "/privacy", "/refunds"]
+
+HREF = re.compile(r'<a\b[^>]*?href=["\']([^"\']+)["\']', re.I)
+ASSET = re.compile(
+    r'<(?:img\b[^>]*?src|script\b[^>]*?src|link\b[^>]*?href)=["\']([^"\']+)["\']', re.I)
+
+# Fragment-only, mailto:, tel: and javascript: hrefs are not fetchable URLs.
+SKIP_SCHEME = re.compile(r'^(?:mailto:|tel:|javascript:|data:|#)', re.I)
+
+
+def host_of(url):
+    return urlsplit(url).netloc.lower().removeprefix("www.")
+
+
+BASE_HOST = host_of(BASE)
+
+
+def internal(url):
+    """Same-site after normalising www. and protocol-relative //host/path forms."""
+    sp = urlsplit(url)
+    if sp.scheme and sp.scheme not in ("http", "https"):
+        return False
+    return not sp.netloc or host_of(url) == BASE_HOST
+
+
+def normalise(page, raw):
+    """Absolute URL, fragment and trailing-slash noise stripped, or None if unfetchable."""
+    raw = raw.strip()
+    if not raw or SKIP_SCHEME.match(raw):
+        return None
+    absolute = urljoin(page, raw)
+    absolute = absolute.split("#", 1)[0]
+    if not internal(absolute):
+        return None
+    return absolute.rstrip("/") or BASE
+
+
+def main():
+    client = httpx.Client(timeout=30, follow_redirects=False,
+                          headers={"User-Agent": "fetchsmith-linkcheck/1 (own-site check)"})
+
+    # Seed the crawl set with the sitemap, which is the site's own claim about what exists.
+    pages = {normalise(BASE, p) for p in SEEDS}
+    try:
+        sm = client.get(f"{BASE}/sitemap.xml")
+        if sm.status_code == 200:
+            for loc in re.findall(r"<loc>([^<]+)</loc>", sm.text):
+                u = normalise(BASE, loc)
+                if u:
+                    pages.add(u)
+    except httpx.HTTPError as e:
+        print(f"WARN  could not read sitemap.xml: {e}")
+    pages.discard(None)
+
+    # link target -> pages that reference it
+    link_refs = defaultdict(set)
+    asset_refs = defaultdict(set)
+    page_status = {}
+    discovered = set()
+
+    # url -> where a 3xx sent us, for the report
+    redirect_to = {}
+
+    def fetch(url, _hops=0):
+        try:
+            r = client.get(url)
+        except httpx.HTTPError as e:
+            return f"ERR {type(e).__name__}", ""
+        if not (300 <= r.status_code < 400):
+            ctype = r.headers.get("content-type", "")
+            return r.status_code, r.text if "html" in ctype else ""
+        loc = r.headers.get("location", "")
+        if not loc:
+            return f"{r.status_code} no-location", ""
+        target = urljoin(url, loc)
+        redirect_to[url] = target
+        if not internal(target):
+            # Intentional outbound hand-off (/go/<slug> -> apify.com). Not ours to judge.
+            return 200, ""
+        if _hops >= 4:
+            return f"{r.status_code} redirect-loop", ""
+        # Judge an internal redirect on where it actually lands.
+        return fetch(target.split("#", 1)[0].rstrip("/") or BASE, _hops + 1)
+
+    # One hop out from the seed/sitemap set, so tool and blog detail pages get scanned too.
+    frontier = sorted(pages)
+    for depth in (0, 1):
+        next_frontier = []
+        for page in frontier:
+            if page in page_status:
+                continue
+            code, html = fetch(page)
+            page_status[page] = code
+            if code != 200 or not html:
+                continue
+            for raw in HREF.findall(html):
+                target = normalise(page, raw)
+                if target:
+                    link_refs[target].add(page)
+                    if depth == 0 and target not in pages:
+                        next_frontier.append(target)
+                        discovered.add(target)
+            for raw in ASSET.findall(html):
+                target = normalise(page, raw)
+                if target:
+                    asset_refs[target].add(page)
+        frontier = sorted(set(next_frontier))
+
+    # Check every referenced URL we have not already fetched as a page.
+    targets = sorted(set(link_refs) | set(asset_refs))
+    for url in targets:
+        if url not in page_status:
+            code, _ = fetch(url)
+            page_status[url] = code
+
+    broken_links = {u: page_status[u] for u in sorted(link_refs) if page_status[u] != 200}
+    broken_assets = {u: page_status[u] for u in sorted(asset_refs) if page_status[u] != 200}
+
+    print(f"base {BASE}   pages crawled {sum(1 for u in page_status if u in pages or u in discovered)}"
+          f"   unique link targets {len(link_refs)}   unique assets {len(asset_refs)}")
+
+    print(f"intentional redirects resolved {len(redirect_to)} "
+          f"({sum(1 for t in redirect_to.values() if not internal(t))} outbound, "
+          f"{sum(1 for t in redirect_to.values() if internal(t))} internal)")
+
+    if VERBOSE:
+        for url in targets:
+            via = f"  -> {redirect_to[url]}" if url in redirect_to else ""
+            print(f"  {page_status[url]:>5}  {url}{via}")
+
+    rc = 0
+    for label, broken, refs in (("BROKEN LINK", broken_links, link_refs),
+                                ("BROKEN ASSET", broken_assets, asset_refs)):
+        for url, code in broken.items():
+            rc = 1
+            srcs = sorted(refs[url])
+            print(f"{label}  {code}  {url}")
+            for s in srcs[:5]:
+                print(f"              linked from {s}")
+            if len(srcs) > 5:
+                print(f"              ... and {len(srcs) - 5} more page(s)")
+
+    if rc == 0:
+        print("CLEAN -- every internal link and asset resolves 200.")
+    return rc
+
+
+if __name__ == "__main__":
+    sys.exit(main())
