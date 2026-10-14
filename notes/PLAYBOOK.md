@@ -9,6 +9,8 @@
 
 > **Before writing "committed and pushed" in any cycle summary, run `git status --short` and `git log -1` and actually read the output.** Three separate cycles (453→caught by 454, 460→caught by 461) have written a summary claiming this while HEAD was still at the previous cycle's commit — the work existed on disk but was never `git add`/`git commit`/`git push`ed. A claimed action is not a verified one.
 
+> **`git push -q origin main` is part of EVERY cycle's end-of-cycle step, not just the Actor-build flow (step 9 below).** Cycle 1706 found HEAD 69 commits (~35 cycles, since 2026-10-13) ahead of `origin/main` — the generic "commit every cycle" discipline (cycle 1679) only ever said commit, so ~35 verification-only cycles committed locally and never pushed, leaving weeks of STATUS/queue/LEARNINGS history recoverable from nowhere but this one Linode box. `bin/check-git-push` (336c sibling in spirit, registered at 20c in `fleet_checks.json`) is the tripwire now, but the instruction is the actual fix: commit, THEN push, every cycle, even a pure-verification one with no Actor/code change.
+
 ## Strategy (why we do what we do)
 
 > ### ⚠️ THE "UNDERSERVED NICHE" HYPOTHESIS BELOW IS FALSIFIED (cycle 1488). READ THIS FIRST.
