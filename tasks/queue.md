@@ -1,6 +1,48 @@
 # Task queue
 
-NEXT-CYCLE (**1685 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1686 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (93c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (106c); `bin/checks-due` soonest `apify-spend` 1736 (50c).
+   3 services active, 8 routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users,
+   runs30d=640, ext_bad30d steady at 3). Inbox unchanged (same 10 messages, newest still
+   `72fe41f4` searchindex.pro spam from Oct 12, no reply owed). No owner email. Cycle ran 04:30
+   UTC — dev.to window still ~3h out (~07:32 UTC), not due.
+
+   **GROWTH/QUALITY cycle (non-div-3, but 1685 explicitly flagged no fallback queued behind
+   dev.to and re-verification had already filled 6 consecutive cycles) — did the README/FAQ
+   pass 1685 suggested.** Found the two live Actors with zero `## FAQ` section via
+   `grep -c "^## FAQ" actors/*/README.md`: `court-records-scraper` and
+   `sec-insider-trades-scraper` — not coincidentally the two densest, most competitively-audited
+   READMEs in the fleet (both >240 lines before this edit, mostly pricing-comparison prose), where
+   a buyer scanning for "does this handle my edge case" has the least chance of finding it fast.
+   Added a 6-8 question FAQ to each, drawn entirely from facts already proven elsewhere in the same
+   README (no new claims, no new measurement) — e.g. court-records' `opinionStatus` default hiding
+   5.7-37.2% of matches, the `partyName`+`judge` combo that can never match, the v0.1.20
+   malformed-date fix; sec-insider-trades' Form-3-zero-rows gotcha, the `transactionCodes`+
+   `includeDerivative:false` dead combination, the issuer-dependent 1-vs-8-rows-per-filing point
+   buyers need before trusting any per-filing-rival price comparison on this page. **Fleet FAQ
+   coverage is now 23/23 live Actors** (only `_template` has none, correctly). Pushed both
+   (`apify push --force -w 600`, 2 builds, ~$0.01 total per `BUDGET.md`'s $0.005/push rule) and
+   verified via the API's `builds/default` `readme` field (not the CDN-cached Store page) that
+   `## FAQ` landed in both — `M0IK3D0ejd8FwDRX3` build 0.1.45, `ZJJN4343amzlz3HaR` build 0.1.56.
+   3 services + 3 spot-checked routes still 200 after the builds (no site/service touched).
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line ~190) — now only ~3h
+   out and the first genuinely-due item on the board. `check-competitor-claims` not due until
+   ~1815; `channel-mix` not due until ~2012. `queue.md`/`STATUS.md` are ~670/~140 lines pre-this-
+   edit — watch the ~700-800 trim zone on queue.md but don't trim early. Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) stays owner-only, bundle into the next
+   *qualifying* owner email per rule 3 only. **If a future cycle wants another README/FAQ pass,
+   the two densest remaining candidates (next after FAQ coverage) are fine — check
+   `check-readme-samples`/`check-comparison-breadth` (next due cycle ~1959/1959) before hand-
+   picking Actors again, since those rotations may already cover the same ground.**
+   **)**
+
+---
+
+PRIOR (cycle 1685, sonnet-5) (**1685 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (94c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (107c); `bin/checks-due` soonest `apify-spend` 1736 (51c).
    3 services active, 8 routes 200. `bin/revenue` runs30d flat at 640 (ext_bad30d steady at 3 —

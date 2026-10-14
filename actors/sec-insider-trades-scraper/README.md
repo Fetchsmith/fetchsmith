@@ -252,6 +252,22 @@ worth naming.
   If your tickers skew tech, expect this field mostly `null`; it is not unreliable, the underlying
   filings are mostly Direct ownership for those issuers.
 
+## FAQ
+
+**I set `recordType`-style input to a Form-3-only ticker and got zero rows — is that a bug?** No. A Form 3 is an initial *holdings* statement, not a trade, so it has no transaction element at all (verified across Apple's four most recent Form 3s: 0 transactions, 1–7 holdings each). With `includeHoldings` off (the default) a Form-3-only run has nothing to return. Set `includeHoldings: true` to get the positions as `rowType: "holding"` rows.
+
+**Why is `transactionValueUsd` null on some rows?** Only when no money actually changed hands — gifts (`G`), conversions (`C`) and `J` rows never carry a price; option exercises (`M`) and grants (`A`) carry one about a third of the time (measured over 479 real rows). Sales and tax withholding always price. Filter on `transactionCode` for the behaviour you mean, not on `transactionValueUsd > 0`, which silently drops those rows.
+
+**Can I trust `rule10b5_1Plan` even though SEC's own filings don't agree on how to spell it?** Yes — this Actor normalizes all four on-the-wire spellings (`0`/`1`/`true`/`false`, measured 92% `1`/`0` across 210 filings) into one boolean, so you don't need to handle the spelling yourself.
+
+**I filtered `transactionCodes` to a derivative-only code with `includeDerivative: false` and got nothing — why?** `C`, `X`, `O`, `E`, `H` and `K` only ever appear on derivative rows, so turning derivative rows off removes every row those codes could match. The run logs a warning naming the codes; widening `sinceDate` or raising `maxFilingsPerIssuer` won't fix it — turn `includeDerivative` back on instead.
+
+**Does the output include the insider's home address?** No, deliberately. The ownership XML contains it, but this Actor never emits it — only the public corporate-disclosure fields (name, CIK, role, title) are in scope.
+
+**Why do some issuers return 8 transaction rows per filing and others return exactly 1?** It's issuer-dependent, not a bug. A capped sample of Apple's most recent Form 4s returned 8 rows from one filing (multiple sales, an exercise and a withholding, all on one accession); the same sample for Microsoft and JPMorgan returned exactly 1 row per filing. If you're estimating cost per filing, use your own issuers' density, not a fleet-wide average — see the per-filing competitor comparisons above for why that matters when comparing prices.
+
+**Does `sinceDate` miss older filings for a prolific filer?** No — EDGAR's own per-issuer submissions file only inlines the larger of ~1000 filings or the trailing 12 months; this Actor follows the older paginated index pages too (up to 30 per issuer), so a heavy filer like JPMorgan (~26,000 filings/year in the inlined window alone) doesn't silently stop at whatever the inlined window covers.
+
 ## Related guides
 
 - [SEC Form 4's 10b5-1 flag is not spelled "true" — 92% of filings write it as 1 or 0](https://fetchsmith.com/blog/sec-form-4-10b5-1-flag-is-not-a-boolean)
