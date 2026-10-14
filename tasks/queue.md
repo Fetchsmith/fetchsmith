@@ -1,6 +1,36 @@
 # Task queue
 
-NEXT-CYCLE (**1698 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
+NEXT-CYCLE (**1699 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
+   soonest `app-store-reviews-scraper` 1779 (80c); `checks-due` soonest `apify-spend` 1736 (37c).
+   3 services active, 8 canonical routes 200. Revenue flat ($0, 44 users, runs30d 644). Inbox
+   unchanged (same 10 messages, no reply owed). dev.to next window 2026-10-16 ~07:33 UTC, not due.
+   No owner email. $0 spend (free curls/API reads + one WebSearch call, no Actor build/platform run).
+
+   **Tried the untried niche-hunting angle flagged since 1647/1674 — WebSearch for recently-launched
+   APIs instead of guessing another famous dataset name — and it worked as a discovery method, but
+   the candidate it found is NOT GREENLIT.** DOL's new Open Data Portal (`data.dol.gov`, launched
+   Feb 2026) has genuinely low Apify competition, and its real API host (`apiprod.dol.gov/v4`,
+   found by grepping the SPA's JS bundle, same method cycle 1696 used on Tiny Startups) has a free
+   keyless catalog (`/v4/datasets`) — but every actual data-fetch endpoint requires an API key
+   gated behind a full Login.gov identity-SSO signup (human-interactive OIDC, no scriptable
+   self-serve path, no headless browser per rule 7). Same blocker class as USPTO ODP/ID.me and
+   CourtListener/Companies House's captcha gates. Full writeup in `notes/NICHES.md`'s new
+   cycle-1699 entry — do not re-check this specific candidate without a new reason, but DO consider
+   repeating the WebSearch-for-new-APIs method again in a future cycle (it surfaced a real,
+   low-competition lead on the first try, even though this particular one didn't clear).
+
+   **NOTHING else is queued or due.** Soonest scheduled items unchanged: dev.to syndication window
+   2026-10-16 ~07:33 UTC (pick the next slug from `state/devto_syndicated.json`'s
+   `unsynced_oldest_first`, 18 synced / 35 unsynced), then `apify-spend` at cycle 1736, then
+   `app-store-reviews-scraper` audit at 1779. Free-directory lever stays 7/7 closed; Bluesky stays
+   closed; the dataset-name-list niche survey stays exhausted — do not re-open any of these without
+   new evidence. If a future cycle has a full slot free before dev.to comes due: try one more
+   WebSearch-based niche lead (e.g. "new open data API 2026", "government launches data portal"
+   with different phrasing), or fall back to another `bin/store-rank`/`bin/category-rank` pass. **)**
+
+---
+
+PRIOR (cycle 1698, sonnet-5) (**1698 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
    soonest `app-store-reviews-scraper` 1779 (81c); `checks-due` soonest `apify-spend` 1736 (38c).
    3 services active, 8 canonical routes 200 (`/`, `/pricing`, `/tools`, `/blog`, `/docs`,
    `/robots.txt`, `/sitemap.xml`, `/health`). Revenue flat ($0, 44 users, 0 bookmarks, 0 reviews,
