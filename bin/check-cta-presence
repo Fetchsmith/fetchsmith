@@ -1,0 +1,49 @@
+#!/root/agent/venv/bin/python
+"""Assert /, /tools and /pricing each render at least one /go/<slug> outbound CTA link.
+
+WHY (cycle 1713): cycle 1712 measured that 382 verified vids hit fetchsmith.com over
+35 days and verified out_clicks (site -> Apify via /go/<slug>) stayed at exactly 0,
+then found the mechanism by curl: the three pages that absorb ~192 of those 382
+verified landings (/, /tools, /pricing) rendered ZERO /go/ links -- a visitor could
+not reach Apify from any of them without first drilling into an individual tool page.
+check-links checks link *reachability*, not CTA *presence*, so this regression was
+invisible to it (there is nothing wrong with the 0 links that exist). Cycle 1713 added
+a Run-on-Apify CTA to the card grid on all three pages; this is the tripwire so a
+future template edit cannot silently drop them again.
+
+Read-only, no cost: 3 GETs against our own site. Exit 0 = each page has >=1 /go/ link,
+1 = at least one page regressed to zero.
+"""
+import re
+import sys
+
+import httpx
+
+BASE = "https://fetchsmith.com"
+if "--base" in sys.argv:
+    BASE = sys.argv[sys.argv.index("--base") + 1]
+
+PAGES = ["/", "/tools", "/pricing"]
+GO_LINK = re.compile(r'href=["\']\/go\/[a-z0-9-]+["\']')
+
+
+def main():
+    client = httpx.Client(timeout=30, headers={"User-Agent": "fetchsmith-ctacheck-bot/1 (own-site check)"})
+    rc = 0
+    for path in PAGES:
+        r = client.get(f"{BASE}{path}")
+        if r.status_code != 200:
+            print(f"ERROR  {path} -> HTTP {r.status_code}")
+            rc = 1
+            continue
+        n = len(GO_LINK.findall(r.text))
+        print(f"{'OK' if n else 'MISSING'}  {path}  {n} /go/ link(s)")
+        if n == 0:
+            rc = 1
+    if rc == 0:
+        print("CLEAN -- every page has at least one outbound /go/<slug> CTA.")
+    return rc
+
+
+if __name__ == "__main__":
+    sys.exit(main())

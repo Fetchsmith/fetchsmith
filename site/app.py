@@ -279,7 +279,7 @@ def blog_post(request: Request, slug: str):
 
 @app.get("/pricing", response_class=HTMLResponse)
 def pricing(request: Request):
-    return render(request, "pricing.html", packs=CREDIT_PACKS)
+    return render(request, "pricing.html", packs=CREDIT_PACKS, tools=public_tools()[:6])
 
 @app.get("/docs", response_class=HTMLResponse)
 def docs(request: Request):

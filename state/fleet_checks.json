@@ -104,6 +104,12 @@
    "interval_cycles": 20,
    "last_cycle": 1706,
    "note": "cycle 1706: cycle 1706: new check. Found HEAD 69 commits (~35 cycles, since 2026-10-13) ahead of origin/main -- the generic verification-only cycle protocol commits but was never told to push (PLAYBOOK step 9's git push instruction is scoped to the Actor-build flow only). Pushed this cycle (git push -q origin main, HEAD now == origin/main). 20c cadence (~0.4d) since this failure mode is silent/undetectable without the check and the damage (unrecoverable off-box history) scales with how long it goes unnoticed."
+  },
+  "check-cta-presence": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1713,
+   "note": "cycle 1713: cycle 1713: registered new tripwire, closes the gap check-links structurally cannot see (link reachability != CTA presence). Baseline clean: / 12, /tools 23, /pricing 6 /go/ links. Drift source is a template edit by us, not external, so 336c/7d mirrors check-blog-cta's reasoning; shorten if a run ever comes back non-zero."
   }
  },
  "not_cadence": {

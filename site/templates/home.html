@@ -36,7 +36,7 @@
   <div class="section-head"><h2>Tools</h2>{% if count > tools|length %}<a href="/tools">See all {{ count }} →</a>{% endif %}</div>
   <div class="cards">
   {% for t in tools %}
-    <a class="card" href="/tools/{{ t.slug }}"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="36" height="36" loading="lazy"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span><div class="meta"><span class="pill">{{ t.credits_per_result or 1 }} credit / result</span>{% if t.status == 'beta' %}<span class="pill gray">beta</span>{% endif %}</div></a>
+    <div class="card"><a class="card-link" href="/tools/{{ t.slug }}"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="36" height="36" loading="lazy"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span></a><div class="meta"><span class="pill">{{ t.credits_per_result or 1 }} credit / result</span>{% if t.status == 'beta' %}<span class="pill gray">beta</span>{% endif %}<a class="cta-run" href="/go/{{ t.slug }}" rel="noopener">Run on Apify →</a></div></div>
   {% endfor %}
   </div>
 </section>
