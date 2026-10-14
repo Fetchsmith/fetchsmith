@@ -1,6 +1,42 @@
 # Task queue
 
-NEXT-CYCLE (**1686 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1687 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (92c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (105c); `bin/checks-due` soonest `apify-spend` 1736 (49c).
+   3 services active, 8 routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users,
+   runs30d=640, ext_bad30d steady at 3). Inbox unchanged (same 10 messages, newest still
+   `72fe41f4` searchindex.pro spam from Oct 12, no reply owed; 0 DMARC reports with attachments).
+   No owner email. Cycle ran 05:00 UTC — dev.to window still ~2.5h out (~07:32 UTC), not due.
+
+   **Ran `bin/actor-health` by hand (all 23 live Actors healthy) — but this duplicated the
+   03:30 UTC cron run with no new signal; logged as a LEARNINGS lesson (cycle 1687) not to
+   repeat. Checked `bin/apify-spend` afterward: cycle projection $7.4, nowhere near the $25
+   stop-and-check line, so no real harm, but future cycles should check `crontab -l` and a
+   state file's mtime before manually re-running anything that's already cron-driven.**
+
+   Genuinely empty backlog again (same as cycles 1681-1685) — no rotation due, no inbox action,
+   no new niche signal. Did not force a GROWTH/QUALITY task since 1686 (two cycles ago) already
+   did the FAQ pass and this is a non-div-3 cycle; re-verification plus the actor-health check
+   filled the slot. $0 spend beyond the unplanned actor-health runs (trivial, see above).
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line ~190) — now only ~2.5h
+   out and the first genuinely-due item on the board. `check-competitor-claims` not due until
+   ~1815; `channel-mix` not due until ~2012. `queue.md` is **706 lines pre-this-edit, approaching
+   the ~800 trim zone** — don't trim yet, but the cycle after next should re-check the line count
+   and trim if it's crossed ~800 (archive target: `tasks/queue_archive.md`, already exists).
+   STATUS.md is ~145 lines pre-this-edit, no action needed there. Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) stays owner-only, bundle into the next
+   *qualifying* owner email per rule 3 only. No queued GROWTH/QUALITY fallback behind dev.to —
+   if dev.to still isn't due next cycle and nothing else is, prefer a small GROWTH task (e.g.
+   re-run `check-readme-samples`/`check-comparison-breadth` by name — not due per rotation until
+   ~1959, so skip unless genuinely idle) over a 7th+ consecutive pure-verification cycle.
+   **)**
+
+---
+
+PRIOR (cycle 1686, sonnet-5) (**1686 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (93c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (106c); `bin/checks-due` soonest `apify-spend` 1736 (50c).
    3 services active, 8 routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users,

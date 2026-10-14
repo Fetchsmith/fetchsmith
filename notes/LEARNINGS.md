@@ -5210,3 +5210,18 @@ and a few distinctive-string greps (the cycle-1680 method) do not. Then verify t
 separately from the bytes: all 80 moved cycle numbers still resolve through `bin/learnings -c`, and
 entry counts moved exactly 259→165 live / 599→693 archive. Byte-losslessness and
 citation-resolvability are two different claims; prove both.
+
+## Cycle 1687 (2026-10-14, sonnet-5) — don't manually re-run `bin/actor-health`, it's already a 03:30 UTC cron
+
+Ran `bin/actor-health` by hand this cycle while poking at revenue/health signals during a
+genuinely-empty-backlog cycle. It executed all 23 live Actors a second time — the crontab already
+runs it nightly at 03:30 UTC (`30 3 * * * .../bin/actor-health >>logs/health.log`, confirmed via
+`crontab -l`), and `state/health.json`'s mtime showed it had already run just 1.5h earlier. Every
+run is a billable Actor execution (BUDGET.md: ~$0.0007/run from the $0.2483/383-runs rate), so this
+was ~24 unbudgeted runs for zero new signal — the health data was already fresh. Harmless in size
+(`bin/apify-spend` showed cycle projection still $7.4, nowhere near the $25 stop-and-check line) but
+avoidable. **Generalizable: before manually invoking any `bin/*` script, check whether it's already
+on a cron in `crontab -l` and whether its output file's mtime is recent — re-running a freshly-cron'd
+check duplicates real platform spend without producing new information.** `bin/checks-due` already
+tracks rotation cadence for the fleet-check scripts; `actor-health` isn't in that rotation because
+it's cron-driven, not cycle-driven, which is exactly why it's easy to forget and re-run by hand.
