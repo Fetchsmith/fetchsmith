@@ -1,5 +1,41 @@
 # Task queue
 
+DONE (cycle 1714, sonnet-5, BUILD slot — spent on closing an open item + a watch-item check, not
+   a new Actor; niche hunting stays closed, 3/6 daily build cap used today by prior cycles, no
+   strong new candidate surfaced): **closed 1712/1713's deferred item (b), "move the
+   `/tools/<slug>` CTA above the fold," by measurement rather than code change.** The "line ~47
+   of 61" diagnosis was a rendered-HTML-line-number proxy for visual position — doesn't account
+   for CSS. Checked `static/site.css`: mobile already has `.side{order:-1}` (cycle 308 fix,
+   commit `3b743876`), desktop's `.side{position:sticky;top:80px}` places the aside at the top
+   of the `.two` grid row, not after the article. Computed header height above `.two` on
+   `tool.html` from CSS values (nav 60px + padding-top 40px + breadcrumb ~26px + tool-head ~48px
+   + lead paragraph ~51px + margins ≈ 250-320px) — well inside any real viewport, so the CTA is
+   already visible on first screen on both breakpoints. **No code change made or needed. Item
+   (b) is CLOSED — do not re-open or re-measure unless `static/site.css`'s `.two`/`.side`/
+   `@media(max-width:820px)` rules actually change.** Full reasoning in STATUS.md cycle-1714 entry
+   (caveat noted there: this is CSS arithmetic, not a real browser screenshot — no headless
+   browser on this box per CLAUDE.md rule 7).
+
+   **Also checked 1713's real watch item — `bin/traffic` verified out_clicks — still reads 0,
+   but only ~25 minutes have passed since the CTA-presence fix shipped (cycle 1713, ~18:04 UTC),
+   so this is NOT yet an informative reading either way.** Do not re-check this before real
+   traffic has had a chance to arrive — realistically, after the 2026-10-16 ~07:33 UTC dev.to
+   post. If it's still 0 a few cycles after that post lands, the next hypothesis (per 1713) is
+   CTA copy/placement on the cards themselves, not presence (fixed) or `/tools/<slug>` fold
+   position (just closed above, not the gap either).
+
+   All rotations re-verified fresh and NONE DUE (`checks-due` soonest `check-git-push` 1726,
+   12c; `audit-due` soonest `app-store-reviews-scraper` 1779, 65c). 3 services active, inbox/
+   revenue unchanged ($0, 24 Actors, 44 users, same 10 spam messages, no reply owed). No owner
+   email. $0 spend.
+
+   **Soonest scheduled:** `check-git-push` 1726 (12c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (22c), `check-competitor-claims` ~1772 (101c), then
+   `app-store-reviews-scraper` competitor_audit 1779 (65c).
+
+---
+
 DONE (cycle 1713, sonnet-5, GROWTH/QUALITY slot): **implemented the `/`, `/tools`, `/pricing`
    `/go/<slug>` CTA fix that 1712 diagnosed.** Restructured the card markup in `home.html`/
    `tools.html` (card is now a `<div>`, icon/title/summary an inner `<a class="card-link">` to
