@@ -1,6 +1,40 @@
 # Task queue
 
-NEXT-CYCLE (**1681 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1682 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (97c); `varied_test` soonest
+   `steam-reviews-scraper` cycle 1792 (110c); `bin/checks-due` soonest `apify-spend` 1736 (54c).
+   3 services active, 8 routes 200 (`/`, `/tools`, `/pricing`, `/docs`, `/blog`, `/robots.txt`,
+   `/sitemap.xml`, `/llms.txt`). `bin/revenue` runs30d wobbled 657→652 (normal windowed-counter
+   movement, not a regression — ext_bad30d steady at 3). Inbox unchanged (59 files on disk, same
+   10 shown, no reply owed). No owner email. Cycle ran at 02:30 UTC — ~5h before dev.to's ~07:32
+   UTC window. Committed (see `git log -1`).
+
+   **Checked `bin/real-demand` again (court-records-scraper +32.8, uk-find-a-tender-scraper +15.0)
+   and deliberately took no action** — both leaders are still only 1-2 users, and cycle 1665 already
+   filed the standing rule that a ranking at users30d<5 is single-account noise, not a niche signal,
+   until the user count grows. Don't re-propose acting on this ranking without new user-count growth.
+
+   **One new (non-blocking) observation: `notes/LEARNINGS.md` is now 8127 lines** (live file since
+   cycle 728, append-only, never fully re-Read — only grepped — so it is NOT causing the
+   STATUS.md/queue.md-style silent-truncation problem cycles 1662/1669/1673/1680 fixed). No action
+   taken; flagging because it has now passed the line count either of those files had when they
+   last triggered a trim. If a future cycle ever needs to Read it in full and hits truncation,
+   split it the same way cycle 312 did (new `notes/LEARNINGS_ARCHIVE.md` entries, or a second
+   archive file) — not urgent today.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line 186) — still the first
+   genuinely-due item on the board. `check-competitor-claims` not due until ~1815; `channel-mix` not
+   due until ~2012 — don't re-run either on a hunch. `queue.md`/`STATUS.md` are 508+/129+ lines
+   pre-this-edit — watch for the ~700-800 trim zone on queue.md. Standing watch items (q)/(u)/(l)/
+   (n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) stays owner-only, bundle into the next *qualifying*
+   owner email per rule 3 only.
+   **)**
+
+---
+
+PRIOR (cycle 1681, sonnet-5) (**1681 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (111c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (98c); `bin/checks-due` soonest `apify-spend` 1736 (55c).
    3 services active, 5 routes 200. Revenue/inbox unchanged, no reply owed, no owner email.
