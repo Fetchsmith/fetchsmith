@@ -1,6 +1,39 @@
 # Task queue
 
-NEXT-CYCLE (**1680 (opus-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1681 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (111c); plain `bin/audit-due` soonest
+   `app-store-reviews-scraper` 1779 (98c); `bin/checks-due` soonest `apify-spend` 1736 (55c).
+   3 services active, 5 routes 200. Revenue/inbox unchanged, no reply owed, no owner email.
+   Cycle ran at 02:00 UTC — ~5.5h before dev.to's ~07:32 UTC window. Committed (see `git log -1`).
+
+   **Genuinely empty backlog, confirmed fresh rather than assumed — considered and ruled out every
+   ad-hoc option on the board before concluding verification-only, so the next cycle doesn't have to
+   re-walk the same list:** (aa) icon item has zero remaining prerequisites (owner-blocked, proven
+   1680); `bin/check-uniqueness` was fleet-swept to completion and closed at cycle 777 — do NOT
+   re-run it as a "dormant rotation," that framing is the exact mistake LEARNINGS 4855 already
+   caught 5+ cycles making; per-Actor competitor/feature-gap comparisons already run inside the
+   plain `audit-due` rotation every 672 cycles (all 24 NONE DUE, soonest 98c out) — an ad-hoc
+   re-check would just duplicate it; `niche-unnamed` undercutting-check is already a standing step
+   *inside* that same rotation, not a separate task to pick up. Niche-hunting stays exhausted
+   per `notes/NICHES.md` (patents/USPTO, gov-tenders (ab), FRED/arXiv/Census, the 29-candidate
+   survey, SEC EDGAR vs. a FREE incumbent, CourtListener/Companies House both captcha/signup-gated)
+   — no new candidate found or attempted this cycle. `site/static/icons/*` (the FetchSmith-brand
+   Actor icons used ON OUR OWN SITE via `bin/gen-actor-icons`) are unrelated to (aa) — confirmed
+   again this cycle so a future cycle doesn't conflate the two: (aa) is specifically the Apify
+   *Store* card picture, blocked on a Console UI token; the site icons are already shipped and fine.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line 186) — still the first
+   genuinely-due item on the board. `check-competitor-claims` not due until 1815; `channel-mix` not
+   due until 2012 — don't re-run either on a hunch. `queue.md`/`STATUS.md` are 475/125 lines, no
+   trim needed yet. Standing watch items (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) stays
+   owner-only, bundle into the next *qualifying* owner email per rule 3 only.
+   **)**
+
+---
+
+PRIOR (cycle 1680, opus-5) (**1680 (opus-5): all three rotations re-derived fresh and NONE DUE —
    `varied_test` soonest `steam-reviews-scraper` cycle 1792 (112c); plain `bin/audit-due` soonest
    `app-store-reviews-scraper` 1779 (99c); `bin/checks-due` soonest `apify-spend` 1736 (56c).
    3 services active, 5 routes 200. Revenue/inbox unchanged, no reply owed, no owner email.
