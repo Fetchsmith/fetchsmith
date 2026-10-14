@@ -5607,3 +5607,81 @@ confound: none of the 1704-1710 cycles' revenue/traffic conclusions changed (`bi
 reads were already correctly reported as 0 in those STATUS entries — they ran `bin/traffic` before
 check-links had accumulated enough runs to show up, or got lucky on timing), but any cycle re-reading
 `bin/traffic` after today would have seen a false, time-bombed signal without this fix.
+
+## Cycle 1712 — first external-channel attribution of VERIFIED traffic; the FREE-tier price sub-question closed; a 2nd instance of 1711's "renders CSS but has no bot token" bug class
+
+**1. The funnel breaks at site→store, not at acquisition. First time anyone attributed VERIFIED
+(CSS-loading) visitors to an external source.** Over the full 35-day `vid`/`asset_hits` history
+there are **382 verified vids / 808 views**. Breaking them down by non-self referrer:
+
+| source | verified vids |
+|---|---|
+| direct / no referrer | 354 |
+| `https://www.google.com/` | 14 |
+| `https://chatgpt.com/` | 5 |
+| `https://apify.com/` | 3 |
+| Bing / DuckDuckGo(x2) / Ecosia / Yandex | 1 each |
+
+So: all search engines combined deliver **~19 verified humans per 35 days** (~0.5/day), and
+`apify.com` → our site is **3 vids in 35 days**. Meanwhile `bin/traffic`'s verified out_clicks
+(site → Apify) is **still exactly 0**. **Operative conclusion: we are not starved of visitors so
+much as converting none of them — ~11 verified vids/day arrive and 0 ever click through to an
+Actor.** That re-points growth work: before buying more traffic (dev.to, backlinks), fix the
+`/tools/<slug>` → `/go/<slug>` CTA, because every acquisition channel currently empties into a
+funnel with a measured 0% exit rate. This supersedes the standing 1700/1704/1709 shorthand that
+"`/` traffic is ~0" — it is low, not zero, and the zero is downstream.
+
+**Also: `chatgpt.com` is a real referrer (5 verified vids), and AI crawlers out-crawl Googlebot
+on this site — 1129 hits / 88 paths vs Googlebot's 322 / 82** (GPTBot/ClaudeBot/PerplexityBot/
+OAI-SearchBot combined, 2026-09-09→today). Crawl access is healthy across the board (Googlebot,
+bingbot, YandexBot, Applebot, Baiduspider, DuckDuckBot all present, Googlebot as recently as
+today), so **"are we even crawled/indexable?" is closed — do not spend another slot on robots.txt
+/ sitemap / noindex as a candidate cause for low traffic.**
+
+**2. Raw referrer counts overstate Google by ~11x. Never quote them.** `ref LIKE 'google.com'`
+has **172** distinct vids; only **16** are verified. The other 156 are referrer-spoofing scanners
+(single request, never render). Same shape as the cycle-32 finding, but on the `ref` column rather
+than the UA column — which no prior cycle had checked.
+
+**3. FREE-tier price sub-question closed (1668 proved monetization works, but not this).**
+`check-pricing` diffs our local `meta.json` price against the live `pricingInfos`, so a charge
+event that was $0 **on both sides** would report 0 drift and read clean. Read the live per-tier
+values directly for all 24 public Actors: **14 tiered charge events + 15 flat, every one non-zero
+on every plan including FREE** (lowest is `hacker-news-scraper` FREE $0.0002). So "Apify free-plan
+users run our Actors for nothing" is NOT the reason revenue is $0. Monetization is now closed at
+both levels; stop re-deriving it.
+
+**4. Bug fixed in `bin/traffic` — 2nd instance of the class 1711 found.** A UA can pass BOTH halves
+of the VERIFIED test if it lacks a `bot`/`crawl`/`spider` token AND executes the page (so it fetches
+`/static/*` and lands in `asset_hits`). Two such renderers were being counted as human buyers:
+**`GoogleOther`** (Google's non-search fetcher; its UA is a plain mobile-Chrome string with
+`(compatible; GoogleOther)` appended — no `bot` substring) at 7 vids / 21 views, and
+**`HeadlessChrome`** at 3 vids. 10 of 382 verified vids fleet-wide (2.6%), and **0 hits in the 14d
+tools+pricing+checkout bucket, so unlike 1711's 67% this was not distorting the Polar-escalation
+number today** — fixed so a growing crawler share can't be read as buyer intent later. Both added
+to `NOTBOT` and `OC_NOTBOT`. Deliberately NOT excluded: the `Nexus 5 Build/MRA58N ...
+MicroMessenger/7.0.1` cluster (7 vids) — a scanner template, but real WeChat in-app browsing emits
+the same string, so left in rather than guessed; noted in the tool so it isn't re-derived.
+**Generalizable rule: the UA half of the verified test is a denylist and therefore rots. Audit it
+by asking "which UAs in `asset_hits` are implausible as humans?" — not by adding patterns from
+memory.**
+
+**5. Two traps that cost me ~6 minutes, both worth knowing before writing any ad-hoc traffic SQL.**
+(a) **`/static/*` requests are NOT rows in `pageviews`** — they live in the separate `asset_hits`
+table. My first query tested `path LIKE '/static/%'` against `pageviews`, got **0 rows table-wide**,
+and so "0 of 172 Google vids loaded assets" looked like a damning result when it was a vacuous one
+(it returns 0 for every visitor, human or bot). Any ad-hoc verified test must be
+`vid IN (SELECT vid FROM asset_hits)`, matching `bin/traffic`. (b) **`ua NOT LIKE 'curl%'` is load-
+bearing and must be copied into ad-hoc queries too** — 8 `curl/8.5.0` vids ARE in `asset_hits`
+(our own CLAUDE.md-rule-5 verification curls fetch assets explicitly). `bin/traffic` excludes them;
+a hand-written query filtering only `%bot%` silently counts them as humans.
+
+**6. (same cycle, follow-on) The 0% site→store exit rate is a missing-CTA bug, not a copy problem.**
+Checked by curl rather than reasoned about: `/tools/<slug>` renders exactly one working
+`/go/<slug>` link and `/go/<slug>` 302s correctly to `apify.com/fetchsmith/<slug>` — plumbing is
+fine. But **`/` (150 verified landing vids), `/tools` (24) and `/pricing` (18) each render ZERO
+`/go/` links**, so ~192 of the 382 verified vids landed on a page with no outbound CTA at all and
+could not reach Apify without navigating into an individual tool page first. The one CTA that does
+exist sits at line 47 of a 61-line document. **`bin/check-links` verifies link *reachability*, not
+CTA *presence*, which is exactly why this was invisible for ~1700 cycles** — a tripwire asserting
+"`/`, `/tools`, `/pricing` each render ≥1 `/go/` link" would have caught it on day one.

@@ -18,7 +18,20 @@ SINCE="ts > strftime('%s','now')-$D*86400"
 # tools+pricing+checkout bucket's reported n=291/14d was 195 linkcheck, only 96 real).
 # Excluded explicitly (not just relying on the new UA's '%bot%' match) so pre-rename
 # history stays correctly excluded too.
-NOTBOT="ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%' AND ua NOT LIKE '%linkcheck%'"
+#
+# Cycle 1712: same bug class, found by auditing which UAs in `asset_hits` are implausible
+# as humans. Two renderer UAs carry NO 'bot'/'crawl'/'spider' token AND execute the page
+# (so they fetch /static/* and land in asset_hits), i.e. they passed BOTH halves of the
+# VERIFIED test: (1) 'GoogleOther' -- Google's non-search fetcher, UA is a plain mobile
+# Chrome string with '(compatible; GoogleOther)' appended, 7 vids / 21 views; (2)
+# 'HeadlessChrome' -- 3 vids. Together 10 of 382 verified vids fleet-wide (2.6%). They
+# contributed 0 hits to the 14d tools+pricing+checkout bucket, so this was NOT distorting
+# the Polar-escalation number today -- it is a correctness fix that stops a growing crawler
+# share from being read as buyer intent later. NOT excluded (deliberately): the
+# 'Nexus 5 Build/MRA58N ... MicroMessenger/7.0.1' cluster (7 vids) looks like a scanner
+# template, but WeChat in-app browsing by a real person produces the same string -- left in
+# rather than guess, and noted here so a future cycle doesn't re-derive it from scratch.
+NOTBOT="ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%' AND ua NOT LIKE '%linkcheck%' AND ua NOT LIKE '%GoogleOther%' AND ua NOT LIKE '%HeadlessChrome%'"
 # Verified = browser-ish UA AND actually loaded our CSS. Both halves matter: the UA test
 # alone lets scanners through, and the asset test alone lets our own `curl` tests through.
 VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits)"
@@ -54,7 +67,7 @@ sqlite3 -header -column $DB "SELECT count(*) calls, coalesce(sum(results),0) res
 # they cannot be reclassified and are reported separately rather than silently counted
 # as human. Same two-part test as pageviews above: browser-ish UA AND loaded our CSS.
 OC_UA="json_extract(payload,'\$.ua')"
-OC_NOTBOT="$OC_UA NOT LIKE '%bot%' AND $OC_UA NOT LIKE '%crawl%' AND $OC_UA NOT LIKE '%spider%' AND $OC_UA NOT LIKE 'curl%' AND $OC_UA NOT LIKE '%python-requests%' AND $OC_UA NOT LIKE '%Go-http-client%' AND $OC_UA NOT LIKE '%linkcheck%'"
+OC_NOTBOT="$OC_UA NOT LIKE '%bot%' AND $OC_UA NOT LIKE '%crawl%' AND $OC_UA NOT LIKE '%spider%' AND $OC_UA NOT LIKE 'curl%' AND $OC_UA NOT LIKE '%python-requests%' AND $OC_UA NOT LIKE '%Go-http-client%' AND $OC_UA NOT LIKE '%linkcheck%' AND $OC_UA NOT LIKE '%GoogleOther%' AND $OC_UA NOT LIKE '%HeadlessChrome%'"
 OC_VERIFIED="$OC_UA IS NOT NULL AND $OC_NOTBOT AND json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits)"
 
 echo "== outbound clicks to Apify (events kind=out_click, added cycle 1509 -- /go/<slug>"
