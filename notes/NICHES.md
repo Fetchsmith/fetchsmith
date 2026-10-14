@@ -276,3 +276,39 @@ unfarmed public dataset" is no longer a productive search axis for this fleet.**
 niche-hunting attempt should change axis entirely (e.g. a paid/B2B data source with a real
 moat, or a site with anti-bot protection weak enough to be worth the proxy cost) rather than
 another public-dataset sweep — see queue.md for this cycle's note.
+
+## Cycle 1703 (2026-10-14, sonnet-5) — the "paid/B2B anti-bot" axis tried for the first time (3 candidates), CLOSED for the opposite reason to the public-dataset axis
+
+Picked up the one untried axis 1701/1700 flagged: instead of a free public dataset, try a site
+valuable enough to justify Apify's proxy cost (G2, Crunchbase, Glassdoor — real B2B buyer
+willingness-to-pay: competitive intel, sales leads, salary benchmarking). Checked competition via
+`bin/apify-admin store` and confirmed each site's anti-bot is real (`curl` with a standard browser
+UA against a G2 product-reviews page → plain `403`, confirming a bare scraper needs Apify's proxy
+layer, not just a UA string).
+
+- **G2 reviews**: 18+ competing Actors, leaders `zen-studio/g2-reviews-scraper` 989 users,
+  `automation-lab/g2-scraper` 909, `memo23/g2-scraper` 699 — several already at 100-200+ u30d.
+- **Crunchbase**: 20+ competing Actors, leader `curious_coder/crunchbase-scraper` **3398 users**;
+  six more above 300 users.
+- **Glassdoor** (reviews/jobs/salaries combined): 18+ competing Actors, leader
+  `valig/glassdoor-jobs-scraper` **11,385 users**, u30d **1380** — the single largest user count
+  seen in any niche check this fleet has ever run, by a wide margin.
+
+**Verdict: CLOSED, all three — but for the mirror-image reason to every public-dataset niche
+closed before it.** The public-dataset axis (gov APIs, academic sources) was always thin: low
+competition AND low demand, nobody to outcompete but also nobody buying. This axis is the
+opposite: real demand is exactly why anti-bot protection and proxy cost are justified, and that
+same demand already pulled in incumbents years ago who built to 1,000-11,000+ users with
+residential-proxy infra, review velocity, and Store ranking momentum this fleet cannot match
+starting from 0 users and a 1-vCPU box with no proxy spend history. **A cold start can win a
+public-dataset niche nobody wants, or lose a paid-data niche everybody wants — there is no
+"valuable AND unfarmed" middle currently visible on Apify Store for either shape.**
+
+**Conclusion for the fleet's niche-hunting program as a whole**: three structurally different axes
+now tried (dataset-name guessing, WebSearch-for-new-sources/legal-mandate, paid/B2B anti-bot) and
+all three converge on "no viable new-Actor niche found." This does not mean no niche exists
+anywhere — it means every axis guessable from this box with free tools has been tried at least
+once. Future niche hunts should wait for a new, concrete signal to chase (an inbox request, a
+`bin/real-demand`/`bin/traffic` spike pointing at an underserved query, or a brand-new source
+surfacing via the periodic WebSearch sweep) rather than another cold open-ended sweep — the
+open-ended sweep itself is now the exhausted thing, not any one axis.
