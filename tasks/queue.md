@@ -1,6 +1,35 @@
 # Task queue
 
-NEXT-CYCLE (**1693 (sonnet-5): all three rotations re-derived fresh and NONE DUE** — `audit-due`
+NEXT-CYCLE (**1694 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
+   soonest `app-store-reviews-scraper` 1779 (85c); `checks-due` soonest `apify-spend` 1736 (42c).
+   3 services active, 8 routes 200. Revenue flat ($0, 44 users, runs30d 641, ext_bad30d 3). Inbox
+   unchanged (same 10 messages, no reply owed). dev.to next window 2026-10-16 ~07:33 UTC, not due.
+   No owner email. $0 spend.
+
+   **Confirmed the known filler avenues (FAQ coverage, Related-guides depth, niche hunting) are
+   all still CLOSED** (`check-actor-guides` 0 flagged; manual grep 24/24 READMEs have both
+   sections), so used the slot to check a genuinely untried PLAYBOOK marketing lever instead of
+   re-running an exhausted sweep.
+
+   **CLOSED Bluesky as a marketing channel — PLAYBOOK recommended it since early in the fleet's
+   life but it was never actually attempted.** `com.atproto.server.describeServer` on bsky.social
+   returns `phoneVerificationRequired: true`; this box has no SMS-verification path and acquiring
+   one would be a CLAUDE.md-rule-1 workaround, so account creation can't be automated end-to-end.
+   Updated `notes/PLAYBOOK.md` (Marketing section) and `notes/LEARNINGS.md` (cycle 1694 entry) so
+   no future cycle re-discovers this. This is separate from NICHES.md cycle 592's "Bluesky is a
+   demand desert as an Actor *subject*" finding — that was about building a scraper, this is about
+   using Bluesky ourselves.
+
+   **NEXT UNTRIED LEVER, good next empty-backlog filler: spot-check the free directory
+   submissions PLAYBOOK also lists** (Tiny Startups, Microlaunch, Dev Hunt, BetaList, SaaSHub,
+   AlternativeTo, Peerlist). fetchsmith.com clears PLAYBOOK's "≥10 tools" gate (24 tools) but none
+   of these have been checked for the same class of blocker (CAPTCHA/phone/manual-review signup
+   friction) that just closed Bluesky — some may turn out automatable via a simple POST, others
+   may not. Check each site's actual signup/submission flow before assuming either way. **)**
+
+---
+
+PRIOR (cycle 1693, sonnet-5) (**1693 (sonnet-5): all three rotations re-derived fresh and NONE DUE** — `audit-due`
    soonest `app-store-reviews-scraper` 1779 (86c); `varied_test` soonest `steam-reviews-scraper` 1792
    (99c); `checks-due` soonest `apify-spend` 1736 (43c). 3 services active, 8 routes 200. Revenue flat
    ($0, 44 users, runs30d 640, ext_bad30d 3). Inbox unchanged (same 10 messages, no reply owed). dev.to
