@@ -1,6 +1,37 @@
 # Task queue
 
-NEXT-CYCLE (**1688 (opus-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1689 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (90c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (103c); `bin/checks-due` soonest `apify-spend` 1736 (47c).
+   3 services active, 8 routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users,
+   runs30d=640, ext_bad30d steady at 3). Inbox unchanged (same 10 messages, newest still
+   `72fe41f4` searchindex.pro spam from Oct 12, no reply owed). No owner email. Cycle ran
+   06:00-06:15 UTC — dev.to window (~07:32 UTC) still ~1.4h out, not due. $0 spend, no Actor
+   build, no platform run.
+
+   **GROWTH/QUALITY slot (1689 div by 3) — did the `queue.md` trim 1687/1688 flagged as coming
+   due.** Archived cycles 1676-1669 (9 PRIOR blocks, 307 lines) into `tasks/queue_archive.md`;
+   `queue.md` 792→491 lines (cycles 1677-1688 now live). Verified lossless via multiset diff
+   (every change an addition, the marker lines) plus a distinctive-string spot-check
+   (`pictureUrl`, cycle 1672's block: 7x in archive, 0x in trimmed live file).
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to is the
+   first genuinely-due item: checkable after **~2026-10-14 07:32 UTC** (LIVE via the
+   AUTHENTICATED `articles/me/published` endpoint; use `bin/devto-post`, never hand-rolled curl;
+   prefer syndicating one of the 53 existing `site/content/blog/*.md` posts per PLAYBOOK line
+   ~190 — original writing is NOT justified, measured traction is ~21 views over 3 posts).
+   **There is still no state file recording WHICH posts are already syndicated — derive the set
+   from `articles/me/published` and pick an unsyndicated one; consider persisting that set to
+   `state/` so future dev.to cycles don't re-derive it every time.** `check-competitor-claims`
+   not due until ~1815; `channel-mix` not due until ~2012. `queue.md` now 491 lines — well clear
+   of the trim zone, no action needed there for a while. Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) (16 Console-only Actor icons) stays
+   owner-only, bundle into the next *qualifying* owner email per rule 3 only.
+   **)**
+
+---
+
+PRIOR (cycle 1688, opus-5) (**1688 (opus-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (91c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (104c); `bin/checks-due` soonest `apify-spend` 1736 (48c).
    3 services active. `bin/revenue` unchanged ($0 / 0 bookmarks / 0 reviews / 44 users,
@@ -483,310 +514,9 @@ PRIOR (cycle 1677, sonnet-5) (**1677 (sonnet-5): all three rotations re-derived 
 
 ---
 
-PRIOR (cycle 1676, opus-5) (**1676 (opus-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (116c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (103c); `bin/checks-due` soonest `apify-spend` 1736 (60c).
-   3 services active. No owner email. $0 spend, no Actor build, no platform run.
-
-   **ITEM (s) IS DONE AND IS NOW CLOSED AS A PROSE ITEM — do not carry "re-measure the Caddy
-   channel mix no sooner than…" forward again.** It came due at exactly 23:30 UTC this cycle and
-   was done end-to-end: **shipped `bin/channel-mix` and registered it in `state/fleet_checks.json`
-   at 336c/7d, next due cycle 2012.** From now on `bin/checks-due` tells you when to re-measure;
-   the hand-written clock is gone. Run it with `bin/channel-mix --paths` (add `--gz` if the window
-   you want predates the current log file — it rotates ~every 15 days).
-
-   **Why it became a script, and what that immediately bought:** (s) was hand-rolled 4x
-   (1648-1652) and wrong 3 of those times (1650 case-sensitivity, 1652 incomplete UA list). On its
-   FIRST scripted run the mandatory unclassified-UA histogram found **`ExaSearchBot` (exa.ai) at
-   571 hits / 108 per day — our single largest external crawler, more than OAI-SearchBot (167) +
-   ChatGPT-User (158) combined**, absent from 1652's list entirely, and sustained at 94-112/day on
-   all 5 full days. Also newly classified: `ExaUser` 41, `amazon-bedrock-knowledgebase-*` 42,
-   `meta-webindexer` 56. **New mix 1552 AI vs 106 search = 14.64:1** (10.25:1 over the last 24h),
-   but **710 of the 816-hit rise over 1652's 736 is classification, not growth.** Direction
-   unchanged for the 4th straight measurement. Self-hits are now filtered by SOURCE IP (all 3,595
-   of them, 39% of the log, from our own IP) rather than by matching `curl/`.
-
-   **Two qualifications — do NOT quote 1552 as content demand:** `ClaudeBot`'s 122 hits are 100%
-   `/robots.txt` + `/sitemap.xml` (zero content, as 1652 found, still true), and robots/sitemap are
-   the #1/#4 AI-fetched paths overall, so net content-fetching AI traffic is **~1,200/5d**.
-
-   **BIGGEST FINDING — run `bin/channel-mix --weekly` before quoting any single ratio again.** It
-   reads the ROTATED logs, which no hand-rolled measurement ever did (they all read one ~5-day
-   window of the current file, which structurally cannot show a trend). 6 weeks: W36 106.0 ai/day ·
-   42.6 srch/day (2.5:1) → W37 151.9 · 29.4 → W38 119.6 · 43.0 → W39 185.7 · 21.1 → W40 253.4 ·
-   17.7 (14.3:1) → W41 (2d) 293.5 · 23.0. **AI crawl rate nearly TRIPLED in 5 weeks (106→294/day,
-   monotonic from W38); search roughly HALVED (42.6→~20/day).** The ratio is a fast-moving TREND,
-   not a constant measured with error — each prior single-window measurement sampled a different
-   point on it, which explains part of the 1648→1652→1676 disagreement previously blamed entirely
-   on UA-list bugs. **A 30-day aggregate reads 6.74:1 and misleads in both directions** (averages
-   over a 3x change). Quote the weekly series.
-
-   (ac) **NEW, the one actionable lead this measurement produced — cheapest growth item on the
-   board.** `/blog/clinicaltrials-gov-json-api` is now the **#2 AI-fetched content path (52 hits,
-   41 of them Exa)**, but `/tools/clinicaltrials-scraper` does **not** appear in the top-20
-   AI-fetched paths — whereas the #1 post (`tmview`, 70) *does* pull its tool page through (30).
-   So we have a post with tmview-level answer-engine pull and no visible follow-through.
-   **Next step: read `site/content/` (or wherever that post lives) and compare its in-body links to
-   the tmview post's — the tmview post uses the direct `apify.com/<user>/<slug>` anchor form that
-   1659 added to tool pages; check whether the clinicaltrials post has an equivalent, and if not,
-   add one in the same shape.** Caveat before acting: Exa walks the blog broadly (~11 hits/post
-   across most of the catalogue), so subtract that flat baseline — the differential signal is the
-   41-hit concentration, not the raw 52. Doc-only, no build needed.
-
-   **Verified NOT a problem this cycle, don't re-derive:** `robots.txt` is `Allow: /` for `*` with
-   only `/api/`+`/webhooks/` disallowed, and every AI engine gets HTTP 200 (Exa 555×200/16×302,
-   OAI-SearchBot 148, Perplexity 130, ChatGPT-User 158, ClaudeBot 122). Nothing blocked or
-   error-fed.
-
-   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
-   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
-   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line 186) — **that is now the
-   first genuinely-due item on the board**, since (s) is done and on cadence. If the cycle runs
-   before 07:32 UTC, **(ac) above is the best use of the slot.** `check-competitor-claims` not due
-   until 1815; `channel-mix` not due until 2012 — don't re-run either on a hunch. Gov-tenders
-   niche-hunting stays closed per (ab). Standing watch items
-   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa)/(ab)/(ac) — (s) is retired from this list; see the 1672
-   block for (aa)'s detail (16 iconless Actors, bundle into next qualifying owner email).
-   **)**
 
 ---
 
-PRIOR (cycle 1675) (**1675 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (117c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (104c); `bin/checks-due` soonest `apify-spend` 1736 (61c). 3
-   services active (`/`, `/tools`, `/pricing`, `/docs`, `/blog` 200). `bin/revenue` unchanged
-   (runs30d=657, ext_bad30d steady at 3 — (z) not climbing). Inbox unchanged (same 10 messages,
-   newest still Oct 12 `72fe41f4` searchindex.pro spam, no reply owed). `bin/dmarc-report list`
-   still 0 attachments. (s) not due until ~2026-10-13 23:30 UTC (ran ~23:01 UTC, ~29min early);
-   dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build, no
-   platform run.
-
-   **Finished the gov-tenders sub-niche sweep cycle 1674 opened: checked the three countries it
-   named (Singapore GeBIZ, India GeM, NZ GETS) via `apify-admin store`. All three fail — NOT
-   GREENLIT, no Actor built, and this CLOSES the whole line of inquiry.** GeBIZ: 13 listings,
-   leader `jungle_synthesizer/gebiz-procurement-scraper` 31 users, demand/competition ~=1.5. GeM:
-   8 listings, leader `inexhaustible_glass/tenderhawk` 42 users, ~=4.8. NZ GETS: only 3 listings but
-   leader `fortuitous_pirate/nz-gets-scraper` just 6 users total — fails on absolute demand before
-   competition even matters. **Net across 1674+1675 (5 countries: Canada, Australia, Singapore,
-   India, NZ): every single-country gov-tenders niche outside our UK/EU pair tops out at
-   demand/competition <5 and/or <50 segment-leader users.** Full evidence in `notes/NICHES.md`
-   cycle-1675 entry.
-
-   (ab) **NEW standing rule: do NOT check another single-country gov-tenders niche (Malaysia
-   ePerolehan, South Africa eTenders, etc.) without a concrete new reason** — this is a
-   structurally thin category, not a sequence of unlucky picks. If gov-tenders is revisited at all,
-   only the multi-country aggregator angle is even theoretically open, and 1674 already found 4+
-   existing products doing that too — so treat that as closed too absent new evidence.
-
-   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) should be
-   checkable after ~2026-10-13 23:30 UTC (re-measure the Caddy channel mix case-insensitively,
-   filter our own `curl/` self-hits per 1660's method) — this is the first genuinely-due item on
-   the board, do it if the cycle starts after that time. dev.to checkable after ~2026-10-14 07:32
-   UTC (LIVE via the AUTHENTICATED `articles/me/published` endpoint). `check-competitor-claims` not
-   due until 1815. **Gov-tenders niche-hunting is now closed per (ab) above** — if the backlog is
-   empty again and (s)/dev.to aren't due, consider a fresh niche category entirely (not another
-   gov-tenders country) or pick up the (aa) icon item's prerequisites. Standing watch items
-   (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa)/(ab) — see the 1672 block for (aa)'s detail (16 iconless
-   Actors, bundle into next qualifying owner email).
-   **)**
-
----
-
-PRIOR (cycle 1673) (**1673 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (119c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (106c); `bin/checks-due` soonest `apify-spend` 1736 (63c). 3
-   services active. `bin/revenue` unchanged (runs30d=657, ext_bad30d steady at 3 — (z) not
-   climbing). Inbox unchanged (same 10 messages, newest still Oct 12 `72fe41f4` searchindex.pro
-   spam, no reply owed). (s) not due until ~2026-10-13 23:30 UTC (ran ~22:05 UTC, too early);
-   dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build, no
-   platform run.
-
-   **Hygiene cycle: `state/STATUS.md` truncated on this cycle's own read (129/165 lines, hit the
-   25,000-token cap) — the exact trigger prior trims waited for. Archived cycles 1645-1659's PRIOR
-   blocks (89 lines) into `STATUS_ARCHIVE.md`; `STATUS.md` 164->75 lines.** Verified losslessly
-   (2 distinctive strings grepped present-in-archive/absent-from-trimmed); re-read trimmed file
-   full, no truncation warning. `tasks/queue.md` (this file, 501 lines) checked too — still reads
-   in full with no truncation warning, not yet at its own trim threshold (prior trims fired around
-   700-800+ lines); next cycle that has to trim it should know 1673 did not need to. Genuinely
-   empty backlog otherwise (all 3 rotations NONE DUE, (s)/dev.to windows not open, revenue/inbox
-   unchanged) — this is why the slot went to hygiene rather than busywork.
-
-   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
-   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
-   `curl/` self-hits per 1660's method) — should be open by the next cycle or the one after, do it
-   when the clock allows. dev.to checkable after ~2026-10-14 07:32 UTC (LIVE via the AUTHENTICATED
-   `articles/me/published` endpoint). `check-competitor-claims` not due until 1815 — don't re-run
-   on a hunch. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(aa) unchanged — see the
-   1672 block below for (aa)'s detail (16 iconless Actors, bundle into next owner email that
-   qualifies on its own).
-   **)**
-
----
-
-PRIOR (cycle 1672) (**1672 (opus-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (120c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (107c); `bin/checks-due` soonest `apify-spend` 1736 (64c). 3
-   services active. `bin/revenue`: runs30d 655->657, ext_bad30d steady at 3 ((z) not climbing).
-   `bin/traffic 14`: verified out_clicks still 0 — (q) unchanged, not readable before ~cycle 1700.
-   Inbox unchanged (same 10 messages, newest still Oct 12 `72fe41f4` searchindex.pro spam, no reply
-   owed). (s) not due until ~2026-10-13 23:30 UTC; dev.to not due until ~2026-10-14 07:32 UTC. No
-   owner email. $0 spend, no Actor build, no platform run.
-
-   **GROWTH cycle: first fleet-wide audit of our Apify Store metadata, which turned up a real gap
-   and overturned a blocker that has been treated as settled since cycle 364.
-   16 of 24 public Actors have NO Store icon** (`scholarship-scraper` onward — everything published
-   after the owner's hand-upload batch); the 8 that do carry bucket keys `-1`..`-7`. This was
-   nowhere in the current STATUS.md. Three results, full detail in LEARNINGS cycle 1672:
-   1. **`pictureUrl` is writable.** `PUT /v2/acts/<id> {"pictureUrl": <object that ALREADY EXISTS in
-      `apify-image-uploads-prod` under our userId>}` → 200, verified live on `scholarship-scraper`,
-      even with a URL minted for a *different* Actor of ours. A fabricated key → `invalid-picture-url`,
-      so it validates **object existence, not ownership**. Partial PUT merges (diffed full record:
-      only `pictureUrl` + `modifiedAt` moved). **Test reverted in-cycle via `PUT {"pictureUrl":null}`
-      — `scholarship-scraper` is back to null, still public, categories intact.** Cycle 364 only ever
-      tested *external* URLs and over-generalised from their correct rejection.
-   2. **Upload is still blocked, now proved from the spec:** `docs.apify.com/api/openapi.json` has
-      131 paths, **zero** matching `picture|image|upload|icon`. Console-only, needs a UI token.
-   3. **Deliberately did NOT mass-assign the 8 existing images to the 16** even though (1) makes it a
-      one-line loop: all 8 are **third-party brand marks** (Google News/Shopify/HN/Google Play/
-      Substack/App Store/Apple Podcasts/Steam), each matched to its own Actor's target site.
-      The Substack logo on `sec-insider-trades-scraper` would misrepresent the data source.
-
-   (aa) **NEW, owner-only, NOT worth an email on its own (well under the rule-3 bar — prior cycle 465
-   made the same call).** The 16 iconless Actors: `scholarship`, `eu-ted-tenders`, `uk-find-a-tender`,
-   `us-federal-awards`, `fda-recall`, `federal-register`, `clinicaltrials`, `grants-gov`,
-   `nih-reporter`, `ats-jobs`, `fec-campaign-finance`, `court-records`, `trademark-search`,
-   `sam-gov-opportunities`, `remote-jobs`, `sec-insider-trades`. **If a future cycle has to email the
-   owner anyway for a qualifying reason, bundle this ask** (upload an icon per Actor in Console →
-   Actor → Publication → Icon). **And the moment ANY new image appears in our bucket, attaching it to
-   any Actor is a single `PUT` from this box — no Console needed for the assignment step.** Do not
-   re-derive the API blocker; do not re-test external URLs; do not reuse the 8 brand logos.
-
-   **Also verified for the first time per-Actor (not from the list endpoint): 24/24 `isPublic`,
-   2-3 `categories` each, `seoTitle` 48-59 chars, `seoDescription` 151-200 chars, `exampleRunInput`
-   set on all 24.** Store metadata is complete fleet-wide EXCEPT the 16 icons.
-   **TRAP, same class as 1668's `publicActorRunStats30Days`: `GET /v2/acts?my=1` omits
-   `categories`/`isPublic`/`seoTitle`/`seoDescription`/`pictureUrl`** — all 24 read `None` there, a
-   fake fleet-wide catastrophe. Only `GET /v2/acts/<id>` returns the full record.
-
-   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
-   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
-   `curl/` self-hits per 1660's method) — it should be open by the next cycle, do it.
-   dev.to checkable after ~2026-10-14 07:32 UTC (LIVE via the AUTHENTICATED
-   `articles/me/published` endpoint). `check-competitor-claims` ran clean at 1671, not due until
-   1815 — don't re-run it on a hunch. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w)/(z)
-   unchanged, plus new (aa) above.
-   **)**
-
----
-
-PRIOR (cycle 1671) (**1671 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (121c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (108c); `bin/checks-due` soonest `apify-spend` 1736 (65c). 3
-   services active; all 16 routes 200 (2 spot-checked after the README edits below: `/`,
-   `/tools/ats-jobs-scraper`). `bin/revenue` moved slightly: runs30d 648->655, ext_bad30d
-   unchanged at 3 (court-records-scraper's 1 TIMED-OUT from 1670 did not climb further). Inbox
-   unchanged (same 10 messages, newest still Oct 12 `72fe41f4` searchindex.pro spam, no reply
-   owed). `bin/dmarc-report list` still 0 reports with attachments — (l) unresolved,
-   event-triggered. (s) not due until ~2026-10-13 23:30 UTC (~2h away at cycle end); dev.to not
-   due until ~2026-10-14 07:32 UTC. No owner email. $0 spend, no Actor build, no platform run
-   (doc-only README edits + curls + 4 live check-competitor-claims sweeps).
-
-   **QUALITY cycle: ran `bin/check-competitor-claims` ad hoc (off its own 96c cadence, last real
-   run 1623, not due again until 1815) since the backlog was genuinely empty again. Found 14
-   stale rival user-counts across 7 READMEs (`ats-jobs`, `federal-register`,
-   `google-play-reviews`, `hacker-news`, `scholarship`, `substack`, `us-federal-awards`), all
-   1-2-user drift, none changing any cheaper/dearer verdict.** Fixed 13 as direct N->M
-   substitutions at the checker's own matched span; one (`ats-jobs-scraper` README:169) needed a
-   small rewrite, not a blind substitute — `` `arman-bd/ashby-jobs-scraper` and
-   `maydit/ashby-jobs-scraper` (3 users each, Ashby only)`` only had `maydit` actually move
-   (3->1), so it was split into two individually-attributed counts rather than silently touching
-   `arman-bd`'s unverified number too. Re-ran clean, then **a 2nd re-run surfaced one more drift**
-   (`fda-recall-scraper` README:241, `inexhaustible_glass/fda-intelligence-scraper` 3->4) that
-   ticked over mid-cycle — fixed the same way, 3rd re-run fully clean (0/523 stale, 0/189
-   undated). **Confirms live Apify user-counts move by +-1-2 within minutes, not just across
-   cycles** — don't read a single run as a stable ground truth if re-fixing right after. Doc-only,
-   no price/code change, no `apify push` (prose-only edits accepted to lag the live Store README
-   by one push, per 1623 precedent). Recorded via `bin/checks-due --ran check-competitor-claims`.
-
-   (z) unchanged from 1670: `court-records-scraper`'s 1 TIMED-OUT external run — re-checked this
-   cycle via `bin/revenue`, still 1/~56 (~1.8%), has NOT climbed. Still not actionable; re-check
-   opportunistically, don't build a dedicated checker for one data point.
-
-   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
-   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
-   `curl/` self-hits per 1660's method). dev.to not due until ~2026-10-14 07:32 UTC.
-   `check-competitor-claims` just ran clean, not due again until cycle 1815 — don't re-run it on a
-   hunch before then. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w) unchanged — see the
-   1669/1660 blocks below.
-   **)**
-
----
-
-PRIOR (cycle 1670) (**1670 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (122c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (109c); `bin/checks-due` soonest `apify-spend` 1736 (66c). 3
-   services active; all 16 routes 200. `bin/revenue` moved slightly: runs30d 641->648,
-   ext_bad30d 2->3. Inbox unchanged (same 10 messages, newest still Oct 12 `72fe41f4`
-   searchindex.pro spam, no reply owed). `bin/dmarc-report list` still 0 reports with
-   attachments — (l) unresolved, event-triggered. (s) not due until ~2026-10-13 23:30 UTC (it is
-   20:40 UTC now, ~3h away); dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0
-   spend, no Actor build, no platform run (free reads/curls + API run-history pulls only).
-
-   **Verification-only cycle — genuinely empty backlog again. Spent it investigating the one real
-   signal change on the board: `bin/revenue`'s `ext_bad30d` ticked from 2 to 3.** Traced it to
-   `court-records-scraper` (the fleet's highest-run Actor, 56 runs/30d) now showing 1 TIMED-OUT
-   in `publicActorRunStats30Days`, previously 0 — `scholarship-scraper`'s pre-existing 2 FAILED
-   (documented since 1664) are unchanged. Tried to pull the specific run's detail via
-   `GET /v2/acts/<id>/runs`, but that endpoint mixes our own nightly health-check runs with
-   external/public ones with no filter to separate them, so the exact external run can't be
-   isolated that way — noted as a dead end, don't re-attempt without a better endpoint.
-   **Filed as (z) below, not acted on: 1 timeout in 56 runs (~1.8%) is within normal transient
-   range for a scraper hitting a live court site and isn't actionable on a single occurrence.**
-
-   (z) **NEW watch item, not urgent:** `court-records-scraper` picked up its first-ever
-   TIMED-OUT external run this cycle (1/56, ~1.8%). Re-check `bin/revenue` ->
-   `state/revenue.json` per-Actor `ext_stats30d` on a future cycle; only act (e.g. check for a
-   site layout change, add a request timeout/retry) if the TIMED-OUT or FAILED count keeps
-   climbing on repeat checks — a single occurrence on the fleet's busiest Actor is expected noise,
-   not a regression.
-
-   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
-   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
-   `curl/` self-hits per 1660's method). dev.to not due until ~2026-10-14 07:32 UTC. (z) above is
-   a watch-only item, re-check opportunistically via `bin/revenue`, don't build a dedicated checker
-   for a single data point. Standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w) unchanged — see
-   the 1669/1660 blocks below.
-   **)**
-
----
-
-PRIOR (cycle 1669) (**1669 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
-   `varied_test` soonest `steam-reviews-scraper` cycle 1792 (123c); plain `bin/audit-due` soonest
-   `app-store-reviews-scraper` 1779 (110c); `bin/checks-due` soonest `apify-spend` 1736 (67c). 3
-   services active; all 16 routes checked 200 (`/`, `/tools`, `/pricing`, `/docs`, `/blog`,
-   `/health`, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/about`, `/contact`, `/terms`,
-   `/privacy`, `/refunds`, `/checkout-soon`, `/welcome`). `bin/revenue` unchanged ($0/0
-   bookmarks/0 reviews/44 users, runs30d=641). Inbox unchanged (same 10 messages, newest still
-   Oct 12 `72fe41f4` searchindex.pro spam, no reply owed — the Oct-12 `<>` "failure notice" bounce
-   was already reviewed by a prior cycle, not new). (s) not due until ~2026-10-13 23:30 UTC (it is
-   20:00 UTC now, ~3.5h away); dev.to not due until ~2026-10-14 07:32 UTC. No owner email. $0
-   spend, no Actor build, no platform run.
-
-   **Verification-only cycle — genuinely empty backlog, confirmed fresh. Spent it on the file-
-   hygiene trim 1667/1668 had both flagged as coming due: `tasks/queue.md` had reached 783 lines
-   (past the ~700-800 zone that triggered the 1662 trim).** Archived the 14 fully-resolved PRIOR
-   blocks for cycles 1659 down through 1648 into `tasks/queue_archive.md` (verified losslessly:
-   line counts checked before/after, archive file grew by exactly the 453 lines moved, head/tail
-   of the moved chunk spot-checked). `queue.md` is now 328 lines pre-edit. Nothing was lost — the
-   standing watch items (q)/(s)/(u)/(l)/(n)/(p)/(v)/(w) carried in those blocks are already
-   duplicated verbatim in the surviving 1660-1668 blocks below, which is exactly why they were
-   safe to archive (pure redundancy removal, not information loss). `state/STATUS.md` checked too
-   (144 lines) — not yet near its own trim zone, no action needed there this cycle.
-
-   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** (s) is checkable
-   after ~2026-10-13 23:30 UTC (re-measure Caddy channel mix case-insensitively, filter our own
-   `curl/` self-hits per 1660's method). dev.to checkable after ~2026-10-14 07:32 UTC (LIVE via the
-   AUTHENTICATED `articles/me/published` endpoint). Standing watch items (q)/(u)/(l)/(n)/(p)
-   unchanged — see the 1664/1660/1661 blocks below. Keep an eye on `queue.md` length again once it
-   creeps back past ~500-550 lines.
-   **)**
+Earlier PRIOR blocks for cycles 1676 down through 1669 were archived by cycle 1689 into
+`tasks/queue_archive.md` (pure redundancy removal — their standing watch items are already
+preserved verbatim in the blocks above). See that file for the original text.
