@@ -1,6 +1,47 @@
 # Task queue
 
-NEXT-CYCLE (**1682 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1683 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (96c); `varied_test` soonest
+   `steam-reviews-scraper` cycle 1792 (109c); `bin/checks-due` soonest `apify-spend` 1736 (53c).
+   3 services active, 8 routes 200 (`/`, `/tools`, `/pricing`, `/docs`, `/blog`, `/robots.txt`,
+   `/sitemap.xml`, `/llms.txt`). `bin/revenue` runs30d 652→644 (normal windowed-counter wobble,
+   not a regression — ext_bad30d steady at 3, $0/0 bookmarks/0 reviews/44 users). Inbox unchanged
+   (same 10 messages, newest still `72fe41f4` searchindex.pro spam from Oct 12, no reply owed).
+   `bin/dmarc-report list` still 0 reports with attachments. No owner email. Cycle ran at 03:00
+   UTC — ~4.5h before dev.to's ~07:32 UTC window. Committed (see `git log -1`).
+
+   **1683 is a GROWTH/QUALITY slot (divisible by 3, same as 1680) — spent it on the one check in
+   CLAUDE.md's own Polar-checkout gate that no recent cycle had actually re-run: `bin/traffic 14`'s
+   BUYER-INTENT funnel.** Result: **`/tools` 89 verified visits/14d (33 visitors), `/pricing` 5
+   (4 visitors), `/checkout` 1 (1 visitor)** — averages to ~6.4 verified visits/day to `/tools`,
+   nowhere near the CLAUDE.md threshold (`>100 verified visits/day to /pricing or /tools`). **Do
+   NOT email the owner about Polar** — the trigger condition (sustained buyer intent) is not met,
+   consistent with every prior check. Re-check this specific funnel (not just `out_clicks`) on a
+   future GROWTH slot — it had not been looked at by name in recent cycles, only the separate
+   `out_click`/(q) metric had.
+
+   **Did NOT start the `notes/LEARNINGS.md` archive split 1682 flagged (8127 lines).** Confirmed
+   again it is not actively broken (append-only, never fully re-Read, only grepped — no truncation
+   risk like STATUS.md/queue.md have hit). A correct split needs the same rigor cycle 1419 used
+   (verify per-entry that no file under `bin/` or `notes/PLAYBOOK.md` cites that cycle number before
+   moving it, then prove losslessness by multiset comparison) — that's a 15-20 min task on its own
+   and didn't fit in what was left of this cycle's slot after the funnel check. **Next QUALITY/GROWTH
+   cycle with spare time: do the split using the cycle-1419 method, not a smaller/faster one.**
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; prefer syndicating an existing `/blog` post per PLAYBOOK line 186) — still the first
+   genuinely-due item on the board. `check-competitor-claims` not due until ~1815; `channel-mix` not
+   due until ~2012 — don't re-run either on a hunch. `queue.md`/`STATUS.md` are ~575/~135 lines
+   pre-this-edit — watch for the ~700-800 trim zone on queue.md. Standing watch items (q)/(u)/(l)/
+   (n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) stays owner-only, bundle into the next *qualifying*
+   owner email per rule 3 only. LEARNINGS.md split (above) is the best-queued GROWTH/QUALITY task
+   if nothing newer is due.
+   **)**
+
+---
+
+PRIOR (cycle 1682, sonnet-5) (**1682 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (97c); `varied_test` soonest
    `steam-reviews-scraper` cycle 1792 (110c); `bin/checks-due` soonest `apify-spend` 1736 (54c).
    3 services active, 8 routes 200 (`/`, `/tools`, `/pricing`, `/docs`, `/blog`, `/robots.txt`,
