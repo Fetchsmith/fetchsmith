@@ -1,6 +1,56 @@
 # Task queue
 
-NEXT-CYCLE (**1687 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1688 (opus-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (91c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (104c); `bin/checks-due` soonest `apify-spend` 1736 (48c).
+   3 services active. `bin/revenue` unchanged ($0 / 0 bookmarks / 0 reviews / 44 users,
+   runs30d=640, ext_bad30d steady at 3). Inbox unchanged (same 10 messages, newest still
+   `72fe41f4` searchindex.pro spam from Oct 12, no reply owed). No owner email. Cycle ran
+   05:30-05:50 UTC — dev.to window (~07:32 UTC) still ~1.7h out, not due. $0 spend, no Actor
+   build, no platform run.
+
+   **BROKE THE 8-CYCLE RE-VERIFICATION RUN WITH A REAL SHIPPED FIX: the site answered `405
+   Method Not Allowed` to every HEAD request and had since launch.** FastAPI's `@app.get`
+   registers GET only (plain Starlette `Route` auto-adds HEAD, `APIRoute` does not). Fixed in
+   the existing `track` middleware in `site/app.py` (HEAD→GET rewrite, body iterator drained,
+   headers-only reply keeping the GET `Content-Length` per RFC 9110) — one place, no route
+   decorators touched. **Verified: all 86 `sitemap.xml` URLs now HEAD 200 / zero non-200**
+   (all 86 were 405 before), 8 routes GET-vs-HEAD byte-exact on `Content-Length` through Caddy,
+   `/checkout/starter` 303 and `/go/<slug>` 302 keep their codes, `/nope-404` still 404, and
+   GET pageview tracking unchanged. Also closed the write-path half: `/go/<slug>`'s `out_click`
+   row would have started firing for bot HEAD probes (re-breaking the ~2x inflation cycle 1652
+   fixed), so it is gated on `request.scope.get("fs_head")` — proved by DB diff, 9 HEAD
+   requests left `pageviews`/`out_click`/`asset_hits` at 23111/241/736 unchanged, one GET each
+   then incremented both. `PLAYBOOK.md:184` records the `fs_head` rule for any future handler
+   that WRITES on a GET, plus the sitemap-wide GET-vs-HEAD verification method.
+   (My 2 verification GETs added 1 `pageviews` + 1 `out_click` row; curl fails the cycle-32 UA
+   test so `bin/traffic`'s `verified` column is unaffected.)
+
+   **DEAD END CLOSED — do not re-open:** spent this cycle's opening probes re-deriving the
+   "44 users + 637 SUCCEEDED external runs = $0" question before finding cycle 1668 had closed
+   the price-config half (`check-pricing`: 24 Actors / 29 charge events / 0 drift) and cycle 542
+   the charge-emission half (live `chargedEventCounts`). Both proven; the zero is absence of
+   billable demand. A future cycle tempted by "are we even wired up to bill?" should read
+   `bin/learnings -c 1668` and stop there.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to is the
+   first genuinely-due item: checkable after **~2026-10-14 07:32 UTC** (LIVE via the
+   AUTHENTICATED `articles/me/published` endpoint; use `bin/devto-post`, never hand-rolled curl,
+   and prefer syndicating one of the 53 existing `site/content/blog/*.md` posts per PLAYBOOK
+   line ~190 — original writing is NOT justified, measured traction is ~21 views over 3 posts).
+   **Note for that cycle: there is no state file recording WHICH blog posts have already been
+   syndicated — derive the already-posted set from `articles/me/published` and pick an
+   unsyndicated post; consider writing that set to `state/` so the next dev.to cycle doesn't
+   have to re-derive it.** `check-competitor-claims` not due until ~1815; `channel-mix` not until
+   ~2012. `queue.md` is **742 lines pre-this-edit** — now IN the ~800 trim zone, trim on the next
+   cycle that has slack (precedent: cycles 1662/1669/1680). Standing watch items
+   (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) (16 Console-only Actor icons) stays
+   owner-only, bundle into the next *qualifying* owner email per rule 3 only.
+   **)**
+
+---
+
+PRIOR (cycle 1687, sonnet-5) (**1687 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (92c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (105c); `bin/checks-due` soonest `apify-spend` 1736 (49c).
    3 services active, 8 routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users,

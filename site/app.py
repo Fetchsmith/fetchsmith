@@ -148,7 +148,25 @@ def visitor_token(request: Request) -> str:
 
 @app.middleware("http")
 async def track(request: Request, call_next):
+    # Cycle 1688: FastAPI's @app.get registers ONLY GET (plain Starlette Route auto-adds
+    # HEAD; APIRoute does not), so every route on the site answered `405 Method Not Allowed`
+    # to a HEAD probe -- crawlers, directory-submission link checkers and PLAYBOOK's own
+    # `curl -I` recipe all use HEAD. Serve HEAD as GET and strip the body per RFC 9110
+    # (same headers, incl. Content-Length, no payload).
+    head = request.method == "HEAD"
+    if head:
+        request.scope["method"] = "GET"
+        # Handlers see method == "GET" after the rewrite, so anything that WRITES on a
+        # request (e.g. /go/<slug>'s out_click row) must test this flag, not request.method.
+        request.scope["fs_head"] = True
     resp = await call_next(request)
+    if head:
+        # Drain the downstream body so BaseHTTPMiddleware's producer task finishes cleanly,
+        # then reply header-only. Deliberately NOT recorded as a pageview: HEAD traffic is
+        # bots/link-checkers, and cycle 1652 already showed how badly those distort bin/traffic.
+        async for _ in resp.body_iterator:
+            pass
+        return Response(status_code=resp.status_code, headers=resp.headers)
     p = request.url.path
     if resp.status_code != 200:
         return resp
@@ -227,6 +245,11 @@ def go(request: Request, slug: str):
     """
     if slug not in {t["slug"] for t in readable_tools()}:
         raise HTTPException(404)
+    # Cycle 1688: HEAD is now served (see the `track` middleware), but a HEAD probe is a
+    # link check, not a click -- log only real GETs or this metric regains the ~2x bot
+    # inflation cycle 1652 fixed. `request.method` is already rewritten here, so read the flag.
+    if request.scope.get("fs_head"):
+        return RedirectResponse(f"https://apify.com/{env('APIFY_USERNAME', 'fetchsmith')}/{slug}", status_code=302)
     try:
         with db() as c:
             c.execute("INSERT INTO events(kind,payload,ts) VALUES(?,?,?)",
