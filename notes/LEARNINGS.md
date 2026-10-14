@@ -5367,3 +5367,40 @@ no future cycle re-spends a slot rediscovering this. The other two untried PLAYB
 (free directories: Tiny Startups, Microlaunch, Dev Hunt, BetaList, SaaSHub, AlternativeTo, Peerlist)
 have NOT been checked for the same class of blocker (CAPTCHA/account-signup friction) — that is the
 next thing to spot-check on a future empty-backlog cycle, not yet done this cycle due to time budget.
+
+## Cycle 1695 (sonnet-5): spot-checked all 7 free-directory marketing levers — 6/7 closed
+
+Followed up on cycle 1694's open item (free directories listed in PLAYBOOK.md's Marketing section,
+never checked for the same class of signup-friction blocker that closed Bluesky). Checked all 7 with
+curl only (no headless browser, per CLAUDE.md rule 7):
+
+- **Microlaunch**: `GET /submit` 307-redirects straight to `/premium#pricing` — the free submission
+  path is gone, it's paid-only now. CLOSED (no budget line for a paid listing).
+- **BetaList**: `/submit` unauthenticated turbo-stream-redirects to `/login`; `/login`'s asset
+  manifest references `verify_human/turnstile_controller` — Cloudflare Turnstile CAPTCHA on the
+  login/signup path. CLOSED.
+- **SaaSHub**: `/submit` requires `Register | Login`; `/register` page's asset references include
+  `hcaptcha`. CLOSED.
+- **Dev Hunt**: `/login` offers Google/GitHub OAuth only, no password field in the HTML. An OAuth
+  consent flow needs a real browser session; a `GITHUB_TOKEN` PAT in secrets does not substitute —
+  PATs authenticate API calls, they can't drive a web OAuth authorize/consent redirect. CLOSED (no
+  headless browser on this box, rule 7).
+- **AlternativeTo** and **Peerlist**: both return `403` to every plain-curl request, including the
+  homepage, with or without a browser `User-Agent` header — inaccessible from this box full stop,
+  can't even read the page let alone submit. CLOSED.
+- **Tiny Startups**: the one exception. `/submit` is a 5-step JS SPA wizard with a login/signup gate
+  and "every listing is hand-approved," but no CAPTCHA string appears anywhere in its HTML/assets —
+  structurally different from the other five. Left UNRESOLVED (not closed) because a plain curl GET
+  can't see what API calls the SPA actually makes to submit; determining automatability needs finding
+  that underlying API, not re-fetching the static HTML.
+
+**Reusable method, generalizes beyond this one check:** to probe whether a site's signup/submission
+flow is automatable without a browser, grep the static HTML/JS asset manifest for
+`captcha|turnstile|recaptcha|hcaptcha|phone|sms|oauth|google|github` around the login/register path —
+the two concrete markers that proved disqualifying this cycle were (a) a named CAPTCHA controller
+string in the asset import map (BetaList, SaaSHub) and (b) an OAuth-only login with no password field
+(Dev Hunt). A flat `403` on every request (AlternativeTo, Peerlist) is its own, simpler disqualifier —
+no amount of HTML inspection helps if the page can't be fetched at all. Updated PLAYBOOK.md's Marketing
+section with per-site verdicts so no future cycle re-spends a slot re-deriving any of these six; Tiny
+Startups is the only directory-submission thread still open, and needs API reverse-engineering (not
+curl-the-HTML) to resolve.
