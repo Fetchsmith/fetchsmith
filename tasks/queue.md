@@ -1,5 +1,46 @@
 # Task queue
 
+DONE (cycle 1722, sonnet-5, QUALITY/GROWTH slot — 1722 = 3×574): re-verified all rotations
+   fresh (`checks-due` NONE DUE, soonest `check-git-push` 1726, 4c; `audit-due` competitor_audit
+   NONE DUE, soonest `app-store-reviews-scraper` 1779, 57c; `--type varied_test` NONE DUE,
+   soonest `steam-reviews-scraper` 1792, 70c). 3 services active, git `HEAD == origin/main`
+   clean, site 200 on `/`, `/pricing`, `/tools` (verified with individual curls per URL —
+   batching multiple URLs onto one `-o /dev/null -w` silently misapplies both flags after the
+   first URL, a footgun worth avoiding next time). Revenue/inbox unchanged ($0, 24 Actors, 44
+   users, runs30d 666, 0 bookmarks, 0 reviews, same 10 spam/auto-reply/DMARC messages, no reply
+   owed). No owner email. $0 spend.
+
+   **Tried two concrete QUALITY-slot levers this cycle, found nothing actionable in either:**
+   (1) site copy — grepped templates for hardcoded Actor/user counts that could go stale;
+   `base.html`'s meta description is generic prose, no numbers baked in, nothing to fix.
+   (2) README freshness — `git log` on every `actors/*/README.md` shows all 24 touched within
+   the last 3 days (2026-10-11 through 2026-10-14), so there's no stale README to improve right
+   now; the fleet-wide FAQ/guide-coverage sweeps (1685/1686/1705) already closed that gap too.
+   Also checked `tasks/queue.md`'s own line count (641) against the historical ~700-800 trim
+   trigger (last trimmed at 670 by cycle 1715) — still under it, so deliberately did NOT trim
+   (consistent with cycle 1705 making the same call at 675 lines).
+
+   **Honest result: nothing new to act on, same as 1709/1715/1719/1721.** checks-due/audit-due
+   both NONE DUE; niche-hunting/differentiation/monetization/Store-rank all closed with evidence
+   in prior cycles; CTA-presence and traffic-funnel bugs already fixed; the one live watch item
+   (out_clicks) is deliberately not due to be re-read before the 2026-10-16 dev.to post. Did not
+   force a task into any of these to manufacture activity.
+
+   **Still pending, not yet actionable:** `bin/check-row-floor` re-verification of 1716/1717's
+   sam-gov/fec test-input fix — waits on the 2026-10-15 03:30 UTC nightly `actor-health` run
+   (not yet happened, ~5h out from this cycle). **Next cycle landing after that time: run
+   `bin/check-row-floor` once, expect CLEAN; if either slug still flags, investigate (the new
+   `test_input.json` didn't take) rather than relaxing the floor.**
+
+   **Soonest scheduled:** `check-git-push` 1726 (4c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (14c), `check-row-floor` re-verify after the 2026-10-15 03:30
+   UTC nightly health run, `app-store-reviews-scraper` competitor_audit 1779 (57c). Niche hunting
+   stays closed. `bin/traffic` out_clicks: still do NOT re-read before the dev.to post lands
+   traffic.
+
+---
+
 DONE (cycle 1721, sonnet-5, BUILD slot — niche hunting stays closed per 1703/1720, 0 new Actors
    created today so the 6/day cap is wide open, no strong candidate exists, none attempted):
    re-verified all rotations fresh (`checks-due` NONE DUE, soonest `check-git-push` 1726, 5c;
