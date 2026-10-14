@@ -1,6 +1,49 @@
 # Task queue
 
-NEXT-CYCLE (**1689 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1690 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (89c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (102c); `bin/checks-due` soonest `apify-spend` 1736 (46c).
+   3 services active, 8 routes 200 (re-verified the correct canonical 8 — `/`, `/pricing`,
+   `/tools`, `/blog`, `/docs`, `/robots.txt`, `/sitemap.xml`, `/health` — after mistakenly
+   curling `/actors`/`/about`/`/privacy`/`/terms` first, none of which are real routes in
+   `site/app.py`; 404 on those is correct, not a bug). `bin/revenue` unchanged ($0/0 bookmarks/0
+   reviews/44 users, runs30d=640, ext_bad30d steady at 3). `bin/dmarc-report list` still 0
+   reports with attachments. Inbox unchanged (same 10 messages, newest still `72fe41f4`
+   searchindex.pro spam from Oct 12, no reply owed). No owner email. Cycle ran 06:30-06:40 UTC —
+   dev.to window (~07:32 UTC) still ~1h out, not due.
+
+   **Genuinely-empty backlog again, so spent the slot on a concrete README quality gap instead of
+   another no-op re-verification.** Swept all 24 live Actor READMEs for a real sample-output
+   example (grep for "sample output/row/item/record" case-insensitively) — 23/24 already had one
+   embedded under `## Output` (prior "sample=0" greps in earlier cycles were false negatives from
+   only matching the literal phrase "sample output", missing headings like "Sample row:" or a bare
+   JSON block with no label line at all). **`ats-jobs-scraper` was the one genuine gap**: its
+   `## Output` section was a comma-separated field-name list with zero JSON example anywhere in
+   the file. Pulled one real record live (`run-sync-get-dataset-items`, Greenhouse/airbnb, 1 row,
+   trivial cost) and added a "Sample row" JSON block plus a 2-line note explaining why
+   `employmentType` is `null` on it (Greenhouse never publishes the field — documented lower in
+   the same README). `apify push --force -w 600` → build 0.1.78 SUCCEEDED; verified live via the
+   build's own `readme` field over the API (not the CDN-cached Store page) — both the "Sample row"
+   heading and the real airbnb job URL are present. Committed `95b5df04`.
+
+   **NEXT CYCLE: re-derive all three rotations fresh — don't trust this prose.** dev.to becomes
+   checkable after **~2026-10-14 07:32 UTC** (LIVE via the AUTHENTICATED `articles/me/published`
+   endpoint; use `bin/devto-post`, never hand-rolled curl; prefer syndicating one of the 53
+   existing `site/content/blog/*.md` posts per PLAYBOOK line ~190 — original writing is NOT
+   justified, measured traction is ~21 views over 3 posts). **There is still no state file
+   recording WHICH posts are already syndicated — derive the set from `articles/me/published` and
+   pick an unsyndicated one; consider persisting that set to `state/`.** If the cycle still runs
+   before 07:32 UTC: the README sample-output sweep this cycle found only one gap and closed it —
+   don't re-run that exact sweep, but a similar fleet-wide consistency check (e.g. `## FAQ` section
+   depth, or the "Related guides" count per `check-actor-guides`) could be a reasonable filler.
+   `check-competitor-claims` not due until ~1815; `channel-mix` not due until ~2012. Standing watch
+   items (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) (16 Console-only Actor icons) stays
+   owner-only, bundle into the next *qualifying* owner email per rule 3 only.
+   **)**
+
+---
+
+PRIOR (cycle 1689, sonnet-5) (**1689 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (90c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (103c); `bin/checks-due` soonest `apify-spend` 1736 (47c).
    3 services active, 8 routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0 reviews/44 users,
