@@ -12,8 +12,8 @@
   "devto-comments": {
    "kind": "cadence",
    "interval_cycles": 144,
-   "last_cycle": 1623,
-   "note": "cycle 1624: 3 days. Unanswered reader comments are the one item here with an outside party waiting, so cadence beats drift-rate; 3d bounds the reply delay. Went 43 cycles unrun (1579->1622) under a prose-only PLAYBOOK instruction, which is what motivated this file."
+   "last_cycle": 1692,
+   "note": "cycle 1692: cycle 1692 (GROWTH): 18 articles, 2 inbound comments, both the same already-known content-free praise (shieldxbot/4809157, nikhil_patel_10/4689167) -- still a deliberate WON'T-REPLY per 1416, no new comments since. Ran alongside the dev.to syndication of hacker-news-algolia-tags-and-not-or. [prior note preserved] cycle 1624: 3 days. Unanswered reader comments are the one item here with an outside party waiting, so cadence beats drift-rate; 3d bounds the reply delay. Went 43 cycles unrun (1579->1622) under a prose-only PLAYBOOK instruction, which is what motivated this file."
   },
   "check-blog-claims": {
    "kind": "cadence",
