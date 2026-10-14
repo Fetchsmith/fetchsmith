@@ -62,6 +62,39 @@ If you only have a guess at the slug (e.g. the company's own name, lowercased) a
 One row per job posting:
 `company, atsSource, jobId, title, department, team, departmentPath, employmentType, workplaceType, isRemote, location, secondaryLocations, country, region, city, salaryMin, salaryMax, salaryCurrency, salaryInterval, publishedAt, updatedAt, jobUrl, applyUrl, descriptionHtml, descriptionText, scrapedAt`
 
+Sample row (Greenhouse, `descriptionHtml`/`descriptionText` truncated — the real fields carry the full posting body):
+```json
+{
+  "company": "airbnb",
+  "atsSource": "greenhouse",
+  "jobId": "8184174",
+  "title": "Account Manager",
+  "department": "2. Business",
+  "team": "Business Development",
+  "departmentPath": ["2. Business", "Sales & Partnerships", "Business Development"],
+  "employmentType": null,
+  "workplaceType": "Hybrid",
+  "isRemote": false,
+  "location": "London, United Kingdom",
+  "secondaryLocations": [],
+  "country": "United Kingdom",
+  "region": "England",
+  "city": "London",
+  "salaryMin": 46000,
+  "salaryMax": 54000,
+  "salaryCurrency": "GBP",
+  "salaryInterval": "year",
+  "publishedAt": "2026-09-09T04:35:19-04:00",
+  "updatedAt": "2026-09-29T20:00:54-04:00",
+  "jobUrl": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174",
+  "applyUrl": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174",
+  "descriptionHtml": "<div class=\"content-intro\"><p>Airbnb was born in 2007...</p></div>...",
+  "descriptionText": "Airbnb was born in 2007 when two hosts welcomed three guests...",
+  "scrapedAt": "2026-10-14T06:33:25.097Z"
+}
+```
+`employmentType` is `null` here because Greenhouse never publishes it (see Employment type below) — not a bug in this row. `salaryMin`/`salaryMax` come from the pay-transparency range printed in this posting's body (`workplaceType: "Hybrid"`), one of the sources listed under Department and team.
+
 ### Department and team (changed in 0.1.36)
 
 A Greenhouse job carries exactly one department, and it is the **leaf** of the board's own org tree — on a large board that is an internal cost-centre node, not a department anyone would group by. Measured over **1,909 live postings across 5 boards**, **76% sit at depth ≥ 1** in the tree (up to depth 3 on Stripe: `Tech > Security (Planning Org) > Security (Planning Group) > 8611 Security Analytics`).
