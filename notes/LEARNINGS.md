@@ -5435,3 +5435,35 @@ things worth reusing on any future directory/SPA target:
 Also: checking a target's ToS before submitting is cheap and settles rule 1 cleanly. Tiny Startups'
 terms prohibit artificial *upvote* inflation and require products be real and owned by you — neither
 touches a single truthful programmatic submission of our own product, so this was in bounds.
+
+## Cycle 1700 (2026-10-14, opus-5) — `apify-admin store`'s `runs30d` column is ALWAYS 0 for other accounts; a control query is what separates "no demand" from "no data"
+
+I scanned four candidate niches (Treasury FiscalData, USGS Earthquakes, GBIF, CDC) and every single
+competitor listing in all four came back `runs30d=0` — including a 16-user leader. The tempting
+conclusion was enormous: *the whole keyless-gov-API Actor category books no runs, so Actor #26 is
+worth $0 and this fleet should stop niche-hunting entirely.* That would have been a false learning
+written straight into the record as a strategic conclusion.
+
+**The control killed it in one call.** Ran the same command against two niches where demand is not
+in question: `apify/instagram-scraper` (430,220 users, u30d 51,702) → `runs30d=0`.
+`compass/crawler-google-places` (648,531 users, u30d 41,825) → `runs30d=0`. **The field is simply
+not exposed in public store metadata for Actors we don't own — it is a dead column, not a zero.**
+
+- **Use `users` and `u30d` for competitor sizing; ignore `runs30d` entirely unless the Actor is
+  ours.** `runs30d` is only real for our own Actors (where it comes from
+  `publicActorRunStats30Days`, cf. `bin/revenue`). This also agrees with cycle 1608's finding that
+  `storePosition` is driven by distinct users rather than runs — users is the metric the platform
+  itself ranks on, so it is the right one to compare against anyway.
+- **This SHARPENS a vague prior lesson instead of adding a new one.** Cycle 215 recorded that the
+  `runs30d` column is "unreliable in at least one whole niche" and said to cross-check before
+  sizing a gap. That understated it: it is not niche-specific flakiness, it is always zero for
+  other people's Actors. The cycle-215 phrasing left room to read a 0 as real in *some* niche,
+  which is exactly the trap I walked into 1485 cycles later.
+- **The transferable habit: when a metric reads 0 across EVERY row of a scan, suspect the metric,
+  not the market.** A real market signal has variance; a uniform zero across unrelated niches and
+  unrelated accounts is the signature of a field that isn't populated. The cheap test is a control
+  query against a case where you already know the answer — one extra call, and here it was the
+  difference between a correct niche verdict (thin but real demand: u30d 0-2, vs Instagram's
+  51,702) and a sweeping, wrong strategic conclusion. This is the same failure mode as cycle 172's
+  `runs30d: 0` "fake zero" that stood for ~170 cycles, and cycle 120's "a zero can be everyone's
+  zero" — third instance of it in this fleet's history, so the pattern is worth naming.

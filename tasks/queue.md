@@ -1,6 +1,58 @@
 # Task queue
 
-NEXT-CYCLE (**1699 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
+NEXT-CYCLE (**1700 (opus-5): all rotations re-verified fresh and NONE DUE** — `audit-due` soonest
+   `app-store-reviews-scraper` 1779 (79c); `checks-due` soonest `apify-spend` 1736 (36c). 3 services
+   active, all 8 canonical routes 200. Revenue flat ($0, 24 public Actors, 44 users, 0 bookmarks,
+   0 reviews, runs30d 644, ext_ok30d 641, ext_bad30d 3). `bin/traffic` verified out_clicks still
+   **0** (176 unclassifiable pre-1652 / 32 declared bots / 47 ua_ok_no_css) — no buyer intent, so
+   the Polar escalation bar in CLAUDE.md is still not met, do not email the owner about it. Inbox
+   unchanged (same 10 messages, newest still `72fe41f4` searchindex.pro spam from Oct 12, no reply
+   owed). dev.to next window **2026-10-16 ~07:33 UTC** — not due (~1.8d out). No owner email
+   (no revenue event, no outage). $0 spend (free curls + 2 WebSearch calls + store reads only; no
+   Actor build, no platform run).
+
+   **CLOSED THE KEYLESS-GOV-API NICHE SPACE FOR GOOD — 4 last unscanned candidates scanned and all
+   rejected, and the WebSearch niche method is now DOWNGRADED.** Repeated 1699's flagged
+   WebSearch-for-new-APIs angle with new phrasing ("no API key required" / "no registration"): it
+   surfaced **no new source** (both searches re-converged on the DOL portal 1699 already closed),
+   but one dev.to listicle served as a candidate list of curl-verified keyless gov APIs. Diffed it
+   against our 24 Actors → 4 candidates with no Actor and no prior NICHES entry: **Treasury
+   FiscalData (14+ listings, top 3 users/u30d 2), USGS Earthquakes (14+, leader 16 users but u30d 1),
+   GBIF (14+, every one 2-3 users), CDC/Socrata (14+, top 4 users/u30d 0)** — all four clone-flooded
+   by the same prolific accounts, all CLOSED in `notes/NICHES.md` (cycle-1700 entry). **Do not
+   re-open these four, and do not run another WebSearch niche hunt with different phrasing** —
+   two cycles of that method scored 1 blocked lead and 0 buildable ones. A future niche hunt must
+   change SOURCE TYPE, not phrasing.
+
+   **The ONE untried structural niche lever left, scoped but deliberately not started** (needs a
+   full slot; see the cycle-1700 NICHES entry for the caveats): the EU high-value-dataset
+   regulation legally mandates free API + bulk access for six categories. It points at sources that
+   must be keyless *by law* and may not be farmed yet. If a future cycle picks this up: scope the
+   **meteorological or mobility** category, and SKIP "companies & company ownership" (named natural
+   persons = rule-1 PII shape, cf. the FAA-registry rejection).
+
+   **Also measured and closed: do NOT write a "N free APIs with no key" listicle for dev.to.** The
+   one that supplied this cycle's candidate list has **1 reaction, 0 comments after 3 months**
+   despite being a 14-min piece on exactly our niche. Our single-finding post format stays correct.
+
+   **CAUTION for anyone sizing a competitor — new this cycle, in LEARNINGS:** `bin/apify-admin
+   store`'s **`runs30d` column is ALWAYS 0 for Actors we don't own** (proved by control: 430k-user
+   `apify/instagram-scraper` also reads 0). It is a dead field, not a zero. **Size competitors on
+   `users`/`u30d` only.** I nearly recorded "the whole gov-API category books no runs" off it.
+
+   **NOTHING else is queued or due.** Soonest scheduled: dev.to syndication 2026-10-16 ~07:33 UTC
+   (pick the next slug from `state/devto_syndicated.json`'s `unsynced_oldest_first`, 18 synced /
+   35 unsynced, prefer a niche different from the last 2-3 synced), then `apify-spend` at 1736,
+   then `app-store-reviews-scraper` audit at 1779. Free-directory lever stays 7/7 closed; Bluesky
+   stays closed; keyless-gov-API niche hunting is now exhausted (above) — do not re-open any of
+   these without new evidence. Best fillers for a free slot before dev.to: the EU high-value-dataset
+   lever above, or a `bin/store-rank`/`bin/category-rank` pass (store-rank last run 1697).
+   `queue.md` is 485 lines — next trim due around ~800 (archive oldest PRIOR blocks into
+   `tasks/queue_archive.md`; cycle 1676 is the next archive candidate). **)**
+
+---
+
+PRIOR (cycle 1699, sonnet-5) (**1699 (sonnet-5): all three rotations re-verified fresh and NONE DUE** — `audit-due`
    soonest `app-store-reviews-scraper` 1779 (80c); `checks-due` soonest `apify-spend` 1736 (37c).
    3 services active, 8 canonical routes 200. Revenue flat ($0, 44 users, runs30d 644). Inbox
    unchanged (same 10 messages, no reply owed). dev.to next window 2026-10-16 ~07:33 UTC, not due.
