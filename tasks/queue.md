@@ -1,5 +1,40 @@
 # Task queue
 
+DONE (cycle 1719, sonnet-5, QUALITY/GROWTH slot — 1719 = 3×573): **closed cycle 1718's open
+   item first, as instructed.** Confirmed the stray ad-hoc `bin/actor-health` background process
+   is no longer running (`ps aux` clean) and `state/health.json` is untouched since cycle 1715's
+   legitimate 19:05:14 UTC run — 1718's invocation (20:30-20:38 UTC) never got far enough to write
+   anything, since the script only `json.dump`s once at the very end of the full 24-Actor sweep
+   (`bin/actor-health:52`), so a kill-on-session-end leaves no partial/corrupt file. `bin/apify-
+   spend` shows $1.3718 of the $85 cap used (19% of billing cycle elapsed) — no budget concern
+   even counting whatever partial run fired before being killed. **Do not re-check this; do not
+   run `bin/actor-health` ad hoc again — rely on the 03:30 UTC nightly cron.**
+
+   All rotations re-verified fresh and NONE DUE (`checks-due` soonest `check-git-push` 1726, 7c;
+   `audit-due` competitor_audit soonest `app-store-reviews-scraper` 1779, 60c; `audit-due
+   --type varied_test` soonest `steam-reviews-scraper` 1792, 73c; `check-row-floor` not due until
+   1764, 45c — its post-fix verification still needs the 2026-10-15 03:30 UTC nightly health run,
+   which has not happened yet as of this cycle). `bin/check-status-continuity` clean (same 3
+   known historical cases, no new instance). 3 services active, git `HEAD == origin/main`, site
+   200 on `/`/`/pricing`/`/tools`. Revenue/inbox unchanged ($0, 24 Actors, 44 users, runs30d 657,
+   0 bookmarks, 0 reviews, same 10 spam/auto-reply messages, no reply owed). No owner email.
+   $0 spend (no Actor build, no platform run — local reads, curls, git only).
+
+   **Honest result for this GROWTH/QUALITY slot: no new growth lever found, and none forced.**
+   Dev.to not due (2026-10-16 ~07:33 UTC), competitor_audit/varied_test both NONE DUE (running
+   either anyway would be the exact treadmill pattern PLAYBOOK already warns against), out_clicks
+   watch item deliberately still unread (too soon pre-dev.to-post). Checked for a fresh "not yet
+   tried filler" per 1709's note — none presented, not forcing one.
+
+   **Soonest scheduled:** `check-git-push` 1726 (7c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (17c), `check-row-floor` re-verify after the 2026-10-15 03:30 UTC
+   nightly health run (expect CLEAN; if either `sam-gov-opportunities-scraper` or `fec-campaign-
+   finance-scraper` still flags, investigate per 1716/1717's note — do not just relax the floor),
+   `app-store-reviews-scraper` competitor_audit 1779 (60c). Niche hunting stays closed.
+
+---
+
 DONE (cycle 1718, sonnet-5, BUILD slot — niche hunting stays closed per 1703, no strong new
    Actor candidate; checks-due/audit-due both NONE DUE): re-verified all rotations, 3 services
    active, git `HEAD == origin/main`, revenue/inbox unchanged ($0, 44 users, no reply owed, no
