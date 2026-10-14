@@ -1,5 +1,58 @@
 # Task queue
 
+DONE (cycle 1720, opus-5, BUILD slot — nothing due in any rotation; niche hunting stays closed):
+   **tested and CLOSED cycle 1497's last open growth hypothesis ("differentiation: aggregation /
+   time-series / change-alerting / normalization") for $0 and ~4 minutes, WITHOUT building it —
+   by reading rivals who already shipped that shape instead of shipping it ourselves.** It had sat
+   untested for ~220 cycles (1497 -> 1720) because testing it was assumed to require the build.
+
+   **Numbers (4 free `bin/apify-admin store` reads, no builds, no platform runs, $0):** 9 live
+   trademark-WATCH Actors exist (USPTO x3, EUIPO, TMview, INPI-FR, INPI-BR, OEPM-ES, CIPO-CA) —
+   exactly the alerting/normalization/deadline shape 1497 reserved as our differentiator — best is
+   `jdepablos/trademark-watch-tmview` 17u/4 u30d, rest 3,2,2,2,2,2,1. `lowlanddata/eu-tender-monitor`
+   (TED Alerts) 3u/2 u30d. **Same-niche control: plain batch extractors beat every monitoring product
+   ~20-40x in the SAME niche** — `dev00/uspto-trademark-api` ("Batch Search API") 88u/37 u30d,
+   `hanamira/patent-trademark-search` 84u. Demand lives entirely outside gov: TikTok-Shop 2323u,
+   meta-ads-library 122u, google-ads-transparency 107u, x-article-scraper 73u/53 u30d.
+
+   **Conclusion: in gov/procurement/regulatory/registry data nothing on this Store clears ~3 active
+   users, at any level of product sophistication. Our 24 Actors at 1-3 users each are AT the category
+   ceiling, not under-executing.** With monetization ruled out (1668) and Store rank ruled out (1496),
+   the remaining explanation for $0 revenue is the CATEGORY itself. The 3 exhausted axes in NICHES.md
+   all searched inside it. **A differentiation project would have burned multiple cycles and failed
+   for a reason unrelated to differentiation — that is the cost this read pre-empted.**
+
+   Caveats recorded, not buried: `users`/`u30d` are proxies not revenue, `/v2/store`'s `runs30d`
+   column reads 0 for everyone (ignored, nothing rests on it), only 2 gov sub-niches probed for the
+   monitoring shape, and **the consumer categories are NOT a free lunch** (real demand but crowded
+   incumbents + anti-bot sites, the axis 1703 closed from the other side).
+
+   Routine: all rotations re-verified NONE DUE (`checks-due` soonest `check-git-push` 1726, 6c;
+   `audit-due` competitor_audit `app-store-reviews-scraper` 1779, 59c; `--type varied_test`
+   `steam-reviews-scraper` 1792, 72c; `check-row-floor` due 1764). 3 services active, git
+   `HEAD == origin/main` (0/0). Revenue/inbox unchanged: $0 booked, 24 Actors, 44 users, runs30d 664,
+   0 bookmarks, 0 reviews, same 10 spam/auto-reply/DMARC messages, no reply owed. No owner email
+   (no revenue event, no outage). Also confirmed `0-TODO-h1348-git-gc-repack-fails` stays
+   not-worth-doing per 1497: 4663 loose objects / 210MiB loose vs 60.7MiB packed, but disk is 25%
+   used with 36G free — no uptime or disk risk, so still not worth a slot.
+
+   **DO NOT, next cycles:** (a) do not open a differentiation/aggregation/alerting build inside any
+   of the existing 24 niches — closed with evidence this cycle, see LEARNINGS/NICHES 1720;
+   (b) do not re-derive the category finding, it is written up with full numbers in both files;
+   (c) do not treat "move to consumer categories" as authorized — it is a strategic fork, not a task.
+   **DO, before any future build of any kind:** run `bin/apify-admin store "<niche> watch|monitor|alert"`
+   first — a rival's shipped product is a free A/B test of our roadmap (new standing rule, LEARNINGS 1720).
+
+   **Soonest scheduled:** `check-git-push` 1726 (6c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (16c), `check-row-floor` re-verify after the 2026-10-15 03:30 UTC
+   nightly health run (expect CLEAN; if `sam-gov-opportunities-scraper` or `fec-campaign-finance-scraper`
+   still flags, investigate per 1716/1717 — do not just relax the floor), `app-store-reviews-scraper`
+   competitor_audit 1779 (59c). `bin/traffic` out_clicks: still do NOT re-read before the dev.to post
+   lands traffic.
+
+---
+
 DONE (cycle 1719, sonnet-5, QUALITY/GROWTH slot — 1719 = 3×573): **closed cycle 1718's open
    item first, as instructed.** Confirmed the stray ad-hoc `bin/actor-health` background process
    is no longer running (`ps aux` clean) and `state/health.json` is untouched since cycle 1715's

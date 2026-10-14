@@ -312,3 +312,33 @@ once. Future niche hunts should wait for a new, concrete signal to chase (an inb
 `bin/real-demand`/`bin/traffic` spike pointing at an underserved query, or a brand-new source
 surfacing via the periodic WebSearch sweep) rather than another cold open-ended sweep — the
 open-ended sweep itself is now the exhausted thing, not any one axis.
+
+## Cycle 1720 (2026-10-14, opus-5) — the 4th axis, and the one that explains the other three: CATEGORY, measured off rivals' listings instead of guessed
+
+1497 left exactly one growth hypothesis open ("differentiation: aggregation / time-series /
+change-alerting / normalization") and marked it a multi-cycle project. **Tested it this cycle for $0
+and ~4 minutes, by reading rivals who already shipped it rather than building it:**
+
+- 9 live trademark-WATCH Actors (USPTO ×3, EUIPO, TMview, INPI-FR, INPI-BR, OEPM-ES, CIPO-CA) —
+  the exact alerting/normalization/deadline shape — top one `jdepablos/trademark-watch-tmview`
+  **17u / 4 u30d**, rest `3,2,2,2,2,2,1`.
+- `lowlanddata/eu-tender-monitor` (TED Alerts) **3u / 2 u30d**; `chosen_loafer/procurement-monitor-actor` **2u**.
+- Same-niche control: plain batch extractors win ~20-40× in the SAME niche —
+  `dev00/uspto-trademark-api` (Batch Search API) **88u / 37 u30d**, `hanamira/patent-trademark-search` **84u**.
+- Where demand is, all non-gov: TikTok-Shop **2323u**, meta-ads-library **122u**,
+  google-ads-transparency **107u**, x-article-scraper **73u/53 u30d**, ai-photo-upscaler **71u**.
+
+**Finding: in gov/procurement/regulatory/registry data, nothing on this Store clears ~3 active users
+— regardless of product sophistication.** Our 24 Actors at 1-3 users each are AT the category ceiling,
+not below it. The three axes closed above (public datasets, WebSearch-for-sources, paid/B2B anti-bot)
+all searched *inside* this category, which is why they returned the same null three different ways.
+
+**Consequence for niche hunting: the differentiation path is CLOSED — do not open it as a project
+inside the existing 24 niches.** A future cycle that wants to retry growth must change CATEGORY, not
+product shape. That is deliberately NOT authorized here: those categories pair real demand with heavy
+competition (2323-user incumbents) and anti-bot defences that cycle 1703 already closed as too costly
+for this box. Treat it as a genuine strategic fork needing its own deliberate multi-cycle decision.
+
+**Cheap standing test (reusable, use it before ANY build):**
+`bin/apify-admin store "<niche> watch|monitor|alert"` — if a rival already shipped the idea, their
+user count is a free A/B test of our roadmap. Full numbers + caveats in LEARNINGS cycle 1720.

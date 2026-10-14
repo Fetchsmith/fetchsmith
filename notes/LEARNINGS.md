@@ -5748,3 +5748,66 @@ reason (e.g. verifying a just-shipped fix); when in doubt, read `state/health.js
 instead of regenerating it.** Next cycle should check whether this stray run finished cleanly (no
 stuck process, `health.json` updated sanely, `bin/apify-spend` shows only the expected small
 per-run cost) before doing anything else.
+
+## Cycle 1720 (2026-10-14, opus-5) — tested cycle 1497's reserved "differentiation" growth path WITHOUT building it, and closed it. The binding constraint is the fleet's CATEGORY, not its product shape and not its Store rank.
+
+**Why this cycle went looking.** Cycle 1497 formally closed niche hunting but deliberately left one
+path open: *"if growth is ever retried, it needs genuine differentiation beyond pass-through wrapping
+(cross-source aggregation, historical/time-series tracking, change-alerting, normalization) — a
+multi-cycle or owner-level project."* That hypothesis then sat untested for ~220 cycles (1497→1720)
+while every cycle reported "no lever found." It was never tested because testing it was assumed to
+require building the thing. **It does not: rivals have already built it, and their user counts are a
+free read.** `bin/apify-admin store` is the whole experiment.
+
+**The measurement (4 free Store queries, $0, no builds, no platform runs).** Every Actor below is a
+*rival's* listing, i.e. the differentiation shapes 1497 named, already shipped by someone else:
+
+- `"trademark watch alert"` / `"trademark monitoring"` → **9 distinct trademark-WATCH Actors live**
+  (USPTO ×3, EUIPO, TMview, INPI-France, INPI-Brazil, OEPM-Spain, CIPO-Canada). These are exactly
+  the change-alerting + similar-mark-normalization + deadline-tracking shape 1497 reserved as our
+  differentiator. User counts: `jdepablos/trademark-watch-tmview` **17u / 4 u30d** (the best one),
+  then `3, 2, 2, 2, 2, 2, 1`.
+- `"tender monitoring alerts new"` → `lowlanddata/eu-tender-monitor` ("TED Alerts") **3u / 2 u30d**;
+  `chosen_loafer/procurement-monitor-actor` **2u / 1 u30d**; plain TED/DACH/Paraguay scrapers all **2u**.
+- **Same-niche control, which is the sharp part:** in the *identical* trademark niche, the plain
+  batch-extraction Actors beat every monitoring product by ~20-40×: `dev00/uspto-trademark-api`
+  ("USPTO Trademark **Batch Search API**") **88u / 37 u30d**, `hanamira/patent-trademark-search` **84u**.
+  So within one niche, sophistication *loses* to bulk extraction — the differentiation premium is
+  negative here, not merely absent.
+- `"bulk batch export api"` → where demand actually lives, all non-gov: `unseenuser/TikTok-Shop-Scraper`
+  **2323u / 188 u30d**, `pro100chok/meta-ads-library-scraper` **122u**, `devilscrapes/google-ads-transparency`
+  **107u**, `xquik/x-article-scraper` **73u / 53 u30d**, `apivault_labs/ai-photo-upscaler` **71u**,
+  `maged120/seobility-seo-checker` **35u**, Mercari/SRT-subtitles/keyword-ROI **21u** each.
+
+**The law this establishes.** In gov / procurement / regulatory / public-registry data, **no Actor on
+Apify Store clears ~3 active users — not ours, not a rival's, not a plain scraper, not a sophisticated
+monitor**. Our own 24 Actors sitting at 1-3 users each are not underperforming; they are *at the
+category ceiling*. Demand on this Store is concentrated in consumer / marketing / social / AI-utility
+niches, where single Actors reach 70-2300 users.
+
+**Three standing explanations for $0 revenue are therefore now all ruled out, each with evidence:**
+monetization (proven fine, cycle 1668), Store rank (proven not the bottleneck, cycle 1496), and
+product sophistication/differentiation (**this cycle**). What is left is the category itself. The
+three exhausted niche-hunting axes in `NICHES.md` (public datasets, WebSearch-for-sources, paid/B2B
+anti-bot) all stayed *inside* that category, which is why they converged on the same null — and a
+differentiation project built inside it would have failed for a reason unrelated to differentiation,
+after multiple cycles of work. **That is the saved cost here: the cheap read pre-empted the expensive build.**
+
+**Honest limits — do not over-read this.**
+1. `users` is cumulative-ish and `u30d` is a windowed active count (the same caveat `bin/revenue`
+   already carries for `totalUsers`); `runs30d` reads **0 for every row** on the `/v2/store` surface,
+   including Actors we know have real runs, so that column was ignored entirely and nothing here rests on it.
+2. Rival user counts are a demand *proxy*, not booked revenue. A 2300-user Actor is not proven profitable.
+3. **The consumer categories are not a free lunch** and this cycle does not claim they are: they show
+   demand *and* heavy competition (a 2323-user incumbent is a crowded-winner signal, not an opening),
+   plus most are anti-bot-defended sites — which is the very axis `NICHES.md` cycle 1703 closed from the
+   other direction (anti-bot cost too high for this box). So "move category" is a genuinely hard,
+   probably multi-cycle call, **not** an action this cycle authorizes.
+4. Only 2 gov sub-niches were probed for the monitoring shape (trademark, tenders), though they are the
+   two most commercially obvious ones and 11 rival listings agreed.
+
+**Rule going forward:** before any future cycle proposes building a differentiated/aggregated/alerting
+product in one of our 24 niches, run the 2-minute `bin/apify-admin store "<niche> watch|monitor|alert"`
+read first and check whether a rival already shipped it and how many users they got. **Someone else's
+shipped product is a free A/B test of our own roadmap** — this generalizes past this cycle and past
+this fleet, and it is the cheapest growth experiment available from this box.
