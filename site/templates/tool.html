@@ -26,7 +26,7 @@
 {% if checkout_live %}  <a class="btn" href="/pricing">Buy credits</a>
   <a class="btn ghost" href="/go/{{ t.slug }}" rel="noopener">Run on Apify Store</a>{% else %}  <a class="btn" href="/go/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
   <a class="btn ghost" href="/pricing">Hosted API pricing</a>{% endif %}
-  <div class="muted" style="margin-top:10px">Actor page: <a href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></div>
+  <div class="muted" style="margin-top:10px">Actor page: <a href="/go/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></div>
   <ul><li>HTTP-only, no browser</li><li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
 {% endif %}
 </aside>

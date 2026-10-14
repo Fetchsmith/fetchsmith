@@ -11,9 +11,30 @@ invisible to it (there is nothing wrong with the 0 links that exist). Cycle 1713
 a Run-on-Apify CTA to the card grid on all three pages; this is the tripwire so a
 future template edit cannot silently drop them again.
 
-Read-only, no cost: 3 GETs against our own site. Exit 0 = each page has >=1 /go/ link,
-1 = at least one page regressed to zero.
+EXTENDED (cycle 1724): the original check covered only /, /tools and /pricing and asserted
+only CTA *presence*. It therefore missed the mirror-image bug on the page class that actually
+receives our human traffic. site/templates/post.html's sidebar "Run on Apify Store" button was
+never migrated to /go/ when cycle 1509 shipped the redirect -- it still pointed straight at
+apify.com/<user>/<slug> on 45 of 53 blog pages, so the most prominent CTA on the top-traffic
+pages (/blog/tmview-trademark-search-api-no-key alone drew 32 verified humans, more unique
+visitors than /) emitted NO out_click event when clicked. Presence-only checking could not see
+it: those pages do render /go/ links from the markdown body, so "n >= 1" passed while the button
+beside it leaked untracked. Hence two changes: every blog post page is checked too, and each
+page must ALSO contain zero raw slug-level apify.com hrefs.
+
+Bare-profile links (apify.com/<user>, in the nav and footer) are deliberately allowed -- they
+carry no slug, are not per-Actor conversion CTAs, and exist as plain-URL disclosure. Only
+slug-level hrefs are a leak. Likewise tool.html renders the raw apify.com/<user>/<slug> URL as
+visible link TEXT (an intentional transparency element); that is why the regex below matches
+href= specifically rather than any occurrence of the URL.
+
+Read-only, no cost: ~56 GETs against our own site, and never against /go/<slug> itself -- that
+endpoint logs a real out_click row on every hit (see the warning in bin/check-blog-cta), so
+this check only ever inspects hrefs, it does not follow them.
+
+Exit 0 = every page has >=1 /go/ CTA and no untracked slug-level apify.com href.
 """
+import pathlib
 import re
 import sys
 
@@ -23,25 +44,46 @@ BASE = "https://fetchsmith.com"
 if "--base" in sys.argv:
     BASE = sys.argv[sys.argv.index("--base") + 1]
 
-PAGES = ["/", "/tools", "/pricing"]
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 GO_LINK = re.compile(r'href=["\']\/go\/[a-z0-9-]+["\']')
+# slug-level only: apify.com/<user>/<slug>. A bare apify.com/<user> profile link must NOT match.
+RAW_CTA = re.compile(r'href=["\']https?://(?:www\.)?apify\.com/[a-z0-9_-]+/[a-z0-9-]+["\']', re.I)
+
+
+def pages():
+    """/, /tools, /pricing plus every blog post -- blog pages carry the sidebar CTA."""
+    posts = sorted(p.stem for p in (ROOT / "site/content/blog").glob("*.md"))
+    return ["/", "/tools", "/pricing"] + [f"/blog/{s}" for s in posts]
 
 
 def main():
     client = httpx.Client(timeout=30, headers={"User-Agent": "fetchsmith-ctacheck-bot/1 (own-site check)"})
     rc = 0
-    for path in PAGES:
+    for path in pages():
         r = client.get(f"{BASE}{path}")
         if r.status_code != 200:
             print(f"ERROR  {path} -> HTTP {r.status_code}")
             rc = 1
             continue
         n = len(GO_LINK.findall(r.text))
-        print(f"{'OK' if n else 'MISSING'}  {path}  {n} /go/ link(s)")
+        raw = RAW_CTA.findall(r.text)
         if n == 0:
+            # A cross-cutting post (an API-pitfall writeup, a roundup) maps to no single Actor, so
+            # post.html renders no tool sidebar and there is legitimately nothing to link. Same
+            # convention as bin/check-blog-cta, which flags only SINGLE-Actor posts. Reported, not
+            # failed -- the three core pages are the ones that must always carry a CTA.
+            core = path in ("/", "/tools", "/pricing")
+            print(f"{'MISSING' if core else 'INFO   '}  {path}  0 /go/ link(s)"
+                  f"{'' if core else ' (no single Actor -- no sidebar CTA expected)'}")
+            if core:
+                rc = 1
+        if raw:
+            print(f"UNTRACKED  {path}  {len(raw)} raw slug-level apify.com CTA(s): {sorted(set(raw))[:3]}")
             rc = 1
+        if n and not raw:
+            print(f"OK  {path}  {n} /go/ link(s)")
     if rc == 0:
-        print("CLEAN -- every page has at least one outbound /go/<slug> CTA.")
+        print("CLEAN -- every page has >=1 /go/<slug> CTA and no untracked apify.com CTA.")
     return rc
 
 

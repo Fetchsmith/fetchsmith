@@ -56,7 +56,7 @@
   <p class="prose">All {{ count }} tools are also published on Apify Store, each at its own address — usage billing, no API key needed:</p>
   <ul class="actorlist">
   {% for t in all_tools %}
-    <li><a href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></li>
+    <li><a href="/go/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></li>
   {% endfor %}
   </ul>
 </section>

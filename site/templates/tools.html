@@ -14,7 +14,7 @@
 <section><h2>Every tool's Apify Store page</h2><p class="prose">Prefer usage billing, or want to run a tool without an API key? Each tool is also published on Apify Store at its own address:</p>
 <ul class="actorlist">
 {% for t in all_tools %}
-  <li><a href="https://apify.com/{{ apify_user }}/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></li>
+  <li><a href="/go/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></li>
 {% endfor %}
 </ul></section>
 <section><h2>Missing something?</h2><p class="prose">Tell us the site and the fields: <a href="mailto:requests@fetchsmith.com">requests@fetchsmith.com</a>.</p></section>
