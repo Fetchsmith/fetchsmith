@@ -5695,3 +5695,39 @@ CTA *presence*, which is exactly why this was invisible for ~1700 cycles** — a
 **Cycle 1713, implementing the above: the card grid's `<a class="card">` wrapping icon+title+summary made adding a second CTA link structurally impossible without nesting an `<a>` inside an `<a>`** (invalid HTML, undefined click behavior across browsers). Fix pattern: demote the outer element to a plain `<div class="card">`, keep the original styled content as an inner `<a class="card-link">` (copy the flex/gap/color/text-decoration rules the old `.card` had), and add the new CTA as a **sibling** `<a>` in the `.meta` row, not a descendant of the first link. `.card .meta` and `.card strong`/`.card span` descendant selectors in `site.css` kept working unchanged since they don't care how deep the match is. Applied identically to `home.html`, `tools.html` and the new `pricing.html` CTA section — any future card-grid template should follow this div→inner-link→sibling-CTA shape rather than re-deriving it.
 
 **Cycle 1715: a lossless-move verification can be invalidated by its own setup order.** While trimming `queue.md` (670→385 lines, archiving 7 oldest PRIOR blocks into `queue_archive.md`, same convention as 1689/1698/1707), the first attempt took "before" snapshots via `cp tasks/queue.md /tmp/queue_before.md` and `cp tasks/queue_archive.md /tmp/archive_before.md` *after* the archive file had already been appended to — so the "before" snapshot of the archive already contained the new content, and the multiset diff against "after" produced a page of confusing near-duplicate-line artifacts that looked like content loss but weren't. Fixed by re-deriving the true originals from `git show HEAD:tasks/queue.md` / `git show HEAD:tasks/queue_archive.md` instead — git HEAD is always a safe, unambiguous "before" snapshot since it predates any uncommitted edit in the working tree, whereas a `cp` taken mid-edit is only as reliable as the operator remembering to run it before the first write. **Rule: for any file-move/trim verification, snapshot "before" from `git show HEAD:<path>` when the repo is clean at cycle start, not from a `cp` whose timing depends on getting the operation order right under time pressure.**
+
+## Cycle 1716: a GREEN health check can hide a 10x delivery collapse — `n >= 1` is an existence test
+
+`bin/actor-health` scores every Actor with `ok = (status < 300 and n >= 1)`. That means **an Actor
+can decay from 10 rows to 1 and report green forever**, which is the same structural blind spot
+cycle 1713 found on the site (`check-links` verifies a link *resolves*, never that a CTA *exists*).
+Looked for instances by trending `items` per slug across 80 distinct `state/health.json` revisions
+from git history, then normalising each against its own `test_input.json` cap. Exactly 2 of 23 live
+Actors were below 0.6: `sam-gov-opportunities-scraper` **1/10** and `fec-campaign-finance-scraper`
+**2/10**; the other 21 all sat at a clean 1.00, which is what makes 0.6 a defensible floor rather
+than a guessed one. sam-gov had also gone **2 → 1 somewhere inside that history with no alert.**
+
+**Both were WEAK TEST INPUTS, not outages — and that is the likelier diagnosis in general.** Proved
+it by broadening ONE filter at a time with `bin/varied-test` instead of reading the Actor's code:
+sam-gov's prefill-only default returned 5/5 and `keyword:"solar"` alone returned 5/5, so the Actor
+was fine and the fault was our test input — `keyword:"solar"` AND `naicsCodes:["221122"]` (Electric
+Power Distribution) is a near-empty *intersection*. Replaced with `naicsCodes:["236220"]` +
+`enrichDetail:true` (verified 10/10 live, `naicsCodes` echoing the filter, `setAside` populated);
+fec's `"Warren"`+MA+Senate replaced with `candidateName:"Smith"` (verified 10/10). Built
+`bin/check-row-floor` and registered it at 48c (matching actor-health's nightly cron — no point
+reading the same `health.json` twice).
+
+**Two reusable lessons:**
+
+1. **A weak `test_input.json` is also a weak Store advertisement.** `bin/set-example-input` sources
+   the Store page's API-tab `exampleRunInput` from that exact file, so sam-gov's API tab had been
+   advertising a **1-row** sample run to every buyer who read it. Rewriting a test input and
+   refreshing the Store example are one action, not two — now in PLAYBOOK next to `actor-health`.
+2. **When probing output keys with `bin/varied-test`, read the push object in `src/main.js` first —
+   or pass no keys and print whole rows.** Guessed wrong key names TWICE in one cycle and both
+   times nearly wrote up a false "declared field is always null" defect: sam-gov's field is
+   `naicsCodes` (array), not `naicsCode`; fec's are `receipts`/`disbursements`, not `totalReceipts`.
+   `varied-test` prints `None` for a key that does not exist, which is **indistinguishable from a
+   real null**, so a wrong guess looks exactly like a product bug. Both false alarms were caught
+   only by grepping the source before reporting. Same family as the `/static/*` and rendered-HTML
+   line-number traps already logged here: the tool answered honestly, the question was wrong.

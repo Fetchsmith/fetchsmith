@@ -1,6 +1,5 @@
 {
-  "keyword": "solar",
-  "naicsCodes": ["221122"],
-  "maxResults": 15,
-  "enrichDetail": true
+  "naicsCodes": ["236220"],
+  "enrichDetail": true,
+  "maxResults": 15
 }

@@ -1,1 +1,5 @@
-{"candidateName":"Warren","state":"MA","office":"S","maxResults":5,"includeTotals":true}
+{
+  "candidateName": "Smith",
+  "maxResults": 10,
+  "includeTotals": true
+}

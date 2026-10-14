@@ -1,0 +1,169 @@
+#!/root/agent/venv/bin/python
+"""check-row-floor -- flag live Actors whose nightly health run returns far FEWER
+rows than its own test input asked for, or fewer than its own recent history.
+
+WHY THIS EXISTS (cycle 1716)
+----------------------------
+`bin/actor-health` scores every Actor with `ok = (status < 300 and n >= 1)`. That is
+an EXISTENCE test, not a QUANTITY test, so an Actor can degrade from 10 rows to 1 and
+stay green forever. Cycle 1716 found two live instances by hand:
+
+  sam-gov-opportunities-scraper -- 1 row of a 10-row cap, and it had silently gone
+      2 -> 1 at some point in the 80-run health history with no alert. Platform runs
+      proved the ACTOR was fine (prefill-only default 5/5, keyword-only 5/5); the
+      fault was our own test input (`keyword:"solar"` AND `naicsCodes:["221122"]` is a
+      near-empty intersection), so nightly health had been proving ~nothing for it.
+  fec-campaign-finance-scraper -- 2 rows of a 5-row cap ("Warren"+MA+Senate).
+
+Both test inputs were rewritten that cycle to inputs verified to return 10/10.
+
+This is the same bug class as cycle 1713's missing-CTA gap: a check that verifies
+something EXISTS is structurally blind to whether there is ENOUGH of it. Note the
+corollary -- a FLAG HERE IS NOT AN OUTAGE. It most often means a weak test input.
+Diagnose with `bin/varied-test` (broaden one filter at a time) BEFORE touching Actor
+code, exactly as 1716 did.
+
+TWO INDEPENDENT SIGNALS
+-----------------------
+1. ratio   -- items / min(test_input.maxResults, 10). The <0.6 floor is what separated
+              the two real cases (0.10, 0.40) from the other 21 (all 1.00) at 1716.
+2. decline -- items vs. the max seen for that Actor across health.json's git history
+              (a drop of >=2 from its own observed best). Catches an Actor whose test
+              input is fine but whose upstream source quietly started returning less;
+              `--no-history` skips it when git is unavailable or slow.
+
+Honest limits: an Actor whose upstream genuinely holds few rows for a legitimately
+narrow query will flag every run -- put it in ALLOW below with a reason, do not relax
+the floor. And a cap-matching 10/10 says nothing about field-level nulls; that is
+`bin/check-field-fill`'s job, not this one.
+
+Usage: bin/check-row-floor [--no-history] [--json]
+Exit 0 = clean, 1 = at least one Actor flagged.
+"""
+import collections
+import json
+import os
+import subprocess
+import sys
+
+ROOT = "/root/agent"
+RATIO_FLOOR = 0.6
+DECLINE_MIN = 2
+HISTORY_DEPTH = 60
+
+# slug -> reason. Only for Actors whose niche genuinely returns few rows for the
+# narrowest input we still want tested nightly. Never add a slug here to silence a
+# real decline; fix or broaden the test input instead.
+ALLOW = {}
+
+
+def latest_health():
+    with open(f"{ROOT}/state/health.json") as fh:
+        return json.load(fh)
+
+
+def live_slugs():
+    with open(f"{ROOT}/actors/registry.json") as fh:
+        reg = json.load(fh).get("tools", [])
+    return {t["slug"]: t for t in reg if t.get("status") in ("live", "beta")}
+
+
+def requested_cap(slug, tool):
+    """Mirror bin/actor-health's own input resolution, including its min(...,10) cap."""
+    path = f"{ROOT}/actors/{slug}/test_input.json"
+    if os.path.exists(path):
+        with open(path) as fh:
+            inp = json.load(fh)
+    else:
+        inp = tool.get("example_input", {"maxResults": 5})
+    try:
+        want = int(inp.get("maxResults", 5) or 5)
+    except (TypeError, ValueError):
+        want = 5
+    return max(min(want, 10), 1)
+
+
+def history_max():
+    """Per-slug max row count across recent distinct health.json revisions."""
+    try:
+        log = subprocess.run(
+            ["git", "-C", ROOT, "log", "--format=%H", "--", "state/health.json"],
+            capture_output=True, text=True, timeout=60,
+        ).stdout.split()
+    except Exception:
+        return {}
+    best = collections.defaultdict(int)
+    seen_ts = set()
+    for sha in log[:HISTORY_DEPTH]:
+        try:
+            blob = subprocess.run(
+                ["git", "-C", ROOT, "show", f"{sha}:state/health.json"],
+                capture_output=True, text=True, timeout=30,
+            ).stdout
+            data = json.loads(blob)
+        except Exception:
+            continue
+        ts = data.get("ts")
+        if ts in seen_ts:
+            continue
+        seen_ts.add(ts)
+        for slug, res in data.get("results", {}).items():
+            n = res.get("items") or 0
+            if n > best[slug]:
+                best[slug] = n
+    return dict(best)
+
+
+def main():
+    use_history = "--no-history" not in sys.argv
+    as_json = "--json" in sys.argv
+
+    health = latest_health()
+    results = health.get("results", {})
+    tools = live_slugs()
+    best = history_max() if use_history else {}
+
+    findings = []
+    for slug, tool in sorted(tools.items()):
+        res = results.get(slug)
+        if res is None:
+            continue  # not in the last health run; actor-health's own report covers that
+        got = res.get("items") or 0
+        cap = requested_cap(slug, tool)
+        ratio = got / cap
+        reasons = []
+        if ratio < RATIO_FLOOR:
+            reasons.append(f"ratio {ratio:.2f} ({got}/{cap} rows) below {RATIO_FLOOR}")
+        peak = best.get(slug, 0)
+        # Only meaningful when the Actor FAILED to fill its current cap. If got == cap it
+        # delivered everything asked for, so a lower absolute count than some historical
+        # peak is a deliberate cap change by an earlier cycle, not a degradation.
+        if got < cap and peak - got >= DECLINE_MIN:
+            reasons.append(f"declined from own best {peak} rows to {got}")
+        if not reasons:
+            continue
+        if slug in ALLOW:
+            print(f"  allow {slug}: {'; '.join(reasons)} -- {ALLOW[slug]}")
+            continue
+        findings.append({"slug": slug, "items": got, "cap": cap,
+                         "ratio": round(ratio, 2), "history_max": peak,
+                         "reasons": reasons})
+
+    if as_json:
+        print(json.dumps({"ts": health.get("ts"), "findings": findings}, indent=1))
+    else:
+        print(f"check-row-floor: {len(tools)} live Actors, health ts={health.get('ts')}, "
+              f"history={'on' if use_history else 'off'}")
+        for f in findings:
+            print(f"FLAG {f['slug']}: {'; '.join(f['reasons'])}")
+        if not findings:
+            print("CLEAN -- every live Actor returned >=60% of its requested cap "
+                  "and none declined from its own observed best.")
+        else:
+            print("\nA flag is most likely a WEAK TEST INPUT, not an outage. Broaden one "
+                  "filter at a time with bin/varied-test before editing Actor code.")
+    return 1 if findings else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
