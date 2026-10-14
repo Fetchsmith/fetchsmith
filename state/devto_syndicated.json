@@ -1,0 +1,222 @@
+{
+  "derived_at_cycle": 1691,
+  "derived_at": "2026-10-14T07:02:42Z",
+  "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> extract slug from canonical_url -> diff against site/content/blog/*.md frontmatter `date:`. 53 total posts, 17 synced, 36 unsynced.",
+  "synced": [
+    {
+      "blog_date": "2026-10-12",
+      "slug": "google-play-reviews-no-api-batchexecute"
+    },
+    {
+      "blog_date": "2026-10-10",
+      "slug": "invisible-characters-return-zero-rows"
+    },
+    {
+      "blog_date": "2026-10-06",
+      "slug": "apify-tiered-pricing-nested-dict-reads-as-free"
+    },
+    {
+      "blog_date": "2026-10-04",
+      "slug": "tmview-trademark-search-api-no-key"
+    },
+    {
+      "blog_date": "2026-10-01",
+      "slug": "court-records-opinion-status-any-is-not-any"
+    },
+    {
+      "blog_date": "2026-09-29",
+      "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml"
+    },
+    {
+      "blog_date": "2026-09-29",
+      "slug": "hacker-news-1000-hit-search-ceiling"
+    },
+    {
+      "blog_date": "2026-09-27",
+      "slug": "government-apis-fail-open-on-a-dropped-filter-name"
+    },
+    {
+      "blog_date": "2026-09-25",
+      "slug": "sam-gov-key-free-federal-datasets-one-endpoint"
+    },
+    {
+      "blog_date": "2026-09-23",
+      "slug": "watch-baseline-eviction-rebilling"
+    },
+    {
+      "blog_date": "2026-09-21",
+      "slug": "http-only-vs-headless-browser-scraping-cost"
+    },
+    {
+      "blog_date": "2026-09-19",
+      "slug": "shopify-inventory-barcode-per-product-json"
+    },
+    {
+      "blog_date": "2026-09-17",
+      "slug": "incremental-api-watch-mode-four-traps"
+    },
+    {
+      "blog_date": "2026-09-15",
+      "slug": "ats-job-board-json-apis-six-shapes"
+    },
+    {
+      "blog_date": "2026-09-13",
+      "slug": "apple-podcasts-public-json-api"
+    },
+    {
+      "blog_date": "2026-09-11",
+      "slug": "json-ld-article-extraction-fails-on-real-news-sites"
+    },
+    {
+      "blog_date": "2026-09-09",
+      "slug": "decode-google-news-rss-redirect-links"
+    }
+  ],
+  "unsynced_oldest_first": [
+    {
+      "blog_date": "2026-09-09",
+      "slug": "apple-app-store-reviews-header-fingerprint"
+    },
+    {
+      "blog_date": "2026-09-09",
+      "slug": "hacker-news-algolia-tags-and-not-or"
+    },
+    {
+      "blog_date": "2026-09-09",
+      "slug": "shopify-catalog-products-json-no-login"
+    },
+    {
+      "blog_date": "2026-09-10",
+      "slug": "bold-org-nextjs-rsc-scholarship-data"
+    },
+    {
+      "blog_date": "2026-09-10",
+      "slug": "eu-ted-tenders-public-json-api"
+    },
+    {
+      "blog_date": "2026-09-10",
+      "slug": "steam-reviews-public-json-api"
+    },
+    {
+      "blog_date": "2026-09-10",
+      "slug": "uk-find-a-tender-ocds-json-api"
+    },
+    {
+      "blog_date": "2026-09-10",
+      "slug": "usaspending-federal-awards-json-api"
+    },
+    {
+      "blog_date": "2026-09-11",
+      "slug": "clinicaltrials-gov-json-api"
+    },
+    {
+      "blog_date": "2026-09-11",
+      "slug": "fda-openfda-recall-json-api"
+    },
+    {
+      "blog_date": "2026-09-11",
+      "slug": "federal-register-documents-json-api"
+    },
+    {
+      "blog_date": "2026-09-11",
+      "slug": "grants-gov-federal-grant-opportunities-json-api"
+    },
+    {
+      "blog_date": "2026-09-11",
+      "slug": "nih-reporter-grants-json-api"
+    },
+    {
+      "blog_date": "2026-09-11",
+      "slug": "substack-full-text-json-api"
+    },
+    {
+      "blog_date": "2026-09-12",
+      "slug": "app-store-review-apis-three-silent-empties"
+    },
+    {
+      "blog_date": "2026-09-12",
+      "slug": "free-government-data-json-apis-no-key"
+    },
+    {
+      "blog_date": "2026-09-12",
+      "slug": "public-content-apis-hidden-second-step"
+    },
+    {
+      "blog_date": "2026-09-14",
+      "slug": "app-store-per-star-ratings-breakdown"
+    },
+    {
+      "blog_date": "2026-09-14",
+      "slug": "fec-campaign-finance-json-api-demo-key"
+    },
+    {
+      "blog_date": "2026-09-14",
+      "slug": "google-news-rss-description-is-not-a-summary"
+    },
+    {
+      "blog_date": "2026-09-14",
+      "slug": "steam-review-hardware-specs-json-field"
+    },
+    {
+      "blog_date": "2026-09-14",
+      "slug": "workday-career-site-json-api"
+    },
+    {
+      "blog_date": "2026-09-15",
+      "slug": "dateto-filter-silently-excludes-its-own-last-day"
+    },
+    {
+      "blog_date": "2026-09-15",
+      "slug": "default-inputs-should-not-cost-you-five-minutes"
+    },
+    {
+      "blog_date": "2026-09-17",
+      "slug": "courtlistener-search-api-two-auth-tiers"
+    },
+    {
+      "blog_date": "2026-09-21",
+      "slug": "clinicaltrials-month-precision-dates"
+    },
+    {
+      "blog_date": "2026-09-21",
+      "slug": "remote-job-board-json-apis-four-feeds"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "eu-ted-deadline-lives-in-a-different-field"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "federal-register-public-inspection-early-access"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "google-play-hidden-aspect-ratings-and-histogram"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "grants-gov-api-fails-open-and-closed"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "nih-reporter-search-id-vs-criteria"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "sam-gov-depth-cap-yield-varies"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "sec-form-4-10b5-1-flag-is-not-a-boolean"
+    },
+    {
+      "blog_date": "2026-09-24",
+      "slug": "substack-paywalled-post-preview-vs-full-text"
+    }
+  ],
+  "selection_note": "No strict ordering rule observed in dev.to publish history (not pure oldest-first by blog date -- e.g. 2026-09-09 has 3 unsynced posts while a 2026-10-xx post was synced same week). Pick any reasonable unsynced post for the next --publish, ideally on a different niche than the last 2-3 synced slugs above. Update this file (move the slug from unsynced to synced, prepend to the synced list) immediately after a successful `bin/devto-post --publish` instead of re-deriving the whole set from the API next time."
+}

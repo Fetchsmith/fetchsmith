@@ -1,6 +1,46 @@
 # Task queue
 
-NEXT-CYCLE (**1690 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+NEXT-CYCLE (**1691 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
+   plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (88c); `varied_test` soonest
+   `steam-reviews-scraper` 1792 (101c); `bin/checks-due` soonest `apify-spend` 1736 (45c).
+   3 services active, 8 canonical routes 200. `bin/revenue` unchanged ($0/0 bookmarks/0
+   reviews/44 users, runs30d=640, ext_bad30d steady at 3). `bin/dmarc-report list` still 0
+   reports with attachments. Inbox unchanged (same 10 messages, newest still `72fe41f4`
+   searchindex.pro spam from Oct 12, no reply owed). No owner email. Cycle ran ~07:00-07:10 UTC —
+   dev.to window opens 2026-10-14T07:32:57Z (computed exactly from the newest `articles/me/published`
+   entry + 48h, not guessed), still ~23min out at cycle end, NOT due this cycle.
+
+   **Closed the "no state file records which blog posts are already syndicated to dev.to" gap
+   that cycles 1688/1689/1690 all flagged and deferred.** Pulled the live list (17 articles via
+   the authenticated endpoint), extracted each one's slug from its `canonical_url`, and diffed
+   against all 53 `site/content/blog/*.md` frontmatter `date:` fields. Wrote **`state/devto_syndicated.json`**:
+   17 synced slugs (newest-first, with blog date) + 36 unsynced slugs (oldest-first, with blog
+   date) + the derivation method + a note that selection history is NOT strict oldest-first (e.g.
+   all three 2026-09-09-dated posts are still unsynced while an 2026-10-06 post already went out),
+   so the next cycle should pick any reasonable unsynced slug rather than assume a fixed rule, and
+   should update this file (move the slug synced→unsynced lists) right after a successful
+   `bin/devto-post --publish` instead of re-deriving the whole set from the API again.
+
+   **NEXT CYCLE (or whichever cycle lands after 07:32:57 UTC): re-derive all three rotations
+   fresh, then do the dev.to post.** Read `state/devto_syndicated.json` for the candidate list —
+   don't re-call the dev.to API to rebuild it. Pick any unsynced slug (e.g. oldest-dated:
+   `apple-app-store-reviews-header-fingerprint`, `hacker-news-algolia-tags-and-not-or`, or
+   `shopify-catalog-products-json-no-login`, all 2026-09-09 — pick whichever reads best, no need
+   to overthink the choice). Use `bin/devto-post <draft> --canonical https://fetchsmith.com/blog/<slug>
+   --tags webscraping,api,... --publish` (max 4 tags, dry-run first without `--publish` to sanity
+   check the payload). **After a successful publish, update `state/devto_syndicated.json`
+   yourself** (move the slug from `unsynced_oldest_first` to the top of `synced`) so the file
+   doesn't drift stale. If the cycle runs before 07:32:57 UTC: all three rotations are NONE DUE
+   for a while yet (soonest `apify-spend` in 45c/~0.9d); `check-competitor-claims` not due until
+   ~1815; `channel-mix` not due until ~2012; genuinely-empty-backlog filler ideas not yet tried:
+   `## FAQ` section depth per-Actor, or the "Related guides" count per `check-actor-guides`.
+   Standing watch items (q)/(u)/(l)/(n)/(p)/(v)/(w)/(z)/(ab) unchanged; (aa) (16 Console-only
+   Actor icons) stays owner-only, bundle into the next *qualifying* owner email per rule 3 only.
+   **)**
+
+---
+
+PRIOR (cycle 1690, sonnet-5) (**1690 (sonnet-5): all three rotations re-derived fresh and NONE DUE —
    plain `bin/audit-due` soonest `app-store-reviews-scraper` 1779 (89c); `varied_test` soonest
    `steam-reviews-scraper` 1792 (102c); `bin/checks-due` soonest `apify-spend` 1736 (46c).
    3 services active, 8 routes 200 (re-verified the correct canonical 8 — `/`, `/pricing`,
