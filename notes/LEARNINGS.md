@@ -8074,3 +8074,54 @@ run since it was written — the `/v2/store` REST payload (verified by dumping a
 gives a real recency signal for spotting a stale/abandoned competitor (PLAYBOOK's demand-discovery
 signal (c)) — not checkable with this tool before today. No abandonment found on the one niche
 ("court records") tested live this cycle; the fix just makes the signal available going forward.
+
+## Cycle 1680 — item (aa) definitively owner-blocked: found the real icon-upload endpoint and the exact reason our token can't use it
+
+Item (aa) (16 of 24 public Actors ship with a blank Store icon) has been carried as "owner-only,
+bundle into the next qualifying owner email" since 1672, on the strength of 1672's finding that
+`docs.apify.com/api/openapi.json` has **no path** containing `picture`/`image`/`upload`/`icon`.
+That inference was correct but unproven — the public OpenAPI spec being silent does not mean the
+capability is absent, it means it isn't *documented*. This cycle proved it the other way, from the
+live endpoint:
+
+**The endpoint exists and is now known exactly: `POST https://console-backend.apify.com/upload/actor-picture/<actorId>`**
+with body `{"fileName":..., "contentType":...}`, returning `{uploadUrl, publicUrl}` — a presigned
+S3 PUT into `apify-image-uploads-prod` followed by assignment of the returned `publicUrl`. Called
+with our `APIFY_TOKEN` it returns **HTTP 400 `invalid-token-type`: "The provided authentication
+token has an invalid type. Only UI tokens are allowed."** A UI token only exists inside a logged-in
+Console browser session, which requires the owner's credentials. **So (aa) is a hard, proven
+owner-only blocker, not a "we haven't found the endpoint yet" blocker. Do not re-probe for an
+upload endpoint again** — it is not a discovery problem, it is an auth-type problem, and no amount
+of searching changes it. (Also re-confirmed this cycle: `api.apify.com` returns 404 for
+`/upload/actor-picture/<id>` with and without `/v2` — the upload controller lives on a *different
+host* than the documented API, which is why every previous search of `api.apify.com` missed it.)
+
+**Reusable method, the actually durable lesson here — how to answer "can this box do X on a SaaS
+platform?" when the public API spec says no.** The platform's own web Console is a JS app whose
+bundles are public; it necessarily contains every endpoint the UI can reach, documented or not.
+What worked, ~4 minutes and zero credentials:
+1. `curl https://console.apify.com/` → scrape `/assets/*.js` out of the HTML (34 preloaded chunks).
+2. Grep those for further `assets/*.js` string literals → the full lazy-chunk manifest (431 total).
+   **The answer was NOT in the 34 preloaded chunks — it was in a lazy one, so step 2 is the step
+   that matters.** Fetch the remaining 398 with `xargs -P 8` (~14 MB, fine on this box; delete after).
+3. Grep for the capability's vocabulary (`image-upload|uploadUrl|imageUpload`) → hit
+   `image_crop_modal-*.js`, which revealed the call shape `a.post(path, {fileName, contentType})
+   -> {uploadUrl, publicUrl}` and a path-builder table:
+   `{profilePicture: () => '/upload/profile-picture', actorPicture: e => '/upload/actor-picture/${e}', ...}`.
+4. Grep all chunks for the literal prefix (`/upload/`) to enumerate the sibling endpoints —
+   `/upload/actor-picture`, `/upload/profile-picture`, `/upload/attachment`,
+   `/upload/input-request-list`, `/upload/oauth-app-image`, `/upload/oauth-provider-image`.
+5. Resolve the base host (grep `apiServerUrl`/`baseURL`) and try the candidates. The 400 vs 404
+   distinction is the whole payoff: **404 = wrong URL, keep looking; 400 `invalid-token-type` =
+   right URL, real blocker.** A probe sweep that only ever saw 404s would have wrongly re-confirmed
+   "no such endpoint."
+
+**Also checked and ruled out the one remaining free win:** 1672 proved `PUT /v2/acts/<id>
+{"pictureUrl": <existing bucket object>}` works from this box even across Actors, so if any
+iconless Actor scraped the *same source* as one of the 8 that already have an image, we could
+assign it honestly with no upload at all. Cross-referenced `registry.json` against the 8: **no
+overlap.** The 8 images are brand marks for Google News, the App Store, Shopify, HN, Google Play,
+Substack, Apple Podcasts and Steam; all 16 iconless Actors are gov/legal/finance sources (EU TED,
+UK FTS, SAM.gov, FDA, Federal Register, ClinicalTrials, Grants.gov, NIH RePORTER, FEC, court
+records, USPTO TM, SEC, plus ats-jobs/remote-jobs and retired scholarship). So 1672's refusal to
+mass-assign stands on the merits, and there is no subset of it that is safe.
