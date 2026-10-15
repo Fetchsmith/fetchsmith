@@ -5,6 +5,12 @@ import { createHash } from 'node:crypto';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+let timeBudgetExceeded = false;
+
 // Grants.gov's own internal search API (no API key, no auth). It is POST + JSON body, unlike
 // Federal Register / ClinicalTrials.gov which are both GET — do not reuse a GET helper here.
 const API = 'https://api.grants.gov/v1/api';
@@ -29,6 +35,10 @@ const apiFail = (reason) => { lastApiFailure = reason; return null; };
 async function apiPost(path, body) {
     let lastTransport = 'unknown transport failure';
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        if (!timeBudgetOk()) {
+            timeBudgetExceeded = true;
+            return apiFail('run-timeout budget exceeded');
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -44,14 +54,17 @@ async function apiPost(path, body) {
         } catch (err) {
             log.warning(`Grants.gov request failed (${err.message}); retrying (${attempt}/4).`);
             lastTransport = `network error: ${err.message}`;
-            await sleep(attempt * 2000);
+            await sleep(Math.min(attempt * 2000, Math.max(remainingMs(), 0)));
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            // A server Retry-After has no upper bound of its own -- never let it sleep past this
+            // run's own timeout (same exposure as every other Actor in the timeout-guard rollout).
             const waitS = Number(resp.headers['retry-after']) || attempt * 5;
-            log.warning(`Grants.gov returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`Grants.gov returned ${resp.statusCode}; retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
             lastTransport = `HTTP ${resp.statusCode}`;
-            await sleep(waitS * 1000);
+            await sleep(waitMs);
             continue;
         }
         let parsed = null;
@@ -1092,7 +1105,10 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
             // that also under-seeds the baseline, and the next incremental run then delivers and
             // CHARGES everything past the failure point as "new".
             if (page === null) {
-                markIncomplete('search-request-failed', `Grants.gov search failed at offset ${startRecordNum} (${lastApiFailure})${agencyChunked ? ` in agency sub-search ${agencyChunks.indexOf(agencyChunk) + 1} of ${agencyChunks.length}` : ''}.`);
+                markIncomplete(
+                    timeBudgetExceeded ? 'time-budget' : 'search-request-failed',
+                    `Grants.gov search failed at offset ${startRecordNum} (${lastApiFailure})${agencyChunked ? ` in agency sub-search ${agencyChunks.indexOf(agencyChunk) + 1} of ${agencyChunks.length}` : ''}.`,
+                );
                 // Stops the remaining chunks too. A half-answered walk is already incomplete, and
                 // scanning on would bill for more rows while still owing the buyer a re-run.
                 aborted = true;
@@ -1225,7 +1241,10 @@ async function walkOppNums(onBatch) {
         // match" is a claim about Grants.gov's index that a failed request cannot support, and
         // it is reported to the buyer by number in the warning below.
         if (page === null) {
-            markIncomplete('search-request-failed', `Lookup of opportunity number ${num} failed (${lastApiFailure}); it is NOT reported as "no match" because we never got an answer.`);
+            markIncomplete(
+                timeBudgetExceeded ? 'time-budget' : 'search-request-failed',
+                `Lookup of opportunity number ${num} failed (${lastApiFailure}); it is NOT reported as "no match" because we never got an answer.`,
+            );
             failedOppNums.push(num);
             continue;
         }
@@ -1327,7 +1346,7 @@ if (!seeding) {
 // buyer's own query being too broad, already surfaced in RUN_SUMMARY, and a capped baseline is
 // still strictly better than none. Seeding never charges, so refusing to save costs nothing but
 // a re-run.
-const seedFailure = seeding && incompleteReason === 'search-request-failed' ? incompleteDetail : null;
+const seedFailure = seeding && (incompleteReason === 'search-request-failed' || incompleteReason === 'time-budget') ? incompleteDetail : null;
 
 if (watchMode && seedFailure) {
     log.warning(
@@ -1370,7 +1389,7 @@ if (watchMode && seedFailure) {
 // anyway under per-result pricing. exclusiveOppNum is excluded because that path never sends cfda
 // (it uses walkOppNums; the startup log already says "other filters ignored").
 let cfdaMatchesAnyStatus = null;
-if (cfda && !exclusiveOppNum && declaredMatches === 0) {
+if (cfda && !exclusiveOppNum && declaredMatches === 0 && !timeBudgetExceeded) {
     const probe = await apiPost('/search2', {
         resultType: 'json',
         rows: 1,

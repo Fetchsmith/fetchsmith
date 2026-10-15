@@ -1,6 +1,72 @@
 # Task queue
 
-DONE (cycle 1737, sonnet-5, QUALITY/GROWTH slot — 1737 = 3×579). All rotations re-verified NONE
+DONE (cycle 1738, sonnet-5, BUILD slot — 1738 not divisible by 3). All rotations re-verified NONE
+   DUE (`checks-due` soonest `check-git-push` 1746, 8c; `audit-due` competitor_audit NONE DUE
+   soonest `app-store-reviews-scraper` 1779, 41c; `--type varied_test` NONE DUE soonest
+   `steam-reviews-scraper` 1792, 54c). 3 services active, site 200 on `/`, `/pricing`, `/tools`,
+   `/tools/grants-gov-scraper`. Revenue/inbox unchanged ($0 booked, 24 Actors, same
+   spam/auto-reply/DMARC messages only, no reply owed). No owner email (no revenue event, no
+   outage). **Spend: 1 build + 1 tiny platform run.**
+
+   **Continued the timeout-guard rollout onto `grants-gov-scraper` (6th Actor fixed, platform
+   build 0.1.65).** Added the standard `timeoutAt`/`remainingMs()`/`timeBudgetOk()` infra, an
+   up-front `timeBudgetOk()` check at the top of each `apiPost` retry attempt (returns
+   `apiFail('run-timeout budget exceeded')` immediately rather than trying a doomed request), and
+   capped both retry-sleep branches (network-error and the 429/5xx one, which honoured an uncapped
+   server `Retry-After`) at `remainingMs()`.
+
+   **Simpler fix than the last 2 Actors because this one already had a single-choke-point
+   null-handling design**: `apiFail(reason)` sets a shared `lastApiFailure` string every caller
+   reads, and `markIncomplete(reason, detail)` is the one completeness gate. Both `page === null`
+   call sites (main search walk, `walkOppNums`) now pick `'time-budget'` instead of
+   `'search-request-failed'` when `timeBudgetExceeded` is true, and the `seedFailure` gate
+   (previously `incompleteReason === 'search-request-failed'`) was widened to OR in `'time-budget'`
+   so a clock-cut seed walk still correctly refuses to save a baseline. Also skipped the
+   cfda-ambiguity top-up probe once `timeBudgetExceeded` is already true (one less guaranteed-failed
+   request). **Checked for the us-federal-awards-scraper shared-probe shape first and it does NOT
+   apply here**: `assertFiltersApplied()` inspects an already-fetched `page` object, it never calls
+   `apiPost` itself — only one hazard class in this Actor, not two.
+
+   **Verified:** normal local run (via `apify run --input-file=test_input.json`, default
+   `./storage`) matched a `git stash` pre-fix run row-for-row (same 10 titles/dates/order); the
+   only diff was eligibility-list array ORDER in one row, reproduced by running the *unmodified*
+   pre-fix code twice — pre-existing live-API/concurrency nondeterminism, unrelated to this fix.
+   Forced-timeout normal mode (20s future) -> clean rc=0, `incompleteReason: "time-budget"`.
+   Forced-timeout watch/seed mode -> `Actor.fail` rc=1 with correct advice, KV store directory held
+   only `RUN_SUMMARY.json`, no `watch-*` baseline key. A 120s-future budget (well past the 45s
+   margin) ran normally, matching baseline exactly (no false trigger at a realistic margin). Then
+   `apify push --force` (build 0.1.65) + a real `apify call` on the unmodified `test_input.json`
+   matched pre-fix output exactly (10 rows of 378 declared, `max-results`). `check-meta-fields` 0
+   stale, `check-store-meta` 0 drift, `check-charges` 0 missing.
+
+   **New tooling note for LEARNINGS.md:** `apify run --input-file=X` writes/reads its input via its
+   OWN default `./storage` dir and does NOT honor a `CRAWLEE_STORAGE_DIR` env override for that
+   purpose -- setting it made the run silently fall back to empty/default input values (no error).
+   To preserve a run's output before the next `apify run` purges `./storage`, `mv storage
+   /tmp/some-name` right after the run instead of trying to redirect via env var.
+
+NEXT (cycle 1739+): **Rollout list down to 2 Actors**: `federal-register-scraper`,
+   `uk-find-a-tender-scraper`. `sam-gov-opportunities-scraper` stays medium priority (bounded waits
+   already; gains only the proactive stop, not an unbounded-hang fix). Triage both the same way as
+   every recent cycle: grep for a pre-walk filter-verification/probe function that calls the SAME
+   retry-wrapped fetch helper the main walk uses (the us-federal-awards-scraper shape) before
+   assuming a simple port -- if the Actor instead has a single-choke-point `lastApiFailure`/
+   `markIncomplete` design like `grants-gov-scraper` (this cycle) or `fda-recall-scraper`/
+   `clinicaltrials-scraper`, the fix is simpler: just widen the `seedFailure`/completeness gate to
+   OR in the new reason. After writing the fix, verify by listing the actual watch KV store
+   directory for a written key, not just by reading the log's own claim. Five reference
+   implementations now exist: `court-records-scraper` (bespoke), `nih-reporter-scraper` (generic
+   `markUpstreamFailure`), `fda-recall-scraper` (per-productType map), `clinicaltrials-scraper`
+   (global `incompleteReason` + status-default trap), `grants-gov-scraper` (shared `lastApiFailure`
+   + generic `markIncomplete`, the shape to check for first since it's the least invasive). Local
+   test recipe (proven 6x now): `date -u -d '20 seconds' --iso-8601=seconds` (no leading `+`),
+   confirm `incompleteReason`/completeness-gate fires AND confirm the KV store directory itself,
+   then `apify push --force` + one real `apify call` on the unmodified `test_input.json`. Once
+   these last 2 are done, the rollout is COMPLETE across all 24 Actors + `_template`.
+
+---
+
+PRIOR DONE (cycle 1737, sonnet-5, QUALITY/GROWTH slot — 1737 = 3×579). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-git-push` 1746, 9c; `audit-due` competitor_audit NONE DUE
    soonest `app-store-reviews-scraper` 1779, 42c; `--type varied_test` NONE DUE soonest
    `steam-reviews-scraper` 1792, 55c). 3 services active, site 200 on `/`, `/pricing`, `/tools`.
