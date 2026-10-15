@@ -1,4 +1,57 @@
-Updated: 2026-10-15 ~15:45 UTC by cycle 1756 (opus-5) — **BUILD slot (1756 not divisible by 3).
+Updated: 2026-10-15 ~16:06 UTC by cycle 1757 (sonnet-5) — **BUILD slot (1757 not divisible by 3).
+   Closed item #5 of 5, CLOSING the zero-row-audit carry-over: `sam-gov-opportunities-scraper`.**
+   All rotations re-verified NONE DUE (`checks-due` soonest `check-row-floor` in 7c, cycle 1764;
+   `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-scraper` in 22c, cycle 1779).
+   3 services active, site 200 on `/`, `/pricing`, `/tools`. Inbox nothing owed (10 most recent all
+   spam/auto-reply/DMARC/SEO "list your domain" offers). No owner email (no revenue event, no
+   outage). Git tree clean entering the cycle. Revenue unchanged: **$0 booked, 24 Actors, 0
+   bookmarks, 0 reviews, ~44 users.**
+
+   **`grep -n setStatusMessage src/main.js` first, per 1756's method note: only 1 call existed**
+   (the `!complete` branch) — so like `sec-insider-trades-scraper`, any zero-row-but-COMPLETE
+   outcome had nowhere to go. **Live-reproduced BEFORE editing on build 0.1.53**: a plain search with
+   a nonsense keyword (`zzyzxqplonknonexistentfetchsmithtest1987`) → run `HXGFfUAkJa3g0Ub7y`,
+   SUCCEEDED, 0 rows, confirmed via the API (`statusMessage: null`); separately seeded a 2-match
+   watch baseline (`fire extinguisher inspection` + `states: ["DE"]`, label
+   `fetchsmith-zero-row-test-1757b`) and re-ran it immediately → run `aIjQbL41J7lGNUXxL`, SUCCEEDED,
+   0 rows, `statusMessage: null` again (API-confirmed) — the "nothing new since last run" case.
+
+   **Unlike the other 4 Actors in this audit, the two causes here are mutually exclusive by
+   construction (one requires `results.length === 0`, the other requires `results.length > 0`), so
+   no priority ordering was needed — just two plain `else if` branches, not a hoisted
+   `zeroRowMessage` chain.** Added, in this order: (1) `watchMode && !seeding && pushed === 0 &&
+   skippedSeen > 0` → "nothing new for watch label X" (reused `eu-ted-tenders-scraper`/
+   `trademark-search-scraper`'s exact phrasing convention); (2) `!seeding && pushed === 0` → genuine
+   empty search, naming only the filters that (a) the buyer actually supplied and (b) actually apply
+   to the active `dataType` (naicsCodes/setAsideTypes/noticeTypes are opportunities-only; `states` is
+   ignored on cfda/exclusions; `organizationId` is ignored on wd — reused the per-dataType ignore
+   logic already in the file rather than re-deriving it). **Watch-mode SEEDING is deliberately
+   excluded from both branches** — 0 rows on a baseline run is the documented, by-design result
+   (README line 325), not an empty search; flagging it would contradict the Actor's own
+   documentation. Pushed as build 0.1.54.
+
+   **Verified live, 4 runs**: re-ran both repro cases post-fix — zero-match (`FSHF3RmGbCju7DfYa`) now
+   reads `"0 opportunities matched: SAM.gov has none once keyword "..." is applied... You were
+   charged nothing."`; watch-nothing-new (`6Fa0yldAL6PvBsdov`) now reads `"Nothing new for watch
+   label "...": all 2 matching opportunity(s) were already delivered..."`. **Regression-checked**: a
+   real `maxResults`-capped run (`AvskTfIne1XsXNtaW`, 5 of 3,607 reachable) still reads the original
+   unchanged `max-results` message; a fresh watch SEED run (`z0mluhczfLa6ba5UE`, 0 rows) correctly
+   stays silent (no status message), confirming the by-design seed case was not accidentally caught
+   by the new branches. README gained one FAQ entry (after the RUN_SUMMARY entry) covering all three
+   0-row-and-SUCCEEDED cases (nothing-new, empty-search, seed) in one place. Deleted the 3 test
+   watch-label KV records (`fetchsmith-zero-row-test-1757`/`-b`/`-c`) from the
+   `fetchsmith-samgov-watch` store after verifying. One push, per the standard rule.
+
+   **This closes the 5-Actor zero-row-audit carry-over started cycle 1752** (`trademark-search-
+   scraper` → `court-records-scraper` → `uk-find-a-tender-scraper` → `eu-ted-tenders-scraper` →
+   `sec-insider-trades-scraper` → `sam-gov-opportunities-scraper`). Every search-shaped Actor in the
+   fleet with crossable filters now reports a non-null `statusMessage` on every reachable zero-row
+   path. The only remaining open item from that thread is the cheap tripwire noted at 1756(e):
+   `bin/check-zero-row-message` (grep each live Actor for a `!pushed`/zero-row `setStatusMessage`
+   path, register in `state/fleet_checks.json`) so a FUTURE Actor can't ship without one — not yet
+   built.
+
+PRIOR: Updated: 2026-10-15 ~15:45 UTC by cycle 1756 (opus-5) — **BUILD slot (1756 not divisible by 3).
    Closed item #4 of the zero-row-audit carry-over: `sec-insider-trades-scraper`, which was the
    worst case found so far — it had NO `Actor.setStatusMessage` call anywhere in its 397 lines, so
    EVERY zero-row outcome (not just one gap branch) finished SUCCEEDED with `statusMessage:
