@@ -1439,6 +1439,42 @@ if (!complete) {
             : `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
     );
+} else if (watchMode && !seeding && pushed === 0 && skippedSeen > 0) {
+    // Every row this query matched was already delivered under this watch label and none changed
+    // -- the common, expected result on a scheduled re-run, not a failure. Before this branch
+    // existed the only trace was a log.info line (above, in the push loop); the Console showed a
+    // green run next to an empty dataset with nothing to tell a buyer who only reads run status.
+    // Seeding is excluded -- 0 rows on a baseline run is the DESIGNED result (see the
+    // baseline-saved log line emitted during the walk), not a quiet incremental run.
+    await Actor.setStatusMessage(
+        `Nothing new for watch label "${watchLabel}": all ${skippedSeen.toLocaleString('en-US')} matching ${ROW_NOUN}(s) `
+        + `were already delivered on a prior run${watchChanges ? ' and none of their watched fields changed' : ''}. `
+        + `You were charged nothing.${watchChanges ? '' : ' Set watchChanges: true to also catch edits to already-delivered rows.'}`,
+    );
+} else if (!seeding && pushed === 0) {
+    // The other way this Actor can reach SUCCEEDED with 0 rows and no markIncomplete cause above:
+    // every filter value supplied is valid and SAM.gov simply has no match -- covers a plain search
+    // AND a watch run whose underlying query now matches nothing at all (the skippedSeen>0 branch
+    // above only fires once there is something to compare against). Only name filters that differ
+    // from this dataType's default AND actually apply to it -- naicsCodes/setAsideTypes/noticeTypes
+    // are opportunities-only, states is ignored on cfda/exclusions, organizationId is ignored on wd
+    // (see the per-dataType ignore blocks above) -- naming a filter the buyer never supplied, or one
+    // this dataType silently drops, would be the same wrong-knob mistake cycle 1637 already ruled
+    // out elsewhere in this fleet.
+    const appliedFilters = [];
+    if (keyword) appliedFilters.push(`keyword "${keyword}"`);
+    if (!isWd && !isCfda && !isExclusions && naicsCodes.length) appliedFilters.push(`naicsCodes ${naicsCodes.join(', ')}`);
+    if (!isWd && !isCfda && !isExclusions && setAsideTypes.length) appliedFilters.push(`setAsideTypes ${setAsideTypes.join(', ')}`);
+    if (!isWd && !isCfda && !isExclusions && noticeTypes.length) appliedFilters.push(`noticeTypes ${noticeTypes.join(', ')}`);
+    if (!isCfda && !isExclusions && states.length) appliedFilters.push(`states ${states.join(', ')}`);
+    if (!isWd && organizationId) appliedFilters.push(`organizationId ${organizationId}`);
+    await Actor.setStatusMessage(
+        appliedFilters.length
+            ? `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has none once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied. `
+              + 'Every value you gave is valid, so this is a genuinely empty search, not an input mistake -- drop or widen one filter at a '
+              + 'time to find which one excludes everything. You were charged nothing.'
+            : `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has no ${ROW_NOUN} at all for this query, with no filter narrowing the run. You were charged nothing.`,
+    );
 } else if (declaredMatches !== null && !watchMode) {
     log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these filters.`);
 }
