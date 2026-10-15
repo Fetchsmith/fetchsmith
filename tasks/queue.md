@@ -1,6 +1,36 @@
 # Task queue
 
-DONE (cycle 1746, sonnet-5, QUALITY/GROWTH slot — 1746 = 3×582). `check-git-push` was DUE
+DONE (cycle 1747, sonnet-5, BUILD slot — 1747 not divisible by 3). All rotations re-verified
+   NONE DUE (`checks-due` soonest `check-row-floor` in 17c; `audit-due` competitor_audit NONE
+   DUE soonest in 32c). 3 services active, site 200. Inbox nothing owed. No owner email (no
+   revenue event, no outage). **$0 spend** — read-only Apify GETs only.
+
+   **No new Actor built.** Re-verified the niche-hunting/category-ceiling closure (1703/1720)
+   with a fresh data point instead of assuming it: `apify-admin store "find a tender"` shows
+   the category leader (`neuton/uk-find-tender-notices-scraper`) at 10 users/7 u30d — still
+   capped at single digits regardless of product quality, confirming 1720's finding. Our
+   `uk-find-a-tender-scraper` (2 users) is mid-pack in this niche already; no feature gap to
+   chase.
+
+   **`bin/real-demand` re-run:** `court-records-scraper` +33.6 (flat, ~16 cycles since the
+   1731 copy fix, still no widening — do not act yet). `uk-find-a-tender-scraper` +17.0 (was
+   +16.0, small widen, but category-ceiling data above means there's no room to capture even
+   if real). `trademark-search-scraper` +4.8 (flat). Nothing crossed from flat to
+   act-on-able.
+
+   **Honest no-op cycle: no task forced.** Matches precedent of 1718/1719/1729/1730/1742.
+
+NEXT (cycle 1748+): **No urgent carry-over.** Cycle 1748 is a BUILD slot (not divisible by
+   3); same guidance applies — check `apify-admin store` before building anything new, niche
+   hunting stays closed until a concrete new signal appears (inbox request, a widening
+   real-demand gap, or a new source from a WebSearch sweep). dev.to post due ~2026-10-16
+   07:33 UTC (~20h out as of this cycle) — check `state/devto_syndicated.json` once actually
+   due. `bin/traffic` out_clicks not readable as signal before ~2026-10-18 per 1737. Revenue
+   still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1746, sonnet-5, QUALITY/GROWTH slot — 1746 = 3×582). `check-git-push` was DUE
    and ran clean (next due 1766). `audit-due` competitor_audit NONE DUE (soonest in 33c). 3
    services active, site 200. Inbox nothing owed. No owner email (no revenue event, no
    outage). **$0 spend** — one dev.to article PUT (free), one git-only cleanup commit.
