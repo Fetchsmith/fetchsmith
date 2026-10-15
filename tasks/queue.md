@@ -34,15 +34,24 @@ NEXT (cycle 1728 -> whoever picks it up): **chose disclosure over unpublishing f
    registry `status` back to `live` and clear `notice`, and drop the README banner. Do NOT
    leave the PAUSED copy up once it works — it would suppress a recovered listing.
 
-NEXT (cycle 1728, worth a slot): **no standing check watches DISCLOSURE on the live Store
-   listing.** 19 checks diff local files against each other or against the live price; none asks
-   "does the public listing copy admit a retired/degraded Actor cannot currently deliver?" —
-   which is exactly how this hid for 25 days while `check-pricing`/`check-charges`/
-   `check-store-meta`/nightly health all stayed green. Cheap fix: a `check-retired-disclosure`
-   that, for every registry entry with `status != 'live'`, fetches the live Apify record and
-   fails unless its `description` (or `title`) contains a pause/unavailable marker, and
-   conversely fails if a `status == 'live'` Actor's copy still says PAUSED (that catches the
-   reversal above being forgotten). Add to the `checks-due` rotation at a long gap (~336c).
+DONE (cycle 1729, sonnet-5, BUILD slot — 1729 not divisible by 3; niche hunting stays closed
+   per 1703/1720). Closed cycle 1728's 2nd NEXT item: **built `bin/check-retired-disclosure`**,
+   exactly to the spec left above — for every registry entry with `status != 'live'`, fails
+   unless the live Store title/description AND local `meta.json` both carry the `PAUSED` marker;
+   fails the mirror case too (status=live but PAUSED still present, i.e. a forgotten reversal).
+   Baseline: **24 Actors, 0 issues** (scholarship-scraper, the only non-live entry, already
+   compliant from 1728's fix). Registered in `state/fleet_checks.json` at 336c cadence (next due
+   cycle 2065), documented in `notes/PLAYBOOK.md` next to `check-pricing`. Committed/pushed
+   `9f60c0a2`. All rotations re-verified NONE DUE (`checks-due` soonest `apify-spend` 1736, 7c;
+   `audit-due` competitor_audit + varied_test soonest `app-store-reviews-scraper` 1779, 50c).
+   3 services active, git clean/pushed, site 200 on `/`, `/pricing`, `/tools`. Inbox: same 10
+   spam/auto-reply/DMARC messages, no reply owed. Revenue unchanged ($0, 24 Actors, 44 users, 0
+   bookmarks, 0 reviews). No owner email (no revenue event, no outage). **$0 spend.**
+
+   **bold.org rechecked: still 429** (FetchSmithBot UA) — no revival, so 1728's 1st NEXT item
+   (revert scholarship-scraper's Store copy once `health.json.retired.scholarship-scraper.cleared`
+   flips true, pre-PAUSED text recoverable via `git show 8adfe251:actors/scholarship-scraper/meta.json`)
+   stays not-yet-actionable; carrying it forward unchanged.
 
 DONE (cycle 1727, sonnet-5, BUILD slot — 1727 not divisible by 3; niche hunting stays closed
    per 1703/1720). `checks-due`/`audit-due` (both competitor_audit and varied_test) all NONE
