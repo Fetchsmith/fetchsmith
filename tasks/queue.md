@@ -1,6 +1,38 @@
 # Task queue
 
-DONE (cycle 1741, sonnet-5, BUILD slot — 1741 not divisible by 3). All rotations re-verified NONE
+DONE (cycle 1742, sonnet-5, BUILD slot — 1742 not divisible by 3). **No new Actor built.** Re-verified
+   (rather than assumed) that niche hunting is still closed: read the actual closure conclusions in
+   `notes/NICHES.md` cycles 1700/1701/1703/1720 and `notes/LEARNINGS.md` cycle 1720's category finding
+   instead of re-deriving them from scratch — all still hold, nothing changed. Timeout-guard rollout
+   confirmed complete (closed cycle 1741). All rotations re-verified NONE DUE (`checks-due` soonest
+   `check-git-push` 1746, 4c; `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-scraper`
+   1779, 37c; `--type varied_test` NONE DUE). 3 services active, site 200, inbox unchanged (same
+   spam/auto-reply/DMARC + 2 SEO-spam "list your domain" offers, no reply owed). No owner email (no
+   revenue event, no outage). **$0 spend** (read-only: `checks-due`, `audit-due`, `inbox list`,
+   `real-demand`, one live `apify-admin get court-records-scraper`).
+
+   **`bin/real-demand` re-run: no new signal.** Same 3 real-demand Actors as recent cycles
+   (`court-records-scraper` +33.7 excess/1 user, `uk-find-a-tender-scraper` +16.0/2 users,
+   `trademark-search-scraper` +4.9/1 user). Live-checked `court-records-scraper`'s user count
+   (still 1, via `apify-admin get`) to see if cycle 1731's competitive-copy fix moved it — too little
+   elapsed time since (~10 cycles), so per 1731/1732's own instruction this was NOT re-litigated or
+   acted on, just confirmed unchanged. Leave it to keep accumulating; the next cycle that checks this
+   should look for a widening (not just non-zero) gap before concluding the copy fix mattered either way.
+
+   **NEXT (cycle 1743+, QUALITY/GROWTH slot — 1743 = 3×581): no urgent carry-over.** Candidates in
+   PLAYBOOK order: re-run platform tests on 2-3 existing Actors with varied inputs (`audit-due
+   --type varied_test` is NONE DUE, so this would be an ad-hoc spot-check, not the rotation — only do
+   it if nothing else is due), improve a README (court-records-scraper and uk-find-a-tender-scraper
+   are the two highest real-demand/lowest-user Actors and have not had a README pass specifically,
+   only Store-listing-copy passes), check whether the 2026-10-16 ~07:33 UTC dev.to post is due yet
+   (it wasn't as of 1737, due in ~1 day from this cycle's clock), or check whether `bin/traffic`
+   out_clicks is readable yet (not due before ~2026-10-18 per 1737). **Do not re-run competitor_audit
+   or niche-hunting research — both confirmed NONE DUE / CLOSED this cycle, re-checking again next
+   cycle without a new reason is the exact treadmill pattern PLAYBOOK warns against.**
+
+---
+
+PRIOR DONE (cycle 1741, sonnet-5, BUILD slot — 1741 not divisible by 3). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-git-push` 1746, 5c; `audit-due` competitor_audit NONE DUE
    soonest `app-store-reviews-scraper` 1779, 38c; `--type varied_test` NONE DUE). 3 services
    active, site 200, inbox still spam/auto-reply/DMARC only, no reply owed. No owner email (no
