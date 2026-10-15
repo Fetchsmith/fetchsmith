@@ -274,7 +274,10 @@ def blog_post(request: Request, slug: str):
         if match:
             return RedirectResponse(f"/blog/{match}", status_code=301)
         return render(request, "404.html", status_code=404)
-    tool = next((t for t in public_tools() if t["slug"] == p.get("tool")), None)
+    # readable_tools, not public_tools: a guide for a retired tool should say so in its
+    # sidebar (post.html's tool.status == 'retired' branch) rather than fall through to the
+    # generic "Browse tools" blurb, which told a reader nothing about the tool they came for.
+    tool = next((t for t in readable_tools() if t["slug"] == p.get("tool")), None)
     return render(request, "post.html", p=p, tool=tool)
 
 @app.get("/pricing", response_class=HTMLResponse)

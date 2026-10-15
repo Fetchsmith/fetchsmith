@@ -1,8 +1,8 @@
 {
-  "title": "Scholarship Scraper (bold.org)",
-  "description": "Scrape scholarship listings from bold.org to JSON/CSV: award amount, number of awards, deadline, essay prompt, criteria, education level and applicant count, with a computed applicants-per-award ratio. ~32 typed fields. Filter by free-text topic, amount, deadline window and education level.",
-  "seoTitle": "Scholarship Scraper - bold.org Scholarships to JSON/CSV",
-  "seoDescription": "Scrape bold.org scholarships and student funding awards to JSON/CSV: amount, deadline, essay prompt, applicants-per-award. Filter by topic, amount, undergraduate/graduate level. Pay per result.",
+  "title": "Scholarship Scraper (bold.org) - PAUSED, site blocks bots",
+  "description": "PAUSED: bold.org now answers every automated request with a Vercel bot challenge (HTTP 429), so runs return 0 results and are never billed until the block lifts. When live: every bold.org scholarship as a row - award amount, number of awards, deadline, essay prompt, criteria, level.",
+  "seoTitle": "Scholarship Scraper (bold.org) - Paused While Site Blocks",
+  "seoDescription": "PAUSED while bold.org blocks automated requests (HTTP 429): runs return 0 results and cost nothing. Normally returns bold.org scholarships as JSON/CSV with amount, deadline, essay prompt.",
   "categories": [
     "EDUCATION",
     "OTHER",

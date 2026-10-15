@@ -5849,3 +5849,48 @@ calls, the acceptance test must be "no direct call survives anywhere", not "the 
 somewhere".** Grep every template, not just the one the ticket mentioned, and prefer
 `grep -rn 'href="https\?://<external-host>/' site/templates/` over hunting for CTA-shaped words —
 the leak hid in a line whose visible text was a URL, with no button or CTA wording on it at all.
+
+## Cycle 1728 — a retired Actor stayed fully marketed on Apify Store for 25 days; "retired" was only ever enforced on our own site
+
+`scholarship-scraper` has been registry `status=retired` since bold.org went behind Vercel's
+Security Checkpoint (block first recorded **2026-09-20**, cycle 533). Every prior cycle treated
+that as closed. It was closed *on fetchsmith.com only*. On Apify Store the Actor was still
+`isPublic=true` with its **original, fully promotional title and description** — "Scrape
+scholarship listings from bold.org to JSON/CSV... ~32 typed fields" — with no hint of the pause.
+Result, measured live this cycle: `publicActorRunStats30Days` = **17 external runs (15 SUCCEEDED,
+2 FAILED), 1 user, last run 2026-10-14** — real people discovering a promoted Actor on the Store,
+running it, and getting 0 rows. Apify's quality score and reviews drive ranking account-wide, so
+an always-empty promoted listing is a liability for all 24 Actors, not just this one.
+
+**The runtime side was already exemplary and is what hid the problem.** A blocked run exits
+`SUCCEEDED` with `{'result': 0}` charged, 0 dataset items, and a truthful terminal status message
+naming bold.org as the cause and stating "you have not been charged". Nobody is ever billed for
+nothing. That correctness is exactly why the marketing gap went unnoticed for 25 days: every
+health check, `check-pricing` (0 drift), `check-charges` (0 missing) and `check-store-meta`
+(0 drift) passed, because **all of them compare our files to each other or to the live price —
+none asks "does the public listing copy admit this Actor cannot currently deliver?"**
+
+Three drifts found and fixed, all three invisible to the whole 19-check fleet:
+1. **Store listing copy** — `title`/`description`/`seoTitle`/`seoDescription` rewritten to lead
+   with `PAUSED`, republished (200, `pricingInfos` still 2 entries, price untouched at $0.00035).
+   Chose disclosure over `isPublic=false`: it is one API call to reverse the moment the nightly
+   `recheck_url` probe clears, and it keeps the indexed listing that recovery depends on.
+2. **`site/app.py` blog-post view used `public_tools()`**, which excludes retired — so a guide for
+   a retired tool silently fell through to the generic "FetchSmith / Pay-per-result extraction
+   tools / Browse tools" blurb, telling a reader nothing about the tool they arrived for.
+   `readable_tools()` already existed for precisely this case (its own comment cites "linked from
+   blog posts") and was used by `/tools/<slug>` but never by `/blog/<slug>`. Switched, and added
+   the `tool.status == 'retired'` branch to `post.html` — the one template of four with no retired
+   handling at all (`tool.html` had noindex + no offers schema, `tools.html` an amber pill).
+3. **Internal date conflict**: `registry.json` said "Paused since 2026-09-22", README said
+   2026-09-20. `git log -S` settled it — 09-20 is the block; **09-22 is when Apify's automated QA
+   auto-flagged the Actor `isDeprecated`**, a consequence, not the cause. Registry corrected.
+
+**Generalises: `status=retired` (or `deprecated`/`sunset`) in a local registry is a claim about a
+row in a file, not about any surface a buyer can actually reach.** When an Actor/product is
+retired, enumerate every surface that still advertises it — the marketplace listing copy, every
+template that renders its price or a run CTA, and the article funnel that links to it — and verify
+each one *by fetching it*, not by trusting the status field. A fleet of checks that only diffs
+local files against each other cannot see a listing that is honest in the repo and promotional in
+production. `bin/actor-health` probes `recheck_url` nightly (cron 03:30, verified) so revival is
+watched; nothing watched *disclosure*, which is why 17 runs landed on an empty product.

@@ -1,6 +1,6 @@
 # Scholarship Scraper (bold.org)
 
-> ### ⚠️ Known issue — temporarily unable to return data (since 2026-09-20; still blocked at the last check, 2026-10-13)
+> ### ⚠️ Known issue — temporarily unable to return data (since 2026-09-20; still blocked at the last check, 2026-10-15)
 >
 > bold.org has switched its entire site to Vercel's **"Security Checkpoint"** bot protection, which
 > answers every non-browser request with HTTP 429 and a JavaScript challenge page — including

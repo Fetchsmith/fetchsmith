@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "scholarship-scraper",
-  "title": "Scholarship Scraper (bold.org)",
-  "description": "Scrape scholarship listings from bold.org to JSON/CSV: award amount, number of awards, deadline, essay prompt, criteria, education level and applicant count, with a computed applicants-per-award ratio. ~32 typed fields. Filter by free-text topic, amount, deadline window and education level.",
+  "title": "Scholarship Scraper (bold.org) - PAUSED, site blocks bots",
+  "description": "PAUSED: bold.org now answers every automated request with a Vercel bot challenge (HTTP 429), so runs return 0 results and are never billed until the block lifts. When live: every bold.org scholarship as a row - award amount, number of awards, deadline, essay prompt, criteria, level.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",
