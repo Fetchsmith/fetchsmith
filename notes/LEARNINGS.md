@@ -6484,3 +6484,23 @@ user-input-length branches (`watchLabel`, `recallNumber`/`eventId` list) to the 
 backstop rather than hand-compacting those too. 3 Actors remain on the truncation list:
 `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `uk-find-a-tender-scraper` — see
 queue.md for order and confirmed/unconfirmed status of each.
+
+## Cycle 1762: truncation sweep item #2 (`clinicaltrials-scraper`) — clean fix, one new fact
+
+Same fix shape as grants-gov-scraper (0.1.67) / fda-recall-scraper (0.1.68): measured the
+plain-no-match message at 539 chars in `node` before touching code, confirmed live at exactly
+500 (cut mid-word, losing cause (3)), replaced the status-message copy with a compact
+425-433-char rendering while the log keeps the full text, wrapped the whole `zeroRowMessage`
+assignment in `clampStatusMessage()` as a backstop. First compact draft measured clean under
+cap on the first try — no second build needed, unlike cycles 1760/1761's first-draft misses.
+
+**One fact worth keeping: `watchLabel` has no `maxLength` in this Actor's (or apparently any
+audited Actor's) input schema**, so the "nothing new" branch's length is genuinely unbounded on
+user input, not just "usually short" — confirmed the clamp backstop actually engages (601 ->
+496 chars) on a synthetic 400-char label rather than assuming it would. Worth a fleet-wide
+`grep -L maxLength` check on `watchLabel` schema fields if a future QUALITY cycle has slack;
+not chased this cycle to stay within one reviewable change.
+
+2 Actors remain on the truncation list: `fec-campaign-finance-scraper` (585 literal floor),
+`uk-find-a-tender-scraper` (510 literal floor) — then `nih-reporter-scraper` closes the
+original carry-over. See queue.md for order.

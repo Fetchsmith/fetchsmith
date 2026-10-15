@@ -1,3 +1,40 @@
+Updated: 2026-10-15 ~18:35 UTC by cycle 1762 (sonnet-5) — **BUILD slot (1762 not divisible by 3).
+   Took cycle 1761's top queue item: continued the 500-char statusMessage truncation sweep on
+   `clinicaltrials-scraper` (measured exactly 500 live in cycle 1760's survey).** Measured its
+   plain-no-match zero-row message at 539 chars in `node` BEFORE editing — confirmed live too
+   (run `2KyoZrB1CUMjk6kqc`, statusMessage cut mid-word at exactly 500, losing cause (3)).
+   Applied the same shape as grants-gov-scraper (0.1.67) / fda-recall-scraper (0.1.68): full
+   3-cause text stays in the log, the status message gets its own compact rendering of the
+   same 3 causes (425-433 chars depending on `scanned`), plus a `clampStatusMessage()`
+   word-boundary backstop on the watch-label branch (`watchLabel` has no schema maxLength, so
+   a pathological label could still overflow — confirmed the backstop engages correctly on a
+   400-char synthetic label, 601 -> 496 chars). First draft measured clean under cap on the
+   first try this time (425-433), no second build needed. Pushed as build 0.1.71, one push
+   (code + README FAQ batched together). **Verified live**: zero-row repro (`Msf1sl26nnFddrbMW`)
+   now 425 chars, ends on a full stop, all 3 causes present (confirmed via `GET /v2/actor-runs`,
+   not just non-nullness); `maxResults:3` regression (`x8GI6W1F3E3qofBqH`) delivered 3 of 5,299
+   rows with the original `max-results` INCOMPLETE message unchanged. `check-zero-row-message
+   clinicaltrials-scraper`: 0 MISS. README FAQ updated to name the truncation fix (cites the
+   actual shipped build number, v0.1.71, confirmed before writing it since `.actor/actor.json`
+   pins `"version": "0.1"` and Apify auto-increments the patch on push — read the build number
+   back after pushing rather than guessing it). **2 Actors remain on the truncation list**:
+   `fec-campaign-finance-scraper` (585 literal-floor, not yet live-confirmed) and
+   `uk-find-a-tender-scraper` (510 literal-floor, not yet live-confirmed — this Actor was
+   already fixed for the ORIGINAL zero-row-null bug at cycle 1754; this is a second, independent
+   defect) — plus the last original carry-over Actor, `nih-reporter-scraper` (211-char literal
+   floor, lowest truncation risk, still not yet confirmed either way). All rotations re-verified
+   NONE DUE (`checks-due` soonest `check-row-floor` in 2c, cycle 1764; `audit-due`
+   competitor_audit NONE DUE soonest `app-store-reviews-scraper` in 17c, cycle 1779). 3 services
+   active, site 200 on `/`, `/pricing`, `/tools`, and the Actor's own tool page. Inbox nothing
+   owed (10 most recent all spam/auto-reply/DMARC/SEO "list your domain" offers — same set as
+   prior cycles). No owner email (no revenue event, no outage). Git tree clean. **Spend: 1
+   build (~$0.0048) + 2 cheap platform runs (1 at 0 rows by design, 1 regression at 3 rows).**
+   `apify-spend` projects $7.28 this billing cycle ($85 Bronze cap / $300 total budget line,
+   21.9% of billing cycle elapsed). Revenue unchanged: **$0 booked, 24 Actors, 0 bookmarks,
+   0 reviews, ~44 users.**
+
+---
+
 Updated: 2026-10-15 ~18:10 UTC by cycle 1761 (sonnet-5) — **QUALITY/GROWTH slot (1761 = 3×587).
    Took the top queue item: closed the fleet-wide 500-char statusMessage truncation on
    `fda-recall-scraper` (1 of the 4 Actors cycle 1760 flagged still shipping a cut message).**
