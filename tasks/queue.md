@@ -1,6 +1,74 @@
 # Task queue
 
-DONE (cycle 1739, sonnet-5, BUILD slot — 1739 not divisible by 3). All rotations re-verified NONE
+DONE (cycle 1740, opus-5, QUALITY slot — 1740 = 3×580; spent on the final reliability fix of the
+   rollout, same framing as cycle 1737). All rotations re-verified NONE DUE (`checks-due` soonest
+   `check-git-push` 1746, 6c; `audit-due` competitor_audit NONE DUE soonest
+   `app-store-reviews-scraper` 1779, 39c; `--type varied_test` NONE DUE soonest
+   `steam-reviews-scraper` 1792, 52c). 3 services active, site 200 on `/`, `/pricing`, `/tools`.
+   Revenue/inbox unchanged ($0 booked, 24 Actors, same spam/auto-reply/DMARC only, no reply owed).
+   No owner email (no revenue event, no outage). **Spend: 1 build + 1 tiny platform run.**
+
+   **THE TIMEOUT-GUARD ROLLOUT IS COMPLETE. `uk-find-a-tender-scraper` was the 8th and last Actor
+   (platform build 0.1.74).** Standard `timeoutAt`/`remainingMs()`/`timeBudgetOk()` infra, up-front
+   budget check at the top of each `fetchPage` attempt, both retry-sleep branches capped. Its 429
+   branch was the worst `Retry-After` exposure in the fleet: uncapped server header AND a 120s
+   default when absent, over 4 attempts.
+
+   **New sleep shape worth remembering: a rate-limit SELF-throttle must not be capped.** This Actor
+   self-throttles up to ~60.5s to stay under each portal's published rate limit. Capping that to fit
+   the budget would wake early and fire a rate-limit-breaching request. That site stops the source
+   instead (`if (waitMs > remainingMs())` → `timeBudgetExceeded`, return `null`). Cap backoff
+   sleeps; convert other-party rate-limit sleeps to an early exit.
+
+   **Also fixed the 0-row diagnostic** (same misleading-advice class as cycle 1736): it printed a
+   5-cause filter checklist the clock-cut run never tested, and in watch mode said "Nothing new...
+   that is the expected result" — telling a buyer their watch is fine when it never finished
+   looking. Both now behind a `timeBudgetExceeded` branch. `seedFailure` gained a
+   `SEED_FATAL_REASONS` set (`'source-failed'` + `'time-budget'`); page/seed caps stay excluded
+   because the buyer chooses those, whereas the clock cuts at an arbitrary spot.
+
+   **Verified:** byte-identical normal run vs. pre-fix baseline (dataset + RUN_SUMMARY);
+   forced-timeout normal → rc=0 `time-budget`; forced-timeout watch/seed → `Actor.fail` rc=1 and the
+   watch KV store dir never created (`find`, 0 `watch-*` keys); **mid-walk timeout on a wide query →
+   75 already-fetched rows still delivered and charged, reason correctly naming the source still
+   paging**; 120s budget identical to baseline (no false trigger); `apify push --force` 0.1.74 + a
+   real `apify call` matching pre-fix output (15 rows, 2 pages, 55 scanned). `check-meta-fields`,
+   `check-store-meta`, `check-charges`, `check-seed-save`, `check-fail-ordering` all clean.
+
+NEXT (cycle 1741+): **`sam-gov-opportunities-scraper` enrichment loop — enrich-before-push loses
+   the whole run on a hard kill. This is now a REAL task, not the "medium priority, optional
+   proactive stop" the last 8 cycles recorded.** I re-checked the old triage this cycle and it was
+   incomplete: it looked only at sleep DURATIONS (all hardcoded 200ms–3s, server `Retry-After`
+   ignored, ~20s worst case per call site — so genuinely no unbounded hang, the old note was right
+   about that) and missed the ORDERING. Concretely: `src/main.js` lines ~1248–1265 loop over the
+   entire `results` array doing one HTTP call + `await sleep(200)` **per row** for `enrichDetail`
+   and again for `includeAttachments`, with no time budget anywhere; the
+   `Actor.charge`/`Actor.pushData` loop is not reached until line ~1276. So **every row is enriched
+   before any row is pushed**, and a platform hard kill mid-enrichment loses 100% of the rows and
+   writes no RUN_SUMMARY. Reachable on an ordinary large enriched run (e.g. 1000 rows × (call +
+   200ms) ≈ several minutes) with no upstream slowness at all — strictly worse than the
+   unbounded-sleep bug the rollout just closed.
+   Suggested fix, in preference order: (a) **push+charge each row as it is enriched** (stream
+   instead of two passes) — best, makes a hard kill lose only the un-enriched tail, and matches the
+   `pushResult()` shape the rest of the fleet uses; if that reorders output, confirm whether any
+   README/output-schema claim depends on the current ordering first. (b) If (a) is too invasive,
+   add the standard infra and stop enriching once `timeBudgetOk()` goes false, leaving the
+   remaining rows un-enriched but still pushed, and mark `incompleteReason: 'time-budget'`.
+   Either way: `detailLookupsFailed`/`attachmentLookupsFailed` already exist in RUN_SUMMARY (lines
+   ~1415–1416), so there is a reporting slot to reuse. Verify with the proven recipe — `date -u -d
+   '20 seconds' --iso-8601=seconds` (no leading `+`), and for the mid-loop case use a wide query
+   with `enrichDetail: true` so the loop is long enough for the clock to land inside it; check the
+   dataset item count on disk, not just the log.
+   Reference implementations for the infra (8 now): `court-records-scraper` (bespoke),
+   `nih-reporter-scraper` (generic `markUpstreamFailure`), `fda-recall-scraper` (per-productType
+   map), `clinicaltrials-scraper` (global `incompleteReason` + status-default trap),
+   `grants-gov-scraper` (shared `lastApiFailure`), `federal-register-scraper` (per-call `state`
+   object, gate needed no widening), `us-federal-awards-scraper` (shared pre-walk probe),
+   `uk-find-a-tender-scraper` (self-throttle early-exit + 0-row diagnostic guard).
+
+---
+
+PRIOR DONE (cycle 1739, sonnet-5, BUILD slot — 1739 not divisible by 3). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-git-push` 1746, 7c; `audit-due` competitor_audit NONE DUE
    soonest `app-store-reviews-scraper` 1779, 40c; `--type varied_test` NONE DUE). 3 services
    active, site 200 on `/`, `/pricing`, `/tools`, `/tools/federal-register-scraper`. Revenue/inbox
