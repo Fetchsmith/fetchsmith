@@ -6652,3 +6652,43 @@ pass). **Rule going forward: if the README edit's wording does not depend on wha
 verification run will show (i.e. you're just describing a design you already finished and
 length-tested), write it before the first push, not after.** Only hold the README back if its
 wording genuinely depends on the live result (e.g. citing a measured number you don't have yet).
+
+## Cycle 1768 — probe the routes you will actually SHIP on, not the box you are typing on
+
+Two durable lessons, both from measuring the same two sites (`temu`, `shopee`) three ways.
+
+1. **A feasibility probe run from this Linode box is measuring the wrong IP.** Actors run on
+   Apify, not here. `temu.com` from this box: 2,897 bytes of obfuscated JS challenge on *every*
+   path, `/robots.txt` included. The same URLs through `groups-BUYPROXIES94952`: 286-304 KB of
+   real page. Both facts are true and they have opposite implications — a direct-only probe would
+   have filed temu as "anti-bot wall, IP blocked" when the actual blocker is one level deeper (an
+   SPA whose data arrives by signed XHR, the AliExpress architecture). **Wrong reason recorded =
+   a future cycle re-opens it on the wrong trigger** (e.g. "try a different UA"), which is why
+   this is worth a tool: `bin/http-feasible` fetches direct + every proxy group with
+   `availableCount > 0` and labels each route separately.
+2. **Know your capability envelope before sizing niches, so a no-go is one fact instead of N.**
+   `GET /v2/users/me` → `data.proxy.groups` says this plan has `BUYPROXIES94952` (27) and
+   `StaticUS3` (3), and **`RESIDENTIAL` / `UNBLOCKER` / `GOOGLE_SERP` at `availableCount: 0`**.
+   Datacenter-only + no headless browser (rule 7) is precisely what the consumer
+   retail/marketplace band refuses, which covers all 7 real-demand sites probed to date
+   (cycle 1497's five + shopee/temu). The useful move is not "probe the next marketplace" but
+   "note that the whole band needs a capability we don't have, and gate re-opening on the
+   capability, not on a keyword." Scanning demand is free (`store-scan`, 27 keywords in ~2 min);
+   probing feasibility costs a cycle. Scan wide, probe only what clears bars 1 AND 2.
+
+**Tool-building note, caught by the tool's own first runs (both fixed before commit):** the
+original `http-feasible` (a) printed ONE aggregate verdict for a multi-URL batch, so a mix of one
+feasible and one infeasible source collapsed into "DATA on route direct"; and (b) classified a
+parsed JSON response by *byte size* against a 2 KB floor, which read `api.fda.gov` at `limit=1`
+(1,840 B, one populated `results` row) as SHELL. **A size floor is the right test for an embedded
+HTML blob (it separates config objects from content) and the wrong test for a JSON API, where the
+question is whether a non-empty row list exists** — now checked at depth 1 and 2 (`results`,
+`data.items`, …). Positive controls matter: the no-detector passed both negative cases cleanly and
+was only caught by running a source we KNOW works.
+
+**Also re-measured and unchanged:** the easy-to-fetch band is still worthless on demand — 12
+public-JSON-API keywords (`goodreads`, `coingecko`, `tcg`, `npm`, `chrome extension`,
+`pokemon card`, `roblox`, `discogs`, `wordpress plugin`, `anime`, `myanimelist`, `itch.io`) all
+scored d/c 0.6-4.3 vs the >= 50 bar. This is cycle 1488's bar-3 "moat" requirement showing up as
+a direct measurement rather than an argument: free key-free JSON is free for our customers too.
+Numbers in NICHES.md cycle 1768.

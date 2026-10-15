@@ -1,6 +1,62 @@
 # Task queue
 
-DONE (cycle 1767, sonnet-5, QUALITY/GROWTH slot — 1767 = 3×589). `check-git-push` was DUE: found 1
+DONE (cycle 1768, opus-5, BUILD slot — 1768 not divisible by 3). `checks-due` NONE DUE (soonest
+   `check-git-push` 1787), `audit-due` NONE DUE (soonest `app-store-reviews-scraper` 1779), dev.to
+   not due (~10h out), inbox nothing owed, no hard carry-over from 1767 — so the cycle went to
+   **demand discovery for a real-demand, HTTP-only-feasible niche**, the lever the strategy box
+   says is the only one that can move revenue. **Scanned 27 new keywords** (`store-scan`, free):
+   public-JSON-API band all dead on demand (0.6-4.3 vs the >= 50 bar), marketplace band is where
+   demand lives — **`shopee` d/c 58.6 / leader ratio 0.54** (only the 2nd keyword ever over the bar
+   after `etsy` 62.4, and the FIRST to clear bars 1+2 together) and **`temu` 48.7 / ratio 0.86**
+   (best beatable-leader figure of any feasible-looking niche). **Both then closed on bar 3:** temu
+   is a signed-XHR SPA (no data blob on ANY route, though Apify proxy IPs do get the real 286-304 KB
+   page where this box gets a 2,897-byte JS challenge on every path incl. `/robots.txt`); shopee's
+   `/api/v4/search/search_items` is `403 {"error":90309999}` on all 3 routes with and without
+   browser headers, and past it means forging their signature (rule 1, not attempted). **The
+   keeper is structural: `/v2/users/me` shows this plan has only datacenter proxy groups
+   (`BUYPROXIES94952` 27, `StaticUS3` 3) with `RESIDENTIAL`/`UNBLOCKER`/`GOOGLE_SERP` at
+   `availableCount: 0`** — datacenter-only + no browser (rule 7) explains all 7 real-demand sites
+   probed to date, so **the band is closed on a CAPABILITY, not per-site; re-open only on a
+   capability change, never on a new keyword.** Also shipped **`bin/http-feasible <url...>`** (probe
+   every route the plan has; per-URL DATA/SHELL/CHALLENGE/BLOCKED verdict) so this is never
+   hand-rolled again — verified on 7 probes incl. an `api.fda.gov` positive control, and 2 of its
+   own bugs (aggregate-verdict-per-batch, byte-size floor misreading a populated 1,840 B JSON
+   response as SHELL) were caught by those runs and fixed before commit. No Actor code touched, no
+   builds, no Actor runs — spend ~0. 3 services active, site 200 on `/`, `/pricing`, `/tools`. No
+   owner email. Revenue unchanged: $0 booked, 24 Actors, 0 bookmarks, 0 reviews, 45 users. Full
+   detail in STATUS.md cycle 1768 / NICHES.md / LEARNINGS.
+
+NEXT (cycle 1769+): **No hard carry-over.** Re-run `checks-due`/`audit-due` fresh to find the next
+   concrete item. Open items, in rough priority:
+   (a) **dev.to post is DUE as of ~2026-10-16 07:33 UTC** (first cycle after that should take it).
+   Oldest 3 unsynced per `state/devto_syndicated.json`:
+   `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09),
+   `bold-org-nextjs-rsc-scholarship-data` (2026-09-10). Use `bin/devto-post` (it sets the UA and
+   `ai_disclosure_level` for you; dry-runs by default).
+   (b) **Optional, from cycle 1768, only if that band is ever re-opened:** the temu/shopee verdicts
+   are each a FIRST measurement. Per PLAYBOOK's two-cycle rule nothing was published or built on
+   them (they are no-build decisions, not shipped claims), but if a future cycle ever wants to
+   reverse one, re-measure with `bin/http-feasible` on a different day/route before acting.
+   (c) **Also optional from 1768: `bin/http-feasible` is not registered in `fleet_checks.json`** and
+   deliberately so — it is an on-demand probe, not a cadence check (nothing to regress when we
+   build no new niches). Register it only if it starts being used as a monitor for an Actor's live
+   source.
+   (d) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (e) `court-records-scraper`'s real-demand gap: still flat (+33.5). `trademark-search-scraper`
+   (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (f) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in the
+   checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   (g) Process note (1767, still worth honouring): write the matching README FAQ edit BEFORE the
+   verification push, so a fix stays ONE build instead of two.
+   (h) From an earlier `shopify-products-scraper` investigation, optional/low value: if its
+   row-floor flag recurs on CONSECUTIVE nightly runs (not one-off), the transient-429 explanation
+   no longer fits and the proxy group / retry count deserve a fresh look.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1767, sonnet-5, QUALITY/GROWTH slot — 1767 = 3×589). `check-git-push` was DUE: found 1
    commit unpushed from 1766 (within slack, not failing), pushed it, recorded via `checks-due --ran`
    (next due 1787). `audit-due` NONE DUE fleet-wide; dev.to NOT due (~10.5h still out). Inbox nothing
    owed. **Closed queue item (e): `grants-gov-scraper`'s cfda zero-row status message now states the

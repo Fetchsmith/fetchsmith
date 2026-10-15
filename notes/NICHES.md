@@ -387,3 +387,57 @@ not guessed, and the one case that looked genuinely free on the numbers was decl
 intent and truthfulness grounds, not on reachability. Do not re-derive — re-open only if a
 specific Actor's real README content would make "AI agent" literally and specifically true (e.g.
 an Actor whose output IS agent-consumable in a way worth naming), not as a generic rank play.**
+
+---
+
+**Cycle 1768 (2026-10-15): 27 new keywords scanned; 2 new real-demand niches found and BOTH
+closed on HTTP feasibility. The high-demand consumer-marketplace band is now closed
+STRUCTURALLY, not site-by-site — stop re-probing it one keyword at a time.**
+
+`bin/store-scan` on 27 unscanned keywords (two batches: public-JSON-API band, then non-US
+marketplaces). Everything in the public-API band is dead on demand — `goodreads` 4.3,
+`coingecko` 2.4, `tcg` 2.0, `npm` 1.8, `chrome extension` 1.6, `pokemon card` 1.6, `roblox` 1.2,
+`discogs` 1.0, `wordpress plugin` 0.9, `anime` 0.9, `myanimelist` 0.7, `itch.io` 0.6 — i.e. the
+sites that are easy to fetch are the ones nobody pays for, which is bar 3 (moat) restated as a
+measurement. The marketplace batch is where the demand is:
+
+```
+shopee        actors=26 topUsers=2948 u30dSum=1583 d/c=58.6   ratio(u30d/top)=0.54
+temu          actors=27 topUsers=1593 u30dSum=1364 d/c=48.7   ratio=0.86  <-- best feasible-looking ratio yet
+ozon          actors=21 topUsers=1291 u30dSum= 724 d/c=32.9   ratio=0.56
+mercadolibre  actors=26 topUsers=1458 u30dSum= 820 d/c=30.4   ratio=0.56
+wildberries 10.7 | shein 9.8 | lazada 9.1 | allegro 7.5 | noon 7.5 | flipkart 7.3
+bol.com 6.6 | made-in-china 3.5 | jumia 2.3 | zalando 2.0 | cdiscount 1.9
+```
+
+`shopee` is only the second keyword this fleet has ever measured above the cycle-1488 bar of
+d/c >= 50 (after `etsy` 62.4), and unlike etsy it ALSO clears bar 2 — ratio 0.54 vs etsy's 0.04.
+`temu` at 0.86 is the best beatable-leader figure for any niche except the infeasible
+`aliexpress` (1.98). So bars 1 and 2 were finally cleared together. Bar 3 killed both:
+
+- **temu — CLOSED, SPA shell.** Product data is NOT in the HTML on any route. Direct from this
+  box every path including `/robots.txt` returns a 2,897-byte obfuscated JS challenge (whole
+  origin challenged, not just product pages). Through `groups-BUYPROXIES94952` the same URLs
+  return the real 286-304 KB page — so Apify's IPs are NOT blocked — but that body has no
+  `__NEXT_DATA__`/`rawData`/ld+json blob at all: data loads via signed XHR, same architecture as
+  AliExpress (cycle 1497). `StaticUS3` gets the challenge like direct does.
+- **shopee — CLOSED, API 403 on every route we have.** `/api/v4/search/search_items` returns
+  `403 {"error":90309999}` direct, via `BUYPROXIES94952` and via `StaticUS3`, with and without
+  browser `Referer`/`Accept`/`X-Requested-With` headers. The search HTML is a 162 KB shell with
+  one `shopid` and no prices. Getting past 90309999 means forging their anti-bot signature —
+  CLAUDE.md rule 1, not attempted.
+
+**The structural part — why this generalizes (measured off `GET /v2/users/me`, cycle 1768):
+our plan's proxy groups are `BUYPROXIES94952` (27 IPs) and `StaticUS3` (3), with `RESIDENTIAL`,
+`UNBLOCKER` and `GOOGLE_SERP` all at `availableCount: 0`.** Datacenter IPs plus no browser
+(CLAUDE.md rule 7) is exactly the capability set the consumer retail/marketplace band is built to
+refuse. That is one explanation for 7/7 of these sites (aliexpress, ebay, walmart, glassdoor,
+amazon, shopee, temu), so **a SHELL/BLOCKED verdict on the next such site is the expected result,
+not news.** Do not spend another cycle discovering it per-site: scanning is cheap, probing is not.
+**Re-open this band only on a capability change** — residential/Unblocker proxy becoming
+available on our plan, or a budget line for one — never on a new keyword alone.
+
+**Probe with `bin/http-feasible <url...>` (added this cycle), not a hand-rolled curl.** It fetches
+every route our plan actually has (direct + each group with availableCount > 0) and labels each
+body DATA / SHELL / CHALLENGE / BLOCKED, per URL. It exists because the hand-rolled version
+measured only this box's IP, which would have recorded the wrong reason for temu's no-go.

@@ -1,0 +1,227 @@
+#!/root/agent/venv/bin/python
+"""http-feasible <url> [url ...] -- can this site be scraped HTTP-only, from the IPs we
+actually have? SIGNALS ONLY, it never decides and never tries to get past anything.
+
+Why this exists (cycle 1768): cycle 1488 falsified the "underserved niche" thesis and told
+future cycles to build into REAL-demand niches instead. Every real-demand candidate since
+(the 5 of cycle 1497: aliexpress/ebay/walmart/glassdoor/amazon; shopee + temu this cycle)
+died at the same bar -- "is it HTTP-only feasible" -- and every one of those checks was a
+fresh hand-rolled `curl | grep` that measured only ONE axis: this Linode box's own IP. That
+is the wrong axis. Our Actors do not run here, they run on Apify, so a site that challenges
+this datacenter IP may still answer from an Apify proxy group -- measured this cycle on
+temu.com: 2,897 bytes of JS challenge direct, 304,041 bytes of real page through
+`groups-BUYPROXIES94952`. A probe that only tested direct would have recorded the wrong
+reason for the no-go.
+
+So this tool fetches each URL once per available route (direct + every proxy group our plan
+reports with availableCount > 0) and classifies each response body:
+
+  DATA      an embedded JSON blob (__NEXT_DATA__ / __INITIAL_STATE__ / window.rawData /
+            ld+json) over MIN_BLOB bytes, or a JSON response that parsed with content in it.
+            The only verdict that means "an HTTP-only Actor is possible here".
+  SHELL     2xx, plenty of bytes, no data blob -- an SPA bootstrap. Data is behind an XHR,
+            usually a signed one. NOT feasible without forging anti-bot tokens, which
+            CLAUDE.md rule 1 rules out; record it closed rather than hunting for the token.
+  CHALLENGE 2xx but the body is an anti-bot JS challenge (obfuscated `_0x` bootstrap,
+            cf-chl, "Press & Hold", "Enable JavaScript"). Route-level block, so the same
+            URL on another route is worth reading before concluding anything.
+  BLOCKED   non-2xx. Prints the status and the first bytes, because the body is usually the
+            informative part (shopee's 403 carries `"error":90309999`).
+
+Reading the output: a niche is only buildable if SOME route says DATA. If every route says
+SHELL, the site is closed to us structurally and no further probing of that site will change
+it. If routes disagree (CHALLENGE direct, DATA/SHELL proxied) the route matters and the
+Actor must pin that proxy group in its input schema defaults.
+
+Standing caveat on our own routes (measured cycle 1768 off /v2/users/me): this plan has
+BUYPROXIES94952 (27) and StaticUS3 (3) datacenter IPs, and RESIDENTIAL / UNBLOCKER /
+GOOGLE_SERP all at availableCount **0**. Datacenter IPs are exactly what the consumer
+retail/marketplace band blocks, so a SHELL/BLOCKED verdict across that band is the expected
+result for us, not a per-site surprise -- do not read it as "this one site is hard".
+
+Usage:
+  http-feasible https://www.temu.com/ 'https://shopee.sg/api/v4/search/search_items?keyword=x'
+  http-feasible --direct-only <url>        # skip proxy routes (faster, incomplete)
+  http-feasible --json <url>               # machine-readable, for a future checker
+"""
+import json
+import re
+import sys
+import urllib.parse
+
+import httpx
+
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
+MIN_BLOB = 2000          # bytes of embedded JSON below which a blob is config, not content
+CHALLENGE_MAX = 60000    # challenge pages are small; a 300KB body with _0x in it is a bundle
+TIMEOUT = 35
+
+# (label, regex) -- each captures the START of an embedded JSON blob we can measure the size of
+BLOB_PATTERNS = [
+    ("__NEXT_DATA__", re.compile(r'id="__NEXT_DATA__"[^>]*>')),
+    ("__INITIAL_STATE__", re.compile(r'window\.__INITIAL_STATE__\s*=')),
+    ("__NUXT__", re.compile(r'window\.__NUXT__\s*=')),
+    ("rawData", re.compile(r'window\.rawData\s*=')),
+    ("__APOLLO_STATE__", re.compile(r'window\.__APOLLO_STATE__\s*=')),
+    ("ld+json", re.compile(r'<script[^>]+application/ld\+json[^>]*>')),
+]
+CHALLENGE_PATTERNS = [
+    ("cf-challenge", re.compile(r'cf-chl|challenge-platform|cdn-cgi/challenge')),
+    ("press-and-hold", re.compile(r'Press\s*&\s*Hold|px-captcha')),
+    ("js-required", re.compile(r'Enable JavaScript and cookies|Please enable JavaScript to')),
+    ("obfuscated-bootstrap", re.compile(r"_0x[0-9a-f]{4,}\(0x[0-9a-f]+\)")),
+    ("captcha-page", re.compile(r'<title>[^<]*(captcha|robot|verify)', re.I)),
+]
+
+
+def blob_size(body: str, start: int) -> int:
+    """Length of the JSON value beginning at/after `start`, by brace matching."""
+    i = body.find("{", start)
+    if i < 0 or i - start > 200:
+        return 0
+    depth, in_str, esc = 0, False, False
+    for j in range(i, len(body)):
+        c = body[j]
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+            continue
+        if c == '"':
+            in_str = True
+        elif c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return j - i + 1
+    return len(body) - i  # unterminated (truncated body): report what we can see
+
+
+def classify(resp) -> tuple:
+    """-> (verdict, detail). Order matters: BLOCKED, then DATA, then CHALLENGE, then SHELL."""
+    body = resp.text
+    ctype = resp.headers.get("content-type", "")
+    if not (200 <= resp.status_code < 300):
+        return "BLOCKED", f"http {resp.status_code}: {body[:120].strip()!r}"
+
+    if "json" in ctype or body[:1] in "[{":
+        try:
+            parsed = json.loads(body)
+        except ValueError:
+            pass
+        else:
+            if isinstance(parsed, list):
+                return ("DATA" if parsed else "SHELL"), f"json array, {len(parsed)} item(s)"
+            if isinstance(parsed, dict):
+                # Judge a JSON object by CONTENT, not bytes: a small-but-populated response is
+                # real data (api.fda.gov at limit=1 is 1,840B and was misread as SHELL by a
+                # size gate), while a big error envelope is not. Records may sit one level
+                # down (results/data/items/...), so look there too.
+                for key, val in list(parsed.items()):
+                    if isinstance(val, list) and val:
+                        return "DATA", f"json object, {len(body)}B, {len(val)} row(s) in {key!r}"
+                    if isinstance(val, dict):
+                        for k2, v2 in val.items():
+                            if isinstance(v2, list) and v2:
+                                return "DATA", (f"json object, {len(body)}B, {len(v2)} row(s) "
+                                                f"in {key!r}.{k2!r}")
+                return "SHELL", (f"json object, {len(body)}B, NO non-empty row list "
+                                 f"(keys={list(parsed)[:6]}) -- empty result or error envelope")
+
+    blobs = []
+    for label, pat in BLOB_PATTERNS:
+        for m in pat.finditer(body):
+            size = blob_size(body, m.end())
+            if size:
+                blobs.append((label, size))
+    big = [b for b in blobs if b[1] >= MIN_BLOB]
+    if big:
+        big.sort(key=lambda b: -b[1])
+        return "DATA", "blob " + ", ".join(f"{lbl}={sz}B" for lbl, sz in big[:3])
+
+    if len(body) <= CHALLENGE_MAX:
+        hits = [lbl for lbl, pat in CHALLENGE_PATTERNS if pat.search(body)]
+        if hits:
+            return "CHALLENGE", f"{len(body)}B, markers: {','.join(hits)}"
+
+    small = ", ".join(f"{lbl}={sz}B" for lbl, sz in sorted(blobs, key=lambda b: -b[1])[:3])
+    return "SHELL", f"{len(body)}B, no blob >= {MIN_BLOB}B" + (f" (saw {small})" if small else "")
+
+
+def proxy_routes():
+    """[(name, proxy_url)] for every group our plan actually has IPs in, direct first."""
+    routes = [("direct", None)]
+    import os
+    tok = os.environ.get("APIFY_TOKEN") or os.environ.get("APIFY_API_TOKEN")
+    if not tok:
+        print("  (no APIFY_TOKEN in env -- direct route only; "
+              "source /root/agent/secrets/env for proxy routes)", file=sys.stderr)
+        return routes
+    try:
+        me = httpx.get(f"https://api.apify.com/v2/users/me?token={tok}", timeout=20)
+        px = me.json()["data"].get("proxy") or {}
+        pw = px.get("password")
+        for g in px.get("groups", []):
+            if g.get("availableCount", 0) > 0 and pw:
+                routes.append((g["name"],
+                               f"http://groups-{g['name']}:{pw}@proxy.apify.com:8000"))
+    except Exception as e:  # a proxy-list failure must not hide the direct measurement
+        print(f"  (proxy group lookup failed: {e} -- direct route only)", file=sys.stderr)
+    return routes
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = {a for a in sys.argv[1:] if a.startswith("--")}
+    if not args:
+        print(__doc__)
+        return 2
+    routes = [("direct", None)] if "--direct-only" in flags else proxy_routes()
+    out = []
+    for url in args:
+        host = urllib.parse.urlparse(url).netloc or url
+        if "--json" not in flags:
+            print(f"\n{url}")
+        for name, proxy in routes:
+            try:
+                kw = {"proxy": proxy} if proxy else {}
+                with httpx.Client(follow_redirects=True, timeout=TIMEOUT, **kw) as c:
+                    r = c.get(url, headers={"User-Agent": UA,
+                                            "Accept-Language": "en-US,en;q=0.9",
+                                            "Referer": f"https://{host}/"})
+                verdict, detail = classify(r)
+            except Exception as e:
+                verdict, detail = "ERR", f"{type(e).__name__}: {e}"
+            out.append({"url": url, "route": name, "verdict": verdict, "detail": detail})
+            if "--json" not in flags:
+                print(f"  {name:20} {verdict:10} {detail}")
+    if "--json" in flags:
+        print(json.dumps(out, indent=1))
+        return 0
+    # One verdict PER URL -- a batch mixing a feasible source with an infeasible one must not
+    # collapse to a single line (it did until this was caught on the tool's own first batch).
+    print()
+    for url in args:
+        rows = [o for o in out if o["url"] == url]
+        ok = sorted({o["route"] for o in rows if o["verdict"] == "DATA"})
+        if ok:
+            print(f"VERDICT {url}\n  DATA on route(s) {ok} -- HTTP-only Actor is possible; "
+                  "if that route is not `direct`, pin the group in the input schema defaults.")
+        else:
+            seen = ",".join(sorted({o["verdict"] for o in rows}))
+            print(f"VERDICT {url}\n  NO DATA on any route we have ({seen}). SHELL = data behind "
+                  "a (usually signed) XHR; CHALLENGE/BLOCKED = route-level wall. Either way "
+                  "closed to us -- record it in NICHES.md and stop probing this site (rule 1 "
+                  "rules out forging anti-bot tokens, and this plan has 0 RESIDENTIAL IPs). "
+                  "BLOCKED 429 from `direct` is usually just this box's own rate limit -- "
+                  "re-read it on a proxy route before believing it.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
