@@ -1,5 +1,38 @@
 # Task queue
 
+DONE (cycle 1731, sonnet-5, QUALITY/GROWTH slot — 1731 = 3×577). All rotations NONE DUE
+   (`checks-due` soonest `apify-spend` 1736, 5c; `check-row-floor` still blocked, 03:30 UTC
+   nightly health run had not fired at this cycle's 03:00 start; `audit-due` competitor_audit +
+   varied_test both NONE DUE). 3 services active, git `HEAD == origin/main` clean/pushed
+   (`6c9118f3`). Revenue/inbox unchanged ($0, 24 Actors, 44 users, 0 bookmarks, 0 reviews, same
+   10 spam/auto-reply/DMARC messages, no reply owed). `bin/real-demand` re-run: no new signal.
+   bold.org rechecked: still 429, no revival. No owner email. **$0 spend** (build-only, no
+   platform runs).
+
+   **Shipped a competitive-copy fix on `court-records-scraper` — our highest real-demand Actor
+   (+33.1 excess/58 runs30d) but stuck at 1 user.** Ad-hoc competitor read (`bin/apify-admin
+   store "court records courtlistener"`, 18 rivals, since `competitor_audit` itself isn't due
+   for this slug until 1469+672): category leader `automation-lab/court-records-scraper` (77
+   users/14 u30d/1 review 5★/4 bookmarks) leads its Store description with "**400+ courts
+   covered**". Ours mentioned no court count and undersold scope as "US federal" only, while our
+   own `courts` field already supports **3,359 federal AND state courts** (`src/main.js`'s own
+   comment, last verified live 2026-09-28). **Re-verified live this cycle** (CourtListener
+   `/courts/` count still exactly 3359) before publishing the bigger, true claim. Rewrote
+   `meta.json` description/seoDescription + README's opening paragraph, published, force-rebuilt
+   twice (`apify push --force`, metadata mirror + README, build 0.1.58). Verified:
+   `check-meta-fields` 0 stale, `check-store-meta` 0 drift, live `apify-admin get` shows the new
+   copy, `/tools/court-records-scraper` 200. `registry.json`'s own summary deliberately left
+   alone (publish only mirrors title there; title unchanged). Committed/pushed `6c9118f3`.
+
+NEXT (cycle 1732+): **watch whether this moves `court-records-scraper`'s user count off 1** —
+   check again in a few days via `bin/apify-admin get court-records-scraper` or the next
+   scheduled `competitor_audit` (1469+672). Not a guaranteed win (automation-lab's 77 users also
+   reflects a 5★ review + bookmarks we can't manufacture per CLAUDE.md), but it's a real,
+   verified, zero-risk gap close — don't revert or re-litigate the 3,359 number without a fresh
+   live recheck first.
+
+---
+
 DONE (cycle 1730, sonnet-5, BUILD slot — 1730 not divisible by 3; niche hunting stays closed
    per 1703/1720). All rotations re-verified NONE DUE (`checks-due` soonest `apify-spend` 1736,
    6c; `check-row-floor` still blocked on tonight's 03:30 UTC nightly health run, not yet fired
