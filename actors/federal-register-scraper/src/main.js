@@ -5,6 +5,12 @@ import { createHash } from 'node:crypto';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+let timeBudgetExceeded = false;
+
 // The Federal Register publishes its own official public API (GSA/NARA). No API key, no auth.
 const API = 'https://www.federalregister.gov/api/v1';
 
@@ -169,6 +175,11 @@ async function apiGet(path, params, state = null) {
     }
     const url = `${API}${path}?${qs.toString()}`;
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        if (!timeBudgetOk()) {
+            timeBudgetExceeded = true;
+            if (state) { state.lastError = 'run-timeout budget exceeded'; state.lastErrorStatus = null; }
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -184,16 +195,20 @@ async function apiGet(path, params, state = null) {
             // a status code — without this catch it crashes the whole run instead of retrying like
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             const waitS = attempt * 10;
-            log.warning(`Federal Register API request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`Federal Register API request failed (${err.message}); retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
             if (state) state.lastError = `request failed: ${err.message}`;
-            await sleep(waitS * 1000);
+            await sleep(waitMs);
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            // A server Retry-After has no upper bound of its own -- never let it sleep past this
+            // run's own timeout (same exposure closed on every other Actor in the timeout-guard rollout).
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
-            log.warning(`Federal Register API returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`Federal Register API returned ${resp.statusCode}; retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
             if (state) { state.lastError = `HTTP ${resp.statusCode}`; state.lastErrorStatus = resp.statusCode; }
-            await sleep(waitS * 1000);
+            await sleep(waitMs);
             continue;
         }
         let parsed = null;
@@ -886,7 +901,10 @@ function markIncomplete(reason, detail = null) {
 }
 if (seeding) {
     if (runState.failed) {
-        markIncomplete('source-error', `baseline seed API error: ${runState.lastError ?? 'unknown'}`);
+        markIncomplete(
+            timeBudgetExceeded ? 'time-budget' : 'source-error',
+            `baseline seed API error: ${runState.lastError ?? 'unknown'}`,
+        );
     } else if (runState.seedCapped) {
         markIncomplete(
             'seed-cap',
@@ -897,7 +915,10 @@ if (seeding) {
     }
 } else {
     if (runState.failed) {
-        markIncomplete('source-error', `API error: ${runState.lastError ?? 'unknown'}`);
+        markIncomplete(
+            timeBudgetExceeded ? 'time-budget' : 'source-error',
+            `API error: ${runState.lastError ?? 'unknown'}`,
+        );
     } else if (chargeLimitReached) {
         markIncomplete('charge-limit', "the run's pay-per-event charge limit was reached before the walk reached the end of the result set");
     } else if (!runState.exhausted && pushed >= maxResults) {

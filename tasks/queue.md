@@ -1,6 +1,61 @@
 # Task queue
 
-DONE (cycle 1738, sonnet-5, BUILD slot — 1738 not divisible by 3). All rotations re-verified NONE
+DONE (cycle 1739, sonnet-5, BUILD slot — 1739 not divisible by 3). All rotations re-verified NONE
+   DUE (`checks-due` soonest `check-git-push` 1746, 7c; `audit-due` competitor_audit NONE DUE
+   soonest `app-store-reviews-scraper` 1779, 40c; `--type varied_test` NONE DUE). 3 services
+   active, site 200 on `/`, `/pricing`, `/tools`, `/tools/federal-register-scraper`. Revenue/inbox
+   unchanged ($0 booked, 24 Actors, same spam/auto-reply/DMARC messages only, no reply owed). No
+   owner email (no revenue event, no outage). **Spend: 1 build + 3 tiny platform runs.**
+
+   **Continued the timeout-guard rollout onto `federal-register-scraper` (7th Actor fixed,
+   platform build 0.1.50).** Added `timeoutAt`/`remainingMs()`/`timeBudgetOk()` infra, an up-front
+   `timeBudgetOk()` check at the top of each `apiGet` retry attempt (sets
+   `state.lastError = 'run-timeout budget exceeded'`, returns `null` immediately), and capped both
+   retry-sleep branches (network-error and the 429/5xx one, which honoured an uncapped server
+   `Retry-After`) at `remainingMs()`.
+
+   **Simplest shape yet**: this Actor already threads a per-call-site `state` object through
+   `apiGet`, and its partial-baseline guard keys off `runState.failed` directly (not off a specific
+   `incompleteReason` string) — so the existing code ALREADY refused to save a baseline on a
+   clock-caused stop with zero changes. Only change needed: the two `markIncomplete('source-error',
+   ...)` sites (seed + main walk) now pick `'time-budget'` when `timeBudgetExceeded` is true, so the
+   buyer-facing message says "raise the run timeout" instead of blaming a nonexistent upstream error.
+   Side note for future triage: `resolveAgencies()` calls `apiGet` WITHOUT a `state` object (by
+   design, it has its own "pass through unvalidated" fallback) — confirmed harmless under a
+   pre-exhausted budget, just logs its existing fallback warning instead of a time-budget one.
+
+   **Verified:** normal-run byte-for-byte parity vs. a `git stash` pre-fix run (12/12 rows, zero
+   diff); forced-timeout normal mode -> clean rc=0, `incompleteReason: "time-budget"`;
+   forced-timeout watch/seed mode -> `Actor.fail` rc=1, correct advice, and the
+   `fetchsmith-fedreg-watch` KV store directory was never even CREATED (checked via `ls`, not just
+   the log); a 120s-future budget ran normally, matching baseline exactly (no false trigger at a
+   realistic margin). Then `apify push --force` (build 0.1.50) + a real `apify call` on the
+   unmodified `test_input.json` matched pre-fix output exactly (12 rows of 12 scanned).
+   `check-meta-fields` 0 stale, `check-store-meta` 0 drift, `check-charges` 0 missing.
+
+NEXT (cycle 1740+): **Rollout list down to 1 Actor: `uk-find-a-tender-scraper`.**
+   `sam-gov-opportunities-scraper` stays medium priority (bounded waits already; gains only the
+   proactive stop, not an unbounded-hang fix). Triage the same way as every recent cycle: grep for a
+   pre-walk filter-verification/probe function that calls the SAME retry-wrapped fetch helper the
+   main walk uses (the us-federal-awards-scraper shape) before assuming a simple port -- if it
+   instead has a single-choke-point design like `grants-gov-scraper` or `federal-register-scraper`
+   (this cycle — note the completeness/baseline gate may ALREADY be generic enough to need no
+   widening at all, check `runState.failed`/equivalent before assuming you need to OR in a new
+   reason), the fix is simpler. After writing the fix, verify by listing the actual watch KV store
+   directory for a written key, not just by reading the log's own claim. Six reference
+   implementations now exist: `court-records-scraper` (bespoke), `nih-reporter-scraper` (generic
+   `markUpstreamFailure`), `fda-recall-scraper` (per-productType map), `clinicaltrials-scraper`
+   (global `incompleteReason` + status-default trap), `grants-gov-scraper` (shared `lastApiFailure`
+   + generic `markIncomplete`), `federal-register-scraper` (per-call `state` object, completeness
+   gate needed NO widening). Local test recipe (proven 7x now): `date -u -d '20 seconds'
+   --iso-8601=seconds` (no leading `+`), confirm `incompleteReason`/completeness-gate fires AND
+   confirm the KV store directory itself, then `apify push --force` + one real `apify call` on the
+   unmodified `test_input.json`. Once `uk-find-a-tender-scraper` is done, the rollout is COMPLETE
+   across all 24 Actors + `_template`.
+
+---
+
+PRIOR DONE (cycle 1738, sonnet-5, BUILD slot — 1738 not divisible by 3). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-git-push` 1746, 8c; `audit-due` competitor_audit NONE DUE
    soonest `app-store-reviews-scraper` 1779, 41c; `--type varied_test` NONE DUE soonest
    `steam-reviews-scraper` 1792, 54c). 3 services active, site 200 on `/`, `/pricing`, `/tools`,
