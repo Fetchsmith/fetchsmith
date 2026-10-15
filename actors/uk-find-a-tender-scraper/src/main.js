@@ -982,8 +982,20 @@ if (watchMode && seedFailure) {
     }
 }
 
+// Built once and reused below for `setStatusMessage` -- until this fix these were log-only, so a
+// run that is COMPLETE (both portals' feeds exhausted, no cap, no upstream failure) with zero
+// matches fell through the `!complete`/`baselineTruncated` checks further down and reached the
+// console as a plain green SUCCEEDED run with `statusMessage: null`, same bug class fixed on
+// trademark-search-scraper (cycle 1752) and court-records-scraper (cycle 1753). Live-reproduced
+// before this fix: searchQuery "zzyzxqplonknonexistentfetchsmithtest1987" (every filter valid)
+// finished SUCCEEDED, scanned 92/filtered 88, dataset empty, statusMessage null, RUN_SUMMARY
+// complete:true/delivered:0 -- exactly this branch.
+let zeroRowMessage = null;
 if (pushed === 0 && !seeding) {
     if (timeBudgetExceeded) {
+        // Every path that sets timeBudgetExceeded also fails a cursor and calls markIncomplete
+        // (see fillBuffer), so this case is always `!complete` and already gets a status message
+        // from that branch below -- no zeroRowMessage needed here, this stays a log-only detail.
         // Neither of the two diagnostics below can be told the truth on a clock-cut run: the
         // filter checklist blames inputs the run never actually tested, and the watch-mode line
         // ("that is the expected result most of the time") would reassure a buyer that their
@@ -995,10 +1007,9 @@ if (pushed === 0 && !seeding) {
             + 'query (fewer stages, a shorter updatedWithinDays, one source), and re-run. See RUN_SUMMARY.',
         );
     } else if (watchMode) {
-        log.warning(
-            `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
-            + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
-        );
+        zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
+            + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.';
+        log.warning(zeroRowMessage);
     } else {
         const malformedCpvNote = malformedCpvCodes.length
             ? `cpvCodes value(s) ${malformedCpvCodes.map((c) => `"${c}"`).join(', ')} are not 8-digit CPV codes and `
@@ -1029,15 +1040,14 @@ if (pushed === 0 && !seeding) {
         } else {
             textFilterCause = 'no text filter ("searchQuery"/"keywordsAny") was set, so that is not the cause here.';
         }
-        log.warning(
-            `No notices matched. ${malformedCpvNote}Scanned ${scanned} releases over ${page} page(s) and filtered out `
+        zeroRowMessage = `No notices matched. ${malformedCpvNote}Scanned ${scanned} releases over ${page} page(s) and filtered out `
             + `${filtered}. Most common causes, in order: (1) ${textFilterCause} (2) "cpvCodes" does not match — both `
             + 'portals use 8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
             + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
             + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '
             + 'notices are on — Find a Tender is above-threshold only and is a thin feed; Contracts Finder carries the '
-            + 'much larger sub-threshold flow. Filtered rows are never charged.',
-        );
+            + 'much larger sub-threshold flow. Filtered rows are never charged.';
+        log.warning(zeroRowMessage);
     }
 }
 
@@ -1130,6 +1140,8 @@ if (!complete) {
               + `already-delivered id(s) were dropped at the ${WATCH_KEEP.toLocaleString('en-US')}-notice baseline limit `
               + 'and will be charged again. Narrow the watch filters. See RUN_SUMMARY.',
     );
+} else if (zeroRowMessage) {
+    await Actor.setStatusMessage(zeroRowMessage);
 } else {
     log.info(
         `Complete: every notice both portal(s) (${cursors.map((c) => c.source.label).join(', ')}) had for these `

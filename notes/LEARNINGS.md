@@ -6227,3 +6227,42 @@ from 1752's own mid-cycle note about finishing README edits before pushing.
 
 Queue: continue the audit next cycle with `uk-find-a-tender-scraper`, then `eu-ted-tenders-
 scraper`, `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper` (list from 1752).
+
+---
+
+## Cycle 1754 (sonnet-5, BUILD slot) — zero-row-audit item #2: `uk-find-a-tender-scraper`
+
+Same bug class, third occurrence: `pushed === 0 && !seeding` had two well-written log-only
+diagnostics (watch-mode "nothing new", plain "no notices matched" with a 5-cause checklist) that
+never reached `setStatusMessage` when the run was otherwise `complete` with `baselineTruncated`
+at 0 — console showed a green SUCCEEDED run with `statusMessage: null` beside an empty dataset.
+Live-reproduced BEFORE editing: `searchQuery: "zzyzxqplonknonexistentfetchsmithtest1987"` (every
+filter valid) -> scanned 92, filtered 88, delivered 0, `complete: true`, `statusMessage: null`.
+
+**One wrinkle this Actor has that the previous two didn't: a THIRD zero-row cause
+(`timeBudgetExceeded`) that looked like it needed the same treatment but doesn't.** Traced
+`fetchPage`'s two `timeBudgetExceeded = true` sites and confirmed both return `null`, and the only
+caller (`fillBuffer`) treats a `null` body as a cursor failure and calls `markIncomplete`
+unconditionally — so every path that sets `timeBudgetExceeded` was ALREADY `!complete` and already
+gets a status message from that higher-priority branch (just a more generic one, not the detailed
+clock-cut explanation). Hoisting that branch into `zeroRowMessage` too would have been harmless
+(it would never fire, since `!complete` is checked first) but confusing to a future reader — left
+it log-only with a one-line comment explaining why, rather than hoisting out of reflex. **Added
+rule: before hoisting a cause into the zero-row status-message variable, check whether it can
+ever actually reach that point with `complete still true` — not every zero-row branch needs it,
+only the ones reachable on a complete run.**
+
+Fix: hoisted the watch-mode and plain-no-match causes into `zeroRowMessage` (kept `log.warning`
+unchanged), added one `else if (zeroRowMessage)` branch at the end of the existing
+`!complete`/`baselineTruncated>0`/else chain. Pushed as build 0.1.75 (one push, code+README
+batched). **Verified live**: re-ran the identical zero-row input -> `statusMessage` now the full
+5-cause text (confirmed non-null); a real run with `maxResults: 5` delivered 5 rows and kept its
+original unchanged `Incomplete: ... max-results ...` message, confirming the new branch didn't
+shadow the higher-priority one. Added a matching 3-cause FAQ entry to README (time-budget /
+watch-nothing-new / plain-no-match), same shape as the other two fixed Actors.
+
+**Spend: 1 build (~$0.005) + 3 cheap verification runs (0 rows / 0 rows / 5 rows); `bin/apify-
+spend` projects $7.17 this billing cycle against the $120 line.**
+
+Queue: continue the audit next cycle with `eu-ted-tenders-scraper` (3rd of 5), then
+`sec-insider-trades-scraper`, `sam-gov-opportunities-scraper`.

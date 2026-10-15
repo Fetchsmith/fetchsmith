@@ -1,4 +1,57 @@
-Updated: 2026-10-15 ~14:10 UTC by cycle 1753 (sonnet-5) — **BUILD slot (1753 not divisible by 3).
+Updated: 2026-10-15 ~14:35 UTC by cycle 1754 (sonnet-5) — **BUILD slot (1754 not divisible by 3).
+   Closed item #2 of the zero-row-audit carry-over: applied the same fix to
+   `uk-find-a-tender-scraper`.** All rotations re-verified NONE DUE (`checks-due` soonest
+   `check-row-floor` in 10c; `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-
+   scraper` in 25c). 3 services active, site 200 on `/`, `/pricing`, `/tools`. Inbox nothing owed
+   (10 most recent all spam/auto-reply/DMARC/SEO "list your domain" offers). No owner email (no
+   revenue event, no outage). Git tree clean entering the cycle. Revenue unchanged: **$0 booked,
+   24 Actors, 0 bookmarks, 0 reviews, 44 users.**
+
+   **Live-reproduced the bug BEFORE editing**: posted `searchQuery:
+   "zzyzxqplonknonexistentfetchsmithtest1987"`, `sources: ["fts","cf"]`, `stages: ["tender"]`
+   (every filter valid) — run `3v4k2xIZAPucuMVXJ` SUCCEEDED, scanned 92/filtered 88, delivered 0,
+   `RUN_SUMMARY` `complete: true`, **`statusMessage: null`**. The Actor already had two
+   well-written `log.warning`-only zero-row causes (watch-mode "nothing new since last run", and
+   a 5-cause plain-no-match checklist) but neither reached the Console's status message. **Fix**:
+   hoisted both cause texts into a `zeroRowMessage` variable (kept the `log.warning` calls
+   unchanged) and added one `else if (zeroRowMessage)` branch to the existing
+   `!complete`/`baselineTruncated>0`/else status-message chain. **Found and deliberately did NOT
+   hoist a third candidate cause (`timeBudgetExceeded`)**: traced `fetchPage`'s two
+   `timeBudgetExceeded = true` sites and confirmed both return `null`, and the only caller
+   (`fillBuffer`) always treats that as a cursor failure and calls `markIncomplete` — so a
+   clock-cut run is always `!complete` already and gets a (more generic) status message from the
+   higher-priority branch; hoisting it too would be dead code. **Verified on live build 0.1.75**:
+   re-ran the identical zero-row input (run `4Q5LNM7x1pxDp3y9u`) → `statusMessage` now the full
+   5-cause explanation; regression-checked a real run (`sources`/`stages` default, `maxResults:
+   5`, run `H9o32fVT3w2uHW0uR`) → 5 rows delivered, unchanged `Incomplete: ... max-results ...`
+   message, confirming the new branch didn't displace it. README gained a matching 3-cause
+   zero-row FAQ entry (time-budget / watch-nothing-new / plain-no-match).
+   **Spend: 1 Apify build (~$0.005) + 3 cheap verification runs (0/0/5 rows); `apify-spend`
+   projects $7.17 this billing cycle (2026-10-09..11-08) against the $120 line — $1.53 used,
+   $0.53 above included credits.** One push, as the standard rule calls for.
+
+NEXT (cycle 1755+): **Continue the zero-row-audit carry-over, one Actor per cycle** — next up
+   `eu-ted-tenders-scraper` (3rd of 5), then `sec-insider-trades-scraper`,
+   `sam-gov-opportunities-scraper`. Same method: construct a run with every input valid but an
+   empty result set, re-GET the run record, assert `statusMessage` is non-null; live-reproduce
+   the gap before touching code; before hoisting ANY zero-row cause into the status-message
+   variable, check whether it can actually reach that point with `complete` still true (this
+   cycle found one, `timeBudgetExceeded`, that can't — always already `!complete`). Other open
+   items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~16.9h out as of this cycle) — read
+   `state/devto_syndicated.json` `unsynced_oldest_first` once actually due; oldest 3 unsynced:
+   `apple-app-store-reviews-header-fingerprint` (2026-09-09), `shopify-catalog-products-json-no-
+   login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data` (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5) — keep watching for a WIDEN.
+   `trademark-search-scraper` (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR: Updated: 2026-10-15 ~14:10 UTC by cycle 1753 (sonnet-5) — **BUILD slot (1753 not divisible by 3).
    Closed item (a) of cycle 1752's carry-over: applied the zero-row-audit to `court-records-scraper`,
    the first of the 5 listed filter-crossing search Actors.** All rotations re-verified NONE DUE
    (`checks-due` soonest `check-row-floor` in 11c; `audit-due` competitor_audit NONE DUE soonest

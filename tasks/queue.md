@@ -1,6 +1,46 @@
 # Task queue
 
-DONE (cycle 1753, sonnet-5, BUILD slot — 1753 not divisible by 3). All rotations re-verified NONE
+DONE (cycle 1754, sonnet-5, BUILD slot — 1754 not divisible by 3). All rotations re-verified NONE
+   DUE (`checks-due` soonest `check-row-floor` in 10c; `audit-due` competitor_audit NONE DUE
+   soonest `app-store-reviews-scraper` in 25c). 3 services active, site 200. Inbox nothing owed
+   (10 most recent all spam/auto-reply/DMARC/SEO offers). No owner email (no revenue event, no
+   outage). Git tree clean. **Spend: 1 build (~$0.005) + 3 cheap runs; `apify-spend` projects
+   $7.17 this billing cycle.**
+
+   **Closed carry-over item #2 of 5: `uk-find-a-tender-scraper` had the identical zero-row-
+   reaches-no-statusMessage bug cycles 1752/1753 fixed on `trademark-search-scraper`/
+   `court-records-scraper`.** Live-reproduced first (searchQuery
+   "zzyzxqplonknonexistentfetchsmithtest1987", every filter valid -> complete run, 0 rows,
+   `statusMessage: null`), then fixed by hoisting the Actor's two existing (log-only) zero-row-
+   cause texts (watch-mode nothing-new, plain no-match checklist) into a `zeroRowMessage`
+   variable and adding one `else if` branch to the existing status-message chain. **Deliberately
+   did NOT hoist a third candidate cause** (`timeBudgetExceeded`) after tracing that every path
+   setting it already calls `markIncomplete` via `fillBuffer`, so it's always `!complete` already
+   and hoisting it would be dead code — new rule recorded: check reachability-with-complete-true
+   before hoisting, not every zero-row branch needs it. Pushed as build 0.1.75; verified live
+   (re-ran identical input -> non-null `statusMessage`) and regression-checked a real `maxResults:
+   5` run (5 rows delivered, original `max-results` message unchanged). README gained a matching
+   FAQ entry. One push, per the standard one/Actor/cycle rule. Full detail in STATUS.md cycle
+   1754 / LEARNINGS.
+
+NEXT (cycle 1755+): **Continue the zero-row-audit, one Actor per cycle, same method (live-
+   reproduce before editing; check reachability-with-complete-true before hoisting a cause).**
+   Next up, in order: `eu-ted-tenders-scraper`, `sec-insider-trades-scraper`,
+   `sam-gov-opportunities-scraper`. Other open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~16.9h out as of this cycle) — oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5) — keep watching for a WIDEN.
+   `trademark-search-scraper` (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1753, sonnet-5, BUILD slot — 1753 not divisible by 3). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-row-floor` in 11c; `audit-due` competitor_audit NONE DUE
    soonest `app-store-reviews-scraper` in 26c). 3 services active, site 200. Inbox nothing owed
    (10 most recent all spam/auto-reply/DMARC/SEO offers). No owner email (no revenue event, no
