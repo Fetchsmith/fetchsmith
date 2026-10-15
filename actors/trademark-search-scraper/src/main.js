@@ -620,6 +620,56 @@ if (pushed === 0 && zeroRowFilterCauses.length > 0) {
     + 'stopped early because of this run\'s own maxResults or Apify cost limit, not because TMview ran out of results. '
     + 'Raise maxResults (or the run\'s cost limit) to get more. See RUN_SUMMARY.',
   );
+} else if (pushed === 0 && !watchMode && runError === null && searchTerm) {
+  // The THIRD way this Actor can return 0 rows, and until cycle 1752 the only one that said
+  // nothing at all: every supplied filter value is valid and TMview simply has no match. The
+  // two branches above cover invalid filter values and a buyer-imposed cap; a genuinely empty
+  // search fell through both and finished SUCCEEDED with `statusMessage: null`, so the Console
+  // showed a green run next to an empty dataset with no explanation. Live-reproduced this cycle
+  // (searchTerm "qwertzuiopx" + offices JP + class 45 + status Expired -> declaredMatches 0,
+  // delivered 0, complete true, all three unknown* arrays empty, statusMessage null) -- which is
+  // exactly what a buyer narrowing filters run after run sees, and they are charged nothing, so
+  // they have no bill to ask about either. Watch mode is excluded because its own pushed===0
+  // branch above already explains the quiet case far better ("nothing new since last run"), and
+  // this would overwrite it; a transport failure is excluded because Actor.fail() reports that,
+  // and calling a failed fetch "genuinely empty" would be the cycle-1637 wrong-cause mistake.
+  // Only name filters the buyer ACTUALLY set to a VALID value -- advice that tells someone to
+  // widen a filter they never supplied is the same wrong-knob bug in a new place. Validity is
+  // recomputed from the canonical sets rather than diffed against unknown*, because unknown*
+  // stores the buyer's ORIGINAL spelling while these arrays hold the case-corrected form.
+  const appliedFilters = [];
+  const validOffices = offices.filter((o) => OFFICE_SET.has(o));
+  const validNice = niceClasses.filter((c) => /^\d+$/.test(c) && Number(c) >= 1 && Number(c) <= NICE_CLASS_COUNT);
+  const validStatuses = statuses.filter((s) => TM_STATUSES.includes(s));
+  if (validOffices.length) appliedFilters.push(`offices ${validOffices.join(', ')}`);
+  if (validNice.length) appliedFilters.push(`Nice class${validNice.length > 1 ? 'es' : ''} ${validNice.join(', ')}`);
+  if (validStatuses.length) appliedFilters.push(`status ${validStatuses.join(', ')}`);
+  if (declaredMatches !== null && declaredMatches > 0) {
+    // Not reachable by any filter combination we can construct (a declared match with no cap
+    // should always deliver), so report the numbers instead of inventing a cause for it.
+    await Actor.setStatusMessage(
+      `TMview declared ${declaredMatches.toLocaleString('en-US')} match(es) for this search but 0 rows were delivered, `
+      + 'and no cap was hit. That combination is unexpected rather than a normal empty result — '
+      + 'please report it with the run ID; see RUN_SUMMARY for the scanned/declared counts. You were charged nothing.',
+    );
+  } else if (appliedFilters.length) {
+    await Actor.setStatusMessage(
+      `0 results: TMview has no trademark matching "${searchTerm}" once ${appliedFilters.join(' + ')} `
+      + `${appliedFilters.length > 1 ? 'are' : 'is'} applied. Every filter value you gave is valid, so this is a genuinely empty search, not an `
+      + 'input mistake — drop or widen one of those filters at a time to find which one excludes '
+      + 'everything (the office filter is usually the narrowest). You were charged nothing.',
+    );
+  } else {
+    // Reaching here means no filter field was supplied at all: a field whose every value was
+    // invalid is already handled by the zeroRowFilterCauses branch, and a field with even one
+    // valid value would have populated appliedFilters.
+    await Actor.setStatusMessage(
+      `0 results: TMview has no trademark whose name contains "${searchTerm}", across all `
+      + `${OFFICES.length} offices with no filter narrowing the run — so there is no filter to widen here. `
+      + 'Check the spelling, or try a shorter stem of the term (matching is "name contains", not exact). '
+      + 'You were charged nothing.',
+    );
+  }
 }
 
 log.info(`Done. Pushed ${pushed} results.${watchLabel ? ` Watch label: ${watchLabel}` : ''}`);
