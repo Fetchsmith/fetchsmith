@@ -1260,6 +1260,18 @@ if (watchMode && seedFailure) {
     }
 }
 
+// Apify truncates a run status message at 500 characters, silently, cutting from the end --
+// measured live on this Actor (`2KyoZrB1CUMjk6kqc`, the plain-no-match message cut mid-word at
+// exactly 500, losing cause (3)). Same fleet-wide defect closed on grants-gov-scraper (0.1.67)
+// and fda-recall-scraper (0.1.68); applied here with the same shape, cycle 1762.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg) => {
+    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
+    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+};
+
 // Built once and reused below for `setStatusMessage` (cycle 1758) -- until this fix these were
 // log-only, so a complete run with 0 rows showed bare "Succeeded" in the Console with the cause
 // visible only in the log. Watch-mode SEEDING stays silent (0 rows there is the documented
@@ -1271,16 +1283,30 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'time; you were charged for nothing.';
     log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding) {
-    zeroRowMessage = nctIds.length
-        ? 'No studies matched. Every requested nctId was either malformed or not found on ClinicalTrials.gov — check the id list above.'
-        : `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
-          + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
-          + 'narrow filters often genuinely matches nothing; drop one and retry. '
-          + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
-          + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
-          + '(3) resultsAvailability is "with" (or the deprecated hasResultsOnly, which sets the same '
-          + 'thing) on a small minority of studies — combine with a broad condition first.';
-    log.warning(zeroRowMessage);
+    if (nctIds.length) {
+        zeroRowMessage = 'No studies matched. Every requested nctId was either malformed or not found on ClinicalTrials.gov — check the id list above.';
+        log.warning(zeroRowMessage);
+    } else {
+        // Log form keeps the full 3-cause explanation (539 chars, past the status-message cap).
+        // The status message below is a SEPARATE, compact rendering of the same 3 causes in the
+        // same order, written to fit under 500 chars whole rather than relying on
+        // clampStatusMessage() to cut it -- a truncated-but-non-null message would still lose
+        // cause (3) silently, exactly as it did live before this fix.
+        zeroRowMessage = `No studies matched (scanned ${scanned}). Common causes: (1) conditions/interventions/sponsors/`
+            + 'locations/searchQuery are ANDed, so several narrow filters together often match nothing -- drop '
+            + 'one and retry. (2) phases only applies to interventional studies; pairing it with '
+            + 'studyTypes=["OBSERVATIONAL"] always returns nothing. (3) resultsAvailability="with" matches a '
+            + 'small minority of studies -- combine with a broader condition first.';
+        log.warning(
+            `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
+            + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
+            + 'narrow filters often genuinely matches nothing; drop one and retry. '
+            + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
+            + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
+            + '(3) resultsAvailability is "with" (or the deprecated hasResultsOnly, which sets the same '
+            + 'thing) on a small minority of studies — combine with a broad condition first.',
+        );
+    }
 }
 
 log.info(`Done. Pushed ${pushed} rows over ${pages} page(s) (scanned ${scanned} studies, mode=${rowsPerStudy}).`);
@@ -1348,7 +1374,10 @@ if (!complete) {
         + truncationNote(),
     );
 } else if (zeroRowMessage) {
-    await Actor.setStatusMessage(zeroRowMessage);
+    // clampStatusMessage() is a backstop only -- the compact plain-no-match wording above is
+    // already written to fit whole; this guards the watch-label branch, whose length depends on
+    // a user-supplied watchLabel string with no schema-enforced length cap.
+    await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
 } else if (declaredMatches !== null && !watchMode && !nctIds.length) {
     log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} studies the registry declared for these filters.`);
 }
