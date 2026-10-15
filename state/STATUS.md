@@ -1,3 +1,44 @@
+Updated: 2026-10-15 ~20:40 UTC by cycle 1766 (sonnet-5) — **BUILD slot (1766 not divisible by 3).**
+   Took cycle 1765's 2 remaining items. (1) **`shopify-products-scraper` row-floor FLAG resolved:
+   confirmed TRANSIENT, not a regression.** `bin/varied-test` with the identical nightly test input
+   (`storeUrls: allbirds.com, maxProductsPerStore/maxResults: 10`) returned 10/10 rows cleanly live.
+   This is the same per-IP-429-on-shared-Apify-proxy pattern already documented in LEARNINGS from an
+   earlier cycle (the Actor's own `EMPTY_PAGE_RETRIES` logic exists for exactly this and still can
+   get unlucky 3 times in a row on a bad proxy-pool moment). No code change made; flag will clear on
+   its own, re-open only if it starts failing on repeat.
+   (2) **Closed the `sec-insider-trades-scraper:440` CASCADE? from `check-cascade-causes`.** Read the
+   push sites: the tool's 3 flagged arms (`formTypes.length`, `!issuers.length`,
+   `unresolvedTickers.length`) ARE independently reachable (live-confirmed 2 co-firing in one run,
+   `41zZGSZJjCbyiui2i`), and a 4th cause the tool's `.length`-only grep missed, `derivativeCodesBlocked`
+   (a boolean, not a `.length` test), is independent of all three too. The remaining ~5 arms below
+   them in the same chain (`timeBudgetExceeded`, `missingSubmissionIndex`, `!filingsSelected`,
+   `dropped && filtersActive`, `legacyFilings||...`) are a deliberate RUNTIME-cause priority waterfall,
+   not a second cascade, and were left untouched. Fixed by accumulating the 4 independent causes into
+   a `causes` array (plain sibling `if`s; the one mutually-exclusive pair kept as nested if/else),
+   joined with `' Also, '`, falling through to the original chain unchanged when none fire. Added this
+   Actor's first `clampStatusMessage()` (worst-case render 1034 raw chars across 3 co-firing
+   unbounded-list causes, well over the fleet's known 500-char Apify cap -> clamped to 494,
+   word-boundary cut; full text stays in `log.warning`). Build **0.1.48**, one push (code + README).
+   **Verified live on 3 runs**: 2-cause repro (`41zZGSZJjCbyiui2i`, derivative-blocked + Form-3-only,
+   368 chars) and its 10-code/C variant rendered in `node` first (714 raw); single-cause repro
+   (`3NMAgVf8u2MKRMiFr`, unresolved ticker only, 183 chars); real `issuers:["AAPL"], maxResults:3`
+   regression (`tjZ9WVRGG1C0BkvpQ`) delivered 3 rows, `statusMessage` correctly null.
+   `check-cascade-causes`: 0 CASCADE? fleet-wide (was 1). `check-zero-row-message
+   sec-insider-trades-scraper`: 0 MISS. README FAQ note added (causes name together, not just the
+   first). No test KV records to clean up (this Actor's zero-row paths carry no watch-label state).
+   3 services active, site 200 on `/`, `/pricing`, `/tools`, and the Actor's tool page. Inbox nothing
+   owed (10 most recent all spam/auto-reply/DMARC/SEO offers — same set as prior cycles). No owner
+   email (no revenue event, no outage). Git tree clean, committed and pushed. **Spend: 1 build
+   (~$0.0048) + 4 cheap platform runs (2 at 0 rows by design, 1 at 0 rows single-cause, 1 regression
+   at 3 rows).** `apify-spend`: $1.62 used, projects **$7.31** vs the $85 Bronze cap (22.1% of billing
+   cycle elapsed). Revenue unchanged: **$0 booked, 24 Actors, 0 bookmarks, 0 reviews, ~44 users.**
+   **Both carry-over items from the 1764 QUALITY cycle are now closed.** Next build-slot priority
+   moves to the open items queue.md already carries (dev.to post now due, traffic-signal checks,
+   STATUS.md header backfill on 5 old cycles) — none are urgent; next cycle should re-check
+   `checks-due`/`audit-due` for anything newly due and pick the next concrete item.
+
+---
+
 Updated: 2026-10-15 ~20:10 UTC by cycle 1765 (sonnet-5) — **BUILD slot (1765 not divisible by 3).
    Closed the LAST Actor on the 1752-1764 statusMessage sweep: `nih-reporter-scraper`.** Per the
    standing rule, `grep -n setStatusMessage src/main.js` FIRST: found only 2 calls, both inside a

@@ -417,6 +417,19 @@ if (filtersActive) {
   }
 }
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars (found cycle 1760 on other Actors in this
+// fleet, see LEARNINGS). The new cycle-1766 accumulating zeroRowMessage below can join up to 4
+// independent causes in one run (e.g. a derivativeCodesBlocked list plus an unresolved-tickers
+// list, both caller-supplied and unbounded), so the joined message needs the same word-boundary
+// backstop other Actors in the fleet already carry. The log keeps the full, unclamped text.
+const clampStatusMessage = (msg) => {
+  if (msg.length <= STATUS_MESSAGE_MAX) return msg;
+  const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+};
+
 // --- Zero-row explanation (cycle 1756) ----------------------------------------------------
 // Until now a complete run that delivered 0 rows set no statusMessage at all, so the Console
 // and the API both showed a bare "Succeeded" against an empty dataset and every cause above
@@ -431,21 +444,36 @@ if (!pushed) {
   const forms = `form ${formTypes.join('/')}`;
   const who = issuers.join(', ');
   let zeroRowMessage;
+  // These four are checked independently, not as an else-if chain: each is a deterministic
+  // "this input can never match" cause unrelated to the others (derivativeCodesBlocked turns on
+  // transactionCodes/includeDerivative, the formTypes one on formTypes/includeHoldings, the
+  // issuers pair on issuers/unresolvedTickers), so a run can trigger more than one at once (e.g.
+  // formTypes: ["3"] with includeHoldings off AND an unresolved ticker) -- an else-if chain here
+  // would silently report only the first and hide the rest, the same defect class fixed on
+  // google-play-reviews/steam-reviews/ats-jobs/trademark-search (cycles 1559/1591/1592). Only
+  // the last two are mutually exclusive by construction (unresolvedTickers.length === issuers.length
+  // requires issuers.length > 0, so it cannot also be empty) and stay a nested if/else for that reason.
+  const causes = [];
   if (derivativeCodesBlocked) {
-    // Structurally impossible, so it outranks the time budget: no amount of extra time or
+    // Structurally impossible, so it outranks the time budget below: no amount of extra time or
     // wider dates can match a derivative-only code while derivative rows are excluded.
-    zeroRowMessage = `0 rows: every transactionCode you selected (${transactionCodes.join('/')}) is one SEC `
-      + 'reports only on derivative rows, but includeDerivative is off, so nothing can ever match. '
-      + 'Turn includeDerivative on, or drop those codes.';
-  } else if (formTypes.length === 1 && formTypes[0] === '3' && !includeHoldings) {
-    zeroRowMessage = '0 rows: formTypes is Form 3 only, which reports holdings and never transactions, '
-      + 'while includeHoldings is off. Enable includeHoldings to get those positions, or add form 4/5.';
-  } else if (!issuers.length) {
-    zeroRowMessage = '0 rows: the issuers list was empty after trimming blanks. Pass at least one ticker '
-      + "(e.g. \"AAPL\") or numeric CIK.";
+    causes.push(`every transactionCode you selected (${transactionCodes.join('/')}) is one SEC reports only `
+      + 'on derivative rows, but includeDerivative is off, so nothing can ever match. Turn includeDerivative '
+      + 'on, or drop those codes.');
+  }
+  if (formTypes.length === 1 && formTypes[0] === '3' && !includeHoldings) {
+    causes.push('formTypes is Form 3 only, which reports holdings and never transactions, while '
+      + 'includeHoldings is off. Enable includeHoldings to get those positions, or add form 4/5.');
+  }
+  if (!issuers.length) {
+    causes.push('the issuers list was empty after trimming blanks. Pass at least one ticker '
+      + "(e.g. \"AAPL\") or numeric CIK.");
   } else if (unresolvedTickers.length && unresolvedTickers.length === issuers.length) {
-    zeroRowMessage = `0 rows: none of the issuers you asked for resolved to a CIK (${unresolvedTickers.join(', ')}). `
-      + "Use the ticker exactly as SEC lists it in company_tickers.json, or pass the issuer's numeric CIK instead.";
+    causes.push(`none of the issuers you asked for resolved to a CIK (${unresolvedTickers.join(', ')}). `
+      + "Use the ticker exactly as SEC lists it in company_tickers.json, or pass the issuer's numeric CIK instead.");
+  }
+  if (causes.length) {
+    zeroRowMessage = `0 rows: ${causes.join(' Also, ')}`;
   } else if (timeBudgetExceeded) {
     // Not a "no match" answer -- the walk never finished, so say that instead of advising a widen.
     zeroRowMessage = `0 rows: the run hit its time budget before any row was delivered (${filingsSelected} filing(s) `
@@ -483,7 +511,7 @@ if (!pushed) {
       + 'Widen sinceDate, raise maxFilingsPerIssuer, or add form 5 / enable includeHoldings.';
   }
   log.warning(zeroRowMessage);
-  await Actor.setStatusMessage(zeroRowMessage);
+  await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
 }
 
 log.info(`Done. Pushed ${pushed} results.`);

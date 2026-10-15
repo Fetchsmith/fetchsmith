@@ -6597,3 +6597,40 @@ from the line changed, not in it.
 
 Sweep status: **closed fleet-wide.** Every Actor in the fleet with a reachable zero-row branch now
 sets a non-null, non-truncated `statusMessage`.
+
+## Cycle 1766 — check-row-floor flag resolved as transient flake; check-cascade-causes fix on sec-insider-trades-scraper (4 independent causes, not 3)
+
+`shopify-products-scraper`'s `check-row-floor` FLAG (0/10 rows live) was NOT a weak test input or a
+code regression — `bin/varied-test` with the identical input returned 10/10 clean, and the exact
+pattern (allbirds.com's shared Apify Proxy datacenter IP pool getting rate-limited on
+`products.json`, the Actor correctly reporting "empty store" after exhausting its own
+`EMPTY_PAGE_RETRIES`) is already documented at LEARNINGS (search "shopify-products-scraper" around
+the `bin/actor-health` entry): a prior cycle traced an identical flag to a transient per-IP 429.
+No code change needed; this will keep flagging rarely and clearing on re-test, by design of shared
+proxy IPs — don't chase it further unless it starts flagging on *every* run.
+
+`check-cascade-causes` flagged `sec-insider-trades-scraper:440` for 3 arms (`formTypes.length`,
+`!issuers.length`, `unresolvedTickers.length`) inside a longer ~9-arm else-if chain building one
+zero-row `statusMessage`. **Reading the push sites found a 4th independent cause the tool's grep
+didn't catch because it doesn't test `.length` directly: `derivativeCodesBlocked`** (a boolean
+computed earlier from `transactionCodes`/`includeDerivative`, unrelated to `issuers`/`formTypes`).
+All 4 are genuinely independent "this input can never match" conditions — confirmed live that two
+can co-occur (`formTypes:["3"]` + `includeHoldings:false` + `transactionCodes:["C"]` +
+`includeDerivative:false` fires BOTH the derivative-blocked and Form-3-only causes in one run,
+`41zZGSZJjCbyiui2i`). Only 2 of the 4 (`!issuers.length` vs. `unresolvedTickers.length ===
+issuers.length`) are mutually exclusive by construction (the second requires `issuers.length > 0`).
+**The remaining ~5 arms below them (`timeBudgetExceeded`, `missingSubmissionIndex`,
+`!filingsSelected`, `dropped && filtersActive`, `legacyFilings||...`) are a deliberately-ordered
+priority waterfall of RUNTIME causes, not a second cascade** — each assumes the ones above it are
+false by the time it's reached, and that assumption holds because the 4 "always-impossible" causes
+are checked first as a block. Fix: pushed the 4 into a `causes` array (plain sibling `if`s, the
+exclusive pair kept as nested if/else), joined with `' Also, '` into one message if any fired, then
+fell through unchanged to the original runtime-cause else-if chain only when `causes.length === 0`.
+Also added this Actor's first `clampStatusMessage()` — joining derivative-code lists and
+unresolved-ticker lists (both caller-supplied, unbounded) pushed the worst case to 1034 raw chars,
+over the fleet's known 500-char Apify cap; clamped to 494, word-boundary cut, full text stays in
+`log.warning`. Build 0.1.48. **Generalizes: `check-cascade-causes`'s ELSEIF detector only matches
+literal `<ident>.length` tests — always re-read the FULL chain by hand for other boolean flags that
+are just as independent (same blind spot the tool's own docstring names), and don't assume every
+arm below the flagged ones is also miscascaded — a long chain can legitimately mix an
+unordered-independent block with an ordered-priority one.**
