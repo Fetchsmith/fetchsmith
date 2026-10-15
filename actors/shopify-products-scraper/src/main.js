@@ -227,10 +227,15 @@ function watchVerdict(item, storeSeeding, storeUrl) {
 // IPs get hit first. Route through Apify Proxy when the run has access to it; if the account has
 // no proxy access the run must still work, so fall back to a direct connection instead of failing.
 let proxyUrlFor = async () => undefined;
+// Whether a proxy actually ended up in use, so the 401/403/429 advice below can stop telling a
+// buyer to "re-run with proxyConfiguration enabled" when it already is (the default is on, so that
+// was the usual case, not the edge case) and point at the residential group instead.
+let proxyInUse = false;
 try {
   const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: true });
   if (proxyConfiguration) {
     proxyUrlFor = (sessionId) => proxyConfiguration.newUrl(sessionId);
+    proxyInUse = true;
     log.info('Using Apify Proxy for storefront requests.');
   }
 } catch (e) {
@@ -333,9 +338,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const STOREFRONT_STATUS = {
   401: 'this storefront is password-protected (Shopify 401) — the merchant has an "Opening soon"/password page up, so products.json is not public. Ask them for the storefront password, or drop this URL.',
   402: 'this store is frozen or closed (Shopify 402 "Unavailable Shop") — the merchant\'s plan lapsed. There is nothing to scrape, and this is not a failure on our end.',
-  403: 'this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. Re-run with proxyConfiguration enabled (residential group) to get a different IP.',
+  // The proxy-dependent half of the 403/429 advice is resolved against `proxyInUse` (set above, so
+  // it is already known here): the default IS useApifyProxy, so "enable proxyConfiguration" was
+  // advice the buyer had almost always already taken, which reads as the tool not knowing its own
+  // state. When a proxy is already in play the useful next step is a different group, not enabling it.
+  403: `this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. ${proxyInUse ? 'A proxy was already in use, so switch proxyConfiguration to the RESIDENTIAL group' : 'Re-run with proxyConfiguration enabled (residential group)'} to get a different IP.`,
   404: 'there is no Shopify store at this URL (404 "Not Found") — check the domain/handle for a typo, or the store has been deleted.',
-  429: 'this storefront rate-limited us (429). Re-run with fewer storeUrls, or with proxyConfiguration enabled so each request comes from a different IP.',
+  429: `this storefront rate-limited us (429) — a transient per-IP throttle, not a missing or disabled products.json. Re-run with fewer storeUrls${proxyInUse ? ', or switch proxyConfiguration to the RESIDENTIAL group so each request comes from a different IP (the shared datacenter pool this run used is rate-limited by some storefronts)' : ', or with proxyConfiguration enabled so each request comes from a different IP'}.`,
 };
 const throwIfStorefrontError = (res) => {
   const code = res.statusCode;
@@ -646,6 +655,10 @@ async function enrichWithDetail(item, origin, handle) {
 }
 
 const erroredStores = []; // products.json fetch failed (not Shopify, or endpoint disabled)
+// origin -> the same customer-ready sentence `outcomeReason` gets, so the run's final status
+// message can name the ACTUAL cause per store instead of guessing. `erroredStores` itself stays a
+// plain origin array because it is a published webhook/RUN_SUMMARY field; this is a side table.
+const erroredStoreReasons = new Map();
 const emptyStores = []; // request succeeded but Shopify returned zero products for this URL
 const filteredOutStores = []; // products existed but onlyAvailable removed all of them
 // One structured record per input URL, so a machine reading this run can tell the outcomes apart
@@ -827,6 +840,7 @@ for (const raw of storeUrls) {
         ? 'this URL returned an HTML page instead of JSON — likely a headless/custom storefront (e.g. Shopify Hydrogen) without the classic products.json endpoint, or a bot-check page. Not a failure on our end.'
         : `${e.message} (store may not be Shopify or has products.json disabled)`;
     outcomeReason = reason;
+    erroredStoreReasons.set(ep.origin, reason);
     // A single-product watch URL has no "page 2" to still hold the product — a clean 404 (not the
     // password/frozen/blocked/rate-limited codes above, which mean something other than "gone") on a
     // URL this label already successfully baselined IS the whole feed disappearing, so the coverage
@@ -952,8 +966,17 @@ if (watchMode && pushed === 0 && !erroredStores.length && !timeBudgetExceeded) {
     ? `Baseline run for watch "${watchLabel}": recorded ${watchSeededThisRun} products, returned 0, charged 0. Re-run under the same label to get only what changed.`
     : `Watch "${watchLabel}": no changes since the last run (${watchUnchanged} products unchanged, 0 charged).`);
 } else if (pushed === 0 && storeUrls.length && !timeBudgetExceeded) {
+  // Name the real per-store cause. Hardcoding "may not be Shopify, or products.json is disabled"
+  // here re-introduced, at the aggregate level, exactly the mislabeling the per-store `reason`
+  // above is careful to avoid: a 429/403/401/frozen storefront, or an HTML bot-check page, is a
+  // retryable or merchant-side cause, and telling the buyer their store "may not be Shopify"
+  // sends them to debug the one thing that is definitely fine. Observed live on the nightly health
+  // probe 2026-10-15: allbirds.com 429'd the proxy egress IP and the log said so correctly, while
+  // this status message still blamed a missing products.json endpoint.
   const why = erroredStores.length
-    ? `fetching products failed for: ${erroredStores.join(', ')} (store may not be Shopify, or products.json is disabled)`
+    // Reasons are whole sentences and mostly end in '.', while the template below adds its own
+    // '. See the log for details.' — trim one so the buyer doesn't read "deleted.. See the log".
+    ? `fetching products failed for: ${erroredStores.map((s) => (erroredStoreReasons.has(s) ? `${s} — ${erroredStoreReasons.get(s).replace(/\.\s*$/, '')}` : `${s} (store may not be Shopify, or products.json is disabled)`)).join('; ')}`
     : filteredOutStores.length && !emptyStores.length
       ? 'products were found but the filters you set ("onlyAvailable"/"searchQuery"/"vendors"/"productTypes"/"minPrice"/"maxPrice"/"onSaleOnly"/"minDiscountPercent") removed all of them'
       : `Shopify returned zero products for: ${emptyStores.join(', ')}`;

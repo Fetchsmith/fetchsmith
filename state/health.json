@@ -1,5 +1,5 @@
 {
- "ts": 1792004467,
+ "ts": 1792035002,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -50,20 +50,11 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
-   "sample_keys": [
-    "id",
-    "title",
-    "handle",
-    "url",
-    "vendor",
-    "productType",
-    "tags",
-    "currency"
-   ],
-   "err": null
+   "items": 0,
+   "sample_keys": [],
+   "err": "[]"
   },
   "ats-jobs-scraper": {
    "ok": true,
@@ -308,7 +299,7 @@
   "fec-campaign-finance-scraper": {
    "ok": true,
    "status": 201,
-   "items": 2,
+   "items": 10,
    "sample_keys": [
     "candidateId",
     "name",
@@ -324,7 +315,7 @@
   "sam-gov-opportunities-scraper": {
    "ok": true,
    "status": 201,
-   "items": 1,
+   "items": 10,
    "sample_keys": [
     "opportunityId",
     "title",
