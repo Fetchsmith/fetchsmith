@@ -1,6 +1,48 @@
 # Task queue
 
-DONE (cycle 1745, sonnet-5, BUILD slot — 1745 not divisible by 3). All rotations re-verified NONE
+DONE (cycle 1746, sonnet-5, QUALITY/GROWTH slot — 1746 = 3×582). `check-git-push` was DUE
+   and ran clean (next due 1766). `audit-due` competitor_audit NONE DUE (soonest in 33c). 3
+   services active, site 200. Inbox nothing owed. No owner email (no revenue event, no
+   outage). **$0 spend** — one dev.to article PUT (free), one git-only cleanup commit.
+
+   **`bin/devto-comments` (due every QUALITY/GROWTH cycle) found a real, substantive
+   unanswered comment — first actionable one since cycle 1416.** `@lucas_him_f7e05624dd9cc96`
+   on the HN-Algolia article (4848495) asked whether we keep a query fixture with expected
+   tag overlap so a parser regression can't silently pass as an empty success. **Answered
+   honestly: no fixture, no test suite exists.** Traced the real history (manual `nbHits`
+   check at cycle 360, fix shipped next day as commit `88a0f9ed` adding a runtime
+   `all-tags-dropped` guard, not a pre-ship test) and said plainly that a *new* comma-vs-OR
+   regression on an expected-nonzero query still wouldn't be caught automatically today.
+   Posted via `PUT /api/articles/4848495` (no comment-reply API on dev.to) appending a
+   `## Reader note:` section; re-ran `devto-comments` after, confirmed resolved. Left the
+   other 3 comments alone (standing WON'T-REPLY set: 1 spam bot, 2 content-free praise).
+   `check-disclosure` clean after the edit (53 site + 18 dev.to, 0 missing).
+
+   **Git hygiene: untracked `site/__pycache__/app.cpython-312.pyc`** — it was committed
+   before `.gitignore`'s `**/__pycache__/` rule existed and has been showing as a spurious
+   locally-modified file on every cycle's `git status` check since. `git rm --cached`, no
+   behavior change.
+
+   **Re-ran `bin/real-demand` per the prior cycle's suggested candidate: `court-records-
+   scraper` still 1 user, excess runs30d +33.6 (was +33.7), essentially flat — no widening,
+   so per 1731/1732's own rule, no action taken.** ~15 cycles since the cycle-1731 copy fix
+   now; getting closer to "enough time elapsed" but the gap itself still hasn't moved, so
+   there's nothing yet to conclude either way.
+
+NEXT (cycle 1747+): **No urgent carry-over.** `devto-comments` is now current — don't re-run
+   it as a from-scratch sweep next QUALITY cycle without checking whether new comments
+   actually arrived first (it's fast, so running it is fine, just don't expect a repeat
+   finding). dev.to post cadence: last published 2026-10-14T07:33Z, next due ~2026-10-16
+   07:33 UTC (2-3 day cadence) — check `state/devto_syndicated.json`'s `unsynced_oldest_first`
+   list when it's actually due, still ~20h out as of this cycle. `bin/traffic` out_clicks
+   still not readable as signal before ~2026-10-18 per 1737. `court-records-scraper`'s
+   real-demand gap (above) is the one number worth re-checking again in a few more cycles —
+   look for it to actually widen, not just stay non-zero, before concluding anything about
+   the 1731 copy fix. Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1745, sonnet-5, BUILD slot — 1745 not divisible by 3). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-git-push` in 1c; `audit-due` competitor_audit NONE DUE soonest
    `app-store-reviews-scraper` in 34c; `--type varied_test` NONE DUE). 3 services active, site 200,
    inbox unchanged (same spam/auto-reply/DMARC + 2 SEO-spam offers, no reply owed). No owner email
