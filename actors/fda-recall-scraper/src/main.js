@@ -1177,9 +1177,13 @@ if (watchMode && seedFailure) {
     }
 }
 
+// Built once and reused below for `setStatusMessage` (cycle 1759) -- until this fix these were
+// log-only, so a complete run with 0 rows showed bare "Succeeded" in the Console with the cause
+// visible only in the log. Watch-mode SEEDING stays silent (0 rows there is the documented
+// by-design baseline result, not an empty search), matching every prior Actor in this audit.
+let zeroRowMessage = null;
 if (pushed === 0 && watchMode && !seeding) {
-    log.warning(
-        `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching recall(s) `
+    zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching recall(s) `
         + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.'
         // Without this, a run that CAN NEVER report a change (see watchChangeBlindFilters above)
         // is byte-for-byte indistinguishable from a healthy quiet run -- and this is a monitor, so
@@ -1187,24 +1191,22 @@ if (pushed === 0 && watchMode && !seeding) {
         + (watchChangeBlindFilters.length
             ? ` NOTE: this run also cannot report any ${watchChangeBlindFilters.join('/')} change at all `
             + '(see the change-blind-filter warning above), so "nothing changed" is not evidence here.'
-            : ''),
-    );
+            : '');
+    log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding && lookupMode) {
     // The causes below this branch are all about OTHER filters narrowing the result -- moot here,
     // since buildSearch() now skips every one of them in lookupMode (recallNumber/eventId is an
     // exact-identity lookup, not a narrowing filter). A miss means the value itself, or the
     // productTypes endpoint it was searched against, is wrong -- not a filter combination.
-    log.warning(
-        `No recall matched ${recallNumber ? `recallNumber="${recallNumber}"` : ''}`
+    zeroRowMessage = `No recall matched ${recallNumber ? `recallNumber="${recallNumber}"` : ''}`
         + `${recallNumber && eventId ? ' / ' : ''}${eventId ? `eventId="${eventId}"` : ''}`
         + ` across productTypes=[${productTypes.join(',')}] (full history, every other filter ignored as documented). `
         + 'Most likely: (1) a typo in the exact value -- recall numbers look like "F-1233-2022", event ids are plain '
         + 'numbers like "90105"; (2) the recall lives on a product type not selected here -- recall numbers are not '
-        + 'unique across food/drug/device, so set productTypes to all three (or leave it empty) if unsure which one.',
-    );
+        + 'unique across food/drug/device, so set productTypes to all three (or leave it empty) if unsure which one.';
+    log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding) {
-    log.warning(
-        `No recalls matched. Scanned ${scanned} rows. Most common causes, in order: `
+    zeroRowMessage = `No recalls matched. Scanned ${scanned} rows. Most common causes, in order: `
         + '(1) the filters are ANDed — a searchQuery plus a state plus a classification over a short '
         + 'report_date window often has zero real matches; drop one filter and retry. '
         + `(2) reportDateFrom/reportDateTo currently filter on ${dateField} — if that's report_date `
@@ -1215,8 +1217,8 @@ if (pushed === 0 && watchMode && !seeding) {
         + '(4) searchQuery is a phrase match over product description, recall reason and firm name — '
         + 'a long phrase rarely matches; try one distinctive word. '
         + '(5) brandName/genericName/manufacturerName only ever match drug recalls (openFDA cross-'
-        + 'references those fields for drugs only) — they will zero out a food- or device-only search.',
-    );
+        + 'references those fields for drugs only) — they will zero out a food- or device-only search.';
+    log.warning(zeroRowMessage);
 }
 
 // The whole point of this record: everything above is English in a log, and a pipeline
@@ -1290,6 +1292,8 @@ if (firstIncomplete) {
         + `id(s) this run (${baselineTruncatedTotal} total) -- those may be re-delivered and re-charged as "new" `
         + 'later. Narrow the filters to keep this label under the cap.',
     );
+} else if (zeroRowMessage) {
+    await Actor.setStatusMessage(zeroRowMessage);
 }
 
 log.info(`Done. Pushed ${pushed} recalls from ${productTypes.length} product type(s) (scanned ${scanned} rows).`);

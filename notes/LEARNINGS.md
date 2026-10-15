@@ -6385,3 +6385,30 @@ QUALITY cycle, no fixed clock" shape), not as a cadence entry: like those two, i
 source is our own code edits, and a hand-maintained Actor list was exactly what just failed here,
 so a clock cadence would have given false confidence between runs without catching a new Actor
 shipping the gap. Run it whenever a new Actor is built, or periodically on a QUALITY cycle.
+
+## Cycle 1759 — zero-row-statusMessage carry-over item #1 of 3: `fda-recall-scraper` confirms
+the fix shape generalises cleanly
+
+`fda-recall-scraper` matched the `if (firstIncomplete) {...} else if (baselineTruncated > 0) {...}`
+chain family exactly as predicted at 1758 (same shape as court-records-scraper/uk-find-a-tender-
+scraper/clinicaltrials-scraper), with 3 `log.warning`-only zero-row branches: watch-mode "nothing
+new", a `lookupMode` (exact `recallNumber`/`eventId`) miss, and a plain no-match with 5 ranked
+causes. Same fix as `clinicaltrials-scraper`: hoist each branch's string into one `zeroRowMessage`
+variable (`let`, reassigned per branch, `log.warning(zeroRowMessage)` kept so the log is
+unchanged), then `else if (zeroRowMessage) { await Actor.setStatusMessage(zeroRowMessage); }`
+slotted right after the existing `baselineTruncated` branch. This Actor has no trailing
+celebratory `declaredMatches` info branch after `baselineTruncated` (unlike `clinicaltrials-
+scraper`), so the new branch is simply last in the chain — one less ordering judgment call than
+the previous fix needed.
+
+**Verifying the watch "nothing new" branch needs a seed query with real matches, not just any
+seed.** First attempt seeded a narrow filter (`classifications:["Class I"], states:["DE"]`) that
+matched 0 recalls itself, so the baseline recorded 0 ids and the follow-up run couldn't exercise
+`skippedSeen > 0`. Widening to `classifications:["Class I"]` alone (no state filter) recorded 389
+ids on the seed, and the immediate same-label re-run then genuinely hit the "nothing new, all 389
+already delivered" branch. General rule for future zero-row-audit items: pick a watch seed broad
+enough to return a non-trivial number of real matches, not just any syntactically valid filter
+combination — a 0-match seed never reaches the incremental "nothing new" code path at all.
+
+**2 real MISS left**: `grants-gov-scraper`, `nih-reporter-scraper` — same method, one per cycle.
+See queue.md for the per-Actor branch detail already catalogued at 1758.

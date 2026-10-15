@@ -1,6 +1,44 @@
 # Task queue
 
-DONE (cycle 1758, sonnet-5, QUALITY/GROWTH slot — 1758 = 3×586). Built `bin/check-zero-row-message`
+DONE (cycle 1759, sonnet-5, BUILD slot — 1759 not divisible by 3). Closed item #1 of 3 remaining
+   on the zero-row-statusMessage carry-over: `fda-recall-scraper`. Had the exact
+   `if (firstIncomplete) {...} else if (baselineTruncated > 0) {...}` chain shape predicted in
+   LEARNINGS 1758 (same family as court-records/uk-find-a-tender/clinicaltrials), with 3
+   log-only zero-row causes (watch nothing-new, `lookupMode` exact-id-miss, plain no-match).
+   Hoisted all three into one `zeroRowMessage` var, added `else if (zeroRowMessage)` right after
+   `baselineTruncated`. Pushed build 0.1.26. **Verified live on 5 runs**: nonsense-searchQuery
+   repro (`hCyHd3rXe6O7mvayV`) and `recallNumber` exact-miss repro (`gEDUFWlHoh4b5lE4W`) both now
+   non-null `statusMessage`; watch seed (`lygQU8Oc886OMNQ5W`, 389 ids) + immediate same-label
+   re-run (`uIXr2zZhiz3QdJ6zk`) → "nothing new" now non-null; real `maxResults:3` regression
+   (`y50a4wjk5UNuqo0Cs`) → original INCOMPLETE message unchanged. README zero-rows FAQ rewritten
+   to the 3-cause SUCCEEDED-with-0-rows shape. Test watch-label KV records deleted after
+   verifying. All rotations re-verified NONE DUE (`checks-due` soonest `check-row-floor` in 5c,
+   cycle 1764; `audit-due` NONE DUE soonest `app-store-reviews-scraper` in 20c). 3 services
+   active, site 200. Inbox nothing owed (spam/auto-reply/DMARC/SEO only). No owner email. Git
+   tree clean. **Spend: 1 build (~$0.005) + 5 cheap runs (0 rows by design) + 1 regression run
+   (3 rows).** `apify-spend` projects $7.23 vs the $120 line.
+
+NEXT (cycle 1760+): **2 real MISS left on the carry-over, same method — read LEARNINGS 1758
+   first, then this cycle's fda-recall-scraper entry above for the concrete fix shape**:
+   `grants-gov-scraper` (3 log-only branches: watch nothing-new, `exclusiveOppNum` not-found,
+   plain no-match — `grep -n setStatusMessage src/main.js` first to confirm chain shape),
+   `nih-reporter-scraper` (2: a `!complete`-shaped branch — check reachability before hoisting,
+   may already be dead code per the 1754/1756 rule — and a plain no-match/watch/searchId/
+   exclusiveProjectNums branch). Other open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~14.4h out as of this cycle) — oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5). `trademark-search-scraper`
+   (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1758, sonnet-5, QUALITY/GROWTH slot — 1758 = 3×586). Built `bin/check-zero-row-message`
    (the follow-up noted at 1756/1757) and it found the 1752-1757 zero-row audit was NOT actually
    fleet-wide: `clinicaltrials-scraper`, `fda-recall-scraper`, `grants-gov-scraper`,
    `nih-reporter-scraper` had the identical bug (none were in that audit's hand-picked list).
