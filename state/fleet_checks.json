@@ -122,6 +122,12 @@
    "interval_cycles": 336,
    "last_cycle": 1729,
    "note": "cycle 1729: new check (spec from 1728's queue item): 0/24 issues at creation. Flags (a) status!=live with no PAUSED marker in live Store title/description or local meta.json, (b) status=live with a PAUSED marker still present (forgotten reversal). Only non-live Actor is scholarship-scraper, already compliant from 1728's fix. 336c matches check-blog-cta/check-links' cadence class: drift source is our own status changes (retire or revive an Actor), not calendar time, and the one case in scope will not move again until bold.org clears (still 429 as of this cycle)."
+  },
+  "sync-apify-prices": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1744,
+   "note": "cycle 1744: cycle 1744: NEW tool+tripwire, built this cycle. Run it as `bin/sync-apify-prices --check` (exit 1 on drift); bare invocation WRITES the live prices into actors/registry.json. Closes the gap that fetchsmith.com tool pages quoted ONLY the hosted-API credit price (a flat $0.0025/result for all 24 tools, for a Polar checkout that is NOT live) while the live Apify price a buyer actually pays -- $0.0001 to $0.004, so overstated up to 25x on the cheapest Actors -- appeared nowhere on the page or in its schema.org Offer. First sync: 24/24 Actors priced from the live pricingInfos record, re-check 0 drift. INTERVAL 336c/7d, same class as check-blog-claims/check-links: the only drift source is a price edit, which is our own action. EVENT-TRIGGER is the tighter catch -- re-run IMMEDIATELY after any price change on any Actor, since between the change and the next sync the tool page quotes a price we do not charge. Note check-pricing (meta.json vs live) does NOT cover this: 14 of 30 charge events have no eventPriceUsd in meta.json at all (tiered shape, cycle-480 trap), so meta.json cannot be the site's price source."
   }
  },
  "not_cadence": {

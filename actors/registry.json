@@ -58,7 +58,13 @@
         "dateCreated",
         "_watchChangeType",
         "_watchPrevious"
-      ]
+      ],
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.002,
+        "floor": 0.002
+      }
     },
     {
       "slug": "uk-find-a-tender-scraper",
@@ -198,6 +204,12 @@
         "contractDateSigned": null,
         "aboveThreshold": null,
         "documentUrls": []
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.003,
+        "floor": 0.0025
       }
     },
     {
@@ -275,6 +287,12 @@
         ],
         "markImageUrl": "https://www.tmdn.org/tmview/api/trademark/thumbnail/US500000086403823",
         "detailImageUrl": "https://www.tmdn.org/tmview/api/trademark/image/US500000086403823"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.002,
+        "floor": 0.002
       }
     },
     {
@@ -348,7 +366,13 @@
         "variantCount": 12
       },
       "description": "<p>Works on any Shopify storefront without login. Pass a store homepage for the whole catalog, a <code>/collections/&lt;handle&gt;</code> URL for one collection, or a <code>/products/&lt;handle&gt;</code> URL for a single product.</p><p><strong>One charge per product.</strong> Overlapping collections are the normal case — <code>/collections/all</code> plus a category, or two categories sharing a product. Each product is returned, and charged, once per run, under the first URL that returned it; repeats are skipped before any filter and before billing. Every row carries <code>sourceUrl</code>, the input URL it came from, so several collections of one store stay distinguishable.</p><p><strong>Watch mode:</strong> set <code>watchLabel</code> and the first run records each product’s price, availability and sale status for free; every later run under that label returns only what changed (<code>new</code>, <code>priceDrop</code>, <code>priceIncrease</code>, <code>wentOnSale</code>, <code>saleEnded</code>, <code>backInStock</code>, <code>outOfStock</code>, <code>delisted</code>) with <code>previousPriceMin</code>, <code>previousIsOnSale</code> and <code>priceChange</code> on each row. Unchanged products are never pushed and never charged, and a <code>delisted</code> row is only produced when the run walked that store’s whole feed.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.001,
+        "floor": 0.00085
+      }
     },
     {
       "slug": "ats-jobs-scraper",
@@ -427,7 +451,13 @@
         "jobUrl": "https://careers.airbnb.com/positions/8184174?gh_jid=8184174"
       },
       "description": "<p>Give it a list of companies as <code>{\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"...\"}</code> and it pulls every live posting straight from each company's own career-board API — no browser, no login. Omit <code>ats</code> or set it to <code>\"auto\"</code> and it tries all 6 non-Workday platforms for that slug and keeps whichever one is real — you only need to know the company, not the ATS. Seven ATSes normalized into one schema — the only one of these seven to also include Recruitee. Hand-typed board locations are normalized into <code>city</code>/<code>region</code>/<code>country</code>, so you can group or filter by country without writing a location parser — neither Greenhouse nor Workday publishes usable structured geography, and the same normaliser fills <code>country</code> on 95% of 1,914 live Greenhouse postings and on 100% of Workday postings once descriptions are fetched (35% from the cheap list call alone). Measured on 800 live Workday postings, <code>locationKeyword: &quot;United States&quot;</code> matched <strong>0</strong> of them before and matches <strong>89</strong> now; on Greenhouse the same filter matches a posting whose own text only reads &quot;San Francisco, CA&quot;. Greenhouse returns only the <em>leaf</em> department, and on 76% of 1,909 live postings that leaf is a nested internal name, so <code>department</code> used to report an internal cost-centre code: one Stripe board showed <strong>191</strong> distinct “departments”. Since 0.1.36 the board's department tree is resolved once per company, so <code>department</code> is the real top-level department (<strong>191 → 4</strong> on Stripe, 44 → 13 on Databricks, 29 → 3 on Airbnb), <code>team</code> is the sub-team it sits under (filled on 76% of Greenhouse postings, previously always empty) and <code>departmentPath</code> is the whole chain. <code>departmentKeyword</code> matches any level of that chain, so a filter written against either the top-level name or the leaf keeps working. Supports <code>titleKeyword</code>/<code>titleExcludeKeyword</code>, <code>locationKeyword</code>/<code>locationExcludeKeyword</code>, <code>hasSalary</code>/<code>minSalary</code>/<code>maxSalary</code>, <code>remoteOnly</code> and <code>postedAfter</code> filters applied before you're charged — a salary floor costs you nothing on the postings it rejects. Companies that have moved off an ATS (common for Lever) are skipped with a warning instead of failing the run. No start fee.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "job",
+        "shape": "tiered",
+        "entry": 0.001,
+        "floor": 0.0007
+      }
     },
     {
       "slug": "google-news-scraper",
@@ -489,7 +519,13 @@
         "snippet": "Apify raises new funding"
       },
       "description": "<p>Supports Google News operators such as <code>\"exact phrase\"</code>, <code>site:reuters.com</code>, <code>when:7d</code> and <code>before:2026-01-01</code>. Up to 100 articles per query. Google's encoded redirect links are resolved to the publisher's real URL. Also browse built-in sections (World, Business, Technology, Entertainment, Science, Sports, Health) with the <code>topics</code> field — no RSS URL needed. Restrict to a date window with <code>timePeriod</code> (<code>1h</code> … <code>1y</code>) or <code>publishedAfter</code>/<code>publishedBefore</code> (<code>YYYY-MM-DD</code>) — Google applies the filter, so you are not charged for articles outside the window. <code>siteFilter</code>/<code>excludeSites</code> restrict or exclude publisher domains across every query with no extra requests. Optional <code>extractTickers</code> pulls stock tickers (e.g. <code>$TSLA</code>, <code>NASDAQ:AAPL</code>, “Tesla, Inc. (TSLA)”) into a <code>tickers</code> array, free.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.002,
+        "floor": 0.001
+      }
     },
     {
       "slug": "app-store-reviews-scraper",
@@ -574,7 +610,13 @@
         "scrapedAt": "2026-09-12T07:30:31.577Z"
       },
       "description": "<p>Apple exposes the 500 most recent reviews per app per country (sorted by most recent or most helpful). Run on a schedule and deduplicate by <code>reviewId</code> to build a history.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0001,
+        "floor": 0.0001
+      }
     },
     {
       "slug": "hacker-news-scraper",
@@ -635,7 +677,13 @@
         "createdAt": "2017-10-26T13:03:29Z"
       },
       "description": "<p>Uses HN's official Algolia Search API, so results are fast and reliable. Filter by tag (<code>story</code>, <code>comment</code>, <code>ask_hn</code>, <code>show_hn</code>, <code>job</code>), minimum points, date range, and <code>excludeKeywords</code> to drop off-topic matches HN's search can't exclude server-side. Leave <code>queries</code> empty and sort by date to pull the newest items for a tag, e.g. the latest monthly Who's Hiring thread. Optional <code>enrichGithubLinks</code> adds star count, language and last-push date for any linked GitHub repo. Watch mode (<code>watchLabel</code>) returns only hits it has never delivered under that label before; add <code>watchChanges</code> to also be re-alerted when an already-seen story crosses a points or comment-count milestone (100, 500, ... — tunable), which a plain id-based watch can never tell you.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.0002,
+        "floor": 0.0001
+      }
     },
     {
       "slug": "google-play-reviews-scraper",
@@ -709,7 +757,13 @@
         ]
       },
       "description": "<p>Pass Google Play package names (<code>appIds</code>, e.g. <code>com.spotify.music</code>) or plain <code>searchTerms</code> to resolve the top matching app automatically. Returns review rows plus an optional app-details row (installs, score, rating histogram, developer). Supports country/language targeting and sort by newest, rating or helpfulness.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0001,
+        "floor": 0.0001
+      }
     },
     {
       "slug": "substack-scraper",
@@ -816,7 +870,13 @@
         "bodyTruncated": false
       },
       "description": "<p>Give it a Substack handle (<code>astralcodexten</code>), a <code>*.substack.com</code> URL or a custom domain (<code>bigtechnology.com</code>) and get every post as a flat record — including the <strong>full article text</strong>, which the public archive listing does not contain. Optional comment threads come back flattened with <code>parentCommentId</code> so you can rebuild the tree. Filter by keyword (<code>searchQuery</code>), date range, or free vs. paywalled posts. Reads only what a logged-out visitor sees: no login, no paywall bypass, no headless browser.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.002,
+        "floor": 0.00078
+      }
     },
     {
       "slug": "apple-podcasts-scraper",
@@ -895,7 +955,13 @@
         "feedUrl": "https://lexfridman.com/feed/podcast/"
       },
       "description": "<p>Five modes in one Actor. <code>episodes</code> returns every episode of a show with its <strong>direct audio file URL</strong> (<code>episodeUrl</code>), duration, publish date, description and the show's RSS feed. <code>reviews</code> returns listener reviews with star rating, title, body, author and date, filterable by <code>minRating</code>/<code>maxRating</code> and by <code>keyword</code>. <code>podcasts</code> searches Apple Podcasts by keyword and can be chained straight into episodes or reviews. <code>charts</code> pulls Apple's Top Shows chart (overall or by genre) or its separate <strong>Trending Episodes</strong> chart, and <code>publisher</code> lists every show one publisher runs. Accepts an Apple Podcasts URL, a bare collection ID or a search term, in any country storefront. HTTP-only: no login, no headless browser.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.001,
+        "floor": 0.001
+      }
     },
     {
       "slug": "steam-reviews-scraper",
@@ -1011,7 +1077,13 @@
         "reviewUrl": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/"
       },
       "description": "<p>Two modes in one Actor. <code>reviews</code> returns Steam player reviews with the full text, the reviewer's <strong>playtime at review and total</strong>, whether they recommend the game, helpfulness votes, comment count and whether it was a genuine Steam purchase — filterable by <code>language</code>, <code>reviewType</code> (positive/negative), <code>purchaseType</code>, <code>minPlaytimeHours</code> and a text <code>keyword</code>. Set <code>includeOffTopic</code> to also return the reviews Steam hides when Valve flags a stretch of time as an off-topic review bomb — 94,228 reviews for Total War: ROME II instead of 88,334. <code>games</code> returns the store record for each game: price and discount in any country's currency, release date, developers, publishers, genres, platforms, Metacritic score, the full review-score summary (total positive/negative and % positive) and optionally the <strong>live concurrent player count</strong>. Accepts Steam store URLs, numeric App IDs or plain game names to search. HTTP-only: no login, no API key, no headless browser.</p>",
-      "memory_mb": 1024
+      "memory_mb": 1024,
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.000575,
+        "floor": 0.0003
+      }
     },
     {
       "slug": "scholarship-scraper",
@@ -1095,7 +1167,13 @@
       },
       "description": "<p>Every scholarship listed on <strong>bold.org</strong> as a clean row: the award amount and how many awards are given, the deadline (with rolling deadlines flagged), the actual <strong>essay question</strong> as plain text with its word limits, the judging criteria, which education levels can apply, the donor, and bold.org's <strong>live applicant count</strong>. From those last two numbers we compute <code>applicantsPerAward</code>, so you can rank a list by how winnable each award actually is rather than by headline dollar amount.</p><p>Crawls the <code>by-major</code>, <code>by-state</code>, <code>by-type</code>, <code>by-demographics</code> and <code>by-year</code> category families (discovered from bold.org's own sitemap — never a query-string URL, which its robots.txt disallows), returning about 30 complete records per HTTP request and de-duplicating across categories. Filter by minimum award, deadline window, education level, or open-only. HTTP-only: no login, no headless browser, no proxy.</p>",
       "memory_mb": 1024,
-      "recheck_url": "https://bold.org/robots.txt"
+      "recheck_url": "https://bold.org/robots.txt",
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.00035,
+        "floor": 0.00035
+      }
     },
     {
       "slug": "eu-ted-tenders-scraper",
@@ -1174,6 +1252,12 @@
         "xmlUrl": "https://ted.europa.eu/en/notice/629162-2026/xml",
         "procedureIdentifier": "26272159-01fb-40c6-a514-0bc8851a9ec8",
         "changeReasonDescription": null
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0015,
+        "floor": 0.0015
       }
     },
     {
@@ -1294,6 +1378,12 @@
           "Q"
         ],
         "kind": "contract"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.004,
+        "floor": 0.0025
       }
     },
     {
@@ -1403,6 +1493,12 @@
         "splSetId": null,
         "pressReleaseTitle": null,
         "sourceUrl": null
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "tiered",
+        "entry": 0.0035,
+        "floor": 0.0024
       }
     },
     {
@@ -1482,6 +1578,12 @@
         "citation": "91 FR 57842",
         "url": "https://www.federalregister.gov/documents/2026/09/11/2026-18552/wisconsin-approval-of-state-coal-combustion-residuals-permit-program",
         "fullTextUrl": "https://www.federalregister.gov/documents/full_text/text/2026/09/11/2026-18552.txt"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0008,
+        "floor": 0.0008
       }
     },
     {
@@ -1561,6 +1663,12 @@
         ],
         "locationCount": 1,
         "studyUrl": "https://clinicaltrials.gov/study/NCT04137653"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0015,
+        "floor": 0.0015
       }
     },
     {
@@ -1647,6 +1755,12 @@
         "estAwardDate": "Sep 15, 2025 12:00:00 AM EDT",
         "fiscalYear": 2025,
         "url": "https://www.grants.gov/search-results-detail/355824"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0015,
+        "floor": 0.0015
       }
     },
     {
@@ -1734,6 +1848,12 @@
         "projectEndDate": "2025-06-30T00:00:00",
         "publicationCount": 899,
         "url": "https://reporter.nih.gov/project-details/10862591"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0015,
+        "floor": 0.0015
       }
     },
     {
@@ -1836,6 +1956,12 @@
         "transactionId": "500543378",
         "subId": "4021820261309017009",
         "pdfUrl": "https://docquery.fec.gov/cgi-bin/fecimg/?202407199661322773"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.001,
+        "floor": 0.001
       }
     },
     {
@@ -1973,6 +2099,12 @@
             "type": "secondary"
           }
         ]
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0015,
+        "floor": 0.0015
       }
     },
     {
@@ -2044,6 +2176,12 @@
         "alsoOn": [],
         "duplicateUrls": [],
         "scrapedAt": "2026-09-21T10:01:41.871Z"
+      },
+      "apify_price": {
+        "event": "job",
+        "shape": "tiered",
+        "entry": 0.0015,
+        "floor": 0.001
       }
     },
     {
@@ -2141,6 +2279,12 @@
         "footnotes": "This transaction was made pursuant to a Rule 10b5-1 trading plan adopted by the reporting person on May 5, 2026.",
         "filingUrl": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037020/form4.xml",
         "url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126037020/0001140361-26-037020-index.htm"
+      },
+      "apify_price": {
+        "event": "result",
+        "shape": "flat",
+        "entry": 0.0018,
+        "floor": 0.0018
       }
     }
   ]

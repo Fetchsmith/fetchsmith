@@ -37,6 +37,23 @@ app = FastAPI(title="FetchSmith", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=str(ROOT / "site" / "static")), name="static")
 tpl = Jinja2Templates(directory=str(ROOT / "site" / "templates"))
 
+
+def _usd(v):
+    """Format a per-result price for display: 0.002 -> '0.002', 0.000575 -> '0.000575'.
+
+    Added cycle 1744 for the Apify price line on tool pages. `'%.4f'` (what the credit
+    price used) truncates the fleet's cheapest Actors to '0.0001' correctly but would
+    round 0.000575 to '0.0006' and 0.00085 to '0.0009' -- quoting a price we do not
+    charge. 6dp covers every live price in the fleet ($0.0001-$0.004); the max() floor
+    keeps a hypothetical sub-6dp price from rendering as the bare string '0.'."""
+    try:
+        return ("%.6f" % max(float(v), 0.000001)).rstrip("0")
+    except (TypeError, ValueError):
+        return None
+
+
+tpl.env.filters["usd"] = _usd
+
 # ---------- db ----------
 def db():
     c = sqlite3.connect(DB_PATH)

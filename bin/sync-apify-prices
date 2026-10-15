@@ -1,0 +1,193 @@
+#!/root/agent/venv/bin/python
+"""Sync each public Actor's LIVE Apify primary-event price into actors/registry.json,
+so fetchsmith.com tool pages can state the price the buyer actually pays.
+
+Why this exists (cycle 1744). The standing growth conclusion (LEARNINGS cycle 1653) is
+that the off-platform channel is AI answer engines, not SEO, and the question to optimise
+is "when an answer engine summarises this page, does the buyer get a clickable, billable
+destination AND the price?". Cycle 1653 fixed the destination half (the Actor URL is now
+its own anchor text on tool pages). The price half was still wrong: `templates/tool.html`
+quoted ONLY the hosted-API credit price ("1 credit per result / about $0.0025 per result
+on the Starter pack") -- a price for a checkout that is NOT live (`checkout_live` is
+`bool(polar_products())`, and Polar is deferred by owner decision), while the one
+destination a buyer can actually buy from (Apify) had its real per-result price stated
+nowhere on the page. So a summarised tool page handed the buyer an unbuyable number.
+
+Why the price cannot just be read from meta.json: 14 of 30 charge events in
+`actors/*/meta.json` have no `eventPriceUsd` at all, because a charge event carries
+EITHER a flat `eventPriceUsd` OR a per-plan `eventTieredPricingUsd` map (the cycle-480
+trap, see `bin/check-pricing`). Code that reads only `eventPriceUsd` sees None for half
+the fleet and renders "no price". The live `pricingInfos` record is the authoritative
+source, and it is also a HISTORY list whose last entry may be future-dated (cycle 388),
+so entries must be filtered by `startedAt <= now` before any of it is quoted.
+
+Which event's price: the same rule `check-price-superiority` uses -- the event flagged
+`isPrimaryEvent`, else the cheapest non-one-time event. Per `bin/check-primary-event`
+the flag is an owner-set display hint, but on OUR OWN Actors we set it, so it is
+meaningful here (that check exists to catch RIVALS misusing it).
+
+What it writes, per tool, as `apify_price`:
+    {"event": "result", "shape": "flat"|"tiered",
+     "entry": <price a buyer on the free plan pays>,
+     "floor": <cheapest price any plan pays>}
+`entry` is the headline and `floor` only renders when it differs -- which is the phrasing
+the Actor READMEs already use ("$0.000575 per row at FREE, dropping to $0.0003 on GOLD
+and above"). Quoting the floor ALONE would be the dishonest version: on a tiered Actor it
+is ~2x cheaper than what a new buyer is actually charged, and a cited price a buyer does
+not get is worse than no price. Deliberately emits no "no start fee" claim -- true on the
+Actors spot-checked, but not verified fleet-wide, and this file should not invent claims.
+
+Usage:
+  bin/sync-apify-prices            # write live prices into registry.json
+  bin/sync-apify-prices --check    # read-only; exit 1 if registry.json has drifted
+Read-only against Apify (no runs, no compute cost) in both modes.
+"""
+import datetime
+import glob
+import json
+import os
+import sys
+
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_json  # noqa: E402
+
+API = "https://api.apify.com/v2"
+REGISTRY = "/root/agent/actors/registry.json"
+TIERS = ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
+
+
+def token():
+    env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env")
+               if "=" in l and not l.startswith("#"))
+    return env["APIFY_TOKEN"]
+
+
+def effective(pricing_infos, now):
+    """The pricing entry actually in effect right now, or None (cycle 388 trap)."""
+    live = [p for p in (pricing_infos or [])
+            if p.get("startedAt")
+            and datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) <= now]
+    return live[-1] if live else None
+
+
+def prices_of(event):
+    """(entry, floor) for one charge event, handling both pricing shapes.
+
+    entry = what a buyer on the free plan pays; floor = the cheapest plan's price.
+    Returns (None, None) if the event carries no usable price."""
+    if event is None:
+        return None, None
+    if "eventPriceUsd" in event:
+        p = event["eventPriceUsd"]
+        return (p, p) if isinstance(p, (int, float)) else (None, None)
+    tiers = event.get("eventTieredPricingUsd") or {}
+    vals = {t: (tiers.get(t) or {}).get("tieredEventPriceUsd") for t in TIERS}
+    nums = [v for v in vals.values() if isinstance(v, (int, float))]
+    if not nums:
+        return None, None
+    # entry = FREE if priced, else the dearest plan on record (never quote cheaper
+    # than a new buyer is charged).
+    entry = vals.get("FREE") if isinstance(vals.get("FREE"), (int, float)) else max(nums)
+    return entry, min(nums)
+
+
+def pick_event(live_events):
+    """(name, event) for the event whose price we quote: the `isPrimaryEvent` one, else
+    the cheapest non-one-time event -- the rule `check-price-superiority` uses."""
+    if not live_events:
+        return None, None
+    primary = [(n, e) for n, e in live_events.items() if (e or {}).get("isPrimaryEvent")]
+    if len(primary) == 1:
+        return primary[0]
+    cands = [(n, e) for n, e in live_events.items() if not (e or {}).get("isOneTimeEvent")]
+    if not cands:
+        return None, None
+    def key(item):
+        entry, _floor = prices_of(item[1])
+        return (entry if entry is not None else float("inf"), item[0])
+    return sorted(cands, key=key)[0]
+
+
+def shape_of(event):
+    return "flat" if "eventPriceUsd" in (event or {}) else "tiered"
+
+
+def collect():
+    """{slug: apify_price dict} from the live platform record, for public Actors."""
+    H = {"Authorization": "Bearer " + token()}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    out, problems = {}, []
+
+    for path in sorted(glob.glob("/root/agent/actors/*/meta.json")):
+        slug = os.path.basename(os.path.dirname(path))
+        r, _st = get_json(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30)
+        act = (r or {}).get("data")
+        if not act or not act.get("isPublic"):
+            continue
+        cur = effective(act.get("pricingInfos"), now)
+        if cur is None or cur.get("pricingModel") != "PAY_PER_EVENT":
+            problems.append(f"{slug}: no PAY_PER_EVENT pricing in effect -- "
+                            f"bin/check-pricing owns this, not priced here")
+            continue
+        live_events = (cur.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
+        name, ev = pick_event(live_events)
+        if name is None:
+            problems.append(f"{slug}: no quotable charge event on the live record")
+            continue
+        entry, floor = prices_of(ev)
+        if entry is None:
+            problems.append(f"{slug}/{name}: event carries no usable price")
+            continue
+        out[slug] = {"event": name, "shape": shape_of(ev),
+                     "entry": entry, "floor": floor}
+    return out, problems
+
+
+def main():
+    check = "--check" in sys.argv
+    live, problems = collect()
+    reg = json.loads(open(REGISTRY).read())
+    tools = reg.get("tools", [])
+
+    drift, priced = [], 0
+    for t in tools:
+        slug = t.get("slug")
+        want = live.get(slug)
+        have = t.get("apify_price")
+        if want is None:
+            # Not public / not PPE-priced: a stale price left behind would be a lie.
+            if have is not None:
+                drift.append(f"{slug}: registry has apify_price {have} but the live record "
+                             f"gives no quotable price -- stale")
+                if not check:
+                    t.pop("apify_price", None)
+            continue
+        priced += 1
+        if have != want:
+            drift.append(f"{slug}: registry {have} -> live {want}")
+            if not check:
+                t["apify_price"] = want
+
+    for p in problems:
+        print(f"note: {p}")
+    for d in drift:
+        print(("DRIFT " if check else "updated ") + d)
+
+    print(f"{len(tools)} tools, {priced} with a live quotable price, {len(drift)} "
+          f"{'drifted' if check else 'updated'}")
+
+    if check:
+        return 1 if drift else 0
+    if drift:
+        # `indent=2, ensure_ascii=False` + a trailing newline round-trips registry.json
+        # byte-identically (verified cycle 1744). Plain `json.dump` escapes the em-dashes
+        # in every title and reformats ~420 bytes of the file, burying the real diff.
+        with open(REGISTRY, "w") as f:
+            json.dump(reg, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+        print(f"wrote {REGISTRY}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

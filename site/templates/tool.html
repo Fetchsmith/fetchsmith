@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t.title }} — FetchSmith{% endblock %}
 {% block desc %}{{ t.summary }}{% endblock %}
-{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}"{% if t.status != 'retired' %},"offers":{"@type":"Offer","price":"{{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}","priceCurrency":"USD","description":"Pay per result ({{ t.credits_per_result or 1 }} credit{{ '' if (t.credits_per_result or 1) == 1 else 's' }} per result on the Starter pack)"}{% endif %}}</script>{% if t.status == 'retired' %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
+{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}"{% if t.status != 'retired' %}{% if t.apify_price and not checkout_live %},"offers":{"@type":"Offer","price":"{{ t.apify_price.entry | usd }}","priceCurrency":"USD","url":"https://apify.com/{{ apify_user }}/{{ t.slug }}","availability":"https://schema.org/InStock","description":"Pay per result on the Apify Store: ${{ t.apify_price.entry | usd }} per result{% if t.apify_price.floor and t.apify_price.floor != t.apify_price.entry %}, dropping to ${{ t.apify_price.floor | usd }} per result on higher Apify plans{% endif %}. No charge for a run that returns nothing."}{% else %},"offers":{"@type":"Offer","price":"{{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}","priceCurrency":"USD","description":"Pay per result ({{ t.credits_per_result or 1 }} credit{{ '' if (t.credits_per_result or 1) == 1 else 's' }} per result on the Starter pack)"}{% endif %}{% endif %}}</script>{% if t.status == 'retired' %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
 {% block body %}
 <div style="padding-top:40px"><p class="muted"><a href="/tools">Tools</a> / {{ t.title }}</p><div class="tool-head"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="48" height="48"><h1 style="margin:0">{{ t.title }}</h1></div><p class="lead" style="color:var(--ink-2);max-width:720px">{{ t.summary }}</p>{% if t.notice %}<p class="notice warn">⚠ {{ t.notice }}</p>{% endif %}</div>
 <div class="two">
@@ -21,11 +21,25 @@
   <div class="muted">This tool is no longer available to run and cannot be bought. The page stays up so the fields it returned, and the reason it was retired, remain on the record.</div>
   <a class="btn" href="/tools">Browse working tools</a>
   <ul><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
+{% else %}{% set ap = t.apify_price %}
+{# Cycle 1744: the headline price must be the price of the destination the buyer can
+   actually buy from. While `checkout_live` is false (Polar deferred), that is Apify, so
+   its live per-result price leads and the hosted-API credit price is demoted and marked
+   as not open yet. Before this, the page quoted ONLY the credit price -- a flat
+   $0.0025/result for every tool, against real Apify prices of $0.0001-$0.004 -- i.e. a
+   number no buyer could pay, overstated 25x on the cheapest Actors. `apify_price` is
+   synced from the live platform record by bin/sync-apify-prices. #}
+{% if ap and not checkout_live %}  <div class="price">${{ ap.entry | usd }} <small>per result</small></div>
+  <div class="muted">Charged on Apify{% if ap.floor and ap.floor != ap.entry %}, dropping to ${{ ap.floor | usd }} per result on higher Apify plans{% endif %}. Failed runs are free.</div>
+  <a class="btn" href="/go/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
+  <a class="btn ghost" href="/pricing">Hosted API pricing</a>
+  <div class="muted" style="margin-top:10px">A hosted API ({{ t.credits_per_result or 1 }} credit per result, about ${{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}) is planned but not open yet — today the Actor above is the way to run this.</div>
 {% else %}  <div class="price">{{ t.credits_per_result or 1 }} credit <small>per result</small></div>
-  <div class="muted">About ${{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }} per result on the Starter pack. Failed runs are free.</div>
+  <div class="muted">About ${{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }} per result on the Starter pack. Failed runs are free.{% if ap %} On Apify, ${{ ap.entry | usd }} per result{% if ap.floor and ap.floor != ap.entry %} (down to ${{ ap.floor | usd }} on higher plans){% endif %}.{% endif %}</div>
 {% if checkout_live %}  <a class="btn" href="/pricing">Buy credits</a>
   <a class="btn ghost" href="/go/{{ t.slug }}" rel="noopener">Run on Apify Store</a>{% else %}  <a class="btn" href="/go/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
   <a class="btn ghost" href="/pricing">Hosted API pricing</a>{% endif %}
+{% endif %}
   <div class="muted" style="margin-top:10px">Actor page: <a href="/go/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></div>
   <ul><li>HTTP-only, no browser</li><li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
 {% endif %}
