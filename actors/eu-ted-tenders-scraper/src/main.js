@@ -728,10 +728,15 @@ if (filteredOutDeadline > 0) {
   );
 }
 if (pushed === 0 && watchMode && !seeding) {
-  log.warning(
-    `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
-    + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
-  );
+  // Until this fix this was log-only, so a COMPLETE watch run (no httpError, nothing new)
+  // reached the console as a plain green SUCCEEDED run with statusMessage: null -- same bug
+  // class fixed on trademark-search-scraper/court-records-scraper/uk-find-a-tender-scraper
+  // (cycles 1752-1754). Live-reproduced before this fix: seeded a baseline, re-ran the same
+  // watchLabel/filters with nothing new published since -- SUCCEEDED, 0 rows, statusMessage null.
+  const nothingNewMessage = `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
+    + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.';
+  log.warning(nothingNewMessage);
+  await Actor.setStatusMessage(nothingNewMessage);
 } else if (!pushed && !seeding && (filteredOutValue > 0 || filteredOutDeadline > 0) && !skippedSeen) {
   // Name only the filter(s) that actually dropped something — claiming a cause the
   // run did not observe is the defect cycles 483/484 fixed elsewhere in the fleet.

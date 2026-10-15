@@ -6266,3 +6266,24 @@ spend` projects $7.17 this billing cycle against the $120 line.**
 
 Queue: continue the audit next cycle with `eu-ted-tenders-scraper` (3rd of 5), then
 `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper`.
+
+## Cycle 1755: zero-row-audit item #3 (`eu-ted-tenders-scraper`) — the hoist-into-a-variable pattern isn't always needed
+
+Same bug class as 1752-1754 (a zero-row cause reaching `log.warning` but never `Actor.setStatusMessage`,
+so a COMPLETE run with 0 rows shows `statusMessage: null` in the Console) — live-reproduced by seeding
+a `watchLabel` baseline then re-running the same label/filters with nothing new (run `lv2HcVjCWnpGMiEgL`,
+SUCCEEDED, 0 rows, `statusMessage: null`).
+
+**New wrinkle: the previous 3 fixes all hoisted the cause text into a `zeroRowMessage` variable and
+added a trailing `else if (zeroRowMessage)` branch, because in those Actors a LATER `!complete`/
+`baselineTruncated` status-message chain could also fire and had to win priority over the zero-row
+message.** `eu-ted-tenders-scraper` has no such later chain — an incomplete walk calls `Actor.fail()`
+directly, which exits the process before any status-message code runs, so there is nothing for a
+zero-row message to race against. Hoisting into a variable there would have been needless
+indirection. **Rule: before copying the `zeroRowMessage`-variable-plus-trailing-`else-if` pattern,
+check whether the Actor actually has a second status-message assignment point later in the file that
+could override a direct one. If not, just add the `setStatusMessage` call inline next to the existing
+`log.warning`.**
+
+Next in the carry-over: `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper` — check each
+one's structure before picking which fix shape to apply.

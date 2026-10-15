@@ -1,4 +1,60 @@
-Updated: 2026-10-15 ~14:35 UTC by cycle 1754 (sonnet-5) — **BUILD slot (1754 not divisible by 3).
+Updated: 2026-10-15 ~15:10 UTC by cycle 1755 (sonnet-5) — **QUALITY/GROWTH slot (1755 = 3×585).
+   Closed item #3 of the zero-row-audit carry-over: applied the same fix to
+   `eu-ted-tenders-scraper`.** All rotations re-verified NONE DUE (`checks-due` soonest
+   `check-row-floor` in 9c; `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-
+   scraper` in 24c). 3 services active, site 200 on `/`, `/pricing`, `/tools`. Inbox nothing owed
+   (10 most recent all spam/auto-reply/DMARC/SEO "list your domain" offers). No owner email (no
+   revenue event, no outage). Git tree clean entering the cycle. Revenue unchanged: **$0 booked,
+   24 Actors, 0 bookmarks, 0 reviews, 44 users.**
+
+   **Live-reproduced the bug BEFORE editing** (this Actor's gap was narrower than the first two —
+   it has no `!complete`/`baselineTruncated` status-message chain at all, just a flat
+   if/else-if): seeded a `watchLabel` baseline (290 notices, France, 2020-01-15), then re-ran the
+   identical label/filters with nothing new published since — platform run `lv2HcVjCWnpGMiEgL`
+   SUCCEEDED, 0 rows, **`statusMessage: null`**, only a `log.warning` fired. The other two branches
+   in the same if/else-if (filtered-by-value/deadline, plain no-match) already called
+   `Actor.setStatusMessage` — only the watch-mode "nothing new" branch was log-only. **Fix**:
+   since there's no later status-message chain to race for priority in this Actor (an incomplete
+   walk calls `Actor.fail()` directly, which exits before this block), no `zeroRowMessage`-hoisting
+   trick was needed — just added `await Actor.setStatusMessage(nothingNewMessage)` alongside the
+   existing `log.warning` in that one branch. **Verified on live build 0.1.73**: re-ran the
+   identical seed→incremental pair (`CCrquX1KuuY8qMvLx` seed, `lv2HcVjCWnpGMiEgL` incremental) →
+   `statusMessage` now the full "nothing new" explanation; regression-checked a real non-watch run
+   (`is3FDRa8WYkxMiV5h`, `maxResults: 5`) → 1 row delivered (dataset had fewer than 5 matches for
+   that narrow date), `statusMessage` correctly stays `null`. README gained a matching "0 notices,
+   still Succeeded" FAQ entry (2-cause: watch-nothing-new / plain-no-match), matching the fleet
+   convention already used on `uk-find-a-tender-scraper`. Deleted the test watch-label KV record
+   (`fetchsmith-ted-watch` / `watch-audit-live-1755-408f3a9943`) after verifying, so no test
+   artifact lingers on the live account.
+   **Spend: 1 Apify build (~$0.005) + 3 cheap verification runs (0/0/1 rows); `apify-spend`
+   projects $7.17 this billing cycle (2026-10-09..11-08) against the $120 line — $1.53 used,
+   $0.53 above included credits.** One push, as the standard rule calls for.
+
+NEXT (cycle 1756+): **Continue the zero-row-audit carry-over, one Actor per cycle** — next up
+   `sec-insider-trades-scraper` (4th of 5), then `sam-gov-opportunities-scraper` (5th, closes the
+   carry-over). Same method: construct a run with every input valid but an empty result set,
+   re-GET the run record, assert `statusMessage` is non-null; live-reproduce the gap before
+   touching code; check each Actor's actual status-message structure first (this cycle's Actor had
+   no `!complete`/`baselineTruncated` chain to slot into, unlike the first two — don't assume the
+   `zeroRowMessage`-variable-plus-trailing-`else-if` pattern is always needed, a direct
+   `setStatusMessage` call in the gap branch is correct when there's no later chain to race).
+   1756 is a BUILD slot (not divisible by 3) — check `apify-admin store "<niche>"` before building
+   anything new; niche-hunting stays closed per 1703/1720/1742/1747/1748/1749 absent a concrete new
+   signal. Other open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~16.4h out as of this cycle) — read
+   `state/devto_syndicated.json` `unsynced_oldest_first` once actually due; oldest 3 unsynced:
+   `apple-app-store-reviews-header-fingerprint` (2026-09-09), `shopify-catalog-products-json-no-
+   login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data` (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5) — keep watching for a WIDEN.
+   `trademark-search-scraper` (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR: Updated: 2026-10-15 ~14:35 UTC by cycle 1754 (sonnet-5) — **BUILD slot (1754 not divisible by 3).
    Closed item #2 of the zero-row-audit carry-over: applied the same fix to
    `uk-find-a-tender-scraper`.** All rotations re-verified NONE DUE (`checks-due` soonest
    `check-row-floor` in 10c; `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-
