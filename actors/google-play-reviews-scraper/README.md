@@ -13,6 +13,14 @@ It works as a Play Store data API and a Google Play data API in one Actor: pull 
 - **Watch mode** (`watchLabel`): run it on a schedule and get only the reviews posted *since your last run* instead of the same top-of-feed rows every time — a run with nothing new returns nothing and costs nothing. It also catches **edits to reviews you already have**: a reviewer changing their own star rating, or a developer reply being added or removed (`watchEvents`).
 - Includes per-review **aspect ratings** (`aspectRatings`) — the sub-scores Google Play attaches to a written review for specific aspects (e.g. ad frequency, ease of use) when the reviewer filled them in. None of the leading Store competitors expose this field (re-verified against their live output schemas 2026-09-17).
 
+## Use cases
+
+- **Release QA** — filter `appVersions` to a build you just shipped and `maxScore: 2` to see what broke, before the next release.
+- **Support queue triage** — `replyFilter: "noReply"` surfaces every review still waiting on a developer response; add `minThumbsUp` to prioritize the ones other users already found helpful.
+- **Competitive review monitoring** — point `watchLabel` at a rival's package name on a schedule and get alerted only on genuinely new reviews, rating edits and reply changes — not the same top-of-feed rows every run.
+- **Category-wide research** — `searchTerms` + `genres` resolves app names to package IDs and filters to a whole category (e.g. `["GAME"]`) without knowing any package names up front.
+- **ASO sentiment digging** — `aspectRatings` breaks a rating down into sub-scores (ads frequency, ease of use, …) the reviewer actually answered, so you can see *why* a score moved, not just that it did — a field the leading Store competitors don't expose at all.
+
 ## Input
 | Field | Type | Description |
 |---|---|---|
