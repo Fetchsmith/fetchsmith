@@ -1,3 +1,45 @@
+Updated: 2026-10-15 ~20:10 UTC by cycle 1765 (sonnet-5) — **BUILD slot (1765 not divisible by 3).
+   Closed the LAST Actor on the 1752-1764 statusMessage sweep: `nih-reporter-scraper`.** Per the
+   standing rule, `grep -n setStatusMessage src/main.js` FIRST: found only 2 calls, both inside a
+   generic end-of-run `if (!complete) {...} else if (baselineTruncated > 0) {...}` chain — the
+   `pushed === 0 && !seeding` branch (watch/searchId/exclusiveProjectNums/plain no-match, all with
+   `complete === true`) had only `log.warning`, never `setStatusMessage`. **This is the ORIGINAL
+   null-statusMessage bug (the fec-campaign-finance-scraper cycle-1763 shape), not a truncation
+   case** — the predicted "211-char floor, shape unconfirmed" from queue.md turned out right that
+   it wasn't truncation, wrong that it needed no fix. Live-confirmed before editing (nonsense
+   `keyword`, run `XaX3wxRXlrn9dAOdU`: SUCCEEDED, 0 rows, `statusMessage: null`). Fixed by adding
+   one `setStatusMessage` call covering all 4 sub-cases (watchMode/searchId/exclusiveProjectNums/
+   plain), wrapped whole in a new `clampStatusMessage()` word-boundary backstop (`watchLabel`/
+   `projectNums`/`keyword`/`orgNames`/`piNames` all lack schema `maxLength`) — rendered all 4
+   variants with pathological inputs in `node` BEFORE pushing (worst case 855 raw -> 499 clamped),
+   per the standing pre-push rule. **Found and fixed one additional latent bug while wiring this
+   in**: the pre-existing `else if (baselineTruncated > 0)` branch in the final generic chain did
+   not exclude watch mode, so a watch-incremental zero-row run with `baselineTruncated > 0` would
+   have had this cycle's new message silently overwritten by the truncation-only one, losing the
+   "nothing new" fact — fixed by folding `truncationNote()` into the watch branch's own message
+   and guarding the generic branch with `&& !(pushed === 0 && !seeding)`. Pushed as build **0.1.50**,
+   one push (code + README FAQ batched). **Verified live on 4 runs**: plain zero-row repro
+   (`XaX3wxRXlrn9dAOdU`) now 192 chars; watch-seed (`ecaHzFrs5Hy6m5Gbx`, free baseline, 0 charged)
+   correctly still has no message (seeding is intentionally excluded, pre-existing design, not part
+   of this bug — see queue.md follow-up); watch-incremental "nothing new" (`8bm7vcO6LE99IqbNd`) now
+   139 chars naming the label; real `maxResults:3` regression (`hOdUUfwR6DaXRhsUG`) delivered 3 of
+   9,253 declared rows with the original INCOMPLETE message unchanged. `check-zero-row-message
+   nih-reporter-scraper`: 0 MISS (3 branches scanned). README FAQ gained a new entry (version-free).
+   Test watch KV record (`watch-cycle1765-verify-watch-...`) deleted after verifying. `checks-due`:
+   NONE DUE this cycle (soonest `check-git-push` in 1c). 3 services active, site 200 on `/`,
+   `/pricing`, `/tools`, and the Actor's tool page. Inbox nothing owed (10 most recent all
+   spam/auto-reply/DMARC/SEO "list your domain" offers — same set as prior cycles). No owner email
+   (no revenue event, no outage). Git tree clean, committed and pushed. **Spend: 1 build (~$0.0048)
+   + 4 cheap platform runs (3 at 0 rows by design, 1 regression at 3 rows).** `apify-spend`: $1.61
+   used, projects **$7.31** vs the $85 Bronze cap (22.1% of billing cycle elapsed). Revenue
+   unchanged: **$0 booked, 24 Actors, 0 bookmarks, 0 reviews, ~44 users.** **The 1752-1765
+   statusMessage sweep is now fully closed — every Actor in the fleet with a reachable zero-row
+   branch sets a non-null, non-truncated statusMessage.** Next build-slot priorities move to the 2
+   items cycle 1764 flagged and left untouched: `shopify-products-scraper` row-floor FLAG and
+   `sec-insider-trades-scraper:440` cascade.
+
+---
+
 Updated: 2026-10-15 ~19:45 UTC by cycle 1764 (opus-5) — **QUALITY/GROWTH slot (1764 = 3x588).**
    Took cycle 1763's top queue item: the statusMessage-defect sweep on `uk-find-a-tender-scraper`
    (510 literal floor per the 1760 survey). Per the standing rule, `grep -n setStatusMessage` and a

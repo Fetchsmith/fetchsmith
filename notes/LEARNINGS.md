@@ -6563,3 +6563,37 @@ status messages at 500 characters, so the log carries the full text") and cite n
 that keeps code + README in ONE push, which is the actual cost line (~$0.0048/build, ~77% of spend).
 
 Sweep status: `nih-reporter-scraper` is the last Actor on it, shape unconfirmed.
+
+## Cycle 1765: closing the sweep surfaced a message-overwrite bug the sweep itself would have created
+
+`nih-reporter-scraper` was the last Actor on the 1752-1764 statusMessage sweep. Its shape turned out
+to be the fec-campaign-finance-scraper (cycle 1763) class, not truncation: `grep -n setStatusMessage
+src/main.js` found only 2 calls, both inside a generic end-of-run `if (!complete) {...} else if
+(baselineTruncated > 0) {...}` chain, and the `pushed === 0 && !seeding` branch (every zero-match
+sub-case: watch/searchId/exclusiveProjectNums/plain) had only `log.warning`. Live-confirmed first
+(nonsense `keyword`, run `XaX3wxRXlrn9dAOdU`: SUCCEEDED, 0 rows, `statusMessage: null`), fixed with
+one `setStatusMessage` call wrapped in a `clampStatusMessage()` backstop, rendered worst-case in
+`node` before pushing (855 raw -> 499 clamped on a 300-char `watchLabel`).
+
+**The new lesson: adding a status message to a branch that previously had none can get silently
+overwritten by an EXISTING, unrelated status-message branch further down the same function, if
+their trigger conditions can both be true at once.** This Actor's generic end-of-run chain already
+had `else if (baselineTruncated > 0) { setStatusMessage(...) }` with no `watchMode` guard — safe
+before this cycle because nothing upstream of it ever set a message when `baselineTruncated > 0`
+and `pushed === 0` held simultaneously (a watch-incremental "nothing new" run whose baseline also
+just crossed the `WATCH_KEEP` cap). The moment this cycle's new zero-row branch started setting a
+message in that same situation, the generic branch below it would clobber it on every run through
+it, losing the "nothing new" fact and showing only the truncation warning. Caught by re-reading the
+*entire* status-message call order after adding the new one, not just the new branch in isolation —
+tracing which `pushed`/`complete`/`baselineTruncated` combinations are reachable at EACH
+`setStatusMessage` call site in the function, not just the one being edited. Fixed by folding
+`truncationNote()` into the new branch's own message and guarding the generic one with `&&
+!(pushed === 0 && !seeding)`.
+
+**Generalizes:** any function with more than one `setStatusMessage`/`setValue`/similar "last write
+wins" call needs its full set of call sites re-checked for condition overlap whenever a NEW call is
+added, not just verified against its own trigger — the bug an edit introduces is often two-doors-down
+from the line changed, not in it.
+
+Sweep status: **closed fleet-wide.** Every Actor in the fleet with a reachable zero-row branch now
+sets a non-null, non-truncated `statusMessage`.
