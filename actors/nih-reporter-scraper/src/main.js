@@ -848,6 +848,38 @@ function truncationNote() {
         : '';
 }
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars (found cycle 1760 on other Actors in this
+// fleet) -- keyword/orgNames/piNames/watchLabel/projectNums have no schema maxLength, so a long
+// caller-supplied value could overflow the message built below. Word-boundary cut, not a hard slice.
+const clampStatusMessage = (msg) => {
+    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
+    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+};
+
+// Names only the filters actually applied, so a plain no-match message never blames a filter the
+// search never set.
+function appliedFilterSummary() {
+    const parts = [];
+    if (keyword) parts.push(`keyword="${keyword}"`);
+    if (fiscalYears.length) parts.push(`fiscalYears=${fiscalYears.join(',')}`);
+    if (agencyIcCodes.length) parts.push(`agencyIcCodes=${agencyIcCodes.join(',')}`);
+    if (activityCodes.length) parts.push(`activityCodes=${activityCodes.join(',')}`);
+    if (awardTypes.length) parts.push(`awardTypes=${awardTypes.join(',')}`);
+    if (orgNames.length) parts.push(`orgNames=${orgNames.join(',')}`);
+    if (orgStates.length) parts.push(`orgStates=${orgStates.join(',')}`);
+    if (piNames.length) parts.push(`piNames=${piNames.join(',')}`);
+    if (minAwardAmount !== null) parts.push(`minAwardAmount=${minAwardAmount}`);
+    if (maxAwardAmount !== null) parts.push(`maxAwardAmount=${maxAwardAmount}`);
+    if (awardNoticeDateFrom) parts.push(`awardNoticeDateFrom=${awardNoticeDateFrom}`);
+    if (awardNoticeDateTo) parts.push(`awardNoticeDateTo=${awardNoticeDateTo}`);
+    if (input.activeOnly === true) parts.push('activeOnly');
+    if (input.newlyAddedOnly === true) parts.push('newlyAddedOnly');
+    return parts.length ? parts.join(', ') : '(no filters)';
+}
+
 async function saveWatchRecord(status) {
     const entries = Array.from(watchSeen.entries()).slice(-WATCH_KEEP);
     baselineTruncated = watchSeen.size - entries.length;
@@ -1290,6 +1322,23 @@ if (pushed === 0 && !seeding && !complete) {
             + 'state code that is not a real NIH value matches nothing (a warning above lists any unrecognised one); '
             + '(3) fiscal years before 1985 have no data.',
     );
+    // A zero-row run still SUCCEEDS, so without this the Apify console shows the default
+    // "Succeeded" status on a run that genuinely matched nothing -- the same null-statusMessage
+    // bug the 1752-1764 fleet sweep fixed on every OTHER Actor's reachable zero-row branch. This
+    // one was missed because `complete` is true here, so the generic `!complete` status-message
+    // block below never fires for it. The watch case folds in truncationNote() itself and the
+    // final chain's `baselineTruncated > 0` branch is guarded below so it cannot overwrite this.
+    await Actor.setStatusMessage(clampStatusMessage(
+        watchMode
+            ? `Nothing new for watch label "${watchLabel}" -- every matching project had already been delivered. `
+            + 'You were charged for nothing.' + blindNote() + truncationNote()
+            : searchId
+            ? `The saved search ${searchId} resolved, but matched no projects right now.`
+            : exclusiveProjectNums
+            ? `No project found for [${projectNums.join(', ')}]. Use a full or core project number exactly as shown on reporter.nih.gov.`
+            : `No projects matched (${appliedFilterSummary()}). NIH RePORTER confirms 0 results for these filters -- `
+            + 'not an error. Drop a filter to broaden the search; see the log for the full checklist.',
+    ));
 }
 
 log.info(`Done. Pushed ${pushed} project records (scanned ${scanned} row(s) over ${pages} page(s)).`);
@@ -1344,7 +1393,9 @@ if (!complete) {
         `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
         + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
     );
-} else if (baselineTruncated > 0) {
+} else if (baselineTruncated > 0 && !(pushed === 0 && !seeding)) {
+    // pushed === 0 && !seeding already set its own message above (which folds in
+    // truncationNote() itself) -- this branch must not overwrite it.
     await Actor.setStatusMessage(
         `Complete, but the watch baseline dropped ${baselineTruncated} older id(s) past the ${WATCH_KEEP}-project `
         + `cap (${baselineTruncatedTotal} total) -- those will be re-delivered and CHARGED next run. See RUN_SUMMARY.`,

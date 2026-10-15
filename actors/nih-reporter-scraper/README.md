@@ -114,6 +114,8 @@ Grant records (R/P/U/K/F activity codes) populate almost everything. **R&D contr
 
 **Does it need an NIH account or API key?** No. NIH RePORTER's API is fully public.
 
+**I got 0 rows and the run shows "Succeeded" with no status message — is that a bug?** It was, and is now fixed: a run that genuinely matches nothing still succeeds (the search itself worked), and the Apify console's run-list status now names the actual reason inline — "no project matched your filters", "nothing new for this watch label", "no project found for that project number", or "that saved search resolved to zero projects" — instead of leaving the default "Succeeded" label with no explanation. The full checklist of common causes (narrow ANDed filters, an unrecognised IC/activity/state code, pre-1985 fiscal years) stays in the run log; the console message is a short pointer to it. A pathologically long `watchLabel` or `projectNums` list is word-wrapped to fit Apify's 500-character status-message cap rather than silently cut mid-word.
+
 **How do I get more than 15,000 rows?** Just raise `maxResults`; the chunking is automatic. If a query is so broad that even chunking can't reach the rest, the log says so explicitly rather than silently truncating.
 
 **Why does one project appear several times?** NIH RePORTER records one row per *fiscal year of funding*. `R01CA234538` returns six rows for its six funded years. De-duplicate on `coreProjectNum` if you want one row per project.
