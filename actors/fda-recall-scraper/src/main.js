@@ -3,6 +3,18 @@ import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
 
 await Actor.init();
+// Soft-deadline guard (cycle 1735, same pattern as nih-reporter-scraper/court-records-scraper): a
+// hard platform kill mid-walk skips the RUN_SUMMARY write and, in watch mode, the baseline save --
+// the buyer loses their seed and gets re-billed for everything past the cutoff next run. Stop
+// proactively with a safety margin instead, and report it as 'time-budget', not an openFDA failure
+// (fetchPage's own retry/retry-after sleeps are the thing most likely to overrun).
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+let timeBudgetExceeded = false;
+function failureReason(fallback) { return timeBudgetExceeded ? 'time-budget' : fallback; }
+
 const input = (await Actor.getInput()) ?? {};
 
 // openFDA publishes recalls as three separate endpoints, one per product type. There is no
@@ -443,6 +455,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function fetchPage(productType, search, limit, skip) {
     const url = `${ENDPOINTS[productType]}?search=${search}&limit=${limit}&skip=${skip}&sort=${SORT}`;
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        if (!timeBudgetOk()) {
+            timeBudgetExceeded = true;
+            lastApiFailure = `stopped before the platform run timeout (attempt ${attempt}/4)`;
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -459,13 +476,16 @@ async function fetchPage(productType, search, limit, skip) {
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             const waitS = attempt * 10;
             log.warning(`openFDA ${productType} request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
-            await sleep(waitS * 1000);
+            await sleep(Math.min(waitS * 1000, Math.max(remainingMs(), 0)));
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            // A server Retry-After has no upper bound of its own (a real one logged elsewhere on
+            // this fleet: 3600s) -- never let it sleep past this run's own timeout.
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
-            log.warning(`openFDA ${productType} returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
-            await sleep(waitS * 1000);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`openFDA ${productType} returned ${resp.statusCode}; retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
+            await sleep(waitMs);
             continue;
         }
         let parsed = null;
@@ -561,7 +581,7 @@ async function planWindows(productType, from, to) {
         // entire product type from the run with nothing but a log line to show it.
         markIncomplete(
             productType,
-            'plan-request-failed',
+            failureReason('plan-request-failed'),
             `openFDA never answered the initial ${productType} count query (${lastApiFailure}), so NOT ONE `
             + `${productType} recall was scanned. This is not evidence that no ${productType} recall matched.`,
         );
@@ -588,7 +608,7 @@ async function planWindows(productType, from, to) {
             // "Done. Pushed N".
             markIncomplete(
                 productType,
-                'plan-request-failed',
+                failureReason('plan-request-failed'),
                 `Planning the ${productType} date windows failed at ${w.from}..${w.to} (${lastApiFailure}); `
                 + `${queue.length + 1} window(s) of that range were never scanned and their recalls are missing `
                 + 'from this run.',
@@ -938,7 +958,7 @@ async function refill(reader) {
             // Was: silently identical to "this product type is exhausted".
             markIncomplete(
                 reader.productType,
-                'search-request-failed',
+                failureReason('search-request-failed'),
                 `The ${reader.productType} walk stopped at window ${w.from}..${w.to} offset ${reader.skip} because `
                 + `openFDA did not answer (${lastApiFailure}); the rest of that window and every window after it `
                 + 'was not scanned.',
@@ -976,7 +996,7 @@ async function seedBaseline() {
                 if (!page) {
                     markIncomplete(
                         productType,
-                        'search-request-failed',
+                        failureReason('search-request-failed'),
                         `The ${productType} baseline walk stopped at window ${w.from}..${w.to} offset ${skip} because `
                         + `openFDA did not answer (${lastApiFailure}). Recalls past that point are NOT in the baseline, `
                         + 'so the next incremental run on this watch label would deliver and charge them as new. '
@@ -1128,7 +1148,7 @@ if (watchMode && seeding) {
 // Deliberately NOT gated on `seed-cap`/`skip-ceiling`: those are the buyer's query being too
 // broad, are reported in RUN_SUMMARY and the status message, and a capped baseline is still
 // strictly better than none. Only a source that never answered gets the no-save treatment.
-const SEED_UPSTREAM_FAILURES = new Set(['plan-request-failed', 'search-request-failed']);
+const SEED_UPSTREAM_FAILURES = new Set(['plan-request-failed', 'search-request-failed', 'time-budget']);
 const seedFailure = seeding
     ? ([...typeSummaries.values()].find((s) => SEED_UPSTREAM_FAILURES.has(s.incompleteReason))?.incompleteDetail
         ?? pressReleaseFetchFailed
