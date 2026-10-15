@@ -143,6 +143,7 @@
     "check-filter-reach",
     "check-change-blind",
     "check-cascade-causes",
+    "check-zero-row-message",
     "check-seed-save",
     "check-row-loop-drop",
     "check-fail-ordering",

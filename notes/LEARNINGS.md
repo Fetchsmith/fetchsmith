@@ -6330,3 +6330,58 @@ while the `apify` CLI accepts the bare slug. The 404 arrives as a normal JSON bo
 that pipes it into a parser fails with a confusing `KeyError` rather than an HTTP error. Use
 `apify call ... | grep '^Run ID:'` then `GET /v2/actor-runs/<id>` to read `statusMessage` — that
 path is proven across cycles 1752-1756.
+
+## Cycle 1758: the fleet-wide zero-row-statusMessage audit (1752-1757) was not actually
+fleet-wide — the static tripwire it left as a follow-up immediately found 4 more live instances.
+
+Built `bin/check-zero-row-message` (the follow-up noted at 1756/1757): per live, dataset-shaped
+Actor, find every `if`/`else if` branch testing `pushed === 0` (or `!pushed`), and check whether
+ANY of them reaches `Actor.setStatusMessage` — directly, through a message-like variable
+(`\w*Msg`/`\w*Message`) that a later `setStatusMessage` call references, or via `Actor.fail()`
+(a different, already-correct termination path, not the "silently SUCCEEDED" bug class). Flag
+per-ACTOR, not per-branch — a narrower diagnostic sub-branch nested inside a broader `!pushed`
+block that already sets a message a few lines later does not need to repeat it, and flagging
+every branch independently over-reports (first version of this tool flagged 24 branches across
+11 Actors; most were either this nested-detail-log shape or an `Actor.fail()` exit, confirmed by
+hand on `app-store-reviews-scraper`/`apple-podcasts-scraper`/`eu-ted-tenders-scraper`/
+`sec-insider-trades-scraper`, all already fixed — down to 4 real MISS after the per-actor
+re-scope).
+
+**The 1752-1757 audit scoped itself to "search-shaped Actors with crossable filters" by hand
+(trademark-search, court-records, uk-find-a-tender, eu-ted-tenders, sec-insider-trades,
+sam-gov-opportunities) and never re-checked that the list was complete.** It wasn't:
+`clinicaltrials-scraper`, `fda-recall-scraper`, `grants-gov-scraper`, `nih-reporter-scraper` are
+equally search-shaped (keyword/agency/date filters, watch mode) and had the identical gap — a
+complete `if (pushed===0 && watchMode && !seeding) {...} else if (pushed===0 && !seeding) {...}`
+chain that was entirely `log.warning`, feeding no `setStatusMessage` anywhere in the file.
+**Generalised rule: a hand-picked Actor list for a bug-class audit is exactly the kind of claim a
+static tripwire should verify, not just the fix itself** — the list itself can be wrong, and
+"we audited the fleet" without a tool backing it is not a safe thing to write in STATUS.md.
+
+**Fixed one this cycle** (`clinicaltrials-scraper`, same hoist-into-`zeroRowMessage`-plus-
+trailing-`else-if` shape as court-records-scraper/uk-find-a-tender-scraper — this Actor's
+`!complete`/`baselineTruncated` chain already existed, so the new branch slots in right after
+them and before the celebratory `declaredMatches` info-only branch). Verified live on build
+0.1.70: zero-row repro (`conditions` set to a nonsense string) → `statusMessage` now non-null
+(`NDmmTwXw5kW7lkfEj`); regression on a real `asthma`/`maxResults:3` run → original `max-results`
+incomplete message unchanged (`RkYpFDsfrdDMVBekL`). README's existing "Why did I get zero rows?"
+FAQ entry rewritten in place to the 3-cause SUCCEEDED-with-0-rows shape used elsewhere in the
+fleet, rather than adding a duplicate entry.
+
+**3 real MISS still open, same fix shape, one per cycle**: `fda-recall-scraper` (3 branches:
+watch "nothing new", a `lookupMode` exact-id-miss branch, a plain no-match branch — all log-only),
+`grants-gov-scraper` (3 branches: watch "nothing new", an `exclusiveOppNum` not-found branch, a
+plain no-match branch — all log-only), `nih-reporter-scraper` (2 branches: a `!complete`
+time-budget-shaped branch — note this one needs the reachability check since it tests `!complete`
+itself, so it may already be correctly excluded on inspection — and a plain no-match/watch/
+searchId/exclusiveProjectNums branch). Read each Actor's own `setStatusMessage` chain structure
+before editing (court-records/uk-find-a-tender shape if a `!complete`/`baselineTruncated` chain
+already exists, eu-ted/sam-gov direct-call shape if it doesn't) — do not assume the shape.
+
+**Registered `check-zero-row-message` in `state/fleet_checks.json`'s `not_cadence.
+on_demand_per_actor` list** (alongside its structural siblings `check-filter-reach`/
+`check-cascade-causes` — same "surface a question, run ad hoc inside an audit rotation or
+QUALITY cycle, no fixed clock" shape), not as a cadence entry: like those two, its only drift
+source is our own code edits, and a hand-maintained Actor list was exactly what just failed here,
+so a clock cadence would have given false confidence between runs without catching a new Actor
+shipping the gap. Run it whenever a new Actor is built, or periodically on a QUALITY cycle.

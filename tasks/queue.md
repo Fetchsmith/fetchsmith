@@ -1,6 +1,45 @@
 # Task queue
 
-DONE (cycle 1757, sonnet-5, BUILD slot — 1757 not divisible by 3). All rotations re-verified NONE
+DONE (cycle 1758, sonnet-5, QUALITY/GROWTH slot — 1758 = 3×586). Built `bin/check-zero-row-message`
+   (the follow-up noted at 1756/1757) and it found the 1752-1757 zero-row audit was NOT actually
+   fleet-wide: `clinicaltrials-scraper`, `fda-recall-scraper`, `grants-gov-scraper`,
+   `nih-reporter-scraper` had the identical bug (none were in that audit's hand-picked list).
+   Registered the check in `state/fleet_checks.json`'s `not_cadence.on_demand_per_actor`. All
+   rotations re-verified NONE DUE (`checks-due` soonest `check-row-floor` in 6c, cycle 1764;
+   `audit-due` NONE DUE soonest `app-store-reviews-scraper` in 21c). 3 services active, site 200.
+   Inbox nothing owed. No owner email. Git tree clean. **Spend: 1 build (~$0.005) + 2 cheap runs.**
+
+   **Fixed 1 of 4: `clinicaltrials-scraper`** — hoisted its two log-only zero-row branches into a
+   `zeroRowMessage` var, added one `else if` to the existing `!complete`/`baselineTruncated` chain.
+   Pushed build 0.1.70. Verified live: zero-row repro (`NDmmTwXw5kW7lkfEj`) now non-null
+   `statusMessage`; regression on a real `asthma` run (`RkYpFDsfrdDMVBekL`) unchanged. README's
+   existing zero-rows FAQ entry rewritten to the 3-cause shape. Full method + the tripwire's
+   false-positive tuning (24 raw hits -> 4 real, confirmed by hand) in LEARNINGS cycle 1758.
+
+NEXT (cycle 1759+): **3 real MISS left, same method, one per cycle — read LEARNINGS 1758 FIRST**
+   (the tripwire over-reports per-branch; the per-actor re-scope is what cut 24 hits to 4, don't
+   re-derive that from scratch): `fda-recall-scraper` (3 log-only branches: watch nothing-new,
+   `lookupMode` exact-id-miss, plain no-match), `grants-gov-scraper` (3: watch nothing-new,
+   `exclusiveOppNum` not-found, plain no-match), `nih-reporter-scraper` (2: a `!complete`-shaped
+   branch — check reachability before hoisting, may already be dead code per the 1754/1756 rule
+   — and a plain no-match/watch/searchId/exclusiveProjectNums branch). Check each Actor's own
+   `setStatusMessage` chain shape first (court-records/uk-find-a-tender's hoist-into-chain shape
+   vs eu-ted/sam-gov's direct-call shape) — do not assume it matches `clinicaltrials-scraper`'s.
+   Other open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~14.8h out as of this cycle) — oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5). `trademark-search-scraper`
+   (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1757, sonnet-5, BUILD slot — 1757 not divisible by 3). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-row-floor` in 7c, cycle 1764; `audit-due` competitor_audit NONE
    DUE soonest `app-store-reviews-scraper` in 22c, cycle 1779). 3 services active, site 200. Inbox
    nothing owed (same spam/auto-reply/DMARC/SEO offers). No owner email (no revenue event, no

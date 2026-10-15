@@ -1260,24 +1260,27 @@ if (watchMode && seedFailure) {
     }
 }
 
+// Built once and reused below for `setStatusMessage` (cycle 1758) -- until this fix these were
+// log-only, so a complete run with 0 rows showed bare "Succeeded" in the Console with the cause
+// visible only in the log. Watch-mode SEEDING stays silent (0 rows there is the documented
+// by-design baseline result, not an empty search), matching every prior Actor in this audit.
+let zeroRowMessage = null;
 if (pushed === 0 && watchMode && !seeding) {
-    log.warning(
-        `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching `
+    zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching `
         + 'stud(y/ies) had already been delivered under this label. That is the expected result most of the '
-        + 'time; you were charged for nothing.',
-    );
+        + 'time; you were charged for nothing.';
+    log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding) {
-    log.warning(
-        nctIds.length
-            ? 'No studies matched. Every requested nctId was either malformed or not found on ClinicalTrials.gov — check the id list above.'
-            : `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
-              + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
-              + 'narrow filters often genuinely matches nothing; drop one and retry. '
-              + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
-              + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
-              + '(3) resultsAvailability is "with" (or the deprecated hasResultsOnly, which sets the same '
-              + 'thing) on a small minority of studies — combine with a broad condition first.',
-    );
+    zeroRowMessage = nctIds.length
+        ? 'No studies matched. Every requested nctId was either malformed or not found on ClinicalTrials.gov — check the id list above.'
+        : `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
+          + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
+          + 'narrow filters often genuinely matches nothing; drop one and retry. '
+          + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
+          + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
+          + '(3) resultsAvailability is "with" (or the deprecated hasResultsOnly, which sets the same '
+          + 'thing) on a small minority of studies — combine with a broad condition first.';
+    log.warning(zeroRowMessage);
 }
 
 log.info(`Done. Pushed ${pushed} rows over ${pages} page(s) (scanned ${scanned} studies, mode=${rowsPerStudy}).`);
@@ -1344,6 +1347,8 @@ if (!complete) {
             : `Watch label "${watchLabel}": ${pushed.toLocaleString('en-US')} row(s) delivered.`)
         + truncationNote(),
     );
+} else if (zeroRowMessage) {
+    await Actor.setStatusMessage(zeroRowMessage);
 } else if (declaredMatches !== null && !watchMode && !nctIds.length) {
     log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} studies the registry declared for these filters.`);
 }
