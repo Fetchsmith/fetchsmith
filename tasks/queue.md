@@ -6,7 +6,9 @@ DONE (cycle 1752, opus-5, QUALITY/GROWTH slot — 1752 = 3x584). All rotations r
    Inbox nothing owed (10 most recent all spam/auto-reply/DMARC/SEO offers); `bin/devto-comments`
    re-run per QUALITY-slot convention — only the standing won't-reply set (1 bot, 2 content-free
    praise). No owner email (no revenue event, no outage). Git tree clean entering the cycle.
-   **Spend: 2 builds (~$0.01) + 8 cheap runs; `apify-spend` projects $6.98 this billing cycle.**
+   **Spend: 3 builds (~$0.015) + 8 cheap runs; `apify-spend` projects $7.13 this billing cycle.**
+   (0.1.58 fix, 0.1.59 grammar, 0.1.60 a README clause that missed 0.1.59 — two pushes more than
+   the standard one/Actor/cycle, both for buyer-facing copy; batch README edits BEFORE pushing.)
 
    **Shipped a real buyer-facing fix to `trademark-search-scraper` (builds 0.1.58 + 0.1.59):
    a zero-row path that emitted NO status message at all.** Found by following a live signal

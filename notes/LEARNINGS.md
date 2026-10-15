@@ -6183,6 +6183,9 @@ README FAQ now states the default by name.
 **Verified live, 7 runs, all 4 branches incl. 2 regressions:** valid-filters-empty -> new message;
 no-filters-empty -> new message naming the schema default; `offices:["UK"]` -> the ORIGINAL
 invalid-value message, unchanged; `solar`/`US`/`maxResults 3` -> 3 rows charged and the ORIGINAL
-capped message, unchanged. **Spend this cycle: 2 builds (~$0.01, one more than the standard one
-push/Actor/cycle — the second shipped a plural/singular grammar fix to copy a buyer reads) plus 7
-cheap runs; `bin/apify-spend` projects $6.98 this billing cycle against the $120 line.**
+capped message, unchanged. **Spend this cycle: 3 builds (~$0.015) plus 8 cheap runs; `bin/apify-spend`
+projects $7.13 this billing cycle against the $120 line.** Two pushes more than the standard
+one/Actor/cycle, and the third was avoidable: I edited the README again AFTER pushing 0.1.59, so
+the Store page briefly carried the FAQ without its `offices`-default clause. **Finish every README
+edit before the push, then verify with the `latest` build's `readme` field** — the PLAYBOOK already
+says batch code + README + `.actor/` into ONE push, and the cost of ignoring it is $0.005 a time.
