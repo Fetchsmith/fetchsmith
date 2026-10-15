@@ -5,6 +5,16 @@ import { createHash } from 'node:crypto';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+// Soft run-timeout budget (timeout-guard rollout). Every retry/throttle sleep below is capped at
+// the time this run actually has left, so a slow or rate-limiting portal can never park the run
+// inside a sleep until the platform kills it mid-walk -- a hard kill writes no RUN_SUMMARY, no
+// status message, and (worst of all, in watch mode) can leave a half-written baseline behind.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+let timeBudgetExceeded = false;
+
 function uniqStrings(arr) {
     return Array.from(new Set((arr ?? []).filter(Boolean)));
 }
@@ -622,10 +632,23 @@ const RATE_WINDOW_MS = 60_000;
 async function fetchPage(pageUrl, source) {
     const { requestTimes, rateMax } = source;
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        if (!timeBudgetOk()) {
+            timeBudgetExceeded = true;
+            source.lastError = 'run-timeout budget exceeded';
+            return null;
+        }
         const now = Date.now();
         while (requestTimes.length && now - requestTimes[0] > RATE_WINDOW_MS) requestTimes.shift();
         if (requestTimes.length >= rateMax) {
             const waitMs = RATE_WINDOW_MS - (now - requestTimes[0]) + 500;
+            // Unlike the retry sleeps below, this one must NOT be shortened to fit the budget:
+            // waking early here would fire a request that breaks the portal's published rate
+            // limit. If the wait no longer fits, stop this source cleanly instead.
+            if (waitMs > remainingMs()) {
+                timeBudgetExceeded = true;
+                source.lastError = 'run-timeout budget exceeded';
+                return null;
+            }
             log.info(`Self-throttling ${source.label} to stay under its rate limit: waiting ${Math.ceil(waitMs / 1000)}s`);
             await sleep(waitMs);
         }
@@ -646,15 +669,21 @@ async function fetchPage(pageUrl, source) {
             // a status code — without this catch it crashes the whole run instead of retrying like
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             const waitS = attempt * 10;
-            log.warning(`${source.label} request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
-            await sleep(waitS * 1000);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`${source.label} request failed (${err.message}); retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
+            await sleep(waitMs);
             continue;
         }
 
         if (resp.statusCode === 429) {
+            // A server Retry-After has no upper bound of its own (and this branch defaults to a
+            // full 120s), so four attempts could sleep for minutes of portal-chosen time -- never
+            // let it sleep past this run's own timeout. Same exposure closed on every other Actor
+            // in the timeout-guard rollout.
             const retryAfter = Number(resp.headers['retry-after']) || 120;
-            log.warning(`Rate-limited by ${source.label} (429). Waiting ${retryAfter}s before retry ${attempt}/4.`);
-            await sleep((retryAfter + 2) * 1000);
+            const waitMs = Math.min((retryAfter + 2) * 1000, Math.max(remainingMs(), 0));
+            log.warning(`Rate-limited by ${source.label} (429). Waiting ${Math.round(waitMs / 1000)}s before retry ${attempt}/4.`);
+            await sleep(waitMs);
             continue;
         }
         if (resp.statusCode !== 200) {
@@ -781,11 +810,22 @@ async function fillBuffer(c) {
             // but this portal's contribution is now unknown, not zero.
             c.failed = true;
             c.url = null;
-            markIncomplete(
-                'source-failed',
-                `${c.source.label} stopped answering after ${c.pages} page(s) (${c.source.lastError ?? 'unknown error'}); `
-                + `its notices are missing from this run, and "0 from ${c.source.label}" here does NOT mean it had none`,
-            );
+            // A clock-caused stop must not be reported as the PORTAL failing: the advice a buyer
+            // can act on is "raise the run timeout / narrow the query", not "the portal is down".
+            if (timeBudgetExceeded) {
+                markIncomplete(
+                    'time-budget',
+                    `the run ran out of time after ${c.pages} page(s) with ${c.source.label} still paging; `
+                    + `its remaining notices are missing from this run, and "0 from ${c.source.label}" here does NOT mean `
+                    + 'it had none — raise the run timeout or narrow the query (fewer stages, a shorter window)',
+                );
+            } else {
+                markIncomplete(
+                    'source-failed',
+                    `${c.source.label} stopped answering after ${c.pages} page(s) (${c.source.lastError ?? 'unknown error'}); `
+                    + `its notices are missing from this run, and "0 from ${c.source.label}" here does NOT mean it had none`,
+                );
+            }
             break;
         }
         const releases = body.releases ?? [];
@@ -901,7 +941,12 @@ if (stoppedShort.length) {
 // run. `page-cap`/`seed-cap` are deliberately excluded -- those are the buyer's own query/budget
 // being too broad, already surfaced in RUN_SUMMARY, and a capped-but-real baseline is still
 // strictly better than none. Seeding never charges, so refusing to save costs nothing but a re-run.
-const seedFailure = seeding && incompleteReason === 'source-failed' ? incompleteDetail : null;
+//
+// `time-budget` belongs with `source-failed`, NOT with the caps: the buyer picks a page/seed cap
+// deliberately and the walk stops at a spot they chose, whereas the clock cuts the walk at an
+// arbitrary, run-to-run-varying point. Saving that is the cycle 297/298 trap with extra noise.
+const SEED_FATAL_REASONS = new Set(['source-failed', 'time-budget']);
+const seedFailure = seeding && SEED_FATAL_REASONS.has(incompleteReason) ? incompleteDetail : null;
 
 if (watchMode && seedFailure) {
     log.warning(
@@ -938,7 +983,18 @@ if (watchMode && seedFailure) {
 }
 
 if (pushed === 0 && !seeding) {
-    if (watchMode) {
+    if (timeBudgetExceeded) {
+        // Neither of the two diagnostics below can be told the truth on a clock-cut run: the
+        // filter checklist blames inputs the run never actually tested, and the watch-mode line
+        // ("that is the expected result most of the time") would reassure a buyer that their
+        // watch is healthy when it never finished looking. Say what really happened instead.
+        log.warning(
+            `0 notices delivered because the run ran out of time, NOT because nothing matched — `
+            + `only ${scanned} release(s) over ${page} page(s) were read before the clock stopped the walk. `
+            + 'Do not change your filters on the strength of this run: raise the run timeout, or narrow the '
+            + 'query (fewer stages, a shorter updatedWithinDays, one source), and re-run. See RUN_SUMMARY.',
+        );
+    } else if (watchMode) {
         log.warning(
             `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
             + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
