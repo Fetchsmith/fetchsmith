@@ -5950,3 +5950,62 @@ watched; nothing watched *disclosure*, which is why 17 runs landed on an empty p
 **A 0-row run's diagnostic advice is part of the timeout fix, not a cosmetic extra** (the cycle 1736 clinicaltrials lesson again, found independently here). This Actor logged a confident 5-cause filter checklist on any 0-row run — "cpvCodes does not match", "updatedWithinDays is too short", "sources excludes the portal your notices are on" — none of which a clock-cut run had actually tested. Worse, in watch mode it logged "Nothing new for watch label X... **that is the expected result most of the time; you were charged for nothing**", which actively reassures a buyer that their scheduled watch is healthy when the run never finished looking. Both now sit behind a `timeBudgetExceeded` branch that says what happened and explicitly tells the buyer *not* to change filters on the strength of that run. **Generalises: after adding a time-budget guard, grep the Actor for every "nothing found / nothing new / expected result" message and ask whether it is still true when the walk was cut short — a reassuring message on a truncated run is more harmful than a missing one.**
 
 **"Are its sleeps bounded?" is the wrong triage question for hard-kill risk — ask "what is lost if the process dies at the worst moment?"** For 8 cycles the rollout carried `sam-gov-opportunities-scraper` as "bounded waits already; gains only the proactive stop, not an unbounded-hang fix". Re-checking this cycle, the sleep-duration claim is correct (all hardcoded 200ms–3s, server `Retry-After` ignored entirely, ~20s worst case per call site) — and the conclusion drawn from it was still wrong. That Actor enriches **every** row (1 HTTP call + 200ms sleep per row, no time budget) before pushing **any** row, so a hard kill mid-enrichment loses 100% of the run's rows and writes no RUN_SUMMARY — reachable on an ordinary large enriched run with no upstream slowness at all. That is worse than the unbounded-sleep bug the rollout was built to close. **Generalises: unbounded sleeps are only one way to meet a hard kill. The other, easier one is a long two-pass "collect everything, then deliver everything" shape — any loop that does per-row network work before the first `pushData`/`charge` is a total-loss window, and sleep duration says nothing about it. When auditing a fleet for timeout exposure, check push ORDERING as well as wait DURATION.**
+
+## Cycle 1744 — we advertised a price no buyer could pay, for 1700 cycles, on the only page the growth channel reads
+
+**The bug.** `/tools/<slug>` quoted its price as "1 credit per result / About $0.0025 per
+result on the Starter pack". That is the **hosted-API credit price**, for a Polar checkout
+that is **not live** (`checkout_live = bool(polar_products())`, deferred by owner decision).
+The one destination a buyer can actually buy from is the Apify Actor the page's own CTA
+points at — and its live per-result price appeared **nowhere** on the page, nor in the
+page's schema.org `Offer`, which carried the same unbuyable $0.0025.
+
+**The magnitude is the part worth remembering.** The credit price is a flat $0.0025/result
+for *all 24 tools* (1 credit x $0.0025), while real live Apify prices span **$0.0001 to
+$0.004** — so the page overstated the price **25x** on `app-store-reviews-scraper` and
+`google-play-reviews-scraper`, and understated it on `us-federal-awards-scraper`. A single
+hardcoded constant standing in for 24 independently-priced products is the kind of claim
+that reads as fine in the template and is wrong on nearly every page it renders.
+
+**Why this is the highest-leverage version of the 1653 finding, not a cosmetic fix.**
+Cycle 1653 established the standing conclusion: the off-platform channel is AI answer
+engines (out-crawling Google+Bing 8.5:1 then, 14.6:1 by 1676), and the question to optimise
+is *"when an answer engine summarises this page, does the buyer get a clickable, billable
+destination AND the price?"*. 1653 fixed the destination half (Actor URL as its own anchor
+text). **Nobody went back for the price half** — the conclusion was filed as done. An answer
+engine citing these pages was handing buyers a correct URL next to a fabricated price.
+**Rule: when a finding names two things to fix and a cycle fixes one, the other does not
+inherit "done" from the conclusion's status. Re-read the conclusion, not the cycle note.**
+
+**Three traps hit while fixing it, all reusable:**
+1. **`meta.json` cannot be the site's price source.** 14 of 30 charge events have no
+   `eventPriceUsd` there at all — a charge event carries EITHER a flat `eventPriceUsd` OR a
+   per-plan `eventTieredPricingUsd` map (the cycle-480 trap `bin/check-pricing` documents).
+   Code reading only the flat field sees `None` for half the fleet and renders "no price".
+   The live `pricingInfos` record is authoritative, and is a *history* list whose last entry
+   may be future-dated (cycle 388) — filter `startedAt <= now` before quoting any of it.
+2. **Quoting the cheapest tier is the dishonest option.** On a tiered Actor the floor is
+   ~2x cheaper than what a *new* buyer is charged (`steam-reviews-scraper`: $0.000575 entry,
+   $0.0003 floor). "From $X" is what the Actor descriptions use, but on a buyer-facing price
+   line the entry price must lead with the floor as a secondary clause — the phrasing the
+   READMEs already settled on. A cited price the buyer does not get is worse than no price.
+3. **`'%.4f'` silently invents prices.** It renders 0.000575 as "0.0006" and 0.00085 as
+   "0.0009". The old credit price was always 4dp by construction so the format was safe;
+   reused on real fleet prices it would quote rates we do not charge. 6dp covers $0.0001-$0.004.
+
+**Also: `json.dump(obj, indent=2)` is not a safe rewriter for our JSON state files.** On
+`registry.json` it escapes the em-dash in every one of 24 titles and shifts ~420 bytes,
+burying a 144-line real change in noise. `indent=2, ensure_ascii=False` + a trailing
+newline round-trips **byte-identically** — verify that before writing any tracked JSON file,
+so the diff shows only what changed.
+
+**One self-inflicted false alarm, recorded because the shape recurs.** `bin/indexnow`
+returned 400 for >=2 URLs and 200 for exactly 1, reproducibly, surviving a 75s pause — which
+looked exactly like a real multi-URL bug in the script. It was not: **`./bin/indexnow $urls`
+with a newline-separated variable does not word-split in this shell**, so all 23 URLs arrived
+as ONE argv entry with embedded newlines, and the embedded newlines made the JSON body
+invalid (`Invalid control character`). The script is correct; `| xargs ./bin/indexnow`
+submits all 23 at 200. Same lesson as cycles 958/974/1653's sitemap `grep -c`: **a
+reproducible failure in a tool that has worked before is first a bug in how this cycle
+invoked it.** Dumping the actual bytes sent ended the guessing in one step — do that before
+the third hypothesis, not after.
