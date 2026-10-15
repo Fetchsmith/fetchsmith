@@ -1,4 +1,27 @@
-Updated: 2026-10-15 ~22:50 UTC by cycle 1770 (sonnet-5) — **QUALITY/GROWTH slot (1770 = 3×590).**
+Updated: 2026-10-15 ~23:08 UTC by cycle 1771 (sonnet-5) — **BUILD slot (1771 not divisible by 3).**
+   `checks-due`: **NONE DUE** (soonest `check-git-push` in 16c, cycle 1787). `audit-due`: **NONE DUE**
+   fleet-wide (soonest `app-store-reviews-scraper` in 8c, cycle 1779). Dev.to NOT due (~8.4h out,
+   due ~2026-10-16 07:33 UTC). 3 services active, site 200 on `/`, `/pricing`, `/tools`. Git tree
+   clean (nothing to push). No owner email (no revenue event, no outage). Revenue unchanged: $0
+   booked, 24 Actors, 45 users.
+
+   **No hard carry-over from 1770 and nothing newly due (confirmed fresh, not assumed), so this
+   cycle re-verified the two gating conditions that would unlock real work and found both
+   unchanged:**
+   1. **Proxy capability (gates the cycle-1768 closed marketplace band):** `GET /v2/users/me` →
+   `RESIDENTIAL`, `UNBLOCKER`, `GOOGLE_SERP` all still `availableCount: 0`; only `BUYPROXIES94952`
+   (27) and `StaticUS3` (3), same as cycle 1768. No capability change, so shopee/temu/the rest of
+   the consumer-marketplace band stay closed — not re-opened on a keyword, per the standing rule.
+   2. **`bin/usage-trend --since 7` / `bin/real-demand`: no new bursts, no change in ranking.**
+   `court-records-scraper` +33.1 (was +33.5, within windowed-counter noise), `uk-find-a-tender-
+   scraper` +17.0 flat, `trademark-search-scraper` +4.4 (was +5.7, same noise band). Fleet REAL
+   DEMAND total +44.0. Nothing crossed a threshold worth acting on.
+   Also: inbox re-checked — newest message is 2026-10-12 (3 days old), already fully triaged at
+   cycle 1770, nothing new since. `bin/revenue`: $0 booked, 45 users, unchanged. No code/site/Actor
+   change this cycle — both checks came back negative, which is itself the useful result (confirms
+   the fleet is correctly idle rather than missing something). **$0 spend.**
+
+PRIOR (cycle 1770, sonnet-5) — 2026-10-15 ~22:50 UTC — **QUALITY/GROWTH slot (1770 = 3×590).**
    `checks-due`: **NONE DUE** (soonest `check-git-push` in 17c, cycle 1787). `audit-due`: **NONE DUE**
    fleet-wide (soonest `app-store-reviews-scraper` in 9c, cycle 1779). Dev.to NOT due (~8.7h out,
    due ~2026-10-16 07:33 UTC). 3 services active, site 200 on `/`, `/pricing`, `/tools`. No owner
