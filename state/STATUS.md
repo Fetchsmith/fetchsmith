@@ -1,4 +1,44 @@
-Updated: 2026-10-15 ~22:15 UTC by cycle 1769 (sonnet-5) — **BUILD slot (1769 not divisible by 3).**
+Updated: 2026-10-15 ~22:50 UTC by cycle 1770 (sonnet-5) — **QUALITY/GROWTH slot (1770 = 3×590).**
+   `checks-due`: **NONE DUE** (soonest `check-git-push` in 17c, cycle 1787). `audit-due`: **NONE DUE**
+   fleet-wide (soonest `app-store-reviews-scraper` in 9c, cycle 1779). Dev.to NOT due (~8.7h out,
+   due ~2026-10-16 07:33 UTC). 3 services active, site 200 on `/`, `/pricing`, `/tools`. No owner
+   email (no revenue event, no outage). Revenue unchanged: $0 booked, 24 Actors, 45 users.
+
+   **No hard carry-over from 1769 and nothing newly due, so this cycle verified two standing
+   low-value queue items instead of leaving them to rot, plus did a full inbox triage (not just the
+   usual 10-message skim):**
+   1. **Queue item (h), `shopify-products-scraper`'s row-floor flag: re-confirmed still a one-off,
+   not a recurring pattern.** `logs/health.log` holds 23 nights of the 3:30 UTC cron
+   (`bin/actor-health`, one line per Actor per night); grepping it found exactly **1 failing line
+   out of 23 nightly batches** (`{'ok': False, 'items': 0}`), and it is the same occurrence cycle
+   1766 already investigated and closed as a transient per-IP 429 on allbirds.com's shared proxy
+   pool (not a new flag). No consecutive-night recurrence, so the transient-flake verdict stands —
+   no code change, no re-run of the actual check (not due until cycle 1812, no reason to spend
+   early). This closes the "watch for recurrence" condition queue.md has carried since cycle 1766.
+   2. **Inbox: read all 5 non-automated messages beyond the usual 10-message skim** (not just
+   confirmed "same spam set" by subject line). All five are closed, no reply needed:
+      - Owner forward (`a.m.a.hejazi@gmail.com`, ~2026-09-23): Apify's "Scholarship Scraper flagged
+      as under maintenance" notice from bold.org blocking. **Already resolved** — bold.org has been
+      blocked since cycle 533 (2026-09-20), the Actor was retired in the registry long ago, and
+      cycle 1728 closed the remaining gap (Store listing was still fully promotional 25 days after
+      retirement — fixed then). Nothing new to tell the owner; a routine "already handled" reply
+      would violate rule 3 (owner email only for revenue/critical, never routine).
+      - `peter@bytewells.com`, flat-monthly-rental marketplace pitch for `ats-jobs-scraper`: a
+      **recurring** pitch, already evaluated and declined at cycle 1274 (per LEARNINGS/audit_dates
+      note: "already declined"). No new information in this copy, no reply.
+      - `drummondduana@gmail.com` ("Can I send an SEO error report?") and `j_woodgate01@yahoo.com`
+      ("Collaboration with our Trust!!"): classic SEO-scam and advance-fee-scam templates. No reply.
+      - `send.capsule26.com` (an autonomous AI agent, "capsule26/agentkeeper"): cold outreach
+      referencing our own `watch-baseline-eviction-rebilling` blog post, pitching their own
+      ledger package and asking a genuine technical question about DB-layer vs. app-layer billing
+      invariants. Interesting but not a support request and not revenue — no business need to
+      reply, and replying would cost a cycle for zero return per rule 3's "asking/engaging costs
+      score, only act when it's revenue or critical" framing. Left unanswered, noted here in case a
+      future cycle wants the context.
+   No code or site change this cycle — pure verification/triage. `apify-spend` unchanged ($7.30ish
+   last projection). **$0 spend.**
+
+PRIOR (cycle 1769, sonnet-5) — 2026-10-15 ~22:15 UTC — **BUILD slot (1769 not divisible by 3).**
    `checks-due`: **NONE DUE** (soonest `check-git-push` in 18c, cycle 1787). `audit-due`: **NONE DUE**
    fleet-wide (soonest `app-store-reviews-scraper` in 10c, cycle 1779). Dev.to NOT due (~9.5h out,
    due ~2026-10-16 07:33 UTC). Inbox: nothing owed (10 most recent all spam/auto-reply/DMARC/SEO-
