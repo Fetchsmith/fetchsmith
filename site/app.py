@@ -1,6 +1,6 @@
 """FetchSmith web app: catalog, legal pages, API (keys + credits), Polar checkout/webhooks."""
 import os, json, time, secrets, sqlite3, hmac, hashlib, base64, logging
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse, RedirectResponse, Response
@@ -335,12 +335,34 @@ def llms():
               f"- [Apify Store profile (all {len(public_tools())} tools, runnable today)](https://apify.com/{au})"]
     return "\n".join(lines) + "\n"
 
+_STATIC_PAGE_TEMPLATES = {
+    "": "home.html", "/tools": "tools.html", "/pricing": "pricing.html", "/docs": "docs.html",
+    "/blog": "blog.html", "/about": "about.html", "/contact": "contact.html",
+    "/terms": "terms.html", "/privacy": "privacy.html", "/refunds": "refunds.html",
+}
+
+def _file_date(path: Path):
+    try:
+        return date.fromtimestamp(path.stat().st_mtime).isoformat()
+    except OSError:
+        return None
+
 @app.get("/sitemap.xml")
 def sitemap():
-    urls = (["", "/tools", "/pricing", "/docs", "/blog", "/about", "/contact", "/terms", "/privacy", "/refunds"]
-            + [f"/tools/{t['slug']}" for t in public_tools()]
-            + [f"/blog/{p['slug']}" for p in load_posts()])
-    body = "".join(f"<url><loc>{SITE_URL}{u}</loc></url>" for u in urls)
+    # lastmod uses filesystem mtime (template file for static pages, actor meta.json for tool
+    # pages, the post's own frontmatter `date` for blog -- that one is already authoritative and
+    # cheaper than a stat call). Omitted, not guessed, if the backing file is missing.
+    entries = []
+    for u, tmpl in _STATIC_PAGE_TEMPLATES.items():
+        entries.append((u, _file_date(ROOT / "site" / "templates" / tmpl)))
+    for t in public_tools():
+        entries.append((f"/tools/{t['slug']}", _file_date(ROOT / "actors" / t["slug"] / "meta.json")))
+    for p in load_posts():
+        entries.append((f"/blog/{p['slug']}", p.get("date")))
+    body = "".join(
+        f"<url><loc>{SITE_URL}{u}</loc>{f'<lastmod>{lm}</lastmod>' if lm else ''}</url>"
+        for u, lm in entries
+    )
     return Response(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>', media_type="application/xml")
 
 @app.get("/health")
