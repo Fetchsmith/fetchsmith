@@ -3,6 +3,16 @@ import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
 await Actor.init();
+// Soft-deadline guard (cycle 1734, same pattern as google-news-scraper/court-records-scraper): a
+// hard platform kill mid-walk skips the RUN_SUMMARY write below AND, in watch mode, the baseline
+// save -- the buyer loses their seed and gets re-billed for everything past the cutoff next run.
+// Stop proactively with a safety margin instead, and report it as 'time-budget', not a NIH
+// RePORTER failure (apiPost's own retry/retry-after sleeps are the thing most likely to overrun).
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+
 const input = (await Actor.getInput()) ?? {};
 
 // NIH RePORTER's official public API (no API key, no auth). POST + JSON body, like Grants.gov
@@ -46,6 +56,11 @@ let chunksCountFailed = 0;    // sub-queries whose count never answered -- NOT t
 // (offset-wall, seed-cap) that is not itself an over-charge risk -- only THIS flag, not the
 // reason string, decides whether a SEED walk's baseline is safe to save.
 let seedUpstreamFailure = false;
+// Set the instant apiPost() stops short of the time budget rather than NIH genuinely failing to
+// answer -- lets every `=== null` call site below report 'time-budget' instead of a misleading
+// NIH-side failure reason.
+let timeBudgetExceeded = false;
+function countFailureReason() { return timeBudgetExceeded ? 'time-budget' : 'count-request-failed'; }
 
 // First cause wins: a walk that stopped because NIH stopped answering and THEN also hit
 // maxResults must keep reporting the upstream failure -- that is the cause the buyer can act on.
@@ -67,6 +82,11 @@ function markUpstreamFailure(reason, detail = null) {
 
 async function apiPost(path, body, attempts = 4) {
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        if (!timeBudgetOk()) {
+            timeBudgetExceeded = true;
+            lastApiError = `${path}: stopped before the platform run timeout (attempt ${attempt}/${attempts})`;
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -82,14 +102,17 @@ async function apiPost(path, body, attempts = 4) {
         } catch (err) {
             lastApiError = `${path}: ${err.message}`;
             log.warning(`NIH RePORTER request failed (${err.message}); retrying (${attempt}/${attempts}).`);
-            await sleep(attempt * 2000);
+            await sleep(Math.min(attempt * 2000, Math.max(remainingMs(), 0)));
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             lastApiError = `${path}: HTTP ${resp.statusCode}`;
+            // A server Retry-After has no upper bound of its own (a real one logged elsewhere on
+            // this fleet: 3600s) -- never let it sleep past this run's own timeout.
             const waitS = Number(resp.headers['retry-after']) || attempt * 5;
-            log.warning(`NIH RePORTER returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/${attempts}).`);
-            await sleep(waitS * 1000);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`NIH RePORTER returned ${resp.statusCode}; retrying in ${Math.round(waitMs / 1000)}s (${attempt}/${attempts}).`);
+            await sleep(waitMs);
             continue;
         }
         let parsed = null;
@@ -927,6 +950,14 @@ async function walkChunk(criteria, total) {
             // and the run reported "Done. Pushed N project records" -- SUCCEEDED, silently short.
             // In a seeding run it is worse: the baseline is short, so the next incremental run
             // charges the buyer for projects that already existed. (7th appearance of that shape.)
+            if (timeBudgetExceeded) {
+                markUpstreamFailure('time-budget', `offset=${offset}, approaching the platform run timeout`);
+                log.warning(
+                    `Stopping at offset ${offset} of ${total === null ? 'an unknown number of' : total} match(es): `
+                    + 'approaching the platform run timeout, not a NIH RePORTER failure. See RUN_SUMMARY.',
+                );
+                return false;
+            }
             markUpstreamFailure('search-request-failed', lastApiError);
             log.warning(
                 `NIH RePORTER stopped answering at offset ${offset} of `
@@ -1081,11 +1112,14 @@ if (rootTotal === null) {
     // The count query itself never got an answer. Before cycle 647 this became `0`, the walk was
     // skipped entirely, and the run SUCCEEDED with an empty dataset and a warning telling the buyer
     // their filters were too narrow. Now it is named, and the walk still runs blind to the wall.
-    markUpstreamFailure('count-request-failed', lastApiError);
+    markUpstreamFailure(countFailureReason(), lastApiError);
     log.warning(
-        'NIH RePORTER never answered the match-count query for these filters, so how many projects match is '
-        + 'UNKNOWN (not zero). Paging ahead anyway up to the offset wall; whatever comes back is real but may be '
-        + 'incomplete, and results-per-query planning is disabled for this run. See RUN_SUMMARY.',
+        timeBudgetExceeded
+            ? 'Stopping before NIH RePORTER could answer the match-count query: approaching the platform run '
+            + 'timeout, not a NIH RePORTER failure. See RUN_SUMMARY.'
+            : 'NIH RePORTER never answered the match-count query for these filters, so how many projects match is '
+            + 'UNKNOWN (not zero). Paging ahead anyway up to the offset wall; whatever comes back is real but may be '
+            + 'incomplete, and results-per-query planning is disabled for this run. See RUN_SUMMARY.',
     );
 } else {
     log.info(`Matched ${rootTotal} project records before paging.`);
@@ -1129,9 +1163,10 @@ if (rootTotal === null) {
             // named in RUN_SUMMARY.
             if (total === null) {
                 chunksCountFailed += 1;
-                markUpstreamFailure('count-request-failed', lastApiError);
+                markUpstreamFailure(countFailureReason(), lastApiError);
                 log.warning(`Match count failed for sub-query ${JSON.stringify(chunk).slice(0, 120)} (${lastApiError}); paging it blind rather than skipping it.`);
                 chunksScanned += 1;
+                if (timeBudgetExceeded) break;
                 if (!(await walkChunk(chunk, null))) break;
                 continue;
             }
@@ -1145,8 +1180,9 @@ if (rootTotal === null) {
                         const t = await countOf(s);
                         if (t === null) {
                             chunksCountFailed += 1;
-                            markUpstreamFailure('count-request-failed', lastApiError);
+                            markUpstreamFailure(countFailureReason(), lastApiError);
                             log.warning(`Match count failed for sub-query ${JSON.stringify(s).slice(0, 120)} (${lastApiError}); paging it blind rather than skipping it.`);
+                            if (timeBudgetExceeded) break;
                             if (!(await walkChunk(s, null))) break;
                             continue;
                         }
