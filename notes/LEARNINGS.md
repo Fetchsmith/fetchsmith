@@ -6074,3 +6074,44 @@ either way as of this cycle.
 **Unmeasured, flagged so a later cycle doesn't assume it:** whether these listings run in Apify
 standby mode. The field probed (`isStandby`/`standbyConfig`/`defaultRunOptions.standby`) is simply
 absent from the public Actor record, so that read was empty, not negative.
+
+## Cycle 1749 (sonnet-5) — the biggest bucket-arithmetic rank win ever priced in this fleet was declined, on buyer-intent and truthfulness grounds, not reachability
+
+Closed cycle 1748's one open sub-finding: does naming an AI client ("Claude", "ChatGPT", "Cursor",
+"AI Agent") in a title/description move our rank, the way it apparently does for MCP-server
+listings? Priced all 4 terms with `bin/store-rank --why` against `remote-jobs-scraper` (picked for
+having the most title/description headroom in the fleet — every other Actor is within 0-5 chars
+of both the 63-char title cap and the 300-char description cap after ~900 cycles of prior SEO
+work, confirmed by actually measuring all 24 before picking).
+
+**`ai agent` (nbHits=10,937) has a real, free, rank-1 win available: the entire 59-record title
+bucket sits at prox=1** — every competitor's title has "AI" and "Agent" one word apart ("AI Travel
+Agent", "AI Web Agent", "Job Search Assistant AI Agent"), never contiguous. A literal "AI Agent"
+phrase would create an empty prox=0 bucket and land p1 ahead of all of them — bigger than any
+prior win in `bin/store-rank`'s history (previous record wins were on 300-8800-hit queries, this is
+10,937). `chatgpt`/`claude`/`cursor` were all weaker: single prox=0 title blocks of 50-60 records
+sorted by storePosition, landing us somewhere mid-to-deep-pack, not a clean win.
+
+**Declined to ship the "ai agent" win anyway.** The fleet's standing truthful-SEO rule (every prior
+win in `bin/store-rank`'s 900-cycle history) is "the phrase must already be true of the Actor,
+verified against the README before shipping" (cycle 906's `court-records-scraper`/
+`us-federal-awards-scraper` pattern). "AI Agent" in a remote-jobs-scraper title fails that test
+twice over: (1) a human reading it would reasonably infer "scrapes AI agent jobs" or "is an AI
+agent," neither of which is true — this is a step past every prior win, which added a phrase
+*already* descriptive of the product, not one describing an unrelated product category; (2) even
+granting the charitable true reading ("callable by an AI agent via HTTP" — true of every Actor in
+the fleet, not just this one), it still doesn't convert: everyone else who ranks for "ai agent" IS
+an agent/MCP product, and that buyer wants to deploy an agent, not scrape remote job boards.
+Reachability and relevance are different questions, and this is the cleanest fleet example yet
+where the Algolia bucket math says "yes, free, p1" while the actual question — does the human on
+the other end of that search want this Actor — says no.
+
+**Generalises beyond this one query:** `bin/store-rank`'s bucket-arithmetic method answers "can we
+rank for X," never "should we." The $300 budget and the no-spam rule in CLAUDE.md both route
+through the same test this cycle applied by hand — check it explicitly before shipping any
+future win sized this large, not just the character-count/truthfulness checks the tool already
+encodes.
+
+**No edit shipped, no build, $0 spend.** Closes the cycle-1748 queue item; do not re-derive the
+"ai agent" pricing from scratch — re-open only if a specific Actor's actual output would make an
+agent-client phrase specifically and narrowly true (not a generic rank play).

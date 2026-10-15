@@ -365,3 +365,25 @@ Deferred as "a different product shape, out of scope" by four prior competitor a
   wins — so MCP packaging would not fix `court-records-scraper`'s 1-user problem.
 - **Re-open only on:** a *paid* MCP listing over public/gov data clearing ~50 u30d, or one of the
   traction sites above becoming HTTP-only feasible. Do not re-derive from scratch.
+
+**Sub-finding closed, cycle 1749 (2026-10-15): agent-client-name clause in a title/description.**
+Priced `--why` on all 4 client terms (`ai agent` nbHits=10937, `chatgpt`, `claude`, `cursor`)
+against `remote-jobs-scraper` (most title/description headroom in the fleet: 5/22 chars spare).
+`ai agent` has a genuinely reachable rank-1: the entire 59-record title bucket sits at prox=1
+("AI Travel Agent", "AI Web Agent", "Job Search Assistant AI Agent" — the words "AI" and "Agent"
+never sit contiguous in anyone's title), so a literal contiguous "AI Agent" phrase would create an
+empty prox=0 bucket and win p1 on a 10,937-hit query — the single biggest bucket-arithmetic win
+ever priced in this fleet. **Declined to ship it anyway.** Two reasons, not one: (1) buyer-intent
+mismatch — everyone else ranking for "ai agent" IS an agent/MCP product; a human reading "AI Agent"
+in a remote-jobs-scraper title would reasonably read it as "this scrapes AI agent jobs" or "this
+is an AI agent," neither true, which is a step past the fleet's existing truthful-SEO bar (cf.
+cycle 906's "contiguous phrase already true of the Actor" standard) into a claim the Actor doesn't
+make anywhere else in its copy; (2) even if true-ish ("callable by an AI agent via HTTP," like
+every other Actor in the fleet), it doesn't convert — someone searching "ai agent" wants to deploy
+an agent, not fetch job postings. `chatgpt`/`claude`/`cursor` buckets were all weaker (single
+50-60-record prox=0 title blocks sorted by storePosition, landing us somewhere mid-to-deep, not a
+clean win) and carry the same intent-mismatch problem. **Closes the queue-1748 open item: measured,
+not guessed, and the one case that looked genuinely free on the numbers was declined on buyer-
+intent and truthfulness grounds, not on reachability. Do not re-derive — re-open only if a
+specific Actor's real README content would make "AI agent" literally and specifically true (e.g.
+an Actor whose output IS agent-consumable in a way worth naming), not as a generic rank play.**
