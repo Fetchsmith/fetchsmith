@@ -1060,14 +1060,21 @@ if (watchMode && seedFailure) {
     }
 }
 
+// Built once and reused below for `setStatusMessage` -- until cycle 1753 these were log-only,
+// so a run that is COMPLETE (every selected index exhausted, no cap, no upstream failure) with
+// zero matches fell through the `!complete`/`baselineTruncated` checks further down and reached
+// the console as a plain green SUCCEEDED run with `statusMessage: null`, same bug class as
+// trademark-search-scraper 0.1.58 (cycle 1752). Live-reproduced before this fix: query
+// "zzyzxqplonknonexistentcasefetchsmithtest1987" + courts ["ca9"] + recordType "both" (every
+// filter value valid) finished SUCCEEDED, dataset empty, statusMessage null, RUN_SUMMARY
+// complete:true/delivered:0 -- exactly this branch.
+let zeroRowMessage = null;
 if (pushed === 0 && watchMode && !seeding) {
-    log.warning(
-        `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching record(s) had `
-        + 'already been delivered. That is the expected result most of the time; you were charged for nothing.',
-    );
+    zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching record(s) had `
+        + 'already been delivered. That is the expected result most of the time; you were charged for nothing.';
+    log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding) {
-    log.warning(
-        `No records matched. Scanned ${scanned} rows. Most common causes, in order: `
+    zeroRowMessage = `No records matched. Scanned ${scanned} rows. Most common causes, in order: `
         + '(1) every filter is ANDed — a query plus a court plus a narrow filed-date window often has zero real '
         + 'matches; drop one and retry. '
         + '(2) a court id must be CourtListener\'s own short slug, the one in a courtlistener.com/court/<id>/ URL '
@@ -1078,8 +1085,8 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'dedicated docketNumber field for a case number, and if that returns nothing try it without the office '
         + 'prefix ("20-cv-03590" rather than "1:20-cv-03590"), since the format varies by court. '
         + '(5) partyName/attorneyName match the parties and attorneys recorded on a RECAP docket — a name that only '
-        + 'appears in the body text of an opinion will not match; put that in the query instead.',
-    );
+        + 'appears in the body text of an opinion will not match; put that in the query instead.';
+    log.warning(zeroRowMessage);
 }
 
 log.info(
@@ -1155,6 +1162,8 @@ if (!complete) {
             : `Watch label "${watchLabel}": ${pushed.toLocaleString('en-US')} record(s) delivered.`)
         + truncationNote(),
     );
+} else if (zeroRowMessage) {
+    await Actor.setStatusMessage(zeroRowMessage);
 } else {
     log.info(`Complete: every selected index (${recordTypes.join(', ')}) was read to the end of its matches for these filters.`);
 }

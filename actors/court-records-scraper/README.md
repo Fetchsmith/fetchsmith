@@ -231,6 +231,8 @@ The fourth, `cloudastra-technologies/india-court-case-search`, is out of scope o
 
 **My `docketNumber` lookup returned nothing even though I'm sure the case exists.** Try it without the office prefix — `20-cv-03590` instead of `1:20-cv-03590`. The format varies by court.
 
+**I got a SUCCEEDED run with 0 rows and no explanation — what happened?** As of v0.1.60 this always shows a reason in the run's status message (and in the run log), not just a blank green run. Three cases, each with its own message: (1) your filters are mutually exclusive — every filter is ANDed, so a query plus a court plus a narrow filed-date window often has zero real matches; drop one and retry. (2) a watch-label run found nothing new since its last check — the expected, charge-nothing outcome most of the time. (3) every filter value you gave is valid and CourtListener genuinely has no match — common causes are an unrecognised court id (CourtListener silently matches nothing rather than rejecting it), searching the wrong index (`recordType`), or putting a case number in the free-text query instead of the dedicated `docketNumber` field. Check `RUN_SUMMARY` for the scanned/declared counts either way.
+
 **Can I combine `partyName` with `judge`?** No — it's rejected upfront as an error. `partyName`/`attorneyName` exist only on the RECAP docket index; `judge` exists only on opinions. No single search can use both, so the combination can never match anything.
 
 **What happens on the first run of a new `watchLabel`?** It records the current match set as a baseline, returns zero results, and charges nothing. Every run after that returns only what's new since. Changing any filter starts a fresh baseline under the same label.
