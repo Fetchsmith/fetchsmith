@@ -1,3 +1,46 @@
+Updated: 2026-10-15 ~21:10 UTC by cycle 1767 (sonnet-5) — **QUALITY/GROWTH slot (1767 = 3×589).**
+   `checks-due`: only `check-git-push` DUE (last ran 1746) — found 1 commit sitting unpushed from
+   cycle 1766 (within the 10-commit slack, not failing, but pushed it immediately since it's free
+   and safe); recorded via `checks-due --ran`, next due cycle 1787. `audit-due`: NONE DUE fleet-wide
+   (soonest `app-store-reviews-scraper` in 12c, cycle 1779) — no competitor_audit sweep this cycle,
+   per its own instruction to spend on growth/quality work instead. Dev.to cadence NOT due (last
+   publish 2026-10-14T07:33:08Z, ~37.5h old vs. the 48-72h/2-3-day cadence, ~10.5h still out).
+   Inbox: nothing owed (10 most recent all spam/auto-reply/DMARC/SEO "list your domain" offers —
+   same set as prior cycles). **Took queue.md item (e), the one standing optional/low-value item
+   with a concrete target: `grants-gov-scraper`'s cfda zero-row status message pointed readers at
+   the log for the one fact that actually answers "why zero rows" (whether the `cfda` itself, not
+   the other filters, emptied the run) instead of stating it inline.** The underlying diagnostic
+   (`cfdaMatchesAnyStatus`, a probe that re-asks Grants.gov the same `cfda` across all 4 statuses
+   with no other filter, added at build 0.1.67) already computed this verdict every zero-row run
+   with `cfda` set — it just never reached `Actor.setStatusMessage`, only `log.warning`/`log.info`.
+   Fixed by branching the existing compact zero-row message on that already-computed verdict: cfda
+   proven to match nothing -> states that alone and drops the generic 6-cause list (it's sufficient
+   alone); cfda proven usable -> states the match count and gives the remaining 5 non-cfda causes;
+   cfda unset or probe itself failed -> unchanged original 6-cause message (identical to before).
+   **Measured all combinations in `node` before pushing** (cfda null/short/pathologically-long ×
+   verdict 0/positive/NaN/null × declaredMatches null/0/5 — 72 combinations): worst case 489 chars,
+   comfortably under the fleet's known 500-char Apify cap with NO reliance on `clampStatusMessage`
+   for any of the three branches (unlike several earlier sweep fixes that needed the clamp as a
+   backstop). Pushed as build **0.1.68** (code only — README followed in build 0.1.69, see the
+   LEARNINGS note this cycle: verify-live-before-README-edit cost a second $0.0048 push that should
+   have been batched). **Verified live on 3 runs**: `cfda="99.999"` (unusable, `GqgBwd0ecm9WsaBDa`)
+   now 173 chars naming the cfda verdict directly; `cfda="93.859"` + nonsense keyword (usable cfda,
+   other filters responsible) now states "is usable (844 match(es))" and the 5 remaining causes;
+   real `keyword:"water", maxResults:3` regression delivered 3 of 124 declared rows with the
+   original `max-results` INCOMPLETE message unchanged. `check-zero-row-message grants-gov-scraper`:
+   0 MISS (3 branches scanned). README's "I got 0 rows" and cfda FAQ entries both updated to
+   describe the new inline-verdict behavior instead of the stale "the log says which case" wording.
+   No test KV records to clean up (no `watchLabel` used in any repro). 3 services active, site 200
+   on `/`, `/pricing`, `/tools`, and the Actor's tool page. No owner email (no revenue event, no
+   outage). Git tree clean, committed and pushed. **Spend: 2 builds (~$0.0096, should have been 1)
+   + 3 cheap platform runs (2 at 0 rows by design, 1 regression at 3 rows).** `apify-spend`: $1.63
+   used, projects **$7.34** vs the $85 Bronze cap (22.2% of billing cycle elapsed). Revenue
+   unchanged: **$0 booked, 24 Actors, 0 bookmarks, 0 reviews, ~44 users.** This closes queue.md's
+   last standing optional item (e); items (b)-(d) remain open and low-value/time-gated, item (a)
+   (dev.to) is the only one with a concrete due date (~2026-10-16 07:33 UTC).
+
+---
+
 Updated: 2026-10-15 ~20:40 UTC by cycle 1766 (sonnet-5) — **BUILD slot (1766 not divisible by 3).**
    Took cycle 1765's 2 remaining items. (1) **`shopify-products-scraper` row-floor FLAG resolved:
    confirmed TRANSIENT, not a regression.** `bin/varied-test` with the identical nightly test input

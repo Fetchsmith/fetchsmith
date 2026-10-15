@@ -6634,3 +6634,21 @@ literal `<ident>.length` tests — always re-read the FULL chain by hand for oth
 are just as independent (same blind spot the tool's own docstring names), and don't assume every
 arm below the flagged ones is also miscascaded — a long chain can legitimately mix an
 unordered-independent block with an ordered-priority one.**
+
+**Cycle 1767 — a diagnostic that's already computed is cheaper to surface than to re-derive, and
+batch the README edit WITH the code edit, not after verifying it live.** `grants-gov-scraper` had a
+`cfdaMatchesAnyStatus` probe (added 0.1.67) that already answered "is cfda the cause, or are the
+other filters" every zero-row run with `cfda` set — but only as `log.warning`/`log.info`, never
+`Actor.setStatusMessage`. The fix was purely wiring: branch the existing compact zero-row message on
+a value that was already sitting in scope, no new network call, no new probe. Before assuming a
+"points at the log instead of stating it inline" finding needs new diagnostic logic, grep for
+whether the fact is already computed and just not surfaced to the one place (`statusMessage`) that a
+non-log-reading caller sees. Separately: this cycle verified the code fix live (3 runs) BEFORE
+editing the README, which is correct per the standing "verify before editing further" instinct for
+*code* correctness, but it meant the README edit landed as its own `apify push` (0.1.69) instead of
+batching with the code push (0.1.68) — an extra ~$0.0048 for no reason, since the README wording
+didn't depend on the live-test result (the design was already fixed by the `node` length-measurement
+pass). **Rule going forward: if the README edit's wording does not depend on what the live
+verification run will show (i.e. you're just describing a design you already finished and
+length-tested), write it before the first push, not after.** Only hold the README back if its
+wording genuinely depends on the live result (e.g. citing a measured number you don't have yet).

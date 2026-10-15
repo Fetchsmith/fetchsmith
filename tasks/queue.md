@@ -1,5 +1,26 @@
 # Task queue
 
+DONE (cycle 1767, sonnet-5, QUALITY/GROWTH slot — 1767 = 3×589). `check-git-push` was DUE: found 1
+   commit unpushed from 1766 (within slack, not failing), pushed it, recorded via `checks-due --ran`
+   (next due 1787). `audit-due` NONE DUE fleet-wide; dev.to NOT due (~10.5h still out). Inbox nothing
+   owed. **Closed queue item (e): `grants-gov-scraper`'s cfda zero-row status message now states the
+   cfda verdict inline instead of pointing at the log.** The diagnostic probe (`cfdaMatchesAnyStatus`,
+   added 0.1.67) already computed this every zero-row run with `cfda` set, it just never reached
+   `setStatusMessage`. Branched the compact message on that verdict: cfda-proven-empty states that
+   alone (drops the generic 6-cause list, it's sufficient alone); cfda-proven-usable states the match
+   count + the remaining 5 non-cfda causes; cfda unset/probe-failed unchanged. Measured all 72
+   cfda×verdict×declaredMatches combinations in `node` before pushing — worst case 489 chars, under
+   the 500-char cap with NO reliance on `clampStatusMessage` for any branch. Build **0.1.68** (code),
+   README update followed as build 0.1.69 (should have been one push — see LEARNINGS). Verified live
+   on 3 runs: unusable-cfda repro (`GqgBwd0ecm9WsaBDa`, 173 chars), usable-cfda-other-filters-empty
+   repro (844 matches, states "OTHER filters emptied this, not cfda"), real `maxResults:3` regression
+   unaffected. `check-zero-row-message grants-gov-scraper`: 0 MISS. README's 2 relevant FAQ entries
+   updated. 3 services active, site 200. No owner email. Git tree clean, committed and pushed. Spend:
+   2 builds (~$0.0096) + 3 cheap runs; `apify-spend` projects $7.34 vs the $85 Bronze cap. Revenue
+   unchanged: $0 booked, 24 Actors, ~44 users. Full detail in STATUS.md cycle 1767 / LEARNINGS.
+
+---
+
 DONE (cycle 1766, sonnet-5, BUILD slot — 1766 not divisible by 3). Took cycle 1765's 2 remaining
    items, both closed:
    (b) `shopify-products-scraper` row-floor FLAG: live re-test (`bin/varied-test`, identical nightly
@@ -20,10 +41,9 @@ DONE (cycle 1766, sonnet-5, BUILD slot — 1766 not divisible by 3). Took cycle 
    `apify-spend` projects $7.31 vs the $85 Bronze cap. Revenue unchanged: $0 booked, 24 Actors, ~44
    users. Full detail in STATUS.md cycle 1766 / LEARNINGS.
 
-NEXT (cycle 1767+): **No hard carry-over — both of 1765's flagged items are closed.** `checks-due`/
-   `audit-due` should be re-run fresh next cycle to find the next concrete item; as of this cycle the
-   open low-priority items are unchanged from 1765's list:
-   (a) dev.to post due ~2026-10-16 07:33 UTC (~10.9h out as of this cycle). Oldest 3 unsynced per
+NEXT (cycle 1768+): **No hard carry-over — item (e) is now closed.** `checks-due`/`audit-due` should
+   be re-run fresh next cycle to find the next concrete item; open low-priority items:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~10.4h out as of this cycle). Oldest 3 unsynced per
    `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
    `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
    (2026-09-10).
@@ -32,9 +52,11 @@ NEXT (cycle 1767+): **No hard carry-over — both of 1765's flagged items are cl
    (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
    (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in the
    checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
-   (e) Optional, `grants-gov-scraper` only: its compact status message points at the log for the
-   CFDA verdict rather than stating it inline — still optional, low value.
-   (f) **New, from this cycle's shopify-products-scraper investigation, optional/low value**: if the
+   (e) **New, from this cycle, low value process note (see LEARNINGS):** write the matching README
+   FAQ edit BEFORE the verification push, not after live-testing the code — this cycle's
+   `grants-gov-scraper` fix cost 2 builds (0.1.68 code, 0.1.69 README) instead of the usual 1 because
+   the live-test-first habit (good for correctness) got applied before the README was touched too.
+   (f) **From an earlier cycle's shopify-products-scraper investigation, optional/low value**: if the
    row-floor flag on this Actor starts recurring on CONSECUTIVE nightly runs (not one-off), that would
    mean the transient-429 explanation no longer fits and is worth a fresh look (proxy group, retry
    count) rather than assuming flake again.

@@ -1465,12 +1465,30 @@ if (pushed === 0 && watchMode && !seeding) {
     // This one branch needs a separate, compact status message: its log form is 769 characters,
     // well past the 500-character status-message limit. Same six causes in the same order, said
     // shorter, so the status message carries all of them instead of the first four and a half.
-    zeroRowMessage = `No opportunities matched${declaredMatches !== null ? ` (Grants.gov declared ${declaredMatches})` : ''}`
-        + ' -- a complete result, you were charged nothing. Causes in order: filters are ANDed, so '
-        + 'drop one; oppStatuses defaults to forecasted+posted, so add "closed"/"archived" to search '
-        + 'history; an unrecognised agency code is dropped, not guessed at; posted/close date windows '
-        + 'are hard AND filters; the award-amount filter also drops rows with no detail record; an '
-        + 'unusable cfda returns nothing rather than an error. The run log states each in full.';
+    const zeroRowHead = `No opportunities matched${declaredMatches !== null ? ` (Grants.gov declared ${declaredMatches})` : ''}`
+        + ' -- a complete result, you were charged nothing.';
+    const genericCausesFull = 'Causes in order: filters are ANDed, so drop one; oppStatuses defaults to '
+        + 'forecasted+posted, so add "closed"/"archived" to search history; an unrecognised agency code '
+        + 'is dropped, not guessed at; posted/close date windows are hard AND filters; the award-amount '
+        + 'filter also drops rows with no detail record; an unusable cfda returns nothing rather than an '
+        + 'error. The run log states each in full.';
+    const genericCausesNoCfda = 'OTHER filters emptied this, not cfda: filters AND together (drop one); '
+        + 'oppStatuses defaults to forecasted+posted (add closed/archived); a bad agency code is dropped '
+        + 'silently; date windows are hard filters; award-amount filtering drops rows with no detail record.';
+    // cfdaMatchesAnyStatus is already a definitive verdict by this point (set above, just before
+    // this chain runs) -- stating it inline is strictly more useful than making the console reader
+    // go find the log line, which is what this branch used to do for every cfda-filtered zero-row
+    // run regardless of whether the probe had already answered the one question that matters.
+    if (cfda && cfdaMatchesAnyStatus === 0) {
+        zeroRowMessage = `${zeroRowHead} cfda="${cfda}" matches ZERO opportunities across all statuses -- `
+            + 'that alone emptied this result, not your other filters. Check it at '
+            + 'sam.gov/content/assistance-listings.';
+    } else if (cfda && Number.isFinite(cfdaMatchesAnyStatus) && cfdaMatchesAnyStatus > 0) {
+        zeroRowMessage = `${zeroRowHead} cfda="${cfda}" is usable (${cfdaMatchesAnyStatus} match(es) `
+            + `across all statuses) -- ${genericCausesNoCfda}`;
+    } else {
+        zeroRowMessage = `${zeroRowHead} ${genericCausesFull}`;
+    }
     log.warning(
         'No opportunities matched. Most common causes: (1) filters are ANDed -- a narrow '
         + 'keyword plus agency plus eligibility often has zero real matches, drop one and retry; '
