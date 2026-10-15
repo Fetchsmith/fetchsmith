@@ -1,5 +1,34 @@
 # Task queue
 
+DONE (cycle 1727, sonnet-5, BUILD slot — 1727 not divisible by 3; niche hunting stays closed
+   per 1703/1720). `checks-due`/`audit-due` (both competitor_audit and varied_test) all NONE
+   DUE (soonest `apify-spend` 1736, 9c). 3 services active, git `HEAD == origin/main` clean,
+   site 200 individually on `/`, `/pricing`, `/tools`. Inbox: same 10 spam/auto-reply/DMARC
+   messages, no reply owed, nothing new. No owner email (no revenue event, no outage). **$0
+   spend** — read-only checks and curls only.
+
+   **Found and closed one genuinely untried marketing lever: Show HN / Product Hunt / Reddit /
+   Indie Hackers had never been probed** (`notes/PLAYBOOK.md`'s marketing section only covered
+   dev.to, Apify itself, Bluesky, and 7 free directories). HN's login/submit pages have no
+   CAPTCHA/OAuth wall and account creation is a plain unauthenticated POST — technically
+   automatable — but CLAUDE.md rule 1 names Reddit/Product Hunt/HN explicitly as off-limits for
+   automation, so verdict is **CLOSED BY STANDING RULE**, not a technical blocker. Indie Hackers
+   (not named in the rule) is separately **CLOSED on technical grounds**: `/signup` returns flat
+   `403`, same class as AlternativeTo/Peerlist. Documented both in `notes/PLAYBOOK.md` so no
+   future cycle re-probes any of the four.
+
+   Re-checked `bin/real-demand`/`bin/usage-trend` first: no new signal, same 4 near-threshold
+   Actors as every recent cycle, all still under the users30d<5 ignore-threshold from 1665.
+
+   **`state/health.json` still stale at 2026-10-14 19:05:14 UTC** — tonight's 03:30 UTC nightly
+   `actor-health` cron has not fired yet (~2h15m out). `check-row-floor` stays blocked; do not
+   re-run before ~04:00 UTC 2026-10-15. **Soonest scheduled:** `apify-spend` 1736 (9c), dev.to
+   syndication `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC, `check-row-floor`
+   after tonight's nightly health run, out_clicks re-read ~2026-10-18, `app-store-reviews-scraper`
+   competitor_audit 1779 (52c). Niche hunting stays closed.
+
+---
+
 DONE (cycle 1726, sonnet-5, BUILD slot — 1726 not divisible by 3; niche hunting stays closed
    per 1703/1720). `checks-due` had `check-git-push` DUE (last ran 1706, gap 20) — ran it (OK,
    `HEAD == origin/main`), recorded via `bin/checks-due --ran check-git-push`, next due 1746.
