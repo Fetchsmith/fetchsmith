@@ -27,6 +27,22 @@ function knownCourt(courtId) {
 }
 
 await Actor.init();
+// A watch-mode or recordType=both run can walk thousands of pages sequentially and approach the
+// platform timeout with real work still queued. Getting hard-killed there skips the watch-state
+// write below (saveWatchRecord), so a timed-out watch customer loses their incremental baseline
+// and is re-delivered -- and re-CHARGED for -- the whole result set on the next run (1 TIMED-OUT
+// external run observed in 30-day public stats, cycle 1733). Stop proactively with a safety
+// margin and save what was collected instead, same pattern as google-news-scraper.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() {
+    if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+    return true;
+}
 const input = (await Actor.getInput()) ?? {};
 
 // CourtListener (Free Law Project) publishes a public REST API. The *search index* endpoint
@@ -347,6 +363,10 @@ const INPUT_ERROR_STATUS = new Set([400, 404, 422]);
 
 async function apiGet(url, state = null) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        if (!timeBudgetOk()) {
+            if (state) state.lastError = state.lastError ?? 'stopped: approaching run timeout';
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -364,14 +384,19 @@ async function apiGet(url, state = null) {
             const waitS = attempt * 10;
             log.warning(`CourtListener request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
             if (state) state.lastError = `request failed: ${err.message}`;
-            await sleep(waitS * 1000);
+            // Capped at remainingMs(): the loop's own timeBudgetOk() check at the top of the next
+            // attempt is what actually stops the retry chain, not the length of this one sleep.
+            await sleep(Math.min(waitS * 1000, Math.max(0, remainingMs())));
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            // Capped the same way -- without this, a hostile or just-large Retry-After header (a
+            // real one observed: 3600s) would sleep clean past our own run timeout instead of
+            // handing control back to the budget check above.
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
             log.warning(`CourtListener returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
             if (state) { state.lastError = `HTTP ${resp.statusCode}`; state.lastErrorStatus = resp.statusCode; }
-            await sleep(waitS * 1000);
+            await sleep(Math.min(waitS * 1000, Math.max(0, remainingMs())));
             continue;
         }
         let parsed = null;
@@ -818,7 +843,14 @@ async function walk(state, target) {
         if (!first) await sleep(PAGE_DELAY_MS);
         const page = await apiGet(state.url, state);
         first = false;
-        if (!page) { state.failed = true; state.url = null; break; }
+        if (!page) {
+            // Distinguish a proactive time-budget stop from a genuine upstream failure: the former
+            // is not a source problem, and `stop = true` here ends every OTHER walker's loop too
+            // (not just this one), since once the budget is gone it is gone for the whole run.
+            if (timeBudgetExceeded) { state.timedOut = true; stop = true; } else { state.failed = true; }
+            state.url = null;
+            break;
+        }
         const results = listOf(page.results);
         if (typeof page.count === 'number' && state.declaredMatches === null) {
             state.declaredMatches = page.count;
@@ -888,6 +920,7 @@ const walkers = recordTypes.map((kind) => ({
     declaredMatches: null,
     exhausted: false,
     failed: false,
+    timedOut: false,
     lastError: null,
 }));
 
@@ -948,6 +981,19 @@ if (failedWalkers.length) {
         + 'matches are missing from this run, and a low or zero delivered count for it does NOT mean the index had that few',
     );
 }
+const timedOutWalkers = walkers.filter((w) => w.timedOut);
+if (timedOutWalkers.length) {
+    markIncomplete(
+        'time-budget',
+        `the run stopped early (${timedOutWalkers.map((w) => w.kind).join(' and ')} still had results left) because `
+        + 'it was approaching the platform run timeout; its remaining matches are missing from this run',
+    );
+}
+// Distinct from the input-error cause above: there is no source to recover from and no input to
+// fix -- the query itself is just bigger than one run's time budget, so the actionable advice is
+// to narrow it (fewer courts, a shorter filed-date window, a lower maxResults), not to retry the
+// identical input and expect a different result.
+const seedFailureIsTimeBudget = timedOutWalkers.length > 0;
 // A walker that still has a cursor to follow only happens because the shared `stop` flag fired
 // (maxResults, a charge limit, or the watch seed cap) — the redistribution loop above only ends
 // early via `stop`; otherwise it keeps rotating budget until every walker's `url` is null
@@ -974,7 +1020,12 @@ if (stillOpen.length) {
 // the buyer already paid nothing for this run. `seed-cap` is deliberately excluded — that is the
 // buyer's own query being broader than WATCH_KEEP, already surfaced above, and a capped-but-real
 // baseline beats none (same policy as the rest of the fleet's h289 fixes).
-const seedFailure = seeding && (incompleteReason === 'source-error' || incompleteReason === 'stopped-early');
+// 'time-budget' belongs in this set for the same reason as the other two: a seed cut short by
+// the run timeout has only scanned part of the match set, so saving it as the baseline would
+// make the next incremental run deliver -- and CHARGE for -- everything past the stopping point
+// as "new", even though the buyer paid nothing for this seed.
+const seedFailure = seeding
+    && (incompleteReason === 'source-error' || incompleteReason === 'stopped-early' || incompleteReason === 'time-budget');
 
 if (watchMode && seedFailure) {
     log.warning(
@@ -982,7 +1033,10 @@ if (watchMode && seedFailure) {
         + 'Saving a partial baseline here would cause every record past the failure point to be delivered '
         + `and CHARGED as "new" on the next incremental run. ${seedFailureIsInputError
             ? 'This is CourtListener rejecting the input itself -- fix the filter values and re-run.'
-            : 'Re-run the seed once the source recovers.'}`,
+            : seedFailureIsTimeBudget
+                ? 'The query is bigger than one run can seed in time -- narrow it (fewer courts, a '
+                  + 'shorter filed-date window, or a lower maxResults) and re-run.'
+                : 'Re-run the seed once the source recovers.'}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -1055,6 +1109,7 @@ const runSummary = {
         // `delivered` for it is unknown, not "this index had that few".
         exhausted: w.exhausted,
         failed: w.failed,
+        timedOut: w.timedOut,
         lastError: w.lastError,
     }])),
     recordTypesRequested: recordTypes,
@@ -1154,7 +1209,10 @@ if (seedFailure) {
         + `charged. ${seedFailureIsInputError
             ? 'This is CourtListener rejecting your input (an unrecognised court id or a malformed filter) — '
                 + 're-running with the same input will fail the same way; fix the filter values above and re-run.'
-            : 'Please re-run in a few minutes.'}`,
+            : seedFailureIsTimeBudget
+                ? 'The query is bigger than one run can seed in time -- narrow it (fewer courts, a shorter '
+                  + 'filed-date window, or a lower maxResults) and re-run, rather than retrying the same input.'
+                : 'Please re-run in a few minutes.'}`,
     );
 }
 

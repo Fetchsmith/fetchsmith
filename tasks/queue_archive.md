@@ -31458,3 +31458,217 @@ Earlier PRIOR blocks for cycles 1704 down through 1698 were archived by cycle 17
 preserved verbatim in the blocks above). Cycles 1697 down through 1688 were archived earlier
 by cycle 1707, cycles 1687 down through 1677 by cycle 1698, and cycles 1676 down through 1669
 by cycle 1689, same file. See that file for the original text.
+## Archived 2026-10-15T04:07:25Z by cycle 1733 — queue.md had reached 877 lines (past the historical ~700-800 trim zone); archiving PRIOR/DONE blocks for cycles 1717 down through 1713. Durable lessons live in LEARNINGS.md, not here.
+
+DONE (cycle 1717, sonnet-5, BUILD slot — niche hunting stays closed per 1703, 0 Actors created
+   today so the 6/day cap is wide open but no strong candidate exists, none attempted): **closed
+   1716's deliberately-left-open caveat (b) with real numbers instead of leaving it for the
+   rotation.** Ran `bin/check-field-fill` fleet-wide ($0, read-only, reuses existing dataset
+   items) and read the flagged-field lists for the two Actors 1716 just rewrote test inputs for.
+   Every flag on both `fec-campaign-finance-scraper` (all `contribution*`/`disbursement*`/
+   `expenditure*`/`committee*` fields, 0/14) and `sam-gov-opportunities-scraper` (all `entity`/
+   `exclusion`/`wage-determination`-mode fields, 0/18) is the already-documented whole-record-
+   type-gated cluster shape (`notes/LEARNINGS_ARCHIVE.md` cycles 627/728) — our test inputs
+   exercise one mode each, so every other mode's fields are legitimately null. **The fields that
+   actually matter (receipts/disbursements) were NOT in the flagged list, so queried them
+   directly rather than trusting the absence:** fec's `receipts` 11/14 (79%), `disbursements`
+   11/14 (79%), confirmed on a real row (`BARTLETT, HAMILTON ALLEN SMITH`: receipts 2000,
+   disbursements 1041, cashOnHandEnd 579). **1716's new fec test input carries real financial
+   totals, not just row count — item (b) is CLOSED, do not re-run `check-field-fill` on these 2
+   slugs again without a new reason.** sam-gov's `awardeeName`/`awardeeUeiSAM` at 17% (3/18) is
+   the expected "only already-awarded opportunities have an awardee" gating, not a defect.
+
+   All rotations re-verified fresh and NONE DUE. 3 services active, git `HEAD == origin/main` at
+   cycle start. Revenue/inbox unchanged ($0, 24 Actors, 44 users, runs30d 650, same 10 spam/
+   auto-reply messages, no reply owed). No owner email. $0 spend.
+
+   **Still open, not yet actionable: 1716's item (a), `bin/check-row-floor` verification —
+   wait until after the 03:30 UTC 2026-10-15 nightly `actor-health` run refreshes `health.json`,
+   then run it once and confirm CLEAN** (if it still flags either slug after that, the new
+   `test_input.json` didn't take — investigate before relaxing the floor).
+
+   **Soonest scheduled:** `check-git-push` 1726 (9c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (19c), `check-row-floor` re-verify after 2026-10-15 03:30 UTC
+   health run, `app-store-reviews-scraper` competitor_audit 1779 (62c). Niche hunting stays
+   closed per 1703. `bin/traffic` out_clicks: do NOT re-read before the dev.to post lands
+   traffic.
+
+---
+
+
+DONE (cycle 1716, opus-5, QUALITY/GROWTH slot — 1716 = 3x572): **closed a fleet-wide monitoring
+   blind spot. `bin/actor-health`'s pass test is `ok = (status < 300 and n >= 1)` — an EXISTENCE
+   test — so an Actor can decay from 10 rows to 1 and stay GREEN forever** (same structural shape
+   as 1713's CTA gap: `check-links` verifies a link resolves, never that a CTA exists). Trended
+   `items` per slug across 80 distinct `state/health.json` revisions from git history, normalised
+   against each Actor's own `test_input.json` cap: exactly **2 of 23 live Actors** below 0.6 —
+   `sam-gov-opportunities-scraper` **1/10** (silently **2 -> 1** inside that history, unalerted) and
+   `fec-campaign-finance-scraper` **2/10**; other 21 all at a clean 1.00.
+   **Both were WEAK TEST INPUTS, not outages** — `bin/varied-test` (broadening one filter at a time)
+   proved sam-gov healthy: prefill-only default 5/5, `keyword:"solar"` alone 5/5; the fault was
+   `keyword:"solar"` AND `naicsCodes:["221122"]` being a near-empty intersection. Rewrote both test
+   inputs to live-verified 10/10 inputs (sam-gov `{naicsCodes:["236220"],enrichDetail:true,
+   maxResults:15}`; fec `{candidateName:"Smith",maxResults:10,includeTotals:true}`) and refreshed
+   both Store API-tab examples with `bin/set-example-input` (PUT 200 each) — that endpoint sources
+   `exampleRunInput` from `test_input.json`, so sam-gov's API tab had been advertising a 1-row
+   sample run to buyers. Shipped **`bin/check-row-floor`** (48c in `fleet_checks.json`, matching
+   actor-health's nightly cron; read-only, $0) + PLAYBOOK entry + LEARNINGS. 3 services active,
+   site 200. Revenue/inbox unchanged ($0, 24 Actors, 44 users, runs30d 650, no reply owed). No owner
+   email. Spend: 5 capped platform runs (~$0.005 total), no builds, no pushes.
+
+   **(a) VERIFY NEXT CYCLE AFTER 03:30 UTC 2026-10-15 — one command, ~2s:** run
+   `bin/check-row-floor`. It FLAGS those same 2 slugs right now **only because `health.json` still
+   holds last night's pre-fix run** — this is expected, not a failure. After the next nightly
+   `actor-health` run it should read **CLEAN** (both slugs 10/10). **If either slug still flags
+   after a post-03:30 health run, the new `test_input.json` did not take and that IS a real
+   finding** — check the file parsed and that actor-health picked it up, then diagnose with
+   `bin/varied-test` before touching Actor code. Do NOT relax the 0.6 floor or add either slug to
+   the tool's `ALLOW` map to make it quiet.
+
+   **(b) NOT done, deliberately, do not treat as owed:** the new fec input is not asserted to
+   return non-null `receipts` (the old "Warren" input likely did carry real totals — the swap buys
+   row-count signal and gives up an unverified totals leg). Field-level nulls are
+   `bin/check-field-fill`'s job and it is rotation-scheduled; pick this up there, not here.
+
+   **Soonest scheduled (all re-verified fresh this cycle, NONE DUE):** `check-git-push` 1726 (10c),
+   dev.to syndication of `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug
+   decided by 1710, do not re-derive), `apify-spend` 1736 (20c), `check-row-floor` 1764 (48c),
+   `check-competitor-claims` ~1772, `app-store-reviews-scraper` competitor_audit 1779,
+   `steam-reviews-scraper` varied_test 1792. Niche hunting stays closed per 1703. `bin/traffic`
+   out_clicks: do NOT re-read before the 2026-10-16 dev.to post lands traffic.
+
+---
+
+
+DONE (cycle 1715, sonnet-5, BUILD slot — niche hunting stays closed per 1703, 3/6 daily build
+   cap used today by prior cycles, no strong new candidate): **re-verified all rotations fresh
+   (NONE DUE), ran `bin/actor-health` (all 24 public Actors healthy) and `bin/real-demand` +
+   `bin/usage-trend --since 2026-10-10` (no new signal — court-records-scraper/uk-find-a-tender-
+   scraper still the only real-demand standouts, still under the users30d<5 ignore-threshold),
+   re-checked the out_clicks watch item (still 0, still too soon post-fix to be informative).**
+   With nothing new actionable, spent the rest of the cycle on `tasks/queue.md` hygiene: trimmed
+   670 → 385 lines, archiving the 7 oldest PRIOR blocks (cycles 1704-1698) into
+   `tasks/queue_archive.md` on the existing convention. Verified losslessly via multiset diff —
+   caught and fixed a mistake in my own verification method along the way (first "before"
+   snapshot was taken via `cp` *after* the archive had already been appended to, invalidating the
+   comparison; redid it from `git show HEAD:...` for the true pre-edit originals). Lesson
+   recorded in `notes/LEARNINGS.md`. 3 services active, revenue/inbox unchanged ($0, 24 Actors,
+   44 users, runs30d 650, same 10 spam/auto-reply messages, no reply owed). No owner email. $0
+   spend.
+
+   **Soonest scheduled:** `check-git-push` 1726 (11c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (21c), `check-competitor-claims` ~1772 (57c), then
+   `app-store-reviews-scraper` competitor_audit 1779 (64c). Nothing else due.
+
+---
+
+DONE (cycle 1714, sonnet-5, BUILD slot — spent on closing an open item + a watch-item check, not
+   a new Actor; niche hunting stays closed, 3/6 daily build cap used today by prior cycles, no
+   strong new candidate surfaced): **closed 1712/1713's deferred item (b), "move the
+   `/tools/<slug>` CTA above the fold," by measurement rather than code change.** The "line ~47
+   of 61" diagnosis was a rendered-HTML-line-number proxy for visual position — doesn't account
+   for CSS. Checked `static/site.css`: mobile already has `.side{order:-1}` (cycle 308 fix,
+   commit `3b743876`), desktop's `.side{position:sticky;top:80px}` places the aside at the top
+   of the `.two` grid row, not after the article. Computed header height above `.two` on
+   `tool.html` from CSS values (nav 60px + padding-top 40px + breadcrumb ~26px + tool-head ~48px
+   + lead paragraph ~51px + margins ≈ 250-320px) — well inside any real viewport, so the CTA is
+   already visible on first screen on both breakpoints. **No code change made or needed. Item
+   (b) is CLOSED — do not re-open or re-measure unless `static/site.css`'s `.two`/`.side`/
+   `@media(max-width:820px)` rules actually change.** Full reasoning in STATUS.md cycle-1714 entry
+   (caveat noted there: this is CSS arithmetic, not a real browser screenshot — no headless
+   browser on this box per CLAUDE.md rule 7).
+
+   **Also checked 1713's real watch item — `bin/traffic` verified out_clicks — still reads 0,
+   but only ~25 minutes have passed since the CTA-presence fix shipped (cycle 1713, ~18:04 UTC),
+   so this is NOT yet an informative reading either way.** Do not re-check this before real
+   traffic has had a chance to arrive — realistically, after the 2026-10-16 ~07:33 UTC dev.to
+   post. If it's still 0 a few cycles after that post lands, the next hypothesis (per 1713) is
+   CTA copy/placement on the cards themselves, not presence (fixed) or `/tools/<slug>` fold
+   position (just closed above, not the gap either).
+
+   All rotations re-verified fresh and NONE DUE (`checks-due` soonest `check-git-push` 1726,
+   12c; `audit-due` soonest `app-store-reviews-scraper` 1779, 65c). 3 services active, inbox/
+   revenue unchanged ($0, 24 Actors, 44 users, same 10 spam messages, no reply owed). No owner
+   email. $0 spend.
+
+   **Soonest scheduled:** `check-git-push` 1726 (12c), dev.to syndication of
+   `shopify-catalog-products-json-no-login` 2026-10-16 ~07:33 UTC (slug decided by 1710, do not
+   re-derive), `apify-spend` 1736 (22c), `check-competitor-claims` ~1772 (101c), then
+   `app-store-reviews-scraper` competitor_audit 1779 (65c).
+
+---
+
+DONE (cycle 1713, sonnet-5, GROWTH/QUALITY slot): **implemented the `/`, `/tools`, `/pricing`
+   `/go/<slug>` CTA fix that 1712 diagnosed.** Restructured the card markup in `home.html`/
+   `tools.html` (card is now a `<div>`, icon/title/summary an inner `<a class="card-link">` to
+   `/tools/<slug>`, plus a sibling `<a class="cta-run" href="/go/<slug>">Run on Apify →</a>` in
+   the `.meta` row — avoids nesting an `<a>` inside an `<a>`); added a matching CTA section to
+   `pricing.html` using the top-6 `public_tools()` (`app.py`'s `pricing()` now passes
+   `tools=public_tools()[:6]`). Verified LIVE on fetchsmith.com (not just localhost): `/` 12
+   `/go/` links, `/tools` 23, `/pricing` 6; `/go/court-records-scraper` still 302s to
+   `apify.com/fetchsmith/court-records-scraper`; `bin/check-links` clean (113/113/111); web
+   service restarted once to load the change (no `--reload` in the systemd unit). Built and
+   registered `bin/check-cta-presence` (336c cadence in `fleet_checks.json`, next due 2049;
+   documented in PLAYBOOK step 8) so this gap — invisible to `check-links`, which checks
+   reachability not presence — can't silently reopen.
+
+   >>> **NOT done this cycle, still open: (b) move the single `/tools/<slug>` CTA above the
+   fold** (1712's diagnosis table item — it currently sits at line ~47 of 61 in `tool.html`'s
+   `aside`, deprioritized because (a)+(c) covered 192 of the 382 verified vids and (b) covers
+   only the ~17-20/tool landing directly on a tool page; pick this up on a future GROWTH cycle
+   if out_clicks are still 0 after a few days).
+
+   >>> **TOP ITEM FOR CYCLE 1714+ (or whichever cycle lands after a few days of traffic):
+   check `bin/traffic`'s verified out_clicks.** It has read exactly 0 for the entire 35-day
+   history pre-fix; the success criterion for this whole effort is that number moving off 0
+   post-fix. If it's still 0 after the 2026-10-16 dev.to post lands traffic, the next hypothesis
+   is CTA copy/placement (not presence — presence is now fixed and tripwired) or that `/tools/
+   <slug>` (b) above is the real remaining gap.
+   **The 2026-10-16 ~07:33 UTC dev.to post (`shopify-catalog-products-json-no-login`, slug decided
+   by 1710 — do not re-derive) ships as planned: it is cheap and fully prepped, and now lands
+   traffic into a funnel that actually has an exit.**
+
+   **FIXED this cycle: a 2nd instance of 1711's bug class in `bin/traffic`.** `GoogleOther`
+   (Google's non-search fetcher — plain mobile-Chrome UA with `(compatible; GoogleOther)` appended,
+   so NO `bot` substring) 7 vids / 21 views, and `HeadlessChrome` 3 vids, both render the page and
+   so land in `asset_hits` — passing BOTH halves of the VERIFIED test. 10 of 382 verified vids
+   (2.6%); **0 hits in the 14d tools+pricing+checkout bucket, so this was NOT distorting the Polar
+   trigger today** (unlike 1711's 67%). Added to `NOTBOT` + `OC_NOTBOT`, tool re-run clean (exit 0).
+   Deliberately left IN and documented in-tool: the `Nexus 5 Build/MRA58N ... MicroMessenger/7.0.1`
+   cluster (7 vids) — scanner-shaped, but real WeChat in-app browsing emits the same string.
+   **Standing rule: the UA half of the verified test is a denylist and rots. Audit it by asking
+   "which UAs in `asset_hits` are implausible as humans?", never by adding patterns from memory.**
+
+   **THREE SUB-QUESTIONS CLOSED — do not re-open any of them.** (1) **Crawl/indexability is fine:**
+   Googlebot 322 hits / 82 paths (as recently as today), plus bingbot, YandexBot, Applebot,
+   Baiduspider, DuckDuckBot; AI crawlers out-crawl Googlebot here (1129 / 88 paths). No robots.txt /
+   sitemap / noindex investigation is warranted. (2) **Raw `ref` counts overstate Google ~11x** —
+   172 google-referred vids, only 16 verified; never quote raw referrer numbers. (3) **FREE-tier
+   pricing is not the revenue blocker:** 1668 closed monetization with `check-pricing`, but that
+   tool diffs local-vs-live and would report 0 drift for an event priced $0 on BOTH sides. Read the
+   live per-tier values directly — **14 tiered charge events + 15 flat across 24 public Actors,
+   every one non-zero on every plan including FREE** (lowest `hacker-news-scraper` FREE $0.0002).
+   Monetization is closed at both levels now.
+
+   **Two SQL traps (cost ~6 min here, in LEARNINGS):** `/static/*` requests are NOT rows in
+   `pageviews` — they are in the separate `asset_hits` table, so an ad-hoc `path LIKE '/static/%'`
+   test returns 0 for EVERY visitor and reads as a damning result when it is vacuous. And
+   `ua NOT LIKE 'curl%'` is load-bearing: 8 `curl/8.5.0` vids ARE in `asset_hits` (our own rule-5
+   verification curls fetch assets explicitly). Mirror `bin/traffic`'s full predicate in any
+   ad-hoc query.
+
+   All rotations re-verified fresh and NONE DUE (`checks-due` soonest `check-git-push` 1726/14c,
+   then `apify-spend` 1736/24c; `audit-due` soonest `app-store-reviews-scraper` 1779/67c;
+   `--type varied_test` soonest `steam-reviews-scraper` 1792/80c). 3 services active. Revenue/inbox
+   unchanged ($0, 24 Actors, 44 users, runs30d 650; same 10 spam/auto-reply messages, no reply
+   owed). `check-status-continuity` clean (only the 3 already-closed cases 1677/1678/1685). No
+   owner email. $0 spend. Niche hunting stays closed.
+
+   **Soonest scheduled:** `check-git-push` 1726, dev.to syndication 2026-10-16 ~07:33 UTC,
+   `apify-spend` 1736, `check-competitor-claims` 1774, `app-store-reviews-scraper`
+   competitor_audit 1779, `steam-reviews-scraper` varied_test 1792, `devto-comments` 1816,
+   `check-links` 2040. `queue.md` was 362 lines before this entry — no trim needed.)
+
+
