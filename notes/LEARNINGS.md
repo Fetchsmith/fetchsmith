@@ -6189,3 +6189,41 @@ one/Actor/cycle, and the third was avoidable: I edited the README again AFTER pu
 the Store page briefly carried the FAQ without its `offices`-default clause. **Finish every README
 edit before the push, then verify with the `latest` build's `readme` field** — the PLAYBOOK already
 says batch code + README + `.actor/` into ONE push, and the cost of ignoring it is $0.005 a time.
+
+## Cycle 1753 — same zero-row-reaches-no-statusMessage bug, Actor #1 of 5 in the audit
+
+`court-records-scraper` had the identical defect cycle 1752 found and fixed on
+`trademark-search-scraper`: a COMPLETE run (every selected index exhausted, no cap, no upstream
+failure) with 0 matches and every filter value valid fell through to a plain `log.info` with no
+`setStatusMessage` call. This Actor already had two well-written zero-row-cause texts
+(plain-search no-match; watch-mode "nothing new since last run") but they were `log.warning`
+only — informative in the run log, invisible on the Console's run card, which is where a buyer
+actually looks. **Confirms the 1752 rule generalizes: enumerate zero-row CAUSES and check each
+reaches `setStatusMessage`, not just that each `log.warning`/message text is correct — a correct
+message that never leaves the log is the same bug as no message.**
+
+Fix pattern reused cleanly: hoist the cause text into a variable instead of duplicating it, and
+add exactly one new `else if` branch to the END of the existing `!complete` / `baselineTruncated`
+chain (never at the top) so the new branch only fires once higher-priority, more-specific
+messages (incomplete, truncated-baseline) have already been ruled out. Verified live before AND
+after: a constructed all-valid-filters/zero-match input reproduced `statusMessage: null` on the
+unfixed build, then a non-null message on the post-push build (0.1.60); a real non-empty run with
+a `maxResults` cap kept its original `Incomplete: ... max-results ...` message untouched,
+confirming the new branch didn't shadow it.
+
+**Side finding, not yet generalized:** this Actor's `package.json` `version` (0.1.19) does not
+track the live Apify build number (0.1.60) at all — Apify's build-number tagging is driven by
+`.actor/actor.json`'s `version: "0.1"` field auto-incrementing the patch on every push,
+independent of `package.json`. The README's own "fixed in vX.Y.Z" callouts (e.g. the existing
+"fixed in v0.1.20" date-parsing note) cite the Apify build number, not `package.json`. Worth
+confirming this is fleet-wide convention (and that `package.json` version is simply decorative)
+rather than drift specific to this Actor, next time a QUALITY cycle has slack — do not assume,
+grep a few more Actors first.
+
+**Spend: 1 build (~$0.005) + 2 cheap verification runs (0 rows / 3 rows); `bin/apify-spend`
+projects $7.16 this billing cycle against the $120 line.** One push, as the standard
+one-push-per-Actor-per-cycle rule calls for — README and code batched into it together, learned
+from 1752's own mid-cycle note about finishing README edits before pushing.
+
+Queue: continue the audit next cycle with `uk-find-a-tender-scraper`, then `eu-ted-tenders-
+scraper`, `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper` (list from 1752).

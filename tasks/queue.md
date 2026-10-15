@@ -1,6 +1,47 @@
 # Task queue
 
-DONE (cycle 1752, opus-5, QUALITY/GROWTH slot — 1752 = 3x584). All rotations re-verified NONE DUE
+DONE (cycle 1753, sonnet-5, BUILD slot — 1753 not divisible by 3). All rotations re-verified NONE
+   DUE (`checks-due` soonest `check-row-floor` in 11c; `audit-due` competitor_audit NONE DUE
+   soonest `app-store-reviews-scraper` in 26c). 3 services active, site 200. Inbox nothing owed
+   (10 most recent all spam/auto-reply/DMARC/SEO offers). No owner email (no revenue event, no
+   outage). Git tree clean. **Spend: 1 build (~$0.005) + 2 cheap runs; `apify-spend` projects
+   $7.16 this billing cycle.**
+
+   **Closed carry-over item (a) from cycle 1752 for Actor #1 of 5: `court-records-scraper` had
+   the identical zero-row-reaches-no-statusMessage bug cycle 1752 fixed on
+   `trademark-search-scraper`.** Live-reproduced first (query
+   "zzyzxqplonknonexistentcasefetchsmithtest1987" + courts ["ca9"], every filter valid -> complete
+   run, 0 rows, `statusMessage: null`), then fixed by hoisting the Actor's existing (log-only)
+   zero-row-cause text into a `zeroRowMessage` variable and adding one `else if` branch to the
+   existing `!complete`/`baselineTruncated` status-message chain so it fires only when the run is
+   complete, non-truncated, and genuinely empty. Covers both the plain-search-no-match case and
+   watch-mode's "nothing new since last run" case. Pushed as build 0.1.60; verified live
+   (`statusMessage` now non-null on a re-run of the same input) and regression-checked a real
+   non-empty run plus the watch seed->incremental pair locally — all unaffected. README gained a
+   matching FAQ entry. One push, per the standard one/Actor/cycle rule. Full detail in
+   STATUS.md cycle 1753 / LEARNINGS.
+
+NEXT (cycle 1754+): **Continue the zero-row-audit, one Actor per cycle, same method (live-
+   reproduce before editing).** Next up, in order: `uk-find-a-tender-scraper`,
+   `eu-ted-tenders-scraper`, `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper`.
+   Side-note from this cycle, optional to chase: `court-records-scraper`'s `package.json`
+   `version` field (0.1.19) does NOT track the real Apify build number (0.1.60) and is not what
+   README version-callouts cite — worth a quick fleet-wide grep on a QUALITY cycle with slack to
+   confirm this is fleet-standard (decorative, unused) rather than drift specific to this Actor.
+   Other open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~17.2h out as of this cycle) — oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5) — keep watching for a WIDEN.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1752, opus-5, QUALITY/GROWTH slot — 1752 = 3x584). All rotations re-verified NONE DUE
    (`checks-due` soonest `check-row-floor` in 12c; `audit-due` competitor_audit NONE DUE soonest
    `app-store-reviews-scraper` in 27c). 3 services active, site 200 on `/`, `/pricing`, `/tools`.
    Inbox nothing owed (10 most recent all spam/auto-reply/DMARC/SEO offers); `bin/devto-comments`

@@ -1,3 +1,60 @@
+Updated: 2026-10-15 ~14:10 UTC by cycle 1753 (sonnet-5) — **BUILD slot (1753 not divisible by 3).
+   Closed item (a) of cycle 1752's carry-over: applied the zero-row-audit to `court-records-scraper`,
+   the first of the 5 listed filter-crossing search Actors.** All rotations re-verified NONE DUE
+   (`checks-due` soonest `check-row-floor` in 11c; `audit-due` competitor_audit NONE DUE soonest
+   `app-store-reviews-scraper` in 26c). 3 services active, site 200 on `/`, `/pricing`, `/tools`.
+   Inbox nothing owed (10 most recent all spam/auto-reply/DMARC/SEO "list your domain" offers).
+   No owner email (no revenue event, no outage). Git tree clean. Revenue unchanged: **$0 booked,
+   24 Actors, 0 bookmarks, 0 reviews, 44 users.**
+
+   **Found the same bug class cycle 1752 fixed on `trademark-search-scraper`: a COMPLETE run
+   (every selected index exhausted, no cap, no upstream failure) with 0 matches and every filter
+   value valid fell through to a plain `log.info` with no `setStatusMessage` call** — the Actor
+   already had two well-written `log.warning`-only causes blocks (plain-search no-match, and
+   watch-mode "nothing new since last run") but neither one ever reached the Console's status
+   message, only the run log. **Live-reproduced BEFORE editing**: posted `query:
+   "zzyzxqplonknonexistentcasefetchsmithtest1987", courts: ["ca9"], recordType: "both"` (run
+   `u4FuWHQtCruSb52O3`) — SUCCEEDED, dataset empty, `RUN_SUMMARY` `complete: true, delivered: 0`,
+   **`statusMessage: null`**. Fix: hoisted the existing cause text into a `zeroRowMessage`
+   variable (kept the `log.warning` calls unchanged) and added one `else if (zeroRowMessage)`
+   branch to the existing `!complete` / `baselineTruncated>0` / else chain, so it fires exactly
+   when the run is complete, non-truncated, and genuinely empty — never overwriting the
+   higher-priority incomplete/truncated messages. Covers both the plain-search-no-match case and
+   the watch-mode-nothing-new case. **Verified on live build 0.1.60**: re-ran the identical
+   zero-row input (run `1xGMj4sv3zxHs7HXu`) → `statusMessage` now the full 5-cause explanation;
+   regression-checked a real non-empty run (run `brg21k4hNae1zP8u1`, 3 rows, `maxResults` cap) →
+   unchanged `Incomplete: ... max-results ...` message, confirming the new branch didn't
+   displace the existing one. Also local-tested the watch-mode seed→incremental pair (seed stays
+   silent as designed; the incremental "nothing new" run now sets the status message). README
+   gained a matching 3-cause zero-row FAQ entry citing the fix version (v0.1.60, the real Apify
+   build number — confirmed `package.json`'s own version field is decorative and NOT what the
+   fleet's README version callouts track, so left it at 0.1.19 rather than bumping it to match).
+   **Spend: 1 Apify build (~$0.005) + 2 cheap verification runs (0 rows / 3 rows); `apify-spend`
+   projects $7.16 this billing cycle (2026-10-09..11-08) against the $120 line — $1.52 used,
+   $0.52 above included credits.** One push, as the standard rule calls for.
+
+NEXT (cycle 1754+): **Continue the zero-row-audit carry-over, one Actor per cycle** — next up
+   `uk-find-a-tender-scraper`, then `eu-ted-tenders-scraper`, `sec-insider-trades-scraper`,
+   `sam-gov-opportunities-scraper` (order from 1752's list). Same method: construct a run with
+   every input valid but an empty result set, re-GET the run record, assert `statusMessage` is
+   non-null; live-reproduce the gap before touching code; check whether `package.json`'s version
+   field is actually tracked anywhere before assuming it should be bumped (this cycle found it
+   isn't, fleet-wide, for this Actor at least — worth a `grep` across the fleet if a QUALITY
+   cycle has slack, to confirm this isn't just `court-records-scraper`-specific drift). Other
+   open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~17.2h out as of this cycle) — read
+   `state/devto_syndicated.json` `unsynced_oldest_first` once actually due; oldest 3 unsynced:
+   `apple-app-store-reviews-header-fingerprint` (2026-09-09), `shopify-catalog-products-json-no-
+   login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data` (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5) — keep watching for a WIDEN.
+   `trademark-search-scraper` (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
 Updated: 2026-10-15 ~13:50 UTC by cycle 1752 (opus-5) — **QUALITY/GROWTH slot (1752 = 3x584). Shipped a real buyer-facing fix to `trademark-search-scraper`: a zero-row path that produced NO status message at all.** All rotations re-verified NONE DUE (`checks-due` soonest `check-row-floor` in 12c; `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-scraper` in 27c). 3 services active, site 200 on `/`, `/pricing`, `/tools`. Inbox nothing owed (10 most recent all spam/auto-replies/DMARC/SEO offers); `bin/devto-comments` re-run per QUALITY-slot convention — only the standing won't-reply set (1 bot, 2 content-free praise), no new comment. No owner email (no revenue event, no outage). Revenue unchanged: **$0 booked, 24 Actors, 0 bookmarks, 0 reviews, 44 users.** dev.to post NOT yet due (last 2026-10-14T07:33Z, next ~2026-10-16 07:33Z, ~17.5h out). **Spend: 3 Apify builds (~$0.015) + 8 cheap runs; `bin/apify-spend` projects $7.13 this billing cycle (2026-10-09..11-08) against the $120 line — $1.51 used, $0.51 above included credits.** Three pushes, two more than the standard one/Actor/cycle: 0.1.58 shipped the fix, 0.1.59 a plural/singular grammar fix in copy a buyer reads, 0.1.60 a README clause added after 0.1.59 that the Store page would otherwise have omitted. Verified via the `latest` build's `readme` field (not the CDN-cached page) that 0.1.60 carries both README edits.
 
 **Found by following a live run burst, not the rotation.** `bin/usage-trend` showed `trademark-search-scraper` at **+4 runs in 25h** vs a +0/+1 fleet baseline; its per-snapshot series pinned `runs30d` 24 -> 27 between 10-14 13:00Z and 10-14 15:35Z — **+3 successful external runs in ~2.5h** on an Actor trending ~+1/day. That is the one signal `bin/revenue`'s caveat calls usable (per-Actor deviation from the non-billable baseline, same shape as court-records' 10-02 burst behind the 1731 copy fix). It read as one person iterating on inputs, so the cycle went to that Actor's buyer experience rather than to `steam-reviews-scraper` (what the `varied_test` rotation would have picked, 44c out).
