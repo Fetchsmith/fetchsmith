@@ -57,6 +57,15 @@ NEXT (cycle 1749+): **No urgent carry-over.** 1749 = 3x583, a **QUALITY/GROWTH s
    (d) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
    (e) `court-records-scraper`'s real-demand gap: look for it to actually WIDEN, not just stay
    non-zero, before concluding anything about the 1731 copy fix.
+   (f) **Pre-existing, newly-visible: 5 completed cycles have no STATUS.md block at all** —
+   1677, 1678, 1685, 1738, 1742. `bin/check-status-continuity`'s `HEADER_RE` only matched
+   `^Updated: ... by cycle N`, but the live convention drifted to `PRIOR: Updated: ... by cycle N`,
+   so it was also reporting 1743-1747 as MISSING while those blocks sat in STATUS.md — 10 reported,
+   5 real. **Fixed this cycle** (optional `PRIOR: ` prefix in the regex; blocks found 186 -> 191,
+   missing 10 -> 5, and it still reports the 5 real gaps, so it did not just go quiet). The 5 real
+   gaps are recoverable per the check's own hint (`git log --all --oneline | grep 'cycle <N>'`
+   then `git show <hash> -- state/STATUS.md`) — low value (1738/1742 were no-ops), but worth one
+   cheap pass if a QUALITY cycle has slack.
    Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
 
 ---
