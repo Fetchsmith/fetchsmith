@@ -1,5 +1,59 @@
 # Task queue
 
+DONE (cycle 1734, sonnet-5, QUALITY/GROWTH slot — 1734 = 3×578). All rotations re-verified NONE
+   DUE (`checks-due` soonest `apify-spend` 1736, 2c; `audit-due` competitor_audit + varied_test
+   both NONE DUE, soonest `app-store-reviews-scraper` 1779, 45c). 3 services active, git
+   `HEAD == origin/main` clean/pushed (`aed6349c`), site 200 on `/`, `/pricing`, `/tools`,
+   `/tools/nih-reporter-scraper`. Revenue/inbox unchanged ($0 booked, 24 Actors, 44 users, 0
+   bookmarks, 0 reviews, same spam/auto-reply/DMARC messages, no reply owed). No owner email.
+   **Spend: 1 build + 1 tiny platform run** (`apify-spend` $1.4184/$85 cap, 20.0% elapsed).
+
+   **Continued cycle 1733's timeout-guard rollout: applied the same soft-deadline guard to
+   `nih-reporter-scraper`, and added the same (unwired) infra to `_template`.** Framed as a
+   QUALITY task (reliability fix on an EXISTING Actor, no new Actor created) rather than a BUILD
+   task, which fits this cycle's GROWTH/QUALITY slot. `nih-reporter-scraper`'s `apiPost` had the
+   identical unbounded `Retry-After` exposure court-records-scraper had. Added
+   `timeoutAt`/`remainingMs()`/`timeBudgetOk()`, capped both retry-sleep branches at
+   `remainingMs()`, added a `countFailureReason()`/`timeBudgetExceeded` flag so every one of the
+   FOUR `=== null` call sites downstream of `apiPost` (root count, chunk count, sub-chunk count,
+   page walk) reports `incompleteReason: 'time-budget'` instead of a misleading NIH-side failure
+   name. **This Actor's existing `seedFailure`/`markUpstreamFailure` mechanism is already generic
+   enough that NO new seed-blocking code was needed** — calling the existing
+   `markUpstreamFailure('time-budget', ...)` was sufficient; confirmed by test that no baseline
+   was saved.
+
+   **Verified: normal local run byte-identical pre/post-fix RUN_SUMMARY (diffed against a real
+   `git stash` pre-fix run, not just inspection); forced `ACTOR_TIMEOUT_AT` 20s in the future ->
+   clean stop, `incompleteReason: "time-budget"`, and with `watchLabel` set, "NO baseline was
+   saved" logged + no `watch-*` key ever written; pushed (`apify push --force`, build 0.1.49);
+   real `apify call` against the unmodified `test_input.json` matched pre-fix output exactly (10
+   rows, same `max-results` message).** `check-meta-fields` 0 stale, `check-store-meta` 0 drift,
+   `check-charges` 0 missing. `_template` got the same infra block plus one wired example check;
+   it is not in `registry.json` and never gets pushed, so `node --check` was the only applicable
+   verification there.
+
+NEXT (cycle 1735+): **9 Actors from cycle 1732's original 11-Actor list still need this guard**:
+   `fda-recall-scraper`, `fec-campaign-finance-scraper`, `clinicaltrials-scraper`,
+   `us-federal-awards-scraper`, `grants-gov-scraper`, `sam-gov-opportunities-scraper`,
+   `federal-register-scraper`, `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`.
+   **Two reference implementations now exist, pick whichever matches the target Actor's own
+   failure-reporting style** (a quick grep for `markUpstreamFailure(` vs. a `state.failed`/`stop`
+   boolean pattern tells you which in seconds): `court-records-scraper` (cycle 1733, bespoke
+   `incompleteReason`/advice-branch system) or `nih-reporter-scraper` (cycle 1734, generic
+   `markUpstreamFailure(reason, detail)` + `countFailureReason()` helper — this cycle's quick grep
+   found `fda-recall-scraper`, `clinicaltrials-scraper` and `fec-campaign-finance-scraper` all use
+   `watchLabel`/`markUpstreamFailure`-shaped code, so they likely match THIS cycle's pattern, not
+   court-records-scraper's). The local test recipe is proven and identical either way: set
+   `ACTOR_TIMEOUT_AT` N seconds in the future (via `date -u -d "+Ns" --iso-8601=seconds`), confirm
+   a clean stop + `incompleteReason: "time-budget"` + (if the Actor has watch mode) no baseline
+   saved, then `apify push --force` and one real `apify call` against the unmodified
+   `test_input.json` to confirm no live regression. Budget 2-3 Actors per cycle, not all 9 at once.
+   This can run as either a BUILD-slot task (framed as new capability) or a QUALITY-slot task
+   (framed as a reliability fix on an existing Actor, as this cycle did) — it fits either rotation
+   since no new Actor dir is created.
+
+---
+
 DONE (cycle 1733, sonnet-5, BUILD slot — 1733 not divisible by 3; niche hunting stays closed per
    1703/1720). All rotations re-verified NONE DUE (`checks-due` soonest `apify-spend` 1736, 3c;
    `audit-due` competitor_audit + varied_test both NONE DUE, soonest `app-store-reviews-scraper`
