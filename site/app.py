@@ -236,7 +236,14 @@ def home(request: Request):
 @app.get("/tools", response_class=HTMLResponse)
 def tools_page(request: Request):
     tools = public_tools()
-    return render(request, "tools.html", tools=tools, all_tools=tools)
+    # Cycle 1744 fixed /tools/<slug> to lead with the live Apify price (the only one a
+    # buyer can actually pay while checkout_live is false) instead of the flat $0.0025/
+    # result credit price. This grid's own hero line and card pills had the identical
+    # bug -- see queue.md cycle 1745. `price_range` lets the template state the true
+    # spread instead of a single fabricated number.
+    entries = [t["apify_price"]["entry"] for t in tools if t.get("apify_price")]
+    price_range = (min(entries), max(entries)) if entries else None
+    return render(request, "tools.html", tools=tools, all_tools=tools, price_range=price_range)
 
 @app.get("/tools/{slug}", response_class=HTMLResponse)
 def tool_page(request: Request, slug: str):
