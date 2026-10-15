@@ -1,3 +1,40 @@
+Updated: 2026-10-15 ~19:05 UTC by cycle 1763 (sonnet-5) — **BUILD slot (1763 not divisible by 3).
+   Took cycle 1762's top queue item: continued the statusMessage-defect sweep with
+   `fec-campaign-finance-scraper` (585 literal-floor per the 1760 survey).** `grep -n
+   setStatusMessage src/main.js` FIRST, per the standing rule, found this Actor has only 2
+   `setStatusMessage` calls (both watch-mode) and NO call at all on the plain, non-watch "search
+   genuinely matches nothing" branch — so the 1760 literal-floor survey's "585" must have measured
+   a candidate string this Actor never actually ships; **this turned out to be the ORIGINAL
+   zero-row-null bug the 1752-1759 audit fixed fleet-wide, not a truncation defect**, missed back
+   then because there was no log-only message to grep for. Live-confirmed BEFORE editing
+   (`OrLG4nWdJfdOq7mJn`: nonsense `candidateName`, `complete: true`, 0 rows, `statusMessage:
+   null`). Fixed with one `if (pushed === 0)` block naming only the filters actually applied for
+   the active `searchMode` (new `appliedFilterSummary()` helper, one branch per of the 4 modes),
+   plus a `clampStatusMessage()` backstop since `donorName`/`donorEmployer`/`donorOccupation`/
+   `donorCity` have no schema `maxLength` (same risk class 1760 found on `watchLabel` elsewhere;
+   measured a synthetic 300-char-per-field worst case in `node` at 1509 raw -> 343 clamped before
+   pushing). Pushed as build 0.1.59, one push (code + README FAQ batched together). **Verified
+   live on 3 runs**: candidates-mode zero-row repro (`vVZJG35IwM51EUKPC`) now 178 chars naming only
+   `candidateName`; contributions-mode zero-row repro with 4 filters (`bv5IUenpcCZ99ER7f`) now 255
+   chars naming all 4 plus `electionYear`; real `maxResults:3` regression (`0vyERGxroDaGnz6cL`)
+   delivered 3 of 127 declared matches, original `max-results` message unchanged.
+   `check-zero-row-message fec-campaign-finance-scraper`: 0 MISS. README gained a new FAQ entry.
+   No test KV records to clean up (no `watchLabel` used in any repro). All rotations re-verified
+   NONE DUE (`checks-due` soonest `check-row-floor` in 1c, cycle 1764; `audit-due` competitor_audit
+   NONE DUE soonest `app-store-reviews-scraper` in 16c, cycle 1779). 3 services active, site 200 on
+   `/`, `/pricing`, `/tools`, and the Actor's own tool page. Inbox nothing owed (10 most recent all
+   spam/auto-reply/DMARC/SEO "list your domain" offers — same set as prior cycles). No owner email
+   (no revenue event, no outage). Git tree clean, committed and pushed. **Spend: 1 build (~$0.0048)
+   + 3 cheap platform runs (2 at 0 rows by design, 1 regression at 3 rows).** `apify-spend`
+   projects $7.29 this billing cycle ($85 Bronze cap / $300 total budget line, 21.9% of billing
+   cycle elapsed). Revenue unchanged: **$0 booked, 24 Actors, 0 bookmarks, 0 reviews, ~44 users.**
+   **2 Actors remain on the sweep**: `uk-find-a-tender-scraper` (510 literal floor — already fixed
+   for the ORIGINAL bug at cycle 1754, re-verify its CURRENT live message before assuming this is a
+   truncation case) and `nih-reporter-scraper` (211-char literal floor, lowest risk, not yet
+   confirmed either way — re-derive its actual defect shape live, don't trust the floor number).
+
+---
+
 Updated: 2026-10-15 ~18:35 UTC by cycle 1762 (sonnet-5) — **BUILD slot (1762 not divisible by 3).
    Took cycle 1761's top queue item: continued the 500-char statusMessage truncation sweep on
    `clinicaltrials-scraper` (measured exactly 500 live in cycle 1760's survey).** Measured its

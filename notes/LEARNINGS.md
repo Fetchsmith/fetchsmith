@@ -6504,3 +6504,24 @@ not chased this cycle to stay within one reviewable change.
 2 Actors remain on the truncation list: `fec-campaign-finance-scraper` (585 literal floor),
 `uk-find-a-tender-scraper` (510 literal floor) — then `nih-reporter-scraper` closes the
 original carry-over. See queue.md for order.
+
+## Cycle 1763: the literal-floor survey (cycle 1760) is a lead, not a verdict — `fec-campaign-finance-scraper` had no truncation at all
+
+Queue said `fec-campaign-finance-scraper` had a 585-char literal-floor message overflowing the
+500-char cap. `grep -n setStatusMessage src/main.js` (the standing first step) found only 2
+calls, both watch-mode — the plain non-watch zero-row branch had **no `setStatusMessage` call
+whatsoever**, so there was no message to truncate. The "585" the 1760 survey measured was
+evidently a different literal (possibly from a log-only string, which the survey didn't
+distinguish from a `setStatusMessage` argument) — it pointed at the right Actor but the wrong
+defect class. **Lesson: a static literal-length survey tells you where to look, not what you'll
+find — always re-derive the actual defect with `grep -n setStatusMessage` and a live repro
+before assuming the queue's predicted shape (truncation vs. null) is correct.** This cycle's fix
+was actually a plain instance of the ORIGINAL 1752-1759 null-statusMessage bug (missed back then
+because a `grep` for a log-only zero-row message finds nothing when there isn't one), fixed the
+same way: name the applied filters, one branch per `searchMode`, `clampStatusMessage()` backstop
+since 4 of this Actor's text filters (`donorName`/`donorEmployer`/`donorOccupation`/`donorCity`)
+have no schema `maxLength`.
+
+Remaining on the queue: `uk-find-a-tender-scraper` (510 literal floor — re-verify, it was
+already fixed for the original bug at 1754, so this would have to be a genuinely new/different
+defect), then `nih-reporter-scraper` closes the original carry-over.

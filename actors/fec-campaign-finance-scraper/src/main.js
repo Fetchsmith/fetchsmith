@@ -898,6 +898,70 @@ function truncationNote() {
     + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars (found cycle 1760 on other Actors in this
+// fleet) -- donorName/donorEmployer/donorOccupation/donorCity have no schema maxLength, so a long
+// caller-supplied value could overflow the message built below. Word-boundary cut, not a hard slice.
+const clampStatusMessage = (msg) => {
+  if (msg.length <= STATUS_MESSAGE_MAX) return msg;
+  const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+};
+
+// Names only the filters actually applied in the active mode, so a plain no-match message never
+// mentions a filter the search ignored. electionYear is always applied (defaults are set above),
+// so it is unconditional in every mode.
+function appliedFilterSummary() {
+  const parts = [];
+  if (searchMode === 'candidates') {
+    parts.push(`candidateName="${candidateName}"`);
+    if (state) parts.push(`state=${state}`);
+    if (office) parts.push(`office=${office}`);
+    if (party) parts.push(`party=${party}`);
+    if (electionYear) parts.push(`electionYear=${electionYear}`);
+  } else if (searchMode === 'contributions') {
+    if (donorName) parts.push(`donorName="${donorName}"`);
+    if (donorEmployer) parts.push(`donorEmployer="${donorEmployer}"`);
+    if (donorOccupation) parts.push(`donorOccupation="${donorOccupation}"`);
+    if (donorCity) parts.push(`donorCity="${donorCity}"`);
+    if (donorZip) parts.push(`donorZip=${donorZip}`);
+    if (state) parts.push(`state=${state}`);
+    if (minAmount !== undefined) parts.push(`minAmount=${minAmount}`);
+    if (maxAmount !== undefined) parts.push(`maxAmount=${maxAmount}`);
+    if (contributionDateFrom) parts.push(`from=${contributionDateFrom}`);
+    if (contributionDateTo) parts.push(`to=${contributionDateTo}`);
+    parts.push(`electionYear=${electionYear}`);
+  } else if (searchMode === 'disbursements') {
+    if (recipientName) parts.push(`recipientName="${recipientName}"`);
+    if (state) parts.push(`state=${state}`);
+    if (committeeId) parts.push(`committeeId=${committeeId}`);
+    if (minAmount !== undefined) parts.push(`minAmount=${minAmount}`);
+    if (maxAmount !== undefined) parts.push(`maxAmount=${maxAmount}`);
+    if (contributionDateFrom) parts.push(`from=${contributionDateFrom}`);
+    if (contributionDateTo) parts.push(`to=${contributionDateTo}`);
+    parts.push(`electionYear=${electionYear}`);
+  } else {
+    if (payeeName) parts.push(`payeeName="${payeeName}"`);
+    if (candidateId) parts.push(`candidateId=${candidateId}`);
+    if (committeeId) parts.push(`committeeId=${committeeId}`);
+    if (supportOppose) parts.push(`supportOppose=${supportOppose}`);
+    if (minAmount !== undefined) parts.push(`minAmount=${minAmount}`);
+    if (maxAmount !== undefined) parts.push(`maxAmount=${maxAmount}`);
+    if (contributionDateFrom) parts.push(`from=${contributionDateFrom}`);
+    if (contributionDateTo) parts.push(`to=${contributionDateTo}`);
+    parts.push(`electionYear=${electionYear}`);
+  }
+  return parts.join(', ');
+}
+
+const SEARCH_MODE_NOUN = {
+  candidates: 'candidates',
+  contributions: 'contributions',
+  disbursements: 'disbursements',
+  independentExpenditures: 'independent expenditures',
+};
+
 // First cause wins, so these run in the order the buyer can act on: an upstream failure was
 // already recorded in the catch above and outranks every cap below it. `max-results` is only a
 // shortfall when something was demonstrably left behind -- a query with exactly maxResults
@@ -1026,6 +1090,16 @@ if (!complete && !runError && !watchMode) { // watch mode sets its own, more spe
   );
 } else if (complete && !watchMode && declaredMatches !== null) {
   log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} row(s) the FEC declared for these filters.`);
+  // A plain, non-watch search that genuinely matches nothing used to leave the default "Succeeded"
+  // status in place (same null-statusMessage bug the 1752-1759 fleet audit fixed on every OTHER
+  // Actor that had a reachable zero-row branch -- this one was missed because it had no pre-existing
+  // log-only message to find by grep for "pushed === 0").
+  if (pushed === 0) {
+    await Actor.setStatusMessage(clampStatusMessage(
+      `No ${SEARCH_MODE_NOUN[searchMode]} matched (${appliedFilterSummary()}). The FEC confirms 0 `
+      + 'results for these filters -- not an error. Narrow or drop a filter to broaden the search.',
+    ));
+  }
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
