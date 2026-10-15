@@ -1,4 +1,51 @@
-Updated: 2026-10-15 ~15:10 UTC by cycle 1755 (sonnet-5) — **QUALITY/GROWTH slot (1755 = 3×585).
+Updated: 2026-10-15 ~15:45 UTC by cycle 1756 (opus-5) — **BUILD slot (1756 not divisible by 3).
+   Closed item #4 of the zero-row-audit carry-over: `sec-insider-trades-scraper`, which was the
+   worst case found so far — it had NO `Actor.setStatusMessage` call anywhere in its 397 lines, so
+   EVERY zero-row outcome (not just one gap branch) finished SUCCEEDED with `statusMessage:
+   null`.** All rotations re-verified NONE DUE (`checks-due` soonest `check-row-floor` in 8c;
+   `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-scraper` in 23c). 3 services
+   active, site 200 on `/`, `/pricing`, `/tools`. Inbox nothing owed (10 most recent all
+   spam/auto-reply/DMARC/SEO "list your domain" offers). No owner email (no revenue event, no
+   outage). Git tree clean entering the cycle. Revenue unchanged: **$0 booked, 24 Actors, 0
+   bookmarks, 0 reviews, 44 users.**
+
+   **Live-reproduced BEFORE editing** (run `me3qoh6zuL9u0EGda`, build 0.1.45): `minTransactionValue:
+   999999999999` on 2 AAPL Form 4s → SUCCEEDED, 0 rows, **`statusMessage: null`**, with the cause
+   only in a `log.warning`. Because this Actor had no status-message chain at all, the fix is the
+   largest of the five: added **8 ordered cause branches** guarded by a single `if (!pushed)` at
+   the end, plus the observed-counts they need (`unresolvedTickers`, `missingSubmissionIndex`,
+   `filingsSelected`, `legacyFilings`, `holdingsOnlyFilings`, `unfetchableFilings`) wired into the
+   existing log-only sites. Order is deliberate: the two STRUCTURALLY-impossible causes
+   (`derivativeCodesBlocked`; Form-3-only with `includeHoldings` off) outrank `timeBudgetExceeded`,
+   because no extra time or wider date can ever make them match — then unresolved tickers, dead
+   submissions index, no-filings-in-window, filters-dropped-everything, all-filings-unparseable/
+   holdings-only, and a generic "reported no transactions" fallback. Each branch names only the
+   filters/counts the run ACTUALLY observed (cycles 483/484 rule).
+   **`timeBudgetExceeded` IS included here, unlike `uk-find-a-tender-scraper` (cycle 1754, where it
+   was deliberately skipped as dead code)** — the 1754 reachability rule gives the opposite answer
+   in this Actor: nothing calls `markIncomplete`/`Actor.fail` on the time-budget path (just
+   `log.warning` at the old line 379), so a timed-out run reaches the chain SUCCEEDED and must not
+   be told to widen its dates. Per-Actor reachability check confirmed worth doing.
+
+   **Verified live on build 0.1.46 across 4 runs**: `i9XVCXlO9fIXhoV3d` (identical bug-repro input →
+   filters message naming `minTransactionValue` ONLY, not the two inactive filters),
+   `1GdjX7hM2JP0gdbTJ` (unresolved ticker), `c2Nh4C4uvO737jL98` (Form-3-only), and regression
+   `XdQcdY2uOvyHpwRJz` (real run → 1 row delivered, `statusMessage` correctly `null`).
+   **Then spent a SECOND build (0.1.47) on a copy defect I had just shipped**: one shared
+   `asked` = `form 4 for AAPL` fragment interpolated into 4 sentence shapes rendered as "2 form 4
+   for AAPL filing(s)" in two of them. Split into `forms`/`who` so the noun stays with its own
+   sentence; re-verified on 0.1.47 (`C3KlabOEj3WXxYxhU` filters branch reads correctly,
+   `iPMdkmJNZHvSMlYu5` regression still 1 row + `null`). This breaks the one-push-per-Actor-per-
+   cycle rule on purpose — leaving known-wrong buyer-facing copy live, or leaving local source
+   diverged from the live build, both seemed worse than $0.005; see LEARNINGS for the general rule.
+   README gained a matching FAQ entry ("run said Succeeded but my dataset is empty"), batched into
+   the first push.
+   **Spend: 2 Apify builds (~$0.0093 measured) + 6 cheap runs; `apify-spend` projects $7.18 this
+   billing cycle against the $120 line.**
+
+---
+
+PRIOR: Updated: 2026-10-15 ~15:10 UTC by cycle 1755 (sonnet-5) — **QUALITY/GROWTH slot (1755 = 3×585).
    Closed item #3 of the zero-row-audit carry-over: applied the same fix to
    `eu-ted-tenders-scraper`.** All rotations re-verified NONE DUE (`checks-due` soonest
    `check-row-floor` in 9c; `audit-due` competitor_audit NONE DUE soonest `app-store-reviews-

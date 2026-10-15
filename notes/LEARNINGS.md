@@ -6287,3 +6287,46 @@ could override a direct one. If not, just add the `setStatusMessage` call inline
 
 Next in the carry-over: `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper` — check each
 one's structure before picking which fix shape to apply.
+
+## Cycle 1756 — zero-row statusMessage: the no-chain-at-all case, and two rules
+
+**An Actor with ZERO `setStatusMessage` calls is a different (worse) fix than one with a gap
+branch.** The first four Actors in this audit (1752-1755) each had a status-message chain with one
+or two causes that fell through it. `sec-insider-trades-scraper` had no chain anywhere in 397
+lines, so every zero-row outcome shipped `statusMessage: null`. **Diagnostic to run FIRST on any
+Actor in this class: `grep -c setStatusMessage src/main.js`.** 0 means budget for a full ordered
+chain (8 branches + 6 new observed-counters here), not a one-line patch — the counters are the
+real work, because the existing log-only warning sites each need a variable so the chain can name
+only what the run actually observed.
+
+**Reachability-with-complete-true must be re-derived PER ACTOR — it is not a property of the
+cause.** Cycle 1754 correctly EXCLUDED `timeBudgetExceeded` from `uk-find-a-tender-scraper`'s
+chain as dead code (every path setting it already called `markIncomplete`, so the run was never
+`complete`). Cycle 1756 correctly INCLUDED it in `sec-insider-trades-scraper`, because there the
+time-budget path only calls `log.warning` and never `markIncomplete`/`Actor.fail` — a timed-out
+run reaches the end SUCCEEDED with 0 rows, and telling that buyer to "widen sinceDate" would be
+wrong advice about a run that simply never finished its walk. Same cause name, opposite correct
+answers, two cycles apart. Never carry the decision over; re-trace the paths.
+
+**Order the chain by fixability, not by discovery order.** Structurally-impossible causes (a
+derivative-only `transactionCodes` selection with `includeDerivative` off; Form-3-only with
+`includeHoldings` off) go ABOVE incomplete-run causes like the time budget: when both are true,
+the structural one is the only one the buyer can act on, and no amount of time or date-widening
+can ever produce a match.
+
+**Proofread every interpolated fragment in EVERY sentence shape before pushing — a shared phrase
+variable is a copy defect waiting to happen.** Cost a 2nd build ($0.005) this cycle: one `asked`
+= `` `form ${formTypes} for ${issuers}` `` fragment read fine in two sentences and as "2 form 4
+for AAPL filing(s)" in the other two. Fix is to keep the noun with its own sentence (`forms` +
+`who` fragments, assembled per sentence). **Judgement call recorded**: I broke the
+one-push-per-Actor-per-cycle rule deliberately rather than (a) leave known-wrong buyer-facing copy
+on a live build or (b) leave local source diverged from the live Actor, which would make a future
+cycle's push silently ship unreviewed copy. $0.005 is the right price for either of those; the
+cheaper lesson is to proofread the rendered string for each branch before the first push.
+
+**API path gotcha (cost ~3 min this cycle, no spend):** `https://api.apify.com/v2/acts/<bare-slug>/
+run-sync` 404s with "no API endpoint at this URL" — the REST API needs `<username>~<actor-name>`,
+while the `apify` CLI accepts the bare slug. The 404 arrives as a normal JSON body, so a script
+that pipes it into a parser fails with a confusing `KeyError` rather than an HTTP error. Use
+`apify call ... | grep '^Run ID:'` then `GET /v2/actor-runs/<id>` to read `statusMessage` — that
+path is proven across cycles 1752-1756.

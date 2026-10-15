@@ -184,6 +184,15 @@ function keepRow(row) {
   return true;
 }
 
+// Zero-row bookkeeping (cycle 1756): the statusMessage chain at the bottom may only name a
+// cause this particular run actually observed, so each cause needs its own observed-count.
+const unresolvedTickers = [];
+let missingSubmissionIndex = 0;
+let filingsSelected = 0;
+let legacyFilings = 0;
+let holdingsOnlyFilings = 0;
+let unfetchableFilings = 0;
+
 async function resolveIssuers(list) {
   const map = await secGet('https://www.sec.gov/files/company_tickers.json', { json: true });
   const byTicker = new Map();
@@ -197,7 +206,10 @@ async function resolveIssuers(list) {
     if (/^\d{1,10}$/.test(raw)) { out.push({ cik: String(Number(raw)), name: null, input: raw }); continue; }
     const hit = byTicker.get(raw.toUpperCase());
     if (hit) out.push({ ...hit, input: raw });
-    else log.warning(`Ticker "${raw}" not found in SEC's ticker->CIK map; skipping.`);
+    else {
+      unresolvedTickers.push(raw);
+      log.warning(`Ticker "${raw}" not found in SEC's ticker->CIK map; skipping.`);
+    }
   }
   return out;
 }
@@ -317,7 +329,11 @@ try {
     if (!keepGoing || !haveTime()) break;
     const padded = iss.cik.padStart(10, '0');
     const sub = await secGet(`https://data.sec.gov/submissions/CIK${padded}.json`, { json: true });
-    if (!sub) { log.warning(`No submissions index for CIK ${padded} (${iss.input}).`); continue; }
+    if (!sub) {
+      missingSubmissionIndex += 1;
+      log.warning(`No submissions index for CIK ${padded} (${iss.input}).`);
+      continue;
+    }
     const recent = sub.filings?.recent ?? {};
 
     const picked = [];
@@ -343,6 +359,7 @@ try {
         if (done) break;
       }
     }
+    filingsSelected += picked.length;
     log.info(`${iss.input} (CIK ${iss.cik}): ${picked.length} ${formTypes.join('/')} filings selected`
       + `${pagesRead ? ` (${pagesRead} older index page(s) read)` : ''}.`);
 
@@ -354,7 +371,11 @@ try {
       // stripping that directory prefix yields the raw machine-readable XML.
       const rawDoc = f.primaryDocument.replace(/^xsl[^/]*\//, '');
       const xml = await secGet(`${base}/${rawDoc}`);
-      if (!xml) { log.warning(`Could not fetch ownership XML for ${f.accessionNumber}.`); continue; }
+      if (!xml) {
+        unfetchableFilings += 1;
+        log.warning(`Could not fetch ownership XML for ${f.accessionNumber}.`);
+        continue;
+      }
       const rows = rowsFromXml(xml, {
         accessionNumber: f.accessionNumber,
         filingDate: f.filingDate,
@@ -363,10 +384,12 @@ try {
         indexUrl: `${base}/${f.accessionNumber}-index.htm`,
       });
       if (rows === null) {
+        legacyFilings += 1;
         log.warning(`${f.accessionNumber}: not machine-readable ownership XML -- likely a pre-June-2003 `
           + 'legacy filing (EDGAR mandated the XML ownership schema from mid-2003); skipped, not a '
           + 'holdings-only filing.');
       } else if (!rows.length) {
+        holdingsOnlyFilings += 1;
         log.warning(`${f.accessionNumber}: no transaction rows (holdings-only filing?).`);
       }
       for (const row of rows ?? []) {
@@ -393,5 +416,75 @@ if (filtersActive) {
       + 'maxFilingsPerIssuer already selected -- raise it (or widen sinceDate) to look further back.');
   }
 }
+
+// --- Zero-row explanation (cycle 1756) ----------------------------------------------------
+// Until now a complete run that delivered 0 rows set no statusMessage at all, so the Console
+// and the API both showed a bare "Succeeded" against an empty dataset and every cause above
+// lived only in the run log. Name the cause THIS run observed, most specific first -- claiming
+// an unobserved cause is the defect cycles 483/484 fixed elsewhere in the fleet. Only causes
+// reachable on a run that gets this far are listed: the catch block exits via `Actor.fail()`,
+// so a thrown error never arrives here (same structure as eu-ted-tenders-scraper, cycle 1755).
+if (!pushed) {
+  // Two fragments, not one shared phrase: the sentences below put the word "filing(s)" in
+  // different places, and a single `form 4 for AAPL` blob reads as "2 form 4 for AAPL filing(s)"
+  // in half of them. Keep the noun with its own sentence.
+  const forms = `form ${formTypes.join('/')}`;
+  const who = issuers.join(', ');
+  let zeroRowMessage;
+  if (derivativeCodesBlocked) {
+    // Structurally impossible, so it outranks the time budget: no amount of extra time or
+    // wider dates can match a derivative-only code while derivative rows are excluded.
+    zeroRowMessage = `0 rows: every transactionCode you selected (${transactionCodes.join('/')}) is one SEC `
+      + 'reports only on derivative rows, but includeDerivative is off, so nothing can ever match. '
+      + 'Turn includeDerivative on, or drop those codes.';
+  } else if (formTypes.length === 1 && formTypes[0] === '3' && !includeHoldings) {
+    zeroRowMessage = '0 rows: formTypes is Form 3 only, which reports holdings and never transactions, '
+      + 'while includeHoldings is off. Enable includeHoldings to get those positions, or add form 4/5.';
+  } else if (!issuers.length) {
+    zeroRowMessage = '0 rows: the issuers list was empty after trimming blanks. Pass at least one ticker '
+      + "(e.g. \"AAPL\") or numeric CIK.";
+  } else if (unresolvedTickers.length && unresolvedTickers.length === issuers.length) {
+    zeroRowMessage = `0 rows: none of the issuers you asked for resolved to a CIK (${unresolvedTickers.join(', ')}). `
+      + "Use the ticker exactly as SEC lists it in company_tickers.json, or pass the issuer's numeric CIK instead.";
+  } else if (timeBudgetExceeded) {
+    // Not a "no match" answer -- the walk never finished, so say that instead of advising a widen.
+    zeroRowMessage = `0 rows: the run hit its time budget before any row was delivered (${filingsSelected} filing(s) `
+      + 'selected). Raise the run timeout, or narrow the request (fewer issuers, lower maxFilingsPerIssuer).';
+  } else if (missingSubmissionIndex && missingSubmissionIndex === issuers.length - unresolvedTickers.length) {
+    zeroRowMessage = `0 rows: SEC returned no submissions index for any of the ${missingSubmissionIndex} issuer(s) `
+      + 'resolved. That is usually a transient EDGAR error -- please re-run in a few minutes.';
+  } else if (!filingsSelected) {
+    zeroRowMessage = `0 rows: no ${forms} filings for ${who} exist in the window searched`
+      + (sinceDate ? ` (sinceDate ${sinceDate} or later)` : '')
+      + '. Widen sinceDate (or drop it), check the issuer really files that form, or raise maxFilingsPerIssuer.';
+  } else if (dropped && filtersActive) {
+    const active = [
+      transactionCodes.length ? `transactionCodes=${transactionCodes.join('/')}` : null,
+      minTransactionValue > 0 ? `minTransactionValue=${minTransactionValue}` : null,
+      insiderRoles.length ? `insiderRoles=${insiderRoles.join('/')}` : null,
+    ].filter(Boolean).join(', ');
+    zeroRowMessage = `0 rows: all ${dropped} row(s) parsed from ${filingsSelected} ${forms} filing(s) for ${who} were dropped by `
+      + `your filters (${active}). Those filters apply only to the filings maxFilingsPerIssuer already selected, so `
+      + 'raise it (or widen sinceDate) to look further back'
+      + (includeHoldings && (transactionCodes.length || minTransactionValue > 0)
+        ? '. Note holding rows carry neither a transaction code nor a value, so those two filters exclude all of them'
+        : '')
+      + '.';
+  } else if (legacyFilings || holdingsOnlyFilings || unfetchableFilings) {
+    const why = [
+      holdingsOnlyFilings ? `${holdingsOnlyFilings} carried holdings only (no transaction rows)` : null,
+      legacyFilings ? `${legacyFilings} are pre-June-2003 legacy filings with no machine-readable XML` : null,
+      unfetchableFilings ? `${unfetchableFilings} could not be fetched from EDGAR` : null,
+    ].filter(Boolean).join('; ');
+    zeroRowMessage = `0 rows: all ${filingsSelected} ${forms} filing(s) selected for ${who} yielded no transaction rows -- ${why}.`
+      + (holdingsOnlyFilings && !includeHoldings ? ' Enable includeHoldings to return those positions.' : '');
+  } else {
+    zeroRowMessage = `0 rows: the ${filingsSelected} ${forms} filing(s) searched for ${who} reported no transactions. `
+      + 'Widen sinceDate, raise maxFilingsPerIssuer, or add form 5 / enable includeHoldings.';
+  }
+  log.warning(zeroRowMessage);
+  await Actor.setStatusMessage(zeroRowMessage);
+}
+
 log.info(`Done. Pushed ${pushed} results.`);
 await Actor.exit();
