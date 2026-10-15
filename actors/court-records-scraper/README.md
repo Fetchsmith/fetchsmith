@@ -1,6 +1,6 @@
 # Court Records & Case Law Scraper — Dockets + Opinions
 
-Search **US federal court dockets** (the PACER/RECAP mirror) and **published court opinions** through CourtListener's public API and get flat, sortable JSON/CSV/Excel rows back.
+Search **3,359 US federal and state court dockets** (the PACER/RECAP mirror) and **published court opinions** through CourtListener's public API and get flat, sortable JSON/CSV/Excel rows back.
 
 **No API key. No registration. No captcha.** The search index this Actor is built on is fully anonymous — many CourtListener wrappers assume a token is required, because the `/dockets/` and `/opinions/` *detail* endpoints do need one. The *search* index does not, so nothing here depends on you creating an account. (Verified live 2026-09-17.)
 
