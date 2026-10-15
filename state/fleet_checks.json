@@ -116,6 +116,12 @@
    "interval_cycles": 48,
    "last_cycle": 1716,
    "note": "cycle 1716: NEW tripwire, built this cycle. Closes the gap bin/actor-health structurally cannot see: its pass test is `ok = (status<300 and n>=1)`, an EXISTENCE test, so an Actor can decay from 10 rows to 1 and stay green forever. First run found exactly 2 of 23 live Actors below the 0.6 ratio floor -- sam-gov-opportunities-scraper 1/10 (and it had silently gone 2->1 somewhere in the 80-run health history, unalerted) and fec-campaign-finance-scraper 2/10 -- against 21 others at a clean 1.00, which is what set the floor at 0.6. BOTH were WEAK TEST INPUTS, not outages: platform runs proved sam-gov fine (prefill-only default 5/5, keyword-only 5/5; the fault was `keyword:solar` AND `naicsCodes:[221122]` being a near-empty intersection). Both test_input.json files were rewritten to inputs verified 10/10 live, so this should read CLEAN from the next nightly actor-health run onward -- if it still flags those two after that, the inputs did not take. INTERVAL 48c (~1 day) to match actor-health's own nightly cadence: one read per health run, no point running it twice against the same health.json. Unlike the our-own-edit checks (check-blog-claims etc.) the drift source here is EXTERNAL (an upstream source quietly returning less), which is why this is daily rather than 336c. A FLAG IS NOT AN OUTAGE -- diagnose with bin/varied-test, broadening one filter at a time, before touching Actor code."
+  },
+  "check-retired-disclosure": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1729,
+   "note": "cycle 1729: new check (spec from 1728's queue item): 0/24 issues at creation. Flags (a) status!=live with no PAUSED marker in live Store title/description or local meta.json, (b) status=live with a PAUSED marker still present (forgotten reversal). Only non-live Actor is scholarship-scraper, already compliant from 1728's fix. 336c matches check-blog-cta/check-links' cadence class: drift source is our own status changes (retire or revive an Actor), not calendar time, and the one case in scope will not move again until bold.org clears (still 429 as of this cycle)."
   }
  },
  "not_cadence": {

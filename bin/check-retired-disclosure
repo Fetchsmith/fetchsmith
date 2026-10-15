@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""check-retired-disclosure — does the LIVE Apify Store listing admit it when a
+registry entry is not `status: live`, and does it stop admitting it once the
+entry is live again?
+
+WHY (cycle 1728, closing an open item it left in queue.md): `scholarship-scraper`
+was retired on fetchsmith.com for 25 days while its Apify Store listing stayed
+fully promotional with no pause notice, and real users kept running it for 0 rows
+(bold.org 429 since 2026-09-20; 17 external runs/1 user in the 30d window at
+discovery). None of the 19 standing checks caught it: check-pricing/check-charges/
+check-store-meta/nightly health all diff files against each other or against the
+live price — none asks "does the public listing copy admit a retired/degraded
+Actor cannot currently deliver?" `recheck_url` (bin/actor-health) watches for
+*revival*; nothing watched *disclosure*. Cycle 1728's fix was to rewrite
+scholarship-scraper's meta.json/Store copy to lead with "PAUSED" — this check
+makes sure that stays true, and flags the mirror-image mistake (PAUSED copy left
+live on an Actor whose registry status was reverted back to `live`, which would
+silently suppress a recovered listing).
+
+Marker word: "PAUSED" (case-sensitive, matches the exact convention cycle 1728
+used in title/description/seoTitle/seoDescription). Checked against meta.json
+(the file bin/apify-admin publish reads from) AND the live Store record (title +
+description) directly, since meta.json could be edited without being published.
+
+Usage:
+  bin/check-retired-disclosure      # report, exit 1 if any Actor fails
+"""
+import json
+import os
+import sys
+import urllib.request
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MARKER = "PAUSED"
+
+
+def token():
+    for line in open(os.path.join(ROOT, "secrets/env")):
+        if line.startswith("APIFY_TOKEN="):
+            return line.split("=", 1)[1].strip().strip('"')
+    sys.exit("APIFY_TOKEN not found in secrets/env")
+
+
+def live(slug, tok):
+    req = urllib.request.Request(
+        f"https://api.apify.com/v2/acts/fetchsmith~{slug}",
+        headers={"Authorization": f"Bearer {tok}"},
+    )
+    return json.load(urllib.request.urlopen(req, timeout=30))["data"]
+
+
+def main():
+    tok = token()
+    registry = json.load(open(os.path.join(ROOT, "actors/registry.json")))
+    fails = 0
+    checked = 0
+    for t in registry["tools"]:
+        slug = t["slug"]
+        status = t.get("status", "live")
+        meta_path = os.path.join(ROOT, "actors", slug, "meta.json")
+        meta = json.load(open(meta_path)) if os.path.exists(meta_path) else {}
+        rem = live(slug, tok)
+        checked += 1
+        meta_has_marker = MARKER in (meta.get("title") or "") or MARKER in (meta.get("description") or "")
+        live_has_marker = MARKER in (rem.get("title") or "") or MARKER in (rem.get("description") or "")
+        if status != "live":
+            if not live_has_marker:
+                fails += 1
+                print(f"{slug}: status={status!r} but LIVE Store listing has no {MARKER!r} marker "
+                      f"-- a real user can find and run this expecting it to work\n"
+                      f"  live title: {rem.get('title')}\n  live desc : {rem.get('description')}")
+            if not meta_has_marker:
+                fails += 1
+                print(f"{slug}: status={status!r} but local meta.json has no {MARKER!r} marker "
+                      f"(even if live is already fixed, meta.json would re-publish the stale copy)")
+        else:
+            if live_has_marker:
+                fails += 1
+                print(f"{slug}: status=live but LIVE Store listing still says {MARKER!r} "
+                      f"-- reversal to live was done in registry.json without undoing the Store copy\n"
+                      f"  live title: {rem.get('title')}\n  live desc : {rem.get('description')}")
+            if meta_has_marker:
+                fails += 1
+                print(f"{slug}: status=live but local meta.json still says {MARKER!r} "
+                      f"(next publish of this Actor would ship stale PAUSED copy)")
+    print(f"check-retired-disclosure: {checked} Actors checked, {fails} issue(s)")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
