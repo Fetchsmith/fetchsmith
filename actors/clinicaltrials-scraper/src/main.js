@@ -3,6 +3,19 @@ import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
 
 await Actor.init();
+// Soft-deadline guard (cycle 1736, 4th Actor on the rollout; same pattern as fda-recall-scraper /
+// nih-reporter-scraper / court-records-scraper): a hard platform kill mid-walk skips the
+// RUN_SUMMARY write and, in watch mode, the baseline save -- the buyer loses their seed and gets
+// re-billed for everything past the cutoff on the next run. Stop proactively with a safety margin
+// instead, and report it as 'time-budget', not as a ClinicalTrials.gov failure. `apiGet`'s
+// retry/Retry-After sleeps are the thing most likely to overrun the run's own timeout.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+let timeBudgetExceeded = false;
+function failureReason(fallback) { return timeBudgetExceeded ? 'time-budget' : fallback; }
+
 const input = (await Actor.getInput()) ?? {};
 
 // ---------------------------------------------------------------------------
@@ -664,6 +677,18 @@ async function apiGet(params, { quiet = false } = {}) {
     }
     const url = `${API}?${qs.toString()}`;
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        if (!timeBudgetOk()) {
+            // Deliberately silent even outside `quiet` mode: the single named 'time-budget' line
+            // the callers log once is the useful signal, not one warning per in-flight request.
+            // `lastApiErrorStatus = null` is load-bearing -- markIncomplete() defaults its `status`
+            // param from this variable, and `seedFailureIsInputError` later tests that status
+            // against INPUT_ERROR_STATUS. Leaving a stale 4xx here would make a clock-caused stop
+            // advise the buyer to "fix the filter values", which is wrong and unactionable.
+            timeBudgetExceeded = true;
+            lastApiError = `stopped before the platform run timeout (attempt ${attempt}/4)`;
+            lastApiErrorStatus = null;
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -682,15 +707,18 @@ async function apiGet(params, { quiet = false } = {}) {
             lastApiErrorStatus = null;
             const waitS = attempt * 10;
             if (!quiet) log.warning(`ClinicalTrials.gov API request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
-            await sleep(waitS * 1000);
+            await sleep(Math.min(waitS * 1000, Math.max(remainingMs(), 0)));
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             lastApiError = `HTTP ${resp.statusCode}`;
             lastApiErrorStatus = resp.statusCode;
+            // A server Retry-After has no upper bound of its own (a real one logged elsewhere on
+            // this fleet: 3600s) -- never let it sleep past this run's own timeout.
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
-            log.warning(`ClinicalTrials.gov API returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
-            await sleep(waitS * 1000);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`ClinicalTrials.gov API returned ${resp.statusCode}; retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
+            await sleep(waitMs);
             continue;
         }
         let parsed = null;
@@ -806,6 +834,10 @@ async function resolveIdsChunk(ids) {
             ? { studies: [], notFound: [], malformed: ids, failed: [] }
             : { studies: [], notFound: [], malformed: [], failed: ids };
     }
+    // Out of clock: splitting would recurse down to one doomed apiGet per id (each now returning
+    // instantly), producing nothing but noise. Report them all as never-answered, which is what
+    // they are, and let the caller's `failedIds` branch name the cause once.
+    if (timeBudgetExceeded) return { studies: [], notFound: [], malformed: [], failed: ids };
     const mid = Math.ceil(ids.length / 2);
     const [a, b] = await Promise.all([resolveIdsChunk(ids.slice(0, mid)), resolveIdsChunk(ids.slice(mid))]);
     return {
@@ -1025,7 +1057,7 @@ async function seedBaseline() {
             // A failed page here silently SHORTENS the baseline, and every study past the failure
             // point is then "new" on the next incremental run -- so the buyer is charged for rows
             // they already had. Loud, named, and recorded in RUN_SUMMARY.
-            markIncomplete('search-request-failed', lastApiError);
+            markIncomplete(failureReason('search-request-failed'), lastApiError);
             log.warning(
                 `Baseline seed for watch label "${watchLabel}" stopped early: ${lastApiError}. The baseline is `
                 + `INCOMPLETE (${watchSeen.size} recorded), so the next incremental run would deliver -- and `
@@ -1107,7 +1139,7 @@ if (nctIds.length) {
     if (failedIds.length) {
         // Deliberately NOT folded into notFound: a failed request cannot support the claim that a
         // study is absent from the registry.
-        markIncomplete('lookup-request-failed', lastApiError);
+        markIncomplete(failureReason('lookup-request-failed'), lastApiError);
         log.warning(
             `${failedIds.length} nctId(s) could not be checked -- ClinicalTrials.gov never answered for them `
             + `(${lastApiError}): ${failedIds.join(', ')}. They are NOT known to be missing; re-run for these ids.`,
@@ -1123,7 +1155,7 @@ if (nctIds.length) {
         if (pageToken) params.pageToken = pageToken;
         const page = await apiGet(params);
         if (!page) {
-            markIncomplete('search-request-failed', lastApiError);
+            markIncomplete(failureReason('search-request-failed'), lastApiError);
             log.warning(
                 `Paging stopped early after ${pages} page(s): ${lastApiError}. The result set is INCOMPLETE -- `
                 + 'this run returned only what was fetched before the failure. See RUN_SUMMARY.',
@@ -1185,18 +1217,30 @@ if (nctIds.length) {
 // is free; there is nothing lost by not persisting here. Deliberately NOT gated on 'seed-cap':
 // that is the buyer's query being too broad, is reported in RUN_SUMMARY and the status message,
 // and a capped baseline is still strictly better than none. Same policy as fda-recall-scraper (h289).
-const SEED_UPSTREAM_FAILURES = new Set(['search-request-failed']);
+// 'time-budget' belongs here for the same reason: a seed walk the clock cut short is just as
+// partial as one the API cut short, and saving it would re-bill the buyer for everything past
+// the cutoff. (cycle 1736)
+const SEED_UPSTREAM_FAILURES = new Set(['search-request-failed', 'time-budget']);
 const seedFailure = seeding && incompleteReason && SEED_UPSTREAM_FAILURES.has(incompleteReason)
     ? incompleteDetail : null;
 const seedFailureIsInputError = seedFailure != null && INPUT_ERROR_STATUS.has(incompleteStatus);
+// Three causes, three different things the buyer has to DO about it. Telling someone whose seed
+// ran out of clock to "re-run once ClinicalTrials.gov is answering again" sends them to wait on a
+// service that was never down -- the same mis-advice the reason-name fix above removes from
+// RUN_SUMMARY, so it is removed from the two buyer-facing messages too. (cycle 1736)
+const seedFailureIsTimeBudget = seedFailure != null && incompleteReason === 'time-budget';
+const seedFailureAdvice = seedFailureIsInputError
+    ? 'This is ClinicalTrials.gov rejecting the input itself -- fix the filter values and re-run.'
+    : seedFailureIsTimeBudget
+        ? 'This run ran out of time, not out of data -- raise the Actor run timeout, or narrow the query '
+            + '(fewer conditions/locations, a shorter date window), then re-run the same label.'
+        : 'Re-run the same label and filters once ClinicalTrials.gov is answering again.';
 
 if (watchMode && seedFailure) {
     log.warning(
         `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
         + 'A partial baseline would have caused every study past the stopping point to be delivered and charged '
-        + `as "new" on your next run. ${seedFailureIsInputError
-            ? 'This is ClinicalTrials.gov rejecting the input itself -- fix the filter values and re-run.'
-            : 'Re-run the same label and filters once ClinicalTrials.gov is answering again.'}`,
+        + `as "new" on your next run. ${seedFailureAdvice}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -1353,7 +1397,10 @@ if (watchMode && seedFailure) {
         + `charged. ${seedFailureIsInputError
             ? 'This is ClinicalTrials.gov rejecting your input (an unrecognised filter value) -- re-running with '
                 + 'the same input will fail the same way; fix the filter values above and re-run.'
-            : 'Please re-run in a few minutes.'}`,
+            : seedFailureIsTimeBudget
+                ? 'The run hit its own time limit with ClinicalTrials.gov still answering -- re-running unchanged '
+                    + 'will stop at the same place; raise the run timeout or narrow the query, then re-run.'
+                : 'Please re-run in a few minutes.'}`,
     );
 }
 
