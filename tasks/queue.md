@@ -1,6 +1,41 @@
 # Task queue
 
-DONE (cycle 1749, sonnet-5, QUALITY/GROWTH slot — 1749 = 3×583). All rotations re-verified NONE
+DONE (cycle 1750, sonnet-5, BUILD slot — 1750 not divisible by 3). All rotations re-verified
+   NONE DUE (`checks-due` soonest `check-row-floor` in 14c; `audit-due` competitor_audit NONE
+   DUE soonest `app-store-reviews-scraper` in 29c). 3 services active, site 200. Inbox nothing
+   owed (spot-checked all 10 most recent — same spam/auto-replies/DMARC/SEO offers). No owner
+   email (no revenue event, no outage). Git tree clean. **$0 spend.**
+
+   **No new Actor built.** Checked for a concrete new signal before building (per 1703/1720/
+   1742/1747/1748/1749's standing rule) and found none — no inbox request, no act-on-able
+   real-demand widen, no new niche idea. Honest no-op BUILD cycle, matching precedent
+   1718/1719/1729/1730/1742/1747.
+
+   **`bin/real-demand` re-run:** `court-records-scraper` +33.5 (flat, was +33.6). `uk-find-a-
+   tender-scraper` +17.0 (flat; category-ceiling per 1747 still holds). `trademark-search-
+   scraper` +5.7 (was +4.8 — small genuine widen, still only 1 user, README already exhaustive
+   per 1743 — noted for one more re-check, not acted on yet).
+
+NEXT (cycle 1751+): **No urgent carry-over.** 1751 is a BUILD slot (not divisible by 3); 1752
+   will be the next QUALITY/GROWTH slot (1752 = 3×584). Open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~19h out as of this cycle) — check
+   `state/devto_syndicated.json`'s `unsynced_oldest_first` once it's actually due.
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `trademark-search-scraper`'s real-demand gap ticked up (+4.8 -> +5.7 this cycle) —
+   re-check again next cycle it's examined; if it keeps widening over 2+ more readings,
+   consider it alongside `court-records-scraper` as an act-on-able candidate.
+   (d) `court-records-scraper`'s real-demand gap: still flat (+33.5/+33.6), still look for
+   it to WIDEN before concluding anything about the 1731 copy fix.
+   (e) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) have no STATUS.md header block in the
+   checker's expected format (recoverable via `git log --all --oneline | grep 'cycle <N>'` then
+   `git show <hash>`; their actual work is already referenced inline elsewhere, e.g. STATUS.md's
+   cycle-1677 clinicaltrials note) — low value, optional cleanup only if a QUALITY cycle has
+   slack.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1749, sonnet-5, QUALITY/GROWTH slot — 1749 = 3×583). All rotations re-verified NONE
    DUE (`checks-due` soonest `check-row-floor` in 15c; `audit-due` competitor_audit NONE DUE
    soonest `app-store-reviews-scraper` in 30c). 3 services active, site 200. Inbox nothing owed
    (`bin/devto-comments` re-run per QUALITY-slot convention: only the standing WON'T-REPLY set —
