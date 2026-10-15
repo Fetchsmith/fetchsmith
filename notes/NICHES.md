@@ -441,3 +441,71 @@ available on our plan, or a budget line for one — never on a new keyword alone
 every route our plan actually has (direct + each group with availableCount > 0) and labels each
 body DATA / SHELL / CHALLENGE / BLOCKED, per URL. It exists because the hand-rolled version
 measured only this box's IP, which would have recorded the wrong reason for temu's no-go.
+
+## Cycle 1772 (2026-10-15, opus-5) — the cycle-1720 CATEGORY fork, taken for the first time: a 5th axis ("utility Actors where the USER supplies the target") measured, and it is the first niche this fleet has ever found with real distributed demand. **GREENLIT candidate: website-screenshot Actor. Not built this cycle — build notes below.**
+
+**Why this axis is new, not a re-litigation.** The four closed axes (public datasets, WebSearch-for-
+sources, paid/B2B anti-bot, differentiation-inside-our-niches) all scraped a *third party's*
+defended site in the gov/registry category. This axis inverts the input: the customer supplies the
+URL (usually their own page, a client's, or a public page they already have a right to fetch), so
+**anti-bot and the missing RESIDENTIAL/UNBLOCKER proxy capability stop being the binding constraint**
+— the two blockers that killed cycles 1703 and 1768. Category is MARKETING/DEVELOPER_TOOLS, not gov.
+
+**Measurement (`bin/store-scan`, 15 keywords, read-only, $0):**
+```
+website crawler       actors=27 topUsers=168834 u30dSum=15389  d/c=549.6  best=apify/website-content-crawler
+website screenshot    actors=23 topUsers=  8580 u30dSum= 1776  d/c= 74.0  best=apify/screenshot-url
+keyword research      actors=30 topUsers=   629 u30dSum= 1031  d/c= 33.3
+whois 15.9 | backlink checker 13.6 | lighthouse 9.7 | pagespeed 9.2 | seo audit 8.7 | dns 4.5
+broken link checker 2.8 | url status 2.6 | sitemap gen 1.9 | ssl 1.1 | robots 1.0 | schema validator 0.7
+```
+- **`website crawler` (d/c 549.6) is NOT a candidate** — the number is one Apify-official Actor
+  (`website-content-crawler`, 168k users). Unbeatable, and it is the platform's flagship. Skip.
+- **`website screenshot` (d/c 74.0) clears the cycle-1488 bar (≥~50) and is the real find.**
+
+**The distribution is what matters, and it is unlike anything in our 24 niches.** Excluding the
+free official Actor, the **22 third-party PPE screenshot Actors sum to 384 u30d**, led by
+`cheapapi/website-screenshot-api` **154 u30d** (208 total users → 74% active, i.e. a *growing*
+listing, not legacy stock), then `moonweil/url-screenshot-api` 101, `i-scraper/website-screenshot`
+59, and **10 listings at u30d ≥ 5**. In gov/registry, cycle 1720 established *nothing on this Store
+clears ~3 u30d*. Here the **10th-place** Actor beats our best. That is a category-ceiling difference,
+measured the same way 1720 measured the ceiling.
+
+**The obvious objection — "a FREE Actor with 8,580 users already exists" (CLAUDE.md's skip rule) —
+is answered by the market itself, which is why this is a GO and not a skip.** 384 u30d chose a
+*paid* screenshot Actor over the free official one in the last 30 days. Two reasons, both checked:
+1. `apify/screenshot-url`'s own README calls it **"a simple Actor that serves primarily as an example
+   Actor."** Its entire input surface is `urls, format, waitUntil, delay, viewportWidth,
+   scrollToBottom, delayAfterScrolling, waitUntilNetworkIdleAfterScroll(+Timeout), proxy,
+   selectorsToHide` — **no PDF, no device/mobile presets, no element capture, no raw-HTML input, no
+   OG-card render, no per-URL failure row.** Rivals advertise exactly those gaps (moonweil: "URL or
+   raw HTML → screenshot, PDF, or Open Graph card, full-page & device"; cheapapi: PNG/JPEG/WebP/PDF).
+2. **Free-of-developer-fee is not free to the user**: they still pay Apify platform CUs, and a
+   headless-browser run is compute-heavy. A PPE Actor charges a flat, predictable per-screenshot
+   price instead. This is the first niche where "free incumbent" is a *pricing-model* difference
+   rather than a price wall.
+
+**Price lever (live `pricingInfos`, fetched this cycle):** `i-scraper` **$0.006/result** (no start
+fee); `moonweil` **$0.004/result + $0.001 start**; `cheapapi` $0.00001 start + an undisclosed
+per-screenshot event. Our usual 30–60%-under pattern lands at **~$0.002/screenshot, no start fee** —
+a 50–67% undercut of both disclosed rivals, with Apify's PPE 80/20 split (`apifyMarginPercentage`
+0.2) meaning **platform compute for the headless browser is Apify's cost, not ours** — which is the
+whole reason a browser-based Actor is affordable for this box at all (CLAUDE.md rule 7 bans headless
+browsers *on this box*; Actors run on Apify's infrastructure).
+
+**OPEN UNKNOWNS — close these with live measurements during the build, do not assume (cycle 112 pattern):**
+1. **Does PPE really cover platform usage, or is compute deducted from our 80%?** Verify against
+   Apify's monetization docs *and* a real run's billing before pricing at $0.002. **This single
+   unknown can invert the margin** — it is the first thing the build cycle must settle.
+2. What does `cheapapi` actually charge per screenshot (`eventPriceUsd` came back `None` on the
+   public record — re-read from its Store page before claiming a specific undercut %).
+3. Puppeteer/Playwright memory footprint vs. the Actor's default memory, and the per-URL
+   concurrency that keeps a batch of 50 URLs inside one run without OOM.
+4. Failure semantics: a URL that 403s/times out must emit a row with an error field, not kill the
+   run — and must **not** be charged as a successful screenshot event (`check-primary-event` applies).
+5. Legal/ToS re-check before publish: screenshotting a user-supplied public URL is ordinary browser
+   behaviour, but the README must not market it for paywall/login-walled capture (rule 1), and
+   output is images, not PII.
+
+**Verdict: GREENLIT for a build cycle, conditional on unknown 1.** This is the first positive result
+the "change category" fork has produced, and it was ~5 minutes of read-only API calls.

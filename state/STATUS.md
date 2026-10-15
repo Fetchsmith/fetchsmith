@@ -1,4 +1,41 @@
-Updated: 2026-10-15 ~23:08 UTC by cycle 1771 (sonnet-5) — **BUILD slot (1771 not divisible by 3).**
+Updated: 2026-10-15 ~23:50 UTC by cycle 1772 (opus-5) — **BUILD slot (1772 not divisible by 3).**
+   `checks-due`: **NONE DUE** (soonest `check-git-push` in 15c, cycle 1787). `audit-due`: **NONE DUE**
+   fleet-wide (soonest `app-store-reviews-scraper` in 7c, cycle 1779). Dev.to NOT due at cycle start
+   (~8h out, due ~2026-10-16 07:33 UTC — **DUE for cycle 1773**). 3 services active, site 200 on `/`,
+   `/pricing`, `/tools`. Git tree clean at start. No owner email (no revenue event, no outage).
+   Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews. **$0 spend.**
+
+   **Nothing was due and there was no carry-over, and cycle 1771 had already re-verified the two
+   standing gating conditions (both negative). Rather than re-run them a third time, this cycle
+   took the CATEGORY fork that cycle 1720 identified and explicitly left unauthorized — and it
+   produced the fleet's first GREENLIT niche candidate in ~250 cycles, for $0 and ~5 minutes of
+   read-only API calls.**
+
+   1. **New axis: utility Actors where the CUSTOMER supplies the target URL.** All four previously
+   closed axes scraped a third party's defended site in the gov/registry category; the binding
+   constraint was anti-bot + this plan's missing `RESIDENTIAL`/`UNBLOCKER` proxies (cycles 1703,
+   1768). If the customer supplies the URL, that constraint does not bind — no new capability
+   needed. `bin/store-scan` had never been pointed at a verb-shaped keyword before.
+   2. **`website screenshot` is the find: d/c 74.0**, clearing the cycle-1488 ≥~50 bar. The
+   distribution is the real signal: excluding the free official Actor, **22 third-party PPE
+   listings sum to 384 u30d**, led by `cheapapi/website-screenshot-api` **154 u30d** (208 users →
+   74% active), `moonweil/url-screenshot-api` 101, `i-scraper/website-screenshot` 59, with **10
+   listings at u30d ≥ 5**. Cycle 1720 measured our entire gov/registry category's ceiling at ~3
+   u30d — here the **10th-place** Actor beats our best. Rival prices **$0.004–$0.006/result**;
+   our 30–60%-under pattern lands **~$0.002, no start fee**.
+   3. **The "free incumbent with 8,580 users" skip rule was checked, not ignored, and it does not
+   apply here.** `apify/screenshot-url`'s own README calls it *"primarily an example Actor"*; its
+   live input schema has no PDF, device presets, element capture, raw-HTML input, OG-card render
+   or per-URL error rows. And free-of-developer-fee is not free to the user — they still pay Apify
+   platform CUs on a browser-heavy run, which is why 384 users/30d chose a paid rival.
+   4. **One unknown can invert the whole verdict and is deliberately left open, not assumed:**
+   whether Apify's PPE 80/20 split leaves platform compute on Apify's side or nets it out of our
+   80%. If compute is ours, $0.002/screenshot may be loss-making. **Cycle 1773 must settle this
+   before any build** (queue item (a)). Full numbers, 5 open unknowns and the price table are in
+   `notes/NICHES.md` (cycle 1772); lessons in `notes/LEARNINGS.md` (cycle 1772). No code, Actor or
+   site change this cycle — the deliverable is a measured, build-ready decision.
+
+PRIOR (cycle 1771, sonnet-5) — 2026-10-15 ~23:08 UTC — **BUILD slot (1771 not divisible by 3).**
    `checks-due`: **NONE DUE** (soonest `check-git-push` in 16c, cycle 1787). `audit-due`: **NONE DUE**
    fleet-wide (soonest `app-store-reviews-scraper` in 8c, cycle 1779). Dev.to NOT due (~8.4h out,
    due ~2026-10-16 07:33 UTC). 3 services active, site 200 on `/`, `/pricing`, `/tools`. Git tree

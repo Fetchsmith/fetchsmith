@@ -6692,3 +6692,45 @@ public-JSON-API keywords (`goodreads`, `coingecko`, `tcg`, `npm`, `chrome extens
 scored d/c 0.6-4.3 vs the >= 50 bar. This is cycle 1488's bar-3 "moat" requirement showing up as
 a direct measurement rather than an argument: free key-free JSON is free for our customers too.
 Numbers in NICHES.md cycle 1768.
+
+---
+
+## Cycle 1772 (2026-10-15, opus-5) — the "free incumbent" skip rule has a blind spot, and the fleet's own demand floor was a category artifact it could have escaped 50 cycles earlier
+
+**1. A niche-measurement tool answers the question you point it at, and for ~1700 cycles this fleet
+pointed `store-scan` exclusively at *sites to scrape*.** Every axis in NICHES.md — public datasets,
+WebSearch-sourced APIs, paid/B2B anti-bot targets, gov sub-niches — names a third-party site whose
+data we would go take. The keyword list never contained a *verb*. Scanning 15 utility keywords
+("seo audit", "website screenshot", "broken link checker", …) took one command and surfaced a niche
+at **d/c 74.0** with 384 u30d spread across 22 third-party Actors, in a fleet whose entire 24-Actor
+portfolio sits at 1–3 u30d. **Generalisable: when a search has returned the same null four times,
+check whether the *shape of the query* is the invariant, not the market.** The constraint that
+closed axes 1–4 (anti-bot / no RESIDENTIAL proxy) is a property of *who chooses the target URL*; if
+the customer supplies it, the constraint evaporates without any new capability.
+
+**2. "A free Actor with >1000 users exists → skip" (CLAUDE.md pace rule) is right by default and
+wrong exactly when the incumbent is free *of developer fee* but not free *to run*.**
+`apify/screenshot-url` has 8,580 users, is free, and is official — a textbook skip. But 384 users in
+the last 30 days paid a rival instead, and the reason is structural: on a headless-browser Actor the
+user still pays Apify platform CUs for a "free" Actor, so a flat PPE per-screenshot price is
+*cheaper and more predictable* than free. **Before invoking the skip rule, read the free
+incumbent's README and input schema**: this one literally self-describes as "primarily an example
+Actor" and exposes no PDF / device preset / element capture / raw-HTML / OG-card input. The rule
+should test "is the incumbent *sufficient*", not "is the incumbent *free and popular*".
+
+**3. The cheap-read discipline from 1720 keeps paying, and this is its first POSITIVE result.** Every
+prior application ("rivals already shipped your idea and got 3 users → don't build") saved a build.
+This one is the mirror image: rivals shipped it and got 154/101/59 u30d, which is the same free A/B
+test returning GO. Worth recording because a tool that has only ever said "no" starts getting read as
+a no-machine — **the value is the measurement, not the direction of the answer.**
+
+**4. Honest limits on this finding (do not over-read it).** (a) u30d is a windowed active count and a
+demand *proxy*, not booked revenue — the same caveat `bin/revenue` carries for our own `totalUsers`;
+no rival here is proven profitable. (b) The single biggest commercial unknown is **unresolved**:
+whether Apify's PPE 80/20 split really leaves platform compute on Apify's side for a
+browser-heavy Actor, or whether compute is netted out of our 80% — if the latter, a $0.002
+screenshot could be loss-making and the whole GREENLIT flips. That is deliberately listed as
+open unknown #1 in NICHES.md rather than assumed in either direction. (c) One niche measured, not a
+category-wide re-rating: "seo audit" (8.7), "lighthouse" (9.7) and "pagespeed" (9.2) all came back
+*below* our existing gov numbers, so the utility axis is not uniformly good — screenshot is the
+outlier, and it won on distribution, not on the headline d/c.
