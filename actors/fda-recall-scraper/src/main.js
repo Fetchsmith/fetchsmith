@@ -1177,6 +1177,18 @@ if (watchMode && seedFailure) {
     }
 }
 
+// Apify truncates a run status message at 500 characters -- measured live on this Actor
+// (`hCyHd3rXe6O7mvayV`, cut mid-word at exactly 500) after the fleet-wide finding on
+// grants-gov-scraper build 0.1.67. Truncation drops the LAST causes, which are the least
+// obvious ones, so a long message is not merely shortened, it loses its most useful part.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg) => {
+    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
+    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+};
+
 // Built once and reused below for `setStatusMessage` (cycle 1759) -- until this fix these were
 // log-only, so a complete run with 0 rows showed bare "Succeeded" in the Console with the cause
 // visible only in the log. Watch-mode SEEDING stays silent (0 rows there is the documented
@@ -1206,7 +1218,18 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'unique across food/drug/device, so set productTypes to all three (or leave it empty) if unsure which one.';
     log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding) {
-    zeroRowMessage = `No recalls matched. Scanned ${scanned} rows. Most common causes, in order: `
+    // Log form keeps the full 5-cause explanation (984 chars, well past the status-message cap).
+    // The status message below is a SEPARATE, compact rendering of the same 5 causes in the same
+    // order, written to fit under 500 chars whole rather than relying on clampStatusMessage() to
+    // cut it -- a truncated-but-non-null message would still lose causes (4) and (5) silently.
+    zeroRowMessage = `No recalls matched (scanned ${scanned}). Causes, in order: (1) filters are ANDed -- `
+        + 'drop one of searchQuery/state/classification; '
+        + `(2) date filters run on ${dateField}, which can lag the real recall date -- try the other `
+        + 'dateField or widen the window; (3) states means the RECALLING FIRM\'s state, not where the '
+        + 'product was distributed; (4) searchQuery is a phrase match, not keywords; (5) brandName/'
+        + 'genericName/manufacturerName only ever match drug recalls.';
+    log.warning(
+        'No recalls matched. Scanned ' + scanned + ' rows. Most common causes, in order: '
         + '(1) the filters are ANDed — a searchQuery plus a state plus a classification over a short '
         + 'report_date window often has zero real matches; drop one filter and retry. '
         + `(2) reportDateFrom/reportDateTo currently filter on ${dateField} — if that's report_date `
@@ -1217,8 +1240,8 @@ if (pushed === 0 && watchMode && !seeding) {
         + '(4) searchQuery is a phrase match over product description, recall reason and firm name — '
         + 'a long phrase rarely matches; try one distinctive word. '
         + '(5) brandName/genericName/manufacturerName only ever match drug recalls (openFDA cross-'
-        + 'references those fields for drugs only) — they will zero out a food- or device-only search.';
-    log.warning(zeroRowMessage);
+        + 'references those fields for drugs only) — they will zero out a food- or device-only search.',
+    );
 }
 
 // The whole point of this record: everything above is English in a log, and a pipeline
@@ -1293,7 +1316,12 @@ if (firstIncomplete) {
         + 'later. Narrow the filters to keep this label under the cap.',
     );
 } else if (zeroRowMessage) {
-    await Actor.setStatusMessage(zeroRowMessage);
+    // Last in the chain deliberately: an INCOMPLETE run or a truncated watch baseline is a
+    // stronger thing to say than "nothing matched", and both of those can coincide with 0 rows.
+    // clampStatusMessage() is a backstop only -- the compact plain-no-match wording above is
+    // already written to fit whole; this guards the watch-label/lookup branches whose length
+    // depends on user-supplied strings (a long watchLabel, or many change-blind filters).
+    await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
 }
 
 log.info(`Done. Pushed ${pushed} recalls from ${productTypes.length} product type(s) (scanned ${scanned} rows).`);

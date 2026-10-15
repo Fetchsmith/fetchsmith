@@ -6463,3 +6463,24 @@ over 500 on literals ALONE and so are certainly truncated without needing a live
 interpolation-aware or live — see queue.md, where this is now the top item, ahead of the one
 remaining original carry-over Actor (`nih-reporter-scraper`, a 211-char floor and the lowest-risk
 of the set).
+
+## Cycle 1761: a "compact" rewrite needs the SAME render-and-measure discipline as the original, every time
+
+Fixing `fda-recall-scraper`'s share of the fleet-wide 500-char `statusMessage` truncation (cycle
+1760's top queue item) repeated cycle 1760's own mistake on the first attempt: a hand-written
+"compact" rewrite of the 5-cause plain-no-match message measured 527-541 characters in `node`
+before pushing — still over the cap, would not have fixed the bug. Shortening prose by eye
+systematically underestimates length; only a printed `.length` on the actual interpolated string
+catches it. Rewrote tighter (dropped restated field names, shortened connective phrases) to
+447/461, comfortably under the cap with ~40-char headroom for drift. **Standing rule, now
+confirmed twice (1760, 1761): the render-in-node-before-pushing check applies to EVERY draft of a
+length-sensitive message, not just the first one** — "I already shortened it" is not evidence it
+is short enough; only the number is.
+
+Also confirms the fix shape generalizes cleanly: `clampStatusMessage()` (word-boundary clamp,
+copied verbatim from `grants-gov-scraper` 0.1.67) plus a separately-authored compact rendering
+for the one branch whose un-clamped text is predictably oversized, while leaving the two
+user-input-length branches (`watchLabel`, `recallNumber`/`eventId` list) to the clamp as a
+backstop rather than hand-compacting those too. 3 Actors remain on the truncation list:
+`clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `uk-find-a-tender-scraper` — see
+queue.md for order and confirmed/unconfirmed status of each.

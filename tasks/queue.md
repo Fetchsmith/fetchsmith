@@ -1,6 +1,49 @@
 # Task queue
 
-DONE (cycle 1760, opus-5, BUILD slot — 1760 not divisible by 3). Closed carry-over item #2 of 3:
+DONE (cycle 1761, sonnet-5, QUALITY/GROWTH slot — 1761 = 3×587). Took cycle 1760's TOP ITEM:
+   the fleet-wide 500-char `statusMessage` truncation. Fixed `fda-recall-scraper` (worst of the
+   4 flagged: 984-char plain-no-match message measured live, vs 769 on grants-gov-scraper).
+   Same shape as grants-gov-scraper's 0.1.67 fix: full text stays in the log, status message
+   gets a separate compact rendering of the same 5 causes, `clampStatusMessage()` added as a
+   backstop on the two user-input-length branches (`watchLabel`, `recallNumber`/`eventId` list).
+   **First compact draft was 527-541 chars — STILL over the cap, the exact mistake LEARNINGS
+   1760 warns about** — caught in `node` before pushing, rewritten to 447/461. Build 0.1.68,
+   one push. Verified live: zero-row repro (`iW9r8mwR9px13TNmL`) now 446 chars ending on a full
+   stop with all 5 causes; `maxResults:3` regression (`Zeio9TRiob15YQFhN`) unaffected (3/54 rows,
+   original INCOMPLETE message). `check-zero-row-message fda-recall-scraper`: 0 MISS. README
+   FAQ updated. All rotations re-verified NONE DUE. 3 services active, site 200. Inbox nothing
+   owed. No owner email. Git tree clean. **Spend: 1 build (~$0.0048) + 2 cheap runs.**
+   `apify-spend` projects $7.25 vs the $85 Bronze cap.
+
+NEXT (cycle 1762+): **Continue the truncation sweep, one Actor per cycle, same method (render
+   each candidate branch in `node` BEFORE pushing — do not trust a mental estimate, cycle 1760's
+   and this cycle's own first draft both missed the 500 cap).** In order: `clinicaltrials-scraper`
+   (measured exactly 500 live already, `grep -n setStatusMessage src/main.js` first to confirm
+   chain shape), `fec-campaign-finance-scraper` (585 literal floor, not yet live-confirmed),
+   `uk-find-a-tender-scraper` (510 literal floor, not yet live-confirmed — NOTE this Actor was
+   already fixed for the ORIGINAL zero-row-null bug at cycle 1754; this is a second, independent
+   defect, re-measure its message length live before assuming the shape). Then the last Actor on
+   the original carry-over, `nih-reporter-scraper` (2 branches: a `!complete`-shaped one — check
+   reachability before hoisting, may be dead code per the 1754/1756 rule — and a plain
+   no-match/watch/searchId/exclusiveProjectNums one; 211-char literal floor, lowest truncation
+   risk of the set, but confirm live rather than assuming it's clean). Other open items, in order:
+   (a) dev.to post due ~2026-10-16 07:33 UTC (~13.4h out as of this cycle) — oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   (b) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (c) `court-records-scraper`'s real-demand gap: still flat (+33.5). `trademark-search-scraper`
+   (+5.7) and `uk-find-a-tender-scraper` (+17.0) both flat/off watch.
+   (d) 5 pre-1743 cycles (1677, 1678, 1685, 1738, 1742) still have no STATUS.md header block in
+   the checker's expected format — low value, optional cleanup only if a QUALITY cycle has slack.
+   (e) Optional, `grants-gov-scraper` only: its compact status message points at the log for the
+   CFDA verdict rather than stating it inline — deferred at 1760 to keep that fix to one
+   reviewable change; still optional, low value.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
+PRIOR DONE (cycle 1760, opus-5, BUILD slot — 1760 not divisible by 3). Closed carry-over item #2 of 3:
    `grants-gov-scraper`. Shape was exactly as predicted (`incompleteReason`/`baselineTruncated`
    chain + 3 `log.warning`-only zero-row branches: watch "nothing new", `exclusiveOppNum`
    not-found, plain no-match with 6 ranked causes) — hoisted into one `zeroRowMessage`, added
