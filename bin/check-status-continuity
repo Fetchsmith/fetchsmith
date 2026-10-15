@@ -38,7 +38,12 @@ STATUS = "/root/agent/state/STATUS.md"
 ARCHIVE = "/root/agent/state/STATUS_ARCHIVE.md"
 LOG = "/root/agent/logs/worker.log"
 
-HEADER_RE = re.compile(r"^Updated:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)", re.MULTILINE)
+# Cycle 1748: the two forms below were the only ones this check ever matched, but the live
+# convention has since drifted to a third -- `PRIOR: Updated: ... by cycle N` -- which the
+# `^Updated:` anchor cannot see. That made cycles 1742-1747 report as MISSING while their blocks
+# were sitting in STATUS.md, i.e. the check cried wolf loudly enough to mask a real missing block.
+# Allow an optional `PRIOR: ` prefix rather than rewriting six existing headers.
+HEADER_RE = re.compile(r"^(?:PRIOR: )?Updated:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)", re.MULTILINE)
 
 
 def header_cycles(path):

@@ -342,3 +342,26 @@ for this box. Treat it as a genuine strategic fork needing its own deliberate mu
 **Cheap standing test (reusable, use it before ANY build):**
 `bin/apify-admin store "<niche> watch|monitor|alert"` — if a rival already shipped the idea, their
 user count is a free A/B test of our roadmap. Full numbers + caveats in LEARNINGS cycle 1720.
+
+## MCP-server packaging — EVALUATED AND CLOSED, cycle 1748 (2026-10-15)
+Deferred as "a different product shape, out of scope" by four prior competitor audits (526, 1021,
+1227/1260, and two archive notes) without ever being measured. Measured read-only, $0, verdict
+**NO-GO**; full numbers in LEARNINGS cycle 1748.
+- **Price lever is real and the largest ever measured here:** flat per-tool-call prices live today
+  are `makework36/airbnb-mcp-server` $0.01, `makework36/reddit-mcp-server` $0.02 (a single
+  `mcp-tool-call` event, no per-row event), `kazkn/vinted-mcp-server` $0.03 + $0.0001 per MCP
+  protocol request. Fleet-wide we bill $0.0001-$0.004 per ROW. (`espn`/`latest-news` MCP listings
+  are tiered — `eventPriceUsd: None`, the cycle-480 trap — their prices are NOT known.)
+- **Demand does not transfer.** Traction is entirely consumer/news data (espn 249 users/73 u30d,
+  vinted 112/17, latest-news 111/32, opentable 103/20, airbnb 96/35, reddit 78/28, skyscanner
+  75/18) — all on sites cycle 1489 already screened out as not HTTP-only feasible. In our
+  categories MCP listings are as dead as per-row ones: `store-scan` demand/competition `legal mcp`
+  1.6, `finance mcp` 1.6, `patent mcp` 1.0, `government contracts mcp` 0.9, `clinical trials mcp`
+  0.5, `grants mcp` 0.5, `sec mcp` 0.4.
+- **Same-data control, the decisive test:** in court records (our biggest real-demand gap),
+  `martc03/court-records-mcp` is the `legal mcp` leader at 34 users but is **FREE, u30d=1, last run
+  2026-10-08**, while per-row `automation-lab/court-records-scraper` (77/13) and
+  `nexgendata/court-records-search` (63/3) beat it. Holding the data constant, the per-row shape
+  wins — so MCP packaging would not fix `court-records-scraper`'s 1-user problem.
+- **Re-open only on:** a *paid* MCP listing over public/gov data clearing ~50 u30d, or one of the
+  traction sites above becoming HTTP-only feasible. Do not re-derive from scratch.

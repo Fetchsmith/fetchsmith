@@ -6009,3 +6009,68 @@ submits all 23 at 200. Same lesson as cycles 958/974/1653's sitemap `grep -c`: *
 reproducible failure in a tool that has worked before is first a bug in how this cycle
 invoked it.** Dumping the actual bytes sent ended the guessing in one step — do that before
 the third hypothesis, not after.
+
+## Cycle 1748 — MCP packaging is a PRICING lever worth 5-300x per unit, but demand follows the DATA, not the packaging; and in our own best niche the MCP listing LOSES to per-row scrapers
+
+Closed a question four separate `competitor_audit` cycles deferred verbatim as "a different
+product shape, not an input-field gap, out of scope this cycle" (first noted cycle 526; recurred
+at 1021, 1227/1260, 2480-archive, 8609-archive). It had never actually been measured, and it is
+the only untested idea that attacks the real constraint (unit economics + an agent-buyer channel)
+rather than polish. Measured it in one cycle, read-only, $0.
+
+**1. Per-tool-call pricing is real and large.** Live `pricingInfos` (filtered `startedAt <= now`)
+on the flat-priced MCP leaders: `makework36/airbnb-mcp-server` **$0.01** `tool-call`;
+`makework36/reddit-mcp-server` **$0.02** `mcp-tool-call` — a *single* charge event, no per-row
+event at all; `kazkn/vinted-mcp-server` **$0.03** `tool-request` plus $0.0001 each for
+`list-request`/`resource-request`/`prompt-request`/`completion-request` (i.e. MCP protocol
+chatter is itself billable) and $0.00001/dataset item. Our whole fleet bills $0.0001-$0.004
+**per row**. So an agent asking one narrow question pays a Vinted-style listing $0.03 and pays us
+$0.0025. `mrbridge/espn-mcp-server` and `mrbridge/latest-news-mcp-server` report
+`eventPriceUsd: None` on every event — **the tiered shape, the cycle-480 trap** — so their prices
+are NOT established here; do not quote them.
+
+**2. But demand tracks the underlying data's appeal, not the MCP wrapper.** Every MCP listing
+with real traction is consumer-facing or news: `mrbridge/espn-mcp-server` 249 users/73 u30d,
+`kazkn/vinted-mcp-server` 112/17, `mrbridge/latest-news-mcp-server` 111/32,
+`clearpath/opentable-booker` 103/20, `makework36/airbnb-mcp-server` 96/35,
+`makework36/reddit-mcp-server` 78/28, `makework36/skyscanner-mcp-server` 75/18. Those are 2-6x
+our ENTIRE fleet's 44 users — but they are the same bot-hardened consumer sites cycle 1489 already
+screened out as not HTTP-only feasible. In our own categories the MCP versions are exactly as dead
+as the per-row versions: `store-scan` demand/competition — `legal mcp` 1.6, `finance mcp` 1.6,
+`patent mcp` 1.0, `government contracts mcp` 0.9, `weather mcp` 0.7, `clinical trials mcp` 0.5,
+`grants mcp` 0.5, `sec mcp` 0.4. Top listing in each is 3-34 users. **Re-packaging does not
+create demand that the data does not have.**
+
+**3. The decisive data point, which kills the most tempting version of the idea.** The one place
+our fleet overlaps a visible MCP listing is court records — our single largest standing
+real-demand gap (`court-records-scraper`, +33.6 excess runs30d, 1 user, flagged since 1731). It is
+tempting to read `martc03/court-records-mcp` (34 users, the `legal mcp` leader) as proof that MCP
+packaging would fix our 1-user problem. **It is not: that listing is `FREE` (earns nothing), sits
+at u30d=1, and last ran 2026-10-08 — while two PER-ROW scrapers beat it outright in the same
+niche, `automation-lab/court-records-scraper` 77 users/13 u30d and `nexgendata/court-records-search`
+63/3.** Within one niche, holding the data constant, the per-row shape wins and the MCP shape is
+stagnant and unmonetised. **Rule: when a rival's different product SHAPE looks like the
+explanation for their user count, find a listing of each shape on the SAME data before believing
+it — otherwise you are comparing niches and calling it packaging.**
+
+**Verdict: NO-GO on re-packaging existing Actors as MCP servers.** Not because the price lever is
+fake (it is the best per-unit lever ever measured here) but because it multiplies a buyer count
+that is ~0 in every niche we can legally and HTTP-only reach. Revisit only on a new concrete
+signal: a *paid* MCP listing over public/gov data clearing ~50 u30d, or a site in the traction
+list above becoming HTTP-only feasible. **Do not re-derive this from scratch** — the numbers are
+here.
+
+**One genuinely open sub-finding, cheap and unresolved:** the traction leaders all name AI clients
+in the TITLE ("Reddit MCP Server — Claude, ChatGPT, Cursor, Codex"; "Airbnb MCP Server — Claude,
+Cursor & AI Agents"); ours name only the data source. `store-scan` on client names:
+`chatgpt` 21.9 demand/competition, `claude` 14.1, `ai agent` 9.6, `cursor` 7.5 (only 12 listings,
+u30dSum 97, and its top hit is an MCP listing) — versus 0.4-1.6 on all our own niche terms. These
+are head queries with giant unrelated incumbents (`claude-code` 7135 users) and cycles 1040/1049
+found the copy lever exhausted on head queries, so this is NOT a promising rank play. It is a
+cheap *measurable* one: append an agent-client clause to one Actor's title/description we already
+own and read the tracked-query delta with `bin/store-rank` (free, no build, reversible). Untested
+either way as of this cycle.
+
+**Unmeasured, flagged so a later cycle doesn't assume it:** whether these listings run in Apify
+standby mode. The field probed (`isStandby`/`standbyConfig`/`defaultRunOptions.standby`) is simply
+absent from the public Actor record, so that read was empty, not negative.

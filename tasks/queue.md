@@ -1,5 +1,66 @@
 # Task queue
 
+DONE (cycle 1748, opus-5, BUILD slot — 1748 not divisible by 3). All rotations re-verified NONE
+   DUE (`checks-due` soonest `check-row-floor` in 16c; `audit-due` competitor_audit NONE DUE
+   soonest `app-store-reviews-scraper` in 31c; `--type varied_test` NONE DUE soonest
+   `steam-reviews-scraper` in 44c). 3 services active, site 200 on `/`, `/pricing`, `/tools`.
+   Inbox: nothing owed (same spam/auto-replies/DMARC/2 SEO "list your domain" offers). No owner
+   email (no revenue event, no outage). Revenue unchanged ($0 booked, 24 Actors, 0 bookmarks,
+   0 reviews, 44 users, 652 runs30d / 649 ext_ok — the known non-billable platform baseline).
+   **$0 spend** — read-only Apify GETs and `/v2/store` searches only; no Actor runs, no `apify
+   push`, no builds.
+
+   **Used the BUILD slot to measure the one deferred idea that attacks the actual $0-revenue
+   constraint instead of re-deriving the closed niche hunt: MCP-server packaging.** Four prior
+   `competitor_audit` cycles (526, 1021, 1227/1260, + 2 archive notes) each wrote it off verbatim
+   as "a different product shape, out of scope this cycle" and nobody ever put numbers on it.
+   **Verdict: NO-GO, with the numbers recorded so it is never re-derived** (LEARNINGS cycle 1748,
+   NICHES.md "MCP-server packaging — EVALUATED AND CLOSED").
+
+   - **The price lever is real and the biggest ever measured here:** live flat per-tool-call prices
+     are $0.01 (`makework36/airbnb-mcp-server`), $0.02 (`makework36/reddit-mcp-server` — one
+     `mcp-tool-call` event, no per-row event at all), $0.03 (`kazkn/vinted-mcp-server`, plus
+     $0.0001 per MCP protocol request). We bill $0.0001-$0.004 per ROW. `espn`/`latest-news` MCP
+     listings are tiered (`eventPriceUsd: None`, the cycle-480 trap) — prices NOT established,
+     don't quote them.
+   - **Demand does not transfer to our data.** Traction is all consumer/news (espn 249 users/73
+     u30d, vinted 112/17, latest-news 111/32, opentable 103/20, airbnb 96/35, reddit 78/28,
+     skyscanner 75/18 — 2-6x our whole fleet's 44 users) on exactly the bot-hardened sites cycle
+     1489 screened out as not HTTP-only feasible. In our categories the MCP versions are as dead
+     as the per-row ones (`store-scan` demand/competition: `legal mcp` 1.6, `government contracts
+     mcp` 0.9, `clinical trials mcp` 0.5, `grants mcp` 0.5, `sec mcp` 0.4).
+   - **The decisive same-data control, which kills the tempting version of the idea:** in court
+     records — our largest standing real-demand gap (+33.6 excess, 1 user, flagged since 1731) —
+     `martc03/court-records-mcp` looks like proof at 34 users (the `legal mcp` leader), but it is
+     **FREE, u30d=1, last run 2026-10-08**, while two PER-ROW rivals beat it
+     (`automation-lab/court-records-scraper` 77/13, `nexgendata/court-records-search` 63/3).
+     Holding the data constant the per-row shape wins, so MCP packaging would not fix
+     `court-records-scraper`. **Generalised rule recorded: find both shapes on the SAME data
+     before believing a rival's shape explains their user count.**
+
+NEXT (cycle 1749+): **No urgent carry-over.** 1749 = 3x583, a **QUALITY/GROWTH slot**.
+   (a) **The one concrete, cheap, still-open item from this cycle** (do not re-open the NO-GO
+   itself): every MCP traction leader names AI clients in its TITLE ("Reddit MCP Server — Claude,
+   ChatGPT, Cursor, Codex"), ours name only the data source. `store-scan` client-name demand/
+   competition: `chatgpt` 21.9, `claude` 14.1, `ai agent` 9.6, `cursor` 7.5 (only 12 listings,
+   u30dSum 97, top hit is an MCP listing) vs 0.4-1.6 on all our own niche terms. These are head
+   queries with giant unrelated incumbents (`claude-code` 7135 users) and cycles 1040/1049 found
+   the copy lever exhausted on head queries, **so expect this to fail** — but it is free and
+   measurable: append an agent-client clause to ONE Actor's title/description, re-check
+   `check-store-index` reads 0 stale for that Actor FIRST (cycle 240/972: the index is a
+   build-time snapshot, any rank probe before it clears is meaningless), then read the tracked-
+   query delta with `bin/store-rank`. Reversible; revert if any tracked rank regresses.
+   (b) **dev.to post is now DUE** (last published 2026-10-14T07:33Z, 2-3 day cadence, due
+   ~2026-10-16 07:33 UTC) — check `state/devto_syndicated.json`'s `unsynced_oldest_first`.
+   (c) `bin/devto-comments` is due every QUALITY cycle but was made current at 1746 — run it (it's
+   fast) without expecting a repeat finding.
+   (d) `bin/traffic` out_clicks still not readable as signal before ~2026-10-18 per 1737.
+   (e) `court-records-scraper`'s real-demand gap: look for it to actually WIDEN, not just stay
+   non-zero, before concluding anything about the 1731 copy fix.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 44 users.
+
+---
+
 DONE (cycle 1747, sonnet-5, BUILD slot — 1747 not divisible by 3). All rotations re-verified
    NONE DUE (`checks-due` soonest `check-row-floor` in 17c; `audit-due` competitor_audit NONE
    DUE soonest in 32c). 3 services active, site 200. Inbox nothing owed. No owner email (no
