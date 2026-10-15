@@ -5,6 +5,12 @@ import { gotScraping } from 'got-scraping';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+let timeBudgetExceeded = false;
+
 const API = 'https://api.usaspending.gov/api/v2/search/spending_by_award/';
 const PAGE_SIZE = 100; // API max for this endpoint
 
@@ -723,6 +729,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function postPage(body) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        if (!timeBudgetOk()) {
+            timeBudgetExceeded = true;
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -741,14 +751,17 @@ async function postPage(body) {
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             const waitS = attempt * 10;
             log.warning(`USAspending request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
-            await sleep(waitS * 1000);
+            await sleep(Math.min(waitS * 1000, Math.max(remainingMs(), 0)));
             continue;
         }
 
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            // A server Retry-After has no upper bound of its own (a real one logged elsewhere on
+            // this fleet: 3600s) -- never let it sleep past this run's own timeout.
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
-            log.warning(`USAspending returned ${resp.statusCode}; retrying in ${waitS}s (${attempt}/4).`);
-            await sleep(waitS * 1000);
+            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            log.warning(`USAspending returned ${resp.statusCode}; retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
+            await sleep(waitMs);
             continue;
         }
         let parsed = null;
@@ -982,7 +995,7 @@ let keepGoing = true;
 let seedError = false;
 
 for (const category of categories) {
-    if (!keepGoing || pushed >= maxResults) break;
+    if (!keepGoing || pushed >= maxResults || timeBudgetExceeded) break;
     const { codes, kind } = CATEGORIES[category];
     const fields = isSubaward ? SUB_FIELDS : [...BASE_FIELDS, ...KIND_FIELDS[kind]];
     const sort = isSubaward ? SUB_SORTS[sortBy] : SORTS[sortBy][kind];
@@ -1071,15 +1084,24 @@ function truncationNote() {
         + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
-const seedFailure = seeding && seedError;
+// `timeBudgetExceeded` can be set during `assertFiltersApplied()`'s pre-walk probes (which also
+// call `postPage`) before the main category walk ever runs and gets a chance to set `seedError`
+// itself -- a seed cut short there must not look like a genuine zero-match baseline either.
+const seedFailure = seeding && (seedError || timeBudgetExceeded);
 if (watchMode && seedFailure) {
+    const cause = timeBudgetExceeded
+        ? 'ran out of run-timeout budget'
+        : 'hit a USAspending API failure';
+    const retryAdvice = timeBudgetExceeded
+        ? 'Raise the run timeout or narrow the filters so the whole seed fits in one run.'
+        : 'Re-run this exact seed (same label and filters) to try again.';
     log.warning(
-        `Seed walk for watch label "${watchLabel}" hit a USAspending API failure and stopped early -- baseline `
-        + 'NOT saved. Re-run this exact seed (same label and filters) to try again; saving a truncated baseline '
+        `Seed walk for watch label "${watchLabel}" ${cause} and stopped early -- baseline `
+        + `NOT saved. ${retryAdvice} Saving a truncated baseline `
         + 'here would risk charging you for pre-existing awards/sub-awards as "new" on the next incremental run.',
     );
     await Actor.setStatusMessage(
-        `Baseline run for watch label "${watchLabel}" failed midway (USAspending API error) -- nothing saved, 0 charged. Re-run to try again.`,
+        `Baseline run for watch label "${watchLabel}" failed midway (${timeBudgetExceeded ? 'run-timeout budget' : 'USAspending API error'}) -- nothing saved, 0 charged. ${retryAdvice}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -1188,8 +1210,11 @@ if (webhookUrl) {
 
 if (seedFailure) {
     await Actor.fail(
-        `Seed walk for watch label "${watchLabel}" hit a USAspending API failure and stopped early; baseline `
-        + 'was not saved. Re-run this exact seed (same label and filters) to try again.',
+        timeBudgetExceeded
+            ? `Seed walk for watch label "${watchLabel}" ran out of run-timeout budget and stopped early; baseline `
+                + 'was not saved. Raise the run timeout or narrow the filters so the whole seed fits in one run.'
+            : `Seed walk for watch label "${watchLabel}" hit a USAspending API failure and stopped early; baseline `
+                + 'was not saved. Re-run this exact seed (same label and filters) to try again.',
     );
 }
 
