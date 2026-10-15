@@ -1245,36 +1245,21 @@ if (!seeding) {
     if (results.length >= maxResults && reach !== null && reach > maxResults) {
         markIncomplete('max-results', `maxResults=${maxResults} of ${reach} reachable match(es)`);
     }
-    if (enrichDetail) {
-        log.info(`Enriching ${results.length} rows with detail-call fields (naics, set-aside, place of performance, contacts)...`);
-        for (const item of results) {
-            await enrichOne(item);
-            await sleep(200);
-        }
-        // A detail call that failed leaves naicsCodes/setAside/pointOfContact at null -- the same
-        // null a genuinely contact-less notice has. The buyer turned enrichment ON and paid for
-        // those fields, so a silent miss is a shortfall, not a detail.
-        if (detailLookupsFailed) {
-            markIncomplete('enrich-failed', `${detailLookupsFailed} of ${results.length} detail lookup(s) failed; their naics/set-aside/place-of-performance/contact fields are null for that reason, not because SAM.gov has none`);
-        }
-    }
-    if (includeAttachments) {
-        log.info(`Fetching attachment lists for ${results.length} row(s)...`);
-        for (const item of results) {
-            await fetchAttachments(item);
-            await sleep(200);
-        }
-        // Same null-means-broken rule as enrich-failed above: an attachments lookup that failed
-        // leaves `attachments: null`, not `[]` (a notice with genuinely zero files is `[]`).
-        if (attachmentLookupsFailed) {
-            markIncomplete('attachments-failed', `${attachmentLookupsFailed} of ${results.length} attachment lookup(s) failed; their attachments field is null for that reason, not because the notice has none`);
-        }
-    }
+    if (enrichDetail) log.info(`Enriching up to ${results.length} row(s) with detail-call fields (naics, set-aside, place of performance, contacts) as each is reached...`);
+    if (includeAttachments) log.info(`Fetching attachment lists for up to ${results.length} row(s) as each is reached...`);
 
     let beforePush = 0;
     let index = 0;
     for (const item of results) {
         index += 1;
+        // Enrich/fetch-attachments immediately before this row is decided on, one row at a time,
+        // instead of two separate full passes over `results` before any row is pushed. Under the
+        // old order a platform hard kill mid-run lost 100% of the rows (and wrote no RUN_SUMMARY)
+        // even though some had already been fully enriched -- enrichment never bought any row
+        // safety because nothing was pushed/charged until every row had been enriched first. Now a
+        // hard kill loses only the not-yet-reached tail, same as a run with enrichment off.
+        if (enrichDetail) { await enrichOne(item); await sleep(200); }
+        if (includeAttachments) { await fetchAttachments(item); await sleep(200); }
         if (watchMode && idOf(item) && watchSeen.has(idOf(item))) {
             const id = idOf(item);
             const nextSnap = snapshotOf(item);
@@ -1302,6 +1287,24 @@ if (!seeding) {
         if (watchMode && idOf(item) && pushed > beforePush) watchSeen.set(idOf(item), snapshotOf(item));
         beforePush = pushed;
         if (!cont) { rowsNotReached = results.length - index; break; } // maxResults reached or a per-run charge limit hit
+    }
+
+    // Same first-cause-wins priority as before the enrichment reorder, just evaluated after the
+    // loop now that enrichment happens row-by-row inside it rather than in a pass that finished
+    // before the loop started: enrich-failed, then attachments-failed, then charge-limit/
+    // max-results. `index` (rows actually reached before an early break), not `results.length`, is
+    // the right denominator -- a maxResults/charge-limit break can leave both failure counts well
+    // under `results.length` while still being 100% of what was attempted.
+    // A detail call that failed leaves naicsCodes/setAside/pointOfContact at null -- the same
+    // null a genuinely contact-less notice has. The buyer turned enrichment ON and paid for
+    // those fields, so a silent miss is a shortfall, not a detail.
+    if (enrichDetail && detailLookupsFailed) {
+        markIncomplete('enrich-failed', `${detailLookupsFailed} of ${index} detail lookup(s) failed; their naics/set-aside/place-of-performance/contact fields are null for that reason, not because SAM.gov has none`);
+    }
+    // Same null-means-broken rule as enrich-failed above: an attachments lookup that failed
+    // leaves `attachments: null`, not `[]` (a notice with genuinely zero files is `[]`).
+    if (includeAttachments && attachmentLookupsFailed) {
+        markIncomplete('attachments-failed', `${attachmentLookupsFailed} of ${index} attachment lookup(s) failed; their attachments field is null for that reason, not because the notice has none`);
     }
 
     // The push loop abandoning rows it had already fetched is invisible in the dataset: the run

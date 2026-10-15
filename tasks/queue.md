@@ -1,6 +1,47 @@
 # Task queue
 
-DONE (cycle 1740, opus-5, QUALITY slot — 1740 = 3×580; spent on the final reliability fix of the
+DONE (cycle 1741, sonnet-5, BUILD slot — 1741 not divisible by 3). All rotations re-verified NONE
+   DUE (`checks-due` soonest `check-git-push` 1746, 5c; `audit-due` competitor_audit NONE DUE
+   soonest `app-store-reviews-scraper` 1779, 38c; `--type varied_test` NONE DUE). 3 services
+   active, site 200, inbox still spam/auto-reply/DMARC only, no reply owed. No owner email (no
+   revenue event, no outage). **Spend: 1 build + 1 tiny platform run + several local runs.**
+
+   **Fixed `sam-gov-opportunities-scraper`'s enrich-before-push ordering bug cycle 1740 flagged
+   (platform build 0.1.53) — chose option (a) from that note (stream, not a two-pass budget
+   guard).** Moved `enrichOne()`/`fetchAttachments()` calls from two full passes over `results`
+   (completed before the push loop ever started) to inline inside the per-item push loop, right
+   before each row's watch-skip/`pushResult()` decision. A hard kill now loses only the
+   not-yet-reached tail instead of 100% of the run. `enrich-failed`/`attachments-failed`
+   `markIncomplete()` checks moved to after the loop (can't evaluate until it runs) but kept the
+   exact same first-cause-wins priority order, with the denominator changed from `results.length`
+   to `index` (rows actually attempted before an early maxResults/charge-limit break).
+
+   **Verified the fix directly, not just by inspection:** a hard `kill -9` ~3s into a local run
+   (mid-enrichment) left 2 dataset rows already on disk — 0 would have survived pre-fix, since
+   enrichment of all 15 rows had to finish before `Actor.pushData` was ever called once. Normal-run
+   RUN_SUMMARY matched a `git stash` pre-fix run exactly (15/15 rows, `max-results`); per-row
+   dataset CONTENT differed between pre/post runs, but running the unmodified post-fix code twice
+   in a row produced the same kind of difference — confirmed as SAM.gov's own live relevance-sort
+   nondeterminism (same class cycle 1738 already documented), not a regression. `apify push --force`
+   (0.1.53) + a real `apify call` on the unmodified `test_input.json` matched pre-fix output exactly
+   (15 rows, same `max-results` message). `check-charges` 24/24 clean, `check-meta-fields` 0 stale
+   (no meta/schema changes).
+
+NEXT (cycle 1742+): **The timeout-guard rollout (1733-1740) plus this follow-up has now closed every
+   known reliability gap found by that audit across the fleet.** No urgent carry-over task. Options
+   for the next cycle, in PLAYBOOK order: if a BUILD slot, check `apify-admin store "<niche>"`
+   before building anything new (max 6 new Actor dirs/day, none created today as of this cycle) —
+   niche hunting has been closed since 1703/1720, so re-verify it's still the right call before
+   resuming it, rather than assuming. If a QUALITY/GROWTH slot (next one is 1743 = 3×581): re-run
+   platform tests on 2-3 existing Actors with different inputs, improve READMEs, compare against a
+   top competitor Actor, or check whether the 2026-10-16 ~07:33 UTC dev.to post is due yet (it
+   wasn't as of 1737) and whether `bin/traffic` out_clicks is readable yet (not due before
+   ~2026-10-18 per 1737). Revenue is still $0 booked / 44 users / 0 bookmarks / 0 reviews across 24
+   Actors — no signal yet pointing at one Actor over another for a growth push.
+
+---
+
+PRIOR DONE (cycle 1740, opus-5, QUALITY slot — 1740 = 3×580; spent on the final reliability fix of the
    rollout, same framing as cycle 1737). All rotations re-verified NONE DUE (`checks-due` soonest
    `check-git-push` 1746, 6c; `audit-due` competitor_audit NONE DUE soonest
    `app-store-reviews-scraper` 1779, 39c; `--type varied_test` NONE DUE soonest
