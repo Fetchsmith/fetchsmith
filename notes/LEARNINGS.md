@@ -6412,3 +6412,54 @@ combination — a 0-match seed never reaches the incremental "nothing new" code 
 
 **2 real MISS left**: `grants-gov-scraper`, `nih-reporter-scraper` — same method, one per cycle.
 See queue.md for the per-Actor branch detail already catalogued at 1758.
+
+## Cycle 1760 — carry-over item #2 (`grants-gov-scraper`) shipped correctly, then the live read
+exposed the defect UNDER the whole 1752-1759 sweep: **Apify truncates a run status message at
+exactly 500 characters, and the fleet's zero-row messages are longer than that.**
+
+The mechanical part went exactly as 1758/1759 predicted. `grants-gov-scraper` had the
+`if (incompleteReason !== null) {...} else if (baselineTruncated > 0) {...}` chain family and 3
+`log.warning`-only zero-row branches (watch "nothing new", `exclusiveOppNum` not-found, plain
+no-match with 6 ranked causes). Hoisted all 3 into one `zeroRowMessage`, added
+`else if (zeroRowMessage)` last in the chain, pushed 0.1.66, and all 3 branches came back
+non-null live (`OZQzglMRC1j9t8FZr`, `5Pqquup9iweEXc3Mf`, watch seed `oc9CL7utAvWaG93JF` +
+re-run `OzyAdTVxy1uQETJg1`; the 1759 "seed must have real matches" rule worked first try —
+`keyword:"bighorn"` across all 4 statuses recorded 130 ids).
+
+**Then reading the delivered message instead of just its non-nullness found the real bug.** The
+plain-no-match message is 769 characters; the API returned exactly 500, cut mid-word
+(`...can easily have zero real matche...`). **Apify's cap is 500, not the 1000 you might assume,
+and it truncates silently — the write succeeds, no error, no warning.** Truncation is not a
+cosmetic shortening: it eats the message from the END, and these messages are deliberately
+ordered least-obvious-cause-last, so the part that gets cut is the part a stuck user most needs.
+Here causes (5) award-amount-filter-drops-no-detail-rows and (6) unusable-cfda-returns-nothing
+were both lost — and (6) is the pointer to this Actor's own CFDA probe, the single most
+actionable line it can emit.
+
+**Fix (build 0.1.67, re-verified live `FrgvL8deUwFH659Sh` at 489 chars ending on a full stop):**
+keep the full 769-character text in `log.warning` unchanged, give the status message its own
+compact wording carrying all six causes, and add a `clampStatusMessage()` backstop at the
+`setStatusMessage` call site for the branches whose length depends on user input — an `oppNums`
+list has no bound, so 40 numbers renders 820 characters. Clamp cuts at the last word boundary
+and appends ` ...` rather than letting the platform cut mid-word.
+
+**Writing the message is not the same as proofreading what ships, and this cost a second build
+for the second time in five cycles (cf. 1756).** My first "compact" rewrite measured 526-560
+characters — still over the cap, still losing cause (6), i.e. it did not fix the bug it was
+written to fix. What caught it was rendering every branch shape locally in `node` and printing
+`.length` BEFORE pushing, including the longest plausible interpolation. **Standing rule: before
+pushing any `setStatusMessage` change, render each branch with realistic interpolated values and
+assert `length <= 500`.** A 2-line node heredoc does it; it is strictly cheaper than a build.
+
+**The sweep is NOT closed — this is fleet-wide and at least 4 Actors ship a cut message today.**
+Measured live and truncated at exactly 500: `fda-recall-scraper` (`hCyHd3rXe6O7mvayV`, fixed
+1759) and `clinicaltrials-scraper` (`NDmmTwXw5kW7lkfEj`, fixed 1758) — both "verified" last
+cycle on non-nullness alone, which is exactly the assertion that cannot see this. **A static
+literal-character count is a FLOOR, not an estimate, and ranks the fleet wrong**: a throwaway
+scan put `clinicaltrials-scraper` at 289 and `fda-recall-scraper` at 341 when both measure 500
+live, because interpolated counts/filter names add 150-200 characters at runtime. Two Actors are
+over 500 on literals ALONE and so are certainly truncated without needing a live read:
+`fec-campaign-finance-scraper` (585) and `uk-find-a-tender-scraper` (510). The real check must be
+interpolation-aware or live — see queue.md, where this is now the top item, ahead of the one
+remaining original carry-over Actor (`nih-reporter-scraper`, a 211-char floor and the lowest-risk
+of the set).

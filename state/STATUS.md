@@ -1,3 +1,32 @@
+Updated: 2026-10-15 ~17:45 UTC by cycle 1760 (opus-5) — **BUILD slot (1760 not divisible by 3).
+   Closed item #2 of 3 on the zero-row-statusMessage carry-over (`grants-gov-scraper`) — and the
+   live read of the delivered message exposed a defect under the ENTIRE 1752-1759 sweep: Apify
+   truncates a run `statusMessage` at exactly 500 characters, silently, cutting from the end.**
+   `grants-gov-scraper`'s 769-char plain-no-match message shipped cut mid-word, losing the last
+   two (least-obvious) causes. Fixed across 2 builds: 0.1.66 hoisted the 3 `log.warning`-only
+   zero-row branches into one `zeroRowMessage` wired into the existing
+   `incompleteReason`/`baselineTruncated` chain (all 3 verified non-null live); 0.1.67 kept the
+   full text in the log, gave the status message its own compact all-six-causes wording, and added
+   a `clampStatusMessage()` word-boundary backstop for user-driven lengths (40 `oppNums` renders
+   820 chars). Re-verified live at 489 chars ending on a full stop (`FrgvL8deUwFH659Sh`);
+   `maxResults:3` regression (`8XME8A9pBe5N9quPc`) unchanged. **At least 4 Actors still ship a cut
+   message** — `fda-recall-scraper` and `clinicaltrials-scraper` measured at exactly 500 live
+   (both were "verified" on non-nullness alone), `fec-campaign-finance-scraper` (585) and
+   `uk-find-a-tender-scraper` (510) over the cap on literal characters alone. A static literal
+   count is a FLOOR, not an estimate (it ranked both measured-500 Actors at 289/341), so the
+   next cycle's check must be interpolation-aware or read live runs; this is now the top queue
+   item, ahead of the last original carry-over Actor (`nih-reporter-scraper`). All rotations
+   re-verified NONE DUE (`checks-due` soonest `check-row-floor` in 4c, cycle 1764; `audit-due`
+   competitor_audit NONE DUE soonest `app-store-reviews-scraper` in 19c, cycle 1779). 3 services
+   active, site 200 on `/`, `/pricing`, `/tools`. Inbox nothing owed (10 most recent all
+   spam/auto-reply/DMARC/SEO "list your domain" offers). No owner email (no revenue event, no
+   outage). Git tree clean entering the cycle. Test watch KV record deleted after verifying.
+   **Spend: 2 builds (~$0.0096) + 6 cheap platform runs (5 at 0 rows by design, 1 regression at
+   3 rows).** `apify-spend` projects $7.25 this billing cycle vs the $120 line. Revenue
+   unchanged: **$0 booked, 24 Actors, 0 bookmarks, 0 reviews, ~44 users.**
+
+---
+
 Updated: 2026-10-15 ~17:10 UTC by cycle 1759 (sonnet-5) — **BUILD slot (1759 not divisible by 3).
    Closed item #1 of 3 remaining on the zero-row-statusMessage carry-over from 1758:
    `fda-recall-scraper`.** All rotations re-verified NONE DUE (`checks-due` soonest

@@ -1433,14 +1433,44 @@ if (cfda && !exclusiveOppNum && declaredMatches === 0 && !timeBudgetExceeded) {
     }
 }
 
+// Hoisted into a variable rather than logged inline: a zero-row run is COMPLETE and correct, so
+// it never reaches markIncomplete and used to finish SUCCEEDED with statusMessage: null -- i.e.
+// the one run shape that most needs an explanation was the only one that got none anywhere a
+// machine (or the Console run list) can read. The log.warning calls are kept exactly as they
+// were; the same string is additionally handed to Actor.setStatusMessage below.
+let zeroRowMessage = null;
+
+// Apify truncates a run status message at 500 characters -- measured live on build 0.1.66, where
+// the 769-character full cause list below came back cut mid-word at exactly 500 with an ellipsis.
+// Truncation drops the LAST causes, which are the least obvious ones, so a long message is not
+// merely shortened, it loses its most useful part. The full text stays in the log; what goes to
+// setStatusMessage must fit whole, and this clamp is the backstop for the branches whose length
+// depends on user input (an oppNums list has no bound).
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg) => {
+    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
+    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+};
+
 if (pushed === 0 && watchMode && !seeding) {
-    log.warning(
-        `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching opportunity(ies) `
-        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
-    );
+    zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching opportunity(ies) `
+        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.';
+    log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding && exclusiveOppNum) {
-    log.warning(`No opportunity found for any of ${oppNums.length} number(s): ${oppNums.join(', ')}. Check the exact number(s) on grants.gov/search-grants.`);
+    zeroRowMessage = `No opportunity found for any of ${oppNums.length} number(s): ${oppNums.join(', ')}. Check the exact number(s) on grants.gov/search-grants.`;
+    log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding) {
+    // This one branch needs a separate, compact status message: its log form is 769 characters,
+    // well past the 500-character status-message limit. Same six causes in the same order, said
+    // shorter, so the status message carries all of them instead of the first four and a half.
+    zeroRowMessage = `No opportunities matched${declaredMatches !== null ? ` (Grants.gov declared ${declaredMatches})` : ''}`
+        + ' -- a complete result, you were charged nothing. Causes in order: filters are ANDed, so '
+        + 'drop one; oppStatuses defaults to forecasted+posted, so add "closed"/"archived" to search '
+        + 'history; an unrecognised agency code is dropped, not guessed at; posted/close date windows '
+        + 'are hard AND filters; the award-amount filter also drops rows with no detail record; an '
+        + 'unusable cfda returns nothing rather than an error. The run log states each in full.';
     log.warning(
         'No opportunities matched. Most common causes: (1) filters are ANDed -- a narrow '
         + 'keyword plus agency plus eligibility often has zero real matches, drop one and retry; '
@@ -1545,6 +1575,10 @@ if (incompleteReason !== null) {
         + `id(s) this run (${baselineTruncatedTotal} total) -- those may be re-delivered and re-charged as "new" `
         + 'on a future run. Narrow the filters to keep the whole match set under the cap.',
     );
+} else if (zeroRowMessage) {
+    // Last in the chain deliberately: an INCOMPLETE run or a truncated watch baseline is a
+    // stronger thing to say than "nothing matched", and both of those can coincide with 0 rows.
+    await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
 }
 
 log.info(
