@@ -990,6 +990,23 @@ if (watchMode && seedFailure) {
 // before this fix: searchQuery "zzyzxqplonknonexistentfetchsmithtest1987" (every filter valid)
 // finished SUCCEEDED, scanned 92/filtered 88, dataset empty, statusMessage null, RUN_SUMMARY
 // complete:true/delivered:0 -- exactly this branch.
+//
+// Apify silently truncates `statusMessage` at exactly 500 characters, cutting from the end
+// (found cycle 1760; closed on grants-gov-scraper 0.1.67, fda-recall-scraper 0.1.68,
+// clinicaltrials-scraper 0.1.71). The plain-no-match text below rendered 702-1213 chars in every
+// variant and shipped CUT: live run 4bJtydJqIPNB7F2gp (cycle 1764) ended mid-clause at
+// "...a trailing-zero code like 72000000 is matched as a" -- causes (3), (4) and (5) were lost
+// silently. So the log keeps the full checklist and the status message gets its own SEPARATE
+// compact rendering of the same causes in the same order, written to fit whole rather than
+// relying on the clamp (a clamped message is still non-null and still loses its tail).
+// `watchLabel` has no schema maxLength, so the clamp stays as a backstop for that branch.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg) => {
+    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
+    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+};
 let zeroRowMessage = null;
 if (pushed === 0 && !seeding) {
     if (timeBudgetExceeded) {
@@ -1007,9 +1024,13 @@ if (pushed === 0 && !seeding) {
             + 'query (fewer stages, a shorter updatedWithinDays, one source), and re-run. See RUN_SUMMARY.',
         );
     } else if (watchMode) {
-        zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
+        // 191 chars on a normal label, but `watchLabel` has no schema maxLength -- a 400-char
+        // label renders 582 and would be cut by the platform, so clamp this one on a word
+        // boundary instead. The log always keeps the full, unclamped text.
+        const watchFull = `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching notice(s) `
             + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.';
-        log.warning(zeroRowMessage);
+        zeroRowMessage = clampStatusMessage(watchFull);
+        log.warning(watchFull);
     } else {
         const malformedCpvNote = malformedCpvCodes.length
             ? `cpvCodes value(s) ${malformedCpvCodes.map((c) => `"${c}"`).join(', ')} are not 8-digit CPV codes and `
@@ -1040,14 +1061,53 @@ if (pushed === 0 && !seeding) {
         } else {
             textFilterCause = 'no text filter ("searchQuery"/"keywordsAny") was set, so that is not the cause here.';
         }
-        zeroRowMessage = `No notices matched. ${malformedCpvNote}Scanned ${scanned} releases over ${page} page(s) and filtered out `
+        log.warning(
+            `No notices matched. ${malformedCpvNote}Scanned ${scanned} releases over ${page} page(s) and filtered out `
             + `${filtered}. Most common causes, in order: (1) ${textFilterCause} (2) "cpvCodes" does not match — both `
             + 'portals use 8-digit CPV codes and a trailing-zero code like 72000000 is matched as a prefix (72...). '
             + '(3) "openOnly" is true but the notices found are award notices, which have no future deadline — set '
             + '"stages" to ["tender"]. (4) "updatedWithinDays" is too short. (5) "sources" excludes the portal your '
             + 'notices are on — Find a Tender is above-threshold only and is a thin feed; Contracts Finder carries the '
-            + 'much larger sub-threshold flow. Filtered rows are never charged.';
-        log.warning(zeroRowMessage);
+            + 'much larger sub-threshold flow. Filtered rows are never charged.',
+        );
+        // Compact rendering for the status message: the same causes in the same order, written
+        // to fit whole under the 500-char cap. Measured in `node` across all 10 variants before
+        // pushing (the cycle 1760/1761 rule -- two earlier "compact" rewrites in this fleet still
+        // measured 504-569 and would not have fixed the bug): worst case 491 chars, at
+        // pathological scanned/filtered/page counters. Mirrors `textFilterCause` above; keep the
+        // two in sync, and re-measure here on any wording change.
+        const FIELDS_SHORT = 'title/description/buyer/CPV desc/lots';
+        let textCauseShort;
+        if (searchWords.length && keywordsAny.length) {
+            textCauseShort = `"searchQuery" (all words) AND "keywordsAny" (one phrase) must BOTH hit ${FIELDS_SHORT}; `
+                + 'drop one of the two.';
+        } else if (searchWords.length) {
+            textCauseShort = `"searchQuery" too specific — every word must hit ${FIELDS_SHORT}, matched from a word start.`;
+        } else if (keywordsAny.length) {
+            textCauseShort = `"keywordsAny" missed — one phrase must hit ${FIELDS_SHORT} as adjacent whole words; `
+                + 'try a shorter phrase.';
+        } else {
+            textCauseShort = 'no text filter was set, so that is not the cause here.';
+        }
+        if (malformedCpvCodes.length) {
+            // A malformed CPV code is almost always THE cause, and the code list is caller-sized
+            // (40 codes rendered 281 chars of note alone), so this variant leads with it and
+            // sends the rest of the checklist to the log rather than shipping a five-cause
+            // message the platform would cut. The example code is sliced: `cpvCodes` entries have
+            // no schema maxLength, so one pathological value could otherwise overflow on its own.
+            zeroRowMessage = `No notices matched. ${malformedCpvCodes.length} "cpvCodes" value(s) (e.g. `
+                + `"${malformedCpvCodes[0].slice(0, 20)}") are not 8-digit CPV codes and were excluded from matching `
+                + '— if that left no valid "cpvCodes" value, that alone explains 0 results. Fix them to exactly 8 '
+                + `digits and re-run. Scanned ${scanned}, filtered out ${filtered} over ${page} page(s). The log `
+                + 'lists every bad code and the other causes to check.';
+        } else {
+            zeroRowMessage = `No notices matched: ${scanned} scanned, ${filtered} filtered. Causes: (1) `
+                + `${textCauseShort} (2) "cpvCodes" must be 8 digits; 72000000 matches as prefix 72... `
+                + '(3) "openOnly" hides award notices — use "stages":["tender"]. (4) "updatedWithinDays" too short. '
+                + '(5) "sources" excludes the portal — Find a Tender is above-threshold only; Contracts Finder has '
+                + 'the sub-threshold flow. See the log.';
+        }
+        zeroRowMessage = clampStatusMessage(zeroRowMessage);
     }
 }
 

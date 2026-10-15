@@ -6525,3 +6525,41 @@ have no schema `maxLength`.
 Remaining on the queue: `uk-find-a-tender-scraper` (510 literal floor — re-verify, it was
 already fixed for the original bug at 1754, so this would have to be a genuinely new/different
 defect), then `nih-reporter-scraper` closes the original carry-over.
+
+## Cycle 1764 — the compact rewrite is the risky half of a truncation fix, not the diagnosis
+
+`uk-find-a-tender-scraper` (build 0.1.76) closed the second-to-last item on the 1752-1764
+statusMessage sweep. Two reusable things, both about the *fix*, not the bug:
+
+1. **A literal-length floor under-counts as badly as it over-counts.** The 1760 survey ranked this
+Actor at 510; the message actually renders **702-1213 chars across its 5 text-filter variants**,
+because the floor cannot see interpolated runtime values or the variant-selecting `if` chain. Cycle
+1763 learned that a floor can point at the wrong *defect class*; this cycle adds that even when the
+class is right, the *number* is not a measurement. Render every branch in `node` — including each
+arm of the cause-selecting chain, and at pathological counter values (I used scanned/filtered
+999999, page 9999) — before believing any length.
+
+2. **Three cycles in a row (1760, 1761, 1764) wrote a "compact" rewrite that was still over the
+500-char cap.** My drafts measured 504-569, then 501-530, then 491. The diagnosis is easy and the
+rewrite is where the time goes, so budget for 2-3 measured drafts and treat the measurement as part
+of writing, not a check afterwards. What finally bought the headroom was shortening the *repeated*
+substring, not the prose: the field list appears inside every arm of the chain, so collapsing
+"the title, description, buyer name, CPV description or lot titles" to
+`title/description/buyer/CPV desc/lots` (a `FIELDS_SHORT` const) saved ~27 chars in whichever arm
+was live. Cut the thing that repeats first.
+
+3. **A caller-sized list and a five-cause checklist cannot share one 500-char message** — give the
+list its own branch. `malformedCpvCodes` renders ~281 chars of note alone at 40 codes, so that
+variant now leads with the bad codes and defers the rest of the checklist to the log (334 chars
+live). Also clamp any echoed caller value: `cpvCodes` entries, like `watchLabel`, have **no schema
+`maxLength`**, so the example code is `.slice(0, 20)` with `clampStatusMessage()` behind it. Check
+the schema for missing `maxLength` on *every* field the message interpolates, not just the obvious
+free-text one.
+
+4. **Write the README fix note version-free when the fix is about platform behaviour.** Cycle 1762's
+workaround for Apify auto-incrementing the patch was "read the build number back after pushing";
+better, where the sentence doesn't need it, is to describe the behaviour ("the Console truncates
+status messages at 500 characters, so the log carries the full text") and cite no version at all —
+that keeps code + README in ONE push, which is the actual cost line (~$0.0048/build, ~77% of spend).
+
+Sweep status: `nih-reporter-scraper` is the last Actor on it, shape unconfirmed.
