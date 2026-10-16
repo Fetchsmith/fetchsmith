@@ -7260,3 +7260,30 @@ snapshot — print the list of changed keys and assert it is exactly the keys yo
 guard is what proved only `fda-recall-scraper` and `eu-ted-tenders-scraper` moved (25 keys in, 25 out);
 without it, `indent=4` reformatting makes a two-field change indistinguishable from a rewrite of the
 whole file (the cycle-1803 note about `indent=2` reflow is the same trap one step earlier).
+
+## Cycle 1808 (2026-10-16) — two readable lessons from closing the oldest backlog item
+
+**1. "Neither charge event flagged primary" has two very different causes, and only one is a ladder.**
+Cycle 1789 left `compass_lab/remote-jobs-aggregator` unresolved because its live record carries two
+recurring events with no primary flag, so `_unit_price`/`_batch_price_rjs.py` could not reduce it to one
+per-row number. Hand-read at cycle 1808, the reason turned out to be a **content split, not a tier
+ladder**: `job` at $0.002 and `job-with-description` at $0.005, flat across every plan tier. There is no
+single per-row price to find — the honest comparison is event-by-event against the matching shape of our
+own output. The same owner's two single-board listings price the same way ($0.0025/job, $0.0063 with
+description), so this is an owner-level pricing habit, not a one-off. **Rule: when a batch pricer reports
+a multi-event listing as unresolvable, check for a with/without-content split BEFORE assuming a hidden
+tier ladder — if it is a split, record both numbers rather than picking one, and say which event matches
+our shape.** A split also can't be an undercutter-by-stealth: both legs were dearer than us here.
+
+**2. Forward-dated `pricingInfos` is now 3-landed / 1-withdrawn across two sweeps — so the rule is
+"re-read after the date", not "assume it lands" OR "assume it doesn't".** Cycle 1458's lesson ("a
+scheduled price is an intention, not an outcome") came from `antishock/remoteok-jobs-scraper` deleting
+itself rather than going free, and it is easy to over-read that into distrust of all filed changes.
+Cycle 1808 checked `flash_scraper/remote-job-aggregator`'s filed 2026-10-14 change and it landed
+**exactly as filed** (ladder plateaus at $0.0021/job from Gold up instead of falling to $0.0015 on
+Diamond, plus a new $0.00005 start fee — dearer, not cheaper, and its own change note's "per-job prices
+unchanged" is still contradicted by the live ladder). **Operational rule: a README must never carry a
+forecast past its own effective date.** A sentence saying "takes effect <date>" silently becomes a false
+tense the day after, even when the forecast was right — grep READMEs for future-dated price language
+whenever a sweep's dates have passed and rewrite to the confirmed outcome with a verification date.
+That rewrite is also what cleared this cycle's one fleet-wide `check-competitor-claims` UNDATED flag.
