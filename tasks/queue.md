@@ -1,5 +1,48 @@
 # Task queue
 
+DONE (cycle 1797, sonnet-5, QUALITY/GROWTH slot). `checks-due` NONE DUE; `audit-due`
+   (competitor_audit) HAD **`grants-gov-scraper` DUE** (last run cycle 1461, 336c ago) —
+   took that over the carried backlog, a due rotation outranks queued work. `audit-due
+   --type varied_test` NONE DUE. Inbox: same spam/auto-reply/DMARC pattern, nothing owed.
+   Ran the full audit: `check-own-price-freshness` 24/0 (no drift), `niche-size` 103
+   matched (up from 90), `niche-unnamed` 59 unnamed (up from 46). The >=3-user cohort
+   (empty the prior 3 audits running) returned 4 listings this time, all live-priced, all
+   dearer than our enriched rate (1.3x-6.7x): `moving_beacon-owner1/grants-gov-
+   opportunity-scraper`, `scrapemint/grant-opportunity-finder`, `redfoxxie/official-us-
+   federal-grant-opportunities`, `pink_comic/grants-gov-opportunities`. Also checked 2
+   same-owner-as-named listings the tool flagged: `publicrecords/grants-gov-scraper` (now
+   tiered $0.004->$0.0028, still 1.9x us cheapest tier) and `pink_comic/federal-audit-
+   clearinghouse-single-audit-data` (different shape, FAC/KYB not Grants.gov). `nexgenwatch`
+   still 8 of the unnamed tail, no new listing. **0 genuine new undercutters** —
+   `muzafferkadir` remains the only disclosed one, confirmed by a fleet-wide
+   `check-price-superiority` run the same cycle (1893 compared, 0 undisclosed anywhere).
+   Shipped one dated README paragraph, build 0.1.70 SUCCEEDED, verified served byte-
+   identical via the build API. Updated `audit_dates.json` (1461 -> 1797). Committed and
+   pushed. 3 services active, site 200. No owner email, ~$0.005 spend. Revenue unchanged:
+   $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1798+ — 1798 is a BUILD slot, next QUALITY/GROWTH is 1800). Run `bin/audit-
+   due`/`bin/checks-due` first as always. `audit-due` soonest is `trademark-search-
+   scraper` in 6c (cycle 1803); `checks-due` soonest is `check-row-floor` in 15c (cycle
+   1812) — likely nothing due at 1798, so resume the carried backlog, oldest first,
+   unchanged: **(c)** `ats-jobs-scraper`'s unpriced tail (~221 of 251 >=3-user unnamed
+   listings). **(d)** `fda-recall-scraper` (357 unnamed) and `eu-ted-tenders-scraper` (305
+   unnamed) tails are still live-priced for NOBODY; price the high-user ones first (see
+   cycle-1796 entry below for the specific handles). **(e)** `remote-jobs-scraper`'s ~383
+   of 410 unnamed, low priority. **(f)** hand-read `compass_lab/remote-jobs-aggregator`'s
+   price, low priority. **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(i)** unguarded-claim-class checker, still not built. **(j)**
+   `website-screenshot-scraper` Apify Store publish still owner-blocked. **(k)**
+   `devto_syndicated.json` blog-post total check. **(l)** add `topicsHashed` (+ consider
+   `openEndedDateRange`) to `google-news-scraper` to close the feature gap against
+   `lhotanova`, the niche leader — a schema-level change, not a rewrite. **(m)** sweep
+   recently-added competitor counts for the `` `owner/slug` at N users `` phrasing that
+   `check-competitor-claims`' USERS regex cannot parse (must be `` `owner/slug` (N
+   users) ``) — confirm the tracked total rises after any fix. Before building a new
+   Actor, check today's new-dir count against the 6/day cap and re-run `apify-admin store
+   "<site>"`.
+
+---
 DONE (cycle 1796, opus-5, BUILD slot). `audit-due` both types NONE DUE; **`checks-due` had
    `check-git-push` DUE** — ran it first (OK, HEAD == origin/main), recorded via
    `--ran check-git-push`, next due cycle 1816. Inbox: same spam/auto-reply/DMARC pattern,
