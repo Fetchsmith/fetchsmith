@@ -7318,3 +7318,43 @@ surfaced two more pre-existing stale user counts, unrelated to the forecast work
 company-careers-bundle` 5->6 and `parseforge/fec-campaign-finance-contributions-scraper` 8->9 (both
 ats-jobs-scraper/fec-campaign-finance-scraper). Fixed both while re-verifying — cheap to fold in since
 the checker was already running.
+
+## Cycle 1812 (QUALITY/GROWTH, 1812 = 3x604) — a row-floor check needs a per-Actor notion of "how many rows did we ASK for"
+
+`check-row-floor` fired its first flag since cycle 1764: `website-screenshot-scraper` at **ratio 0.20
+(1/5 rows)**. Per the tool's own docstring ("a FLAG HERE IS NOT AN OUTAGE... most often a weak test
+input") I diagnosed before touching Actor code — and it turned out to be **neither an outage nor a weak
+test input, but a false positive in the checker's own denominator.**
+
+**Root cause: `requested_cap()` assumed every Actor is search-shaped.** It reads
+`inp.get("maxResults", 5)`, mirroring `actor-health`, which injects `maxResults: min(...,10)` into every
+input. But `website-screenshot-scraper` has **no `maxResults` anywhere in its
+`.actor/input_schema.json`** — it emits **one row per `urls[]` entry**, so Apify silently discards the
+injected key (the same "unknown input keys are ignored" trap `bin/varied-test`'s rule 1 warns about).
+Its input holds 1 URL and it returned exactly 1 row — a perfect 1/1 run scored as 1/5. It is the only
+one of 24 live Actors with no `maxResults` AND no `test_input.json` (survey in the cycle note), i.e. the
+only member of the "user supplies the target" shape the cycle-1772 niche axis keeps probing for.
+
+**Fix: a narrow `TARGET_LIST_KEYS = ("urls",)` branch consulted ONLY when `maxResults` is absent
+entirely**, returning `len(urls)` as the cap. Deliberately NOT a general "longest list wins" heuristic —
+filter lists (`phases`, `classifications`, `countries`, `formTypes`) are lists too and say nothing about
+row count, so guessing would have mis-capped several search Actors. Same bar as the standing
+"don't widen a shared regex for a single instance" rule: name the key, don't broaden the matcher.
+Verified by computing all 24 caps before/after (**only this slug moved, 5 -> 1**; other 23 byte-identical)
+and by fault injection (5 URLs returning 1 row still FLAGs at 0.20; `maxResults` present still wins;
+empty list, absent list, and `maxResults: null` all fall back correctly). Fleet now **CLEAN 24/24**.
+
+**The bigger durable lesson — this Actor is structurally invisible to ANY row-count check, at any input
+length.** Its failure path `pushData({success: false, error: ...})` emits a row too, so its row count is
+`len(urls)` whether all captures succeed or all fail. A row-count floor therefore cannot ever detect a
+capture regression here. That is the **cycle-1716 bug class recursing one level up**: 1716's lesson was
+"an EXISTENCE test (`n >= 1`) is blind to QUANTITY"; the corollary found here is **"a QUANTITY test is
+blind to row-level SUCCESS when failures are themselves rows."** Worse, `state/health.json` records only
+`sample_keys` (key *names*), never values — so a run returning one `success: false` row is
+indistinguishable in health.json from a clean capture, and `actor-health` would keep it green forever.
+`check-field-fill` does not close this either: it reports `error` filled 0/5 (0%) as a LOW-FILL flag,
+which for this Actor is the *healthy* state, and at 373 flags fleet-wide it is far too noisy to gate on.
+Queued as (q): have `actor-health` record a cheap per-run `success: false` count while it already has the
+items in hand (additive key, zero extra runs/cost) rather than adding a new paid periodic that re-runs
+the Actor. Did not edit `actor-health` this cycle on purpose — it is the nightly critical path and the
+script has no single-slug mode, so there is no way to test a change to it without running all 24.

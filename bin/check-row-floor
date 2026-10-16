@@ -56,6 +56,18 @@ HISTORY_DEPTH = 60
 # real decline; fix or broaden the test input instead.
 ALLOW = {}
 
+# Input keys that are a LIST OF TARGETS, where the Actor emits one row per entry and
+# there is no maxResults cap to read (cycle 1812: `website-screenshot-scraper` takes
+# `urls` and has no maxResults anywhere in its .actor/input_schema.json -- one row per
+# URL, success or error). For those the row count the test input ASKED FOR is the length
+# of that list, not actor-health's fallback default of 5, which flagged a correct 1/1 run
+# as 1/5 = 0.20. Only consulted when the input declares NO maxResults at all, so this can
+# never move the cap for the 23 search-shaped Actors that do declare one. Add a key here
+# when a new "user supplies the target" Actor ships; do not make this a general
+# longest-list guess -- filter lists (`phases`, `classifications`, `countries`) are lists
+# too and say nothing about row count.
+TARGET_LIST_KEYS = ("urls",)
+
 
 def latest_health():
     with open(f"{ROOT}/state/health.json") as fh:
@@ -76,6 +88,11 @@ def requested_cap(slug, tool):
             inp = json.load(fh)
     else:
         inp = tool.get("example_input", {"maxResults": 5})
+    if inp.get("maxResults") is None:
+        for key in TARGET_LIST_KEYS:
+            targets = inp.get(key)
+            if isinstance(targets, list) and targets:
+                return max(min(len(targets), 10), 1)
     try:
         want = int(inp.get("maxResults", 5) or 5)
     except (TypeError, ValueError):
