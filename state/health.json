@@ -1,5 +1,5 @@
 {
- "ts": 1792035002,
+ "ts": 1792121402,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -50,11 +50,20 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": false,
+   "ok": true,
    "status": 201,
-   "items": 0,
-   "sample_keys": [],
-   "err": "[]"
+   "items": 10,
+   "sample_keys": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "currency"
+   ],
+   "err": null
   },
   "ats-jobs-scraper": {
    "ok": true,
@@ -357,6 +366,22 @@
     "periodOfReport",
     "issuerName",
     "issuerCik"
+   ],
+   "err": null
+  },
+  "website-screenshot-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 1,
+   "sample_keys": [
+    "url",
+    "format",
+    "success",
+    "error",
+    "imageUrl",
+    "screenshotKey",
+    "contentType",
+    "byteSize"
    ],
    "err": null
   }

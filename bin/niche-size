@@ -709,8 +709,18 @@ def main():
     failed_terms = []
     for term in terms:
         try:
-            body, _st = get_json(f"{API}/store", params={"search": term, "limit": 100},
-                                 timeout=40)
+            # Cycle 1780: limit was 100 and that was a 10x UNDERCOUNT, not a cap on a
+            # short list. `/v2/store?search=X` reports `total` in the thousands and will
+            # serve up to ~1000 hits in ONE call; at limit=100 it returned count=100 but
+            # only ~82 items, so this sweep saw ~10% of the matchable Store for each term.
+            # Measured live on this Actor's own niche: 577 distinct / 227 matched at
+            # limit=100 vs 859 / 403 at limit=1000 -- i.e. 176 title-matching rivals were
+            # invisible to every audit this tool has ever backed. One call per term still
+            # (do NOT add an offset loop: cycle 1779 proved a second page requested at an
+            # already-truncated Algolia offset returns fewer/different items than a fresh
+            # single-page call, which is how that sweep lost 60 of 89 KNOWN rivals).
+            body, _st = get_json(f"{API}/store", params={"search": term, "limit": 1000},
+                                 timeout=60)
             items = ((body or {}).get("data") or {}).get("items") or []
         except Exception as e:
             failed_terms.append(term)

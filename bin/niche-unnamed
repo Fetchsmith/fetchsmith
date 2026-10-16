@@ -40,8 +40,12 @@ seen = {}
 failed_terms = []
 for term in terms:
     try:
-        body, _st = ns.get_json(f"{ns.API}/store", params={"search": term, "limit": 100},
-                                timeout=40)
+        # Cycle 1780: 100 -> 1000, same fix and same reason as bin/niche-size's loop
+        # (see the comment there). This tool's entire job is completeness, so a 10x
+        # truncation here was the worst place in the fleet for it: every "N unnamed"
+        # list it has printed was drawn from ~10% of the matchable Store.
+        body, _st = ns.get_json(f"{ns.API}/store", params={"search": term, "limit": 1000},
+                                timeout=60)
         items = ((body or {}).get("data") or {}).get("items") or []
     except Exception as e:
         failed_terms.append(term)

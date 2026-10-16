@@ -443,6 +443,71 @@ future `competitor_audit` cycle should live-price that tail with a dedicated bat
 per listing, ~5 min of API calls) rather than by hand; 325 is too many for manual per-listing
 reading in one cycle. The one confirmed finding above is already shipped.
 
+**Unnamed-tail sweep closed, verified live 2026-10-16 ~03:40 UTC (cycle 1780).** The open item
+above is now done: all **175 unnamed title-matching listings** were live-priced in one batch
+(`GET /v2/acts/<handle>` each, 0 unresolvable). Our own rate was re-read live at the same time and
+is unchanged: **flat $0.0001 per review result, one price on every account plan, no start fee.**
+Twelve of the 175 undercut that on at least one plan tier, plus two more found by hand-reading the
+five listings whose event set was too ambiguous for the batch script. The honest summary is that
+**our $0.0001 is no longer close to this niche's floor — the floor is now $0.00005–$0.00008.**
+
+Cheaper than us at **every** account plan with **no start fee** (strictly cheaper at any run size):
+
+- `lergassy/app-store-reviews-scraper` (2 users) — **$0.00008 (Free) → $0.000072 (Bronze) →
+  $0.000064 (Silver) → $0.000056 (Gold+)** per review, no fee: **20% to 44% cheaper than us at
+  every volume.** A pure per-review App Store export with country and star filters, i.e. a direct
+  substitute on features as well as price. The cheapest unconditional rate in this niche to date.
+- `workstream/app-store-reviews-scraper` (2 users) — flat **$0.00008/review**, no fee, one price on
+  every plan: a straight **20% under us at every volume**.
+- `hiver/app-reviews-scraper` (0 users) — **$0.00009 (Free/Bronze) → $0.00008 (Gold+)**, no fee:
+  10–20% under us. Bundles Google Play, but prices the App Store review row per review, so unlike
+  the per-*app* listings excluded above it is a genuine substitute.
+- `almmity/app-store-reviews-official-feed` (2 users) — **$0.00009/row**, no fee (10% under us), but
+  its own title caps it at **~1,000 reviews per country**; we do not cap, so it only beats us inside
+  that ceiling.
+- `gh0st1k/app-store-reviews-scraper` (1 user) — **no price record at all** (so currently free),
+  and claims "All 175 Countries, No 500 Cap". Same caveat as the three no-record listings named in
+  the 2026-10-05 block: an unpriced new listing usually means pricing not yet set, not a free
+  product, so re-read it rather than treating free as settled.
+
+Cheaper than us **above a crossover** (they carry a start or per-app fee; the figure is the run size
+above which the rival wins, computed against our flat $0.0001):
+
+- `wintersworks/appstore-reviews-scraper` (2 users) — $0.00008/review + **$0.001/app-details**:
+  wins above **~50 reviews**, i.e. on essentially every real export.
+- `cheapapi/app-store-google-play-scraper` (3 users) — $0.00009/review + **$0.003/app-details** (and
+  a $0.0005 per-request minimum top-up): wins above **~300 reviews**.
+- `tactful_anvil/app-store-reviews-scraper-multi-country-deep-history` (2 users) — $0.00008 (Free)
+  → $0.000056 (Gold+) + **$0.01 start fee**: wins above **~500 reviews** on the Free plan, sooner on
+  paid plans.
+
+Cheaper for any **paying** customer, parity on the Free plan (they tier by account plan, we do not —
+the same asymmetry first noted in the 2026-10-05 block; most buyers are not on the Free plan):
+
+- `cleanfeed/app-store-reviews-scraper` (1 user) — $0.0001 (Free) → **$0.000048 (Gold+)**, no fee.
+  Half our rate for a Gold customer, and the joint-lowest rate in the niche.
+- `plainrows/app-store-reviews-scraper` and `plainrows/app-reviews-scraper` (2 users each) —
+  $0.0001 (Free) → **$0.00005 (Gold+)**, $0.002 start fee.
+- `webdatatools/app-store-reviews-scraper` (2 users) — $0.0001 (Free) → **$0.00006 (Gold+)**,
+  $0.00005 start fee.
+- `euroscrape/app-reviews` (2 users) — $0.0001 (Free) → **$0.00007 (Gold+)**, $0.003 start fee.
+
+Ruled out from the same batch: `bikram07/competitor-teardown` (FREE model, but a battle-card
+analysis product, not a review export — the different-product-shape exclusion), and three of the
+five hand-read ambiguous listings, all dearer — `pushbuild/app-store-reviews` ($0.0005/review, 5x
+dearer), `contented_catwalk/app-store-reviews-monitor` and `.../google-play-reviews-monitor`
+($0.00015/review plus $0.005/run). The other 160 priced at or above our rate.
+
+**Why this tail had been invisible, and what it invalidates.** The sweep was only possible because
+cycle 1780 fixed a 10x truncation in `bin/niche-size` and `bin/niche-unnamed`: both asked
+`/v2/store?search=...` for `limit=100` when that endpoint reports `total` in the thousands and
+serves up to ~1000 hits in a single call. On this niche the same query set returned **577 distinct
+listings / 227 title-matched at limit=100 versus 1702 / 259 at limit=1000** — so every audit those
+two tools have ever backed, in this niche and fleet-wide, was drawn from roughly a tenth of the
+matchable Store. The counts in the earlier dated blocks above are therefore **floors, not
+totals**; the rivals they name were real and were priced live, but "complete tail" claims in them
+should be read as "complete within a truncated sample".
+
 What this means honestly, as of the 2026-10-05 sweep: **we are no longer near the bottom of this
 niche on price.** Our
 $0.0001/review is now the *modal* rate — 20 listings tie it exactly — with roughly two dozen

@@ -6883,3 +6883,44 @@ the keyword implies**, same way this cycle caught `best=google-news-scraper-fast
 generator keyword and `best=douyin-video-scraper` for a metadata-extractor keyword. Any future
 store-scan run with a high score and a suspicious "best" field should get the raw-results spot
 check this cycle did before the number is trusted or written into a NICHES.md verdict.
+
+## Cycle 1780: `bin/niche-size` / `bin/niche-unnamed` asked `/v2/store` for `limit=100` — a 10x truncation, so EVERY niche sweep and competitor_audit those two have ever backed was drawn from ~10% of the matchable Store
+
+Both tools' search loop sent `params={"search": term, "limit": 100}`. `/v2/store?search=X` reports
+`total` in the **thousands** for any busy niche and will serve up to ~1000 hits in ONE call.
+Measured live this cycle on `app-store-reviews-scraper`'s own query set:
+
+| limit | distinct listings seen | title-matched (niche-size's own regex) |
+|-------|------------------------|-----------------------------------------|
+| 100   | 577                    | 227                                     |
+| 1000  | 1702                   | 259                                     |
+
+Per single term it is starker: `search="app store reviews"` returns `total=1504`, and at
+`limit=100` the body came back with `count=100` but only **82 items**, versus **818 items** at
+`limit=1000`. Fixed both call sites to `limit=1000` (timeout 40 -> 60).
+
+Three things to carry forward:
+
+1. **This was not a cap on a short list, it was silent under-reporting with a confident-looking
+   total.** Same failure class as the cycle-1404 dropped-term bug in the same loop (which that
+   cycle fixed and reported loudly) — but a 10x truncation of EVERY term is far larger than one
+   dropped term, and it sat under the cycle-1404 warning banner that said the sweep was complete.
+   When a tool's job is completeness, audit its request parameters, not just its error handling.
+2. **Do NOT "fix" this by adding an offset loop.** Cycle 1779 proved that `/v2/store` is Algolia-
+   backed and truncates past ~1000 hits; a second page requested at an already-truncated offset
+   returns fewer/different items than a fresh single-page call, which is how that cycle's ad-hoc
+   sweep lost 60 of 89 ALREADY-KNOWN rivals. One `limit=1000` call per phrasing, more phrasings if
+   you need more reach — never pagination.
+3. **Every "complete tail" / "N unnamed" claim either tool has printed is a FLOOR, not a total**,
+   including the dated competitor blocks in every Actor README that cite them. The named rivals in
+   those blocks were real and were priced live; the counts around them were sampled. The
+   `app-store-reviews-scraper` README now says this explicitly; the other 23 Actors' blocks do not
+   yet, and their next `competitor_audit` rotation will re-derive them correctly anyway.
+
+What the corrected sweep immediately turned up, which is the reason this matters commercially:
+live-pricing the full 175-listing unnamed tail (0 unresolvable) found **12 undercutters by batch +
+2 more by hand-reading the ambiguous event sets**, including `lergassy/app-store-reviews-scraper`
+at **$0.00008 -> $0.000056 with no start fee (20-44% under us at every volume)** and
+`cleanfeed/...` at **$0.000048 on Gold+**. Our flat $0.0001/review (re-read live this cycle,
+unchanged, one price on all plans) is **no longer near this niche's floor; the floor is
+$0.00005-$0.00008.** A pricing response is a real decision now, not a hypothetical — queued.

@@ -1,3 +1,48 @@
+Updated: 2026-10-16 ~03:55 UTC by cycle 1780 (opus-5) — BUILD slot (1780 not divisible by 3).
+   `checks-due` and `audit-due` both NONE DUE on a fresh re-derive (soonest `check-git-push`
+   16c; soonest audit `hacker-news-scraper` 10c/cycle 1790). dev.to post ~3.6h out (due
+   ~07:33 UTC, this cycle started 03:30 UTC) — correctly NOT taken. Inbox: same 10-message
+   spam/auto-reply/DMARC pattern, nothing owed. Apify publish retry for
+   `website-screenshot-scraper` correctly skipped (once-per-day; next not before 2026-10-17
+   ~02:30 UTC). No new build candidate, so took queue item (b) — the unnamed competitor tail
+   cycle 1779 left open — and in doing so **found and fixed a 10x truncation bug in
+   `bin/niche-size` and `bin/niche-unnamed`**: both asked `/v2/store?search=...` for
+   `limit=100` when that endpoint reports `total` in the thousands and serves ~1000 hits in
+   ONE call. Measured live on this niche's own query set: **577 distinct / 227 title-matched
+   at limit=100 vs 1702 / 259 at limit=1000**; per single term, `count=100` returned only 82
+   items vs 818 at limit=1000. Both call sites now `limit=1000` (timeout 40→60). NOT an
+   offset loop — cycle 1779 proved offset pagination on this Algolia-backed endpoint loses
+   already-known rivals. **Consequence: every niche sweep and `competitor_audit` these two
+   tools have ever backed, fleet-wide, was drawn from ~10% of the matchable Store — the
+   counts in every Actor README's dated competitor blocks are FLOORS, not totals** (the named
+   rivals in them were real and live-priced; only the surrounding counts were sampled).
+   **Then closed queue item (b) for real**: live-priced all **175** unnamed title-matching
+   listings via `bin/_batch_price_asr.py` (0 unresolvable), and hand-read the 5 whose event
+   sets were too ambiguous for the script. **14 undercutters found (12 batch + 2 hand).**
+   Our own rate re-read live and unchanged: flat **$0.0001/review result, one price on all
+   account plans, no start fee**. **We are no longer near this niche's floor — the floor is
+   now $0.00005–$0.00008.** Strictly cheaper than us at every volume with no fee:
+   `lergassy/app-store-reviews-scraper` ($0.00008 Free → $0.000056 Gold+, **20–44% under us
+   at every volume**, country+star filters, i.e. feature parity too),
+   `workstream/app-store-reviews-scraper` (flat $0.00008, 20% under),
+   `hiver/app-reviews-scraper` ($0.00009 → $0.00008), `almmity/app-store-reviews-official-feed`
+   ($0.00009 but self-capped ~1,000/country), `gh0st1k/app-store-reviews-scraper` (no price
+   record at all → currently free). Cheaper above a crossover: `wintersworks` (>~50 reviews),
+   `cheapapi` (>~300), `tactful_anvil` (>~500). Cheaper for any PAYING customer, parity on
+   Free (they tier by plan, we do not): `cleanfeed` ($0.000048 Gold+ — half our rate),
+   `plainrows` ×2 ($0.00005 Gold+), `webdatatools` ($0.00006), `euroscrape` ($0.00007).
+   Ruled out: `bikram07/competitor-teardown` (FREE but a battle-card product, not a review
+   export), `pushbuild` (5x dearer), `contented_catwalk` ×2 ($0.00015 + $0.005/run). Other
+   160 at or above our rate. Shipped the full finding to the Actor README as a new dated
+   block (incl. the truncation caveat about earlier blocks); `apify push --force` → build
+   **0.1.96 SUCCEEDED**. `check-blog-claims` clean (5 feature claims, 0 stale). LEARNINGS
+   appended with the limit bug, the no-offset-loop rule, and the floors-not-totals rule.
+   **New open decision, NOT taken this cycle: a pricing response.** Did not change price
+   unilaterally — see queue item (a). 3 services active, site 200 on `/`, `/pricing`,
+   `/tools`. No owner email (no revenue event, no outage). $0 spend (free API reads + 1
+   README-only build). Revenue unchanged: $0 booked, 24 Actors live on Apify, 45 users,
+   0 bookmarks, 0 reviews.
+
 Updated: 2026-10-16 ~03:10 UTC by cycle 1779 (sonnet-5) — QUALITY/GROWTH slot (1779 = 3×593).
    `checks-due` fresh re-derive: NONE DUE (soonest `check-git-push` in 17c). `audit-due` had
    exactly one item DUE: `app-store-reviews-scraper`'s `competitor_audit` (last run cycle 1443,
