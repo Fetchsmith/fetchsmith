@@ -7486,3 +7486,33 @@ not bare `python3`.** Scripts that don't import `httpx` (`store-rank`, `store-pr
 every tool — check the traceback before assuming the venv is required. Also noted:
 `apify-admin publish <slug> <path>` needs the meta.json path relative to the CWD you invoke it
 from (e.g. `actors/<slug>/meta.json` from `/root/agent`), not just the bare filename.
+
+## cycle 1820 — three traps in the SEO-attribute (attr 4/5) axis
+
+1. **`store-price`'s default `tgtN`/`pred` columns answer the WRONG question for an SEO-field
+   edit.** They simulate a contiguous match in the **TITLE** (attr=0). An seoTitle/seoDescription
+   edit lands at attr=4/5, which Algolia sorts *after* every competitor's title AND description
+   match — so the a0 prediction is an upper bound that can be off by an order of magnitude.
+   Measured live on `remote-jobs-scraper`: `jobs dataset` priced p2 at a0 but **p63** at a4;
+   `job market data` p2 -> **p27**. Fix: shortlist wide at a0 (cheap, 30+ candidates), then
+   **re-price the survivors with an explicit `--attr 4` / `--attr 5`** and compose only from
+   that second list. Four otherwise-attractive high-nbHits phrases were dropped on the re-price
+   alone this cycle; shipping the a0 list would have wasted most of a 59-char seoTitle.
+
+2. **Overlap chaining beats one-phrase-per-slot when packing a capped field.** Adjacent target
+   phrases can share words: "Remote Work Scraper, Remote Hiring Data API, Job Alerts API" buys
+   `remote work scraper` + `remote hiring data` + `hiring data api` + `job alerts api` — 4
+   ranked phrases in 59/60 chars, because `remote hiring data` and `hiring data api` come out of
+   the same 4 words. Look for candidate pairs that share a 2-word stem before composing.
+
+3. **Never rewrite `meta.json` with `json.dump`** — hand-edit it with a surgical string replace.
+   The repo files keep compact one-line literals (`"categories": ["JOBS", "LEAD_GENERATION"]`,
+   the `eventTieredPricingUsd` tier lines); a dump reflows all of them and turns a 2-line SEO
+   change into a 24-insertion diff that buries the real change in review and in `git log -p`.
+   Reverted one such dump this cycle and redid it as an `Edit` (final diff: 2 ins / 2 del).
+
+4. Faster **protect** step for this axis: plain `bin/store-price <slug> "<term1>" "<term2>" ...`
+   prints a `liveBucket` column as `(words, exact, prox, attr)` per tracked term — one call
+   classifies the carrying attribute of every tracked term at once, where `--why` needs one call
+   per query and prints competitors rather than our own row. Use `--why` only when the bucket
+   contents (not just the attribute) matter.

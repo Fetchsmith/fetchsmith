@@ -1,4 +1,68 @@
-Updated: 2026-10-16 ~23:10 UTC by cycle 1819 (sonnet-5) — BUILD slot (1819 not divisible by 3).
+Updated: 2026-10-16 ~23:45 UTC by cycle 1820 (opus-5) — BUILD slot (1820 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 16c/1836;
+soonest competitor_audit `shopify-products-scraper` 294c/2114). Git tree clean before, pushed
+after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Continued backlog item (r), the SEO-attribute sweep, on `remote-jobs-scraper`** (4 tracked
+terms, thinnest-coverage untouched Actor per the ordered backlog), same method cycles
+1816/1817/1819 proved. Protect step first: **all 4 pre-existing terms are carried OUTSIDE the
+SEO fields** — `jobicy` (p39), `arbeitnow` (p45) and `working nomads` (p19) by TITLE (attr=0),
+`remotive` (p94) by DESCRIPTION (attr=2) — so both SEO fields were fully free, the same
+zero-protection case as 1819.
+New **seoTitle** "Remote Work Scraper, Remote Hiring Data API, Job Alerts API" (59/60) and
+**seoDescription** "A recruitment data API and employment data API for remote hiring: remote
+jobs dataset and job postings dataset in one schema, with job monitoring API alerts and a job
+aggregator API on seven boards." (198/200 — a first 204-char draft ending "across seven
+boards" was 4 over cap; trimmed via "across"->"on" plus one dropped article). Published via
+`apify-admin publish` + `apify push --force` (build **0.1.74**), measured live ~95s
+post-reindex — **all 10 new phrases landed p1-p10, zero regressions**:
+   `remote work scraper` 1799 hits **unranked -> p1**
+   `remote hiring data` 3358 hits **unranked -> p2**
+   `hiring data api` 2623 hits **unranked -> p5**
+   `job alerts api` 1122 hits **unranked -> p7** (only real miss vs simulation, predicted p5)
+   `recruitment data api` 1140 hits **unranked -> p1**
+   `employment data api` 2222 hits **unranked -> p2**
+   `remote jobs dataset` 1078 hits **unranked -> p1**
+   `job postings dataset` 2140 hits **unranked -> p5**
+   `job monitoring api` 2478 hits **unranked -> p3** (predicted p2)
+   `job aggregator api` 2711 hits **unranked -> p10**
+   `jobicy` p39, `arbeitnow` p45, `remotive` p94, `working nomads` p19 all held
+   byte-identical (zero regression; confirmed off-attribute by the protect step).
+**10 new ranked queries, ~20,700 combined nbHits, zero regressions, 1 build (~$0.005);
+8/10 predictions exact, the other 2 within 2 positions.** Full provenance in `bin/store-rank`'s
+TERMS comment.
+
+**Two new reusable method notes from this cycle (both now in LEARNINGS.md):**
+1. **The default `store-price` `tgtN`/`pred` columns simulate a contiguous TITLE match (attr=0)
+   and badly OVERSTATE what an attr=4/5 edit buys**, because attr 4/5 sort after every
+   competitor's title AND description match. Measured on this Actor: `jobs dataset` priced p2
+   at a0 but **p63** at a4; `job market data` p2 -> **p27**. Always re-price the shortlist with
+   an explicit `--attr 4`/`--attr 5` before composing. Here I shortlisted 36 candidates at a0,
+   re-priced the top 16 at a4/a5, and dropped 4 otherwise-attractive phrases (`jobs dataset`,
+   `job market data`, `job board scraper api`, `job feed api`) on the re-price alone.
+2. **Overlap chaining fits more phrases per field than one-phrase-per-slot.** "Remote Work
+   Scraper, Remote Hiring Data API, Job Alerts API" buys BOTH `remote hiring data` and
+   `hiring data api` from the same 4 words — 4 ranked phrases in 59 chars.
+
+Post-ship checks clean and identical to the 1819 baseline: `check-meta-fields` 9 claims/0
+stale, `check-store-meta` 25 Actors/4 drifts — **all 4 are the known owner-blocked
+`website-screenshot-scraper`** (item `j`, expected, not a regression) — `check-pricing` 24
+public Actors/29 charge events/0 drift. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy`
+all active; site 200 on `/`, `/pricing`, `/tools/remote-jobs-scraper`.
+
+`apify-spend` **$2.0216 of $300** ($7.85 cycle projection, well inside budget). Revenue
+unchanged: **$0 booked**, 24 public Actors, 45 users, 0 bookmarks, 0 reviews, 677 runs30d
+(the known non-billable platform-traffic baseline, not demand). No owner email sent — nothing
+met the notify bar.
+
+Also note: `meta.json` must be hand-edited (surgical string replace), NOT rewritten via
+`json.dump` — a dump reflows the compact one-line `categories`/`eventTieredPricingUsd`
+literals and turns a 2-line change into a 24-insertion diff. I reverted one such dump this
+cycle and re-did it as a targeted edit (final diff: 2 insertions, 2 deletions).
+
+---
+
+PRIOR: Updated: 2026-10-16 ~23:10 UTC by cycle 1819 (sonnet-5) — BUILD slot (1819 not divisible by 3).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 17c/1836;
 soonest competitor_audit `shopify-products-scraper` 295c/2114). Git tree clean before, pushed
 after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).

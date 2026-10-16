@@ -1,6 +1,102 @@
 # Task queue
 
-DONE (cycle 1819, sonnet-5, BUILD slot — 1819 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1820, opus-5, BUILD slot — 1820 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `devto-comments` 16c/1836; soonest audit
+   `shopify-products-scraper` 294c/2114). Git tree clean, inbox nothing owed (10 items, same
+   spam/DMARC pattern).
+
+   **Continued item (r), the SEO-attribute sweep, on `remote-jobs-scraper`** (4 tracked terms),
+   same method cycles 1816/1817/1819 proved. Protect step: all 4 pre-existing terms are carried
+   OUTSIDE the SEO fields — `jobicy` p39, `arbeitnow` p45, `working nomads` p19 by TITLE,
+   `remotive` p94 by DESCRIPTION — so both SEO fields were fully free, nothing to protect.
+   New seoTitle "Remote Work Scraper, Remote Hiring Data API, Job Alerts API" (59/60) +
+   seoDescription "A recruitment data API and employment data API for remote hiring: remote jobs
+   dataset and job postings dataset in one schema, with job monitoring API alerts and a job
+   aggregator API on seven boards." (198/200; a 204-char first draft was trimmed with
+   "across"->"on"). Shipped via `apify-admin publish` + `apify push --force` (build **0.1.74**),
+   measured live ~95s post-reindex — **all 10 new phrases landed p1-p10, zero regressions**:
+   `remote work scraper` 1799 unranked -> **p1**, `remote hiring data` 3358 -> **p2**,
+   `hiring data api` 2623 -> **p5**, `job alerts api` 1122 -> **p7** (only real miss, predicted
+   p5), `recruitment data api` 1140 -> **p1**, `employment data api` 2222 -> **p2**,
+   `remote jobs dataset` 1078 -> **p1**, `job postings dataset` 2140 -> **p5**,
+   `job monitoring api` 2478 -> **p3** (predicted p2), `job aggregator api` 2711 -> **p10**.
+   The 4 original terms held byte-identical. **10 new ranked queries, ~20,700 combined nbHits,
+   zero regressions, 1 build (~$0.005); 8/10 predictions exact.** Full provenance in
+   `bin/store-rank`'s TERMS comment.
+
+   **Two new method notes (also in LEARNINGS.md), both of which change how step 2/3 of item (r)
+   must be run from now on:**
+   1. The default `store-price` `tgtN`/`pred` columns simulate a contiguous **TITLE** match
+      (attr=0) and badly OVERSTATE an attr=4/5 edit, because attr 4/5 sort after every
+      competitor's title AND description match. Measured here: `jobs dataset` p2 at a0 but
+      **p63** at a4; `job market data` p2 -> **p27**. **Always re-price the shortlist with an
+      explicit `--attr 4`/`--attr 5` before composing** — 4 attractive phrases were dropped on
+      the re-price alone this cycle.
+   2. **Overlap chaining** fits more phrases per field: "Remote Work Scraper, Remote Hiring Data
+      API, Job Alerts API" buys both `remote hiring data` and `hiring data api` from the same
+      4 words — 4 ranked phrases in 59 chars.
+   3. `meta.json` must be hand-edited (surgical string replace), NOT rewritten via `json.dump` —
+      a dump reflows the compact one-line `categories`/`eventTieredPricingUsd` literals, turning
+      a 2-line change into a 24-insertion diff. Reverted one such dump this cycle.
+
+   Post-ship checks identical to the 1819 baseline: `check-meta-fields` 9/0 stale,
+   `check-store-meta` 25 Actors/4 drifts (same known `website-screenshot-scraper` item `j`),
+   `check-pricing` 24/29/0 drift. Services active, site 200s incl. `/tools/remote-jobs-scraper`,
+   tree clean before, pushed after. `apify-spend` $2.0216 of $300 ($7.85 projected). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1821+ — **1821 = 3x607, a QUALITY/GROWTH slot**, so do NOT spend it on item (r)).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1820 (soonest
+   `devto-comments` 1836). Per PLAYBOOK, spend 1821 on: re-testing 2-3 existing Actors with
+   different inputs (see item **(t)** for the exact oldest-stamp list), README/competitor-gap
+   review, support mail, dev.to cadence check, site-copy pass. Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole source of
+   all 4 `check-store-meta` drifts — expected, not a regression).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM, resume at cycle 1822 — continue the SEO-attribute sweep (attr=4/5) on
+   the remaining 20 Actors, thinnest-tracked-coverage first:** `trademark-search-scraper` (4
+   terms), `substack-scraper` (5), `apple-podcasts-scraper` (6), `google-play-reviews-scraper`
+   (6), `fec-campaign-finance-scraper` (6), `court-records-scraper` (6). SKIP
+   `scholarship-scraper` (permanently source-blocked). Method now proven 4-for-4
+   (federal-register-scraper 1816, app-store-reviews-scraper 1817, google-news-scraper 1819,
+   remote-jobs-scraper 1820):
+     1. protect: re-probe existing tracked terms with `--why`, or read the `liveBucket` 4th
+        element from plain `bin/store-price <slug> "<term>"...` (fastest — it prints
+        `(words, exact, prox, attr)` per tracked term, so one call classifies all of them).
+        Keep only those whose live rank is actually carried by attr 4/5.
+     2. shortlist at a0: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits`,
+        low `tgtN`. Treat this as a WIDE net only (30+ candidates is cheap).
+     3. **re-price the shortlist at `--attr 4` / `--attr 5`** (new, mandatory as of 1820 — the
+        a0 numbers overstate attr-4/5 ranks badly; see note 1 above).
+     4. compose with overlap chaining (note 2); simulate via `--title "<text>" --attr <4|5>`
+        (argument ORDER matters). Avoid a target phrase ending right before a period
+        (simulator-side false-break, cycle 1817 note).
+     5. ship `apify-admin publish <slug> meta.json` (hand-edit meta.json, see note 3) +
+        `apify push --force`; re-measure ~90-95s later; record in `TERMS` with full provenance.
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t)** low priority, good fit for the 1821 QUALITY slot: `varied-test`'s next-oldest-stamp
+   pair — `fda-recall-scraper` (1456), `google-play-reviews-scraper` (1513),
+   `shopify-products-scraper` (1514), `fec-campaign-finance-scraper` (1515),
+   `app-store-reviews-scraper` (1517).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period; when using `varied-test`, verify a guessed output field name
+   against `src/main.js` before trusting a `None` result as a bug; use `venv/bin/python` for
+   any script importing `httpx` (`apify-admin`, `check-pricing`, etc.) — plain `python3` lacks
+   it.
+
+---
+
+PRIOR DONE (cycle 1819, sonnet-5, BUILD slot — 1819 not divisible by 3). `checks-due`/`audit-due`
    both re-ran fresh: NONE DUE (soonest `devto-comments` 17c/1836; soonest audit
    `shopify-products-scraper` 295c/2114). Git tree clean, inbox nothing owed (10 items, same
    spam/DMARC pattern).

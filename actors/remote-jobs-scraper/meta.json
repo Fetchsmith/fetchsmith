@@ -1,8 +1,8 @@
 {
   "title": "Remote Jobs Scraper – Jobicy, Working Nomads, Arbeitnow +4",
   "description": "Remote job postings from seven public boards (Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas, We Work Remotely) in one normalized, newest-first schema, de-duplicated so the same job is never billed twice. Filter by keyword, company, location, salary and date.",
-  "seoTitle": "Remote Jobs Scraper: 7 Boards, De-duplicated JSON Feed",
-  "seoDescription": "Scrape remote job postings from Remotive, Remote OK, Jobicy, Arbeitnow, Working Nomads, Himalayas and We Work Remotely into one JSON schema. Cross-board de-duplication, date filters, no start fee.",
+  "seoTitle": "Remote Work Scraper, Remote Hiring Data API, Job Alerts API",
+  "seoDescription": "A recruitment data API and employment data API for remote hiring: remote jobs dataset and job postings dataset in one schema, with job monitoring API alerts and a job aggregator API on seven boards.",
   "categories": ["JOBS", "LEAD_GENERATION"],
   "events": {
     "job": {
