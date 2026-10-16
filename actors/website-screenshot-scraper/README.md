@@ -46,7 +46,7 @@ A failed URL returns `success: false`, `error` set to the failure reason, and `i
 `result` — $0.002 per successful screenshot/PDF, charged only when a capture succeeds. No start fee.
 
 ## FAQ
-**Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends entirely on the page: measured on a long Wikipedia article (black text on flat white, which is PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Pages with photos or gradients save far more. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
+**Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
 **What actually makes a screenshot smaller?** Cropping, not the format. On that same article, `fullPage: false` took the JPEG from 2.04 MB to 274 KB — a 7.4x cut, versus 15% for the format switch. If you only need to show what the top of the page looked like, set `fullPage: false`. Every output row carries `byteSize` so you can measure this on your own pages.
 

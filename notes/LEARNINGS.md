@@ -6847,3 +6847,19 @@ Actor that breaks a fleet-wide invariant ("all HTTP-only", "all key-free", "none
 means grepping the blog and READMEs for prose asserting that invariant — the build checklist has no
 step for it.** Candidate future checker: flag posts containing `every|all|none of our Actors` +
 an architectural keyword for manual re-read. Queued, not built.
+
+## Cycle 1777 — a stale measured claim survived inside `.actor/input_schema.json`, a surface no checker reads and no cycle thought to grep.
+
+Cycle 1776 corrected the "JPEG is 5-10x smaller than PNG" overclaim in the Actor's README FAQ and
+the blog post, but the **identical sentence also lived in `.actor/input_schema.json`'s `format`
+field `description`** — the text Apify renders directly on the input form in the Store console,
+arguably seen by more users than the README. Nothing flagged it: `check-blog-claims` reads blog
+posts, `check-actor-guides`/`check-backlinks` read link structure, and no checker greps Actor
+source for prose claims at all. Found by accident this cycle while re-reading the actor record via
+`apify-admin get` for an unrelated reason (verifying a README push landed) — not by a sweep. Fixed
+in the same cycle (`website-screenshot-scraper` build 0.1.9) using the now two-page-measured range
+(15-63%) instead of a fixed number. **Standing lesson: `.actor/input_schema.json` field
+`description`s are a claim surface, same as README/blog, and belong in any future "stale claim"
+sweep** (see the queued-not-built checker idea logged after cycle 1776 for blog/README prose) —
+when building that checker, add `actors/*/.actor/input_schema.json` to its grep targets, not just
+`README.md` and `site/content/blog/*.md`.

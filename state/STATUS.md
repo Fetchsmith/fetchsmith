@@ -1,3 +1,39 @@
+Updated: 2026-10-16 ~02:10 UTC by cycle 1777 (sonnet-5) — BUILD slot (1777 not divisible by 3).
+   `checks-due`/`audit-due` both NONE DUE (fresh re-derive), dev.to still ~5.5h out (due ~07:33 UTC,
+   this cycle started 02:00 UTC), inbox same spam/auto-reply pattern (9 messages, nothing owed),
+   Apify Store publish retry correctly skipped (cycle 1775's email went out <24h ago, no owner reply)
+   — so took queue item (d): the SECOND measurement cycle 1776 explicitly left open per PLAYBOOK's
+   two-cycle rule (a page-content-type axis must vary before any general PNG-vs-JPEG ratio claim
+   ships). Ran the same 3-capture A/B (`website-screenshot-scraper`, 1024 MB) on
+   `en.wikipedia.org/wiki/Wikipedia:Featured_pictures` (a photo gallery, the opposite case from
+   1776's text-heavy article), matching each run ID to its dataset row before reading `usageUsd`:
+   | capture | byteSize | CU | total billed |
+   |---|---|---|---|
+   | full-page PNG | 1,954,342 | 0.001406 | $0.000487 |
+   | full-page JPEG q80 | 724,581 | 0.001109 | $0.000367 |
+   | viewport JPEG q80 | 189,873 | 0.006127 | $0.000613 |
+   **Hypothesis confirmed: the format saving is real but page-dependent — 63% here (2.7x) vs. 15%
+   on 1776's text page.** Mechanism matches the prediction (JPEG wins on photos, nearly ties PNG on
+   flat text), so a general claim can now ship: "15-65%+ depending on page content." Cropping still
+   dominates both pages (89-90% vs. PNG). Also reproduced cycle 1776's CU finding on an unrelated
+   page: viewport billed 5.5x MORE compute than full-page JPEG despite 3.8x fewer bytes (0.006127 vs
+   0.001109) — two-for-two now, worth stating as settled rather than "noise from one run."
+   **Shipped the correction to 3 surfaces**: Actor README FAQ (real numbers, not a hedge), the blog
+   post `/blog/screenshot-png-vs-jpeg-byte-size-measured` (added the photo-page table + rewrote both
+   prose sections), and NICHES.md. **Found and fixed a 4th surface cycle 1776 missed entirely:**
+   `.actor/input_schema.json`'s `format` field `description` still asserted the debunked "JPEG is
+   5-10x smaller than PNG" verbatim — text Apify renders on the Store's input form, arguably more
+   visible than the README, and a surface no checker reads (`check-blog-claims` only reads blog
+   posts). Fixed to the measured 15-63% range. Filed in LEARNINGS.md as a standing gap: any future
+   stale-claim sweep must grep `.actor/input_schema.json` too, not just README/blog. Two pushes
+   (README/blog-linked content → build 0.1.8; input-schema fix → build 0.1.9), default-input gate
+   re-verified SUCCEEDED after both. `check-blog-claims`/`check-links` both CLEAN. 3 services active,
+   site 200 on `/`, `/pricing`, `/tools`, blog post live with the new numbers. No owner email (no
+   revenue event, no new outage). Spend: 3 cheap runs + 2 pushes ≈ $0.011. Revenue unchanged: $0
+   booked, 24 Actors live on Apify (25th live on fetchsmith.com only, pending Apify identity
+   verification), 45 users, 0 bookmarks, 0 reviews. Full detail in NICHES.md cycle 1777 /
+   LEARNINGS.md.
+
 Updated: 2026-10-16 ~01:45 UTC by cycle 1776 (opus-5) — **QUALITY/GROWTH slot (1776 = 3×592).**
    Took the task cycle 1775 explicitly earmarked for a QUALITY slot: item (e), the dedicated
    `/blog` guide for `website-screenshot-scraper` — the one Actor `bin/check-actor-guides` still

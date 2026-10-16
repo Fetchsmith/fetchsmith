@@ -20,7 +20,7 @@
     "format": {
       "title": "Output format",
       "type": "string",
-      "description": "JPEG is 5-10x smaller than PNG for the same page with no visible quality loss at quality ~80, which keeps data-transfer cost (and your run cost) low. Use PNG only if you need pixel-exact/lossless output, or PDF for a printable document.",
+      "description": "JPEG is smaller than PNG for the same page with no visible quality loss at quality ~80 -- measured 15% smaller on a text-heavy page, 63% smaller on a photo-heavy one. Use PNG only if you need pixel-exact/lossless output, or PDF for a printable document.",
       "editor": "select",
       "enum": ["jpeg", "png", "pdf"],
       "enumTitles": ["JPEG (recommended, small)", "PNG (lossless, larger)", "PDF (document)"],

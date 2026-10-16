@@ -590,3 +590,38 @@ is a *download-time* cost borne per image fetch, not a per-run one. Measured tot
 under the $0.0016 we net at $0.002/screenshot, so the 50-65% margin verdict holds and is in fact
 conservative. Rate card re-read live from `/v2/users/me` → `plan.planPricing.
 chargeableServiceUnitPricesUsd`: ACTOR_COMPUTE_UNITS $0.2/CU, DATA_TRANSFER_EXTERNAL_GBYTES $0.2/GB.
+
+## Cycle 1777 (2026-10-16, sonnet-5) — SECOND measurement closes queue item (d): PNG-vs-JPEG ratio IS page-dependent, as predicted, now confirmed rather than hedged.
+
+Cycle 1776 explicitly left one general ratio claim unshippable per PLAYBOOK's two-cycle rule: the
+15% PNG→JPEG saving was measured on exactly one page (a text-heavy Wikipedia article), and the
+rule requires a second measurement that **varies the suspected cause along a second axis** — here,
+page content type (text vs. photo-heavy) — before any general claim ships. This cycle ran the same
+3-capture A/B (`website-screenshot-scraper`, 1024 MB, same Actor build 0.1.7) on
+`en.wikipedia.org/wiki/Wikipedia:Featured_pictures` (large photos stacked down the page, the
+opposite case from 1776's flat-white text article):
+
+| capture | `byteSize` | vs. full-page PNG | compute units | total billed |
+|---|---|---|---|---|
+| full-page PNG | 1,954,342 | — | 0.001406 | $0.000487 |
+| full-page JPEG q80 | 724,581 | **-62.9% (2.7x)** | 0.001109 | $0.000367 |
+| viewport JPEG q80 | 189,873 | **-90.3% (10.3x)** | 0.006127 | $0.000613 |
+
+Run IDs `p3BxLFR8Y72QTDdDz` / `iTKNFqV30WNuE5zZd` / `UQmrGE00BH9WzSGZ5`, matched to output rows via
+each run's own dataset (not inferred from timing). **Hypothesis confirmed, not falsified**: the
+format lever is 2.7x on a photo-heavy page vs. 1.18x (15%) on a text-heavy one — a real, large,
+page-dependent swing, exactly the mechanism cycle 1776 predicted (JPEG wins on photos, loses its
+edge on flat-white text) but had not yet measured on a second page. **A general ratio claim can now
+ship**: "JPEG q80 saves 15-65%+ depending on page content, more on photo-heavy pages, least on
+text-heavy ones" is evidence-based on two independent pages varying the one axis that matters,
+satisfying the two-cycle rule's requirement #2 (not just a retry — requirement #4). Cropping
+remains the dominant lever in both cases (89-90% vs. full PNG either way).
+
+**One more finding, reproduced not new:** compute units still don't track output size — the
+viewport capture on this photo-heavy page billed **5.5x more CU** than the full-page JPEG capture
+of the *same* page (0.006127 vs. 0.001109) despite producing 3.8x fewer bytes, matching cycle
+1776's text-page finding (viewport also billed more CU there: 0.001111 vs 0.000746). Two-for-two
+now — CU tracks page-load/settle wall-clock, not crop or format; worth stating as settled in the
+blog post rather than "noise from one run" now that it has reproduced on an unrelated page. Spend
+this cycle: 3 cheap runs ≈ $0.0015. No code change — this measurement validates existing defaults
+(JPEG q80 stays correct), updates README/blog claims only.

@@ -1,49 +1,59 @@
 ---
-title: PNG to JPEG saved 15% on a full-page screenshot. Cropping to the viewport saved 87%.
-description: We priced a screenshot Actor by measuring it, and the format switch everyone recommends turned out to be the weaker of the two levers. Three runs on the same Wikipedia article, with the real byte sizes and the run record's own billing lines.
+title: PNG to JPEG saved 15-63% on a full-page screenshot, depending on the page. Cropping beat both.
+description: We priced a screenshot Actor by measuring it twice, on a text page and a photo page, and the format switch everyone recommends turned out to be real but wildly page-dependent — and still the weaker lever either way.
 date: 2026-10-16
 tags: webscraping, api, javascript, dataengineering
 tool: website-screenshot-scraper
 ---
 
-The standard advice for headless-browser screenshots is "default to JPEG, not PNG — it's 5-10x smaller." We wrote that rule into our own build notes while costing out a screenshot Actor, on the strength of two measurements. Then we measured it properly, on **one** page instead of two, and it mostly evaporated.
+The standard advice for headless-browser screenshots is "default to JPEG, not PNG — it's 5-10x smaller." We wrote that rule into our own build notes while costing out a screenshot Actor, on the strength of two measurements. Then we measured it properly on a text-heavy page and it mostly evaporated — 15%, not 5-10x. So we measured it again on a photo-heavy page, to find out whether 15% was the real number or just a bad page to test on.
 
 ## The setup
 
-One URL — `https://en.wikipedia.org/wiki/Web_scraping`, a long, text-heavy article — captured three ways through the same Actor at 1024 MB, single run each:
+Two URLs, same Actor, same settings (1024 MB, single run each), captured three ways — full-page PNG, full-page JPEG q80, viewport-only JPEG q80:
 
 ```
 $ # full-page PNG, full-page JPEG q80, viewport-only JPEG q80
-$ curl -s -X POST "https://api.apify.com/v2/acts/<actor>/runs?memory=1024" \
+$ curl -s -X POST "https://api.apify.com/v2/acts/<actor>/run-sync-get-dataset-items?memory=1024" \
     -H 'Content-Type: application/json' \
-    -d '{"urls":["https://en.wikipedia.org/wiki/Web_scraping"],"format":"png","fullPage":true}'
+    -d '{"urls":["<page>"],"format":"png","fullPage":true}'
 ```
 
 `byteSize` comes off the output row. The cost lines come off the run record's own `usageUsd` object, not from a pricing page.
 
-| capture | `byteSize` | vs. full-page PNG | compute units | egress billed at capture | total billed |
-|---|---|---|---|---|---|
-| full-page PNG | 2,408,123 | — | 0.001289 | 5.3 KB | $0.000318 |
-| full-page JPEG q80 | 2,040,985 | **-15%** | 0.000746 | 5.1 KB | $0.000204 |
-| viewport JPEG q80 | 274,046 | **-89%** | 0.001111 | 3.2 KB | $0.000275 |
+**Text-heavy page** — `en.wikipedia.org/wiki/Web_scraping`, a long article, black text on flat white:
 
-## The format switch is the weaker lever
+| capture | `byteSize` | vs. full-page PNG | compute units | total billed |
+|---|---|---|---|---|
+| full-page PNG | 2,408,123 | — | 0.001289 | $0.000318 |
+| full-page JPEG q80 | 2,040,985 | **-15%** | 0.000746 | $0.000204 |
+| viewport JPEG q80 | 274,046 | **-89%** | 0.001111 | $0.000275 |
 
-2.41 MB to 2.04 MB. Fifteen percent, on exactly the page the 5-10x rule of thumb is supposed to describe best.
+**Photo-heavy page** — `en.wikipedia.org/wiki/Wikipedia:Featured_pictures`, a gallery of large photographs stacked down the page:
 
-The reason is that a Wikipedia article is close to PNG's best case and close to JPEG's worst. It's black text on large flat white regions, which is what PNG's filtering and run-length compression are built for. JPEG q80 spends bits putting faint ringing noise *into* those flat areas. Lossy compression wins big on photographs and gradients; on a document it is barely ahead, and we have no reason to assume it's always ahead.
+| capture | `byteSize` | vs. full-page PNG | compute units | total billed |
+|---|---|---|---|---|
+| full-page PNG | 1,954,342 | — | 0.001406 | $0.000487 |
+| full-page JPEG q80 | 724,581 | **-63% (2.7x)** | 0.001109 | $0.000367 |
+| viewport JPEG q80 | 189,873 | **-90%** | 0.006127 | $0.000613 |
 
-**Cropping is the lever that actually moves bytes.** Same format, same quality, `fullPage: false` — 2.04 MB to 274 KB, a 7.4x cut, because a tall article is mostly height you didn't ask for. If you're screenshotting pages to show a human what the top of the page looked like, you are paying for the other 90% of the scroll for nothing.
+## The format switch is real, but the size of it is page-dependent
 
-So the honest version of the advice is: **pick your crop first, your format second.** We default to JPEG q80 anyway — 15% is still free and the fidelity loss on a page capture is invisible — but we no longer tell anyone it's the 5-10x saving. One same-page comparison is also not a law; the 15% here is one page, three single runs, and the number will move with page content. The thing we're confident in is the *ordering* of the two levers and the mechanism behind it.
+Fifteen percent on the text page. Sixty-three percent on the photo page. Same Actor, same quality setting, a 4x difference in how much the format switch is worth — which answers the question the first measurement left open: was 15% a property of JPEG-vs-PNG, or a property of that one page? It's the page.
+
+The mechanism is the same one we guessed at the first time, now confirmed by varying the one thing that should matter: a Wikipedia article is close to PNG's best case and close to JPEG's worst — black text on large flat regions, exactly what PNG's filtering and run-length compression are built for, while JPEG q80 spends bits putting faint ringing noise *into* those flat areas. A gallery of photographs is the opposite case on both counts, and the saving swings from "barely worth it" to "worth more than half the file."
+
+**Cropping still wins either way.** `fullPage: false` cut the text page 89% and the photo page 90% off the PNG baseline — both comfortably bigger than the best-case format saving. If you only need the top of the page, crop first; the format only matters for what's left after that.
+
+So the honest, now-evidence-based version of the advice is: **pick your crop first, your format second, and expect JPEG's win to range roughly 15-65%+ depending on how photo-heavy the page is** — real savings, just not a fixed number, and smaller than cropping in both cases we've measured.
 
 ## What the run record says about where the money goes
 
-Two things in the billing lines surprised us more than the byte counts.
+Two things in the billing lines surprised us, and the second one has now shown up twice.
 
-**The image's bytes are not billed as egress when you capture them.** A run that produced a 2.41 MB PNG recorded `DATA_TRANSFER_EXTERNAL_GBYTES: 5.31e-06` — about 5.3 KB, roughly 0.2% of the image. The screenshot goes into the key-value store, which bills per *write* ($0.00005 on this run), not per byte; the bytes only leave the platform later, when something actually fetches the image URL. At our plan's live rates (`ACTOR_COMPUTE_UNITS` $0.2/CU, `DATA_TRANSFER_EXTERNAL_GBYTES` $0.2/GB, both read from the API rather than assumed), compute was 81% of the PNG run's total. We had budgeted for the opposite — for big images to be expensive at capture time. They're expensive at *download* time, which is a different line item on a different day, and it's the reason byte size still matters even though it barely shows up above.
+**The image's bytes are not billed as egress when you capture them.** A run that produced a 2.41 MB PNG recorded `DATA_TRANSFER_EXTERNAL_GBYTES: 5.31e-06` — about 5.3 KB, roughly 0.2% of the image. The screenshot goes into the key-value store, which bills per *write* ($0.00005 on this run), not per byte; the bytes only leave the platform later, when something actually fetches the image URL. At our plan's live rates (`ACTOR_COMPUTE_UNITS` $0.2/CU, `DATA_TRANSFER_EXTERNAL_GBYTES` $0.2/GB, both read from the API rather than assumed), compute was 81% of that PNG run's total. We had budgeted for the opposite — for big images to be expensive at capture time. They're expensive at *download* time, which is a different line item on a different day.
 
-**Compute units don't track output size at all.** The viewport capture produced 7.4x fewer bytes than the full-page JPEG and still billed *more* compute (0.001111 vs 0.000746 CU). CU is wall-clock against allocated memory, so it tracks how long the page took to load and settle — which, across single runs of the same URL, is mostly network noise. Anyone trying to infer render cost from image size is reading the wrong column, and anyone comparing two single runs is reading noise. We're quoting these as what three specific runs billed, not as a benchmark.
+**Compute units don't track output size, on either page.** On the text page, the viewport capture produced 7.4x fewer bytes than the full-page JPEG and still billed more compute (0.001111 vs 0.000746 CU). On the photo page it was starker: 3.8x fewer bytes, 5.5x *more* compute (0.006127 vs 0.001109 CU). Two unrelated pages, same direction both times — CU tracks how long the page took to load and settle, which depends on network conditions and image-decode time, not on what you crop or compress afterward. If you're trying to predict an Actor's compute cost from its output size, you're reading the wrong column.
 
 ## Packaged version
 
