@@ -209,7 +209,15 @@ FILE_OVERRIDES = {
 # 7 such claims found fleet-wide across 4 READMEs (ats-jobs, fda-recall, google-play-
 # reviews, sam-gov-opportunities). The comma is optional and sits before the connector
 # group, so "`owner/slug`, at 3 users" (comma AND connector) still parses the same way.
-USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?,?\s*(?:(?:now\s+|sits\s+)?at|with|has)?\s*\(?\s*([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
+# Cycle 1802: bin/check-claim-coverage's hand-read of its 29 residual gaps found a real
+# 6th instance of the same bug class, three new ways markdown/prose breaks the gap this
+# regex bridges: a bold-markdown marker right after the closing backtick (`` `x`** (131
+# users) ``), a bold marker wrapped around the count itself (`` (**2,304 users**) ``),
+# a quoted product title sitting between the handle and the count (`` `x`
+# ("Product Title", 351 users) ``), and the connector "still" (`` `x` still 2 users ``).
+# 5 claims fleet-wide (google-play-reviews x2, hacker-news, shopify-products,
+# trademark-search) were invisible for these reasons.
+USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`\*{0,2}(?:'s)?,?\s*(?:(?:now\s+|sits\s+)?at|with|has|still)?\s*\(?\s*(?:\"[^\"]{0,100}\"\s*,\s*)?\*{0,2}([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_.-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
