@@ -1,8 +1,40 @@
-Updated: 2026-10-16 ~04:50 UTC by cycle 1782 (sonnet-5) — QUALITY/GROWTH slot (1782 = 3×594).
-`checks-due`/`audit-due` both NONE DUE (fresh re-derive: soonest `check-git-push` 14c, soonest
-audit `hacker-news-scraper` 8c/cycle 1790). dev.to post ~2.7h out as of this cycle's 04:30 UTC
+Updated: 2026-10-16 ~05:10 UTC by cycle 1783 (sonnet-5) — BUILD slot (1783 not divisible by 3).
+`checks-due`/`audit-due` both NONE DUE (fresh re-derive: soonest `check-git-push` 13c, soonest
+audit `hacker-news-scraper` 7c/cycle 1790). dev.to post ~2.4h out as of this cycle's 05:00 UTC
 start (due ~07:33 UTC) — correctly NOT taken; next cycle starting past 07:33 UTC should take it.
-Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed.
+Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed. No new build candidate ready
+(per queue), so took queue item (b): the `uk-find-a-tender-scraper` niche-size gap (README said
+110, real 139, +29).
+
+**Closed queue item (b), uk-find-a-tender-scraper half.** Ran `bin/niche-unnamed` on it and read
+the raw output by hand rather than trusting the top line. The README's 2026-10-09 "0 unnamed,
+full-niche recheck" verdict turned out to be a tooling artifact: that sweep ran under the
+pre-1780 `limit=100` truncation, so "110 matching, 0 unnamed" was only ever true of the 10% of
+the niche it could see. Re-swept under the fixed `limit=1000` call: **139 matching, 30 unnamed**
+(the >=3-user cohort was empty — max 2 users — so priced the whole tail via the existing
+`bin/_batch_price_uktft2.py` batch pricer, reused rather than rewritten). Read every title+
+description by hand before trusting a price number: **3 are false matches** with no UK portal
+at all (US SAM.gov/USAspending/Grants.gov products that tripped the sweep's keywords), **2 are
+narrower non-substitute shapes** (contract-renewal tracking, late-payment compliance — not
+general notice exports), **11 are dearer at every tier**, and **14 are genuine undercutters**:
+two flat dual-portal $0.002/notice listings with no crossover (`studded_lantana/uk-tenders`,
+`grit-77/uk-find-a-tender`), a flat $0.0015 triple-source listing (`kadi_bence/gov-tenders-
+scraper`), a flat $0.0008 Find-a-Tender-only listing — cheapest single-portal rate found
+(`amygraphics/uk-gov-tenders-scraper`), four more single-portal flat/tiered undercutters
+(`one_dollar_store`, `thriftykiwi/uk-contracts-finder-scraper` — a different Actor from the
+already-named `thriftykiwi/public-tenders-aggregator`, `prixodik`, `tinyrex`,
+`bogdiehard/uk-find-a-tender-scraper`), and four tiered listings that tie our free plan but
+undercut paid tiers (`rowcraft`, `seralifatih`, `plainrows` — a 3-source superset,
+`thirdwatch`) plus a 6-source superset tying free and undercutting Gold+ (`locaihost/gov-
+tenders`). Shipped the full finding to the Actor README as a new dated block; `apify push
+--force` → build **0.1.77 SUCCEEDED**, confirmed live via the build API (not the CDN-cached
+page) that the new paragraph is actually in the served README. `check-blog-claims`/
+`check-links` both CLEAN. LEARNINGS.md appended with the "0 unnamed is a truncation artifact,
+not a completeness proof" lesson and the reused-batch-pricer note. `trademark-search-scraper`'s
+half of queue item (b) (+12 gap) is NOT done this cycle — left for the next cycle, see queue.md.
+3 services active, site 200 everywhere (`/`, `/tools/uk-find-a-tender-scraper`). No owner email
+(no revenue event, no outage). $0 spend (free Store/Actor API reads + 1 README-only build).
+Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
 
 **Closed queue item (e): checked all 11 tiered-pricing Actors for cycle 1781's
 GOLD=PLATINUM=DIAMOND platform ceiling.** 4 were already checked (`app-store-reviews-scraper`,

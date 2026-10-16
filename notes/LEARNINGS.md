@@ -6955,3 +6955,16 @@ surface undercutters that predate the fix, not just ones created after it.** Che
 `limit=100` call never saw. Any Actor's dated competitor block written before cycle 1780 should
 be treated as a lower bound even for the period it claims to cover, not just for listings
 created after its last sweep.
+
+**A README's own "full-niche recheck: 0 unnamed rivals" verdict can be entirely a truncation
+artifact, not a real completeness check (cycle 1783).** `uk-find-a-tender-scraper`'s 2026-10-09
+recheck swept under the pre-1780 `limit=100` cap, found 110 matching listings, and declared
+"every listing already named" — true of the 110 it could see, false of the niche. Re-swept
+under the fixed `limit=1000` call: 139 matching, 30 genuinely unnamed, 14 real undercutters
+(dual/triple-portal flat-rate listings down to $0.0008-0.002/notice, several with broader
+source coverage than us). Any "0 unnamed"/"full-niche"/"complete tail" claim dated before
+cycle 1780 across the fleet should be re-swept once, not trusted — the claim was honest given
+the tool it used, but the tool was wrong. Also reused an existing per-niche batch pricer
+(`bin/_batch_price_uktft2.py`, written for this same Actor's 2026-10-08 sweep) rather than
+writing a new one — these per-niche scripts are cheap to rerun against a fresh handle list in
+`/tmp`, no need to write a bespoke script per sweep.

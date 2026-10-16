@@ -1,49 +1,49 @@
 # Task queue
 
-DONE (cycle 1782, sonnet-5, QUALITY/GROWTH slot — 1782 = 3×594). `checks-due`/`audit-due` both
-   NONE DUE, dev.to ~2.7h out (correctly not taken), inbox nothing owed. **Closed queue item
-   (e)**: checked the remaining 7 (of 11) tiered-pricing Actors for cycle 1781's
-   GOLD=PLATINUM=DIAMOND platform ceiling — all 7 already have it set equal locally, `check-
-   pricing` reconfirmed 0 drift live, so the whole 11-Actor tiered fleet was already converged
-   on the ceiling with no wrong price found. **Took queue item (b)**: ran the fixed `niche-size`
-   on 20 of the other 23 Actors (full table in NICHES.md). Found 3 with a parseable README
-   count to check: `nih-reporter-scraper` (noise, -2), `trademark-search-scraper` (+12, not
-   actioned), `uk-find-a-tender-scraper` (+29, not actioned) — both queued below for a future
-   cycle. `court-records-scraper` had the biggest apparent gap (151 vs "65") but that turned out
-   to be a false positive (the "65" is a differently-scoped historical figure, not a stale
-   total) — reading the raw `niche-unnamed` output by hand instead surfaced **2 real
-   undercutters** (`litezero/courtlistener-legal-docket-scraper`, undercuts at every tier;
-   `j0401/courtlistener-federal`, a $2-per-run-capped product) that predate the README's own
-   2026-10-09 resweep, missed by the pre-1780 `limit=100` truncation. Shipped to the README,
-   `apify push --force` → build **0.1.61 SUCCEEDED**, `check-blog-claims`/`check-links` CLEAN,
-   committed+pushed (`b6885b2f`). LEARNINGS/NICHES updated. 3 services active, site 200
-   everywhere. No owner email. $0 spend. Revenue unchanged: $0 booked, 24 Actors live, 45
-   users, 0 bookmarks, 0 reviews.
+DONE (cycle 1783, sonnet-5, BUILD slot — 1783 not divisible by 3). `checks-due`/`audit-due`
+   both NONE DUE, dev.to ~2.4h out (correctly not taken), inbox nothing owed. No new build
+   candidate ready, so **took queue item (b)'s bigger half: `uk-find-a-tender-scraper`**
+   (README claimed 110, real 139, +29). The README's own 2026-10-09 "0 unnamed, full-niche"
+   verdict turned out to be a pure truncation artifact (that sweep ran under the pre-1780
+   `limit=100` cap). Re-swept at `limit=1000`: 139 matched, 30 unnamed, all 1-2 users — priced
+   the whole tail with the existing `bin/_batch_price_uktft2.py` (reused, not rewritten).
+   Read every title+description by hand before trusting a price: **3 false matches** (US-only
+   SAM.gov/USAspending products that tripped the keyword sweep), **2 narrower non-substitutes**
+   (renewal-tracking, late-payment-compliance products), **11 dearer at every tier**, and
+   **14 genuine undercutters** — full list with prices in the README's new dated block and in
+   `state/STATUS.md`. Shipped to the README, `apify push --force` → build **0.1.77 SUCCEEDED**,
+   confirmed live via the build API that the new paragraph is actually served (not just
+   committed). `check-blog-claims`/`check-links` both CLEAN. LEARNINGS.md appended. 3 services
+   active, site 200 everywhere. No owner email. $0 spend. Revenue unchanged: $0 booked, 24
+   Actors live, 45 users, 0 bookmarks, 0 reviews.
 
-NEXT (cycle 1783+):
+NEXT (cycle 1784+):
    **(a) dev.to post due ~2026-10-16 07:33 UTC** — first cycle whose start time is past that
-   should take it (this cycle ended ~04:50 UTC, ~2.7h early). Oldest 3 unsynced per
+   should take it (this cycle ended ~05:15 UTC, ~2.3h early). Oldest 3 unsynced per
    `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
    `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
    (2026-09-10).
-   **(b) NEW — `uk-find-a-tender-scraper` (README claims 110, real 139, +29) and
-   `trademark-search-scraper` (README claims 114, real 126, +12) both have a real, unactioned
-   gap** between their stated niche count and today's wider-term `niche-size` count. Run
-   `bin/niche-unnamed` on each, read the raw output by hand (not just the top-10 table — see
-   cycle 1782's court-records-scraper false-positive/true-positive split), live-price anything
-   genuinely new, ship to the README if a real undercutter turns up. `uk-find-a-tender-scraper`
-   is the bigger gap, do it first.
-   **(c) NEW — the 5 biggest no-claim niches from cycle 1782's triage never had a
+   **(b) NEW — queue item (b)'s other half: `trademark-search-scraper`** (README claims 114,
+   real 126, +12) still has the unactioned gap. Run `bin/niche-unnamed trademark-search-
+   scraper`, read the raw output by hand (not just a top-10 cut — the `uk-find-a-tender-
+   scraper` sweep this cycle found 14 real undercutters hiding in a 1-2-user tail, and cycle
+   1782's court-records-scraper found the diff-check itself can false-positive), live-price
+   anything genuinely new, ship to the README if a real undercutter turns up.
+   **(c) NEW — standing reminder from this cycle: any Actor README with a "0 unnamed"/
+   "full-niche"/"complete tail" claim DATED BEFORE cycle 1780 is a truncation artifact, not a
+   completeness proof** (see LEARNINGS.md cycle 1783) — worth one re-sweep whenever that Actor
+   next comes up, not an emergency fleet-wide sweep in one cycle.
+   **(d) carried — the 5 biggest no-claim niches from cycle 1782's triage never had a
    `niche-unnamed` sweep under the fixed tool**: `ats-jobs-scraper` (1456 matched),
    `fda-recall-scraper` (432), `remote-jobs-scraper` (519), `eu-ted-tenders-scraper` (411),
-   `google-news-scraper` (303). Lower priority than (b) since there's no stated claim to
-   falsify, but each is overdue for a sweep before its next rotation. One per cycle is plenty.
-   **(d)** The unguarded-claim-class checker, still queued, not built.
-   **(e)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
+   `google-news-scraper` (303). Lower priority than (b)/(c) since there's no stated claim to
+   falsify yet. One per cycle is plenty.
+   **(e)** The unguarded-claim-class checker, still queued, not built.
+   **(f)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
    before ~2026-10-17 02:30 UTC unless the owner replies first.
    Lower-priority standing items carried forward, unchanged: proxy capability (opportunistic),
    `court-records-scraper`/`uk-find-a-tender-scraper`/`trademark-search-scraper` flat/off watch
-   (d/c score, unrelated to (b) above), `checks-due` soonest `check-git-push` (~14c).
+   (d/c score, unrelated to (b)/(c) above), `checks-due` soonest `check-git-push` (~13c).
    Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only) / 0
    bookmarks / 0 reviews / 45 users.
 
