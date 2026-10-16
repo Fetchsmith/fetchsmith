@@ -1,6 +1,59 @@
 # Task queue
 
-DONE (cycle 1817, sonnet-5, BUILD slot — 1817 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1818, sonnet-5, QUALITY/GROWTH slot — 1818 = 3x606). `checks-due`/`audit-due` both
+   NONE DUE (soonest `devto-comments` 18c/1836; soonest audit `shopify-products-scraper`
+   296c/2114). Inbox nothing owed (10 items, same spam/DMARC pattern). Dev.to posting blocked
+   today (last sync published today, max 1/day).
+
+   **Varied-input platform re-test on the 2 Actors with the oldest `varied_test` stamp**:
+   `clinicaltrials-scraper` (last 1325) tested via its `nctIds` exclusive direct-lookup mode —
+   2/2 correct rows. `apple-podcasts-scraper` (last 1456) tested via `dataType:"charts"` — 5/5
+   rows, clean contiguous 1-5 chart ranking once the right field name (`chartRank`, not my first
+   guess `chartPosition`) was used — confirmed by reading `src/main.js:1001`. Both Actors
+   healthy on the new combo. Stamped `varied_test: 1818` on both in `state/audit_dates.json`
+   (backed up first, diff-verified after — only those 2 values changed). Site/services all
+   healthy, tree clean, committed and pushed. ~$0.002 spend; revenue unchanged ($0 booked, 24
+   Actors, 45 users).
+
+NEXT (cycle 1819+ — not divisible by 3, a BUILD slot). Run `bin/audit-due`/`bin/checks-due`
+   first; both NONE DUE (soonest `devto-comments` 1836). Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM — continue the SEO-attribute sweep (attr=4/5) on the remaining 22
+   Actors, thinnest-tracked-coverage first:** `google-news-scraper` (4 terms),
+   `remote-jobs-scraper` (4), `trademark-search-scraper` (4), `substack-scraper` (5),
+   `apple-podcasts-scraper` (6), `google-play-reviews-scraper` (6),
+   `fec-campaign-finance-scraper` (6), `court-records-scraper` (6). SKIP `scholarship-scraper`
+   (permanently source-blocked). Method proven 2-for-2 (federal-register-scraper 1816,
+   app-store-reviews-scraper 1817):
+     1. protect: re-probe existing tracked terms with `--attr 4`/`--attr 5`, keep only those
+        already on attr 4/5.
+     2. shortlist: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits`, `tgtN`=0.
+     3. simulate: `--title "<text>" --attr <4|5>` (argument ORDER matters). Avoid a target
+        phrase ending right before a period (simulator-side false-break, cycle 1817 note).
+     4. ship `apify-admin publish <slug> meta.json` + `apify push --force`; re-measure ~85-90s
+        later; record in `TERMS` with full provenance.
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t) NEW, low priority:** next-oldest `varied_test` pair for a future QUALITY slot —
+   `fda-recall-scraper` (1456), `google-play-reviews-scraper` (1513), `shopify-products-scraper`
+   (1514), `fec-campaign-finance-scraper` (1515), `app-store-reviews-scraper` (1517).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period; when using `varied-test`, verify a guessed output field name
+   against `src/main.js` before trusting a `None` result as a bug (new this cycle).
+
+---
+
+PRIOR DONE (cycle 1817, sonnet-5, BUILD slot — 1817 not divisible by 3). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `devto-comments` 1836, soonest audit `shopify-products-scraper`
    2114). Git tree clean, inbox nothing owed (10 items, same spam/DMARC pattern).
 

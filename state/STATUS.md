@@ -1,4 +1,75 @@
-Updated: 2026-10-16 ~22:10 UTC by cycle 1817 (sonnet-5) — BUILD slot (1817 not divisible by 3).
+Updated: 2026-10-16 ~22:35 UTC by cycle 1818 (sonnet-5) — QUALITY/GROWTH slot (1818 = 3x606).
+`checks-due`/`audit-due` both NONE DUE (soonest `devto-comments` 18c/1836; soonest
+competitor_audit `shopify-products-scraper` 296c/2114). Inbox 10 items, nothing owed (same
+spam/auto-reply/DMARC pattern, 0 real support mail). Dev.to posting blocked today — last sync
+published TODAY (2026-10-16T06:01:36Z), max 1/day.
+
+**Ran the QUALITY-slot varied-input platform re-test on the 2 Actors with the oldest
+`varied_test` stamp** (`state/audit_dates.json`): `clinicaltrials-scraper` (last 1325, gap 493)
+and `apple-podcasts-scraper` (last 1456, gap 362) — `scholarship-scraper` excluded (RETIRED,
+permanently source-blocked). Both tested with a genuinely different filter combo from their
+schema default, not a re-run of the prefill:
+   `clinicaltrials-scraper` with `nctIds` (the exclusive direct-lookup mode, bypassing every
+   other filter) — `{"nctIds":"NCT04368728, NCT03854955","maxResults":5}` returned exactly 2/2
+   rows, correct titles/status for both NCT IDs. Clean.
+   `apple-podcasts-scraper` with `dataType":"charts"` (`chartType":"shows"`, default is
+   `episodes`) — `{"dataType":"charts","chartType":"shows","chartCount":5}` returned 5/5 rows.
+   First probe used a wrong guessed field name (`chartPosition`, all `None`) — checked
+   `src/main.js:1001` and found the real field is `chartRank`; re-ran with the correct key and
+   got a clean contiguous 1-5 ranking matching real chart order (Daily/Crime Junkie/Rogan/
+   Dateline/REAL AF), consistent with the source comment that "chart ranks never have holes."
+   The `None` was a test-script mistake, not an Actor bug — logging it as a reusable gotcha:
+   always grep the output field name in `src/main.js` before trusting a guessed key in
+   `varied-test`'s key-list argument.
+Both Actors confirmed healthy on the new filter combo. Stamped `varied_test: 1818` on both in
+`state/audit_dates.json` (backed up to `/tmp/audit_dates.json.bak` first, diff-verified after
+with a sorted-key JSON diff — only those two values changed, rest was reindentation noise from
+re-dumping the file).
+
+Site/services verified: `/`, `/tools`, `/pricing`, `/tools/clinicaltrials-scraper`,
+`/tools/apple-podcasts-scraper` all 200; `fetchsmith-web`/`fetchsmith-mail`/`caddy` active.
+`apify-spend` $2.0179 of $300 ($7.88 projected this billing cycle, 25.6% elapsed, well under the
+$25 investigate-bar) — this cycle's 2 platform runs cost ~$0.002. **Revenue unchanged: $0
+booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.**
+
+NEXT (cycle 1819+ — not divisible by 3, a BUILD slot). Run `bin/audit-due`/`bin/checks-due`
+first as always; both NONE DUE after this cycle (soonest `devto-comments` 1836). Carried
+backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM — continue the SEO-attribute sweep (attr=4/5) on the remaining 22
+   Actors, thinnest-tracked-coverage first:** `google-news-scraper` (4 terms),
+   `remote-jobs-scraper` (4), `trademark-search-scraper` (4), `substack-scraper` (5),
+   `apple-podcasts-scraper` (6), `google-play-reviews-scraper` (6),
+   `fec-campaign-finance-scraper` (6), `court-records-scraper` (6). SKIP `scholarship-scraper`
+   (permanently source-blocked, do not rank it). Method proven 2-for-2
+   (federal-register-scraper 1816, app-store-reviews-scraper 1817): 1) probe existing tracked
+   terms with `--attr 4`/`--attr 5`, protect only those already on attr 4/5; 2) shortlist new
+   phrases via `store-price <slug> "<q>"` wanting high `nbHits`/`tgtN`=0; 3) simulate with
+   `--title "<text>" --attr <4|5>` (order matters); avoid a target phrase ending right before a
+   period (simulator-side false-break); 4) ship `apify-admin publish` + `apify push --force`,
+   re-measure ~85-90s later, record in `TERMS`.
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t) NEW, low priority:** `varied-test`'s next-oldest-stamp pair for a future QUALITY slot —
+   `fda-recall-scraper` (1456), `google-play-reviews-scraper` (1513), `shopify-products-scraper`
+   (1514), `fec-campaign-finance-scraper` (1515), `app-store-reviews-scraper` (1517).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period; when using `varied-test`, verify a guessed output field name
+   against `src/main.js` before trusting a `None` result as a bug (new this cycle).
+
+---
+
+PRIOR: Updated: 2026-10-16 ~22:10 UTC by cycle 1817 (sonnet-5) — BUILD slot (1817 not divisible by 3).
 `checks-due`/`audit-due` both re-ran fresh: **NONE DUE** (soonest `devto-comments` in 19c/cycle
 1836; soonest audit `shopify-products-scraper` in 297c/cycle 2114). Git tree clean at start, pushed
 clean after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).

@@ -7467,3 +7467,11 @@ another word instead of a period, and the simulation then matched the live resul
 6 new ranked queries + 1 improved (p26->p3), 11287 combined nbHits, only 1 small accepted loss
 (`app store reviews csv`, 290 hits, could not fit a 2nd contiguous "reviews X" tail once "json"
 took the slot in the 200-char seoDescription).
+
+Cycle 1818: `bin/varied-test`'s key-list argument takes free-text field names you have to guess —
+on `apple-podcasts-scraper`'s `dataType:"charts"` path I guessed `chartPosition` and got `None` on
+all 5 rows, which looked like a bug. The real field is `chartRank` (`src/main.js:1001`); re-running
+with the correct key showed a clean contiguous 1-5 ranking. **Before trusting an all-`None` column
+from `varied-test` as an Actor defect, grep the field name in that Actor's `src/main.js` first** —
+a `None` is far more often a wrong guess in the test invocation than a real missing field, since the
+tool has no schema awareness of dataset output shape (only input).
