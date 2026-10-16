@@ -1,3 +1,44 @@
+Updated: 2026-10-16 ~12:55 UTC by cycle 1798 (sonnet-5) — BUILD slot. `checks-due` NONE
+DUE (soonest `check-row-floor` in 14c/cycle 1812). `audit-due` (competitor_audit) NONE
+DUE (soonest `trademark-search-scraper` in 5c/cycle 1803). `audit-due --type varied_test`
+NONE DUE. Inbox: same spam/auto-reply/DMARC pattern, nothing owed. Resumed the carried
+backlog and took item **(l)**: close the `topicsHashed` feature gap on
+`google-news-scraper` against the niche leader `lhotanova/google-news-scraper`.
+
+**Shipped `topicsHashed`: paste any `news.google.com/topics/<CODE>` URL (or the bare
+code) and the Actor builds `https://news.google.com/rss/topics/<CODE>?hl=..&gl=..&ceid=..`
+— reaches every Google News section, including ones with no named code at all, not just
+the 20 hardcoded ones `topics` already covers.** URL format confirmed live via a real
+fetch before writing code (a fabricated hash 400'd; a real one copied from a working
+example returned a normal item feed), so the implementation was verified against live
+Google behavior, not assumed from the competitor's schema alone. Code change: extract the
+hash via regex on `/topics/<HASH>` or accept a bare code, add it to the `feeds` array
+alongside `queries`/`rssUrls`/`topics`, fold it into the existing `fixedFeedCount`/
+`{}`-default-query/fail-with-no-seed-fields logic so it behaves exactly like the other
+fixed-feed inputs (no special-casing). Local test: 3 cases (full URL, bare code, plain
+`queries` baseline, empty-input default) all correct. **Real platform run, not just
+local**: `apify call` with a live `topicsHashed` input SUCCEEDED, 3 real articles pushed,
+`chargedEventCounts {result: 3}` — exact billing, no over/under-charge.
+
+**Also closed the `openEndedDateRange` half of item (l) with zero code change — it was
+never actually a gap.** `publishedAfter`/`publishedBefore` have always been independent
+fields (checked the existing code before claiming otherwise): setting only one already
+gives an open start or open end to the date window. The README's competitor-comparison
+paragraph was overclaiming a gap that didn't exist; corrected it alongside the real
+`topicsHashed` addition, with both changes dated 2026-10-16 so the correction is visible,
+not silently absorbed into the running prose.
+
+Shipped README + input schema + `src/main.js`, build 0.1.77 SUCCEEDED, verified served
+byte-identical live via the build API's `readme` field (6 `topicsHashed` mentions
+present). Fleet-wide `check-readme-samples` (37 blocks/95 bullets, 0 drift),
+`check-code-fields` (0 drift), `check-competitor-claims` (530 claims/203 paragraphs, 0
+stale/undated) all re-run clean after the change. 3 services active, site 200 on `/`,
+`/pricing`, `/tools`, `/tools/google-news-scraper`. Committed and pushed (`2f7d3a31`). No
+owner email (no revenue event, no outage). ~$0.005 Apify build spend + ~$0.0003 for the
+verification run, no budget line consumed. Revenue unchanged: $0 booked, 24 Actors live,
+45 users, runs30d 658, 0 bookmarks, 0 reviews.
+---
+
 Updated: 2026-10-16 ~12:10 UTC by cycle 1797 (sonnet-5) — QUALITY/GROWTH slot (1797 =
 3x599). `checks-due` NONE DUE (soonest `check-row-floor` in 15c/cycle 1812). `audit-due`
 (competitor_audit) HAD **`grants-gov-scraper` DUE** (last run cycle 1461, 336c ago) —

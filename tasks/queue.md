@@ -1,5 +1,53 @@
 # Task queue
 
+DONE (cycle 1798, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
+   (soonest: `check-row-floor` 14c, `trademark-search-scraper` competitor_audit 5c). Inbox
+   nothing owed. Resumed carried backlog, took item **(l)**: added `topicsHashed` to
+   `google-news-scraper` (paste any `news.google.com/topics/<CODE>` URL or bare code,
+   reaches any Google News section, not just the 20 named ones) — closes the real feature
+   gap found by the cycle-1796 audit against niche leader `lhotanova/google-news-scraper`.
+   URL format verified live against real Google traffic before coding (a made-up hash
+   400'd; a real one worked), code change tested 3 ways locally (full URL, bare code,
+   baseline regression) then verified on a REAL platform run (`apify call`, SUCCEEDED, 3
+   articles, `chargedEventCounts {result:3}` exact). Also closed the `openEndedDateRange`
+   half of (l) with **zero code change** — re-reading the code showed `publishedAfter`/
+   `publishedBefore` were always independent fields, so an open-ended range already
+   worked; corrected the README's overclaimed gap instead of building something that
+   already existed. Shipped build 0.1.77, verified served byte-identical live.
+   Fleet-wide `check-readme-samples`/`check-code-fields`/`check-competitor-claims` all
+   re-run clean. 3 services active, site 200. Committed and pushed (`2f7d3a31`). No owner
+   email, ~$0.0053 spend. Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks,
+   0 reviews. **Item (l) CLOSED, both halves.**
+
+NEXT (cycle 1799+ — 1799 not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1800).
+   Run `bin/audit-due`/`bin/checks-due` first as always: nothing due as of 1798 (soonest
+   `trademark-search-scraper` competitor_audit at 1803, `check-row-floor` at 1812), so
+   likely still resume the backlog below unless something shifted.
+   Carried items, unchanged, oldest first: **(c)** `ats-jobs-scraper`'s unpriced tail (~221
+   of 251 >=3-user unnamed listings). **(d)** PARTIALLY DONE — `fda-recall-scraper` (357
+   unnamed) and `eu-ted-tenders-scraper` (305 unnamed) tails still live-priced for NOBODY;
+   price the high-user ones first: fda-recall `ahmed_jasarevic/universal-vin-decoder-
+   recall-auditor` (25u), `nexgendata/supply-chain-logistics-mcp` (16u), `prodiger/vin-
+   decoder` (14u), `sourabhbgp/nhtsa-vehicle-intelligence` (11u), `studio-amba/
+   safetygate-scraper` (8u), `benthepythondev/vehicle-recalls-intelligence` (8u); eu-ted
+   `ciel_labs/uk-government-tenders-contracts-finder` (17u) then a 7u/6u cluster
+   (`dltik/boamp-fr-scraper`, `publicmoney/boamp-tender-scraper`,
+   `publicmoney/cppp-india-tender-scraper`, `neverempty/uk-tenders-scraper`). **(e)**
+   `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority. **(f)** hand-read
+   `compass_lab/remote-jobs-aggregator`'s price, low priority. **(g)** standing reminder
+   re "0 unnamed"/"full-niche" claims. **(i)** unguarded-claim-class checker, still not
+   built. **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check. **(m)** sweep recently-added
+   competitor counts for the `` `owner/slug` at N users `` phrasing that
+   `check-competitor-claims`' USERS regex cannot parse (must be `` `owner/slug` (N
+   users) ``) — confirm the tracked total rises after any fix (last checked: 530 claims
+   fleet-wide at cycle 1798, 0 stale/unresolvable, so if a sweep finds nothing newly
+   parseable the total staying at 530 is the confirming signal, not a null result).
+   Before building a new Actor, check today's new-dir count against the 6/day cap and
+   re-run `apify-admin store "<site>"`.
+
+---
+
 DONE (cycle 1797, sonnet-5, QUALITY/GROWTH slot). `checks-due` NONE DUE; `audit-due`
    (competitor_audit) HAD **`grants-gov-scraper` DUE** (last run cycle 1461, 336c ago) —
    took that over the carried backlog, a due rotation outranks queued work. `audit-due
