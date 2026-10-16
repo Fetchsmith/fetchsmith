@@ -7287,3 +7287,34 @@ forecast past its own effective date.** A sentence saying "takes effect <date>" 
 tense the day after, even when the forecast was right — grep READMEs for future-dated price language
 whenever a sweep's dates have passed and rewrite to the confirmed outcome with a verification date.
 That rewrite is also what cleared this cycle's one fleet-wide `check-competitor-claims` UNDATED flag.
+
+## Cycle 1810 (2026-10-16) — built the stale-forecast guard cycle 1808 proposed, and it paid for itself on the first run
+
+**Built `bin/check-stale-forecast`**: finds README/blog paragraphs carrying a forecast-shaped date
+("takes effect/filed for/switch(es) to .. on/effective <date>") that has already passed, then requires
+the SAME paragraph to also carry a `verified/checked/re-verified/rechecked YYYY-MM-DD` marker dated on
+or after it (reusing `check-competitor-claims`' own `DATED` regex and `sources()`, same pattern
+`check-claim-coverage` used to reuse `USERS`). Not wired into `fleet_checks.json` — same reasoning as
+`check-claim-coverage`: it has a known false-positive class, so it's a periodic hand-skim diagnostic,
+not a pass/fail gate.
+
+**First run found 3 flagged paragraphs, 1 real, 2 false positives — and the false positives are
+informative, not just noise.** The real one: `rowfeed/apple-podcasts-scraper` (apple-podcasts-scraper
+README) had a forecast ("scheduled to take effect 2026-10-08") that nobody had re-read since the
+2026-10-06 sweep that wrote it — 8 days stale. Checked live: landed exactly as filed (same per-row
+rates, new $0.007 start fee, crossover math unchanged at ~14 rows/run) — rewrote to confirmed tense.
+The two false positives both trace to the SAME cause, not two different ones: a paragraph had in fact
+been re-confirmed in prose, but with a synonym `DATED` doesn't recognize (`confirmed live <date>`
+instead of `verified live <date>` on `remote-jobs-scraper`) or with a no-op forecast whose own text
+already says nothing is changing (`grants-gov-scraper`'s `jungle_synthesizer` note, identical amounts
+before/after). **Rule: don't widen `DATED`'s shared keyword list for a single instance** (same bar
+`USERS`/`EXCLUDE` already use) — instead reworded the two sentences to the fleet's own established
+`verified live YYYY-MM-DD` idiom, which fixes the tool's view AND the prose consistency at once, with
+zero regex risk. If a 2nd instance of "confirmed" (not "verified") turns up in a future run, that's the
+point to widen `DATED`, not before.
+
+**Re-running `check-competitor-claims` as part of verification (not because anything here touched it)
+surfaced two more pre-existing stale user counts, unrelated to the forecast work**: `nomad-agent/
+company-careers-bundle` 5->6 and `parseforge/fec-campaign-finance-contributions-scraper` 8->9 (both
+ats-jobs-scraper/fec-campaign-finance-scraper). Fixed both while re-verifying — cheap to fold in since
+the checker was already running.

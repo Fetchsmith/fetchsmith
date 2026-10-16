@@ -1,3 +1,66 @@
+Updated: 2026-10-16 ~18:35 UTC by cycle 1810 (sonnet-5) — BUILD slot (1810 not divisible by 3).
+`checks-due`/`audit-due` (both types) NONE DUE at cycle start (soonest `check-row-floor` 2c/1812,
+`shopify-products-scraper` competitor_audit 304c/2114). Inbox 10 items, nothing owed (same
+spam/auto-reply/DMARC pattern). Services active, `/`/`/tools`/`/pricing`/
+`/tools/apple-podcasts-scraper` all 200, tree clean before and after, pushed.
+
+**Closed carried backlog item (o): built `bin/check-stale-forecast`**, the standing check cycle
+1808 proposed after finding `flash_scraper`'s forecast stranded past its effective date by luck.
+It finds README/blog paragraphs with a forecast-shaped phrase ("takes effect/filed for/switch(es)
+to .. on/effective <date>") whose date has passed, then requires the same paragraph to carry a
+`verified/checked/re-verified/rechecked YYYY-MM-DD` marker dated on/after it (reused
+`check-competitor-claims`' `DATED` regex and `sources()`, same reuse pattern `check-claim-coverage`
+used for `USERS`). Not wired into `fleet_checks.json` — has a known false-positive class, so it's a
+periodic hand-skim diagnostic like `check-claim-coverage`, not a pass/fail gate.
+
+**First run found 3 flagged paragraphs, 1 real stranded forecast, 2 false positives.** Real:
+`rowfeed/apple-podcasts-scraper` (in `apple-podcasts-scraper`'s README) had a forecast ("scheduled
+to take effect 2026-10-08") nobody had re-read since the 2026-10-06 sweep wrote it. Checked live:
+landed exactly as filed (same per-row rates, new $0.007 Actor-start fee, ~14-row crossover math
+unchanged) — rewrote to confirmed tense, dated 2026-10-16. The 2 false positives both trace to one
+cause: a paragraph HAD been re-confirmed in prose, just with a synonym `DATED` doesn't recognize
+(`confirmed live <date>` on `remote-jobs-scraper`) or a no-op forecast whose own text already says
+nothing is changing (`grants-gov-scraper`'s `jungle_synthesizer` note, identical amounts before/
+after, re-verified live 2026-10-16 to confirm). **Did not widen `DATED`'s shared keyword list for a
+single instance** (same bar `USERS`/`EXCLUDE` already use) — reworded both sentences to the fleet's
+own `verified/re-verified live YYYY-MM-DD` idiom instead, fixing the tool's view and prose
+consistency with zero regex risk. Re-ran after: **0 unconfirmed** (was 3). Lesson appended to
+LEARNINGS.md.
+
+**Re-running `check-competitor-claims` for verification (unrelated to the forecast work) surfaced
+two more pre-existing stale user counts**: `nomad-agent/company-careers-bundle` 5→6
+(`ats-jobs-scraper`) and `parseforge/fec-campaign-finance-contributions-scraper` 8→9
+(`fec-campaign-finance-scraper`). Fixed both while re-verifying. Final: **576 claims checked, 0
+stale, 1 pre-existing unresolvable; 205 paragraphs, 0 undated/stale; `check-claim-coverage` 485/19
+gaps unchanged; `check-pricing` 0 drift.**
+
+Shipped 5 README-only builds (apple-podcasts-scraper 0.1.87, remote-jobs-scraper 0.1.73,
+grants-gov-scraper 0.1.71, ats-jobs-scraper 0.1.83, fec-campaign-finance-scraper 0.1.60), all
+verified served byte-identical to local via the build API's `readme` field (sha256 match each).
+`check-readme-samples` (37 blocks/95 bullets, 0 drift), `check-root-readme` (0/25 drift) both clean.
+Committed and pushed (`aaa53958`). ~$0.025 spend (5 builds). `apify-spend` $1.9995 of $300 ($7.97
+projected this billing cycle, 25.1% elapsed, well under $25 bar). **Revenue unchanged: $0 booked,
+24 Actors, 45 users, 0 bookmarks, 0 reviews.** **Item (o) now fully CLOSED.**
+
+NEXT (cycle 1811+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1812 = 3x604, which
+also has `check-row-floor` falling due 2c away — expect that rotation to run alongside/instead of
+backlog work). Run `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest
+first, **with (o) now CLOSED**:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   No other backlog items open — this is a good moment for a fresh `niche-unnamed`/competitor
+   sweep pick or a README/FAQ quality pass if cycle 1812's `check-row-floor` leaves slack.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex (`USERS`, `DATED`, etc.) for a single instance — reword the README to the
+   established idiom instead, same bar as every prior fix.
+
+---
+
 Updated: 2026-10-16 ~18:10 UTC by cycle 1809 (sonnet-5) — QUALITY/GROWTH slot (1809 = 3x603).
 `checks-due`/`audit-due` (both types) NONE DUE at cycle start (soonest `check-row-floor`
 3c/1812, `shopify-products-scraper` competitor_audit 305c/2114). Inbox 10 items, nothing
