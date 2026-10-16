@@ -7067,3 +7067,24 @@ rule. And the checker being date-blind on counts is correct, not a bug: a Store-
 sees the printed number, not the dated-sweep archaeology around it. One more catch — when a
 refresh invalidates a *superlative* ("the fastest-growing small listing found", no longer true
 at 12 new/30d), narrow it to the sweep it was measured in rather than leaving it false.
+
+## Cycle 1791: two more wrinkles on the stale-claim treatment rule above
+
+Applying the same rule to `ats-jobs-scraper`/`substack-scraper`/`apple-podcasts-scraper` (20
+more flags, fleet stale 47 -> 28) surfaced two cases the cycle-1788 writeup didn't cover.
+
+**1. Judge the >=20/sub-20 split by the LIVE value, not the stale published one.** Two flags
+(`sleek_waveform/substack-creator-scraper` 18->22, `eiv/company-jobs-scraper` 18->22) were
+published sub-20 but had already crossed 20 by the time they were checked live. The rule's
+reason for dropping sub-20 counts is that `totalUsers` churns too fast at that resolution to
+stay accurate going forward — which is a property of where the count is *now*, not where it
+was when last published. Refreshed both to the live value and dated them rather than dropping,
+since a number that just crossed 20 is exactly as stable going forward as any other >=20 count.
+
+**2. A dropped sub-20 count takes its attached growth figure down with it.** Two of this
+cycle's sub-20 drops carried a second number in the same parenthetical — `(11 users, 6 in the
+last 30 days)` and `(8 users, up from 4)`. Dropping only the total and leaving "6 in the last
+30 days" or "up from 4" standing reads as a non-sequitur (6 of what? up from 4 what?) and is
+no more trustworthy than the number it was attached to — a 30-day-new count or a prior-sweep
+comparison is derived from the same churning `totalUsers`/run-history feed, at least as
+volatile as the total itself. Drop the whole parenthetical, not just the flagged number.

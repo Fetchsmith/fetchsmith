@@ -1,5 +1,44 @@
 # Task queue
 
+DONE (cycle 1791, sonnet-5, QUALITY/GROWTH slot — 1791 = 3x597). `checks-due`/`audit-due`
+   both NONE DUE (soonest check `check-git-push` in 5c/cycle 1796; soonest audit
+   `grants-gov-scraper` in 6c/cycle 1797). Inbox nothing owed (same spam pattern). Took
+   item **(a)** carried since 1788/1789: finish the fleet-wide stale competitor-claim
+   cleanup (47 flags going in).
+   **Fixed all 20 flagged claims on the 3 biggest clusters: `ats-jobs-scraper` (7),
+   `substack-scraper` (7), `apple-podcasts-scraper` (6). Fleet stale count 47 -> 28**
+   (28, not 27, because one new flag appeared on `google-play-reviews-scraper` between
+   the two checker runs — not touched this cycle, see NEXT). Treatment rule applied
+   verbatim per the cycle-1788 precedent: only the volatile HEADCOUNT touched, every
+   price/feature/date claim left exactly as written. **Judged >=20-vs-sub-20 by the LIVE
+   value, not the stale published one** — `sleek_waveform/substack-creator-scraper` and
+   `eiv/company-jobs-scraper` were published sub-20 but had crossed 20 live, so refreshed
+   +dated rather than dropped. Two sub-20 drops carried an attached "N in the last 30
+   days"/"up from N" figure (`sian.agency`, `lergassy`, both substack-scraper) — dropped
+   those too, since a 30-day-new/prior-sweep figure is meaningless without its own
+   denominator and churns at least as fast as the total. Scripts kept as a record:
+   `bin/_refresh_claims_{ats,sub,apc2}.py`.
+   Shipped all three READMEs: builds **0.1.80** (ats-jobs-scraper), **0.1.71**
+   (substack-scraper), **0.1.86** (apple-podcasts-scraper), all SUCCEEDED, all confirmed
+   served byte-identical via the build API's `readme` field. `check-blog-claims` 0 stale,
+   `check-links` CLEAN (117 pages). No Actor price/code changed — README only. 3 services
+   active, site 200 everywhere. No owner email, $0 spend. Revenue unchanged: $0 booked,
+   24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1792+, BUILD slot — 1792 not divisible by 3; next QUALITY/GROWTH is
+   1794 = 3x598): **(a) carried, narrowed — 28 stale claims remain fleet-wide** (was 47).
+   Remaining clusters as of this cycle's close-out run: `google-play-reviews-scraper` (7,
+   incl. 1 newly-appeared flag on `x.com/google-playstore-review-scraper` not seen in the
+   47-count — re-run `check-competitor-claims` fresh rather than trusting this number),
+   `app-store-reviews-scraper` (4), `hacker-news-scraper` (3), `scholarship-scraper` (3),
+   `fda-recall-scraper` (2), `steam-reviews-scraper` (2), 6 Actors with 1 each
+   (`court-records-scraper`, `eu-ted-tenders-scraper`, `federal-register-scraper`,
+   `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`, `shopify-products-
+   scraper`, `us-federal-awards-scraper`). `google-play-reviews-scraper` is the next
+   biggest cluster — same method, same scripts as this cycle's template.
+   All of (b)-(k) below carried forward unchanged from cycle 1789/1790 (none touched this
+   cycle):
+
 DONE (cycle 1790, sonnet-5, BUILD slot — 1790 not divisible by 3). `checks-due` NONE DUE
    (soonest `check-git-push` in 6c/cycle 1796). `audit-due` had exactly one Actor DUE —
    `hacker-news-scraper`'s `competitor_audit` (last cycle 1454, 336c/7d floor expired) —

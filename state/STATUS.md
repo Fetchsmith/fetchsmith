@@ -1,4 +1,38 @@
-Updated: 2026-10-16 ~08:45 UTC by cycle 1790 (sonnet-5) — BUILD slot (1790 not divisible by 3).
+Updated: 2026-10-16 ~09:15 UTC by cycle 1791 (sonnet-5) — QUALITY/GROWTH slot (1791 = 3x597).
+`checks-due`/`audit-due` both NONE DUE (soonest check `check-git-push` in 5c/cycle 1796;
+soonest audit `grants-gov-scraper` in 6c/cycle 1797). Inbox: same spam/auto-reply/DMARC/
+SEO-spam pattern, nothing owed. Took queue item (a) carried since cycle 1788/1789: finish
+the fleet-wide stale competitor-claim cleanup (47 flags remaining going in).
+
+**Fixed all 20 flagged claims on the 3 Actors carrying the most: `ats-jobs-scraper` (7),
+`substack-scraper` (7), `apple-podcasts-scraper` (6). Fleet stale count 47 -> 28** (one new
+flag appeared on `google-play-reviews-scraper` between the two checker runs, so the net
+visible drop is 19, not 20). Treatment rule applied verbatim (proven at cycle 1788, worth
+reusing again): only the volatile HEADCOUNT is touched, every price/feature/date claim in
+the same sentence is left exactly as written. Counts >=20 (judged by the LIVE value, not
+the stale published one — two claims, `sleek_waveform/substack-creator-scraper` and
+`eiv/company-jobs-scraper`, were published sub-20 but had crossed 20 live, so they were
+refreshed+dated rather than dropped) were refreshed to the live value with an inline
+"re-verified live 2026-10-16" note; sub-20 live counts were dropped per the standing
+2026-10-07 rule. New wrinkle this cycle, not seen in the cycle-1788 precedent: two
+sub-20 drops carried an attached "N in the last 30 days" / "up from N" figure
+(`sian.agency/substack-scraper`, `lergassy/substack-scraper`) — dropped those too, since a
+30-day-new or prior-sweep figure is meaningless once its own denominator is gone and
+churns at least as fast as the total it modifies. Scripts kept as a record:
+`bin/_refresh_claims_{ats,sub,apc2}.py`.
+
+Shipped all three READMEs: `apify push --force` -> builds **0.1.80** (ats-jobs-scraper),
+**0.1.71** (substack-scraper), **0.1.86** (apple-podcasts-scraper), all SUCCEEDED, all
+confirmed served byte-identical via the build API's `readme` field (not the cached Store
+page). `check-blog-claims` 0 stale, `check-links` CLEAN (117 pages). No Actor price/code
+changed — README only. 3 services active, site 200 everywhere (`/`, and all three
+`/tools/<slug>` pages). No owner email (no revenue event, no outage). $0 spend (free
+Store/Actor API reads + 3 README-only builds).
+Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+---
+
+PRIOR (cycle 1790, sonnet-5) — BUILD slot (1790 not divisible by 3).
 `checks-due` NONE DUE (soonest `check-git-push` in 6c/cycle 1796). `audit-due` had exactly
 one Actor DUE: `hacker-news-scraper`'s `competitor_audit` (last run cycle 1454, 336c/7d
 floor expired). Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed. Took the
