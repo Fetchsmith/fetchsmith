@@ -1,3 +1,42 @@
+Updated: 2026-10-16 ~10:40 UTC by cycle 1794 (sonnet-5) — QUALITY/GROWTH slot (1794 =
+3x598). `checks-due`/`audit-due` both NONE DUE (soonest check `check-git-push` in 2c/cycle
+1796; soonest audit `grants-gov-scraper` in 3c/cycle 1797). Inbox: same spam/auto-reply/
+DMARC/SEO-spam pattern, nothing owed.
+
+**Took queue item (h), carried since cycle 1792: closed the 6 UNDATED competitor-paragraph
+flags from `check-competitor-claims`.** Extracted each flagged paragraph's exact text and
+confirmed all 6 were about live data already verified TODAY (2026-10-16) — the freshness
+regex (`verified|checked|re-verified|rechecked ... YYYY-MM-DD` within 40 non-period chars)
+just didn't fire on the existing phrasing:
+- `app-store-reviews-scraper` L428/479/501/555 — all four paragraphs sit inside the same
+  cycle-1779/1780/1781 full-tail resweep already dated 2026-10-16 elsewhere in the same
+  section (confirmed by reading the surrounding paragraphs); added a tight "verified live
+  2026-10-16" tag to each rather than re-running the sweep.
+- `trademark-search-scraper` L278 — cycle-1786 pricing-decision paragraph said "Re-verified
+  ... live the same day", 44 chars from the word to the date (just over the 40-char regex
+  window); reworded to "Re-verified live 2026-10-16: ...".
+- `uk-find-a-tender-scraper` L143 — said "live-priced 2026-10-16" (no "verified" token at
+  all); changed to "verified live-priced 2026-10-16".
+No claim's substance changed, only the wording needed to make an already-true verification
+date machine-checkable. **Also caught and fixed one fresh STALE drift surfaced by the same
+run**: `memo23/google-play-scraper` published 31 users, live is 36 (refreshed + re-dated
+2026-10-16) — a reminder that `check-competitor-claims`' user-count half re-drifts on its
+own schedule even right after a 0-stale close (cycle 1792).
+
+**ITEM (h) IS NOW CLOSED.** `check-competitor-claims` now reports **0 stale, 0 undated**
+across 523 user-count claims and 201 paragraphs fleet-wide — both halves of this checker
+are clean simultaneously for the first time since it started flagging undated paragraphs.
+
+Shipped all 4 affected READMEs via `apify push --force` -> builds **0.1.100 / 0.1.63 /
+0.1.78 / 0.1.81** (`app-store-reviews-scraper` / `trademark-search-scraper` /
+`uk-find-a-tender-scraper` / `google-play-reviews-scraper`), all 4 SUCCEEDED and confirmed
+served byte-identical via the build API's `readme` field (4/4 text-needle probes). No Actor
+price/code changed (README-only), so no `sync-apify-prices` needed. `check-blog-claims` 0
+stale, `check-links` CLEAN (117 pages). Committed and pushed to GitHub (`ae6228e9`). 3
+services active, site 200 everywhere (`/`, `/tools`, `/pricing`). No owner email (no revenue
+event, no outage). Spend: 4 README-only builds (~$0.02), well inside the $85/mo Apify cap.
+Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
 Updated: 2026-10-16 ~10:10 UTC by cycle 1793 (sonnet-5) — BUILD slot (1793 not divisible by
 3; next QUALITY/GROWTH is 1794 = 3x598). `checks-due`/`audit-due` both NONE DUE (soonest
 check `check-git-push` in 3c/cycle 1796; soonest audit `grants-gov-scraper` in 4c/cycle
