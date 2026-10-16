@@ -1,0 +1,99 @@
+{
+  "title": "Website Screenshot Scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "urls": {
+      "title": "URLs",
+      "type": "array",
+      "description": "Public web pages to screenshot, e.g. https://example.com. Each becomes one charged result row (or one error row on failure, never both).",
+      "editor": "stringList",
+      "prefill": ["https://example.com"],
+      "default": ["https://example.com"]
+    },
+    "html": {
+      "title": "Raw HTML (optional, single input)",
+      "type": "string",
+      "description": "Instead of fetching a URL, render this raw HTML string directly (e.g. an email template or OG-card markup you built yourself). If set, 'URLs' is ignored and this produces exactly one result row.",
+      "editor": "textarea"
+    },
+    "format": {
+      "title": "Output format",
+      "type": "string",
+      "description": "JPEG is 5-10x smaller than PNG for the same page with no visible quality loss at quality ~80, which keeps data-transfer cost (and your run cost) low. Use PNG only if you need pixel-exact/lossless output, or PDF for a printable document.",
+      "editor": "select",
+      "enum": ["jpeg", "png", "pdf"],
+      "enumTitles": ["JPEG (recommended, small)", "PNG (lossless, larger)", "PDF (document)"],
+      "default": "jpeg"
+    },
+    "quality": {
+      "title": "JPEG quality",
+      "type": "integer",
+      "description": "Ignored for PNG and PDF.",
+      "default": 80,
+      "minimum": 10,
+      "maximum": 100
+    },
+    "fullPage": {
+      "title": "Full page (not just the first screen)",
+      "type": "boolean",
+      "description": "Capture the entire scrollable page height, not just the visible viewport. Ignored for PDF, which is always full-document.",
+      "default": true
+    },
+    "devicePreset": {
+      "title": "Device preset",
+      "type": "string",
+      "description": "Emulate a common device's viewport, pixel ratio and user agent. 'Custom' uses the Viewport width/height fields below instead.",
+      "editor": "select",
+      "enum": ["custom", "desktop", "iphone", "pixel", "ipad"],
+      "enumTitles": ["Custom (use viewport fields)", "Desktop 1920x1080", "iPhone 14 (390x844, 3x)", "Pixel 7 (412x915, 2.6x)", "iPad (820x1180, 2x)"],
+      "default": "desktop"
+    },
+    "viewportWidth": {
+      "title": "Viewport width (custom preset only)",
+      "type": "integer",
+      "description": "Browser viewport width in pixels. Only used when Device preset is 'custom'.",
+      "default": 1920,
+      "minimum": 200,
+      "maximum": 3840
+    },
+    "viewportHeight": {
+      "title": "Viewport height (custom preset only)",
+      "type": "integer",
+      "description": "Browser viewport height in pixels. Only used when Device preset is 'custom'.",
+      "default": 1080,
+      "minimum": 200,
+      "maximum": 3840
+    },
+    "selector": {
+      "title": "Element selector (optional)",
+      "type": "string",
+      "description": "CSS selector of a single element to capture instead of the whole page, e.g. '#pricing-table' or '.hero'. Takes priority over Full page.",
+      "editor": "textfield"
+    },
+    "ogCard": {
+      "title": "Render as Open Graph card (1200x630)",
+      "type": "boolean",
+      "description": "Force a 1200x630 viewport screenshot sized for social-share previews, ignoring other viewport/fullPage settings.",
+      "default": false
+    },
+    "waitUntil": {
+      "title": "Wait condition before capture",
+      "type": "string",
+      "description": "When to consider the page ready to capture.",
+      "editor": "select",
+      "enum": ["load", "domcontentloaded", "networkidle"],
+      "enumTitles": ["Load event (fast, default)", "DOM content loaded (fastest)", "Network idle (slow, best for JS-heavy pages)"],
+      "default": "load"
+    },
+    "delayMs": {
+      "title": "Extra delay before capture (ms)",
+      "type": "integer",
+      "description": "Wait this long after the page load condition is met, e.g. to let an animation or lazy-loaded image settle.",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 15000
+    }
+  },
+  "required": []
+}

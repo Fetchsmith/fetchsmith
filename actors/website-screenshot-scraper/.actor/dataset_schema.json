@@ -1,0 +1,36 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "url": { "type": ["string", "null"], "title": "URL" },
+      "format": { "type": "string", "title": "Format" },
+      "success": { "type": "boolean", "title": "Success" },
+      "error": { "type": ["string", "null"], "title": "Error" },
+      "imageUrl": { "type": ["string", "null"], "title": "Image URL" },
+      "screenshotKey": { "type": ["string", "null"], "title": "Screenshot key" },
+      "contentType": { "type": ["string", "null"], "title": "Content type" },
+      "byteSize": { "type": ["integer", "null"], "title": "Byte size" },
+      "capturedAt": { "type": "string", "title": "Captured at" }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": {
+        "fields": ["url", "format", "success", "imageUrl", "byteSize", "error"]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "url": { "label": "URL", "format": "link" },
+          "format": { "label": "Format" },
+          "success": { "label": "Success" },
+          "imageUrl": { "label": "Image", "format": "link" },
+          "byteSize": { "label": "Bytes" },
+          "error": { "label": "Error" }
+        }
+      }
+    }
+  }
+}
