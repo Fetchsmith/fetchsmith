@@ -1,7 +1,7 @@
 {
- "derived_at_cycle": 1691,
- "derived_at": "2026-10-14T07:02:42Z",
- "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> extract slug from canonical_url -> diff against site/content/blog/*.md frontmatter `date:`. 53 total posts; as of cycle 1692: 18 synced, 35 unsynced (maintained incrementally since, not re-derived).",
+ "derived_at_cycle": 1809,
+ "derived_at": "2026-10-16T18:01:49Z",
+ "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match canonical_url slug against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for that same article (the two can differ by weeks -- posts are written before they're syndicated). 54 total site posts as of cycle 1809 (was 53 at the cycle-1691 derivation): 19 synced (all now carry a verified devto_id + devto_published_at; cycle 1691 only backfilled 2 of them), 35 unsynced. CORRECTED cycle 1809: 17 of the 19 synced entries had `blog_date` wrongly populated with dev.to's publish date instead of the post's own frontmatter date -- re-derived both fields independently and verified no further drift before writing.",
  "synced": [
   {
    "blog_date": "2026-09-09",
@@ -16,75 +16,109 @@
    "devto_published_at": "2026-10-14T07:33:08Z"
   },
   {
-   "blog_date": "2026-10-12",
-   "slug": "google-play-reviews-no-api-batchexecute"
-  },
-  {
-   "blog_date": "2026-10-10",
-   "slug": "invisible-characters-return-zero-rows"
-  },
-  {
-   "blog_date": "2026-10-06",
-   "slug": "apify-tiered-pricing-nested-dict-reads-as-free"
-  },
-  {
-   "blog_date": "2026-10-04",
-   "slug": "tmview-trademark-search-api-no-key"
-  },
-  {
-   "blog_date": "2026-10-01",
-   "slug": "court-records-opinion-status-any-is-not-any"
-  },
-  {
-   "blog_date": "2026-09-29",
-   "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml"
-  },
-  {
-   "blog_date": "2026-09-29",
-   "slug": "hacker-news-1000-hit-search-ceiling"
-  },
-  {
-   "blog_date": "2026-09-27",
-   "slug": "government-apis-fail-open-on-a-dropped-filter-name"
-  },
-  {
-   "blog_date": "2026-09-25",
-   "slug": "sam-gov-key-free-federal-datasets-one-endpoint"
-  },
-  {
-   "blog_date": "2026-09-23",
-   "slug": "watch-baseline-eviction-rebilling"
-  },
-  {
-   "blog_date": "2026-09-21",
-   "slug": "http-only-vs-headless-browser-scraping-cost"
-  },
-  {
-   "blog_date": "2026-09-19",
-   "slug": "shopify-inventory-barcode-per-product-json"
-  },
-  {
-   "blog_date": "2026-09-17",
-   "slug": "incremental-api-watch-mode-four-traps"
-  },
-  {
-   "blog_date": "2026-09-15",
-   "slug": "ats-job-board-json-apis-six-shapes"
-  },
-  {
-   "blog_date": "2026-09-13",
-   "slug": "apple-podcasts-public-json-api"
-  },
-  {
-   "blog_date": "2026-09-11",
-   "slug": "json-ld-article-extraction-fails-on-real-news-sites"
+   "blog_date": "2026-09-09",
+   "slug": "http-only-vs-headless-browser-scraping-cost",
+   "devto_id": 4702159,
+   "devto_published_at": "2026-09-21T00:01:36Z"
   },
   {
    "blog_date": "2026-09-09",
-   "slug": "decode-google-news-rss-redirect-links"
+   "slug": "json-ld-article-extraction-fails-on-real-news-sites",
+   "devto_id": 4627420,
+   "devto_published_at": "2026-09-11T00:32:33Z"
+  },
+  {
+   "blog_date": "2026-09-09",
+   "slug": "decode-google-news-rss-redirect-links",
+   "devto_id": 4610780,
+   "devto_published_at": "2026-09-09T03:31:11Z"
+  },
+  {
+   "blog_date": "2026-09-10",
+   "slug": "apple-podcasts-public-json-api",
+   "devto_id": 4641373,
+   "devto_published_at": "2026-09-13T00:06:48Z"
+  },
+  {
+   "blog_date": "2026-09-11",
+   "slug": "google-play-reviews-no-api-batchexecute",
+   "devto_id": 4836719,
+   "devto_published_at": "2026-10-12T07:32:57Z"
+  },
+  {
+   "blog_date": "2026-09-13",
+   "slug": "ats-job-board-json-apis-six-shapes",
+   "devto_id": 4653994,
+   "devto_published_at": "2026-09-15T00:06:19Z"
+  },
+  {
+   "blog_date": "2026-09-14",
+   "slug": "shopify-inventory-barcode-per-product-json",
+   "devto_id": 4689167,
+   "devto_published_at": "2026-09-19T00:06:22Z"
+  },
+  {
+   "blog_date": "2026-09-15",
+   "slug": "invisible-characters-return-zero-rows",
+   "devto_id": 4826969,
+   "devto_published_at": "2026-10-10T06:31:30Z"
+  },
+  {
+   "blog_date": "2026-09-16",
+   "slug": "incremental-api-watch-mode-four-traps",
+   "devto_id": 4670994,
+   "devto_published_at": "2026-09-17T00:06:16Z"
+  },
+  {
+   "blog_date": "2026-09-23",
+   "slug": "sam-gov-key-free-federal-datasets-one-endpoint",
+   "devto_id": 4737103,
+   "devto_published_at": "2026-09-25T00:00:43Z"
+  },
+  {
+   "blog_date": "2026-09-23",
+   "slug": "watch-baseline-eviction-rebilling",
+   "devto_id": 4719842,
+   "devto_published_at": "2026-09-23T00:01:26Z"
+  },
+  {
+   "blog_date": "2026-09-24",
+   "slug": "tmview-trademark-search-api-no-key",
+   "devto_id": 4797175,
+   "devto_published_at": "2026-10-04T19:02:03Z"
+  },
+  {
+   "blog_date": "2026-09-24",
+   "slug": "court-records-opinion-status-any-is-not-any",
+   "devto_id": 4779767,
+   "devto_published_at": "2026-10-01T00:01:10Z"
+  },
+  {
+   "blog_date": "2026-09-24",
+   "slug": "hacker-news-1000-hit-search-ceiling",
+   "devto_id": 4771966,
+   "devto_published_at": "2026-09-29T14:03:14Z"
+  },
+  {
+   "blog_date": "2026-09-24",
+   "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml",
+   "devto_id": 4771257,
+   "devto_published_at": "2026-09-29T12:01:38Z"
+  },
+  {
+   "blog_date": "2026-09-24",
+   "slug": "government-apis-fail-open-on-a-dropped-filter-name",
+   "devto_id": 4753165,
+   "devto_published_at": "2026-09-27T01:02:07Z"
+  },
+  {
+   "blog_date": "2026-10-06",
+   "slug": "apify-tiered-pricing-nested-dict-reads-as-free",
+   "devto_id": 4809157,
+   "devto_published_at": "2026-10-06T22:03:09Z"
   }
  ],
- "unsynced_oldest_first": [
+ "unsynced": [
   {
    "blog_date": "2026-09-09",
    "slug": "shopify-catalog-products-json-no-login"
@@ -220,10 +254,10 @@
   {
    "blog_date": "2026-09-24",
    "slug": "substack-paywalled-post-preview-vs-full-text"
+  },
+  {
+   "blog_date": "2026-10-16",
+   "slug": "screenshot-png-vs-jpeg-byte-size-measured"
   }
- ],
- "selection_note": "No strict ordering rule observed in dev.to publish history (not pure oldest-first by blog date -- e.g. 2026-09-09 has 3 unsynced posts while a 2026-10-xx post was synced same week). Pick any reasonable unsynced post for the next --publish, ideally on a different niche than the last 2-3 synced slugs above. Update this file (move the slug from unsynced to synced, prepend to the synced list) immediately after a successful `bin/devto-post --publish` instead of re-deriving the whole set from the API next time.",
- "last_update_cycle": 1785,
- "last_update": "2026-10-16T06:02Z",
- "update_note": "Cycle 1785 published apple-app-store-reviews-header-fingerprint (dev.to id 4860281, draft notes/devto_article_13.md) and moved it here by hand rather than re-deriving from the API, per the 1691 selection_note. Counts below are now 19 synced / 34 unsynced of 54 blog posts (1 new blog post added since cycle 1692, not yet reconciled into this count). Keep doing this after each successful `bin/devto-post --publish`."
+ ]
 }
