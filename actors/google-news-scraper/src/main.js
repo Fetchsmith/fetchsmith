@@ -38,17 +38,27 @@ const rawTopics = (input.topics ?? []).map((t) => String(t).trim().toUpperCase()
 const topics = rawTopics.filter((t) => VALID_TOPICS.includes(t));
 const badTopics = rawTopics.filter((t) => !VALID_TOPICS.includes(t));
 // Silently dropping an unknown topic used to make a typo look like "Google has no news today".
-if (badTopics.length) log.warning(`Ignoring unsupported topic(s) ${badTopics.join(', ')} — use one of: ${VALID_TOPICS.join(', ')}. For any other section, pass its feed URL in "Custom RSS feed URLs" instead.`);
+if (badTopics.length) log.warning(`Ignoring unsupported topic(s) ${badTopics.join(', ')} — use one of: ${VALID_TOPICS.join(', ')}. For any other section, pass its feed URL in "Custom RSS feed URLs" instead, or use "Topic by hashed code" below.`);
+// Every Google News section — including the ~tens of thousands of niche/local/story-cluster pages
+// that have no named code at all, like a single company's "Full Coverage" page — has a URL of the
+// form news.google.com/topics/<HASH>. Accept either the full URL (any of its path shapes, e.g. the
+// .../topics/<HASH>/sections/<SECTION> drill-down) or a bare copy-pasted hash, and extract the hash.
+// Verified live (cycle 1798): news.google.com/rss/topics/<HASH>?hl=..&gl=..&ceid=.. returns a normal
+// item feed for a real hash copied from a browser URL bar — same endpoint shape as the named-topic
+// feed above, just addressed by hash instead of by one of our 20 hardcoded codes.
+const TOPIC_HASH_RE = /\/topics\/([^/?#]+)/;
+const rawTopicsHashed = (input.topicsHashed ?? []).map((t) => String(t).trim()).filter(Boolean);
+const topicsHashed = rawTopicsHashed.map((t) => (t.match(TOPIC_HASH_RE)?.[1] ?? t.split(/[?#]/)[0])).filter(Boolean);
 // Cycle 893 removed the schema-level "default" on "queries" because Apify silently merges it into
 // ANY run that omits the field, including a topics/rssUrls-only API call -- polluting billed
 // results with an uninvited example query. But Apify's own automated Store quality test calls with
 // a literal `{}` body and expects real, non-empty output (see PLAYBOOK.md step 3/4c). Replicate the
-// default here instead, but only when the caller supplied NONE of the three seed fields at all
-// (true `{}` omission, not an explicit "queries": []), so a topics/rssUrls-only call is never
-// polluted.
-if (input.queries === undefined && input.rssUrls === undefined && input.topics === undefined) {
+// default here instead, but only when the caller supplied NONE of the four seed fields at all
+// (true `{}` omission, not an explicit "queries": []), so a topics/rssUrls/topicsHashed-only call is
+// never polluted.
+if (input.queries === undefined && input.rssUrls === undefined && input.topics === undefined && input.topicsHashed === undefined) {
   queries = ['artificial intelligence'];
-  log.info('No "queries", "rssUrls" or "topics" given: running the example query so this call returns real output.');
+  log.info('No "queries", "rssUrls", "topics" or "topicsHashed" given: running the example query so this call returns real output.');
 }
 // Every filter below is a Google *search operator*, and those only exist on the /rss/search
 // endpoint. Topic sections and user-supplied RSS URLs are FIXED feeds: their rows come back
@@ -56,7 +66,7 @@ if (input.queries === undefined && input.rssUrls === undefined && input.topics =
 // (the behaviour before cycle 984) left the worse case silent -- a MIXED run (queries plus
 // topics/rssUrls) filters the query feeds, returns the fixed feeds whole, and charges for both,
 // with nothing in the log to say half the rows never saw the filter.
-const fixedFeedCount = rssUrls.length + topics.length;
+const fixedFeedCount = rssUrls.length + topics.length + topicsHashed.length;
 const warnFixedFeeds = (what) => {
   if (!fixedFeedCount) return;
   const many = fixedFeedCount > 1;
@@ -168,7 +178,7 @@ const fetchBody = input.fetchArticleBody === true;
 const extractTickers = input.extractTickers === true;
 const decode = input.decodeUrls !== false || fetchBody; // the body lives on the publisher's page, so it needs the real URL
 const bodyMaxChars = Math.min(Math.max(Number(input.articleBodyMaxChars ?? 20000), 500), 200000);
-if (!queries.length && !rssUrls.length && !topics.length) { await Actor.fail('Provide at least one query, RSS URL or topic.'); }
+if (!queries.length && !rssUrls.length && !topics.length && !topicsHashed.length) { await Actor.fail('Provide at least one query, RSS URL, topic or hashed topic code.'); }
 if (fetchBody && input.decodeUrls === false) log.warning('fetchArticleBody needs the publisher URL, so decodeUrls was turned back on.');
 
 let pushed = 0;
@@ -369,6 +379,7 @@ const feeds = [
   ...queries.map((q) => ({ query: q, topic: null, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix + siteSuffix + (hasOwnTimeOp(q) ? '' : timeSuffix))}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
   ...rssUrls.map((u) => ({ query: null, topic: null, url: u })),
   ...topics.map((t) => ({ query: null, topic: t, url: `https://news.google.com/rss/headlines/section/topic/${t}?hl=${hl}&gl=${gl}&ceid=${ceid}` })),
+  ...topicsHashed.map((t) => ({ query: null, topic: t, url: `https://news.google.com/rss/topics/${t}?hl=${hl}&gl=${gl}&ceid=${ceid}` })),
 ];
 const emptyFeeds = []; // Google News RSS returned zero <item>s for this query/URL
 const erroredFeeds = []; // the RSS request itself failed

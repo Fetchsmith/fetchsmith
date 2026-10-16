@@ -24,28 +24,34 @@
       "description": "Optional: Google News' built-in topic sections (added to the queries), no RSS URL needed. Main sections: WORLD, NATION, BUSINESS, TECHNOLOGY, ENTERTAINMENT, SCIENCE, SPORTS, HEALTH. Narrower sub-sections Google serves but does not link in its own nav: POLITICS, ECONOMY, REAL_ESTATE, JOBS, EDUCATION, AUTOS, MOVIES, MUSIC, CELEBRITIES, ARTS, SOCCER, BASKETBALL.",
       "editor": "stringList"
     },
+    "topicsHashed": {
+      "title": "Topic by hashed code (any section, incl. local/story clusters)",
+      "type": "array",
+      "description": "Optional: paste a full news.google.com/topics/<CODE>... URL (copied from your browser's address bar after clicking into ANY Google News section, including ones with no name above — a single company's page, a local-news section, a story cluster) or just the <CODE> itself. The code is extracted automatically. Unlike \"Browse by topic\", this reaches every section Google has, not just our 20 named ones.",
+      "editor": "stringList"
+    },
     "excludeWords": {
       "title": "Exclude words",
       "type": "array",
-      "description": "Words or phrases to exclude, applied to every query (e.g. \"iphone\" drops articles mentioning it). Equivalent to typing -word yourself, just easier to manage as a list. Does not apply to topics or custom RSS URLs, which are fixed feeds, not search terms.",
+      "description": "Words or phrases to exclude, applied to every query (e.g. \"iphone\" drops articles mentioning it). Equivalent to typing -word yourself, just easier to manage as a list. Does not apply to topics, hashed topics or custom RSS URLs, which are fixed feeds, not search terms.",
       "editor": "stringList"
     },
     "siteFilter": {
       "title": "Only these domains",
       "type": "array",
-      "description": "Restrict results to these publisher domains, e.g. nytimes.com, reuters.com. Multiple domains are OR'd (site:a.com OR site:b.com), applied to every query at Google's end (no extra requests, no under-filled results). Same effect as typing site: yourself, just easier to manage as a list across many queries. Does not apply to topics or custom RSS URLs, which are fixed feeds.",
+      "description": "Restrict results to these publisher domains, e.g. nytimes.com, reuters.com. Multiple domains are OR'd (site:a.com OR site:b.com), applied to every query at Google's end (no extra requests, no under-filled results). Same effect as typing site: yourself, just easier to manage as a list across many queries. Does not apply to topics, hashed topics or custom RSS URLs, which are fixed feeds.",
       "editor": "stringList"
     },
     "excludeSites": {
       "title": "Exclude these domains",
       "type": "array",
-      "description": "Drop results from these publisher domains, e.g. pinterest.com. Equivalent to typing -site:domain.com yourself. Does not apply to topics or custom RSS URLs, which are fixed feeds.",
+      "description": "Drop results from these publisher domains, e.g. pinterest.com. Equivalent to typing -site:domain.com yourself. Does not apply to topics, hashed topics or custom RSS URLs, which are fixed feeds.",
       "editor": "stringList"
     },
     "timePeriod": {
       "title": "Time period",
       "type": "string",
-      "description": "Only return articles published within this window, filtered by Google itself (no extra requests). Applies to search queries only, not to topics or custom RSS URLs. Leave empty for no time limit. Ignored if you set an explicit From/To date below.",
+      "description": "Only return articles published within this window, filtered by Google itself (no extra requests). Applies to search queries only, not to topics, hashed topics or custom RSS URLs. Leave empty for no time limit. Ignored if you set an explicit From/To date below.",
       "editor": "select",
       "enum": [
         "",
