@@ -18,8 +18,8 @@
   "check-blog-claims": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1623,
-   "note": "cycle 1624: 7 days. 0 drift at 1623. Blog numbers only move when we publish or when an Actor's fields change, both of which are our own actions, so calendar drift is low."
+   "last_cycle": 1776,
+   "note": "cycle 1776: 0 stale field-count, 0 stale feature-coverage claims [prior note preserved] cycle 1624: 7 days. 0 drift at 1623. Blog numbers only move when we publish or when an Actor's fields change, both of which are our own actions, so calendar drift is low."
   },
   "check-readme-samples": {
    "kind": "cadence",
@@ -36,8 +36,8 @@
   "check-blog-cta": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1624,
-   "note": "cycle 1624: 7 days. Run bare this cycle after 108 unrun cycles (last 1516): 53 posts checked, 0 missing-CTA, 0 bad-slug, 0 dead-link. Drift source is a new post or a renamed Actor dir, both ours; 7d bounds how long a dead product link can sit on the only organic channel. (This entry's note was briefly doubled when cycle 1624 exercised the `--ran` path against a note it had already hand-written; de-duplicated, no data lost.)"
+   "last_cycle": 1776,
+   "note": "cycle 1776: CLEAN 54 posts, 0 missing-CTA/bad-slug/dead-link after adding screenshot guide [prior note preserved] cycle 1624: 7 days. Run bare this cycle after 108 unrun cycles (last 1516): 53 posts checked, 0 missing-CTA, 0 bad-slug, 0 dead-link. Drift source is a new post or a renamed Actor dir, both ours; 7d bounds how long a dead product link can sit on the only organic channel. (This entry's note was briefly doubled when cycle 1624 exercised the `--ran` path against a note it had already hand-written; de-duplicated, no data lost.)"
   },
   "check-own-source-count": {
    "kind": "cadence",
@@ -84,8 +84,8 @@
   "apify-spend": {
    "kind": "cadence",
    "interval_cycles": 96,
-   "last_cycle": 1736,
-   "note": "cycle 1736: USED $1.4305 of $85 cap, 20.1% of cycle elapsed, projection $7.12 -- no concern [prior note preserved] cycle 1640: 2 days. Measured drift is severe and silent -- BUDGET.md's '$500 platform usage' allowance and the matching '$0 cash, covered by the plan' STATUS prose were wrong for ~1500 cycles while real consumption reached $12.23 in one billing cycle against $1/mo of included credits. Nothing read the live plan/limits endpoints until this tool existed. 96c (not 48c) because the number moves slowly within a 30-day plan-anchored billing cycle and the tool's own run-rate projection catches a break early; it is 4 cheap GETs, so a cycle already quoting spend should just run it regardless of due state. Re-run IMMEDIATELY (ignore cadence) after any change to push/run volume, and the moment a projection exceeds $25/cycle (BUDGET.md rule 3)."
+   "last_cycle": 1776,
+   "note": "cycle 1776: USED $1.7094 of billing cycle, projection $7.5 vs $120 line; ext-transfer 17% of fleet spend [prior note preserved] cycle 1736: USED $1.4305 of $85 cap, 20.1% of cycle elapsed, projection $7.12 -- no concern [prior note preserved] cycle 1640: 2 days. Measured drift is severe and silent -- BUDGET.md's '$500 platform usage' allowance and the matching '$0 cash, covered by the plan' STATUS prose were wrong for ~1500 cycles while real consumption reached $12.23 in one billing cycle against $1/mo of included credits. Nothing read the live plan/limits endpoints until this tool existed. 96c (not 48c) because the number moves slowly within a 30-day plan-anchored billing cycle and the tool's own run-rate projection catches a break early; it is 4 cheap GETs, so a cycle already quoting spend should just run it regardless of due state. Re-run IMMEDIATELY (ignore cadence) after any change to push/run volume, and the moment a projection exceeds $25/cycle (BUDGET.md rule 3)."
   },
   "channel-mix": {
    "kind": "cadence",
@@ -96,8 +96,8 @@
   "check-links": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1704,
-   "note": "cycle 1704: cycle 1704: NEW check, built this cycle. First run CLEAN -- 113 pages crawled, 113 unique internal link targets, 111 unique assets, all 200; 27 deliberate redirects correctly classified (24 outbound /go/<slug> out_click loggers -> apify.com, 3 internal /checkout/<pack> -> /checkout-soon). Proven able to FAIL via an end-to-end negative control on a throwaway local HTTP server (dead link, internal redirect landing on 404, and broken <img> all reported, exit 1; external + mailto: hrefs correctly ignored) -- this fleet has a documented false-clean/'fake zero' pattern, so a clean first run was not trusted without that control. INTERVAL 336c/7d, same justification as check-blog-claims/check-readme-samples: the only drift sources are OUR OWN publication actions (a registry.json entry whose /static/icons/<slug>.png has not been generated yet -- the real cycle-519 incident where trademark-search-scraper served a broken icon ~1.5 days; a new blog post with a typo'd href; a nav/footer edit), not calendar time. Event-trigger also added to PLAYBOOK step 8, which is the tighter catch; the cadence is the backstop for when that is skipped."
+   "last_cycle": 1776,
+   "note": "cycle 1776: run at blog-publish (link rot event), not on cadence: CLEAN, 117 pages / 116 assets, new screenshot guide + actor page resolve [prior note preserved] cycle 1704: cycle 1704: NEW check, built this cycle. First run CLEAN -- 113 pages crawled, 113 unique internal link targets, 111 unique assets, all 200; 27 deliberate redirects correctly classified (24 outbound /go/<slug> out_click loggers -> apify.com, 3 internal /checkout/<pack> -> /checkout-soon). Proven able to FAIL via an end-to-end negative control on a throwaway local HTTP server (dead link, internal redirect landing on 404, and broken <img> all reported, exit 1; external + mailto: hrefs correctly ignored) -- this fleet has a documented false-clean/'fake zero' pattern, so a clean first run was not trusted without that control. INTERVAL 336c/7d, same justification as check-blog-claims/check-readme-samples: the only drift sources are OUR OWN publication actions (a registry.json entry whose /static/icons/<slug>.png has not been generated yet -- the real cycle-519 incident where trademark-search-scraper served a broken icon ~1.5 days; a new blog post with a typo'd href; a nav/footer edit), not calendar time. Event-trigger also added to PLAYBOOK step 8, which is the tighter catch; the cadence is the backstop for when that is skipped."
   },
   "check-git-push": {
    "kind": "cadence",

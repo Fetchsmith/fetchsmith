@@ -1,57 +1,57 @@
 {
- "ts": 1790960836,
+ "ts": 1792114380,
  "results": {
   "ats-jobs-scraper": {
    "status": "SUCCEEDED",
-   "secs": 79,
-   "items": 180,
+   "secs": 90,
+   "items": 175,
    "pass": true
   },
   "hacker-news-scraper": {
    "status": "SUCCEEDED",
-   "secs": 10,
+   "secs": 12,
    "items": 100,
    "pass": true
   },
   "google-news-scraper": {
    "status": "SUCCEEDED",
-   "secs": 69,
-   "items": 24,
+   "secs": 81,
+   "items": 25,
    "pass": true
   },
   "app-store-reviews-scraper": {
    "status": "SUCCEEDED",
-   "secs": 13,
-   "items": 150,
+   "secs": 21,
+   "items": 200,
    "pass": true
   },
   "shopify-products-scraper": {
    "status": "SUCCEEDED",
-   "secs": 23,
-   "items": 294,
+   "secs": 41,
+   "items": 500,
    "pass": true
   },
   "google-play-reviews-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
+   "secs": 21,
    "items": 101,
    "pass": true
   },
   "substack-scraper": {
    "status": "SUCCEEDED",
-   "secs": 117,
-   "items": 48,
+   "secs": 110,
+   "items": 49,
    "pass": true
   },
   "apple-podcasts-scraper": {
    "status": "SUCCEEDED",
-   "secs": 11,
+   "secs": 12,
    "items": 100,
    "pass": true
   },
   "steam-reviews-scraper": {
    "status": "SUCCEEDED",
-   "secs": 18,
+   "secs": 16,
    "items": 200,
    "pass": true
   },
@@ -63,55 +63,55 @@
   },
   "eu-ted-tenders-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
+   "secs": 15,
    "items": 100,
    "pass": true
   },
   "uk-find-a-tender-scraper": {
    "status": "SUCCEEDED",
-   "secs": 11,
-   "items": 100,
+   "secs": 13,
+   "items": 87,
    "pass": true
   },
   "us-federal-awards-scraper": {
    "status": "SUCCEEDED",
-   "secs": 10,
+   "secs": 12,
    "items": 100,
    "pass": true
   },
   "fda-recall-scraper": {
    "status": "SUCCEEDED",
-   "secs": 13,
+   "secs": 10,
    "items": 100,
    "pass": true
   },
   "federal-register-scraper": {
    "status": "SUCCEEDED",
-   "secs": 10,
+   "secs": 11,
    "items": 100,
    "pass": true
   },
   "clinicaltrials-scraper": {
    "status": "SUCCEEDED",
-   "secs": 9,
+   "secs": 11,
    "items": 100,
    "pass": true
   },
   "grants-gov-scraper": {
    "status": "SUCCEEDED",
-   "secs": 27,
+   "secs": 32,
    "items": 100,
    "pass": true
   },
   "nih-reporter-scraper": {
    "status": "SUCCEEDED",
-   "secs": 10,
+   "secs": 13,
    "items": 100,
    "pass": true
   },
   "fec-campaign-finance-scraper": {
    "status": "SUCCEEDED",
-   "secs": 6,
+   "secs": 8,
    "items": 20,
    "pass": true
   },
@@ -122,8 +122,8 @@
   },
   "court-records-scraper": {
    "status": "SUCCEEDED",
-   "secs": 23,
-   "items": 100,
+   "secs": 72,
+   "items": 90,
    "pass": true
   },
   "--input": {
@@ -138,14 +138,32 @@
   },
   "sam-gov-opportunities-scraper": {
    "status": "SUCCEEDED",
-   "secs": 18,
+   "secs": 24,
    "items": 200,
    "pass": true
   },
   "remote-jobs-scraper": {
    "status": "SUCCEEDED",
-   "secs": 11,
+   "secs": 12,
    "items": 100,
+   "pass": true
+  },
+  "trademark-search-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 9,
+   "items": 50,
+   "pass": true
+  },
+  "sec-insider-trades-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 14,
+   "items": 100,
+   "pass": true
+  },
+  "website-screenshot-scraper": {
+   "status": "SUCCEEDED",
+   "secs": 4,
+   "items": 1,
    "pass": true
   }
  }

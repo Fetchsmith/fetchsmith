@@ -46,7 +46,9 @@ A failed URL returns `success: false`, `error` set to the failure reason, and `i
 `result` — $0.002 per successful screenshot/PDF, charged only when a capture succeeds. No start fee.
 
 ## FAQ
-**Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot but 5-10x smaller, especially on long, text-heavy pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
+**Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends entirely on the page: measured on a long Wikipedia article (black text on flat white, which is PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Pages with photos or gradients save far more. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
+
+**What actually makes a screenshot smaller?** Cropping, not the format. On that same article, `fullPage: false` took the JPEG from 2.04 MB to 274 KB — a 7.4x cut, versus 15% for the format switch. If you only need to show what the top of the page looked like, set `fullPage: false`. Every output row carries `byteSize` so you can measure this on your own pages.
 
 **Can I screenshot just one element, like a pricing table?** Yes — set `selector` to any CSS selector (e.g. `#pricing-table`). This takes priority over `fullPage`.
 
@@ -60,4 +62,6 @@ A failed URL returns `success: false`, `error` set to the failure reason, and `i
 Only public pages you have a right to view/fetch should be submitted — this Actor does not bypass logins or paywalls. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
+- https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-size-measured — PNG vs JPEG vs viewport cropping on the same page, with the real byte sizes and billing lines
+- https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost — when you need a browser at all, timed against HTTP-only extraction
 - https://fetchsmith.com/tools

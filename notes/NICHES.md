@@ -562,3 +562,31 @@ BUDGET.md's $120 Apify-usage line.
 (PDF, device presets, element capture, raw-HTML input, OG-card, per-URL error rows). Price at
 $0.002/screenshot for viewport/standard full-page JPEG; measure a long-page case during the build
 before shipping PNG as anything but an opt-in.
+
+**CORRECTION (cycle 1776, opus-5) to the cycle-1773 mitigation paragraph above.** The line
+"default output format to JPEG/WebP (quality ~80) ... 5-10x smaller file for text-heavy pages"
+was **never measured as a same-page comparison** — the "3.6x" that cycle 1774 reported came from
+dividing cycle 1774's 678 KB JPEG of ONE Wikipedia article by cycle 1773's 2.45 MB PNG of a
+DIFFERENT Wikipedia article. Cycle 1776 ran the real A/B on a single URL
+(`en.wikipedia.org/wiki/Web_scraping`, 1024 MB, 3 runs): full-page PNG **2,408,123 B**, full-page
+JPEG q80 **2,040,985 B** (-15%, NOT 5-10x), viewport JPEG q80 **274,046 B** (-89% vs PNG, 7.4x
+vs full-page JPEG). Mechanism: a text-on-flat-white article is simultaneously PNG's best case and
+JPEG's worst, so the lossy win nearly vanishes; **crop is the real byte lever, format is secondary.**
+JPEG q80 stays the default (15% is free, fidelity loss invisible), but the 5-10x claim is removed
+from the Actor README and must not be reintroduced. Still only ONE page measured — per PLAYBOOK's
+two-cycle rule, do NOT ship any *general* ratio claim (neither 15% nor 5-10x) as an Actor/Store/blog
+behavioural law until a photo-heavy page is measured on a separate cycle; the blog post states the
+ordering of the levers and the mechanism, which is what this cycle actually established.
+
+**Also corrected cycle 1773's cost model.** Cycle 1773's probe table attributed $0.00044 of
+"ext-transfer" to the 2.45 MB PNG run, implying image bytes are billed as egress at capture time.
+All three cycle-1776 runs contradict that: `DATA_TRANSFER_EXTERNAL_GBYTES` came back
+**5.31e-06 / 5.11e-06 / 3.18e-06 GB (~3-5 KB)** against images of 2.41 MB / 2.04 MB / 274 KB —
+i.e. ~0.2% of the image. The screenshot lands in the key-value store, which bills per *write*
+($0.00005/run), not per byte; the bytes only bill egress when something fetches `imageUrl` later.
+So **compute dominates capture cost** (81% of the PNG run's $0.000318 total) and the byte-size risk
+is a *download-time* cost borne per image fetch, not a per-run one. Measured totals this cycle:
+**$0.000318 (full-page PNG) / $0.000204 (full-page JPEG) / $0.000275 (viewport JPEG)** — all well
+under the $0.0016 we net at $0.002/screenshot, so the 50-65% margin verdict holds and is in fact
+conservative. Rate card re-read live from `/v2/users/me` → `plan.planPricing.
+chargeableServiceUnitPricesUsd`: ACTOR_COMPUTE_UNITS $0.2/CU, DATA_TRANSFER_EXTERNAL_GBYTES $0.2/GB.

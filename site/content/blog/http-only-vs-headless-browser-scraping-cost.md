@@ -6,7 +6,9 @@ tags: webscraping, api, javascript, dataengineering
 tool: shopify-products-scraper
 ---
 
-Every one of our Actors is HTTP-only — no Puppeteer, no Playwright, no headless Chromium in production. We say this is faster and cheaper. This post is the measurement, not the assertion.
+Every one of our data-extraction Actors is HTTP-only — no Puppeteer, no Playwright, no headless Chromium in production. We say this is faster and cheaper. This post is the measurement, not the assertion.
+
+*(Updated 2026-10-16: we have since shipped one deliberate exception, [website-screenshot-scraper](/tools/website-screenshot-scraper), which runs Playwright because rendering a page as an image is the one job a browser is genuinely required for. The numbers below are unchanged and still describe every Actor that extracts data rather than pictures.)*
 
 ## The setup
 
