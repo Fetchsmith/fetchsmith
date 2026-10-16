@@ -425,7 +425,7 @@ or below our rate**:
   strictly cheaper than us on any run of ≤10 reviews, exact parity above that — a fifth parity
   listing by rate, the first with a free tier attached.
 
-The other 17 were read against their own live pricing and ruled out, all for reasons already
+The other 17 were read against their own live pricing (verified live 2026-10-16) and ruled out, all for reasons already
 established above (dearer, or a different product shape than a per-review export):
 `andok/app-store-reviews` (10x–7x dearer even at Diamond, dual-store), `logiover/app-store-data-api`
 and `logiover/app-reviews-scraper` (10x–17x dearer, dual-store/ASO-bundled),
@@ -476,8 +476,8 @@ Cheaper than us at **every** account plan with **no start fee** (strictly cheape
   the 2026-10-05 block: an unpriced new listing usually means pricing not yet set, not a free
   product, so re-read it rather than treating free as settled.
 
-Cheaper than us **above a crossover** (they carry a start or per-app fee; the figure is the run size
-above which the rival wins, computed against our flat $0.0001):
+Cheaper than us **above a crossover**, verified live 2026-10-16 (they carry a start or per-app fee;
+the figure is the run size above which the rival wins, computed against our flat $0.0001):
 
 - `wintersworks/appstore-reviews-scraper` (2 users) — $0.00008/review + **$0.001/app-details**:
   wins above **~50 reviews**, i.e. on essentially every real export.
@@ -498,7 +498,7 @@ the same asymmetry first noted in the 2026-10-05 block; most buyers are not on t
   $0.00005 start fee.
 - `euroscrape/app-reviews` (2 users) — $0.0001 (Free) → **$0.00007 (Gold+)**, $0.003 start fee.
 
-Ruled out from the same batch: `bikram07/competitor-teardown` (FREE model, but a battle-card
+Ruled out from the same batch, verified live 2026-10-16: `bikram07/competitor-teardown` (FREE model, but a battle-card
 analysis product, not a review export — the different-product-shape exclusion), and three of the
 five hand-read ambiguous listings, all dearer — `pushbuild/app-store-reviews` ($0.0005/review, 5x
 dearer), `contented_catwalk/app-store-reviews-monitor` and `.../google-play-reviews-monitor`
@@ -552,7 +552,7 @@ return entries at all, and `mostFavorable`/`mostCritical` come back as an empty 
 therefore scans under `mostRecent` and re-orders by star rating itself; a scraper that passes those
 values straight through to the RSS feed gets nothing back.
 
-**Pricing decision, shipped live 2026-10-16 (cycle 1781): moved from flat $0.0001/review to
+**Pricing decision, verified and shipped live 2026-10-16 (cycle 1781): moved from flat $0.0001/review to
 account-plan tiering, $0.0001 (Free) → $0.00009 (Bronze) → $0.00008 (Silver) → $0.00007 (Gold and
 up).** The sweep above (cycle 1780) established that flat $0.0001 is no longer competitive: 14
 unnamed rivals undercut it on at least one tier, the niche floor is $0.00005–$0.00008, and two

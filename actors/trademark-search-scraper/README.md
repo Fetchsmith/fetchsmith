@@ -275,8 +275,8 @@ job. None of the three belongs in a row-rate comparison.
 **Our own price was re-read live during this sweep and is unchanged**: a single `result` event at
 a flat $0.002 on every plan tier, no start fee.
 
-**Pricing decision (2026-10-16, cycle 1786): holding flat $0.002, not tiering.** Re-verified
-`scrapewise/uspto-trademark-scraper` live the same day: still 2 users three weeks after its
+**Pricing decision (2026-10-16, cycle 1786): holding flat $0.002, not tiering.** Re-verified live 2026-10-16:
+`scrapewise/uspto-trademark-scraper` still 2 users three weeks after its
 2026-09-30 launch, still USPTO-only, still no opposition window, seniority claim, Vienna codes,
 territories or watch mode. That is a materially weaker signal than the one that triggered
 `app-store-reviews-scraper`'s account-plan tiering in cycle 1781 — that niche had **14**
