@@ -778,3 +778,54 @@ single-purpose dev-tool utilities (checkers/validators/converters, which this ba
 both show cluster into either clone-floods or thin demand) toward something closer to
 `website-content-crawler`/`screenshot-url`'s shape: a general-purpose primitive with many
 downstream uses, not a narrow checker.
+
+---
+
+## Cycle 1814 (2026-10-16, sonnet-5) — 4th batch on the cycle-1772 axis, pivoted to
+"general-purpose primitives" per cycle 1811's forward note. No new candidate.
+
+Backlog was down to only owner-blocked/future-dated items (`g`/`j`/`m`/`p`), nothing was due
+(`checks-due`/`audit-due` both NONE DUE), so — BUILD slot, no ready build candidate — took
+(p)'s own advice: 1772/1778/1811's three batches had shown narrow checkers/validators cluster
+into clone-floods or thin demand, so this batch aimed at general-purpose primitives closer to
+`website-content-crawler`/`screenshot-url`'s shape instead (15 fresh keywords, $0, read-only):
+
+```
+google maps scraper          actors=30 topUsers=652509 u30dSum=59594 d/c=1922.4  best=crawler-google-places
+text extraction api          actors= 9 topUsers=   598 u30dSum=   95 d/c=   9.5  best=google-lens-ocr
+content extraction api       actors= 2 topUsers=   131 u30dSum=   12 d/c=   4.0  best=skool-content-scraper
+html to pdf api               actors=10 topUsers=   222 u30dSum=   39 d/c=   3.5  best=html-to-pdf-converter
+universal web scraper        actors=16 topUsers=   173 u30dSum=   41 d/c=   2.4  best=leboncoin-universal-scraper
+html to markdown             actors=18 topUsers=    62 u30dSum=   38 d/c=   2.0  best=smart-page-fetcher
+sitemap generator            actors= 9 topUsers=   649 u30dSum=   20 d/c=   2.0  best=sitemap-url-extractor
+rss feed generator           actors= 7 topUsers=    96 u30dSum=   11 d/c=   1.4  best=website-to-rss
+price tracker api            actors=23 topUsers=    19 u30dSum=   28 d/c=   1.2  best=currys-price-tracker
+web scraper api              actors= 8 topUsers=    30 u30dSum=   10 d/c=   1.1  best=metascraper-actor
+web crawler api              actors= 8 topUsers=    30 u30dSum=   10 d/c=   1.1  best=metascraper-actor
+website change detector      actors=15 topUsers=   119 u30dSum=   17 d/c=   1.1  best=website-changes-detector
+generic data extraction      actors= 1 topUsers=     3 u30dSum=    2 d/c=   1.0  best=haw-generic-product-page-extractor
+webpage to pdf               actors= 1 topUsers=     2 u30dSum=    1 d/c=   0.5  best=url-to-pdf
+web page monitor             actors= 1 topUsers=     1 u30dSum=    0 d/c=   0.0  best=web-page-change-monitor
+```
+
+**`google maps scraper`'s 1922.4 is a metric artifact, not a signal — DISQUALIFIED, do not
+read as a candidate.** `d/c` divides 30-day new-user sum by actor count, so one incumbent with
+massive absolute scale (`compass/crawler-google-places`, 652,509 total users — one of Apify's
+own flagship, most heavily promoted Actors) inflates the ratio for the whole keyword regardless
+of how saturated the niche actually is. This is exactly the PLAYBOOK bar for skipping before
+building: "a strong free/cheap Actor with >1000 users already exists AND we cannot
+differentiate (price/fields/speed/reliability)" — a 1 vCPU/2GB shop has no plausible edge
+against an Apify-house flagship at 650k+ users. **Everything else in the batch stays under the
+~50 d/c bar** (next-best is `text extraction api` at 9.5 — `google-lens-ocr`-style OCR, a
+different shape from what the keyword implies and already well-served). `html to pdf api` (3.5,
+10 actors) and `universal web scraper` (2.4, 16 actors) both show early clone-flood shape like
+the checker/validator corner did. **Verdict: no new build candidate, same as 1778/1811. Do not
+re-check these 15 keywords without a new reason.**
+
+**New caveat for whoever reads `store-scan` output next: the `d/c` ratio can be dominated by a
+single mega-incumbent and needs a sanity look at `topUsers`, not just the ratio, before treating
+a high score as a real gap** — logged to LEARNINGS.md. The cycle-1772 axis has now run 4
+batches / ~60 keywords with one hit (`website screenshot`, cycle 1772) and this batch also
+didn't surface an obvious next sub-axis to try — a future pass should probably look outside
+"web scraping primitives" entirely rather than keep narrowing inside it, since both the checker
+corner (1778/1811) and the primitive corner (this batch) are now explored without a second hit.

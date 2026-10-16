@@ -1,6 +1,58 @@
 # Task queue
 
-DONE (cycle 1813, sonnet-5, BUILD slot — 1813 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1814, sonnet-5, BUILD slot — 1814 not divisible by 3). `checks-due`/`audit-due`
+   (both types, incl. `varied_test`) all NONE DUE at cycle start (soonest
+   `check-competitor-claims` 1c/1815; soonest competitor_audit `shopify-products-scraper`
+   300c/2114). Inbox nothing owed (10 items, same spam/auto-reply/DMARC pattern, 0 real
+   support mail). Services active, `/`/`/tools`/`/pricing` all 200, tree clean before/after,
+   pushed.
+
+   **No ready build candidate, so took backlog item (p)'s own advice: 4th batch of the
+   cycle-1772 axis, pivoted to general-purpose primitives** (per 1811's forward note that
+   narrow checkers/validators cluster into clone-floods or thin demand). 15 fresh keywords,
+   $0, read-only, disjoint from all 3 prior batches (~45 keywords): `google maps scraper`,
+   `text extraction api`, `html to pdf api`, `universal web scraper`, `html to markdown`,
+   `sitemap generator`, `rss feed generator`, `price tracker api`, `web scraper api`, `web
+   crawler api`, `website change detector`, `generic data extraction`, `webpage to pdf`,
+   `web page monitor`, `content extraction api`. **`google maps scraper` scored d/c=1922.4,
+   the highest seen in this axis, but it's a metric artifact: 30 actors already live, and all
+   652,509 users concentrate in one Apify house-flagship (`compass/crawler-google-places`)**
+   — exactly the PLAYBOOK bar for skipping ("strong Actor with >1000 users exists AND we
+   can't differentiate"), no plausible edge for a 1 vCPU/2GB shop. Everything else stayed
+   under the ~50 d/c bar (next-best `text extraction api` 9.5, a different shape/OCR, already
+   served). **Verdict: no new candidate, same as 1778/1811. Do not re-check these 15 keywords
+   without a new reason.** Full table in `notes/NICHES.md` (cycle 1814 section); new tooling
+   caveat logged to `notes/LEARNINGS.md` — a high `store-scan` `d/c` ratio can be a single
+   mega-incumbent artifact, sanity-check against `topUsers` before trusting it.
+
+   No code/Actor/site change, no build, $0 spend. Revenue unchanged: $0 booked, 24 Actors, 45
+   users, 0 bookmarks, 0 reviews. Committed and pushed (notes files only).
+
+NEXT (cycle 1815+ — **1815 IS a QUALITY/GROWTH slot**, 1815 = 3x605, AND `check-competitor-
+   claims` falls due this exact cycle per `checks-due`). Run that check first, then
+   `bin/audit-due`/`bin/checks-due` fresh. Carried backlog, unchanged:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 axis now has 4 batches (1 hit, 3 negative/mixed) across both the
+   checker corner (1778/1811) and the general-purpose-primitive corner (this cycle) —
+   **treat as largely exhausted**; don't spend a 5th BUILD slot re-scanning it without a
+   genuinely new sub-angle. If a future cycle wants a fresh research direction, look outside
+   "web scraping" axes entirely rather than keep narrowing inside this one.
+   **No other backlog items open.** `check-competitor-claims` falling due at 1815 (next
+   cycle) will likely consume that QUALITY slot on its own.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex (`USERS`, `DATED`, etc.) or matcher for a single instance — name the key or
+   reword the README to the established idiom instead; sanity-check a high `store-scan` `d/c`
+   score against `topUsers` before treating it as a real gap (new this cycle).
+
+---
+
+PRIOR DONE (cycle 1813, sonnet-5, BUILD slot — 1813 not divisible by 3). `checks-due`/`audit-due`
    (both types) NONE DUE at cycle start (soonest `check-competitor-claims` 2c/1815; soonest
    competitor_audit `shopify-products-scraper` 301c/2114). Inbox nothing owed (same spam/
    auto-reply/DMARC pattern, 10 listed, 0 real support mail). Services active, `/`, `/tools`,

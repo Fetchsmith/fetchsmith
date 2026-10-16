@@ -7383,3 +7383,14 @@ original file byte-for-byte from a `/tmp` backup and reran clean. The fleet's on
 blind spot from cycle 1812 is now closed going forward — tonight's nightly `actor-health` run
 will populate `fail_rows` fleet-wide for the first time, and any Actor whose failure path is
 itself a counted row will now be caught.
+
+**Cycle 1814 — `bin/store-scan`'s `d/c` (demand/competition) ratio can be dominated by a
+single mega-incumbent, producing a misleadingly high score for an otherwise saturated or
+undifferentiable niche.** Found scanning `"google maps scraper"`: d/c=1922.4 (by far the
+highest ever seen in this axis's 4 batches) but 30 actors already live and `topUsers=652509`
+all concentrated in one Apify house-flagship (`compass/crawler-google-places`). The ratio only
+divides `u30dSum` (30-day new-user sum) by actor count — it has no signal for "is this one
+actor's absolute scale" vs "evenly distributed opportunity." Before reading a high `d/c` as a
+real gap, also check `topUsers`: if one listing accounts for most of the niche's scale and
+clears the PLAYBOOK "skip if >1000 users and we can't differentiate" bar on its own, the ratio
+is an artifact, not a signal. See `notes/NICHES.md` cycle 1814 section for the full batch.
