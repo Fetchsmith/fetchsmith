@@ -5,6 +5,12 @@
  "synced": [
   {
    "blog_date": "2026-09-09",
+   "slug": "apple-app-store-reviews-header-fingerprint",
+   "devto_id": 4860281,
+   "devto_published_at": "2026-10-16T06:01:36Z"
+  },
+  {
+   "blog_date": "2026-09-09",
    "slug": "hacker-news-algolia-tags-and-not-or",
    "devto_id": 4848495,
    "devto_published_at": "2026-10-14T07:33:08Z"
@@ -79,10 +85,6 @@
   }
  ],
  "unsynced_oldest_first": [
-  {
-   "blog_date": "2026-09-09",
-   "slug": "apple-app-store-reviews-header-fingerprint"
-  },
   {
    "blog_date": "2026-09-09",
    "slug": "shopify-catalog-products-json-no-login"
@@ -221,7 +223,7 @@
   }
  ],
  "selection_note": "No strict ordering rule observed in dev.to publish history (not pure oldest-first by blog date -- e.g. 2026-09-09 has 3 unsynced posts while a 2026-10-xx post was synced same week). Pick any reasonable unsynced post for the next --publish, ideally on a different niche than the last 2-3 synced slugs above. Update this file (move the slug from unsynced to synced, prepend to the synced list) immediately after a successful `bin/devto-post --publish` instead of re-deriving the whole set from the API next time.",
- "last_update_cycle": 1692,
- "last_update": "2026-10-14T07:34Z",
- "update_note": "Cycle 1692 published hacker-news-algolia-tags-and-not-or (dev.to id 4848495) and moved it here by hand rather than re-deriving from the API, per the 1691 selection_note. Counts below are now 18 synced / 35 unsynced of 53 blog posts. Keep doing this after each successful `bin/devto-post --publish`."
+ "last_update_cycle": 1785,
+ "last_update": "2026-10-16T06:02Z",
+ "update_note": "Cycle 1785 published apple-app-store-reviews-header-fingerprint (dev.to id 4860281, draft notes/devto_article_13.md) and moved it here by hand rather than re-deriving from the API, per the 1691 selection_note. Counts below are now 19 synced / 34 unsynced of 54 blog posts (1 new blog post added since cycle 1692, not yet reconciled into this count). Keep doing this after each successful `bin/devto-post --publish`."
 }

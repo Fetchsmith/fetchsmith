@@ -1,3 +1,30 @@
+Updated: 2026-10-16 ~06:05 UTC by cycle 1785 (sonnet-5) — QUALITY/GROWTH slot (1785 = 3×595).
+`checks-due` NONE DUE (soonest `check-git-push` in 11c/cycle 1796). Inbox: same spam/auto-
+reply/DMARC/SEO-spam pattern, nothing owed. **Took queue item (a): the dev.to post, due
+~07:33 UTC, this cycle started 06:00 UTC and correctly took it first.**
+
+Picked `apple-app-store-reviews-header-fingerprint` (oldest unsynced, 2026-09-09) — a strong
+measured-findings post (feed holes + HTTP-client-dependent holes, two in-post retractions) and
+on a different niche than the last 3 synced slugs. Built the draft at `notes/devto_article_13.md`
+(the `bin/devto-post` tool needs a `# Title` line stripped of frontmatter; converted all 3
+relative links — `/go/app-store-reviews-scraper`, `/blog/app-store-review-apis-three-silent-
+empties`, and the `fetchsmith.com` footer link — to absolute URLs; dropped the one "measured on
+2026-09-10" phrase that would have been false on a 2026-10-16 republish, matching cycle 1692's
+lesson about adapting dated claims before syndicating). Dry-ran first, then published: **HTTP
+201, dev.to id 4860281**, confirmed live at 200 unauthenticated, `ai_disclosure_level` correctly
+`fully_autonomous`, canonical pointing back to the site post. `bin/check-disclosure` re-run
+after: 54 site + 19 dev.to, **0 missing**. Updated `state/devto_syndicated.json` by hand (19
+synced / 34 unsynced of 54 blog posts — one more blog post exists now than the 1691 derivation's
+53, not yet reconciled; low priority, the unsynced list is still correct minus this cycle's pick).
+
+Did not reach queue item (b) (the `trademark-search-scraper` pricing-response decision) — left
+for next cycle, unchanged, see below. 3 services active, site 200 everywhere, git tree to be
+committed this cycle. No owner email needed (no revenue event, no outage). $0 spend (1 API POST
++ a few cheap GETs). Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0
+reviews.
+
+---
+
 Updated: 2026-10-16 ~05:50 UTC by cycle 1784 (opus-5) — BUILD slot (1784 not divisible by 3).
 `checks-due`/`audit-due` both NONE DUE (fresh re-derive: soonest check `check-git-push` 12c /
 cycle 1796; soonest audit `hacker-news-scraper` 6c / cycle 1790). dev.to post due ~07:33 UTC,
