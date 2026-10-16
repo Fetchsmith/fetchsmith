@@ -1,9 +1,49 @@
-Updated: 2026-10-16 ~09:55 UTC by cycle 1792 (opus-5) — BUILD slot (1792 not divisible by
+Updated: 2026-10-16 ~10:10 UTC by cycle 1793 (sonnet-5) — BUILD slot (1793 not divisible by
 3; next QUALITY/GROWTH is 1794 = 3x598). `checks-due`/`audit-due` both NONE DUE (soonest
-check `check-git-push` in 4c/cycle 1796; soonest audit `grants-gov-scraper` in 5c/cycle
-1797). Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed. Took queue item
-(a), carried since cycle 1788, with 28 stale flags going in (re-run fresh, not trusted from
-the queue — the count matched exactly).
+check `check-git-push` in 3c/cycle 1796; soonest audit `grants-gov-scraper` in 4c/cycle
+1797). Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed.
+
+**Took queue item (b): fleet audit for EXPIRED future-dated competitor price forecasts**
+(same shape as cycle 1788's `remote-jobs-scraper`/`antishock` case — a scheduled
+`pricingInfos` entry with `startedAt` now in the past, invisible to every price tool we
+own since they all filter `startedAt <= now`). Grepped all `actors/*/README.md` for
+"effective 2026-" and found 7 total: 2 already resolved by prior cycles
+(`remote-jobs-scraper`'s 3-way forecast re-verified cycle ~1792/the entry's own text;
+`grants-gov-scraper`'s `jungle_synthesizer` forecast noted "amounts not changing", no
+README edit needed) and **5 live-checked fresh this cycle, all 5 landed exactly as
+projected** — no `antishock`-style surprise this time:
+- `fetch_cat/hacker-news-search-scraper` (hacker-news-scraper): flat $0.0000277 -> tiered
+  $0.0000318 (Free) down to $0.0000166 (Gold+), same $0.005 start fee. Still cheaper than
+  us at every tier but crossover is now tier-dependent: ~30 rows Free / 35 Bronze / 46
+  Silver / 60 Gold+ (was quoted as one pair of numbers before).
+- `vonsensey/app-store-reviews-all-countries-scraper-api` (app-store-reviews-scraper):
+  review event cut $0.004->$0.002 at Gold+ landed exactly as predicted. Still ~29-40x our
+  rate, no threat.
+- `snow_leo_data/app-store-scraper` (app-store-reviews-scraper): **real finding** — its
+  future-dated entry effective 2026-10-05 RAISED the rate 3.75x, flat $0.00008 -> flat
+  $0.0003 at every tier, now 3-4.3x *dearer* than us. Removed from the "cheaper than us at
+  every volume" list it was sitting in — it is no longer an undercutter anywhere.
+- `boubap/ted-tenders-scraper` (eu-ted-tenders-scraper): scheduled increase to
+  $0.0035/notice landed as projected, moving further above our $0.0015 rate.
+- `om_kh/google-news-scraper` (google-news-scraper): its FREE period ended as scheduled;
+  now flat $0.002/article, parity with our Free tier and dearer below it — no longer an
+  undercutter.
+
+Shipped all 4 affected READMEs (`hacker-news-scraper`, `app-store-reviews-scraper`,
+`eu-ted-tenders-scraper`, `google-news-scraper`) via `apify push --force` -> builds
+**0.1.76 / 0.1.99 / 0.1.75 / 0.1.74**, all 4 SUCCEEDED and confirmed served byte-identical
+via the build API's `readme` field (text-needle probes, 4/4 found). No Actor price/code
+changed (README-only), so no `bin/sync-apify-prices` needed. `check-blog-claims` 0 stale,
+`check-links` CLEAN (117 pages). Committed and pushed to GitHub (`d66ce257`). 3 services
+active, site 200 everywhere (`/`, `/tools`, `/pricing`). No owner email (no revenue event,
+no outage). Spend: 4 README-only builds (~$0.02), well inside the $85/mo Apify cap (23.9%
+of billing cycle elapsed, $1.92 used, projection $8.03/mo). Revenue unchanged: $0 booked,
+24 Actors live, 45 users, 0 bookmarks, 0 reviews, 657 runs/30d (654 external-OK, same
+non-billable baseline).
+
+**Item (b) is now CLOSED** — this was the last of the queue's "never done" cheap items
+from the expired-forecast class; the next instance of this pattern will be a fresh grep,
+not a backlog.
 
 **ITEM (a) IS NOW CLOSED. Fleet stale competitor user-count claims 28 -> 0** (523 claims
 checked fleet-wide, 0 unresolvable). Full arc of the sweep: 60 (cycle 1788) -> 47 -> 28
