@@ -239,9 +239,13 @@ Cheaper than us at every volume, **no start fee** (all verified 2026-10-05):
 `steadyscrape/app-store-reviews-scraper` flat
 **$0.00005/review** (ties `riadh_chebbi` as the cheapest no-fee listing in this niche);
 `peerless_columbine/apple-app-store-reviews-scraper-api` $0.00008 (Free) → $0.00005 (Gold+);
-`axiomworks/review-firehose` $0.00008 → $0.000056 (Gold+); `snow_leo_data/app-store-scraper`
-flat $0.00008 — this one also carries a **future-dated pricing entry effective 2026-10-05 12:00 UTC**,
-so its rate here is today's, not necessarily tomorrow's.
+`axiomworks/review-firehose` $0.00008 → $0.000056 (Gold+).
+
+**`snow_leo_data/app-store-scraper` removed from this list — forecast landed, re-verified live
+2026-10-16: its scheduled 2026-10-05 12:00 UTC pricing entry is now in effect, and it raised the
+rate from flat $0.00008 to flat $0.0003 at every tier, 3-4.3x *dearer* than us (our range is
+$0.0001 Free down to $0.00007 Gold+). It is no longer an undercutter anywhere; the standing lesson
+holds — a future-dated entry is a risk to re-check, not a price to carry forward unverified.**
 
 Cheaper per review with an Actor-start fee, so the crossover volume is what matters (ours has no
 start fee; the figure is the run size above which the rival wins; all rates verified 2026-10-05):
@@ -340,10 +344,11 @@ figure compared:
   Bronze** (it ties our per-review rate there, so the $0.01 fee leaves it strictly dearer at every
   volume). A conditional undercut for high-volume Gold+ buyers only, not an across-the-board one.
 
-The only **future-dated** price change anywhere in the 122-listing tail is
+The only **future-dated** price change anywhere in the 122-listing tail was
 `vonsensey/app-store-reviews-all-countries-scraper-api`, cutting its review event $0.004 → $0.002
-(Gold+) effective 2026-10-09 — still 20-40x our rate, so it is not an undercutter before or after
-that date. Of the rest of the tail, **15 listings tie our $0.0001 exactly at every tier**, two are
+(Gold+) effective 2026-10-09. **Forecast landed, re-verified live 2026-10-16: the cut is in effect
+exactly as projected** ($0.002 Gold/Platinum/Diamond, $0.004 Free) — still 29-40x our rate, so it
+was not an undercutter before or after that date. Of the rest of the tail, **15 listings tie our $0.0001 exactly at every tier**, two are
 one-time/report-fee products with no per-review rate at all
 (`second_coming/app-store-review-analyzer` $0.02 per scan run,
 `muhammadafzal/apple-app-store-review-intelligence` $0.016-$0.02 per report plus a $0.005-$0.00625
@@ -371,8 +376,8 @@ be read against the timestamp on its own block. No listing anywhere in the 117 c
 future-dated price change this time, none is on Apify's FREE model, and none is a pure
 per-run-fee product with no per-review rate at all. (The one future-dated cut named above,
 `vonsensey/app-store-reviews-all-countries-scraper-api` $0.004 → $0.002 effective 2026-10-09, is a
-*named* listing and so sits outside this unnamed-cohort sweep; it is still pending as of today and
-remains 20x our rate after it lands.)
+*named* listing and so sits outside this unnamed-cohort sweep; re-verified live 2026-10-16, it has
+landed exactly as projected and remains ~29x our Gold+ rate.)
 
 **Fourth full-tail resweep, verified live 2026-10-09 ~03:00 UTC (cycle 1443), pulled forward
 out of strict rotation order specifically to close the retraction above.** Same method again:
