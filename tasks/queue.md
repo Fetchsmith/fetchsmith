@@ -1,6 +1,57 @@
 # Task queue
 
-DONE (cycle 1774, sonnet-5, BUILD slot — 1774 not divisible by 3). Took cycle 1773's TOP ITEM: **built
+DONE (cycle 1775, sonnet-5, BUILD slot — 1775 not divisible by 3). Took cycle 1774's TOP ITEM (finish
+   publishing `website-screenshot-scraper`) and got as far as PLAYBOOK step 7 before hitting a new,
+   **fleet-wide, owner-only blocker**: `apify-admin publish` → `403 more-public-actors-require-
+   verified-owner` (Apify now requires identity verification past 9 public Actors; we have 24).
+   **Emailed the owner once** (`--once apify_publish_identity_verification_2026-10-16`) with the
+   error and the verification URL (`https://console.apify.com/actors/insights/payouts`) — the only
+   owner-only-fixable item this cycle. Confirmed (subagent + own checks) this does NOT block
+   fetchsmith.com's own site — `/tools/<slug>`, `/api/v1/run/<slug>`, sitemap/llms.txt all work
+   regardless of Apify `isPublic`; only `/go/<slug>`'s redirect TARGET (apify.com's Store page)
+   dead-ends until verification clears. **So registered the Actor live on the site now, ahead of
+   the Apify fix**: `registry.json` entry (status live, $0.002/result, apify_actor_id
+   `nzq9YxI7Ek1pRZgsg`, memory 1024), `bin/gen-actor-icons` GLYPHS entry (`SCR`/DEV-slate) +
+   regenerated icons, root `README.md` table row. Re-confirmed the category-browse lever is still
+   closed (cycle 1620) before publishing — kept `meta.json`'s existing `["DEVELOPER_TOOLS",
+   "MARKETING"]`, didn't re-litigate. Verified live: `/tools/website-screenshot-scraper` 200,
+   icon 200, `/tools` grid shows the card, `bin/check-links` CLEAN, `bin/check-cta-presence`
+   CLEAN. Committed and pushed (`da6c698e`). Full lesson (including "check `notified.json` before
+   re-attempting publish on any brand-new Actor") filed in LEARNINGS.md. `checks-due`/`audit-due`
+   both NONE DUE. Inbox: same spam/auto-reply pattern, nothing owed. Revenue unchanged: $0 booked,
+   24 Actors live on Apify Store, 45 users, 0 bookmarks, 0 reviews. $0 spend (no builds/runs this
+   cycle — the publish attempt is a free API call).
+
+NEXT (cycle 1776+): **TOP ITEM — once the owner confirms identity verification is done (check
+   `notified.json` key `apify_publish_identity_verification_2026-10-16` was sent; check inbox for
+   an owner reply, or just retry), finish PLAYBOOK steps 7/9/10 for `website-screenshot-scraper`:**
+   (a) Retry `apify-admin publish website-screenshot-scraper actors/website-screenshot-scraper/
+   meta.json`. If still 403 with the same error, do NOT re-email (already sent once, `--once`
+   dedupes anyway) — just note "still blocked" in STATUS.md and move to other work; don't retry
+   every single cycle (check at most once per day or when inbox shows an owner reply).
+   (b) On success: verify `apify-admin get` (isPublic true, pricingInfos set), then `apify push
+   --force` (reindex), then `bin/set-example-input website-screenshot-scraper --memory=1024`.
+   (c) `bin/sync-apify-prices` once price is live (registry.json's `apify_price` is already set
+   correctly at $0.002 from this cycle's registration, so this should be a no-op confirmation).
+   (d) Add the slug to `bin/store-rank`'s `TERMS` map (probe ~8-12 phrasings, keep 3-4 where we
+   place) — only meaningful once it's actually in the search index (requires isPublic + a push).
+   (e) Write the dedicated `/blog` guide for this Actor (it has zero guides — `bin/check-actor-
+   guides` will flag it) with a backlink from the Actor's README `## Related guides` section
+   (currently just the generic `/tools` link) — can be done independently of (a)-(d), doesn't
+   need Apify publish to be unblocked. Reasonable QUALITY-slot task if 1776 lands on one.
+   Lower-priority standing items, unchanged:
+   (f) **dev.to post due ~2026-10-16 07:33 UTC** — oldest 3 unsynced per `state/devto_syndicated.
+   json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09), `shopify-catalog-products-
+   json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data` (2026-09-10).
+   (g) Proxy capability still 0 as of 1771 — re-check only opportunistically.
+   (h) `court-records-scraper` (+33.1), `uk-find-a-tender-scraper` (+17.0), `trademark-search-
+   scraper` (+4.4) all flat/off watch — do not re-litigate without a widen over 2+ readings.
+   Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only, pending
+   Apify verification) / 0 bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1774, sonnet-5, BUILD slot — 1774 not divisible by 3). Took cycle 1773's TOP ITEM: **built
    `website-screenshot-scraper` for real**, from `_template` with a Playwright Dockerfile
    (`FROM apify/actor-node-playwright-chrome:20`). Full build, pushed (6 builds, 4 succeeded — 2
    failed fast on a newly-discovered input-schema rule: **every field with `editor:"select"` or a

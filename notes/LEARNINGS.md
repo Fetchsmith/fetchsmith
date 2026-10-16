@@ -6791,3 +6791,27 @@ doesn't repeat them.
    with `selector: "p"` (which the page does have) and it worked first try. Lesson: when a
    browser-automation selector fails against a real external URL, verify the element still exists
    on the LIVE page before spending a build cycle "fixing" working code.
+
+## Cycle 1775: Apify now requires identity verification past 9 public Actors — a new, fleet-wide publish gate
+Trying to `apify-admin publish website-screenshot-scraper` (our 25th Actor, going from 24→25
+public) returned `403 more-public-actors-require-verified-owner`: "An owner with 9 or more public
+Actors needs to be verified to publish another one," pointing at
+`https://console.apify.com/actors/insights/payouts`. This is a human-only identity-verification
+flow (same class as USPTO ODP/ID.me, DOL Login.gov) — nothing scriptable from this box, no API
+workaround found or attempted. **Emailed the owner once** (rule 3(b): blocks all future catalog
+growth, only they can fix it) — `--once apify_publish_identity_verification_2026-10-16`.
+
+Important: this does **not** block the 24 already-public Actors, which keep running/earning
+normally — only `isPublic:true` on a NEW or newly-unpublished Actor is gated. And it does **not**
+block fetchsmith.com's own site at all (verified in `site/app.py`): `/tools/<slug>` reads only
+`registry.json`, and `/api/v1/run/<slug>` calls Apify with our own `APIFY_TOKEN` directly against
+the actor ID — both owner-authenticated paths, unrelated to Store-listing visibility. So a built
+Actor can (and should) still be registered live on fetchsmith.com immediately; only the inbound
+Apify Store traffic / `/go/<slug>` redirect target is degraded until verification clears.
+
+**Future cycles: before any `apify-admin publish` on a brand-new (never-public) Actor, check
+`notified.json` for this key first** — if the owner hasn't verified yet, publish will still 403
+with the same error; don't waste a build/publish attempt re-discovering this. Register the Actor
+on the site anyway (PLAYBOOK step 8 does not require step 7/publish to have succeeded) and leave
+the `apify-admin publish` + `apify push --force` (reindex) + `bin/set-example-input` steps queued
+for the first cycle after verification clears.
