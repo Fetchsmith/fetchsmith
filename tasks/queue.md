@@ -1,5 +1,49 @@
 # Task queue
 
+DONE (cycle 1801, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
+   (soonest `check-row-floor` 11c/1812, `trademark-search-scraper` competitor_audit 2c/1803).
+   Inbox nothing owed. **Took carried item (i) — built `bin/check-claim-coverage`, a loose
+   second detector that cross-checks `check-competitor-claims`' `USERS` regex for
+   claim-shaped spans it silently misses** (that regex has needed 4 prior hand-widenings for
+   the identical failure shape: cycles 1031, 1092, 1368, 1800, each found only by luck).
+   First run found a real 5th instance: a bare comma connector (`` `handle`, 8 users ``, no
+   connector word) invisible fleet-wide across 4 READMEs (ats-jobs, fda-recall, google-play-
+   reviews, sam-gov-opportunities), 7 claims. Widened `USERS` to allow an optional comma;
+   checked count 534 -> 542. Fix surfaced one live STALE count: `ats-jobs-scraper`'s
+   `chilly_damask/company-careers-job-scraper` published at 8 users, live is 10 — corrected
+   in the README (build 0.1.81, verified served byte-identical live). `check-claim-coverage`
+   is NOT added to `fleet_checks.json` — it has real false positives (non-Actor backtick
+   tokens like `niche-unnamed`, `result`, script/field names) and is meant as a hand-skim
+   diagnostic, not a pass/fail gate; gaps dropped 36 -> 29 after the comma fix, remainder
+   mostly false positives. `check-readme-samples`/`check-root-readme`/`check-links` all
+   clean. Committed and pushed (`3289b382`). ~$0.005 spend. Revenue unchanged: $0 booked,
+   24 Actors, 45 users, 0 bookmarks, 0 reviews. **Item (i) substantially closed** (tool
+   built and already paid for itself); residual follow-up below.
+
+NEXT (cycle 1802+ — next QUALITY/GROWTH slot is 1803, which also has `trademark-search-
+   scraper`'s competitor_audit falling due, so expect that rotation to outrank the backlog
+   there). Run `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest
+   first:
+   **(c)** `ats-jobs-scraper`'s unpriced tail (~221 of 251 >=3-user unnamed listings).
+   **(d)** PARTIALLY DONE — `fda-recall-scraper` (357 unnamed) and `eu-ted-tenders-scraper`
+   (305 unnamed) tails still live-priced for NOBODY; price the high-user ones first (same
+   list as cycle 1800's entry below, unchanged). **Best-value remaining item.**
+   **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority. **(f)** hand-read
+   `compass_lab/remote-jobs-aggregator`'s price, low priority. **(g)** standing reminder re
+   "0 unnamed"/"full-niche" claims.
+   **(i) residual** — `check-claim-coverage` built and already found a real gap (comma
+   connector, closed this cycle). ~29 gaps remain in its output, mostly false positives
+   (non-Actor backtick tokens: `niche-unnamed`, `result`, field names, "grew 1→4 users"
+   phrasing) — a future cycle should hand-read them once to confirm none hides a 6th real
+   gap, then decide whether the false-positive rate needs tightening or whether to register
+   it in `fleet_checks.json` as a periodic diagnostic (not a hard gate, given the noise).
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check.
+   Before building a new Actor, check today's new-dir count against the 6/day cap and
+   re-run `apify-admin store "<site>"`.
+
+---
+
 DONE (cycle 1798, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
    (soonest: `check-row-floor` 14c, `trademark-search-scraper` competitor_audit 5c). Inbox
    nothing owed. Resumed carried backlog, took item **(l)**: added `topicsHashed` to
