@@ -7088,3 +7088,43 @@ last 30 days)` and `(8 users, up from 4)`. Dropping only the total and leaving "
 no more trustworthy than the number it was attached to — a 30-day-new count or a prior-sweep
 comparison is derived from the same churning `totalUsers`/run-history feed, at least as
 volatile as the total itself. Drop the whole parenthetical, not just the flagged number.
+
+## Cycle 1792 — closing the fleet-wide stale competitor-count cleanup (28 -> 0)
+Finished the sweep carried since cycle 1788 (60 -> 47 -> 28 -> **0 stale**, 523 claims
+checked across the fleet). 24 claims fixed this cycle across 13 Actors. The cycle-1788
+treatment rule and the cycle-1791 wrinkles held without modification on all but two
+claims; both exceptions are worth reusing, because both are cases where the mechanical
+"sub-20 -> drop the count" rule would have *published a worse claim than it removed*:
+
+1. **Dropping a sub-20 count can orphan a dormancy read that the count was the only
+   evidence for.** `jungle_synthesizer/bold-org-scholarship-database-scraper` read
+   "(3 users, dormant — 0 new users in 30 days)" and had gone 3 -> 4 live. The count drops
+   per the rule, but "0 new users in 30 days" is now probably false (it gained one) and
+   "dormant" rests entirely on that figure — so dropping only the count leaves an
+   unsupported, likely-wrong claim standing. **Drop the whole parenthetical when the
+   attached qualifier is an inference FROM the number being dropped.** Check first that
+   the sentence survives: here the price argument (2.9x our per-row rate before a $0.10
+   start fee) carries the dismissal on its own, so nothing was lost.
+2. **Do not drop a count that is the grammatical SUBJECT of an explicitly dated clause.**
+   `sutraflow/sec-insider-trading-signals` read "(1 user as of 2026-10-09, down from 3)"
+   inside "Only X cleared the usual >=3-user floor at the time of that sweep". Dropping the
+   number destroys a dated historical argument, which the standing "leave dated paragraphs
+   standing" principle protects. Refreshed + re-dated to "(2 users as of 2026-10-16, down
+   from 3)" instead — still under the >=3 floor, which is the point the sentence makes.
+   Generalization: the sub-20 drop rule assumes the count is *decoration* on a price/feature
+   claim. When the count is the claim, refresh and date it regardless of size.
+
+Re-confirmed from 1791 and worth keeping: judge the >=20/sub-20 split by the **live** value,
+not the published one (`x.com/google-playstore-review-scraper` was published at 20 and had
+crossed to 23); drop an attached "N in the last 30 days"/"N new" figure alongside a *dropped*
+count, but leave it verbatim beside a *refreshed* one (it keeps its denominator).
+
+Mechanics that made a 13-Actor edit safe in one cycle: one script per batch, dict of
+`path -> [(old, new)]`, **stage every file in memory and abort before writing anything if
+any anchor is non-unique or missing**. Both batches applied clean on the first run.
+Scripts kept as a record: `bin/_refresh_claims_gprs2.py` (14 claims / 3 Actors),
+`bin/_refresh_claims_tail1792.py` (10 claims / 10 Actors).
+
+Cost note: 13 `apify push --force` builds in one cycle ~= $0.06 at the measured ~$0.0048
+each. Acceptable for a close-out, but this is the cycle shape to watch — README-only fixes
+batched per-Actor are cheap individually and add up fleet-wide.

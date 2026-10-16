@@ -106,11 +106,11 @@ $0.00007 (Gold and up). App lookups, empty pages and errors are free. HTTP-only 
 
 **Where this sits in the market. Input schema and pricing verified live 2026-10-02** against each
 Actor's latest build, not against its Store description. The two busiest App Store review scrapers
-on the Store, `thewolves/appstore-reviews-scraper` (2,370 users) and `theagents/appstore-reviews`
+on the Store, `thewolves/appstore-reviews-scraper` (2,688 users, re-verified live 2026-10-16) and `theagents/appstore-reviews`
 (818 users), both charge a flat **$0.0001/review with no start fee** — the exact same price and
 shape we use, so we're at parity with the traction leaders rather than undercutting or
 overcharging. Everyone else charges meaningfully more once every fee is counted:
-`johnvc/apple-app-store-reviews-api` (479 users) is $0.00125–$0.00144/review tiered **plus** a
+`johnvc/apple-app-store-reviews-api` (550 users, re-verified live 2026-10-16) is $0.00125–$0.00144/review tiered **plus** a
 $0.0175 one-time setup fee, a $0.00005 Actor-start fee and $0.00001 per dataset row;
 `easyapi/app-store-reviews-scraper` (545 users) is $0.00299/review plus a **$0.09** Actor-start fee
 (900x our whole per-review price, charged before a single review is scraped);
@@ -197,7 +197,7 @@ below roughly 50-100 reviews/run on Bronze/Silver and below roughly 34 reviews/r
 cheaper above those volumes since its per-review rate undercuts ours from Bronze up. One more
 listing ties our exact rate rather than beating it: `scrapersdelight/appstore-reviews-scraper`
 charges flat $0.0001/review with no start fee, a fourth parity listing alongside
-`thewolves`/`theagents`/`scriptbase`/`freshactors`. `bikram07/app-store-reviews` (5 users) is
+`thewolves`/`theagents`/`scriptbase`/`freshactors`. `bikram07/app-store-reviews` is
 listed `FREE` (Apify's free-pricing-model flag, not a $0/review PPE rate) but has had zero runs in
 the last 30 days, so it is read as dormant rather than an active price threat. Six more unnamed
 listings read at 3+ users in this sweep were ruled out as different-shape, not App-Store-review
@@ -460,7 +460,7 @@ Cheaper than us at **every** account plan with **no start fee** (strictly cheape
   substitute on features as well as price. The cheapest unconditional rate in this niche to date.
 - `workstream/app-store-reviews-scraper` (2 users) — flat **$0.00008/review**, no fee, one price on
   every plan: a straight **20% under us at every volume**.
-- `hiver/app-reviews-scraper` (0 users) — **$0.00009 (Free/Bronze) → $0.00008 (Gold+)**, no fee:
+- `hiver/app-reviews-scraper` — **$0.00009 (Free/Bronze) → $0.00008 (Gold+)**, no fee:
   10–20% under us. Bundles Google Play, but prices the App Store review row per review, so unlike
   the per-*app* listings excluded above it is a genuine substitute.
 - `almmity/app-store-reviews-official-feed` (2 users) — **$0.00009/row**, no fee (10% under us), but
