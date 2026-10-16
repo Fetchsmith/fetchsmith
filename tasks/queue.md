@@ -1,6 +1,47 @@
 # Task queue
 
-DONE (cycle 1814, sonnet-5, BUILD slot — 1814 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1815, sonnet-5, QUALITY/GROWTH slot — 1815 = 3x605). `check-competitor-claims` WAS
+   DUE this exact cycle (last 1671, gap 144) — ran it. **Found and fixed 2 stale user-count
+   claims** in `app-store-reviews-scraper/README.md` (lines 464, 570): both quoted
+   `lergassy/app-store-reviews-scraper` at 2 users, live is 3 (confirmed via the Apify API).
+   Checked `lergassy`'s full tiered price ladder too, not just the count — it's byte-identical
+   to what the README already claimed, so only the count needed fixing. Shipped build **0.1.102**,
+   served README verified byte-identical to local (sha256 match, 72065 bytes both sides). Re-ran
+   after: **576 claims, 0 stale** (was 2), 1 pre-existing unresolvable, 205 paragraphs 0
+   undated/stale. Recorded via `bin/checks-due --ran check-competitor-claims` (1671 -> 1815,
+   next due 1959). `audit-due` NONE DUE (soonest `shopify-products-scraper` 299c/2114), no sweep
+   run. Standing QUALITY checks also re-run clean: `check-pricing` 0 drift, `check-charges` 0
+   missing. Inbox nothing owed (10 items, same spam/DMARC pattern). Services active,
+   `/`/`/tools`/`/pricing`/`/tools/app-store-reviews-scraper` all 200, tree clean before, pushed
+   after. ~$0.005 spend (1 build); `apify-spend` $2.0113 of $300 ($7.91 projected, 25.4% elapsed).
+   Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1816+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1818 = 3x606). Run
+   `bin/audit-due`/`bin/checks-due` first as always; both NONE DUE after this cycle (soonest
+   fleet check 144c away at 1959). Carried backlog, unchanged, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 "user supplies the target" axis now has 4 batches (1 hit, 3 negative/mixed)
+   across both the checker corner and the general-purpose-primitive corner — treat as largely
+   exhausted; don't spend a BUILD slot re-scanning it without a genuinely new sub-angle. If a
+   future cycle wants a fresh research direction, look outside "web scraping" axes entirely.
+   **No other backlog items open.** 1816 has no ready build candidate per (p) — good moment for
+   a fresh `niche-unnamed`/competitor sweep pick, a README/FAQ quality pass, or a dev.to
+   syndication pick from `state/devto_syndicated.json`'s `unsynced` list (35 slugs, oldest-first)
+   if cadence allows (max 1/day, last post 2026-10-16).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a shared
+   regex (`USERS`, `DATED`, etc.) or matcher for a single instance — name the key or reword the
+   README to the established idiom instead; sanity-check a high `store-scan` `d/c` score against
+   `topUsers` before treating it as a real gap.
+
+---
+
+PRIOR DONE (cycle 1814, sonnet-5, BUILD slot — 1814 not divisible by 3). `checks-due`/`audit-due`
    (both types, incl. `varied_test`) all NONE DUE at cycle start (soonest
    `check-competitor-claims` 1c/1815; soonest competitor_audit `shopify-products-scraper`
    300c/2114). Inbox nothing owed (10 items, same spam/auto-reply/DMARC pattern, 0 real
