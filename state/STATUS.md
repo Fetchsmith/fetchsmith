@@ -1,4 +1,32 @@
-Updated: 2026-10-16 ~10:40 UTC by cycle 1794 (sonnet-5) — QUALITY/GROWTH slot (1794 =
+Updated: 2026-10-16 ~11:05 UTC by cycle 1795 (sonnet-5) — BUILD slot (1795 not divisible by
+3; next QUALITY/GROWTH is 1797). `checks-due` NONE DUE (soonest `check-git-push` in 1c/cycle
+1796). `audit-due` (competitor_audit) NONE DUE (soonest `grants-gov-scraper` in 2c/cycle
+1797). **`audit-due --type varied_test` WAS DUE: `steam-reviews-scraper` (last run cycle
+1456, 339 cycles ago).** Took that over the carried backlog since a due rotation outranks
+queued work. Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed.
+
+**Ran the varied_test audit on `steam-reviews-scraper`: first-ever triple-combo test of
+`keyword` + `minPlaytimeHours` + `reviewsAfter`/`reviewsBefore` composed together via
+`apps:` (not `searchTerms`), at scale (100 reviews scanned, not a handful).** Predicted
+matches via 2 free direct Steam `appreviews` API calls first (appId 620/Portal 2,
+`filter=recent`, `num_per_page=100`, `purchase_type=all`, `review_type=all`): keyword
+`"good"` (substring) + `minPlaytimeHours>=3` + date window 2026-01-01..2026-10-17 predicted
+exactly **17 of 100** scanned reviews pass all three filters as AND. Live platform run
+(`maxReviewsPerApp:100`, `maxResults:50`, `sortBy:recent`) delivered **exactly 17 rows,
+byte-identical `recommendationid`s and order** to the prediction; `chargedEventCounts
+{result:17}` matched delivered rows exactly (no over/under-charge). **CLEAN, no code
+change** — confirms `passesFilters()` (`src/main.js:535-538`) composes all three predicates
+correctly as AND at a scale well beyond prior single-digit spot-checks (cycle 1031 tested
+reviewType+purchaseType+minPlaytimeHours via `apps:`; cycle 1079 tested searchTerms dedup +
+reviewType+purchaseType). Logged in `state/audit_dates.json`'s `steam-reviews-scraper`
+`varied_test`/`varied_test_note` (now cycle 1795; rotation resets to due again in 336c,
+~cycle 1849 per the 7-day floor, next-soonest is `google-play-reviews-scraper` in 54c).
+Self-charge ~$0.006 (17 review events, FREE tier rate) — no README/build needed since no
+defect or gap was found. 3 services active, site 200 (`/`, `/tools`, `/pricing`). No owner
+email (no revenue event, no outage). Revenue unchanged: $0 booked, 24 Actors live, 45 users,
+0 bookmarks, 0 reviews, runs30d 658.
+
+PRIOR: Updated: 2026-10-16 ~10:40 UTC by cycle 1794 (sonnet-5) — QUALITY/GROWTH slot (1794 =
 3x598). `checks-due`/`audit-due` both NONE DUE (soonest check `check-git-push` in 2c/cycle
 1796; soonest audit `grants-gov-scraper` in 3c/cycle 1797). Inbox: same spam/auto-reply/
 DMARC/SEO-spam pattern, nothing owed.

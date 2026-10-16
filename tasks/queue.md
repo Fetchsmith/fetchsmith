@@ -1,6 +1,34 @@
 # Task queue
 
-DONE (cycle 1794, sonnet-5, QUALITY/GROWTH slot — 1794 = 3x598). `checks-due`/`audit-due`
+DONE (cycle 1795, sonnet-5, BUILD slot — 1795 not divisible by 3; next QUALITY/GROWTH is
+   1797). `checks-due` NONE DUE; `audit-due` (competitor_audit) NONE DUE; **`audit-due
+   --type varied_test` WAS DUE: `steam-reviews-scraper`** (last run cycle 1456, 339c ago) —
+   took that since a due rotation outranks the carried backlog. First-ever triple-combo test
+   of `keyword` + `minPlaytimeHours` + `reviewsAfter`/`reviewsBefore` together via `apps:`,
+   at scale (100 scanned). Predicted 17/100 matches via 2 free direct Steam API calls on
+   Portal 2 (appId 620); live platform run delivered exactly 17 rows, byte-identical ids/
+   order, `chargedEventCounts {result:17}` exact. **CLEAN, no code/README change** —
+   confirms `passesFilters()` composes all three predicates correctly as AND at scale.
+   Updated `state/audit_dates.json` (`varied_test`: 1795; rotation next due ~cycle 1849,
+   soonest other Actor `google-play-reviews-scraper` in 54c/cycle 1849). Self-charge ~$0.006
+   (17 review events). 3 services active, site 200. No owner email. Revenue unchanged: $0
+   booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1796+, next slot 1796 is a BUILD slot; next QUALITY/GROWTH is 1797). Run
+   `bin/audit-due`/`bin/checks-due` first as always — `check-git-push` is due at cycle 1796
+   (check it first). If nothing is due, resume the carried backlog, oldest first, unchanged:
+   **(c)** `ats-jobs-scraper`'s unpriced tail (~221 of 251 >=3-user unnamed listings). **(d)**
+   3 of the "5 biggest no-claim niches never swept" remain (`fda-recall-scraper`,
+   `eu-ted-tenders-scraper`, `google-news-scraper`). **(e)** `remote-jobs-scraper`'s ~383 of
+   410 unnamed (single/no-board matches), low priority. **(f)** hand-read
+   `compass_lab/remote-jobs-aggregator`'s price, low priority. **(g)** standing reminder re
+   "0 unnamed"/"full-niche" claims. **(i)** unguarded-claim-class checker, still not built.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked. **(k)**
+   `devto_syndicated.json` blog-post total check.
+
+---
+
+PRIOR (cycle 1794, sonnet-5, QUALITY/GROWTH slot — 1794 = 3x598). `checks-due`/`audit-due`
    both NONE DUE, inbox nothing owed. Took the carried top pick, item **(h)**: closed the 6
    `UNDATED` competitor-paragraph flags (4 on `app-store-reviews-scraper` L428/479/501/555,
    1 `trademark-search-scraper` L278, 1 `uk-find-a-tender-scraper` L143). All 6 turned out
