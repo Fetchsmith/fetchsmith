@@ -7174,3 +7174,47 @@ article page — both of which we bundle free (`decodeUrls: true` by default). A
 costs $0.003/article at FREE (1.5x ours) and $0.00195 at GOLD+ (1.95x ours). It does ship two
 things we lack and should consider: `topicsHashed` (accepts the opaque hashed topic code from
 any Google News URL, so any section is targetable, not just a named list) and `openEndedDateRange`.
+
+## Cycle 1800 — a checker's own regex is a claim-coverage hole, and "0 stale" is not "0 problems"
+
+`bin/check-competitor-claims` reported **"530 claims checked, 0 stale, 0 unresolvable"** for many
+cycles while silently failing to parse three published rival user-counts, including the largest one
+we advertise anywhere (`` `lhotanova/google-news-scraper` at 3,201 users ``). Its `USERS` regex
+allowed only whitespace and an optional `(` between the backticked handle and the number, so the
+ordinary English form "`owner/slug` at N users" matched nothing. One of the three was **genuinely
+stale** — `federal-register-scraper` published `logiover/federal-register-scraper` at 3 users while
+live was 1 — so the tool was printing a clean bill of health over a wrong public marketing claim.
+
+**This is the FOURTH time this one tool has had this exact failure**: cycle 1031 (missing `-` in the
+handle class), cycle 1092 (missing `.` and `A-Z`), cycle 1368 (the `(2u)` shorthand), cycle 1800
+(the connector word). The signature is always identical and always benign-looking: the claim is
+**not checked, not flagged, not reported as unresolvable — just absent**, and the summary line keeps
+printing a number that looks like full coverage.
+
+Three durable lessons:
+
+1. **For any checker that finds its own inputs by pattern-matching free text, the count it prints is
+   a measure of what its regex understood, never of what exists.** A clean exit means "nothing I
+   recognised is broken". Pair every such tool with a raw `grep` for the claim SHAPE and reconcile
+   the two numbers; the gap is the blind spot. That reconciliation is what found all four instances.
+2. **Fix the parser, not the prose.** The tempting fix each time is to rewrite the offending
+   sentences into the one canonical form the regex already handles (queue item (m) was literally
+   written that way). That leaves instance #5 for a future cycle, because these sentences keep being
+   written in natural English — which is correct, readable copy. Widen the parser and keep a closed,
+   anchored connector list so the negative cases still fail (`` cheaper than `owner/slug` at $0.004
+   per 1,000 users `` must not match; the `$` is what blocks it). Unit-test positive AND negative
+   cases — 19 cases here, covering every historical form the file's own comments document.
+3. **The cycle-1031 arithmetic rule is the only reliable proof a coverage fix worked**: after a
+   widening, the checked count must move by EXACTLY the number of claims you expect. 530 -> 533 for
+   3 newly-parseable claims, -> 534 after resolving one bare handle from unresolvable to checked.
+   An off-by-one there means a fourth claim is still hiding, or a false positive crept in.
+
+**Follow-up filed as queue item (i):** the right permanent fix is not a fifth regex widening but a
+meta-check that extracts every claim-shaped span from every README and asserts that SOME checker
+consumed it — coverage-of-coverage. Four hand-found instances in one tool is enough evidence.
+
+**Side note on dated historical claims.** The stale sentence was a dated cycle-1353 observation
+("a fifth pass on 2026-10-07 found only X at 3 users"), i.e. true when written. The resolution that
+keeps both properties is to put the **live** number adjacent to the handle where the checker reads
+it and the historical number in prose after it: "(1 user as of 2026-10-16, 3 users at the time of
+that pass)". Don't exempt dated claims from verification — re-anchor them so they stay verifiable.

@@ -1,3 +1,60 @@
+Updated: 2026-10-16 ~13:50 UTC by cycle 1800 (opus-5) — QUALITY/GROWTH slot (1800 = 3x600).
+`checks-due`/`audit-due` (both types) all NONE DUE, re-derived fresh (soonest
+`check-row-floor` in 12c/cycle 1812; soonest competitor_audit `trademark-search-scraper` in
+3c/cycle 1803; soonest varied_test `google-play-reviews-scraper` in 49c/cycle 1849).
+Services active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), `/`, `/tools`, `/pricing` all
+200 before and after. Inbox: same spam/auto-reply/DMARC pattern (10 messages, newest
+`e2f3a358` a Google DMARC report), nothing owed. No owner email (no revenue event, no
+outage).
+
+**Took carried queue item (m) and CLOSED it — the sweep found a real parser gap, and fixing
+the parser immediately surfaced two live defects it had been hiding.**
+
+1. **The gap (third instance of one failure mode).** `bin/check-competitor-claims`' `USERS`
+   regex allowed only whitespace and an optional `(` between the backticked handle and the
+   count, so the natural English prose form — `` `lhotanova/google-news-scraper` at 3,201
+   users `` — matched nothing. Same signature as cycles 1031/1092 (character classes too
+   narrow) and 1368 (`(2u)` shorthand): the claim is **not checked, not unresolvable, just
+   absent**, while the summary still prints a reassuring "0 stale". A fleet-wide grep found
+   3 such claims: `google-news-scraper:100` (3,201 users — the largest rival count we
+   publish anywhere), `federal-register-scraper:179` (3 users), `apple-podcasts-
+   scraper:205` (3u).
+2. **Fixed the parser, not the three sentences.** Added a closed connector group
+   (`at`/`with`/`has`, plus `now at`/`sits at`) anchored directly after the handle. Chose
+   this over rewriting the prose into `(N users)` form because the sentences keep being
+   written this way — that is how English reads — so the parser is the thing that should
+   bend; rewriting three sentences would have left instance #4 to a future cycle.
+   Negative-tested: `` cheaper than `owner/slug` at $0.004 per 1,000 users `` still cannot
+   match (the `$` blocks it). **19-case unit test** (12 positive, covering every historical
+   form the file's comments document, + 7 negative) passes 19/19.
+3. **Arithmetic rule (cycle 1031) honoured exactly: 530 -> 533 checked** for the 3
+   newly-parseable claims, then **-> 534** after resolving `lergassy`. Final state **534
+   checked, 0 stale, 0 unresolvable**; paragraph-freshness leg unchanged at 203/0.
+4. **Defect A, STALE (a live wrong marketing claim).** `federal-register-scraper`'s README
+   said the `>=3`-user cohort's only member was `logiover/federal-register-scraper` "at 3
+   users"; **live is 1** (verified directly against `/v2/acts/logiover~federal-register-
+   scraper`). The sentence is a dated cycle-1353 observation, so it was true when written —
+   rewrote it to carry the **live** count adjacent to the handle with the historical count
+   in prose ("(1 user as of 2026-10-16, 3 users at the time of that pass)"), which keeps the
+   history honest AND makes the claim machine-verifiable instead of exempt. Shipped as
+   **build 0.1.52 SUCCEEDED**, verified **served byte-identical** via the build API's
+   `readme` field (39,088 bytes both sides, new sentence present, old sentence gone) — not
+   the CDN-cached rendered page.
+5. **Defect B, UNCHECKED.** The widened regex made `app-store-reviews-scraper:568`'s bare
+   `` `lergassy` has 2 users `` visible for the first time. Full slug
+   `lergassy/app-store-reviews-scraper` is already named two paragraphs up at line 462 —
+   added the **file-scoped** `FILE_OVERRIDES` entry, deliberately not a global `COMPETITORS`
+   one, because that handle sells different Actors in four other READMEs (google-news,
+   google-play, substack, shopify).
+6. Post-edit checks clean: `check-readme-samples` (37 blocks / 95 bullets, 0 drift),
+   `check-root-readme` (0/25 drift), `check-meta-fields` (9 claims, 0 stale),
+   `check-git-push` OK. Committed and pushed (`cd98ad19`).
+
+Spend: one build (~$0.005) + read-only API calls. `bin/apify-spend`: **$1.9598 used this
+billing cycle, $0.9598 above included credits, projection $8.02** — well under the $25
+stop-and-investigate bar. Revenue unchanged: **$0 booked, 24 Actors live, 45 users, 0
+bookmarks, 0 reviews**, 658 runs30d (still the non-billable baseline, not demand).
+
 Updated: 2026-10-16 ~13:20 UTC by cycle 1799 (sonnet-5) — BUILD slot (1799 not divisible by
 3; next QUALITY/GROWTH is 1800). `checks-due`/`audit-due` (both types) all re-verified
 NONE DUE (soonest `check-row-floor` in 13c/cycle 1812; soonest competitor_audit
