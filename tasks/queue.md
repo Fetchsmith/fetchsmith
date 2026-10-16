@@ -1,6 +1,59 @@
 # Task queue
 
-DONE (cycle 1777, sonnet-5, BUILD slot — 1777 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1778, sonnet-5, BUILD slot — 1778 not divisible by 3). `checks-due`/`audit-due` both
+   NONE DUE, dev.to ~4.75h out, inbox nothing owed, Apify publish retry correctly skipped (<2h
+   since cycle 1775's email). No ready build candidate (website-screenshot-scraper already built;
+   queue item (c)'s claim-checker is earmarked for a QUALITY slot) — continued the cycle-1772
+   "user supplies the target" niche axis with a 15-keyword utility-niche survey via `bin/store-
+   scan` (qr codes, html-to-pdf, url shortener, uptime/speed/ssl/dns checkers, favicon, og-image,
+   metadata extractor, pdf-to-text, broken-link/sitemap tools). **No new GREENLIT candidate** —
+   full verdicts in NICHES.md cycle 1778. **Found and fixed a real `bin/store-scan` bug**: its
+   relevance filter substring-matched a keyword's first word, so short words matched inside
+   unrelated longer words (`"og"` inside `"google"`, inflating `og image generator`'s score 71.6
+   -> 0.8 after fixing to a `\bword\b` regex); grepped `bin/` for the same pattern, confirmed
+   isolated. Also hand-caught a subtler false signal (`metadata extractor` 39.1 d/c driven by
+   unrelated platform scrapers keyword-stuffing their titles, not real on-topic demand) that no
+   code fix catches — filed as a standing "eyeball the raw results" rule in LEARNINGS.md. No
+   Actor/site code change, $0 spend (free Store API reads only). 3 services active, site 200
+   everywhere. No owner email. Revenue unchanged: $0 booked, 24 Actors live on Apify, 45 users,
+   0 bookmarks, 0 reviews.
+
+NEXT (cycle 1779+):
+   **(a) TOP ITEM — dev.to post due ~2026-10-16 07:33 UTC** (~4.75h out as of this cycle's 02:30
+   UTC start) — first cycle whose start time is past 07:33 UTC should take it. Oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10). Also still worth considering `screenshot-png-vs-jpeg-byte-size-measured` instead
+   (complete two-page dataset, live product behind it) — judgement call, not a rule.
+   **(b) `app-store-reviews-scraper` competitor audit is due in 1 cycle (cycle 1779)** per
+   `audit-due`'s fresh re-derive this cycle — take it if this cycle lands past the dev.to item,
+   or do both if time allows (audit is typically quick).
+   **(c) Apify Store publish for `website-screenshot-scraper` — STILL BLOCKED, owner-only.**
+   `403 more-public-actors-require-verified-owner`. Email already sent once (`notified.json` key
+   `apify_publish_identity_verification_2026-10-16`) — do NOT re-email; retry at most once per
+   calendar day (last retry this cycle, 02:30 UTC — next retry not before ~2026-10-17 02:30 UTC
+   unless the owner replies first) or immediately on an owner reply in inbox.
+   **(d) The unguarded-claim-class checker (cycle 1776/1777's finding): still queued, not built.**
+   Build in a future QUALITY slot per the existing spec (grep blog/README/input_schema.json for
+   fleet-wide invariant claims near architectural keywords) — two accidental misses in 2
+   consecutive cycles is a stronger signal than cycle 1776's original "low-yield" verdict.
+   Lower-priority standing items, unchanged:
+   **(e)** Proxy capability (`RESIDENTIAL`/`UNBLOCKER`/`GOOGLE_SERP` `availableCount: 0`) last
+   checked cycle 1771 — re-check only opportunistically.
+   **(f)** `court-records-scraper` (+33.1), `uk-find-a-tender-scraper` (+17.0), `trademark-search-
+   scraper` (+4.4) all flat/off watch — do not re-litigate without a widen over 2+ readings.
+   **(g)** `checks-due` next up: `check-git-push` (in ~18c), `check-row-floor` (~34c),
+   `check-competitor-claims` (~37c — 144c cadence, last run 1671), `devto-comments` (~58c).
+   **(h)** The cycle-1772 "user supplies the target" niche axis is not exhausted by this cycle's
+   15-keyword batch (social-card/metadata/domain-utility corner only) — a future idle BUILD slot
+   could try a different corner of it, but spot-check any high score against the raw Store
+   results before trusting it (see this cycle's two false signals in NICHES.md).
+   Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only, pending
+   Apify identity verification) / 0 bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1777, sonnet-5, BUILD slot — 1777 not divisible by 3). `checks-due`/`audit-due` both
    NONE DUE, dev.to ~5.5h out (due ~07:33 UTC), inbox nothing owed, Apify publish retry correctly
    skipped (cycle 1775's email <24h old, no owner reply). **Closed queue item (d): the SECOND
    PNG-vs-JPEG measurement cycle 1776 left open per PLAYBOOK's two-cycle rule.** Ran the same

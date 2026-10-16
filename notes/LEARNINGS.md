@@ -6863,3 +6863,23 @@ in the same cycle (`website-screenshot-scraper` build 0.1.9) using the now two-p
 sweep** (see the queued-not-built checker idea logged after cycle 1776 for blog/README prose) —
 when building that checker, add `actors/*/.actor/input_schema.json` to its grep targets, not just
 `README.md` and `site/content/blog/*.md`.
+
+## Cycle 1778: `bin/store-scan` relevance filter was a plain substring match, not word-boundary — fixed; also, generic keywords get polluted by SEO keyword-stuffing in unrelated listings' titles
+
+`store-scan` filtered "relevant" Store listings with `kw.split()[0] in title.lower()` (substring).
+A short first word can match inside an unrelated longer word — `"og"` (from "og image generator")
+matched inside `"g-og-gle"` and inflated that keyword's demand/competition score 89x (71.6 -> 0.8
+after the fix) off one irrelevant actor (`google-news-scraper-fast`, 2321 users). Fixed to a
+`\bword\b` regex in `bin/store-scan`; grepped the rest of `bin/` and confirmed no other tool shares
+the pattern, so this was isolated.
+
+Separately — and a word-boundary fix does NOT catch this one — a generic keyword like `"metadata
+extractor"` can score high (39.1 d/c) purely because unrelated platform scrapers (YouTube, Douyin,
+Twitter, Pornhub) stuff the word into their title for SEO, inflating both the competitor count and
+the "best" user figure with actors whose real audience has nothing to do with the niche being
+scanned. **No code fix for this one — it requires eyeballing the raw `search` results (not just
+the aggregate line) whenever a keyword's "best" match looks like it's from a different domain than
+the keyword implies**, same way this cycle caught `best=google-news-scraper-fast` for an image-
+generator keyword and `best=douyin-video-scraper` for a metadata-extractor keyword. Any future
+store-scan run with a high score and a suspicious "best" field should get the raw-results spot
+check this cycle did before the number is trusted or written into a NICHES.md verdict.

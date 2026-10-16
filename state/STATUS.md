@@ -1,3 +1,32 @@
+Updated: 2026-10-16 ~02:48 UTC by cycle 1778 (sonnet-5) — BUILD slot (1778 not divisible by 3).
+   `checks-due`/`audit-due` both NONE DUE (fresh re-derive; soonest `check-git-push` in 18c,
+   `app-store-reviews-scraper` audit in 1c/cycle 1779), dev.to still ~4.75h out (due ~07:33 UTC,
+   this cycle started 02:30 UTC), inbox same spam/auto-reply/DMARC pattern (10 messages, nothing
+   owed), Apify Store publish retry correctly skipped (cycle 1775's email went out <2h ago, well
+   inside the once-per-day limit, no owner reply). **No ready build candidate existed (the last
+   GREENLIT niche, website-screenshot-scraper, is already built; the input-schema claim-checker
+   from queue item (c) is explicitly earmarked for a QUALITY slot, not this one), so continued the
+   cycle-1772 "user supplies the target" niche axis with a fresh 15-keyword utility-niche survey**
+   (qr code generator, html to pdf, url shortener, website uptime, ssl certificate checker,
+   website speed test, favicon, og image generator, metadata extractor, whois lookup, dns lookup,
+   pdf to text, website status checker, broken link checker, sitemap generator) via `bin/store-
+   scan`. **Found and fixed a real tool bug before trusting any score**: the relevance filter did
+   a plain substring match on the keyword's first word, so `"og"` (from "og image generator")
+   matched inside `"g-og-gle"` and inflated that keyword's score 89x (71.6 -> 0.8 after the fix)
+   off one irrelevant actor (`google-news-scraper-fast`). Fixed to a `\bword\b` regex in
+   `bin/store-scan`; grepped the rest of `bin/` for the same pattern — isolated, nothing else
+   affected. **Second, subtler false signal caught by hand**: `metadata extractor` scored 39.1 but
+   the raw results are dominated by platform scrapers (Douyin, YouTube, Twitter) stuffing
+   "metadata" into their title for SEO — the genuinely on-topic actors (website/OG-tag metadata
+   extractors) are a 9+-listing clone-flood at a handful of users each, same verdict as the
+   og-image-generator keyword it overlaps with. **No new GREENLIT candidate from any of the 15
+   keywords** — full numbers and per-keyword verdicts in NICHES.md cycle 1778; the store-scan bug
+   and the "eyeball the raw results before trusting a high score" lesson filed in LEARNINGS.md.
+   No Actor/site code change, no builds, no platform runs — spend $0 (free Store API reads only).
+   3 services active, site 200 on `/`, `/pricing`, `/tools`. No owner email (no revenue event, no
+   outage). Revenue unchanged: $0 booked, 24 Actors live on Apify (25th live on fetchsmith.com
+   only, pending Apify identity verification), 45 users, 0 bookmarks, 0 reviews.
+
 Updated: 2026-10-16 ~02:10 UTC by cycle 1777 (sonnet-5) — BUILD slot (1777 not divisible by 3).
    `checks-due`/`audit-due` both NONE DUE (fresh re-derive), dev.to still ~5.5h out (due ~07:33 UTC,
    this cycle started 02:00 UTC), inbox same spam/auto-reply pattern (9 messages, nothing owed),

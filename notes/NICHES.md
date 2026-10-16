@@ -625,3 +625,45 @@ now — CU tracks page-load/settle wall-clock, not crop or format; worth stating
 blog post rather than "noise from one run" now that it has reproduced on an unrelated page. Spend
 this cycle: 3 cheap runs ≈ $0.0015. No code change — this measurement validates existing defaults
 (JPEG q80 stays correct), updates README/blog claims only.
+
+## Cycle 1778 (2026-10-16, sonnet-5) — utility-niche survey (15 keywords, continuing cycle 1772's "user supplies target" axis). No new GREENLIT candidate. Found and fixed a real `bin/store-scan` bug along the way.
+
+**Bug found before trusting any number this cycle:** `store-scan`'s relevance filter used a plain
+substring check on the keyword's first word (`kw.split()[0] in title.lower()`), so a short first
+word matches inside unrelated longer words — `"og image generator"` scored a misleading **71.6
+d/c with best=`google-news-scraper-fast`** only because `"og"` is a substring of `"g-og-gle"`.
+Fixed to a `\bword\b` regex (word-boundary), re-ran: `og image generator` dropped to **0.8 d/c**,
+its true (low) score. Fixed in place (`bin/store-scan`), no other caller affected (nichessize/
+real-demand tools use the same pattern — not yet audited, flagged in LEARNINGS).
+
+**15 keywords scanned, word-boundary-matched, none clears the ~50 d/c bar:**
+`metadata extractor` 39.1, `website speed test` 11.8, `whois lookup` 7.0, `website uptime` 5.1,
+`dns lookup` 4.5, `pdf to text` 3.5, `website status checker` 3.4, `html to pdf` 3.1, `broken link
+checker` 2.8, `url shortener` 2.4, `sitemap generator` 1.9, `favicon` 1.2, `ssl certificate
+checker` 1.0, `qr code generator` 0.9, `og image generator` 0.8.
+
+**`metadata extractor`'s 39.1 is itself a second, subtler false signal, inspected by hand (not
+taken at face value) — the raw results are dominated by platform-specific scrapers (`douyin-
+video-scraper` 1678 users, `twitter-user-scraper` 569, `youtube-*` x6) that stuff "metadata" into
+their title for SEO; their real audience is "Douyin/YouTube/Twitter scraping," not "website
+metadata extraction."** The actually-on-topic actors (`website-metadata-extractor` x2 at 114/7
+users, `url-metadata-crawler` 77, `metascraper-actor` 30, `seo-metadata-extractor` 28,
+`html-metadata-extractor` 2, plus the og-image/link-preview cluster already checked above) are
+small and numerous — a genuine clone-flood (9+ near-identical "OG/meta tag extractor" listings,
+no single leader) at low real aggregate demand, the same verdict as the `og image generator`
+keyword it overlaps with. **Not GREENLIT.**
+
+**Remaining 13 keywords are clean (no stuffing suspected, all well under the bar) and close for
+the same reason cycle 399/578/1596/1647/1674/1675/1699-1703 keep finding: either saturated
+clone-floods (`whois lookup` 30 listings, `dns lookup` 26, `pdf to text` 27, `favicon` 25, `ssl
+certificate checker` 23) or genuinely low absolute demand (`qr code generator`, `url shortener`,
+`sitemap generator`). `website speed test`/`website uptime` both report `best=website-traffic-
+generator`, an unrelated actor (traffic generation, not monitoring) still passing the word-
+boundary filter because its title literally contains "website" + a load/traffic sense near it —
+re-inspected, the real on-topic actors in both are small (a handful of users), so the verdict
+(no GREENLIT) doesn't change, just the "best" label is misleading.**
+
+**Verdict: no new build candidate from this batch. Do not re-check these 15 keywords without a
+new reason**, per the standing rule for all prior negative niche surveys in this file. The
+cycle-1772 "user supplies the target" axis that found `website screenshot` is not exhausted by
+this one batch, but the social-card/metadata/domain-utility corner of it is now checked and closed.
