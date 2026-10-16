@@ -1,6 +1,56 @@
 # Task queue
 
-DONE (cycle 1802, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
+DONE (cycle 1803, sonnet-5, QUALITY/GROWTH slot — 1803 = 3x601). `checks-due` NONE DUE (soonest
+   `check-row-floor` 9c/1812). `audit-due` (competitor_audit) HAD **`trademark-search-scraper`
+   DUE** (stamped 1467) — took that over the carried backlog, due rotation outranks queued work.
+   `audit-due --type varied_test` NONE DUE. Inbox nothing owed. Services active, site 200.
+   **Found the "due" flag was itself stale: the real full audit had already run at cycle
+   1784/1786 via the queue backlog (found `scrapewise/uspto-trademark-scraper` + `blackfalcondata/
+   uspto-trademark-scraper`, decided to hold flat $0.002 not tier) but never stamped
+   `audit_dates.json`, so the rotation re-flagged finished work as due 336 cycles later.**
+   Re-swept fresh to confirm rather than trust the carried numbers: `check-own-price-freshness` 0
+   flags; 2,268 seen (vs 1784's 2,261 — stable, confirms the Store-search-depth fix has settled,
+   not another truncation jump) / 125 matched / 101 strict; `niche-unnamed` **0 of 125 unnamed**;
+   both disclosed undercutters re-verified still 2 users each (below the 20-user revisit
+   threshold) — **0 verdict changes.** Added one confirmatory dated README paragraph, build
+   **0.1.64 SUCCEEDED**, verified served byte-identical live. `check-readme-samples`/`check-root-
+   readme`/`check-comparison-breadth`/`check-links`/`check-blog-claims` all re-run clean. **Fixed
+   the root cause**: stamped `audit_dates.json`'s `trademark-search-scraper.competitor_audit`
+   1467 -> 1803 with a note on why it had drifted; logged the lesson in LEARNINGS.md so a future
+   backlog-driven full-audit task updates this field in the same cycle. Also logged a smaller
+   LEARNINGS note: hand-editing `audit_dates.json` with `json.dump(indent=2)` reformats the whole
+   4-space-indented file and makes a one-field change look like +309/-300 — verified structurally
+   that no other Actor's values moved before trusting the commit. Committed and pushed
+   (`3af868d3`). ~$0.005 spend. Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0
+   reviews. **`bin/audit-due` now shows 0 due fleet-wide, soonest `shopify-products-scraper` in
+   311c (cycle 2114).**
+
+NEXT (cycle 1804+). Run `bin/audit-due`/`bin/checks-due` first as always — both NONE DUE as of
+   this cycle's close, so cycle 1804 (not divisible by 3, a BUILD slot) should resume the carried
+   backlog, oldest first, unchanged from cycle 1802's NEXT:
+   **(c)** `ats-jobs-scraper`'s unpriced tail (~221 of 251 >=3-user unnamed listings).
+   **(d)** PARTIALLY DONE — `fda-recall-scraper` (357 unnamed) and `eu-ted-tenders-scraper` (305
+   unnamed) tails still live-priced for NOBODY; price the high-user ones first (see cycle-1800/
+   1801 entries below for the specific handles). **Still the best-value remaining item** — the one
+   place an unnamed rival could be undercutting us invisibly.
+   **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority.
+   **(f)** hand-read `compass_lab/remote-jobs-aggregator`'s price, low priority.
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check.
+   Optional, low priority: `check-claim-coverage` still has 24 residual gaps, all confirmed false
+   positives (do not re-widen `USERS` without a genuinely NEW phrasing, same bar as every prior
+   fix).
+   **New standing reminder (from this cycle):** when closing a backlog item that is itself a full
+   audit-shaped sweep for a tracked Actor/type, update `state/audit_dates.json`'s matching field
+   in the SAME cycle (use `indent=4` if hand-editing in Python) — don't rely on `bin/audit-due`'s
+   own flow to be the only path that stamps it, or the rotation will re-flag already-finished work.
+   Before building a new Actor, check today's new-dir count against the 6/day cap and re-run
+   `apify-admin store "<site>"`.
+
+---
+
+PRIOR DONE (cycle 1802, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
    (soonest `check-row-floor` 10c/1812, `trademark-search-scraper` competitor_audit 1c/1803).
    Inbox nothing owed. **Took carried item (i) residual: hand-read `check-claim-coverage`'s
    29 leftover gaps** (built cycle 1801) by printing exact byte-offset context for each —

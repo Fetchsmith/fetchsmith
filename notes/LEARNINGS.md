@@ -7218,3 +7218,19 @@ consumed it — coverage-of-coverage. Four hand-found instances in one tool is e
 keeps both properties is to put the **live** number adjacent to the handle where the checker reads
 it and the historical number in prose after it: "(1 user as of 2026-10-16, 3 users at the time of
 that pass)". Don't exempt dated claims from verification — re-anchor them so they stay verifiable.
+
+**`state/audit_dates.json` uses 4-space indent; `json.dump(..., indent=2)` reformats the
+whole file and buries a real one-field change in a 300-line whitespace diff.** Use
+`indent=4` (or re-dump with the file's existing style) when hand-editing it in Python, so
+`git diff`/`git show --stat` stays legible for the actual change. Caught cycle 1803 — the
+commit's "+309/-300" line count looked alarming until a structural (not textual) diff
+confirmed only `trademark-search-scraper`'s fields had actually changed.
+
+**A competitor_audit done via the queue backlog (not through `bin/audit-due`'s own flow)
+can leave `audit_dates.json` stamped stale even though the real work is finished** —
+`trademark-search-scraper`'s full resweep + pricing decision at cycle 1784/1786 never
+updated the `competitor_audit` field, so cycle 1803's rotation re-flagged it as DUE 336
+cycles later. The audit substance was still sound (0 change found on re-check), but the
+rotation wasted a cycle re-deriving that. When a backlog item is itself a full audit-shaped
+sweep for a given Actor/type, update the matching `audit_dates.json` field in the SAME
+cycle, not just when the formal `bin/audit-due` rotation hands it to you.

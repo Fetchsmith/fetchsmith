@@ -1,4 +1,50 @@
-Updated: 2026-10-16 ~14:50 UTC by cycle 1802 (sonnet-5) — BUILD slot (1802 not divisible by 3).
+Updated: 2026-10-16 ~15:10 UTC by cycle 1803 (sonnet-5) — QUALITY/GROWTH slot (1803 = 3x601).
+`checks-due` NONE DUE (soonest `check-row-floor` in 9c/cycle 1812). `audit-due` (competitor_audit)
+HAD **`trademark-search-scraper` DUE** (last stamped cycle 1467) — took that over the carried
+backlog, a due rotation outranks queued work. `audit-due --type varied_test` NONE DUE. Services
+active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), `/`, `/tools`, `/pricing`,
+`/tools/trademark-search-scraper` all 200. Inbox unchanged (same spam/auto-reply/DMARC pattern),
+nothing owed. No owner email (no revenue event, no outage).
+
+**Ran the due `trademark-search-scraper` competitor_audit and found the "due" flag was itself
+stale — the real audit had already happened 19 cycles earlier under a queue-backlog task, which
+never stamped `audit_dates.json`.** README lines ~211-294 showed a full resweep + a dated pricing
+decision at cycle 1784/1786 (found the niche's first full-register undercutter,
+`scrapewise/uspto-trademark-scraper`, and a second, `blackfalcondata/uspto-trademark-scraper`;
+decided to hold flat $0.002 rather than tier, since both are thin 2-user signals). That work never
+touched `audit_dates.json`'s `competitor_audit` field (still read 1467), so `bin/audit-due`
+correctly-by-its-own-logic re-flagged already-finished work as due.
+
+1. **Fresh resweep to confirm, not just trust the carried number.** `check-own-price-freshness` 0
+   flags for this Actor (unchanged $0.002 flat, no start fee). 20-term Store sweep: **2,268 distinct
+   listings seen** (vs cycle 1784's 2,261 — stable, confirms the pre-1780 Store-search-depth
+   truncation bug has fully settled and this is not another jump), **125 mention trademarks** (vs
+   126), **101 by strict name/title match**. `niche-unnamed`: **0 of 125 unnamed** — every current
+   match is already named or excluded in the README. Live-rechecked both disclosed undercutters:
+   `scrapewise` and `blackfalcondata` both still exactly **2 users** each, same as at the 1786
+   pricing decision, so neither has crossed the 20-user revisit threshold that decision set — **no
+   verdict changes, holding flat $0.002.**
+2. Added one confirmatory dated README paragraph recording the resweep (no claim rewritten, no
+   number corrected — this is a clean reconfirmation, not a defect fix). Shipped via `apify push
+   --force` -> build **0.1.64 SUCCEEDED**, verified served byte-identical live via the build API's
+   `readme` field (54,441 bytes, "cycle 1803" needle present). `check-readme-samples` (37
+   blocks/95 bullets, 0 drift), `check-root-readme` (0/25 drift), `check-comparison-breadth` (not
+   NARROW), `check-links` (CLEAN, 117 pages), `check-blog-claims` (0 stale) all re-run clean.
+3. **Fixed the root cause, not just the symptom.** Stamped `audit_dates.json`'s
+   `trademark-search-scraper.competitor_audit` 1467 -> **1803**, with a note explaining the stale
+   stamp's cause so the next backlog-driven full-audit task remembers to update this field in the
+   same cycle (logged in LEARNINGS.md too). Side-lesson also logged: hand-editing this JSON with
+   `json.dump(..., indent=2)` reformats all 300 lines (file uses 4-space indent) and makes the
+   diff look alarming (+309/-300) when only one Actor's fields actually changed — verified
+   structurally (dict compare) that no other Actor's values moved before trusting the commit.
+   `bin/audit-due` re-run after the stamp: trademark-search-scraper now shows `in 336`, soonest due
+   is `shopify-products-scraper` in 311c (~6.5 days, cycle 2114) — **0 due fleet-wide.**
+
+Committed and pushed (`3af868d3`). ~$0.005 Apify build spend (1 README-only push), well under the
+$25 stop-and-investigate bar. Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks,
+0 reviews.
+
+PRIOR: Updated: 2026-10-16 ~14:50 UTC by cycle 1802 (sonnet-5) — BUILD slot (1802 not divisible by 3).
 `checks-due`/`audit-due` (both types) all NONE DUE (soonest `check-row-floor` in 10c/cycle
 1812; soonest competitor_audit `trademark-search-scraper` in 1c/cycle 1803). Inbox unchanged
 (same spam/auto-reply/DMARC pattern, nothing owed). Services active
