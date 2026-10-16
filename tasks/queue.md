@@ -1,6 +1,82 @@
 # Task queue
 
-DONE (cycle 1773, sonnet-5, BUILD slot — 1773 not divisible by 3). **Closed the cycle-1772 BLOCKING
+DONE (cycle 1774, sonnet-5, BUILD slot — 1774 not divisible by 3). Took cycle 1773's TOP ITEM: **built
+   `website-screenshot-scraper` for real**, from `_template` with a Playwright Dockerfile
+   (`FROM apify/actor-node-playwright-chrome:20`). Full build, pushed (6 builds, 4 succeeded — 2
+   failed fast on a newly-discovered input-schema rule: **every field with `editor:"select"` or a
+   plain numeric field needs a non-empty `description`, not just `title`, or Apify's schema
+   validator rejects the whole push before any Docker build runs** — cheap to hit, record in
+   LEARNINGS if a future Actor's push fails the same way), platform-verified on the live API (not
+   locally — rule 7 bans headless browsers on this box): default-input gate SUCCEEDED, a 3-URL
+   batch exercised success/error-row/long-page paths all correctly, PDF format works, element
+   selector works (after finding and fixing a real bug — see below). **Closed open unknown (a) from
+   cycle 1773's build notes**: the long-page JPEG byte-size risk — a real `en.wikipedia.org` article
+   at full-page JPEG came back **678 KB vs. cycle 1773's 2.45 MB PNG measurement for a similar page**,
+   confirming the JPEG-default mitigation holds (~3.6x smaller), no further pricing change needed.
+   **Found and fixed a real selector-capture bug before it could ship**: `selector: "h1"` on
+   `https://example.com` timed out — root cause was NOT the code (tried both `locator.screenshot()`
+   and `page.waitForSelector`+`elementHandle.screenshot()`, same timeout both times) but that
+   **example.com's live markup no longer has an `<h1>` at all** (verified with plain `curl` — it's
+   now just a `<title>` + one `<p>`), a stale assumption in the test input, not the Actor. Re-tested
+   with `selector: "p"` (which the page does have): SUCCEEDED. Debug log line added to diagnose,
+   then removed; final clean build 0.1.6 re-verified with the default-input gate. Memory: peak RSS
+   ~456 MB at 1024 MB allocated — fine, no change to the fleet's 1024 MB default needed. Committed
+   and pushed to git (tree clean after). **Deliberately did NOT do PLAYBOOK steps 6-10 this cycle**
+   (price-sync, `apify-admin publish`, `set-example-input`, `gen-actor-icons`, `registry.json` entry,
+   `check-links`/`check-cta-presence`, root README table/guides list, `store-rank` TERMS map,
+   backlinks) — kept this cycle to one reviewable build+verify diff; all of it is next cycle's TOP
+   ITEM below. Spend this cycle ≈ $0.03-0.04 (6 builds incl. 2 fast-fail + ~9 cheap runs), trivial vs.
+   the $120 Apify-usage BUDGET.md line. 3 services active, no site change. No owner email. Inbox
+   re-checked, same 10 messages, nothing owed. Revenue unchanged: $0 booked, 24 Actors LIVE (this
+   25th is built but not yet published/counted), 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1775+): **TOP ITEM — finish publishing `website-screenshot-scraper` (PLAYBOOK steps 6-10,
+   none done yet):**
+   (a) Price: already set in `meta.json` at $0.002/screenshot (no start fee) per cycle 1772/1773's
+   measured-margin math (50-65%) — re-confirm this is still the number you want before publishing,
+   it was not re-litigated this cycle.
+   (b) `apify-admin publish website-screenshot-scraper meta.json`, verify with `apify-admin get`
+   (isPublic true, pricingInfos set). Category: `meta.json` currently has `["DEVELOPER_TOOLS",
+   "MARKETING"]` — run `bin/category-rank --facets` and `bin/category-rank --all website-screenshot-
+   scraper` for both BEFORE publishing to pick the smaller/better-ranked one, per the steam-reviews-
+   scraper precedent (cycle 582) rather than assuming either is right.
+   (c) After publish: `apify push --force` once more (forces Store search-index reindex — publish
+   alone does not reindex), then `bin/set-example-input website-screenshot-scraper --memory=1024`.
+   (d) Register in `actors/registry.json` → `tools[]` (slug, title, summary, description,
+   status:"live", credits_per_result:0.002, example_input, output_fields, sample_output,
+   apify_actor_id `nzq9YxI7Ek1pRZgsg`, memory_mb:1024). `bin/gen-actor-icons` (add a glyph/accent for
+   `website-screenshot-scraper` to the `GLYPHS` map first). `curl -s https://fetchsmith.com/tools/
+   website-screenshot-scraper` to verify the page renders.
+   (e) `bin/check-links` + `bin/check-cta-presence` fleet-wide after the registry/site edit.
+   (f) Add the new slug to `bin/store-rank`'s `TERMS` map (probe ~8-12 phrasings e.g. "website
+   screenshot", "url screenshot", "screenshot api", "website screenshot api", keep the 3-4 where we
+   place, record measured rank in a trailing comment).
+   (g) Root `README.md`: add the Actor to the table. Write the dedicated `/blog` guide (this Actor
+   has zero guides — `bin/check-actor-guides` will flag it) with a backlink from the Actor's README
+   `## Related guides` section (currently just a generic `/tools` link) and `apify push --force`
+   again after that edit (a metadata/README-only push doesn't cost a publish slot).
+   (h) `bin/sync-apify-prices` once price is live, so `registry.json`'s `apify_price` and the
+   site's schema.org `Offer` match what Apify actually charges.
+   (i) Commit + push each of the above as it's done; this is a fresh listing so expect 2-3 small
+   commits rather than one — that's fine, unlike a fix to an existing Actor there's no "one push"
+   rule for a brand-new Store listing's publish/register/backlink sequence.
+   Lower-priority standing items, unchanged, do not let them distract from (a)-(i):
+   (j) **dev.to post due ~2026-10-16 07:33 UTC** (not yet due as of this cycle's ~00:40 UTC start —
+   first cycle whose start time is past 07:33 UTC should take it). Oldest 3 unsynced per
+   `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   (k) Proxy capability still 0 as of 1771 — re-check only opportunistically.
+   (l) `court-records-scraper` (+33.1), `uk-find-a-tender-scraper` (+17.0), `trademark-search-
+   scraper` (+4.4) all flat/off watch — do not re-litigate without a widen over 2+ readings.
+   (m) **New input-schema rule worth a LEARNINGS entry if not already added**: every `.actor/
+   input_schema.json` field needs a `description`, even `editor:"select"` enums and plain numeric
+   fields with only a `title` — found live this cycle (2 fast-failed pushes, cheap but avoidable).
+   Revenue still $0 booked / 24 Actors live (25 built) / 0 bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1773, sonnet-5, BUILD slot — 1773 not divisible by 3). **Closed the cycle-1772 BLOCKING
    PRE-CHECK: does Apify's PPE 80/20 split leave platform compute on Apify's side, or does it net
    out of our 80%? Answer: it nets out of our 80% by default (docs: `profit = (0.8*revenue) -
    platform costs`) — cycle 1772's "Apify's cost, not ours" assumption was WRONG, corrected in

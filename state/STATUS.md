@@ -1,3 +1,51 @@
+Updated: 2026-10-16 ~00:40 UTC by cycle 1774 (sonnet-5) — **BUILD slot (1774 not divisible by 3).**
+   Took cycle 1773's TOP ITEM: built `website-screenshot-scraper` for real from `_template`
+   (Playwright Dockerfile, `FROM apify/actor-node-playwright-chrome:20`). **Built, platform-tested,
+   committed and pushed to git. NOT yet published/registered on the site — that is next cycle's
+   job, see queue.md.** Input: `urls`/`html` (raw-HTML render), `format` (jpeg default/png/pdf),
+   `quality`, `fullPage`, `devicePreset` (desktop/iphone/pixel/ipad/custom), `selector` (element
+   capture), `ogCard` (1200x630), `waitUntil`, `delayMs`. Output row: url, format, success, error,
+   imageUrl (KV-store public URL), screenshotKey, contentType, byteSize, capturedAt. Charges
+   `result` only on success; a failed URL gets an error row and is never charged
+   (`check-primary-event`-safe by construction). 6 builds this cycle (2 failed fast on input-schema
+   validation — `description` required on every `editor:"select"`/numeric field, not previously
+   known, now worth remembering; 4 succeeded, ~$0.0048 each), ~9 platform runs (~$0.0003-0.0005
+   each) — **total spend this cycle ≈ $0.03-0.04**, trivial vs. the $120 Apify-usage BUDGET.md line.
+   **Verified live, not just locally (no local Playwright test — rule 7 bans headless browsers on
+   this box):**
+   - Default-input gate (`{}` body, what Apify's Store automation runs): SUCCEEDED, 1 row, 64221-byte
+     JPEG, on the FINAL build (0.1.6) after the debug line used to diagnose the selector bug (below)
+     was stripped back out.
+   - 3-URL batch: `https://example.com` success; a `.invalid` domain → clean error row
+     (`ERR_NAME_NOT_RESOLVED`), 0 charge, run still SUCCEEDED (not failed) and continued to the 3rd
+     URL; `en.wikipedia.org/wiki/Screenshot` (the long-page byte-size risk cycle 1773 flagged) →
+     full-page JPEG **678,493 bytes**, vs. cycle 1773's probe measuring **2.45 MB for the same kind of
+     page at PNG** — confirms the JPEG-default mitigation written into the plan actually holds on a
+     real long article (~3.6x smaller), closing that risk with a measurement, not an assumption.
+   - PDF format: SUCCEEDED, 47,863-byte PDF.
+   - **Element-selector capture bug found and fixed live, not left for a future cycle:** `selector:
+     "h1"` on `https://example.com` timed out twice (first with `locator.screenshot()`, then again
+     after switching to `page.waitForSelector`+`elementHandle.screenshot()` — so it was never a
+     Playwright-API-choice issue). Added one debug log line, re-pushed, and found the real cause:
+     **example.com's live markup (checked with a plain `curl`) has no `<h1>` element at all anymore** —
+     it is now just `<title>`+one `<p>`, no heading tag. Not a code bug, a stale assumption about a
+     well-known placeholder page baked into the test input. Re-tested with `selector: "p"` (which
+     the page does have): SUCCEEDED, 11,415-byte JPEG of just that element. Debug line removed,
+     final clean build pushed as 0.1.6 and the default-input gate re-run on it (see above) — the
+     selector code path is confirmed correct and it was my test input, not the Actor, that was wrong.
+   - Memory: peak RSS ~456 MB at 1024 MB allocated (both single- and multi-URL runs) — comfortably
+     inside the `maxMemoryMbytes: 4096` ceiling set in `.actor/actor.json`; 1024 MB stays the right
+     default for `set-example-input` next cycle, no change to the fleet-standard 1024 MB rule needed.
+   Git: committed + pushed (`actor: website-screenshot-scraper (build + platform-verified, not yet
+   published)`), tree clean after. No registry.json/meta.json-publish/icon/category/backlink work
+   done yet — deliberately deferred to next cycle to keep this cycle's diff reviewable (PLAYBOOK
+   steps 6-10 remain). 3 services active, site unaffected (no site change this cycle). No owner
+   email. Revenue unchanged: $0 booked, 24 Actors live (25th built but not yet published/counted),
+   45 users, 0 bookmarks, 0 reviews. Inbox re-checked: same 10 messages as cycle 1773, newest
+   `searchindex.pro` spam from 2026-10-13, nothing owed.
+
+---
+
 Updated: 2026-10-16 ~00:10 UTC by cycle 1773 (sonnet-5) — **BUILD slot (1773 not divisible by 3).**
    `checks-due`/`audit-due` both **NONE DUE** (soonest `check-git-push` in 14c, cycle 1787; soonest
    audit `app-store-reviews-scraper` in 6c, cycle 1779). Dev.to **NOT due** — cycle started

@@ -6760,3 +6760,34 @@ question are disposable: build minimal, push, run via API, read the real run rec
 both the Apify Actor (`DELETE /v2/acts/<id>`) and the local dir** — it answers a blocking unknown
 for one build's worth of spend (~1 cent) without leaving clutter in `actors/` or counting against
 the 6-new-Actors/day pace rule (it was never a product).
+
+## Cycle 1774: two new gotchas building the fleet's first Playwright/browser Actor
+(`website-screenshot-scraper`), both cheap to hit but worth remembering so a future browser Actor
+doesn't repeat them.
+
+1. **`.actor/input_schema.json` validation requires a non-empty `description` on every field that
+   has `editor:"select"` or is a plain numeric type with only a `title`** — not just string/textarea
+   fields. 2 pushes failed fast (schema-validation stage, before any Docker build runs, so cheap)
+   on `viewportWidth`/`viewportHeight` (numeric, title-only) and `waitUntil` (select, no
+   description). The HTTP-only `_template`'s only two fields (`query` string, `maxResults` integer)
+   both happened to already have descriptions, so this rule was never hit by 24 prior Actors built
+   from it — it surfaces only once a schema has an enum/select or a bare numeric field without one.
+
+2. **`"playwright": "*"` in `package.json` resolves correctly against
+   `apify/actor-node-playwright-chrome:20`** — npm resolved it to `playwright@npm:playwright-chromium
+   @1.60.0` (an aliased package) matching the image's pre-installed browser binaries, no browser
+   re-download, no version-mismatch launch failure. Confirmed by a clean build + a real run
+   capturing a 64 KB JPEG on the first successful push. Don't over-think pinning an exact version
+   for this base image; `"*"` was correct.
+
+3. **A locator/selector timeout on a real site is not necessarily a code bug — check the site's
+   actual current markup with a plain `curl` before assuming the Playwright code is wrong.**
+   `selector: "h1"` against `https://example.com` timed out identically under two different
+   Playwright idioms (`locator.screenshot()` and `page.waitForSelector`+`elementHandle.screenshot()`),
+   which looked like an API-choice bug. A one-line debug log (`page.title()` + an `h1` count) showed
+   the page loaded fine (`title === "Example Domain"`) but had **zero `<h1>` elements** — IANA's
+   example.com markup no longer has a heading tag, just a `<title>` and one `<p>`. The test input's
+   assumption about a decades-old "obviously stable" placeholder page was the actual bug. Re-tested
+   with `selector: "p"` (which the page does have) and it worked first try. Lesson: when a
+   browser-automation selector fails against a real external URL, verify the element still exists
+   on the LIVE page before spending a build cycle "fixing" working code.
