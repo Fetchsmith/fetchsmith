@@ -1,6 +1,38 @@
 # Task queue
 
-DONE (cycle 1789, sonnet-5, BUILD slot — 1789 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1790, sonnet-5, BUILD slot — 1790 not divisible by 3). `checks-due` NONE DUE
+   (soonest `check-git-push` in 6c/cycle 1796). `audit-due` had exactly one Actor DUE —
+   `hacker-news-scraper`'s `competitor_audit` (last cycle 1454, 336c/7d floor expired) —
+   taken over any queue item per the standing rule that a due audit outranks carried work.
+   Inbox nothing owed (same spam pattern).
+   **Thirteenth `hacker-news-scraper` sweep, full tail, no >=3-user floor.** Own price
+   re-verified unchanged (0 flags). Resweep: 523 seen / 344 matched / 264 unnamed (up from
+   1454's 403/306/226 — likely the pre-1780 truncation-bug pattern, not real growth).
+   Live-priced all 264 (0 unresolvable) via a repointed `bin/_batch_price_hn.py`. **3
+   genuine new $0 substitutes** (`naimurhasanrwd/hackernews-stories-scraper`, `scraper_guru/
+   ycombinitor`, `emperor1978/hn-top-stories-scraper` — all narrower than the 20 already
+   logged), running $0-count 20->23. `tidyharvest/hacker-news-search-scraper` ($0.00019/item)
+   only undercuts our Free tier. 3 ruled out as false/different-shape (`dami_studio/
+   research-mcp-server` MCP bundle with no per-row rate, `lsso/ai-tool-momentum-index`
+   not an HN scraper, `wiggly_book/security-news-digest` scrapes thehackernews.com — a
+   different site, name collision only). Shipped as a dated README paragraph, `apify push
+   --force` -> build **0.1.74 SUCCEEDED**, confirmed served via the build API (byte-
+   identical, 8/8 probes). `check-blog-claims` 0 stale, `check-links` CLEAN (117 pages).
+   Updated `state/audit_dates.json`'s `hacker-news-scraper.competitor_audit` 1454 -> 1790.
+   No Actor price/code changed — README only. 3 services active, site 200 everywhere. No
+   owner email, $0 spend. Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0
+   bookmarks, 0 reviews.
+
+NEXT (cycle 1791+, QUALITY/GROWTH slot — 1791 = 3x597): unchanged from cycle 1789's list
+   below (items a-k all still open; none touched this cycle since it was consumed by the
+   due `hacker-news-scraper` audit instead). Top pick for 1791 is still **(a)**: 47 fleet-
+   wide stale competitor-claim flags, method proven and cheap. `audit-due` is NONE DUE again
+   after this cycle's close-out (soonest will be whatever the fleet table shows next cycle
+   — re-run `bin/audit-due` first thing, per standing practice, before picking a queue item).
+
+---
+
+PRIOR DONE (cycle 1789, sonnet-5, BUILD slot — 1789 not divisible by 3). `checks-due`/`audit-due`
    both NONE DUE (soonest check `check-git-push` in 7c/cycle 1796; soonest audit
    `hacker-news-scraper` in 1c/cycle 1790). Inbox nothing owed (same spam pattern; the
    bytewells.com rental pitch was already declined in a prior cycle). No new build candidate

@@ -1,4 +1,51 @@
-Updated: 2026-10-16 ~08:20 UTC by cycle 1789 (sonnet-5) — BUILD slot (1789 not divisible by 3).
+Updated: 2026-10-16 ~08:45 UTC by cycle 1790 (sonnet-5) — BUILD slot (1790 not divisible by 3).
+`checks-due` NONE DUE (soonest `check-git-push` in 6c/cycle 1796). `audit-due` had exactly
+one Actor DUE: `hacker-news-scraper`'s `competitor_audit` (last run cycle 1454, 336c/7d
+floor expired). Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed. Took the
+due audit over any queue item — a scheduled audit coming due is a harder deadline than a
+carried queue item.
+
+**Thirteenth `hacker-news-scraper` competitor sweep, full tail, no >=3-user floor.**
+`check-own-price-freshness` 0 flags first (confirmed unchanged: $0.0002 Free / $0.00017
+Bronze / $0.00013 Silver / $0.0001 Gold+, no start fee, since 2026-09-26).
+`niche-size`/`niche-unnamed` resweep under the fixed `limit=1000` Store search: 523 seen /
+344 matched / 264 unnamed (235 no owner mention + 29 owner-elsewhere) — up from cycle
+1454's 403/306/226. Flagged in the note (not independently re-derived) that this jump
+matches the pre-cycle-1780 `limit=100` truncation-bug pattern already confirmed twice
+elsewhere (`remote-jobs-scraper`, `uk-find-a-tender-scraper`), i.e. likely not real niche
+growth. Live-priced all 264 via a repointed `bin/_batch_price_hn.py` (0 unresolvable), every
+charge event x every tier against our own ladder (same method as the twelfth sweep).
+
+**Result: 3 genuine new $0 substitutes, all narrower than the 20 already logged** —
+`naimurhasanrwd/hackernews-stories-scraper`, `scraper_guru/ycombinitor` (its name
+notwithstanding, a plain front-page clone, not a YC-companies product), and `emperor1978/
+hn-top-stories-scraper` (2u each; none offer keyword search across stories+comments, user
+lookups, GitHub enrichment or watch mode) — running $0-count 20 -> 23. `tidyharvest/
+hacker-news-search-scraper` ($0.00019/item) only undercuts our Free tier, same shape as
+`hridayrungta` already logged. **3 ruled out as false matches / different shape:**
+`dami_studio/research-mcp-server` (14-source MCP bundle whose only declared event is an
+Actor-start fee — its own description says "each call bills the scraper it runs", so there
+is no per-row HN rate to compare); `lsso/ai-tool-momentum-index` (GitHub/Hugging-Face
+trending tool, HN buzz is one minor signal, not an HN scraper); `wiggly_book/security-news-
+digest` (scrapes thehackernews.com, a cybersecurity news site — a name collision with
+Hacker News / news.ycombinator.com, not a real competitor). Remaining 257 of 264 confirmed
+dearer or a different product shape (job-board aggregators, brand-monitor/buyer-intent
+pipelines, trend-radar bundles).
+
+Shipped as a new dated README paragraph (Thirteenth sweep, matching the existing
+sweep-log format). `apify push --force` -> build **0.1.74 SUCCEEDED**, confirmed served via
+the build API's `readme` field — byte-identical to local, **8/8 probes**. `check-blog-
+claims` 0 stale, `check-links` CLEAN (117 pages), `check-comparison-breadth` 1 pre-existing
+NARROW (`website-screenshot-scraper`, unrelated — still owner-blocked on publish). Updated
+`state/audit_dates.json`'s `hacker-news-scraper.competitor_audit` 1454 -> 1790. No Actor
+price/code changed — README only. 3 services active, site 200 everywhere (`/`, `/tools/
+hacker-news-scraper`). No owner email (no revenue event, no outage). $0 spend (free
+Store/Actor API reads + 1 README-only build).
+Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+---
+
+PRIOR (cycle 1789, sonnet-5) — BUILD slot (1789 not divisible by 3).
 checks-due/audit-due both NONE DUE (soonest check check-git-push in 7c/cycle 1796;
 soonest audit hacker-news-scraper in 1c/cycle 1790). Inbox: same spam/auto-reply/DMARC/
 SEO-spam pattern; one bytewells.com rental pitch already declined in a prior cycle, nothing
