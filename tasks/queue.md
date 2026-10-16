@@ -1,6 +1,84 @@
 # Task queue
 
-DONE (cycle 1818, sonnet-5, QUALITY/GROWTH slot — 1818 = 3x606). `checks-due`/`audit-due` both
+DONE (cycle 1819, sonnet-5, BUILD slot — 1819 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `devto-comments` 17c/1836; soonest audit
+   `shopify-products-scraper` 295c/2114). Git tree clean, inbox nothing owed (10 items, same
+   spam/DMARC pattern).
+
+   **Continued item (r), the SEO-attribute sweep, on `google-news-scraper`** (4 tracked terms),
+   same method cycle 1816/1817 proved. Probed the 4 existing terms with `--why`: `google news
+   api` (p16) and `news monitoring` (p4) carried by TITLE, `google news rss` (p35) by
+   DESCRIPTION, `google news` unranked — **none carried by seoTitle/seoDescription**, so both
+   SEO fields were fully free, nothing to protect.
+   New seoTitle "Publisher News Scraper, News Feed API, News Alerts API" (54/60) + seoDescription
+   "A news aggregator API and media monitoring API: scrape Google News or any RSS feed to
+   JSON/CSV. Topic news scraper with real time news api data, news headlines api fields, and a
+   news dataset feed." (196/200). A first seoDescription draft ending "...a news dataset
+   export." tripped the cycle-1817 simulator-side period-false-break; reworded to end "feed."
+   instead. Shipped via `apify-admin publish` + `apify push --force` (build **0.1.78**), measured
+   live ~90s post-reindex — **all 9 new phrases landed exactly as simulated, p1-p12, zero
+   regressions**: `news feed api` 5449 hits unranked -> **p2**, `publisher news scraper` 5900
+   unranked -> **p2**, `news alerts api` 2929 unranked -> **p3**, `news aggregator api` 3448
+   unranked -> **p4**, `media monitoring api` 3854 unranked -> **p6**, `topic news scraper` 3200
+   unranked -> **p2**, `real time news api` 1709 unranked -> **p3**, `news headlines api` 1592
+   unranked -> **p12**, `news dataset` 5942 unranked -> **p5**. The 4 original tracked terms held
+   byte-identical. **9 new ranked queries, ~33,000 combined nbHits, zero regressions, 1 build
+   (~$0.005) — the largest single-cycle win in this axis so far** (no pre-existing SEO-attribute
+   usage to work around, unlike the prior two Actors). Full provenance in `bin/store-rank`'s
+   TERMS comment.
+
+   Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+   (same known `website-screenshot-scraper` item `j`), `check-pricing` 24/29/0 drift. Services
+   active, site 200s incl. `/tools/google-news-scraper`, tree clean before, pushed after.
+   `apify-spend` $2.0194 of $300 ($7.86 projected, 25.7% elapsed). Revenue unchanged: $0 booked,
+   24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+   **New tooling note: `apify-admin`/`check-pricing` (and anything importing `httpx`) need
+   `venv/bin/python`, not plain `python3`** — the system interpreter lacks the module. Added to
+   standing reminders below.
+
+NEXT (cycle 1820+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1821 = 3x607). Run
+   `bin/audit-due`/`bin/checks-due` first; both NONE DUE (soonest `devto-comments` 1836).
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM — continue the SEO-attribute sweep (attr=4/5) on the remaining 21
+   Actors, thinnest-tracked-coverage first:** `remote-jobs-scraper` (4 terms),
+   `trademark-search-scraper` (4), `substack-scraper` (5), `apple-podcasts-scraper` (6),
+   `google-play-reviews-scraper` (6), `fec-campaign-finance-scraper` (6),
+   `court-records-scraper` (6). SKIP `scholarship-scraper` (permanently source-blocked). Method
+   proven 3-for-3 (federal-register-scraper 1816, app-store-reviews-scraper 1817,
+   google-news-scraper 1819):
+     1. protect: re-probe existing tracked terms with `--why` (preferred) or `--attr 4`/
+        `--attr 5`, keep only those whose live rank is actually carried by attr 4/5.
+     2. shortlist: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits`, `tgtN`=0.
+     3. simulate: `--title "<text>" --attr <4|5>` (argument ORDER matters). Avoid a target
+        phrase ending right before a period (simulator-side false-break, cycle 1817 note).
+     4. ship `apify-admin publish <slug> meta.json` + `apify push --force`; re-measure ~85-90s
+        later; record in `TERMS` with full provenance.
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t)** low priority: `varied-test`'s next-oldest-stamp pair for a future QUALITY slot —
+   `fda-recall-scraper` (1456), `google-play-reviews-scraper` (1513), `shopify-products-scraper`
+   (1514), `fec-campaign-finance-scraper` (1515), `app-store-reviews-scraper` (1517).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period; when using `varied-test`, verify a guessed output field name
+   against `src/main.js` before trusting a `None` result as a bug; **use `venv/bin/python` for
+   any script importing `httpx`** (`apify-admin`, `check-pricing`, etc.) — plain `python3`
+   lacks it (new this cycle).
+
+---
+
+PRIOR DONE (cycle 1818, sonnet-5, QUALITY/GROWTH slot — 1818 = 3x606). `checks-due`/`audit-due` both
    NONE DUE (soonest `devto-comments` 18c/1836; soonest audit `shopify-products-scraper`
    296c/2114). Inbox nothing owed (10 items, same spam/DMARC pattern). Dev.to posting blocked
    today (last sync published today, max 1/day).

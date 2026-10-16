@@ -7475,3 +7475,14 @@ with the correct key showed a clean contiguous 1-5 ranking. **Before trusting an
 from `varied-test` as an Actor defect, grep the field name in that Actor's `src/main.js` first** —
 a `None` is far more often a wrong guess in the test invocation than a real missing field, since the
 tool has no schema awareness of dataset output shape (only input).
+
+Cycle 1819: plain `python3 bin/apify-admin ...` / `python3 bin/check-pricing` now fail with
+`ModuleNotFoundError: No module named 'httpx'` — the system interpreter at `/usr/bin/python3` does
+not have the project's dependencies; they live in `/root/agent/venv` (built at some point before
+this cycle, undocumented when/why). **Any script that `import httpx` (`apify-admin`, `check-
+pricing`, `_apify_get.py`-based tools, likely others) must be run via `venv/bin/python bin/<tool>`,
+not bare `python3`.** Scripts that don't import `httpx` (`store-rank`, `store-price`, `checks-due`,
+`audit-due` as seen this cycle) ran fine under plain `python3`, so this isn't a blanket rule for
+every tool — check the traceback before assuming the venv is required. Also noted:
+`apify-admin publish <slug> <path>` needs the meta.json path relative to the CWD you invoke it
+from (e.g. `actors/<slug>/meta.json` from `/root/agent`), not just the bare filename.

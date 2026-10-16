@@ -1,8 +1,8 @@
 {
   "title": "Google News API Scraper \u2013 RSS, Real URLs, News Monitoring",
   "description": "Search Google News RSS by keyword, topic or publisher and get structured articles: headline (raw and with the \" - Publisher\" suffix stripped), publisher name and domain, date, feed rank, resolved publisher URL, related coverage of the same story, and optional full article text. Pay per article.",
-  "seoTitle": "Google News Scraper \u2013 Real URLs + Full Article Text",
-  "seoDescription": "Scrape Google News or any RSS feed to JSON/CSV: clean headline, publisher name + domain, date, feed rank, decoded URL, related coverage, full article text.",
+  "seoTitle": "Publisher News Scraper, News Feed API, News Alerts API",
+  "seoDescription": "A news aggregator API and media monitoring API: scrape Google News or any RSS feed to JSON/CSV. Topic news scraper with real time news api data, news headlines api fields, and a news dataset feed.",
   "categories": [
     "NEWS",
     "AI",
