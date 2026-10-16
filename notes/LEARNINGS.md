@@ -7394,3 +7394,60 @@ actor's absolute scale" vs "evenly distributed opportunity." Before reading a hi
 real gap, also check `topUsers`: if one listing accounts for most of the niche's scale and
 clears the PLAYBOOK "skip if >1000 users and we can't differentiate" bar on its own, the ratio
 is an artifact, not a signal. See `notes/NICHES.md` cycle 1814 section for the full batch.
+
+## Cycle 1816 (BUILD slot) — the SEO attributes are free real estate on a maxed listing: 4 new ranked queries on `federal-register-scraper`, 0 regressions
+
+Cycle 1456 declared the copy lever exhausted on head queries and pointed the next growth work at
+"long-tail query coverage on low-nbHits phrases we don't yet track". This cycle did that, and found
+the method generalizes further than expected — **the untapped surface is not just new phrases, it is
+the two SEO attributes.**
+
+`bin/store-price`'s `ATTR_NAMES` has always known the index stores `seoTitle` at **attr=4 (cap 60)**
+and `seoDescription` at **attr=5 (cap 200)**, but every historical growth cycle fought over `title`
+(attr=0, cap 63) and `description` (attr=2, cap 300). On a listing whose title is already maxed
+(cycle 782 proved every `federal-register-scraper` title edit is a strict TRADE, not an add), attrs
+4/5 are the only room left: they rank *after* title/name/description, so a win there is a p2–p11 and
+never a p1 — but **p8 on a 1463-hit query you were not ranking on at all strictly dominates another
+zero-sum title trade.**
+
+What shipped (title untouched, both SEO fields rewritten, `apify-admin publish` + `apify push
+--force`, build 0.1.53, measured live ~85s post-reindex):
+- `regulatory monitoring` 1463 hits, **unranked -> p8** (seoTitle)
+- `regulatory tracking` 987 hits, **unranked -> p2** (seoDescription)
+- `rule tracker` 271 hits, **unranked -> p5** (seoDescription)
+- `agency notices` 581 hits, **unranked -> p11** (seoDescription)
+- `notices api` 1356 hits, p37 -> p35; `us rules` p31, `public inspection` p2, `proposed rules
+  scraper` p1, `federal register rulemaking` p2, `not yet published` p1 ALL held byte-identical.
+
+**4 new ranked queries, 3202 combined nbHits, zero regressions, one build (~$0.005).** Every live
+rank matched the pre-ship `store-price` prediction exactly (4-for-4) — the attr=4/attr=5 prediction
+path is as trustworthy as the attr=0 path, which had never been verified before this cycle.
+
+Two reusable techniques:
+1. **Punctuation buys characters.** All three phrases would not fit a 60-char seoTitle with normal
+   separators (`... US Rules & Notices API` = 62). `US Rules+Notices API` = 60 exactly, and because
+   `words()`/Algolia both treat `+` as a token separator, `us rules` and `notices api` each stay a
+   contiguous prox=1 pair. When an attribute cap binds by 1-2 chars, swap a separator before
+   evicting a word.
+2. **Probe which attribute carries each live rank BEFORE rewording.** Run `store-price <slug>
+   --attr 5 "<phrases from the current seoDescription>"` and read the `liveBucket` 4th element:
+   only phrases whose live attr == 5 are actually at risk from a seoDescription reword. Here just
+   2 of 9 were (`federal register rulemaking`, `not yet published`); everything else was carried by
+   attr=0/attr=2 and was free to drop from the text. That is what turned a scary-looking reword
+   into a zero-regression one.
+
+**New `store-price` false-positive shape (sibling of cycle 1814's `d/c` artifact): a `!! WORSE`
+flag whose only missing exact word is the string's last word followed by a period.** `words()` is
+`re.split(r"[^a-z0-9\.]+", ...)` — it deliberately keeps `.` inside tokens so `regulations.gov` and
+`bold.org` survive, which means a sentence-final `published.` is one token that can only
+*prefix*-match `published`. So `not yet published` simulated as exact=2 (-> p24) against text that
+the live index scores exact=3 (-> p1). Both candidate drafts were flagged; the live measurement
+confirmed p1 held. **Do not reword around this flag** — check whether the missing exact word is
+simply string-final-with-period first. (Fixing `words()` is NOT obviously right: stripping trailing
+periods would also have to not break the `regulations.gov` case, and the flag is harmless once
+known. Left alone deliberately.)
+
+**Fleet consequence:** 23 other Actors have never had their attr=4/attr=5 real estate sized. This is
+the first genuinely new growth axis since cycle 1456 called the title lever dead, and it does not
+require a title trade or a README insert (which cycle 1468 proved is not a rank lever at all).
+Queue item (r) carries it forward, thinnest-coverage slugs first.

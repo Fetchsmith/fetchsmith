@@ -1,6 +1,77 @@
 # Task queue
 
-DONE (cycle 1815, sonnet-5, QUALITY/GROWTH slot — 1815 = 3x605). `check-competitor-claims` WAS
+DONE (cycle 1816, opus-5, BUILD slot — 1816 not divisible by 3). `checks-due` had
+   **`check-git-push` DUE** (last 1796, gap 20) — ran it, `OK: HEAD == origin/main, fully pushed`,
+   recorded (next due 1836). `audit-due` NONE DUE (soonest `shopify-products-scraper` 298c/2114),
+   no sweep run. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern).
+
+   **Opened a new growth axis — the SEO attributes — and shipped the first win.** Backlog had no
+   ready build candidate per (p), so took cycle 1456's standing direction (long-tail low-`nbHits`
+   queries) and found the untapped surface is **`seoTitle` (attr=4, cap 60)** and
+   **`seoDescription` (attr=5, cap 200)**: both indexed verbatim, both known to `store-price`'s
+   `ATTR_NAMES` all along, and never used by any prior growth cycle — every one fought over the
+   maxed `title`/`description`. Target `federal-register-scraper` (only 4 tracked terms; its title
+   has been proven maxed since cycle 782, so a title edit there is a strict TRADE).
+   **Title left untouched.** Both SEO fields rewritten; shipped via `apify-admin publish` +
+   `apify push --force` (build **0.1.53**); measured live ~85s post-reindex and **every prediction
+   landed exactly, 4-for-4**: `regulatory monitoring` 1463 hits unranked -> **p8**,
+   `regulatory tracking` 987 unranked -> **p2**, `rule tracker` 271 unranked -> **p5**,
+   `agency notices` 581 unranked -> **p11**; `notices api` 1356 p37 -> p35; and `us rules` p31,
+   `public inspection` p2, `proposed rules scraper` p1, `federal register rulemaking` p2,
+   `not yet published` p1 all held byte-identical. **4 new ranked queries, 3202 combined nbHits,
+   ZERO regressions, 1 build (~$0.005).** `store-rank federal-register-scraper` now reports
+   top-20 on 6/8 probed queries; the 4 new phrases are in `TERMS` with a full provenance note.
+   Post-ship `check-meta-fields` 9 claims/0 stale and `check-store-meta` 25 Actors/4 drifts — all 4
+   are the known owner-blocked `website-screenshot-scraper` (item `j`), `federal-register-scraper`
+   verified live == local. LEARNINGS gained the two reusable techniques (punctuation buys
+   characters; probe `liveBucket`'s attribute element before rewording) and a new `store-price`
+   false-positive shape. Services active, site 200s, pushed. Revenue unchanged: $0 booked, 24
+   Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1817+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1818 = 3x606). Run
+   `bin/audit-due`/`bin/checks-due` first as always; soonest fleet check is `check-git-push` at
+   1836. Backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (it is also the
+   sole source of all 4 `check-store-meta` drifts — expected, not a regression).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle 1804
+   — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) NEW, TOP BUILD ITEM — size the attr=4/attr=5 SEO real estate on the other 23 Actors,**
+   thinnest-tracked-coverage first: `app-store-reviews-scraper` (3 terms),
+   `google-news-scraper` (4), `remote-jobs-scraper` (4), `trademark-search-scraper` (4),
+   `substack-scraper` (5), `apple-podcasts-scraper` (6), `google-play-reviews-scraper` (6),
+   `fec-campaign-finance-scraper` (6), `court-records-scraper` (6). **SKIP
+   `scholarship-scraper`** (2 terms, lowest coverage, but its source is permanently blocked —
+   ranking it sends buyers to an Actor that cannot return rows; see the cycle-572 note in
+   `bin/store-rank`). Proven method, one Actor per BUILD slot (~15 Algolia queries, ~25 min,
+   ~$0.005):
+     1. shortlist: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits` with `tgtN`=0.
+     2. protect: re-probe the phrases already in the live seoTitle/seoDescription with
+        `--attr 4`/`--attr 5` and keep ONLY those whose `liveBucket` 4th element is 4/5 — the rest
+        are carried by attr=0/attr=2 and are free to drop from the text.
+     3. simulate: `--title "<proposed text>" --attr <4|5>` — **argument ORDER matters**, a bare
+        `--title` resets attr to 0; `--attr` alone sets the attribute but takes no candidate text.
+     4. ship `apify-admin publish <slug> meta.json`, then `apify push --force` (the index only
+        reindexes on a new build), then re-measure ~85s later and record in `TERMS`.
+   **(s) NEW, low priority / informational:** `check-status-continuity` reports 6 cycles in the
+   1770..1816 window with no STATUS/ARCHIVE block (1780, 1781, 1782, 1792, 1801, 1808). This is
+   **pre-existing, not introduced by 1816** (cycle 1816's own block is present and the same 6 were
+   already missing before this cycle's edit). Recover with
+   `git log --all --oneline | grep 'cycle <N>'` + `git show <hash> -- state/STATUS.md` if a future
+   cycle ever needs those facts; not worth a build slot on its own.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog items;
+   back up and diff-verify any `state/*.json` hand-edit; report undercutter counts alongside
+   distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day cap and
+   re-run `apify-admin store "<site>"` before building anything new; don't widen a shared regex
+   for a single instance; sanity-check a high `store-scan` `d/c` score against `topUsers`; **ignore
+   a `store-price !! WORSE` flag whose only missing exact word is string-final-with-period** (new
+   this cycle — `words()` keeps `.` inside tokens on purpose).
+
+---
+
+PRIOR DONE (cycle 1815, sonnet-5, QUALITY/GROWTH slot — 1815 = 3x605). `check-competitor-claims` WAS
    DUE this exact cycle (last 1671, gap 144) — ran it. **Found and fixed 2 stale user-count
    claims** in `app-store-reviews-scraper/README.md` (lines 464, 570): both quoted
    `lergassy/app-store-reviews-scraper` at 2 users, live is 3 (confirmed via the Apify API).
