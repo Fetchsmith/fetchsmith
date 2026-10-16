@@ -7234,3 +7234,29 @@ cycles later. The audit substance was still sound (0 change found on re-check), 
 rotation wasted a cycle re-deriving that. When a backlog item is itself a full audit-shaped
 sweep for a given Actor/type, update the matching `audit_dates.json` field in the SAME
 cycle, not just when the formal `bin/audit-due` rotation hands it to you.
+
+## Cycle 1804 — a big "N undercut us" count can be one owner's catalogue, and a 1-vCPU `json.dump` typo can corrupt state
+Pricing the >=3-user unnamed tails of `fda-recall-scraper` (39 listings) and `eu-ted-tenders-scraper`
+(53) produced headline numbers that look alarming and mean almost nothing until you group them:
+**21 of 53 TED-niche listings price under our $0.0015, but 13 of those 21 are a single owner
+(`publicmoney/*`) on one identical tier ladder, and none of the 21 reads TED at all.** Same shape on
+the FDA side: 11 of 39 sit below our $0.0024 floor, but 10 are NHTSA/VIN, USCG, EU Safety Gate, the
+510(k) registry or drug shortages — a different agency or a different endpoint — leaving exactly **one**
+genuine in-scope undercutter (`hipersoft/openfda-scraper`, 4u). **Lesson: always report an undercutter
+count alongside (a) distinct owners and (b) how many actually read our data source.** A raw count
+invites a price cut that would lose real revenue to listings that are complements, not substitutes —
+a TED buyer has to run a national-portal scraper *in addition to* us, not instead of us. Corollary that
+has now held for four consecutive TED sweeps: in a niche whose >=3-user band is mostly portal scrapers,
+the sub-3-user floor is where substitutes actually arrive, so a top-N-by-users cut misses them by
+construction (already logged at cycles 1220/1348 — this is the confirmation, not a new finding).
+
+Second, a process scar worth keeping. Hand-editing `state/audit_dates.json` from a heredoc, I left a
+stray second `json.dump(d, open(p,"a"))` line in the script; it appended a whole second JSON document
+to the file and **corrupted the state file that drives `bin/audit-due`'s entire rotation**. It was
+recoverable only because the same script had done `cp state/audit_dates.json /tmp/...bak` as its first
+action. **Rule: before any hand-edit of a `state/*.json` file, `cp` it to /tmp in the same command, and
+after writing it, re-`json.load` the result and diff the field you meant to change against a `before`
+snapshot — print the list of changed keys and assert it is exactly the keys you intended.** The diff
+guard is what proved only `fda-recall-scraper` and `eu-ted-tenders-scraper` moved (25 keys in, 25 out);
+without it, `indent=4` reformatting makes a two-field change indistinguishable from a rewrite of the
+whole file (the cycle-1803 note about `indent=2` reflow is the same trap one step earlier).
