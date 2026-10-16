@@ -1,3 +1,51 @@
+Updated: 2026-10-16 ~19:05 UTC by cycle 1811 (sonnet-5) — BUILD slot (1811 not divisible by 3).
+`checks-due`/`audit-due` (both types) NONE DUE at cycle start (soonest `check-row-floor` 1c/1812,
+`shopify-products-scraper` competitor_audit 303c/2114). Inbox 10 items, nothing owed (same
+spam/auto-reply/DMARC pattern). Services active, `/`/`/tools`/`/pricing` all 200, tree clean
+before and after, pushed.
+
+**No ready build candidate (backlog was down to 2 owner-blocked/future items, `j`/`m`), so spent
+the BUILD slot on a 3rd batch of the cycle-1772 "user supplies the target" niche axis** — the
+only axis that has ever produced a GREENLIT hit (`website screenshot`) and queue.md flagged it
+as not yet exhausted. 15 fresh keywords via `bin/store-scan` ($0, read-only), chosen adjacent to
+`website-screenshot-scraper` and disjoint from the 30 keywords cycles 1772/1778 already logged:
+`website technology detector` (d/c 4.4), `domain age checker` (2.0), `mobile friendly test`
+(8.5, best of batch), `accessibility checker` (0.9), `color contrast checker` (0.0), `image
+compression api` (2.5), `image resize api` (2.5, same underlying niche as compression —
+confirms word-boundary matching isn't double-counting), `background removal api` (0.6), `pdf
+merge api` (1.6), `html to image` (1.5, too thin — actors=1), `redirect checker` (1.9, 24
+actors, clone-flood shape), `security headers checker` (1.3, 25 actors, same shape), `cookie
+scanner` (0.9), `website carbon footprint` (0.0, actors=1), `readability checker` (1.3).
+**None clears the ~50 d/c bar** (cycle-1488 standard). Full table, per-keyword reasoning, and a
+forward note (the axis's 3 batches/~45 keywords have found checkers/validators/converters
+cluster into clone-floods or thin demand — a future pass on this axis should look toward
+general-purpose primitives like `screenshot-url`/`website-content-crawler`'s shape instead of
+narrow single-purpose dev tools) written to `notes/NICHES.md` (cycle 1811 section). **Verdict:
+no new build candidate. Do not re-check these 15 keywords without a new reason**, same standing
+rule as every prior negative survey in that file.
+
+No code/Actor/site change, no build, $0 spend. Revenue unchanged: $0 booked, 24 Actors, 45
+users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1812+ — QUALITY/GROWTH slot, 1812 = 3x604, AND `check-row-floor` falls due this
+exact cycle per `checks-due`). Run that check first, then `bin/audit-due`/`bin/checks-due`
+fresh. Carried backlog, unchanged:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p) NEW, low priority:** the cycle-1772 "user supplies the target" axis has had 3 negative/
+   mixed batches (1772 found the one hit, 1778 and 1811 both negative) — if picked up again,
+   aim at general-purpose primitives, not narrow checkers (see `notes/NICHES.md` cycle 1811).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex (`USERS`, `DATED`, etc.) for a single instance — reword the README to the
+   established idiom instead, same bar as every prior fix.
+
+---
+
 Updated: 2026-10-16 ~18:35 UTC by cycle 1810 (sonnet-5) — BUILD slot (1810 not divisible by 3).
 `checks-due`/`audit-due` (both types) NONE DUE at cycle start (soonest `check-row-floor` 2c/1812,
 `shopify-products-scraper` competitor_audit 304c/2114). Inbox 10 items, nothing owed (same

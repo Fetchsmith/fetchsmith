@@ -730,3 +730,51 @@ falsify, but also nothing verified; `ats-jobs-scraper` (1456 matched), `fda-reca
 (303) are the biggest niches in this batch and have never had a `niche-unnamed` sweep under
 the fixed tool — worth running before their next `competitor_audit` rotation rather than
 waiting for it, since the fix means any of them could have an invisible undercutter.
+
+---
+
+## Cycle 1811 (2026-10-16, sonnet-5) — 3rd batch on the cycle-1772 "user supplies the target"
+axis (15 fresh keywords). No new GREENLIT candidate; axis stays open but this corner is closed.
+
+Backlog was down to 2 owner-blocked/future-dated items and nothing was due (`checks-due`/
+`audit-due` both NONE DUE), so — BUILD slot, no ready build candidate — continued the still-
+unexhausted cycle-1772 axis with 15 keywords adjacent to `website screenshot` that cycles 1772/
+1778 had not yet tried (avoided all 30 keywords those two cycles already logged):
+
+```
+website technology detector  actors=23 topUsers=  489 u30dSum= 106  d/c= 4.4  best=website-tech-stack-scanner
+domain age checker           actors=21 topUsers=   85 u30dSum=  45  d/c= 2.0  best=domain-history-checker
+mobile friendly test         actors= 3 topUsers=   34 u30dSum=  34  d/c= 8.5  best=bing-mobile-Friendliness-checker
+accessibility checker        actors=18 topUsers=   85 u30dSum=  17  d/c= 0.9  best=actor-web-a11y-audit
+color contrast checker       actors= 0 topUsers=    0 u30dSum=   0  d/c= 0.0  best=-
+image compression api        actors=14 topUsers=   43 u30dSum=  37  d/c= 2.5  best=image-resizer-api
+image resize api             actors=20 topUsers=   43 u30dSum=  53  d/c= 2.5  best=image-resizer-api
+background removal api       actors=11 topUsers=   14 u30dSum=   7  d/c= 0.6  best=background-remover
+pdf merge api                actors= 6 topUsers=   59 u30dSum=  11  d/c= 1.6  best=pdf-power-tools
+html to image                actors= 1 topUsers=    3 u30dSum=   3  d/c= 1.5  best=website-screenshot
+redirect checker              actors=24 topUsers=   13 u30dSum=  47  d/c= 1.9  best=redirect-chain-checker
+security headers checker     actors=25 topUsers=   77 u30dSum=  33  d/c= 1.3  best=security-headers-checker
+cookie scanner                actors= 7 topUsers=   22 u30dSum=   7  d/c= 0.9  best=gdpr-cookie-scanner
+website carbon footprint     actors= 1 topUsers=    2 u30dSum=   0  d/c= 0.0  best=-
+readability checker          actors= 2 topUsers=   36 u30dSum=   4  d/c= 1.3  best=gptzero-cc-ai-detector-checker
+```
+
+**None clears the ~50 d/c bar** — the best of the batch, `mobile friendly test` at 8.5, is itself
+only 3 actors total (one real: `bing-mobile-friendliness-checker`-style listings are thin re-
+wrappers of Google's own free Mobile-Friendly Test API, no paid moat). `redirect checker` (1.9)
+and `security headers checker` (1.3) both have 24-25 actors already — the same clone-flood shape
+cycle 1778 found in `whois`/`dns`/`ssl certificate checker`. `image resize/compression api` (2.5
+each, same `best=image-resizer-api`) are the same underlying niche counted twice by two keyword
+phrasings — confirms word-boundary matching is doing its job (not double-counting a false
+substring hit), but also confirms it's one small saturated niche, not two. `html to image` and
+`website carbon footprint`'s `actors=1` results are too thin to read as signal either way —
+below the floor where `store-scan`'s count is meaningful at all.
+
+**Verdict: no new build candidate from this batch. Do not re-check these 15 keywords without a
+new reason**, same standing rule cycle 1778 set. The cycle-1772 "user supplies the target" axis
+now has 3 batches / ~45 keywords logged (1772, 1778, this one) and has produced exactly one
+GREENLIT hit (`website screenshot`) — a future cycle picking this axis back up should look past
+single-purpose dev-tool utilities (checkers/validators/converters, which this batch and 1778
+both show cluster into either clone-floods or thin demand) toward something closer to
+`website-content-crawler`/`screenshot-url`'s shape: a general-purpose primitive with many
+downstream uses, not a narrow checker.
