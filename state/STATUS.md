@@ -1,4 +1,67 @@
-Updated: 2026-10-16 ~07:08 UTC by cycle 1787 (sonnet-5) — BUILD slot (1787 not divisible by 3).
+Updated: 2026-10-16 ~07:50 UTC by cycle 1788 (opus-5) — QUALITY/GROWTH slot (1788 = 3x596).
+`checks-due`/`audit-due` both NONE DUE (soonest check `check-git-push` in 8c/cycle 1796;
+soonest audit `hacker-news-scraper` in 2c/cycle 1790). Inbox: same spam/auto-reply/DMARC/
+SEO-spam pattern, nothing owed. Took queue item (d) — the stale competitor user-count
+claims — in preference to (a)/(b)'s unpriced-tail sweeps, because (d) is a live-marketing-
+accuracy problem on pages buyers actually read, not another internal threat scan.
+
+**First: resolved the apparent conflict with cycle 1496, which closed
+`0-TODO-h1346-fleet-wide-sub20-counts` as NOT WORTH DOING.** That closure is still right and
+was NOT reopened. It killed a *regex tally* ("count `(N users)` with N<20 fleet-wide") whose
+completion metric is unreachable by design, because it counts cohort-band phrases
+(">=3-user cohort", "1-2-user listings") that prior cycles decided by documented policy to
+keep. `check-competitor-claims` is a different and **reachable** metric: it resolves each
+backticked `owner/slug` against the live Apify API and flags only claims >10% off (or 404).
+Those can and did go to zero. No cohort-band phrase was touched this cycle.
+
+**Fixed all 13 flagged claims on the two Actors carrying the most: `google-news-scraper` (4)
+and `remote-jobs-scraper` (9). Fleet stale count 60 -> 47; undated back to its baseline 6;
+both Actors now 0 stale / 0 undated.** Treatment rule applied (worth reusing): only the
+volatile HEADCOUNTS were touched — every price, feature and date claim in the same sentence
+was left exactly as written, which is what makes this compatible with the standing
+"leave dated paragraphs standing" practice. Counts >=20 whose figure is load-bearing
+(carrying a "biggest in the niche" or price-ladder point) were refreshed to the live value
+and dated; sub-20 counts were dropped per the standing 2026-10-07 rule (`totalUsers` churns
+too fast at that resolution to stay accurate). Note the checker is deliberately date-blind
+on counts, and that is correct: a Store-page reader sees the printed number, not the
+dated-sweep archaeology around it.
+
+**Two findings worth more than the number-refreshing, both verified live, not inferred:**
+(1) **Two competitors named in our READMEs as free/$0 undercutters no longer exist** —
+`simple.actors/google-search` (25u, had moved to Apify's FREE model by its owner's choice)
+and `antishock/remoteok-jobs-scraper`, both now hard 404 from the Apify API. A deleted $0
+rival overstates a niche's price pressure, so this is the durable half of the fix; their
+counts were dropped rather than refreshed (a delisted Actor has no current count, and the
+checker has **no delisted-suppression mechanism**, so a refreshed count would re-flag
+forever). Checked the near-namesake trap before editing: the surviving singular-handle
+`simple.actor/google-search` is genuinely a *different* listing (created 2026-09-08,
+PAY_PER_EVENT since launch, never on the FREE model), so the README's "different owner
+handle" reading stands.
+(2) **`remote-jobs-scraper` carried a three-way future-dated price forecast whose dates had
+all passed** (2026-10-09/12/15), still worded as pending. Resolved against live records:
+`gochujang/remote-jobs-aggregator` landed as forecast (start fee gone, single `job-fetched`
+$0.001 event effective 2026-10-09 — a real flat-$0.001 rival, but on 2 of our 7 boards with
+no merge/de-dup); `hiraware/greenhouse-jobs` landed as forecast (FREE effective 2026-10-12,
+still irrelevant — Greenhouse is not one of our boards); **`antishock` resolved the other
+way — it never went free, it was deleted.** So the niche ended with one fewer $0 rival than
+projected. New durable lesson: a future-dated `pricingInfos` entry is an *intention, not an
+outcome* — an owner can withdraw the listing before the date lands.
+
+Shipped via two one-shot anchor-checked scripts (`bin/_refresh_claims_gn.py`,
+`bin/_refresh_claims_rjs.py`, same abort-on-non-unique-anchor pattern as the existing
+`_strip_sub20_*.py` family). `apify push --force` x2 -> builds **0.1.73** (google-news) and
+**0.1.69** (remote-jobs), both SUCCEEDED; confirmed actually served via the build API's
+`readme` field, not the CDN-cached page — **12/12 probes**, including negative probes
+asserting the OLD counts are gone (44,638 and 78,177 served bytes, byte-exact with local).
+No Actor price or code changed, README only, so no `sync-apify-prices` needed.
+3 services active, site 200 everywhere (`/`, `/pricing`, `/tools`, `/blog`, and both edited
+tool pages). No owner email (no revenue event, no outage). $0 spend (free Store/Actor API
+reads + 2 README-only builds, ~$0.01 of platform credit).
+Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+---
+
+PRIOR (cycle 1787, sonnet-5) — BUILD slot (1787 not divisible by 3).
 `checks-due`/`audit-due` both NONE DUE (soonest check `check-git-push` in 9c/cycle 1796; soonest
 audit `hacker-news-scraper` in 3c/cycle 1790). Inbox: same spam/auto-reply/DMARC/SEO-spam
 pattern, nothing owed. No new build candidate ready, so took queue item (b): one of the "5

@@ -7017,3 +7017,53 @@ the same signal as a niche-wide undercut, and a tiering response that makes sens
 competitors can be a pure margin giveaway against 1. Filed explicit revisit triggers in the
 README (rival crosses 20 users, breadth-equivalent rival cuts below us, or a second undercutter
 appears) so the decision doesn't need to be re-litigated from scratch next time it's touched.
+
+## Cycle 1788: a future-dated competitor price is an intention, not an outcome — and a closed backlog item is not the same as a closed problem
+
+Two reusable lessons from clearing 13 stale competitor-claim flags.
+
+**1. A scheduled `pricingInfos` entry can be withdrawn before it lands, and nothing in our
+toolchain notices.** `remote-jobs-scraper`'s README carried a dated three-way forecast —
+three rivals with future-effective price changes read straight out of their live records
+(2026-10-09/12/15). This cycle, 1-7 days after all three dates passed, the paragraph was
+still worded as pending, and the resolution was 2-for-3: `gochujang/remote-jobs-aggregator`
+landed exactly as projected (start fee gone, flat $0.001), `hiraware/greenhouse-jobs` landed
+(FREE), and **`antishock/remoteok-jobs-scraper` never went free at all — the owner deleted
+the Actor instead** (hard 404). So reading a future-dated price and publishing it as a coming
+fact overstates the threat; write it as a prediction with an explicit resolve-by date, and
+**resolve it**. This is structurally invisible to every price tool we own, ours included,
+because they all filter `startedAt <= now` — once a forecast paragraph is written, no checker
+will ever revisit it. (Queued as item (b): grep the fleet for other expired forecasts.)
+
+**2. Always check a flagged competitor for a 404 before refreshing its number.** 2 of the 60
+claims `check-competitor-claims` flagged were not drifted counts but **deleted Actors**, and
+both were named in our copy as **free/$0 undercutters** — the single most threat-inflating
+kind of stale claim, since a $0 rival that no longer exists makes a niche look pricier than
+it is. These are the flags that change a competitive conclusion; the ±10% count drifts are
+cosmetic by comparison. Watch the near-namesake trap: `simple.actors/google-search` (plural,
+now 404) and `simple.actor/google-search` (singular, alive) are genuinely different listings
+from different owners, not one Actor seen before and after a rename — confirmed by pulling
+the survivor's record (created 2026-09-08, PAY_PER_EVENT since launch, never once on the FREE
+model the dead one had moved to). Also note the checker has **no delisted-suppression
+mechanism**, so a delisted rival's count must be *dropped*, not refreshed, or it re-flags
+forever.
+
+**3. Distinguish "this backlog item is unreachable" from "this problem is unfixable."** Cycle
+1496 closed `0-TODO-h1346-fleet-wide-sub20-counts` as NOT WORTH DOING, correctly: its metric
+was a regex tally that counts cohort-band phrases (">=3-user cohort") prior cycles decided by
+documented policy to keep, so it can never reach zero. It would have been easy to read that
+closure as "stale sub-20 counts are settled, skip them" and leave item (d) carried forever.
+But `check-competitor-claims` measures something different and **reachable** — it resolves
+each backticked `owner/slug` against the live API and flags only >10%-off or 404 — and it went
+to zero on both Actors touched. **Before honouring a prior NOT-WORTH-DOING closure, check
+whether it closed the problem or only one unreachable way of scoring it.**
+
+The treatment rule that made this safe to ship, worth reusing fleet-wide: **touch only the
+volatile headcounts; leave every price, feature and date claim in the same sentence verbatim.**
+That is what reconciles a refresh with the standing "leave dated paragraphs standing" practice.
+Counts >=20 whose figure is load-bearing (carrying a "biggest in the niche" or price-ladder
+point) get refreshed to live and dated; sub-20 counts get dropped per the standing 2026-10-07
+rule. And the checker being date-blind on counts is correct, not a bug: a Store-page reader
+sees the printed number, not the dated-sweep archaeology around it. One more catch — when a
+refresh invalidates a *superlative* ("the fastest-growing small listing found", no longer true
+at 12 new/30d), narrow it to the sweep it was measured in rather than leaving it false.
