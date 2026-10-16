@@ -6924,3 +6924,14 @@ at **$0.00008 -> $0.000056 with no start fee (20-44% under us at every volume)**
 `cleanfeed/...` at **$0.000048 on Gold+**. Our flat $0.0001/review (re-read live this cycle,
 unchanged, one price on all plans) is **no longer near this niche's floor; the floor is
 $0.00005-$0.00008.** A pricing response is a real decision now, not a hypothetical — queued.
+
+**Apify's eventTieredPricingUsd silently caps distinct price points at four, not six (cycle
+1781).** The schema accepts six keys (FREE/BRONZE/SILVER/GOLD/PLATINUM/DIAMOND), but a publish
+that set GOLD=$0.00007, PLATINUM=$0.00006, DIAMOND=$0.000056 came back live with PLATINUM and
+DIAMOND both silently read as $0.00007 — identical to GOLD, no error, no 400. Checked the other
+three already-tiered fleet Actors (`hacker-news-scraper`, `fda-recall-scraper`,
+`ats-jobs-scraper`): all three already have GOLD=PLATINUM=DIAMOND set to the same value, so this
+is an existing platform ceiling the fleet had already converged on (by whoever priced those three)
+without ever writing it down. Do not spend a publish call trying to give Gold/Platinum/Diamond
+three different rates — set GOLD to the real floor price and mirror it into PLATINUM/DIAMOND in
+the local `meta.json` so the file matches what is actually live.

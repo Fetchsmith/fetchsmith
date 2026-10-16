@@ -101,7 +101,8 @@ An app's average rating hides the shape of its distribution: 4.5 stars from most
 Useful for a 1★-share trend line over releases, for weighting sentiment against how many silent raters actually sit behind a review, and for competitor comparisons where two apps show the same average.
 
 ## Pricing
-`result` — charged per review returned. App lookups, empty pages and errors are free. HTTP-only and fast.
+`result` — charged per review returned, tiered by your Apify account plan from $0.0001 (Free) down to
+$0.00007 (Gold and up). App lookups, empty pages and errors are free. HTTP-only and fast.
 
 **Where this sits in the market. Input schema and pricing verified live 2026-10-02** against each
 Actor's latest build, not against its Store description. The two busiest App Store review scrapers
@@ -545,6 +546,32 @@ note those are **not real Apple feed orders**: probed live 2026-09-26 against
 return entries at all, and `mostFavorable`/`mostCritical` come back as an empty feed. This Actor
 therefore scans under `mostRecent` and re-orders by star rating itself; a scraper that passes those
 values straight through to the RSS feed gets nothing back.
+
+**Pricing decision, shipped live 2026-10-16 (cycle 1781): moved from flat $0.0001/review to
+account-plan tiering, $0.0001 (Free) → $0.00009 (Bronze) → $0.00008 (Silver) → $0.00007 (Gold and
+up).** The sweep above (cycle 1780) established that flat $0.0001 is no longer competitive: 14
+unnamed rivals undercut it on at least one tier, the niche floor is $0.00005–$0.00008, and two
+no-fee listings (`lergassy`, `workstream`) beat it at every volume on every plan. A flat cut to
+match the floor was rejected — racing a handful of 2-user listings that may be abandoned to
+$0.00005 is not obviously winnable with 45 users and $0 revenue fleet-wide, and flattens the margin
+on every run regardless of who is paying. Tiering by account plan is the fix that was actually
+missing: every serious named rival in this niche tiers by plan and this Actor did not, which meant
+we were the **dearest** option for every buyer who had ever paid Apify a cent, even while quoting a
+rate that looked competitive to a Free-tier shopper. The new tiers keep the Free-tier rate unchanged
+(still ties the historical volume leaders `thewolves`/`theagents`), and make every paying tier
+cheaper than the old flat rate — Silver ties `workstream`'s unconditional $0.00008, and Gold+ sits
+one tick above `lergassy`'s $0.000056 Gold+ rate rather than matching it exactly, since `lergassy`
+has 2 users and no track record and losing 0.000014/review to the single cheapest listing in a
+crowded niche is a reasonable price for not having raced to the bottom. **Platform finding, not
+previously documented:** Apify's tiered-pricing API silently collapses GOLD/PLATINUM/DIAMOND to one
+value — a publish that set PLATINUM to $0.00006 and DIAMOND to $0.000056 came back live with both
+read as $0.00007, identical to GOLD. Checked three other already-tiered fleet Actors
+(`hacker-news-scraper`, `fda-recall-scraper`, `ats-jobs-scraper`): all three already have
+GOLD = PLATINUM = DIAMOND, so this is an existing platform ceiling the fleet had already converged
+on by convention, not a new regression — filed in LEARNINGS so a future cycle doesn't waste a
+publish call trying to separate those three tiers again. `apify-admin publish` + `bin/sync-apify-prices`
+both re-verified clean against this live record; `registry.json`'s `apify_price` now reads
+`{shape: tiered, entry: 0.0001, floor: 0.00007}`.
 
 ## Never silently returns an empty result
 Apple's public review feed is full of holes. For one app in one storefront, page 1 can be empty while pages 2 and 7 return a full 50 reviews each; an app can be completely empty under `mostRecent` and have hundreds under `mostHelpful`; and coverage differs per storefront. Most scrapers stop at the first empty page and hand you an empty dataset with a green "succeeded" run. This one:
