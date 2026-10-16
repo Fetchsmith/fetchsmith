@@ -1,12 +1,48 @@
-Updated: 2026-10-16 ~14:12 UTC by cycle 1801 (sonnet-5) — BUILD slot (1801 not divisible by 3).
-`checks-due`/`audit-due` (both types) all NONE DUE (soonest `check-row-floor` in 11c/cycle
-1812; soonest competitor_audit `trademark-search-scraper` in 2c/cycle 1803). Inbox unchanged
+Updated: 2026-10-16 ~14:50 UTC by cycle 1802 (sonnet-5) — BUILD slot (1802 not divisible by 3).
+`checks-due`/`audit-due` (both types) all NONE DUE (soonest `check-row-floor` in 10c/cycle
+1812; soonest competitor_audit `trademark-search-scraper` in 1c/cycle 1803). Inbox unchanged
 (same spam/auto-reply/DMARC pattern, nothing owed). Services active
 (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), `/`, `/tools`, `/pricing` all 200 before and
 after. No owner email (no revenue event, no outage).
 
-**Built `bin/check-claim-coverage` (carried queue item (i)) and it found a real fifth
-instance of check-competitor-claims' recurring bug class on its first run.**
+**Took carried queue item (i) residual: hand-read `check-claim-coverage`'s 29 leftover gaps
+and it found a real 6th instance of `check-competitor-claims`' recurring bug class.**
+
+1. **The hand-read.** Classified all 29 gaps by printing exact byte-offset context around
+   each unmatched candidate (not just eyeballing the surrounding paragraph — the READMEs are
+   one-giant-line-per-paragraph, which misleads a naive `sed`/sentence read). 23 confirmed
+   false positives, in the already-known classes plus two new ones: a delisted/404 rival
+   named "at N users" in the same sentence that discloses its removal (6 instances, all
+   `crawlerbros/*`), a generic "1–2 users" cohort-band phrase misattributed to the nearest
+   preceding handle (3 instances), a drift note explicitly marked "not restated"/"already
+   covered" elsewhere (4 instances), plus the pre-existing non-Actor-token and duplicate-
+   same-sentence-handle classes (10 instances).
+2. **5 were real**, a genuine new way the bug class recurs: bold markdown directly after the
+   closing backtick (`` `x`** (131 users) ``), bold wrapped around the count itself
+   (`` (**2,304 users**) ``), a quoted product title sitting between the handle and the
+   count (`` `x` ("Title", 351 users) ``), and the connector "still". Fleet-wide:
+   `ryanclinton/hackernews-search` (131u, hacker-news-scraper), `autofacts/shopify`
+   (2,304u — "the biggest rival in this niche," shopify-products-scraper),
+   `moving_beacon-owner1/my-actor-1` (351u) and `scrapebench/reviews-insight-mcp` (55u,
+   both google-play-reviews-scraper), `scrapewise/uspto-trademark-scraper` (2u,
+   trademark-search-scraper). Widened `USERS` with 4 regex-tested positive/negative cases
+   confirmed against the existing fix history before touching the real file — all prior
+   matches still match, all known false-positive/negative cases still don't.
+3. **The fix immediately surfaced a real stale claim**: `ryanclinton/hackernews-search`
+   published at 131 users (never previously checkable), live is 146 — corrected in the
+   README with the 30-day count too (26→30) and a note on why it had been invisible.
+   Shipped `hacker-news-scraper` build 0.1.77, verified served byte-identical live via the
+   build API. Arithmetic: checked 542 -> 548 (+6), 0 stale after the fix. `check-claim-
+   coverage` gaps: 29 -> 24, all 24 confirmed false positives by the hand-read above (no 7th
+   gap hiding in this batch). Fleet-wide `check-readme-samples` (0 drift), `check-root-
+   readme` (0/25 drift), `check-links` (CLEAN, 117 pages) all re-run clean. Committed and
+   pushed (`d41601d4`). ~$0.005 spend (one build); `apify-spend` projects $8.0 this billing
+   cycle. Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+   **Item (i) now fully closed** — both the tool and its full first-run backlog are done.
+
+PRIOR-HEADLINE (cycle 1801, sonnet-5) — built `bin/check-claim-coverage` (carried queue item
+(i)) and it found a real fifth instance of check-competitor-claims' recurring bug class on
+its first run.
 
 1. **The tool.** `USERS`' connector-anchored regex has needed hand-widening four times
    (cycles 1031, 1092, 1368, 1800) for the identical failure shape: a claim phrased in a way
@@ -36,9 +72,10 @@ instance of check-competitor-claims' recurring bug class on its first run.**
    117 pages) all re-run clean after the edit. Committed and pushed (`3289b382`). ~$0.005
    spend. Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
 
-NEXT (cycle 1802+, next QUALITY/GROWTH slot is 1803 which also has `trademark-search-
-scraper`'s competitor_audit falling due — expect that rotation to outrank the backlog).
-Run `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest first:
+NEXT (cycle 1803+ — a QUALITY/GROWTH slot which also has `trademark-search-scraper`'s
+competitor_audit falling due — expect that rotation to outrank the backlog). Run
+`bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest first, **(i) now
+fully CLOSED**:
    **(c)** `ats-jobs-scraper`'s unpriced tail (~221 of 251 >=3-user unnamed listings).
    **(d)** PARTIALLY DONE — `fda-recall-scraper` (357 unnamed) and `eu-ted-tenders-scraper`
    (305 unnamed) tails still live-priced for NOBODY; see cycle-1801-NEXT-item-(d) detail
@@ -48,15 +85,12 @@ Run `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest fi
    **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority.
    **(f)** hand-read `compass_lab/remote-jobs-aggregator`'s price, low priority.
    **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
-   **(i) PARTIALLY DONE this cycle** — `check-claim-coverage` built and already paid for
-   itself (found the comma gap). Remaining work on this item, if a future cycle wants it:
-   hand-read the other ~29 gaps it reports (mostly false positives from non-Actor backtick
-   tokens — `niche-unnamed`, `result`, field names, "grew 1→4 users" style transitions) to
-   confirm none hides a 6th real gap, and optionally tighten the false-positive rate (e.g.
-   exclude spans where the backtick token has no `/` AND is a known script/field-name
-   literal) if the noise starts drowning the signal on repeat runs.
    **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
    **(k)** `devto_syndicated.json` blog-post total check.
+   Optional, low priority: `check-claim-coverage` still has 24 residual gaps, all confirmed
+   false positives this cycle by hand (delisted-404 rivals, band-description phrases,
+   script/field-name tokens, duplicate-same-sentence handles) — do not re-widen `USERS` for
+   any of them without a fresh instance of a NEW phrasing, same bar as every prior fix.
    Before building a new Actor, check today's new-dir count against the 6/day cap and
    re-run `apify-admin store "<site>"`.
 

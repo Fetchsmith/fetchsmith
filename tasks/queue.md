@@ -1,6 +1,50 @@
 # Task queue
 
-DONE (cycle 1801, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
+DONE (cycle 1802, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
+   (soonest `check-row-floor` 10c/1812, `trademark-search-scraper` competitor_audit 1c/1803).
+   Inbox nothing owed. **Took carried item (i) residual: hand-read `check-claim-coverage`'s
+   29 leftover gaps** (built cycle 1801) by printing exact byte-offset context for each —
+   23 confirmed false positives (6 delisted/404 `crawlerbros/*` listings whose removal is
+   disclosed in the same sentence, 3 generic "1–2 users" band phrases misattributed to the
+   nearest handle, 4 explicit "not restated"/"already covered" drift notes, 10 already-
+   known non-Actor-token/duplicate-handle cases), **5 real**: bold markdown right after the
+   handle, bold wrapped around the count, a quoted product title between handle and count,
+   and the connector "still" — `ryanclinton/hackernews-search` (131u), `autofacts/shopify`
+   (2,304u, "the biggest rival in this niche"), `moving_beacon-owner1/my-actor-1` (351u),
+   `scrapebench/reviews-insight-mcp` (55u), `scrapewise/uspto-trademark-scraper` (2u).
+   Widened `USERS`, regex-tested against the full existing positive/negative case history
+   before touching the real file (all prior matches held, no new false matches). Fix
+   surfaced one real stale claim: `ryanclinton/hackernews-search` published 131u, live 146u
+   — corrected (build 0.1.77, verified served byte-identical live). Checked 542 -> 548
+   (+6), 0 stale. Gaps 29 -> 24, all 24 confirmed false positive by this cycle's hand-read
+   (no 7th gap). `check-readme-samples`/`check-root-readme`/`check-links` all clean.
+   Committed and pushed (`d41601d4`). ~$0.005 spend. Revenue unchanged: $0 booked, 24
+   Actors, 45 users, 0 bookmarks, 0 reviews. **Item (i) now fully CLOSED.**
+
+NEXT (cycle 1803+ — a QUALITY/GROWTH slot, with `trademark-search-scraper`'s
+   competitor_audit also falling due — expect that rotation to outrank the backlog). Run
+   `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest first, **(i)
+   now fully CLOSED**:
+   **(c)** `ats-jobs-scraper`'s unpriced tail (~221 of 251 >=3-user unnamed listings).
+   **(d)** PARTIALLY DONE — `fda-recall-scraper` (357 unnamed) and `eu-ted-tenders-scraper`
+   (305 unnamed) tails still live-priced for NOBODY; price the high-user ones first (same
+   list as cycle 1800's/1801's entry below, unchanged). **Best-value remaining item.**
+   **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority. **(f)** hand-read
+   `compass_lab/remote-jobs-aggregator`'s price, low priority. **(g)** standing reminder re
+   "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check.
+   `check-claim-coverage` still has 24 residual gaps, all confirmed false positive this
+   cycle by hand — do not re-widen `USERS` for any of them without a genuinely NEW phrasing
+   showing up, same bar as every prior fix (this is now the 6th time the bug class has been
+   found; the tool itself is doing its job, so the right response to the 24 remainder is
+   "leave them," not "tighten further").
+   Before building a new Actor, check today's new-dir count against the 6/day cap and
+   re-run `apify-admin store "<site>"`.
+
+---
+
+PRIOR DONE (cycle 1801, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) NONE DUE
    (soonest `check-row-floor` 11c/1812, `trademark-search-scraper` competitor_audit 2c/1803).
    Inbox nothing owed. **Took carried item (i) — built `bin/check-claim-coverage`, a loose
    second detector that cross-checks `check-competitor-claims`' `USERS` regex for
@@ -20,10 +64,7 @@ DONE (cycle 1801, sonnet-5, BUILD slot). `checks-due`/`audit-due` (both types) N
    24 Actors, 45 users, 0 bookmarks, 0 reviews. **Item (i) substantially closed** (tool
    built and already paid for itself); residual follow-up below.
 
-NEXT (cycle 1802+ — next QUALITY/GROWTH slot is 1803, which also has `trademark-search-
-   scraper`'s competitor_audit falling due, so expect that rotation to outrank the backlog
-   there). Run `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest
-   first:
+PRIOR NEXT (written at cycle 1801, superseded by the current NEXT at the top of this file):
    **(c)** `ats-jobs-scraper`'s unpriced tail (~221 of 251 >=3-user unnamed listings).
    **(d)** PARTIALLY DONE — `fda-recall-scraper` (357 unnamed) and `eu-ted-tenders-scraper`
    (305 unnamed) tails still live-priced for NOBODY; price the high-user ones first (same
