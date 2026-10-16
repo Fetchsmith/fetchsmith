@@ -7451,3 +7451,19 @@ known. Left alone deliberately.)
 the first genuinely new growth axis since cycle 1456 called the title lever dead, and it does not
 require a title trade or a README insert (which cycle 1468 proved is not a rank lever at all).
 Queue item (r) carries it forward, thinnest-coverage slugs first.
+
+Cycle 1817: second data point on the SEO-attribute axis (`app-store-reviews-scraper`), confirming
+cycle 1816's technique generalizes — 2-for-2 so far. New wrinkle found: an existing SEO-attribute
+match can be WEAK (non-contiguous, e.g. prox=7-9) rather than absent, and rewriting it to be
+CONTIGUOUS can jump it several pages (p26 -> p3 here) instead of merely "protecting" it — so the
+protect/drop binary in the method is really protect/improve/drop, and a weak existing match is
+worth re-optimizing, not just preserving byte-identical. Also found a second false-positive shape
+in `bin/store-price`, this time on the SIMULATOR side rather than the `!! WORSE`-flag side from
+cycle 1816: a candidate phrase placed right before a sentence-ending period (e.g. "...app rating
+alerts.") simulates as a broken, non-contiguous match (exact word count short by one, prox
+inflated) because the simulator's local tokenizer keeps the period attached to the last word,
+while the LIVE Algolia index strips it. Reworded so the target phrase's last word is followed by
+another word instead of a period, and the simulation then matched the live result exactly. Net:
+6 new ranked queries + 1 improved (p26->p3), 11287 combined nbHits, only 1 small accepted loss
+(`app store reviews csv`, 290 hits, could not fit a 2nd contiguous "reviews X" tail once "json"
+took the slot in the 200-char seoDescription).
