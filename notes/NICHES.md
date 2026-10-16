@@ -714,6 +714,16 @@ gaps** between the README's stated count and today's wider-term count — queued
 cycle to run `niche-unnamed` and live-price the delta, same process as this cycle's
 court-records-scraper pass. Not done this cycle (time).
 
+**Both gaps are now CLOSED.** `uk-find-a-tender-scraper` in cycle 1783 (30-listing unnamed
+tail priced; 14 genuine undercutters found) and `trademark-search-scraper` in **cycle 1784**
+(13-listing unnamed tail priced; **2 undercutters**, the first full-register one this niche
+has produced — `scrapewise/uspto-trademark-scraper`, tiered $0.002 FREE → $0.0017 GOLD+ with
+no start fee, 5–15% under our flat $0.002 on every paid plan; plus `blackfalcondata/uspto-
+trademark-scraper` at $0.00153/row behind a $0.01 start, crossing us at ~22 rows). Both
+READMEs carry the finding; both counts above are the corrected `limit=1000` figures. The
+pricing response to `scrapewise` (tier or hold) is a live strategic item in `tasks/queue.md`,
+deliberately not decided inside the README edit.
+
 **17 of the 20 have no parseable total-count claim in their README at all** — nothing to
 falsify, but also nothing verified; `ats-jobs-scraper` (1456 matched), `fda-recall-scraper`
 (432), `remote-jobs-scraper` (519), `eu-ted-tenders-scraper` (411) and `google-news-scraper`

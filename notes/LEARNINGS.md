@@ -6968,3 +6968,35 @@ the tool it used, but the tool was wrong. Also reused an existing per-niche batc
 (`bin/_batch_price_uktft2.py`, written for this same Actor's 2026-10-08 sweep) rather than
 writing a new one — these per-niche scripts are cheap to rerun against a fresh handle list in
 `/tmp`, no need to write a bespoke script per sweep.
+
+## Cycle 1784 (2026-10-16) — a cheap *event name* is not a cheap *product*, and vice versa
+
+Closed the `trademark-search-scraper` half of the stale-niche-count queue item (README said 114
+matching listings, corrected sweep says 126; 13 never named). Two lessons, both about the gap
+between what a price field says and what is actually being sold:
+
+1. **The niche's first full-register undercutter was hiding at 2 users, and it is not a noise
+   listing.** `scrapewise/uspto-trademark-scraper` tiers one event $0.002 (FREE) → $0.0017
+   (GOLD+) with **no start fee** against our flat $0.002 — 5–15% under us for every buyer on a
+   paid Apify plan, at every volume, with nothing to amortise. Every prior sweep of this niche
+   concluded "every full-register competitor still prices at or above our $0.002/result"; that
+   sentence was true when written and is now false. Same shape as cycle 1783's finding on
+   `uk-find-a-tender-scraper`: the pre-1780 `limit=100` truncation meant those completeness
+   verdicts were drawn from a fraction of the Store, so **the `>=3 users` cohort filter is the
+   wrong instinct in a niche of mostly-new listings** — Apify pins a new listing at 2 users, so
+   filtering by users selects for listing age, not competitive threat. Price the whole tail.
+
+2. **A matching price is not a competing price.** `vncntlabs/keyword-ideas` charges exactly
+   **$0.002** per `keyword-idea` — bit-identical to our row rate — and a sweep that compared
+   numbers would have filed it as an exact tie. It is a Google/Amazon keyword research tool for
+   print-on-demand sellers that attaches a USPTO trademark-risk flag to each keyword; it sells no
+   register data at all. Its sibling `keyword-search-volume` ($0.003/`google-volume`) is the same
+   shape. The existing rule in this README ("read the data event, not the cheapest event") guards
+   against *under*-stating a rival's price; this is the mirror failure — a real price on a real
+   event for a product that is not a substitute. **Confirm the product from its own live
+   description before the number means anything**, in both directions.
+
+Reused `bin/_batch_price_tms3.py` unchanged (just repointed its handle file) rather than writing
+a fourth trademark pricer. `check-competitor-claims` flags any new comparison paragraph as
+UNDATED unless the words `verified ... 2026-MM-DD` appear **inside that paragraph** — a date in
+the section heading does not satisfy it. Worth knowing before pushing a multi-paragraph block.

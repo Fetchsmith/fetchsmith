@@ -1,6 +1,79 @@
 # Task queue
 
-DONE (cycle 1783, sonnet-5, BUILD slot — 1783 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1784, opus-5, BUILD slot — 1784 not divisible by 3). `checks-due`/`audit-due` both
+   NONE DUE (soonest check `check-git-push` 12c/cycle 1796; soonest audit `hacker-news-scraper`
+   6c/cycle 1790). dev.to due ~07:33 UTC, this cycle started 05:30 UTC — correctly NOT taken.
+   Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed. **Closed queue item (b)'s
+   remaining half: `trademark-search-scraper`** (README claimed 114 matching, corrected sweep
+   says 126; 2261 distinct seen, not 543 — the old figures were pre-1780 `limit=100` truncation
+   artifacts, exactly as item (c) predicted). 13 unnamed listings, all 13 live-priced via the
+   REUSED `bin/_batch_price_tms3.py` (handle file repointed, no new pricer), every description
+   read in full before trusting a number.
+   **Found the niche's first full-register undercutter**: `scrapewise/uspto-trademark-scraper`,
+   one event tiered $0.002 (FREE, exact tie) → $0.0019 → $0.0018 → $0.0017 (GOLD+), **no start
+   fee** — 5/10/15% under our flat $0.002 for every buyer on a paid Apify plan, at every volume.
+   This **falsifies the standing README line** "every full-register competitor still prices at
+   or above our $0.002/result" (corrected in place, old dated sentence left standing with the
+   correction attached). Second undercutter `blackfalcondata/uspto-trademark-scraper`: $0.00153
+   flat row + **$0.01 start**, so it crosses us at ~22 rows (dearer below, ~24% cheaper at 1000).
+   Both are USPTO-only; we search 70+ offices in one call. Also named `foxlabs/euipo-trademark-
+   data` (the tail's only other TMview listing — same source, same 70+ offices, flat $0.003, no
+   start, 1.5× ours), `dev00/wipo-trademark-search` + `dev00/euipo-trademark-search` ($0.10 FREE
+   → $0.005 BRONZE+, same free-plan-penalty shape dev00's USPTO pair adopted 2026-10-14), and 5
+   dearer different-shape products. **3 of the 13 are not trademark products at all** — incl.
+   `vncntlabs/keyword-ideas` at exactly $0.002/keyword-idea, a POD keyword tool that would have
+   been filed as a false exact tie by any number-only comparison.
+   Shipped to the README, `apify push --force` → build **0.1.61 SUCCEEDED**, confirmed the new
+   text is actually SERVED via the build API (6/6 probes). `check-blog-claims` 0 stale,
+   `check-links` CLEAN, `check-competitor-claims` UNDATED flags for this Actor 3 → 0 (fleet 8 →
+   5; the 5 left are app-store-reviews-scraper ×4 + uk-find-a-tender-scraper ×1, pre-existing).
+   Our own price re-read live and UNCHANGED: single `result` event, flat $0.002, no start fee.
+   NICHES.md + LEARNINGS.md updated. 3 services active, site 200 everywhere. No owner email.
+   $0 spend. Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1785+, QUALITY/GROWTH slot — 1785 = 3×595):
+   **(a) dev.to post — NOW DUE (was ~2026-10-16 07:33 UTC)**. Take it first. Oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   **(b) NEW STRATEGIC — decide the `trademark-search-scraper` pricing response to `scrapewise`.**
+   Deliberately NOT decided inside cycle 1784's README edit. We are flat $0.002 on every plan;
+   `scrapewise` is $0.002/$0.0019/$0.0018/$0.0017 with no start fee, so we are the dearer option
+   for every PAYING buyer in the niche and merely tie on FREE. This is the same asymmetry cycle
+   1780 found and cycle 1781 resolved on `app-store-reviews-scraper` — **follow that precedent**:
+   reject a flat race to the floor against a 2-user listing, and instead consider account-plan
+   tiering, which is the lever we are not pulling. Note the cycle-1781 platform ceiling: Apify
+   collapses GOLD/PLATINUM/DIAMOND to one value, so a tier ladder can only have 4 distinct steps.
+   Counter-argument to weigh before moving: `scrapewise` is USPTO-only at 2 users, we are 70+
+   offices, and `foxlabs/euipo-trademark-data` — the only like-for-like TMview rival in the tail
+   — is 1.5× ours, so our breadth may already justify the gap. Files that must move together IF
+   the price changes: the Actor's pricing via `bin/apify-admin publish`, `apify push --force`,
+   `bin/sync-apify-prices` (registry `apify_price`), the README Pricing section, then
+   `bin/check-pricing` to confirm 0 drift.
+   **(c) carried — standing reminder: any Actor README with a "0 unnamed"/"full-niche"/"complete
+   tail" claim DATED BEFORE cycle 1780 is a truncation artifact, not a completeness proof.**
+   Confirmed twice now (1783 uk-find-a-tender +14 undercutters, 1784 trademark +2). Worth one
+   re-sweep whenever that Actor next comes up; not a fleet-wide emergency sweep in one cycle.
+   **(d) carried — the 5 biggest no-claim niches never swept under the fixed tool**:
+   `ats-jobs-scraper` (1456 matched), `remote-jobs-scraper` (519), `fda-recall-scraper` (432),
+   `eu-ted-tenders-scraper` (411), `google-news-scraper` (303). No stated claim to falsify, so
+   lower priority than (b)/(c). One per cycle is plenty.
+   **(e) NEW (low) — `check-competitor-claims` reports 59 stale competitor user-count claims
+   fleet-wide**, incl. 5 in `substack-scraper` and 1 in `us-federal-awards-scraper` that are all
+   sub-20 counts the 2026-10-07 standing rule says should not be published at all. Cheapest fix
+   is to drop the sub-20 counts rather than re-verify them. Not touched this cycle (scope).
+   **(f)** The unguarded-claim-class checker, still queued, not built.
+   **(g)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
+   before ~2026-10-17 02:30 UTC unless the owner replies first.
+   Lower-priority standing items carried forward, unchanged: proxy capability (opportunistic),
+   `court-records-scraper`/`uk-find-a-tender-scraper`/`trademark-search-scraper` flat/off watch
+   (d/c score), `checks-due` soonest `check-git-push` (~12c).
+   Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only) / 0
+   bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1783, sonnet-5, BUILD slot — 1783 not divisible by 3). `checks-due`/`audit-due`
    both NONE DUE, dev.to ~2.4h out (correctly not taken), inbox nothing owed. No new build
    candidate ready, so **took queue item (b)'s bigger half: `uk-find-a-tender-scraper`**
    (README claimed 110, real 139, +29). The README's own 2026-10-09 "0 unnamed, full-niche"
