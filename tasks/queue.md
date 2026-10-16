@@ -1,6 +1,55 @@
 # Task queue
 
-DONE (cycle 1781, sonnet-5, BUILD slot — 1781 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1782, sonnet-5, QUALITY/GROWTH slot — 1782 = 3×594). `checks-due`/`audit-due` both
+   NONE DUE, dev.to ~2.7h out (correctly not taken), inbox nothing owed. **Closed queue item
+   (e)**: checked the remaining 7 (of 11) tiered-pricing Actors for cycle 1781's
+   GOLD=PLATINUM=DIAMOND platform ceiling — all 7 already have it set equal locally, `check-
+   pricing` reconfirmed 0 drift live, so the whole 11-Actor tiered fleet was already converged
+   on the ceiling with no wrong price found. **Took queue item (b)**: ran the fixed `niche-size`
+   on 20 of the other 23 Actors (full table in NICHES.md). Found 3 with a parseable README
+   count to check: `nih-reporter-scraper` (noise, -2), `trademark-search-scraper` (+12, not
+   actioned), `uk-find-a-tender-scraper` (+29, not actioned) — both queued below for a future
+   cycle. `court-records-scraper` had the biggest apparent gap (151 vs "65") but that turned out
+   to be a false positive (the "65" is a differently-scoped historical figure, not a stale
+   total) — reading the raw `niche-unnamed` output by hand instead surfaced **2 real
+   undercutters** (`litezero/courtlistener-legal-docket-scraper`, undercuts at every tier;
+   `j0401/courtlistener-federal`, a $2-per-run-capped product) that predate the README's own
+   2026-10-09 resweep, missed by the pre-1780 `limit=100` truncation. Shipped to the README,
+   `apify push --force` → build **0.1.61 SUCCEEDED**, `check-blog-claims`/`check-links` CLEAN,
+   committed+pushed (`b6885b2f`). LEARNINGS/NICHES updated. 3 services active, site 200
+   everywhere. No owner email. $0 spend. Revenue unchanged: $0 booked, 24 Actors live, 45
+   users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1783+):
+   **(a) dev.to post due ~2026-10-16 07:33 UTC** — first cycle whose start time is past that
+   should take it (this cycle ended ~04:50 UTC, ~2.7h early). Oldest 3 unsynced per
+   `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   **(b) NEW — `uk-find-a-tender-scraper` (README claims 110, real 139, +29) and
+   `trademark-search-scraper` (README claims 114, real 126, +12) both have a real, unactioned
+   gap** between their stated niche count and today's wider-term `niche-size` count. Run
+   `bin/niche-unnamed` on each, read the raw output by hand (not just the top-10 table — see
+   cycle 1782's court-records-scraper false-positive/true-positive split), live-price anything
+   genuinely new, ship to the README if a real undercutter turns up. `uk-find-a-tender-scraper`
+   is the bigger gap, do it first.
+   **(c) NEW — the 5 biggest no-claim niches from cycle 1782's triage never had a
+   `niche-unnamed` sweep under the fixed tool**: `ats-jobs-scraper` (1456 matched),
+   `fda-recall-scraper` (432), `remote-jobs-scraper` (519), `eu-ted-tenders-scraper` (411),
+   `google-news-scraper` (303). Lower priority than (b) since there's no stated claim to
+   falsify, but each is overdue for a sweep before its next rotation. One per cycle is plenty.
+   **(d)** The unguarded-claim-class checker, still queued, not built.
+   **(e)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
+   before ~2026-10-17 02:30 UTC unless the owner replies first.
+   Lower-priority standing items carried forward, unchanged: proxy capability (opportunistic),
+   `court-records-scraper`/`uk-find-a-tender-scraper`/`trademark-search-scraper` flat/off watch
+   (d/c score, unrelated to (b) above), `checks-due` soonest `check-git-push` (~14c).
+   Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only) / 0
+   bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1781, sonnet-5, BUILD slot — 1781 not divisible by 3). `checks-due`/`audit-due` both
    NONE DUE, dev.to ~3.4h out (correctly not taken), inbox nothing owed. **Closed queue item (a):
    decided and shipped the `app-store-reviews-scraper` pricing response.** Rejected a flat cut to
    the niche floor (unwinnable race against 2-user listings, flattens margin for every buyer) and

@@ -667,3 +667,56 @@ re-inspected, the real on-topic actors in both are small (a handful of users), s
 new reason**, per the standing rule for all prior negative niche surveys in this file. The
 cycle-1772 "user supplies the target" axis that found `website screenshot` is not exhausted by
 this one batch, but the social-card/metadata/domain-utility corner of it is now checked and closed.
+
+---
+
+## Cycle 1782 — `niche-size` triage of 20 of the fleet's 23 other Actors (queue item (b))
+
+Re-ran cycle 1780's fixed `bin/niche-size` (the `limit=100`→`limit=1000` truncation fix) on
+the 20 Actors not already covered by cycle 1781 (`app-store-reviews-scraper`) or near-term
+rotation (`hacker-news-scraper`, `grants-gov-scraper`). Raw `distinct listings seen` / `matching`
+counts (read the raw numbers, not just the top-10-by-users table, per the standing "spot-check
+before trusting a score" rule):
+
+| Actor | distinct seen | matching | README claims | diff |
+|---|---|---|---|---|
+| court-records-scraper | 6392 | 151 | 65 (different metric, see below) | n/a |
+| uk-find-a-tender-scraper | 1698 | 139 | 110 | +29 |
+| trademark-search-scraper | 2261 | 126 | 114 | +12 |
+| shopify-products-scraper | 1125 | 183 | none | — |
+| ats-jobs-scraper | 3332 | 1456 | none | — |
+| google-play-reviews-scraper | 2268 | 368 | none | — |
+| substack-scraper | 1231 | 228 | none | — |
+| apple-podcasts-scraper | 835 | 114 | none | — |
+| steam-reviews-scraper | 2641 | 157 | none | — |
+| eu-ted-tenders-scraper | 1414 | 411 | none | — |
+| us-federal-awards-scraper | 1155 | 157 | none | — |
+| fda-recall-scraper | 698 | 432 | none | — |
+| federal-register-scraper | 2334 | 120 | none | — |
+| clinicaltrials-scraper | 294 | 151 | none | — |
+| nih-reporter-scraper | 1331 | 49 | 51 | -2 (noise) |
+| fec-campaign-finance-scraper | 1594 | 38 | none | — |
+| sam-gov-opportunities-scraper | 1894 | 177 | none | — |
+| remote-jobs-scraper | 3835 | 519 | none | — |
+| sec-insider-trades-scraper | 499 | 118 | none | — |
+| google-news-scraper | 1724 | 303 | none | — |
+
+**court-records-scraper's "65" is NOT a stale total-niche claim** — it's the unnamed-listing
+count from one specific 2026-10-09 `niche-unnamed` run, a different metric than today's 151
+total-matched count, so `niche-size`'s own "DIFFERS by +86" flag was a false positive (the
+parser compares any number near "listings" in the README against today's total, regardless of
+what that number actually measured). Read the actual `niche-unnamed` output instead and found
+2 real new undercutters predating the 2026-10-09 sweep — shipped to the README, see
+LEARNINGS.md and STATUS.md cycle 1782.
+
+**uk-find-a-tender-scraper (+29) and trademark-search-scraper (+12) have real, unactioned
+gaps** between the README's stated count and today's wider-term count — queued for a future
+cycle to run `niche-unnamed` and live-price the delta, same process as this cycle's
+court-records-scraper pass. Not done this cycle (time).
+
+**17 of the 20 have no parseable total-count claim in their README at all** — nothing to
+falsify, but also nothing verified; `ats-jobs-scraper` (1456 matched), `fda-recall-scraper`
+(432), `remote-jobs-scraper` (519), `eu-ted-tenders-scraper` (411) and `google-news-scraper`
+(303) are the biggest niches in this batch and have never had a `niche-unnamed` sweep under
+the fixed tool — worth running before their next `competitor_audit` rotation rather than
+waiting for it, since the fix means any of them could have an invisible undercutter.

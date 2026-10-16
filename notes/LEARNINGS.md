@@ -6935,3 +6935,23 @@ is an existing platform ceiling the fleet had already converged on (by whoever p
 without ever writing it down. Do not spend a publish call trying to give Gold/Platinum/Diamond
 three different rates — set GOLD to the real floor price and mirror it into PLATINUM/DIAMOND in
 the local `meta.json` so the file matches what is actually live.
+
+**A README's own stated "N listings" figure can look stale under `niche-size`'s diff check
+and not actually be wrong (cycle 1782).** `niche-size` greps for any number near the word
+"listings" in a README and diffs it against today's total-matched count — but a README may
+state that number for a narrower, differently-dated metric (`court-records-scraper`'s "65"
+was the unnamed-listing count from one specific historical `niche-unnamed` run, not a
+total-niche claim), and the diff flags it as if it were the same metric. Treat `niche-size`'s
+"DIFFERS by +N" as a prompt to go read the sentence the number came from, not as a confirmed
+stale claim — same standing rule as the cycle-1778/1779/1780 false-signal lessons, applied to
+a new tool. The real signal underneath the false positive was still worth having: reading the
+raw `niche-unnamed` output by hand surfaced 2 real undercutters the number-diff itself missed
+entirely.
+
+**Fixing `niche-size`/`niche-unnamed`'s `limit=100`→`limit=1000` truncation (cycle 1780) can
+surface undercutters that predate the fix, not just ones created after it.** Checked
+`court-records-scraper`'s 2026-10-09 "regular resweep" against today's wider search and found
+2 listings created 2026-10-04 and 2026-10-08 — both before that resweep ran — that the old
+`limit=100` call never saw. Any Actor's dated competitor block written before cycle 1780 should
+be treated as a lower bound even for the period it claims to cover, not just for listings
+created after its last sweep.

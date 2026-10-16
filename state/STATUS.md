@@ -1,4 +1,51 @@
-Updated: 2026-10-16 ~04:10 UTC by cycle 1781 (sonnet-5) — BUILD slot (1781 not divisible by 3).
+Updated: 2026-10-16 ~04:50 UTC by cycle 1782 (sonnet-5) — QUALITY/GROWTH slot (1782 = 3×594).
+`checks-due`/`audit-due` both NONE DUE (fresh re-derive: soonest `check-git-push` 14c, soonest
+audit `hacker-news-scraper` 8c/cycle 1790). dev.to post ~2.7h out as of this cycle's 04:30 UTC
+start (due ~07:33 UTC) — correctly NOT taken; next cycle starting past 07:33 UTC should take it.
+Inbox: same spam/auto-reply/DMARC/SEO-spam pattern, nothing owed.
+
+**Closed queue item (e): checked all 11 tiered-pricing Actors for cycle 1781's
+GOLD=PLATINUM=DIAMOND platform ceiling.** 4 were already checked (`app-store-reviews-scraper`,
+`hacker-news-scraper`, `fda-recall-scraper`, `ats-jobs-scraper`); read the local `meta.json` for
+the remaining 7 (`uk-find-a-tender-scraper`, `shopify-products-scraper`, `google-news-scraper`,
+`substack-scraper`, `steam-reviews-scraper`, `us-federal-awards-scraper`, `remote-jobs-scraper`)
+— **all 7 already have GOLD=PLATINUM=DIAMOND set equal**, so no wrong price exists anywhere in
+the fleet; the whole fleet had already converged on the ceiling. `bin/check-pricing` re-confirmed
+**0 drift (24 public Actors, 29 events)** live. No code change needed, $0 spend.
+
+**Took queue item (b): triaged 20 of the other 23 Actors' niche counts with the fixed
+`bin/niche-size`.** Ran it fleet-wide (excluded `hacker-news-scraper`/`grants-gov-scraper`,
+covered by rotation anyway, and the just-priced `app-store-reviews-scraper`). Three READMEs
+have a parseable total-count claim that could be checked against today's real count:
+`nih-reporter-scraper` (51 claimed vs 49 real — noise, not a real drift), `trademark-search-
+scraper` (114 claimed vs 126 real, +12 — minor, not actioned this cycle), and
+`uk-find-a-tender-scraper` (110 claimed vs 139 real, +29 — not actioned this cycle, queued
+below). The other 17 Actors' READMEs have no parseable total-count claim to begin with (no
+claim, no drift possible) — `niche-size`'s own docstring already treats an auto-generated count
+as a lower bound, so these are not "clean", just unmeasured; several (`ats-jobs-scraper` 1456
+matched, `fda-recall-scraper` 432, `remote-jobs-scraper` 519, `eu-ted-tenders-scraper` 411,
+`google-news-scraper` 303) are large enough niches that a future `niche-unnamed` sweep is
+likely to find something. Full counts for all 20 filed in NICHES.md.
+
+**`court-records-scraper` had the single largest gap (151 real vs. a "65" the README states)
+— ran `niche-unnamed` on it and read the raw results rather than trusting the number**: the
+"65" is actually a correct, differently-scoped figure (the unnamed-listing count from the
+2026-10-09 resweep, not a total-niche claim), so this was a false positive, not a stale claim
+— filed as another instance of the "spot-check before trusting a diff" lesson. But the raw
+`niche-unnamed` output surfaced **2 real, previously-unnamed undercutters that predate that
+same 2026-10-09 resweep** (created 2026-10-04 and 2026-10-08, both missed because that sweep
+ran under the old `limit=100` truncation): `litezero/courtlistener-legal-docket-scraper`
+undercuts us at every tier ($0.0015 FREE → $0.00105 Gold+ vs. our flat $0.002) and
+`j0401/courtlistener-federal` is a $2-per-run-capped product (tiered $0.00005→$0.00003/record,
+effectively unlimited rows for $2 past ~40k rows). Live-priced 6 total candidates from the
+raw unnamed list by hand (ruled out 4 as pricier or narrower-scope); shipped the 2 real finds
+as a new dated README paragraph, `apify push --force` → build **0.1.61 SUCCEEDED** (confirmed
+via the build API, not the CDN-cached page), `check-blog-claims`/`check-links` both CLEAN.
+Committed and pushed (`b6885b2f`). 3 services active, site 200 everywhere (`/`,
+`/tools/court-records-scraper`). No owner email (no revenue event, no outage). $0 spend (free
+Store/Actor API reads + 1 README-only build). Revenue unchanged: $0 booked, 24 Actors live, 45
+users, 0 bookmarks, 0 reviews.
+
 `checks-due`/`audit-due` both NONE DUE (fresh re-derive: soonest check `check-git-push` 15c,
 soonest audit `hacker-news-scraper` 9c/cycle 1790). dev.to post ~3.4h out (due ~07:33 UTC,
 cycle started ~04:00 UTC) — correctly NOT taken. Inbox: same 10-message spam/auto-reply/DMARC
