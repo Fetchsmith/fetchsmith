@@ -1,0 +1,94 @@
+#!/root/agent/venv/bin/python
+"""Meta-check: does every user-count-shaped claim in our READMEs actually get
+consumed by check-competitor-claims' USERS regex?
+
+Added cycle 1801, after check-competitor-claims' USERS regex had to be widened
+FOUR separate times (cycles 1031, 1092, 1368, 1800) for the exact same failure
+shape: a claim is phrased in a way the regex's character class or connector
+list doesn't cover, so it is not flagged STALE and not flagged UNCHECKED --
+it just vanishes, and the tool's own summary line still prints "0 stale" for
+a file that is silently blind to that one sentence. Each fix came from a
+human/agent re-reading READMEs by hand and grepping for the exact phrasing
+that broke it; there was no standing check that would catch failure #5 before
+another hand-read did.
+
+This tool is that standing check. It runs a SECOND, deliberately looser
+detector over the same files -- no connector-word requirement at all, just
+"a backticked handle near a number that reads as a user count" -- and flags
+any span the loose detector finds that the strict USERS regex does not. A
+gap reported here is not automatically a real missed claim (the loose net
+catches some non-claims too, see EXCLUDE below); it is a short list for a
+human to read, which is strictly better than finding gap #5 by luck.
+
+This does NOT replace check-competitor-claims (it still owns correctness --
+is the count accurate, is the claim dated). This only answers "did anything
+go completely unseen."
+"""
+import importlib.util
+import os
+import re
+import sys
+from importlib.machinery import SourceFileLoader
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+_loader = SourceFileLoader("check_competitor_claims", os.path.join(ROOT, "bin/check-competitor-claims"))
+_spec = importlib.util.spec_from_loader(_loader.name, _loader)
+_ccc = importlib.util.module_from_spec(_spec)
+_loader.exec_module(_ccc)
+
+USERS = _ccc.USERS
+sources = _ccc.sources
+
+# Loose, independent detector: ANY backticked handle (or owner/slug) followed
+# somewhere later in the SAME paragraph, within WINDOW characters and with no
+# blank-line break between them, by a number immediately before "user(s)" or
+# a bare "u" boundary. Deliberately has no connector-word list at all, so a
+# future rephrasing can't make a real claim invisible to this detector the
+# way it did to USERS four times running.
+HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}(?:/[A-Za-z0-9_.-]+)?)`")
+NUMUSER = re.compile(r"([0-9][0-9,]{0,9})\s*(?:users?\b|\bu\b)")
+WINDOW = 120
+
+# Phrases that put a number next to the word "user(s)" without the number
+# being a claim about a specific handle's user count -- a rate ("$X per
+# 1,000 users"), not a count. Checked against the text between the handle
+# and the number: if a rate connector sits there, the number belongs to the
+# rate, not to the handle, and the loose detector would false-positive.
+RATE = re.compile(r"\bper\b|\$")
+
+
+def candidates(text):
+    """Yield (handle, count_str, offset) for every loose claim-shaped span."""
+    handles = [(m.end(), m.group(1)) for m in HANDLE.finditer(text)]
+    for num_m in NUMUSER.finditer(text):
+        best = None
+        for end, handle in handles:
+            if end > num_m.start() or num_m.start() - end > WINDOW:
+                continue
+            between = text[end:num_m.start()]
+            if "\n\n" in between or RATE.search(between):
+                continue
+            if best is None or end > best[0]:
+                best = (end, handle)
+        if best:
+            yield best[1], num_m.group(1), num_m.start()
+
+
+if __name__ == "__main__":
+    total = covered = gaps = 0
+    for path in sources():
+        name = os.path.relpath(path, ROOT)
+        text = open(path).read()
+        strict_offsets = {m.start(3) for m in USERS.finditer(text)}
+        for handle, count, offset in candidates(text):
+            total += 1
+            if any(abs(offset - so) <= 3 for so in strict_offsets):
+                covered += 1
+                continue
+            gaps += 1
+            lineno = text.count("\n", 0, offset) + 1
+            print(f"GAP {name}:{lineno}  `{handle}` ... {count} user-shaped claim not matched by USERS")
+
+    print(f"check-claim-coverage: {total} candidate claim(s) found, {covered} covered by USERS, {gaps} gap(s)")
+    sys.exit(1 if gaps else 0)

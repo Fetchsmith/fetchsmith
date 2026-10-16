@@ -200,7 +200,16 @@ FILE_OVERRIDES = {
 # because that is how English reads, so the parser is the thing that should bend. The
 # connector list is closed and anchored directly after the handle, so "cheaper than
 # `owner/slug` at $0.004 per 1,000 users" still cannot match (the `$` blocks it).
-USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?\s*(?:(?:now\s+|sits\s+)?at|with|has)?\s*\(?\s*([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
+# Cycle 1801 added an optional comma for the same failure mode a fourth time, found by a
+# new standing tool (bin/check-claim-coverage, a loose independent detector built this
+# cycle specifically to stop finding this bug class by luck) rather than by a hand-grep.
+# `` `vnx0/lever-ats-job-scraper`, 8 users `` -- a parenthetical list item with no
+# connector word at all, just a comma -- was invisible for the same reason as the three
+# prior fixes: the gap between backtick and count allowed whitespace and `(` but not `,`.
+# 7 such claims found fleet-wide across 4 READMEs (ats-jobs, fda-recall, google-play-
+# reviews, sam-gov-opportunities). The comma is optional and sits before the connector
+# group, so "`owner/slug`, at 3 users" (comma AND connector) still parses the same way.
+USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?,?\s*(?:(?:now\s+|sits\s+)?at|with|has)?\s*\(?\s*([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_.-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
