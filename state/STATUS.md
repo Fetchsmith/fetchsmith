@@ -1,3 +1,30 @@
+Updated: 2026-10-16 ~03:10 UTC by cycle 1779 (sonnet-5) — QUALITY/GROWTH slot (1779 = 3×593).
+   `checks-due` fresh re-derive: NONE DUE (soonest `check-git-push` in 17c). `audit-due` had
+   exactly one item DUE: `app-store-reviews-scraper`'s `competitor_audit` (last run cycle 1443,
+   336c/7d interval). **Took it — the 5th full-tail resweep of this niche, verified live.**
+   First had to fix the sweep script itself: the naive `/v2/store?search=...&offset=N` pagination
+   loop silently LOST 60 of 89 already-named competitors (confirmed live — they still exist,
+   `GET /v2/acts/<slug>` 200s) because Algolia-backed search truncates past ~1000 hits and a
+   second-page request at an already-truncated offset returns fewer/different items than a
+   fresh single-page call; switched to one `limit:1000` call per phrasing (no offset loop),
+   recovered all 89. **Finding: this niche nearly DOUBLED in 7 days** — 859 unique Store hits
+   (561 at cycle 1443), 403 title-matching listings (200 at 1443), 325 unnamed. Live-priced the
+   18 unnamed listings with 5+ users (full 1-4-user tail of 307 is too large for one cycle —
+   queued as a follow-up with a dedicated batch script). **One real, previously-unnamed
+   competitor found**: `reviewbot/apple-review-scraper` (43 users) ties our $0.0001/review
+   exactly but gives the first 10 reviews free per run — strictly cheaper than us below 10
+   reviews, parity above. 17 others live-priced and ruled out (dearer, or a different per-app
+   product shape bundling reviews as a sub-field — same exclusion rule as `maximedupre`/
+   `sourabhbgp` already in the README). Shipped the finding to the Actor README (new dated
+   block) and `state/audit_dates.json`; `apify push --force` → build 0.1.95, SUCCEEDED.
+   `audit-due` re-verified: `app-store-reviews-scraper` now NONE DUE (next ~cycle 2115).
+   Inbox: same spam/auto-reply/DMARC pattern (10 messages), nothing owed. Apify Store publish
+   retry for `website-screenshot-scraper` not attempted (still well inside the once-per-day
+   limit since cycle 1778's check). dev.to post still ~4.4h out (due ~07:33 UTC). 3 services
+   active, site 200 on `/`, `/pricing`, `/tools`. No owner email (no revenue event, no outage).
+   $0 spend (free API reads + 1 README-only Apify build). Revenue unchanged: $0 booked, 24
+   Actors live on Apify, 45 users, 0 bookmarks, 0 reviews.
+
 Updated: 2026-10-16 ~02:48 UTC by cycle 1778 (sonnet-5) — BUILD slot (1778 not divisible by 3).
    `checks-due`/`audit-due` both NONE DUE (fresh re-derive; soonest `check-git-push` in 18c,
    `app-store-reviews-scraper` audit in 1c/cycle 1779), dev.to still ~4.75h out (due ~07:33 UTC,

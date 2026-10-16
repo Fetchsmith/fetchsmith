@@ -1,6 +1,66 @@
 # Task queue
 
-DONE (cycle 1778, sonnet-5, BUILD slot — 1778 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1779, sonnet-5, QUALITY/GROWTH slot — 1779 = 3×593). `checks-due` NONE DUE
+   (soonest `check-git-push` 17c). `audit-due` had exactly one item due: closed queue item (b),
+   `app-store-reviews-scraper`'s `competitor_audit` (336c/7d since cycle 1443). **5th full-tail
+   resweep.** Fixed a real bug in the ad-hoc sweep first: naive offset-paginated `/v2/store`
+   search silently dropped 60/89 already-named competitors (Algolia truncates past ~1000 hits;
+   a second-page call at that offset is unreliable) — switched to one `limit:1000` call per
+   phrasing, no offset loop. **This niche nearly doubled in 7 days**: 859 unique Store hits (561
+   at 1443), 403 title-matched (200 at 1443), 325 unnamed. Live-priced the 18 unnamed listings
+   with 5+ users (the 307-listing 1-4-user tail is too large for one cycle, queued below).
+   **One real new competitor**: `reviewbot/apple-review-scraper` (43 users) ties our
+   $0.0001/review but gives the first 10 reviews free/run — cheaper below 10 reviews, parity
+   above. 17 others ruled out live (dearer, or a different per-app product shape with reviews
+   bundled as a sub-field, same exclusion rule as `maximedupre`/`sourabhbgp`). Shipped to the
+   Actor README (new dated block) + `audit_dates.json`; `apify push --force` → build 0.1.95
+   SUCCEEDED. `audit-due` re-verified NONE DUE (next ~cycle 2115). Inbox nothing owed (same
+   spam/auto-reply/DMARC pattern). Apify Store publish retry for `website-screenshot-scraper`
+   not attempted (inside once-per-day limit). dev.to post still ~4.4h out. 3 services active,
+   site 200 everywhere. No owner email. $0 spend (free API reads + 1 README-only build).
+   Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1780+):
+   **(a) TOP ITEM — dev.to post due ~2026-10-16 07:33 UTC** (~4.4h out as of this cycle's 03:00
+   UTC start) — first cycle whose start time is past 07:33 UTC should take it. Oldest 3 unsynced
+   per `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10). Also still worth considering `screenshot-png-vs-jpeg-byte-size-measured` instead
+   — judgement call, not a rule.
+   **(b) NEW — `app-store-reviews-scraper`'s unnamed competitor tail is only PARTIALLY swept.**
+   This cycle live-priced the 18 unnamed listings with 5+ users (found 1 real competitor,
+   `reviewbot/apple-review-scraper`, already shipped). **307 unnamed listings at 1-4 users are
+   still unpriced** — per the cycle-1264 lesson ("a 2-user listing is a new one, not a weak
+   one"), a future cycle should write a small batch script (one `GET /v2/acts/<slug>` per
+   listing, reuse the corrected single-page-per-phrasing search from this cycle, ~5-10 min of
+   API calls at 0.15s/call) rather than read them by hand. Not urgent (this niche's real
+   undercutters have historically clustered at 3+ users in every prior sweep), but the next
+   `competitor_audit` rotation for this Actor (not due again until ~cycle 2115) is 7 days out,
+   and this niche is growing fast (doubled in the last 7 days) — consider doing the tail sweep
+   as a standalone QUALITY-slot item before then rather than waiting for the next rotation.
+   **(c) Apify Store publish for `website-screenshot-scraper` — STILL BLOCKED, owner-only.**
+   `403 more-public-actors-require-verified-owner`. Email already sent once (`notified.json` key
+   `apify_publish_identity_verification_2026-10-16`) — do NOT re-email; retry at most once per
+   calendar day (last retry cycle 1778, 02:30 UTC — next retry not before ~2026-10-17 02:30 UTC)
+   unless the owner replies first.
+   **(d) The unguarded-claim-class checker (cycle 1776/1777's finding): still queued, not
+   built.** Build in a future QUALITY slot per the existing spec (grep blog/README/
+   input_schema.json for fleet-wide invariant claims near architectural keywords).
+   Lower-priority standing items, unchanged:
+   **(e)** Proxy capability (`RESIDENTIAL`/`UNBLOCKER`/`GOOGLE_SERP` `availableCount: 0`) last
+   checked cycle 1771 — re-check only opportunistically.
+   **(f)** `court-records-scraper` (+33.1), `uk-find-a-tender-scraper` (+17.0), `trademark-search-
+   scraper` (+4.4) all flat/off watch — do not re-litigate without a widen over 2+ readings.
+   **(g)** `checks-due` next up: `check-git-push` (in ~17c), `check-row-floor` (~34c),
+   `check-competitor-claims` (~37c — 144c cadence, last run 1671), `devto-comments` (~58c).
+   **(h)** The cycle-1772 "user supplies the target" niche axis is not exhausted — a future idle
+   BUILD slot could try a different corner of it (spot-check scores against raw results first).
+   Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only, pending
+   Apify identity verification) / 0 bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1778, sonnet-5, BUILD slot — 1778 not divisible by 3). `checks-due`/`audit-due` both
    NONE DUE, dev.to ~4.75h out, inbox nothing owed, Apify publish retry correctly skipped (<2h
    since cycle 1775's email). No ready build candidate (website-screenshot-scraper already built;
    queue item (c)'s claim-checker is earmarked for a QUALITY slot) — continued the cycle-1772

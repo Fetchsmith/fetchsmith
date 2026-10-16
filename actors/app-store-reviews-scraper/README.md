@@ -400,6 +400,49 @@ cheaper, and on a small one dearer. We still read them as a different product (a
 a reviews dataset you can join and re-query), but the honest figure is a crossover, not "no
 comparison is possible".
 
+**Fifth full-tail resweep, verified live 2026-10-16 ~03:00 UTC (cycle 1779, fleet-oldest
+`competitor_audit` rotation, 336 cycles / 7 days after cycle 1443).** This niche's growth has not
+slowed: three search phrasings ("app store reviews", "appstore reviews", "ios app reviews") now
+return **859 unique listings** (up from 561 at cycle 1443), of which **403 title-match this niche**
+(contain "review" plus "app store"/"ios"/"apple" in the title) versus 200 at cycle 1443 — roughly
+double in 7 days, the sharpest growth this rotation has measured. 78 of those are already named in
+this README; **325 are unnamed, and 401 Google Play/App-Store-dual listings swelled the description-only
+match further** (excluded here — this section counts the title-strict set). Live-pricing the full
+325-listing unnamed tail is now too large for one audit cycle (prior full-tail passes topped out at
+148); this pass live-priced the **18 unnamed listings with 5+ users** (the ones with enough traction
+to matter before the next rotation) and found exactly **one real, previously-unnamed competitor at
+or below our rate**:
+
+- `reviewbot/apple-review-scraper` (43 users) — flat **$0.0001/review, our exact rate, but the first
+  10 reviews per run are free**, which we do not offer. A pure Apple App Store review scraper (no
+  Google Play bundling), so it is a genuine substitute, not a different-shape exclusion. Crossover:
+  strictly cheaper than us on any run of ≤10 reviews, exact parity above that — a fifth parity
+  listing by rate, the first with a free tier attached.
+
+The other 17 were read against their own live pricing and ruled out, all for reasons already
+established above (dearer, or a different product shape than a per-review export):
+`andok/app-store-reviews` (10x–7x dearer even at Diamond, dual-store), `logiover/app-store-data-api`
+and `logiover/app-reviews-scraper` (10x–17x dearer, dual-store/ASO-bundled),
+`focused_vanguard/appstore-reviews-scraper` (35–40x dearer), `haketa/app-store-scraper` (20–25x
+dearer, bundles top-chart rankings), `cleanscrape/app-store-reviews-scraper` (2x dearer plus a
+start fee), `rupom888/appstore-ios-scraper` (20x dearer flat), `native_emblem/app-reviews-scraper`
+(1.5x dearer flat, dual-store), `berkaydev/app-store-google-play-reviews-scraper` (3x dearer),
+`scrapemint/app-review-intelligence` ($0.002/row, 20x dearer); and five read as a **different
+product shape**, same exclusion rule as `maximedupre`/`sourabhbgp` above — priced per *app* record
+with reviews as a bundled sub-field, not per review: `johnvc/apple-app-store-product-api` ($0.00008
+Free → $0.00006 Gold+ per app, "sample reviews" bundled), `sian.agency/apple-app-store-scraper`
+(per-app overview/detail events, reviews bundled into the detail price), `dami_studio/app-store-scraper`
+($0.00009/app row), `renzomacar/app-store-scraper` (`reviews-batch` priced per batch, not per row —
+ambiguous, no clean per-review figure), plus the two Shopify-App-Store listings in the same cohort
+(`freshactors/shopify-app-store-scraper`, `devsef/shopify-app-store-scraper` — wrong store entirely,
+same exclusion as the Shopify listings named earlier in this section).
+
+**Open item, not closed by this pass**: the remaining ~307 unnamed listings at 1-4 users are
+untouched — per the cycle-1264 lesson above ("a 2-user listing is a new one, not a weak one"), a
+future `competitor_audit` cycle should live-price that tail with a dedicated batch script (one GET
+per listing, ~5 min of API calls) rather than by hand; 325 is too many for manual per-listing
+reading in one cycle. The one confirmed finding above is already shipped.
+
 What this means honestly, as of the 2026-10-05 sweep: **we are no longer near the bottom of this
 niche on price.** Our
 $0.0001/review is now the *modal* rate — 20 listings tie it exactly — with roughly two dozen
