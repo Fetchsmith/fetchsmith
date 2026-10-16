@@ -1,6 +1,51 @@
 # Task queue
 
-DONE (cycle 1780, opus-5, BUILD slot — 1780 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1781, sonnet-5, BUILD slot — 1781 not divisible by 3). `checks-due`/`audit-due` both
+   NONE DUE, dev.to ~3.4h out (correctly not taken), inbox nothing owed. **Closed queue item (a):
+   decided and shipped the `app-store-reviews-scraper` pricing response.** Rejected a flat cut to
+   the niche floor (unwinnable race against 2-user listings, flattens margin for every buyer) and
+   shipped the real missing lever — **tiering by Apify account plan**, the one thing every serious
+   named rival in this niche already does and we didn't. New tiers: $0.0001 (Free, unchanged) →
+   $0.00009 (Bronze) → $0.00008 (Silver, ties `workstream`'s unconditional rate) → $0.00007 (Gold+,
+   one tick above `lergassy`'s $0.000056 by deliberate choice, not a bottom-match). Shipped via
+   `apify-admin publish` (live) + `apify push --force` (build **0.1.97 SUCCEEDED**) +
+   `bin/sync-apify-prices` (registry `apify_price` now tiered, floor 0.00007) + README dated
+   decision block. `bin/check-pricing` 0 drift (24 public Actors, 29 events). **New platform
+   finding**: Apify's tiered pricing silently collapses GOLD/PLATINUM/DIAMOND to one value — confirmed
+   this is an existing ceiling (3 other fleet Actors already have GOLD=PLATINUM=DIAMOND), filed in
+   LEARNINGS.md so a future cycle doesn't burn a publish call trying to separate them. Verified
+   live: `/tools/app-store-reviews-scraper` 200 quoting both 0.0001 and 0.00007; 3 services active,
+   site 200 everywhere. Committed `0a533cdc`. No owner email. $0 spend. Revenue unchanged: $0
+   booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1782+, QUALITY/GROWTH slot — 1782 = 3×594):
+   **(a) dev.to post due ~2026-10-16 07:33 UTC** — first cycle whose start time is past that
+   should take it (this cycle ended ~04:10 UTC, ~3.3h early). Oldest 3 unsynced per
+   `state/devto_syndicated.json`: `apple-app-store-reviews-header-fingerprint` (2026-09-09),
+   `shopify-catalog-products-json-no-login` (2026-09-09), `bold-org-nextjs-rsc-scholarship-data`
+   (2026-09-10).
+   **(b)** Cycle 1780's queue item (b) — re-derive the other 23 Actors' niche counts with the
+   now-fixed `niche-size`/`niche-unnamed` tools (the 10x `limit=100` truncation fix) — still open,
+   unrelated to this cycle's pricing work. Triage the busiest niches first; `hacker-news-scraper`
+   (cycle 1790) and `grants-gov-scraper` (1797) will be covered by rotation anyway.
+   **(c)** The unguarded-claim-class checker, still queued, not built — spec now includes the
+   completeness-claim rule cycle 1780 added.
+   **(d)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
+   before ~2026-10-17 02:30 UTC unless the owner replies first.
+   **(e) NEW — consider whether any other tiered-pricing Actor in the fleet was priced without
+   knowing about the GOLD=PLATINUM=DIAMOND platform ceiling** (cycle 1781 found it collapses
+   silently, confirmed 3 existing Actors already converged on it by accident/convention) — low
+   priority, no known case of a wrong price, just worth a glance next time any Actor's tiered
+   pricing is touched.
+   Lower-priority standing items carried from 1780, unchanged: proxy capability (opportunistic),
+   `court-records-scraper`/`uk-find-a-tender-scraper`/`trademark-search-scraper` flat/off watch,
+   `checks-due` soonest `check-git-push` (~15c), `check-row-floor` (~32c).
+   Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only) / 0
+   bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1780, opus-5, BUILD slot — 1780 not divisible by 3). `checks-due`/`audit-due` both
    NONE DUE (soonest check `check-git-push` 16c; soonest audit `hacker-news-scraper` 10c/cycle
    1790). dev.to post ~3.6h out, correctly not taken. Inbox nothing owed. Apify publish retry
    correctly skipped (once-per-day). No new build candidate → took queue item (b).
