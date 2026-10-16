@@ -1,0 +1,84 @@
+#!/root/agent/venv/bin/python
+"""Flag README/blog paragraphs that carry a price-forecast date which has
+already passed without a later confirmation in the same paragraph.
+
+Added cycle 1810 (queue item (o)), after cycle 1808 found
+`flash_scraper/remote-job-aggregator`'s README still asserting a pricing
+change "takes effect 2026-10-14" by hand, days after that date had passed --
+every automated price checker in this fleet filters live records to
+`startedAt <= now`, so a forward-dated change is invisible to them both
+before AND after it lands; nothing but luck (an agent re-reading the
+paragraph for an unrelated reason) caught that one. A grep at the time
+found no OTHER stranded forecast, but grep is not a standing check.
+
+This tool is that standing check. It finds paragraphs containing a
+forecast-shaped phrase ("takes effect <date>", "filed for <date>",
+"switch(es) to ... on <date>", "effective <date>") whose date is in the
+past, then requires the SAME paragraph to also carry a
+"verified/checked/re-verified/rechecked YYYY-MM-DD" phrase (the same DATED
+marker check-competitor-claims already requires for freshness) dated ON OR
+AFTER the forecast date. No such marker means nobody has re-read this
+paragraph since the forecast was supposed to land -- the sentence may still
+be accurate, but it has not been re-confirmed, which is exactly how the
+flash_scraper case sat unnoticed.
+
+Known false-positive class (acceptable, hand-read like check-claim-
+coverage): a forecast whose own text says the amounts are IDENTICAL to the
+current ones (e.g. grants-gov-scraper's `jungle_synthesizer` note) has
+nothing to re-verify even though the date has passed and no later
+re-verification date happens to sit in that paragraph. This is a diagnostic
+to skim, not a hard gate -- it is not wired into fleet_checks.json.
+"""
+import datetime
+import os
+import re
+import sys
+from importlib.machinery import SourceFileLoader
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+_loader = SourceFileLoader("check_competitor_claims", os.path.join(ROOT, "bin/check-competitor-claims"))
+_spec = _loader
+_ccc = _loader.load_module()
+
+DATED = _ccc.DATED
+sources = _ccc.sources
+
+# A date preceded (within 60 chars, same sentence-ish span) by a phrase that
+# announces a FUTURE price/model change -- as opposed to a plain historical
+# "verified ... YYYY-MM-DD" marker, which DATED already owns.
+FORECAST = re.compile(
+    r"\b(?:takes?\s+effect|filed\s+for|switch(?:es)?\s+to\b[^.]{0,60}?\bon|"
+    r"scheduled\b[^.]{0,60}?\beffective|drops?\b[^.]{0,60}?\bon|effective)\b"
+    r"\s*\**\s*(\d{4}-\d{2}-\d{2})",
+    re.I,
+)
+
+
+if __name__ == "__main__":
+    today = datetime.date.today()
+    checked = stale = 0
+    for path in sources():
+        name = os.path.relpath(path, ROOT)
+        text = open(path).read()
+        offset = 1
+        for para in text.split("\n\n"):
+            lineno = offset
+            offset += para.count("\n") + 2
+            past = sorted({datetime.date.fromisoformat(d) for d in FORECAST.findall(para) if datetime.date.fromisoformat(d) < today})
+            if not past:
+                continue
+            checked += 1
+            verified = [datetime.date.fromisoformat(d) for d in DATED.findall(para)]
+            newest_verified = max(verified) if verified else None
+            latest_forecast = past[-1]
+            if newest_verified is None or newest_verified < latest_forecast:
+                age = (today - latest_forecast).days
+                print(
+                    f"STALE_FORECAST {name}:{lineno}  forecast date {latest_forecast} passed "
+                    f"{age}d ago, no 'verified/checked YYYY-MM-DD' on/after it in this paragraph"
+                )
+                stale += 1
+
+    print(f"check-stale-forecast: {checked} paragraph(s) with a past forecast date, {stale} unconfirmed")
+    sys.exit(1 if stale else 0)
