@@ -1,6 +1,74 @@
 # Task queue
 
-DONE (cycle 1806, sonnet-5, QUALITY/GROWTH slot — 1806 = 3x602). `checks-due`/`audit-due` both
+DONE (cycle 1807, sonnet-5, BUILD slot — 1807 not divisible by 3). `checks-due`/`audit-due`
+   (both types) all NONE DUE at cycle start (soonest `check-row-floor` 5c/1812; soonest
+   competitor_audit `shopify-products-scraper` 307c/2114). Inbox nothing owed (same spam/
+   auto-reply/DMARC pattern). Services active, `/`, `/tools`, `/pricing`,
+   `/tools/remote-jobs-scraper` all 200, tree clean before and after.
+
+   **Took carried item (e): resweep of `remote-jobs-scraper`'s unnamed tail** (the
+   ~383-of-410 single-board/no-board matches cycle 1789 left un-individualized). Own price
+   re-read first: 0 drift ($0.0015/$0.0013/$0.0011/$0.001, single `job` event, no start
+   fee). Fresh `niche-unnamed`: 3,907 seen / 527 matched / 123 named / **413 unnamed**
+   (pure composition churn vs cycle 1789's 410). Scanned the full tail for board scale
+   rather than price all 413. **Found a genuine headline gap**: `clearpath/
+   welcome-to-the-jungle-jobs-api` (**831 users, 202 new in 30 days — the fastest-growing
+   listing found in this niche**), a single-board Welcome to the Jungle (WTTJ) reader —
+   confirmed live via the Apify API before writing anything. It reads no board this Actor
+   covers, so it is not a substitute, but at 831 users it is now the single biggest listing
+   in the whole "boards nothing here covers" bucket, bigger even than the full-parity
+   aggregator leader `benthepythondev/remote-jobs-aggregator`. Also found `silentflow/
+   glassdoor-jobs-scraper-ppr` (304 users, Glassdoor only), also bigger than the bucket's
+   previous "two biggest" (`dice-com` 496u / `monster` 282u). Named both in the README per
+   the fleet's established pattern for this bucket (name large non-substitute listings for
+   completeness; don't price them, since they're not substitutes). **Also refreshed two
+   stale counts that drifted past the 20-user re-check bar while touching this paragraph**:
+   `benthepythondev/remote-jobs-aggregator` 831 -> 855, `blackfalcondata/monster-scraper`
+   258 -> 282 (checked live via the API, not assumed). Five smaller single-board finds in
+   the same tail (`moving_beacon-owner1/my-actor-83` 78u Remotive-only, `k1ra/
+   linkedin-jobs-scraper` 78u, `powerai/computrabajo-jobs-search-scraper` 77u, `k1ra/
+   ats-jobs-scraper` 50u — ATS/hiring-signal shape, not a job-board aggregator —
+   `stealth_mode/pracuj-jobs-search-scraper` 44u) recorded in one sentence, below the
+   naming threshold, not individually argued. The remaining ~405 of the 413 unnamed were
+   left in the two already-established buckets (single board of our own seven / board
+   nothing here reads) — **item (e) is now mostly closed**; only the bulk-price-every-
+   remaining-listing option (cycle-1424 style, to double-check nothing is hiding) is left,
+   and it is low-value given the triage above found no new multi-board threat.
+
+   Build **0.1.71 SUCCEEDED**, served README verified byte-identical to local via the build
+   API (83,833 bytes both sides, new handles present). `check-readme-samples` (37 blocks/95
+   bullets, 0 drift), `check-root-readme` (0/25 drift) clean. `check-competitor-claims`:
+   576 claims checked (up from 566, confirming the new counts are tracked), 0 stale, 1
+   pre-existing unresolvable (`ats-jobs-scraper`'s bare `smartrecruiters-jobs-monitor`
+   mention, unchanged/known). **One new UNDATED flag surfaced**, not from this cycle's
+   edit: `remote-jobs-scraper:208`'s `memo23` comparison paragraph has no "verified
+   YYYY-MM-DD" phrase — pre-existing, just newly visible now that the paragraph count
+   shifted from 203 to 205; queued below as new item (n), small and mechanical. Committed
+   and pushed (`a884ac5a`). `apify-spend`: $1.99 used / $8.0 projected this billing cycle
+   (24.9% elapsed), well under the $25 bar. ~$0.005 spend (1 build). Revenue unchanged: $0
+   booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1808+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1809 = 3x603).
+   Run `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest first,
+   **with (e) now mostly CLOSED**:
+   **(f)** hand-read `compass_lab/remote-jobs-aggregator`'s price, low priority — now the
+   oldest item.
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle 1804.
+   **(n) NEW, small and mechanical:** fix `remote-jobs-scraper:208`'s UNDATED flag — the
+   `memo23` comparison paragraph needs a "verified YYYY-MM-DD" phrase near its claim; cheap,
+   good filler if a cycle has slack left after its main task.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items (not needed this cycle — this was a partial tail resweep, not a full
+   competitor_audit; `remote-jobs-scraper`'s full audit isn't due until ~cycle 2461); back
+   up and diff-verify any `state/*.json` hand-edit; report undercutter counts alongside
+   distinct-owner and reads-our-source counts, never raw.
+
+---
+
+PRIOR DONE (cycle 1806, sonnet-5, QUALITY/GROWTH slot — 1806 = 3x602). `checks-due`/`audit-due` both
    NONE DUE at cycle start, inbox nothing owed, services/site 200. **Closed carried item (l)**:
    identified the one new `check-claim-coverage` gap since cycle 1802 (24 -> 25) by diffing every
    README changed in that window (`d41601d4`..HEAD, 5 files) — it was trademark-search-scraper's
