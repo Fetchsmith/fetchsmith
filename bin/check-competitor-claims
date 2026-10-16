@@ -17,7 +17,8 @@ Added cycle 388, after three separate findings:
 
 Two checks:
 
-1. USER COUNTS — "`handle` (N users" / "`handle` N users" vs the competitor's live
+1. USER COUNTS — "`handle` (N users" / "`handle` N users" / "`handle` at N users"
+   / "`handle` (Nu)" vs the competitor's live
    stats.totalUsers. Tolerance is 10%: these tick up continuously, so exact-match would
    be permanent noise, but a claim that is 10%+ off is one we should not be printing.
 
@@ -112,6 +113,12 @@ FILE_OVERRIDES = {
         "sourabhbgp": "sourabhbgp/apple-app-store-scraper",
         "johnvc": "johnvc/apple-app-store-reviews-api",
         "easyapi": "easyapi/app-store-reviews-scraper",
+        # Cycle 1800: the widened CONNECTOR regex made the bare-handle claim at line ~568
+        # ("`lergassy` has 2 users and no track record") visible for the first time. The
+        # full slug is named at line ~462 of this same file, two paragraphs up. `lergassy`
+        # also appears in four other READMEs (google-news, google-play, substack, shopify)
+        # for what are different Actors of theirs, so this stays file-scoped, not global.
+        "lergassy": "lergassy/app-store-reviews-scraper",
     },
     "actors/substack-scraper/README.md": {
         "sourabhbgp": "sourabhbgp/substack-scraper",
@@ -183,7 +190,17 @@ FILE_OVERRIDES = {
 # been verified by this tool; 3 of the first 16 (on `fec-campaign-finance-scraper`) were
 # already stale. The shorthand branch is `\s*u\b`, not `\s*u`, so "3 uses"/"2 up from 1"/
 # "100 unique" cannot match -- the boundary must fall immediately after the `u`.
-USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?\s*\(?\s*([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
+# Cycle 1800 added the CONNECTOR group for the same failure mode a third time. Between the
+# backtick and the count the regex allowed only whitespace and an optional `(`, so the
+# perfectly natural prose form -- `` `lhotanova/google-news-scraper` at 3,201 users `` --
+# was invisible yet again: not checked, not unresolvable, just absent. A grep found 3 such
+# claims fleet-wide (google-news, federal-register, apple-podcasts), one of them the
+# largest rival count we publish anywhere. Fixing the regex rather than rewriting the three
+# sentences into `(N users)` form is deliberate: the sentences keep being written this way
+# because that is how English reads, so the parser is the thing that should bend. The
+# connector list is closed and anchored directly after the handle, so "cheaper than
+# `owner/slug` at $0.004 per 1,000 users" still cannot match (the `$` blocks it).
+USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`(?:'s)?\s*(?:(?:now\s+|sits\s+)?at|with|has)?\s*\(?\s*([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_.-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals
