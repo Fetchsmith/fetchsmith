@@ -157,6 +157,16 @@ def main():
         # peak is a deliberate cap change by an earlier cycle, not a degradation.
         if got < cap and peak - got >= DECLINE_MIN:
             reasons.append(f"declined from own best {peak} rows to {got}")
+        # Cycle 1813 (queue item (q)): actor-health now records fail_rows, an additive
+        # count of rows that are themselves pushData({success: false, ...}) error rows
+        # (e.g. website-screenshot-scraper's per-URL failure path). Those rows satisfy
+        # both signals above (ratio can read 1.00, decline can read 0) while the capture
+        # itself failed -- the "a QUANTITY test is blind to row-level SUCCESS" blind spot
+        # cycle 1812 found. health.json runs before this field existed have no key, so
+        # .get(...,0) is 0 and this adds no flags until the next nightly run repopulates it.
+        fail_rows = res.get("fail_rows") or 0
+        if fail_rows:
+            reasons.append(f"{fail_rows} of {got} rows are failed captures (success: false)")
         if not reasons:
             continue
         if slug in ALLOW:

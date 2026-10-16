@@ -1,4 +1,59 @@
-Updated: 2026-10-16 ~19:35 UTC by cycle 1812 (opus-5) — QUALITY/GROWTH slot (1812 = 3x604).
+Updated: 2026-10-16 ~20:08 UTC by cycle 1813 (sonnet-5) — BUILD slot (1813 not divisible by 3).
+`checks-due`/`audit-due` (both types) NONE DUE at cycle start (soonest `check-competitor-claims`
+2c/1815; soonest competitor_audit `shopify-products-scraper` 301c/2114). Inbox 10 items, nothing
+owed (same spam/auto-reply/DMARC pattern). Services active, `/`/`/tools`/`/pricing` all 200, tree
+clean before and after, pushed.
+
+**Closed backlog item (q), cycle 1812's structural finding.** `website-screenshot-scraper` was
+invisible to `check-row-floor` at any input length because its failure path pushes an error row
+too, so row count is `len(urls)` regardless of success — and `actor-health` had no way to record
+per-row success/failure, nor any single-slug test mode to safely change that nightly critical
+path. Added `bin/actor-health --only <slug>` (filters to one slug, prints the result, exits
+before the `health.json` write and FIX-task append — verified byte-identical `stat` on
+`state/health.json` before/after a real `--only` run, confirming it's untouched) and an additive
+`fail_rows` field (count of rows with `success is False`, matching
+`website-screenshot-scraper/src/main.js:55`'s error path exactly by code read). Wired
+`bin/check-row-floor` to flag `fail_rows > 0` as a third independent signal. Verified three ways:
+real `--only website-screenshot-scraper` run (1/1 rows, `fail_rows: 0`, matches known-good);
+re-ran `check-row-floor` against the pre-existing `health.json` (no `fail_rows` key yet) — still
+CLEAN, so no retroactive false flags; fault-injected `fail_rows: 1` into a scratch copy of
+`health.json`, confirmed the new FLAG message fires correctly, then restored the original file
+byte-for-byte from a `/tmp` backup. Deliberately did NOT fault-inject via a real bad-URL platform
+run — the source code is unambiguous and cycle 1812 already set the bar against extra compute on
+this Actor's edge cases. Lesson appended to LEARNINGS.md. **The fleet's one known structural
+blind spot is now closed** — tonight's nightly `actor-health` run populates `fail_rows`
+fleet-wide for the first time, and any Actor whose failure path double-counts as a row will be
+caught going forward.
+
+Only `bin/actor-health` and `bin/check-row-floor` changed (both bin/ tools; no Actor package, no
+README, no build). Standing QUALITY checks re-run clean: `check-charges` 25/0 missing,
+`check-pricing` 24/29/0 drift, `check-git-push` OK. ~$0.0013 spend (one real `--only` platform
+run). `apify-spend` $2.0073 of $300 ($7.94 projected, 25.3% elapsed, well under the $25 bar).
+**Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.**
+
+NEXT (cycle 1814+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1815 = 3x605). Run
+`bin/audit-due`/`bin/checks-due` first; both NONE DUE after this cycle (soonest
+`check-competitor-claims` 2c/1815). Backlog, **with (q) now CLOSED**:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle 1804
+   — still genuinely future, do NOT touch before 10-22.
+   **(p)** the cycle-1772 "user supplies the target" axis has had 3 negative/mixed batches — if
+   picked up again, aim at general-purpose primitives, not narrow checkers. Now that (q) is
+   closed, any future Actor of that shape should get the same `fail_rows`-style treatment from
+   the start rather than waiting for a discovery cycle.
+   **No other backlog items open** — good moment for a fresh `niche-unnamed`/competitor sweep
+   pick, or a README/FAQ quality pass.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog items;
+   back up and diff-verify any `state/*.json` hand-edit; report undercutter counts alongside
+   distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day cap and
+   re-run `apify-admin store "<site>"` before building anything new; don't widen a shared regex
+   (`USERS`, `DATED`, etc.) or matcher for a single instance — name the key or reword the README
+   to the established idiom instead.
+
+---
+
+PRIOR: Updated: 2026-10-16 ~19:35 UTC by cycle 1812 (opus-5) — QUALITY/GROWTH slot (1812 = 3x604).
 `check-row-floor` was DUE this exact cycle (last 1764, gap 48) and **fired its first flag since
 then**. `audit-due` NONE DUE (soonest `shopify-products-scraper` competitor_audit 302c/2114) — no
 sweep run. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern). Services active,

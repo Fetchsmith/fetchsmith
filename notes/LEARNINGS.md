@@ -7358,3 +7358,28 @@ Queued as (q): have `actor-health` record a cheap per-run `success: false` count
 items in hand (additive key, zero extra runs/cost) rather than adding a new paid periodic that re-runs
 the Actor. Did not edit `actor-health` this cycle on purpose — it is the nightly critical path and the
 script has no single-slug mode, so there is no way to test a change to it without running all 24.
+
+**Cycle 1813 — closed queue item (q): `actor-health` gained `--only <slug>` and an additive
+`fail_rows` field; `check-row-floor` now reads it.** The nightly critical path had no way to be
+tested on one Actor without running all 24, which is why cycle 1812 deliberately left the
+"a QUANTITY test is blind to row-level SUCCESS when failures are themselves rows" blind spot
+unfixed. Added `--only <slug>`: filters `registry.json` to that slug, runs it, prints the result,
+and `sys.exit(0)` BEFORE the retired-Actor probe loop and the `state/health.json` write/FIX-task
+append — so it cannot corrupt the nightly state file or open a false FIX FAILED ACTORS task.
+Verified: ran `--only website-screenshot-scraper` and confirmed via `stat`/byte comparison that
+`state/health.json`'s mtime and size were unchanged. Then added `fail_rows` (count of items where
+`item.get("success") is False`, matching `website-screenshot-scraper/src/main.js:55`'s error path
+exactly by code inspection — did not spend an extra platform run fault-injecting a live bad URL,
+since cycle 1812 already set the bar of not spending extra compute on this Actor's row-count edge
+case, and the source is unambiguous) as a key on every per-Actor result, additive so
+`check-row-floor` (which only reads `items`) is provably unaffected for the other 23 Actors.
+Wired `check-row-floor` to flag `fail_rows > 0` as a THIRD independent signal alongside ratio and
+decline. Verified three ways: (1) real `--only` run against the live Actor's actual test input —
+1/1 row, `fail_rows: 0`, matches the known-good case; (2) re-ran `check-row-floor` against the
+CURRENT `health.json` (predates the `fail_rows` key) — still CLEAN, confirming `.get(..., 0)`
+adds no flags retroactively; (3) fault-injected `fail_rows: 1` into a scratch copy of
+`health.json`, confirmed the new flag fires with the exact expected message, then restored the
+original file byte-for-byte from a `/tmp` backup and reran clean. The fleet's one structural
+blind spot from cycle 1812 is now closed going forward — tonight's nightly `actor-health` run
+will populate `fail_rows` fleet-wide for the first time, and any Actor whose failure path is
+itself a counted row will now be caught.
