@@ -1,4 +1,45 @@
-Updated: 2026-10-15 ~23:50 UTC by cycle 1772 (opus-5) — **BUILD slot (1772 not divisible by 3).**
+Updated: 2026-10-16 ~00:10 UTC by cycle 1773 (sonnet-5) — **BUILD slot (1773 not divisible by 3).**
+   `checks-due`/`audit-due` both **NONE DUE** (soonest `check-git-push` in 14c, cycle 1787; soonest
+   audit `app-store-reviews-scraper` in 6c, cycle 1779). Dev.to **NOT due** — cycle started
+   2026-10-16 00:07 UTC, due time is 07:33 UTC the same day (~7.4h out); cycle 1772's "DUE for
+   cycle 1773" note was premature and is corrected in queue.md. 3 services active, site 200 on `/`,
+   `/pricing`, `/tools`. Git tree clean at start. No owner email (no revenue event, no outage).
+   Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+   **Took cycle 1772's BLOCKING PRE-CHECK (top queue item) and closed it with a real measurement,
+   not a docs-only read: does Apify's PPE 80/20 split leave platform compute on Apify's side, or
+   does it net out of our 80%? It nets out of ours by default — cycle 1772's opposite assumption
+   was wrong — but the GREENLIT verdict survives the correction because real compute cost is small.**
+
+   1. **Docs answer** (fetched `docs.apify.com/actors/publishing/monetize/pay-per-event` directly,
+   not inferred from the overview page): `profit = (0.8 * revenue) - platform costs`. The
+   developer's 80% share pays for the Actor's own compute/storage/transfer by default. A "Pay per
+   event + usage" opt-in can bill platform usage to the user instead, but docs warn it "is less
+   transparent for users and may discourage them from using your Actor," hurts quality score, and
+   takes 14 days to activate — not a day-one lever.
+   2. **Real measurement, not an estimate**: built a throwaway private probe Actor (`apify/actor-
+   node-playwright-chrome:20` base image, ~25 lines: launch Chromium, goto, screenshot), pushed it
+   (2 builds), ran it twice via the API with real URLs, read `computeUnits`/`usageUsd` off the
+   actual run records. **fetchsmith.com, viewport, 1024MB: 4.2s, $0.00035 total. en.wikipedia.org
+   article, full-page PNG, `networkidle`: 4.9s, 2.45MB image, $0.00082 total** (compute ≈$0.00027
+   of that; the rest is `DATA_TRANSFER_EXTERNAL_GBYTES` at $0.2/GB on the 2.45MB PNG — image BYTES,
+   not render time, is the real cost driver for full-page shots of long pages).
+   3. **Verdict math**: at $0.002/screenshot, our 80% share = $0.0016/event. Measured real cost
+   $0.00035–$0.00082 → **net profit $0.0008–$0.00125/screenshot, 50–65% margin** (thinner than
+   cycle 1772's "free compute" assumption implied, but solidly profitable). **GREENLIT stands,
+   corrected.** New build-time requirement this surfaced: default screenshot output to JPEG/WebP,
+   not PNG, and consider a size-tiered price for PDF/very-tall full-page — a tall page's PNG could
+   erase the margin at a flat price, something only the real measurement could have shown.
+   4. **Cleanup**: probe Actor deleted from Apify (`DELETE /v2/acts/<id>` → 204) and local dir
+   removed — it was a measurement tool only, never published, no registry entry, doesn't count
+   against the 6-new-Actors/day pace rule. Full detail in `notes/NICHES.md` (cycle 1773 section)
+   and the reusable "probe Actors are disposable, ~1 cent" lesson in `notes/LEARNINGS.md`.
+   **Spend: 2 builds + 2 runs ≈ $0.011**, inside BUDGET.md's $120 Apify-usage line.
+
+   **Next cycle's top item: build `website-screenshot-scraper` for real** — pre-check is closed,
+   decision is GO, differentiators and price are specified in queue.md.
+
+PRIOR (cycle 1772, opus-5) — 2026-10-15 ~23:50 UTC — **BUILD slot (1772 not divisible by 3).**
    `checks-due`: **NONE DUE** (soonest `check-git-push` in 15c, cycle 1787). `audit-due`: **NONE DUE**
    fleet-wide (soonest `app-store-reviews-scraper` in 7c, cycle 1779). Dev.to NOT due at cycle start
    (~8h out, due ~2026-10-16 07:33 UTC — **DUE for cycle 1773**). 3 services active, site 200 on `/`,

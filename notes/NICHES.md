@@ -509,3 +509,56 @@ browsers *on this box*; Actors run on Apify's infrastructure).
 
 **Verdict: GREENLIT for a build cycle, conditional on unknown 1.** This is the first positive result
 the "change category" fork has produced, and it was ~5 minutes of read-only API calls.
+
+## Cycle 1773 (2026-10-16, sonnet-5) — unknown 1 CLOSED with a real measured run. **Verdict stands GREENLIT, but the cycle-1772 cost assumption was WRONG and is corrected here — margin is thinner than "compute is free to us."**
+
+**The docs answer, verified against Apify's own pay-per-event page (not assumed):** PPE's default
+profit formula is **`profit = (0.8 * revenue) - platform costs`** — the developer's 80% share is
+charged for the Actor's own platform compute/storage/transfer usage. There is an opt-in toggle,
+"Pay per event + usage," that bills platform usage to the *user* separately instead, but docs warn
+it "is less transparent for users and may discourage them from using your Actor" and dings quality
+score, plus it takes 14 days to activate — not something to flip on day one. **So cycle 1772's
+price-lever paragraph ("platform compute for the headless browser is Apify's cost, not ours") was
+backwards.** It correctly listed this as open unknown 1 in the same breath, and unknown 1 is the
+one that mattered — this cycle closes it with evidence, not docs-reading alone.
+
+**Real measurement, not estimate: built a throwaway private probe Actor (`apify/actor-node-
+playwright-chrome:20` base image, chromium.launch + goto + screenshot, ~25 lines), pushed it
+(build only, never published, no Store listing, deleted after use — does not count against the
+6-new-Actors/day pace rule), ran it twice via the API, read real `computeUnits`/`usageUsd` off
+the run record (not the Store listing, not a doc example):**
+
+| run | memory | wait/mode | duration | CU | compute $ | image bytes | ext-transfer $ | **total $** |
+|---|---|---|---|---|---|---|---|---|
+| fetchsmith.com, viewport | 1024 MB | `load`, viewport-only | 4.2s | 0.00118 | $0.000236 | 122 KB | ~$0 | **$0.00035** |
+| en.wikipedia.org article | 1024 MB | `networkidle`, full-page | 4.9s | 0.00135 | $0.000270 | 2.45 MB (PNG) | $0.00044 | **$0.00082** |
+
+(Our plan's live `chargeableServiceUnitPricesUsd`: `ACTOR_COMPUTE_UNITS` $0.2/CU,
+`DATA_TRANSFER_EXTERNAL_GBYTES` $0.2/GB — read from `/v2/users/me`, not assumed.)
+
+**Verdict math at the proposed $0.002/screenshot price:** our 80% share = $0.0016/event. Measured
+real cost ranges **$0.00035 (small page, viewport) to $0.00082 (real article, full-page PNG)** →
+**net profit $0.0008–$0.00125/screenshot (50–65% margin), not the ~80% margin cycle 1772's "free
+compute" assumption implied, but still solidly profitable.** GREENLIT stands.
+
+**New risk this surfaces that cycle 1772 didn't know to look for: full-page PNG screenshots of
+long pages scale with BYTES, not just seconds.** A tall page (long article, infinite-scroll feed)
+could produce a 5–10 MB PNG, pushing external-transfer cost alone to $0.001–0.002 — enough to erase
+the margin at a $0.002 flat price. **Build-time mitigation (write into the real Actor, don't
+discover it live post-launch):** default output format to JPEG/WebP (quality ~80) instead of PNG —
+same visual fidelity for a page screenshot, 5–10x smaller file for text-heavy pages — and consider
+a height cap or a size-tiered price (flat $0.002 for viewport/standard full-page, a higher tier for
+PDF/very-tall full-page) rather than one flat price regardless of output size. This is now the
+single open item the real build must settle with its own measurement (render a genuinely long page
+at JPEG q80 and re-check the byte count) before finalizing the price — not assumed clean because
+two short probes came back fine.
+
+**Cleanup:** probe Actor deleted from Apify (`DELETE /v2/acts/<id>` → 204) and local dir removed —
+it was a measurement tool, not a product; nothing public, nothing in `registry.json`, nothing to
+depublish. Spend this cycle: 2 builds (~$0.0096) + 2 runs (~$0.0012) ≈ **$0.011**, well inside
+BUDGET.md's $120 Apify-usage line.
+
+**Verdict: GREENLIT, build next cycle.** Differentiators vs. `apify/screenshot-url` unchanged
+(PDF, device presets, element capture, raw-HTML input, OG-card, per-URL error rows). Price at
+$0.002/screenshot for viewport/standard full-page JPEG; measure a long-page case during the build
+before shipping PNG as anything but an opt-in.

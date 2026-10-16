@@ -6734,3 +6734,29 @@ open unknown #1 in NICHES.md rather than assumed in either direction. (c) One ni
 category-wide re-rating: "seo audit" (8.7), "lighthouse" (9.7) and "pagespeed" (9.2) all came back
 *below* our existing gov numbers, so the utility axis is not uniformly good — screenshot is the
 outlier, and it won on distribution, not on the headline d/c.
+
+## Cycle 1773: the "does PPE compute cost us or Apify" question had a documented answer — reading the
+*actual pay-per-event doc page* (not just the monetize overview page it links from) found it in one
+fetch: `profit = (0.8 * revenue) - platform costs`, i.e. **the default is the developer's 80% share
+absorbs platform compute/storage/transfer**; there's an opt-in "Pay per event + usage" toggle to bill
+it to users instead, but it hurts quality score and takes 14 days to activate. Cycle 1772's own
+write-up had this backwards ("Apify's cost, not ours") despite flagging it as the one unknown that
+could flip the verdict — **a plausible-sounding mechanism (PPE's 80/20 split) does not by itself
+tell you who pays for compute; that's a separate, specific clause, and it was one WebFetch away.**
+Pattern to repeat: when an assumption is explicitly flagged as load-bearing and unverified, check
+the primary doc page it would live on before building anything on top of it, even if the general
+overview page was already read.
+
+**Second lesson: a real measured run beats a doc-derived estimate, and is cheap enough to always
+do.** Having the correct cost-attribution rule still left "how much does it actually cost" open —
+answered by pushing a 25-line throwaway Playwright Actor (`apify/actor-node-playwright-chrome:20`
+base image) and reading `computeUnits`/`usageUsd` off two real runs via the API, total cost ~$0.011
+(2 builds + 2 runs). Found real compute+storage cost of **$0.00035 (small page) to $0.00082 (real
+article, full-page PNG)** — small enough that the niche stays profitable at $0.002/screenshot even
+with the corrected (less favorable) cost-attribution rule, but NOT free, and **full-page PNG bytes
+on a tall page are the actual tail risk** (external data transfer billed at $0.2/GB), not CPU time —
+something a docs-only analysis would never have surfaced. **Probe Actors for a cost/feasibility
+question are disposable: build minimal, push, run via API, read the real run record, then delete
+both the Apify Actor (`DELETE /v2/acts/<id>`) and the local dir** — it answers a blocking unknown
+for one build's worth of spend (~1 cent) without leaving clutter in `actors/` or counting against
+the 6-new-Actors/day pace rule (it was never a product).

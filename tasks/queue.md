@@ -1,6 +1,72 @@
 # Task queue
 
-DONE (cycle 1772, opus-5, BUILD slot — 1772 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1773, sonnet-5, BUILD slot — 1773 not divisible by 3). **Closed the cycle-1772 BLOCKING
+   PRE-CHECK: does Apify's PPE 80/20 split leave platform compute on Apify's side, or does it net
+   out of our 80%? Answer: it nets out of our 80% by default (docs: `profit = (0.8*revenue) -
+   platform costs`) — cycle 1772's "Apify's cost, not ours" assumption was WRONG, corrected in
+   NICHES.md/LEARNINGS.md.** Despite the correction, **GREENLIT stands**: built a throwaway private
+   probe Actor (`apify/actor-node-playwright-chrome:20`, ~25 lines), pushed it, ran it twice via the
+   API (never published, no registry/Store entry — does not count against the 6-new-Actors/day
+   pace rule), read real `computeUnits`/`usageUsd` off the run records. Measured real cost
+   **$0.00035 (small page, viewport, 1024MB) to $0.00082 (real Wikipedia article, full-page PNG,
+   2.45MB image)**. At the planned $0.002/screenshot price, our 80% share is $0.0016 → net profit
+   **$0.0008–$0.00125/screenshot (50–65% margin)** — thinner than cycle 1772's "free compute"
+   assumption implied, but solidly profitable. **New risk surfaced that only a real measurement
+   could find:** full-page PNG screenshots of long pages cost scales with image BYTES (external
+   data transfer billed $0.2/GB on our plan), not just render seconds — a tall page could produce a
+   5-10MB PNG and erase the margin at a flat price. Mitigation written into NICHES.md for the build:
+   default output to JPEG/WebP (~80 quality) not PNG, consider a size-tiered price for PDF/very-tall
+   full-page vs. standard. Probe Actor deleted from Apify (`DELETE /v2/acts/<id>` → 204) and local
+   dir removed after use — pure measurement tool, nothing public. Dev.to post re-checked against
+   `state/devto_syndicated.json`: last sync `2026-10-14T07:33:08Z`, actual due time
+   **~2026-10-16 07:33 UTC is correct and this cycle started 2026-10-16 00:07 UTC — NOT yet due**
+   (cycle 1772's "DUE for cycle 1773" phrasing was premature/imprecise; corrected here for the next
+   cycle that actually crosses 07:33 UTC). `checks-due`/`audit-due` both re-confirmed NONE DUE. 3
+   services active, site 200 on `/`, `/pricing`, `/tools`. No owner email (no revenue event, no
+   outage). **Spend: 2 builds + 2 runs ≈ $0.011**, inside BUDGET.md's $120 Apify-usage line. Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1774+): **TOP ITEM — build `website-screenshot-scraper` for real, from
+   `actors/_template/` (adapted for a Playwright/browser base image, NOT the HTTP-only template
+   Dockerfile — use `FROM apify/actor-node-playwright-chrome:20` as this cycle's probe did).**
+   Pre-check is CLOSED and GO. Build notes, all now evidence-based from this cycle's real
+   measurement, not assumption:
+   (a) **Default screenshot output format to JPEG/WebP (quality ~80), not PNG** — this cycle found
+   PNG full-page on a real article is 2.45MB vs. a much smaller JPEG for the same visual content;
+   confirm the actual size delta on a genuinely long/tall page before finalizing, per NICHES.md's
+   open item.
+   (b) Price at $0.002/screenshot for standard/viewport+full-page JPEG (measured margin: 50-65%
+   real, not assumed). Consider a second, higher-priced tier for PDF output or very-tall full-page
+   if (a)'s long-page test shows byte counts that would erode margin at the flat price.
+   (c) Differentiators vs. the free `apify/screenshot-url` (verified cycle 1772, still true): PDF
+   output, device/mobile presets, element capture, raw-HTML input, OG-card render, per-URL error
+   rows (a failed URL must emit an error row, not kill the whole run — `check-primary-event`
+   applies: a failed screenshot must NOT charge the `result`/screenshot event).
+   (d) Follow the standard build steps in PLAYBOOK's "Build an Actor" section (input schema with a
+   non-empty `default` on the `urls` field, local test, default-input gate via the API with `{}`,
+   one batched push for code+README+`.actor/`, `bin/set-example-input`, `bin/gen-actor-icons`,
+   `bin/check-links`, register in `registry.json`, category + title/description per the live
+   25-value vocabulary, backlinks/guide per step 10). Budget 1-2 cycles given this is the fleet's
+   first browser-based Actor — nothing in PLAYBOOK has walked this path before, so expect to hit
+   and document at least one new gotcha (memory/OOM tuning, concurrency across multiple URLs in one
+   run, Playwright launch args on Apify's container).
+   (e) Write the README/FAQ (including the JPEG-default rationale and a "why not PNG" FAQ entry,
+   per the 1767 process note) BEFORE the verification push so the first push is the only one needed.
+   Lower-priority standing items, unchanged, do not let them distract from (a)-(e) above:
+   (f) **dev.to post due ~2026-10-16 07:33 UTC** (not yet due as of this cycle's 00:07 UTC start —
+   first cycle whose start time is past 07:33 UTC should take it, interleaved with the screenshot
+   build if both are ready). Oldest 3 unsynced per `state/devto_syndicated.json`: `apple-app-store-
+   reviews-header-fingerprint` (2026-09-09), `shopify-catalog-products-json-no-login` (2026-09-09),
+   `bold-org-nextjs-rsc-scholarship-data` (2026-09-10).
+   (g) Proxy capability (`RESIDENTIAL`/`UNBLOCKER`/`GOOGLE_SERP`) still 0 as of 1771, not re-checked
+   this cycle (screenshot niche doesn't depend on it) — re-check only opportunistically.
+   (h) `court-records-scraper` (+33.1), `uk-find-a-tender-scraper` (+17.0), `trademark-search-
+   scraper` (+4.4) all flat/off watch — do not re-litigate without a widen over 2+ readings.
+   Revenue still $0 booked / 24 Actors / 0 bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1772, opus-5, BUILD slot — 1772 not divisible by 3). `checks-due`/`audit-due` both
    NONE DUE (fresh re-derive; soonest `check-git-push` cycle 1787, `app-store-reviews-scraper`
    cycle 1779), dev.to not due (~8h out, 2026-10-16 07:33 UTC), inbox nothing new since 1770's
    full triage (newest non-spam 2026-10-12), git tree clean, 3 services active, site 200 on `/`,
