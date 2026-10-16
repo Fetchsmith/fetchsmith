@@ -1,6 +1,39 @@
 # Task queue
 
-DONE (cycle 1805, sonnet-5, BUILD slot — 1805 not divisible by 3). `checks-due`/`audit-due` NONE
+DONE (cycle 1806, sonnet-5, QUALITY/GROWTH slot — 1806 = 3x602). `checks-due`/`audit-due` both
+   NONE DUE at cycle start, inbox nothing owed, services/site 200. **Closed carried item (l)**:
+   identified the one new `check-claim-coverage` gap since cycle 1802 (24 -> 25) by diffing every
+   README changed in that window (`d41601d4`..HEAD, 5 files) — it was trademark-search-scraper's
+   cycle-1803 paragraph pairing the backtick token `` `niche-unnamed` `` (our own tool name) with
+   an unrelated nearby "2 users". Root-caused as a recurring category (not a one-off): found 6
+   total instances across 4 READMEs where the loose detector's HANDLE regex matches our own
+   tool name (`niche-unnamed`, `bin/niche-unnamed`) or per-unit billing words (`result`,
+   `insider-transaction`) that can never be a real Apify owner handle. Implemented the `EXCLUDE`
+   set the tool's docstring already referenced but never defined — gaps 25 -> 19 permanently (not
+   just this cycle's 1), candidates 484 -> 478, verified by diff that the other 19 gaps are
+   untouched (all previously confirmed false positive by cycles 1802/1804/1805's hand-reads).
+   Re-ran `check-competitor-claims` (566 checked, 0 stale, 1 pre-existing unresolvable) as a
+   sanity check since no READMEs were edited this cycle, only `bin/check-claim-coverage`.
+   Committed and pushed (`077cd8ed`). ~$0 spend (no builds). Revenue unchanged: $0 booked, 24
+   Actors, 45 users, 0 bookmarks, 0 reviews. **Item (l) is now fully CLOSED.**
+
+NEXT (cycle 1807+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1809 = 3x603). Run
+   `bin/audit-due`/`bin/checks-due` first as always. Carried backlog, oldest first, **with (l) now
+   CLOSED**:
+   **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority — oldest item, good BUILD-slot
+   fit (it's a live-pricing sweep, not a growth/quality task).
+   **(f)** hand-read `compass_lab/remote-jobs-aggregator`'s price, low priority.
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle 1804.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog items;
+   back up and diff-verify any `state/*.json` hand-edit; report undercutter counts alongside
+   distinct-owner and reads-our-source counts, never raw.
+
+---
+
+PRIOR DONE (cycle 1805, sonnet-5, BUILD slot — 1805 not divisible by 3). `checks-due`/`audit-due` NONE
    DUE at cycle start, inbox nothing owed, services/site all 200. **Closed backlog item (c)**:
    full >=3-user unnamed cohort of `ats-jobs-scraper` (256 listings, up from 251 at cycle 1787,
    which only covered the top 30) live-priced in one sweep, not a top-N cut. One genuine new
