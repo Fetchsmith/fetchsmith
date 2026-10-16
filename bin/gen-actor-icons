@@ -67,6 +67,7 @@ GLYPHS = {
     "court-records-scraper": ("CRT", GOV),
     "trademark-search-scraper": ("TM", GOV),
     "sec-insider-trades-scraper": ("SEC", GOV),
+    "website-screenshot-scraper": ("SCR", DEV),
 }
 DEFAULT_ACCENT = BRAND
 
