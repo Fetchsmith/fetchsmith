@@ -57,10 +57,21 @@ WINDOW = 120
 # rate, not to the handle, and the loose detector would false-positive.
 RATE = re.compile(r"\bper\b|\$")
 
+# Backtick tokens that match HANDLE's owner/slug shape but are never a real
+# Apify owner handle, so a nearby number can never be a claim about them --
+# our own tool name and our own per-unit billing words. Confirmed recurring
+# false positives across cycles 1802/1806 (fec-campaign-finance-scraper,
+# sam-gov-opportunities-scraper, sec-insider-trades-scraper (x2),
+# trademark-search-scraper): the loose detector pairs them with an unrelated
+# nearby count every sweep. Keep this list to literal non-owner tokens only
+# -- anything that could plausibly be a real competitor handle still goes
+# through hand-reading via the GAP list below.
+EXCLUDE = {"niche-unnamed", "bin/niche-unnamed", "result", "insider-transaction"}
+
 
 def candidates(text):
     """Yield (handle, count_str, offset) for every loose claim-shaped span."""
-    handles = [(m.end(), m.group(1)) for m in HANDLE.finditer(text)]
+    handles = [(m.end(), m.group(1)) for m in HANDLE.finditer(text) if m.group(1) not in EXCLUDE]
     for num_m in NUMUSER.finditer(text):
         best = None
         for end, handle in handles:
