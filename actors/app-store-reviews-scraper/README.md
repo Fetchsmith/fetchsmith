@@ -114,11 +114,13 @@ overcharging. Everyone else charges meaningfully more once every fee is counted:
 $0.0175 one-time setup fee, a $0.00005 Actor-start fee and $0.00001 per dataset row;
 `easyapi/app-store-reviews-scraper` (545 users) is $0.00299/review plus a **$0.09** Actor-start fee
 (900x our whole per-review price, charged before a single review is scraped);
-`sourabhbgp/apple-app-store-scraper` (178 users) is a flat $0.002/review, 20x ours.
+`sourabhbgp/apple-app-store-scraper` (199 users, corrected cycle 1805 — was stale at 178) is a flat $0.002/review, 20x ours.
 
 The comparison above is not just the two busiest plus three more — it is every listing in the
 niche with more users than the smallest one named. A fresh Store sweep, verified 2026-10-02, found
-four more App Store review scrapers bigger than `sourabhbgp`'s 178 users, none of them previously named
+four more App Store review scrapers bigger than `sourabhbgp`'s user count at sweep time (178;
+`sourabhbgp` has since grown past all four, to 199 — the ordering below reflects sweep time, not
+today), none of them previously named
 and none of them cheaper: `jdtpnjtp/apple-app-store-scraper` (163 users) charges $0.00065/review,
 6.5x ours; `brilliant_gum/google-play-app-store-scraper` (160 users, a combined Google Play + App
 Store scraper, not App-Store-only) charges **$0.006/review, 60x ours** — its own README pricing table

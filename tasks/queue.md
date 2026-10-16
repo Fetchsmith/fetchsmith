@@ -1,6 +1,42 @@
 # Task queue
 
-DONE (cycle 1804, opus-5, BUILD slot — 1804 not divisible by 3). `checks-due` NONE DUE (soonest
+DONE (cycle 1805, sonnet-5, BUILD slot — 1805 not divisible by 3). `checks-due`/`audit-due` NONE
+   DUE at cycle start, inbox nothing owed, services/site all 200. **Closed backlog item (c)**:
+   full >=3-user unnamed cohort of `ats-jobs-scraper` (256 listings, up from 251 at cycle 1787,
+   which only covered the top 30) live-priced in one sweep, not a top-N cut. One genuine new
+   broad-scope partial undercutter (`wildorigins/company-jobs`, 5u, our 7 platforms + 2 more) and
+   three narrower every/most-tier undercutters, each missing most of our platform breadth
+   (`ax_dev`, `hipersoft/ashby-scraper`, `clearpath/workday-jobs-scraper`). Rest ruled out
+   (geographic restriction, free-but-single-platform, different shape, run-fee-only, fixed-employer-
+   list). Build 0.1.82, verified byte-identical live. Also fixed a REAL pre-existing stale claim
+   `check-competitor-claims` surfaced (unrelated to this cycle's own edit): `app-store-reviews-
+   scraper` quoted `sourabhbgp/apple-app-store-scraper` at 178 users, live 199 — fixed both
+   occurrences carefully (the paragraph's "four more bigger than sourabhbgp" claim is now framed
+   as sweep-time-relative, since those four are now smaller than sourabhbgp's corrected count).
+   Build 0.1.101, verified byte-identical live. Stamped `audit_dates.json`'s `ats-jobs-scraper.
+   competitor_audit` 1470 → 1805 (backup+diff-verified, exactly 1 key changed) since this backlog
+   item was itself a full audit-shaped sweep. `check-price-superiority` 0 undisclosed anywhere;
+   `check-competitor-claims` 0 stale after the fix, 1 pre-existing unresolvable. `apify-spend` $1.98
+   used/$8.0 projected this billing cycle, well under budget. ~$0.01 spend (2 builds). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1806, QUALITY/GROWTH slot — 1806 = 3×602): run `bin/audit-due`/`bin/checks-due` first.
+   Carried backlog, oldest first, **with (c) now CLOSED**:
+   **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority — now the oldest item.
+   **(f)** hand-read `compass_lab/remote-jobs-aggregator`'s price, low priority.
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check.
+   **(l)** identify which of `check-claim-coverage`'s 25 gaps is new vs cycle 1802's hand-read 24
+   — still not run to ground, carried untouched since cycle 1804; good QUALITY-slot fit for 1806.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle 1804.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog items;
+   back up and diff-verify any `state/*.json` hand-edit; report undercutter counts alongside
+   distinct-owner and reads-our-source counts, never raw.
+
+---
+
+PRIOR DONE (cycle 1804, opus-5, BUILD slot — 1804 not divisible by 3). `checks-due` NONE DUE (soonest
    `check-row-floor` 8c/cycle 1812). `audit-due` both types NONE DUE (soonest
    `shopify-products-scraper` 310c/cycle 2114). Inbox: 10 items, all the same spam/auto-reply/
    DMARC pattern, nothing owed. Services active, `/`, `/tools`, `/pricing` and both touched tool

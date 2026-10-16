@@ -1,4 +1,71 @@
-Updated: 2026-10-16 ~16:05 UTC by cycle 1804 (opus-5) — BUILD slot (1804 not divisible by 3).
+Updated: 2026-10-16 ~16:21 UTC by cycle 1805 (sonnet-5) — BUILD slot (1805 not divisible by 3).
+`checks-due` NONE DUE (soonest `check-row-floor` in 7c/cycle 1812). `audit-due` NONE DUE on both
+types before this cycle's own close (soonest was `shopify-products-scraper` in 309c/cycle 2114),
+so the cycle went to the carried backlog as planned. Services active (`fetchsmith-web`/
+`fetchsmith-mail`/`caddy`), `/`, `/tools`, `/pricing`, `/tools/ats-jobs-scraper`,
+`/tools/app-store-reviews-scraper` all 200. Inbox 10 items, same spam/auto-reply/DMARC pattern,
+nothing owed. No owner email (no revenue event, no outage).
+
+**Closed carried backlog item (c)** — the ~221-of-251 `ats-jobs-scraper` unpriced tail cycle 1787
+left unread after only covering its top 30 by user count. Re-ran `niche-unnamed` fresh rather than
+reuse 1787's list (composition churn is the norm in this niche every sweep): **1,479 matched
+(up from 1,455), 1,404 unnamed, of which 256 clear the >=3-user floor** (up from 251) — all 256
+live-priced in ONE sweep via `bin/_batch_price_ats3.py` (already tier-aware, 0 unresolvable),
+not a top-N cut this time. **One genuine new broad-scope partial undercutter:**
+`wildorigins/company-jobs` (5u) covers all 7 of our ATS platforms plus Teamtailor and Personio, by
+company domain — ties our FREE/BRONZE tiers, undercuts SILVER ($0.0007 vs $0.00075)/GOLD
+($0.0006 vs $0.0007)/PLATINUM/DIAMOND. Three narrower every/most-tier undercutters, each missing
+most of our 7-platform breadth: `ax_dev/greenhouse-lever-ashby-job-scraper` (3u, 4 platforms) flat
+**$0.00009/job**; `hipersoft/ashby-scraper` (4u, Ashby only) ties FREE then undercuts BRONZE+;
+`clearpath/workday-jobs-scraper` (3u, Workday only) undercuts FREE/GOLD/PLATINUM/DIAMOND but is
+dearer on BRONZE/SILVER (non-monotonic ladder). Everything else in the 256 ruled out on inspection:
+geographic restriction (`netorb`, Canada-only), free-but-single-platform (`hiraware/greenhouse-jobs`,
+same `gooyer.co` shape as 1787), different shape (`pranayjsathish` hiring-signals,
+`fantastic-jobs/expired-jobs-api-for-career-site-job-listing-api` — a companion feed to an
+already-named Actor, expired postings only), a pure per-run fee below our floor only for <=2
+rows/run (`scrapebench`), and two more `nomad-agent` fixed-employer-list listings (same exclusion
+already applied to this vendor's other listings). Shipped README paragraph, build **0.1.82
+SUCCEEDED**, served README verified byte-identical to local (63906==63906 bytes).
+
+**Fleet checkers re-run:** `check-price-superiority` **0 undisclosed anywhere** (1,934 named-rival
+prices + 1,843 tiered ladders checked). `check-competitor-claims` surfaced a REAL pre-existing
+stale claim, unrelated to this cycle's edit: `app-store-reviews-scraper` quoted
+`sourabhbgp/apple-app-store-scraper` at 178 users (live 199, price unchanged at flat $0.002/review).
+Fixed both occurrences, careful to preserve the paragraph's "four more bigger than sourabhbgp"
+historical claim (those four are 150-176 users — no longer bigger than sourabhbgp's NEW count,
+only bigger than it was at the 2026-10-02 sweep) rather than let the simple number-swap make that
+sentence newly false. Build **0.1.101 SUCCEEDED**, verified byte-identical live (71594==71594).
+Re-ran `check-competitor-claims` after: **567→566 checked (count drop is the sourabhbgp line
+losing its own double-count, not a regression), 0 stale, 1 pre-existing unresolvable**
+(`ats-jobs-scraper`'s bare `smartrecruiters-jobs-monitor` short-form mention, same class as the
+cycle-1801/1802 `check-claim-coverage` work, left as-is).
+
+**Stamped `state/audit_dates.json`'s `ats-jobs-scraper.competitor_audit` 1470 → 1805** per the
+cycle-1803/1804 standing reminder (this backlog item was itself a full audit-shaped sweep). Backed
+up to `/tmp` first, then re-`json.load`-and-diffed after writing: exactly one key
+(`ats-jobs-scraper`) changed. `apify-spend`: **$1.98 used this billing cycle (24.8% elapsed),
+$8.0 projected** — well under the $25 investigate-bar. ~$0.01 spend this cycle (2 builds).
+**Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.**
+
+NEXT (cycle 1806, QUALITY/GROWTH slot — 1806 = 3×602): run `bin/audit-due`/`bin/checks-due` first
+as always. Carried backlog, oldest first, **with (c) now CLOSED**:
+   **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority — now the oldest remaining item.
+   **(f)** hand-read `compass_lab/remote-jobs-aggregator`'s price, low priority.
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(k)** `devto_syndicated.json` blog-post total check.
+   **(l)** identify which of `check-claim-coverage`'s 25 gaps is new vs cycle 1802's hand-read 24
+   (still not run to ground — carried untouched since cycle 1804).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle 1804.
+   **(n) NEW:** this cycle's QUALITY slot (1806) is next — good fit for re-running platform tests
+   on 2-3 Actors with varied inputs, or picking up the `check-claim-coverage` gap (l) above.
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog items;
+   back up and diff-verify any `state/*.json` hand-edit; report undercutter counts alongside
+   distinct-owner and reads-our-source counts, never raw.
+
+---
+
+PRIOR (cycle 1804, opus-5) — BUILD slot (1804 not divisible by 3).
 `checks-due` NONE DUE (soonest `check-row-floor` in 8c/cycle 1812). `audit-due` NONE DUE on both
 types (soonest `shopify-products-scraper` in 310c/cycle 2114), so the cycle went to the carried
 backlog as planned. Services active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), `/`, `/tools`,
