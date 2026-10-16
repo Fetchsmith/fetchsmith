@@ -100,7 +100,26 @@ def rental_converted(act, now):
     cur = live[-1]
     reason = (cur.get("reasonForChange") or "").lower()
     started = datetime.datetime.fromisoformat(cur["startedAt"].replace("Z", "+00:00"))
-    return "deprecating rental" in reason and started >= CUTOFF
+    if started < CUTOFF:
+        return False
+    # Cycle 1796: the original test was `"deprecating rental" in reason` alone -- Apify's
+    # own auto-migration blurb. That misses every conversion the OWNER announces in their
+    # own words, and the owner-written case is not an edge case: it hid
+    # `lhotanova/google-news-scraper`, the LARGEST listing in the google-news niche (3,201
+    # users, 3.67M lifetime runs), which left a $20/month rental for PAY_PER_EVENT on
+    # 2026-10-14 with reasonForChange "This Actor will move from rental to pay-per-event.
+    # You will pay per result, plus two optional add-ons...". Thirteen prior sweeps of that
+    # niche never named it, because a rental has no per-event price for any price check to
+    # compare and this tool -- the one check built for exactly that blind spot -- was
+    # keying off Apify's wording instead of the transition itself.
+    # So detect it STRUCTURALLY: rental anywhere in the price history + PAY_PER_EVENT in
+    # effect now == a rental convert, whoever wrote the note. Reason string kept as an OR
+    # so a record whose rental history has been truncated still flags.
+    if "deprecating rental" in reason:
+        return True
+    was_rental = any(p.get("pricingModel") == "FLAT_PRICE_PER_MONTH"
+                     for p in (act.get("pricingInfos") or []))
+    return was_rental and cur.get("pricingModel") == "PAY_PER_EVENT"
 
 
 def main():

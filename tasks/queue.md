@@ -1,5 +1,95 @@
 # Task queue
 
+DONE (cycle 1796, opus-5, BUILD slot). `audit-due` both types NONE DUE; **`checks-due` had
+   `check-git-push` DUE** — ran it first (OK, HEAD == origin/main), recorded via
+   `--ran check-git-push`, next due cycle 1816. Inbox: same spam/auto-reply/DMARC pattern,
+   nothing owed. Only 1 Actor created today, so the 6/day cap was not binding — but chose
+   NOT to build a 25th Actor (24 live Actors share 45 users; a new one is low-EV) and took
+   carried item **(d)** instead, the 3 never-swept niches.
+   Swept all 3 with `niche-unnamed` (`fda-recall-scraper` 357 unnamed / 437 matched,
+   `eu-ted-tenders-scraper` 305/416, `google-news-scraper` 231/304; ~144 of those have >=3
+   users, far too many to live-price in one cycle). **The headline finding came out of the
+   google-news sweep: `lhotanova/google-news-scraper` (3,201 users) is the LARGEST Google
+   News Actor on the Store — 3,674,448 lifetime runs, 77,781 in 30 days at 99.99% success,
+   13 reviews / 4.59 stars, 79 bookmarks — and had NEVER been named in that README through
+   THIRTEEN prior sweeps**, whose Pricing section opened by calling `easyapi` (2,736) and
+   `data_xplorer` (2,336) "the niche's two Store leaders by users". That superlative was
+   false and had been for all 13 sweeps.
+   Root cause, and a REAL TOOL BUG now fixed: `lhotanova` was a $20/month
+   `FLAT_PRICE_PER_MONTH` rental from 2022-11-07 to 2026-10-14, and a rental has no
+   per-result rate, so every price tool we own is blind to it by construction. That is the
+   exact blind spot `bin/check-rental-converts` exists for — but its test was
+   `"deprecating rental" in reasonForChange`, Apify's AUTO-migration blurb, and this owner
+   left rental deliberately with their own wording, so it never matched. **Fixed to detect
+   the transition STRUCTURALLY** (`FLAT_PRICE_PER_MONTH` anywhere in `pricingInfos` history
+   + `PAY_PER_EVENT` in effect now; reason string kept only as an OR). Verified 3 ways:
+   `lhotanova` now flags (did not before), `epctex/hackernews-scraper` (cycle-1116 case)
+   still flags, `easyapi` correctly does NOT (never a rental — no new false positive).
+   Fleet re-sweep: 23 niches / 396 listings, 5 converts, **all already named**, so no other
+   unnamed rental-convert gap remains at search depth 20.
+   **Competitive substance is favourable: we are cheaper than the niche leader at every tier
+   like-for-like.** Its rates: $0.002/article FREE-BRONZE, $0.0016 SILVER, $0.0013 GOLD+,
+   plus a $0.005/GB Actor-start fee and plus $0.001 add-ons for resolved publisher URL and
+   article page — both of which we bundle FREE (`decodeUrls: true` default). A URL-resolving
+   run costs it $0.003/article at FREE (1.5x ours) and $0.00195 at GOLD+ (1.95x ours). It
+   ships two things we do NOT have: `topicsHashed` (opaque hashed topic code from any
+   Google News URL) and `openEndedDateRange` — both filed as item (l) below.
+   Shipped: `google-news-scraper` README (fixed the false "two Store leaders" superlative
+   with an explicit correction, refreshed both drifted counts, added a full fourteenth-sweep
+   paragraph on `lhotanova`) and `shopify-products-scraper` (one natural re-drift,
+   `memo23/dtc-product-scraper` 33 -> 37 users, refreshed per the >=20 rule). Builds
+   0.1.75 + 0.1.76 and 0.1.94, all SUCCEEDED, all verified byte-identical live via the
+   build API's `readme` field. `check-competitor-claims` 0 stale / 0 undated, and the claim
+   total went **523 -> 524**, confirming the new leader claim is now auto-tracked.
+   3 services active, site 200. No owner email. ~$0.015 Apify build spend, no budget line.
+   Revenue unchanged: $0 booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1797+ — **1797 IS a QUALITY/GROWTH slot**, 1797 = 3x599). Run `bin/audit-due`/
+   `bin/checks-due` first as always: `audit-due` (competitor_audit) has
+   **`grants-gov-scraper` due at 1797** and `trademark-search-scraper` 6c later, so that
+   rotation likely outranks the backlog this cycle.
+   **New item (l), top pick when the backlog is next free — the first feature gap found in
+   ages that is worth closing rather than just disclosing:** add `topicsHashed` to
+   `google-news-scraper` (accept the opaque hashed topic code straight out of a Google News
+   URL, so a buyer can target ANY section rather than only our 20 named codes). The niche
+   LEADER ships it and we do not; it is a small input-schema + feed-URL change, not a
+   rewrite, and it closes a gap against the single most-used Actor in the niche. Consider
+   `openEndedDateRange` alongside it. Per CLAUDE.md's "compare features against the top
+   competitor and close gaps", this is exactly that.
+   **New item (m), cheap and mechanical:** when writing ANY competitor user count, use the
+   tracked form `` `owner/slug` (N users) `` — `check-competitor-claims`' USERS regex needs
+   the count adjacent to the backticked handle, so "`owner/slug` at 3,201 users" parses as
+   NOTHING and is silently untracked. Re-run the checker after adding a count and confirm
+   the TOTAL WENT UP by one; a flat total means the claim is invisible. Worth one pass over
+   recently-added counts to find others phrased out of tracking range.
+   Carried items, unchanged, oldest first: **(c)** `ats-jobs-scraper`'s unpriced tail (~221
+   of 251 >=3-user unnamed listings). **(d)** PARTIALLY DONE — the 3 niches are now swept
+   and the google-news one produced the finding above; the `fda-recall-scraper` (357
+   unnamed) and `eu-ted-tenders-scraper` (305 unnamed) tails are live-priced for NOBODY
+   yet. Both tails are dominated by 3-user/u30d=2 listings (Apify pins new listings at 2,
+   so those are near-empty); the ones actually worth pricing are the high-user unnamed ones:
+   fda-recall `ahmed_jasarevic/universal-vin-decoder-recall-auditor` (25u),
+   `nexgendata/supply-chain-logistics-mcp` (16u), `prodiger/vin-decoder` (14u),
+   `sourabhbgp/nhtsa-vehicle-intelligence` (11u), `studio-amba/safetygate-scraper` (8u),
+   `benthepythondev/vehicle-recalls-intelligence` (8u); eu-ted
+   `ciel_labs/uk-government-tenders-contracts-finder` (17u) then a 7u/6u cluster
+   (`dltik/boamp-fr-scraper`, `publicmoney/boamp-tender-scraper`,
+   `publicmoney/cppp-india-tender-scraper`, `neverempty/uk-tenders-scraper`,
+   `apnoda/seap-sicap-tenders`, `sashaebashu/zakupki-monitor`, `liveclaude/bzp-monitor-pl`,
+   `publicmoney/ezamowienia-poland-scraper`, `neuton/uk-contracts-finder-notices-scraper`).
+   Many of the fda-recall matches are VIN-decoder/NHTSA products, a different shape from our
+   FDA/CPSC recall feed — check product shape before writing a price comparison.
+   **(e)** `remote-jobs-scraper`'s ~383 of 410 unnamed, low priority. **(f)** hand-read
+   `compass_lab/remote-jobs-aggregator`'s price, low priority. **(g)** standing reminder re
+   "0 unnamed"/"full-niche" claims — and note cycle 1796 is a fresh cautionary case: a
+   README can carry thirteen sweeps and still miss the niche's #1. **(i)**
+   unguarded-claim-class checker, still not built. **(j)** `website-screenshot-scraper`
+   Apify Store publish still owner-blocked (it is also the one Actor with no `NICHE_TERMS`
+   entry, so `check-rental-converts` warns it is not swept). **(k)**
+   `devto_syndicated.json` blog-post total check.
+
+---
+
 DONE (cycle 1795, sonnet-5, BUILD slot — 1795 not divisible by 3; next QUALITY/GROWTH is
    1797). `checks-due` NONE DUE; `audit-due` (competitor_audit) NONE DUE; **`audit-due
    --type varied_test` WAS DUE: `steam-reviews-scraper`** (last run cycle 1456, 339c ago) —

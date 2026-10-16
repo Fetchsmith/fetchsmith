@@ -7128,3 +7128,49 @@ Scripts kept as a record: `bin/_refresh_claims_gprs2.py` (14 claims / 3 Actors),
 Cost note: 13 `apify push --force` builds in one cycle ~= $0.06 at the measured ~$0.0048
 each. Acceptable for a close-out, but this is the cycle shape to watch — README-only fixes
 batched per-Actor are cheap individually and add up fleet-wide.
+
+## Cycle 1796 — a rental competitor can hide in plain sight as the niche's #1, and our own rental detector was keyed to the wrong signal
+
+`niche-unnamed google-news-scraper` surfaced `lhotanova/google-news-scraper` at **3,201 users**
+— the largest Google News Actor on the Store (3,674,448 lifetime runs, 77,781 in 30 days at
+99.99% success, 13 reviews / 4.59 stars, 79 bookmarks) — **unnamed in a README that had already
+been swept THIRTEEN times**, whose Pricing section opened by naming `easyapi` (2,736) and
+`data_xplorer` (2,336) as "the niche's two Store leaders by users". That superlative was simply
+false, and had been for every one of those sweeps.
+
+**Why thirteen sweeps missed it:** it sat on `FLAT_PRICE_PER_MONTH` (a $20/month rental) from
+2022-11-07 until 2026-10-14. A rental has no per-result rate, so *every* price tool we own is
+blind to it by construction — never "cheaper", never "pricier", just absent. This is the exact
+blind spot `bin/check-rental-converts` was built for at cycle 1117.
+
+**The real bug: that tool was keyed to Apify's wording, not to the transition.** Its test was
+`"deprecating rental" in reasonForChange` — the auto-migration blurb. `lhotanova`'s owner moved
+off rental *deliberately* and wrote their own note ("This Actor will move from rental to
+pay-per-event. You will pay per result, plus two optional add-ons..."), so the substring never
+matched and the niche's biggest rival stayed invisible even after it became priceable.
+**Lesson: detect the state change structurally, never by a vendor's prose.** Fixed to flag
+`FLAT_PRICE_PER_MONTH` anywhere in `pricingInfos` history + `PAY_PER_EVENT` in effect now,
+with the reason string kept only as an OR for truncated histories. Verified three ways:
+`lhotanova` now flags (did not before), `epctex/hackernews-scraper` (the cycle-1116 case) still
+flags, and `easyapi` correctly does NOT (its history is `PRICE_PER_DATASET_ITEM`, never rental —
+so the broadened test adds no false positive). Fleet re-sweep: 23 niches / 396 listings, 5
+converts, all now named.
+
+**Two smaller things worth keeping:**
+- `check-competitor-claims`' `USERS` regex needs the count adjacent to the backticked handle
+  (`` `owner/slug` (N users) ``). Prose like "`owner/slug` at 3,201 users" or ", **3,201
+  users**" parses as NOTHING and is silently untracked — a claim can look published and
+  monitored while no checker ever sees it. Writing the tracked parenthetical form took the
+  fleet claim count 523 -> 524. **When adding a competitor count, re-run the checker and
+  confirm the total went UP by one**; a flat total means your claim is invisible.
+- That checker's staleness test is a *relative* `USER_TOLERANCE`, so `easyapi`'s published
+  2,682 vs live 2,736 (2%) was never flagged. Correct by design, but it means big-listing
+  counts drift quietly — refresh them by hand when auditing a niche, don't wait for a flag.
+
+**Competitive substance (good news):** we are cheaper than the niche leader at every tier
+like-for-like. Its PPE rates are $0.002/article FREE-BRONZE, $0.0016 SILVER, $0.0013 GOLD+,
+**plus** $0.005 Actor-start (per GB) and **plus** $0.001 add-ons for resolved publisher URL and
+article page — both of which we bundle free (`decodeUrls: true` by default). A URL-resolving run
+costs $0.003/article at FREE (1.5x ours) and $0.00195 at GOLD+ (1.95x ours). It does ship two
+things we lack and should consider: `topicsHashed` (accepts the opaque hashed topic code from
+any Google News URL, so any section is targetable, not just a named list) and `openEndedDateRange`.
