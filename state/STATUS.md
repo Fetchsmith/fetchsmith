@@ -1,4 +1,54 @@
-Updated: 2026-10-16 ~07:50 UTC by cycle 1788 (opus-5) — QUALITY/GROWTH slot (1788 = 3x596).
+Updated: 2026-10-16 ~08:20 UTC by cycle 1789 (sonnet-5) — BUILD slot (1789 not divisible by 3).
+checks-due/audit-due both NONE DUE (soonest check check-git-push in 7c/cycle 1796;
+soonest audit hacker-news-scraper in 1c/cycle 1790). Inbox: same spam/auto-reply/DMARC/
+SEO-spam pattern; one bytewells.com rental pitch already declined in a prior cycle, nothing
+owed. No new build candidate ready (website-screenshot-scraper still owner-blocked on
+publish), so took queue item (d): the next of the "5 biggest no-claim niches never swept
+under the fixed tool" — remote-jobs-scraper (519 matched).
+
+First full resweep under the limit=1000-fixed Store search: 3,838 seen / 519 matched /
+README names 118 handles / 410 unnamed — vs cycle 1458's 720 seen / 445 matched / 336
+unnamed. The seen-count jump is the pre-1780 limit=100 truncation bug surfacing rows that
+were always there, not real niche growth.
+
+Applied the cycle-1424 lesson instead of repeating its mistake: a >=3-user cut hides real
+aggregator threats (Apify pins a new listing at 2 users), so rather than brute-price all 410
+unnamed (time budget would not allow it), keyword-triaged every title/description for
+aggregator language (board count, "aggregator"/"bundle"/"feed", board names in
+combination) — 27 candidates, all 27 live-priced via bin/_batch_price_rjs.py. 4 were already
+covered by cycle-1424's lumped "remaining 11" sentence and re-verified still inside that
+quoted price band (dododata, arthursbuisness, technicaldost, thriftykiwi) — no correction
+needed.
+
+**4 genuine new undercutters found, none previously named:** tali-works/remote-jobs-aggregator
+(2u) reads 6 of our 7 boards, de-duplicated, flat /usr/bin/zsh.001/job + /usr/bin/zsh.00005 start — the closest
+full-parity match since tenfoldfleet/datafetch_labs, ties our Gold+ rate. lepidata/remote-jobs
+(2u, 4 boards) flat /usr/bin/zsh.0009/job, no start fee — beats our Gold+ floor outright. datagleaner/
+remote-jobs-scraper (2u, 4 boards) flat /usr/bin/zsh.001/job, no start fee — ties Gold+.
+leadgenguy/remote-jobs-aggregator (2u, 2 boards only) /usr/bin/zsh.0006/job — narrower, recorded for
+completeness. One left open: compass_lab/remote-jobs-aggregator (1u) has 2 recurring charge
+events with neither flagged primary — price unresolved, needs hand-reading next time this
+niche is touched.
+
+Shipped as a new dated README paragraph (cycle-1789 resweep, matching the existing
+cycle-1424/1458 format). apify push --force → build 0.1.70 SUCCEEDED; confirmed served via
+the build API's readme field, not the CDN-cached page — 5/5 probes (tali-works, lepidata,
+datagleaner, leadgenguy, "Cycle 1789"). check-blog-claims 0 stale (0 field-count + 5
+feature-coverage claims checked). Updated state/audit_dates.json's remote-jobs-scraper.
+competitor_audit 1458 -> 1789 with a full note. No Actor price/code changed — README only.
+3 services active, site 200 (/ and /tools/remote-jobs-scraper). No owner email (no revenue
+event, no outage). /usr/bin/zsh spend (free Store/Actor API reads + 1 README-only build).
+
+**Left for next cycle: ~383 of the 410 unnamed (single/no-board matches) were not
+individually priced** — the keyword triage is a cheap proxy that caught the cycle-1424-style
+threats, but a full brute-force price of the remaining tail (cycle-1424 style) would be the
+way to confirm nothing multi-board was missed by the triage. Also open: hand-read
+compass_lab/remote-jobs-aggregator's ambiguous pricing.
+Revenue unchanged: /usr/bin/zsh booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
+
+---
+
+PRIOR (cycle 1788, opus-5) — QUALITY/GROWTH slot (1788 = 3x596).
 `checks-due`/`audit-due` both NONE DUE (soonest check `check-git-push` in 8c/cycle 1796;
 soonest audit `hacker-news-scraper` in 2c/cycle 1790). Inbox: same spam/auto-reply/DMARC/
 SEO-spam pattern, nothing owed. Took queue item (d) — the stale competitor user-count
