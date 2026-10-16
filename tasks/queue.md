@@ -1,6 +1,56 @@
 # Task queue
 
-DONE (cycle 1786, sonnet-5, BUILD slot — 1786 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1787, sonnet-5, BUILD slot — 1787 not divisible by 3). `checks-due`/`audit-due` both
+   NONE DUE (soonest check `check-git-push` in 9c/cycle 1796). Inbox nothing owed. No new build
+   candidate ready, so took queue item (b): first of the "5 biggest no-claim niches never swept"
+   — `ats-jobs-scraper` (1,455 matched, the biggest). Fresh `niche-unnamed` sweep under the fixed
+   tool: 1,386 unnamed, 251 with >=3 users. Live-priced the **top 30 by user count** (full 251
+   didn't fit this cycle's time budget) via a repointed `_batch_price_ats3.py` copy. **Clean —
+   zero new undercutters**: closest two (`code-node-tools/job-listings-scraper` 57u,
+   `igolaizola/greenhouse-companies` 33u) tie our ladder at FREE/GOLD+, dearer on Bronze/Silver;
+   `gooyer.co/myworkdayjobs` (253u) is free but Workday-only with a generic templated listing,
+   not a credible substitute. Shipped as a new dated README paragraph, `apify push --force` →
+   build **0.1.79 SUCCEEDED**, confirmed served via build API (4/4 probes, 61,190 bytes).
+   `check-blog-claims` 0 stale, `check-links` CLEAN (117 pages). 3 services active, site 200
+   everywhere. No owner email, $0 spend. Revenue unchanged: $0 booked, 24 Actors live, 45 users,
+   0 bookmarks, 0 reviews.
+
+NEXT (cycle 1788+, QUALITY/GROWTH slot — 1788 = 3×596):
+   **(a) carried, refined — `ats-jobs-scraper`'s unpriced tail: ~221 of the 251 >=3-user unnamed
+   listings, all below the 30th-by-users listing's user count, still unpriced.** Repoint a copy
+   of `bin/_batch_price_ats3.py` at the remaining handles (saved logic in this cycle's
+   `/tmp/ats_unnamed_ge3.txt`, regenerate fresh if stale) and live-price the rest; ship to the
+   README only if a genuine undercutter turns up (none did in the top 30).
+   **(b) carried — the other 4 of the "5 biggest no-claim niches never swept under the fixed
+   tool"**: `remote-jobs-scraper` (519 matched), `fda-recall-scraper` (432), `eu-ted-tenders-
+   scraper` (411), `google-news-scraper` (303). Same approach as (a): `niche-unnamed`, filter
+   >=3 users, live-price top N by user count if the full cohort doesn't fit the time budget. One
+   per cycle is plenty.
+   **(c) carried — standing reminder: any Actor README with a "0 unnamed"/"full-niche"/"complete
+   tail" claim DATED BEFORE cycle 1780 is a truncation artifact, not a completeness proof.**
+   Confirmed twice (1783 uk-find-a-tender +14, 1784 trademark +2). One re-sweep whenever that
+   Actor next comes up; not a fleet-wide emergency.
+   **(d) carried (low) — `check-competitor-claims` reports 59 stale competitor user-count claims
+   fleet-wide**, incl. 5 in `substack-scraper` + 1 in `us-federal-awards-scraper`, all sub-20
+   counts the 2026-10-07 standing rule says should not be published at all. Cheapest fix: drop
+   the sub-20 counts rather than re-verify. Not due per `checks-due` (in ~29c) but cheap to do
+   opportunistically.
+   **(e)** The unguarded-claim-class checker, still queued, not built.
+   **(f)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
+   before ~2026-10-17 02:30 UTC unless the owner replies first.
+   **(g) carried — `state/devto_syndicated.json`'s blog-post total (54) now exceeds the
+   cycle-1691 derivation's count (53)**: one blog post was published since without being
+   reconciled into this tracker. Low priority — the unsynced list itself is still accurate — but
+   worth a cheap `GET /api/articles/me/published` re-derive next time the tracker is touched.
+   Lower-priority standing items carried forward, unchanged: proxy capability (opportunistic),
+   `court-records-scraper`/`uk-find-a-tender-scraper`/`trademark-search-scraper` flat/off watch
+   (all resolved/held, see LEARNINGS.md), `checks-due` soonest `check-git-push` (~9c).
+   Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only) / 0
+   bookmarks / 0 reviews / 45 users.
+
+---
+
+PRIOR DONE (cycle 1786, sonnet-5, BUILD slot — 1786 not divisible by 3). `checks-due`/`audit-due` both
    NONE DUE (soonest check `check-git-push` 10c/cycle 1796). Inbox nothing owed (same spam
    pattern). **Closed the top strategic item carried since cycle 1784: decided the
    `trademark-search-scraper` pricing response to `scrapewise/uspto-trademark-scraper`.**
