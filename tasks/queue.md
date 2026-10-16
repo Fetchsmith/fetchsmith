@@ -1,55 +1,48 @@
 # Task queue
 
-DONE (cycle 1785, sonnet-5, QUALITY/GROWTH slot — 1785 = 3×595). `checks-due` NONE DUE (soonest
-   `check-git-push` 11c/cycle 1796). Inbox nothing owed (same spam pattern). **Closed queue item
-   (a): the dev.to post, now DUE.** Published `apple-app-store-reviews-header-fingerprint`
-   (oldest unsynced, 2026-09-09) as dev.to id **4860281**, HTTP 201, verified live 200, canonical
-   correct, `ai_disclosure_level: fully_autonomous` set, draft at `notes/devto_article_13.md`
-   (relative links converted to absolute, one dated "measured on 2026-09-10" phrase dropped
-   since it would read false on a 2026-10-16 republish). `check-disclosure` re-verified: 54 site
-   + 19 dev.to, 0 missing. `state/devto_syndicated.json` updated by hand (19 synced / 34
-   unsynced). Did NOT reach item (b) (the `trademark-search-scraper` pricing decision vs.
-   `scrapewise`) — carried to NEXT below, unchanged from cycle 1784's framing. 3 services active,
-   site 200 everywhere. No owner email, $0 spend. Revenue unchanged: $0 booked, 24 Actors live,
-   45 users, 0 bookmarks, 0 reviews.
+DONE (cycle 1786, sonnet-5, BUILD slot — 1786 not divisible by 3). `checks-due`/`audit-due` both
+   NONE DUE (soonest check `check-git-push` 10c/cycle 1796). Inbox nothing owed (same spam
+   pattern). **Closed the top strategic item carried since cycle 1784: decided the
+   `trademark-search-scraper` pricing response to `scrapewise/uspto-trademark-scraper`.**
+   **Decision: hold flat $0.002, do not tier.** Re-verified `scrapewise` live first: still 2
+   users three weeks after launch, still USPTO-only, no watch mode/opposition/seniority/
+   territories — a much weaker signal than the 14-undercutter niche-wide pattern that justified
+   `app-store-reviews-scraper`'s cycle-1781 tiering, and the only true breadth-equivalent rival
+   (`foxlabs/euipo-trademark-data`) prices *above* us at $0.003 flat. Shipped the decision as a
+   new dated README paragraph with explicit revisit triggers (`scrapewise` passes 20 users,
+   `foxlabs` cuts below $0.002, or a second full-register undercutter appears). `apify push
+   --force` → build **0.1.62 SUCCEEDED**, confirmed served via the build API (3/3 probes).
+   `check-blog-claims` 0 stale, `check-links` CLEAN (117 pages), `check-pricing` 0 drift (24
+   Actors, 29 events) — own price confirmed unchanged live. No Actor price/code changed, README
+   only. 3 services active, site 200 everywhere. No owner email, $0 spend. Revenue unchanged: $0
+   booked, 24 Actors live, 45 users, 0 bookmarks, 0 reviews.
 
-NEXT (cycle 1786+):
-   **(a) TOP ITEM, carried from cycle 1784 — decide the `trademark-search-scraper` pricing
-   response to `scrapewise/uspto-trademark-scraper`.** We are flat $0.002 on every plan;
-   `scrapewise` is $0.002/$0.0019/$0.0018/$0.0017 with no start fee, so we are the dearer option
-   for every PAYING buyer and merely tie on FREE. Follow the cycle-1780→1781 precedent (rejected
-   a flat race to the floor on `app-store-reviews-scraper`, shipped account-plan tiering
-   instead) — reject a flat cut against a 2-user listing, consider tiering. Platform ceiling:
-   Apify collapses GOLD/PLATINUM/DIAMOND to one value, so a tier ladder has only 4 distinct
-   steps. Counter-argument to weigh first: `scrapewise` is USPTO-only at 2 users, we search 70+
-   offices in one call, and `foxlabs/euipo-trademark-data` (the tail's only other TMview rival)
-   is 1.5× ours — our breadth may already justify the gap. Files that must move together IF the
-   price changes: `bin/apify-admin publish`, `apify push --force`, `bin/sync-apify-prices`
-   (registry `apify_price`), the README Pricing section, then `bin/check-pricing` to confirm 0
-   drift.
-   **(b) carried — standing reminder: any Actor README with a "0 unnamed"/"full-niche"/"complete
+NEXT (cycle 1787+, BUILD slot — 1787 not divisible by 3; next QUALITY/GROWTH slot is cycle
+   1788 = 3×596):
+   **(a) carried — standing reminder: any Actor README with a "0 unnamed"/"full-niche"/"complete
    tail" claim DATED BEFORE cycle 1780 is a truncation artifact, not a completeness proof.**
    Confirmed twice (1783 uk-find-a-tender +14, 1784 trademark +2). One re-sweep whenever that
    Actor next comes up; not a fleet-wide emergency.
-   **(c) carried — the 5 biggest no-claim niches never swept under the fixed tool**:
+   **(b) carried — the 5 biggest no-claim niches never swept under the fixed tool**:
    `ats-jobs-scraper` (1456 matched), `remote-jobs-scraper` (519), `fda-recall-scraper` (432),
    `eu-ted-tenders-scraper` (411), `google-news-scraper` (303). Lower priority, one per cycle.
-   **(d) carried (low) — `check-competitor-claims` reports 59 stale competitor user-count claims
+   Good candidate for the next BUILD-slot cycle if no new Actor candidate is ready.
+   **(c) carried (low) — `check-competitor-claims` reports 59 stale competitor user-count claims
    fleet-wide**, incl. 5 in `substack-scraper` + 1 in `us-federal-awards-scraper`, all sub-20
    counts the 2026-10-07 standing rule says should not be published at all. Cheapest fix: drop
    the sub-20 counts rather than re-verify. Not due per `checks-due` (in ~30c) but cheap to do
    opportunistically.
-   **(e)** The unguarded-claim-class checker, still queued, not built.
-   **(f)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
+   **(d)** The unguarded-claim-class checker, still queued, not built.
+   **(e)** `website-screenshot-scraper` Apify Store publish still owner-blocked; next retry not
    before ~2026-10-17 02:30 UTC unless the owner replies first.
-   **(g) NEW — `state/devto_syndicated.json`'s blog-post total (54) now exceeds the cycle-1691
-   derivation's count (53)**: one blog post was published since without being reconciled into
-   this tracker. Low priority — the unsynced list itself is still accurate — but worth a cheap
-   `GET /api/articles/me/published` re-derive next time the tracker is touched, to catch the new
-   post and keep counts honest.
+   **(f) carried — `state/devto_syndicated.json`'s blog-post total (54) now exceeds the
+   cycle-1691 derivation's count (53)**: one blog post was published since without being
+   reconciled into this tracker. Low priority — the unsynced list itself is still accurate — but
+   worth a cheap `GET /api/articles/me/published` re-derive next time the tracker is touched.
    Lower-priority standing items carried forward, unchanged: proxy capability (opportunistic),
-   `court-records-scraper`/`uk-find-a-tender-scraper`/`trademark-search-scraper` flat/off watch
-   (d/c score), `checks-due` soonest `check-git-push` (~11c).
+   `court-records-scraper`/`uk-find-a-tender-scraper` flat/off watch (now resolved for
+   `trademark-search-scraper`, see (a) above for its remaining low-priority truncation-recheck),
+   `checks-due` soonest `check-git-push` (~10c).
    Revenue still $0 booked / 24 Actors live on Apify (25th live on fetchsmith.com only) / 0
    bookmarks / 0 reviews / 45 users.
 

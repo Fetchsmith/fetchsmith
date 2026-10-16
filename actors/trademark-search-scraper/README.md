@@ -273,10 +273,25 @@ artwork-and-listing generator that screens slogans against the US register as on
 job. None of the three belongs in a row-rate comparison.
 
 **Our own price was re-read live during this sweep and is unchanged**: a single `result` event at
-a flat $0.002 on every plan tier, no start fee. We have not moved it in response to `scrapewise` —
-whether to answer a 15% paid-tier undercut by a 2-user listing with plan tiering of our own is a
-pricing decision, not a README edit, and it is filed as such in the task queue rather than made
-here by default.
+a flat $0.002 on every plan tier, no start fee.
+
+**Pricing decision (2026-10-16, cycle 1786): holding flat $0.002, not tiering.** Re-verified
+`scrapewise/uspto-trademark-scraper` live the same day: still 2 users three weeks after its
+2026-09-30 launch, still USPTO-only, still no opposition window, seniority claim, Vienna codes,
+territories or watch mode. That is a materially weaker signal than the one that triggered
+`app-store-reviews-scraper`'s account-plan tiering in cycle 1781 — that niche had **14**
+undercutters and every serious named rival already tiered by plan, so our flat rate was quietly
+the dearest option industry-wide. Here there is exactly **one** full-register undercutter, it
+is narrower in scope than us, and the only other listing that matches us structurally —
+`foxlabs/euipo-trademark-data`, same TMview source, same 70+-office breadth — prices **above**
+us at a flat $0.003 with no start fee. A buyer who needs more than USPTO is still cheaper here
+than anywhere else found in this niche; a USPTO-only buyer on a paid Apify plan saves at most
+15% by switching to a 2-user listing with none of our watch mode, validation or hosted-API
+coverage. Adding plan tiers here would shave margin off every buyer, on every plan, to match a
+competitor whose adoption after three weeks has not moved, in exchange for closing a gap that
+breadth and features already cover. Revisit if any of: `scrapewise` crosses 20 users (passes
+the standing publish-a-count threshold and stops being a thin signal), `foxlabs` cuts below our
+$0.002, or a second full-register undercutter appears in a future resweep.
 
 **Cheaper than us once a run is big enough to amortise their start fee** (all four verified 2026-10-03). `automation-lab` (55 users, re-verified live 2026-10-09, `automation-lab/euipo-tmview-trademarks-scraper`) charges a $0.005 start plus $0.0000355/record (FREE, down to $0.00001 on DIAMOND), so any run returning more than about 3 records costs less there — and it also offers application-date bounds and several search terms per run, which this Actor currently does not. `fetch_cat/uspto-trademarks-scraper` is the same shape against USPTO only: $0.005 start plus $0.00002875/record (FREE, to $0.000015 on GOLD+), crossing us at about 3 rows. `sian.agency/uspto-trademark-scraper` (30 users) undercuts us only on the upper plans: its record price tiers from $0.009 (FREE, 4.5× ours) through $0.003 (BRONZE) and $0.00225 (SILVER) down to $0.0015 on **GOLD, PLATINUM and DIAMOND** — an earlier version of this sentence said PLATINUM and DIAMOND only, which understated by one plan — and on those three tiers its $0.005 start is repaid at about 10 rows; on FREE, BRONZE or SILVER it costs more than we do at every volume, and its start fee is itself tiered at **$0.05 on FREE** (not the $0.005 this section used to quote flat, which is the BRONZE-and-above figure). It never leaves the US register, but it adds availability checks, class suggestions and a detail event. `jungle_synthesizer/euipo-trademark-scraper` matches our $0.002 on FREE, and its $0.10 start fee means it undercuts us only on large runs on its top tiers. Its filed price change took effect at **09:23 UTC on 2026-10-04**, and it moves against the buyer, not for them: FREE/BRONZE ($0.002), SILVER ($0.0018) and GOLD ($0.0016) are untouched, while PLATINUM went $0.0014 → $0.0016 and DIAMOND $0.0012 → $0.0016. Before that moment its DIAMOND rate of $0.0012 beat ours above roughly 125 rows; from it, the three top tiers are flattened onto one $0.0016 price and the volume at which it undercuts us moves out to about **250 rows**. Both schedules were read live from the listing on 2026-10-04 and are filed exactly as described here.
 

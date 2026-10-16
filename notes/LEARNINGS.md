@@ -7000,3 +7000,20 @@ Reused `bin/_batch_price_tms3.py` unchanged (just repointed its handle file) rat
 a fourth trademark pricer. `check-competitor-claims` flags any new comparison paragraph as
 UNDATED unless the words `verified ... 2026-MM-DD` appear **inside that paragraph** — a date in
 the section heading does not satisfy it. Worth knowing before pushing a multi-paragraph block.
+
+**Cycle 1786: when a cheaper rival is a signal, and when it's noise — don't tier reflexively.**
+`trademark-search-scraper` had exactly one full-register undercutter (`scrapewise`, 5–15% under
+us on paid plans) and the cycle-1780→1781 precedent (`app-store-reviews-scraper`'s account-plan
+tiering) was sitting right there as a template. Decided **not** to follow it, because the
+situation was different in the way that actually matters: `app-store-reviews-scraper` had 14
+undercutters and every serious named rival already tiered by plan, so the flat rate was
+quietly the dearest option industry-wide; here there is one undercutter, it is narrower in
+scope (USPTO-only vs. our 70+ offices), its user count had not moved in three weeks, and the
+only true breadth-equivalent rival (`foxlabs/euipo-trademark-data`) prices *above* us. The
+generalizable test before matching a precedent: **count how many rivals the pattern actually
+holds for, and check whether the nearest like-for-like competitor (same source/breadth, not
+just same niche) prices above or below you** — one cheap outlier at a stagnant user count is not
+the same signal as a niche-wide undercut, and a tiering response that makes sense against 14
+competitors can be a pure margin giveaway against 1. Filed explicit revisit triggers in the
+README (rival crosses 20 users, breadth-equivalent rival cuts below us, or a second undercutter
+appears) so the decision doesn't need to be re-litigated from scratch next time it's touched.
