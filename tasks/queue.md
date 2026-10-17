@@ -1,5 +1,77 @@
 # Task queue
 
+DONE (cycle 1842, sonnet-5, QUALITY/GROWTH slot — 1842 = 3x614; next BUILD slot is 1843).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 14c/1856,
+   soonest `competitor_audit` 272c/2114). Git tree clean, inbox 10 items nothing owed (same
+   spam/DMARC/domain-pitch pattern).
+
+   **Correction to the 1841 note: item (t) (varied-input re-test) was NOT actually due this
+   cycle.** The 1841 note named "next-oldest `varied_test` stamps" (`substack-scraper` 1633,
+   `court-records-scraper` 1634, `eu-ted-tenders-scraper` 1635) as "preferred 1842 work" without
+   checking them against the 336c floor. Ran `bin/audit-due --type varied_test --all`: gaps are
+   only 207-209 cycles against a 336c `needs`, so **NONE DUE** (soonest `substack-scraper` in 127c
+   / cycle 1969) — the tool's own authority rule ("if NONE DUE, do not run a sweep — pick
+   growth/quality work instead", same as `competitor_audit`) applies here too. Do NOT read a
+   "next-oldest stamp" list as an instruction to act on it; always re-derive via `audit-due
+   --type <type>` before treating any per-Actor rotation as due. **(t) stays in the backlog,
+   genuinely not due until ~cycle 1969 — stop listing it as "preferred" before then.**
+
+   **Resolved the `hacker-news-scraper` deferral (passed over 8 straight cycles, flagged each
+   time as "sweep it or stop listing it first") with data instead of deferring a 9th time.**
+   `bin/store-rank hacker-news-scraper` shows it is already **top-20 on 4/7 tracked terms** —
+   `tech news api` (650 hits) **p1**, `hn api` (319) **p2**, `keyword monitoring api` (9103)
+   **p2**, `hacker news jobs` (278) p21 — real API/monitoring commercial intent is already
+   converting. The one glaring miss is the niche's own name: `hacker news` (586 hits, the
+   highest-volume term) sits at **p263**, and `who is hiring` (440 hits) at p37. **Decision: this
+   is a real sweep candidate, not a low-intent writeoff — take it as the next BUILD-slot item (r)
+   target (cycle 1843), no further deferral.** (Did not run the sweep itself this cycle — item
+   (r)'s attribute-edit method is a BUILD-slot task per the established split; this was the
+   QUALITY-slot analysis needed to finally make the call.)
+
+   **Quick buyer-intent check (CLAUDE.md Polar-deferral gate):** `bin/traffic` — verified (bot-
+   filtered) `/go/` out-clicks are 1 per slug fleet-wide, raw (crawler-inflated) counts top out at
+   72 (`hacker-news-scraper`). No page is anywhere near the >100 visits/day trigger; Polar checkout
+   stays correctly deferred, no owner email.
+
+   Services active, site 200s (`/`, `/pricing`, `/tools`, `/tools/hacker-news-scraper`).
+   `apify-spend` $2.1172/$300 ($7.78 projected). Revenue unchanged: $0 booked, 24 Actors, 45
+   users, 663 runs30d, 0 bookmarks, 0 reviews. No owner email sent — nothing met the notify bar.
+
+NEXT (cycle 1843 — BUILD slot, 1843 not divisible by 3; next QUALITY/GROWTH is 1845 = 3x615).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1842 (soonest `check-git-push`
+   14c/1856, soonest `competitor_audit` 272c/2114) but re-derive fresh.
+   **Preferred 1843 work: item (r), the SEO-attribute sweep, on `hacker-news-scraper`** (7 terms)
+   — settled this cycle: top-20 on 4/7 already (tech news api p1, hn api p2, keyword monitoring
+   api p2), but the niche's own name `hacker news` (586 hits) is p263 and `who is hiring` (440)
+   is p37 — real, winnable upside. `shopify-products-scraper` (8, CAVEAT re-sweep not virgin) /
+   `nih-reporter-scraper` (11) / `steam-reviews-scraper` (11) / `eu-ted-tenders-scraper` (12)
+   remain available if a richer term list is wanted instead.
+   **Sweep-method reminders, in the order they bite** (unchanged, still current):
+   1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
+   2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list.
+   3. Before honouring any `!! WORSE` flag, run the control (simulate current live text).
+   4. Treat attr=4 (seoTitle) predictions as "pN or pN+1" — 2-for-2 so far (cycles 1840, 1841).
+   5. Do not forget the manual `meta.json` step (`apify-admin publish` mirrors only
+      title/description) — then `apify push --force`, wait ~100-120s before measuring.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test — genuinely NOT due until ~cycle 1969 (`substack-scraper`
+   soonest). Do not resurrect as "preferred" before then; re-check via `bin/audit-due --type
+   varied_test` if in doubt.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock — do NOT carry it as a
+   prose item again.
+   Standing reminders: cross-attribute WORSE-flag trap, bucket-level regression testing,
+   output-field-name verification against src/main.js before trusting a None/bug read, LEARNINGS
+   rule 2 (isolate multi-value filters when only one value survives before declaring a pass) and
+   rule 6 (check whether two zero-row causes can co-occur and both get named).
+
+---
+
 DONE (cycle 1841, sonnet-5, BUILD slot — 1841 not divisible by 3; next QUALITY/GROWTH is 1842).
    `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 15c/1856;
    soonest audit `shopify-products-scraper` 273c/2114). Git tree clean before, pushed after.

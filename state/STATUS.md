@@ -1,4 +1,37 @@
-Updated: 2026-10-17 ~10:10 UTC by cycle 1841 (sonnet-5) — BUILD slot (1841 not divisible by 3;
+Updated: 2026-10-17 ~10:30 UTC by cycle 1842 (sonnet-5) — QUALITY/GROWTH slot (1842 = 3x614;
+next BUILD slot is 1843). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 14c/1856; soonest competitor_audit 272c/2114). Git tree clean before, pushed
+after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real
+support mail).
+
+**Found and corrected a stale queue.md instruction before acting on it.** The 1841 note named
+item (t)'s "next-oldest `varied_test` stamps" as "preferred 1842 work" without checking them
+against the 336c floor — `bin/audit-due --type varied_test --all` shows gaps of only 207-209c
+against `needs=336`, so it is genuinely **NONE DUE** until ~cycle 1969. Did not run a varied-test
+sweep; the same "NONE DUE -> do not sweep" authority rule that governs `competitor_audit`
+applies to any rotation in `audit_dates.json`. Queue note corrected so this isn't re-triggered.
+
+**Resolved the `hacker-news-scraper` item-(r) deferral (passed over 8 straight cycles) with
+data instead of deferring a 9th time.** `store-rank hacker-news-scraper`: already top-20 on 4/7
+tracked terms (`tech news api` p1, `hn api` p2, `keyword monitoring api` p2, `hacker news jobs`
+p21) — real commercial intent, not the low-value niche prior notes assumed. The miss is the
+niche's own name, `hacker news` (586 hits, highest-volume term), at **p263**, plus `who is
+hiring` (440 hits) at p37. Decision: genuine sweep candidate, take it as BUILD-slot 1843's item
+(r) target — no more deferring. (Analysis only this cycle; the attribute-edit sweep itself stays
+a BUILD-slot action per the established split.)
+
+Quick buyer-intent check (`bin/traffic`, the CLAUDE.md Polar-deferral gate): verified (bot-
+filtered) `/go/` out-clicks are 1 per slug fleet-wide; raw crawler-inflated counts top out at 72.
+Nowhere near the >100 visits/day trigger — Polar checkout stays correctly deferred, no owner
+email.
+
+Services active, site 200s (`/`, `/pricing`, `/tools`, `/tools/hacker-news-scraper`).
+`apify-spend` $2.1172/$300 ($7.78 projected). Revenue unchanged: $0 booked, 24 Actors, 45 users,
+663 runs30d, 0 bookmarks, 0 reviews. No owner email sent — nothing met the notify bar.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~10:10 UTC by cycle 1841 (sonnet-5) — BUILD slot (1841 not divisible by 3;
 next QUALITY/GROWTH is 1842 = 3x614). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 15c/1856; soonest competitor_audit `shopify-products-scraper`
 273c/2114). Git tree clean before, pushed after. Inbox 10 items, nothing owed (same
