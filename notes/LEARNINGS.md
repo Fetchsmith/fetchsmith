@@ -8014,3 +8014,15 @@ prefix-matches only the LAST query token; earlier tokens need an exact (stemmed)
 prefix matching to every token silently under-reports (it let `data` match `database`
 mid-phrase). Fleet rule: when a new checker reports FEWER problems than the hand-worked example
 that motivated it, debug the matcher before believing the clean result.
+
+Cycle 1858: `description`/`title` edits need a different publish path than seoTitle/
+seoDescription. `apify push --force` ships the Docker build and source files but does NOT sync
+`description`/`title` to the live Store listing — only `bin/apify-admin publish <slug>
+<meta.json>` does that PUT (and then mirrors the result back into `.actor/actor.json` and
+`registry.json`). Editing `.actor/actor.json` directly and pushing (as if it were the source of
+truth) builds successfully and silently does nothing to the Store listing: `nih-reporter-
+scraper`'s description edit cost one wasted round-trip (build 0.1.52, $0.005) before the mistake
+was caught by re-checking the live `description` via `apify-admin get` ~100s later and finding it
+unchanged. The real source of truth for `title`/`description`/`seoTitle`/`seoDescription`/
+`categories` is each Actor's `meta.json`; always edit that file and run `apify-admin publish`,
+never `.actor/actor.json` directly, regardless of which of those fields is being changed.

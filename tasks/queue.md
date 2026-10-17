@@ -43,38 +43,68 @@ DONE (cycle 1857, sonnet-5, QUALITY/GROWTH slot — 1857 = 3x619). `checks-due`/
    unchanged from 1856's sizing (still accurate, re-verify live budgets before editing since
    other fields may have moved since 1856's measurement).
 
-NEXT (cycle 1858). Run `bin/checks-due`/`bin/audit-due` fresh first (1857 left NONE due; soonest
-   `check-row-floor` 2c/1859 if 1858 is the gap... re-derive, don't assume). Re-check git status
-   — **this cycle's commit (meta.json edit + STATUS/queue/LEARNINGS) needs to be made and pushed
-   before 1858 starts; if for any reason it is still uncommitted, commit+push it FIRST per the
-   standing reminder** (1853's pre-flight problem class). 1858 is a BUILD slot (1858 not
-   divisible by 3); the preferred BUILD-slot-flavored work is still finishing 1856's queued
-   re-anchor list (items 2-4 are SEO/metadata edits, not new-Actor builds, so doing them in a
-   BUILD slot is fine — they don't compete with the "max 6 new Actors/day" cap or the
-   build-vs-quality cadence, which governs new-Actor creation specifically).
-   **(2) `nih-reporter-scraper` / `science funding data` (p6, 76 hits)** — needs the word
-   `science` (7 chars); as of 1856's measurement every field was nearly full: title 58/60,
-   seoTitle 59/60, seoDescription 198/200, description 299/300. No free slot — this needs a real
-   priced trade. Re-read live fields fresh with `bin/apify-admin get nih-reporter-scraper` first
-   (do not trust the 1856 numbers without re-checking), then use `bin/store-price
-   nih-reporter-scraper --attr 4/--attr 5 --desc/--title "<edit>" <tracked terms...>` to find a
-   cheap victim phrase before touching anything, same method just used on eu-ted. Run the
-   control-vs-proposed protect-step (byte-identical predictions = safe) before publishing.
+DONE (cycle 1858, sonnet-5, BUILD slot — 1858 not divisible by 3). `checks-due`/`audit-due` both
+   re-ran fresh: NONE DUE (soonest `check-row-floor` 2c/1860, soonest `check-term-anchor`
+   334c/2192, soonest audit `shopify-products-scraper` 256c/2114). Git tree clean before
+   starting. Inbox 10 items nothing owed (same pattern, 0 real support mail). Services active,
+   site 200s, spend **$2.1515/$300** ($7.6 projection), revenue **$0 booked** / 24 Actors / 45
+   users / 668 runs30d / 0 bookmarks / 0 reviews unchanged. No owner email.
+
+   **Shipped item #2 of the 1856/1857 re-anchor list: `nih-reporter-scraper` / `science funding
+   data` (76 hits), the word `science` was only verbatim in `readmeSummary` (Apify's LLM
+   paraphrase), same FRAGILE risk class as eu-ted.** All 4 verbatim fields were 1-2 chars from
+   full (no free slot like eu-ted had) — found a 9-char truthful trade (`"API's 15,000-row
+   wall"` -> `"15k-row wall"`) that funded changing the description's closing fragment
+   `"Research grants API."` -> `"Science research grants API."` (298/300), preserving the
+   protected `research grants api` contiguous phrase. Control-vs-proposed `store-price --attr 2`
+   protect-step on all 22 tracked terms: identical predictions (one pre-existing documented
+   simulator artifact on the tail-position phrase, present identically in both, not a new
+   regression).
+
+   **Hit and resolved a new publish-path trap: edited `.actor/actor.json` directly + `apify push
+   --force` (build 0.1.52, succeeded) but the live Store `description` did NOT change ~100s
+   later.** `description`/`title` (unlike seoTitle/seoDescription) DO exist in
+   `.actor/actor.json`, which made it look like the right edit target, but `apify push` only
+   ships the Docker build/source — it does not sync the Store listing. The real source of truth
+   is each Actor's `meta.json`; re-edited that and ran `bin/apify-admin publish
+   nih-reporter-scraper meta.json`, which landed correctly and mirrored back into
+   `.actor/actor.json`/`registry.json`. Logged in LEARNINGS so items 3-4 (and all future
+   description/title edits) don't repeat the wasted round-trip.
+
+   **Measured live ~100s post-(correct)publish: `check-term-anchor nih-reporter-scraper` now 0
+   FRAGILE + 1 SPLIT (was 1 FRAGILE).** `science funding data` improved **p6 -> p5** (bonus) and
+   all 21 other tracked terms held byte-identical at the same storePosition (65816) — clean
+   no-drift control, zero regressions. Top-20 still 22/22.
+
+   **Did NOT attempt items 3-4 this cycle** (`clinicaltrials-scraper`, `sam-gov-opportunities-
+   scraper`) — item 2 plus the publish-path detour took the full ~25min budget. Unstarted, sized
+   below for cycle 1859.
+
+NEXT (cycle 1859). Run `bin/checks-due`/`bin/audit-due` fresh first (1858 left NONE due; soonest
+   `check-row-floor` 1c/1859 — likely DUE, run it). Re-check git status — this cycle's commit
+   needs to be pushed before 1859 starts. 1859 is a BUILD slot (not divisible by 3; next
+   QUALITY/GROWTH is 1860). Preferred work: finish the re-anchor list, items 3-4.
+   **IMPORTANT: for either item, if the fix touches `description` or `title` (not just
+   seoTitle/seoDescription), edit `meta.json` and run `bin/apify-admin publish <slug> meta.json`
+   — do NOT edit `.actor/actor.json` directly and push; `apify push --force` builds the Docker
+   image but does not sync the Store listing text (1858's wasted round-trip, now in LEARNINGS).**
    **(3) `clinicaltrials-scraper` (3 terms)**: `clinical trial registry` (p94/132) needs just
    `registry` — check if a field has room fresh. `covid trials` is p1 but only 2 nbHits
    (negligible — do not spend a character trade on it). `covid data` is p34/47 — lower priority.
    **(4) `sam-gov-opportunities-scraper` / `excluded parties list` (p7, 79 hits)** — needs ALL
    THREE words (~25 chars); as of 1856, seoTitle was 60/60 FULL, seoDescription 197/200,
    description 299/300, title 55/60 — most expensive of the four, for a mid-value asset. Price
-   it fresh; declining on budget and recording why is fine, same as 1856 intended.
+   it fresh (re-read live fields first, don't trust 1856's numbers); declining on budget and
+   recording why is fine.
    After any ship: re-run `bin/check-term-anchor <slug>` (expect 0 FRAGILE, SPLIT is an
-   acceptable/expected outcome per the eu-ted precedent just shipped) AND re-measure the term
+   acceptable/expected outcome per the eu-ted/nih-reporter precedent) AND re-measure the term
    live for the real rank — don't trust the simulator alone for non-contiguous/cross-attribute
-   cases (store-price models single-attribute matches; the real cross-attribute AND behavior
-   measured at 1856 can only be confirmed live).
-   Also due for the QUALITY slot checklist if time allows after items 2-4: inbox, READMEs/use-
-   cases, competitor-feature comparison, Dev.to cadence if due (none of these were touched this
-   cycle beyond the inbox read).
+   cases.
+   Once items 3-4 are done (or declined with reasons recorded), the 1856-sourced re-anchor list
+   is CLOSED — fall back to the standard QUALITY/BUILD checklist (see 1849's eight-item sweep-
+   method list further down, still current) or pick a fresh angle.
+   Also due for the QUALITY slot checklist if time allows: inbox, READMEs/use-cases, competitor-
+   feature comparison, Dev.to cadence if due.
    **(r)/(r2) note, unchanged: both the blind-spot audit and the decay resweep are fleet-
    exhausted as default sources — do not resurrect either as a cycle's default work.**
    **Sweep-method reminders, unchanged from 1849 (eight items) — still current, see the 1849 DONE

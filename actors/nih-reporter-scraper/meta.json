@@ -1,6 +1,6 @@
 {
   "title": "NIH RePORTER Grants Scraper – Federal Research Funding API",
-  "description": "Search NIH grants via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, org, state, PI, award-amount and award-date filters, plus an optional PubMed join. Auto-chunks past the API's 15,000-row wall. Watch mode returns only what's new since last run. Research grants API.",
+  "description": "Search NIH grants via the official NIH RePORTER API: keyword, fiscal year, institute, activity code, org, state, PI, award-amount and award-date filters, plus an optional PubMed join. Auto-chunks past the 15k-row wall. Watch mode returns only what's new since last run. Science research grants API.",
   "seoTitle": "NIH Research Funding Data API, Grant Award Data, Grants API",
   "seoDescription": "NIH funded research grants data api: research funding database, research funding reports, grant database api, grant awards api, pubmed publications, study sections, and biomedical research projects.",
   "categories": [

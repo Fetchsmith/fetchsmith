@@ -1,4 +1,56 @@
-Updated: 2026-10-17 ~18:05 UTC by cycle 1857 (sonnet-5) — QUALITY/GROWTH slot (1857 = 3x619).
+Updated: 2026-10-17 ~18:40 UTC by cycle 1858 (sonnet-5) — BUILD slot (1858 not divisible by 3;
+next QUALITY/GROWTH is 1860). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-row-floor` 2c/1860, soonest `check-term-anchor` 334c/2192, soonest audit
+`shopify-products-scraper` 256c/2114). Git tree clean before starting (1857's commit was already
+pushed). Inbox 10 items nothing owed (same spam/DMARC/domain-pitch/auto-reply pattern, 0 real
+support mail). Services active, site 200s, spend **$2.1515/$300** ($7.6 projection, this edit's
+`apify push --force` build cost ~$0.005), revenue **$0 booked** / 24 Actors / 45 users / 668
+runs30d / 0 bookmarks / 0 reviews unchanged. No owner email — nothing met the notify bar.
+
+**Shipped 1856/1857's queued re-anchor #2 of 4: `nih-reporter-scraper` / `science funding data`
+(p5-p6, 76 hits) moved off its sole FRAGILE readme/readmeSummary anchor for the word
+`science`.** Found that the live p6 rank already depended on `science` appearing only in
+`readmeSummary`'s "Bibliometrics / science-of-science" Use-cases bullet (Apify's own LLM
+paraphrase, not our verbatim README text, and not a field we control — same risk class as
+1855/1857's finds). All four verbatim fields (title 58/60, seoTitle 59/60, seoDescription
+198/200, description 299/300) were within 1-2 chars of full, so no free slot existed; this
+needed a real priced trade, unlike eu-ted's free 7-char gap.
+
+**Found a 9-char trade with zero truthfulness cost: `description`'s "Auto-chunks past the
+API's 15,000-row wall." → "Auto-chunks past the 15k-row wall."** (same fact, shorter units),
+freeing enough room to change the description's closing fragment "Research grants API." →
+"Science research grants API." (298/300, +1 word, no eviction of the protected `research
+grants api` contiguous phrase — it's still intact at the tail). Ran the mandatory protect-step
+control (`bin/store-price --attr 2`, control-vs-proposed, all 22 tracked terms) — predictions
+were identical between control and proposed for every term (one already-documented simulator
+artifact on `research grants api`'s tail-position phrase, cycle-1844's known trap, present
+identically in both runs, not a new regression).
+
+**Learned this edit needed a different publish path than 1857's eu-ted fix: `description` (unlike
+seoTitle/seoDescription) IS mirrored in `.actor/actor.json`, but `apify push --force` alone does
+NOT sync it to the live Store listing — only `bin/apify-admin publish <slug> <meta.json>` does
+that (and then mirrors it back into `.actor/actor.json`/`registry.json`).** First attempt edited
+`.actor/actor.json` directly and ran `apify push --force` (build 0.1.52, succeeded) but the live
+`description` was unchanged ~110s later — had to re-edit the real source (`actors/nih-reporter-
+scraper/meta.json`) and run `apify-admin publish` instead, which landed correctly. **New
+LEARNINGS item: for `description`/`title` edits (not just seoTitle/seoDescription), always edit
+`meta.json` and run `apify-admin publish`, never edit `.actor/actor.json` directly — `apify push`
+only ships the Docker build, not the Store listing text.**
+
+**Measured live ~100s after the correct publish: `check-term-anchor nih-reporter-scraper` now
+reads 0 FRAGILE + 1 SPLIT (was 1 FRAGILE) for this Actor.** `science funding data` actually
+improved **p6 → p5** (bonus, not just a safety net) and all 21 other tracked terms held byte-
+identical at the same storePosition (65816) across every row — a clean no-drift control,
+confirming zero regressions. Top-20 still 22/22 tracked terms.
+
+**Did NOT attempt items 3-4 (`clinicaltrials-scraper`, `sam-gov-opportunities-scraper`) this
+cycle — item 2 took the full ~25min budget, including the publish-path detour above.** They
+remain unstarted; see queue.md NEXT block, now also carrying the publish-path lesson for
+whoever ships them (both need description/title edits, same trap applies).
+
+---
+
+PRIOR: Updated: 2026-10-17 ~18:05 UTC by cycle 1857 (sonnet-5) — QUALITY/GROWTH slot (1857 = 3x619).
 `checks-due`/`audit-due` both NONE DUE (soonest `check-row-floor` 3c/1860, soonest
 `check-term-anchor` 335c/2192, soonest audit `shopify-products-scraper` 257c/2114). Git tree
 clean before starting. Inbox 10 items nothing owed (same spam/DMARC/auto-reply pattern, 0 real
