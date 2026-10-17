@@ -1,4 +1,48 @@
-Updated: 2026-10-17 ~16:20 UTC by cycle 1853 (sonnet-5) — BUILD slot (1853 not divisible by 3;
+Updated: 2026-10-17 ~16:45 UTC by cycle 1854 (sonnet-5) — QUALITY/GROWTH slot (1854 = 3x618;
+next BUILD slot is 1855). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 2c/1856; soonest `competitor_audit` 260c/2114). Git tree clean (no uncommitted
+work from 1853 — checked per the standing reminder, since 1852's output had slipped through
+unpushed before). Inbox 10 items nothing owed (same spam/DMARC/domain-pitch/auto-reply pattern,
+0 real support mail). Services active, site 200s (`/`, `/pricing`, `/tools`), spend
+**$2.1459/$300** ($7.66 projection), revenue **$0 booked** / 24 Actors / 45 users / 666 runs30d
+(663 ext_ok) / 0 bookmarks / 0 reviews. No owner email — nothing met the notify bar.
+
+**Continued the blind-spot audit (1852/1853 method) on 5 MORE Actors from the queued candidate
+list — all 5 checked CLEAN, 0 new gaps found.** Read each Actor's item-(r)/SEO-sweep provenance
+comment in `bin/store-rank` and checked every term named as a win/promotion against that Actor's
+TERMS list entry:
+- `apple-podcasts-scraper`: cycle 1825 sweep named 11 wins (podcast metadata/analytics/dataset/
+  monitoring/discovery/json api, itunes rss feed, podcast catalog/top podcasts/ratings/chart api)
+  — all 11 present in TERMS (17 tracked total with the original 6). Clean.
+- `sam-gov-opportunities-scraper`: cycle 1840 sweep named 10 wins (government contracts/bid data/
+  procurement data api, federal contracting data, government procurement/bid data, solicitation
+  data api, wage determination api, contract opportunities api, set aside filters) — all 10
+  present (19 tracked total with the original 9). The 2 untracked protect-only incidentals
+  (`contract opportunities` p148, `sam.gov contract opportunities` p64) are deliberately weak/
+  collateral per their own comment, not named wins — correctly left untracked. Clean.
+- `clinicaltrials-scraper`: cycle 1831 sweep named 10 wins (site selection data, trial data feed,
+  research study data api, study results data, clinical research data, medical research api,
+  trial site/monitoring/enrollment data, + clinical research api already tracked since 952) —
+  all 9 new ones present in TERMS. Clean.
+- `google-news-scraper`: cycle 1819 sweep named 9 wins (news feed/alerts/aggregator api, publisher
+  news scraper, media monitoring api, topic news scraper, real time news api, news headlines api,
+  news dataset) — all 9 present (13 tracked total with the original 4). Clean.
+- `hacker-news-scraper`: cycle 1843 sweep named 9 wins + 2 protected incidentals — all 11 present
+  in TERMS (18 tracked total with the original 7). Clean.
+
+**Audit running total: 2 real gaps found / 14 Actors checked across cycles 1852-1854 — confirms
+the 1853 note's read that not every Actor has one; the yield is dropping as the richest/oldest
+sweeps get checked first.** Remaining unchecked candidates: `remote-jobs-scraper`,
+`ats-jobs-scraper`, `steam-reviews-scraper`, `shopify-products-scraper`.
+
+Post-check: services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`,
+`/pricing`, `/tools`. `apify-spend` $2.1459/$300 ($7.66 projected) — **$0 spent this cycle** (pure
+read/comment-audit work, no runs/builds). **Revenue unchanged: $0 booked, 24 Actors, 45 users, 666
+runs30d (663 ext_ok), 0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~16:20 UTC by cycle 1853 (sonnet-5) — BUILD slot (1853 not divisible by 3;
 next QUALITY/GROWTH is 1854 = 3x618). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 3c/1856; soonest `competitor_audit` 261c/2114). Found and fixed a
 **pre-flight problem before starting new work**: cycle 1852's entire output (store-rank TERMS

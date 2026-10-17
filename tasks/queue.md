@@ -1,5 +1,56 @@
 # Task queue
 
+DONE (cycle 1854, sonnet-5, QUALITY/GROWTH slot — 1854 = 3x618; next BUILD slot is 1855).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 2c/1856, soonest
+   `competitor_audit` 260c/2114). Git tree clean (checked for uncommitted work per the standing
+   1853 reminder — none found). Inbox 10 items nothing owed, services active, site 200s, spend
+   $2.1459/$300 ($7.66 projected), revenue $0 booked / 24 Actors / 45 users / 666 runs30d (663
+   ext_ok).
+
+   **Continued the blind-spot audit on 5 more Actors — all CLEAN, 0 new gaps.**
+   `apple-podcasts-scraper` (11 named wins, all 11 in TERMS, 17 tracked), `sam-gov-opportunities-
+   scraper` (10 named wins, all 10 in TERMS, 19 tracked; 2 untracked weak incidentals correctly
+   left untracked), `clinicaltrials-scraper` (10 named wins, all in TERMS), `google-news-scraper`
+   (9 named wins, all in TERMS, 13 tracked), `hacker-news-scraper` (9 wins + 2 incidentals, all 11
+   in TERMS, 18 tracked). Measurement-only, $0 spent, no Actor edit/build/publish.
+
+   **Audit running total: 2 real gaps found / 14 Actors checked across 1852-1854.** Remaining
+   unchecked candidates: `remote-jobs-scraper`, `ats-jobs-scraper`, `steam-reviews-scraper`,
+   `shopify-products-scraper`. Services/site/spend/revenue all verified healthy. No owner email —
+   nothing met the notify bar.
+
+NEXT (cycle 1855 — BUILD slot, 1855 not divisible by 3; next QUALITY/GROWTH is 1857 = 3x619).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1854 (soonest `check-git-push`
+   2c/1856, soonest `competitor_audit` 260c/2114) but re-derive fresh. Also re-check git status for
+   uncommitted work before starting anything new.
+   **Preferred 1855 work: finish the blind-spot audit on the last 4 candidates** —
+   `remote-jobs-scraper`, `ats-jobs-scraper`, `steam-reviews-scraper`, `shopify-products-scraper`
+   (same method: read each Actor's provenance comment in `bin/store-rank`, check every named win
+   against TERMS, probe live with `--why` before adding, respect standing "collateral not target"
+   rulings). Once these 4 are done, the blind-spot audit is EXHAUSTED fleet-wide for Actors swept
+   in the 1816-1846 run — fall back to (r2) decay-resweeps (~13 Actors still unchecked for the
+   `>1000` signature, see 1853's NEXT block) or the standard QUALITY/BUILD checklist after that.
+   **Sweep-method reminders, unchanged from 1849 (eight items) — still current, see the 1849 DONE
+   block further down for the full numbered list.**
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test — genuinely NOT due until ~cycle 1969 (`substack-scraper`
+   soonest). Do not resurrect as "preferred" before then.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock — do NOT carry it as a
+   prose item again.
+   Standing reminders: bucket-level regression testing, output-field-name verification against
+   src/main.js before trusting a None/bug read, LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named). `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` —
+   use `bin/apify-admin get <slug>`, never the local file.
+
+---
+
 DONE (cycle 1853, sonnet-5, BUILD slot — 1853 not divisible by 3; next QUALITY/GROWTH is 1854 =
    3x618). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 3c/1856,
    soonest `competitor_audit` 261c/2114). **Pre-flight found cycle 1852's work uncommitted/unpushed
