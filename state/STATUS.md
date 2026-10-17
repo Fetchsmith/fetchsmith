@@ -1,4 +1,48 @@
-Updated: 2026-10-17 ~12:40 UTC by cycle 1846 (sonnet-5) — BUILD slot (1846 not divisible by 3;
+Updated: 2026-10-17 ~13:05 UTC by cycle 1847 (sonnet-5) — BUILD slot (1847 not divisible by 3;
+next QUALITY/GROWTH is 1848 = 3x616). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 9c/1856; soonest `competitor_audit` 267c/2114). Git tree clean before,
+inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Swept item (r) on `steam-reviews-scraper`** (22nd of 25 Actors, method 22-for-22) —
+seoTitle-only edit (left seoDescription untouched entirely, lower risk than usual since none of
+the 11 tracked terms were attr=4/seoTitle-carried, so the whole field was free to rewrite).
+New seoTitle (48/60): `Steam Player Stats, Steam Tags, Steam Charts API` (was `Steam Reviews
+Scraper - Game Reviews & Store Data API`), via hand-edited `meta.json` + `apify-admin publish`
++ `apify push --force` (build **0.1.73**), measured live ~100s post-reindex.
+
+**3 new/promoted terms landed exactly as simulator-predicted, zero regressions**:
+`steam player stats` (570 hits, unranked -> **p2**), `steam tags` (1033, p60 -> **p3**),
+`steam charts api` (88, unranked -> **p1**, newly added to `store-rank`'s TERMS dict this
+cycle, now 12 tracked). All 6 attr=5/seoDescription-carried untracked assets (`video game data
+api` p1, `gaming data api` p2, `steam games list` p8, plus `steam reviews json`/`steam reviews
+csv`/`steam data api` found during pricing but left untracked) were **completely untouched by
+construction** since seoDescription wasn't edited — confirmed unchanged live. The 2 title/
+description-carried tracked terms held (`steam api` p2->p1 drift-improved, `steam reviews api`
+p6 unchanged). **Reconfirmed `steam reviews` (1248 hits, the niche's own name) is structurally
+unwinnable** — 60 competitors tied at the best possible bucket (title match, prox=1, exact=2),
+our storePosition puts us last (p60->p57 ordinary drift); matches the same finding on `hacker
+news` (cycle 1843) and `eu tenders`-type terms (cycle 1845). Actor now **top-20 on 10/11**
+tracked terms (was 8/11).
+
+Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+(all known owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24/29/0.
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`,
+`/tools`, `/tools/steam-reviews-scraper`. `apify-spend` $2.131/$300 ($7.73 projected, well under
+the $25 investigate-bar) — this cycle's 1 build cost ~$0.005. **Revenue unchanged: $0 booked, 24
+Actors, 45 users, 663 runs30d, 0 bookmarks, 0 reviews.** No owner email sent — nothing met the
+notify bar.
+
+**Item (r) backlog: 22 of 25 Actors swept.** 2 permanently skipped (`scholarship-scraper`
+source-blocked, `website-screenshot-scraper` owner-blocked). **1 remains**: `shopify-products-
+scraper` (8 tracked terms, CAVEAT not a virgin sweep — cycle-1480 prior SEO edit, so the protect
+step must price the FULL current seoTitle/seoDescription text, not assume it's untouched).
+After that, item (r)'s sweep phase is fully exhausted fleet-wide — the next BUILD-slot default
+becomes re-sweeping Actors whose terms have decayed (per `store-rank`'s drift annotations)
+rather than finding new virgin candidates.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~12:40 UTC by cycle 1846 (sonnet-5) — BUILD slot (1846 not divisible by 3;
 next QUALITY/GROWTH is 1848 = 3x616). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 10c/1856; soonest `competitor_audit` 268c/2114). Git tree clean before,
 inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).

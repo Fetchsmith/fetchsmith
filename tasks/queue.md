@@ -214,15 +214,49 @@ DONE (cycle 1846, sonnet-5, BUILD slot — 1846 not divisible by 3; next QUALITY
    phase is fleet-wide exhausted** — next BUILD-slot default becomes re-sweeping Actors whose
    terms have decayed per `store-rank`'s drift annotations, not finding new virgin terms.
 
-NEXT (cycle 1847 — BUILD slot, 1847 not divisible by 3; next QUALITY/GROWTH is 1848 = 3x616).
-   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1846 (soonest `check-git-push`
-   10c/1856, soonest `competitor_audit` 268c/2114) but re-derive fresh.
-   **Preferred 1847 work: continue item (r)** on `steam-reviews-scraper` (11 terms, top-20 on
-   8/11 already, thinner upside but still real — protect step first) or
-   `shopify-products-scraper` (8 terms, CAVEAT: re-sweep, not virgin — check cycle-1480's prior
-   edit before assuming a clean slate). These are the last 2 item-(r) candidates; after both ship,
-   the next QUALITY/GROWTH cycle (1848) should pick a new backlog focus (re-sweep decayed terms,
-   per PLAYBOOK checklist, or answer inbox/polish READMEs — none owed as of 1846).
+DONE (cycle 1847, sonnet-5, BUILD slot — 1847 not divisible by 3; next QUALITY/GROWTH is 1848 =
+   3x616). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push`
+   9c/1856, soonest `competitor_audit` 267c/2114). Git tree clean before, inbox 10 items
+   nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Swept item (r) on `steam-reviews-scraper`** (22nd of 25 Actors, method 22-for-22) —
+   seoTitle-only edit, build **0.1.73**. Protect step found none of the 11 tracked terms were
+   attr=4(seoTitle)-carried, so the whole field was free to rewrite with zero regression risk;
+   left seoDescription completely untouched to protect its 6 attr=5-carried assets (`video game
+   data api` p1, `gaming data api` p2, `steam games list` p8, plus 3 untracked finds) by
+   construction rather than by simulation.
+
+   New seoTitle (48/60): `Steam Player Stats, Steam Tags, Steam Charts API` (was `Steam Reviews
+   Scraper - Game Reviews & Store Data API`). **3 new/promoted terms landed exactly as
+   predicted, zero regressions**: `steam player stats` (570 hits) unranked->**p2**, `steam
+   tags` (1033) p60->**p3**, `steam charts api` (88) unranked->**p1** (added to `store-rank`
+   TERMS this cycle, now 12 tracked). `steam api` p2->p1 (drift-improved), `steam reviews api`
+   p6 unchanged. **Reconfirmed `steam reviews` (1248 hits, the niche's own name) is
+   structurally unwinnable** — 60 competitors tied at the best bucket (title match, prox=1,
+   exact=2), our storePosition puts us last (p60->p57 ordinary drift) — same pattern as `hacker
+   news` (1843). Actor now top-20 on **10/11** tracked terms (was 8/11).
+
+   Post-ship checks clean: `check-meta-fields` 9/0, `check-store-meta` 25/4 (known owner-blocked
+   `website-screenshot-scraper` only), `check-pricing` 24/29/0. Services active, site 200s incl.
+   `/tools/steam-reviews-scraper`. `apify-spend` $2.131/$300 ($7.73 projected). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks, 0 reviews. No owner
+   email — nothing met the notify bar.
+
+NEXT (cycle 1848 — QUALITY/GROWTH slot, 1848 = 3x616; next BUILD slot is 1849).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1847 (soonest `check-git-push`
+   9c/1856, soonest `competitor_audit` 267c/2114) but re-derive fresh.
+   **Preferred 1848 work: `shopify-products-scraper`** (8 terms, CAVEAT: re-sweep, not virgin —
+   check cycle-1480's prior SEO edit before assuming a clean slate; price the FULL current
+   seoTitle/seoDescription text in the protect step, not just the tracked-term list) is the
+   LAST item-(r) candidate. Since 1848 is a QUALITY slot, per the standing "no item-(r) edits in
+   a QUALITY slot" rule, do the pricing/protect ANALYSIS only and leave a ready-to-ship draft for
+   cycle 1849 (BUILD) to ship directly — same split used successfully for `eu-ted-tenders-scraper`
+   (1845 analysis -> 1846 ship). After `shopify-products-scraper` ships, item (r)'s sweep phase
+   is fully exhausted fleet-wide (22/25 swept, 2 permanently skipped) — the next BUILD-slot
+   default becomes re-sweeping Actors whose terms have decayed (per `store-rank`'s drift
+   annotations), not finding new virgin candidates. Also due for a QUALITY slot per PLAYBOOK:
+   answer inbox (none owed as of 1847), polish 2-3 READMEs, or compare features against a top
+   competitor Actor.
    **Sweep-method reminders, in the order they bite** (unchanged, still current):
    1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
    2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list.

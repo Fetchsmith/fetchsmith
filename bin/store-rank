@@ -788,7 +788,8 @@ TERMS = {
     "steam-reviews-scraper": ["steam reviews", "steam api", "steam player count",
                               "video game data api", "steam player stats", "steam tags",
                               "gaming data api", "steam games list",
-                              "steam review data", "steam store api", "steam reviews api"],
+                              "steam review data", "steam store api", "steam reviews api",
+                              "steam charts api"],
     # cycle 535: "who is hiring" added — title -> "...Who Is Hiring, Jobs" (span 0),
     # measured p57->p23 (genuine 29-record block, block's #1 verified matchLevel
     # full). Confirmed the h143/h145(b) apostrophe caveat: querying "who's hiring"
