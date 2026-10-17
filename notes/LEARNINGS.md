@@ -7976,3 +7976,41 @@ breaking any of the 7). Measured live: exact prediction (`open contracting data`
 regressions. Any Actor whose TERMS list has an attr=6-only entry is a candidate for the same
 silent loss — worth a proactive `check-readme-prox --sweep` pass rather than waiting to catch it
 cold on the next (r2) rotation.
+
+cycle 1856: acted on 1855's closing suggestion ("worth a proactive pass rather than waiting to
+catch it cold") but inverted the method, which made it ~400x cheaper. 1855 proposed
+`check-readme-prox --sweep` per Actor — a per-term LIVE Algolia measurement. The cheaper
+equivalent is to ask the question from the CARRIAGE side instead: a term can only be at risk of
+silent paraphrase loss if its words are absent from the fields the index stores VERBATIM, and
+those fields are readable in ONE admin GET per Actor. New tool **`bin/check-term-anchor`** (fleet
+sweep, 24 admin GETs, ~40s, $0, no Algolia queries at all, registered 336c in
+`state/fleet_checks.json`) cross-references `bin/store-rank`'s TERMS map against the live
+`title`/`name`/`description`/`seoTitle`/`seoDescription` of every Actor. First run: **6 FRAGILE of
+360 tracked terms across 24 Actors**, every one still ranking live at detection time — the whole
+point, since (r2) only ever catches these after the rank is already gone. Control: the Actor 1855
+fixed reads 0/15 fragile, confirming the tool sees a correct re-anchor as fixed.
+
+**Measured, and it corrects a standing assumption: the Store's Algolia index ANDs query words
+ACROSS attributes.** Control that proves it — `corrigenda` appears only in
+`eu-ted-tenders-scraper`'s description and `monitoring` only in its seoTitle, yet the conjunction
+"corrigenda monitoring" returns our record at **p4**. So README-only carriage splits into two
+genuinely different risks, and conflating them over-reports: (a) a term with a word in NO verbatim
+field rests on the paraphrase for the MATCH ITSELF and VANISHES when the paraphrase drops it
+(1855's `open contracting data` at >1000); (b) a term whose words are all verbatim but scattered
+across fields cannot vanish — only its prox/attr bucket can worsen, so the rank SLIPS. Only (a)
+is worth a character trade of its own; fold (b) in opportunistically when already shipping an SEO
+edit. **Corollary for fixes: the minimum durable repair is getting the missing WORD into any
+verbatim field, which is far cheaper than fitting the whole contiguous PHRASE — e.g.
+`government tenders europe` needs only the word `government`, 10 chars, not 25.** Fit the
+contiguous phrase when the budget allows, since that also buys the better prox bucket.
+
+Two matcher bugs worth remembering, both caught by disbelieving a convenient result rather than
+by a test: (1) **prefix matching has exactly one real direction** — the index prefix-matches the
+QUERY token against the start of an INDEX word (cycle 557: "european".startswith("eu")), and the
+first draft also allowed the reverse, so the stray token `s` from "API's" in
+`nih-reporter-scraper`'s description "satisfied" the term word `science` and mis-tiered a real
+FRAGILE as a harmless SPLIT. A one-letter token matching a 7-letter word is the tell. (2) Algolia
+prefix-matches only the LAST query token; earlier tokens need an exact (stemmed) hit, so applying
+prefix matching to every token silently under-reports (it let `data` match `database`
+mid-phrase). Fleet rule: when a new checker reports FEWER problems than the hand-worked example
+that motivated it, debug the matcher before believing the clean result.

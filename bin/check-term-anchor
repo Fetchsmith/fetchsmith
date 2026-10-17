@@ -1,0 +1,247 @@
+#!/usr/bin/env python3
+"""check-term-anchor — flag tracked TERMS that only the README can be carrying, i.e.
+terms whose words are NOT all present in the attributes the Store index stores
+VERBATIM (title, name/slug, description, seoTitle, seoDescription).
+
+Why this exists (cycle 1856, from cycle 1855's find): cycle 1855's (r2) decay resweep
+caught `uk-find-a-tender-scraper`'s `open contracting data` (274 hits) completely absent
+from the top 1000, and the root cause was NOT the ats-jobs/google-play "apify push
+dropped the readme text" class. The phrase was still literally present in our real
+`README.md` -- but the Store's Algolia record has carried no `readme` field since
+cycle 1474, only `readmeSummary`, an Apify-generated LLM PARAPHRASE we do not control.
+The phrase simply did not survive a paraphrase regeneration, and the rank vanished
+silently, weeks after the win was booked.
+
+That makes README-only carriage a STANDING, SILENT fragility for every term in the
+fleet, not a one-off: anything whose only carrier is `readmeSummary` can disappear on
+Apify's regeneration schedule with no push, no edit and no signal from us. The (r2)
+sweep catches these COLD, one Actor at a time, after the rank is already gone. This
+tool finds them BEFORE they decay, from the carriage side, so they can be re-anchored
+into a verbatim field (per 1846/1855 the durable levers are title/description/
+seoTitle/seoDescription) while the rank is still live.
+
+Method (cheap and deterministic -- ONE admin GET per Actor, no Algolia queries, $0):
+for each slug in `bin/store-rank`'s TERMS map, read the live record's verbatim text
+fields and ask, per tracked term, whether every word of the term appears somewhere in
+them. Word matching mirrors the index's own behaviour closely enough for a presence
+test: casefold, strip punctuation, stem a trailing "s" on both sides (cycle 1125's
+`niche-size` fix -- Algolia stems singular/plural, confirmed cycle 968 by `grant data
+api`/`grants data api` returning byte-identical bucket tables), and allow the term word
+to be a PREFIX of a field word (cycle 557: "european".startswith("eu") is why
+`eu tenders` matches a title carrying only "European Tenders").
+
+Deliberately a PRESENCE test, not a proximity/rank test. Non-contiguous presence is a
+weaker rank bucket (worse prox) but it CANNOT silently vanish, which is the failure
+mode this tool exists to prevent; contiguity/prox is what `bin/store-price --title`/
+`--desc` and `store-rank --why` are for. A flagged term is therefore "at risk of
+silent loss", NOT "currently unranked" -- most flagged terms are ranking fine today,
+which is exactly why they are worth re-anchoring now.
+
+TWO TIERS, because cycle 1856 MEASURED that the index ANDs query words ACROSS
+attributes (control: `corrigenda` appears only in `eu-ted-tenders-scraper`'s
+description and `monitoring` only in its seoTitle, yet the conjunction
+"corrigenda monitoring" returns us at p4). So "which field carries the whole phrase"
+decides rank QUALITY, while "is every word somewhere verbatim" decides whether the
+record MATCHES AT ALL:
+
+  FRAGILE -- at least one word of the term appears in NO verbatim field. The match
+             itself rests on the paraphrase: when the regeneration drops that word the
+             record stops matching the query entirely and the rank vanishes (this is
+             exactly 1855's `open contracting data`, >1000). Fix these.
+  SPLIT   -- every word is verbatim somewhere, but no single field carries them all.
+             Cannot vanish; the contiguous readme match may be supplying a better prox
+             bucket than the scattered verbatim words would, so the rank can SLIP (not
+             disappear) on a regeneration. Worth re-anchoring opportunistically, when
+             an SEO rewrite is already being shipped for other reasons -- not worth a
+             trade of its own.
+
+Fix a FRAGILE term by working it into seoDescription/seoTitle (200/60-char budgets,
+fields we write verbatim), under the usual protect step -- simulate the rewrite first
+and re-check the attr=4/5-carried untracked assets the current SEO text is already
+holding, per the 1844/1846 method. Prefer the CONTIGUOUS phrase when the budget allows
+it, since that also buys the better prox bucket; the minimum durable fix is just
+getting the missing WORD(s) in somewhere.
+
+Exit 0 always (informational).
+
+Usage:
+  bin/check-term-anchor                 # whole fleet, summary + per-Actor fragile list
+  bin/check-term-anchor <slug> [<slug>] # just these Actors, verbose (shows carriers)
+"""
+import importlib.util
+import json
+import os
+import re
+import subprocess
+import sys
+from importlib.machinery import SourceFileLoader
+
+BIN = os.path.dirname(os.path.abspath(__file__))
+
+# The attributes the Store's Algolia record stores VERBATIM -- i.e. text we write and
+# Apify copies through unchanged. Per `store-rank`'s ATTR_INDEX (mapped cycle 876):
+# 0 title | 1 name (the slug) | 2 description | 4 seoTitle | 5 seoDescription.
+# `readme` (6) is deliberately ABSENT: the index has no `readme` field at all since
+# cycle 1474, only the `readmeSummary` paraphrase, which is the whole point of this
+# tool. `username`(3)/`userFullName`(7) are constant across the fleet, not levers.
+VERBATIM_FIELDS = ("title", "name", "description", "seoTitle", "seoDescription")
+
+
+def load_store_rank():
+    """Load bin/store-rank as a module (no .py extension, so import needs a spec)."""
+    path = os.path.join(BIN, "store-rank")
+    loader = SourceFileLoader("store_rank", path)
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    mod = importlib.util.module_from_spec(spec)
+    loader.exec_module(mod)
+    return mod
+
+
+def words(text):
+    """Split to comparable word tokens: casefold, drop punctuation, keep alnum runs."""
+    return [w for w in re.split(r"[^a-z0-9]+", (text or "").casefold()) if w]
+
+
+def stem(w):
+    """Strip one trailing 's' (>=4 chars) -- Algolia stems singular/plural (cycle 968)."""
+    return w[:-1] if len(w) >= 4 and w.endswith("s") else w
+
+
+def word_present(term_word, field_words, prefix_ok=False):
+    """True if `term_word` matches any field word, stemmed; prefix only if `prefix_ok`.
+
+    Direction matters and only ONE direction is real: the index prefix-matches the
+    QUERY token against the start of an INDEX word (cycle 557 -- "European" satisfies
+    the token "eu" because "european".startswith("eu")). The reverse is not a match,
+    and allowing it was a live bug in this tool's first draft (cycle 1856): the stray
+    token "s" from "API's" in `nih-reporter-scraper`'s description satisfied the term
+    word "science", mis-tiering a genuinely FRAGILE term as merely SPLIT.
+
+    `prefix_ok` is set only for the term's LAST word, which is the only token Algolia
+    prefix-matches; earlier tokens need an exact (stemmed) hit.
+    """
+    tw = stem(term_word)
+    for fw in field_words:
+        fs = stem(fw)
+        if fs == tw or (prefix_ok and fs.startswith(tw)):
+            return True
+    return False
+
+
+def carriers(term, fields):
+    """Return the verbatim fields that carry EVERY word of `term` (possibly scattered)."""
+    tws = words(term)
+    out = []
+    for name in VERBATIM_FIELDS:
+        fws = words(fields.get(name))
+        if fws and all(word_present(w, fws, prefix_ok=(i == len(tws) - 1))
+                       for i, w in enumerate(tws)):
+            out.append(name)
+    return out
+
+
+def missing_words(term, fields):
+    """Words of `term` that appear in NO verbatim field at all (the FRAGILE signal).
+
+    Cross-attribute AND matching is real (measured cycle 1856), so a word present in
+    ANY verbatim field keeps the record matching the query; only a word present in none
+    of them leaves the match resting on the `readmeSummary` paraphrase.
+    """
+    all_words = []
+    for name in VERBATIM_FIELDS:
+        all_words += words(fields.get(name))
+    tws = words(term)
+    return [w for i, w in enumerate(tws)
+            if not word_present(w, all_words, prefix_ok=(i == len(tws) - 1))]
+
+
+def get_record(slug):
+    """Live Store-facing record via bin/apify-admin get (one admin GET)."""
+    p = subprocess.run([os.path.join(BIN, "apify-admin"), "get", slug],
+                       capture_output=True, text=True, timeout=120)
+    if p.returncode != 0:
+        return None
+    try:
+        return json.loads(p.stdout)
+    except json.JSONDecodeError:
+        return None
+
+
+def main():
+    sr = load_store_rank()
+    terms = sr.TERMS
+    argv = [a for a in sys.argv[1:] if not a.startswith("-")]
+    verbose = bool(argv)
+    slugs = argv or sorted(terms)
+
+    unknown = [s for s in slugs if s not in terms]
+    for s in unknown:
+        print(f"check-term-anchor: {s} is not in bin/store-rank's TERMS map -- skipping")
+    slugs = [s for s in slugs if s in terms]
+
+    print(f"check-term-anchor: {len(slugs)} Actor(s), verbatim fields = "
+          f"{', '.join(VERBATIM_FIELDS)} (readme/readmeSummary deliberately excluded)\n")
+
+    total_terms = 0
+    fragile_rows = []
+    split_rows = []
+    failed = []
+    for slug in slugs:
+        rec = get_record(slug)
+        if rec is None:
+            failed.append(slug)
+            print(f"  {slug:34} ERROR: could not read live record")
+            continue
+        fields = {k: rec.get(k) for k in VERBATIM_FIELDS}
+        tracked = terms[slug]
+        total_terms += len(tracked)
+        flagged = 0
+        for t in tracked:
+            cs = carriers(t, fields)
+            miss = missing_words(t, fields)
+            if miss:
+                flagged += 1
+                fragile_rows.append((slug, t, miss))
+                print(f"  {slug:34} FRAGILE  {t:38} <- no verbatim field has: "
+                      f"{', '.join(miss)}")
+            elif not cs:
+                flagged += 1
+                split_rows.append((slug, t))
+                print(f"  {slug:34} SPLIT    {t:38} <- words scattered across "
+                      f"verbatim fields")
+            elif verbose:
+                print(f"  {slug:34} ok       {t:38} <- {','.join(cs)}")
+        if verbose and not flagged:
+            print(f"  {slug:34} -- all {len(tracked)} tracked terms verbatim-anchored")
+
+    print(f"\nTOTAL: {len(fragile_rows)} FRAGILE + {len(split_rows)} SPLIT of "
+          f"{total_terms} tracked term(s) across {len(slugs) - len(failed)} Actor(s)")
+    if failed:
+        print(f"UNREAD ({len(failed)}): {', '.join(failed)} -- re-run before trusting a clean result")
+    if fragile_rows:
+        by_slug = {}
+        for slug, t, miss in fragile_rows:
+            by_slug.setdefault(slug, []).append(f"{t} (+{'/'.join(miss)})")
+        print("\nFRAGILE by Actor (most first) -- the MATCH rests on Apify's LLM\n"
+              "`readmeSummary` paraphrase, so these can vanish with no push and no signal.\n"
+              "Parenthesised words are the ones that need to land in a verbatim field:")
+        for slug, ts in sorted(by_slug.items(), key=lambda kv: -len(kv[1])):
+            print(f"  {slug:34} {len(ts):>2}  {', '.join(ts)}")
+        print("\nNext step per PLAYBOOK: price the high-nbHits ones with `bin/store-price "
+              "--desc`/`--title`,\nre-anchor into seoDescription/seoTitle, and run the "
+              "protect step (re-simulate the\ncurrent live SEO text at the same --attr) "
+              "before shipping. Terms flagged here are\nNOT necessarily unranked today -- "
+              "re-anchor while the rank is still live.")
+    if split_rows:
+        print("\nSPLIT (rank can slip, cannot vanish -- fold in only when already "
+              "shipping an SEO edit):")
+        for slug, t in split_rows:
+            print(f"  {slug:34}     {t}")
+    if not fragile_rows and not split_rows:
+        print("No README-dependent tracked terms -- every tracked term is carried by "
+              "fields we write verbatim.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
