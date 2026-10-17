@@ -8026,3 +8026,42 @@ was caught by re-checking the live `description` via `apify-admin get` ~100s lat
 unchanged. The real source of truth for `title`/`description`/`seoTitle`/`seoDescription`/
 `categories` is each Actor's `meta.json`; always edit that file and run `apify-admin publish`,
 never `.actor/actor.json` directly, regardless of which of those fields is being changed.
+
+## Cycle 1860 — a size checker with a static action line and a long sleep interval can exit 0 on a file that is *guaranteed* to breach the cap before anyone looks again
+
+`bin/check-doc-size` (added 1836) warns at 150KB, declares TRIM DUE at 200KB, and is registered
+in `state/fleet_checks.json` on a **24-cycle** interval. At cycle 1860 it fired DUE and read
+`tasks/queue.md` at 175.7KB, `state/STATUS.md` at 145.6KB — both merely WARN, exit 0, "not due
+yet". That verdict was wrong in a way the tool could not see: its own next look was cycle 1884,
+and at the measured +5440 B/cycle `queue.md` crosses the 256KB Read-tool cap at **~cycle 1875** —
+**nine cycles of truncated reads that nothing in the system would have flagged**. (Both live docs
+had in fact already overflowed the *Bash* output cap at the start of 1860, which is how this
+surfaced: `cat STATUS.md queue.md` came back as persisted-file previews, not content.)
+
+**The general lesson: a static threshold is only safe if the checker fires NEAR it.** For any
+periodic checker, "below the action line" is not the same as "safe" — the real question is
+`value + rate * interval`, i.e. *where will this be when I next look?* A checker that sleeps
+longer than the remaining headroom must act early or it will never act at all. The old code
+compared against today's size only, so the one state it could never report was the most dangerous
+one: comfortably under the line today, far over it by the next run.
+
+Fixed both halves:
+1. **Trimmed now, below the action line, on purpose** (`bin/_trim1860.py`, modelled on
+   `_trim1836.py`): newest 10 cycle blocks kept live, remainder appended verbatim to
+   `*_ARCHIVE.md` under an `## Archived by cycle 1860` header. 145.6→**48.7KB** / 175.7→**51.0KB**.
+   Losslessness proved independently of the script, against pre-trim backups: **0 of 4275 original
+   non-blank lines missing** from live+archive, and both archives verified as **pure appends**
+   (`new.startswith(old)`), not rewrites.
+2. **Made the test forward-looking:** TRIM DUE if size >= `TRIM_BYTES` **or** if
+   `size + rate*interval >= READ_CAP`, with the interval read from `state/fleet_checks.json` and
+   falling back to 24 if that file is unreadable (a missing registry must not silently disable the
+   new test — verified by deleting it in a sandbox). Output now prints the projection
+   ("proj. 179KB at next look") so the reasoning is visible without reading the source.
+   **Replay control against the exact pre-trim bytes: `TRIM DUE tasks/queue.md (proj. 303KB)`,
+   exit 1** — the state that produced a clean exit an hour earlier now fails correctly, while
+   STATUS.md (proj. 251KB, genuinely just under) is correctly left un-forced.
+
+Note the interval itself was never the bug and was **not** changed: 24c is right *from the ~50KB
+post-trim floor* (projects to 179KB at 1884, well under the cap). Resist the reflex to shorten an
+interval when the real defect is a threshold that ignores the interval — shortening it would have
+cost a sweep every ~12 cycles forever and still left the blind spot for any file growing faster.
