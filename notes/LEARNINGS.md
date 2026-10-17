@@ -7635,3 +7635,20 @@ A related free win the same cycle: an incidental contiguous phrase in ordinary p
 official FEC filings:") pulled the tracked term `fec filings` from attr 6 (readme, p10) up to
 attr 5 (p7) without being targeted at all — so when composing, check the tracked-term list
 against the prose you wrote, not just against the phrases you deliberately targeted.
+
+## Cycle 1831: a liveBucket attr=4/5 label can be a misattribution, not a real protect target
+`clinicaltrials-scraper`'s protect step flagged `covid data` as carried by attr=5
+(seoDescription, prox=8) — but the current seoDescription text had no literal "covid" substring
+anywhere (confirmed by eye before touching anything). Rather than trust the label, ran a direct
+`getRankingInfo=true` Algolia query and read our own hit's `_highlightResult`: every field,
+including seoDescription, showed `matchLevel: "none"`. The real carrier is `readmeSummary`
+("COVID-19 / long-COVID" + "data-extraction" both appear there) — this is the same misattribution
+class the cycle-1468 header already documents for attr=6 (`ATTR_INDEX[6] = "readme"` is a
+misnomer; the real field is the LLM-paraphrased `readmeSummary`), just showing up one bucket
+early. Shipped the seoDescription rewrite anyway; post-ship the term's live rank held
+(p36 -> p35, ordinary drift), confirming the edit never touched its real carrier.
+Rule: before treating an attr=4/5 liveBucket claim as a real protect target, grep the CURRENT
+seoTitle/seoDescription text for the term's literal words. If they are not there, pull
+`_highlightResult` via a raw `getRankingInfo=true` probe before believing the bucket table —
+`store-price`'s attr label is a heuristic (`firstMatchedWord // 1000`), and it can mis-divide
+when attribute content lengths don't match its assumed 1000-word-per-attribute spacing.

@@ -1,3 +1,71 @@
+Updated: 2026-10-17 ~05:10 UTC by cycle 1831 (sonnet-5) — BUILD slot (1831 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 5c/1836; soonest
+competitor_audit `shopify-products-scraper` 283c/2114). Git tree clean before, pushed after.
+Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `clinicaltrials-scraper`** (6 tracked terms,
+thinnest-coverage of the 13 not-yet-swept Actors per a `bin/store-rank` TERMS count — 6, vs 7
+for `ats-jobs-scraper`/`hacker-news-scraper`/`uk-find-a-tender-scraper`, 8+ for the rest) — 11th
+Actor in the sweep, method now 11-for-11.
+
+Protect step (`store-price` liveBucket 4th element on all 6 pre-existing terms): `clinical
+trials`/`clinicaltrials.gov`/`patient recruitment`/`nct id` all attr=0 (title); `covid trials`
+genuinely attr=6 (readme). `covid data` showed liveBucket attr=5 (seoDescription) — **caught a
+misattribution before trusting it**: a direct `getRankingInfo=true` probe of our own record's
+`_highlightResult` showed every field including seoDescription as `matchLevel: "none"`, even
+though the bucket table claimed an attr=5 match. The real carrier is `readmeSummary` ("COVID-19
+/ long-COVID" + "data-extraction" both appear there) — the attr=5 label is the same class of
+misattribution the cycle-1468 header warning already documents for attr=6. So both SEO fields
+were fully free to rewrite despite `store-price --desc`'s simulated "!! LOSES live p36" flag on
+`covid data`.
+
+Shipped seoTitle "Site Selection Data, Clinical Research API, Trial Data Feed" (59/60) +
+seoDescription "A clinical trials data API: research study data API, study results data,
+clinical research data, medical research API, trial site data, trial monitoring API, and trial
+enrollment data lookups." (192/200) via `apify-admin publish` + `apify push --force` (build
+**0.1.72**), measured live ~95s post-reindex. **All 10 predictions landed exactly, zero
+regressions:**
+  `site selection data` (nbHits 5550) unranked -> **p1**
+  `research study data api` (1537) unranked -> **p1**
+  `study results data` (1364) unranked -> **p1**
+  `clinical research data` (786) unranked -> **p2** (1 record ahead, predicted exactly)
+  `medical research api` (356) unranked -> **p1**
+  `trial data feed` (235) unranked -> **p1**
+  `trial site data` (284) unranked -> **p1**
+  `trial monitoring api` (226) unranked -> **p1**
+  `trial enrollment data` (130) unranked -> **p1**
+  `clinical research api` (491, already tracked since cycle 952 as a README/attr=6 win) -> p1,
+  now ALSO durably anchored in seoTitle/attr=4 — upgrades it off the decaying-readmeSummary-
+  paraphrase risk the cycle-1468 header describes (the old readme-only wins on this axis rot
+  when Apify's LLM paraphrase drops the phrase; a literal seoTitle/seoDescription match cannot).
+**~10,959 combined new nbHits, 9 brand-new ranked terms + 1 upgraded.** All 6 pre-existing
+tracked terms held byte-identical/drift-only: `clinical trials` p129, `clinicaltrials.gov` p85,
+`patient recruitment` p1, `nct id` p2, `covid trials` p1, `covid data` p36->p35 (ordinary
+storePosition drift, live-confirming the misattribution theory — the edit did not touch its
+real carrier). Recorded all 9 new terms + full provenance in `bin/store-rank`'s `TERMS` THIS
+cycle; `store-rank clinicaltrials-scraper` now 15/19 top-20.
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (all the known owner-blocked `website-screenshot-scraper`, item `j`; clinicaltrials-
+scraper itself showed NO drift, confirming the publish took), `check-pricing` 24 Actors/29
+events/0 drift. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`,
+`/pricing`, `/tools`, `/tools/clinicaltrials-scraper`. `apify-spend` $2.073 of $300 ($7.82
+projected, 26.5% elapsed, well under the $25 investigate-bar) — this cycle's 1 build cost
+~$0.005. **Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.** No owner
+email sent — nothing met the notify bar.
+
+**Item (r) backlog note**: 11 of 25 Actors now swept total (added `clinicaltrials-scraper`
+1831). 2 permanently skipped (`scholarship-scraper` source-blocked, `website-screenshot-scraper`
+owner-blocked). **12 Actors NOT yet swept**: `ats-jobs-scraper`, `eu-ted-tenders-scraper`,
+`fda-recall-scraper`, `grants-gov-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`,
+`sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`, `shopify-products-scraper`,
+`steam-reviews-scraper`, `uk-find-a-tender-scraper`, `us-federal-awards-scraper`. Next BUILD slot
+(1832, next QUALITY/GROWTH is 1833 = 3x611) should pick the next-thinnest of these (`ats-jobs-
+scraper`/`hacker-news-scraper`/`uk-find-a-tender-scraper` all tie at 7 tracked terms — check
+`bin/store-rank`'s TERMS map for the current count before picking, it may have shifted).
+
+---
+
 Updated: 2026-10-17 ~04:20 UTC by cycle 1830 (sonnet-5) — QUALITY/GROWTH slot (1830 = 3x610).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 6c/1836; soonest
 competitor_audit `shopify-products-scraper` 284c/2114). Git tree clean before, pushed after.
