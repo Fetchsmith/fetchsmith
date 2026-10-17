@@ -6,9 +6,18 @@
     "searchTerm": {
       "title": "Trademark term",
       "type": "string",
-      "description": "Word or brand to search for. Matches trademarks whose name contains this term.",
+      "description": "Word or brand to search for. Matches trademarks whose name contains this term (see Match mode to require a whole word at the start/end instead).",
       "editor": "textfield",
       "default": "coffee"
+    },
+    "matchMode": {
+      "title": "Match mode",
+      "type": "string",
+      "description": "How 'Trademark term' is matched against each trademark's name. 'Contains' (default) matches the term anywhere, as a plain substring -- no word boundary, so \"solar\" also matches \"SOLARWINDS\". 'Starts with a word' and 'Ends with a word' both require a COMPLETE word, not just a substring -- e.g. the fragment \"solarw\" matches under Contains but matches NOTHING under either whole-word mode, since neither \"solar\" nor \"solarw\" is a complete word in \"SOLARWINDS\". Useful for clearance screening: 'Starts with a word' answers \"does any mark begin with my proposed name\" without wading through every mark that merely contains it somewhere in a longer compound.",
+      "editor": "select",
+      "enum": ["contains", "startsWith", "endsWith"],
+      "enumTitles": ["Contains (default)", "Starts with a word", "Ends with a word"],
+      "default": "contains"
     },
     "offices": {
       "title": "Trademark offices",

@@ -102,6 +102,19 @@ if (unknownStatuses.length) {
     + 'rather than widening them. Fix the spelling or drop it.',
   );
 }
+// TMview's `criteria` param (verified live cycle 1866, brute-forced the whole alphabet plus
+// lowercase/empty against the live endpoint): only three values return 200 at all -- `C`
+// (contains, pure substring, no word boundary -- what this Actor always sent before this input
+// existed), `W` (starts with a COMPLETE word) and `E` (ends with a COMPLETE word). Every other
+// value, including lowercase `c`/`e`/`s`, is a 400 PARAMETER_INCORRECT_FORMAT, so an unrecognised
+// matchMode falls back to `contains` rather than being sent through and breaking the whole run.
+const MATCH_MODE_TO_CRITERIA = { contains: 'C', startsWith: 'W', endsWith: 'E' };
+const matchModeRaw = String(input.matchMode ?? 'contains').trim();
+const matchMode = MATCH_MODE_TO_CRITERIA[matchModeRaw] ? matchModeRaw : 'contains';
+if (input.matchMode && matchMode !== matchModeRaw) {
+  log.warning(`Match mode "${matchModeRaw}" is not one of contains/startsWith/endsWith — using "contains" instead.`);
+}
+const criteriaCode = MATCH_MODE_TO_CRITERIA[matchMode];
 const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
@@ -220,7 +233,10 @@ let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const watchSeen = new Map(); // ST13 id -> last-seen snapshot ({status})
 
 if (watchMode) {
-  const criteria = { searchTerm, offices, niceClasses, statuses };
+  // matchMode only joins the fingerprint when non-default, so every watch label created before
+  // this input existed keeps the exact same key (and baseline) it always had -- adding the field
+  // unconditionally would reseed every existing watch the moment this shipped.
+  const criteria = { searchTerm, offices, niceClasses, statuses, ...(matchMode !== 'contains' ? { matchMode } : {}) };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
@@ -377,7 +393,7 @@ async function fetchPage(page) {
   const body = {
     page: String(page),
     pageSize: String(PAGE_SIZE),
-    criteria: 'C', // "contains" — the API rejects unknown criteria codes with HTTP 400
+    criteria: criteriaCode, // contains/startsWith/endsWith -> C/W/E — see matchMode above
     basicSearch: searchTerm,
   };
   if (offices.length) body.fOffices = offices;
@@ -563,6 +579,7 @@ if (watchMode && !skipBaselineSave) {
 const complete = runError === null && !stoppedByCap;
 await Actor.setValue('RUN_SUMMARY', {
   searchTerm: searchTerm || null,
+  matchMode,
   declaredMatches,
   totalPages,
   pagesFetched,
