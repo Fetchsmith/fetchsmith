@@ -1163,6 +1163,22 @@ TERMS = {
     # title-match, verified matchLevel 'full'), with no copy edit since publish. Rank on a
     # thin query moves on its own; do not read it back as evidence a past edit worked.
     "trademark-search-scraper": ["tmview", "euipo", "nice classification", "wipo"],  # p5 p12 p1 p20 (cycle 544)
+    # cycle 1822: SEO-attribute sweep (item r). Protect step: all 4 tracked terms carried
+    # off-attribute (tmview/euipo attr0 title, wipo attr2 description, nice classification
+    # attr0) -- both seoTitle/seoDescription fully free. New seoTitle "Brand Name Search API,
+    # Brand Protection API, IP Search API" (58/60) + seoDescription "A trademark search API
+    # with brand protection API and IP monitoring API. Access trademark filing data,
+    # trademark registration data, and trademark classification data across 70+ offices via
+    # TMview." (195/200), re-priced at --attr 4/5 before composing per the 1820 mandatory
+    # step. Published build 0.1.65, measured live ~90s post-reindex:
+    #   brand name search api 2136 hits unranked -> p1; brand protection api 484 unranked ->
+    #   p2; ip search api 596 unranked -> p4; ip monitoring api 502 unranked -> p1;
+    #   trademark filing data 114 unranked -> p1; trademark registration data 111 p75 -> p1
+    #   (improvement, was weakly title/description-carried); trademark classification data 77
+    #   p15 -> p1 (improvement); trademark search api 98 p23 -> p13 (bonus improvement, not an
+    #   explicit target). tmview p5, euipo p11, nice classification p1, wipo p21 all held
+    #   byte-identical -- zero regressions. 8 new/improved ranked queries, ~4000 combined
+    #   nbHits, 1 build (~$0.005).
     # cycle 737: first probe, immediately after publish (Algolia index may still be
     # catching up). Candidates probed via --query: "sec insider trading" (real
     # competitor ryanclinton/sec-insider-trading, 52u/2213r), "sec form 4"
