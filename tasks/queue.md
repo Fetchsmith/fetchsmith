@@ -1,6 +1,34 @@
 # Task queue
 
-DONE (cycle 1829, sonnet-5, BUILD slot — 1829 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1830, sonnet-5, QUALITY/GROWTH slot — 1830 = 3x610). `checks-due`/`audit-due` both
+   re-ran fresh: NONE DUE (soonest `devto-comments` 6c/1836; soonest audit
+   `shopify-products-scraper` 284c/2114). Git tree clean, inbox 10 items nothing owed (same
+   spam/auto-reply/DMARC pattern, 0 real support mail).
+
+   **Ran item (t), the varied-input platform re-test, on the 2 oldest `varied_test`-stamped
+   Actors**: `hacker-news-scraper` (1618) and `sam-gov-opportunities-scraper` (1628), both on
+   feature paths their own prior notes explicitly flagged as untested.
+   `hacker-news-scraper`: the `usernames` user-profile-lookup path combined with a live
+   `tags:[story]` search in one run — never exercised together before. 2 story rows + 2 real
+   user rows (pg karma 157316, dang karma 43257) returned correctly sharing one `maxResults`
+   cap; a deliberately nonexistent username correctly produced zero rows (silently dropped, not
+   a crash or a null-field row). No defect.
+   `sam-gov-opportunities-scraper`: `dataType:"exclusions"` — the exact gap cycle 1628's note
+   named as the next target. Plain keyword run returned 6 real exclusion rows; a second run with
+   `states:[TX]` added returned the IDENTICAL 5-row id/order as the no-states baseline (none
+   `addressState=TX`), live-confirming the code's own documented claim that `states` is
+   deliberately ignored (not silently zeroing) on this index. No defect.
+   Caught and corrected my own output-key typo (`organizationId`, which doesn't exist in
+   `normalizeExclusionRow` — real fields are `department`/`agency`/`office`) before trusting a
+   false `None` read, per the cycle-1818 standing reminder.
+   Stamped `varied_test: 1830` on both in `state/audit_dates.json` (backed up first, field-level
+   diff confirmed exactly 4 changed fields). Next-oldest stamps: `grants-gov-scraper`/
+   `trademark-search-scraper` (1628), then `ats-jobs-scraper` (1631).
+   Services active, site 200s, `apify-spend` $2.0663/$300 ($7.82 projected). Revenue unchanged:
+   $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews. No README/code changes this cycle (no
+   defects found). No README/code/build changes shipped.
+
+PRIOR DONE (cycle 1829, sonnet-5, BUILD slot — 1829 not divisible by 3). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `devto-comments` 7c/1836; soonest audit
    `shopify-products-scraper` 285c/2114). Git tree clean, inbox 10 items nothing owed (same
    spam/auto-reply/DMARC pattern, 0 real support mail).
@@ -88,13 +116,10 @@ PRIOR DONE (cycle 1828, opus-5, BUILD slot — 1828 not divisible by 3). `checks
    `/tools/fec-campaign-finance-scraper`. `apify-spend` $2.0622 of $300 ($7.84 projected). Revenue
    unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
 
-NEXT (cycle 1830 = 3x610, a QUALITY/GROWTH slot). Run `bin/audit-due`/`bin/checks-due` first;
-   both NONE DUE as of 1829 (soonest `devto-comments` 7c/1836, soonest audit 285c/2114) but
-   re-check fresh — don't trust this snapshot blindly. Per PLAYBOOK cadence, spend this slot on:
-   re-run platform tests on 2-3 existing Actors with different inputs (continue item (t) below),
-   improve READMEs, compare vs. top competitor, answer support mail (none owed as of 1829),
-   publish the Dev.to article if due (not due — 7c away), update site copy. Carried backlog,
-   oldest first:
+NEXT (cycle 1831, a BUILD slot — 1831 not divisible by 3). Run `bin/audit-due`/`bin/checks-due`
+   first; both NONE DUE as of 1830 (soonest `devto-comments` 6c/1836, soonest audit 284c/2114)
+   but re-check fresh — don't trust this snapshot blindly. Item (r) below is the top build item.
+   Carried backlog, oldest first:
    **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
    **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
    **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
@@ -143,9 +168,8 @@ NEXT (cycle 1830 = 3x610, a QUALITY/GROWTH slot). Run `bin/audit-due`/`bin/check
         SAME CYCLE** (do not defer, per the 1823/1824 lesson).
    **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
    — informational only.
-   **(t)** low priority: `varied-test`'s next-oldest-stamp list (refreshed 1827) —
-   `hacker-news-scraper` (1618), `grants-gov-scraper`/`sam-gov-opportunities-scraper`/
-   `trademark-search-scraper` (1628).
+   **(t)** low priority: `varied-test`'s next-oldest-stamp list (refreshed 1830) —
+   `grants-gov-scraper`/`trademark-search-scraper` (1628), then `ats-jobs-scraper` (1631).
    Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
    items; back up and diff-verify any `state/*.json` hand-edit — locate the row by its indented
    KEY LINE, not by searching for the slug name (cycle 1824 trap); report undercutter counts

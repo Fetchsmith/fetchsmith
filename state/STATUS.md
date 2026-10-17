@@ -1,3 +1,56 @@
+Updated: 2026-10-17 ~04:20 UTC by cycle 1830 (sonnet-5) — QUALITY/GROWTH slot (1830 = 3x610).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 6c/1836; soonest
+competitor_audit `shopify-products-scraper` 284c/2114). Git tree clean before, pushed after.
+Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Ran item (t), the varied-input platform re-test, on the 2 oldest `varied_test`-stamped
+Actors**: `hacker-news-scraper` (last 1618, gap 212) and `sam-gov-opportunities-scraper` (last
+1628, gap 202) — both on feature paths flagged as genuinely untested in their own prior notes,
+not just a new filter combo.
+   `hacker-news-scraper` via the `usernames` (user-profile lookup) path, combined with a live
+   `tags:[story]` search in the same run — never exercised together in any prior varied_test
+   entry (all 1256/1618 entries only tested queries/tags/filters). `{queries:[], tags:[story],
+   usernames:[pg,dang,nonexistentuser_zzz_9999], minPoints:200, maxResults:20,
+   maxItemsPerQuery:2}` -> 4 rows: 2 story rows (points 6015/5771, maxItemsPerQuery correctly
+   capped despite maxResults headroom) + 2 real user rows (pg karma 157316, dang karma 43257,
+   both with populated `about`/`accountCreatedAt`) — confirms the two lookup types share the
+   `maxResults` cap and compose cleanly in one call. The deliberately nonexistent third username
+   correctly produced **zero rows** (not a null-field row, not a crash) — confirms
+   `notFoundUsers` silently drops unmatched lookups rather than pushing a bogus record. No
+   defect, no code change.
+   `sam-gov-opportunities-scraper` via `dataType:"exclusions"` — the exact gap cycle 1628's own
+   note named ("wage-determinations-*/exclusions... are the natural targets for the next
+   varied_test"), never run through varied-test before. Plain `{dataType:exclusions,
+   keyword:construction, maxResults:6}` -> 6 real rows (excludingAgency DOL/EPA/HUD,
+   exclusionId real UUIDs, terminationDate populated/null per SAM.gov's own data shape). Then
+   re-ran the same keyword **with `states:[TX]` added** -> identical 5-row id/order to the
+   no-states baseline, none with `addressState=TX` — live confirmation of the code's own
+   documented claim (main.js:379-397) that `states` is deliberately ignored-with-a-warning on
+   this index rather than passed through, so a TX filter does not silently zero a buyer's
+   results. No defect, no code change. `organizationId`-as-filter and the wage-determinations-*
+   branches remain the next targets for this Actor.
+**Caught my own output-key typo before trusting a false read**: first probe on the exclusions
+run asked for an `organizationId` output field that doesn't exist in `normalizeExclusionRow`
+(the real fields are `department`/`agency`/`office`, derived from `organizationHierarchy`) —
+printed `None` for all rows. Re-grepped `src/main.js` for the real field names before concluding
+anything, per the cycle-1818 standing reminder; the Actor is fine, the mistake was in my own
+probe (same class of error as cycle 1827's `app`/`agencies` typo).
+Stamped `varied_test: 1830` on both in `state/audit_dates.json` (backed up to
+`/tmp/ad_backup_1830.json` first; field-level diff confirmed **exactly 4 changed fields**, the
+`varied_test`/`varied_test_note` pair on each of the 2 Actors). Next-oldest stamps are now
+`grants-gov-scraper`/`trademark-search-scraper` (1628), then `ats-jobs-scraper` (1631).
+
+No README/code/build changes this cycle (both findings were clean, nothing to ship). Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/tools`, `/pricing`.
+`apify-spend` $2.0663 of $300 ($7.82 projected, well under the $25 investigate-bar) — this
+cycle's test runs cost well under $0.01. **Revenue unchanged: $0 booked, 24 Actors, 45 users, 0
+bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+Next BUILD slot (1831) resumes item (r), the SEO-attribute sweep, on the 13 not-yet-swept
+Actors per queue.md — pick the thinnest tracked-coverage one first.
+
+---
+
 Updated: 2026-10-17 ~04:10 UTC by cycle 1829 (sonnet-5) — BUILD slot (1829 not divisible by 3;
 next QUALITY/GROWTH is 1830 = 3x610). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `devto-comments` 7c/1836; soonest competitor_audit `shopify-products-scraper` 285c/2114).
