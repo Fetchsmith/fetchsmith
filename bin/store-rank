@@ -1124,7 +1124,43 @@ TERMS = {
     #       finance dataset (29), political spending data (81), committee spending data
     #       (35), donor contributions api (32): all priced p1-p2 at attr 5 but no
     #       budget left (187/200 used, the 13 spare chars fit none of them).
-    "court-records-scraper": ["docket scraper", "case law", "court records", "party name search", "case law api", "case filings"],
+    "court-records-scraper": ["docket scraper", "case law", "court records", "party name search", "case law api", "case filings", "case search api", "court case data", "court case data api", "case citation data", "legal case search", "legal records api", "legal data api", "court filing data", "legal filings api", "unpublished opinions api"],
+    # cycle 1829 (BUILD): item (r) SEO-attribute sweep, 10th Actor, method 10-for-10. Protect
+    # step (plain `store-price` on the 6 pre-existing terms) found `case law api` carried by
+    # attr=4 (seoTitle, p8, old text "...US Dockets & Case Law API") -- the only one of the 6
+    # off-attribute; the other 5 are attr=0 (title) or attr=2 (description). `--why "case law
+    # api"` showed promoting it further would require moving it into the main TITLE field
+    # (attr=0, 2 records at p1-p2) -- out of scope for this SEO-field-only sweep, so protected
+    # it in place instead (kept "Case Law API" contiguous in the new seoTitle).
+    # New seoTitle "Court Case Data API, Case Law API, Legal Records API" (52/60) + seoDescription
+    # "A case search API and case citation data API for US court records. Includes legal case
+    # search, legal data API, court filing data, legal filings API, and unpublished opinions API
+    # lookups." (186/200). Shipped via `apify-admin publish` + `apify push --force` (build
+    # **0.1.63**), measured live ~95s post-reindex -- **9 new ranked queries, the largest single
+    # haul of the sweep by nbHits (~54,921 combined, beating cycle 1828's prior-best ~7,616 by
+    # ~7x)**, zero regressions on the 6 tracked terms:
+    #   `case search api` nbHits 22496 unranked -> **p5** (attr 5; predicted p3 -- real
+    #     composition text differs from the isolated-phrase simulation, still a strong landing)
+    #   `court case data` nbHits 11173 unranked -> **p4** (attr 4, inside the new seoTitle)
+    #   `case citation data` nbHits 10114 unranked -> **p1** (attr 5)
+    #   `court case data api` nbHits 4378 unranked -> **p1** (attr 4)
+    #   `legal case search` nbHits 2498 unranked -> **p1** (attr 5)
+    #   `legal records api` nbHits 1701 unranked -> **p1** (attr 4)
+    #   `legal data api` nbHits 1684 unranked -> **p2** (attr 5)
+    #   `court filing data` nbHits 448 unranked -> **p1** (attr 5)
+    #   `legal filings api` nbHits 429 unranked -> **p1** (attr 5)
+    #   `unpublished opinions api` nbHits 159 already p1 pre-edit (an untracked incidental match
+    #     via the old seoDescription's "unpublished-opinion filter" prose) -- protected by using
+    #     the literal exact phrase in the new seoDescription, held **p1** (attr 5).
+    # Tracked terms all held: `docket scraper` p11->p10 (ordinary storePosition drift),
+    # `case law` p35 (byte-identical), `court records` p31->p30 (drift), `party name search` p1
+    # (byte-identical), `case law api` p8 (byte-identical, protected as designed),
+    # `case filings` p7 (byte-identical). `store-rank court-records-scraper` now 10/16 top-20.
+    # NOTE: two pre-existing UNTRACKED incidental matches were knowingly sacrificed to fit the
+    # char budget -- `court docket api` (nbHits 103, was p10 via attr 4) and `case docket api`
+    # (nbHits 326, was p4 via attr 4) both relied on the word "Dockets" being present in the old
+    # seoTitle; the new seoTitle has no "docket" token. Deliberate tradeoff, not an oversight --
+    # neither was ever a tracked term and both are tiny next to the 9 new rankings.
     # cycle 908 (GROWTH): swept the fleet's "priced but unshippable for lack of chars"
     # backlog with `--why` and found the best one here. `case filings` (nbHits 1985) had
     # NO prox=1 title bucket at all -- the whole head of the result set is the prox=1
