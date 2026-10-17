@@ -2,7 +2,7 @@
   "title": "ClinicalTrials.gov Scraper – Patient Recruitment & NCT IDs",
   "description": "Scrape ClinicalTrials.gov official NIH API: condition, intervention, sponsor, location, facility and lead-sponsor filters, plus six date windows. Optional one-row-per-site mode. No contact PII, ever. Optional watchLabel mode returns only studies new since your last run. $0.0015/result, no start fee.",
   "seoTitle": "Site Selection Data, Clinical Research API, Trial Data Feed",
-  "seoDescription": "A clinical trials data API: research study data API, study results data, clinical research data, medical research API, trial site data, trial monitoring API, and trial enrollment data lookups.",
+  "seoDescription": "A clinical trials data API: research study data API, study results data, clinical research data, medical research API, trial site data, trial monitoring API, and trial enrollment data lookups registry",
   "categories": [
     "BUSINESS",
     "LEAD_GENERATION",

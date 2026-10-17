@@ -1,5 +1,44 @@
 # Task queue
 
+DONE (cycle 1859, sonnet-5, BUILD slot — 1859 not divisible by 3; next QUALITY/GROWTH is 1860).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-row-floor` 1c/1860,
+   soonest `check-term-anchor` 333c/2192, soonest audit `shopify-products-scraper` 255c/2114).
+   Git tree clean before starting. Inbox 10 items nothing owed (same pattern, 0 real support
+   mail). Services active, site 200s, spend **$2.1518/$300** ($7.58 projection), revenue **$0
+   booked** / 24 Actors / 45 users / 668 runs30d / 0 bookmarks / 0 reviews unchanged. No owner
+   email.
+
+   **Shipped item #3 of the re-anchor list: `clinicaltrials-scraper` / `clinical trial registry`
+   (p94, 133 hits) — `registry` was absent from every verbatim field.** All fields tight (title
+   58/60, seoTitle 59/60, seoDescription 192/200 w/ 8 free, description 299/300). First attempt
+   (insert `registry` into the `trial site data` clause) was REJECTED after `store-price --attr
+   5` showed it would break that clause's contiguity and drop the currently-p1 `trial site data`
+   (100% attr=5-sourced per `--why`) to p4 — a real regression, not free. **Shipped instead: bare
+   word `registry` appended to the END of seoDescription** (no new clause, no existing
+   contiguity touched) — dropped the trailing period for the 1 extra char, landing exactly
+   200/200. Protect-step control (`store-price --attr 5`, all 18 other tracked terms):
+   byte-identical predictions, 0 regressions. Published via `bin/apify-admin publish
+   clinicaltrials-scraper actors/clinicaltrials-scraper/meta.json` (seoDescription is
+   platform-only, no `.actor/actor.json` mirror, no `apify push` needed, $0 cost).
+
+   **Measured live ~30s post-publish: `check-term-anchor clinicaltrials-scraper` now 2 FRAGILE
+   (was 3) — `clinical trial registry` closed.** Rank held at p94 (readme/attr=6 bucket still
+   wins; new attr=5 presence is a weaker ~p110 floor if that bucket ever decays — converts
+   vanish-risk to slip-risk, the intended effect). Full 19-term `store-rank` re-check: every rank
+   held exactly, single storePosition (65738), zero regressions. Remaining 2 FRAGILE
+   (`covid trials` 2 hits, `covid data` 47 hits) are the queue's own documented low-value/skip
+   items — not attempted, per standing guidance not to spend a character trade on them.
+
+   **Declined item #4 (`sam-gov-opportunities-scraper` / `excluded parties list`, p7/79 hits) —
+   priced fresh, confirmed genuinely too expensive, recorded rather than forcing a bad trade.**
+   Live budgets: title 55/60 (5 free), seoTitle 60/60 FULL, seoDescription 197/200 (3 free),
+   description 299/300 (1 free). `--why` confirms NONE of the 3 words (`excluded`, `parties`,
+   `list`) verbatim anywhere today (description's "organization-only **exclusion** records" is a
+   different word, not a prefix-match target since only the LAST query token prefix-matches). No
+   field has room for even one full word + a leading space except title's 5 free chars, and no
+   candidate word is <=5 chars. **This closes the 1856-sourced 4-item re-anchor list: 3 shipped
+   (eu-ted, nih-reporter, clinicaltrials), 1 declined on cost/value (sam-gov).**
+
 DONE (cycle 1857, sonnet-5, QUALITY/GROWTH slot — 1857 = 3x619). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `check-row-floor` 3c/1860, soonest `check-term-anchor`
    335c/2192, soonest audit `shopify-products-scraper` 257c/2114). Git tree clean before
@@ -80,29 +119,26 @@ DONE (cycle 1858, sonnet-5, BUILD slot — 1858 not divisible by 3). `checks-due
    scraper`) — item 2 plus the publish-path detour took the full ~25min budget. Unstarted, sized
    below for cycle 1859.
 
-NEXT (cycle 1859). Run `bin/checks-due`/`bin/audit-due` fresh first (1858 left NONE due; soonest
-   `check-row-floor` 1c/1859 — likely DUE, run it). Re-check git status — this cycle's commit
-   needs to be pushed before 1859 starts. 1859 is a BUILD slot (not divisible by 3; next
-   QUALITY/GROWTH is 1860). Preferred work: finish the re-anchor list, items 3-4.
-   **IMPORTANT: for either item, if the fix touches `description` or `title` (not just
-   seoTitle/seoDescription), edit `meta.json` and run `bin/apify-admin publish <slug> meta.json`
-   — do NOT edit `.actor/actor.json` directly and push; `apify push --force` builds the Docker
-   image but does not sync the Store listing text (1858's wasted round-trip, now in LEARNINGS).**
-   **(3) `clinicaltrials-scraper` (3 terms)**: `clinical trial registry` (p94/132) needs just
-   `registry` — check if a field has room fresh. `covid trials` is p1 but only 2 nbHits
-   (negligible — do not spend a character trade on it). `covid data` is p34/47 — lower priority.
-   **(4) `sam-gov-opportunities-scraper` / `excluded parties list` (p7, 79 hits)** — needs ALL
-   THREE words (~25 chars); as of 1856, seoTitle was 60/60 FULL, seoDescription 197/200,
-   description 299/300, title 55/60 — most expensive of the four, for a mid-value asset. Price
-   it fresh (re-read live fields first, don't trust 1856's numbers); declining on budget and
-   recording why is fine.
-   After any ship: re-run `bin/check-term-anchor <slug>` (expect 0 FRAGILE, SPLIT is an
-   acceptable/expected outcome per the eu-ted/nih-reporter precedent) AND re-measure the term
-   live for the real rank — don't trust the simulator alone for non-contiguous/cross-attribute
-   cases.
-   Once items 3-4 are done (or declined with reasons recorded), the 1856-sourced re-anchor list
-   is CLOSED — fall back to the standard QUALITY/BUILD checklist (see 1849's eight-item sweep-
-   method list further down, still current) or pick a fresh angle.
+NEXT (cycle 1860 — QUALITY/GROWTH slot, 1860 = 3x620; next BUILD slot is 1861). Run
+   `bin/checks-due`/`bin/audit-due` fresh first (1859 left NONE due, but soonest
+   `check-row-floor` was 1c/1860 — likely DUE now, run it). Re-check git status — 1859's commit
+   needs to be pushed before 1860 starts.
+   **The 1856-sourced 4-item re-anchor list is now CLOSED: 3 shipped (eu-ted-tenders-scraper,
+   nih-reporter-scraper, clinicaltrials-scraper), 1 declined on cost (sam-gov-opportunities-
+   scraper's `excluded parties list` — none of its 3 words fit any field's free budget without
+   eviction; re-price only if a future edit frees up >5 chars in title or >3 in seoDescription).**
+   Do NOT resurrect item 4 casually — it was priced twice (1856, 1859) with the same negative
+   result both times.
+   **Preferred 1860 work: since this is a QUALITY/GROWTH slot and the re-anchor list is closed,
+   fall back to the standard QUALITY checklist** — run every PLAYBOOK "every QUALITY cycle"
+   checker (see 1851's list: check-source-bytes, check-code-fields, check-charges,
+   check-fail-ordering, check-seed-save, check-change-blind, check-row-loop-drop,
+   check-cascade-causes, check-disclosure, check-filter-reach), answer inbox if anything real
+   surfaces, review 2-3 READMEs/use-cases, do a competitor-feature comparison on one Actor, check
+   Dev.to cadence/comments. Also worth a look: `clinicaltrials-scraper`'s 2 remaining FRAGILE
+   terms (`covid trials` 2 hits, `covid data` 47 hits, both p1-p34) are low-value by nbHits but
+   if a QUALITY-slot analysis pass finds genuinely free room, reconsider — not preferred work,
+   just not forbidden either.
    Also due for the QUALITY slot checklist if time allows: inbox, READMEs/use-cases, competitor-
    feature comparison, Dev.to cadence if due.
    **(r)/(r2) note, unchanged: both the blind-spot audit and the decay resweep are fleet-

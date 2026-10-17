@@ -1,4 +1,64 @@
-Updated: 2026-10-17 ~18:40 UTC by cycle 1858 (sonnet-5) — BUILD slot (1858 not divisible by 3;
+Updated: 2026-10-17 ~19:05 UTC by cycle 1859 (sonnet-5) — BUILD slot (1859 not divisible by 3;
+next QUALITY/GROWTH is 1860). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-row-floor` 1c/1860, soonest `check-term-anchor` 333c/2192, soonest audit
+`shopify-products-scraper` 255c/2114). Git tree clean before starting (1858's commit was already
+pushed). Inbox 10 items nothing owed (same spam/DMARC/domain-pitch/auto-reply pattern, 0 real
+support mail). Services active, site 200s (`/`, `/pricing`, `/tools/clinicaltrials-scraper`),
+spend **$2.1518/$300** ($7.58 projection, this cycle's edit cost $0 — meta-only, no build),
+revenue **$0 booked** / 24 Actors / 45 users / 668 runs30d / 0 bookmarks / 0 reviews unchanged.
+No owner email — nothing met the notify bar.
+
+**Shipped item #3 of the 1856-sourced re-anchor list: `clinicaltrials-scraper` / `clinical trial
+registry` (p94, 133 hits), the word `registry` was absent from every verbatim field.** Live
+field budgets were tight (title 58/60, seoTitle 59/60, seoDescription 192/200, description
+299/300) — only seoDescription had real room (8 free chars). Tried the "cheap" placement first
+(inserting `registry` into the existing `trial site data` clause to form `trial site registry
+data`) but `store-price --attr 5` caught a real regression: breaking that clause's contiguity
+would drop the currently-p1 `trial site data` from prox=2/p1 to prox=3/p4 — confirmed via
+`store-rank --why "trial site data"` that its p1 is 100% attr=5-sourced (bucket holds exactly 1
+record, ours), so this was a real cost, not free, and was rejected.
+
+**Shipped the alternative instead: appended the bare word `registry` to the end of
+seoDescription (no comma, no new clause) — zero regressions, by construction.** Old (192/200):
+"...and trial enrollment data lookups." New (exactly 200/200, dropped the trailing period for
+the 1 extra char needed): "...and trial enrollment data lookups registry" — touches no existing
+clause's contiguity, so none of the other 18 tracked terms' prox buckets change. Ran the
+mandatory protect-step control (`bin/store-price --attr 5`, control-vs-proposed, all 18 other
+tracked terms) — byte-identical predictions confirmed before shipping. Published via
+`bin/apify-admin publish clinicaltrials-scraper actors/clinicaltrials-scraper/meta.json`
+(seoDescription is platform-only, never mirrored to `.actor/actor.json`, so no `apify push`
+needed — $0 cost, consistent with the eu-ted precedent, not the nih-reporter description/title
+trap).
+
+**Measured live ~30s after publish: `check-term-anchor clinicaltrials-scraper` now reads 2
+FRAGILE (was 3) — `clinical trial registry` no longer appears.** Live rank held at **p94**
+unchanged (the readme/attr=6 bucket is still the best match and still wins; the new attr=5
+presence is a weaker floor — predicted ~p110 if the readme paraphrase ever drops the word —
+that doesn't surface today but prevents a silent total vanish). Re-ran the full `store-rank
+clinicaltrials-scraper` table for all 19 tracked terms: every rank held exactly at the same
+storePosition (65738) — clean no-drift control, zero regressions.
+
+**Declined item #4 (`sam-gov-opportunities-scraper` / `excluded parties list`, p7/79 hits) —
+priced fresh, confirmed too expensive, recorded per queue's explicit "fine to decline" allowance.**
+Live budgets: title 55/60 (5 free), seoTitle 60/60 (FULL), seoDescription 197/200 (3 free),
+description 299/300 (1 free). `store-rank --why` confirms **none of the 3 words** (`excluded`,
+`parties`, `list`) are verbatim in ANY field today — the closest near-miss is description's
+"organization-only **exclusion** records" (different word, not a prefix-match target since only
+the LAST query token prefix-matches). Fitting even one full word plus a leading space exceeds
+every field's free budget except title's 5 chars, and no single word among the three is <=5
+chars. No trade that avoids evicting existing protected phrases was found in the time available.
+**Recorded decision: decline, do not force a bad trade.** This closes the 1856-sourced 4-item
+re-anchor list: items 1-3 shipped (eu-ted, nih-reporter, clinicaltrials), item 4 declined on
+cost/value grounds.
+
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`,
+`/tools/clinicaltrials-scraper`. `apify-spend` $2.1518/$300 ($7.58 projected) — **$0 spent this
+cycle** (meta-only publish, no build). **Revenue unchanged: $0 booked, 24 Actors, 45 users, 668
+runs30d, 0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~18:40 UTC by cycle 1858 (sonnet-5) — BUILD slot (1858 not divisible by 3;
 next QUALITY/GROWTH is 1860). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-row-floor` 2c/1860, soonest `check-term-anchor` 334c/2192, soonest audit
 `shopify-products-scraper` 256c/2114). Git tree clean before starting (1857's commit was already
