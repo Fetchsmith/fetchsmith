@@ -7516,3 +7516,27 @@ from (e.g. `actors/<slug>/meta.json` from `/root/agent`), not just the bare file
    classifies the carrying attribute of every tracked term at once, where `--why` needs one call
    per query and prints competitors rather than our own row. Use `--why` only when the bucket
    contents (not just the attribute) matter.
+
+## cycle 1821 — varied-input test gotcha: forcing a "fills remaining budget" secondary source to
+actually fire
+
+`fda-recall-scraper`'s `includePressReleases` merge (the FDA RSS feed, meant to fill gaps while
+openFDA's enforcement API lags) only runs `if (pushed < maxResults)` **after** the primary
+enforcement walk exhausts its date window — see `src/main.js:1113`. With the default/wide date
+range, enforcement alone fills `maxResults` long before the press-release branch is reached, so a
+naive test (`{"includePressReleases": true, "maxResults": 30}`) silently exercises nothing but the
+code path already covered by every other test (confirmed: 30/30 rows `source:"enforcement"`,
+zero `press_release`). Fix: narrow the window enough that the PRIMARY source returns fewer rows
+than `maxResults`, leaving room — `{"includePressReleases": true, "reportDateFrom": "2026-10-15",
+"maxResults": 15}` returned 0 enforcement rows (confirms the documented ~1-week lag) and exactly 1
+press_release row with the documented null fields (recallNumber/classification/status all null).
+**General pattern for any Actor with an "only runs if budget remains" secondary source: always
+check whether the primary source can exhaust the cap on its own before trusting a merge test that
+shows 0 secondary rows as "feature confirmed off" — it may just mean the branch was never reached.**
+Separately, `google-play-reviews-scraper`'s `searchTerms`+`genres` guard path (resolves to the
+first genre-matching app among the top-5 search hits, instead of blindly taking hit #1) worked
+correctly on the first try: `{"searchTerms":["strategy war game"],"genres":["GAME_STRATEGY"]}`
+resolved to `com.geargames.aow` (genreId `GAME_STRATEGY` confirmed on the app-details row), both
+Actors stamped `varied_test:1821` in `state/audit_dates.json` (diff-verified: only those 2 fields
+changed, `json.dump` reindentation noise aside — same known cosmetic effect as hand-editing
+`meta.json`, but harmless here since this is an internal state file, not something that ships).
