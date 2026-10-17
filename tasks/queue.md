@@ -1,6 +1,89 @@
 # Task queue
 
-DONE (cycle 1837, sonnet-5, BUILD slot — 1837 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1838, sonnet-5, BUILD slot — 1838 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `check-git-push` 18c/1856; soonest audit
+   `shopify-products-scraper` 276c/2114). Git tree clean before, pushed after. Inbox 10 items,
+   nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `sec-insider-trades-scraper`** (9 tracked
+   terms) — 16th Actor, method 16-for-16. Picked over `hacker-news-scraper` (thinnest at 7, low
+   commercial intent, now passed over 5 cycles) — insider-trading data has real buyers.
+
+   **Tool-usage bug caught before cost**: `bin/store-price <slug> --title "x" --attr 4 ...` with
+   flags BEFORE the slug silently fell back to attr=0 for every row — `<slug>` must be
+   `argv[0]`, before any flags. Re-ran with slug first and got correct attr=4/5 sims. Sharper
+   restatement of the flag-order trap than the prior "title before attr" note.
+
+   Protect step found 1 of 9 tracked terms carried by the SEO fields about to be overwritten
+   (`insider trading api` p6 attr=4, the cycle-1477 edit) — protected in place (only promotion
+   path was into the saturated attr=0 bucket, out of scope). Also caught 2 UNTRACKED incidental
+   wins before trusting the rewrite was free: `sec form 4 api` (p22, attr=4, non-contiguous) and
+   `sec edgar insider data` (p61, attr=5) — both explicitly re-priced and PROMOTED, not just
+   preserved (`sec edgar insider data` -> p1, now contiguous for the first time).
+
+   Shipped seoTitle "Insider Trading API, SEC Filings Data API, Form 4 Data API" (58/60) +
+   seoDescription "An SEC insider data API: sec edgar insider data, insider transactions data,
+   insider trade data, insider trading research, executive trading data, and insider sentiment
+   data exports." (181/200), build **0.1.50**, measured live ~95s post-reindex. **All 10
+   predictions landed, most exactly**: `sec filings data api` (nbHits 446) unranked -> **p2**;
+   `form 4 data api` (577) unranked -> **p2**; `sec insider data` (306) unranked -> **p6**; `sec
+   edgar insider data` (273, untracked) p61 -> **p1**; `insider transactions data` (250) unranked
+   -> **p3**; `insider trade data` (233) unranked -> **p2**; `insider trading research` (205)
+   unranked -> **p1**; `executive trading data` (193) unranked -> **p1**; `insider sentiment
+   data` (120) unranked -> **p1**; `sec form 4 api` (216, untracked) p22 -> **p12** (promoted).
+   **Unplanned bonus**: TRACKED term `form 4 data` (nbHits 1218) jumped from p85 (attr=0,
+   prox=9) to **p3** (now attr=4/prox=2 via the new seoTitle's "Form 4 Data API"). **Zero
+   regressions** on all 8 other tracked terms — ordinary drift only. **Deliberate sacrifice**:
+   untracked `10b5-1 flag` (23 hits, was p13) dropped to p17/attr=6 — too small to matter.
+   Recorded all 9 new terms + full provenance in `bin/store-rank`'s `TERMS` THIS cycle;
+   `store-rank sec-insider-trades-scraper` now tracking 18 terms.
+
+   Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+   (all the known owner-blocked `website-screenshot-scraper`, item `j`; sec-insider-trades-
+   scraper itself showed NO drift), `check-pricing` 24/29/0. Services active, site 200s incl.
+   `/tools/sec-insider-trades-scraper`. `apify-spend` $2.105 of $300 ($7.8 projected). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews. No owner email sent —
+   nothing met the notify bar.
+
+   **Item (r) backlog note**: 16 of 25 Actors now swept (added `sec-insider-trades-scraper`
+   1838). 2 permanently skipped (`scholarship-scraper` source-blocked, `website-screenshot-
+   scraper` owner-blocked). **7 Actors NOT yet swept**: `hacker-news-scraper` (7, low commercial
+   intent, passed over 5 cycles running — either sweep it next or stop listing it first),
+   `shopify-products-scraper` (8, CAVEAT: re-sweep not virgin, cycle-1480 prior edit),
+   `grants-gov-scraper` (9), `sam-gov-opportunities-scraper` (9), `nih-reporter-scraper` (11),
+   `steam-reviews-scraper` (11), `eu-ted-tenders-scraper` (12).
+
+NEXT (cycle 1839 — QUALITY/GROWTH slot, 1839 = 3x613; next BUILD slot is 1840).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1838 (soonest
+   `check-git-push` 18c/1856, soonest audit 276c/2114) but re-derive fresh.
+   **Preferred 1839 work**: item (t) varied-input re-test on the 2 oldest `varied_test` stamps
+   (`ats-jobs-scraper` 1631 is oldest), or answer inbox/polish READMEs per PLAYBOOK's
+   QUALITY/GROWTH checklist if nothing else is due.
+   **Next BUILD slot (1840) continues item (r)** on `grants-gov-scraper` or
+   `sam-gov-opportunities-scraper` (both 9 terms) or finally `hacker-news-scraper` (7, deferred
+   5 cycles — if skipped again, stop listing it first each cycle).
+   **Do not forget the manual `meta.json` step**: `apify-admin publish` mirrors only
+   title/description, NOT seoTitle/seoDescription — hand-edit the repo `meta.json` each sweep.
+   **New trap, sharper than the old note**: `bin/store-price` requires `<slug>` as the FIRST
+   argument, before any `--title`/`--attr` flags — flags before the slug silently reset attr to
+   0 with no error. The "title before attr" ordering rule still applies AFTER the slug.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test's next-oldest-stamp list — `ats-jobs-scraper` (1631) is oldest.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock (next ~1860) — do NOT
+   carry it as a prose item again.
+   Standing reminders: see the full list in the 1833 NEXT block further below (all still
+   accurate) — store-price flag order (slug FIRST, then title-before-attr), cross-attribute
+   WORSE-flag trap, bucket-level regression testing, output-field-name verification against
+   src/main.js before trusting a None/bug read.
+
+---
+
+PRIOR DONE (cycle 1837, sonnet-5, BUILD slot — 1837 not divisible by 3). `checks-due`/`audit-due`
    both re-ran fresh: NONE DUE (soonest `check-git-push` 20c/1856; soonest audit
    `shopify-products-scraper` 277c/2114). Git tree clean before, pushed after. Inbox 10 items,
    nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
