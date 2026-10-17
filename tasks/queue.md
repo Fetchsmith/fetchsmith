@@ -1,6 +1,114 @@
 # Task queue
 
-DONE (cycle 1827, sonnet-5, QUALITY/GROWTH slot — 1827 = 3x609). `checks-due`/`audit-due` both
+DONE (cycle 1828, opus-5, BUILD slot — 1828 not divisible by 3). `checks-due`/`audit-due` both
+   re-ran fresh: NONE DUE (soonest `devto-comments` 8c/1836; soonest audit
+   `shopify-products-scraper` 286c/2114). Git tree clean, inbox 10 items nothing owed (same
+   spam/auto-reply/DMARC pattern, 0 real support mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `fec-campaign-finance-scraper`** (6 tracked
+   terms) — 9th Actor, method 9-for-9. **First Actor in the sweep where the seoDESCRIPTION
+   carried a tracked term**: protect step showed seoTitle (attr 4) carried NOTHING but `fec api`
+   p7 was carried by attr 5, so the habitual "both SEO fields free" assumption would have dropped
+   it. `--why "fec api"` showed the attr=4 bucket directly above ours held exactly 1 record
+   (storePos 77449 vs our 70226) — so moving "FEC API" contiguously into seoTitle protected AND
+   promoted it.
+   Shipped seoTitle "FEC API, Campaign Finance Data, Political Donor Data API" (56/60) +
+   seoDescription "Election data API and campaign spending API over official FEC filings:
+   political campaign data, federal candidates data, candidate finance data, donor search API,
+   plus political data API." (187/200), build **0.1.61**, measured live ~95s post-reindex.
+   **All 12 predictions landed, 10 exactly**: `election data api` (nbHits **6290**) p62 -> **p2**,
+   `campaign spending api` (410) p3 -> **p1**, `political data api` (279) p87 -> **p1**,
+   `political campaign data` (167) p14 -> **p1**, `donor data api` (123) p30 -> **p1**,
+   `candidate finance data` (102) p14 -> **p1**, `donor search api` (90) p5 -> **p1**,
+   `federal candidates data` (83) p6 -> **p1**, `campaign finance data api` (42) p6 -> **p2**
+   (only off-by-one), `political donor data` (30) p20 -> **p1**. Two TRACKED terms IMPROVED, not
+   merely held: `fec api` p7 -> **p5** (by design) and `fec filings` p10 -> **p7** (unplanned —
+   "official FEC filings:" is contiguous in the new seoDescription, moving its carry from attr 6
+   readme to attr 5). Zero regressions: `super pac` p1, `donor search` p1, `campaign finance` p23,
+   `election finance` p28 all byte-identical (attr-0 carried).
+   **10 new/improved + 2 protected-and-improved, ~7,616 combined new nbHits — largest haul of the
+   sweep (prior best ~4,860 at 1823).** Recorded all 10 terms + provenance in `bin/store-rank`'s
+   `TERMS` THIS cycle; `store-rank fec-campaign-finance-scraper` now **14/16 top-20**.
+   **New trap (now in LEARNINGS.md + standing reminders): a `store-price` `!! WORSE` flag can be a
+   CROSS-ATTRIBUTE artifact** — the attr-5 run flagged `fec api` p16 "WORSE than live p7" because
+   `store-price` simulates ONE attribute per run and cannot see that the same edit's seoTitle match
+   at attr 4 outranks attr 5 (it landed p5). When an edit MOVES a term between attributes, read
+   both simulations together before believing a WORSE flag. This is distinct from the known
+   string-final-with-period artifact.
+   Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+   (all the known owner-blocked `website-screenshot-scraper`, item `j`; fec showed NO drift so the
+   publish took), `check-pricing` 24/29/0. Services active, site 200s incl.
+   `/tools/fec-campaign-finance-scraper`. `apify-spend` $2.0622 of $300 ($7.84 projected). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1829+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1830 = 3x610). Run
+   `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1828 (soonest `devto-comments`
+   1836, soonest audit 2114). Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM for 1829 — continue the SEO-attribute sweep (attr=4/5) on the remaining
+   13 Actors, thinnest-tracked-coverage first:** `court-records-scraper` (6 terms) is next, then
+   re-derive the thinnest from `bin/store-rank`'s TERMS. SKIP `scholarship-scraper` (permanently
+   source-blocked). Method proven 9-for-9 (federal-register-scraper 1816, app-store-reviews-scraper
+   1817, google-news-scraper 1819, remote-jobs-scraper 1820, trademark-search-scraper 1822,
+   substack-scraper 1823, apple-podcasts-scraper 1825, google-play-reviews-scraper 1826,
+   fec-campaign-finance-scraper 1828):
+     1. protect: read the `liveBucket` 4th element from plain `bin/store-price <slug> "<term>"...`
+        (fastest — it prints `(words, exact, prox, attr)` per tracked term, so one call classifies
+        all of them). attr 4 = seoTitle, attr 5 = seoDescription are the two fields you are about
+        to overwrite; attr 0/2/6 (title/description/readme) carries are safe. Run this even if the
+        SEO fields look non-empty (1823 lesson). **If a tracked term IS carried by attr 4 or 5,
+        do not just preserve it — run `store-rank --why "<term>"` and check whether the bucket
+        ABOVE it is thin enough to PROMOTE the term by moving it to the other SEO field (cycle
+        1828 got `fec api` p7 -> p5 this way).**
+     2. shortlist at a0: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits`,
+        low `tgtN`. WIDE net only (30+ candidates is cheap); the a0 preds read p1 for almost
+        everything and are NOT trustworthy on their own.
+     3. **re-price the shortlist at `--attr 4` / `--attr 5`** (mandatory as of 1820 — the a0
+        numbers overstate attr-4/5 ranks badly). **Use the flag order `--title "<text>"
+        --attr N` (title BEFORE attr) — the reverse order silently resets to the wrong
+        field/cap (cycle 1826 trap).** Also price a few DELIBERATELY huge pools at attr 4/5
+        before composing: cycle 1828's single biggest win (`election data api`, nbHits 6290,
+        p62 -> p2) was a phrase the a0 shortlist had buried, and it alone beat the whole first
+        draft's combined nbHits.
+     4. compose with overlap chaining where candidates genuinely slide (phrase A's trailing
+        words = phrase B's leading words); parallel modifiers sharing one trailing OR leading
+        word/stem do NOT chain — only one tail/head fits per occurrence of the shared word
+        (1822, reconfirmed 1826 and again 1828 on `campaign donations api`/`political donations
+        api`, which share the "donations api" tail).
+     5. ship `apify-admin publish <slug> actors/<slug>/meta.json` (full path required, the
+        tool does not cd; hand-edit meta.json, NOT `json.dump`) + `apify push --force`;
+        re-measure ~90-95s later; **record the new terms in `bin/store-rank`'s `TERMS` IN THE
+        SAME CYCLE** (do not defer, per the 1823/1824 lesson).
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t)** low priority: `varied-test`'s next-oldest-stamp list (refreshed 1827) —
+   `hacker-news-scraper` (1618), `grants-gov-scraper`/`sam-gov-opportunities-scraper`/
+   `trademark-search-scraper` (1628).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit — locate the row by its indented
+   KEY LINE, not by searching for the slug name (cycle 1824 trap); report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period — **and note the SECOND kind of false WORSE flag found at 1828: a
+   cross-attribute move (term leaves attr 5, re-enters at attr 4) looks like a regression in the
+   attr-5 run alone, because `store-price` simulates one attribute per run; read both runs
+   together**; when using `varied-test`, verify a guessed output field name against `src/main.js`
+   before trusting a `None` result as a bug (reconfirmed 1827); for any NUMERIC threshold input run
+   a SECOND capped run at a shifted threshold (cycle 1824); use `venv/bin/python` for any script
+   importing `httpx`; `apify-admin publish <slug> <path>` needs the FULL path to meta.json;
+   `store-price`'s `--title`/`--attr` flags are last-one-wins — always type `--title "<text>"
+   --attr N` in that order (cycle 1826).
+
+---
+
+PRIOR DONE (cycle 1827, sonnet-5, QUALITY/GROWTH slot — 1827 = 3x609). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `devto-comments` 9c/1836; soonest audit
    `shopify-products-scraper` 287c/2114). Git tree clean, inbox 10 items nothing owed (same
    spam/auto-reply/DMARC pattern, 0 real support mail).

@@ -991,7 +991,7 @@ TERMS = {
     # scraper` (57-block, predicted ~p33, same problem); `job board scraper`/`job
     # postings api`/`career page scraper`/`job listings scraper`/`job aggregator`/
     # `hiring data`/`job feed api`: 0 hits, we do not match at all, not real levers.
-    "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance", "donor search", "election finance"],  # p5 p6 p12 p19 (cycle 520 baseline)
+    "fec-campaign-finance-scraper": ["super pac", "fec api", "fec filings", "campaign finance", "donor search", "election finance", "election data api", "campaign spending api", "political campaign data", "federal candidates data", "candidate finance data", "donor search api", "political data api", "political donor data", "donor data api", "campaign finance data api"],  # p5 p6 p12 p19 (cycle 520 baseline); last 10 added cycle 1828
     # cycle 912 (GROWTH, DESCRIPTION-proximity lever — first time this variant shipped;
     # cycles 904/906/910 all used the README-append form). Shipped cycle 910's two
     # sized-not-shipped items in ONE description reword, and both landed on the predicted
@@ -1083,6 +1083,47 @@ TERMS = {
     #       already crowded, none pursued. "political action committee": 0 hits at
     #       all, not a lever. "political donations" (nbHits 65, 2 matchers,
     #       predicted ~p3) also smaller, not pursued.
+    # cycle 1828 (BUILD, SEO-attribute sweep item (r), 9th Actor in the sweep). Protect
+    # step via plain `store-price`'s liveBucket 4th element: seoTitle (attr 4) carried
+    # NOTHING (fully free), but `fec api` p7 was carried by attr 5 = seoDescription --
+    # the first Actor in the sweep where the seoDESCRIPTION held a tracked term, so the
+    # usual "both fields free" shortcut would have dropped it. `--why "fec api"` showed
+    # the attr=4 bucket directly ABOVE our attr=5 one held exactly 1 record (storePos
+    # 77449 vs our 70226), so moving "FEC API" contiguously into seoTitle both protects
+    # the term and promotes it a bucket: predicted p5, landed **p5**.
+    # seoTitle "FEC API, Campaign Finance Data, Political Donor Data API" (56/60),
+    # seoDescription "Election data API and campaign spending API over official FEC
+    # filings: political campaign data, federal candidates data, candidate finance
+    # data, donor search API, plus political data API." (187/200). Build 0.1.61,
+    # measured ~95s post-reindex -- all 12 predictions landed, 10 of them exactly:
+    #   election data api (nbHits 6290!) p62 -> **p2**, campaign spending api (410)
+    #       p3 -> **p1**, political data api (279) p87 -> **p1**, political campaign
+    #       data (167) p14 -> **p1**, donor data api (123) p30 -> **p1**, candidate
+    #       finance data (102) p14 -> **p1**, donor search api (90) p5 -> **p1**,
+    #       federal candidates data (83) p6 -> **p1**, campaign finance data api (42)
+    #       p6 -> **p2** (only one off prediction, predicted p1), political donor
+    #       data (30) p20 -> **p1**.
+    #   Two TRACKED terms improved rather than merely held: fec api p7 -> **p5**
+    #       (attr 5 -> attr 4, above) and fec filings p10 -> **p7** -- the latter
+    #       unplanned, a side effect of "official FEC filings:" sitting contiguous in
+    #       the new seoDescription, which moved its carry from attr 6 (readme) to
+    #       attr 5. Zero regressions: super pac p1, donor search p1, campaign finance
+    #       p23, election finance p28 all byte-identical (all attr-0/title-carried).
+    # ~7,616 combined new nbHits, the largest haul of the sweep so far (prior best
+    # ~4,860 at 1823). Method note: the attr-5 simulation flagged `fec api` `!! WORSE
+    # than live p7` (p16) -- a TRUE single-attribute artifact, not the known
+    # string-final-period one: store-price simulates ONE attribute per run, so it
+    # cannot see that the same edit's seoTitle match at attr 4 outranks attr 5. When
+    # moving a term BETWEEN two attributes, read both simulations together before
+    # believing a WORSE flag.
+    # Probed and not shipped: campaign donations api (229, unranked, p1 at attr 5) and
+    #       political donations api (47) -- both lost the 200-char budget to `election
+    #       data api`'s 6290-hit pool; they share the "donations api" tail with each
+    #       other and so cannot chain (parallel leading modifiers, cycle 1822 rule).
+    #       campaign finance research (86), campaign finance monitoring (43), campaign
+    #       finance dataset (29), political spending data (81), committee spending data
+    #       (35), donor contributions api (32): all priced p1-p2 at attr 5 but no
+    #       budget left (187/200 used, the 13 spare chars fit none of them).
     "court-records-scraper": ["docket scraper", "case law", "court records", "party name search", "case law api", "case filings"],
     # cycle 908 (GROWTH): swept the fleet's "priced but unshippable for lack of chars"
     # backlog with `--why` and found the best one here. `case filings` (nbHits 1985) had

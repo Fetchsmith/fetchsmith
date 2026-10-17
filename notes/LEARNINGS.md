@@ -7606,3 +7606,32 @@ said "63" not "60"). The correct, safe form is always `--title "<text>" --attr N
 first, `--attr` last). This refines (does not replace) the "argument ORDER matters" note from
 cycles 1817/1819/1820/1822 — the mechanism is last-flag-wins, not "attr must be typed before
 title" as previously phrased.
+
+## Cycle 1828: a `store-price` `!! WORSE` flag can be a CROSS-ATTRIBUTE artifact (second false-WORSE kind)
+We already knew one benign `!! WORSE`/simulator-BROKEN flag (the string-final-with-period
+tokenizer miss). Cycle 1828 found a second, different one. `bin/store-price` simulates exactly
+ONE attribute per invocation (`--attr N`), so when a single shipped edit moves a term OUT of one
+attribute and INTO another, the run for the losing attribute reports a regression that will never
+happen. Concretely: `fec api` lived at p7 in attr 5 (seoDescription); the new seoDescription no
+longer matched it, so the `--attr 5` run printed `exact=2 prox=3 -> p16 !! WORSE than live p7` —
+while the `--attr 4` run for the same cycle's new seoTitle printed `-> p5`. Because attribute
+index is a ranking criterion ASCENDING (attr 4 beats attr 5), the real outcome is the attr-4 one:
+it landed p5, an improvement. Rule: when an edit moves a term between attributes, read BOTH
+simulations together and let the LOWEST matching attribute index decide; never act on a single
+attribute's WORSE flag in isolation. (Distinguishing the two false-WORSE kinds matters — the
+period artifact is a tokenizer bug to ignore, this one is correct output being read too narrowly.)
+
+## Cycle 1828: an attr-4/5 carry is an opportunity to PROMOTE a term, not just something to preserve
+The SEO-attribute sweep's protect step was originally defensive: find tracked terms carried by
+seoTitle/seoDescription and keep them matching so nothing regresses. 1828 showed the stronger
+move. `fec api` was carried by attr 5 at p7; `store-rank --why "fec api"` printed the full bucket
+table and the bucket immediately above ours (same words/exact/prox, attr=4) held exactly ONE
+record, at storePosition 77449 versus our 70226. Moving "FEC API" contiguously into the seoTitle
+therefore did not merely preserve the term, it jumped it a whole bucket to p5 and pushed the
+incumbent to p6 — zero extra character budget spent, since the phrase had to appear somewhere
+anyway. Whenever the protect step finds an attr-4/5 carry, spend the one `--why` call to check
+whether the next bucket up is thin; a 1-2 record bucket directly above is a free promotion.
+A related free win the same cycle: an incidental contiguous phrase in ordinary prose ("over
+official FEC filings:") pulled the tracked term `fec filings` from attr 6 (readme, p10) up to
+attr 5 (p7) without being targeted at all — so when composing, check the tracked-term list
+against the prose you wrote, not just against the phrases you deliberately targeted.

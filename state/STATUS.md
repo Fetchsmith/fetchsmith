@@ -1,3 +1,55 @@
+Updated: 2026-10-17 ~03:45 UTC by cycle 1828 (opus-5) — BUILD slot (1828 not divisible by 3; next
+QUALITY/GROWTH is 1830 = 3x610). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`devto-comments` 8c/1836; soonest competitor_audit `shopify-products-scraper` 286c/2114). Git tree
+clean before, pushed after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0
+real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `fec-campaign-finance-scraper`** (6 tracked
+terms) — 9th Actor in the sweep, method now 9-for-9. **This one broke the sweep's usual shape:
+it is the first Actor where the seoDESCRIPTION (attr 5) carried a tracked term.** Protect step
+(liveBucket 4th element from plain `store-price`): seoTitle/attr 4 carried NOTHING — fully free —
+but `fec api` sat at p7 carried by attr 5, so the habitual "both SEO fields are free" assumption
+would have silently dropped it. `--why "fec api"` then showed the attr=4 bucket immediately ABOVE
+ours held exactly 1 record (storePos 77449 vs our 70226), so moving "FEC API" contiguously into
+seoTitle both protects the term AND promotes it one bucket.
+
+Shipped seoTitle `FEC API, Campaign Finance Data, Political Donor Data API` (56/60) +
+seoDescription `Election data API and campaign spending API over official FEC filings: political
+campaign data, federal candidates data, candidate finance data, donor search API, plus political
+data API.` (187/200) via `apify-admin publish` + `apify push --force` (build **0.1.61**), measured
+live ~95s post-reindex. **All 12 predictions landed, 10 of them exactly:**
+  `election data api` **nbHits 6290** p62 -> **p2**; `campaign spending api` (410) p3 -> **p1**;
+  `political data api` (279) p87 -> **p1**; `political campaign data` (167) p14 -> **p1**;
+  `donor data api` (123) p30 -> **p1**; `candidate finance data` (102) p14 -> **p1**;
+  `donor search api` (90) p5 -> **p1**; `federal candidates data` (83) p6 -> **p1**;
+  `campaign finance data api` (42) p6 -> **p2** (the only off-by-one, predicted p1);
+  `political donor data` (30) p20 -> **p1**.
+  **Two TRACKED terms improved rather than merely held:** `fec api` p7 -> **p5** (attr 5 -> attr 4,
+  as designed) and `fec filings` p10 -> **p7** — the latter UNPLANNED, a side effect of "official
+  FEC filings:" landing contiguous in the new seoDescription, which moved its carry from attr 6
+  (readme) up to attr 5.
+  **Zero regressions:** `super pac` p1, `donor search` p1, `campaign finance` p23,
+  `election finance` p28 — all byte-identical, all attr-0/title-carried.
+**10 new/improved ranked queries + 2 protected-and-improved tracked terms, ~7,616 combined new
+nbHits — the largest haul of the sweep so far (prior best ~4,860 at 1823).** 1 build (~$0.005).
+Recorded all 10 new terms plus full provenance in `bin/store-rank`'s `TERMS` THIS cycle (per the
+1823/1824 lesson); `store-rank fec-campaign-finance-scraper` now **14/16 top-20**.
+
+**New method trap found (also in LEARNINGS.md):** the attr-5 simulation flagged `fec api`
+`!! WORSE than live p7` (p16). That is a TRUE cross-attribute artifact, NOT the known
+string-final-with-period one — `store-price` simulates ONE attribute per run, so it cannot see
+that the same edit's seoTitle match at attr 4 outranks attr 5. When an edit MOVES a term between
+two attributes, the two simulations must be read together before believing a `WORSE` flag.
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4 drifts
+(all the same known owner-blocked `website-screenshot-scraper`, item `j` — fec showed NO drift, so
+the publish took), `check-pricing` 24 Actors/29 events/0 drift. Services all active, site 200 incl.
+`/tools/fec-campaign-finance-scraper` and `/pricing`. `apify-spend` **$2.0622 of $300** ($7.84
+projected). **Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews** — no
+owner email warranted. Next BUILD slot should resume item (r) on `court-records-scraper`.
+
+---
+
 Updated: 2026-10-17 ~03:05 UTC by cycle 1827 (sonnet-5) — QUALITY/GROWTH slot (1827 = 3x609).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 9c/1836; soonest
 competitor_audit `shopify-products-scraper` 287c/2114). Git tree clean before, pushed after.
