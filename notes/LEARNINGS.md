@@ -7652,3 +7652,49 @@ seoTitle/seoDescription text for the term's literal words. If they are not there
 `_highlightResult` via a raw `getRankingInfo=true` probe before believing the bucket table —
 `store-price`'s attr label is a heuristic (`firstMatchedWord // 1000`), and it can mis-divide
 when attribute content lengths don't match its assumed 1000-word-per-attribute spacing.
+
+## Cycle 1832 — two corrections to the SEO-attribute-sweep method, and bucket-level regression testing
+
+**1. The cycle-1831 `_highlightResult` misattribution probe is not universally reliable — it can
+return a FALSE misattribution verdict.** Cycle 1831 established that if a term's `liveBucket`
+claims attr=4/5 but a `getRankingInfo=true` probe of our own record shows `matchLevel: "none"` on
+every field, the bucket table misattributed a `readmeSummary` match and the SEO field is free to
+rewrite. On `ats-jobs-scraper` that rule breaks: EVERY field returned `matchLevel: "none"` for
+`ats jobs scraper`, a query Algolia itself reported as a genuine title match (firstMatchedWord=0,
+words=3, nbExactWords=3) against a title that visibly contains all three words. So "none
+everywhere" means only that highlight data is unpopulated for that record — it proves nothing
+about which attribute carries the match.
+**Use this instead:** query a phrase that appears in ONE field only and read
+`firstMatchedWord//1000` off `_rankingInfo`. On ats-jobs, `real pay ranges` (old seoDescription
+only) returned p2/attr=5 and `lever workday` (contiguous in the old seoTitle only) returned
+attr=4/prox=1 — proving both fields live and searchable on that record, which is the question the
+probe is actually trying to answer.
+
+**2. Duplicate phrases in an SEO field earn nothing when a better-ranked attribute also holds
+them, so they are free to overwrite.** Apify's chain is
+`nbTypos -> words -> nbExactWords -> proximityDistance -> attribute -> storePosition`. A 3-word
+phrase sitting CONTIGUOUSLY in both `title` and `seoTitle` scores prox=2 in either field — a tie —
+so the next criterion, attribute, decides, and attr=0 (title) always beats attr=4 (seoTitle).
+That is why `ats jobs scraper` reported a title carry even though the old seoTitle held it
+verbatim. The same holds for an attr=5 duplicate of a phrase the description (attr=2) carries
+(`smartrecruiters`, `workable jobs`). Practical effect: in the protect step, a tracked term whose
+best bucket is attr 0/2/6 is safe **even if the SEO field you are about to overwrite also
+contains it verbatim** — you are deleting a copy that was contributing zero. Verified live on
+three terms at 1832, all byte-identical post-ship.
+
+**3. Regression-test an SEO edit at BUCKET level, not by rank.** Rank alone is noisy enough to
+manufacture fake regressions: post-ship at 1832, `recruitee` moved p43->p47, `smartrecruiters`
+p324->p344 and `ats jobs scraper` p138->p151, which reads like three regressions. A
+`getRankingInfo=true` probe of all five pre-existing live terms returned (attr, prox, exact,
+words) tuples IDENTICAL to the pre-ship readings with `storePosition` unchanged at 73968 — so
+every shift was competitor churn inside an unchanged bucket. Compare tuples, not positions,
+before attributing a move to your own edit. (Corollary for shopping: `store-price`'s `live`
+column reads "-" for anything outside its top-200 window, which is NOT the same as unranked —
+`smartrecruiters`/`workable jobs` showed "-" while genuinely sitting at p324/p321.)
+
+**4. Readme-only (attr=6) wins can decay to a TOTAL loss, not just a slide.** The cycle-1468
+header warns that readme wins rot when Apify's LLM re-paraphrases `readmeSummary`. At 1832 two
+cycle-962 wins on `ats-jobs-scraper` (`hiring page scraper`, `applicant tracking system api`)
+were found gone from the top 1000 entirely — first observation of complete disappearance rather
+than a decaying rank. Re-anchoring them as literal attr=4/5 text restored both to p1. Worth
+checking old readme-era wins on any Actor before assuming its tracked list still reflects reality.

@@ -951,7 +951,39 @@ TERMS = {
     # cycle 200: chosen by measured winnability, not by guessing. "recruitee"
     # and "smartrecruiters" are thin fields where we already place; "greenhouse"
     # and "lever" are broad/crowded and we sit past rank 350 there regardless.
-    "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs", "job openings scraper", "hiring page scraper", "applicant tracking system api"],
+    "ats-jobs-scraper": ["recruitee", "smartrecruiters", "ats jobs scraper", "workable jobs", "job openings scraper", "hiring page scraper", "applicant tracking system api", "hiring data feed", "pay range data", "job openings data", "employment data api", "recruiting data api", "recruitment data api", "open roles api", "hiring trends data", "jobs data feed"],
+    # cycle 1832 (BUILD, item (r) SEO-attribute sweep -- 12th Actor, method 12-for-12):
+    # the 9 terms after "applicant tracking system api" are NEW this cycle, plus the two
+    # cycle-962 readme wins "hiring page scraper"/"applicant tracking system api" were
+    # RE-ANCHORED here (see below). Protect step: of the 7 pre-existing tracked terms only
+    # 3 were still carried live -- "recruitee" p43, "ats jobs scraper" p138, "job openings
+    # scraper" p1, ALL attr=0 (title), so both SEO fields were free. The other 4 had
+    # DECAYED off their cycle-962 readme carry: "smartrecruiters" p324 and "workable jobs"
+    # p321 had fallen back to attr=2 (description, which still names both ATS vendors),
+    # while "hiring page scraper" and "applicant tracking system api" were gone from the
+    # top 1000 entirely -- the readmeSummary-paraphrase rot the cycle-1468 header warns
+    # about, observed here for the first time as a total loss rather than a slide. Both are
+    # now re-anchored as literal attr=4/attr=5 matches, which cannot rot.
+    # **Two method corrections found this cycle, both important for the remaining 11 Actors:**
+    # (1) the cycle-1831 `_highlightResult` misattribution probe is NOT universally
+    # reliable. On this record EVERY field returned `matchLevel: "none"` even for queries
+    # with a definite, Algolia-confirmed title match (`ats jobs scraper`, firstMatchedWord=0,
+    # words=3, exact=3) -- so "none everywhere" does NOT by itself prove misattribution.
+    # Confirm a field is live by querying a phrase UNIQUE to that field instead: "real pay
+    # ranges" (old seoDescription only) returned p2/attr=5 and "lever workday" (old seoTitle
+    # only) returned attr=4/prox=1, proving both fields searchable on this record.
+    # (2) a 3-word phrase sitting contiguously in BOTH title and seoTitle ties on proximity
+    # (prox=2 either way), and the attribute criterion then breaks the tie toward attr=0 --
+    # which is why `ats jobs scraper` reported a title carry despite the old seoTitle holding
+    # it verbatim. Practical consequence: a duplicate phrase in seoTitle earns NOTHING while
+    # the title also holds it, so it is free to overwrite (verified -- no `!! LOSES` flag).
+    # Shipped seoTitle "Hiring Page Scraper, Hiring Data Feed, Pay Range Data" (53/60) +
+    # seoDescription "An ATS and applicant tracking system API: job openings data, employment
+    # data API, recruiting data API, recruitment data API, open roles API, hiring trends
+    # data, and jobs data feed exports." (188/200) as build 0.1.84. attr-4/attr-5 re-pricing
+    # was decisive as usual: the a0 shortlist's two biggest pools (`job market data` 7174,
+    # `job posting data` 6540) both collapsed to p27/p31 at attr 4 and were DROPPED, while
+    # `hiring page scraper` (4215) and `jobs data feed` (4072) held thin buckets.
     # cycle 962: h904 readme-proximity-scan continued (title 63/63 full, description
     # 291/300 near-full -> readme was the only lever). Priced 16 fresh phrases via
     # `bin/store-price`; two stood out on `--why`. "hiring page scraper" (6429 hits) had
