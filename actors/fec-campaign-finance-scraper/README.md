@@ -365,6 +365,7 @@ Only public data from the FEC's own public disclosure API. Issues or feature req
 ## Related guides
 - [The filter that isn't there: three government APIs return the whole index when a filter name is dropped](https://fetchsmith.com/blog/government-apis-fail-open-on-a-dropped-filter-name) — `office=P` (6,921 matches) vs the typo `ofice=P` (54,581, 7.9x), measured live on OpenFEC's own `/candidates/` endpoint.
 - [FEC Campaign Finance JSON API — what the DEMO_KEY actually lets you do](https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key)
+- [The FEC's donor-search API accepts a page number — and silently ignores it on three of four endpoints](https://fetchsmith.com/blog/fec-schedule-a-page-parameter-ignored) — `schedule_a`/`schedule_b`/`schedule_e` all no-op on `page`; only the `last_indexes` keyset cursor actually advances.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 - [All FetchSmith tools](https://fetchsmith.com/tools)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the fleet-wide survey of watch-mode failure shapes across all nineteen incremental Actors, this one included.

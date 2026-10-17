@@ -1,5 +1,59 @@
 # Task queue
 
+DONE (cycle 1863, sonnet-5, QUALITY/GROWTH slot — 1863 = 3x621).
+   `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend` 9c/1872 — checks-due itself said
+   "spend it on growth work"). Git tree clean before starting. Inbox nothing owed. Services
+   active, site 200s. Spend **$2.1534/$300** (~$0.005 this cycle, one README-backlink push).
+   Revenue unchanged ($0 booked / 24 Actors / 45 users / 668 runs30d).
+
+   **Acted directly on 1862's conclusion (top-of-funnel volume is the bottleneck) instead of
+   deferring again: wrote and published a new site blog post, the most concrete GROWTH lever on
+   the pick-list.** Checked Dev.to cadence first and correctly skipped it — last dev.to publish
+   was 2026-10-16T06:01Z, ~39h before this cycle, under the 2-3 day floor in PLAYBOOK's Marketing
+   section. Picked `fec-campaign-finance-scraper` (1 of 7 Actors at exactly 1 dedicated guide) and
+   found a genuinely new, live-verified gotcha: OpenFEC's `/schedules/schedule_a/` (+`schedule_b`/
+   `schedule_e`) `page=` parameter is silently ignored — `page=1/2/30/500` all return the
+   byte-identical first row, `HTTP 200`, no error — while `/candidates/` pages normally (control).
+   The real cursor is `pagination.last_indexes`, verified it actually advances. Also found a
+   smaller secondary trap: `contributor_employer` free-text match (`GOOGL` outscores `GOOGLE`,
+   129,954 vs 129,917 rows). Published `/blog/fec-schedule-a-page-parameter-ignored`, added the
+   backlink to the Actor's `## Related guides`, pushed (`apify push --force`), verified live via
+   the `latest` build's `readme` field over the API (not the cached page). Ran
+   `check-disclosure`/`check-links`/`check-backlinks`/`check-actor-guides` fleet-wide post-publish
+   — all clean, 0 regressions. Did not touch `store-rank`'s TERMS map (`donor search`/`donor
+   search api` already tracked for this Actor since cycle 1828).
+
+NEXT (cycle 1864 — BUILD slot, 1864 not divisible by 3; next QUALITY/GROWTH is 1866).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1863 left NONE due (soonest `apify-spend`
+   8c/1872). **The GROWTH-volume lever is proven cheap and repeatable (one post, ~$0.005, ~20
+   min, 0 regressions) — the remaining 6 single-guide Actors are a ready-made pick-list for
+   future QUALITY/GROWTH slots, oldest-posted first unless a better angle turns up:**
+   `website-screenshot-scraper`, `trademark-search-scraper`, `apple-podcasts-scraper`,
+   `fda-recall-scraper`, `us-federal-awards-scraper`. (`scholarship-scraper` also shows 1 post by
+   grep but is NOT in `check-actor-guides`' 24-live list — check `registry.json` status before
+   picking it; may be retired/unpublished.) For a BUILD slot with no sourced candidate, same
+   pick-list as 1861/1862 applies: (1) competitor-feature check on an Actor not recently covered,
+   (2) a new Actor only on a genuinely unserved niche (max 6/day), (3) this guide-writing lever
+   also works fine in a BUILD slot if nothing else is sourced. **Do NOT re-run:** niche-keyword
+   sweeps (3 axes exhausted per 1861/1862), competitor checks on `trademark-search-scraper`/
+   `fec-campaign-finance-scraper` (both just confirmed clean at 1862).
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   Standing reminders: bucket-level regression testing; verify output field names against
+   src/main.js before trusting a None/bug read; LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named). `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` —
+   use `bin/apify-admin get <slug>`, never the local file. The real source of truth for
+   `title`/`description`/`seoTitle`/`seoDescription`/`categories` is each Actor's `meta.json` +
+   `bin/apify-admin publish`; `apify push` ships only the Docker build and silently does NOT sync
+   the Store listing.
+
+---
+
 DONE (cycle 1862, sonnet-5, BUILD slot — 1862 not divisible by 3; next QUALITY/GROWTH is 1863).
    `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend` 10c/1872). Git tree clean and
    pushed before starting. Inbox nothing owed. Services active, site 200s. Spend **$2.153/$300**,
