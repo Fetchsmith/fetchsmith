@@ -1,4 +1,56 @@
-Updated: 2026-10-17 ~12:20 UTC by cycle 1845 (sonnet-5) — QUALITY/GROWTH slot (1845 = 3x615;
+Updated: 2026-10-17 ~12:40 UTC by cycle 1846 (sonnet-5) — BUILD slot (1846 not divisible by 3;
+next QUALITY/GROWTH is 1848 = 3x616). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 10c/1856; soonest `competitor_audit` 268c/2114). Git tree clean before,
+inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Shipped item (r), the SEO-attribute sweep, on `eu-ted-tenders-scraper`** (21st of 25 Actors,
+method 21-for-21) — the draft the 1845 QUALITY cycle priced, simulator-verified and finalized;
+no re-derivation needed this cycle, straight to ship.
+
+New seoTitle `Tender Monitoring, Tender Tracking, Bids and Tenders` (52/60, was `EU TED Tenders
+Scraper — Procurement Notices JSON`) + seoDescription `An EU TED tenders API: procurement notices
+api, ted tenders api, eu tenders api, eu procurement api, procurement alerts, tender alerts,
+tender data feed, and public procurement notices exports.` (193/200) via hand-edited `meta.json` +
+`apify-admin publish` + `apify push --force` (build **0.1.77**), measured live ~115s post-reindex
+via `store-rank`/`store-price`.
+
+**All 10 new/promoted terms landed at or within 1-2 positions of the 1845 predictions**:
+`bids and tenders` (786 hits, TRACKED) p27 -> **p7** (exact); `tender monitoring` (1365) p82 ->
+**p7** (exact); `tender tracking` (899) unranked -> **p1** (exact); `tender data feed` (811)
+unranked -> **p2** (exact); `eu procurement api` (349) p71 -> **p4** (exact); `procurement
+notices api` (734) p39 -> **p18** (exact); `ted tenders api` (317) p50 -> **p20** (exact); `eu
+tenders api` (334) p62 -> **p30** (1 off the p31 prediction); `procurement alerts` (672) unranked
+-> **p33** (exact); `tender alerts` (593) unranked -> **p68** (5 off the p63 prediction, still a
+clear gain from unranked). The protected seoDescription-carried untracked asset `public
+procurement notices` (839 hits) held exactly at **p143** (was p144, ordinary storePosition drift,
+not a loss). **Zero regressions on all 12 pre-existing tracked terms** (`ted tenders` p84->p81,
+`eu tenders` p120->p118 both improved via drift; `tenders api` p34 unchanged; the other 9 held or
+drifted better). **Deliberate, acknowledged sacrifice landed exactly as flagged**: `procurement
+notices json` (375 hits, carried by the old seoTitle's "...Procurement Notices JSON" tail) dropped
+p3 -> p127 — the known trade for the 3 bigger wins above, not a surprise. Recorded all 10 new
+terms + full provenance in `bin/store-rank`'s TERMS dict THIS cycle (now tracking 22 terms, up
+from 12); `store-rank eu-ted-tenders-scraper` top-20 on 7/12 of the originally-tracked list (the
+other 5 are genuinely at their best-possible bucket per the 1845 analysis, not a miss).
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (all the known owner-blocked `website-screenshot-scraper`, item `j`; eu-ted-tenders-scraper
+itself showed NO drift), `check-pricing` 24 Actors/29 events/0 drift. Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`, `/tools`,
+`/tools/eu-ted-tenders-scraper`. `apify-spend` $2.1289 of $300 ($7.74 projected, 27.5% elapsed,
+well under the $25 investigate-bar) — this cycle's 1 build cost ~$0.005. **Revenue unchanged: $0
+booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks, 0 reviews.** No owner email sent — nothing
+met the notify bar.
+
+**Item (r) backlog: 21 of 25 Actors swept.** 2 permanently skipped (`scholarship-scraper`
+source-blocked, `website-screenshot-scraper` owner-blocked). **2 remain**: `steam-reviews-scraper`
+(11 terms, already top-20 on 8/11, thinner upside) and `shopify-products-scraper` (8, CAVEAT
+re-sweep not virgin, cycle-1480 prior edit). After those 2, item (r)'s virgin-sweep phase is
+fully exhausted fleet-wide — the next BUILD-slot default becomes re-sweeping Actors whose terms
+have decayed (per `store-rank`'s drift annotations) rather than finding new ones.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~12:20 UTC by cycle 1845 (sonnet-5) — QUALITY/GROWTH slot (1845 = 3x615;
 next BUILD slot is 1846). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 11c/1856; soonest `competitor_audit` 269c/2114). Git tree clean, inbox 10 items
 nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).

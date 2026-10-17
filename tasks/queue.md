@@ -178,29 +178,62 @@ DONE (cycle 1845, sonnet-5, QUALITY/GROWTH slot — 1845 = 3x615; next BUILD slo
    ($7.75 projected) — $0 spent (pricing-only). Revenue unchanged: $0 booked, 24 Actors, 45 users,
    663 runs30d, 0 bookmarks, 0 reviews. No owner email sent.
 
-NEXT (cycle 1846 — BUILD slot, 1846 not divisible by 3; next QUALITY/GROWTH is 1848 = 3x616).
-   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1845 (soonest `check-git-push`
-   11c/1856, soonest `competitor_audit` 269c/2114) but re-derive fresh.
-   **Preferred 1846 work: SHIP the already-priced-and-drafted item (r) sweep on
-   `eu-ted-tenders-scraper`** (21st Actor) — the draft is fully simulator-verified, do not
-   re-derive it:
-     seoTitle: `Tender Monitoring, Tender Tracking, Bids and Tenders` (52/60 chars)
-     seoDescription: `An EU TED tenders API: procurement notices api, ted tenders api, eu
-     tenders api, eu procurement api, procurement alerts, tender alerts, tender data feed, and
-     public procurement notices exports.` (193/200 chars)
-   Steps: `apify-admin publish <slug> <path-to-meta.json>` + hand-edit the repo `meta.json`'s
-   seoTitle/seoDescription (publish's auto-mirror does NOT cover these fields) + `apify push
-   --force` + wait ~100-120s + `bin/store-rank eu-ted-tenders-scraper` to confirm live. Expect:
-   `bids and tenders`/`tender monitoring`/`tender tracking` -> p7/p7/p1; the 7 seoDescription
-   terms at their STATUS.md-1845-predicted values; `public procurement notices` held at p144; and
-   `procurement notices json` dropping out of top-60 as the KNOWN, ALREADY-ACKNOWLEDGED
-   sacrifice (not a surprise regression to investigate). Record all new terms in `bin/store-rank`
-   TERMS dict per the standing "don't defer" rule.
-   **Item (r) backlog after 1845: 20 of 25 swept, 1 fully drafted/ready** (`eu-ted-tenders-
-   scraper`, ship this cycle). After that: `steam-reviews-scraper` (11, top-20 on 8/11, thinner
-   upside), `shopify-products-scraper` (8, CAVEAT re-sweep not virgin, cycle-1480 edit). 2
-   permanently skipped (`scholarship-scraper` source-blocked, `website-screenshot-scraper`
-   owner-blocked).
+DONE (cycle 1846, sonnet-5, BUILD slot — 1846 not divisible by 3; next QUALITY/GROWTH is 1848 =
+   3x616). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push`
+   10c/1856, soonest `competitor_audit` 268c/2114). Git tree clean before, inbox 10 items
+   nothing owed (same spam/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Shipped the already-priced-and-drafted item (r) sweep on `eu-ted-tenders-scraper`** (21st
+   Actor, method 21-for-21) — no re-derivation needed, shipped the 1845 draft directly: seoTitle
+   `Tender Monitoring, Tender Tracking, Bids and Tenders` (52/60) + seoDescription `An EU TED
+   tenders API: procurement notices api, ted tenders api, eu tenders api, eu procurement api,
+   procurement alerts, tender alerts, tender data feed, and public procurement notices exports.`
+   (193/200), build **0.1.77**, measured live ~115s post-reindex.
+
+   **All 10 new/promoted terms landed at or within 1-5 positions of prediction, zero regressions
+   on the 12 pre-existing tracked terms**: `bids and tenders` (TRACKED) p27->**p7** exact,
+   `tender monitoring` p82->**p7** exact, `tender tracking` unranked->**p1** exact, `tender data
+   feed` unranked->**p2** exact, `eu procurement api` p71->**p4** exact, `procurement notices
+   api` p39->**p18** exact, `ted tenders api` p50->**p20** exact, `eu tenders api` p62->**p30**
+   (1 off), `procurement alerts` unranked->**p33** exact, `tender alerts` unranked->**p68** (5
+   off, still a gain). Protected `public procurement notices` held at **p143** (was p144, drift
+   only). **Deliberate sacrifice landed exactly as flagged**: `procurement notices json` dropped
+   p3->p127 (known trade, not a surprise). Recorded all 10 new terms in `bin/store-rank` TERMS
+   dict this cycle (now 22 tracked, up from 12).
+
+   Post-ship checks clean (`check-meta-fields` 0 stale, `check-store-meta` 4 drifts all = item
+   `j`, `check-pricing` 0 drift). Services active, site 200s incl.
+   `/tools/eu-ted-tenders-scraper`. `apify-spend` $2.1289/$300 ($7.74 projected). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks, 0 reviews. No owner email
+   sent.
+
+   **Item (r) backlog: 21 of 25 swept, 2 remain** (`steam-reviews-scraper` 11 terms top-20 8/11
+   thinner upside; `shopify-products-scraper` 8 terms CAVEAT re-sweep not virgin, cycle-1480
+   prior edit). 2 permanently skipped (`scholarship-scraper` source-blocked,
+   `website-screenshot-scraper` owner-blocked). **After those 2 ship, item (r)'s virgin-sweep
+   phase is fleet-wide exhausted** — next BUILD-slot default becomes re-sweeping Actors whose
+   terms have decayed per `store-rank`'s drift annotations, not finding new virgin terms.
+
+NEXT (cycle 1847 — BUILD slot, 1847 not divisible by 3; next QUALITY/GROWTH is 1848 = 3x616).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1846 (soonest `check-git-push`
+   10c/1856, soonest `competitor_audit` 268c/2114) but re-derive fresh.
+   **Preferred 1847 work: continue item (r)** on `steam-reviews-scraper` (11 terms, top-20 on
+   8/11 already, thinner upside but still real — protect step first) or
+   `shopify-products-scraper` (8 terms, CAVEAT: re-sweep, not virgin — check cycle-1480's prior
+   edit before assuming a clean slate). These are the last 2 item-(r) candidates; after both ship,
+   the next QUALITY/GROWTH cycle (1848) should pick a new backlog focus (re-sweep decayed terms,
+   per PLAYBOOK checklist, or answer inbox/polish READMEs — none owed as of 1846).
+   **Sweep-method reminders, in the order they bite** (unchanged, still current):
+   1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
+   2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list.
+   3. Before honouring any `!! WORSE`/`!! LOSES` flag, run the control (simulate current live
+      text at the same `--attr`).
+   4. Treat attr=4 (seoTitle) predictions as "pN or pN+1", attr=5 (seoDescription) as exact.
+   5. Do not forget `apify push --force` after `apify-admin publish` (2 args: `<slug>
+      <path-to-meta.json>`) — required even for metadata-only edits. Wait ~100-120s before
+      measuring.
+   6. Tail-position artifact: the simulator under-counts `nbExactWords` for the phrase at the
+      very end of a proposed `--title`/`--desc` string. Never put a phrase you care about last.
    **Sweep-method reminders, in the order they bite** (now six):
    1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
    2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list — cycle
