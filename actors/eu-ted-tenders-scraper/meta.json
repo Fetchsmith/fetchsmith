@@ -2,7 +2,7 @@
   "title": "Tender Data API – EU European Tenders, TED Europa, CPV Codes",
   "description": "Search the EU's official TED public-procurement journal by country, CPV code, date or open submission deadline. Returns clean, deduplicated JSON in your choice of 24 EU languages: buyer, value, deadlines, CPV codes and notice link. Includes tender notices, contract awards and corrigenda.",
   "seoTitle": "Tender Monitoring, Tender Tracking, Bids and Tenders",
-  "seoDescription": "An EU TED tenders API: procurement notices api, ted tenders api, eu tenders api, eu procurement api, procurement alerts, tender alerts, tender data feed, and public procurement notices exports.",
+  "seoDescription": "An EU government tenders API: procurement notices api, ted tenders api, eu tenders api, eu procurement api, procurement alerts, tender alerts, tender data feed, and public procurement notices exports.",
   "categories": ["LEAD_GENERATION", "OTHER"],
   "events": {
     "result": { "eventTitle": "Result item", "eventDescription": "One normalized procurement notice returned to the dataset.", "eventPriceUsd": 0.0015 }
