@@ -216,6 +216,7 @@ Built by [FetchSmith](https://fetchsmith.com) — fast, HTTP-only scrapers with 
 ## Related guides
 Engineering write-ups behind this Actor:
 - [Apple Podcasts has a public JSON API — four endpoints, no key, and one that doesn't exist](https://fetchsmith.com/blog/apple-podcasts-public-json-api)
+- [Apple's podcast API tells you a show has 2,752 episodes and then hands you 44](https://fetchsmith.com/blog/apple-podcasts-episode-archive-is-not-there) — the episode ceiling is 200 and clamps silently, `offset` is inert everywhere, and for high-frequency shows the index is decimated rather than truncated; use `useRssForFullArchive`, and compare `episodeCount` against the rows you got.
 - [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the fleet-wide survey of watch-mode failure shapes across all nineteen incremental Actors, this one included.

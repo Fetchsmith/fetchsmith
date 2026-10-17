@@ -58,7 +58,9 @@ Each episode row carries ~26 fields, and the valuable one is **`episodeUrl`: the
 
 Watch the naming here: there is no `audioUrl` field. The MP3 is `episodeUrl` and the Apple page is `trackViewUrl` — we got this backwards on our first pass and only caught it by reading a real dataset row instead of trusting the field name we expected.
 
-`limit` caps out well before "every episode ever", so this endpoint is a recent-episodes feed, not a full archive. For a complete back catalogue, take `feedUrl` from the show record and parse the publisher's own RSS.
+`limit` caps out well before "every episode ever", so this endpoint is a recent-episodes feed, not a full archive. For a deeper back catalogue, take `feedUrl` from the show record and parse the publisher's own RSS.
+
+**Updated 2026-10-17** — this paragraph was too vague in one direction and wrong in the other, and we [measured both](/blog/apple-podcasts-episode-archive-is-not-there). The ceiling is exactly **200 episodes**, clamped silently: `limit=201`, `300` and `1000` all return a byte-identical 200-episode body with no error. `offset` is inert on `/lookup` *and* `/search`, for podcasts and for music alike, so there is no paging past it. Worse, for some high-frequency shows the index is *decimated* rather than truncated — The Daily (`trackCount: 2752`) returns **44** episodes spanning 307 days, weekly at the old end and daily at the new one, so per-period stats computed from it are badly wrong with no missing-data signal. And this paragraph originally said RSS gives you a *complete* back catalogue: it does not. Publishers trim their own feeds (NPR's Up First keeps 500 of 1,425; The Daily keeps 66 of 2,752). RSS is deeper, not complete. Compare the show row's `trackCount` against the episode rows you actually received — that's a free truncation detector in the response you already have.
 
 ## 5. Reviews — the RSS-JSON hybrid, and its quirk
 

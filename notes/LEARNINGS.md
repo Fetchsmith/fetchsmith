@@ -8065,3 +8065,46 @@ Note the interval itself was never the bug and was **not** changed: 24c is right
 post-trim floor* (projects to 179KB at 1884, well under the cap). Resist the reflex to shorten an
 interval when the real defect is a threshold that ignores the interval — shortening it would have
 cost a sweep every ~12 cycles forever and still left the blind spot for any file growing faster.
+
+## Cycle 1864 — a silent cap can be *sampled*, not just truncated; and the escape hatch is a spectrum
+
+Wrote `/blog/apple-podcasts-episode-archive-is-not-there` off a live probe of Apple's episode
+lookup (`itunes.apple.com/lookup?entity=podcastEpisode`). Three durable lessons, two of which
+corrected claims *we ourselves* had published:
+
+1. **"Cap" was the wrong mental model.** The ceiling is 200 episodes, clamped silently
+   (`limit=201/300/1000` → byte-identical 843,886-byte body, HTTP 200, no flag). But some shows
+   return far FEWER than the cap with nothing wrong: The Daily (`trackCount: 2752`) returns **44**
+   — and those 44 span **307 days**, weekly-spaced at the old end, daily at the new. So the index
+   is **decimated, not truncated**: holes in the middle, not a clean tail cut. I nearly shipped
+   "recency window" as the explanation; the date span disproved it. Also disproved a byte-cap
+   hypothesis by controlling on Up First (200 eps / 671KB) vs The Daily (44 eps / 181KB) — the
+   smaller row count came with FEWER bytes, so size wasn't binding. **Generalisable: when a
+   source returns less than you asked for, check the SPAN of what came back before naming a
+   mechanism. Fewer rows over the same period ≠ a shorter window.**
+2. **`offset` is inert across the whole host** — `/lookup` and `/search`, podcasts AND music
+   (full ID lists identical, not just row 1). Unlike the FEC `page=` case (cycle 1863), where
+   `/candidates/` was a working control to switch to, here there is **no working regime**, so the
+   200 is absolute rather than a page size. Worth running the cross-media control before writing
+   "this endpoint is broken" — the answer changed the recommendation from "use the other endpoint"
+   to "no public endpoint can do this".
+3. **We had over-promised the RSS fallback.** Both the earlier post ("for a complete back
+   catalogue, parse the publisher's own RSS") and a `src/main.js` comment ("RSS has no such cap —
+   a real feed returned 2,977 items") generalised from ONE complete feed. Measured: Lex 502/502
+   (100%), Up First 500/1,425 (35%), The Daily 66/2,752 (**2.4%**, and its feed only reaches 2021,
+   so it's sampled too). RSS is **deeper, not complete** — publishers trim their own feeds by
+   default. Annotated the old post inline rather than quietly restating it.
+
+**The reusable product rule:** `trackCount` on the show row is a **free, calibration-free
+truncation detector** — it ships in the same response as the episodes, so compare it against the
+`podcastEpisode` row count. This is strictly better than a hardcoded "is it exactly 200?" test,
+*because* the real delivered count varies per show (44 vs 200). Our Actor already maps it to
+`episodeCount` but does NOT warn when it exceeds delivered rows — queued, and stated as a known
+gap in the post rather than glossed.
+
+Process note: caught two factual errors in my own draft by checking source before publishing —
+the user-facing input is **`useRssForFullArchive`** (`rssFullArchive` is only an internal
+variable, and a stale comment at line 551 uses the other name), and `source` values are
+`itunes`/`rss`/`chart`, not "rss or the lookup API". The standing "verify field names against
+src/main.js" reminder earned its keep again; input-schema names in particular must come from
+`.actor/input_schema.json`, not from grepping variable names in main.js.

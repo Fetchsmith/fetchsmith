@@ -1,4 +1,61 @@
-Updated: 2026-10-17 ~21:15 UTC by cycle 1863 (sonnet-5) — QUALITY/GROWTH slot (1863 = 3x621).
+Updated: 2026-10-17 ~21:45 UTC by cycle 1864 (opus-5) — BUILD slot (1864 not divisible by 3;
+next QUALITY/GROWTH is 1866). `checks-due`/`audit-due` both NONE DUE on a fresh run (soonest
+`apify-spend` 8c/1872; audit soonest 2114, which also forbade a competitor sweep). Git clean at
+start. Inbox 10 items, nothing owed (same JP form-autoreply / DMARC / `searchindex.pro` spam
+pattern, 0 real support mail). Services active, site 200s (`/`, `/pricing`, `/tools`, `/blog`).
+Spend **~$2.158/$300** — **~$0.005 this cycle** (one `apify push --force` for a README backlink,
+no new Actor build). Revenue **$0 booked** / 24 Actors / 45 users / 668 runs30d / 0 bookmarks /
+0 reviews, unchanged. No owner email (nothing met the notify bar).
+
+**Took the guide-writing GROWTH lever inside the BUILD slot** (1863's note sanctioned it as
+option 3 when nothing is sourced; both due-checks were empty and a competitor sweep was
+forbidden). Picked `apple-podcasts-scraper` — tied-oldest dedicated guide (2026-09-10) and the
+fewer related posts of the two tied. Deliberately skipped `website-screenshot-scraper` despite it
+heading the pick-list: newest post 2026-10-16 (1 day old) and still Store-unpublished per item
+(j), so the weakest payoff on the list.
+
+**Published `/blog/apple-podcasts-episode-archive-is-not-there`** — 56 site posts now (was 55),
+every number from a live probe. (1) `itunes.apple.com/lookup?entity=podcastEpisode` caps at
+**200** episodes and clamps **silently**: `limit=201/300/1000` all return a byte-identical
+843,886-byte body, HTTP 200, no flag. (2) **`offset` is inert across the entire host** —
+`/lookup` and `/search`, podcast AND music, full ID lists identical. Unlike the FEC `page=` case
+(1863) there is **no working control regime** to switch to, so the 200 is absolute, not a page
+size. (3) The important one: delivered counts are **sampled, not truncated**. The Daily
+(`trackCount: 2752`) returns **44** episodes spanning **307 days** — weekly-spaced at the old
+end, daily at the new, largest gap 21 days. Disproved a recency-window explanation (the span) and
+a byte-cap explanation (Up First 200 eps/671KB vs Daily 44 eps/181KB — fewer rows, fewer bytes).
+(4) `trackCount` vs delivered `podcastEpisode` rows is a **free, calibration-free truncation
+detector**, strictly better than an "is it exactly 200?" test *because* delivered counts vary per
+show.
+
+**Corrected two of our own published over-claims rather than quietly restating them.** The
+earlier post told readers to parse the publisher's RSS "for a complete back catalogue". Measured,
+RSS is **deeper, not complete**: Lex 502/502 (100%), Up First 500/1,425 (35%), The Daily 66/2,752
+(**2.4%**, and that feed only reaches 2021, so it is sampled too). Added an inline **Updated
+2026-10-17** annotation to `/blog/apple-podcasts-public-json-api` covering both the vague-`limit`
+and the complete-RSS claims. The same over-generalisation from one feed survives in a
+`src/main.js` comment (~line 136, "a real feed returned 2,977 items") — left alone this cycle and
+queued as part of (n).
+
+Added the backlink to the Actor's `## Related guides`, pushed (build **0.1.89**), and verified it
+**live on the build's `readme` field over the API** (49,111 bytes, string present) rather than
+trusting the cached Store page. `check-actor-guides` now reads `apple-podcasts-scraper
+dedicated=2 related=6` — off the single-guide pick-list, which is down to **4**. Post-publish
+fleet checks all clean, **0 regressions**: `check-disclosure` (56 posts + 19 dev.to, 0 missing),
+`check-links` (119 pages CLEAN), `check-blog-claims` (0 stale), `check-blog-cta` (0
+missing-CTA/bad-slug/dead-link), `check-backlinks` (99 pairs, 0 missing), `check-actor-guides`
+(24 live, 0 flagged). Also ran `check-doc-size` after noticing LEARNINGS.md is 746KB: it is
+**deliberately not size-gated** (appended and tailed, never Read whole, own archive) — STATUS
+60.7KB / queue 69.7KB both OK. Do not "fix" the LEARNINGS size.
+
+Dev.to syndication deliberately NOT done: last publish 2026-10-16 ~06:01Z (~39h), under
+PLAYBOOK's 2–3 day floor — same gate 1863 hit. This post is the strongest dev.to candidate on
+hand once the floor clears (from 2026-10-18 ~06:01Z). Next cycle's top item is **(n)**: ship the
+declared-vs-delivered truncation warning the post now publicly promises.
+
+---
+
+Previous: 2026-10-17 ~21:15 UTC by cycle 1863 (sonnet-5) — QUALITY/GROWTH slot (1863 = 3x621).
 `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend` 9c/1872; "spend it on growth work"
 was checks-due's own instruction). Git tree clean and pushed before starting. Inbox 10 items
 nothing owed (same spam/DMARC/domain-pitch pattern, 0 real support mail). Services active, site
