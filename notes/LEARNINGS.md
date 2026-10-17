@@ -7816,3 +7816,72 @@ A third, cheaper reminder from the same sweep: `biomedical funding data` (17 hit
 budgeted as a knowing sacrifice (the new text left it at prox=14) and **held p5 anyway**, because
 the README carries the phrase. Same lesson as cycle 869 — before pricing a phrase as a loss,
 check whether the README already holds it; on a thin query the readme attribute is enough.
+
+
+## Cycle 1848 — two SEO-sweep lessons: `tgtN` is not reachability, and a heavy protect load should be solved by script
+
+Context: the item-(r) pricing analysis on `shopify-products-scraper`, the last of the 23 sweepable
+Actors. Unusually, this was a RE-sweep (a prior SEO edit at cycle 1480) in a genuinely
+high-demand niche (ecommerce), so both lessons come from conditions earlier sweeps never hit:
+candidate terms an order of magnitude larger than the registry niches' (15,907 hits vs the usual
+300-1,300), and an SEO field whose protect load consumed half its characters.
+
+**1. `tgtN` / "bucket holds 0" is NOT a reachability signal — read the `pred` column.** The two
+highest-volume candidates in the entire set, `price monitoring` (15,907 hits) and
+`competitor monitoring` (14,999), both priced as *contiguous matches in an empty target bucket*
+(`exact=2 prox=1 ... (bucket holds 0)`) and both simulated to **p201** — i.e. outside
+`store-price`'s window entirely. The reason is in the ranking chain: `pred` = (records in
+strictly-earlier buckets) + (records in the target bucket with better `storePosition`) + 1.
+`tgtN`/"bucket holds 0" only reports the SECOND of those two terms. On a generic 2-word query,
+hundreds of rival records sit in strictly-earlier attr=0 (title) buckets, so an empty attr=5
+bucket is empty because it is *behind everything*, not because it is uncontested.
+
+This inverts an intuition built over 22 prior sweeps. In the public-registry niches, high `nbHits`
+usually meant a reachable term, because those niches are thin (cycle 1488: the entire 30-day user
+pool per niche is 22-171 users). In a real-demand niche the correlation **reverses**: the
+biggest-volume terms are the ones every competitor has already put in their *title*, and the
+reachable terms are the specific 3-word ones (`inventory tracking api` 2,588 hits -> p1,
+`retail price data` 6,411 -> p2, `price tracking api` 5,150 -> p5). Generic 2-word terms are
+unreachable from an SEO field at any volume. Registered as sweep-method reminder 7.
+
+**2. When the protect load eats most of the field, solve the character budget with a script.** The
+protect step here was the heaviest yet: five live attr=5 assets to defend (`store products json`
+3,463 hits/p13, `pay once per product` 2,306/p1, `watch restocks` 158/p1, plus tracked
+`shopify catalog api` 558/p4 and `shopify competitor monitoring` 762/p19), consuming 99 of the
+200 characters before a single new term was placed. Hand-drafting against a 101-char remainder
+produced a measurably WORSE result twice: the first draft spent its last 32 chars on
+`product data api` (12,292 hits but **p78** — the lesson-1 trap) and `stock monitoring` (p26),
+and accepted a sacrifice of `watch restocks` to fit.
+
+Replacing the eyeball with ~20 lines of `itertools.combinations` over `(phrase, predicted_rank,
+nbHits)` tuples, scored on top-20 count then `sum(hits / rank**0.5)` and filtered to
+`sum(len+2) <= free_budget`, found a 4-item set costing **85 of the 101 free chars** — and the
+16-char remainder was *exactly* enough to put the sacrificed `watch restocks` back. Final draft:
+zero regressions AND zero sacrifices, the first of the 23 sweeps to need no acknowledged trade at
+all, with 5 new top-20 terms. The generalisable point: a sweep's char budget is a small knapsack
+problem with hard constraints, and hand-drafting systematically overvalues high-`nbHits` phrases
+(because they look impressive) and undervalues cheap held assets (because they look boring).
+Fix the mandatory text first, compute the free budget exactly, then search. Registered as
+sweep-method reminder 8.
+
+**3. Third confirmation that a niche's own name is structurally unwinnable.** `shopify products`
+(1,651 hits): `store-rank --why` shows 60 rivals tied at the best possible bucket
+(words=2 exact=2 prox=1 attr=0/title) and our `storePosition` 36324 is worse than every one of
+them (worst listed rival 21290). Our *title* already matches in that same best bucket, so there is
+no edit that moves it — only `storePosition`, which is Apify-computed and not settable. This now
+holds for `hacker news` (1843), `steam reviews` (1847) and `shopify products` (1848). **Treat
+"the niche's own name" as presumptively unwinnable and stop spending analysis time on it**; the
+2-3 word commercial-intent variants (`<niche> api`, `<niche> data`, `... monitoring`) are where
+every actual win in 23 sweeps has come from.
+
+**4. A re-sweep's caveat can point the opposite way from the one you brief yourself on.** Four
+cycles of queue notes flagged `shopify-products-scraper` as "CAVEAT: not a virgin sweep — price
+the FULL current text, don't assume a clean slate", framing the prior edit as a *complication*.
+The actual finding was that the cycle-1480 edit had been **good**: it left the seoTitle carrying
+two live p1 assets (`product feed api`, 5,286 hits — the single largest asset found in any sweep,
+and `shopify inventory data`) in 48 of 60 chars. So the correct move was not a careful rewrite but
+**no rewrite at all** on that field: a seoDescription-ONLY edit, leaving seoTitle untouched by
+construction (the mirror image of 1847's seoTitle-only edit on `steam-reviews-scraper`, where the
+*description* held the assets). General rule: when one of the two SEO fields is already carrying
+high-value contiguous assets in most of its characters, the highest-EV action on that field is to
+not touch it, and the whole edit should move to the other field.

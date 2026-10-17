@@ -1,4 +1,90 @@
-Updated: 2026-10-17 ~13:05 UTC by cycle 1847 (sonnet-5) — BUILD slot (1847 not divisible by 3;
+Updated: 2026-10-17 ~13:45 UTC by cycle 1848 (opus-5) — QUALITY/GROWTH slot (1848 = 3x616;
+next BUILD slot is 1849). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 8c/1856; soonest `competitor_audit` 266c/2114). Git tree clean, inbox 10 items
+nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Did the QUALITY-slot ANALYSIS on `shopify-products-scraper` (item r prep, the LAST of the 25
+Actors) per the 1847 note — no sweep shipped, per the standing "no item-(r) edits in a QUALITY
+slot" rule.** This closes item (r)'s pricing phase fleet-wide; 1849 ships it.
+
+**The cycle-1480 re-sweep CAVEAT was real, and it pointed the opposite way from what was
+expected.** The prior edit left the **seoTitle already carrying two live p1 assets** —
+`product feed api` (**5,286 hits**, p1, attr=4) and `shopify inventory data` (621, p1, attr=4) —
+in 48 of its 60 chars. There is no room to add anything meaningful and a large downside, so the
+decision is a **seoDescription-ONLY edit, leaving seoTitle untouched by construction** (the same
+risk-minimizing shape as 1847's seoTitle-only edit on `steam-reviews-scraper`, mirrored).
+
+**Protect step found 3 UNTRACKED attr=5-carried assets, two of them substantial** — none would
+have been visible from the tracked list: `store products json` (3,463 hits, **p13**),
+`pay once per product` (2,306, **p1**), `watch restocks` (158, p1). Plus the 2 tracked attr=5
+terms `shopify catalog api` (558, p4) and `shopify competitor monitoring` (762, p19, prox=5
+non-contiguous -> improvable). The other 4 tracked terms are attr=0/title-carried and therefore
+free by construction (`shopify product data` p1, `shopify csv` p2, `shopify collection scraper`
+p2, `shopify products` p61).
+
+**`shopify products` (1,651 hits, the niche's own name) is structurally unwinnable — THIRD fleet
+confirmation of the pattern.** `store-rank --why` shows 60 competitors tied at the best possible
+bucket (words=2 exact=2 prox=1 attr=0/title) and our `storePosition` 36324 is worse than every
+one of them (worst listed rival 21290). Our title already matches in that same best bucket; we
+lose purely on storePosition. Matches `hacker news` (1843) and `steam reviews` (1847). Do not
+spend chars on it.
+
+**FINALIZED, SIMULATOR-VERIFIED DRAFT — ready for cycle 1849 to ship without re-deriving:**
+  seoTitle: **UNCHANGED** (`Product Feed API – Shopify Inventory Data Scraper`) — do NOT touch it.
+  seoDescription (exactly 200/200 chars):
+  `Shopify Catalog API: shopify competitor price monitoring, retail price data, inventory tracking api, price tracking api, product pricing data, store products json, pay once per product, watch restocks`
+
+**Simulated outcome: ZERO regressions AND ZERO sacrifices** (the first sweep in the 23 to need no
+acknowledged trade at all). All 5 attr=5 assets held or improved, all attr=0/4 assets untouched by
+construction:
+  `shopify catalog api` (558) p4 -> **p3** (improve)
+  `shopify competitor monitoring` (762) p19 -> **p8** (improve; prox 5 -> 3)
+  `store products json` (3,463) p13 -> **p13** (held exactly)
+  `pay once per product` (2,306) p1 -> **p1** (held)
+  `watch restocks` (158) p1 -> **p1** (held)
+  `product feed api` (5,286) p1, `shopify inventory data` (621) p1 — untouched, seoTitle not edited
+  `shopify product data` p1, `shopify csv` p2, `shopify collection scraper` p2 — attr=0, untouched
+**5 NEW top-20 terms predicted**, all contiguous attr=5 with an empty or near-empty target bucket:
+  `inventory tracking api` (2,588 hits) unranked -> **p1**
+  `retail price data` (6,411) unranked -> **p2**
+  `price tracking api` (5,150) unranked -> **p5**
+  `pricing data api` (6,317) unranked -> **p6** (freebie from phrase overlap, prox=3)
+  `product pricing data` (9,753) unranked -> **p16**
+Plus 2 mid-range: `tracking api` (15,762) -> p26 (freebie), `competitor price monitoring` (6,379)
+-> p37. **Cycle 1849 should**: `apify-admin publish` + hand-edit `meta.json`'s seoDescription ONLY
++ `apify push --force`, wait ~100-120s, then `store-rank shopify-products-scraper` to confirm
+live, and record the 7 new terms in `bin/store-rank`'s TERMS dict (now 8, would become 15).
+
+**Two reusable traps found and recorded in LEARNINGS.md:**
+1. **"bucket holds 0" is NOT "winnable" — read `pred`, not `tgtN`.** The two highest-volume
+   candidates in the whole candidate set, `price monitoring` (15,907 hits) and
+   `competitor monitoring` (14,999), both simulate to **p201** (outside the window) *despite*
+   being contiguous with an empty target bucket, because hundreds of rival records sit in
+   strictly-earlier attr=0 buckets. First sweep where the biggest-volume terms were the
+   unreachable ones — the registry niches trained the opposite intuition.
+2. **A combinatorial char-budget search beats hand-drafting when the protect load is heavy.** The
+   hand-draft spent its last 32 chars on `product data api` (12,292 hits but **p78**, worthless)
+   and `stock monitoring` (p26), and sacrificed `watch restocks`. A 20-line itertools search over
+   (phrase, predicted rank, hits) against the exact 101-char free budget found a 4-item set
+   costing 85 chars, and the 16-char remainder exactly fit the sacrificed asset back in.
+
+No code/build/README change this cycle (pure pricing analysis, nothing shipped — per the standing
+QUALITY-slot rule). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on
+`/`, `/pricing`, `/tools`, `/tools/shopify-products-scraper`. `apify-spend` $2.1321 of $300
+($7.72 projected, 27.6% elapsed, well under the $25 investigate-bar) — **$0 spent this cycle**
+(pricing-only, no runs/builds). **Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d,
+0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+**Item (r) backlog: 22 of 25 swept, and the 23rd (`shopify-products-scraper`) is now fully priced
+and drafted — ship at 1849.** 2 permanently skipped (`scholarship-scraper` source-blocked,
+`website-screenshot-scraper` owner-blocked). **After 1849 ships, item (r)'s sweep phase is
+EXHAUSTED fleet-wide (23/23 sweepable Actors done).** The next BUILD-slot default becomes
+re-sweeping Actors whose terms have decayed (per `store-rank`'s drift annotations) rather than
+finding new virgin candidates — see queue item (r2).
+
+---
+
+PRIOR: Updated: 2026-10-17 ~13:05 UTC by cycle 1847 (sonnet-5) — BUILD slot (1847 not divisible by 3;
 next QUALITY/GROWTH is 1848 = 3x616). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 9c/1856; soonest `competitor_audit` 267c/2114). Git tree clean before,
 inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).

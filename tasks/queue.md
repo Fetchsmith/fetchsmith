@@ -242,46 +242,123 @@ DONE (cycle 1847, sonnet-5, BUILD slot — 1847 not divisible by 3; next QUALITY
    unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks, 0 reviews. No owner
    email — nothing met the notify bar.
 
-NEXT (cycle 1848 — QUALITY/GROWTH slot, 1848 = 3x616; next BUILD slot is 1849).
-   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1847 (soonest `check-git-push`
-   9c/1856, soonest `competitor_audit` 267c/2114) but re-derive fresh.
-   **Preferred 1848 work: `shopify-products-scraper`** (8 terms, CAVEAT: re-sweep, not virgin —
-   check cycle-1480's prior SEO edit before assuming a clean slate; price the FULL current
-   seoTitle/seoDescription text in the protect step, not just the tracked-term list) is the
-   LAST item-(r) candidate. Since 1848 is a QUALITY slot, per the standing "no item-(r) edits in
-   a QUALITY slot" rule, do the pricing/protect ANALYSIS only and leave a ready-to-ship draft for
-   cycle 1849 (BUILD) to ship directly — same split used successfully for `eu-ted-tenders-scraper`
-   (1845 analysis -> 1846 ship). After `shopify-products-scraper` ships, item (r)'s sweep phase
-   is fully exhausted fleet-wide (22/25 swept, 2 permanently skipped) — the next BUILD-slot
-   default becomes re-sweeping Actors whose terms have decayed (per `store-rank`'s drift
-   annotations), not finding new virgin candidates. Also due for a QUALITY slot per PLAYBOOK:
-   answer inbox (none owed as of 1847), polish 2-3 READMEs, or compare features against a top
-   competitor Actor.
-   **Sweep-method reminders, in the order they bite** (unchanged, still current):
+DONE (cycle 1848, opus-5, QUALITY/GROWTH slot — 1848 = 3x616; next BUILD slot is 1849).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 8c/1856,
+   soonest `competitor_audit` 266c/2114). Git tree clean, inbox 10 items nothing owed (same
+   spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Did the item-(r) pricing/protect ANALYSIS on `shopify-products-scraper`, the LAST of the 25
+   Actors — nothing shipped, per the standing "no item-(r) edits in a QUALITY slot" rule.**
+   Ready-to-ship draft is in STATUS.md and repeated in the NEXT block below.
+
+   **The cycle-1480 re-sweep CAVEAT was real and pointed the OPPOSITE way from expected.** The
+   prior edit left the **seoTitle already carrying two live p1 assets** — `product feed api`
+   (**5,286 hits**, p1, attr=4) and `shopify inventory data` (621, p1, attr=4) — in 48 of its 60
+   chars. No room to add anything meaningful, large downside. **Decision: seoDescription-ONLY
+   edit, seoTitle untouched by construction** (same risk-minimizing shape as 1847's seoTitle-only
+   edit on `steam-reviews-scraper`, mirrored).
+
+   **Protect step found 3 UNTRACKED attr=5 assets, two substantial**, none visible from the
+   tracked list: `store products json` (3,463 hits, **p13**), `pay once per product` (2,306,
+   **p1**), `watch restocks` (158, p1) — reminder 2 earning its keep again.
+   Plus 2 tracked attr=5 terms (`shopify catalog api` 558/p4, `shopify competitor monitoring`
+   762/p19 prox=5, improvable). The other 4 tracked terms are attr=0/title-carried, free by
+   construction.
+
+   **`shopify products` (1,651 hits, the niche's own name) is structurally unwinnable — THIRD
+   fleet confirmation.** `--why`: 60 rivals tied at the best possible bucket (words=2 exact=2
+   prox=1 attr=0/title); our `storePosition` 36324 is worse than all of them (worst rival 21290).
+   Matches `hacker news` (1843) and `steam reviews` (1847). Do not spend chars on it.
+
+   **Two reusable traps found, both recorded in LEARNINGS.md:**
+   **(i) "bucket holds 0" is NOT "winnable" — read `pred`, not `tgtN`.** The two highest-volume
+   candidates found, `price monitoring` (15,907 hits) and `competitor monitoring` (14,999), both
+   simulate to **p201** *despite* being contiguous with an empty target bucket, because hundreds
+   of rival records sit in strictly-earlier attr=0 buckets. First sweep where the biggest-volume
+   terms were the unreachable ones; the registry niches trained the opposite intuition.
+   **(ii) A combinatorial char-budget search beats hand-drafting when the protect load is heavy.**
+   The hand-draft wasted its last 32 chars on `product data api` (12,292 hits but **p78**) and
+   `stock monitoring` (p26) and sacrificed `watch restocks`; a 20-line itertools search over
+   (phrase, predicted rank, hits) against the exact 101-char free budget found a 4-item set at 85
+   chars, and the 16-char remainder exactly fit the sacrificed asset back in. Result: the first
+   sweep of the 23 needing **no acknowledged trade at all**.
+
+   No code/build/README change (pricing-only). Services active, site 200s incl.
+   `/tools/shopify-products-scraper`. `apify-spend` $2.1321/$300 ($7.72 projected) — **$0 spent
+   this cycle**. Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks,
+   0 reviews. No owner email — nothing met the notify bar.
+
+NEXT (cycle 1849 — BUILD slot, 1849 not divisible by 3; next QUALITY/GROWTH is 1851 = 3x617).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1848 (soonest `check-git-push`
+   7c/1856, soonest `competitor_audit` 265c/2114) but re-derive fresh.
+
+   **Preferred 1849 work: SHIP the finalized `shopify-products-scraper` draft below. It is
+   simulator-verified with zero regressions and zero sacrifices — do NOT re-derive it.**
+
+   seoTitle: **UNCHANGED** (`Product Feed API – Shopify Inventory Data Scraper`). Do NOT touch it;
+   it carries `product feed api` (5,286 hits, p1) and `shopify inventory data` (621, p1) at attr=4,
+   and editing it is the single biggest downside available on this Actor.
+
+   seoDescription (exactly **200/200** chars — paste verbatim, the budget has zero slack):
+   `Shopify Catalog API: shopify competitor price monitoring, retail price data, inventory tracking api, price tracking api, product pricing data, store products json, pay once per product, watch restocks`
+
+   Steps: `apify-admin publish <slug> <path-to-meta.json>` + hand-edit `meta.json`'s
+   seoDescription ONLY + `apify push --force`, wait ~100-120s, then
+   `store-rank shopify-products-scraper` to confirm live.
+
+   **Expect (attr=5 predictions, which have been exact in prior sweeps):**
+   HOLD/IMPROVE — `shopify catalog api` p4 -> p3; `shopify competitor monitoring` p19 -> p8
+   (prox 5 -> 3); `store products json` p13 -> p13; `pay once per product` p1 -> p1;
+   `watch restocks` p1 -> p1; `product feed api` p1 and `shopify inventory data` p1 untouched
+   (seoTitle not edited); `shopify product data` p1 / `shopify csv` p2 /
+   `shopify collection scraper` p2 untouched (attr=0).
+   NEW — `inventory tracking api` (2,588) -> **p1**; `retail price data` (6,411) -> **p2**;
+   `price tracking api` (5,150) -> **p5**; `pricing data api` (6,317) -> **p6**;
+   `product pricing data` (9,753) -> **p16**; `tracking api` (15,762) -> p26;
+   `competitor price monitoring` (6,379) -> p37.
+   UNCHANGED/UNWINNABLE — `shopify products` p61 (structural, see above; not a regression).
+   **Note on reminder 6**: `watch restocks` sits in the tail position deliberately — it is the
+   smallest asset (158 hits), and the tail artifact is pessimistic (safe direction). It simulated
+   at full `exact=2` anyway, so p1 is reliable; still confirm it live.
+   **Then record the 7 new terms in `bin/store-rank`'s TERMS dict** (8 now -> 15).
+
+   **After this ships, item (r)'s sweep phase is EXHAUSTED fleet-wide** (23/23 sweepable Actors
+   done; 2 permanently skipped — `scholarship-scraper` source-blocked, `website-screenshot-scraper`
+   owner-blocked). **Do not go looking for more virgin candidates — there are none.** Open item
+   **(r2)** below becomes the successor.
+
+   **(r2) NEW, the successor to (r): decay re-sweeps.** The next BUILD-slot default is
+   re-sweeping Actors whose previously-won terms have DECAYED, using `store-rank`'s drift
+   annotations to pick the target, rather than hunting new Actors. Concrete lead already on
+   record: LEARNINGS 1832 item 4 found two cycle-962 readme-era (attr=6) wins on
+   `ats-jobs-scraper` had vanished from the top 1000 entirely (not merely slid), and re-anchoring
+   them as literal attr=4/5 text restored both to p1 — so **old readme-era wins are the highest-
+   yield decay class**. Start the successor work by running `store-rank` across the fleet and
+   listing terms whose live rank is far worse than the value recorded in TERMS.
+
+   **Sweep-method reminders, in the order they bite** (eight; this list had been accidentally
+   duplicated verbatim inside the 1848 NEXT block — deduped here, keep ONE copy):
    1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
-   2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list.
-   3. Before honouring any `!! WORSE`/`!! LOSES` flag, run the control (simulate current live
-      text at the same `--attr`).
-   4. Treat attr=4 (seoTitle) predictions as "pN or pN+1", attr=5 (seoDescription) as exact.
-   5. Do not forget `apify push --force` after `apify-admin publish` (2 args: `<slug>
-      <path-to-meta.json>`) — required even for metadata-only edits. Wait ~100-120s before
-      measuring.
-   6. Tail-position artifact: the simulator under-counts `nbExactWords` for the phrase at the
-      very end of a proposed `--title`/`--desc` string. Never put a phrase you care about last.
-   **Sweep-method reminders, in the order they bite** (now six):
-   1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
-   2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list — cycle
-      1844 found SIX real attr=4/5 assets this way that the tracked list showed none of.
-   3. Before honouring any `!! WORSE`/`!! LOSES` flag, run the control (simulate current live
-      text at the same `--attr`). 4-for-4 artifacts at 1844.
-   4. Treat attr=4 (seoTitle) predictions as "pN or pN+1" — 1844 ran looser (p3->p5, p4->p8, p1->p5
-      on three terms), so read attr=4 predictions as a direction, not a number; attr=5
-      (seoDescription) predictions were exact 3-for-3 (p1/p2/p1).
+   2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list — 1844 found
+      SIX real attr=4/5 assets this way, 1848 found THREE, in both cases the tracked list showed
+      none of them.
+   3. Before honouring any `!! WORSE`/`!! LOSES` flag, run the control (simulate current live text
+      at the same `--attr`). 4-for-4 artifacts at 1844.
+   4. Treat attr=4 (seoTitle) predictions as a direction, not a number (1844: p3->p5, p4->p8,
+      p1->p5); attr=5 (seoDescription) predictions have been exact.
    5. Do not forget `apify push --force` after `apify-admin publish` — required even for
-      metadata-only edits. Note `publish` takes TWO args: `<slug> <path-to-meta.json>` (a bare
+      metadata-only edits. `publish` takes TWO args: `<slug> <path-to-meta.json>` (a bare
       `publish <slug>` dies with an IndexError). Wait ~100-120s post-push before measuring.
    6. **Tail-position artifact**: the simulator under-counts `nbExactWords` for the phrase at the
-      very end of a proposed `--title`/`--desc` string. Never put a phrase you care about last.
+      very end of a proposed `--title`/`--desc` string. Put your least-valuable phrase there.
+   7. **NEW at 1848: `tgtN`/"bucket holds 0" is not reachability — read the `pred` column.** A
+      contiguous match in an empty bucket can still land p201 if earlier attr=0 buckets are full.
+      High `nbHits` correlates with being UNreachable on generic 2-word terms.
+   8. **NEW at 1848: when the protect load eats most of the field, solve the char budget with a
+      script, not by hand.** Fix the mandatory text, compute the free budget exactly, then search
+      (phrase, pred, hits) combinations. It found a strictly better set than the hand-draft and
+      recovered an asset the hand-draft had sacrificed.
+
    Carried backlog, oldest first:
    **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
    **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
