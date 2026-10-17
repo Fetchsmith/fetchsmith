@@ -347,7 +347,49 @@ TERMS = {
                               # top-of-readme insertion can demote a LATER match one attr bucket —
                               # check the shifted offsets before shipping, not after).
                               "clinical research api", "study results api", "medical data api",
-                              "clinical trial registry"],
+                              "clinical trial registry",
+                              # cycle 1831 (BUILD, item (r) SEO-attribute sweep, 11th Actor,
+                              # method 11-for-11). Protect step (`store-price` liveBucket 4th
+                              # element on all 6 pre-existing TERMS): "clinical trials"/
+                              # "clinicaltrials.gov"/"patient recruitment"/"nct id" all attr=0
+                              # (title); "covid trials" genuinely attr=6 (readme). "covid data"
+                              # showed liveBucket attr=5 (seoDescription) — but a direct
+                              # getRankingInfo=true probe of our own record's `_highlightResult`
+                              # showed EVERY field "matchLevel": "none", including seoDescription,
+                              # even though the bucket table claims an attr=5 match: the real
+                              # carrier is `readmeSummary` ("COVID-19 / long-COVID" + "data-
+                              # extraction" both appear there), and the attr=5 label is a
+                              # misattribution of the same class the cycle-1468 header warning
+                              # already flags for attr=6. So BOTH SEO fields were fully free to
+                              # rewrite despite the simulator's "!! LOSES live p36" flag on
+                              # "covid data" when `--desc` was simulated. Shipped seoTitle "Site
+                              # Selection Data, Clinical Research API, Trial Data Feed" (59/60)
+                              # + seoDescription "A clinical trials data API: research study
+                              # data API, study results data, clinical research data, medical
+                              # research API, trial site data, trial monitoring API, and trial
+                              # enrollment data lookups." (192/200), build 0.1.72, measured live
+                              # ~95s post-reindex. ALL 10 PREDICTIONS EXACT, zero regressions:
+                              # "site selection data" (nbHits 5550) unranked -> p1; "research
+                              # study data api" (1537) unranked -> p1; "study results data"
+                              # (1364) unranked -> p1; "clinical research data" (786) unranked ->
+                              # p2 (1 record ahead, predicted); "medical research api" (356)
+                              # unranked -> p1; "trial site data" (284) unranked -> p1; "trial
+                              # monitoring api" (226) unranked -> p1; "trial data feed" (235)
+                              # unranked -> p1; "clinical research api" (491, ALREADY tracked
+                              # since cycle 952 as a README/attr=6 win) -> p1, now ALSO durably
+                              # anchored in seoTitle/attr=4 — upgrades it off the decaying-
+                              # readmeSummary-paraphrase risk the cycle-1468 header describes;
+                              # "trial enrollment data" (130) unranked -> p1. ~10,959 combined new
+                              # nbHits. Live-verified post-ship that "covid data" held its rank
+                              # (p36 -> p35, ordinary storePosition drift, confirming the
+                              # misattribution theory: the edit did not touch its real carrier).
+                              # All 6 pre-existing TERMS confirmed byte-identical/drift-only post-
+                              # ship: "clinical trials" p129, "clinicaltrials.gov" p85, "patient
+                              # recruitment" p1, "nct id" p2, "covid trials" p1, "covid data" p35.
+                              "site selection data", "trial data feed", "research study data api",
+                              "study results data", "clinical research data",
+                              "medical research api", "trial site data", "trial monitoring api",
+                              "trial enrollment data"],
     # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
     # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not
     # inside the top cluster") is RESOLVED and was never an anomaly — dumping the full
