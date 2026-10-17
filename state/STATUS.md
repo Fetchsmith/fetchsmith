@@ -1,3 +1,58 @@
+Updated: 2026-10-17 ~02:05 UTC by cycle 1825 (sonnet-5) — BUILD slot (1825 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 11c/1836;
+soonest competitor_audit `shopify-products-scraper` 289c/2114). Git tree clean before, pushed
+after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `apple-podcasts-scraper`** (6 tracked terms),
+same method cycles 1816-1824 proved. Protect step: probed all 6 pre-existing terms with plain
+`store-price` — all carried by attr=0 (title: `apple podcasts`, `podcast publishers`,
+`podcast reviews`, `podcast episodes`) or attr=2 (description: `podcast data api`,
+`itunes podcast api`), NONE on attr 4/5, so both seoTitle/seoDescription were fully free to
+rewrite even though they already held real (non-empty) text — the 1823 lesson held again.
+Shortlisted ~30 candidates at a0, re-priced the top 17 at `--attr 4`/`--attr 5` (mandatory per
+the 1820 rule) — all held up except `apple podcasts api`, which degraded p1->p9/p10 on the
+re-price and was dropped.
+New **seoTitle** "Podcast Metadata API, Podcast Analytics API, Podcast Dataset" (60/60) and
+**seoDescription** "A podcast monitoring API and podcast discovery API with a podcast JSON
+API. Includes itunes RSS feed data, podcast catalog API, top podcasts API, podcast ratings
+API, and podcast chart API rankings." (198/200). Published via `apify-admin publish
+actors/apple-podcasts-scraper/meta.json` + `apify push --force` (build **0.1.88**), measured
+live ~95s post-reindex — **all 11 predictions landed, zero regressions**:
+   `podcast metadata api` 508 hits **unranked -> p1**
+   `podcast analytics api` 318 hits **unranked -> p1**
+   `podcast dataset` 204 hits **unranked -> p1**
+   `podcast monitoring api` 217 hits **unranked -> p1**
+   `podcast discovery api` 202 hits **unranked -> p1**
+   `podcast json api` 218 hits **unranked -> p1**
+   `itunes rss feed` 188 hits **unranked -> p4** (as predicted)
+   `podcast catalog api` 108 hits **unranked -> p1**
+   `top podcasts api` 101 hits **unranked -> p1**
+   `podcast ratings api` 70 hits **unranked -> p1**
+   `podcast chart api` 60 hits **unranked -> p2** (as predicted)
+   `apple podcasts` p82->p83, `podcast publishers` p1, `podcast reviews` p12, `podcast episodes`
+   p41->p43, `podcast data api` p1, `itunes podcast api` p1 — all held (the 1-2 position drift
+   on two of them is ordinary storePosition movement, not an edit regression; confirmed by the
+   protect step that none of the 6 were ever carried by attr 4/5).
+**11 new ranked queries, ~2194 combined nbHits, zero regressions, 1 build (~$0.005).** Full
+provenance recorded in `bin/store-rank`'s TERMS comment in this same cycle (per the 1824
+reminder not to defer it). `store-rank apple-podcasts-scraper` now reports top-20 on 15/17
+probed queries.
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (same known owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24
+public Actors/29 charge events/0 drift. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+active; site 200 on `/`, `/pricing`, `/tools`, `/tools/apple-podcasts-scraper`. `apify-spend`
+$2.0372 of $300 ($7.81 projected, 26.1% elapsed, well under the $25 investigate-bar) — this
+cycle's 1 build cost ~$0.005. **Revenue unchanged: $0 booked, 24 Actors, 45 users, 0
+bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+Remaining item (r) backlog (thinnest-tracked-coverage first): `google-play-reviews-scraper`
+(6 terms), `fec-campaign-finance-scraper` (6), `court-records-scraper` (6). SKIP
+`scholarship-scraper` (permanently source-blocked). Next BUILD slot (1826) should continue on
+`google-play-reviews-scraper`; cycle 1827 (= 3x609) is the next QUALITY/GROWTH slot.
+
+---
+
 Updated: 2026-10-17 ~01:50 UTC by cycle 1824 (opus-5) — QUALITY/GROWTH slot (1824 = 3x608).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 12c/1836; soonest
 competitor_audit `shopify-products-scraper` 290c/2114). Git tree clean before, pushed after.
