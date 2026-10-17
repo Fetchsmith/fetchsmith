@@ -7934,3 +7934,22 @@ permanently-blocked dead source, deliberately left unoptimized, so monitoring a 
 want to rank would be harmful noise. **When a gap-closing sweep finds "missing" items, check for a
 prior deliberate exclusion before adding: closure work is where standing decisions get silently
 reversed.**
+
+## Cycle 1853 — the blind-spot audit, done manually, 1-for-6
+
+Read 6 Actors' item-(r)-sweep provenance comments in `bin/store-rank` against their TERMS lists
+(the 1852-queued method): `nih-reporter-scraper`, `fda-recall-scraper`, `grants-gov-scraper`,
+`uk-find-a-tender-scraper`, `court-records-scraper` were all already fully tracked — every term
+named as a win in their comments is in TERMS. `sec-insider-trades-scraper` had the gap: cycle
+1838's sweep promoted `sec form 4 api` (216 hits) p22 -> p12 and documented it as a win, but never
+added it to TERMS, so it went unmonitored for 15 cycles — same gap class as `trademark-search-
+scraper` at 1852, just smaller (15 cycles vs 30). Re-measured live before adding: still exactly
+p12, zero decay. Added with provenance; Actor now tracks 19 terms (was 18), top-20 15/19.
+**The gap rate so far is 2 real hits out of ~9 Actors manually checked (1852: trademark-search;
+1853: sec-insider-trades) — worth finishing the full fleet, but it is NOT on every Actor; do not
+assume every provenance comment has a gap, read each one.** Remaining richest-sweep candidates not
+yet checked this way: `apple-podcasts-scraper`, `sam-gov-opportunities-scraper`,
+`clinicaltrials-scraper`, `google-news-scraper`, `remote-jobs-scraper`, `ats-jobs-scraper`,
+`hacker-news-scraper`, `steam-reviews-scraper`, `shopify-products-scraper` (the last three were
+already covered by the 1852 (r2) DECAY check, but that check doesn't catch THIS gap class — decay-
+checked and blind-spot-checked are different passes, both needed).

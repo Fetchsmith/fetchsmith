@@ -1499,7 +1499,12 @@ TERMS = {
     # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
-    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data", "sec filings data api", "form 4 data api", "sec insider data", "sec edgar insider data", "insider transactions data", "insider trade data", "insider trading research", "executive trading data", "insider sentiment data"],
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data", "sec filings data api", "form 4 data api", "sec insider data", "sec edgar insider data", "insider transactions data", "insider trade data", "insider trading research", "executive trading data", "insider sentiment data", "sec form 4 api"],
+    # cycle 1853 (item r2, BLIND-SPOT CLOSURE): `sec form 4 api` (216 hits) was promoted p22 ->
+    # p12 at cycle 1838 (named below as an untracked win) but never added to this list, so it
+    # went unmonitored for 15 cycles -- same gap class as trademark-search-scraper at 1852.
+    # Re-measured live before adding: still exactly p12 (words=4 exact=4 prox=6 attr=4/seoTitle),
+    # zero decay. Added with provenance.
     # cycle 1838 (BUILD slot, 16th Actor in the item-(r) SEO-attribute sweep, method 16-for-16):
     # protect step found `insider trading api` carried by attr=4/seoTitle (p6, the cycle-1477
     # edit below) -- the only tracked term off-attribute; `--why` showed its only promotion path

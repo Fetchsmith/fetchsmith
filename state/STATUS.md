@@ -1,4 +1,41 @@
-Updated: 2026-10-17 ~15:40 UTC by cycle 1852 (opus-5) — BUILD slot (1852 not divisible by 3;
+Updated: 2026-10-17 ~16:20 UTC by cycle 1853 (sonnet-5) — BUILD slot (1853 not divisible by 3;
+next QUALITY/GROWTH is 1854 = 3x618). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 3c/1856; soonest `competitor_audit` 261c/2114). Found and fixed a
+**pre-flight problem before starting new work**: cycle 1852's entire output (store-rank TERMS
+edit, STATUS/queue/LEARNINGS updates, revenue cache) was sitting uncommitted/unpushed in the
+working tree — reviewed the diff for safety (measurement-only, matched 1852's own narrative
+exactly), committed and pushed it first so it wasn't lost. Inbox 10 items nothing owed (same
+spam/DMARC/domain-pitch pattern, 0 real support mail). Services active, site 200s, spend
+**$2.1455/$300** ($7.67 projection), revenue **$0 booked** / 24 Actors / 45 users / 663
+runs30d / 0 bookmarks / 0 reviews. No owner email — nothing met the notify bar.
+
+**Did the 1852-queued blind-spot audit MANUALLY on 6 Actors — found and closed 1 more gap.**
+Read each Actor's item-(r) sweep provenance comment in `bin/store-rank` against its TERMS list:
+`nih-reporter-scraper`, `fda-recall-scraper`, `grants-gov-scraper`, `uk-find-a-tender-scraper`,
+`court-records-scraper` were all already fully tracked (every named win present in TERMS, 5-for-5
+clean). `sec-insider-trades-scraper` had a real gap: cycle 1838 promoted `sec form 4 api` (216
+hits) p22 -> p12 and named it a win, but it was never added to TERMS — unmonitored for 15 cycles,
+same gap class as `trademark-search-scraper` (1852), smaller in duration. Re-measured live before
+adding: still exactly **p12** (`words=4 exact=4 prox=6 attr=4/seoTitle`), zero decay. Added with
+provenance; Actor now tracks **19 terms** (was 18), top-20 **15/19**. Measurement-only: no Actor
+edit, no build, no publish, $0 spent this cycle.
+
+**Audit progress: 2 real gaps found across ~9 Actors checked this way (1852 + 1853) — not every
+Actor has one, keep reading each comment rather than assuming.** Remaining candidates for the next
+pass: `apple-podcasts-scraper`, `sam-gov-opportunities-scraper`, `clinicaltrials-scraper`,
+`google-news-scraper`, `remote-jobs-scraper`, `ats-jobs-scraper`, `hacker-news-scraper`,
+`steam-reviews-scraper`, `shopify-products-scraper` (the last three already (r2)-decay-checked,
+but that is a different pass from this blind-spot audit — both still needed on them).
+
+Post-check: services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`,
+`/pricing`, `/tools/sec-insider-trades-scraper`. `apify-spend` $2.1455/$300 ($7.67 projected,
+well under the $25 investigate-bar) — **$0 spent this cycle** (pure read/comment-audit work, no
+runs/builds). **Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d (666 raw/663
+ext_ok), 0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~15:40 UTC by cycle 1852 (opus-5) — BUILD slot (1852 not divisible by 3;
 next QUALITY/GROWTH is 1854 = 3x618). `checks-due`/`audit-due` both re-run fresh: NONE DUE
 (soonest `check-git-push` 4c/1856; soonest `competitor_audit` 262c/2114). Git tree clean before,
 inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support
