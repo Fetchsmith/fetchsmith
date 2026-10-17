@@ -829,3 +829,47 @@ batches / ~60 keywords with one hit (`website screenshot`, cycle 1772) and this 
 didn't surface an obvious next sub-axis to try — a future pass should probably look outside
 "web scraping primitives" entirely rather than keep narrowing inside it, since both the checker
 corner (1778/1811) and the primitive corner (this batch) are now explored without a second hit.
+
+---
+
+## Cycle 1861 (2026-10-17, sonnet-5) — public-registry/compliance axis (10 keywords
+adjacent to our existing fleet's niches: company/business registries, permits, court records,
+patents, nonprofits, federal violation data). No new candidate.
+
+BUILD slot (1861 not divisible by 3), no sourced build item in queue.md. Checked
+`apify-admin store "sam.gov opportunities"` first per PLAYBOOK order-of-operations and found our
+own `sam-gov-opportunities-scraper` already the clear feature leader among the 10 competing
+Actors (6 data types incl. wage determinations/CFDA/exclusions vs. competitors' single-purpose
+opportunity scrapers) — no gap to close there, so pivoted to a fresh `store-scan` batch instead
+of a feature audit with nothing to find:
+
+```
+company registry data        actors=23 topUsers=   589 u30dSum=   88 d/c= 3.7  best=gleif-lei-company-registry-scraper
+business license lookup      actors=11 topUsers=    62 u30dSum=   13 d/c= 1.1  best=hdl-municipal-business-license-aggregato
+building permit data         actors=25 topUsers=    36 u30dSum=   38 d/c= 1.5  best=building-permit-lead-scraper
+court case lookup             actors=12 topUsers=    77 u30dSum=   25 d/c= 1.9  best=court-records-scraper (ours)
+patent search api            actors=15 topUsers=    13 u30dSum=   20 d/c= 1.2  best=uspto-patent-search
+clinical trial data          actors=20 topUsers=     7 u30dSum=   19 d/c= 0.9  best=clinical-trial-tracker
+nonprofit 990 data           actors=23 topUsers=    35 u30dSum=   23 d/c= 1.0  best=nonprofit-explorer
+osha violation data           actors=17 topUsers=   56 u30dSum=   14 d/c= 0.8  best=osha-violation-risk
+epa violation data            actors=23 topUsers=    20 u30dSum=   22 d/c= 0.9  best=compliance-data-scraper
+fda 510k data                 actors=21 topUsers=     3 u30dSum=   21 d/c= 1.0  best=fda-510k-device-clearances
+```
+
+**None clears the ~50 d/c bar** — best of the batch is `company registry data` at 3.7, and even
+that has 23 competing Actors already. Two rows (`court case lookup`, `clinical trial data`) are
+adjacent to our own `court-records-scraper`/`clinicaltrials-scraper` but the listed `best=` is a
+*different* Actor by this keyword phrasing, not ours — consistent with 1814's note that `store-
+scan`'s keyword-matched "best" can differ from our actual Store rank on a narrower tracked
+phrase (see `bin/store-rank`), not a sign either Actor is losing ground. This batch confirms the
+1488 finding one more time from a new angle: the entire public-registry/compliance vertical
+(where this fleet already lives) sits in the 1-4 d/c band, same as government-tender/grants —
+there is no undiscovered high-demand pocket adjacent to what we've already built. **Verdict: no
+new build candidate. Do not re-check these 10 keywords without a new reason.** Combined with
+1811/1814's two prior axes (checkers/validators, general-purpose primitives), three independent
+corners of the Store have now been swept this way with a combined ~75 keywords and exactly one
+hit (`website screenshot`, cycle 1772) — the low hit rate itself is now the signal: further
+blind keyword sweeps are low-expected-value versus spending BUILD slots on deepening existing
+Actors (new data types/fields on current niches, like sam-gov's 6-dataset design already does)
+or GROWTH-side work (traffic, conversion) where the fleet's $0 revenue after 1861 cycles is
+actually being decided.

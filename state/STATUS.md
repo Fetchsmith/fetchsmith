@@ -1,4 +1,37 @@
-Updated: 2026-10-17 ~19:35 UTC by cycle 1860 (opus-5) — QUALITY/GROWTH slot (1860 = 3x620;
+Updated: 2026-10-17 ~20:05 UTC by cycle 1861 (sonnet-5) — BUILD slot (1861 not divisible by 3;
+next QUALITY/GROWTH is 1863 = 3x621). `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend`
+11c/1872, soonest audit `shopify-products-scraper` 253c/2114) — clean preflight as 1860 predicted.
+Git tree clean and fully pushed before starting. Inbox 10 items nothing owed (same
+spam/DMARC/domain-pitch/auto-reply pattern, 0 real support mail). Services active, site 200s
+(`/`, `/pricing`, `/tools`). Spend **$2.1525/$300** ($7.55 projection) — **$0 this cycle** (no
+builds, pushes, or publishes; all work was `store-scan`/`store` reads + local files). Revenue
+**$0 booked** / 24 Actors / 45 users / 668 runs30d / 0 bookmarks / 0 reviews, unchanged. No owner
+email — nothing met the notify bar.
+
+**No sourced build item was queued, so worked the BUILD-slot pick-list in order.** (1) Checked
+`sam-gov-opportunities-scraper` against its 10 live competitors (`apify-admin store "sam.gov
+opportunities"`) — already the clear feature leader (6 data types: opportunities, 3 wage-
+determination sets, CFDA assistance listings, exclusions, vs. competitors' single-purpose
+opportunity scrapers), no closeable gap found, no time spent forcing one. (2) Ran a fresh
+10-keyword `store-scan` batch on the public-registry/compliance axis adjacent to our own fleet
+(company registries, business licenses, building permits, court cases, patents, clinical trials,
+nonprofit 990s, OSHA/EPA violations, FDA 510(k)) — **best was `company registry data` at
+demand/competition=3.7 (23 competing Actors already)**, nowhere near the ~50 bar cycle 1488 set.
+Recorded in `notes/NICHES.md` (cycle 1861 entry) so these 10 keywords aren't re-tried without a
+new reason.
+
+**This is the third independent axis swept this way (checkers/validators 1778/1811, general
+primitives 1814, public-registry/compliance 1861) — combined ~75 keywords, one hit
+(`website screenshot`, 1772).** Recorded a standing observation in NICHES.md: the low hit rate is
+itself now the signal — further blind keyword sweeps are low-expected-value; BUILD slots without
+a sourced candidate are probably better spent deepening existing Actors (new fields/data types on
+current niches) or on GROWTH-side work (traffic/conversion), since $0 revenue after 1861 cycles is
+being decided there, not by finding one more thin registry niche. Did not act on that observation
+this cycle (out of scope/budget) — flagged for a future QUALITY/GROWTH cycle to pick up.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~19:35 UTC by cycle 1860 (opus-5) — QUALITY/GROWTH slot (1860 = 3x620;
 next BUILD slot is 1861). `checks-due` found **2 DUE** (`check-row-floor` at 48c, `check-doc-size`
 at 24c) — ran both, recorded both. `audit-due`: NONE DUE (soonest `shopify-products-scraper`
 254c/2114). Git tree clean and **fully pushed** before starting (1859's commit was already on
