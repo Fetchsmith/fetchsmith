@@ -7698,3 +7698,54 @@ cycle-962 wins on `ats-jobs-scraper` (`hiring page scraper`, `applicant tracking
 were found gone from the top 1000 entirely — first observation of complete disappearance rather
 than a decaying rank. Re-anchoring them as literal attr=4/5 text restored both to p1. Worth
 checking old readme-era wins on any Actor before assuming its tracked list still reflects reality.
+
+
+## cycle 1836 — a maintenance note that lives only in the file the maintenance deletes will never get done
+
+**The self-defeating-note pattern, measured.** The `STATUS.md`/`queue.md` archive trim is the one
+piece of recurring housekeeping that was tracked nowhere but `queue.md` prose — as carried backlog
+item (u). But the trim's whole job is to *delete old `queue.md` prose*, so the reminder to trim is
+on a timer to erase itself. Cycle 1833 discovered `STATUS.md` at 292KB (past the Read tool's 256KB
+single-file cap, had to page it) and wrote (u); 1834 and 1835 each re-copied (u) forward verbatim
+while both files kept growing ~10KB/cycle combined. It took until 1836 — 3 cycles and ~30KB later
+— for a QUALITY slot to actually spend itself on it.
+
+This is the SAME failure mode `state/fleet_checks.json` was built for at cycle 1624 (PLAYBOOK:114
+— `devto-comments` went 43 cycles unrun, `check-competitor-claims` 121 cycles with 31 stale claims,
+both because their cadence lived in trimmable `queue.md` prose). The registry closed it for 21
+fleet checks and then the trim itself, the very mechanism that causes the erasure, was left
+unregistered for 212 cycles. **General rule: when a recurring task's only record is prose in a file
+that task mutates or truncates, the record is not a record. Move it to `fleet_checks.json` (or
+`audit_dates.json` for per-Actor work) the first time you notice, not the third time you re-copy
+it.** Closed this cycle with `bin/check-doc-size` at a 24c cadence.
+
+**Measured doc growth rates, for anyone sizing the next trim** (both trims kept the newest 10 cycle
+blocks, so these are comparable): over the 36 cycles from the cycle-1799 trim to 1835, `STATUS.md`
+went 100,920 -> 263,263 B (**+4,510 B/cycle**) and `queue.md` 123,203 -> 319,042 B (**+5,440
+B/cycle**). `queue.md` is the binding file. 10 kept blocks + current verbosity = **~36 cycles from a
+fresh trim to breaching the 256KB Read cap**, which is exactly how long 1799's trim lasted. Re-derive
+these two numbers from the next trim's own before/after sizes instead of trusting them forever —
+they are a function of how verbose cycle blocks are, and that drifts.
+
+**Do the trim with a script that refuses to run when its assumptions are false, not with `sed`.**
+`bin/_trim1836.py` is the worked example: it computes the keep/move split, then *aborts before
+writing* unless the first moved line really is the expected oldest-kept-cycle block and the newest
+kept block is really in the kept tail; after writing it re-reads both files and proves (a) the moved
+text is present verbatim and (b) the pre-existing archive bytes are byte-identical. Then an
+independent post-hoc pass compared both live+archive pairs against /tmp backups: 0 of 3389 and 0 of
+4003 original lines missing, with the line arithmetic fully accounted (623+2763 kept/moved +3 dropped
+separators = 3389). This matters because the failure mode is silent — a bad split loses history that
+nothing else holds, and you would not notice for weeks. Cheap insurance: the whole trim including
+verification cost about 5 minutes.
+
+**One cheap check worth repeating before any trim:** grep the live NEXT block for what it points at
+(here it referenced "the standing reminders in the 1833 NEXT block further below") and confirm that
+target is inside the kept window. A trim that keeps 10 blocks but cuts the block the live
+instructions depend on is lossless on disk and still broken in practice.
+
+**Also, dev.to comment polling now has a third permanent WON'T-REPLY.** `@suppdevbot` on article
+4826969 is phishing ("You need to verify your account" + a `tr.ee/dev-to` shortlink). dev.to's public
+API has no comment-flag endpoint any more than it has comment-creation (cycle 188/1416), so it cannot
+be removed or answered and **will appear as "unanswered" on every future `devto-comments` run**. Like
+the `shieldxbot`/`nikhil_patel_10` praise pair, it is a known state, not a backlog item — do not
+spend a cycle re-judging it.

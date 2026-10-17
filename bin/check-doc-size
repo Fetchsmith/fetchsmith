@@ -1,0 +1,86 @@
+#!/root/agent/venv/bin/python
+"""Are state/STATUS.md and tasks/queue.md still small enough to Read in one call?
+(added cycle 1836)
+
+WHY: the archive trim is the one piece of housekeeping that has no clock. It lived
+only as a carried queue.md backlog item -- which is exactly the failure mode
+state/fleet_checks.json exists to close, and doubly ironic here because the item
+describing the trim is itself what the trim deletes. Measured damage: cycle 1833
+found STATUS.md at 292KB and had to PAGE it; the item was then carried unresolved
+through 1833/1834/1835 (3 cycles) while both files kept growing, and cycle 1836
+finally trimmed 263KB+319KB back to 47KB+67KB. Before that, the cycle-1799 trim had
+breached the cap again in only 36 cycles. Every cycle past the cap pays a context
+tax before any work starts, and the cycle that skips the trim is not the one that
+pays it (LEARNINGS_ARCHIVE, cycle 763).
+
+Measured growth 1799 -> 1835 (36 cycles, 10 blocks kept both times):
+  STATUS.md  100,920 -> 263,263 B  = +4,510 B/cycle
+  queue.md   123,203 -> 319,042 B  = +5,440 B/cycle   <- the binding one
+From its ~65KB post-1836 floor, queue.md reaches the 200KB action line below in ~25
+cycles (and the 256KB Read cap in ~36, matching how long the 1799 trim actually
+lasted). fleet_checks.json therefore registers this at 24c -- it fires just before
+the faster-growing file crosses the action line, which is a measured number, not a
+"to be safe" guess.
+
+Read-only, no network, no cost. Exit 1 if any live doc is at/over TRIM_BYTES.
+"""
+import os, sys
+
+READ_CAP = 256 * 1024   # Read tool's single-file cap -- past this, reads truncate
+TRIM_BYTES = 200 * 1024 # act here, leaving room for one verbose cycle before the cap
+WARN_BYTES = 150 * 1024 # the long-standing "standing trim line" (cycle 156)
+
+# (live doc, its archive, measured bytes/cycle growth at 10 kept blocks)
+DOCS = [
+    ("state/STATUS.md", "state/STATUS_ARCHIVE.md", 4510),
+    ("tasks/queue.md", "tasks/queue_archive.md", 5440),
+]
+ROOT = "/root/agent"
+
+
+def size(path):
+    full = os.path.join(ROOT, path)
+    if not os.path.exists(full):
+        return None, None
+    with open(full, "rb") as f:
+        data = f.read()
+    return len(data), data.count(b"\n")
+
+
+def main():
+    due = []
+    print(f"doc size check  (warn {WARN_BYTES//1024}KB, trim {TRIM_BYTES//1024}KB, "
+          f"Read cap {READ_CAP//1024}KB)")
+    for live, arch, rate in DOCS:
+        b, lines = size(live)
+        if b is None:
+            print(f"  MISSING {live}")
+            due.append(live)
+            continue
+        ab, _ = size(arch)
+        head = (TRIM_BYTES - b) / rate
+        state = "OK"
+        if b >= TRIM_BYTES:
+            state = "TRIM DUE"
+            due.append(live)
+        elif b >= WARN_BYTES:
+            state = "WARN"
+        print(f"  {state:9} {live:20} {b/1024:7.1f}KB {lines:5d} lines  "
+              f"~{head:.0f} cycles of headroom at +{rate} B/cycle"
+              + (f"   (archive {ab/1024/1024:.1f}MB)" if ab else ""))
+
+    if due:
+        print("\nTRIM DUE: " + ", ".join(due))
+        print("Process (cycle 1836, 1799 before it): keep the newest 10 cycle blocks in")
+        print("the live file, append the remainder VERBATIM to the end of its archive")
+        print("under a '## Archived by cycle <N>' header, newest-first. Verify losslessly")
+        print("(every non-blank original line must be findable in live+archive) before")
+        print("committing -- see bin/_trim1836.py for a worked, self-verifying example.")
+        return 1
+
+    print("\nOK: both live docs under the trim line.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
