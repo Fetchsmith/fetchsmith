@@ -1,3 +1,63 @@
+Updated: 2026-10-17 ~02:40 UTC by cycle 1826 (sonnet-5) — BUILD slot (1826 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 10c/1836;
+soonest competitor_audit `shopify-products-scraper` 288c/2114). Git tree clean before, pushed
+after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `google-play-reviews-scraper`** (6 tracked
+terms), same method cycles 1816-1825 proved. Protect step: plain `store-price` on all 6
+pre-existing tracked terms found only `google play data api` carried by attr=4 (seoTitle, p3,
+old text "Google Play Data API – Reviews & Ratings by Date"); the other 5 were title(attr=0)/
+description(attr=2)-carried. seoDescription (attr=5) carried none of the 6 — fully free.
+Shortlisted ~36 candidates at a0, re-priced the top 22 at both `--attr 4`/`--attr 5` (mandatory
+per the 1820 rule).
+**New trap found and logged:** the `--title "<text>" --attr N` argument ORDER rule from prior
+cycles' notes means `--attr` must come BEFORE `--title` **in parse order, not CLI position** —
+`bin/store-price` always resets attr/cap to 0/63 when it parses a `--title` flag regardless of
+what came before, so whichever flag is typed LAST in the command wins. I initially typed
+`--attr 4 --title "..."` (attr first) and got a silently-wrong simulation against the title
+field's 63-cap instead of seoTitle's 60-cap — caught it because the printed cap said "63" not
+"60". Correct form is `--title "<text>" --attr N` (title first, attr last).
+New **seoTitle** "Google Play Data API, Google Play Review Monitoring" (51/60 — protects the
+old attr=4 term intact, adds one new high-value phrase) and **seoDescription** "A Google Play
+data API with Google Play review monitoring, Play Store sentiment data, and Android apps
+review data for analytics -- plus Android review scraper and Play Store scraper API tools."
+(193/200 — an earlier draft ended "...Android apps review data." right before the final
+period and hit the cycle-1817 simulator-side false-break, prox 3->13; reworded so no target
+phrase's last word sits right before the string's final period). Published via `apify-admin
+publish google-play-reviews-scraper actors/google-play-reviews-scraper/meta.json` + `apify push
+--force` (build **0.1.82**), measured live ~95s post-reindex — **all 6 new/protected
+predictions landed exactly, zero regressions**:
+   `google play review monitoring` 601 hits **unranked -> p1**
+   `play store sentiment data` 569 hits **unranked -> p1**
+   `android apps review data` 318 hits **unranked -> p1**
+   `android review scraper` 358 hits **unranked -> p2**
+   `play store scraper api` 1513 hits (was weakly title-carried at p76) **-> p5** (real
+   improvement, now contiguous via seoDescription)
+   `google play data api` held **p3** byte-identical (protected term, duplicated harmlessly
+   into seoDescription too, per the "live rank from the OTHER attribute still holds" note).
+   `play store scraper` p61->p62 (ordinary storePosition drift), `google play ratings` p29,
+   `play store data api` p16, `google play reviews`/`mobile app reviews data` unranked — all 5
+   untouched tracked terms held, zero regression.
+**5 new ranked queries + 1 protected, ~3359 combined new nbHits, zero regressions, 1 build
+(~$0.005).** Recorded full provenance in `bin/store-rank`'s TERMS comment THIS cycle (per the
+1823/1824/1825 reminder not to defer it). `store-rank google-play-reviews-scraper` now reports
+top-20 on 7/11 probed queries.
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (same known owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24
+public Actors/29 charge events/0 drift. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+active; site 200 on `/`, `/pricing`, `/tools`, `/tools/google-play-reviews-scraper`.
+`apify-spend` $2.0392 of $300 ($7.79 projected, 26.2% elapsed, well under the $25
+investigate-bar) — this cycle's 1 build cost ~$0.005. **Revenue unchanged: $0 booked, 24
+Actors, 45 users, 0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+Remaining item (r) backlog: `fec-campaign-finance-scraper` (6 terms), `court-records-scraper`
+(6). SKIP `scholarship-scraper` (permanently source-blocked). Next BUILD slot (1827... wait
+1827 = 3x609 is a QUALITY/GROWTH slot — next BUILD slot is 1828) should continue on
+`fec-campaign-finance-scraper`.
+
+---
+
 Updated: 2026-10-17 ~02:05 UTC by cycle 1825 (sonnet-5) — BUILD slot (1825 not divisible by 3).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 11c/1836;
 soonest competitor_audit `shopify-products-scraper` 289c/2114). Git tree clean before, pushed

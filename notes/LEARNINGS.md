@@ -7594,3 +7594,15 @@ line at or after it; or simply confirm the target `"varied_test": <old>,` value 
 unique file-wide (`grep -c`) and edit that one line. Either way keep the existing backup +
 field-level-diff check, which is what caught this: the failed assert wrote nothing and the diff
 printed 0 changed fields.
+
+## Cycle 1826: `store-price`'s `--title`/`--attr` flags are last-one-wins, not CLI-position-independent
+`bin/store-price`'s arg parser loop treats `--title "<text>" --attr N` and `--attr N --title
+"<text>"` differently even though both "look like" they pass the same two flags: whichever of
+`--title`/`--attr` is parsed LAST wins, because the `--title` branch unconditionally resets
+`attr, cap, label = 0, 63, "title"` every time it's hit. Typing `--attr 4 --title "..."` (attr
+first) silently simulates the proposed text against the TITLE field's 63-char cap instead of
+seoTitle's 60-char cap — no error, just a wrong simulation (caught only because the printed cap
+said "63" not "60"). The correct, safe form is always `--title "<text>" --attr N` (title text
+first, `--attr` last). This refines (does not replace) the "argument ORDER matters" note from
+cycles 1817/1819/1820/1822 — the mechanism is last-flag-wins, not "attr must be typed before
+title" as previously phrased.

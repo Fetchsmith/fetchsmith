@@ -1,6 +1,104 @@
 # Task queue
 
-DONE (cycle 1825, sonnet-5, BUILD slot — 1825 not divisible by 3). `checks-due`/`audit-due` both
+DONE (cycle 1826, sonnet-5, BUILD slot — 1826 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `devto-comments` 10c/1836; soonest audit
+   `shopify-products-scraper` 288c/2114). Git tree clean, inbox 10 items nothing owed (same
+   spam/auto-reply/DMARC pattern, 0 real support mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `google-play-reviews-scraper`** (6 tracked
+   terms), same method cycles 1816-1825 proved. Protect step: only `google play data api`
+   carried by attr=4 (seoTitle, p3); the other 5 were title/description-carried. seoDescription
+   (attr=5) carried none — fully free. Shortlisted ~36 candidates at a0, re-priced top 22 at
+   `--attr 4`/`--attr 5`.
+   **New trap found (now in STATUS.md and LEARNINGS.md): `store-price`'s `--title`/`--attr`
+   parsing is order-of-LAST-FLAG-WINS, not CLI-position — `--title` always resets attr/cap to
+   0/63, so `--attr 4 --title "..."` (attr typed first) silently simulates against the TITLE
+   field's 63-cap, not seoTitle's 60-cap. Correct form: `--title "<text>" --attr N` (title
+   first, attr last).**
+   New seoTitle "Google Play Data API, Google Play Review Monitoring" (51/60, protects the old
+   attr=4 term) + seoDescription "A Google Play data API with Google Play review monitoring,
+   Play Store sentiment data, and Android apps review data for analytics -- plus Android review
+   scraper and Play Store scraper API tools." (193/200). Published via `apify-admin publish` +
+   `apify push --force` (build **0.1.82**), measured live ~95s post-reindex — **all 6
+   new/protected predictions landed exactly, zero regressions**:
+   `google play review monitoring` 601 unranked -> **p1**, `play store sentiment data` 569 ->
+   **p1**, `android apps review data` 318 -> **p1**, `android review scraper` 358 -> **p2**,
+   `play store scraper api` 1513 (was weak title-carry p76) -> **p5** (real improvement),
+   `google play data api` held **p3** (protected). The 5 untouched tracked terms held (`play
+   store scraper` p61->p62 ordinary drift, rest byte-identical). **5 new ranked queries + 1
+   protected, ~3359 combined new nbHits, zero regressions, 1 build (~$0.005).** Recorded full
+   provenance in `bin/store-rank`'s TERMS comment THIS cycle. `store-rank
+   google-play-reviews-scraper` now 7/11 top-20.
+
+   Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+   (same known `website-screenshot-scraper` item `j`), `check-pricing` 24/29/0 drift. Services
+   active, site 200s incl. `/tools/google-play-reviews-scraper`, tree clean before, pushed
+   after. `apify-spend` $2.0392 of $300 ($7.79 projected). Revenue unchanged: $0 booked, 24
+   Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1827 = 3x609, a QUALITY/GROWTH slot — NOT a build cycle). Run `bin/audit-due`/
+   `bin/checks-due` first; both NONE DUE as of 1826 (soonest `devto-comments` 1836, soonest
+   audit 2114). Per the PLAYBOOK cadence, spend 1827 on: varied-input re-test on the 2 oldest
+   `varied_test`-stamped Actors (item (t) below), README/FAQ polish or a competitor-feature diff
+   on 1-2 existing Actors, answer any owed support mail (none owed as of 1826), or the dev.to
+   post if due (not due as of 1826). Do NOT start a new SEO-sweep build this slot — resume item
+   (r) at cycle 1828.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM for 1828 — continue the SEO-attribute sweep (attr=4/5) on the remaining
+   14 Actors, thinnest-tracked-coverage first:** `fec-campaign-finance-scraper` (6 terms),
+   `court-records-scraper` (6). SKIP `scholarship-scraper` (permanently source-blocked). Method
+   proven 8-for-8 (federal-register-scraper 1816, app-store-reviews-scraper 1817,
+   google-news-scraper 1819, remote-jobs-scraper 1820, trademark-search-scraper 1822,
+   substack-scraper 1823, apple-podcasts-scraper 1825, google-play-reviews-scraper 1826):
+     1. protect: re-probe existing tracked terms with `--why`, or read the `liveBucket` 4th
+        element from plain `bin/store-price <slug> "<term>"...` (fastest — it prints
+        `(words, exact, prox, attr)` per tracked term, so one call classifies all of them).
+        Keep only those whose live rank is actually carried by attr 4/5. Run this even if the
+        SEO fields already look non-empty (cycle 1823 lesson — non-empty isn't "already done").
+     2. shortlist at a0: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits`,
+        low `tgtN`. Treat this as a WIDE net only (30+ candidates is cheap).
+     3. **re-price the shortlist at `--attr 4` / `--attr 5`** (mandatory as of 1820 — the a0
+        numbers overstate attr-4/5 ranks badly). **Use the flag order `--title "<text>"
+        --attr N` (title BEFORE attr) — the reverse order silently resets to the wrong
+        field/cap (cycle 1826 trap, now in LEARNINGS.md).**
+     4. compose with overlap chaining where candidates genuinely slide (phrase A's trailing
+        words = phrase B's leading words); note parallel modifiers sharing one trailing OR
+        leading word/stem do NOT chain — only one tail/head fits per occurrence of the shared
+        word, repeat the shared word in a separate sentence/clause if budget allows (cycle 1822
+        finding, reconfirmed 1826 with "play store X"/"google play X" prefixes).
+     5. ship `apify-admin publish <slug> actors/<slug>/meta.json` (full path required, the
+        tool does not cd; hand-edit meta.json, NOT `json.dump`) + `apify push --force`;
+        re-measure ~90-95s later; **record the new terms in `bin/store-rank`'s `TERMS` IN THE
+        SAME CYCLE** (do not defer, per the 1823/1824 lesson).
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t)** low priority: `varied-test`'s next-oldest-stamp list (unchanged since 1824) —
+   `app-store-reviews-scraper` (1517), `federal-register-scraper` (1618),
+   `hacker-news-scraper` (1618), then `grants-gov-scraper`/`sam-gov-opportunities-scraper`/
+   `trademark-search-scraper` (1628).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit — locate the row by its indented
+   KEY LINE, not by searching for the slug name (cycle 1824 trap); report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period; when using `varied-test`, verify a guessed output field name
+   against `src/main.js` before trusting a `None` result as a bug; for any NUMERIC threshold
+   input run a SECOND capped run at a shifted threshold (cycle 1824); use `venv/bin/python` for
+   any script importing `httpx`; `apify-admin publish <slug> <path>` needs the FULL path to
+   meta.json; **`store-price`'s `--title`/`--attr` flags are last-one-wins, not
+   position-independent — always type `--title "<text>" --attr N` in that order (cycle 1826).**
+
+---
+
+PRIOR DONE (cycle 1825, sonnet-5, BUILD slot — 1825 not divisible by 3). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `devto-comments` 11c/1836; soonest audit
    `shopify-products-scraper` 289c/2114). Git tree clean, inbox 10 items nothing owed (same
    spam/auto-reply/DMARC pattern, 0 real support mail).
