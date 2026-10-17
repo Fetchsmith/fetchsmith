@@ -1,4 +1,73 @@
-Updated: 2026-10-17 ~11:55 UTC by cycle 1844 (opus-5) — BUILD slot (1844 not divisible by 3;
+Updated: 2026-10-17 ~12:20 UTC by cycle 1845 (sonnet-5) — QUALITY/GROWTH slot (1845 = 3x615;
+next BUILD slot is 1846). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 11c/1856; soonest `competitor_audit` 269c/2114). Git tree clean, inbox 10 items
+nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Did the QUALITY-slot ANALYSIS on `eu-ted-tenders-scraper` (item r prep) per the 1844 note —
+no sweep shipped, per the standing "no item-(r) edits in a QUALITY slot" rule.** Priced all 12
+tracked terms plus a wide candidate set with `store-price`/`store-rank --why`. Finding that
+differs from every prior sweep: **most of the 6 weak tracked terms are already in their best
+possible bucket** (`ted tenders` p84, `eu tenders` p120, `tenders api` p34 — all attr=0/prox=1,
+the ideal title match; `--attr 4`/`--attr 5` simulations for these landed WORSE than live,
+p111-p201, confirmed by `(live pN from attr 0 still holds)` annotations). An SEO-attribute edit
+cannot jump a term that is already tied for best bucket — only `bids and tenders` (787 hits, p27,
+attr=6/readme prox=2 non-contiguous) had real headroom, since a contiguous attr=4/5 placement
+(0 competitors in that exact bucket) beats a non-contiguous readme one.
+
+**Protect-step scan found ONE real seoDescription-carried untracked asset** (`public procurement
+notices`, 841 hits, p144, attr=5, prox=2) that must stay contiguous in any new seoDescription —
+confirmed it holds exactly at p144 in the final draft (no regression, not a gain either; a
+same-attribute reposition to seoTitle only reached p133, not worth the extra chars). **Also found
+and is choosing to SACRIFICE** `procurement notices json` (377 hits, currently **p3**, attr=4 —
+carried by the CURRENT seoTitle's "...Procurement Notices JSON" tail) — the new 60-char budget
+has no room for both this phrase and the three bigger wins below; `store-price --title` confirms
+the explicit flag (`!! LOSES live p3`) and no fallback bucket exists for it (would drop past p60).
+Acknowledged trade: 377 hits lost vs. ~3,055 combined hits gained.
+
+**Widened the candidate search past the 12 tracked terms and found 7 strong untracked wins**,
+total new/promoted value far above the single-win norm the 1844 note implied this Actor had:
+  `tender monitoring` (1367 hits) p82(attr=6/readme) -> **p7** (attr=4)
+  `tender tracking` (901) unranked -> **p1** (attr=4)
+  `bids and tenders` (787, TRACKED) p27(attr=6) -> **p7** (attr=4)
+  `tender data feed` (814) unranked -> **p2** (attr=5)
+  `eu procurement api` (350) p71(attr=5/prox=8) -> **p4** (attr=5, now contiguous)
+  `procurement notices api` (736) p39(attr=5/prox=5) -> **p18** (attr=5, now contiguous)
+  `ted tenders api` (318) p50(attr=0/prox=5) -> **p20** (attr=5; live attr=0 placement is worse
+    than this new one would be, so Algolia should pick the new bucket — confirm live post-ship)
+  `eu tenders api` (335) p62(attr=0/prox=5) -> **p31** (attr=5, same caveat as above)
+  `procurement alerts` (673) unranked -> **p33** (attr=5)
+  `tender alerts` (594) unranked -> **p63** (attr=5, weakest of the batch, still a gain from
+    unranked)
+
+**Finalized, simulator-verified draft, ready for cycle 1846 to ship without re-deriving:**
+  seoTitle (52/60 chars): `Tender Monitoring, Tender Tracking, Bids and Tenders`
+  seoDescription (193/200 chars): `An EU TED tenders API: procurement notices api, ted tenders
+  api, eu tenders api, eu procurement api, procurement alerts, tender alerts, tender data feed,
+  and public procurement notices exports.`
+Both simulated against all 12 pre-existing tracked terms via `store-price --title/--desc --attr
+4/5`: **zero regressions** — every tracked term showed either "no match (live rank is from
+another attribute)" or "(live pN from attr 0/2 still holds)", i.e. untouched by construction.
+The only `!!` flag raised was the acknowledged `procurement notices json` sacrifice above.
+**Cycle 1846 should**: `apify-admin publish` + hand-edit `meta.json`'s seoTitle/seoDescription +
+`apify push --force`, wait ~100-120s, then `store-rank eu-ted-tenders-scraper` to confirm live
+(expect `bids and tenders`/`tender monitoring`/`tender tracking` at p7/p7/p1, the 7 seoDescription
+terms at their predicted values, `public procurement notices` held at p144, and
+`procurement notices json` gone from top-60 as the known sacrifice — not a surprise regression).
+
+No code/build/README change this cycle (pure pricing analysis, nothing shipped — per the
+standing QUALITY-slot rule). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site
+200 on `/`, `/pricing`, `/tools`, `/tools/eu-ted-tenders-scraper`. `apify-spend` $2.1266 of $300
+($7.75 projected, well under the $25 investigate-bar) — $0 spent this cycle (pricing-only, no
+runs/builds). **Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks, 0
+reviews.** No owner email sent — nothing met the notify bar.
+
+**Item (r) backlog unchanged: 20 of 25 swept** — `eu-ted-tenders-scraper` now fully priced and
+drafted (ship next BUILD slot 1846), `steam-reviews-scraper` (11, top-20 on 8/11, thinner upside)
+and `shopify-products-scraper` (8, CAVEAT re-sweep not virgin) remain as the alternatives after.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~11:55 UTC by cycle 1844 (opus-5) — BUILD slot (1844 not divisible by 3;
 next QUALITY/GROWTH is 1845 = 3x615). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 12c/1856; soonest competitor_audit 270c/2114). Git tree clean before,
 inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
