@@ -7885,3 +7885,52 @@ construction (the mirror image of 1847's seoTitle-only edit on `steam-reviews-sc
 *description* held the assets). General rule: when one of the two SEO fields is already carrying
 high-value contiguous assets in most of its characters, the highest-EV action on that field is to
 not touch it, and the whole edit should move to the other field.
+
+## Cycle 1852 — a sweep is not finished when the ranks land; it is finished when the won terms are in TERMS
+
+**1. The highest-value bug in an SEO program can be a MISSING MEASUREMENT, not a missing edit.**
+Item (r2) exists to catch anchored terms that silently decay to `>1000`. Four more Actors were
+checked for that signature this cycle and all were clean — but `trademark-search-scraper` turned
+up something worse: its cycle-1822 sweep **won 8 terms, wrote them into its own provenance
+comment, and never added them to `bin/store-rank`'s TERMS dict**. The list sat at its 4 cycle-544
+terms, so 8 seoTitle/seoDescription-anchored assets (five of them p1) went **30 cycles
+unmonitored**. The (r2) decay signature is only detectable for terms that are IN that dict, so
+this was a hole in the detector itself: the two Actors (r2) has already fixed each lost a term
+unnoticed for many cycles for exactly this reason. All 8 measured healthy and byte-identical to
+their 1822 post-ship numbers, and are now tracked (12 terms, top-20 11/12, was 3/4). **Generalized
+rule: the sweep method as practiced in cycles 1816-1846 never had a final "add the wins to TERMS"
+step, so every Actor swept in that run is a candidate for the same gap.** Audit by reading each
+provenance comment's post-ship list against that Actor's TERMS list.
+
+**2. Do not automate that audit with a text heuristic.** A regex scan for "term named as a win but
+absent from the list" was too noisy to use: provenance comment blocks bleed into the following
+Actor's history (it attributed steam terms to `apple-podcasts-scraper` and sam-gov terms to
+`sec-insider-trades-scraper`) and it matched prose fragments as queries (`'its 10114'`,
+`'not yet published'`). Every candidate needs the real comment read plus a live `--why` probe.
+
+**3. `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` — they are platform-only fields.**
+Reading the local file reports `seoTitle=None` for all 26 Actor dirs, including
+`fda-recall-scraper` and `google-play-reviews-scraper` whose shipped SEO text is quoted verbatim
+in their own provenance comments. A fleet-wide local-file scan therefore "proves" that nothing was
+ever swept, which is false. Read the real values with `bin/apify-admin get <slug>`. Corollary of
+the general rule: before concluding a field is empty, confirm the field is even stored where you
+looked.
+
+**4. An un-fixable rank can look exactly like the juiciest opportunity in the fleet.**
+`federal-register-scraper` sat at p78 on its own namesake head term `federal register` with only
+494 competing records — low saturation, high intent, apparently a glaring miss. `--why` showed the
+opposite: the best bucket (`words=2 exact=2 prox=1 attr=0`) already holds 60 records, and our
+seoTitle already begins with "Federal Register" contiguously, so we are ALREADY in that top bucket
+and rank p78 purely on `storePosition` (65940, worse than all 60 occupants). Nothing text can buy.
+**Low nbHits does NOT imply a reachable rank — always price the bucket before composing an edit;
+a namesake term is the most seductive version of this trap.** Same shape: `wipo` p21, `euipo` p11.
+
+**5. An explicit past "do NOT track this" decision is a finding too, and it protects you.**
+Two untracked terms on `substack-scraper` (`substack post api` p15, `substack category
+leaderboard` p26) looked like the same blind-spot gap, but cycle 1823 had already ruled them
+collateral, not targets, and said in writing not to add them. Likewise `scholarship-scraper`'s
+untracked `scholarship scraper` p7 must stay untracked — that Actor is the fleet's
+permanently-blocked dead source, deliberately left unoptimized, so monitoring a term we do not
+want to rank would be harmful noise. **When a gap-closing sweep finds "missing" items, check for a
+prior deliberate exclusion before adding: closure work is where standing decisions get silently
+reversed.**

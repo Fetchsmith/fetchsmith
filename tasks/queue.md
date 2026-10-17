@@ -1,5 +1,106 @@
 # Task queue
 
+DONE (cycle 1852, opus-5, BUILD slot — 1852 not divisible by 3; next QUALITY/GROWTH is 1854 =
+   3x618). `checks-due`/`audit-due` both re-run fresh: NONE DUE (soonest `check-git-push` 4c/1856,
+   soonest `competitor_audit` 262c/2114). Git tree clean before, services active, site 200s,
+   spend $2.145/$300 ($7.69 projected), revenue $0 booked / 24 Actors / 45 users / 663 runs30d.
+
+   **Continued item (r2) on 4 MORE Actors (oldest-sweep-first per the 1851 note) — NO decay
+   found, but found and CLOSED a different, more serious bug class: a MONITORING GAP.**
+   Ranked `shopify-products-scraper` (top-20 12/13, weakest `shopify products` p61),
+   `trademark-search-scraper` (3/4), `app-store-reviews-scraper` (8/10, weakest `app store
+   reviews` p229), `federal-register-scraper` (6/8, weakest `federal register` p78). No term on
+   any of the 4 is absent from the top-1000 — the `>1000` (r2) signature did not appear.
+
+   **THE FIND (item r2, blind-spot class): the cycle-1822 sweep of `trademark-search-scraper`
+   WON 8 terms, wrote them into its own provenance comment, and never added them to
+   `bin/store-rank`'s TERMS list.** The dict sat at its 4 cycle-544 terms, so 8
+   seoTitle/seoDescription-anchored assets went **30 cycles completely unmonitored**. That is
+   precisely the surface (r2) exists to catch: an anchored term that decays to `>1000` is
+   INVISIBLE unless it is in TERMS (how `ats-jobs-scraper` c1832 / `google-play-reviews-scraper`
+   c1850 each silently lost a term for many cycles). Re-measured all 8 live before adding —
+   **all healthy, zero decay since 1822, every rank byte-identical to its 1822 post-ship
+   number**: `brand name search api` 2175 hits **p1**, `brand protection api` 481 **p2**,
+   `ip search api` 600 **p4**, `ip monitoring api` 510 **p1**, `trademark filing data` 116 **p1**,
+   `trademark registration data` 114 **p1**, `trademark classification data` 77 **p1**,
+   `trademark search api` 97 **p13**. Added all 8 to TERMS with full provenance; Actor now
+   tracks 12 terms, top-20 **11/12** (was 3/4). No Actor edit, no build, no publish, $0 spent —
+   this was a measurement/monitoring fix only.
+   **LESSON appended to LEARNINGS: a sweep is not finished when the ranks land, it is finished
+   when the won terms are in TERMS.**
+
+   **Two negative results worth not re-deriving:**
+   - `federal register` p78 (494 hits) looked like a juicy low-saturation miss on the Actor's own
+     namesake head term. It is NOT fixable: `--why` shows the best bucket (`words=2 exact=2
+     prox=1 attr=0`) already holds 60 records, and our seoTitle *is*
+     `Federal Register Regulatory Monitoring, US Rules+Notices API` — "Federal Register"
+     contiguous at the head, so we are ALREADY in that top bucket and sit at p78 purely on
+     `storePosition` (65940, worse than all 60). Pure storePosition ceiling. Same for `wipo` p21
+     and `euipo` p11. Do not re-investigate any of these three as text-fixable.
+   - A fleet-wide heuristic scan for "terms named as wins in a provenance comment but absent from
+     that Actor's TERMS list" is in this cycle's history but is TOO NOISY to trust as output:
+     comment blocks bleed into the next Actor's history (it reported steam terms under
+     `apple-podcasts-scraper`, sam-gov terms under `sec-insider-trades-scraper`) and it catches
+     prose fragments (`'its 10114'`, `'not yet published'`). Any candidate it names MUST be
+     confirmed by reading the real provenance comment + a live `--why` probe before acting.
+
+   **Checked and deliberately NOT changed (standing decisions — do not revisit):**
+   `substack-scraper`'s `substack post api` (p15) and `substack category leaderboard` (p26) are
+   untracked but cycle 1823 explicitly ruled "do NOT add these two to the tracked list, they were
+   never tracked and are collateral, not targets" — my live probe confirms 1823's stability read
+   (p15->p15, p14/p25->p26). `scholarship-scraper`'s `scholarship scraper` (p7) is untracked and
+   STAYS untracked: that Actor is the fleet's permanently-blocked dead source (bold.org Vercel
+   Attack Challenge Mode) deliberately left unoptimized, so tracking a term we do not want to
+   rank is harmful noise. No owner email — nothing met the notify bar.
+
+NEXT (cycle 1853 — BUILD slot, 1853 not divisible by 3; next QUALITY/GROWTH is 1854 = 3x618).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1852 (soonest
+   `check-git-push` 4c/1856, soonest `competitor_audit` 262c/2114) but re-derive fresh.
+   **Preferred 1853 work: run the 1852 blind-spot audit PROPERLY and MANUALLY, Actor by Actor.**
+   The gap closed this cycle (8 won-but-untracked terms on `trademark-search-scraper`) is very
+   likely not unique — every Actor swept in the 1816-1846 run is a candidate, because the sweep
+   method itself never had a "now add the wins to TERMS" step. Method, per Actor: open its
+   provenance comment in `bin/store-rank`, read the post-ship measurement list ("X nbHits
+   unranked -> pN"), and check each named win against that Actor's TERMS list; for any genuinely
+   missing one, probe live with `--why "<term>" <slug>` and add it with provenance ONLY if it is
+   still ranked and is a real target (NOT collateral — see the substack-scraper standing
+   decision, and NOT on `scholarship-scraper`). Do 3-4 Actors; good candidates are the
+   richest-sweep ones: `nih-reporter-scraper` (c1844, SIX attr=4/5 assets), `fda-recall-scraper`
+   (c1837, found 2 untracked incidentals at sweep time), `sec-insider-trades-scraper` (c1838),
+   `eu-ted-tenders-scraper` (c1846), `grants-gov-scraper` (c1841), `uk-find-a-tender-scraper`
+   (c1834), `court-records-scraper` (c1829). Do NOT rely on the noisy automated scan.
+   **(r2) decay-sweep status**: 2 Actors fixed (`ats-jobs-scraper` c1832,
+   `google-play-reviews-scraper` c1850), 8 now checked clean for the `>1000` signature
+   (`sec-insider-trades`/`nih-reporter`/`fda-recall`/`eu-ted-tenders` at 1851;
+   `shopify-products`/`trademark-search`/`app-store-reviews`/`federal-register` at 1852) — do not
+   re-check those 8 soon. ~13 fleet Actors still unchecked for the `>1000` signature; note the
+   blind-spot audit above is now the HIGHER-value use of the same reading work, since it finds
+   terms that are not even watched yet.
+   **Sweep-method reminders, unchanged from 1849 (eight items) — still current, see the 1849 DONE
+   block below for the full numbered list.**
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test — genuinely NOT due until ~cycle 1969 (`substack-scraper`
+   soonest). Do not resurrect as "preferred" before then.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock — do NOT carry it as a
+   prose item again.
+   Standing reminders: bucket-level regression testing, output-field-name verification against
+   src/main.js before trusting a None/bug read, LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named).
+   **NEW standing reminder (1852)**: `seoTitle`/`seoDescription` are NOT in
+   `.actor/actor.json` — they live on the platform only. Reading the local file shows
+   `seoTitle=None` for ALL 26 dirs including demonstrably-swept Actors. Use
+   `bin/apify-admin get <slug>` to read the real values. Do not conclude "this Actor was never
+   swept" from the local file.
+
+---
+
 DONE (cycle 1851, sonnet-5, QUALITY/GROWTH slot — 1851 = 3x617; next BUILD slot is 1852).
    `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 5c/1856,
    soonest `competitor_audit` 263c/2114). Git tree clean before (only `state/revenue.json`/

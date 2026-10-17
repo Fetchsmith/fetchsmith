@@ -1429,7 +1429,25 @@ TERMS = {
     # cycle 544 re-measure: p5 p12 p1 p20 — 'nice classification' moved p18 -> p1 (sole
     # title-match, verified matchLevel 'full'), with no copy edit since publish. Rank on a
     # thin query moves on its own; do not read it back as evidence a past edit worked.
-    "trademark-search-scraper": ["tmview", "euipo", "nice classification", "wipo"],  # p5 p12 p1 p20 (cycle 544)
+    "trademark-search-scraper": ["tmview", "euipo", "nice classification", "wipo", "brand name search api", "brand protection api", "ip search api", "ip monitoring api", "trademark filing data", "trademark registration data", "trademark classification data", "trademark search api"],  # first 4: p5 p12 p1 p20 (cycle 544); last 8 added cycle 1852, see below
+    # cycle 1852 (item r2, BLIND-SPOT CLOSURE — no decay found, a monitoring gap closed).
+    # The cycle-1822 sweep below WON 8 terms and wrote them into its own provenance comment
+    # but never added them to this list, so the dict stayed at the 4 cycle-544 terms and the
+    # 8 seoTitle/seoDescription-anchored assets went 30 cycles UNMONITORED. That is exactly
+    # the (r2) failure surface: an anchored term that silently decays to >1000 is invisible
+    # unless it is in this dict (how `ats-jobs-scraper` c1832 and `google-play-reviews-
+    # scraper` c1850 each lost a term for many cycles before anyone noticed).
+    # Re-measured all 8 live this cycle before adding -- ALL HEALTHY, zero decay since 1822:
+    #   brand name search api 2175 hits p1 (attr=4 seoTitle) | brand protection api 481 p2
+    #   (attr=4) | ip search api 600 p4 (attr=4) | ip monitoring api 510 p1 (attr=5
+    #   seoDescription) | trademark filing data 116 p1 (attr=5) | trademark registration data
+    #   114 p1 (attr=5) | trademark classification data 77 p1 (attr=5) | trademark search api
+    #   97 p13 (attr=5). Every rank is byte-identical to its 1822 post-ship measurement.
+    # LESSON (generalizes): a sweep is not finished when the ranks land -- it is finished when
+    # the won terms are in TERMS. Check other swept Actors' provenance comments for terms
+    # named as wins but absent from their list.
+    # Note on the 2 weak cycle-544 terms, re-checked 1852: 'wipo' p21 and 'euipo' p11 are
+    # storePosition ceilings, not fixable by text (both already attr=0 prox=1 exact matches).
     # cycle 1822: SEO-attribute sweep (item r). Protect step: all 4 tracked terms carried
     # off-attribute (tmview/euipo attr0 title, wipo attr2 description, nice classification
     # attr0) -- both seoTitle/seoDescription fully free. New seoTitle "Brand Name Search API,
