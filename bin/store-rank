@@ -250,7 +250,45 @@ TERMS = {
     # cycle — its title is 61/63 (only 2 chars free), so every one of those 4 needs a real eviction, unlike
     # this Actor's free append; left for a future cycle with time to price the eviction cost properly.
     "federal-register-scraper": ["federal register", "public inspection", "comment deadline", "proposed rules scraper", "regulatory monitoring", "regulatory tracking", "rule tracker", "agency notices"],  # cycle 1816: the LAST 4 terms are seo-attribute wins, NOT title wins -- see the cycle-1816 note at the end of this comment. cycle 546: title -> "...Public Inspection, Comment Deadlines" joined "public inspection" p3->p1. cycle 782: title was 63/63 chars with both owned phrases (public inspection p1/1445 hits, comment deadline p2/440 hits) already maxed at span 0 -- any further edit is a TRADE, not a free add (queue item opened cycle 781 after probing 5 candidates: presidential documents scraper/notice and comment scraper/proposed rules scraper/federal rulemaking scraper/cfr scraper, all requiring a word evicted). Picked "proposed rules scraper" (863 hits, highest nbHits of the 5, only 1 competing title-matcher) over the other candidates and traded away "comment deadline" (already documented in the meta.json description as "comment-close deadline", so the concept survives the listing even off the title, per the cycle-780 eviction rule). New title "Federal Register – Proposed Rules Scraper & Public Inspection" (61/63 chars) restructures word order so "Scraper" sits directly after "Proposed Rules" (needed for span 0 on a 3-word contiguous query) while "Public Inspection" stays a separate contiguous pair at the end. Simulated locally first (all 8 probed queries, only "comment deadline"/"notice and comment scraper"/etc lost span), then published + apify push --force (build 0.1.22), measured live ~75s post-reindex: "proposed rules scraper" p38 -> **p1** (beat the ~p2 local prediction), "public inspection" held **p1** byte-identical (0 regression), "federal register" p61->p57 (unaffected, storePosition drift only). Accepted cost: "comment deadline" p2 -> p11 (dropped out of the title block but stayed page-1-ish via a genuine 2-matcher block it's not part of -- not a big loss). Net: 1 real win on the higher-volume query (863 vs 440 hits), 1 accepted moderate loss, 2 unaffected. TERMS list above now includes "proposed rules scraper" for future tracking; "comment deadline" kept in the list too since it's still a real (if now title-less) ranking signal. **cycle 1816: the title was left ALONE (it is maxed per cycle 782) and the two SEO attributes were used instead -- seoTitle (attr=4, cap 60) and seoDescription (attr=5, cap 200), which are indexed verbatim but rank after title/name/description, so they are the only free real estate left on a maxed listing.** seoTitle "Federal Register Scraper - US Rules & Notices API" -> "Federal Register Regulatory Monitoring, US Rules+Notices API" (60/60; the `+` is a token separator, so "us rules" and "notices api" both stay contiguous while "Regulatory Monitoring" is added -- that is the only way all three fit under 60). seoDescription reworded to carry "regulatory tracking", "rule tracker" and "agency notices" contiguously while keeping "federal register rulemaking" and "not yet published". Published + `apify push --force` (build 0.1.53), measured live ~85s post-reindex, **every prediction landed exactly**: `regulatory monitoring` 1463 hits unranked -> **p8**, `regulatory tracking` 987 unranked -> **p2**, `rule tracker` 271 unranked -> **p5**, `agency notices` 581 unranked -> **p11**; `notices api` 1356 p37 -> p35; and `us rules` p31, `public inspection` p2, `proposed rules scraper` p1, `federal register rulemaking` p2, `not yet published` p1 all held byte-identical. **4 new ranked queries, 3202 combined nbHits, zero regressions, one build (~$0.005).** Caveat on the simulator: `--attr 5` flagged `not yet published` as p1 -> p24 WORSE both times it was simulated, and that is a FALSE POSITIVE -- `words()` keeps `.` inside a token, so a sentence-final "published." only ever prefix-matches locally, while the live index tokenizes the period away (live bucket reads nbExactWords=3). Ignore a `!! WORSE` flag whose only missing exact word is the one ending the string with a period.
-    "grants-gov-scraper": ["grants.gov", "government grants", "nonprofit grants", "grant eligibility", "award details", "status eligibility", "grants gov scraper", "grants.gov scraper", "grants database"],
+    "grants-gov-scraper": ["grants.gov", "government grants", "nonprofit grants", "grant eligibility", "award details", "status eligibility", "grants gov scraper", "grants.gov scraper", "grants database", "nonprofit grants api", "government grants api", "grant opportunities api", "federal funding api", "grants database api", "grants data api", "funding opportunity api", "federal grants api", "eligibility filters"],
+    # cycle 1841 (BUILD, item (r) SEO-attribute sweep, 18th Actor, method 18-for-18 --
+    # last virgin 9-term candidate). Protect step: all 9 tracked terms carried by attr=0/1
+    # (title/name), untouched by an SEO-field edit, so zero regression risk on them by
+    # construction -- but 3 UNTRACKED phrases WERE seoDescription-carried (attr=5) and had
+    # to be checked before trusting the rewrite was free: `government grants opportunities`
+    # (98 hits, live p3), `eligibility filters` (506 hits, live p2), `nofos` (125 hits,
+    # live p3). A first draft dropped `eligibility filters`/`nofos` outright (`store-desc`
+    # flagged both `!! LOSES live pN`) -- fixed by re-adding "eligibility filters" and the
+    # "(NOFOs)" parenthetical verbatim into the new copy; both then simulated clean. The
+    # 3rd, `government grants opportunities`, still flagged `!! WORSE p3 -> p6` after the
+    # fix; ran the cycle-1840 control (simulated the CURRENT LIVE seoDescription) and it
+    # did NOT reproduce the flag there, so this one was real, not a tool artifact -- shipped
+    # anyway as a deliberate, small, acknowledged sacrifice (98 hits) to win 9 larger terms.
+    # Shipped seoTitle "Grants.gov API, Federal Grants API, Funding Opportunity API" (59/60)
+    # + seoDescription "A Grants.gov API: nonprofit grants api, government grants api, grant
+    # opportunities api (NOFOs), federal funding api, grants database api, eligibility
+    # filters, and grants data api exports." (187/200), build 0.1.72 (apify-admin publish +
+    # apify push --force), measured live ~110s post-reindex. **All 9 new/promoted terms
+    # landed, most within 1 of predicted**: `nonprofit grants api` (139 hits) p13 -> **p2**;
+    # `government grants api` (146) p6 -> **p3**; `grant opportunities api` (211) p28 ->
+    # **p10**; `federal funding api` (235) p102 -> **p3**; `grants database api` (60) p5 ->
+    # **p2**; `grants data api` (432) unranked -> **p6**; `funding opportunity api` (352)
+    # p137 -> **p4**; `federal grants api` (267) p54 -> **p15** (seoTitle/attr=4, landed 1
+    # off the p14 prediction -- matches the cycle-1840 attr=4 off-by-one pattern, now 2-for-2);
+    # `grants.gov api` (117) held p14 unchanged, exactly as predicted ("still holds" from the
+    # pre-existing attr=2 description match, the seoTitle match would have been worse so
+    # Algolia correctly kept the better one). Both protected untracked phrases held: `eligibility
+    # filters` p2 -> **p2** exactly, `nofos` p3 -> p3 (preserved, not promoted to the predicted
+    # p1 -- a smaller, cheaper outcome than modeled, not a loss). The acknowledged sacrifice
+    # `government grants opportunities` landed p3 -> **p5**, beating its own p6 prediction.
+    # **Zero regressions on all 9 pre-existing tracked terms** (one, `grant eligibility`,
+    # drifted BETTER p18->p13 as a side effect, picked up by a non-contiguous attr=5 match it
+    # was never meant to win). ~2,400 combined new/improved nbHits. `store-rank
+    # grants-gov-scraper` now tracking 18 terms. Item (r) backlog: 18 of 25 Actors swept, only
+    # `hacker-news-scraper` (7, low commercial intent) and `shopify-products-scraper` (8,
+    # CAVEAT re-sweep) remain of the originally-listed candidates; the 11/11/12-term richer
+    # Actors (`nih-reporter-scraper`/`steam-reviews-scraper`/`eu-ted-tenders-scraper`) are also
+    # still open if a bigger term list is wanted next.
     # cycle 874 (FIRST --attr BATCH probe on this Actor; 16 new candidate queries). Title was
     # exactly 63/63 chars with 4 protected spans, all already decent (nonprofit grants p1/220
     # hits, award details p2/3649 hits, status eligibility p2/970 hits, grants.gov scraper p21 +

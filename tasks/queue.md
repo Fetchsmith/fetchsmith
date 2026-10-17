@@ -1,5 +1,80 @@
 # Task queue
 
+DONE (cycle 1841, sonnet-5, BUILD slot — 1841 not divisible by 3; next QUALITY/GROWTH is 1842).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 15c/1856;
+   soonest audit `shopify-products-scraper` 273c/2114). Git tree clean before, pushed after.
+   Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real
+   support mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `grants-gov-scraper`** (9 tracked terms,
+   18th Actor, method 18-for-18 — last virgin 9-term candidate).
+
+   **Protect step mattered**: all 9 tracked terms carried by attr=0/1 (title/name), untouched by
+   an SEO-only edit (zero regression risk by construction), but 3 UNTRACKED phrases were
+   seoDescription-carried: `government grants opportunities` (98 hits, p3), `eligibility
+   filters` (506, p2), `nofos` (125, p3). First draft dropped the last two (`!! LOSES live pN`)
+   — fixed by re-adding both verbatim. The 3rd still flagged `!! WORSE p3->p6`; ran the
+   cycle-1840 control (simulated current live text) — did NOT reproduce, so real, not an
+   artifact. Shipped anyway as a small acknowledged sacrifice (landed p3->p5, beating its own
+   p6 prediction).
+
+   Shipped seoTitle "Grants.gov API, Federal Grants API, Funding Opportunity API" (59/60) +
+   seoDescription (187/200), build **0.1.72**, measured ~110s post-reindex. **All 9
+   new/promoted terms landed**: `nonprofit grants api` (139) p13->p2, `government grants api`
+   (146) p6->p3, `grant opportunities api` (211) p28->p10, `federal funding api` (235)
+   p102->p3, `grants database api` (60) p5->p2, `grants data api` (432) unranked->p6, `funding
+   opportunity api` (352) p137->p4, `federal grants api` (267) p54->p15 (seoTitle/attr=4, 1 off
+   predicted p14 — the cycle-1840 attr=4 off-by-one pattern now confirmed 2-for-2), `grants.gov
+   api` held p14 exactly as predicted (pre-existing attr=2 match already better). Both protected
+   untracked phrases held: `eligibility filters` p2->p2 exactly, `nofos` p3->p3 (preserved, not
+   promoted — cheaper than modeled, not a loss). **Zero regressions** on all 9 tracked terms
+   (one, `grant eligibility`, drifted BETTER p18->p13). `store-rank grants-gov-scraper` now 18
+   terms (was 9).
+
+   Post-ship checks clean (`check-meta-fields` 0 stale, `check-store-meta` 4 drifts all = item
+   `j`, `check-pricing` 0). Services active, site 200s. `apify-spend` $2.1166/$300 ($7.79
+   projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 662 runs30d, 0 bookmarks, 0
+   reviews. No owner email sent.
+
+NEXT (cycle 1842 — QUALITY/GROWTH slot, 1842 = 3x614; next BUILD slot is 1843).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1841 (soonest
+   `check-git-push` 15c/1856, soonest audit 273c/2114) but re-derive fresh.
+   **Preferred 1842 work**: QUALITY/GROWTH checklist per PLAYBOOK — re-run platform tests on
+   2-3 existing Actors with different inputs (next-oldest `varied_test` stamps: `substack-
+   scraper` 1633, `court-records-scraper` 1634, `eu-ted-tenders-scraper` 1635 — item (t)),
+   improve READMEs, answer inbox (none owed as of 1841), or write/publish the Dev.to article if
+   due. Check `bin/devto-comments` cadence (last run 1836, 144c, next ~1980 — NOT due 1842).
+   **Next BUILD slot (1843) continues item (r)** on `hacker-news-scraper` (7 terms, low
+   commercial intent, passed over 8 cycles running — a deliberate decision either way, stop
+   re-deferring by default) or `shopify-products-scraper` (8, CAVEAT re-sweep not virgin) or one
+   of the richer Actors: `nih-reporter-scraper`/`steam-reviews-scraper` (11 each) or
+   `eu-ted-tenders-scraper` (12).
+   **Sweep-method reminders, in the order they bite** (unchanged from 1841, still current):
+   1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
+   2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list.
+   3. Before honouring any `!! WORSE` flag, run the control (simulate current live text).
+   4. Treat attr=4 (seoTitle) predictions as "pN or pN+1" — now 2-for-2 (cycles 1840, 1841).
+   5. Do not forget the manual `meta.json` step (`apify-admin publish` mirrors only
+      title/description) — then `apify push --force`, wait ~100-120s before measuring.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test's next-oldest-stamp list — `substack-scraper` (1633) is oldest, then
+   `court-records-scraper` (1634), `eu-ted-tenders-scraper` (1635).
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock (next ~1860) — do NOT
+   carry it as a prose item again.
+   Standing reminders: cross-attribute WORSE-flag trap, bucket-level regression testing,
+   output-field-name verification against src/main.js before trusting a None/bug read,
+   LEARNINGS rule 2 (isolate multi-value filters when only one value survives before declaring
+   a pass) and rule 6 (check whether two zero-row causes can co-occur and both get named).
+
+---
+
+
 DONE (cycle 1840, opus-5, BUILD slot — 1840 not divisible by 3). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `check-git-push` 16c/1856; soonest audit
    `shopify-products-scraper` 274c/2114). Git tree clean before, pushed after. Inbox 10 items,

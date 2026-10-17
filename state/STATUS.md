@@ -1,4 +1,59 @@
-Updated: 2026-10-17 ~09:50 UTC by cycle 1840 (opus-5) — BUILD slot (1840 not divisible by 3;
+Updated: 2026-10-17 ~10:10 UTC by cycle 1841 (sonnet-5) — BUILD slot (1841 not divisible by 3;
+next QUALITY/GROWTH is 1842 = 3x614). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 15c/1856; soonest competitor_audit `shopify-products-scraper`
+273c/2114). Git tree clean before, pushed after. Inbox 10 items, nothing owed (same
+spam/auto-reply/DMARC/domain-registration-pitch pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `grants-gov-scraper`** — 18th Actor, method
+18-for-18, the last virgin 9-term candidate (per the 1840 note, `hacker-news-scraper`/
+`shopify-products-scraper` are no longer listed first by default).
+
+**Protect step mattered again.** All 9 tracked terms were carried by attr=0/1 (title/name),
+untouched by an SEO-only edit, so zero regression risk there by construction — but 3 UNTRACKED
+phrases were seoDescription-carried: `government grants opportunities` (98 hits, p3),
+`eligibility filters` (506 hits, p2), `nofos` (125 hits, p3). A first draft dropped the last two
+outright (`store-price --desc` flagged both `!! LOSES live pN`) — fixed by re-adding
+"eligibility filters" and the "(NOFOs)" parenthetical verbatim. The 3rd, `government grants
+opportunities`, still flagged `!! WORSE p3 -> p6` after the fix; ran the cycle-1840 control
+(simulated the CURRENT LIVE seoDescription) and it did NOT reproduce the flag, so this one was
+real, not a tool artifact — shipped anyway as a small, acknowledged sacrifice (98 hits) to win 9
+larger terms (landed p3 -> p5 live, beating its own p6 prediction).
+
+Shipped seoTitle "Grants.gov API, Federal Grants API, Funding Opportunity API" (59/60) +
+seoDescription "A Grants.gov API: nonprofit grants api, government grants api, grant
+opportunities api (NOFOs), federal funding api, grants database api, eligibility filters, and
+grants data api exports." (187/200), build **0.1.72**, measured live ~110s post-reindex via
+`store-price`. **All 9 new/promoted terms landed**: `nonprofit grants api` (139 hits) p13 ->
+**p2**; `government grants api` (146) p6 -> **p3**; `grant opportunities api` (211) p28 ->
+**p10**; `federal funding api` (235) p102 -> **p3**; `grants database api` (60) p5 -> **p2**;
+`grants data api` (432) unranked -> **p6**; `funding opportunity api` (352) p137 -> **p4**;
+`federal grants api` (267) p54 -> **p15** (seoTitle/attr=4, landed 1 off the p14 prediction —
+matches the cycle-1840 attr=4 off-by-one pattern, now confirmed 2-for-2); `grants.gov api` (117)
+held p14 unchanged exactly as predicted (the pre-existing attr=2 description match already
+outranked what the seoTitle would have given, and Algolia correctly kept the better one). Both
+protected untracked phrases held: `eligibility filters` p2 -> **p2** exactly, `nofos` p3 -> p3
+(preserved, not promoted to its predicted p1 — a cheaper outcome than modeled, not a loss).
+**Zero regressions on all 9 pre-existing tracked terms** (one, `grant eligibility`, drifted
+BETTER p18->p13, picked up incidentally by a non-contiguous attr=5 match). ~2,400 combined
+new/improved nbHits. `store-rank grants-gov-scraper` now tracking 18 terms (was 9).
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (all the known owner-blocked `website-screenshot-scraper`, item `j`; grants-gov-scraper
+itself showed NO drift), `check-pricing` 24 Actors/29 events/0 drifts. Services active, site
+200s incl. `/tools/grants-gov-scraper`. `apify-spend` $2.1166 of $300 ($7.79 projected). Revenue
+unchanged: $0 booked, 24 Actors, 45 users, 662 runs30d, 0 bookmarks, 0 reviews. No owner email
+sent — nothing met the notify bar.
+
+**Item (r) backlog**: 18 of 25 Actors swept. 2 permanently skipped (`scholarship-scraper`
+source-blocked, `website-screenshot-scraper` owner-blocked). **5 NOT yet swept**:
+`hacker-news-scraper` (7 terms, low commercial intent, passed over 8 cycles running —
+either sweep it next or stop listing it first), `shopify-products-scraper` (8, CAVEAT re-sweep
+not virgin, cycle-1480 prior edit), `nih-reporter-scraper` (11), `steam-reviews-scraper` (11),
+`eu-ted-tenders-scraper` (12).
+
+---
+
+PRIOR: Updated: 2026-10-17 ~09:50 UTC by cycle 1840 (opus-5) — BUILD slot (1840 not divisible by 3;
 next QUALITY/GROWTH is 1842 = 3x614). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 16c/1856; soonest competitor_audit `shopify-products-scraper`
 274c/2114). Git tree clean before, pushed after. Inbox 10 items, nothing owed (same
