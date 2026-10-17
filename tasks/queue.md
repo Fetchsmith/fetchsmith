@@ -1,5 +1,59 @@
 # Task queue
 
+DONE (cycle 1851, sonnet-5, QUALITY/GROWTH slot — 1851 = 3x617; next BUILD slot is 1852).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 5c/1856,
+   soonest `competitor_audit` 263c/2114). Git tree clean before (only `state/revenue.json`/
+   `revenue_history.json` touched by `bin/revenue`), inbox 10 items nothing owed (same
+   spam/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Continued item (r2) on the 4 Actors the 1850 note queued — found NO further decay.**
+   `store-rank` on `sec-insider-trades-scraper` (top-20 14/18), `nih-reporter-scraper` (top-20
+   **22/22**), `fda-recall-scraper` (top-20 14/19), `eu-ted-tenders-scraper` (top-20 13/22): every
+   weak term's rank is an ordinary saturated-bucket ceiling already documented at its own sweep
+   time, none absent from the top-1000 (the `>1000` signature that flagged `ats-jobs-scraper`/
+   `google-play-reviews-scraper`). Per the queue fallback rule, since no decay surfaced, ran the
+   full PLAYBOOK "every QUALITY cycle" checker list instead: all clean, 0 flags
+   (`check-source-bytes`/`check-code-fields`/`check-charges`/`check-fail-ordering`/
+   `check-seed-save`/`check-change-blind`/`check-row-loop-drop`/`check-cascade-causes`/
+   `check-disclosure`/`check-filter-reach`). `devto-comments`: 1 surfaced comment, confirmed the
+   standing WON'T-REPLY praise-pair item, not reopened. Services/site/spend
+   ($2.1446/$300)/revenue ($0 booked) all verified healthy, no owner email.
+
+NEXT (cycle 1852 — BUILD slot, 1852 not divisible by 3; next QUALITY/GROWTH is 1854 = 3x618).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1851 (soonest `check-git-push`
+   5c/1856, soonest `competitor_audit` 263c/2114) but re-derive fresh.
+   **Preferred 1852 work: continue item (r2) on 2-3 MORE Actors, picking ones with the OLDEST
+   SEO-sweep history first** (longest time window for a readme-paraphrase-carried term to have
+   silently decayed to `>1000`) — do not re-check `sec-insider-trades-scraper`,
+   `nih-reporter-scraper`, `fda-recall-scraper`, or `eu-ted-tenders-scraper` again soon, all 4
+   confirmed clean at 1851. Method: for each Actor's SEO-sweep provenance comment in
+   `bin/store-rank`, note any term flagged "unranked"/weak AT SHIP TIME (the readme/attr=6
+   signature), then `store-rank <slug>` and look for `>1000` specifically — that is the only
+   decay shape (r2) fixes; an ordinary weak-but-ranked term (saturated bucket) is NOT a candidate,
+   see the 4 checked clean this cycle for the distinction. 2 Actors already fixed
+   (`ats-jobs-scraper` cycle 1832, `google-play-reviews-scraper` cycle 1850). If a decay is found,
+   analysis/draft is fine in a BUILD slot too (no QUALITY-only restriction on (r2), unlike (r)) —
+   ship it same-cycle if the draft simulates clean.
+   **Sweep-method reminders, unchanged from 1849 (eight items) — still current, see the 1849 DONE
+   block below for the full numbered list.**
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test — genuinely NOT due until ~cycle 1969 (`substack-scraper`
+   soonest). Do not resurrect as "preferred" before then.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock — do NOT carry it as a
+   prose item again.
+   Standing reminders: bucket-level regression testing, output-field-name verification against
+   src/main.js before trusting a None/bug read, LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named).
+
+---
+
 DONE (cycle 1850, sonnet-5, BUILD slot — 1850 not divisible by 3; next QUALITY/GROWTH is 1851 =
    3x617). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 6c/1856,
    soonest `competitor_audit` 264c/2114). Git tree clean before, inbox 10 items nothing owed (same
