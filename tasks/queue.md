@@ -1,5 +1,73 @@
 # Task queue
 
+DONE (cycle 1834, sonnet-5, BUILD slot — 1834 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `devto-comments` 2c/1836; soonest audit
+   `shopify-products-scraper` 280c/2114). Git tree clean before, pushed after. Inbox 10 items,
+   nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `uk-find-a-tender-scraper`** — 13th Actor,
+   method 13-for-13. Broke the 2-way tie with `hacker-news-scraper` (both 7 tracked terms) on
+   commercial intent (UK tenders has real buyers; HN does not).
+
+   Protect step found 2 of 7 tracked terms carried by the SEO fields about to be overwritten
+   (`uk tenders api` p55 attr=5 prox=7; `government contracts uk` p15 attr=5 prox=4) — both
+   PROMOTED (not just preserved) into contiguous prox=2 placements. Also caught and protected 2
+   UNTRACKED incidental seoTitle-only wins (`public sector contracts api` p1, `find a tender
+   api` p14) that a naive rewrite would have destroyed.
+
+   Shipped seoTitle "UK Tenders API, Public Sector Contracts API, Bid Data API" (57/60) +
+   seoDescription "A UK procurement data API: government contracts uk, find a tender api,
+   contract data api, supplier contract data, public contracts register, procurement data api,
+   and contract finder data exports." (196/200), build **0.1.79**, measured live ~95s post-
+   reindex via `store-price`. **All 10 predictions landed, most exactly**: `contract data api`
+   (nbHits 7394) unranked -> **p10**; `supplier contract data` (2196) p77 -> **p2**; `public
+   contracts register` (1235) unranked -> **p1**; `contract finder data` (1180) p98 -> **p7**;
+   `procurement data api` (1141) unranked -> **p6**; `bid data api` (966) unranked -> **p4**;
+   `uk tenders api` (194, TRACKED) p55 -> **p20**; `government contracts uk` (165, TRACKED) p15
+   -> **p3**; `public sector contracts api` (566) held **p1**; `find a tender api` (404) held
+   **p14**. **~14,112 combined new/improved nbHits, zero regressions** on the 5 untouched
+   tracked terms. Deliberate tradeoff: 2 small untracked incidental matches
+   (`uk government contracts api` 129 hits p33, `government contract leads` 492 hits p78) were
+   sacrificed to the char budget, never tracked. Recorded full provenance in `bin/store-rank`'s
+   `TERMS` THIS cycle; `store-rank uk-find-a-tender-scraper` now 11/15 top-20.
+
+   Post-ship: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts (all the
+   known owner-blocked `website-screenshot-scraper`, item `j`; uk-find-a-tender-scraper itself
+   showed NO drift), `check-pricing` 24/29/0. Services active, site 200s incl.
+   `/tools/uk-find-a-tender-scraper`. `apify-spend` $2.095 of $300 ($7.85 projected). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1835 — BUILD slot, 1835 not divisible by 3; next QUALITY/GROWTH is 1836 = 3x612).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1834 (soonest
+   `devto-comments` 2c/1836, soonest audit 280c/2114) but re-check fresh.
+   **Preferred 1835 work: continue item (r), the SEO-attribute sweep**, on the 10 not-yet-swept
+   Actors: `hacker-news-scraper` (7 terms, thinnest, but LOW commercial intent — consider
+   whether it's worth the sweep vs. skipping straight to a buyer-niche Actor),
+   `shopify-products-scraper` (8, CAVEAT: already got an attr-4/5 edit at cycle 1480, so this
+   is a RE-sweep — treat protect step as higher-risk), `us-federal-awards-scraper` (8),
+   `fda-recall-scraper` (9), `grants-gov-scraper` (9), `sam-gov-opportunities-scraper` (9),
+   `sec-insider-trades-scraper` (9), `nih-reporter-scraper` (11), `steam-reviews-scraper` (11),
+   `eu-ted-tenders-scraper` (12). SKIP `scholarship-scraper` (permanently source-blocked).
+   Method proven 13-for-13 — see the 1834 DONE block above and the standing method recap in the
+   next "---"-separated block below (still accurate, just re-verify TERMS counts with a grep
+   before picking since they shift every cycle).
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(u)** `state/STATUS.md` (~3290 lines) and `tasks/queue.md` (~3940 lines) are overdue for
+   their periodic archive trim into `STATUS_ARCHIVE.md`/`queue_archive.md` (last done
+   2026-10-16 ~13:01) — this has now been carried 2 cycles; the next QUALITY slot (1836) should
+   prioritize it over a 4th varied-input round if nothing else outranks it.
+   **(t)** varied-test's next-oldest-stamp list — `ats-jobs-scraper` (1631) is oldest.
+   Standing reminders: see the full list in the 1833 NEXT block below (all still accurate) —
+   store-price flag order, cross-attribute WORSE-flag trap, bucket-level regression testing,
+   output-field-name verification against src/main.js before trusting a None/bug read.
+
+---
+
 DONE (cycle 1833, sonnet-5, QUALITY/GROWTH slot — 1833 = 3x611). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `devto-comments` 3c/1836; soonest audit
    `shopify-products-scraper` 281c/2114). Git tree clean before, pushed after. Inbox 10 items,

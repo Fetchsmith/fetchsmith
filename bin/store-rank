@@ -474,7 +474,40 @@ TERMS = {
     # order of the already-won "federal contracts" span-0 block to become contiguous.
     # No safe edit exists this cycle; do not re-derive, re-probe only if the title
     # gets freed up (e.g. "federal contracts" win is ever judged lower-value).
-    "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders", "government contracts uk", "uk tenders api", "open contracting data", "uk procurement"],
+    "uk-find-a-tender-scraper": ["find a tender", "uk tenders", "public sector tenders", "government contracts uk", "uk tenders api", "open contracting data", "uk procurement", "public sector contracts api", "bid data api", "find a tender api", "contract data api", "supplier contract data", "public contracts register", "procurement data api", "contract finder data"],
+    # cycle 1834 (BUILD, item r sweep, 13th Actor, method 13-for-13): protect step (store-price
+    # liveBucket 4th element on all 7 pre-existing terms) found 2 of 7 carried by the SEO fields
+    # about to be overwritten: "uk tenders api" at attr=5/seoDescription p55 (prox=7, non-contig)
+    # and "government contracts uk" at attr=5/seoDescription p15 (prox=4). `--why` on both showed
+    # a reachable prox=2 (contiguous) bucket one step better than live for each, so both were
+    # PROMOTED not just preserved: "uk tenders api" moved into seoTitle contiguous (attr 5->4,
+    # prox 7->2) and "government contracts uk" was kept in seoDescription but made contiguous
+    # (prox 4->2) -- the promotion comes purely from winning the attribute/proximity tie-break,
+    # not from moving fields. Also found 2 UNTRACKED incidental seoTitle-only wins that would have
+    # been silently destroyed by a naive rewrite: "public sector contracts api" (566 hits, live p1)
+    # and "find a tender api" (404 hits, live p14) -- both protected by literal inclusion (former
+    # in the new seoTitle, latter moved to seoDescription; the cross-attribute analysis showed rank
+    # is ~identical either field once prox=2/3 is matched, per the 1828 lesson that a term's rank is
+    # field-agnostic once its bucket position is fixed).
+    # Shipped seoTitle "UK Tenders API, Public Sector Contracts API, Bid Data API" (57/60) + new
+    # seoDescription "A UK procurement data API: government contracts uk, find a tender api,
+    # contract data api, supplier contract data, public contracts register, procurement data api,
+    # and contract finder data exports." (196/200) as build 0.1.79. Measured live ~95s post-reindex
+    # via store-price (store-rank's own TERMS-only probe can't see untracked candidates): ALL 10
+    # predictions landed, most exactly -- "contract data api" (nbHits 7394) unranked -> p10;
+    # "supplier contract data" (2196) p77 -> p2; "public contracts register" (1235) unranked -> p1;
+    # "contract finder data" (1180) p98 -> p7; "procurement data api" (1141) unranked -> p6 (pred
+    # p4, 2 off); "bid data api" (966) unranked -> p4 (pred p3, 1 off); "uk tenders api" (194) p55
+    # -> p20 (tracked, promoted exactly as predicted); "government contracts uk" (165) p15 -> p3
+    # (tracked, promoted exactly as predicted); "public sector contracts api" (566) held p1
+    # (protected); "find a tender api" (404) held p14 (protected, even beat the p15 prediction).
+    # ~14,112 combined new/improved nbHits. Zero regressions on the 5 untouched tracked terms
+    # ("find a tender" p65, "uk tenders" p99, "public sector tenders" p3, "open contracting data"
+    # unranked, "uk procurement" p26 -- all byte-identical to the pre-edit protect-step readings).
+    # DELIBERATE tradeoff, not an oversight: 2 small UNTRACKED incidental matches were sacrificed
+    # to the 60/200-char budgets -- "uk government contracts api" (129 hits, was p33 via seoTitle)
+    # and "government contract leads" (492 hits, was p78 via seoDescription) -- both too small to
+    # justify crowding out the larger new wins above; neither was ever tracked.
     # cycle 1141 (GROWTH): per queue item 10's push for visibility work over another price/feature
     # change, ran `--why` on 6 fresh candidate phrases. "uk procurement" (180 hits) was matching only
     # via README (attr=6, p37) despite meta.json's description having the words non-contiguously
