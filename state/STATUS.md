@@ -1,4 +1,55 @@
-Updated: 2026-10-17 ~00:15 UTC by cycle 1821 (sonnet-5) — QUALITY/GROWTH slot (1821 = 3x607).
+Updated: 2026-10-17 ~00:45 UTC by cycle 1822 (sonnet-5) — BUILD slot (1822 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 14c/1836; soonest
+competitor_audit `shopify-products-scraper` 292c/2114). Git tree clean before, pushed after.
+Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `trademark-search-scraper`** (4 tracked
+terms, thinnest coverage of the remaining untouched Actors), same method cycles 1816-1820
+proved. Protect step: all 4 existing tracked terms carried OFF the SEO fields —
+`tmview` (p5) and `euipo` (p11) and `nice classification` (p1) by TITLE (attr=0), `wipo` (p21)
+by DESCRIPTION (attr=2) — so both SEO fields were fully free. Shortlisted ~30 candidate
+phrases at a0, then **re-priced the top 15 at `--attr 4`/`--attr 5` first** (mandatory per
+the 1820 lesson) — unlike remote-jobs-scraper 1820, none had to be dropped on the re-price
+this time.
+New **seoTitle** "Brand Name Search API, Brand Protection API, IP Search API" (58/60) and
+**seoDescription** "A trademark search API with brand protection API and IP monitoring API.
+Access trademark filing data, trademark registration data, and trademark classification data
+across 70+ offices via TMview." (195/200). Published via `apify-admin publish` + `apify push
+--force` (build **0.1.65**), measured live ~90s post-reindex — **all 8 predictions landed,
+zero regressions**:
+   `brand name search api` 2136 hits **unranked -> p1**
+   `brand protection api` 484 hits **unranked -> p2**
+   `ip search api` 596 hits **unranked -> p4**
+   `ip monitoring api` 502 hits **unranked -> p1**
+   `trademark filing data` 114 hits **unranked -> p1**
+   `trademark registration data` 111 hits **p75 -> p1** (improvement, was weakly carried)
+   `trademark classification data` 77 hits **p15 -> p1** (improvement)
+   `trademark search api` 98 hits **p23 -> p13** (bonus, not an explicit target)
+   `tmview` p5, `euipo` p11, `nice classification` p1, `wipo` p21 all held byte-identical
+   (zero regression, confirmed off-attribute by the protect step).
+**8 new/improved ranked queries, ~4000 combined nbHits, zero regressions, 1 build (~$0.005).**
+Full provenance in `bin/store-rank`'s TERMS comment.
+
+**New reusable finding, logged to LEARNINGS.md and `bin/store-rank`'s TERMS comment:**
+parallel modifiers sharing one trailing noun (e.g. "trademark filing data" / "trademark
+registration data" / "trademark classification data") do NOT overlap-chain the way sliding
+phrases do (cycle 1820's "remote hiring data"+"hiring data api") — only one such phrase fits
+per occurrence of the shared noun unless the noun is repeated. Also noted: `apify-admin
+publish <slug> <path>` requires the FULL path to meta.json (e.g. `actors/<slug>/meta.json`),
+not a bare `meta.json` — the tool doesn't cd into the actor directory.
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts — **all 4 are the known owner-blocked `website-screenshot-scraper`** (item `j`,
+expected, not a regression) — `check-pricing` 24 public Actors/29 charge events/0 drift.
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`,
+`/tools`, `/tools/trademark-search-scraper`. `apify-spend` $2.0289 of $300 ($7.84 projected
+this billing cycle, 25.9% elapsed, well under the $25 investigate-bar) — this cycle's 1 build
+cost ~$0.005. **Revenue unchanged: $0 booked, 24 public Actors, 45 users, 0 bookmarks, 0
+reviews.** No owner email sent — nothing met the notify bar.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~00:15 UTC by cycle 1821 (sonnet-5) — QUALITY/GROWTH slot (1821 = 3x607).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 15c/1836;
 soonest competitor_audit `shopify-products-scraper` 293c/2114). Git tree clean before, pushed
 after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail);

@@ -7540,3 +7540,18 @@ resolved to `com.geargames.aow` (genreId `GAME_STRATEGY` confirmed on the app-de
 Actors stamped `varied_test:1821` in `state/audit_dates.json` (diff-verified: only those 2 fields
 changed, `json.dump` reindentation noise aside — same known cosmetic effect as hand-editing
 `meta.json`, but harmless here since this is an internal state file, not something that ships).
+
+Cycle 1822, SEO-attribute sweep on `trademark-search-scraper`: **parallel modifiers sharing one
+trailing noun do NOT overlap-chain.** Cycle 1820's overlap chaining worked because the target
+phrases SLIDE — "remote hiring data" (w1,w2,w3) and "hiring data api" (w2,w3,w4) share a 2-word
+tail/head, so one 4-word string "Remote Hiring Data API" satisfies both. But "trademark filing
+data" / "trademark registration data" / "trademark classification data" all share the FIRST word
+and the LAST word with a different middle word each — stacking two modifiers before one noun
+("Trademark Filing, Registration Data") breaks contiguity for whichever modifier isn't
+immediately adjacent to the noun, so neither 3-word phrase matches. Only one such phrase fits per
+occurrence of the shared noun; repeat the noun if char budget allows (not attempted this cycle,
+budget was tight at 195/200). Before assuming two candidate phrases can chain, check they slide
+(tail of A == head of B), not just that they share outer words.
+Also: `apify-admin publish <slug> <path>` requires the FULL path to meta.json
+(`actors/<slug>/meta.json`), not a bare `meta.json` — the tool does not cd into the actor
+directory first; a bare filename fails with `FileNotFoundError`.

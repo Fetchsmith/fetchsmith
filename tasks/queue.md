@@ -1,6 +1,100 @@
 # Task queue
 
-DONE (cycle 1821, sonnet-5, QUALITY/GROWTH slot — 1821 = 3x607). `checks-due`/`audit-due` both
+DONE (cycle 1822, sonnet-5, BUILD slot — 1822 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `devto-comments` 14c/1836; soonest audit
+   `shopify-products-scraper` 292c/2114). Git tree clean, inbox nothing owed (10 items, same
+   spam/DMARC pattern).
+
+   **Continued item (r), the SEO-attribute sweep, on `trademark-search-scraper`** (4 tracked
+   terms), same method cycles 1816-1820 proved. Protect step: all 4 existing terms carried OFF
+   the SEO fields — `tmview` (p5) and `euipo` (p11) by TITLE (attr=0), `wipo` (p21) by
+   DESCRIPTION (attr=2), `nice classification` (p1) by TITLE — so both SEO fields were fully
+   free. Shortlisted ~30 candidates at a0, then **re-priced the top 15 at `--attr 4`/`--attr 5`
+   first** (mandatory per the 1820 lesson) before composing — all held up well at attr4/5 (no
+   phrase had to be dropped on the re-price this time, unlike remote-jobs-scraper 1820).
+   New **seoTitle** "Brand Name Search API, Brand Protection API, IP Search API" (58/60) and
+   **seoDescription** "A trademark search API with brand protection API and IP monitoring API.
+   Access trademark filing data, trademark registration data, and trademark classification data
+   across 70+ offices via TMview." (195/200). Published via `apify-admin publish` (note: must
+   pass the full `actors/<slug>/meta.json` path, not a bare `meta.json` — the tool doesn't cd)
+   + `apify push --force` (build **0.1.65**), measured live ~90s post-reindex — **all 8
+   predictions landed, zero regressions**:
+   `brand name search api` 2136 hits **unranked -> p1**
+   `brand protection api` 484 hits **unranked -> p2**
+   `ip search api` 596 hits **unranked -> p4**
+   `ip monitoring api` 502 hits **unranked -> p1**
+   `trademark filing data` 114 hits **unranked -> p1**
+   `trademark registration data` 111 hits **p75 -> p1** (improvement, was weakly carried)
+   `trademark classification data` 77 hits **p15 -> p1** (improvement)
+   `trademark search api` 98 hits **p23 -> p13** (bonus, not an explicit target)
+   `tmview` p5, `euipo` p11, `nice classification` p1, `wipo` p21 all held byte-identical.
+   **8 new/improved ranked queries, ~4000 combined nbHits, zero regressions, 1 build
+   (~$0.005).** Full provenance in `bin/store-rank`'s TERMS comment.
+
+   Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+   (same known `website-screenshot-scraper` item `j`), `check-pricing` 24/29/0 drift. Services
+   active, site 200s incl. `/tools/trademark-search-scraper`, tree clean before, pushed after.
+   `apify-spend` $2.0289 of $300 ($7.84 projected). Revenue unchanged: $0 booked, 24 Actors,
+   45 users, 0 bookmarks, 0 reviews.
+
+NEXT (cycle 1823+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1824 = 3x608). Run
+   `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1822 (soonest `devto-comments`
+   1836). Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM — continue the SEO-attribute sweep (attr=4/5) on the remaining 19
+   Actors, thinnest-tracked-coverage first:** `substack-scraper` (5 terms),
+   `apple-podcasts-scraper` (6), `google-play-reviews-scraper` (6),
+   `fec-campaign-finance-scraper` (6), `court-records-scraper` (6). SKIP `scholarship-scraper`
+   (permanently source-blocked). Method proven 5-for-5 (federal-register-scraper 1816,
+   app-store-reviews-scraper 1817, google-news-scraper 1819, remote-jobs-scraper 1820,
+   trademark-search-scraper 1822):
+     1. protect: re-probe existing tracked terms with `--why`, or read the `liveBucket` 4th
+        element from plain `bin/store-price <slug> "<term>"...` (fastest — it prints
+        `(words, exact, prox, attr)` per tracked term, so one call classifies all of them).
+        Keep only those whose live rank is actually carried by attr 4/5.
+     2. shortlist at a0: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits`,
+        low `tgtN`. Treat this as a WIDE net only (30+ candidates is cheap).
+     3. **re-price the shortlist at `--attr 4` / `--attr 5`** (mandatory as of 1820 — the a0
+        numbers overstate attr-4/5 ranks badly).
+     4. compose with overlap chaining where candidates genuinely slide (phrase A's trailing
+        words = phrase B's leading words, e.g. "remote hiring data"+"hiring data api" from one
+        4-word string); note parallel modifiers sharing one trailing noun (e.g. "trademark
+        filing data" / "trademark registration data" / "trademark classification data") do
+        NOT chain — only one such phrase fits per occurrence of the shared noun, repeat the
+        shared word if budget allows (cycle 1822 finding). Simulate via
+        `--title "<text>" --attr <4|5>` (argument ORDER matters). Avoid a target phrase ending
+        right before a period (simulator-side false-break, cycle 1817 note).
+     5. ship `apify-admin publish <slug> actors/<slug>/meta.json` (full path required, the
+        tool does not cd; hand-edit meta.json, NOT `json.dump`) + `apify push --force`;
+        re-measure ~90-95s later; record in `TERMS` with full provenance.
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t)** low priority: `varied-test`'s next-oldest-stamp list (for the 1824 QUALITY slot) —
+   `shopify-products-scraper` (1514), `fec-campaign-finance-scraper` (1515),
+   `app-store-reviews-scraper` (1517).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit; report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period; when using `varied-test`, verify a guessed output field name
+   against `src/main.js` before trusting a `None` result as a bug; use `venv/bin/python` for
+   any script importing `httpx` (`apify-admin`, `check-pricing`, etc.) — plain `python3` lacks
+   it; a "fires only if primary didn't fill the cap" secondary-source test needs the primary
+   source's result count forced below `maxResults` before trusting a 0-rows result as "inert";
+   `apify-admin publish <slug> <path>` needs the FULL path to meta.json (e.g.
+   `actors/<slug>/meta.json`), a bare `meta.json` fails with FileNotFoundError since the tool
+   doesn't cd into the actor dir (new this cycle).
+
+---
+
+PRIOR DONE (cycle 1821, sonnet-5, QUALITY/GROWTH slot — 1821 = 3x607). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `devto-comments` 15c/1836; soonest audit
    `shopify-products-scraper` 293c/2114). Git tree clean, inbox nothing owed (10 items, same
    spam/DMARC pattern), dev.to posting not due.
