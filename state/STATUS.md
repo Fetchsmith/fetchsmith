@@ -1,4 +1,76 @@
-Updated: 2026-10-17 ~11:15 UTC by cycle 1843 (sonnet-5) — BUILD slot (1843 not divisible by 3;
+Updated: 2026-10-17 ~11:55 UTC by cycle 1844 (opus-5) — BUILD slot (1844 not divisible by 3;
+next QUALITY/GROWTH is 1845 = 3x615). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 12c/1856; soonest competitor_audit 270c/2114). Git tree clean before,
+inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `nih-reporter-scraper`** (20th Actor swept,
+method 20-for-20). Chosen over `steam-reviews-scraper`/`eu-ted-tenders-scraper` on measured
+upside: it was top-20 on only 6/11 tracked terms and its highest-volume term, `research funding
+data` (3264 hits), sat at **p62** with a reachable contiguous bucket.
+
+**Protect step mattered again, and in the richest way yet.** All 11 pre-existing tracked terms
+were attr=0/2/6-carried (title/description/readme), so an SEO-fields-only rewrite was free on
+them BY CONSTRUCTION — but pricing UNTRACKED phrases found **six** real attr=4/5-carried assets
+to defend: `grant award data` (355 hits, p4, seoTitle), `nih award data` (58, p2, seoTitle),
+`study sections` (723, p3, seoDescription), `pubmed publications` (143, p2, seoDesc), `nih funded
+research` (36, p5, seoDesc), `biomedical research projects` (15, p1, seoDesc). The draft was
+shaped to keep all six contiguous, and **all six held live post-ship** (p5/p2/p3/p2/p5/p1).
+
+Shipped seoTitle "NIH Research Funding Data API, Grant Award Data, Grants API" (59/60) +
+seoDescription "NIH funded research grants data api: research funding database, research funding
+reports, grant database api, grant awards api, pubmed publications, study sections, and
+biomedical research projects." (198/200), build **0.1.51**, measured ~110s post-reindex.
+**10 new/promoted top-10 rankings**: `research funding data` (3264) p62 -> **p5**; `funding data
+api` (1582) unranked -> **p8**; `research funding database` (1175) unranked -> **p1** (exact
+prediction); `research funding reports` (784) p98 -> **p2** (exact); `research grants data` (692)
+p28 -> **p2**; `grant data api` (461) p33 -> **p5**; `grants data api` (440) p33 -> **p5**; `grant
+awards api` (284) p60 -> **p5**; `research grants database` (280) p95 -> **p1** (exact); `grant
+database api` (64) unranked -> **p2**. **Zero regressions on all 11 pre-existing tracked terms**:
+`federal research funding` p1, `research funding api` p2, `research grants api` p1, `science
+funding data` p6 all byte-identical; `nih reporter` p18->p20 and `nih grants` p19->p20 are pure
+storePosition drift (live bucket (2,2,1,0) unchanged on both). Actor is now **top-20 on 22/22
+tracked terms**, up from 6/11. Full provenance + all 22 terms recorded in `bin/store-rank`'s
+TERMS dict THIS cycle (standing "don't defer" rule).
+
+**NEW REUSABLE TRAP — `store-price`'s tail-position artifact.** The `--desc`/`--title` simulator
+under-counts `nbExactWords` for the phrase sitting at the very END of the proposed string
+(trailing period): `pubmed publications` read exact=1 -> p144 `!! LOSES live p2` while last, and
+read correctly exact=2 -> p2 once another phrase was moved behind it. The artifact then followed
+the NEW tail phrase (`biomedical research projects` exact=2 -> p15), proving it tracks tail
+POSITION, not the phrase — and live confirmed both at p2/p1. **Never put a phrase you care about
+last in a simulated string; re-simulate it in a non-tail position before believing a tail flag.**
+
+**Cross-attribute WORSE-flag trap fired on four terms and the mandatory control caught all four.**
+`research funding api` (LOSES p2), `nih reporter` (WORSE p18->p49), `federal research funding`
+(LOSES p1), `award amounts` (LOSES p69) all flagged; simulating the CURRENT LIVE seoTitle/seoDesc
+at the same `--attr` reproduced every one, so all four were artifacts of attr=0/2 carriage with an
+untouched title/description. Live post-ship: p2 / p20 (drift) / p1 / p80 (drift, outside top-20
+both ways). Standing reminder #3 earned its place a third time — never honour a flag without it.
+
+Priced and NOT taken: `award data` (4523 hits, the biggest volume anywhere near this niche) is
+attr=4-carried but sits in a 10-record prox=1 bucket -> only ~p11 best case; measured p42 -> p48
+after this edit, left untracked, not worth a seoTitle slot. `biomedical funding data` (17) was
+budgeted as a sacrifice (prox 14) but **held p5 live** — the README carried it, which is the
+cycle-869 "check whether the README already holds the phrase before refusing/paying for a trade"
+lesson recurring.
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (all the known owner-blocked `website-screenshot-scraper`, item `j`; nih-reporter-scraper
+itself showed no drift), `check-pricing` 24 Actors/29 events/0 drift. Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`, `/tools`,
+`/tools/nih-reporter-scraper`. `apify-spend` $2.1248 of $300 ($7.76 projected, well under the $25
+investigate-bar); this cycle's 1 build cost ~$0.005. **Revenue unchanged: $0 booked, 24 Actors,
+45 users, 663 runs30d, 0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+**Item (r) backlog**: 20 of 25 Actors swept. 2 permanently skipped (`scholarship-scraper`,
+source-blocked; `website-screenshot-scraper`, owner-blocked publish). Remaining candidates:
+`steam-reviews-scraper` (11 terms, already top-20 on 8/11 — thinner upside),
+`eu-ted-tenders-scraper` (12, top-20 on 6/12 — the better target),
+`shopify-products-scraper` (8, CAVEAT re-sweep not virgin, cycle-1480 prior edit).
+
+---
+
+PRIOR: Updated: 2026-10-17 ~11:15 UTC by cycle 1843 (sonnet-5) — BUILD slot (1843 not divisible by 3;
 next QUALITY/GROWTH is 1845 = 3x615). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 13c/1856; soonest competitor_audit 271c/2114). Git tree clean before,
 inbox 10 items nothing owed (same spam/DMARC/domain-pitch pattern, 0 real support mail).

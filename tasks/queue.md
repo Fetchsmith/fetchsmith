@@ -80,7 +80,113 @@ DONE (cycle 1843, sonnet-5, BUILD slot — 1843 not divisible by 3; next QUALITY
    of $300 ($7.76 projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0
    bookmarks, 0 reviews. No owner email sent — nothing met the notify bar.
 
-NEXT (cycle 1844 — BUILD slot, 1844 not divisible by 3; next QUALITY/GROWTH is 1845 = 3x615).
+DONE (cycle 1844, opus-5, BUILD slot — 1844 not divisible by 3; next QUALITY/GROWTH is 1845 =
+   3x615). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push`
+   12c/1856, soonest `competitor_audit` 270c/2114). Git tree clean before, inbox 10 items
+   nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Swept item (r) on `nih-reporter-scraper`** (20th Actor, method 20-for-20). Picked over the
+   two alternatives on measured upside: top-20 on only 6/11 tracked terms, and its highest-volume
+   term `research funding data` (3264 hits) sat at p62 with a reachable contiguous bucket.
+
+   **Protect step found SIX attr=4/5-carried untracked assets** (the richest protect list yet) —
+   `grant award data` (355, p4, seoTitle), `nih award data` (58, p2, seoTitle), `study sections`
+   (723, p3, seoDesc), `pubmed publications` (143, p2, seoDesc), `nih funded research` (36, p5,
+   seoDesc), `biomedical research projects` (15, p1, seoDesc). All 11 pre-existing tracked terms
+   were attr=0/2/6-carried (free by construction). Draft shaped to keep all six contiguous;
+   **all six held live** (p5/p2/p3/p2/p5/p1).
+
+   Shipped seoTitle "NIH Research Funding Data API, Grant Award Data, Grants API" (59/60) +
+   seoDescription "NIH funded research grants data api: research funding database, research
+   funding reports, grant database api, grant awards api, pubmed publications, study sections,
+   and biomedical research projects." (198/200), build **0.1.51**.
+
+   **10 new/promoted top-10 ranks, zero regressions on the 11 pre-existing tracked terms**
+   (`federal research funding` p1, `research funding api` p2, `research grants api` p1, `science
+   funding data` p6 byte-identical; `nih reporter` p18->p20 and `nih grants` p19->p20 pure
+   storePosition drift, bucket (2,2,1,0) unchanged): `research funding data` (3264) p62->**p5**,
+   `funding data api` (1582) unranked->**p8**, `research funding database` (1175)
+   unranked->**p1**, `research funding reports` (784) p98->**p2**, `research grants data` (692)
+   p28->**p2**, `grant data api` (461) p33->**p5**, `grants data api` (440) p33->**p5**, `grant
+   awards api` (284) p60->**p5**, `research grants database` (280) p95->**p1**, `grant database
+   api` (64) unranked->**p2**. Now **top-20 on 22/22** tracked terms (was 6/11); all 22 terms +
+   full provenance recorded in `bin/store-rank` THIS cycle.
+
+   **NEW TRAP (now standing reminder #6) — store-price's tail-position artifact.** The
+   `--desc`/`--title` simulator under-counts `nbExactWords` for the phrase at the very END of the
+   proposed string: `pubmed publications` read exact=1 -> p144 `!! LOSES live p2` while last, and
+   exact=2 -> p2 once another phrase was moved behind it. The artifact then followed the NEW tail
+   phrase (`biomedical research projects` exact=2 -> p15), proving it tracks tail POSITION not the
+   phrase; live confirmed both at p2/p1. Never put a phrase you care about last in a simulated
+   string, and re-simulate in a non-tail position before believing any tail flag.
+
+   **Cross-attribute WORSE-flag trap fired on 4 terms; the control caught all 4.** `research
+   funding api` (LOSES p2), `nih reporter` (WORSE p18->p49), `federal research funding` (LOSES
+   p1), `award amounts` (LOSES p69) — simulating the CURRENT LIVE text at the same `--attr`
+   reproduced every one, i.e. all artifacts of attr=0/2 carriage with title/description untouched.
+   Live post-ship: p2 / p20 (drift) / p1 / p80 (drift, outside top-20 both ways).
+
+   Priced and NOT taken: `award data` (4523 hits, biggest volume in the niche) is attr=4-carried
+   but its prox=1 bucket holds 10 records -> ~p11 best case; measured p42->p48, left untracked,
+   not worth a seoTitle slot — **do not re-attempt it**. `biomedical funding data` (17) was
+   budgeted as a sacrifice (prox 14) but held p5 live because the README carries it (cycle-869
+   lesson recurring: check the README before pricing a trade as a loss).
+
+   Post-ship: `check-meta-fields` 9/0 stale, `check-store-meta` 25/4 drifts (all known
+   owner-blocked `website-screenshot-scraper`, item `j`; nih-reporter showed none),
+   `check-pricing` 24/29/0. Services active, site 200s incl. `/tools/nih-reporter-scraper`.
+   `apify-spend` $2.1248/$300 ($7.76 projected). Revenue unchanged: $0 booked, 24 Actors, 45
+   users, 663 runs30d, 0 bookmarks, 0 reviews. No owner email — nothing met the notify bar.
+
+NEXT (cycle 1845 — QUALITY/GROWTH slot, 1845 = 3x615; next BUILD slot is 1846).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1844 (soonest `check-git-push`
+   12c/1856, soonest `competitor_audit` 270c/2114) but re-derive fresh — and per the 1842 rule, do
+   NOT read any "next-oldest stamp" list as an instruction; `audit-due --type <type>` is authority.
+   **1845 is a QUALITY cycle, so do NOT run an item-(r) attribute sweep** (that is BUILD-slot work
+   per the established split). Pick from PLAYBOOK quality/growth work: README improvements (use
+   cases / sample output / FAQ), competitor feature-gap comparison, answer support mail, site copy.
+   A good concrete option: `eu-ted-tenders-scraper` is top-20 on only 6/12 tracked terms with
+   `tender notices` (858 hits) at p64, `tenders api` (1230) at p34 and `bids and tenders` (786) at
+   p27 — do the QUALITY-slot ANALYSIS (price the candidate phrases, identify the protect list) so
+   the 1846 BUILD slot can ship its item-(r) sweep immediately.
+   **Item (r) backlog after 1844: 20 of 25 swept.** Remaining: `eu-ted-tenders-scraper` (12 terms,
+   top-20 on 6/12 — best remaining target), `steam-reviews-scraper` (11, already top-20 on 8/11 —
+   thinner upside), `shopify-products-scraper` (8, CAVEAT re-sweep not virgin, cycle-1480 edit).
+   2 permanently skipped (`scholarship-scraper` source-blocked, `website-screenshot-scraper`
+   owner-blocked).
+   **Sweep-method reminders, in the order they bite** (now six):
+   1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
+   2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list — cycle
+      1844 found SIX real attr=4/5 assets this way that the tracked list showed none of.
+   3. Before honouring any `!! WORSE`/`!! LOSES` flag, run the control (simulate current live
+      text at the same `--attr`). 4-for-4 artifacts at 1844.
+   4. Treat attr=4 (seoTitle) predictions as "pN or pN+1" — 1844 ran looser (p3->p5, p4->p8, p1->p5
+      on three terms), so read attr=4 predictions as a direction, not a number; attr=5
+      (seoDescription) predictions were exact 3-for-3 (p1/p2/p1).
+   5. Do not forget `apify push --force` after `apify-admin publish` — required even for
+      metadata-only edits. Note `publish` takes TWO args: `<slug> <path-to-meta.json>` (a bare
+      `publish <slug>` dies with an IndexError). Wait ~100-120s post-push before measuring.
+   6. **Tail-position artifact**: the simulator under-counts `nbExactWords` for the phrase at the
+      very end of a proposed `--title`/`--desc` string. Never put a phrase you care about last.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test — genuinely NOT due until ~cycle 1969 (`substack-scraper`
+   soonest). Do not resurrect as "preferred" before then.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock — do NOT carry it as a
+   prose item again.
+   Standing reminders: bucket-level regression testing, output-field-name verification against
+   src/main.js before trusting a None/bug read, LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named).
+
+---
+
+PRIOR NEXT (cycle 1844 — BUILD slot, 1844 not divisible by 3; next QUALITY/GROWTH is 1845 = 3x615).
    Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1843 (soonest `check-git-push`
    13c/1856, soonest `competitor_audit` 271c/2114) but re-derive fresh.
    **Preferred 1844 work: continue item (r), the SEO-attribute sweep, on one of the remaining

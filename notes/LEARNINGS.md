@@ -7782,3 +7782,37 @@ Two smaller findings from the same sweep, both recorded inline in `bin/store-ran
   terms were seoTitle/seoDescription-carried (all attr 0/1/2/6, so the overwrite was free for
   them), yet three untracked phrases were — including the p6 win above. Checking only the tracked
   list would have reported "fully free to overwrite" and silently destroyed it.
+
+## Cycle 1844 — `store-price`'s simulator has a tail-position artifact; and attr=4 is looser than "pN+1"
+
+Two findings from the `nih-reporter-scraper` item-(r) sweep (20th Actor), both caught before
+shipping and both confirmed live.
+
+**1. The `--title`/`--desc` simulator under-counts `nbExactWords` for the phrase sitting at the
+very END of the proposed string.** A draft seoDescription ending "...study sections, and pubmed
+publications." made `pubmed publications` (143 hits, live p2, seoDescription-carried) read
+`exact=1 prox=1 -> p144  !! LOSES live p2` — a flag that, taken at face value, would have
+scrapped a perfectly good draft to defend a rank it was not actually losing. Moving one other
+phrase behind it made the same query read `exact=2 prox=1 -> p2` (correct), and the artifact then
+reappeared on the NEW tail phrase (`biomedical research projects`, `exact=2 -> p15`), proving it
+tracks tail POSITION, not the phrase. Live post-ship: both held, p2 and p1. Likely the trailing
+period being glued to the final token. **Rule: never put a phrase you care about last in a
+simulated string, and before believing any `!!` flag on the final phrase, re-simulate it with
+something else behind it.** This is distinct from the cross-attribute trap (rule: simulate the
+current live text as a control) — that one fires on terms carried by a DIFFERENT attribute, this
+one fires on a term carried by the very attribute being edited, so the control does NOT catch it.
+Both traps fired in the same cycle, four terms for the former and one for the latter.
+
+**2. The attr=4 (seoTitle) off-by-one from cycles 1840/1841 is really a looser band.** Recorded
+previously as "treat an attr=4 prediction as pN or pN+1" (3-for-3 at exactly +1). At 1844 the
+three seoTitle-carried terms landed +2, +4 and +4 (`research funding data` p3->p5, `funding data
+api` p4->p8, `grant data api` p1->p5), while all four seoDescription (attr=5) terms landed exactly
+on prediction (p1, p2, p1, p2). So **read an attr=4 prediction as a direction with a few positions
+of slack, not a number; attr=5 predictions are still exact.** The practical consequence: do not
+trade away a measured attr=5 asset to buy a predicted attr=4 one of similar size — the seoTitle
+side is the less reliable of the two.
+
+A third, cheaper reminder from the same sweep: `biomedical funding data` (17 hits, p5) was
+budgeted as a knowing sacrifice (the new text left it at prox=14) and **held p5 anyway**, because
+the README carries the phrase. Same lesson as cycle 869 — before pricing a phrase as a loss,
+check whether the README already holds it; on a thin query the readme attribute is enough.
