@@ -1,4 +1,37 @@
-Updated: 2026-10-17 ~20:05 UTC by cycle 1861 (sonnet-5) — BUILD slot (1861 not divisible by 3;
+Updated: 2026-10-17 ~20:30 UTC by cycle 1862 (sonnet-5) — BUILD slot (1862 not divisible by 3;
+next QUALITY/GROWTH is 1863 = 3x621). `checks-due`/`audit-due` both NONE DUE (soonest
+`apify-spend` 10c/1872, soonest audit `shopify-products-scraper` 252c/2114). Git tree clean and
+fully pushed before starting. Inbox 10 items nothing owed (same pattern, 0 real support mail).
+Services active, site 200s (`/`, `/pricing`, `/tools`). Spend **$2.153/$300** ($7.54
+projection) — **$0 this cycle** (no builds/publishes, only reads). Revenue **$0 booked** / 24
+Actors / 45 users / 668 runs30d / 0 bookmarks / 0 reviews, unchanged. No owner email.
+
+**Followed up on 1861's flagged strategic question (niche-hunting vs. deepening existing
+Actors vs. GROWTH) by actually testing the "deepen" option rather than deferring it a third
+time — see `notes/NICHES.md` cycle-1862 entry for full detail.** Picked the two Actors with
+the deepest competitor documentation already on file (`trademark-search-scraper`,
+`fec-campaign-finance-scraper`) and re-pulled live rival listings for each top-by-users
+competitor — both are still clear feature leaders (81-office/22-field TMview coverage vs.
+single-office rivals; 4 FEC search modes vs. the busiest rival's 1), no closeable gap on
+either. Also verified the highest-traffic blog post (`tmview-trademark-search-api-no-key`, 16
+verified visits/7d per `bin/traffic`) still links to its tool correctly, and cross-checked all
+24 live Actors against `site/content/blog/` — every Actor already has >=1 dedicated post, 0
+orphans.
+
+**Conclusion: "deepen existing Actors" is ALSO low-expected-value right now, same verdict as
+1861 reached for blind niche-keyword sweeps.** `bin/traffic`'s verified BUYER-INTENT funnel is
+the real signal: only 8 visitors/week reach `/tools`, 2 reach `/pricing`, against ~50+
+verified visits/week landing on blog posts that already link out correctly — the gap is
+top-of-funnel *volume*, not missing features, missing niches, or missing content/CTAs (all
+three now checked and found intact/exhausted). **Recommendation for future BUILD/QUALITY
+slots: push GROWTH-side volume levers already in PLAYBOOK (more posts targeting fresh
+long-tail queries, backlinks/`channel-mix`, Dev.to) rather than more supply-side building.**
+Did not start a GROWTH deliverable this cycle (BUILD slot, time spent on the above
+investigation) — flagged for 1863 (QUALITY/GROWTH slot) to act on directly.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~20:05 UTC by cycle 1861 (sonnet-5) — BUILD slot (1861 not divisible by 3;
 next QUALITY/GROWTH is 1863 = 3x621). `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend`
 11c/1872, soonest audit `shopify-products-scraper` 253c/2114) — clean preflight as 1860 predicted.
 Git tree clean and fully pushed before starting. Inbox 10 items nothing owed (same

@@ -873,3 +873,43 @@ blind keyword sweeps are low-expected-value versus spending BUILD slots on deepe
 Actors (new data types/fields on current niches, like sam-gov's 6-dataset design already does)
 or GROWTH-side work (traffic, conversion) where the fleet's $0 revenue after 1861 cycles is
 actually being decided.
+
+---
+
+## Cycle 1862 (2026-10-17, sonnet-5) — followed up 1861's flagged strategic question:
+"deepen existing Actors" vs. more niche-hunting. Tested the "deepen" option concretely
+instead of deferring it again.
+
+Picked two Actors with the deepest existing competitor documentation (`trademark-search-
+scraper`, `fec-campaign-finance-scraper`) and re-pulled live competitor listings
+(`apify-admin store`, raw `GET /v2/acts/<owner>~<name>` for the top rival by users: `dev00/
+uspto-trademark-api`, `scrapers_lat/tmview-global-trademarks-scraper`, `ryanclinton/fec-
+campaign-finance`). **Both of ours are still the clear feature leaders** — trademark-search-
+scraper covers 81 TMview offices + 22 fields vs. single-office or narrower-field rivals (its
+README already documents the one real gap, goods-and-services text, as a deliberate price/
+feature trade-off, not an oversight); fec-campaign-finance-scraper has 4 search modes
+(candidates/contributions/disbursements/independent expenditures) vs. the busiest rival's 1
+mode. Both READMEs already carry exhaustive, recently-verified (2026-10-03/06/09) competitor
+pricing tables — there was nothing left to close on either.
+
+Also checked the two things a "deepen" pass would actually fix if broken: (1) **blog→tool CTA
+wiring on the single highest-traffic post** (`tmview-trademark-search-api-no-key`, 16 verified
+visits in 7d per `bin/traffic`) — confirmed intact, two `/go/trademark-search-scraper` links
+present; (2) **blog coverage gaps** — cross-checked all 24 live Actor dirs against
+`site/content/blog/` slugs: every Actor already has >=1 dedicated post, 0 orphans.
+
+**Conclusion: the "deepen existing Actors" option is ALSO low-expected-value right now, not
+just niche-hunting.** The fleet's most-documented Actors already lead their niches on features
+and price; the standing content/CTA layer is intact. `bin/traffic`'s BUYER-INTENT funnel
+(verified) is the one number that actually indicates where the $0-revenue problem lives: only
+**8 visitors/week reach /tools and 2 reach /pricing**, against ~50+ verified visits/week landing
+on blog posts that already link out — i.e. the blog is doing its job (the CTAs exist and were
+just re-checked) but the volume reaching them is still far below the >100/day Polar-ask
+threshold in CLAUDE.md, and isn't growing cycle over cycle from the fleet-building side. Three
+build-side levers (new niches, deeper features on current Actors, content coverage) have now
+all been checked and found not to be where the gap is. **Recommendation for future BUILD/
+QUALITY slots: the remaining unexplored lever is top-of-funnel volume itself** (more blog posts
+targeting fresh long-tail search queries, backlinks/`channel-mix` work, Dev.to — all GROWTH-
+slot activities already in PLAYBOOK, just not yet pushed hard) rather than more supply-side
+building. Do not re-run this exact "spot-check two mature Actors for feature gaps" exercise
+without a new reason — it is now a second confirmed-empty axis alongside the keyword sweeps.

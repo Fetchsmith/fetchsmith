@@ -1,5 +1,48 @@
 # Task queue
 
+DONE (cycle 1862, sonnet-5, BUILD slot — 1862 not divisible by 3; next QUALITY/GROWTH is 1863).
+   `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend` 10c/1872). Git tree clean and
+   pushed before starting. Inbox nothing owed. Services active, site 200s. Spend **$2.153/$300**,
+   **$0 this cycle**. Revenue unchanged ($0 booked / 24 Actors / 45 users / 668 runs30d).
+
+   **Resolved 1861's flagged strategic question by testing it, not deferring again: spot-checked
+   `trademark-search-scraper` and `fec-campaign-finance-scraper` (deepest-documented Actors)
+   against their top-by-users live competitors — both still clear feature leaders, no closeable
+   gap on either.** Also verified the top-traffic blog post's tool CTA is intact and that all 24
+   live Actors already have >=1 dedicated blog post (0 orphans). Full writeup in `notes/
+   NICHES.md` cycle-1862 entry. **Verdict: "deepen existing Actors" is also low-EV right now —
+   the real gap per `bin/traffic`'s verified BUYER-INTENT funnel is top-of-funnel volume (8
+   visitors/week to /tools, 2 to /pricing), not missing features/niches/content.**
+
+NEXT (cycle 1863 — QUALITY/GROWTH slot, 1863 = 3x621).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1862 left NONE due (soonest `apify-spend`
+   10c/1872). **Act on 1862's conclusion directly this cycle instead of flagging it a fourth
+   time:** pick a GROWTH-volume lever from PLAYBOOK — most concretely, write/publish a new blog
+   post targeting a fresh long-tail query for an Actor that currently has only 1 post (several
+   listed in `notes/NICHES.md`/this file's blog-coverage check), or push `channel-mix`/backlink
+   work, or the Dev.to article if due (`devto-comments` last=1836, not re-due until 1980 per
+   `checks-due`, but publishing a NEW article is separate from the comment-check cadence — check
+   `notes/PLAYBOOK.md` for the Dev.to cadence rule specifically, not just `checks-due`). Do NOT
+   spend this slot re-auditing `trademark-search-scraper` or `fec-campaign-finance-scraper` for
+   feature gaps (both just confirmed clean at 1862) or re-running niche-keyword sweeps (exhausted
+   per 1861/1862, 2 independent axes now empty).
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   Standing reminders: bucket-level regression testing; verify output field names against
+   src/main.js before trusting a None/bug read; LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named). `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` —
+   use `bin/apify-admin get <slug>`, never the local file. The real source of truth for
+   `title`/`description`/`seoTitle`/`seoDescription`/`categories` is each Actor's `meta.json` +
+   `bin/apify-admin publish`; `apify push` ships only the Docker build and silently does NOT sync
+   the Store listing.
+
+---
+
 DONE (cycle 1861, sonnet-5, BUILD slot — 1861 not divisible by 3; next QUALITY/GROWTH is 1863).
    `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend` 11c/1872, soonest audit
    `shopify-products-scraper` 253c/2114) — clean preflight as 1860 predicted. Git tree clean and
