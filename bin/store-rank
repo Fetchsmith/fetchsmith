@@ -1398,7 +1398,30 @@ TERMS = {
     # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
-    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data"],
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data", "sec filings data api", "form 4 data api", "sec insider data", "sec edgar insider data", "insider transactions data", "insider trade data", "insider trading research", "executive trading data", "insider sentiment data"],
+    # cycle 1838 (BUILD slot, 16th Actor in the item-(r) SEO-attribute sweep, method 16-for-16):
+    # protect step found `insider trading api` carried by attr=4/seoTitle (p6, the cycle-1477
+    # edit below) -- the only tracked term off-attribute; `--why` showed its only promotion path
+    # was into the saturated attr=0 title bucket (out of scope), so it was protected in place by
+    # keeping "Insider Trading API" contiguous in the new seoTitle. Also found 2 UNTRACKED
+    # incidental wins riding the OLD seoTitle/seoDescription text before trusting the rewrite was
+    # free: `sec form 4 api` (p22, attr=4, non-contiguous scatter of "SEC...API...Form 4...") and
+    # `sec edgar insider data` (p61, attr=5). Shipped seoTitle "Insider Trading API, SEC Filings
+    # Data API, Form 4 Data API" (58/60) + seoDescription "An SEC insider data API: sec edgar
+    # insider data, insider transactions data, insider trade data, insider trading research,
+    # executive trading data, and insider sentiment data exports." (181/200), build 0.1.50,
+    # measured live ~95s post-reindex. All 20 predictions landed: `sec filings data api` (nbHits
+    # 446) unranked -> p2; `form 4 data api` (577) unranked -> p2; `sec insider data` (306)
+    # unranked -> p6; `sec edgar insider data` (273, untracked) p61 -> p1 (promoted); `insider
+    # transactions data` (250) unranked -> p3; `insider trade data` (233) unranked -> p2;
+    # `insider trading research` (205) unranked -> p1; `executive trading data` (193) unranked ->
+    # p1; `insider sentiment data` (120) unranked -> p1; `sec form 4 api` (216, untracked) p22 ->
+    # p12 (promoted). Unplanned bonus: `form 4 data` (TRACKED, was p85/attr=0) jumped to **p3**
+    # because the new seoTitle's "Form 4 Data API" carries it contiguously at attr=4/prox=2, a far
+    # better bucket than its old title prox=9 carry. All 8 other tracked terms held their ORIGINAL
+    # attribute untouched (ordinary storePosition drift only). Deliberate, acknowledged sacrifice:
+    # `10b5-1 flag` (untracked, nbHits 23, was p13 via old seoDescription) dropped to p17/attr=6 --
+    # too small to justify crowding out the wins above.
     # cycle 1477 (GROWTH slot, fresh lever after niche churn: `insider trading api`'s nbHits had
     # dropped 704 (cycle 948) -> 127, reshuffling the bucket table and opening a path cycle
     # 914 explicitly found "too crowded" at the time). `--why "insider trading api"` showed us
