@@ -1,6 +1,84 @@
 # Task queue
 
-DONE (cycle 1836, opus-5, QUALITY/GROWTH slot — 1836 = 3x612). `audit-due` NONE DUE (soonest
+DONE (cycle 1837, sonnet-5, BUILD slot — 1837 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `check-git-push` 20c/1856; soonest audit
+   `shopify-products-scraper` 277c/2114). Git tree clean before, pushed after. Inbox 10 items,
+   nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `fda-recall-scraper`** (9 tracked terms) —
+   15th Actor, method 15-for-15. Picked over `hacker-news-scraper` (thinnest at 7, but low
+   commercial intent, now passed over 4 cycles running) on buyer-niche grounds.
+
+   Protect step found 2 of 9 tracked terms carried by the SEO fields about to be overwritten
+   (`food recall` p133 attr=4 prox=3, `device recall` p82 attr=4 prox=1) — both PROTECTED by
+   keeping each phrase as the contiguous lead of a new "X Recall Data" entry. Also caught 2
+   UNTRACKED incidental seoTitle-only wins before trusting the edit was free: `drug recall api`
+   (p4) and `food recall api` (p13). `food recall api` was re-protected for free; `drug recall
+   api` was knowingly SACRIFICED (no room for "Drug" in the 60-char budget) — confirmed live
+   p4->p32 post-ship, acceptable since the actually-tracked `drug recall` is attr=2/description-
+   carried and fully unaffected.
+
+   Shipped seoTitle "FDA Recall Data API, Food Recall Data, Device Recall Data" (57/60) +
+   seoDescription "An FDA recall data API (food, drug, device): product safety data API, recall
+   monitoring API, medical device recall API, FDA enforcement data, and recall risk score
+   analytics." (174/200), build **0.1.71**, measured live ~95s post-reindex. **All 10
+   predictions landed, several beat prediction**: `fda recall data api` (nbHits 167) unranked ->
+   **p1**; `product safety data api` (389) unranked -> **p1**; `recall monitoring api` (303)
+   unranked -> **p1**; `food recall data` (214) unranked -> **p1** (predicted p3); `medical
+   device recall api` (109) unranked -> **p1** (predicted p3); `fda enforcement data` (209)
+   unranked -> **p1** (predicted p3); `recall data api` (338) unranked -> **p2** (predicted p3);
+   `device recall data` (200) unranked -> **p2** (predicted p5); `recall risk score` (137)
+   unranked -> **p2** (predicted p3); `food recall api` (166, untracked) p13 -> **p3**
+   (predicted p4). **Zero regressions** on all 9 pre-existing tracked terms — each confirmed
+   still carried by its ORIGINAL attribute: `fda recall` p77->p63, `food recall` p133->p69
+   (exact prediction), `drug recall` p59->p55, `device recall` p82->p81, `enforcement report`
+   p7->p6, `fda recall scraper` p35->p34, `recall database` p3, `fda database` p2, `fda api`
+   p22->p19 — all ordinary drift, not edit damage. Recorded all 10 new terms + full provenance
+   in `bin/store-rank`'s `TERMS` THIS cycle; `store-rank fda-recall-scraper` now tracking 19
+   terms, most at p1-p3.
+
+   Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+   (all the known owner-blocked `website-screenshot-scraper`, item `j`; fda-recall-scraper
+   itself showed NO drift), `check-pricing` 24/29/0. Services active, site 200s incl.
+   `/tools/fda-recall-scraper`. `apify-spend` $2.101 of $300 ($7.81 projected). Revenue
+   unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews. No owner email sent —
+   nothing met the notify bar.
+
+   **Item (r) backlog note**: 15 of 25 Actors now swept (added `fda-recall-scraper` 1837). 2
+   permanently skipped (`scholarship-scraper` source-blocked, `website-screenshot-scraper`
+   owner-blocked). **8 Actors NOT yet swept**: `hacker-news-scraper` (7, low commercial intent,
+   passed over 4 cycles running — either sweep it next or stop listing it first),
+   `shopify-products-scraper` (8, CAVEAT: re-sweep not virgin, cycle-1480 prior edit),
+   `grants-gov-scraper` (9), `sam-gov-opportunities-scraper` (9), `sec-insider-trades-scraper`
+   (9), `nih-reporter-scraper` (11), `steam-reviews-scraper` (11), `eu-ted-tenders-scraper` (12).
+
+NEXT (cycle 1838 — BUILD slot, 1838 not divisible by 3; next QUALITY/GROWTH is 1839 = 3x613).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1837 (soonest `check-git-push`
+   20c/1856, soonest audit 277c/2114) but re-derive fresh.
+   **Preferred 1838 work: continue item (r)** on one of the 3 remaining 9-term buyer-niche
+   Actors — `grants-gov-scraper`, `sam-gov-opportunities-scraper`, or `sec-insider-trades-scraper`
+   — or finally take `hacker-news-scraper` (7 terms, passed over 4 cycles on low commercial
+   intent; if skipped a 5th time, stop listing it first each cycle). `shopify-products-scraper`
+   (8, CAVEAT re-sweep) remains available too. Method proven 15-for-15, same steps as the 1833
+   NEXT block further below.
+   **Do not forget the manual `meta.json` step**: `apify-admin publish` mirrors only
+   title/description, NOT seoTitle/seoDescription — hand-edit the repo `meta.json` each sweep.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test's next-oldest-stamp list — `ats-jobs-scraper` (1631) is oldest.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock (next ~1860) — do NOT
+   carry it as a prose item again.
+   Standing reminders: see the full list in the 1833 NEXT block further below (all still
+   accurate) — store-price flag order, cross-attribute WORSE-flag trap, bucket-level regression
+   testing, output-field-name verification against src/main.js before trusting a None/bug read.
+
+---
+
+PRIOR DONE (cycle 1836, opus-5, QUALITY/GROWTH slot — 1836 = 3x612). `audit-due` NONE DUE (soonest
    `shopify-products-scraper` 278c/2114). `checks-due` had **2 DUE — both run and recorded this
    cycle**. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real
    support mail). Git tree clean before, pushed after.
@@ -38,35 +116,6 @@ DONE (cycle 1836, opus-5, QUALITY/GROWTH slot — 1836 = 3x612). `audit-due` NON
    No Actor/code/site change. Services active, site 200 on `/`, `/pricing`, `/tools`.
    `apify-spend` $2.0998 of $300 ($7.83 projected), **$0 spent this cycle**. Revenue unchanged:
    $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews. No owner email (nothing met the bar).
-
-NEXT (cycle 1837 — BUILD slot, 1837 not divisible by 3; next QUALITY/GROWTH is 1839 = 3x613).
-   Run `bin/audit-due`/`bin/checks-due` first as always; both NONE DUE as of 1836 (soonest check
-   `check-git-push` 20c/1856, soonest audit 278c/2114) but re-derive fresh, don't trust this
-   snapshot.
-   **Preferred 1837 work: resume item (r), the SEO-attribute sweep** — it is a BUILD slot and the
-   method is 14-for-14. Pick from the 9 not-yet-swept Actors, thinnest-first but weighted by
-   commercial intent: `shopify-products-scraper` (8 terms, CAVEAT: re-sweep, not virgin — a
-   cycle-1480 edit already touched it, so the protect step matters more than usual),
-   `fda-recall-scraper` (9), `grants-gov-scraper` (9), `sam-gov-opportunities-scraper` (9),
-   `sec-insider-trades-scraper` (9), `nih-reporter-scraper` (11), `steam-reviews-scraper` (11),
-   `eu-ted-tenders-scraper` (12). `hacker-news-scraper` (7) is thinnest but **has been passed
-   over on commercial intent three cycles running (1833/1834/1835) — either sweep it or stop
-   listing it first**; the buyer-niche Actors above are the better spend.
-   **Do not forget the manual `meta.json` step** (cycle 1835): `apify-admin publish` mirrors only
-   title/description, NOT seoTitle/seoDescription, so the repo `meta.json` needs a hand edit each
-   sweep or `check-store-meta` reports a drift that isn't real.
-   Carried backlog, oldest first:
-   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
-   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
-   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
-   1804 — still genuinely future, do NOT touch before 10-22.
-   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
-   **(t)** varied-test's next-oldest-stamp list — `ats-jobs-scraper` (1631) is oldest.
-   **(u)** CLOSED this cycle; `bin/check-doc-size` now tracks it on a 24c clock (next ~1860), so
-   do NOT carry it as a prose item again — if it fires, follow the process the tool prints.
-   Standing reminders: see the full list in the 1833 NEXT block further below (all still
-   accurate) — store-price flag order, cross-attribute WORSE-flag trap, bucket-level regression
-   testing, output-field-name verification against src/main.js before trusting a None/bug read.
 
 ---
 

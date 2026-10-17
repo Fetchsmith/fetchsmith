@@ -1,4 +1,72 @@
-Updated: 2026-10-17 ~07:40 UTC by cycle 1836 (opus-5) — QUALITY/GROWTH slot (1836 = 3x612).
+Updated: 2026-10-17 ~08:15 UTC by cycle 1837 (sonnet-5) — BUILD slot (1837 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 20c/1856; soonest
+competitor_audit `shopify-products-scraper` 277c/2114). Git tree clean before, pushed after.
+Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-registration-pitch pattern, 0
+real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `fda-recall-scraper`** (9 tracked terms) —
+15th Actor in the sweep, method now 15-for-15. Picked over `hacker-news-scraper` (thinnest at 7
+but low commercial intent, passed over 3 cycles running) on buyer-niche grounds: FDA recall
+data has real buyers (compliance/QA/legal/consumer-safety firms).
+
+Protect step (`store-price` liveBucket 4th element on all 9 pre-existing tracked terms) found 2
+carried by the SEO fields about to be overwritten: `food recall` (p133, attr=4 seoTitle,
+prox=3) and `device recall` (p82, attr=4 seoTitle, prox=1) — both PROTECTED by keeping each
+2-word phrase as the contiguous lead of a new 3-word "X Recall Data" entry in the new seoTitle.
+A literal-inclusion check of the OLD seoTitle also turned up 2 UNTRACKED incidental wins before
+trusting the edit was free: `drug recall api` (170 hits, live p4) and `food recall api` (166
+hits, live p13), both riding the old text's loose "...Drug & Device Recalls API" tail.
+`food recall api` was re-protected for free (falls out of "Food Recall Data" + trailing "API"
+token); `drug recall api` was knowingly SACRIFICED — no room for "Drug" in the 60-char budget,
+accepted since the actually-tracked term `drug recall` is attr=2/description-carried and fully
+unaffected by this edit.
+
+Shipped seoTitle "FDA Recall Data API, Food Recall Data, Device Recall Data" (57/60) +
+seoDescription "An FDA recall data API (food, drug, device): product safety data API, recall
+monitoring API, medical device recall API, FDA enforcement data, and recall risk score
+analytics." (174/200) via `apify-admin publish` + `apify push --force` (build **0.1.71**),
+measured live ~95s post-reindex via `store-price`. **All 10 predictions landed, several beat
+prediction:**
+  `fda recall data api` (nbHits 167) unranked -> **p1**
+  `product safety data api` (389) unranked -> **p1**
+  `recall monitoring api` (303) unranked -> **p1**
+  `food recall data` (214) unranked -> **p1** (predicted p3)
+  `medical device recall api` (109) unranked -> **p1** (predicted p3)
+  `fda enforcement data` (209) unranked -> **p1** (predicted p3)
+  `recall data api` (338) unranked -> **p2** (predicted p3)
+  `device recall data` (200) unranked -> **p2** (predicted p5)
+  `recall risk score` (137) unranked -> **p2** (predicted p3)
+  `food recall api` (166, untracked incidental) p13 -> **p3** (predicted p4)
+**Zero regressions on all 9 pre-existing tracked terms** — each confirmed still carried by its
+ORIGINAL attribute, untouched by this seoTitle/seoDescription-only edit: `fda recall`
+p77->p63 (attr=0, drift), `food recall` p133->p69 (attr=4, landed exactly at predicted p69),
+`drug recall` p59->p55 (attr=2, drift), `device recall` p82->p81 (attr=4, held), `enforcement
+report` p7->p6 (attr=0, drift), `fda recall scraper` p35->p34 (attr=1/name, drift), `recall
+database` p3 (attr=0, byte-identical), `fda database` p2 (attr=0, byte-identical), `fda api`
+p22->p19 (attr=2, drift). Recorded all 10 new terms plus full provenance in `bin/store-rank`'s
+`TERMS` THIS cycle; `store-rank fda-recall-scraper` now tracking 19 terms, most at p1-p3.
+
+Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+(all the known owner-blocked `website-screenshot-scraper`, item `j`; fda-recall-scraper itself
+showed NO drift, confirming the publish took), `check-pricing` 24/29/0. Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`, `/tools`,
+`/tools/fda-recall-scraper`. `apify-spend` $2.101 of $300 ($7.81 projected) — this cycle's 1
+build ~$0.005. **Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.** No
+owner email sent — nothing met the notify bar.
+
+**Item (r) backlog note**: 15 of 25 Actors now swept (added `fda-recall-scraper` 1837). 2
+permanently skipped (`scholarship-scraper` source-blocked, `website-screenshot-scraper`
+owner-blocked). **8 Actors NOT yet swept**: `hacker-news-scraper` (7, low commercial intent,
+passed over 4 cycles running — either sweep it next or stop listing it first),
+`shopify-products-scraper` (8, CAVEAT: re-sweep not virgin, cycle-1480 prior edit),
+`grants-gov-scraper` (9), `sam-gov-opportunities-scraper` (9), `sec-insider-trades-scraper` (9),
+`nih-reporter-scraper` (11), `steam-reviews-scraper` (11), `eu-ted-tenders-scraper` (12). Next
+BUILD slot (1838) should continue on one of the 9-term buyer-niche Actors (`grants-gov-scraper`/
+`sam-gov-opportunities-scraper`/`sec-insider-trades-scraper`) or finally take `hacker-news-scraper`.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~07:40 UTC by cycle 1836 (opus-5) — QUALITY/GROWTH slot (1836 = 3x612).
 `audit-due`: NONE DUE (soonest competitor_audit `shopify-products-scraper` 278c/2114).
 `checks-due`: **2 DUE and both run+recorded this cycle** — `devto-comments` and `check-git-push`.
 Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-registration-pitch pattern, 0
