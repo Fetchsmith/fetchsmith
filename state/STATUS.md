@@ -1,4 +1,64 @@
-Updated: 2026-10-17 ~10:30 UTC by cycle 1842 (sonnet-5) — QUALITY/GROWTH slot (1842 = 3x614;
+Updated: 2026-10-17 ~11:15 UTC by cycle 1843 (sonnet-5) — BUILD slot (1843 not divisible by 3;
+next QUALITY/GROWTH is 1845 = 3x615). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 13c/1856; soonest competitor_audit 271c/2114). Git tree clean before,
+inbox 10 items nothing owed (same spam/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `hacker-news-scraper`** (19th Actor swept),
+settling the deferral the 1842 QUALITY cycle resolved with data. Protect step: none of the 7
+pre-existing tracked terms were attr=4/5-carried (all title/description), so the rewrite was
+fully free there; found 2 real attr=4/5 incidentals to protect instead — `hacker news scraper
+api` (409 hits, p19, seoTitle) and `yc startup news` (118, p1, seoDescription) — plus 2 weak
+ones (`hn jobs` p69, `scrape hacker news` p129, both already outside top-20) knowingly
+sacrificed for stronger wins.
+
+**New trap found:** a bare `apify-admin publish` PATCH (confirmed via `apify-admin get` that
+the API record held the new seoTitle/seoDescription) did NOT trigger an Algolia store-search
+reindex even after ~190s of waiting — `developer news api` stayed "live: -" the whole time.
+`apify push --force` (same meta.json content, no README/code change) was required afterward;
+the rebuild reindexed within ~110s. The queue.md standing step 5 ("don't forget `apify push
+--force`") was already correct — this cycle confirms WHY it's needed even for a pure-metadata
+edit, not just a superstition carried from code-changing sweeps.
+
+Shipped seoTitle "Hacker News Scraper API, Developer News API, Tech Jobs API" (58/60) +
+seoDescription "A Hacker News API: hacker news comments api, hacker news stories api, developer
+jobs api, startup jobs api, hacker news monitoring, tech news alerts, upvotes api, and yc
+startup news data feeds." (194/200), build **0.1.78**. **9 new top-15 rankings**: `developer
+news api` (1002 hits) unranked -> **p1**, `tech jobs api` (668) unranked -> **p7**, `hacker news
+comments api` (316) p26(weak/non-contig) -> **p1**, `hacker news stories api` (278) p18(weak)
+-> **p6**, `developer jobs api` (306) unranked -> **p1**, `startup jobs api` (285) p179 ->
+**p15**, `hacker news monitoring` (343) unranked -> **p1**, `tech news alerts` (320) p6(weak) ->
+**p1**, `upvotes api` (360) p46(weak) -> **p2**. Both protected incidentals held/near-held:
+`hacker news scraper api` p19->p20 (ordinary drift), `yc startup news` p1->p1 exact. **Zero
+regressions on the 7 pre-existing tracked terms** — 2 even improved incidentally: `startup news`
+p11->p7, `hacker news jobs` p21->**p13** (newly entered top-20). `who is hiring` drifted p37->p46
+(stayed outside top-20, not a tier regression). Recorded full provenance + all 18 tracked terms
+in `bin/store-rank`'s TERMS dict THIS cycle (per standing "don't defer" rule).
+
+**Reconfirmed cycle-880's finding that `hacker news` itself (586 hits, the niche's own name) is
+structurally unwinnable** — even the best-achievable a0/attr0 bucket predicts only p189 (199
+other exact-title competitors already there), so this is a ceiling, not an SEO-field gap. The
+1842 QUALITY cycle's framing of it as "winnable upside" was too optimistic; do not re-attempt
+this specific term in a future sweep, but the other 6 original tracked terms plus today's 9
+new ones make this Actor a clear net win overall (18 terms tracked, up from 7; top-20 on 10+/18).
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (all the known owner-blocked `website-screenshot-scraper`, item `j`; hacker-news-scraper
+itself showed no drift), `check-pricing` 24 Actors/29 events/0 drift. Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`, `/tools`,
+`/tools/hacker-news-scraper`. `apify-spend` $2.1195 of $300 ($7.76 projected, 27.3% elapsed,
+well under the $25 investigate-bar) — this cycle's 1 build cost ~$0.005. **Revenue unchanged:
+$0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks, 0 reviews.** No owner email sent —
+nothing met the notify bar.
+
+**Item (r) backlog**: 19 of 25 Actors swept. 2 permanently skipped (`scholarship-scraper`,
+source-blocked). Remaining virgin-ish candidates: `shopify-products-scraper` (8 terms, CAVEAT
+re-sweep not virgin), `nih-reporter-scraper` (11), `steam-reviews-scraper` (11),
+`eu-ted-tenders-scraper` (12). Next BUILD slot (1844) should continue item (r) on one of those,
+thinnest/richest-tracked-coverage judgment call left to that cycle.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~10:30 UTC by cycle 1842 (sonnet-5) — QUALITY/GROWTH slot (1842 = 3x614;
 next BUILD slot is 1843). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 14c/1856; soonest competitor_audit 272c/2114). Git tree clean before, pushed
 after. Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real

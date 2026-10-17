@@ -805,8 +805,43 @@ TERMS = {
     # "startup news" (3228 hits) p15->p9, "hacker news jobs" (629) p146->p16,
     # "hacker news search" (917) p85->p38 (untracked, measured). "hacker news" itself
     # is hopeless: 60+ title-matchers with a better storePosition, we sit ~p200.
+    # cycle 1843 (item (r) SEO-attribute sweep, 19th Actor, resolving the 8-cycle
+    # hacker-news-scraper deferral with data per the 1842 analysis). Protect step:
+    # none of the 7 pre-existing tracked terms were attr=4/5-carried (all title/
+    # description), so the rewrite was fully free there; found 2 real attr=4/5
+    # incidentals worth protecting instead -- "hacker news scraper api" (409 hits,
+    # p19, seoTitle) and "yc startup news" (118, p1, seoDescription) -- plus 2 weak
+    # ones (hn jobs p69, scrape hacker news p129, both already outside top-20)
+    # knowingly sacrificed for stronger wins. New seoTitle "Hacker News Scraper API,
+    # Developer News API, Tech Jobs API" (58/60) + seoDescription "A Hacker News
+    # API: hacker news comments api, hacker news stories api, developer jobs api,
+    # startup jobs api, hacker news monitoring, tech news alerts, upvotes api, and
+    # yc startup news data feeds." (194/200), build 0.1.78, measured live ~190s
+    # post-push-reindex (a bare `apify-admin publish` PATCH did NOT reindex the
+    # store search after 190s of waiting -- `apify push --force` was required
+    # afterward to trigger it; same meta.json content, just needs the build step).
+    # **9 new top-15 rankings**: developer news api (1002 hits) unranked->p1, tech
+    # jobs api (668) unranked->p7, hacker news comments api (316) p26(weak/non-
+    # contig)->p1, hacker news stories api (278) p18(weak)->p6, developer jobs api
+    # (306) unranked->p1, startup jobs api (285) p179->p15, hacker news monitoring
+    # (343) unranked->p1, tech news alerts (320) p6(weak)->p1, upvotes api (360)
+    # p46(weak)->p2. Both protected incidentals held/near-held: hacker news scraper
+    # api p19->p20 (ordinary drift), yc startup news p1->p1 exact. **Zero
+    # regressions on the 7 pre-existing tracked terms** -- 2 even improved
+    # incidentally: startup news p11->p7, hacker news jobs p21->p13 (newly entered
+    # top-20). `who is hiring` drifted p37->p46 (unchanged outside top-20, not a
+    # regression in rank tier). Reconfirmed cycle-880's finding that "hacker news"
+    # itself (586 hits, the niche's own name) is genuinely unwinnable -- even the
+    # best-achievable a0/attr0 bucket predicts only p189 (199 other exact-title
+    # competitors), so this is a structural ceiling, not an SEO-field gap; do not
+    # re-attempt it in a future sweep.
     "hacker-news-scraper": ["hacker news", "hn api", "who is hiring", "tech news api",
-                            "startup news", "hacker news jobs", "keyword monitoring api"],
+                            "startup news", "hacker news jobs", "keyword monitoring api",
+                            "hacker news scraper api", "developer news api", "tech jobs api",
+                            "yc startup news", "hacker news comments api",
+                            "hacker news stories api", "developer jobs api",
+                            "startup jobs api", "hacker news monitoring",
+                            "tech news alerts", "upvotes api"],
     # cycle 890 (final 44 free chars, pure append, 0 words evicted, 256->298/300):
     # appended " Also a keyword monitoring API for alerts." — verified true against
     # the existing `watchLabel` feature (README already calls it a "scheduled keyword

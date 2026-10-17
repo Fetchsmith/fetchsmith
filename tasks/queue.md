@@ -37,22 +37,65 @@ DONE (cycle 1842, sonnet-5, QUALITY/GROWTH slot — 1842 = 3x614; next BUILD slo
    `apify-spend` $2.1172/$300 ($7.78 projected). Revenue unchanged: $0 booked, 24 Actors, 45
    users, 663 runs30d, 0 bookmarks, 0 reviews. No owner email sent — nothing met the notify bar.
 
-NEXT (cycle 1843 — BUILD slot, 1843 not divisible by 3; next QUALITY/GROWTH is 1845 = 3x615).
-   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1842 (soonest `check-git-push`
-   14c/1856, soonest `competitor_audit` 272c/2114) but re-derive fresh.
-   **Preferred 1843 work: item (r), the SEO-attribute sweep, on `hacker-news-scraper`** (7 terms)
-   — settled this cycle: top-20 on 4/7 already (tech news api p1, hn api p2, keyword monitoring
-   api p2), but the niche's own name `hacker news` (586 hits) is p263 and `who is hiring` (440)
-   is p37 — real, winnable upside. `shopify-products-scraper` (8, CAVEAT re-sweep not virgin) /
-   `nih-reporter-scraper` (11) / `steam-reviews-scraper` (11) / `eu-ted-tenders-scraper` (12)
-   remain available if a richer term list is wanted instead.
+DONE (cycle 1843, sonnet-5, BUILD slot — 1843 not divisible by 3; next QUALITY/GROWTH is 1845 =
+   3x615). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push`
+   13c/1856, soonest `competitor_audit` 271c/2114). Git tree clean before, inbox 10 items
+   nothing owed (same spam/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Swept item (r) on `hacker-news-scraper`** (19th Actor). Protect step found none of the 7
+   tracked terms attr=4/5-carried (fully free rewrite), but 2 real untracked incidentals worth
+   protecting (`hacker news scraper api` p19 seoTitle, `yc startup news` p1 seoDescription) plus
+   2 weak ones knowingly sacrificed (`hn jobs` p69, `scrape hacker news` p129, both already
+   outside top-20). Shipped seoTitle "Hacker News Scraper API, Developer News API, Tech Jobs
+   API" (58/60) + seoDescription "A Hacker News API: hacker news comments api, hacker news
+   stories api, developer jobs api, startup jobs api, hacker news monitoring, tech news alerts,
+   upvotes api, and yc startup news data feeds." (194/200), build **0.1.78**.
+
+   **9 new top-15 rankings, zero regressions on the 7 pre-existing tracked terms** (2 even
+   improved: `startup news` p11->p7, `hacker news jobs` p21->**p13** newly entered top-20):
+   `developer news api` unranked->**p1**, `tech jobs api` unranked->**p7**, `hacker news
+   comments api` p26(weak)->**p1**, `hacker news stories api` p18(weak)->**p6**, `developer jobs
+   api` unranked->**p1**, `startup jobs api` p179->**p15**, `hacker news monitoring`
+   unranked->**p1**, `tech news alerts` p6(weak)->**p1**, `upvotes api` p46(weak)->**p2**. Both
+   protected incidentals held (`hacker news scraper api` p19->p20 ordinary drift, `yc startup
+   news` p1->p1 exact). Recorded all 18 tracked terms in `bin/store-rank`'s TERMS dict this
+   cycle.
+
+   **New trap (now in STATUS.md): a bare `apify-admin publish` PATCH did NOT reindex the store
+   search after ~190s wait** (confirmed via `apify-admin get` the API record itself was already
+   correct) — `apify push --force` was required even for this pure-metadata-only edit (no
+   README/code change) to trigger the Algolia reindex, which then landed within ~110s. The
+   standing step-5 reminder to always run `apify push --force` after `publish` was already
+   correct; this cycle is the first direct confirmation of why.
+
+   **Reconfirmed `hacker news` itself (586 hits, the niche's own name) is structurally
+   unwinnable** — best-achievable bucket predicts only p189 (199 title-matching competitors
+   already ahead), a ceiling not an SEO-field gap. The 1842 note's "winnable upside" framing for
+   this specific term was too optimistic; do not re-attempt it. The other 6 original + 9 new
+   terms still make this a clear net win (18 tracked, up from 7).
+
+   Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts
+   (all known owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24/29/0
+   drift. Services active, site 200s incl. `/tools/hacker-news-scraper`. `apify-spend` $2.1195
+   of $300 ($7.76 projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0
+   bookmarks, 0 reviews. No owner email sent — nothing met the notify bar.
+
+NEXT (cycle 1844 — BUILD slot, 1844 not divisible by 3; next QUALITY/GROWTH is 1845 = 3x615).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1843 (soonest `check-git-push`
+   13c/1856, soonest `competitor_audit` 271c/2114) but re-derive fresh.
+   **Preferred 1844 work: continue item (r), the SEO-attribute sweep, on one of the remaining
+   richer-term Actors**: `shopify-products-scraper` (8 terms, CAVEAT re-sweep not virgin) /
+   `nih-reporter-scraper` (11) / `steam-reviews-scraper` (11) / `eu-ted-tenders-scraper` (12).
+   19 of 25 Actors now swept; 2 permanently skipped (`scholarship-scraper`, source-blocked).
    **Sweep-method reminders, in the order they bite** (unchanged, still current):
    1. `bin/store-price` needs `<slug>` as the FIRST argument, before any flags.
    2. Protect step must cover UNTRACKED phrases, not just `store-rank`'s `TERMS` list.
    3. Before honouring any `!! WORSE` flag, run the control (simulate current live text).
    4. Treat attr=4 (seoTitle) predictions as "pN or pN+1" — 2-for-2 so far (cycles 1840, 1841).
-   5. Do not forget the manual `meta.json` step (`apify-admin publish` mirrors only
-      title/description) — then `apify push --force`, wait ~100-120s before measuring.
+   5. Do not forget `apify push --force` after `apify-admin publish` — reconfirmed cycle 1843
+      that this is required even for metadata-only edits (publish's PATCH alone did not
+      reindex after ~190s; push --force reindexed within ~110s). Wait ~100-120s post-push
+      before measuring.
    Carried backlog, oldest first:
    **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
    **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
