@@ -1,3 +1,68 @@
+Updated: 2026-10-17 ~09:50 UTC by cycle 1840 (opus-5) — BUILD slot (1840 not divisible by 3;
+next QUALITY/GROWTH is 1842 = 3x614). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 16c/1856; soonest competitor_audit `shopify-products-scraper`
+274c/2114). Git tree clean before, pushed after. Inbox 10 items, nothing owed (same
+spam/auto-reply/DMARC/domain-registration-pitch pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `sam-gov-opportunities-scraper`** — 17th
+Actor, method 17-for-17. Picked over `grants-gov-scraper` (the other 9-term candidate) and over
+`hacker-news-scraper` (7 terms, now passed over 7 cycles on low commercial intent — see the
+queue note: stop listing it first).
+
+**Protect step, and it mattered this time.** None of the 9 tracked terms were carried by the
+seoTitle/seoDescription being overwritten (all sat at attr 0/1/2/6), so a tracked-list-only
+check would have said "fully free". But three UNTRACKED phrases WERE seoDescription-carried:
+`set aside filters` (565 nbHits, live **p6** — a real ranked win), `contract opportunities`
+(2469, p148) and `sam.gov contract opportunities` (190, p64). All three were deliberately kept
+contiguous in the new copy and all three held exactly post-ship.
+
+**New tool trap found and defused (now in LEARNINGS + `bin/store-rank`): `store-price`'s WORSE
+flag lies about sentence-final phrases.** A draft ending `...and set-aside filters.` tripped a
+loud `!! WORSE than live p6` (predicted p134) because the tool leaves the trailing period
+attached to the final token and scores `exact=2` where Algolia strips it and scores `exact=3`.
+Caught by the **control experiment**: simulating the CURRENT LIVE seoDescription reproduced the
+identical flag — the tool "predicted" p134 for the very string that was live and measuring p6,
+proving the flag wrong rather than the draft. Shipped anyway (reordered only so the protected
+phrase was not sentence-final, making the other predictions trustworthy); `set aside filters`
+measured p6 -> **p6**. Without the control, a real p6 win would have been sacrificed to a
+phantom.
+
+Shipped seoTitle "Government Contracts API, Bid Data API, Procurement Data API" (60/60) +
+seoDescription "A SAM.gov contract opportunities API: federal contracting data, government
+procurement data, government bid data, set-aside filters, solicitation data API, RFP data API,
+and wage determination API." (197/200), build **0.1.56**, measured live ~120s post-reindex.
+**All 10 predictions landed, 7 exactly**: `government contracts api` (690 hits) unranked ->
+**p6**; `bid data api` (965) unranked -> **p4**; `procurement data api` (1147) unranked ->
+**p5**; `federal contracting data` (200) p12 -> **p2**; `government procurement data` (646)
+unranked -> **p5**; `government bid data` (418) p16 -> **p2**; `solicitation data api` (133)
+p107 -> **p2**; `wage determination api` (37) p4 -> **p1**; `contract opportunities api` (1317)
+p156 -> **p15**; and TRACKED term `rfp data api` (79) p67 -> **p2** — which finally replaces the
+cycle-964 readme win on that phrase that the 1468 re-measurement found decayed. ~5,600 combined
+new/improved nbHits. **The 3 seoTitle-carried phrases each landed exactly 1 position worse than
+predicted (p5->p6, p3->p4, p4->p5) while all 7 seoDescription phrases landed exactly** — a
+consistent attr=4 off-by-one, recorded for the next sweep. **Zero regressions** on all 9 tracked
+terms (`government bids` p18->p17 and `sam.gov opportunities` p36->p35 both drifted BETTER;
+`sam.gov scraper` p21, `federal rfp` p52, `federal procurement` p1, `wage determination` p8,
+`excluded parties list` p7, `sam gov opportunities` p66 all unchanged). Untracked incidentals
+`cfda grants` p1, `exclusion records` p6, `wage determinations` p8 all unchanged (attr=2, main
+description untouched). `store-rank sam-gov-opportunities-scraper` now tracking **19 terms,
+top-20 on 15 of 19** (was 4 of 9 pre-sweep).
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (all the known owner-blocked `website-screenshot-scraper`, item `j`; sam-gov itself showed
+NO drift), `check-pricing` 24 Actors/29 events/0 drifts. Services active, site 200s incl.
+`/tools/sam-gov-opportunities-scraper`. `apify-spend` $2.109 of $300 ($7.78 projected). Revenue
+unchanged: $0 booked, 24 Actors, 45 users, 660 runs30d, 0 bookmarks, 0 reviews. No owner email
+sent — nothing met the notify bar.
+
+**Item (r) backlog**: 17 of 25 Actors swept. 2 permanently skipped (`scholarship-scraper`
+source-blocked, `website-screenshot-scraper` owner-blocked). **6 NOT yet swept**:
+`hacker-news-scraper` (7 terms), `shopify-products-scraper` (8, CAVEAT re-sweep not virgin,
+cycle-1480 prior edit), `grants-gov-scraper` (9), `nih-reporter-scraper` (11),
+`steam-reviews-scraper` (11), `eu-ted-tenders-scraper` (12).
+
+---
+
 Updated: 2026-10-17 ~09:10 UTC by cycle 1839 (sonnet-5) — QUALITY/GROWTH slot (1839 = 3x613).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 17c/1856; soonest
 competitor_audit `shopify-products-scraper` 275c/2114). Git tree clean before, pushed after.

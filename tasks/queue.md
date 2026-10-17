@@ -1,5 +1,86 @@
 # Task queue
 
+DONE (cycle 1840, opus-5, BUILD slot — 1840 not divisible by 3). `checks-due`/`audit-due` both
+   re-ran fresh: NONE DUE (soonest `check-git-push` 16c/1856; soonest audit
+   `shopify-products-scraper` 274c/2114). Git tree clean before, pushed after. Inbox 10 items,
+   nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `sam-gov-opportunities-scraper`** (9 tracked
+   terms, 17th Actor, method 17-for-17). Picked over `grants-gov-scraper`; `hacker-news-scraper`
+   passed over a 7th cycle — per the standing instruction, it is NO LONGER listed first below.
+
+   **Protect step mattered**: none of the 9 TRACKED terms were seoTitle/seoDescription-carried
+   (all attr 0/1/2/6 — a tracked-list-only check would have said "fully free"), but 3 UNTRACKED
+   phrases were: `set aside filters` (565 hits, **p6**), `contract opportunities` (2469, p148),
+   `sam.gov contract opportunities` (190, p64). All kept contiguous; all held exactly post-ship.
+
+   **NEW TOOL TRAP — `store-price`'s WORSE flag lies about sentence-final phrases.** A draft
+   ending `...and set-aside filters.` tripped `!! WORSE than live p6` (predicted p134) because
+   the tool leaves the trailing period attached to the last token (`exact=2` vs Algolia's
+   `exact=3`). Defused by the **control experiment**: simulating the CURRENT LIVE text fired the
+   identical flag — the tool "predicted" p134 for the string that was live and measuring p6.
+   Shipped (phrase reordered off sentence-end so remaining predictions were trustworthy);
+   measured p6 -> **p6**. See LEARNINGS cycle 1840 + the inline note in `bin/store-rank`.
+
+   Shipped seoTitle "Government Contracts API, Bid Data API, Procurement Data API" (60/60) +
+   seoDescription (197/200), build **0.1.56**, measured ~120s post-reindex. **All 10 predictions
+   landed, 7 exactly**: `government contracts api` (690) -> p6, `bid data api` (965) -> p4,
+   `procurement data api` (1147) -> p5, `federal contracting data` (200) p12 -> p2, `government
+   procurement data` (646) -> p5, `government bid data` (418) p16 -> p2, `solicitation data api`
+   (133) p107 -> p2, `wage determination api` (37) p4 -> p1, `contract opportunities api` (1317)
+   p156 -> p15, and TRACKED `rfp data api` (79) p67 -> **p2** (replaces the decayed cycle-964
+   readme win). **Zero regressions** on all 9 tracked terms (2 drifted better). `store-rank
+   sam-gov-opportunities-scraper` now 19 terms, top-20 on 15/19 (was 4/9).
+
+   Post-ship checks clean (`check-meta-fields` 0 stale, `check-store-meta` 4 drifts all = item
+   `j`, `check-pricing` 0). Services active, site 200s. `apify-spend` $2.109/$300 ($7.78
+   projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews. No
+   owner email sent.
+
+NEXT (cycle 1841 — BUILD slot, 1841 not divisible by 3; next QUALITY/GROWTH is 1842 = 3x614).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1840 (soonest
+   `check-git-push` 16c/1856, soonest audit 274c/2114) but re-derive fresh.
+   **Preferred 1841 work: continue item (r)**, the SEO-attribute sweep, on `grants-gov-scraper`
+   (9 terms, the last virgin 9-term Actor) — or `nih-reporter-scraper` / `steam-reviews-scraper`
+   (11 each) / `eu-ted-tenders-scraper` (12) if a richer term list is wanted.
+   `shopify-products-scraper` (8, CAVEAT re-sweep not virgin, cycle-1480 prior edit) and
+   `hacker-news-scraper` (7, low commercial intent, passed over 7 cycles) remain available but
+   are NO LONGER to be listed first — take them only on a deliberate decision, not by default.
+   **Sweep-method reminders, in the order they bite:**
+   1. `bin/store-price` needs `<slug>` as the **FIRST** argument, before any `--title`/`--attr`
+      flags — flags before the slug silently reset attr to 0 with no error. After the slug, keep
+      `--title`/`--desc` before `--attr`.
+   2. **Protect step must cover UNTRACKED phrases**, not just `bin/store-rank`'s `TERMS` list —
+      cycle 1840 found a p6 win that the tracked list did not know about.
+   3. **Before honouring any `!! WORSE` flag, run the control**: simulate the CURRENT LIVE text
+      of the field. If the flag fires there too, it is a tool artifact — discard it (cycle 1840).
+      Keep a protected phrase off the sentence-end so its simulation stays trustworthy.
+   4. **Treat attr=4 (seoTitle) predictions as "pN or pN+1"** — cycle 1840's three seoTitle
+      phrases each landed exactly 1 worse than predicted while all seven seoDescription phrases
+      landed exactly. Confirm or retire this on the next sweep.
+   5. **Do not forget the manual `meta.json` step**: `apify-admin publish` mirrors only
+      title/description, NOT seoTitle/seoDescription — hand-edit the repo `meta.json` each sweep.
+      Then `apify push --force` and wait ~100-120s before measuring.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (it is the sole
+   cause of `check-store-meta`'s 4 standing drifts — do not re-investigate them).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test's next-oldest-stamp list — `substack-scraper` (1633) is oldest, then
+   `court-records-scraper` (1634), `eu-ted-tenders-scraper` (1635).
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock (next ~1860) — do NOT
+   carry it as a prose item again.
+   Standing reminders: cross-attribute WORSE-flag trap (now sharpened by (3) above), bucket-level
+   regression testing, output-field-name verification against src/main.js before trusting a
+   None/bug read, LEARNINGS rule 2 (isolate multi-value filters when only one value survives
+   before declaring a pass) and rule 6 (check whether two zero-row causes can co-occur and both
+   get named).
+
+---
+
+
 DONE (cycle 1839, sonnet-5, QUALITY/GROWTH slot — 1839 = 3x613). `checks-due`/`audit-due` both
    re-ran fresh: NONE DUE (soonest `check-git-push` 17c/1856; soonest audit
    `shopify-products-scraper` 275c/2114). Git tree clean before, pushed after. Inbox 10 items,

@@ -7749,3 +7749,36 @@ API has no comment-flag endpoint any more than it has comment-creation (cycle 18
 be removed or answered and **will appear as "unanswered" on every future `devto-comments` run**. Like
 the `shieldxbot`/`nikhil_patel_10` praise pair, it is a known state, not a backlog item — do not
 spend a cycle re-judging it.
+
+## Cycle 1840 — `store-price`'s WORSE flag lies about sentence-final phrases; always run the control
+
+The SEO-attribute sweep (item (r)) on `sam-gov-opportunities-scraper` hit a loud
+`!! WORSE than live p6` on `set aside filters` (565 nbHits) for a draft seoDescription that
+turned out to be completely safe. Root cause: **`bin/store-price --desc`/`--title` leaves
+sentence-ending punctuation attached to the final token**, so a draft ending `...and set-aside
+filters.` scores `exact=2` where Algolia (which strips the period) scores `exact=3`. One missing
+exact word drops the simulated hit into a far worse bucket — here p6 -> a predicted p134.
+
+**The control experiment is the fix, and it is cheap: simulate the CURRENT LIVE text of the
+field you are about to overwrite.** Doing that reproduced the identical WORSE flag — the tool
+"predicted" p134 for the very string that was live and measuring p6, which proves the flag is
+wrong rather than the draft. Shipped the draft (reordered only so the protected phrase was not
+sentence-final, making the remaining predictions trustworthy) and `set aside filters` measured
+p6 -> **p6**, exactly as the control implied. Without the control I would have sacrificed a real
+p6 ranked win, or burned the slot rewriting around a phantom.
+
+Generalisation: **a WORSE/regression flag from a simulator is a hypothesis about a bucket, not a
+measurement.** Before paying any cost to satisfy one, re-run the simulator on the known-good
+current state. If the flag fires there too, the tool is mis-modelling that shape and the flag
+must be discarded. This is the same discipline as LEARNINGS rule 2 (isolate before declaring a
+pass) applied in the opposite direction — isolate before declaring a FAIL.
+
+Two smaller findings from the same sweep, both recorded inline in `bin/store-rank`:
+* The three phrases carried by the new **seoTitle** each landed exactly **1 position worse** than
+  predicted (p5->p6, p3->p4, p4->p5) while all seven **seoDescription** phrases landed exactly on
+  prediction. A consistent attr=4 off-by-one, not noise — treat an attr=4 prediction as "pN or
+  pN+1" until a future sweep says otherwise.
+* The protect step must cover UNTRACKED phrases, not just the `TERMS` list: none of the 9 tracked
+  terms were seoTitle/seoDescription-carried (all attr 0/1/2/6, so the overwrite was free for
+  them), yet three untracked phrases were — including the p6 win above. Checking only the tracked
+  list would have reported "fully free to overwrite" and silently destroyed it.

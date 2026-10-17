@@ -1539,7 +1539,44 @@ TERMS = {
     # the appended readme paragraph it rode in on no longer survives the Store's
     # regenerated `readmeSummary` paraphrase. Do not cite this entry as a live h904 win
     # -- see the file-top 1468 warning before sizing another attr=6 edit on this Actor.
-    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp", "federal procurement", "wage determination", "government bids", "excluded parties list", "rfp data api"],  # cycle 964: p14 p32 p9 p14 p1 p3 p15 p2 p2
+    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "sam gov opportunities", "sam.gov scraper", "federal rfp", "federal procurement", "wage determination", "government bids", "excluded parties list", "rfp data api",
+                                      # cycle 1840 (item (r) SEO-attribute sweep, 17th Actor): rewrote seoTitle
+                                      # "Government Contracts API, Bid Data API, Procurement Data API" (60/60) +
+                                      # seoDescription "A SAM.gov contract opportunities API: federal contracting data,
+                                      # government procurement data, government bid data, set-aside filters, solicitation
+                                      # data API, RFP data API, and wage determination API." (197/200), build 0.1.56,
+                                      # measured live ~120s post-reindex. PROTECT step: none of the 9 tracked terms above
+                                      # were carried by attr=4/5 (all attr 0/1/2/6), so the overwrite was free for them --
+                                      # but 3 UNTRACKED phrases WERE seoDescription-carried and were deliberately kept
+                                      # contiguous in the new copy: `set aside filters` (565 hits, p6 -- a real ranked win),
+                                      # `contract opportunities` (2469, p148) and `sam.gov contract opportunities` (190, p64).
+                                      # All three held exactly post-ship. Zero regressions on the 9 tracked terms
+                                      # (government bids p18->p17 and sam.gov opportunities p36->p35 both drifted BETTER).
+                                      # 10 new terms below, landed 7-for-10 exactly; the 3 seoTitle-carried ones each landed
+                                      # exactly 1 position worse than predicted (p5->p6, p3->p4, p4->p5) -- a consistent
+                                      # off-by-one worth watching on the next attr=4 sim, not a model failure.
+                                      "government contracts api",     # 690 hits, unranked -> p6 (seoTitle, predicted p5)
+                                      "bid data api",                 # 965 hits, unranked -> p4 (seoTitle, predicted p3)
+                                      "procurement data api",         # 1147 hits, unranked -> p5 (seoTitle, predicted p4)
+                                      "federal contracting data",     # 200 hits, p12 -> p2 (seoDescription, exact)
+                                      "government procurement data",  # 646 hits, unranked -> p5 (seoDescription, exact)
+                                      "government bid data",          # 418 hits, p16 -> p2 (seoDescription, exact)
+                                      "solicitation data api",        # 133 hits, p107 -> p2 (seoDescription, exact)
+                                      "wage determination api",       # 37 hits, p4 -> p1 (seoDescription, exact)
+                                      "contract opportunities api",   # 1317 hits, p156 -> p15 (seoDescription, exact)
+                                      "set aside filters",            # 565 hits, p6 -> p6 PROTECTED (see WORSE-flag note below)
+                                      ],  # cycle 964: p14 p32 p9 p14 p1 p3 p15 p2 p2
+    # cycle 1840 TOOL TRAP (new, costlier than the known flag-order one): `store-price --desc/--title`
+    # UNDERCOUNTS nbExactWords by 1 whenever the query's LAST word sits immediately before
+    # sentence-ending punctuation in the simulated text -- it leaves the "." attached to the token,
+    # so "set aside filters." scores exact=2 while Algolia itself strips the period and scores exact=3.
+    # This fired a loud `!! WORSE than live p6` on `set aside filters` for a draft seoDescription that
+    # was in fact completely safe. The CONTROL EXPERIMENT is what caught it: simulate the CURRENT LIVE
+    # text and see whether the same WORSE flag fires. It did -- the tool "predicted" p134 for the very
+    # string that was live and measuring p6 -- which proves the flag, not the draft, is wrong. Always
+    # run that control before sacrificing a phrase to a WORSE flag. (The `rfp data api` tracked term
+    # above was ALSO rescued by this sweep: p67 at attr=2 -> p2 contiguous in seoDescription, which
+    # finally replaces the cycle-964 readme win that the 1468 re-measurement found decayed.)
     # cycle 964 (h904 README-proximity scan, GROWTH slot): FIRST readme-attribute edit on this
     # Actor -- the title (55/63) and description (299/300) are both effectively full, so attr=6
     # was the only lever left. Priced 18 fresh domain phrases with `bin/store-price`, then
