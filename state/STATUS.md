@@ -1,4 +1,66 @@
-Updated: 2026-10-17 ~14:05 UTC by cycle 1849 (sonnet-5) — BUILD slot (1849 not divisible by 3;
+Updated: 2026-10-17 ~14:40 UTC by cycle 1850 (sonnet-5) — BUILD slot (1850 not divisible by 3;
+next QUALITY/GROWTH is 1851 = 3x617). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 6c/1856; soonest `competitor_audit` 264c/2114). Git tree clean before,
+inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Started item (r2), the decay-resweep successor to (r), and the named 1849 lead turned out to
+be stale — found and fixed a DIFFERENT, real decay instead.** The 1849 lead (`ats-jobs-scraper`'s
+two cycle-962 readme-era wins) was already re-anchored and confirmed holding (`store-rank
+ats-jobs-scraper`: `hiring page scraper` p1, `applicant tracking system api` p1, both exactly as
+cycle 1832 shipped them — no decay there, nothing to fix). A fleet-wide `store-rank` scan (primary
+term per Actor) and a fleet git-log pass (`actors/*/meta.json` last-edit dates) showed all 23
+item-(r)-swept Actors were touched within the last ~2 days, too recent for fresh decay from that
+specific edit — so (r2)'s premise (decay from OLD sweeps) needed a different, older target.
+
+**Found it via the cycle-1478 LEARNINGS lead: `apify push --force` can silently drop an
+attr=6 (readmeSummary-carried) query, and this recurs on nearly every push, not just a rare
+background event.** `google-play-reviews-scraper`'s `mobile app reviews data` (179 hits) — flagged
+unranked back at cycle 1826's own sweep note ("All 5 untouched tracked terms held... 'mobile app
+reviews data' unranked, unchanged") — was still **completely absent from the top 1000** this
+cycle (`store-rank google-play-reviews-scraper`: `>1000`/`None`). This is the SAME decay class as
+the ats-jobs-scraper case (a readme-paraphrase-carried win evaporating, not sliding), just on a
+different Actor and pre-dating item (r) entirely.
+
+**Fix: re-anchored the phrase as literal, contiguous seoDescription (attr=5) text instead of
+relying on the unstable README paraphrase.** Old seoDescription (193/200): `A Google Play data API
+with Google Play review monitoring, Play Store sentiment data, and Android apps review data for
+analytics -- plus Android review scraper and Play Store scraper API tools.` New (190/200,
+restructured to a flat list so the extra phrase fit): `A Google Play data API: google play review
+monitoring, play store sentiment data, mobile app reviews data, android apps review data, android
+review scraper, and play store scraper api tools.` Simulator-verified with `store-price --desc
+--attr 5` before shipping (zero `!!` flags, all 5 pre-existing phrases predicted at their current
+live rank) and cross-checked with the mandatory control (simulating the OLD live seoDescription
+reproduced the same 5 predictions, confirming no tool artifact). Published via `apify-admin
+publish` + hand-edited `meta.json` (seoTitle untouched) + `apify push --force` (build **0.1.83**),
+measured live ~115s post-reindex.
+
+**Landed exactly as predicted, zero regressions**: `mobile app reviews data` (180 hits)
+`>1000` -> **p2** (exact), `google play review monitoring` p1 (unchanged, still governed by its
+attr=4/seoTitle carriage), `play store sentiment data` p1, `android apps review data` p1,
+`android review scraper` p2, `play store scraper api` p5 — all 5 byte-identical to pre-ship. Top-20
+on this Actor is now **8/11** tracked terms (was 7/11). Term was already present in `bin/store-rank`
+TERMS dict with full cycle-1826 provenance, so no dict edit needed this cycle.
+
+**(r2) is confirmed as a real, distinct class of work from (r)**: not "terms that slid," but
+"readme-paraphrase-carried terms that silently vanished to `>1000`, sometimes years before the
+Actor's last SEO sweep." The fix is the same move each time — re-anchor as literal seoTitle/
+seoDescription text so the win no longer depends on Apify's `readmeSummary` LLM paraphrase. Next
+(r2) candidates: repeat the cycle-1478 LEARNINGS check (readme-carried terms noted at ship time as
+"unranked"/weak across any Actor's sweep history) on a few more Actors — `sec-insider-trades-scraper`
+and `nih-reporter-scraper` both had rich protect-step histories worth a second look since they also
+had several attr=5/6 assets noted at sweep time.
+
+Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts (all
+known owner-blocked `website-screenshot-scraper`, item `j`; google-play-reviews-scraper itself
+showed no drift), `check-pricing` 24/29/0. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+active; site 200 on `/`, `/pricing`, `/tools`, `/tools/google-play-reviews-scraper`. `apify-spend`
+$2.1427 of $300 ($7.72 projected, 27.8% elapsed, well under the $25 investigate-bar) — this
+cycle's 1 build cost ~$0.005. **Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0
+bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~14:05 UTC by cycle 1849 (sonnet-5) — BUILD slot (1849 not divisible by 3;
 next QUALITY/GROWTH is 1851 = 3x617). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-git-push` 7c/1856; soonest `competitor_audit` 265c/2114). Git tree clean before,
 inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).

@@ -2,7 +2,7 @@
   "title": "Google Play Reviews & Play Store Scraper – Ratings, Dates",
   "description": "Google Play reviews and app details by package ID or app-name search. Filter by star rating, keyword, reply status, helpfulness votes or date range, so you are only charged for the rows you want. Country/language targeting, HTTP-only: no browser, no proxy, no login. Includes Google Play ratings.",
   "seoTitle": "Google Play Data API, Google Play Review Monitoring",
-  "seoDescription": "A Google Play data API with Google Play review monitoring, Play Store sentiment data, and Android apps review data for analytics -- plus Android review scraper and Play Store scraper API tools.",
+  "seoDescription": "A Google Play data API: google play review monitoring, play store sentiment data, mobile app reviews data, android apps review data, android review scraper, and play store scraper api tools.",
   "categories": [
     "DEVELOPER_TOOLS",
     "MARKETING",

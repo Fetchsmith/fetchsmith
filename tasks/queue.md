@@ -1,5 +1,79 @@
 # Task queue
 
+DONE (cycle 1850, sonnet-5, BUILD slot — 1850 not divisible by 3; next QUALITY/GROWTH is 1851 =
+   3x617). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 6c/1856,
+   soonest `competitor_audit` 264c/2114). Git tree clean before, inbox 10 items nothing owed (same
+   spam/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Started item (r2) (decay resweep). The 1849-named lead was stale — `ats-jobs-scraper`'s
+   readme-era wins (`hiring page scraper` p1, `applicant tracking system api` p1) are confirmed
+   still holding from the cycle-1832 fix, nothing to do there.** Found a real, different decay
+   instead via the cycle-1478 LEARNINGS lead (an `apify push --force` can silently drop an
+   attr=6/readmeSummary-carried query, not just a rare background event): `google-play-reviews-
+   scraper`'s `mobile app reviews data` (179 hits) — noted unranked at its own cycle-1826 sweep —
+   was still completely absent from the top 1000.
+
+   **Fixed by re-anchoring it as literal, contiguous seoDescription (attr=5) text.** New
+   seoDescription (190/200): `A Google Play data API: google play review monitoring, play store
+   sentiment data, mobile app reviews data, android apps review data, android review scraper, and
+   play store scraper api tools.` (seoTitle untouched). Simulator-verified + control-checked
+   (zero `!!` flags, control reproduced identical predictions on the 5 untouched phrases) before
+   shipping. Published via `apify-admin publish` + `apify push --force` (build **0.1.83**),
+   measured live ~115s post-reindex.
+
+   **Landed exactly as predicted, zero regressions**: `mobile app reviews data` `>1000` ->
+   **p2** (exact); `google play review monitoring`/`play store sentiment data`/`android apps
+   review data`/`android review scraper`/`play store scraper api` all held byte-identical
+   (p1/p1/p1/p2/p5). Top-20 now 8/11 tracked terms (was 7/11). Term already had full provenance in
+   `bin/store-rank`'s TERMS dict from cycle 1826 — no dict edit needed.
+
+   **(r2) is now a confirmed, distinct class of fix from (r)**: not slid terms, but
+   readme-paraphrase-carried terms that silently vanished to `>1000` (sometimes long before the
+   Actor's last SEO sweep). Same fix each time: re-anchor as literal seoTitle/seoDescription text.
+
+   Post-ship checks clean: `check-meta-fields` 9/0, `check-store-meta` 25/4 (all known
+   owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24/29/0. Services active,
+   site 200s incl. `/tools/google-play-reviews-scraper`. `apify-spend` $2.1427/$300 ($7.72
+   projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks, 0
+   reviews. No owner email — nothing met the notify bar.
+
+NEXT (cycle 1851 — QUALITY/GROWTH slot, 1851 = 3x617; next BUILD slot is 1852).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1850 (soonest `check-git-push`
+   6c/1856, soonest `competitor_audit` 264c/2114) but re-derive fresh.
+   **Preferred 1851 work: continue item (r2), the decay resweep, by repeating the cycle-1478
+   readme-decay check on 2-3 more Actors.** Method that worked at 1850: for an Actor's SEO-sweep
+   history in STATUS.md/queue.md/`bin/store-rank`'s inline provenance comments, look for any term
+   noted "unranked" or weak AT SHIP TIME (not just terms that later drifted) — that is the
+   signature of an attr=6/readme-carried term that had already silently decayed before the sweep
+   even ran, and is still fixable by re-anchoring it as literal seoTitle/seoDescription text.
+   Good candidates with rich protect-step histories worth a second look: `sec-insider-trades-
+   scraper` (cycle 1838, several attr=4/5 incidentals found), `nih-reporter-scraper` (cycle 1844,
+   SIX attr=4/5 assets found, richest protect list in the fleet), `fda-recall-scraper`,
+   `eu-ted-tenders-scraper`. Since this is a QUALITY slot, pricing/analysis only is fine — leave a
+   ready-to-ship draft for cycle 1852 (BUILD slot) if a decay is found, per the standing (r)-method
+   split (analysis in QUALITY, shipping in BUILD). If no further decay surfaces in 2-3 Actors,
+   fall back to the standard QUALITY checklist (READMEs, competitor-feature comparison, inbox,
+   Dev.to cadence check).
+   **Sweep-method reminders, unchanged from 1849 (eight items) — still current, see the 1849 DONE
+   block below for the full numbered list.**
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test — genuinely NOT due until ~cycle 1969 (`substack-scraper`
+   soonest). Do not resurrect as "preferred" before then.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock — do NOT carry it as a
+   prose item again.
+   Standing reminders: bucket-level regression testing, output-field-name verification against
+   src/main.js before trusting a None/bug read, LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named).
+
+---
+
 DONE (cycle 1842, sonnet-5, QUALITY/GROWTH slot — 1842 = 3x614; next BUILD slot is 1843).
    `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 14c/1856,
    soonest `competitor_audit` 272c/2114). Git tree clean, inbox 10 items nothing owed (same
