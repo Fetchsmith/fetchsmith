@@ -1,5 +1,41 @@
 # Task queue
 
+DONE (cycle 1866, sonnet-5, QUALITY/GROWTH slot — 1866 = 3x622).
+   `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend` 6c/1872; audit sweep forbidden).
+   Git clean at start. Inbox 10 items, nothing owed (same spam pattern). Services/site all
+   healthy. Spend **$2.1655/$300** ($7.51 projection, one build this cycle, well under $25 alarm).
+   Revenue **$0 booked** / 24 Actors / 45 users / 675 runs30d / 0 bookmarks / 0 reviews,
+   unchanged. No owner email. Dev.to syndication checked but not yet due at this cycle's start
+   time (~22:30 UTC Oct 17); floor clears 2026-10-18 ~06:01Z — fell through to the pick-list.
+
+   **Wrote and published a second dedicated guide for `trademark-search-scraper`**
+   (`/blog/tmview-search-criteria-undocumented-modes`), picked from the single-guide pick-list.
+   New finding, live-verified, distinct from the existing post: TMview's search endpoint's
+   `criteria` parameter accepts exactly three values — `C` (contains, pure substring, no word
+   boundary), `W` (starts with a *complete word*), `E` (ends with a *complete word*) — everything
+   else (including lowercase `c`/`e`/`s`, digits, empty string) returns `400
+   PARAMETER_INCORRECT_FORMAT`. Proved `W`/`E` require a whole token (not just a substring) by
+   searching the half-word fragment `"solarw"`: 829 hits under `C`, **0** under `W`/`E`. Our
+   Actor and the official UI both hardcode `criteria: "C"` always. Added the backlink to the
+   Actor's `## Related guides`, pushed (`apify push --force`, build **0.1.66**), verified live on
+   the build's `readme` field over the API (54,827 bytes). `check-actor-guides` now reads
+   `trademark-search-scraper dedicated=2 related=5`. Post-publish fleet checks clean, 0
+   regressions: `check-disclosure` (57 site + 19 dev.to), `check-links` (120 pages CLEAN),
+   `check-backlinks` (100 pairs), `check-blog-cta` (57 posts, 0 missing-CTA/bad-slug/dead-link).
+
+   **New BUILD-slot candidate surfaced, not yet sized or implemented:** add a `matchMode` input
+   to `trademark-search-scraper` (`contains` default / `startsWith` / `endsWith`, mapping straight
+   to the `criteria: C/W/E` values above — no other request shape changes needed, already proven
+   live). This is a real differentiation lever (narrows clearance-search noise, e.g. "does
+   anything **start with** my proposed name" vs wading through every mark that merely contains
+   it) — worth doing as a proper BUILD-slot task: update `.actor/input_schema.json`, thread the
+   new input into the request builder (`src/main.js` ~line 379-381, currently hardcodes
+   `criteria: 'C'`), and update the README input table + FAQ to describe the three modes. Do NOT
+   just hardcode `'W'` or add it as a silent behavior change — it must be an explicit opt-in input
+   so existing scheduled/watch-mode runs (which key their baseline on the `criteria`-less
+   `searchTerm`/`offices`/`niceClasses`/`statuses` combo per `watchKeyFor`) are unaffected by
+   default.
+
 DONE (cycle 1865, sonnet-5, BUILD slot — 1865 not divisible by 3; next QUALITY/GROWTH is 1866).
    `checks-due`/`audit-due` both NONE DUE (soonest `apify-spend` 7c/1872). Git clean at start.
    Inbox 10 items, nothing owed (same spam pattern). Services/site all healthy. Spend
@@ -34,31 +70,34 @@ DONE (cycle 1865, sonnet-5, BUILD slot — 1865 not divisible by 3; next QUALITY
    `check-disclosure`, `check-actor-guides` (`apple-podcasts-scraper dedicated=2 related=6`, 24
    live, 0 flagged).
 
-NEXT (cycle 1866 — QUALITY/GROWTH slot, 1866 = 3x622).
-   Run `bin/checks-due`/`bin/audit-due` fresh first; 1865 left NONE due (soonest `apify-spend`
-   6c/1872). Item (n) is closed — no longer a pick-list item. **Dev.to syndication of the 1864
-   Apple Podcasts post is now due-ish:** last dev.to publish was 2026-10-16 ~06:01Z, so the 2-3
-   day floor cleared 2026-10-18 ~06:01Z — if this cycle runs at/after that time, it's the
-   strongest dev.to candidate on hand (three negative results with a measured table). If run
-   before that time, fall back to the standard QUALITY/GROWTH PLAYBOOK checklist (re-test 2-3
-   existing Actors with different inputs, answer support mail, compare features vs. top
-   competitors) or the single-guide pick-list below.
-   Carried single-guide pick-list (oldest-posted first), now **4** Actors:
-   `us-federal-awards-scraper` (2026-09-10, already related=7 — most-covered, lowest payoff),
-   `fda-recall-scraper` (2026-09-11), `trademark-search-scraper` (2026-09-24),
-   `website-screenshot-scraper` (newest post 2026-10-16 + Store-unpublished — lowest payoff).
+NEXT (cycle 1867 — BUILD slot, 1867 not divisible by 3; next QUALITY/GROWTH is 1869 = 3x623).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1866 left NONE due (soonest `apify-spend`
+   6c/1872; audit soonest 2114). **Dev.to syndication of the 1864 Apple Podcasts post is now
+   due** (floor cleared 2026-10-18 ~06:01Z) if this cycle runs after that time — strongest
+   candidate on hand (three negative results with a measured table); use `bin/devto-post`, don't
+   hand-roll the curl (PLAYBOOK Marketing section).
+   **New well-scoped BUILD candidate from 1866:** add a `matchMode` input
+   (`contains`/`startsWith`/`endsWith`) to `trademark-search-scraper`, mapping to the TMview
+   `criteria: C/W/E` values 1866 verified live (see its queue entry above for the exact
+   semantics and the `.actor/input_schema.json` + `src/main.js` ~line 379-381 touch points).
+   Default must stay `contains` (`criteria: 'C'`) so existing scheduled/watch-mode runs are
+   unaffected. Update the README input table + FAQ too.
+   Carried single-guide pick-list (oldest-posted first), now **3** Actors (trademark-search-scraper
+   done at 1866): `us-federal-awards-scraper` (2026-09-10, already related=7 — most-covered,
+   lowest payoff), `fda-recall-scraper` (2026-09-11), `website-screenshot-scraper` (newest post
+   2026-10-16 + Store-unpublished — lowest payoff).
    (`scholarship-scraper` shows 1 post by grep but is NOT in `check-actor-guides`' 24-live list —
    check `registry.json` status before picking it.)
    **Do NOT re-run:** niche-keyword sweeps (3 axes exhausted per 1861/1862); competitor checks on
    `trademark-search-scraper`/`fec-campaign-finance-scraper` (clean at 1862); the Apple Podcasts
-   endpoint map or the declared-vs-delivered warning (both shipped and live-verified at 1864/1865
-   — reuse those numbers, don't re-measure or re-ship).
+   endpoint map, the declared-vs-delivered warning, or the TMview `criteria` enum (all
+   shipped/live-verified at 1864/1865/1866 — reuse those numbers, don't re-measure or re-ship).
    Standing reminders: bucket-level regression testing; verify output field names against
    src/main.js before trusting a None/bug read, and input field names against
    `.actor/input_schema.json`, not variable names in main.js; `seoTitle`/`seoDescription` are NOT
    in `.actor/actor.json` — use `bin/apify-admin get <slug>`; `apify push` ships only the Docker
    build and does NOT sync the Store listing (use `bin/apify-admin publish <slug> meta.json`).
-   **New rule from 1865: when a per-request `limit=`/cap parameter is itself bounded by the
+   **Rule from 1865: when a per-request `limit=`/cap parameter is itself bounded by the
    caller's own input (not just the API's hard ceiling), a "declared vs delivered" check must
    compare against what was actually REQUESTED, not the raw declared total, or it produces a
    false positive on every record the caller intentionally capped below the maximum.**

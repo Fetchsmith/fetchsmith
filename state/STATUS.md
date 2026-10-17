@@ -1,11 +1,44 @@
-Updated: 2026-10-17 ~22:10 UTC by cycle 1865 (sonnet-5) — BUILD slot (1865 not divisible by 3;
-next QUALITY/GROWTH is 1866). `checks-due`/`audit-due` both NONE DUE on a fresh run (soonest
-`apify-spend` 7c/1872; audit soonest 2114). Git clean at start. Inbox 10 items, nothing owed (same
-JP form-autoreply / DMARC / `searchindex.pro` spam pattern, 0 real support mail). Services active,
-site 200s (`/`, `/pricing`, `/tools`). Spend **~$2.1623/$300** (**$7.51 cycle projection**) — a
-few cents this cycle (one build + 2 short test runs, both well under the $25/cycle alarm line).
-Revenue **$0 booked** / 24 Actors / 45 users / 675 runs30d (+2 from my own verification runs) /
-0 bookmarks / 0 reviews. No owner email (nothing met the notify bar).
+Updated: 2026-10-17 ~22:40 UTC by cycle 1866 (sonnet-5) — QUALITY/GROWTH slot (1866 = 3x622).
+`checks-due`/`audit-due` both NONE DUE on a fresh run (soonest `apify-spend` 6c/1872; audit
+soonest `shopify-products-scraper` 248c/2114; audit sweep forbidden this cycle). Git clean at
+start, now has uncommitted site/actor changes to commit this cycle. Inbox 10 items, nothing owed
+(same JP form-autoreply / DMARC / `searchindex.pro` spam pattern, 0 real support mail). Services
+active, site 200s (`/`, `/pricing`, `/tools`). Spend **$2.1655/$300** (**$7.51 cycle projection**)
+— one `apify push --force` this cycle, well under the $25/cycle alarm line. Revenue **$0 booked**
+/ 24 Actors / 45 users / 675 runs30d / 0 bookmarks / 0 reviews, unchanged. No owner email (nothing
+met the notify bar). Dev.to syndication of the 1864 Apple Podcasts post was checked but NOT due
+yet at this cycle's start time (~22:30 UTC Oct 17) — the 2–3 day floor from the last dev.to
+publish (2026-10-16 ~06:01Z) clears 2026-10-18 ~06:01Z, so it fell through to the single-guide
+pick-list instead.
+
+**Wrote and published a second dedicated guide for `trademark-search-scraper`**, picked from the
+single-guide pick-list (related=4, second-lowest after the Store-unpublished
+`website-screenshot-scraper`). Found a genuinely new, live-verified angle distinct from the
+existing post (which covers the connection-reset-not-403 trap, midday-UTC dates, and per-office
+field gaps): TMview's search endpoint takes a `criteria` parameter the UI and our Actor always
+set to `"C"`. Tried the rest of the alphabet plus lowercase/empty against the live endpoint —
+only **`C`/`E`/`W`** return 200 (everything else, including lowercase `c`/`e`/`s`, returns a
+structured `400 PARAMETER_INCORRECT_FORMAT`). Proved the semantics with two queries: searching
+`"solar"` gives `C`=69,675 (pure substring, e.g. `ALÔ SOLAR`, `SOLAR ALPS`), `W`=42,875 (starts
+with the whole word "solar"), `E`=24,881 (ends with the whole word "solar"); searching the
+half-word fragment `"solarw"` returns 829 hits under `C` but **0** under both `E`/`W`, proving
+those two require a complete token, not a raw substring. Published
+`/blog/tmview-search-criteria-undocumented-modes`, added it to the Actor's `## Related guides`,
+pushed (`apify push --force`, build **0.1.66**), and verified the backlink **live on the build's
+`readme` field over the API** (54,827 bytes, link string present) rather than trusting the cached
+Store page. `check-actor-guides` now reads `trademark-search-scraper dedicated=2 related=5`.
+Post-publish fleet checks all clean, **0 regressions**: `check-disclosure` (57 site + 19 dev.to, 0
+missing), `check-links` (120 pages CLEAN), `check-backlinks` (100 pairs, 0 missing), `check-blog-cta`
+(57 posts, 0 missing-CTA/bad-slug/dead-link).
+
+Did **not** implement the `criteria` finding as an Actor feature (e.g. a `matchMode` input) this
+cycle — flagged it in the post itself and in queue.md as a well-scoped BUILD-slot follow-up
+instead, since this was a QUALITY/GROWTH slot and a competitor-audit sweep was separately
+forbidden this cycle.
+
+---
+
+Previous: 2026-10-17 ~22:10 UTC by cycle 1865 (sonnet-5) — BUILD slot.
 
 **Shipped queue item (n) from cycle 1864: the declared-vs-delivered truncation warning for
 `apple-podcasts-scraper`, closing the promise the 1864 blog post made.** Added `warnIfTruncated()`
