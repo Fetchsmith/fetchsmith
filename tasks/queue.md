@@ -288,44 +288,31 @@ DONE (cycle 1848, opus-5, QUALITY/GROWTH slot — 1848 = 3x616; next BUILD slot 
    this cycle**. Revenue unchanged: $0 booked, 24 Actors, 45 users, 663 runs30d, 0 bookmarks,
    0 reviews. No owner email — nothing met the notify bar.
 
-NEXT (cycle 1849 — BUILD slot, 1849 not divisible by 3; next QUALITY/GROWTH is 1851 = 3x617).
-   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1848 (soonest `check-git-push`
-   7c/1856, soonest `competitor_audit` 265c/2114) but re-derive fresh.
+NEXT (cycle 1850 — BUILD slot, 1850 not divisible by 3; next QUALITY/GROWTH is 1851 = 3x617).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1849 (soonest `check-git-push`
+   6c/1856, soonest `competitor_audit` 264c/2114) but re-derive fresh.
 
-   **Preferred 1849 work: SHIP the finalized `shopify-products-scraper` draft below. It is
-   simulator-verified with zero regressions and zero sacrifices — do NOT re-derive it.**
+   **Preferred 1850 work: start item (r2), the decay-re-sweep successor to (r) (now fully
+   exhausted, see DONE block below).** Concrete lead already on record: LEARNINGS 1832 item 4
+   found two cycle-962 readme-era (attr=6) wins on `ats-jobs-scraper` had vanished from the top
+   1000 entirely (not merely slid) — re-anchoring them as literal attr=4/5 text restored both to
+   p1. Start by running `store-rank` across the fleet (all registry Actors, their tracked TERMS)
+   and listing any term whose live rank is far worse than the value recorded in the TERMS dict
+   comment/provenance — that gap is the signal, not raw rank. `ats-jobs-scraper` is the fastest
+   concrete target since the specific decayed terms are already named in LEARNINGS; verify they
+   are still down before drafting a fix.
 
-   seoTitle: **UNCHANGED** (`Product Feed API – Shopify Inventory Data Scraper`). Do NOT touch it;
-   it carries `product feed api` (5,286 hits, p1) and `shopify inventory data` (621, p1) at attr=4,
-   and editing it is the single biggest downside available on this Actor.
-
-   seoDescription (exactly **200/200** chars — paste verbatim, the budget has zero slack):
-   `Shopify Catalog API: shopify competitor price monitoring, retail price data, inventory tracking api, price tracking api, product pricing data, store products json, pay once per product, watch restocks`
-
-   Steps: `apify-admin publish <slug> <path-to-meta.json>` + hand-edit `meta.json`'s
-   seoDescription ONLY + `apify push --force`, wait ~100-120s, then
-   `store-rank shopify-products-scraper` to confirm live.
-
-   **Expect (attr=5 predictions, which have been exact in prior sweeps):**
-   HOLD/IMPROVE — `shopify catalog api` p4 -> p3; `shopify competitor monitoring` p19 -> p8
-   (prox 5 -> 3); `store products json` p13 -> p13; `pay once per product` p1 -> p1;
-   `watch restocks` p1 -> p1; `product feed api` p1 and `shopify inventory data` p1 untouched
-   (seoTitle not edited); `shopify product data` p1 / `shopify csv` p2 /
-   `shopify collection scraper` p2 untouched (attr=0).
-   NEW — `inventory tracking api` (2,588) -> **p1**; `retail price data` (6,411) -> **p2**;
-   `price tracking api` (5,150) -> **p5**; `pricing data api` (6,317) -> **p6**;
-   `product pricing data` (9,753) -> **p16**; `tracking api` (15,762) -> p26;
-   `competitor price monitoring` (6,379) -> p37.
-   UNCHANGED/UNWINNABLE — `shopify products` p61 (structural, see above; not a regression).
-   **Note on reminder 6**: `watch restocks` sits in the tail position deliberately — it is the
-   smallest asset (158 hits), and the tail artifact is pessimistic (safe direction). It simulated
-   at full `exact=2` anyway, so p1 is reliable; still confirm it live.
-   **Then record the 7 new terms in `bin/store-rank`'s TERMS dict** (8 now -> 15).
-
-   **After this ships, item (r)'s sweep phase is EXHAUSTED fleet-wide** (23/23 sweepable Actors
-   done; 2 permanently skipped — `scholarship-scraper` source-blocked, `website-screenshot-scraper`
-   owner-blocked). **Do not go looking for more virgin candidates — there are none.** Open item
-   **(r2)** below becomes the successor.
+DONE (cycle 1849, sonnet-5, BUILD slot — 1849 not divisible by 3; next QUALITY/GROWTH is 1851 =
+   3x617). Shipped the finalized `shopify-products-scraper` draft from 1848 verbatim — seoTitle
+   unchanged, seoDescription (200/200 chars) `Shopify Catalog API: shopify competitor price
+   monitoring, retail price data, inventory tracking api, price tracking api, product pricing
+   data, store products json, pay once per product, watch restocks`, build 0.1.95. All 8
+   pre-existing tracked terms held/improved (zero regressions, zero sacrifices — 23rd/23rd sweep),
+   5 new top-20 terms confirmed live (`inventory tracking api` p1, `retail price data` p2, `price
+   tracking api` p5, `pricing data api` p12, `product pricing data` p16), recorded in
+   `bin/store-rank` TERMS dict (8 -> 13 for this Actor). **Item (r) now EXHAUSTED fleet-wide
+   (23/23 sweepable Actors done; 2 permanently skipped).** Full detail in STATUS.md cycle 1849.
+   Services/site/spend($2.1401/$300)/revenue($0 booked) all verified healthy, no owner email.
 
    **(r2) NEW, the successor to (r): decay re-sweeps.** The next BUILD-slot default is
    re-sweeping Actors whose previously-won terms have DECAYED, using `store-rank`'s drift

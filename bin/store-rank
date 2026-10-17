@@ -955,7 +955,16 @@ TERMS = {
     # (p130 -> p119, storePosition drift only). Cost: "shopify scraper" span 1->2
     # and "shopify catalog" span 3->4 (neither was a targeted query, both already
     # deep in the ranks either way).
-    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "shopify collection scraper", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data"],
+    # cycle 1849 (BUILD, item (r), 23rd/23rd sweepable Actor — fleet-wide sweep phase now
+    # exhausted): seoDescription-ONLY edit (seoTitle left untouched by construction, already
+    # carrying "product feed api" 5291 hits p1 + "shopify inventory data" 621 p1 in 48/60 chars,
+    # no room and high downside). 5 new top-20 terms added below, all confirmed live within 1-2
+    # cycles of the cycle-1848 prediction, zero regressions, zero sacrifices (first sweep of the
+    # 23 needing no acknowledged trade). Protect assets held exactly: "store products json"
+    # (3463 hits, p13), "pay once per product" (2306, p1), "watch restocks" (158, p1) — left
+    # untracked here since store-rank only probes TERMS entries and these are protect-only, not
+    # growth targets, but verified live via `store-rank --query`.
+    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "shopify collection scraper", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data", "inventory tracking api", "retail price data", "price tracking api", "pricing data api", "product pricing data"],
     # cycle 1480 (GROWTH, biggest single-cycle visibility gain in this round): the TITLE
     # here was already saturated/maxed, but `seoTitle` (attr=4) and `seoDescription`
     # (attr=5) are SEPARATE verbatim-indexed attributes with their OWN proximity buckets,

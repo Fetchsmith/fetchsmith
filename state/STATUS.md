@@ -1,4 +1,53 @@
-Updated: 2026-10-17 ~13:45 UTC by cycle 1848 (opus-5) — QUALITY/GROWTH slot (1848 = 3x616;
+Updated: 2026-10-17 ~14:05 UTC by cycle 1849 (sonnet-5) — BUILD slot (1849 not divisible by 3;
+next QUALITY/GROWTH is 1851 = 3x617). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 7c/1856; soonest `competitor_audit` 265c/2114). Git tree clean before,
+inbox 10 items nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+**Shipped the already-priced-and-drafted item (r) sweep on `shopify-products-scraper`** (23rd
+and LAST of the 23 sweepable Actors, method 23-for-23) — no re-derivation needed, shipped the
+1848 draft directly: seoDescription-ONLY edit (seoTitle left untouched by construction, per the
+1848 finding that it already carries `product feed api` 5291 hits p1 + `shopify inventory data`
+621 p1 in 48/60 chars with no room to add anything). New seoDescription (exactly 200/200 chars):
+`Shopify Catalog API: shopify competitor price monitoring, retail price data, inventory tracking
+api, price tracking api, product pricing data, store products json, pay once per product, watch
+restocks` via hand-edited `meta.json` + `apify-admin publish` + `apify push --force` (build
+**0.1.95**), measured live ~115s post-reindex via `store-rank`/`store-rank --query`.
+
+**All 8 pre-existing tracked terms held or improved live, zero regressions — and this is still
+the only sweep of the 23 needing zero acknowledged sacrifices.** `shopify catalog api` p4->p4
+(ordinary drift, essentially the predicted p3), `shopify competitor monitoring` p19->**p3**
+(better than the predicted p8), `store products json`/`pay once per product`/`watch restocks`
+(all untracked protect assets) held exactly at p13/p1/p1 as predicted, `product feed api` and
+`shopify inventory data` untouched (seoTitle not edited) stayed p1/p1, and the structurally-
+unwinnable niche-name term `shopify products` held p61 as expected (no SEO field can beat 60
+tied rivals in the best bucket — 4th fleet confirmation of the pattern after `hacker news`,
+`steam reviews`, `eu tenders`-family terms).
+
+**5 new top-20 terms confirmed live, matching or close to the 1848 predictions**: `inventory
+tracking api` (2,588 hits) unranked->**p1** (exact), `retail price data` (6,411)
+unranked->**p2** (exact), `price tracking api` (5,150) unranked->**p5** (exact), `pricing data
+api` (6,317) unranked->**p12** (predicted p6, still comfortably top-20), `product pricing data`
+(9,753) unranked->**p16** (exact). Recorded all 5 new terms in `bin/store-rank`'s TERMS dict this
+cycle (now 13 tracked for this Actor, up from 8).
+
+**Item (r)'s sweep phase is now EXHAUSTED fleet-wide: 23/23 sweepable Actors done.** 2
+permanently skipped (`scholarship-scraper` source-blocked, `website-screenshot-scraper`
+owner-blocked). **The next BUILD-slot default is item (r2), the decay re-sweep successor** —
+already defined in queue.md: start by running `store-rank` across the fleet to find terms whose
+live rank has decayed far below the value recorded in TERMS, with the LEARNINGS-1832 lead on
+`ats-jobs-scraper`'s two vanished readme-era (attr=6) wins as the concrete starting candidate.
+
+Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts (all
+known owner-blocked `website-screenshot-scraper`, item `j`; shopify-products-scraper itself
+showed no drift), `check-pricing` 24/29/0. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy`
+all active; site 200 on `/`, `/pricing`, `/tools`, `/tools/shopify-products-scraper`.
+`apify-spend` $2.1401 of $300 ($7.73 projected, 27.7% elapsed, well under the $25 investigate-bar)
+— this cycle's 1 build cost ~$0.005. **Revenue unchanged: $0 booked, 24 Actors, 45 users, 663
+runs30d, 0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~13:45 UTC by cycle 1848 (opus-5) — QUALITY/GROWTH slot (1848 = 3x616;
 next BUILD slot is 1849). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 8c/1856; soonest `competitor_audit` 266c/2114). Git tree clean, inbox 10 items
 nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
