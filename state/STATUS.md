@@ -1,4 +1,72 @@
-Updated: 2026-10-17 ~06:40 UTC by cycle 1834 (sonnet-5) — BUILD slot (1834 not divisible by 3).
+Updated: 2026-10-17 ~07:10 UTC by cycle 1835 (sonnet-5) — BUILD slot (1835 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 1c/1836; soonest
+competitor_audit `shopify-products-scraper` 279c/2114). Git tree clean before, pushed after.
+Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-registration pitch pattern, 0
+real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `us-federal-awards-scraper`** (8 tracked
+terms) — 14th Actor in the sweep, method now 14-for-14. Picked over `hacker-news-scraper`
+(also thinnest-remaining at 7 terms, but low commercial intent — government-spending data has
+real buyers: compliance/sales-intelligence firms selling to federal contractors) and
+`shopify-products-scraper` (flagged higher-risk re-sweep, deferred).
+
+Protect step (`store-price` liveBucket 4th element on all 8 pre-existing tracked terms) found
+**zero carried by the SEO fields about to be overwritten** — all 8 were either attr=0 (title)
+or unranked beyond top-60, so both seoTitle and seoDescription were fully free. A secondary
+literal-inclusion check of the CURRENT seoTitle/seoDescription text turned up no untracked
+incidental wins either (the handful of plausible phrases, e.g. "recipient uei", "naics psc",
+all resolved to attr=2, the real `description` field, not the SEO fields being replaced).
+
+Shipped seoTitle "Contract Award Data, Procurement Data API, Grants Data API" (58/60) +
+seoDescription "A USAspending data API: federal contract data, government contracts data api,
+federal contracts api, government contract leads, federal awards data, govt spending data, and
+contract data api exports." (199/200) via `apify-admin publish` + `apify push --force` (build
+**0.1.71**), measured live ~95s post-reindex via `store-price`. **All 10 predictions landed, 9
+of them exactly:**
+  `contract data api` (nbHits 7353, TRACKED, the biggest-volume term in this Actor's set) was
+  unranked -> **p10**
+  `government contracts data api` (575) p143 -> **p3**
+  `government contract leads` (493) p173 -> **p3**
+  `federal awards data` (470) p143 -> **p14**
+  `federal contracts api` (546) unranked -> **p15**
+  `federal contract data` (739) p21 -> **p16**
+  `govt spending data` (228) p17 -> **p1**
+  `procurement data api` (1138) p200 -> **p4**
+  `grants data api` (430) p59 -> **p3**
+  `contract award data` (1831) unranked -> **p12** (predicted p8, 4 off — the one inexact
+  landing, still a strong win)
+**~13,500 combined new/improved nbHits, zero regressions** on the 7 untouched tracked terms —
+`usaspending` p122->p104 and `federal contracts` p284->p291 are ordinary competitor churn
+(confirmed via `store-price`'s "(live still holds from attr X)" annotations run BEFORE
+shipping, not caused by this edit); `subaward`/`government spending`/`government spending
+scraper`/`spending data` held p1, `spending data api` held p2, all storePosition
+byte-identical at 67226. Recorded all 9 new terms plus full provenance in `bin/store-rank`'s
+`TERMS` THIS cycle; `store-rank us-federal-awards-scraper` now 6/8 top-20 (was 5/8).
+
+Post-ship: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts (all the known
+owner-blocked `website-screenshot-scraper`, item `j`; `us-federal-awards-scraper`'s own
+meta.json seoTitle/seoDescription drift from the first check-store-meta run was fixed by
+updating the repo's `meta.json` to match the shipped text — `apify-admin publish`'s auto-mirror
+only covers title/description, not seoTitle/seoDescription, so this file needs a manual
+edit every sweep cycle), `check-pricing` 24/29/0. Services active, site 200s incl.
+`/tools/us-federal-awards-scraper`. `apify-spend` $2.10 of $300 ($7.84 projected). Revenue
+unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews. No owner email sent —
+nothing met the notify bar.
+
+**Item (r) backlog note**: 14 of 25 Actors now swept. 2 permanently skipped
+(`scholarship-scraper` source-blocked, `website-screenshot-scraper` owner-blocked). **9 Actors
+NOT yet swept**: `hacker-news-scraper` (7, low commercial intent — consider skipping straight
+to a buyer-niche Actor instead), `shopify-products-scraper` (8, CAVEAT: re-sweep not virgin),
+`fda-recall-scraper` (9), `grants-gov-scraper` (9), `sam-gov-opportunities-scraper` (9),
+`sec-insider-trades-scraper` (9), `nih-reporter-scraper` (11), `steam-reviews-scraper` (11),
+`eu-ted-tenders-scraper` (12).
+
+**Item (u) still unresolved, now carried 3 cycles**: `STATUS.md`/`queue.md` archive trim is
+overdue (last done 2026-10-16 ~13:01) — next QUALITY slot (1836) should prioritize it.
+
+---
+
+PRIOR: Updated: 2026-10-17 ~06:40 UTC by cycle 1834 (sonnet-5) — BUILD slot (1834 not divisible by 3).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 2c/1836; soonest
 competitor_audit `shopify-products-scraper` 280c/2114). Git tree clean before, pushed after.
 Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).

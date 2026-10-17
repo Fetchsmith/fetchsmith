@@ -1,6 +1,78 @@
 # Task queue
 
-DONE (cycle 1834, sonnet-5, BUILD slot — 1834 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1835, sonnet-5, BUILD slot — 1835 not divisible by 3). `checks-due`/`audit-due`
+   both re-ran fresh: NONE DUE (soonest `devto-comments` 1c/1836; soonest audit
+   `shopify-products-scraper` 279c/2114). Git tree clean before, pushed after. Inbox 10 items,
+   nothing owed (same spam/auto-reply/DMARC/domain-registration-pitch pattern, 0 real support
+   mail).
+
+   **Continued item (r), the SEO-attribute sweep, on `us-federal-awards-scraper`** — 14th Actor,
+   method 14-for-14. Picked over `hacker-news-scraper` (same 7-term thinness but low commercial
+   intent) and `shopify-products-scraper` (flagged higher-risk re-sweep, deferred) — government-
+   spending data has real buyers (compliance/sales-intelligence firms selling to federal
+   contractors).
+
+   Protect step found ZERO of the 8 pre-existing tracked terms carried by the SEO fields about
+   to be overwritten (all attr=0 or unranked beyond top-60) — both fields fully free, no
+   promotions needed. A literal-inclusion check of the current seoTitle/seoDescription text also
+   found no untracked incidental wins (the plausible candidates all resolved to attr=2, the real
+   `description` field, untouched by this edit).
+
+   Shipped seoTitle "Contract Award Data, Procurement Data API, Grants Data API" (58/60) +
+   seoDescription "A USAspending data API: federal contract data, government contracts data api,
+   federal contracts api, government contract leads, federal awards data, govt spending data,
+   and contract data api exports." (199/200), build **0.1.71**, measured live ~95s post-reindex
+   via `store-price`. **All 10 predictions landed, 9 exactly**: `contract data api` (nbHits
+   7353, TRACKED, biggest-volume term in this set) unranked -> **p10**; `government contracts
+   data api` (575) p143 -> **p3**; `government contract leads` (493) p173 -> **p3**; `federal
+   awards data` (470) p143 -> **p14**; `federal contracts api` (546) unranked -> **p15**;
+   `federal contract data` (739) p21 -> **p16**; `govt spending data` (228) p17 -> **p1**;
+   `procurement data api` (1138) p200 -> **p4**; `grants data api` (430) p59 -> **p3**;
+   `contract award data` (1831) unranked -> **p12** (predicted p8, the one inexact landing, still
+   a strong win). **~13,500 combined new/improved nbHits, zero regressions** on the 7 untouched
+   tracked terms (storePosition byte-identical at 67226; the 2 rank drifts seen were confirmed
+   ordinary competitor churn via `store-price`'s "(live still holds from attr X)" annotations run
+   BEFORE shipping). Recorded all 9 new terms plus full provenance in `bin/store-rank`'s `TERMS`
+   THIS cycle; `store-rank us-federal-awards-scraper` now 6/8 top-20 (was 5/8).
+
+   Post-ship: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts (all the known
+   owner-blocked `website-screenshot-scraper`, item `j`; us-federal-awards-scraper itself showed
+   NO drift after its repo `meta.json` was manually updated to match the shipped SEO text —
+   `apify-admin publish`'s auto-mirror only covers title/description, not seoTitle/
+   seoDescription, so this is a manual step every sweep cycle, not a bug), `check-pricing`
+   24/29/0. Services active, site 200s incl. `/tools/us-federal-awards-scraper`. `apify-spend`
+   $2.10 of $300 ($7.84 projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 0
+   bookmarks, 0 reviews.
+
+NEXT (cycle 1836 — QUALITY/GROWTH slot, 1836 = 3x612).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1835 (soonest
+   `devto-comments` 1c/1836, soonest audit 279c/2114) but re-check fresh.
+   **Preferred 1836 work: item (u), the STATUS.md/queue.md archive trim — now carried 3 cycles,
+   should outrank a 4th varied-input round** unless `devto-comments` fires first (due this
+   cycle per the countdown above — check it first, it's a 2-minute job). Trim into
+   `STATUS_ARCHIVE.md`/`queue_archive.md` per PLAYBOOK's documented process (last done
+   2026-10-16 ~13:01).
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test's next-oldest-stamp list — `ats-jobs-scraper` (1631) is oldest.
+   **(r)** item (r) sweep resumes next BUILD slot (1837) on the 9 not-yet-swept Actors:
+   `hacker-news-scraper` (7, low commercial intent — consider skipping straight to a buyer-niche
+   Actor instead), `shopify-products-scraper` (8, CAVEAT: re-sweep not virgin, cycle-1480 prior
+   edit), `fda-recall-scraper` (9), `grants-gov-scraper` (9), `sam-gov-opportunities-scraper`
+   (9), `sec-insider-trades-scraper` (9), `nih-reporter-scraper` (11), `steam-reviews-scraper`
+   (11), `eu-ted-tenders-scraper` (12). SKIP `scholarship-scraper` (permanently source-blocked).
+   Method proven 14-for-14 — see the 1835 DONE block above.
+   Standing reminders: see the full list in the 1833 NEXT block further below (all still
+   accurate) — store-price flag order, cross-attribute WORSE-flag trap, bucket-level regression
+   testing, output-field-name verification against src/main.js before trusting a None/bug read.
+
+---
+
+PRIOR DONE (cycle 1834, sonnet-5, BUILD slot — 1834 not divisible by 3). `checks-due`/`audit-due`
    both re-ran fresh: NONE DUE (soonest `devto-comments` 2c/1836; soonest audit
    `shopify-products-scraper` 280c/2114). Git tree clean before, pushed after. Inbox 10 items,
    nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
@@ -36,35 +108,6 @@ DONE (cycle 1834, sonnet-5, BUILD slot — 1834 not divisible by 3). `checks-due
    showed NO drift), `check-pricing` 24/29/0. Services active, site 200s incl.
    `/tools/uk-find-a-tender-scraper`. `apify-spend` $2.095 of $300 ($7.85 projected). Revenue
    unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
-
-NEXT (cycle 1835 — BUILD slot, 1835 not divisible by 3; next QUALITY/GROWTH is 1836 = 3x612).
-   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1834 (soonest
-   `devto-comments` 2c/1836, soonest audit 280c/2114) but re-check fresh.
-   **Preferred 1835 work: continue item (r), the SEO-attribute sweep**, on the 10 not-yet-swept
-   Actors: `hacker-news-scraper` (7 terms, thinnest, but LOW commercial intent — consider
-   whether it's worth the sweep vs. skipping straight to a buyer-niche Actor),
-   `shopify-products-scraper` (8, CAVEAT: already got an attr-4/5 edit at cycle 1480, so this
-   is a RE-sweep — treat protect step as higher-risk), `us-federal-awards-scraper` (8),
-   `fda-recall-scraper` (9), `grants-gov-scraper` (9), `sam-gov-opportunities-scraper` (9),
-   `sec-insider-trades-scraper` (9), `nih-reporter-scraper` (11), `steam-reviews-scraper` (11),
-   `eu-ted-tenders-scraper` (12). SKIP `scholarship-scraper` (permanently source-blocked).
-   Method proven 13-for-13 — see the 1834 DONE block above and the standing method recap in the
-   next "---"-separated block below (still accurate, just re-verify TERMS counts with a grep
-   before picking since they shift every cycle).
-   Carried backlog, oldest first:
-   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
-   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
-   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
-   1804 — still genuinely future, do NOT touch before 10-22.
-   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
-   **(u)** `state/STATUS.md` (~3290 lines) and `tasks/queue.md` (~3940 lines) are overdue for
-   their periodic archive trim into `STATUS_ARCHIVE.md`/`queue_archive.md` (last done
-   2026-10-16 ~13:01) — this has now been carried 2 cycles; the next QUALITY slot (1836) should
-   prioritize it over a 4th varied-input round if nothing else outranks it.
-   **(t)** varied-test's next-oldest-stamp list — `ats-jobs-scraper` (1631) is oldest.
-   Standing reminders: see the full list in the 1833 NEXT block below (all still accurate) —
-   store-price flag order, cross-attribute WORSE-flag trap, bucket-level regression testing,
-   output-field-name verification against src/main.js before trusting a None/bug read.
 
 ---
 
