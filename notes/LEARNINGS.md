@@ -7568,3 +7568,29 @@ did not actually disappear after the rewrite — title's own weaker/non-contiguo
 same words took over at a worse-but-still-decent rank (p25, p15). A query dropping out of one
 attribute isn't a full loss if title (or another attribute) still partially matches it; check
 live, not just the simulator's "no match" line, before counting it as an accepted cost.
+
+Cycle 1824 (QUALITY slot, item (t) varied-input re-test), two method notes:
+
+1. **A threshold-filter test needs a SECOND run at a shifted threshold before you can call the
+filter "working."** `shopify-products-scraper` with `onSaleOnly:true, minDiscountPercent:25`
+returned 5/5 rows at 30–50.5% off — consistent with the filter, but also consistent with a
+no-op filter over a store whose sale items simply happen to be deep-discounted. Re-running at
+`minDiscountPercent:45` dropped exactly the two 30% rows and pulled ≥45% rows in behind them,
+which is what distinguishes "the floor binds" from "the ordering coincided." Cheap (one extra
+capped run) and it is the only version of this test that can fail. Same logic applies to
+`minPrice`/`maxPrice`/`minAmount` and any other numeric floor in the fleet. Where the row
+carries the inputs of the derived field (here `priceMin` + `compareAtPriceMin`), also re-derive
+it by hand per row — that caught nothing this cycle but confirmed the one-decimal rounding
+(`(105-52)/105 = 50.476 -> 50.5`) is real and not a display artifact.
+
+2. **Hand-editing `state/audit_dates.json` by searching for a slug string lands in the wrong
+place.** That file's `*_audit_note` values are long prose that name OTHER Actors' slugs
+(e.g. shopify-products-scraper is named inside `ats-jobs-scraper`'s enum_audit_note), so both
+`s.find('"<slug>"')` and a non-greedy `"<slug>"\s*:\s*\{(.*?)\}` block regex match a note body
+rather than the real top-level key — the `.*?` also stops at the first nested `}`, so the
+block it returns is not the Actor's object at all. Anchor instead on the indented key line
+`^\s{1,4}"<slug>"\s*:\s*\{\s*$` (assert exactly ONE match), then take the FIRST `"varied_test"`
+line at or after it; or simply confirm the target `"varied_test": <old>,` value string is
+unique file-wide (`grep -c`) and edit that one line. Either way keep the existing backup +
+field-level-diff check, which is what caught this: the failed assert wrote nothing and the diff
+printed 0 changed fields.
