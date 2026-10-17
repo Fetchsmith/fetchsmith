@@ -8108,3 +8108,46 @@ variable, and a stale comment at line 551 uses the other name), and `source` val
 `itunes`/`rss`/`chart`, not "rss or the lookup API". The standing "verify field names against
 src/main.js" reminder earned its keep again; input-schema names in particular must come from
 `.actor/input_schema.json`, not from grepping variable names in main.js.
+
+## Cycle 1868 — an aggregation endpoint that drops the `total` block is silently truncating: openFDA's `count=` caps distinct values at 1,000 with no signal, and date-partitioning recovers 5.5x more
+
+openFDA's enforcement API (`/{food,drug,device}/enforcement.json`) answers `count=<field>.exact`
+with a plain `200` and a tidy bucket array — and that response looks identical whether it is
+complete or has thrown away 80% of the answer. Measured live: the no-`limit` default is **100**
+buckets, the maximum is **1,000** (`limit=1001` → clean `400`, "Limit cannot exceed 1000 results
+for count requests"), and **all three endpoints return exactly 1000** on corpora of 29,485 /
+18,010 / 40,249 rows — which is what proves it is a ceiling rather than a real distinct count.
+`skip` is rejected outright (`400`, "Should not use skip param when using count"), so there is no
+paging past it.
+
+The generalizable tell: **a `count=` response drops `meta.results` entirely** — no `total`, no
+`skip`, no echoed `limit` — while an ordinary `search=` on the same host carries all three. When
+an aggregation response stops carrying the size metadata its own search responses carry, treat
+that as the truncation warning the API didn't give you; `len(results) == limit` is then the only
+signal available.
+
+The remedy and its proof obligation: `count=` applies *after* `search=`, so partition the corpus
+on an indexed date field and union the per-window aggregations. 15 single-year `report_date`
+windows returned **5,526** distinct food recalling firms vs the global query's 1,000 (**5.5x**).
+Three checks before trusting a union like this — (1) every term from the global query must appear
+in the union (0 lost here), (2) the summed bucket counts must equal the corpus
+`meta.results.total` (29,485 == 29,485, proving no window double-counted or dropped rows), and
+(3) a known per-term total must match (top firm 633 global == 633 windowed). Also check each
+window for self-truncation: busiest year here was 677 buckets, under the 1,000 cap — if any
+window returns exactly `limit`, subdivide it (quarters, then months).
+
+Two secondary traps on the same API, both about the `.exact` suffix: `count=` on a non-`.exact`
+string field returns **HTTP 500** `SERVER_ERROR` leaking the raw Elasticsearch
+`illegal_argument_exception` ("Text fields are not optimised for ... aggregations"), so a
+retry-on-5xx client hammers a request that can never succeed — and this hits short enum-looking
+fields too (`classification`, `state`, `voluntary_mandated`), not just free text, on all three
+endpoints. `sort=` on the same non-`.exact` field fails for the same reason but as a clean `400`.
+Separately, `limit` is **inert on date counts**: `count=report_date` returns 745 buckets at
+`limit=5`, `limit=1000` and no limit alike, so one parameter caps one aggregation type and is
+discarded by the other.
+
+Negative results from the same session, recorded so they are not re-measured: openFDA's sorted
+deep paging is **stable and exact** (ten 100-row pages of `sort=report_date:desc` matched a single
+`limit=1000` fetch in both order and set — 0 duplicates, 0 gaps; two identical requests returned
+identical order), and `recall_number` is **unique** across 1,000 sampled rows, with `event_id` as
+the one-to-many grouping key (305 events over those 1,000 rows).
