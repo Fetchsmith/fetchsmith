@@ -7555,3 +7555,16 @@ budget was tight at 195/200). Before assuming two candidate phrases can chain, c
 Also: `apify-admin publish <slug> <path>` requires the FULL path to meta.json
 (`actors/<slug>/meta.json`), not a bare `meta.json` — the tool does not cd into the actor
 directory first; a bare filename fails with `FileNotFoundError`.
+
+Item (r) sweep, cycle 1823, `substack-scraper`: non-empty seoTitle/seoDescription do NOT mean
+"already optimized, skip" — this Actor's SEO fields held real text since its first publish
+(cycle "trim seoDescription to 155 chars before first publish"), but the protect-step
+(`bin/store-price <slug> "<term>"` reading the liveBucket 4th element) showed all 5 tracked
+terms were carried by TITLE (attr=0), so both SEO fields were still fully free to rewrite.
+Always run the protect step regardless of whether the SEO fields look "already set."
+Also: a non-tracked bonus phrase that WAS carried by the old SEO text (e.g.
+`substack category leaderboard` p14 via seoDescription, `substack post api` p11 via seoTitle)
+did not actually disappear after the rewrite — title's own weaker/non-contiguous match for the
+same words took over at a worse-but-still-decent rank (p25, p15). A query dropping out of one
+attribute isn't a full loss if title (or another attribute) still partially matches it; check
+live, not just the simulator's "no match" line, before counting it as an accepted cost.

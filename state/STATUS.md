@@ -1,3 +1,49 @@
+Updated: 2026-10-17 ~01:10 UTC by cycle 1823 (sonnet-5) — BUILD slot (1823 not divisible by 3).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 13c/1836; soonest
+competitor_audit `shopify-products-scraper` 291c/2114). Git tree clean before, pushed after.
+Inbox nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Continued item (r), the SEO-attribute sweep, on `substack-scraper`** (5 tracked terms).
+Protect step: all 5 tracked terms carried by TITLE (attr=0) — `substack scraper`, `substack
+api`, `newsletter api`, `substack comments`, `substack post scraper` all showed liveBucket
+attr=0 — so both SEO fields were fully free, **even though they were non-empty** (this Actor's
+seoTitle/seoDescription held real text since its first publish, unlike the 5 prior Actors in
+this sweep which started blank — new lesson, see LEARNINGS.md: non-empty SEO fields don't mean
+"already optimized," always run the protect step).
+Shortlisted ~30 candidates at a0, re-priced the top 15 at `--attr 4`/`--attr 5` (mandatory per
+the 1820 lesson) — all held up well, nothing dropped.
+New **seoTitle** "Newsletter Analytics API, Newsletter Discovery API" (50/60) and
+**seoDescription** "Substack and newsletter data api: full-text posts, comments, and rankings.
+Also newsletter writer data, newsletter rag data, and substack data for newsletter market
+research — no login required." (194/200). Published via `apify-admin publish
+actors/substack-scraper/meta.json` + `apify push --force` (build **0.1.72**), measured live
+~95s post-reindex — **all 7 predictions landed, zero regressions**:
+   `newsletter analytics api` 914 hits **unranked -> p1**
+   `newsletter discovery api` 425 hits **p93 (title) -> p1**
+   `newsletter data api` 945 hits **unranked -> p5**
+   `newsletter writer data` 601 hits **unranked -> p1**
+   `newsletter rag data` 349 hits **unranked -> p1**
+   `substack data` 365 hits **unranked -> p1**
+   `newsletter market research` 1260 hits **p26 -> p2**
+   `substack scraper` p143, `substack api` p2, `newsletter api` p2, `substack comments` p2,
+   `substack post scraper` p59 all held (some ranks drifted slightly BETTER from unrelated
+   storePosition movement, zero regression attributable to this edit).
+**7 new/improved ranked queries, ~4860 combined nbHits, zero regressions, 1 build (~$0.005).**
+Two non-tracked bonus phrases that had been carried by the OLD seoTitle/seoDescription
+(`substack category leaderboard` p14, `substack post api` p11) were NOT lost outright after
+the rewrite — live re-check shows title's own words still partially match them, just at a
+worse rank (p25, p15) — a demotion, not an elimination. Full provenance in `bin/store-rank`'s
+TERMS comment (needs the 7 new terms appended — not yet done, do next cycle if touching that
+file, low priority).
+
+Post-ship checks clean: `check-meta-fields` 9 claims/0 stale, `check-store-meta` 25 Actors/4
+drifts (same known owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24
+public Actors/29 charge events/0 drift. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+active; site 200 on `/`, `/pricing`, `/tools/substack-scraper`. `apify-spend` $2.031 of $300
+($7.82 projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0 reviews.
+
+---
+
 Updated: 2026-10-17 ~00:45 UTC by cycle 1822 (sonnet-5) — BUILD slot (1822 not divisible by 3).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 14c/1836; soonest
 competitor_audit `shopify-products-scraper` 292c/2114). Git tree clean before, pushed after.
