@@ -132,9 +132,12 @@ if (chartCount < chartCountRequested) {
 }
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
 // Apple's episode lookup API caps at 200 regardless of what's requested. Enabling
-// useRssForFullArchive replaces that call with a direct fetch of the show's own RSS feed, which
-// has no such cap (verified live: a real feed returned 2,977 items vs Apple's 200-episode ceiling)
-// — so the input cap only needs raising in that mode.
+// useRssForFullArchive replaces that call with a direct fetch of the show's own RSS feed, which we
+// do NOT cap on our side (verified live: a real feed returned 2,977 items past Apple's 200-episode
+// ceiling) — so the input cap only needs raising in that mode. That does NOT make RSS "complete":
+// a publisher's own feed can itself be shallower than Apple's declared episode count (measured
+// 2026-10-17: The Daily's feed holds only 66 of its 2,752 declared episodes) — see
+// scrapeEpisodes' declared-vs-delivered warning below.
 const rssFullArchive = input.useRssForFullArchive === true;
 const perPodcastEpisodes = Math.min(Number(input.maxEpisodesPerPodcast ?? 100), rssFullArchive ? 20000 : 200);
 const perPodcastReviews = Math.min(Number(input.maxReviewsPerPodcast ?? 200), 500);
@@ -658,15 +661,19 @@ async function getPodcastInfo(id) {
 }
 
 // Needed for useRssForFullArchive when includePodcastInfo is off, since the feed URL still has
-// to come from somewhere — getPodcastInfo already carries it when podcast info is on.
+// to come from somewhere — getPodcastInfo already carries it when podcast info is on. Also
+// carries trackCount off the same response (no extra request) for the declared-vs-delivered
+// check in scrapeEpisodes, since includePodcastInfo:false means `info` is null there too.
 const feedUrlCache = new Map();
 async function getFeedUrlOnly(id) {
   if (feedUrlCache.has(id)) return feedUrlCache.get(id);
-  let feedUrl = null;
-  try { feedUrl = (await getJson(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).results?.[0]?.feedUrl ?? null; }
-  catch (e) { log.debug(`Feed URL lookup failed for ${id}: ${e.message}`); }
-  feedUrlCache.set(id, feedUrl);
-  return feedUrl;
+  let result = { feedUrl: null, trackCount: null };
+  try {
+    const r = (await getJson(`https://itunes.apple.com/lookup?id=${id}&country=${country}`)).results?.[0];
+    result = { feedUrl: r?.feedUrl ?? null, trackCount: r?.trackCount ?? null };
+  } catch (e) { log.debug(`Feed URL lookup failed for ${id}: ${e.message}`); }
+  feedUrlCache.set(id, result);
+  return result;
 }
 
 // `floorKey` identifies the podcast this batch belongs to for the watch-mode date floor: the
@@ -790,12 +797,51 @@ async function getShowEpisodeBundle(showId) {
   return bundle;
 }
 
+// `declaredCount` is the show's own trackCount — what Apple SAYS it has. `delivered` is what we
+// actually got back before any user filter runs. Comparing the two (not hardcoding 200) is the
+// only test that works across sources, since delivered counts are sampled per-show, not a fixed
+// ceiling (apple-podcasts-episode-archive-is-not-there, cycle 1864: The Daily's trackCount is
+// 2752 but its lookup response holds only 44 rows, its RSS feed only 66).
+// Lookup path: `requestedLimit` is the `limit=` value we actually sent Apple. If the caller
+// explicitly asked for fewer than both that and the declared count, and got exactly what they
+// asked for, that is the caller's own choice, not a surprise — stay quiet. Any other shortfall
+// (including landing exactly on Apple's 200 hard cap when more episodes are declared) is worth
+// naming, because the caller now has a number to act on that they didn't have before.
+function warnIfTruncated(id, declaredCount, delivered, requestedLimit, wholeFeed) {
+  if (declaredCount == null || delivered >= declaredCount) return;
+  if (wholeFeed) {
+    log.warning(
+      `Podcast ${id}: Apple reports ${declaredCount} episode(s) (trackCount), but this show's own `
+      + `RSS feed only has ${delivered} <item> entries. This is the edge of what is public for this `
+      + `show (publishers often trim their own feed) — "useRssForFullArchive" is already on, there `
+      + `is nothing further to enable.`,
+    );
+    return;
+  }
+  const callerChoseFewer = requestedLimit < 200 && delivered === requestedLimit && requestedLimit < declaredCount;
+  if (callerChoseFewer) return;
+  log.warning(
+    `Podcast ${id}: Apple reports ${declaredCount} episode(s) (trackCount), but the lookup API only `
+    + `delivered ${delivered}. Apple's lookup caps at 200 and can silently sample even fewer than `
+    + `that for some shows. Turn on "useRssForFullArchive" to reach further back, though a `
+    + `publisher's own RSS feed is not guaranteed to be complete either (one real show delivered `
+    + `only 66 of its 2,752 declared episodes via RSS) — this is the edge of what Apple makes `
+    + `public, not a bug.`,
+  );
+}
+
 async function scrapeEpisodes(id) {
   const info = includePodcastInfo ? await getPodcastInfo(id) : null;
   let rows = null;
   let fromWholeFeed = false;
+  let declaredCount = info?.episodeCount ?? null;
   if (rssFullArchive) {
-    const feedUrl = info?.feedUrl ?? await getFeedUrlOnly(id);
+    let feedUrl = info?.feedUrl ?? null;
+    if (feedUrl == null) {
+      const r = await getFeedUrlOnly(id);
+      feedUrl = r.feedUrl;
+      if (declaredCount == null) declaredCount = r.trackCount;
+    }
     if (feedUrl) {
       try { rows = await scrapeRssFeed(feedUrl, Number(id), info ?? { feedUrl }); fromWholeFeed = true; }
       catch (e) { log.warning(`RSS full-archive fetch failed for podcast ${id} (${feedUrl}): ${e.message} — falling back to Apple's lookup API (max 200 episodes).`); }
@@ -803,14 +849,18 @@ async function scrapeEpisodes(id) {
       log.warning(`No RSS feed URL found for podcast ${id} — falling back to Apple's lookup API (max 200 episodes).`);
     }
   }
+  let requestedLimit = null;
   if (rows == null) {
     // One call returns the podcast record plus up to `limit` most recent episodes (hard cap 200).
-    const url = `https://itunes.apple.com/lookup?id=${id}&country=${country}&entity=podcastEpisode&limit=${Math.min(perPodcastEpisodes, 200)}`;
+    requestedLimit = Math.min(perPodcastEpisodes, 200);
+    const url = `https://itunes.apple.com/lookup?id=${id}&country=${country}&entity=podcastEpisode&limit=${requestedLimit}`;
     let results = [];
     try { results = (await getJson(url)).results ?? []; }
     catch (e) { log.warning(`Episode lookup failed for ${id}: ${e.message}`); return { got: 0, failed: true }; }
+    if (declaredCount == null) declaredCount = results.find((r) => r.wrapperType === 'track')?.trackCount ?? null;
     rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
   }
+  warnIfTruncated(id, declaredCount, rows.length, requestedLimit, fromWholeFeed);
   return { got: await pushEpisodeRows(rows, String(id), fromWholeFeed), failed: false, wholeFeed: fromWholeFeed };
 }
 
