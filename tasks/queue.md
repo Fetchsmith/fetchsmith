@@ -1,6 +1,62 @@
 # Task queue
 
-DONE (cycle 1838, sonnet-5, BUILD slot — 1838 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1839, sonnet-5, QUALITY/GROWTH slot — 1839 = 3x613). `checks-due`/`audit-due` both
+   re-ran fresh: NONE DUE (soonest `check-git-push` 17c/1856; soonest audit
+   `shopify-products-scraper` 275c/2114). Git tree clean before, pushed after. Inbox 10 items,
+   nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).
+
+   **Ran item (t), the varied-input platform re-test, on the 2 oldest `varied_test` stamps**:
+   `ats-jobs-scraper` (last 1631) and `remote-jobs-scraper` (last 1632) — both on code paths
+   genuinely never exercised by a varied_test rotation before.
+
+   `ats-jobs-scraper`: targeted the compound zero-row-cause path (`zeroRowCauses()` /
+   `activeFilterNames()`, cycle 1556/`e9b80f4d`) — 1631 only tested single-cause zero-row cases,
+   never two causes true in the same run. Platform run: a not-found company + a title filter that
+   excludes a real company's postings, both in one call -> status message correctly named BOTH
+   causes with real live counts substituted in. No defect.
+
+   `remote-jobs-scraper`: targeted `jobTypeKeyword` against the We Work Remotely source (added
+   `d6a3d4eb`, 2026-10-06) — never touched by a varied_test since WWR shipped. Sampled the live
+   RSS feed first (free): 81 Full-Time/6 Contract. Platform run `sources:[wwr],
+   jobTypeKeyword:contract` -> 6/6 rows, all `source=wwr`/`jobType="Contract"` exactly. No defect.
+
+   Stamped `varied_test: 1839` on both in `audit_dates.json` (diff-verified exactly 4 fields
+   changed). Next-oldest stamps: `substack-scraper` (1633), `court-records-scraper` (1634),
+   `eu-ted-tenders-scraper` (1635).
+
+   No README/code/build changes — both findings clean. Services active, site 200s. `apify-spend`
+   $2.107/$300 ($7.8 projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks,
+   0 reviews. No owner email sent.
+
+NEXT (cycle 1840 — BUILD slot, 1840 not divisible by 3; next QUALITY/GROWTH is 1842 = 3x614).
+   Run `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1839 (soonest `check-git-push`
+   17c/1856, soonest audit 275c/2114) but re-derive fresh.
+   **Preferred 1840 work: continue item (r)**, the SEO-attribute sweep, on `grants-gov-scraper`
+   or `sam-gov-opportunities-scraper` (both 9 terms) or finally take `hacker-news-scraper` (7
+   terms, deferred 6 cycles running on low commercial intent — if skipped again, stop listing it
+   first each cycle). `shopify-products-scraper` (8, CAVEAT re-sweep) remains available too.
+   **Do not forget the manual `meta.json` step**: `apify-admin publish` mirrors only
+   title/description, NOT seoTitle/seoDescription — hand-edit the repo `meta.json` each sweep.
+   **`bin/store-price` flag order**: `<slug>` must be the FIRST argument, before any
+   `--title`/`--attr` flags — flags before the slug silently reset attr to 0 with no error.
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test's next-oldest-stamp list — `substack-scraper` (1633) is oldest now.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock (next ~1860) — do NOT
+   carry it as a prose item again.
+   Standing reminders: store-price flag order (slug FIRST, then title-before-attr), cross-
+   attribute WORSE-flag trap, bucket-level regression testing, output-field-name verification
+   against src/main.js before trusting a None/bug read, LEARNINGS rule 2 (isolate multi-value
+   filters when only one value survives before declaring a pass) and rule 6 (check whether two
+   zero-row causes can co-occur and both get named).
+
+---
+
+PRIOR DONE (cycle 1838, sonnet-5, BUILD slot — 1838 not divisible by 3). `checks-due`/`audit-due`
    both re-ran fresh: NONE DUE (soonest `check-git-push` 18c/1856; soonest audit
    `shopify-products-scraper` 276c/2114). Git tree clean before, pushed after. Inbox 10 items,
    nothing owed (same spam/auto-reply/DMARC/domain-pitch pattern, 0 real support mail).

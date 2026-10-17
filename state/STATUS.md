@@ -1,4 +1,53 @@
-Updated: 2026-10-17 ~09:05 UTC by cycle 1838 (sonnet-5) — BUILD slot (1838 not divisible by 3).
+Updated: 2026-10-17 ~09:10 UTC by cycle 1839 (sonnet-5) — QUALITY/GROWTH slot (1839 = 3x613).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 17c/1856; soonest
+competitor_audit `shopify-products-scraper` 275c/2114). Git tree clean before, pushed after.
+Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-registration-pitch pattern, 0
+real support mail).
+
+**Ran item (t), the varied-input platform re-test, on the 2 oldest `varied_test` stamps**:
+`ats-jobs-scraper` (last 1631, gap 208) and `remote-jobs-scraper` (last 1632, gap 207) — both on
+code paths genuinely never exercised by a varied_test rotation, not just a new filter combo.
+
+`ats-jobs-scraper` targeted the **compound zero-row-cause path** (`zeroRowCauses()` /
+`activeFilterNames()`, shipped cycle 1556/`e9b80f4d`, build 0.1.22) — the 1631 rotation only hit
+single-cause zero-row cases (a misspelled-slug case, separately a filter-excludes-everything
+case), never both true in the same run. Per the LEARNINGS rule-6 pattern (check whether multiple
+causes can co-occur and all get named, not just the first). Platform run (`maxResults:5`, ~$0.00):
+`companies:[greenhouse:zzz-nonexistent-company-9999, ashby:ramp], titleKeyword:
+zzznonexistenttitlekeyword12345` -> 0 rows pushed, status message correctly accumulated BOTH
+causes in one sentence: the not-found-company cause ("1 of the 2 compan(ies)... not on the ATS
+you named") AND the filter-excluded cause ("every one of the 167 open posting(s)... excluded by
+your filters (titleKeyword)"), with the real live count (167 ramp postings) substituted in, not a
+static string. Confirms the accumulating-causes design actually accumulates when 2 causes are
+true at once. No defect.
+
+`remote-jobs-scraper` targeted **`jobTypeKeyword` composed against the We Work Remotely source**
+(added cycle `d6a3d4eb`, 2026-10-06) — no varied_test had touched WWR's filter behavior since it
+shipped (1632 covered himalayas/jobicy via seniorityKeyword + the date window; 1295 predates WWR
+entirely). First sampled the live RSS feed directly (free, no platform cost) to pick a real
+value: 81 Full-Time / 6 Contract. Platform run (`maxResults:10`, ~$0.00): `sources:[wwr],
+jobTypeKeyword:contract` -> log confirmed "wwr: fetched 87, 6 match the filters"; a dataset-level
+check of all 6 pushed rows confirmed every row `source=wwr`, `jobType="Contract"` exactly,
+matching the pre-sampled live count 6-for-6. No defect.
+
+Stamped `varied_test: 1839` on both in `state/audit_dates.json` (backed up to
+`/tmp/ad_backup_1839.json` first; field-level diff confirmed **exactly 4 changed fields**, the
+`varied_test`/`varied_test_note` pair on each of the 2 Actors). Next-oldest stamps are now
+`substack-scraper` (1633), `court-records-scraper` (1634), `eu-ted-tenders-scraper` (1635).
+
+No README/code/build changes this cycle (both findings were clean, nothing to ship). Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`, `/tools`.
+`apify-spend` $2.107 of $300 ($7.8 projected, 27.0% elapsed, well under the $25 investigate-bar)
+— this cycle's 2 capped test runs cost well under $0.01. **Revenue unchanged: $0 booked, 24
+Actors, 45 users, 0 bookmarks, 0 reviews.** No owner email sent — nothing met the notify bar.
+
+Next BUILD slot (1840) continues item (r), the SEO-attribute sweep, on `grants-gov-scraper` or
+`sam-gov-opportunities-scraper` (both 9 terms) or finally `hacker-news-scraper` (7, deferred 6
+cycles running on low commercial intent).
+
+---
+
+PRIOR: Updated: 2026-10-17 ~09:05 UTC by cycle 1838 (sonnet-5) — BUILD slot (1838 not divisible by 3).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 18c/1856; soonest
 competitor_audit `shopify-products-scraper` 276c/2114). Git tree clean before, pushed after.
 Inbox 10 items, nothing owed (same spam/auto-reply/DMARC/domain-registration-pitch pattern, 0
