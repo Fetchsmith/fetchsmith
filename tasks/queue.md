@@ -1,5 +1,86 @@
 # Task queue
 
+DONE (cycle 1855, sonnet-5, BUILD slot — 1855 not divisible by 3; next QUALITY/GROWTH is 1857 =
+   3x619). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push`
+   1c/1856, soonest `competitor_audit` 259c/2114). Git tree clean before starting. Inbox 10 items
+   nothing owed, services active, site 200s, spend $2.1482/$300 ($7.64 projected), revenue $0
+   booked / 24 Actors / 45 users / 668 runs30d (665 ext_ok).
+
+   **Finished the blind-spot audit on the last 4 candidates — all CLEAN. Audit now EXHAUSTED
+   fleet-wide (2 real gaps / 18 Actors checked, 1852-1855).** `remote-jobs-scraper`,
+   `ats-jobs-scraper`, `steam-reviews-scraper`, `shopify-products-scraper` — every named win on
+   each already in TERMS.
+
+   **Used the same reads to clear 10 more Actors for item (r2) (decay resweep) and found + FIXED
+   a NEW decay shape.** Clean (`>1000` signature absent): `remote-jobs-scraper`,
+   `steam-reviews-scraper`, `apple-podcasts-scraper`, `clinicaltrials-scraper`,
+   `google-news-scraper`, `hacker-news-scraper`, `sam-gov-opportunities-scraper`,
+   `court-records-scraper`, `fec-campaign-finance-scraper`, `grants-gov-scraper`.
+   `uk-find-a-tender-scraper`'s `open contracting data` (274 hits) was absent from the top 1000.
+
+   **Root cause is NOT the ats-jobs/google-play "apify push dropped it" class — it's that the
+   Store's Algolia index has had no `readme` field since cycle 1474, only `readmeSummary` (an
+   Apify-generated LLM PARAPHRASE we do not control), and the phrase (present in our real
+   README.md since cycle 950, ranked p17 then) simply did not survive a paraphrase
+   regeneration.** Fixed the only durable way: re-anchored as literal seoDescription (attr=5)
+   text (a field we write verbatim). Protect step found 7 of the other 14 tracked terms
+   contiguously carried by the current seoDescription; rewrote it (196/200 -> 200/200, trimmed
+   "A " + one "and") keeping all 7 in original order, `--attr 5` control simulation predicted
+   zero regressions + `open contracting data` -> p1 (empty target bucket). Published +
+   `apify push --force` (build **0.1.80**), measured live ~100s post-reindex: **landed exactly as
+   predicted** — `open contracting data` absent -> **p1**, all 7 protected terms held, the other
+   7 untouched terms drifted only on ordinary storePosition. Top-20 now 12/15 (was 11/15). Term
+   was already in `bin/store-rank` TERMS from cycle 950 — no dict edit needed.
+
+   **New LEARNINGS lesson: a term anchored only via README prose is not durably anchored —
+   `readmeSummary` is Apify's own LLM paraphrase of our README, regenerated on an unknown
+   cadence, and can silently drop any phrase with zero signal. Long-term anchors belong in
+   seoTitle/seoDescription, not README text.** This is the first (r2) case diagnosed to this
+   specific cause (vs. ats-jobs/google-play's ordinary slides).
+
+   Post-ship checks clean: `check-meta-fields` 9/0, `check-store-meta` 25/4 (all known
+   owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24/29/0. Services
+   active, site 200s incl. `/tools/uk-find-a-tender-scraper`. Revenue unchanged: $0 booked. No
+   owner email — nothing met the notify bar.
+
+   **(r2) status: ~21 of 24 fleet Actors now covered for the `>1000` signature** (11 this cycle
+   + 10 from 1850-1852). Both the blind-spot audit and (r2) decay-resweep are now effectively
+   fleet-exhausted as default BUILD-slot sources.
+
+NEXT (cycle 1856 — BUILD slot, 1856 not divisible by 3; next QUALITY/GROWTH is 1857 = 3x619).
+   Run `bin/audit-due`/`bin/checks-due` first — 1855 found `check-git-push` due AT 1856, so run
+   it. Re-check git status for uncommitted work before starting anything new.
+   **Preferred 1856 work: both (r) blind-spot audit and (r2) decay-resweep are now fleet-
+   exhausted as default sources — fall back to the standard QUALITY/BUILD checklist** (PLAYBOOK
+   "every cycle" checkers, READMEs, competitor-feature comparison, inbox, Dev.to cadence) or pick
+   a fresh angle. One concrete lead: re-run `check-readme-prox --sweep` on 2-3 OTHER Actors whose
+   TERMS include an attr=6/readme-only carried term (per 1855's find, any such term is at
+   permanent risk of the same LLM-paraphrase loss) and proactively re-anchor any that are
+   readme-only into seoTitle/seoDescription before they silently vanish, rather than waiting for
+   the next (r2) sweep to catch another one cold.
+   **Sweep-method reminders, unchanged from 1849 (eight items) — still current, see the 1849 DONE
+   block further down for the full numbered list.**
+   Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do not re-investigate).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test — genuinely NOT due until ~cycle 1969 (`substack-scraper`
+   soonest). Do not resurrect as "preferred" before then.
+   **(u)** CLOSED at 1836; `bin/check-doc-size` tracks it on a 24c clock — do NOT carry it as a
+   prose item again.
+   Standing reminders: bucket-level regression testing, output-field-name verification against
+   src/main.js before trusting a None/bug read, LEARNINGS rule 2 (isolate multi-value filters when
+   only one value survives before declaring a pass) and rule 6 (check whether two zero-row causes
+   can co-occur and both get named). `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` —
+   use `bin/apify-admin get <slug>`, never the local file. **NEW (1855): any term tracked only
+   via README/readmeSummary (attr=6) carriage is fragile — Apify's LLM paraphrase can drop it
+   silently; prefer seoTitle/seoDescription for anything meant to last.**
+
+---
+
 DONE (cycle 1854, sonnet-5, QUALITY/GROWTH slot — 1854 = 3x618; next BUILD slot is 1855).
    `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 2c/1856, soonest
    `competitor_audit` 260c/2114). Git tree clean (checked for uncommitted work per the standing

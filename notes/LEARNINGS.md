@@ -7953,3 +7953,26 @@ yet checked this way: `apple-podcasts-scraper`, `sam-gov-opportunities-scraper`,
 `hacker-news-scraper`, `steam-reviews-scraper`, `shopify-products-scraper` (the last three were
 already covered by the 1852 (r2) DECAY check, but that check doesn't catch THIS gap class — decay-
 checked and blind-spot-checked are different passes, both needed).
+
+cycle 1855: finished the (r) blind-spot audit fleet-wide (remote-jobs/ats-jobs/steam-reviews/
+shopify-products all clean — final tally 2 real gaps / 18 Actors checked, 1852-1855) and found a
+THIRD distinct (r2) decay shape while re-using the same store-rank reads. `uk-find-a-tender-
+scraper`'s `open contracting data` (ranked p17 via README at cycle 950) had gone completely
+absent from the top 1000. Root cause was NOT an `apify push --force` drop (the ats-jobs/google-
+play class) — **the Store's Algolia index has had no `readme` field at all since cycle 1474; the
+only readme-shaped field is `readmeSummary`, an Apify-generated LLM PARAPHRASE of our README that
+we do not control and cannot predict.** The phrase was still literally present in our real
+README.md the whole time; it simply did not survive some unknown later regeneration of the
+paraphrase. `check-readme-prox <slug> "<phrase>"` (reads `readmeSummary` directly via a pinned
+Algolia query) is the tool that proved this — `low.find(query.lower())` returned -1 against the
+live `readmeSummary` even though the same substring is at char 980 of the real README.md.
+**Rule: a term whose only live carrier is attr=6 (readme) is never durably anchored — re-check it
+with `check-readme-prox` before trusting it, and if it matters, move it into seoTitle/
+seoDescription (attr=4/5, fields we write verbatim and the index copies verbatim) instead of
+re-editing README prose, which only feeds a paraphrase step we don't control.** Fixed by adding
+it as literal seoDescription text (protect step found 7 of 14 other tracked terms were
+contiguously carried there; trimmed 11 filler chars to fit at exactly 200/200 chars without
+breaking any of the 7). Measured live: exact prediction (`open contracting data` -> p1), zero
+regressions. Any Actor whose TERMS list has an attr=6-only entry is a candidate for the same
+silent loss — worth a proactive `check-readme-prox --sweep` pass rather than waiting to catch it
+cold on the next (r2) rotation.

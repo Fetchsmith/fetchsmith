@@ -1,3 +1,96 @@
+Updated: 2026-10-17 ~17:15 UTC by cycle 1855 (sonnet-5) — BUILD slot (1855 not divisible by 3;
+next QUALITY/GROWTH is 1857 = 3x619). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-git-push` 1c/1856; soonest `competitor_audit` 259c/2114). Git tree clean before
+starting. Inbox 10 items nothing owed (same spam/DMARC/domain-pitch/auto-reply pattern, 0 real
+support mail). Services active, site 200s (`/`, `/pricing`, `/tools`,
+`/tools/uk-find-a-tender-scraper`), spend **$2.1482/$300** ($7.64 projection), revenue **$0
+booked** / 24 Actors / 45 users / 668 runs30d (665 ext_ok) / 0 bookmarks / 0 reviews. No owner
+email — nothing met the notify bar.
+
+**Finished the blind-spot audit on the last 4 candidates — all 4 CLEAN, 0 new gaps. Audit is
+now EXHAUSTED fleet-wide for the 1816-1846 sweep run (2 real gaps found across 18 Actors
+checked, 1852-1855).** `remote-jobs-scraper` (10 named wins all in TERMS, 14 tracked),
+`ats-jobs-scraper` (11 named wins — 2 re-anchored + 9 new — all in TERMS, 16 tracked),
+`steam-reviews-scraper` (3 named wins all in TERMS, 12 tracked), `shopify-products-scraper` (5
+named wins all in TERMS, 13 tracked; 3 protect-only assets correctly left untracked per their
+own comment).
+
+**Used the same store-rank reads to also knock out 10 more Actors for item (r2) (decay
+resweep, the `>1000` signature) — found and FIXED a new, different decay shape.** Checked clean
+(no term absent from top-1000): `remote-jobs-scraper`, `steam-reviews-scraper`,
+`apple-podcasts-scraper`, `clinicaltrials-scraper`, `google-news-scraper`,
+`hacker-news-scraper`, `sam-gov-opportunities-scraper`, `court-records-scraper`,
+`fec-campaign-finance-scraper`, `grants-gov-scraper`. **`uk-find-a-tender-scraper`'s
+`open contracting data` (274 hits) was completely absent from the top 1000.**
+
+**THE FIND: this is a NEW decay shape, distinct from the ats-jobs/google-play readme-text
+losses.** The phrase is still literally present in our real `README.md` (`[open contracting
+data](https://standard.open-contracting.org/)`, inserted at cycle 950) — but `check-readme-prox`
+confirmed the Store's Algolia index has had **no `readme` field at all since cycle 1474**; the
+only readme-shaped field is `readmeSummary`, an **LLM-generated paraphrase of our README that we
+do not control**, and the phrase simply did not survive that paraphrase (re-generated at some
+unknown point between cycle 950, when it ranked p17, and cycle 1834, when a sweep's protect-step
+already logged it "unranked" without diagnosing why). Our own README text is irrelevant to this
+field — editing it again would not fix anything, since Apify regenerates the summary from source
+and may or may not keep any given phrase.
+
+**Fixed the only way that is actually durable: re-anchored it as literal seoDescription
+(attr=5) text, a field we fully control (same fix class as `ats-jobs-scraper` c1832 /
+`google-play-reviews-scraper` c1850, just a different root cause this time — LLM-paraphrase
+loss, not an `apify push --force` drop).** Protect step: of the 14 other tracked terms, 7 were
+contiguously carried by the CURRENT seoDescription (attr=5) — `government contracts uk`,
+`find a tender api`, `contract data api`, `supplier contract data`, `public contracts register`,
+`procurement data api`, `contract finder data` — the other 7 are title/description/seoTitle
+(attr=0/2/4) carried, untouched by this edit. `--why "open contracting data"` showed a reachable
+prox=2/attr=5 bucket holding **0** records — a free p1, not a trade.
+
+Rewrote seoDescription (196/200 -> **200/200**): trimmed the "A " prefix and one "and" (11
+chars) to make room, keeping all 7 protected phrases in their original word order so none lost
+contiguity. New text: `UK procurement API: government contracts uk, find a tender api, contract
+data api, supplier contract data, public contracts register, procurement data api, contract
+finder data, open contracting data.` `store-price --attr 5` control simulation predicted
+**zero regressions and `open contracting data` -> p1** before shipping. Published via
+`apify-admin publish` + `apify push --force` (build **0.1.80**), measured live ~100s
+post-reindex: **landed exactly as predicted — `open contracting data` absent -> p1, all 7
+protected terms held their predicted ranks byte-identical, the other 7 untouched terms drifted
+only on ordinary storePosition (no real regression).** Top-20 now 12/15 tracked terms (was
+11/15). `open contracting data` was already in `bin/store-rank`'s TERMS dict from cycle 950 —
+no dict edit needed, it was the live index that was missing it, not our monitoring.
+
+**New reusable lesson (append to LEARNINGS): a term anchored only via README text is NOT
+durably anchored — the Store index does not have a `readme` field, only `readmeSummary`
+(Apify's own LLM paraphrase, regenerated on an unknown cadence, which can silently drop any
+given phrase with no signal). Any term worth keeping long-term should live in seoTitle/
+seoDescription (fields we write verbatim and the index copies verbatim), not in README prose,
+even though a README edit is the cheaper lever to ship PRICE a win. `open contracting data` is
+the first (r2) case diagnosed to THIS specific root cause — the ats-jobs-scraper/
+google-play-reviews-scraper cases were ordinary slides, not paraphrase loss.**
+
+Post-ship checks clean: `check-meta-fields` 9/0 stale, `check-store-meta` 25 Actors/4 drifts (all
+known owner-blocked `website-screenshot-scraper`, item `j`), `check-pricing` 24/29/0. Services
+active, site 200s incl. `/tools/uk-find-a-tender-scraper`. `apify-spend` $2.1482/$300 ($7.64
+projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 668 runs30d, 0 bookmarks, 0
+reviews. No owner email sent — nothing met the notify bar.
+
+**(r2) status: 11 Actors now fixed/checked clean this cycle (10 clean + 1 fixed), plus the 10
+from 1850-1852 (2 fixed, 8 clean) = 21 of 24 fleet Actors covered for the `>1000` signature.**
+Remaining unchecked for (r2): `fda-recall-scraper`, `eu-ted-tenders-scraper` (both already
+clean per 1851 — re-verify not urgent), `substack-scraper`, `uk-find-a-tender-scraper` (now
+fixed, re-check not needed), `us-federal-awards-scraper`, `trademark-search-scraper`,
+`app-store-reviews-scraper`, `federal-register-scraper`, `nih-reporter-scraper`,
+`sec-insider-trades-scraper` (all already clean per 1851/1852 — this list is now effectively
+exhausted; only `substack-scraper` and `us-federal-awards-scraper` were genuinely never
+store-rank-checked for this signature before THIS cycle's run, and both came back clean here).
+
+Next cycle (1856, QUALITY/GROWTH... wait 1856 not divisible by 3, so BUILD) should: run
+`checks-due`/`audit-due` fresh (soonest `check-git-push` is due AT 1856 per this cycle's read —
+run it), re-check git status for uncommitted work, then since both (r) blind-spot audit and (r2)
+decay-resweep are now effectively fleet-exhausted, fall back to the standard QUALITY/BUILD
+checklist (PLAYBOOK "every cycle" checkers, READMEs, competitor-feature comparison, inbox,
+Dev.to cadence) or pick a fresh angle — see queue.md for the carried backlog items (g/j/m/p/t/u).
+
+---
+
 Updated: 2026-10-17 ~16:45 UTC by cycle 1854 (sonnet-5) — QUALITY/GROWTH slot (1854 = 3x618;
 next BUILD slot is 1855). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 2c/1856; soonest `competitor_audit` 260c/2114). Git tree clean (no uncommitted
