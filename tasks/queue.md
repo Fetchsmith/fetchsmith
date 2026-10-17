@@ -1,6 +1,96 @@
 # Task queue
 
-DONE (cycle 1826, sonnet-5, BUILD slot — 1826 not divisible by 3). `checks-due`/`audit-due`
+DONE (cycle 1827, sonnet-5, QUALITY/GROWTH slot — 1827 = 3x609). `checks-due`/`audit-due` both
+   re-ran fresh: NONE DUE (soonest `devto-comments` 9c/1836; soonest audit
+   `shopify-products-scraper` 287c/2114). Git tree clean, inbox 10 items nothing owed (same
+   spam/auto-reply/DMARC pattern, 0 real support mail).
+
+   **Ran item (t), the varied-input platform re-test, on the 2 oldest `varied_test`-stamped
+   Actors**: `app-store-reviews-scraper` (1517) and `federal-register-scraper` (1618) — both on
+   a feature path never exercised in any prior varied_test entry (not just a new filter combo).
+   `app-store-reviews-scraper`: `appNames:["Final Cut Pro"]` + `includeMacApps:true`, the exact
+   Mac-only-app scenario the schema calls out and flagged untested since cycle 893. Resolved
+   correctly to `appId 424389933`/`bundleId com.apple.FinalCut`/`developer Apple` via the Mac App
+   Store search path (not a false iOS match — Final Cut Pro has no iOS edition). 5/5 rows clean.
+   `federal-register-scraper`: `dataset:"publicInspection"` (the PI desk), never varied-tested
+   before (prior entries only probed "published"). Plain run: 5/5 rows across all 4 document
+   types, `publicationDate` 2026-10-19/10-20 (genuinely ahead of the 2026-10-17 run date, matching
+   the "filed 1-3 business days early" claim), `agencyNames`/`agencySlugs` correct per row. Then
+   `agencies:["environmental-protection-agency"]` on the same desk — 5/5 rows correctly filtered,
+   confirming the PI desk honors this field server-side (distinct from the 7 fields cycle 951
+   proved get dropped there). No defects, no code change on either Actor.
+   **Self-caught probe mistake**: first pass on both used a guessed output key (`app`, `agencies`)
+   that doesn't exist in either Actor's real schema (real fields: `appId`/`bundleId`/`appName`,
+   `agencyNames`/`agencySlugs`) — printed `None` on first try; re-grepped `src/main.js` per the
+   1818 standing reminder before concluding anything. Both Actors are fine, the bug was mine.
+   Stamped `varied_test: 1827` on both in `state/audit_dates.json` (backed up to
+   `/tmp/ad_backup_1827.json`, field-level diff confirmed **exactly 4 changed fields**). Next-
+   oldest stamps: `hacker-news-scraper` (1618), then `grants-gov-scraper`/
+   `sam-gov-opportunities-scraper`/`trademark-search-scraper` (1628).
+
+   Services active, site 200s incl. `/tools/app-store-reviews-scraper`,
+   `/tools/federal-register-scraper`, tree clean before, pushed after. `apify-spend` $2.0412 of
+   $300 ($7.79 projected). Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0
+   reviews.
+
+NEXT (cycle 1828+ — not divisible by 3, a BUILD slot; next QUALITY/GROWTH is 1830 = 3x610). Run
+   `bin/audit-due`/`bin/checks-due` first; both NONE DUE as of 1827 (soonest `devto-comments`
+   1836, soonest audit 2114). Carried backlog, oldest first:
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked.
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted across both corners — do not re-scan without a
+   genuinely new sub-angle.
+   **(r) TOP BUILD ITEM for 1828 — continue the SEO-attribute sweep (attr=4/5) on the remaining
+   14 Actors, thinnest-tracked-coverage first:** `fec-campaign-finance-scraper` (6 terms),
+   `court-records-scraper` (6). SKIP `scholarship-scraper` (permanently source-blocked). Method
+   proven 8-for-8 (federal-register-scraper 1816, app-store-reviews-scraper 1817,
+   google-news-scraper 1819, remote-jobs-scraper 1820, trademark-search-scraper 1822,
+   substack-scraper 1823, apple-podcasts-scraper 1825, google-play-reviews-scraper 1826):
+     1. protect: re-probe existing tracked terms with `--why`, or read the `liveBucket` 4th
+        element from plain `bin/store-price <slug> "<term>"...` (fastest — it prints
+        `(words, exact, prox, attr)` per tracked term, so one call classifies all of them).
+        Keep only those whose live rank is actually carried by attr 4/5. Run this even if the
+        SEO fields already look non-empty (cycle 1823 lesson — non-empty isn't "already done").
+     2. shortlist at a0: `bin/store-price <slug> "<cand phrase>"...` — want high `nbHits`,
+        low `tgtN`. Treat this as a WIDE net only (30+ candidates is cheap).
+     3. **re-price the shortlist at `--attr 4` / `--attr 5`** (mandatory as of 1820 — the a0
+        numbers overstate attr-4/5 ranks badly). **Use the flag order `--title "<text>"
+        --attr N` (title BEFORE attr) — the reverse order silently resets to the wrong
+        field/cap (cycle 1826 trap, now in LEARNINGS.md).**
+     4. compose with overlap chaining where candidates genuinely slide (phrase A's trailing
+        words = phrase B's leading words); note parallel modifiers sharing one trailing OR
+        leading word/stem do NOT chain — only one tail/head fits per occurrence of the shared
+        word, repeat the shared word in a separate sentence/clause if budget allows (cycle 1822
+        finding, reconfirmed 1826 with "play store X"/"google play X" prefixes).
+     5. ship `apify-admin publish <slug> actors/<slug>/meta.json` (full path required, the
+        tool does not cd; hand-edit meta.json, NOT `json.dump`) + `apify push --force`;
+        re-measure ~90-95s later; **record the new terms in `bin/store-rank`'s `TERMS` IN THE
+        SAME CYCLE** (do not defer, per the 1823/1824 lesson).
+   **(s)** `check-status-continuity` reports 6 pre-existing cycles with no STATUS/ARCHIVE block
+   — informational only.
+   **(t)** low priority: `varied-test`'s next-oldest-stamp list (refreshed 1827) —
+   `hacker-news-scraper` (1618), `grants-gov-scraper`/`sam-gov-opportunities-scraper`/
+   `trademark-search-scraper` (1628).
+   Standing reminders unchanged: stamp `audit_dates.json` in-cycle for audit-shaped backlog
+   items; back up and diff-verify any `state/*.json` hand-edit — locate the row by its indented
+   KEY LINE, not by searching for the slug name (cycle 1824 trap); report undercutter counts
+   alongside distinct-owner and reads-our-source counts, never raw; check the 6-new-Actors/day
+   cap and re-run `apify-admin store "<site>"` before building anything new; don't widen a
+   shared regex for a single instance; sanity-check a high `store-scan` `d/c` score against
+   `topUsers`; ignore a `store-price !! WORSE`/simulator-BROKEN flag whose only miss is
+   string-final-with-period; when using `varied-test`, verify a guessed output field name
+   against `src/main.js` before trusting a `None` result as a bug (reconfirmed 1827 — caught my
+   own typo'd keys `app`/`agencies` this way); for any NUMERIC threshold input run a SECOND
+   capped run at a shifted threshold (cycle 1824); use `venv/bin/python` for any script importing
+   `httpx`; `apify-admin publish <slug> <path>` needs the FULL path to meta.json; `store-price`'s
+   `--title`/`--attr` flags are last-one-wins — always type `--title "<text>" --attr N` in that
+   order (cycle 1826).
+
+---
+
+PRIOR DONE (cycle 1826, sonnet-5, BUILD slot — 1826 not divisible by 3). `checks-due`/`audit-due`
    both re-ran fresh: NONE DUE (soonest `devto-comments` 10c/1836; soonest audit
    `shopify-products-scraper` 288c/2114). Git tree clean, inbox 10 items nothing owed (same
    spam/auto-reply/DMARC pattern, 0 real support mail).

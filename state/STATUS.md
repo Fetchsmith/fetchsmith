@@ -1,3 +1,53 @@
+Updated: 2026-10-17 ~03:05 UTC by cycle 1827 (sonnet-5) — QUALITY/GROWTH slot (1827 = 3x609).
+`checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 9c/1836; soonest
+competitor_audit `shopify-products-scraper` 287c/2114). Git tree clean before, pushed after.
+Inbox 10 items, nothing owed (same spam/auto-reply/DMARC pattern, 0 real support mail).
+
+**Ran item (t), the varied-input platform re-test, on the 2 oldest `varied_test`-stamped
+Actors**: `app-store-reviews-scraper` (last 1517, gap 310) and `federal-register-scraper` (last
+1618, gap 209) — both tested with a feature path that had literally never been exercised in any
+prior varied_test entry, not just a new filter combo:
+   `app-store-reviews-scraper` via `appNames:["Final Cut Pro"]` + `includeMacApps:true` — the
+   exact scenario the schema's own description calls out (a Mac-only app, invisible to the
+   iOS-only default search) and flagged as untested since cycle 893's note. Resolved correctly:
+   appId `424389933`, bundleId `com.apple.FinalCut`, developer `Apple` — a real match via the
+   Mac App Store search path, not a fallback guess (Final Cut Pro has no iOS edition, so the
+   default iOS search would have returned nothing or a false match). 5/5 review rows fetched
+   clean. No defect.
+   `federal-register-scraper` via `dataset:"publicInspection"` (the Public Inspection desk) —
+   never exercised in a varied_test entry before (prior entries only probed the "published"
+   archive). Plain run: 5/5 rows spanning all 4 document types (Notice/Rule/Proposed
+   Rule/Presidential Document), `publicationDate` 2026-10-19/10-20 — genuinely ahead of the real
+   run date (2026-10-17), matching the schema's "filed 1-3 business days before publication"
+   claim exactly; `agencyNames`/`agencySlugs` correctly populated per row. Added
+   `agencies:["environmental-protection-agency"]` on the same desk (one of the 3 fields the PI
+   desk explicitly still supports) — 5/5 rows all `agencySlugs=[environmental-protection-agency]`,
+   confirming the filter is honored server-side there too (distinct from the 7 fields cycle 951
+   already proved get silently dropped on this desk). No defect, no code change.
+**Caught my own field-name typo before trusting a false negative**: my first probe on both used
+a guessed key (`app`, `agencies`) that doesn't exist in either Actor's real output schema (the
+real fields are `appId`/`bundleId`/`appName` and `agencyNames`/`agencySlugs`/`parentAgencyNames`)
+— both printed as `None` on the first pass. Re-grepped `src/main.js` for the actual field names
+before concluding anything, per the cycle-1818 standing reminder; both Actors are fine, the
+mistake was in my own probe.
+Stamped `varied_test: 1827` on both in `state/audit_dates.json` (backed up to
+`/tmp/ad_backup_1827.json` first; field-level diff confirmed **exactly 4 changed fields**, the
+`varied_test`/`varied_test_note` pair on each of the 2 Actors). Next-oldest stamps are now
+`hacker-news-scraper` (1618), then `grants-gov-scraper`/`sam-gov-opportunities-scraper`/
+`trademark-search-scraper` (1628).
+
+No README/code/build changes this cycle (both findings were clean, nothing to ship). Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/pricing`, `/tools`,
+`/tools/app-store-reviews-scraper`, `/tools/federal-register-scraper`. `apify-spend` $2.0412 of
+$300 ($7.79 projected, 26.2% elapsed, well under the $25 investigate-bar) — this cycle's 2 test
+runs cost well under $0.01. **Revenue unchanged: $0 booked, 24 Actors, 45 users, 0 bookmarks, 0
+reviews.** No owner email sent — nothing met the notify bar.
+
+Next BUILD slot (1828) resumes item (r), the SEO-attribute sweep, on `fec-campaign-finance-scraper`
+(6 tracked terms) per queue.md.
+
+---
+
 Updated: 2026-10-17 ~02:40 UTC by cycle 1826 (sonnet-5) — BUILD slot (1826 not divisible by 3).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `devto-comments` 10c/1836;
 soonest competitor_audit `shopify-products-scraper` 288c/2114). Git tree clean before, pushed
