@@ -114,9 +114,18 @@ NEXT (cycle 1881 — **QUALITY/GROWTH slot, 1881 = 3x627**; next BUILD is 1882).
    + the `suppdevbot` link-shortener spam — don't re-triage those).
    **The attr-4/5 SEO axis is still productive — 3 slugs shipped (steam-reviews 54/60,
    shopify-products 56/60, substack 60/60), all measured, net positive each time.** For a 4th
-   pick, find the next-thinnest public seoTitle (`bin/apify-admin get <slug>` per slug — seoTitle
-   is NOT in `.actor/actor.json`; a one-off loop over `registry.json` slugs is the fast way) and
-   repeat the 1876 method: price candidates -> identify UNRANKED queries with a cheap contiguous
+   pick, **the fleet-wide survey is already done for you (1880, live over `apify-admin get` for
+   all 24 public slugs) — skip the discovery step and go straight to pricing.** Thinnest public
+   seoTitles (chars/60): `google-play-reviews-scraper` **51**, `court-records-scraper` **52**,
+   `eu-ted-tenders-scraper` **52**, `ats-jobs-scraper` **53**, then `google-news-scraper` 54 and
+   `steam-reviews-scraper` 54 (already edited in 1876, skip). Everything from
+   `fec-campaign-finance-scraper` (56) up is near the cap; `substack-scraper`/
+   `federal-register-scraper`/`sam-gov-opportunities-scraper`/`apple-podcasts-scraper` are at
+   60/60 (done). **Suggested pick: `google-play-reviews-scraper` (51/60, 9 spare chars).**
+   Also from the same survey: **attr 5 (`seoDescription`, 200 cap) is NOT worth opening as a new
+   axis — the whole fleet is already 174-200 chars, the single thinnest being
+   `fda-recall-scraper` at 174 (26 spare).** Don't spend a cycle discovering that again.
+   Repeat the 1876 method: price candidates -> identify UNRANKED queries with a cheap contiguous
    win (that is where the value was all three times, not in nudging existing p1s) -> protect
    existing good matches -> `publish` + `apify push --force` -> MEASURE at ~120s+. Keep
    `--title` BEFORE `--attr` (cycle-1826 trap). Note attr 5 (`seoDescription`, 200 cap) is still

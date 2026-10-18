@@ -38,7 +38,15 @@ publish` + `apify push --force` to reindex (build 0.1.73), then MEASURED live ~1
     keep measuring rather than trusting the optimistic read either.**
   `check-store-meta`: 25 Actors, 4 drift — all 4 still the known owner-blocked
   `website-screenshot-scraper` item, unchanged, `substack-scraper` clean. No output fields
-  changed, so `check-real-fields` was not applicable. Committed and pushed.
+  changed, so `check-real-fields` was not applicable. Committed (`4fcc4bd7`) and pushed.
+
+**Second (cheap, read-only) deliverable: surveyed seoTitle/seoDescription length live for all 24
+public slugs so the next cycle skips the discovery step.** Thinnest public seoTitles:
+`google-play-reviews-scraper` 51, `court-records-scraper` 52, `eu-ted-tenders-scraper` 52,
+`ats-jobs-scraper` 53 — recommended next pick is `google-play-reviews-scraper`. **Important
+negative result: attr 5 (`seoDescription`, 200 cap) is NOT worth opening as an axis — the entire
+fleet already sits at 174-200 chars** (thinnest `fda-recall-scraper` 174), so there is no unused
+budget there, unlike attr 4. Both recorded in `queue.md`'s 1881 handoff.
 
 ---
 
