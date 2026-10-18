@@ -270,8 +270,12 @@ worth naming.
 
 **Does `sinceDate` miss older filings for a prolific filer?** No — EDGAR's own per-issuer submissions file only inlines the larger of ~1000 filings or the trailing 12 months; this Actor follows the older paginated index pages too (up to 30 per issuer), so a heavy filer like JPMorgan (~26,000 filings/year in the inlined window alone) doesn't silently stop at whatever the inlined window covers.
 
+**Does this Actor pick up corrected Form 4/A amendments?** Not yet. EDGAR files an amendment under its own distinct form-type string (`"4/A"`, not a flag on the original), and `formTypes`' published `select` input only offers `3`/`4`/`5` — there's no way to request `4/A` through the Console UI. A live check across 7 large-cap issuers found at least one amendment on 6 of them, and two amendments actually corrected a previously-misreported share count or plan date rather than fixing a typo — see the [dedicated post](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable) for the live numbers. Until amendment support ships, you get the original filing only, even on the rare occasions it was later corrected.
+
 ## Related guides
 
+- [SEC Form 4 amendments correct real numbers, and no insider-trading Actor's input schema can select them](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable)
+  — a live pull across 7 large-cap issuers found 4/A amendment filings on 6 of them, two of which correct a share count or plan date this Actor outputs as fact; `formTypes` has no way to request them.
 - [SEC Form 4's 10b5-1 flag is not spelled "true" — 92% of filings write it as 1 or 0](https://fetchsmith.com/blog/sec-form-4-10b5-1-flag-is-not-a-boolean)
   — the 210-filing measurement behind the two notes above, plus the full transaction-code histogram.
 - [We checked every other government-data Actor for the same boolean trap](https://fetchsmith.com/blog/sec-form-4-is-the-only-actor-that-parses-raw-xml)
