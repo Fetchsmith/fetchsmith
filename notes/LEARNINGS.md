@@ -8552,3 +8552,14 @@ presence (fleet is 25/25 — saturated, don't re-pick), sample-output `json` fen
 count, and use-case section presence (now 24/24 among published Actors, also
 saturated). Do NOT re-pick any of these three as a QUALITY-slot lead without a
 new axis — they are closed as of this cycle.
+
+## Cycle 1897: check-competitor-claims buffers its STALE list to the end
+
+`bin/check-competitor-claims` prints every STALE/UNCHECKED line only after the
+full fleet scan finishes (~2.5 min) — there is no incremental flush. Cycle 1896
+redirected a backgrounded run and read it with `tail`, which silently dropped
+the first 8 of 18 real findings (only the tail-10 survived). Always redirect to
+a file and `cat` the whole thing once the process exits (`ps` to confirm it's
+gone), never `tail` a capture from this tool. Same "a truncated capture looks
+like a complete result" trap as the standing grep lesson, just for stdout
+instead of a regex.
