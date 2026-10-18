@@ -3,6 +3,21 @@ import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
 
 await Actor.init();
+// Soft-deadline guard (same pattern as sam-gov-opportunities-scraper, 22nd Actor on the
+// rollout) adapted to this Actor's own shape: it has no RUN_SUMMARY/incompleteReason
+// framework at all, so this adds only what the shape actually needs rather than porting
+// that machinery wholesale. Two places do real network work and can approach the platform
+// run timeout: the main paged search walk (up to maxResults/PAGE_SIZE pages, each with up
+// to 4 retries x 2-30s) and the id-only baseline walk in seedBaseline() (up to SEED_CAP/
+// PAGE_SIZE = 80 pages). Getting hard-killed there is not a billing loss (pushResult charges
+// per row as it goes) -- it is the skipped write AFTER the walk: watchStore.setValue, so a
+// watch-mode buyer whose run is killed loses their baseline and gets re-charged for the whole
+// result set on the next run. Stop proactively with a margin and flush instead.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetStopped = false; // set when the MAIN (non-seed) walk stops itself for this reason
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
 const input = (await Actor.getInput()) ?? {};
 
 const countries = (input.countries ?? []).map((c) => String(c).toUpperCase().trim()).filter(Boolean);
@@ -432,6 +447,7 @@ let apiErrorMessage = null;
 // the stopping point is reported as "new" — and charged — on the first incremental run.
 let seedError = null;
 let seedErrorStatus = null;
+let seedTimedOut = false; // seedError was caused by the time budget, not a real TED-side error
 let httpErrorMessage = null;
 
 // gotScraping runs with throwHttpErrors:false, so got's own `retry` never fires on a
@@ -478,14 +494,21 @@ function upstreamMessage(body) {
   return body.message ?? body.error?.message ?? null;
 }
 
+// `timeBudgetHit` (the return value, not the module-level `timeBudgetStopped`) tells the
+// caller this response is stale because a retry was abandoned for the time budget, not
+// because TED actually answered with it again -- otherwise a lingering 429/503 status would
+// be misread as a real upstream error instead of a clock stop.
 async function fetchPage(pageNum, fieldsOverride) {
   let resp = await fetchPageOnce(pageNum, fieldsOverride);
   for (const fallbackMs of HTTP_RETRY_DELAYS_MS) {
     if (!TRANSIENT_STATUS.has(resp.statusCode)) break;
+    if (!timeBudgetOk()) return { ...resp, timeBudgetHit: true };
     const retryAfterMs = Number(resp.headers?.['retry-after']) * 1000;
     const waitMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? Math.min(retryAfterMs, 30000) : fallbackMs;
-    log.warning(`TED API returned ${resp.statusCode} on page ${pageNum} — retrying in ${waitMs}ms`);
-    await new Promise((r) => setTimeout(r, waitMs));
+    const cappedWaitMs = Math.max(Math.min(waitMs, remainingMs()), 0);
+    log.warning(`TED API returned ${resp.statusCode} on page ${pageNum} — retrying in ${cappedWaitMs}ms`);
+    await new Promise((r) => setTimeout(r, cappedWaitMs));
+    if (!timeBudgetOk()) return { ...resp, timeBudgetHit: true };
     resp = await fetchPageOnce(pageNum, fieldsOverride);
   }
   return resp;
@@ -538,7 +561,19 @@ async function seedBaseline() {
   let seedTotal = Infinity;
   let pagesSeeded = 0;
   while (watchSeen.size < SEED_CAP && (seedPage - 1) * PAGE_SIZE < seedTotal) {
+    if (!timeBudgetOk()) {
+      log.warning(`Baseline walk: run time budget reached after ${pagesSeeded} page(s) (${watchSeen.size} notice id(s) collected) — stopping baseline walk early.`);
+      seedError = `the run approached its platform time limit after ${pagesSeeded} baseline page(s) (${watchSeen.size} notice id(s) collected)`;
+      seedTimedOut = true;
+      break;
+    }
     const resp = await fetchPage(seedPage, seedFields);
+    if (resp.timeBudgetHit) {
+      log.warning(`Baseline walk: run time budget reached while retrying page ${seedPage} (${watchSeen.size} notice id(s) collected) — stopping baseline walk early.`);
+      seedError = `the run approached its platform time limit while retrying baseline page ${seedPage} (${watchSeen.size} notice id(s) collected)`;
+      seedTimedOut = true;
+      break;
+    }
     if (resp.statusCode !== 200) {
       const upstream = upstreamMessage(resp.body);
       log.warning(`Baseline walk: TED API returned ${resp.statusCode} on page ${seedPage}${upstream ? `: ${upstream}` : ''} — stopping baseline walk early.`);
@@ -570,7 +605,10 @@ async function seedBaseline() {
 if (seeding) await seedBaseline();
 
 while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < total) {
+  if (!timeBudgetOk()) { timeBudgetStopped = true; break; }
   let resp = await fetchPage(page);
+
+  if (resp.timeBudgetHit) { timeBudgetStopped = true; break; }
 
   if (resp.statusCode !== 200) {
     log.warning(`TED API returned ${resp.statusCode} on page ${page}: ${JSON.stringify(resp.body).slice(0, 300)}`);
@@ -600,16 +638,20 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
   const RETRY_DELAYS_MS = [2000, 5000, 10000];
   for (const delayMs of RETRY_DELAYS_MS) {
     if (notices.length || total <= (page - 1) * PAGE_SIZE) break;
-    log.warning(`page ${page}: 0 notices but totalNoticeCount ${total} says there should be more — retrying in ${delayMs}ms`);
-    await new Promise((r) => setTimeout(r, delayMs));
+    if (!timeBudgetOk()) { timeBudgetStopped = true; break; }
+    const waitMs = Math.max(Math.min(delayMs, remainingMs()), 0);
+    log.warning(`page ${page}: 0 notices but totalNoticeCount ${total} says there should be more — retrying in ${waitMs}ms`);
+    await new Promise((r) => setTimeout(r, waitMs));
+    if (!timeBudgetOk()) { timeBudgetStopped = true; break; }
     resp = await fetchPage(page);
+    if (resp.timeBudgetHit) { timeBudgetStopped = true; break; }
     if (resp.statusCode === 200) {
       body = resp.body;
       total = body.totalNoticeCount ?? total;
       notices = body.notices ?? [];
     }
   }
-  if (!notices.length) break;
+  if (!notices.length || timeBudgetStopped) break;
 
   let beforePush = pushed;
   for (const notice of notices) {
@@ -671,7 +713,11 @@ if (watchMode && seeding && seedError) {
     + 'for this run — re-run the same label and filters to build a complete baseline.',
   );
 } else if (watchMode) {
-  await saveWatchRecord(apiErrorMessage && !seeding ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
+  await saveWatchRecord(
+    apiErrorMessage && !seeding ? 'failed-incremental'
+      : timeBudgetStopped ? 'time-budget-incremental'
+        : seeding ? 'seeded' : 'incremental',
+  );
   evictionSuffix = baselineTruncated > 0
     ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest notice `
       + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) — they will be `
@@ -727,7 +773,20 @@ if (filteredOutDeadline > 0) {
     + 'notices usually have none). None of them were charged.',
   );
 }
-if (pushed === 0 && watchMode && !seeding) {
+if (timeBudgetStopped) {
+  // Must outrank every branch below: with pushed===0 this would otherwise read as "nothing
+  // matched"/"nothing new since last run" to the buyer, hiding the real cause (the run ran out
+  // of time, not that the query matched nothing) -- the same first-cause-wins trap the
+  // sam-gov-opportunities-scraper rollout cycle hit and fixed for `max-results` vs `time-budget`.
+  const partial = `the run approached its platform time limit after ${pushed} notice(s) over ${page - 1} `
+    + `page(s) (totalNoticeCount ${Number.isFinite(total) ? total : 'unknown'}), and stopped itself so the `
+    + `rows already collected${watchMode ? ' (and the watch baseline)' : ''} would be saved instead of lost `
+    + 'to a hard kill. Give the run a longer timeout in its run options, or narrow the query (fewer '
+    + 'countries/CPV codes, a shorter publication-date window, a lower maxResults) to finish within the '
+    + 'platform limit.';
+  log.warning(`Time budget: ${partial}`);
+  await Actor.setStatusMessage(`Incomplete (time budget): ${pushed} notice(s) delivered. ${partial}`);
+} else if (pushed === 0 && watchMode && !seeding) {
   // Until this fix this was log-only, so a COMPLETE watch run (no httpError, nothing new)
   // reached the console as a plain green SUCCEEDED run with statusMessage: null -- same bug
   // class fixed on trademark-search-scraper/court-records-scraper/uk-find-a-tender-scraper
@@ -769,9 +828,12 @@ if (webhookUrl) {
     // re-charge for rows already paid for once.
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
-    // Non-null means the walk was cut short by TED and this run will exit FAILED. The rows
+    // Non-null means the walk was cut short (by TED or the run's own time budget) and, unless
+    // it was only a non-fatal main-walk time-budget stop, this run will exit FAILED. The rows
     // in the dataset are real and were charged for; there are simply more that were not reached.
-    error: seedError ?? (apiErrorMessage ? `TED API error: ${apiErrorMessage}` : null),
+    error: seedError ?? (apiErrorMessage ? `TED API error: ${apiErrorMessage}` : null)
+      ?? (timeBudgetStopped ? 'run approached its platform time limit; results are partial' : null),
+    timeBudgetStopped,
   };
   try {
     const resp = await gotScraping({
@@ -799,9 +861,14 @@ if (seedError) {
   await Actor.fail(
     `The watch baseline could not be completed: ${seedError}. No baseline was saved (a partial one would `
     + 'cause you to be charged twice for the same notices) and nothing was charged. '
-    + (seedErrorStatus == null
-      ? 'If this looks like a TED-side outage or rate limit, please re-run in a few minutes.'
-      : upstreamAdvice(seedErrorStatus)),
+    + (seedTimedOut
+      // Distinct from the TED-outage advice below: re-running immediately will not help if the
+      // query itself just needs more pages than one run's time budget allows.
+      ? 'Give the run a longer timeout in its run options, or narrow the query (fewer countries/CPV '
+        + 'codes, a shorter publication-date window) so the baseline walk finishes faster, then re-run.'
+      : seedErrorStatus == null
+        ? 'If this looks like a TED-side outage or rate limit, please re-run in a few minutes.'
+        : upstreamAdvice(seedErrorStatus)),
   );
 } else if (apiErrorMessage) {
   await Actor.fail(
