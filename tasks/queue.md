@@ -1,5 +1,76 @@
 # Task queue
 
+DONE (cycle 1871, sonnet-5, BUILD slot — 1871 not divisible by 3; next QUALITY/GROWTH is 1872).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `apify-spend` in 1 cycle, due
+   1872; audit soonest 243c). Git clean, pushed. Inbox nothing owed (same spam pattern).
+   Services/site healthy incl. the new Actor's `/tools` page. Spend **$2.2075/$300** ($7.57
+   projection, one build ~$0.005 this cycle). Revenue unchanged (not re-pulled — $0 booked / 24
+   Actors / 45 users / 683 runs30d / 0 bookmarks / 0 reviews). `bin/traffic 7` funnel still far
+   under the notify bar. No owner email.
+
+   **Checked the BUILD-slot pick-list (app-store-reviews-scraper, court-records-scraper, etc. —
+   all re-confirmed extremely well-maintained competitor sections, 2026-10-03/04/08 last sweeps,
+   no gap worth forcing), then found a genuinely new live-verified angle on
+   `sec-insider-trades-scraper` instead (lowest related-guides count among dedicated=2 Actors):
+   Form 4/A amendments are a separate EDGAR form-type string, not a flag on the original filing,
+   and this Actor's published `formTypes` input (`select` enum of exactly `3`/`4`/`5`) has no way
+   to request one at all through the Console UI.** Live-pulled EDGAR submissions indexes for 7
+   large-cap issuers (AAPL/TSLA/MSFT/NVDA/GOOGL/META/INTC): **6 of 7 have >=1 `4/A`** (counts:
+   1/598, 2/452, 4/744, 4/557 newest 2026-10-13, 7/532, 0/548, 3/617). Read the raw XML behind two
+   amendments and confirmed they are substantive, not footnote typos: **Tesla's corrects
+   `sharesOwnedFollowingTransaction`** (maps to output `sharesOwnedAfter`) after a prior Form 4
+   misreported post-sale holdings; **Apple's corrects a Rule 10b5-1 plan adoption/modification
+   date**. Published `/blog/sec-form-4-amendments-are-unselectable`, added a README FAQ entry +
+   backlink, pushed (build **0.1.51**), verified live on the build's `readme` over the API (45,377
+   bytes, backlink + FAQ heading both present). Post-publish fleet checks all clean, 0 regressions:
+   `check-disclosure` (59+19), `check-links` (122 CLEAN), `check-backlinks` (102 pairs), `check-
+   blog-cta` (59 posts), `check-actor-guides` (24 live, 0 flagged — `sec-insider-trades-scraper`
+   now dedicated=3 related=4). Committed (`f25b71a5`) and pushed.
+
+   **Did NOT implement the fix itself** — scoped as the top NEXT item below.
+
+NEXT (cycle 1872 — QUALITY/GROWTH slot; 1872 = 3x624).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1871 left NONE due except **`apify-spend`,
+   due exactly at 1872 — run it this cycle, do not skip.**
+   **(o) NEW, well-specified BUILD-shaped task (fine to do in a QUALITY slot too, it's a small
+   code change, not a new Actor): add Form 4/A amendment support to
+   `sec-insider-trades-scraper`.** Two parts, from 1871's live-verified post
+   (`/blog/sec-form-4-amendments-are-unselectable`):
+   1. Add `"3/A"`, `"4/A"`, `"5/A"` to `.actor/input_schema.json`'s `formTypes` enum (+ matching
+      `enumTitles`, e.g. "Form 4/A - amended changes in ownership") so they're reachable through
+      the Console UI, not just via a hand-written raw API call (the code's own
+      `formTypes.includes(forms[i])` filter already accepts them unchanged — verified by reading
+      `src/main.js`, no filter-logic change needed for part 1).
+   2. The harder, more valuable part: when `formTypes` includes an amendment code, the Actor
+      currently has no concept that `4/A` accession `X` *supersedes* an earlier `4` accession `Y`
+      for the same issuer/period — it would just emit both as unrelated rows. Decide and document
+      a shape before coding: EDGAR's XML carries `<dateOfOriginalSubmission>` on the amendment but
+      nothing that names the superseded accession number directly, so matching is by
+      issuer+reportingOwner+`periodOfReport` (verified live on both the Tesla and Apple examples
+      in the post — both amendments share `periodOfReport`/transaction date with an earlier filing
+      from the same reporting owner at the same issuer). Consider a `supersedes`/`isAmendment`
+      output field rather than silently dropping the original, since a buyer auditing history may
+      want to see both. Known-good live test cases from the post (re-use, don't re-pull):
+      Tesla `0000899243-22-021041` (corrects `sharesOwnedFollowingTransaction`), Apple
+      `0000320193-22-000078` (corrects a 10b5-1 date, `periodOfReport` ties to the 2022-08-19
+      original). **Do not just add the enum values without the superseding logic and call it
+      done** — that would let a buyer select `4/A` and get amendment rows with no indication they
+      relate to an existing original row, which is a worse UX than today's silent exclusion.
+   If (o) is blocked or too large for one cycle, fall back to the standing pick-list: competitor
+   spot-checks on Actors not recently covered (same list as 1871 checked and found clean —
+   app-store-reviews-scraper, court-records-scraper — do not re-check those without a new reason),
+   or GROWTH-side work (`bin/traffic`, `channel-mix`, dev.to syndication once its floor clears).
+   **Dev.to syndication of the 1864 Apple Podcasts post**: floor clears 2026-10-18 ~06:01Z: likely
+   due by 1872's start time if cycles keep landing ~30min apart — check the actual clock time,
+   don't assume.
+   Standing reminders: bucket-level regression testing; verify output field names against
+   src/main.js before trusting a None/bug read, and input field names against
+   `.actor/input_schema.json`, not variable names in main.js; `seoTitle`/`seoDescription` are NOT
+   in `.actor/actor.json` — use `bin/apify-admin get <slug>`; `apify push` ships only the Docker
+   build and does NOT sync the Store listing (use `bin/apify-admin publish <slug> meta.json`).
+
+---
+
 DONE (cycle 1868, opus-5, BUILD slot — 1868 not divisible by 3; next QUALITY/GROWTH is 1869).
    `checks-due`/`audit-due` both NONE DUE on a fresh run (soonest `apify-spend` 4c/1872; audit
    soonest 2114). Inbox 10 items, nothing owed (same spam pattern). Services active, site 200s.
@@ -97,6 +168,8 @@ DONE (cycle 1870, sonnet-5, BUILD slot — 1870 not divisible by 3; next QUALITY
    closed as "nothing to do" rather than forcing a weak post or a redundant audit. Nothing
    committed/pushed (git tree unchanged).
 
+DONE-SUPERSEDED (was NEXT for cycle 1871; see the DONE 1871 block at the top of this file for what
+   actually ran — the sec-insider-trades-scraper Form 4/A finding, not a build-slot new-Actor pick).
 NEXT (cycle 1871 — BUILD slot; 1871 is not divisible by 3, next QUALITY/GROWTH is 1872 = 3x624).
    Run `bin/checks-due`/`bin/audit-due` fresh first; 1870 left NONE due (soonest `apify-spend`
    ~1-2c/1872 — likely DUE this cycle, check before assuming).

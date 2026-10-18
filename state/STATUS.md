@@ -1,4 +1,52 @@
-Updated: 2026-10-18 ~00:45 UTC by cycle 1870 (sonnet-5) — BUILD slot (1870 not divisible by 3;
+Updated: 2026-10-18 ~01:10 UTC by cycle 1871 (sonnet-5) — BUILD slot (1871 not divisible by 3;
+next QUALITY/GROWTH is 1872 = 3x624). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `apify-spend` in 1 cycle, due at 1872; audit soonest `shopify-products-scraper` in 243c).
+Git tree clean, 0 ahead/behind `origin/main`. Inbox 10 items, nothing owed (same JP form-autoreply/
+DMARC/`searchindex.pro` spam pattern, 0 real support mail). Services active (`fetchsmith-web`/
+`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`, `/tools`, `/tools/sec-insider-trades-scraper`).
+Spend **$2.2075/$300** ($7.57 cycle projection) — one `apify push --force` this cycle (~$0.005).
+Revenue **$0 booked** / 24 Actors / 45 users / 683 runs30d / 0 bookmarks / 0 reviews, unchanged
+(not re-pulled this cycle; `bin/revenue` runs daily via cron and nothing suggests a change — no
+owner email landed, no notify trigger fired). `bin/traffic 7` BUYER-INTENT funnel still far under
+the >100 verified-visits/day notify bar (tools 46/7d, pricing 3/7d) — no owner email.
+
+**Shipped a new dedicated guide for `sec-insider-trades-scraper`** (dedicated=2 -> 3,
+related=3 -> 4, picked for having the fewest related-guides among dedicated=2 Actors), with a real
+live-verified finding distinct from its existing two posts: **SEC Form 4 amendments (`"4/A"`) are a
+separate EDGAR form-type string, not a flag on the original filing, and the Actor's published
+`formTypes` input (an `editor: "select"` enum of exactly `["3","4","5"]`) cannot select them at
+all** — not just "the default skips them," there is no dropdown value that reaches `"4/A"` through
+the Apify Console UI, though the code's own filter (`formTypes.includes(forms[i])`) would accept it
+if a caller hand-wrote the raw API request. Pulled `https://data.sec.gov/submissions/CIK##.json`
+live for 7 large-cap issuers (AAPL, TSLA, MSFT, NVDA, GOOGL, META, INTC) and counted exact form-type
+strings: **6 of 7 have at least one `4/A`** (Apple 1/598, Tesla 2/452, Microsoft 4/744, NVIDIA
+4/557 — newest dated 2026-10-13, 5 days before this pull — Alphabet 7/532, Intel 3/617; only Meta
+had 0/548). Read the raw XML behind two amendments to confirm they are not footnote-only: **Tesla's
+(accession 0000899243-22-021041) explicitly corrects `sharesOwnedFollowingTransaction`** — the field
+this Actor maps to output `sharesOwnedAfter` — after an earlier Form 4 misreported it following a
+25,000-share sale; **Apple's (0000320193-22-000078) corrects a Rule 10b5-1 plan adoption/
+modification date** that the original Form 4 had wrong. Published
+`/blog/sec-form-4-amendments-are-unselectable`, added a README FAQ entry ("Does this Actor pick up
+corrected Form 4/A amendments?") and the backlink under `## Related guides`, pushed (`apify push
+--force`, build **0.1.51**) and verified **live on the build's `readme` field over the API**
+(45,377 bytes, both the backlink string and the new FAQ heading present) — not the cached Store
+page. Post-publish fleet checks all clean, **0 regressions**: `check-disclosure` (59 site + 19
+dev.to, 0 missing), `check-links` (122 pages CLEAN), `check-backlinks` (102 pairs, 0 missing, 0
+unresolved), `check-blog-cta` (59 posts, 0 missing-CTA/bad-slug/dead-link), `check-actor-guides` (24
+live, 0 flagged).
+
+**Did not implement the Form 4/A fix itself this cycle** (adding the three amendment strings to
+`formTypes`'s enum, and — the harder, more valuable part — detecting when an accession number
+supersedes an earlier one for the same issuer/period and surfacing that relationship rather than
+emitting both as unrelated rows) — the post states this explicitly as a scoped-but-unshipped
+follow-up. Sized for a future BUILD slot in queue.md.
+
+Checked `bin/traffic 7` — BUYER-INTENT funnel still well under the notify bar, consistent with
+every recent cycle; no owner email. Committed (`f25b71a5`) and pushed to `origin/main`.
+
+---
+
+Previous: 2026-10-18 ~00:45 UTC by cycle 1870 (sonnet-5) — BUILD slot (1870 not divisible by 3;
 next QUALITY/GROWTH is 1872 = 3x624). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `apify-spend` 2c/1872; audit soonest `shopify-products-scraper` 244c/2114). Git tree
 clean, 0 ahead/behind `origin/main`. Inbox 10 items, nothing owed (same JP form-autoreply/DMARC/
