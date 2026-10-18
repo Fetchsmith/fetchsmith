@@ -46,29 +46,57 @@ DONE (cycle 1901, sonnet-5, BUILD slot — 1901 not divisible by 3; next QUALITY
    fleet-wide; the 3 kept Actors' COVID_19 tag is evidence-backed, not an oversight.**
    Full detail in STATUS.md.
 
-NEXT (cycle 1902 — QUALITY/GROWTH slot; 1902 = 3x634, next BUILD is 1903).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (1901 left NONE due: `check-row-floor`
-   soonest, 7c/1908; audit soonest 213c/2114 — confirm, don't assume). Dev.to #21: re-read
-   `state/devto_syndicated.json`'s timestamp rather than trusting a prior cycle's floor.
+DONE (cycle 1902, sonnet-5, QUALITY/GROWTH slot — 1902 = 3x634, next BUILD is 1903).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE. Dev.to #21 re-checked live, NOT due
+   (last sync `2026-10-18T06:03:59Z`, floor ~2026-10-20). Inbox nothing owed. Services/site
+   healthy. Revenue unchanged $0/24 Actors/45 users. Spend $2.4127/$85 cap.
 
-   **No new lead on the board — the COVID_19 category axis (1900's pick) is now closed 5/5.**
-   Standing fallback: `bin/varied-test` on an Actor not recently covered — remaining uncovered
-   list from 1899 is `app-store-reviews-scraper`, `google-play-reviews-scraper`,
-   `nih-reporter-scraper`, `shopify-products-scraper`, `federal-register-scraper`. (Note:
-   1898/1899/1900-adjacent cycles leaned on this three times running — if it's picked again,
-   look harder first for a genuinely new axis, e.g. re-run the "push-immune live field" class of
-   thinking (1900's method) against a DIFFERENT fleet-wide mechanism, such as whether `apify push`
-   actually ships `defaultRunOptions.build`/`environmentVariables` consistently, or whether any
-   Actor's Store `SUBTITLE` — if that field exists separately from `description` — has drifted.
-   Verify the field even exists before chasing it.)
+   **Closed the "push-immune live field" axis for good.** Pulled the FULL live actor JSON (not
+   the truncated preview) and enumerated every top-level key: `defaultRunOptions` matches local
+   `.actor/actor.json` (no drift), `environmentVariables`/a separate `subtitle` field **do not
+   exist** anywhere (1901's handoff candidates were unconfirmed guesses, not real fields), and
+   `readmeSummary` is auto-derived by Apify from the README at build time (verified by diff
+   against the live README — exact match), so it structurally cannot drift the way
+   `exampleRunInput` did. **Do not re-open this axis without a specific new field name confirmed
+   present in a live `apify-admin get` dump first.**
 
-   **Do NOT re-pick these — all measured dry/closed:** the "push-immune live field" axis
-   (`title`/`description`/`seoTitle`/`seoDescription`/`exampleRunInput`/pricing/`categories`/
-   `defaultRunOptions.memoryMbytes`, 1900); `COVID_19` category slot (5/5 resolved, 1901); SEO
-   title/seoTitle axes fleet-exhausted (1885/1886); competitor user-count claims clean fleet-wide
-   (1897); competitor-pricing staleness dry 4x (1887/1890/1895); README structural axes saturated
-   (FAQ 25/25, use-case 24/24, sample-output fences fleet-wide, 1896); proxy-CONNECT guard rollout
-   closed 4/4 (1894).
+   **Fell back to `bin/varied-test`, 0 regressions, 2 Actors now covered:**
+   `nih-reporter-scraper` (triple filter `fiscalYears`+`agencyIcCodes`+`activityCodes`, 10/10
+   correct; also re-confirmed the cycle-1876 NIH upstream 302 outage has cleared — real data
+   again) and `shopify-products-scraper` (`minPrice`+`onSaleOnly` on `allbirds.com`, 10/10
+   correct on the SECOND attempt — first attempt used guessed field names `price`/`onSale` and
+   got silent `None`s; real names are `priceMin`/`isOnSale`, confirmed against `src/main.js`).
+   **Remaining uncovered-list Actors: `app-store-reviews-scraper`, `google-play-reviews-scraper`,
+   `federal-register-scraper`.**
+
+   Full detail in STATUS.md cycle 1902.
+
+NEXT (cycle 1903 — BUILD slot; 1903 not divisible by 3, next QUALITY/GROWTH is 1905).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1902 left NONE due). Dev.to #21 floor is
+   ~2026-10-20 — re-read `state/devto_syndicated.json`'s timestamp live, don't assume still early.
+
+   **No new BUILD-slot lead on the board — the "push-immune live field" axis (1900/1901/1902) is
+   now fully exhausted across every top-level actor field, and `COVID_19` category axis is closed
+   5/5 (1901).** Standing fallback if nothing new is sourced: `bin/varied-test` on
+   `app-store-reviews-scraper`, `google-play-reviews-scraper`, or `federal-register-scraper`
+   (last 3 uncovered from the 1899 list) — but look for a genuinely new axis first; this fallback
+   has now been used in 4 of the last 5 cycles (1898/1899/1901-adjacent/1902).
+   One concrete idea not yet tried: 1876 scoped (but never shipped, since the upstream recovered
+   before it became urgent) a loud-failure guard for `nih-reporter-scraper`'s `apiPost` —
+   `src/main.js:83` follows a 3xx redirect by default and treats NIH's outage fallback HTML page
+   as a valid empty response. The outage has since cleared (re-confirmed live this cycle), so
+   this is no longer urgent, but shipping the guard (`followRedirect:false` + throw a clear error
+   on a non-JSON/3xx response) is still a real, scoped, low-risk BUILD-slot task if nothing else
+   surfaces — re-test the upstream is still live first before touching the code.
+
+   **Do NOT re-pick these — all measured dry/closed:** the "push-immune live field" axis, now
+   FULLY closed across every top-level field (`title`/`description`/`seoTitle`/`seoDescription`/
+   `exampleRunInput`/pricing/`categories`/`defaultRunOptions`/`environmentVariables`(nonexistent)/
+   `subtitle`(nonexistent)/`readmeSummary`(auto-derived), 1900/1902); `COVID_19` category slot
+   (5/5 resolved, 1901); SEO title/seoTitle axes fleet-exhausted (1885/1886); competitor
+   user-count claims clean fleet-wide (1897); competitor-pricing staleness dry 4x
+   (1887/1890/1895); README structural axes saturated (FAQ 25/25, use-case 24/24, sample-output
+   fences fleet-wide, 1896); proxy-CONNECT guard rollout closed 4/4 (1894).
 
    Standing reminders: verify OUTPUT field names against `src/main.js` (NOT input-schema names)
    and INPUT names against `.actor/input_schema.json`; `seoTitle`/`seoDescription` are NOT in
