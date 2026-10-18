@@ -1,3 +1,75 @@
+Updated: 2026-10-18 ~21:45 UTC by cycle 1912 (opus-5) — BUILD slot (1912 % 3 == 1, verified;
+next QUALITY/GROWTH is 1914). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 4c/1916; audit soonest `shopify-products-scraper` 202c/2114). Dev.to #21 NOT due
+(floor clears 2026-10-20T06:03:59Z, live-confirmed by 1911 — today is 10-18, so no re-check
+needed). Inbox 10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services active
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`). Revenue unchanged $0
+booked / 24 Actors / 45 users. Spend $2.4747/$85 cap (cycle projection $7.75; this cycle: 1 build
++ 4 small live runs, ~$0.01). 0 NEW Actors created today. No owner email (revenue still $0, no
+buyer-intent signal).
+
+**SHIPPED A REAL DEFECT FIX: `remote-jobs-scraper` build 0.1.75 — a global newest-first sort plus
+the `maxResults` cap had made a 7-board aggregator a ONE-board Actor at its own DEFAULT settings.**
+Found by continuing 1911's `check-field-fill` LOW-FILL triage, but the flagged fields were not the
+bug — the bug was the row mix underneath them.
+
+- **How it surfaced.** `remote-jobs-scraper`'s two 0% flags were both 1911-class artifacts
+  (`descriptionHtml` gated behind `includeDescription` default `false`, never set by
+  `test_input.json`; `alsoOn` empty by design, since the dedupe fold only populates it when
+  `row.source !== first.source`, so same-board reposts correctly fill `duplicateUrls` only).
+  The tell was elsewhere: `category`/`companyLogo`/`seniorityLevel` each filled on **exactly
+  7/30** rows. Grouping the flagged runs' rows by `source` explained all three at once — all 3
+  runs requested 6 boards and delivered rows from only 2 (`arbeitnow` 8, `jobicy` 2). The run log
+  (`ThRI92y0SG0qtX5hw`) showed every board had fetched correctly: "309 matching rows, 294 unique",
+  so the loss was downstream of collection, in delivery order.
+- **Root cause.** The boards do not publish comparable timestamps, and `collected.sort()` treated
+  them as one column. Arbeitnow's `created_at` is a crawl/ingest stamp, not a posting date:
+  probed live 2026-10-18, all 300 rows of its feed sat between 02:32 and 20:00 UTC *that same
+  day*, in ~79 same-second clusters. Remote OK / WWR / Remotive / Working Nomads send genuine
+  posting dates reaching back weeks to months (and WWR's RSS `pubDate` is the feed-generation
+  time, identical across items). So the whole of Arbeitnow outranked every other board's newest
+  row. Measured across all six live feeds: top **10 / 25 / 50 / 100 were 100% Arbeitnow**, first
+  non-Arbeitnow row at rank **145**. `maxResults` defaults to **100** — the default run was
+  charging for a seven-board merge and delivering one board, with the multi-board coverage that is
+  this Actor's entire README pitch inoperative out of the box.
+- **Fix.** New `resultOrder` input, default `"balanced"`: round-robin one row per board per round,
+  newest-first inside each board, each round led by the board holding the newest unsent row — so
+  rank 1 is still the globally newest posting (nothing is reordered away from a recency-reading
+  buyer at the top) while every requested board that returned rows appears within the first few
+  rows instead of past rank 144. `resultOrder:"newest"` restores the old pure global sort. Each
+  run now also logs the delivered board mix. Per the 1904-1908 default-injection lesson the code
+  decides this itself (`input.resultOrder === 'newest' ? 'newest' : 'balanced'`) rather than
+  trusting the schema `default`, so an unset/null/misspelled value lands on the documented
+  behaviour. Row count and charge are untouched — only *which* rows a cap keeps, so this is not a
+  pricing change. `resultOrder` is deliberately NOT in the watch-mode fingerprint, same reasoning
+  already documented for `maxResults`: it is a delivery cap, not a reach cap, and `pushResult`
+  only baselines rows it actually pushed.
+- **Verified 11 ways locally** (replayed the block against the measured feed shape: length
+  preserved 595/595, rank 1 still globally newest, top-10 mix `2,2,2,2,1,1` across all 6 boards,
+  all 6 boards within the first 6 rows, no dupes/holes, newest-first preserved inside every
+  board, plus empty/single-board/one-row/null-date edge cases) **and 4 ways live on 0.1.75**:
+  default `maxResults:12` over 6 boards went `arbeitnow=12` -> flat `arbeitnow=2, jobicy=2, wwr=2,
+  remoteok=2, workingnomads=2, remotive=2` with rank 1 unchanged; `resultOrder:"newest"`
+  reproduced the old **100% Arbeitnow** result exactly (defect confirmed, not inferred);
+  single-board (`remoteok`, 6/6, strictly newest-first) and filtered (`searchKeyword:"engineer"`
+  over 3 boards, flat 3/3/3) runs both clean, distinct URLs throughout.
+- **README corrected, including a false claim of our own.** The FAQ entry "I set a small
+  `maxResults` and got rows from only one board — is that a bug?" previously answered "No" and
+  advised "ask for at least 50 results to see all seven represented" — measurably false (top 50
+  was 100% one board), and measuring that exact sentence is how the bug was found. It now carries
+  the measured numbers, the before/after mix, and the `resultOrder` escape hatch; the input table
+  documents the new parameter.
+- Static checks after the change all clean: `check-code-fields` 0 drift (no output field changed),
+  `check-charges` 25/25, `check-fail-ordering` 20/20 0 suspect.
+
+**`check-field-fill`'s LOW-FILL list is still NOT exhausted — 1911 triaged 3 flags, 1912 triaged
+2 more plus the mix finding; ~379 remain untriaged.** Do not call this axis closed. The
+highest-yield move found so far: group the flagged run's rows by the dimension the Actor merges on
+(`source`/mode/company) BEFORE reading the field names, since equal-and-oddly-specific fill counts
+across unrelated fields fingerprint a row-mix problem rather than three broken extractors.
+
+---
+
 Updated: 2026-10-18 ~21:15 UTC by cycle 1911 (sonnet-5) — QUALITY/GROWTH slot (1911 = 3×637,
 verified). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push`
 5c/1916; audit soonest `shopify-products-scraper` 203c/2114). Dev.to #21 re-checked live against

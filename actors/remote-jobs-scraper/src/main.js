@@ -119,6 +119,11 @@ function parseInput() {
     minSalaryAnnual: parseMinSalaryAnnual(input.minSalaryAnnual),
     includeDescription: input.includeDescription === true,
     dedupe: input.dedupe !== false,
+    // Anything other than the explicit opt-out is the fair-share order (see the delivery-order
+    // block below): the schema's own `default` is deliberately NOT what decides this, so an
+    // unset / misspelled / null value lands on the documented behaviour rather than on the
+    // one-board merge the balanced order exists to fix.
+    resultOrder: input.resultOrder === 'newest' ? 'newest' : 'balanced',
     postedAfter: after,
     postedBefore: before,
   };
@@ -133,7 +138,7 @@ try {
 const {
   sources, maxResults, maxPagesPerSource, searchKeyword, titleExcludeKeyword,
   companyKeyword, locationKeyword, jobTypeKeyword, seniorityKeyword, salaryOnly, minSalaryAnnual, includeDescription, dedupe,
-  postedAfter, postedBefore,
+  resultOrder, postedAfter, postedBefore,
 } = cfg;
 
 // ---------------------------------------------------------------- watch mode
@@ -1041,7 +1046,57 @@ try {
   const dupes = collected.length - ordered.length;
   log.info(`${collected.length} matching rows, ${ordered.length} unique after de-duplication (${dupes} cross-board duplicates folded).`);
 
-  for (const row of ordered) {
+  // Fair-share delivery order (h1912). A plain global newest-first merge made this a ONE-board
+  // Actor at its own default settings, because the boards do not publish comparable timestamps:
+  // Arbeitnow stamps every row in its 300-posting feed with a crawl/ingest time from the current
+  // day (measured 2026-10-18: all 300 rows between 02:32 and 20:00 UTC, in ~79 same-second
+  // clusters), while Remote OK / We Work Remotely / Remotive / Working Nomads send real posting
+  // dates reaching back weeks or months. Sorting those together puts the whole of Arbeitnow above
+  // every other board's newest row, so the top of the merged list is pure Arbeitnow: measured
+  // against all six live feeds on 2026-10-18, the top 10 / 25 / 50 / 100 were 100% Arbeitnow and
+  // the first non-Arbeitnow row appeared at rank 145. maxResults DEFAULTS to 100 -- so a buyer
+  // selecting all seven boards was being charged for a dataset from one of them, and the README
+  // FAQ's "ask for at least 50 results to see all seven represented" was measurably false.
+  //
+  // So the cap now samples BOARDS, not just recency: round-robin one row per board per round,
+  // newest-first inside each board, rounds led by whichever board currently has the newest
+  // unsent row. Rank 1 is therefore still the globally newest posting (nothing is reordered
+  // "away" from a recency-sorting buyer at the top), but every requested board that returned
+  // rows is represented within the first `boards` rows instead of beyond rank 144.
+  // `resultOrder: "newest"` restores the old pure global sort for anyone depending on it.
+  // This changes the ORDER rows are delivered in, never the row count or the charge: the cap,
+  // the per-row charge and the watch-mode baseline all run off this same list downstream.
+  let delivery = ordered;
+  if (resultOrder === 'balanced' && ordered.length > 0) {
+    const bySource = new Map();
+    for (const row of ordered) {
+      if (!bySource.has(row.source)) bySource.set(row.source, []);
+      bySource.get(row.source).push(row); // already newest-first within the board
+    }
+    let queues = [...bySource.values()];
+    const balanced = [];
+    // Drained queues are dropped each round rather than skipped, so this cannot spin on a list
+    // of empty arrays however the grouping above turns out.
+    while (queues.length > 0) {
+      // Lead each round with the board holding the newest unsent row, so rank 1 stays the
+      // globally newest posting and each round is itself in recency order.
+      queues.sort((a, b) => String(b[0].publishedAt ?? '').localeCompare(String(a[0].publishedAt ?? '')));
+      for (const q of queues) balanced.push(q.shift());
+      queues = queues.filter((q) => q.length > 0);
+    }
+    delivery = balanced;
+  }
+
+  // Name what the cap will actually deliver per board, so a buyer reading the log can see the
+  // board mix without downloading and grouping the dataset themselves.
+  const mixCounts = new Map();
+  for (const row of delivery.slice(0, maxResults)) {
+    mixCounts.set(row.source, (mixCounts.get(row.source) ?? 0) + 1);
+  }
+  const mix = [...mixCounts.entries()].map(([s, n]) => `${s}=${n}`).join(', ');
+  log.info(`Delivery order "${resultOrder}"; first ${Math.min(maxResults, delivery.length)} row(s) by board: ${mix || 'none'}.`);
+
+  for (const row of delivery) {
     const item = {
       source: row.source,
       sourceSite: SOURCE_SITE[row.source],

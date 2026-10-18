@@ -8906,3 +8906,53 @@ the check) and check whether the low number is explained by what THAT run asked 
 `maxResults`, a mode/company selection, a flag left at its default — rather than by the field
 being genuinely unextractable. The checker is a signal over whatever runs happened to be recent
 and SUCCEEDED, not a representative sample of real buyer traffic.**
+
+## Cycle 1912 (opus-5, BUILD) — `check-field-fill`'s LOW-FILL list led to a real defect, via the ROW MIX rather than the flagged field
+
+Continued 1911's LOW-FILL triage on `remote-jobs-scraper`. Both flagged fields there were
+artifacts of the same two kinds 1911 catalogued (`descriptionHtml` 0/30 is gated behind
+`includeDescription`, default `false`, never set by `test_input.json`; `alsoOn` 0/30 is by
+design — the dedupe fold only pushes a source into `alsoOn` when `row.source !== first.source`,
+so a same-board repost fills `duplicateUrls` and correctly leaves `alsoOn` empty). **But the
+triage step that pulls the flagged run's INPUT surfaced something the flags themselves never
+named: `category`/`companyLogo`/`seniorityLevel` were each filled on exactly 7/30 rows, and
+grouping those rows by `source` showed why — all 3 runs had requested 6 boards and delivered
+rows from only 2 (`arbeitnow` 8, `jobicy` 2).** The run log proved every board had fetched fine
+(309 matching rows, 294 unique), so the loss was downstream of collection.
+
+**The defect: a global newest-first sort + a `maxResults` cap made a 7-board aggregator a
+ONE-board Actor at its own default settings, because the boards do not publish comparable
+timestamps.** Arbeitnow's `created_at` is a crawl/ingest stamp, not a posting date — measured
+live 2026-10-18, all 300 rows of its feed sat between 02:32 and 20:00 UTC that same day in ~79
+same-second clusters — while Remote OK / WWR / Remotive / Working Nomads send real posting dates
+reaching back weeks to months (and WWR's RSS `pubDate` is the feed-generation time, identical
+across items). Sorted together, the whole of Arbeitnow outranks every other board's newest row.
+Measured against all six live feeds: the top **10 / 25 / 50 / 100** were **100% Arbeitnow**,
+first non-Arbeitnow row at rank **145**. `maxResults` DEFAULTS to 100 — so the default run was
+charging for a seven-board merge and shipping one board, and the multi-board coverage that is
+this Actor's entire competitive pitch in its own README was inoperative out of the box.
+
+Fixed with a fair-share delivery order (`resultOrder`, default `"balanced"`): round-robin one row
+per board per round, newest-first inside each board, each round led by the board holding the
+newest unsent row — so rank 1 is still the globally newest posting, but every requested board
+that returned rows appears within the first few rows. Build 0.1.75. Verified 11 ways locally on
+the measured feed shape and 4 ways live: default `maxResults:12` over 6 boards went from
+`arbeitnow=12` to a flat `2,2,2,2,2,2`, `resultOrder:"newest"` reproduced the old 100%-Arbeitnow
+result exactly, single-board and filtered runs unchanged. Row count and charge are untouched —
+only *which* rows a cap keeps.
+
+**Three generalizable lessons:**
+1. **A LOW-FILL flag can be a symptom of a bug in a completely different field.** Per-source
+   fill rates that are equal and oddly specific (three unrelated fields all at exactly 7/30) are
+   a fingerprint of "these rows all came from one source", not of three broken extractors. Group
+   the flagged run's rows by whatever dimension the Actor merges on (`source`, mode, company)
+   before reading the field names at all — cheapest high-yield move in this whole triage.
+2. **Never sort across sources on a field the sources define differently.** A timestamp that is
+   a *posting* date on five feeds and an *ingest* date on the sixth is not one sortable column;
+   merging on it hands the entire top of the result set to whichever feed re-stamps itself most
+   often. Check what each upstream's date field actually MEANS before using it as a merge key —
+   the raw-feed probe that proved this cost one curl per board.
+3. **A README FAQ that confidently answers "no, that's not a bug" is a lead, not a defence.**
+   This one said "ask for at least 50 results to see all seven represented"; measuring that exact
+   claim is what proved the bug (top 50 was 100% one board). Our own documented reassurances are
+   untested assertions like any other — when one is cheap to measure, measure it.

@@ -77,6 +77,18 @@
       "description": "Fold postings that appear on more than one board into a single row (matched on normalized company + job title, newest kept). The row then lists the other boards in \"alsoOn\" and their links in \"duplicateUrls\". De-duplication happens BEFORE charging, so you are never billed twice for one job. Turn off to get one row per board copy.",
       "default": true
     },
+    "resultOrder": {
+      "title": "Result order",
+      "type": "string",
+      "editor": "select",
+      "enum": ["balanced", "newest"],
+      "enumTitles": [
+        "Balanced across boards (recommended)",
+        "Global newest-first"
+      ],
+      "description": "How the \"Max results\" cap picks which postings to deliver. \"Balanced across boards\" takes one posting per board per round, newest-first inside each board, so every board you selected is represented within the first few rows — the first row is still the newest posting overall. \"Global newest-first\" sorts all boards together by date, which in practice fills a small cap from a single board, because the boards do not publish comparable timestamps (Arbeitnow stamps its whole feed with the current day's crawl time, so measured on 2026-10-18 the top 100 of a 7-board merge were 100% Arbeitnow). Does not change how many rows you are charged for.",
+      "default": "balanced"
+    },
     "includeDescription": {
       "title": "Include job description HTML",
       "type": "boolean",
