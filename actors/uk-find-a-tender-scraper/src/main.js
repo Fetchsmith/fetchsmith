@@ -423,7 +423,16 @@ function matches(row) {
     // Normally redundant with the server-side stage filter (both portals apply it exactly
     // when they can), but it's the ONLY filter for FTS rows fetched unfiltered above because
     // "contract"/"implementation" was requested — see FTS_STAGES.
-    if (stages.length && !stages.some((s) => row.stage.includes(s))) return false;
+    // OCDS tags an amendment/update/cancellation release as "<stage>Amendment"/"<stage>Update"/
+    // "<stage>Cancellation" (e.g. "tenderAmendment", "awardUpdate"), not bare "<stage>" — a plain
+    // `row.stage.includes(s)` only matched the bare form, so under the default `stages: ["tender"]`
+    // every Contracts Finder tender amendment was silently dropped (measured live 2026-10-18:
+    // 61/368 CF tender-stage releases in a 6-week window carried "tenderAmendment" instead of
+    // "tender", even though CF's own server-side `stages=tender` filter already returns them —
+    // this client-side re-check was throwing back out what the portal itself had included). Match
+    // on a stage-name prefix instead of exact equality so an amendment/update/cancellation of a
+    // requested stage counts as that stage, same as CF's own filter already treats it.
+    if (stages.length && !stages.some((s) => row.stage.some((tag) => tag.startsWith(s)))) return false;
     if (cpvCodes.length) {
         const hit = cpvPrefixes.some((prefix) => row.cpvCodes.some((have) => have.startsWith(prefix)));
         if (!hit) return false;
@@ -860,15 +869,22 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
         if (c.done || !c.buffer.length) continue;
 
         const release = c.buffer.shift();
+        const row = normalize(release, c.source, includeRawOcds);
+        if (!matches(row)) { filtered += 1; continue; }
+
         // The same OCID can be re-published (amendments); keep the first (newest) copy only.
+        // Checked AFTER matches(), not before: registering the ocid/id here regardless of
+        // whether this release matched used to let a non-matching release for an ocid "claim"
+        // it and block a later, actually-matching release of the SAME ocid from ever being
+        // seen — exactly what happened to every amended tender notice before the stage-prefix
+        // fix above, and would still happen to any procurement where the newest release fails
+        // some OTHER filter (cpvCodes, minValueGbp, ...) while an earlier release for the same
+        // ocid would have matched.
         const key2 = release.id ?? release.ocid;
         const isDup = (key2 && seen.has(key2)) || (release.ocid && seen.has(release.ocid));
         if (key2) seen.add(key2);
         if (release.ocid) seen.add(release.ocid);
         if (isDup) continue;
-
-        const row = normalize(release, c.source, includeRawOcds);
-        if (!matches(row)) { filtered += 1; continue; }
 
         // Keep the first copy the walk reaches, which is the newest (both portals page
         // newest-first), and never charge for the rest.
