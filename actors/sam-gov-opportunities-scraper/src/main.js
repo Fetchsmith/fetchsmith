@@ -3,6 +3,24 @@ import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
 
 await Actor.init();
+// Soft-deadline guard (same pattern as google-news-scraper:11-20, 21st Actor on the rollout).
+// This Actor can approach the platform run timeout with real work still queued in two places: the
+// paged search walk (up to 100 pages x 300ms pacing, plus up to 4 retries x 2-12s per failed page)
+// and the per-row enrich/attachments pass (1-2 HTTP calls + 200-400ms sleep for EVERY delivered
+// row). Getting hard-killed there is not a billing loss -- pushResult charges per row as it goes --
+// it is the skipped writes AFTER the walk: RUN_SUMMARY and, worse, the watch-state
+// `watchStore.setValue`, so a watch-mode buyer whose run is killed loses their baseline and gets
+// re-charged for the whole result set next run. Stop proactively with a margin and flush instead.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+let timeBudgetExceeded = false;
+// Milliseconds of useful work left before the margin starts. Infinity on a local/dev run, where
+// the platform sets no deadline.
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() {
+    if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
+    return true;
+}
 const input = (await Actor.getInput()) ?? {};
 
 // SAM.gov's OFFICIAL developer API (api.sam.gov/opportunities/v2/search) requires a free
@@ -231,15 +249,45 @@ let lastApiError = null;      // WHY the most recent null happened, carried into
 
 // First cause wins: a walk that stopped because SAM stopped answering and THEN also hit maxResults
 // must keep reporting the upstream failure -- that is the cause the buyer can act on.
+// ...with ONE exception, found live while testing the time-budget guard: `max-results` is marked
+// BEFORE the push loop runs (the walk got everything it was asked for, SAM just has more behind
+// it), it is the buyer's own chosen ceiling, and it is already the weakest cause in this file --
+// charge-limit outranks it below for exactly that reason. A time-budget stop inside the push loop
+// is strictly more actionable AND falsifies the earlier mark, because fewer rows than maxResults
+// were actually delivered. Without this exception a clock-stopped run on any query larger than
+// maxResults reported "max-results" and the time budget was invisible in both the status message
+// and RUN_SUMMARY -- verified live before the fix (10 of 25 rows delivered, reason "max-results").
 function markIncomplete(reason, detail = null) {
-    if (!complete) return;
+    if (!complete && !(reason === 'time-budget' && incompleteReason === 'max-results')) return;
     complete = false;
     incompleteReason = reason;
     incompleteDetail = detail;
 }
 
+// One wording for every `time-budget` stop, so the search walk, the seed walk and the per-row
+// enrichment pass cannot drift apart. Deliberately says what to CHANGE: "re-run and hope" is the
+// right advice for an upstream failure and the wrong advice here -- re-running the same oversized
+// query under the same timeout stops in exactly the same place.
+function timeBudgetDetail(rowCount) {
+    const reach = reachable();
+    return `the run approached its platform time limit after ${rowCount.toLocaleString('en-US')} row(s)`
+        + `${reach === null ? '' : ` of ${reach.toLocaleString('en-US')} reachable`} over ${pages} page(s), `
+        + 'and stopped itself so the rows already collected (and, in watch mode, the baseline) would be saved '
+        + 'instead of lost to a hard kill. Narrow the query or raise maxResults less, or give the run a longer '
+        + 'timeout in its run options.';
+}
+
 async function apiGet(url) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
+        // Checked per ATTEMPT, not once per call: a retry is only worth starting if there is time
+        // left to use its answer, and the backoff sleeps below are capped at the time actually
+        // remaining so one long backoff can never sleep straight past the run deadline. The caller
+        // distinguishes this null from a real upstream failure via `timeBudgetExceeded`.
+        if (!timeBudgetOk()) {
+            lastApiError = 'stopped before the run time budget ran out';
+            log.warning('Run time budget reached; not starting another SAM.gov request.');
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -254,13 +302,13 @@ async function apiGet(url) {
         } catch (err) {
             lastApiError = `request error: ${err.message}`;
             log.warning(`SAM.gov request failed (${err.message}); retrying (${attempt}/4).`);
-            await sleep(attempt * 2000);
+            await sleep(Math.max(Math.min(attempt * 2000, remainingMs()), 0));
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             lastApiError = `HTTP ${resp.statusCode}`;
             log.warning(`SAM.gov returned ${resp.statusCode}; retrying (${attempt}/4).`);
-            await sleep(attempt * 3000);
+            await sleep(Math.max(Math.min(attempt * 3000, remainingMs()), 0));
             continue;
         }
         if (resp.statusCode === 404) { lastApiError = 'HTTP 404'; return null; }
@@ -1136,9 +1184,20 @@ async function fetchRows(limit) {
     while (rows.length < limit) {
         const reach = reachable();
         if (reach !== null && rows.length >= reach) break; // delivered everything SAM will serve
+        if (!timeBudgetOk()) { markIncomplete('time-budget', timeBudgetDetail(rows.length)); break; }
         const url = buildSearchUrl(page, PAGE_SIZE);
         const data = await apiGet(url);
         if (!data) {
+            // A null from apiGet has two causes and they need different names: SAM.gov genuinely
+            // failing (`upstream-error` -- re-run once it recovers), and our own deadline guard
+            // declining to start another request (`time-budget` -- nothing needs to recover, the
+            // query is too big for this run's timeout). Reporting the second as an upstream error
+            // would hand the buyer advice that provably does nothing, and would also feed the
+            // seed-baseline guard below under the wrong label.
+            if (timeBudgetExceeded) {
+                markIncomplete('time-budget', timeBudgetDetail(rows.length));
+                break;
+            }
             pagesFailed += 1;
             markIncomplete('upstream-error', `page ${page} failed after 4 attempts (${lastApiError ?? 'unknown error'})`);
             log.warning(`Page ${page} failed after retries; stopping short.`);
@@ -1251,6 +1310,18 @@ if (!seeding) {
     let beforePush = 0;
     let index = 0;
     for (const item of results) {
+        // Gated ONLY when there is per-row network work. With enrichDetail and includeAttachments
+        // both off this loop is pure pushData -- no HTTP, no sleep -- so stopping it on the clock
+        // would abandon already-fetched rows to buy back milliseconds; the 45s margin exists to
+        // flush exactly those. With either on, every row costs 1-2 HTTP calls plus 200-400ms, so
+        // the loop genuinely can run into the deadline. Then stopping is the honest move: the
+        // alternative is delivering (and CHARGING for) rows whose paid-for detail/attachment
+        // fields are null for a reason that has nothing to do with SAM.gov.
+        if ((enrichDetail || includeAttachments) && !timeBudgetOk()) {
+            rowsNotReached = results.length - index;
+            log.warning(`Run time budget reached after ${index} enriched row(s); ${rowsNotReached} fetched row(s) not delivered.`);
+            break;
+        }
         index += 1;
         // Enrich/fetch-attachments immediately before this row is decided on, one row at a time,
         // instead of two separate full passes over `results` before any row is pushed. Under the
@@ -1298,6 +1369,12 @@ if (!seeding) {
     // A detail call that failed leaves naicsCodes/setAside/pointOfContact at null -- the same
     // null a genuinely contact-less notice has. The buyer turned enrichment ON and paid for
     // those fields, so a silent miss is a shortfall, not a detail.
+    // Ahead of enrich-failed/charge-limit/max-results on purpose. If the clock ran out while the
+    // LAST row was being enriched the loop ends naturally with no break, so nothing inside it
+    // marked the cause -- and the detail call that the guard aborted would otherwise be reported
+    // as `enrich-failed`, blaming SAM.gov for our own deadline. First-cause-wins makes this a
+    // no-op when the walk or the loop already named it.
+    if (timeBudgetExceeded) markIncomplete('time-budget', timeBudgetDetail(pushed));
     if (enrichDetail && detailLookupsFailed) {
         markIncomplete('enrich-failed', `${detailLookupsFailed} of ${index} detail lookup(s) failed; their naics/set-aside/place-of-performance/contact fields are null for that reason, not because SAM.gov has none`);
     }
@@ -1326,15 +1403,24 @@ if (!seeding) {
 // refusing to save costs nothing but a re-run. Before this fix the save was unconditional and only
 // the status label read `'seeded-incomplete'` -- cosmetic, since neither load path (line ~751)
 // reads `.status` back, so the truncated baseline was consumed exactly like a complete one.
-const SEED_UPSTREAM_FAILURES = new Set(['upstream-error', 'short-page']);
-const seedFailure = seeding && incompleteReason && SEED_UPSTREAM_FAILURES.has(incompleteReason)
+// `time-budget` belongs in this set for exactly the same reason as the two upstream causes, which
+// is why the set is no longer named after them: a baseline cut short by OUR OWN clock is just as
+// wrong as one cut short by SAM.gov -- every opportunity past the stopping point still reads as
+// "new" (and billable) on the first incremental run. What differs is only the advice below.
+const SEED_FATAL_SHORTFALLS = new Set(['upstream-error', 'short-page', 'time-budget']);
+const seedFailure = seeding && incompleteReason && SEED_FATAL_SHORTFALLS.has(incompleteReason)
     ? `${incompleteReason}${incompleteDetail ? `: ${incompleteDetail}` : ''}`
     : null;
+// Third branch, not a safe default: "once SAM.gov is answering" is right for an upstream stop and
+// actively wrong for a clock stop (nothing needs to recover; an identical re-run stops identically).
+const seedRetryAdvice = incompleteReason === 'time-budget'
+    ? 'Re-run with the same watchLabel once the query is narrower or the run has a longer timeout'
+    : 'Re-run with the same watchLabel to seed again once SAM.gov is answering';
 
 if (watchMode && seedFailure) {
     log.warning(
         `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
-        + 'Re-run with the same watchLabel to seed again once SAM.gov is answering -- saving a truncated baseline '
+        + `${seedRetryAdvice} -- saving a truncated baseline `
         + 'would make every opportunity past the failure point look "new" (and billable) on the first incremental run.',
     );
 } else if (watchMode) {
@@ -1522,7 +1608,7 @@ if (webhookUrl) {
 if (watchMode && seedFailure) {
     await Actor.fail(
         `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
-        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+        + `for watch label "${watchLabel}" -- ${seedRetryAdvice.replace(/^Re-run/, 're-run')}.`,
     );
 }
 

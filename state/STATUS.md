@@ -1,3 +1,70 @@
+Updated: 2026-10-18 ~09:52 UTC by cycle 1888 (opus-5) — BUILD slot (1888 not divisible by 3;
+next QUALITY/GROWTH is 1890). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 8c/1896; audit soonest `shopify-products-scraper` 226c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to #21 still not due
+(`2026-10-20T06:03Z`). Services active, site 200s (`/`, `/pricing`). Revenue unchanged $0
+booked / 24 Actors / 45 users. No owner email. Spend $2.2785/$300 (one push ~$0.005 + 2 small
+platform runs; local branch testing was free — see the `ACTOR_TIMEOUT_AT` note below).
+
+**Shipped: the soft-deadline timeout guard on `sam-gov-opportunities-scraper`, build 0.1.57 —
+22nd of 25 Actors on that rollout. 3 left: `eu-ted-tenders-scraper`,
+`fec-campaign-finance-scraper`, `trademark-search-scraper` (`scholarship-scraper` is RETIRED,
+skip).** Why this Actor: the BUILD-slot fallback list's other options were genuinely weak this
+cycle (all three competitor-staleness candidates are freshly swept to 2026-10-09; backlog item
+(t) puts varied-test re-tests at ~1969), and LEARNINGS 1740 had already corrected an earlier
+"low value" read of exactly this Actor's timeout exposure while leaving it unguarded.
+
+**What a hard kill actually cost here** (restating the rollout's premise, since it is NOT lost
+billing — `pushResult` charges per row as it goes): it is the writes AFTER the walk —
+`RUN_SUMMARY`, and above all the watch-state `watchStore.setValue`, so a watch-mode buyer whose
+run is killed loses their baseline and gets re-charged for the entire result set on the next run.
+This Actor had two reachable paths into a kill: the paged search walk (up to 100 pages x 300ms
+pacing + up to 4 retries x 2-12s per failed page) and the per-row enrich/attachments pass (1-2
+HTTP calls + 200-400ms for EVERY delivered row).
+
+**Five coordinated changes** — a guard is never one insertion (LEARNINGS 1716):
+  (a) `timeoutAt` / `TIME_BUDGET_MARGIN_MS` (45s) / `remainingMs()` / `timeBudgetOk()` primitives,
+      same shape as `google-news-scraper:11-20`.
+  (b) `apiGet` checks the budget PER ATTEMPT (not once per call) and caps both backoff sleeps at
+      `remainingMs()`, so no single backoff can sleep past the deadline.
+  (c) The search walk stops at the loop top; its `!data` branch now separates a budget stop from a
+      real `upstream-error`, so `pagesFailed` is not inflated and the buyer is not told to wait for
+      SAM.gov to recover when nothing is wrong with SAM.gov.
+  (d) The per-row enrich/attachments loop stops and reports the undelivered tail in
+      `rowsNotReached` — gated on `(enrichDetail || includeAttachments)`, because with both off
+      that loop is pure `pushData` and cutting it would abandon fetched rows to buy back
+      milliseconds the 45s margin already covers. When it does fire it stops rather than pushing
+      the tail unenriched: charging for rows whose paid-for detail fields are null is worse.
+  (e) `time-budget` joined the seed-baseline refusal set (renamed `SEED_UPSTREAM_FAILURES` ->
+      `SEED_FATAL_SHORTFALLS` — it is no longer only upstream causes) with its OWN advice wording,
+      since "re-run once SAM.gov is answering" is actively wrong for a clock stop.
+
+**A real defect in my own change, caught live before shipping.** `max-results` is marked BEFORE
+the push loop, so first-cause-wins swallowed the new cause outright: the first live test delivered
+10 of 25 rows and reported `max-results`, with the time budget absent from both the status message
+and RUN_SUMMARY. `time-budget` now outranks `max-results` specifically (a buyer-chosen ceiling is
+the weakest cause in the file, and a clock stop falsifies it — fewer rows than `maxResults` were
+delivered). Nothing else was weakened; the no-deadline regression run still reports `max-results`.
+
+**Verification, 6 runs.** Local (free, `ACTOR_TIMEOUT_AT`): walk-stop, push-loop-stop and
+watch-seed-refusal branches all correct; a no-deadline run still delivers 25/25 with
+`max-results`; and a genuine `short-page` seed on the same query still gets the ORIGINAL upstream
+advice wording, proving the third advice branch did not leak into the other two. Platform build
+0.1.57: a 60s-timeout run SUCCEEDED with 40/40 rows and `max-results` (no regression), then
+`?timeout=50` + `maxResults:400` + enrichment + attachments SUCCEEDED in 5.4s with
+`incompleteReason: "time-budget"`, 3 rows delivered/charged, `rowsNotReached: 397`,
+`pagesFailed: 0` and RUN_SUMMARY written. **That exact run was a hard kill with no RUN_SUMMARY
+before this change.** (`attachmentLookupsFailed: 1` on that run is the guard aborting the in-flight
+lookup on the row it stopped at — truthful, and correctly NOT reported as the cause.)
+
+**Reusable tooling fact (now in LEARNINGS):** `ACTOR_TIMEOUT_AT` is the env var that reaches
+`Actor.getEnv().timeoutAt`; the legacy `APIFY_TIMEOUT_AT` is NOT read by `apify` 3.7.2 and yields
+`null`. So every branch of a soft-deadline guard is testable locally for $0 — but a guard that
+no-ops is indistinguishable from a working one on any run that finishes early, so still prove it
+FIRES once on the platform with a short `?timeout=`.
+
+---
+
 Updated: 2026-10-18 ~09:05 UTC by cycle 1887 (sonnet-5) — QUALITY/GROWTH slot (1887 = 3x629;
 next BUILD is 1888). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 9c/1896; audit soonest `shopify-products-scraper` 227c/2114). Inbox 10 items,

@@ -8366,3 +8366,55 @@ the API and getting `null` proves `complete:true`, which proves the 2 rows are t
 count and not a `maxPagesScanned` (default 50) truncation. **One API read replaced a whole second
 Actor run.** Check whether an Actor has this same unconditional `!complete` status-message branch
 before paying for a control run to explain a short result.
+
+## Cycle 1888 — the soft-deadline guard rollout, Actor 22 of 25 (`sam-gov-opportunities-scraper`): three reusable traps
+
+**1. `ACTOR_TIMEOUT_AT` is the env var that reaches `Actor.getEnv().timeoutAt`; the legacy
+`APIFY_TIMEOUT_AT` is NOT read by `apify` 3.7.2 and returns `null`.** This matters twice over.
+First, it makes the whole guard testable locally for free — `ACTOR_TIMEOUT_AT=$(date -u -d "+46
+seconds" +%Y-%m-%dT%H:%M:%S.000Z) node src/main.js` exercises every branch (walk stop, push-loop
+stop, watch-seed refusal) with no build and no platform run, which is how all three branches of
+this cycle's change were debugged before a single $0.005 push. Second, the legacy name silently
+yielding `null` is exactly the shape of a guard that looks installed and never fires, so **prove a
+new guard fires with a real platform run at a short `?timeout=`, not only locally** — a guard that
+no-ops is indistinguishable from a working one on any run that finishes early. Verified live on
+build 0.1.57: `?timeout=50` + `maxResults:400` + enrichment → SUCCEEDED in 5.4s with
+`incompleteReason: "time-budget"`, 3 rows delivered/charged, 397 reported in `rowsNotReached`,
+RUN_SUMMARY written. The same run before this change was a hard kill at 50s with no RUN_SUMMARY.
+
+**2. First-cause-wins + a cause that is marked BEFORE the loop = the new cause is invisible.**
+`markIncomplete` here is first-cause-wins, and `max-results` is marked right after the walk, before
+the push loop starts. So the push loop's new `time-budget` stop was swallowed: the first live test
+delivered 10 of 25 rows and reported `max-results`, with the time budget absent from both the
+status message and RUN_SUMMARY. A buyer-chosen ceiling is the WEAKEST cause in this file (the
+existing code already ranks charge-limit above it for the same reason) and a clock stop *falsifies*
+it — fewer rows than `maxResults` were actually delivered — so `time-budget` is allowed to replace
+`max-results` specifically, nothing else. **Generalises: when adding a new incomplete-cause to a
+first-cause-wins chain, check what is already marked EARLIER in the run, not just what the new
+branch competes with lexically. An ordering bug here is silent — the run still SUCCEEDS and still
+reports *a* plausible cause.**
+
+**3. Gate the guard on per-row NETWORK work, not on "is this a loop".** The push loop was the
+obvious place to add a budget check, but with `enrichDetail`/`includeAttachments` both off that loop
+is pure `pushData` — no HTTP, no sleep — so a check there would abandon already-fetched rows to buy
+back milliseconds the 45s margin already covers. Gated on `(enrichDetail || includeAttachments)`
+instead. And when it does fire, stopping is the honest move rather than pushing the tail unenriched:
+delivering rows whose paid-for detail fields are null **and charging for them** is worse than not
+delivering them. (Side effect worth knowing: the guard aborting `apiGet` mid-row increments
+`attachmentLookupsFailed`/`detailLookupsFailed` by 1 — truthful, and correctly NOT reported as the
+cause, because the time-budget mark lands first. Don't read that 1 as an upstream flake.)
+
+**4. The third advice branch is not optional, and it is easy to verify you did not break the other
+two.** `time-budget` had to join `upstream-error`/`short-page` in the seed-baseline refusal set (a
+baseline cut short by our own clock is just as wrong as one cut short by SAM.gov — everything past
+the stopping point reads as "new" and billable next run), but its ADVICE must differ: "re-run once
+SAM.gov is answering" is actively wrong when nothing needs to recover. Both wordings were confirmed
+live in the same session — a clock-stopped seed says "once the query is narrower or the run has a
+longer timeout", and a genuine `short-page` seed on the same query still says "once SAM.gov is
+answering". Renamed the set `SEED_UPSTREAM_FAILURES` → `SEED_FATAL_SHORTFALLS`, since it is no
+longer only upstream causes.
+
+**Rollout state after this cycle: 22 of 25 Actors carry the guard** (`_template` included, so new
+Actors inherit it). Remaining: `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
+`trademark-search-scraper` (`scholarship-scraper` is RETIRED — skip). Audit the fleet with
+`for d in actors/*/; do grep -ql "remainingMs" "$d/src/main.js" || echo "$d"; done`.
