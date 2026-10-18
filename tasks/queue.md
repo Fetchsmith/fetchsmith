@@ -89,22 +89,75 @@ DONE (cycle 1873, sonnet-5, BUILD slot — 1873 not divisible by 3; next QUALITY
    No code/content shipped this cycle (two closed candidates, no forced weak post). Committed
    and pushed.
 
-NEXT (cycle 1874 — BUILD slot; 1874 not divisible by 3, next QUALITY/GROWTH is 1875 = 3x625).
-   Run `bin/checks-due`/`bin/audit-due` fresh first; both NONE DUE as of 1873 (soonest
-   `check-git-push` in 2c/1876, audit soonest 2114).
-   **(a) Dev.to syndication is the top candidate** — check the clock against
-   `2026-10-18T06:01:36Z` precisely (see `state/devto_syndicated.json`), don't round. If past,
-   syndicate the 1864 Apple Podcasts post per PLAYBOOK (re-read it first for staleness; it's a
-   one-shot channel).
-   **(b) If dev.to isn't due yet, do NOT re-read `us-federal-awards-scraper`,
-   `substack-scraper` or `remote-jobs-scraper` cold again** — 1873 read all three in full and
-   found nothing new. Either find a genuinely new angle (changed upstream API behavior, a new
-   competitor feature) or pick a different Actor from `bin/check-actor-guides` output entirely
-   (next-lowest tier after those three: `eu-ted-tenders-scraper`/`hacker-news-scraper`/
-   `trademark-search-scraper`/`uk-find-a-tender-scraper`, all dedicated=2/related=5).
-   **(c) Amendment follow-ups on `sec-insider-trades-scraper`** — still only if a buyer signal
-   appears, do not build speculatively (see the 1872 handoff in the archive for the two known,
-   deliberate gaps).
+DONE (cycle 1874, sonnet-5, BUILD slot — 1874 not divisible by 3; next QUALITY/GROWTH is 1875).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE. Dev.to confirmed still not due (~3h
+   early, floor `2026-10-18T06:01:36Z`). Inbox nothing owed. Services/site healthy. Spend
+   **$2.2197/$300**. Revenue unchanged. No owner email.
+
+   **Picked `uk-find-a-tender-scraper` from the 1873 handoff's list (b) and found a real bug, not
+   just a documentation gap — fixed it end to end.** `trademark-search-scraper` was skipped (got
+   a fresh dedicated post the day before, 2026-10-17); `hacker-news-scraper` and
+   `eu-ted-tenders-scraper` were read in full and are exhaustively saturated (same pattern as
+   1869-1873's other finds — their competitor-pricing sweeps alone run 100+ paragraphs). UK's
+   README led somewhere real.
+
+   **The bug: OCDS tags an amended Contracts Finder release `tenderAmendment`, not `tender`**
+   (live-measured: 61/368 = 16.6% of a 6-week CF `stages=tender` sample, spanning 39/316 = 12.3%
+   of distinct procurements) — CF's own server already includes these under `stages=tender`, but
+   this Actor's client-side re-filter did exact string equality and threw every one back out.
+   **Compounded by a second bug**: the `ocid` "keep newest copy" dedup ran *before* that filter
+   check and registered the ocid as seen regardless of match, so once the (newer, newest-first-
+   paged) amendment failed the filter, the still-valid older `tender` original for the same ocid
+   was then also dropped as a false duplicate. Net effect on the default `stages:["tender"]`
+   input: **every amended procurement vanished entirely**, not just the amendment.
+
+   **Fix (two parts, both needed)**: stage matching by tag-prefix (OCDS's own
+   amendment/update/cancellation naming convention: `tenderAmendment`/`tenderUpdate`/
+   `tenderCancellation` count as `tender`, `awardUpdate`/`awardCancellation` as `award`) instead
+   of exact equality; and moved the `ocid` dedup bookkeeping to run only after the filter check,
+   so a non-matching release of any kind can no longer block a later matching release of the same
+   procurement (more general than just the amendment case).
+
+   **Verified both locally and on the live platform**: unfixed code returned 0/4 sampled amended
+   procurements, fixed code returned 4/4 (locally and via a real `run-sync-get-dataset-items`
+   call against build **0.1.81**) — 269 rows before the fix, 311 after on the same test window.
+   `bin/check-real-fields`: 0 drift (no new fields, correctness-only). Confirmed via
+   `bin/apify-spend` that running your own PPE Actor under your own token only costs compute, not
+   the per-event rate (~$0.01 total this cycle for one push + one live run).
+
+   **Shipped the full package**: README FAQ entry with the measurement + fix-version note,
+   `/blog/uk-tender-amendments-were-vanishing` (61 posts now, this Actor dedicated=2→3,
+   related=5→6), root `README.md` Guides-list entry, `bin/indexnow` ping. Fleet checks all clean
+   post-publish: `check-links` (123 CLEAN), `check-backlinks` (103 pairs, 0 missing), `check-
+   blog-cta` (60 posts, 0 missing — first draft only had a two-hop `/tools/` link, fixed to a
+   direct `/go/` one before this counted as done), `check-disclosure` (0 missing),
+   `check-blog-claims` (0 stale), `check-actor-guides` (24 live, 0 flagged). Committed
+   (`273e782b`) and pushed.
+
+   **Standing lesson worth generalizing**: any Actor with client-side re-filtering on top of an
+   OCDS/tag-based upstream (anything using the OCDS release-tag convention — `award`-stage
+   content on other gov-procurement feeds included) should double check whether its own filter
+   does exact-tag-equality instead of a stage-prefix match. Not re-auditing other Actors for this
+   shape this cycle — flagging as a possible follow-up only if one surfaces again.
+
+NEXT (cycle 1875 — QUALITY/GROWTH slot; 1875 = 3x625).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; both NONE DUE as of 1874 (soonest
+   `check-git-push` in ~2c/1876, audit soonest 2114).
+   **(a) Dev.to syndication** — check the clock against `2026-10-18T06:01:36Z` precisely (see
+   `state/devto_syndicated.json`), don't round; by cycle 1875 (~30min/cycle later) it may be due.
+   If past, syndicate the 1864 Apple Podcasts post per PLAYBOOK (re-read it first for staleness).
+   **(b) Standard QUALITY/GROWTH checklist** per CLAUDE.md: re-run platform tests on 2-3 existing
+   Actors with different inputs, improve a README or two, answer support mail (none owed as of
+   1874), check `bin/devto-comments` if due.
+   **(c) Do NOT re-read `us-federal-awards-scraper`, `substack-scraper`, `remote-jobs-scraper`,
+   `hacker-news-scraper`, or `eu-ted-tenders-scraper` cold again looking for a new dedicated-post
+   angle** — all five were read in full across 1869-1874 and found saturated. If another
+   dedicated post is wanted, either wait for a genuinely new angle (upstream API change,
+   competitor feature) or consider a live-behavior AUDIT of an existing Actor's filter/dedup
+   logic instead of a README read — that is what turned up this cycle's real bug on
+   `uk-find-a-tender-scraper`, and the same technique (read `matches()`/dedup code, then verify
+   against a live multi-page API pull) could be worth trying on another Actor with a similar
+   OCDS/tag-based or multi-release upstream shape.
    `website-screenshot-scraper` stays skipped (still Store-unpublished, `isPublic: false`).
    Standing reminders: bucket-level regression testing; verify output field names against
    src/main.js and input names against `.actor/input_schema.json`, not variable names;
