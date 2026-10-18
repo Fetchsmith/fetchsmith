@@ -172,15 +172,38 @@ const REQUEST_TIMEOUT_MS = 30000;
 const DEADLINE_RESERVE_MS = 15000;
 // Below this there is no point starting another attempt — stop and report instead of being killed.
 const MIN_ATTEMPT_MS = 5000;
+// Read from every source the platform might populate, not just `Actor.getEnv().timeoutAt`.
+// Cycle 1892 measured this Actor getting hard-KILLED at 60s on build 0.1.68 with no RUN_SUMMARY
+// and no status message, while the byte-identical `Actor.getEnv().timeoutAt` call in
+// sam-gov-opportunities-scraper fired correctly on the same platform, same SDK (apify 3.7.2),
+// same node, same start mechanism -- i.e. getEnv() alone resolved to undefined HERE. The whole
+// guard silently degrades to a no-op when that happens (remainingBudgetMs() returns Infinity),
+// which is the one failure mode a deadline guard must not have, so take the first source that
+// parses instead of trusting one. ACTOR_TIMEOUT_AT is current, APIFY_TIMEOUT_AT the legacy name.
+let deadlineSource = 'none';
 const RUN_DEADLINE_MS = (() => {
-  const t = Actor.getEnv().timeoutAt;
-  const ms = t instanceof Date ? t.getTime() : (t ? Date.parse(t) : NaN);
-  return Number.isFinite(ms) ? ms : null; // null = no run timeout set; behave exactly as before
+  const sources = [
+    ['getEnv().timeoutAt', Actor.getEnv().timeoutAt],
+    ['ACTOR_TIMEOUT_AT', process.env.ACTOR_TIMEOUT_AT],
+    ['APIFY_TIMEOUT_AT', process.env.APIFY_TIMEOUT_AT],
+  ];
+  for (const [name, t] of sources) {
+    const ms = t instanceof Date ? t.getTime() : (t ? Date.parse(t) : NaN);
+    if (Number.isFinite(ms)) { deadlineSource = name; return ms; }
+  }
+  return null; // null = no run timeout set (local/dev); behave exactly as before
 })();
 // Infinity when the run has no timeout, so every comparison below is a no-op in that case.
 const remainingBudgetMs = () => (RUN_DEADLINE_MS === null
   ? Infinity
   : RUN_DEADLINE_MS - Date.now() - DEADLINE_RESERVE_MS);
+
+// Logged because a silently-absent deadline turns every budget check below into a no-op, and the
+// only visible symptom is a hard kill many minutes later with no status message at all. One line
+// here makes "was the guard even armed?" answerable from the run log alone.
+log.info(RUN_DEADLINE_MS === null
+  ? 'No run timeout visible to this Actor, so the time-budget guard is OFF (expected on a local run; on the platform set a run timeout to enable it).'
+  : `Time-budget guard armed from ${deadlineSource}: ${Math.round((RUN_DEADLINE_MS - Date.now()) / 1000)}s left, of which ${DEADLINE_RESERVE_MS / 1000}s is reserved for finishing work.`);
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
@@ -445,13 +468,19 @@ async function fetchPage(page) {
   // the watch-baseline save below and lose the record of rows this run already pushed and
   // charged for. Let the outer catch record the error and fail at the very end instead.
   if (outOfTime) {
-    throw new Error(
+    // Tagged, not string-matched, so the caller can tell "our own clock stopped us" from a real
+    // TMview/proxy failure and keep the rows already pushed instead of failing the whole run
+    // (cycle 1892: cycle 1061 stopped the hard KILL but still reported a clock stop as a FAILURE,
+    // so a buyer who had already been charged for 1,000 rows saw a red run and no status message).
+    const err = new Error(
       `This run's own time limit ran out while fetching page ${page} from TMview`
       + `${lastErr ? ` (last network error: ${lastErr.message})` : ''}. `
       + 'TMview behind Apify Proxy has spells of transient 590 UPSTREAM502 errors, and each retry on a '
       + 'fresh proxy session costs up to 30s. Raise the run timeout (Input > Run options; 300s+ is a '
       + 'safe default for this Actor), or re-run in a few minutes — the proxy route usually clears.',
     );
+    err.timeBudget = true;
+    throw err;
   }
   throw new Error(
     'Could not reach TMview (tmdn.org) through any network path this run: '
@@ -472,6 +501,10 @@ let pagesFetched = 0;
 // and then 100 pages -- the code's own ceiling -- both walked to completion with every row
 // unique, so there is no observed "TMview cut us off early" case to distinguish from this one).
 let stoppedByCap = false;
+// True when THIS run's own clock -- not TMview, not a buyer cap -- ended the walk. Distinct from
+// `stoppedByCap` because the advice differs (raise the run timeout vs raise maxResults/cost limit)
+// and distinct from `runError` because every row already pushed is still valid and paid for.
+let timeBudgetStopped = false;
 
 try {
   if (!searchTerm) {
@@ -495,6 +528,11 @@ try {
       }
       if (!keepGoing) { stoppedByCap = page < totalPages; break; }
       if (page >= totalPages) break;
+      // Checked here -- after the cap check, before committing to another page -- so a buyer cap
+      // that already fired still wins the cause (it is the older, more actionable one), and the
+      // clock is only ever blamed when we were genuinely about to fetch more. Stopping cleanly
+      // here rather than letting fetchPage throw keeps the common case exception-free.
+      if (remainingBudgetMs() < MIN_ATTEMPT_MS) { timeBudgetStopped = true; break; }
       page += 1;
       const next = await fetchPage(page);
       batch = next.tradeMarks ?? [];
@@ -507,8 +545,30 @@ try {
   // baseline save below would never run and every mark this run already pushed and CHARGED for
   // would be missing from the baseline and re-delivered/re-charged next run. Record the error,
   // let the tail of the script persist the baseline, and fail at the very end instead.
-  log.exception(err, 'Run failed');
-  runError = err.message;
+  if (err.timeBudget) {
+    // Our own clock, not a TMview failure: every row already pushed is real and already charged
+    // for, so this is a partial success, not a failed run. `runError` stays null (the seeding
+    // exception is applied just below) and the cause is reported through timeBudgetStopped.
+    timeBudgetStopped = true;
+    log.warning(err.message);
+  } else {
+    log.exception(err, 'Run failed');
+    runError = err.message;
+  }
+}
+
+// The one case where a clock stop must still FAIL: a baseline (seeding) run. Saving a baseline the
+// walk never finished is the expensive outcome -- every mark it never reached looks already-seen
+// to the next run and the whole current match set gets delivered and CHARGED as "new" (same reason
+// the transport-failure path above refuses to save). Failing re-seeds for free instead. Converges
+// both ways in: the clean loop-top break and the fetchPage throw.
+if (watchMode && seeding && timeBudgetStopped && runError === null) {
+  runError = `This run's own time limit ran out while seeding the baseline for watch label "${watchLabel}", `
+    + `after recording ${watchSeen.size} mark(s). No baseline was saved -- a partial one would make the next `
+    + 'run treat every mark it never reached as new and charge you for the whole match set. Raise the run '
+    + 'timeout (Input > Run options; 300s+ is a safe default, more for a broad search) or narrow the search '
+    + '(tighter term, fewer offices, specific Nice classes or statuses), then run again -- a baseline run '
+    + 'charges nothing, so re-seeding is free.';
 }
 
 // WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
@@ -522,16 +582,26 @@ let evictionSuffix = '';
 // simply re-seeds for free.
 const skipBaselineSave = watchMode && seeding && runError !== null;
 if (skipBaselineSave) {
+  // Same refusal either way, but not the same advice: "re-run in a few minutes" is wrong for a
+  // clock stop (it will just run out again), and "raise the run timeout" is wrong for a proxy
+  // outage. The time-budget wording already lives in runError above, so don't repeat it here.
   log.warning(
-    `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
-    + 'Re-run on the same label and search to seed again (a baseline run charges nothing). Saving '
-    + 'a partial baseline would have made the next run treat the un-reached mark(s) as freshly '
-    + 'baselined and charge for the entire current match set.',
+    timeBudgetStopped
+      ? `The baseline run for "${watchLabel}" ran out of time before it finished, so NO baseline was saved `
+        + '-- see the failure message for how much time to give it. Re-seeding charges nothing.'
+      : `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
+        + 'Re-run on the same label and search to seed again (a baseline run charges nothing). Saving '
+        + 'a partial baseline would have made the next run treat the un-reached mark(s) as freshly '
+        + 'baselined and charge for the entire current match set.',
   );
 }
 
 if (watchMode && !skipBaselineSave) {
-  await saveWatchRecord(runError ? 'failed-incremental' : (seeding ? 'seeded' : 'incremental'));
+  // A clock-stopped incremental run still saves: every mark it delivered was CHARGED, so leaving
+  // them out of the baseline would re-deliver and re-charge them next run (h287 class).
+  await saveWatchRecord(runError
+    ? 'failed-incremental'
+    : (seeding ? 'seeded' : (timeBudgetStopped ? 'incomplete-time-budget' : 'incremental')));
   evictionSuffix = baselineTruncated > 0
     ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest mark `
       + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) -- they will be `
@@ -553,7 +623,19 @@ if (watchMode && !skipBaselineSave) {
       + (watchChanges ? ` and ${changedCount} changed mark(s) (status)` : '')
       + ` since the last run (${watchSkipped} already-delivered mark(s) skipped, not charged); baseline now holds ${watchSeen.size}.${evictionSuffix}`,
     );
-    if (pushed === 0) {
+    if (timeBudgetStopped) {
+      // Checked BEFORE the quiet-run branch below, which would otherwise be the exact wrong
+      // answer: this is a monitor the buyer schedules and stops watching, so telling them
+      // "nothing new" when the truth is "we never finished looking" hides a missed hit for as
+      // long as the schedule runs. Same first-cause-wins shape as eu-ted/sam-gov on this rollout.
+      await Actor.setStatusMessage(
+        `Incomplete (time budget): watch label "${watchLabel}" delivered ${pushed} new mark(s) but this run's own `
+        + `time limit ran out after ${pagesFetched} page(s), so it did NOT finish checking for new marks -- do not `
+        + 'read this as "nothing new". The marks it did deliver are saved to the baseline and will not be charged '
+        + 'again. Raise the run timeout (Input > Run options; 300s+ is a safe default) or narrow the search, then '
+        + `run again to cover the rest.${evictionSuffix}`,
+      );
+    } else if (pushed === 0) {
       await Actor.setStatusMessage(
         `Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`
         // Without this, a run that CAN NEVER report a change (see watchChangeBlindFilters above)
@@ -576,7 +658,13 @@ if (watchMode && !skipBaselineSave) {
 // here to report (h824/h826 finding above) -- `complete` is false only for a buyer-imposed stop
 // (maxResults/cost limit, `stoppedByCap`) or a transport failure (`error`), never a silent
 // upstream cutoff.
-const complete = runError === null && !stoppedByCap;
+const complete = runError === null && !stoppedByCap && !timeBudgetStopped;
+// One field a pipeline can branch on instead of inferring the cause from three booleans. Ordered
+// most-actionable-first: a buyer cap is the buyer's own knob, the clock is a run-options knob, an
+// upstream failure is neither.
+const incompleteReason = complete
+  ? null
+  : (stoppedByCap ? 'cap' : (timeBudgetStopped ? 'time-budget' : 'upstream-error'));
 await Actor.setValue('RUN_SUMMARY', {
   searchTerm: searchTerm || null,
   matchMode,
@@ -587,7 +675,9 @@ await Actor.setValue('RUN_SUMMARY', {
   delivered: pushed,
   maxResults,
   complete,
+  incompleteReason,
   stoppedByCap,
+  timeBudgetStopped,
   error: runError,
   unknownStatuses,
   unknownNiceClasses,
@@ -626,7 +716,26 @@ if (offices.length > 0 && unknownOffices.length === offices.length) {
     + 'offices; common mix-ups: "UK" should be "GB", "EU" should be "EM")',
   );
 }
-if (pushed === 0 && zeroRowFilterCauses.length > 0) {
+if (timeBudgetStopped && !watchMode) {
+  // FIRST in this cascade, because every branch below it would name a cause that is simply untrue
+  // once the clock is why we stopped -- most dangerously the "genuinely empty search" branch,
+  // which would tell a buyer whose page-1 fetch ran out of time that TMview has no such trademark.
+  // Watch mode is excluded: its own block above already said this better, with the baseline detail.
+  // Invalid filter values are still worth naming (they are a real, separate input bug, and the
+  // walk never got far enough to prove them harmless), so they are appended rather than dropped --
+  // the same collect-every-cause rule the zero-row branch below documents.
+  await Actor.setStatusMessage(
+    `Incomplete (time budget): delivered ${pushed.toLocaleString('en-US')} of `
+    + `${declaredMatches?.toLocaleString('en-US') ?? 'an unknown number of'} match(es) TMview declared, from `
+    + `${pagesFetched} page(s), then stopped because THIS run's own time limit ran out -- not because TMview `
+    + 'ran out of results or failed. Everything delivered is complete and correct as far as it goes, and it '
+    + 'stopped itself cleanly instead of being killed part-way. Raise the run timeout (Input > Run options; '
+    + '300s+ is a safe default, more for a broad search) or narrow the search to finish the rest. See RUN_SUMMARY.'
+    + (zeroRowFilterCauses.length > 0
+      ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`
+      : ''),
+  );
+} else if (pushed === 0 && zeroRowFilterCauses.length > 0) {
   await Actor.setStatusMessage(
     `0 results because of ${zeroRowFilterCauses.length} invalid filter value${zeroRowFilterCauses.length > 1 ? 's' : ''}: `
     + `${zeroRowFilterCauses.join('; ')}. This is a filter-value problem, not an empty search.`,
