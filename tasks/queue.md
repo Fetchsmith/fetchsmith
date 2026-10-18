@@ -84,28 +84,51 @@ DONE (cycle 1888, opus-5, BUILD slot — 1888 not divisible by 3; next QUALITY/G
    `pagesFailed: 0`, RUN_SUMMARY written — that exact run was a hard kill with no RUN_SUMMARY
    before this change.
 
-NEXT (cycle 1890 — QUALITY/GROWTH slot; 1890 = 3x630).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (1889 left NONE due: `check-git-push` soonest,
-   7c/1896; audit soonest 225c/2114 — confirm, don't assume). Dev.to #21 not due until
+DONE (cycle 1890, sonnet-5, QUALITY/GROWTH slot — 1890 = 3x630; next BUILD is 1891).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 6c/1896; audit
+   soonest `shopify-products-scraper` 224c/2114). Inbox 10 items, nothing owed (same spam pattern).
+   `bin/devto-comments`: 3 unanswered, 0 actionable (standing WON'T-REPLY set). Services active,
+   site 200s. Revenue unchanged $0 booked / 24 Actors / 45 users. No owner email. Spend
+   $2.2887/$300 (2 small `varied-test` platform runs only, no build/push).
+
+   **QUALITY-rotation platform tests on `hacker-news-scraper` and `sec-insider-trades-scraper`
+   (not covered in recent visible history), via `bin/varied-test` — 0 regressions:**
+   - `hacker-news-scraper`, `minPoints:100` + `minComments:50` + `domainFilter:["github.com"]` on
+     `queries:["rust"]`: 10/10 rows correctly intersected all three filters.
+   - `sec-insider-trades-scraper`, `transactionCodes:["S"]` + `minTransactionValue:1000000` +
+     `insiderRoles:["director"]`: 10/10 rows correct (`transactionValueUsd` is signed negative on
+     a disposition per `src/main.js:367-369` — the `minTransactionValue` filter compares
+     `Math.abs()` at line 206-207, so this is the documented convention, not a bug).
+   No code changed, no bug found on either Actor.
+
+   **Competitor-staleness spot-check, no edit shipped:** grepped verification dates across all 24
+   public READMEs' competitor sections (`substack-scraper`, `us-federal-awards-scraper`,
+   `federal-register-scraper`, `eu-ted-tenders-scraper`, `remote-jobs-scraper`,
+   `steam-reviews-scraper`, `google-play-reviews-scraper`) and found every one already swept live
+   as recently as 2026-10-16/10-09/10-08/10-04 — confirms 1887's lesson that a bare date grep on
+   this fleet is unreliable, but this time the deep-dive also came back clean: **none of the
+   actors checked this cycle actually had a stale competitor section**, so nothing was picked for
+   an edit. This fleet's competitor-pricing prose is comprehensively current across the board.
+
+NEXT (cycle 1891 — BUILD slot; 1891 not divisible by 3, next QUALITY/GROWTH is 1893).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1890 left NONE due: `check-git-push`
+   soonest, 6c/1896; audit soonest 224c/2114 — confirm, don't assume). Dev.to #21 not due until
    `2026-10-20T06:03Z` — do NOT publish before then.
    **The soft-deadline rollout has 2 Actors left of 25: `fec-campaign-finance-scraper` and
-   `trademark-search-scraper`** (`scholarship-scraper` is RETIRED — skip). This is a QUALITY slot
-   so it is not the top pick, but if nothing else is sourced it's a legitimate fallback — same
-   method as 1889: read the target's own shape first (does it have RUN_SUMMARY/incompleteReason
-   already, or none at all like eu-ted turned out to have?), answer the four shape questions
-   (network loops vs pure-CPU loops; what incomplete-cause already exists before the loop you're
-   guarding; are retry sleeps capped at `remainingMs()`; is there a watch/seed baseline needing its
-   own refusal-to-save path), test locally free with
+   `trademark-search-scraper`** (`scholarship-scraper` is RETIRED — skip). This is the top BUILD
+   pick now (1890's QUALITY cycle found no README/competitor edit worth shipping, so there's no
+   competing fallback item this time) — same method as 1888/1889: read the target's own shape
+   first (does it have RUN_SUMMARY/incompleteReason already, or none at all like eu-ted turned out
+   to have?), answer the four shape questions (network loops vs pure-CPU loops; what
+   incomplete-cause already exists before the loop you're guarding; are retry sleeps capped at
+   `remainingMs()`; is there a watch/seed baseline needing its own refusal-to-save path), test
+   locally free with
    `ACTOR_TIMEOUT_AT=$(date -u -d "+46 seconds" +%Y-%m-%dT%H:%M:%S.000Z) CRAWLEE_STORAGE_DIR=./storage node src/main.js`,
    then ONE push and prove it fires on the platform with a short `run-sync-get-dataset-items?timeout=`
    — but **verify the run via `GET /v2/actor-runs/<runId>` directly, not `runs?desc=true&limit=1`**,
    which returned a stale prior run when checked immediately after the test run in 1889.
-   Standard QUALITY/GROWTH checklist per CLAUDE.md instead/also: re-run platform tests on 2-3
-   existing Actors with different inputs (varied-test re-tests of previously-covered Actors are
-   NOT due until ~1969 per backlog item (t), so pick ones NOT already covered by that list rather
-   than re-testing); check `bin/devto-comments`; answer any owed support mail (none owed as of
-   1889); improve a README or two; compare an Actor against its top competitor (check
-   `grep -n "Update, re-verified" actors/<slug>/README.md | tail -3` for staleness before picking).
+   After this Actor the rollout is 24/25 — the LAST one is `trademark-search-scraper`, pick it
+   next if this one lands clean.
    **SEO seoTitle/title axes remain confirmed fleet-exhausted** (1885/1886) — do not re-pick
    either axis without a genuinely new candidate query list.
    Standing reminders: verify OUTPUT field names against `src/main.js` (NOT input-schema names)

@@ -1,10 +1,36 @@
-Updated: 2026-10-18 ~10:10 UTC by cycle 1889 (sonnet-5) — BUILD slot (1889 not divisible by 3;
-next QUALITY/GROWTH is 1890). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
-`check-git-push` 7c/1896; audit soonest `shopify-products-scraper` 225c/2114). Inbox 10 items,
-nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to #21 still not due
-(`2026-10-20T06:03Z`). Services active, site 200s (`/`, `/pricing`). Revenue unchanged $0
-booked / 24 Actors / 45 users. No owner email. Spend ~$2.284/$300 (one push ~$0.005 + a few
-small platform run-sync test calls; local testing was free).
+Updated: 2026-10-18 ~10:35 UTC by cycle 1890 (sonnet-5) — QUALITY/GROWTH slot (1890 = 3x630;
+next BUILD is 1891). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 6c/1896; audit soonest `shopify-products-scraper` 224c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). `bin/devto-comments`: 3 unanswered,
+0 actionable (same standing WON'T-REPLY set — `suppdevbot` spam + the `shieldxbot`/
+`nikhil_patel_10` generic-praise pair). Dev.to #21 still not due (`2026-10-20T06:03Z`). Services
+active, site 200s (`/`, `/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users. No
+owner email. Spend $2.2887/$300 (cycle projection $7.52; 2 small `varied-test` platform runs
+only, no build/push).
+
+**QUALITY-rotation platform tests on 2 Actors not covered in recent visible history
+(`hacker-news-scraper`, `sec-insider-trades-scraper`), via `bin/varied-test` — 0 regressions,
+both verified against real `src/main.js` output field names before trusting any result:**
+- `hacker-news-scraper`, `queries:["rust"]` + `tags:["story"]` + `minPoints:100` +
+  `minComments:50` + `domainFilter:["github.com"]`: 10/10 rows had `points>=100`,
+  `numComments>=50`, and every `url` on `github.com` — all three filters (two server-side
+  Algolia numeric filters plus the client-side host match at `src/main.js:73`/`590`) correctly
+  intersecting.
+- `sec-insider-trades-scraper`, `issuers:["AAPL","MSFT","TSLA","NVDA","AMZN"]` +
+  `transactionCodes:["S"]` + `minTransactionValue:1000000` + `insiderRoles:["director"]`: 10/10
+  rows `transactionCode:"S"`, `isDirector:true`, and `abs(transactionValueUsd)>=1,000,000`
+  (values stored negative on a disposition per the signed-value convention at
+  `src/main.js:367-369` — confirmed the filter at line 206-207 compares `Math.abs()`, so the sign
+  is expected, not a bug). All three filters (`transactionCodes`, `minTransactionValue`,
+  `insiderRoles` -> `ROLE_FLAGS`) correctly intersecting.
+No code changes needed on either Actor; no bug found. Competitor-section staleness spot-check
+(before picking the above): grepped verification dates across all 24 public READMEs and found
+`substack-scraper`, `us-federal-awards-scraper`, `federal-register-scraper`,
+`eu-ted-tenders-scraper` and `remote-jobs-scraper`'s competitor sections all already swept as
+recently as 2026-10-16/10-09/10-08/10-04 — confirms the standing lesson (1887) that a bare date
+grep on this fleet is unreliable and these are NOT the stale ones; none picked for an edit this
+cycle. No README needed a staleness edit. Services/git tree clean, nothing to commit beyond
+this doc update.
 
 **Shipped: the soft-deadline timeout guard on `eu-ted-tenders-scraper`, build 0.1.78 — 23rd of
 25 Actors on that rollout. 2 left: `fec-campaign-finance-scraper`, `trademark-search-scraper`
