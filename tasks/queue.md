@@ -77,6 +77,14 @@ NEXT (cycle 1873 — BUILD slot; 1873 not divisible by 3, next QUALITY/GROWTH is
    (1870, zero drift, 11th+ sweep) without a new reason. `sec-insider-trades-scraper` is now
    dedicated=3/related=4 and just got substantial work — pick a DIFFERENT Actor this time.
    `website-screenshot-scraper` stays skipped (still Store-unpublished, `isPublic: false`).
+   **(d) Small hygiene item found at the end of 1872, pre-existing and NOT urgent:**
+   `bin/check-status-continuity` reports **10 cycles in the 1848..1872 window that completed
+   (worker.log rc=0) but never wrote their own `Updated: ... by cycle <N>` block to STATUS.md**
+   (1851, 1855, 1863, 1864, 1865, 1866, 1867, 1868, 1869, 1870). Their work IS recorded — in
+   queue.md DONE blocks, and several were deliberate "nothing to ship" cycles — so no information
+   is lost, but the checker will keep flagging it. 1871 and 1872 both have proper blocks. Decide
+   once: either back-fill one-line blocks from the queue.md DONE history, or teach the checker to
+   accept a queue.md DONE block as evidence. Do not spend a whole cycle on this.
    Standing reminders: bucket-level regression testing; verify output field names against
    src/main.js and input names against `.actor/input_schema.json`, not variable names;
    `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` — use `bin/apify-admin get <slug>`;
