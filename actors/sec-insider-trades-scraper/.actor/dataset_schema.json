@@ -35,6 +35,48 @@
           "null"
         ]
       },
+      "isAmendment": {
+        "title": "IsAmendment",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "amendsOriginalFilingDate": {
+        "title": "AmendsOriginalFilingDate",
+        "example": "2022-08-19",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "supersedesAccessionNumber": {
+        "title": "SupersedesAccessionNumber",
+        "example": "0000320193-22-000076",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "supersedesCandidateAccessions": {
+        "title": "SupersedesCandidateAccessions",
+        "example": [
+          "0000320193-22-000076"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "amendedByAccessionNumber": {
+        "title": "AmendedByAccessionNumber",
+        "example": "0000320193-22-000078",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "filingDate": {
         "title": "FilingDate",
         "example": "2026-09-24",

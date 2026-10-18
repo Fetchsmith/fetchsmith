@@ -58,6 +58,33 @@ async function pushResult(item) {
   return pushed < maxResults;
 }
 
+// EDGAR identifies an amendment only by its own form string ("4/A") plus a
+// <dateOfOriginalSubmission> DATE -- it never names the superseded accession number. The
+// submissions index we have already downloaded carries (form, filingDate, accessionNumber) for
+// every filing, so an amendment can be mapped back to its original with no extra request: same
+// issuer, same base form, filingDate == dateOfOriginalSubmission. That is unique for most
+// issuers but NOT for a large one that filed several Form 4s that day (several officers, one
+// board event), so we publish the whole candidate set and only fill supersedesAccessionNumber
+// when exactly one candidate exists.
+const OWNERSHIP_FORMS = new Set(['3', '4', '5', '3/A', '4/A', '5/A']);
+function baseForm(form) { return String(form ?? '').replace(/\/A$/, ''); }
+function isAmendmentForm(form) { return /\/A$/.test(String(form ?? '')); }
+
+// Index EVERY ownership filing on a page, independent of formTypes and of maxFilingsPerIssuer:
+// the original behind an amendment is older than the amendment (so further down this
+// newest-first page) and is usually a form the caller did not select, which means the capped
+// selection in selectFilings() would miss it. Walking the arrays again is free -- the JSON is
+// already in hand. Keyed on the EXACT form string so that a 4/A amending a 4 is never offered
+// another 4/A filed the same day as its "original".
+function indexOwnershipFilings(idx, map) {
+  const forms = idx.form ?? [];
+  for (let i = 0; i < forms.length; i += 1) {
+    if (!OWNERSHIP_FORMS.has(forms[i])) continue;
+    const key = `${forms[i]}|${idx.filingDate[i]}`;
+    (map[key] ??= []).push(idx.accessionNumber[i]);
+  }
+}
+
 // Scan one index page's parallel arrays (newest-first) into `picked`.
 // Returns true when selection is finished -- either the cap is full or we have passed sinceDate,
 // in which case no older page can contribute and the caller stops paging.
@@ -244,6 +271,47 @@ function rowsFromXml(xml, ctx) {
   // visible rather than silently attributing the trade to the first one only.
   const coFilers = owners.slice(1).map((o) => o.insiderName).filter(Boolean);
 
+  // --- amendment linkage (see indexOwnershipFilings above) ---
+  const isAmendment = isAmendmentForm(documentType);
+  // EDGAR's own field, present on every amendment we checked; it is the ORIGINAL's filing date,
+  // not its period or accession. Verified live on TSLA 0000899243-22-021041 (period 2022-05-02,
+  // original filed 2022-05-04) and AAPL 0000320193-22-000078 (period 2022-08-17, original filed
+  // 2022-08-19) -- note the original's FILING date is after the period in both, so this date
+  // must never be compared against periodOfReport.
+  const amendsOriginalFilingDate = isAmendment ? val($, doc, 'dateOfOriginalSubmission') : null;
+  // issuer + reporting owner + period + base form identifies the same reported event across an
+  // original and its amendment; both worked examples above share period and reporting owner with
+  // the filing they correct.
+  const eventKey = `${ctx.issuerCik}|${owner.insiderCik ?? ''}|${periodOfReport ?? ''}|${baseForm(documentType)}`;
+  let supersedesCandidateAccessions = [];
+  if (isAmendment && amendsOriginalFilingDate) {
+    supersedesCandidateAccessions = (ctx.ownershipIndex?.[`${baseForm(documentType)}|${amendsOriginalFilingDate}`] ?? [])
+      .filter((a) => a !== ctx.accessionNumber);
+    ctx.amendmentsByEvent?.set(eventKey, {
+      accessionNumber: ctx.accessionNumber,
+      candidates: supersedesCandidateAccessions,
+    });
+  }
+  const supersedesAccessionNumber = supersedesCandidateAccessions.length === 1
+    ? supersedesCandidateAccessions[0] : null;
+  // Reverse link. EDGAR's index is newest-first, so an amendment is always processed BEFORE the
+  // filing it corrects: if that original turns up later in this run, mark its rows as superseded
+  // instead of dropping them -- a buyer auditing history needs to see both the wrong number and
+  // the correction, and silently dropping either is worse than today's blanket exclusion. The
+  // eventKey hit (issuer+owner+period+form) disambiguates most of the cases where the date-based
+  // candidate set had several members -- e.g. of the three Form 4s Tesla filed on 2022-05-04,
+  // one is Baglino's and is correctly excluded from Denholm's amendment.
+  // KNOWN LIMIT, verified live, do not "fix" by narrowing on filingDate (it is already equal):
+  // the same insider can file two Form 4s on one day for one period -- Denholm filed BOTH
+  // 0000899243-22-016670 and -016671 (period 2022-05-02) -- and EDGAR publishes no superseded-
+  // accession pointer anywhere, so this flag then marks both originals. It therefore means "a
+  // correction touching this issuer/owner/period exists", not "this exact row was restated".
+  // That is still strictly better than excluding amendments outright, which is today's behaviour.
+  const pendingAmendment = !isAmendment ? ctx.amendmentsByEvent?.get(eventKey) : null;
+  const amendedByAccessionNumber = pendingAmendment
+    && (!pendingAmendment.candidates.length || pendingAmendment.candidates.includes(ctx.accessionNumber))
+    ? pendingAmendment.accessionNumber : null;
+
   const footnotes = {};
   doc.find('footnotes > footnote').each((_, f) => { footnotes[$(f).attr('id')] = $(f).text().trim(); });
   const footnoteText = (el) => {
@@ -276,6 +344,11 @@ function rowsFromXml(xml, ctx) {
         rowType: holding ? 'holding' : 'transaction',
         accessionNumber: ctx.accessionNumber,
         formType: documentType,
+        isAmendment,
+        amendsOriginalFilingDate,
+        supersedesAccessionNumber,
+        supersedesCandidateAccessions,
+        amendedByAccessionNumber,
         filingDate: ctx.filingDate,
         periodOfReport,
         issuerName,
@@ -315,7 +388,7 @@ function rowsFromXml(xml, ctx) {
 // Form 3 is a holdings snapshot: it never contains a transaction element, so asking for it
 // without includeHoldings can only ever return zero rows. Say so up front rather than
 // letting the buyer read "no transaction rows" once per filing and assume the feed is empty.
-if (formTypes.includes('3') && !includeHoldings) {
+if (formTypes.some((f) => baseForm(f) === '3') && !includeHoldings) {
   log.warning('formTypes includes "3" but includeHoldings is off: Form 3 filings report holdings '
     + 'only (no transactions), so they will yield 0 rows. Enable includeHoldings to get those positions.');
 }
@@ -336,6 +409,11 @@ try {
     }
     const recent = sub.filings?.recent ?? {};
 
+    // Per-issuer, so both maps are freed between issuers; the eventKey already carries the CIK.
+    const ownershipIndex = {};
+    const amendmentsByEvent = new Map();
+    indexOwnershipFilings(recent, ownershipIndex);
+
     const picked = [];
     let done = selectFilings(recent, picked, maxFilingsPerIssuer);
 
@@ -355,6 +433,7 @@ try {
         const older = await secGet(`https://data.sec.gov/submissions/${pg.name}`, { json: true });
         pagesRead += 1;
         if (!older) continue;
+        indexOwnershipFilings(older, ownershipIndex);
         done = selectFilings(older, picked, maxFilingsPerIssuer);
         if (done) break;
       }
@@ -382,6 +461,8 @@ try {
         issuerCik: iss.cik,
         filingUrl: `${base}/${rawDoc}`,
         indexUrl: `${base}/${f.accessionNumber}-index.htm`,
+        ownershipIndex,
+        amendmentsByEvent,
       });
       if (rows === null) {
         legacyFilings += 1;
@@ -461,7 +542,7 @@ if (!pushed) {
       + 'on derivative rows, but includeDerivative is off, so nothing can ever match. Turn includeDerivative '
       + 'on, or drop those codes.');
   }
-  if (formTypes.length === 1 && formTypes[0] === '3' && !includeHoldings) {
+  if (formTypes.every((f) => baseForm(f) === '3') && !includeHoldings) {
     causes.push('formTypes is Form 3 only, which reports holdings and never transactions, while '
       + 'includeHoldings is off. Enable includeHoldings to get those positions, or add form 4/5.');
   }

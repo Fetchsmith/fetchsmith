@@ -37,7 +37,9 @@ parser yourself.
 
 ## Output fields
 
-`id`, `rowType`, `accessionNumber`, `formType`, `filingDate`, `periodOfReport`, `issuerName`, `issuerCik`,
+`id`, `rowType`, `accessionNumber`, `formType`, `isAmendment`, `amendsOriginalFilingDate`,
+`supersedesAccessionNumber`, `supersedesCandidateAccessions`, `amendedByAccessionNumber`,
+`filingDate`, `periodOfReport`, `issuerName`, `issuerCik`,
 `ticker`, `insiderName`, `insiderCik`, `isDirector`, `isOfficer`, `isTenPercentOwner`, `isOther`,
 `officerTitle`, `coFilers`, `derivative`, `securityTitle`, `transactionDate`, `transactionCode`,
 `transactionCodeMeaning`, `acquiredOrDisposed`, `shares`, `pricePerShare`, `transactionValueUsd`,
@@ -48,6 +50,44 @@ parser yourself.
 Derivative rows (options, RSUs, convertibles) carry `exercisePrice`, `expirationDate`,
 `underlyingSecurityTitle` and `underlyingShares`; non-derivative common-stock rows leave them
 `null`. Set `includeDerivative: false` to get common stock only.
+
+### Amendments (`4/A`) and which filing they replace
+
+SEC does not flag a corrected filing — it publishes the correction as a **separate form type**
+(`4/A`), so a feed that only asks for `4` silently never sees it. Select `4/A` in `formTypes`
+(alongside `4`) to get them. Amendments are real: of the seven large-cap issuers we sampled, six
+had at least one, and the two we read in full corrected a post-transaction share count and a Rule
+10b5-1 plan date respectively — numbers this Actor otherwise reports as fact.
+
+EDGAR's amendment XML names only the **date** the original was filed
+(`dateOfOriginalSubmission`), never its accession number, so linking the two is an inference this
+Actor makes for you from the issuer's own filing index — at no extra request cost:
+
+| Field | Meaning |
+| --- | --- |
+| `isAmendment` | `true` on `3/A`/`4/A`/`5/A` rows. |
+| `amendsOriginalFilingDate` | EDGAR's `dateOfOriginalSubmission` — the **filing date** of the original, which is normally later than `periodOfReport`. Never compare it against `periodOfReport`. |
+| `supersedesAccessionNumber` | The original's accession, filled **only when the match is unambiguous** (exactly one filing of that form by that issuer on that date). `null` otherwise — `null` means "could not tell", not "no original exists". |
+| `supersedesCandidateAccessions` | Every filing that could be the original, so you can check them yourself when the match is ambiguous. Empty on non-amendment rows. |
+| `amendedByAccessionNumber` | Set on an **original** row when an amendment for the same issuer, insider and period also appeared in this run. |
+
+Nothing is dropped: when you select both `4` and `4/A` you get the original rows *and* the
+correcting rows, with the originals tagged — an audit trail needs both the wrong number and the
+fix, so we never silently replace one with the other.
+
+**Worked examples, both live-verified.** Apple's `0000320193-22-000078` (a `4/A` filed 2022-08-22,
+period 2022-08-17) reports its original as filed 2022-08-19; Apple filed exactly one Form 4 that
+day, so `supersedesAccessionNumber` resolves cleanly to `0000320193-22-000076` — same insider
+(Luca Maestri), same period. Tesla's `0000899243-22-021041` (a `4/A` filed 2022-06-03) reports its
+original as filed 2022-05-04, but Tesla filed **three** Form 4s that day, so
+`supersedesAccessionNumber` is `null` and all three appear in `supersedesCandidateAccessions`.
+
+**The one limit worth knowing**, because it is a property of EDGAR and not something any Actor can
+engineer around: the same insider can file two Form 4s on one day for one period. Robyn Denholm
+filed both `0000899243-22-016670` and `-016671` for period 2022-05-02, and since EDGAR publishes
+no superseded-accession pointer anywhere, `amendedByAccessionNumber` will mark **both** of those
+originals. Read that field as "a correction touching this issuer/insider/period exists" rather
+than "this exact row was restated", and use `filingUrl` to confirm which one moved.
 
 ### Holdings rows (`includeHoldings`, off by default)
 
@@ -270,12 +310,12 @@ worth naming.
 
 **Does `sinceDate` miss older filings for a prolific filer?** No — EDGAR's own per-issuer submissions file only inlines the larger of ~1000 filings or the trailing 12 months; this Actor follows the older paginated index pages too (up to 30 per issuer), so a heavy filer like JPMorgan (~26,000 filings/year in the inlined window alone) doesn't silently stop at whatever the inlined window covers.
 
-**Does this Actor pick up corrected Form 4/A amendments?** Not yet. EDGAR files an amendment under its own distinct form-type string (`"4/A"`, not a flag on the original), and `formTypes`' published `select` input only offers `3`/`4`/`5` — there's no way to request `4/A` through the Console UI. A live check across 7 large-cap issuers found at least one amendment on 6 of them, and two amendments actually corrected a previously-misreported share count or plan date rather than fixing a typo — see the [dedicated post](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable) for the live numbers. Until amendment support ships, you get the original filing only, even on the rare occasions it was later corrected.
+**Does this Actor pick up corrected Form 4/A amendments?** Yes — select `4/A` in `formTypes`. EDGAR files an amendment under its own distinct form-type string (`"4/A"`, not a flag on the original), so it is opt-in rather than automatic, and the default (`["4"]`) still returns originals only so existing runs and bills are unchanged. Amendment rows carry `isAmendment`, `amendsOriginalFilingDate` and `supersedesAccessionNumber`, and the original they correct is returned too, tagged with `amendedByAccessionNumber` — see [Amendments and which filing they replace](#amendments-4a-and-which-filing-they-replace) for how the linking works and where it can only narrow to a candidate set. Background and the live survey that prompted this: the [dedicated post](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable).
 
 ## Related guides
 
 - [SEC Form 4 amendments correct real numbers, and no insider-trading Actor's input schema can select them](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable)
-  — a live pull across 7 large-cap issuers found 4/A amendment filings on 6 of them, two of which correct a share count or plan date this Actor outputs as fact; `formTypes` has no way to request them.
+  — a live pull across 7 large-cap issuers found 4/A amendment filings on 6 of them, two of which correct a share count or plan date this Actor outputs as fact. This Actor now supports them: `formTypes` accepts `3/A`/`4/A`/`5/A` and links each amendment to the filing it replaces.
 - [SEC Form 4's 10b5-1 flag is not spelled "true" — 92% of filings write it as 1 or 0](https://fetchsmith.com/blog/sec-form-4-10b5-1-flag-is-not-a-boolean)
   — the 210-filing measurement behind the two notes above, plus the full transaction-code histogram.
 - [We checked every other government-data Actor for the same boolean trap](https://fetchsmith.com/blog/sec-form-4-is-the-only-actor-that-parses-raw-xml)

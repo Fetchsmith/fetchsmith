@@ -92,7 +92,13 @@ FIELD_SUPPRESS = {
     # own name. Neither literal has a `const/let/var` binding for binding_of() to key off (one
     # is a bare call argument, the other a push() argument), so they read as row shapes purely
     # because they share >= MIN_OVERLAP field names with the real schema.
-    'sec-insider-trades-scraper': {'primaryDocument', 'indexUrl'},
+    # Cycle 1872 added `ownershipIndex` (form|filingDate -> accessions, built from the submissions
+    # index) and `amendmentsByEvent` (Map, eventKey -> pending amendment) to that same ctx literal
+    # for Form 4/A amendment linking. Both are lookup structures consumed inside rowsFromXml to
+    # compute the five declared amendment fields; neither is ever a row key. Confirmed on the live
+    # 45-row run of build 0.1.52 (dataset 3xbLxdBOA9edE8mqA) -- check-real-fields reports 0 drift
+    # against a real dataset row, which is the authoritative check for "did it reach the dataset".
+    'sec-insider-trades-scraper': {'primaryDocument', 'indexUrl', 'ownershipIndex', 'amendmentsByEvent'},
     # watchId is the watch-mode cross-board identity key, computed once per de-duplicated row
     # and carried on the internal `enriched` literal (main.js ~line 819) alongside the real
     # alsoOn/duplicateUrls fields -- which is what tips `enriched` over MIN_OVERLAP and makes it

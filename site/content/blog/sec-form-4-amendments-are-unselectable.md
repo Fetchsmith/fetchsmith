@@ -1,6 +1,6 @@
 ---
 title: SEC Form 4 amendments correct real numbers, and no insider-trading Actor's input schema can select them
-description: EDGAR records a Form 4 amendment under a distinct form-type string ("4/A"), not as a flag on the original filing. A live pull across 7 large-cap issuers found 4/A filings on 6 of them — and Tesla's and Agilent's actually correct previously-reported share counts, not just footnotes. The published input schema for this niche offers no way to request them.
+description: EDGAR records a Form 4 amendment under a distinct form-type string ("4/A"), not as a flag on the original filing. A live pull across 7 large-cap issuers found 4/A filings on 6 of them — and Tesla's and Agilent's actually correct previously-reported share counts, not just footnotes. The published input schema for this niche offered no way to request them — ours now does, and links each amendment to the filing it replaces.
 date: 2026-10-18
 tags: webscraping, sec, edgar, finance, dataquality
 tool: sec-insider-trades-scraper
@@ -50,7 +50,31 @@ curl -s "https://data.sec.gov/submissions/CIK0000320193.json" | \
 
 Swap the zero-padded CIK (Apple's is `0000320193`) for any issuer. Counts are current as of 2026-10-18 and will grow as issuers keep filing; the structural point — amendments are a separate form-type string, unreachable through this niche's published `select` input — does not depend on today's counts.
 
-[sec-insider-trades-scraper](/go/sec-insider-trades-scraper) decodes every one of SEC's 20 transaction codes, normalizes the 10b5-1 flag's four real spellings, and signs `transactionValueUsd` so a disposition is negative. Form 4/A support — adding the three amendment strings to `formTypes` and, where an accession number clearly supersedes an earlier one for the same issuer and period, surfacing that relationship rather than returning both as unrelated rows — is a scoped follow-up, not yet shipped.
+[sec-insider-trades-scraper](/go/sec-insider-trades-scraper) decodes every one of SEC's 20 transaction codes, normalizes the 10b5-1 flag's four real spellings, and signs `transactionValueUsd` so a disposition is negative.
+
+## Update, 2026-10-18: amendment support shipped
+
+The follow-up this post scoped is now live in build 0.1.52. `formTypes` accepts `3/A`, `4/A` and
+`5/A` (the default is still `["4"]`, so existing runs are unchanged), and each amendment row
+carries `isAmendment`, `amendsOriginalFilingDate` and `supersedesAccessionNumber`; the original it
+corrects is still returned, tagged with `amendedByAccessionNumber`, because an audit trail needs
+both the wrong number and the fix.
+
+Linking the two took one more EDGAR quirk than this post anticipated. The amendment XML carries
+`<dateOfOriginalSubmission>` — the original's **filing date**, which is later than
+`periodOfReport`, not equal to it — but **never the superseded accession number**. So the link is
+an inference from the issuer's own filing index (free: that JSON is already downloaded), and it is
+not always unique. Apple's `4/A` `0000320193-22-000078` reports its original as filed 2022-08-19
+and Apple filed exactly one Form 4 that day, so it resolves cleanly to `0000320193-22-000076`.
+Tesla's `0000899243-22-021041` reports 2022-05-04, when Tesla filed **three** Form 4s — so
+`supersedesAccessionNumber` is `null` and all three are published in
+`supersedesCandidateAccessions` rather than guessed at.
+
+Worse for anyone assuming issuer + insider + period is a key: Robyn Denholm filed **two** Form 4s
+on 2022-05-04 for period 2022-05-02 (`0000899243-22-016670` and `-016671`). Nothing in EDGAR says
+which one the amendment replaced. That is a property of the source, not of any scraper, so
+`amendedByAccessionNumber` is documented as "a correction touching this issuer/insider/period
+exists" rather than "this exact row was restated".
 
 ## Related guides
 

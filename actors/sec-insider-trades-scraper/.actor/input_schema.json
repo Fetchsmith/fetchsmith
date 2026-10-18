@@ -22,19 +22,25 @@
     "formTypes": {
       "title": "Ownership form types",
       "type": "array",
-      "description": "Form 4 is the one that matters for trade signals (a transaction reported within 2 business days). Form 5 is an annual catch-up and does carry real transactions. Form 3 is an initial statement of holdings and contains no transaction at all, so selecting it returns zero rows unless you also turn on includeHoldings below.",
+      "description": "Form 4 is the one that matters for trade signals (a transaction reported within 2 business days). Form 5 is an annual catch-up and does carry real transactions. Form 3 is an initial statement of holdings and contains no transaction at all, so selecting it returns zero rows unless you also turn on includeHoldings below. The \"/A\" forms are AMENDMENTS, which SEC files under a separate form type rather than flagging the original: select 4/A alongside 4 to see corrections (restated share counts, fixed Rule 10b5-1 dates). Amendment rows carry isAmendment, amendsOriginalFilingDate and supersedesAccessionNumber, and the original they correct is returned too, tagged with amendedByAccessionNumber - nothing is silently dropped.",
       "editor": "select",
       "items": {
         "type": "string",
         "enum": [
           "3",
           "4",
-          "5"
+          "5",
+          "3/A",
+          "4/A",
+          "5/A"
         ],
         "enumTitles": [
           "Form 3 - initial statement of ownership",
           "Form 4 - changes in ownership (insider trades)",
-          "Form 5 - annual statement"
+          "Form 5 - annual statement",
+          "Form 3/A - amended initial statement",
+          "Form 4/A - amended changes in ownership",
+          "Form 5/A - amended annual statement"
         ]
       },
       "default": [
