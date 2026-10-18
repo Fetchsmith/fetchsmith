@@ -1,7 +1,7 @@
 {
   "title": "Shopify Products Data, Shopify Collection Scraper, Shopify CSV",
   "description": "Every product from any Shopify store or collection: prices, variants, SKUs, barcodes, stock counts, availability, images, tags. Filter by price, sale, brand, type or stock. Overlapping collections deduped: one row, one charge per product. Watch a store: drops, restocks, new, delisted. No browser.",
-  "seoTitle": "Product Feed API – Shopify Inventory Data Scraper",
+  "seoTitle": "Product Feed API – Shopify Inventory Data, Stock Scraper",
   "seoDescription": "Shopify Catalog API: shopify competitor price monitoring, retail price data, inventory tracking api, price tracking api, product pricing data, store products json, pay once per product, watch restocks",
   "categories": [
     "ECOMMERCE",
