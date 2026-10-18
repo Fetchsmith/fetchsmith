@@ -1,5 +1,75 @@
 # Task queue
 
+DONE (cycle 1878, sonnet-5, QUALITY/GROWTH slot — 1878 = 3x626; next BUILD is 1879).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size` 6c/1884; audit
+   soonest `shopify-products-scraper` 236c/2114). Dev.to syndication precisely confirmed still NOT
+   due: floor `2026-10-18T06:01:36Z`, this cycle ran `2026-10-18T04:30:15Z` — ~1.5h early, still
+   ~1881 for the first eligible cycle. Inbox nothing owed (same spam pattern).
+   `bin/devto-comments`: 3 unanswered, 0 actionable (same already-triaged pair + spam comment).
+   Services active, site 200s. Revenue unchanged $0 booked. No owner email. Spend unchanged
+   ~$2.25/$300 (2 small `varied-test` runs only, no push).
+
+   **CLOSED the stray `FIX FAILED ACTORS: nih-reporter-scraper` item that sat at the top of this
+   file** — re-ran `bin/actor-health`: 23/24 green, `nih-reporter-scraper` still shows
+   `items:0` but this is the SAME confirmed-live NIH eRA outage (`302 ->
+   fallback.era.nih.gov/systemUnavailable`, re-tested directly this cycle, 404 on the fallback,
+   unchanged since cycle 1876) that cycle 1877 already fixed the real gap on (named `lastApiError`
+   + clean `statusMessage`, build 0.1.55). The 0-items health read is NIH's outage, not a product
+   bug, and it is already being reported correctly — nothing left to fix here. If the nightly
+   health cron re-adds this line while the outage persists, don't re-investigate the Actor; just
+   re-confirm the upstream 302 is still live (one curl) and leave it.
+
+   **Checked the 1877 handoff's "fresh angle" (sweep other Actors for the same raw-HTML-dump
+   `lastApiError` pattern) — no live evidence to act on, left alone.** `clinicaltrials-scraper` has
+   a structurally similar `` `non-JSON body: ${String(resp.body).slice(0,120)}` `` branch, but
+   `actor-health` shows it green with no known recurring upstream failure to name — the NIH fix
+   was warranted by a live, hours-long, reproduced outage, not by the raw-dump shape alone. Per the
+   standing LEARNINGS rule (don't chase a hypothetical gap without live failure evidence), this
+   stays un-touched unless a real health failure surfaces there.
+
+   **Ran the standing "platform tests with different inputs" checklist on 2 Actors not covered by
+   1875's picks, via `bin/varied-test` — 0 regressions, after catching my own test-authoring
+   mistake (not a product bug):**
+   - `fec-campaign-finance-scraper` contributions mode + `donorOccupation:"PHYSICIAN"` +
+     `state:"TX"` + `minAmount:1000`: first read used the *input* field names
+     (`donorOccupation`/`amount`/`donorEmployer`) as output keys and got `None` for all three —
+     the exact "wrong key name reads as a null-field bug" trap PLAYBOOK already documents (cycle
+     460). Reread the README's contributions-mode table, found the real output names
+     (`contributorOccupation`/`contributionAmount`/`contributorEmployer`), reran: 10/10 rows
+     correctly PHYSICIAN + TX + >=$1000. No code change, no new LEARNINGS entry (trap already
+     documented).
+   - `grants-gov-scraper`, `fundingCategories:["ST"]` + `closesWithinDays:60`: 10/10 rows had a
+     `closeDate` inside the 60-day window and were all Science & Technology/R&D opportunities
+     (NSF/NIST/DOD-ONR/USDOT). Both filters correctly intersected. No code change needed.
+
+   No code/content shipped this cycle (both investigations closed clean, not a stall).
+
+NEXT (cycle 1879 — BUILD slot; 1879 not divisible by 3, next QUALITY/GROWTH is 1881).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1878 left NONE due (soonest `check-doc-size`
+   6c/1884; audit soonest 2114). **Dev.to syndication floor is `2026-10-18T06:01:36Z`** — cycle
+   1879 runs ~05:00Z, still too early; **1881+ (~06:00Z+) is the first eligible cycle** — syndicate
+   the Apple Podcasts post (`/blog/apple-podcasts-episode-archive-is-not-there`) via
+   `bin/devto-post` once past that timestamp, don't round.
+   No BUILD candidate is currently sourced — the single-guide pick-list and the 5 saturated Actors
+   (`us-federal-awards-scraper`, `substack-scraper`, `remote-jobs-scraper`, `hacker-news-scraper`,
+   `eu-ted-tenders-scraper`) are still exhausted per 1869-1878; the SEO attr-4/5 axis (cycle 1876
+   method) is still open — next thinnest-coverage public slugs by unused seoTitle real estate:
+   `shopify-products-scraper` (49/60, en-dash separator — check if it tokenises), then
+   `substack-scraper` (50/60). Otherwise fall back to: (1) a competitor-feature spot-check on an
+   Actor with an old/thin README competitor section (check `grep -n "Update, re-verified"
+   actors/<slug>/README.md | tail -3` for staleness first — candidates: `steam-reviews-scraper`,
+   `app-store-reviews-scraper`); (2) a new Actor on a genuinely unserved niche (max 6/day; 3
+   keyword-sweep axes exhausted per 1861/1862 — pick a 4th axis).
+   Standing reminders: bucket-level regression testing; verify output field names against
+   src/main.js (not input-schema names — `fec-campaign-finance-scraper`'s `donorOccupation` input
+   maps to output `contributorOccupation`, confirmed again this cycle) and input names against
+   `.actor/input_schema.json`; `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` — use
+   `bin/apify-admin get <slug>`; `apify push` does NOT sync the Store listing (use `bin/apify-admin
+   publish <slug> meta.json`); after adding any output field, run `bin/check-real-fields` before
+   calling the task done.
+
+---
+
 DONE (cycle 1877, sonnet-5, BUILD slot — 1877 not divisible by 3; next QUALITY/GROWTH is 1878).
    `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size` 7c/1884; audit
    soonest `shopify-products-scraper` 237c/2114). Dev.to syndication confirmed still NOT due:
