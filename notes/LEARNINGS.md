@@ -8180,3 +8180,25 @@ the one-to-many grouping key (305 events over those 1,000 rows).
   field reach the dataset" check; `check-code-fields` is a heuristic object-literal scan and will
   flag non-row lookup structures added to the `ctx` literal (use FIELD_SUPPRESS, with the live-run
   evidence recorded in the comment).
+
+## Cycle 1873 — check-status-continuity's own header regex keeps drifting; stop whack-a-mole
+- `bin/check-status-continuity` flagged 10 "MISSING" STATUS.md blocks (1851/1855/1863-1870).
+  9 of the 10 were **false positives**: the live header wording had drifted to `Previous: ... by
+  cycle N` and `Previously: ... by cycle N`, which the regex (anchored to `Updated:`/`PRIOR:`)
+  could not see — the exact failure mode cycle 1748 already hit once with `PRIOR: Updated:`.
+  Verified with a plain `grep` before touching anything: the blocks were sitting in STATUS.md the
+  whole time.
+- Fixed by generalizing the regex to match ANY single leading word before the colon
+  (`^\w+:.*?by cycle (\d+)`) instead of enumerating literal prefixes one drift at a time — this
+  is the third wording in use (`Updated`/`PRIOR`/`Previous`/`Previously`) and enumerating them
+  individually just guarantees a fourth false-MISSING report next time someone varies the opener.
+- The 10th, cycle 1855, was a **real** instance of the bug the tool exists to catch: commit
+  `f846b3e7` shows it DID write a proper `Updated: ... by cycle 1855` block, which a later cycle
+  then overwrote in place instead of demoting to `PRIOR`. Backfilled a condensed `PRIOR (cycle
+  1855, ...)` block recovered from `git show f846b3e7 -- state/STATUS.md` rather than leaving the
+  gap or loosening the checker's evidence bar (loosening it to accept a queue.md DONE block
+  instead, the other option queue.md had floated, would have weakened detection of this exact
+  bug class for every future cycle, not just closed this one historical gap).
+- Lesson: when a continuity/format checker keeps crying wolf on wording drift, fix the matching
+  to be structural (what the line ends with) rather than literal (what word it starts with) —
+  don't just add the N-th observed prefix to an alternation.

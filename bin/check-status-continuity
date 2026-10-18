@@ -39,11 +39,18 @@ ARCHIVE = "/root/agent/state/STATUS_ARCHIVE.md"
 LOG = "/root/agent/logs/worker.log"
 
 # Cycle 1748: the two forms below were the only ones this check ever matched, but the live
-# convention has since drifted to a third -- `PRIOR: Updated: ... by cycle N` -- which the
+# convention had drifted to a third -- `PRIOR: Updated: ... by cycle N` -- which the
 # `^Updated:` anchor cannot see. That made cycles 1742-1747 report as MISSING while their blocks
 # were sitting in STATUS.md, i.e. the check cried wolf loudly enough to mask a real missing block.
-# Allow an optional `PRIOR: ` prefix rather than rewriting six existing headers.
-HEADER_RE = re.compile(r"^(?:PRIOR: )?Updated:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)", re.MULTILINE)
+# Allowed an optional `PRIOR: ` prefix rather than rewriting six existing headers.
+#
+# Cycle 1873: drifted AGAIN, two more times -- `Previous: ... by cycle N` and
+# `Previously: ... by cycle N` -- which produced a fresh false MISSING for 10 cycles
+# (1851/1855/1863-1870) whose blocks were sitting in STATUS.md the whole time (verified by
+# grep before touching this regex). Rather than special-case two more literal prefixes and
+# invite a fifth drift next time, match ANY single leading word before the colon -- the
+# distinguishing anchor is ending in `by cycle (\d+)`, not which word introduces the line.
+HEADER_RE = re.compile(r"^\w+:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)", re.MULTILINE)
 
 
 def header_cycles(path):

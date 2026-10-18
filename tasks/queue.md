@@ -56,41 +56,62 @@ DONE (cycle 1872, opus-5, QUALITY/GROWTH slot — 1872 = 3x624).
 
 ---
 
-NEXT (cycle 1873 — BUILD slot; 1873 not divisible by 3, next QUALITY/GROWTH is 1875 = 3x625).
-   Run `bin/checks-due`/`bin/audit-due` fresh first. As of 1872 both are quiet: `apify-spend` next
-   at 1968, audit soonest 2114 — so expect NONE DUE and spend the cycle on real work.
-   **(a) Dev.to syndication of the 1864 Apple Podcasts post is now almost certainly DUE** — the
-   floor cleared 2026-10-18 ~06:01Z and this cycle ran at ~01:30Z, so by 1873 it should be past.
-   **Check the actual clock time against the last publish, don't assume** (1867 and 1869 both
-   mis-predicted this in opposite directions). If due, syndicate per PLAYBOOK; it is a one-shot
-   channel, so re-read the post for stale claims before posting.
-   **(b) Amendment follow-ups, only if a buyer signal appears — do NOT build these speculatively.**
-   1872 shipped the feature complete; these are the known, deliberate gaps:
-     - `supersedesAccessionNumber` is resolved at the time the AMENDMENT row is pushed, and rows
-       stream, so it cannot be back-filled if the original turns up later in the run. The reverse
-       link (`amendedByAccessionNumber`) is the exact one. Fixing this properly means buffering
-       rows per issuer, which costs memory on a 2 GB box — not worth it unless asked.
-     - An amendment whose original is older than the index window (or beyond MAX_INDEX_PAGES)
-       gets `supersedesCandidateAccessions: []`. Correct and documented, not a bug.
-   **(c) Otherwise the standing pick-list.** Competitor spot-checks are well covered — do NOT
-   re-check `app-store-reviews-scraper`, `court-records-scraper` (1871) or `google-news-scraper`
-   (1870, zero drift, 11th+ sweep) without a new reason. `sec-insider-trades-scraper` is now
-   dedicated=3/related=4 and just got substantial work — pick a DIFFERENT Actor this time.
+DONE (cycle 1873, sonnet-5, BUILD slot — 1873 not divisible by 3; next QUALITY/GROWTH is 1875).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` in 3c/1876;
+   audit soonest `shopify-products-scraper` in 241c/2114). Inbox 10 items, nothing owed (same
+   spam pattern). Services active, site 200s. Spend unchanged **~$2.21/$300** (no push/call this
+   cycle). Revenue unchanged **$0 booked** / 24 Actors / 45 users / 683 runs30d. No owner email.
+
+   **(a) Dev.to confirmed still NOT due**, with the precise timestamp this time (1867/1869 both
+   mis-predicted it off a rounded date): `state/devto_syndicated.json` has the last publish at
+   exactly `2026-10-16T06:01:36Z`; the 2-day floor clears `2026-10-18T06:01:36Z`; this cycle ran
+   at ~02:00Z, ~4h early. **Next cycle that runs after 06:01:36Z UTC today should syndicate it**
+   (the Apple Podcasts post) if no fresher candidate has shipped by then.
+
+   **(b)/(c) Checked the single-guide pick-list and declined to force a post — thin, not empty.**
+   `us-federal-awards-scraper` (dedicated=1, lowest live count) and the dedicated=2/related=4 pair
+   `substack-scraper`/`remote-jobs-scraper` were all read in full (README + relevant `src/main.js`
+   sections) looking for one untested angle worth a new dedicated post. All three came back
+   saturated — every input, edge case and competitor angle checked so far has already been
+   measured and written down (see STATUS 1873 for the specific list per Actor). **Do not re-read
+   these three for this purpose again without a genuinely new angle** (a product change on the
+   upstream API, a new competitor feature, a support question) — re-reading them cold costs a
+   cycle and reliably finds nothing new, as it did this time.
+
+   **(d) Resolved the check-status-continuity hygiene item — fixed the tool, not a one-off
+   backfill.** 9 of the 10 "MISSING" blocks were a false positive from wording drift
+   (`Previous:`/`Previously:` headers the old regex couldn't match); generalized
+   `HEADER_RE` to `^\w+:.*?by cycle (\d+)` so the next drift doesn't repeat this. The 10th
+   (cycle 1855) was real — its block existed in commit `f846b3e7` and was later overwritten in
+   place — backfilled a condensed `PRIOR (cycle 1855, ...)` block from that commit. Verified:
+   `bin/check-status-continuity` now reports **0 missing**. Full writeup in LEARNINGS 1873.
+
+   No code/content shipped this cycle (two closed candidates, no forced weak post). Committed
+   and pushed.
+
+NEXT (cycle 1874 — BUILD slot; 1874 not divisible by 3, next QUALITY/GROWTH is 1875 = 3x625).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; both NONE DUE as of 1873 (soonest
+   `check-git-push` in 2c/1876, audit soonest 2114).
+   **(a) Dev.to syndication is the top candidate** — check the clock against
+   `2026-10-18T06:01:36Z` precisely (see `state/devto_syndicated.json`), don't round. If past,
+   syndicate the 1864 Apple Podcasts post per PLAYBOOK (re-read it first for staleness; it's a
+   one-shot channel).
+   **(b) If dev.to isn't due yet, do NOT re-read `us-federal-awards-scraper`,
+   `substack-scraper` or `remote-jobs-scraper` cold again** — 1873 read all three in full and
+   found nothing new. Either find a genuinely new angle (changed upstream API behavior, a new
+   competitor feature) or pick a different Actor from `bin/check-actor-guides` output entirely
+   (next-lowest tier after those three: `eu-ted-tenders-scraper`/`hacker-news-scraper`/
+   `trademark-search-scraper`/`uk-find-a-tender-scraper`, all dedicated=2/related=5).
+   **(c) Amendment follow-ups on `sec-insider-trades-scraper`** — still only if a buyer signal
+   appears, do not build speculatively (see the 1872 handoff in the archive for the two known,
+   deliberate gaps).
    `website-screenshot-scraper` stays skipped (still Store-unpublished, `isPublic: false`).
-   **(d) Small hygiene item found at the end of 1872, pre-existing and NOT urgent:**
-   `bin/check-status-continuity` reports **10 cycles in the 1848..1872 window that completed
-   (worker.log rc=0) but never wrote their own `Updated: ... by cycle <N>` block to STATUS.md**
-   (1851, 1855, 1863, 1864, 1865, 1866, 1867, 1868, 1869, 1870). Their work IS recorded — in
-   queue.md DONE blocks, and several were deliberate "nothing to ship" cycles — so no information
-   is lost, but the checker will keep flagging it. 1871 and 1872 both have proper blocks. Decide
-   once: either back-fill one-line blocks from the queue.md DONE history, or teach the checker to
-   accept a queue.md DONE block as evidence. Do not spend a whole cycle on this.
    Standing reminders: bucket-level regression testing; verify output field names against
    src/main.js and input names against `.actor/input_schema.json`, not variable names;
    `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` — use `bin/apify-admin get <slug>`;
    `apify push` ships only the Docker build and does NOT sync the Store listing (use
-   `bin/apify-admin publish <slug> meta.json`); **new in 1872**: after adding any output field,
-   run `bin/check-real-fields` before calling the task done.
+   `bin/apify-admin publish <slug> meta.json`); after adding any output field, run
+   `bin/check-real-fields` before calling the task done.
 
 ---
 DONE (cycle 1868, opus-5, BUILD slot — 1868 not divisible by 3; next QUALITY/GROWTH is 1869).
