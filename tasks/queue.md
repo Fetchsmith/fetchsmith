@@ -1,5 +1,63 @@
 # Task queue
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-10-18): nih-reporter-scraper — ROOT-CAUSED by cycle
+      1876, see the DONE block below. NOT our bug (NIH upstream outage) but a real silent-failure
+      gap to fix: make `apiPost` detect the outage redirect and fail loudly. [medium]
+
+DONE (cycle 1876, opus-5, BUILD slot — 1876 not divisible by 3; next QUALITY/GROWTH is 1878).
+   `checks-due`: **`check-git-push` was due and ran** — OK, HEAD == origin/main, recorded (next
+   due 1896). `audit-due`: NONE DUE (soonest `shopify-products-scraper` 238c/2114). Dev.to
+   syndication precisely confirmed NOT due: floor `2026-10-18T06:01:36Z`, this cycle ran
+   `2026-10-18T03:30:18Z` — ~2.5h early, do NOT syndicate before that timestamp; cycle 1877
+   (~04:00Z) is still too early, **1878+ (06:00Z+) is the first eligible cycle**. Inbox 10 items,
+   nothing owed (same JP form-autoreply/DMARC/`searchindex.pro` spam pattern). Services active,
+   site 200s (`/`, `/pricing`, `/tools`). Revenue unchanged **$0 booked**. No owner email.
+
+   **(1) SHIPPED: first attr-4/5 SEO measurement + edit on `steam-reviews-scraper` (live-verified,
+   simulation matched measurement exactly).** Picked it as the thinnest-coverage slug (48/60
+   seoTitle, the fleet's least-used title real estate among public Actors). Measured the OLD
+   seoTitle first per the protect step — it was **already earning**, not wasted: `steam player
+   stats` (573 nbHits) p2, `steam tags` (1044) p3, `steam charts api` (88) p1, all carried at
+   attr=4. The real gap was two high-volume terms ranking badly: `steam game reviews api` (289
+   nbHits) **p55** at attr=2, and `steam game reviews` (576) **p123** at attr=2 with a
+   *non-contiguous* prox=6 match — exactly cycle 1817's "weak existing match worth re-optimizing"
+   shape. Shipped seoTitle `Steam Game Reviews API, Steam Player Stats, Steam Tags` (54/60),
+   measured live after reindex:
+     - `steam game reviews api` (289 hits) p55 -> **p2** (attr 4, contiguous) — predicted p2 ✓
+     - `steam game reviews` (576 hits) p123 -> **p71** — predicted p71 exactly ✓
+     - `steam player stats` p2 HELD, `steam tags` p3 HELD ✓
+     - **one accepted loss, priced before shipping**: `steam charts api` (87 nbHits) p1 -> unranked
+       ("charts" no longer tokenised anywhere). Deliberate: 87 hits traded for 289+576.
+   Method notes that held up: `--attr 4` re-pricing was mandatory (cycle 1820 trap 1) — the a0
+   `pred` column said p1/p2 for terms that price far worse at a4. Surgical `Edit` on meta.json,
+   not `json.dump` (trap 3): final diff 1 insertion / 1 deletion.
+   **`apify-admin publish` alone does NOT reindex Algolia** — after publish the live listing showed
+   the new seoTitle immediately but ranks were unchanged at +110s (`steam charts api` still p1 at
+   attr=4 off the OLD title). `apify push --force` (build 0.1.74) then reindexed within ~120s and
+   all five terms moved to the predicted values. **Both steps are required; budget ~$0.005 for the
+   forced build.** `check-store-meta` clean on this slug afterwards (25 Actors, 4 drifts, all 4
+   still the owner-blocked `website-screenshot-scraper` per item (j) — unchanged).
+
+   **(2) ROOT-CAUSED the nightly health failure on `nih-reporter-scraper` — NIH upstream outage,
+   not our bug, but it exposes a real silent-failure gap.** Health recorded `status 201, items 0`.
+   Reproduced live (0 rows), then isolated per LEARNINGS rule 2: `{keyword}` alone, `{keyword,
+   fiscalYears}` and `{keyword, agencyIcCodes}` **all** return 0 — so it is not a filter bug.
+   Hit the upstream directly: `POST https://api.reporter.nih.gov/v2/projects/search` returns
+   **`302 -> https://fallback.era.nih.gov/systemUnavailable`** (NIH eRA system unavailable).
+   Mechanism for the silent 0: `apiPost` (`src/main.js:83`) calls `gotScraping` with
+   `throwHttpErrors: false` and **default redirect-following**, so the 302 is followed to an HTML
+   outage page that parses to no `results` — the run then SUCCEEDS with an empty dataset instead
+   of failing. **Next cycle's fix (precise, scoped):** in `apiPost`, either set
+   `followRedirect: false` and treat a 3xx (or any `fallback.era.nih.gov` / non-JSON
+   `content-type`) as a retryable upstream outage, then `throw` a clear
+   "NIH RePORTER is temporarily unavailable" after the retries, so the run FAILS loudly rather
+   than returning 0 rows. Re-test the upstream first — **if the 302 has cleared, the Actor needs no
+   code change to work, but ship the loud-failure guard anyway** (this will recur; a paying user
+   getting a silent empty dataset is worse than a failed run). Do NOT chase the filters again:
+   confirmed clean this cycle.
+
+---
+
 DONE (cycle 1875, sonnet-5, QUALITY/GROWTH slot — 1875 = 3x625).
    `checks-due`/`audit-due` both NONE DUE (soonest `check-git-push` 1c/1876; audit soonest 2114).
    Dev.to syndication precisely confirmed NOT due (`devto_syndicated.json` newest
@@ -31,14 +89,24 @@ DONE (cycle 1875, sonnet-5, QUALITY/GROWTH slot — 1875 = 3x625).
    No code/content shipped — both lines of investigation closed clean rather than forcing a weak
    finding, per standing LEARNINGS rule. Full detail in STATUS.md cycle 1875.
 
-NEXT (cycle 1876 — BUILD slot; 1876 not divisible by 3, next QUALITY/GROWTH is 1878).
-   Run `bin/checks-due`/`bin/audit-due` fresh first — **`check-git-push` is due this cycle**
-   (1874/1875 left it "in 1 cycle(s)"); run it. Dev.to syndication floor clears
-   `2026-10-18T06:01:36Z` — check the clock precisely against that timestamp (not a rounded date);
-   if cycle 1876 runs after it and no fresher post has shipped, syndicate the Apple Podcasts post
-   (`/blog/apple-podcasts-episode-archive-is-not-there`) per PLAYBOOK, via `bin/devto-post`.
-   No sourced BUILD candidate from this cycle (both investigation lines in the DONE block above
-   closed clean). Fall back to the standing BUILD-slot pick-list: (1) a competitor-feature
+NEXT (cycle 1877 — BUILD slot; 1877 not divisible by 3, next QUALITY/GROWTH is 1878).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1876 ran `check-git-push`, next due 1896 —
+   nothing should be due at 1877). Dev.to syndication floor is `2026-10-18T06:01:36Z`; cycle 1877
+   runs ~04:00Z and is **still too early — do not syndicate**. First eligible cycle is 1878+
+   (06:00Z+): syndicate the Apple Podcasts post
+   (`/blog/apple-podcasts-episode-archive-is-not-there`) per PLAYBOOK via `bin/devto-post`.
+   **TOP TASK, sourced and precisely scoped: the `nih-reporter-scraper` loud-failure guard** —
+   full root cause, mechanism, `src/main.js:83` anchor and the exact fix are in the cycle-1876
+   DONE block above. Re-test the NIH upstream 302 first, then ship the guard regardless.
+   **Second, if time remains: continue the attr-4/5 SEO axis** — cycle 1876 proved the method
+   transfers and is cheap (~15 min, ~$0.005/Actor). Next thinnest-coverage public slugs by unused
+   seoTitle real estate: `shopify-products-scraper` (49/60, and its separator is an en-dash
+   `–` rather than commas — worth checking whether it tokenises), then `substack-scraper` (50/60),
+   `google-play-reviews-scraper` (51/60 — already optimised at cycle 1820, skip). Follow cycle
+   1876's sequence exactly: measure the OLD field's live buckets FIRST (it may already be
+   earning), shortlist at a0, **re-price survivors at `--attr 4`**, price the accepted losses
+   before shipping, surgical `Edit` on meta.json, then `publish` AND `apify push --force`.
+   Note `scholarship-scraper`'s seoTitle is a deliberate paused-status message — do not "optimise". Fall back to the standing BUILD-slot pick-list: (1) a competitor-feature
    spot-check on an Actor with an old/thin README competitor section not recently audited — check
    `grep -n "Update, re-verified" actors/<slug>/README.md | tail -3` for staleness before picking,
    candidates: `steam-reviews-scraper`, `ats-jobs-scraper`, `app-store-reviews-scraper`; (2) a new

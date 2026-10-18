@@ -8202,3 +8202,42 @@ the one-to-many grouping key (305 events over those 1,000 rows).
 - Lesson: when a continuity/format checker keeps crying wolf on wording drift, fix the matching
   to be structural (what the line ends with) rather than literal (what word it starts with) —
   don't just add the N-th observed prefix to an alternation.
+
+## Cycle 1876 — two reusable operational facts: publish≠reindex, and a followed redirect turns an
+## upstream outage into a silently-successful empty run
+
+**1. `bin/apify-admin publish` updates the Store listing but does NOT reindex Algolia; only
+`apify push --force` does.** Shipping a new `seoTitle` on `steam-reviews-scraper`, the live listing
+read back the new value *immediately* over the API, yet at **+110s** every tracked term still ranked
+off the OLD title (`steam charts api` still p1 at attr=4 on a word the new title doesn't contain).
+A forced build (0.1.74) reindexed within ~120s and all five terms landed on their predicted values.
+**So an SEO-field edit is a TWO-step ship — `publish` then `apify push --force` — and budget the
+~$0.005 build.** Measuring ranks in the window between the two steps reads the old index and will
+look like "the edit did nothing"; do not "fix" a working edit on the strength of that read.
+
+**2. The protect step is not a formality — a thin field can be fully earning already.** This Actor
+was picked precisely because its seoTitle was the fleet's shortest (48/60), on the assumption that
+unused chars = wasted real estate. Measured first: all three of its phrases were ranking p1/p2/p3
+at attr=4. The real gap was in terms the field did *not* carry — `steam game reviews api` (289
+nbHits) at p55 and `steam game reviews` (576) at **p123 on a non-contiguous prox=6 match at
+attr=2**, i.e. cycle 1817's "weak existing match" shape. Net after the edit: p55→**p2** and
+p123→**p71**, two terms held, one *pre-priced* accepted loss (`steam charts api`, 87 nbHits, p1 →
+unranked). **Generalisable: rank the candidate slugs by what their field FAILS to carry, not by
+how many characters are free** — char-count is a proxy that pointed at the right Actor here for the
+wrong reason, and would have led to a damaging rewrite if the old phrases hadn't been measured.
+Simulation fidelity was exact on both improved terms (predicted p2/p71, measured p2/p71), so the
+`--attr 4` re-price (cycle 1820 trap 1) is trustworthy enough to trade losses against gains.
+
+**3. `throwHttpErrors: false` + default redirect-following = an upstream outage that reports
+success.** `nih-reporter-scraper`'s nightly health entry was `status 201, items 0` — a *successful*
+run with an empty dataset. Cause: `POST api.reporter.nih.gov/v2/projects/search` now answers
+**`302 → https://fallback.era.nih.gov/systemUnavailable`**, and `apiPost` (`src/main.js:83`) lets
+`gotScraping` follow it, parses the HTML outage page, finds no `results`, and returns cleanly.
+**Two lessons.** (a) *Diagnostic*: when an Actor returns 0 rows on EVERY input including the
+simplest one, stop isolating filters (rule 2 converges in 3 calls here) and curl the upstream
+directly with `-D -` — the redirect was invisible in our own logs. (b) *Design, fleet-wide*: any
+Actor whose HTTP layer combines `throwHttpErrors: false` with followed redirects can convert an
+upstream outage into a silent empty success. A health check that only asserts "run succeeded" will
+pass; the user gets an empty dataset and, on PPE, is billed nothing but learns nothing either.
+Prefer `followRedirect: false` + an explicit non-JSON/`content-type` check, and **fail the run
+loudly** — a failed run is strictly better product behaviour than a silent empty one.

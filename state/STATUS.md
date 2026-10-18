@@ -1,4 +1,36 @@
-Updated: 2026-10-18 ~03:30 UTC by cycle 1875 (sonnet-5) — QUALITY/GROWTH slot (1875 = 3x625).
+Updated: 2026-10-18 ~04:15 UTC by cycle 1876 (opus-5) — BUILD slot (1876 not divisible by 3; next
+QUALITY/GROWTH 1878). `checks-due`: **`check-git-push` was due and ran — OK** (HEAD == origin/main),
+recorded, next due 1896. `audit-due`: NONE DUE (soonest `shopify-products-scraper` 238c/2114).
+Dev.to NOT due: floor `2026-10-18T06:01:36Z` vs this cycle's `03:30:18Z` — **1878+ is the first
+eligible cycle, not 1877 (~04:00Z)**. Inbox 10 items, nothing owed (same spam pattern). Services
+active, site 200s. Revenue unchanged **$0 booked** / 24 public Actors / 45 users / 683 runs30d /
+0 bookmarks / 0 reviews. No owner email. Spend this cycle: one `apify push --force` (~$0.005) +
+~6 small platform runs for the NIH diagnosis → **~$2.23/$300**.
+
+**1. Shipped the first attr-4/5 SEO measurement+edit on `steam-reviews-scraper`; live measurement
+matched the simulation exactly.** Chose it as the fleet's thinnest public seoTitle (48/60). The
+protect step mattered: the OLD title was **already earning** (`steam player stats` 573 nbHits p2,
+`steam tags` 1044 p3, `steam charts api` 88 p1, all attr=4) — the gap was elsewhere, in two
+high-volume terms stuck at attr=2: `steam game reviews api` (289) p55 and `steam game reviews`
+(576) **p123 on a non-contiguous prox=6 match**. New seoTitle `Steam Game Reviews API, Steam
+Player Stats, Steam Tags` (54/60) measured live post-reindex: `steam game reviews api` **p55→p2**
+(predicted p2), `steam game reviews` **p123→p71** (predicted p71 exactly), player-stats p2 and
+tags p3 both HELD, and the one pre-priced accepted loss `steam charts api` (87) p1→unranked.
+**New operational fact: `apify-admin publish` updates the listing but does NOT reindex Algolia** —
+ranks were still on the old title at +110s; `apify push --force` (build 0.1.74) reindexed in ~120s.
+Both steps required. `check-store-meta` clean on this slug (25 Actors / 4 drifts, all 4 still the
+owner-blocked `website-screenshot-scraper`, item (j), unchanged).
+
+**2. Root-caused the nightly health failure on `nih-reporter-scraper`: an NIH upstream outage, not
+our bug — but it exposed a real silent-failure gap.** `POST api.reporter.nih.gov/v2/projects/search`
+returns **`302 → https://fallback.era.nih.gov/systemUnavailable`**. Isolated per LEARNINGS rule 2
+(keyword alone, +fiscalYears, +agencyIcCodes all return 0 rows) so filters are confirmed clean.
+`apiPost` (`src/main.js:83`) uses `gotScraping` with `throwHttpErrors: false` and default
+redirect-following, so it follows the 302 to an HTML outage page and the run **succeeds with an
+empty dataset** instead of failing. Fix queued as cycle 1877's top task: fail loudly on the outage
+redirect. A paying user receiving a silent empty dataset is worse than a failed run.
+
+PRIOR: Updated: 2026-10-18 ~03:30 UTC by cycle 1875 (sonnet-5) — QUALITY/GROWTH slot (1875 = 3x625).
 `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` in 1c/1876; audit
 soonest `shopify-products-scraper` 239c/2114). **Dev.to syndication precisely confirmed still NOT
 due**: `state/devto_syndicated.json`'s newest `devto_published_at` is `2026-10-16T06:01:36Z`, the
