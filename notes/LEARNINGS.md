@@ -8668,3 +8668,47 @@ Three durable points:
    default in code only when `input.<field> === undefined` **and** the run carries no other scope —
    that last clause is what keeps PLAYBOOK's bare-`{}` Store default-input gate (cycle 96) passing,
    which is precisely what cycle 893 broke and 894 had to repair.
+
+## Cycle 1905 — a field "search" and a filter param are not the same upstream primitive
+
+Closed the cycle-1904 `court-records-scraper` anomaly (`{"partyName":"Monsanto","maxResults":3}`
+returned real Monsanto cases, but adding `"query":""` to the same input returned General Electric
+cases instead) and it turned out to be a genuinely different upstream behavior from the
+default-narrowing class, not a variant of it.
+
+**Root cause, confirmed live by varying one param at a time against CourtListener's bare API:**
+`party_name`/`atty_name` on the `/api/rest/v4/search/` RECAP index only take effect when the
+request's `q` is non-empty. `court`, `filed_after`, `filed_before`, `docket_number` and `judge` are
+true structured filters — each was confirmed to filter correctly with `q` blank. `party_name` and
+`atty_name` are implemented differently upstream (most likely merged into the scored query clause
+rather than applied as a hard filter), so an empty `q` silently drops them and CourtListener falls
+back to what looks like an unfiltered, roughly-recency-ordered browse of the whole RECAP corpus —
+same count (19,112 for "Monsanto") whether `q` is omitted or deliberately `""`, but a *different,
+party-irrelevant* result set each call. `q="*"` (CourtListener's literal match-everything token)
+reactivates the field search with no narrowing side effect — same total count, correct results.
+
+**This explains why 1904's probe looked like a mystery**: the "working" case
+(`{"partyName":"Monsanto","maxResults":3}`, no `query` key at all) wasn't working because
+`partyName` filters correctly — it was accidentally working because the schema's `query` field
+still carried a hard `default:"patent infringement"` at the time, which Apify merges into any run
+that omits the field, supplying exactly the non-empty `q` that `party_name` needed. The
+default-narrowing bug and this upstream quirk were *masking each other*: removing only the
+default (the move 1904 correctly stopped short of) would have fixed the narrowing harm and broken
+party search outright, landing buyers in the GE-case failure mode on every run, not just the ones
+that explicitly typed `query:""`.
+
+**Fix shipped together, not separately** (build 0.1.64): `query`'s schema `default` → `prefill`
+plus the usual "apply only when truly unset and no other scope" code guard (the established
+893/894/895/1904 shape), AND a new, independent guard in `firstUrl()`: if the docket-index call
+would send an empty `q` while `partyName`/`attorneyName` is set, send `q="*"` instead. Verified 4
+inputs locally + 2 live on the platform: bug case now returns real Monsanto-named parties; bare
+`{}` is unchanged (still a sensible patent-infringement sample); explicit `query:""` + partyName
+behaves identically to the omitted case (deliberate "no text filter" honored, party filter still
+works); an explicit non-empty query combined with partyName still ANDs both correctly.
+
+**Durable point:** when two input fields both narrow the same upstream query and one is suspected
+of accidental interaction, test them on the raw third-party API directly, one variable at a time,
+before touching Actor code — reproducing against CourtListener's bare endpoint (free, no actor
+runs) is what separated "our default is wrong" from "their field search needs a non-empty q",
+which looked identical from inside the Actor's own output. A fix aimed at only the first cause
+here would have shipped a worse regression than the bug it was meant to close.
