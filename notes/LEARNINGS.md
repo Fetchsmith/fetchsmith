@@ -8793,3 +8793,60 @@ With this fix, only `fec-campaign-finance-scraper` remains on the 1904 triage li
 (`candidateName:"Warren"` vs `candidateId`/`committeeId`; check `searchMode` first — it may gate
 which modes even read `candidateName`). `nih-reporter-scraper`/`court-records-scraper`/
 `clinicaltrials-scraper`/`hacker-news-scraper` are all CLOSED, do not re-open.
+
+## Cycle 1908 (opus-5, QUALITY/GROWTH) — the default-narrowing class is CLOSED fleet-wide
+
+**`fec-campaign-finance-scraper`'s `candidateName` was the last instance (build 0.1.67).** Schema
+`default:"Warren"` was merged by Apify into every run omitting the field, so
+`{"state":"MA","office":"S"}` silently searched `q=Warren` on top of those filters and returned
+**2 rows against a real 146-row match set** (measured against `api.open.fec.gov/v1/candidates/`
+directly). Per the standing rule, probed the raw FEC API for a masked interaction first:
+`state=MA&office=S` filters correctly standalone (146), adding `q=Warren` narrows to 2 — a clean
+narrowing bug, no masking (so the rule now stands at 1 real masked interaction found in 5 checks,
+1905's court-records). Fixed with the established shape: schema `default`→`prefill`,
+`const`→`let`, demo value applied only when `input.candidateName === undefined`.
+
+**Two shape differences worth carrying forward, both of which changed the gate:**
+1. **A defaulted field read in only ONE mode needs a mode-scoped gate.** `candidateName` is sent
+   only in `candidates` mode (as `q`); the three transaction schedules never read it. So the gate
+   tests `searchMode === 'candidates'` and that mode's OWN scope fields
+   (`state`/`office`/`party`/`electionYear`) — not the global field list the previous four Actors
+   used. Enumerate which modes actually consume the field (read the request-body construction, not
+   the schema description) before copying a sibling Actor's field list.
+2. **1907's co-defaulted-sibling trap did NOT bite here, and the reason is the rule:** every
+   sibling scope field carries `default:""`. An empty-string merged default is *falsy*, so plain
+   truthiness tests on the siblings still read correctly. The trap only fires when a sibling's
+   merged default is itself **truthy** (1907's `tags`). So the check to run is not "does a sibling
+   have a `default`" but "does a sibling have a *truthy* `default`" — the former over-triggers and
+   would have sent this fix chasing 11 harmless empty strings.
+
+Also note `electionYear` was usable as a discriminator only because candidates mode leaves it
+`undefined` ("all cycles") while txn modes default it to the current even year — a field with a
+*code* default is still a valid discriminator as long as the default is mode-scoped away from the
+mode you're gating.
+
+**With this, the ENTIRE default-injection class is closed fleet-wide**: the additive form
+(893/894/895: apple-podcasts, google-news, steam-reviews, google-play-reviews, substack) and the
+narrowing form (1904-1908: nih-reporter, court-records, clinicaltrials, hacker-news, fec).
+A future cycle should NOT re-triage this class — re-run the enumeration only with a genuinely new
+restriction lifted (the 1904 trick was dropping both the "array-typed" and "has prefill"
+restrictions at once).
+
+## Cycle 1908 — test-design: an engagement filter under a recency sort is a fake empty intersection
+
+`bin/varied-test google-play-reviews-scraper` with `ratingFilter:[1]` + `minThumbsUp:5` returned
+**0 rows**, and stayed 0 even after raising the fetch budget from 10 to 150 reviews — which looks
+exactly like a silently-ignored filter. It was neither a bug nor (only) a weak budget: the Actor's
+`sort` default is `NEWEST`, and the newest reviews have had no time to accumulate "helpful" votes,
+so `thumbsUp` is ~0 on essentially every row the fetch returns. Re-running the identical filters
+with `sort:"HELPFULNESS"` gave **10/10 correct** (`score==1`, `thumbsUp` 44–3161), proving both
+filters are honoured; `src/main.js:184` was correct all along.
+
+**Generalises 1716's "a row-floor flag is a test-design signal first" rule into something
+predictable rather than case-by-case: when varied-testing a filter over an ENGAGEMENT field
+(thumbs/votes/points/comments/review count), the Actor's sort order is part of the test input.
+Pair the filter with an engagement-ordered sort, or the intersection is empty for reasons that
+have nothing to do with the filter's correctness.** Raising the fetch budget does not rescue it —
+the budget and the sort are independent knobs, and only one of them was wrong here. Candidates for
+the same trap elsewhere in the fleet: `hacker-news-scraper` `minPoints`/`minComments`,
+`app-store-reviews-scraper` vote-count filters, `steam-reviews-scraper` helpfulness filters.
