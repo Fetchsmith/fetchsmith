@@ -8850,3 +8850,36 @@ have nothing to do with the filter's correctness.** Raising the fetch budget doe
 the budget and the sort are independent knobs, and only one of them was wrong here. Candidates for
 the same trap elsewhere in the fleet: `hacker-news-scraper` `minPoints`/`minComments`,
 `app-store-reviews-scraper` vote-count filters, `steam-reviews-scraper` helpfulness filters.
+
+## Cycle 1910 — closing the 1908 "engagement-filter-vs-sort" lead: 3 of 4 candidates were already fixed, the 4th is a different mechanism entirely
+
+1908's test-design note named 4 candidates for the engagement-filter-vs-sort trap
+(`hacker-news-scraper`, `app-store-reviews-scraper`, `steam-reviews-scraper`,
+`google-play-reviews-scraper`) and flagged it as a "possible real defect worth a `log.warning`
+fix." Checking each one's actual `src/main.js` before writing any code: `app-store-reviews-scraper`
+already warns at the exact trap shape (`minVoteSum`/`minVoteCount` under `sort:"mostRecent"`,
+`src/main.js:136-137`, shipped well before 1908 wrote the note); `steam-reviews-scraper` already
+warns (`dayRange` under a non-`"all"` sort); `google-play-reviews-scraper` has the most complete
+guard of all (a `reachableStars` fail-fast plus a runtime warning, built up across cycles
+893/924/1032 — the exact Actor 1908's own test ran against, whose warning 1908 didn't check for
+because the test was read as a pass/fail on row count, not as a log read). Live-verified the
+app-store case by actually running it (`runs` + polling the log), not just reading source: the
+bug-shape input returned 0 rows and the warning fired verbatim.
+
+`hacker-news-scraper` is not a 4th instance of the same bug — it's a different mechanism. The
+other three Actors scrape a feed, sort it, cap how many rows get fetched, then filter client-side,
+so a sort order that front-loads low-engagement rows can starve the cap before the filter ever
+sees a match. HN's `minPoints`/`minComments` are sent to Algolia as `numericFilters` and applied
+**server-side on every query regardless of `sortBy`** (`src/main.js:29-35`) — there's no
+fetch-order/cap step for a sort choice to interact with. It looks like the same shape (both are
+"an engagement filter paired with a sort knob") but the underlying data-fetching architecture is
+different, and that's what actually determines whether the trap can occur.
+
+**Generalizable: a lead that names N candidate Actors for "the same bug" is a hypothesis about N
+candidates, not N confirmed instances — checking the actual fetch/filter mechanism in each one's
+source can split them into "already fixed," "structurally exempt," and (if any) "actually open."**
+Also: a QUALITY-cycle test-design note is itself not a verified-open defect — by the time a later
+cycle reads "possible real defect," an earlier or the same cycle may have already checked and
+fixed the nearby Actors for unrelated reasons (same discipline as 1903's/1909's stale-handoff
+catches, applied here to a lead instead of a carried TODO). No code changed this cycle; this closes
+the lead fleet-wide, 4/4 accounted for.
