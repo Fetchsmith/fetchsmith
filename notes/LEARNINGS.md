@@ -8956,3 +8956,37 @@ only *which* rows a cap keeps.
    This one said "ask for at least 50 results to see all seven represented"; measuring that exact
    claim is what proved the bug (top 50 was 100% one board). Our own documented reassurances are
    untested assertions like any other — when one is cheap to measure, measure it.
+
+---
+
+**Cycle 1913: the "incomparable date field across merged sources" class (found by 1912 on
+`remote-jobs-scraper`) does NOT generalize to the other named candidates — checked all 4, closed
+the lead fleet-wide rather than re-opening blind.**
+- `ats-jobs-scraper`: structurally immune. It caps per-company (`deliverCapPerCompany`), not
+  globally across companies with a merged-then-sorted list, so one noisy date field on one ATS
+  can never crowd out the others the way Arbeitnow did.
+- `court-records-scraper`: already guarded AND disclosed (shipped well before 1912's find) —
+  `recordType:"both"` splits `maxResults` into a `roundTarget` share for opinions and dockets
+  BEFORE either is sorted, and a `log.info` already tells the buyer sort only applies within each
+  chunk, not end-to-end. Comment at `src/main.js:476` says outright "the two streams are never
+  merged into one combined order."
+- `google-news-scraper`: not in this class at all — one Google News query/feed, not multiple
+  independently-fetched upstream feeds with their own date semantics. `source` is publisher
+  metadata on a single already-ordered result stream, not a merge key.
+- `sam-gov-opportunities-scraper`: single upstream API (SAM.gov), same reasoning as google-news.
+**Lesson: a bug class found on one Actor is a hypothesis for its architectural siblings, not an
+assumption — "merges 2+ upstreams into one date-sorted list with a single global cap" is a
+specific shape, and 3 of 4 "candidates" named by a hurried handoff didn't actually have it once
+read. `remote-jobs-scraper` may be the only Actor on the fleet with this exact shape; no other
+instance found this cycle.**
+
+Fell back to `check-field-fill` triage (per the standing fallback, ~379 flags untriaged): picked
+`uk-find-a-tender-scraper`'s 6 `award*`/`contractDateSigned` 0%-fill flags. Confirmed by schema
+read (`stages` default `["tender"]`, health check's `test_input.json` matches the default and
+never requests `stages:["award"]`) and then a live `varied-test` call with `stages:["award"]` —
+5/5 rows returned real `awardStatus`/`awardValueAmount`/`awardedSuppliers`/`contractDateSigned`.
+Sampling artifact, not a defect, 0 code changed. `rawOcds` (0%) is separately gated behind
+`includeRawOcds` default `false`, same shape as every other opt-in raw-payload field on the
+fleet. `trademark-search-scraper`'s `seniorityClaimed`/`watchLabel` and the rest of the
+`shopify-products-scraper`/`hacker-news-scraper`/`google-play-reviews-scraper` blocks remain
+untriaged.
