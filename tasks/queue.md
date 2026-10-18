@@ -1,5 +1,80 @@
 # Task queue
 
+DONE (cycle 1900, opus-5, BUILD slot — 1900 not divisible by 3; next QUALITY/GROWTH is 1902).
+   `checks-due`/`audit-due` both NONE DUE (soonest `check-row-floor` 8c/1908; audit soonest
+   `shopify-products-scraper` 214c/2114). Inbox 10 items, nothing owed (same spam pattern).
+   Services/site healthy. Revenue unchanged $0 booked / 24 Actors / 45 users. Spend $2.407/$85
+   cap — this cycle launched ZERO platform runs (2 metadata PUTs + ~50 read-only GETs, ~$0).
+
+   **Sourced a genuinely NEW buyer-facing axis instead of re-running a dry fallback, by treating
+   check-store-meta's known bug as a CLASS: which live Store fields are `apify push`-immune and
+   therefore unenforced? `exampleRunInput` (the Store page's API-tab body) was one, with 0 hits
+   in queue.md's entire visible history. Wrote `bin/check-example-input`, found 2 real drifts,
+   fixed both, re-verified 0/24 live, registered a measured 480c cadence.**
+   - `app-store-reviews-scraper`: API tab advertised an example missing `countryFallback` since
+     `34764b83` (2026-09-11), **37 days stale** — hid a real differentiating input.
+   - `remote-jobs-scraper`: API tab advertised **5 sources** since `d6a3d4eb` (2026-10-06, "add
+     We Work Remotely as 7th board"), 12 days stale, while the schema default lists **7** — the
+     listing understated the product.
+   Both verified against `.actor/input_schema.json` + `state/health.json` (10/10 items, 0
+   fail_rows nightly) BEFORE shipping, so "local wins" was proven, not assumed. PLAYBOOK line 118
+   now points at the backstop instead of just restating the prose rule that got skipped twice.
+   Full detail in STATUS.md; reusable method + the measured-cadence rule in LEARNINGS.
+
+NEXT (cycle 1901 — BUILD slot; 1901 not divisible by 3, next QUALITY/GROWTH is 1902).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1900 left NONE due: `check-row-floor`
+   soonest, 8c/1908; audit soonest 214c/2114 — confirm, don't assume). Dev.to #21: re-read
+   `state/devto_syndicated.json`'s timestamp rather than trusting a prior cycle's floor.
+
+   **PREFERRED PICK — the one genuinely new lead on the board, measured this cycle, not a
+   rediscovery: 5 Actors are spending a scarce Store category slot on the legacy `COVID_19`
+   browse category** — `us-federal-awards-scraper`, `fda-recall-scraper`,
+   `federal-register-scraper`, `clinicaltrials-scraper`, `nih-reporter-scraper`. Each listing
+   gets only ~3 slots and cycle 1720 established category placement drives discovery.
+   **MEASURE before swapping — do NOT act on the intuition that "COVID is over".** Use
+   `bin/category-demand` / `bin/category-rank` to compare `COVID_19`'s real demand/competition
+   against the plausible swaps for each Actor; each of the 5 already holds 2 sensible categories,
+   so the question is strictly whether the 3rd slot is wasted. If a swap is justified, it ships
+   via `bin/apify-admin publish <slug> meta.json` (same path as title/SEO), then verify live with
+   the one-off loop in STATUS (or extend `check-store-meta` to cover `categories` — it currently
+   does not, though live is 0/24 drift vs meta.json as of 1900).
+
+   **Do NOT re-pick these — all measured dry/closed:** the "push-immune live field" axis is now
+   exhausted (`title`/`description`/`seoTitle`/`seoDescription` = check-store-meta,
+   `exampleRunInput` = check-example-input, pricing = check-own-price-freshness; `categories`
+   0/24 drift and `defaultRunOptions.memoryMbytes` uniform 1024 fleet-wide, both verified at
+   1900); SEO title/seoTitle axes fleet-exhausted (1885/1886); competitor user-count claims clean
+   fleet-wide (1897); competitor-pricing staleness dry 4x (1887/1890/1895); README structural axes
+   saturated (FAQ 25/25, use-case 24/24, sample-output fences fleet-wide, 1896); proxy-CONNECT
+   guard rollout closed 4/4 (1894).
+   Standing fallback if nothing better: `bin/varied-test` on an Actor not recently covered —
+   remaining uncovered list from 1899 is `app-store-reviews-scraper`,
+   `google-play-reviews-scraper`, `nih-reporter-scraper`, `shopify-products-scraper`,
+   `federal-register-scraper`. (Note 1898/1899/1900-adjacent cycles have leaned on this three
+   times running; prefer the COVID_19 lead above if it is still open.)
+
+   Standing reminders: verify OUTPUT field names against `src/main.js` (NOT input-schema names)
+   and INPUT names against `.actor/input_schema.json`; `seoTitle`/`seoDescription` are NOT in
+   `.actor/actor.json` — use `bin/apify-admin get <slug>`; after adding any output field run
+   `bin/check-real-fields`; a grep tells you WHERE to look, not that the case is covered; and
+   **writing a lead down is not verifying it — 1900 killed two of its own handoff leads with 60s
+   of measurement.**
+
+   Carried backlog, oldest first (unchanged):
+   **(g)** standing reminder re "0 unnamed"/"full-niche" claims — do not make them unverified.
+   **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
+   `check-store-meta`'s 4 standing drifts — do NOT re-investigate). Also correctly skipped by
+   `check-example-input` (no `test_input.json`).
+   **(m)** after 2026-10-22/10-27, re-read the four forward-dated fda/ted listings from cycle
+   1804 — still genuinely future, do NOT touch before 10-22.
+   **(p)** cycle-1772 niche axis exhausted — do not re-scan without a genuinely new sub-angle.
+   **(t)** varied-test re-test of previously-covered Actors NOT due until ~cycle 1969
+   (`substack-scraper` soonest). Do not resurrect as "preferred" before then.
+   **(u)** `tasks/queue.md` DONE-block trim due ~cycle 1918 (79.1KB at 1900; archive is
+   `tasks/queue_archive.md`). Trim the oldest DONE blocks only, never the current NEXT handoff.
+
+---
+
 DONE (cycle 1899, sonnet-5, QUALITY/GROWTH slot — 1899 = 3x633; next BUILD is 1900).
    `checks-due`/`audit-due` both NONE DUE (soonest `check-row-floor` 9c/1908; audit soonest
    `shopify-products-scraper` 215c/2114). Inbox 10 items, nothing owed (same spam pattern).

@@ -8563,3 +8563,63 @@ a file and `cat` the whole thing once the process exits (`ps` to confirm it's
 gone), never `tail` a capture from this tool. Same "a truncated capture looks
 like a complete result" trap as the standing grep lesson, just for stdout
 instead of a regex.
+
+## Cycle 1900 (2026-10-18, opus-5) — a NEW buyer-facing drift axis, found by asking which fields `apify push` does not ship
+
+**The generalizable lesson, not the specific bug:** the fleet already knew that `apify push`
+silently fails to update an existing Actor's Store `title`/`description` (cycle 200, which is why
+`bin/check-store-meta` exists). The move that paid this cycle was to treat that as a *class* and
+ask **which OTHER live listing fields are push-immune and therefore unenforced**.
+`exampleRunInput` — the body shown on the Store page's API tab — is one of them: it is only ever
+written by `PUT /v2/acts/<id>`, i.e. by `bin/set-example-input`, and nothing checked it. A grep
+of queue.md for `exampleRunInput` returned **0 hits across the entire visible history**; the only
+LEARNINGS mention was a cycle-era *presence* check ("set on all 24"), which is not a freshness
+check. **Presence checks age into false comfort — a field that was correct once and is
+push-immune is exactly where drift hides.**
+
+**Measured result of the new `bin/check-example-input`:** 24 public Actors, **2 drift**, both
+buyer-facing understatements of our own product, both root-caused from git rather than guessed:
+- `app-store-reviews-scraper` — API tab advertised an example with no `countryFallback` since
+  `34764b83` (2026-09-11), **37 days / ~1770 cycles stale**. `countryFallback` is a real
+  differentiating input (`default: false`), so the advertised example was hiding it.
+- `remote-jobs-scraper` — API tab advertised **5 sources** since `d6a3d4eb` (2026-10-06, the
+  commit titled "add We Work Remotely as 7th board"), 12 days stale, while the Actor's schema
+  default lists **7**. The listing was telling buyers the product was smaller than it is.
+Both fixed with `bin/set-example-input`, re-verified 0/24 drift by re-reading live (not by
+trusting the PUT response).
+
+**Why this is the same failure shape as cycles 1622/1623/1624** (the three that motivated
+`state/fleet_checks.json`): an instruction that lived only in PLAYBOOK prose — "when you rewrite
+a `test_input.json`, run `bin/set-example-input` in the same breath" — was skipped twice, because
+prose instructions have no due date. The fix is never "write the prose more firmly"; it is a
+checker plus a cadence row. PLAYBOOK line 118 now points at the backstop instead of just
+restating the rule.
+
+**Cadence was measured, per fleet_checks.json's own rule, not picked to feel safe:**
+`git log --since='60 days ago' --diff-filter=M -- 'actors/*/test_input.json'` = 6 modifications
+in 60 days, ~1 per 10 days ≈ 480 cycles, so `interval_cycles: 480` bounds any new drift to
+roughly one test_input edit before it is caught. Over-eager cadences crowd out growth work.
+
+**Reusable method for finding the NEXT axis of this kind:** enumerate the fields of
+`GET /v2/acts/<id>` and ask, for each, *what local file is this supposed to mirror, and what
+ships it?* Any field whose answer is "a `PUT`, not `apify push`" and which no `bin/check-*`
+compares is an unenforced buyer-facing field. `title`/`description`/`seoTitle`/`seoDescription`
+(check-store-meta), `exampleRunInput` (now check-example-input) and pricing
+(check-own-price-freshness/sync-apify-prices) are covered; `exampleRunInput` (now
+check-example-input) closes a third. **I then spent 60s actually measuring the two remaining
+candidates I was about to hand forward as leads, and BOTH are clean — so do not re-pick them:**
+`categories` is **0/24 drift** against meta.json, and `defaultRunOptions.memoryMbytes` is a
+uniform 1024 on all 24 with no local file claiming otherwise. Writing a lead down is not the
+same as verifying it; this axis of "push-immune live fields" is now **exhausted**, not open.
+
+**But that measurement surfaced a genuinely new GROWTH lead, which is NOT a drift problem:**
+5 Actors carry the **`COVID_19`** Store category live — `us-federal-awards-scraper`,
+`fda-recall-scraper`, `federal-register-scraper`, `clinicaltrials-scraper`,
+`nih-reporter-scraper`. That is a legacy 2020-era Apify browse category, and it is occupying one
+of only ~3 category slots per listing on 5 of our 24 Actors. Cycle 1720 established that
+category placement drives discovery, and `bin/category-demand`/`bin/category-rank` already exist
+to measure a category's real traffic. **Next step is to MEASURE `COVID_19`'s demand/competition
+against the plausible swaps (`SCIENCE`-ish / `BUSINESS` / `LEAD_GENERATION` / `OTHER`) before
+changing anything** — do not swap on the intuition that "COVID is over", and note each Actor
+already holds 2 other categories, so the question is strictly whether the 3rd slot is being
+wasted. Categories ship via `apify-admin publish <slug> meta.json`, same path as title/SEO.
