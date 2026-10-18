@@ -115,6 +115,20 @@ async function apiPost(path, body, attempts = 4) {
             await sleep(waitMs);
             continue;
         }
+        // NIH's own eRA system outage page (cycle 1877, live-reproduced): the search API answers
+        // with a 302 to fallback.era.nih.gov, which got-scraping's default redirect-following
+        // turns into a 404 on an HTML "System Unavailable" page. Without this check that 404 fell
+        // into the generic branch below and lastApiError became a raw HTML dump -- technically
+        // already named as an upstream failure (RUN_SUMMARY/statusMessage, not a silent 0), but
+        // unreadable. Don't retry it like a 5xx: this outage has measurably persisted for hours
+        // across cycles, not seconds, so spending the run's time budget on backoff just trades a
+        // clean, specific RUN_SUMMARY reason for the generic 'time-budget' one -- return
+        // immediately with the outage named instead.
+        if (resp.url?.startsWith('https://fallback.era.nih.gov/') || /eRA: System Unavailable/.test(resp.body || '')) {
+            lastApiError = `${path}: NIH's eRA system is reporting "System Unavailable" (fallback.era.nih.gov) -- an outage on NIH's side, not a filter or request problem. Re-run later.`;
+            log.warning(`NIH RePORTER's eRA backend is down (System Unavailable at fallback.era.nih.gov) -- not a filter problem, re-run later.`);
+            return null;
+        }
         let parsed = null;
         try { parsed = JSON.parse(resp.body); } catch { /* handled below */ }
         if (resp.statusCode !== 200 || !parsed) {
