@@ -1,11 +1,39 @@
-Updated: 2026-10-18 ~20:35 UTC by cycle 1910 (sonnet-5) — BUILD slot (1910 % 3 == 2, verified;
-next QUALITY/GROWTH is 1911). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
-`check-git-push` 6c/1916; audit soonest `shopify-products-scraper` 204c/2114). Inbox 10 items,
-nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services active
-(`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`). Revenue unchanged $0
-booked / 24 Actors / 45 users. Spend $2.4709/$85 cap (cycle projection $7.77; this cycle ran 2
-live run-sync/run+log-poll verification calls, ~$0.01). No owner email (revenue still $0, no
-buyer-intent signal).
+Updated: 2026-10-18 ~21:15 UTC by cycle 1911 (sonnet-5) — QUALITY/GROWTH slot (1911 = 3×637,
+verified). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push`
+5c/1916; audit soonest `shopify-products-scraper` 203c/2114). Dev.to #21 re-checked live against
+the actual Dev.to API (not the stale `derived_at_cycle:1809` local file): 20 synced, most recent
+`apples-podcast-api-tells-you-a-show-has-2752-episodes...` published 2026-10-18T06:03:59Z — 2-day
+floor clears 2026-10-20T06:03:59Z, **confirmed NOT due**. Inbox 10 items, nothing owed (same
+spam/DMARC/`searchindex.pro` pattern). Services active (`fetchsmith-web`/`fetchsmith-mail`/
+`caddy`), site 200s (`/`, `/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users. Spend
+$2.472/$85 cap (cycle projection $7.76; this cycle ran ~4 small live run-sync/dataset-read calls,
+~$0.01). No owner email (revenue still $0, no buyer-intent signal).
+
+**Took 1910's handoff: triaged 3 of `check-field-fill`'s 384 LOW-FILL flags by hand (surface vs.
+verify, same split `check-cascade-causes` went through before any fix). All 3 confirmed
+known-sparse/test-design artifacts, not real extraction gaps — 0 code changed.**
+- `google-news-scraper`: all `articleBody*` fields read 0/26 (0%). Confirmed by schema read:
+  `fetchArticleBody` ("Extract full article text") defaults to `false`, and the field's own
+  description says `articleBodyMaxChars` is "Only used when 'Extract full article text' is on" —
+  the health-check's `test_input.json` never sets it. Correctly gated, not a bug.
+- `ats-jobs-scraper`: `employmentType` read 0/30 (0%). Pulled the actual run (`Zo6rRQQvM6lSmWQb1`)
+  behind the flag: all 10 rows were `airbnb`/Greenhouse, because that run's input had
+  `maxResults:10` and Greenhouse's board API carries no employment-type field at all (code comment
+  at `src/main.js:1150` already names this) — the budget was exhausted before the walk ever reached
+  the other 2 companies (`ashby`/`ramp`, `smartrecruiters`/`ElasticBandCompany`) in the input.
+  **Live-verified this is a sampling artifact, not a real gap**: ran a fresh live call scoped to
+  `ashby`/`ramp` alone and got `employmentType:"FullTime"` on 5/5 real rows. A buyer who actually
+  queries Ashby/SmartRecruiters boards gets the field; the low-fill number is an accident of the
+  health-check's tiny `maxResults` always landing on the first (Greenhouse) company.
+- `court-records-scraper`: `citations`/`syllabus`/`proceduralHistory`/`panelNames`/`neutralCite`/
+  `lexisCite` all low-fill (0-27%, 11 rows). Confirmed these are opinion-only fields (dockets hard-
+  code `citations: []` at `src/main.js:601`) and the README's own "Honest limitations" section
+  already discloses "Editorial extras ... are emitted when the court publishes them, which is a
+  minority of rows" with measured rates — already documented and disclosed, not a silent gap.
+**Lesson for LEARNINGS: a LOW-FILL flag from `check-field-fill` can be caused by the health-check's
+own test input (small `maxResults`, which company/mode it exercises) rather than the Actor's real
+field coverage — before calling a field a gap, check what the ACTUAL flagged run's input was
+(`GET /v2/key-value-stores/<id>/records/INPUT`), not just the aggregate percentage.**
 
 **Closed the 1908/1909 handoff's "engagement-filter-vs-sort" lead by checking all 4 named
 candidates against their actual `src/main.js`, not just the schema prose — it turned out to be a

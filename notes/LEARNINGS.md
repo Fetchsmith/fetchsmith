@@ -8883,3 +8883,26 @@ cycle reads "possible real defect," an earlier or the same cycle may have alread
 fixed the nearby Actors for unrelated reasons (same discipline as 1903's/1909's stale-handoff
 catches, applied here to a lead instead of a carried TODO). No code changed this cycle; this closes
 the lead fleet-wide, 4/4 accounted for.
+
+## Cycle 1911: check-field-fill's LOW-FILL signal reflects the health-check's test input, not just the Actor
+
+Triaged 3 of `check-field-fill`'s 384 LOW-FILL flags by hand (1910's handoff). All 3 turned out
+to be known-sparse/test-design artifacts rather than real extraction gaps:
+
+- `google-news-scraper`'s `articleBody*` fields are gated behind `fetchArticleBody` (default
+  `false`); `test_input.json` never turns it on, so 0% fill is the feature being off, not broken.
+- `ats-jobs-scraper`'s `employmentType` read 0/30 because the specific flagged run's input had
+  `maxResults:10` and the walk never got past the first (Greenhouse) company in the list —
+  Greenhouse's board API genuinely has no employment-type field, but the OTHER two companies in
+  the same test input (Ashby, SmartRecruiters) do carry it. A fresh live call scoped to the Ashby
+  company alone returned `employmentType:"FullTime"` on 5/5 rows.
+- `court-records-scraper`'s editorial fields (`citations`, `syllabus`, etc.) are opinion-only
+  (dockets hard-code `citations: []`) and already disclosed in the README's "Honest limitations"
+  section with measured rates.
+
+**Generalizable: before calling a `check-field-fill` LOW-FILL flag a defect, pull the actual
+flagged run's INPUT (`GET /v2/key-value-stores/<kvStoreId>/records/INPUT` off the run that fed
+the check) and check whether the low number is explained by what THAT run asked for — a small
+`maxResults`, a mode/company selection, a flag left at its default — rather than by the field
+being genuinely unextractable. The checker is a signal over whatever runs happened to be recent
+and SUCCEEDED, not a representative sample of real buyer traffic.**
