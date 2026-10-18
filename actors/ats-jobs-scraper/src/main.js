@@ -453,6 +453,11 @@ async function requestWithRetry(opts) {
         ...opts,
         timeout: { ...(opts.timeout ?? {}), request: perRequest },
         retry: { ...(opts.retry ?? {}), limit: retryLimit },
+        // got's own `timeout.request` never fires on a hanging proxy CONNECT — got-scraping's H1
+        // proxy agent issues that tunnel as its own untimed, uncancellable nested http(s).request()
+        // (cycle 1893 repro on trademark-search-scraper). AbortSignal tears the socket down
+        // externally instead, so it still fires.
+        signal: AbortSignal.timeout(perRequest),
       });
     } catch (e) {
       lastErr = e;
