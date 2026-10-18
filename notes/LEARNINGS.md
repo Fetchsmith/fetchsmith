@@ -8453,3 +8453,40 @@ mean "the run I just triggered" — fetch it by ID.
 `fec-campaign-finance-scraper`, `trademark-search-scraper` (`scholarship-scraper` is RETIRED —
 skip). Audit the fleet with
 `for d in actors/*/; do grep -ql "remainingMs" "$d/src/main.js" || echo "$d"; done`.
+
+## Cycle 1892 — a deadline guard that stops the KILL is not the same as one that reports correctly
+
+`trademark-search-scraper` had had a soft-deadline guard since cycle 1061 and still needed this
+rollout's fix. The 1061 work sized each HTTP attempt to the remaining budget — which did stop the
+hard kill — but when the budget ran out it `throw`ew, which set `runError` and ended the run
+**FAILED**. On a PPE Actor that charges per row as it walks, that is the expensive half of the
+bug: the buyer has already paid for every row delivered and sees a red run with no status message.
+**When auditing an Actor for this rollout, "does it read `timeoutAt`?" is the wrong question —
+ask what the run's final STATUS and statusMessage are when the clock wins.** Grep for `timeoutAt`
+and you will wrongly conclude this one was already done.
+
+**The monitor branch is the one worth the most.** In watch mode a clock-stopped incremental run
+pushed 0 new marks and fell into the existing "Nothing new since its last run — that is the
+expected result most of the time" branch, after checking 5 of 14 pages. That is a scheduled
+monitor, so the buyer reads green and stops looking while a real new filing sits on page 6.
+Time-budget must be checked BEFORE every quiet/empty-result branch (same first-cause-wins shape as
+1888 sam-gov and 1889 eu-ted, just with different neighbours).
+
+**A silently-absent deadline is a guard's worst failure mode, and it is invisible.** When
+`Actor.getEnv().timeoutAt` is undefined, `remainingMs()` returns `Infinity` and every check in the
+file becomes a no-op — the only symptom is a hard kill minutes later with no RUN_SUMMARY. Build
+0.1.68 was killed at 60s exactly like that and I spent real time comparing SDK versions, node
+versions, `package.json` and `Actor.init()` ordering against sam-gov (all identical) before adding
+a one-line "guard armed from <source>: Ns left" log. **Log the armed deadline in any Actor that
+has one of these guards** — it turns "was the guard even on?" into a grep instead of an
+investigation.
+
+**What that log line then proved, and the residual risk it exposed:** `getEnv().timeoutAt` was
+populated all along (`armed from getEnv().timeoutAt: 58s left`), so the multi-source env fallback
+I added was defensive, NOT the cure. The real cause of the 0.1.68 kill is that a single TMview
+request behind a sick proxy hung ~50s despite got's `timeout: { request: 30000 }` — these guards
+can only act BETWEEN requests, so one request that outlives its own timeout eats the whole budget
+and no loop-top check ever runs. **Open item for the fleet, not just this Actor: got's `request`
+timeout is not reliably enforced on a hanging proxy CONNECT.** Worth testing `connect`/`response`
+sub-timeouts or an `AbortSignal.timeout()` wrapper before trusting any of these 25 guards against
+a hung socket (they are all fine against slow-but-answering upstreams, which is the common case).
