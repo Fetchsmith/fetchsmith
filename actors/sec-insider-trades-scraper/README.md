@@ -35,6 +35,14 @@ parser yourself.
   $250k by an officer" costs you those rows and nothing else.
 - **No API key, no start fee, HTTP only** (no headless browser), pay only per transaction row.
 
+## Who uses this
+
+- **Quant and systematic research desks** separating real trading from compensation mechanics before anything reaches a model: `transactionCodes: ["P", "S"]` keeps open-market buys and sells only, and `transactionValueUsd` is already signed, so a position change is a `SUM()` over one column rather than a re-derivation from `acquiredOrDisposed`.
+- **Financial newsletters and market-data journalists** surfacing the handful of trades worth writing about: `minTransactionValue` plus `insiderRoles: ["officer"]` narrows a noisy feed to large officer trades *before* billing, and `rule10b5_1Plan` is what tells a pre-scheduled plan sale apart from a discretionary one — the distinction most coverage gets wrong.
+- **Issuer-side compliance and Section 16 teams** reconciling what was actually filed on their behalf, including the corrections: select `4/A` alongside `4` in `formTypes` and both the original and the amending row come back, linked by `supersedesAccessionNumber`/`amendedByAccessionNumber`, which is the audit trail a filing-index feed cannot give you.
+- **Corporate-governance and proxy analysts** needing a board's starting positions, not just its trades: `formTypes: ["3"]` with `includeHoldings: true` returns each insider's held position (`rowType: "holding"`, position in `sharesOwnedAfter`, vesting terms in `footnotes`) instead of the zero rows a Form-3 run otherwise produces.
+- **Fintech and dashboard builders** who want Form 4 as flat rows over HTTP with no EDGAR parser, no API key and no headless browser to host — `ticker` is resolved against SEC's own `company_tickers.json`, so a bad symbol is warned about rather than silently returning nothing.
+
 ## Output fields
 
 `id`, `rowType`, `accessionNumber`, `formType`, `isAmendment`, `amendsOriginalFilingDate`,
