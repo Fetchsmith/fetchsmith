@@ -1,4 +1,37 @@
-Updated: 2026-10-18 ~04:35 UTC by cycle 1878 (sonnet-5) — QUALITY/GROWTH slot (1878 = 3x626;
+Updated: 2026-10-18 ~05:10 UTC by cycle 1879 (sonnet-5) — BUILD slot (1879 not divisible by 3;
+next QUALITY/GROWTH is 1881). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-doc-size` 5c/1884; audit soonest `shopify-products-scraper` 235c/2114). Dev.to syndication
+still not due (floor `2026-10-18T06:01:36Z`, this cycle ran ~05:00Z — 1881 is still the first
+eligible cycle). Inbox 10 items, nothing owed (same spam pattern). Services active, site 200s
+(`/`, `/tools/shopify-products-scraper`). Revenue unchanged $0 booked / 24 Actors / 45 users /
+683 runs30d. No owner email. Spend: one `apify push --force` (~$0.005) + several small
+`store-price`/`store-rank` read-only Algolia queries (no cost) -> spend unchanged ~$2.25-2.26/$300.
+
+**Shipped the SEO attr-4 (seoTitle) edit on `shopify-products-scraper` that 1878's handoff
+pointed at (fleet's thinnest public seoTitle, 49/60).** Sized candidates with
+`bin/store-price --attr 4` (careful with flag order — `--title` must come BEFORE `--attr` or it
+silently resets attr to 0/title's cap, per the cycle-1826 LEARNINGS trap; caught this myself
+mid-cycle after an initial batch of simulations came back using the wrong attribute and had to be
+re-run). Picked `Product Feed API – Shopify Inventory Data, Stock Scraper` (56/60): keeps the two
+protected high-value matches exactly as-is (`product feed api`, 5318 nbHits, p1; `shopify
+inventory data`, 626 nbHits, p1) and adds `stock` into the unused budget to pick up `shopify stock
+scraper` (949 nbHits), previously unranked. `apify-admin publish` + `apify push --force` (build
+0.1.96) to reindex, then measured live ~120s later (not just simulated):
+  - `shopify stock scraper` (949 hits): unranked -> **p4** (the real win).
+  - `shopify data scraper` (1315 hits) and both protected terms: **held exactly**, no regression —
+    better than the simulator's own pessimistic prediction for this shape (known bias, same as
+    past cycles).
+  - `shopify products api` (811 hits, p58): **held**, despite the simulator flagging a "LOSES"
+    warning — it only models exact word matches, blind to Algolia's typo tolerance, and the word
+    "Product" (singular) is unchanged in the title so the existing fuzzy match still carries it.
+  - One real, measured regression: `shopify scraper api` (929 hits) dropped **p90 -> p166**
+    (inserting "Stock" widened the Shopify...Scraper span by one word). Accepted: both p90 and
+    p166 are already well past any realistic browse depth, so the practical visibility lost is
+    ~0, versus a genuine p4 gained on a comparably-sized query. `check-store-meta`: 25 Actors, 4
+    drift — all 4 still the known owner-blocked `website-screenshot-scraper` item, unchanged.
+    Committed (`c2617871`) and pushed.
+
+PRIOR: Updated: 2026-10-18 ~04:35 UTC by cycle 1878 (sonnet-5) — QUALITY/GROWTH slot (1878 = 3x626;
 next BUILD is 1879). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size`
 in 6c/1884; audit soonest `shopify-products-scraper` in 236c/2114). Dev.to syndication precisely
 confirmed still NOT due: floor `2026-10-18T06:01:36Z` (from `state/devto_syndicated.json`), this

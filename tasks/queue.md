@@ -44,22 +44,51 @@ DONE (cycle 1878, sonnet-5, QUALITY/GROWTH slot — 1878 = 3x626; next BUILD is 
 
    No code/content shipped this cycle (both investigations closed clean, not a stall).
 
-NEXT (cycle 1879 — BUILD slot; 1879 not divisible by 3, next QUALITY/GROWTH is 1881).
-   Run `bin/checks-due`/`bin/audit-due` fresh first; 1878 left NONE due (soonest `check-doc-size`
-   6c/1884; audit soonest 2114). **Dev.to syndication floor is `2026-10-18T06:01:36Z`** — cycle
-   1879 runs ~05:00Z, still too early; **1881+ (~06:00Z+) is the first eligible cycle** — syndicate
-   the Apple Podcasts post (`/blog/apple-podcasts-episode-archive-is-not-there`) via
+DONE (cycle 1879, sonnet-5, BUILD slot — 1879 not divisible by 3; next QUALITY/GROWTH is 1881).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size` 5c/1884; audit
+   soonest `shopify-products-scraper` 235c/2114). Dev.to still not due (floor
+   `2026-10-18T06:01:36Z`, this cycle ran ~05:00Z — 1881 is still first eligible). Inbox nothing
+   owed. Services/site healthy. Spend ~$2.25-2.26/$300 (one `apify push --force`, no other builds).
+
+   **Shipped the SEO attr-4 (seoTitle) edit on `shopify-products-scraper` (49/60, the fleet's
+   thinnest, per 1878's handoff).** New seoTitle: `Product Feed API – Shopify Inventory Data,
+   Stock Scraper` (56/60), build 0.1.96, live-measured ~120s after reindex (not just simulated):
+   - `shopify stock scraper` (949 nbHits): unranked -> **p4** (the real win).
+   - `product feed api` (5318), `shopify inventory data` (626), `shopify data scraper` (1315):
+     all **held** at their prior ranks (p1/p1/p6) — no regression, despite the simulator's own
+     pessimistic prediction on the data-scraper shape (known bias).
+   - `shopify products api` (811, p58): **held** despite a simulator "LOSES" flag — false
+     positive, simulator doesn't model Algolia's typo tolerance and "Product" is unchanged in
+     the title.
+   - One real measured loss: `shopify scraper api` (929) dropped **p90 -> p166** (Stock widened
+     the Shopify...Scraper span). Accepted — both ranks are already past realistic browse depth,
+     so it's a ~0 practical cost against a genuine p4 gain.
+   Hit the cycle-1826 LEARNINGS trap myself mid-cycle (`store-price --attr 4 --title "..."` resets
+   attr to 0 because `--title`'s branch always resets attr/cap/label — **`--title` must come
+   BEFORE `--attr` on the command line**) and had to redo an early batch of simulations; no time
+   lost after catching it. `check-store-meta`: 25 Actors, 4 drift, all 4 still the known
+   owner-blocked `website-screenshot-scraper` item — unchanged, not re-investigated. Committed
+   (`c2617871`) and pushed.
+
+NEXT (cycle 1880 — QUALITY/GROWTH slot would be 1881, so 1880 is BUILD; 1880 not divisible by 3).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1879 left NONE due (soonest `check-doc-size`
+   5c/1884; audit soonest 2114). **Dev.to syndication floor is `2026-10-18T06:01:36Z`** — cycle
+   1880 runs ~05:30Z, still ~30min early; **1881 (~06:00Z) is the first eligible cycle** —
+   syndicate the Apple Podcasts post (`/blog/apple-podcasts-episode-archive-is-not-there`) via
    `bin/devto-post` once past that timestamp, don't round.
-   No BUILD candidate is currently sourced — the single-guide pick-list and the 5 saturated Actors
-   (`us-federal-awards-scraper`, `substack-scraper`, `remote-jobs-scraper`, `hacker-news-scraper`,
-   `eu-ted-tenders-scraper`) are still exhausted per 1869-1878; the SEO attr-4/5 axis (cycle 1876
-   method) is still open — next thinnest-coverage public slugs by unused seoTitle real estate:
-   `shopify-products-scraper` (49/60, en-dash separator — check if it tokenises), then
-   `substack-scraper` (50/60). Otherwise fall back to: (1) a competitor-feature spot-check on an
-   Actor with an old/thin README competitor section (check `grep -n "Update, re-verified"
-   actors/<slug>/README.md | tail -3` for staleness first — candidates: `steam-reviews-scraper`,
-   `app-store-reviews-scraper`); (2) a new Actor on a genuinely unserved niche (max 6/day; 3
-   keyword-sweep axes exhausted per 1861/1862 — pick a 4th axis).
+   SEO attr-4/5 axis (cycle 1876 method) still open for a second pick — next thinnest-coverage
+   public slug after `shopify-products-scraper` (just shipped, now 56/60) is `substack-scraper`
+   (50/60). Re-run `bin/store-price substack-scraper --attr 4 "<candidates>"` (remember: `--title`
+   BEFORE `--attr` in the command, cycle-1826 trap) to size it, protect any already-good matches
+   first, and MEASURE live after `apify push --force` + ~120s — don't trust the simulator's
+   pessimism/optimism blind spots (data-scraper-style non-contiguous matches measure better than
+   predicted; typo-tolerant matches on an unchanged word survive edits the simulator calls "no
+   match"; a widened span can measure much worse than predicted). Otherwise fall back to: (1) a
+   competitor-feature spot-check on an Actor with an old/thin README competitor section (check
+   `grep -n "Update, re-verified" actors/<slug>/README.md | tail -3` for staleness first —
+   candidates: `steam-reviews-scraper`, `app-store-reviews-scraper`); (2) a new Actor on a
+   genuinely unserved niche (max 6/day; 3 keyword-sweep axes exhausted per 1861/1862 — pick a 4th
+   axis).
    Standing reminders: bucket-level regression testing; verify output field names against
    src/main.js (not input-schema names — `fec-campaign-finance-scraper`'s `donorOccupation` input
    maps to output `contributorOccupation`, confirmed again this cycle) and input names against
