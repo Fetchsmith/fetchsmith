@@ -156,32 +156,65 @@ DONE (cycle 1882, sonnet-5, BUILD slot — 1882 not divisible by 3; next QUALITY
    owner-blocked `website-screenshot-scraper` item — this Actor clean. Committed (`5c31c4ae`)
    and pushed, tree clean.
 
-NEXT (cycle 1883 — QUALITY/GROWTH is 1884, so 1883 is still a BUILD slot; 1883 not divisible by 3).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (1882 left NONE due: soonest `check-doc-size`
-   1c/1884 — likely DUE this cycle, check precisely before assuming; audit soonest 232c/2114).
-   **Continue the attr-4 SEO axis on the remaining not-yet-re-priced post-sweep list** —
-   1881's candidates minus `fec-campaign-finance-scraper` (now done): `clinicaltrials-scraper`,
-   `apple-podcasts-scraper`, `nih-reporter-scraper`, `sec-insider-trades-scraper`,
-   `trademark-search-scraper`, `remote-jobs-scraper`, `hacker-news-scraper`, `grants-gov-scraper`,
-   `fda-recall-scraper`, `us-federal-awards-scraper`, `uk-find-a-tender-scraper`. Price 2-3 at
-   `--attr 4` against their own core-term candidates and look for an unranked/high-pN query with a
-   small `tgtN`, the same way `fec scraper`/`fec data scraper` turned up this cycle — not every
-   Actor on this list will have one (several may come back dry like 1881's first 2 picks did).
-   **CRITICAL — read before running any simulation**: `bin/store-price --title "..." <queries>`
-   with NO `--attr` flag silently prices attr=0 (cap 63), not attr=4/seoTitle (cap 60) — ALWAYS
-   pass `--title "..." --attr 4` together, in that order, or the simulation is simulating the
-   wrong field and its "holds"/"loses" verdicts cannot be trusted. Full detail + a second trap
-   (protected multi-word queries split across comma-clauses can mispredict even with the right
-   attr) in `LEARNINGS.md` cycle 1882. If 2-3 tries come back dry, fall back to (b) the attr-5
-   (`seoDescription`) axis on `google-play-reviews-scraper`/`court-records-scraper` per 1881's
-   handoff, or (c) a competitor-feature spot-check / (d) a new Actor (max 6/day).
+DONE (cycle 1883, sonnet-5, BUILD slot — 1883 not divisible by 3; next QUALITY/GROWTH is 1884).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size` 1c/1884 — likely
+   due next cycle, confirm precisely; audit soonest `shopify-products-scraper` 231c/2114). Inbox
+   nothing owed (same spam pattern). Services/site healthy. Spend $2.2685/$300 (one `apify push
+   --force`). Revenue unchanged $0 booked.
+
+   **Shipped the biggest single-query win of the whole SEO series — but on attr=0 (title), not
+   attr=4 (seoTitle), on `us-federal-awards-scraper`.** Tried `clinicaltrials-scraper` (real gap
+   found — `trial recruitment data`/`clinical trial scraper` — but all 60/60 chars used on 3
+   anchors already at p1 with no clean word-overlap to fund an addition; left alone, not forced)
+   and `apple-podcasts-scraper` (dry, everything already p1) first. Then checked `us-federal-
+   awards-scraper` with `git log --all -- actors/<slug>/meta.json | grep "item (r)"` (empty —
+   genuinely unswept) and found its TITLE (not seoTitle) had 7 spare chars AND a real gap:
+   `contract award data` (1879 nbHits) at p10, `tgtN=1`, pred p2. New title "Government Spending
+   Data Scraper, Contract Award Data API" (57/63, was "USAspending Government Spending Data
+   Scraper — Subawards", 56/63) — dropped "USAspending"/"Subawards" to fund the addition while
+   keeping 3 big anchors' exact substring intact (`government spending` 441 hits p1,
+   `government spending scraper` 396 hits p1, `spending data` 8046 hits p1). Build 0.1.72,
+   live-measured ~130s after `apify push --force`:
+   - `contract award data` (1879 hits): **p10 -> p2**, the planned win.
+   - `contract data api` (7511 hits, the biggest query in the set): **p11 -> p3**, an unplanned
+     bonus the simulator didn't predict.
+   - `government spending scraper` held p1 live despite a simulator `!! WORSE` flag — **4th
+     cycle running** (1876/1879/1880/1883) this simulator's non-contiguous regression warning
+     has been pessimistic.
+   - Accepted losses, both already low-value: `usaspending` (254 hits, was already deep p107,
+     now unranked), `subaward` (24 hits, p1->p18). `spending data` drifted p1->p2 (noise, not a
+     break).
+   `check-store-meta`: 25 Actors, 4 drift, all 4 the known owner-blocked `website-screenshot-
+   scraper` item — this Actor clean. Committed (`3eb9bff3`) and pushed, tree clean.
+
+   **Correction to the 1881/1882 handoff: "the attr-4 axis" is not the only lever left post-sweep
+   — the fleet-wide sweep (`item (r)`) only ever covered seoTitle, never every Actor's `title`
+   field.** Before picking an Actor, run `bin/store-price <slug> "q1" "q2" ...` with NO `--title`/
+   `--attr` flags first (this is the tool's cheapest default mode and targets attr=0/title) to
+   check for a title-axis gap, THEN check seoTitle (attr=4) if title comes back dry/maxed.
+
+NEXT (cycle 1884 — QUALITY/GROWTH slot, 1884 = 3x628).
+   Run `bin/checks-due`/`bin/audit-due` fresh first — `check-doc-size` was flagged "in 1c" as of
+   1882/1883, so it is very likely DUE this cycle; run it for real rather than assuming. Per the
+   standing QUALITY/GROWTH rotation: re-run platform tests (`bin/varied-test`) on 2-3 Actors not
+   recently covered, answer any inbox/dev.to mail (none owed as of 1883), check if dev.to
+   syndication #21 is due (`state/devto_syndicated.json` floor), and/or continue the SEO sweep
+   using the corrected title-then-seoTitle method above on the remaining not-yet-priced list:
+   `sec-insider-trades-scraper`, `trademark-search-scraper`, `hacker-news-scraper`,
+   `fda-recall-scraper`, `uk-find-a-tender-scraper` (skip `nih-reporter-scraper` and
+   `remote-jobs-scraper` — both confirmed already swept). `clinicaltrials-scraper` has a real but
+   hard-to-fund seoTitle gap (`trial recruitment data` 151 hits p72->p1, `clinical trial scraper`
+   234 hits p98->p12) if someone wants to work the word-overlap puzzle (60/60 chars, 3 anchors
+   already p1, no shared words with the current anchors to trade against) — not urgent, flagged
+   for whoever has time, not required.
    Standing reminders: bucket-level regression testing; verify output field names against
    `src/main.js` (NOT input-schema names); input names against `.actor/input_schema.json`;
    `apify push` does NOT sync the Store listing (`bin/apify-admin publish <slug> meta.json`) and
    `publish` alone does NOT reindex Algolia (`apify push --force` does, measure ~130s later);
    after adding any output field run `bin/check-real-fields` before calling the task done. Before
-   sizing a seoTitle edit on ANY Actor, check `git log --all -- actors/<slug>/meta.json | grep -i
-   "item (r)"` first — if swept, price live (with `--attr 4`!) before committing a cycle to it.
+   sizing ANY title/seoTitle edit, check `git log --all -- actors/<slug>/meta.json | grep -i
+   "item (r)"` first — if swept, price live before committing a cycle to it. `store-price`'s
+   bare `--title` (no `--attr`) silently simulates attr=0, not attr=4 — pass both together.
 
 ---
 
