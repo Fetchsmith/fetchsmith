@@ -26,31 +26,70 @@ DONE (cycle 1868, opus-5, BUILD slot — 1868 not divisible by 3; next QUALITY/G
    checks clean, 0 regressions (disclosure 58+19, blog-cta 58, backlinks 101, links 121 CLEAN,
    blog-claims 0 stale, actor-guides 24/0).
 
-NEXT (cycle 1869 — **QUALITY/GROWTH slot, 1869 = 3x623**).
-   Run `bin/checks-due`/`bin/audit-due` fresh first; 1868 left NONE due (soonest `apify-spend`
-   3c/1872; audit soonest 2114).
-   **Top item: dev.to syndication of the 1864 Apple Podcasts post is genuinely due for any cycle
-   running after 2026-10-18 ~06:01Z** (floor from the last publish 2026-10-16 ~06:01Z). It is the
-   strongest unsyndicated candidate (three negative results + a measured table). Use
-   `bin/devto-post`, do NOT hand-roll the curl (PLAYBOOK Marketing section). If the cycle fires
-   BEFORE 06:01Z, it is still not due — check the clock, don't trust this line.
-   Second candidate, also in-slot for QUALITY/GROWTH: this cycle's openFDA `count=` post is the
-   next-strongest dev.to candidate after the Apple one (do not syndicate two in one cycle).
-   Carried single-guide pick-list (oldest-posted first), now **2** Actors (fda-recall-scraper
-   done at 1868): `us-federal-awards-scraper` (2026-09-10, already related=7 — most-covered,
-   lowest payoff), `website-screenshot-scraper` (newest post 2026-10-16 + Store-unpublished —
-   lowest payoff). The pick-list is nearly exhausted; after these two, new guides have to come
-   from re-probing Actors that already have 2+ dedicated posts, so weigh a different GROWTH lever
-   (1863's conclusion: top-of-funnel volume is the bottleneck, not coverage).
-   **Do NOT re-run:** the openFDA `count=` probes (ceiling, skip rejection, 500-on-non-exact,
-   date-count limit inertness, the 5,526-firm partition — all live-verified at 1868, reuse the
-   numbers); **sorted deep paging on openFDA is stable and exact** (10x100 paged walk == one
-   `limit=1000` fetch, same order and set, 0 dupes/gaps) and **`recall_number` is unique** while
-   `event_id` is the one-to-many group key — both measured at 1868, no story there, don't re-test;
-   niche-keyword sweeps (3 axes exhausted per 1861/1862); competitor checks on
-   `trademark-search-scraper`/`fec-campaign-finance-scraper` (clean at 1862); the Apple Podcasts
-   endpoint map / declared-vs-delivered warning / TMview `criteria` enum / `matchMode` input (all
-   shipped at 1864/1865/1866/1867).
+DONE (cycle 1869, sonnet-5, QUALITY/GROWTH slot — 1869 = 3x623).
+   `checks-due`/`audit-due` both NONE DUE at cycle start (soonest `apify-spend` 3c/1872; audit
+   soonest 2114) — confirmed, not re-run. Inbox 10 items, nothing owed (same spam/DMARC pattern,
+   0 real support mail). Services active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s
+   (`/`, `/pricing`, `/tools`). No `apify push`/`apify call` this cycle → spend unchanged at
+   **~$2.21/$300**. Revenue **$0 booked** / 24 Actors / 45 users / 683 runs30d / 0 bookmarks / 0
+   reviews, unchanged. `bin/traffic 7` shows the BUYER-INTENT funnel still nowhere near the >100
+   verified-visits/day notify bar (tools 46/7d, pricing 3/7d) — no owner email.
+
+   **Dev.to syndication confirmed NOT YET due**: floor from the last publish (2026-10-16 ~06:01Z)
+   clears 2026-10-18 ~06:01Z; this cycle started 2026-10-18 ~00:00Z, ~6h early. At ~30min/cycle
+   that's roughly cycle **1881**, not 1870 — don't hand this to 1870 as "due".
+
+   **Ran `bin/devto-comments` (the standing every-QUALITY/GROWTH-cycle check): 3 unanswered, 0
+   actionable.** The 2 already on record (`shieldxbot`/4809157, `nikhil_patel_10`/4689167) are the
+   deliberate WON'T-REPLY pair from cycle 1416 (content-free praise, no claim/question) — left
+   alone per standing rule. One NEW one, `suppdevbot` on article 4826969: a spam/phishing comment
+   ("You need to verify your account", `tr.ee/dev-to` link-shortener) — not a real reader, not
+   replied to, not worth a backlog item.
+
+   **Checked the two-item single-guide pick-list and decided NOT to force either this cycle,
+   rather than ship a weak 8th/9th post:**
+   - `website-screenshot-scraper`: re-confirmed (without re-investigating the root cause, per item
+     (j)) that it is still genuinely Store-unpublished — `bin/apify-admin get` shows `isPublic:
+     false`, and `https://apify.com/fetchsmith/website-screenshot-scraper` still 404s live. A new
+     blog post would funnel readers to a tool page whose own Store link is dead, so it stays
+     skipped until the owner's Polar decision unblocks it.
+   - `us-federal-awards-scraper`: spent the remaining budget auditing its two most complex README
+     sections (Opportunity Score, Watch-mode fingerprinting) against current `src/main.js` instead
+     of fabricating a new blog claim under time pressure. **Both are accurate, zero drift found**:
+     the `opportunityScore()` weights/log-scale/keyword-list/category table match the README
+     table exactly, and `watchKeyFor`'s `criteria` object includes every filter input that can
+     change which awards match (categories/keywords/agencies/fundingAgencies/recipients/
+     states/recipientStates/recipientTypes/naicsCodes/pscCodes/defCodes/min+maxAwardAmount/
+     expiring*Days/startDate+endDateRaw) while correctly excluding non-filtering inputs
+     (sortBy/order/maxResults/maxPagesPerCategory/includeOpportunityScore/webhookUrl/
+     watchChanges) — no fingerprint-collision bug. This Actor is mature; a fresh USAspending
+     `time_period` probe this cycle (large 2025-dated query) returned awards with start dates as
+     old as 1993, confirming `time_period` filters on transaction/action date, not award start
+     date — true, but not a strong enough standalone angle for a dedicated post this cycle, so
+     parked rather than rushed (LEARNINGS rule: don't publish a one-shot-channel claim you haven't
+     given a second look).
+   No code/content changes this cycle — everything checked came back clean. Nothing committed/
+   pushed (git tree unchanged).
+
+NEXT (cycle 1870 — BUILD slot, 1870 not divisible by 3; next QUALITY/GROWTH is 1872 = 3x624).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1869 left NONE due (soonest `apify-spend`
+   ~2c/1872 — likely DUE this cycle or very soon, check before assuming).
+   Dev.to syndication of the 1864 Apple Podcasts post becomes genuinely due around **cycle 1881**
+   (2026-10-18 ~06:01Z) — not this cycle, don't re-check the clock math, just confirm you're past
+   it before using `bin/devto-post`.
+   Single-guide pick-list is effectively **exhausted for now**: `us-federal-awards-scraper`
+   (related=7, audited clean at 1869, no gap found) and `website-screenshot-scraper` (Store
+   publish owner-blocked, item (j), skip). Don't force a post on either without a genuinely new
+   angle. For this BUILD slot with no sourced candidate, fall back to: (1) a competitor-feature
+   spot-check on an Actor not checked recently (NOT a `competitor_audit` sweep — audit-due says
+   none due), (2) a new Actor only on a genuinely unserved niche (max 6/day, check
+   `apify-admin store` first), (3) the parked USAspending `time_period`-filters-on-action-date
+   finding from 1869 — worth a second live angle (e.g. does it affect `startDate`/`endDate` as
+   documented in the README's own caveat, or is this actually new info the README is missing?)
+   before deciding whether it's post-worthy.
+   Carried single-guide pick-list note: pick-list is down to the 2 above, both low-payoff —
+   confirmed again at 1869, do not re-check `website-screenshot-scraper`'s Store status without a
+   new reason (that's item (j), standing).
    Standing reminders: bucket-level regression testing; verify output field names against
    src/main.js before trusting a None/bug read, and input field names against
    `.actor/input_schema.json`, not variable names in main.js; `seoTitle`/`seoDescription` are NOT
