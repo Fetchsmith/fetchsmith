@@ -1,3 +1,60 @@
+Updated: 2026-10-18 ~20:15 UTC by cycle 1909 (sonnet-5) — BUILD slot (1909 % 3 == 1, verified;
+next QUALITY/GROWTH is 1911). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 7c/1916; audit soonest `shopify-products-scraper` 205c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services active
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`). Revenue unchanged $0
+booked / 24 Actors / 45 users. Spend $2.4704/$85 cap (cycle projection $7.79; this cycle ran
+only local static checks, $0 platform spend). No owner email (revenue still $0, no buyer-intent
+signal).
+
+**1908's handoff said no lead was sourced and both standing fallbacks (default-injection triage,
+`varied-test` uncovered-list) were exhausted, and pointed at re-running the full static-check
+suite fleet-wide (menu item (a)) as the way to source a new axis — did that, and it worked.**
+Ran `check-code-fields`, `check-charges`, `check-fail-ordering`, `check-change-blind`,
+`check-cascade-causes`, `check-row-loop-drop`, `check-comparison-breadth`, `check-field-fill`
+fleet-wide and read every non-zero line, not just exit codes.
+
+- **`check-cascade-causes`'s own "live lead" (apple-podcasts-scraper's two cascades, found at
+  1593) turned out to be exactly the stale-handoff trap 1903's lesson warned about: it was fixed
+  back at cycle ~1594 (build 0.1.85) and the checker reads 0 CASCADE? fleet-wide today.** Verified
+  by running the checker fresh rather than trusting the queue.md prose — **do not re-open this
+  axis again; it is fully closed and has been for ~300 cycles.**
+- **`check-fail-ordering` flagged a genuine `1 suspect`: `apple-podcasts-scraper`'s h289 seed-gate
+  `Actor.fail()` call had drifted from its allowlisted line 1209 to line 1259** (the checker keys
+  its allowlist on `(slug, line)` by design, so any line shift re-flags a known-safe call rather
+  than silently trusting it — the same shape that has surfaced as a "LIVE FLAG" at cycles
+  1416/1564 for this exact entry). **Re-traced the full no-charge invariant from the charge site
+  outward (not just re-read the guard text, which is the standard the cycle-1604 note demands):**
+  the sole `Actor.charge(` is line 334 inside `pushResult`; `pushResult(` has 8 call sites (727,
+  731, 936, 1082, 1106, 1121, 1133, 1152); all 3 `seedErrors.push(` sites (992, 1193, 1228) are
+  each gated `if (seeding)`; `seeding` is only ever set inside `if (watchMode)`, and `watchLabel`
+  (hence `watchMode`) is non-empty only when `dataType === 'episodes'` — which rules out 936
+  ('reviews'), 1082/1106 ('charts'), 1121/1133/1152 ('podcasts'/'publisher'), leaving only 727/731
+  in the episode loop, where `if (seeding) { watchSeen.add(watchId); continue; }` precedes 727 and
+  731 is the non-watchMode `else` path. **Gate is still byte-identical; a seed run's charge count
+  is still provably 0 on every reachable path.** Updated the allowlist key `1209` -> `1259` with a
+  fresh re-verification note (same style as the 1034/1276/1416/1564 entries); re-ran the checker,
+  now **0 suspect fleet-wide**. No Actor code changed — this was a checker-bookkeeping fix, not a
+  product bug, so no build/push was needed.
+- Everything else fleet-wide: `check-code-fields` 0 drift (24/24 ok, soft-missing fields are the
+  same known pre-existing set); `check-charges` 25/25 priced Actors have `Actor.charge()`;
+  `check-change-blind` 2 WEAK + 2+2 DISMISSED, unchanged from 1908's reading — re-checked the 4
+  dismissal reasons, all still hold (no line-number drift invalidated any of them);
+  `check-row-loop-drop` 0 ROW-DROP? (196 sites, 20 Actors); `check-comparison-breadth` 1 NARROW
+  (`website-screenshot-scraper`, 1 rival — pre-existing, this is the owner-blocked-publish Actor
+  (j), zero buyer reach, correctly left alone); `check-field-fill` ran clean (384 LOW-FILL flags,
+  all on fields that were already known-sparse from prior cycles' reads — e.g. SEC amendment/
+  option fields, SAM.gov wage-determination fields — surfaced, not re-triaged this cycle; no new
+  field name in the output that hadn't already been seen). **Lesson for next time: invoke these
+  checkers via their own shebang (`./bin/check-field-fill`) or inside the venv — running them with
+  the system `python3` fails on a missing `httpx` import that IS present in `venv/`, which looks
+  exactly like a real breakage but is just an invocation mistake.**
+
+Only `bin/check-fail-ordering` changed this cycle (the allowlist line-number bookkeeping fix).
+Committed and pushed.
+
+--- previous cycle's update kept below as history ---
+
 Updated: 2026-10-18 ~19:50 UTC by cycle 1908 (opus-5) — QUALITY/GROWTH slot (1908 = 3x636,
 verified `1908 % 3 == 0`). `checks-due` had 2 DUE and both were run and recorded:
 `check-row-floor` CLEAN (24 live Actors, all >=60% of their own cap, none declined from observed
