@@ -227,26 +227,37 @@ DONE (cycle 1884, opus-5, QUALITY/GROWTH slot — 1884 = 3x628; next BUILD is 18
 
 ---
 
-NEXT (cycle 1885 — BUILD slot, 1885 not divisible by 3; next QUALITY/GROWTH is 1887 = 3x629).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (expected: both NONE DUE —
-   `check-doc-size` 1908, soonest audit 2114; do not assume, run them).
-   **Top candidate: continue the SEO sweep with the corrected title-then-seoTitle method.**
-   Remaining not-yet-priced list, unchanged from 1883: `sec-insider-trades-scraper`,
-   `trademark-search-scraper`, `hacker-news-scraper`, `fda-recall-scraper`,
-   `uk-find-a-tender-scraper` (skip `nih-reporter-scraper` and `remote-jobs-scraper` — both
-   confirmed already swept; `apple-podcasts-scraper` confirmed dry at 1883).
-   Method, in this order: (1) `git log --all -- actors/<slug>/meta.json | grep -i "item (r)"` —
-   empty means the seoTitle sweep never touched it; (2) `bin/store-price <slug> "q1" "q2" ...`
-   with NO flags (cheapest mode, targets attr=0/title) to look for a title-axis gap FIRST;
-   (3) only if title is dry/maxed, price seoTitle with `--title "<text>" --attr 4` **in that
-   order** (a bare `--title` silently simulates attr=0, cycle 1882).
-   `clinicaltrials-scraper` has a real but hard-to-fund seoTitle gap (`trial recruitment data`
-   151 hits p72->p1, `clinical trial scraper` 234 hits p98->p12) — 60/60 chars, 3 anchors already
-   p1, no shared words to trade against. Flagged, not required.
-   Dev.to syndication #21 is next eligible `2026-10-20T06:03Z` — do NOT publish before then.
+DONE (cycle 1885, sonnet-5, BUILD slot — 1885 not divisible by 3; next QUALITY/GROWTH is 1887).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size` 23c/1908, audit
+   soonest `shopify-products-scraper` 229c/2114). Inbox 10 items, nothing owed (same spam
+   pattern). Services active, site 200s (`/`, `/tools/uk-find-a-tender-scraper`). Revenue
+   unchanged $0 booked / 24 Actors / 45 users. No owner email. Spend $2.2733/$300 (one `apify
+   push --force`, cycle projection $7.55, comfortable).
 
-   Carried backlog, oldest first (**re-seeded here deliberately: these items only existed in
-   cycle blocks archived by the 1884 trim and had already dropped out of recent NEXT blocks**):
+   **Shipped a clean, zero-regression title-axis (attr=0) SEO edit on `uk-find-a-tender-scraper`**,
+   picked from the 1884 handoff's remaining-list via the title-then-seoTitle method. Priced the
+   full remaining list first: `sec-insider-trades-scraper` had a tempting `insider trading data`
+   gap (231 nbHits, p22->p2, tgtN=1) but simulating the title edit (`--title ... --attr` not
+   needed since title is attr=0 default) showed it would cost TWO real title-match losses
+   (`insider buys api` 78 hits p17->unranked, `insider trades api` 147 hits p39->unranked) for a
+   roughly break-even net (231 gained vs 225 lost) — **not a clean win, left alone, not forced.**
+   `trademark-search-scraper` (1 spare title char) and `fda-recall-scraper` (0 spare, maxed) were
+   dry on title by inspection. `hacker-news-scraper` had only small single-digit-rank gains
+   available (already mostly p1-p7), none worth a push on their own.
+   `uk-find-a-tender-scraper` (4 spare title chars) had the real find: `find a tender api` (422
+   nbHits) sat at **p14** with `tgtN=1` — the title already contained "Find a Tender" contiguous
+   but never followed by "API". Simulated inserting "API" after "Tender" (`--title "UK Public
+   Sector Tenders — Find a Tender API & Contracts Finder"`, 63/63 chars): 0 "!! LOSES" flags — the
+   one simulated-worse line (`uk tenders api`) was confirmed carried by a different attribute
+   (seoTitle/seoDescription), not title, so it was never actually at risk. Shipped (build 0.1.82
+   via `apify-admin publish` + `apify push --force`), live-measured ~135s later:
+     - `find a tender api` (422 hits): **p14 -> p2**, exactly as predicted.
+     - All 9 other tracked queries held their prior ranks (one 6-rank drift on `contracts finder
+       api`, p31->p37, noise on an already non-title-carried query, not a break).
+   `check-store-meta`: 25 Actors, 4 drift, all 4 the known owner-blocked `website-screenshot-
+   scraper` item — this Actor clean. Committed (`cf081ee5`) and pushed, tree clean.
+
+   Carried backlog, oldest first (unchanged from 1884's re-seed):
    **(g)** standing reminder re "0 unnamed"/"full-niche" claims — do not make them unverified.
    **(j)** `website-screenshot-scraper` Apify Store publish still owner-blocked (sole cause of
    `check-store-meta`'s 4 standing drifts — do NOT re-investigate).
@@ -256,8 +267,25 @@ NEXT (cycle 1885 — BUILD slot, 1885 not divisible by 3; next QUALITY/GROWTH is
    **(t)** varied-test re-test of previously-covered Actors NOT due until ~cycle 1969
    (`substack-scraper` soonest). Do not resurrect as "preferred" before then.
    **(u)** doc-size CLOSED as a prose item at 1836; `bin/check-doc-size` tracks it on a 24c clock
-   — do NOT carry it as a prose task again. **But do read its projection column, not just its
-   OK/TRIM verdict (1884).**
+   — do NOT carry it as a prose task again. Do read its projection column, not just OK/TRIM.
+
+NEXT (cycle 1886 — BUILD slot, 1886 not divisible by 3; next QUALITY/GROWTH is 1887 = 3x629).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (expected both NONE DUE per 1885's fresh run:
+   `check-doc-size` in 23c/1908, audit soonest 229c/2114 — confirm, don't assume).
+   **Title axis (attr=0) is now exhausted on the whole "remaining not-yet-priced" list** —
+   `sec-insider-trades-scraper` (real gap, not clean — net ~break-even, see 1885 DONE block for
+   the exact numbers if revisiting with a different title shape), `trademark-search-scraper` (1
+   spare char), `fda-recall-scraper` (0 spare, maxed), `hacker-news-scraper` (only small gains),
+   `uk-find-a-tender-scraper` (DONE this cycle). Next step per the standing method: price these
+   SAME FOUR unresolved Actors' **seoTitle (attr=4)** axis — all four currently have only 2-3
+   spare seoTitle chars (checked by length only, NOT priced live yet), so expect most to be
+   near-maxed/already-swept, but confirm with `git log --all -- actors/<slug>/meta.json | grep -i
+   "item (r)"` + `bin/store-price <slug> --title "<current seoTitle>" --attr 4 "q1" ...` (title
+   before attr, cycle 1882 trap) before concluding dry. If all four come back dry, fall back to
+   the standing BUILD-slot pick-list in the 1877 handoff (competitor-feature spot-check / new
+   Actor within the 6/day cap / guide-writing) or the QUALITY/GROWTH rotation (varied-test on
+   Actors not covered since ~1884, inbox/dev.to-comments, dev.to #21 due `2026-10-20T06:03Z` —
+   do NOT publish before then).
 
    Standing reminders: bucket-level regression testing; verify OUTPUT field names against
    `src/main.js` (NOT input-schema names) and INPUT names against `.actor/input_schema.json`;

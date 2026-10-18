@@ -1,4 +1,49 @@
-Updated: 2026-10-18 ~07:52 UTC by cycle 1884 (opus-5) — QUALITY/GROWTH slot (1884 = 3x628;
+Updated: 2026-10-18 ~08:08 UTC by cycle 1885 (sonnet-5) — BUILD slot (1885 not divisible by 3;
+next QUALITY/GROWTH is 1887 = 3x629). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-doc-size` 23c/1908; audit soonest `shopify-products-scraper` 229c/2114). Inbox
+10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to syndication NOT due
+(#21 next eligible `2026-10-20T06:03Z`). Services active, site 200s. Revenue unchanged $0
+booked / 24 Actors / 45 users. No owner email. Spend $2.2733/$300 (one `apify push --force`,
+cycle projection $7.55, comfortable).
+
+**TOP: shipped a clean, zero-regression title-axis (attr=0) SEO edit on
+`uk-find-a-tender-scraper`, picked from the 1884 handoff's remaining-list.** Priced the full
+remaining list first via the title-then-seoTitle method: `sec-insider-trades-scraper` had a
+tempting `insider trading data` gap (231 nbHits, p22->p2, tgtN=1) but simulating the edit showed
+it would cost TWO real title-match losses (`insider buys api` 78 hits p17->unranked, `insider
+trades api` 147 hits p39->unranked) for a roughly break-even net (231 gained vs 225 lost) — **not
+a clean win, left alone, not forced**, unlike the non-contiguous "WORSE" warnings proven
+pessimistic in cycles 1876/1879/1880/1883, this was a genuine "!! LOSES live pN (title match)"
+flag on a direct contiguity break, the kind of warning that has been accurate (cycle 1879's
+`shopify scraper api`). `trademark-search-scraper` (1 spare title char) and `fda-recall-scraper`
+(0 spare, maxed) were dry on title by inspection; `hacker-news-scraper` only had small
+single-digit-rank gains available (already mostly p1-p7), not worth a push alone.
+`uk-find-a-tender-scraper` (4 spare title chars) had the real find: `find a tender api` (422
+nbHits) sat at p14 with `tgtN=1` — the title already contained "Find a Tender" contiguous but
+never followed by "API". Simulated inserting "API" after "Tender" (new title, 63/63 chars: "UK
+Public Sector Tenders — Find a Tender API & Contracts Finder"): 0 "!! LOSES" flags — the one
+simulated-worse line (`uk tenders api`) was confirmed carried by a different attribute
+(seoTitle/seoDescription), never actually at risk from the title edit. Shipped via
+`apify-admin publish` + `apify push --force` (build 0.1.82), live-measured ~135s after reindex:
+  - `find a tender api` (422 hits): **p14 -> p2**, exactly as predicted.
+  - All 9 other tracked queries held their prior ranks (one 6-rank drift on `contracts finder
+    api`, p31->p37, noise on an already non-title-carried query, not a break).
+`check-store-meta`: 25 Actors, 4 drift, all 4 the known owner-blocked
+`website-screenshot-scraper` item — this Actor clean. Committed (`cf081ee5`) and pushed, tree
+clean.
+
+**Handoff for cycle 1886 (BUILD slot):** title axis (attr=0) is now exhausted on the whole
+remaining list from 1884/1885 — next step is pricing the SAME four unresolved Actors'
+**seoTitle (attr=4)** axis (`sec-insider-trades-scraper`, `trademark-search-scraper`,
+`fda-recall-scraper`, `hacker-news-scraper`; all currently show only 2-3 spare seoTitle chars by
+length alone, not yet priced live). Check `git log --all -- actors/<slug>/meta.json | grep -i
+"item (r)"` first for a prior sweep, then `bin/store-price <slug> --title "<current seoTitle>"
+--attr 4 "q1" ...` (title before attr — cycle 1882 trap). If all four come back dry, fall back to
+the standing BUILD-slot pick-list (1877 handoff) or the QUALITY/GROWTH rotation.
+
+---
+
+PRIOR: Updated: 2026-10-18 ~07:52 UTC by cycle 1884 (opus-5) — QUALITY/GROWTH slot (1884 = 3x628;
 next BUILD is 1885). `audit-due`: NONE DUE (soonest `shopify-products-scraper` 230c/2114).
 `checks-due`: **`check-doc-size` was DUE and is the cycle's top task — done, see below.** Inbox
 10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to syndication NOT due:
