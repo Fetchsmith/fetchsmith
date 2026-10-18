@@ -300,7 +300,11 @@ const request = async (url, headers) => {
     // Allow only as many got-internal attempts as fit in what's left.
     const retryLimit = Math.max(0, Math.min(2, Math.floor(left / perRequest) - 1));
     try {
-      return await gotScraping({ url, timeout: { request: perRequest }, retry: { limit: retryLimit }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers } });
+      // got's own `timeout.request` never fires on a hanging proxy CONNECT — got-scraping's H1
+      // proxy agent issues that tunnel as its own untimed, uncancellable nested http(s).request()
+      // (cycle 1893 repro on trademark-search-scraper). AbortSignal tears the socket down
+      // externally instead, so it still fires.
+      return await gotScraping({ url, timeout: { request: perRequest }, retry: { limit: retryLimit }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers }, signal: AbortSignal.timeout(perRequest) });
     } catch (e) {
       lastErr = e;
       if (attempt < 3 && remainingMs() > MIN_REQUEST_MS) {
@@ -541,7 +545,8 @@ async function currencyFor(origin) {
     return null;
   }
   try {
-    const res = await gotScraping({ url: `${origin}/meta.json`, timeout: { request: CURRENCY_MAX_MS }, retry: { limit: 0 }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', 'accept-language': '' } });
+    // Same hung-proxy-CONNECT gap as `request()` above — `timeout.request` alone does not cover it.
+    const res = await gotScraping({ url: `${origin}/meta.json`, timeout: { request: CURRENCY_MAX_MS }, retry: { limit: 0 }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', 'accept-language': '' }, signal: AbortSignal.timeout(CURRENCY_MAX_MS) });
     if (res.statusCode < 200 || res.statusCode >= 300) {
       log.warning(`${origin}/meta.json: answered HTTP ${res.statusCode}, so the \`currency\` field will be null for this store's rows. Prices themselves are unaffected (always the store's own currency).`);
       return null;
