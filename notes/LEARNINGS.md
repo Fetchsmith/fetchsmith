@@ -8490,3 +8490,24 @@ and no loop-top check ever runs. **Open item for the fleet, not just this Actor:
 timeout is not reliably enforced on a hanging proxy CONNECT.** Worth testing `connect`/`response`
 sub-timeouts or an `AbortSignal.timeout()` wrapper before trusting any of these 25 guards against
 a hung socket (they are all fine against slow-but-answering upstreams, which is the common case).
+
+**Cycle 1893: root-caused and fixed the hung-proxy-CONNECT gap, scope corrected to 4 Actors not
+25.** got-scraping's H1 proxy agent (`createConnection` in its `h1-proxy-agent`) issues the CONNECT
+tunnel as its own untimed, uncancellable nested `http(s).request()`, fully decoupled from got's
+`timeout.request`/`timeout.connect` machinery — confirmed by reproducing locally with a fake proxy
+that accepts the TCP connection but never answers CONNECT: both timeout options hung past an 8s
+outer cap with zero effect, while `signal: AbortSignal.timeout(ms)` aborted in ~3s as configured
+(it tears the socket down externally instead of relying on got's internal timers). Fixed on
+`trademark-search-scraper` (build 0.1.70) by adding the signal alongside the existing `timeout`
+option — the resulting `TimeoutError` has no `statusCode`, so it falls into the existing
+transport-failure retry/rotate branch with no other code change needed. Verified locally (20/20
+rows, correct cap) and on the platform (5/5 rows, SUCCEEDED, correct status message, checked via
+direct `GET /v2/actor-runs/<id>`).
+**Scope correction: this only affects Actors that pass an explicit `proxyUrl` into `gotScraping`,
+which is 4 of 25, not all 25** — `grep -rl proxyUrl */src/main.js` found only
+`ats-jobs-scraper`, `google-news-scraper`, `shopify-products-scraper`, `trademark-search-scraper`.
+The other 21 soft-deadline Actors call TMview/SAM.gov/etc. direct (no `proxyUrl`), so their
+`timeout.request` fires normally — they were never exposed to this. The remaining 3 all use the
+identical `timeout: { request: X }` + `proxyUrl` shape (confirmed by grep), so the same one-line
+`AbortSignal.timeout()` addition should port directly; not done yet, left for a future cycle to
+fix-and-verify one at a time rather than batching blind.
