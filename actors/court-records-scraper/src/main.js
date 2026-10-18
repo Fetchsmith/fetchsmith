@@ -278,6 +278,21 @@ if (startUrlRaw) {
     }
 }
 
+// `query` defaults to "patent infringement" only when the buyer gave no query AND no other
+// scope at all (filters below are unaffected either way). Verified live cycle 1905: the schema
+// used to carry this as a hard `default`, which Apify merges into ANY run that omits the field —
+// so a buyer asking for "all of Monsanto's docket records" via {"partyName":"Monsanto"} alone
+// was silently narrowed to Monsanto's PATENT cases only (same default-narrowing class fixed on
+// nih-reporter-scraper at cycle 894). `undefined` on the raw input is the discriminator, same as
+// that fix — an explicit `query:""` is a deliberate "no text filter" and must stay empty.
+if (!startUrlRaw && input.query === undefined && !query
+    && !(courts.length || filedAfter || filedBefore || docketNumber || partyName || attorneyName || judge)) {
+    query = 'patent infringement';
+    log.info('No query or other filter given; defaulting query to "patent infringement" so the run returns a '
+        + 'real, bounded sample instead of the entire multi-million-row corpus. Set query (to anything, including '
+        + 'an empty string) or any other filter to see your own results instead.');
+}
+
 // Checked here, after the startUrl block above, because a pasted URL can replace `courts`
 // wholesale. CourtListener does NOT reject an unknown court id — verified live 2026-09-28:
 // `?type=r&court=notarealcourt123` returns a clean `count: 0` with HTTP 200, exactly like a
@@ -422,7 +437,19 @@ async function apiGet(url, state = null) {
 function firstUrl(kind) {
     const qs = new URLSearchParams();
     qs.set('type', TYPE_FOR[kind]);
+    // `party_name`/`atty_name` only constrain RECAP results when `q` is non-empty — verified
+    // live cycle 1905 by holding party_name="Monsanto" fixed and varying only q: blank or
+    // omitted returned 19,112 rows of mostly-unrelated General Electric cases (the filter
+    // silently not applied, same failure shape `unknownCourts` above warns about for `court`),
+    // while q="*" returned the same 19,112-row count but correctly ALL named-party "Monsanto"
+    // matches. `court`/`filed_after`/`filed_before`/`docket_number`/`judge` do NOT need this —
+    // each was separately confirmed live to filter correctly with q blank. So: if this run would
+    // otherwise send an empty q to the index that needs party_name/atty_name, send the
+    // CourtListener match-everything token instead of nothing, rather than silently losing the
+    // one filter the buyer actually asked for.
+    const needsQueryToFilterParty = kind === 'dockets' && (partyName || attorneyName) && !query;
     if (query) qs.set('q', query);
+    else if (needsQueryToFilterParty) qs.set('q', '*');
     // `court` takes a space-separated list of court ids; repeating the param only keeps the last.
     if (courts.length) qs.set('court', courts.join(' '));
     if (filedAfter) qs.set('filed_after', filedAfter);

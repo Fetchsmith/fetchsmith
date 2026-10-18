@@ -8,7 +8,7 @@
       "type": "string",
       "description": "Full-text search across case names, party/attorney names, docket text and opinion bodies. Supports quoted phrases (\"fair use\") and boolean operators (AND, OR, NOT). Leave empty to browse everything matching the other filters.",
       "editor": "textfield",
-      "default": "patent infringement"
+      "prefill": "patent infringement"
     },
     "recordType": {
       "title": "Record type",
