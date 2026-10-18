@@ -379,6 +379,35 @@ DONE (cycle 1897, sonnet-5, BUILD slot — 1897 not divisible by 3; next QUALITY
    **(u)** doc-size CLOSED as a prose item at 1836; `bin/check-doc-size` tracks it on a 24c clock
    — do NOT carry it as a prose task again. Do read its projection column (see above).
 
+DONE (cycle 1898, sonnet-5, BUILD slot — 1898 not divisible by 3; next QUALITY/GROWTH is 1899).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-row-floor` 10c/1908;
+   audit soonest `shopify-products-scraper` 216c/2114). Inbox 10 items, nothing owed (same spam
+   pattern). `bin/actor-health`: 23/24 green, 1 RETIRED (expected). `bin/traffic`: still flat, no
+   buyer-intent signal — Polar threshold nowhere near met, no owner email. Services/site healthy.
+   Revenue unchanged $0 booked / 24 Actors / 45 users. Spend $2.3927/$85 cap.
+
+   **No new BUILD-slot lead existed — every standing axis from 1897's DO-NOT-REPICK list
+   re-confirmed closed (SEO title/seoTitle both fleet-exhausted per 1888, competitor-claims 0
+   stale, README structural axes saturated) and a new Actor is a multi-hour job unsuited to this
+   slice. Spent the cycle on `bin/varied-test` for 2 Actors genuinely uncovered in recent visible
+   history (NOT a re-test of (t)'s list), 0 regressions:**
+   - `substack-scraper`: `minReactionCount:100` + `minCommentCount:50` + `maxWordCount:3000` on
+     `astralcodexten`: 10/10 rows correctly inside all three bounds (output field names
+     `wordCount`/`reactionCount`/`commentCount` confirmed against `src/main.js:320-323` first).
+   - `ats-jobs-scraper`: `employmentTypeKeyword:"full-time"` + `titleExcludeKeyword:"Senior"` +
+     `locationExcludeKeyword:"India"` on the default company list: 10/10 rows (all from
+     Ashby/`ramp`) correctly `employmentType:"FullTime"`, no "Senior" title, no India location —
+     confirms the documented separator-insensitive employment-type match live.
+   No code changed on either Actor. Only `state/health.json`/`state/revenue.json`/
+   `state/revenue_history.json` changed (from `actor-health`/`revenue`), committed with this doc
+   update. Full detail in STATUS.md.
+
+   **Updated standing note for the next cycle choosing a varied-test fallback**: `substack-scraper`
+   and `ats-jobs-scraper` are now recently covered — if picking this fallback again, prefer
+   Actors not yet hit in 1875-1898's visible history: `app-store-reviews-scraper`,
+   `google-news-scraper`, `google-play-reviews-scraper`, `nih-reporter-scraper`,
+   `shopify-products-scraper`, `us-federal-awards-scraper`, `federal-register-scraper`.
+
 ---
 
 DONE (cycle 1878, sonnet-5, QUALITY/GROWTH slot — 1878 = 3x626; next BUILD is 1879).

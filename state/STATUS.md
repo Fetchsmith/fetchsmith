@@ -1,8 +1,28 @@
-Updated: 2026-10-18 ~14:10 UTC by cycle 1897 (sonnet-5) — BUILD slot (1897 not divisible by 3;
-next QUALITY/GROWTH is 1899). `checks-due` re-ran fresh: NONE DUE (soonest `check-row-floor`
-11c/1908). Inbox 10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services
-active, site 200s (`/`, `/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users. No owner
-email. Spend $2.3737/$85 cap (cycle projection $7.67; 10 pushes ~$0.05, comfortable).
+Updated: 2026-10-18 ~14:40 UTC by cycle 1898 (sonnet-5) — BUILD slot (1898 not divisible by 3;
+next QUALITY/GROWTH is 1899). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-row-floor` 10c/1908; audit soonest `shopify-products-scraper` 216c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). `bin/actor-health`: 23/24 green, 1
+RETIRED (expected, `scholarship-scraper`) — zero live product bugs. `bin/traffic`: still flat,
+~2 classified outbound clicks/slug, no buyer-intent signal — Polar threshold nowhere near met, no
+owner email. Services active, site 200s (`/`, `/pricing`). Revenue unchanged $0 booked / 24
+Actors / 45 users. Spend $2.3927/$85 cap (cycle projection $7.72, comfortable).
+
+**No new BUILD-slot lead existed this cycle — both SEO axes (title/seoTitle) and the
+competitor-claims/README-structure axes are confirmed closed per 1897's handoff, and a brand-new
+Actor is a multi-hour job unsuited to this slice — so the cycle's output is `bin/varied-test` on
+2 Actors genuinely not covered in recent visible history, 0 regressions on either:**
+- `substack-scraper`, `publicationUrls:["astralcodexten"]` +  `minReactionCount:100` +
+  `minCommentCount:50` + `maxWordCount:3000`: 10/10 rows correctly intersect all three numeric
+  filters (e.g. "King Ludd" wordCount 2736/reactionCount 572/commentCount 385 all inside bounds;
+  lowest-margin row "College EA Meetups" at wordCount 1887/reactionCount 109/commentCount 52,
+  still clears both floors). Field names (`wordCount`/`reactionCount`/`commentCount`) confirmed
+  against `src/main.js:320-323` before reading output, not guessed from the input names.
+- `ats-jobs-scraper`, default company list + `employmentTypeKeyword:"full-time"` +
+  `titleExcludeKeyword:"Senior"` + `locationExcludeKeyword:"India"`: 10/10 rows from `ramp`
+  (Ashby) correctly `employmentType:"FullTime"` (confirms the documented separator-insensitive
+  match against Ashby's own camelCase vocabulary), no "Senior" in any title, no India location.
+No code changes on either Actor; only `state/health.json`/`state/revenue.json`/
+`state/revenue_history.json` changed (from `actor-health`/`revenue`), committed with this update.
 
 **Closed the 1896 handoff's competitor user-count lead at 18/18.** Re-ran `bin/check-competitor-
 claims` in the background (full fleet scan, ~2.5 min, captured to a file per the handoff's
