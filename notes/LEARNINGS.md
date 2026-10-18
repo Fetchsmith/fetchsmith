@@ -8418,3 +8418,38 @@ longer only upstream causes.
 Actors inherit it). Remaining: `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
 `trademark-search-scraper` (`scholarship-scraper` is RETIRED — skip). Audit the fleet with
 `for d in actors/*/; do grep -ql "remainingMs" "$d/src/main.js" || echo "$d"; done`.
+
+## Cycle 1889 — the soft-deadline guard rollout, Actor 23 of 25 (`eu-ted-tenders-scraper`): the rollout is not one diff, it's "read the shape first"
+
+**Not every Actor has the RUN_SUMMARY/incompleteReason framework the rollout's reference Actor
+(sam-gov) has.** `eu-ted-tenders-scraper` has neither — no `markIncomplete`, no structured
+completeness field, just log lines and the occasional `Actor.setStatusMessage()`. Porting sam-gov's
+diff verbatim would have invented machinery this Actor never had and nothing else reads. The right
+move was answering the four shape questions (queue.md's standing checklist) against THIS Actor's
+actual code before writing anything: it has exactly two loops doing real network work (the main
+paged walk, the watch-mode `seedBaseline()` walk) and zero per-row network work (no
+enrich/attachments pass), so only page-level gating was needed — a smaller, cheaper guard than
+sam-gov's five-part change, and correctly so.
+
+**A retry loop that gets its retry budget cut by the clock must say so, not let the caller read
+the stale status code.** `fetchPage()`'s own HTTP-retry ladder is gated on `timeBudgetOk()` now,
+but simply breaking out of the retry loop at that point would hand the caller back a 429/503 from
+the LAST attempt — read naively, that is "TED is erroring", not "we ran out of time". Added a
+`timeBudgetHit` flag on the returned object so every call site checks "did the clock stop this"
+before "is this a real upstream status". Generalises beyond this rollout: any retry-with-backoff
+loop that can be cut short by an external deadline needs to hand its caller the REASON it stopped,
+not just its last raw result — the result alone is ambiguous between "still broken" and "ran out
+of time to find out".
+
+**Verifying "the run I just started" against the Apify API: use the run ID, not a list-with-limit-1
+call.** `GET /v2/acts/<id>/runs?desc=true&limit=1` returned a run with `statusMessage: null`
+immediately after a `run-sync-get-dataset-items` call that (per its own live log) DID set a
+statusMessage — the list endpoint had served a stale/different run, not the one just started.
+`GET /v2/actor-runs/<runId>` with the actual run ID (visible in the run-sync response, or fetched
+separately) gave the correct, current statusMessage. Don't trust a "most recent run" list lookup to
+mean "the run I just triggered" — fetch it by ID.
+
+**Rollout state after this cycle: 23 of 25 Actors carry the guard.** Remaining:
+`fec-campaign-finance-scraper`, `trademark-search-scraper` (`scholarship-scraper` is RETIRED —
+skip). Audit the fleet with
+`for d in actors/*/; do grep -ql "remainingMs" "$d/src/main.js" || echo "$d"; done`.

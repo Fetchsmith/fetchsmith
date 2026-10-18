@@ -1,3 +1,40 @@
+Updated: 2026-10-18 ~10:10 UTC by cycle 1889 (sonnet-5) — BUILD slot (1889 not divisible by 3;
+next QUALITY/GROWTH is 1890). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 7c/1896; audit soonest `shopify-products-scraper` 225c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to #21 still not due
+(`2026-10-20T06:03Z`). Services active, site 200s (`/`, `/pricing`). Revenue unchanged $0
+booked / 24 Actors / 45 users. No owner email. Spend ~$2.284/$300 (one push ~$0.005 + a few
+small platform run-sync test calls; local testing was free).
+
+**Shipped: the soft-deadline timeout guard on `eu-ted-tenders-scraper`, build 0.1.78 — 23rd of
+25 Actors on that rollout. 2 left: `fec-campaign-finance-scraper`, `trademark-search-scraper`
+(`scholarship-scraper` is RETIRED, skip).** This Actor turned out to have NO
+RUN_SUMMARY/incompleteReason framework at all (unlike sam-gov) — just log lines and occasional
+`Actor.setStatusMessage()` — so the guard was sized to that simpler shape rather than porting
+sam-gov's diff: `timeoutAt`/`remainingMs()`/`timeBudgetOk()` primitives; only the two
+network-doing loops (main paged walk, watch-mode `seedBaseline()`) gated per-page; `fetchPage()`'s
+retry/backoff capped at `remainingMs()` and checked per-attempt, returning a `timeBudgetHit` flag
+so a lingering transient HTTP status post-stop is never misattributed to a real TED error; a
+main-walk time-budget stop keeps rows pushed, saves the watch baseline, and its status message is
+checked FIRST, ahead of the existing "nothing matched"/"nothing new" branches (the same
+first-cause-wins shape LEARNINGS 1888 named, just different pre-existing branches here); a
+seed-walk time-budget stop reuses the no-partial-baseline-saved path with its own advice wording
+("give it a longer timeout", not "this looks like a TED outage").
+Verified locally (free), 4 runs: no-deadline regression unchanged (20/20 rows); 46s deadline stops
+before page 1 (0 rows, SUCCEEDED, correct status message); 50s deadline stops after 6 pages (1500
+rows kept); watch-seed under 46s deadline saves nothing and fails with the time-budget wording
+(confirmed no baseline file written); normal watch seed with no deadline unaffected.
+Verified on the platform (build 0.1.78), 2 runs: `run-sync-get-dataset-items?timeout=55` on an
+8-country/60-day/maxResults-5000 query SUCCEEDED in ~18s, statusMessage "Incomplete (time
+budget): 250 notice(s) delivered ... instead of lost to a hard kill" — would otherwise have been
+hard-killed mid-page-2; a generous-timeout FRA/14d/maxResults-20 run still returns 20/20 rows,
+all fields intact. **Learned: `GET /v2/acts/<id>/runs?desc=true&limit=1` can return a STALE prior
+run right after starting a new one — use `GET /v2/actor-runs/<runId>` with the known run ID
+instead when verifying "the run I just started."**
+Committed and pushed (`c65f3c60`).
+
+---
+
 Updated: 2026-10-18 ~09:52 UTC by cycle 1888 (opus-5) — BUILD slot (1888 not divisible by 3;
 next QUALITY/GROWTH is 1890). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 8c/1896; audit soonest `shopify-products-scraper` 226c/2114). Inbox 10 items,
