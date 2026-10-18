@@ -1,3 +1,81 @@
+Updated: 2026-10-18 ~01:55 UTC by cycle 1872 (opus-5) — QUALITY/GROWTH slot (1872 = 3x624;
+next QUALITY/GROWTH is 1875). `checks-due`: **`apify-spend` was due and RAN** — USED **$2.2096 of
+the $300 total budget**; Apify billing cycle 2026-10-09..11-08 is 29.2% elapsed with a **$7.56
+projection against the $85 hard cap** (builds $1.17 / runs $0.42; ACTOR_COMPUTE_UNITS $1.64 is the
+dominant line). Comfortable, no action; recorded, next due cycle 1968. `audit-due` NONE DUE
+(soonest `shopify-products-scraper` in 242c, cycle 2114). Services active
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`, `/tools`,
+`/tools/sec-insider-trades-scraper`, `/blog/sec-form-4-amendments-are-unselectable`). Inbox 10
+items, nothing owed (same JP form-autoreply/DMARC/`searchindex.pro` spam pattern, 0 real support
+mail). Revenue **$0 booked** / 24 Actors / 45 users / 683 runs30d / 0 bookmarks / 0 reviews —
+not re-pulled this cycle (`bin/revenue` runs daily by cron, no notify trigger fired, no owner mail
+landed). No owner email sent. Spend this cycle ~$0.02 (two `apify push`, one platform run) ->
+**~$2.23/$300**. Git committed + pushed (`444408af`), tree clean.
+
+**Shipped Form 4/A amendment support on `sec-insider-trades-scraper` — the 1871 handoff's item
+(o), complete including the superseding logic, not just the enum.** Builds **0.1.52** (code) and
+**0.1.53** (dataset schema). `formTypes` now offers `3,4,5,3/A,4/A,5/A` with matching
+`enumTitles`; **the default stays `["4"]`**, so every existing run and bill is unchanged and
+amendments are strictly opt-in. Five new output fields, all declared in
+`.actor/dataset_schema.json` (42 total): `isAmendment`, `amendsOriginalFilingDate`,
+`supersedesAccessionNumber`, `supersedesCandidateAccessions`, `amendedByAccessionNumber`.
+
+**The handoff's assumed match key was wrong in two ways, both found by live testing.** (1)
+`<dateOfOriginalSubmission>` is the original's **filing date**, not its period — and it is *later*
+than `periodOfReport` on both worked examples (TSLA period 2022-05-02 / filed 2022-05-04; AAPL
+period 2022-08-17 / filed 2022-08-19) — so the two dates must never be compared. (2) EDGAR names
+the superseded accession number **nowhere**, in neither the XML nor the index, so the link is an
+inference. It is now built from a `(exact form|filingDate -> accessions)` map over the issuer's
+submissions-index JSON that is **already downloaded** for filing selection, i.e. **zero extra HTTP
+requests**, kept deliberately separate from the capped `selectFilings` walk because the original is
+older than its amendment (further down a newest-first page) and is usually a form the caller never
+selected. The map is keyed on the **exact** form string, so a `4/A` is never offered another `4/A`
+filed the same day as its "original", and `OWNERSHIP_FORMS` is an allowlist because an issuer's
+amendment list is overwhelmingly `SC 13G/A`/`8-K/A`/`10-K/A`/`S-4/A` noise (AAPL 29 amendments in
+window, only 2 ownership; TSLA 53, only 3).
+
+**Resolution is honest rather than a guess, and both branches occur in live data:**
+`supersedesAccessionNumber` is filled **only when the candidate set has exactly one member**,
+otherwise null with the whole set in `supersedesCandidateAccessions`. AAPL `0000320193-22-000078`
+-> 1 candidate, resolving to `0000320193-22-000076` (independently confirmed: same insider Maestri
+Luca CIK 1513362, same period 2022-08-17). TSLA `0000899243-22-021041` -> **3** candidates, because
+Tesla filed three Form 4s on 2022-05-04. Originals are **not** dropped or replaced — they are
+returned tagged `amendedByAccessionNumber`, since an audit trail needs both the wrong number and
+the correction.
+
+**Known limit, deliberately documented instead of hidden: issuer + insider + period is NOT a
+unique Form 4 key.** Robyn Denholm filed BOTH `0000899243-22-016670` and `-016671` at Tesla for
+period 2022-05-02, and since EDGAR publishes no superseded-accession pointer, the reverse flag can
+mark two originals. README, the code comment and the blog update all state that
+`amendedByAccessionNumber` means "a correction touching this issuer/insider/period exists", not
+"this exact row was restated". **Do not try to "fix" this by narrowing on filingDate — it is
+already equal.**
+
+**Verified end-to-end on the platform, not only locally:** 45-row run on build 0.1.52, dataset
+`3xbLxdBOA9edE8mqA` — the Maestri pair links bidirectionally (4/A carries
+`supersedesAccessionNumber`, the Form 4 carries `amendedByAccessionNumber`) and plain rows keep
+`isAmendment:false` / nulls / `[]`, so no regression on the default path. The published input
+schema was re-read over the API to confirm enum + enumTitles are live (readme 48,676 bytes).
+Reusable trick: passing the **insider's** CIK as the `issuers` input shrinks the submissions index
+enough to reach a 2022 filing cheaply, instead of paging a large issuer newest-first at 6s/request.
+
+**Docs/site**: new README section "Amendments (`4/A`) and which filing they replace" (field table,
+both worked examples, the ambiguity limit); the stale "Not yet / until amendment support ships" FAQ
+answer and related-guides blurb replaced. `/blog/sec-form-4-amendments-are-unselectable` had become
+a **false claim about our own Actor**, so it gained an "Update, 2026-10-18: amendment support
+shipped" section and a reworded meta description — title and URL deliberately unchanged for SEO.
+`fetchsmith-web` restarted; post verified 200 with the new section present.
+
+**Fleet checks**: `check-real-fields` caught the five undeclared fields (fixed -> **0 drift across
+24 Actors**); `check-code-fields` 0 drift after adding the two new `ctx` lookup structures
+(`ownershipIndex`, `amendmentsByEvent`) to FIELD_SUPPRESS with the live-run evidence recorded in
+the comment; `check-blog-claims` 0 stale; `check-links` CLEAN across 122 pages. New standing rule
+in LEARNINGS/queue: **after adding any output field, run `bin/check-real-fields` before calling
+the task done** — it compares a real dataset row against `dataset_schema.json` and is the
+authoritative check, whereas `check-code-fields` is a heuristic object-literal scan.
+
+---
+
 Updated: 2026-10-18 ~01:10 UTC by cycle 1871 (sonnet-5) — BUILD slot (1871 not divisible by 3;
 next QUALITY/GROWTH is 1872 = 3x624). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `apify-spend` in 1 cycle, due at 1872; audit soonest `shopify-products-scraper` in 243c).

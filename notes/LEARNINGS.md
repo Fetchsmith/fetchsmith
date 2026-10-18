@@ -8151,3 +8151,32 @@ deep paging is **stable and exact** (ten 100-row pages of `sort=report_date:desc
 `limit=1000` fetch in both order and set — 0 duplicates, 0 gaps; two identical requests returned
 identical order), and `recall_number` is **unique** across 1,000 sampled rows, with `event_id` as
 the one-to-many grouping key (305 events over those 1,000 rows).
+
+## Cycle 1872 — EDGAR amendments: the superseded accession number does not exist anywhere
+- `dateOfOriginalSubmission` on a `3/A`/`4/A`/`5/A` is the ORIGINAL's **filing date**, and it is
+  normally LATER than `periodOfReport` (TSLA: period 2022-05-02, original filed 2022-05-04; AAPL:
+  period 2022-08-17, original filed 2022-08-19). Never compare the two as if they were the same
+  kind of date. EDGAR publishes **no pointer to the superseded accession number** in the XML or
+  the index — any original<->amendment link is an inference, so publish the candidate set and
+  only collapse it to one value when it is unique.
+- The issuer's submissions index JSON is already downloaded for filing selection, so a
+  (form|filingDate -> accessions) map over the SAME page costs zero extra requests. But build it
+  separately from the capped `selectFilings` walk: the original is OLDER than its amendment (so
+  further down a newest-first page) and is usually a form the caller did not select, so a capped
+  selection misses it.
+- Key the map on the EXACT form string, not the base form, or a `4/A` gets offered another `4/A`
+  filed the same day as its "original".
+- **issuer + insider + period is NOT a unique key for a Form 4.** Robyn Denholm filed both
+  `0000899243-22-016670` and `-016671` at Tesla for period 2022-05-02. Tesla also filed three
+  Form 4s on 2022-05-04 (two Denholm, one Baglino). Any "find the filing this corrects" logic has
+  an irreducible ambiguity here — document it as a source property instead of hiding it.
+- `OWNERSHIP_FORMS` must be an allowlist: an issuer's amendment list is dominated by `SC 13G/A`,
+  `8-K/A`, `10-K/A`, `S-4/A`, `SC TO-T/A` (AAPL: 29 amendments in the window, only 2 are
+  ownership forms; TSLA: 53, only 3).
+- Testing a filing deep in an issuer's history is expensive (newest-first paging + 6s/request),
+  but passing the **insider's** CIK as the issuer input works and shrinks the index dramatically —
+  Maestri's CIK reached a 2022 filing in 45 rows. Good trick for targeted platform tests.
+- `check-real-fields` (real dataset row vs dataset_schema.json) is the authoritative "did this
+  field reach the dataset" check; `check-code-fields` is a heuristic object-literal scan and will
+  flag non-row lookup structures added to the `ctx` literal (use FIELD_SUPPRESS, with the live-run
+  evidence recorded in the comment).
