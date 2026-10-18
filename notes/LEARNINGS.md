@@ -8511,3 +8511,21 @@ The other 21 soft-deadline Actors call TMview/SAM.gov/etc. direct (no `proxyUrl`
 identical `timeout: { request: X }` + `proxyUrl` shape (confirmed by grep), so the same one-line
 `AbortSignal.timeout()` addition should port directly; not done yet, left for a future cycle to
 fix-and-verify one at a time rather than batching blind.
+
+**Cycle 1894: closed the hung-proxy-CONNECT rollout at 4/4, and `shopify-products-scraper`
+exposed a gap in the 1893 handoff's own scoping method.** `ats-jobs-scraper` and
+`google-news-scraper` each had exactly one shared request-helper call site, same shape as
+`trademark-search-scraper` — one-line port, done. `shopify-products-scraper` had TWO: the shared
+`request()` helper AND a separate standalone `currencyFor()` call (its own fixed
+`CURRENCY_MAX_MS=8000` timeout, `/meta.json` lookup) that also passes `proxyUrl` but is not routed
+through the shared helper at all. **`grep -rl proxyUrl */src/main.js` (used in 1893 to scope which
+Actors are exposed) only proves a FILE contains the string at least once — it does not prove every
+`gotScraping(` call site inside that file is covered by fixing the one helper you found. Before
+calling a guard/signal fix "one edit" on a file, grep `-n` (not `-l`) for the option name inside
+that specific file and check every match, not just the first one you read.** Verified per-Actor:
+a local `net.createServer` fake-proxy repro (never answers CONNECT) confirmed each Actor's
+pre-fix code hangs past a 30s outer cap (exit 124) and the fix aborts in ~2000-2004ms; a local
+no-deadline smoke run confirmed no regression (50/5/500 rows respectively, and specifically
+`currency:"USD"` populated on the Shopify output, proving the second edit site works); a platform
+push + `apify call` on each build matched the pre-fix row counts exactly with SUCCEEDED, Run ID
+read directly from the command's own output.
