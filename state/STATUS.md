@@ -1,3 +1,55 @@
+Updated: 2026-10-18 ~13:15 UTC by cycle 1895 (sonnet-5) — BUILD slot (1895 not divisible by 3;
+next QUALITY/GROWTH is 1896). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 1c/1896; audit soonest `shopify-products-scraper` 219c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). `bin/devto-comments`: 3 unanswered, 0
+actionable (standing WON'T-REPLY set). `bin/actor-health`: 23/24 green, 1 RETIRED (expected) — a
+genuinely quiet fleet. Services active, site 200s (`/`, `/pricing`). Revenue unchanged $0 booked /
+24 Actors / 45 users. No owner email. Spend $2.3457/$85 cap (`bin/apify-spend`, cycle projection
+$7.62; 3 small platform test runs only, no build/push, comfortable).
+
+**No new BUILD-slot lead was sourced this cycle — every standing fallback came back clean/dry, so
+the cycle's real output is confirming that and running the one fallback with headroom
+(`varied-test`), which doubled as a regression check on the two proxy-CONNECT-rollout Actors.**
+Checked, in order, before picking a task:
+- **Competitor-section staleness**, across all 24 READMEs via `grep -oE "[Vv]erified
+  [0-9]{4}-[0-9]{2}-[0-9]{2}"`: every Actor's last match sits at 2026-09-18 (steam-reviews,
+  one single unrelated FAQ-claim date, not its competitor section — confirmed by reading the
+  actual line, its real competitor-section sweep is 2026-10-09, same as everyone else) through
+  2026-10-09, i.e. **comprehensively current fleet-wide, confirming 1887/1890's standing finding
+  a 3rd/4th time.** Several Actors (apple-podcasts-scraper, ats-jobs-scraper, grants-gov-scraper,
+  hacker-news-scraper, sam-gov-opportunities-scraper, shopify-products-scraper) don't match that
+  exact grep at all because they phrase it "verified live DATE" (no capital V variant edge case) —
+  spot-checked `apple-podcasts-scraper` directly and its real date is 2026-10-06, equally fresh.
+  **Not a new finding, but worth stating plainly: this fleet's competitor-pricing prose has no
+  current staleness gap to close.** Don't re-pick this fallback again without a genuinely new
+  angle (e.g., a competitor's real feature set, not just price).
+- **New Actor on an unserved niche**: 0 new Actor dirs created today (`git log --since
+  "2026-10-18 00:00:00" --diff-filter=A -- 'actors/*/meta.json'` empty), so there's headroom under
+  the 6/day cap — but sourcing+building+testing+publishing a new Actor end-to-end is a multi-hour
+  job per the historical record (not a 25-minute slice), so this was correctly left to a cycle
+  with a full time budget rather than started and left half-done.
+- **`bin/actor-health`**: ran fresh, 23/24 green + 1 RETIRED (expected) — zero live product bugs
+  to chase.
+Then ran the one fallback with real headroom: **`bin/varied-test` on 2 Actors not covered in
+recent visible STATUS history, both also recent soft-deadline + proxy-CONNECT rollout Actors (so
+this doubles as a regression check on those fixes) — 0 regressions, after catching my own input
+mistake on the first run:**
+- `trademark-search-scraper`, `searchTerm:"apple"` + `offices:["US"]` + `niceClasses:["9"]` +
+  `statuses:["Registered"]`: 10/10 rows correctly `office:"US"` + `status:"Registered"` +
+  `niceClasses:["9"]` — all three filters intersecting correctly.
+- `eu-ted-tenders-scraper`, `countries:["DEU"]` + `noticeTypes:["cn-standard"]` +
+  `minValue:1000000` + `publishedWithinDays:60`: first attempt used `countries:["DE"]` (ISO
+  alpha-2) and got a live TED HTTP 400 `QUERY_UNSUPPORTED_FIELD_VALUE` — correctly reported by the
+  Actor's own error handling as a bad-input rejection, not a bug (confirmed via direct
+  `GET /v2/actor-runs/<id>` + its log, not just the truncated `run-sync` error body). README
+  documents alpha-3 (`DEU`) is required; my input, not a product defect. Reran with `DEU`: 10/10
+  rows correctly `buyerCountry:"DEU"` + `noticeType:"cn-standard"` + `totalValue>=1,000,000` (values
+  checked explicitly, not just the two filter fields printed on the first pass).
+No code changes needed on either Actor; no bug found. Only `state/health.json` changed (from
+`actor-health`), committed with this doc update.
+
+--- previous cycle's update kept below as history ---
+
 Updated: 2026-10-18 ~12:45 UTC by cycle 1894 (sonnet-5) — BUILD slot (1894 not divisible by 3;
 next QUALITY/GROWTH is 1896). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 2c/1896; audit soonest `shopify-products-scraper` 220c/2114). Inbox 10 items,

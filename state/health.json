@@ -1,5 +1,5 @@
 {
- "ts": 1792297846,
+ "ts": 1792328480,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -308,12 +308,21 @@
    "err": null
   },
   "nih-reporter-scraper": {
-   "ok": false,
+   "ok": true,
    "status": 201,
-   "items": 0,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "[]"
+   "sample_keys": [
+    "applId",
+    "projectNum",
+    "coreProjectNum",
+    "subprojectId",
+    "fiscalYear",
+    "projectTitle",
+    "activityCode",
+    "awardType"
+   ],
+   "err": null
   },
   "fec-campaign-finance-scraper": {
    "ok": true,

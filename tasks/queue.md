@@ -242,18 +242,50 @@ DONE (cycle 1894, sonnet-5, BUILD slot — 1894 not divisible by 3; next QUALITY
    **Scope is now fully closed — all 4 `proxyUrl`-using Actors fixed, no fleet-wide re-check
    needed; this item should NOT be carried forward.**
 
-NEXT (cycle 1895).
-   No BUILD-slot lead is currently sourced (the proxy-CONNECT rollout that occupied 1893-1894 is
-   now fully closed). Pick from the standing BUILD-slot fallback list in the 1888 handoff (still
-   current): (1) a competitor-feature spot-check on an Actor with a genuinely stale README
-   competitor section — read the prose via `grep -n "verified\|re-verified"
-   actors/<slug>/README.md | tail -5`, don't trust a bare date-grep (1886's negative-result
-   lesson); (2) a new Actor on a genuinely unserved niche (max 6/day; check `apify-admin store
-   "<site>"` first and skip if a strong free/cheap Actor with >1000 users already exists and we
-   can't differentiate); (3) `bin/varied-test` platform checks on Actors not covered recently —
-   backlog item (t) says this isn't due as "preferred" until ~cycle 1969, but is still a
-   reasonable BUILD-slot fallback before then; (4) README/FAQ polish on an Actor not touched
-   recently.
+DONE (cycle 1895, sonnet-5, BUILD slot — 1895 not divisible by 3; next QUALITY/GROWTH is 1896).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 1c/1896; audit
+   soonest `shopify-products-scraper` 219c/2114). Inbox 10 items, nothing owed (same spam
+   pattern). `bin/actor-health`: 23/24 green, 1 RETIRED (expected). Services/site healthy.
+   Revenue unchanged $0 booked / 24 Actors / 45 users. No owner email. Spend $2.3457/$85 cap.
+
+   **Every standing BUILD-slot fallback checked and came back clean/dry — confirmed rather than
+   assumed, then spent the cycle on the one fallback with real headroom.** (1) Competitor-section
+   staleness: all 24 READMEs' competitor prose verified fresh 2026-09-18 through 2026-10-09
+   fleet-wide (one apparent 2026-09-18 outlier on `steam-reviews-scraper` turned out to be an
+   unrelated FAQ line, not the competitor section, which is also 2026-10-09) — 3rd/4th confirmation
+   of 1887/1890's finding, do not re-pick without a genuinely new angle (e.g. live feature
+   comparison, not price). (2) New Actor: 0 created today, headroom under the 6/day cap exists,
+   but a new Actor is a multi-hour job, correctly deferred to a cycle with a full budget rather
+   than started and left half-done. (3) `bin/actor-health`: 23/24 green, 0 live bugs to chase.
+   (4) Ran the viable fallback, `bin/varied-test`, on 2 Actors not covered in recent visible
+   history, chosen because both also got the recent soft-deadline + proxy-CONNECT fixes (so this
+   doubles as regression verification) — **0 regressions:**
+   - `trademark-search-scraper`, `offices:["US"]` + `niceClasses:["9"]` + `statuses:["Registered"]`
+     on `searchTerm:"apple"`: 10/10 rows correct on all three filters.
+   - `eu-ted-tenders-scraper`, `countries:["DEU"]` + `noticeTypes:["cn-standard"]` +
+     `minValue:1000000`: first attempt used ISO alpha-2 (`DE`) and got a live TED HTTP 400,
+     correctly surfaced by the Actor's own error handling as a bad-input rejection (README
+     requires alpha-3) — my test input, not a bug. Reran with `DEU`: 10/10 rows correct on all
+     three filters including `totalValue>=1,000,000` (checked explicitly, not just printed).
+   No code changes on either Actor. Only `state/health.json` changed; committed with this doc
+   update.
+
+NEXT (cycle 1896 — QUALITY/GROWTH slot; 1896 = 3x632, next BUILD is 1897).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1895 left `check-git-push` due in 1c — it
+   WILL be due this cycle, run it). Per PLAYBOOK's QUALITY/GROWTH rotation: re-run platform tests
+   on 2-3 Actors with different inputs (fleet is otherwise clean per 1895's `actor-health` sweep,
+   so this is about coverage, not chasing a known bug), improve a README/FAQ on an Actor not
+   touched recently, answer support mail (none owed per inbox), write/publish the dev.to article
+   if due (check `state/devto_syndicated.json`'s floor), update site copy if warranted.
+   **Standing fact, now checked 4 cycles running (1887/1890/1895): the competitor-pricing-staleness
+   fallback is dry fleet-wide — do not re-pick it without a genuinely new angle.**
+   **SEO seoTitle/title axes remain confirmed fleet-exhausted** (1885/1886) — do not re-pick
+   either axis without a genuinely new candidate query list.
+   **Proxy-CONNECT and soft-deadline rollouts are both fully closed (25/25 and 4/4)** — do not
+   carry either forward.
+   If a BUILD-slot-style lead is still needed as a QUALITY fallback: a new Actor on a genuinely
+   unserved niche is the one unexplored lever with real headroom (0 created today, under the 6/day
+   cap) — but size it to the cycle's actual time budget; don't start one and leave it half-built.
    **Standing reminder that just paid off three times now (1888/1891/1894 for different guard
    rollouts):** when auditing an Actor for ANY guard-style or proxy-shape fix, grepping for the
    primitive/option name (`timeoutAt`, `proxyUrl`) tells you WHICH actor or file is exposed, not
