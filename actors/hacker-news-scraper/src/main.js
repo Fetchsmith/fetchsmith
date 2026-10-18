@@ -20,7 +20,7 @@ function timeBudgetOk() {
 }
 const input = (await Actor.getInput()) ?? {};
 
-const queries = (input.queries ?? []).map((q) => String(q).trim()).filter((q) => q.length);
+let queries = (input.queries ?? []).map((q) => String(q).trim()).filter((q) => q.length);
 const tags = (input.tags ?? ['story']).filter(Boolean);
 const sortBy = input.sortBy === 'date' ? 'search_by_date' : 'search';
 const maxItemsPerQuery = Math.min(Number(input.maxItemsPerQuery ?? 100), 1000);
@@ -84,6 +84,31 @@ if (webhookUrlRaw) {
   }
 }
 
+// `queries` (and `tags`) carried a schema-level `default` that Apify merges into ANY run omitting
+// the field (API/CLI/scheduler, not just a Console click), so every alternate-seed call that
+// deliberately left queries blank got "apify" ANDed into it anyway. Measured live before this fix:
+// {"usernames":["pg"]} returned 0 of pg's posts (every slot was consumed by generic "apify" hits
+// before the usernames loop even ran); {"domainFilter":["simonwillison.net"]} and {"tags":["job"]}
+// both returned 0 rows, though each is a real, non-empty population (confirmed against Algolia's
+// own API: tags=job alone declares 17,447; tags=job+query=apify declares 0) -- the same narrowing
+// shape as nih-reporter-scraper's `keyword`/clinicaltrials-scraper's `conditions`/
+// court-records-scraper's `query`. Fix: the demo default now lives in CODE (schema keeps a
+// `prefill` so the Console form still shows and submits "apify"/["story"] explicitly, unchanged
+// UX), applied ONLY when queries is truly absent AND no other scope at all was given --
+// `input.queries === undefined` is the discriminator, since an explicit `queries:[]` is a
+// deliberate "no text query" and must stay empty.
+const QUERIES_DEFAULT = ['apify'];
+const otherScope = input.tags !== undefined || Boolean(author) || usernames.length > 0
+  || domainFilter.length > 0 || excludeKeywords.length > 0 || minPointsNum != null || minCommentsNum != null
+  || Boolean(input.postedAfter) || Boolean(input.postedBefore);
+if (input.queries === undefined && !otherScope) {
+  queries = QUERIES_DEFAULT.slice();
+  log.info(
+    `No queries and no other filter was given, so this run uses the example query "${QUERIES_DEFAULT.join(', ')}". `
+    + 'Set "queries" to search for something else, or add any other filter (tags, author, usernames, domainFilter, '
+    + 'excludeKeywords, minPoints/minComments, or a postedAfter/postedBefore window) to browse without a text query.',
+  );
+}
 if (!queries.length) queries.push(''); // empty query = browse by tag/date (e.g. front page, Ask HN, Who's Hiring)
 
 const cm = Actor.getChargingManager();

@@ -8759,3 +8759,37 @@ Remaining from the 1904 triage list, not yet done: `hacker-news-scraper` (`queri
 `author`/`usernames`/`domainFilter`), `fec-campaign-finance-scraper` (`candidateName:"Warren"` vs
 `candidateId`/`committeeId`; check `searchMode` first — it may gate which modes even read
 `candidateName`).
+
+**Cycle 1907: fixed `hacker-news-scraper`'s `queries` default-narrowing bug (build 0.1.81) —
+next item on the 1904-1906 triage list, and it turned out worse than the other 3.** Schema
+carried `default:["apify"]` (merged by Apify into any run omitting the field), and the main
+search loop always ran BEFORE the `usernames` profile-lookup loop and consumed the whole
+`maxResults` budget — so `{"usernames":["pg"]}` returned 10/10 generic "apify"-story hits and
+ZERO of pg's own data (an ADDITIVE pollution, not just narrowing, because usernames is a
+documented *separate* lookup, not an alternate seed for the same search). `{"domainFilter":[...]}`
+and `{"tags":["job"]}` (the "browse by tag only" pattern the code's own comments document as
+legitimate) both returned 0 rows — confirmed against raw Algolia (`tags=job` alone declares
+17,447; `tags=job&query=apify` declares 0), no masking quirk, clean narrowing. Fix: removed
+`default` from both `queries` and `tags` in the schema (kept `prefill` on each, Console UX
+unchanged — Console submits the prefilled value explicitly either way), `queries` became `let`,
+and a code fallback injects `["apify"]` only when `input.queries === undefined` AND
+`input.tags === undefined` (not just "tags.length===0" — tags needed the SAME default-removal
+treatment as queries, since its own merged default would otherwise always read as "scope is set"
+and permanently block the demo value even on a truly bare `{}` call) AND no
+author/usernames/domainFilter/excludeKeywords/minPoints/minComments/postedAfter/postedBefore.
+Verified 5 ways live: bug cases (usernames/domainFilter/tags-job) all return real populations now;
+the *documented* pure-username-lookup shape (`usernames`+explicit `tags:[]`) returns the actual
+profile row; bare `{}` still returns 5/5 "apify" demo rows; explicit `queries:["rust"]` still
+filters; explicit `queries:[]` + `domainFilter` stays empty (no re-injection).
+
+**New sub-lesson for this class: when the defaulted field has a SIBLING field that also carries
+its own schema default (here `tags`), that sibling needs the same default-removal treatment, not
+just a `.length` check** — a merged-in sibling default makes "other scope" look permanently true
+(or permanently false) regardless of what the buyer actually set, silently defeating the
+`undefined`-as-discriminator trick for the primary field. Check every co-defaulted field pair, not
+just the one field being fixed.
+
+With this fix, only `fec-campaign-finance-scraper` remains on the 1904 triage list
+(`candidateName:"Warren"` vs `candidateId`/`committeeId`; check `searchMode` first — it may gate
+which modes even read `candidateName`). `nih-reporter-scraper`/`court-records-scraper`/
+`clinicaltrials-scraper`/`hacker-news-scraper` are all CLOSED, do not re-open.
