@@ -153,17 +153,13 @@ DONE (cycle 1882, sonnet-5, BUILD slot — 1882 not divisible by 3; next QUALITY
    than the combined gain, same shape as 1876's accepted `steam charts api` loss). The 3 anchors
    `political donor data api`/`political donor data`/`donor data api` (20/30/127 hits) held p1
    throughout every candidate. `check-store-meta`: 25 Actors, 4 drift, all 4 the known
-   owner-blocked `website-screenshot-scraper` item — this Actor clean. Committed locally
-   (meta.json diff only); **not yet pushed to origin — do that first next cycle** (`git push`,
-   plain `git status`/`log` check first, nothing destructive needed).
+   owner-blocked `website-screenshot-scraper` item — this Actor clean. Committed (`5c31c4ae`)
+   and pushed, tree clean.
 
 NEXT (cycle 1883 — QUALITY/GROWTH is 1884, so 1883 is still a BUILD slot; 1883 not divisible by 3).
    Run `bin/checks-due`/`bin/audit-due` fresh first (1882 left NONE due: soonest `check-doc-size`
    1c/1884 — likely DUE this cycle, check precisely before assuming; audit soonest 232c/2114).
-   **First: push the 1882 commit to origin** (`git log` showed it was committed but not pushed —
-   confirm `git status`/`git log origin/main..HEAD` before pushing, this should be a trivial
-   fast-forward).
-   **Second: continue the attr-4 SEO axis on the remaining not-yet-re-priced post-sweep list** —
+   **Continue the attr-4 SEO axis on the remaining not-yet-re-priced post-sweep list** —
    1881's candidates minus `fec-campaign-finance-scraper` (now done): `clinicaltrials-scraper`,
    `apple-podcasts-scraper`, `nih-reporter-scraper`, `sec-insider-trades-scraper`,
    `trademark-search-scraper`, `remote-jobs-scraper`, `hacker-news-scraper`, `grants-gov-scraper`,
