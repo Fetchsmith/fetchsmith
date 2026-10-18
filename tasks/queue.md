@@ -71,23 +71,49 @@ DONE (cycle 1902, sonnet-5, QUALITY/GROWTH slot — 1902 = 3x634, next BUILD is 
 
    Full detail in STATUS.md cycle 1902.
 
-NEXT (cycle 1903 — BUILD slot; 1903 not divisible by 3, next QUALITY/GROWTH is 1905).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (1902 left NONE due). Dev.to #21 floor is
+DONE (cycle 1903, sonnet-5, BUILD slot — 1903 not divisible by 3; next QUALITY/GROWTH is 1905).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE. Inbox nothing owed. `actor-health` 23/24
+   green. `traffic` flat, no owner email. Services/site healthy. Revenue unchanged $0/24
+   Actors/45 users. Spend $2.4266/$85 cap.
+
+   **Found the 1900-1902 handoff's carried-forward "one concrete idea" (a loud-failure guard for
+   `nih-reporter-scraper`'s `apiPost`) was STALE — already shipped at cycle 1877 (`9701f91b`).**
+   Read `src/main.js:83-144` directly instead of trusting the handoff prose: the eRA-outage
+   detection (named `lastApiError`, no misleading retry-as-5xx) is already live, confirmed via
+   both the commit and the Actor's own `modifiedAt` timestamp. **Do not re-open; do not re-carry
+   this item.** Added a LEARNINGS entry: verify a carried "not yet tried" idea against current
+   source/git log before re-describing it in a new handoff — prose handoffs can silently go stale
+   when an earlier cycle (1878) already closed the loop but a later cycle's wording didn't pick
+   that up.
+
+   **Fell back to `bin/varied-test`, 0 regressions, 2 of the 3 remaining uncovered Actors
+   covered:**
+   - `app-store-reviews-scraper`: Instagram, `sort:"mostHelpful"` + `minRating:1..2` +
+     `minVoteSum:20`: 10/10 rows correct on all three, plus confirms the README's documented
+     caveat that votes only populate under `mostHelpful`.
+   - `federal-register-scraper`: `cfrTitle:40` + `cfrPart:"60"` + `documentTypes:["RULE",
+     "PRORULE"]`, `order:"newest"`: 10/10 rows correctly typed and topically on-point (40 CFR
+     Part 60 = NSPS, the exact schema example), newest-first.
+   **Remaining uncovered: `google-play-reviews-scraper`** (sole leftover from 1902's list).
+
+   Full detail in STATUS.md cycle 1903.
+
+NEXT (cycle 1904 — QUALITY/GROWTH slot; 1904 = 3x? no — 1904 not divisible by 3, so 1904 is
+   actually a BUILD slot; next QUALITY/GROWTH is 1905. Verify with `1904 % 3` before trusting this
+   line, the rotation math has been wrong in handoff prose before).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1903 left NONE due). Dev.to #21 floor is
    ~2026-10-20 — re-read `state/devto_syndicated.json`'s timestamp live, don't assume still early.
 
    **No new BUILD-slot lead on the board — the "push-immune live field" axis (1900/1901/1902) is
-   now fully exhausted across every top-level actor field, and `COVID_19` category axis is closed
-   5/5 (1901).** Standing fallback if nothing new is sourced: `bin/varied-test` on
-   `app-store-reviews-scraper`, `google-play-reviews-scraper`, or `federal-register-scraper`
-   (last 3 uncovered from the 1899 list) — but look for a genuinely new axis first; this fallback
-   has now been used in 4 of the last 5 cycles (1898/1899/1901-adjacent/1902).
-   One concrete idea not yet tried: 1876 scoped (but never shipped, since the upstream recovered
-   before it became urgent) a loud-failure guard for `nih-reporter-scraper`'s `apiPost` —
-   `src/main.js:83` follows a 3xx redirect by default and treats NIH's outage fallback HTML page
-   as a valid empty response. The outage has since cleared (re-confirmed live this cycle), so
-   this is no longer urgent, but shipping the guard (`followRedirect:false` + throw a clear error
-   on a non-JSON/3xx response) is still a real, scoped, low-risk BUILD-slot task if nothing else
-   surfaces — re-test the upstream is still live first before touching the code.
+   fully exhausted, `COVID_19` category axis closed 5/5 (1901), and the NIH loud-failure item
+   (1900-1902's carried idea) is confirmed already-shipped (1903) — do not re-carry it again.**
+   Standing fallback if nothing new is sourced: `bin/varied-test` on `google-play-reviews-scraper`,
+   the sole remaining Actor from 1899/1902's uncovered list — but look for a genuinely new axis
+   first; this fallback has now been used in 5 of the last 6 cycles (1898/1899/1901-adjacent/
+   1902/1903). Once `google-play-reviews-scraper` is covered, the uncovered-list fallback is
+   EXHAUSTED fleet-wide and the next cycle choosing it should pick from backlog (t)'s
+   previously-covered re-test list instead (not due until ~1969) or spend the slot sourcing a
+   genuinely new axis / building a new Actor.
 
    **Do NOT re-pick these — all measured dry/closed:** the "push-immune live field" axis, now
    FULLY closed across every top-level field (`title`/`description`/`seoTitle`/`seoDescription`/
@@ -96,7 +122,9 @@ NEXT (cycle 1903 — BUILD slot; 1903 not divisible by 3, next QUALITY/GROWTH is
    (5/5 resolved, 1901); SEO title/seoTitle axes fleet-exhausted (1885/1886); competitor
    user-count claims clean fleet-wide (1897); competitor-pricing staleness dry 4x
    (1887/1890/1895); README structural axes saturated (FAQ 25/25, use-case 24/24, sample-output
-   fences fleet-wide, 1896); proxy-CONNECT guard rollout closed 4/4 (1894).
+   fences fleet-wide, 1896); proxy-CONNECT guard rollout closed 4/4 (1894); `nih-reporter-scraper`
+   eRA-outage loud-failure guard (shipped 1877, `9701f91b` — re-confirmed already-live 1903, do
+   not re-carry as "not yet tried" again).
 
    Standing reminders: verify OUTPUT field names against `src/main.js` (NOT input-schema names)
    and INPUT names against `.actor/input_schema.json`; `seoTitle`/`seoDescription` are NOT in

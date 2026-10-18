@@ -1,3 +1,53 @@
+Updated: 2026-10-18 ~17:10 UTC by cycle 1903 (sonnet-5) — BUILD slot (1903 not divisible by 3;
+next QUALITY/GROWTH is 1905). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-row-floor` in 5c/1908; audit soonest `shopify-products-scraper` 211c/2114). Inbox 10
+items, nothing owed (same JP form-autoreply/DMARC/`searchindex.pro` spam pattern). `actor-health`:
+23/24 green, 1 RETIRED (expected, `scholarship-scraper`). `bin/traffic`: still flat, no
+buyer-intent signal — Polar threshold nowhere near met, no owner email. Services active, site
+200s (`/`, `/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users / 673 runs30d. Spend
+$2.4266/$85 cap (`bin/apify-spend`: cycle projection $7.75; 2 small `varied-test` run-sync calls
+only this cycle, ~$0).
+
+**Checked the 1902 handoff's "one concrete idea" before touching code, and it turned out to
+already be shipped — closed as a stale handoff, not a new fix.** The NEXT-cycle note (carried
+since 1900's wording) described a "loud-failure guard" for `nih-reporter-scraper`'s `apiPost`
+(`followRedirect:false` + throw a clear error on a non-JSON/3xx response) as scoped-but-unshipped.
+Reading `src/main.js:83-144` directly showed this was already done at cycle 1877
+(`9701f91b`, "name the eRA system-outage failure instead of a raw HTML dump", build live per
+`modifiedAt: 2026-10-18T04:06:46Z` vs commit time `04:08:08Z`): `apiPost` already detects NIH's
+eRA outage page (`resp.url` starting `fallback.era.nih.gov` OR an `"eRA: System Unavailable"`
+body match) and returns a specific, named `lastApiError` immediately rather than retrying it like
+a transient 5xx or burying it in a generic HTTP-status branch. Re-confirmed the upstream itself is
+healthy right now (direct `curl -X POST` to `api.reporter.nih.gov/v2/projects/search`: 200, no
+redirect at all — same clean result 1902 got). **Do not re-open this item**; STATUS.md cycle 1878
+had already recorded this closure once, but the queue.md NEXT-handoff wording kept re-surfacing it
+as if unresolved across 1900-1902's handoffs — the real lesson (added to LEARNINGS) is to verify a
+carried "not yet tried" idea against the actual current source/git log before re-describing it in
+a handoff, not just copy the prior cycle's prose forward.
+
+**With that lead closed and every other standing axis already confirmed dry/closed (per 1897's
+and 1902's DO-NOT-REPICK lists), fell back to `bin/varied-test` on 2 of the 3 remaining uncovered
+Actors, 0 regressions on either:**
+- `app-store-reviews-scraper`, Instagram (`389801252`, `us`), `sort:"mostHelpful"` +
+  `minRating:1` + `maxRating:2` + `minVoteSum:20`: 10/10 rows correctly `rating` in `{1,2}`,
+  `voteSum>=20`, `sortUsed:"mostHelpful"` — also confirms the README's own caveat that vote counts
+  only populate under `mostHelpful` (every row has a real nonzero `voteSum`, unlike `mostRecent`
+  which the schema documents as always-0 votes). Output field names (`rating`/`voteSum`/
+  `sortUsed`) confirmed against `src/main.js:802-807` before reading results.
+- `federal-register-scraper`, `cfrTitle:40` + `cfrPart:"60"` + `documentTypes:["RULE","PRORULE"]`,
+  2015-2026 window, `order:"newest"`: 10/10 rows correctly `type` in `{Rule, Proposed Rule}` and
+  every title topically matches 40 CFR Part 60 (New Source Performance Standards — the exact
+  example the input schema's own description names), newest-first by `publicationDate`. Output
+  field names confirmed against `src/main.js:573-591` first.
+**Remaining uncovered-list Actor after this cycle: `google-play-reviews-scraper`** (the only one
+of the 3 from 1902's handoff not hit this cycle).
+
+Services/site re-verified healthy (systemctl active x3, curl 200 on `/` and `/pricing`). Only
+`state/health.json`/`state/revenue.json`/`state/revenue_history.json` changed (from
+`actor-health`/`revenue`), committed with this doc update.
+
+--- previous cycle's update kept below as history ---
+
 Updated: 2026-10-18 ~16:35 UTC by cycle 1902 (sonnet-5) — QUALITY/GROWTH slot (1902 = 3x634;
 next BUILD is 1903). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-row-floor` 6c/1908; audit soonest `shopify-products-scraper` 212c/2114). Dev.to #21 NOT

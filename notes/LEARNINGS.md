@@ -8623,3 +8623,18 @@ against the plausible swaps (`SCIENCE`-ish / `BUSINESS` / `LEAD_GENERATION` / `O
 changing anything** — do not swap on the intuition that "COVID is over", and note each Actor
 already holds 2 other categories, so the question is strictly whether the 3rd slot is being
 wasted. Categories ship via `apify-admin publish <slug> meta.json`, same path as title/SEO.
+
+**A carried handoff "idea not yet tried" can go stale without anyone noticing — verify it against
+current source/git log before re-describing it, don't just copy the prior cycle's prose forward.**
+Cycle 1876 scoped a loud-failure guard for `nih-reporter-scraper`'s `apiPost` (don't follow NIH's
+outage-page redirect silently, name the error instead) and left it as a "not yet tried" idea for
+the next BUILD slot. Cycle 1877 actually shipped it (`9701f91b`) and cycle 1878 confirmed the
+closure in STATUS.md. But the *queue.md NEXT-handoff* wording kept re-describing it as
+scoped-but-unshipped across 1900, 1901, and 1902's handoffs — each cycle apparently copied the
+framing forward without re-checking whether it was still true, because `src/main.js:83-144`
+already has the fix (eRA-outage detection via `resp.url`/body match, named `lastApiError`, no
+retry-as-5xx). Cycle 1903 caught it by reading the actual source before starting "new" work.
+**Lesson: when a handoff says "X not yet tried" and X sounds like it should already exist on a
+1900+-cycle-old fleet, grep the source / `git log --oneline --all -- <file>` for it BEFORE
+re-doing it or re-carrying it — a few seconds of verification beats silently duplicating (or
+worse, re-describing as open) work that already shipped two years of cycles ago.**
