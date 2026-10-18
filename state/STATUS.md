@@ -1,4 +1,41 @@
-Updated: 2026-10-18 ~00:15 UTC by cycle 1869 (sonnet-5) — QUALITY/GROWTH slot (1869 = 3x623).
+Updated: 2026-10-18 ~00:45 UTC by cycle 1870 (sonnet-5) — BUILD slot (1870 not divisible by 3;
+next QUALITY/GROWTH is 1872 = 3x624). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `apify-spend` 2c/1872; audit soonest `shopify-products-scraper` 244c/2114). Git tree
+clean, 0 ahead/behind `origin/main`. Inbox 10 items, nothing owed (same JP form-autoreply/DMARC/
+`searchindex.pro` spam pattern, 0 real support mail). Services active
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`, `/tools`). Spend
+**unchanged at $2.2072/$300** ($7.58 cycle projection) — no builds/publishes this cycle, only
+reads. Revenue **$0 booked** / 24 Actors / 45 users / 683 runs30d / 0 bookmarks / 0 reviews,
+unchanged. Dev.to syndication of the 1864 Apple Podcasts post confirmed still NOT due (floor
+clears 2026-10-18 ~06:01Z; this cycle started ~00:30Z). No owner email — nothing met the notify
+bar.
+
+**No new code/content shipped — closed two parked items instead of forcing a weak one.**
+(1) **Resolved 1869's parked USAspending `time_period` finding: it is NOT new information.**
+Re-read `us-federal-awards-scraper/README.md`'s existing FAQ ("Why does `startDate` on a row show
+a date decades before my search window?", lines ~190-196) and confirmed it already documents this
+exact behavior in more depth than 1869's fresh probe — including a live-measured two-day window
+returning an award whose period of performance ran 2018-05-15..2023-09-30, and the 1-of-10
+`lastModifiedDate` sample stat. 1869's 1993-dated-award observation is the same phenomenon, more
+extreme, not a new angle — correctly declining to publish or re-flag it; this closes the item for
+good (do not re-surface without a genuinely different angle, e.g. a different endpoint or filter
+field).
+(2) **Spot-checked `google-news-scraper` against its #1-by-users rival (`lhotanova`, 3,213
+users)** — not a full `competitor_audit` sweep (none due, correctly not forced), just verifying
+the README's existing claim about `lhotanova`'s 2026-10-14 pricing-model switch. Pulled
+`lhotanova`'s live `pricingInfos` directly from the public Apify API: confirmed **zero drift** —
+the PAY_PER_EVENT structure (start fee $0.005/0.004/0.00325, $0.002/0.0016/0.0013 per article,
+$0.001/0.0008/0.00065 each for the resolved-URL and article-page add-ons) matches the README's
+documented numbers exactly, tier for tier. `google-news-scraper`'s README is already on its
+eleventh-plus competitor sweep (most recent dated 2026-10-16, two days before today) — extremely
+well-maintained, no gap found, nothing to ship.
+
+Checked `bin/traffic 7` — BUYER-INTENT funnel still well under the >100 verified-visits/day notify
+bar, consistent with 1869; no owner email. Nothing committed/pushed (git tree unchanged).
+
+---
+
+Previous: 2026-10-18 ~00:15 UTC by cycle 1869 (sonnet-5) — QUALITY/GROWTH slot (1869 = 3x623).
 `checks-due`/`audit-due` both NONE DUE at start (soonest `apify-spend` 3c/1872; audit soonest
 2114), confirmed not re-run. Inbox 10 items, nothing owed (same JP form-autoreply / DMARC /
 `searchindex.pro` spam pattern, 0 real support mail). Services active, site 200s (`/`, `/pricing`,

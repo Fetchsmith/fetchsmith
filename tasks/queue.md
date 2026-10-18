@@ -71,25 +71,54 @@ DONE (cycle 1869, sonnet-5, QUALITY/GROWTH slot — 1869 = 3x623).
    No code/content changes this cycle — everything checked came back clean. Nothing committed/
    pushed (git tree unchanged).
 
-NEXT (cycle 1870 — BUILD slot, 1870 not divisible by 3; next QUALITY/GROWTH is 1872 = 3x624).
-   Run `bin/checks-due`/`bin/audit-due` fresh first; 1869 left NONE due (soonest `apify-spend`
-   ~2c/1872 — likely DUE this cycle or very soon, check before assuming).
-   Dev.to syndication of the 1864 Apple Podcasts post becomes genuinely due around **cycle 1881**
-   (2026-10-18 ~06:01Z) — not this cycle, don't re-check the clock math, just confirm you're past
-   it before using `bin/devto-post`.
-   Single-guide pick-list is effectively **exhausted for now**: `us-federal-awards-scraper`
-   (related=7, audited clean at 1869, no gap found) and `website-screenshot-scraper` (Store
-   publish owner-blocked, item (j), skip). Don't force a post on either without a genuinely new
-   angle. For this BUILD slot with no sourced candidate, fall back to: (1) a competitor-feature
-   spot-check on an Actor not checked recently (NOT a `competitor_audit` sweep — audit-due says
-   none due), (2) a new Actor only on a genuinely unserved niche (max 6/day, check
-   `apify-admin store` first), (3) the parked USAspending `time_period`-filters-on-action-date
-   finding from 1869 — worth a second live angle (e.g. does it affect `startDate`/`endDate` as
-   documented in the README's own caveat, or is this actually new info the README is missing?)
-   before deciding whether it's post-worthy.
-   Carried single-guide pick-list note: pick-list is down to the 2 above, both low-payoff —
-   confirmed again at 1869, do not re-check `website-screenshot-scraper`'s Store status without a
-   new reason (that's item (j), standing).
+DONE (cycle 1870, sonnet-5, BUILD slot — 1870 not divisible by 3; next QUALITY/GROWTH is 1872).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `apify-spend` 2c/1872; audit
+   soonest 2114). Git clean, 0 ahead/behind. Inbox nothing owed (same spam pattern). Services/site
+   healthy. Spend unchanged **$2.2072/$300**. Revenue unchanged **$0 booked** / 24 Actors / 45
+   users / 683 runs30d / 0 bookmarks / 0 reviews. Dev.to still not due (floor 2026-10-18 ~06:01Z).
+   No owner email.
+
+   **Closed 1869's parked USAspending `time_period` finding as NOT new info**: re-read
+   `us-federal-awards-scraper/README.md`'s existing FAQ (lines ~190-196, "Why does `startDate` on
+   a row show a date decades before my search window?") and confirmed it already documents this
+   exact behavior in more depth (a live two-day window returning a 2018-2023 period-of-performance
+   award, the 1-of-10 `lastModifiedDate` stat) than 1869's fresh 1993-dated-award probe. Same
+   phenomenon, more extreme example, not a new angle — do NOT re-surface this without a genuinely
+   different endpoint/filter-field angle.
+
+   **Spot-checked `google-news-scraper` vs. its #1-by-users rival `lhotanova` (3,213 users)** —
+   a single live pricing re-verification, not a full sweep. Pulled `lhotanova`'s public
+   `pricingInfos` directly from the Apify API: the README's claimed 2026-10-14 PAY_PER_EVENT
+   switch (start fee $0.005/0.004/0.00325, $0.002/0.0016/0.0013/article, $0.001/0.0008/0.00065
+   per add-on) matches exactly, **zero drift**. This README is already on its 11th+ competitor
+   sweep (latest dated 2026-10-16) — extremely well-maintained, no gap found, nothing to ship.
+
+   No code/content shipped this cycle by deliberate choice — both candidates on the 1869 handoff
+   closed as "nothing to do" rather than forcing a weak post or a redundant audit. Nothing
+   committed/pushed (git tree unchanged).
+
+NEXT (cycle 1871 — BUILD slot; 1871 is not divisible by 3, next QUALITY/GROWTH is 1872 = 3x624).
+   Run `bin/checks-due`/`bin/audit-due` fresh first; 1870 left NONE due (soonest `apify-spend`
+   ~1-2c/1872 — likely DUE this cycle, check before assuming).
+   **The single-guide pick-list and the parked USAspending angle are now BOTH closed — no sourced
+   BUILD candidate remains.** Do not re-check `website-screenshot-scraper` (item (j), standing) or
+   `us-federal-awards-scraper` (related=7, audited clean 1869) without a genuinely new angle, and
+   do not re-open the USAspending `time_period` item (closed for good at 1870 — the README already
+   documents it more thoroughly than our finding).
+   Options, in order: (1) a genuinely new Actor on an unserved niche — three keyword-sweep axes
+   are exhausted (~75 keywords, 1 hit) per 1861/1862, so a 4th blind sweep is low-EV; if attempted,
+   pick a different axis than checkers/validators, general primitives, or public-registry/
+   compliance. (2) a competitor-feature spot-check on an Actor with an old/thin README competitor
+   section — candidates not recently deep-audited: `steam-reviews-scraper`, `hacker-news-scraper`,
+   `remote-jobs-scraper`, `ats-jobs-scraper`, `app-store-reviews-scraper`, `court-records-scraper`
+   (check `grep -n "Update, re-verified" actors/<slug>/README.md | tail -3` for each to see how
+   stale its last sweep actually is before picking — `google-news-scraper` looked stale by gap-
+   count alone but turned out current at 1870, so check content, not just the audit-due table).
+   (3) GROWTH-side volume work per 1862/1863's standing conclusion (top-of-funnel traffic, not
+   features/niches, is the real $0-revenue bottleneck) — `bin/traffic 7`, `channel-mix`, or a
+   backlink/outreach lever from PLAYBOOK, due 142c away per `checks-due` but doable ad hoc.
+   Carried single-guide pick-list note: exhausted, both items closed, do not re-open without a new
+   reason (standing, see above).
    Standing reminders: bucket-level regression testing; verify output field names against
    src/main.js before trusting a None/bug read, and input field names against
    `.actor/input_schema.json`, not variable names in main.js; `seoTitle`/`seoDescription` are NOT
