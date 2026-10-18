@@ -8241,3 +8241,26 @@ upstream outage into a silent empty success. A health check that only asserts "r
 pass; the user gets an empty dataset and, on PPE, is billed nothing but learns nothing either.
 Prefer `followRedirect: false` + an explicit non-JSON/`content-type` check, and **fail the run
 loudly** — a failed run is strictly better product behaviour than a silent empty one.
+
+## Cycle 1880 — `store-price`'s regression warnings are a worst case, not a forecast (3-for-3)
+When simulating a title/seoTitle edit with `bin/store-price --title "..." --attr <n>`, a
+`!! WORSE than live pN` / `!! LOSES live pN` flag on a term whose match becomes non-contiguous or
+whose span widens has now been **wrong three times in a row** in the safe direction:
+  * 1876 — `tenders api`-style non-contiguous match modelled p143, landed p21.
+  * 1879 — `shopify products api` (811 hits) flagged "LOSES", **held p58** (the simulator only
+    models exact word matches and is blind to Algolia's typo tolerance; "Product" vs "products").
+  * 1880 — `newsletter discovery api` (431 hits) predicted p1 -> p2, **held p1** (we were alone in
+    the `prox=4 attr=4` bucket; the simulator assumed a competitor in an earlier bucket).
+So: **do not abandon an otherwise-good title shape just because the simulator flags a protected
+term.** Price it, take the shape with the best upside, and MEASURE at ~120s+ after
+`apify push --force`. The simulator IS trustworthy when it predicts a real loss from a widened
+span (1879's `shopify scraper api` p90 -> p166 happened exactly as modelled), so read a warning as
+"this is the floor", not "this will happen".
+
+Second, generalisable from 3 shipped attr-4 edits (steam-reviews, shopify-products, substack):
+**the value is always in an UNRANKED query with a cheap contiguous win, never in nudging an
+existing p1.** Every one of these Actors was already earning p1/p2/p3 on the phrases its old
+seoTitle contained, so the "unused characters are wasted real estate" premise is only half right —
+the unused characters are worth something only if you first price the candidate list and find a
+real nbHits>300 query the fleet does not rank for at all (1880: `email newsletter scraper`, 465
+hits, unranked -> p1). Protect the existing matches, spend the leftover budget on the gap.
