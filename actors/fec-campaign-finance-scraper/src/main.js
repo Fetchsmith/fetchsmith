@@ -6,6 +6,20 @@ import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
 await Actor.init();
+// Soft-deadline guard (same pattern as sam-gov-opportunities-scraper/eu-ted-tenders-scraper,
+// 24th Actor on the rollout). Two reachable paths into a hard kill here: the paged walk itself
+// (up to 500 maxResults worth of pages, each with got's own retry.limit:2 backoff on a timeout
+// or 429/5xx) and, in candidates mode with includeTotals on, a `fetchTotals()` network call for
+// EVERY delivered candidate row. A hard kill is not a billing loss (pushResult charges per row
+// as it goes) -- it is the writes AFTER the walk: RUN_SUMMARY, and above all the watch-state
+// `watchStore.setValue`, so a watch-mode buyer whose run is killed loses their baseline and gets
+// re-charged for the whole result set on the next run. Stop proactively with a margin and flush
+// instead.
+const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
+const TIME_BUDGET_MARGIN_MS = 45_000;
+function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
+function timeBudgetOk() { return remainingMs() > 0; }
+let timeBudgetHit = false;
 const input = (await Actor.getInput()) ?? {};
 const MODES = ['candidates', 'contributions', 'disbursements', 'independentExpenditures'];
 const searchMode = MODES.includes(input.searchMode) ? input.searchMode : 'candidates';
@@ -376,11 +390,25 @@ async function fecGet(path, params) {
   // empty page and `break`s, so a mid-walk 429 ended the run as "complete" with partial data and
   // no warning; `fetchTotals` turned one into "no money on file". Check the status directly.
   let res;
+  // Capped at remainingMs() (never below a 1s floor so the request can still be attempted once)
+  // so neither the request itself nor got's own retry backoff below can run the clock past the
+  // margin -- without this, a single timed-out call plus its 2 built-in retries could burn up to
+  // ~90s (3 x 30s), more than the whole margin. Kept outside the gotScraping call so the catch
+  // below can tell whether IT, not FEC, is what cut the request short.
+  const requestTimeoutMs = Math.max(Math.min(30000, remainingMs()), 1000);
   try {
     res = await gotScraping({
       url: url.toString(),
-      timeout: { request: 30000 },
-      retry: { limit: 2 },
+      timeout: { request: requestTimeoutMs },
+      retry: {
+        limit: 2,
+        // enforceRetryRules defaults to false, so computedValue 0 (the default rules already
+        // said "don't retry" -- e.g. attempt limit reached, non-retriable error) must still be
+        // honoured here, not overridden into a retry just because time remains.
+        calculateDelay: ({ computedValue }) => (
+          computedValue === 0 || !timeBudgetOk() ? 0 : Math.min(computedValue, Math.max(remainingMs(), 0))
+        ),
+      },
       responseType: 'json',
       throwHttpErrors: false,
     });
@@ -400,6 +428,17 @@ async function fecGet(path, params) {
     // in advance which values are "too broad" (a COUNT probe would hit the identical timeout), so
     // this is caught after the fact rather than guarded before the request.
     if (err.name === 'TimeoutError' || err.code === 'ETIMEDOUT') {
+      // A real defect caught locally while testing the time-budget guard: capping
+      // `requestTimeoutMs` below the full 30s means a perfectly ordinary FEC response (1-3s) can
+      // now also time out, purely because WE shortened the budget, not because the filter is
+      // broad. Without this check that run reported "employer too broad, narrow your search" --
+      // actively wrong advice for a clock stop, and the opposite of what the buyer should do
+      // (the real fix is a longer run timeout, not a narrower query).
+      if (requestTimeoutMs < 30000) {
+        const e = new Error('stopped before the run time budget ran out (request timeout was shortened to fit the remaining budget)');
+        e.isTimeBudget = true;
+        throw e;
+      }
       const e = new Error(
         `The FEC API took too long to respond and timed out. This usually means a free-text `
         + `filter value (donorEmployer, donorOccupation, donorName, recipientName or payeeName) `
@@ -628,6 +667,14 @@ try {
   // next request. Only `/candidates/` uses normal `page` paging.
   let cursor = null;
   while (!stop) {
+    if (!timeBudgetOk()) {
+      timeBudgetHit = true;
+      log.warning(
+        `Run time budget reached; stopping before fetching page ${page} so the ${pushed} row(s) `
+        + `already collected${watchMode ? ' and the watch baseline' : ''} are saved instead of lost to a hard kill.`,
+      );
+      break;
+    }
     if (watchMode && page > WATCH_PAGE_CAP) {
       // A scan safety valve, not a delivery cap -- it only ever bounds how many pages of an
       // already-mostly-seen result set one run will page through, never how many NEW rows can
@@ -719,6 +766,16 @@ try {
     let rowIndex = -1;
     for (const c of results) {
       rowIndex += 1;
+      // Checked before this row's own work starts (including `fetchTotals()` below, the other
+      // network call this Actor makes), not after -- so a time-budget stop here can never be
+      // confused with `chargeLimitReached`/`maxResultsReached`/`seedCapHit`, which are only ever
+      // set inside `pushResult()`, never reached for this row if this check fires first.
+      if (!timeBudgetOk()) {
+        timeBudgetHit = true;
+        rowsNotReached = results.length - rowIndex;
+        stop = true;
+        break;
+      }
       let item;
       let watchId;
       if (searchMode === 'disbursements') {
@@ -881,14 +938,28 @@ try {
     page += 1;
   }
 } catch (err) {
-  // Deliberately NOT Actor.fail() here (cycle 676): Actor.fail exits the process immediately, so
-  // the watch baseline was never saved on a failed incremental run -- every row this run had
-  // already pushed AND CHARGED for was missing from the baseline and got delivered and charged a
-  // second time on the next run. Record the error, let the tail of the script persist the
-  // baseline and RUN_SUMMARY, and fail at the very end instead.
-  log.exception(err, 'Run failed');
-  runError = err.message;
-  markIncomplete('upstream-error', `the FEC API call on page ${pages + 1} failed: ${err.message}`);
+  // A `fecGet` call that timed out ONLY because its own request timeout was shortened to fit the
+  // remaining time budget (see the check above requestTimeoutMs<30000) is a soft time-budget
+  // stop, not an upstream failure -- it must NOT set `runError`/`upstream-error`, or it would
+  // both fail the run (losing the rows already pushed and charged from the baseline, same as any
+  // other runError) and tell the buyer to narrow their query when the real fix is a longer
+  // timeout. Falls through to the generic `timeBudgetHit` handling below instead.
+  if (err.isTimeBudget) {
+    timeBudgetHit = true;
+    log.warning(
+      `Run time budget reached while waiting on the FEC API; stopping so the ${pushed} row(s) `
+      + `already collected${watchMode ? ' and the watch baseline' : ''} are saved instead of lost to a hard kill.`,
+    );
+  } else {
+    // Deliberately NOT Actor.fail() here (cycle 676): Actor.fail exits the process immediately, so
+    // the watch baseline was never saved on a failed incremental run -- every row this run had
+    // already pushed AND CHARGED for was missing from the baseline and got delivered and charged a
+    // second time on the next run. Record the error, let the tail of the script persist the
+    // baseline and RUN_SUMMARY, and fail at the very end instead.
+    log.exception(err, 'Run failed');
+    runError = err.message;
+    markIncomplete('upstream-error', `the FEC API call on page ${pages + 1} failed: ${err.message}`);
+  }
 }
 
 // Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
@@ -966,6 +1037,10 @@ const SEARCH_MODE_NOUN = {
 // already recorded in the catch above and outranks every cap below it. `max-results` is only a
 // shortfall when something was demonstrably left behind -- a query with exactly maxResults
 // matches is complete, and saying otherwise would cry wolf on the commonest healthy run.
+// `timeBudgetHit` is set in exactly two places, both of which break the walk immediately before
+// any of the other four causes below can be set for the same stop -- so in practice at most one
+// of these five is ever true, and the order here is for readability, not tie-breaking.
+if (timeBudgetHit) markIncomplete('time-budget', `${pushed.toLocaleString('en-US')} row(s) delivered over ${pages} page(s); the run approached its platform time limit and stopped itself so what was already collected${watchMode ? ' (and the watch baseline)' : ''} would be saved instead of lost to a hard kill. Give the run a longer timeout in its run options, or narrow the query.`);
 if (watchPageCapHit) markIncomplete('watch-page-cap', `the watch scan stopped after ${WATCH_PAGE_CAP} page(s) without exhausting the match set`);
 if (seedCapHit) markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-row cap; matches past the cap will be reported as new (and charged) on a later incremental run`);
 if (chargeLimitReached) markIncomplete('charge-limit', `the run's pay-per-event charge limit was reached${rowsNotReached ? `; ${rowsNotReached} already-fetched row(s) were not delivered` : ''}`);
@@ -973,7 +1048,12 @@ if (maxResultsReached && moreAvailable) markIncomplete('max-results', `maxResult
 
 // A failed SEEDING run must NOT leave a partial baseline behind: a half-written baseline turns
 // the next run into an "incremental" one that charges for every match the seed walk never
-// reached. No record at all is the cheap outcome -- the next run simply re-seeds for free.
+// reached. No record at all is the cheap outcome -- the next run simply re-seeds for free. Gated
+// on `runError` specifically, not on `!complete` -- a cap-triggered seed shortfall (seedCapHit,
+// watchPageCapHit, and now timeBudgetHit) is a soft, anticipated stopping point that still saves
+// the partial baseline with a warning (same as seedCapHit's own wording above), not a refusal;
+// only a genuine thrown failure discards it, because only then is the baseline's state unknown
+// rather than merely incomplete.
 const skipBaselineSave = watchMode && seeding && runError !== null;
 if (skipBaselineSave) {
   log.warning(
@@ -1062,6 +1142,7 @@ const runSummary = {
   maxResults,
   maxResultsReached,
   chargeLimitReached,
+  timeBudgetHit,
   seedCap: watchMode && seeding ? SEED_CAP : null,
   seedCapHit: watchMode && seeding ? seedCapHit : null,
   watchPageCap: watchMode ? WATCH_PAGE_CAP : null,
