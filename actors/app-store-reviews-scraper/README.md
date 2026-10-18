@@ -128,7 +128,7 @@ names this as the `Review scraped` event; an earlier version of this paragraph q
 that listing's `Search / chart result scraped` event, not what a reviews run is charged (fixed
 2026-10-03, cycle 1178, same isPrimaryEvent-vs-rival's-own-table class as the `westerly_breaker` fix in
 `eu-ted-tenders-scraper`'s README); `code-node-tools/app-reviews-scraper`
-(176 users) charges $0.0005/review tiered down to $0.0003 on Gold and up, 3x-5x ours (an earlier version
+(199 users, re-verified 2026-10-18) charges $0.0005/review tiered down to $0.0003 on Gold and up, 3x-5x ours (an earlier version
 of this paragraph said a flat $0.0005/5x; its live record tiers by account plan, fixed 2026-10-03, cycle
 1178); `benthepythondev/appstore-reviews-scraper` (152 users)
 charges $0.002/review tiered down to $0.0014 on Diamond, 14x-20x ours at every tier, same ballpark
@@ -461,7 +461,7 @@ five listings whose event set was too ambiguous for the batch script. The honest
 
 Cheaper than us at **every** account plan with **no start fee** (strictly cheaper at any run size):
 
-- `lergassy/app-store-reviews-scraper` (3 users) — **$0.00008 (Free) → $0.000072 (Bronze) →
+- `lergassy/app-store-reviews-scraper` (1 user, re-verified 2026-10-18) — **$0.00008 (Free) → $0.000072 (Bronze) →
   $0.000064 (Silver) → $0.000056 (Gold+)** per review, no fee: **20% to 44% cheaper than us at
   every volume.** A pure per-review App Store export with country and star filters, i.e. a direct
   substitute on features as well as price. The cheapest unconditional rate in this niche to date.
@@ -568,7 +568,7 @@ rate that looked competitive to a Free-tier shopper. The new tiers keep the Free
 (still ties the historical volume leaders `thewolves`/`theagents`), and make every paying tier
 cheaper than the old flat rate — Silver ties `workstream`'s unconditional $0.00008, and Gold+ sits
 one tick above `lergassy`'s $0.000056 Gold+ rate rather than matching it exactly, since `lergassy`
-has 3 users and no track record and losing 0.000014/review to the single cheapest listing in a
+has 1 user (re-verified 2026-10-18) and no track record and losing 0.000014/review to the single cheapest listing in a
 crowded niche is a reasonable price for not having raced to the bottom. **Platform finding, not
 previously documented:** Apify's tiered-pricing API silently collapses GOLD/PLATINUM/DIAMOND to one
 value — a publish that set PLATINUM to $0.00006 and DIAMOND to $0.000056 came back live with both
