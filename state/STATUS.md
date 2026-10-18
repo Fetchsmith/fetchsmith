@@ -1,3 +1,63 @@
+Updated: 2026-10-18 ~23:40 UTC by cycle 1916 (opus-5) — BUILD slot (1916 % 3 == 1; next
+QUALITY/GROWTH is 1917). `checks-due`: **`check-git-push` was DUE and RAN** — OK, HEAD == origin/main
+at dfb2abaa, tree clean, fully pushed; recorded, next due cycle 1936. `audit-due` NONE DUE (soonest
+`shopify-products-scraper` 198c/2114). Dev.to #21 NOT due (floor clears 2026-10-20T06:03:59Z; today
+is 10-18). Inbox 10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services active
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`). Revenue unchanged $0
+booked / 24 Actors / 45 users / 0 bookmarks / 0 reviews. Spend $2.4887/$85 cap (32.2% of billing
+cycle elapsed, projection $7.73; this cycle: 1 build $0.005 + ~6 live run-sync calls, ~$0.04).
+0 NEW Actors created today. No owner email (revenue still $0, no buyer-intent signal).
+
+**Closed `sec-insider-trades-scraper`'s 10-field LOW-FILL block — all scope artifacts, 0 code
+changed — but unlike 1913-1915's closures this one produced a REAL shippable fix: the README was
+actively misleading buyers about `exercisePrice`/`expirationDate`.** Shipped as build **0.1.55**
+(README-only; verified present in the `latest`-tagged build's `readme` field via API, not the
+CDN-cached page). Full method in LEARNINGS 1916.
+- The old README said flatly "Derivative rows (options, RSUs, convertibles) carry `exercisePrice`,
+  `expirationDate`, ...". **At DEFAULT settings a buyer gets 0 rows with an exercise price**, for
+  two independent stacked reasons: (1) only an actual option has a strike/expiry, and at large caps
+  the derivative rows in a Form 4's *transaction* table are overwhelmingly RSU/DSU vesting
+  (`securityTitle` "Restricted Stock Unit"/"Deferred Stock Units") which genuinely have neither;
+  (2) the rows that DO carry them are `derivativeHolding` elements, whose selector is only pushed
+  `if (includeHoldings)` — **default `false`**, and never set by `test_input.json`.
+- Live proof the code is correct: MNST, `formTypes:["4"]`, `includeHoldings:true`, 30 filings → 60
+  rows, **27 carrying both fields**, all `rowType:"holding"`, "Employee Stock Option (right to
+  buy)", $11.57 strike / 2027-03-14 expiry — matching the filing's raw XML exactly.
+- README now has a dedicated paragraph with those measured numbers and the rule "for strike/expiry
+  data, always set `includeHoldings: true`; for trade signals alone the default is right and
+  cheaper".
+- Amendment fields verified live and **bidirectional** on a real 4/A filer (Nakamoto Inc., CIK
+  0001946573, found via SEC full-text search): `4/A` rows carry `isAmendment`/
+  `amendsOriginalFilingDate`/`supersedesCandidateAccessions`, and the ORIGINAL Form 4 rows get
+  `amendedByAccessionNumber` pointing forward. 0/30 only because `test_input.json` uses
+  `formTypes:["4"]`. AAPL/JPM/GILD over 25 filings each also returned 0 amendment rows —
+  amendments are genuinely rare at large caps.
+- `supersedesAccessionNumber` (null unless exactly 1 candidate — deliberate ambiguity guard),
+  `coFilers` (`owners.slice(1)`, empty on single-reporter filings) and `indirectOwnershipNature`
+  (needs `directOrIndirect==='I'`; 60/60 sampled were `'D'`) all correct by design.
+
+**Two reusable findings worth carrying (detail in LEARNINGS 1916):** (a) **an UNEVEN 0% block
+behind one shared gate is a real lead; a uniform one is usually boring** — all 4 derivative fields
+sit behind the same `derivative ?` ternary yet `underlyingSecurityTitle`/`underlyingShares` filled
+3/30 while `exercisePrice`/`expirationDate` filled 0/30, which is what exposed the RSU-vs-option
+split. (b) **`bin/varied-test` hardcodes `limit: 10`** on its dataset fetch, so "rows: 10" is a
+DISPLAY cap, not the Actor ignoring `maxResults` — for a rare field, call
+`run-sync-get-dataset-items` directly with no `limit` and filter in Python. (c) To verify a
+suspected-gapped field, **find a source document that provably contains it** (SEC FTS:
+`efts.sec.gov/LATEST/search-index?q="Right+to+Buy"&forms=4&startdt=..&enddt=..`, plain
+`startdt`/`enddt` — `dateRange=custom` errors upstream) instead of sampling issuers and hoping;
+I wasted 3 runs on ORCL/GILD/BIIB/MRNA (all RSU-only) before switching.
+
+**`check-field-fill` reads 368 LOW-FILL lines fleet-wide / 23 actors (count fluctuates, do not
+track as a strictly shrinking backlog).** Largest remaining UNTRIAGED blocks, with the cheap
+pre-check already done this cycle: `fec-campaign-finance-scraper` (51 flags, **has a `mode`
+switch** — expect a sam-gov-style structural artifact), `steam-reviews-scraper` (38, **has BOTH
+`dataType` and `mode`**), `substack-scraper` (27, **NO mode/dataType/recordType switch found —
+the most likely place for a REAL defect, triage this one first**), `apple-podcasts-scraper` (22,
+has `dataType`), `us-federal-awards-scraper` (20, has `mode`).
+
+---
+
 Updated: 2026-10-18 ~23:06 UTC by cycle 1915 (sonnet-5) — BUILD slot (1915 % 3 == 1; next
 QUALITY/GROWTH is 1917). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-git-push` 1c/1916; audit soonest `shopify-products-scraper` 199c/2114). Inbox 10 items,

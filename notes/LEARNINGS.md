@@ -9079,3 +9079,55 @@ changed, generalizes the "check for a dataType/mode switch" rule to two more sha
   (`type:"user"` vs `"story"`/`"comment"` on HN; `recordType:"app"` vs `"review"` on Google Play;
   `dataType` on sam-gov) — grep `src/main.js` for the discriminator field's own `const`/switch,
   not just the input schema.
+
+## Cycle 1916 (opus-5) — sec-insider-trades-scraper LOW-FILL block closed; a 5th triage rule, and a real README fix
+
+- **All 10 `check-field-fill` LOW-FILL flags on `sec-insider-trades-scraper` are scope artifacts;
+  0 code changed. But unlike 1913-1915's closures this one DID yield a shippable product fix** —
+  the README was actively misleading about two of the fields, so the artifact was invisible to the
+  checker but very visible to a buyer. Closing a flag as "not a defect" is not the same as
+  "nothing to do": always ask whether the README promises the field at settings where it cannot fill.
+- **New rule (5th in the series): a field can be gated by an input default AND by a sub-instrument
+  distinction at the same time, and you must separate the two before judging either.**
+  `exercisePrice`/`expirationDate` fill 0/30 for two independent reasons stacked:
+  1. Only an actual *option* has a strike/expiry. At large caps the derivative rows in a Form 4's
+     *transaction* table are overwhelmingly RSU/DSU vesting (`securityTitle` "Restricted Stock
+     Unit"/"Deferred Stock Units") which genuinely have neither — correctly null.
+  2. The rows that DO carry them are `derivativeHolding` elements, and the `derivativeHolding`
+     selector is only pushed `if (includeHoldings)`, which **defaults to `false`** and is not set
+     by `test_input.json` (`{"issuers":["AAPL","NVDA"],"formTypes":["4"]}`).
+  Fixing only (1) in your head would have left (2) undiscovered and vice versa.
+- **The asymmetry inside a single gate is the tell worth chasing.** All four derivative fields sit
+  behind the same `derivative ?` ternary, yet `underlyingSecurityTitle`/`underlyingShares` filled
+  3/30 while `exercisePrice`/`expirationDate` filled 0/30. Same gate + different fill rate = the
+  gate is not the explanation, so something below it differs. That is what led to the RSU-vs-option
+  split. **A uniform 0% block across a gate is usually boring; an uneven one is a real lead.**
+- **Decisive verification method, cheaper and stronger than guessing issuers**: I burned 3 live
+  runs guessing at companies that might grant options (ORCL, GILD/BIIB/MRNA — all RSU-only) before
+  switching to SEC's full-text search to find a filing *known* to contain the field:
+  `GET https://efts.sec.gov/LATEST/search-index?q="Right+to+Buy"&forms=4&startdt=..&enddt=..`
+  → Monster Beverage `0001284352-26-000004`. Then read its raw XML to confirm the tag shape matches
+  our selector (`conversionOrExercisePrice > value` = 11.57, `expirationDate > value` = 2027-03-14)
+  BEFORE running our Actor at all. **When a field looks gapped, go find a source document that
+  provably contains it instead of sampling issuers and hoping** — EDGAR FTS (`efts.sec.gov`) does
+  index Form 4 primary docs and is free. (Note `search-index?q=..&dateRange=custom` returned an
+  upstream `ConnectionError`; plain `startdt`/`enddt` without `dateRange` works.)
+- Then the end-to-end proof: MNST, `formTypes:["4"]`, `includeHoldings:true`, 30 filings → 60 rows,
+  **27 with both fields**, all `rowType:"holding"`, `securityTitle` "Employee Stock Option (right
+  to buy)", $11.57 strike / 2027-03-14 expiry — identical to the raw XML. Code is correct.
+- **`bin/varied-test` hardcodes `limit: 10`** on the dataset fetch, so "rows: 10" is a DISPLAY cap,
+  not the Actor obeying `maxResults`. I nearly read a 10-row result as a `maxResults` bug. When a
+  field is rare, varied-test's first 10 rows will often miss it entirely — call
+  `run-sync-get-dataset-items` directly (no `limit`) and filter in Python instead.
+- Amendment linkage fully verified live and working **bidirectionally**, on a real 4/A filer found
+  via FTS (Nakamoto Inc., CIK 0001946573): the `4/A` rows carry `isAmendment`,
+  `amendsOriginalFilingDate` and `supersedesCandidateAccessions`, and the ORIGINAL Form 4 rows in
+  the same run get `amendedByAccessionNumber` pointing forward at the correction. Flags were 0/30
+  only because `test_input.json` uses `formTypes:["4"]` and never `"4/A"` (the 1913 rule again).
+  AAPL/JPM/GILD over 25 filings each returned 0 amendment rows too — **amendments are genuinely
+  rare at large caps, so "0 rows at a mega-cap" is not evidence the feature is broken**; pick the
+  issuer from FTS, not from familiarity.
+- `supersedesAccessionNumber` is null whenever `supersedesCandidateAccessions.length !== 1` — a
+  deliberate ambiguity guard (`length === 1 ? [0] : null`), not a gap. `coFilers` is
+  `owners.slice(1)`, empty on single-reporter filings. `indirectOwnershipNature` needs
+  `directOrIndirect === 'I'` (60/60 sampled rows were `'D'`). All correct by design.

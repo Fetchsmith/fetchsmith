@@ -55,9 +55,26 @@ parser yourself.
 `expirationDate`, `underlyingSecurityTitle`, `underlyingShares`, `rule10b5_1Plan`, `footnotes`,
 `filingUrl`, `url`.
 
-Derivative rows (options, RSUs, convertibles) carry `exercisePrice`, `expirationDate`,
-`underlyingSecurityTitle` and `underlyingShares`; non-derivative common-stock rows leave them
-`null`. Set `includeDerivative: false` to get common stock only.
+Derivative rows (options, RSUs, convertibles) carry `underlyingSecurityTitle` and
+`underlyingShares`; non-derivative common-stock rows leave them `null`. Set
+`includeDerivative: false` to get common stock only.
+
+**`exercisePrice` and `expirationDate` need `includeHoldings: true` on most issuers, and this is
+the one default that surprises buyers** (measured 2026-10-18). Only an actual *option* has a
+strike and an expiry. At large caps the derivative rows in a Form 4's *transaction* table are
+overwhelmingly RSU/DSU vesting (`securityTitle` "Restricted Stock Unit"/"Deferred Stock Units"),
+which genuinely have neither — so both fields are correctly `null` there, and a default run on
+AAPL/NVDA/ORCL/MNST returns **0 rows with an exercise price** even though nothing is broken. The
+options are reported in the *holdings* table, which `includeHoldings` (default `false`) skips.
+Turn it on and they fill: Monster Beverage (`formTypes: ["4"]`, `includeHoldings: true`, 30
+filings) returned 60 rows of which **27 carried both fields** — all `rowType: "holding"`,
+`securityTitle` "Employee Stock Option (right to buy)", e.g. a $11.57 strike expiring
+2027-03-14, matching the figures in the filing's raw XML exactly. Note `underlyingShares` can
+still be `null` on such a row when the filer reports the share count only as a footnote
+reference; the text is then in `footnotes`.
+
+So: for **strike/expiry data, always set `includeHoldings: true`**. For trade signals alone, the
+default is right and cheaper.
 
 ### Amendments (`4/A`) and which filing they replace
 
