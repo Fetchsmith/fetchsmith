@@ -8529,3 +8529,26 @@ no-deadline smoke run confirmed no regression (50/5/500 rows respectively, and s
 `currency:"USD"` populated on the Shopify output, proving the second edit site works); a platform
 push + `apify call` on each build matched the pre-fix row counts exactly with SUCCEEDED, Run ID
 read directly from the command's own output.
+
+## Cycle 1896 — audit README *structure* by listing all headings, not by grepping one phrasing
+
+Looking for Actors missing a buyer-facing use-case section, a fleet grep for
+`^#+ .*(use case|who.s this for|what you can)` flagged 5 of 24 READMEs. Four were
+**false positives — pure phrasing variants** that serve the identical purpose:
+`## Who uses this` (clinicaltrials, federal-register), `## What it's for`
+(nih-reporter). Only ONE Actor (`sec-insider-trades-scraper`) genuinely lacked the
+section, and `website-screenshot-scraper` lacks it but is owner-blocked from
+publishing so README work there has zero buyer reach.
+
+**Rule:** for any "which Actor is missing section X" sweep, run
+`grep -nE '^#+ ' <file>` and read the whole heading list per Actor (24 files is a
+few seconds), rather than guessing the phrasing. This is the same shape as the
+standing `timeoutAt`/`proxyUrl` lesson — a grep for a token tells you where to
+*look*, never whether the thing is actually covered. A phrase grep over prose is
+even weaker than one over code, because prose has no canonical spelling.
+
+**Also reusable:** the cheap structural axes worth sweeping this way are FAQ
+presence (fleet is 25/25 — saturated, don't re-pick), sample-output `json` fence
+count, and use-case section presence (now 24/24 among published Actors, also
+saturated). Do NOT re-pick any of these three as a QUALITY-slot lead without a
+new axis — they are closed as of this cycle.
