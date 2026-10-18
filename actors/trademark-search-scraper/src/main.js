@@ -442,15 +442,25 @@ async function fetchPage(page) {
     }
     let res;
     try {
+      const requestTimeoutMs = Math.min(REQUEST_TIMEOUT_MS, budget);
       res = await gotScraping({
         url: API,
         method: 'POST',
         json: body,
         responseType: 'json',
-        timeout: { request: Math.min(REQUEST_TIMEOUT_MS, budget) },
+        timeout: { request: requestTimeoutMs },
         retry: { limit: 0 },
         throwHttpErrors: false,
         proxyUrl,
+        // got's own `timeout.request` does NOT fire while stuck in a hung proxy CONNECT:
+        // got-scraping's H1 proxy agent issues CONNECT as its own untimed, uncancellable nested
+        // http(s).request() inside createConnection(), fully decoupled from got's timeout
+        // machinery (cycle 1892 platform run ZIcKbMxI4MWHeTUhw sat ~50s past a 30s request
+        // timeout). Reproduced locally (cycle 1893) with a fake proxy that accepts the TCP
+        // connection but never answers CONNECT: timeout.request and timeout.connect both hung
+        // past an 8s outer cap, while AbortSignal.timeout() aborted the socket in ~3s as
+        // configured — only an externally-aborted signal actually tears it down.
+        signal: AbortSignal.timeout(requestTimeoutMs),
       });
     } catch (e) {
       // Transport-level (proxy CONNECT refused/590, socket reset, DNS, timeout): no statusCode
