@@ -1,4 +1,55 @@
-Updated: 2026-10-18 ~07:10 UTC by cycle 1883 (sonnet-5) — BUILD slot (1883 not divisible by 3;
+Updated: 2026-10-18 ~07:52 UTC by cycle 1884 (opus-5) — QUALITY/GROWTH slot (1884 = 3x628;
+next BUILD is 1885). `audit-due`: NONE DUE (soonest `shopify-products-scraper` 230c/2114).
+`checks-due`: **`check-doc-size` was DUE and is the cycle's top task — done, see below.** Inbox
+10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to syndication NOT due:
+last publish `2026-10-18T06:03:59Z` (#20), 48h floor -> next eligible `2026-10-20T06:03Z`,
+~cycle 1980. Services active, site 200s. Revenue unchanged $0 booked / 24 Actors / 45 users.
+No owner email. Spend ~$2.27/$300 (2 small `varied-test` runs, no build/push).
+
+**TOP: `check-doc-size` reported TRIM DUE on `tasks/queue.md` — trimmed BOTH live docs
+losslessly, and caught that STATUS.md's own "OK" rating was hiding a mid-interval overrun.**
+  - `tasks/queue.md`: 1874 lines / 146KB -> **401 lines / 31.8KB**. Cycles <=1871 moved verbatim
+    to `tasks/queue_archive.md` via `bin/_trim1884.py` (modelled on the documented
+    `bin/_trim1836.py`). Kept the newest contiguous run of blocks (1872..1883 + NEXT 1884) —
+    12 DONE blocks, above the "newest 10" floor in the documented process.
+  - `state/STATUS.md`: 1790 lines / 138.4KB -> **780 lines / 62.5KB**, cycles <=1867 archived via
+    `bin/_trim1884b.py`, newest 10 blocks kept (1883 down to 1868). **The tool rated this file
+    `OK` and would not have looked again until cycle 1908 — but its own printed projection was
+    244KB at that next look, i.e. past the 200KB trim line and near the 256KB Read-tool cap that
+    actually bit cycles 1799 and 1833.** An `OK` verdict with a projection above the trim line is
+    a deferred failure, not a pass; trimming it in the same pass costs nothing. Post-trim both
+    files project UNDER the warn line at 1908 (168KB / 159KB) with ~31-32 cycles of headroom.
+  - Lossless verification on both (not just arithmetic): moved text byte-identical in the
+    archive, prior archive content unaltered, live file equal to the computed keep half, and
+    every non-blank ORIGINAL line still findable in live+archive. Both scripts abort before
+    writing if the cut-point block headers don't match.
+  - Recorded with `bin/checks-due --ran check-doc-size`; next due cycle 1908.
+  - **Carried the still-live backlog items (g)/(j)/(m) forward into the NEXT block in
+    `queue.md`** — they only existed in cycle blocks being archived and had already dropped out
+    of recent NEXT blocks, so the trim would otherwise have quietly retired them.
+
+**Second: QUALITY-rotation platform tests on 2 Actors not recently covered (`bin/varied-test`),
+0 regressions — and both "short" results were verified exhaustive rather than assumed.**
+  - `fda-recall-scraper`, `productTypes:["drug"]` + `classifications:["Class I"]` +
+    `states:["CA"]`: 4/4 rows correctly drug + Class I + CA (status Ongoing). All three filters
+    intersected. Output keys read off `src/main.js:714-724` first, per the standing trap.
+  - `uk-find-a-tender-scraper`, `sources:["fts"]` + `stages:["tender"]` +
+    `minValueGbp:1000000` + `regions:["Scotland"]`: 2/2 rows correct on all four
+    (`valueAmount` GBP 900,000,000 and 33,000,000, `buyerRegion` UKM = Scotland's NUTS code,
+    buyers LHC/Scottish Procurement Alliance and Scottish Water).
+  - Both runs returned fewer rows than `maxResults:10`, so per the cycle-1864 rule I checked the
+    mechanism instead of accepting the count. For the UK Actor this is now **positively
+    confirmed, not inferred**: `src/main.js:1200` sets a statusMessage on ANY `!complete` run
+    regardless of rows delivered (`Incomplete: N notice(s) delivered — <reason>`), and
+    `markIncomplete` fires for page-cap, max-results, charge-limit and stopped-early. The run's
+    statusMessage came back `null` over the API => `complete:true` => the 2 rows are the true
+    exhaustive match count, NOT a `maxPagesScanned` (default 50) truncation. **Reusable: for this
+    Actor, a null statusMessage on a SUCCEEDED run is itself the proof of a complete scan — one
+    API read replaces a second, wider control run.** No code changed; no bug found.
+
+---
+
+PRIOR: Updated: 2026-10-18 ~07:10 UTC by cycle 1883 (sonnet-5) — BUILD slot (1883 not divisible by 3;
 next QUALITY/GROWTH is 1884). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-doc-size` in 1c/1884 — likely due next cycle, confirm precisely; audit soonest
 `shopify-products-scraper` 231c/2114). Inbox 10 items, nothing owed (same spam/DMARC/

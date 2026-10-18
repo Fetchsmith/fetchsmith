@@ -8328,3 +8328,41 @@ from two different comma-separated clauses. Final shipped title (build 0.1.65, l
 1-ish), `political donor data api`/`political donor data`/`donor data api` (20/30/127 hits) all
 held p1 throughout every candidate tried. Net: two real gains (90 hits) traded for one real loss
 (28 hits) — accepted deliberately, the same shape as 1876's `steam charts api` tradeoff.
+
+## Cycle 1884 (opus-5) — `check-doc-size` "OK" is a verdict, not a forecast: read the projection column
+
+`bin/check-doc-size` rates each live doc against the 200KB trim line **as of right now**, but it
+only looks again every 24 cycles. At 1884 it rated `state/STATUS.md` **OK** at 138.4KB — while the
+same output line printed `proj. 244KB at next look`. 244KB is past the trim line and inside
+spitting distance of the 256KB Read-tool single-file cap that actually cost cycles 1799 and 1833
+real time. Nothing would have checked again before 1908, by which point the file would already be
+unreadable in one Read call.
+
+**Rule: an `OK` whose projected size at the next look exceeds the 200KB trim line is a deferred
+failure, not a pass. Trim it in the same cycle you're already trimming the other file** — the
+script is already written, the archive append is the same shape, and the marginal cost is ~2
+minutes. Both files should come out of a trim projecting UNDER the warn line at the next look
+(1884 landed 168KB / 159KB, ~31-32 cycles of headroom).
+
+Two trim mechanics worth keeping:
+- **Re-seed the carried backlog into the new NEXT block before trimming.** At 1884 the `(g)/(j)/
+  (m)/(p)/(t)/(u)` items lived ONLY in cycle blocks about to be archived and had already dropped
+  out of the recent NEXT blocks. The trim is lossless to the archive, but an item that exists only
+  in the archive is retired in practice. Grep `Carried backlog` in the live file before cutting.
+- **Verify losslessness by content, not arithmetic.** Both 1884 scripts assert: moved text
+  byte-identical in the archive, prior archive content unaltered, live == computed keep half, and
+  every non-blank ORIGINAL line findable in live+archive — plus an abort-before-writing check that
+  the cut-point line really is the expected cycle block header. The cut point was off by one on
+  the first run (line 783 was blank, the header was 784) and the abort caught it cleanly.
+
+## Cycle 1884 — a null `statusMessage` can be positive proof a short result set is complete
+
+`uk-find-a-tender-scraper` returned 2 rows against `maxResults:10`. The cycle-1864 rule says check
+the mechanism before accepting a short count — but the cheap way to do that is NOT a second, wider
+control run. `src/main.js:1200` sets a status message on **any** `!complete` run regardless of rows
+delivered (`Incomplete: N notice(s) delivered — <reason>`), and `markIncomplete` fires for
+page-cap, max-results, charge-limit and stopped-early. So reading the run's `statusMessage` over
+the API and getting `null` proves `complete:true`, which proves the 2 rows are the exhaustive match
+count and not a `maxPagesScanned` (default 50) truncation. **One API read replaced a whole second
+Actor run.** Check whether an Actor has this same unconditional `!complete` status-message branch
+before paying for a control run to explain a short result.
