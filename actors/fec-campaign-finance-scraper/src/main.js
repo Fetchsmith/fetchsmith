@@ -27,7 +27,9 @@ const searchMode = MODES.includes(input.searchMode) ? input.searchMode : 'candid
 // share the same paging, amount-window, date-window and watch machinery -- only the endpoint,
 // the query params and the row shape differ.
 const isTxnMode = searchMode !== 'candidates';
-const candidateName = (input.candidateName ?? 'Warren').trim();
+// The "Warren" demo value is applied further down, once state/office/party/electionYear are
+// parsed -- it must NOT be a schema `default` (see the note at that fallback).
+let candidateName = (input.candidateName ?? '').trim();
 const donorName = (input.donorName ?? '').trim();
 const donorEmployer = (input.donorEmployer ?? '').trim();
 const donorOccupation = (input.donorOccupation ?? '').trim();
@@ -79,6 +81,26 @@ const currentEvenYear = new Date().getUTCFullYear() - (new Date().getUTCFullYear
 const electionYear = input.electionYear
   ? Number(input.electionYear)
   : (isTxnMode ? currentEvenYear : undefined);
+
+// `candidateName` carried a schema `default: "Warren"` until cycle 1908. Apify merges a schema
+// default into EVERY run that omits the field, so `{"state":"MA","office":"S"}` was silently
+// searching `q=Warren` on top of those filters and returning 2 rows where the real match set is
+// 146 (measured against the FEC API directly) -- the caller never asked for Warren and got no
+// warning. Same class as nih-reporter's `keyword` (1904), court-records' `query` (1905),
+// clinicaltrials' `conditions` (1906) and hacker-news' `queries`/`tags` (1907). The demo value
+// now lives here instead, applied only when the field is genuinely absent AND the run carries no
+// other candidates-mode scope -- so a bare `{}` (the Store's "run with default input" path) still
+// returns real rows, while any real filter is honoured as written. The `undefined` test is what
+// makes this work, so the schema must keep `prefill` and never regain `default`. The sibling
+// scope fields are safe to test by truthiness: their schema defaults are empty strings (1907's
+// co-defaulted-sibling trap only bites when a sibling's merged default is itself truthy).
+// Unlike the four Actors above, this field is read in ONE mode only (`candidates`, as `q`) -- the
+// three transaction schedules never send it -- so the gate is scoped to that mode's own filters.
+if (input.candidateName === undefined && searchMode === 'candidates'
+  && !state && !office && !party && electionYear === undefined) {
+  candidateName = 'Warren';
+  log.info('No candidateName or state/office/party/electionYear filter set -- searching the demo value "Warren". Set candidateName, or any of those filters, to search for something else.');
+}
 
 // `committee_id` is a fast, indexed filter on Schedules B and E but reliably 504s on Schedule A
 // (confirmed live in cycle 410 on both a large and a small committee), so it is accepted only

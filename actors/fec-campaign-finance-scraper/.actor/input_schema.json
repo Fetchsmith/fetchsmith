@@ -6,7 +6,7 @@
     "searchMode": {
       "title": "Search mode",
       "type": "string",
-      "description": "\"candidates\" (default): search candidates and their financial totals. \"contributions\": individual donor contributions (Schedule A) — donor name, employer, occupation, amount, date, receiving committee. \"disbursements\": committee SPENDING (Schedule B) — who a campaign paid, how much, when and what for. \"independentExpenditures\": outside spending FOR or AGAINST a candidate (Schedule E) — super PAC ads and mailers, with the support/oppose flag.",
+      "description": "\"candidates\" (default): search candidates and their financial totals. \"contributions\": individual donor contributions (Schedule A) \u2014 donor name, employer, occupation, amount, date, receiving committee. \"disbursements\": committee SPENDING (Schedule B) \u2014 who a campaign paid, how much, when and what for. \"independentExpenditures\": outside spending FOR or AGAINST a candidate (Schedule E) \u2014 super PAC ads and mailers, with the support/oppose flag.",
       "editor": "select",
       "enum": [
         "candidates",
@@ -63,7 +63,7 @@
     "committeeId": {
       "title": "Committee ID (FEC)",
       "type": "string",
-      "description": "Only return rows filed by this committee, e.g. \"C00744946\". Disbursements and independent expenditures modes only — the FEC's Schedule A endpoint times out on this filter, so it is ignored (with a warning) in contributions mode.",
+      "description": "Only return rows filed by this committee, e.g. \"C00744946\". Disbursements and independent expenditures modes only \u2014 the FEC's Schedule A endpoint times out on this filter, so it is ignored (with a warning) in contributions mode.",
       "editor": "textfield",
       "default": ""
     },
@@ -72,7 +72,7 @@
       "type": "string",
       "description": "Full or partial candidate name to search for (e.g. \"Warren\" or \"Elizabeth Warren\"). Leave empty and use state/office/party filters alone to browse instead of searching by name. Candidates mode only.",
       "editor": "textfield",
-      "default": "Warren"
+      "prefill": "Warren"
     },
     "donorName": {
       "title": "Donor name",
@@ -124,14 +124,14 @@
     "contributionDateFrom": {
       "title": "Transaction date from (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return rows on or after this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference.",
+      "description": "Only return rows on or after this date \u2014 contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference.",
       "editor": "textfield",
       "default": ""
     },
     "contributionDateTo": {
       "title": "Transaction date to (YYYY-MM-DD)",
       "type": "string",
-      "description": "Only return rows on or before this date — contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference. WATCH MODE WARNING: combined with watchLabel, this is a permanent dead end once today’s date passes it — it is an upper bound sent to the FEC as max_date, and genuinely new activity is always newer than any bound fixed in the past, so the watch goes quiet for good (see README “Watch mode”). Leave it unset in a watch run; contributionDateFrom is safe to keep.",
+      "description": "Only return rows on or before this date \u2014 contribution receipt date (contributions), disbursement date (disbursements) or expenditure date (independent expenditures). Ignored in candidates mode. Must be a real calendar date in strict YYYY-MM-DD form; anything else stops the run with an error naming it, because silently dropping a date bound would widen the search to every matching row and charge you for the difference. WATCH MODE WARNING: combined with watchLabel, this is a permanent dead end once today\u2019s date passes it \u2014 it is an upper bound sent to the FEC as max_date, and genuinely new activity is always newer than any bound fixed in the past, so the watch goes quiet for good (see README \u201cWatch mode\u201d). Leave it unset in a watch run; contributionDateFrom is safe to keep.",
       "editor": "textfield",
       "default": ""
     },
@@ -171,7 +171,7 @@
     "electionYear": {
       "title": "Election cycle year",
       "type": "integer",
-      "description": "Even-numbered election cycle, e.g. 2024. Candidates mode: leave empty for all cycles. Contributions / disbursements / independent expenditures: required by the FEC API to keep the query fast — defaults to the most recent even year if left empty.",
+      "description": "Even-numbered election cycle, e.g. 2024. Candidates mode: leave empty for all cycles. Contributions / disbursements / independent expenditures: required by the FEC API to keep the query fast \u2014 defaults to the most recent even year if left empty.",
       "editor": "number"
     },
     "includeTotals": {
@@ -192,14 +192,14 @@
     "watchLabel": {
       "title": "Watch mode: label for a saved search (optional)",
       "type": "string",
-      "description": "Transaction modes only (contributions, disbursements, independentExpenditures). Set a name for this saved search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only rows that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior. Do not combine with contributionDateTo — that upper-bounds the transaction date and permanently kills the watch once today’s date passes it.",
+      "description": "Transaction modes only (contributions, disbursements, independentExpenditures). Set a name for this saved search (e.g. \"acme-corp-employees\") to turn on watch mode: the first run with a given label + filter set is a free baseline (0 results, 0 charged); every later run on the same label returns and charges only rows that are NEW since the last run. Ignored (with a warning) in candidates mode. Leave empty for normal behavior. Do not combine with contributionDateTo \u2014 that upper-bounds the transaction date and permanently kills the watch once today\u2019s date passes it.",
       "editor": "textfield",
       "default": ""
     },
     "webhookUrl": {
       "title": "Webhook URL (notify on completion)",
       "type": "string",
-      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes — results pushed, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging — it fires after every result has already been pushed and charged. Leave empty to skip.",
+      "description": "Optional. An http(s) URL to POST a small JSON summary to when the run finishes \u2014 results pushed, watch-label new count if Watch label is set, and the run's dataset ID so you can fetch the results. A convenience for callers who want a completion ping without setting up an Apify platform webhook (which needs separate Console/API configuration per Task, not per run). Best-effort: a failed or slow webhook is logged as a warning and never fails the run or affects charging \u2014 it fires after every result has already been pushed and charged. Leave empty to skip.",
       "editor": "textfield"
     }
   },

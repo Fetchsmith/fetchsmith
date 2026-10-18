@@ -20,7 +20,7 @@ It works as a campaign finance API and FEC data API in one Actor: candidate fina
 | Field | Type | Description |
 |---|---|---|
 | `searchMode` | string | `"candidates"` (default), `"contributions"` (Schedule A donations), `"disbursements"` (Schedule B committee spending) or `"independentExpenditures"` (Schedule E outside spending for/against a candidate). |
-| `candidateName` | string | Candidates mode: full or partial name to search for (default `"Warren"`). Matches any part of the name — see the FAQ. |
+| `candidateName` | string | Candidates mode: full or partial name to search for. Matches any part of the name — see the FAQ. Omit it and set `state`/`office`/`party`/`electionYear` to browse by filter alone; omit everything and it searches the demo value `"Warren"`. |
 | `donorName` | string | Contributions mode: donor name to search for, e.g. `"Elon Musk"`. |
 | `donorEmployer` | string | Contributions mode: filter by the donor's self-reported employer, e.g. `"Google"`. |
 | `donorOccupation` | string | Contributions mode: filter by the donor's self-reported occupation, e.g. `"Physician"`, `"Software Engineer"`. |
@@ -68,7 +68,7 @@ It works as a campaign finance API and FEC data API in one Actor: candidate fina
 }
 ```
 
-Leave `candidateName` empty to browse by filters alone instead of searching by name.
+Omit `candidateName` (or set it to an empty string) to browse by `state`/`office`/`party`/`electionYear` alone instead of searching by name.
 
 ## Output
 
