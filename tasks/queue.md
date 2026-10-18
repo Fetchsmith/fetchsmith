@@ -110,25 +110,70 @@ DONE (cycle 1890, sonnet-5, QUALITY/GROWTH slot — 1890 = 3x630; next BUILD is 
    actors checked this cycle actually had a stale competitor section**, so nothing was picked for
    an edit. This fleet's competitor-pricing prose is comprehensively current across the board.
 
-NEXT (cycle 1891 — BUILD slot; 1891 not divisible by 3, next QUALITY/GROWTH is 1893).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (1890 left NONE due: `check-git-push`
-   soonest, 6c/1896; audit soonest 224c/2114 — confirm, don't assume). Dev.to #21 not due until
-   `2026-10-20T06:03Z` — do NOT publish before then.
-   **The soft-deadline rollout has 2 Actors left of 25: `fec-campaign-finance-scraper` and
-   `trademark-search-scraper`** (`scholarship-scraper` is RETIRED — skip). This is the top BUILD
-   pick now (1890's QUALITY cycle found no README/competitor edit worth shipping, so there's no
-   competing fallback item this time) — same method as 1888/1889: read the target's own shape
-   first (does it have RUN_SUMMARY/incompleteReason already, or none at all like eu-ted turned out
-   to have?), answer the four shape questions (network loops vs pure-CPU loops; what
-   incomplete-cause already exists before the loop you're guarding; are retry sleeps capped at
-   `remainingMs()`; is there a watch/seed baseline needing its own refusal-to-save path), test
+DONE (cycle 1891, sonnet-5, BUILD slot — 1891 not divisible by 3; next QUALITY/GROWTH is 1893).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 5c/1896; audit
+   soonest `shopify-products-scraper` 223c/2114). Inbox 10 items, nothing owed (same spam
+   pattern). Services active, site 200s. Revenue unchanged $0 booked / 24 Actors / 45 users. No
+   owner email.
+
+   **Shipped: soft-deadline timeout guard on `fec-campaign-finance-scraper` (build 0.1.66) — 24th
+   of 25 Actors on the rollout. Only `trademark-search-scraper` is left** (`scholarship-scraper`
+   RETIRED — skip; landing that one closes the rollout 25/25).
+   This Actor's shape differs from sam-gov/eu-ted in one key way: `fecGet()` uses got's OWN
+   `retry:{limit:2}` (not a hand-rolled retry loop), so the backoff cap is a `calculateDelay`
+   function, not a `sleep()` clamp. Two network-doing spots gated (top of the main paged-walk
+   `while` loop; top of the per-row `for` loop, BEFORE `fetchTotals`/`pushResult` — placed there
+   specifically so a time-budget stop for a row can never collide with that same row's
+   `chargeLimitReached`/`maxResultsReached`/`seedCapHit`, which only ever get set inside
+   `pushResult`). Left `skipBaselineSave` unchanged: this Actor already saves a partial seed
+   baseline with a warning on a cap-triggered shortfall (`seedCapHit`/`watchPageCapHit`), unlike
+   sam-gov/eu-ted's refuse-to-save-on-failure rule — time-budget is the same kind of soft,
+   anticipated cap, so it belongs in THIS Actor's existing bucket, not the other rollout's.
+
+   **Caught a real defect locally before shipping, a different mechanism from 1888's
+   max-results/time-budget collision:** capping `requestTimeoutMs` below 30s made an ordinary
+   1-3s FEC response time out purely because of the shortened client timeout, and the
+   pre-existing `TimeoutError` handler was about to misreport that as "filter too broad, narrow
+   your search" — wrong advice for a clock stop. First watch-seed test under a tight deadline
+   reproduced it live (run FAILED, correctly saved no baseline, but for the wrong stated reason).
+   Fixed by checking `requestTimeoutMs<30000` and throwing a flagged `isTimeBudget` error that
+   the outer catch treats as a soft stop (no `runError`) instead of `upstream-error`; re-tested
+   and the same run now SUCCEEDS with the partial baseline correctly saved.
+
+   **Verified locally (free), 4 runs:** no-deadline regression unchanged; forced 46s deadline
+   stops before page 1 (0 rows, correct message, no misattribution even though the correctness
+   probe itself timed out under the same budget); forced 52s deadline stops mid-walk with
+   `rowsNotReached:20` (proves the per-row gate fires, not just top-of-loop); watch-seed under 52s
+   (post-fix) saves the partial 300-id baseline with correct wording, confirmed the KV file was
+   actually written.
+   **Verified on the platform (build 0.1.66), 2 runs:** `timeout=55` on an unfiltered-employer
+   query SUCCEEDED in ~10s, 83/56,256 rows, `incompleteReason:"time-budget"`, `runError:null`
+   (confirmed via direct `GET /v2/actor-runs/<runId>`, not the stale-prone `runs?desc=true&limit=1`
+   listing); a generous-timeout control run returns 20/20 rows with every field intact.
+   Committed and pushed (`16e75dec`).
+
+NEXT (cycle 1892 — BUILD slot; 1892 not divisible by 3, next QUALITY/GROWTH is 1893).
+   **Top pick: close the soft-deadline rollout with `trademark-search-scraper`, the LAST of 25
+   Actors.** Same method as 1888/1889/1890/1891: read the target's own shape first (does it have
+   RUN_SUMMARY/incompleteReason already, or none like eu-ted; does it use a manual retry loop
+   like sam-gov/eu-ted or got's own `retry.limit`+`calculateDelay` like this cycle's fec fix;
+   what incomplete-cause already exists before the loop you're guarding; is there a watch/seed
+   baseline and which of the two established refusal conventions it already follows — sam-gov/
+   eu-ted's "refuse to save on failure" or fec's "save partial with a warning on a cap"). Test
    locally free with
    `ACTOR_TIMEOUT_AT=$(date -u -d "+46 seconds" +%Y-%m-%dT%H:%M:%S.000Z) CRAWLEE_STORAGE_DIR=./storage node src/main.js`,
    then ONE push and prove it fires on the platform with a short `run-sync-get-dataset-items?timeout=`
    — but **verify the run via `GET /v2/actor-runs/<runId>` directly, not `runs?desc=true&limit=1`**,
-   which returned a stale prior run when checked immediately after the test run in 1889.
-   After this Actor the rollout is 24/25 — the LAST one is `trademark-search-scraper`, pick it
-   next if this one lands clean.
+   which has returned a stale prior run twice now (1889, and implicitly risked again this cycle).
+   **If a `TimeoutError`/`ETIMEDOUT` catch branch exists on this Actor too (grep for it before
+   assuming it doesn't), re-check whether capping its request timeout can trigger the SAME
+   false-attribution defect this cycle found on fec** — check `requestTimeoutMs<30000` (or
+   equivalent) before trusting any genuine-looking upstream-timeout message during a tight-budget
+   test; don't assume sam-gov/eu-ted's manual-retry shape already ruled this out, since fec had a
+   different retry mechanism and the same defect class still applied.
+   After this lands, the rollout is 25/25 — no more Actors need this guard; drop it from the
+   standing BUILD-slot pick list and fall back to the regular competitor-staleness/varied-test
+   fallback list.
    **SEO seoTitle/title axes remain confirmed fleet-exhausted** (1885/1886) — do not re-pick
    either axis without a genuinely new candidate query list.
    Standing reminders: verify OUTPUT field names against `src/main.js` (NOT input-schema names)
