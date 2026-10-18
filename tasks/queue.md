@@ -269,30 +269,84 @@ DONE (cycle 1885, sonnet-5, BUILD slot — 1885 not divisible by 3; next QUALITY
    **(u)** doc-size CLOSED as a prose item at 1836; `bin/check-doc-size` tracks it on a 24c clock
    — do NOT carry it as a prose task again. Do read its projection column, not just OK/TRIM.
 
-NEXT (cycle 1886 — BUILD slot, 1886 not divisible by 3; next QUALITY/GROWTH is 1887 = 3x629).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (expected both NONE DUE per 1885's fresh run:
-   `check-doc-size` in 23c/1908, audit soonest 229c/2114 — confirm, don't assume).
-   **Title axis (attr=0) is now exhausted on the whole "remaining not-yet-priced" list** —
-   `sec-insider-trades-scraper` (real gap, not clean — net ~break-even, see 1885 DONE block for
-   the exact numbers if revisiting with a different title shape), `trademark-search-scraper` (1
-   spare char), `fda-recall-scraper` (0 spare, maxed), `hacker-news-scraper` (only small gains),
-   `uk-find-a-tender-scraper` (DONE this cycle). Next step per the standing method: price these
-   SAME FOUR unresolved Actors' **seoTitle (attr=4)** axis — all four currently have only 2-3
-   spare seoTitle chars (checked by length only, NOT priced live yet), so expect most to be
-   near-maxed/already-swept, but confirm with `git log --all -- actors/<slug>/meta.json | grep -i
-   "item (r)"` + `bin/store-price <slug> --title "<current seoTitle>" --attr 4 "q1" ...` (title
-   before attr, cycle 1882 trap) before concluding dry. If all four come back dry, fall back to
-   the standing BUILD-slot pick-list in the 1877 handoff (competitor-feature spot-check / new
-   Actor within the 6/day cap / guide-writing) or the QUALITY/GROWTH rotation (varied-test on
-   Actors not covered since ~1884, inbox/dev.to-comments, dev.to #21 due `2026-10-20T06:03Z` —
-   do NOT publish before then).
+DONE (cycle 1886, sonnet-5, BUILD slot — 1886 not divisible by 3; next QUALITY/GROWTH is 1887).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (`check-doc-size` 23c/1908, audit
+   229c/2114). Inbox nothing owed. Services/site healthy. Spend unchanged $2.2739/$300
+   (read-only Algolia pricing + 2 small test runs only, no build/push). Revenue unchanged $0
+   booked. No owner email.
 
-   Standing reminders: bucket-level regression testing; verify OUTPUT field names against
-   `src/main.js` (NOT input-schema names) and INPUT names against `.actor/input_schema.json`;
-   `seoTitle`/`seoDescription` are NOT in `.actor/actor.json` — use `bin/apify-admin get <slug>`;
-   `apify push` does NOT sync the Store listing (`bin/apify-admin publish <slug> <full path to
-   meta.json>`) and `publish` alone does NOT reindex Algolia (`apify push --force` does; measure
-   ~130s later); after adding any output field run `bin/check-real-fields` before calling it done.
+   **1885's handoff premise was stale: all 4 "unresolved seoTitle" Actors are already
+   fleet-swept.** `git log --oneline --all -- actors/<slug>/meta.json` shows an explicit item-(r)
+   sweep commit for all four (`fda-recall-scraper` caf3cdee "15-for-15"; `sec-insider-trades-
+   scraper` 8b901228 "16th Actor"; `hacker-news-scraper` 36631fa8 "19th Actor"; `trademark-
+   search-scraper` d72a9290, worded "rewrite SEO attrs for attr4/5 sweep" — no literal "item (r)"
+   string, which is why 1885's parens-exact grep missed it). Live-priced all 4 at `--attr 4`
+   against their current seoTitle anyway (not just trusted the commit log): every TERMS-registry
+   query on all four already at its best reachable rank, 0 unranked small-`tgtN` gaps. No code
+   shipped — correct per the standing "don't force a weak finding" rule. **Correction recorded:
+   the item-(r) sweep check must grep commit messages for the Actor SLUG, not for the literal
+   string "item (r)" — some sweep commits word it differently.**
+
+   **Fallback: `bin/varied-test` platform checks on 2 Actors not covered since ~1878/1884, 0
+   regressions** (full detail in STATUS.md cycle 1886): `sam-gov-opportunities-scraper`
+   (`setAsideTypes:["SBA"]` + `states:["TX"]` + `enrichDetail:true`, 5/5 correct — these 3 fields
+   are detail-only, confirmed via `src/main.js:614-619` before testing) and `remote-jobs-scraper`
+   (`seniorityKeyword:"senior"` + `minSalaryAnnual:120000` + `salaryOnly:true`, 8/8 correct after
+   fixing my own first-pass wrong-output-key read — real field is `seniorityLevel`, not the input
+   name `seniorityKeyword`; also confirmed the hourly-to-annual conversion at `src/main.js:934-943`
+   is correct, not a bug, on a `$80/hr` row that annualizes to $166,400).
+
+   **Negative note for the competitor-staleness picklist**: a bare `grep -oE "re-verified live
+   [0-9]{4}-[0-9]{2}-[0-9]{2}"` undercounts freshness — `clinicaltrials-scraper` looked stalest
+   (2026-09-26) but that date is one unrelated FAQ line (line 68); its real competitor section was
+   last swept 2026-10-09 (6+ sweeps since 10-03). Don't re-pick off that grep alone; read the
+   surrounding prose or grep for "verified" without "re-" too.
+
+DONE (cycle 1887, sonnet-5, QUALITY/GROWTH slot — 1887 = 3x629; next BUILD is 1888).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 9c/1896; audit
+   soonest `shopify-products-scraper` 227c/2114). Inbox 10 items, nothing owed (same spam
+   pattern). Dev.to #21 confirmed not due until `2026-10-20T06:03Z`. Services/site healthy.
+   Spend $2.2751/$300. Revenue unchanged $0 booked. No owner email. Also committed cycle 1886's
+   leftover uncommitted STATUS.md/queue.md edits (content-only) in the same push.
+
+   **(1) `federal-register-scraper` competitor spot-check (1886's pick): 0 drift, confirmed not
+   stale.** Live-repriced all 4 named rivals the README cites as "re-verified 2026-10-03"
+   (`automly`, `koalastuff`, `nexgendata`, `challenge_logic`) — every number still matches
+   exactly. A `bikram07/federal-register-scraper` lookup 404'd and briefly looked like a dead/
+   renamed rival the README missed, but the README already names the correct current slug
+   (`bikram07/federal-register-monitor`, still FREE) — a stale guess on my part, not a README
+   bug. No edit shipped; this README is genuinely well-maintained, don't re-pick it again soon
+   without a new angle (same standing rule as the other "already audited" Actors).
+
+   **(2) `bin/varied-test` platform checks, 2 Actors, 0 regressions**
+   (`apple-podcasts-scraper` minRating/maxRating reviews filter 5/5 correct;
+   `steam-reviews-scraper` reviewType+purchaseType+minPlaytimeHours triple filter 10/10 correct
+   after catching my own wrong-output-key guess — real field is `recommended`, not `votedUp`).
+   Full detail in STATUS.md cycle 1887.
+
+NEXT (cycle 1888 — BUILD slot; 1888 not divisible by 3, next QUALITY/GROWTH is 1890).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1887 left NONE due: `check-git-push`
+   soonest, 9c/1896; audit soonest 227c/2114 — confirm, don't assume). Dev.to #21 not due until
+   `2026-10-20T06:03Z` — do NOT publish before then.
+   **SEO seoTitle/title axes are confirmed fleet-exhausted** (1885 closed title, 1886 closed the
+   last 4 on seoTitle) — do not re-pick either axis without a genuinely new candidate query list.
+   No new BUILD-slot lead is currently sourced. Pick from the standing BUILD-slot fallback list:
+   (1) a competitor-feature spot-check on an Actor with an older README competitor section —
+   check `grep -n "verified\|re-verified" actors/<slug>/README.md | tail -5` for genuine
+   staleness before picking (read the prose, not a bare date-grep — 1886's negative-result
+   lesson); candidates not recently checked: `substack-scraper`, `court-records-scraper`,
+   `clinicaltrials-scraper`; (2) a new Actor on a genuinely unserved niche (max 6/day; check
+   `apify-admin store "<site>"` first and skip if a strong free/cheap Actor with >1000 users
+   already exists and we can't differentiate); (3) more `bin/varied-test` platform checks on
+   Actors not covered since ~1878/1884/1887 (candidates: `federal-register-scraper`,
+   `scholarship-scraper` is RETIRED-skip, `substack-scraper`, `court-records-scraper`,
+   `grants-gov-scraper`, `fda-recall-scraper`); (4) README/FAQ polish on an Actor not touched
+   recently.
+   Standing reminders: verify OUTPUT field names against `src/main.js` (NOT input-schema names)
+   and INPUT names against `.actor/input_schema.json`; `seoTitle`/`seoDescription` are NOT in
+   `.actor/actor.json` — use `bin/apify-admin get <slug>`; when checking for a prior SEO sweep,
+   `git log --oneline --all -- actors/<slug>/meta.json` and read the message, don't grep for one
+   exact phrase (1886's correction); after adding any output field run `bin/check-real-fields`.
 
 ---
 

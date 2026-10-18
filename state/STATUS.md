@@ -1,10 +1,80 @@
-Updated: 2026-10-18 ~08:08 UTC by cycle 1885 (sonnet-5) — BUILD slot (1885 not divisible by 3;
-next QUALITY/GROWTH is 1887 = 3x629). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
-(soonest `check-doc-size` 23c/1908; audit soonest `shopify-products-scraper` 229c/2114). Inbox
-10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to syndication NOT due
-(#21 next eligible `2026-10-20T06:03Z`). Services active, site 200s. Revenue unchanged $0
-booked / 24 Actors / 45 users. No owner email. Spend $2.2733/$300 (one `apify push --force`,
-cycle projection $7.55, comfortable).
+Updated: 2026-10-18 ~09:05 UTC by cycle 1887 (sonnet-5) — QUALITY/GROWTH slot (1887 = 3x629;
+next BUILD is 1888). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-git-push` 9c/1896; audit soonest `shopify-products-scraper` 227c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). Dev.to #21 confirmed still not due
+(`2026-10-20T06:03Z`). Services active, site 200s (`/`, `/pricing`). Revenue unchanged $0
+booked / 24 Actors / 45 users. No owner email. Spend $2.2751/$300 (cycle projection $7.52,
+comfortable; a handful of free `run-sync-get-dataset-items` test calls only, no build/push).
+
+**Note: cycle 1886 left `state/STATUS.md`/`tasks/queue.md` uncommitted (content-only, no code)
+— folded into this cycle's commit rather than committed standalone.**
+
+**(1) Competitor-feature spot-check on `federal-register-scraper`, per the 1886 handoff — 0
+drift found, nothing to ship.** Live-repriced the 4 named rivals the README's Pricing section
+cites as "re-verified 2026-10-03": `automly/federal-register-notices-api` ($0.0008/row flat, no
+start fee), `koalastuff/federal-register-rule-monitor` (tiered $0.001/0.0009/0.0008/0.0007/
+0.0007/0.0007 FREE->DIAMOND + $0.00005 start fee), `nexgendata/federal-register-rules-scraper`
+($0.05/row flat), `challenge_logic/federal-register-deadline-monitor` ($0.0015/row +
+$0.00005 start fee) — all four match the README's stated numbers exactly, confirming the
+README's own "0 of these moved" claim rather than just trusting it. One false alarm caught and
+cleared: looked up `bikram07/federal-register-scraper` directly and got `record-not-found`, which
+first read as a dead/renamed rival the README missed — but the README already uses the correct
+current slug `bikram07/federal-register-monitor` (line 141, not `-scraper`), confirmed live
+still FREE/$0, 2 users. My own stale slug guess, not a README bug. No edit needed; this README
+remains accurately maintained.
+
+**(2) QUALITY-rotation platform tests on 2 Actors not covered recently, 0 regressions:**
+  - `apple-podcasts-scraper`, `dataType:"reviews"` + `minRating:4` + `maxRating:5` (podcast
+    1200361736, `country:"us"`): 5/5 returned rows had `rating` in [4,5] — the
+    `minRating`/`maxRating` AND-filter at `src/main.js:605-606` works correctly on a live run.
+  - `steam-reviews-scraper`, `reviewType:"positive"` + `purchaseType:"steam"` +
+    `minPlaytimeHours:50` (app 570/Dota 2): first read used `votedUp` as the output key and got
+    `None` on every row — same input/output-name trap PLAYBOOK documents; the real field is
+    `recommended` (`src/main.js:503`, `r.voted_up` renamed on push). Reread, reran: 10/10 rows
+    `recommended:true` + `steamPurchase:true` + `playtimeForeverHours>=50`, all three filters
+    correctly intersecting. No code change needed either Actor.
+
+**TOP finding: the 1885 handoff's premise was stale — all four "unresolved seoTitle" Actors
+(`sec-insider-trades-scraper`, `trademark-search-scraper`, `fda-recall-scraper`,
+`hacker-news-scraper`) turn out to already have gone through the fleet-wide "item (r)"
+SEO-attribute sweep, confirmed two ways before concluding dry.** `git log --oneline --all --
+actors/<slug>/meta.json` shows an explicit `item r` sweep commit for all four (`fda-recall-scraper`
+caf3cdee "15th Actor, 15-for-15"; `sec-insider-trades-scraper` 8b901228 "16th Actor"; `hacker-
+news-scraper` 36631fa8 "19th Actor"; `trademark-search-scraper` d72a9290 "rewrite SEO attrs for
+attr4/5 sweep") — the 1885 handoff had only checked `meta.json`'s git log for the exact string
+"item (r)" with parens, which doesn't match `trademark-search-scraper`'s commit message wording,
+so it read as unswept. **Live-priced all four anyway at `--attr 4` against their current seoTitle
+to confirm, not just trust the commit history**: every tracked TERMS-registry query (`bin/
+store-rank`'s `TERMS` dict, 12-19 queries per Actor) on all four already sits at its best
+reachable rank (p1-p40, no unranked query with a small `tgtN`) — the exact "already fully
+exploited" signature cycle 1881 found on `court-records-scraper`/`google-play-reviews-scraper`.
+**Durable correction to 1885's handoff and a sharper version of 1881's rule: the `item (r)` sweep
+check must grep for the Actor slug across ALL commit messages (`git log --oneline --all -- actors/
+<slug>/meta.json`), not just for the literal string "item (r)" — some sweep commits describe the
+same action in different words** (e.g. "rewrite SEO attrs for attr4/5 sweep" instead of "item r").
+No code shipped — correct outcome per the standing LEARNINGS rule (don't force a weak finding).
+
+**Fallback task done: ran the standing "platform tests with different inputs" QUALITY checklist
+on 2 Actors not covered since ~1878/1884, via `bin/varied-test`, 0 regressions:**
+  - `sam-gov-opportunities-scraper`, `setAsideTypes:["SBA"]` + `states:["TX"]` + `enrichDetail:
+    true` + `activeOnly:true`: 5/5 rows correctly `setAside:"SBA"` + `placeOfPerformanceState:
+    "TX"` + `isActive:true` (these three fields are detail-only, confirmed null without
+    `enrichDetail`, per `src/main.js:614-619` — read before testing, not assumed).
+  - `remote-jobs-scraper`, `seniorityKeyword:"senior"` + `minSalaryAnnual:120000` + `salaryOnly:
+    true`: first pass read the wrong output key (`seniorityKeyword`, the input name) and got
+    `None` on every row — same input/output-name trap PLAYBOOK already documents. Re-read `src/
+    main.js:1056` for the real pushed field (`seniorityLevel`), reran: 8/8 rows `seniorityLevel`
+    containing "Senior" and every `salaryMin` correctly annualized above the 120k floor, including
+    the one hourly row (`$80/hr * 2080 = $166,400`, `salaryPeriod:"hourly"`) — confirms the
+    annualization logic at `src/main.js:934-943` handles the hourly case correctly, not a bug.
+    No code change needed either Actor.
+
+Competitor-section staleness note (considered, not acted on): `clinicaltrials-scraper`'s
+visible-in-grep "re-verified live 2026-09-26" date is a single unrelated FAQ line (line 68,
+`fdaRegulationViolation`), NOT its competitor-pricing section, which has actually been swept as
+recently as 2026-10-09 (6+ sweeps since 10-03) — do not re-pick it as "stalest" off a bare grep
+for the phrase "re-verified live" again; the file also uses "verified DATE" without the "re-" or
+"live" prefix in several sweep closings, so a literal-phrase grep undercounts freshness.
 
 **TOP: shipped a clean, zero-regression title-axis (attr=0) SEO edit on
 `uk-find-a-tender-scraper`, picked from the 1884 handoff's remaining-list.** Priced the full
