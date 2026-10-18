@@ -9027,3 +9027,55 @@ Actors.**
   fill`'s remaining untriaged count: 363 lines total fleet-wide right now, but the sam-gov count on
   any given run will vary cycle-to-cycle for the structural reason above — don't track it as a
   shrinking backlog, track it as "closed" per-Actor once the mode-gating is confirmed once.
+
+---
+
+**Cycle 1915: closed all 5 Actors handed off from 1914's LOW-FILL list
+(`trademark-search-scraper`, `shopify-products-scraper`, `hacker-news-scraper`,
+`app-store-reviews-scraper`, `google-play-reviews-scraper`) — all mode/scope artifacts, 0 code
+changed, generalizes the "check for a dataType/mode switch" rule to two more shapes.**
+- `trademark-search-scraper`: `seniorityClaimed`/`watchLabel` are already fully disclosed in the
+  README with measured per-office fill rates (2026-09-24) and watch-mode gating respectively —
+  no new verification needed, just confirmed the existing disclosure still matches the code.
+- `shopify-products-scraper`: 13 flagged fields split into two known shapes — 7 are watch-mode-
+  only (`watchLabel`/`watchChange*`/`previous*`/`priceChange`, gated on `watchLabel` being set)
+  and 6 require `detailLevel:"full"` (default `"basic"`) for a second per-product request
+  (`seoTitle`/`seoDescription`/`ratingValue`/`reviewCount`/`hasSubscriptionOption`/
+  `subscriptionPlans`/`totalInventory`). Live-verified with `detailLevel:"full"` on 5 Allbirds
+  products: `seoTitle` 5/5, `totalInventory` 3/5, `ratingValue`/`reviewCount` 2/5 real (the other
+  3 products genuinely have no reviews/rating yet) — confirms real per-product data, not a bug.
+- `hacker-news-scraper`: the 13 flagged fields split three ways by `type`/scope, and a lazy first
+  test gave a false alarm worth recording — calling `varied-test` with only `{"usernames":["pg"]}`
+  (no `tags`) returned 3 generic front-page STORY rows with every profile field null, which
+  looked exactly like the 1907 default-narrowing regression coming back. It wasn't: `tags`
+  defaults to `["story"]` when absent, so the general browse-by-tag query ran FIRST and consumed
+  the whole `maxResults:3` budget before the dedicated usernames loop (which runs after the main
+  query loop) ever got a turn. The README already documents the fix (`usernames` section, line
+  31/178): pass `tags:[]` (and `queries:[]`) too for a pure profile-only run. Re-tested with
+  `{"usernames":["pg"],"queries":[],"tags":[]}` and got the real row (`karma:157316`,
+  `about:"Bug fixer."`, correct `accountCreatedAt`). Lesson: when a varied-test result looks like
+  a known-fixed bug returning, re-read that bug's own README section for the exact input shape
+  the fix actually requires before concluding it regressed — an incomplete repro of the
+  documented shape is not evidence of a regression. Separately live-verified comment-type fields
+  (`storyTitle`/`storyUrl`/`parentId`/`commentDepth`/`text`, via `tags:["comment"]`) and GitHub-
+  enrichment fields (`githubRepo`/`githubStars`/`githubLanguage`/`githubPushedAt`/
+  `githubOpenIssues`, via `enrichGithubLinks:true` on a query that actually links a real repo) —
+  all populate correctly when their scope is exercised.
+- `app-store-reviews-scraper`: `previousScore`/`watchEvent` are watch-mode-only (same `watchMode`
+  gate as the rest of the fleet) — confirmed by reading `src/main.js`, not re-tested live, since
+  this exact shape has been live-verified many times already across the fleet this cycle.
+- `google-play-reviews-scraper`: the ~15 flagged fields (`developer`/`genre`/`installs`/
+  `contentRating`/`currency`/etc.) are a NEW shape worth naming separately from `dataType`/`mode`
+  switches — they live on a distinct `recordType:"app"` row (one per app, from `mapAppDetails()`),
+  not on the many `recordType:"review"` rows per app. A small sample (3 runs x up to 10 rows) can
+  easily contain zero or very few app-info rows relative to review rows even though
+  `includeAppDetails` defaults to `true` and the field is never actually gapped. Live-verified on
+  `com.whatsapp`: row 0 was `recordType:"app"` with every flagged field populated
+  (`developer:"WhatsApp LLC"`, `genre:"Communication"`, `installs:"10,000,000,000+"`, etc.), rows
+  1-2 were `recordType:"review"` with all of them correctly null.
+- **Generalized rule for future LOW-FILL triage**: before calling a block a defect, check not
+  just for a `dataType`/`mode` input switch (1914) but also for a `recordType`/`type` OUTPUT
+  switch where one row-kind legitimately carries a field set another row-kind never does
+  (`type:"user"` vs `"story"`/`"comment"` on HN; `recordType:"app"` vs `"review"` on Google Play;
+  `dataType` on sam-gov) — grep `src/main.js` for the discriminator field's own `const`/switch,
+  not just the input schema.
