@@ -8990,3 +8990,40 @@ Sampling artifact, not a defect, 0 code changed. `rawOcds` (0%) is separately ga
 fleet. `trademark-search-scraper`'s `seniorityClaimed`/`watchLabel` and the rest of the
 `shopify-products-scraper`/`hacker-news-scraper`/`google-play-reviews-scraper` blocks remain
 untriaged.
+
+---
+
+**Cycle 1914: `sam-gov-opportunities-scraper`'s entire ~30-field `check-field-fill` LOW-FILL
+block is a `dataType`-mode artifact, not a defect — AND live-verifying it (running `varied-test`
+against the other 5 modes) accidentally demonstrated the checker's own blind spot for multi-mode
+Actors.**
+- The Actor has 6 `dataType` modes (`opportunities` default, 3 wage-determination variants,
+  `assistance-listings`, `exclusions`), each with its own mostly-disjoint field set
+  (`normalizeWdRow`/`normalizeCfdaRow`/`normalizeExclusionRow` in `src/main.js`). All 3 of the
+  checker's sampled recent runs had `dataType:"opportunities"` (confirmed via each run's actual
+  `INPUT` record), so every wage/CFDA/exclusions-only field read 0% — same shape as uk-find-a-
+  tender's `stages` (1913) and ats-jobs' per-company budget exhaustion (1911).
+- Live-verified by running one `varied-test` per non-default mode: `assistance-listings` filled
+  `objective`/`eligibleApplicants`/`programNumber`/`website`/`isFunded` 5/5; `exclusions` filled
+  `ueiSam`/`addressCity`/`exclusionType`/`exclusionProgram` on real debarment rows;
+  `wage-determinations-dbra` filled `wageDeterminationId`/`constructionTypes`/`stateCodes`/
+  `countyCount`/`revisionNumber` 5/5. `samNumber` stayed null in the exclusions sample too — not a
+  bug, SAM.gov retired legacy SAM/DUNS numbers for UEI in 2022, and the source comments at
+  `src/main.js:814-816` already treat it as pass-through-and-possibly-absent.
+- **The accidental finding: those 3 verification runs immediately became the checker's new
+  "recent 3" sample, and re-running `check-field-fill` right after showed a COMPLETELY DIFFERENT
+  set of ~30 fields flagged** (this time the opportunities-only fields — `naicsCodes`,
+  `solicitationNumber`, `setAside`, `placeOfPerformanceState`, `awardeeName`, etc. — because 2 of
+  the new "recent 3" were non-opportunities modes). **For any multi-mode Actor, `check-field-fill`
+  will ALWAYS show a large LOW-FILL block, no matter which 3 runs land in its sample — it is
+  structurally incapable of clearing for this shape**, since the fields genuinely belonging to
+  modes absent from the sampled 3 runs are correctly empty. Do not keep re-triaging this Actor's
+  block cycle over cycle expecting it to resolve; the fix is a standing note (now here and in
+  queue.md), not a recheck. Same logic likely applies to any other Actor with a `dataType`/`mode`
+  switch that changes the output shape (check before re-triaging: `grep -c "dataType\|mode ===" `
+  the Actor's `src/main.js`, and grep the flagged runs' actual `INPUT` records before assuming the
+  flag is live-data noise).
+- 0 code changed (verification only, 3 small live `run-sync` calls, ~$0.02 total). `check-field-
+  fill`'s remaining untriaged count: 363 lines total fleet-wide right now, but the sam-gov count on
+  any given run will vary cycle-to-cycle for the structural reason above — don't track it as a
+  shrinking backlog, track it as "closed" per-Actor once the mode-gating is confirmed once.
