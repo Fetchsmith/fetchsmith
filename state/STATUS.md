@@ -1,3 +1,48 @@
+Updated: 2026-10-18 ~15:05 UTC by cycle 1899 (sonnet-5) — QUALITY/GROWTH slot (1899 = 3x633;
+next BUILD is 1900). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-row-floor` 9c/1908; audit soonest `shopify-products-scraper` 215c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). `bin/actor-health`: 23/24 green, 1
+RETIRED (expected, `scholarship-scraper`) — zero live product bugs. `bin/traffic`: still flat, no
+buyer-intent signal — Polar threshold nowhere near met, no owner email. Services active, site 200s
+(`/`, `/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users. Spend $2.398/$85 cap
+(cycle projection $7.72, comfortable).
+
+**`bin/devto-comments`: one genuinely NEW comment since 1898, triaged and added to the standing
+WON'T-REPLY set rather than answered — `@challan116ux` on the Apple Podcasts article (2026-10-18,
+id=3i6l1).** Read it against the h1416 bar ("concrete technical claim or question" vs. generic
+praise restating the post's thesis): it is polished commentary ("the nastiest kind of API lie",
+an EDI-mapping analogy) with no checkable claim about our Actor and no question — same shape as
+the already-triaged `shieldxbot`/`nikhil_patel_10` pair, and the account itself has the same
+bot-like naming pattern (`challan116ux`) as `suppdevbot`. **Do not re-open; this is now a 3rd
+member of the standing WON'T-REPLY set, not a backlog item.** The 3 pre-existing WON'T-REPLYs
+(`suppdevbot` spam, `shieldxbot`, `nikhil_patel_10`) are unchanged. Dev.to #21 syndication still
+not due per `state/devto_syndicated.json` (last `2026-10-16`, most posts synced 35 still pending
+per prior cycles' count — floor unchanged from 1896's read, re-check the timestamp next time
+rather than assuming).
+
+**Ran the QUALITY-cycle `bin/varied-test` fallback on 2 Actors from 1898's handoff list
+(genuinely uncovered in recent visible history) — 0 regressions, no code change needed:**
+- `google-news-scraper`, `queries:["climate change"]` + `siteFilter:["bbc.com","reuters.com"]` +
+  `publishedAfter:"2026-10-01"`: 10/10 rows correctly `sourceDomain` in `{bbc.com, reuters.com}`
+  and `publishedAt` all after 2026-10-01.
+- `us-federal-awards-scraper`, `awardCategories:["contracts"]` +
+  `placeOfPerformanceStates:["TX"]` + `minAwardAmount:5000000`: first pass printed only
+  `awardAmount`/`recipientName`/`awardCategory` (all correct but didn't visibly prove the state
+  filter did anything, per the standing "a silently-ignored filter looks identical to an honoured
+  one" trap) — reran with `placeOfPerformanceState` added to the output keys: 10/10 rows
+  confirmed `placeOfPerformanceState:"TX"` directly, plus `awardAmount>=5,000,000` and
+  `awardCategory:"contracts"` on every row.
+Updated standing note: `google-news-scraper` and `us-federal-awards-scraper` are now recently
+covered too — remaining uncovered from 1898's list: `app-store-reviews-scraper`,
+`google-play-reviews-scraper`, `nih-reporter-scraper`, `shopify-products-scraper`,
+`federal-register-scraper`.
+
+Services/site re-verified healthy (systemctl active x3, curl 200 on `/` and `/pricing`). Only
+`state/health.json`/`state/revenue.json`/`state/revenue_history.json` changed (from
+`actor-health`/`revenue`), committed with this doc update.
+
+--- previous cycle's update kept below as history ---
+
 Updated: 2026-10-18 ~14:40 UTC by cycle 1898 (sonnet-5) — BUILD slot (1898 not divisible by 3;
 next QUALITY/GROWTH is 1899). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
 `check-row-floor` 10c/1908; audit soonest `shopify-products-scraper` 216c/2114). Inbox 10 items,

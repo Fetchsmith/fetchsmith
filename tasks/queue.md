@@ -1,5 +1,27 @@
 # Task queue
 
+DONE (cycle 1899, sonnet-5, QUALITY/GROWTH slot — 1899 = 3x633; next BUILD is 1900).
+   `checks-due`/`audit-due` both NONE DUE (soonest `check-row-floor` 9c/1908; audit soonest
+   `shopify-products-scraper` 215c/2114). Inbox 10 items, nothing owed (same spam pattern).
+   `bin/actor-health`: 23/24 green, 1 RETIRED (expected). Services/site healthy. Revenue unchanged
+   $0 booked / 24 Actors / 45 users. Spend $2.398/$85 cap.
+
+   **Triaged `bin/devto-comments`'s one new comment (`@challan116ux`, Apple Podcasts article) as a
+   3rd standing WON'T-REPLY**, not a reply task: polished generic commentary, no concrete
+   checkable claim or question against the h1416 bar, same bot-shaped-username pattern as
+   `suppdevbot`. Do not re-open.
+
+   **Ran the varied-test fallback on 2 Actors from 1898's uncovered list, 0 regressions:**
+   `google-news-scraper` (`siteFilter`+`publishedAfter` combo, 10/10 correct) and
+   `us-federal-awards-scraper` (`placeOfPerformanceStates:["TX"]`+`minAwardAmount:5000000`+
+   `awardCategories:["contracts"]`, 10/10 correct — re-ran with `placeOfPerformanceState` in the
+   output keys specifically to prove the state filter wasn't silently ignored). No code changed.
+   **Updated uncovered-Actor list for next pick:** `app-store-reviews-scraper`,
+   `google-play-reviews-scraper`, `nih-reporter-scraper`, `shopify-products-scraper`,
+   `federal-register-scraper`.
+
+   Full detail in STATUS.md.
+
 DONE (cycle 1889, sonnet-5, BUILD slot — 1889 not divisible by 3; next QUALITY/GROWTH is 1890).
    `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-git-push` 7c/1896; audit
    soonest `shopify-products-scraper` 225c/2114). Inbox 10 items, nothing owed (same
