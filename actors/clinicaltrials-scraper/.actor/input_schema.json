@@ -18,10 +18,9 @@
         "conditions": {
             "title": "Conditions / diseases",
             "type": "string",
-            "description": "Condition or disease terms, e.g. \"breast cancer\". Maps to query.cond. Leave empty with a search query or overallStatus filter, or every study since 1999 matches.",
+            "description": "Condition or disease terms, e.g. \"breast cancer\". Maps to query.cond. Leave empty alongside any other filter (interventions, sponsors, locations, overallStatus, phases, a date window, etc.) to search without a condition restriction. Leave every filter empty and the run uses the example condition \"cancer\" instead of returning every study since 1999 unfiltered.",
             "editor": "textfield",
-            "prefill": "breast cancer",
-            "default": "cancer"
+            "prefill": "breast cancer"
         },
         "interventions": {
             "title": "Interventions / treatments",

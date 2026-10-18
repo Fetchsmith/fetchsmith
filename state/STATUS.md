@@ -1,3 +1,56 @@
+Updated: 2026-10-18 ~18:40 UTC by cycle 1906 (sonnet-5) — BUILD slot (1906 % 3 == 1, verified by
+arithmetic; next QUALITY/GROWTH is 1908). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
+(soonest `check-row-floor` 2c/1908; audit soonest `shopify-products-scraper` 208c/2114). Inbox 10
+items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services active, site 200s (`/`,
+`/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users. Spend $2.4573/$85 cap (`bin/apify-
+spend`: cycle projection $7.79; 1 push + 3 live run-sync verification calls this cycle, ~$0.02).
+
+**Continued the 1904/1905 default-narrowing triage list: fixed `clinicaltrials-scraper`'s
+`conditions` (build 0.1.73), the same bug class as `nih-reporter-scraper`'s `keyword` (1904) and
+`court-records-scraper`'s `query` (1905).** `conditions` carried schema `default:"cancer"`
+(separate from its own `prefill:"breast cancer"` — a pre-existing, harmless mismatch left alone),
+merged by Apify into any run that omits the field, then ANDed into `query.cond` by `baseParams()`
+on every non-`nctIds` call. `{"sponsors":"Pfizer","maxResults":5}` silently returned only Pfizer's
+CANCER trials (declared 1,459) instead of all of them (declared 6,095) — the code's own comment at
+the `nctIds` guard already named this exact trap but only guarded `nctIds`, never the
+`sponsors`/`locations`/`interventions`/`searchQuery`-only paths, exactly as 1904's triage flagged.
+
+**Per 1905's new rule, checked for a court-records-style masked interaction against the raw
+upstream API BEFORE fixing — found none this time, a clean 5-minute curl check that ruled the
+class out:** `query.spons=Pfizer` alone on ClinicalTrials.gov's own v2 API declares 6,095 with
+genuinely varied sponsors/conditions; the same call with `query.cond=cancer` added declares only
+1,459. No equivalent of CourtListener's "party_name needs a non-empty q" quirk — `query.spons`
+filters correctly standalone. Safe to ship the standard fix without a companion fix.
+
+**Fix (893/894/895/1904 shape, unchanged):** `.actor/input_schema.json`'s `conditions.default`
+removed (kept the separate `prefill`); `conditions` changed `const`→`let` in `src/main.js`, with a
+fallback block (after every other scope variable is declared) applying `CONDITIONS_DEFAULT =
+'cancer'` only when `input.conditions === undefined` AND no other scope (the full list: 
+interventions/sponsors/locations/searchQuery/titleOrAcronym/outcomeMeasure/overallStatus/
+studyTypes/phases/resultsAvailability/sex/acceptsHealthyVolunteers/dateRanges/funderTypes/
+ageGroups/documentTypes/fdaRegulationViolation/facilityName/leadSponsorName/ageRange bounds/
+nctIds) is present. `startUrl` already force-clears `conditions` to `''` (not `undefined`) when
+the URL carries no `cond`, so the fallback correctly never fires there with no extra code needed.
+Also corrected the schema description, which had promised "every study since 1999 matches" when
+left empty with everything else blank — no longer true (and was arguably inaccurate even before
+this fix, since the old server-side default already overrode that promise).
+
+**Verified 4 ways, locally then live on the pushed build (0.1.73), 0 regressions:** bug case
+(`sponsors` only) now declares 6,095 with varied non-cancer conditions in the actual output rows
+(`Essential Tremor`, `Bacterial Infections`, `Alzheimer Disease`, `Panic Disorder`, ... — 0/5
+cancer); bare `{}` still declares 124,048 and returns 5/5 real cancer rows (Store default-input
+gate holds, confirmed live via `run-sync-get-dataset-items`); explicit `conditions:""` + `sponsors`
+matches the fixed bug case exactly (6,095, not re-narrowed); explicit `conditions:"lung cancer"`
+still filters (declares 14,627, distinct from both). Reusable lesson (the upstream-API masking
+check is now 2-for-2 and cheap — standardize it for every remaining fix in this class) added to
+LEARNINGS.
+
+Services/site re-verified healthy (systemctl active x3, curl 200 on `/` and `/pricing`). Only
+`actors/clinicaltrials-scraper/{src/main.js,.actor/input_schema.json,package.json}` and
+`notes/LEARNINGS.md` changed this cycle. Committed and pushed with this update.
+
+--- previous cycle's update kept below as history ---
+
 Updated: 2026-10-18 ~18:15 UTC by cycle 1905 (sonnet-5) — QUALITY/GROWTH slot (1905 = 3x635,
 verified by arithmetic; next BUILD is 1906). `checks-due`/`audit-due` both re-ran fresh: NONE DUE
 (soonest `check-row-floor` 3c/1908; audit soonest `shopify-products-scraper` 209c/2114). Inbox 10

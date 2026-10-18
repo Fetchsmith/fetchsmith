@@ -192,7 +192,7 @@ if (nctIdsBadFormat.length) {
     log.warning(`Dropped ${nctIdsBadFormat.length} nctIds with bad format (expected NCT + 8 digits): ${nctIdsBadFormat.join(', ')}`);
 }
 
-const conditions = String(input.conditions ?? '').trim();
+let conditions = String(input.conditions ?? '').trim();
 const interventions = String(input.interventions ?? '').trim();
 const sponsors = String(input.sponsors ?? '').trim();
 const locations = String(input.locations ?? '').trim();
@@ -363,6 +363,40 @@ if (input.watchLabel && nctIds.length) {
     log.warning(
         'watchLabel is ignored when nctIds is set -- direct-lookup mode always returns exactly the ids you '
         + 'asked for, so there is no "new since last run" concept to track for it.',
+    );
+}
+
+// THE DEFAULT-NARROWING TRAP (same class as nih-reporter-scraper's `keyword`, cycle 1904/1906;
+// same shape as the cycle-893/894/895 default-injection bug but in its narrowing form).
+// `conditions` used to carry a schema `default` of "cancer", which Apify merges into ANY run that
+// omits the field (API/CLI/scheduler/webhook, not just a Console click), and `baseParams()` ANDs
+// `conditions` into `query.cond` on every call that isn't a direct nctIds lookup. So
+// `{"sponsors":"Pfizer"}` -- the natural way to ask "all Pfizer-sponsored trials" -- silently
+// returned only Pfizer's CANCER trials. Measured live against ClinicalTrials.gov's own API before
+// shipping this fix: `query.spons=Pfizer` alone declares 6,095 studies; the same call with
+// `query.cond=cancer` added declares only 1,459 -- and `query.spons` on its own filters correctly
+// (no court-records-style masked interaction where dropping one field breaks another), so this is
+// a plain narrowing bug, safe to fix the established way.
+// FIX, same shape as nih-reporter's: the default lives in CODE, not the schema (schema keeps its
+// own `prefill` so the Console form still shows "breast cancer" and submits it explicitly), and is
+// applied ONLY when the field is truly absent AND the run has no other scope at all -- i.e. the
+// bare `{}` run Apify's automated Store default-input gate makes (PLAYBOOK, cycle 96) still
+// returns real cancer rows, while any caller who names a scope of their own gets exactly that
+// scope. `input.conditions === undefined` is the discriminator: an explicit "" is a deliberate
+// "no condition filter" and must stay empty.
+const CONDITIONS_DEFAULT = 'cancer';
+const otherScope = nctIds.length > 0 || Boolean(interventions) || Boolean(sponsors) || Boolean(locations)
+    || Boolean(searchQuery) || Boolean(titleOrAcronym) || Boolean(outcomeMeasure) || overallStatus.length > 0
+    || studyTypes.length > 0 || phases.length > 0 || Boolean(resultsAvailability) || Boolean(sex)
+    || acceptsHealthyVolunteers || dateRanges.length > 0 || funderTypes.length > 0 || ageGroups.length > 0
+    || documentTypes.length > 0 || fdaRegulationViolation || Boolean(facilityName) || Boolean(leadSponsorName)
+    || ageRangeFromYears !== null || ageRangeToYears !== null;
+if (input.conditions === undefined && !otherScope) {
+    conditions = CONDITIONS_DEFAULT;
+    log.info(
+        `No conditions and no other filter was given, so this run uses the example condition "${CONDITIONS_DEFAULT}". `
+        + 'Set "conditions" to search for something else, or add any other filter (interventions, sponsors, '
+        + 'locations, overallStatus, phases, a date window, etc.) to search without a condition.',
     );
 }
 

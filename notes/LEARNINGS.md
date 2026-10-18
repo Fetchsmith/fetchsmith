@@ -8712,3 +8712,50 @@ before touching Actor code — reproducing against CourtListener's bare endpoint
 runs) is what separated "our default is wrong" from "their field search needs a non-empty q",
 which looked identical from inside the Actor's own output. A fix aimed at only the first cause
 here would have shipped a worse regression than the bug it was meant to close.
+
+## Cycle 1906: clinicaltrials-scraper's `conditions` had the same default-narrowing bug as nih-reporter's `keyword` — fixed, no masked-interaction trap this time
+
+Continuing the 1904/1905 default-narrowing triage list, `clinicaltrials-scraper`'s `conditions`
+field carried a schema `default:"cancer"` (plus a separate `prefill:"breast cancer"` for the
+Console form — the two were already different strings, a pre-existing oddity left alone).
+`baseParams()` ANDs `conditions` into `query.cond` on every call that isn't a direct `nctIds`
+lookup, and the code's own comment at the old `nctIds` guard already proved it knew the trap
+existed — it just only guarded `nctIds`, not `sponsors`/`locations`/`interventions`/`searchQuery`-
+only calls. `{"sponsors":"Pfizer","maxResults":5}` silently returned only Pfizer's CANCER-related
+trials (declared 1,459) instead of all Pfizer-sponsored trials (declared 6,095).
+
+**Checked for a court-records-style masked interaction before fixing, per 1905's new rule — found
+none.** Tested directly against ClinicalTrials.gov's own v2 API: `query.spons=Pfizer` alone
+declares 6,095 and returns genuinely varied non-cancer sponsors/conditions; `query.spons=Pfizer`
+cond blank behaves identically to `cond` omitted (no equivalent of CourtListener's "party_name
+needs a non-empty q" quirk). So this was a plain, unmasked narrowing bug — safe to fix directly
+with the established shape, no companion fix needed.
+
+**Fix (893/894/895/1904 shape, unchanged):** schema `default` → removed (kept the existing,
+separate `prefill:"breast cancer"` as-is — not part of this bug), `conditions` changed `const` →
+`let`, and a fallback block added after every other scope variable is declared: applies
+`CONDITIONS_DEFAULT = 'cancer'` only when `input.conditions === undefined` AND no other scope
+(interventions/sponsors/locations/searchQuery/titleOrAcronym/outcomeMeasure/overallStatus/
+studyTypes/phases/resultsAvailability/sex/acceptsHealthyVolunteers/dateRanges/funderTypes/
+ageGroups/documentTypes/fdaRegulationViolation/facilityName/leadSponsorName/ageRange bounds/
+nctIds) is present. `startUrl` already force-clears `conditions` to `''` (not `undefined`) when
+the pasted URL carries no `cond` param, so the fallback correctly never fires in that path without
+any extra code. Also corrected the schema's `conditions` description, which had promised "every
+study since 1999 matches" when left empty with everything else blank — no longer true once the
+fallback exists, and was arguably never an accurate description of the pre-fix behavior either.
+
+**Verified 4 ways, locally then live on the pushed build (0.1.73), 0 regressions:** bug case
+(`sponsors` only) now declares 6,095 with varied non-cancer conditions in the rows; bare `{}`
+still declares 124,048 and returns 5/5 real cancer rows (Store default-input gate holds); explicit
+`conditions:""` + `sponsors` matches the fixed bug case exactly (6,095, not re-narrowed); explicit
+`conditions:"lung cancer"` still filters (declares 14,627, distinct from both).
+
+**Durable point:** the "test the raw upstream API for a masked interaction before shipping" rule
+from 1905 is now 2-for-2 — once finding a real interaction (CourtListener) and once ruling one
+out cleanly (ClinicalTrials.gov) in under 5 minutes of curl calls. Cheap enough to make standard
+for every remaining default-narrowing fix, not just the ones that look suspicious.
+
+Remaining from the 1904 triage list, not yet done: `hacker-news-scraper` (`queries:["apify"]` vs
+`author`/`usernames`/`domainFilter`), `fec-campaign-finance-scraper` (`candidateName:"Warren"` vs
+`candidateId`/`committeeId`; check `searchMode` first — it may gate which modes even read
+`candidateName`).
