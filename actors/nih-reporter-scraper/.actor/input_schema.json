@@ -14,7 +14,7 @@
             "type": "string",
             "description": "Full-text search across project title, abstract and NIH indexing terms (e.g. \"CRISPR\", \"alzheimer\", \"mRNA vaccine\"). Leave empty to return everything matching the other filters.",
             "editor": "textfield",
-            "default": "cancer"
+            "prefill": "cancer"
         },
         "fiscalYears": {
             "title": "Fiscal years",

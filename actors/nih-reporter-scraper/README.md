@@ -50,7 +50,7 @@ The 15,000-row wall still applies to a pasted search and cannot be worked around
 | Field | Type | Description |
 | --- | --- | --- |
 | `startUrl` | string | Paste a reporter.nih.gov search link instead of re-typing its filters — see below. **Replaces every filter field in this table** |
-| `keyword` | string | Full-text over project title, abstract and NIH terms (default `"cancer"`) |
+| `keyword` | string | Full-text over project title, abstract and NIH terms. Omit it (or leave it empty) to search on the other filters alone — e.g. every FY2025 project at one organization. Only a run with **no** filters at all falls back to the example keyword `"cancer"` |
 | `fiscalYears` | array | e.g. `[2024, 2025]`. Empty = all years |
 | `agencyIcCodes` | array | Administering institute, e.g. `["NCI","NIAID"]` |
 | `activityCodes` | array | Award mechanism, e.g. `["R01","R21","R43"]` |

@@ -260,7 +260,7 @@ const ORG_STATE_CODES = [
 const listOf = (v) => (Array.isArray(v) ? v.filter((x) => x !== null && x !== undefined && x !== '') : []);
 const strList = (v) => listOf(v).map((x) => String(x).trim()).filter(Boolean);
 
-const keyword = String(input.keyword ?? '').trim();
+let keyword = String(input.keyword ?? '').trim();
 const includePublications = input.includePublications !== false;
 const includeAbstract = input.includeAbstract !== false;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
@@ -346,6 +346,39 @@ const awardNoticeDateFrom = parseDateBound(input.awardNoticeDateFrom, 'awardNoti
 const awardNoticeDateTo = parseDateBound(input.awardNoticeDateTo, 'awardNoticeDateTo');
 if (awardNoticeDateFrom && awardNoticeDateTo && awardNoticeDateFrom > awardNoticeDateTo) {
     throw new Error(`awardNoticeDateFrom (${awardNoticeDateFrom}) is after awardNoticeDateTo (${awardNoticeDateTo}); no project can match that window.`);
+}
+
+// THE DEFAULT-NARROWING TRAP (cycle 1904, same class as the cycle-893/894/895 default-injection
+// bug but in its narrowing form). `keyword` used to carry a schema `default` of "cancer", and
+// Apify merges a schema default into ANY run that omits the field -- API, CLI, scheduler, webhook,
+// not just a Console click. Since `keyword` is ANDed into the criteria (advanced_text_search), an
+// API caller who sent {"orgNames":["MASSACHUSETTS INSTITUTE OF TECHNOLOGY"],"fiscalYears":[2025]}
+// -- the most natural way to ask "all of MIT's NIH grants for FY2025" -- silently got only MIT's
+// CANCER grants, with no warning, while the schema's own description promised "Leave empty to
+// return everything matching the other filters." Measured live: that input returned 5/5 cancer
+// titles; the identical input with `keyword:""` returned BRAIN-initiative/neuroscience rows.
+// This is worse than the additive form of the bug (893's unwanted rows): a narrowing filter hides
+// rows the buyer asked and paid for, and nothing in the output says why they are missing.
+// FIX, same shape as cycle 894's: the default lives in CODE, not the schema (schema keeps a
+// `prefill` so the Console form still shows "cancer" and submits it explicitly), and is applied
+// ONLY when the field is truly absent AND the run has no other scope at all -- i.e. the bare `{}`
+// run that Apify's automated Store test makes (PLAYBOOK's default-input gate, cycle 96) still
+// returns real rows, while any caller who names a scope of their own gets exactly that scope.
+// `input.keyword === undefined` is the discriminator: an explicit "" is a deliberate "no keyword"
+// and must stay empty, which is why this cannot be done by comparing against the default string.
+const KEYWORD_DEFAULT = 'cancer';
+const otherScope = fiscalYears.length > 0 || agencyIcCodes.length > 0 || activityCodes.length > 0
+    || awardTypes.length > 0 || orgNames.length > 0 || orgStates.length > 0 || piNames.length > 0
+    || projectNums.length > 0 || minAwardAmount !== null || maxAwardAmount !== null
+    || Boolean(awardNoticeDateFrom) || Boolean(awardNoticeDateTo)
+    || input.activeOnly === true || input.newlyAddedOnly === true;
+if (input.keyword === undefined && !otherScope && !searchId) {
+    keyword = KEYWORD_DEFAULT;
+    log.info(
+        `No keyword and no other filter was given, so this run uses the example keyword "${KEYWORD_DEFAULT}". `
+        + 'Set "keyword" to search for something else, or add any other filter (orgNames, piNames, fiscalYears, '
+        + 'agencyIcCodes, projectNums, an award-amount band or a date window) to search without a keyword.',
+    );
 }
 
 if (minAwardAmount !== null || maxAwardAmount !== null) {
@@ -449,12 +482,12 @@ if (activeOnlyClientFilter) {
 
 // Named so the warning below can tell the buyer exactly which of their inputs the saved search
 // overrode, instead of quietly returning a result set that ignores half the form.
-// `keyword` is compared against its schema default because that default is filled in on EVERY
-// run whether or not the buyer touched the field -- warning about it unconditionally would make
-// the one warning that matters look like boilerplate.
-const KEYWORD_DEFAULT = 'cancer';
+// `keyword` no longer needs the old compare-against-the-default guard here: the schema default is
+// gone (see the default-narrowing trap above) and the code default is never applied when
+// `searchId` is set, so a non-empty `keyword` at this point is always one the buyer actually typed
+// and is worth naming in the warning.
 const IGNORED_WITH_SEARCH_ID = [
-    ['keyword', keyword === KEYWORD_DEFAULT ? '' : keyword], ['fiscalYears', fiscalYears], ['agencyIcCodes', agencyIcCodes],
+    ['keyword', keyword], ['fiscalYears', fiscalYears], ['agencyIcCodes', agencyIcCodes],
     ['activityCodes', activityCodes], ['awardTypes', awardTypes], ['orgNames', orgNames],
     ['orgStates', orgStates], ['piNames', piNames], ['projectNums', projectNums],
     ['minAwardAmount', minAwardAmount], ['maxAwardAmount', maxAwardAmount],

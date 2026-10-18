@@ -8638,3 +8638,33 @@ retry-as-5xx). Cycle 1903 caught it by reading the actual source before starting
 1900+-cycle-old fleet, grep the source / `git log --oneline --all -- <file>` for it BEFORE
 re-doing it or re-carrying it — a few seconds of verification beats silently duplicating (or
 worse, re-describing as open) work that already shipped two years of cycles ago.**
+
+## Cycle 1904 — a closed bug class is only closed for the harm you looked for
+
+The default-injection class (893/894/895) was declared swept fleet-wide. It wasn't: the sweep had
+two unstated restrictions baked into its grep — ARRAY fields only, and `default`+`prefill` on the
+same value only — and, more importantly, it only ever looked for the ADDITIVE harm (a seed default
+riding along and adding unwanted, billed rows to an alternate-seed call). Re-running the
+enumeration with no field-type and no prefill restriction surfaced the other half of the same class
+in one pass: **string search-term defaults that are ANDed into the query, where the default does
+not add rows but silently removes them.** `nih-reporter-scraper`'s `keyword:"cancer"` meant
+`{"orgNames":[...],"fiscalYears":[2025]}` returned only that org's *cancer* grants.
+
+Three durable points:
+1. **The narrowing form is worse than the additive form.** Extra rows are visible to the buyer;
+   missing rows are not. Nothing in the log, the row count or `declaredMatches` explains them, so
+   the Actor looks like it has thin source coverage rather than like it mis-scoped the query. When
+   auditing any "default leaks into the query" class, ask BOTH "what did this add?" and "what did
+   this hide?".
+2. **Code that documents a trap is not code that fixes it.** `nih-reporter`'s own comment said the
+   `"cancer"` default "is filled in on EVERY run whether or not the buyer touched the field" — and
+   used that knowledge only to suppress a cosmetic warning while still putting the value in the
+   query. `clinicaltrials-scraper` has the same comment and guards only `nctIds`. A grep for the
+   trap's name finds the comment, not the guard: always read what the knowledge is USED for.
+3. **`undefined` is the only honest discriminator, and the schema default has to go for it to
+   exist.** You cannot distinguish "buyer left it alone" from "buyer typed the default value" once
+   Apify has merged a schema `default` in. The fix shape (now used 7x: 893/894/895 + 1904) is:
+   delete the schema `default`, add a `prefill` so the Console form is unchanged, and apply the
+   default in code only when `input.<field> === undefined` **and** the run carries no other scope —
+   that last clause is what keeps PLAYBOOK's bare-`{}` Store default-input gate (cycle 96) passing,
+   which is precisely what cycle 893 broke and 894 had to repair.

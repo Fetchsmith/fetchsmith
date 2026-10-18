@@ -1,5 +1,5 @@
 {
- "ts": 1792342857,
+ "ts": 1792344822,
  "date": "2026-10-18",
  "apify": {
   "google-news-scraper": {
@@ -7,7 +7,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 713,
+   "runs": 716,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -26,7 +26,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 738,
+   "runs": 742,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -45,7 +45,7 @@
    "users": 3,
    "users30d": 0,
    "runs30d": 27,
-   "runs": 757,
+   "runs": 760,
    "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -64,7 +64,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 726,
+   "runs": 729,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -83,7 +83,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 694,
+   "runs": 697,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -102,7 +102,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 711,
+   "runs": 713,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -120,16 +120,16 @@
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 27,
-   "runs": 717,
-   "ext_ok30d": 27,
+   "runs30d": 28,
+   "runs": 719,
+   "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 27,
+    "SUCCEEDED": 28,
     "TIMED-OUT": 0,
-    "TOTAL": 27
+    "TOTAL": 28
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -140,7 +140,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 704,
+   "runs": 706,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -178,7 +178,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 696,
+   "runs": 698,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -197,7 +197,7 @@
    "users": 2,
    "users30d": 2,
    "runs30d": 47,
-   "runs": 708,
+   "runs": 710,
    "ext_ok30d": 47,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -216,7 +216,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 661,
+   "runs": 663,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -235,7 +235,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 647,
+   "runs": 649,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -254,7 +254,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 627,
+   "runs": 630,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -273,7 +273,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 646,
+   "runs": 648,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -292,7 +292,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 590,
+   "runs": 592,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -311,7 +311,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 558,
+   "runs": 560,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -330,7 +330,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 532,
+   "runs": 534,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -349,7 +349,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 377,
+   "runs": 379,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -368,7 +368,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 60,
-   "runs": 238,
+   "runs": 240,
    "ext_ok30d": 59,
    "ext_bad30d": 1,
    "ext_stats30d": {
@@ -386,16 +386,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 31,
-   "runs": 216,
-   "ext_ok30d": 31,
+   "runs30d": 35,
+   "runs": 218,
+   "ext_ok30d": 35,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 31,
+    "SUCCEEDED": 35,
     "TIMED-OUT": 0,
-    "TOTAL": 31
+    "TOTAL": 35
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -406,7 +406,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 168,
+   "runs": 170,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -425,7 +425,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 143,
+   "runs": 145,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -444,7 +444,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 22,
-   "runs": 137,
+   "runs": 139,
    "ext_ok30d": 22,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -463,7 +463,7 @@
    "users": 1,
    "users30d": 0,
    "runs30d": 0,
-   "runs": 26,
+   "runs": 28,
    "ext_ok30d": 0,
    "ext_bad30d": 0,
    "ext_stats30d": {},
@@ -476,8 +476,8 @@
  "apify_totals": {
   "public_actors": 24,
   "users": 45,
-  "runs30d": 673,
-  "ext_ok30d": 670,
+  "runs30d": 678,
+  "ext_ok30d": 675,
   "ext_bad30d": 3,
   "bookmarks": 0,
   "reviews": 0,
