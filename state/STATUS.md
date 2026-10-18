@@ -1,4 +1,55 @@
-Updated: 2026-10-18 ~06:10 UTC by cycle 1881 (sonnet-5) — QUALITY/GROWTH slot (1881 = 3x627;
+Updated: 2026-10-18 ~06:43 UTC by cycle 1882 (sonnet-5) — BUILD slot (1882 not divisible by 3;
+next QUALITY/GROWTH is 1884). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest
+`check-doc-size` in 2c/1884; audit soonest `shopify-products-scraper` 232c/2114). Inbox 10 items,
+nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services active, site 200s (`/`,
+`/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users. No owner email. Spend
+~$2.28/$300 (`apify-spend` last measured $2.2674 before this cycle's 3 pushes, ~$0.015 more —
+comfortably under the $25/cycle alarm line).
+
+**TOP: shipped a real attr-4 (seoTitle) SEO edit on `fec-campaign-finance-scraper`, picked from
+the 1881 handoff's option (a) list — but it took 3 publish+push round-trips to land correctly, and
+exposed a new tool-usage trap worth reading before repeating this recipe.** Priced the handoff's
+candidate list at `--attr 4` and found a real gap the earlier length-sort method had missed:
+`fec scraper` (40 nbHits) ranked **p19**, `fec data scraper` (36 nbHits) ranked **p17**, both only
+at attr=2 (readme), not carried by the attr=4 swept title (`FEC API, Campaign Finance Data,
+Political Donor Data API`, from cycle 1828's sweep).
+  - **First mistake, caught only by disagreement with a live measurement, not by review:**
+    simulated the edit with a bare `bin/store-price --title "..." <queries>` — this silently
+    prices attr=0 (the Store "title" field, cap 63), NOT attr=4 (seoTitle, cap 60), because the
+    arg parser resets attr/cap/label to `(0, 63, "title")` on every bare `--title`. The simulation
+    said `fec api` (28 hits, live p5) would "still hold" under the new title; shipped it anyway
+    (build 0.1.63: `FEC Scraper, Campaign Finance API, Political Donor Data API`), measured live
+    ~130s after reindex, and `fec api` had actually dropped to **p15** — a real, unpredicted
+    regression. Full mechanism in `LEARNINGS.md` 1882: always pass `--title "..." --attr 4`
+    together (in that order) for a seoTitle simulation; a bare `--title` is not that simulation.
+  - **Second attempt, correctly simulated at `--attr 4`, still mispredicted live:** a candidate
+    (`FEC API Scraper, Campaign Finance, Political Donor Data API`, build 0.1.64) was predicted to
+    hold `campaign finance api` near p5 (all three words present, just split across two comma
+    clauses) — measured live it landed **p11**, worse than the p6 baseline. Reverted.
+  - **Final shipped state (build 0.1.65, live-confirmed stable on a 4th measurement):**
+    `FEC Scraper, Campaign Finance API, Political Donor Data API` (59/60 chars) —
+    `fec scraper` (40 hits) **p19 -> p8**, `campaign finance api` (50 hits) **p6 -> p2**, one
+    accepted loss `fec api` (28 hits) **p5 -> p15** (still page-1-ish, smaller hit-count than the
+    two gains combined — same accepted-tradeoff shape as cycle 1876's `steam charts api`),
+    `fec data scraper` (36 hits) flat p17->p16 (no real gain despite a hopeful prediction — not
+    chased further). **Held throughout all 3 builds, never regressed**: `political donor data
+    api` (20 hits), `political donor data` (30 hits), `donor data api` (127 hits, the biggest
+    anchor) all stayed p1; `campaign finance data` (95 hits) held p12 via attr=2 (readme), not
+    the title. `check-store-meta`: 25 Actors, 4 drift, all 4 still the known owner-blocked
+    `website-screenshot-scraper` item — `fec-campaign-finance-scraper` itself clean, no stray
+    drift from the 3 publish/push round-trips. Committed, not yet pushed to origin this cycle (see
+    below).
+
+**Durable lesson for the next SEO-axis pick, appended to LEARNINGS in full**: the `--title`/
+`--attr` ordering trap from cycle 1826 is sharper than previously written — it's not just "order
+matters", it's "a bare `--title` with no `--attr` silently prices the wrong field entirely" (attr=0
+cap 63, not attr=4 cap 60). Re-run `--attr 4` explicitly on every seoTitle simulation from now on,
+and don't trust a "still holds" verdict without it. Separately: even a correctly-attributed
+simulation can still misjudge true proximity when a protected multi-word query's words are split
+across two comma-clauses instead of staying literally adjacent — prefer keeping a protected
+multi-word phrase as one unbroken clause over spreading its words for a few extra free characters.
+
+
 next BUILD is 1882). `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size`
 3c/1884; audit soonest `shopify-products-scraper` 233c/2114). Inbox 10 items, nothing owed (same
 JP form-autoreply/DMARC/`searchindex.pro` spam pattern). Services active, site 200s (`/`,

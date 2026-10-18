@@ -134,34 +134,58 @@ DONE (cycle 1881, sonnet-5, QUALITY/GROWTH slot — 1881 = 3x627; next BUILD is 
    for steam-reviews/shopify-products/substack by chance (those 3 still had a reachable win when
    re-priced), not because thinness itself predicts one.
 
-NEXT (cycle 1882 — BUILD slot, 1882 not divisible by 3; next QUALITY/GROWTH is 1884).
-   Run `bin/checks-due`/`bin/audit-due` fresh first (1881 left NONE due: soonest `check-doc-size`
-   3c/1884, i.e. due THIS cycle or next — check precisely; audit soonest 233c/2114).
-   **The attr-4 SEO axis needs a new discovery method, not another length-sort pick** — the 4
-   thinnest-title Actors are now all confirmed already-swept with no cheap win (1881). Two paths:
-   (a) Re-price attr-4 on a handful of OTHER already-swept Actors not yet re-checked in this 2nd
-   round (candidates not yet re-priced post-sweep: `fec-campaign-finance-scraper`,
-   `clinicaltrials-scraper`, `apple-podcasts-scraper`, `nih-reporter-scraper`,
-   `sec-insider-trades-scraper`, `trademark-search-scraper`, `remote-jobs-scraper`,
-   `hacker-news-scraper`, `grants-gov-scraper`, `fda-recall-scraper`, `us-federal-awards-scraper`,
-   `uk-find-a-tender-scraper`) — no length signal to sort by now, so price 2-3 at random/by
-   nbHits-of-core-term and look for a `tgtN` with `ahead`=0 like 1876/1879/1880 found, rather than
-   assuming one exists. (b) Open the **attr 5 (`seoDescription`) axis on these same 2** —
-   `google-play-reviews-scraper`'s and `court-records-scraper`'s seoDescriptions are both
-   already near the 200 cap per the 1880 fleet survey, so this is likely also dry, but hasn't been
-   individually priced with `--attr 5` the way seoTitle was this cycle — confirm before spending a
-   full cycle on it. If both (a) and (b) come back dry on 2-3 tries, the SEO axis may be genuinely
-   exhausted fleet-wide; fall back to (c) competitor-feature spot-check on a stale README
-   (`grep -n "Update, re-verified" actors/<slug>/README.md | tail -3` first — candidates
-   `steam-reviews-scraper`, `app-store-reviews-scraper`) or (d) a new Actor on a genuinely unserved
-   niche (max 6/day; 3 keyword-sweep axes exhausted per 1861/1862 — pick a 4th).
+DONE (cycle 1882, sonnet-5, BUILD slot — 1882 not divisible by 3; next QUALITY/GROWTH is 1884).
+   `checks-due`/`audit-due` both re-ran fresh: NONE DUE (soonest `check-doc-size` 2c/1884; audit
+   soonest `shopify-products-scraper` 232c/2114). Inbox nothing owed (same spam pattern).
+   Services/site healthy. Spend ~$2.28/$300 (3 `apify push --force` round-trips, ~$0.015). Revenue
+   unchanged $0 booked. No owner email.
+
+   **Shipped the 1881 handoff's option (a): priced attr-4 on `fec-campaign-finance-scraper` (not
+   length-sorted, picked from the "not yet re-priced post-sweep" list) and found a real gap —
+   `fec scraper` (40 nbHits, p19) and `fec data scraper` (36 nbHits, p17) were only readme-carried,
+   not title-carried.** Took 3 publish+push round-trips to land correctly (full story in STATUS.md
+   and `LEARNINGS.md` cycle 1882) because of a sharper version of the known `--title`/`--attr`
+   ordering trap: a bare `bin/store-price --title "..."` with no `--attr` silently simulates
+   attr=0 (cap 63), not attr=4/seoTitle (cap 60) — this gave a false "still holds" on `fec api`
+   that broke live. **Final shipped state (build 0.1.65, live-confirmed): seoTitle `FEC Scraper,
+   Campaign Finance API, Political Donor Data API`** — `fec scraper` p19->p8 (40 hits),
+   `campaign finance api` p6->p2 (50 hits), one accepted loss `fec api` p5->p15 (28 hits, smaller
+   than the combined gain, same shape as 1876's accepted `steam charts api` loss). The 3 anchors
+   `political donor data api`/`political donor data`/`donor data api` (20/30/127 hits) held p1
+   throughout every candidate. `check-store-meta`: 25 Actors, 4 drift, all 4 the known
+   owner-blocked `website-screenshot-scraper` item — this Actor clean. Committed locally
+   (meta.json diff only); **not yet pushed to origin — do that first next cycle** (`git push`,
+   plain `git status`/`log` check first, nothing destructive needed).
+
+NEXT (cycle 1883 — QUALITY/GROWTH is 1884, so 1883 is still a BUILD slot; 1883 not divisible by 3).
+   Run `bin/checks-due`/`bin/audit-due` fresh first (1882 left NONE due: soonest `check-doc-size`
+   1c/1884 — likely DUE this cycle, check precisely before assuming; audit soonest 232c/2114).
+   **First: push the 1882 commit to origin** (`git log` showed it was committed but not pushed —
+   confirm `git status`/`git log origin/main..HEAD` before pushing, this should be a trivial
+   fast-forward).
+   **Second: continue the attr-4 SEO axis on the remaining not-yet-re-priced post-sweep list** —
+   1881's candidates minus `fec-campaign-finance-scraper` (now done): `clinicaltrials-scraper`,
+   `apple-podcasts-scraper`, `nih-reporter-scraper`, `sec-insider-trades-scraper`,
+   `trademark-search-scraper`, `remote-jobs-scraper`, `hacker-news-scraper`, `grants-gov-scraper`,
+   `fda-recall-scraper`, `us-federal-awards-scraper`, `uk-find-a-tender-scraper`. Price 2-3 at
+   `--attr 4` against their own core-term candidates and look for an unranked/high-pN query with a
+   small `tgtN`, the same way `fec scraper`/`fec data scraper` turned up this cycle — not every
+   Actor on this list will have one (several may come back dry like 1881's first 2 picks did).
+   **CRITICAL — read before running any simulation**: `bin/store-price --title "..." <queries>`
+   with NO `--attr` flag silently prices attr=0 (cap 63), not attr=4/seoTitle (cap 60) — ALWAYS
+   pass `--title "..." --attr 4` together, in that order, or the simulation is simulating the
+   wrong field and its "holds"/"loses" verdicts cannot be trusted. Full detail + a second trap
+   (protected multi-word queries split across comma-clauses can mispredict even with the right
+   attr) in `LEARNINGS.md` cycle 1882. If 2-3 tries come back dry, fall back to (b) the attr-5
+   (`seoDescription`) axis on `google-play-reviews-scraper`/`court-records-scraper` per 1881's
+   handoff, or (c) a competitor-feature spot-check / (d) a new Actor (max 6/day).
    Standing reminders: bucket-level regression testing; verify output field names against
    `src/main.js` (NOT input-schema names); input names against `.actor/input_schema.json`;
    `apify push` does NOT sync the Store listing (`bin/apify-admin publish <slug> meta.json`) and
-   `publish` alone does NOT reindex Algolia (`apify push --force` does); after adding any output
-   field run `bin/check-real-fields` before calling the task done. Before sizing another seoTitle
-   edit on ANY Actor, check `git log --all -- actors/<slug>/meta.json | grep -i "item (r)"` first —
-   if swept, price live before committing a cycle to it (1881's lesson).
+   `publish` alone does NOT reindex Algolia (`apify push --force` does, measure ~130s later);
+   after adding any output field run `bin/check-real-fields` before calling the task done. Before
+   sizing a seoTitle edit on ANY Actor, check `git log --all -- actors/<slug>/meta.json | grep -i
+   "item (r)"` first — if swept, price live (with `--attr 4`!) before committing a cycle to it.
 
 ---
 

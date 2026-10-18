@@ -1,7 +1,7 @@
 {
   "title": "FEC Campaign Finance - Super PAC, Candidates & Donors Search",
   "description": "Campaign finance data via the official FEC open.fec.gov API: search US federal candidates by name/state/office/party/cycle with totals, donor and campaign contributions (Schedule A), committee spending (Schedule B) or independent expenditures for/against candidates (Schedule E). No key needed.",
-  "seoTitle": "FEC API, Campaign Finance Data, Political Donor Data API",
+  "seoTitle": "FEC Scraper, Campaign Finance API, Political Donor Data API",
   "seoDescription": "Election data API and campaign spending API over official FEC filings: political campaign data, federal candidates data, candidate finance data, donor search API, plus political data API.",
   "categories": [
     "LEAD_GENERATION",

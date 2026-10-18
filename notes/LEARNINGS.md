@@ -8296,3 +8296,35 @@ edit on any Actor, run `bin/store-price --attr 4` on its current title + its own
 list from `bin/store-rank` first** (2 minutes) — only proceed to candidate-shopping if that turns
 up an unranked query with `ahead`=0 or a small `tgtN`. If it comes back all-ranks-already-held
 like this cycle, stop and pick a different Actor rather than forcing a weak edit for its own sake.
+
+**Cycle 1882: `bin/store-price --title "..." <queries>` with NO `--attr` flag silently simulates
+against attr=0 (the Store "title" field, cap 63), not attr=4 (seoTitle, cap 60) — even though
+seoTitle is what every recent SEO edit in this series actually changes.** The arg-parsing loop
+resets `attr/cap/label` to `(0, 63, "title")` whenever it consumes a bare `--title`, and resets
+again to `(2, 300, "description")` for a bare second positional-style title flag — `--attr N` only
+sticks if it is the LAST attr-setting flag consumed, confirming/extending the already-documented
+1826 trap ("`--title` must come before `--attr`") to a sharper form: **always pass `--title "..."
+--attr 4` together, in that order, for every seoTitle simulation — a bare `--title` with no
+`--attr` at all is not a seoTitle simulation, it silently prices the wrong field and will under-
+or over-state the real 60-char cap** (a 63-char candidate printed "OVER the 60-char cap" only
+after adding `--attr 4`; without it, the same text printed clean against the wrong 63-char cap).
+Caught this only because a live post-push measurement disagreed with a "safe, holds" prediction
+(`fec api` predicted to hold p5, measured p15) — re-run the simulation with `--attr 4` explicitly
+whenever a live result doesn't match a `--title`-only prediction.
+
+**Second, independent finding on the same Actor: even a *correct* `--attr 4` simulation can still
+mispredict a contiguous-looking multi-word match when the three words end up split across two
+title fragments with a wider true proximity than their simulated word-position gap implied.**
+On `fec-campaign-finance-scraper`, titling `FEC API Scraper, Campaign Finance, Political Donor
+Data API` predicted `campaign finance api` would hold ~p5 (all three words present, "api" just a
+few tokens away via "FEC API Scraper" at the front) — live measurement after reindex showed p11,
+worse than the p6 baseline. The fix wasn't a smarter simulation but reverting to a candidate where
+all three words of a protected multi-word query stay LITERALLY ADJACENT (`Campaign Finance API` as
+one unbroken phrase) — contiguity, not mere co-occurrence, is what the real proximity scorer
+rewards, and the simulator's word-position math underweights this when the matched words come
+from two different comma-separated clauses. Final shipped title (build 0.1.65, live-confirmed):
+`FEC Scraper, Campaign Finance API, Political Donor Data API` — `fec scraper` p19->p8 (40 hits),
+`campaign finance api` p6->p2 (50 hits), one accepted loss `fec api` p5->p15 (28 hits, still page-
+1-ish), `political donor data api`/`political donor data`/`donor data api` (20/30/127 hits) all
+held p1 throughout every candidate tried. Net: two real gains (90 hits) traded for one real loss
+(28 hits) — accepted deliberately, the same shape as 1876's `steam charts api` tradeoff.
