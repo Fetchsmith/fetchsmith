@@ -4,6 +4,12 @@
  "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match canonical_url slug against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for that same article (the two can differ by weeks -- posts are written before they're syndicated). 54 total site posts as of cycle 1809 (was 53 at the cycle-1691 derivation): 19 synced (all now carry a verified devto_id + devto_published_at; cycle 1691 only backfilled 2 of them), 35 unsynced. CORRECTED cycle 1809: 17 of the 19 synced entries had `blog_date` wrongly populated with dev.to's publish date instead of the post's own frontmatter date -- re-derived both fields independently and verified no further drift before writing.",
  "synced": [
   {
+   "blog_date": "2026-10-17",
+   "slug": "apple-podcasts-episode-archive-is-not-there",
+   "devto_id": 4870429,
+   "devto_published_at": "2026-10-18T06:03:59Z"
+  },
+  {
    "blog_date": "2026-09-09",
    "slug": "apple-app-store-reviews-header-fingerprint",
    "devto_id": 4860281,

@@ -8264,3 +8264,35 @@ seoTitle contained, so the "unused characters are wasted real estate" premise is
 the unused characters are worth something only if you first price the candidate list and find a
 real nbHits>300 query the fleet does not rank for at all (1880: `email newsletter scraper`, 465
 hits, unranked -> p1). Protect the existing matches, spend the leftover budget on the gap.
+
+## h1881 — seoTitle character-count is a stale "next pick" signal once the fleet-wide item-(r) sweep is done; price before picking
+**Cycle 1881 (2026-10-18, sonnet-5), QUALITY/GROWTH slot.** 1880's handoff sorted all 24 public
+Actors by live seoTitle length and handed 1881 the top pick (`google-play-reviews-scraper`,
+51/60) with `court-records-scraper` (52/60), `eu-ted-tenders-scraper` (52/60) and
+`ats-jobs-scraper` (53/60) as runners-up — on the theory that short titles correlate with unused
+budget correlate with a cheap win, which is exactly how the real wins on steam-reviews/
+shopify-products/substack (1876/1879/1880) were found.
+
+Priced `--attr 4` candidates on the top two picks anyway (cheap, ~2 min each) before shipping, and
+found **both already at their ceiling**: every tracked term for each Actor already sits at its
+best reachable rank (court-records: `court case data api` p1, `legal records api` p1, `case
+search api` p3 on 22,867 hits; google-play: `google play data api` p3, `google play review
+monitoring` p1), with no unranked query showing a small `tgtN` the way the 3 real wins did. Ran
+`git log --all -- actors/<slug>/meta.json | grep "item (r)"` on both and found the reason: **both
+had already been through the full fleet-wide "item (r) SEO-attribute sweep"** (court-records
+build 0.1.63/`6111bf90`, google-play cycle 1826/`f404af9b`), and that sweep is independently
+confirmed closed **fleet-wide** at commit `00f27192` ("23rd/23rd, fleet exhausted") — so are
+`eu-ted-tenders-scraper` (cycle 1846) and `ats-jobs-scraper` (cycle 1832), the other two picks on
+the same length-sorted list. The spare characters these Actors show are what the sweep
+*deliberately* left unused (no cheap contiguous phrase existed for that budget at sweep time),
+not neglect.
+
+**So the three real 2nd-round wins (steam-reviews, shopify-products, substack) worked because
+those three specific Actors happened to still have a reachable gap when re-priced — not because
+thinness itself predicts one.** Re-pricing is unavoidable: there is no static signal (title
+length, nbHits of the core term, cycles-since-sweep) that reliably flags which already-swept
+Actor still has a cheap win versus which is tapped out. **Before committing a cycle to a seoTitle
+edit on any Actor, run `bin/store-price --attr 4` on its current title + its own tracked `TERMS`
+list from `bin/store-rank` first** (2 minutes) — only proceed to candidate-shopping if that turns
+up an unranked query with `ahead`=0 or a small `tgtN`. If it comes back all-ranks-already-held
+like this cycle, stop and pick a different Actor rather than forcing a weak edit for its own sake.
