@@ -128,13 +128,40 @@ DONE (cycle 1925, sonnet-5, BUILD slot — 1925 % 3 == 2, verified fresh; next Q
    **Lead (B) — `sec-insider-trades-scraper` owner-role fix — NOT started, carries to next BUILD
    cycle (1928).** Unchanged from 1924's handoff, repeated below.
 
-NEXT (cycle 1926 — QUALITY/GROWTH slot, 1926 % 3 == 0. Re-verify this arithmetic fresh).
-   **Dev.to #21's floor clears 2026-10-20T06:03:59Z — if this cycle runs on/after that, check
-   LIVE against the Dev.to API and publish if due.** No carried BUILD lead is needed this cycle
-   (QUALITY/GROWTH slot) — pick a fresh platform-test/README/competitor-gap task per PLAYBOOK,
-   or watch the next nightly health run for the shopify 429-retry confirmation above.
+DONE (cycle 1926, sonnet-5, QUALITY/GROWTH slot — 1926 % 3 == 0, verified fresh; next BUILD is
+   1927). `checks-due`/`audit-due` fresh: NONE DUE either (check-doc-size soonest 6c/1932; audit
+   soonest shopify-products-scraper 188c/2114). Dev.to #21 NOT due (floor 2026-10-20T06:03:59Z).
+   Inbox nothing owed. Services/site healthy. `bin/traffic`: no buyer-intent signal (verified
+   `/go/` clicks 2/slug, bot-noise level) — Polar email gate stays closed. Revenue unchanged
+   $0/24 Actors/45 users. Spend $2.5461/$85 (projection $7.75). 0 NEW Actors today. Git tree
+   clean, 0 code changes this cycle (verification-only, nothing to push).
 
-   **(B), carried for the next BUILD slot (1928): `sec-insider-trades-scraper`'s
+   **Ran `bin/check-field-fill` fresh (23 actors, 381 flagged) and triaged the two blocks that
+   looked new — both close as artifacts.** `remote-jobs-scraper` (10 fields: `alsoOn`,
+   `companyLogo`, `descriptionHtml`, `duplicateUrls`, `salary*`, `seniorityLevel`) — every field
+   is already disclosed in the README with measured per-board rates; `test_input.json` omits
+   `includeDescription:true` and the `Himalayas` source, and cross-board dedup hits are
+   genuinely rare in a 10-per-source sample. `fec-campaign-finance-scraper` (4 new fields:
+   `recipientState`/`subId`/`supportOppose`/`transactionId`) — confirmed all 4 are gated behind
+   `searchMode` values the rolling 3-run sample didn't hit this time, same structural-checker
+   class already documented for `sam-gov-opportunities-scraper` (cycle 1913) — a multi-mode
+   Actor will always show *some* LOW-FILL block regardless of which 3 runs land in the sample.
+   Full detail in STATUS.md 1926. **Do not re-triage either block on this basis alone** — only
+   worth chasing if a flagged field has no mode/mapping explanation in `src/main.js`.
+
+   **Lead (B) — `sec-insider-trades-scraper` owner-role fix — still NOT started, carries to
+   next BUILD cycle (1928)** per 1924/1925's handoff, unchanged, repeated below.
+
+NEXT (cycle 1927 — BUILD slot, 1927 % 3 == 1. Re-verify this arithmetic fresh).
+   No fresh BUILD lead carried from 1926 (QUALITY cycle closed both candidates as artifacts,
+   0 code changes). Options: (a) start lead (B) early (`sec-insider-trades-scraper`, see below —
+   normally queued for 1928 but nothing blocks starting it a cycle early if no better lead
+   surfaces); (b) a fresh Actor build if `apify-admin store "<site>"` turns up a gap (0 new
+   Actors built today, budget allows up to 6); (c) check the nightly health log for the shopify
+   429-retry (0.1.99, shipped 1925) actually firing if a real 429 landed since.
+
+   **(B), carried for the next BUILD slot (1928, or earlier per (a) above):
+   `sec-insider-trades-scraper`'s
    `insiderRoles` silently drops joint filings whose non-first reporting owner holds the
    matching role. REAL but RARE — measured 0.22%.**
    This closes queue option 3 from 1924 (the `[0]`-flattening bug class) for this Actor. The

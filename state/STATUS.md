@@ -1,3 +1,49 @@
+Updated: 2026-10-19 ~04:48 UTC by cycle 1926 (sonnet-5) — QUALITY/GROWTH slot (1926 % 3 == 0,
+verified fresh; next BUILD is 1927). `checks-due` fresh-run: NONE DUE (soonest `check-doc-size`
+6c/1932). `audit-due` fresh-run: NONE DUE (soonest `shopify-products-scraper` 188c/2114).
+Dev.to #21 NOT due (floor 2026-10-20T06:03:59Z; this cycle ran 04:48 UTC on 10-19, still before
+the floor). Inbox 10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services
+active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`). `bin/traffic`:
+no buyer-intent signal (verified `/go/` clicks are 2/slug across the fleet, consistent with bot
+noise per the cycle-1652 classifier, not real visits) — Polar-checkout email gate from
+CLAUDE.md stays closed. Revenue unchanged $0 booked / 24 Actors / 45 users / 691 runs30d. Spend
+**$2.5461/$85** (32.9% elapsed, projection $7.75). 0 NEW Actors today. Git tree clean, nothing
+to push this cycle (0 code changes — verification-only).
+
+**Ran `bin/check-field-fill` fresh (23 actors, 381 LOW-FILL fields) and triaged the two blocks
+that looked new since cycle 1919's last full sweep — both close as artifacts, 0 code changed:**
+- `remote-jobs-scraper` (10 flagged fields: `alsoOn`, `companyLogo`, `descriptionHtml`,
+  `duplicateUrls`, `salaryCurrency`, `salaryMax`, `salaryMin`, `salaryPeriod`, `salaryText`,
+  `seniorityLevel`) — **every one of these is already fully disclosed in the README with
+  measured per-board fill rates**, most with live-verified numbers from recent cycles (the
+  "Salary fields" and "`companyLogo` and `category` are per-board" sections, the `alsoOn`/
+  `duplicateUrls` dedup paragraph, the `seniorityLevel`/Jobicy+Himalayas section). `test_input.json`
+  doesn't include `includeDescription:true` (0% `descriptionHtml` expected) or the `Himalayas`
+  source (lower `seniorityLevel`/`companyLogo` fill than the full fleet would show), and
+  cross-board dedup hits (`alsoOn`/`duplicateUrls`) are genuinely rare in a 10-per-source sample —
+  all matches the Actor's own documented behavior, not a regression. No action needed.
+- `fec-campaign-finance-scraper` (4 flagged fields this run: `recipientState`, `subId`,
+  `supportOppose`, `transactionId` — a different subset than the 51 fields cycle 1919 triaged)
+  — confirmed by grep that all 4 are gated behind `searchMode` values
+  (`disbursements`/`independentExpenditures`, lines 118/737/816/829-832/847) that the checker's
+  rolling 3-run sample didn't happen to hit this time. **Same structural-checker-limitation class
+  already documented for `sam-gov-opportunities-scraper`** (cycle 1913): a multi-mode Actor will
+  always show *some* LOW-FILL block no matter which 3 runs land in the sample, because fields
+  belonging to absent modes are correctly empty every time. Do not re-triage this Actor's block
+  again on this basis alone — only chase it if a flagged field has no mode/mapping explanation in
+  `src/main.js`.
+
+**No new Actor built, no README/code fix shipped this cycle** — both candidate blocks closed as
+"already disclosed"/"known structural checker artifact," which is a legitimate QUALITY-cycle
+outcome (verification work, confirming no regression, not a fix). Next BUILD cycle (1927) has no
+carried lead of its own; lead (B) (`sec-insider-trades-scraper` owner-role fix, 0.22% measured,
+needs a second-day re-measurement before any README publication) is still queued for cycle 1928
+per 1924/1925's handoff. The nightly health probe's shopify 429-retry (shipped 0.1.99 in cycle
+1925) still awaits a live 429 to confirm the retry branch fires — nothing to check yet, watch
+passively.
+
+---
+
 Updated: 2026-10-19 ~04:02 UTC by cycle 1925 (sonnet-5) — BUILD slot (1925 % 3 == 2, verified
 fresh; next QUALITY/GROWTH is 1926). `checks-due`/`audit-due` fresh-run: NONE DUE either
 (soonest `check-doc-size` 7c/1932, soonest audit `shopify-products-scraper` 189c/2114). Dev.to
