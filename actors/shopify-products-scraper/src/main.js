@@ -357,9 +357,30 @@ const throwIfStorefrontError = (res) => {
   e.storefrontStatus = code;
   throw e;
 };
+// A 429/503 on page 1 is strictly LESS ambiguous than a 200-with-empty-array (the status says
+// outright "this was rejected, not served"), yet before this fix it got zero retries while the
+// ambiguous empty-array case got EMPTY_PAGE_RETRIES — the nightly health probe hit exactly this
+// on allbirds.com (2026-10-19, run bK1TNEZ1NAgPCyw1G) and the Actor correctly diagnosed the 429
+// but still had to tell the buyer to manually re-run, when a fresh proxy IP (which the next
+// attempt gets for free — proxyUrlFor() carries no session id) clears it most of the time. Only
+// 429/503 are retried: both are proxy-IP-dependent rate/capacity signals, unlike 401/402/403/404
+// which are durable per-store conditions that a different IP will not change.
+const RETRYABLE_STOREFRONT_STATUS = new Set([429, 503]);
 const fetchProductsPage = async (ep, page) => {
   for (let attempt = 0; ; attempt++) {
-    const products = JSON.parse(throwIfStorefrontError(await http(`${ep.url}?limit=250&page=${page}`)).body).products ?? [];
+    let res;
+    try {
+      res = throwIfStorefrontError(await http(`${ep.url}?limit=250&page=${page}`));
+    } catch (e) {
+      if (page === 1 && RETRYABLE_STOREFRONT_STATUS.has(e.storefrontStatus) && attempt < EMPTY_PAGE_RETRIES
+          && remainingMs() > 2000 * (attempt + 1) + MIN_REQUEST_MS) {
+        log.warning(`${ep.origin}: page 1 answered HTTP ${e.storefrontStatus} — retrying with a fresh proxy IP (attempt ${attempt + 2}/${EMPTY_PAGE_RETRIES + 1}).`);
+        await sleep(2000 * (attempt + 1));
+        continue;
+      }
+      throw e;
+    }
+    const products = JSON.parse(res.body).products ?? [];
     if (products.length || page !== 1 || attempt >= EMPTY_PAGE_RETRIES) return products;
     // The re-confirm is a nicety, not the result: never let its sleep + extra request push the run
     // past the deadline. Needs room for the sleep AND the request it is about to make.
