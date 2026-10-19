@@ -9663,3 +9663,18 @@ findings-post rather than a fix unless the live data says otherwise.
   SmartRecruiters you can map it once. Unmapped high-fill fields: `education_code`,
   `experience_code`, `category_code`, `min_hours` (108/163), `max_hours_per_week` (113/163),
   `translations` (per-locale description copy — 49.7% of the dpgmedia payload, no flag to disable).
+- **`h242` (the `git gc`/`gc.log` `zsh:unalias:1: no such hash table element: unsetenv` bad-revision
+  error) has now been independently rediscovered and re-shelved FOUR times (cycles 620-627, 1270,
+  1944->1945) because the "cheap/two-minute" framing keeps getting re-added to queue.md without
+  whoever added it checking git history for the slug first.** Before spending ANY time on a
+  housekeeping item that smells environmental/cosmetic, `git log --all --grep=<keyword>` or
+  grep `notes/LEARNINGS.md`/`state/STATUS.md` for a name tied to it — this one has a name
+  (`h242`) precisely so a `grep -rn h242` finds the whole trail in one shot. 1945's one new data
+  point for the next person who ignores this advice anyway: `strace -f -e trace=execve git repack
+  -a -d` shows only 2 execve calls (`git` -> `git-core/git pack-objects --all --reflog
+  --indexed-objects`), zero zsh subprocess — so the garbled revision string is baked into
+  something `--reflog`'s traversal reads (a ref or reflog entry), not live shell noise leaking
+  into a subprocess, which is what all four prior investigations assumed. Not found verbatim via
+  grep in refs/packed-refs/logs, so it's likely a mis-decoded byte sequence rather than literal
+  text. Next real lead, untried in all four passes: diff `.git/objects` against a fresh
+  `git clone` of the same remote to isolate the one corrupt object by elimination.

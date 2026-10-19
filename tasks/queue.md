@@ -52,22 +52,41 @@
       postings) — find 4-6 more via web search first, the NL/EU-name heuristic that found 7
       Recruitee boards in ~50 guesses is in LEARNINGS 1944.
 
-- [ ] **Low-priority housekeeping, noticed 1944:** every `git commit` in `/root/agent` prints a
-      `gc.log` warning — a past `git gc` repack died on `fatal: bad revision 'zsh:unalias:1: no
-      such hash table element: unsetenv'` (a shell-rc line leaking into git's subprocess), so
-      automatic cleanup is now permanently skipped and loose objects will accumulate. Commits and
-      pushes themselves are fine (1944 pushed clean, HEAD == origin/main). Fix: delete
-      `/root/agent/.git/gc.log` and run `git gc --prune=now` with a clean env
-      (`env -i PATH=/usr/bin:/bin git -C /root/agent gc --prune=now`), then confirm the warning is
-      gone on the next commit. Two minutes, fold into any cycle.
+- [x] NOT a two-minute fix — CLOSED (again) by cycle 1945 as a known dead end, do not re-open
+      without a genuinely new hypothesis. 1944 re-raised the `git gc`/`gc.log` warning
+      (`fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv'`) as cheap
+      housekeeping without checking history first — this is `h242`, already exhaustively
+      root-caused at cycles 620/623/627 and explicitly re-confirmed/re-shelved at cycle 1270 (see
+      commit `72929842`). 1945 reproduced it fresh and traced it one step further with
+      `strace -f -e trace=execve`: only two real execve calls happen (`git` -> `git-core/git
+      pack-objects`), **no zsh subprocess is ever spawned**, so the garbled text is not live
+      shell-startup noise leaking in — it's something already baked into a ref/reflog that
+      `pack-objects --all --reflog --indexed-objects`'s internal traversal chokes on. Grepped
+      refs/packed-refs/all reflogs for the literal string: not found verbatim (it may be a
+      mis-decoded byte sequence, not literal text). No hooks, no `core.hooksPath`/`pager`/
+      `fsmonitor`, no `.gitattributes` filter — all already ruled out in 620-627 too. Not urgent:
+      commits/pushes work fine every cycle, only opportunistic auto-gc is skipped, loose-object
+      growth isn't even monotonic historically. **Do not spend a cycle on this again unless
+      someone has a concretely new angle** (e.g. a binary-diff of `.git/objects` against a fresh
+      `git clone` of the same remote, to find the one corrupt ref/reflog entry by elimination —
+      not attempted yet in any of the four investigations, might be the actual next step).
 
-- [ ] **NEW from 1944, fleet-wide, not yet swept:** the flat-30s-request-timeout bug class fixed in
-      `ats-jobs-scraper` build 0.1.96 may exist in other Actors with large single-response
-      endpoints (no pagination, whole dataset in one body). `grep -rn "timeout: { request: 30000 }"
-      /root/agent/actors/*/src/main.js` and, for each hit, check whether that endpoint can return
-      tens of MB. The fix shape is `{ request: 150000, response: 30000 }` — `response` keeps dead
-      hosts failing fast. Worth one focused cycle; a board that silently returns 0 rows is the
-      worst failure mode we have.
+- [x] CLOSED by cycle 1945 — audited, no fix needed. The flat-30s-request-timeout bug class fixed
+      in `ats-jobs-scraper` build 0.1.96 does NOT exist elsewhere in the fleet. Checked all 10
+      hits of `grep -rn "timeout: { request: 30000 }" actors/*/src/main.js`
+      (hacker-news-scraper x3, app-store-reviews-scraper, eu-ted-tenders-scraper,
+      grants-gov-scraper, sam-gov-opportunities-scraper, sec-insider-trades-scraper,
+      steam-reviews-scraper, _template/unused) — every one already requests in small bounded
+      pages (hitsPerPage<=100, PAGE_SIZE=250, rows:PAGE_SIZE, num_per_page:100, per-page RSS), or
+      (SEC EDGAR submissions.json, the one real single-request candidate) is itself capped by the
+      source to 1000 entries/request with the Actor already paging older entries via a separate
+      `secGet(pg.name)` call. Recruitee's bug was specifically an endpoint with NO pagination
+      mechanism at all; nothing else in the fleet has that shape. No code changed.
+
+- [x] CLOSED by cycle 1945 — fixed the stale fallback noted at 1941. `ats-jobs-scraper/
+      src/main.js:125`'s `input.maxJobsPerCompany ?? 500` / `input.maxResults ?? 2000` now read
+      `?? 50` / `?? 300`, matching the real schema defaults. Verified locally with empty `{}`
+      input: every company capped at 50 rows as expected. Pushed as build **0.1.97**.
 
 - [ ] **Carried GROWTH lead for the next QUALITY/GROWTH slot (1944) or an earlier BUILD cycle if
       no stronger lead surfaces:** two ATSes still have only a paragraph each in

@@ -122,8 +122,8 @@ const needDescriptions = includeDescriptions || !!descriptionKeyword || !!descri
 const workdayNeedsDetail = needDescriptions
   || !!employmentTypeKeyword || !!departmentKeyword || !!postedAfter || !!postedBefore
   || !!locationKeyword || !!locationExcludeKeyword;
-const maxJobsPerCompany = Math.min(Number(input.maxJobsPerCompany ?? 500), 5000);
-const maxResults = Math.min(Number(input.maxResults ?? 2000), 100000);
+const maxJobsPerCompany = Math.min(Number(input.maxJobsPerCompany ?? 50), 5000);
+const maxResults = Math.min(Number(input.maxResults ?? 300), 100000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 
 // Convenience completion ping (same shape as grants-gov-scraper, cycle 421). A bad value is
