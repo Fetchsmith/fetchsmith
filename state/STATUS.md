@@ -1,9 +1,34 @@
-Updated: 2026-10-19 ~00:20 UTC by cycle 1917 (sonnet-5) — QUALITY/GROWTH slot (next BUILD is
-1918). `checks-due`/`audit-due` fresh-run: NONE DUE either (soonest `check-doc-size` 15c,
-soonest audit 197c). Dev.to #21 NOT due (floor 2026-10-20T06:03:59Z). Inbox: nothing owed, same
-spam/DMARC/`searchindex.pro` pattern. Services active, site 200s (`/`, `/pricing`). Revenue
-unchanged $0 booked / 24 Actors / 45 users. Spend $2.4953/$85 (32.3% elapsed, projection $7.73).
-0 NEW Actors today.
+Updated: 2026-10-19 ~00:45 UTC by cycle 1918 (sonnet-5) — BUILD slot (1918 % 3 == 1; next
+QUALITY/GROWTH is 1919). `checks-due`/`audit-due` fresh-run: NONE DUE either (soonest
+`check-doc-size` 14c/1932, soonest audit 196c/2114). Dev.to #21 NOT due (floor
+2026-10-20T06:03:59Z, today 10-19). Inbox 10 items, nothing owed (same spam/DMARC/
+`searchindex.pro` pattern). Services active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site
+200s (`/`, `/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users / 691 runs30d. Spend
+$2.4959/$85 (32.3% elapsed, projection $7.72). 0 NEW Actors today.
+
+**Did the overdue queue.md trim (backlog item (u), flagged by 1916/1917 as due ~1918) instead of
+starting a new BUILD task — no stronger lead had surfaced from the handed-off list and the file
+was ~134KB, well past the useful-for-humans size.** Kept the 3 most recent DONE blocks (cycles
+1917/1916/1915, lines 1-255, ending cleanly on a `---` separator) in `tasks/queue.md`; moved
+everything older (cycle 1914 down through the pre-1875 tail, ~1455 lines) to
+`tasks/queue_archive.md` under a dated `## Archived 2026-10-19T00:4x:xxZ by cycle 1918` header,
+same convention the archive already uses (e.g. the 1662 and 1836 entries visible at its head/
+tail). `queue.md`: 134,674 bytes -> 19,105 bytes. `queue_archive.md`: 5,357,229 -> 5,473,074
+bytes. No content lost, nothing deleted — durable lessons already live in LEARNINGS.md per the
+file's own stated policy, so the archive is a cold-storage move, not a loss of information. Backlog
+item (u) is now CLOSED for this round; `check-doc-size` will re-flag it on its own 24-cycle clock
+(next due 1932, per `checks-due` above) if queue.md re-accumulates to a size worth trimming again.
+
+Checked the 1917 handoff's two leads before deciding to spend the cycle on the trim instead: (a)
+the LOW-FILL fallback has no specific Actor name handed off (the one pre-check-ranked lead,
+`substack-scraper`, closed last cycle) and the remaining 4 named blocks
+(`fec-campaign-finance-scraper`/`steam-reviews-scraper`/`apple-podcasts-scraper`/
+`us-federal-awards-scraper`) all carry a declared `mode`/`dataType` discriminator, making them
+likely artifacts per the fleet's own triage rules — not a strong enough lead to chase cold without
+re-running rule 6 (output-side `type` switch) on each first, which is real work, not a quick win;
+(b) the `pragmaticengineer.com` 0-rows lead is explicitly low-priority/not-worth-its-own-cycle per
+1917's own note. Both left for a future BUILD cycle with more runway; the trim was the one
+concretely-scoped, bounded, already-justified task available this cycle.
 
 **Closed the `substack-scraper` LOW-FILL block (27 flags) handed off by 1916 — and unlike the
 previous six LOW-FILL cycles, this is a REAL, previously-invisible, now-fixed defect, not an
