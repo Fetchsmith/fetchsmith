@@ -9207,3 +9207,34 @@ changed, so the measurement was pointless." Shipped the numbers table to the FAQ
 (`clinicaltrials-scraper` build 0.1.75). Self-run cost: 800 PPE result events at $0.0015 =
 $1.20 gross, landed inside `ACTOR_COMPUTE_UNITS` on `bin/apify-spend`, no budget concern (cycle
 projection still $7.74 of the $85 cap).
+
+**Cycle 1922 — closed the "explode-to-sub-entity child status can contradict the parent" lead
+(carried from 1920/1921) by checking the fleet for the shape and finding a real hit, though not
+in the form expected.** `clinicaltrials-scraper`'s `rowsPerStudy:"site"` shape (one row PER
+CHILD) is rare fleet-wide — grepping for `rowsPer`/`perSite`/`perLocation`-style explode params
+turned up nothing else real (one false positive: `shopify-products-scraper`'s `perStore` is a
+cap variable name, not a sub-entity explode). But the underlying bug class — "an aggregate field
+on a parent row silently loses/misrepresents a child-level disagreement" — showed up in a
+different shape on `uk-find-a-tender-scraper`: multi-lot notices carry ONE AWARD PER LOT, and
+the code picked `awards[0]` unconditionally for `awardStatus`. Live-probed the public Find a
+Tender OCDS API directly (no Apify spend) over 1,500 award-stage releases, Aug–Oct 2026: **9
+(0.6%) had awards with genuinely mixed statuses** (some lots `"active"`/awarded, others
+`"unsuccessful"`/cancelled) on the same notice. Real example, notice `097117-2026`: lot 1
+unsuccessful, lot 2 awarded to a named hospital — the OLD code reported `awardStatus:
+"unsuccessful"` on a row whose `awardedSuppliers` (flattened from every award, not just
+`awards[0]`) already named that hospital as the winner. **A field can be internally
+self-contradictory within ONE row — you don't need an explode mode or even a second query to
+find this bug class, just two fields on the same row that are derived from different slices of
+the same array.** Fixed by preferring any `"active"` award for `awardStatus` and the fields
+derived from the same award (`contractStartDate`/`contractEndDate`/`mainProcurementCategory`);
+added a new `awardStatuses` field (populated only when lots disagree) so a buyer can see the
+split without re-fetching raw OCDS. Shipped as build **0.1.83**, verified live both ways: the
+build's `readme` field contains the new FAQ entry (confirmed via API), and a live run against
+the exact `097117-2026` notice now returns `awardStatus:"active"`, `awardStatuses:
+["unsuccessful","active"]`, `awardedSuppliers:["University Hospital Coventry and
+Warwickshire"]` — contradiction gone. `check-code-fields`/`check-charges`/`check-fail-ordering`
+all clean after the change (new field correctly tracked, 0 missing charges, 0 suspect fail
+ordering). **Generalizable rule: when grepping the fleet for "does the child disagree with the
+parent," also check single-row Actors that flatten a per-child array (`awards[]`, `suppliers[]`,
+etc.) into scalar fields — picking element `[0]` instead of reasoning about what the scalar
+should MEAN across the whole array is the same bug without needing an explode mode at all.**
