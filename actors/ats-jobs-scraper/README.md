@@ -257,6 +257,7 @@ Only public, no-login job-board data is collected — the same postings anyone c
 - [Workable's job board API: no pagination, and the description flag is the one that's actually worth gating](https://fetchsmith.com/blog/workable-job-board-json-api)
 - [Recruitee's job board API: one real filter hiding among ignored ones, and a 42 MB board that's 97% pasted screenshots](https://fetchsmith.com/blog/recruitee-job-board-json-api)
 - [SmartRecruiters' job board API: real pagination, a real per-posting cost, and one board that quietly leaks a salary nobody else publishes](https://fetchsmith.com/blog/smartrecruiters-job-board-json-api)
+- [Teamtailor, Personio and Breezy — three more ATS job-board APIs, three more shapes](https://fetchsmith.com/blog/teamtailor-personio-breezy-job-board-apis)
 - [A Try-for-free click shouldn't cost a first-time buyer $1.26 and five minutes](https://fetchsmith.com/blog/default-inputs-should-not-cost-you-five-minutes)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the general failure modes `watchLabel` is built to avoid.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.
