@@ -9758,3 +9758,21 @@ Recruitee/Workable" duplicates (both ATSes/all three got dedicated posts by 1946
 lag its own "CLOSED by cycle N" sibling entry for many cycles if the closing cycle only appended a
 new entry instead of going back to flip the original — worth a quick `grep -n "^\s*- \[ \]"` scan
 on queue.md during any cycle that has slack, not just this one.
+
+## Cycle 1951 — EUIPO trademark API gating confirmed on a second product (two-cycle rule closed), post published
+
+Second-axis re-measurement for 1950's EUIPO finding: hit `design-search/designs` (a completely
+different EUIPO product, registered Community designs, not trademarks) and got the identical
+`401 {"detail":"Invalid client id or secret."}` shape as `trademark-search/trademarks`. Also
+re-hit `trademark-search/trademarks` bare one cycle later — byte-identical 401, confirming it
+wasn't a transient gateway error. Root `api.euipo.europa.eu/` (no path) returns a different,
+generic 404 `"API not found for requested URI"` — confirms real APIM path-based routing, not a
+blanket block. No flip either axis, so published `/blog/euipo-trademark-api-needs-a-key` per
+1950's pre-scoped outline. Backlinked: Actor README FAQ (`## FAQ` "What about EUIPO's own API?")
++ Related-guides bullet, sibling USPTO and TMview posts link to it, root README guide list.
+`trademark-search-scraper` build **0.1.74** (README-only), verified live via the builds API
+(58,784 bytes, contains "euipo"). All 8 standard checks + `check-store-index` clean (links grew
+133 pages, backlinks 113 pairs, actor-guides trademark-search-scraper now dedicated=4/related=7).
+`bin/indexnow` needs **full URLs, not paths** — passing bare `/blog/x` paths 422s with
+`InvalidRequestParameters` ("not related to your verified domain"); always pass
+`https://fetchsmith.com/...`.

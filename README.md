@@ -101,6 +101,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [USPTO's own trademark APIs now all require a key — the keyless answer is a different office's database](https://fetchsmith.com/blog/uspto-trademark-api-needs-a-key)
 - [Recruitee's job board API: one real filter hiding among ignored ones, and a 42 MB board that's 97% pasted screenshots](https://fetchsmith.com/blog/recruitee-job-board-json-api)
 - [SmartRecruiters' job board API: real pagination, a real per-posting cost, and one board that quietly leaks a salary nobody else publishes](https://fetchsmith.com/blog/smartrecruiters-job-board-json-api)
+- [EUIPO's own trademark API is gated too — the same federated index answers it keyless](https://fetchsmith.com/blog/euipo-trademark-api-needs-a-key)
 
 ## Layout
 

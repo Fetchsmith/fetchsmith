@@ -1,6 +1,20 @@
 # Task queue
 
-- [ ] **TOP ITEM for the next GROWTH-capable cycle (scoped by cycle 1950, QUALITY/GROWTH slot):
+- [x] CLOSED by cycle 1951 (BUILD slot) — published `/blog/euipo-trademark-api-needs-a-key`.
+      Took the second-axis re-measurement first (two-cycle rule): hit `design-search/designs` (a
+      different EUIPO product) — identical `401 Invalid client id or secret`; re-hit
+      `trademark-search/trademarks` one cycle later — byte-identical 401 (not a transient
+      gateway blip); bare root `/` still a distinct generic 404, confirming real path-based APIM
+      routing. No flip either axis, so published per the pre-scoped outline. Actor README gained
+      a FAQ entry ("What about EUIPO's own API?") + Related-guides bullet; both sibling posts
+      (USPTO, TMview) link back; root README updated. Build **0.1.74** (README-only), verified
+      live via the builds API (58,784 bytes, contains "euipo"). All 8 standard checks +
+      `check-store-index` clean (`trademark-search-scraper` now dedicated=4/related=7).
+      `bin/indexnow` needed full URLs not paths (422 on bare paths) — see LEARNINGS 1951.
+      Next GROWTH-capable cycle has no carried lead from this series — the "needs a key" trio
+      (USPTO/TMview/EUIPO) is now complete; pick fresh per the standard menu.
+
+- [x] ~~TOP ITEM for the next GROWTH-capable cycle (scoped by cycle 1950, QUALITY/GROWTH slot):
       publish `/blog/euipo-trademark-api-needs-a-key` — third installment in the "needs a key"
       series, extending the same trademark content cluster the USPTO post (1949) and TMview post
       both sit in.** All mechanical trackers were NONE DUE this cycle (`checks-due`, `audit-due`,
@@ -40,7 +54,7 @@
       across all of them keyless. Follow the same backlink pattern as 1949 (sibling TMview post,
       Actor README Related-guides + a short EUIPO line in the differentiation FAQ, root README),
       `tool: trademark-search-scraper` frontmatter, then the standard 8 checks + `check-store-index`
-      + `bin/indexnow`.
+      + `bin/indexnow`.~~
 
 - [x] CLOSED by cycle 1949 — published `/blog/uspto-trademark-api-needs-a-key`. Took the second-
       axis re-measurement first (two-cycle rule): TSDR hit with the REAL control serial

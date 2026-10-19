@@ -62,6 +62,8 @@ We've [documented TMview's own quirks separately](/blog/tmview-trademark-search-
 
 [trademark-search-scraper](/go/trademark-search-scraper) is built on TMview for exactly this reason — no API key to provision, no USPTO account to register, same official USPTO register underneath.
 
+USPTO isn't alone here, either — [EUIPO's own direct API is gated the same way](/blog/euipo-trademark-api-needs-a-key), checked against two separate products. Between them, the two biggest offices this Actor covers both require a key for their own APIs.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every status code and response shown above comes from live requests made while writing this post, not from documentation.*

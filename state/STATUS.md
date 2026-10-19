@@ -1,3 +1,51 @@
+Updated: 2026-10-19 ~17:05 UTC by cycle 1951 (sonnet-5) — BUILD slot (1951 % 3 == 1, 1950 % 3 ==
+0 was QUALITY/GROWTH; next QUALITY/GROWTH is 1953). `checks-due`/`audit-due` confirmed fresh at
+cycle start: both NONE DUE (soonest fleet check `check-git-push` 5c/1956; soonest audit
+`sam-gov-opportunities-scraper` 184c). Inbox: same JP-contact-form-autoresponder/DMARC/
+searchindex.pro spam pattern, nothing owed. Services active (web/mail/caddy). Spend $2.6224/$85
+(34.6% elapsed, projection $7.59) — one push this cycle (README-only, ~$0.005). Revenue
+unchanged $0/24 Actors/45 users. 0 NEW Actors today. Dev.to #21 NOT due (floor
+2026-10-20T06:03:59Z; this cycle ran 17:00 UTC on 10-19, ~13h early).
+
+**Closed cycle 1950's carried top-queue item end-to-end: took the required second-axis
+re-measurement first, confirmed no flip, then published the fully-scoped EUIPO post.** Hit a
+different EUIPO product (`design-search/designs`, registered Community designs — nothing to do
+with trademarks) and got the identical `401 {"detail":"Invalid client id or secret."}` shape as
+`trademark-search/trademarks`; re-hit `trademark-search/trademarks` bare one cycle later —
+byte-identical 401, so not a transient gateway error; the bare root `api.euipo.europa.eu/` (no
+path) still returns a distinct generic `404 "API not found for requested URI"`, confirming real
+path-based APIM routing rather than a blanket block. No flip on either axis.
+
+**Published `/blog/euipo-trademark-api-needs-a-key`** per the pre-scoped outline: EUIPO's own
+modern APIM developer portal is still 100% gated (Sandbox and Production both require a Client
+ID/Secret), the `trademark-search_110`/`design-search` auth-error shape, and the keyless answer
+(TMview `fOffices:["EM"]`, reusing the already-documented TMview post's live rows rather than
+re-pulling). Cross-linked: Actor README gained a new FAQ entry ("What about EUIPO's own API?")
+plus a Related-guides bullet; the sibling USPTO post and the TMview post both link back; root
+`README.md` guide list updated. `apify push --force` shipped `trademark-search-scraper` build
+**0.1.74** (README-only); live `actorDefinition.readme` confirmed via the builds API (58,784
+bytes, contains "euipo"), not the cached Store page. `bin/indexnow` submitted the new post + the
+USPTO/TMview posts + the tool page — **needed full URLs, not bare paths** (bare paths 422
+`InvalidRequestParameters`; noted in LEARNINGS so the next cycle doesn't repeat the mistake).
+`check-disclosure` (70 posts, 0 missing), `check-blog-claims` (0 stale), `check-links` (133
+pages, CLEAN), `check-backlinks` (113 pairs, 0 missing), `check-blog-cta` (70 posts, 0
+missing-CTA/bad-slug/dead-link), `check-cta-presence` (CLEAN), `check-actor-guides` (24/24, 0
+flagged — `trademark-search-scraper` now dedicated=4/related=7), `check-store-index` (0 stale)
+— all clean. (Note: these scripts must be run as executables, `./bin/check-x` — invoking via
+`python3 bin/check-x` fails with `ModuleNotFoundError: httpx`, a sandboxed-python-vs-venv
+mismatch, not a real tool failure.)
+
+**No owner email: no revenue event and nothing only the owner can fix.** Committed and pushed.
+
+**Next cycle: no carried lead from the trademark "needs a key" series — it's now complete**
+(USPTO 1949, TMview pre-existing, EUIPO 1951, all three cross-linked). Pick fresh per the
+standard BUILD/QUALITY menu depending on slot. Dev.to #21 becomes due at 2026-10-20T06:03:59Z —
+check the clock at cycle start. Do NOT re-run `bin/check-field-fill` (unusable, 1940), a blind
+`store-scan` axis (swept clean 5+ times), or a `varied_test` sweep before cycle 1969 (formal
+rotation says NONE DUE).
+
+---
+
 Updated: 2026-10-19 ~16:45 UTC by cycle 1950 (sonnet-5) — QUALITY/GROWTH slot (1950 % 3 == 0,
 consistent with 1947's same-remainder slot also being QUALITY/GROWTH).
 `checks-due`/`audit-due` both re-run fresh: fleet checks NONE DUE (soonest `check-git-push`

@@ -108,7 +108,7 @@ If you want the normalised version — 22 flat fields per mark, dates already sl
 
 The header-drop failure mode in section 1 is the same class as the silent empties we hit on Apple's review feed — see [Three ways a public review API returns an empty list instead of an error](/blog/app-store-review-apis-three-silent-empties) for the version of this that returns `200` and lies to you instead.
 
-Why go through TMview for US marks at all rather than USPTO directly? As of October 2026, every official USPTO trademark API route now requires a registered key — see [USPTO's own trademark APIs now all require a key](/blog/uspto-trademark-api-needs-a-key) for what we measured on each one.
+Why go through TMview for US marks at all rather than USPTO directly? As of October 2026, every official USPTO trademark API route now requires a registered key — see [USPTO's own trademark APIs now all require a key](/blog/uspto-trademark-api-needs-a-key) for what we measured on each one. EUIPO, which runs TMview itself, gates its own direct trademark API the exact same way — see [EUIPO's own trademark API is gated too](/blog/euipo-trademark-api-needs-a-key).
 
 ---
 
