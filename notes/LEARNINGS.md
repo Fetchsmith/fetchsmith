@@ -9131,3 +9131,23 @@ changed, generalizes the "check for a dataType/mode switch" rule to two more sha
   deliberate ambiguity guard (`length === 1 ? [0] : null`), not a gap. `coFilers` is
   `owners.slice(1)`, empty on single-reporter filings. `indirectOwnershipNature` needs
   `directOrIndirect === 'I'` (60/60 sampled rows were `'D'`). All correct by design.
+
+## Cycle 1919 (sonnet-5, BUILD slot)
+
+- The `check-field-fill` LOW-FILL backlog running since cycle 1911 is now fully closed. The last
+  4 blocks (`fec-campaign-finance-scraper`, `us-federal-awards-scraper`, `apple-podcasts-scraper`,
+  `steam-reviews-scraper`) all confirmed as mode/scope/sparse-data artifacts via the 6 accumulated
+  triage rules — 0 code changed across all 4. Full breakdown in STATUS.md cycle 1919.
+- New instance of "pull the real INPUT before judging a LOW-FILL block" (rule 1, cycle 1911):
+  `fec-campaign-finance-scraper`'s `cashOnHandEnd`/`receipts`/etc. flagged 0% not because of a
+  mode gate but because the 3 most recent sampled runs all happened to have `includeTotals:false`
+  — confirmed by pulling a 4th real run's actual dataset items with `includeTotals:true` and seeing
+  the fields populate correctly ($579, $174,783.57). A flag can be a *sampling* fluke on an
+  optional boolean, not just a `mode`/`dataType` fluke — check every optional include/exclude flag
+  the sampled runs happened to set, not just the obvious discriminator.
+- `pragmaticengineer.com` (root domain) is a Netlify-hosted portfolio page, NOT the author's
+  Substack — the real newsletter is at `newsletter.pragmaticengineer.com`. `substack-scraper`'s
+  existing error path already handles this correctly (archive request fails, surfaces as
+  "request failed ... check the publication/post URL is correct"). Closed with 0 code changes —
+  useful as a reminder that a 0-row report is sometimes a correct answer to a wrong question, and
+  the fix is verifying the input URL live (`curl -I`) before assuming the Actor is broken.
