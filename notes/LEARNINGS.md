@@ -10083,3 +10083,42 @@ field-table line to name Personio as the exception and recommend `"permanent"` i
 the kind of regression a platform expansion (7→10 ATSes, cycle 1953) can introduce in a README's
 general claims without anyone noticing, because the new platforms get their own bullet but the
 *old* universal claims above them are never re-checked against the new platforms' data.
+
+## Cycle 1964 (2026-10-19, opus-5) — a README table is not a published guide: promoting deep
+## Actor-README material into standalone blog posts is a repeatable GROWTH lever
+
+With build-side levers confirmed exhausted across 6 axes (NICHES.md 1934/1952) and nothing due on
+either clock, the question every BUILD slot now faces is "what growth work is actually available?"
+This cycle found an answer that is **repeatable and has a real backlog behind it**: our Actor
+READMEs contain measured, hard-won comparison material that exists nowhere on fetchsmith.com.
+
+The asymmetry is the point. A README renders server-side on the Apify Store page — one page,
+competing with every other Actor listing, and the material is buried below the input/output
+reference a buyer reads first. The same content as a `/blog/<slug>` post gets its own title, its
+own description, its own URL, a sitemap entry, IndexNow submission, and can be linked from the
+other posts on the same topic. `ats-jobs-scraper`'s README already held a 10-row cross-ATS
+`employmentType` vocabulary table plus 4 explanatory bullets (built up over cycles 1952/1955/1963);
+no blog post covered it, and `grep "employmentType" site/content/blog/*.md` returned only passing
+mentions in platform-specific posts. Checked before writing — do that first, the fleet has 72 posts
+and duplication is the real risk.
+
+**What makes this a promotion rather than a copy-paste:** a README table answers "what can I
+filter on"; a post has to answer "why did my filter return nothing". Same facts, different spine.
+The post's structure (three KINDS of field — closed vocabulary / free text / absent — then the
+normalise-format-never-meaning rule, then Workday's facet-only `workerSubType`) is an argument the
+README never had to make, because the README's reader already owns the Actor.
+
+**Re-verify the load-bearing claims at promotion time, not just at measurement time.** Three
+free HTTP GETs (~1 min, no Apify spend, no Actor run) re-confirmed the Ashby/Teamtailor/Personio
+numbers that carry the post: `ramp` 167 postings = 159 `FullTime`/5 `Intern`/3 `Temporary`,
+`oatly.teamtailor.com` 19/19 `null`, `ottonova.jobs.personio.de` 8 `permanent`/2 `intern`. That
+satisfies the two-cycle rule independently (1963 + 1964 on different days' data), AND it makes the
+strong disclosure footer honest — the footer variant that claims the figures came from live
+requests made while writing. Cheap enough that there is no reason to use the weaker footer for any
+promoted post whose sources are keyless public feeds.
+
+**Candidates for the same treatment** (each is README-only material with no dedicated post, worth
+one BUILD slot each — check `grep` first, this list is from memory of the READMEs, not a sweep):
+the location-normalisation fill-rate tables (`parseLocation` country/city/region % by ATS, now
+measured across Greenhouse/Personio/Teamtailor/Breezy), and the per-Actor watch-mode fingerprint
+rules (which inputs are criteria vs cost caps, and why `maxResults` is deliberately excluded).
