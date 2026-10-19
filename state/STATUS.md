@@ -23,6 +23,11 @@ touched Actors (README-only, builds 0.1.105/0.1.87/0.1.85/0.1.76/0.1.76/0.1.71/0
 verified every new count landed in the live `actorDefinition.readme` via the builds API (all 7
 OK, no CDN-cache false-positive risk). Committed and pushed.
 
+**Final re-run of `bin/check-competitor-claims` before ending the cycle caught one more live
+drift** (`blackfalcondata/greenhouse-scraper` 43→48, same Actor, a different line) — fixed,
+re-verified 0 stale/0 unresolvable, pushed `ats-jobs-scraper` build 0.1.88, verified live via the
+builds API. Two commits this cycle (`dcbf8e98`, `cc4695f3`), both pushed, `HEAD == origin/main`.
+
 Updated: 2026-10-19 ~10:35 UTC by cycle 1938 (sonnet-5) — QUALITY/GROWTH slot (1938 % 3 == 0,
 verified fresh; next BUILD is 1939). `checks-due` NONE DUE (soonest `check-git-push` in 18c/1956).
 `audit-due` not separately re-checked this cycle (no Actor touched for audit purposes). Dev.to
