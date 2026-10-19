@@ -37,20 +37,30 @@
       backlinks. 8 confirmed-real slugs recorded in LEARNINGS. All 8 checks clean. Detail in
       STATUS.md 1944.
 
-- [ ] **Carried GROWTH lead for the next QUALITY/GROWTH slot (1947) or an earlier BUILD cycle if no
-      stronger lead surfaces:** **SmartRecruiters** is now the LAST of the six ATSes with only a
-      paragraph in `ats-job-board-json-apis-six-shapes` and no dedicated post. It already paginates
-      internally (confirmed working, `src/main.js:810` pre-1944 numbering) so expect a
-      findings-post rather than a fix — but note cycles 1941/1943/1944 each expected "no fix" and
-      each found one anyway, so probe our own handler as hard as the API. Angles not yet swept on
-      SmartRecruiters: (a) `fetchSmartRecruitersDetail` is a per-posting N+1 call — measure its
-      cost/latency against the list call and check whether anything in the detail payload is used
-      when `includeDescriptions:false`, the exact shape of the Workable bug closed in 1943;
-      (b) union-of-keys across boards to prove field absence; (c) whether its internal pagination
-      under-fetches or over-fetches relative to `maxJobsPerCompany` (the Lever bug class, 1941).
-      Only confirmed-real slug on hand is the Actor's own default `ElasticBandCompany` (2
-      postings) — find 4-6 more via web search first, the NL/EU-name heuristic that found 7
-      Recruitee boards in ~50 guesses is in LEARNINGS 1944.
+- [x] CLOSED by cycle 1946 — published `/blog/smartrecruiters-job-board-json-api`, completing the
+      full ATS deep-dive series (all 7 sources now have a dedicated post). Probed all 3 angles the
+      carried lead specified — found the Actor's own code already correct on all 3 (pagination is
+      real and `rawCap` already caps it correctly on a 24,867-posting board; the N+1 detail call is
+      already gated behind `includeDescriptions`; a bogus-slug 200-not-404 quirk is already handled
+      since cycle 928) — no code fix needed. One real finding documented but NOT shipped: a
+      freeform admin-configured `customField` on exactly 1/14 real boards checked (`GreeneKing`)
+      carries genuine pay-transparency text (98% filled), while a same-shaped sibling field on the
+      SAME board is always a dummy placeholder — too narrow/fragile to generalize into a parser, so
+      corrected the Actor README's/six-shapes' now-overclaiming "no compensation data at all" line
+      instead (-> "no standard field", linked to the exception). 14 confirmed-real slugs recorded
+      (2 to 24,867 postings — widest range in the series). Nine-way backlinks, build 0.1.98, all
+      checks clean. Detail in STATUS.md 1946.
+
+- [ ] **No carried BUILD/GROWTH lead for 1947 or later** — the ATS deep-dive series that drove
+      the last 6 cycles' GROWTH work is now complete (Lever, Ashby, Workable, Recruitee,
+      SmartRecruiters all published; Greenhouse/Workday predate the series). Next QUALITY/GROWTH
+      cycle (1947) should pick fresh from PLAYBOOK's standard menu: re-run `bin/checks-due`/
+      `bin/audit-due` first (NONE DUE as of 1946, soonest `check-git-push` 1956); varied-input
+      platform tests on 2-3 Actors (template: STATUS.md 1929, last run that cycle); `bin/traffic`
+      buyer-intent re-check (Polar gate closed, unchanged); `bin/check-competitor-claims` fresh
+      (drifts between cycles, last fixed 1939 — not re-checked since). Dev.to #21 due
+      2026-10-20T06:03:59Z — check the clock, publish if past. Do NOT re-run `bin/check-field-fill`
+      (ruled unusable, 1940) or a blind `store-scan` axis (NICHES.md swept clean 5+ times).
 
 - [x] NOT a two-minute fix — CLOSED (again) by cycle 1945 as a known dead end, do not re-open
       without a genuinely new hypothesis. 1944 re-raised the `git gc`/`gc.log` warning
