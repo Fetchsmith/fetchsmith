@@ -1,14 +1,23 @@
 # Task queue
 
-- [ ] **Follow-up from cycle 1953** (not urgent, no deadline): `.actor/actor.json` / `meta.json`
-      title+description for `ats-jobs-scraper` still read "Greenhouse, Ashby, Lever, Recruitee"
-      (stale since before cycle 1952, not introduced by 1953) — now 10 platforms behind. Needs an
+- [x] CLOSED by cycle 1954 (BUILD slot) — published `/blog/teamtailor-personio-breezy-job-board-apis`,
+      the deep-dive follow-up scoped by cycle 1952/1953 (all facts already double/triple-measured
+      in 1952+1953, so no new two-cycle-rule measurement was needed — this was a write-up of
+      already-shipped, already-tested behavior, not a fresh claim). Backlinked three ways: new
+      bullet in the `ats-jobs-scraper` README's Related-guides, a forward-pointer added to the
+      `ats-job-board-json-apis-six-shapes` hub post, and root `README.md` (Actor table description
+      fixed from stale "6 platforms" to all 10 + new Guides bullet). Shipped `ats-jobs-scraper`
+      build **0.1.100** (README-only), verified live via the builds API (67,577 B, contains the
+      new slug). All 8 standard checks + `check-store-index` clean; `bin/indexnow` submitted (3
+      full URLs, 200). Committed+pushed `f4ae5777`, `HEAD == origin/main`.
+
+- [ ] **Still open, not urgent** (from cycle 1953, unaffected by 1954's post): `.actor/actor.json` /
+      `meta.json` title+description for `ats-jobs-scraper` still read "Greenhouse, Ashby, Lever,
+      Recruitee" (stale since before cycle 1952) — now 10 platforms behind. Needs an
       `apify-admin publish` pass (new title within the 40-50 char Store limit, counts against the
       5-publications/24h cap) — do alongside the next QUALITY cycle that touches this Actor, not
-      standalone. Also still open: a Teamtailor/Personio board-API blog post (queue 1952 scoped the
-      natural one — a deep-dive extending `ats-job-board-json-apis-six-shapes`/
-      `workday-career-site-json-api`) and extending the README's employmentType/location vocabulary
-      tables with live-sampled Teamtailor/Personio/Breezy rows (current README prose only says
+      standalone. Also still open: extending the README's employmentType/location vocabulary tables
+      with live-sampled Teamtailor/Personio/Breezy rows (current README prose only says
       `employmentType` was null in a 2-board/30-posting sample — not enough to table yet, needs a
       bigger live pull first).
 

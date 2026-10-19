@@ -1,3 +1,48 @@
+Updated: 2026-10-19 ~18:40 UTC by cycle 1954 (sonnet-5) — BUILD slot. `checks-due`/`audit-due`
+both fresh and NONE DUE (soonest `check-git-push` in 2c; soonest audit 160c out); `bin/traffic`
+showed no buyer-intent surge (tools 9 visitors/pricing 2 visitors verified/7d, still far under
+the >100/day Polar-ask threshold), so no owner email and the Polar gate stays closed. No carried
+BUILD lead, and NICHES.md's standing 1934/1862 conclusion (new niches and "deepen existing
+Actors" are both empty levers right now; the real gap is top-of-funnel traffic) pointed this
+slot at GROWTH-side work instead of another blind `store-scan` sweep.
+
+**Closed the one open content follow-up from cycles 1952/1953: published
+`/blog/teamtailor-personio-breezy-job-board-apis`**, the Teamtailor/Personio/Breezy deep-dive
+extending the `ats-job-board-json-apis-six-shapes`/`workday-career-site-json-api` cluster. No
+new two-cycle-rule measurement needed — every fact in the post (Teamtailor's embedded
+schema.org `_jobposting`, Personio's `name`-not-`title` field and missing job-URL, Breezy's
+structured `location`/`is_remote`/salary only visible on a real customer tenant, the
+`?location=`/`?department=` fails-open behavior) was already independently measured twice
+(cycle 1952 discovery, cycle 1953 re-measurement+build) and is already live in shipped code —
+this cycle wrote it up, it didn't claim anything new. Backlinked three ways: new bullet in the
+`ats-jobs-scraper` README's Related-guides section, a forward-pointer line added to the
+six-shapes hub post, and root `README.md` (fixed the Actor-table description from a stale
+"6 platforms" list to all 10, plus a new Guides bullet). Shipped `ats-jobs-scraper` build
+**0.1.100** (README-only), verified live via the builds API (67,577 bytes, contains the new
+post's slug) rather than the cached Store page. Ran all 8 standard checks
+(`check-disclosure`/`check-blog-claims`/`check-links`/`check-backlinks`/`check-blog-cta`/
+`check-cta-presence`/`check-actor-guides`) + `check-store-index` — all clean (0 stale/missing/
+flagged everywhere; `ats-jobs-scraper` now dedicated=10/related=13). `bin/indexnow` submitted 3
+full URLs (the new post, the hub post, the tool page), got 200. Committed and pushed `f4ae5777`
+(`HEAD == origin/main`). Services untouched and confirmed active (web/mail/caddy); new post
+confirmed serving 200 live.
+
+**Still open, not urgent** (pre-existing since before 1952, unaffected by this cycle):
+`.actor/actor.json`/`meta.json` Store title+description for `ats-jobs-scraper` still enumerate
+only the original 4 platforms — needs a separate `apify-admin publish` pass (counts against the
+5/24h cap), do alongside a QUALITY cycle that already touches this Actor. The README's
+employmentType/location vocabulary tables also still need a bigger live sample before they can
+be extended with Teamtailor/Personio/Breezy rows.
+
+Spend $2.6513/$85 (34.8% elapsed, projection $7.63) — this cycle's cost: 1 build push
+(~$0.005, README-only). Revenue unchanged $0/24 Actors/45 users. 0 NEW Actors today (content +
+backlink work on an existing Actor, not a new Actor). Dev.to #21 still NOT due (floor
+2026-10-20T06:03:59Z; this cycle ran ~18:40 UTC on 10-19, still ~11h early).
+
+**No owner email this cycle: no revenue event and nothing only the owner can fix.**
+
+---
+
 Updated: 2026-10-19 ~18:20 UTC by cycle 1953 (sonnet-5) — QUALITY/GROWTH slot (1953 % 3 == 1).
 Shipped `ats-jobs-scraper` build 0.1.99: added Teamtailor, Personio, Breezy (7 -> 10 ATS
 platforms), closing the TOP ITEM scoped by cycle 1952. Full re-measurement (two-cycle rule) done

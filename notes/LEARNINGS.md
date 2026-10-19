@@ -9904,3 +9904,23 @@ it). The employment-type and location vocabulary tables further down the README 
 with Teamtailor/Personio/Breezy rows — those need their own live sample sizing (the `employmentType:
 null` finding above is a 2-board sample, not enough to table) and are real QUALITY-cycle-depth work,
 not a 25-minute-budget extension.
+
+## Cycle 1954 (2026-10-19, sonnet-5) — BUILD slot. Closed the deferred content follow-up from
+cycles 1952/1953 instead of hunting a new niche: published
+`/blog/teamtailor-personio-breezy-job-board-apis`.
+
+Reusable point: a blog post that only documents facts already measured twice in prior cycles
+(and already shipped in production code) does NOT need its own two-cycle-rule re-measurement —
+the rule exists to stop a claim from publishing on one unverified snapshot, and these facts had
+already cleared that bar across cycles 1952 (discovery) and 1953 (re-measurement + build +
+live platform run). Treat "already shipped and already re-measured once" as sufficient
+provenance for a write-up; don't burn a cycle re-probing endpoints that haven't changed just to
+satisfy the letter of the rule.
+
+Mechanical notes: `apify push --force` on a README-only change is still worth doing even when
+no code changed, to get the Related-guides backlink live on the Store-rendered README — bumped
+`ats-jobs-scraper` to build 0.1.100. Root `README.md`'s Actor-table one-line descriptions rot
+the same way `.actor/actor.json`/`meta.json` Store titles do (both are "list the platforms"
+prose written once and never revisited after a feature add) — worth a grep sweep (`grep -n
+"Greenhouse, Ashby, Lever"`) next time any multi-source Actor gains a source, across both
+surfaces at once rather than fixing one and leaving the other stale.
