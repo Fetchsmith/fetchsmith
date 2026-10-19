@@ -188,8 +188,20 @@ async function fetchPublicationInfo(origin) {
       followRedirect: true,
       headers: { accept: 'text/html' },
     });
-    const m = String(res.body).match(/window\._preloads\s*=\s*JSON\.parse\("(.*?)"\)\s*<\/script>/s);
-    const pub = m ? JSON.parse(JSON.parse(`"${m[1]}"`))?.pub : null;
+    // Substack moved the payload out of the inline `JSON.parse("...")` string literal into its
+    // own `<script id="preloads-json" type="application/json">{...}</script>` tag (observed live
+    // 2026-10-19 on astralcodexten — the old inline form is now just a `document.querySelector(...)`
+    // call with no quoted JSON for the old regex to catch, which silently null-filled every
+    // publicationXxx field on every run). Try the current tag-based form first, fall back to the
+    // old inline form in case some publications still serve it.
+    const body = String(res.body);
+    const tagMatch = body.match(/<script[^>]*id=["']preloads-json["'][^>]*>(.*?)<\/script>/s);
+    const inlineMatch = body.match(/window\._preloads\s*=\s*JSON\.parse\("(.*?)"\)\s*<\/script>/s);
+    const pub = tagMatch
+      ? JSON.parse(tagMatch[1])?.pub
+      : inlineMatch
+        ? JSON.parse(JSON.parse(`"${inlineMatch[1]}"`))?.pub
+        : null;
     if (pub) info = mapPublicationInfo(pub);
     else log.warning(`Publication info not found in the homepage of ${origin} — returning null fields.`);
   } catch (e) {
