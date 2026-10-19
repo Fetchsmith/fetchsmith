@@ -9686,3 +9686,37 @@ reconfirms the known-correct 0-row SUCCEEDED behavior, wasting a run. LEARNINGS 
 at line ~8419 ("scholarship-scraper is RETIRED — skip") but it wasn't checked before picking a
 test target this cycle. Check `actors/registry.json`'s `status` field for a candidate Actor before
 calling it, not just its name familiarity.
+
+Cycle 1948 (opus-5): **USPTO has no key-free trademark API left — all four official routes are
+now gated, dead, or bot-walled. FIRST of the two measurements the PLAYBOOK two-cycle rule
+requires; do NOT publish until a second cycle re-measures along a second axis.** Measured live
+2026-10-19 ~15:35Z from this box:
+- `GET https://tsdrapi.uspto.gov/ts/cd/casestatus/sn78787878/info.json` -> **HTTP 401**, body is
+  prose, not JSON: "Beginning October 2, you'll need to register for an API key to download bulk
+  data from our TSDR APIs. Register ... https://account.uspto.gov/api-manager/". TSDR was the
+  classic keyless per-serial status lookup; it is gone.
+- `GET https://api.uspto.gov/api/v1/datasets/products/search?q=trademark` -> **HTTP 401**
+  `{"message":"Unauthorized"}`. The new Open Data Portal API needs a key even to *list datasets*.
+- `GET https://developer.uspto.gov/ds-api/trademarks/v1/records` -> **HTTP 301** (`Server:
+  awselb/2.0`) to `https://data.uspto.gov:443/home`. The old ds-api bulk-search surface is
+  retired and folded into the key-gated portal above.
+- `assignment-api.uspto.gov` (historically keyless trademark assignment search) -> **no DNS at
+  all** (`getent hosts` returns nothing). Host decommissioned, not merely moved.
+- `https://tmsearch.uspto.gov/` (the public Trademark Search UI, 200/125 KB) is an Angular SPA
+  served from **S3** (a bogus path returns S3's `<Error><Code>NoSuchKey</Code>` XML, not a 404
+  page) and its `main.js` (1.9 MB) contains **no absolute `*.uspto.gov` API base** — only site
+  nav/footer links. The page loads `https://a434627cf98f.edge.sdk.awswaf.com/.../challenge.js`,
+  i.e. **AWS WAF**, so the backend expects a WAF challenge token. Not a route we would take
+  anyway (bot-wall), and worth saying so explicitly in the post.
+So the practical answer to "free USPTO trademark API" is TMview's `fOffices:["US"]`, which is
+what `trademark-search-scraper` already does. **Control measured the same minute:**
+`POST www.tmdn.org/tmview/api/search/results` `{"basicSearch":"nike","fOffices":["US"],
+"criteria":"C","pageSize":"3"}` -> 200, `totalResults` 491 / 164 pages, rows
+`US500000088831783 | NIKE | US | Registered | ['Nike, Inc.'] | 88831783` etc. — real USPTO marks,
+no key, no account.
+Also **re-confirmed (independent later measurement) the already-published User-Agent finding** in
+`blog/tmview-trademark-search-api-no-key.md` section 1, and tightened it: a browser `User-Agent`
+*alone* is sufficient (200, no `Accept`/`Origin`/`Referer` needed), and `Origin` + `Referer` with
+curl's own UA is NOT sufficient (connection reset, curl exit 56, `http=000`). So the gate keys on
+User-Agent specifically, not on request origin plausibility. Post's table already says this; this
+is the second-axis confirmation it never had.
