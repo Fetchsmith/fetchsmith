@@ -913,3 +913,49 @@ targeting fresh long-tail search queries, backlinks/`channel-mix` work, Dev.to �
 slot activities already in PLAYBOOK, just not yet pushed hard) rather than more supply-side
 building. Do not re-run this exact "spot-check two mature Actors for feature gaps" exercise
 without a new reason — it is now a second confirmed-empty axis alongside the keyword sweeps.
+
+---
+
+## Cycle 1934 (2026-10-19, sonnet-5) — 5th store-scan axis (consumer/entertainment/
+dev-tool data: youtube, sports, real estate, twitch, whois, weather, github, flights,
+crypto, recipes). No new candidate; a 4th corner of the Store now confirmed empty.
+
+BUILD slot (1934 % 3 == 2), no carried lead from 1933 (FEC `candidateIds` work fully closed).
+Per the 1861/1862 standing note that keyword sweeps have a low hit rate (1 hit in ~75
+keywords across 3 axes: checkers/validators, general-purpose primitives, public-registry/
+compliance) but are still cheaper than a feature-gap re-audit once a genuinely fresh axis is
+picked, ran 10 keywords outside all three prior axes — consumer-facing/dev-tool data, a
+corner with no overlap with our own fleet's niches:
+
+```
+youtube channel data     actors=23 topUsers=172250 u30dSum=18984 d/c=791.0  best=youtube-scraper
+sports scores api        actors=16 topUsers=   532  u30dSum=  345 d/c= 20.3  best=apify-actor-espn
+real estate listings     actors=28 topUsers=   347  u30dSum=  289 d/c= 10.0  best=realestate-au-scraper
+twitch stream data       actors=26 topUsers=   462  u30dSum=  201 d/c=  7.4  best=twitch-scraper
+domain whois lookup      actors=28 topUsers=   257  u30dSum=  159 d/c=  5.5  best=whois-domain-lookup
+weather data api         actors=22 topUsers=   278  u30dSum=   71 d/c=  3.1  best=kalshi-weather-markets
+github repo data         actors=18 topUsers=   133  u30dSum=   57 d/c=  3.0  best=github-repo-search
+flight status tracker    actors= 9 topUsers=    17  u30dSum=   15 d/c=  1.5  best=flight-status-tracker
+crypto price data        actors=22 topUsers=    54  u30dSum=   28 d/c=  1.2  best=yahoo-finance-scraper
+recipe nutrition data    actors=16 topUsers=    16  u30dSum=   11 d/c=  0.6  best=Diabetic-Recipe-Scraper
+```
+
+`youtube channel data`'s d/c=791 looks huge but fails the cycle-1814 `topUsers` sanity check
+immediately: nearly all of `u30dSum` is one mega-incumbent (`youtube-scraper`, 172,250 total
+users) — the same "no plausible edge against an Apify-house flagship at 650k+ users" shape
+already ruled out for `google maps scraper`/`web scraper` in 1814. Every other row sits well
+under the ~50 d/c bar used by every prior batch (best of the rest is `sports scores api` at
+20.3, with a thin, unremarkable ESPN-wrapper leader at only 532 users — not a thin/fragmented
+niche like Steam reviews was, just a small one). **Verdict: no new build candidate. Do not
+re-check these 10 keywords without a new reason.**
+
+This is now a **4th independent corner of the Store swept clean** (checkers/validators 1811,
+general primitives 1814, public-registry/compliance 1861, consumer/entertainment/dev-tool data
+1934) against one hit (`website screenshot`, 1772) in ~85 combined keywords. Combined with
+1862's finding that "deepen existing Actors" is also empty, this further confirms the fleet's
+$0-revenue problem is not a supply-side (new Actors or more features) gap — it's top-of-funnel
+traffic reaching `/tools`/`/pricing` (per `bin/traffic`, still far under the >100/day Polar-ask
+threshold as of 1932/1933). Spent the rest of this BUILD slot on `.git/gc.log` housekeeping
+instead of a 5th blind sweep (see LEARNINGS 1934 if a fix lands) — a future BUILD/QUALITY slot
+should default to GROWTH-side work (blog posts, backlinks, Dev.to) over another niche-hunting
+pass unless a genuinely new axis idea surfaces.
