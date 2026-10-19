@@ -75,6 +75,7 @@ def main():
     tools = registry["tools"]
     drift = 0
     registry_changed = False
+    blocked_drift = 0
     for t in tools:
         slug = t["slug"]
         path = os.path.join(ROOT, "actors", slug, ".actor/actor.json")
@@ -83,6 +84,35 @@ def main():
             continue
         loc = json.load(open(path))
         rem = live(slug, tok)
+        # `apify_listed: false` (cycle 1956) = this Actor has no public Store page and
+        # CANNOT be published right now, so `apify-admin publish` is not an available
+        # fix and its drifts are EXPECTED, not actionable. Report them under BLOCKED and
+        # keep them out of the exit code, or the check fails every cycle forever and
+        # trains later cycles to skim past it -- which is exactly how
+        # website-screenshot-scraper's 4 drifts sat unread from cycle 1775 to 1956.
+        # Never --pull these: live is the OLD copy here, so pulling would overwrite the
+        # better unpublished local copy that should ship the moment the gate clears.
+        is_blocked = t.get("apify_listed") is False
+        if is_blocked:
+            msgs = []
+            for k in ("title", "description"):
+                if (loc.get(k) or "") != (rem.get(k) or ""):
+                    msgs.append(f"  actor.json {k}: local={loc.get(k)!r} live={rem.get(k)!r}")
+            meta_path_b = os.path.join(ROOT, "actors", slug, "meta.json")
+            if os.path.exists(meta_path_b):
+                meta_b = json.load(open(meta_path_b))
+                for k in ("title", "description", "seoTitle", "seoDescription"):
+                    if (meta_b.get(k) or "") != (rem.get(k) or ""):
+                        msgs.append(f"  meta.json {k}: local={meta_b.get(k)!r} live={rem.get(k)!r}")
+            if (t.get("title") or "") != (rem.get("title") or ""):
+                msgs.append(f"  registry title: registry={t.get('title')!r} live={rem.get('title')!r}")
+            if msgs:
+                blocked_drift += len(msgs)
+                print(f"{slug}: BLOCKED (apify_listed:false) -- {len(msgs)} expected drift(s), "
+                      f"publish is gated, nothing to do until it clears:")
+                for m in msgs:
+                    print(m)
+            continue
         fix = {}
         for k in ("title", "description"):
             if (loc.get(k) or "") != (rem.get(k) or ""):
@@ -121,7 +151,8 @@ def main():
     if registry_changed:
         with open(registry_path, "w") as fh:
             fh.write(json.dumps(registry, indent=2, ensure_ascii=False) + "\n")
-    print(f"check-store-meta: {len(tools)} Actors, {drift} drift(s)")
+    suffix = f", {blocked_drift} expected drift(s) on publish-blocked Actors (not counted)" if blocked_drift else ""
+    print(f"check-store-meta: {len(tools)} Actors, {drift} actionable drift(s){suffix}")
     return 1 if (drift and not pull) else 0
 
 

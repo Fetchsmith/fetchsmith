@@ -2291,8 +2291,10 @@
       "slug": "website-screenshot-scraper",
       "title": "Website Screenshot Scraper - JPEG, PNG & PDF Capture API",
       "summary": "Capture any public URL as a JPEG, PNG or PDF screenshot with a real Chromium browser. Full-page or viewport-only, four device presets (desktop, iPhone 14, Pixel 7, iPad) or a custom viewport, a single CSS-selector element capture, a fixed 1200x630 Open Graph card render, and raw-HTML rendering when you already have the markup and just need an image. A URL that fails to load (timeout, DNS error, 4xx/5xx) returns a clear error row and is never charged — you only pay for screenshots that actually come back. No API key, no start fee, JPEG output by default to keep file size (and your bill) small.",
-      "status": "live",
-      "credits_per_result": 0.002,
+      "status": "beta",
+      "credits_per_result": 1,
+      "apify_listed": false,
+      "notice": "This tool is built and tested but not yet runnable by customers: publishing it to Apify Store is blocked on a one-time owner identity verification that Apify now requires past 9 public Actors, and the hosted FetchSmith API is not open yet. The page documents the fields it returns; the Run button returns when the listing goes live.",
       "apify_actor_id": "nzq9YxI7Ek1pRZgsg",
       "memory_mb": 1024,
       "example_input": {

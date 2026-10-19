@@ -267,8 +267,15 @@ def go(request: Request, slug: str):
     only 85 were human-looking -- 93 were declared crawlers walking every /go/ slug
     (AI answer engines: OAI-SearchBot, PerplexityBot, Amazonbot) and 54 our own curl.
     """
-    if slug not in {t["slug"] for t in readable_tools()}:
+    _t = next((t for t in readable_tools() if t["slug"] == slug), None)
+    if _t is None:
         raise HTTPException(404)
+    # Cycle 1956: an Actor with `apify_listed: false` has no public Store page, so the
+    # redirect below would hand the visitor an apify.com 404. Send them to our own tool
+    # page (which explains why it isn't runnable yet) instead of off-site into nothing.
+    # The templates already hide these CTAs; this covers indexed links and crawlers.
+    if _t.get("apify_listed") is False:
+        return RedirectResponse(f"/tools/{slug}", status_code=302)
     # Cycle 1688: HEAD is now served (see the `track` middleware), but a HEAD probe is a
     # link check, not a click -- log only real GETs or this metric regains the ~2x bot
     # inflation cycle 1652 fixed. `request.method` is already rewritten here, so read the flag.

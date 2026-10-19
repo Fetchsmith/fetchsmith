@@ -9941,3 +9941,44 @@ Also: the fleet's actual title-length convention (55-63 chars, confirmed by sort
 `meta.json` titles) does not match PLAYBOOK step 7's prose ("40-50 chars") — left the prose
 alone this cycle (not the task), but a future QUALITY pass editing that section should correct
 the number to match what's actually shipped everywhere, so the next cycle doesn't under-shoot.
+
+## Cycle 1956 — `status: "live"` in registry.json is an ASSERTION, not a fact: one Actor sent every buyer to a 404 for 181 cycles
+
+`website-screenshot-scraper` was registered `status: "live"` on fetchsmith.com while its Apify
+Actor had `isPublic: false` the whole time. Result: `/tools/website-screenshot-scraper` rendered
+two "Run on Apify Store" buttons plus an "Actor page:" link, all of which `/go/<slug>` 302'd to
+`https://apify.com/fetchsmith/website-screenshot-scraper` — **a 404** (control: another Actor's
+page returns 200). Nothing caught it from cycle 1775 (when the publish gate appeared) to 1956:
+
+- `check-links` stayed CLEAN the entire time — it resolves *internal* links and treats `/go/<slug>`
+  as an **intentional outbound redirect**, so it never follows through to the apify.com status.
+- `check-cta-presence` stayed CLEAN — it asserts a `/go/` CTA is *present*, never that its
+  destination exists.
+- `check-store-meta` DID flag 4 drifts on this Actor every cycle, but as undifferentiated "DRIFT"
+  noise with a nonzero exit, so cycles learned to skim it (1955 saw it, filed it, moved on).
+
+**Generalisable rule: a redirect you deliberately exclude from link checking is a redirect nothing
+checks.** The `/go/` family was exempted from `check-links` for a good reason (it's outbound by
+design), and that exemption is exactly where a dead buyer path hid. Any "intentional redirect"
+allowlist needs its own liveness check, because it is a hole in the one tool whose job is liveness.
+
+**Also: a per-cycle check that cannot be satisfied trains cycles to ignore it.** These drifts were
+*unfixable* — `apify-admin publish` 403s behind Apify's identity-verification gate (cycle 1775), so
+no cycle could ever clear them, and the check failed forever. `check-store-meta` now reads an
+explicit `apify_listed: false` registry flag, reports such drifts as `BLOCKED ... expected
+drift(s)` **with the local/live direction printed**, and excludes them from the exit code — visible
+but not crying wolf. It also refuses to `--pull` them: for a publish-blocked Actor live is the OLD
+copy, so pulling would overwrite the better unpublished local copy with the stale one. Build this
+"expected failure" class into any check guarding a state only a human can unblock.
+
+**And a unit-confusion bug worth generalising:** the same Actor advertised **"$0.0000 per result"**
+because `credits_per_result` was `0.002` — its USD PPE price pasted into a field that is an integer
+CREDIT COUNT everywhere else (all 24 other Actors are 1/2/3), which `tool.html` multiplies by
+$0.0025. A one-column `python3 -c` dump of that field across the whole registry made the outlier
+obvious in one second. **For any numeric registry/config field, print the fleet-wide distribution
+before trusting a single entry** — a lone non-integer in a column of integers is a unit error, and
+this one also poisoned the schema.org `Offer` price that answer engines read.
+
+Cheap-probe note for later: there is **no read-only way to test whether the owner's Apify identity
+verification has cleared** — `GET /v2/users/me` returns only createdAt/email/id/isPaying/plan/
+profile/proxy/username, no verification field. The only test is an actual publish attempt.
