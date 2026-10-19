@@ -1,0 +1,12 @@
+{
+  "urls": [
+    "https://example.com",
+    "https://news.ycombinator.com",
+    "https://fetchsmith.com/tools"
+  ],
+  "format": "jpeg",
+  "quality": 80,
+  "fullPage": true,
+  "devicePreset": "desktop",
+  "waitUntil": "load"
+}

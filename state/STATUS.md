@@ -1,3 +1,60 @@
+Updated: 2026-10-19 ~21:40 UTC by cycle 1960 (opus-5) — BUILD slot (1960 % 3 == 1). **THE 185-CYCLE
+PUBLISH BLOCKER IS CLEARED. The owner replied "Done" to the identity-verification email at
+2026-10-19 21:07 UTC** (mail `mail/inbox/1792444024-dc593cfb....json`, a reply to the
+2026-10-16 `apify_publish_identity_verification_2026-10-16` notify) — that landed 5 minutes
+AFTER cycle 1959 had already read its inbox, which is why 1959 reported "nothing owed". Checked
+it this cycle, probed with a real publish attempt (the only possible probe — `GET /v2/users/me`
+exposes no verification field) and it went through.
+
+**`website-screenshot-scraper` is now PUBLIC and LIVE — Actor #25, first new publication since
+cycle 1775.** Ran the full recipe STATUS had left for this moment, every step verified:
+1. `apify-admin publish` -> `isPublic: true` (200). `https://apify.com/fetchsmith/website-screenshot-scraper`
+   now returns **200** (was a confirmed 404 for 181 cycles).
+2. Caught and fixed a side effect of the publish mirror on the FIRST publish: `meta.json`'s title
+   was the bare "Website Screenshot Scraper", so the cycle-1600 mirror overwrote `registry.json`'s
+   richer SEO title with it. Fleet convention is meta.json title == registry title == the
+   SEO-rich one, so the fix was to put the rich title IN `meta.json`
+   ("Website Screenshot Scraper – JPEG, PNG & PDF Capture API", en dash like `ats-jobs-scraper`)
+   and republish — now all three copies agree. **Lesson for the next first-publish: write the
+   rich title into meta.json BEFORE the first `publish`, or the mirror downgrades the site.**
+3. `apify push --force -w 600` -> build **0.1.10** (forces the Algolia reindex per cycle 515).
+4. **Wrote the missing `test_input.json`** — this Actor never had one (it was never live, so
+   `actor-health`/`check-row-floor`/`set-example-input` had nothing to read): 3 URLs
+   (example.com, news.ycombinator.com, fetchsmith.com/tools), jpeg/fullPage/desktop.
+5. `bin/set-example-input --memory=1024` -> **caught the Actor defaulting to 4096 MB** (4x billing
+   for any Store user who clicks Start, exactly the cycle-164 trap) and set it to the fleet
+   standard 1024; `exampleRunInput` now sources from the new test_input.json instead of nothing.
+6. **Real platform run on build 0.1.10: SUCCEEDED, 3/3 rows, all `success: true`**, real JPEGs of
+   plausibly different sizes (64KB / 170KB / 1.27MB), ~4s wall clock at 1024 MB. Refreshed
+   `registry.json`'s `sample_output` from this real run (was an `abc123` placeholder).
+7. `bin/sync-apify-prices`: picked up the live price (flat $0.002/result) — **25/25 tools now have
+   a live quotable price**.
+8. `registry.json`: `status: beta -> live`, `apify_listed: false -> true`, cycle-1956 `notice`
+   removed. Site picks registry up without a restart (no service touched).
+
+Curl-verified after: `/tools/website-screenshot-scraper` renders a real "Run on Apify Store"
+button + the "Actor page:" link (2 `/go/` refs, same shape as `hacker-news-scraper`),
+`/go/website-screenshot-scraper` 302s to the live Store page (200, no longer self-redirecting to
+our own page), `/` and `/tools` carry **zero** "Not on Store yet"/"not published yet" pills,
+both 200. `check-cta-presence` CLEAN, `check-store-meta` **25 Actors / 0 actionable drift**
+(the "4 expected drifts on publish-blocked Actors" line is gone), `check-pricing` 25 public
+Actors / 30 events / 0 drift, `check-actor-guides` 24 live / 0 flagged, `check-backlinks` 114
+pairs / 0 missing.
+
+**Fleet is now 24 live + 1 retired = 25 registry tools, 25 public Actors, 0 `apify_listed: false`.**
+
+**What this unblocks:** catalog growth past 24 Actors, i.e. the CLAUDE.md "max 6 new Actors per
+calendar day" lane is open again for the first time since cycle 1775. No owner email sent (rule 3:
+no revenue event, and nothing left that only they can fix — they just fixed it).
+
+Open follow-ups, both small and precisely scoped in queue.md: (a) the new Store listing was NOT
+in `apify-admin store "website screenshot"` results yet ~1 min after the push — expected Algolia
+lag (cycle 515 saw hours), re-check with `bin/check-store-index` next cycle before trusting any
+rank measurement; the niche is crowded (apify/screenshot-url at 8,789 users, several PPE rivals
+at 100-300) so a `bin/category-rank --all` placement review is worth a QUALITY slot. (b) the
+queue.md trim 1959 left as TOP ITEM is still open — deliberately deferred, a cleared revenue
+blocker outranks a doc-size chore that `check-doc-size` still reports OK.
+
 Updated: 2026-10-19 ~21:05 UTC by cycle 1959 (sonnet-5) — QUALITY/GROWTH slot (1959 % 3 == 0,
 same remainder as 1956's QUALITY/GROWTH slot). `checks-due` had 2 DUE at cycle start:
 `check-readme-samples` and `check-comparison-breadth` (both last run cycle 1623, a 336-cycle

@@ -10008,3 +10008,39 @@ tool's default 300s window and silently moves to a background task — if wrappe
 tail`, a kill before Python's buffered stdout flushes can make a REAL, in-progress (and billed)
 run look like it produced "no output" at all. Run it unwrapped and let the harness background it,
 or redirect to a file instead of a pipe, if the 300s default budget is a risk.
+
+## Cycle 1960 — publishing an Actor that was built while publication was blocked
+
+Owner-gated blockers can clear between cycles and the only signal is the mail: the identity-
+verification reply ("Done") landed 5 minutes after cycle 1959 had already run `bin/inbox list`,
+so 1959 truthfully reported "nothing owed" and the unblock sat unnoticed until 1960 read the mail
+again. **When a standing blocker is owner-gated, re-read the inbox for the reply even if the last
+cycle said the inbox was clean** — the reply does not retro-announce itself. Apify still offers no
+read-only verification probe (`GET /v2/users/me` has no field for it); a real `publish` attempt is
+the only test, and it is cheap and idempotent, so just try it.
+
+An Actor built while publication was blocked skips several steps that normally happen at publish
+time, and all of them are buyer-facing. Checklist for the next one:
+- **`meta.json` title must already be the SEO-rich title before the FIRST `publish`.** The
+  cycle-1600 mirror copies the published title down into `registry.json` and `.actor/actor.json`,
+  so publishing a bare "Website Screenshot Scraper" silently downgraded the site's richer
+  "… – JPEG, PNG & PDF Capture API" title. Fix is to enrich meta.json and republish (costs no
+  publication slot), not to hand-edit registry.json back.
+- **There is no `test_input.json`**, because nothing ever needed one: `actor-health`,
+  `check-row-floor` and `set-example-input` all read it, and all three were silently inert for
+  this Actor. Write it at publish time, then immediately `set-example-input`.
+- **Memory default was still 4096 MB.** `apify push` never sets it; only `set-example-input`
+  (a `PUT /v2/acts/<id>`) does. Any Store user clicking Start would have been billed 4x. Fleet
+  standard is 1024 and measured peak RSS is well under it, even for a Chromium-based Actor — this
+  one ran 3 full-page screenshots (up to 1.27 MB JPEG) in ~4s at 1024 MB.
+- `sync-apify-prices` after publish, or `/tools/<slug>` quotes no price at all (`apify_price` was
+  `None` here, not merely stale).
+- Flip `registry.json` `status` + `apify_listed` + drop the `notice` LAST, and curl-verify: the
+  site reads registry.json live, so no service restart is needed.
+
+Checks worth running right after a publish, in this order (all cheap, all caught something or
+proved a claim this cycle): `check-store-meta` (should drop its "N expected drift(s) on
+publish-blocked Actors" line entirely), `check-pricing`, `check-cta-presence`, `check-links`,
+`check-actor-guides`, `check-backlinks`. One thing that is NOT instant: the Store **search index**
+(Algolia) had not picked the new listing up ~1 min after the `--force` push, consistent with
+cycle 515's hours-long lag — never measure Store rank in the same cycle you publish.

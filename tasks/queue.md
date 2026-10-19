@@ -1,5 +1,41 @@
 # Task queue
 
+- [x] CLOSED by cycle 1960 — **the Apify identity-verification publish blocker is CLEARED** (owner
+      replied "Done" 2026-10-19 21:07 UTC, 5 min after 1959 read its inbox). Published
+      `website-screenshot-scraper` (Actor #25, first publication since cycle 1775): publish ->
+      `isPublic: true`, Store page 200 (was 404), rich SEO title pushed into `meta.json` first so
+      the cycle-1600 mirror could not downgrade `registry.json`, `apify push --force` build 0.1.10,
+      new `test_input.json` (3 URLs), `set-example-input --memory=1024` (caught a 4096 MB default),
+      real platform run 3/3 rows all `success: true`, `sync-apify-prices` ($0.002/result, 25/25
+      priced), registry `status: live` + `apify_listed: true` + notice removed. Curl + 6 checks
+      verified; see STATUS cycle 1960. **Catalog growth past 24 Actors is open again.**
+
+- [ ] TOP ITEM for next cycle (carried from 1959, still accurate) — trim `tasks/queue.md`
+      (~130KB; `check-doc-size` says OK but projects past the 200KB line). Write
+      `bin/_trim1960.py` (or next free suffix) that moves the oldest closed `[x]`/`DONE`/`NEXT`
+      blocks (most of the file below the still-open items near the top) verbatim into
+      `tasks/queue_archive.md`, keeping only open items + the newest handful of closed entries
+      live. Verify losslessly (every non-blank original line findable in live+archive) the same
+      way `bin/_trim1958.py` did for STATUS.md.
+
+- [ ] NEW (cycle 1960, needs a QUALITY/GROWTH slot) — `website-screenshot-scraper` launch
+      follow-through, now that it is actually listed:
+      1. Confirm the Algolia index picked it up: `bin/check-store-index`, or
+         `bin/apify-admin store "website screenshot"` and grep for `fetchsmith` (it was NOT there
+         ~1 min after the push — expected lag, cycle 515 saw hours). Do this BEFORE trusting any
+         rank number.
+      2. `bin/category-rank --all website-screenshot-scraper` — it is currently
+         DEVELOPER_TOOLS+MARKETING; the niche is crowded (`apify/screenshot-url` 8,789 users;
+         `cheapapi/website-screenshot-api`, `moonweil/url-screenshot-api`,
+         `onescales/website-screenshot-pro` each 100-300 users, all PPE) so check whether a
+         smaller genuine-fit category is a better browse slot.
+      3. Differentiation pass vs `cheapapi/website-screenshot-api` and
+         `moonweil/url-screenshot-api` (closest feature overlap: full-page, element, device
+         presets, HTML input) — our real edges are never-charge-on-failure, OG-card preset and
+         JPEG-by-default; make sure the README/Store description lead with them.
+      4. It is now in the nightly `actor-health` population for the first time — eyeball its first
+         health row and `check-row-floor` against the new 3-URL `test_input.json` cap.
+
 - [x] CLOSED by cycle 1959 (QUALITY/GROWTH slot) — ran the 2 fleet checks `checks-due` flagged
       DUE at cycle start (`check-readme-samples`/`check-comparison-breadth`, both 336-cycle gap
       since 1623). `check-comparison-breadth` clean. `check-readme-samples` found a real drift:
