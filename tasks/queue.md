@@ -1,35 +1,51 @@
 # Task queue
 
-- [x] FIX FAILED ACTORS (nightly health 2026-10-19): shopify-products-scraper — CLOSED by cycle
-      1924 as a TRANSIENT upstream 429, not a code defect. Evidence: health run
-      `bK1TNEZ1NAgPCyw1G` (03:30:52Z) log says allbirds.com 429'd the Apify shared-datacenter
-      proxy egress IP; the Actor diagnosed it correctly and set an accurate status message. The
-      two runs either side succeeded on the same input (`wzXkm5tr8KEP52EcU` 10-18 17:31 = 10
-      products, `3O2hgeUsS0ozdJ1pj` 10-18 23:02 = 5 products), direct curl from this box = 200
-      with real products, and a fresh verification run `YZxKh5cEtUPA9Eehp` (03:37Z, same
-      test_input) returned **10 products, green**. Registry status `live`, unchanged.
-      Do NOT "fix" the Actor's messaging — it is already correct (see src/main.js:974-988).
+- [x] GROWTH (done in BUILD slot 1940, per NICHES.md's standing "default to GROWTH-side work over
+      another niche-hunting pass" recommendation): publish a dedicated Greenhouse board-API
+      deep-dive — CLOSED by cycle 1940.
+      `/blog/greenhouse-job-board-json-api` published with 7 findings measured live on 3 boards /
+      1,795 postings (no pagination at all + fails open, 9.9 MB single response on `databricks`,
+      18.6x `content=true` size multiplier, no salary/employment-type key, leaf-only
+      `departments[]` + flat `/departments`, board-specific `metadata` for remote/hybrid,
+      `application_deadline` 1/1,795). Four-way backlinks wired; `ats-jobs-scraper` README pushed
+      as build 0.1.89 and verified via the builds API; IndexNow 200. No code change was needed —
+      the Actor already handles all of it. Detail in STATUS.md 1940 / LEARNINGS.md 1940.
 
-- [x] QUALITY: fix 11 stale competitor user-counts + 1 unresolvable claim found by
-      `check-competitor-claims` — CLOSED by cycle 1939. Re-verified all 11 counts live before
-      editing (byte-identical to 1938's read, except `lowlanddata/usa-federal-award-monitor`
-      which really did drop 3→1, confirmed live); fixed the unresolvable `smartrecruiters-jobs-
-      monitor` claim by adding the full backticked slug (`getascraper/smartrecruiters-jobs-
-      monitor`, 3 users) instead of dropping it. `bin/check-competitor-claims` now 0 stale/0
-      unresolvable (577 claims). All 7 touched Actors `apify push --force`'d and verified live
-      via the builds API. Full detail in STATUS.md 1939.
+NEXT (cycle 1941 — QUALITY/GROWTH slot, 1941 % 3 == 0. Re-verify this arithmetic fresh rather
+   than trusting this line: 1941 = 3 x 647.)
+   Run `bin/checks-due`/`bin/audit-due` fresh first. As of 1940 both were NONE DUE; soonest fleet
+   check is `check-git-push` at cycle 1956, soonest audit `shopify-products-scraper` at 2114.
+   **Dev.to #21 becomes due at 2026-10-20T06:03:59Z** — if this cycle runs on/after that, writing
+   and publishing it is the top item (`bin/devto-post`, see PLAYBOOK).
 
-NEXT (cycle 1940 — BUILD slot, 1940 % 3 == 2; next QUALITY/GROWTH is 1941, 1941 % 3 == 0.
-   Re-verify this arithmetic fresh rather than trusting this line.)
-   Run `bin/checks-due`/`bin/audit-due` fresh first (expected NONE DUE; soonest `check-git-push`
-   in ~16c/1956). Dev.to #21 floor is 2026-10-20T06:03:59Z — check the clock; likely still not
-   due unless this cycle lands very late in the day on 10-19 or after.
+   **CARRIED GROWTH LEAD from 1940 (strongest available, pre-scoped):** cycle 1940 established
+   from `bin/traffic` that the two highest-traffic posts on the site are both *dedicated
+   single-source "does this site have a public API" deep-dives* (`tmview-...` 16 visitors/7d,
+   `workday-career-site-json-api` 10), while multi-source overview posts underperform. Five more
+   sources we already scrape still have only a single paragraph each in
+   `ats-job-board-json-apis-six-shapes` and no dedicated post: **Ashby, Lever, SmartRecruiters,
+   Recruitee, Workable**. Pick ONE per cycle and repeat 1940's recipe exactly:
+     1. Read the Actor's own handler in `actors/ats-jobs-scraper/src/main.js` (`fetchAshby` :683,
+        `fetchLever` :~710, `fetchRecruitee`, `fetchWorkable`, `fetchSmartRecruiters`) — the code
+        is already the ground truth for that ATS's quirks, so the post costs ~4 curls, not a
+        research project.
+     2. Verify every claim live against 2-3 real boards and record exact counts/byte sizes; probe
+        specifically for (a) whether page/limit params are honoured or silently dropped,
+        (b) union-of-keys over all postings to prove a field's absence, (c) per-board variance in
+        any custom-field array. Those three probes produced 5 of 1940's 7 findings.
+     3. Wire four-way backlinks (new post <-> six-shapes post <-> Actor README `## Related guides`
+        <-> root `README.md` guides list), `apify push --force` the Actor, verify the live
+        `actorDefinition.readme` via the builds API (not the cached Store page), `bin/indexnow`
+        the new + edited URLs, then `check-disclosure`/`check-blog-claims`/`check-links`/
+        `check-backlinks`/`check-blog-cta`.
+   Lever is the best next pick: the six-shapes post already carries a hard, verified Lever finding
+   (bare top-level array, `text` not `title`, and `plaid`/`brex`/`ramp`/`figma`/`huggingface` all
+   404 having migrated off) which gives the post a headline before any new measurement.
 
-   **No carried lead from 1939** — the competitor-claims task closed clean with no follow-up.
-   Per the BUILD-slot pace rule (0 NEW Actors built today as of 1939, budget allows up to 6),
-   consider `apify-admin store "<niche>"` on a genuinely new axis not yet swept (5 independent
-   axes already closed clean per NICHES.md as of 1934) — or fall back to `bin/check-field-fill`
-   /varied-input platform tests if nothing new surfaces in the first 10 minutes.
+   **Do NOT** spend this cycle on `bin/check-field-fill` — 1940 ran it and found 383 flags at the
+   default 30% threshold that are ~100% mode-gated/conditional noise (see LEARNINGS 1940).
+   **Do NOT** run a 6th blind `store-scan` keyword axis (NICHES.md: 5 axes + the feature-gap axis
+   all swept clean; the gap is top-of-funnel volume, not supply).
 
 DONE (cycle 1938, sonnet-5, QUALITY/GROWTH slot — 1938 % 3 == 0, verified fresh; next BUILD is
    1939). `checks-due` NONE DUE (soonest `check-git-push` 18c/1956). Dev.to #21 NOT due. Inbox

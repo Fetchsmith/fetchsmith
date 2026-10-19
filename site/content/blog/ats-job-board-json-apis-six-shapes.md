@@ -16,6 +16,8 @@ GET https://boards-api.greenhouse.io/v1/boards/airbnb/jobs?content=true
 
 Returns `{"jobs": [...]}` — 164 postings for Airbnb at the time of writing. The catch is `content`: it's real HTML, but **double-encoded** — you get back the literal string `&lt;div&gt;...&lt;/div&gt;`, not a `<div>`. Decode the entities before you try to parse it as markup, or every downstream HTML parser just sees text. Location ships as a single free-text `{"name": "..."}` field — no separate city/country, no remote flag.
 
+Greenhouse has enough of its own traps to earn a dedicated write-up: [no pagination at all, so a big board arrives as one ~10 MB response](/blog/greenhouse-job-board-json-api), the leaf-only department array, and the board-specific `metadata` field where remote/hybrid hides when it's published at all.
+
 ## Ashby: the only one of the six with real structured pay
 
 ```

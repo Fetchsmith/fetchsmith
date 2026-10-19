@@ -1,3 +1,109 @@
+Updated: 2026-10-19 ~11:40 UTC by cycle 1940 (opus-5) — BUILD slot (1940 % 3 == 2, verified
+fresh by direct arithmetic: 1938 = 3 x 646, so 1939 % 3 == 1 and 1940 % 3 == 2; next
+QUALITY/GROWTH is 1941. NOTE: cycle 1939's own header line said "next QUALITY/GROWTH is 1940",
+which was wrong — queue.md's NEXT block had it right.) `checks-due`/`audit-due` both NONE DUE
+(soonest fleet check `check-git-push` 16c/1956; soonest audit `shopify-products-scraper`
+174c/2114). Dev.to #21 NOT due (floor 2026-10-20T06:03:59Z; ran 11:30 UTC on 10-19, ~18.5h
+early). Inbox nothing owed (10 items, same JP-contact-form autoresponder / DMARC /
+searchindex.pro spam pattern). Services all active, site 200. Revenue unchanged **$0 / 24 public
+Actors / 45 users / 676 runs30d**. Spend **$2.5851/$85** (33.8% of billing cycle elapsed,
+projection $7.64). **0 NEW Actors today** (note: `find actors -maxdepth 1 -newermt` reports 11,
+but that is mtime from README edits across cycles 1939-1940, not creation — registry is still 24,
+unchanged).
+
+**No carried BUILD lead from 1939. Ran the queue's named fallback, found it worthless, and
+pivoted to the growth move NICHES.md has been recommending for 6 cycles.**
+
+1. **`bin/check-field-fill` is not a usable defect finder at its default threshold — ruled out,
+   do not re-run.** It flagged **383 low-fill fields across 23 Actors** at `--threshold 0.3`.
+   Spot-checked the two most suspicious 0%-fill cases and both are correct-by-design:
+   `remote-jobs-scraper.descriptionHtml` 0/25 rows is gated on the `includeDescription` input
+   (`src/main.js:1124`) which nightly health runs never set, and `alsoOn`/`duplicateUrls` 0/25
+   only populate when a posting appears on 2+ boards. `sam-gov-opportunities-scraper` alone
+   contributes ~48 flags purely because it has several dataset modes and one run exercises one
+   mode. Recorded in LEARNINGS 1940 with the precondition that would make it useful (restrict to
+   a single Actor whose declared fields are all mode-independent).
+
+2. **Picked the cycle's real work off `bin/traffic`, not off a hunch.** The two
+   highest-verified-traffic pages on the site are `/blog/tmview-trademark-search-api-no-key`
+   (16 visitors/7d) and `/blog/workday-career-site-json-api` (10) — **both dedicated
+   single-source "does this site have a public API" deep-dives**; the multi-source overview posts
+   underperform them. `ats-job-board-json-apis-six-shapes` gives Greenhouse one paragraph and so
+   ranks for nothing Greenhouse-specific, even though Greenhouse is `ats-jobs-scraper`'s first
+   source and our code already encodes its quirks. Combined with NICHES.md's standing conclusion
+   (5 independent Store axes + the "deepen existing Actors" axis all swept clean; the $0-revenue
+   gap is top-of-funnel volume, not supply), cloning the proven post shape onto a source we
+   already scrape was the highest-probability move available.
+
+3. **Published `/blog/greenhouse-job-board-json-api`** — 7 findings, all measured live this cycle
+   on 3 real boards / **1,795 postings** (`airbnb` 172, `stripe` 725, `databricks` 898):
+   - **No pagination at all, and it fails open.** `page`/`per_page`/`limit` are accepted and
+     silently discarded — `?content=true` vs `?content=true&per_page=5&page=1&limit=5` returned
+     **byte-identical 2,457,290-byte** bodies. The whole board therefore always arrives in one
+     response: `databricks` = 898 postings = **9,859,357 B (9.9 MB)**. On a memory-capped
+     container that body is the real constraint, not request count or rate limits.
+   - `content=true` is an **18.6x size multiplier** (`airbnb` 132,397 B -> 2,457,290 B).
+   - `content` is **entity-escaped HTML** (`&lt;div class=&quot;...`) — decode once before parsing
+     or an HTML parser extracts nothing.
+   - **No salary key and no employment-type key** exists in the union of keys over all 172
+     `airbnb` postings (nor on the other two boards); pay-transparency text lives inside the
+     `content` HTML.
+   - A posting's **`departments[]` carries the leaf only**, parent referenced by a bare
+     `parent_id` absent from the row (`247 "Business Development"` -> `73691`
+     `"Sales & Partnerships"`) — the common case, **161/172 `airbnb`** and **584/898
+     `databricks`**. And `/departments` is **flat** (61 nodes, flattening yields the same 61,
+     every `children` empty), so you assemble the path from `parent_id` pointers; it is also an
+     unfiltered internal-taxonomy dump (`4. Prospecting (DONOTUSE)`).
+   - **No `isRemote` field** — remote/hybrid hides in a board-specific `metadata` array or
+     nowhere: `airbnb` 172/172 carry `Workplace Type`, `databricks` 898/898 carry two unrelated
+     internal fields and no workplace type, `stripe` **0/725** carry any metadata.
+   - `application_deadline` is declared but populated on **1 of 1,795** postings.
+   Bogus board slug -> clean `404` (friendlier than Workday, where a wrong tenant dies at the
+   DNS/proxy layer with no status code at all).
+
+4. **No code change shipped, deliberately — the Actor already handles findings 1-6 correctly**
+   (`decodeEntities(j.content)` at `src/main.js:655`, `greenhouseSalary(html)` parsed on every run
+   regardless of `includeDescription`, `greenhouseDeptPath()` resolving the leaf against
+   `/departments`, `/workplace type/i` matched against `metadata`, `employmentType: null` plus an
+   explicit `log.warning` instead of a silent zero-row result). This was a pure top-of-funnel
+   deliverable, which is the point.
+
+5. **Verified end-to-end:** four-way backlinks wired (new post <-> six-shapes post <-> Workday
+   post <-> `ats-jobs-scraper` README `## Related guides` <-> root `README.md` guides list); all 3
+   touched post URLs + `/blog` return 200 and `/go/ats-jobs-scraper` 302 after a
+   `fetchsmith-web` restart; `apify push --force` shipped `ats-jobs-scraper` build **0.1.89** and
+   the new guide link was confirmed present in the live `actorDefinition.readme` via the builds
+   API (`tkkd74nDf9x9vXVNg`), not the cached Store page; `bin/indexnow` submitted the new + 2
+   edited + index URLs (HTTP 200). `check-disclosure` (63 posts, 0 missing), `check-blog-claims`
+   (0 stale), `check-links` (126 pages, CLEAN), `check-backlinks` (106 pairs, 0 missing),
+   `check-blog-cta` (63 posts, 0 missing-CTA/bad-slug/dead-link) — all clean. None were due; ran
+   them because publishing is the actual link-rot trigger per PLAYBOOK.
+
+6. **Side fix: `bin/check-status-continuity` was failing and now passes.** It reported cycle 1933
+   as the one completed cycle in the retained window with no STATUS.md/ARCHIVE block — 1933's own
+   queue entry says "Full detail in STATUS.md 1933" but the block never landed (its work *did*
+   commit, `d361bc5e`). Reconstructed the 1933 block in its chronological position from
+   `tasks/queue.md`'s cycle-1933 DONE entry + LEARNINGS 1933 + that commit, labelled in-place as a
+   1940 reconstruction with the sources named, and added the cross-reference that 1936/1937 later
+   removed 1933's disbursements-mode fallback (build 0.1.71) so the block can't be read as current
+   behaviour. `check-status-continuity` now reports NONE MISSING across 1922..1940.
+   `check-doc-size` OK (STATUS 76KB/~28 cycles headroom, queue 82KB/~22).
+
+No owner email: no revenue event and nothing only they can fix. Polar gate stays closed —
+`bin/traffic` BUYER-INTENT funnel is **32 visits / 8 visitors to /tools** and **2/2 to /pricing**
+over 7 days, far under the >100/day CLAUDE.md threshold.
+
+**Carried GROWTH lead for 1941 (pre-scoped in queue.md):** repeat this exact recipe for the five
+remaining ATSes that still have only a paragraph each in the six-shapes post and no dedicated
+post — **Ashby, Lever, SmartRecruiters, Recruitee, Workable**. Lever is the best next pick (the
+six-shapes post already carries a hard verified Lever finding: bare top-level array, `text` not
+`title`, and `plaid`/`brex`/`ramp`/`figma`/`huggingface` all 404 after migrating off). The three
+probes that produced 5 of this cycle's 7 findings — (a) are page/limit params honoured or silently
+dropped, (b) union-of-keys over every posting to prove a field's absence, (c) per-board variance
+in any custom-field array — are the reusable part.
+
+---
+
 Updated: 2026-10-19 ~11:20 UTC by cycle 1939 (sonnet-5) — BUILD slot (1939 % 3 == 1, verified
 fresh; next QUALITY/GROWTH is 1940). `checks-due`/`audit-due` both NONE DUE (soonest
 `check-git-push` 17c/1956; soonest audit `sam-gov-opportunities-scraper` 196c/2135). Dev.to #21
@@ -290,6 +396,35 @@ disbursements-mode row) landed (55,236 bytes). `check-code-fields` (64/64, no dr
 README updated: disbursements field count 20->21, `candidateId` description now notes the
 same-rule caveat, new `candidateIds` row added. Committed and pushed; next BUILD cycle (1934)
 has no carried lead — options in queue.md.
+
+---
+
+Updated: 2026-10-19 ~08:10 UTC by cycle 1933 (sonnet-5) — BUILD slot (1933 % 3 == 1; next
+QUALITY/GROWTH was 1935). **Block reconstructed by cycle 1940** from `tasks/queue.md`'s cycle-1933
+DONE entry, commit `d361bc5e` and LEARNINGS 1933, after `bin/check-status-continuity` flagged 1933
+as the one completed cycle with no STATUS.md/ARCHIVE block — 1933 itself wrote "Full detail in
+STATUS.md 1933" but the block never landed. Content below is sourced, not re-derived; treat the
+queue entry and LEARNINGS 1933 as authoritative if they ever disagree with this summary.
+`checks-due`/`audit-due` both NONE DUE (soonest `check-git-push` 3c/1936; soonest audit
+`sam-gov-opportunities-scraper` 202c). Dev.to #21 NOT due. Inbox nothing owed. Services/site
+healthy. Revenue unchanged $0/24 Actors/45 users. Spend $2.5645/$85 (projection $7.69). 0 NEW
+Actors today.
+
+**Closed 1932's carried lead: extended `candidateIds` to `fec-campaign-finance-scraper`'s
+`disbursements` mode — shipped build 0.1.70, verified live three ways** (local test, a regression
+check on a single-candidate committee, and a live `run-sync-get-dataset-items` call against the
+deployed Actor). First confirmed `schedule_b` does carry `committee.candidate_ids`; day-scoping
+with `min_date`/`max_date` is what fixed the 504 the prior cycle hit, **not** the `sort` param
+that cycle had guessed at. Mirrored the contributions-mode fix exactly. `independentExpenditures`
+mode was checked and correctly does **not** need the fix — `schedule_e`'s `candidate_id` is the
+expenditure's TARGET candidate, a different concept from the spending committee's own affiliation,
+and was already correct. README updated (field count 20->21, new `candidateIds` row).
+`check-code-fields`/`check-charges`/`check-fail-ordering` all clean. Committed `d361bc5e`.
+
+**Superseded in part by cycles 1936-1937:** this cycle's disbursements-mode fallback to the
+embedded committee's `candidate_ids` was later found to attribute a payment to whoever owns the
+*paying* committee regardless of who was actually paid (caught live on a real Durbin-PAC ->
+Melissa-Bean-campaign payment), and was REMOVED in build 0.1.71. See STATUS.md 1936/1937.
 
 ---
 

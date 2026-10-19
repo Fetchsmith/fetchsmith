@@ -53,7 +53,7 @@ On Lever, a company that's migrated off the platform 404s cleanly — [documente
 
 [ats-jobs-scraper on Apify](/go/ats-jobs-scraper) now covers Workday as a 7th source alongside Greenhouse, Ashby, Lever, Recruitee, Workable and SmartRecruiters, normalized into the same schema — company, ATS source, title, department (via `hiringOrganization.name` for Workday), employment type, remote flag, location, salary, timestamps, apply URL and description. Detail-level fields (department, employment type, exact date) only cost the extra request when `includeDescriptions` is on, same tradeoff the SmartRecruiters integration already makes.
 
-If you're pulling from the other six ATSes too, see [how their title, location and salary fields all mean something slightly different from each other](/blog/ats-job-board-json-apis-six-shapes) — Workday adds an eighth idea of what a "job" looks like to that list.
+If you're pulling from the other six ATSes too, see [how their title, location and salary fields all mean something slightly different from each other](/blog/ats-job-board-json-apis-six-shapes) — Workday adds an eighth idea of what a "job" looks like to that list. Greenhouse, the startup-tier counterpart to Workday's enterprise boards, has [the opposite pagination problem](/blog/greenhouse-job-board-json-api): no page-size cap because there is no paging at all, so a large board comes back as a single ~10 MB body.
 
 ---
 

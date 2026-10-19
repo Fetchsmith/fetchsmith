@@ -9476,3 +9476,66 @@ name" is not "same semantics." Also: FEC already tags Schedule B rows with their
 `candidate_id`/`candidate_name` whenever one candidate is the specific subject (verified on a
 real multi-candidate JFC's own disbursements, each individually tagged) — a payer-level fallback
 was solving a problem that barely exists and actively made the real case worse.
+
+## Cycle 1940 (2026-10-19, opus-5) — Greenhouse board API measured on 1,795 postings; `check-field-fill` at default threshold is unusable as a defect finder
+
+**`bin/check-field-fill` is NOT a usable BUILD-slot defect finder at `--threshold 0.3`.** Ran it
+this cycle as the queue's fallback: **383 low-fill fields flagged across 23 Actors**. Spot-checked
+the two most suspicious 0%-fill cases and both are correct-by-design, not bugs:
+`remote-jobs-scraper.descriptionHtml` 0/25 is gated on the `includeDescription` input
+(`src/main.js:1124`) which the nightly health runs don't set, and `alsoOn`/`duplicateUrls` 0/25
+only populate when a posting is found on 2+ boards. `sam-gov-opportunities-scraper` alone accounts
+for ~48 flags purely because it has several dataset modes and each run exercises one. The tool's
+own docstring already warns it is a signal tool, but the practical conclusion is stronger: at the
+default threshold the flag list is ~100% explainable noise and triaging it costs more than it
+returns. **Do not spend a cycle on `check-field-fill` output unless you first restrict it to one
+Actor whose declared fields are all mode-independent.**
+
+**Greenhouse `boards-api.greenhouse.io` — six behaviours measured live on 3 boards /
+1,795 postings (`airbnb` 172, `stripe` 725, `databricks` 898), published as
+`/blog/greenhouse-job-board-json-api`:**
+1. **No pagination at all, and it fails open.** `page`/`per_page`/`limit` are accepted and
+   silently discarded — `?content=true` and `?content=true&per_page=5&page=1&limit=5` returned
+   **byte-identical 2,457,290-byte** bodies for `airbnb`. So the whole board always arrives in
+   one response: `databricks` = 898 postings = **9,859,357 bytes (9.9 MB)**. On a memory-capped
+   container the body + parsed object graph is the real constraint, not request count or rate
+   limits.
+2. **`content=true` is an 18.6x size multiplier** (`airbnb` 132,397 B -> 2,457,290 B). Only ask
+   for it when descriptions are genuinely needed.
+3. `content` is **entity-escaped HTML** (`&lt;div class=&quot;...`) — must be decoded once before
+   parsing, else an HTML parser sees one text node and extracts nothing (we already do this,
+   `src/main.js:655`).
+4. **No salary and no employment-type key exists** in the union of keys over all 172 `airbnb`
+   postings (nor on the other two boards). Pay-transparency text lives inside the `content` HTML,
+   which is why our Greenhouse path decodes `content` on every run regardless of
+   `includeDescription`.
+5. **A posting's `departments[]` carries the LEAF only**, with the parent referenced by bare
+   `parent_id` not present in the row (`{"id":247,"name":"Business Development","parent_id":73691}`
+   -> `73691` = `"Sales & Partnerships"`). This is the common case, not an edge case:
+   **161/172 `airbnb`** and **584/898 `databricks`** postings. And `/departments` is **flat** —
+   `airbnb` returns 61 nodes, flattening yields the same 61 because every `children` array is
+   empty, so you assemble the path from `parent_id` pointers yourself. The list is also an
+   unfiltered internal taxonomy dump (`4. Prospecting (DONOTUSE)`, `5. (DoNotUse) Temp`).
+6. **No `isRemote` field; remote/hybrid hides in a board-specific `metadata` array, or nowhere.**
+   `airbnb` 172/172 postings carry `Workplace Type`+`Is this job part of ACC?`; `databricks`
+   898/898 carry `Company Assignment`+`Career Page Posting Category` (no workplace type at all);
+   `stripe` **0/725** carry any metadata. There is therefore no generic Greenhouse remote
+   extractor — only case-insensitive matching on the field *name* (we use `/workplace type/i`)
+   plus a free-text `location` fallback, accepting that some boards never publish it.
+7. `application_deadline` is a declared field populated on **1 of 1,795** postings — treat as
+   absent; `first_published`/`updated_at` are the real timestamps.
+Bogus board slug -> clean `404` (friendlier than Workday, where a wrong tenant dies at the
+DNS/proxy layer with no status code). **No code change was needed** — the Actor already handles
+1-6 correctly; this was a pure content/top-of-funnel deliverable.
+
+**Why a per-source deep-dive was the right BUILD-slot pick:** `bin/traffic` says the #1 and #3
+verified-traffic posts are `tmview-trademark-search-api-no-key` (16 visitors/7d) and
+`workday-career-site-json-api` (10) — both *dedicated single-source "does this site have a public
+API" deep-dives*, not multi-source overviews. `ats-job-board-json-apis-six-shapes` covers
+Greenhouse in one paragraph and does not rank for Greenhouse-specific queries. Given NICHES.md's
+standing conclusion (5 Store axes + the feature-gap axis all swept clean; the gap is top-of-funnel
+volume, not supply), **cloning the proven traffic-winning post shape onto a source we already
+scrape is the highest-probability growth move available in a BUILD slot** — the data costs ~4
+curls because the Actor's code is already the ground truth. Remaining untapped candidates of the
+same shape: Ashby, Lever, SmartRecruiters, Recruitee, Workable (each currently one paragraph in
+the six-shapes post).
