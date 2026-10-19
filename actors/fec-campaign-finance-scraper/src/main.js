@@ -884,7 +884,20 @@ try {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
           ...committeeClassification(c),
-          candidateId: c.candidate_id ?? c.committee?.candidate_ids?.[0] ?? null,
+          // schedule_a's own `candidate_id` is always null on every row we've observed (verified
+          // live on both a joint fundraising committee and a plain principal campaign committee)
+          // -- the receiving committee's `candidate_ids` is the only real source. A JFC routinely
+          // lists 2+ ids (e.g. "CASSIDY PERDUE SULLIVAN TILLIS VICTORY FUND" -> 4 Senate
+          // candidates, verified live), so picking `[0]` unconditionally silently attributed every
+          // JFC contribution to whichever candidate happened to be listed first and dropped the
+          // rest -- the exact same single-element-flattening bug class already fixed on
+          // `sec-insider-trades-scraper` (owners[0]) and `uk-find-a-tender-scraper` (awards[0]).
+          // Only collapse to a single id when it is unambiguous; otherwise leave it null (matching
+          // this field's own documented "null for PACs/parties" rule, which a JFC falls under)
+          // and surface the full list in `candidateIds` so a buyer can see who actually benefits.
+          candidateId: c.candidate_id
+            ?? (c.committee?.candidate_ids?.length === 1 ? c.committee.candidate_ids[0] : null),
+          candidateIds: (c.committee?.candidate_ids?.length ?? 0) > 1 ? c.committee.candidate_ids : null,
           transactionId: c.transaction_id ?? null,
           subId: c.sub_id ?? null,
           imageNumber: c.image_number ?? null,

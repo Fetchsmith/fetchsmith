@@ -228,6 +228,13 @@
         ],
         "title": "Receiving committee name (contributions mode)"
       },
+      "candidateIds": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "All candidates a joint fundraising committee splits this contribution across, only present when there are 2+ (contributions mode)"
+      },
       "committeeType": {
         "type": [
           "string",

@@ -111,7 +111,8 @@ One item per itemized donor contribution:
 | `contributorAggregateYtd` | This donor's running total given to the same committee this cycle, as computed by the FEC. |
 | `committeeId`, `committeeName` | The receiving committee. |
 | `committeeType`, `committeeDesignation` | The FEC's own committee classification, e.g. `"Super PAC (Independent Expenditure-Only)"`, `"PAC - Qualified"`, `"House"` (a candidate's principal committee) and `"Unauthorized"`/`"Principal campaign committee"`/`"Joint fundraiser"`. Straight from the FEC's own codes, not a guess — see the FAQ. |
-| `candidateId` | The committee's associated candidate, when the committee is a candidate committee (`null` for PACs/parties). |
+| `candidateId` | The committee's associated candidate, when the committee is a candidate committee or a joint fundraising committee for exactly one candidate (`null` for PACs/parties, and `null` — not a guess — when the receiving committee is a joint fundraising committee for more than one candidate at once; see `candidateIds`). |
+| `candidateIds` | Only present (and only ever 2+ entries) when the receiving committee is a joint fundraising committee splitting the money across several candidates at once, e.g. a multi-candidate "Victory Fund" — `null` otherwise. A JFC's own contribution records never carry a single candidate id (verified live), so when more than one candidate benefits we surface the whole list instead of silently picking one and dropping the rest. |
 | `transactionId`, `subId` | The FEC's own identity for this transaction — `transactionId` is the filer's id (stable across amendments of the same transaction), `subId` is the FEC's row id. Use these to dedup or to join back to the FEC. They matter: the same donor giving the same amount twice on the same day is two real transactions that are otherwise identical row-for-row. |
 | `imageNumber`, `pdfUrl` | The FEC's own scanned-image identifier for the original filing, and a direct link to that PDF page — the primary source document behind the row. |
 
@@ -133,6 +134,7 @@ One item per itemized donor contribution:
   "committeeType": "Party - Qualified",
   "committeeDesignation": "Unauthorized",
   "candidateId": null,
+  "candidateIds": null,
   "transactionId": "SA11AI_682682199",
   "subId": "4021120251167375831",
   "imageNumber": "202609149904200417",
@@ -316,6 +318,9 @@ The FEC's search matches the token anywhere in the filed name, including middle 
 
 **What do the `candidateStatus` letters mean?**
 Straight from the FEC: `C` = present candidate, `F` = future candidate, `N` = not yet a candidate, `P` = prior candidate. `party`, `office` and `incumbentChallenge` are already decoded to readable text for you; this one field stays as the FEC's raw code so it round-trips cleanly back into FEC queries.
+
+**A contribution went to a "Victory Fund" — why is `candidateId` null instead of naming a candidate? (v0.1.68)**
+Because the money is split across more than one candidate, and we'd rather tell you that than guess. Schedule A's own `candidate_id` field is always null, on every contribution we've checked — the real link is the receiving committee's `candidate_ids` list. For a committee tied to exactly one candidate (a principal campaign committee, or a single-candidate "Victory Fund") that list has one entry and `candidateId` is set from it as before. But a **joint fundraising committee** routinely splits one donor's check across several candidates at once — e.g. `CASSIDY PERDUE SULLIVAN TILLIS VICTORY FUND` (live-verified) lists four Senate candidates (`S4AK00214`, `S4GA11285`, `S4LA00107`, `S4NC00162`) on every one of its contribution rows. Before this build, the code picked that list's first entry unconditionally, so every contribution to a multi-candidate JFC was silently attributed to whichever candidate happened to be listed first — the same single-element-flattening bug already fixed on this fleet's `sec-insider-trades-scraper` (first-reporting-owner-only) and `uk-find-a-tender-scraper` (first-lot-award-only). Now: `candidateId` is only ever set when exactly one candidate benefits, and `candidateIds` carries the full list whenever there are two or more, so the data isn't lost — just not falsely narrowed to one name.
 
 **Why is `district` `"00"` for a Senator?**
 `00` is the FEC's placeholder for offices that have no House district — President, Senate, and at-large House seats.
