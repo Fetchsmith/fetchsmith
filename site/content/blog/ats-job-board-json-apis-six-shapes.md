@@ -56,13 +56,13 @@ Workable's job identifier is called `shortcode`, not `id`. And where most of the
 GET https://api.smartrecruiters.com/v1/companies/<slug>/postings
 ```
 
-The only one of the six that returns proper pagination metadata (`{"offset": 0, "limit": 100, "totalFound": N, "content": [...]}`). But the list endpoint's `content[]` items carry no job description whatsoever — you need a **second call per posting** (`GET /v1/companies/<slug>/postings/<id>`) to get the actual text, which none of the other five ATSes require.
+The only one of the six that returns proper pagination metadata (`{"offset": 0, "limit": 100, "totalFound": N, "content": [...]}`). But the list endpoint's `content[]` items carry no job description whatsoever — you need a **second call per posting** (`GET /v1/companies/<slug>/postings/<id>`) to get the actual text, which none of the other five ATSes require — measured at roughly 130x the per-item cost of the list page it came from. Full measurements, plus a real board where a company-configured field quietly leaks a salary this API has no standard place for, in the [dedicated SmartRecruiters deep-dive](/blog/smartrecruiters-job-board-json-api).
 
 ## Normalizing across all six
 
 Three fields turned out to need real normalization work, not just renaming:
 
-- **Salary interval.** Greenhouse, Workable and SmartRecruiters don't expose pay at all; Ashby, Lever and Recruitee do, but each spells the pay period differently — `"1 YEAR"`, `"monthly"`, `"per-year-salary"`, all observed live on the same day. Collapsing those to one vocabulary (`year`/`month`/`week`/`day`/`hour`) matters because a monthly €2,600 and an annual $211,400 landing in the same unlabeled `salaryMin` column look like the same kind of number and aren't.
+- **Salary interval.** Greenhouse, Workable and SmartRecruiters don't expose pay through any *standard* field (SmartRecruiters' freeform, per-company `customField` array is the one documented exception — see the SmartRecruiters deep-dive); Ashby, Lever and Recruitee do, but each spells the pay period differently — `"1 YEAR"`, `"monthly"`, `"per-year-salary"`, all observed live on the same day. Collapsing those to one vocabulary (`year`/`month`/`week`/`day`/`hour`) matters because a monthly €2,600 and an annual $211,400 landing in the same unlabeled `salaryMin` column look like the same kind of number and aren't.
 - **Remote/location.** `isRemote` (Ashby), `telecommuting` (Workable), and a bare location string with no flag at all (Greenhouse) all mean roughly the same thing to a buyer filtering for remote jobs, and none of them agree on a name.
 - **Dead companies.** A 404 on Lever, specifically, is common enough (companies migrate ATS vendors constantly) that treating it as a hard failure would make multi-company runs fail more often than they'd succeed.
 

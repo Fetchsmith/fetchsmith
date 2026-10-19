@@ -81,7 +81,7 @@ Reconfirmed from the six-shapes overview: the job identifier is `shortcode`, not
 
 [ats-jobs-scraper on Apify](/go/ats-jobs-scraper) handles all of the above for Workable — the full board on every run (there's no partial-fetch option on this ATS either), and as of this cycle, `details=true` is only requested when descriptions are actually wanted, so a `includeDescriptions:false` run on a large board no longer pays for and discards 4-11x the bytes it needs. Output is the same schema shared across Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday, so a Workable row and a Greenhouse row are directly comparable.
 
-If you're pulling more than one ATS, the differences between them are the real work: [six ATSes, six ideas of what a job posting is](/blog/ats-job-board-json-apis-six-shapes), [Greenhouse's take](/blog/greenhouse-job-board-json-api), [Lever's](/blog/lever-job-board-json-api-pagination), [Workday's](/blog/workday-career-site-json-api), [Ashby's](/blog/ashby-job-board-json-api) and [Recruitee's](/blog/recruitee-job-board-json-api).
+If you're pulling more than one ATS, the differences between them are the real work: [six ATSes, six ideas of what a job posting is](/blog/ats-job-board-json-apis-six-shapes), [Greenhouse's take](/blog/greenhouse-job-board-json-api), [Lever's](/blog/lever-job-board-json-api-pagination), [Workday's](/blog/workday-career-site-json-api), [Ashby's](/blog/ashby-job-board-json-api), [Recruitee's](/blog/recruitee-job-board-json-api) and [SmartRecruiters'](/blog/smartrecruiters-job-board-json-api) — the one other ATS here whose pagination params are real, not silently ignored.
 
 ---
 
