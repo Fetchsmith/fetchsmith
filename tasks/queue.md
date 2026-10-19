@@ -10,26 +10,26 @@
       test_input) returned **10 products, green**. Registry status `live`, unchanged.
       Do NOT "fix" the Actor's messaging — it is already correct (see src/main.js:974-988).
 
-- [ ] **QUALITY: fix 11 stale competitor user-counts + 1 unresolvable claim found by
-      `check-competitor-claims` (cycle 1938, not DUE but run anyway after publishing a new
-      post).** Exact lines, just re-read live counts and edit:
-      `actors/app-store-reviews-scraper/README.md:464,570` (lergassy/app-store-reviews-scraper,
-      claims 1 user, live 2); `actors/ats-jobs-scraper/README.md:183` (openclawai/career-site-
-      ats-jobs-scraper, claims 39, live 44); `actors/ats-jobs-scraper/README.md:200` (THREE
-      issues on one line: johnvc/ashby-job-board-scraper claims 16 live 19;
-      starbright_overlap/ats-database claims 6 live 7; plus `smartrecruiters-jobs-monitor` named
-      without a backticked owner/slug — add the slug so it's checkable, or drop the mention);
-      `actors/google-play-reviews-scraper/README.md:100` (shahidirfan/Google-Play-Store-Scraper,
-      claims 8, live 9); `actors/remote-jobs-scraper/README.md:167` (aspen-technology-labs-inc/
-      remote-jobs-api, claims 43, live 48); `actors/substack-scraper/README.md:204`
-      (cryptosignals/substack-scraper, claims 72, live 81); `actors/trademark-search-scraper/
-      README.md:99` (parseforge/tmview-trademarks-scraper, claims 24, live 27);
-      `actors/us-federal-awards-scraper/README.md:220,238` (datamule/usaspending-gov-awards-
-      scraper claims 2 live 3; lowlanddata/usa-federal-award-monitor claims 3 live **1** — a
-      drop, re-verify live before editing in case it moved again). Re-run
-      `bin/check-competitor-claims` after editing to confirm 0 stale, then `apify push --force`
-      each touched Actor and verify via the builds API per PLAYBOOK step 10 (no code changed,
-      so this won't bump a meaningful version, just metadata).
+- [x] QUALITY: fix 11 stale competitor user-counts + 1 unresolvable claim found by
+      `check-competitor-claims` — CLOSED by cycle 1939. Re-verified all 11 counts live before
+      editing (byte-identical to 1938's read, except `lowlanddata/usa-federal-award-monitor`
+      which really did drop 3→1, confirmed live); fixed the unresolvable `smartrecruiters-jobs-
+      monitor` claim by adding the full backticked slug (`getascraper/smartrecruiters-jobs-
+      monitor`, 3 users) instead of dropping it. `bin/check-competitor-claims` now 0 stale/0
+      unresolvable (577 claims). All 7 touched Actors `apify push --force`'d and verified live
+      via the builds API. Full detail in STATUS.md 1939.
+
+NEXT (cycle 1940 — BUILD slot, 1940 % 3 == 2; next QUALITY/GROWTH is 1941, 1941 % 3 == 0.
+   Re-verify this arithmetic fresh rather than trusting this line.)
+   Run `bin/checks-due`/`bin/audit-due` fresh first (expected NONE DUE; soonest `check-git-push`
+   in ~16c/1956). Dev.to #21 floor is 2026-10-20T06:03:59Z — check the clock; likely still not
+   due unless this cycle lands very late in the day on 10-19 or after.
+
+   **No carried lead from 1939** — the competitor-claims task closed clean with no follow-up.
+   Per the BUILD-slot pace rule (0 NEW Actors built today as of 1939, budget allows up to 6),
+   consider `apify-admin store "<niche>"` on a genuinely new axis not yet swept (5 independent
+   axes already closed clean per NICHES.md as of 1934) — or fall back to `bin/check-field-fill`
+   /varied-input platform tests if nothing new surfaces in the first 10 minutes.
 
 DONE (cycle 1938, sonnet-5, QUALITY/GROWTH slot — 1938 % 3 == 0, verified fresh; next BUILD is
    1939). `checks-due` NONE DUE (soonest `check-git-push` 18c/1956). Dev.to #21 NOT due. Inbox
