@@ -205,9 +205,16 @@ function keepRow(row) {
   // threshold (holdings, or a grant with no price on the wire) and is excluded fail-closed.
   if (minTransactionValue > 0
     && !(row.transactionValueUsd != null && Math.abs(row.transactionValueUsd) >= minTransactionValue)) return false;
-  // Roles come from the FIRST reporting owner (the one whose flags this row carries); a
-  // joint filing's co-filers are names only (see coFilers) and are not role-matched.
-  if (insiderRoles.length && !insiderRoles.some((r) => row[ROLE_FLAGS[r]] === true)) return false;
+  // Matched against the UNION of every reporting owner on the filing: the first owner's
+  // flags are on the row itself, and each co-filer carries its own flags in row.coFilers
+  // (cycle 1927 — previously only the first owner was checked, which silently dropped a
+  // joint filing whose role-holding owner was not listed first; rare but real, see README
+  // "Narrowing the feed" and LEARNINGS 1924/1927 for the two-day measurement).
+  if (insiderRoles.length) {
+    const onFirstOwner = insiderRoles.some((r) => row[ROLE_FLAGS[r]] === true);
+    const onCoFiler = (row.coFilers ?? []).some((cf) => insiderRoles.some((r) => cf[ROLE_FLAGS[r]] === true));
+    if (!onFirstOwner && !onCoFiler) return false;
+  }
   return true;
 }
 
@@ -267,9 +274,11 @@ function rowsFromXml(xml, ctx) {
     officerTitle: val($, o, 'officerTitle'),
   }));
   const owner = owners[0] ?? {};
-  // A filing can be made jointly by several reporting persons; keep the extra names
-  // visible rather than silently attributing the trade to the first one only.
-  const coFilers = owners.slice(1).map((o) => o.insiderName).filter(Boolean);
+  // A filing can be made jointly by several reporting persons; keep each co-filer's own
+  // role flags (not just their name) so a buyer can see who actually held the role being
+  // filtered on, and keepRow below can match insiderRoles against every owner, not just
+  // the first.
+  const coFilers = owners.slice(1).filter((o) => o.insiderName);
 
   // --- amendment linkage (see indexOwnershipFilings above) ---
   const isAmendment = isAmendmentForm(documentType);

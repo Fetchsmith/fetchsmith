@@ -148,9 +148,22 @@ the feed down **before anything is pushed or charged**:
   (`transactionValueUsd: -2000000`) passes a `500000` floor exactly like a $2M purchase. Rows with
   no reportable value — holdings, and grants filed with no price — cannot be shown to clear the
   floor and are excluded.
-- **`insiderRoles`** — any of `officer`, `director`, `tenPercentOwner`, `other`. Matched against the
-  filing's first reporting owner; on a joint filing the other reporting persons appear in
-  `coFilers` as names only and are not role-matched.
+- **`insiderRoles`** — any of `officer`, `director`, `tenPercentOwner`, `other`. Matched against
+  **every** reporting owner on the filing, not just the first: the first owner's flags are on the
+  row itself, and on a joint filing each co-filer's own flags are inside `coFilers` (see below), so
+  a row is kept if ANY reporting owner on it holds a requested role. (Fixed cycle 1927 — previously
+  only the first owner was checked, which silently dropped a joint filing whose role-holding owner
+  was listed second. This is genuinely rare: checked against the full EDGAR daily index on two
+  different trading days, 2026-10-16 (450 Form 4s, 6 joint filings) and 2026-10-14 (296 Form 4s, 22
+  joint filings — a day with several large Blackstone/Silver Lake multi-entity filings, so the
+  *joint-filing* rate itself swings a lot day to day and isn't worth quoting as a stable number).
+  Of those 28 joint filings combined, only **1** actually had a non-first owner holding a role the
+  first owner lacked — issuer AACP, accession `0001213900-26-110405` — the rest were either
+  uniform-flag control chains (a fund + its holding company + its GP, all flagged identically) or
+  had the *individual* filed first with the fuller flag set and their holding entities trailing
+  with a subset, which the old first-owner-only code already handled correctly. So the fix closes
+  a real but low-frequency gap — roughly 1 affected filing per few hundred Form 4s — rather than a
+  frequent one.)
 
 The filters are combined with AND, and they narrow **rows**, not filings: `maxFilingsPerIssuer`
 still decides how far back the run looks, so a strict filter can return few rows from a filer who
@@ -272,7 +285,11 @@ worth naming.
   `includeHoldings: false` a Form-3-only run yields **zero rows** — turn `includeHoldings` on to
   get those positions. Form 5 does carry real transactions.
 - A filing can be made jointly by several reporting persons. The first is used for the
-  `insiderName`/role fields and the rest are listed in `coFilers` rather than dropped.
+  `insiderName`/role fields on the row itself, and the rest are listed in `coFilers`, each
+  carrying its own `insiderName`, `insiderCik`, `isDirector`/`isOfficer`/`isTenPercentOwner`/
+  `isOther` and `officerTitle` — not just a name. `insiderRoles` matches against the union of the
+  first owner and every co-filer (fixed cycle 1927; see "Narrowing the feed" above for how rare
+  the gap this closes actually was).
 - SEC's filing index is newest-first, so `sinceDate` stops paging as soon as it passes the date.
 - **`sinceDate` reaches past EDGAR's inlined filing window, which matters for prolific filers.**
   EDGAR's per-issuer submissions file inlines only the larger of ~1000 filings or the trailing

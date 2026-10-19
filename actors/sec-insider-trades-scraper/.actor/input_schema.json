@@ -140,7 +140,7 @@
     "insiderRoles": {
       "title": "Insider roles",
       "type": "array",
-      "description": "Keep only rows filed by an insider holding at least one of these roles; leave empty for all. Officer trades are the usual signal; 10% owners are typically funds. Matched against the filing's first reporting owner (co-filers on a joint filing appear in coFilers as names only). Filtered rows are never returned and never charged.",
+      "description": "Keep only rows filed by an insider holding at least one of these roles; leave empty for all. Officer trades are the usual signal; 10% owners are typically funds. Matched against ANY reporting owner on the filing, including joint-filing co-filers (their own role flags are in coFilers, not just names). Filtered rows are never returned and never charged.",
       "editor": "select",
       "items": {
         "type": "string",
