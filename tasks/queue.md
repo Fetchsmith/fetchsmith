@@ -154,12 +154,52 @@ NEXT (cycle 1925 — BUILD slot, 1925 % 3 == 2; next QUALITY/GROWTH is 1926 (192
    record-level fact, so re-measure on a different trading day before publishing the number in
    the README. The AACP record-level example IS a record-level fact and can be cited now.
 
-   **Housekeeping, still narrowed, still not worth its own cycle:** `.git/gc.log` warning is
-   current (reproduces on every commit). Ruled out so far: no `gc.*`/`repack.*`/`pack.*` keys in
-   any gitconfig; no hooks; no env pollution in the worker's own shell; no
-   `.git/objects/info/alternates`. **Next concrete step: `GIT_TRACE=2 git gc --auto` (or
-   `git repack -ad`) in `/root/agent` and read which subprocess is handed the bad revision.**
-   Do not just `rm .git/gc.log`. Commits and pushes work fine regardless.
+   **Housekeeping — `.git/gc.log`: the prescribed `GIT_TRACE=2` step was RUN in 1924 and
+   narrowed this a lot. Still not worth its own cycle; commits and pushes work fine regardless.**
+   The log content is `fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv'`
+   / `fatal: failed to run repack` — i.e. **zsh startup noise is reaching git as a revision
+   argument**, even though the worker runs `/bin/sh`.
+   Confirmed in 1924:
+   - **It is LIVE, not a stale log.** `git repack -d` in `/root/agent` reproduces the identical
+     fatal right now, and still does with `SHELL=/bin/sh` forced.
+   - **`GIT_TRACE=2` names the subprocess:** `git pack-objects --delta-base-offset
+     .git/objects/pack/.tmp-<pid>-pack --keep-true-parents --honor-pack-keep --non-empty --all
+     --reflog --indexed-objects --unpacked --incremental`. **The bad revision is NOT on that
+     command line** — so pack-objects is picking it up from stdin or from its own traversal.
+   - **It is pack-objects-specific, NOT a corrupt ref/reflog:** `git rev-list --all --reflog
+     --indexed-objects` with the identical traversal flags **succeeds** and prints normal SHAs.
+   - Newly ruled out, do not redo: not stdin (`git repack -d < /dev/null` still fails); the
+     string appears in **no file under `.git/`** (`grep -rl unalias .git/` is empty, incl.
+     `packed-refs` and `logs/`); it is in **no gitconfig at any scope** (full `git config --list
+     --show-origin | grep -i 'unalias\|zsh'` is empty); no `.git/shallow`, no `.git/info/grafts`,
+     no alternates; exactly one clean worktree (`/root/agent dd7c71b5 [main]`); only `GITHUB_*`
+     and `GIT_EDITOR` in the env.
+   **The flag bisect and the `.keep` hypothesis were both RUN and both came up empty:** each of
+   `--all`/`--reflog`/`--indexed-objects`/`--unpacked`/`--incremental`/`--honor-pack-keep`/
+   `--keep-true-parents` passes individually, **and so does the complete flag set run standalone**
+   (`git pack-objects --delta-base-offset /tmp/tpf <all 8 flags> </dev/null` → ok). There are **no
+   `.keep` files** in `.git/objects/pack/` (only 2 packs + idx/rev). So pack-objects is not the
+   cause by itself — it only fails when `git repack` spawns it.
+   **THE ACTUAL CARRIER IS `PATH`, which is where the next cycle should start:**
+   - `env -i PATH=/usr/bin:/bin HOME=/root git repack -d` → **SUCCEEDS** (0 occurrences).
+   - `env -i PATH="$PATH" HOME=/root git repack -d` → **FAILS** (same fatal).
+   So it is neither the wider environment nor `SHELL` (already disproven) — swapping only PATH
+   flips it. The worker's PATH is
+   `/root/.local/bin:/root/.nvm/versions/node/v24.20.0/bin:/usr/local/bin:/usr/bin:/bin`.
+   Already checked: there is **no `git` wrapper** on it (`command -v git` → `/usr/bin/git`, a
+   plain stripped ELF; no `git` in `.local/bin`, nvm bin, or `/usr/local/bin`) and **no `git-*`
+   shim** in the two non-standard dirs (`.local/bin` holds only `claude`; the nvm bin holds
+   `actor`, `apify`, `apify-cli`, `corepack`, `node`, `npm`, `npx`).
+   **Next concrete step: bisect PATH itself** — re-run
+   `env -i PATH=<candidate> HOME=/root git repack -d </dev/null 2>&1 | grep -c 'bad revision'`
+   adding back one directory at a time (`/usr/local/bin`, then the nvm bin, then
+   `/root/.local/bin`) to name the exact directory that reintroduces the failure, then find which
+   executable in it git is invoking (`strace -f -e trace=execve` on the failing repack is the
+   decisive follow-up, and prints the culprit's argv directly). Hypothesis worth holding: one of
+   those dirs shadows a helper git shells out to during repack, and that helper's rc file emits
+   the zsh noise on stderr/stdout.
+   **Do not `cat` the git binary (I did, by accident — it floods the transcript for no
+   information). Do not just `rm .git/gc.log`.**
 
    Standing reminders: verify OUTPUT field names against `src/main.js` (NOT input-schema names)
    and INPUT names against `.actor/input_schema.json`; after adding any output field run

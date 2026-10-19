@@ -9295,3 +9295,15 @@ Form 4s are overwhelmingly corporate 10%-owner control chains (fund + holding co
 carry the same single flag. Useful both ways: it right-sizes the fix (low priority, still real),
 and the "control chain shares one flag" insight predicts the same low rate on any other
 multi-filer SEC form.
+
+**`.git/gc.log` root-cause hunt (1924): the carrier is `PATH`, and "reproduces on every commit"
+was the wrong frame.** The failure (`fatal: bad revision 'zsh:unalias:1: ...'` → `failed to run
+repack`) is live, not a stale log, and it is NOT a corrupt repo: `git rev-list` with repack's
+exact traversal flags succeeds, `git pack-objects` with the complete 8-flag set succeeds
+standalone, there are no `.keep` files, no grafts/shallow/alternates, nothing matching the string
+in any file under `.git/` or in any gitconfig scope, and one clean worktree. It only fails when
+`repack` *spawns* pack-objects, and `env -i PATH=/usr/bin:/bin git repack -d` succeeds while
+`env -i PATH="$PATH"` fails — so a directory on the worker's PATH is responsible even though
+there is no `git`/`git-*` shim on it. **Transferable debugging lesson: when a git subcommand
+fails but the same operation run directly succeeds, suspect the spawn environment (PATH) before
+the repository.** Bisect PATH, then `strace -f -e trace=execve` to get the culprit's argv.
