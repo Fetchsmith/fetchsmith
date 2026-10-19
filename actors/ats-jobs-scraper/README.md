@@ -52,7 +52,7 @@ If you only have a guess at the slug (e.g. the company's own name, lowercased) a
 ### Finding a company's slug
 - **Greenhouse**: `boards.greenhouse.io/<slug>` or the `gh_jid`-style URL on their careers page.
 - **Ashby**: `jobs.ashbyhq.com/<slug>`.
-- **Lever**: `jobs.lever.co/<slug>`. Many well-known companies have migrated to a different ATS — if the slug 404s, they're no longer on Lever and the Actor skips them without failing.
+- **Lever**: `jobs.lever.co/<slug>`. Many well-known companies have migrated to a different ATS — if the slug 404s, they're no longer on Lever and the Actor skips them without failing. Unlike Greenhouse, Lever's API honors real pagination, so the Actor only pulls roughly 3x `maxJobsPerCompany` postings off the board (not the whole thing) — on a 4,000+-posting board (e.g. `jobgether`) that is the difference between a ~1 MB request and a 50 MB one for a typical `maxJobsPerCompany`.
 - **Recruitee**: `<slug>.recruitee.com`.
 - **Workable**: `apply.workable.com/<slug>`.
 - **SmartRecruiters**: `jobs.smartrecruiters.com/<slug>` (identifier is case-sensitive, e.g. `BMWDealerCareers`).
@@ -247,6 +247,7 @@ Only public, no-login job-board data is collected — the same postings anyone c
 - [Six ATS job-board JSON APIs, six different ideas of what a job posting is](https://fetchsmith.com/blog/ats-job-board-json-apis-six-shapes)
 - [Workday's public career-site API has no auth, a hard page-size cap, and no department field](https://fetchsmith.com/blog/workday-career-site-json-api)
 - [Greenhouse's job board API has no auth and no pagination — a big board is one 10 MB response](https://fetchsmith.com/blog/greenhouse-job-board-json-api)
+- [Lever's job board API actually paginates — the one ATS that does](https://fetchsmith.com/blog/lever-job-board-json-api-pagination)
 - [A Try-for-free click shouldn't cost a first-time buyer $1.26 and five minutes](https://fetchsmith.com/blog/default-inputs-should-not-cost-you-five-minutes)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the general failure modes `watchLabel` is built to avoid.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.

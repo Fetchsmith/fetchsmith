@@ -32,7 +32,7 @@ Ashby is the richest of the six by far — `isRemote`, `workplaceType`, both `de
 GET https://api.lever.co/v0/postings/figma?mode=json
 ```
 
-Where Greenhouse and Ashby wrap results in an object, Lever's response is a **bare array** — no `{"jobs": [...]}`, just `[...]` at the top level. The job title lives in a field called `text`, not `title`. Location, team and commitment type are all folded into a `categories` object instead of top-level fields. And a fair number of well-known company slugs that "should" be on Lever simply 404 — `plaid`, `brex`, `ramp`, `figma`, and `huggingface` all return 404 on `api.lever.co` (re-verified live, two separate measurement cycles), because they've since migrated to a different ATS. A 404 here means "moved," not "broken" — worth skipping quietly rather than failing the whole run.
+Where Greenhouse and Ashby wrap results in an object, Lever's response is a **bare array** — no `{"jobs": [...]}`, just `[...]` at the top level. The job title lives in a field called `text`, not `title`. Location, team and commitment type are all folded into a `categories` object instead of top-level fields. And a fair number of well-known company slugs that "should" be on Lever simply 404 — `plaid`, `brex`, `ramp`, `figma`, and `huggingface` all return 404 on `api.lever.co` (re-verified live, three separate measurement cycles), because they've since migrated to a different ATS. A 404 here means "moved," not "broken" — worth skipping quietly rather than failing the whole run. Lever has its own dedicated write-up too: [it's the one ATS here whose pagination actually works](/blog/lever-job-board-json-api-pagination), which matters once a board hits a few thousand postings.
 
 ## Recruitee: numbers that are actually strings
 

@@ -95,6 +95,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [One Form 4 can name ten reporting owners — and EDGAR's daily index lists the filing once per owner](https://fetchsmith.com/blog/sec-form-4-joint-filings-reporting-owners)
 - [A committee's FEC candidate_ids field says "plural" 430 times — and 426 of those are one person, not a joint fundraiser](https://fetchsmith.com/blog/fec-committee-candidate-ids-plural-is-not-joint-fundraising)
 - [Greenhouse's job board API has no auth and no pagination — a big board is one 10 MB response](https://fetchsmith.com/blog/greenhouse-job-board-json-api)
+- [Lever's job board API actually paginates — the one ATS that does](https://fetchsmith.com/blog/lever-job-board-json-api-pagination)
 
 ## Layout
 

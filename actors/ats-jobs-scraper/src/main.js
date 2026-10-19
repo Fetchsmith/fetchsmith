@@ -706,7 +706,17 @@ async function fetchAshby(slug) {
 }
 
 async function fetchLever(slug) {
-  const res = await requestWithRetry({ url: `https://api.lever.co/v0/postings/${encodeURIComponent(slug)}?mode=json`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
+  // Unlike Greenhouse (no pagination at all, confirmed cycle 1940), Lever's postings endpoint
+  // honors `skip`/`limit` for real (confirmed this cycle: skip=5&limit=5 returns the NEXT 5
+  // postings, not the same 5 again) and raises no error at limit=5000 on a 4,200+-posting board.
+  // Fetching the whole board unconditionally therefore wastes bandwidth/memory on large boards
+  // for no reason a buyer with a small maxJobsPerCompany would ever need — one real board
+  // (`jobgether`) is 4,225 postings / 50 MB in a single response. Apply the same
+  // scanCapPerCompany*3 raw-fetch buffer already used by fetchWorkday/fetchSmartRecruiters (the
+  // buffer, not the exact scan cap, because filters run after the fetch and need headroom to
+  // still find enough matching rows within the capped window).
+  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, 100), watchMode ? SEED_CAP : 2000);
+  const res = await requestWithRetry({ url: `https://api.lever.co/v0/postings/${encodeURIComponent(slug)}?mode=json&skip=0&limit=${rawCap}`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
   // Most well-known "Lever companies" have migrated to another ATS and now 404 here — that is
   // expected, not a failure, and must not fail the whole run (confirmed cycle 196: plaid, brex,
   // ramp, figma, huggingface, cohere, eventbrite, kickstarter all 404).
