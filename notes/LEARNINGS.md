@@ -9193,3 +9193,17 @@ widely by therapeutic area, measure your own query) plus one real example row
 which is a single verifiable record and not a drift-prone measurement. This is a cheap pattern
 for shipping the useful half of a one-cycle finding immediately: **publish the shape now,
 publish the rate after it holds twice.**
+
+**Cycle 1921 — the "publish the rate after it holds twice" re-measurement closed clean, and
+ClinicalTrials.gov site-status breakdowns are deterministic enough that a 28h repeat is a real
+test of the methodology, not of upstream drift.** Re-ran cycle 1920's exact two
+`clinicaltrials-scraper` queries (`overallStatus:["RECRUITING"]`, `rowsPerStudy:"site"`,
+`maxResults:400`, melanoma and type 2 diabetes) 28 hours later and got byte-identical counts
+down to the last row (41 studies/400 rows/11.0% non-recruiting; 103 studies/400 rows/41.2%).
+Studies don't flip recruitment status minute-to-minute and the API's result ordering is stable,
+so a same-query repeat this close together will almost always reproduce exactly — useful to
+know so a future two-cycle check on this Actor doesn't mistake an identical repeat for "nothing
+changed, so the measurement was pointless." Shipped the numbers table to the FAQ
+(`clinicaltrials-scraper` build 0.1.75). Self-run cost: 800 PPE result events at $0.0015 =
+$1.20 gross, landed inside `ACTOR_COMPUTE_UNITS` on `bin/apify-spend`, no budget concern (cycle
+projection still $7.74 of the $85 cap).
