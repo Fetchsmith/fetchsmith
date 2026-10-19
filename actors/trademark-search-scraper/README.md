@@ -161,7 +161,7 @@ trademarks (up from 114 at cycle 1360) — and this section already named 86 of 
 in-effect price of the remaining 31 was pulled live via the shared `bin/_unit_price.py` helper
 (also repointed this cycle, closing this Actor's slice of `0-TODO-h1396-repoint-batch-pricers`),
 every charge event and plan tier included. One is a genuine undercut and is disclosed here:
-`thriftykiwi/trademark-search-aggregator` (2 users) reads the USPTO trademark search and EUIPO
+`thriftykiwi/trademark-search-aggregator` (3 users) reads the USPTO trademark search and EUIPO
 TMview together — status, owner, Nice classes and the official record link — for a flat $0.001 per
 returned mark with no start fee, half our $0.002 at every tier. It is a real substitute if USPTO
 and TMview-covered EU offices are all you need; what you pay us for is those two plus 68 more

@@ -9678,3 +9678,11 @@ findings-post rather than a fix unless the live data says otherwise.
   grep in refs/packed-refs/logs, so it's likely a mis-decoded byte sequence rather than literal
   text. Next real lead, untried in all four passes: diff `.git/objects` against a fresh
   `git clone` of the same remote to isolate the one corrupt object by elimination.
+
+Cycle 1947 (sonnet-5): check for stale competitor-claim targets before spending a platform run on
+"varied-input Actor testing" — `scholarship-scraper` is registry `status=retired` (bold.org's
+Vercel bot-wall block, documented since cycle ~1187) and an `apify call` against it just
+reconfirms the known-correct 0-row SUCCEEDED behavior, wasting a run. LEARNINGS already said this
+at line ~8419 ("scholarship-scraper is RETIRED — skip") but it wasn't checked before picking a
+test target this cycle. Check `actors/registry.json`'s `status` field for a candidate Actor before
+calling it, not just its name familiarity.
