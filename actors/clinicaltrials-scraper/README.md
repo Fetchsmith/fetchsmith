@@ -217,7 +217,12 @@ The trial's **own** dates are a different story and are deliberately *not* flagg
 **A study says `RECRUITING` — are all of its sites recruiting? (No, and it is not close.)**
 `overallStatus` is the **study's** status; every site row additionally carries that facility's **own** `site.status`, and the two routinely disagree. A multi-site trial opens and closes sites on a rolling schedule, so a trial that is globally recruiting can have sites that have not opened yet, have finished accrual, or were withdrawn before enrolling anyone — the sample row above is a real `WITHDRAWN` site inside a `RECRUITING` phase-3 study (NCT06246916, pulled live 2026-10-19), and a single `overallStatus: ["RECRUITING"]` query can return `NOT_YET_RECRUITING`, `ACTIVE_NOT_RECRUITING`, `COMPLETED`, `WITHDRAWN`, `SUSPENDED` and `TERMINATED` site rows alongside the open ones.
 
-There is no input filter for this — ClinicalTrials.gov's own sidebar filters on the study, not the site — so filter `site.status` yourself on the returned rows: keep `RECRUITING` for "can refer a patient today", add `NOT_YET_RECRUITING` for a pipeline view, and drop `WITHDRAWN`/`TERMINATED`/`SUSPENDED` before anyone contacts a facility. Do not assume this is a rounding error: the share of non-recruiting site rows varies widely by therapeutic area, so measure it on your own query rather than taking a single headline rate.
+There is no input filter for this — ClinicalTrials.gov's own sidebar filters on the study, not the site — so filter `site.status` yourself on the returned rows: keep `RECRUITING` for "can refer a patient today", add `NOT_YET_RECRUITING` for a pipeline view, and drop `WITHDRAWN`/`TERMINATED`/`SUSPENDED` before anyone contacts a facility. Do not assume this is a rounding error: the share of non-recruiting site rows varies widely by therapeutic area, so measure it on your own query rather than taking a single headline rate — two examples, measured live and reproduced identically 28 hours apart (2026-10-19):
+
+| Query (`overallStatus: ["RECRUITING"]`) | Studies | Site rows | Non-recruiting | Breakdown |
+|---|---|---|---|---|
+| `conditions: "melanoma"` | 41 | 400 | **11.0%** | 30 `NOT_YET_RECRUITING`, 10 `ACTIVE_NOT_RECRUITING`, 4 `COMPLETED` |
+| `conditions: "type 2 diabetes"` | 103 | 400 | **41.2%** | 87 `NOT_YET_RECRUITING`, 54 `ACTIVE_NOT_RECRUITING`, 12 `WITHDRAWN`, 9 `COMPLETED`, 2 `SUSPENDED`, 1 `TERMINATED` |
 
 **Does `rowsPerStudy: "site"` change what `watchLabel` tracks?**
 No — "new" is always decided per **study** (`nctId`), never per site row. A trial that was already delivered stays excluded even if `rowsPerStudy` or another display-only setting changes between runs; only filters that change which studies match start a fresh baseline.
