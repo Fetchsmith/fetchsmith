@@ -98,6 +98,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Lever's job board API actually paginates — the one ATS that does](https://fetchsmith.com/blog/lever-job-board-json-api-pagination)
 - [Ashby's job board API: no pagination, no size cap, and pay bands baked into one number](https://fetchsmith.com/blog/ashby-job-board-json-api)
 - [Workable's job board API: no pagination, and the description flag is the one that's actually worth gating](https://fetchsmith.com/blog/workable-job-board-json-api)
+- [USPTO's own trademark APIs now all require a key — the keyless answer is a different office's database](https://fetchsmith.com/blog/uspto-trademark-api-needs-a-key)
 - [Recruitee's job board API: one real filter hiding among ignored ones, and a 42 MB board that's 97% pasted screenshots](https://fetchsmith.com/blog/recruitee-job-board-json-api)
 - [SmartRecruiters' job board API: real pagination, a real per-posting cost, and one board that quietly leaks a salary nobody else publishes](https://fetchsmith.com/blog/smartrecruiters-job-board-json-api)
 
