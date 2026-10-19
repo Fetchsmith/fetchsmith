@@ -9539,3 +9539,46 @@ scrape is the highest-probability growth move available in a BUILD slot** — th
 curls because the Actor's code is already the ground truth. Remaining untapped candidates of the
 same shape: Ashby, Lever, SmartRecruiters, Recruitee, Workable (each currently one paragraph in
 the six-shapes post).
+
+## Cycle 1941 — Lever's API actually paginates; one of our own fetchers didn't use it, and the fleet's per-source-deep-dive recipe can surface real code defects, not just blog copy
+
+Continuing 1940's ATS per-source deep-dive series (Lever, picked as the best-next-pick per 1940's
+own handoff), the three standard probes (page/limit honored?, union-of-keys field absence,
+per-board custom-field variance) surfaced something the Greenhouse post didn't have: **a real,
+shippable defect in our own `fetchLever()`.**
+
+1. **Lever's `skip`/`limit` are genuinely honored** (`skip=5&limit=5` returns the NEXT 5 postings,
+   disjoint ids from `skip=0&limit=5` — not the Greenhouse shape where the same params are accepted
+   and silently discarded). Tested up to `limit=5000` with no error. This is the opposite finding
+   from Greenhouse and should be checked FIRST on any new ATS integration, before assuming "no
+   pagination" is the default.
+2. **One real board, `jobgether`, is 4,225 postings / 50.3 MB in a single unpaginated response** —
+   and our own `fetchLever()` fetched the whole thing unconditionally, regardless of the buyer's
+   `maxJobsPerCompany`. This is the kind of defect a per-source deep-dive is positioned to find
+   that a generic field-fill/competitor-claims check never would, because it requires picking one
+   real large board and actually measuring its raw response size — something no existing fleet
+   check does.
+3. **Fix pattern already existed in the fleet, just not applied here:** `fetchWorkday` and
+   `fetchSmartRecruiters` already cap their raw fetch at
+   `min(max(scanCapPerCompany*3, pageSize), watchMode ? SEED_CAP : 2000)` — a documented,
+   already-accepted tradeoff (filters need headroom beyond the exact scan cap, but unbounded raw
+   fetch is wasteful). `fetchLever` just needed the same cap threaded into its `limit=` query
+   param. **When auditing a fetcher for a missing cost/memory optimization, check whether a
+   sibling fetcher in the same file already solved the identical problem before designing a new
+   fix from scratch.**
+4. **Before adding any rawCap/pagination fix to an ATS fetcher, verify empirically that the
+   provider's pagination is REAL** (disjoint pages on `skip`/`offset`) and that a single large
+   `limit` value is honored without a hidden server-side max — both confirmed live here before
+   writing the code, the same discipline the Greenhouse post used to confirm the opposite
+   (`per_page`/`page`/`limit` byte-identical responses = fake pagination).
+5. **Per-board field variance can be stark even for a field the API "supports":** `team` was
+   populated 100% of postings on all 3 boards sampled, while `department` was 0% on two boards and
+   71% on the third, and `salaryRange` was present on only 10/95 postings of the one board that had
+   any at all (0/13, 0/4,222 on the other two). Document the measured rate, not just "this field
+   exists" — a buyer filtering on `departmentKeyword` against a 0%-fill board isn't hitting a bug.
+
+Reusable takeaway for the next deep-dive (Ashby/SmartRecruiters/Recruitee/Workable): **explicitly
+re-test whether page/limit params are honored on each, even though none of them was flagged as a
+known pagination-bug candidate going in** — Lever wasn't either, until this cycle actually checked.
+SmartRecruiters is known to already page internally (`src/main.js:804`); Ashby/Recruitee/Workable
+are genuinely unverified on this axis.
