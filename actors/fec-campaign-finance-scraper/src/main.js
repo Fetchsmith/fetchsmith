@@ -402,7 +402,11 @@ async function fecGet(path, params) {
   const url = new URL(API_BASE + path);
   url.searchParams.set('api_key', API_KEY);
   for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== '') url.searchParams.set(k, v);
+    if (v === undefined || v === '') continue;
+    // OpenFEC's own convention for "match any of these" is a repeated query param
+    // (candidate_id=A&candidate_id=B), not a comma-joined value -- verified live against
+    // /v1/candidates/ (cycle 1937, resolving a committee's multi-candidate_ids list).
+    if (Array.isArray(v)) { for (const item of v) url.searchParams.append(k, item); } else url.searchParams.set(k, v);
   }
   // got-scraping defaults to throwHttpErrors:false (verified live 2026-09-24: a 403/422/404
   // arrives as an ordinary RESOLVED response, never a thrown error). Set explicitly because the
@@ -537,6 +541,61 @@ async function fetchTotals(id) {
     log.warning(`totals lookup failed for ${id}: ${err.message}`);
     return null;
   }
+}
+
+// Cycle 1937: a committee's `candidate_ids` having 2+ entries does NOT mean a joint
+// fundraising committee splitting money across several people (the v0.1.68/0.1.70 assumption).
+// A full registry scan found 430/20,903 (2.06%) cycle-2026 committees with 2+ ids, of which
+// only 4 are JFCs (`designation:"J"`) -- the bulk (P=334, A=28) is ONE PERSON who holds
+// several FEC candidate ids at once (a House id and a Senate id, e.g. Durbin's
+// `H2IL20026`/`S6IL00151`), verified by resolving ids to names on two random samples (12/12,
+// then 8/8, same human). Exact name-string equality under-reports this: the FEC spells the
+// same person differently across ids ("DURBIN, RICHARD JOSEPH" vs "DURBIN, RICHARD J."), so
+// the match below is surname + first-initial, not strict equality.
+function normPerson(name) {
+  if (!name) return null;
+  const cleaned = name.toUpperCase()
+    .replace(/\b(MR|MRS|MS|DR|HON|JR|SR|I{1,3}|IV)\b\.?/g, '')
+    .replace(/[^A-Z, ]/g, ' ');
+  const parts = cleaned.split(',').map((p) => p.trim()).filter(Boolean);
+  if (!parts.length) return null;
+  const surname = parts[0].split(/\s+/)[0] ?? '';
+  const first = parts.length > 1 ? (parts[1].split(/\s+/)[0] ?? '') : '';
+  return `${surname}|${first.slice(0, 1)}`;
+}
+
+const candidateNameCache = new Map(); // candidate_id -> name|null, resolved at most once per run
+const committeeCandidateCache = new Map(); // committee_id -> { candidateId, candidateIds }
+
+// Decides what `candidateId`/`candidateIds` should be for a committee, given its own
+// `candidate_ids` list. 0 or 1 ids: unambiguous, no lookup needed. 2+ ids: resolve names
+// (cached per candidate id, decision cached per committee, so a popular committee's rows
+// only pay for this once per run) and check whether every id is the SAME person. If so,
+// `candidateId` is still populated (prefer the id whose office letter matches this
+// committee's own `committee_type`, e.g. "S" -> an "S"-prefixed id) because there is only one
+// real-world candidate to name; only genuinely different people (the real JFC case) null it.
+async function resolveCandidateIds(committee) {
+  const ids = committee?.candidate_ids ?? [];
+  if (ids.length <= 1) return { candidateId: ids[0] ?? null, candidateIds: null };
+  const committeeId = committee.committee_id ?? null;
+  if (committeeId && committeeCandidateCache.has(committeeId)) return committeeCandidateCache.get(committeeId);
+  const missing = ids.filter((id) => !candidateNameCache.has(id));
+  if (missing.length) {
+    try {
+      const body = await fecGet('/candidates/', { candidate_id: missing, per_page: 100 });
+      for (const cand of body.results ?? []) candidateNameCache.set(cand.candidate_id, cand.name ?? null);
+    } catch (err) {
+      if (err.isRateLimit) throw err;
+      log.warning(`candidate name lookup failed for committee ${committeeId}: ${err.message}`);
+    }
+    for (const id of missing) if (!candidateNameCache.has(id)) candidateNameCache.set(id, null);
+  }
+  const people = new Set(ids.map((id) => normPerson(candidateNameCache.get(id))).filter(Boolean));
+  const samePerson = people.size === 1;
+  const preferredId = ids.find((id) => committee.committee_type && id.startsWith(committee.committee_type)) ?? ids[0];
+  const decision = { candidateId: samePerson ? preferredId : null, candidateIds: ids };
+  if (committeeId) committeeCandidateCache.set(committeeId, decision);
+  return decision;
 }
 
 // FEC fails CLOSED on some unrecognised filter VALUES (format-validated fields -- committee_id,
@@ -807,6 +866,21 @@ try {
         // re-delivers (and re-charges for) the whole report on every amendment. transaction_id is
         // the filer's own id and stays stable across amendments (confirmed live, see README).
         watchId = watchKeyOf(c);
+        // CORRECTED cycle 1937 -- 0.1.70's fallback to `committee.candidate_ids` when
+        // `candidate_id` was null is REMOVED, not extended, after live verification showed it was
+        // built on a false premise. In schedule_b the embedded `committee` is always the PAYING
+        // committee, never the recipient, so falling back to its candidate_ids attributes the
+        // payment to WHOEVER OWNS THE PAYING COMMITTEE, regardless of who actually got paid --
+        // verified live on Durbin's own leadership PAC (C00148999, candidate_ids
+        // [H2IL20026, S6IL00151]): a real disbursement to "MELISSA BEAN FOR CONGRESS" has
+        // `candidate_id: null` but came out of the old code as `candidateId: "S6IL00151"`
+        // (Durbin), a flatly wrong attribution. It also wasn't needed: FEC already tags each
+        // disbursement with its OWN `candidate_id`/`candidate_name` when one specific candidate is
+        // the payment's subject -- verified live on the real multi-candidate JFC this README cites
+        // (`CASSIDY PERDUE SULLIVAN TILLIS VICTORY FUND`, C00568055): its disbursements to Tillis,
+        // Sullivan, Perdue and Cassidy each arrive individually tagged with that candidate's own
+        // id, never null. The only rows where both are null are genuine non-candidate spending
+        // (e.g. a vendor invoice) -- correctly unattributed, not ambiguous.
         item = {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
@@ -820,14 +894,8 @@ try {
           disbursementPurposeCategory: c.disbursement_purpose_category ?? null,
           disbursementCategory: c.category_code_full ?? null,
           lineNumberLabel: c.line_number_label ?? null,
-          // Same fix as contributions mode's `candidateId` (cycle 1930/0.1.68): schedule_b's own
-          // `candidate_id` is always null for a spending committee that isn't itself a candidate
-          // committee (verified live on a joint fundraising committee), so `committee.candidate_ids`
-          // is the only real source of which candidate(s) benefit from the spending. Only collapse
-          // to a single id when unambiguous; otherwise null, with the full list in `candidateIds`.
-          candidateId: c.candidate_id
-            ?? (c.committee?.candidate_ids?.length === 1 ? c.committee.candidate_ids[0] : null),
-          candidateIds: (c.committee?.candidate_ids?.length ?? 0) > 1 ? c.committee.candidate_ids : null,
+          candidateId: c.candidate_id ?? null,
+          candidateIds: null,
           candidateName: c.candidate_name ?? null,
           electionCycle: c.two_year_transaction_period ?? null,
           // The FEC's own per-transaction identity. Emitted (cycle 772) because without it two
@@ -878,6 +946,16 @@ try {
         };
       } else if (searchMode === 'contributions') {
         watchId = watchKeyOf(c);
+        // schedule_a's own `candidate_id` is always null on every row we've observed (verified
+        // live on both a joint fundraising committee and a plain principal campaign committee)
+        // -- the receiving committee's `candidate_ids` is the only real source. 2+ ids does NOT
+        // mean a JFC splitting money across several people (cycle 1937 correction, see
+        // resolveCandidateIds): the bulk of multi-id committees are one person holding both a
+        // House and a Senate id, so only genuinely different people (a real multi-candidate
+        // "Victory Fund") null `candidateId` -- see `candidateIds` for the full list either way.
+        const aCandidate = c.candidate_id
+          ? { candidateId: c.candidate_id, candidateIds: null }
+          : await resolveCandidateIds(c.committee ?? {});
         item = {
           contributorName: c.contributor_name ?? null,
           contributorEmployer: c.contributor_employer ?? null,
@@ -891,20 +969,7 @@ try {
           committeeId: c.committee_id ?? c.committee?.committee_id ?? null,
           committeeName: c.committee?.name ?? null,
           ...committeeClassification(c),
-          // schedule_a's own `candidate_id` is always null on every row we've observed (verified
-          // live on both a joint fundraising committee and a plain principal campaign committee)
-          // -- the receiving committee's `candidate_ids` is the only real source. A JFC routinely
-          // lists 2+ ids (e.g. "CASSIDY PERDUE SULLIVAN TILLIS VICTORY FUND" -> 4 Senate
-          // candidates, verified live), so picking `[0]` unconditionally silently attributed every
-          // JFC contribution to whichever candidate happened to be listed first and dropped the
-          // rest -- the exact same single-element-flattening bug class already fixed on
-          // `sec-insider-trades-scraper` (owners[0]) and `uk-find-a-tender-scraper` (awards[0]).
-          // Only collapse to a single id when it is unambiguous; otherwise leave it null (matching
-          // this field's own documented "null for PACs/parties" rule, which a JFC falls under)
-          // and surface the full list in `candidateIds` so a buyer can see who actually benefits.
-          candidateId: c.candidate_id
-            ?? (c.committee?.candidate_ids?.length === 1 ? c.committee.candidate_ids[0] : null),
-          candidateIds: (c.committee?.candidate_ids?.length ?? 0) > 1 ? c.committee.candidate_ids : null,
+          ...aCandidate,
           transactionId: c.transaction_id ?? null,
           subId: c.sub_id ?? null,
           imageNumber: c.image_number ?? null,

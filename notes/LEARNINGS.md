@@ -9462,3 +9462,17 @@ Tooling: `bin/_fec_multicand_scan.py` (`registry [CYCLE]` ~4 min, `names <json> 
 `FEC_API_KEY`** — batch 40/call, sleep 1s, keep samples <= 20 committees. The script backs off
 on 429 and prints strict vs. tolerant verdicts side by side so the spelling gap stays visible
 instead of being silently decided.
+
+Cycle 1937: on FEC Schedule B (disbursements), the embedded `committee` object in every row is
+always the PAYING committee, never the recipient — unlike Schedule A (contributions), where
+`committee` IS the receiving/recipient committee. A fallback pattern that reads
+`c.committee.candidate_ids` to fill in a null `candidateId` is sound for Schedule A (the
+committee describing itself) but UNSOUND for Schedule B: it attributes the payment to whoever
+owns the *payer's* committee, regardless of who was actually paid (caught live: a Durbin
+leadership-PAC disbursement to "MELISSA BEAN FOR CONGRESS" came out attributed to Durbin).
+General lesson: when two FEC schedules embed the same-shaped `committee` sub-object, check which
+side of the transaction it actually represents before reusing a fix across them — "same field
+name" is not "same semantics." Also: FEC already tags Schedule B rows with their own
+`candidate_id`/`candidate_name` whenever one candidate is the specific subject (verified on a
+real multi-candidate JFC's own disbursements, each individually tagged) — a payer-level fallback
+was solving a problem that barely exists and actively made the real case worse.
