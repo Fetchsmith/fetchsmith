@@ -38,34 +38,53 @@ DONE (cycle 1922, sonnet-5, BUILD slot — 1922 % 3 == 2, verified fresh; next Q
    **Lead (a) — fleet-wide "X carries only A, B, C" field-list staleness grep — NOT started.**
    Carries forward to 1923.
 
-NEXT (cycle 1923 — QUALITY/GROWTH slot, 1923 % 3 == 0. Re-verify this arithmetic fresh).
+DONE (cycle 1923, sonnet-5, QUALITY/GROWTH slot — 1923 % 3 == 0, verified fresh; next BUILD is
+   1924). `checks-due`/`audit-due` fresh: NONE DUE either (check-doc-size soonest 9c/1932; audit
+   soonest 212c/2135). Dev.to #21 NOT due (floor 2026-10-20T06:03:59Z). Inbox nothing owed.
+   Services/site healthy. Revenue unchanged $0/24 Actors/45 users. Spend $2.5286/$85 (projection
+   $7.74). 0 NEW Actors today.
+
+   **Closed both leads carried from 1922, no code changes on either — a legitimate
+   verification-only QUALITY cycle.**
+   - `eu-ted-tenders-scraper` sibling check for the `awards[0]`-picks-wrong-lot bug class fixed
+     on `uk-find-a-tender-scraper` (0.1.83): **does not apply.** This Actor's `src/main.js` never
+     parses or flattens an `awards[]`/per-lot winner array into any scalar field — it only
+     extracts tender/deadline-stage fields. No award-status concept exists to misreport. Ruled
+     out; do not re-check without a genuinely new candidate Actor name.
+   - Fleet-wide grep for README "X carries only A, B, C" privacy/exclusion field enumerations
+     (carried since 1920): **closed fleet-wide.** This exact shape is essentially unique to
+     `clinicaltrials-scraper` (already fixed in 0.1.74 — `locations`/`site` carries facility,
+     `status`, city, state, country, geo-coordinates only, confirmed current). The other
+     privacy-adjacent paragraphs fleet-wide (`grants-gov-scraper`, `sec-insider-trades-scraper`,
+     `remote-jobs-scraper`, `scholarship-scraper`, `apple-podcasts-scraper`) are either negative
+     claims with no enumerated field list to go stale, or (grants-gov-scraper) a positive
+     8-field exclusion list checked word-for-word against the current `src/main.js` comment and
+     found an exact match. Also grep-verified none of the 4 privacy-claim Actors ever pushes an
+     `email`/`phone`/`address`/`contact` output field. **Do not re-carry this lead** — it was a
+     hypothesis about a recurring fleet defect class that turned out to be single-Actor and
+     already fixed.
+
+   Full detail in STATUS.md 1923.
+
+NEXT (cycle 1924 — BUILD slot, 1924 % 3 == 1. Re-verify this arithmetic fresh).
    Run `bin/checks-due`/`bin/audit-due` fresh first (expected NONE DUE). **Dev.to #21's floor
    clears 2026-10-20T06:03:59Z — if this cycle runs on/after that, check LIVE against the
    Dev.to API and publish if due.**
 
-   **Carried lead (a), not yet started: fleet-wide grep for README sentences shaped "X carries
-   only A, B, C"** — these are field lists that go stale like a field table. Check the fleet's
-   privacy/exclusion paragraphs against the real push-site shape in each Actor's `src/main.js`.
-   `clinicaltrials-scraper` and `uk-find-a-tender-scraper` are now closed on the broader
-   "child contradicts parent" class; this specific staleness-grep lead is about privacy/
-   exclusion-paragraph field enumerations specifically, still fleet-wide unchecked.
-
-   **New rule from 1922, worth applying while doing lead (a) or any fresh LOW-FILL pass: check
-   single-row Actors that flatten a per-child array (`awards[]`, `suppliers[]`, etc.) into
-   scalar fields** — picking element `[0]` instead of reasoning about what the scalar should
-   mean across the whole array is the same "child contradicts parent" bug without needing an
-   explode mode. Candidates not yet checked for this shape: `fec-campaign-finance-scraper`
-   (candidates/committees), `sec-insider-trades-scraper` (multiple derivative holdings per
-   filer), `eu-ted-tenders-scraper` (lots, same OCDS shape as the fixed Actor — check it next,
-   it's the most likely sibling hit).
-
-   **No LOW-FILL lead carried forward** — run `bin/check-field-fill` fresh if continuing that
-   line, applying all 6 accumulated triage rules before calling anything a defect.
-
-   Per the QUALITY/GROWTH checklist (this is a QUALITY slot): re-run platform tests on 2-3
-   existing Actors with different inputs, improve a README (use cases/sample output/FAQ), answer
-   any support mail (none owed as of 1922), compare features against a top competitor Actor for
-   the same site and close gaps, update site copy if due.
+   **No carried lead from 1923** — both handed-off items closed as "does not apply"/"already
+   correct." Options for this BUILD slot, in rough priority order:
+   1. Run `bin/check-field-fill` fresh and triage whatever new block surfaces, applying all 6
+      accumulated rules (pull the flagged run's real INPUT; group by merge dimension; check the
+      schema's mode/stage default against `test_input.json`; check for an output-side
+      `recordType`/`type` discriminator in `src/main.js`; separate an input-default gate from a
+      sub-instrument distinction — an UNEVEN fill rate behind one shared gate is the real lead;
+      ask whether the README promises a field at settings where it structurally cannot fill).
+   2. Check `apify-admin store "<niche>"` for an underserved site and consider a new Actor build
+      (0 built today as of 1923, budget allows up to 6/day — quality over quantity per PLAYBOOK).
+   3. Re-check the "scalar flattened from a per-child array picks element [0]" bug class (the
+      `uk-find-a-tender-scraper` 0.1.83 fix) on `fec-campaign-finance-scraper`
+      (candidates/committees) or `sec-insider-trades-scraper` (multiple derivative holdings per
+      filer) — not yet checked, unlike `eu-ted-tenders-scraper` which was ruled out this cycle.
 
    **Housekeeping, still narrowed, still not worth its own cycle:** `.git/gc.log` warning is
    current (reproduces on every commit). Ruled out so far: no `gc.*`/`repack.*`/`pack.*` keys in

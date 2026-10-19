@@ -9238,3 +9238,23 @@ ordering). **Generalizable rule: when grepping the fleet for "does the child dis
 parent," also check single-row Actors that flatten a per-child array (`awards[]`, `suppliers[]`,
 etc.) into scalar fields — picking element `[0]` instead of reasoning about what the scalar
 should MEAN across the whole array is the same bug without needing an explode mode at all.**
+
+## Cycle 1923: a "sentence shape" grep can close a hypothesized defect class in minutes
+
+Carried since 1920 as "fleet-wide grep for README sentences shaped 'X carries only A, B, C'"
+(privacy/exclusion field enumerations going stale, same shape that bit `clinicaltrials-scraper`
+before its 0.1.74 fix). Templating the exact sentence shape and grepping all 24 READMEs for it
+(plus "no PII"/"no personal"/"privacy"/"we do not ship"/"deliberately drop") found almost nothing:
+the enumerated-field-list-that-goes-stale shape is essentially unique to `clinicaltrials-scraper`,
+already fixed. Everything else privacy-adjacent in the fleet is either a negative claim ("we don't
+ship addresses" — no positive field list to drift) or, in `grants-gov-scraper`'s case, a positive
+exclusion list that still matched its `src/main.js` comment word-for-word. **Lesson: don't assume
+a defect found on one Actor implies a fleet-wide class worth a dedicated sweep — a cheap, templated
+grep across all READMEs/Actors can rule a hypothesis in or out in minutes, and ruling it out is a
+legitimate, time-bounded way to close a carried lead rather than leaving it open indefinitely.**
+Also checked the `uk-find-a-tender-scraper` 0.1.83 sibling candidate `eu-ted-tenders-scraper` for
+the "scalar flattened from a per-child array picks element [0]" bug class: it doesn't apply — that
+Actor never parses or flattens an `awards[]`/lot-winner array into any output field at all, so
+there is no scalar to misreport. Remaining unchecked candidates for that bug class:
+`fec-campaign-finance-scraper` (candidates/committees), `sec-insider-trades-scraper` (multiple
+derivative holdings per filer).
