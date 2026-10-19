@@ -249,6 +249,7 @@ Only public, no-login job-board data is collected — the same postings anyone c
 - [Greenhouse's job board API has no auth and no pagination — a big board is one 10 MB response](https://fetchsmith.com/blog/greenhouse-job-board-json-api)
 - [Lever's job board API actually paginates — the one ATS that does](https://fetchsmith.com/blog/lever-job-board-json-api-pagination)
 - [Ashby's job board API: no pagination, no size cap, and pay bands baked into one number](https://fetchsmith.com/blog/ashby-job-board-json-api)
+- [Workable's job board API: no pagination, and the description flag is the one that's actually worth gating](https://fetchsmith.com/blog/workable-job-board-json-api)
 - [A Try-for-free click shouldn't cost a first-time buyer $1.26 and five minutes](https://fetchsmith.com/blog/default-inputs-should-not-cost-you-five-minutes)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the general failure modes `watchLabel` is built to avoid.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.

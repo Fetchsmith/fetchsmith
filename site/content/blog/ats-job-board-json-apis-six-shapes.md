@@ -48,7 +48,7 @@ Recruitee publishes salary too, but `salary.min` and `salary.max` come back as *
 GET https://apply.workable.com/api/v1/widget/accounts/<slug>?details=true
 ```
 
-Workable's job identifier is called `shortcode`, not `id`. And where most of the other five use some flavor of `isRemote`/`workplaceType`, Workable's remote flag is named `telecommuting` — same concept, different name, easy to silently drop if you're mapping fields by convention instead of checking each schema.
+Workable's job identifier is called `shortcode`, not `id`. And where most of the other five use some flavor of `isRemote`/`workplaceType`, Workable's remote flag is named `telecommuting` — same concept, different name, easy to silently drop if you're mapping fields by convention instead of checking each schema. Full write-up, including why `details=true` is the one flag on this ATS actually worth gating: [Workable's job board API](/blog/workable-job-board-json-api).
 
 ## SmartRecruiters: the only paginated one, and its list has no description at all
 

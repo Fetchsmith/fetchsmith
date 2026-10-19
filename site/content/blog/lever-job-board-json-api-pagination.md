@@ -71,7 +71,7 @@ And it ships its own plain-text companion, `descriptionPlain`, already stripped 
 
 [ats-jobs-scraper on Apify](/go/ats-jobs-scraper) handles all of the above for Lever — it maps the bare top-level array (not an envelope), reads `text` as the title, pulls `categories.department`/`team`/`commitment` and `salaryRange` straight through, and — as of build 0.1.90 — requests only roughly 3x your `maxJobsPerCompany` from the board instead of the whole thing, so a 4,000-posting board costs you megabytes, not fifty of them. Output is the same schema shared across Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday, so a Lever row and a Greenhouse row are directly comparable.
 
-If you're pulling more than one ATS, the differences between them are the real work: [six ATSes, six ideas of what a job posting is](/blog/ats-job-board-json-apis-six-shapes), [Greenhouse's take](/blog/greenhouse-job-board-json-api), [Workday's](/blog/workday-career-site-json-api), and [Ashby's](/blog/ashby-job-board-json-api) — the one ATS here with no pagination knob of any kind, real or fake.
+If you're pulling more than one ATS, the differences between them are the real work: [six ATSes, six ideas of what a job posting is](/blog/ats-job-board-json-apis-six-shapes), [Greenhouse's take](/blog/greenhouse-job-board-json-api), [Workday's](/blog/workday-career-site-json-api), [Ashby's](/blog/ashby-job-board-json-api) — the one ATS here with no pagination knob of any kind, real or fake — and [Workable's](/blog/workable-job-board-json-api), whose `page`/`limit` params are as fake as Greenhouse's.
 
 ---
 

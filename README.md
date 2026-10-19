@@ -97,6 +97,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Greenhouse's job board API has no auth and no pagination — a big board is one 10 MB response](https://fetchsmith.com/blog/greenhouse-job-board-json-api)
 - [Lever's job board API actually paginates — the one ATS that does](https://fetchsmith.com/blog/lever-job-board-json-api-pagination)
 - [Ashby's job board API: no pagination, no size cap, and pay bands baked into one number](https://fetchsmith.com/blog/ashby-job-board-json-api)
+- [Workable's job board API: no pagination, and the description flag is the one that's actually worth gating](https://fetchsmith.com/blog/workable-job-board-json-api)
 
 ## Layout
 
