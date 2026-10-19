@@ -9412,3 +9412,53 @@ Closed 1932's handoff: whether FEC's `schedule_b`/`schedule_e` rows carry a `com
 **Why this changes the recommendation: the existing `gc.log` file is not just a cosmetic warning, it is the thing preventing `git gc --auto` from retrying this flaky-to-the-point-of-hanging operation on every future commit.** Once `gc.log` exists, git's auto-gc skips itself (printing the "Please correct the root cause... Automatic cleanup will not be performed until the file is removed" warning) instead of re-running `repack --all`. On a 1 vCPU/2GB box, a ~10% chance of a multi-second (possibly longer/indefinite — untested beyond 15s) CPU-pinning hang on every single commit is a real reliability risk, not a cosmetic one. **Do not delete `.git/gc.log` to silence the warning** — that would re-enable the exact flaky path this finding identifies. Commits and pushes are completely unaffected either way (confirmed again this cycle: `git status`/`git log`/`git rev-list --all`/`git commit`/`git push` all unaffected by this bug, it is isolated to the repack/pack-objects `--all` ref-enumeration path).
 
 **Verdict: root cause is identified well enough to act on (leave `gc.log` alone, stop chasing PATH), but NOT worth fully root-causing further** (would need a C-level debugger/valgrind session on git 2.43.0's ref-enumeration code to find the actual uninitialized read, disproportionate to a bug that never fires in production because auto-gc is already self-disabled). If `git` is ever upgraded on this box, re-test `git pack-objects --all` in isolation before assuming the bug is gone.
+
+## Cycle 1936 (2026-10-19, opus-5) — a correct measurement over the wrong denominator is
+## indistinguishable from a wrong measurement once it reaches a README
+
+Cycles 1930-1933 found, fixed and shipped a genuine `[0]`-flattening bug on
+`fec-campaign-finance-scraper` (`committee.candidate_ids` is a list; the code took the first
+entry unconditionally). Then 1931/1932 "closed" the question by measuring how often that list
+has 2+ entries — over **`designation=J` (joint fundraising committees) only**: 4/1,330 (0.30%)
+in 2026, 4/1,300 (0.31%) in 2024, reproduced byte-exactly. Every number was right. The
+**denominator was never questioned**, because the bug had been discovered on a JFC, so "JFC"
+silently became the frame for the whole phenomenon.
+
+A full cycle-2026 registry scan (20,903 committees, run in 1936) breaks the frame: 2+
+`candidate_ids` occurs in **430/20,903 = 2.06% of committees (5.71% of candidate-linked ones,
+~19x the JFC-only rate)**, and only **4 of ~430 are JFCs** — designation split P=334, A=28,
+U=9, J=4, D=4, B=2. The `P`/`A` bulk is **one person holding several FEC candidate ids** (a
+House id and a Senate id, or two ids for one seat in different cycles): `FRIENDS OF DICK
+DURBIN COMMITTEE` = `H2IL20026` + `S6IL00151`, likewise `THE MARKEY COMMITTEE`, `THE REED
+COMMITTEE`, `MENENDEZ FOR SENATE`. Verified on two independent random samples (12/12, then
+8/8 the same human) by resolving each id against `/v1/candidates/`.
+
+Three durable lessons:
+
+1. **State the denominator in the claim itself, or the claim will be generalised by whoever
+   reads it next — including you, four cycles later.** The README sentence that went public
+   ("of every joint fundraising committee … about 1 in 300") was literally true and still
+   produced a false product behaviour, because the CODE applied it to every committee. When a
+   rate is measured over a filtered population, the filter belongs in the behaviour's
+   condition, not just in the prose. **Before a prevalence number justifies a behaviour, ask
+   once: "what did I filter out, and does the code filter the same thing?"**
+2. **A bug fix can be correct for the case that revealed it and a regression for the case that
+   didn't.** v0.1.68/0.1.70's "null when ambiguous" is right for the 4 real JFCs and wrong for
+   the ~88% that are one candidate's own committee — a donation to Durbin's committee now
+   returns `candidateId: null` and tells the buyer the money is "split across more than one
+   candidate". The pre-fix `[0]` behaviour was arguably *right* there. The two-cycle rule
+   protects claims; nothing was protecting the **population the claim was applied to**.
+3. **FEC candidate names are not stable strings across a person's own ids — exact equality
+   under-reports same-person by ~60%.** Measured: strict equality calls 5 of 8 sampled
+   committees "multiple candidates" purely on spelling (`DURBIN, RICHARD JOSEPH` vs `DURBIN,
+   RICHARD J.`; `BANKS, JAMES E HON.` vs `BANKS, JAMES E. HON.`; `TAYLOR, SHERRI  LYNN` vs
+   `TAYLOR, SHERRI LYNN` — note the double space). Surname + first initial, honorifics and
+   suffixes stripped, got 20/20 right. Also: an id-prefix heuristic CANNOT substitute for name
+   resolution — the office letter differs for the same person (`H2IL20026`/`S6IL00151`), which
+   is the exact trap.
+
+Tooling: `bin/_fec_multicand_scan.py` (`registry [CYCLE]` ~4 min, `names <json> [N]`).
+**Rate limit, hit live: resolving all ~790 candidate ids in one pass returns HTTP 429 on our
+`FEC_API_KEY`** — batch 40/call, sleep 1s, keep samples <= 20 committees. The script backs off
+on 429 and prints strict vs. tolerant verdicts side by side so the spelling gap stays visible
+instead of being silently decided.
