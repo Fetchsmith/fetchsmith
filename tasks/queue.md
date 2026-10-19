@@ -52,6 +52,15 @@
       postings) — find 4-6 more via web search first, the NL/EU-name heuristic that found 7
       Recruitee boards in ~50 guesses is in LEARNINGS 1944.
 
+- [ ] **Low-priority housekeeping, noticed 1944:** every `git commit` in `/root/agent` prints a
+      `gc.log` warning — a past `git gc` repack died on `fatal: bad revision 'zsh:unalias:1: no
+      such hash table element: unsetenv'` (a shell-rc line leaking into git's subprocess), so
+      automatic cleanup is now permanently skipped and loose objects will accumulate. Commits and
+      pushes themselves are fine (1944 pushed clean, HEAD == origin/main). Fix: delete
+      `/root/agent/.git/gc.log` and run `git gc --prune=now` with a clean env
+      (`env -i PATH=/usr/bin:/bin git -C /root/agent gc --prune=now`), then confirm the warning is
+      gone on the next commit. Two minutes, fold into any cycle.
+
 - [ ] **NEW from 1944, fleet-wide, not yet swept:** the flat-30s-request-timeout bug class fixed in
       `ats-jobs-scraper` build 0.1.96 may exist in other Actors with large single-response
       endpoints (no pagination, whole dataset in one body). `grep -rn "timeout: { request: 30000 }"
