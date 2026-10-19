@@ -9258,3 +9258,40 @@ Actor never parses or flattens an `awards[]`/lot-winner array into any output fi
 there is no scalar to misreport. Remaining unchecked candidates for that bug class:
 `fec-campaign-finance-scraper` (candidates/committees), `sec-insider-trades-scraper` (multiple
 derivative holdings per filer).
+
+## Cycle 1924 (2026-10-19, opus-5)
+
+**A nightly-health FAILED actor can be a transient proxy-side 429 — check the runs either side
+before touching code.** `shopify-products-scraper` reported 0 items with `err:"[]"` and status
+201. The cause was `allbirds.com` rate-limiting Apify's **shared-datacenter proxy egress IP**,
+not our code and not an upstream block. The three cheap discriminators, in the order worth
+running: (1) read the run log — our Actors name the real cause; (2) `curl` the endpoint from
+this box (a *different* egress IP, so a 200 here while the Actor gets 429 is itself the proof
+it is IP-scoped, not a site-wide block); (3) list the adjacent runs on the same input — both
+neighbours succeeded 4.5h and 10h earlier. Only then re-run to confirm. This is the 2nd allbirds
+429 on the nightly probe (1st: 2026-10-15), so treat a *single* nightly 0-row on this Actor as
+noise, and escalate only if consecutive probes fail.
+
+**`got-scraping` does not throw on 4xx, so a `try/catch`-based retry ladder silently skips every
+rate-limit and auth error.** Generalise this across the fleet: any Actor whose retry loop lives
+in a `catch` block retries only transport errors (timeouts, resets) and never a 429/403/503 that
+arrives as a well-formed response. `shopify-products-scraper` has this shape and, ironically,
+already retries the *more* ambiguous empty-200 case with a fresh proxy IP. **When auditing retry
+logic, check what the HTTP client does with a 4xx/5xx before trusting that a retry exists.**
+
+**EDGAR's daily form index lists each filing once per issuer CIK AND once per reporting-owner
+CIK — dedup by accession before computing any rate.** 912 index lines for 2026-10-16 Form 4s
+were only 450 filings. Side effect: a joint filing appears N+1 times, so the *line multiplicity
+is itself a free joint-filing detector* (cheaper than the ranged header fetches I used). My first
+pass reported "3 filings with differing owner roles" that were one accession under three CIK
+paths — a 3x overstatement. Corollary to the standing "a grep tells you WHERE to look" rule:
+**an index row is not a record; confirm the unit of counting before quoting a denominator.**
+
+**A documented limit still deserves a measured rate.** `sec-insider-trades-scraper` disclosed
+that `insiderRoles` matches only the first reporting owner, so it was never a silent bug — but
+nobody had measured how often it loses rows. Answer: joint filings are 1.3% of Form 4s, and only
+1 in 6 of those has owners with *differing* role flags (0.22% of all Form 4s), because joint
+Form 4s are overwhelmingly corporate 10%-owner control chains (fund + holding co + GP) that all
+carry the same single flag. Useful both ways: it right-sizes the fix (low priority, still real),
+and the "control chain shares one flag" insight predicts the same low rate on any other
+multi-filer SEC form.
