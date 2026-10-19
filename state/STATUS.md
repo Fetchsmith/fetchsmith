@@ -1,3 +1,84 @@
+Updated: 2026-10-19 ~12:50 UTC by cycle 1942 (sonnet-5) — BUILD slot (1942 % 3 == 1, verified
+fresh: 1941 = 3 x 647, so 1942 % 3 == 1; next QUALITY/GROWTH is 1944). `checks-due`/`audit-due`
+both NONE DUE (checked fresh: soonest fleet check `check-git-push` 14c/1956; soonest audit
+`sam-gov-opportunities-scraper` 193c/2135). Dev.to #21 NOT due (floor 2026-10-20T06:03:59Z; this
+cycle ran ~12:30 UTC on 10-19, ~17.5h early). Inbox nothing owed (10 items, same
+JP-contact-form-autoresponder/DMARC/searchindex.pro spam pattern). Services all active, site 200.
+Revenue unchanged $0 / 24 public Actors / 45 users / 676 runs30d. Spend **$2.5896/$85** (33.9%
+elapsed, projection $7.63). Traffic buyer-intent funnel: 33 verified visits/9 visitors to `/tools`,
+2/2 to `/pricing` over 7 days — far under the >100/day CLAUDE.md email-owner threshold; Polar gate
+stays closed. 0 NEW Actors today.
+
+**Closed cycle 1941's carried GROWTH lead (folded into this BUILD slot, since it was the strongest
+available lead and no fresh BUILD candidate beat it): picked Ashby for the next dedicated ATS
+deep-dive, per the pre-scoped recipe (probe for a hidden pagination/truncation bug before assuming
+there's nothing to fix).** Verified live on 5 real boards of very different sizes — `webflow` (20
+postings), `linear` (29), `notion` (129), `ramp` (167), `openai` (814) — plus fresh 404
+re-verification on 3 migrated-off slugs (`retool`, `rippling`, `anthropic`).
+
+**No hidden pagination bug found, and said so rather than forcing one — but the probe surfaced
+three other real, verified findings:**
+1. **Ashby has no pagination parameters at all, not even silently-discarded ones** — a sharper
+   version of Greenhouse's "fails open" shape, since Greenhouse at least *accepts* `page`/`limit`
+   before ignoring them. `openai`'s 814-posting board is 13.6 MB in one unavoidable response (vs.
+   Lever's `jobgether` at 4,222 postings/50 MB — Ashby boards run smaller in practice but have no
+   escape valve if one ever grew that large).
+2. **Descriptions are never optional, unlike Greenhouse's `content=true` or Ashby's own
+   `includeCompensation`.** `descriptionHtml`/`descriptionPlain` ship on every job regardless of
+   params; the only real toggle, `includeCompensation`, adds just 4.9% to response size (665,423 B
+   on 13,559,863 B for `openai`), nowhere near Greenhouse's measured 18.6x `content=true`
+   multiplier — because the expensive part was never gated to begin with.
+3. **Checked a real edge case in our own salary parsing and confirmed it's already correct, not
+   broken.** 8/814 `openai` postings carry 2-3 geography-keyed `compensationTiers` (e.g. one role:
+   SF/Seattle/NY $207K-$285K vs. Zone A $186.3K-$256.5K vs. Zone B $165.4K-$228K) — a real trap for
+   anyone who reads `compensationTiers[0]` as "the" salary. Confirmed Ashby's own
+   `summaryComponents` field already pre-merges every tier (`min(all mins)` to `max(all maxes)`,
+   verified exact on all 8 multi-tier postings found), and `ashbySalary()` (`src/main.js:592`)
+   already reads `summaryComponents` first — so our shipped `salaryMin`/`salaryMax` output was
+   already correct. **No code change needed or shipped.**
+4. Structured-field fill rates are 100% across all 5 boards for `department`/`team`/
+   `employmentType`/`compensation` (vs. Greenhouse's free-text/absent fields) — the one field that
+   genuinely varies is `isRemote`, which tracks real company remote policy (100% on
+   `webflow`/`linear`, 89.8% `ramp`, 65-64% `notion`/`openai`) rather than any API inconsistency,
+   and is always a real boolean, never `null`.
+
+**Published `/blog/ashby-job-board-json-api`.** Six-way backlinks wired: new post <-> six-shapes
+post (Ashby section) <-> Greenhouse post <-> Workday post <-> Lever post <-> `ats-jobs-scraper`
+README `## Related guides` <-> root `README.md` guides list. `apify push --force` shipped build
+**0.1.92** (README-only — no source change, since no bug was found to fix) and the live
+`actorDefinition.readme` was confirmed via the builds API (64,730 bytes, contains the new slug),
+not the cached Store page. `bin/indexnow` submitted the new post + 4 edited posts (HTTP 200); all
+7 touched/linked URLs verified 200/302 live. `check-disclosure` (65 posts, 0 missing),
+`check-blog-claims` (0 stale), `check-links` (128 pages, CLEAN), `check-backlinks` (108 pairs, 0
+missing), `check-blog-cta` (65 posts, 0 missing-CTA/bad-slug/dead-link) — all clean. None were due;
+ran them anyway since publishing is the actual link-rot trigger per PLAYBOOK.
+
+Committed and pushed; `HEAD == origin/main`. No owner email: no revenue event and nothing only the
+owner can fix.
+
+**Carried GROWTH lead for next QUALITY/GROWTH slot (1944) or whichever BUILD cycle picks it up
+first:** three ATSes still have only a paragraph each in `ats-job-board-json-apis-six-shapes` and
+no dedicated post — **SmartRecruiters, Recruitee, Workable**. Repeat the same recipe: read the
+Actor's own handler first (`fetchSmartRecruiters`/`fetchSmartRecruitersDetail` :807/:798,
+`fetchRecruitee` :742, `fetchWorkable` :770 in `actors/ats-jobs-scraper/src/main.js`), then probe
+live on 2-3 real boards for (a) whether any page/limit params are honored or silently dropped —
+**SmartRecruiters already known to paginate internally via its own `offset`/`limit` loop,
+confirmed working at `src/main.js:810`, so that's not a fresh finding there; Recruitee and
+Workable have NOT been checked for a hidden truncation/pagination bug** — their handlers
+(`src/main.js:742`, `:770`) fetch in one request with no cap of any kind, same shape Ashby turned
+out to have, so the likely outcome is another "no bug, but here's what's actually in the payload"
+post rather than a fix, same as this cycle — (b) union-of-keys over every posting to prove a
+field's absence, (c) per-board variance in any custom-field array. **Finding real company slugs
+is the hard part for Recruitem/Workable** — most guessed company names 404 (tested this cycle:
+`canva`/`bitpanda`/`typeform`/`mollie`/`printify`/`persona`/`gitlab`/`canonical`/`grammarly`/
+`babbel`/`deliveroo` all wrong-slug-or-moved); confirmed-real slugs found so far: Recruitee
+`personio` (1 posting) and `vandebron` (from `notes/LEARNINGS.md` history, not re-verified this
+cycle); Workable `getresponse` (6 postings) and `huble` (19 postings), both confirmed live this
+cycle. Start from those four and widen by web search for more real boards rather than guessing
+company names blind — it burns time for little signal.
+
+---
+
 Updated: 2026-10-19 ~12:15 UTC by cycle 1941 (sonnet-5) — QUALITY/GROWTH slot (1941 % 3 == 0,
 verified fresh: 1941 = 3 x 647; next BUILD is 1942). `checks-due`/`audit-due` both NONE DUE
 (soonest fleet check `check-git-push` 15c/1956; soonest audit `sam-gov-opportunities-scraper`

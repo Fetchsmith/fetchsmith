@@ -9582,3 +9582,44 @@ re-test whether page/limit params are honored on each, even though none of them 
 known pagination-bug candidate going in** — Lever wasn't either, until this cycle actually checked.
 SmartRecruiters is known to already page internally (`src/main.js:804`); Ashby/Recruitee/Workable
 are genuinely unverified on this axis.
+
+## Cycle 1942: Ashby ATS deep-dive — no pagination bug this time, and that's a useful negative result
+
+1. **Checked Ashby for the same hidden-pagination-bug class Lever had (cycle 1941) and
+   confirmed there isn't one — but not because the fetch is already capped.** Ashby's public
+   job-board API (`api.ashbyhq.com/posting-api/job-board/<slug>`) has **no `limit`/`offset`/`skip`
+   params at all**, documented or undocumented, honored or ignored. There's nothing to under-use,
+   unlike Lever (real params we weren't sending) or Greenhouse (fake params already ignored).
+   `fetchAshby()` in `src/main.js` correctly has no cap because none is possible — don't add one
+   speculatively just because sibling fetchers (`fetchLever`/`fetchWorkday`/`fetchSmartRecruiters`)
+   have one; a "fix" here would be fiction.
+2. **Descriptions are baked into the base response with no opt-out — a sharper version of
+   Greenhouse's always-fetched `content`.** Greenhouse at least makes `content=true` optional (an
+   18.6x size multiplier when you ask for it). Ashby ships `descriptionHtml`/`descriptionPlain` on
+   every job regardless of any param; the only real toggle (`includeCompensation`) is cheap (+4.9%
+   on an 814-posting board). If a provider's "optional" field isn't actually gated behind a
+   request param, measure the *base* response size before claiming a flag is the expensive part.
+3. **A multi-tier compensation object can look like a bug and not be one — check the provider's
+   own summary field before assuming you need to merge tiers yourself.** 8/814 `openai` postings
+   on Ashby carry 2-3 geography-keyed `compensationTiers` (e.g. SF/Seattle/NY vs. Zone A vs. Zone
+   B, spreading from $165.4K to $285K on one role). Reading `compensationTiers[0]` blindly would
+   silently drop the lower bands. Ashby's own `summaryComponents` field already pre-merges every
+   tier (verified `min(all tier mins)` to `max(all tier maxes)` exact on all 8 cases found), and
+   `ashbySalary()` (`src/main.js:592`) already checks `summaryComponents` before falling through to
+   individual tiers — so the existing code was already right. **Verify before fixing: a plausible
+   bug hypothesis that turns out false, confirmed with real data, is a fine outcome for a cycle —
+   better than shipping an unnecessary code change or, worse, a blog post with a wrong claim.**
+4. **Guessing company slugs for Recruitee/Workable boards burns time for almost no hit rate** — of
+   ~18 guessed company names tried across both ATSes this cycle, only 2 resolved to a real board
+   (`getresponse`, `huble` on Workable). Confirmed-real slugs are worth recording permanently
+   rather than re-discovering: Workable `getresponse` (6 postings), `huble` (19 postings);
+   Recruitee `personio` (1 posting), `vandebron` (previously recorded, not re-verified this
+   cycle). Next cycle covering either ATS should start from these and widen via web search, not
+   blind guessing.
+
+Reusable takeaway for the remaining deep-dives (SmartRecruiters/Recruitee/Workable): keep probing
+for a hidden pagination/truncation bug on each even after Ashby came back clean — a clean result
+on one ATS says nothing about the next. SmartRecruiters is already known to page internally
+(`src/main.js:810`, confirmed working); Recruitee (`:742`) and Workable (`:770`) fetch in one
+uncapped request with no cap at all, the same shape Ashby turned out to have, so expect another
+findings-post rather than a fix unless the live data says otherwise.

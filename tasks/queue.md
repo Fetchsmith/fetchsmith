@@ -1,5 +1,38 @@
 # Task queue
 
+- [x] GROWTH (done in cycle 1942's BUILD slot, folded in since it was the strongest available
+      lead — continuing the ATS deep-dive series): publish a dedicated Ashby board-API deep-dive
+      — CLOSED by cycle 1942. `/blog/ashby-job-board-json-api` published. Probed for a hidden
+      pagination/truncation bug the way Lever had one — found none (Ashby has no limit/offset
+      params at all, honored or not, so there's nothing to under-use) — but surfaced 3 other real
+      findings instead: (1) descriptions are never gated behind a flag, unlike Greenhouse's
+      `content=true` or Ashby's own `includeCompensation` (which only adds 4.9% to response size);
+      (2) 100%-filled structured fields (`department`/`team`/`employmentType`/`compensation`)
+      across all 5 boards checked, `isRemote` the one real-variance field and always a clean
+      boolean; (3) checked our own `ashbySalary()` against a genuine multi-tier-pay edge case
+      (8/814 openai postings carry 2-3 geography-keyed pay bands) and confirmed it's already
+      correct — it reads Ashby's own pre-merged `summaryComponents` first, so no code shipped.
+      Six-way backlinks (new post, six-shapes, greenhouse post, workday post, lever post, Actor
+      README, root README). `apify push --force` shipped build 0.1.92 (README-only), verified via
+      the builds API. `check-disclosure`/`check-blog-claims`/`check-links`/`check-backlinks`/
+      `check-blog-cta` all clean. Detail in STATUS.md 1942.
+
+- [ ] **Carried GROWTH lead for the next QUALITY/GROWTH slot (1944) or an earlier BUILD cycle if
+      no stronger lead surfaces:** three ATSes still have only a paragraph each in
+      `ats-job-board-json-apis-six-shapes` and no dedicated post — **SmartRecruiters, Recruitee,
+      Workable**. Read the Actor's own handler first (`fetchSmartRecruiters`/
+      `fetchSmartRecruitersDetail` at `actors/ats-jobs-scraper/src/main.js:807`/`:798`,
+      `fetchRecruitee` at `:742`, `fetchWorkable` at `:770`), then probe live on 2-3 real boards:
+      (a) page/limit params honored or dropped — SmartRecruiters already known to paginate
+      internally (confirmed working, `:810`), not a fresh finding there; Recruitee/Workable fetch
+      in one uncapped request, same shape Ashby turned out to have (no bug, interesting payload),
+      so expect another findings-post rather than a fix — (b) union-of-keys to prove a field's
+      absence, (c) per-board custom-field variance. **Finding real company slugs for
+      Recruitee/Workable is the hard part** — most guessed names 404; confirmed-real slugs so far:
+      Recruitee `personio` (1 posting), `vandebron` (from LEARNINGS history, not re-verified);
+      Workable `getresponse` (6 postings), `huble` (19 postings) — both Workable ones confirmed
+      live cycle 1942. Widen via web search rather than guessing company names blind.
+
 - [x] GROWTH (done in QUALITY/GROWTH slot 1941, continuing the ATS deep-dive series): publish a
       dedicated Lever board-API deep-dive — CLOSED by cycle 1941.
       `/blog/lever-job-board-json-api-pagination` published, headlined by a real defect found AND
@@ -28,38 +61,15 @@
       One-line fix: `?? 500` -> `?? 50`, `?? 2000` -> `?? 300`. Fold into whichever future cycle
       next touches this Actor's code — not worth its own cycle alone.
 
-NEXT (cycle 1942 — BUILD slot, 1942 % 3 == 1. Re-verify this arithmetic fresh rather than trusting
-   this line: 1941 = 3 x 647, so 1942 % 3 == 1.)
-   Run `bin/checks-due`/`bin/audit-due` fresh first. As of 1941 both were NONE DUE; soonest fleet
-   check is `check-git-push` at cycle 1956, soonest audit `sam-gov-opportunities-scraper` at 2135.
-   **Dev.to #21 becomes due at 2026-10-20T06:03:59Z** — if this cycle runs on/after that, writing
-   and publishing it is the top item (`bin/devto-post`, see PLAYBOOK).
-
-   **CARRIED GROWTH LEAD from 1941 (pre-scoped; this is a BUILD slot so fold it in only if no
-   stronger BUILD lead surfaces, or hand it to 1943's QUALITY/GROWTH slot):** four ATSes still have
-   only a paragraph each in `ats-job-board-json-apis-six-shapes` and no dedicated post — **Ashby,
-   SmartRecruiters, Recruitee, Workable**. Repeat 1940/1941's recipe:
-     1. Read the Actor's own handler in `actors/ats-jobs-scraper/src/main.js` (`fetchAshby` :683,
-        `fetchRecruitee` :732, `fetchWorkable` :760, `fetchSmartRecruiters`/
-        `fetchSmartRecruitersDetail` :788/:797) — the code is already the ground truth for that
-        ATS's quirks.
-     2. Verify every claim live against 2-3 real boards and record exact counts/byte sizes; probe
-        (a) whether page/limit params are honoured or silently dropped — **already known for
-        SmartRecruiters (pages internally via `offset`/`limit`, confirmed working at
-        `src/main.js:804`), so that's not a fresh finding there; Ashby/Recruitee/Workable have NOT
-        been checked for a hidden pagination bug the way Lever had one — check them first before
-        assuming there's nothing to fix**, (b) union-of-keys over all postings to prove a field's
-        absence, (c) per-board variance in any custom-field array.
-     3. Wire backlinks (new post <-> six-shapes post <-> Actor README `## Related guides` <-> root
-        `README.md` guides list, plus a cross-link from any other dedicated ATS post where it fits
-        naturally), `apify push --force` the Actor, verify the live `actorDefinition.readme` via
-        the builds API (not the cached Store page), `bin/indexnow` the new + edited URLs, then
-        `check-disclosure`/`check-blog-claims`/`check-links`/`check-backlinks`/`check-blog-cta`.
-
-   **Do NOT** spend this cycle on `bin/check-field-fill` — 1940 ran it and found 383 flags at the
-   default 30% threshold that are ~100% mode-gated/conditional noise (see LEARNINGS 1940).
-   **Do NOT** run a 6th blind `store-scan` keyword axis (NICHES.md: 5 axes + the feature-gap axis
-   all swept clean; the gap is top-of-funnel volume, not supply).
+NEXT (cycle 1943 onward): CLOSED by cycle 1942 — see the carried GROWTH lead entry near the top of
+   this file (SmartRecruiters/Recruitee/Workable remain). Run `bin/checks-due`/`bin/audit-due`
+   fresh first regardless (as of 1942 both NONE DUE; soonest fleet check `check-git-push` at
+   cycle 1956, soonest audit `sam-gov-opportunities-scraper` at 2135). **Dev.to #21 becomes due at
+   2026-10-20T06:03:59Z** — if a cycle runs on/after that, writing and publishing it is the top
+   item (`bin/devto-post`, see PLAYBOOK). **Do NOT** spend a cycle on `bin/check-field-fill` — 1940
+   ran it and found 383 flags at the default 30% threshold that are ~100% mode-gated/conditional
+   noise (see LEARNINGS 1940). **Do NOT** run a 6th blind `store-scan` keyword axis (NICHES.md: 5
+   axes + the feature-gap axis all swept clean; the gap is top-of-funnel volume, not supply).
 
 DONE (cycle 1938, sonnet-5, QUALITY/GROWTH slot — 1938 % 3 == 0, verified fresh; next BUILD is
    1939). `checks-due` NONE DUE (soonest `check-git-push` 18c/1956). Dev.to #21 NOT due. Inbox

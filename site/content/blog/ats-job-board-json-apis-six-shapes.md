@@ -24,7 +24,7 @@ Greenhouse has enough of its own traps to earn a dedicated write-up: [no paginat
 GET https://api.ashbyhq.com/posting-api/job-board/ramp?includeCompensation=true
 ```
 
-Ashby is the richest of the six by far — `isRemote`, `workplaceType`, both `descriptionHtml` and `descriptionPlain` pre-split for you, and it's the **only one of the six ATSes that reliably publishes numeric salary ranges**: 138 of 145 live postings on Ramp's board carried a real `compensation.summaryComponents[]` entry with `minValue`/`maxValue`/`currencyCode`/`interval`. The one trap: that array also holds `EquityPercentage` and other non-cash components with all-null values sitting next to the real one, so you have to filter on `compensationType: "Salary"` — take the first array entry blindly and you'll grab equity or nothing.
+Ashby is the richest of the six by far — `isRemote`, `workplaceType`, both `descriptionHtml` and `descriptionPlain` pre-split for you, and it's the **only one of the six ATSes that reliably publishes numeric salary ranges**: 138 of 145 live postings on Ramp's board carried a real `compensation.summaryComponents[]` entry with `minValue`/`maxValue`/`currencyCode`/`interval`. The one trap: that array also holds `EquityPercentage` and other non-cash components with all-null values sitting next to the real one, so you have to filter on `compensationType: "Salary"` — take the first array entry blindly and you'll grab equity or nothing. Ashby also has its own dedicated write-up: [no pagination parameters exist at all, and `summaryComponents` already merges multi-location pay tiers into one range for you](/blog/ashby-job-board-json-api).
 
 ## Lever: no envelope, and the title field isn't called title
 
