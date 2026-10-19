@@ -820,7 +820,14 @@ try {
           disbursementPurposeCategory: c.disbursement_purpose_category ?? null,
           disbursementCategory: c.category_code_full ?? null,
           lineNumberLabel: c.line_number_label ?? null,
-          candidateId: c.candidate_id ?? null,
+          // Same fix as contributions mode's `candidateId` (cycle 1930/0.1.68): schedule_b's own
+          // `candidate_id` is always null for a spending committee that isn't itself a candidate
+          // committee (verified live on a joint fundraising committee), so `committee.candidate_ids`
+          // is the only real source of which candidate(s) benefit from the spending. Only collapse
+          // to a single id when unambiguous; otherwise null, with the full list in `candidateIds`.
+          candidateId: c.candidate_id
+            ?? (c.committee?.candidate_ids?.length === 1 ? c.committee.candidate_ids[0] : null),
+          candidateIds: (c.committee?.candidate_ids?.length ?? 0) > 1 ? c.committee.candidate_ids : null,
           candidateName: c.candidate_name ?? null,
           electionCycle: c.two_year_transaction_period ?? null,
           // The FEC's own per-transaction identity. Emitted (cycle 772) because without it two

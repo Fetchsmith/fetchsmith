@@ -144,7 +144,7 @@ One item per itemized donor contribution:
 
 ### Disbursements mode output (Schedule B)
 
-`searchMode: "disbursements"` returns one row per payment a committee reported making, 20 fields:
+`searchMode: "disbursements"` returns one row per payment a committee reported making, 21 fields:
 
 | Field | Description |
 |---|---|
@@ -156,7 +156,8 @@ One item per itemized donor contribution:
 | `disbursementPurposeCategory` | The FEC's normalized purpose bucket, e.g. `ADVERTISING`, `OTHER`. |
 | `disbursementCategory` | Category code decoded, when the filer supplied one (`null` is common). |
 | `lineNumberLabel` | Which line of the form it was reported on, e.g. `Operating Expenditures`. |
-| `candidateId`, `candidateName` | The candidate the payment relates to, when the filing names one. |
+| `candidateId`, `candidateName` | The candidate the payment relates to, when the filing names one. Same rule as contributions mode (v0.1.70): `null` — not a guess — when the paying committee is a joint fundraising committee splitting support across 2+ candidates; see `candidateIds`. |
+| `candidateIds` | Only present (2+ entries) when the paying committee is a multi-candidate joint fundraising committee, e.g. `VAN HOLLEN VICTORY FUND` (`H2MD08126`, `S6MD03441`) — `null` otherwise. |
 | `electionCycle` | The two-year transaction period the row belongs to. |
 | `transactionId`, `subId` | The FEC's own identity for this transaction — the filer's id and the FEC's row id. Two payments to the same vendor for the same amount on the same day are otherwise identical row-for-row. |
 | `imageNumber`, `pdfUrl` | The scanned original filing and a direct link to it. |
