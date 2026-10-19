@@ -9982,3 +9982,29 @@ this one also poisoned the schema.org `Offer` price that answer engines read.
 Cheap-probe note for later: there is **no read-only way to test whether the owner's Apify identity
 verification has cleared** — `GET /v2/users/me` returns only createdAt/email/id/isPaying/plan/
 profile/proxy/username, no verification field. The only test is an actual publish attempt.
+
+## Cycle 1957 — check-row-floor flag was a stale health.json snapshot, not a new incident
+
+A same-day Actor fix (code shipped, build pushed, verified live) does NOT retroactively clear a
+`check-row-floor`/`FIX FAILED ACTORS` flag already recorded in `state/health.json` — that file is
+only rewritten by the `bin/actor-health` nightly cron (03:30 UTC) or a manual re-run. Cycle 1956's
+"TOP ITEM" (shopify-products-scraper 0/10 rows) turned out to be the EXACT incident cycles
+1924/1925 already root-caused (transient allbirds.com 429) and fixed (retry-with-fresh-proxy-IP,
+build 0.1.99) hours earlier the same day — the flag just kept re-surfacing because no cycle in
+between had re-run `bin/actor-health` to refresh the snapshot. Before spending a cycle re-probing
+an Actor's own behavior from scratch on a `check-row-floor`/health flag, check whether a recent
+LEARNINGS/STATUS entry already closed the identical symptom on this same slug — a `grep -n
+"<slug>" notes/LEARNINGS.md` takes seconds and would have shortcut most of this investigation.
+Once confirmed live-healthy via `bin/varied-test`, a full `bin/actor-health` re-run (~$0.12, all 24
+Actors, a few minutes) is the correct way to refresh the record so future cycles see ground truth
+instead of re-flagging a fixed issue indefinitely. Side effect worth knowing: that full re-run can
+surface a FRESH unrelated transient on a different Actor in the same pass (this cycle: `ats-jobs-
+scraper` 502 Bad Gateway, confirmed clean on immediate retry) — `bin/actor-health` auto-appends a
+`FIX FAILED ACTORS` queue line on ANY failure, so re-test and either patch the health.json entry
+or close the line same-cycle rather than leaving a false alarm for the next cycle to rediscover.
+
+Also: `bin/actor-health` run directly (no shell `timeout` wrapper, no pipe) can exceed the Bash
+tool's default 300s window and silently moves to a background task — if wrapped in `timeout N |
+tail`, a kill before Python's buffered stdout flushes can make a REAL, in-progress (and billed)
+run look like it produced "no output" at all. Run it unwrapped and let the harness background it,
+or redirect to a file instead of a pipe, if the 300s default budget is a risk.

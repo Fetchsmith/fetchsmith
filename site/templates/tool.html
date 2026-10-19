@@ -45,7 +45,7 @@
    website-screenshot-scraper sat that way (status live, two dead Run buttons) from cycle 1775,
    when Apify started gating publication past 9 public Actors on owner identity verification. #}
 {% if t.apify_listed != false %}  <div class="muted" style="margin-top:10px">Actor page: <a href="/go/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></div>{% endif %}
-  <ul><li>HTTP-only, no browser</li><li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
+  <ul>{% if not t.browser_based %}<li>HTTP-only, no browser</li>{% endif %}<li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
 {% endif %}
 </aside>
 </div>
