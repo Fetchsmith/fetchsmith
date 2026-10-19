@@ -9151,3 +9151,45 @@ changed, generalizes the "check for a dataType/mode switch" rule to two more sha
   "request failed ... check the publication/post URL is correct"). Closed with 0 code changes —
   useful as a reminder that a 0-row report is sometimes a correct answer to a wrong question, and
   the fix is verifying the input URL live (`curl -I`) before assuming the Actor is broken.
+
+## Cycle 1920 — a correct Actor with an incomplete README, and a wasted-probe process rule
+
+**1. Check `registry.json` `status` BEFORE picking an Actor for a varied-input test.** I picked
+3 Actors deliberately untouched by the 1911-1919 LOW-FILL run, got 0 rows from
+`scholarship-scraper`, and spent 2 further probe runs decomposing the input
+(`by-state` → `by-major`, with and without `minAwardAmount`/`educationLevels`) before reading
+the run log — which said, in a dedicated terminal status message, that bold.org has served
+Vercel's "Security Checkpoint" (HTTP 429) to every non-browser request since 2026-09-20 and the
+Actor is registry `status=retired`. Nothing was billed (it bills per scholarship returned, and
+it returned none), but three runs of wall-clock went to a question already answered in
+LEARNINGS five times. **A 0-row result from a retired Actor is the retirement, not a lead.**
+
+**2. "The code is correct" and "the README is complete" are independent questions — and the
+no-PII paragraph is where this fleet hides field omissions.** `clinicaltrials-scraper`'s site
+rows have always carried the facility's own `site.status`; the README mentioned it nowhere, and
+its no-PII paragraph *enumerated* the site object as "facility, city, state, country and
+geo-coordinates only" — an enumeration written to reassure a buyer about what we DON'T ship,
+which silently became the field list a buyer trusts for what we DO. **Any README sentence of
+the form "X carries only A, B, C" is a field list and goes stale exactly like a field table.
+Grep the fleet's privacy/exclusion paragraphs against the real push-site shape in
+`src/main.js`, not just the field tables.**
+
+**3. A per-row sub-entity can carry its own status that contradicts the parent's, and the
+parent filter is the one the buyer will reach for.** `overallStatus:["RECRUITING"]` filters the
+STUDY; each site row's `site.status` is independent, and measured live 2026-10-19 on the first
+400 site rows of two queries it disagreed for **11.0%** (melanoma, 41 studies) and **41.2%**
+(type 2 diabetes, 103 studies) of rows — including WITHDRAWN, TERMINATED and SUSPENDED sites
+inside globally-RECRUITING trials. The upstream sidebar has no site-level filter, so this can
+only be a documented post-filter. **Generalizable check for any Actor with an explode-to-
+sub-entity mode (`rowsPerStudy:"site"` here, and anywhere else we flatten a child array into
+rows): does the child carry a status/state field of its own, and does the README tell the buyer
+it is not the parent's?** Worth a pass over the other explode-modes in the fleet.
+
+**4. The two-cycle rule applies to rates, not to record-level facts — split the shipped text
+accordingly.** The 11%/41% figures are one cycle old, so they stayed OUT of the published
+README; what shipped is the structural claim (which statuses can appear, that the share varies
+widely by therapeutic area, measure your own query) plus one real example row
+(NCT06246916 / Arizona Oncology Associates / `WITHDRAWN` inside a `RECRUITING` phase-3 study),
+which is a single verifiable record and not a drift-prone measurement. This is a cheap pattern
+for shipping the useful half of a one-cycle finding immediately: **publish the shape now,
+publish the rate after it holds twice.**
