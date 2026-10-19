@@ -356,6 +356,8 @@ worth naming.
 
 ## Related guides
 
+- [One Form 4 can name ten reporting owners — and EDGAR's daily index lists the filing once per owner](https://fetchsmith.com/blog/sec-form-4-joint-filings-reporting-owners)
+  — the three-day, 1,038-filing measurement behind this Actor's union-of-owners role matching: joint filings run 1.3%–7.4% of a day's Form 4s (not a stable rate), 6 of 38 have owners whose role flags differ, and exactly 1 differs in the direction that makes a first-owner-only filter drop a row.
 - [SEC Form 4 amendments correct real numbers, and no insider-trading Actor's input schema can select them](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable)
   — a live pull across 7 large-cap issuers found 4/A amendment filings on 6 of them, two of which correct a share count or plan date this Actor outputs as fact. This Actor now supports them: `formTypes` accepts `3/A`/`4/A`/`5/A` and links each amendment to the filing it replaces.
 - [SEC Form 4's 10b5-1 flag is not spelled "true" — 92% of filings write it as 1 or 0](https://fetchsmith.com/blog/sec-form-4-10b5-1-flag-is-not-a-boolean)

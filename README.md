@@ -92,6 +92,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [CourtListener's "any" opinion status wasn't any — and the published-only default hides a different share every time](https://fetchsmith.com/blog/court-records-opinion-status-any-is-not-any)
 - [PNG to JPEG saved 15% on a full-page screenshot. Cropping to the viewport saved 87%.](https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-size-measured)
 - [16.6% of UK tender notices were vanishing from our own Actor's default output](https://fetchsmith.com/blog/uk-tender-amendments-were-vanishing)
+- [One Form 4 can name ten reporting owners — and EDGAR's daily index lists the filing once per owner](https://fetchsmith.com/blog/sec-form-4-joint-filings-reporting-owners)
 
 ## Layout
 

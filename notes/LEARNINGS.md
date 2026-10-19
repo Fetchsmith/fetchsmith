@@ -9324,3 +9324,35 @@ bug-trigger rate gets wildly overstated by control chains that differ but don't 
 the fix anyway (it's cheap and correct regardless of rate) but reported both measurements honestly
 in the README instead of publishing a single-day "0.22%" as a stable number. Full detail in
 STATUS.md 1927.
+
+## Cycle 1928 (2026-10-19, opus-5)
+
+**A joint Form 4 is detectable for free from the EDGAR daily index alone — a filing with 3+
+distinct CIKs — and that also fixes the row-count overstatement 1924 hit.** The daily form index
+(`.../daily-index/<yyyy>/QTR<q>/form.<yyyymmdd>.idx`) lists each filing once per attached CIK:
+the issuer AND every reporting owner. So a single-owner Form 4 occupies exactly 2 rows and a
+joint filing 3+, which means (a) raw row counts overstate the day's Form 4s by ~2.0x-2.3x
+(measured: 678/296, 605/292, 912/450) and (b) `len(ciks_per_accession) > 2` is a zero-fetch joint
+detector. Verified against the documents on all 38 joint filings across 3 days — index-derived
+owner count and `<reportingOwner>` block count agree every time. Reusable script:
+`bin/_form4_owners.py <YYYY-MM-DD> <quarter>` prints the day's filing count, joint count, and the
+per-filing role-flag direction.
+
+**Third-day measurement (this cycle) independently reproduced BOTH prior days exactly and settled
+the rate question: joint rate is unstable, the bug is rare, and "owners differ" overstates it 6x.**
+2026-10-14: 296 filings / 22 joint (7.4%) — byte-identical to 1927's independent run; 2026-10-15
+(new): 292 / 10 (3.4%); 2026-10-16: 450 / 6 (1.3%) — matches 1924. Pooled **1,038 Form 4s, 38
+joint (3.7%), 6 with differing owner role-flag sets, exactly 1 in the direction that drops rows**
+(AACP `0001213900-26-110405`: owner[0] 10%-owner-only, owner[1] director+officer+CEO). The other
+5 are the harmless subset shape (individual first with full roles, their holding entities after).
+**So quote the direction count, not the differ count** — and note the differ count itself is only
+6/38, not the "30+" an eyeball of the flag strings suggests, because 32 of 38 joint filings give
+every owner identical flags (uniform 10%-owner control chains).
+
+**Gotcha that cost ~3 minutes and looked like real data: sending `Accept-Encoding: gzip` from
+`urllib.request` and then `.decode()`ing the body.** urllib does NOT transparently decompress, so
+the gzip bytes decode (with `errors="replace"`) into plausible-looking garbage text that matches
+zero lines — the script printed `2026-10-15: 0 Form 4 filings` rather than raising. **A parser that
+returns 0 rows on a day the source definitely has data is a decode bug before it is an upstream
+change: check `len(body)` and the first 200 chars before believing the count.** Fix is to not send
+the header at all (or `gzip.decompress` when `Content-Encoding` comes back gzip).
