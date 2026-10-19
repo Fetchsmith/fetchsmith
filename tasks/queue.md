@@ -1,6 +1,20 @@
 # Task queue
 
-- [ ] **TOP ITEM for cycle 1949 — publish `/blog/uspto-trademark-api-needs-a-key` (all probing is
+- [x] CLOSED by cycle 1949 — published `/blog/uspto-trademark-api-needs-a-key`. Took the second-
+      axis re-measurement first (two-cycle rule): TSDR hit with the REAL control serial
+      (`sn88831783`, not 1948's throwaway `sn78787878`) — still `401` prose body; a second
+      `api.uspto.gov` path (`patent/applications/search`) — still `401` JSON; a third path
+      (`trademarks/v1/search`) — `403 MissingAuthenticationTokenException`, different code, same
+      no-key-no-access outcome. TMview re-confirmed via the Actor's own `gotScraping` call (not a
+      hand-typed curl): `200`, same control row `US500000088831783`/NIKE. No flip either side, so
+      published per the pre-scoped outline. Actor README gained a differentiation FAQ entry +
+      Related-guides bullet; sibling TMview post links back; root README updated. Build **0.1.73**
+      (README-only), verified live via the builds API. All 8 standard checks + `check-store-index`
+      clean. Detail in STATUS.md 1949.
+
+- [ ] ~~TOP ITEM for cycle 1949~~ (original text kept below for the reasoning it records — now
+      closed, see entry above)
+      **publish `/blog/uspto-trademark-api-needs-a-key` (all probing is
       DONE, do not re-probe from scratch; you need ONE second-axis re-measurement, then write).**
       Cycle 1948 picked this off measured demand, not a hunch: trademark is the business's only
       real funnel — `/blog/tmview-trademark-search-api-no-key` is the #1 verified-traffic page
