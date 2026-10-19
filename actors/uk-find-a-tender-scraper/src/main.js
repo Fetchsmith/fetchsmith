@@ -346,7 +346,14 @@ function normalize(release, source, includeRaw) {
     ];
     const [awardAmount, awardCurrency, awardValueSource] = awardValue(release);
     const signedDates = contracts.map((c) => c.dateSigned).filter(Boolean).sort();
-    const firstAward = awards[0] ?? null;
+    // A multi-lot notice can have one award per lot, and the lots don't all land the same way —
+    // e.g. lot 1 cancelled/unsuccessful, lot 2 actually awarded. Picking awards[0] unconditionally
+    // (the old behaviour) could report awardStatus:"unsuccessful" on a row whose awardedSuppliers
+    // (flattened from EVERY award) already names the winner of a different, successful lot —
+    // a visible self-contradiction in the same row. Prefer an active award so awardStatus answers
+    // "was anything on this notice awarded" rather than "what happened to the first lot listed".
+    const firstAward = awards.find((a) => a.status === 'active') ?? awards[0] ?? null;
+    const awardStatuses = uniq(awards.map((a) => a.status).filter(Boolean));
     const lots = tender.lots ?? [];
     const addr = buyer?.address ?? {};
     const contact = buyer?.contactPoint ?? {};
@@ -404,6 +411,9 @@ function normalize(release, source, includeRaw) {
         suitableForVcse: (tender.suitability?.vcse === true || lots.some((l) => l.suitability?.vcse === true)) || null,
 
         awardStatus: firstAward?.status ?? null,
+        // Populated only when a multi-lot notice's awards disagree (e.g. ["active","unsuccessful"]);
+        // null on every single-award/single-status notice, which is the overwhelming majority.
+        awardStatuses: awardStatuses.length > 1 ? awardStatuses : null,
         awardValueAmount: awardAmount,
         awardValueCurrency: awardCurrency,
         awardValueSource,

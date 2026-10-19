@@ -275,6 +275,13 @@
         ],
         "title": "Award status"
       },
+      "awardStatuses": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "title": "Award statuses (only set when lots disagree)"
+      },
       "awardValueAmount": {
         "type": [
           "number",
