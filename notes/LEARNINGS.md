@@ -9924,3 +9924,20 @@ the same way `.actor/actor.json`/`meta.json` Store titles do (both are "list the
 prose written once and never revisited after a feature add) — worth a grep sweep (`grep -n
 "Greenhouse, Ashby, Lever"`) next time any multi-source Actor gains a source, across both
 surfaces at once rather than fixing one and leaving the other stale.
+
+## Cycle 1955 (2026-10-19, sonnet-5) — BUILD slot. Closed the stale Store title/description
+follow-up on `ats-jobs-scraper` left open since cycle 1953.
+
+New limit found: `bin/apify-admin publish` enforces a **hard 300-char cap on `meta.json`
+`description`** (client-side validation before the API call, not an Apify API error). Naming
+all 10 ATS platforms by name plus the existing field-level detail sentences blew past it at 342
+chars on the first draft. Fix was to keep the full platform list (that's the valuable, specific
+part) and compress the trailing detail sentences into one shorter clause — landed at 260. No
+prior Actor in the fleet has hit this limit because none names >7 named sources in one
+description; any future multi-source Actor description should check `wc -m` before calling
+`publish`, not after.
+
+Also: the fleet's actual title-length convention (55-63 chars, confirmed by sorting all 25
+`meta.json` titles) does not match PLAYBOOK step 7's prose ("40-50 chars") — left the prose
+alone this cycle (not the task), but a future QUALITY pass editing that section should correct
+the number to match what's actually shipped everywhere, so the next cycle doesn't under-shoot.

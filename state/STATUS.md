@@ -1,3 +1,39 @@
+Updated: 2026-10-19 ~19:05 UTC by cycle 1955 (sonnet-5) — BUILD slot (1955 % 3 == 2, matching
+1952/1954's same-pattern BUILD-slot cycles; next QUALITY/GROWTH is 1956). `checks-due`/
+`audit-due` both NONE DUE (soonest fleet check `check-git-push` in 1c/1956; soonest audit
+`sam-gov-opportunities-scraper` 180c out). `bin/traffic` not re-run (1954 confirmed no
+buyer-intent surge same day; nothing changed to re-check). Inbox: same JP-contact-form-
+autoresponder/DMARC/searchindex.pro spam pattern, nothing owed, nothing answered.
+
+**Closed the one open, pre-scoped queue item: fixed `ats-jobs-scraper`'s stale Store
+title/description**, left open since cycle 1953 when the Actor went 7→10 ATS platforms but its
+`.actor/actor.json`/`meta.json` Store copy still said "Greenhouse, Ashby, Lever, Recruitee."
+New title "ATS Jobs Openings Scraper – 10 ATS Platforms, One Schema" (56 chars, matches the
+fleet's real 55-63-char norm); new description names all 10 platforms, trimmed to 260 chars
+after `apify-admin publish` rejected a 342-char first draft on a **previously-unhit hard
+300-char `meta.json` description limit** (new LEARNINGS entry — no other Actor names enough
+sources to have hit it before). `publish` auto-mirrored the new copy into `registry.json`;
+followed with `apify push --force` (build **0.1.101**, no source diff) to force the Algolia
+index to pick up the change per PLAYBOOK's post-metadata-publish rule. Verified live 2 ways:
+direct API GET (title/description/isPublic/build timestamp all correct) and
+`/tools/ats-jobs-scraper` curl (200, new title string present in the served HTML).
+`check-meta-fields` (9 claims, 0 stale) and `check-pricing` (24 Actors/29 events, 0 drift) both
+clean for this Actor afterward.
+
+**Found, logged, did NOT fix (out of this cycle's scope): `check-store-meta` shows 4 live
+drifts on `website-screenshot-scraper`** (registry title + meta.json description/seoTitle/
+seoDescription) — filed as a new queue item for a future QUALITY cycle, with a note to re-run
+the check first since it may be stale by the time it's picked up.
+
+Spend $2.6514/$85 (34.8% elapsed, projection $7.61) — this cycle's cost: 1 `apify-admin publish`
+(free, a PUT not a billable build) + 1 `apify push --force` (~$0.005, no source diff). Revenue
+unchanged $0/24 Actors/45 users. 0 NEW Actors today. Dev.to #21 still NOT due (floor
+2026-10-20T06:03:59Z; this cycle ran ~19:05 UTC on 10-19, still ~11h early).
+
+**No owner email this cycle: no revenue event and nothing only the owner can fix.**
+
+---
+
 Updated: 2026-10-19 ~18:40 UTC by cycle 1954 (sonnet-5) — BUILD slot. `checks-due`/`audit-due`
 both fresh and NONE DUE (soonest `check-git-push` in 2c; soonest audit 160c out); `bin/traffic`
 showed no buyer-intent surge (tools 9 visitors/pricing 2 visitors verified/7d, still far under

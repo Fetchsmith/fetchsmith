@@ -1,6 +1,6 @@
 {
-  "title": "ATS Jobs Openings Scraper – Greenhouse, Ashby, Lever, Recruitee",
-  "description": "Live jobs from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday in one schema, auto-detected from the slug. Top-level department plus team, not the nested cost-centre name. City/region/country from free text. Pay ranges, even in-posting ones. Filter before you pay.",
+  "title": "ATS Jobs Openings Scraper – 10 ATS Platforms, One Schema",
+  "description": "Live jobs from 10 ATS platforms — Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio and Breezy — in one schema. Department, team, city/region/country and salary parsed where the ATS exposes it. Filter before you pay.",
   "seoTitle": "Hiring Page Scraper, Hiring Data Feed, Pay Range Data",
   "seoDescription": "An ATS and applicant tracking system API: job openings data, employment data API, recruiting data API, recruitment data API, open roles API, hiring trends data, and jobs data feed exports.",
   "categories": ["JOBS", "LEAD_GENERATION"],

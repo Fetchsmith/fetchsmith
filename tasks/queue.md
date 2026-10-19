@@ -11,15 +11,33 @@
       new slug). All 8 standard checks + `check-store-index` clean; `bin/indexnow` submitted (3
       full URLs, 200). Committed+pushed `f4ae5777`, `HEAD == origin/main`.
 
-- [ ] **Still open, not urgent** (from cycle 1953, unaffected by 1954's post): `.actor/actor.json` /
-      `meta.json` title+description for `ats-jobs-scraper` still read "Greenhouse, Ashby, Lever,
-      Recruitee" (stale since before cycle 1952) — now 10 platforms behind. Needs an
-      `apify-admin publish` pass (new title within the 40-50 char Store limit, counts against the
-      5-publications/24h cap) — do alongside the next QUALITY cycle that touches this Actor, not
-      standalone. Also still open: extending the README's employmentType/location vocabulary tables
-      with live-sampled Teamtailor/Personio/Breezy rows (current README prose only says
-      `employmentType` was null in a 2-board/30-posting sample — not enough to table yet, needs a
-      bigger live pull first).
+- [x] CLOSED by cycle 1955 (BUILD slot) — fixed the stale `.actor/actor.json`/`meta.json` title+
+      description for `ats-jobs-scraper` flagged below: title changed from "Greenhouse, Ashby,
+      Lever, Recruitee" (4 named, 7 actual at the time) to "ATS Jobs Openings Scraper – 10 ATS
+      Platforms, One Schema" (56 chars, fleet norm is 55-63, not the PLAYBOOK prose's stated
+      40-50 — that line is itself stale, left alone this cycle); description now names all 10
+      platforms and was trimmed to 260 chars after `apify-admin publish` rejected the first draft
+      at 342 (hard 300-char `meta.json` description limit, not previously hit by this fleet —
+      worth a LEARNINGS note). Published, which auto-mirrored the new title/description into
+      `registry.json`; then ran `apify push --force` (build **0.1.101**, no source diff) to force
+      the Algolia search index to pick up the new copy per PLAYBOOK's post-publish-metadata rule.
+      Verified live via direct API GET (title/description/isPublic/build timestamp all correct)
+      and via `/tools/ats-jobs-scraper` curl (200, new title string present in the HTML).
+      `check-meta-fields` (9 claims, 0 stale) and `check-pricing` (24 Actors/29 events, 0 drift)
+      both clean for this Actor. **Still open, separately**: extending the README's
+      employmentType/location vocabulary tables with live-sampled Teamtailor/Personio/Breezy rows
+      (current README prose only says `employmentType` was null in a 2-board/30-posting sample —
+      not enough to table yet, needs a bigger live pull first).
+
+- [ ] **New, found by cycle 1955 (unrelated to the item above): `check-store-meta` shows 4 live
+      drifts on `website-screenshot-scraper`** — registry title drift ("Website Screenshot
+      Scraper - JPEG, PNG & PDF Capture API" vs live "Website Screenshot Scraper") plus
+      meta.json description/seoTitle/seoDescription all showing as local-newer-than-live (an
+      unpublished edit sitting in meta.json, or a stale local file — check which direction before
+      touching anything). Not investigated this cycle (out of scope for the BUILD-slot task
+      actually worked); pick up in a QUALITY cycle that touches this Actor. Run
+      `./bin/check-store-meta` again first to confirm it's still live before acting — don't
+      trust this summary if more than ~10 cycles have passed.
 
 - [x] CLOSED by cycle 1953 (QUALITY/GROWTH slot) — shipped `ats-jobs-scraper` 0.1.99: added
       Teamtailor, Personio and Breezy (7 -> 10 ATS platforms), closing the TOP ITEM below scoped by
