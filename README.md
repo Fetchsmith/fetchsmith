@@ -103,6 +103,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [SmartRecruiters' job board API: real pagination, a real per-posting cost, and one board that quietly leaks a salary nobody else publishes](https://fetchsmith.com/blog/smartrecruiters-job-board-json-api)
 - [EUIPO's own trademark API is gated too — the same federated index answers it keyless](https://fetchsmith.com/blog/euipo-trademark-api-needs-a-key)
 - [Teamtailor, Personio and Breezy — three more ATS job-board APIs, three more shapes](https://fetchsmith.com/blog/teamtailor-personio-breezy-job-board-apis)
+- ["full-time" is not a filter: employmentType across ten ATS job-board APIs](https://fetchsmith.com/blog/ats-employment-type-is-not-one-vocabulary)
 
 ## Layout
 

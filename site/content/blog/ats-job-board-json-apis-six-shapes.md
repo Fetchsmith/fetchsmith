@@ -84,7 +84,7 @@ The general rule, which we now apply to every filter input in the fleet: **judge
 
 [ats-jobs-scraper](/go/ats-jobs-scraper) wraps all six APIs behind one schema — company, ATS source, title, department, team, employment type, workplace type, remote flag, location, normalized salary (min/max/currency/**interval**), timestamps, apply URL and description — and skips companies that have moved off an ATS instead of failing the run. Pay per job posting returned, no start fee, no browser required for any of the six.
 
-The Actor has since grown past these six: see the [Workday write-up](/blog/workday-career-site-json-api) and the [Teamtailor/Personio/Breezy deep-dive](/blog/teamtailor-personio-breezy-job-board-apis) for the other four.
+The Actor has since grown past these six: see the [Workday write-up](/blog/workday-career-site-json-api) and the [Teamtailor/Personio/Breezy deep-dive](/blog/teamtailor-personio-breezy-job-board-apis) for the other four. With all ten platforms measured, the employment-type field turned out to be the least portable thing on a job posting — [ten platforms, three kinds of field, and three where `"full-time"` matches nothing](/blog/ats-employment-type-is-not-one-vocabulary).
 
 ---
 

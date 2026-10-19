@@ -138,6 +138,8 @@ The point is cross-company grouping: distinct `department` values on the same li
 | Personio | closed, lowercase snake_case | `permanent`, `intern`, `temporary`, `working_student` (25 postings, 5 boards) | ❌ — use `"permanent"` | ❌ — use `"temporary"` |
 | Teamtailor | schema.org field exists, never populated | always `null` (67 postings, 5 boards) | ❌ | ❌ |
 
+Full write-up of this table, including why we normalise separators but deliberately do not normalise vocabulary: ["full-time" is not a filter](https://fetchsmith.com/blog/ats-employment-type-is-not-one-vocabulary).
+
 Only the Workday row is a claim about the *whole* vocabulary rather than about a sample: Workday publishes its own `timeType` facet, so the full value set is directly readable (see below). For the other ATSes, treat the table as "these definitely exist and definitely match" — a board may use a value this sample never hit.
 
 - **Personio's vocabulary doesn't contain the word "full" or "time" at all** — a permanent, full-time role is just `permanent`, so `employmentTypeKeyword: "full-time"` returns **0 rows** on every Personio board (measured: `ottonova`/`clark`/`orderbird`/`exporto`/`personio` own board, 25 postings, 20 `permanent`). Filter on `"permanent"` instead; `"contract"` also matches nothing — the closest Personio gets to contingent work is `temporary` or `working_student`.
@@ -266,6 +268,7 @@ Only public, no-login job-board data is collected — the same postings anyone c
 - [Recruitee's job board API: one real filter hiding among ignored ones, and a 42 MB board that's 97% pasted screenshots](https://fetchsmith.com/blog/recruitee-job-board-json-api)
 - [SmartRecruiters' job board API: real pagination, a real per-posting cost, and one board that quietly leaks a salary nobody else publishes](https://fetchsmith.com/blog/smartrecruiters-job-board-json-api)
 - [Teamtailor, Personio and Breezy — three more ATS job-board APIs, three more shapes](https://fetchsmith.com/blog/teamtailor-personio-breezy-job-board-apis)
+- ["full-time" is not a filter: employmentType across ten ATS job-board APIs](https://fetchsmith.com/blog/ats-employment-type-is-not-one-vocabulary) — why `employmentTypeKeyword` returns rows on seven platforms and zero on three, and which value to use instead on each.
 - [A Try-for-free click shouldn't cost a first-time buyer $1.26 and five minutes](https://fetchsmith.com/blog/default-inputs-should-not-cost-you-five-minutes)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the general failure modes `watchLabel` is built to avoid.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.
