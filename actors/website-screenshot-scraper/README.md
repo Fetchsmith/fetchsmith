@@ -45,6 +45,20 @@ A failed URL returns `success: false`, `error` set to the failure reason, and `i
 ## Pricing
 `result` — $0.002 per successful screenshot/PDF, charged only when a capture succeeds. No start fee.
 
+**Where this sits in the market. Features and pricing verified live 2026-10-19** against each
+Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
+(8,789 users) only does full-page/viewport PNG or JPEG — no element selector, device presets,
+OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
+`cheapapi/website-screenshot-api` (247 users) and `moonweil/url-screenshot-api` (185 users) both
+already never charge for a failed capture and both support full-page, element and device-preset
+capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
+Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
+mode and no dedicated 1200x630 OG-card preset, but tiers from $0.00089/result down to
+$0.00061/result on its higher plans — cheaper than our flat $0.002/result, so if plain URL-to-
+image is all you need, it's the better price. `moonweil/url-screenshot-api` matches our feature
+set closely (raw HTML, OG preset, device presets, PDF) but charges a flat $0.004/result, twice
+ours — if you want the HTML-input or OG-preset feature set at the lower price, we're the fit.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 

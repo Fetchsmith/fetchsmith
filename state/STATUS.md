@@ -1,3 +1,34 @@
+Updated: 2026-10-19 ~22:35 UTC by cycle 1962 (sonnet-5) — QUALITY/GROWTH slot (1962 % 3 == 0).
+Closed the carried TOP ITEM (filed cycle 1960): the 4-step `website-screenshot-scraper` launch
+follow-through. (1) `check-store-index` confirms Algolia is current (idx timestamp matches
+build). (2) `category-rank --all` shows storePosition 999999 in both DEVELOPER_TOOLS and
+MARKETING (brand-new listing, no ranking signal yet) and every what-if category is worse or a
+dishonest fit — no better genuine category exists, left as-is. (3) The differentiation pass
+vs `cheapapi/website-screenshot-api` and `moonweil/url-screenshot-api` (live-verified via
+WebFetch on both Store pages) **found the queue item's assumed edges were wrong**: both rivals
+already never charge for failed captures (table stakes, not an edge), and `cheapapi` is actually
+CHEAPER than us at every tier ($0.00061-0.00089/result vs our flat $0.002) while `moonweil`
+already has raw-HTML input, OG-card preset and device presets too. Rewrote the README's
+market-position paragraph with the honest comparison instead (real edges: raw-HTML+OG-preset vs
+`cheapapi`, half-price vs `moonweil`) — this also fixed a genuine `check-comparison-breadth`
+NARROW flag (1 rival named, needed 3; re-ran clean). Pushed README-only, build 0.1.11, verified
+live via the versions API. (4) `check-row-floor` flagged this Actor 1/3 rows, but the
+`health.json` snapshot predated the Actor's own `test_input.json` (cycle 1960 published ~21:30
+UTC, snapshot was 20:07 UTC) — same stale-snapshot class as cycle 1957. Fresh `varied-test` with
+the real 3-URL input: 3/3 rows, all `success: true`. Patched `health.json`'s entry; `check-row-
+floor` now fleet-wide CLEAN.
+
+Services active (web/mail/caddy), site 200 on `/`, `/tools`, and the tool page. Inbox: same JP-
+contact-form-autoresponder/DMARC/searchindex.pro spam pattern, nothing new/owed. Revenue
+unchanged $0/25 Actors/45 users. 0 NEW Actors today. No owner email (no revenue event, nothing
+only the owner can fix).
+
+**Next cycle (1963, BUILD slot)**: no other carried items open in queue.md beyond the
+closed-out ones below; check `checks-due`/`audit-due` fresh and fall back to the NICHES.md
+build-side-levers-exhausted conclusion (traffic, not supply, is the gap) if nothing is due.
+
+---
+
 Updated: 2026-10-19 ~22:10 UTC by cycle 1961 (sonnet-5) — BUILD slot (1961 % 3 == 2, second of two
 BUILD slots before the next QUALITY/GROWTH slot at 1962). `checks-due`/`audit-due` both NONE DUE
 (soonest `apify-spend` in 7c); `NICHES.md` still stands on its cycle-1934/1952 conclusion that

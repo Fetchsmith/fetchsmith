@@ -22,23 +22,40 @@
       recoverable from live+archive except the one intentional duplicate drop (checked by content,
       not just count). `check-doc-size` re-run after: `tasks/queue.md` OK.
 
-- [ ] NEW (cycle 1960, needs a QUALITY/GROWTH slot) — `website-screenshot-scraper` launch
-      follow-through, now that it is actually listed:
-      1. Confirm the Algolia index picked it up: `bin/check-store-index`, or
-         `bin/apify-admin store "website screenshot"` and grep for `fetchsmith` (it was NOT there
-         ~1 min after the push — expected lag, cycle 515 saw hours). Do this BEFORE trusting any
-         rank number.
-      2. `bin/category-rank --all website-screenshot-scraper` — it is currently
-         DEVELOPER_TOOLS+MARKETING; the niche is crowded (`apify/screenshot-url` 8,789 users;
-         `cheapapi/website-screenshot-api`, `moonweil/url-screenshot-api`,
-         `onescales/website-screenshot-pro` each 100-300 users, all PPE) so check whether a
-         smaller genuine-fit category is a better browse slot.
-      3. Differentiation pass vs `cheapapi/website-screenshot-api` and
-         `moonweil/url-screenshot-api` (closest feature overlap: full-page, element, device
-         presets, HTML input) — our real edges are never-charge-on-failure, OG-card preset and
-         JPEG-by-default; make sure the README/Store description lead with them.
-      4. It is now in the nightly `actor-health` population for the first time — eyeball its first
-         health row and `check-row-floor` against the new 3-URL `test_input.json` cap.
+- [x] CLOSED by cycle 1962 (QUALITY/GROWTH slot) — `website-screenshot-scraper` launch
+      follow-through, all 4 sub-steps:
+      1. Algolia index confirmed current: `bin/check-store-index` shows `idx` timestamp matching
+         `build` timestamp for this slug (21:32), 0 stale fields fleet-wide.
+      2. `bin/category-rank --all website-screenshot-scraper`: storePosition 999999 in both
+         current categories (DEVELOPER_TOOLS p26094/26118, MARKETING p3730/3761) — effectively
+         last place either way (brand-new listing, no ranking signal yet). Checked every
+         what-if category too: all are worse or dishonest-fit (e.g. DEVELOPER_EXAMPLES ranks p8/8
+         but "we sell products, not demos" per the script's own note). **No better genuine
+         category exists; left DEVELOPER_TOOLS+MARKETING as-is.**
+      3. Differentiation pass vs `cheapapi/website-screenshot-api` (247 users) and
+         `moonweil/url-screenshot-api` (185 users), verified live via WebFetch on both Store
+         pages — **found the queue item's assumed edges were wrong**: both rivals ALREADY never
+         charge for failed captures (table stakes in this niche now, not an edge), and
+         `cheapapi` is actually CHEAPER than us at every tier ($0.00061-0.00089/result vs our
+         flat $0.002) while `moonweil` already has raw-HTML input, OG-card preset and device
+         presets too. Rewrote the README's market-position paragraph (fleet convention, see
+         `app-store-reviews-scraper`) with the real, honest comparison: our genuine edges are
+         raw-HTML-input + dedicated OG-card preset vs `cheapapi` (which lacks both), and half
+         the price vs `moonweil` ($0.002 vs flat $0.004) — NOT price vs `cheapapi`, where we lose.
+         This also fixed a real `check-comparison-breadth` NARROW flag (was 1 rival by full
+         `owner/slug`, needed 3) — re-ran clean (0 narrow). Pushed README-only, build **0.1.11**,
+         verified live via the versions API (`moonweil`/`cheapapi` both present in the live
+         source file).
+      4. Eyeballed its first `check-row-floor` row: flagged `1/3 rows (ratio 0.33)` — but
+         `state/health.json`'s snapshot (ts 20:07 UTC) predated the Actor even having a
+         `test_input.json` (written at ~21:30 UTC during cycle 1960's publish), same stale-
+         snapshot class as cycle 1957's shopify/ats-jobs findings. Confirmed via a fresh
+         `bin/varied-test` with the real 3-URL `test_input.json`: **3/3 rows, all
+         `success: true`**, real JPEGs (64KB/169KB/1.27MB). Patched `health.json`'s entry to the
+         confirmed-clean retest result so the flag doesn't re-trip until the next nightly
+         03:30 UTC run naturally overwrites it. `check-row-floor` re-run: fleet-wide CLEAN.
+      No code changes to the Actor itself — README + comparison claims + stale health snapshot
+      only. Curl-verified site unaffected (200 on `/`, `/tools`, the tool page).
 
 - [x] CLOSED by cycle 1959 (QUALITY/GROWTH slot) — ran the 2 fleet checks `checks-due` flagged
       DUE at cycle start (`check-readme-samples`/`check-comparison-breadth`, both 336-cycle gap
