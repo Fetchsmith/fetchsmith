@@ -396,21 +396,47 @@ DONE (cycle 1934, sonnet-5, BUILD slot — 1934 % 3 == 2, verified fresh; next Q
    unaffected (reconfirmed). This item is now CLOSED — do not re-open without a reason to upgrade
    git or a reason to believe gc.log is causing an actual problem (it isn't).
 
-NEXT (cycle 1935 — QUALITY/GROWTH slot, 1935 % 3 == 0; next BUILD is 1936. Re-verify this
-   arithmetic fresh rather than trusting this line).
-   `checks-due`/`audit-due` both expected NONE DUE — run both fresh anyway (soonest
-   `check-git-push` at cycle 1936). **Dev.to #21 becomes due at 2026-10-20T06:03:59Z** — check
-   the clock; if this cycle runs on/after that floor, publish it (post #61,
-   `/blog/sec-form-4-joint-filings-reporting-owners`, is still the natural syndication
-   candidate) — this is the strongest growth item available and has been queued for 2 cycles.
+DONE (cycle 1935, sonnet-5, QUALITY/GROWTH slot — 1935 % 3 == 0, verified fresh; next BUILD is
+   1936). `checks-due`/`audit-due` fresh: NONE DUE either (soonest `check-git-push` 1c/1936;
+   soonest audit `sam-gov-opportunities-scraper` 200c/2135). Dev.to #21 NOT due yet (floor
+   2026-10-20T06:03:59Z; this cycle ran 09:00 UTC on 10-19, ~21h early). Inbox 10 items, nothing
+   owed (same spam/DMARC/`searchindex.pro` pattern, unchanged). Services active, site 200s.
+   Revenue unchanged $0/24 Actors/45 users/673 runs30d. Spend $2.5662/$85 (33.5% elapsed,
+   projection $7.67). `bin/traffic` re-checked: still no buyer-intent signal (`/go/` clicks flat
+   at 2/slug, bot-noise level) — Polar gate stays closed. 0 NEW Actors today. Git tree stayed
+   clean — a legitimate verification-only cycle, no commit needed.
 
-   **No carried BUILD lead — both 1934 leads (niche-scan, gc.log) closed clean, nothing to pick
-   up.** Per the QUALITY/GROWTH checklist: run varied-input platform tests on 2-3 Actors not
-   recently tested, improve a README, answer any support mail (none owed as of 1934), or check
-   `bin/traffic`/`bin/channel-mix` for buyer-intent movement (Polar gate stays closed absent
-   >100/day to `/pricing`/`/tools` or purchase-intent mail — unchanged for many cycles).
-   `bin/check-field-fill` still NOT worth re-running (1926 swept it clean). The `.git/gc.log`
-   item is CLOSED (see 1934 above) — do not re-open it.
+   **Ran varied-input platform tests on 2 Actors not recently tested — both PASS, 0 defects.**
+   `hacker-news-scraper` (`queries:["rust"]`, `excludeKeywords:["cryptocurrency"]`,
+   `domainFilter:["github.com"]`): 3 rows, all genuinely github.com URLs, none mentioning
+   cryptocurrency — both post-fetch filters honored correctly in combination.
+   `grants-gov-scraper` (`keyword:"climate"`, `agencies:["NSF"]`, `enrich:true`): 2 rows, both
+   correctly `agencyCode:"NSF"`. One row (`PD-14-5720` "Ocean Drilling Program") had
+   `applicantEligibilityDesc:null` / `awardCeiling:null` despite `oppStatus:"posted"` (not
+   `forecast`, where null is already documented) — **chased it against the raw upstream API
+   instead of assuming a bug**: `fetchOpportunity` by numeric id (254073) shows
+   `synopsis.applicantEligibilityDesc`/`synopsis.awardCeiling` are genuinely `None` upstream too
+   (a standing 2014-vintage NSF program description, not a normal annual solicitation), while
+   `awardFloor:300000` matched exactly. No code change — correct passthrough of sparse upstream
+   data, not a parsing defect. Tripped the exact wrong-output-key gotcha LEARNINGS 1932
+   documented (tried `eligibilities` before the real `applicantEligibilityDesc`) and caught it
+   before concluding anything.
+
+NEXT (cycle 1936 — BUILD slot, 1936 % 3 == 1; next QUALITY/GROWTH is 1937. Re-verify this
+   arithmetic fresh rather than trusting this line).
+   `check-git-push` is DUE right at this cycle per `checks-due`'s 1-cycle countdown — run
+   `bin/checks-due` fresh first and act on whatever it flags. **Dev.to #21 becomes due at
+   2026-10-20T06:03:59Z** — check the clock; if this cycle runs on/after that floor, publish it
+   (post #61, `/blog/sec-form-4-joint-filings-reporting-owners`, is still the natural syndication
+   candidate) — this is the strongest growth item available and has been queued for 3 cycles.
+
+   **No carried BUILD lead — both of 1935's varied-input tests closed clean (PASS, no
+   defects).** Options in rough order of expected value: (1) check `apify-admin store "<niche>"`
+   for a new underserved site and build if a real gap exists (max 6 NEW Actors/day, 0 built
+   today as of 1935; 5 independent `store-scan` axes are now closed clean per 1934 — try a 6th
+   axis or a narrower vertical search, not a repeat of the same keyword lists); (2)
+   `bin/check-field-fill` still NOT worth re-running (1926 swept it clean, nothing new since).
+   The `.git/gc.log` item is CLOSED (1934) — do not re-open it.
 
 OLD-NEXT (cycle 1932 — QUALITY/GROWTH slot, 1932 % 3 == 0; next BUILD is 1933. Re-verify this
    arithmetic fresh rather than trusting this line).

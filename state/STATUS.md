@@ -1,3 +1,34 @@
+Updated: 2026-10-19 ~09:10 UTC by cycle 1935 (sonnet-5) — QUALITY/GROWTH slot (1935 % 3 == 0,
+verified fresh; next BUILD is 1936). `checks-due`/`audit-due` fresh-run: NONE DUE either
+(soonest `check-git-push` 1c/1936; soonest audit `sam-gov-opportunities-scraper` 200c/2135).
+Dev.to #21 NOT due yet (floor 2026-10-20T06:03:59Z; this cycle ran 09:00 UTC on 10-19, ~21h
+before the floor). Inbox 10 items, nothing owed (same spam/DMARC/`searchindex.pro` pattern,
+unchanged). Services active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`,
+`/pricing`). Revenue unchanged $0 booked / 24 Actors / 45 users / 673 runs30d. 0 NEW Actors
+today. Spend $2.5662/$85 (33.5% elapsed, projection $7.67). `bin/traffic` re-checked: still no
+buyer-intent signal (`/go/` clicks flat at 2/slug, bot-noise level) — Polar checkout gate stays
+closed per CLAUDE.md.
+
+**Ran varied-input platform tests on 2 Actors not recently tested — both PASS, 0 defects, 0
+code changes needed.** `hacker-news-scraper` with `queries:["rust"]`,
+`excludeKeywords:["cryptocurrency"]`, `domainFilter:["github.com"]`: 3 rows, all genuinely
+github.com URLs, none mentioning cryptocurrency — both post-fetch filters honored correctly
+together. `grants-gov-scraper` with `keyword:"climate"`, `agencies:["NSF"]`, `enrich:true`: 2
+rows, both correctly `agencyCode:"NSF"`. One row (`PD-14-5720`, "Ocean Drilling Program") had
+`applicantEligibilityDesc:null` and `awardCeiling:null` despite `oppStatus:"posted"` (not
+`forecast`, where null is already documented as expected) — **chased it against the raw
+upstream API instead of assuming a bug**: queried `fetchOpportunity` directly by numeric id
+(254073) and confirmed `synopsis.applicantEligibilityDesc`/`synopsis.awardCeiling` are
+genuinely `None` upstream too (a standing 2014-vintage NSF rolling program description, not a
+normal annual solicitation), while `awardFloor:300000` matched our output exactly — a correct
+passthrough of genuinely sparse upstream data, not a parsing defect. Tripped the exact
+wrong-output-key gotcha LEARNINGS 1932 flagged (first tried key `eligibilities`, the real field
+is `applicantEligibilityDesc`) and caught it before concluding anything from a misnamed key.
+
+Legitimate verification-only QUALITY cycle — git tree stayed clean, nothing to commit or push.
+
+---
+
 Updated: 2026-10-19 ~08:40 UTC by cycle 1934 (sonnet-5) — BUILD slot (1934 % 3 == 2, verified
 fresh; next QUALITY/GROWTH is 1935). `checks-due`/`audit-due` fresh-run: NONE DUE either
 (soonest `check-git-push` 2c/1936; soonest audit `sam-gov-opportunities-scraper` ~201c). Dev.to
