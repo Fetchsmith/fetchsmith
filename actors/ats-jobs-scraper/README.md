@@ -1,19 +1,19 @@
-# ATS Jobs Scraper – Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters & Workday
+# ATS Jobs Scraper – Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio & Breezy
 
-Live job postings straight from any company's own career board on **Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters or Workday**, normalized into one schema — no matter which ATS the company uses.
+Live job postings straight from any company's own career board on **Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio or Breezy** — 10 ATS platforms in one call, normalized into one schema no matter which ATS the company uses.
 
 In short: a hiring page scraper and applicant tracking system API in one call — no browser, no login, just the postings each company's own ATS already exposes publicly.
 
 ## What it does
-- Fetches each company's public job-board API directly (no browser, no login) for **Greenhouse**, **Ashby**, **Lever**, **Recruitee**, **Workable**, **SmartRecruiters** and **Workday** — the ATS behind 10,000+ career sites, including many large employers no other field in this list reaches.
-- **Don't know which ATS a company uses?** Leave `ats` off (or set it to `"auto"`) and give just the slug — the Actor checks all 6 non-Workday platforms for you and uses whichever one is real. See [Don't know which ATS a company uses?](#dont-know-which-ats-a-company-uses-use-ats-auto).
+- Fetches each company's public job-board API directly (no browser, no login) for **Greenhouse**, **Ashby**, **Lever**, **Recruitee**, **Workable**, **SmartRecruiters**, **Workday**, **Teamtailor**, **Personio** and **Breezy** — 10 ATS platforms combined reaching well over 10,000 career sites, including many large employers no other field in this list reaches.
+- **Don't know which ATS a company uses?** Leave `ats` off (or set it to `"auto"`) and give just the slug — the Actor checks all 9 non-Workday platforms for you and uses whichever one is real. See [Don't know which ATS a company uses?](#dont-know-which-ats-a-company-uses-use-ats-auto).
 - Normalizes every posting into one shared schema (title, department, team, employment type, workplace type, remote flag, location, salary where the ATS exposes it, timestamps, apply URL, description).
 - Client-side filters (title keyword + exclude, location keyword + exclude, remote-only, has-salary, posted-after date) are applied **before** charging, so you only pay for postings you actually want.
 - Companies that have migrated off an ATS (very common for Lever) are skipped with a warning, not a failed run.
 - Pay per result: you are charged only for job postings actually returned. **No start fee.**
 
 ## Use cases
-- **Job-board aggregation** — pull live openings from every company you track across 7 different ATSes into one feed, instead of maintaining 7 separate scrapers.
+- **Job-board aggregation** — pull live openings from every company you track across 10 different ATSes into one feed, instead of maintaining 10 separate scrapers.
 - **Recruiting/sourcing intelligence** — spot when a target company opens a new role in a specific team or location, with `department`/`team`/`location` already normalized so you can filter without per-ATS cleanup.
 - **Salary benchmarking** — `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` give a normalized comparable across Ashby, Lever, Recruitee and Greenhouse postings that publish pay ranges.
 - **Remote-work tracking** — `remoteOnly` plus the normalized `workplaceType`/`isRemote` fields build a remote-jobs feed across every ATS at once, not just the ones with a "remote" search filter.
@@ -24,7 +24,7 @@ In short: a hiring page scraper and applicant tracking system API in one call �
 ## Input
 | Field | Type | Description |
 |---|---|---|
-| `companies` | array | `[{"ats": "auto\|greenhouse\|ashby\|lever\|recruitee\|workable\|smartrecruiters\|workday", "slug": "<company-slug>"}]`. The slug is the company identifier in their career-board URL, e.g. `jobs.ashbyhq.com/ramp` → `{"ats":"ashby","slug":"ramp"}`. **Omit `ats` or set it to `"auto"` to skip knowing which platform a company uses** — the Actor tries all 6 non-Workday platforms for that slug and keeps whichever one actually has a board. **Workday's slug is `"<host>/<site>"`** (see below) since a Workday board has no single short identifier, and it always needs an explicit `"ats":"workday"` — it cannot be auto-detected. |
+| `companies` | array | `[{"ats": "auto\|greenhouse\|ashby\|lever\|recruitee\|workable\|smartrecruiters\|workday\|teamtailor\|personio\|breezy", "slug": "<company-slug>"}]`. The slug is the company identifier in their career-board URL, e.g. `jobs.ashbyhq.com/ramp` → `{"ats":"ashby","slug":"ramp"}`. **Omit `ats` or set it to `"auto"` to skip knowing which platform a company uses** — the Actor tries all 9 non-Workday platforms for that slug and keeps whichever one actually has a board. **Workday's slug is `"<host>/<site>"`** (see below) since a Workday board has no single short identifier, and it always needs an explicit `"ats":"workday"` — it cannot be auto-detected. |
 | `titleKeyword` | string | Only keep postings whose title contains this text. |
 | `titleExcludeKeyword` | string | Drop postings whose title contains this text, e.g. `"Senior"` to filter out senior roles. |
 | `locationKeyword` | string | Only keep postings whose location/city/region/country contains this text. |
@@ -47,7 +47,7 @@ In short: a hiring page scraper and applicant tracking system API in one call �
 | `proxyConfiguration` | object | Apify Proxy config. Default: Apify Proxy on. |
 
 ### Don't know which ATS a company uses? Use `"ats": "auto"`
-If you only have a guess at the slug (e.g. the company's own name, lowercased) and not the platform, pass `{"slug": "<slug>"}` with no `ats`, or `{"ats": "auto", "slug": "<slug>"}`. The Actor tries Greenhouse, Ashby, Lever, Recruitee, Workable and SmartRecruiters for that exact slug in parallel and keeps whichever platform actually has a board there — `atsSource` on the returned rows shows what it found. If the same slug happens to be a real, populated board on more than one platform (rare, but generic slugs like `demo` can collide), it keeps the one with postings; if more than one has postings, it logs the ambiguity and picks by a fixed priority order. If no platform has that slug at all, the company is skipped and reported the same as a wrong explicit `ats` guess (see below) — nothing is charged for it. Auto-detect costs the same as specifying the platform directly: only the postings actually returned are charged. **Workday is never auto-detected** — its slug format is `"<host>/<site>"`, not a bare company name, so there's nothing to guess; always pass `"ats": "workday"` explicitly for it.
+If you only have a guess at the slug (e.g. the company's own name, lowercased) and not the platform, pass `{"slug": "<slug>"}` with no `ats`, or `{"ats": "auto", "slug": "<slug>"}`. The Actor tries Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Teamtailor, Personio and Breezy for that exact slug in parallel and keeps whichever platform actually has a board there — `atsSource` on the returned rows shows what it found. If the same slug happens to be a real, populated board on more than one platform (rare, but generic slugs like `demo` can collide), it keeps the one with postings; if more than one has postings, it logs the ambiguity and picks by a fixed priority order. If no platform has that slug at all, the company is skipped and reported the same as a wrong explicit `ats` guess (see below) — nothing is charged for it. Auto-detect costs the same as specifying the platform directly: only the postings actually returned are charged. **Workday is never auto-detected** — its slug format is `"<host>/<site>"`, not a bare company name, so there's nothing to guess; always pass `"ats": "workday"` explicitly for it.
 
 ### Finding a company's slug
 - **Greenhouse**: `boards.greenhouse.io/<slug>` or the `gh_jid`-style URL on their careers page.
@@ -57,6 +57,9 @@ If you only have a guess at the slug (e.g. the company's own name, lowercased) a
 - **Workable**: `apply.workable.com/<slug>`.
 - **SmartRecruiters**: `jobs.smartrecruiters.com/<slug>` (identifier is case-sensitive, e.g. `BMWDealerCareers`).
 - **Workday**: use `"<host>/<site>"` from the board's own URL, e.g. `okgov.wd1.myworkdayjobs.com/okgovjobs` → `{"ats":"workday","slug":"okgov.wd1.myworkdayjobs.com/okgovjobs"}`. The `wd<N>` host segment and the site name are both required and vary per company — copy them straight from the address bar on the company's own Workday career page (`https://<host>/<site>`).
+- **Teamtailor**: `<slug>.teamtailor.com`, e.g. `oatly.teamtailor.com` → `{"ats":"teamtailor","slug":"oatly"}`. The board is a JSON Feed with an embedded schema.org `JobPosting` per item, so location/date/organization come free — no per-job detail call.
+- **Personio**: `<slug>.jobs.personio.de`, e.g. `ottonova.jobs.personio.de` → `{"ats":"personio","slug":"ottonova"}`. An empty board (no open roles) is a normal result, not an error.
+- **Breezy**: `<slug>.breezy.hr`, e.g. `the-san-francisco-standard.breezy.hr` → `{"ats":"breezy","slug":"the-san-francisco-standard"}`. Breezy publishes structured `country`/`region`/`city` plus a real `is_remote` flag, and a free-text `salary` field is parsed into `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` when the posting includes one.
 
 ## Output
 One row per job posting:

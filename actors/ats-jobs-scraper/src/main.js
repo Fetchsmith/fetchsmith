@@ -10,11 +10,11 @@ import { parseLocation } from './location.js';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
-const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday'];
+const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday', 'teamtailor', 'personio', 'breezy'];
 // Workday's slug is "<host>/<site>", not a bare company name, so it can't be guessed from a slug
 // alone and is excluded from auto-detection. Order is a fixed priority for the rare case where the
 // same slug string happens to exist as a real, populated board on more than one platform.
-const AUTO_DETECT_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters'];
+const AUTO_DETECT_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'teamtailor', 'personio', 'breezy'];
 const DEFAULT_COMPANIES = [
   { ats: 'greenhouse', slug: 'airbnb' },
   { ats: 'ashby', slug: 'ramp' },
@@ -23,6 +23,9 @@ const DEFAULT_COMPANIES = [
   { ats: 'workable', slug: 'getresponse' },
   { ats: 'smartrecruiters', slug: 'ElasticBandCompany' },
   { ats: 'workday', slug: 'okgov.wd1.myworkdayjobs.com/okgovjobs' },
+  { ats: 'teamtailor', slug: 'oatly' },
+  { ats: 'personio', slug: 'ottonova' },
+  { ats: 'breezy', slug: 'the-san-francisco-standard' },
 ];
 const seenCompanies = new Set();
 const companies = (Array.isArray(input.companies) && input.companies.length ? input.companies : DEFAULT_COMPANIES)
@@ -484,6 +487,11 @@ async function getJson(url) {
   return { status: res.statusCode, body: res.body };
 }
 
+async function getText(url) {
+  const res = await requestWithRetry({ url, timeout: BOARD_TIMEOUT, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), responseType: 'text' });
+  return { status: res.statusCode, body: res.body };
+}
+
 // Greenhouse's `content` field comes back HTML-entity-encoded (e.g. "&lt;div&gt;") rather than
 // raw HTML — decode it once so descriptionHtml is actually usable HTML, not escaped text.
 function decodeEntities(s) {
@@ -828,6 +836,129 @@ async function fetchWorkable(slug) {
   };
 }
 
+// Teamtailor's board is a JSON Feed 1.1 document (`{version,title,items[]}`), not a bespoke shape.
+// Each item carries an embedded schema.org JobPosting (`_jobposting`) with `jobLocation`/
+// `datePosted`/`hiringOrganization` already resolved — no per-job detail call needed, unlike
+// Workday. Measured live (cycle 1952, re-confirmed 1953) on career.teamtailor.com and
+// oatly.teamtailor.com: `jobLocation[].address.addressRegion` is NOT a sub-country region — it is
+// either a continent name ("Oceania", "North America") or, on single-country boards, a repeat of
+// the country name ("Sweden") — never a real state/province, so it is left null rather than
+// mislabeled as `region`. `addressCountry` is already an ISO code (normalizeCountry handles it).
+// `employmentType` was null on every item sampled across both boards but is read anyway since the
+// schema.org field exists — a board that does populate it costs nothing extra to support.
+async function fetchTeamtailor(slug) {
+  const { status, body } = await getJson(`https://${encodeURIComponent(slug)}.teamtailor.com/jobs.json`);
+  if (status === 404 || !Array.isArray(body?.items)) return { jobs: [], notFound: true };
+  return {
+    jobs: body.items.map((it) => {
+      const jp = it._jobposting ?? {};
+      const places = Array.isArray(jp.jobLocation) ? jp.jobLocation : [];
+      const addr = (p) => p?.address ?? {};
+      const primary = addr(places[0]);
+      const location = primary.addressLocality ?? null;
+      return {
+        company: slug, atsSource: 'teamtailor', jobId: it.id, title: it.title?.trim() ?? jp.title?.trim() ?? null,
+        department: null, team: null, departmentPath: null, employmentType: jp.employmentType ?? null,
+        workplaceType: null, isRemote: /remote/i.test(location ?? ''),
+        location, secondaryLocations: places.slice(1).map((p) => addr(p).addressLocality).filter(Boolean),
+        country: normalizeCountry(primary.addressCountry), region: null, city: primary.addressLocality ?? null,
+        salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
+        publishedAt: jp.datePosted ?? it.date_published ?? null, updatedAt: null,
+        jobUrl: it.url ?? null, applyUrl: it.url ?? null,
+        descriptionHtml: needDescriptions ? (it.content_html ?? null) : null,
+        descriptionText: needDescriptions ? textOf(it.content_html) : null,
+      };
+    }),
+  };
+}
+
+// Personio's board is `<workzag-jobs><position>` XML, not JSON — no XML dependency exists in this
+// Actor yet, so it is parsed with cheerio in xmlMode (already a dependency for Greenhouse's HTML).
+// Measured live (cycle 1952, re-confirmed 1953): the title field is `name`, not `title`; `office`
+// is free text ("München") parsed the same way Greenhouse's `location.name` is; an empty
+// `<workzag-jobs>` (72 B, seen on `holidu`) is a normal zero-posting board, not an error. There is
+// no job-URL field in the feed at all — `<tenant>.jobs.personio.de/job/<id>` is a separately
+// measured, live-verified pattern (this cycle: fetched it directly, 200, page <title> matches the
+// feed's `name`), not a guess.
+function personioDescription(pos, $) {
+  const sections = pos.children('jobDescriptions').children('jobDescription')
+    .map((_, el) => {
+      const sec = $(el);
+      const name = sec.children('name').first().text().trim();
+      const value = sec.children('value').first().html() ?? '';
+      return name ? `<h3>${name}</h3>${value}` : value;
+    }).get();
+  return sections.join('') || null;
+}
+async function fetchPersonio(slug) {
+  const { status, body } = await getText(`https://${encodeURIComponent(slug)}.jobs.personio.de/xml`);
+  if (status === 404) return { jobs: [], notFound: true };
+  const $ = cheerio.load(body, { xmlMode: true });
+  return {
+    jobs: $('position').map((_, el) => {
+      const p = $(el);
+      const text = (tag) => p.children(tag).first().text().trim() || null;
+      const office = text('office');
+      const additionalOffices = p.children('additionalOffices').children('office').map((__, o) => $(o).text().trim()).get().filter(Boolean);
+      const geo = parseLocation(office);
+      const id = text('id');
+      const descHtml = needDescriptions ? personioDescription(p, $) : null;
+      return {
+        company: slug, atsSource: 'personio', jobId: id, title: text('name'),
+        department: text('department'), team: null, departmentPath: null, employmentType: text('employmentType'),
+        workplaceType: null, isRemote: /remote/i.test(office ?? '') || additionalOffices.some((o) => /remote/i.test(o)),
+        location: office, secondaryLocations: additionalOffices,
+        country: geo.country, region: geo.region, city: geo.city,
+        salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
+        publishedAt: text('createdAt'), updatedAt: null,
+        jobUrl: id ? `https://${encodeURIComponent(slug)}.jobs.personio.de/job/${encodeURIComponent(id)}` : null,
+        applyUrl: id ? `https://${encodeURIComponent(slug)}.jobs.personio.de/job/${encodeURIComponent(id)}` : null,
+        descriptionHtml: descHtml, descriptionText: needDescriptions ? textOf(descHtml) : null,
+      };
+    }).get(),
+  };
+}
+
+// Breezy's board is a flat JSON array, title field `name` again (not `title`), `url` prebuilt. The
+// vendor's own demo tenant (breezy.breezy.hr) is the only one sampled in cycle 1952 — this cycle
+// confirmed a REAL customer tenant (`the-san-francisco-standard`, pulled from a rival Actor's
+// `exampleRunInput` rather than guessed) and found two fields the demo tenant's minimal rows did
+// not show: `location` is a STRUCTURED object (country/state/city, not free text — no parseLocation
+// needed) with a real `is_remote` boolean, and a free-text `salary` field ("$25 / hour") that
+// parses with the same parseMoney/periodWord helpers built for Greenhouse's pay-transparency block.
+// The `?location=`/`?department=` query params are confirmed silently ignored on the real tenant
+// (byte-identical response with both params set) — same fails-open shape as Greenhouse/Workable.
+function breezySalary(raw) {
+  const none = { min: null, max: null, currency: null, interval: null };
+  if (!raw || !String(raw).trim()) return none;
+  const min = parseMoney(raw);
+  if (min == null) return none;
+  const currency = /€/.test(raw) ? 'EUR' : /£/.test(raw) ? 'GBP' : /\$/.test(raw) ? 'USD' : null;
+  return { min, max: min, currency, interval: periodWord(raw) };
+}
+async function fetchBreezy(slug) {
+  const { status, body } = await getJson(`https://${encodeURIComponent(slug)}.breezy.hr/json`);
+  if (status === 404 || !Array.isArray(body)) return { jobs: [], notFound: true };
+  return {
+    jobs: body.map((j) => {
+      const loc = j.location ?? {};
+      const secondary = (Array.isArray(j.locations) ? j.locations : []).slice(1);
+      const pay = breezySalary(j.salary);
+      return {
+        company: slug, atsSource: 'breezy', jobId: j.id, title: j.name?.trim() ?? null,
+        department: j.department ?? null, team: null, departmentPath: null, employmentType: j.type?.name ?? null,
+        workplaceType: loc.is_remote ? 'remote' : null, isRemote: !!loc.is_remote,
+        location: loc.name ?? null, secondaryLocations: secondary.map((l) => l?.name).filter(Boolean),
+        country: loc.country?.name ?? null, region: loc.state?.name ?? null, city: loc.city ?? null,
+        salaryMin: pay.min, salaryMax: pay.max, salaryCurrency: pay.currency, salaryInterval: pay.interval,
+        publishedAt: j.published_date ?? null, updatedAt: null,
+        jobUrl: j.url ?? null, applyUrl: j.url ?? null,
+        descriptionHtml: null, descriptionText: null,
+      };
+    }),
+  };
+}
+
 // SmartRecruiters' list endpoint (`/postings`) does not carry the job description — that only
 // comes back from a per-job detail call (`/postings/<id>`, `jobAd.sections`). To avoid one HTTP
 // request per posting on large boards (BMWDealerCareers alone has 194), filter on the cheap
@@ -1069,6 +1200,7 @@ async function fetchWorkday(slug) {
 const FETCHERS = {
   greenhouse: fetchGreenhouse, ashby: fetchAshby, lever: fetchLever, recruitee: fetchRecruitee,
   workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters, workday: fetchWorkday,
+  teamtailor: fetchTeamtailor, personio: fetchPersonio, breezy: fetchBreezy,
 };
 
 // Tries every auto-detectable platform for one slug in parallel and keeps the first (in

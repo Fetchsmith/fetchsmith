@@ -6,7 +6,7 @@
     "companies": {
       "title": "Companies",
       "type": "array",
-      "description": "List of {\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Omit \"ats\" or set it to \"auto\" to auto-detect the platform from the slug alone (tries all 6 non-Workday platforms and keeps whichever one actually has a board there) — useful when you know a company's slug but not which ATS they use. Examples when you do know the platform: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive); Workday uses \"<host>/<site>\" from the board's own URL, e.g. \"okgov.wd1.myworkdayjobs.com/okgovjobs\" — Workday cannot be auto-detected and always needs an explicit \"ats\": \"workday\".",
+      "description": "List of {\"ats\": \"auto|greenhouse|ashby|lever|recruitee|workable|smartrecruiters|workday|teamtailor|personio|breezy\", \"slug\": \"<company-slug-from-their-career-board-url>\"}. Omit \"ats\" or set it to \"auto\" to auto-detect the platform from the slug alone (tries all 9 non-Workday platforms and keeps whichever one actually has a board there) — useful when you know a company's slug but not which ATS they use. Examples when you do know the platform: careers.airbnb.com/... uses Greenhouse slug \"airbnb\"; jobs.ashbyhq.com/ramp uses Ashby slug \"ramp\"; apply.workable.com/getresponse uses Workable slug \"getresponse\"; jobs.smartrecruiters.com/BMWDealerCareers uses SmartRecruiters slug \"BMWDealerCareers\" (case-sensitive); oatly.teamtailor.com uses Teamtailor slug \"oatly\"; ottonova.jobs.personio.de uses Personio slug \"ottonova\"; the-san-francisco-standard.breezy.hr uses Breezy slug \"the-san-francisco-standard\"; Workday uses \"<host>/<site>\" from the board's own URL, e.g. \"okgov.wd1.myworkdayjobs.com/okgovjobs\" — Workday cannot be auto-detected and always needs an explicit \"ats\": \"workday\".",
       "editor": "json",
       "default": [
         {
@@ -36,6 +36,18 @@
         {
           "ats": "workday",
           "slug": "okgov.wd1.myworkdayjobs.com/okgovjobs"
+        },
+        {
+          "ats": "teamtailor",
+          "slug": "oatly"
+        },
+        {
+          "ats": "personio",
+          "slug": "ottonova"
+        },
+        {
+          "ats": "breezy",
+          "slug": "the-san-francisco-standard"
         }
       ]
     },

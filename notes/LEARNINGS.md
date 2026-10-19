@@ -9841,3 +9841,66 @@ Teamtailor in the title. Single-ATS rivals are numerous but tiny (9 Personio Act
 users; 9 Teamtailor Actors, max 8 users) — so the per-platform niches are clone-flooded and NOT
 worth a dedicated Actor, consistent with every survey since 1489. The defensible move is the
 breadth claim on the Actor we already own: 7 → 10 platforms in one request.
+
+## Cycle 1953 (2026-10-19, sonnet-5) — QUALITY/GROWTH slot. Shipped `ats-jobs-scraper` 0.1.99:
+Teamtailor + Personio + Breezy added (7 -> 10 ATS platforms), closing the TOP ITEM scoped by 1952.
+
+**Step-1 re-measurement (two-cycle rule) all held, one cycle later:** `oatly.teamtailor.com/jobs.json`
+byte-identical (357,536 B), `ottonova.jobs.personio.de/xml` byte-identical (116,233 B). Breezy's
+vendor-only tenant from 1952 was NOT enough to ship on — pulled a REAL customer tenant the cheap
+way per the carried instruction (`GET /v2/acts/cliqtomedia~breezy-jobs-monitor-scraper?token=...`
+-> `exampleRunInput.body` -> `the-san-francisco-standard`), confirmed 200/15,579 B, and re-ran the
+filter-ignored claim on a SECOND axis (two different params, `?location=remote` AND
+`?department=engineering`, both byte-identical to the unfiltered response) — it holds on a real
+board, not just the vendor demo.
+
+**Three things the real Breezy tenant exposed that the vendor demo tenant (1952's only sample)
+did not carry, now shipped:** (1) `location` is a STRUCTURED object
+(`country.name`/`state.name`/city/`is_remote` boolean), not free text — no `parseLocation` needed,
+unlike Greenhouse/Personio. (2) a free-text `salary` field (`"$25 / hour"`) exists and parses with
+the same `parseMoney`/`periodWord` helpers built for Greenhouse's pay-transparency block — one real
+row (`the-san-francisco-standard`'s intern posting) came back `salaryMin: 25, salaryInterval: null`
+(no period word printed) live-verified. (3) a `department` field exists on the row shape but was
+null on every posting sampled (this board doesn't use departments) — mapped straight through for
+boards that do.
+
+**Personio has no job-URL field anywhere in the XML feed** — `<tenant>.jobs.personio.de/job/<id>`
+is a separately live-verified pattern this cycle (fetched directly, 200, page `<title>` matched the
+feed's `name` for id 2573573), not a guess. Parsed with `cheerio.load(xml, {xmlMode:true})` — no
+new XML dependency needed, cheerio (already a dependency for Greenhouse's HTML) handles it fine.
+`office` (the only location field) is free text and reuses `parseLocation` (confirmed it resolves
+German city names: "München"->Munich/Germany, "Köln"->Cologne/Germany). Multi-section
+`jobDescriptions` (`jobDescription[].{name,value}`) joined into one HTML blob per posting
+(`<h3>{name}</h3>{value}`) since there's no existing "assemble named sections" helper to reuse.
+
+**Teamtailor's `jobLocation[].address.addressRegion` is NOT a sub-country region — checked on a
+second, bigger board (`career.teamtailor.com`, 15 items) beyond 1952's `oatly` sample and it is
+either a continent name (`"Oceania"`, `"North America"`, `"Europe"`) or, on a single-country board,
+a repeat of the country name (`"Sweden"`) — never a real state/province. Left `region: null` rather
+than shipping continent names mislabeled as region; same "a wrong field is worse than a null one"
+rule as `location.js`'s own country-vs-null call. `employmentType` was `null` on every item sampled
+across both boards (30 postings) — read anyway since the schema.org field exists in principle, costs
+nothing to support if a board ever populates it.
+
+**Build verified three ways before push:** local `CRAWLEE_STORAGE_DIR` run (all 3 new ATSes +
+`auto` detect on a Teamtailor slug, 20/20 rows, auto correctly resolved `oatly` to teamtailor), local
+default-input gate (all 10 companies, 213 rows pushed, exit 0), and a live platform async run
+post-push (`run-sync-get-dataset-items` truncated at its own 180s cap mid-way through the company
+loop at 129/213 rows — not a bug, just the sync endpoint's own timeout; a plain async run via
+`POST /runs` + poll to SUCCEEDED confirmed the full 213 rows across all 10 `atsSource` values,
+including `teamtailor: 18, personio: 10, breezy: 6`). **Lesson for next cycle verifying a
+default-input gate that fans out over 10 sequential company fetches: use `run-sync-get-dataset-items`
+only for a quick smoke check, not as proof of full completion — poll a plain async run instead when
+the company list is long enough to plausibly exceed the sync timeout.**
+
+Build 0.1.99, README/package.json/.actor/input_schema.json updated in the same push (breadth claim
+"7 -> 10 ATS platforms", new per-platform slug-format bullets, companies-field description, auto-
+detect platform list and count everywhere it was enumerated). **NOT done this cycle, left as a
+follow-up:** `.actor/actor.json`/`meta.json` title+description still say "Greenhouse, Ashby, Lever,
+Recruitee" (stale since before 1952, i.e. a pre-existing gap, not introduced this cycle) — updating
+those is a separate `apify-admin publish` action (title length limit, 5-publications/24h cap) that
+didn't fit this cycle's time budget; no blog post written either (queue explicitly allowed deferring
+it). The employment-type and location vocabulary tables further down the README were NOT extended
+with Teamtailor/Personio/Breezy rows — those need their own live sample sizing (the `employmentType:
+null` finding above is a 2-board sample, not enough to table) and are real QUALITY-cycle-depth work,
+not a 25-minute-budget extension.
