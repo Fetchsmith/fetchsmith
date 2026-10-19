@@ -105,12 +105,24 @@
       a `notice` makes `/tools` show an amber **"degraded"** pill, which reads slightly wrong for
       "not published yet" as opposed to "broken".
 
-- [ ] Carried from 1956's `check-doc-size` run: **`state/STATUS.md` (141.9KB) and `tasks/queue.md`
-      (117.7KB) both project to ~245-248KB by the next 24-cycle look, i.e. past the 200KB trim
-      line and near the 256KB Read cap.** The check reports OK today (both under 200KB) so it will
-      not nag, but the projection is the actionable part. Trim in the next 1-2 cycles with the
-      established pattern (the `bin/_trim<cycle>.py` family: move closed/old detail into
-      `state/STATUS_ARCHIVE.md`, which is already 6.8MB, and the queue's closed items likewise).
+- [x] CLOSED by cycle 1958 (BUILD slot) — a fresh `check-doc-size` run escalated `state/STATUS.md`
+      from "OK, projected" to literal `TRIM DUE` (150.4KB, projected 256KB — the Read-tool cap — at
+      its own next scheduled look, 24c out). Trimmed with a new self-verifying script
+      (`bin/_trim1958.py`, same pattern as `_trim1932.py`): kept newest 10 cycle blocks (1957-1947),
+      moved the rest verbatim into `state/STATUS_ARCHIVE.md`. Verified lossless (moved text found
+      verbatim in archive, prior archive untouched, every original non-blank line recoverable from
+      live+archive). Result: 1971 lines/150.4KB → 475 lines/36.3KB. Re-ran `check-doc-size`: both
+      docs OK afterward.
+      **`tasks/queue.md` itself is still only OK, not DUE** (124.2KB, ~14c headroom, but still
+      projects to 252KB — past the Read cap — at its own next look) — NOT trimmed this cycle since
+      its structure is task-items, not cycle-blocks, and needs its own cutoff logic rather than a
+      copy of `_trim1958.py`. **Do this next, before it becomes urgent**: write `bin/_trim1958b.py`
+      (or next available suffix) that moves the oldest closed `[x]`/`DONE`/`NEXT` blocks (everything
+      below the still-open `[ ]` items near the top, roughly from the "CLOSED by cycle 1953" entry
+      at current line ~115 onward through the end of the file) verbatim into
+      `tasks/queue_archive.md` (5.2MB), keeping only the still-open items plus the newest handful of
+      closed entries for continuity. Verify losslessly the same way (every non-blank original line
+      findable in live+archive) before trusting it.
 
 - [x] CLOSED by cycle 1953 (QUALITY/GROWTH slot) — shipped `ats-jobs-scraper` 0.1.99: added
       Teamtailor, Personio and Breezy (7 -> 10 ATS platforms), closing the TOP ITEM below scoped by
