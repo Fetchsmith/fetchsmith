@@ -8,7 +8,7 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM clinical trial registr
 
 | Field | Why it matters |
 | --- | --- |
-| `rowsPerStudy: "site"` mode | One row per **trial site** instead of one per study — facility name, city, state, country and lat/lon, so a site-selection or patient-recruitment buyer doesn't have to explode the array themselves. A study averages 5 sites (max seen: 110), so this mode returns roughly 5x more billable rows for the same query. |
+| `rowsPerStudy: "site"` mode | One row per **trial site** instead of one per study — facility name, city, state, country, lat/lon and that site's **own recruitment `status`**, so a site-selection or patient-recruitment buyer doesn't have to explode the array themselves. A study averages 5 sites (max seen: 110), so this mode returns roughly 5x more billable rows for the same query. The per-site `status` is the one most buyers miss: it routinely disagrees with the study-level `overallStatus` — see the FAQ for measured rates. |
 | `phases`, `studyType`, `overallStatus` | Filterable and returned flat, not nested. |
 | `enrollmentCount`, `sex`, `minimumAge`, `maximumAge`, `healthyVolunteers`, `standardAges` | The eligibility snapshot without parsing free-text criteria. `enrollmentType` says whether that count is `ACTUAL` or `ESTIMATED` — an estimate on a running trial is a target, not a headcount. `standardAges` is the registry's own `CHILD`/`ADULT`/`OLDER_ADULT` bucketing, the same vocabulary the `ageGroups` filter uses. |
 | `eligibilityCriteria` | The full inclusion/exclusion text as the registry publishes it. We deliberately **don't** pre-split it into separate inclusion and exclusion lists the way some competitors do: the split is a guess at prose with no fixed format, and mislabelling an exclusion criterion as an inclusion one is the one error a trial-screening buyer cannot afford. |
@@ -21,7 +21,7 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM clinical trial registr
 
 With `hasResults`, `primaryOutcomes` and `resultsFirstPostDate` flat on every row, this doubles as a study results API: set `resultsAvailability` to return only trials that have actually reported, or only the ones that never did.
 
-**We do not ship contact people, phone numbers or emails — ever.** ClinicalTrials.gov's own API returns named individuals and personal email addresses in `centralContacts`/location `contacts` (we found a real `@gmail.com` in a live sample). Several competitor Actors resell that as a "contact finder." We deliberately drop it; `locations`/`site` carries facility, city, state, country and geo-coordinates only. A medical data API can be useful without reselling named individuals.
+**We do not ship contact people, phone numbers or emails — ever.** ClinicalTrials.gov's own API returns named individuals and personal email addresses in `centralContacts`/location `contacts` (we found a real `@gmail.com` in a live sample). Several competitor Actors resell that as a "contact finder." We deliberately drop it; `locations`/`site` carries facility, that facility's recruitment `status`, city, state, country and geo-coordinates only. A medical data API can be useful without reselling named individuals.
 
 Name a `watchLabel` and every later run on the same saved search returns **only studies new since the last run**, so a scheduled competitive-intelligence pull never re-delivers or re-charges for the same trial twice; add `watchChanges` and it also catches a study's **status changing** (e.g. Recruiting → Completed/Terminated), a **protocol amendment updating its enrollment count**, or its **completion date slipping**.
 
@@ -111,6 +111,31 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
 }
 ```
 
+## Sample output (`rowsPerStudy: "site"`)
+
+Same flat study fields as above, minus `locations`/`locationCount`, plus one `site` object per participating facility — so a 12-site study becomes 12 rows that differ only in `site`. Real row, pulled live 2026-10-19:
+
+```json
+{
+  "nctId": "NCT06246916",
+  "overallStatus": "RECRUITING",
+  "phases": ["PHASE3"],
+  "leadSponsorClass": "INDUSTRY",
+  "site": {
+    "facility": "Arizona Oncology Associates",
+    "status": "WITHDRAWN",
+    "city": "Tucson",
+    "state": "Arizona",
+    "country": "United States",
+    "lat": 32.22174,
+    "lon": -110.92648
+  },
+  "studyUrl": "https://clinicaltrials.gov/study/NCT06246916"
+}
+```
+
+Note `site.status` (`WITHDRAWN`) against the study's `overallStatus` (`RECRUITING`) — that is not an error, and it is the field to filter on for site work. See the FAQ.
+
 **Watch-mode change fields, only on a `watchChanges` re-delivery:** `_watchChangeType` (array, one or more of `overallStatus`/`lastUpdatePostDate`/`enrollmentCount`/`primaryCompletionDate`/`completionDate`), `_watchPrevious` (object with the previous value(s) for each changed field).
 
 ## The pageSize trap
@@ -188,6 +213,11 @@ Check whether you set an upper date bound on a **registry-event** date. `firstPo
 One wrinkle that makes this easy to miss: with `firstPostedDateTo` or `resultsFirstPostedDateTo`, studies already inside your window that are merely *revised* still match, so `watchChanges` events keep arriving and the watch looks alive while being blind to every new trial (measured 2026-10-12: 2,677 studies first posted on or before 2020-01-01 had an update posted on or after 2026-09-01). `lastUpdatePostedDateTo` has no such wrinkle — it blinds the revisions too.
 
 The trial's **own** dates are a different story and are deliberately *not* flagged: `studyStartDateTo`, `primaryCompletionDateTo` and `studyCompletionDateTo` describe the trial's timeline, not a registry event, so a study registered today can perfectly well carry a start date from years ago and a fixed upper bound on them keeps admitting new rows indefinitely. Measured 2026-10-12: of 5,660 studies first posted on or after 2026-09-01, 80 have a start date on or before 2020-01-01. They can still be *change*-blind in the sense described above, which is a separate warning.
+
+**A study says `RECRUITING` — are all of its sites recruiting? (No, and it is not close.)**
+`overallStatus` is the **study's** status; every site row additionally carries that facility's **own** `site.status`, and the two routinely disagree. A multi-site trial opens and closes sites on a rolling schedule, so a trial that is globally recruiting can have sites that have not opened yet, have finished accrual, or were withdrawn before enrolling anyone — the sample row above is a real `WITHDRAWN` site inside a `RECRUITING` phase-3 study (NCT06246916, pulled live 2026-10-19), and a single `overallStatus: ["RECRUITING"]` query can return `NOT_YET_RECRUITING`, `ACTIVE_NOT_RECRUITING`, `COMPLETED`, `WITHDRAWN`, `SUSPENDED` and `TERMINATED` site rows alongside the open ones.
+
+There is no input filter for this — ClinicalTrials.gov's own sidebar filters on the study, not the site — so filter `site.status` yourself on the returned rows: keep `RECRUITING` for "can refer a patient today", add `NOT_YET_RECRUITING` for a pipeline view, and drop `WITHDRAWN`/`TERMINATED`/`SUSPENDED` before anyone contacts a facility. Do not assume this is a rounding error: the share of non-recruiting site rows varies widely by therapeutic area, so measure it on your own query rather than taking a single headline rate.
 
 **Does `rowsPerStudy: "site"` change what `watchLabel` tracks?**
 No — "new" is always decided per **study** (`nctId`), never per site row. A trial that was already delivered stays excluded even if `rowsPerStudy` or another display-only setting changes between runs; only filters that change which studies match start a fresh baseline.
