@@ -62,6 +62,8 @@ If you only have a guess at the slug (e.g. the company's own name, lowercased) a
 One row per job posting:
 `company, atsSource, jobId, title, department, team, departmentPath, employmentType, workplaceType, isRemote, location, secondaryLocations, country, region, city, salaryMin, salaryMax, salaryCurrency, salaryInterval, publishedAt, updatedAt, jobUrl, applyUrl, descriptionHtml, descriptionText, scrapedAt`
 
+`descriptionHtml` is the posting body as the ATS serves it, with one exception: inline base64 image payloads are dropped. Some Recruitee boards paste screenshots straight into the job description (one real posting measured 2,436,168 bytes, 99.6% of it a single PNG, against a 6,150-byte median) — the `<img>` tag is kept with the image type and byte count in place of the payload (`src="data-uri-stripped:image/png:2426348"`), so you still see that an image was there without paying storage for it. `descriptionText` is unaffected either way.
+
 Sample row (Greenhouse, `descriptionHtml`/`descriptionText` truncated — the real fields carry the full posting body):
 ```json
 {
@@ -250,6 +252,7 @@ Only public, no-login job-board data is collected — the same postings anyone c
 - [Lever's job board API actually paginates — the one ATS that does](https://fetchsmith.com/blog/lever-job-board-json-api-pagination)
 - [Ashby's job board API: no pagination, no size cap, and pay bands baked into one number](https://fetchsmith.com/blog/ashby-job-board-json-api)
 - [Workable's job board API: no pagination, and the description flag is the one that's actually worth gating](https://fetchsmith.com/blog/workable-job-board-json-api)
+- [Recruitee's job board API: one real filter hiding among ignored ones, and a 42 MB board that's 97% pasted screenshots](https://fetchsmith.com/blog/recruitee-job-board-json-api)
 - [A Try-for-free click shouldn't cost a first-time buyer $1.26 and five minutes](https://fetchsmith.com/blog/default-inputs-should-not-cost-you-five-minutes)
 - [Eight ways an "only new since last run" watch mode silently stops working](https://fetchsmith.com/blog/incremental-api-watch-mode-four-traps) — the general failure modes `watchLabel` is built to avoid.
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for. Reproduced on this Actor, closed with truncation tracking.

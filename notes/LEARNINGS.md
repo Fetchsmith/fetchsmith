@@ -9623,3 +9623,43 @@ on one ATS says nothing about the next. SmartRecruiters is already known to page
 (`src/main.js:810`, confirmed working); Recruitee (`:742`) and Workable (`:770`) fetch in one
 uncapped request with no cap at all, the same shape Ashby turned out to have, so expect another
 findings-post rather than a fix unless the live data says otherwise.
+
+## Cycle 1944 — Recruitee: the 42 MB board, base64 screenshots, and one real filter among fakes
+- **A flat `timeout: { request: 30000 }` is wrong for any unpaginated API.** Recruitee `dpgmedia`
+  is 41,935,464 B / 86 postings in ONE response (no pagination exists). It downloads in 0.98 s
+  direct from this box but **cannot finish in 30 s through Apify Proxy** — the platform run burned
+  3 attempts and skipped the board with 0 rows (graceful, but silent data loss). Measured again
+  after the fix: **109 s through the proxy (~0.4 MB/s)**. Fix shipped fleet-wide inside this Actor:
+  `BOARD_TIMEOUT = { request: 150000, response: 30000 }` — `response` caps time-to-first-byte so a
+  dead board still fails in ~30 s/attempt, `request` lets a healthy huge body stream. **Check other
+  Actors with large single-response endpoints for the same flat-30s shape.**
+- **Recruitee's description editor inlines pasted screenshots as base64 data URIs.** 20.15 MB of
+  base64 inside 20.65 MB of description HTML on `dpgmedia` (97.6%), 10/86 postings affected, worst
+  single posting 2,436,168 B of which 99.6% was one PNG, against a 6,150 B median. Shipped
+  `stripInlineDataUris()` at the one central pre-push point (`src/main.js`, the
+  `if (!includeDescriptions)` line) so it covers all 7 sources: keeps the `<img>` tag, replaces the
+  payload with `data-uri-stripped:<mime>:<bytes>`. 2,436,168 -> 9,833 B (248x), `descriptionText`
+  byte-identical (cheerio `.text()` already drops attributes). Greenhouse/Lever/Workable boards
+  sampled the same day carried zero `;base64,` — looks Recruitee-editor-specific.
+- **Recruitee honors exactly ONE query param and it fails CLOSED.** `page`/`limit`/`per_page`/
+  `offset`/`location`/`remote`/`status`/`kind`/nonsense are all accepted and silently ignored
+  (byte-identical responses), but `department` is a real exact-match, **case-sensitive** filter:
+  `department=Marketing` -> 3, `department=marketing` -> 0, `department=Nope` -> 0 (confirmed on
+  vandebron/channable/infomedics). `department=` (empty) -> 0, and department is often null in the
+  payload (66/86 on dpgmedia), so server-side filtering can never reach those rows. **Inverse of
+  the fail-open dropped-filter-name pattern** we blogged about on government APIs. Do NOT push our
+  `departmentKeyword` (substring, case-insensitive) down to this param — semantics differ.
+- **Recruitee randomizes JSON key order per response** (Elixir/Phoenix map serialization): 3
+  identical curls -> 3 different MD5s at identical byte count and identical parsed content. Any
+  hash-the-body change detector reports "changed" forever. Ours is safe (we diff ids), but worth
+  knowing. Fails noisily, which is the good direction.
+- **Confirmed-real Recruitee slugs** (2026-10-19): `dpgmedia` 86, `infomedics` 30, `greenchoice` 14,
+  `vandebron` 13, `channable` 12, `nmbrs` 8, `personio` 1, `tellent` 0 (live board, 200 +
+  `{"offers":[]}`, 13 B — distinguishable from a bogus slug's clean `404 {"error":"Not Found"}`).
+  Guessing NL/EU B2B SaaS + utility names worked far better than guessing US tech names: 7 hits in
+  50 guesses vs ~0 for the US list.
+- **Schema is stable on Recruitee**: all 163 offers across 6 boards shared exactly ONE 56-key
+  keyset, `dynamic_fields` empty everywhere, `status` `"published"` on all 163. Unlike Workday/
+  SmartRecruiters you can map it once. Unmapped high-fill fields: `education_code`,
+  `experience_code`, `category_code`, `min_hours` (108/163), `max_hours_per_week` (113/163),
+  `translations` (per-locale description copy — 49.7% of the dpgmedia payload, no flag to disable).

@@ -40,7 +40,7 @@ Where Greenhouse and Ashby wrap results in an object, Lever's response is a **ba
 GET https://<slug>.recruitee.com/api/offers/
 ```
 
-Recruitee publishes salary too, but `salary.min` and `salary.max` come back as **numeric strings** (`"2600"`, not `2600`) — cast them or every downstream comparison silently does string comparison instead of numeric.
+Recruitee publishes salary too, but `salary.min` and `salary.max` come back as **numeric strings** (`"2600"`, not `2600`) — cast them or every downstream comparison silently does string comparison instead of numeric. It also has the only real server-side filter of the six, and it is a trap: see the [dedicated Recruitee write-up](/blog/recruitee-job-board-json-api).
 
 ## Workable: its own vocabulary for two common concepts
 

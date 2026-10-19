@@ -470,8 +470,17 @@ async function requestWithRetry(opts) {
   throw lastErr;
 }
 
+// A flat 30s `request` budget was killing the biggest boards outright: none of these six ATSes
+// paginate, so one board is one response, and the largest measured (Recruitee `dpgmedia`,
+// 41,935,464 bytes for 86 postings) takes 1.0s direct but could not finish inside 30s through
+// Apify Proxy — three attempts, three timeouts, board silently skipped (verified on build 0.1.95,
+// cycle 1944). Splitting the budget fixes that without making dead boards slow: `response` caps
+// the wait for the first byte (an unresponsive host still fails in ~30s per attempt), while
+// `request` gives a healthy-but-huge body up to 150s to finish streaming.
+const BOARD_TIMEOUT = { request: 150000, response: 30000 };
+
 async function getJson(url) {
-  const res = await requestWithRetry({ url, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), responseType: 'json' });
+  const res = await requestWithRetry({ url, timeout: BOARD_TIMEOUT, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), responseType: 'json' });
   return { status: res.statusCode, body: res.body };
 }
 
@@ -484,6 +493,28 @@ function decodeEntities(s) {
 function textOf(html) {
   if (!html) return null;
   return cheerio.load(html).text().replace(/\s+/g, ' ').trim() || null;
+}
+
+// Recruitee's description editor inlines pasted screenshots into the description HTML as base64
+// data URIs. Measured live on the `dpgmedia` board (cycle 1944): 20.15 MB of base64 inside
+// 20.65 MB of description HTML (97.6%) across 86 postings, 10 of them affected, the worst single
+// posting 2,436,168 bytes of which 99.6% was one PNG — against a 6,150-byte median description.
+// That is binary image data, not job data: it makes one row ~400x the median, is far past Excel's
+// 32,767-character cell limit, and the buyer pays dataset storage for it on every run. Keep the
+// <img> tag (so the HTML still records that an image was there, with its type and size) and drop
+// only the payload. Applied for every source, not just Recruitee — Greenhouse/Lever/Workable
+// boards sampled the same cycle carried none, but the same editor habit can land on any of them.
+// descriptionText needs no equivalent: cheerio's .text() already drops attributes.
+const BASE64_DATA_URI_RE = /data:([\w.+-]+\/[\w.+-]+);base64,([A-Za-z0-9+/=]+)/g;
+let strippedImages = 0;
+let strippedBytes = 0;
+function stripInlineDataUris(html) {
+  if (!html || !html.includes(';base64,')) return html;
+  return html.replace(BASE64_DATA_URI_RE, (_m, mime, payload) => {
+    strippedImages += 1;
+    strippedBytes += payload.length;
+    return `data-uri-stripped:${mime}:${payload.length}`;
+  });
 }
 
 // The three ATSes that expose a pay period each spell it differently — Ashby "1 YEAR"/"1 HOUR",
@@ -716,7 +747,7 @@ async function fetchLever(slug) {
   // buffer, not the exact scan cap, because filters run after the fetch and need headroom to
   // still find enough matching rows within the capped window).
   const rawCap = Math.min(Math.max(scanCapPerCompany * 3, 100), watchMode ? SEED_CAP : 2000);
-  const res = await requestWithRetry({ url: `https://api.lever.co/v0/postings/${encodeURIComponent(slug)}?mode=json&skip=0&limit=${rawCap}`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
+  const res = await requestWithRetry({ url: `https://api.lever.co/v0/postings/${encodeURIComponent(slug)}?mode=json&skip=0&limit=${rawCap}`, timeout: BOARD_TIMEOUT, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
   // Most well-known "Lever companies" have migrated to another ATS and now 404 here — that is
   // expected, not a failure, and must not fail the whole run (confirmed cycle 196: plaid, brex,
   // ramp, figma, huggingface, cohere, eventbrite, kickstarter all 404).
@@ -740,7 +771,7 @@ async function fetchLever(slug) {
 }
 
 async function fetchRecruitee(slug) {
-  const res = await requestWithRetry({ url: `https://${encodeURIComponent(slug)}.recruitee.com/api/offers/`, timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
+  const res = await requestWithRetry({ url: `https://${encodeURIComponent(slug)}.recruitee.com/api/offers/`, timeout: BOARD_TIMEOUT, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
   if (res.statusCode !== 200 || !Array.isArray(res.body?.offers)) return { jobs: [], notFound: true };
   return {
     jobs: res.body.offers.map((o) => ({
@@ -921,7 +952,7 @@ async function fetchWorkday(slug) {
       res = await requestWithRetry({
         url: `https://${host}/wday/cxs/${tenant}/${site}/jobs`, method: 'POST',
         json: { appliedFacets: {}, limit: pageSize, offset, searchText: '' },
-        timeout: { request: 30000 }, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(),
+        timeout: BOARD_TIMEOUT, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(),
         throwHttpErrors: false, responseType: 'json',
       });
     } catch (e) {
@@ -1205,6 +1236,7 @@ try {
       // A description fetched only to filter on (or, on Workday, only because the detail call had
       // to run anyway) never reaches the dataset when the buyer asked for rows without it.
       if (!includeDescriptions) { job.descriptionHtml = null; job.descriptionText = null; }
+      else job.descriptionHtml = stripInlineDataUris(job.descriptionHtml);
       job.scrapedAt = new Date().toISOString();
       const before = pushed;
       const keepGoing = await pushResult(job, watchMode ? watchIdFor(job) : null);
@@ -1289,6 +1321,13 @@ if (watchMode && !skipBaselineSave) {
   }
 }
 
+if (strippedImages > 0) {
+  log.info(`Dropped ${strippedImages} inline base64 image(s) (${(strippedBytes / 1e6).toFixed(2)} MB)`
+    + ' from descriptionHtml. The <img> tags are still there, with the image type and byte count in'
+    + ' place of the payload (data-uri-stripped:<type>:<bytes>) — only the embedded binary is gone.'
+    + ' Recruitee boards are where this shows up; the images are pasted into the job description in'
+    + " the ATS's editor and are not part of the job data.");
+}
 log.info(`Done. Pushed ${pushed} job postings from ${companies.length} companies.`);
 
 // timeBudgetExceeded can be set either by the between-company check or by requestWithRetry

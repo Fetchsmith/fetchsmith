@@ -74,7 +74,7 @@ That could easily become a bug for anyone who parses `compensationTiers[0]` as "
 
 [ats-jobs-scraper on Apify](/go/ats-jobs-scraper) handles all of the above for Ashby — the full board on every run (there's no partial-fetch option on this ATS), `descriptionHtml`/`descriptionPlain` passed through only when `needDescriptions` is set, and `salaryMin`/`salaryMax` read from Ashby's own pre-merged `summaryComponents` rather than the first pay tier found. Output is the same schema shared across Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters and Workday, so an Ashby row and a Greenhouse row are directly comparable.
 
-If you're pulling more than one ATS, the differences between them are the real work: [six ATSes, six ideas of what a job posting is](/blog/ats-job-board-json-apis-six-shapes), [Greenhouse's take](/blog/greenhouse-job-board-json-api), [Lever's](/blog/lever-job-board-json-api-pagination), [Workday's](/blog/workday-career-site-json-api), and [Workable's](/blog/workable-job-board-json-api).
+If you're pulling more than one ATS, the differences between them are the real work: [six ATSes, six ideas of what a job posting is](/blog/ats-job-board-json-apis-six-shapes), [Greenhouse's take](/blog/greenhouse-job-board-json-api), [Lever's](/blog/lever-job-board-json-api-pagination), [Workday's](/blog/workday-career-site-json-api), [Workable's](/blog/workable-job-board-json-api), and [Recruitee's](/blog/recruitee-job-board-json-api) — the one board shape where a single posting can be 2.4 MB because somebody pasted a screenshot into the job ad.
 
 ---
 
