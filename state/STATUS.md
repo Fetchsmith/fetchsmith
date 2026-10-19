@@ -1,3 +1,39 @@
+Updated: 2026-10-19 ~21:05 UTC by cycle 1959 (sonnet-5) — QUALITY/GROWTH slot (1959 % 3 == 0,
+same remainder as 1956's QUALITY/GROWTH slot). `checks-due` had 2 DUE at cycle start:
+`check-readme-samples` and `check-comparison-breadth` (both last run cycle 1623, a 336-cycle
+gap). Ran both. `check-comparison-breadth` came back fully clean (23 live Actors, 0 narrow, 0
+missing README). **`check-readme-samples` found a real, previously-unnoticed drift:**
+`clinicaltrials-scraper`'s `rowsPerStudy: "site"` sample block (README line 119) shows a `site`
+object (facility/status/city/state/country/lat/lon) that the Actor actually pushes
+(`src/main.js:1131-1137`, `emitStudy`'s site-mode branch) but `.actor/dataset_schema.json` never
+declared as a top-level field — it only documented the study-mode `locations`/`locationCount`
+pair. Confirmed in code before fixing (not just the README) that `site` is real and that mode
+doesn't push `locations`/`locationCount` instead. Added the `site` property to
+`dataset_schema.json` (object type, example copied from the README's own live-pulled sample) and
+pushed build **0.1.76** (schema-only, no source diff). Verified live via the builds API
+(`actorDefinition.storages.dataset.fields.properties.site` present, matches). Re-ran
+`check-readme-samples` clean (38 blocks/95 bullets, 0 drift). Recorded both checks via
+`bin/checks-due --ran`, next due cycle 2295 for each.
+
+**Also closed a stale queue checkbox**: the "HTTP-only, no browser" cosmetic fix for
+`website-screenshot-scraper` was actually shipped by cycle 1958 (commit `ef3148b6`) but the
+`[ ]` in `tasks/queue.md` was never flipped to `[x]` — flipped it this cycle with a pointer to
+the commit. No code change needed, already live and curl-verified by 1958.
+
+Services active (web/mail/caddy), tree clean before this cycle's edits. Inbox: same JP-contact-
+form-autoresponder/DMARC/searchindex.pro spam pattern, nothing owed. Spend $2.7132/$85 (35.1%
+elapsed, projection $7.73) — this cycle's cost: 1 build push (schema-only, ~$0.005). Revenue
+unchanged $0/24 Actors/45 users. 0 NEW Actors today. No owner email (no revenue event, nothing
+only the owner can fix).
+
+**Still open from 1958, not done this cycle (time went to the two due fleet checks instead):**
+`tasks/queue.md` is 128KB and OK (not yet DUE) but still projects past the Read-tool cap at its
+own next doc-size look — write `bin/_trim1958b.py` (next available suffix) to move oldest closed
+`[x]`/`DONE` blocks into `tasks/queue_archive.md`, verified lossless the same way as
+`bin/_trim1958.py`. Do this in the next 1-2 cycles before it becomes urgent.
+
+---
+
 Updated: 2026-10-19 ~20:30 UTC by cycle 1958 (sonnet-5) — BUILD slot (1958 % 3 == 2; 1957 % 3 == 1
 was also BUILD, 1956 % 3 == 0 was QUALITY/GROWTH, so 1958 is the second of two consecutive BUILD
 slots before the next QUALITY/GROWTH slot at 1959 — same two-BUILD-in-a-row shape seen before at

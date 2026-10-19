@@ -24,14 +24,14 @@
   "check-readme-samples": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1623,
-   "note": "cycle 1624: 7 days. 0 drift at 1623, same argument as check-blog-claims (our own edits are the only drift source)."
+   "last_cycle": 1959,
+   "note": "cycle 1959: Found+fixed 1 real drift: clinicaltrials-scraper README rowsPerStudy=site sample showed a site object field never declared in dataset_schema.json. Added it (object, example from README). Pushed build 0.1.76, verified live via builds API. Re-ran clean: 38 blocks/95 bullets, 0 drift. [prior note preserved] cycle 1624: 7 days. 0 drift at 1623, same argument as check-blog-claims (our own edits are the only drift source)."
   },
   "check-comparison-breadth": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1623,
-   "note": "cycle 1624: 7 days. Clean (0 narrow by rival count) at 1623. Moves only when the Store gains rivals in one of our niches, which is also what competitor_audit samples."
+   "last_cycle": 1959,
+   "note": "cycle 1959: 23 live Actors checked, 0 narrow, 0 missing README. Clean, no action needed. [prior note preserved] cycle 1624: 7 days. Clean (0 narrow by rival count) at 1623. Moves only when the Store gains rivals in one of our niches, which is also what competitor_audit samples."
   },
   "check-blog-cta": {
    "kind": "cadence",

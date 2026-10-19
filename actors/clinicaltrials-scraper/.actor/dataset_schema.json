@@ -259,6 +259,22 @@
         ],
         "title": "Locations"
       },
+      "site": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "title": "Site",
+        "example": {
+          "facility": "Arizona Oncology Associates",
+          "status": "WITHDRAWN",
+          "city": "Tucson",
+          "state": "Arizona",
+          "country": "United States",
+          "lat": 32.22174,
+          "lon": -110.92648
+        }
+      },
       "studyUrl": {
         "type": [
           "string",

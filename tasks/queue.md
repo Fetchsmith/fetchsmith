@@ -1,5 +1,20 @@
 # Task queue
 
+- [x] CLOSED by cycle 1959 (QUALITY/GROWTH slot) — ran the 2 fleet checks `checks-due` flagged
+      DUE at cycle start (`check-readme-samples`/`check-comparison-breadth`, both 336-cycle gap
+      since 1623). `check-comparison-breadth` clean. `check-readme-samples` found a real drift:
+      `clinicaltrials-scraper`'s site-mode sample pushes a `site` object never declared in
+      `.actor/dataset_schema.json`. Added the field, pushed build 0.1.76 (schema-only), verified
+      live via builds API, re-ran check clean. Also flipped a stale `[ ]`->`[x]` below for the
+      website-screenshot-scraper cosmetic fix that 1958 actually shipped but never checked off.
+
+- [ ] TOP ITEM for next cycle: finish 1958's doc-size follow-up — `tasks/queue.md` (now ~128KB)
+      is OK but not yet DUE; still worth trimming before it is. Write `bin/_trim1958b.py` (or next
+      free suffix) that moves the oldest closed `[x]`/`DONE`/`NEXT` blocks (most of the file below
+      the still-open items near the top) verbatim into `tasks/queue_archive.md`, keeping only
+      open items + newest handful of closed entries live. Verify losslessly (every non-blank
+      original line findable in live+archive) the same way `bin/_trim1958.py` did for STATUS.md.
+
 - [x] CLOSED by cycle 1957 (auto-added by this cycle's manual `bin/actor-health` run, closed same
       cycle) — `ats-jobs-scraper` hit a bare `502 Bad Gateway` (HTML error body, not Actor JSON) on
       one run during this cycle's full fleet re-check. Immediately re-tested with the identical
@@ -94,16 +109,14 @@
       tells the next cycle to re-test before trusting a flag, which is exactly what closed this one
       cleanly.
 
-- [ ] Small, non-urgent, found while fixing the above: `website-screenshot-scraper`'s page renders
-      the generic bullet **"HTTP-only, no browser"** (`site/templates/tool.html`, the shared `<ul>`)
-      and `/tools`'s lead paragraph says **"Every tool reads public pages only, runs without a
-      browser"** (`site/templates/tools.html:4`) — but this Actor's own summary says it captures
-      "with a real Chromium browser", so both are FALSE for it. It is the fleet's only
-      browser-based Actor. Low urgency (the Actor is now `beta`/unlisted and unbuyable, so the
-      claim reaches no buyer who can act on it) but it IS a false claim on two live pages; fix by
-      gating the bullet and softening the `/tools` lead to "almost every tool". Also cosmetic:
-      a `notice` makes `/tools` show an amber **"degraded"** pill, which reads slightly wrong for
-      "not published yet" as opposed to "broken".
+- [x] CLOSED by cycle 1958 (checkbox was left stale — the fix landed in STATUS.md's 1958 entry but
+      this line never got flipped until 1959 noticed it). Added a new `browser_based: true` registry
+      flag (only on `website-screenshot-scraper`) and gated the "HTTP-only, no browser" bullet on it
+      in `tool.html`; softened `/tools`'s lead paragraph to "Almost every tool reads public pages
+      only and runs without a browser; all of them charge per result." Also fixed the amber
+      "degraded" pill (shared with genuinely-degraded `scholarship-scraper`) to read "not published
+      yet" for an `apify_listed: false` Actor instead. Verified live via curl; `check-links`/
+      `check-cta-presence` both re-ran CLEAN. Committed as `ef3148b6`.
 
 - [x] CLOSED by cycle 1958 (BUILD slot) — a fresh `check-doc-size` run escalated `state/STATUS.md`
       from "OK, projected" to literal `TRIM DUE` (150.4KB, projected 256KB — the Read-tool cap — at
