@@ -9776,3 +9776,68 @@ blanket block. No flip either axis, so published `/blog/euipo-trademark-api-need
 `bin/indexnow` needs **full URLs, not paths** — passing bare `/blog/x` paths 422s with
 `InvalidRequestParameters` ("not related to your verified domain"); always pass
 `https://fetchsmith.com/...`.
+
+## Cycle 1952 (2026-10-19, opus-5) — BUILD slot. First-ever probe of the ATS platforms
+`ats-jobs-scraper` does NOT cover: **3 keyless public board feeds found, and rivals already
+ship 2 of them while we do not.** All numbers below are ONE cycle of measurement (two-cycle
+rule: they may guide code, they must NOT go into a README/Store listing/blog post yet).
+
+Why this axis: all mechanical trackers were NONE DUE (`checks-due` soonest `check-git-push`
+1956; `audit-due` 2114; `varied_test` 1969) and 1934's standing note says default a BUILD slot
+to GROWTH-side work over another blind `store-scan` sweep. `bin/traffic` says the ATS cluster
+is the #2 verified-traffic cluster (`/blog/workday-career-site-json-api` 14 visitors/7d, right
+behind the trademark TMview post's 16), and `SUPPORTED_ATS` in `actors/ats-jobs-scraper/src/main.js:13`
+has only 7 entries (greenhouse, ashby, lever, recruitee, workable, smartrecruiters, workday).
+Grep confirmed no prior cycle had ever probed teamtailor/personio/breezy/jobvite/comeet/icims/
+taleo (the only prior hits for "personio" were a Recruitee *company slug* coincidentally named
+`personio`, nothing to do with the Personio ATS).
+
+**Measured live, plain desktop-Chrome UA, no cookies/JS, from this datacenter IP:**
+```
+teamtailor  https://<tenant>.teamtailor.com/jobs.json      200  application/feed+json
+            career.teamtailor.com  219,443 B ;  oatly.teamtailor.com  357,536 B / 18 items
+personio    https://<tenant>.jobs.personio.de/xml          200  text/xml
+            personio.jobs.personio.de 815 B/1 pos ; ottonova. 116,233 B/10 pos ; holidu. 72 B/0 pos
+breezy      https://<tenant>.breezy.hr/json                200  application/json
+            breezy.breezy.hr  1,898 B  (array of postings)
+jobvite     https://jobs.jobvite.com/careers/<co>/jobs     200  text/html  (server-rendered, no JSON)
+comeet      https://api.comeet.co/careers/2.0/company/<uid>/positions  404 without a real uid+token
+```
+- **Teamtailor is a JSON Feed 1.1 document**, not a bespoke shape: top level
+  `{version,title,home_page_url,feed_url,items[]}`, each item
+  `{id,url,title,date_published,content_html,_jobposting}`. `_jobposting` is a full embedded
+  **schema.org JobPosting** (`datePosted,validThrough,jobLocation,hiringOrganization,identifier,
+  description`) — i.e. location/date/org are available without a second detail fetch, unlike
+  Workday. Good fit for our normalized row with zero extra requests.
+- **Personio is `<workzag-jobs><position>`** XML with a rich flat field set:
+  `id,subcompany,office,additionalOffices,department,recruitingCategory,name,jobDescriptions,
+  employmentType,seniority,schedule,yearsOfExperience,occupation,occupationCategory,createdAt`.
+  Note the title field is `name`, not `title`. `holidu` returned a **valid 200 with an empty
+  `<workzag-jobs>` (72 B)** — an empty board is a normal answer here, so the parser must treat
+  it as 0 rows, not an error (same rule as `scholarship-scraper`).
+- **Breezy rows**: `id,friendly_id,name,url,published_date,type{id,name}` — title is `name`
+  again, and `url` is prebuilt (`<tenant>.breezy.hr/p/<friendly_id>`).
+- **Breezy `?location=` is silently ignored** — `breezy.breezy.hr/json` and
+  `...?location=remote` came back **byte-identical (1,898 B both)**. That is the same fails-open
+  shape already published for Greenhouse/Workable and in
+  `/blog/government-apis-fail-open-on-a-dropped-filter-name`. UNVERIFIED on a second tenant.
+
+**Tenant discovery is the real cost, and blind subdomain guessing does not work:** 11 of 13
+guessed tenants 404'd (`sennder`/`celonis`/`wefox`/`getyourguide`/`staffbase`/`tier` on Personio,
+`mentimeter`/`voiscooters` on Teamtailor, `pushpay`/`sprout`/`aspiration` on Breezy). What DID
+work, cheaply: pull a rival Actor's `exampleRunInput` from the API
+(`GET /v2/acts/<user>~<name>` → `data.exampleRunInput.body`) — `kenko404/personio-job-scraper`
+handed over `holidu` and `ottonova` directly. Use that trick before WebSearch next time; it is
+one authenticated GET and the slugs are known-good by construction. (Also note the rival
+`freshactors/personio-jobs-scraper` still ships the template's `{"helloWorld": 123}` as its
+example input — the exact bug PLAYBOOK step 7's `bin/set-example-input` exists to prevent.)
+
+**The competitive finding, which is the reason to act rather than just file this:** the
+*multi-ATS* rivals have already extended past our 7 sources. `apify-admin store personio` →
+top hit `blackfalcondata/greenhouse-scraper` (**47 users**, the biggest in that result set)
+is titled "Greenhouse, Lever, Ashby, SmartRecruiters, Personio…"; `apify-admin store teamtailor`
+→ `steadydata/company-career-site-jobs` (5 users) and `vindr/eu-career-site-jobs` (3) both list
+Teamtailor in the title. Single-ATS rivals are numerous but tiny (9 Personio Actors, max 18
+users; 9 Teamtailor Actors, max 8 users) — so the per-platform niches are clone-flooded and NOT
+worth a dedicated Actor, consistent with every survey since 1489. The defensible move is the
+breadth claim on the Actor we already own: 7 → 10 platforms in one request.

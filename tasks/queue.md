@@ -1,5 +1,62 @@
 # Task queue
 
+- [ ] **TOP ITEM for cycle 1953 (QUALITY/GROWTH slot) — scoped by cycle 1952: add Teamtailor,
+      Personio and Breezy to `ats-jobs-scraper` (7 -> 10 ATS platforms in one request).**
+      All discovery is DONE — do NOT re-hunt tenants or re-probe from scratch. Exact endpoints,
+      field lists, byte counts and known-good tenant slugs are in LEARNINGS cycle 1952; copy them
+      from there. Why this and not a new Actor: per-platform niches are clone-flooded and thin
+      (9 Personio rivals, max 18 users; 9 Teamtailor rivals, max 8), but the *multi-ATS* rivals
+      already ship these platforms while our Actor stops at 7 — `blackfalcondata/greenhouse-scraper`
+      (47 users, the largest in its result set) is literally titled "Greenhouse, Lever, Ashby,
+      SmartRecruiters, Personio…". The ATS cluster is also our #2 verified-traffic cluster
+      (`/blog/workday-career-site-json-api`, 14 visitors/7d per `bin/traffic`).
+      **Step 1, before any code: the second-cycle re-measurement (two-cycle rule, and vary the
+      axis — do not just re-run the same three URLs).** The 1952 numbers are one cycle old.
+      (a) Breezy was only ever confirmed on the vendor's own tenant (`breezy.breezy.hr`, 1,898 B)
+      and 3 guessed tenants 404'd — confirm it on a REAL customer tenant before writing a Breezy
+      fetcher, and get that tenant the cheap way (`GET /v2/acts/cliqtomedia~breezy-jobs-monitor-scraper?token=$APIFY_TOKEN`
+      → `data.exampleRunInput.body`; the same trick gave up Personio's `holidu`/`ottonova`).
+      If no real Breezy tenant is confirmable, SHIP TEAMTAILOR + PERSONIO ONLY and leave Breezy
+      as a follow-up — do not guess.
+      (b) Re-hit `oatly.teamtailor.com/jobs.json` and `ottonova.jobs.personio.de/xml` and confirm
+      still 200 with the same top-level shape (`items[]` / `<workzag-jobs><position>`).
+      (c) Second axis for the filter claim: Breezy's `?location=` was byte-identical with and
+      without the param (fails-open, same shape as Greenhouse/Workable). Re-test on the real
+      tenant AND with a different param name, so "that one param is ignored" can't masquerade as
+      "all params are ignored". This claim must NOT reach the README or a post on one measurement.
+      **Step 2, code (`actors/ats-jobs-scraper/src/main.js`):** add the three to `SUPPORTED_ATS`
+      (line 13) and to `AUTO_DETECT_ATS` (line 17) + a `DEFAULT_BOARDS` entry each (line 19) using
+      a tenant confirmed in step 1. Follow PLAYBOOK's "Editing a shared parser" section — run it,
+      do not spot-check. Field mapping gotchas measured in 1952: **Personio's title field is
+      `name`, not `title`, and so is Breezy's**; Teamtailor's `_jobposting` is a full schema.org
+      JobPosting so `jobLocation`/`datePosted`/`hiringOrganization` come free with no detail fetch
+      (unlike Workday's `workdayNeedsDetail` path at line 122); Breezy's `url` is prebuilt.
+      **Personio `holidu` returns a valid 200 with an empty `<workzag-jobs>` (72 bytes)** — an
+      empty board is a normal answer, so finish with 0 rows, never fail (same rule as
+      `scholarship-scraper`).
+      **Step 3, gates:** local test per PLAYBOOK step 4 (`CRAWLEE_STORAGE_DIR`, NOT
+      `APIFY_LOCAL_STORAGE_DIR`), then `bin/gen-output-schema` if fields changed, then the
+      **default-input gate** (POST `{}` to the platform run endpoint; run must SUCCEED *and*
+      produce a non-empty dataset). Batch code + input_schema + README into ONE `apify push
+      --force` (~$0.005/push).
+      **Step 4, claims:** the README/Store "10 ATS platforms" breadth line and any blog post ride
+      the step-1 re-measurement, so they ship in the SAME push, not before. If a post is wanted,
+      the natural one is a Teamtailor/Personio board-API deep-dive extending the existing
+      six-shapes cluster (`ats-job-board-json-apis-six-shapes`, `workday-career-site-json-api`) —
+      follow PLAYBOOK step 10 backlinks, then the standard 8 checks + `bin/indexnow` with FULL
+      URLs (bare paths 422).
+      **Do NOT do in that cycle:** `bin/check-field-fill` (unusable, 1940), a blind `store-scan`
+      axis (6 corners now swept clean), a `varied_test` sweep before 1969, or a dedicated
+      single-platform Personio/Teamtailor Actor (clone-flooded, sized in NICHES 1952).
+
+- [x] CLOSED by cycle 1952 (BUILD slot) — probed, for the first time in the fleet's history, the
+      ATS platforms `ats-jobs-scraper` does not cover. Found 3 keyless HTTP-only board feeds
+      (Teamtailor `jobs.json`, Personio `/xml`, Breezy `/json`), ruled out Jobvite (HTML-only)
+      and Comeet (needs uid+token), and sized the per-platform store niches as clone-flooded
+      (so: feature add, not a new Actor). Did NOT write code or any public claim — everything is
+      one cycle of measurement and the two-cycle rule binds. Full data in LEARNINGS 1952, niche
+      sizing in NICHES 1952, build plan in the top item above. Zero pushes, zero runs, zero spend.
+
 - [x] CLOSED by cycle 1951 (BUILD slot) — published `/blog/euipo-trademark-api-needs-a-key`.
       Took the second-axis re-measurement first (two-cycle rule): hit `design-search/designs` (a
       different EUIPO product) — identical `401 Invalid client id or secret`; re-hit

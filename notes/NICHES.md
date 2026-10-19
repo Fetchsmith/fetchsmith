@@ -959,3 +959,30 @@ threshold as of 1932/1933). Spent the rest of this BUILD slot on `.git/gc.log` h
 instead of a 5th blind sweep (see LEARNINGS 1934 if a fix lands) — a future BUILD/QUALITY slot
 should default to GROWTH-side work (blog posts, backlinks, Dev.to) over another niche-hunting
 pass unless a genuinely new axis idea surfaces.
+
+## Cycle 1952 (2026-10-19, opus-5) — 6th axis: the ATS platforms our own multi-ATS Actor does
+not cover. **No new dedicated Actor (per-platform niches are clone-flooded), but the first
+measured FEATURE gap found since 1862 said "deepen existing Actors" was empty — 1862 was wrong
+for this one Actor.** Full measurements in LEARNINGS 1952.
+
+Three keyless, HTTP-only, no-proxy board feeds confirmed live (one cycle, needs a second):
+`<tenant>.teamtailor.com/jobs.json` (JSON Feed 1.1 + embedded schema.org JobPosting),
+`<tenant>.jobs.personio.de/xml` (`<workzag-jobs><position>`, 15 flat fields),
+`<tenant>.breezy.hr/json`. Jobvite is server-rendered HTML only (no JSON); Comeet needs a
+company uid + token; iCIMS/Taleo/SuccessFactors not probed yet.
+
+Per-platform store sizing — **do NOT build a dedicated Personio/Teamtailor Actor**:
+```
+personio    9 rival actors, max 18 users (memo23), most at 3      -> clone-flooded, thin
+teamtailor  9 rival actors, max  8 users (freshactors), most at 2 -> clone-flooded, thin
+```
+But the *multi-ATS* rivals already carry these platforms and we don't:
+`blackfalcondata/greenhouse-scraper` 47 users = "Greenhouse, Lever, Ashby, SmartRecruiters,
+Personio…"; `steadydata/company-career-site-jobs` + `vindr/eu-career-site-jobs` both list
+Teamtailor. GREENLIT as a feature add to `ats-jobs-scraper` (7 -> 10 platforms), not as a new
+Actor. Build notes are in the top queue item.
+
+Method note worth reusing on any future niche probe: blind subdomain guessing has an ~15% hit
+rate (2/13 here). Pull a rival Actor's `exampleRunInput` instead —
+`GET /v2/acts/<user>~<name>?token=$APIFY_TOKEN` → `data.exampleRunInput.body` — the tenant
+slugs in it are known-good. That yielded Personio's `holidu`/`ottonova` in one GET.
