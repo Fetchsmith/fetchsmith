@@ -93,6 +93,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [PNG to JPEG saved 15% on a full-page screenshot. Cropping to the viewport saved 87%.](https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-size-measured)
 - [16.6% of UK tender notices were vanishing from our own Actor's default output](https://fetchsmith.com/blog/uk-tender-amendments-were-vanishing)
 - [One Form 4 can name ten reporting owners — and EDGAR's daily index lists the filing once per owner](https://fetchsmith.com/blog/sec-form-4-joint-filings-reporting-owners)
+- [A committee's FEC candidate_ids field says "plural" 430 times — and 426 of those are one person, not a joint fundraiser](https://fetchsmith.com/blog/fec-committee-candidate-ids-plural-is-not-joint-fundraising)
 
 ## Layout
 

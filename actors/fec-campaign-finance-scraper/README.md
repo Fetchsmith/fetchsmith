@@ -369,6 +369,7 @@ The FEC's Schedule A endpoint times out on a full-table scan (129,000+ rows even
 Only public data from the FEC's own public disclosure API. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
+- [A committee's FEC candidate_ids field says "plural" 430 times — and 426 of those are one person, not a joint fundraiser](https://fetchsmith.com/blog/fec-committee-candidate-ids-plural-is-not-joint-fundraising) — the full measurement and the Durbin/Bean disbursement near-miss behind this Actor's v0.1.71 fix.
 - [The filter that isn't there: three government APIs return the whole index when a filter name is dropped](https://fetchsmith.com/blog/government-apis-fail-open-on-a-dropped-filter-name) — `office=P` (6,921 matches) vs the typo `ofice=P` (54,581, 7.9x), measured live on OpenFEC's own `/candidates/` endpoint.
 - [FEC Campaign Finance JSON API — what the DEMO_KEY actually lets you do](https://fetchsmith.com/blog/fec-campaign-finance-json-api-demo-key)
 - [The FEC's donor-search API accepts a page number — and silently ignores it on three of four endpoints](https://fetchsmith.com/blog/fec-schedule-a-page-parameter-ignored) — `schedule_a`/`schedule_b`/`schedule_e` all no-op on `page`; only the `last_indexes` keyset cursor actually advances.

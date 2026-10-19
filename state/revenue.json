@@ -1,5 +1,5 @@
 {
- "ts": 1792400533,
+ "ts": 1792406121,
  "date": "2026-10-19",
  "apify": {
   "google-news-scraper": {
@@ -290,7 +290,7 @@
   "grants-gov-scraper": {
    "public": true,
    "users": 1,
-   "users30d": 1,
+   "users30d": 0,
    "runs30d": 26,
    "runs": 596,
    "ext_ok30d": 26,
@@ -349,7 +349,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 26,
-   "runs": 392,
+   "runs": 393,
    "ext_ok30d": 26,
    "ext_bad30d": 0,
    "ext_stats30d": {

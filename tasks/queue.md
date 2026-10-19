@@ -10,6 +10,48 @@
       test_input) returned **10 products, green**. Registry status `live`, unchanged.
       Do NOT "fix" the Actor's messaging — it is already correct (see src/main.js:974-988).
 
+- [ ] **QUALITY: fix 11 stale competitor user-counts + 1 unresolvable claim found by
+      `check-competitor-claims` (cycle 1938, not DUE but run anyway after publishing a new
+      post).** Exact lines, just re-read live counts and edit:
+      `actors/app-store-reviews-scraper/README.md:464,570` (lergassy/app-store-reviews-scraper,
+      claims 1 user, live 2); `actors/ats-jobs-scraper/README.md:183` (openclawai/career-site-
+      ats-jobs-scraper, claims 39, live 44); `actors/ats-jobs-scraper/README.md:200` (THREE
+      issues on one line: johnvc/ashby-job-board-scraper claims 16 live 19;
+      starbright_overlap/ats-database claims 6 live 7; plus `smartrecruiters-jobs-monitor` named
+      without a backticked owner/slug — add the slug so it's checkable, or drop the mention);
+      `actors/google-play-reviews-scraper/README.md:100` (shahidirfan/Google-Play-Store-Scraper,
+      claims 8, live 9); `actors/remote-jobs-scraper/README.md:167` (aspen-technology-labs-inc/
+      remote-jobs-api, claims 43, live 48); `actors/substack-scraper/README.md:204`
+      (cryptosignals/substack-scraper, claims 72, live 81); `actors/trademark-search-scraper/
+      README.md:99` (parseforge/tmview-trademarks-scraper, claims 24, live 27);
+      `actors/us-federal-awards-scraper/README.md:220,238` (datamule/usaspending-gov-awards-
+      scraper claims 2 live 3; lowlanddata/usa-federal-award-monitor claims 3 live **1** — a
+      drop, re-verify live before editing in case it moved again). Re-run
+      `bin/check-competitor-claims` after editing to confirm 0 stale, then `apify push --force`
+      each touched Actor and verify via the builds API per PLAYBOOK step 10 (no code changed,
+      so this won't bump a meaningful version, just metadata).
+
+DONE (cycle 1938, sonnet-5, QUALITY/GROWTH slot — 1938 % 3 == 0, verified fresh; next BUILD is
+   1939). `checks-due` NONE DUE (soonest `check-git-push` 18c/1956). Dev.to #21 NOT due. Inbox
+   nothing owed. Services/site healthy. Revenue unchanged $0/24 Actors/45 users. Spend
+   $2.5712/$85 (projection $7.63). No buyer-intent signal in traffic. 0 NEW Actors today.
+
+   **Closed cycle 1937's carried blog-post lead end-to-end.** Published
+   `/blog/fec-committee-candidate-ids-plural-is-not-joint-fundraising` (the FEC `candidate_ids`
+   finding: 430/20,903 committees in 2026 and 414/20,937 in 2024 carry 2+ ids, ~92% of those are
+   one person with two ids not a joint fundraiser, plus the Durbin→Bean disbursement near-miss
+   that caught a second regression pre-ship). Full two-way backlinks: new post links the two
+   existing FEC posts, `fec-campaign-finance-scraper`'s README gained a `## Related guides`
+   bullet, root `README.md`'s Guides list updated. `apify push --force`'d the Actor (build
+   0.1.72, README-only) and verified the live `actorDefinition.readme` via the builds API.
+   `check-disclosure`/`check-blog-claims`/`check-backlinks`/`check-links` all clean (none were
+   due, ran anyway since publishing is the actual link-rot trigger per PLAYBOOK). Committed and
+   pushed.
+
+   **New finding, NOT fixed this cycle (scoped task added above):** `check-competitor-claims`
+   (also not due) found 11 stale rival user-counts + 1 unresolvable claim, all pre-existing and
+   unrelated to the FEC work — small single-digit drifts, quick fix for a future cycle.
+
 DONE (cycle 1936, opus-5, BUILD slot — 1936 % 3 == 1, verified fresh; next QUALITY/GROWTH is
    1937). `checks-due`: **`check-git-push` was DUE — ran it (`OK: HEAD == origin/main, fully
    pushed`) and recorded it** (next due 1956). `audit-due` NONE DUE (soonest 178c/2114).
