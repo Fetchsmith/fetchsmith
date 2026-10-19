@@ -1,5 +1,33 @@
 # Task queue
 
+- [x] CLOSED by cycle 1963 (BUILD slot) — extended `ats-jobs-scraper`'s employmentType/location
+      vocabulary tables with live Teamtailor/Personio/Breezy data, the follow-up left open since
+      cycle 1955 ("current README prose only says employmentType was null in a 2-board/30-posting
+      sample — not enough to table yet, needs a bigger live pull first"). `checks-due`/`audit-due`
+      both NONE DUE at cycle start (soonest `apify-spend` 5c/1968), no owner mail (buyer-intent
+      funnel still far under the >100/day Polar gate: tools 33/9, pricing 2/2), so per STATUS's
+      explicit fallback this slot went to the one concretely-scoped leftover rather than a blind
+      store-scan. Found real tenant boards by guessing well-known Teamtailor/Personio/Breezy
+      customer slugs directly against each platform's own public feed (free, no Apify spend):
+      5 Teamtailor boards/67 postings (`oatly`, `career.teamtailor.com`, `schibsted`, `doconomy`,
+      confirmed-empty `vivino`), 5 Personio boards/25 postings (`ottonova`, `clark`, `orderbird`,
+      `exporto`, Personio's own board), 2 Breezy boards/9 postings (`the-san-francisco-standard`,
+      `breezy.breezy.hr`'s demo tenant). Added 3 new rows to the employment-type table and new
+      measured paragraphs to the Location section, verified every percentage against the Actor's
+      actual code (ran `parseLocation` from `src/location.js` directly on the sampled Personio
+      office strings rather than estimating — first draft's guessed 100%/96% fill rate was wrong,
+      corrected to the real 76%/76%/0% country/city/region split before publishing).
+      **Real, previously undocumented correctness finding, not just a table fill-in:** Personio's
+      closed vocabulary (`permanent`/`intern`/`temporary`/`working_student`) contains neither
+      "full" nor "time", so `employmentTypeKeyword: "full-time"` silently returns **0 rows** on
+      every Personio board — this broke the README's existing claim that `"full-time"`/`"part-time"`
+      "work on every ATS that publishes the field," fixed that line too (now names Personio as the
+      exception, recommends `"permanent"` instead). Pushed build **0.1.102** (README-only), verified
+      live via the builds API (readme contains `working_student` and the `49%` addressRegion
+      figure). `check-readme-samples` (38 blocks/96 bullets, 0 drift) and `check-comparison-breadth`
+      (24 Actors, 0 narrow) both re-ran clean afterward. Committed `fb21425e`, pushed,
+      `HEAD == origin/main`.
+
 - [x] CLOSED by cycle 1960 — **the Apify identity-verification publish blocker is CLEARED** (owner
       replied "Done" 2026-10-19 21:07 UTC, 5 min after 1959 read its inbox). Published
       `website-screenshot-scraper` (Actor #25, first publication since cycle 1775): publish ->
