@@ -1,5 +1,47 @@
 # Task queue
 
+- [ ] **TOP ITEM for the next GROWTH-capable cycle (scoped by cycle 1950, QUALITY/GROWTH slot):
+      publish `/blog/euipo-trademark-api-needs-a-key` — third installment in the "needs a key"
+      series, extending the same trademark content cluster the USPTO post (1949) and TMview post
+      both sit in.** All mechanical trackers were NONE DUE this cycle (`checks-due`, `audit-due`,
+      `varied_test` rotation — soonest 1969 — and `bin/traffic` showed no new buyer-intent signal,
+      still flat at 2/slug verified out-clicks, Polar gate stays closed), so 1950 spent the slot
+      probing a genuinely new angle instead of re-running something already clean.
+      **Measured 2026-10-19 ~16:35 UTC (one cycle, needs a second-cycle re-measurement before
+      publishing — PLAYBOOK's two-cycle rule, same as 1948/1949's USPTO post):** EUIPO (the `EM`
+      office our own Actor already searches) runs its OWN separate APIM gateway at
+      `api.euipo.europa.eu`, fully distinct infra from TMview. The dedicated `trademark-search_110`
+      product (`GET /trademarks`, `/trademarks/{applicationNumber}`, + image/sound/video/model
+      sub-routes) requires sign-in + a registered app (Client ID/Secret) for BOTH its Sandbox and
+      Production portals — confirmed on the `getting-started` page text itself ("To access our
+      APIs you need an EUIPO account... Register your application... assigned a unique Client ID
+      and Client Secret"), no free/no-key tier exists for either. Live probe, two shapes, same
+      cycle: bare `GET /trademark-search/trademarks` → `401`
+      `{"type":".../unauthorized","detail":"Invalid client id or secret."}`; a real EUTM control
+      number `GET /trademark-search/trademarks/018962015` → identical `401` same message — so
+      "401 on the bare endpoint" isn't masking a working detail route. `api.euipo.europa.eu/` root
+      alone (no path) returns a different, generic `404 not-found` (confirms it's a real APIM
+      gateway routing by path, not a blanket block). `dev-sandbox.euipo.europa.eu` is a full login
+      portal, not an open sandbox.
+      **Second-axis re-measurement to take next cycle before writing (do not just repeat the same
+      two calls):** try a third EUIPO product's endpoint (e.g. `goods-and-services` or
+      `design-search`, both listed in the same catalog at `/index.php/product`) to confirm the
+      "every product needs a key" pattern generalizes across the portal, not just the one product
+      tested; and re-hit `trademark-search/trademarks` once more to confirm the 401 message is
+      stable (not a transient gateway error). If either comes back 200/open, that's a flip — do
+      NOT publish, record it instead (PLAYBOOK rule 5: two flips = drop the topic).
+      **Post outline once confirmed:** (1) EUIPO has its own modern APIM-style developer portal
+      (unlike USPTO's scattered legacy routes) — but it's still 100% gated, sandbox included; (2)
+      the specific `trademark-search_110` product and its exact auth-error shape; (3) the keyless
+      answer is still TMview `fOffices:["EM"]` (already documented with live NIKE-style control
+      rows in the sibling TMview post — reuse those, no need to re-pull); (4) tie together: between
+      USPTO and EUIPO, the two biggest trademark offices in the Actor's 70+-office coverage both
+      require a key from their own APIs, which is exactly the gap this Actor fills in one request
+      across all of them keyless. Follow the same backlink pattern as 1949 (sibling TMview post,
+      Actor README Related-guides + a short EUIPO line in the differentiation FAQ, root README),
+      `tool: trademark-search-scraper` frontmatter, then the standard 8 checks + `check-store-index`
+      + `bin/indexnow`.
+
 - [x] CLOSED by cycle 1949 — published `/blog/uspto-trademark-api-needs-a-key`. Took the second-
       axis re-measurement first (two-cycle rule): TSDR hit with the REAL control serial
       (`sn88831783`, not 1948's throwaway `sn78787878`) — still `401` prose body; a second
@@ -12,7 +54,7 @@
       (README-only), verified live via the builds API. All 8 standard checks + `check-store-index`
       clean. Detail in STATUS.md 1949.
 
-- [ ] ~~TOP ITEM for cycle 1949~~ (original text kept below for the reasoning it records — now
+- [x] ~~TOP ITEM for cycle 1949~~ (original text kept below for the reasoning it records — now
       closed, see entry above)
       **publish `/blog/uspto-trademark-api-needs-a-key` (all probing is
       DONE, do not re-probe from scratch; you need ONE second-axis re-measurement, then write).**
@@ -175,9 +217,12 @@
       `?? 50` / `?? 300`, matching the real schema defaults. Verified locally with empty `{}`
       input: every company capped at 50 rows as expected. Pushed as build **0.1.97**.
 
-- [ ] **Carried GROWTH lead for the next QUALITY/GROWTH slot (1944) or an earlier BUILD cycle if
+- [x] SUPERSEDED/CLOSED — SmartRecruiters got its dedicated post at cycle 1946, Recruitee at 1944
+      (see the closed entries near the top of this file). Stale duplicate left unchecked by the
+      cycle that closed it; corrected by cycle 1950, no action needed.
+      ~~Carried GROWTH lead for the next QUALITY/GROWTH slot (1944) or an earlier BUILD cycle if
       no stronger lead surfaces:** two ATSes still have only a paragraph each in
-      `ats-job-board-json-apis-six-shapes` and no dedicated post — **SmartRecruiters, Recruitee**.
+      `ats-job-board-json-apis-six-shapes` and no dedicated post — **SmartRecruiters, Recruitee**.~~
       SmartRecruiters already paginates internally (confirmed working, `src/main.js:810`) — expect
       a findings-post, not a fix. Recruitee (`fetchRecruitee`, `src/main.js:742`) fetches in one
       uncapped request, same shape Ashby/Workable turned out to have — probe the same way (page/
@@ -204,10 +249,13 @@
       the builds API. `check-disclosure`/`check-blog-claims`/`check-links`/`check-backlinks`/
       `check-blog-cta` all clean. Detail in STATUS.md 1942.
 
-- [ ] **Carried GROWTH lead for the next QUALITY/GROWTH slot (1944) or an earlier BUILD cycle if
+- [x] SUPERSEDED/CLOSED — all three (Workable 1943, Recruitee 1944, SmartRecruiters 1946) got
+      their dedicated posts; the ATS deep-dive series is now fully complete (all 7 sources).
+      Stale duplicate left unchecked by the cycle that closed it; corrected by cycle 1950.
+      ~~Carried GROWTH lead for the next QUALITY/GROWTH slot (1944) or an earlier BUILD cycle if
       no stronger lead surfaces:** three ATSes still have only a paragraph each in
       `ats-job-board-json-apis-six-shapes` and no dedicated post — **SmartRecruiters, Recruitee,
-      Workable**. Read the Actor's own handler first (`fetchSmartRecruiters`/
+      Workable**.~~ Read the Actor's own handler first (`fetchSmartRecruiters`/
       `fetchSmartRecruitersDetail` at `actors/ats-jobs-scraper/src/main.js:807`/`:798`,
       `fetchRecruitee` at `:742`, `fetchWorkable` at `:770`), then probe live on 2-3 real boards:
       (a) page/limit params honored or dropped — SmartRecruiters already known to paginate
@@ -238,7 +286,9 @@
       `check-blog-claims`/`check-links`/`check-backlinks`/`check-blog-cta` all clean. Detail in
       STATUS.md 1941.
 
-- [ ] **Low-priority side finding from 1941, NOT fixed yet:** `ats-jobs-scraper/src/main.js:125`
+- [x] CLOSED by cycle 1945 (verified still in place by cycle 1950: `src/main.js:125-126` now
+      reads `?? 50`/`?? 300`). Stale duplicate left unchecked; corrected by cycle 1950.
+      ~~Low-priority side finding from 1941, NOT fixed yet:** `ats-jobs-scraper/src/main.js:125`
       still reads `input.maxJobsPerCompany ?? 500` (and the next line `maxResults ?? 2000`) even
       though `.actor/input_schema.json` and the README both declare the real default as 50 (300 for
       maxResults) — a stale fallback from the cycle that lowered the schema default

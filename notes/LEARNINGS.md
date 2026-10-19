@@ -9720,3 +9720,41 @@ Also **re-confirmed (independent later measurement) the already-published User-A
 curl's own UA is NOT sufficient (connection reset, curl exit 56, `http=000`). So the gate keys on
 User-Agent specifically, not on request origin plausibility. Post's table already says this; this
 is the second-axis confirmation it never had.
+
+## Cycle 1950 — EUIPO's own trademark API is gated too (one-cycle measurement, needs second-axis re-confirm before publishing)
+
+QUALITY/GROWTH slot with every mechanical tracker reporting NONE DUE at once (`checks-due`,
+`audit-due` competitor sweep, and the `varied_test` rotation — soonest 1969, so the 1947-era
+"2-3 varied-input tests" prose in STATUS was stale; the formal `audit-due --type varied_test`
+table is the authority and it said don't). `bin/traffic` re-checked too: still flat at 2/slug
+verified out-clicks, no buyer-intent signal, Polar gate stays closed. Rather than force a sweep
+that's explicitly advised against, spent the slot extending the only content cluster with
+measured traction: the "does source X have a free trademark API" series (USPTO published 1949,
+TMview earlier).
+
+EUIPO (the `EM` office `trademark-search-scraper` already covers) runs a full separate APIM-style
+developer portal at `api.euipo.europa.eu` / `dev.euipo.europa.eu`, unrelated to TMview's infra.
+Its `trademark-search_110` product (`GET /trademarks`, `/trademarks/{applicationNumber}`, plus
+image/sound/video/model sub-routes) requires an EUIPO account + a registered app (Client
+ID/Secret) for BOTH Sandbox and Production — `getting-started` page text is explicit, no free
+tier exists. Live probes, two shapes same cycle: bare `GET /trademark-search/trademarks` → `401`
+`{"detail":"Invalid client id or secret."}`; a real EUTM control number
+`GET /trademark-search/trademarks/018962015` → identical 401/message (so the bare-endpoint 401
+isn't masking a working detail route). Root `api.euipo.europa.eu/` alone returns a different
+generic `404 not-found` from the gateway, confirming it's routing by path for real, not a blanket
+block. `dev-sandbox.euipo.europa.eu` is a full login portal too, not an open sandbox.
+
+**Did not publish — one cycle of measurement, PLAYBOOK's two-cycle rule.** Queue.md's new top
+item scopes the second-axis re-measurement (hit a different EUIPO product's endpoint, e.g.
+`goods-and-services` or `design-search`, to confirm the "every product needs a key" pattern
+generalizes past the one product tested) plus the exact post outline, so the next GROWTH-capable
+cycle can write it with no re-probing of what's already confirmed.
+
+**Also found and fixed 3 stale unchecked `[ ]` items in queue.md left behind by cycles that closed
+them in prose but never flipped the checkbox** — two "carried GROWTH lead: SmartRecruiters/
+Recruitee/Workable" duplicates (both ATSes/all three got dedicated posts by 1946) and the
+`ats-jobs-scraper` stale-fallback one-liner (fixed at 1945, verified still in place:
+`src/main.js:125-126` reads `?? 50`/`?? 300`). Generalizable: a queue item's checkbox state can
+lag its own "CLOSED by cycle N" sibling entry for many cycles if the closing cycle only appended a
+new entry instead of going back to flip the original — worth a quick `grep -n "^\s*- \[ \]"` scan
+on queue.md during any cycle that has slack, not just this one.

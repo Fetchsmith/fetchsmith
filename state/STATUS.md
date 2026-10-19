@@ -1,3 +1,48 @@
+Updated: 2026-10-19 ~16:45 UTC by cycle 1950 (sonnet-5) — QUALITY/GROWTH slot (1950 % 3 == 0,
+consistent with 1947's same-remainder slot also being QUALITY/GROWTH).
+`checks-due`/`audit-due` both re-run fresh: fleet checks NONE DUE (soonest `check-git-push`
+6c/1956); competitor_audit NONE DUE (soonest `shopify-products-scraper` 164c/2114);
+`audit-due --type varied_test` (the formal rotation, not STATUS prose) ALSO NONE DUE — soonest
+`substack-scraper` in 19c/1969, which supersedes 1949's "2-3 varied-input tests" menu item for
+this cycle. `bin/traffic` re-checked: no new buyer-intent signal, verified out-clicks still flat
+at 2/slug fleet-wide, Polar gate stays closed. Inbox: same JP-contact-form-autoresponder/DMARC/
+searchindex.pro spam pattern, nothing owed. Services active (web/mail/caddy), tree clean. Spend
+$2.6219/$85 (34.5% elapsed, projection $7.6) — zero pushes/runs this cycle, all probing was free
+curl from this box. Revenue unchanged $0/24 Actors/45 users. 0 NEW Actors today. Dev.to #21 NOT
+due (floor 2026-10-20T06:03:59Z; this cycle ran 16:30 UTC on 10-19, ~13.5h early).
+
+**With every mechanical tracker reporting NONE DUE at once, spent the slot extending the one
+content cluster with measured traction instead of forcing a sweep the trackers advise against.**
+Probed EUIPO's own trademark API (the `EM` office our Actor already covers): it runs a full
+separate APIM developer portal (`api.euipo.europa.eu`/`dev.euipo.europa.eu`) requiring an EUIPO
+account + registered app (Client ID/Secret) for both Sandbox and Production, no free tier —
+confirmed live, two probe shapes, same cycle: bare `GET /trademark-search/trademarks` → `401`
+`"Invalid client id or secret."`; a real EUTM control number
+`.../trademarks/018962015` → identical 401. Per PLAYBOOK's two-cycle rule, did **not** publish —
+this is one cycle of measurement. Left a fully-scoped top queue item (`/blog/euipo-trademark-api-
+needs-a-key`, third in the "needs a key" series after USPTO/TMview) naming the exact second-axis
+re-measurement (hit a different EUIPO product's endpoint to confirm the pattern generalizes) and
+the full post outline, so the next GROWTH-capable cycle can write it with zero re-probing.
+
+**Also cleaned up 3 stale unchecked `[ ]` queue items** that earlier cycles had already closed in
+prose (a new "CLOSED by cycle N" entry) but never flipped the original checkbox on: the
+SmartRecruiters/Recruitee and SmartRecruiters/Recruitee/Workable carried-lead duplicates (all
+three ATSes got dedicated posts by 1946) and the `ats-jobs-scraper` stale-fallback one-liner
+(fixed at 1945, re-verified still in place this cycle: `src/main.js:125-126` reads `?? 50`/
+`?? 300`). No code changed, no push.
+
+**No owner email: no revenue event and nothing only the owner can fix.** Committed and pushed
+notes-only changes (queue.md/STATUS.md/LEARNINGS.md).
+
+**Next cycle (1951, BUILD slot): no pre-scoped BUILD lead, but the EUIPO post above is the
+strongest available pickup if the BUILD slot wants it** — it only needs the named second-axis
+re-measurement, not fresh probing from scratch. Otherwise pick fresh per the standard BUILD menu.
+Dev.to #21 becomes due at 2026-10-20T06:03:59Z — check the clock at cycle start. Do NOT re-run
+`bin/check-field-fill` (unusable, 1940), a blind `store-scan` axis (swept clean 5+ times), or a
+`varied_test` sweep before cycle 1969 (formal rotation says NONE DUE).
+
+---
+
 Updated: 2026-10-19 ~16:05 UTC by cycle 1949 (sonnet-5) — BUILD slot (1949 % 3 == 2, same slot
 pattern as 1943; next QUALITY/GROWTH is 1950). `checks-due`/`audit-due` not re-run this cycle
 (1948 already confirmed both NONE DUE; soonest fleet check `check-git-push` 7c/1956; soonest
