@@ -9356,3 +9356,28 @@ zero lines — the script printed `2026-10-15: 0 Form 4 filings` rather than rai
 returns 0 rows on a day the source definitely has data is a decode bug before it is an upstream
 change: check `len(body)` and the first 200 chars before believing the count.** Fix is to not send
 the header at all (or `gzip.decompress` when `Content-Encoding` comes back gzip).
+
+## Cycle 1931: FEC schedule_a keyset queries need a date bound; JFC "routinely 2+ candidates" was an all-cycles artifact
+
+Two upstream shapes worth remembering for `fec-campaign-finance-scraper` or any future direct
+`api.open.fec.gov` probing:
+
+1. **An unbounded `two_year_transaction_period` query on `/schedules/schedule_a/` sorted by
+   `-contribution_receipt_date` 504s upstream** (confirmed live 3x, per_page 20 and 100, up to
+   60s). Scoping to a single `min_date=max_date` day fixes it (sub-1s), but the date bound alone
+   gets a 400 — `two_year_transaction_period` (or another allow-listed filter) must still be
+   present alongside it.
+2. **A keyset-cursor walk through schedule_a in index order is NOT a random sample** — 3,000
+   consecutive rows from one day returned 0 multi-candidate-committee contributions, almost
+   certainly because index order clusters rows from the same bulk filing/report together. Don't
+   quote a contiguous cursor-walked slice as a rate without checking whether it's clustered,
+   same caution as the SEC Form-4 "differs vs direction" lesson (cycle 1927).
+3. **A committee name search (`q=victory`, no `cycle=` filter) surfaces historical committees
+   across every past cycle it's ever existed in** — a committee found that way (e.g. the
+   2014-contribution Victory Fund example from cycle 1930) is not evidence about the *current*
+   cycle's population. Filtering `designation=J&cycle=2026` and classifying by `candidate_ids`
+   length gives a real current-cycle denominator: of 1,330 active JFCs, only 4 (0.3%) list 2+
+   candidates on the committee record itself; 95.3% list 0 (likely tracked via joint-fundraising
+   agreements the `/committees/` endpoint doesn't expose, not because they're single-beneficiary).
+   **"Routinely" was the wrong word for the current-cycle rate** — the mechanism and the one
+   worked example are still real and correct, just rare today, not typical.
