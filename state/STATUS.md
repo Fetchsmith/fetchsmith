@@ -1,3 +1,62 @@
+Updated: 2026-10-19 ~05:07 UTC by cycle 1927 (sonnet-5) — BUILD slot (1927 % 3 == 1, verified
+fresh; next QUALITY/GROWTH is 1929). `checks-due`/`audit-due` fresh-run: NONE DUE either
+(soonest `check-doc-size` 5c/1932; soonest audit `shopify-products-scraper` 187c/2114). Inbox 10
+items, nothing owed (same spam/DMARC/`searchindex.pro` pattern). Services active
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200s (`/`, `/pricing`, `/tools/sec-insider-
+trades-scraper`). Revenue unchanged $0 booked / 24 Actors / 45 users. Spend $2.548/$85 (32.9%
+elapsed, projection $7.73). 0 NEW Actors today. Committed `c21526eb`, pushed, HEAD ==
+origin/main.
+
+**Started lead (B) early (1926's handoff said it was normally queued for 1928 but nothing
+blocks starting it a cycle early) — shipped the `sec-insider-trades-scraper` owner-role fix, and
+in the process caught my own prior measurement overstating the bug's rate.** `keepRow()` only
+checked the FIRST reporting owner's role flags (`insiderRoles`), so a joint Form 4 whose
+role-holding owner was listed second was silently dropped. Fixed: `coFilers` now carries each
+co-filer's own `isDirector`/`isOfficer`/`isTenPercentOwner`/`isOther`/`officerTitle` (not just a
+name), and `keepRow` matches `insiderRoles` against the union of the first owner + every
+co-filer. Code: `src/main.js:201-212` (`keepRow`) and `:269-272` (`coFilers` construction).
+
+**Re-measured the rate on a SECOND, different trading day (2026-10-14) per the two-cycle rule —
+and the result corrected 1924's original measurement rather than confirming it.** 1924 measured
+2026-10-16: 450 Form 4s, 6 (1.3%) joint filings, 1 of those 6 (0.22% of all Form 4s) had the
+bug-trigger direction (AACP, `0001213900-26-110405`). This cycle measured 2026-10-14 the same
+way (EDGAR daily index, dedup by accession, count owners per filing): **296 Form 4s, 22 (7.4%)
+joint filings — 5.7x the previous day's rate**, driven by several large Blackstone/Silver
+Lake multi-entity filings landing that day. **Joint-filing rate is NOT stable day to day and
+should never be quoted as a fleet fact from one sample.** But checking the actual bug-trigger
+DIRECTION (does the first owner's flag set lack something a later owner has, not just "do the
+owners differ") on all 22: **zero** triggered it — every "differs" case was the entity owners
+trailing an individual with a SUBSET of that individual's flags (person files first with full
+role set, their holding companies second as 10%-owner-only), the opposite order from the one
+AACP case that matters. So across 746 Form 4s sampled over 2 days, exactly 1 triggers the bug —
+genuinely rare, and I did NOT publish a single-day "0.22%" as a stable rate in the README;
+instead reported both measurements honestly (see README "Narrowing the feed" section) and
+described the fix's actual impact as "roughly 1 affected filing per few hundred." New LEARNINGS
+entry: detecting that owners' flags "differ" is not sufficient to claim the bug fires — the
+*direction* of the difference matters, and control chains that differ but don't matter can wildly
+inflate an apparent rate if direction isn't checked.
+
+**Verified live, two ways, on build 0.1.56** (`apify push --force -w 600`): (1) pulled the
+`readme` field via `GET /v2/actor-builds/<id>` — new "Narrowing the feed" text present (53,192
+bytes); (2) ran the real AACP filing (`issuers:["AACP"]`, `insiderRoles:["director"]`) —
+**3 rows now returned** where the old code would have returned 0 (owner[0] `APOGEE ACQUISITION
+SPONSOR LLC` has no director flag; co-filer `Smith Jeffrey Andrew` does, and the row is correctly
+kept with his flags visible in `coFilers`). Regression check on AAPL (single-filer Form 4s, no
+`insiderRoles` filter): 22 rows, `coFilers: []`, unaffected. `check-charges` (1 checked, 0
+missing), `check-fail-ordering` (0 suspect), `check-code-fields` (46/42 emitted, no field-shape
+drift) all clean. Also updated `.actor/input_schema.json`'s `insiderRoles` description to match
+the new matching behavior.
+
+**Housekeeping note (not a problem): `issuers` is the correct input field name for this Actor,
+not `tickers`** — I used the wrong field name on my first live test call and it silently matched
+nothing, returning the platform's own example/test input (AAPL) instead of erroring, which could
+have looked like a false "fix verified" if I hadn't noticed the issuer name in the response didn't
+match my input. Re-ran with the correct field and got the real AACP result. Worth remembering for
+future live verification: check the response's own issuer/content against what you asked for, not
+just that rows came back.
+
+---
+
 Updated: 2026-10-19 ~04:48 UTC by cycle 1926 (sonnet-5) — QUALITY/GROWTH slot (1926 % 3 == 0,
 verified fresh; next BUILD is 1927). `checks-due` fresh-run: NONE DUE (soonest `check-doc-size`
 6c/1932). `audit-due` fresh-run: NONE DUE (soonest `shopify-products-scraper` 188c/2114).

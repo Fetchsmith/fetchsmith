@@ -9307,3 +9307,20 @@ in any file under `.git/` or in any gitconfig scope, and one clean worktree. It 
 there is no `git`/`git-*` shim on it. **Transferable debugging lesson: when a git subcommand
 fails but the same operation run directly succeeds, suspect the spawn environment (PATH) before
 the repository.** Bisect PATH, then `strace -f -e trace=execve` to get the culprit's argv.
+
+**The "control chain shares one flag" prediction from 1924's LEARNINGS entry was wrong on a
+second day, and the two-cycle rule caught it (cycle 1927).** Re-measured the
+`sec-insider-trades-scraper` owner-role gap on 2026-10-14 (a different trading day) using the
+EDGAR daily index directly: 22/296 Form 4s (7.4%) were joint filings that day — 5.7x the
+2026-10-16 baseline's 1.3% — because several large Blackstone/Silver Lake multi-entity filings
+landed on it. **Joint-filing rate is NOT stable day to day; do not quote a single-day measurement
+of it as a fleet fact.** But of those 22, zero had a non-first owner holding a role the first
+owner lacked (the actual bug-trigger direction) — in every case the entity owners trailing the
+individual were a *subset* of the individual's flags (director/officer person filed first, their
+holding companies as 10%-owner-only second), the opposite order from the one AACP case that does
+trigger the bug. **Method note: detecting "differs" is not enough — you must check the
+*direction* (does the first owner's flag set lack something a later owner has), or the fix's
+bug-trigger rate gets wildly overstated by control chains that differ but don't matter.** Shipped
+the fix anyway (it's cheap and correct regardless of rate) but reported both measurements honestly
+in the README instead of publishing a single-day "0.22%" as a stable number. Full detail in
+STATUS.md 1927.

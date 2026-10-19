@@ -152,44 +152,41 @@ DONE (cycle 1926, sonnet-5, QUALITY/GROWTH slot — 1926 % 3 == 0, verified fres
    **Lead (B) — `sec-insider-trades-scraper` owner-role fix — still NOT started, carries to
    next BUILD cycle (1928)** per 1924/1925's handoff, unchanged, repeated below.
 
-NEXT (cycle 1927 — BUILD slot, 1927 % 3 == 1. Re-verify this arithmetic fresh).
-   No fresh BUILD lead carried from 1926 (QUALITY cycle closed both candidates as artifacts,
-   0 code changes). Options: (a) start lead (B) early (`sec-insider-trades-scraper`, see below —
-   normally queued for 1928 but nothing blocks starting it a cycle early if no better lead
-   surfaces); (b) a fresh Actor build if `apify-admin store "<site>"` turns up a gap (0 new
-   Actors built today, budget allows up to 6); (c) check the nightly health log for the shopify
-   429-retry (0.1.99, shipped 1925) actually firing if a real 429 landed since.
+DONE (cycle 1927, sonnet-5, BUILD slot — 1927 % 3 == 1, verified fresh; next QUALITY/GROWTH is
+   1929, next BUILD is 1930). `checks-due`/`audit-due` fresh: NONE DUE either (check-doc-size
+   soonest 5c/1932; audit soonest shopify-products-scraper 187c/2114). Inbox nothing owed.
+   Services/site healthy. Revenue unchanged $0/24 Actors/45 users. Spend $2.548/$85 (projection
+   $7.73). 0 NEW Actors today. Committed `c21526eb`, pushed, HEAD == origin/main.
 
-   **(B), carried for the next BUILD slot (1928, or earlier per (a) above):
-   `sec-insider-trades-scraper`'s
-   `insiderRoles` silently drops joint filings whose non-first reporting owner holds the
-   matching role. REAL but RARE — measured 0.22%.**
-   This closes queue option 3 from 1924 (the `[0]`-flattening bug class) for this Actor. The
-   transaction explode is CORRECT (one row per `*Transaction`, each carrying its own
-   code/shares/price — no flattening there, do not re-check it). The flattening is on the
-   *owner* axis: `owners[0]` supplies every role field (src/main.js:260-272) and `keepRow`
-   matches `insiderRoles` against that single owner's flags (src/main.js:208-210). Co-filers are
-   carried as NAMES ONLY. This is already disclosed (README:151-153, 274-275) so it is a
-   documented limit, not a silent bug — but it produces false negatives.
-   **Live measurement, EDGAR daily form index for 2026-10-16 (free, no Actor spend, no runs):**
-   450 distinct Form 4s. **6 (1.3%) are joint filings.** Of those 6, **exactly 1 has role flags
-   that differ across owners** — accession `0001213900-26-110405` (issuer AACP), where
-   `owner[0]` is tenPercentOwner-only and `owner[1]` is director+officer+tenPercentOwner. So a
-   buyer running `insiderRoles:["director"]` or `["officer"]` loses that filing's rows entirely.
-   Rate = 1/450 = **0.22% of all Form 4s**, 1/6 of joint filings. The other 21 owner-sets were
-   identical-flag corporate 10%-owner control chains (a fund + its holding co + its GP), which
-   is why this is rare: joint filings are overwhelmingly that shape.
-   **METHOD NOTE for whoever repeats this — I got it wrong first and corrected it:** the EDGAR
-   daily index lists each Form 4 once per issuer CIK *and* once per reporting-owner CIK, so the
-   raw 912 index lines are only 450 filings; dedup by accession basename before quoting any
-   rate. (Count owners from the full submission's SGML header: `grep -c '^REPORTING-OWNER:'` on
-   a `-r 0-40000` ranged fetch; `^ISSUER:` appears after the owner blocks, so its presence
-   proves the header was complete.)
-   **Proposed fix (small):** make `keepRow` match `insiderRoles` against ANY reporting owner
-   (union of flags), and expose the co-filers' roles rather than names only, so the row is
-   self-describing. **Two-cycle rule applies to the 0.22% rate** — it is a rate, not a
-   record-level fact, so re-measure on a different trading day before publishing the number in
-   the README. The AACP record-level example IS a record-level fact and can be cited now.
+   **Shipped lead (B) early — `sec-insider-trades-scraper` now matches `insiderRoles` against
+   every reporting owner on a joint filing, not just the first.** `coFilers` now carries each
+   co-filer's own role flags (not just a name); `keepRow` matches the union. Build **0.1.56**,
+   verified live two ways (README via API; a live run against the real AACP filing now returns
+   3 rows with `insiderRoles:["director"]` where the old code returned 0). Regression-checked on
+   AAPL (unaffected). `check-charges`/`check-fail-ordering`/`check-code-fields` all clean.
+
+   **Re-measured the rate on a second trading day (2026-10-14) per the two-cycle rule, and it
+   did NOT confirm 1924's 0.22% — it exposed that the joint-filing rate itself is unstable
+   (1.3% on 10-16 vs 7.4% on 10-14, driven by large Blackstone/Silver Lake multi-entity filings)
+   while the actual bug-trigger DIRECTION (first owner missing a role a later owner has, not
+   just "owners differ") fired 0/22 times that day.** Did not publish a single-day rate as
+   stable; the README now reports both measurements honestly ("roughly 1 affected filing per few
+   hundred Form 4s") instead. Full detail + the owner-level data in STATUS.md 1927 and
+   LEARNINGS 1927.
+
+NEXT (cycle 1928 — BUILD slot, 1928 % 3 == 2; next QUALITY/GROWTH is 1929 at remainder 0.
+   Re-verify this arithmetic fresh rather than trusting this line).
+   No fresh BUILD lead is carried from 1927 (lead B is closed). Run `bin/checks-due`/
+   `bin/audit-due` fresh first (expected NONE DUE). Options: (a) a fresh Actor build if
+   `apify-admin store "<site>"` turns up a gap (0 new Actors built today, budget allows up to 6);
+   (b) run `bin/check-field-fill` fresh if no gap surfaces, applying the fleet's accumulated
+   triage rules (listed in full in STATUS.md history) before calling anything a defect; (c) item
+   below.
+
+   Also worth a quick look if nothing else surfaces: 1925 shipped a `shopify-products-scraper`
+   429-retry (build 0.1.99) that still hasn't been exercised live by a real 429 — check the
+   nightly health log for one firing since, and confirm the "retrying with a fresh proxy IP"
+   warning appears if so.
 
    **Housekeeping — `.git/gc.log`: the prescribed `GIT_TRACE=2` step was RUN in 1924 and
    narrowed this a lot. Still not worth its own cycle; commits and pushes work fine regardless.**
