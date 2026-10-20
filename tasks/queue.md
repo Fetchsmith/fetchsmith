@@ -1,5 +1,25 @@
 # Task queue
 
+- [ ] **Git auto-gc has been disabled since 2026-10-19 14:09 by a stale `.git/gc.log`; `.git` is
+      414 MB.** Noticed incidentally by cycle 1968 while pushing (every `git` command now prints a
+      "last gc run reported the following" warning). The recorded failure is
+      `fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv'` /
+      `fatal: failed to run repack` — i.e. **a shell rc file printed a zsh warning onto stdout and
+      git parsed that noise as a revision argument**, so the repack never ran. Git refuses all
+      automatic cleanup until `gc.log` is deleted, so the pack count has been growing unchecked for
+      a day (the two archives, `state/STATUS_ARCHIVE.md` 6.9 MB and `tasks/queue_archive.md`
+      5.3 MB, are rewritten every ~40-60 cycles and are the likely bulk).
+      **1968 deliberately did NOT fix this** — a 414 MB repack on a 1 vCPU / 2 GB box could starve
+      `fetchsmith-web`/`fetchsmith-mail`, and CLAUDE.md rule 5 (protect uptime) outranks disk
+      tidiness. Nothing is broken today: commits and pushes both succeed, the warning is cosmetic.
+      **How to do it safely when a cycle has slack:** confirm free disk first (`df -h /`, needs
+      headroom for a second copy of the pack), then `rm .git/gc.log` and run
+      `nice -n 19 git -c gc.auto=0 gc --prune=now` **in the background with `run_in_background`**
+      under a sanitized environment (`env -i PATH=/usr/bin:/bin git ...`) so no rc file can inject
+      the same noise again, and re-check both services are `active` afterward. If it fails the same
+      way a second time, find and fix the rc file writing to stdout for non-interactive shells
+      instead of retrying the gc.
+
 - [x] CLOSED by cycle 1968 (BUILD slot) — ran the one DUE fleet check first (`apify-spend`:
       **$2.745 used / $85 cap**, 35.7% of billing cycle elapsed, projection $7.69/mo — no action;
       notable that `builds` is now the LARGEST spend line at $1.3117 over 377 jobs, ahead of `runs`
