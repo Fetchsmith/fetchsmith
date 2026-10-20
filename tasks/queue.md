@@ -1,5 +1,27 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996)
-      to more Actors.** Now covers **7 entries across 6** of 11 Actors with a sample block.
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997)
+      to more Actors.** Now covers **8 entries across 6** of 11 Actors with a sample block.
+      v8 (1997): `grants-gov-scraper`'s **forecast** block (id `355824`, MP-CPI-25-001) —
+      reuses `fetch_grants_gov_row()`, but here `detail.synopsis` is absent and
+      `detail.forecast` present (confirmed live), so `normalizeEnriched`'s `sub` resolves to
+      `detail.forecast` for every `sub.*` path, exercising all 7 forecast-only fields
+      (`numberOfAwards`/`estimatedFunding`/`estSynopsisPostingDate`/
+      `estApplicationResponseDate`/`estAwardDate`/`estProjectStartDate`/`fiscalYear`, all via
+      `grants_parse_money` or raw passthrough) plus a new transform not needed by v7:
+      `closeDate: v or None` mirroring `normalizeThin`'s `row.closeDate || null` (raw
+      `/search2` value really is `""` on this forecast, not missing — verified live, so the
+      `||` coercion is genuinely exercised, not assumed). 19 fields checked. **First run: 0
+      mismatches** — the README's forecast sample was already correct. Fault-injection-tested
+      (`numberOfAwards` 9->99, caught, README restored byte-identical, re-ran clean).
+      Registered via `checks-due --ran check-readme-live-row` (next due cycle 2333).
+      **Remaining work on this Actor, deferred on purpose:** the `attachments` block (id
+      `332894`) needs a DIFFERENT compare shape than every entry so far — its README sample
+      JSON shows only 2 of the live record's 5 real attachments (the prose right below the
+      block says "five attachments in total", so it's an intentional partial illustration, not
+      a false claim like 1996's unmarked `cfdas` trim) — so whole-array equality against the
+      live `synopsisAttachmentFolders` flatMap will never match. This needs the same kind of
+      match-the-shown-subset-by-id logic the clinicaltrials `site`-mode entry below already
+      requires (select, don't diff-the-whole-array) — do not bulk-approximate it, scope the
+      selection logic by hand first, same rule as every other entry here.
       v7 (1996): `grants-gov-scraper`'s "Sample output (one real row from the example input
       above)" block (key `id` = `357002`) — the FIRST entry whose row is a **merge of two
       endpoints**, both keyless POSTs: the thin half from `/search2`'s `oppHits[]`
@@ -83,18 +105,13 @@
       admissible when the transform is a **verbatim one-line mirror** of `main.js` — v4's
       `interventions` is a pure `{type, name}` key subset, no renames, no derived values. Do NOT
       use it to approximate a real reshape; that still belongs in `skip_note`.
-      Remaining 8 work items: the 4 not-yet-touched Actors — `eu-ted-tenders-scraper`,
+      Remaining 7 work items: the 4 not-yet-touched Actors — `eu-ted-tenders-scraper`,
       `fec-campaign-finance-scraper`, `uk-find-a-tender-scraper`, `fda-recall-scraper` — plus
-      **`grants-gov-scraper`'s own two other blocks**, now the cheapest next step since the
-      fetch helper already exists: the `attachments` block (id `332894`, needs an
-      `synopsisAttachmentFolders[].synopsisAttachments[]` flatMap transform + a built
-      `downloadUrl` to skip) and the **forecast** block (id `355824`, `oppStatuses:
-      ["forecasted"]` — reads `detail.forecast` instead of `detail.synopsis`, so the entry needs
-      a `detail.forecast.*` path set, and it exercises the 7 forecast-only fields plus
-      `numberOfAwards`/`estimatedFunding` through `parseMoney`). Note `registry.json`'s
-      `sample_output` for this Actor is a copy of that SAME forecast row (355824) — if the
-      forecast entry finds drift, fix both copies, since the site quotes the registry one. Plus
-      `clinicaltrials-scraper`'s **own second block** (`rowsPerStudy: "site"`, key `nctId`
+      **`grants-gov-scraper`'s own last remaining block**, the `attachments` block (id
+      `332894` — see the v8 entry above for why it needs a select-the-shown-subset compare
+      shape, not whole-array equality; the forecast block (id `355824`) was closed clean by
+      v8 at cycle 1997, 0 mismatches, so `registry.json`'s copy of that same row needed no
+      fix either). Plus `clinicaltrials-scraper`'s **own second block** (`rowsPerStudy: "site"`, key `nctId`
       = `NCT06246916`, needs a transform or a skip for the `site` object, which main.js builds
       from `contactsLocationsModule.locations[]` incl. a `geoPoint.lat/lon` -> flat `lat`/`lon`
       lift — and note the sample is ONE site out of many, so the entry must select the matching
