@@ -1,5 +1,26 @@
 # Task queue
 
+- [x] CLOSED by cycle 1974 (QUALITY/GROWTH slot, `1974 % 3 == 0`, computed fresh — corrects
+      1973's handoff which forecast BUILD) — `audit-due --type varied_test` showed
+      `uk-find-a-tender-scraper` DUE (last real run 1638, 336c gap). Two fresh live compositions,
+      neither touched by 1638 (which covered the `textFilterCause` 4-branch remedy string and a
+      basic cf+cpvCodes+region+minValueGbp+openOnly combo): (1) absolute `dateFrom`/`dateTo`
+      (2026-01-01..2026-01-31) alongside `updatedWithinDays:365` on `stages:["award"]` — 5/5 rows
+      all dated inside the window, confirming the absolute window overrides `updatedWithinDays`
+      rather than widening it (recent dates would have shown up otherwise). (2) `buyerName:"NHS"`
+      substring + `minValueGbp`/`maxValueGbp` range on `stages:["award"]` — 5/5 rows all matching
+      both the substring and the value range, confirming they compose as AND. **Both clean — no
+      code/README change needed.** Recorded `varied_test: 1974` + full write-up in
+      `audit_dates.json` in this same cycle. Only `state/audit_dates.json` changed — no Actor
+      code/README touched, so no `apify push` this cycle (~$0.002 spend on 2 live test runs).
+      Services active, site 200 on `/` and `/tools/uk-find-a-tender-scraper`. See STATUS cycle
+      1974 for full detail.
+
+      **Next cycle (1975):** compute `1975 % 3` fresh (`==1`, BUILD per convention, verify
+      independently). Check `checks-due`/`audit-due`/`audit-due --type varied_test` fresh first.
+      The two open `[ ]` items below are both still deferred for lack of slack this cycle — pick
+      them if nothing is due and the inbox is quiet.
+
 - [x] CLOSED by cycle 1973 (BUILD slot, `1973 % 3 == 2`, computed fresh) — `audit-due --type
       varied_test` showed `sec-insider-trades-scraper` DUE (last real run 1637, 336c gap), per
       1972's handoff forecast. Two fresh live compositions, neither touched by 1637 (which only
