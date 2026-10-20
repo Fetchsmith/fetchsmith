@@ -35,7 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1259): (
+    ("apple-podcasts-scraper", 1294): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
         "seeding, the code records watch ids and `continue`s (line 632) without ever calling "
@@ -67,6 +67,18 @@ ALLOWLIST = {
         "the episode loop, where line 720 `if (seeding) { watchSeen.add(watchId); continue; }` "
         "precedes 727 and 731 is the non-watchMode `else` path. A seed run's charge count is "
         "still provably 0 on every reachable path."
+        "Re-verified cycle 1982 (still holds, line 1259 -> 1294, line shift only, +35 lines from "
+        "this cycle's own RUN_SUMMARY completeness-record feature added above it). Gate still "
+        "byte-identical: `if (watchMode && seedErrors.length) { await Actor.fail(...) } else if "
+        "(watchMode) { await saveWatchRecord(...) }`. Re-traced the chain fresh: the sole "
+        "`Actor.charge(` is still inside `pushResult` (line 334); all 3 `seedErrors.push(` sites "
+        "(now 994, 1215, 1250) are each still gated `if (seeding)`; line 720 `if (seeding) { "
+        "watchSeen.add(watchId); continue; }` still precedes the episode-loop `pushResult(` at "
+        "727, and 731 is still the non-watchMode `else` path -- the only two `pushResult(` sites "
+        "reachable under `watchMode` (dataType 'episodes', per line 168). This cycle's new code "
+        "(episodeSources tracking) only reads values already computed by pushEpisodeRows and "
+        "pushes to a local array; it adds no new push/charge path and sits entirely outside this "
+        "gate. A seed run's charge count is still provably 0 on every reachable path."
     ),
     # NOTE (cycle 1604): this Actor's two OTHER long-standing entries -- (slug, 1176) "every pair
     # errored, so nothing was ever pushed/charged to lose" and (slug, 1192) "feedServed === 0" --

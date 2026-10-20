@@ -762,7 +762,7 @@ async function pushEpisodeRows(rows, floorKey, wholeFeed = false) {
   if (watchMode && seeding && oldestScanned != null) {
     pairFloors.set(floorKey, new Date(oldestScanned).toISOString());
   }
-  return got;
+  return { got, oldestMs: oldestScanned, newestMs: newestScanned };
 }
 
 // Trending-Episodes chart support. The chart feed itself carries only name/artist/artwork/url,
@@ -861,7 +861,8 @@ async function scrapeEpisodes(id) {
     rows = results.filter((r) => r.wrapperType === 'podcastEpisode').map((e) => episodeRow(e, info));
   }
   warnIfTruncated(id, declaredCount, rows.length, requestedLimit, fromWholeFeed);
-  return { got: await pushEpisodeRows(rows, String(id), fromWholeFeed), failed: false, wholeFeed: fromWholeFeed };
+  const { got, oldestMs, newestMs } = await pushEpisodeRows(rows, String(id), fromWholeFeed);
+  return { got, failed: false, wholeFeed: fromWholeFeed, declaredCount, oldestMs, newestMs };
 }
 
 // Podcast shows without an Apple presence (or with one the caller didn't bother looking up) can
@@ -889,7 +890,8 @@ async function scrapeEpisodesFromFeed(feedUrl) {
   } : null;
   const channelExplicit = parseItunesExplicit(channel.find('> itunes\\:explicit').first().text());
   const rows = $('item').map((_, el) => rssEpisodeRow($, el, null, info, channelExplicit)).get();
-  return { got: await pushEpisodeRows(rows, `feed:${feedUrl}`, true), failed: false };
+  const { got, oldestMs, newestMs } = await pushEpisodeRows(rows, `feed:${feedUrl}`, true);
+  return { got, failed: false, oldestMs, newestMs };
 }
 
 async function scrapeReviews(id) {
@@ -1000,6 +1002,10 @@ const depthCapped = [];
 const feedCeilingIds = []; // Apple's review feed quit mid-walk after a FULL page (see scrapeReviews)
 const windowFilteredIds = []; // episodes: Apple's own lookup API window (not RSS) fetched rows but the filters removed all of them
 const archiveFilteredIds = []; // episodes: the WHOLE RSS archive was walked and the filters removed all of it
+// Per-source completeness record for dataType "episodes", the machine-readable counterpart to
+// warnIfTruncated()'s log line (raised by a dev.to reader, cycle 1980: a log line is not readable
+// by a program consuming the dataset). One entry per requested id/feed; written to RUN_SUMMARY below.
+const episodeSources = [];
 // Declared before the loop (not just for the final status message) because the loop itself needs
 // it to tell "every episode filtered out" apart from "nothing to filter" while scraping each id.
 // Kept split by kind because a zero-row archive walk has to name the filter that actually did the
@@ -1161,6 +1167,9 @@ if (dataType === 'charts') {
     let got;
     let failed;
     let wholeFeed = false;
+    let declaredCount = null;
+    let oldestMs = null;
+    let newestMs = null;
     if (dataType === 'reviews') {
       const r = await scrapeReviews(id);
       got = r.got;
@@ -1183,9 +1192,22 @@ if (dataType === 'charts') {
         );
       }
     } else {
-      ({ got, failed, wholeFeed } = await scrapeEpisodes(id));
+      ({ got, failed, wholeFeed, declaredCount, oldestMs, newestMs } = await scrapeEpisodes(id));
     }
     log.info(`${id}: ${got} ${dataType} fetched, ${pushed - before} kept after filters.`);
+    if (dataType === 'episodes' && !failed) {
+      episodeSources.push({
+        id,
+        source: wholeFeed ? 'rss' : 'itunes',
+        declaredCount,
+        delivered: got,
+        // `null` (not false) when declaredCount itself is unknown — "complete" is an unanswerable
+        // question without a number to compare against, not a "no".
+        complete: declaredCount == null ? null : got >= declaredCount,
+        dateFrom: oldestMs != null ? new Date(oldestMs).toISOString() : null,
+        dateTo: newestMs != null ? new Date(newestMs).toISOString() : null,
+      });
+    }
     // Zero rows because the request itself failed is a DIFFERENT answer from zero rows because
     // Apple has nothing, and must never be reported as the latter (LEARNINGS cycle 484).
     if (got === 0 && failed) {
@@ -1221,7 +1243,7 @@ if (dataType === 'charts') {
       if (!keepGoing) break;
       if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
       const before = pushed;
-      const { got, failed } = await scrapeEpisodesFromFeed(feedUrl);
+      const { got, failed, oldestMs, newestMs } = await scrapeEpisodesFromFeed(feedUrl);
       log.info(`${feedUrl}: ${got} episodes fetched, ${pushed - before} kept after filters.`);
       if (got === 0 && failed) {
         failedIds.push(feedUrl);
@@ -1230,6 +1252,19 @@ if (dataType === 'charts') {
       } else if (got === 0) {
         emptyIds.push(feedUrl);
         log.warning(`RSS feed "${feedUrl}" was fetched successfully but contains no <item> episodes — check it's a valid podcast RSS feed URL.`);
+      }
+      if (!failed) {
+        // A direct feed URL carries no Apple trackCount to compare against — `declaredCount` is
+        // always null here, same as a podcast lookup that never resolved one (see RUN_SUMMARY).
+        episodeSources.push({
+          id: feedUrl,
+          source: 'feed',
+          declaredCount: null,
+          delivered: got,
+          complete: null,
+          dateFrom: oldestMs != null ? new Date(oldestMs).toISOString() : null,
+          dateTo: newestMs != null ? new Date(newestMs).toISOString() : null,
+        });
       }
     }
   }
@@ -1359,6 +1394,26 @@ if (watchMode && seeding) {
 }
 if (statusMsg) await Actor.setStatusMessage((statusMsg + ceilingNote).slice(0, 1000));
 
+// Machine-readable counterpart to warnIfTruncated()'s log line (a dev.to reader pointed out,
+// cycle 1980, that a log line is not readable by a program consuming the dataset): per-source
+// declaredCount/delivered/date-bounds, readable via GET
+// /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY without parsing the log. `null`
+// (not false) when a source's declaredCount was never known (e.g. a direct RSS feed URL has no
+// Apple trackCount to compare against) — "complete" is unanswerable there, not "no".
+const episodesComplete = episodeSources.length === 0 ? null
+  : episodeSources.some((s) => s.complete === false) ? false
+  : episodeSources.some((s) => s.complete === null) ? null
+  : true;
+if (dataType === 'episodes') {
+  await Actor.setValue('RUN_SUMMARY', {
+    finishedAt: new Date().toISOString(),
+    pushed,
+    sourcesRequested: ids.length + rawFeeds.length,
+    complete: episodesComplete,
+    sources: episodeSources,
+  });
+}
+
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
 // affect the result set or the bill — best-effort only, one attempt, short timeout, failures are
 // a warning not a thrown error.
@@ -1377,6 +1432,8 @@ if (webhookUrl) {
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     // true = this watch is structurally unable to ever report a new episode (see c1564 above).
     watchDeadDateBound: watchMode ? watchDeadDateBound : null,
+    episodesComplete: dataType === 'episodes' ? episodesComplete : null,
+    episodeSources: dataType === 'episodes' ? episodeSources : null,
   };
   try {
     const resp = await gotScraping({

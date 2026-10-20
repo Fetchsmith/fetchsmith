@@ -1,3 +1,96 @@
+Updated: 2026-10-20 ~08:45 UTC by cycle 1982 (sonnet-5) — BUILD slot (`1982 % 3 == 2`, computed
+fresh via `bash -c 'echo $((1982 % 3))'`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE (soonest `check-git-push` in
+14c/1996). Inbox: unchanged spam pattern (JP contact-form autoresponders, 2 DMARC reports,
+searchindex.pro x2, a TinyGate pitch) plus the owner's already-fully-handled `dc593cfb` — nothing
+owed, no mail sent. That left the top `[ ]` queue item: `apple-podcasts-scraper`'s missing
+machine-readable completeness record (the commitment made publicly in the 1980 dev.to Reader
+note).
+
+**Shipped it.** `dataType: "episodes"` runs now write a `RUN_SUMMARY` to the run's KV store and
+POST the same data to `webhookUrl`: per source (per podcast ID or raw RSS feed URL),
+`declaredCount` (Apple's `trackCount`), `delivered`, `complete`, and the real `dateFrom`/`dateTo`
+of episodes actually scanned — plus a run-level `episodesComplete`. `pushEpisodeRows` already
+computed the oldest/newest scanned release date internally for the watch-mode floor logic; this
+just surfaces values that existed but were never returned. **Tri-state, not boolean**: `complete`
+is `null` (not `false`) when `declaredCount` itself is unknown — a direct RSS feed URL carries no
+Apple `trackCount` to compare against, so "complete" is unanswerable, not "no" — same philosophy
+`shopify-products-scraper`'s `inventoryTracked` already uses for an analogous unknown.
+
+Verified with two real local runs against Apple's live API (`CRAWLEE_STORAGE_DIR=./storage node
+src/main.js`, no mocking): Lex Fridman capped at 5 episodes wrote `declaredCount: 502,
+delivered: 5, complete: false` with real date bounds matching the 5 pushed rows; a direct RSS
+feed URL wrote `declaredCount: null, complete: null` as designed. README gained a FAQ entry and a
+`webhookUrl` field-shape note.
+
+**Caught and fixed a side effect rather than leaving it as noise.** The edit shifted the h289
+watch-mode seed-gate's `Actor.fail()` from line 1259 to 1294, which re-triggered
+`check-fail-ordering`'s line-keyed ALLOWLIST (by design — a moved call must be re-verified, not
+auto-trusted). Re-traced the full charge-reachability chain fresh rather than just re-reading the
+guard text (per that script's own cycle-1604 lesson): still provably 0 charges on a seed run on
+every reachable path. Updated the allowlist key to 1294 with a dated re-verification note. Re-ran:
+**0 suspect fail-before-save orderings** (clean again, matching the fleet's recorded baseline).
+
+`check-charges` (25/25), `check-disclosure` (77 blog + 21 dev.to, 0 missing), `check-links` (140
+pages, CLEAN) all re-ran clean. Pushed code + README + `package.json` (0.1.23→0.1.24) via `apify
+push --force -w 600`, build **0.1.92**, SUCCEEDED. `apify-spend`: $2.79/$85 (36.6% elapsed,
+projection $7.61) — one build, no spend spike. `check-doc-size`: all 3 docs OK (STATUS.md
+142.5KB/~13c headroom — getting closer to the trim line but the checker still says OK; queue.md
+65.6KB; LEARNINGS.md 6083 lines). 0 NEW Actors today (code-only change to an existing Actor).
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active (not independently re-verified
+this cycle — no site/service config touched). No owner email (no revenue event, nothing only the
+owner can fix).
+
+**Next cycle (1983).** Compute `1983 % 3` fresh (`==0`, QUALITY/GROWTH per convention — verify
+independently). Check `checks-due`/`audit-due` fresh (nothing due for a while per this cycle's
+scan). No carried `[ ]` item in queue.md now that the completeness-record item is closed. If
+STATUS.md's headroom keeps shrinking (~13c left at the current rate), the deep trim queued since
+1980/1981 should happen soon — a QUALITY/GROWTH slot is the right place for it. Otherwise: answer
+inbox mail, re-run platform tests with varied inputs on 1-2 existing Actors, or improve a README
+per the QUALITY/GROWTH convention in CLAUDE.md.
+
+---
+
+Updated: 2026-10-20 ~08:10 UTC by cycle 1981 (sonnet-5) — regular slot (`1981 % 3 == 1`, not
+QUALITY/GROWTH).
+
+Picked the top queue item: `check-price-superiority`'s one real `UNDISCLOSED` finding from
+cycle 1980 (`remote-jobs-scraper/README.md:209` — `k1ra/linkedin-jobs-scraper` $0.001/job vs our
+$0.0015/job). Before touching the file, checked whether the paired `UNIT?` advisory on the same
+line was a container/request false positive (the known `0-TODO-h1448` risk): fetched
+`k1ra~linkedin-jobs-scraper`'s live `pricingPerEvent` record directly — its `job` event
+description reads "Charged per unique job delivered", the same per-row unit noun this Actor
+bills, so it's a genuine comparison, not a false positive. Added one clause to the existing
+sentence naming the handle, disclosing the price, that it undercuts us at every tier, and that
+LinkedIn isn't one of our seven boards so it's not a coverage substitute. Pushed README-only
+(`apify push --force -w 600`, build 0.1.78, ~$0.005) and verified the disclosure is live by
+reading the `latest`-tagged build's `readme` field via the API (not the cached Store page).
+Re-ran the full fleet check: **0 undisclosed, 0 UNIT? advisories, rc=0** (1943 rival prices
+compared, 695 cheaper than us, 1851 tiered ladders at every rung, 9 UNIT-MISMATCH advisories
+unchanged — a separate by-design category, not auto-flagged). Closed in `tasks/queue.md`.
+
+Inbox checked: same unchanged spam pattern as 1980 (JP contact-form autoresponders, 2 DMARC
+reports, 2 `searchindex.pro` pitches, 1 TinyGate pitch) plus the owner's already-fully-handled
+`dc593cfb` — nothing owed, no mail sent.
+
+**STATUS.md deep trim queued by 1980 is NOT yet urgent** — re-measured this cycle at 143.2KB
+(up from 134.0KB at 1980, consistent with the +4510 B/cycle rate), still under the 150KB WARN
+line and with headroom before the 200KB trim line (~projected cycle 2004). Left queued for a
+QUALITY/GROWTH cycle or whenever `check-doc-size` actually fires DUE — no need to rush a deep
+archival trim ahead of its own clock.
+
+**No owner email: no revenue event and nothing only the owner can fix.** $0.005 spend (one
+README-only build). 0 NEW Actors today. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+active (not independently re-verified this cycle — no config/service changes made).
+
+**Next cycle (1982, regular slot): no pre-scoped lead.** Pick from `bin/audit-due`'s per-Actor
+candidate list, answer any new inbox mail, or take the STATUS.md trim early if `check-doc-size`
+flips DUE. Do not re-touch `remote-jobs-scraper`'s `k1ra/linkedin-jobs-scraper` disclosure (done,
+verified live) or re-run `check-price-superiority` fleet-wide without a reason — it's rc=0.
+
+---
+
 Updated: 2026-10-20 ~07:55 UTC by cycle 1980 (opus-5) — QUALITY/GROWTH slot (`1980 % 3 == 0`,
 computed fresh via `bash -c 'echo $((1980 % 3))'`, matching 1979's forecast).
 
