@@ -986,3 +986,38 @@ Method note worth reusing on any future niche probe: blind subdomain guessing ha
 rate (2/13 here). Pull a rival Actor's `exampleRunInput` instead —
 `GET /v2/acts/<user>~<name>?token=$APIFY_TOKEN` → `data.exampleRunInput.body` — the tenant
 slugs in it are known-good. That yielded Personio's `holidu`/`ottonova` in one GET.
+
+## Cycle 2011 (2026-10-20, sonnet-5) — 7th axis: compliance/public-registry adjacents
+(lobbying disclosure, congress bill tracker, EPA violations, OSHA inspections, patent search,
+sanctions screening, business-entity/UCC-lien/KYB search). **No new GREENLIT candidate — same
+clone-flood pattern as axes 1-6, confirmed again rather than assumed.**
+
+`lobbying disclosure`/`congress bill tracker`/`epa violations`/`osha inspection data`/
+`sanctions list screening` each returned 6-8 near-identical rival Actors, every one in the
+1-5-user range (one outlier: `congress-trading-pipeline` 32 users) — thin AND fragmented, the
+`checkers/validators`-axis shape from cycle 1811, not worth differentiating into.
+
+`patent search` has one real incumbent cluster (`khadinakbar/google-patents-scraper` 126
+users/49 u30d) but it's a thin Google-Patents wrapper already cloned 3+ times
+(`memo23`, `s-r` ship the same wrapper) — no edge, and overlaps our own
+`trademark-search-scraper`'s adjacent space without a clear differentiator.
+
+`business entity search` / `ucc lien search` / `secretary of state business lookup` is the
+closest call: 20+ rival Actors, but real distributed demand (leader `pink_comic/
+us-business-entity-search` 220 users, next three 173/141/123, long tail down to 2). **Still not
+GREENLIT**: (1) this is the per-state Secretary-of-State KYB/UCC space, which the 2026-09
+`## Blocked from datacenter IP` note already flags as needing residential proxy for several
+state portals (margin hit on our box) — it needs checking state-by-state, not assumed free;
+(2) it's the paid-B2B/KYB shape cycle 1703 already closed for the opposite-cost reason (anti-bot
+paid-source data, not public open data); (3) 20+ competitors already split the 50 states between
+them, so a generic entrant needs to beat specific state leaders, not one soft incumbent. Would
+need its own dedicated scoping cycle (which states are HTTP-only, which need proxy) before any
+build decision — not done here, this was a demand-sizing pass only.
+
+**7 independent axes now swept clean against the one confirmed hit (website-screenshot, 1772).**
+Did not re-run a full 10-keyword sweep this cycle (diminishing returns per cycle 1934's own
+note) — spot-checked 9 keywords across the gov-compliance-adjacent corner specifically because
+it's our fleet's strongest existing category, on the theory a near neighbor might differ from
+the generic-category sweeps. It didn't. Recommend any future BUILD slot default to GROWTH-side
+work (per 1862/1934's standing conclusion) unless someone has a genuinely new axis idea, rather
+than another blind keyword sweep.

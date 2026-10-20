@@ -310,7 +310,7 @@ The `null`-vs-`0` distinction is the point: `declaredMatches: null` means *we ne
 
 ## Related guides
 - [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
-- [All FetchSmith scrapers](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.
+- [All FetchSmith scrapers](https://fetchsmith.com/tools) — HTTP-only Actors for public data sources, no browser required.
 - [The FDA publishes every product recall as JSON — but you can't page past row 25,000, and only drugs come with a barcode](https://fetchsmith.com/blog/fda-openfda-recall-json-api) — the full write-up of the 25,000-row skip cap, the date-chunking workaround and the drug-only `openfda` barcode fields.
 - [openFDA's `count=` shows you the top 1,000 values and never tells you it stopped](https://fetchsmith.com/blog/openfda-count-shows-you-the-top-1000-and-never-says-so) — the distinct-value ceiling (100 by default, 1,000 max, `skip` rejected, no `meta.results` to detect it), the exactly-additive date-partition that recovers all 5,526 recalling firms, and why `count=`/`sort=` on a non-`.exact` field returns a 500 instead of a 400.
 - [Scraping USAspending's federal awards JSON API](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — the same "US government publishes it as keyless JSON" pattern, applied to federal contracts and grants.

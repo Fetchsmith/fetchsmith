@@ -372,4 +372,4 @@ Only public data from Grants.gov's official API is collected. Issues or feature 
 ## Source code
 https://github.com/Fetchsmith/fetchsmith/tree/main/actors/grants-gov-scraper
 
-More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — HTTP-only Actors for public data sources, no browser required.

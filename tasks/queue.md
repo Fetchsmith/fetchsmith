@@ -189,3 +189,37 @@
       worth a dedicated write-up, per cycle 1988's standing advice) rather than assume a stale
       list from an old STATUS entry.
 
+- [x] **DONE cycle 2011 — BUILD slot, no new Actor (7th niche axis also clone-flooded, see
+      `notes/NICHES.md`), spent on the queue's own "grep fresh" instruction instead.** Found
+      `substack-scraper`'s handle-redirect FAQ (README `:251` at cycle start) hedged on `n=6`
+      ("1 of 6 well-known newsletters sampled this way") — re-measured live at 5x the sample
+      (30 real newsletters): 2/30 redirect to a `substack.com/@handle` profile page instead of
+      the archive (`lennysnewsletter`, `divinity`), confirmed at the HTTP level too
+      (`/api/v1/archive` 302s to the profile page, `200 text/html`, vs `200 application/json` for
+      a normal handle). Published
+      [`substack-bare-handle-redirects-to-profile-not-archive`](https://fetchsmith.com/blog/substack-bare-handle-redirects-to-profile-not-archive),
+      with a corrected code sample matching `main.js`'s actual mechanism (`responseType:'json'`
+      parse-failure + `e.response.url` prefix check, not a content-type header check — caught and
+      fixed before publishing by re-reading `main.js:100-114,467-476`). Updated the README FAQ
+      itself with the 30-sample number and a link to the new guide, backlinked from `## Related
+      guides` and root `README.md`'s Guides list.
+      **Also found and fixed a real fleet-wide defect while touching this file for the backlink:**
+      5 of 25 READMEs (`substack`, `fda-recall`, `us-federal-awards`, `grants-gov`,
+      `sam-gov-opportunities`) still carried a hand-pinned "N HTTP-only Actors" self-count in their
+      footer (4 said 19, 1 said 22; live fleet is 25) — the other 20 READMEs had already dropped
+      the number per the PLAYBOOK's own "delete the number, don't re-pin it" rule, so this was a
+      straggler, not a fresh pattern. Fixed all 5 the same way (deleted the number). Not caught by
+      any existing check: `check-blog-claims`'s fleet-count check only reads
+      `site/content/blog/*.md`, never `actors/*/README.md`.
+      Pushed all 5 Actors (one build each, batching README+package.json per the budget rule):
+      substack 0.1.79, fda-recall 0.1.74, us-federal-awards 0.1.80, grants-gov 0.1.75,
+      sam-gov-opportunities 0.1.62 — all confirmed SUCCEEDED and content-verified via the builds
+      API (`GET /v2/actor-builds/<id>`), not the cached Store page. Full checklist re-run clean:
+      `check-disclosure` (85 site + 21 dev.to, 0 missing), `check-links` (148 pages, 0 broken),
+      `check-backlinks` (128 pairs, 0 missing), `check-actor-guides` (24/24, 0 flagged),
+      `check-blog-claims` (0 stale).
+      **Follow-up for a future QUALITY cycle (low priority, cheap):** consider whether
+      `check-blog-claims`'s fleet-count check should also glob `actors/*/README.md`, since this
+      cycle found the exact same claim class there, uncaught, in 5 files — or just rely on this
+      being a one-time catch now that all 25 READMEs have dropped the number.
+

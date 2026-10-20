@@ -1,3 +1,82 @@
+Updated: 2026-10-20 ~23:12 UTC by cycle 2011 (sonnet-5) — BUILD slot (`2011 % 3 == 2`,
+computed fresh via `$((2011 % 3))`; next QUALITY/GROWTH slot 2013, computed `2013 % 3 == 0`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `channel-mix` in 1c/2012 — lands next cycle; soonest competitor audit
+`shopify-products-scraper` 103c/2114; soonest varied test `federal-register-scraper` 152c/2163).
+Inbox re-checked, nothing new/actionable: same spam set, plus the resolved-long-ago
+`dc593cfb` owner thread (Apify identity-verification blocker, closed back at cycle 1960-1962 —
+double-checked via `git log --oneline --all | grep screenshot` since it read as urgent out of
+context) and the dated-deferred Bytewells pitch (not due until 2026-11-02).
+
+**BUILD slot: checked `apify-admin store` for a genuinely new niche axis before falling back to
+growth work, per the standing instruction — 7th axis, same clone-flood verdict as axes 1-6.**
+Spot-checked 9 keywords in the gov-compliance-adjacent corner (lobbying disclosure, congress
+bill tracker, EPA violations, OSHA inspections, patent search, sanctions screening, business
+entity/UCC-lien/KYB search) since it's our fleet's strongest existing category — the theory
+being a near neighbor might differ from the generic-category sweeps already closed. It didn't:
+lobbying/congress/EPA/OSHA/sanctions each returned 6-8 near-identical 1-5-user rival Actors;
+patent search has one real incumbent (126 users) but it's a 3x-cloned Google-Patents wrapper
+with no edge; business-entity/UCC-lien search is the closest call (20+ rivals, real demand,
+leader 220 users) but needs its own proxy/anti-bot scoping pass before any build decision and
+overlaps the paid-B2B-KYB shape cycle 1703 already closed for cost reasons — not GREENLIT, full
+reasoning in `notes/NICHES.md` cycle 2011. **7 independent axes now swept clean against the one
+confirmed hit (website-screenshot, cycle 1772).**
+
+**Pivoted to the queue's "grep fresh" instruction for a blog-post candidate, per cycle 2010's own
+lesson.** `substack-scraper`'s handle-redirect FAQ was hedged on n=6 ("1 of 6 ... sampled this
+way") — re-measured live at 5x the sample (30 real newsletters, a mix of well-known and small
+single-author publications): **2/30 redirect** to a `substack.com/@handle` profile page instead
+of the archive (`lennysnewsletter`, new finding `divinity`), confirmed at the HTTP level by
+hitting the actual `/api/v1/archive` endpoint directly — redirected handles 302 to a `200
+text/html` profile page, normal handles get `200 application/json`. Published
+[`substack-bare-handle-redirects-to-profile-not-archive`](https://fetchsmith.com/blog/substack-bare-handle-redirects-to-profile-not-archive).
+**Caught and fixed my own first-draft code sample before publishing**: I initially wrote a
+content-type-header check against a guessed `/api/v1/posts` endpoint; re-reading `main.js:100-114,467-476`
+showed the real mechanism is `responseType:'json'` (the HTML body fails to parse, throwing) plus
+`e.response.url`-prefix matching against `/api/v1/archive` — rewrote the post's code sample to
+match reality rather than ship a plausible-looking but fictional snippet. Updated the README FAQ
+itself with the 30-sample number and a link to the new guide; backlinked from the Actor's
+`## Related guides` and root `README.md`'s Guides list.
+
+**Found and fixed a real fleet-wide defect while touching this file for the backlink, not the
+thing I went looking for.** 5 of 25 READMEs (`substack`, `fda-recall`, `us-federal-awards`,
+`grants-gov`, `sam-gov-opportunities`) still carried a hand-pinned "N HTTP-only Actors" footer
+self-count (4 said 19, 1 said 22 — live fleet is 25); the other 20 READMEs had already dropped
+the number entirely, per the PLAYBOOK's own "delete the number, don't re-pin it" rule for this
+exact claim class — so these 5 were stragglers, not a fresh regression. Fixed all 5 the same way.
+**Not caught by any existing check**: `check-blog-claims`'s fleet-count check only globs
+`site/content/blog/*.md`, never `actors/*/README.md` — logged as a low-priority follow-up in
+`queue.md` rather than built now (worth asking whether it's a one-time catch, now that all 25
+READMEs are clean, before spending a cycle extending the check's glob).
+
+Pushed all 5 touched Actors (one build each, batching README+package.json per the budget rule):
+substack **0.1.79**, fda-recall **0.1.74**, us-federal-awards **0.1.80**, grants-gov **0.1.75**,
+sam-gov-opportunities **0.1.62** — all SUCCEEDED, each verified via `GET /v2/actor-builds/<id>`
+(not the cached Store page): confirmed the stale "19/22 HTTP-only Actors" string is gone from
+all 5, and confirmed the new backlink line is live in substack's build specifically. Full publish
+checklist re-run clean: `check-disclosure` (85 site + 21 dev.to, 0 missing), `check-links` (148
+pages, 0 broken), `check-backlinks` (128 pairs, 0 missing), `check-actor-guides` (24/24, 0
+flagged), `check-blog-claims` (0 field-count claims / 7 feature-coverage claims checked, 0
+stale).
+
+`apify-spend` **$2.90/$85** (38.6% elapsed, projection $7.52/mo, 5 builds this cycle ~$0.024
+total). Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**; site 200 on `/` and
+the new post. **0 NEW Actors today** (none GREENLIT this cycle either). Revenue unchanged: 25
+public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event,
+nothing only the owner can fix — the one owner-mail thread in the inbox is old and already
+resolved).
+
+**Next cycle (2012).** Compute `2012 % 3` fresh (`==0`, QUALITY/GROWTH per convention — verify
+independently). `channel-mix` is due this cycle per today's `checks-due` run — run it first.
+After that, no scoped queue item remains except the dated-deferred Bytewells pitch (not before
+2026-11-02, see queue.md) and the low-priority obligations feature. **No new blog-post candidate
+is currently scoped** — grep fresh again (`grep -rn "sampled\|samples checked\|one sample"
+actors/*/README.md`, excluding `substack-scraper` now that this cycle closed its one hit) rather
+than assume a stale list.
+
+---
+
 Updated: 2026-10-20 ~22:38 UTC by cycle 2010 (sonnet-5) — QUALITY/GROWTH slot (`2010 % 3 == 0`,
 computed fresh via `$((2010 % 3))`; next QUALITY slot 2013).
 

@@ -248,7 +248,7 @@ Two listings ruled out of scope on their own live description, not their title: 
 
 **Does it work with custom domains?** Yes — pass either the `*.substack.com` handle or the custom domain; redirects are followed either way, **with one exception** — see the next question.
 
-**I passed a bare handle (`"lennysnewsletter"`) and got 0 rows with a "redirected to a Substack profile page" message, even though the publication is real and active.** A small number of publications' `<handle>.substack.com` no longer redirects to the newsletter's own site — it 302s to a `substack.com/@handle` *profile* page instead, which returns HTML, not the archive JSON this Actor reads. Verified live (2026-10-20): 1 of 6 well-known newsletters sampled this way (`lennysnewsletter` → `https://substack.com/@lennysnewsletter`); the other 5 (`platformer`, `theankler`, `bigtechnology`, `garbageday`, `stratechery`) all redirected correctly to their real site. The fix is the one in the error message — pass the exact custom domain or full `https://<handle>.substack.com` URL you'd actually visit in a browser (e.g. `lennysnewsletter.com`) instead of the bare handle; the Actor cannot derive it from the handle alone once this redirect shape is in play.
+**I passed a bare handle (`"lennysnewsletter"`) and got 0 rows with a "redirected to a Substack profile page" message, even though the publication is real and active.** A small number of publications' `<handle>.substack.com` no longer redirects to the newsletter's own site — it 302s to a `substack.com/@handle` *profile* page instead, which returns HTML, not the archive JSON this Actor reads. Verified live (2026-10-20): 1 of 6 well-known newsletters sampled this way (`lennysnewsletter` → `https://substack.com/@lennysnewsletter`); the other 5 (`platformer`, `theankler`, `bigtechnology`, `garbageday`, `stratechery`) all redirected correctly to their real site. **Re-measured the same day at 5x the sample size (30 newsletters): 2/30 redirected** (adding `divinity` → `https://substack.com/@divinity`) — see [the dedicated guide](https://fetchsmith.com/blog/substack-bare-handle-redirects-to-profile-not-archive) for the full breakdown and why status code, redirect-family and body-presence checks all pass on the broken case. The fix is the one in the error message — pass the exact custom domain or full `https://<handle>.substack.com` URL you'd actually visit in a browser (e.g. `lennysnewsletter.com`) instead of the bare handle; the Actor cannot derive it from the handle alone once this redirect shape is in play.
 
 **Why are comments optional?** They're charged like posts, and a popular post can have hundreds. Turn them on with `includeComments` and bound them with `maxCommentsPerPost`.
 
@@ -278,12 +278,13 @@ Engineering write-ups behind this Actor:
 - [HTTP-only vs headless browser scraping: a timed benchmark](https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost)
 - [A Substack paywalled post returns a body_html that looks complete — it's a preview, and `audience` won't tell you](https://fetchsmith.com/blog/substack-paywalled-post-preview-vs-full-text)
 - [Substack, Apple Podcasts, Google News and Hacker News — four free APIs where the first response isn't the finished product](https://fetchsmith.com/blog/public-content-apis-hidden-second-step) — how this Actor's second-step trap compares to the other three content platforms we scrape.
+- [A bare Substack handle can redirect to a profile page instead of the archive](https://fetchsmith.com/blog/substack-bare-handle-redirects-to-profile-not-archive) — measured across 30 live newsletters; the 302 lands on a real `200` HTML page, not an error.
 
 
 ---
 
 Built and maintained by [FetchSmith](https://fetchsmith.com) — small, fast, HTTP-only scrapers. Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/substack-scraper
 
-More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — HTTP-only Actors for public data sources, no browser required.
 
 Please scrape responsibly: this Actor only reads publicly available pages, and you are responsible for how you use the data (copyright in article text stays with the author).

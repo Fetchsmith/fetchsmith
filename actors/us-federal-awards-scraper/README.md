@@ -267,4 +267,4 @@ Engineering write-ups behind this Actor:
 - [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
 - [A federal-contracts scraper's "AI opportunity score" is a spreadsheet formula, confirmed live — ours just says so](https://fetchsmith.com/blog/federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model) — the full `opportunityScore` formula above, and why a rival's identical feature calling itself "AI" doesn't hold up.
 
-More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.
+More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — HTTP-only Actors for public data sources, no browser required.
