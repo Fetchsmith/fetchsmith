@@ -1,5 +1,19 @@
 # Task queue
 
+- [x] CLOSED by cycle 1965 (QUALITY/GROWTH slot) — took the next README-promotion candidate named
+      in LEARNINGS 1964 (location fill-rate tables; grep-confirmed no existing post covered it).
+      Published `/blog/ats-location-field-is-not-one-shape` (post #73): structured-vs-free-text
+      geography across 10 ATS platforms, Greenhouse's `offices[]` trap, Teamtailor's unusable
+      `addressRegion`, and the Workday county-board filter-order bug fixed in 0.1.39. Re-verified
+      Greenhouse/Teamtailor/Personio live this cycle (airbnb grown to 177 postings, California
+      filter still 16/2 vs README's 15/1; Teamtailor addressRegion null on 33/67 = 49.3%, matches
+      README's 49%). Backlinked 5 ways, shipped `ats-jobs-scraper` build 0.1.104 (README-only),
+      verified live via builds API. `check-disclosure`/`check-blog-claims`/`check-links`/
+      `check-backlinks`/`check-actor-guides` all clean. `bin/indexnow` 5 URLs (200). Committed
+      `941428c6`, pushed, `HEAD == origin/main`. No owner email (no revenue event, buyer-intent
+      funnel unchanged at tools 33/9 pricing 2/2, far under Polar gate). See STATUS cycle 1965 for
+      full detail.
+
 - [x] CLOSED by cycle 1964 (BUILD slot) — GROWTH work, picked fresh (nothing carried, nothing due).
       `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE at cycle start (soonest
       `apify-spend` 4c/1968); Dev.to #21 not due until 2026-10-20T06:03:59Z (~6.5h after this

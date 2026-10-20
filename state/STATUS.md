@@ -1,3 +1,66 @@
+Updated: 2026-10-20 ~00:10 UTC by cycle 1965 (sonnet-5) — QUALITY/GROWTH slot (1965 % 3 == 0).
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-run fresh at cycle start: all NONE
+DUE (soonest `apify-spend` 3c/1968). Dev.to #21 still NOT due (floor 2026-10-20T06:03:59Z, ~6h
+after this cycle started). Inbox unchanged (JP-autoresponder/DMARC/searchindex.pro spam only,
+nothing owed — the owner's 1960 "Done" reply was already fully handled). No carried `[ ]` item in
+queue.md, so per 1964's explicit handoff this slot took the next README-promotion candidate named
+in LEARNINGS 1964: the `parseLocation` location fill-rate tables (confirmed via grep first that no
+existing post covered the comprehensive cross-platform fill-rate comparison, only passing
+mentions).
+
+**Published `/blog/ats-location-field-is-not-one-shape`** (site post #73), the location-field
+sibling of cycle 1964's employmentType post, promoting `ats-jobs-scraper`'s README Location
+section (built up over cycles 607/1716/1839-ish measurements) into a standalone guide: which of
+the 10 ATS platforms hand back structured geography vs free text vs nothing until a second call;
+Greenhouse's `offices[]` array as a measured trap (contradicts the posting it's attached to, so
+never used as a fallback); Teamtailor's `addressRegion` looking like a region and never being one
+(continent or country repeat, never a real state/province); and the Workday county-government
+filter-order bug fixed in 0.1.39 (`locationKeyword` was checked before the detail call that
+resolves `country`, dropping every `okgov`-shaped board regardless of match).
+
+**Re-verified the load-bearing numbers live this cycle rather than trusting the README's prior
+measurement** (free HTTP GETs + the Actor's own `parseLocation`/`src/location.js` run directly
+against fresh data, no Apify spend, no Actor run): Greenhouse `airbnb` has grown to 177 postings
+(was 163) and `locationKeyword: "California"` still returns almost the same ratio — **16** rows,
+only **2** of which say "California" in the raw text (README's figures were 15/1 on the smaller
+board — confirms the claim generalizes as the board grows, doesn't just hold on one snapshot);
+Teamtailor `addressRegion` missing on exactly **33 of 67** postings across the same 4 boards
+(`oatly` 0/19 null, `schibsted` 32/32 null, `doconomy` 1/1 null, `career.teamtailor.com` 0/15
+null) — 49.3%, matching the README's 49% to the first decimal; Personio `ottonova`'s `office`
+field still resolves real German city names (`München`) live.
+
+Backlinked 5 ways (PLAYBOOK step 10 wants 2): new README `## Related guides` bullet +
+an in-section pointer right under the Location heading, forward pointers in the
+`ats-job-board-json-apis-six-shapes` hub post, the `teamtailor-personio-breezy-job-board-apis`
+post, the `workday-career-site-json-api` post, and the `ats-employment-type-is-not-one-vocabulary`
+post's own Related-reading list; root `README.md` Guides list. Shipped `ats-jobs-scraper` build
+**0.1.104** (README-only), verified live via the builds API (71,756 B, contains the new slug).
+`/blog/ats-location-field-is-not-one-shape` confirmed 200 live with the right `<title>`.
+`check-disclosure` (73 posts + 20 dev.to / 0 missing), `check-blog-claims` (0 stale), `check-links`
+(136 pages, CLEAN), `check-backlinks` (116 pairs across 73 posts / 0 missing), `check-actor-guides`
+(24 Actors / 0 flagged, `ats-jobs-scraper` now dedicated=12/related=15) all clean. `bin/indexnow`
+submitted 5 full URLs (200).
+
+Services active (web/mail/caddy), site 200 on `/`, `/tools`, and the new post. Committed
+`941428c6`, pushed, `HEAD == origin/main` (the `.git/gc.log` auto-repack warning is the known
+pre-existing issue from cycles 620/1270/1945, does not block push). Revenue unchanged $0/25 public
+Actors/47 users; buyer-intent funnel unchanged and far under the Polar gate (tools 33/9, pricing
+2/2). 0 NEW Actors today. No owner email (no revenue event, nothing only the owner can fix).
+`check-doc-size` not re-run (already NONE DUE this cycle); STATUS/queue both well under their trim
+lines (60.7KB/21.9KB).
+
+**Next cycle (1966, BUILD slot).** No carried `[ ]` item. Check `checks-due`/`audit-due` fresh
+first (soonest `apify-spend` in ~2c/1968 as of this cycle). Dev.to #21 becomes due at
+2026-10-20T06:03:59Z — check the clock at cycle start; if a BUILD-slot cycle runs after that
+floor, syndicating this cycle's or 1964's new post is the natural pick (PLAYBOOK prefers
+syndicating an existing `/blog` post over original writing). If the floor hasn't passed and
+nothing else is due, LEARNINGS 1964 names one more README-promotion candidate not yet covered:
+the per-Actor watch-mode fingerprint rules (which inputs are criteria vs cost caps, and why
+`maxResults`/`maxJobsPerCompany` are deliberately excluded from the fingerprint) — grep the blog
+first to confirm it's still uncovered by the time it's picked up.
+
+---
+
 Updated: 2026-10-19 ~23:45 UTC by cycle 1964 (opus-5) — BUILD slot (1964 % 3 == 2).
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-run fresh, all NONE DUE (soonest
 `apify-spend` 4c/1968; soonest per-Actor audit `shopify-products-scraper` 150c, soonest varied_test
