@@ -64,8 +64,40 @@
       verified via the builds API; re-ran clean (15/0) and fault-tested three paths (field
       mismatch, id-absent-from-hits raise, unregistered-id raise).
 
-- [ ] **New check candidate, scoped by cycle 2004's finding: diff each Actor's hand-written README
-      sample row against its own generated `.actor/dataset_schema.json` `example` values.** The
+- [x] **CLOSED cycle 2008 — the README-vs-`dataset_schema.json` candidate was scoped, and it
+      resolved into a 3-line extension of an EXISTING check, not a new one. Do not re-open it as
+      a value-diff.** The gate (`ls actors/*/.actor/dataset_schema.json | wc -l`) cleared easily:
+      26/26 Actors have the file, 21/26 carry `example` keys, and all 40 README sample blocks
+      parse as strict JSON — so this was never a 1-Actor curiosity. But the three candidate
+      comparisons did not survive measurement equally:
+      - **Value equality: UNSOUND, dropped.** `bin/gen-output-schema:56-57` records the first
+        non-empty value it sees **per field**, not per row, and cuts strings at 120 chars. A
+        schema's `example` set is therefore a **composite of different rows**, so diffing it
+        against the README's one real row flags README truncation (`…`), trimmed arrays, 120-char
+        cuts and ordinary row-to-row variation as if they were defects. Measured 33 raw
+        "disagreements" and chased the 2 most promising to the bottom: `court-records-scraper`'s
+        `courtJurisdiction` ("Federal Appellate" in README vs "Federal District" in schema) is
+        **correct in the README** — `jurisdictionFor('ca9')` resolves to `Federal Appellate`,
+        verified against `court-jurisdictions.json`, and the schema's value simply came off a
+        district-court row; `apple-podcasts-scraper`'s `source` ("itunes" vs "rss") is a
+        **path discriminator**, both values legitimate (`main.js:529` lookup path, `:593` RSS
+        path, `:1081` chart path). Zero defects, two near-misses — exactly the false-positive
+        profile that makes a check not worth having.
+      - **Field names: ALREADY COVERED.** `check-readme-samples` pass 1 has diffed README sample
+        keys against `dataset_schema.json` properties since cycle 448. Measured 0 across the
+        fleet because that check enforces it. Building it again would have been pure duplication.
+      - **Value TYPES: the one real gap, now shipped** as `check-readme-samples` **pass 3**
+        (`type_mismatches()`). Types are the part that survives per-field example sourcing, since
+        every row of a field shares one type. Fleet run clean: **38 blocks / 97 prose bullets /
+        707 sample values type-checked, 0 drift.** `state/fleet_checks.json` `last_cycle` moved
+        1959 -> 2008 (next due 2344) since the whole check ran fleet-wide this cycle.
+      **Lesson for the next check candidate (in LEARNINGS too): measure the candidate's signal
+      BEFORE writing it, and check whether an existing check already owns the sound half.**
+      A one-shot prototype over the fleet cost ~5 minutes here and turned a planned new check
+      into 60 lines inside an old one.
+
+      *Original cycle-2004 scoping note, kept only for context (NOT an open item):* diff each
+      Actor's hand-written README sample row against its generated `dataset_schema.json`. The
       sam-gov `addressState` defect existed in the README while the generated schema in the SAME
       Actor directory carried the correct `"XX"` — two artifacts describing one field, never
       compared, and the generated one is the trustworthy side (it comes off a real run). This is a

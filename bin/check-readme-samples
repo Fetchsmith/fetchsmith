@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""check-readme-samples (added cycle 448, extended cycle 451)
+"""check-readme-samples (added cycle 448, extended cycles 451 and 2008)
 
-Standing check, two passes over the same READMEs:
+Standing check, three passes over the same READMEs:
 
 1. Every key shown in a README "Sample output" JSON block must be a field the
    Actor actually declares in .actor/dataset_schema.json.
@@ -13,6 +13,12 @@ Standing check, two passes over the same READMEs:
    freshest source of truth; if the field gets renamed or dropped in code and
    only the sample block is caught (or nothing is), this sentence keeps
    describing a field that no longer exists.
+3. (cycle 2008) Every sample-block VALUE must have the JSON type its field
+   declares in dataset_schema.json -- pass 1 only asks whether the key is a
+   real field, so a README showing a scalar where the Actor now emits an array,
+   or a quoted "42" for a number field, passed it silently. Example values are
+   deliberately NOT diffed; see type_mismatches() for why that comparison is
+   unsound against a gen-output-schema-generated schema.
 
 Nothing else in the check suite looks at README prose: check-code-fields diffs
 code -> dataset_schema, check-registry-fields diffs registry -> schema,
@@ -79,6 +85,72 @@ def top_level_keys(text):
     if isinstance(doc, dict):
         return list(doc.keys())
     return None
+
+
+def sample_items(text):
+    """The sample block's row dicts: [the object], or every object in an array block."""
+    try:
+        doc = json.loads(text)
+    except Exception:
+        return []
+    if isinstance(doc, dict):
+        return [doc]
+    if isinstance(doc, list):
+        return [d for d in doc if isinstance(d, dict)]
+    return []
+
+
+def json_types(value):
+    """The JSON Schema type name(s) a Python value from json.loads satisfies.
+
+    bool is tested before int because Python's bool IS an int, and an integral
+    float satisfies "integer" too -- JSON has one number type, so a schema field
+    declared "integer" legitimately round-trips a sample written as 1.0.
+    """
+    if value is None:
+        return {"null"}
+    if isinstance(value, bool):
+        return {"boolean"}
+    if isinstance(value, int):
+        return {"integer", "number"}
+    if isinstance(value, float):
+        return {"number"} | ({"integer"} if value.is_integer() else set())
+    if isinstance(value, str):
+        return {"string"}
+    if isinstance(value, list):
+        return {"array"}
+    if isinstance(value, dict):
+        return {"object"}
+    return set()
+
+
+def type_mismatches(text, props):
+    """Yield (key, readme_types, declared) where a sample value contradicts the schema.
+
+    Pass 1 above answers "is this key a real field"; this answers "is the value
+    shown the SHAPE the field really has". The two artifacts are written by
+    different hands -- the sample block by us, dataset_schema.json generated off a
+    real run by bin/gen-output-schema -- so a README that still shows a scalar where
+    the Actor now emits an array (or a quoted "42" where the field is a number) is
+    drift a buyer wiring up a parser pays for, and nothing else in the suite looks
+    at sample VALUES.
+
+    Deliberately NOT compared: the example values themselves. gen-output-schema
+    records the first non-empty value it sees *per field*, so a schema's examples
+    are a composite of different rows (and strings are cut at 120 chars) -- they are
+    not one record, and diffing them against the README's one real row flags
+    truncation and row-to-row variation as if they were defects (scoped cycle 2008).
+    Types survive that, because every row of a field shares one type.
+    """
+    for row in sample_items(text):
+        for k, v in row.items():
+            declared = props.get(k, {}).get("type")
+            if declared is None:
+                continue
+            declared = {declared} if isinstance(declared, str) else set(declared)
+            if not declared or json_types(v) & declared:
+                continue
+            yield k, json_types(v), sorted(declared)
 
 
 def blocks(readme):
@@ -184,6 +256,7 @@ def main():
     problems = 0
     checked_bullets = 0
     checked_blocks = 0
+    checked_types = 0
     for actor_dir in sorted(ACTORS.iterdir()):
         if not actor_dir.is_dir() or actor_dir.name.startswith("_"):
             continue
@@ -193,9 +266,8 @@ def main():
         if not readme.exists() or not schema.exists():
             print(f"SKIP {actor_dir.name}: missing README or dataset_schema.json")
             continue
-        declared = set(
-            json.loads(schema.read_text()).get("fields", {}).get("properties", {})
-        )
+        props = json.loads(schema.read_text()).get("fields", {}).get("properties", {})
+        declared = set(props)
         known = set(declared)
         if input_schema.exists():
             known |= set(
@@ -236,9 +308,18 @@ def main():
                     f"DRIFT {actor_dir.name}:{lineno} sample under '{heading}' "
                     f"shows '{k}' -- not a declared field in dataset_schema.json"
                 )
+            for k, got, want in type_mismatches(body, props):
+                problems += 1
+                print(
+                    f"DRIFT {actor_dir.name}:{lineno} sample under '{heading}' "
+                    f"shows '{k}' as {'/'.join(sorted(got))} -- "
+                    f"dataset_schema.json declares {want}"
+                )
+            checked_types += sum(len(r) for r in sample_items(body))
     print(
         f"check-readme-samples: {checked_blocks} sample blocks, "
-        f"{checked_bullets} prose bullets checked, {problems} drift"
+        f"{checked_bullets} prose bullets, {checked_types} sample values "
+        f"type-checked, {problems} drift"
     )
     return 1 if problems else 0
 

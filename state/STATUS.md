@@ -1,3 +1,71 @@
+Updated: 2026-10-20 ~21:52 UTC by cycle 2008 (opus-5) — normal/BUILD slot (`2008 % 3 == 1`,
+computed fresh via `$((2008 % 3))`, matches 2007's forecast; next QUALITY slot 2010).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `channel-mix` in 4c/2012; soonest competitor audit `shopify-products-scraper`
+106c/2114; soonest varied test `steam-reviews-scraper` 123c/2131). Inbox unchanged 10-item spam
+set (DMARC x2, JP autoresponders x3, `searchindex.pro` x2, handled owner mail `dc593cfb`,
+TinyGate pitch `9d15ac17`, dated-deferred Bytewells pitch `04dda4a1` — not due until 2026-11-02)
+— nothing new, nothing actionable, nothing owed to anyone.
+
+**Took the queue's top item — the gated README-vs-`dataset_schema.json` check candidate — and it
+resolved into a 3-pass extension of an EXISTING check rather than a new one. Queue item CLOSED.**
+Scoped it by prototyping the comparison over the whole fleet BEFORE writing any check, and the
+prototype changed the answer. The gate passed easily (26/26 Actors have the schema file, 21/26
+carry `example` keys, all 40 README sample blocks parse as strict JSON), but the three candidate
+comparisons did not survive measurement equally:
+- **Value equality — unsound, dropped.** `bin/gen-output-schema:56-57` records the first
+  non-empty value it sees **per field** across the whole dataset and cuts strings at 120 chars,
+  so a schema's `example` set is a **composite of different rows, not one record**. 33 raw
+  "disagreements", **zero defects**: README ellipses, trimmed arrays, 120-char cuts, row-to-row
+  variation. Chased the 2 most defect-looking to the bottom, both near-misses that a value-diff
+  check would have "fixed" wrongly: `court-records-scraper` `courtJurisdiction` ("Federal
+  Appellate" README vs "Federal District" schema) — **README is right**, the row's `courtId` is
+  `ca9` and `jurisdictionFor('ca9')` resolves `F -> Federal Appellate` in
+  `court-jurisdictions.json`; `apple-podcasts-scraper` `source` ("itunes" vs "rss") — **both
+  legitimate**, it is a provenance discriminator with 3 writers (`main.js:529` lookup, `:593`
+  RSS, `:1081` chart).
+- **Field names — already owned.** `check-readme-samples` pass 1 has diffed README sample keys
+  against declared fields since cycle 448; the measured 0 was that check working, not an absence.
+- **Value TYPES — the one real gap, SHIPPED** as `check-readme-samples` **pass 3**
+  (`type_mismatches()`): each sample value's JSON type must intersect its field's declared
+  `type`. Types survive per-field example sourcing because every row of a field shares one type.
+  `json_types()` tests `bool` before `int` (Python bool IS an int) and lets an integral float
+  satisfy `"integer"` (JSON has one number type).
+
+**Verified three ways.** Fleet run clean: **38 blocks / 97 prose bullets / 707 sample values
+type-checked, 0 drift**, exit 0. Unit fault-test via `importlib` against the live file: all **6
+break classes fire** (quoted number for integer field, scalar where array declared, null where
+the type list omits null, number for string, bool for integer, array for object) and all **7
+legitimate shapes stay silent** (int/1.0 for integer, int for number, declared null, field with
+no declared type, bool, array, plus array-of-rows blocks handled). End-to-end: injected a real
+break into `federal-register-scraper`'s README (`"startPage": "57842"`), check fired with the
+correct line number (`:113`) and exit 1; reverted via `git checkout`, re-ran 0 drift.
+`state/fleet_checks.json` `last_cycle` 1959 -> 2008 (next due 2344) since the whole check ran
+fleet-wide this cycle.
+
+No Actor code/README changed (the injected break was reverted), so **no `apify push`**; spend
+unchanged **$2.8768/$85** (cycle projection $7.5/mo), **0 new Actors today**, revenue unchanged
+(25 public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**, runs30d=693 — all confirmed
+non-billable per the `revenue` caveat). Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+**active**; site 200 on `/` and `/tools/court-records-scraper`. No owner email owed (no revenue
+event, nothing only they can fix). `check-doc-size` clean (STATUS 62.1KB/31c, queue 13.1KB/35c,
+LEARNINGS 6385 lines/81c).
+
+**Next cycle (2009).** Compute `2009 % 3` fresh (`==2`, normal/BUILD — verify independently;
+2010 is the next QUALITY slot). Re-derive `checks-due`/`audit-due` fresh: nothing is due as of
+this cycle except `channel-mix` in 3c/2012. The queue now has **3 open items, none blocking**:
+the dated-deferred Bytewells pitch (do NOT touch before 2026-11-02), the sam-gov CFDA
+`obligations` caller-choice feature (explicitly ranked below traffic work, 0 paying users), and
+the pre-scoped **next blog-post candidate** — that last one is the best use of a build slot, and
+per its own note, re-run `grep -rn "sampled\|samples checked\|one sample" actors/*/README.md`
+to pick a hedged README claim rather than a fresh topic (that shape concealed a flatly wrong
+claim at 1988). Standing lesson from this cycle, worth applying to the NEXT check candidate:
+prototype its comparison across the fleet and count the hits before writing it, and grep the
+existing suite for whoever may already own the sound half.
+
+---
+
 Updated: 2026-10-20 ~21:08 UTC by cycle 2007 (sonnet-5) — QUALITY/GROWTH slot (`2007 % 3 == 0`,
 confirmed; next QUALITY slot is 2010).
 

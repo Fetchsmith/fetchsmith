@@ -24,8 +24,8 @@
   "check-readme-samples": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1959,
-   "note": "cycle 1959: Found+fixed 1 real drift: clinicaltrials-scraper README rowsPerStudy=site sample showed a site object field never declared in dataset_schema.json. Added it (object, example from README). Pushed build 0.1.76, verified live via builds API. Re-ran clean: 38 blocks/95 bullets, 0 drift. [prior note preserved] cycle 1624: 7 days. 0 drift at 1623, same argument as check-blog-claims (our own edits are the only drift source)."
+   "last_cycle": 2008,
+   "note": "cycle 2008: Added PASS 3 -- sample-block VALUE types vs dataset_schema.json's declared `type`. Ran fleet-wide clean: 38 blocks / 97 bullets / 707 values type-checked, 0 drift. Pass 3 came out of the cycle-2004 README-vs-schema candidate: value EQUALITY is unsound (gen-output-schema records the first non-empty value PER FIELD, so examples are a composite of different rows, strings cut at 120 chars), but types survive that. Fault-tested 6 break classes + 7 legitimate shapes + one real injected README break (exit 1, right line) before reverting. [prior note preserved] cycle 1959: Found+fixed 1 real drift: clinicaltrials-scraper README rowsPerStudy=site sample showed a site object field never declared in dataset_schema.json. Added it (object, example from README). Pushed build 0.1.76, verified live via builds API. Re-ran clean: 38 blocks/95 bullets, 0 drift. [prior note preserved] cycle 1624: 7 days. 0 drift at 1623, same argument as check-blog-claims (our own edits are the only drift source)."
   },
   "check-comparison-breadth": {
    "kind": "cadence",

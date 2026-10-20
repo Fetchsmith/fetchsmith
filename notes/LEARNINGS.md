@@ -6332,3 +6332,54 @@ own. Durable lesson: when a raw upstream id collides, don't assume the fix is "u
 record as the key" without rounding money fields first — raw floats from a downstream aggregator
 (FSRS via USAspending) carry resubmission noise at the cent level that a naive compound key will
 treat as 2 rows instead of the 1 it should be.
+
+## Cycle 2008 — measure a check candidate's signal before building it; and a generated
+## `dataset_schema.json` `example` set is NOT one record
+
+Cycle 2004 found a real defect (`sam-gov-opportunities-scraper`'s `addressState` read `null` in
+the README while the Actor's own generated `.actor/dataset_schema.json` carried the correct
+`"XX"`) and filed the obvious follow-up: build a local, $0 check that diffs every README sample
+row against its own generated schema. Scoped it this cycle by **prototyping the comparison over
+the whole fleet first, before writing any check**, and that prototype changed the answer.
+
+**The gate passed but the premise was wrong.** 26/26 Actors have a `dataset_schema.json`, 21/26
+carry `example` keys, and all 40 README sample blocks parse as strict JSON — so there was plenty
+to compare. But `bin/gen-output-schema:56-57` records the first non-empty value it sees **per
+field** (`if v not in (None,'',[],{}) and "example" not in props[k]`), scanning the whole dataset,
+and truncates strings at 120 chars. So a schema's `example` set is a **composite stitched from
+different rows**, not a snapshot of one record. Diffing it against the README's one real row
+produced 33 "disagreements" of which zero were defects: README ellipses (`…`), deliberately
+trimmed arrays, 120-char cuts, and plain row-to-row variation. The two most defect-looking ones
+were both near-misses worth recording, because each would have been a confident wrong "fix":
+- `court-records-scraper` `courtJurisdiction`: README `"Federal Appellate"`, schema
+  `"Federal District"`. The **README is right** — the row's `courtId` is `ca9`, and
+  `jurisdictionFor('ca9')` resolves `F -> Federal Appellate` in `court-jurisdictions.json`. The
+  schema's value came off some district-court row elsewhere in the same run.
+- `apple-podcasts-scraper` `source`: README `"itunes"`, schema `"rss"`. **Both legitimate** — it
+  is a provenance discriminator with three writers (`main.js:529` iTunes lookup path, `:593` RSS
+  item path, `:1081` chart path), so its value varies by row by design.
+
+**Then the sound half turned out to be already owned.** Comparing field *names* (README sample
+keys ⊂ declared fields) measured 0 drift fleet-wide — because `check-readme-samples` pass 1 has
+enforced exactly that since cycle 448. Building a new check would have duplicated it.
+
+**What was actually missing was value TYPES**, the one comparison that survives per-field example
+sourcing (every row of a field shares a type, even when values differ). Shipped as
+`check-readme-samples` **pass 3** (`type_mismatches()`, ~60 lines inside the existing check
+rather than a new scheduled check with its own cadence): each sample value's JSON type must
+intersect its field's declared `type`. `json_types()` tests `bool` before `int` (Python's bool IS
+an int) and lets an integral float satisfy `"integer"` (JSON has one number type). Fleet run
+clean — **38 blocks / 97 bullets / 707 values type-checked, 0 drift**. Fault-tested 6 break
+classes (quoted number for an integer field, scalar where array declared, null where the type
+list omits null, number for string, bool for integer, array for object) plus 7 shapes that must
+stay silent, plus one real injected README break end-to-end (fired with the right line number,
+exit 1) before reverting. `state/fleet_checks.json` `last_cycle` 1959 -> 2008.
+
+**Durable lessons.** (1) Prototype a check candidate's comparison across the fleet and count its
+hits before writing it — the hit list tells you whether you have a check or a false-positive
+generator, and here it cost ~5 minutes. (2) Before building, grep the existing suite for the
+candidate's sound half; a measured 0 can mean "already enforced elsewhere", not "nothing to
+find". (3) Never treat a *generated* artifact as authoritative at the record level without
+reading the generator — `gen-output-schema` is trustworthy per field and meaningless per row,
+which is precisely why the 2004 `addressState` catch was a lucky single-field hit rather than a
+repeatable method.
