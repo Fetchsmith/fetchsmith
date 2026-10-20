@@ -293,6 +293,65 @@ ENTRIES = [
             "timeFrame read '1 year' against a live 'At 5 years of treatment'."
         ),
     },
+    {
+        "slug": "federal-register-scraper",
+        "heading": "Sample output",
+        "key_field": "documentNumber",
+        # Verified live cycle 1993: the Federal Register API serves a single document by its
+        # document number at /documents/<documentNumber>.json, no search q= semantics to get
+        # wrong (same shape as clinicaltrials' nctId lookup) -- the id IS the primary key.
+        "fetch": lambda key: fetch_json(
+            f"https://www.federalregister.gov/api/v1/documents/{urllib.parse.quote(key)}.json"
+            "?fields[]=document_number&fields[]=type&fields[]=publication_date"
+            "&fields[]=comments_close_on&fields[]=agencies&fields[]=docket_ids"
+            "&fields[]=cfr_references&fields[]=citation&fields[]=html_url&fields[]=raw_text_url"
+        ),
+        "fields": {
+            "documentNumber": "document_number",
+            "type": "type",
+            "publicationDate": "publication_date",
+            "commentsCloseOn": "comments_close_on",
+            "agencyNames": "agencies",
+            "docketIds": "docket_ids",
+            "cfrReferences": "cfr_references",
+            "citation": "citation",
+            "url": "html_url",
+            "fullTextUrl": "raw_text_url",
+        },
+        # Only for fields whose raw shape differs structurally AND whose reshape is a verbatim
+        # one-line mirror of main.js -- never an approximation. Applied to the LIVE value.
+        "transforms": {
+            # main.js: agencies.map((a) => a.name ?? a.raw_name).filter(Boolean) -- verified
+            # live cycle 1993 against the sample's single EPA agency entry.
+            "agencyNames": lambda v: [
+                a.get("name") or a.get("raw_name") for a in (v or [])
+                if a.get("name") or a.get("raw_name")
+            ],
+            # main.js cfrString(): [title, 'CFR', part ?? chapter].filter(x => x!=='' && x!=null)
+            # .join(' ') -- verified live cycle 1993 (raw {title:40, part:"257"} -> "40 CFR 257",
+            # matching the README's sample byte-for-byte).
+            "cfrReferences": lambda v: [
+                s for s in (
+                    " ".join(
+                        str(x) for x in (
+                            r.get("title"), "CFR", r.get("part") if r.get("part") is not None else r.get("chapter")
+                        ) if x is not None and x != ""
+                    ).strip()
+                    for r in (v or [])
+                ) if s
+            ],
+        },
+        "skip_note": (
+            "title/abstract/action/datesText/excerpt all pass through the Actor's cleanText() "
+            "(HTML-entity decode + inline-tag strip + whitespace collapse -- not a verbatim "
+            "one-line mirror, so not approximated here); subtype, effectiveOn, signingDate, "
+            "significant, agencySlugs, parentAgencyNames, regulationIdNumbers, topics, "
+            "startPage/endPage/pageLength, president, executiveOrderNumber, referencedCitations "
+            "(derived from dates/action text via extractCitations(), not a raw field), pdfUrl, "
+            "jsonUrl are intentionally NOT spot-checked -- reshaped, derived, or absent on this "
+            "sample (a Proposed Rule, so president/executiveOrderNumber are null by type anyway)."
+        ),
+    },
 ]
 
 def main():
