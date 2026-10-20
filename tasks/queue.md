@@ -1,5 +1,31 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995) to
-      more Actors.** Now covers **6 entries across 5** of 11 Actors with a sample block. v6
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996)
+      to more Actors.** Now covers **7 entries across 6** of 11 Actors with a sample block.
+      v7 (1996): `grants-gov-scraper`'s "Sample output (one real row from the example input
+      above)" block (key `id` = `357002`) — the FIRST entry whose row is a **merge of two
+      endpoints**, both keyless POSTs: the thin half from `/search2`'s `oppHits[]`
+      (`normalizeThin`) and the enriched half from `/fetchOpportunity`'s `data`
+      (`normalizeEnriched`). `fetch_grants_gov_row()` returns them under explicit `thin.`/
+      `detail.` path prefixes so each field names its own half rather than reimplementing the
+      Actor's merge — **copy this shape for any future multi-endpoint entry**. `/search2` has no
+      id lookup (only `oppNum`), so the detail record is fetched first, `opportunityNumber` read
+      off it, then the thin row fetched by number and asserted to be the same id.
+      23 fields checked, 5 via verified one-line transforms (`grants_parse_money` mirroring
+      main.js `parseMoney` incl. the literal `"none"` -> null and JS's `Number('')===0`;
+      `fundingInstruments`/`fundingActivityCategories` description-maps; `cfdas` number/title
+      map). **Found a real defect**: `cfdas` had been hand-trimmed to 1 of the record's 3 CFDA
+      programs with no `...` elision marker, contradicting the SAME row's `cfdaList`, which
+      correctly listed all three. Fixed the README, pushed build **0.1.73**, verified the text
+      landed by reading the build's `readme` field via the builds API, re-ran clean (7 entries,
+      0 mismatches), fault-injection-tested through a transform (`awardCeiling` 500000->999999,
+      caught, restored).
+      **New free pre-check, use it before writing any entry (see LEARNINGS 1996): compare a
+      sample row's fields against their SIBLINGS in the same row.** A flat `xList` and a
+      structured `x` carrying the same information must agree; this defect was visible by eye
+      with no live fetch at all. And distinguish an explicitly-marked elision (`applicantTypes`,
+      `synopsisText` here, both ending `"..."` — honest documentation, belongs in `skip_note`)
+      from an UNMARKED truncation, which reads to a buyer as the complete value and is a bug.
+      Registered via `checks-due --ran check-readme-live-row` (next due cycle 2332).
+      v6
       (1995): `sec-insider-trades-scraper`'s "Sample row" block (key `id`, no single live JSON
       endpoint — the hardest shape yet). The row's `id` (e.g. `0001140361-26-037020-n0`) encodes
       an accession number + transaction-table selector (`n`on-derivative/`d`erivative, optional
@@ -57,9 +83,17 @@
       admissible when the transform is a **verbatim one-line mirror** of `main.js` — v4's
       `interventions` is a pure `{type, name}` key subset, no renames, no derived values. Do NOT
       use it to approximate a real reshape; that still belongs in `skip_note`.
-      Remaining 7 work items: the 5 not-yet-touched Actors — `eu-ted-tenders-scraper`,
-      `fec-campaign-finance-scraper`, `grants-gov-scraper`,
-      `uk-find-a-tender-scraper`, `fda-recall-scraper` — plus
+      Remaining 8 work items: the 4 not-yet-touched Actors — `eu-ted-tenders-scraper`,
+      `fec-campaign-finance-scraper`, `uk-find-a-tender-scraper`, `fda-recall-scraper` — plus
+      **`grants-gov-scraper`'s own two other blocks**, now the cheapest next step since the
+      fetch helper already exists: the `attachments` block (id `332894`, needs an
+      `synopsisAttachmentFolders[].synopsisAttachments[]` flatMap transform + a built
+      `downloadUrl` to skip) and the **forecast** block (id `355824`, `oppStatuses:
+      ["forecasted"]` — reads `detail.forecast` instead of `detail.synopsis`, so the entry needs
+      a `detail.forecast.*` path set, and it exercises the 7 forecast-only fields plus
+      `numberOfAwards`/`estimatedFunding` through `parseMoney`). Note `registry.json`'s
+      `sample_output` for this Actor is a copy of that SAME forecast row (355824) — if the
+      forecast entry finds drift, fix both copies, since the site quotes the registry one. Plus
       `clinicaltrials-scraper`'s **own second block** (`rowsPerStudy: "site"`, key `nctId`
       = `NCT06246916`, needs a transform or a skip for the `site` object, which main.js builds
       from `contactsLocationsModule.locations[]` incl. a `geoPoint.lat/lon` -> flat `lat`/`lon`

@@ -6183,3 +6183,28 @@ admissible when it is a verbatim one-line mirror of `main.js` — here
 `listOf(arms.interventions).map((i) => ({type, name}))`, a pure key subset with no renames and
 no derived values. Without it `interventions` would have had to stay unchecked, and
 `interventions` is exactly where the worst of the three errors was hiding.
+
+## Cycle 1996 — a sample row that merges two endpoints, and the sibling-field consistency tell
+`check-readme-live-row`'s 7th entry (`grants-gov-scraper`) is the first whose README row is a
+**merge of two API responses**, not one record: the thin half is `/search2`'s `oppHits[]`
+(`normalizeThin`) and the enriched half is `/fetchOpportunity`'s `data` (`normalizeEnriched`).
+Both keyless POSTs. The pattern that keeps this honest — and that any future multi-endpoint entry
+should copy — is to return the halves under explicit path prefixes (`{"thin": ..., "detail": ...}`)
+so every field in `fields` names the half it came from (`thin.number`, `detail.synopsis.postingDate`)
+instead of silently reimplementing the Actor's merge. Note `/search2` has **no id lookup** — only
+`oppNum` — so fetch the detail record first, read `opportunityNumber` off it, then fetch the thin
+row by that number and assert the id matches before comparing anything.
+
+**New diagnostic, cheaper than the 1992 last-modified check and it found this cycle's defect:
+compare a sample row's fields against their SIBLINGS in the same row.** `grants-gov-scraper`'s
+sample had `cfdaList: ["93.394","93.395","93.396"]` (correct, all three) sitting four lines above
+`cfdas: [{...93.394...}]` (one of three, no `...` elision marker) — the same information in two
+shapes, disagreeing. The 1992 last-modified rule then confirmed it was ours and not upstream drift
+(the record's own `lastUpdatedDate` is 2024-11-06, long before the sample was captured), but the
+sibling disagreement is visible by eye with **no live fetch at all**. When a README row carries both
+a flat `xList` and a structured `x`, they must agree; that is a free pre-check before writing an entry.
+
+Corollary on elision: this README elides `applicantTypes` and `synopsisText` with an explicit
+trailing `"..."`, which is honest documentation and correctly belongs in `skip_note`. `cfdas` had
+**no** marker, which is what made it a defect rather than an abbreviation. Keep that distinction —
+an unmarked truncation reads to a buyer as the complete value.

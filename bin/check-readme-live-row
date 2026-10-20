@@ -175,6 +175,59 @@ def fetch_sec_form4_row(key):
     }
 
 
+def grants_parse_money(v):
+    """Mirrors grants-gov-scraper main.js parseMoney() verbatim (one-liner, see src/main.js):
+    non-string -> None; otherwise JS Number(v), None when not finite. Grants.gov sends award
+    amounts as STRINGS and uses the literal "none" for "agency set no floor/ceiling"
+    (confirmed live cycle 1996: awardCeiling "500000", awardFloor "none" on opp 357002)."""
+    if not isinstance(v, str):
+        return None
+    s = v.strip()
+    if s == "":
+        return 0  # JS Number('') === 0; mirrored deliberately rather than "fixed" here
+    try:
+        n = float(s)
+    except ValueError:
+        return None  # covers "none" and any other non-numeric string
+    return int(n) if n.is_integer() else n
+
+
+def fetch_grants_gov_row(key):
+    """Fetch one grants-gov-scraper row's two live halves by opportunity id.
+
+    Unlike every other entry, this Actor's row is a MERGE of two API responses (verified
+    live cycle 1996 by reading main.js first): the thin half comes from `/search2`'s
+    `oppHits[]` (normalizeThin) and the enriched half from `/fetchOpportunity`
+    (normalizeEnriched). Rather than approximate the merge, this returns both halves under
+    explicit `thin.`/`detail.` path prefixes so each entry field names the half it came from.
+
+    `/search2` has no id lookup -- only `oppNum` (main.js's own walkOppNums path) -- so the
+    opportunity number is read off the detail record first, then the thin row is fetched by
+    that number across all four statuses and asserted to be the same id.
+    """
+    detail = fetch_json_post(
+        "https://api.grants.gov/v1/api/fetchOpportunity", {"opportunityId": str(key)}
+    )["data"]
+    opp_num = detail.get("opportunityNumber")
+    if not opp_num:
+        raise RuntimeError(f"detail record for id={key!r} has no opportunityNumber")
+    hits = fetch_json_post(
+        "https://api.grants.gov/v1/api/search2",
+        {
+            "resultType": "json", "oppNum": opp_num,
+            "oppStatuses": "forecasted|posted|closed|archived",
+            "rows": 10, "startRecordNum": 0,
+        },
+    )["data"].get("oppHits") or []
+    thin = next((h for h in hits if str(h.get("id")) == str(key)), None)
+    if thin is None:
+        raise RuntimeError(
+            f"no /search2 oppHit with id={key!r} for oppNum={opp_num!r} "
+            f"({len(hits)} hit(s) returned)"
+        )
+    return {"thin": thin, "detail": detail}
+
+
 def get_path(d, path):
     """Dotted path into nested dicts/lists, e.g. 'financial.obligations'."""
     cur = d
@@ -509,6 +562,76 @@ ENTRIES = [
             "expirationDate/underlyingSecurityTitle/underlyingShares (non-derivative row, "
             "all null/not-applicable by construction), filingUrl/url (built from a URL "
             "template, not a raw field) are intentionally NOT spot-checked."
+        ),
+    },
+    {
+        "slug": "grants-gov-scraper",
+        "heading": "Sample output (one real row from the example input above)",
+        "key_field": "id",
+        # Verified live cycle 1996 against the README's own sample (opportunity id 357002,
+        # PAR-24-311). The only entry so far whose row is a MERGE of two endpoints -- see
+        # fetch_grants_gov_row(); `thin.` paths are /search2 oppHits fields (normalizeThin),
+        # `detail.` paths are /fetchOpportunity fields (normalizeEnriched). Both are keyless
+        # POSTs. This run found a real defect: `cfdas` had been hand-trimmed to 1 of the
+        # record's 3 CFDA programs, contradicting the SAME row's `cfdaList`, which correctly
+        # listed all three -- and the 1992 diagnostic confirms it is ours, not drift, since
+        # the record's own lastUpdatedDate is 2024-11-06, long before the sample was captured.
+        "fetch": fetch_grants_gov_row,
+        "fields": {
+            "id": "thin.id",
+            "opportunityNumber": "thin.number",
+            "agencyCode": "thin.agencyCode",
+            "agency": "thin.agency",
+            "openDate": "thin.openDate",
+            "closeDate": "thin.closeDate",
+            "oppStatus": "thin.oppStatus",
+            "docType": "thin.docType",
+            "cfdaList": "thin.cfdaList",
+            "topAgencyName": "detail.topAgencyDetails.agencyName",
+            "topAgencyCode": "detail.topAgencyDetails.agencyCode",
+            "opportunityCategory": "detail.opportunityCategory.description",
+            "postingDate": "detail.synopsis.postingDate",
+            "responseDate": "detail.synopsis.responseDate",
+            "archiveDate": "detail.synopsis.archiveDate",
+            "costSharing": "detail.synopsis.costSharing",
+            "fundingDescLinkUrl": "detail.synopsis.fundingDescLinkUrl",
+            "lastUpdatedDate": "detail.synopsis.lastUpdatedDate",
+            # The four below need a transform; each is a verbatim one-line mirror of
+            # normalizeEnriched (read line-for-line before adding, not guessed).
+            "awardCeiling": "detail.synopsis.awardCeiling",
+            "awardFloor": "detail.synopsis.awardFloor",
+            "fundingInstruments": "detail.synopsis.fundingInstruments",
+            "fundingActivityCategories": "detail.synopsis.fundingActivityCategories",
+            "cfdas": "detail.cfdas",
+        },
+        "transforms": {
+            "awardCeiling": grants_parse_money,
+            "awardFloor": grants_parse_money,
+            # listOf(x).map((t) => t.description).filter(Boolean)
+            "fundingInstruments": lambda v: [
+                t.get("description") for t in (v or []) if t.get("description")
+            ],
+            "fundingActivityCategories": lambda v: [
+                t.get("description") for t in (v or []) if t.get("description")
+            ],
+            # listOf(detail.cfdas).filter((c) => c.cfdaNumber)
+            #   .map((c) => ({ number: c.cfdaNumber, title: c.programTitle ?? null }))
+            "cfdas": lambda v: [
+                {"number": c.get("cfdaNumber"), "title": c.get("programTitle")}
+                for c in (v or []) if c.get("cfdaNumber")
+            ],
+        },
+        "skip_note": (
+            "title and synopsisText pass through cleanText()/stripHtml() (entity-decode + "
+            "tag-strip + whitespace-collapse regex chains, not a one-line mirror) and "
+            "synopsisText is additionally elided with a trailing '...' in the README, so "
+            "neither is approximated here -- same reason v5 skipped federal-register's "
+            "title/abstract. applicantTypes is likewise an explicitly-marked elision in the "
+            "README (3 of the record's 15 types plus '...'), so it is documentation, not a "
+            "value to compare. url is built from a URL template, not a raw field. "
+            "applicantEligibilityDesc/synopsisDocumentURLs/attachments/assistURL/modComments "
+            "and the seven forecast-only fields are not present in this synopsis sample block "
+            "(attachments has its own block, and the forecast fields their own)."
         ),
     },
 ]

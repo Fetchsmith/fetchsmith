@@ -106,7 +106,11 @@ On a `docType: "forecast"` row, `responseDate`/`archiveDate`/`applicantEligibili
   "fundingInstruments": ["Grant"],
   "fundingActivityCategories": ["Education", "Health"],
   "synopsisText": "The purpose of this Notice of Funding Opportunity (NOFO) is to invite research grant applications (R01) for the development and use of ...",
-  "cfdas": [{ "number": "93.394", "title": "Cancer Detection and Diagnosis Research" }],
+  "cfdas": [
+    { "number": "93.394", "title": "Cancer Detection and Diagnosis Research" },
+    { "number": "93.395", "title": "Cancer Treatment Research" },
+    { "number": "93.396", "title": "Cancer Biology Research" }
+  ],
   "fundingDescLinkUrl": "http://grants.nih.gov/grants/guide/pa-files/PAR-24-311.html",
   "lastUpdatedDate": "Nov 06, 2024 10:10:59 AM EST"
 }
