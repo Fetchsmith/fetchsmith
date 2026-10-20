@@ -10203,3 +10203,42 @@ line — **$1.3117 over 377 jobs** vs `runs` $0.4121 — at ~$0.0035/build. That
 fleet's README-only `apify push --force` habit (roughly one per publishing cycle). Still trivial
 against the $85 cap ($2.745 used, $7.69/mo projection), so **no action taken and none recommended**;
 recorded only so a future cycle looking for cost levers doesn't assume runs dominate.
+
+## Cycle 1969 — a redirect can land on a dead end that isn't the custom domain it was supposed to reach, and the generic error message actively misled about why
+
+`substack-scraper`'s `getJson` has followed redirects since early on, on the documented assumption
+that `<handle>.substack.com` either serves the archive directly or 301/302s to the publication's
+real custom domain (`followRedirect: true, // <handle>.substack.com often 301s to a custom domain`).
+This cycle's `varied_test` (`publicationUrls:["lennysnewsletter"]` + `audienceFilter:"paid"` +
+`contentType:"podcast"`) returned 0 rows, and reading the run log in full (not just trusting the
+row count — the same habit that caught cycle 1633's missing `depthCapped` cause) showed the real
+shape: `lennysnewsletter.substack.com` returns `200`, redirecting not to the newsletter's own site
+but to `https://substack.com/@lennysnewsletter` — a Substack-hosted **profile** page (HTML). The
+redirect assumption baked into that old comment is only half true: a redirect can land somewhere
+that is neither the archive nor the real custom domain, and `getJson`'s `responseType: 'json'`
+then throws a parse error on the HTML body, which `scrapePublication`'s catch block folded into the
+generic `errored` bucket — a message telling the buyer to "check the URL is correct" when the URL
+*was* correct, it just couldn't reach an archive through that particular redirect.
+
+**Fixed by giving this failure its own cause bucket (`profileRedirected`) rather than patching the
+message string in place** — same shape as every other independent-cause fix in this fleet
+(`depthCapped`, `filtered`, `empty`): detect the specific signature (`e.response.url` matching
+`^https://substack\.com/@`), collect affected origins separately, dedupe them out of the broader
+`errored` bucket so the two buckets don't give contradictory advice for the same origin, and wire
+the new bucket into both the zero-row `causes[]` and non-zero `notes[]` branches (not just one —
+exactly the sibling-branch-gets-forgotten shape 1633 found in this same file last time).
+
+**Generalizable: "redirects are followed" is not the same claim as "redirects land somewhere
+useful."** A fetch helper that assumes a redirect always resolves to the thing you wanted will
+silently misreport *why* it failed when the redirect instead resolves to some third thing (here, a
+different page on a different site entirely) — and a generic catch-all error message for "the
+fetch didn't work" actively costs the buyer time once a URL really is correct but the resolution
+chain isn't. Worth checking: measured live before documenting (1/6 well-known newsletters sampled
+hit this; the other 5 redirected correctly), so the fix and the new README FAQ entry both state the
+actual prevalence instead of implying either "this never happens" or "this happens often."
+
+**Process note, not a lesson for the Actor itself:** this cycle shipped the code fix and the README
+documentation as two separate `apify push --force` calls (0.1.77, then 0.1.78) instead of batching
+them into one, breaking the PLAYBOOK's "one push per Actor per cycle" rule (~$0.005 wasted, trivial
+against the $85 cap but avoidable) — write the docs change in the same sitting as the code change
+next time a fix like this comes up, verify both together locally, then push once.

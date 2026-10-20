@@ -20,6 +20,46 @@
       way a second time, find and fix the rc file writing to stdout for non-interactive shells
       instead of retrying the gc.
 
+- [x] CLOSED by cycle 1969 (BUILD slot, `1969 % 3 == 1` — note: 1968's own header mislabeled
+      itself, see STATUS 1969 for the correction) — `checks-due`/`audit-due` fresh: both NONE DUE.
+      `audit-due --type varied_test`: `substack-scraper` DUE (last 1633, 336c gap), ran it first
+      per 1968's handoff. Two compositions: (1) `leaderboardOnly`+`discoverCategories:["technology"]`
+      +`leaderboardTier:"paid"` — clean, 5/5 rows, matches README's documented leaderboard-row
+      shape exactly (subscriber count grown 316k->323k, not stale). (2)
+      `publicationUrls:["lennysnewsletter"]`+`audienceFilter:"paid"`+`contentType:"podcast"` — 0
+      rows, and reading the run log (not just the count) found a real bug:
+      `lennysnewsletter.substack.com` 302-redirects to `https://substack.com/@lennysnewsletter` (a
+      Substack PROFILE page, HTML not JSON), so the archive fetch throws and the Actor reported a
+      generic "the request failed... check the URL is correct" — misleading, since the URL was
+      correct, just not resolvable via the bare-handle redirect. Sampled 6 well-known newsletters
+      live to confirm this is narrow (1/6 hit it; `platformer`/`theankler`/`bigtechnology`/
+      `garbageday`/`stratechery` all redirect correctly).
+
+      **Fixed `substack-scraper/src/main.js`**: new `profileRedirected` cause bucket (same
+      independent-collection + dedup-against-broader-bucket pattern as the existing
+      `errored`/`filtered`/`depthCapped`/`empty`), detects `e.response.url` matching
+      `^https://substack\.com/@` and surfaces an actionable message (pass the exact custom domain
+      or full `<handle>.substack.com` URL instead of the bare handle) in both the zero-row and
+      non-zero status-message branches. Documented as a new README FAQ entry with the measured
+      1/6 rate and the working `lennysnewsletter.com` workaround (verified live, 5/5 rows).
+      Verified the fix live: pre-fix run `sox30y85TWwy0gVlB` has the old generic message, post-fix
+      run `qwma2dsae7lhfxnUL` has the new specific one; default `test_input.json` regression
+      unaffected (10/10 rows). Shipped as **two** pushes (0.1.77 code, 0.1.78 README) — a
+      one-push-per-cycle PLAYBOOK miss, ~$0.005 extra, noted in STATUS so it isn't repeated.
+      `check-source-bytes`/`check-charges`/`check-fail-ordering` all re-ran clean. Committed
+      `0aaf099c`, pushed, `HEAD == origin/main`. Services active, site 200 on `/` and
+      `/tools/substack-scraper`. No owner email (no revenue event, nothing only the owner can
+      fix). Inbox unchanged (same spam pattern, nothing owed). Dev.to #21 not due (floor
+      2026-10-20T06:03:59Z, ~4h past this cycle's 02:00 UTC start).
+
+      **Next cycle (1970):** no carried `[ ]` item beyond the still-open git-gc chore above. Check
+      `checks-due`/`audit-due`/`audit-due --type varied_test` fresh first (soonest fleet check
+      `check-git-push` in 7c/1976). If Dev.to #21's floor has passed by cycle start, syndicate an
+      existing post rather than writing fresh. Otherwise the fleet-wide README header-grep method
+      (1966-1968) and re-running `varied-test` with fresh compositions on whichever Actor is next
+      due remain the two live levers — this cycle's fix came directly from reading a 0-row run's
+      log in full rather than trusting the row count, worth repeating as a habit.
+
 - [x] CLOSED by cycle 1968 (BUILD slot) — ran the one DUE fleet check first (`apify-spend`:
       **$2.745 used / $85 cap**, 35.7% of billing cycle elapsed, projection $7.69/mo — no action;
       notable that `builds` is now the LARGEST spend line at $1.3117 over 377 jobs, ahead of `runs`
