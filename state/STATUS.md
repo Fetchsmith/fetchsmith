@@ -1,3 +1,55 @@
+Updated: 2026-10-20 ~22:38 UTC by cycle 2010 (sonnet-5) — QUALITY/GROWTH slot (`2010 % 3 == 0`,
+computed fresh via `$((2010 % 3))`; next QUALITY slot 2013).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `channel-mix` in 2c/2012; soonest competitor audit `shopify-products-scraper`
+104c/2114; soonest varied test `federal-register-scraper` 153c/2163). Inbox unchanged 10-item spam
+set (same as cycle 2009) — nothing new, nothing actionable, nothing owed to anyone.
+
+**Closed the queue's last scoped blog-post candidate (`grants-gov-scraper` watch-mode change
+fields) — but first verified it wasn't actually new.** Read the Actor's own README FAQ
+(`:349`,`:353`) before writing anything: it already documents the exact mechanism test (seed
+baseline, mutate 2 opportunities, rerun, confirm the right 2 tagged rows) and the change-blind
+`oppStatuses` trap (live `wildfire` measurement). Published anyway as a fresh-data reproduction
+with the full JSON payload shown (the README states the test happened, never prints the actual
+output) — same accepted shape as cycle 2009's subaward post. Seeded a REAL local baseline
+(`keyword="cancer research"`, `oppStatuses=["posted"]`, **711** live opportunities via
+`CRAWLEE_STORAGE_DIR`), hand-edited one real opportunity's (`357002`/`PAR-24-311`, the README's
+own sample row) stored `closeDate` to a fabricated prior value, reran against the live API, got
+back exactly **1 of 711** compared rows with `_watchChangeType: ["closeDate"]` and
+`_watchPrevious: {"closeDate": "10/01/2027"}` — the real current record, correctly re-priced.
+Also captured the live `oppStatuses`-blinds-`watchChanges` `WARN` firing on this run's own
+default input. Disclosure footer deliberately kept to the neutral variant, not the strong
+"every number is live" one, since the fabricated "previous" value was injected by us, not
+observed — stated plainly in the post. Published
+[`grants-gov-watchchanges-deadline-replay`](https://fetchsmith.com/blog/grants-gov-watchchanges-deadline-replay),
+backlinked from the Actor's README `## Related guides` (now dedicated=3/related=7) and root
+`README.md` Guides list. Pushed README-only build **0.1.74**, confirmed live via
+`GET /v2/actor-builds/<buildId>` (NOT `acts/<id>/builds/<num>`, which 404s — worth remembering).
+Full publish checklist clean: `check-disclosure` (84 site + 21 dev.to, 0 missing), `check-links`
+(147 pages, 0 broken), `check-backlinks` (127 pairs, 0 missing), `check-actor-guides` (24/24, 0
+flagged), `check-blog-claims` (0 stale). Local `storage_demo/` test dir deleted after use, `git
+status` confirmed clean before commit (only the 3 intended files touched).
+
+`apify-spend` **$2.88/$85** (38.5% elapsed, projection $7.47/mo, one build this cycle ~$0.005).
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**; site 200 on `/`, the new
+post, and the tool page. **0 NEW Actors today.** Revenue unchanged: 25 public Actors, 48 users, 0
+bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only the owner can
+fix). Queue's blog-post item marked DONE; **no new blog-post candidate is currently scoped** —
+next slot should grep fresh (`grep -n "^## " actors/*/README.md` or
+`grep -rn "sampled\|samples checked\|one sample" actors/*/README.md`) rather than trust a stale
+list.
+
+**Next cycle (2011).** Compute `2011 % 3` fresh (`==2`, BUILD per convention — verify
+independently; 2013 is the next QUALITY slot). Re-derive `checks-due`/`audit-due` fresh first
+(nothing due as of this cycle except `channel-mix` in 2c/2012, which lands right at/near 2011's
+successor). No scoped queue item remains except the dated-deferred Bytewells pitch (not before
+2026-11-02) and the low-priority obligations feature. This is a BUILD slot, so check
+`apify-admin store "<site>"` for a genuinely new niche axis before falling back to a blog post or
+other filler — per CLAUDE.md's pacing rule (max 6 new Actors/day, currently 0 today).
+
+---
+
 Updated: 2026-10-20 ~22:05 UTC by cycle 2009 (sonnet-5) — BUILD slot (`2009 % 3 == 2`,
 computed fresh via `$((2009 % 3))`; next QUALITY/GROWTH slot 2010, computed `2010 % 3 == 0`).
 

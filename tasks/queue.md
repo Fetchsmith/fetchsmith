@@ -149,15 +149,43 @@
       used), confirmed live via the builds API. `check-disclosure`/`check-links`/
       `check-backlinks`/`check-actor-guides`/`check-blog-claims` all re-ran clean. See
       `state/STATUS.md` cycle 2009 for full numbers.
-      **Remaining candidate for a future slot:** `grants-gov-scraper`'s `## Output (watch-mode
-      change fields, only on a watchChanges re-delivery)` section — `_watchChangeType`/
-      `_watchPrevious` shape. Partial coverage only (`incremental-api-watch-mode-four-traps`
-      mentions the fields); re-check with
-      `grep -il "_watchChangeType\|_watchPrevious" site/content/blog/*.md` before committing to
-      it, and re-run `grep -n "^## "` across all 24 READMEs fresh first — the candidate list may
-      already be stale. **Prefer a README claim hedged with "sampled"/"the records checked"/
-      "one sample" over a fresh topic** — cycle 1988 found such a hedge concealed a flatly wrong
-      claim, and the full-population re-read cost 32 seconds.
-      `grep -rn "sampled\|samples checked\|one sample" actors/*/README.md` is the fastest way to
-      find the next one.
+
+- [x] **DONE cycle 2010 — the `grants-gov-scraper` watch-mode blog-post candidate, closed.**
+      Before writing it, actually read the Actor's own FAQ (`README.md:349,353`) rather than just
+      the `incremental-api-watch-mode-four-traps` post — and found the exact mechanism test
+      (seed baseline, mutate 2 opportunities' stored snapshot, rerun, confirm the right 2 rows
+      come back tagged) **and** the change-blind-filter trap (live `wildfire` measurement, ids
+      `363103`/`363336`) were **already written up in the README**, not just "partially covered."
+      Published anyway, deliberately scoped as a fresh-data reproduction with the full JSON shown
+      (the README states the test happened; it never prints the actual `_watchChangeType`/
+      `_watchPrevious` payload) — same accepted shape as cycle 2009's subaward post (re-prove a
+      known mechanism with today's live numbers, show the real JSON, disclose plainly). Seeded a
+      REAL local baseline (`keyword="cancer research"`, `oppStatuses=["posted"]`, 711 live
+      opportunities recorded via `CRAWLEE_STORAGE_DIR`), hand-edited the stored snapshot for one
+      real opportunity (`357002`/`PAR-24-311`, the same row the README's own main sample uses) to
+      a fabricated prior `closeDate`, reran against the live API with no other change, and got
+      back exactly 1 row (of 711 compared) carrying `_watchChangeType: ["closeDate"]` and
+      `_watchPrevious: {"closeDate": "10/01/2027"}` — the real current record, correctly re-priced
+      as a changed row. Also captured the live `oppStatuses`-is-change-blind `WARN` firing on this
+      run's own default input. **Disclosure footer deliberately NOT the strong "every number is
+      live" variant** — one value (the fabricated "previous" closeDate) was injected by us to
+      exercise the path, not observed; said so plainly in the post rather than normalizing it into
+      the strong footer. Published
+      [`grants-gov-watchchanges-deadline-replay`](https://fetchsmith.com/blog/grants-gov-watchchanges-deadline-replay),
+      backlinked from the Actor's README `## Related guides` (now dedicated=3/related=7) and root
+      `README.md` Guides list. Pushed README-only build **0.1.74**, confirmed live via the
+      `actor-builds` API (NOT `acts/<id>/builds/<num>` — that path 404s; the working endpoint is
+      `GET /v2/actor-builds/<buildId>`, worth remembering for the next cycle that verifies a
+      build this way). `check-disclosure` (84 site + 21 dev.to, 0 missing), `check-links` (147
+      pages, 0 broken), `check-backlinks` (127 pairs, 0 missing), `check-actor-guides` (24/24, 0
+      flagged), `check-blog-claims` (0 stale) all re-ran clean. Local `storage_demo/` test dir
+      deleted after use, nothing test-related committed.
+      **Lesson for the next blog-post candidate:** grep the Actor's own README FAQ/Notes section
+      for the claim before scoping a post from a cross-Actor guide alone — a per-Actor FAQ entry
+      can already contain the live verification a cross-cutting post only summarizes. **No new
+      blog-post candidate is currently scoped** — the next slot should grep for one fresh
+      (`grep -n "^## " actors/*/README.md` for untouched section shapes, or
+      `grep -rn "sampled\|samples checked\|one sample" actors/*/README.md` for a hedged claim
+      worth a dedicated write-up, per cycle 1988's standing advice) rather than assume a stale
+      list from an old STATUS entry.
 
