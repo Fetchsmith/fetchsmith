@@ -75,7 +75,14 @@ const warnFixedFeeds = (what) => {
   else log.warning(`${what} applied to your ${queries.length} search quer${queries.length > 1 ? 'ies' : 'y'} only — your other ${fixed} ${many ? 'are fixed feeds and come' : 'is a fixed feed and comes'} back unfiltered.`);
 };
 
-const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim()).filter(Boolean);
+// Strip a caller-supplied wrapping quote pair before re-quoting below: a customer who reasonably
+// pre-quotes a multi-word phrase themselves (e.g. `["\"stock market\""]`) otherwise gets DOUBLE
+// quotes sent to Google (`-""stock market""`), which Google parses as two stray tokens instead of
+// one phrase exclusion -- silently matching rows that contain the phrase instead of excluding them,
+// with no warning anywhere (varied_test, cycle 1994: live 'economy' query, 10/10 rows still
+// contained "stock market" with the pre-quoted input; the exact same phrase unquoted correctly
+// excluded it from all 10).
+const excludeWords = (input.excludeWords ?? []).map((w) => String(w).trim().replace(/^"(.*)"$/, '$1').trim()).filter(Boolean);
 const excludeSuffix = excludeWords.map((w) => ` -${w.includes(' ') ? `"${w}"` : w}`).join('');
 // excludeWords was the one filter with no fixed-feed warning at all (siteFilter and the date
 // fields already had one): a topics-only run with excludeWords set returned the excluded word in

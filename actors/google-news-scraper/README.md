@@ -164,6 +164,7 @@ Two things this deliberately does **not** do, both because we measured them fail
 **Why did a run return 0 articles with status SUCCEEDED?** The status message distinguishes "Google returned nothing for this query" from "every result was a duplicate of another feed" from "the request failed" — check it before assuming your query is wrong.
 **What's the difference between `siteFilter` and typing `site:` into `queries`?** None functionally — `siteFilter` just OR's multiple domains together (`site:a.com OR site:b.com`) and applies them to every query in your list, so you don't have to hand-append the operator to each one.
 **What happens if Google's RSS feed has a transient blip mid-run?** Every feed and article-URL-decoding request is retried up to 3 times on a connection-level failure (measured at roughly 1 fresh request in 4 for HTTP/2 faults across this fleet, 2026-09-21) before that feed is given up on and named in the status message — a single blip no longer silently empties a query's results into `erroredFeeds`.
+**Do I need to quote a multi-word `excludeWords` phrase myself?** No — pass the phrase plain, e.g. `["stock market"]`, and it is quoted for you. Fixed 2026-10-20: pre-quoting it yourself (`["\"stock market\""]`) used to send Google a doubled quote that silently broke the exclusion (confirmed live: a pre-quoted `"stock market"` left every one of 10 `economy`-query results containing that phrase, where the plain form correctly excluded it from all 10). Either form now works.
 
 ## Related guides
 Engineering write-ups behind this Actor:
