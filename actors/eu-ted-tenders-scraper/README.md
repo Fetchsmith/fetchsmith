@@ -113,7 +113,7 @@ One row per notice:
   "totalValue": null,
   "totalValueCurrency": null,
   "deadlineDate": "2026-09-16",
-  "deadlineType": "tender",
+  "deadlineType": "generic",
   "daysUntilDeadline": 12,
   "deadlineReceiptRequestDate": "2026-09-29",
   "publicationDate": "2026-08-31",

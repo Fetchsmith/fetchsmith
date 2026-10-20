@@ -377,6 +377,188 @@ def fetch_fec_candidate_row(candidate_id):
     return {**row, "totals": totals[0] if totals else {}}
 
 
+TED_FIELDS = [
+    'publication-number', 'notice-title', 'notice-type', 'notice-subtype', 'procedure-type',
+    'publication-date', 'buyer-name', 'buyer-country', 'buyer-city',
+    'organisation-email-buyer', 'organisation-tel-buyer', 'organisation-internet-address-buyer',
+    'place-of-performance-country-lot', 'place-of-performance-city-lot',
+    'contract-nature', 'classification-cpv', 'description-lot',
+    'total-value', 'total-value-cur',
+    'deadline-date-lot', 'deadline-receipt-tender-date-lot', 'deadline-receipt-expressions-date-lot',
+    'deadline-receipt-request-date-lot', 'links',
+    'procedure-identifier', 'change-reason-description',
+]  # verbatim copy of eu-ted-tenders-scraper src/main.js:69-79's FIELDS, read first not guessed.
+
+TED_OUTPUT_LANGUAGE = "eng"  # main.js default (input.outputLanguage ?? 'eng'); matches this
+# README sample's own titleLanguage, so the default-leg of every language-preference helper
+# below is what's actually exercised, not the outputLanguage-override leg.
+
+
+def ted_first(v):
+    """Mirrors main.js firstValue(): Array.isArray(v) ? v[0] ?? null : v ?? null."""
+    if isinstance(v, list):
+        return v[0] if v else None
+    return v if v is not None else None
+
+
+def ted_preferred_text(m, output_language=TED_OUTPUT_LANGUAGE):
+    """Mirrors main.js preferredText(): prefer outputLanguage, else eng, else mul, else the
+    first key present. Returns (value, language) like the original."""
+    if not isinstance(m, dict) or not m:
+        return (None, None)
+    if output_language != "eng" and m.get(output_language) is not None:
+        return (ted_first(m[output_language]), output_language)
+    if m.get("eng") is not None:
+        return (ted_first(m["eng"]), "eng")
+    if m.get("mul") is not None:
+        return (ted_first(m["mul"]), "mul")
+    lang = next(iter(m), None)
+    if lang is None:
+        return (None, None)
+    return (ted_first(m[lang]), lang)
+
+
+def ted_dedupe(arr):
+    """Mirrors main.js dedupe(): Array.from(new Set(arr.filter(v => v != null))) -- dedup
+    preserving first-occurrence order, dropping only null/undefined (NOT every falsy value,
+    unlike fda-recall-scraper's list_dedup -- the two Actors' own helpers differ, so this is
+    a deliberately separate function rather than reusing list_dedup)."""
+    if not isinstance(arr, list):
+        return []
+    seen = set()
+    out = []
+    for v in arr:
+        if v is None or v in seen:
+            continue
+        seen.add(v)
+        out.append(v)
+    return out
+
+
+def ted_earliest_date(arr):
+    """Mirrors main.js earliestDate(): dedupe, strip a trailing '+offset' or bare 'Z', sort,
+    take the earliest."""
+    uniq = ted_dedupe(arr)
+    if not uniq:
+        return None
+    cleaned = sorted(re.sub(r"Z$", "", str(d).split("+")[0]) for d in uniq)
+    return cleaned[0]
+
+
+TED_DEADLINE_SOURCES = [
+    ("deadline-receipt-tender-date-lot", "tender"),
+    ("deadline-date-lot", "generic"),
+    ("deadline-receipt-expressions-date-lot", "expressions"),
+]
+
+
+def ted_pick_deadline(notice):
+    """Mirrors main.js pickDeadline(): first non-empty field in DEADLINE_SOURCES order."""
+    for field, kind in TED_DEADLINE_SOURCES:
+        date = ted_earliest_date(notice.get(field))
+        if date:
+            return (date, kind)
+    return (None, None)
+
+
+def ted_pick_link(links, kind, output_language=TED_OUTPUT_LANGUAGE):
+    """Mirrors main.js pickLink(): prefer outputLanguage (upper), else ENG, else MUL, else
+    whatever key is first."""
+    by_lang = (links or {}).get(kind)
+    if not by_lang:
+        return None
+    preferred_upper = output_language.upper()
+    if preferred_upper != "ENG" and by_lang.get(preferred_upper):
+        return by_lang[preferred_upper]
+    if by_lang.get("ENG"):
+        return by_lang["ENG"]
+    if by_lang.get("MUL"):
+        return by_lang["MUL"]
+    first_key = next(iter(by_lang), None)
+    return by_lang.get(first_key) if first_key else None
+
+
+def fetch_ted_notice_row(publication_number):
+    """Fetch one eu-ted-tenders-scraper row live from TED's v3 notices/search, by-id (the
+    README's own key, publicationNumber). Keyless POST, proven live against this exact
+    sample at cycle 2000 before this entry was written: `{"query":
+    "publication-number=<id>", "page":1, "limit":1, "fields": TED_FIELDS}` returns exactly
+    one notice whose own 'publication-number' matches (TED has no separate numeric id --
+    the publication number IS the primary key).
+
+    main.js's normalize() (read first, not guessed) computes several README fields out of
+    shapes get_path can't express -- multilingual dicts needing a language-preference pick
+    (title/buyerName/buyerCity/description/changeReasonDescription), per-lot arrays needing
+    dedup (placeOfPerformance*/contractNature/cpvCodes), three deadline fields needing a
+    first-non-empty pick with a provenance label (deadlineDate/deadlineType), and a
+    links-by-format-by-language object needing a language pick per format
+    (pdfUrl/htmlUrl/xmlUrl/noticeUrl) -- so those are precomputed here under `_`-prefixed
+    keys, each a verified line-for-line mirror of the corresponding main.js helper, not an
+    approximation.
+    """
+    data = fetch_json_post(
+        "https://api.ted.europa.eu/v3/notices/search",
+        {"query": f"publication-number={publication_number}", "page": 1, "limit": 1, "fields": TED_FIELDS},
+    )
+    notices = data.get("notices") or []
+    if not notices:
+        raise RuntimeError(f"no TED notice for publication-number={publication_number!r}")
+    n = notices[0]
+    if n.get("publication-number") != publication_number:
+        raise RuntimeError(f"TED returned publication-number={n.get('publication-number')!r}, expected {publication_number!r}")
+
+    title, title_language = ted_preferred_text(n.get("notice-title"))
+    buyer_name, _ = ted_preferred_text(n.get("buyer-name"))
+    buyer_city, _ = ted_preferred_text(n.get("buyer-city"))
+    description, _ = ted_preferred_text(n.get("description-lot"))
+    change_reason, _ = ted_preferred_text(n.get("change-reason-description"))
+
+    buyer_country_raw = n.get("buyer-country")
+    buyer_country = buyer_country_raw[0] if isinstance(buyer_country_raw, list) else buyer_country_raw
+    if isinstance(buyer_country_raw, list) and not buyer_country_raw:
+        buyer_country = None
+
+    deadline_date, deadline_type = ted_pick_deadline(n)
+
+    links = n.get("links") or {}
+    pdf_url = ted_pick_link(links, "pdf")
+    html_url = ted_pick_link(links, "html")
+    xml_url = ted_pick_link(links, "xml")
+    notice_url = pdf_url if pdf_url is not None else xml_url
+
+    total_value_cur_raw = n.get("total-value-cur")
+    total_value_cur = total_value_cur_raw[0] if isinstance(total_value_cur_raw, list) else total_value_cur_raw
+    if isinstance(total_value_cur_raw, list) and not total_value_cur_raw:
+        total_value_cur = None
+
+    pub_date_raw = n.get("publication-date")
+    publication_date = str(pub_date_raw).split("+")[0] if pub_date_raw else None
+
+    return {
+        **n,
+        "_title": title,
+        "_titleLanguage": title_language,
+        "_buyerName": buyer_name,
+        "_buyerCountry": buyer_country,
+        "_buyerCity": buyer_city,
+        "_description": description,
+        "_changeReasonDescription": change_reason,
+        "_placeOfPerformanceCountry": ted_dedupe(n.get("place-of-performance-country-lot")),
+        "_placeOfPerformanceCity": ted_dedupe(n.get("place-of-performance-city-lot")),
+        "_contractNature": ted_dedupe(n.get("contract-nature")),
+        "_cpvCodes": ted_dedupe(n.get("classification-cpv")),
+        "_totalValueCurrency": total_value_cur,
+        "_deadlineDate": deadline_date,
+        "_deadlineType": deadline_type,
+        "_deadlineReceiptRequestDate": ted_earliest_date(n.get("deadline-receipt-request-date-lot")),
+        "_publicationDate": publication_date,
+        "_pdfUrl": pdf_url,
+        "_htmlUrl": html_url,
+        "_xmlUrl": xml_url,
+        "_noticeUrl": notice_url,
+    }
+
+
 def get_path(d, path):
     """Dotted path into nested dicts/lists, e.g. 'financial.obligations'."""
     cur = d
@@ -1040,6 +1222,72 @@ ENTRIES = [
             "stale snapshot was also quoted in three places in the "
             "site/content/blog/fec-campaign-finance-json-api-demo-key.md post -- fixed there "
             "too in the same cycle (check-blog-claims does not read raw JSON snippets)."
+        ),
+    },
+    {
+        "slug": "eu-ted-tenders-scraper",
+        "heading": "Sample row (real output, German construction-engineering notice)",
+        "key_field": "publicationNumber",
+        # Verified live cycle 2001 against the README's own sample (publication-number
+        # 596425-2026). Keyless POST, endpoint proven live at cycle 2000. All 25 raw fields
+        # dumped and hand-matched against main.js's normalize() before adding this entry.
+        "fetch": fetch_ted_notice_row,
+        "fields": {
+            "publicationNumber": "publication-number",
+            "noticeType": "notice-type",
+            "procedureType": "procedure-type",
+            "title": "_title",
+            "titleLanguage": "_titleLanguage",
+            "buyerName": "_buyerName",
+            "buyerCountry": "_buyerCountry",
+            "buyerCity": "_buyerCity",
+            "noticeSubtype": "notice-subtype",
+            "buyerEmail": "organisation-email-buyer",
+            "buyerPhone": "organisation-tel-buyer",
+            "buyerUrl": "organisation-internet-address-buyer",
+            "placeOfPerformanceCountry": "_placeOfPerformanceCountry",
+            "placeOfPerformanceCity": "_placeOfPerformanceCity",
+            "contractNature": "_contractNature",
+            "cpvCodes": "_cpvCodes",
+            "description": "_description",
+            "totalValue": "total-value",
+            "totalValueCurrency": "_totalValueCurrency",
+            "deadlineDate": "_deadlineDate",
+            "deadlineType": "_deadlineType",
+            "deadlineReceiptRequestDate": "_deadlineReceiptRequestDate",
+            "publicationDate": "_publicationDate",
+            "noticeUrl": "_noticeUrl",
+            "pdfUrl": "_pdfUrl",
+            "htmlUrl": "_htmlUrl",
+            "xmlUrl": "_xmlUrl",
+            "procedureIdentifier": "procedure-identifier",
+            "changeReasonDescription": "_changeReasonDescription",
+        },
+        "transforms": {
+            # main.js firstValue(): array[0] ?? null, else the scalar itself.
+            "buyerEmail": ted_first,
+            "buyerPhone": ted_first,
+            "buyerUrl": ted_first,
+            # main.js: (typeof v === 'number' && v >= 0) ? v : null.
+            "totalValue": lambda v: v if isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 0 else None,
+        },
+        "skip_note": (
+            "daysUntilDeadline MUST stay unchecked -- the README itself says it is computed "
+            "at run time in Brussels local time and shrinks (or goes negative) every day, so "
+            "it is unconditionally uncheckable against a fixed sample, not merely skipped for "
+            "convenience.\n\n"
+            "**Found a real defect on first run (9th of 12 extensions to find one, a NEW "
+            "class -- the DATE is right but its own provenance LABEL is wrong):** "
+            "deadlineType read 'tender' in the README but live is 'generic' -- "
+            "deadline-receipt-tender-date-lot is null on this notice (confirmed live), so "
+            "pickDeadline() falls through to deadline-date-lot, which is exactly the 'generic' "
+            "leg, not 'tender'. deadlineDate itself ('2026-09-16') matches byte-for-byte "
+            "either way, which rules out ordinary schedule drift (a drifted value would have "
+            "moved the date, not just its label) and points to the label being typed wrong "
+            "by hand when the sample was captured -- same hand-edit-not-drift conclusion as "
+            "1992's clinicaltrials timeFrame, reached the same way (one field's value is "
+            "self-consistent, a sibling field describing it is not). Fixed the README's "
+            "deadlineType to 'generic'."
         ),
     },
 ]
