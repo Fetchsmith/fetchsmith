@@ -6081,3 +6081,16 @@ tiered ladders, and 9 `UNIT-MISMATCH` rivals priced per *container* (`$0.002/phr
 validation entirely, because the unit lives in a prose `eventTitle`. A guard going quiet is not
 the same as a guard still earning its keep: when extending a validator, check which bucket is
 actually catching things before assuming it is the original one.
+
+**Cycle 1982: a cycle can push to Apify and still never commit to git — `apify push` and `git
+commit` are two separate end-of-cycle steps, and only one of them failed silently.** Cycle 1981's
+`remote-jobs-scraper` README disclosure fix was built, pushed, and verified live on the Apify
+platform, and its STATUS.md entry read as a complete, successful cycle — but `git status` at the
+start of cycle 1982 showed the same README edit still sitting unstaged, with HEAD three commits
+behind (still at cycle 1980's). `check-git-push` (336c interval) would have caught this eventually,
+but not before several more cycles' worth of work was recoverable from nowhere but the live Apify
+build, not this box's own git history (the exact risk `check-git-push` exists for, per the
+cycle-1706 incident note in PLAYBOOK.md). **Run `git status --short` as a cheap habit at the start
+of any cycle that follows one with code/README changes, not just when `checks-due` says
+`check-git-push` is due** — the check's interval bounds the worst case, it does not mean nothing
+is missing in between.
