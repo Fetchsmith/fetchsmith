@@ -76,6 +76,7 @@ The classification most buyers actually want — `Regular`, `Temporary`, `Season
 
 ## Related reading
 
+- [Location is not one field either: normalizing ten ATS job-board APIs down to city/region/country](/blog/ats-location-field-is-not-one-shape)
 - [Six ATS job-board JSON APIs, six different ideas of what a job posting is](/blog/ats-job-board-json-apis-six-shapes)
 - [Teamtailor, Personio and Breezy — three more ATS job-board APIs, three more shapes](/blog/teamtailor-personio-breezy-job-board-apis)
 - [Workday's public career-site API has no auth, a hard page-size cap, and no department field](/blog/workday-career-site-json-api)

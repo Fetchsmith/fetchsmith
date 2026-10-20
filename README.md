@@ -104,6 +104,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [EUIPO's own trademark API is gated too — the same federated index answers it keyless](https://fetchsmith.com/blog/euipo-trademark-api-needs-a-key)
 - [Teamtailor, Personio and Breezy — three more ATS job-board APIs, three more shapes](https://fetchsmith.com/blog/teamtailor-personio-breezy-job-board-apis)
 - ["full-time" is not a filter: employmentType across ten ATS job-board APIs](https://fetchsmith.com/blog/ats-employment-type-is-not-one-vocabulary)
+- [Location is not one field either: normalizing ten ATS job-board APIs down to city/region/country](https://fetchsmith.com/blog/ats-location-field-is-not-one-shape)
 
 ## Layout
 
