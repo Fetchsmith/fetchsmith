@@ -37,6 +37,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 
 ACTORS = "/root/agent/actors"
 VERBOSE = "--verbose" in sys.argv
@@ -58,6 +59,120 @@ def fetch_json_post(url, body):
     )
     with urllib.request.urlopen(req, timeout=20) as r:
         return json.load(r)
+
+
+def fetch_text(url):
+    # SEC's www.sec.gov/Archives (unlike efts.sec.gov) enforces its fair-access policy and
+    # 403s a generic UA -- verified live cycle 1995, same declarative-contact format the
+    # Actor's own secGet() sends.
+    ua = "FetchSmith-check-readme-live-row admin@fetchsmith.com" if "sec.gov" in url else "Mozilla/5.0"
+    req = urllib.request.Request(url, headers={"User-Agent": ua})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return r.read().decode()
+
+
+# sec-insider-trades-scraper's sample row has no single-GET live endpoint (unlike every
+# other entry below): the row's `id` encodes an accession number + transaction selector +
+# in-document index, and the raw source is a Form 4 ownership XML filed under the issuer's
+# EDGAR CIK, not a JSON API. Verified live cycle 1995 end to end against the README's own
+# sample (accession 0001140361-26-037020, row n0): EDGAR's full-text-search index
+# (efts.sec.gov) resolves an accession number straight to its CIK + filename without first
+# needing to know the issuer (main.js itself gets there via a ticker->CIK map + a
+# submissions-index page scan, a path this check deliberately skips since it already has
+# the accession number), then the raw XML is fetched from the Archives path using EITHER
+# CIK efts returns (confirmed live: the same filing resolves under both the reporting
+# owner's CIK 1780525 and the issuer's CIK 320193 -- EDGAR cross-indexes a submission under
+# every filer CIK on it, not just the issuer).
+SEC_FORM4_ID_RE = re.compile(r"^(?P<acc>\d{10}-\d{2}-\d{6})-(?P<der>[nd])(?P<hold>h?)(?P<idx>\d+)$")
+# Mirrors main.js's CODE_MEANING table verbatim (the only transaction codes a buyer sees
+# decoded) -- a static lookup table, not a derived value, so this is a copy rather than a
+# `transforms` lambda, verified against main.js's own literal at the time this was added.
+SEC_CODE_MEANING = {
+    "P": "Open-market purchase", "S": "Open-market sale", "A": "Grant/award", "D": "Disposition to issuer",
+    "F": "Shares withheld for taxes", "M": "Option exercise/conversion", "C": "Conversion of derivative",
+    "G": "Gift", "X": "Option exercise (in the money)", "J": "Other (see footnotes)", "K": "Equity swap",
+    "I": "Discretionary transaction", "H": "Expiration (long derivative)", "E": "Expiration (short derivative)",
+    "U": "Tender of shares", "L": "Small acquisition", "W": "Will or laws of descent", "Z": "Voting trust",
+    "O": "Option exercise (out of the money)", "V": "Voluntarily reported early",
+}
+
+
+def sec_num(s):
+    if s is None or s == "":
+        return None
+    try:
+        return float(s) if "." in s else int(s)
+    except ValueError:
+        return None
+
+
+def fetch_sec_form4_row(key):
+    """Fetch and re-derive one sec-insider-trades-scraper row by its `id`, mirroring
+    main.js's rowsFromXml() field-by-field (verified live cycle 1995 against the README's
+    own sample row, byte-for-byte on every field including the two derived ones)."""
+    m = SEC_FORM4_ID_RE.match(key)
+    if not m:
+        raise ValueError(f"id {key!r} doesn't match accession-number-n/d[h]idx shape")
+    acc, derivative, holding, idx = m.group("acc"), m.group("der") == "d", m.group("hold") == "h", int(m.group("idx"))
+    hit = fetch_json(
+        f"https://efts.sec.gov/LATEST/search-index?q=%22{urllib.parse.quote(acc)}%22&forms=4"
+    )["hits"]["hits"][0]
+    cik = int(hit["_source"]["ciks"][0])
+    filename = hit["_id"].split(":")[1]
+    acc_nodash = acc.replace("-", "")
+    root = ET.fromstring(fetch_text(
+        f"https://www.sec.gov/Archives/edgar/data/{cik}/{acc_nodash}/{filename}"
+    ))
+
+    def t(el, path):
+        n = el.find(path)
+        return n.text.strip() if n is not None and n.text else None
+
+    footnotes = {f.get("id"): (f.text or "").strip() for f in root.findall(".//footnotes/footnote")}
+
+    def footnote_text(el):
+        seen = []
+        for fid in (n.get("id") for n in el.iter("footnoteId")):
+            if fid in footnotes and footnotes[fid] not in seen:
+                seen.append(footnotes[fid])
+        return " ".join(seen) if seen else None
+
+    owner = root.find(".//reportingOwner")
+    table = root.find("derivativeTable" if derivative else "nonDerivativeTable")
+    tx_tag = ("derivativeHolding" if holding else "derivativeTransaction") if derivative \
+        else ("nonDerivativeHolding" if holding else "nonDerivativeTransaction")
+    tx = table.findall(tx_tag)[idx]
+
+    code = None if holding else t(tx, "transactionCoding/transactionCode")
+    shares = None if holding else sec_num(t(tx, "transactionAmounts/transactionShares/value"))
+    price = None if holding else sec_num(t(tx, "transactionAmounts/transactionPricePerShare/value"))
+    acq = None if holding else t(tx, "transactionAmounts/transactionAcquiredDisposedCode/value")
+
+    return {
+        "id": key,
+        "accessionNumber": acc,
+        "formType": t(root, "documentType"),
+        "filingDate": hit["_source"]["file_date"],
+        "periodOfReport": t(root, "periodOfReport"),
+        "issuerName": t(root, "issuer/issuerName"),
+        "ticker": t(root, "issuer/issuerTradingSymbol"),
+        "insiderName": t(owner, "reportingOwnerId/rptOwnerName"),
+        "isOfficer": t(owner, "reportingOwnerRelationship/isOfficer") == "true",
+        "officerTitle": t(owner, "reportingOwnerRelationship/officerTitle"),
+        "derivative": derivative,
+        "securityTitle": t(tx, "securityTitle/value"),
+        "transactionDate": t(tx, "transactionDate/value"),
+        "transactionCode": code,
+        "transactionCodeMeaning": SEC_CODE_MEANING.get(code) if code else None,
+        "acquiredOrDisposed": acq,
+        "shares": shares,
+        "pricePerShare": price,
+        "transactionValueUsd": round((-1 if acq == "D" else 1) * shares * price, 2)
+            if shares is not None and price is not None else None,
+        "sharesOwnedAfter": sec_num(t(tx, "postTransactionAmounts/sharesOwnedFollowingTransaction/value")),
+        "rule10b5_1Plan": t(root, "aff10b5One") == "true",
+        "footnotes": footnote_text(tx),
+    }
 
 
 def get_path(d, path):
@@ -350,6 +465,50 @@ ENTRIES = [
             "(derived from dates/action text via extractCitations(), not a raw field), pdfUrl, "
             "jsonUrl are intentionally NOT spot-checked -- reshaped, derived, or absent on this "
             "sample (a Proposed Rule, so president/executiveOrderNumber are null by type anyway)."
+        ),
+    },
+    {
+        "slug": "sec-insider-trades-scraper",
+        "heading": "Sample row",
+        "key_field": "id",
+        # Verified live cycle 1995: see fetch_sec_form4_row()'s own docstring for the two-hop
+        # resolution (efts.sec.gov accession-number search -> Archives XML, no ticker->CIK
+        # lookup needed since the id already carries the accession number). Every field below
+        # matched the README's AAPL/Newstead sample byte-for-byte on first run, including the
+        # two derived ones (transactionCodeMeaning, transactionValueUsd's sign+rounding).
+        "fetch": fetch_sec_form4_row,
+        "fields": {
+            "id": "id",
+            "accessionNumber": "accessionNumber",
+            "formType": "formType",
+            "filingDate": "filingDate",
+            "periodOfReport": "periodOfReport",
+            "issuerName": "issuerName",
+            "ticker": "ticker",
+            "insiderName": "insiderName",
+            "isOfficer": "isOfficer",
+            "officerTitle": "officerTitle",
+            "derivative": "derivative",
+            "securityTitle": "securityTitle",
+            "transactionDate": "transactionDate",
+            "transactionCode": "transactionCode",
+            "transactionCodeMeaning": "transactionCodeMeaning",
+            "acquiredOrDisposed": "acquiredOrDisposed",
+            "shares": "shares",
+            "pricePerShare": "pricePerShare",
+            "transactionValueUsd": "transactionValueUsd",
+            "sharesOwnedAfter": "sharesOwnedAfter",
+            "rule10b5_1Plan": "rule10b5_1Plan",
+            "footnotes": "footnotes",
+        },
+        "skip_note": (
+            "isDirector/isTenPercentOwner/isOther/coFilers (sample's single owner has all "
+            "three false and no co-filers -- not exercised by this sample), isAmendment/"
+            "amendsOriginalFilingDate/supersedes*/amendedBy* (all null on this non-amendment "
+            "filing, not exercised), directOrIndirect/indirectOwnershipNature/exercisePrice/"
+            "expirationDate/underlyingSecurityTitle/underlyingShares (non-derivative row, "
+            "all null/not-applicable by construction), filingUrl/url (built from a URL "
+            "template, not a raw field) are intentionally NOT spot-checked."
         ),
     },
 ]
