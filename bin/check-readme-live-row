@@ -193,6 +193,57 @@ def grants_parse_money(v):
     return int(n) if n.is_integer() else n
 
 
+def grants_selected_attachments(folders):
+    """Build main.js's `attachments` array (flatMap synopsisAttachmentFolders ->
+    synopsisAttachments, building downloadUrl from the attachment id, main.js:861-870,
+    verified line-for-line) for opportunity 332894's live record, then narrow it to the exact
+    two attachments the README's hand-picked sample illustrates (ids 306813 and 350603,
+    identified by the downloadUrl those ids build), in the same order the live record's own
+    folder iteration produces (verified live: 306813 is folder 0's attachment, 350603 is
+    folder 2's -- the README's sample order matches that natural order, not a re-sort). The
+    live record has 5 real attachments total (confirmed live, matches the README's own prose
+    "five attachments in total"); the README's JSON block deliberately shows only 2 as an
+    illustration, so whole-array equality would never match -- this is the
+    select-the-shown-subset shape queue.md scoped for this entry, not a bug.
+
+    fileDescription passes through cleanText() in main.js (decodeEntities + tag-strip +
+    whitespace-collapse), which this check deliberately never mirrors anywhere (see every
+    title/synopsisText skip_note above -- decodeEntities is a custom entity table with an
+    iterative fixpoint loop, not a one-line mirror). But for these specific two descriptions
+    cleanText is a PROVEN no-op: by inspection of cleanText's own definition, a string with no
+    HTML entity sequence, no tag, and no run of whitespace to collapse comes out identical.
+    Checked live, not assumed -- and asserted here, so a future re-sample that picks a
+    description actually needing cleanText() raises instead of silently comparing wrong.
+    """
+    shown_ids = {306813, 350603}
+    out = []
+    for f in (folders or []):
+        for a in (f.get("synopsisAttachments") or []):
+            if a.get("id") not in shown_ids:
+                continue
+            desc = a.get("fileDescription")
+            if desc and (
+                re.search(r"&(#x?[0-9a-fA-F]+|[a-zA-Z]+);", desc)
+                or re.search(r"<[^>]+>", desc)
+                or re.search(r"\s{2,}", desc)
+            ):
+                raise RuntimeError(
+                    f"fileDescription {desc!r} (attachment id {a.get('id')}) may need "
+                    "cleanText(); grants_selected_attachments()'s plain-text assumption broke"
+                )
+            out.append({
+                "fileName": a.get("fileName"),
+                "description": desc,
+                "mimeType": a.get("mimeType"),
+                "sizeBytes": a.get("fileLobSize") if isinstance(a.get("fileLobSize"), (int, float)) else None,
+                "folderName": f.get("folderName"),
+                "folderType": f.get("folderType"),
+                "postedDate": a.get("createdDate"),
+                "downloadUrl": f"https://www.grants.gov/grantsws/rest/opportunity/att/download/{a['id']}",
+            })
+    return out
+
+
 def fetch_grants_gov_row(key):
     """Fetch one grants-gov-scraper row's two live halves by opportunity id.
 
@@ -1034,6 +1085,49 @@ ENTRIES = [
             "attachments has its own block, not yet added -- see queue.md, the live record's "
             "`synopsisAttachmentFolders` is empty for this forecast anyway so it could not "
             "exercise that path even if added here)."
+        ),
+    },
+    {
+        "slug": "grants-gov-scraper",
+        "heading": "Sample output (the `attachments` array",
+        "key_field": "id",
+        # Verified live cycle 2002 against the README's own attachments sample (opportunity id
+        # 332894, same record v7's synopsis entry already covers for its own block). Reuses
+        # fetch_grants_gov_row() -- no new fetch logic needed, just a new field + transform on
+        # the same two-endpoint merge. This is the "select-the-shown-subset" entry 1997/1998's
+        # notes scoped: the README shows 2 of this record's 5 real attachments, deliberately
+        # (prose below the block says "five attachments in total"), so `attachments` is
+        # compared via grants_selected_attachments() rather than whole-array equality -- see
+        # that function's own docstring for the id-matching and cleanText-is-a-proven-no-op
+        # reasoning.
+        "fetch": fetch_grants_gov_row,
+        "fields": {
+            "id": "thin.id",
+            "opportunityNumber": "thin.number",
+            "agency": "thin.agency",
+            "synopsisDocumentURLs": "detail.synopsisDocumentURLs",
+            "attachments": "detail.synopsisAttachmentFolders",
+        },
+        "transforms": {
+            # listOf(detail.synopsisDocumentURLs).map((d) => ({ url: d.docUrl ?? null,
+            # description: d.description ?? null })).filter((d) => d.url) -- description here
+            # is a RAW passthrough (unlike attachments' fileDescription), so no cleanText
+            # concern, verified by reading main.js:849 directly.
+            "synopsisDocumentURLs": lambda v: [
+                {"url": d.get("docUrl"), "description": d.get("description")}
+                for d in (v or []) if d.get("docUrl")
+            ],
+            "attachments": grants_selected_attachments,
+        },
+        "skip_note": (
+            "title/opportunityCategory/agencyCode and every other field this sample doesn't "
+            "show are not checked -- this block only illustrates id/opportunityNumber/title/"
+            "agency/synopsisDocumentURLs/attachments, and title is skipped for the same "
+            "cleanText reason every other grants-gov entry skips it. attachmentsTotal (the "
+            "prose's \"five attachments in total\" claim) was verified by hand against the "
+            "live record (5 folders, 1 attachment each) but is not itself a JSON field, so it "
+            "is not and cannot be spot-checked by this tool -- see LEARNINGS if that ever "
+            "needs a dedicated prose-claim check."
         ),
     },
     {
