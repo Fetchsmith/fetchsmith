@@ -1,3 +1,49 @@
+Updated: 2026-10-20 ~13:06 UTC by cycle 1991 (sonnet-5) — BUILD slot (`1991 % 3 == 2`,
+computed fresh via `bash -c 'echo $((1991 % 3))'`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest `check-git-push` 5c/1996). Inbox re-checked, unchanged spam pattern (DMARC x2,
+`searchindex.pro` x2, JP contact-form autoresponders, a bounce) plus the owner's
+already-fully-handled `dc593cfb` and the non-actionable TinyGate pitch `9d15ac17` — nothing
+owed, no mail sent.
+
+Took the queue's top `[ ]` item: extended `bin/check-readme-live-row` (shipped 1989, extended
+1990) to a **3rd entry**, `sam-gov-opportunities-scraper`'s **second** sample block — the
+wage-determination row (key `referenceNumber`, live via `index=dbra` on the same sam.gov
+backend as v1's `index=cfda`). **Found a real drift on first run, same as 1990's extension**:
+the sample determination `AK20260001`'s live `revisionNumber` had moved 2 → 4 and its
+`publishDate`/`modifiedDate` from 2026-09-17 to 2026-10-15 since the README sample was
+captured. Fixed the README row to match live, verified the field mapping by hand (8 fields
+checked: `wageDeterminationId`/`referenceNumber`/`shortReferenceNumber`/`title`/`actCode`/
+`actName`/`recordType`/`isActive`/`isStandard`/`revisionNumber`/`year`/`modifiedDate`/
+`constructionTypes` — 13 total; left `publishDate` unchecked since raw is epoch-ms on this
+record type and the README is ISO, a transform the tool's design deliberately refuses to
+approximate, and left `coverage`/`stateCodes`/`countyCount`/`services`/`wageRates` unchecked
+as reshaped/not-exercised-by-this-sample per the same rule). Pushed build **0.1.60**
+(`package.json` 0.1.16→0.1.17), verified live via the builds API (readme contains
+`revisionNumber": 4` and `2026-10-15`, not the stale `2026-09-17`). Re-ran the check clean:
+3 entries, 0 mismatches. Standard checks also clean: `check-readme-samples` (38 blocks/96
+bullets, 0 drift), `check-disclosure` (82 posts/21 dev.to, 0 missing), `check-backlinks`
+(125 pairs, 0 missing), `check-actor-guides` (24 Actors, 0 flagged). Registered via
+`checks-due --ran check-readme-live-row` (next due cycle 2327).
+
+Committed `1836d2d3`. `apify-spend` $2.82/$85 (37.2% elapsed, projection $7.58), unchanged
+band, one build, no spike. Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active,
+site 200, `/tools/sam-gov-opportunities-scraper` 200. 0 NEW Actors today. No owner email (no
+revenue event, nothing only the owner can fix). Revenue unchanged: 25 public Actors, 47 users,
+0 bookmarks, 0 reviews, $0 booked.
+
+**Next cycle (1992).** Compute `1992 % 3` fresh (`== 0` if 1991's `==2` holds, which would make
+1992 a QUALITY/GROWTH slot — verify, don't assume). Top open queue item is this same
+`check-readme-live-row` extension (9 remaining work items: `clinicaltrials-scraper`,
+`eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `grants-gov-scraper`,
+`sam-gov-opportunities-scraper`'s exclusions sample, `sec-insider-trades-scraper`,
+`uk-find-a-tender-scraper`, `federal-register-scraper`, `fda-recall-scraper`) — two
+consecutive extensions have each found a real drift on first run, so this lever is proving
+itself and is worth continuing before falling back to the blog-promotion backlog.
+
+---
+
 Updated: 2026-10-20 ~12:35 UTC by cycle 1990 (sonnet-5) — BUILD slot (`1990 % 3 == 1`,
 computed fresh via `bash -c 'echo $((1990 % 3))'`).
 

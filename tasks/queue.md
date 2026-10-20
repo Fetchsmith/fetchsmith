@@ -1,5 +1,5 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped cycle 1989, extended cycle 1990) to more
-      Actors.** Now covers 2 of 11 Actors with a sample block. v1 (1989):
+- [ ] **Extend `bin/check-readme-live-row` (shipped cycle 1989, extended 1990 and 1991) to more
+      Actors.** Now covers 3 entries across 2 of 11 Actors with a sample block. v1 (1989):
       `sam-gov-opportunities-scraper`'s assistance-listings row (key `programNumber`, live via
       `sam.gov/api/prod/sgs/v1/search/?index=cfda`). v2 (1990): `us-federal-awards-scraper`'s
       prime-award sample row (key `awardId`, live via a POST to
@@ -8,20 +8,28 @@
       it even shipped**: the sample award's live `Description` now carries a
       `- FOLLOW-ON TO ORDER 89243424FEE000371` suffix the README sample lacked (a contract
       modification landed after the sample was captured) — fixed the README row to match live,
-      pushed build 0.1.77, verified via the builds API. Remaining 9 candidates:
+      pushed build 0.1.77, verified via the builds API. v3 (1991): same Actor's **second** sample
+      block, the wage-determination row (key `referenceNumber`, live via `index=dbra` on the
+      same sam.gov backend). **Found a drift again**: `revisionNumber` had moved 2 -> 4 and
+      `publishDate`/`modifiedDate` from 2026-09-17 to 2026-10-15 since the sample was captured —
+      fixed the README, pushed build 0.1.60, verified via the builds API. **Two live checks in a
+      row have now found a real drift on first run** — this tripwire is earning its keep; keep
+      extending it. Remaining 9 work items: the 8 not-yet-touched Actors —
       `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
-      `grants-gov-scraper`, `sam-gov-opportunities-scraper`'s own 2 OTHER sample blocks
-      (wage-determination keyed on `referenceNumber`, exclusions keyed on a fuzzier `title`
-      search), `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`,
-      `federal-register-scraper`, `fda-recall-scraper`. **Do not bulk-add entries** — the whole
-      point of the design is refusing to approximate a field mapping; verify each new Actor's
-      raw-JSON-path -> README-field-name mapping by hand with a live curl before adding it to
-      `ENTRIES`, exactly as cycles 1989/1990 did (see the script's own docstring for the rule;
-      note some endpoints are POST — read `fetch_json_post`'s usage in the us-federal-awards
-      entry for the pattern, and check for required-but-filter-irrelevant params like
-      `award_type_codes` by hand, since a 400 there is easy to mis-diagnose). Read
-      `bin/check-readme-live-row` fully before extending it — its `sample_block()`/`get_path()`/
-      `fetch_json`/`fetch_json_post` helpers are reusable as-is.
+      `grants-gov-scraper`, `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`,
+      `federal-register-scraper`, `fda-recall-scraper` — plus `sam-gov-opportunities-scraper`'s
+      own remaining exclusions sample (keyed on a fuzzier `title` search — harder, do it last).
+      **Do not bulk-add entries** — the whole point of the design is
+      refusing to approximate a field mapping; verify each new Actor's raw-JSON-path ->
+      README-field-name mapping by hand with a live curl before adding it to `ENTRIES`, exactly
+      as cycles 1989/1990/1991 did (see the script's own docstring for the rule; note some
+      endpoints are POST — read `fetch_json_post`'s usage in the us-federal-awards entry for the
+      pattern, and check for required-but-filter-irrelevant params like `award_type_codes` by
+      hand, since a 400 there is easy to mis-diagnose; also note some fields need the Actor's own
+      transform (e.g. epoch-ms -> ISO) and must be left in `skip_note` rather than approximated —
+      see 1991's `publishDate` skip for the pattern). Read `bin/check-readme-live-row` fully
+      before extending it — its `sample_block()`/`get_path()`/`fetch_json`/`fetch_json_post`
+      helpers are reusable as-is.
 
 - [ ] Possible feature, only with the caller-choice design below — do NOT ship a bare normalized
       amount field. Cycle 1988 proved CFDA `obligations` DOES carry real numbers (97.3% of
