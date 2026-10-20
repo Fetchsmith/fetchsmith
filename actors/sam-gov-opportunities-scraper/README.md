@@ -62,10 +62,10 @@ Set `dataType` to one of the three wage-determination options and the same filte
   "recordType": "wdDBRA",
   "isActive": true,
   "isStandard": true,
-  "revisionNumber": 2,
+  "revisionNumber": 4,
   "year": 2026,
-  "publishDate": "2026-09-17T04:00:00.000Z",
-  "modifiedDate": "2026-09-17T00:00:00-04:00",
+  "publishDate": "2026-10-15T04:00:00.000Z",
+  "modifiedDate": "2026-10-15T00:00:00-04:00",
   "constructionTypes": ["Building", "Heavy"],
   "services": null,
   "coverage": [

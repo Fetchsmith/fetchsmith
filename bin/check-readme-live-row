@@ -142,6 +142,47 @@ ENTRIES = [
         ),
     },
     {
+        "slug": "sam-gov-opportunities-scraper",
+        "heading": "wage-determination output",
+        "key_field": "referenceNumber",
+        # Verified live cycle 1991: index=dbra, q=<exact reference number> -> the single
+        # matching determination (same exact-match q semantics cycle 1989/1985 documented
+        # for cfda/wage-determinations -- a complete token wins outright). This run FOUND
+        # a real drift: the sample's revisionNumber/publishDate/modifiedDate had moved
+        # (revision 2 -> 4, 2026-09-17 -> 2026-10-15) since the README sample was captured
+        # -- fixed the README row to match live before adding this entry.
+        "fetch": lambda key: fetch_json(
+            "https://sam.gov/api/prod/sgs/v1/search/"
+            f"?index=dbra&responseType=json&page=0&size=1&q={urllib.parse.quote(key)}"
+        )["_embedded"]["results"][0],
+        "fields": {
+            "wageDeterminationId": "_id",
+            "referenceNumber": "fullReferenceNumber",
+            "shortReferenceNumber": "shortReferenceNumber",
+            "title": "title",
+            "actCode": "type.code",
+            "actName": "type.value",
+            "recordType": "_type",
+            "isActive": "isActive",
+            "isStandard": "isStandard",
+            "revisionNumber": "revisionNumber",
+            "year": "year",
+            # Raw `modifiedDate` is already ISO on a wdDBRA row (confirmed live cycle 1991,
+            # unlike `publishDate` which is epoch-ms on DBRA/SCA -- see skip_note), so a
+            # direct path match is valid for this specific DBRA sample without reimplementing
+            # the Actor's toIso() transform.
+            "modifiedDate": "modifiedDate",
+            "constructionTypes": "constructionTypes",
+        },
+        "skip_note": (
+            "publishDate (epoch-ms on the raw wdDBRA row, ISO in the README -- needs the "
+            "Actor's own toIso() transform), coverage/stateCodes/countyCount (reshaped from "
+            "raw `location.state` into a flat array + derived count) and services/wageRates "
+            "(null on this DBRA sample, not exercised by it) are intentionally NOT "
+            "spot-checked here."
+        ),
+    },
+    {
         "slug": "us-federal-awards-scraper",
         "heading": "Sample row",
         "key_field": "awardId",
