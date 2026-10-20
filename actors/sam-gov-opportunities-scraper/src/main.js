@@ -761,9 +761,22 @@ function orgFieldByLevel(hierarchy, level) {
 // ISO strings on every sample checked (unlike wd's epoch-ms DBRA/SCA split) -- no toIso() needed.
 // `contacts` is the agency's own published program contact, same PII-safe reasoning already
 // applied to opp's `pointOfContact` (statutory public notice, not a person's private profile).
-// `financial.obligations` is shipped as raw pass-through, not normalized: the one sample read had
-// only a `flag` per year (no numeric `amount`), and cycle 707's time budget did not allow reading
-// enough records to enumerate the full flag vocabulary -- honest raw data beats a half-guessed enum.
+// `financial.obligations` is shipped as raw pass-through, not normalized. Cycle 707 deferred the
+// flag-vocabulary question (one sample read had only a `flag`, no numeric amount); cycle 1988 CLOSED
+// it by reading the whole catalog (7,396 programs / 74 pages / 32s / no key, keyless hal+json).
+// Corrected findings -- the 707 sample was NOT representative:
+//   * value-entry keys: year 16594, actual 9432, estimate 8019, flag 1036 (only 6.2%), explanation 403
+//   * flag vocabulary is EXACTLY two: `ena` (696, estimate not available), `nsi` (340, not separately
+//     identifiable -- money booked under another programNumber, named in `explanation`)
+//   * amounts are mostly present: 4205 programs have a non-empty block, 4093 of those (97.3%) carry
+//     a real number; only 77 are flag-only. So "the amounts are missing" was wrong.
+// Raw pass-through still stands, for a STRONGER reason: any single normalized amount field would be
+// silently wrong on >1/3 of entries. `0` is a placeholder not a quantity (2943 estimate=0 + 2737
+// actual=0 = 34.2% of entries; e.g. 10.856 FY2013 = {flag:"ena", estimate:0, explanation:"Program
+// not funded"}), and `estimate`/`actual` CO-OCCUR on 1771 entries and disagree by up to ~50%
+// (14.880 FY2019: estimate 20.0M vs actual 29.967M) -- there is no single "the amount" to pick.
+// Do not add a normalized amount field without a caller-chosen actual-vs-estimate preference.
+// Measured: site/content/blog/cfda-funding-history-zero-is-not-zero.md
 function normalizeCfdaRow(row) {
     const id = row._id;
     return {

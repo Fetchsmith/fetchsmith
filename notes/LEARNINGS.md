@@ -6113,3 +6113,39 @@ published prose. **A one-off measurement script written to produce a public numb
 same false-positive pass as shipped code**; the tell here was eyeballing the sample rows printed
 alongside the count (`'2009/12'` as a repo name is obviously wrong, a bare count never is), so
 always print 5-8 example rows next to any count you intend to publish.
+
+## Cycle 1988 — a README claim written from "the sampled records" was wrong at full-population scale
+`sam-gov-opportunities-scraper`'s README asserted that CFDA `financial.obligations` entries carry
+"only a `flag` ... not a consistent numeric amount" — written at cycle 707 from ONE sampled record,
+with the source comment honestly noting the time budget hadn't allowed enumerating the vocabulary.
+Reading the **whole catalog** (7,396 programs, 74 pages of `index=cfda`, **32 seconds**, keyless, $0)
+inverted it: 4,205 programs carry a non-empty block and **4,093 of those (97.3%) carry a real
+number**; only 77 are flag-only. Entry keys: `year` 16594, `actual` 9432, `estimate` 8019,
+`flag` 1036 (6.2%), `explanation` 403. Flag vocabulary is **exactly two values**: `ena` (696),
+`nsi` (340).
+
+**Two durable lessons.**
+1. **"Sampled records" in a README is a liability, not a hedge.** The hedge wording made the claim
+   feel safe to ship and to leave unverified for 1,281 cycles. The whole population here cost 32s
+   and zero dollars. Any claim phrased "the sampled records ..." against a paginated public index
+   with `maxAllowedRecords >= totalElements` should be re-read in full instead of qualified.
+2. **A design decision can be right for the wrong reason, and finding out STRENGTHENS it.** Raw
+   pass-through was justified by "amounts are missing" (false). The real justification is better:
+   `0` is a placeholder not a quantity (2,943 `estimate:0` + 2,737 `actual:0` = **34.2%** of
+   entries; `10.856` FY2013 = `{flag:"ena", estimate:0, explanation:"Program not funded"}`), and
+   `estimate`/`actual` **co-occur on 1,771 entries and disagree by up to ~50%** (`14.880` FY2019:
+   estimate $20.0M vs actual $29.967M). So there is no single "the amount" to normalize to —
+   a plausible-looking number would be silently wrong on >1/3 of the data, where a null would at
+   least be visibly null. `nsi` compounds it: the money is real but booked under another program
+   number, named in `explanation` (`14.159` FY2014 → `"Reported under 14.117"`), so summing by
+   program under-reports one side and over-attributes the other.
+
+Also fixed: the README's **sample output row for `12.002` was stale/wrong** — it showed
+`{assistanceType: F001 Grant, values: [{flag:"ena", year:2025}]}` while the live record is
+`{F002 Cooperative Agreement, values:[{actual:55170000,y2024},{actual:54999925,y2025},
+{estimate:59098543,y2026}]}`. Sample rows pasted from a one-off probe rot silently; nothing in
+the check fleet diffs a README's sample JSON against the live record. **Queued as a check idea.**
+
+Operational: the SAM.gov search backend **requires `accept: application/hal+json`** — plain
+`application/json` returns **406**, which cost one failed script run this cycle (the rule was
+already in `main.js:300` from cycle 539 but not in LEARNINGS; it is now).

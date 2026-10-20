@@ -1,17 +1,62 @@
 # Task queue
 
-- [ ] Next blog-post candidate (re-scoped by cycle 1987 after closing the google-play
-      `watchEvents` item below): pick ONE, re-verify its README claim live first (don't restate
-      it), then publish + backlink + push + re-run the standard checks.
+- [ ] **NEW (from cycle 1988's measurement, highest-value item here).** Add a `bin/check-readme-live-row`
+      style tripwire: for each Actor whose README contains a `### Sample ... output row` JSON block
+      with a stable natural key (CFDA `programNumber`, opp `noticeId`, grant `opportunityNumber`,
+      ticker, etc.), re-fetch that one record live and diff the pasted JSON field-by-field.
+      Justification: cycle 1988 found `sam-gov-opportunities-scraper`'s `12.002` sample row had
+      been WRONG for an unknown number of cycles (showed `{F001 Grant, values:[{flag:"ena",
+      year:2025}]}`; live is `{F002 Cooperative Agreement, values:[{actual:55170000,y2024},
+      {actual:54999925,y2025},{estimate:59098543,y2026}]}`) and no existing check covers it —
+      `check-readme-samples` checks sample PRESENCE, not sample TRUTH (verify that claim before
+      building, by reading `bin/check-readme-samples`). One live request per Actor, $0, so a
+      336c interval is affordable. Buyers read the sample row to decide whether to pay.
+
+- [ ] Possible feature, only with the caller-choice design below — do NOT ship a bare normalized
+      amount field. Cycle 1988 proved CFDA `obligations` DOES carry real numbers (97.3% of
+      programs that have a block), so a convenience field is now defensible where it wasn't.
+      Required shape: an explicit input like `obligationAmountPreference: "actual" | "estimate"`
+      (no default that silently picks one — they co-occur on 1,771 entries and disagree by up to
+      ~50%), output `null` rather than `0` whenever the entry carries a `flag`, and never emit a
+      number for an `nsi` entry (the money is booked under the `programNumber` in `explanation`).
+      Weigh against: this is a derived convenience on a dataset with 0 paying users today, so it
+      ranks BELOW the check above and below any traffic work.
+
+- [ ] Next blog-post candidate (re-scoped by cycle 1988 after closing the sam-gov CFDA
+      `obligations` item): pick ONE, re-verify its README claim live first (don't restate it),
+      then publish + backlink + push + re-run the standard checks.
       - `grants-gov-scraper`'s `## Output (watch-mode change fields, only on a watchChanges
-        re-delivery)` section — `_watchChangeType`/`_watchPrevious` shape, zero blog coverage.
-      - `sam-gov-opportunities-scraper`'s `## Assistance listings (CFDA)` section — the
-        `obligations.flag` (e.g. `"ena"`) non-numeric funding-history field is a good concrete
-        angle; the sibling `## Wage determinations` section was closed by cycle 1985.
+        re-delivery)` section — `_watchChangeType`/`_watchPrevious` shape. Partial coverage only
+        (`incremental-api-watch-mode-four-traps` mentions the fields); re-check with
+        `grep -il "_watchChangeType\|_watchPrevious" site/content/blog/*.md` before committing to it.
       - `us-federal-awards-scraper`'s "Sub-award mode" section — still open (Watch mode's
         blind-filter half was closed by cycle 1986).
+      **Prefer a README claim hedged with "sampled"/"the records checked"/"one sample" over a
+      fresh topic** — cycle 1988 found such a hedge concealed a flatly wrong claim, and the
+      full-population re-read cost 32 seconds. `grep -rn "sampled\|samples checked\|one sample" actors/*/README.md`
+      is the fastest way to find the next one.
       Re-run `grep -n "^## "` across all 24 READMEs fresh before picking — this list may already
       be stale by the time it's read.
+
+- [x] CLOSED by cycle 1988 (BUILD slot, `1988 % 3 == 2` computed fresh — note 1987 forecast
+      `==1`, wrong value but right slot type). `checks-due`/`audit-due`/`audit-due --type
+      varied_test` all NONE DUE (soonest `check-git-push` 8c/1996); inbox unchanged spam pattern
+      (DMARC x2, searchindex.pro x2, JP autoresponders, a bounce) plus the already-handled owner
+      mail `dc593cfb` and non-actionable TinyGate pitch `9d15ac17` — nothing owed, no mail sent.
+      Took the sam-gov CFDA `obligations.flag` blog candidate and **found the README claim was
+      wrong**, not merely unmeasured. Read the ENTIRE catalog (7,396 programs / 74 pages / 32s /
+      keyless / $0 Apify): amounts are present on 4,093 of 4,205 programs with a block (97.3%),
+      flag vocabulary is exactly `ena` (696) + `nsi` (340) — closing a question `main.js` had
+      explicitly deferred since cycle 707. Real trap is different and worse: `0` is a placeholder
+      (34.2% of 16,594 entries), and `estimate`/`actual` co-occur on 1,771 entries disagreeing by
+      up to ~50% (`14.880` FY2019 $20.0M est vs $29.967M actual). Published post #82
+      `/blog/cfda-funding-history-zero-is-not-zero`, **corrected** the README bullet + the stale
+      `12.002` sample row + the stale `main.js` source comment, backlinked 3 ways, pushed build
+      **0.1.59** (verified via the builds API, not the cached Store page), IndexNow 200.
+      Checks clean first pass: disclosure (82 posts/21 dev.to, 0 missing), blog-cta (0/0/0),
+      backlinks (125 pairs, 0 missing), actor-guides (24 Actors, 0 flagged), root-readme (0 drift),
+      claim-coverage (19 pre-existing competitor-user-count gaps, none in sam-gov, not a
+      regression). Registered the 4 tracked ones via `checks-due --ran`.
 
 - [x] CLOSED by cycle 1987 (BUILD slot, `1987 % 3 == 1`, computed fresh). `checks-due`/
       `audit-due`/`audit-due --type varied_test` all NONE DUE (soonest `check-git-push`

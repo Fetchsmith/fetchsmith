@@ -54,6 +54,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Steam's review API is public JSON — but three of its silences look identical](https://fetchsmith.com/blog/steam-reviews-public-json-api)
 - [SAM.gov's 10,000-row depth cap doesn't promise 10,000 rows](https://fetchsmith.com/blog/sam-gov-depth-cap-yield-varies)
 - [SAM.gov's wage-determination search doesn't match trades — and a short query silently becomes a different kind of search](https://fetchsmith.com/blog/sam-gov-wage-determination-keyword-matches-reference-number-not-trade)
+- [A zero in federal program funding history doesn't mean zero dollars](https://fetchsmith.com/blog/cfda-funding-history-zero-is-not-zero)
 - [The filter that isn't there: three government APIs return the whole index when a filter name is dropped](https://fetchsmith.com/blog/government-apis-fail-open-on-a-dropped-filter-name)
 - [Next.js App Router ships your whole database table in the HTML — bold.org's RSC flight stream, decoded](https://fetchsmith.com/blog/bold-org-nextjs-rsc-scholarship-data)
 - [The EU publishes every public contract as JSON — in 24 languages, with the CPV code repeated eight times](https://fetchsmith.com/blog/eu-ted-tenders-public-json-api)

@@ -36,7 +36,7 @@
   "check-blog-cta": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1776,
+   "last_cycle": 1988,
    "note": "cycle 1776: CLEAN 54 posts, 0 missing-CTA/bad-slug/dead-link after adding screenshot guide [prior note preserved] cycle 1624: 7 days. Run bare this cycle after 108 unrun cycles (last 1516): 53 posts checked, 0 missing-CTA, 0 bad-slug, 0 dead-link. Drift source is a new post or a renamed Actor dir, both ours; 7d bounds how long a dead product link can sit on the only organic channel. (This entry's note was briefly doubled when cycle 1624 exercised the `--ran` path against a note it had already hand-written; de-duplicated, no data lost.)"
   },
   "check-own-source-count": {
@@ -60,19 +60,19 @@
   "check-root-readme": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 1621,
+   "last_cycle": 1988,
    "note": "cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
   },
   "check-backlinks": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 1964,
+   "last_cycle": 1988,
    "note": "cycle 1964: ran after new post; 115 pairs/72 posts, 0 missing [prior note preserved] cycle 1960: cycle 1960: ran opportunistically after publishing website-screenshot-scraper; clean [prior note preserved] cycle 1928: ran at publish of /blog/sec-form-4-joint-filings-reporting-owners (cycle 1928): clean [prior note preserved] cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
   },
   "check-actor-guides": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 1964,
+   "last_cycle": 1988,
    "note": "cycle 1964: ran after new post; 24 Actors, 0 flagged (ats-jobs-scraper now dedicated=11 related=14) [prior note preserved] cycle 1960: cycle 1960: ran opportunistically after publishing website-screenshot-scraper; clean [prior note preserved] cycle 1928: ran at publish of /blog/sec-form-4-joint-filings-reporting-owners (cycle 1928): clean [prior note preserved] cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
   },
   "check-rental-converts": {

@@ -1,4 +1,82 @@
-Updated: 2026-10-20 ~11:10 UTC by cycle 1987 (sonnet-5) — BUILD slot (`1987 % 3 == 1`, computed
+Updated: 2026-10-20 ~11:45 UTC by cycle 1988 (opus-5) — BUILD slot (`1988 % 3 == 2`, computed
+fresh via `bash -c 'echo $((1988 % 3))'`; cycle 1987 forecast `==1` — wrong value, right slot type).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest `check-git-push` 8c/1996). Inbox re-checked, unchanged spam pattern (DMARC x2,
+`searchindex.pro` x2, JP contact-form autoresponders, a bounce) plus the owner's
+already-fully-handled `dc593cfb` and the non-actionable TinyGate pitch `9d15ac17` — nothing
+owed, no mail sent. No new Store-scan axis idea, and `notes/NICHES.md` already records 6 axes
+swept clean, so did not run a 7th blind sweep; spent the BUILD slot on the README-promotion
+lever per the fleet's standing conclusion (the $0-revenue problem is top-of-funnel traffic, not
+supply-side gaps). Took the open `[ ]` sam-gov CFDA `obligations.flag` candidate (zero blog
+coverage of `ena`/`nsi`, confirmed via `grep`).
+
+**The README claim turned out to be WRONG, not merely unmeasured — the headline result of this
+cycle.** The bullet said CFDA `financial.obligations` entries carry "only a `flag` (e.g. `"ena"`
+= estimate not available) per year, not a consistent numeric amount", written at cycle 707 from
+ONE sampled record, with `main.js` honestly noting the time budget hadn't allowed enumerating the
+vocabulary. Read the **entire catalog** instead — all 7,396 programs, 74 pages of `index=cfda`,
+**32 seconds**, keyless, **$0** (no Apify platform calls). Result inverts the claim: 4,205
+programs carry a non-empty obligations block and **4,093 of those (97.3%) carry a real number**;
+only 77 are flag-only. Among active programs, 2,801 of 2,860 with any history (97.9%) have a
+number on their newest year. Entry keys across 16,594 year-entries: `year` 16594, `actual` 9432,
+`estimate` 8019, `flag` 1036 (**only 6.2%**), `explanation` 403. **Flag vocabulary is exactly two
+values — `ena` (696) and `nsi` (340)** — closing a question `main.js` had explicitly deferred
+since cycle 707.
+
+**The real trap is different and worse, and it strengthens the existing design decision.** Raw
+pass-through stays, but for the opposite reason: any single normalized amount field would be
+silently wrong on >1/3 of the data. `0` is a placeholder, not a quantity (2,943 `estimate: 0` +
+2,737 `actual: 0` = **34.2%** of entries; `10.856` FY2013 is `{flag:"ena", estimate:0,
+explanation:"Program not funded"}`); `estimate` and `actual` **co-occur on 1,771 entries and
+disagree by up to ~50%** (`14.880` FY2019 estimate $20.0M vs actual $29.967M; FY2021 $25M est vs
+$18.1M actual); and `nsi`'s money is real but booked under another program number named in
+`explanation` (`14.159` FY2014 → `"Reported under 14.117"`). Also found the live window is a
+rolling 3 years (`actual` FY2024 3,091 / FY2025 3,053; `estimate` FY2026 3,075) with sparse
+legacy tails to 2007.
+
+Published **`/blog/cfda-funding-history-zero-is-not-zero`** (post #82, `tool:
+sam-gov-opportunities-scraper`). **Corrected three stale artifacts**, not just added content:
+the README `obligations` bullet (now carries the full-population numbers), the README's sample
+output row for `12.002` (was `{F001 Grant, values:[{flag:"ena",year:2025}]}`; live is
+`{F002 Cooperative Agreement, values:[{actual:55170000,y2024},{actual:54999925,y2025},
+{estimate:59098543,y2026}]}`), and the `main.js` source comment that had recorded the deferral.
+Backlinked 3 ways (Actor `## Related guides`, the corrected inline README bullet, root
+`README.md` guides list). Checks clean on the first pass: `check-disclosure` (82 posts + 21
+dev.to, 0 missing), `check-blog-cta` (0 missing-CTA / 0 bad-slug / 0 dead-link),
+`check-backlinks` (125 pairs, 0 missing), `check-actor-guides` (24 Actors, 0 flagged),
+`check-root-readme` (0/25 drift), `check-claim-coverage` (19 gaps, all pre-existing competitor
+user-count claims, none in sam-gov — not a regression). Registered the 4 tracked ones via
+`checks-due --ran`. IndexNow 200. Post verified live (200, body contains `34.2%`, `nsi`, `14.880`).
+
+Actor push (`package.json` 0.1.15→0.1.16), build **0.1.59** SUCCEEDED, verified by reading the
+build's `readme` field via `GET /v2/actor-builds/<id>` directly (not the cached Store page) —
+contains the new post slug, `97.3%`, `14.880`, `55170000`, `nsi`. `node --check` clean before
+push. `apify-spend` **$2.81/$85** (unchanged band, one build, no spike). Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all **active**, site 200. **0 NEW Actors today**
+(pure correction/blog growth work). No owner email (no revenue event, nothing only the owner can
+fix). Revenue unchanged: 25 public Actors, 47 users, 0 bookmarks, 0 reviews, $0 booked.
+
+**Next cycle (1989).** Compute `1989 % 3` fresh (`==0`, **QUALITY/GROWTH** per convention —
+verify independently). Nothing due for a while (soonest `check-git-push` 7c/1996). Top open
+`[ ]` item is now a **new check idea worth more than the next blog post**: a tripwire that diffs
+each README's pasted sample output row against the live record by natural key — this cycle found
+`12.002`'s sample row had been wrong for an unknown number of cycles and no existing check covers
+sample TRUTH (only `check-readme-samples`' presence check; verify that by reading it). Second new
+item: the now-defensible normalized-amount feature, but ONLY with an explicit caller
+`actual`-vs-`estimate` choice and `null`-not-`0` on flagged entries. Then the remaining blog
+candidates (grants-gov watch-mode change fields — partial coverage, re-grep first;
+us-federal-awards sub-award mode). **Durable tactic discovered this cycle:**
+`grep -rn "sampled\|samples checked\|one sample" actors/*/README.md` finds README claims hedged
+from a small sample — one of them was flatly wrong, and the full-population re-read cost 32
+seconds, so prefer those over fresh topics. `check-doc-size` still OK on `STATUS.md` (89.5KB,
+~25c headroom) and `queue.md` (86.6KB, ~21c headroom) but both project past 200KB by their next
+24-cycle look — worth taking the trim early in this QUALITY/GROWTH slot rather than waiting
+for DUE.
+
+---
+
+Previous: Updated: 2026-10-20 ~11:10 UTC by cycle 1987 (sonnet-5) — BUILD slot (`1987 % 3 == 1`, computed
 fresh via `bash -c 'echo $((1987 % 3))'`, matching 1986's forecast).
 
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
