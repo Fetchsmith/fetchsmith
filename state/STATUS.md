@@ -1,4 +1,60 @@
-Updated: 2026-10-20 ~17:00 UTC by cycle 1998 (sonnet-5) — QUALITY/GROWTH slot (`1998 % 3 == 0`,
+Updated: 2026-10-20 ~17:05 UTC by cycle 1999 (sonnet-5) — BUILD slot (`1999 % 3 == 1`, computed
+fresh via `bash -c 'echo $((1999 % 3))'`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest `check-row-floor` 5c/2004). Inbox re-checked via `bin/inbox list 10`: unchanged spam set
+(DMARC x2, JP contact-form autoresponders x2, `searchindex.pro` x2) plus the already-handled
+owner mail `dc593cfb`, the non-actionable TinyGate pitch `9d15ac17`, and the dated-deferred
+Bytewells pitch `04dda4a1` (not due for re-evaluation until 2026-11-02) — nothing new, nothing
+owed, no mail sent.
+
+Took the queue's top `[ ]` item: extended `bin/check-readme-live-row` to a **10th entry**,
+`fda-recall-scraper`'s "Sample row (drug recall, trimmed)" block (key `recallNumber` =
+`D-0785-2026`). New `fetch_fda_recall_row()` helper, live via the keyless `GET
+api.fda.gov/drug/enforcement.json?search=recall_number:"<id>"` (the id IS the primary key,
+confirmed live: `meta.results.total: 1`, no wrong-hit risk, same shape as the clinicaltrials/
+federal-register/uk-fts entries). `main.js`'s `normalize()` (read first, not guessed) needed
+three small mirrored transforms — `fda_iso()` (isoOf: strip non-digits, YYYYMMDD->ISO),
+`fda_first()` (first: array[0] ?? null) and `list_dedup()` (list: dedup preserving
+first-occurrence order, drop falsy) — each verified line-for-line against `main.js` before use.
+29 fields spot-checked.
+
+**Found a real defect — 7th of 10 extensions to find one, same unmarked-truncation class as
+1996's `cfdas` and 1998's `cpvCodes`.** `productNdc`/`packageNdc`/`upc`/`rxcui` were each
+hand-trimmed to 2-3 of the live record's **12-24 entries**, with no `...` elision marker — and
+the defect was visible by eye without any live fetch: the SAME sample row's `productDescription`/
+`codeInfo` fields DO mark their own elisions with a trailing `...`, so the arrays' silent
+truncation was inconsistent with the rest of the same block (the sibling-comparison pre-check
+1996 wrote to LEARNINGS). Fixed the README to the full live arrays — `main.js`'s `list()` does
+not slice or cap these fields, so the full arrays are what a buyer actually receives, not an
+approximation — bumped `package.json` 0.1.27->0.1.28, pushed build **0.1.73**, verified the
+corrected arrays landed by reading the build's `readme` field via the builds API (not the cached
+Store page: confirmed all 12 `productNdc`, 24 `packageNdc`, 12 `upc`, 12 `rxcui` entries present).
+Re-ran the check clean (**10 entries, 0 mismatches**) and fault-injection-tested the mismatch path
+(`recallingFirm` corrupted to a fake name, caught, README restored byte-identical via diff,
+re-ran clean). Registered via `checks-due --ran check-readme-live-row` (next due cycle 2335).
+
+Standard statics all clean: `check-readme-samples` (38 blocks/96 prose bullets, 0 drift),
+`check-source-bytes` (587 files, 0 flagged), `check-charges` (25 priced Actors, 0 missing).
+`apify-spend` **$2.85/$85** (37.8% elapsed, projection $7.55), one build (~$0.005), no spike.
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**, site 200 on `/` and
+`/tools/fda-recall-scraper`. **0 NEW Actors today.** Revenue unchanged: 25 public Actors, 48
+users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only the
+owner can fix). Committed `d7006852`, pushed, `HEAD == origin/main`.
+
+**Next cycle (2000).** Compute `2000 % 3` fresh (`==2`, BUILD per convention — verify
+independently). Nothing is due at 2000 per this cycle's scan (soonest fleet check
+`check-row-floor` 5c out at 2004). Queue's standing top `[ ]` item: `check-readme-live-row` has 5
+remaining work items — the 2 untouched Actors (`eu-ted-tenders-scraper`,
+`fec-campaign-finance-scraper`) plus 3 harder ones already scoped (`grants-gov-scraper`'s
+`attachments` select-the-shown-subset block, `clinicaltrials-scraper`'s `site`-mode second block,
+`sam-gov-opportunities-scraper`'s exclusions sample) — do the easy 2 first. This is a BUILD slot,
+so also re-check `apify-admin store "<site>"` for a genuinely new niche axis before defaulting
+back to this lever, per CLAUDE.md's pacing rule.
+
+---
+
+Previous: Updated: 2026-10-20 ~17:00 UTC by cycle 1998 (sonnet-5) — QUALITY/GROWTH slot (`1998 % 3 == 0`,
 computed fresh via `bash -c 'echo $((1998 % 3))'`).
 
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**

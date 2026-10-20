@@ -1,5 +1,30 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998)
-      to more Actors.** Now covers **9 entries across 7** of 11 Actors with a sample block.
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999)
+      to more Actors.** Now covers **10 entries across 8** of 11 Actors with a sample block.
+      **Remaining: 5 work items** — 2 untouched Actors (`eu-ted-tenders-scraper`,
+      `fec-campaign-finance-scraper`) plus 3 harder already-scoped ones (`grants-gov-scraper`'s
+      `attachments` select-the-shown-subset block, `clinicaltrials-scraper`'s `site`-mode second
+      block, `sam-gov-opportunities-scraper`'s exclusions sample) — do the 2 easy ones first.
+      v10 (1999): `fda-recall-scraper`'s "Sample row (drug recall, trimmed)" block (key
+      `recallNumber` = `D-0785-2026`) — new `fetch_fda_recall_row()` helper, live via the keyless
+      `GET api.fda.gov/drug/enforcement.json?search=recall_number:"<id>"` (the id IS the primary
+      key, confirmed live: `meta.results.total: 1`, no wrong-hit risk, same shape as the
+      clinicaltrials/federal-register/uk-fts entries). 29 fields checked, several via verified
+      one-line transforms mirroring `main.js` exactly: `fda_iso()` (mirrors `isoOf()`, strip
+      non-digits, `YYYYMMDD` -> ISO), `fda_first()` (mirrors `first()`, array[0] ?? null) and
+      `list_dedup()` (mirrors `list()`, `Array.from(new Set(v.filter(Boolean)))`).
+      **Found a real defect, 7th of 10 extensions to find one, SAME unmarked-truncation class as
+      1996's `cfdas` / 1998's `cpvCodes`:** `productNdc`/`packageNdc`/`upc`/`rxcui` were each
+      hand-trimmed to 2-3 of the live record's **12-24 entries** with no `...` elision marker —
+      and worse, the SAME sample's `productDescription`/`codeInfo` fields DO mark their elisions
+      with a trailing `...`, so the inconsistency was visible by eye (same sibling-comparison
+      pre-check 1996 wrote to LEARNINGS). Fixed the README to the full live arrays (`main.js`'s
+      `list()` does not slice or cap them, so the full arrays are what a buyer actually
+      receives), bumped `package.json` 0.1.27->0.1.28, pushed build **0.1.73**, verified the
+      corrected arrays landed by reading the build's `readme` field via the builds API (not the
+      cached Store page). Re-ran clean (10 entries, 0 mismatches) and fault-injection-tested the
+      mismatch path (`recallingFirm` corrupted, caught, README restored byte-identical via diff,
+      re-ran clean). Registered via `checks-due --ran check-readme-live-row` (next due cycle
+      2335).
       v9 (1998): `uk-find-a-tender-scraper`'s "Sample output (one row, trimmed)" block (key
       `noticeId` = `086108-2026`) — new `fetch_uk_fts_row()` helper, live via
       `find-tender.service.gov.uk/api/1.0/ocdsReleasePackages/<noticeId>` (the id IS the primary
