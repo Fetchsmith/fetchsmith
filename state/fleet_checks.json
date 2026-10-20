@@ -152,6 +152,12 @@
    "interval_cycles": 48,
    "last_cycle": 1972,
    "note": "cycle 1972: cycle 1972: new check. Found .git at 416MB/8173 loose objects (351.8MiB loose vs 60.7MiB in-pack) because auto-gc had been disabled since 2026-10-19 by a stale .git/gc.log. ROOT CAUSE was /dev/null clobbered into a 102-byte regular file of zsh noise -> git auto-gc reads stdin from /dev/null -> pack-objects --revs parsed it as a revision -> 'bad revision' -> gc.log. Fixed /dev/null (mknod c 1 3) and repacked: 416MB -> 90MB, 1 pack, 0 loose. Interval 48c (~1 day) because STATUS_ARCHIVE.md (7.0MB) + queue_archive.md (5.4MB) are rewritten by nearly every commit, so loose objects regrow ~300MB/day."
+  },
+  "check-readme-live-row": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 1989,
+   "note": "cycle 1989: cycle 1989: NEW check. v1 covers 1 entry (sam-gov-opportunities-scraper assistance-listings, key=programNumber), spot-checking programNumber/title/isActive/isFunded/isLatest/obligations against a live SAM.gov fetch. 0 mismatches on first run (confirms cycle 1988's README fix is correct). Sanity-tested the mismatch path separately with a deliberately wrong fake sample (title+obligations both correctly flagged MISMATCH). 336c/7d matches check-readme-samples' cadence reasoning. Extending to the other 10 Actors with sample blocks is queued as follow-up -- needs a per-Actor natural-key + live-fetch verified by hand before adding, not a bulk guess."
   }
  },
  "not_cadence": {

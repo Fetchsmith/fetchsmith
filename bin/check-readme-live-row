@@ -1,0 +1,172 @@
+#!/root/agent/venv/bin/python
+"""check-readme-live-row (added cycle 1989)
+
+Checks sample-row TRUTH, not just presence. check-readme-samples (cycle 448)
+already verifies every key in a README's "Sample output" JSON block is a field
+the Actor actually declares -- but it never asks whether the pasted VALUES are
+still correct. Cycle 1988 found sam-gov-opportunities-scraper's `12.002` sample
+row had been wrong for an unknown number of cycles (`obligations` showed a
+flag-only placeholder; the live record has real dollar figures) and no existing
+check would have caught it, because buyers read the sample row to decide
+whether to pay -- a wrong one is a worse bug than a missing field.
+
+DESIGN, DELIBERATELY NARROW: this does NOT reimplement each Actor's field-
+mapping logic (main.js files are monoliths with no exported mapping function,
+and duplicating that logic here would just be a second place for it to drift).
+Instead each entry below names a small set of SPOT-CHECK fields whose live
+JSON path is either identical to the README's key name or a trivial one-level
+rename (e.g. raw `financial.obligations` -> README's top-level `obligations`)
+-- verified by hand against a live response before being added, not guessed.
+Fields that genuinely need the Actor's own transform (nested arrays reshaped,
+renamed sub-keys, computed booleans) are deliberately left UNCHECKED here
+rather than approximated; see each entry's `skip_note`.
+
+One live GET per entry, no Apify spend, no auth. ADDING AN ACTOR: find its
+sample block's natural key, confirm live via curl that the raw API's field
+names at the chosen paths literally match (or trivially rename to) the
+README's, then add an entry -- do not add a field whose raw shape differs
+structurally from the README without a `transform` lambda that is itself
+verified live.
+
+Exit 1 = any spot-check field's live value differs from the README's.
+--verbose prints every field checked, matched or not.
+"""
+import json
+import re
+import sys
+import urllib.parse
+import urllib.request
+
+ACTORS = "/root/agent/actors"
+VERBOSE = "--verbose" in sys.argv
+HEADING_RE = re.compile(r"^#{1,6}\s+(.*)$")
+FENCE_RE = re.compile(r"^```(\w*)\s*$")
+
+
+def fetch_json(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return json.load(r)
+
+
+def get_path(d, path):
+    """Dotted path into nested dicts/lists, e.g. 'financial.obligations'."""
+    cur = d
+    for part in path.split("."):
+        if isinstance(cur, list):
+            cur = cur[0] if cur else None
+        if not isinstance(cur, dict) or part not in cur:
+            return None
+        cur = cur[part]
+    return cur
+
+
+def sample_block(readme_path, heading_substr):
+    """First ```json fence under a heading containing heading_substr, parsed."""
+    heading = ""
+    lines = readme_path.read_text() if hasattr(readme_path, "read_text") else open(readme_path).read()
+    lines = lines.splitlines()
+    i = 0
+    while i < len(lines):
+        h = HEADING_RE.match(lines[i])
+        if h:
+            heading = h.group(1).strip()
+            i += 1
+            continue
+        f = FENCE_RE.match(lines[i])
+        if f and f.group(1) == "json" and heading_substr.lower() in heading.lower():
+            start = i + 1
+            j = start
+            while j < len(lines) and not lines[j].startswith("```"):
+                j += 1
+            try:
+                return json.loads("\n".join(lines[start:j]))
+            except Exception:
+                return None
+        if f:
+            start = i + 1
+            j = start
+            while j < len(lines) and not lines[j].startswith("```"):
+                j += 1
+            i = j + 1
+            continue
+        i += 1
+    return None
+
+
+# Each entry: fetch the live record by natural key, then spot-check a few
+# fields whose README name is either identical to, or a verified trivial
+# rename of, the raw API path.
+ENTRIES = [
+    {
+        "slug": "sam-gov-opportunities-scraper",
+        "heading": "Sample assistance-listings output row",
+        "key_field": "programNumber",
+        # Verified live cycle 1989: index=cfda, q=<exact program number> ->
+        # first hit is the matching program (same q-semantics cycle 1985
+        # documented for wage-determinations: an exact full-token match wins
+        # even though a partial query can OR-flip across tokens).
+        "fetch": lambda key: fetch_json(
+            "https://sam.gov/api/prod/sgs/v1/search/"
+            f"?index=cfda&responseType=json&page=0&size=1&q={urllib.parse.quote(key)}"
+        )["_embedded"]["results"][0],
+        "fields": {
+            "programNumber": "programNumber",
+            "title": "title",
+            "isActive": "isActive",
+            "isFunded": "isFunded",
+            "isLatest": "isLatest",
+            # Raw nests this under `financial`; README flattens it to
+            # top-level `obligations` with the identical sub-shape (verified
+            # cycle 1989 by diffing a live fetch against the corrected
+            # cycle-1988 README row byte-for-byte).
+            "obligations": "financial.obligations",
+        },
+        "skip_note": (
+            "assistanceTypes, organizationHierarchy, contacts, eligibility, "
+            "historicalIndexCount are all reshaped by the Actor's own mapping "
+            "(nested hierarchy -> flat pairs, org list -> department/agency "
+            "strings, etc.) and are intentionally NOT spot-checked here -- "
+            "doing so would require reimplementing that transform."
+        ),
+    },
+]
+
+def main():
+    failures = []
+    checked_entries = 0
+    for entry in ENTRIES:
+        readme = f"{ACTORS}/{entry['slug']}/README.md"
+        sample = sample_block(readme, entry["heading"])
+        if sample is None:
+            failures.append(f"{entry['slug']}: could not find/parse sample block under heading {entry['heading']!r}")
+            continue
+        key_value = sample.get(entry["key_field"])
+        if not key_value:
+            failures.append(f"{entry['slug']}: sample block has no {entry['key_field']!r}")
+            continue
+        try:
+            live = entry["fetch"](key_value)
+        except Exception as e:
+            failures.append(f"{entry['slug']}: live fetch for {entry['key_field']}={key_value!r} failed: {e}")
+            continue
+        checked_entries += 1
+        for readme_field, live_path in entry["fields"].items():
+            readme_val = sample.get(readme_field)
+            live_val = get_path(live, live_path)
+            if readme_val != live_val:
+                failures.append(
+                    f"{entry['slug']}: field {readme_field!r} (key {entry['key_field']}={key_value!r}) "
+                    f"README={readme_val!r} LIVE={live_val!r}"
+                )
+            elif VERBOSE:
+                print(f"OK {entry['slug']}.{readme_field} = {readme_val!r}")
+
+    print(f"check-readme-live-row: {checked_entries} entr{'y' if checked_entries == 1 else 'ies'} checked, {len(failures)} mismatch(es)")
+    for f in failures:
+        print(f"MISMATCH: {f}")
+    sys.exit(1 if failures else 0)
+
+
+if __name__ == "__main__":
+    main()
