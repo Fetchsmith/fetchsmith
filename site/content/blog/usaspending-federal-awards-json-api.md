@@ -102,6 +102,8 @@ One more live surprise, unrelated to the type-grouping rules: `time_period` filt
 
 USAspending is one of eight key-free government APIs we build against, and its per-award-type field mapping is one of several ways these APIs return 200 for a request you got wrong — the cross-API comparison is in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
 
+This Actor also ships a published, non-AI `opportunityScore` field for ranking which awards are worth pursuing — see [A federal-contracts scraper's "AI opportunity score" is a spreadsheet formula, confirmed live](/blog/federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model) for the full formula and why a rival's identical feature calling itself "AI" doesn't hold up.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every JSON snippet above comes from a live request made while writing this post, not from documentation.*

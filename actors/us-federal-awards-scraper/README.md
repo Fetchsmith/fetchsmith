@@ -153,6 +153,8 @@ Set `includeOpportunityScore` (prime mode only) to add a 0-100 `opportunityScore
 
 Off by default, so it never changes the default row shape. Prime mode only — sub-award records report no period-of-performance end date to score urgency from, so setting the flag in `awardLevel: "subaward"` mode is a no-op (logged, not silently ignored), same pattern as `expiringWithinDays`.
 
+A rival USAspending Actor markets this same idea as "AI opportunity analysis" — it isn't, it's a weighted formula same as this one, just not published. See [A federal-contracts scraper's "AI opportunity score" is a spreadsheet formula, confirmed live](https://fetchsmith.com/blog/federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model) for the live comparison and the exact weights above spelled out.
+
 ## Pricing
 
 Pay per result: **$0.004 per award on the free plan, dropping to $0.0025 on Gold and above** (Bronze $0.0035, Silver $0.003), **no Actor-start fee**. You only pay for awards actually written to the dataset.
@@ -260,5 +262,6 @@ Engineering write-ups behind this Actor:
 - [We nearly charged our own buyers twice for rows they'd already paid for](https://fetchsmith.com/blog/watch-baseline-eviction-rebilling) — a capped watch-mode baseline can silently evict old-but-current ids on a high-volume run, re-delivering (and re-billing) rows already paid for.
 - [A rival's price was nested two dicts deep — and the obvious min() read 20 competitors as free](https://fetchsmith.com/blog/apify-tiered-pricing-nested-dict-reads-as-free) — the Apify Store API pricing-parser bug behind this Actor's own competitor-pricing sections.
 - [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
+- [A federal-contracts scraper's "AI opportunity score" is a spreadsheet formula, confirmed live — ours just says so](https://fetchsmith.com/blog/federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model) — the full `opportunityScore` formula above, and why a rival's identical feature calling itself "AI" doesn't hold up.
 
 More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools) — 19 HTTP-only Actors for public data sources, no browser required.

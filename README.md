@@ -106,6 +106,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - ["full-time" is not a filter: employmentType across ten ATS job-board APIs](https://fetchsmith.com/blog/ats-employment-type-is-not-one-vocabulary)
 - [Location is not one field either: normalizing ten ATS job-board APIs down to city/region/country](https://fetchsmith.com/blog/ats-location-field-is-not-one-shape)
 - [A court that publishes one sparse opinion field tells you nothing about the others](https://fetchsmith.com/blog/court-opinion-metadata-fields-dont-travel-together)
+- [A federal-contracts scraper's "AI opportunity score" is a spreadsheet formula, confirmed live — ours just says so](https://fetchsmith.com/blog/federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model)
 
 ## Layout
 
