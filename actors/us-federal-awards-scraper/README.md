@@ -90,11 +90,12 @@ With `awardLevel: "subaward"` the same six categories, the same date window and 
 
 `primeAwardGeneratedInternalId` is the **same value** as a prime row's `generatedInternalId`, so the two modes join cleanly on it (or on `primeAwardUrl` = `awardUrl`).
 
-Three things to know:
+Four things to know:
 
 - **Filters retarget to the sub-recipient.** `recipients`, `recipientStates` and `recipientTypes` match the sub-awardee, not the prime contractor; `agencies`/`fundingAgencies`, `keywords`, `placeOfPerformanceStates`, `naicsCodes`, `pscCodes`, `defCodes` and the amount bounds work as usual (matching the **prime** award's NAICS/PSC/DEFC, since sub-awards carry none of their own). `awardIds` matches the **prime** award ID and returns every sub-award filed under it — the fastest way to see who a given prime contractor subcontracted to. None of NAICS/PSC/DEFC appear as their own output field on a sub-award row either (see the field table above) — they only narrow which sub-awards come back, matched against the prime.
 - **`sortBy: lastModifiedDate` falls back to the sub-award date**, because sub-award records carry no last-modified timestamp.
 - **Coverage is narrower than prime awards.** Only prime recipients required to file FSRS reports have sub-awards, so small awards, most loans and most direct payments return nothing here. An empty sub-award result does not mean the prime award doesn't exist — re-run with `awardLevel: "prime"` to confirm.
+- **`subAwardId` is reused across genuinely different filings — it is not a unique key on its own.** USAspending's FSRS numbering re-files a later contract modification under the same `Sub-Award ID` (live-verified: DOE prime `89233018CNR000004` has one id covering both a $96.9M base filing and a $1.15B modification nine days apart), and — rarer, confirmed on two unrelated primes across DOE and HHS — occasionally reuses an id/date/amount under a *different* sub-awardee name. This Actor treats `subAwardId` + `subAwardDate` + `subAwardAmount` (rounded to the dollar, to absorb FSRS's own sub-cent resubmission noise) + `subRecipientName` as the real row identity, so amendments and mismatched-name filings are each delivered as their own row instead of one silently dropping the other. In the mismatched-name case both rows are kept deliberately — that's an upstream FSRS data quality issue, not something this Actor corrects by picking a side.
 
 ### Sample row
 

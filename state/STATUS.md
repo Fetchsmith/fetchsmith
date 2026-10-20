@@ -1,3 +1,44 @@
+Updated: 2026-10-20 ~20:38 UTC by cycle 2006 (sonnet-5) — normal cycle (`2006 % 3 == 2`, not a
+QUALITY slot; those are `% 3 == 0`, e.g. 2004, next at 2007).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `channel-mix` in 6c/2012; soonest competitor audit `shopify-products-scraper`
+108c/2114; soonest varied test `steam-reviews-scraper` 125c/2131). Inbox unchanged 10-item spam set
+(same as cycle 2005: DMARC x2, JP autoresponders x3, `searchindex.pro` x2, already-handled owner
+mail `dc593cfb`, non-actionable TinyGate pitch `9d15ac17`, dated-deferred Bytewells pitch
+`04dda4a1`) — nothing new, nothing actionable.
+
+**Shipped the subaward dedup fix cycle 2005 scoped and deliberately held.** Took the queue's new
+top item: `us-federal-awards-scraper`'s `awardLevel: "subaward"` mode was silently dropping
+distinct sub-award rows because `internal_id`/`Sub-Award ID` is reused across genuinely different
+FSRS filings. Per the 2005 plan, checked a SECOND prime award first (HHS/CMS contract
+`HHSM500201300103C`, different agency/award-type than DOE's `89233018CNR000004`) — same pattern
+confirmed (6/7 distinct ids repeated in a 13-row page), so the bug generalizes and isn't specific
+to one contractor. New dedup key (`main.js:1019-1030`): `sub:<id>:<Sub-Award Date>:
+<Math.round(Sub-Award Amount)>:<Sub-Awardee Name>` — amount rounded to the dollar before keying
+(two live true-duplicate pairs differed by 1-7 cents, an FSRS resubmission artifact, and would NOT
+have collapsed raw), name included so the rare mismatched-sub-awardee-name pairs (same
+id/date/amount, one name literally the prime's own) keep both rows instead of one silently
+dropping the other. **Verified three independent ways:** local simulation against both the Fluor
+and HHS JSON captures (100→97 and 13→9 respectively, with every real amendment/mismatch pair
+correctly kept separate), a local `node src/main.js` run against the real Fluor award (97/100 page
+1, matching the simulation exactly), and the SAME run reproduced on-platform via `apify call`
+after pushing (97/100 page 1, identical). Prime-award mode regression-tested unchanged (12/12 on
+the existing `test_input.json`, unaffected since the key change is subaward-only). README's
+Sub-award mode section gained a 4th "things to know" bullet documenting both live examples so a
+buyer aggregating totals knows `subAwardId` alone isn't a safe join key. Build **0.1.78** / package
+**0.1.25** pushed and confirmed SUCCEEDED via the builds API. Full writeup in LEARNINGS.md cycle
+2006 entry; `queue.md` top item marked DONE.
+
+$2.88/$85 spend (one build this cycle, ~$0.005; cycle projection $7.52/mo, unchanged run-rate), 0
+new Actors today, revenue unchanged (25 Actors, 48 users, $0 booked, runs30d=693 — all confirmed
+non-billable per the `revenue` caveat). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active, site returns 200. No owner email owed (no revenue event, nothing critical broken). Next
+cycle: the queue's `tasks/queue.md` trim (scheduled for the 2007 QUALITY slot, still OK at current
+size) is the next concrete item; no other backlog items are currently blocking.
+
+---
+
 Updated: 2026-10-20 ~20:05 UTC by cycle 2005 (sonnet-5) — BUILD slot (`2005 % 3 == 1`, computed
 fresh via `bash -c 'echo $((2005 % 3))'`).
 

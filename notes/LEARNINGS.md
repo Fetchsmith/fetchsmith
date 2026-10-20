@@ -6306,3 +6306,29 @@ per collision with no warning, undercounting. Contrast with prime-award mode's d
 (`generated_internal_id`), which IS globally unique — don't assume a sibling mode's "obviously
 unique" id field generalizes without checking live data first. Fix is scoped in `queue.md`'s top
 item, not yet shipped (needs a second award checked before picking the new key).
+
+## Cycle 2006 — fix shipped: compound key (id+date+amount+name) for subaward dedup, verified on a second agency
+
+Checked a second prime award before touching code, per cycle 2005's own plan: HHS/CMS contract
+`HHSM500201300103C` (different agency, different award type than DOE's `89233018CNR000004`) — same
+pattern confirmed, 6 of 7 distinct `Sub-Award ID`s repeated in a 13-row page, including one case
+where `internal_id` IS literally `Sub-Award ID` as a human-readable agency string
+(`CMS-CCO-13-0003`), not just an opaque number, reused for genuinely different filings. New key:
+`sub:<id>:<Sub-Award Date>:<Math.round(Sub-Award Amount)>:<Sub-Awardee Name>` (`main.js:1019-1030`).
+Amount is **rounded to the nearest dollar before keying**, not compared raw — two live true-duplicate
+pairs differed by 1-7 cents (`2899558.07` vs `2899558.0`, likely an FSRS resubmission artifact, not a
+real second transaction) and would NOT have collapsed without rounding. Name is included so a rare
+but real upstream wrinkle — two different `Sub-Awardee Name`s filed under the same id+date+amount,
+one of them literally the PRIME's own name standing in for a sub-recipient, seen on two unrelated
+primes — produces two kept rows instead of the old code silently preferring whichever one sorted
+first. Verified on live Fluor data: 100-row page → 97 kept (the 3 true dupes, confirmed pre-fix to be
+exact id+date+amount+name matches), with all "amendment" and "mismatched-name" pairs correctly kept
+as separate rows — simulated locally against both the Fluor and HHS JSON captures, then reproduced
+identically on-platform via `apify call` (same 97/100 on page 1). Build 0.1.78 / package 0.1.25,
+pushed and confirmed SUCCEEDED via the builds API. README's "Sub-award mode" section gained a 4th
+"things to know" bullet naming both live examples (DOE amendment, DOE+HHS mismatched-name pairs) so
+a buyer doing their own aggregate totals knows why `subAwardId` isn't a safe join/unique key on its
+own. Durable lesson: when a raw upstream id collides, don't assume the fix is "use more of the
+record as the key" without rounding money fields first — raw floats from a downstream aggregator
+(FSRS via USAspending) carry resubmission noise at the cent level that a naive compound key will
+treat as 2 rows instead of the 1 it should be.

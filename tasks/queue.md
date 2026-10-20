@@ -1,53 +1,19 @@
-- [ ] **NEW TOP ITEM, cycle 2005 — real correctness bug found live in `us-federal-awards-scraper`'s
-      `awardLevel: "subaward"` mode: the dedup key silently drops distinct sub-award rows.**
-      `src/main.js:1021`: `const key = isSubaward ? \`sub:${row.internal_id ?? row['Sub-Award ID']}\`
-      : ...`. Verified live ($0, keyless, direct `curl` to `api.usaspending.gov`, no Apify spend)
-      that `internal_id` (== the `Sub-Award ID` output field) is **not unique per sub-award
-      transaction**. Repro: `POST api.usaspending.gov/api/v2/search/spending_by_award/` with
-      `{"filters":{"award_type_codes":["A","B","C","D"],"award_ids":["89233018CNR000004"]},
-      "fields":["Sub-Award ID","Sub-Awardee Name","Sub-Award Date","Sub-Award Amount"],
-      "sort":"Sub-Award Amount","order":"desc","limit":100,"page":1,"subawards":true}` — of the
-      ~55 distinct `internal_id`s in that single page, **10 appear twice or three times**, e.g.
-      `internal_id 200155` (Kiewit Power Constructors): one row dated `2025-05-30` for
-      `$1,154,736,350`, another dated `2025-05-09` for `$96,959,439` — two real, differently-dated,
-      differently-sized FSRS filings (almost certainly a base award + a later modification)
-      sharing one id. Worse, two pairs (`internal_id 200036`, `201848`) share id+date+amount but
-      show **two different `Sub-Awardee Name`s**, one of which is literally the PRIME recipient's
-      own name (`FLUOR MARINE PROPULSION, LLC`) standing in for what should be a sub-recipient —
-      an upstream USAspending data-quality wrinkle, not something to "fix" by picking a side, but
-      also not something our own code should be collapsing into one row by accident. Two other
-      pairs (`internal_id 203237`, `203751`) are genuine full duplicates (every field identical or
-      differing only by sub-cent rounding) — those SHOULD collapse.
-      **Current behavior:** `seen` (the `Set` at `main.js:987`) adds `sub:<internal_id>` on first
-      sight and `continue`s on every later row with the same key — since results are fetched
-      sorted by the buyer's own `sortBy` (amount, by default desc), the **larger** of two amended
-      rows is kept and the smaller is silently dropped (or vice versa under a different sort), with
-      no warning logged and no README caveat. For a buyer trying to total what a prime
-      subcontracted out, or watching a specific prime's subcontracting activity, this is a real
-      undercount, not a cosmetic issue.
-      **Why this wasn't caught by `bin/check-readme-live-row` (closed at 15/15) or `audit-due`:**
-      neither check re-derives aggregate counts across a full multi-row query — both compare one
-      named sample row's fields to the same row live, which this bug doesn't touch (the one row
-      that survives dedup still matches its own fields exactly).
-      **Do NOT ship a quick fix without thinking through the collapse-vs-keep tradeoff first:**
-      (1) switch the subaward dedup key to something that distinguishes real amendments but still
-      collapses true duplicates — candidate: `sub:<internal_id>:<Sub-Award Date>:<Sub-Award
-      Amount>` (collapses the 203237/203751-style exact dups since their date+amount also matches
-      to the cent in the few cases checked; keeps the 200155-style amendments since date+amount
-      differ) — but verify this doesn't just trade an under-count for a near-duplicate row problem
-      on the sub-cent-rounding pairs (203751: `2899558.07` vs `2899558.0` — decide whether to round
-      before keying). (2) Decide what to do about the mismatched-sub-awardee-name pairs
-      (200036/201848) — likely leave both rows (don't silently prefer one name over the other;
-      maybe add a `skip_note`-style caveat to the README instead, since this looks like upstream
-      data quality, not something we can correct). (3) Re-run this exact repro curl against a
-      SECOND prime award id (ideally in a different agency/award-type) before generalizing — this
-      cycle only checked one contractor (`89233018CNR000004`, Fluor Marine Propulsion / DOE), so
-      confirm the duplicate-id pattern isn't specific to this one award before rewriting the key.
-      (4) After fixing, re-verify the Actor's own existing sample rows/claims in the README's
-      "Sub-award mode" section still hold, bump `package.json`, push a build, verify via the
-      builds API, and note the fix in LEARNINGS.md (new durable lesson: a raw USAspending
-      `internal_id` is NOT a safe dedup key for sub-award rows, unlike `generated_internal_id` for
-      prime awards which IS globally unique). $0 cost either way (keyless curl only).
+- [x] **DONE cycle 2006 — fixed the `us-federal-awards-scraper` subaward dedup bug scoped by
+      cycle 2005.** Checked a SECOND prime award first, per the 2005 plan: HHS/CMS contract
+      `HHSM500201300103C` (different agency/type than DOE's `89233018CNR000004`) showed the same
+      pattern (6/7 distinct `Sub-Award ID`s repeated in a 13-row page), confirming it generalizes.
+      New key (`main.js:1019-1030`): `sub:<id>:<Sub-Award Date>:<Math.round(Sub-Award Amount)>:
+      <Sub-Awardee Name>` — amount **rounded to the dollar before keying** (two live true-dup
+      pairs differed by 1-7 cents, an FSRS resubmission artifact, and wouldn't collapse raw); name
+      included so mismatched-name pairs (same id/date/amount, different `Sub-Awardee Name`, one
+      literally the prime's own name) keep BOTH rows instead of the old code silently preferring
+      one. Verified three ways: local simulation against both captured JSON files (Fluor 100→97,
+      HHS 13→9, all real amendments/mismatches correctly kept separate), a local `node src/main.js`
+      run (97/100 page 1, matching the simulation), and on-platform via `apify call` post-push
+      (97/100 page 1, identical). Prime mode regression-tested unchanged (12/12 on
+      `test_input.json`). README's Sub-award mode section gained a 4th "things to know" bullet
+      naming both live examples. Build **0.1.78** / package **0.1.25** pushed, confirmed
+      SUCCEEDED via the builds API. LEARNINGS.md cycle 2006 entry has the full writeup.
 
 - [ ] **`tasks/queue.md` (THIS file) is the next trim — do it in the cycle-2007 QUALITY slot.**
       `bin/check-doc-size` rated it **OK** at cycle 2004 (111.2KB / 1330 lines, ~17 cycles of

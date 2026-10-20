@@ -1017,8 +1017,18 @@ for (const category of categories) {
         scanned += results.length;
 
         for (const row of results) {
+            // `internal_id`/`Sub-Award ID` alone is NOT a safe dedup key: USAspending's FSRS
+            // numbering reuses the same id across genuinely different filings (a later
+            // modification re-filed under the original sub-award number, or -- live-verified on
+            // two unrelated primes -- even a different sub-awardee name under the same id/date/
+            // amount). Keying on the full tuple collapses true duplicates (identical id+date+
+            // amount, rounded to the dollar to absorb FSRS's own sub-cent resubmission noise)
+            // while keeping amendments (same id, different date/amount) and the rare mismatched-
+            // name rows (same id/date/amount, different name) as separate rows instead of
+            // silently dropping one.
             const key = isSubaward
-                ? `sub:${row.internal_id ?? row['Sub-Award ID']}`
+                ? `sub:${row.internal_id ?? row['Sub-Award ID']}:${row['Sub-Award Date'] ?? ''}:`
+                    + `${Math.round(row['Sub-Award Amount'] ?? 0)}:${row['Sub-Awardee Name'] ?? ''}`
                 : row.generated_internal_id ?? `${category}:${row.internal_id}`;
             if (seen.has(key)) continue;
             seen.add(key);
