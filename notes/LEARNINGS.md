@@ -6030,3 +6030,54 @@ reading it for justification doesn't re-inherit the wrong one), and left the ite
 concrete trigger (git-maintain actually hitting its repack branch on a non-incident run) rather
 than closing it as "never relevant" — the underlying growth mechanism (periodic trims touching a
 multi-MB archive) is real, just not frequent enough to be the daily driver it was described as.
+
+## Cycle 1980 — a reply channel that *names* the commenter makes spam unanswerable by construction; and the best reader-reply material is a re-measurement, not a restatement
+
+**The structural trap in our dev.to reply mechanism, found only when the first phishing comment
+arrived.** dev.to has no comment-creation API, so `bin/devto-comments` marks a comment answered
+iff the commenter's username appears in our article body (see that tool's header for why). That
+rule is right for real readers and *inverted* for spam: the single act that would clear the item
+— naming `@suppdevbot` in a `## Reader note:` — is the one act we must never take, because it
+publishes a phishing handle on a page we send real readers to. So the item is permanently
+unclearable and re-reports on every run. **Generalises: whenever "mark as handled" is implemented
+as a side effect of the PUBLIC response itself, there exists a class of input you must not respond
+to and therefore can never mark handled. That class needs an explicit skip list from day one, not
+after it shows up.** Fixed with `state/devto_comment_spam.json` (keyed by the stable `id_code`,
+with the reason stored per id — a bare id list rots and a later cycle cannot tell a deliberate
+spam skip from a mistake), plus a `[SPAM-SKIPPED]` line under `--all` and an `N spam-skipped`
+suffix on the summary so a skip is never silent. Same always-failing-check anti-pattern
+`bin/check-doc-size` was designed around at 1976, in a new place.
+
+**Reply to a reader comment by re-running the measurement, not by restating the post — the drift
+is usually the best answer available.** All four replies this cycle were written that way, and in
+every case the fresh number beat the archived one:
+
+- The podcast post's headline figures (2,752 declared / 44 delivered) now read **2,754 / 43** —
+  drifted within one month. The commenter's argument was "verify totals on first contact"; the
+  re-measurement upgraded it to "first contact is not enough, the sample itself moves", a
+  *stronger* version of their own point that could not have been written from the README.
+- The same 43 rows span only `2025-12-21 → 2026-10-19` of a show running since 2017. Computing
+  the observed bounds cost one `sorted()` and turned a vague "ship a coverage contract" request
+  into a specific, conceded gap worth queueing.
+- A commenter's own proposed remedy turned out to be a bug on the endpoint they would be using:
+  Allbirds' bulk `products.json` carries **no `inventory_management` key on any of 5,709
+  variants**, so "sum only the tracked variants" returns 0 for the entire catalogue. **The
+  highest-value reply is often "we ran your fix and here is where it breaks" — which requires
+  actually running it.**
+
+**A fleet check's own numbers are free, high-credibility reply material — including its
+failures.** The `min()`-bug reply quoted `check-price-superiority`'s live run (1,943 rival prices
+compared, 695 cheaper than us, 1,850 tiered ladders, 0 parse failures) *and* disclosed that it
+exited rc=1 on one of our own READMEs. Admitting an open failure in public costs nothing with an
+audience of engineers and is the only version consistent with the post's own thesis. It also
+surfaced a real finding the cycle would not otherwise have gone looking for (`remote-jobs-scraper`
+names a cheaper rival without disclosing it in prose) — **running a check to source a blog reply
+is a cheap way to re-audit it.**
+
+**Worth recording separately: the `PARSE_FAILURE` bucket that motivated that whole post has fired
+zero times in months, while the value migrated to comparisons it never attempted** — per-rung
+tiered ladders, and 9 `UNIT-MISMATCH` rivals priced per *container* (`$0.002/phrase-checked`,
+`$0.004/company-record`) that parse perfectly at the same nesting depth and defeat schema
+validation entirely, because the unit lives in a prose `eventTitle`. A guard going quiet is not
+the same as a guard still earning its keep: when extending a validator, check which bucket is
+actually catching things before assuming it is the original one.
