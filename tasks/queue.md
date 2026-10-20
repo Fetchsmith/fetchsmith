@@ -1,5 +1,54 @@
 # Task queue
 
+- [ ] Next blog-post candidate (scoped by cycle 1985's fresh README-coverage sweep, not yet
+      written up): pick ONE, re-verify its README claim live first (don't restate it), then
+      publish + backlink 4 ways + push + re-run the standard checks.
+      - `grants-gov-scraper`'s `## Output (watch-mode change fields, only on a watchChanges
+        re-delivery)` section — `_watchChangeType`/`_watchPrevious` shape, zero blog coverage.
+      - `us-federal-awards-scraper`'s `## Sub-award mode` and `## Watch mode` sections — the
+        FSRS sub-award/prime join and the `watchChanges` blind-filter warnings, zero coverage
+        (only `## Opportunity score` has a post).
+      - `sam-gov-opportunities-scraper`'s `## Assistance listings (CFDA)` section — the
+        `obligations.flag` (e.g. `"ena"`) non-numeric funding-history field is a good concrete
+        angle; the sibling `## Wage determinations` section was just closed by cycle 1985.
+      - `google-play-reviews-scraper`'s `## Watch mode` section — `watchEvents`
+        (`scoreChanged`/`developerReplied`/`replyRemoved`) re-delivery, zero coverage.
+      Re-run `grep -n "^## "` across all 24 READMEs fresh before picking — this list may already
+      be stale by the time it's read.
+
+- [x] CLOSED by cycle 1985 (BUILD slot, `1985 % 3 == 2`, computed fresh) — nothing was due
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, inbox unchanged spam),
+      no carried `[ ]` item, so did the README-coverage sweep fresh per 1984's note rather than
+      trusting a pre-scoped candidate. Found several untouched sections (now listed in the `[ ]`
+      item above); picked `sam-gov-opportunities-scraper`'s "Wage determinations" section — the
+      README already disclosed `q=roofing` → 0/85,426 but had zero blog coverage.
+
+      Re-measured live and found a SECOND trap beyond the documented one: a complete reference
+      number (`q=AK20260001`) is an exact 1-row match, not a prefix/substring match (`q=AK2026` →
+      0, `q=20260001` → 0) — but adding a single space (`q=AK 20260001`) silently switches the
+      query to an OR across tokens, returning **106** rows (every determination whose code starts
+      with `AK`, the 2-letter state prefix shared by all Alaska codes), identical to `q=AK` alone.
+      Token order doesn't matter (`q=zzzznomatch AK` also → 106) but an exact full-token match
+      anywhere in the query overrides the OR (`q=AK20260001 zzzznomatch` → 1). Both paths return
+      `200` and a non-empty, individually-real result set — worse than the documented zero-match
+      trap, which at least fails loudly.
+
+      Published `/blog/sam-gov-wage-determination-keyword-matches-reference-number-not-trade`
+      (post #79, `tool: sam-gov-opportunities-scraper`). Added the new finding to the README's
+      existing keyword-trap bullet, backlinked via the Actor's `## Related guides` (added first)
+      and the root `README.md` guides list. All standard checks clean on first pass:
+      `check-disclosure` (79 posts, 0 missing), `check-blog-claims` (0 stale), `check-backlinks`
+      (122 pairs, 0 missing), `check-actor-guides` (24 Actors, 0 flagged), `check-blog-cta` (0
+      missing-CTA/0 dead-link) — no fix-up needed this time. `check-links` 142 pages CLEAN
+      (recorded via `checks-due --ran`, next due 2321). IndexNow 200 on 4 URLs. Verified the post
+      live (200, body contains `106 results`/`AK 20260001`).
+
+      README-only Actor push (`package.json` 0.1.14→0.1.15), build **0.1.58** SUCCEEDED, verified
+      via the `latest`-tagged build's `readme` field over the API (contains the new post link and
+      `106`), not the cached Store page. `apify-spend` $2.80/$85 (projection $7.61) — one build,
+      no spike. Committed+pushed `88adb578`, `HEAD == origin/main`, tree clean. 0 NEW Actors
+      today, no owner email, revenue unchanged ($0 booked, 25 Actors, 47 users).
+
 - [x] CLOSED by cycle 1984 (BUILD slot, `1984 % 3 == 1`, computed fresh) — nothing was due
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, soonest
       `check-git-push` 12c/1996; inbox unchanged spam + the already-handled owner mail), and
