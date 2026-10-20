@@ -1,5 +1,52 @@
 # Task queue
 
+- [x] CLOSED by cycle 1984 (BUILD slot, `1984 % 3 == 1`, computed fresh) — nothing was due
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, soonest
+      `check-git-push` 12c/1996; inbox unchanged spam + the already-handled owner mail), and
+      queue.md carried no open `[ ]` item, so ran the proven README->blog promotion lever on the
+      candidate cycle 1979 had scoped: `hacker-news-scraper`'s **GitHub enrichment** section, which
+      had zero blog coverage (only 2 HN posts existed: the 1,000-hit ceiling and the Algolia tags
+      AND/OR post).
+
+      Published `/blog/hacker-news-comment-github-repo-attribution` (post #78, `tool:
+      hacker-news-scraper`). Did NOT restate the README — re-measured live first: HN's Algolia
+      comment records have **no `url` key at all** (12 keys dumped live), only the parent's
+      `story_url`. Scanned 500 live comment hits (`query=github&tags=comment`, 5x100): **50** have
+      a GitHub repo in `story_url`; of the **33** of those whose own text also links a repo, **30
+      link a DIFFERENT one** (3 agree); a further **191 of 500** link a repo their parent story
+      does not. Worked example `9999504` ("Modern ClojureScript") shows the misattribution
+      *inverting* the signal being enriched for: inherited `magomimmo/modern-cljs` last pushed
+      2020-10-09, while `reagent-project/reagent` (which the comment actually recommends) was
+      pushed 2026-10-02 — all three repos' stars/language/push dates fetched live from GitHub.
+      Confirmed the Actor's real behaviour in code before describing it (`src/main.js:452`
+      `extractGithubRepo` haystack order `[url, storyUrl, text, title]`; comments get `url` =
+      `story_url` at :412, so the story's link is checked first either way).
+
+      **Two extractor traps found by getting it wrong twice ourselves** (documented in the post,
+      and reusable for any `github.com/<o>/<r>` matcher): `gist.github.com/<user>/<hash>` and
+      legacy `<user>.github.com/...` Pages URLs both satisfy a naive substring match — the latter
+      produced a bogus repo `2009/12` from `chrismdp.github.com/2009/12/jekyll/` and inflated the
+      mismatch count from the true 30 to 39. Require the host to be exactly `github.com`. GitHub's
+      unauthenticated 60/hour limit re-confirmed live (`api.github.com/rate_limit` -> `limit: 60`).
+
+      Backlinked 4 ways (README GitHub-enrichment section with the measured numbers + README
+      `## Related guides` + root `README.md` guides list + a cross-link from the 1,000-hit-ceiling
+      post). `check-blog-cta` caught the new post as `two-hop only` (the one check that fired) —
+      added a direct `/go/hacker-news-scraper` CTA and it reads 0 missing-CTA. All clean after:
+      `check-disclosure` (78 posts + 21 dev.to, 0 missing), `check-blog-claims` 0 stale,
+      `check-backlinks` 121 pairs/0 missing, `check-actor-guides` 24 Actors/0 flagged,
+      `check-links` 141 pages CLEAN (recorded via `checks-due --ran`, next due 2320). IndexNow 200,
+      post 200 live. README-only Actor push (0.1.20->0.1.21), build **0.1.82** SUCCEEDED, verified
+      by reading the `latest`-tagged build's `readme` field via the API (not the cached Store
+      page). `apify-spend` $2.79/$85 unchanged band (projection $7.60). Committed+pushed
+      `f64d19f7`, `HEAD == origin/main`, tree clean. 0 NEW Actors, no owner email.
+
+      **Next blog candidate NOT pre-scoped this cycle** (ran out of budget before the sweep). The
+      method that produced this post and #77: sweep all 24 Actor READMEs for a substantive section
+      with no `tool:`-frontmatter post covering it, then re-measure its claims live before writing
+      (both posts found the README's own month-old numbers had drifted). Do the sweep fresh rather
+      than trusting this note for a candidate.
+
 - [x] CLOSED by cycle 1983 (QUALITY/GROWTH slot, `1983 % 3 == 0`, computed fresh) — the STATUS.md
       deep trim queued since 1980/1981. Found `STATUS_ARCHIVE.md` uses a reverse-chronological,
       new-chunk-**prepended** convention (newest `PRIOR (cycles X-Y, archived by cycle Z):` chunk

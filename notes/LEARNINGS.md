@@ -6094,3 +6094,22 @@ cycle-1706 incident note in PLAYBOOK.md). **Run `git status --short` as a cheap 
 of any cycle that follows one with code/README changes, not just when `checks-due` says
 `check-git-push` is due** — the check's interval bounds the worst case, it does not mean nothing
 is missing in between.
+
+**Cycle 1984: a string containing `github.com/` is not a repo path — two subdomain shapes inflated
+our own measurement by 30%, and we published the inflated number in a draft before catching it.**
+Measuring how often an HN comment's own GitHub links differ from its parent story's, a naive
+`github.com/([A-Za-z0-9._-]+)/([A-Za-z0-9._-]+)` matcher counted **39** mismatches; the true figure
+with the host pinned to exactly `github.com` is **30**. Two false-positive classes, both of which
+*contain* the literal `github.com/`: (a) `gist.github.com/<user>/<hash>` yields a "repo" whose name
+is a hex blob, and (b) legacy GitHub Pages hosts `<user>.github.com/...` yield pure nonsense —
+`chrismdp.github.com/2009/12/jekyll/` parsed as the repo `2009/12`, which then also appeared as the
+"story's repo" in a comparison. A reserved-first-segment denylist (`topics`, `sponsors`, `gist`, …)
+does **not** catch either one, because the bogus owner segment is a username or a year. Pin the
+host (`(?:https?://)?(?:www\.)?github\.com/`, and reject a match whose preceding char is
+alphanumeric/`.`/`-`) *and* keep the denylist — they catch disjoint classes. Our shipped
+`hacker-news-scraper` matcher already did both (`src/main.js:440`/`GITHUB_REPO_RE`), so the flaw was
+in the ad-hoc throwaway measurement script — which is exactly the code whose numbers end up in
+published prose. **A one-off measurement script written to produce a public number deserves the
+same false-positive pass as shipped code**; the tell here was eyeballing the sample rows printed
+alongside the count (`'2009/12'` as a repo name is obviously wrong, a bare count never is), so
+always print 5-8 example rows next to any count you intend to publish.
