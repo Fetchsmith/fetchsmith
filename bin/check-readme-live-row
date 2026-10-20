@@ -33,6 +33,7 @@ Exit 1 = any spot-check field's live value differs from the README's.
 """
 import datetime
 import json
+import os
 import re
 import sys
 import urllib.parse
@@ -331,6 +332,49 @@ def fetch_fda_recall_row(recall_number):
     if row.get("recall_number") != recall_number:
         raise RuntimeError(f"openFDA returned recall_number={row.get('recall_number')!r}, expected {recall_number!r}")
     return row
+
+
+def fetch_fec_candidate_row(candidate_id):
+    """Fetch one fec-campaign-finance-scraper candidates-mode row live from OpenFEC, mirroring
+    exactly the two calls main.js makes for a candidates-mode row with includeTotals on:
+    `GET /v1/candidates/?candidate_id=<id>` for identity, then `fetchTotals()`'s
+    `GET /v1/candidate/<id>/totals/?per_page=1&sort=-candidate_election_year` for the money
+    columns. Both read line-for-line off main.js (cycle 2000), not guessed.
+
+    Returns the raw identity record with the raw totals record nested under `totals`, so the
+    entry's `fields` map stays plain snake_case->camelCase paths. A candidate with no totals
+    row on file yields `{}` there, and get_path's None then matches main.js's `totals?.x ?? null`
+    with no transform needed (the asymmetric-empty-`results` case the Actor's own blog post
+    documents).
+
+    Unlike every other entry this one needs a key: OpenFEC has no keyless path (DEMO_KEY is
+    itself a shared key with a published ceiling). FEC_API_KEY is read from the environment --
+    never hardcode it here. `worker/run.sh` line 7 already exports it for every cycle, so a
+    normal cycle needs no extra step; a bare interactive run needs
+    `set -a; . /root/agent/secrets/env; set +a` first, and without it this raises a named
+    error rather than a 403 (fault-tested cycle 2000). This is an admin-side check, not
+    product runtime, so an owner-provided key is in scope."""
+    api_key = os.environ.get("FEC_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "FEC_API_KEY not in environment -- run `set -a; . /root/agent/secrets/env; set +a` first"
+        )
+
+    def fec_get(path, **params):
+        params["api_key"] = api_key
+        return fetch_json(f"https://api.open.fec.gov/v1{path}?{urllib.parse.urlencode(params)}")
+
+    results = fec_get("/candidates/", candidate_id=candidate_id, per_page=1).get("results") or []
+    if not results:
+        raise RuntimeError(f"no OpenFEC candidate for candidate_id={candidate_id!r}")
+    row = results[0]
+    if row.get("candidate_id") != candidate_id:
+        raise RuntimeError(f"OpenFEC returned candidate_id={row.get('candidate_id')!r}, expected {candidate_id!r}")
+    totals = fec_get(
+        f"/candidate/{urllib.parse.quote(candidate_id)}/totals/",
+        per_page=1, sort="-candidate_election_year",
+    ).get("results") or []
+    return {**row, "totals": totals[0] if totals else {}}
 
 
 def get_path(d, path):
@@ -926,6 +970,76 @@ ENTRIES = [
             "SAME sample which do mark their elisions -- fixed by pasting the full live arrays "
             "(main.js's list() does not slice or cap them, so the full arrays are what a buyer "
             "actually receives)."
+        ),
+    },
+    {
+        "slug": "fec-campaign-finance-scraper",
+        "heading": "Sample row (real output, Elizabeth Warren, Senate)",
+        "key_field": "candidateId",
+        "fetch": fetch_fec_candidate_row,
+        "fields": {
+            "candidateId": "candidate_id",
+            "name": "name",
+            # main.js: party_full ?? party ?? null / office_full ?? office ?? null. Both
+            # *_full keys are present on this record (verified live cycle 2000), so the
+            # fallback leg is not exercised by this sample -- deliberately not approximated.
+            "party": "party_full",
+            "office": "office_full",
+            "state": "state",
+            "district": "district",
+            "incumbentChallenge": "incumbent_challenge_full",
+            "candidateStatus": "candidate_status",
+            "electionYears": "election_years",
+            "cycles": "cycles",
+            "firstFileDate": "first_file_date",
+            # Pure template literal off candidate_id in main.js, no data of its own.
+            "fecUrl": "candidate_id",
+            "receipts": "totals.receipts",
+            "disbursements": "totals.disbursements",
+            "cashOnHandEnd": "totals.last_cash_on_hand_end_period",
+            "individualContributions": "totals.individual_contributions",
+            "individualItemizedContributions": "totals.individual_itemized_contributions",
+            "individualUnitemizedContributions": "totals.individual_unitemized_contributions",
+            "refundedIndividualContributions": "totals.refunded_individual_contributions",
+            "coverageStartDate": "totals.coverage_start_date",
+            "coverageEndDate": "totals.coverage_end_date",
+        },
+        "transforms": {
+            # main.js: fecUrl: `https://www.fec.gov/data/candidate/${c.candidate_id}/`
+            "fecUrl": lambda v: f"https://www.fec.gov/data/candidate/{v}/" if v else None,
+        },
+        "skip_note": (
+            "This entry covers the candidates-mode sample only. The three transaction-mode "
+            "sample rows in the same README (contributions / disbursements / independent "
+            "expenditures) have no single-GET natural key: their ids are committeeId+"
+            "transactionId pairs that OpenFEC's /schedules/ endpoints only expose through a "
+            "cursor-paged filter search, not a by-id lookup -- left for a later extension "
+            "rather than approximated with a filter query that could resolve to a different "
+            "row. committeeType/committeeDesignation are transaction-mode only (the Actor's "
+            "committeeClassification() reads c.committee.*, absent on a /candidates/ record) "
+            "and are not in this sample. includeTotals is assumed on, which is what the "
+            "sample shows -- with it off the nine money/coverage fields are null by "
+            "construction and this entry would flag, correctly.\n\n"
+            "EXPECTED TO RE-FLAG ON A SCHEDULE, AND THAT IS THE POINT: the nine totals fields "
+            "track an in-progress election period (candidate_election_year 2030, coverage "
+            "2025-01-01 -> the last filed quarter), so the FEC moves them at every quarterly "
+            "filing deadline. A buyer reads this block to decide whether to pay, so stale "
+            "money columns are exactly the defect class cycle 1988 built this check for -- the "
+            "remedy when it flags is to refresh the nine README values from live, NOT to "
+            "loosen or drop this entry.\n\n"
+            "**Found a real defect on first run (8th of 11 extensions to find one, same "
+            "silent-value-drift class as 1991's wage-determination revisionNumber/dates):** "
+            "all seven money fields plus coverageEndDate had gone stale since the row was "
+            "captured -- receipts 4413931.4 -> 4965731.1, disbursements 4109645.05 -> "
+            "5387108.74, cashOnHandEnd 3754333.02 -> 3028669.03 (down, not up: disbursements "
+            "outran receipts this period, so a buyer eyeballing the old row would have read "
+            "the trend backwards), individualContributions 4234605.7 -> 4770772.73, itemized "
+            "1373252.85 -> 1679286.15, unitemized 2861352.85 -> 3091486.58, refunded 30368.08 "
+            "-> 36068.43, coverageEndDate 2026-06-30 -> 2026-09-30. All twelve identity fields "
+            "matched exactly, which is what localises the drift to the totals call. The same "
+            "stale snapshot was also quoted in three places in the "
+            "site/content/blog/fec-campaign-finance-json-api-demo-key.md post -- fixed there "
+            "too in the same cycle (check-blog-claims does not read raw JSON snippets)."
         ),
     },
 ]

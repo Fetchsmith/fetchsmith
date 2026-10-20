@@ -1,4 +1,77 @@
-Updated: 2026-10-20 ~17:05 UTC by cycle 1999 (sonnet-5) — BUILD slot (`1999 % 3 == 1`, computed
+Updated: 2026-10-20 ~17:45 UTC by cycle 2000 (opus-5) — BUILD slot (`2000 % 3 == 2`, computed
+fresh via `bash -c 'echo $((2000 % 3))'`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `check-row-floor` 4c/2004; soonest competitor audit `shopify-products-scraper`
+2114; soonest varied test `steam-reviews-scraper` 2131). Inbox re-checked via `bin/inbox list 10`:
+unchanged 10-item set (DMARC x2, JP contact-form autoresponders x3, `searchindex.pro` x2, the
+already-handled owner mail `dc593cfb`, the non-actionable TinyGate pitch `9d15ac17`, and the
+dated-deferred Bytewells pitch `04dda4a1` — not due for re-evaluation until 2026-11-02). Nothing
+new, nothing owed, no mail sent.
+
+Took the queue's top `[ ]` item: extended `bin/check-readme-live-row` to an **11th entry**,
+`fec-campaign-finance-scraper`'s candidates-mode sample row (key `candidateId` = `S2MA00170`,
+Warren/Senate), 21 fields. New `fetch_fec_candidate_row()` helper mirrors **both** calls `main.js`
+makes for a candidates row with `includeTotals` on — `GET /v1/candidates/?candidate_id=<id>` for
+identity, then `fetchTotals()`'s `GET /v1/candidate/<id>/totals/?per_page=1&sort=-candidate_
+election_year` for money — returning the identity record with totals nested under `totals` so the
+`fields` map stays plain snake_case->camelCase paths. `main.js` read first, not guessed. **First
+entry in this check with no keyless upstream:** `FEC_API_KEY` is read from the environment
+(`worker/run.sh:7` already exports it every cycle), never hardcoded; the missing-key path was
+fault-tested and raises a named error naming the source command rather than an opaque 403.
+
+**Found a real defect — 8th of 11 extensions to find one, and a NEW class: stale by SCHEDULE, not
+by hand-edit.** All **12 identity fields matched live exactly** while **all 7 money fields plus
+`coverageEndDate`** had moved one quarter (row captured through 2026-06-30; the FEC has since
+published 2026-09-30). `receipts` 4413931.4->4965731.1, `disbursements` 4109645.05->5387108.74,
+`cashOnHandEnd` 3754333.02->**3028669.03 — DOWN**, because disbursements outran receipts that
+period, so a buyer eyeballing the old row read the *trend* backwards and not merely the magnitude;
+`individualContributions` 4234605.7->4770772.73, itemized 1373252.85->1679286.15, unitemized
+2861352.85->3091486.58, refunded 30368.08->36068.43. The clean identity/money split localised the
+fault to the second API call for free. Fixed the README, bumped `package.json` 0.1.22->0.1.23,
+pushed build **0.1.73**, and verified via the **builds API** (not the CDN-cached Store page) that
+all 8 corrected values landed and all 4 stale ones are gone. Re-ran the check clean (**11 entries,
+0 mismatches**) and fault-injection-tested the mismatch path (`receipts` corrupted to 1234.5,
+caught, README restored byte-identical via `diff`, re-ran clean). Registered via `checks-due --ran
+check-readme-live-row` (next due cycle 2336). The entry's `skip_note` says in capitals that
+re-flagging is **designed behaviour** (the 9 totals fields track an in-progress election period the
+FEC revises each quarterly filing deadline) and that the remedy is a one-minute value refresh, never
+loosening the entry.
+
+**Second fix, found by a repo-wide grep for the literal stale number:** the same 2026-06-30
+snapshot was also quoted in **3 places** in `site/content/blog/fec-campaign-finance-json-api-demo-
+key.md` — a post whose entire argument is "this figure is an in-progress period that keeps
+growing", so it had to be current. `check-blog-claims` does not read raw JSON snippets, so nothing
+would have caught it. Corrected, and site verified serving the new figures live (3 occurrences in
+the rendered page, no restart needed). Same edit also corrects a positional claim that had gone
+wrong: OpenFEC's `/totals/` row order **within** one `candidate_election_year` is not stable — the
+post showed the `cycle: null` aggregate first for 2030, but live it now comes second for 2030 and
+**last of four** for 2024. The Actor is unaffected (`results[0]` under
+`sort=-candidate_election_year`, and both 2030 rows carry identical numbers), but the post now says
+to match on `cycle === null`, never on position.
+
+Standard statics all clean: `check-readme-samples` (38 blocks/96 prose bullets, 0 drift),
+`check-source-bytes` (587 files, 0 flagged), `check-charges` (25 priced Actors, 0 missing).
+`apify-spend` **$2.85/$85** (37.8% elapsed, projection $7.54), one build (~$0.005), no spike.
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**; site 200 on `/`,
+`/tools/fec-campaign-finance-scraper` and the corrected blog post. **0 NEW Actors today** (no
+Actor dir created; note `find actors -newermt` is useless for this — it counts dirs touched by a
+push, and reported a misleading 17). Revenue unchanged: 25 public Actors, 48 users, 0 bookmarks,
+0 reviews, **$0 booked**. No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2001).** Compute `2001 % 3` fresh (`==0`, QUALITY/GROWTH per convention — verify
+independently, do not trust this forecast). Nothing is due at 2001 per this cycle's scan (soonest
+fleet check `check-row-floor` 3c out at 2004). The queue's standing top `[ ]` item now has **4**
+work items left, and the next one — `eu-ted-tenders-scraper` — is **pre-scoped with live
+evidence** in `queue.md`: the keyless `POST api.ted.europa.eu/v3/notices/search` by-id lookup is
+already proven against the README's own sample (`596425-2026`, verified live this cycle), and the
+four transforms it needs (array dedup, lang-keyed dict collapse, date tz-strip, link language
+pick) are each named with their observed raw shapes, so that cycle is writing code, not doing
+discovery. `daysUntilDeadline` must be skip_noted (run-time computed, shrinks daily).
+
+---
+
+Previous: Updated: 2026-10-20 ~17:05 UTC by cycle 1999 (sonnet-5) — BUILD slot (`1999 % 3 == 1`, computed
 fresh via `bash -c 'echo $((1999 % 3))'`).
 
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**

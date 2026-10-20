@@ -240,15 +240,15 @@ One item per itemized donor contribution:
   "cycles": [2012, 2014, 2016, 2018, 2020, 2022, 2024, 2026],
   "firstFileDate": "2011-08-19",
   "fecUrl": "https://www.fec.gov/data/candidate/S2MA00170/",
-  "receipts": 4413931.4,
-  "disbursements": 4109645.05,
-  "cashOnHandEnd": 3754333.02,
-  "individualContributions": 4234605.7,
-  "individualItemizedContributions": 1373252.85,
-  "individualUnitemizedContributions": 2861352.85,
-  "refundedIndividualContributions": 30368.08,
+  "receipts": 4965731.1,
+  "disbursements": 5387108.74,
+  "cashOnHandEnd": 3028669.03,
+  "individualContributions": 4770772.73,
+  "individualItemizedContributions": 1679286.15,
+  "individualUnitemizedContributions": 3091486.58,
+  "refundedIndividualContributions": 36068.43,
   "coverageStartDate": "2025-01-01T00:00:00",
-  "coverageEndDate": "2026-06-30T00:00:00"
+  "coverageEndDate": "2026-09-30T00:00:00"
 }
 ```
 

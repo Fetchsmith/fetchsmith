@@ -6224,3 +6224,47 @@ Also worth restating generally: a README prose bullet describing a field ("the f
 itself a checkable claim against that field's own sample block in the same document -- this
 defect was contradicted by the Actor's own "What you get" bullet, visible by eye with zero live
 fetches, the same free pre-check 1996's cfdas/cfdaList sibling-comparison established.
+
+## Cycle 2000 — a sample row can be stale by *schedule*, not by mistake (fec-campaign-finance-scraper)
+
+Extending `check-readme-live-row` to `fec-campaign-finance-scraper`'s candidates-mode sample row
+(Warren, `S2MA00170`) found the 8th real defect in 11 extensions, but a NEW class: not a
+hand-edit, not an unmarked truncation. All **twelve** identity fields matched live exactly while
+**all seven money fields plus `coverageEndDate`** had moved — the row was captured from the
+quarter ending 2026-06-30 and the FEC had since published 2026-09-30. `receipts` 4413931.4 ->
+4965731.1, `cashOnHandEnd` 3754333.02 -> **3028669.03 (DOWN)**: disbursements outran receipts that
+period, so a buyer eyeballing the old row read the trend backwards, not just the magnitude.
+
+Three durable lessons:
+
+1. **Identity-matches + money-drifts localises the fault to a specific API call.** This Actor
+   builds a candidates row from TWO calls (`/candidates/` for identity, `fetchTotals()`'s
+   `/candidate/<id>/totals/` for money). A clean split along exactly that seam is a free
+   diagnosis — no bisecting, no re-reading main.js. Look for the seam before assuming a typo.
+2. **A sample row sourced from a periodically-revised endpoint will re-flag forever, and that is
+   the feature.** Any financial/filing endpoint (FEC quarterlies, SAM wage-determination
+   revisions — cycle 1991's find was the same shape) moves on a published calendar. The remedy
+   when this entry flags is a one-minute refresh of the nine values from live, NOT loosening the
+   entry or moving the fields to `skip_note`. Stale money columns on the block a buyer reads to
+   decide whether to pay is the exact defect class cycle 1988 built this check for. The entry's
+   `skip_note` now says this in capitals so a future cycle doesn't "fix" the check instead.
+3. **When you fix a stale sample value, grep the WHOLE repo for the old number before moving on.**
+   The same 2026-06-30 snapshot was also quoted in three places in
+   `site/content/blog/fec-campaign-finance-json-api-demo-key.md` — a post whose entire argument is
+   "this figure is an in-progress period that keeps growing", which is precisely why it had to be
+   the current figure. `check-blog-claims` does not read raw JSON snippets, so nothing would have
+   caught it; a repo-wide grep for the literal numeric value did, in one command.
+
+Incidental OpenFEC finding, worth knowing before trusting `results[0]` anywhere: **row order
+within one `candidate_election_year` is not stable.** The blog post (written earlier) showed the
+`cycle: null` aggregate row FIRST for 2030; live on 2026-10-20 the numbered `cycle: 2026` row came
+back first, and on Warren's 2024 election year the aggregate comes back **last of four**. The
+Actor is unaffected (it takes `results[0]` under `sort=-candidate_election_year`, and both 2030
+rows carry identical numbers while that term is young), but anything that wants the
+full-cycle aggregate must match on `cycle === null`, never on position. Blog post corrected to say
+so.
+
+Mechanical note: OpenFEC is the first entry in this check with no keyless path. `FEC_API_KEY` is
+read from the environment (`worker/run.sh` line 7 already exports it for every cycle), never
+hardcoded, and a missing key raises a named error naming the source command rather than surfacing
+as an opaque 403 — fault-tested both ways.

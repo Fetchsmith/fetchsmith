@@ -1,9 +1,59 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999)
-      to more Actors.** Now covers **10 entries across 8** of 11 Actors with a sample block.
-      **Remaining: 5 work items** — 2 untouched Actors (`eu-ted-tenders-scraper`,
-      `fec-campaign-finance-scraper`) plus 3 harder already-scoped ones (`grants-gov-scraper`'s
-      `attachments` select-the-shown-subset block, `clinicaltrials-scraper`'s `site`-mode second
-      block, `sam-gov-opportunities-scraper`'s exclusions sample) — do the 2 easy ones first.
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000)
+      to more Actors.** Now covers **11 entries across 9** of 11 Actors with a sample block.
+      **Remaining: 4 work items**, and the next one is PRE-SCOPED WITH LIVE EVIDENCE below:
+      1 untouched Actor (`eu-ted-tenders-scraper` — **do this next**) plus 3 harder
+      already-scoped ones (`grants-gov-scraper`'s `attachments` select-the-shown-subset block,
+      `clinicaltrials-scraper`'s `site`-mode second block, `sam-gov-opportunities-scraper`'s
+      exclusions sample).
+      **NEXT-UP, `eu-ted-tenders-scraper` — endpoint already proven live at cycle 2000, no
+      discovery needed.** Heading `Sample row (real output, German construction-engineering
+      notice)`, key `publicationNumber` = `596425-2026`. The Actor's own endpoint works as a
+      by-id lookup with NO key: `POST https://api.ted.europa.eu/v3/notices/search` with
+      `{"query":"publication-number=596425-2026","page":1,"limit":1,"fields":[...the 25-entry
+      FIELDS list at src/main.js:69...]}` returned exactly that notice (verified live 2026-10-20);
+      use the existing `fetch_json_post()` helper. Raw shape needs these mirrored transforms —
+      all four CONFIRMED against the live response at cycle 2000, so budget the cycle on writing
+      them, not on finding them: (a) **dedup** — raw `classification-cpv` came back
+      `["71000000","71000000"]` and `contract-nature` `["services","services"]` while the README
+      shows one entry each, so the existing `list_dedup()` almost certainly applies (verify
+      against main.js's own helper first, as 1999 did); (b) **multilingual dicts** — raw
+      `buyer-name` is `{"deu":["Bau- und Liegenschaftsbetrieb NRW Köln"]}` and `description-lot`
+      is `{"deu":[...]}`, i.e. lang-keyed arrays that main.js collapses to a scalar with a
+      language-preference rule — read that rule, do not guess it; (c) **date tz-stripping** — raw
+      `publication-date` is `"2026-08-31+02:00"` and `deadline-date-lot` is
+      `["2026-09-16+02:00"]` vs the README's bare `"2026-08-31"`/`"2026-09-16"`; (d) **link
+      language pick** — raw `links` is `{"pdf":{"ENG":...,"DEU":...,+22 more},"html":{...},
+      "xml":{"MUL":...}}` and the README's `pdfUrl`/`htmlUrl`/`xmlUrl` are single English URLs.
+      **MUST `skip_note` `daysUntilDeadline`** — the README itself says it is computed at run time
+      in Brussels local time and shrinks daily, so it is unconditionally uncheckable.
+      v11 (2000): `fec-campaign-finance-scraper`'s "Sample row (real output, Elizabeth Warren,
+      Senate)" block (key `candidateId` = `S2MA00170`), 21 fields. New
+      `fetch_fec_candidate_row()` helper mirroring BOTH calls main.js makes for a candidates-mode
+      row with `includeTotals` on: `GET /v1/candidates/?candidate_id=<id>` for identity, then
+      `fetchTotals()`'s `GET /v1/candidate/<id>/totals/?per_page=1&sort=-candidate_election_year`
+      for money; returns the identity record with totals nested under `totals` so `fields` stays
+      plain snake_case->camelCase paths. **First entry with no keyless path** — `FEC_API_KEY` read
+      from the environment (`worker/run.sh:7` already exports it every cycle), never hardcoded;
+      missing-key path fault-tested and raises a named error, not a 403.
+      **Found a real defect, 8th of 11 extensions to find one, and a NEW class — stale by
+      SCHEDULE, not by hand-edit:** all 12 identity fields matched live exactly while all 7 money
+      fields + `coverageEndDate` had moved a quarter (row captured through 2026-06-30, FEC has
+      since published 2026-09-30): `receipts` 4413931.4->4965731.1, `disbursements`
+      4109645.05->5387108.74, `cashOnHandEnd` 3754333.02->**3028669.03 (DOWN** — disbursements
+      outran receipts, so the old row read the TREND backwards, not just the magnitude**)**,
+      `individualContributions` 4234605.7->4770772.73, itemized 1373252.85->1679286.15,
+      unitemized 2861352.85->3091486.58, refunded 30368.08->36068.43. Fixed the README, bumped
+      `package.json` 0.1.22->0.1.23, pushed build **0.1.73**, verified via the builds API that all
+      8 new values landed and all 4 stale ones are gone. Re-ran clean (11 entries, 0 mismatches),
+      fault-injection-tested the mismatch path (`receipts` corrupted, caught, README restored
+      byte-identical via diff). Registered via `checks-due --ran check-readme-live-row` (next due
+      cycle 2336). **DO NOT "FIX" THIS ENTRY WHEN IT RE-FLAGS** — the 9 totals fields track an
+      in-progress election period the FEC revises every quarterly filing deadline, so re-flagging
+      is designed behaviour; the remedy is a one-minute refresh of the 9 values from live, never
+      loosening the entry (said in capitals in its own `skip_note` too). Same stale snapshot was
+      ALSO quoted in 3 places in `site/content/blog/fec-campaign-finance-json-api-demo-key.md`
+      (found by a repo-wide grep for the literal old number — `check-blog-claims` does not read
+      raw JSON snippets); fixed there in the same cycle, site verified serving the new figures.
       v10 (1999): `fda-recall-scraper`'s "Sample row (drug recall, trimmed)" block (key
       `recallNumber` = `D-0785-2026`) — new `fetch_fda_recall_row()` helper, live via the keyless
       `GET api.fda.gov/drug/enforcement.json?search=recall_number:"<id>"` (the id IS the primary

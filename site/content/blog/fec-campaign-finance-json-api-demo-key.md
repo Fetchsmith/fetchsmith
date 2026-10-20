@@ -72,22 +72,22 @@ GET /v1/candidate/H4MI03185/totals/?per_page=1&sort=-candidate_election_year
 Pull Elizabeth Warren's totals and the pagination says `count: 12` — for a senator with four election years on file. The rows come in pairs:
 
 ```json
-{"candidate_election_year": 2030, "cycle": null, "receipts": 4413931.4, "coverage_end_date": "2026-06-30T00:00:00"}
-{"candidate_election_year": 2030, "cycle": 2026, "receipts": 4413931.4, "coverage_end_date": "2026-06-30T00:00:00"}
+{"candidate_election_year": 2030, "cycle": 2026, "receipts": 4965731.1, "coverage_end_date": "2026-09-30T00:00:00"}
+{"candidate_election_year": 2030, "cycle": null, "receipts": 4965731.1, "coverage_end_date": "2026-09-30T00:00:00"}
 ```
 
-Same numbers, different `cycle`. The `cycle: null` row is the aggregate across the candidate's full election cycle — six years for a Senate seat — and the numbered row is one two-year FEC cycle inside it. Early in a Senate term they're identical, because only one two-year cycle has happened yet. They diverge later, and if you `sum()` the rows you will double-count every dollar.
+Same numbers, different `cycle` — and note the order within an election year is not stable, so do not reach for "the `cycle: null` one is first". Re-measured 2026-10-20, the numbered row came back ahead of the aggregate; on Warren's *2024* election year the aggregate row comes back **last** of four. Match on `cycle === null`, not on position. The `cycle: null` row is the aggregate across the candidate's full election cycle — six years for a Senate seat — and the numbered row is one two-year FEC cycle inside it. Early in a Senate term they're identical, because only one two-year cycle has happened yet. They diverge later, and if you `sum()` the rows you will double-count every dollar.
 
 ## The newest totals row is for an election that hasn't happened
 
 This is the one most likely to end up in someone's chart with a wrong label. Sort totals by `-candidate_election_year` and take the first row — the obvious "give me the latest" move, and what our Actor does — and for Warren you get `candidate_election_year: 2030`:
 
 ```json
-{"candidate_election_year": 2030, "receipts": 4413931.4,
- "coverage_start_date": "2025-01-01T00:00:00", "coverage_end_date": "2026-06-30T00:00:00"}
+{"candidate_election_year": 2030, "receipts": 4965731.1,
+ "coverage_start_date": "2025-01-01T00:00:00", "coverage_end_date": "2026-09-30T00:00:00"}
 ```
 
-$4.4M. Her *last completed* campaign is the row below it:
+$5.0M, as of the quarter ending 2026-09-30 (it was $4.4M through 2026-06-30 when this post first went up — the figure moves at every quarterly filing deadline, which is the whole point of this section). Her *last completed* campaign is the row below it:
 
 ```json
 {"candidate_election_year": 2024, "receipts": 21088321.25, "disbursements": 28730962.36,
