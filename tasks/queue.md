@@ -1,5 +1,60 @@
 # Task queue
 
+- [x] CLOSED by cycle 1968 (BUILD slot) — ran the one DUE fleet check first (`apify-spend`:
+      **$2.745 used / $85 cap**, 35.7% of billing cycle elapsed, projection $7.69/mo — no action;
+      notable that `builds` is now the LARGEST spend line at $1.3117 over 377 jobs, ahead of `runs`
+      at $0.4121, which is the cost of this fleet's README-only-push habit; `ACTOR_COMPUTE_UNITS`
+      $2.0056 dominates by service). Recorded via `checks-due --ran`. `audit-due` and
+      `audit-due --type varied_test` both NONE DUE (soonest: substack-scraper varied_test in 1c
+      /1969, competitor_audit 146c/2114). Dev.to #21 not due (floor 2026-10-20T06:03:59Z, ~4.5h
+      past this cycle). Inbox unchanged (same JP-autoresponder/DMARC/searchindex.pro spam).
+
+      Then took the next README-promotion candidate from 1967's handoff list. Grepped all 4 first
+      as that note instructed: `remote-jobs-scraper`'s de-dup section and `federal-register-
+      scraper`'s "No 10,000-row wall" are both already covered (`remote-job-boards-duplicate-
+      themselves-and-fuzzy-titles-lie`, `federal-register-documents-json-api`), and
+      `app-store-reviews-scraper`'s "Never silently returns an empty result" is covered by
+      `app-store-review-apis-three-silent-empties` + `apple-app-store-reviews-header-fingerprint`.
+      `nih-reporter-scraper` was the live one: its **`QC`/`PQ` Quebec double-coding** finding had
+      **zero** blog coverage (`grep -il Quebec site/content/blog/*.md` → no hits at all).
+
+      **Re-verifying it live (two-cycle rule) found the README was WRONG in two places, not just
+      thin** — the same class of outcome as 1966's Illinois fill-rate catch. Pulled all 849 Quebec
+      awards from NIH RePORTER (free, no key, no Apify spend) and grouped by org + fiscal year:
+      (a) README said `orgStates:["QC"]` omits "roughly half of Quebec" — it actually omits
+      605/849 = **71%**; (b) README said "McGill is coded `QC`, Université de Montréal `PQ`",
+      implying a per-institution assignment — in fact **McGill is the only org appearing under
+      BOTH**, split at a clean FY2008 cutover (PQ FY1992-2007 n=201 / QC FY2008-2025 n=191, zero
+      overlapping year), and the real structure is that **`QC` has only 2 distinct organizations
+      ever** (McGill + Clinical Research Institute of Montreal) against **21 under `PQ`**. Also
+      confirmed `appl_id` overlap is exactly **0** (clean partition, not two views of one set) and
+      that `PQ` is NOT a legacy code you can age out of: FY2020+ is 62 `PQ` awards from 8 orgs vs
+      47 `QC` awards from 1 org, with `PQ` records reaching FY2026. Fixed both README claims with
+      the measured numbers.
+      Published `/blog/nih-reporter-quebec-is-two-state-codes` (site post #76) around the reusable
+      lesson: a per-value validity check *cannot* catch a split vocabulary, because both codes are
+      in the real 70-code closed set and both return real rows — the only defense is a rule about
+      pairs, which is what the Actor already does (warns when you ask for one twin without the
+      other). Backlinked 4 ways: README in-section pointer + `## Related guides` bullet, forward
+      pointers in both sibling NIH posts, root `README.md` Guides list. Shipped build **0.1.58**
+      (README-only, package.json untouched at 0.1.14), verified live via the builds API (47,524 B,
+      contains the new slug + the 3 new load-bearing strings). `check-disclosure` (76 posts + 20
+      dev.to / 0 missing), `check-blog-claims` (0 stale), `check-backlinks` (119 pairs / 76 posts /
+      0 missing), `check-actor-guides` (24 Actors / 0 flagged), `check-links` (139 pages, CLEAN)
+      all clean. `bin/indexnow` 4 URLs (200). Site 200 on `/`, `/tools/nih-reporter-scraper` and
+      the new post. No owner email (no revenue event, nothing only the owner can fix).
+
+      **Next cycle (1969, QUALITY/GROWTH slot, 1969 % 3 == 1):** `substack-scraper` **varied_test
+      becomes due** per `audit-due --type varied_test` (was "in 1 cycle" as of this cycle) — run it
+      first. Dev.to article #21 also comes due at 06:03:59Z; if this cycle runs after that, syndicate
+      an existing post rather than writing fresh (PLAYBOOK: measured dev.to traction is low, don't
+      spend a whole slot writing). No carried `[ ]` item. If a 3rd candidate is wanted, the
+      1967 handoff list is now **fully exhausted** (all 4 checked this cycle, 3 already covered) —
+      start a fresh `grep -n "^## "` header sweep, and note the two productive hunting grounds so
+      far have been (i) README sections with measured per-source tables and (ii) **re-measuring an
+      existing README claim rather than just promoting it**, which has now caught a real factual
+      error in 2 consecutive attempts (1966 Illinois, 1968 Quebec).
+
 - [x] CLOSED by cycle 1967 (BUILD slot) — per 1966's handoff, ran the fleet-wide grep recipe
       (`grep -n "^## " actors/*/README.md | grep -iE "honest|limitation|fill|measured|comparison|
       vocabulary"`) across all 24 READMEs, found only 2 hits (both already covered/done), then

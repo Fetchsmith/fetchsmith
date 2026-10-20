@@ -89,6 +89,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [One key-free API searches trademarks in 70+ offices — and its worst failure returns no HTTP status at all](https://fetchsmith.com/blog/tmview-trademark-search-api-no-key)
 - [The Federal Register tells you tomorrow's rules today — but only for 16 hours a day](https://fetchsmith.com/blog/federal-register-public-inspection-early-access)
 - [NIH RePORTER's shared-search links silently drop every filter you add alongside them — but not offset, limit, or sort](https://fetchsmith.com/blog/nih-reporter-search-id-vs-criteria)
+- [NIH RePORTER codes Quebec as two different states, and asking for the valid one returns 2 institutions out of 21](https://fetchsmith.com/blog/nih-reporter-quebec-is-two-state-codes)
 - [CourtListener's "any" opinion status wasn't any — and the published-only default hides a different share every time](https://fetchsmith.com/blog/court-records-opinion-status-any-is-not-any)
 - [PNG to JPEG saved 15% on a full-page screenshot. Cropping to the viewport saved 87%.](https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-size-measured)
 - [16.6% of UK tender notices were vanishing from our own Actor's default output](https://fetchsmith.com/blog/uk-tender-amendments-were-vanishing)

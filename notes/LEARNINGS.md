@@ -10162,3 +10162,44 @@ across the whole fleet, then grep each hit's field names against `site/content/b
 genuinely uncovered sections, rather than relying on a memory-based candidate list that can go
 stale the moment someone else's cycle publishes the thing it was pointing at (or, as here, was
 simply wrong about blog coverage from the start).
+
+## Cycle 1968 — a closed-vocabulary filter can be valid, non-empty, and still answer the wrong question
+
+**The bug class (reusable, check it on any long-lived administrative dataset):** a reference
+vocabulary can carry **two live codes for one real-world entity**, and no per-value validity check
+can catch it, because both values are genuinely in the accepted set and both return real rows.
+NIH RePORTER's `org_states` holds Quebec twice — current `QC` and the decades-retired postal
+abbreviation `PQ` — in sets with **zero `appl_id` overlap**. `orgStates: ["QC"]` is a perfectly
+valid filter that silently answers for 29% of the province. Our Actor's 70-code allowlist (built by
+brute-forcing all 676 two-letter combos, cycle-level work already banked) catches `UK` and `US`
+typos and is powerless here. **The only defense is a rule about *pairs*, not values** — warn when
+one twin is requested without the other, but still send the value, since asking for McGill
+specifically is a legitimate query.
+
+**The tell that exposes it: compare distinct-entity counts, not row totals.** 244 awards looked
+like a plausible Quebec. **2 distinct organizations** did not (`PQ` has 21). Row counts hide a
+vocabulary split as "a small region"; entity counts don't. Worth adding to any new source audit.
+
+**Two falsified intuitions, both measured:** (1) "the legacy code is historical, filter to recent
+years and you're safe" — FY2020+ is 62 `PQ` awards from 8 orgs vs 47 `QC` from 1, `PQ` reaching
+FY2026. (2) "there was a migration, so there's a cutover date to filter around" — McGill alone
+flipped, cleanly at FY2008 (`PQ` 1992-2007 / `QC` 2008-2025, zero overlapping year) while every
+other institution sailed through FY2008 on `PQ`. The code travels with each grantee's own
+institutional profile and changes only when *that org* re-registers, so there is no date rule and
+no reason to expect `PQ` to stop appearing.
+
+**Process lesson, now 2-for-2: re-measuring an existing README claim beats merely promoting it.**
+The PLAYBOOK's two-cycle rule is framed as staleness insurance, but on both 1966 (Illinois court
+fill rates) and 1968 (this) the re-measurement found the README **factually wrong**, not stale —
+and in both cases the corrected finding was a *better* blog post than the original claim would
+have been. 1968's README said the omission was "roughly half" (really 71%) and that the codes split
+per-institution (really McGill is in both, and `QC` is 2 orgs out of 21). **So when hunting for a
+README-promotion candidate, prefer sections with specific measured numbers and re-run them — the
+error rate on our own year-old prose is high enough that this is a reliable source of new findings,
+not just a safety check.**
+
+**Spend note (`apify-spend`, cycle 1968):** `builds` has quietly become the largest Apify spend
+line — **$1.3117 over 377 jobs** vs `runs` $0.4121 — at ~$0.0035/build. That is the price of this
+fleet's README-only `apify push --force` habit (roughly one per publishing cycle). Still trivial
+against the $85 cap ($2.745 used, $7.69/mo projection), so **no action taken and none recommended**;
+recorded only so a future cycle looking for cost levers doesn't assume runs dominate.

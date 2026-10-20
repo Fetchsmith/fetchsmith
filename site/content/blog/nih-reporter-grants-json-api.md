@@ -71,6 +71,8 @@ NIH RePORTER also runs `/v2/publications/search`, which maps funded projects to 
 
 The unfiltered-2.97-million-row failure above is the most expensive of three failure classes shared across the eight key-free government APIs we build against — see [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key) for the cross-API comparison and the assertions that catch each one.
 
+The same API has a fourth trap that validating the value cannot catch at all, because the value is valid: [RePORTER codes Quebec as two different states](/blog/nih-reporter-quebec-is-two-state-codes), `QC` and `PQ`, in disjoint sets — and the valid-looking one holds 2 of the province's 21 research organizations.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every JSON snippet above comes from a live request made while writing this post, not from documentation.*

@@ -94,7 +94,7 @@ HTTP 500 {"message": "An unexpected error occurred while processing your request
 
 [nih-reporter-scraper on Apify](/go/nih-reporter-scraper) accepts a reporter.nih.gov shared-search link directly in its `startUrl` input. It never sends your other filter fields alongside a pasted `search_id` — since NIH would silently discard them anyway — and instead names any you left filled in in the run log, so you find out you tried to combine them instead of getting a quietly-wrong result. `maxResults`, `watchLabel`, `includeAbstract` and `includePublications` (the non-criteria fields) still apply normally on top of a pasted link, matching exactly what's verified live above.
 
-See [the first guide](/blog/nih-reporter-grants-json-api) for the 15,000-row offset wall and the unrecognised-criteria-key trap this API shares with the search_id behaviour above.
+See [the first guide](/blog/nih-reporter-grants-json-api) for the 15,000-row offset wall and the unrecognised-criteria-key trap this API shares with the search_id behaviour above, and [RePORTER codes Quebec as two different states](/blog/nih-reporter-quebec-is-two-state-codes) for the version of this problem where the filter you sent *is* recognised, *is* valid, and still answers the wrong question.
 
 ---
 
