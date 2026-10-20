@@ -228,6 +228,66 @@ def fetch_grants_gov_row(key):
     return {"thin": thin, "detail": detail}
 
 
+def fetch_uk_fts_row(notice_id):
+    """Fetch one uk-find-a-tender-scraper row's live OCDS release by Find a Tender notice id.
+
+    The notice id IS the primary key -- `ocdsReleasePackages/<id>` 404s on an unknown id
+    (verified live cycle 1998), same no-wrong-hit shape as the clinicaltrials/federal-register
+    entries below, so there is no search-semantics risk to get wrong.
+
+    main.js's normalize() (read first, not guessed) pulls several README fields out of
+    structures `get_path` can't express (first party with a given role; CPV codes scattered
+    across `tender.classification` + every item's `classification`/`additionalClassifications`;
+    region/location dedup across every item) -- so those are precomputed here under `_`-prefixed
+    keys, each a verified line-for-line mirror of the corresponding main.js helper
+    (`party()`/`allCpv()`/`deliveryRegions()`/`deliveryLocations()`), not an approximation.
+    """
+    pkg = fetch_json(f"https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages/{urllib.parse.quote(notice_id)}")
+    releases = pkg.get("releases") or []
+    release = next((r for r in releases if str(r.get("id")) == str(notice_id)), None)
+    if release is None:
+        raise RuntimeError(f"no release with id={notice_id!r} ({len(releases)} returned)")
+    tender = release.get("tender") or {}
+
+    # main.js allCpv(): tender-level classification + every item's classification/additionalClassifications.
+    cpv = []
+    cls = tender.get("classification") or {}
+    if cls.get("scheme") == "CPV" and cls.get("id"):
+        cpv.append(str(cls["id"]))
+    for item in tender.get("items") or []:
+        icls = item.get("classification") or {}
+        if icls.get("scheme") == "CPV" and icls.get("id"):
+            cpv.append(str(icls["id"]))
+        for c in item.get("additionalClassifications") or []:
+            if c.get("scheme") == "CPV" and c.get("id"):
+                cpv.append(str(c["id"]))
+    seen = set()
+    cpv_uniq = [c for c in cpv if not (c in seen or seen.add(c))]
+
+    # main.js party(release, 'buyer'): first party whose roles[] includes 'buyer'.
+    buyer = next((p for p in (release.get("parties") or []) if "buyer" in (p.get("roles") or [])), None) or {}
+
+    # main.js deliveryRegions()/deliveryLocations(): dedup across every item.
+    regions, locations = [], []
+    for item in tender.get("items") or []:
+        for addr in item.get("deliveryAddresses") or []:
+            if addr.get("region"):
+                regions.append(addr["region"])
+        if (item.get("deliveryLocation") or {}).get("description"):
+            locations.append(item["deliveryLocation"]["description"])
+    seen_r, seen_l = set(), set()
+    regions_uniq = [r for r in regions if not (r in seen_r or seen_r.add(r))]
+    locations_uniq = [l for l in locations if not (l in seen_l or seen_l.add(l))]
+
+    return {
+        **release,
+        "_cpvCodes": cpv_uniq,
+        "_buyer": buyer,
+        "_deliveryRegions": regions_uniq,
+        "_deliveryLocations": locations_uniq,
+    }
+
+
 def get_path(d, path):
     """Dotted path into nested dicts/lists, e.g. 'financial.obligations'."""
     cur = d
@@ -703,6 +763,48 @@ ENTRIES = [
             "attachments has its own block, not yet added -- see queue.md, the live record's "
             "`synopsisAttachmentFolders` is empty for this forecast anyway so it could not "
             "exercise that path even if added here)."
+        ),
+    },
+    {
+        "slug": "uk-find-a-tender-scraper",
+        "heading": "Sample output (one row, trimmed)",
+        "key_field": "noticeId",
+        "fetch": fetch_uk_fts_row,
+        "fields": {
+            "ocid": "ocid",
+            "noticeId": "id",
+            "noticeUrl": "id",
+            "stage": "tag",
+            "title": "tender.title",
+            "status": "tender.status",
+            "procurementMethod": "tender.procurementMethod",
+            "mainProcurementCategory": "tender.mainProcurementCategory",
+            "cpvCode": "_cpvCodes",
+            "cpvDescription": "tender.classification.description",
+            "cpvCodes": "_cpvCodes",
+            "valueAmount": "tender.value.amount",
+            "valueCurrency": "tender.value.currency",
+            "deadlineDate": "tender.tenderPeriod.endDate",
+            "buyerName": "_buyer.name",
+            "buyerEmail": "_buyer.contactPoint.email",
+            "buyerPhone": "_buyer.contactPoint.telephone",
+            "buyerPostalCode": "_buyer.address.postalCode",
+            "deliveryRegions": "_deliveryRegions",
+            "deliveryLocations": "_deliveryLocations",
+        },
+        "transforms": {
+            # main.js: noticeUrl built from a URL template (source.noticeUrl), not a raw field.
+            "noticeUrl": lambda v: f"https://www.find-tender.service.gov.uk/Notice/{v}" if v else None,
+            # main.js: cpvCode = allCpv(tender)[0] ?? null -- first of the same array as cpvCodes.
+            "cpvCode": lambda v: (v or [None])[0],
+        },
+        "skip_note": (
+            "description/legalBasis/awardPeriodStart/contractStartDate/contractEndDate/"
+            "lotCount/lotTitles/suitableForSme/suitableForVcse/awardedSuppliers/awardStatus/"
+            "awardStatuses/contractCount/source/sourceName are not present in this trimmed "
+            "sample row (it shows a tender-stage notice with no awards yet) and are not "
+            "exercised by it; buyerUrl/buyerStreet/buyerLocality/buyerRegion/buyerCountry are "
+            "present on the live buyer party but likewise not shown in the trimmed sample."
         ),
     },
 ]

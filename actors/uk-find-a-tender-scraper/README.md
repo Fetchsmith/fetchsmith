@@ -82,7 +82,7 @@ One row per notice, including:
   "mainProcurementCategory": "services",
   "cpvCode": "50720000",
   "cpvDescription": "Repair and maintenance services of central heating",
-  "cpvCodes": ["50720000", "44621200", "44620000", "42160000"],
+  "cpvCodes": ["50720000", "44621200", "44620000", "44621000", "42160000", "44621100", "44621110", "44621112", "42511110", "42533000"],
   "valueAmount": 710000,
   "valueCurrency": "GBP",
   "deadlineDate": "2026-10-12T17:00:00+01:00",

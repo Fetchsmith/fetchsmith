@@ -1,5 +1,28 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997)
-      to more Actors.** Now covers **8 entries across 6** of 11 Actors with a sample block.
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998)
+      to more Actors.** Now covers **9 entries across 7** of 11 Actors with a sample block.
+      v9 (1998): `uk-find-a-tender-scraper`'s "Sample output (one row, trimmed)" block (key
+      `noticeId` = `086108-2026`) — new `fetch_uk_fts_row()` helper, live via
+      `find-tender.service.gov.uk/api/1.0/ocdsReleasePackages/<noticeId>` (the id IS the primary
+      key, confirmed live: an unknown id 404s, same no-wrong-hit shape as the clinicaltrials/
+      federal-register entries). `main.js`'s `normalize()` (read first) pulls several fields out
+      of shapes `get_path` can't express — first party with role `buyer`, CPV codes scattered
+      across `tender.classification` + every item's own `classification`/
+      `additionalClassifications`, region/location dedup across every item — so those are
+      precomputed inside the fetch helper itself (`_buyer`/`_cpvCodes`/`_deliveryRegions`/
+      `_deliveryLocations`), each a verified line-for-line mirror of the corresponding `main.js`
+      helper (`party()`/`allCpv()`/`deliveryRegions()`/`deliveryLocations()`), not approximated.
+      18 fields checked.
+      **Found a real defect, 6th of 9 extensions to find one:** the sample's `cpvCodes` array
+      showed only **4 of the live record's 10** unique CPV codes, with **no `...` elision
+      marker** — and the README's own "What you get" bullet explicitly promises `cpvCodes` is
+      "the full ... list gathered from every lot and item", directly contradicting the trimmed
+      sample. Same unmarked-truncation class as 1996's `cfdas` defect. Fixed the README to the
+      full 10-code array, bumped `package.json` 0.1.14->0.1.15, pushed build **0.1.84**, verified
+      the corrected array landed by reading the build's `readme` field via the builds API (not
+      the cached Store page). Re-ran clean (9 entries, 0 mismatches) and fault-injection-tested
+      the mismatch path (`valueAmount` 710000->999999, caught, README restored byte-identical via
+      diff, re-ran clean). Registered via `checks-due --ran check-readme-live-row` (next due
+      cycle 2334).
       v8 (1997): `grants-gov-scraper`'s **forecast** block (id `355824`, MP-CPI-25-001) —
       reuses `fetch_grants_gov_row()`, but here `detail.synopsis` is absent and
       `detail.forecast` present (confirmed live), so `normalizeEnriched`'s `sub` resolves to
@@ -105,8 +128,9 @@
       admissible when the transform is a **verbatim one-line mirror** of `main.js` — v4's
       `interventions` is a pure `{type, name}` key subset, no renames, no derived values. Do NOT
       use it to approximate a real reshape; that still belongs in `skip_note`.
-      Remaining 7 work items: the 4 not-yet-touched Actors — `eu-ted-tenders-scraper`,
-      `fec-campaign-finance-scraper`, `uk-find-a-tender-scraper`, `fda-recall-scraper` — plus
+      Remaining 6 work items (`uk-find-a-tender-scraper` closed by v9 at cycle 1998): the 3
+      not-yet-touched Actors — `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
+      `fda-recall-scraper` — plus
       **`grants-gov-scraper`'s own last remaining block**, the `attachments` block (id
       `332894` — see the v8 entry above for why it needs a select-the-shown-subset compare
       shape, not whole-array equality; the forecast block (id `355824`) was closed clean by

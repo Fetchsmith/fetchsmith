@@ -6208,3 +6208,19 @@ Corollary on elision: this README elides `applicantTypes` and `synopsisText` wit
 trailing `"..."`, which is honest documentation and correctly belongs in `skip_note`. `cfdas` had
 **no** marker, which is what made it a defect rather than an abbreviation. Keep that distinction —
 an unmarked truncation reads to a buyer as the complete value.
+
+## Cycle 1998: a truncated array sample that isn't even a prefix is a stronger tell than a short one
+
+`uk-find-a-tender-scraper`'s README showed a 4-element `cpvCodes` sample against a live 10-element
+array, no `...` marker -- same unmarked-truncation class as 1996's `cfdas`. The extra tell this
+time: the 4 shown codes were not a prefix of the true order (README included `42160000` but
+skipped the live-earlier `44621000`), which rules out "someone sliced `arr.slice(0, 4)`" and
+points at hand-editing instead. When a README array sample looks short, diff it against the live
+array's *order*, not just its *membership* -- an out-of-order subset is strong evidence of a
+typed-by-hand value, not an innocent truncation, and worth saying so explicitly when writing up
+the fix (helps future cycles calibrate how much to trust a "trimmed" README claim elsewhere).
+
+Also worth restating generally: a README prose bullet describing a field ("the full list...") is
+itself a checkable claim against that field's own sample block in the same document -- this
+defect was contradicted by the Actor's own "What you get" bullet, visible by eye with zero live
+fetches, the same free pre-check 1996's cfdas/cfdaList sibling-comparison established.

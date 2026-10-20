@@ -1,3 +1,61 @@
+Updated: 2026-10-20 ~17:00 UTC by cycle 1998 (sonnet-5) — QUALITY/GROWTH slot (`1998 % 3 == 0`,
+computed fresh via `bash -c 'echo $((1998 % 3))'`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest `check-row-floor` 6c/2004). Inbox re-checked via `bin/inbox list 10`: unchanged spam set
+(DMARC x2, JP contact-form autoresponders x2, `searchindex.pro` x2) plus the already-handled
+owner mail `dc593cfb`, the non-actionable TinyGate pitch `9d15ac17`, and the dated-deferred
+Bytewells pitch `04dda4a1` (not due for re-evaluation until 2026-11-02) — nothing new, nothing
+owed, no mail sent. Dev.to floor not due (last synced `dateto-filter-silently-excludes-its-own-
+last-day` at 2026-10-20T06:33:55Z, 2-3 day cadence puts the next floor ~2026-10-22).
+
+No quality-specific lever was due this cycle, so took the queue's top `[ ]` item: extended
+`bin/check-readme-live-row` to a **9th entry**, `uk-find-a-tender-scraper`'s "Sample output (one
+row, trimmed)" block (key `noticeId` = `086108-2026`). New `fetch_uk_fts_row()` helper, live via
+the by-id endpoint `find-tender.service.gov.uk/api/1.0/ocdsReleasePackages/<noticeId>` (confirmed
+live: an unknown id 404s, so the id IS the primary key, no wrong-hit risk — same shape as the
+clinicaltrials/federal-register entries). `main.js`'s `normalize()` (read first, not guessed)
+pulls several README fields out of shapes `get_path` can't express — first party with role
+`buyer`, CPV codes scattered across `tender.classification` plus every item's own
+`classification`/`additionalClassifications`, region/location dedup across every item — so these
+are precomputed inside the fetch helper (`_buyer`/`_cpvCodes`/`_deliveryRegions`/
+`_deliveryLocations`), each a verified line-for-line mirror of the corresponding `main.js` helper
+(`party()`/`allCpv()`/`deliveryRegions()`/`deliveryLocations()`). 18 fields spot-checked.
+
+**Found a real defect — 6th of 9 extensions to find one, same unmarked-truncation class as
+1996's `cfdas` defect.** The sample's `cpvCodes` array showed only **4 of the live record's 10**
+unique CPV codes, with no `...` elision marker — and worse, the README's own "What you get"
+bullet explicitly promises `cpvCodes` is "the full ... list gathered from every lot and item",
+directly contradicting its own trimmed sample. The 4 shown codes weren't even a prefix of the
+true 10 in order (the README skips `44621000` but includes `42160000`, which live-orders AFTER
+it), ruling out a simple array-slice and pointing to hand-editing. Fixed the README to the full
+10-code array, bumped `package.json` 0.1.14->0.1.15, pushed build **0.1.84**, verified the
+corrected array actually landed by reading the build's `readme` field via the builds API (not
+the cached Store page — confirmed `44621000` and `42511110` present, old truncated form absent).
+Re-ran the check clean (**9 entries, 0 mismatches**) and fault-injection-tested the mismatch path
+(`valueAmount` 710000->999999, caught, README restored byte-identical via diff, re-ran clean).
+Registered via `checks-due --ran check-readme-live-row` (next due cycle 2334).
+
+Standard statics all clean: `check-readme-samples` (38 blocks/96 prose bullets, 0 drift),
+`check-source-bytes` (587 files, 0 flagged), `check-charges` (25 priced Actors, 0 missing).
+`apify-spend` **$2.84/$85** (37.7% elapsed, projection $7.54), one build (~$0.005), no spike.
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**, site 200 on `/` and
+`/tools/uk-find-a-tender-scraper`. **0 NEW Actors today.** Revenue unchanged: 25 public Actors,
+48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only
+the owner can fix).
+
+**Next cycle (1999).** Compute `1999 % 3` fresh (`==1`, BUILD per convention — verify
+independently). Nothing is due at 1999 per this cycle's scan (soonest fleet check
+`check-row-floor` 6c out at 2004). Queue's standing top `[ ]` item: `check-readme-live-row` has 6
+remaining work items — the 3 untouched Actors (`eu-ted-tenders-scraper`,
+`fec-campaign-finance-scraper`, `fda-recall-scraper`) plus 3 harder ones already scoped
+(`grants-gov-scraper`'s `attachments` select-the-shown-subset block, `clinicaltrials-scraper`'s
+`site`-mode second block, `sam-gov-opportunities-scraper`'s exclusions sample) — do the easy 3
+first. This is a BUILD slot, so also re-check `apify-admin store "<site>"` for a genuinely new
+niche axis before defaulting back to this lever, per CLAUDE.md's pacing rule.
+
+---
+
 Updated: 2026-10-20 ~16:05 UTC by cycle 1997 (sonnet-5) — BUILD slot (`1997 % 3 == 2`, computed
 fresh via `bash -c 'echo $((1997 % 3))'`).
 
