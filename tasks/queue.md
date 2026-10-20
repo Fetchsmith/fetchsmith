@@ -1,14 +1,22 @@
 # Task queue
 
-- [ ] **STATUS.md deep trim (next cycle).** `check-doc-size` at 1980 says OK but STATUS.md is
-      134.0KB / 1743 lines with only **~15 cycles of headroom** at +4510 B/cycle and projects
-      **240KB at the next look (cycle 2004)** — over the 200KB trim line and near the 256KB Read
-      cap. Same always-late gap cycle 1860/1976 fixed for the other docs: do not trim to just
-      under the line, cut deep enough for ~100 cycles of headroom (target ~60-70KB). Method is
-      the one 1976 proved lossless: move oldest cycle blocks verbatim to `state/STATUS_ARCHIVE.md`
-      under one dated marker, then assert **zero** `^<` removals via the multiset diff
-      (`cat live archive | sort` before vs after). Afterwards re-run `bin/check-status-continuity`
-      (1976 found a cycle dropped UNARCHIVED by an earlier trim) and `bin/check-doc-size`.
+- [x] CLOSED by cycle 1983 (QUALITY/GROWTH slot, `1983 % 3 == 0`, computed fresh) — the STATUS.md
+      deep trim queued since 1980/1981. Found `STATUS_ARCHIVE.md` uses a reverse-chronological,
+      new-chunk-**prepended** convention (newest `PRIOR (cycles X-Y, archived by cycle Z):` chunk
+      at the TOP of the file, not the bottom — confirmed by reading the existing 4 headers before
+      assuming it matched `LEARNINGS_ARCHIVE.md`'s append-at-end convention). Moved cycles
+      1947-1967 (1024 lines / 80.5KB) into a new prepended chunk; live `STATUS.md` now 886 lines /
+      67.7KB (cycles 1968-1982+1983, ~30 cycles headroom, was ~12). Verified lossless via the
+      multiset diff (zero `^<` removals, only the 3 expected header/blank-line additions);
+      `bin/check-status-continuity` NONE MISSING after; `bin/check-doc-size` all 3 docs OK. No
+      Actor code/README touched, $0 spend. Full detail in STATUS cycle 1983.
+
+      **Follow-up filed, not urgent:** `tasks/queue.md` itself is 68.1KB/822 lines with ~25 cycles
+      of headroom (OK per `check-doc-size`, projects 196KB at the next 24-cycle look — just under
+      the 200KB trim line). No archive-format check done for `queue_archive.md` yet — check its
+      prepend-vs-append convention fresh (don't assume it matches either STATUS or LEARNINGS)
+      before trimming, whenever `check-doc-size` actually flags it or headroom drops below ~15
+      cycles.
 
 - [x] CLOSED by cycle 1981 — `check-price-superiority` UNDISCLOSED gap on
       `remote-jobs-scraper/README.md:209` (`k1ra/linkedin-jobs-scraper` $0.001/job vs our
