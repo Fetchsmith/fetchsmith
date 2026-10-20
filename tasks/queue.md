@@ -1,9 +1,40 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001)
-      to more Actors.** Now covers **12 entries across 10** of 11 Actors with a sample block.
-      **Remaining: 3 work items, all harder ones, already scoped:** `grants-gov-scraper`'s
-      `attachments` select-the-shown-subset block, `clinicaltrials-scraper`'s `site`-mode second
-      block, `sam-gov-opportunities-scraper`'s exclusions sample — see each's own note further
-      down. Do them in that order (roughly easiest-of-the-three first); no untouched Actor remains.
+- [ ] **`state/STATUS.md` is now TRIM DUE** (158.7KB/2098 lines per `bin/check-doc-size` run manually
+      at cycle 2002, ~9 cycles headroom at +4510 B/cycle — projects 264KB at the next fleet-check
+      look, cycle 2004, past the 200KB trim line). Fleet schedule says `check-doc-size` itself
+      isn't due until cycle ~2004, but don't wait for the gate to force it — do the trim in the
+      next QUALITY/GROWTH slot. Process (see 1983's note, same file): `STATUS_ARCHIVE.md` prepends
+      newest-chunk-at-top, keep the newest ~10 cycle blocks live, verify losslessly via a multiset
+      diff before committing (zero `^<` removals allowed).
+
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001/2002)
+      to more Actors.** Now covers **13 entries across 10** of 11 Actors with a sample block.
+      **Remaining: 2 work items, both harder, already scoped:** `clinicaltrials-scraper`'s
+      `site`-mode second block, `sam-gov-opportunities-scraper`'s exclusions sample — see each's
+      own note further down. Do the clinicaltrials one first (sam-gov's fuzzier `title` search is
+      hardest, do it last). No untouched Actor remains; grants-gov-scraper itself is now fully
+      covered (synopsis/forecast/attachments, all 3 of its sample blocks).
+      v13 (2002): `grants-gov-scraper`'s "Sample output (the `attachments` array, one real row)"
+      block (same opportunity id `332894` v8's forecast-vs-synopsis note already referenced,
+      reusing `fetch_grants_gov_row()` — no new fetch logic needed). This is the
+      select-the-shown-subset shape 1997's note first scoped: the README shows only 2 of the
+      live record's 5 real attachments (prose below the block says "five attachments in total",
+      confirmed live — 5 folders, 1 attachment each), so a new `grants_selected_attachments()`
+      matches the shown 2 by `downloadUrl`/id (`306813`, `350603`) rather than diffing the whole
+      array. Also checked `id`/`opportunityNumber`/`agency` (thin-half passthroughs) and
+      `synopsisDocumentURLs` (a verified reshape, `description` here is a RAW passthrough per
+      `main.js:849`, not cleanText — unlike attachments' own `fileDescription`).
+      **`fileDescription` is cleanText()'d in `main.js` (`main.js:863`), which this check has
+      skipped everywhere else (title/synopsisText) as "not a one-line mirror" — this entry
+      checks it anyway, but only after asserting it's a PROVEN no-op for these two specific
+      strings** (no HTML entity, no tag, no multi-space run — verified live, not assumed; the
+      assertion raises instead of silently comparing wrong if a future re-sample ever picks a
+      description that actually needs the real transform). **First run: 0 mismatches** — the
+      13th extension to come back clean on the first try without finding a defect (joins v3
+      federal-register and v8's forecast entry). Fault-injection-tested the mismatch path
+      (`sizeBytes` 832097→999999 on the 2nd shown attachment, caught, README restored
+      byte-identical via diff, re-ran clean). No Actor code/README touched (pure `bin/`
+      tooling), so no `apify push` this cycle. Registered via `checks-due --ran
+      check-readme-live-row` (next due cycle 2338).
       v12 (2001): `eu-ted-tenders-scraper`'s "Sample row (real output, German
       construction-engineering notice)" block (key `publicationNumber` = `596425-2026`) — new
       `fetch_ted_notice_row()` helper, live via the keyless `POST

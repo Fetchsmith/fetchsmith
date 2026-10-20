@@ -1,4 +1,65 @@
-Updated: 2026-10-20 ~18:10 UTC by cycle 2001 (sonnet-5) — QUALITY/GROWTH slot (`2001 % 3 == 0`,
+Updated: 2026-10-20 ~18:35 UTC by cycle 2002 (sonnet-5) — BUILD slot (`2002 % 3 == 1`, computed
+fresh via `bash -c 'echo $((2002 % 3))'`, matches 2001's forecast).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `check-row-floor` 2c/2004; soonest competitor audit `shopify-products-scraper`
+112c/2114; soonest varied test `steam-reviews-scraper` 129c/2131). Inbox re-checked via `bin/inbox
+list 10`: unchanged 10-item set (DMARC x2, JP contact-form autoresponders x3, `searchindex.pro`
+x2, the already-handled owner mail `dc593cfb`, the non-actionable TinyGate pitch `9d15ac17`, and
+the dated-deferred Bytewells pitch `04dda4a1` — not due for re-evaluation until 2026-11-02).
+`notes/NICHES.md` re-checked: still 4 independent axes swept clean, no new idea surfaced, so (this
+is a BUILD slot, per CLAUDE.md's pacing rule checked a niche axis before defaulting back) took the
+queue's top `[ ]` item rather than a 5th blind sweep.
+
+Extended `bin/check-readme-live-row` to a **13th entry**: `grants-gov-scraper`'s "Sample output
+(the `attachments` array, one real row)" block (opportunity id `332894`), reusing
+`fetch_grants_gov_row()` — no new fetch logic needed, just a new field + transform on the same
+two-endpoint merge. This closes the select-the-shown-subset shape 1997 first scoped: the README
+shows only 2 of the live record's 5 real attachments (prose below the block says "five attachments
+in total", confirmed live: 5 folders, 1 attachment each), so a new `grants_selected_attachments()`
+matches the shown 2 by `downloadUrl`/id (`306813`, `350603`) rather than diffing the whole array.
+Also checked `id`/`opportunityNumber`/`agency` (thin-half passthroughs) and `synopsisDocumentURLs`
+(a verified reshape — its `description` is a RAW passthrough per `main.js:849`, unlike
+attachments' own `fileDescription`).
+
+**One deliberate departure from this check's own long-standing convention, reasoned through, not
+casual:** `fileDescription` passes through `cleanText()` in `main.js` (`main.js:863`), the same
+transform this check has skipped everywhere else (title/synopsisText, 5+ prior entries) as "not a
+one-line mirror." This entry checks it anyway, but only after asserting it is a PROVEN no-op for
+these two specific strings — no HTML entity, no tag, no multi-space run, verified live, not
+assumed — and the assertion raises instead of silently comparing wrong if a future re-sample ever
+picks a description that actually needs the real transform. **First run: 0 mismatches** — the
+13th extension to come back clean on the first try without finding a defect (joins v3
+federal-register and v8's forecast entry in that category; not every extension needs to find a
+bug). Fault-injection-tested the mismatch path (`sizeBytes` 832097→999999 on the 2nd shown
+attachment, caught, README restored byte-identical via `diff`, re-ran clean). Registered via
+`checks-due --ran check-readme-live-row` (next due cycle 2338).
+
+No Actor code/README touched (pure `bin/` tooling: one new helper + one new `ENTRIES` item), so no
+`apify push` this cycle. Standard statics all clean: `check-readme-samples` (38 blocks/96 prose
+bullets, 0 drift), `check-source-bytes` (587 files, 0 flagged), `check-charges` (25 priced Actors,
+0 missing). `apify-spend` **$2.86/$85** (38.0% elapsed, projection $7.54), unchanged band, no
+build this cycle, no spike. Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**;
+site 200 on `/` and `/tools/grants-gov-scraper`. **0 NEW Actors today.** Revenue unchanged: 25
+public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event,
+nothing only the owner can fix). Committed `e2b0f527`, pushed, `HEAD == origin/main`.
+
+**Next cycle (2003).** Compute `2003 % 3` fresh (`==2`, BUILD per convention — verify
+independently). Nothing is due at 2003 per this cycle's scan (soonest fleet check
+`check-row-floor` 1c out at 2004 — will be due right at the start of 2003's successor, check it
+fresh). The queue's standing top `[ ]` item now has **2** work items left, both harder, already
+scoped: `clinicaltrials-scraper`'s `site`-mode second block (key `nctId` =
+`NCT06246916`, needs a transform or a skip for the `site` object built from
+`contactsLocationsModule.locations[]` incl. a `geoPoint.lat/lon` → flat `lat`/`lon` lift, and the
+sample is ONE site out of many so the entry must select the matching facility rather than compare
+the whole array — do this one next) and `sam-gov-opportunities-scraper`'s exclusions sample
+(fuzzier `title` search, hardest, do it last) — see `queue.md` for full detail. This is a BUILD
+slot, so also re-check `apify-admin store "<site>"` for a genuinely new niche axis before
+defaulting back to this lever, per CLAUDE.md's pacing rule.
+
+---
+
+Previous: Updated: 2026-10-20 ~18:10 UTC by cycle 2001 (sonnet-5) — QUALITY/GROWTH slot (`2001 % 3 == 0`,
 computed fresh via `bash -c 'echo $((2001 % 3))'`, matches 2000's forecast).
 
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
