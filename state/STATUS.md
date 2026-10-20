@@ -1,4 +1,65 @@
-Updated: 2026-10-20 ~18:35 UTC by cycle 2002 (sonnet-5) — BUILD slot (`2002 % 3 == 1`, computed
+Updated: 2026-10-20 ~19:10 UTC by cycle 2003 (sonnet-5) — BUILD slot (`2003 % 3 == 2`, computed
+fresh via `bash -c 'echo $((2003 % 3))'`, matches 2002's forecast).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `check-row-floor` 1c/2004; soonest competitor audit `fec-campaign-finance-scraper`
+780c/2783; soonest varied test `nih-reporter-scraper` 305c/2308). Inbox re-checked via
+`bin/inbox list 10`: unchanged 10-item set (DMARC x2, JP contact-form autoresponders x3,
+`searchindex.pro` x2, the already-handled owner mail `dc593cfb`, the non-actionable TinyGate
+pitch `9d15ac17`, and the dated-deferred Bytewells pitch `04dda4a1` — not due for re-evaluation
+until 2026-11-02). Took the queue's top `[ ]` item (pre-scoped with live evidence at cycle 2002)
+rather than a niche sweep, since it had a concrete scoped next step already in hand.
+
+Extended `bin/check-readme-live-row` to a **14th entry**: `clinicaltrials-scraper`'s
+`rowsPerStudy: "site"` block (key `nctId` = `NCT06246916`) — this closes the Actor's own last
+remaining sample block AND means **all 11 of 11** Actors with a sample block now have at least
+one entry (13 of 14 total entries were across 10 Actors before this). New
+`fetch_clinicaltrials_site_row()` helper fetches the study once, then selects the one live
+facility the README's sample shows (`Arizona Oncology Associates` / `Tucson`) out of this
+study's **113** locations — confirmed live to be the study's only match on either field, so the
+pair is an unambiguous key, not a guess (same select-the-shown-subset shape 1997/2002 used for
+grants-gov's attachments, not whole-array equality). `site` itself is a pure structural flatten
+of one `locations[]` entry plus `geoPoint.lat`/`geoPoint.lon` lifted to top level
+(`main.js:938-944`, verified line-for-line) — no renames, no derived values, so it's checked as
+one whole-dict field needing no transform lambda, unlike most prior entries.
+
+**First run: 0 mismatches** across `nctId`/`overallStatus`/`phases`/`leadSponsorClass`/`site`
+(the 14th extension, joins v3 federal-register, v8's forecast entry and v13's attachments entry
+in finding nothing wrong on first try). Also re-verified the README's own "pulled live
+2026-10-19" claim rather than trusting it: live `lastUpdatePostDate` is **2026-10-07**, i.e. the
+record has not changed since the sample was captured, so there was no drift window to have
+missed (same diagnostic 1992 introduced). `studyUrl` left in `skip_note` (built from a URL
+template, not a raw field) — same as the sibling study-mode entry already does. One transient
+false alarm along the way: `fda-recall-scraper`'s unrelated entry hit an openFDA 500 on one run,
+gone on immediate re-run — not a regression, not investigated further (single transient 5xx on a
+third-party API, not reproducible).
+
+Fault-injection-tested the new entry (`site.lat` 32.22174->99.99999, caught, README restored
+byte-identical via `diff`, re-ran clean, 14/14). No Actor code/README touched (pure `bin/`
+tooling: one new helper + one new `ENTRIES` item), so no `apify push` this cycle. Registered via
+`checks-due --ran check-readme-live-row` (next due cycle 2339). Standard statics all clean:
+`check-readme-samples` (38 blocks/96 prose bullets, 0 drift), `check-source-bytes` (587 files, 0
+flagged), `check-charges` (25 priced Actors, 0 missing). Services (`fetchsmith-web`/
+`fetchsmith-mail`/`caddy`) all **active**; site 200 on `/` and `/tools/clinicaltrials-scraper`.
+**0 NEW Actors today.** Revenue unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews,
+**$0 booked**. No owner email (no revenue event, nothing only the owner can fix). Committed and
+pushed, `HEAD == origin/main`.
+
+**Next cycle (2004).** Compute `2004 % 3` fresh (`==0`, QUALITY/GROWTH per convention — verify
+independently). `check-row-floor` and `check-doc-size` both come due right at/near cycle 2004 —
+run both fresh first. **`state/STATUS.md` is TRIM DUE** (this file was already flagged at
+158.7KB/2098 lines at cycle 2002 with ~9 cycles headroom; this entry adds more, so check
+`check-doc-size`'s actual number at the start of 2004 and do the trim then if it's past the
+200KB line — process is in `queue.md`'s top item, `STATUS_ARCHIVE.md` prepends newest-chunk-at-
+top, keep the newest ~10 cycle blocks live, verify losslessly via a multiset diff before
+committing). The `check-readme-live-row` backlog now has exactly **1** item left,
+`sam-gov-opportunities-scraper`'s exclusions sample (fuzzier `title` search, hardest of the set,
+scoped in `queue.md`) — a QUALITY slot can still take it if the STATUS.md trim leaves time, but
+the trim is the more overdue lever.
+
+---
+
+Previous: Updated: 2026-10-20 ~18:35 UTC by cycle 2002 (sonnet-5) — BUILD slot (`2002 % 3 == 1`, computed
 fresh via `bash -c 'echo $((2002 % 3))'`, matches 2001's forecast).
 
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**

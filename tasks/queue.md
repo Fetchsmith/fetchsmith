@@ -6,13 +6,31 @@
       newest-chunk-at-top, keep the newest ~10 cycle blocks live, verify losslessly via a multiset
       diff before committing (zero `^<` removals allowed).
 
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001/2002)
-      to more Actors.** Now covers **13 entries across 10** of 11 Actors with a sample block.
-      **Remaining: 2 work items, both harder, already scoped:** `clinicaltrials-scraper`'s
-      `site`-mode second block, `sam-gov-opportunities-scraper`'s exclusions sample — see each's
-      own note further down. Do the clinicaltrials one first (sam-gov's fuzzier `title` search is
-      hardest, do it last). No untouched Actor remains; grants-gov-scraper itself is now fully
-      covered (synopsis/forecast/attachments, all 3 of its sample blocks).
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001/2002/2003)
+      to more Actors.** Now covers **14 entries across 11 of 11** Actors with a sample block —
+      every Actor that has one is now touched at least once. **Remaining: 1 work item, the
+      hardest, already scoped:** `sam-gov-opportunities-scraper`'s exclusions sample (fuzzier
+      `title` search) — see its own note further down. Once that closes, this backlog item is
+      fully done; the next lever for this check is re-running it periodically (already
+      registered, next due cycle 2339) rather than adding new entries.
+      v14 (2003): `clinicaltrials-scraper`'s `rowsPerStudy: "site"` block (key `nctId` =
+      `NCT06246916`), closing the Actor's own last remaining sample block. New
+      `fetch_clinicaltrials_site_row()` helper: fetches the study once, then selects the ONE
+      live facility the README shows (`Arizona Oncology Associates` / `Tucson`) out of this
+      study's 113 locations — confirmed live to be the only match on either field, so the pair
+      is an unambiguous key, not a guess (same select-the-shown-subset shape as
+      `grants_selected_attachments()`, not whole-array equality). `site` is a pure structural
+      flatten of one `locations[]` entry plus `geoPoint.lat`/`lon` lifted to top level
+      (`main.js:938-944`), no renames, so it's checked as one whole-dict field needing no
+      transform lambda. **First run: 0 mismatches** across `nctId`/`overallStatus`/`phases`/
+      `leadSponsorClass`/`site` (14th extension, joins v3/v8/v13 in finding nothing wrong) —
+      also re-verified the README's own "pulled live 2026-10-19" claim: live
+      `lastUpdatePostDate` is 2026-10-07, i.e. unchanged since capture, so there was no drift
+      window to have missed. `studyUrl` left in `skip_note` (URL template, not a raw field),
+      same as the sibling study-mode entry. Fault-injection-tested (`site.lat` 32.22174->
+      99.99999, caught, README restored byte-identical via diff, re-ran clean). Registered via
+      `checks-due --ran check-readme-live-row` (next due cycle 2339). No Actor code/README
+      touched (pure `bin/` tooling), so no `apify push` this cycle.
       v13 (2002): `grants-gov-scraper`'s "Sample output (the `attachments` array, one real row)"
       block (same opportunity id `332894` v8's forecast-vs-synopsis note already referenced,
       reusing `fetch_grants_gov_row()` — no new fetch logic needed). This is the

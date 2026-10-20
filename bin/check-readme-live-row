@@ -340,6 +340,61 @@ def fetch_uk_fts_row(notice_id):
     }
 
 
+def fetch_clinicaltrials_site_row(nct_id):
+    """Fetch one clinicaltrials-scraper `rowsPerStudy: "site"` row.
+
+    main.js's normalizeStudy() (read first, src/main.js:938-944) builds each `facilities[]`
+    entry as a flat {facility, status, city, state, country, lat, lon} object, with lat/lon
+    lifted straight out of each location's own `geoPoint.lat`/`geoPoint.lon` -- a pure
+    structural flatten, no renames beyond that, verified line-for-line against the live
+    response below. `rowsPerStudy: "site"` then explodes one row per facility, pairing that
+    flat object with the SAME top-level study fields the "study" mode entry above already
+    checks (src/main.js:1132-1136), so this entry reuses that shape for everything except
+    `locations`/`locationCount` (dropped in site mode) and adds `site`.
+
+    The README's sample is ONE site out of this study's 113 (confirmed live), so -- same
+    select-the-shown-subset rule as grants_selected_attachments() -- this does not compare the
+    whole `facilities[]` array. It selects by the exact facility+city the README itself shows
+    (`Arizona Oncology Associates` / `Tucson`), verified live this cycle to be the only
+    location on NCT06246916 matching either field, so the pair is an unambiguous key, not a
+    guess.
+    """
+    study = fetch_json(
+        f"https://clinicaltrials.gov/api/v2/studies/{urllib.parse.quote(nct_id)}?format=json"
+    )
+    p = study.get("protocolSection") or {}
+    id_mod = p.get("identificationModule") or {}
+    status_mod = p.get("statusModule") or {}
+    design_mod = p.get("designModule") or {}
+    sponsor_mod = p.get("sponsorCollaboratorsModule") or {}
+    locs = (p.get("contactsLocationsModule") or {}).get("locations") or []
+    matches = [
+        l for l in locs
+        if l.get("facility") == "Arizona Oncology Associates" and l.get("city") == "Tucson"
+    ]
+    if len(matches) != 1:
+        raise RuntimeError(
+            f"expected exactly 1 Arizona Oncology Associates/Tucson location on {nct_id!r}, "
+            f"found {len(matches)} (of {len(locs)} total)"
+        )
+    l = matches[0]
+    return {
+        "nctId": id_mod.get("nctId"),
+        "overallStatus": status_mod.get("overallStatus"),
+        "phases": design_mod.get("phases"),
+        "leadSponsorClass": (sponsor_mod.get("leadSponsor") or {}).get("class"),
+        "site": {
+            "facility": l.get("facility"),
+            "status": l.get("status"),
+            "city": l.get("city"),
+            "state": l.get("state"),
+            "country": l.get("country"),
+            "lat": (l.get("geoPoint") or {}).get("lat"),
+            "lon": (l.get("geoPoint") or {}).get("lon"),
+        },
+    }
+
+
 def list_dedup(v):
     """Mirrors fda-recall-scraper main.js's list(): Array.from(new Set(v.filter(Boolean))) --
     dedup preserving first-occurrence order, drop falsy entries. Verified live cycle 1999: the
@@ -841,6 +896,32 @@ ENTRIES = [
             "registry drift: briefTitle was missing its ': a Prospective RCT' suffix, "
             "interventions listed only 1 of the trial's 2 arms, and primaryOutcomes[0]."
             "timeFrame read '1 year' against a live 'At 5 years of treatment'."
+        ),
+    },
+    {
+        "slug": "clinicaltrials-scraper",
+        "heading": 'Sample output (`rowsPerStudy: "site"`)',
+        "key_field": "nctId",
+        # See fetch_clinicaltrials_site_row()'s docstring: selects the one live facility the
+        # README's sample shows (Arizona Oncology Associates / Tucson), confirmed live this
+        # cycle to be the study's only match for either field (of 113 locations total) -- not
+        # a guess, and not whole-array equality (same select-the-shown-subset shape as
+        # grants_selected_attachments()).
+        "fetch": lambda key: fetch_clinicaltrials_site_row(key),
+        "fields": {
+            "nctId": "nctId",
+            "overallStatus": "overallStatus",
+            "phases": "phases",
+            "leadSponsorClass": "leadSponsorClass",
+            "site": "site",
+        },
+        "skip_note": (
+            "studyUrl is built from a URL template (https://clinicaltrials.gov/study/<nctId>), "
+            "not a raw field -- intentionally NOT spot-checked here, same as the study-mode "
+            "entry above. `site` is compared as a whole dict (facility/status/city/state/"
+            "country/lat/lon), a pure structural flatten of one `locations[]` entry's own "
+            "fields plus geoPoint.lat/lon lifted to top level (main.js:938-944), verified "
+            "line-for-line -- no renames, no derived values, so no transform lambda is needed."
         ),
     },
     {
