@@ -1,5 +1,6 @@
 #!/root/agent/venv/bin/python
-"""Are state/STATUS.md and tasks/queue.md still small enough to Read in one call?
+"""Are the live docs still small enough to work with? (STATUS/queue by bytes,
+notes/LEARNINGS.md by lines -- see LINE_DOCS for why the rule differs.)
 (added cycle 1836)
 
 WHY: the archive trim is the one piece of housekeeping that has no clock. It lived
@@ -45,6 +46,17 @@ WARN_BYTES = 150 * 1024 # the long-standing "standing trim line" (cycle 156)
 DOCS = [
     ("state/STATUS.md", "state/STATUS_ARCHIVE.md", 4510),
     ("tasks/queue.md", "tasks/queue_archive.md", 5440),
+]
+
+# Docs whose trim rule is stated in LINES, not bytes. notes/LEARNINGS.md is 687KB
+# and will never be Read whole (it is reached via bin/learnings), so the byte
+# thresholds above would mark it TRIM DUE forever -- an always-failing check is as
+# useless as an always-passing one. Its own header states the real rule: ~8000 lines.
+# Added at cycle 1976, which found it at 10,325 lines: the rule had NO enforcer, so
+# it only fired when a cycle happened to eyeball the file (1684 -> 1976 = 292 cycles).
+# (live doc, its archive, max lines, measured lines/cycle growth)
+LINE_DOCS = [
+    ("notes/LEARNINGS.md", "notes/LEARNINGS_ARCHIVE.md", 8000, 20),
 ]
 ROOT = "/root/agent"
 
@@ -103,6 +115,28 @@ def main():
               f" (proj. {projected/1024:.0f}KB at next look)"
               + (f"   (archive {ab/1024/1024:.1f}MB)" if ab else ""))
 
+    for live, arch, maxl, rate in LINE_DOCS:
+        b, lines = size(live)
+        if b is None:
+            print(f"  MISSING {live}")
+            due.append(live)
+            continue
+        ab, _ = size(arch)
+        head = (maxl - lines) / rate
+        projected = lines + rate * gap
+        state = "OK"
+        if lines >= maxl:
+            state = "TRIM DUE"
+            due.append(live)
+        elif projected >= maxl:
+            # Same cycle-1860 logic as the byte docs: a line that the check never
+            # fires NEAR is a line that gets crossed unnoticed between looks.
+            state = "WARN"
+        print(f"  {state:9} {live:20} {lines:5d} lines (max {maxl})  "
+              f"~{head:.0f} cycles of headroom at +{rate} lines/cycle"
+              f" (proj. {projected} at next look)"
+              + (f"   (archive {ab/1024/1024:.1f}MB)" if ab else ""))
+
     if due:
         print("\nTRIM DUE: " + ", ".join(due))
         print("Process (cycle 1836, 1799 before it): keep the newest 10 cycle blocks in")
@@ -110,9 +144,14 @@ def main():
         print("under a '## Archived by cycle <N>' header, newest-first. Verify losslessly")
         print("(every non-blank original line must be findable in live+archive) before")
         print("committing -- see bin/_trim1836.py for a worked, self-verifying example.")
+        print("notes/LEARNINGS.md differs: move the OLDEST contiguous block of the")
+        print("chronological body (never the newest-first highlights block at the top)")
+        print("to the END of its archive, and trim DEEP enough to clear this check's own")
+        print("interval with room to spare -- cycle 1976 first cut to 7604 (20c headroom")
+        print("vs a 24c interval, i.e. instantly WARN) before recutting to 5928.")
         return 1
 
-    print("\nOK: both live docs under the trim line.")
+    print("\nOK: all live docs under their trim line.")
     return 0
 
 

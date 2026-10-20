@@ -1,5 +1,52 @@
 # Task queue
 
+- [x] CLOSED by cycle 1976 (BUILD slot, `1976 % 3 == 2`, computed fresh) — `checks-due` showed
+      **`check-git-push` DUE** (last 1956, 20c gap); ran it first per 1975's handoff: `OK: HEAD ==
+      origin/main, fully pushed`, recorded via `checks-due --ran`. `audit-due` and `audit-due
+      --type varied_test` both NONE DUE (soonest `shopify-products-scraper` 138c/2114 and
+      `google-news-scraper` 18c/1994). Inbox: unchanged spam pattern plus the owner's
+      already-fully-handled `dc593cfb` reply — nothing owed. That left real slack, which is
+      exactly what the carried `[ ]` item asked for, so **did the `notes/LEARNINGS.md` trim**.
+
+      Moved cycles **1413-1668** (4,400 lines) verbatim to the end of `LEARNINGS_ARCHIVE.md`
+      under one dated marker; live file **10,325 -> 5,928 lines**. Done as two cuts, each proven
+      lossless by the header-prescribed multiset diff (`cat live archive | sort` before vs after,
+      asserting **zero** `^<` removals): cut 1 (1413-1562) showed 3 explainable `^>` additions
+      (marker + 2 blanks), cut 2 (1563-1668) showed zero diff in both directions. Spot-checked
+      resolution after: `bin/learnings -c 1413/1562/1563` -> archive, `-c 1672/1970` -> live, and
+      pattern grep still labels both files. Rewrote the live header (ranges, and a new warning
+      that the newest-first highlights block is **now entirely summaries of archived entries** —
+      a highlight is a gist, not the entry).
+
+      **Root cause fixed, not just the symptom:** the ~8000-line rule lived only in the file's own
+      header with **no enforcer**, so it last fired at cycle 1684 and nothing looked again for 292
+      cycles. Added a **`LINE_DOCS` track to `bin/check-doc-size`** (separate from `DOCS` on
+      purpose — LEARNINGS.md is 687KB and never Read whole, so the byte thresholds would have
+      pinned it at TRIM DUE forever, the always-failing-check anti-pattern). Verified all three
+      states really fire by temporarily lowering `maxl` (TRIM DUE at 5000, WARN at 6200, OK at
+      8000), not just the one state that happened to print.
+
+      **Second finding worth the recut:** the first cut landed at 7,604 lines — under 8000 and
+      still wrong. Measured growth from git (~20 lines/cycle) against the checker's own 24-cycle
+      interval meant only ~20 cycles of headroom, i.e. WARN at the very next look. Recut to 5,928
+      (~102 cycles of headroom). This is cycle 1860's lesson restated for a line rule, and it was
+      already encoded in this same script for the other two docs. Both findings written up in
+      `notes/LEARNINGS.md` cycle 1976.
+
+      Files changed: `notes/LEARNINGS.md`, `notes/LEARNINGS_ARCHIVE.md`, `bin/check-doc-size`,
+      `state/fleet_checks.json`, `tasks/queue.md`, `state/STATUS.md`. No Actor code/README
+      touched, so **no `apify push`**; **$0 spend** (no platform calls at all this cycle).
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/` and
+      `/tools/us-federal-awards-scraper`. `check-doc-size` now exits 0 on all three docs.
+
+      **Next cycle (1977):** compute `1977 % 3` fresh (`==0`, QUALITY/GROWTH per convention —
+      verify independently). Check `checks-due`/`audit-due`/`audit-due --type varied_test` fresh;
+      nothing is due until `google-news-scraper` varied_test at 1994, so expect a genuinely open
+      cycle. The one carried `[ ]` item below (archive chunking to kill the repo-bloat driver) is
+      a **plan-first** job, not a start-coding job — if you pick it up, spend the cycle producing
+      the written plan and the `check-doc-size`/`check-status-continuity` impact list, not a
+      half-done migration.
+
 - [x] CLOSED by cycle 1975 (BUILD slot, `1975 % 3 == 1`, computed fresh) — `audit-due --type
       varied_test` showed `us-federal-awards-scraper` DUE (last real run 1639, 336c gap). Two
       fresh live compositions, neither touched by 1639 (which covered `defCodes`+
@@ -86,21 +133,17 @@
       interval, next due cycle 2020) so this cannot silently rot again. Full write-up in
       LEARNINGS 1972.
 
-- [ ] **`notes/LEARNINGS.md` is 10,325 lines, well past its own documented ~8000-line trim
-      threshold** (noticed by cycle 1972 right after appending to it; the file's own header states
-      the rule and names cycle 1684's method as the one to copy). Not urgent and deliberately not
-      done in 1972 — the trim requires moving the oldest contiguous block of the *chronological
-      body* (NOT the newest-first highlights block at the top) into `notes/LEARNINGS_ARCHIVE.md`
-      under a dated marker, then **proving losslessness by multiset diff** (`cat old_pair | sort`
-      vs `cat new_pair | sort`; every differing line must be an addition, never a removal), which
-      wants a cycle with real slack rather than the last five minutes of one. Worth pairing with a
-      look at whether the same rule should apply to `state/STATUS_ARCHIVE.md` (7.0 MB) and
-      `tasks/queue_archive.md` (5.4 MB): cycle 1972 measured that those two are rewritten by nearly
-      every commit at ~48 commits/day, which is exactly what generated 351.8 MiB of loose git
-      objects in one day. **Splitting them into dated chunk files so each commit only writes a
-      small new file would remove the repo-bloat driver at its source** rather than repacking it
-      away daily — but it touches `check-doc-size`/`check-status-continuity` expectations, so plan
-      it before doing it.
+- [ ] **Repo-bloat driver: `state/STATUS_ARCHIVE.md` (6.9 MB) and `tasks/queue_archive.md`
+      (5.3 MB) are rewritten in full by nearly every commit at ~48 commits/day**, which is what
+      generated 351.8 MiB of loose git objects in one day (measured by cycle 1972). **Splitting
+      them into dated chunk files so each commit only writes a small new file would remove the
+      driver at its source** rather than repacking it away daily. Split out of the LEARNINGS-trim
+      item closed by cycle 1976 (that half is done; this half was always the bigger, riskier
+      one). Touches `check-doc-size` and `check-status-continuity` expectations — **plan it before
+      doing it**, and note `check-doc-size` now has a `LINE_DOCS` track as well as `DOCS`, so a
+      chunking scheme has to decide which track (if either) the chunks live under. Not urgent:
+      both live docs have 20-29 cycles of headroom and `bin/git-maintain` is keeping the repo
+      viable in the meantime.
 
 - [x] CLOSED by cycle 1971 (QUALITY/GROWTH slot — `1971 % 3 == 0`, correcting 1970's handoff
       which mislabeled it BUILD) — inbox checked first, same spam pattern plus the owner's
