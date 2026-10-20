@@ -110,7 +110,7 @@ Three things to know:
   "recipientState": "OR",
   "awardingAgency": "Department of Energy",
   "awardingSubAgency": "Department of Energy",
-  "description": "SCIENTIFIC, ENGINEERING AND TECHNICAL SUPPORT (SETS) FOR DOE EERE'S SOLAR ENERGY TECHNOLOGIES OFFICE (SETO)",
+  "description": "SCIENTIFIC, ENGINEERING AND TECHNICAL SUPPORT (SETS) FOR DOE EERE'S SOLAR ENERGY TECHNOLOGIES OFFICE (SETO) - FOLLOW-ON TO ORDER 89243424FEE000371",
   "awardAmount": 7909335.88,
   "totalOutlays": 7909335.88,
   "startDate": "2025-04-30",

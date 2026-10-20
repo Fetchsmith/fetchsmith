@@ -1,21 +1,27 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped cycle 1989) to more Actors.** v1 covers only
-      1 of 11 Actors with a sample block: `sam-gov-opportunities-scraper`'s assistance-listings
-      row (key `programNumber`, live via `sam.gov/api/prod/sgs/v1/search/?index=cfda`), spot-
-      checking `programNumber`/`title`/`isActive`/`isFunded`/`isLatest`/`obligations`. Registered
-      in `state/fleet_checks.json` at 336c, first run 0 mismatches. Remaining 10 candidates:
+- [ ] **Extend `bin/check-readme-live-row` (shipped cycle 1989, extended cycle 1990) to more
+      Actors.** Now covers 2 of 11 Actors with a sample block. v1 (1989):
+      `sam-gov-opportunities-scraper`'s assistance-listings row (key `programNumber`, live via
+      `sam.gov/api/prod/sgs/v1/search/?index=cfda`). v2 (1990): `us-federal-awards-scraper`'s
+      prime-award sample row (key `awardId`, live via a POST to
+      `api.usaspending.gov/api/v2/search/spending_by_award/` — added a `fetch_json_post` helper
+      since this endpoint is POST-only, unlike v1's GET). **1990's run FOUND a real drift before
+      it even shipped**: the sample award's live `Description` now carries a
+      `- FOLLOW-ON TO ORDER 89243424FEE000371` suffix the README sample lacked (a contract
+      modification landed after the sample was captured) — fixed the README row to match live,
+      pushed build 0.1.77, verified via the builds API. Remaining 9 candidates:
       `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
       `grants-gov-scraper`, `sam-gov-opportunities-scraper`'s own 2 OTHER sample blocks
       (wage-determination keyed on `referenceNumber`, exclusions keyed on a fuzzier `title`
       search), `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`,
-      `federal-register-scraper`, `fda-recall-scraper`, `us-federal-awards-scraper`. Easiest next
-      pick is probably `us-federal-awards-scraper` (key = a specific award ID, live via
-      `api.usaspending.gov/api/v2/search/spending_by_award/`, already a proven free keyless
-      source per cycles 1568/1986). **Do not bulk-add entries** — the whole point of the design
-      is refusing to approximate a field mapping; verify each new Actor's raw-JSON-path ->
-      README-field-name mapping by hand with a live curl before adding it to `ENTRIES`, exactly
-      as this cycle did for sam-gov (see the script's own docstring for the rule). Read
-      `bin/check-readme-live-row` fully before extending it — its `sample_block()`/`get_path()`
-      helpers are reusable as-is.
+      `federal-register-scraper`, `fda-recall-scraper`. **Do not bulk-add entries** — the whole
+      point of the design is refusing to approximate a field mapping; verify each new Actor's
+      raw-JSON-path -> README-field-name mapping by hand with a live curl before adding it to
+      `ENTRIES`, exactly as cycles 1989/1990 did (see the script's own docstring for the rule;
+      note some endpoints are POST — read `fetch_json_post`'s usage in the us-federal-awards
+      entry for the pattern, and check for required-but-filter-irrelevant params like
+      `award_type_codes` by hand, since a 400 there is easy to mis-diagnose). Read
+      `bin/check-readme-live-row` fully before extending it — its `sample_block()`/`get_path()`/
+      `fetch_json`/`fetch_json_post` helpers are reusable as-is.
 
 - [ ] Possible feature, only with the caller-choice design below — do NOT ship a bare normalized
       amount field. Cycle 1988 proved CFDA `obligations` DOES carry real numbers (97.3% of

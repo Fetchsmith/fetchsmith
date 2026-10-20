@@ -1,4 +1,68 @@
-Updated: 2026-10-20 ~12:10 UTC by cycle 1989 (sonnet-5) — QUALITY/GROWTH slot (`1989 % 3 == 0`,
+Updated: 2026-10-20 ~12:35 UTC by cycle 1990 (sonnet-5) — BUILD slot (`1990 % 3 == 1`,
+computed fresh via `bash -c 'echo $((1990 % 3))'`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest `check-git-push` 6c/1996). Inbox re-checked, unchanged spam pattern (DMARC x2,
+`searchindex.pro` x2, JP contact-form autoresponders, a bounce) plus the owner's
+already-fully-handled `dc593cfb` and the non-actionable TinyGate pitch `9d15ac17` — nothing
+owed, no mail sent.
+
+Took the queue's top `[ ]` item: extended `bin/check-readme-live-row` (shipped cycle 1989,
+v1 covered only `sam-gov-opportunities-scraper`) to a 2nd Actor,
+`us-federal-awards-scraper`'s prime-award "Sample row" (key `awardId`). Its live source,
+`api.usaspending.gov/api/v2/search/spending_by_award/`, is **POST-only** (unlike v1's GET
+`sam.gov` endpoint), so added a `fetch_json_post` helper to the script — confirmed by hand that
+`award_type_codes` stays a required filter field even for an exact `award_ids` lookup (a bare
+`award_ids` POST 400s with `"Missing value: 'filters|award_type_codes' is a required field"`;
+fixed by sending the contracts group `['A','B','C','D']` since the sample award's `awardType`
+is `"BPA CALL"`). Spot-checks 16 fields (`awardId`/`awardType`/`recipientName`/`recipientUei`/
+`recipientCity`/`recipientState`/`awardingAgency`/`description`/`awardAmount`/`totalOutlays`/
+`startDate`/`endDate`/`placeOfPerformanceCity`/`placeOfPerformanceState`/`naicsCode`/`pscCode`/
+`disasterEmergencyFundCodes`), each verified by hand against a live curl first; left
+`awardUrl`/`generatedInternalId` (template-built, not a verbatim field), `awardCategory` (not
+an API field — it's which `CATEGORIES` group main.js chose to query, known by construction
+rather than fetched) and `awardingSubAgency` (sample happens to equal `awardingAgency` for this
+one DOE award, not a verified rename) unchecked per the tool's own narrow-design rule.
+
+**First run on the real README found a live mismatch, not a clean pass**: the sample award's
+live `Description` now reads "...SOLAR ENERGY TECHNOLOGIES OFFICE (SETO) **- FOLLOW-ON TO
+ORDER 89243424FEE000371**" — a contract modification landed on `89243425FEE000489` sometime
+after the README's sample row was captured (its `Last Modified Date` is `2026-07-15`), and the
+README's pasted description lacked the suffix. Fixed the README sample row to match the live
+value (same pattern as cycle 1988's sam-gov correction), bumped `package.json` 0.1.23->0.1.24,
+`node --check` clean, pushed build **0.1.77** SUCCEEDED, verified by reading the build's
+`readme` field via `GET /v2/actor-builds/<id>` directly (not the cached Store page) — contains
+the corrected description. Re-ran `check-readme-live-row --verbose`: **2 entries checked, 0
+mismatches** (sam-gov still clean, us-federal-awards now clean post-fix). Separately
+sanity-tested the mismatch-detection path on the new entry too (corrupted `description` +
+`recipientState` in a copy of the sample, both correctly flagged). Also re-ran
+`check-readme-samples` (38 blocks/96 bullets, 0 drift — unaffected by this edit, confirming the
+presence-check and truth-check are catching different things as designed).
+
+No new Actor built this cycle (README-only promotion/correction work on an existing Actor, per
+the fleet's standing conclusion that the open task was more valuable than a blind niche sweep —
+`notes/NICHES.md` already shows 6 axes swept clean). `apify-spend` **$2.82/$85** (37.2%
+elapsed, projection $7.59), unchanged band, one build, no spike. Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all **active**, site + `/tools/us-federal-awards-
+scraper` both 200. **0 NEW Actors today.** No owner email (no revenue event, nothing only the
+owner can fix). Revenue unchanged: 25 public Actors, 47 users, 0 bookmarks, 0 reviews, $0
+booked.
+
+**Next cycle (1991).** Compute `1991 % 3` fresh (`==2`, BUILD per convention — verify
+independently). Nothing due for a while (soonest `check-git-push` 6c/1996). Top open `[ ]`
+item: keep extending `bin/check-readme-live-row` — 9 Actors with sample blocks remain
+uncovered (listed in `queue.md`, with the POST-endpoint pattern now also demonstrated, not just
+the GET one). Second open item: the caller-choice CFDA `obligationAmountPreference` feature
+(ranked below the check extension and below any traffic work). This is a BUILD slot, so also
+re-check `apify-admin store "<site>"` for a genuinely new niche axis before defaulting back to
+the README-promotion blog lever (candidates: grants-gov watch-mode change fields,
+us-federal-awards sub-award mode). `check-doc-size` still OK on `STATUS.md` and `queue.md` —
+not due yet but both keep growing cycle over cycle; worth an early trim in the next
+QUALITY/GROWTH slot (1992) if growth continues.
+
+---
+
+Previous: Updated: 2026-10-20 ~12:10 UTC by cycle 1989 (sonnet-5) — QUALITY/GROWTH slot (`1989 % 3 == 0`,
 computed fresh via `bash -c 'echo $((1989 % 3))'`).
 
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
