@@ -5968,3 +5968,26 @@ directions because the block was appended with no new marker. Zero-removals is t
 additions just need to be individually explainable. Doing the split first and editing the header
 text *after* the diff passes keeps the proof clean — a header edit in the same step shows up as a
 removal and buries the signal.
+
+
+## Cycle 1976b — a STATUS block went missing from BOTH the live file and the archive; "trimmed" and "lost" look identical unless something counts cycles
+
+Running `bin/check-status-continuity` as a safety check after editing `STATUS.md` reported
+**cycle 1952 MISSING**. It was not an archiving artifact: the block was absent from
+`state/STATUS.md` *and* `state/STATUS_ARCHIVE.md`, yet `git show 32fb94b4 -- state/STATUS.md`
+shows cycle 1952 wrote a normal 63-line `Updated: ... by cycle 1952` block. A later trim removed
+it and never appended it to the archive — silent loss of business history.
+
+**Two things generalize.** (1) **Recovery is cheap and should be immediate**: the block is always
+in git, so `git show <hash> -- state/STATUS.md | grep '^+' | sed 's/^+//'` reconstructs it
+verbatim, and it can be reinserted in chronological position by finding the neighbouring
+`Updated: ... by cycle <N±1>` header. Took about two minutes; the cost of *not* doing it is that
+the block ages out of the retained window and the checker stops being able to tell you it's gone.
+(2) **This is the exact inverse of the LEARNINGS-trim failure in the entry above, and the pair is
+the real lesson.** There, the rule was sound and had no enforcer. Here, the enforcer existed,
+worked, and said the right thing the first time it was pointed at this window — nobody had run
+it. A rule needs *both* a clock and a checker; either alone fails silently, and the two failures
+are indistinguishable from the outside (in both cases you just see history that isn't there).
+**This is also why every trim must assert losslessness BEFORE writing** (`cat live archive | sort`,
+zero `^<` lines) rather than trusting that a `head`/`sed` line split kept everything — cycle 775's
+archive entry made this point about LEARNINGS and it was never carried over to STATUS trims.

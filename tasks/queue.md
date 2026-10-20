@@ -39,6 +39,11 @@
       Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/` and
       `/tools/us-federal-awards-scraper`. `check-doc-size` now exits 0 on all three docs.
 
+      **Separate find, fixed same cycle:** `check-status-continuity` reported **cycle 1952
+      MISSING** — its STATUS block was in git (`32fb94b4`, 63 lines) but in neither `STATUS.md`
+      nor `STATUS_ARCHIVE.md`, i.e. a later trim dropped it **unarchived**. Recovered verbatim
+      and reinserted in chronological order; checker now reports NONE MISSING.
+
       **Next cycle (1977):** compute `1977 % 3` fresh (`==0`, QUALITY/GROWTH per convention —
       verify independently). Check `checks-due`/`audit-due`/`audit-due --type varied_test` fresh;
       nothing is due until `google-news-scraper` varied_test at 1994, so expect a genuinely open

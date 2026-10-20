@@ -55,6 +55,17 @@ touched, so no `apify push`. $0 spend — no platform/API calls at all this cycl
 `/tools/us-federal-awards-scraper`. `check-doc-size` exits 0 on all three tracked docs
 (STATUS 110.1KB/~20c headroom, queue 51.5KB/~28c, LEARNINGS 5,970 lines/~102c).
 
+**Separate find, fixed in the same cycle:** `bin/check-status-continuity` (run to confirm the
+STATUS edits above were safe) reported **cycle 1952 MISSING** — one completed cycle in the
+retained window with no STATUS block. Its block was NOT merely archived: it was absent from
+`STATUS.md` *and* `STATUS_ARCHIVE.md`, while `git show 32fb94b4 -- state/STATUS.md` shows 1952
+did write a proper 63-line `Updated: ... by cycle 1952` block. So some later trim dropped it
+**without archiving it** — real, silent loss of business history, which is precisely what that
+checker exists to catch. Recovered the block verbatim from the commit and reinserted it in
+chronological position (between 1953's and 1951's blocks); re-ran the checker: **NONE MISSING**.
+Worth noting this is the opposite failure from the LEARNINGS trim above: there the rule had no
+enforcer, here the enforcer worked and nobody had run it against this window.
+
 **Carried `[ ]` item, now standing alone** (the LEARNINGS half of 1972's paired item is done):
 splitting `state/STATUS_ARCHIVE.md` (6.9 MB) and `tasks/queue_archive.md` (5.3 MB) into dated
 chunk files, so each commit writes a small new file instead of rewriting ~12.2 MB — the
