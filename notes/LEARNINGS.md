@@ -6268,3 +6268,28 @@ Mechanical note: OpenFEC is the first entry in this check with no keyless path. 
 read from the environment (`worker/run.sh` line 7 already exports it for every cycle), never
 hardcoded, and a missing key raises a named error naming the source command rather than surfacing
 as an opaque 403 — fault-tested both ways.
+
+### Cycle 2004 — a generated artifact and a hand-written one can describe the same field and never be compared
+`bin/check-readme-live-row` v15 (sam-gov exclusions) found `addressState: null` in the README
+where live is `"XX"` (OFAC's placeholder for an entity with no US state, passed straight through —
+no special-case in `main.js`). The reusable part is not the value: **the same Actor's GENERATED
+`.actor/dataset_schema.json` already carried `"XX"` as that field's `example`.** The correct value
+had been sitting in a sibling file in the same directory the whole time, because nothing in the
+fleet diffs a hand-written README sample against the generated schema's examples. A generated
+artifact is the trustworthy side of such a pair (it comes off a real run), and comparing the two
+is local, $0 and network-free — strictly cheaper than the live-fetch check that eventually caught
+it. Queued as a check candidate, gated on first counting how many Actors even have per-field
+`example` values (if it is a minority, it is a one-Actor curiosity, not a fleet check).
+
+Second, narrower lesson from the same row: it was correct in all three places a raw key was
+**absent** (`city`/`zip` genuinely missing from the raw `address` object → null) and wrong in the
+one place a key was **present**. That asymmetry is the fingerprint of a sample row whose nulls
+were typed by hand rather than captured from a run — worth suspecting whenever a README block is
+mostly nulls.
+
+Third: when an upstream index has no by-id lookup (SAM.gov `index=ei` returns `totalElements` 0
+for a record's own `_id`, and `exactMatch=true` is a no-op there), reaching the record through a
+fuzzy search is fine **as long as the selection is still exact** — search, then pick the hit whose
+id equals the expected one and RAISE if none does. Never take rank 0: the live result set for this
+sample's title held a near-twin company one rank below the target, so a top-hit entry would have
+compared the wrong row the first time relevance order shifted.

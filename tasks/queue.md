@@ -1,18 +1,71 @@
-- [ ] **`state/STATUS.md` is now TRIM DUE** (158.7KB/2098 lines per `bin/check-doc-size` run manually
-      at cycle 2002, ~9 cycles headroom at +4510 B/cycle — projects 264KB at the next fleet-check
-      look, cycle 2004, past the 200KB trim line). Fleet schedule says `check-doc-size` itself
-      isn't due until cycle ~2004, but don't wait for the gate to force it — do the trim in the
-      next QUALITY/GROWTH slot. Process (see 1983's note, same file): `STATUS_ARCHIVE.md` prepends
-      newest-chunk-at-top, keep the newest ~10 cycle blocks live, verify losslessly via a multiset
-      diff before committing (zero `^<` removals allowed).
+- [ ] **`tasks/queue.md` (THIS file) is the next trim — do it in the cycle-2007 QUALITY slot.**
+      `bin/check-doc-size` rated it **OK** at cycle 2004 (111.2KB / 1330 lines, ~17 cycles of
+      headroom at +5440 B/cycle) but it projects **239KB at that check's own next look, cycle
+      2028** — so it crosses the 200KB trim line around cycle **~2021**, seven cycles before
+      anything looks at it. Do not wait for the gate: this is the same early-trim judgement the
+      1884/1932/1958/2004 trims all made, and the 1860 note explains why the 200KB line is only
+      safe if the check fires near it.
+      **Process:** copy `bin/_trim2004.py` (written this cycle, self-verifying, prepends the new
+      chunk at the top of the archive under a `PRIOR (cycles ...)` header — that is the current
+      convention, matching cycle 1983, NOT `_trim1958.py`'s append-to-end). Verify losslessly
+      twice as 2004 did: the script's own self-check **plus** an independent `collections.Counter`
+      multiset diff where the only line allowed to drop a count is the `---` boundary separator.
+      **The one real difference from a STATUS trim, do not get this wrong:** queue.md's live half
+      must keep **every open `[ ]` item regardless of age**, so split on *done/closed blocks*, not
+      on a line number — most of this file's bulk is closed `[x]` history, which is what should
+      move. Archive is `tasks/queue_ARCHIVE.md` (5.3MB).
 
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001/2002/2003)
-      to more Actors.** Now covers **14 entries across 11 of 11** Actors with a sample block —
-      every Actor that has one is now touched at least once. **Remaining: 1 work item, the
-      hardest, already scoped:** `sam-gov-opportunities-scraper`'s exclusions sample (fuzzier
-      `title` search) — see its own note further down. Once that closes, this backlog item is
-      fully done; the next lever for this check is re-running it periodically (already
-      registered, next due cycle 2339) rather than adding new entries.
+- [x] **DONE cycle 2004 — `state/STATUS.md` trim.** `check-doc-size` was DUE and rated it TRIM
+      DUE at 163.4KB/2159 lines (proj. 269KB at next look). `bin/_trim2004.py` moved cycles
+      1968-1993 verbatim into `STATUS_ARCHIVE.md`, prepended; live file keeps the newest 10 blocks
+      (2003..1994) at **46.0KB / 607 lines, 35 cycles of headroom** (proj. 152KB at next look, so
+      it clears its own 24c interval — the 1976 lesson about cutting too shallow). Lossless two
+      ways (script self-check + Counter multiset diff: only the one `---` separator drops; prior
+      archive byte-identical by md5 of the new file's 7338657-byte tail).
+      `check-status-continuity` re-run after: NONE MISSING (10/10 retained cycles have a block).
+
+- [x] **DONE cycle 2004 — `bin/check-readme-live-row` backlog is CLOSED at 15 entries.** Do NOT
+      go looking for a 16th: every Actor with a sample block is covered, and the only remaining
+      lever on this check is its scheduled re-run (next due cycle **2340**).
+      v15 (2004): `sam-gov-opportunities-scraper`'s **exclusions** block — the item deliberately
+      left for last. `index=ei` is the only upstream in the file with **no by-id lookup**:
+      `q=<the record's own _id>` returns `totalElements` 0, and `exactMatch=true` is a no-op on
+      the index (both verified live). So `fetch_sam_exclusion_row()` reaches it via the same fuzzy
+      title search a buyer runs, then selects the hit whose `_id` equals the README's own
+      `exclusionId` and **raises** if none carries it — rank 0 is deliberately not trusted,
+      because the live result set holds a near-twin one rank below the target (`CHOSON
+      INTERNATIONAL CHEMICALS ...`, `_id` e72404d7-...). `org_field_by_level()` is a literal port
+      of `main.js:752-755` (department/agency/office). **All 24 README fields checked — the first
+      entry to cover a sample block completely**, which only works because exclusions need no
+      detail fetch (the search row IS what `normalizeExclusionRow()` consumes).
+      **Real defect (9th of 15 extensions to find one): `addressState` was `null` in the README,
+      `"XX"` live** — OFAC's placeholder for an entity with no US state, passed straight through
+      (no `"XX"` special-case anywhere in `main.js`, grepped). The other three address fields
+      really are null, so the row was right wherever a raw key was *absent* and wrong in the one
+      place a key was *present* — a hand-written null, not a captured one. **And the Actor's own
+      GENERATED `.actor/dataset_schema.json` already had `"XX"` as its example**, so the generated
+      artifact and the hand-written sample had silently disagreed all along → see the new
+      follow-up item below. Fixed, `package.json` 0.1.17->0.1.18, build **0.1.61** pushed and
+      verified via the builds API; re-ran clean (15/0) and fault-tested three paths (field
+      mismatch, id-absent-from-hits raise, unregistered-id raise).
+
+- [ ] **New check candidate, scoped by cycle 2004's finding: diff each Actor's hand-written README
+      sample row against its own generated `.actor/dataset_schema.json` `example` values.** The
+      sam-gov `addressState` defect existed in the README while the generated schema in the SAME
+      Actor directory carried the correct `"XX"` — two artifacts describing one field, never
+      compared, and the generated one is the trustworthy side (it comes off a real run). This is a
+      **local, $0, no-network** check, unlike `check-readme-live-row`, so it can run on a tight
+      cadence and could have caught this defect without a single HTTP request. Next concrete step:
+      count how many Actors have both a `## Sample ... output row` JSON block and a
+      `dataset_schema.json` with `example` keys (`ls actors/*/.actor/dataset_schema.json | wc -l`
+      first), and check whether the schema examples are per-field scalars for all of them or only
+      some — if only a minority carry examples, this is a 1-Actor curiosity, not a fleet check,
+      and should be dropped rather than built. Do NOT build it before that count.
+
+- [x] **CLOSED cycle 2004 — history of the `bin/check-readme-live-row` extension backlog**
+      (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001/2002/2003,
+      closed 2004). Kept below for the per-version detail, which is the record of what each
+      entry's field mapping was verified against.
       v14 (2003): `clinicaltrials-scraper`'s `rowsPerStudy: "site"` block (key `nctId` =
       `NCT06246916`), closing the Actor's own last remaining sample block. New
       `fetch_clinicaltrials_site_row()` helper: fetches the study once, then selects the ONE
