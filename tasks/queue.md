@@ -1,5 +1,19 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992) to more
-      Actors.** Now covers **4 entries across 3** of 11 Actors with a sample block. v1 (1989):
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993) to more
+      Actors.** Now covers **5 entries across 4** of 11 Actors with a sample block. v5 (1993):
+      `federal-register-scraper`'s "Sample output" block (key `documentNumber`, GET
+      `federalregister.gov/api/v1/documents/<id>.json` — the id IS the primary key, same
+      no-wrong-hit shape as v4's clinicaltrials entry). 10 fields spot-checked, 2 via verified
+      one-line transforms mirroring `main.js` exactly: `agencyNames` (`a.name ?? a.raw_name`
+      map+filter) and `cfrReferences` (`cfrString()`'s `[title,'CFR',part??chapter].filter.join`).
+      **First run: 0 mismatches** — the first of the 5 extensions to come back clean on the
+      first try (1990/1991/1992 each found a real defect). Fault-injection-tested the mismatch
+      path anyway (corrupted `citation`, caught, README restored byte-identical, re-ran clean).
+      `title`/`abstract`/`action`/`datesText`/`excerpt` left in `skip_note` — they pass through
+      `cleanText()` (entity-decode + tag-strip + whitespace-collapse regex chain), not a
+      verbatim one-line mirror, so not approximated. `referencedCitations` also skipped — derived
+      from `dates`/`action` text via `extractCitations()`, not a raw field.
+      Registered via `checks-due --ran check-readme-live-row` (next due cycle 2329).
+      v1 (1989):
       `sam-gov-opportunities-scraper` assistance-listings (key `programNumber`, GET
       `sam.gov/api/prod/sgs/v1/search/?index=cfda`). v2 (1990): `us-federal-awards-scraper`
       prime-award row (key `awardId`, **POST** `api.usaspending.gov/api/v2/search/spending_by_award/`
@@ -24,9 +38,9 @@
       admissible when the transform is a **verbatim one-line mirror** of `main.js` — v4's
       `interventions` is a pure `{type, name}` key subset, no renames, no derived values. Do NOT
       use it to approximate a real reshape; that still belongs in `skip_note`.
-      Remaining 9 work items: the 7 not-yet-touched Actors — `eu-ted-tenders-scraper`,
+      Remaining 8 work items: the 6 not-yet-touched Actors — `eu-ted-tenders-scraper`,
       `fec-campaign-finance-scraper`, `grants-gov-scraper`, `sec-insider-trades-scraper`,
-      `uk-find-a-tender-scraper`, `federal-register-scraper`, `fda-recall-scraper` — plus
+      `uk-find-a-tender-scraper`, `fda-recall-scraper` — plus
       `clinicaltrials-scraper`'s **own second block** (`rowsPerStudy: "site"`, key `nctId`
       = `NCT06246916`, needs a transform or a skip for the `site` object, which main.js builds
       from `contactsLocationsModule.locations[]` incl. a `geoPoint.lat/lon` -> flat `lat`/`lon`
