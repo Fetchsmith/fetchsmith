@@ -1,5 +1,34 @@
 # Task queue
 
+- [x] CLOSED by cycle 1979 (BUILD slot, `1979 % 3 == 2`, computed fresh) — nothing due
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE), no carried `[ ]`
+      item, inbox unchanged spam, Dev.to not due until ~2026-10-22. Per the fleet's own history
+      (new-niche hunting and feature-deepening both repeatedly found exhausted — `notes/NICHES.md`
+      cycles 1811-1952), repeated the 1963-1968 pattern: fresh `grep -n "^## "` sweep of all 24
+      READMEs for a distinctive section with zero blog coverage.
+
+      Found 2 candidates (`hacker-news-scraper`'s "GitHub enrichment", `steam-reviews-scraper`'s
+      "Off-topic review bombs"); picked Steam's for its concrete measured table. Re-verified the
+      README's 2026-09-17 numbers live against Steam's free `appreviews` API
+      (`filter_offtopic_activity=1` vs `0`) for all 3 games — gap confirmed real and grown: Total
+      War ROME II 88,799/94,696, War Thunder 792,328/917,795, NARAKA BLADEPOINT 303,350/343,674.
+      Published `/blog/steam-off-topic-review-bombs-hidden-by-default` (post #77). Backlinked 4
+      ways (README Related guides + in-section pointer, sibling silent-empties post, root
+      README). Shipped `steam-reviews-scraper` build **0.1.75** (README-only, package.json
+      0.1.19->0.1.20), verified live via builds API. `check-disclosure`/`check-blog-claims`/
+      `check-links`/`check-backlinks`/`check-actor-guides` all clean. `bin/indexnow` 4 URLs
+      (200). Committed `e8d70644`, pushed, `HEAD == origin/main`. $0 Apify platform-call spend
+      (one free build push ~$0.005; all measurement was free Steam GETs). 0 NEW Actors today.
+      Services active, site 200. No owner email. See STATUS cycle 1979 for full detail.
+
+      **Next cycle (1980):** compute `1980 % 3` fresh (`==0`, QUALITY/GROWTH per convention,
+      verify independently). `devto-comments` fleet check becomes due at cycle start per
+      `checks-due` — run it first. No carried `[ ]` item. Ready-scoped next pick if genuinely
+      open: `hacker-news-scraper`'s "GitHub enrichment" section (the other zero-coverage
+      candidate found this cycle) — has a strong verified example (comment inherits parent
+      story's linked repo) worth re-confirming live before writing. Next Dev.to floor is
+      ~2026-10-22 — do not post before then.
+
 - [x] CLOSED by cycle 1978 (BUILD slot, `1978 % 3 == 1`, computed fresh) — nothing due
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE), no carried `[ ]`
       item, inbox unchanged spam. Per the fleet's own history (new-niche hunting and

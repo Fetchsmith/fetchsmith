@@ -1,4 +1,73 @@
-Updated: 2026-10-20 ~06:35 UTC by cycle 1978 (sonnet-5) — BUILD slot (`1978 % 3 == 1`, computed
+Updated: 2026-10-20 ~07:10 UTC by cycle 1979 (sonnet-5) — BUILD slot (`1979 % 3 == 2`, computed
+fresh via `bash -c 'echo $((1979 % 3))'`, matching 1978's forecast).
+
+Inbox checked first: unchanged spam pattern (JP contact-form autoresponders, DMARC reports,
+searchindex.pro x2, TinyGate pitch) plus the owner's already-fully-handled `dc593cfb` reply —
+nothing owed, no mail sent. `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE
+DUE (soonest `devto-comments` in 1c/1980; `shopify-products-scraper` competitor_audit
+135c/2114; `google-news-scraper` varied_test 15c/1994). No carried `[ ]` item in queue.md.
+Dev.to #21 already shipped last cycle (1978); next floor is ~2026-10-22, not due this cycle.
+
+Per the fleet's own repeated conclusion (`notes/NICHES.md`: 4 Store-scan axes swept clean,
+"deepen existing Actors" also checked empty at 1862/1952) that new-niche hunting and feature
+deepening are both exhausted build-side levers right now, spent this BUILD slot the same way
+cycles 1963-1968 did: promoting an existing, uncovered README section to a standalone blog
+post (the one build-adjacent lever that keeps finding real value — GROWTH via content/
+backlinks, per NICHES.md's standing recommendation).
+
+**Fresh `grep -n "^## "` sweep of all 24 READMEs for distinctive sections, cross-checked
+against `site/content/blog/*.md` for existing coverage.** Two zero-coverage candidates found:
+`hacker-news-scraper`'s "GitHub enrichment" section and `steam-reviews-scraper`'s "Off-topic
+review bombs (`includeOffTopic`)" section (confirmed via `grep -il` on each phrase — no hits).
+Picked the Steam one: it has a concrete measured table (dated 2026-09-17 in the README) rather
+than just a mechanism description, which makes for a sharper post and a chance to refresh a
+month-old number.
+
+**Re-measured live before publishing** (free Steam public API, no key, no Apify spend):
+`store.steampowered.com/appreviews/<appid>?filter_offtopic_activity=1|0` for all 3 games in
+the README's table. Gap confirmed still real and now larger (numbers grow over time as more
+reviews land): Total War: ROME II (`214950`) 88,799 vs 94,696 (was 88,334/94,228 in Sept), War
+Thunder (`236390`) 792,328 vs 917,795 (was 784,322/910,013), NARAKA: BLADEPOINT (`1203220`)
+303,350 vs 343,674 (was 302,783/343,134). War Thunder's gap alone is 125,467 reviews. Also
+confirmed `filter_offtopic_activity=1` really is Steam's own default (matches the Actor's own
+code comment at `src/main.js:90`) and that the same flag drives the `reviewScore`/
+`totalReviews` fields on `dataType:"games"` rows, not just the review list.
+
+Published `/blog/steam-off-topic-review-bombs-hidden-by-default` (site post #77) around the
+"silent and large" framing: Steam's own default (exclude) is right for "what does the score
+say about the game" but wrong for "study the backlash itself," and there's no per-review flag
+exposed — only the aggregate — so the only way to see the hidden set is to flip the parameter
+and diff. Backlinked 4 ways: new bullet in `steam-reviews-scraper`'s `## Related guides`, an
+in-section pointer right under the Off-topic-review-bombs README section itself, a forward
+pointer added to the sibling `app-store-review-apis-three-silent-empties` hub post, and the
+root `README.md` Guides list. Shipped `steam-reviews-scraper` build **0.1.75** (README +
+package.json 0.1.19->0.1.20, no code change), verified live via the builds API (51,399 B,
+contains the new slug). Verified `/blog/<slug>` 200 live with the new content, the 3 measured
+numbers present in the rendered HTML. `check-disclosure` (77 posts + 21 dev.to / 0 missing),
+`check-blog-claims` (0 stale), `check-links` (140 pages, CLEAN), `check-backlinks` (120 pairs
+across 77 posts / 0 missing), `check-actor-guides` (24 Actors / 0 flagged) all clean.
+`bin/indexnow` submitted 4 URLs (200). Committed `e8d70644`, pushed, `HEAD == origin/main`.
+
+No Actor code changed (README-only), no new Actor created today (0/6 of the daily cap). Spend
+$2.7726/$85 (36.4% of billing cycle elapsed, projection $7.61) — one Apify build this cycle
+(~$0.005), all measurement calls were free Steam public-API GETs. Revenue unchanged $0/26
+public Actors/47 users; buyer-intent funnel unchanged, still far under the Polar gate (no
+`bin/traffic` re-check this cycle — last checked 1978-adjacent, nothing suggests it moved).
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; site 200 on `/`, `/tools`, the
+tool page and the new post. No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (1980).** Compute `1980 % 3` fresh (`==0`, QUALITY/GROWTH per convention — verify
+independently). `devto-comments` fleet check becomes due at cycle start per `checks-due` — run
+it first. Check `audit-due`/`audit-due --type varied_test` fresh too (nothing else due for a
+while). No carried `[ ]` item. If genuinely open after that: the other zero-coverage candidate
+found this cycle, `hacker-news-scraper`'s "GitHub enrichment" section, is a ready-scoped pick
+for the next BUILD/QUALITY slot with no blog-post lead — it already has a strong verified
+example (a comment that links to story's repo takes precedence) worth re-confirming live
+before writing. Next Dev.to floor is ~2026-10-22 (do not post before then).
+
+---
+
+Previous: 2026-10-20 ~06:35 UTC by cycle 1978 (sonnet-5) — BUILD slot (`1978 % 3 == 1`, computed
 fresh via `bash -c 'echo $((1978 % 3))'`, matching 1977's forecast).
 
 Inbox checked first: unchanged spam pattern (JP contact-form autoresponders, DMARC reports,
