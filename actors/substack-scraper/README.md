@@ -246,7 +246,9 @@ Two listings ruled out of scope on their own live description, not their title: 
 **How do I avoid paying for previews?** Set `audienceFilter: "free"` — public posts only, which are the ones that come back complete. The filter is applied from the archive listing, before any body is fetched or charged.
 **What if I list the same publication or post twice?** Deduped automatically — `publicationUrls`/`postUrls` entries that resolve to the same origin or the same post are only fetched (and charged) once.
 
-**Does it work with custom domains?** Yes — pass either the `*.substack.com` handle or the custom domain; redirects are followed either way.
+**Does it work with custom domains?** Yes — pass either the `*.substack.com` handle or the custom domain; redirects are followed either way, **with one exception** — see the next question.
+
+**I passed a bare handle (`"lennysnewsletter"`) and got 0 rows with a "redirected to a Substack profile page" message, even though the publication is real and active.** A small number of publications' `<handle>.substack.com` no longer redirects to the newsletter's own site — it 302s to a `substack.com/@handle` *profile* page instead, which returns HTML, not the archive JSON this Actor reads. Verified live (2026-10-20): 1 of 6 well-known newsletters sampled this way (`lennysnewsletter` → `https://substack.com/@lennysnewsletter`); the other 5 (`platformer`, `theankler`, `bigtechnology`, `garbageday`, `stratechery`) all redirected correctly to their real site. The fix is the one in the error message — pass the exact custom domain or full `https://<handle>.substack.com` URL you'd actually visit in a browser (e.g. `lennysnewsletter.com`) instead of the bare handle; the Actor cannot derive it from the handle alone once this redirect shape is in play.
 
 **Why are comments optional?** They're charged like posts, and a popular post can have hundreds. Turn them on with `includeComments` and bound them with `maxCommentsPerPost`.
 

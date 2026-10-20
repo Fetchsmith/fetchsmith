@@ -467,7 +467,18 @@ async function scrapePublication(origin) {
     try {
       posts = await getJson(url.toString());
     } catch (e) {
-      log.warning(`Archive request failed for ${origin} (offset ${offset}): ${e.message}`);
+      const landedOnProfile = /^https:\/\/substack\.com\/@/.test(e.response?.url ?? '');
+      if (landedOnProfile) {
+        log.warning(
+          `Archive request failed for ${origin} (offset ${offset}): redirected to a Substack `
+          + `profile page (${e.response.url}) instead of the archive — this publication's bare `
+          + 'handle no longer resolves to its own archive; find its real custom domain or '
+          + '"<handle>.substack.com" homepage URL and pass that instead.',
+        );
+        profileRedirected.push(origin);
+      } else {
+        log.warning(`Archive request failed for ${origin} (offset ${offset}): ${e.message}`);
+      }
       requestFailed = true;
       break;
     }
@@ -713,6 +724,14 @@ const filtered = [];
 // Publications where the maxPostsPerPublication depth cap was reached while filters were
 // dropping posts — the user is silently seeing fewer results than actually match.
 const depthCapped = [];
+// Publications whose <handle>.substack.com redirects to a substack.com/@handle PROFILE page
+// instead of the real archive (verified live, cycle 1969: lennysnewsletter.substack.com -> 302 ->
+// https://substack.com/@lennysnewsletter, which returns HTML, not the archive JSON). The
+// followRedirect:true comment on getJson assumed every redirect lands on the custom domain; this
+// is a second redirect shape where it lands on a dead end instead. Tracked separately from
+// `errored` because the fix (pass the exact custom domain URL, not the bare handle) is different
+// from a generic "check the URL is correct."
+const profileRedirected = [];
 
 if (!publicationTargets.length && !postTargets.length) {
   const why = unknownCategories
@@ -737,7 +756,9 @@ if (!publicationTargets.length && !postTargets.length) {
   for (const t of publicationTargets) {
     if (!keepGoing) break;
     const result = await scrapePublication(t.origin);
-    if (result === 'error') errored.push(t.origin);
+    // profileRedirected is more specific than a generic error — don't also report it there,
+    // same dedup rule as depthCapped vs filtered (avoid two causes giving different advice).
+    if (result === 'error' && !profileRedirected.includes(t.origin)) errored.push(t.origin);
     else if (result === 'empty') empty.push(t.origin);
     else if (result === 'filtered') filtered.push(t.origin);
   }
@@ -755,12 +776,13 @@ if (!publicationTargets.length && !postTargets.length) {
     // still see 0 rows, since the real fix is widening the filter).
     const causes = [];
     if (timeBudgetNote) causes.push(timeBudgetNote);
+    if (profileRedirected.length) causes.push(`${profileRedirected.join(', ')} redirected to a Substack profile page instead of the archive — pass the exact custom domain or "<handle>.substack.com" homepage URL instead of the bare handle`);
     if (errored.length) causes.push(`the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`);
     if (filtered.length) causes.push(`every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`);
     if (depthCapped.length) causes.push(`hit maxPostsPerPublication (${maxPostsPerPublication}) for: ${depthCapped.join(', ')} before finding a match — the cap counts posts scanned before filters, so raise it to search deeper`);
     if (empty.length) causes.push(`no posts were found for: ${empty.join(', ')} — the publication may be empty, private, or the URL/handle is wrong`);
     await Actor.setStatusMessage(`No items returned — ${causes.join('; ')}.`);
-  } else if (errored.length || empty.length || filtered.length || depthCapped.length || timeBudgetNote || postsWithCommentsWithheld) {
+  } else if (errored.length || empty.length || filtered.length || depthCapped.length || profileRedirected.length || timeBudgetNote || postsWithCommentsWithheld) {
     const notes = [];
     if (timeBudgetNote) notes.push(timeBudgetNote);
     if (postsWithCommentsWithheld) {
@@ -769,6 +791,7 @@ if (!publicationTargets.length && !postTargets.length) {
         + ' (flagged commentsWithheld:true — set audienceFilter:"free" to scrape only posts whose comments are public)',
       );
     }
+    if (profileRedirected.length) notes.push(`${profileRedirected.join(', ')} redirected to a Substack profile page instead of the archive — use the exact custom domain or "<handle>.substack.com" homepage URL instead of the bare handle`);
     if (errored.length) notes.push(`request failed for ${errored.join(', ')}`);
     if (empty.length) notes.push(`no posts found for ${empty.join(', ')}`);
     if (filtered.length) notes.push(`filters excluded everything from ${filtered.join(', ')}`);
