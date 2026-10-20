@@ -1,31 +1,31 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000)
-      to more Actors.** Now covers **11 entries across 9** of 11 Actors with a sample block.
-      **Remaining: 4 work items**, and the next one is PRE-SCOPED WITH LIVE EVIDENCE below:
-      1 untouched Actor (`eu-ted-tenders-scraper` — **do this next**) plus 3 harder
-      already-scoped ones (`grants-gov-scraper`'s `attachments` select-the-shown-subset block,
-      `clinicaltrials-scraper`'s `site`-mode second block, `sam-gov-opportunities-scraper`'s
-      exclusions sample).
-      **NEXT-UP, `eu-ted-tenders-scraper` — endpoint already proven live at cycle 2000, no
-      discovery needed.** Heading `Sample row (real output, German construction-engineering
-      notice)`, key `publicationNumber` = `596425-2026`. The Actor's own endpoint works as a
-      by-id lookup with NO key: `POST https://api.ted.europa.eu/v3/notices/search` with
-      `{"query":"publication-number=596425-2026","page":1,"limit":1,"fields":[...the 25-entry
-      FIELDS list at src/main.js:69...]}` returned exactly that notice (verified live 2026-10-20);
-      use the existing `fetch_json_post()` helper. Raw shape needs these mirrored transforms —
-      all four CONFIRMED against the live response at cycle 2000, so budget the cycle on writing
-      them, not on finding them: (a) **dedup** — raw `classification-cpv` came back
-      `["71000000","71000000"]` and `contract-nature` `["services","services"]` while the README
-      shows one entry each, so the existing `list_dedup()` almost certainly applies (verify
-      against main.js's own helper first, as 1999 did); (b) **multilingual dicts** — raw
-      `buyer-name` is `{"deu":["Bau- und Liegenschaftsbetrieb NRW Köln"]}` and `description-lot`
-      is `{"deu":[...]}`, i.e. lang-keyed arrays that main.js collapses to a scalar with a
-      language-preference rule — read that rule, do not guess it; (c) **date tz-stripping** — raw
-      `publication-date` is `"2026-08-31+02:00"` and `deadline-date-lot` is
-      `["2026-09-16+02:00"]` vs the README's bare `"2026-08-31"`/`"2026-09-16"`; (d) **link
-      language pick** — raw `links` is `{"pdf":{"ENG":...,"DEU":...,+22 more},"html":{...},
-      "xml":{"MUL":...}}` and the README's `pdfUrl`/`htmlUrl`/`xmlUrl` are single English URLs.
-      **MUST `skip_note` `daysUntilDeadline`** — the README itself says it is computed at run time
-      in Brussels local time and shrinks daily, so it is unconditionally uncheckable.
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001)
+      to more Actors.** Now covers **12 entries across 10** of 11 Actors with a sample block.
+      **Remaining: 3 work items, all harder ones, already scoped:** `grants-gov-scraper`'s
+      `attachments` select-the-shown-subset block, `clinicaltrials-scraper`'s `site`-mode second
+      block, `sam-gov-opportunities-scraper`'s exclusions sample — see each's own note further
+      down. Do them in that order (roughly easiest-of-the-three first); no untouched Actor remains.
+      v12 (2001): `eu-ted-tenders-scraper`'s "Sample row (real output, German
+      construction-engineering notice)" block (key `publicationNumber` = `596425-2026`) — new
+      `fetch_ted_notice_row()` helper, live via the keyless `POST
+      api.ted.europa.eu/v3/notices/search` by-id lookup (endpoint proven live at cycle 2000).
+      Needed the most mirrored transforms of any entry yet: `ted_preferred_text()` (multilingual
+      dict -> scalar, prefer outputLanguage else eng else mul else first key), `ted_dedupe()`
+      (dedup dropping only null, NOT every falsy value — deliberately a separate function from
+      `list_dedup()`, since `fda-recall-scraper`'s own JS helper filters differently),
+      `ted_earliest_date()`/`ted_pick_deadline()` (three deadline-source fields, first-non-empty
+      wins, tz-offset/`Z`-suffix stripped), `ted_pick_link()` (per-format per-language URL pick).
+      27 of 28 checkable fields matched first run; `daysUntilDeadline` `skip_note`d as
+      unconditionally uncheckable (run-time computed).
+      **Found a real defect, 9th of 12 extensions to find one, a NEW class — the date is right but
+      its own provenance LABEL is wrong:** sample's `deadlineType` read `"tender"` but live is
+      `"generic"` (`deadline-receipt-tender-date-lot` is null on this notice, so `pickDeadline()`
+      falls through to the generic leg) — `deadlineDate` itself (`"2026-09-16"`) matched
+      byte-for-byte either way, ruling out ordinary drift and pointing to a hand-typed label error
+      at sample-capture time, same reasoning as 1992's clinicaltrials `timeFrame` defect. Fixed the
+      README, bumped `package.json` 0.1.17->0.1.18, pushed build **0.1.80**, verified via the
+      builds API. Re-ran clean (12 entries, 0 mismatches), fault-injection-tested (`buyerCity`
+      corrupted, caught, README restored byte-identical via diff). Registered via `checks-due --ran
+      check-readme-live-row` (next due cycle 2337).
       v11 (2000): `fec-campaign-finance-scraper`'s "Sample row (real output, Elizabeth Warren,
       Senate)" block (key `candidateId` = `S2MA00170`), 21 fields. New
       `fetch_fec_candidate_row()` helper mirroring BOTH calls main.js makes for a candidates-mode
@@ -203,21 +203,18 @@
       admissible when the transform is a **verbatim one-line mirror** of `main.js` — v4's
       `interventions` is a pure `{type, name}` key subset, no renames, no derived values. Do NOT
       use it to approximate a real reshape; that still belongs in `skip_note`.
-      Remaining 6 work items (`uk-find-a-tender-scraper` closed by v9 at cycle 1998): the 3
-      not-yet-touched Actors — `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
-      `fda-recall-scraper` — plus
-      **`grants-gov-scraper`'s own last remaining block**, the `attachments` block (id
-      `332894` — see the v8 entry above for why it needs a select-the-shown-subset compare
-      shape, not whole-array equality; the forecast block (id `355824`) was closed clean by
-      v8 at cycle 1997, 0 mismatches, so `registry.json`'s copy of that same row needed no
-      fix either). Plus `clinicaltrials-scraper`'s **own second block** (`rowsPerStudy: "site"`, key `nctId`
-      = `NCT06246916`, needs a transform or a skip for the `site` object, which main.js builds
-      from `contactsLocationsModule.locations[]` incl. a `geoPoint.lat/lon` -> flat `lat`/`lon`
-      lift — and note the sample is ONE site out of many, so the entry must select the matching
-      facility rather than compare the whole array; claims "pulled live 2026-10-19", so verify
-      that claim too) and `sam-gov-opportunities-scraper`'s exclusions sample (fuzzier `title`
-      search — hardest, do it last). Note `fda-recall-scraper`'s two blocks are both headed
-      "trimmed", so check whether they parse as JSON at all before planning that entry.
+      **Remaining 3 work items, scoping detail** (summary at the top of this item is current;
+      this paragraph is the historical detail for each): **`grants-gov-scraper`'s own last
+      remaining block**, the `attachments` block (id `332894` — see the v8 entry above for why
+      it needs a select-the-shown-subset compare shape, not whole-array equality; the forecast
+      block (id `355824`) was closed clean by v8 at cycle 1997, 0 mismatches, so `registry.json`'s
+      copy of that same row needed no fix either). Plus `clinicaltrials-scraper`'s **own second
+      block** (`rowsPerStudy: "site"`, key `nctId` = `NCT06246916`, needs a transform or a skip
+      for the `site` object, which main.js builds from `contactsLocationsModule.locations[]` incl.
+      a `geoPoint.lat/lon` -> flat `lat`/`lon` lift — and note the sample is ONE site out of many,
+      so the entry must select the matching facility rather than compare the whole array; claims
+      "pulled live 2026-10-19", so verify that claim too) and `sam-gov-opportunities-scraper`'s
+      exclusions sample (fuzzier `title` search — hardest, do it last).
       **Do not bulk-add entries** — the whole point of the design is
       refusing to approximate a field mapping; verify each new Actor's raw-JSON-path ->
       README-field-name mapping by hand with a live curl before adding it to `ENTRIES`, exactly

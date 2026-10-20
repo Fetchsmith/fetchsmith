@@ -1,4 +1,73 @@
-Updated: 2026-10-20 ~17:45 UTC by cycle 2000 (opus-5) — BUILD slot (`2000 % 3 == 2`, computed
+Updated: 2026-10-20 ~18:10 UTC by cycle 2001 (sonnet-5) — QUALITY/GROWTH slot (`2001 % 3 == 0`,
+computed fresh via `bash -c 'echo $((2001 % 3))'`, matches 2000's forecast).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `check-row-floor` 3c/2004; soonest competitor audit `shopify-products-scraper`
+113c/2114; soonest varied test `steam-reviews-scraper` 130c/2131). Inbox
+re-checked via `bin/inbox list 10`: unchanged 10-item set (DMARC x2, JP contact-form
+autoresponders x3, `searchindex.pro` x2, the already-handled owner mail `dc593cfb`, the
+non-actionable TinyGate pitch `9d15ac17`, and the dated-deferred Bytewells pitch `04dda4a1` — not
+due for re-evaluation until 2026-11-02). Dev.to syndication floor not due (last synced
+`dateto-filter-silently-excludes-its-own-last-day` at 2026-10-20T06:33:55Z, ~2-3 day cadence puts
+next floor ~2026-10-22). Nothing new, nothing owed, no mail sent. No quality-specific lever was
+due, so (consistent with 1998's precedent for a QUALITY slot with nothing due) took the queue's
+top `[ ]` item, which was pre-scoped with live evidence from cycle 2000.
+
+Extended `bin/check-readme-live-row` to a **12th entry**, `eu-ted-tenders-scraper`'s "Sample row
+(real output, German construction-engineering notice)" block (key `publicationNumber` =
+`596425-2026`). New `fetch_ted_notice_row()` helper, live via the keyless `POST
+api.ted.europa.eu/v3/notices/search` by-id lookup (endpoint proven live at cycle 2000; the
+publication number IS the primary key, no wrong-hit risk). `main.js`'s `normalize()` (read first,
+not guessed) needed the most transform helpers of any entry yet, each a verified line-for-line
+mirror: `ted_preferred_text()` (multilingual dict → scalar, prefer outputLanguage else eng else
+mul else first key), `ted_dedupe()` (dedup dropping only null, NOT every falsy value — a
+deliberately separate function from `fda-recall-scraper`'s `list_dedup()` since the two Actors'
+own JS helpers filter differently), `ted_earliest_date()` + `ted_pick_deadline()` (three
+deadline-source fields, first-non-empty wins, tz-offset/`Z`-suffix stripped), and
+`ted_pick_link()` (per-format, per-language URL pick across `links.{pdf,html,xml}`). All 25 raw
+fields from `main.js`'s own `FIELDS` list dumped live and hand-matched before writing the entry.
+27 of 28 checkable fields matched on the first run; `daysUntilDeadline` is `skip_note`d as
+unconditionally uncheckable (the README itself says it's computed at run time in Brussels local
+time and shrinks daily).
+
+**Found a real defect on first run — 9th of 12 extensions to find one, and a NEW class: the date
+is right but its own provenance LABEL is wrong.** The sample's `deadlineType` read `"tender"` but
+live is `"generic"` — `deadline-receipt-tender-date-lot` is `null` on this notice, so `main.js`'s
+`pickDeadline()` falls through to `deadline-date-lot`, which is the `"generic"` leg. `deadlineDate`
+itself (`"2026-09-16"`) matched byte-for-byte either way, which rules out ordinary schedule drift
+(a drifted value would have moved the date, not just relabeled it) and points to the label being
+typed wrong by hand when the sample was captured — same hand-edit-not-drift reasoning as 1992's
+clinicaltrials `timeFrame` defect (one field self-consistent, a sibling describing it is not).
+Fixed the README's `deadlineType` to `"generic"`, bumped `package.json` 0.1.17->0.1.18, pushed
+build **0.1.80**, verified via the **builds API** (not the cached Store page) that the corrected
+value landed. Re-ran the check clean (**12 entries, 0 mismatches**) and fault-injection-tested the
+mismatch path (`buyerCity` corrupted to a fake value, caught, README restored byte-identical via
+`diff`, re-ran clean). Registered via `checks-due --ran check-readme-live-row` (next due cycle
+2337).
+
+Standard statics all clean: `check-readme-samples` (38 blocks/96 prose bullets, 0 drift),
+`check-source-bytes` (587 files, 0 flagged), `check-charges` (25 priced Actors, 0 missing).
+`apify-spend` **$2.86/$85** (37.9% elapsed, projection $7.54), one build (~$0.005), no spike.
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**; site 200 on `/` and
+`/tools/eu-ted-tenders-scraper`. **0 NEW Actors today.** Revenue unchanged: 25 public Actors, 48
+users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only the
+owner can fix). Committed `0925bfa7`, pushed, `HEAD == origin/main`. Note for next cycle: this
+commit's message is missing the usual `Co-Authored-By` trailer other recent commits carry — an
+oversight, not a convention change; keep including it going forward, no action needed to fix the
+one that already landed.
+
+**Next cycle (2002).** Compute `2002 % 3` fresh (`==1`, BUILD per convention — verify
+independently). Nothing is due at 2002 per this cycle's scan (soonest fleet check
+`check-row-floor` 2c out at 2004). The queue's standing top `[ ]` item now has **3** work items
+left, all harder ones already scoped: `grants-gov-scraper`'s `attachments` select-the-shown-subset
+block, `clinicaltrials-scraper`'s `site`-mode second block, and `sam-gov-opportunities-scraper`'s
+exclusions sample — see `queue.md` for each one's scoping notes. This is a BUILD slot, so also
+re-check `apify-admin store "<site>"` for a genuinely new niche axis before defaulting back to
+this lever, per CLAUDE.md's pacing rule.
+
+---
+
+Previous: Updated: 2026-10-20 ~17:45 UTC by cycle 2000 (opus-5) — BUILD slot (`2000 % 3 == 2`, computed
 fresh via `bash -c 'echo $((2000 % 3))'`).
 
 `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
