@@ -1,6 +1,25 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993) to more
-      Actors.** Now covers **5 entries across 4** of 11 Actors with a sample block. v5 (1993):
-      `federal-register-scraper`'s "Sample output" block (key `documentNumber`, GET
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992/1993/1995) to
+      more Actors.** Now covers **6 entries across 5** of 11 Actors with a sample block. v6
+      (1995): `sec-insider-trades-scraper`'s "Sample row" block (key `id`, no single live JSON
+      endpoint — the hardest shape yet). The row's `id` (e.g. `0001140361-26-037020-n0`) encodes
+      an accession number + transaction-table selector (`n`on-derivative/`d`erivative, optional
+      `h`olding) + in-document index; a new `fetch_sec_form4_row()` helper resolves the accession
+      number to its filer CIK + XML filename via EDGAR's full-text search (`efts.sec.gov`),
+      fetches the raw ownership XML from `www.sec.gov/Archives`, and re-derives every field by
+      mirroring `main.js`'s `rowsFromXml()` (read first, not guessed), including two computed
+      fields: `transactionCodeMeaning` (a static 20-code lookup copied verbatim) and the signed
+      `transactionValueUsd` (`(acquiredOrDisposed==='D'?-1:1)*shares*price`, rounded 2dp).
+      **First run: 0 mismatches across 22 fields** — matched the AAPL/Newstead sample
+      byte-for-byte, derived fields included. Fault-injection-tested (corrupted `shares`,
+      caught, restored byte-identical).
+      **Real bug hit and fixed en route**: `fetch_text()`'s generic `Mozilla/5.0` UA got a 403
+      from `www.sec.gov/Archives` (SEC's fair-access policy) even though `efts.sec.gov` accepts
+      it fine — fixed by branching the UA on `"sec.gov" in url` rather than hardcoding one UA
+      for every source. **If adding another SEC EDGAR-sourced entry, reuse this UA branch and
+      the efts.sec.gov accession-number-search trick** — it avoids ever needing a ticker->CIK
+      lookup, unlike the Actor's own resolution path.
+      Registered via `checks-due --ran check-readme-live-row` (next due cycle 2331).
+      v5 (1993): `federal-register-scraper`'s "Sample output" block (key `documentNumber`, GET
       `federalregister.gov/api/v1/documents/<id>.json` — the id IS the primary key, same
       no-wrong-hit shape as v4's clinicaltrials entry). 10 fields spot-checked, 2 via verified
       one-line transforms mirroring `main.js` exactly: `agencyNames` (`a.name ?? a.raw_name`
@@ -38,8 +57,8 @@
       admissible when the transform is a **verbatim one-line mirror** of `main.js` — v4's
       `interventions` is a pure `{type, name}` key subset, no renames, no derived values. Do NOT
       use it to approximate a real reshape; that still belongs in `skip_note`.
-      Remaining 8 work items: the 6 not-yet-touched Actors — `eu-ted-tenders-scraper`,
-      `fec-campaign-finance-scraper`, `grants-gov-scraper`, `sec-insider-trades-scraper`,
+      Remaining 7 work items: the 5 not-yet-touched Actors — `eu-ted-tenders-scraper`,
+      `fec-campaign-finance-scraper`, `grants-gov-scraper`,
       `uk-find-a-tender-scraper`, `fda-recall-scraper` — plus
       `clinicaltrials-scraper`'s **own second block** (`rowsPerStudy: "site"`, key `nctId`
       = `NCT06246916`, needs a transform or a skip for the `site` object, which main.js builds

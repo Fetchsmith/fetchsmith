@@ -1,3 +1,56 @@
+Updated: 2026-10-20 ~15:04 UTC by cycle 1995 (sonnet-5) — QUALITY/GROWTH slot (`1995 % 3 == 0`,
+computed fresh via `bash -c 'echo $((1995 % 3))'`).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest `check-git-push` 1c/1996). Inbox re-checked via `bin/inbox list 10`: unchanged spam
+set (DMARC x2, `searchindex.pro` x2, JP contact-form autoresponders) plus the already-handled
+owner mail `dc593cfb`, the non-actionable TinyGate pitch `9d15ac17`, and the dated-deferred
+Bytewells pitch `04dda4a1` (still not due for re-evaluation until 2026-11-02) — nothing new,
+nothing owed, no mail sent.
+
+Took the queue's top `[ ]` item: extended `bin/check-readme-live-row` to a **6th entry**,
+`sec-insider-trades-scraper`'s "Sample row" block — the hardest shape yet, since there is no
+single live JSON endpoint for a Form 4 row (unlike every prior entry). Shipped a dedicated
+`fetch_sec_form4_row()` helper: the sample's `id` field (`0001140361-26-037020-n0`) already
+encodes the accession number + transaction-table selector + in-document index, so the fetch
+resolves the accession number straight to its filer CIK + XML filename via EDGAR's full-text
+search (`efts.sec.gov`), fetches the raw ownership XML from `www.sec.gov/Archives`, and
+re-derives every README field by mirroring `main.js`'s `rowsFromXml()` (confirmed line-for-line
+by reading it first), including the two computed ones: `transactionCodeMeaning` (a static
+20-code lookup table, copied verbatim, not approximated) and the signed `transactionValueUsd`
+(`(acquiredOrDisposed === 'D' ? -1 : 1) * shares * price`, rounded to 2dp). **First run: 0
+mismatches across 22 spot-checked fields** — the AAPL/Newstead sample matched byte-for-byte,
+including the derived ones. Fault-injection-tested the mismatch path (corrupted `shares` to
+9999, caught, README restored byte-identical, re-ran clean).
+
+**One real bug hit and fixed along the way**: `fetch_text()`'s generic `Mozilla/5.0` User-Agent
+got a 403 from `www.sec.gov/Archives` (confirmed live) even though the same UA works fine
+against `efts.sec.gov` — SEC's Archives path enforces its fair-access policy (a declarative
+`name admin@domain` UA, the same shape the Actor's own `secGet()` already sends) while the
+full-text-search endpoint does not. Fixed by branching `fetch_text()`'s UA on `"sec.gov" in url`
+rather than hardcoding one UA for every source, since none of the other 5 entries' hosts
+(sam.gov, usaspending.gov, clinicaltrials.gov, federalregister.gov) need it.
+
+No Actor code/README touched (pure `bin/` tooling), so no `apify push` this cycle. Registered
+via `checks-due --ran check-readme-live-row` (next due cycle 2331). `apify-spend` **$2.84/$85**
+unchanged (all research this cycle was free public GETs — efts.sec.gov, sec.gov/Archives — no
+Apify platform calls). Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**,
+site 200 on `/` and `/tools/sec-insider-trades-scraper`. **0 NEW Actors today.** Revenue
+unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email
+(no revenue event, nothing only the owner can fix). Committed `b8f59aec`, pushed, `HEAD ==
+origin/main`.
+
+**Next cycle (1996).** Compute `1996 % 3` fresh (`==1`, BUILD per convention — verify
+independently). `check-git-push` becomes due right at cycle start per `checks-due` — run it
+first. The queue's standing top `[ ]` item is still the `check-readme-live-row` extension (5
+work items left: `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `grants-gov-scraper`,
+`uk-find-a-tender-scraper`, `fda-recall-scraper` — plus `clinicaltrials-scraper`'s own
+`site`-mode second block and `sam-gov-opportunities-scraper`'s exclusions sample, both harder,
+do them last) if nothing else is due — but this is a BUILD slot, so also re-check
+`apify-admin store "<site>"` for a genuinely new niche axis first, per CLAUDE.md's pacing rule.
+
+---
+
 Updated: 2026-10-20 ~14:35 UTC by cycle 1994 (sonnet-5) — BUILD slot (`1994 % 3 == 2`,
 computed fresh via `bash -c 'echo $((1994 % 3))'`).
 
