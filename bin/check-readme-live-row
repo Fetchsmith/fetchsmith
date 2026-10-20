@@ -665,6 +665,64 @@ def fetch_ted_notice_row(publication_number):
     }
 
 
+def org_field_by_level(hierarchy, level):
+    """Literal port of main.js's orgFieldByLevel() (src/main.js:752-755).
+
+    `(hierarchy ?? []).find((h) => h.level === level)` then `.name`, else null.
+    Shared by the exclusions entry's department/agency/office fields.
+    """
+    for row in hierarchy or []:
+        if row.get("level") == level:
+            return row.get("name")
+    return None
+
+
+def fetch_sam_exclusion_row(exclusion_id):
+    """Reach one SAM.gov exclusion record and return it keyed EXACTLY by its `_id`.
+
+    `index=ei` has no by-id lookup -- querying a record's own `_id` returns
+    totalElements 0 (verified live cycle 2004), and `exactMatch=true` changes
+    nothing on this index. The only way in is the same fuzzy title search a buyer
+    runs, so this helper searches the README sample's title and then SELECTS the
+    hit whose `_id` equals `exclusion_id`, raising if none does. It never trusts
+    rank: the live result set holds a near-twin title one rank below the target.
+
+    The Actor normalizes exclusions straight off the search row (no detail fetch),
+    so this row is exactly what normalizeExclusionRow() consumes.
+    """
+    title = SAM_EXCLUSION_TITLES.get(exclusion_id)
+    if not title:
+        raise RuntimeError(
+            f"no search title registered for exclusionId {exclusion_id} -- add one to "
+            "SAM_EXCLUSION_TITLES rather than letting this fall back to a blind query"
+        )
+    data = fetch_json(
+        "https://sam.gov/api/prod/sgs/v1/search/"
+        f"?index=ei&responseType=json&page=0&size=50&q={urllib.parse.quote(title)}"
+    )
+    results = (data.get("_embedded") or {}).get("results") or []
+    if not results:
+        raise RuntimeError(f"index=ei returned no results for title {title!r}")
+    for row in results:
+        if row.get("_id") == exclusion_id:
+            return row
+    raise RuntimeError(
+        f"exclusionId {exclusion_id} not in the first {len(results)} hits for "
+        f"{title!r} (top hit was {results[0].get('_id')!r} / "
+        f"{results[0].get('title')!r}) -- do NOT relax this to rank 0; re-derive the "
+        "record's own id from sam.gov first"
+    )
+
+
+# exclusionId -> the title to search for it by, since index=ei cannot be queried by
+# id. Kept beside the helper so adding a second exclusions sample is a one-line change
+# and can never silently become a rank-0 guess.
+SAM_EXCLUSION_TITLES = {
+    "4550ad9c-4b01-4e3d-bc94-716ee807836e":
+        "CHOSUN INTERNATIONAL CHEMICALS JOINT OPERATION COMPANY",
+}
+
+
 def get_path(d, path):
     """Dotted path into nested dicts/lists, e.g. 'financial.obligations'."""
     cur = d
@@ -785,6 +843,98 @@ ENTRIES = [
             "raw `location.state` into a flat array + derived count) and services/wageRates "
             "(null on this DBRA sample, not exercised by it) are intentionally NOT "
             "spot-checked here."
+        ),
+    },
+    {
+        "slug": "sam-gov-opportunities-scraper",
+        "heading": "Sample exclusions output row",
+        "key_field": "exclusionId",
+        # The one entry in this file whose upstream has NO by-id lookup: `index=ei`
+        # does not resolve a record's own `_id` as a query (verified live cycle 2004:
+        # q=4550ad9c-... -> totalElements 0), and `exactMatch=true` is a no-op on this
+        # index (same 6628 totalElements either way, also verified live). So the record
+        # has to be reached through the same fuzzy title search a buyer would run --
+        # which is exactly why this was left for last.
+        #
+        # It is still an EXACT key, not a ranked guess: the search is only a means of
+        # paging to the record, and `fetch_sam_exclusion_row()` then selects the one hit
+        # whose `_id` equals the README's own `exclusionId` and raises if no hit carries
+        # it. Position 0 is deliberately NOT trusted -- q ORs the title's tokens, and the
+        # live result set contains a near-twin ("CHOSON INTERNATIONAL CHEMICALS JOINT
+        # OPERATION COMPANY", `_id` e72404d7-...) one rank below the target, so a
+        # take-the-top-hit entry would silently compare the wrong company's row the first
+        # time SAM.gov's relevance order shifted.
+        "fetch": lambda key: fetch_sam_exclusion_row(key),
+        "fields": {
+            # main.js: String(row._id)
+            "exclusionId": "_id",
+            "title": "title",
+            "classificationCode": "classification.code",
+            "ueiSam": "ueiSam",
+            "cageCode": "cageCode",
+            "samNumber": "samNumber",
+            # The raw `address` object only carries the keys SAM.gov actually populates
+            # (this record: country + state only), and main.js reads each sub-key with
+            # `?.` + `?? null`, so an absent key is a genuine null -- dig() returning
+            # None for a missing path mirrors that exactly, no transform needed.
+            "addressCity": "address.city",
+            "addressState": "address.state",
+            "addressCountry": "address.country",
+            "addressZip": "address.zip",
+            "exclusionTypeCode": "type.code",
+            # main.js: row.exclusionType ?? row.type?.value. Both are present and equal
+            # on this record (verified live), so the fallback leg is not exercised by
+            # this sample -- deliberately not approximated.
+            "exclusionType": "exclusionType",
+            "exclusionProgram": "exclusionProgram",
+            "excludingAgency": "excludingAgency",
+            "excludingAgencyDesc": "excludingAgencyDesc",
+            # All three are orgFieldByLevel(row.organizationHierarchy, N) -- a find() on
+            # `level` returning `.name`, reimplemented literally in `transforms` below
+            # (main.js:752-755, read line-for-line this cycle, not assumed).
+            "department": "organizationHierarchy",
+            "agency": "organizationHierarchy",
+            "office": "organizationHierarchy",
+            "isActive": "isActive",
+            # Plain date strings or null on every sampled exclusion row (main.js's own
+            # comment at :817 says so, and both are null here), so no toIso() split like
+            # the wdDBRA/wdSCA dates needed.
+            "activationDate": "activationDate",
+            "terminationDate": "terminationDate",
+            "isFascsaOrder": "isFascsaOrder",
+            # Pure template literal off `_id` in main.js, no data of its own -- same
+            # shape as the fecUrl/noticeUrl entries below.
+            "sourceUrl": "_id",
+        },
+        "transforms": {
+            # main.js: (hierarchy ?? []).find((h) => h.level === N)?.name ?? null
+            "department": lambda v: org_field_by_level(v, 1),
+            "agency": lambda v: org_field_by_level(v, 2),
+            "office": lambda v: org_field_by_level(v, 3),
+            # main.js: id ? `https://sam.gov/exclusion/${id}/view` : null
+            "sourceUrl": lambda v: f"https://sam.gov/exclusion/{v}/view" if v else None,
+        },
+        "skip_note": (
+            "Nothing is skipped on this row -- all 24 README fields are checked, the "
+            "first entry in this file to cover a sample block completely. The Actor "
+            "reads exclusions straight off the search row (no detail fetch: README's "
+            "own 'the search row already carries the full record'), so what this check "
+            "fetches is byte-for-byte what main.js normalizes, with no second endpoint "
+            "to diverge. Raw keys main.js drops on purpose and this entry therefore has "
+            "nothing to compare: `_rScore`/`_type` (search-engine metadata), `ctCode`, "
+            "`pirKey`/`pirValue`, `classification.value` (null here; only `.code` is "
+            "shipped), and `noPublicDisplayFlag` -- that last one is a GATE, not a "
+            "field: a row carrying \"T\" is dropped before normalizeExclusionRow() ever "
+            "sees it, so its value on a row this check CAN fetch is always \"F\".\n\n"
+            "**Found a real defect on first run (9th of 15 extensions to find one):** "
+            "`addressState` read `null` in the README but is `\"XX\"` live -- OFAC's "
+            "placeholder for an entity with no US state, passed straight through by "
+            "main.js (`addressState: row.address?.state ?? null`, no \"XX\" special-case "
+            "anywhere in the file -- grepped, not assumed). The other three address "
+            "fields really are null (the raw `address` object has only `country` and "
+            "`state`), so the row had been correct everywhere a key was absent and wrong "
+            "in the one place a key was present -- the signature of a hand-written null "
+            "rather than a captured one."
         ),
     },
     {

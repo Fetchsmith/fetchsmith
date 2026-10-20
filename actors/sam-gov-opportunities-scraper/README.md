@@ -159,7 +159,7 @@ Set `dataType` to `exclusions` to pull SAM.gov's federal debarment/suspension li
   "cageCode": null,
   "samNumber": null,
   "addressCity": null,
-  "addressState": null,
+  "addressState": "XX",
   "addressCountry": "USA",
   "addressZip": null,
   "exclusionTypeCode": "PR",

@@ -156,8 +156,8 @@
   "check-readme-live-row": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 2003,
-   "note": "cycle 1996: cycle 1996: extended to 7th entry (grants-gov-scraper synopsis sample, merged /search2 + /fetchOpportunity); found cfdas hand-trimmed 1-of-3, fixed README, build 0.1.73; 7 entries 0 mismatches [prior note preserved] cycle 1989: cycle 1989: NEW check. v1 covers 1 entry (sam-gov-opportunities-scraper assistance-listings, key=programNumber), spot-checking programNumber/title/isActive/isFunded/isLatest/obligations against a live SAM.gov fetch. 0 mismatches on first run (confirms cycle 1988's README fix is correct). Sanity-tested the mismatch path separately with a deliberately wrong fake sample (title+obligations both correctly flagged MISMATCH). 336c/7d matches check-readme-samples' cadence reasoning. Extending to the other 10 Actors with sample blocks is queued as follow-up -- needs a per-Actor natural-key + live-fetch verified by hand before adding, not a bulk guess."
+   "last_cycle": 2004,
+   "note": "cycle 2004: v15: sam-gov exclusions block (last backlog item). Found real defect: addressState null -> \"XX\" live; fixed README, build 0.1.61. 15 entries / 0 mismatches. [prior note preserved] cycle 1996: cycle 1996: extended to 7th entry (grants-gov-scraper synopsis sample, merged /search2 + /fetchOpportunity); found cfdas hand-trimmed 1-of-3, fixed README, build 0.1.73; 7 entries 0 mismatches [prior note preserved] cycle 1989: cycle 1989: NEW check. v1 covers 1 entry (sam-gov-opportunities-scraper assistance-listings, key=programNumber), spot-checking programNumber/title/isActive/isFunded/isLatest/obligations against a live SAM.gov fetch. 0 mismatches on first run (confirms cycle 1988's README fix is correct). Sanity-tested the mismatch path separately with a deliberately wrong fake sample (title+obligations both correctly flagged MISMATCH). 336c/7d matches check-readme-samples' cadence reasoning. Extending to the other 10 Actors with sample blocks is queued as follow-up -- needs a per-Actor natural-key + live-fetch verified by hand before adding, not a bulk guess."
   }
  },
  "not_cadence": {
