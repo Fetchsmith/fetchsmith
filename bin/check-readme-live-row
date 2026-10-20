@@ -288,6 +288,51 @@ def fetch_uk_fts_row(notice_id):
     }
 
 
+def list_dedup(v):
+    """Mirrors fda-recall-scraper main.js's list(): Array.from(new Set(v.filter(Boolean))) --
+    dedup preserving first-occurrence order, drop falsy entries. Verified live cycle 1999: the
+    README sample's openfda arrays (product_ndc/package_ndc/upc/rxcui) are already unique with
+    no falsy entries, so this is exercised as a straight pass-through on this sample, not
+    approximated for the harder case."""
+    seen = set()
+    return [x for x in (v or []) if x and not (x in seen or seen.add(x))]
+
+
+def fda_first(v):
+    """Mirrors fda-recall-scraper main.js's first(): Array.isArray(v) ? v[0] ?? null : v ?? null."""
+    return (v[0] if v else None) if isinstance(v, list) else v
+
+
+def fda_iso(v):
+    """Mirrors fda-recall-scraper main.js's isoOf(): strip non-digits, YYYYMMDD -> YYYY-MM-DD,
+    else None. Verified live cycle 1999 against the sample's reportDate/recallInitiationDate/
+    centerClassificationDate (all present) and terminationDate (absent on this Ongoing
+    recall -- openFDA omits the key entirely rather than sending an empty string, so get_path's
+    None already matches isoOf(undefined) -> None without needing this transform, but it is
+    applied uniformly for the three present date fields too)."""
+    d = re.sub(r"[^0-9]", "", str(v) if v is not None else "")
+    return f"{d[0:4]}-{d[4:6]}-{d[6:8]}" if len(d) == 8 else None
+
+
+def fetch_fda_recall_row(recall_number):
+    """Fetch one fda-recall-scraper row live from openFDA's drug/enforcement.json by its
+    recall_number -- the id IS the primary key (an exact `recall_number:"<id>"` search is
+    verified live cycle 1999 to return `meta.results.total: 1` for the README's sample
+    D-0785-2026), so there is no wrong-hit risk, same shape as the clinicaltrials/
+    federal-register/uk-fts entries above."""
+    data = fetch_json(
+        "https://api.fda.gov/drug/enforcement.json"
+        f"?search=recall_number:%22{urllib.parse.quote(recall_number)}%22&limit=1"
+    )
+    results = data.get("results") or []
+    if not results:
+        raise RuntimeError(f"no openFDA drug/enforcement result for recall_number={recall_number!r}")
+    row = results[0]
+    if row.get("recall_number") != recall_number:
+        raise RuntimeError(f"openFDA returned recall_number={row.get('recall_number')!r}, expected {recall_number!r}")
+    return row
+
+
 def get_path(d, path):
     """Dotted path into nested dicts/lists, e.g. 'financial.obligations'."""
     cur = d
@@ -805,6 +850,82 @@ ENTRIES = [
             "sample row (it shows a tender-stage notice with no awards yet) and are not "
             "exercised by it; buyerUrl/buyerStreet/buyerLocality/buyerRegion/buyerCountry are "
             "present on the live buyer party but likewise not shown in the trimmed sample."
+        ),
+    },
+    {
+        "slug": "fda-recall-scraper",
+        "heading": "Sample row (drug recall, trimmed)",
+        "key_field": "recallNumber",
+        "fetch": fetch_fda_recall_row,
+        "fields": {
+            "recallNumber": "recall_number",
+            "eventId": "event_id",
+            "status": "status",
+            "classification": "classification",
+            "voluntaryMandated": "voluntary_mandated",
+            "initialFirmNotification": "initial_firm_notification",
+            "recallingFirm": "recalling_firm",
+            "city": "city",
+            "state": "state",
+            "country": "country",
+            "productQuantity": "product_quantity",
+            "reasonForRecall": "reason_for_recall",
+            "distributionPattern": "distribution_pattern",
+            "reportDate": "report_date",
+            "recallInitiationDate": "recall_initiation_date",
+            "centerClassificationDate": "center_classification_date",
+            "terminationDate": "termination_date",
+            "brandName": "openfda.brand_name",
+            "genericName": "openfda.generic_name",
+            "manufacturerName": "openfda.manufacturer_name",
+            "substanceName": "openfda.substance_name",
+            "productNdc": "openfda.product_ndc",
+            "packageNdc": "openfda.package_ndc",
+            "upc": "openfda.upc",
+            "applicationNumber": "openfda.application_number",
+            "drugRoute": "openfda.route",
+            "rxcui": "openfda.rxcui",
+            "unii": "openfda.unii",
+            "splSetId": "openfda.spl_set_id",
+        },
+        "transforms": {
+            # main.js: eventId: r.event_id != null ? String(r.event_id) : null
+            "eventId": lambda v: str(v) if v is not None else None,
+            "reportDate": fda_iso,
+            "recallInitiationDate": fda_iso,
+            "centerClassificationDate": fda_iso,
+            "terminationDate": fda_iso,
+            "brandName": fda_first,
+            "genericName": fda_first,
+            "manufacturerName": fda_first,
+            "substanceName": list_dedup,
+            "productNdc": list_dedup,
+            "packageNdc": list_dedup,
+            "upc": list_dedup,
+            "applicationNumber": fda_first,
+            "drugRoute": list_dedup,
+            "rxcui": list_dedup,
+            "unii": list_dedup,
+            "splSetId": fda_first,
+        },
+        "skip_note": (
+            "productDescription/codeInfo are explicitly elided with a trailing '...' in the "
+            "README (the live values run much longer) -- documentation, not a value to "
+            "compare, same reason federal-register's title/abstract are skipped. moreCodeInfo "
+            "is not shown in this sample (FAQ documents it as almost always an empty string). "
+            "riskScore is a computed 0-100 formula (severity + recency + distribution-pattern "
+            "scope), not a raw field or a verbatim one-line mirror, so not approximated here. "
+            "source/productType are known by construction (which openFDA endpoint this check "
+            "queries), not raw API fields -- same reason us-federal-awards skips awardCategory. "
+            "pressReleaseTitle/sourceUrl are always null on an enforcement row by construction "
+            "and get_path's None already matches the README's null with no transform needed. "
+            "**Found a real defect on first run (7th of 10 extensions to find one, same "
+            "unmarked-truncation class as 1996's cfdas / 1998's cpvCodes):** productNdc/"
+            "packageNdc/upc/rxcui were each hand-trimmed to 2-3 of the live record's 12-24 "
+            "entries with no '...' elision marker, unlike productDescription/codeInfo in the "
+            "SAME sample which do mark their elisions -- fixed by pasting the full live arrays "
+            "(main.js's list() does not slice or cap them, so the full arrays are what a buyer "
+            "actually receives)."
         ),
     },
 ]
