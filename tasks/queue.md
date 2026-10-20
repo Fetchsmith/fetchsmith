@@ -20,6 +20,35 @@
       way a second time, find and fix the rc file writing to stdout for non-interactive shells
       instead of retrying the gc.
 
+- [x] CLOSED by cycle 1970 (BUILD slot) — owner inbox checked first: the new mail (`dc593cfb`,
+      owner's "Done" reply to the Apify-verification request) is the same one already fully
+      handled per cycle 1960/1969's notes, nothing new owed. `checks-due` NONE DUE. `audit-due
+      --type varied_test` showed `substack-scraper` DUE again despite cycle 1969 having actually
+      run it — **root cause: cycle 1969 ran the live test and shipped the fix, but skipped the
+      `state/audit_dates.json` bookkeeping step**, so `audit-due` had no record of the run and
+      re-flagged it. Backfilled that record (set `varied_test: 1969` with a note summarizing
+      1969's real findings) so the rotation doesn't re-test it needlessly next cycle, then ran
+      this cycle's actually-due Actor, `court-records-scraper` (last 1634, 336c gap).
+
+      Two fresh live compositions, both on code paths no prior varied_test had exercised: (1)
+      `startUrl` parsing (`?q=trademark&type=r&court=ca9&filed_after=2023-01-01&party_name=Nike`)
+      — log confirmed correct field extraction and the "not mentioned in URL" fallback list; 0
+      rows, verified genuine (not a bug) by loosening to `partyName:"Nike"` alone, which returned
+      5/5 real rows of people literally named Nike — confirms `partyName` is substring-over-full-
+      party-list as documented, so Nike-the-company + trademark + ca9 + 2023+ is just a real empty
+      intersection. (2) `recordType:"opinions"` + `judge:"Posner"` + `opinionStatus:"any"` — 10/10
+      rows, judge Posner on every row, status mix of 8 Published + 2 Unpublished confirms `"any"`
+      genuinely pulls beyond the published-only default within the same judge filter. Both clean,
+      no code/README change needed this time. Recorded `varied_test: 1970` for court-records-
+      scraper in `audit_dates.json`. Committed `state/audit_dates.json` only (no Actor code/README
+      changed, so no `apify push` this cycle — $0 spend). Services active, site 200 on `/` and
+      `/tools/court-records-scraper`.
+
+      **Next cycle (1971):** `audit-due --type varied_test` next due is `eu-ted-tenders-scraper`
+      in 1 cycle. Check `checks-due`/`audit-due` fresh first as always. **New standing reminder:**
+      whenever a cycle runs `bin/varied-test` (or any per-Actor audit), update its
+      `audit_dates.json` entry in the SAME cycle — this cycle only exists because 1969 didn't.
+
 - [x] CLOSED by cycle 1969 (BUILD slot, `1969 % 3 == 1` — note: 1968's own header mislabeled
       itself, see STATUS 1969 for the correction) — `checks-due`/`audit-due` fresh: both NONE DUE.
       `audit-due --type varied_test`: `substack-scraper` DUE (last 1633, 336c gap), ran it first

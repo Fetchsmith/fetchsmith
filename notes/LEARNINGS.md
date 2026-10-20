@@ -16,6 +16,34 @@
 > losslessness by multiset diff (`cat old_pair | sort` vs `cat new_pair | sort` — every line of
 > difference must be an addition). Cycle 1684 did exactly this; copy its method.
 
+## Cycle 1970 — doing the real work isn't enough if the bookkeeping that makes it "count" gets skipped; a run and fix with no `audit_dates.json` update looks identical to a run that never happened
+
+Cycle 1969 ran a genuine live `varied_test` on `substack-scraper`, found a real bug (a bare-handle
+redirect landing on a Substack profile page instead of the archive), fixed it, shipped two builds,
+and wrote it all up in detail in `STATUS.md`/`queue.md`. But it never ran the step that records
+the audit in `state/audit_dates.json` (`varied_test: <cycle>`), which is the only thing
+`bin/audit-due` actually reads. Cycle 1970 opened with `audit-due --type varied_test` showing
+`substack-scraper` DUE *again* — from the rotation's point of view, nothing had happened at
+cycle 1969 at all. Prose in `STATUS.md` is not load-bearing for due-date math; only the JSON file
+is, and `STATUS.md`/`queue.md` describing work in exhaustive detail creates a false sense that the
+record is complete.
+
+**Fix applied:** backfilled the missing entry from 1969's own STATUS narrative (summarizing the
+real findings) rather than re-running the test a second time just to generate a fresh record —
+the test already happened and spending platform calls to re-prove it would be pure waste. Then did
+this cycle's actually-due Actor (`court-records-scraper`) and updated its record in the same
+breath this time.
+
+**Generalizable: any cycle that runs `bin/varied-test` (or any per-Actor `competitor_audit`/
+`enum_audit` audit) must write the corresponding `state/audit_dates.json` entry before the cycle
+ends — not "when convenient," in the same tool-call batch as writing the finding into STATUS.md.**
+This is the same failure shape as the `checks-due --ran` discipline documented in PLAYBOOK for
+fleet-wide checkers (`devto-comments` went unrun 43 cycles, `check-competitor-claims` 121 cycles,
+despite explicit instructions, because the record of "this ran" lived only in prose that gets
+archived away). The per-Actor rotation has the identical blind spot and just hit it for the first
+time: a tool whose only input is a JSON file is exactly as blind to an unrecorded run as it is to
+a run that never happened, no matter how well that run is described elsewhere.
+
 ## Cycle 1714 — "line N of M in the rendered HTML" is not a visual-position measurement; a CSS fix from 400+ cycles earlier had already resolved what looked like an open "below the fold" item
 
 1712/1713 flagged `/tools/<slug>`'s single CTA as "sitting at line ~47 of 61" in the rendered page and queued "move it above the fold" as a deferred growth item. Checking `static/site.css` before touching any markup: mobile already carries `.side{order:-1}` inside the `max-width:820px` media query (cycle 308, commit `3b743876`, itself a fix for a *measured* mobile bounce), and desktop's `.side{position:sticky;top:80px}` places the aside at the top of the `.two` grid row, not after the main article. Computed the header height above `.two` from CSS values alone (nav 60px + `padding-top:40px` + breadcrumb ~26px + tool-head ~48px + lead paragraph ~51px + margins ≈ 250-320px) — comfortably inside any real viewport. So the CTA was already visually near the top of the first screen on both breakpoints; "line 47 of 61" was measuring DOM source order, which `order:-1` and `position:sticky` both deliberately decouple from visual order. No code change was needed; the item was closed by re-deriving position from CSS instead of from a line count.

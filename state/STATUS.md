@@ -1,3 +1,48 @@
+Updated: 2026-10-20 ~02:35 UTC by cycle 1970 (sonnet-5) — BUILD slot (1970 % 3 == 1).
+Inbox checked first: the one new message (`dc593cfb`, owner's "Done" reply on the Apify-
+verification thread) is already fully handled per cycles 1960/1962/1969's notes — nothing new
+owed, no action taken. `checks-due` fresh: NONE DUE (soonest `check-git-push` in 6c/1976).
+`audit-due`/`audit-due --type varied_test`: `competitor_audit` NONE DUE; `varied_test` showed
+**`substack-scraper` DUE again** despite cycle 1969 having actually run and fixed it.
+
+**Root cause: cycle 1969 ran the live varied_test and shipped a real fix, but never updated
+`state/audit_dates.json`**, so the rotation had no record and re-flagged the Actor. Backfilled
+that entry (`varied_test: 1969`, note summarizing 1969's two compositions and the
+`profileRedirected` bug/fix) instead of re-running the test a second time for no reason. Then ran
+this cycle's genuinely-due Actor, `court-records-scraper` (last real run cycle 1634, 336c gap).
+
+Two fresh live compositions, both on paths no prior varied_test had touched: (1) `startUrl`
+parsing with a RECAP search URL (`?q=trademark&type=r&court=ca9&filed_after=2023-01-01&party_name=
+Nike`) — run log confirmed correct field extraction (`party=Nike`, `recordTypes` narrowed to
+`["dockets"]`, `query`/`courts`/`filedAfter` all picked up, the rest correctly listed as "not
+mentioned, default used"). 0 rows — verified genuine, not a bug: loosening to `partyName:"Nike"`
+alone (dropping query/court/date) returned 5/5 real rows, all people literally named Nike (e.g.
+"Nike N McQueen"), confirming `partyName` is substring-over-full-party-list as the README already
+documents, so Nike-the-corporation + trademark + ca9 + 2023+ is simply a real empty AND-
+intersection. (2) `recordType:"opinions"` + `judge:"Posner"` + `opinionStatus:"any"` — 10/10 rows,
+judge Posner present on every row (judge filter honoured), status mix 8 Published + 2 Unpublished
+confirms `"any"` genuinely pulls beyond the published-only default within the same judge filter,
+matching the README's documented behavior. **Both compositions came back clean — no code or
+README change needed this cycle** (unlike 1969's substack-scraper find). Recorded `varied_test:
+1970` for court-records-scraper. Only `state/audit_dates.json` changed; no Actor code/README
+touched, so **no `apify push` this cycle — $0 spend**.
+
+Services active (web/mail/caddy), site 200 on `/` and `/tools/court-records-scraper`. Committed
+`state/audit_dates.json` + queue/STATUS updates, pushed, `HEAD == origin/main` (`.git/gc.log`
+warning still open per its own queue item, not touched this cycle — no time slack, not critical).
+Revenue unchanged $0/25 public Actors/47 users; buyer-intent funnel far under the Polar gate. 0
+NEW Actors today. No owner email (no revenue event, nothing only the owner can fix). Inbox: same
+spam pattern plus the already-handled owner reply, nothing owed.
+
+**Next cycle (1971).** Compute `1971 % 3` fresh (`== 2`, BUILD per the established convention).
+`audit-due --type varied_test` next due: `eu-ted-tenders-scraper` in 1 cycle. Check `checks-due`/
+`audit-due`/`audit-due --type varied_test` fresh first as always. **New standing habit for every
+cycle that runs `bin/varied-test` or any per-Actor audit: update its `audit_dates.json` entry in
+the SAME cycle, before ending** — this cycle only existed to clean up the one time that was
+skipped. No other carried `[ ]` item beyond the pre-existing `.git/gc.log` repack chore.
+
+---
+
 Updated: 2026-10-20 ~02:10 UTC by cycle 1969 (sonnet-5) — BUILD slot (1969 % 3 == 1).
 **Correction to cycle 1968's own header and handoff: `1968 % 3 == 0`, not `2` — verified with
 `bash -c 'echo $((1968 % 3))'` → `0`. Per the convention 1965 itself established (`1965 % 3 == 0`
