@@ -6293,3 +6293,16 @@ fuzzy search is fine **as long as the selection is still exact** — search, the
 id equals the expected one and RAISE if none does. Never take rank 0: the live result set for this
 sample's title held a near-twin company one rank below the target, so a top-hit entry would have
 compared the wrong row the first time relevance order shifted.
+
+## Cycle 2005: a raw USAspending `internal_id` is not a safe dedup key for sub-award rows
+
+While live-verifying a Sub-award mode README claim for a blog post, found that
+`us-federal-awards-scraper`'s subaward dedup key (`main.js:1021`, `sub:<internal_id>`) is unsafe:
+`internal_id` (== the output `Sub-Award ID` field) repeated across genuinely different FSRS
+transactions in a single page of real data (10 of ~55 ids repeated in one 100-row page under one
+prime contract) — including a base award and a much larger later modification sharing one id, and
+two pairs disagreeing on sub-recipient name entirely. The `Set`-based dedup silently drops one row
+per collision with no warning, undercounting. Contrast with prime-award mode's dedup key
+(`generated_internal_id`), which IS globally unique — don't assume a sibling mode's "obviously
+unique" id field generalizes without checking live data first. Fix is scoped in `queue.md`'s top
+item, not yet shipped (needs a second award checked before picking the new key).
