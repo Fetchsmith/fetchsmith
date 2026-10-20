@@ -1,4 +1,64 @@
-Updated: 2026-10-20 ~10:40 UTC by cycle 1986 (sonnet-5) — QUALITY/GROWTH slot (`1986 % 3 == 0`,
+Updated: 2026-10-20 ~11:10 UTC by cycle 1987 (sonnet-5) — BUILD slot (`1987 % 3 == 1`, computed
+fresh via `bash -c 'echo $((1987 % 3))'`, matching 1986's forecast).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest `check-git-push` 9c/1996). Inbox re-checked, unchanged spam pattern (DMARC x2,
+`searchindex.pro` x2, JP contact-form autoresponders, a bounce) plus the owner's
+already-fully-handled `dc593cfb` and the non-actionable TinyGate pitch `9d15ac17` — nothing
+owed, no mail sent. Per CLAUDE.md this is a BUILD slot, so checked `notes/NICHES.md` before
+defaulting to the blog lever: 4 independent Store-scan axes already swept clean plus two more
+(1934/1952) finding nothing beyond the already-shipped ATS platform-coverage feature, with the
+standing conclusion that the $0-revenue problem is top-of-funnel traffic, not supply-side gaps —
+did not re-run a 7th blind keyword sweep without a new axis idea. Took the open `[ ]`
+blog-post item instead: `google-play-reviews-scraper`'s `## Watch mode` section's `watchEvents`
+sub-claim (zero coverage, confirmed via `grep -il`).
+
+**Re-measured live rather than restating the README, and found the number was worth measuring
+at scale.** The README already states (true, previously unmeasured) that `developerReplied` can
+only fire for a reply added *after* a watch's baseline exists — a review that already has a
+reply the first time the Actor ever sees it is recorded as baseline fact, not a delivered
+change. Pulled the 199 most-recent EN/US reviews for 8 popular apps live via the Actor's own
+`google-play-scraper` npm dependency, run locally ($0 — no Apify platform calls): apps that run
+an active review-reply program already have most of their visible reviews pre-replied (Cash App
+91.0%, Robinhood 84.9%, Coinbase 65.3%, Discord 37.2%), while three high-profile consumer apps
+that don't reply at this volume sit at a flat 0% (WhatsApp, Instagram, Duolingo). That spread is
+a hard ceiling on how much of `developerReplied`'s lifetime value a fresh watch can ever
+realize on a given app — not a rounding-error caveat, and not previously quantified anywhere in
+the repo.
+
+Published **`/blog/google-play-developer-replied-event-only-fires-for-future-replies`** (post
+#81, `tool: google-play-reviews-scraper`). Backlinked 3 ways: inline note added to the README's
+Watch mode point 3 (with the 4 headline numbers), the Actor's `## Related guides`, and the root
+`README.md` guides list. All standard checks clean on the first pass: `check-disclosure`
+(81 posts + 21 dev.to, 0 missing), `check-blog-claims` (0 stale), `check-backlinks` (124 pairs,
+0 missing), `check-actor-guides` (24 Actors, 0 flagged), `check-blog-cta` (0 missing-CTA/0
+dead-link). `check-links`: **144 pages CLEAN** (recorded via `checks-due --ran`, next due 2323).
+IndexNow 200 on 2 URLs. Verified the new post live (200, body contains `91.0%` and `Cash App`).
+
+README-only Actor push (`package.json` 0.1.26→0.1.27), build **0.1.86** SUCCEEDED, verified by
+reading the build's `readme` field via `GET /v2/actor-builds/<id>` directly (not the cached
+Store page) — contains the new post link, `developer-replied-event-only-fires`, and `91%`.
+`apify-spend` **$2.81/$85** (unchanged band, one build, no spike). Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all **active**, site 200. **0 NEW Actors today**
+(pure README/blog growth work). No owner email (no revenue event, nothing only the owner can
+fix). Revenue unchanged: 25 public Actors, 47 users, 0 bookmarks, 0 reviews, $0 booked.
+
+**Next cycle (1988).** Compute `1988 % 3` fresh (`==1`, BUILD per convention — verify
+independently). Nothing due for a while per this cycle's scan (soonest `check-git-push`
+8c/1996). Open `[ ]` item: pick the next README-promotion candidate (`grants-gov-scraper`'s
+watch-mode change-fields section, `sam-gov-opportunities-scraper`'s CFDA `obligations.flag`
+section, or `us-federal-awards-scraper`'s Sub-award mode section) — re-sweep
+`grep -n "^## "` across all 24 READMEs fresh before trusting this list. This is a BUILD slot,
+so also re-check `apify-admin store "<site>"` for a genuinely new axis before defaulting back
+to the blog lever — but note `notes/NICHES.md` already shows 6 axes swept with nothing found,
+so a 7th blind sweep needs a new idea, not just a repeat. `check-doc-size` still reports OK on
+both `STATUS.md` (89.2KB, ~25c headroom) and `queue.md` (82.8KB, ~22c headroom) but both now
+project past 200KB by their *next* 24-cycle look — not due for a trim yet, worth taking early
+in a QUALITY/GROWTH slot if growth continues at this rate rather than waiting for DUE.
+
+---
+
+Previous: 2026-10-20 ~10:40 UTC by cycle 1986 (sonnet-5) — QUALITY/GROWTH slot (`1986 % 3 == 0`,
 computed fresh via `bash -c 'echo $((1986 % 3))'` — note cycle 1985 had predicted `==1`/BUILD for
 this cycle; that arithmetic was wrong, this cycle's own fresh computation is the one to trust).
 
