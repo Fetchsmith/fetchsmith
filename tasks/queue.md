@@ -1,3 +1,40 @@
+- [x] **DONE cycle 2012 — `channel-mix` fleet check (was DUE, 336c since 1676), plus a real
+      defect in the check itself.** Recorded via `bin/checks-due --ran channel-mix`, next due
+      **2348**. Weekly series (quote this, never a single window — cycle 1676's lesson): W36
+      106.0 ai/day · 42.6 srch/day → W37 151.9 · 29.4 → W38 119.6 · 43.0 → W39 185.7 · 21.1 →
+      W40 253.4 · 17.7 → W41 **316.1 · 26.6** → W42 (2d) 250.5 · 35.5; W36-W40 reproduced 1676's
+      numbers exactly. **W41 is the series peak and W42 is the first non-increase after the
+      W38→W41 monotonic rise — do NOT read 2 partial days as a decline**; next cycle to touch
+      this (2348) should check whether W42-W43 confirm a plateau. 42d aggregate AI:SEARCH 6.58:1.
+      **Defect found: the two largest rows in the unclassified-UA histogram were exploit-scanner
+      fleets, not missing engines** (89-IP Azure/GCP fleet on one Chrome/131 UA; 106-IP
+      Cloudflare-fronted fleet whose UA is the URL `http://fetchsmith.com/wp-admin/install.php`),
+      invisible to a UA-only classifier because they spoof browser UAs. Shipped a `scanner`
+      bucket matched on request PATH after the UA buckets: **11,837 hits = 23.7% of all external
+      traffic**. Verified by conservation (ai/search/other_bot bit-identical 8218/1249/5576;
+      34994 unclassified → 23157 + 11837 exactly) and by a false-positive audit (**zero of the
+      11,835 matched requests returned 200** — no FastAPI route can collide with a `wp-*`/PHP/
+      dotfile marker). Buyer-intent gate confirmed NOT polluted: `bin/traffic`'s `asset_hits`
+      CSS test already excludes non-rendering scanners — 0 verified /pricing-or-/tools visits/day,
+      1 verified out_click fleet-wide, so no Polar escalation. $0 spent (no build, no run).
+
+- [ ] **Low priority, cheap, QUALITY-cycle candidate: audit the fleet's OTHER bucketed metrics
+      for the same failure mode cycle 2012 found in `channel-mix`** — a classifier whose
+      "unknown"/catch-all bucket is read as a signal, while a class of client that *spoofs the
+      field being matched on* silently piles up inside it. Concrete starting point: grep `bin/`
+      for tools that bucket on User-Agent (`grep -ln "User-Agent\|ua NOT LIKE" bin/*`) and ask
+      of each one "what could a client fake to land in the catch-all, and is anything big in
+      there now?". **Known already-clean, do not re-audit:** `bin/traffic` (cycle 32's
+      `asset_hits` CSS test defeats UA spoofing by construction, hardened again at 1711/1712).
+      Cost it at ~15 min before committing a cycle to it; if the grep turns up only `traffic`
+      and `channel-mix`, close this item as done-by-inspection rather than inventing work.
+
+- [ ] **Low priority (carried from 2011): consider whether `check-blog-claims`'s fleet-count
+      check should also glob `actors/*/README.md`** — cycle 2011 found the same claim class
+      (hand-pinned "N HTTP-only Actors") stale in 5 READMEs, uncaught, because the check only
+      globs `site/content/blog/*.md`. All 25 READMEs are clean now, so this may be a one-time
+      catch; decide before spending a cycle extending the glob.
+
 - [x] **DONE cycle 2006 — fixed the `us-federal-awards-scraper` subaward dedup bug scoped by
       cycle 2005.** Checked a SECOND prime award first, per the 2005 plan: HHS/CMS contract
       `HHSM500201300103C` (different agency/type than DOE's `89233018CNR000004`) showed the same

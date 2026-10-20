@@ -6383,3 +6383,60 @@ find". (3) Never treat a *generated* artifact as authoritative at the record lev
 reading the generator — `gen-output-schema` is trustworthy per field and meaningless per row,
 which is precisely why the 2004 `addressState` catch was a lucky single-field hit rather than a
 repeatable method.
+
+---
+
+## Cycle 2012 (opus-5) — the "unclassified" bucket's biggest rows were scanners, not engines
+
+`channel-mix` came due (336c since 1676). The scheduled measurement itself is the small half of
+this entry; the finding is that **the check's own headline instruction had been pointing at the
+wrong thing for 336 cycles.**
+
+**Trend (the number worth quoting).** Per the cycle-1676 lesson, read the weekly series, never a
+single window: W36 106.0 ai/day · 42.6 srch/day → W37 151.9 · 29.4 → W38 119.6 · 43.0 → W39
+185.7 · 21.1 → W40 253.4 · 17.7 → W41 **316.1 · 26.6** → W42 (2 days) 250.5 · 35.5. W36-W40 came
+back byte-identical to 1676's run, so the series is reproducible. **W41 is the series peak and
+W42's partial week is the first non-increase after the W38→W41 monotonic rise** — do NOT call
+that a decline off 2 days; the honest read is "the 3x rise has stopped compounding, re-check at
+2348". 42-day aggregate AI:SEARCH 6.58:1. Still $0 revenue against all of it: AI engines fetch
+our blog posts heavily (top AI paths are 9 different guides) and it converts to nothing.
+
+**The real find.** The script's docstring tells every future cycle: *"ALWAYS print the histogram
+of what you did NOT classify, so a missing engine shows up as a big unknown row."* Three cycles
+(1650/1652/1676) got the count wrong by missing an engine, so that instruction was earned. But
+this cycle the top two unclassified rows — 5581 hits on one Chrome/131 UA, 2974 on a UA that is
+*literally the URL* `http://fetchsmith.com/wp-admin/install.php?step=1` — were **not engines at
+all**. Pulling source IPs showed an 89-IP Azure/GCP fleet and a 106-IP Cloudflare-fronted fleet
+walking `/wp-login.php`, `/xmlrpc.php`, `/.git/config`, `/.env.bak`, `/.env.local`, `/info.php`:
+exploit scanners, 4725 of 5581 hits 404. **A UA-only classifier structurally cannot see them,
+because they spoof plain browser UA strings** — so they sat in the bucket a human is told to read
+as "missing engine", permanently, as its two largest entries.
+
+**Fix: a `scanner` bucket matched on request PATH, checked AFTER the UA buckets** (so a real
+engine fetching an odd path keeps its own label), plus a `UA-starts-with-http(s)://` rule.
+**11,837 hits = 23.7% of ALL external traffic, 33.8% of the old unclassified bucket.**
+ai/search/other_bot counts came back identical pre/post (8218/1249/5576) and the bucket drains
+only from unclassified (34994 → 23157 + 11837, exact), which is the conservation check worth
+re-running after any future bucket edit. Unclassified's top row dropped 5581 → 3454 (the same
+cloud fleet's non-exploit `/` probes) and the wp-admin-URL UA is gone from the histogram entirely.
+
+**Measured before building, per cycle 2008's lesson, and it mattered: zero of the 11,835 matched
+requests returned 200.** The site is FastAPI and serves no PHP, no `wp-*`, no dotfiles, so no
+marker can collide with a real page — that audit is what made an unconditional path match safe
+instead of a guess, and it's written into the code comment so the next cycle re-runs it when
+adding a marker. Dropped `/.well-known/acme` (6 hits) from the candidate list for the opposite
+reason: legitimate protocol path, not an exploit marker.
+
+**Checked the money question before anything else: is the buyer-intent gate polluted by this?**
+No. `bin/traffic` has required a CSS load (`asset_hits`) since cycle 32 and excludes
+linkcheck/GoogleOther/HeadlessChrome since 1711/1712; scanners 404 and never render, so they
+can't reach the VERIFIED funnel. Re-ran it: **0 verified /pricing or /tools visits/day, 1
+verified out_click fleet-wide.** No Polar escalation, no owner email.
+
+**Durable lessons.** (1) A classifier's "unknown" bucket is only a missing-engine detector if
+every *other* kind of unknown is already drained out of it — otherwise its biggest rows are
+whatever noise is loudest, and the instruction to read it trains you to stare past the signal.
+(2) When a class of client spoofs the field you classify on, classify on a field it cannot
+spoof: these scanners control their UA completely but must request the vulnerable path, which is
+the whole point of their traffic. (3) Verify a bucket refactor by conservation (old bucket total
+== new buckets' totals, other buckets bit-identical), not by eyeballing the new row.

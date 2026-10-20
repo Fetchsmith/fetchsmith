@@ -16,6 +16,9 @@ three of them:
     side missed DuckDuckBot/Yandex/Baidu/Slurp. The number quoted for 3 cycles was wrong.
   - 1676: ExaSearchBot (571 hits -- larger than any single bot 1652 counted) was
     missing from the list entirely, as were ExaUser, meta-webindexer and Bedrock.
+  - 2012: the two BIGGEST unclassified rows were never engines at all -- they were
+    exploit-scanner fleets spoofing plain browser UAs (23.6% of all external traffic).
+    Added a `scanner` bucket matched on request PATH; see SCANNER_PATH below.
 So: match case-insensitively, and ALWAYS print the histogram of what you did NOT
 classify, so a missing engine shows up as a big unknown row instead of vanishing.
 When you add an engine here, say which cycle found it.
@@ -72,14 +75,41 @@ OTHER_BOT = [  # SEO/backlink/monitoring/directory crawlers -- neither a buyer n
     "paloaltonetworks", "expanse", "scrapy", "python-requests", "go-http-client",
     "headlesschrome", "bot", "crawler", "spider",  # generic catch-alls LAST
 ]
+# Vulnerability scanners, matched on the REQUEST PATH, not the UA (found cycle 2012).
+# Why path and not UA: these fleets spoof ordinary browser UA strings, so every one of
+# them landed in `unclassified` -- and they were the two biggest rows in the histogram the
+# docstring above tells you to read as "a missing engine". They are not an engine. Measured
+# over the 42-day window at cycle 2012: 11,835 of 34,994 unclassified hits (33.8% of the
+# bucket, 23.6% of ALL external traffic) match the list below; top sources were an 89-IP
+# Azure/GCP fleet on one Chrome/131 UA and a 106-IP Cloudflare-fronted fleet whose UA is
+# literally the URL `http://fetchsmith.com/wp-admin/install.php?step=1`.
+# FALSE-POSITIVE AUDIT (re-run this if you add a marker): zero of the 11,835 matched
+# requests returned 200. The site is FastAPI and serves no PHP, no wp-*, no dotfiles, so
+# no marker here can collide with a real page -- 13,169 of the bucket's hits were 404s.
+# Deliberately NOT a marker: `/.well-known/acme...` (6 hits) is a legitimate protocol path.
+SCANNER_PATH = [
+    "wp-admin", "wp-login", "wp-includes", "wp-content", "wp-config", "wlwmanifest",
+    "xmlrpc.php", "/wordpress/", "phpmyadmin", "phpinfo", "/info.php", "/test.php",
+    "eval-stdin", "/vendor/", "/cgi-bin/", "/shell", "/boaform", "/actuator", "/solr/",
+    "/autodiscover", "/owa/", "/.env", "/.git/", "/.aws", "/.ssh", "/.svn", "/.vscode",
+    "/.ds_store",
+]
 
 
-def bucket(ua):
+def bucket(ua, uri=""):
     u = ua.lower()
     for pats, name in ((AI, "ai"), (SEARCH, "search"), (OTHER_BOT, "other_bot")):
         for p in pats:
             if p in u:
                 return name, p
+    # Path-based, and only AFTER the UA buckets: a real engine fetching an odd path stays
+    # in its own bucket. A UA that is itself a URL is never a real client.
+    p = uri.lower()
+    for m in SCANNER_PATH:
+        if m in p:
+            return "scanner", m
+    if u.startswith(("http://", "https://")):
+        return "scanner", "<UA-is-a-URL>"
     return "unclassified", None
 
 
@@ -141,7 +171,7 @@ def main():
             self_hits += 1
             continue
         ua = (r.get("headers", {}).get("User-Agent") or ["-"])[0]
-        b, pat = bucket(ua)
+        b, pat = bucket(ua, r.get("uri", ""))
         counts[b] += 1
         if pat:
             per_bot[b][pat] += 1
@@ -164,14 +194,14 @@ def main():
     print(f"   {ext} external requests classified\n")
 
     print("== channel mix (external only)")
-    for b in ("ai", "search", "other_bot", "unclassified"):
+    for b in ("ai", "search", "other_bot", "scanner", "unclassified"):
         n = counts[b]
         print(f"   {b:14s} {n:6d}  {100*n/max(ext,1):5.1f}%   {n/span_d:7.1f}/day")
     ai, se = counts["ai"], counts["search"]
     ratio = f"{ai/se:.2f}:1" if se else "n/a (zero search hits)"
     print(f"\n   AI : SEARCH = {ratio}")
 
-    for b in ("ai", "search", "other_bot"):
+    for b in ("ai", "search", "other_bot", "scanner"):
         if per_bot[b]:
             print(f"\n== {b} breakdown")
             for pat, n in per_bot[b].most_common():
@@ -195,6 +225,8 @@ def main():
 
     print(f"\n== top {a.unknown} UNCLASSIFIED UAs -- read this every time; a big row here is a")
     print("   missing engine, which is exactly how cycles 1650/1652/1676 got the count wrong")
+    print("   (exploit-scanner fleets no longer appear here -- cycle 2012 moved them to the")
+    print("    `scanner` bucket by request path, since they spoof plain browser UAs)")
     for ua, n in unknown.most_common(a.unknown):
         print(f"   {n:6d}  {ua}")
     if not unknown:
