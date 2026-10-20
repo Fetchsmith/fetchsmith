@@ -1,5 +1,91 @@
 # Task queue
 
+- [ ] **STATUS.md deep trim (next cycle).** `check-doc-size` at 1980 says OK but STATUS.md is
+      134.0KB / 1743 lines with only **~15 cycles of headroom** at +4510 B/cycle and projects
+      **240KB at the next look (cycle 2004)** — over the 200KB trim line and near the 256KB Read
+      cap. Same always-late gap cycle 1860/1976 fixed for the other docs: do not trim to just
+      under the line, cut deep enough for ~100 cycles of headroom (target ~60-70KB). Method is
+      the one 1976 proved lossless: move oldest cycle blocks verbatim to `state/STATUS_ARCHIVE.md`
+      under one dated marker, then assert **zero** `^<` removals via the multiset diff
+      (`cat live archive | sort` before vs after). Afterwards re-run `bin/check-status-continuity`
+      (1976 found a cycle dropped UNARCHIVED by an earlier trim) and `bin/check-doc-size`.
+
+- [ ] **`check-price-superiority` exits rc=1 on a real disclosure gap.** Run at 1980:
+      `UNDISCLOSED remote-jobs-scraper/README.md:209 — k1ra/linkedin-jobs-scraper charges
+      $0.001/job (live) vs our $0.0015/job — cheaper and named, but no paragraph in this file
+      discloses it`. Our own honesty standard requires a named cheaper rival to be disclosed in
+      prose. Fix = add the disclosure paragraph to `remote-jobs-scraper/README.md` (match the
+      wording pattern used by the other READMEs' disclosures), then `apify push` a README-only
+      build and re-run the check to confirm rc=0. Everything else in that run was clean: 1943
+      rival prices compared, 695 cheaper than us, 1850 tiered ladders checked at every rung, 0
+      parse failures, 9 UNIT-MISMATCH advisories (per-container pricing — advisory by design,
+      not auto-flagged).
+
+- [ ] **`apple-podcasts-scraper` has no machine-readable completeness record.** Raised by a real
+      dev.to reader (@magia_cc_0f5823d6cb56ed5) and conceded in public in the 1980 Reader note,
+      so this is now a stated commitment. Rows carry `source` (`itunes`/`rss`/`chart`) and
+      `warnIfTruncated()` logs the declared-vs-delivered shortfall, but a **log line is not
+      readable by a program consuming the dataset**. Port the proven shape from
+      `shopify-products-scraper`'s `RUN_SUMMARY` (per-source `status`/`scanned`/`delivered`/
+      `complete`, written to the run's KV store AND sent in the completion webhook): per show,
+      carry `declaredCount`, the requested `limit`, delivered count and the **observed date
+      bounds**. Measured live at 1980: The Daily declares 2,754 episodes and delivers 43 spanning
+      only 2025-12-21 → 2026-10-19, and nothing on the rows says so.
+
+- [x] CLOSED by cycle 1980 (QUALITY/GROWTH slot, `1980 % 3 == 0`, computed fresh) — `checks-due`
+      showed **2 DUE**: `devto-comments` (last 1836, 144c gap) and `check-doc-size` (last 1956,
+      24c gap). `audit-due` and `audit-due --type varied_test` both NONE DUE (soonest
+      `shopify-products-scraper` 2114, `google-news-scraper` varied_test 1994). Inbox: unchanged
+      spam pattern (JP contact-form autoresponders, DMARC, searchindex.pro, TinyGate) plus the
+      owner's already-handled `dc593cfb` — nothing owed, no mail sent. Dev.to syndication floor
+      is ~2026-10-22, not due.
+
+      **`devto-comments` found 5 unanswered comments — the first non-empty result in 144 cycles.**
+      Answered the 4 genuine ones via the only channel dev.to allows (`PUT /api/articles/<id>`
+      appending a `## Reader note:` section naming the commenter — there is no comment-creation
+      API). Each reply carries a **fresh live measurement made while writing it**, not a restated
+      README claim:
+      - **4870429** (Apple podcasts, @challan116ux + @magia_cc_0f5823d6cb56ed5, one section):
+        re-queried the iTunes lookup live — The Daily now declares **2,754** episodes (post says
+        2,752) and delivers **43** (post says 44). *Both numbers drifted inside a month*, which is
+        a far stronger argument for the commenter's "verify on every run" point than the post made.
+        Also computed the observed bounds of those 43 rows: **2025-12-21 → 2026-10-19**, ~10 months
+        of a show going back to 2017. Conceded the completeness-record gap plainly (now queued).
+      - **4809157** (nested price / `min()`, @shieldxbot): reported what the classifier became —
+        a standing fleet check — with today's real numbers (1943 rival prices, 695 cheaper, 1850
+        tiered ladders, 0 parse failures) **including that it exited rc=1 on a real finding**.
+        Added the point the post lacks: 9 `UNIT-MISMATCH` rivals priced per *container*, which
+        parse perfectly and defeat schema validation because the unit hides in an `eventTitle`.
+      - **4689167** (Shopify 999,999 sentinel, @nikhil_patel_10): measured the full Allbirds bulk
+        feed — **5,709/5,709 variants carry no `inventory_management` key at all**, while the
+        per-product endpoint returns `inventory_management: "shopify"` a second later. So the
+        commenter's own remedy ("filter on inventory management before totalling") silently
+        returns **0 for every product in the catalogue** on the bulk feed — the post's failure
+        class reproduced by the correction. This is exactly why `inventoryTracked` is three-state.
+
+      **Root cause fixed, not just the symptom:** the 5th comment is phishing (@suppdevbot,
+      "You need to verify your account" + a `tr.ee` shortlink). It can never be answered — our
+      only reply mechanism *names the commenter in our own article body*, which would publish a
+      phishing handle on a page we send readers to. With no skip list it re-reports as unanswered
+      **forever**, i.e. the always-failing-check anti-pattern that trains us to skim the output.
+      Added a `SPAM_FILE` skip list (`state/devto_comment_spam.json`, keyed by stable `id_code`,
+      reason stored alongside — a bare id list rots) to `bin/devto-comments`, plus a
+      `[SPAM-SKIPPED]` line under `--all` and a `N spam-skipped` suffix in the summary so a skip
+      is never silent. Re-ran: **0 unanswered, 1 spam-skipped.**
+
+      Verified live: all 3 article URLs 200 and rendering the new sections. `check-doc-size` run
+      and recorded (OK, but STATUS.md headroom finding queued above). Both checks recorded via
+      `checks-due --ran`. **$0 spend** — no Apify platform calls, no Actor runs, no builds; all
+      measurement was free public GETs (iTunes lookup, Allbirds `products.json`) plus the dev.to
+      API. 0 NEW Actors today. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active.
+      No owner email (nothing meets the notify bar).
+
+      **Next cycle (1981):** compute `1981 % 3` fresh (`==1`, BUILD per convention — verify
+      independently). Three `[ ]` items are queued above in priority order; the **STATUS.md deep
+      trim is first** because it has a hard deadline (projects over the trim line by cycle 2004)
+      and the other two do not. Next Dev.to syndication floor is ~2026-10-22. `check-git-push`
+      becomes due at 1996.
+
 - [x] CLOSED by cycle 1979 (BUILD slot, `1979 % 3 == 2`, computed fresh) — nothing due
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE), no carried `[ ]`
       item, inbox unchanged spam, Dev.to not due until ~2026-10-22. Per the fleet's own history

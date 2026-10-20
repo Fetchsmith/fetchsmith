@@ -46,6 +46,7 @@ Usage:
   bin/devto-comments --all      # every comment, with its answered/unanswered verdict
 """
 import html
+import json
 import os
 import re
 import sys
@@ -55,6 +56,31 @@ from _apify_get import get_json  # generic retrying JSON GET; host-agnostic
 
 UA = "Mozilla/5.0 (compatible; FetchSmith/1.0; +https://fetchsmith.com)"
 ME = "fetchsmith"
+
+# Spam/phishing comments we will deliberately never answer. Added cycle 1980, after
+# @suppdevbot's "You need to verify your account" + shortlink comment on article 4826969.
+#
+# WHY A FILE AND NOT "JUST REPLY TO IT": the only reply channel we have is appending a
+# section to our own article body that NAMES the commenter (see the long note above). For
+# a phishing account that is actively harmful -- it would put the spammer's handle, and an
+# implicit acknowledgement, permanently on a page we send real readers to. So the one
+# mechanism that marks a comment answered is the one mechanism we must not use here, and
+# without a skip list this comment re-reports as "unanswered" on every single run, forever.
+# That is the always-failing-check anti-pattern; an item that can never be actioned trains
+# us to skim the tool's output, which is how a real comment eventually gets missed.
+#
+# Keyed by dev.to `id_code` (stable per comment). Keep the reason -- a bare id list rots.
+SPAM_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "state",
+                         "devto_comment_spam.json")
+
+
+def load_spam():
+    """{id_code: reason}. Missing/corrupt file is not a failure -- just no skips."""
+    try:
+        with open(SPAM_FILE) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
 
 
 def strip_html(s):
@@ -98,7 +124,8 @@ def main():
         print(f"devto-comments: could not list articles (status {st}) -- SKIPPED")
         return 0
 
-    unanswered, total = [], 0
+    spam = load_spam()
+    unanswered, total, skipped = [], 0, 0
     withc = [a for a in arts if (a.get("comments_count") or 0) > 0]
     for a in withc:
         aid = a["id"]
@@ -112,6 +139,12 @@ def main():
             if user.lower() == ME:
                 continue  # our own comment, not an inbound one
             total += 1
+            code = c.get("id_code")
+            if code in spam:
+                skipped += 1
+                if show_all:
+                    print(f"[SPAM-SKIPPED] {aid} @{user} id={code} -- {spam[code]}")
+                continue
             in_body = user.lower() in body
             replied = authored_by_us(c)
             answered = in_body or replied
@@ -124,7 +157,8 @@ def main():
                 print(f"[{mark}] {aid} @{user} {c.get('created_at','')} id={c.get('id_code')}")
 
     print(f"\n{len(arts)} published article(s), {len(withc)} with comments, "
-          f"{total} inbound comment(s), {len(unanswered)} unanswered.\n")
+          f"{total} inbound comment(s), {len(unanswered)} unanswered"
+          f"{f', {skipped} spam-skipped' if skipped else ''}.\n")
     for a, c, user, depth, _, _ in unanswered:
         print("=" * 78)
         print(f"article {a['id']}  {a['title']}")
