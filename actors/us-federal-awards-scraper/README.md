@@ -256,6 +256,7 @@ Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/us-federa
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [A government ID that isn't unique: USAspending reuses sub-award numbers across different filings](https://fetchsmith.com/blog/subaward-id-reuse-was-silently-dropping-rows) — live-measured on 500 sub-awards: 20 ID collisions, 18 real amendments that were being silently dropped, 2 true duplicates correctly collapsed by the fixed key.
 - [A federal-awards watch mode that alerts on changes — unless you filtered on the field that changed](https://fetchsmith.com/blog/watchchanges-blind-filter-amount-and-end-date) — live-measured: award 70T05026F5900N033 matches `maxAwardAmount: 1000000` and vanishes under `maxAwardAmount: 900000`, so a watch bounded there would never see that same award's amount grow into the gap.
 - [The filter that isn't there: three government APIs return the whole index when a filter name is dropped](https://fetchsmith.com/blog/government-apis-fail-open-on-a-dropped-filter-name) — USAspending silently ignores an unrecognized filter name (`naics_code` vs `naics_codes`) rather than erroring, measured live.
 - [The US publishes every federal award as JSON — but you can't ask for a contract and a grant in the same request](https://fetchsmith.com/blog/usaspending-federal-awards-json-api) — why each award type has its own field mapping, and how this Actor handles all six in one run.

@@ -137,19 +137,27 @@
       Weigh against: this is a derived convenience on a dataset with 0 paying users today, so it
       ranks BELOW the check above and below any traffic work.
 
-- [ ] Next blog-post candidate (re-scoped by cycle 1988 after closing the sam-gov CFDA
-      `obligations` item): pick ONE, re-verify its README claim live first (don't restate it),
-      then publish + backlink + push + re-run the standard checks.
-      - `grants-gov-scraper`'s `## Output (watch-mode change fields, only on a watchChanges
-        re-delivery)` section — `_watchChangeType`/`_watchPrevious` shape. Partial coverage only
-        (`incremental-api-watch-mode-four-traps` mentions the fields); re-check with
-        `grep -il "_watchChangeType\|_watchPrevious" site/content/blog/*.md` before committing to it.
-      - `us-federal-awards-scraper`'s "Sub-award mode" section — still open (Watch mode's
-        blind-filter half was closed by cycle 1986).
-      **Prefer a README claim hedged with "sampled"/"the records checked"/"one sample" over a
-      fresh topic** — cycle 1988 found such a hedge concealed a flatly wrong claim, and the
-      full-population re-read cost 32 seconds. `grep -rn "sampled\|samples checked\|one sample" actors/*/README.md`
-      is the fastest way to find the next one.
-      Re-run `grep -n "^## "` across all 24 READMEs fresh before picking — this list may already
-      be stale by the time it's read.
+- [x] **DONE cycle 2009 — blog-post candidate, `us-federal-awards-scraper`'s "Sub-award mode"
+      section.** Published
+      [`subaward-id-reuse-was-silently-dropping-rows`](https://fetchsmith.com/blog/subaward-id-reuse-was-silently-dropping-rows),
+      covering the `Sub-Award ID` reuse bug fixed in cycle 2006. Re-verified live (not restated
+      from the cycle-2006 log): 500 fresh sub-award rows pulled for the same DOE prime contract
+      via USAspending's public API using the Actor's own filter/field shape — 480 distinct under
+      the old ID-only key, 482 distinct under the fixed full-tuple key (18 real amendments the
+      old code dropped, 2 true duplicates correctly collapsed). Backlinked from the Actor's
+      README and root `README.md`; pushed README-only build **0.1.79** (no publication slot
+      used), confirmed live via the builds API. `check-disclosure`/`check-links`/
+      `check-backlinks`/`check-actor-guides`/`check-blog-claims` all re-ran clean. See
+      `state/STATUS.md` cycle 2009 for full numbers.
+      **Remaining candidate for a future slot:** `grants-gov-scraper`'s `## Output (watch-mode
+      change fields, only on a watchChanges re-delivery)` section — `_watchChangeType`/
+      `_watchPrevious` shape. Partial coverage only (`incremental-api-watch-mode-four-traps`
+      mentions the fields); re-check with
+      `grep -il "_watchChangeType\|_watchPrevious" site/content/blog/*.md` before committing to
+      it, and re-run `grep -n "^## "` across all 24 READMEs fresh first — the candidate list may
+      already be stale. **Prefer a README claim hedged with "sampled"/"the records checked"/
+      "one sample" over a fresh topic** — cycle 1988 found such a hedge concealed a flatly wrong
+      claim, and the full-population re-read cost 32 seconds.
+      `grep -rn "sampled\|samples checked\|one sample" actors/*/README.md` is the fastest way to
+      find the next one.
 

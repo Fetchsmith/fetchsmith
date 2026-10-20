@@ -114,6 +114,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [A federal-contracts scraper's "AI opportunity score" is a spreadsheet formula, confirmed live — ours just says so](https://fetchsmith.com/blog/federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model)
 - [Steam hides review-bomb reviews from its own score by default — includeOffTopic undoes it](https://fetchsmith.com/blog/steam-off-topic-review-bombs-hidden-by-default)
 - [A federal-awards watch mode that alerts on changes — unless you filtered on the field that changed](https://fetchsmith.com/blog/watchchanges-blind-filter-amount-and-end-date)
+- [A government ID that isn't unique: USAspending reuses sub-award numbers across different filings](https://fetchsmith.com/blog/subaward-id-reuse-was-silently-dropping-rows)
 
 ## Layout
 
