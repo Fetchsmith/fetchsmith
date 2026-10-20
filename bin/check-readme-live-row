@@ -634,6 +634,77 @@ ENTRIES = [
             "(attachments has its own block, and the forecast fields their own)."
         ),
     },
+    {
+        "slug": "grants-gov-scraper",
+        "heading": "Sample output (a forecast",
+        "key_field": "id",
+        # Verified live cycle 1997 against the README's own forecast sample (opportunity id
+        # 355824, MP-CPI-25-001). Same fetch_grants_gov_row() two-endpoint merge as the synopsis
+        # entry above, but detail.forecast has no detail.synopsis (confirmed live:
+        # has synopsis=False, has forecast=True), so normalizeEnriched's `sub` resolves to
+        # detail.forecast for every sub.* field below (main.js:827 `sub = detail.synopsis ??
+        # detail.forecast ?? {}`) -- read first, not guessed. Did NOT reuse the attachments
+        # block's id (332894) for this entry on purpose: that record is a synopsis, not a
+        # forecast, so it can't exercise the seven forecast-only fields this entry is for.
+        "fetch": fetch_grants_gov_row,
+        "fields": {
+            "id": "thin.id",
+            "opportunityNumber": "thin.number",
+            "agencyCode": "thin.agencyCode",
+            "agency": "thin.agency",
+            "openDate": "thin.openDate",
+            # Raw /search2 closeDate is "" (empty string) on a forecast, not absent -- mirrors
+            # normalizeThin's `row.closeDate || null` (main.js:793), verified live the raw value
+            # really is "" here, not missing, so the `|| null` coercion is exercised for real.
+            "closeDate": "thin.closeDate",
+            "oppStatus": "thin.oppStatus",
+            "docType": "thin.docType",
+            "cfdaList": "thin.cfdaList",
+            "opportunityCategory": "detail.opportunityCategory.description",
+            "costSharing": "detail.forecast.costSharing",
+            "awardCeiling": "detail.forecast.awardCeiling",
+            "awardFloor": "detail.forecast.awardFloor",
+            "fundingInstruments": "detail.forecast.fundingInstruments",
+            "fundingActivityCategories": "detail.forecast.fundingActivityCategories",
+            "cfdas": "detail.cfdas",
+            "numberOfAwards": "detail.forecast.numberOfAwards",
+            "estimatedFunding": "detail.forecast.estimatedFunding",
+            "estSynopsisPostingDate": "detail.forecast.estSynopsisPostingDate",
+            "estApplicationResponseDate": "detail.forecast.estApplicationResponseDate",
+            "estAwardDate": "detail.forecast.estAwardDate",
+            "estProjectStartDate": "detail.forecast.estProjectStartDate",
+            "fiscalYear": "detail.forecast.fiscalYear",
+        },
+        "transforms": {
+            "closeDate": lambda v: v or None,
+            "awardCeiling": grants_parse_money,
+            "awardFloor": grants_parse_money,
+            "numberOfAwards": grants_parse_money,
+            "estimatedFunding": grants_parse_money,
+            "fundingInstruments": lambda v: [
+                t.get("description") for t in (v or []) if t.get("description")
+            ],
+            "fundingActivityCategories": lambda v: [
+                t.get("description") for t in (v or []) if t.get("description")
+            ],
+            "cfdas": lambda v: [
+                {"number": c.get("cfdaNumber"), "title": c.get("programTitle")}
+                for c in (v or []) if c.get("cfdaNumber")
+            ],
+        },
+        "skip_note": (
+            "title (cleanText, not a one-line mirror, same reason v7 skips it), url (built "
+            "from a URL template, not a raw field), applicantTypes (explicitly elided in the "
+            "README with a trailing '...', documentation not a value to compare -- same as v7's "
+            "synopsis entry), synopsisText (stripHtml AND elided with '...', doubly excluded), "
+            "topAgencyName/topAgencyCode/postingDate/lastUpdatedDate/assistURL/modComments/"
+            "synopsisDocumentURLs/attachments are not present in this forecast sample block "
+            "(the synopsis entry above covers topAgencyName/opportunityCategory-adjacent fields; "
+            "attachments has its own block, not yet added -- see queue.md, the live record's "
+            "`synopsisAttachmentFolders` is empty for this forecast anyway so it could not "
+            "exercise that path even if added here)."
+        ),
+    },
 ]
 
 def main():
