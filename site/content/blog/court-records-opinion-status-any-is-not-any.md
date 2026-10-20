@@ -47,7 +47,7 @@ We could have left this as a README caveat — "any means these 2 of 7 statuses"
 
 ## Packaged version
 
-[court-records-scraper on Apify](/go/court-records-scraper) queries CourtListener's anonymous search index directly — no account, no token. `opinionStatus` defaults to `published` (matching CourtListener's own default, so no existing run's row count changes), and `"any"` now genuinely means every status CourtListener tracks. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
+[court-records-scraper on Apify](/go/court-records-scraper) queries CourtListener's anonymous search index directly — no account, no token. `opinionStatus` defaults to `published` (matching CourtListener's own default, so no existing run's row count changes), and `"any"` now genuinely means every status CourtListener tracks. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring. Status isn't the only CourtListener field whose coverage varies more than you'd expect — see [why a court that publishes one sparse opinion metadata field tells you nothing about the others](/blog/court-opinion-metadata-fields-dont-travel-together).
 
 ---
 

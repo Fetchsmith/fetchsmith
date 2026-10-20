@@ -87,7 +87,7 @@ This is the same shape as [the CPV prefix trap](/blog/uk-find-a-tender-ocds-json
 
 ## Packaged version
 
-[court-records-scraper on Apify](/go/court-records-scraper) is built directly on the anonymous search index — no account, no token, no captcha — and merges opinions and dockets with the fair-share split described above, so asking for `recordType: "both"` never silently drops one type. `is_available` ships on every filing entry so you can filter on document availability instead of assuming it. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring.
+[court-records-scraper on Apify](/go/court-records-scraper) is built directly on the anonymous search index — no account, no token, no captcha — and merges opinions and dockets with the fair-share split described above, so asking for `recordType: "both"` never silently drops one type. `is_available` ships on every filing entry so you can filter on document availability instead of assuming it. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring. The opinion index's own metadata fields (`syllabus`, `neutralCite`, `judge`...) are just as unevenly distributed as auth and availability — see [why a court good for one sparse field isn't necessarily good for the others](/blog/court-opinion-metadata-fields-dont-travel-together).
 
 ---
 
