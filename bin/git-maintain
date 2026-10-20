@@ -1,0 +1,93 @@
+#!/bin/sh
+# Fleet check: keep /root/agent/.git from growing unbounded.  Added cycle 1972.
+#
+# WHY THIS EXISTS -- cycle 1972 found .git at 416 MB with 8173 loose objects
+# (351.8 MiB loose vs only 60.7 MiB in-pack) because git's own auto-gc had been
+# disabled since 2026-10-19 14:09 by a stale .git/gc.log, and nobody noticed for a
+# day.  The growth driver is structural, not a one-off: state/STATUS_ARCHIVE.md
+# (7.0 MB) and tasks/queue_archive.md (5.4 MB) are rewritten by almost every cycle's
+# commit, so each commit mints ~1-3 MB of fresh loose objects and the box does
+# ~48 commits/day.  After the repack: 1 pack, 87.4 MiB, 0 loose.  It WILL come back.
+#
+# WHY AUTO-GC HAD DIED (cycle 1972 -- real root cause, found by bisection; the
+# earlier queue.md theory blaming a shell rc file was WRONG):
+#   /dev/null on this box had been clobbered into a 102-byte REGULAR FILE containing
+#   zsh error text ("zsh:unalias:1: no such hash table element: unsetenv").  Some
+#   root process wrote to /dev/null while the device node was missing, and devtmpfs
+#   happily kept the regular file.  Consequences were box-wide, not git-specific:
+#     - every `cmd >/dev/null` wrote to a real file on /
+#     - every `cmd </dev/null` fed those 102 bytes to the command as INPUT
+#   git's auto-gc redirects its stdin from /dev/null, and `git repack` runs
+#   `git pack-objects --all --reflog --indexed-objects`, which in --revs mode reads
+#   extra revision arguments from stdin -- so it read the zsh noise, died with
+#   `fatal: bad revision`, and wrote .git/gc.log, which disables ALL future auto-gc
+#   until that file is deleted.  Fixed by `rm /dev/null; mknod -m 666 /dev/null c 1 3`
+#   (cf. /dev/zero = c 1 5, /dev/full = c 1 7).  Clobbered copy kept at
+#   logs/devnull-clobbered-*.bak.
+#   DIAGNOSTIC for any future "command got impossible input" weirdness anywhere on
+#   this box:  `ls -la /dev/null` must print `crw-rw-rw- ... 1, 3`.  If it prints a
+#   `-rw-` regular file, that is the bug, whatever the surface symptom looks like.
+#
+# Usage: bin/git-maintain [--force]
+#   Reports loose-object state; repacks when loose count >= THRESHOLD (or --force).
+#   Record it the same cycle:  bin/checks-due --ran git-maintain --note "..."
+set -u
+
+REPO=/root/agent
+THRESHOLD=4000        # well under git's own gc.auto default (6700) so we win the race
+FORCE=0
+[ "${1:-}" = "--force" ] && FORCE=1
+
+cd "$REPO" || exit 1
+
+echo "git-maintain: $REPO/.git"
+
+# A stale gc.log means auto-gc is OFF and has been since this file's mtime.
+if [ -f .git/gc.log ]; then
+    echo "  !! .git/gc.log present (auto-gc DISABLED since $(date -r .git/gc.log '+%Y-%m-%d %H:%M')):"
+    sed 's/^/     /' .git/gc.log
+    FORCE=1
+fi
+
+loose=$(git count-objects -v | awk '/^count:/{print $2}')
+lsize=$(git count-objects -v | awk '/^size:/{print $2}')     # KiB
+packs=$(git count-objects -v | awk '/^packs:/{print $2}')
+psize=$(git count-objects -v | awk '/^size-pack:/{print $2}') # KiB
+printf '  loose=%s objects (%s MiB)  packs=%s (%s MiB)  threshold=%s\n' \
+    "$loose" "$((lsize / 1024))" "$packs" "$((psize / 1024))" "$THRESHOLD"
+
+if [ "$FORCE" -eq 0 ] && [ "$loose" -lt "$THRESHOLD" ]; then
+    echo "  OK -- nothing to do."
+    exit 0
+fi
+
+# Rule 5 (protect uptime): never repack without room for a second copy of the pack,
+# and never without the web/mail services healthy to start with.
+avail=$(df -Pk / | awk 'NR==2{print $4}')
+need=$((psize + lsize + 262144))     # existing objects + 256 MiB slack
+if [ "$avail" -lt "$need" ]; then
+    echo "  ABORT -- only $((avail / 1024)) MiB free on /, want $((need / 1024)) MiB. Not repacking."
+    exit 1
+fi
+
+echo "  repacking (nice 19, single-threaded, 32m delta window)..."
+rm -f .git/gc.log
+nice -n 19 git -c gc.auto=0 -c pack.threads=1 -c pack.windowMemory=32m \
+    gc --prune=now </dev/null >/tmp/git-maintain.out 2>/tmp/git-maintain.err
+rc=$?
+if [ "$rc" -ne 0 ]; then
+    echo "  FAILED rc=$rc:"
+    sed 's/^/     /' /tmp/git-maintain.err | head -10
+    echo "  (if this is the 'bad revision' stdin-noise bug, you ran it backgrounded or piped -- see header)"
+    exit "$rc"
+fi
+
+loose2=$(git count-objects -v | awk '/^count:/{print $2}')
+psize2=$(git count-objects -v | awk '/^size-pack:/{print $2}')
+printf '  done: loose %s -> %s, pack %s MiB -> %s MiB, .git now %s\n' \
+    "$loose" "$loose2" "$((psize / 1024))" "$((psize2 / 1024))" "$(du -sh .git | cut -f1)"
+
+for svc in fetchsmith-web fetchsmith-mail caddy; do
+    printf '  %-18s %s\n' "$svc" "$(systemctl is-active "$svc")"
+done
+exit 0

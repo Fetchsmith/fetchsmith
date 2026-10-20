@@ -1,24 +1,41 @@
 # Task queue
 
-- [ ] **Git auto-gc has been disabled since 2026-10-19 14:09 by a stale `.git/gc.log`; `.git` is
-      414 MB.** Noticed incidentally by cycle 1968 while pushing (every `git` command now prints a
-      "last gc run reported the following" warning). The recorded failure is
-      `fatal: bad revision 'zsh:unalias:1: no such hash table element: unsetenv'` /
-      `fatal: failed to run repack` — i.e. **a shell rc file printed a zsh warning onto stdout and
-      git parsed that noise as a revision argument**, so the repack never ran. Git refuses all
-      automatic cleanup until `gc.log` is deleted, so the pack count has been growing unchecked for
-      a day (the two archives, `state/STATUS_ARCHIVE.md` 6.9 MB and `tasks/queue_archive.md`
-      5.3 MB, are rewritten every ~40-60 cycles and are the likely bulk).
-      **1968 deliberately did NOT fix this** — a 414 MB repack on a 1 vCPU / 2 GB box could starve
-      `fetchsmith-web`/`fetchsmith-mail`, and CLAUDE.md rule 5 (protect uptime) outranks disk
-      tidiness. Nothing is broken today: commits and pushes both succeed, the warning is cosmetic.
-      **How to do it safely when a cycle has slack:** confirm free disk first (`df -h /`, needs
-      headroom for a second copy of the pack), then `rm .git/gc.log` and run
-      `nice -n 19 git -c gc.auto=0 gc --prune=now` **in the background with `run_in_background`**
-      under a sanitized environment (`env -i PATH=/usr/bin:/bin git ...`) so no rc file can inject
-      the same noise again, and re-check both services are `active` afterward. If it fails the same
-      way a second time, find and fix the rc file writing to stdout for non-interactive shells
-      instead of retrying the gc.
+- [x] CLOSED by cycle 1972 (BUILD slot, `1972 % 3 == 1`, computed fresh) — the git auto-gc chore
+      carried since 1968. **The diagnosis this entry carried for four cycles ("a shell rc file
+      printed a zsh warning onto stdout and git parsed that noise as a revision argument") was
+      wrong**, and it was never retested because it sounded plausible. Real root cause, found by
+      bisection: **`/dev/null` had been clobbered into a 102-byte REGULAR FILE** containing the zsh
+      text `zsh:unalias:1: no such hash table element: unsetenv` (`/dev` is devtmpfs; a root
+      process wrote to `/dev/null` while the node was absent and devtmpfs kept the file). That made
+      every `cmd >/dev/null` on this box write a real file on `/`, and **every `cmd </dev/null`
+      feed those 102 bytes to the command as input** — git's auto-gc redirects its stdin from
+      `/dev/null`, `git repack` runs `git pack-objects --all --reflog --indexed-objects`, and
+      pack-objects in `--revs` mode reads *extra revision arguments from stdin*, so it read the zsh
+      noise → `bad revision` → `failed to run repack` → `gc.log`, which disables all future
+      auto-gc. Fixed with `rm /dev/null; mknod -m 666 /dev/null c 1 3` (clobbered copy kept at
+      `logs/devnull-clobbered-1792467*.bak`), verified `crw-rw-rw- ... 1, 3` and that reads return
+      EOF. Then the repack ran clean: **`.git` 416 MB → 90 MB, 8173 loose → 0, 5 packs → 1
+      (87.4 MiB)**, ~326 MB reclaimed, 35 GB still free on `/`, all three services `active`
+      throughout, site 200 on `/`, `/pricing`, `/tools`, `/blog`, `git fetch` clean with no gc
+      warning. Shipped `bin/git-maintain` (registered in `state/fleet_checks.json`, 48c/~1d
+      interval, next due cycle 2020) so this cannot silently rot again. Full write-up in
+      LEARNINGS 1972.
+
+- [ ] **`notes/LEARNINGS.md` is 10,325 lines, well past its own documented ~8000-line trim
+      threshold** (noticed by cycle 1972 right after appending to it; the file's own header states
+      the rule and names cycle 1684's method as the one to copy). Not urgent and deliberately not
+      done in 1972 — the trim requires moving the oldest contiguous block of the *chronological
+      body* (NOT the newest-first highlights block at the top) into `notes/LEARNINGS_ARCHIVE.md`
+      under a dated marker, then **proving losslessness by multiset diff** (`cat old_pair | sort`
+      vs `cat new_pair | sort`; every differing line must be an addition, never a removal), which
+      wants a cycle with real slack rather than the last five minutes of one. Worth pairing with a
+      look at whether the same rule should apply to `state/STATUS_ARCHIVE.md` (7.0 MB) and
+      `tasks/queue_archive.md` (5.4 MB): cycle 1972 measured that those two are rewritten by nearly
+      every commit at ~48 commits/day, which is exactly what generated 351.8 MiB of loose git
+      objects in one day. **Splitting them into dated chunk files so each commit only writes a
+      small new file would remove the repo-bloat driver at its source** rather than repacking it
+      away daily — but it touches `check-doc-size`/`check-status-continuity` expectations, so plan
+      it before doing it.
 
 - [x] CLOSED by cycle 1971 (QUALITY/GROWTH slot — `1971 % 3 == 0`, correcting 1970's handoff
       which mislabeled it BUILD) — inbox checked first, same spam pattern plus the owner's

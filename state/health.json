@@ -1,423 +1,422 @@
 {
-  "ts": 1792440472,
-  "results": {
-    "court-records-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "recordType",
-        "id",
-        "caseName",
-        "caseNameFull",
-        "court",
-        "courtId",
-        "courtJurisdiction",
-        "courtCitationString"
-      ],
-      "err": null
-    },
-    "uk-find-a-tender-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "source",
-        "sourceName",
-        "ocid",
-        "noticeId",
-        "noticeUrl",
-        "stage",
-        "publishedDate",
-        "language"
-      ],
-      "err": null
-    },
-    "trademark-search-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "id",
-        "st13",
-        "url",
-        "trademarkName",
-        "office",
-        "status",
-        "trademarkType",
-        "applicationNumber"
-      ],
-      "err": null
-    },
-    "shopify-products-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "id",
-        "title",
-        "handle",
-        "url",
-        "vendor",
-        "productType",
-        "tags",
-        "currency"
-      ],
-      "err": null
-    },
-    "ats-jobs-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "company",
-        "atsSource",
-        "jobId",
-        "title",
-        "department",
-        "team",
-        "departmentPath",
-        "employmentType"
-      ],
-      "err": null
-    },
-    "google-news-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 8,
-      "fail_rows": 0,
-      "sample_keys": [
-        "title",
-        "titleClean",
-        "googleNewsUrl",
-        "guid",
-        "publishedAt",
-        "source",
-        "sourceUrl",
-        "sourceDomain"
-      ],
-      "err": null
-    },
-    "app-store-reviews-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "reviewId",
-        "appId",
-        "country",
-        "title",
-        "content",
-        "rating",
-        "version",
-        "author"
-      ],
-      "err": null
-    },
-    "hacker-news-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "id",
-        "type",
-        "title",
-        "url",
-        "hnUrl",
-        "author",
-        "points",
-        "numComments"
-      ],
-      "err": null
-    },
-    "google-play-reviews-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 6,
-      "fail_rows": 0,
-      "sample_keys": [
-        "recordType",
-        "appId",
-        "title",
-        "developer",
-        "developerId",
-        "summary",
-        "description",
-        "score"
-      ],
-      "err": null
-    },
-    "substack-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "type",
-        "id",
-        "title",
-        "subtitle",
-        "slug",
-        "url",
-        "publicationUrl",
-        "publicationId"
-      ],
-      "err": null
-    },
-    "apple-podcasts-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 5,
-      "fail_rows": 0,
-      "sample_keys": [
-        "type",
-        "collectionId",
-        "podcastName",
-        "episodeId",
-        "title",
-        "episodeNumber",
-        "seasonNumber",
-        "releaseDate"
-      ],
-      "err": null
-    },
-    "steam-reviews-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "type",
-        "appId",
-        "reviewId",
-        "review",
-        "language",
-        "recommended",
-        "createdAt",
-        "updatedAt"
-      ],
-      "err": null
-    },
-    "eu-ted-tenders-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "publicationNumber",
-        "noticeType",
-        "procedureType",
-        "title",
-        "titleLanguage",
-        "buyerName",
-        "buyerCountry",
-        "buyerCity"
-      ],
-      "err": null
-    },
-    "us-federal-awards-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "awardId",
-        "awardUrl",
-        "generatedInternalId",
-        "awardLevel",
-        "awardCategory",
-        "awardType",
-        "recipientName",
-        "recipientUei"
-      ],
-      "err": null
-    },
-    "fda-recall-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "source",
-        "productType",
-        "recallNumber",
-        "eventId",
-        "status",
-        "classification",
-        "voluntaryMandated",
-        "initialFirmNotification"
-      ],
-      "err": null
-    },
-    "federal-register-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "documentNumber",
-        "type",
-        "subtype",
-        "title",
-        "abstract",
-        "action",
-        "publicationDate",
-        "effectiveOn"
-      ],
-      "err": null
-    },
-    "clinicaltrials-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "nctId",
-        "briefTitle",
-        "officialTitle",
-        "acronym",
-        "overallStatus",
-        "studyType",
-        "phases",
-        "enrollmentCount"
-      ],
-      "err": null
-    },
-    "grants-gov-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "id",
-        "opportunityNumber",
-        "title",
-        "agencyCode",
-        "agency",
-        "openDate",
-        "closeDate",
-        "oppStatus"
-      ],
-      "err": null
-    },
-    "nih-reporter-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "applId",
-        "projectNum",
-        "coreProjectNum",
-        "subprojectId",
-        "fiscalYear",
-        "projectTitle",
-        "activityCode",
-        "awardType"
-      ],
-      "err": null
-    },
-    "fec-campaign-finance-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "candidateId",
-        "name",
-        "party",
-        "office",
-        "state",
-        "district",
-        "incumbentChallenge",
-        "candidateStatus"
-      ],
-      "err": null
-    },
-    "sam-gov-opportunities-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "opportunityId",
-        "title",
-        "solicitationNumber",
-        "noticeTypeCode",
-        "noticeType",
-        "isActive",
-        "isCanceled",
-        "publishDate"
-      ],
-      "err": null
-    },
-    "remote-jobs-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "source",
-        "sourceSite",
-        "sourceJobId",
-        "title",
-        "company",
-        "companyLogo",
-        "url",
-        "location"
-      ],
-      "err": null
-    },
-    "sec-insider-trades-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 10,
-      "fail_rows": 0,
-      "sample_keys": [
-        "id",
-        "rowType",
-        "accessionNumber",
-        "formType",
-        "isAmendment",
-        "amendsOriginalFilingDate",
-        "supersedesAccessionNumber",
-        "supersedesCandidateAccessions"
-      ],
-      "err": null
-    },
-    "website-screenshot-scraper": {
-      "ok": true,
-      "status": 201,
-      "items": 3,
-      "fail_rows": 0,
-      "sample_keys": [
-        "url",
-        "format",
-        "success",
-        "error",
-        "imageUrl",
-        "screenshotKey",
-        "contentType",
-        "byteSize",
-        "capturedAt"
-      ],
-      "err": null
-    }
+ "ts": 1792467001,
+ "results": {
+  "court-records-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "recordType",
+    "id",
+    "caseName",
+    "caseNameFull",
+    "court",
+    "courtId",
+    "courtJurisdiction",
+    "courtCitationString"
+   ],
+   "err": null
   },
-  "retired": {
-    "scholarship-scraper": {
-      "url": "https://bold.org/robots.txt",
-      "status": 429,
-      "cleared": false,
-      "challenged": true,
-      "body_head": "<!DOCTYPE html><html lang=\"en\" data-astro-cid-4wdtffzm><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width="
-    }
+  "uk-find-a-tender-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 9,
+   "fail_rows": 0,
+   "sample_keys": [
+    "source",
+    "sourceName",
+    "ocid",
+    "noticeId",
+    "noticeUrl",
+    "stage",
+    "publishedDate",
+    "language"
+   ],
+   "err": null
+  },
+  "trademark-search-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "id",
+    "st13",
+    "url",
+    "trademarkName",
+    "office",
+    "status",
+    "trademarkType",
+    "applicationNumber"
+   ],
+   "err": null
+  },
+  "shopify-products-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "currency"
+   ],
+   "err": null
+  },
+  "ats-jobs-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "company",
+    "atsSource",
+    "jobId",
+    "title",
+    "department",
+    "team",
+    "departmentPath",
+    "employmentType"
+   ],
+   "err": null
+  },
+  "google-news-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 8,
+   "fail_rows": 0,
+   "sample_keys": [
+    "title",
+    "titleClean",
+    "googleNewsUrl",
+    "guid",
+    "publishedAt",
+    "source",
+    "sourceUrl",
+    "sourceDomain"
+   ],
+   "err": null
+  },
+  "app-store-reviews-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "reviewId",
+    "appId",
+    "country",
+    "title",
+    "content",
+    "rating",
+    "version",
+    "author"
+   ],
+   "err": null
+  },
+  "hacker-news-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "id",
+    "type",
+    "title",
+    "url",
+    "hnUrl",
+    "author",
+    "points",
+    "numComments"
+   ],
+   "err": null
+  },
+  "google-play-reviews-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 6,
+   "fail_rows": 0,
+   "sample_keys": [
+    "recordType",
+    "appId",
+    "title",
+    "developer",
+    "developerId",
+    "summary",
+    "description",
+    "score"
+   ],
+   "err": null
+  },
+  "substack-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "type",
+    "id",
+    "title",
+    "subtitle",
+    "slug",
+    "url",
+    "publicationUrl",
+    "publicationId"
+   ],
+   "err": null
+  },
+  "apple-podcasts-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 5,
+   "fail_rows": 0,
+   "sample_keys": [
+    "type",
+    "collectionId",
+    "podcastName",
+    "episodeId",
+    "title",
+    "episodeNumber",
+    "seasonNumber",
+    "releaseDate"
+   ],
+   "err": null
+  },
+  "steam-reviews-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "type",
+    "appId",
+    "reviewId",
+    "review",
+    "language",
+    "recommended",
+    "createdAt",
+    "updatedAt"
+   ],
+   "err": null
+  },
+  "eu-ted-tenders-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "publicationNumber",
+    "noticeType",
+    "procedureType",
+    "title",
+    "titleLanguage",
+    "buyerName",
+    "buyerCountry",
+    "buyerCity"
+   ],
+   "err": null
+  },
+  "us-federal-awards-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "awardId",
+    "awardUrl",
+    "generatedInternalId",
+    "awardLevel",
+    "awardCategory",
+    "awardType",
+    "recipientName",
+    "recipientUei"
+   ],
+   "err": null
+  },
+  "fda-recall-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "source",
+    "productType",
+    "recallNumber",
+    "eventId",
+    "status",
+    "classification",
+    "voluntaryMandated",
+    "initialFirmNotification"
+   ],
+   "err": null
+  },
+  "federal-register-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "documentNumber",
+    "type",
+    "subtype",
+    "title",
+    "abstract",
+    "action",
+    "publicationDate",
+    "effectiveOn"
+   ],
+   "err": null
+  },
+  "clinicaltrials-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "nctId",
+    "briefTitle",
+    "officialTitle",
+    "acronym",
+    "overallStatus",
+    "studyType",
+    "phases",
+    "enrollmentCount"
+   ],
+   "err": null
+  },
+  "grants-gov-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "id",
+    "opportunityNumber",
+    "title",
+    "agencyCode",
+    "agency",
+    "openDate",
+    "closeDate",
+    "oppStatus"
+   ],
+   "err": null
+  },
+  "nih-reporter-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "applId",
+    "projectNum",
+    "coreProjectNum",
+    "subprojectId",
+    "fiscalYear",
+    "projectTitle",
+    "activityCode",
+    "awardType"
+   ],
+   "err": null
+  },
+  "fec-campaign-finance-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "candidateId",
+    "name",
+    "party",
+    "office",
+    "state",
+    "district",
+    "incumbentChallenge",
+    "candidateStatus"
+   ],
+   "err": null
+  },
+  "sam-gov-opportunities-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "opportunityId",
+    "title",
+    "solicitationNumber",
+    "noticeTypeCode",
+    "noticeType",
+    "isActive",
+    "isCanceled",
+    "publishDate"
+   ],
+   "err": null
+  },
+  "remote-jobs-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "source",
+    "sourceSite",
+    "sourceJobId",
+    "title",
+    "company",
+    "companyLogo",
+    "url",
+    "location"
+   ],
+   "err": null
+  },
+  "sec-insider-trades-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "id",
+    "rowType",
+    "accessionNumber",
+    "formType",
+    "isAmendment",
+    "amendsOriginalFilingDate",
+    "supersedesAccessionNumber",
+    "supersedesCandidateAccessions"
+   ],
+   "err": null
+  },
+  "website-screenshot-scraper": {
+   "ok": true,
+   "status": 201,
+   "items": 3,
+   "fail_rows": 0,
+   "sample_keys": [
+    "url",
+    "format",
+    "success",
+    "error",
+    "imageUrl",
+    "screenshotKey",
+    "contentType",
+    "byteSize"
+   ],
+   "err": null
   }
+ },
+ "retired": {
+  "scholarship-scraper": {
+   "url": "https://bold.org/robots.txt",
+   "status": 429,
+   "cleared": false,
+   "challenged": true,
+   "body_head": "<!DOCTYPE html><html lang=\"en\" data-astro-cid-4wdtffzm><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width="
+  }
+ }
 }
