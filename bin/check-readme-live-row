@@ -241,6 +241,58 @@ ENTRIES = [
             "for this DOE award, not a verified rename) are intentionally NOT spot-checked."
         ),
     },
+    {
+        "slug": "clinicaltrials-scraper",
+        "heading": 'Sample output (`rowsPerStudy: "study"`)',
+        "key_field": "nctId",
+        # Verified live cycle 1992: the v2 registry API serves a single study by its NCT id
+        # at /studies/<nctId>, no key, no search semantics to get wrong (unlike the sam-gov
+        # q= entries above) -- the id IS the primary key, so there is no wrong-hit risk.
+        "fetch": lambda key: fetch_json(
+            f"https://clinicaltrials.gov/api/v2/studies/{urllib.parse.quote(key)}?format=json"
+        ),
+        "fields": {
+            "nctId": "protocolSection.identificationModule.nctId",
+            "briefTitle": "protocolSection.identificationModule.briefTitle",
+            "overallStatus": "protocolSection.statusModule.overallStatus",
+            "studyType": "protocolSection.designModule.studyType",
+            "phases": "protocolSection.designModule.phases",
+            "enrollmentCount": "protocolSection.designModule.enrollmentInfo.count",
+            "enrollmentType": "protocolSection.designModule.enrollmentInfo.type",
+            "leadSponsor": "protocolSection.sponsorCollaboratorsModule.leadSponsor.name",
+            "conditions": "protocolSection.conditionsModule.conditions",
+            # Raw key is `stdAges`; the Actor renames it to `standardAges` with the identical
+            # value (main.js normalizeStudy()), a one-level rename, verified live this cycle.
+            "standardAges": "protocolSection.eligibilityModule.stdAges",
+            # Absent on this study, and get_path returns None for a missing path -- so this
+            # also pins the README's explicit `null` (the field exists on the row; it is only
+            # set once results are posted).
+            "resultsFirstPostDate": "protocolSection.statusModule.resultsFirstPostDateStruct.date",
+            "interventions": "protocolSection.armsInterventionsModule.interventions",
+        },
+        # Only for fields whose raw shape differs structurally AND whose reshape is a verbatim
+        # one-line mirror of main.js -- never an approximation. Applied to the LIVE value.
+        "transforms": {
+            # main.js: listOf(arms.interventions).map((i) => ({type: i.type ?? null, name: i.name ?? null}))
+            # -- a pure key subset, no renames, no derived values. Verified live cycle 1992.
+            "interventions": lambda v: [
+                {"type": i.get("type"), "name": i.get("name")} for i in (v or [])
+            ],
+        },
+        "skip_note": (
+            "primaryOutcomes/eligibilityCriteria are truncated with a trailing '...' in the "
+            "README on purpose (the real values are ~290 B / ~1.3 KB), so they cannot be "
+            "equality-checked -- their prefixes and the outcome's measure/timeFrame were "
+            "verified by hand live this cycle instead. locationCount (derived: "
+            "facilities.length), studyUrl (built from a URL template, not a field) and "
+            "eligibilityCriteria's decodeEntities() pass are intentionally NOT spot-checked. "
+            "Cycle 1992's first run found THREE wrong values on a study whose "
+            "lastUpdatePostDate is 2021-07-20 -- i.e. hand-paraphrase in the README, not "
+            "registry drift: briefTitle was missing its ': a Prospective RCT' suffix, "
+            "interventions listed only 1 of the trial's 2 arms, and primaryOutcomes[0]."
+            "timeFrame read '1 year' against a live 'At 5 years of treatment'."
+        ),
+    },
 ]
 
 def main():
@@ -265,6 +317,9 @@ def main():
         for readme_field, live_path in entry["fields"].items():
             readme_val = sample.get(readme_field)
             live_val = get_path(live, live_path)
+            transform = entry.get("transforms", {}).get(readme_field)
+            if transform is not None:
+                live_val = transform(live_val)
             if readme_val != live_val:
                 failures.append(
                     f"{entry['slug']}: field {readme_field!r} (key {entry['key_field']}={key_value!r}) "

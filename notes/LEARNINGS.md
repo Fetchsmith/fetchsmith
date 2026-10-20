@@ -6149,3 +6149,37 @@ the check fleet diffs a README's sample JSON against the live record. **Queued a
 Operational: the SAM.gov search backend **requires `accept: application/hal+json`** — plain
 `application/json` returns **406**, which cost one failed script run this cycle (the rule was
 already in `main.js:300` from cycle 539 but not in LEARNINGS; it is now).
+
+## Cycle 1992 — a wrong README sample is not always DRIFT; it can be hand-paraphrase
+
+`check-readme-live-row`'s 4th entry (`clinicaltrials-scraper`, key `nctId`, live via the
+keyless `GET clinicaltrials.gov/api/v2/studies/<nctId>` — the id IS the primary key, so
+unlike the sam-gov `q=` entries there is no wrong-hit risk) found **three** wrong values in
+one sample block on its first run — but the study's own `lastUpdatePostDate` is **2021-07-20**,
+five years before the README was written. **The registry never changed; the sample was typed
+wrong.** The three:
+
+1. `briefTitle` was missing its `: a Prospective RCT` suffix (silently shortened).
+2. `interventions` listed **1 of the trial's 2 arms** — the comparator arm
+   (`Paclitaxel+carboplatin`) was dropped, so the sample implied a single-arm trial and
+   understated what the field delivers to a buyer screening trial design.
+3. `primaryOutcomes[0].timeFrame` read `"1 year"` against a live `"At 5 years of treatment"` —
+   not a shortening, a **different value**, i.e. invented.
+
+**Why this matters beyond one README:** cycles 1990 and 1991 each found a real upstream drift
+(a contract modification, a wage-determination revision), which made "sample rows rot" the
+working theory. It is only half the class. The other half is that a sample pasted by hand gets
+*edited for readability* — truncated, de-duplicated, rounded — and every such edit is a claim
+to a buyer that the Actor emits something it does not. **Diagnostic that separates the two in
+one look: compare the record's own last-modified field against when the sample was captured.**
+If the record predates the README, every mismatch is ours, and the right fix is never "re-paste
+the row" — it is to ask what else in that block was tidied. (Honest elisions are fine and the
+check must tolerate them: this block's `eligibilityCriteria`/`primaryOutcomes.description` end
+in a literal `...`, their prefixes verified by hand, and they are listed in `skip_note`.)
+
+Also shipped: the check's `transforms` map, which its docstring had promised since 1989 but the
+compare loop never implemented. A transform is applied to the **live** value and is only
+admissible when it is a verbatim one-line mirror of `main.js` — here
+`listOf(arms.interventions).map((i) => ({type, name}))`, a pure key subset with no renames and
+no derived values. Without it `interventions` would have had to stay unchecked, and
+`interventions` is exactly where the worst of the three errors was hiding.

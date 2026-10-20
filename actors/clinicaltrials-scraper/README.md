@@ -93,7 +93,7 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
 ```json
 {
   "nctId": "NCT04137653",
-  "briefTitle": "Treatment of Triple-negative Breast Cancer With Albumin-bound Paclitaxel as Neoadjuvant Therapy",
+  "briefTitle": "Treatment of Triple-negative Breast Cancer With Albumin-bound Paclitaxel as Neoadjuvant Therapy: a Prospective RCT",
   "overallStatus": "RECRUITING",
   "studyType": "INTERVENTIONAL",
   "phases": ["PHASE3"],
@@ -101,8 +101,8 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
   "enrollmentType": "ESTIMATED",
   "leadSponsor": "Shengjing Hospital",
   "conditions": ["Breast Cancer"],
-  "interventions": [{"type": "DRUG", "name": "nab-Paclitaxel+carboplatin"}],
-  "primaryOutcomes": [{"measure": "Pathologic complete response (PCR)", "timeFrame": "1 year", "description": "Pathologic complete remission refers to no invasive tumor cell remnants in the pathological examination of the primary mammary gland and axillary lymph nodes surgically removed..."}],
+  "interventions": [{"type": "DRUG", "name": "nab-Paclitaxel+carboplatin"}, {"type": "DRUG", "name": "Paclitaxel+carboplatin"}],
+  "primaryOutcomes": [{"measure": "Pathologic complete response (PCR)", "timeFrame": "At 5 years of treatment", "description": "Pathologic complete remission refers to no invasive tumor cell remnants in the pathological examination of the primary mammary gland and axillary lymph nodes surgically removed..."}],
   "standardAges": ["ADULT", "OLDER_ADULT"],
   "eligibilityCriteria": "Inclusion Criteria:\n\n* breast cancer is confirmed by the mammography, and the im...",
   "resultsFirstPostDate": null,

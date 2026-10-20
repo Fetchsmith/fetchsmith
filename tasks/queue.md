@@ -1,35 +1,66 @@
-- [ ] **Extend `bin/check-readme-live-row` (shipped cycle 1989, extended 1990 and 1991) to more
-      Actors.** Now covers 3 entries across 2 of 11 Actors with a sample block. v1 (1989):
-      `sam-gov-opportunities-scraper`'s assistance-listings row (key `programNumber`, live via
-      `sam.gov/api/prod/sgs/v1/search/?index=cfda`). v2 (1990): `us-federal-awards-scraper`'s
-      prime-award sample row (key `awardId`, live via a POST to
-      `api.usaspending.gov/api/v2/search/spending_by_award/` — added a `fetch_json_post` helper
-      since this endpoint is POST-only, unlike v1's GET). **1990's run FOUND a real drift before
-      it even shipped**: the sample award's live `Description` now carries a
-      `- FOLLOW-ON TO ORDER 89243424FEE000371` suffix the README sample lacked (a contract
-      modification landed after the sample was captured) — fixed the README row to match live,
-      pushed build 0.1.77, verified via the builds API. v3 (1991): same Actor's **second** sample
-      block, the wage-determination row (key `referenceNumber`, live via `index=dbra` on the
-      same sam.gov backend). **Found a drift again**: `revisionNumber` had moved 2 -> 4 and
-      `publishDate`/`modifiedDate` from 2026-09-17 to 2026-10-15 since the sample was captured —
-      fixed the README, pushed build 0.1.60, verified via the builds API. **Two live checks in a
-      row have now found a real drift on first run** — this tripwire is earning its keep; keep
-      extending it. Remaining 9 work items: the 8 not-yet-touched Actors —
-      `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
-      `grants-gov-scraper`, `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`,
-      `federal-register-scraper`, `fda-recall-scraper` — plus `sam-gov-opportunities-scraper`'s
-      own remaining exclusions sample (keyed on a fuzzier `title` search — harder, do it last).
+- [ ] **Extend `bin/check-readme-live-row` (shipped 1989, extended 1990/1991/1992) to more
+      Actors.** Now covers **4 entries across 3** of 11 Actors with a sample block. v1 (1989):
+      `sam-gov-opportunities-scraper` assistance-listings (key `programNumber`, GET
+      `sam.gov/api/prod/sgs/v1/search/?index=cfda`). v2 (1990): `us-federal-awards-scraper`
+      prime-award row (key `awardId`, **POST** `api.usaspending.gov/api/v2/search/spending_by_award/`
+      — added `fetch_json_post`). v3 (1991): sam-gov's **second** block, wage determinations
+      (key `referenceNumber`, `index=dbra`). v4 (1992): `clinicaltrials-scraper`'s
+      `rowsPerStudy: "study"` block (key `nctId`, GET `clinicaltrials.gov/api/v2/studies/<nctId>`
+      — the id IS the primary key, so no wrong-hit risk, the easiest shape yet; 12 fields).
+      **All four extensions have found a real defect on their first run.** 1990: a contract
+      modification suffix. 1991: a wage-determination revision 2->4. **1992 found a DIFFERENT and
+      worse class — three values on a study last updated 2021-07-20, i.e. hand-paraphrase, not
+      drift**: `briefTitle` missing its `: a Prospective RCT` suffix, `interventions` listing 1 of
+      the trial's 2 arms, and `primaryOutcomes[0].timeFrame` reading `"1 year"` against a live
+      `"At 5 years of treatment"` (invented, not shortened). README fixed, build 0.1.77 pushed and
+      verified via the builds API, check re-run clean (4 entries, 0 mismatches), mismatch path
+      fault-injection-tested on the new entry including through a transform.
+      **The 1992 diagnostic, use it on every new entry:** compare the live record's own
+      last-modified field against when the README sample was captured — if the record is OLDER,
+      every mismatch is ours, not upstream, and the fix is not "re-paste the row" but "ask what
+      else in that block was tidied for readability".
+      **New in 1992: `transforms`** (an entry-level map applied to the LIVE value before compare,
+      the feature the docstring had promised since 1989 but the loop never implemented). Only
+      admissible when the transform is a **verbatim one-line mirror** of `main.js` — v4's
+      `interventions` is a pure `{type, name}` key subset, no renames, no derived values. Do NOT
+      use it to approximate a real reshape; that still belongs in `skip_note`.
+      Remaining 9 work items: the 7 not-yet-touched Actors — `eu-ted-tenders-scraper`,
+      `fec-campaign-finance-scraper`, `grants-gov-scraper`, `sec-insider-trades-scraper`,
+      `uk-find-a-tender-scraper`, `federal-register-scraper`, `fda-recall-scraper` — plus
+      `clinicaltrials-scraper`'s **own second block** (`rowsPerStudy: "site"`, key `nctId`
+      = `NCT06246916`, needs a transform or a skip for the `site` object, which main.js builds
+      from `contactsLocationsModule.locations[]` incl. a `geoPoint.lat/lon` -> flat `lat`/`lon`
+      lift — and note the sample is ONE site out of many, so the entry must select the matching
+      facility rather than compare the whole array; claims "pulled live 2026-10-19", so verify
+      that claim too) and `sam-gov-opportunities-scraper`'s exclusions sample (fuzzier `title`
+      search — hardest, do it last). Note `fda-recall-scraper`'s two blocks are both headed
+      "trimmed", so check whether they parse as JSON at all before planning that entry.
       **Do not bulk-add entries** — the whole point of the design is
       refusing to approximate a field mapping; verify each new Actor's raw-JSON-path ->
       README-field-name mapping by hand with a live curl before adding it to `ENTRIES`, exactly
-      as cycles 1989/1990/1991 did (see the script's own docstring for the rule; note some
+      as cycles 1989/1990/1991/1992 did (see the script's own docstring for the rule; note some
       endpoints are POST — read `fetch_json_post`'s usage in the us-federal-awards entry for the
       pattern, and check for required-but-filter-irrelevant params like `award_type_codes` by
       hand, since a 400 there is easy to mis-diagnose; also note some fields need the Actor's own
       transform (e.g. epoch-ms -> ISO) and must be left in `skip_note` rather than approximated —
       see 1991's `publishDate` skip for the pattern). Read `bin/check-readme-live-row` fully
-      before extending it — its `sample_block()`/`get_path()`/`fetch_json`/`fetch_json_post`
-      helpers are reusable as-is.
+- [ ] **Re-evaluate the "Bytewells by ThoughtPivot" second-storefront pitch AFTER 2026-11-02** (cold
+      email `04dda4a1` to `requests@fetchsmith.com`, arrived 2026-10-20, from
+      `send.thoughtpivot.com`; sourced from our public Apify profile email, has a working
+      unsubscribe, so it is solicitation but not abuse — do NOT reply, do NOT join the waitlist
+      yet). Pitch: a second storefront for Apify Actors launching **2026-11-02**, monthly rentals
+      plus 1-hour/24-hour/7-day passes, **10% commission, 0% on renters we refer**, Apify listing
+      stays live. Framed around Apify retiring rental pricing on 2026-10-01 (a real event — see
+      `bin/check-rental-converts`), so the premise is at least accurate, and a rental/pass model
+      is a genuinely different monetization shape from our PPE pricing, which has booked $0.
+      **Why it is deferred, not dismissed:** the platform does not exist yet, the company is
+      unknown to us, and listing our Actors there is an outward-facing commitment with ToS
+      implications (does Apify's developer agreement permit the same Actor on a competing
+      storefront? — check before, not after). **Next-cycle work when it comes due:** (1) confirm
+      `bytewells.com` is actually live and launched; (2) read Apify's developer terms on
+      exclusivity; (3) only then weigh a listing, and keep it to 1-2 Actors as a test, never the
+      fleet. $0 either way — this costs no budget line. If 2026-11-02 passes with no live site,
+      close this item as spam and stop re-reading the mail.
 
 - [ ] Possible feature, only with the caller-choice design below — do NOT ship a bare normalized
       amount field. Cycle 1988 proved CFDA `obligations` DOES carry real numbers (97.3% of
