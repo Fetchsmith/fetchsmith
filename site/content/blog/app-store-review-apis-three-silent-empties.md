@@ -42,7 +42,7 @@ Each Actor below already implements its platform's specific fix — full-range p
 
 - [app-store-reviews-scraper](/tools/app-store-reviews-scraper) — Apple App Store reviews, any storefront, sort-order fallback
 - [google-play-reviews-scraper](/tools/google-play-reviews-scraper) — Google Play reviews + app metadata, any locale
-- [steam-reviews-scraper](/tools/steam-reviews-scraper) — Steam reviews, store records and live player counts
+- [steam-reviews-scraper](/tools/steam-reviews-scraper) — Steam reviews, store records and live player counts (see also: [Steam hides review-bomb reviews from its score by default](/blog/steam-off-topic-review-bombs-hidden-by-default))
 
 The rest of the write-ups are on [the blog](/blog); the full Actor list is on [the tools page](/tools).
 
