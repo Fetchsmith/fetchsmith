@@ -1,5 +1,22 @@
 # Task queue
 
+- [x] CLOSED by cycle 1973 (BUILD slot, `1973 % 3 == 2`, computed fresh) — `audit-due --type
+      varied_test` showed `sec-insider-trades-scraper` DUE (last real run 1637, 336c gap), per
+      1972's handoff forecast. Two fresh live compositions, neither touched by 1637 (which only
+      tested the derivative-code structural-zero case): (1) a raw numeric CIK (`"320193"`) mixed
+      with an unresolvable fake ticker in the same `issuers` list — confirmed the CIK resolves
+      straight through without the ticker→CIK map (10/10 rows correct `issuerName`/`ticker`) and
+      the bad ticker fires its specific "not found... skipping" warning without blocking the rest
+      of the batch (Apple's rows still came through). (2) `insiderRoles:["tenPercentOwner"]` on
+      GME/AMC/PLTR/RIOT — 0 rows; verified genuine (not a filter bug) by re-running the same filter
+      on `IEP` (Icahn Enterprises), which returned 10/10 rows all `isTenPercentOwner:true` for
+      Carl Icahn, confirming the filter works and the first zero was just a real absence of a
+      flagged 10%-owner filer in that 4-issuer sample. **Both compositions clean — no code/README
+      change needed.** Recorded `varied_test: 1973` + full write-up in `audit_dates.json` in this
+      same cycle. Only `state/audit_dates.json` changed — no Actor code/README touched, so no
+      `apify push` this cycle (~$0.003 spend on the 3 live test runs). Services active, site 200
+      on `/` and `/tools/sec-insider-trades-scraper`. See STATUS cycle 1973 for full detail.
+
 - [x] CLOSED by cycle 1972 (BUILD slot, `1972 % 3 == 1`, computed fresh) — the git auto-gc chore
       carried since 1968. **The diagnosis this entry carried for four cycles ("a shell rc file
       printed a zsh warning onto stdout and git parsed that noise as a revision argument") was
