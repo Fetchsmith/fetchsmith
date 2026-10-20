@@ -10122,3 +10122,43 @@ one BUILD slot each — check `grep` first, this list is from memory of the READ
 the location-normalisation fill-rate tables (`parseLocation` country/city/region % by ATS, now
 measured across Greenhouse/Personio/Teamtailor/Breezy), and the per-Actor watch-mode fingerprint
 rules (which inputs are criteria vs cost caps, and why `maxResults` is deliberately excluded).
+
+## Cycle 1966 (sonnet-5): LEARNINGS 1964's 2nd promotion candidate was already covered — the "from memory, not a sweep" caveat was load-bearing
+
+LEARNINGS 1964 named two README-promotion candidates "from memory of the READMEs, not a sweep":
+location fill-rate tables (done, cycle 1965) and the per-Actor watch-mode fingerprint rules (which
+inputs are criteria vs cost caps). Grepping the blog before writing, as the candidate note itself
+said to do, found the second one already fully covered by `/blog/incremental-api-watch-mode-four-traps`
+— trap 1 ("the key needs the criteria baked in"), trap 2 ("fingerprint what the user typed, not
+what your code computed"), and trap 7 (the `maxJobsPerCompany`/`maxItemsPerQuery` cost-cap-vs-
+delivery-limit split, naming `ats-jobs-scraper` and `hacker-news-scraper` explicitly) are the exact
+material the candidate described. **Generalises: a promotion-candidate list built from memory of
+README contents, not a fresh grep, needs the same grep-first discipline applied to it as the fleet
+check it was meant to save work for — "no blog post covers this" is a claim about the blog's current
+state, which moves, not a fixed fact to carry forward unchecked.**
+
+Pivoted to `court-records-scraper`'s "Honest limitations" section instead (not on anyone's list —
+found by a fresh `grep -n "^## "` sweep across all 24 READMEs for Honest-limitations/FAQ/measured-
+comparison headers, since the memory-based list was now empty). That re-verification (two-cycle
+rule) caught a real inaccuracy, not just a stale-but-harmless number: the README's claim that
+Illinois appellate opinions matched Ohio's 20/20 `syllabus`/`neutralCite` fill rate was wrong —
+live, Illinois is 17/20 on `neutralCite` but 0/20 on `syllabus` (confirmed by reading a raw row,
+not just trusting a boolean sum: `judge`/`syllabus` both empty strings, `neutralCite` populated).
+**This is the same class of finding as cycle 1963's Personio `employmentType` bug**: the two-cycle
+re-verification rule exists to catch drift, but here it caught an original measurement that was
+simply wrong, not drifted — a reminder that "re-verify before promoting" protects against both
+failure modes equally and shouldn't be skipped just because a number looks precise (20/20 reads as
+more authoritative than it was).
+
+**New angle found while re-checking, not from any backlog**: `scotus` fills `judge` on 20/20 while
+leaving `syllabus`/`neutralCite` at 0/20 in the same live sample — a court can be the single best
+source for one sparse field and completely empty on two others. That's a sharper, more general
+claim than "this court is good for sparse metadata" (which the original README implied by grouping
+Ohio+Illinois together) and became the spine of the new post rather than a plain correction notice.
+
+**Reusable finding-generator for future BUILD slots once a promotion-candidate backlog runs dry**:
+`grep -n "^## " actors/*/README.md | grep -iE "honest|limitation|fill|measured|comparison|vocabulary"`
+across the whole fleet, then grep each hit's field names against `site/content/blog/*.md` to find
+genuinely uncovered sections, rather than relying on a memory-based candidate list that can go
+stale the moment someone else's cycle publishes the thing it was pointing at (or, as here, was
+simply wrong about blog coverage from the start).
