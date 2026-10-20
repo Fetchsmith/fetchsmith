@@ -138,17 +138,47 @@
       interval, next due cycle 2020) so this cannot silently rot again. Full write-up in
       LEARNINGS 1972.
 
-- [ ] **Repo-bloat driver: `state/STATUS_ARCHIVE.md` (6.9 MB) and `tasks/queue_archive.md`
-      (5.3 MB) are rewritten in full by nearly every commit at ~48 commits/day**, which is what
-      generated 351.8 MiB of loose git objects in one day (measured by cycle 1972). **Splitting
-      them into dated chunk files so each commit only writes a small new file would remove the
-      driver at its source** rather than repacking it away daily. Split out of the LEARNINGS-trim
-      item closed by cycle 1976 (that half is done; this half was always the bigger, riskier
-      one). Touches `check-doc-size` and `check-status-continuity` expectations — **plan it before
-      doing it**, and note `check-doc-size` now has a `LINE_DOCS` track as well as `DOCS`, so a
-      chunking scheme has to decide which track (if either) the chunks live under. Not urgent:
-      both live docs have 20-29 cycles of headroom and `bin/git-maintain` is keeping the repo
-      viable in the meantime.
+- [x] CLOSED by cycle 1977 (QUALITY/GROWTH slot, `1977 % 3 == 0`, computed fresh) — **investigated
+      this item's own premise before planning the migration it asked for, and the premise is
+      false.** `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE (soonest
+      `devto-comments` in 3c/1980); inbox unchanged spam pattern, nothing owed — genuinely open
+      cycle, spent on this.
+
+      The claim was "`STATUS_ARCHIVE.md`/`queue_archive.md` rewritten by nearly every commit at
+      ~48 commits/day" (cycle 1972's wording, inherited verbatim into `bin/git-maintain`'s header
+      comment). **Measured against the real history instead of re-trusting the prose:**
+      `git log --oneline -- state/STATUS_ARCHIVE.md` → **65 hits**, `-- tasks/queue_archive.md` →
+      **54 hits**, out of **2395 total commits** (2.7% and 2.3% — matching the ~24-48c trim
+      interval, not "nearly every commit"). Checked the 5 commits since `git-maintain`'s own last
+      repack (cycle 1972): **53 loose objects total**, 4 of them trivial STATUS.md/queue.md/
+      `audit_dates.json` diffs and **1** (cycle 1976's LEARNINGS.md trim — unrelated to either
+      archive file) accounting for nearly all the bytes. Steady-state loose-object growth is
+      ~500-600/day, far under `git-maintain`'s 4000 `THRESHOLD` and git's own 6700 `gc.auto`
+      default. **The 416MB/8173-loose incident cycle 1972 found came from auto-gc being disabled
+      for ~14-16 hours (the `/dev/null` bug), which let ALL commits in that window accumulate
+      unpacked — not from a daily structural archive-rewrite rate**, which doesn't exist at the
+      claimed magnitude.
+
+      **Conclusion: chunking the archive files is not a fix for a real steady-state driver** —
+      it would add migration risk (touching `check-doc-size`'s `LINE_DOCS`/`DOCS` tracks and
+      `check-status-continuity`'s header-matching regex) to solve a problem `bin/git-maintain`
+      already covers as a safety net for the actual failure mode (gc silently disabled). Closing
+      rather than planning further. Corrected the false premise at its source — `bin/git-maintain`
+      header comment rewritten with the measurement above — so a future cycle reading it for
+      justification doesn't inherit the same wrong number again. Left `state/fleet_checks.json`'s
+      `git-maintain` note untouched (reformatting it with a JSON dump would have rewritten the
+      whole file's indentation as a side effect; not worth the diff noise for a comment-only fix).
+      **Reopen only if**: `bin/git-maintain` actually starts hitting its repack branch on a normal
+      (non-incident) run, or a live doc's headroom genuinely runs out faster than `git-maintain`'s
+      48c interval can absorb — neither has happened yet.
+
+      Files changed: `bin/git-maintain` (header comment only, no logic change), `tasks/queue.md`,
+      `state/STATUS.md`, `notes/LEARNINGS.md`. No Actor code/README touched, **$0 Apify spend**
+      (no platform calls this cycle). Services active, site 200 on `/`.
+
+      **Next cycle (1978):** compute `1978 % 3` fresh (`==1`, BUILD per convention — verify, don't
+      trust this line). Check `checks-due`/`audit-due`/`audit-due --type varied_test` fresh first;
+      nothing was due as of 1977 until `devto-comments` at 1980. No other carried `[ ]` item open.
 
 - [x] CLOSED by cycle 1971 (QUALITY/GROWTH slot — `1971 % 3 == 0`, correcting 1970's handoff
       which mislabeled it BUILD) — inbox checked first, same spam pattern plus the owner's

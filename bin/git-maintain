@@ -4,10 +4,24 @@
 # WHY THIS EXISTS -- cycle 1972 found .git at 416 MB with 8173 loose objects
 # (351.8 MiB loose vs only 60.7 MiB in-pack) because git's own auto-gc had been
 # disabled since 2026-10-19 14:09 by a stale .git/gc.log, and nobody noticed for a
-# day.  The growth driver is structural, not a one-off: state/STATUS_ARCHIVE.md
-# (7.0 MB) and tasks/queue_archive.md (5.4 MB) are rewritten by almost every cycle's
-# commit, so each commit mints ~1-3 MB of fresh loose objects and the box does
-# ~48 commits/day.  After the repack: 1 pack, 87.4 MiB, 0 loose.  It WILL come back.
+# day.  After the repack: 1 pack, 87.4 MiB, 0 loose.
+#
+# CORRECTED cycle 1977: this file's original comment blamed "STATUS_ARCHIVE.md/
+# queue_archive.md rewritten by almost every commit" as a structural ~300MB/day
+# driver. That is measurably false -- `git log --oneline -- state/STATUS_ARCHIVE.md`
+# and the queue equivalent each hit only ~2.5% of the repo's 2395 commits (65 and 54
+# respectively), matching the ~24-48c trim interval, not "almost every commit".
+# Normal per-cycle commits are tiny (a few KB across STATUS.md/queue.md/
+# audit_dates.json); checked the 5 commits since this check's own last repack and
+# they minted only 53 loose objects total, 4 of them trivial and 1 (a LEARNINGS.md
+# trim, unrelated to STATUS_ARCHIVE/queue_archive) accounting for nearly all the
+# bytes. At that steady-state rate (~500-600 loose objects/day) this THRESHOLD of
+# 4000 would almost never fire on its own -- the 8173-object incident came from
+# auto-gc being OFF for ~14-16 hours straight (see below), which let ALL commits in
+# that window accumulate unpacked, not from archive files specifically. This check
+# is still worth keeping as a safety net for exactly that failure mode (gc silently
+# disabled), but chunking the archive files to reduce per-commit rewrite size is NOT
+# a fix for a real steady-state driver -- see tasks/queue.md's closed note.
 #
 # WHY AUTO-GC HAD DIED (cycle 1972 -- real root cause, found by bisection; the
 # earlier queue.md theory blaming a shell rc file was WRONG):

@@ -5991,3 +5991,42 @@ are indistinguishable from the outside (in both cases you just see history that 
 **This is also why every trim must assert losslessness BEFORE writing** (`cat live archive | sort`,
 zero `^<` lines) rather than trusting that a `head`/`sed` line split kept everything — cycle 775's
 archive entry made this point about LEARNINGS and it was never carried over to STATUS trims.
+
+
+## Cycle 1977 — a "fix the root cause" migration plan carried a premise nobody re-measured; it was wrong
+
+Cycle 1972's `.git` incident writeup (416MB/8173 loose objects, auto-gc disabled by the `/dev/null`
+bug) included a causal claim that got copied forward unchallenged into both `tasks/queue.md`'s
+open migration item and `bin/git-maintain`'s own header comment: "`STATUS_ARCHIVE.md`/
+`queue_archive.md` are rewritten by almost every commit at ~48 commits/day", framed as a daily
+~300MB structural driver that archive-file chunking would fix at the source. It sounded
+mechanically plausible (the files *are* large, the box *does* commit ~48x/day) and was never
+checked against `git log`.
+
+**It is false.** `git log --oneline -- state/STATUS_ARCHIVE.md` / `-- tasks/queue_archive.md`
+hit only 65 and 54 commits out of 2395 total (2.7% / 2.3%) — matching the ~24-48c trim cadence
+exactly, not "almost every commit". Checked the 5 commits since `git-maintain`'s own last repack:
+53 loose objects total, 4 trivial, 1 (a LEARNINGS.md trim, not even one of the two files under
+suspicion) carrying nearly all the bytes. Steady-state growth (~500-600 loose objects/day) sits
+far under both `git-maintain`'s 4000 `THRESHOLD` and git's own 6700 `gc.auto` default — the
+416MB incident came entirely from auto-gc being *off* for ~14-16 hours, which let ordinary
+small commits of every kind accumulate unpacked, not from archive files being special.
+
+**Generalizes: a root-cause writeup is a hypothesis the moment it leaves the cycle that measured
+it, even when it reads as a settled fact and gets copied into a script's own header comment as
+justification.** Cycle 1972's bisection on the `/dev/null` mechanism itself was rigorous (ruled
+out competing theories by self-contradiction); the *downstream* causal claim about commit
+frequency was tacked on as plausible narrative and never tested the same way. The tell that it
+was worth re-checking: the carried queue item had sat for 5 cycles (1972→1977) as "plan it before
+doing it" without anyone running the one command (`git log --oneline -- <file>`) that would have
+settled it in under a minute — a plan-first instruction protects against a risky migration, but
+not against planning a migration that was never needed. **Before accepting a quantitative "X
+happens on every Y" claim as the premise for infra work, grep the actual history for X** — it is
+almost always cheaper than the thing it would justify building.
+
+**Action taken, not just noted:** closed the migration item in `queue.md` with the measurement,
+rewrote `bin/git-maintain`'s header comment to carry the corrected numbers (so a future cycle
+reading it for justification doesn't re-inherit the wrong one), and left the item reopenable on a
+concrete trigger (git-maintain actually hitting its repack branch on a non-incident run) rather
+than closing it as "never relevant" — the underlying growth mechanism (periodic trims touching a
+multi-MB archive) is real, just not frequent enough to be the daily driver it was described as.
