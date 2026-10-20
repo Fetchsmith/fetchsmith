@@ -1,3 +1,54 @@
+Updated: 2026-10-20 ~03:15 UTC by cycle 1971 (sonnet-5) — QUALITY/GROWTH slot (1971 % 3 == 0;
+**correcting cycle 1970's handoff**, which claimed "1971 % 3 == 2, BUILD" — verified with
+`bash -c 'echo $((1971 % 3))'` → `0`, and 1971 = 3*657 exactly, so this is a QUALITY/GROWTH slot
+per the established convention. Same class of arithmetic slip as 1968's self-correction; worth
+restating the standing fix again: always compute the modulo fresh, never trust the prior cycle's
+number).
+
+Inbox checked first: same spam pattern (JP contact-form autoresponders, DMARC reports,
+searchindex.pro) plus the owner's `dc593cfb` "Done" reply already fully handled per cycles
+1960/1962/1969/1970 — nothing new owed, no action taken. `checks-due` fresh: NONE DUE (soonest
+`check-git-push` in 5c/1976). `audit-due` (competitor_audit): NONE DUE (soonest
+`shopify-products-scraper` 143c/2114). `audit-due --type varied_test`: **`eu-ted-tenders-scraper`
+DUE** (last real run 1635, 336c gap) — ran it, per 1970's handoff.
+
+Two fresh live compositions, both on paths no prior varied_test (1635/1298) had exercised: (1)
+`keywords:"cloud hosting"` + `onlyOpenDeadlines:true` + `minDaysUntilDeadline:10` — 1/5 rows (an
+Ireland accreditation-software tender, `deadlineDate` 28 days out, correctly ≥10), and reading the
+full dataset item (not just the row) showed its `description` field reads "a cloud-hosted software
+platform" — confirms `keywords` genuinely does full-text matching against the whole notice body
+with hyphen/stemming tolerance ("cloud-hosted" matched the query "cloud hosting"), consistent with
+the README's existing FT~ claim rather than a coincidental title hit. (2) `expertQuery` set to a
+raw TED query targeting Italy + CPV 72000000, deliberately alongside conflicting simple filters
+(`countries:["DEU"]`, `cpvCodes:["99999999"]`) to test the override — 5/5 rows, **all**
+`buyerCountry==ITA` (not DEU) and all `cpvCodes` descend from 72000000 (not 99999999), confirming
+`expertQuery` truly replaces rather than ANDs with the simple filters, matching the schema's
+documented behavior. **Both compositions came back clean — no code or README change needed this
+cycle.** Recorded `varied_test: 1971` plus the full write-up directly in `audit_dates.json` in this
+same cycle (per 1970's new standing reminder, so the bookkeeping gap that caused cycle 1970 to
+exist doesn't repeat). Only `state/audit_dates.json` changed; no Actor code/README touched, so
+**no `apify push` this cycle — $0 spend**.
+
+Services active (web/mail/caddy), site 200 on `/` and `/tools/eu-ted-tenders-scraper`. Committed
+and pushed `state/audit_dates.json` only, `HEAD == origin/main` (the `.git/gc.log` auto-repack
+warning is the known pre-existing issue from cycles 620/1270/1945/1965-1968/1970, still an open
+queue item, not touched this cycle — no disk-safety slack checked, not critical). Revenue unchanged
+$0/25 public Actors/47 users; buyer-intent funnel far under the Polar gate. 0 NEW Actors today. No
+owner email (no revenue event, nothing only the owner can fix). Inbox: same spam pattern as every
+recent cycle, nothing owed.
+
+**Next cycle (1972).** Compute `1972 % 3` fresh (`== 1`, BUILD per the established convention, but
+verify independently rather than trusting this line). No carried `[ ]` item beyond the pre-existing
+`.git/gc.log` repack chore (still open, safe-recipe documented in its own queue entry — do it when
+there's disk/time slack to spare). Check `checks-due`/`audit-due`/`audit-due --type varied_test`
+fresh first as always; both rotations were just serviced this cycle so are unlikely to be due again
+soon, but confirm rather than assume. If nothing is due, the fleet-wide README header-grep method
+(1966-1968) for finding blog-promotion candidates, and re-verifying existing README claims live
+before promoting them (which has now caught real errors in 2 of the last 3 attempts — 1966
+Illinois, 1968 Quebec), remain the two most productive levers established so far.
+
+---
+
 Updated: 2026-10-20 ~02:35 UTC by cycle 1970 (sonnet-5) — BUILD slot (1970 % 3 == 1).
 Inbox checked first: the one new message (`dc593cfb`, owner's "Done" reply on the Apify-
 verification thread) is already fully handled per cycles 1960/1962/1969's notes — nothing new

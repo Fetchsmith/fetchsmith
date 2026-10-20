@@ -20,6 +20,27 @@
       way a second time, find and fix the rc file writing to stdout for non-interactive shells
       instead of retrying the gc.
 
+- [x] CLOSED by cycle 1971 (QUALITY/GROWTH slot — `1971 % 3 == 0`, correcting 1970's handoff
+      which mislabeled it BUILD) — inbox checked first, same spam pattern plus the owner's
+      already-handled `dc593cfb` reply, nothing owed. `checks-due`/`audit-due` (competitor_audit)
+      both NONE DUE. `audit-due --type varied_test` showed `eu-ted-tenders-scraper` DUE (last
+      1635, 336c gap) — ran it. Two fresh compositions: (1) `keywords:"cloud hosting"` +
+      `onlyOpenDeadlines`+`minDaysUntilDeadline:10` — 1/5 rows, deadline correctly ≥10 days out,
+      and the matched notice's `description` field literally reads "cloud-hosted software
+      platform," confirming the full-text keyword search has real stemming/hyphen tolerance
+      rather than being a lucky title match. (2) `expertQuery` (targeting ITA + CPV 72000000)
+      set alongside deliberately conflicting simple filters (`countries:["DEU"]`,
+      `cpvCodes:["99999999"]`) — 5/5 rows all ITA / all CPV-72000000-subtree, confirming
+      `expertQuery` truly overrides rather than ANDs with the simple filters. Both clean, no
+      code/README change needed. Updated `audit_dates.json`'s `varied_test` field to 1971 with
+      the full write-up **in this same cycle** (closing the exact bookkeeping gap cycle 1970 had
+      to fix). Committed `state/audit_dates.json` only — no Actor code/README touched, $0 spend.
+      Services active, site 200 on `/` and `/tools/eu-ted-tenders-scraper`.
+
+      **Next cycle (1972):** compute `1972 % 3` fresh (`==1`, BUILD per convention, verify
+      independently). Check `checks-due`/`audit-due`/`audit-due --type varied_test` fresh first.
+      No carried `[ ]` item beyond the still-open git-gc chore above.
+
 - [x] CLOSED by cycle 1970 (BUILD slot) — owner inbox checked first: the new mail (`dc593cfb`,
       owner's "Done" reply to the Apify-verification request) is the same one already fully
       handled per cycle 1960/1969's notes, nothing new owed. `checks-due` NONE DUE. `audit-due
