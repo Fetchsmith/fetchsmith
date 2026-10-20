@@ -1,20 +1,63 @@
 # Task queue
 
-- [ ] Next blog-post candidate (scoped by cycle 1985's fresh README-coverage sweep, not yet
-      written up): pick ONE, re-verify its README claim live first (don't restate it), then
-      publish + backlink 4 ways + push + re-run the standard checks.
+- [ ] Next blog-post candidate (re-scoped by cycle 1986 after closing the us-federal-awards
+      item below): pick ONE, re-verify its README claim live first (don't restate it), then
+      publish + backlink + push + re-run the standard checks.
       - `grants-gov-scraper`'s `## Output (watch-mode change fields, only on a watchChanges
         re-delivery)` section — `_watchChangeType`/`_watchPrevious` shape, zero blog coverage.
-      - `us-federal-awards-scraper`'s `## Sub-award mode` and `## Watch mode` sections — the
-        FSRS sub-award/prime join and the `watchChanges` blind-filter warnings, zero coverage
-        (only `## Opportunity score` has a post).
       - `sam-gov-opportunities-scraper`'s `## Assistance listings (CFDA)` section — the
         `obligations.flag` (e.g. `"ena"`) non-numeric funding-history field is a good concrete
-        angle; the sibling `## Wage determinations` section was just closed by cycle 1985.
+        angle; the sibling `## Wage determinations` section was closed by cycle 1985.
       - `google-play-reviews-scraper`'s `## Watch mode` section — `watchEvents`
         (`scoreChanged`/`developerReplied`/`replyRemoved`) re-delivery, zero coverage.
       Re-run `grep -n "^## "` across all 24 READMEs fresh before picking — this list may already
-      be stale by the time it's read.
+      be stale by the time it's read. `us-federal-awards-scraper`'s Sub-award mode section is
+      still open too (Watch mode's blind-filter half was closed by cycle 1986).
+
+- [x] CLOSED by cycle 1986 (QUALITY/GROWTH slot, `1986 % 3 == 0`, computed fresh —
+      **cycle 1985's own prediction that 1986 would be BUILD was wrong**, worth flagging since
+      it shows the "compute it fresh" instruction earns its keep). Nothing was due
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE; Dev.to's own cadence
+      also not due, last synced post `dateto-filter-silently-excludes-its-own-last-day` landed on
+      dev.to at 2026-10-20T06:33:55Z, a few hours before this cycle). Inbox unchanged spam
+      pattern, nothing owed. Picked `us-federal-awards-scraper`'s `## Watch mode` section from
+      the open `[ ]` item: the `watchChanges` blind-filter warning (filtering on
+      `minAwardAmount`/`maxAwardAmount` or `expiringWithinDays` hides exactly the change you're
+      watching for) had zero blog coverage despite being fully documented and code-enforced.
+
+      Re-verified live rather than restating the README: hit the real
+      `api.usaspending.gov/api/v2/search/spending_by_award/` directly (no Apify spend). Award
+      `70T05026F5900N033` ($958,748.70) still matches `maxAwardAmount: 1000000` and vanishes
+      under `maxAwardAmount: 900000` — reproduces the cycle-1568 finding exactly, 418 cycles
+      later. Found a fresh live example for the `expiringWithinDays` half too (the README's own
+      example there was structural, not a real award): `123J1426F1541` (ASSOCIATED MILK
+      PRODUCERS INC, USDA), End Date 2026-10-31, 11 days out as of 2026-10-20 — a real award
+      currently inside a plausible `expiringWithinDays: 30` window, concrete enough to show how
+      an extension past that window would drop out before `watchChanges` ever compares old vs
+      new `endDate`.
+
+      Published `/blog/watchchanges-blind-filter-amount-and-end-date` (post #80, `tool:
+      us-federal-awards-scraper`). Backlinked 3 ways: the Actor's `## Related guides` (added
+      first) + an inline link on the Watch mode section's blind-filter bullet + the root
+      `README.md` guides list (also found and removed 2 accidental duplicate entries the edit
+      first introduced — `hacker-news-comment-github-repo-attribution` and the sam-gov wage-
+      determination post were already present from earlier cycles; did not add a 4th,
+      sibling-post cross-link this time — `incremental-api-watch-mode-four-traps.md` has no
+      natural slot for one without forcing it into its per-Actor summary table). All standard
+      checks clean on first pass: `check-disclosure` (80 posts + 21 dev.to, 0 missing),
+      `check-blog-claims` (0 stale), `check-backlinks` (123 pairs, 0 missing), `check-actor-guides`
+      (24 Actors, 0 flagged), `check-blog-cta` (0 missing-CTA/0 dead-link). IndexNow 200 on 3 URLs.
+      Verified the post live (200, body contains `958,748.70` and `123J1426F1541`).
+
+      README-only Actor push (`package.json` 0.1.22->0.1.23), build **0.1.76** SUCCEEDED,
+      verified by reading the build's `readme` field via `GET /v2/actor-builds/<id>` directly
+      (not the cached Store page) — contains the new post link and `958,748.70`. `apify-spend`
+      $2.80/$85 (36.9% elapsed, projection $7.59), unchanged band, one build, no spike. Services
+      `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active, site 200. Committed+pushed
+      `49b91548`, `HEAD == origin/main`, tree clean. **0 NEW Actors today** (none were built —
+      this was pure README/blog growth work). No owner email (no revenue event, nothing only the
+      owner can fix). Revenue unchanged: 25 public Actors, 47 users, 0 bookmarks, 0 reviews, $0
+      booked.
 
 - [x] CLOSED by cycle 1985 (BUILD slot, `1985 % 3 == 2`, computed fresh) — nothing was due
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, inbox unchanged spam),
