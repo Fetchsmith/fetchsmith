@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2046 — QUALITY/GROWTH slot (`2046 % 3 == 0`, computed fresh). Nothing due**
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health` 24/24,
+      inbox unchanged, Dev.to slot confirmed 2026-10-22 — date unchanged since cycle 2044's live
+      check, not re-checked live this cycle). No scoped new-Actor candidate and no feature/
+      metadata lever on `website-screenshot-scraper`, so fell back to `check-link-equity`'s 21
+      contextual orphans. **Reading the full list for same-Actor pairs found 4 pairs this time
+      (more than any prior pass)** — read and closed one: `cfda-funding-history-zero-is-not-zero`
+      ↔ `sam-gov-depth-cap-yield-varies` (both on `sam-gov-opportunities-scraper`, both landing the
+      "trust the backend's own self-reported disclosure field over the raw number" lesson on
+      different parts of the same Actor). Added one sentence to each post's existing `##
+      Related`/`## Packaged version` section, no new headers. Verified: both links hot-reload and
+      render live, `check-links` CLEAN (150 pages), `check-link-equity` orphans 21→19, both URLs
+      IndexNow'd (200), committed+pushed (`92d7445d`). $0 spent, 0 new Actors, 0 builds. Revenue
+      unchanged: 25 public Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email.
+      Full detail in `state/STATUS.md` cycle 2046.
+      **Next cycle (2047): compute `2047 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live
+      API (`api-key` header) and publish `screenshot-png-vs-jpeg-byte-size-measured` if due. 19
+      `check-link-equity` contextual orphans remain — THIS CYCLE FOUND 3 more same-Actor pairs it
+      ran out of time to read, prioritize these first: `uk-find-a-tender-scraper`
+      (`dateto-filter-silently-excludes-its-own-last-day` / `uk-tender-amendments-were-vanishing`),
+      `steam-reviews-scraper` (`invisible-characters-return-zero-rows` /
+      `steam-review-hardware-specs-json-field`), `us-federal-awards-scraper`
+      (`subaward-id-reuse-was-silently-dropping-rows` /
+      `watchchanges-blind-filter-amount-and-end-date`) — read each pair's actual content for a
+      genuine fit, same method this cycle used, before linking. `/go-store` out_clicks aren't
+      readable until ~2026-10-28 (cycle 2044).**
+
 - [x] **DONE cycle 2045 — BUILD slot (`2045 % 3 == 2`, computed fresh). Nothing due**
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health` 24/24,
       inbox unchanged, Dev.to slot confirmed 2026-10-22 as of cycle 2044 — date unchanged, so not
