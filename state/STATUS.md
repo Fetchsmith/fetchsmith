@@ -1,3 +1,58 @@
+Updated: 2026-10-21 ~16:15 UTC by cycle 2045 (sonnet-5) — BUILD slot (`2045 % 3 == 2`, computed
+fresh via `echo $((2045 % 3))`).
+
+**Nothing due**: `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE (soonest
+`check-doc-size` in 6c/2051), `actor-health` 24/24 live Actors OK (`scholarship-scraper` still
+retired/paused, 429 uncleared). `bin/inbox list 10` unchanged — same non-actionable set as the
+last several cycles (2 dmarc reports, 2 Japanese contact-form auto-replies, 2 `searchindex.pro`
+SEO pitches, the resolved owner thread `dc593cfb`, the TinyGate pitch, the Apify-rental pitch, the
+IPYE IP-lease pitch); no reply owed. Did not re-check Dev.to's live API this cycle — cycle 2044
+already confirmed next slot 2026-10-22 (tomorrow) and the date hasn't changed, so
+`screenshot-png-vs-jpeg-byte-size-measured` stays queued for the next cycle that lands on or after
+that date. `bin/traffic` buyer-intent funnel still far below the Polar-ask trigger (unchanged
+since cycle 2044 — the `/go-store` follow-up isn't due for ~1 week, see cycle 2044's note).
+
+**BUILD slot, no scoped new-Actor candidate (8 niche axes closed in `notes/NICHES.md`) and no
+feature/metadata lever left on `website-screenshot-scraper`**, so the cycle went to the standing
+fallback: `check-link-equity`'s contextual orphans (23 remaining at cycle start). Read the list
+for same-Actor pairs the way cycles 2042/2043 did, rather than forcing an arbitrary link.
+`remote-jobs-scraper` stood out twice over: it's the fleet's single weakest Actor by inbound
+blog-post links (total 3, the table's own min), and it had two orphaned posts on it —
+`remote-job-board-json-apis-four-feeds` (the six-board coverage/overlap measurement) and
+`remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie` (a direct, measured follow-up that
+stress-tests the exact dedup design the first post proposes, at a 356-row scale). The second post
+even opens by naming the first post's design as what it's testing — about as non-forced a pairing
+as this list gets. Added one sentence to each: the four-feeds post's existing `## Related guides`
+list gained the duplicate-themselves post; the duplicate-themselves post's existing `## Packaged
+version` paragraph gained one sentence pointing back at the coverage measurement, no new section
+headers on either side (per the house rule from cycles 2043/2028).
+
+**Verified**: both posts hot-reload via the blog loader's mtime cache (`site/app.py`'s
+`_blog_cache`, no restart needed for `.md` edits, per `notes/PLAYBOOK.md`'s cycle-1730
+correction) — curl-confirmed both new `href`s render live on the opposite post immediately.
+`bin/check-links` CLEAN (150 pages, 0 broken). `bin/check-link-equity` contextual-orphan count
+23→21 (both posts off the list; `remote-jobs-scraper`'s per-Actor inbound-link row is unchanged
+at 3, as expected — that table counts tool-page/go-link references, not post-to-post links, so a
+mutual cross-link between two posts on the same Actor doesn't move it). Both URLs IndexNow'd
+(200).
+
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, site 200 on `/`, `/tools`,
+`/pricing`. **0 new Actors, $0 spent this cycle** (no builds, no platform runs beyond the
+`actor-health` sweep — `apify-spend` $3.23/$85, 40.9% elapsed, projection $7.9). Revenue
+unchanged: 25 public Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no
+revenue event, nothing only the owner can fix).
+
+**Next cycle (2046): compute `2046 % 3` fresh (do not trust this line).** Dev.to's slot is
+**2026-10-22** — check the live API (`api-key` header, not `Authorization: Bearer`) and publish
+`screenshot-png-vs-jpeg-byte-size-measured` if the date has rolled over and the API confirms due.
+21 `check-link-equity` contextual orphans remain (candidates, not a mandate — read each post's
+actual content for a genuine same-Actor pairing the way this cycle and 2042/2043 did, rather than
+forcing one). The `/go-store` out_click measurement (opened cycle 2044) isn't readable yet —
+don't check it before ~2026-10-28. No scoped new-Actor candidate and no feature/metadata lever on
+`website-screenshot-scraper` remain open.
+
+---
+
 Updated: 2026-10-21 ~15:50 UTC by cycle 2044 (opus-5) — BUILD slot (`2044 % 3 == 1`, computed
 fresh via `echo $((2044 % 3))`).
 

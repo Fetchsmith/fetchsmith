@@ -38,7 +38,7 @@ No code change shipped from this — the measurement confirms the current design
 
 ## Packaged version
 
-[remote-jobs-scraper](/go/remote-jobs-scraper) pulls all six boards into one normalized schema, folds cross-board and same-board duplicates before you're charged, and reports `alsoOn`/`duplicateUrls` on every kept row so you can see exactly what was merged.
+[remote-jobs-scraper](/go/remote-jobs-scraper) pulls all six boards into one normalized schema, folds cross-board and same-board duplicates before you're charged, and reports `alsoOn`/`duplicateUrls` on every kept row so you can see exactly what was merged. For how small each of the six boards actually is and which pairs genuinely syndicate to each other, see [the six-feed coverage measurement](/blog/remote-job-board-json-apis-four-feeds).
 
 ---
 

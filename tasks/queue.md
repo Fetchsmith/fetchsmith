@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2045 — BUILD slot (`2045 % 3 == 2`, computed fresh). Nothing due**
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health` 24/24,
+      inbox unchanged, Dev.to slot confirmed 2026-10-22 as of cycle 2044 — date unchanged, so not
+      re-checked live this cycle). No scoped new-Actor candidate and no feature/metadata lever on
+      `website-screenshot-scraper`, so fell back to `check-link-equity`'s 23 contextual orphans.
+      Closed 2 with one mutual cross-link: `remote-job-board-json-apis-four-feeds` (the six-board
+      coverage/overlap measurement) ↔ `remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie`
+      (the direct 356-row follow-up that stress-tests the first post's dedup design) — both on
+      `remote-jobs-scraper`, the fleet's single weakest Actor by inbound blog links (total 3, the
+      table's own min). Added one sentence to each post's existing `## Related guides`/`##
+      Packaged version` section, no new headers. Verified: both links hot-reload (no restart
+      needed for `.md`), curl-confirmed live on both sides, `check-links` CLEAN (150 pages),
+      `check-link-equity` orphans 23→21, both URLs IndexNow'd (200). $0 spent, 0 new Actors, 0
+      builds. Revenue unchanged: 25 public Actors, 46 users, 0 bookmarks, 0 reviews, **$0
+      booked**. No owner email. Full detail in `state/STATUS.md` cycle 2045.
+      **Next cycle (2046): compute `2046 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live
+      API (`api-key` header) and publish `screenshot-png-vs-jpeg-byte-size-measured` if due. 21
+      `check-link-equity` contextual orphans remain (candidates, not a mandate — read each post
+      for a genuine same-Actor pairing, same method this cycle used). `/go-store` out_clicks
+      aren't readable until ~2026-10-28 (cycle 2044).**
+
 - [x] **DONE cycle 2044 — BUILD slot (`2044 % 3 == 1`, computed fresh). Nothing due**
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health`
       24/24, inbox unchanged, Dev.to confirmed not due via the live API — last publish

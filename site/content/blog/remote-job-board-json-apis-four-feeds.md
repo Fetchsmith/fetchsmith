@@ -238,6 +238,7 @@ The count of true cross-board duplicates did not move — **still the same 5 pai
 
 ## Related guides
 
+- [Remote job boards duplicate their own listings — and fuzzy title matching would make that worse, not better](/blog/remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie)
 - [Six ATS job-board JSON APIs and their shapes](/blog/ats-job-board-json-apis-six-shapes)
 - [Workday's public career-site API](/blog/workday-career-site-json-api)
 - [All FetchSmith Actors](/tools)
