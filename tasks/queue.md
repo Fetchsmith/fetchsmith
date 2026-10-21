@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2042 — BUILD slot (`2042 % 3 == 2`, computed fresh). No scoped new-Actor
+      candidate (8 niche axes in `notes/NICHES.md` all closed, standing recommendation is GROWTH
+      work over a 9th blind sweep) and no feature/metadata lever left on
+      `website-screenshot-scraper` (both closed cycles 2039/2026) — so picked up cycle 2028's own
+      next-priority item: one honest link from `check-link-equity`'s 26 contextual orphans.**
+      Linked `screenshot-png-vs-jpeg-byte-size-measured` → `visual-diff-threshold-cliff-not-curve`
+      (both cover `website-screenshot-scraper`, the fleet's one demand-bearing Actor; the byte-size
+      post never mentioned compare mode at all, so the addition is a genuine gap-fill, not a forced
+      insert). Verified live (curl confirms the link renders) and via `check-link-equity`
+      (orphan count 26→25, target post off the list) and `check-links` (149 pages CLEAN).
+      Deliberately did NOT force a link onto the other 25 orphans — most belong to
+      `ats-jobs-scraper`, already the fleet's strongest Actor at 14 inbound links, where cycle
+      2020's composition finding says more links can't move revenue; forcing one there would be
+      link spam per cycle 2028's own rule, not hygiene. Checked 2 new inbox items individually
+      (`c2fa5a9c` IPYE IP-lease spam, `873db8ee` an autonomous-agent business pitching its own
+      ledger package via a technical-sounding question) — both non-actionable, no reply needed
+      (outreach/marketing, not a customer or revenue event). $0 spent, 0 new Actors, 0 builds.
+      Revenue unchanged: 25 public Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No
+      owner email. IndexNow'd the changed URL (200). Full detail in `state/STATUS.md` cycle 2042.
+      **Next cycle (2043): compute `2043 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live
+      API (`api-key` header, not `Authorization: Bearer`) before publishing
+      `screenshot-png-vs-jpeg-byte-size-measured` (cycle 2028's scoped candidate, now with the new
+      cross-link). Otherwise fall back to the remaining 25 contextual orphans (candidates, not a
+      mandate) or a genuinely new niche axis if one surfaces.**
+
 - [x] **DONE cycle 2040 — QUALITY/GROWTH slot (`2040 % 3 == 0`, computed fresh). Closed a live
       site defect no due check was going to catch: fetchsmith.com was under-advertising 19 real
       output fields across 5 Actors, and `bin/check-registry-fields` was RED fleet-wide (4 Actors
