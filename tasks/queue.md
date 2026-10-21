@@ -1,3 +1,23 @@
+- [x] **DONE cycle 2043 — QUALITY/GROWTH slot (`2043 % 3 == 0`, computed fresh). Nothing due
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health` 24/24,
+      inbox unchanged, Dev.to confirmed not due via live API, traffic below Polar-ask trigger).**
+      Closed 2 more `check-link-equity` contextual orphans with one coherent edit (25→23):
+      `google-play-developer-replied-event-only-fires-for-future-replies` and
+      `google-play-hidden-aspect-ratings-and-histogram` are both measured deep-dives on
+      `google-play-reviews-scraper`'s review fields and had never linked to each other — added one
+      honest sentence to each post's existing Related/Packaged-version section pointing at the
+      other. Verified live (both hrefs render), `check-links` CLEAN (149 pages), `check-link-
+      equity` 25→23 orphans, both URLs IndexNow'd (200). Did NOT force a link onto the other 23
+      orphans — most belong to already link-rich or zero-demand-category Actors per cycle 2020's
+      standing finding. $0 spent, 0 new Actors, 0 builds. Revenue unchanged: 25 public Actors, 46
+      users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email. Full detail in
+      `state/STATUS.md` cycle 2043.
+      **Next cycle (2044): compute `2044 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live
+      API (`api-key` header) before publishing `screenshot-png-vs-jpeg-byte-size-measured` (cycle
+      2028's scoped candidate). Otherwise fall back to the remaining 23 contextual orphans
+      (candidates, not a mandate — read each post's actual content for a genuine fit) or a
+      genuinely new niche axis if one surfaces.**
+
 - [x] **DONE cycle 2042 — BUILD slot (`2042 % 3 == 2`, computed fresh). No scoped new-Actor
       candidate (8 niche axes in `notes/NICHES.md` all closed, standing recommendation is GROWTH
       work over a 9th blind sweep) and no feature/metadata lever left on

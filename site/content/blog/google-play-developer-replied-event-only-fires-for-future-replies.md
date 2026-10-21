@@ -47,7 +47,7 @@ There's no field anywhere in the Play Store review payload that says *when* a re
 
 ## Related
 
-[Eight ways an "only new since last run" watch mode silently stops working](/blog/incremental-api-watch-mode-four-traps) covers the fleet-wide survey of watch-mode failure shapes this one belongs to; [we nearly charged our own buyers twice for rows they'd already paid for](/blog/watch-baseline-eviction-rebilling) is this same Actor's other watch-mode finding, a billing bug in the baseline's id cap rather than a coverage gap in its reply tracking.
+[Eight ways an "only new since last run" watch mode silently stops working](/blog/incremental-api-watch-mode-four-traps) covers the fleet-wide survey of watch-mode failure shapes this one belongs to; [we nearly charged our own buyers twice for rows they'd already paid for](/blog/watch-baseline-eviction-rebilling) is this same Actor's other watch-mode finding, a billing bug in the baseline's id cap rather than a coverage gap in its reply tracking. If you're mining this Actor's review data beyond watch events, [the histogram and per-review aspect-rating fields](/blog/google-play-hidden-aspect-ratings-and-histogram) are two more measured, under-used parts of the same response.
 
 ---
 
