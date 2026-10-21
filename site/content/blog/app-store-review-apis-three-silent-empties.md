@@ -17,7 +17,7 @@ Three of the biggest review platforms on the internet — the App Store, Google 
 
 ## Each one's "empty" is a different lie
 
-**Apple's is a paging lie.** The review feed has holes *in the middle* of a result set — page 1 can be empty while page 5 has 50 reviews, and which pages are empty moves day to day. A scraper that does `if (!entries.length) break` on page 1 stops before it starts and reports "no reviews" with a green checkmark. [Full write-up →](/blog/apple-app-store-reviews-header-fingerprint)
+**Apple's is a paging lie.** The review feed has holes *in the middle* of a result set — page 1 can be empty while page 5 has 50 reviews, and which pages are empty moves day to day. A scraper that does `if (!entries.length) break` on page 1 stops before it starts and reports "no reviews" with a green checkmark. [Full write-up →](/blog/apple-app-store-reviews-header-fingerprint) (A separate, unrelated gap on the same platform: neither of Apple's APIs carries the star-rating histogram either — [it's buried in the product page's JSON instead](/blog/app-store-per-star-ratings-breakdown).)
 
 **Google Play's is an identity lie.** Ask for the reviews of a package name that genuinely does not exist and you get `{ data: [] }` — a clean, successful, empty response. Ask for the reviews of a real app that simply has no reviews in the locale you asked for and you get the *exact same shape*. Only the separate app-details call actually validates the ID (`Error: App not found (404)`); the reviews endpoint alone cannot tell a typo from a quiet locale. [Full write-up →](/blog/google-play-reviews-no-api-batchexecute)
 
