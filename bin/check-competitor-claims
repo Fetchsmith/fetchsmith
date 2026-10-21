@@ -217,7 +217,26 @@ FILE_OVERRIDES = {
 # ("Product Title", 351 users) ``), and the connector "still" (`` `x` still 2 users ``).
 # 5 claims fleet-wide (google-play-reviews x2, hacker-news, shopify-products,
 # trademark-search) were invisible for these reasons.
-USERS = re.compile(r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`\*{0,2}(?:'s)?,?\s*(?:(?:now\s+|sits\s+)?at|with|has|still)?\s*\(?\s*(?:\"[^\"]{0,100}\"\s*,\s*)?\*{0,2}([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)")
+# Cycle 2019: bin/check-claim-coverage's first fleet-wide run (added 1801, never run
+# until now) found 19 gaps; 8 of them were two more recurring shapes, not one-offs each
+# seen 2-3x independently: an em-dash qualifier clause between the handle and "at N
+# users" ("`x` -- named here at 504 users", "`x` -- found at 3 users"), and an arrow-
+# notation re-verification tick ("`x` grew 1->4 users", "`x` ticked 46 -> 47 users",
+# "`x` (10 -> 9 users, ...)") where only the SECOND (current) number is the live claim.
+# Added both as new alternatives after the handle, ahead of the original connector/paren
+# tail (which still runs unmodified for every other shape). Verified by diffing matches
+# across all 25 READMEs before/after: +8 matches, 0 lost (see queue.md cycle 2019).
+USERS = re.compile(
+    r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`\*{0,2}(?:'s)?,?\s*"
+    r"(?:"
+    r"(?:(?:now\s+|sits\s+)?at|with|has|still)?\s*\(?\s*(?:\"[^\"]{0,100}\"\s*,\s*)?"
+    r"|"
+    r"—\s*[a-z][a-z \-]{0,24}?\bat\s+"
+    r"|"
+    r"[^`\n]{0,40}?[0-9][0-9,]*\s*(?:→|->)\s*"
+    r")"
+    r"\*{0,2}([0-9][0-9,]*)(?:\s+users?\b|\s*u\b)"
+)
 DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
 TOKEN = re.compile(r"`([a-z][a-z0-9_.-]{2,})`")
 # A paragraph is a COMPETITIVE CLAIM (and so needs a date) when it both mentions rivals

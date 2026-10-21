@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2019 — QUALITY/GROWTH slot, no scoped item in queue; closed `checks-due
+      --map`'s 5-tool UNCLASSIFIED backlog instead of a blind sweep.** `check-claim-coverage`
+      (added 1801) and `check-stale-forecast` (added 1810) had **never been run once** — 218c/209c
+      unrun, tracked nowhere, the exact rot `state/fleet_checks.json` exists to prevent, happening
+      to the tools built to catch it. Ran all 3 untracked standing checks fresh: `check-stale-
+      forecast` clean (7 paragraphs, 0 unconfirmed); `check-status-continuity` clean (0 missing
+      blocks, window 1994-2018); `check-claim-coverage` found **19 real gaps** (claims
+      `check-competitor-claims`'s USERS regex can't see). Hand-read all 19: **8 were two new
+      recurring connector shapes** (an em-dash qualifier — `` `x` — named here at N users ``/
+      `` `x` — found at N users `` — and an arrow-notation tick where only the SECOND number is
+      live — `` `x` grew 1→4 users ``, `` `x` ticked 46 → 47 users ``). Widened `USERS` in
+      `bin/check-competitor-claims` with two new alternatives, keeping its exact 3-group contract;
+      verified by diffing matches across all 25 READMEs before/after (**+8, 0 lost**), then
+      confirmed live via `check-claim-coverage` (19→11 gaps). The remaining 11 are genuinely
+      benign (hand-confirmed: unrelated-prose separation, a bare-number list relying on its own
+      header, a threshold phrase that isn't a current-state claim, a duplicate alias) — do not
+      re-chase them. **Did not run the full live `check-competitor-claims` sweep** (not due for
+      72c, and a live run timed out past 180s on 588 matches) — scoped as a regex-level fix,
+      live completion lands naturally at its next scheduled run, cycle **2091**. Classified the
+      other 2 UNCLASSIFIED tools (`http-feasible` → new `on_demand_research` group,
+      `learnings` → new `utility` group) — `checks-due --map` now shows **0 UNCLASSIFIED**, 29
+      cadence-tracked tools (was 26). Full detail in `state/STATUS.md` cycle 2019.
+      **Follow-up, low priority:** when cycle 2091's `check-competitor-claims` sweep runs, confirm
+      the 8 newly-matched claims resolve cleanly (not a crash) — that's the live-side half of this
+      cycle's fix this cycle couldn't afford the time for.
+
 - [x] **DONE cycle 2016 — QUALITY/GROWTH slot. Ran the one due check (`check-git-push`, next
       2036), closed the fleet's last README structural gap, and fixed TWO real defects found by
       reading code against its own docs.** (1) Measured `^## ` header membership across all 26
