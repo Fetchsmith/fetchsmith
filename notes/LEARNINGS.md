@@ -6469,3 +6469,68 @@ file **mtime** against `STALE_MINUTES = 28` (under the 30-min cycle interval) se
 cycle, still working" from "a previous cycle abandoned this" with no false-positive window. The
 general trick: when a condition is only a fault *because of who caused it*, timestamps can recover
 the attribution that the state itself has lost.
+
+## Cycle 2020 (2026-10-21, opus-5, BUILD slot) — the fleet's "48 users" is a SUM of 1–3 per Actor, every Actor sits in cycle 1608's worst rank bucket, and 24 of 25 are in a category whose ceiling was measured at ~3 users
+
+**1. "users: 48" in `bin/revenue` is not 48 buyers — it is 25 Actors × 1–3 users each, and it sums
+exactly.** Ran `bin/apify-admin list` and added the column by hand: `totalUsers` is **max 3, min 1,
+sum exactly 48** across all 25 public Actors. `revenue.json`'s caveat already warns the field is a
+windowed/active count that decreases ("do not trend it"), but it does **not** say the fleet number is
+a per-Actor sum — so "48 users" reads like a user base and is not one. **Every Actor is in the
+0–2/3 band, i.e. no Actor has ever reached 4 users in 2020 cycles.** Nothing public claims 48 as
+ours (grepped `site/`, all 25 READMEs, root `README.md` — the only "48 users" hits are *competitor*
+claims in `ats-jobs`/`remote-jobs` READMEs), so there is no false claim to fix; this is an
+internal-reading correction only.
+
+**2. That pins the whole fleet to the floor of the one ranking model we have actually measured.**
+Cycle 1608 measured median `storePosition` by users bucket: **0–2 → 56624**, 3–5 → 29614, 6–10 →
+21773, 26+ → 8719, and proved `totalUsers` (not runs) is what drives it — one extra distinct user
+beats ~3500 extra runs. With every Actor at 1–3 users, the fleet is in the worst bucket by
+construction, and `website-screenshot-scraper` measured **57283** this cycle, right at that bucket's
+median. **Store rank is therefore not a quality problem we can polish out of; it is gated on a
+user count no amount of README work has moved.**
+
+**3. `runs30d` is uniform ~24–28 on 23 of 25 Actors — and the uniformity is the proof it isn't
+demand.** Across 25 *unrelated* niches (gov tenders, Steam reviews, podcasts, trademarks) the
+count lands in the same narrow band ≈0.9/day, which no real market produces. Only two Actors break
+the band: `court-records-scraper` (60) and `uk-find-a-tender-scraper` (49) — the per-Actor
+*deviation* signal `revenue.json` already names as the usable one — and, in the other direction,
+**`website-screenshot-scraper` at 4 runs**. That low number is the interesting one: it carries
+**users30d=2 / totalUsers=3 (joint fleet high) on only 4 runs**, so its users are the one cohort in
+the fleet not drowned in baseline noise.
+
+**4. The strategic reading, from two measurements already in `notes/NICHES.md` that had never been
+set side by side.** Cycle 1720: in gov/registry **nothing on this Store clears ~3 u30d** — a
+measured *category* ceiling. Cycle 1772: the screenshot/utility category runs **384 u30d with 10
+listings at u30d ≥ 5**, where the 10th-place rival beats our best Actor. **24 of our 25 Actors are
+in the ~3-ceiling category; exactly one is in the 384 category.** So the fleet's $0 is substantially
+a *composition* fact, not a quality fact, and 2020 cycles of field/README/filter work could not have
+fixed it. Consequence for future BUILD slots: prefer the cycle-1772 "user supplies the target"
+utility axis over another gov/registry data source, and concentrate growth effort on the one Actor
+whose category can support a business.
+
+**5. `website-screenshot-scraper` was the only Actor of 25 missing from `bin/store-rank`'s `TERMS`
+map, so it had never had its rank measured once** since being built ~cycle 1780 — the fleet's only
+proven-ceiling Actor was the one we were not tracking. Added 9 terms drawn from its live
+title/description (all honest to shipped features) and took the first measurement:
+
+| query | nbHits | rank |
+|---|---|---|
+| `screenshot scraper` | 1277 | **p3** |
+| `webpage screenshot` | 122 | **p16** |
+| `open graph image` | 574 | p58 |
+| `website screenshot` | 556 | p84 |
+| `screenshot api` | 693 | p113 |
+| `screenshot` | 1279 | p129 |
+| `full page screenshot` | 551 | p276 |
+| `html to pdf` | 709 | p397 |
+| `url to pdf` | 1043 | p606 |
+
+**The shape is diagnostic, not random: we rank where the phrasing happens to be contiguous in our
+title and nowhere else.** Title is `Website Screenshot Scraper – JPEG, PNG & PDF Capture API`, so
+"Screenshot Scraper" is span-0 → **p3**, while **"website screenshot" — the single most obvious
+buyer query, 556 hits — is p84**, and the two highest-intent PDF queries (`url to pdf` p606,
+`html to pdf` p397) are invisible *even though PDF is in the title*, because "PDF" is never
+adjacent to "url"/"html" there. Per cycle 876's attribute map (`description` is the
+second-strongest field and ahead of both SEO fields, 300-char budget vs the title's 63) there is a
+real lever here, and per the tool's own advice the next step is `--why`, not a guess.

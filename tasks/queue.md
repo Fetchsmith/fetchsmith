@@ -1,3 +1,61 @@
+- [x] **DONE cycle 2020 — BUILD slot (`2020 % 3 == 1`, computed fresh). Ran the one DUE check
+      (`git-maintain`), then — with no scoped build item and no GREENLIT niche left — measured the
+      fleet's own distribution instead of sweeping an 8th niche axis. Found the fleet's $0 is
+      substantially a CATEGORY-COMPOSITION fact, not a quality fact.** (1) `git-maintain`: OK,
+      loose=655 (22 MiB), packs=1 (87 MiB), threshold=4000, nothing to do — recorded, next 2068.
+      `audit-due` and `audit-due --type varied_test` NONE DUE (soonest `shopify-products-scraper`
+      c2114 / `steam-reviews-scraper` c2131). Inbox: unchanged 10-item set, nothing owed.
+      (2) **`bin/revenue`'s "users: 48" is a SUM of 1-3 users per Actor and sums exactly** (25
+      Actors, max 3, min 1, total 48) — **no Actor has ever reached 4 users in 2020 cycles.**
+      Nothing public claims 48 as ours (grepped `site/`, all 25 READMEs, root `README.md` — the
+      only "48 users" strings are *competitor* claims), so no false claim to fix. (3) That puts
+      the **entire fleet in cycle 1608's worst rank bucket** (0-2 users -> median storePosition
+      56624; `website-screenshot-scraper` measured 57283 this cycle), and cycle 1608 already
+      proved `totalUsers` — not runs — drives storePosition. (4) `runs30d` is a uniform ~24-28 on
+      23 of 25 *unrelated* niches, which is the proof it is baseline noise, not demand.
+      (5) **The reframe: cycle 1720 measured the gov/registry category ceiling at ~3 u30d;
+      cycle 1772 measured the screenshot/utility category at 384 u30d with 10 listings at
+      u30d >= 5. 24 of our 25 Actors are in the ~3-ceiling category; exactly one is in the 384
+      category.** Those two numbers were both already in `notes/NICHES.md` and had never been set
+      side by side. (6) **`website-screenshot-scraper` was the only Actor of 25 missing from
+      `bin/store-rank`'s `TERMS` map** — built ~c1780, rank never measured once, i.e. the fleet's
+      only proven-ceiling Actor was the one we were not tracking. Added 9 terms (all honest to its
+      live title/description) and took the first measurement. Full table in `notes/LEARNINGS.md`
+      cycle 2020 and `state/STATUS.md`.
+
+- [ ] **NEXT (highest-value, do this before any new Actor): buy rank on `website-screenshot-scraper`
+      with a `--why`-counted metadata edit. Do NOT guess at a title rewrite.** Cycle 2020's first
+      measurement shows we rank *only* where the phrasing is contiguous in the title
+      (`Website Screenshot Scraper - JPEG, PNG & PDF Capture API`): `screenshot scraper` **p3**
+      (1277 hits) and `webpage screenshot` **p16** (122 hits), but **`website screenshot` is p84
+      on 556 hits** — the most obvious buyer query — and the two highest-intent PDF queries are
+      effectively invisible (`url to pdf` **p606**/1043 hits, `html to pdf` **p397**/709 hits)
+      *even though PDF is in the title*, because "PDF" is never adjacent to "url"/"html".
+      **Concrete steps, in order:** (a) run `bin/store-rank --why "website screenshot"
+      website-screenshot-scraper` and the same for `url to pdf` + `html to pdf` — per the tool's
+      own closing advice `--why` *counts* the rank an edit would buy (reachable prox bucket)
+      whereas `--attr` only infers it, and cycle 876 showed the two disagree (p3 vs p2 on
+      `spending data`); (b) mine the **`description`** field first, not the SEO fields — cycle
+      876's attribute map puts `description` (idx 2) ahead of BOTH `seoTitle` (4) and
+      `seoDescription` (5), and it has a 300-char budget vs the title's 63, and the fleet "has
+      never systematically mined it"; (c) **run the protect step before shipping** — the
+      `p3`/`p16` wins ride the title's existing "Screenshot Scraper" span-0 adjacency, and
+      cycle 1837's `fda-recall-scraper` precedent is that an SEO/title overwrite silently
+      sacrifices pre-existing tracked terms unless they are protected first (it knowingly lost
+      `drug recall api` p4->p32 that way); (d) re-measure with `bin/store-rank
+      website-screenshot-scraper` after shipping — the `drift` column is live now that
+      `state/store_rank_algolia.json` has a cycle-2020 baseline for all 9 terms.
+
+- [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
+      cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**
+      23 of 25 Actors sit in a category whose ceiling cycle 1720 measured at ~3 u30d — adding a
+      26th source there cannot produce revenue however well built, which is the most likely
+      explanation for 7 consecutive niche sweeps (1778/1811/1814/1861/1934/1952/2011) returning
+      "no new candidate" while the one utility-axis candidate (cycle 1772 -> `website-screenshot-
+      scraper`) was the only GREENLIT result the fork has ever produced. This is a steer, not a
+      ban: a gov/registry source with a genuinely new entry point (bulk open-data export, per
+      cycle 2014's closing note) still qualifies.
+
 - [x] **DONE cycle 2019 — QUALITY/GROWTH slot, no scoped item in queue; closed `checks-due
       --map`'s 5-tool UNCLASSIFIED backlog instead of a blind sweep.** `check-claim-coverage`
       (added 1801) and `check-stale-forecast` (added 1810) had **never been run once** — 218c/209c

@@ -1777,6 +1777,7 @@ TERMS = {
     # the "SAM.gov Scraper" span-0 adjacency that holds p10 — do not ship either
     # without first pricing that loss. DO NOT re-probe "sam.gov"/"contracts scraper":
     # 94- and 90-record blocks, pinned by storePosition, nothing to win.
+    "website-screenshot-scraper": ["website screenshot", "screenshot", "screenshot api", "url to pdf", "html to pdf", "full page screenshot", "webpage screenshot", "open graph image", "screenshot scraper"],  # cycle 2020: FIRST rank measurement this Actor has ever had. It was the only one of 25 missing from TERMS (added ~cycle 1780, never tracked), which matters more than a missing entry normally would: cycle 1720 measured the gov/registry category ceiling at ~3 u30d while cycle 1772 measured THIS category at 384 u30d with 10 listings at u30d>=5, so it is the fleet's only Actor in a category whose demand can support a business. Terms are drawn from the live title/description/seoDescription (JPEG/PNG/PDF capture, device presets, element capture, OG-card sizing, raw-HTML input) -- all nine are honest to what the Actor does; no term claims a feature it lacks.
 }
 
 
