@@ -6801,3 +6801,31 @@ locally tested before a push, or ones using an unpinned/`"*"` dependency), delet
 install` generates before running `apify push`, or it will ship as a root-owned file the
 container's non-root user can't rewrite. If it does already have one, a normal `npm install`
 just reuses it and this whole failure mode doesn't trigger.
+
+**Cycle 2032 — a feature's niche can be dead while the feature is still worth shipping.** Before
+building the `compareUrl` visual-diff mode, `apify-admin store "visual regression"` /
+`"screenshot comparison"` showed ~12 dedicated diff Actors ALL at users=1-2 / u30d=1 (the Apify
+per-Actor auto-run floor — `bin/real-demand`'s whole premise) and `apify/image-diff` at 164 users
+but u30d=0, while the general screenshot Actors in the same result set carried real traffic
+(`moonweil/url-screenshot-api` 199 users / 123 u30d). The right read is not "skip it" and not
+"build it" — it is **"never as its own Actor, fine as a feature on an Actor that already has
+demand."** The fleet's standing new-Actor gate (strong rival with >1000 users => skip) does not
+cover this shape: here the rivals are weak *because the niche is empty*, which is a worse signal
+than a strong rival. Apply the floor test (u30d at or below ~1-2 across EVERY Actor in a query)
+as the real "is anyone searching for this" check before spending a build slot on a niche.
+
+**Cycle 2032 (practical) — pixelmatch requires equal dimensions, and `fullPage` screenshots of two
+different pages almost never have them.** Diff the overlapping top-left region, report
+`sizeMismatch` plus all four dimensions, and define `diffPercent` over the pixels actually
+compared; failing the comparison instead would make the feature useless on exactly the pages
+people want to diff. Also: `import { PNG } from 'pngjs'` is a CJS named import that depends on
+cjs-lexer detection — `import pngjs from 'pngjs'; const { PNG } = pngjs;` always works. Verified
+the whole diff path offline against 5 synthetic PNGs before spending a push, which is possible
+even under the no-browsers-on-this-box rule because the diff math has nothing to do with Chromium.
+
+**Cycle 2032 (process) — a README that must quote a real run costs two pushes, and that is correct.**
+The sample row can only exist after the code is on the platform, so code+schemas go up first, the
+run happens, then a README-only push carries the measured row. Budget it as ~$0.01 rather than
+shipping an invented sample. And when stamping a placeholder into a README with `str.replace()`,
+assert the placeholder is gone before pushing — a trailing-newline mismatch silently no-op'd the
+removal and `__COMPARE_SAMPLE__` went live on build 0.1.17 for ~15 minutes.

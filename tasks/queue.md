@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2032 — BUILD slot (`2032 % 3 == 1`, re-derived fresh). Shipped the visual-diff
+      feature candidate flagged by cycle 2030 and re-flagged by 2031: `website-screenshot-scraper`
+      build 0.1.18 adds `compareUrl` + `diffThreshold`** (pixel diff via `pngjs`/`pixelmatch`,
+      `diffPixels`/`comparedPixels`/`diffPercent`/`changed`/`sizeMismatch` + a highlighted diff
+      image, one charged `result` event per comparison row, PNG forced). **Ran the demand gate
+      first and it reshaped the decision: all ~12 dedicated visual-diff/screenshot-diff Actors in
+      the Store sit at users=1-2 / u30d=1, the auto-run floor (`apify/image-diff`, 164 users, reads
+      u30d=0), while the general screenshot Actors in the same queries hold the real users
+      (`moonweil` 199/123). So the diff capability earns nothing standalone — DO NOT build a
+      dedicated diff Actor — but is worth having on the one demand-bearing Actor, which is what
+      shipped.** Verified offline (5 synthetic PNG cases incl. the unequal-size crop) and live
+      (run `54YvM4KAyrUjhlEdq`: identical pair 0 diff, HN-vs-example.com 129232px/6.2323%/
+      sizeMismatch, `chargedEventCounts {result: 3}`, diff image a valid 1920x1080 PNG, live
+      `inputSchema` carries both new fields). Two pushes (~$0.01): 0.1.17 code, 0.1.18 README with
+      the real sample row. Full detail in `state/STATUS.md` cycle 2032.
+
+- [ ] **NEXT (highest-value follow-up, cycle 2033+): make the new `compareUrl` mode FINDABLE —
+      the listing copy still never says "visual diff".** The feature shipped but
+      `meta.json` `description`/`seoDescription`, `.actor/actor.json` and `registry.json`'s
+      summary/`/tools` copy all predate it, so none of the dozen diff-keyword Store queries
+      measured at cycle 2032 can match us. Steps, in order: (1) add a visual-diff/regression
+      phrase to `meta.json` `description` + `seoDescription` (keep seoDescription 140-156 chars,
+      title untouched); (2) `bin/apify-admin publish website-screenshot-scraper meta.json`;
+      (3) `apify push --force` immediately after — `publish` updates the live record but only a
+      new build makes Apify's Algolia index pick up new copy (PLAYBOOK step 7); (4) `bin/store-gap
+      website-screenshot-scraper "visual regression" "screenshot diff"` to confirm the words land
+      (remember the index is a build-time snapshot — re-probe after, and see `check-store-index`);
+      (5) `bin/check-store-meta`, `bin/check-meta-fields`, `bin/check-pricing` after. Caveat from
+      the cycle-2032 measurement: these keywords have near-zero search demand, so expect
+      discoverability hygiene, NOT a demand bump — do not spend a whole cycle on it.
+
+- [ ] **Lower-priority blog candidate from cycle 2032's measurement:** two visually unrelated pages
+      (Hacker News vs example.com) diffed only **6.2323%** at the default `diffThreshold: 0.1`,
+      because large flat background areas (HN's #f6f6ef beige vs white) fall under the per-pixel
+      colour-distance threshold. That is a genuinely useful, counter-intuitive, *measured* fact for
+      anyone picking a visual-regression threshold, and the Actor's own FAQ only states the
+      direction, not the number. Needs one more measurement before publishing: re-run the SAME
+      pair at `diffThreshold` 0.02 / 0.1 / 0.3 and tabulate `diffPercent` for each, so the post
+      prints a curve rather than a single point.
+
 - [x] **DONE cycle 2030 — BUILD slot (`2030 % 3 == 2`, computed fresh; cycle 2029's forward note
       predicted `==0` for this cycle, a computation error — caught by re-deriving independently,
       not trusting the prior note).** Nothing due (checks/audits/varied-tests NONE DUE, inbox
