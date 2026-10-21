@@ -98,7 +98,7 @@ The practical rule: **treat per-office field availability as a property of the o
 
 A search that costs nothing per office is a different tool from one that costs a lawyer's hour per office. The three things people do with it:
 
-- **Clearance screening** — run a proposed name across all 70+ offices before you file anywhere, and see the collisions in one result set instead of thirty tabs.
+- **Clearance screening** — run a proposed name across all 70+ offices before you file anywhere, and see the collisions in one result set instead of thirty tabs. The default search above (`criteria: "C"`) is a substring match, which buries a narrow clearance question — *does anyone already hold a mark that is exactly my proposed word* — under every mark that merely contains it somewhere; [TMview's other two match modes](/blog/tmview-search-criteria-undocumented-modes) answer that question directly instead.
 - **Opposition watch** — new filings that collide with your mark are only actionable inside the opposition window, and `oppositionPeriodStart`/`oppositionDeadline` tell you how much of it is left. Our Actor's `watchLabel` mode returns and bills only for marks that are new since the previous run on the same label, so a daily scheduled watch is cheap; the [watch-mode trap guide](/blog/incremental-api-watch-mode-four-traps) covers how that baseline is keyed and what it deliberately does not track.
 - **Competitor portfolio mapping** — `applicantNames` plus `office` plus `niceClasses` across a result set is a readable map of where a company has actually secured protection, and in which classes.
 
