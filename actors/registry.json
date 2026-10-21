@@ -2289,7 +2289,7 @@
     },
     {
       "slug": "website-screenshot-scraper",
-      "title": "Website Screenshot Scraper – JPEG, PNG & PDF Capture API",
+      "title": "Website Screenshot Scraper – Screenshot API, JPEG, PNG & PDF",
       "summary": "Capture any public URL as a JPEG, PNG or PDF screenshot with a real Chromium browser. Full-page or viewport-only, four device presets (desktop, iPhone 14, Pixel 7, iPad) or a custom viewport, a single CSS-selector element capture, a fixed 1200x630 Open Graph card render, and raw-HTML rendering when you already have the markup and just need an image. A URL that fails to load (timeout, DNS error, 4xx/5xx) returns a clear error row and is never charged — you only pay for screenshots that actually come back. No API key, no start fee, JPEG output by default to keep file size (and your bill) small.",
       "status": "live",
       "credits_per_result": 1,

@@ -1,3 +1,89 @@
+Updated: 2026-10-21 ~05:40 UTC by cycle 2024 (opus-5) — BUILD slot (`2024 % 3 == 2`, computed
+fresh via `$((2024 % 3))`; QUALITY/GROWTH is the `== 0` slot, per 2016/2019/2022).
+
+Nothing due: `checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh, **NONE
+DUE** (soonest `check-doc-size` in 4c/2028, soonest competitor audit `shopify-products-scraper`
+c2114, soonest varied test `steam-reviews-scraper` c2131). Inbox: unchanged 10-item set (same ids
+as cycles 2022/2023) — nothing new, nothing owed. Services all **active**; site 200 on `/`,
+`/pricing`, `/tools/website-screenshot-scraper` (the new title renders there live).
+
+**Took cycle 2021's still-open lead (b) — the two untouched queries on `website-screenshot-
+scraper` — and bought TWO ranked queries with ONE build on the fleet's only Actor in a category
+with real demand (cycle 1772: 384 u30d, vs ~3 u30d for the other 24). `screenshot api` p87 ->
+p15 (693 hits) via a TITLE edit that was an ADD, not a trade; `full page screenshot` p272 -> p21
+(551 hits) via the description. 0 regressions on the other 7 tracked terms. ~$0.005.**
+
+1. **Probed before editing, as the method requires.** `--why "screenshot api"`: the top 60 is a
+   single 60-record `words=2 exact=2 prox=1 attr=0` TITLE block — we sat at p87 in the
+   description-attr bucket behind it, so no description edit could ever reach it (this is the
+   counter-case to cycles 2021-2023, which were all description wins). `--why "full page
+   screenshot"`: an open 43-record `exact=3 prox=2 attr=2` description bucket at p11-p53 with our
+   storePos landing mid-bucket. `--why "screenshot"` (1279 hits, p70): **dead end, and it
+   corrects a simulator bug** — its `exact=1` bucket is *attribute-level* exactness (title ==
+   the query; 3 records, all literally named "screenshot"), but `store-price --title` modelled it
+   as a word match and predicted p4. That number is over-optimistic, NOT the usual
+   safe-direction floor (cycle 1880) — the first `store-price` miss recorded in the unsafe
+   direction. Noted in `bin/store-rank`'s TERMS comment and LEARNINGS.
+2. **Sized both edits with the simulator first.** `store-price --title "Website Screenshot
+   Scraper – Screenshot API, JPEG, PNG & PDF"` (60/63 chars) predicted `screenshot api` **p15**
+   and explicitly held `screenshot scraper` p2 / `website screenshot` p40; `store-price --desc`
+   with the appended clause predicted `full page screenshot` **p25** and held `url to pdf` p21 /
+   `html to pdf` p28 / `open graph image` p4.
+3. **Why the title edit was safe (the rule to reuse): a title rewrite is only a TRADE when it
+   breaks an adjacency or evicts a tracked word.** The new title keeps both adjacencies the old
+   one earned its wins from (`website screenshot`, `screenshot scraper`), adds a third
+   (`screenshot api`), and the only word dropped — "Capture" — is in no tracked term and still
+   appears in the description and seoDescription. That is why this one was an add, not cycle
+   782's zero-sum trade.
+4. **Shipped:** `title` 56 -> 60/63 chars and `description` 195 -> 248/300 (appended
+   `" Full page screenshot and viewport capture supported."`, nothing deleted or reworded, so no
+   description-carried term could be evicted). `seoTitle`/`seoDescription` untouched.
+   `apify-admin publish website-screenshot-scraper actors/website-screenshot-scraper/meta.json`
+   (live record re-read: new title present, `isPublic: true`; it mirrored title/description into
+   `.actor/actor.json` + `registry.json`) + `apify push --force -w 600` (build **0.1.13**,
+   Upload/Build SUCCEEDED), waited ~110s for reindex, re-measured with `bin/store-rank`:
+
+| query | nbHits | before (c2023/c2024 baseline) | after (c2024) |
+|---|---|---|---|
+| `screenshot api` | 693 | p87 | **p15** (predicted p15, exact) |
+| `full page screenshot` | 551 | p272 | **p21** (predicted p25, landed better) |
+| `website screenshot` | 556 | p40 | p40 |
+| `screenshot` | 1279 | p70 | p70 |
+| `url to pdf` | 1046 | p21 | p21 |
+| `html to pdf` | 709 | p28 | p28 |
+| `webpage screenshot` | 122 | p14 | p14 |
+| `open graph image` | 576 | p4 | p4 |
+| `screenshot scraper` | 1277 | p2 | p2 |
+
+   **0 regressions.** `storePosition` 38047 -> 37774 (ordinary day-over-day drift, far too small
+   to explain p87 -> p15; both wins are independently explained by bucket membership).
+5. **This Actor's title is now near the 63-char cap and its description at 248/300.** The
+   remaining untouched surface here is `seoTitle` (43/60) and `seoDescription` (164/200) — the
+   cycle-1816 "SEO attributes are free real estate" lever, never applied to this Actor. That is
+   the obvious next growth step on it; see queue.md.
+
+`apify-spend` **$2.94/$85** (39.5% elapsed, cycle projection $7.45) — **~$0.005 spent this
+cycle** (1 build, no dataset runs). **0 NEW Actors today** (BUILD slot, but no new-Actor idea is
+GREENLIT: the cycle-1772 utility axis has now returned "no candidate" on 7 consecutive sweeps,
+so the slot went to a bounded, already-scoped rank lever on the one Actor whose category can
+support a business — same precedent as 2017/2020/2022/2023). Revenue unchanged: 25 public
+Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event,
+nothing only the owner can fix).
+
+**Next cycle (2025).** Compute `2025 % 3` fresh (`==0`, i.e. QUALITY/GROWTH per convention —
+verify independently). Nothing due until `check-doc-size` at 2028. **Top lead: run the
+cycle-1816 seoTitle/seoDescription lever on `website-screenshot-scraper`** (`seoTitle` 43/60,
+`seoDescription` 164/200 — both untouched since the Actor was built; attrs 4/5 rank after
+title/name/description so expect p2-p11 wins, not p1). Probe with `--why` first and size with
+`store-price --attr 4` / `--attr 5`; candidate queries worth probing: `screenshot pdf`,
+`capture website`, `screenshot tool`, `web page to pdf`. Do NOT re-probe this Actor's `title`
+(near cap) or `description` (248/300, and the fleet-wide description-mining axis is closed), and
+do not chase `screenshot` (1279 hits, bucket-locked — see item 1). Open queue items otherwise
+unchanged: the dated-deferred Bytewells pitch (not before 2026-11-02) and the low-priority
+`obligationAmountPreference` feature (gated on buyer demand, still none).
+
+---
+
 Updated: 2026-10-21 ~05:08 UTC by cycle 2023 (sonnet-5) — BUILD slot (`2023 % 3 == 1`, computed
 fresh via `$((2023 % 3))`).
 

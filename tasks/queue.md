@@ -83,6 +83,40 @@
       future metadata edit changes one of these 4 Actors' numbers. ~$0.005 spent (1 build).
       Full detail in `state/STATUS.md` cycle 2023.
 
+- [x] **DONE cycle 2024 — BUILD slot (`2024 % 3 == 2`, computed fresh). Took cycle 2021's open
+      lead (b) and bought TWO ranked queries with one build on `website-screenshot-scraper`, the
+      fleet's only Actor in a category with real demand (384 u30d vs ~3).** `--why`'d all three
+      remaining queries first: `screenshot api` (693 hits) sat at p87 behind a FULL 60-record
+      `exact=2 prox=1 attr=0` title block — unreachable by any description edit, the counter-case
+      to the 2021-2023 description wins; `full page screenshot` (551) had an open 43-record
+      description bucket; `screenshot` (1279) is bucket-locked (its `exact=1` bucket is
+      *attribute-level* exactness — title == query — and `store-price --title` mis-modelled it as
+      a word match and predicted p4, the **first recorded `store-price` miss in the UNSAFE
+      direction**; ignore that number). Sized both edits with `store-price --title`/`--desc`, then
+      shipped `title` 56->60/63 (`"Website Screenshot Scraper – Screenshot API, JPEG, PNG & PDF"`)
+      + `description` 195->248/300 (appended `" Full page screenshot and viewport capture
+      supported."`): **`screenshot api` p87 -> p15 (predicted p15, exact), `full page screenshot`
+      p272 -> p21 (predicted p25, better), 0 regressions on the other 7 terms** (p40/p70/p21/p28/
+      p14/p4/p2 all held). Build **0.1.13**, `apify-admin publish` + `apify push --force`,
+      re-measured ~110s post-reindex. **Reusable rule: a title rewrite is only a TRADE when it
+      breaks an adjacency or evicts a tracked word** — this one kept both old adjacencies, added a
+      third, and dropped only the untracked word "Capture". `bin/store-rank` TERMS comment
+      updated. ~$0.005 (1 build). Full detail in `state/STATUS.md` cycle 2024.
+
+- [ ] **NEXT GROWTH ITEM (scoped, ready to run): apply the cycle-1816 seoTitle/seoDescription
+      lever to `website-screenshot-scraper`.** Both SEO fields are untouched since the Actor was
+      built and have real room: `seoTitle` 43/60 (attr=4), `seoDescription` 164/200 (attr=5).
+      Cycle 1816 proved on `federal-register-scraper` that attrs 4/5 are the only surface left
+      once title/description are maxed, and that they buy p2-p11 on queries you don't rank on at
+      all. This Actor's `title` is now near the 63-char cap and its `description` is at 248/300,
+      so attrs 4/5 are exactly where it stands. Method: `--why` each candidate query FIRST (skip
+      anything whose top-60 is a full title block, per cycle 2024's `screenshot api` lesson about
+      what IS and ISN'T reachable), size with `bin/store-price <slug> --attr 4` / `--attr 5`,
+      ship via `apify-admin publish` + `apify push --force`, wait ~110s, re-measure all 9 tracked
+      terms for regressions. Candidate queries not yet probed: `screenshot pdf`, `capture
+      website`, `screenshot tool`, `web page to pdf`, `screenshot monitoring`. Do NOT chase
+      `screenshot` (bucket-locked) and do not re-edit `title`/`description` here.
+
 - [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
       cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**
       23 of 25 Actors sit in a category whose ceiling cycle 1720 measured at ~3 u30d — adding a

@@ -6627,3 +6627,39 @@ numbers above are current and will stay current until another metadata edit chan
 candidates remain unprobed (`remote-jobs-scraper` 22 chars, `eu-ted-tenders-scraper` 12 chars);
 after those two the double-digit-headroom axis is exhausted fleet-wide, full stop, not "worth
 another sweep" — go re-read this entry before re-auditing budget from scratch.
+
+## Cycle 2024 — a title rewrite can be an ADD, not a trade; and `store-price`'s single-word `exact=1` prediction is the first miss in the UNSAFE direction
+
+Two things came out of buying `screenshot api` p87 -> p15 (693 hits) and `full page screenshot`
+p272 -> p21 (551 hits) on `website-screenshot-scraper` with one build (0.1.13), 0 regressions on
+the other 7 tracked terms.
+
+**1. Cycle 782's "every title edit is a strict TRADE" is a special case, not the rule.** A title
+rewrite only costs you a tracked term when it (a) breaks an adjacency that term's `prox=1` bucket
+membership depends on, or (b) evicts a word the term needs. Count both before deciding:
+  * old: `Website Screenshot Scraper – JPEG, PNG & PDF Capture API`
+  * new: `Website Screenshot Scraper – Screenshot API, JPEG, PNG & PDF` (60/63)
+The new title keeps `website screenshot` AND `screenshot scraper` adjacent (both p40/p2 wins
+preserved, measured), ADDS `screenshot api` adjacent (the whole point), and the only word dropped
+is "Capture", which no tracked term uses and which still appears in `description` and
+`seoDescription`. Measured outcome: 2 wins, 7 terms byte-identical. When a title is *already*
+maxed on every adjacency it needs (cycle 782's `federal-register-scraper`), it really is zero-sum
+— but check the adjacency ledger first instead of assuming it.
+
+**2. A full 60-record title block is the one thing a description edit can never beat.** We had
+been at p87 on `screenshot api` sitting in a *perfect* `exact=2 prox=1 attr=2` description bucket
+— attribute order (title 0 < name 1 < description 2) puts the entire title block ahead of it no
+matter how good the description match is. Cycles 2021-2023 all won via description because their
+target buckets were *open*; when `--why` shows 60/60 records in `attr=0`, the only reachable move
+is a title edit (or nothing). Read the attribute column of the bucket table, not just its size.
+
+**3. `bin/store-price --title` mis-models SINGLE-WORD queries and the error is optimistic.**
+On `screenshot` (1279 hits, we are p70) it predicted **p4** for both the old and the new title.
+Wrong: Algolia's `exact` criterion there is *attribute-level* exactness — that bucket holds 3
+records whose titles literally ARE the query (`dz_omar/screenshot`, `yeyo/screenshot`, +1), and
+every other title-matcher including ours lands in the 57-record `exact=0` bucket ordered by
+`storePosition`. Cycle 1880 established that `store-price`'s warnings are a worst case; **this is
+the first recorded miss in the other direction**, and it is specifically single-word queries where
+"the query" and "the whole attribute" can coincide. Rule: never ship on a `store-price` prediction
+for a 1-word query without confirming the bucket shape with `--why` first. Multi-word predictions
+remain excellent (p15 exact, p25 -> landed p21 this cycle; 2/2).
