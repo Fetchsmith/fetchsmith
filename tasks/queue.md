@@ -42,19 +42,27 @@
       improved; the 3 real wins are independently explained by the new description buckets. Full
       table and method in `state/STATUS.md`/`notes/LEARNINGS.md` cycle 2021.
 
-- [ ] **NEW, from cycle 2021's close: the `description`-mining method is a real, cheap, durable
-      lever — sweep it fleet-wide, but ONLY where `--why` confirms a reachable bucket, not on
-      unused char budget alone.** Audit budget first: `python3 -c "import json,glob; [print(p,
-      len(json.load(open(p))['description'])) for p in glob.glob('actors/*/meta.json')]"` (this
-      Actor had 168 of 300 chars unused and had never been touched). For each candidate query on
-      an Actor with real headroom, run `bin/store-rank --why "<query>" <slug>` BEFORE editing —
-      only act if it shows an uncontested or thin `attr=2 (description)` bucket; a crowded one
-      buys nothing (this cycle's `website screenshot` dead-end is the counterexample: already in
-      the best bucket, p84 is pure storePosition depth, no edit reaches it). 24 Actors besides
-      `website-screenshot-scraper` have not had this specific audit. Also worth a second look on
-      `website-screenshot-scraper` itself: `screenshot api` (p87) and `screenshot` (p70) only
-      improved via the storePosition drift this cycle, not a confirmed description bucket — check
-      with `--why` whether either has an open attr=2 slot before assuming they're exhausted.
+- [x] **DONE cycle 2022 — ran the fleet-wide `description`-budget audit cycle 2021 scoped.**
+      24/25 Actors are already within ~10 chars of the 300-char cap; only 4 had double-digit
+      headroom (`ats-jobs-scraper` 40, `remote-jobs-scraper` 22, `scholarship-scraper` 17 but
+      PAUSED, `eu-ted-tenders-scraper` 12). `--why`'d 9 platform-name queries on
+      `ats-jobs-scraper`: 6 dead ends (crowded title buckets, no reachable attr=2 slot), 2 thin
+      but low-value (`personio jobs scraper`/`teamtailor jobs scraper`, 36-38 competitors already
+      ahead; `breezy hr jobs` only 113 nbHits). **Shipped `recruitee jobs api` (1519 nbHits): a
+      genuinely open, 0-record `attr=2` bucket right after the title block** — appended
+      `" Recruitee jobs API included."` to description only (260->289/300), published + rebuilt
+      (0.1.105), debuted **not-ranked -> p13 exactly as predicted**, 0 regressions on the 16
+      pre-existing tracked terms. Added to `bin/store-rank` TERMS with a dated comment. Full
+      detail in `state/STATUS.md` cycle 2022.
+
+- [ ] **NEW, from cycle 2022's close: 2 of the 4 real-headroom Actors still need the `--why`
+      probe** — `remote-jobs-scraper` (22 free description chars) and `eu-ted-tenders-scraper` (12
+      free). Same method, same gate as above: only ship if a candidate query shows a genuinely
+      open or thin `attr=2 (description)` bucket on a real-nbHits query, not on char budget alone.
+      `scholarship-scraper`'s 17 free chars are NOT worth probing — the Actor is PAUSED
+      (bold.org still 429s bots as of cycle 2015) so a rank win there cannot convert. After these
+      two, the double-digit-headroom axis is exhausted; do not re-run the budget audit script
+      itself unless a future metadata edit changes the numbers.
 
 - [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
       cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**

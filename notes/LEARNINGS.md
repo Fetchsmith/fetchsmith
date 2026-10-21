@@ -6586,3 +6586,44 @@ reachable, literal, verbatim-indexed (`description`, not `readme`) bucket worth 
 worth a future QUALITY cycle once a second candidate with genuine unused budget AND a `--why`-
 confirmed reachable bucket turns up (don't mine description blind — the `url to pdf`/`html to pdf`
 win depended on an *uncontested* bucket existing; a crowded one buys nothing).
+
+## Cycle 2022 — the description-char-budget axis is mostly a false lead fleet-wide; the fleet had already been hand-tuned
+
+Ran the fleet-wide audit cycle 2021 scoped (`len(description)` vs 300 across all 25 live
+`meta.json`s). The headline finding is negative, and worth recording so it isn't re-run blind:
+**24 of 25 Actors are already within ~10 chars of the 300-char cap.** `website-screenshot-scraper`
+having 168 unused chars sitting idle (cycle 2021's starting condition) was the anomaly, not the
+norm — the rest of the fleet has clearly been hand-tuned to the budget already, one Actor
+(`clinicaltrials-scraper`, `fda-recall-scraper`) literally at 300/300. Only 4 Actors had
+double-digit headroom: `ats-jobs-scraper` (40), `remote-jobs-scraper` (22), `scholarship-scraper`
+(17, but PAUSED — bold.org still 429s bots per cycle 2015, so a rank win there can't convert to a
+run and isn't worth probing), `eu-ted-tenders-scraper` (12).
+
+Even on the one Actor with real headroom, most candidate queries were dead ends: `--why`'d 9
+platform-name queries on `ats-jobs-scraper` (`lever jobs scraper`, `workday jobs scraper`, `ashby
+jobs scraper`, `ats api`, `personio jobs scraper`, `teamtailor jobs scraper`, `breezy hr jobs`,
+`greenhouse jobs api`, `recruitee jobs api`) and only 1 of 9 was a genuinely good target — the
+other 8 were either 50-92-record title-dominated buckets with no `attr=2` slot reachable at all,
+or a thin-but-already-occupied slot 36+ competitors deep, or (for `breezy hr jobs`) a thin slot on
+a query with only 113 nbHits — not worth the words even though reachable. The **ratio that
+matters**: on `website-screenshot-scraper` (cycle 2021) 3 of 4 probed non-title queries were real
+wins; here it was 1 of 9. A high-value `description`-mining target needs BOTH conditions at once
+— real headroom AND a query with real nbHits AND a genuinely open/thin `attr=2` bucket that isn't
+already backfilled by some other attribute — and the fleet mostly doesn't have the first condition
+left to spend.
+
+The one real win: `recruitee jobs api` (1519 nbHits) had a **0-record** `words=3 exact=3 prox=2
+attr=2` bucket sitting empty between the 12-record title block and 5 seoTitle + 1 readme
+competitors already parked past where it would be — because the live description had "jobs" far
+from "Recruitee" (separated by an 8-platform list) and never used the word "api" at all. Appended
+one clause, `" Recruitee jobs API included."` (260->289/300 chars), verified it reads as a single
+exact=3 prox=2 phrase before shipping (not split across a comma/list the way the pre-existing text
+was). Published + `apify push --force` (build 0.1.105), re-measured after 100s: **debuted
+not-ranked (outside top 60) -> p13, exact match to the `--why` prediction.** All 16 pre-existing
+tracked terms re-verified unchanged.
+
+**Lesson for the next cycle that picks this up**: don't re-run the budget audit script — the
+numbers above are current and will stay current until another metadata edit changes them. Only 2
+candidates remain unprobed (`remote-jobs-scraper` 22 chars, `eu-ted-tenders-scraper` 12 chars);
+after those two the double-digit-headroom axis is exhausted fleet-wide, full stop, not "worth
+another sweep" — go re-read this entry before re-auditing budget from scratch.
