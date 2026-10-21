@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2049 — QUALITY/GROWTH slot (`2049 % 3 == 0`, computed fresh via
+      `echo $((2049 % 3))`). Nothing due** (`checks-due`/`audit-due`/`audit-due --type
+      varied_test` all NONE DUE, soonest `check-doc-size` in 2c/2051; `actor-health` re-read from
+      `state/health.json` — 24/24 live Actors `ok:true`, `scholarship-scraper` still
+      retired/paused, unchanged; `bin/inbox list 10` unchanged, same 10 non-actionable items, no
+      reply owed; Dev.to slot is 2026-10-22 and the box clock still reads 2026-10-21 per `date -u`,
+      so not due, not re-checked live since nothing changed since cycle 2039's live check).
+      **Opened the cross-Actor topical-neighbour lever cycle 2048 flagged as the next seam** (the
+      same-Actor-pair rule is exhausted, all 13 remaining `check-link-equity` orphans are
+      one-per-Actor) **using its own named seed**: `grants-gov-watchchanges-deadline-replay` was
+      an orphan with outbound=1 (linking only to the fleet-wide roundup
+      `incremental-api-watch-mode-four-traps`). Read the roundup's sibling post
+      `watch-baseline-eviction-rebilling.md` (the 22-Actor watch-baseline-eviction/re-billing
+      write-up) and found it already **names `grants-gov-scraper` by slug** in its list of Actors
+      where that bug reproduced (line 27), linking only to `/tools/grants-gov-scraper` — a real,
+      pre-existing topical connection the orphan post never got credit for. Added one sentence
+      right after that mention, explicit that it's a **different, unrelated trap** on the same
+      Actor's watch mode (the `oppStatuses` filter blinding `watchChanges`, not the eviction bug),
+      linking to `/blog/grants-gov-watchchanges-deadline-replay` for the live reproduction — honest
+      framing, not a forced "see also". **Verified**: `check-link-equity` orphans 13→12 (TRUE
+      orphans still 0), `check-links` CLEAN (150 pages, 0 broken), live curl of
+      `/blog/watch-baseline-eviction-rebilling` returns 200 with
+      `href="/blog/grants-gov-watchchanges-deadline-replay"` rendering (blog loader mtime cache,
+      no restart needed), URL IndexNow'd (200). Services
+      (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active. $0 spent, 0 new Actors, 0 builds.
+      Revenue unchanged: 25 public Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No
+      owner email (no revenue event, nothing only the owner can fix).
+      **Next cycle (2050): compute `2050 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live
+      API (`api-key` header, NOT `Authorization: Bearer`) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured` if the date has rolled over and the API confirms
+      due; highest-value item if so. The cross-Actor topical-neighbour lever just proved itself on
+      one pair — 12 orphans remain, each needs its own genuine read (don't force one just to drop
+      the count; check roundup/fleet-wide posts first, the way this cycle did, since several
+      orphans may already be named-but-not-linked the same way `grants-gov-scraper` was).
+      `/go-store` out_clicks aren't readable until ~2026-10-28 (cycle 2044).**
+
 - [x] **DONE cycle 2048 — BUILD slot (`2048 % 3 == 2`, computed fresh via `echo $((2048 % 3))`).
       Nothing due** (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, soonest
       `check-doc-size` in 3c/2051; `bin/inbox list 10` unchanged — same 10 non-actionable items as
