@@ -54,7 +54,7 @@ If you call either portal's OCDS API directly with a `stages=tender` filter, you
 
 ## Packaged version
 
-Live now on [uk-find-a-tender-scraper](/go/uk-find-a-tender-scraper), build `0.1.81` — no input changes required; existing runs just see more correct rows on their next call. See the [OCDS fields write-up](/blog/uk-find-a-tender-ocds-json-api) for more on how this feed's nested shape gets flattened.
+Live now on [uk-find-a-tender-scraper](/go/uk-find-a-tender-scraper), build `0.1.81` — no input changes required; existing runs just see more correct rows on their next call. See the [OCDS fields write-up](/blog/uk-find-a-tender-ocds-json-api) for more on how this feed's nested shape gets flattened. [When a dateTo filter silently excludes its own last day](/blog/dateto-filter-silently-excludes-its-own-last-day) covers this same Actor's other boundary case on `dateTo` — that one is correct, documented behavior rather than a bug, but the shape of the trap (a filter silently excluding rows a buyer expected to see) is the same.
 
 ---
 

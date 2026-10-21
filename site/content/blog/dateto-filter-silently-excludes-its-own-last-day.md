@@ -42,6 +42,8 @@ So `dateTo: "2026-08-31"` really does ask the portal for everything strictly bef
 
 Don't assume a `dateTo` filter is inclusive just because the parameter name doesn't say otherwise, and don't assume every "date" field in an API response is actually date-only. The only way to know which behavior you're getting is to check whether the *upstream* field carries a time-of-day component — if it does, a bare date almost always means midnight, and midnight is the start of the day, not the end of it.
 
+This boundary behavior is documented and correct by design. [16.6% of UK tender notices were vanishing from our own Actor's default output](/blog/uk-tender-amendments-were-vanishing) covers a different, genuinely buggy way the same Actor was silently excluding valid rows — a stage-tag filter comparing `tenderAmendment` against `tender` with exact equality instead of a prefix check.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every claim above comes from a live API request made while writing this post, not from documentation.*
