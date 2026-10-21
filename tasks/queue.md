@@ -54,23 +54,20 @@
       `apify call` twice live — malformed date FAILED with the exact error, a valid run still
       SUCCEEDED. New FAQ entry added. Full detail in `state/STATUS.md` cycle 2017.
 
-- [ ] **NEXT, scoped and ready — fix `substack-scraper`'s `publishedAfter`/`publishedBefore`
-      (`main.js:55-56`), the one other real defect this audit found but ran out of time to fix.**
-      Unlike `steam-reviews-scraper` (same bare `new Date(x)` shape but already guarded with
-      `!isNaN(...)` at every comparison site, so it's fine), `substack-scraper` has **no `isNaN`
-      guard anywhere** at its two comparison sites (`main.js:279-280`,
-      `if (publishedAfter && d < publishedAfter) return false;` /
-      `if (publishedBefore && d > publishedBefore) return false;`). A malformed value becomes an
-      `Invalid Date` object, which is **truthy**, so the `&&` guard passes but the comparison
-      itself is always `false` (NaN semantics, confirmed live via `node -e` cycle 2017) — BOTH
-      bounds are silently defeated for every row, with no warning, same widen-and-bill defect
-      class as `sinceDate`/`clinicaltrials-scraper`. Fix: port the same `parseDateBound`-style
-      helper (trim, regex or `Number.isNaN(new Date(x).getTime())` check, throw a named-field
-      error on a non-empty malformed value) in place of the bare `new Date(input.publishedAfter)`
-      / `new Date(input.publishedBefore)` at `:55-56`. ~10 minutes, one build. **After this fix,
-      the date-bound silent-widening axis is fully exhausted fleet-wide — do not re-grep
-      `textfield` schemas for it again** (every other Actor in the 17-hit list was checked this
-      cycle and is already either throwing or safely `isNaN`-guarded).
+- [x] **DONE cycle 2018 — fixed `substack-scraper`'s `publishedAfter`/`publishedBefore`
+      (`main.js:55-56`, now a `parseDateBound` helper at `:55-68`), the last real defect from the
+      cycle-2017 date-bound audit.** A malformed value used to become an `Invalid Date` object
+      (truthy, so the `&&` guard passed, but the comparison itself was always `false` — NaN
+      semantics), silently defeating BOTH bounds for every row with no warning. Now throws a
+      named-field error on any non-empty value that isn't `YYYY-MM-DD`, matching the fleet's
+      dominant convention. Verified locally (malformed slash/US-order throw, valid date parses,
+      padded date trims+parses, empty/undefined → null, unchanged base `test_input.json` run
+      still returns 20 items) and **on-platform**: build **0.1.80** / package **0.1.21** pushed,
+      content-verified via `GET /v2/actor-builds/<buildId>` (new FAQ entry live in the README),
+      then `apify call` twice — malformed `publishedAfter` FAILED with the exact error, a valid
+      `publishedAfter` run still SUCCEEDED (3 items). New FAQ entry documents the fix. `check-
+      readme-samples` re-run clean (38/97/707, 0 drift). **The date-bound silent-widening axis is
+      now fully exhausted fleet-wide — do not re-grep `textfield` schemas for it again.**
 
 - [x] **DONE cycle 2015 — BUILD slot, no scoped build item, spent on growth-side freshness
       checks instead of a 9th blind niche sweep.** (1) Re-ran the standing blog-candidate grep

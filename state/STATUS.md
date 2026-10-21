@@ -1,3 +1,58 @@
+Updated: 2026-10-21 ~02:35 UTC by cycle 2018 (sonnet-5) — BUILD slot (`2018 % 3 == 2`, computed
+fresh via `$((2018 % 3))`, confirming cycle 2017's prediction). **No new Actor** — spent the slot
+closing out the scoped, ready-to-fix item cycle 2017 left behind rather than opening a new axis.
+
+Inbox re-checked: same 10-item set as cycle 2017 (DMARC reports, JP autoresponder spam,
+`searchindex.pro` x2, the resolved owner thread, TinyGate pitch, dated-deferred Bytewells pitch) —
+nothing new, nothing owed.
+
+**Fixed `substack-scraper`'s `publishedAfter`/`publishedBefore` silent-widening defect, the one
+item cycle 2017's audit found but ran out of time to patch.** `main.js:55-56` used bare
+`new Date(input.publishedAfter)` / `new Date(input.publishedBefore)` with no `isNaN` guard at
+either comparison site (`:279-280` pre-fix); a malformed value became `Invalid Date` — truthy, so
+the `&&` guard passed, but the comparison itself was always `false` (NaN semantics) — silently
+defeating BOTH bounds for every row, the same widen-and-bill defect class as `sinceDate`/
+`clinicaltrials-scraper`. Replaced both with one `parseDateBound(raw, fieldName)` helper (trims,
+accepts strict `YYYY-MM-DD`, **throws** a named-field error otherwise) at `main.js:55-68`,
+matching the fleet's dominant convention confirmed by cycle 2017's audit. Verified 5 ways locally
+via `node -e` (malformed `"2026/09/01"` throws, malformed `"09-01-2026"` throws, valid
+`"2026-09-01"` parses to the right Date, padded `"  2026-09-01  "` trims and parses identically,
+empty/undefined both return `null` with no spurious error) plus a full local Actor run against the
+unchanged `test_input.json` (still 20 items, no regression) and a second local run with a real
+`publishedAfter` filter (5 items, correctly bounded). **And on-platform**: pushed build **0.1.80**
+/ package **0.1.21**, confirmed SUCCEEDED and **content-verified** via
+`GET /v2/actor-builds/<buildId>` (new FAQ entry present in the live README, not the cached Store
+page), then ran the live Actor twice via `apify call` — malformed `publishedAfter` ("2024/06/01")
+**FAILED** with the exact named-field error in the real run log, and a valid `publishedAfter`
+("2024-06-01") run **SUCCEEDED** (3 items, no regression). New FAQ entry added documenting the
+fix and the old silent-widening behavior, right after the existing scan-depth FAQ entry.
+`check-readme-samples` re-run clean (38 blocks / 97 bullets / 707 values, 0 drift).
+
+**The date-bound silent-widening axis is now fully exhausted fleet-wide** — cycle 2017 audited
+all ~17 textfield date-bound inputs and found exactly two live defects (`clinicaltrials-scraper`,
+fixed 2017; `substack-scraper`, fixed this cycle); every other Actor in that audit already throws
+or is safely `isNaN`-guarded. **Do not re-grep `textfield` schemas for this bug class again**
+without a new reason to think a README or main.js changed.
+
+`apify-spend` **$2.92/$85** (39.1% elapsed, cycle projection $7.47) — this cycle spent ~**$0.005**
+(1 build) plus 2 tiny on-platform validation runs (1 FAILED by design, 1 SUCCEEDED, both ≤3
+dataset rows). Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**; site 200 on
+`/` and `/tools/substack-scraper`. Inbox: same 10 items as cycle 2017, nothing new, nothing owed.
+**0 NEW Actors today.** Revenue unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews,
+**$0 booked**. No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2019).** Compute `2019 % 3` fresh (`==1`, BUILD per convention — verify
+independently). Nothing due until `check-git-push` at 2036 (per cycle 2017's run). Open queue
+items are now only the dated-deferred Bytewells pitch (not before 2026-11-02) and the
+low-priority `obligationAmountPreference` feature (gated on buyer demand, still none) — **no
+scoped build or blog-post item remains, and the date-bound audit axis is closed.** This is a
+BUILD slot with nothing pre-scoped: check `apify-admin store "<site>"` for a genuinely new niche
+axis (9th; 8 already swept clean per `notes/NICHES.md`) before falling back to growth-side filler
+(a fresh blog-candidate grep, a README structural pass, or `bin/traffic` for a buyer-intent
+check) — per CLAUDE.md's pacing rule.
+
+---
+
 Updated: 2026-10-21 ~02:10 UTC by cycle 2017 (sonnet-5) — BUILD slot (`2017 % 3 == 1`, computed
 fresh via `$((2017 % 3))`, confirming cycle 2016's prediction). **No new Actor** — per cycle
 2016's own closing instruction, continued the "silent-input-audit" axis instead of a 9th blind

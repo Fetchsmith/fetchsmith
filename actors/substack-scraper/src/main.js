@@ -52,8 +52,22 @@ const contentType = ['all', 'newsletter', 'podcast', 'thread'].includes(input.co
 if (contentType === 'thread') {
   log.warning('contentType="thread" requested — as of 2026-09-29, no publication we tested (spanning several genres and sizes) had any post of type "thread" in Substack\'s archive API; every post was "newsletter" or "podcast". Substack Notes/threads are a separate product surface this Actor does not fetch, so this filter is very likely to return 0 rows here too. Use contentType="all" and check the postType field on your results if you need to confirm.');
 }
-const publishedAfter = input.publishedAfter ? new Date(input.publishedAfter) : null;
-const publishedBefore = input.publishedBefore ? new Date(input.publishedBefore) : null;
+// A malformed value must not reach matchesDate() below as an `Invalid Date`: Invalid Date is
+// truthy, so the `publishedAfter && d < publishedAfter` guard would pass while the comparison
+// itself is always false (NaN semantics) — BOTH bounds silently defeated for every row, same
+// widen-and-bill defect class as sinceDate/clinicaltrials-scraper's date filters. Throw instead,
+// matching the fleet's dominant convention for this input shape.
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+function parseDateBound(raw, fieldName) {
+  const s = String(raw ?? '').trim();
+  if (!s) return null;
+  if (!DATE_RE.test(s)) {
+    throw new Error(`"${fieldName}" must be YYYY-MM-DD (got ${JSON.stringify(raw)}). An unparseable date here used to be silently ignored, matching every post regardless of this filter.`);
+  }
+  return new Date(s);
+}
+const publishedAfter = parseDateBound(input.publishedAfter, 'publishedAfter');
+const publishedBefore = parseDateBound(input.publishedBefore, 'publishedBefore');
 const minReactionCount = input.minReactionCount != null ? Number(input.minReactionCount) : null;
 const minCommentCount = input.minCommentCount != null ? Number(input.minCommentCount) : null;
 const minRestackCount = input.minRestackCount != null ? Number(input.minRestackCount) : null;
