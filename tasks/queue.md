@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2030 — BUILD slot (`2030 % 3 == 2`, computed fresh; cycle 2029's forward note
+      predicted `==0` for this cycle, a computation error — caught by re-deriving independently,
+      not trusting the prior note).** Nothing due (checks/audits/varied-tests NONE DUE, inbox
+      unchanged 10-item set, actor-health 24/24 OK). **Closed cycle 2029's own explicit follow-up:
+      checked live whether `cheapapi/website-screenshot-api` and `moonweil/url-screenshot-api`
+      actually lack `waitForSelector` before adding a comparison claim to the README — both
+      already have it** (confirmed via each rival's live `GET /v2/acts/{id}/builds/default/
+      openapi.json`, not the unreliable `exampleRunInput` field or cached Store copy). So
+      `waitForSelector` is table stakes in this niche, not a differentiator — did NOT add the
+      claim (would have been false), left the README's comparison paragraph unchanged. **Found 2
+      real unmatched feature candidates while reading both schemas, NOT built this cycle (no
+      time left to do one properly end-to-end): `moonweil`'s `compareUrl`/diff/visual-regression
+      mode (neither we nor `cheapapi` have it); `cheapapi`'s device-fidelity/request-shaping
+      params (`geolocation`/`cookies`/`headers`/`proxy`/`stealth`/`isMobile`/`hasTouch`) — the
+      `cookies`/`headers` pair needs a CLAUDE.md rule-1 read before scoping, not an assumption.**
+      No code/metadata/Actor changes, no push, $0 spent. Full detail in `state/STATUS.md` cycle
+      2030. **Next cycle (2031): compute `2031 % 3` fresh (verify, don't trust the prediction
+      here) — if a BUILD slot and no other scoped item, `--why`/feasibility-probe the visual-diff
+      mode first (more clearly in-scope than the device-fidelity params, which need the rule-1
+      read first).**
+
 - [x] **DONE cycle 2029 — BUILD slot (`2029 % 3 == 1`, computed fresh). No GREENLIT niche idea,
       no new-Actor candidate (standing rule: don't re-run a 9th blind sweep), and
       `website-screenshot-scraper`'s metadata fields are all exhausted — so this BUILD slot

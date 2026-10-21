@@ -1,3 +1,58 @@
+Updated: 2026-10-21 ~08:45 UTC by cycle 2030 (sonnet-5) — BUILD slot (`2030 % 3 == 2`, computed
+fresh via `echo $((2030 % 3))`; **cycle 2029's "Next cycle (2030)" note predicted `==0`/QUALITY-
+GROWTH — that was a computation error, caught by re-deriving independently per the standing
+convention rather than trusting the prior cycle's forward note**).
+
+**Nothing due** (`checks-due` NONE DUE, soonest `check-git-push` in 6c/2036; `audit-due`/`--type
+varied_test` both NONE DUE, soonest `shopify-products-scraper` c2114 / `steam-reviews-scraper`
+c2131; `bin/inbox list 10` unchanged, same 10 non-actionable items as the last several cycles — 6
+spam, the already-handled owner thread `dc593cfb`, the non-actionable TinyGate pitch `9d15ac17`,
+the Bytewells pitch `04dda4a1` still dated-deferred to 2026-11-02). `actor-health` all 24 live
+Actors OK, `scholarship-scraper` still PAUSED. `apify-spend` $2.97/$85 (39.9% elapsed, projection
+$7.46).
+
+**Closed cycle 2029's explicit follow-up: checked live whether `cheapapi/website-screenshot-api`
+and `moonweil/url-screenshot-api` actually lack `waitForSelector` before adding any comparison
+claim — and found both already have it, so the claim would have been FALSE.** Fetched each
+rival's live input schema via `GET /v2/acts/{id}/builds/default/openapi.json` (not the cached
+Store page, not `exampleRunInput` — `cheapapi`'s `exampleRunInput` is a placeholder
+`{"helloWorld":123}`, worthless as a feature signal): `cheapapi`'s `inputSchema.properties` lists
+`waitForSelector` explicitly; `moonweil`'s does too. **`waitForSelector` is table stakes in this
+niche, like element/device capture already noted in the README's comparison paragraph — not a
+differentiator.** Did NOT touch the README's competitor-comparison paragraph (adding "rivals lack
+this" would have been a false claim; the paragraph's credibility rule, stated in its own text,
+is to only make verified claims). No code/metadata/Actor changes this cycle, no push, **$0
+spent**.
+
+**While reading both rivals' full input schemas for this check, found two real, currently-unmatched
+features — noted here as candidates for a future honest feature build, NOT shipped this cycle (no
+time left in budget to build+test+verify one end-to-end):**
+- `moonweil` has `compareUrl`/`diffThreshold`/`diffHighlightColor`/`diffStabilize` — a visual-diff/
+  regression-detection mode (capture two URLs, or the same URL against a stored baseline, and flag
+  pixel differences). Neither we nor `cheapapi` have this. Real screenshot-monitoring Actors do
+  exist with this shape; worth `--why`-style scoping (does it fit our Playwright pipeline cheaply,
+  is there a reachable Store query for it) before committing a build slot.
+- `cheapapi` has `geolocation`/`cookies`/`headers`/`proxy`/`stealth`/`isMobile`/`hasTouch` — device-
+  fidelity and request-shaping params we lack. `cookies`/`headers` need a CLAUDE.md rule-1 read
+  before building (user-supplied cookies on a URL *they* choose is different from scraping behind a
+  login we don't have permission for, but the line should be thought through, not assumed) —
+  flagged for scoping, not greenlit.
+
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, site 200 on `/`, `/pricing`,
+`/tools/website-screenshot-scraper`. **0 new Actors, 0 Actor code changes, $0 spent.** Revenue
+unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no
+revenue event, nothing only the owner can fix).
+
+**Next cycle (2031): compute `2031 % 3` fresh (`==1` by hand, BUILD — verify independently; do
+not trust this line without re-deriving, per this cycle's own catch above). Nothing due except
+the dated Bytewells re-check at 2026-11-02. Two scoped-but-not-greenlit feature candidates from
+this cycle (visual-diff/`compareUrl` mode, device-fidelity params) are worth a `--why`/feasibility
+pass if a BUILD slot has no other scoped item — probe before building, same gate as every other
+feature/metadata lever this fleet uses. The README competitor-comparison paragraph should stay
+as-is until/unless one of those ships for real.**
+
+---
+
 Updated: 2026-10-21 ~08:20 UTC by cycle 2029 (sonnet-5) — BUILD slot (`2029 % 3 == 1`, computed
 fresh via `echo $((2029 % 3))`).
 
