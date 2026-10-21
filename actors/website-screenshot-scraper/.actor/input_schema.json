@@ -8,8 +8,12 @@
       "type": "array",
       "description": "Public web pages to screenshot, e.g. https://example.com. Each becomes one charged result row (or one error row on failure, never both).",
       "editor": "stringList",
-      "prefill": ["https://example.com"],
-      "default": ["https://example.com"]
+      "prefill": [
+        "https://example.com"
+      ],
+      "default": [
+        "https://example.com"
+      ]
     },
     "html": {
       "title": "Raw HTML (optional, single input)",
@@ -22,8 +26,16 @@
       "type": "string",
       "description": "JPEG is smaller than PNG for the same page with no visible quality loss at quality ~80 -- measured 15% smaller on a text-heavy page, 63% smaller on a photo-heavy one. Use PNG only if you need pixel-exact/lossless output, or PDF for a printable document.",
       "editor": "select",
-      "enum": ["jpeg", "png", "pdf"],
-      "enumTitles": ["JPEG (recommended, small)", "PNG (lossless, larger)", "PDF (document)"],
+      "enum": [
+        "jpeg",
+        "png",
+        "pdf"
+      ],
+      "enumTitles": [
+        "JPEG (recommended, small)",
+        "PNG (lossless, larger)",
+        "PDF (document)"
+      ],
       "default": "jpeg"
     },
     "quality": {
@@ -45,8 +57,20 @@
       "type": "string",
       "description": "Emulate a common device's viewport, pixel ratio and user agent. 'Custom' uses the Viewport width/height fields below instead.",
       "editor": "select",
-      "enum": ["custom", "desktop", "iphone", "pixel", "ipad"],
-      "enumTitles": ["Custom (use viewport fields)", "Desktop 1920x1080", "iPhone 14 (390x844, 3x)", "Pixel 7 (412x915, 2.6x)", "iPad (820x1180, 2x)"],
+      "enum": [
+        "custom",
+        "desktop",
+        "iphone",
+        "pixel",
+        "ipad"
+      ],
+      "enumTitles": [
+        "Custom (use viewport fields)",
+        "Desktop 1920x1080",
+        "iPhone 14 (390x844, 3x)",
+        "Pixel 7 (412x915, 2.6x)",
+        "iPad (820x1180, 2x)"
+      ],
       "default": "desktop"
     },
     "viewportWidth": {
@@ -82,8 +106,16 @@
       "type": "string",
       "description": "When to consider the page ready to capture.",
       "editor": "select",
-      "enum": ["load", "domcontentloaded", "networkidle"],
-      "enumTitles": ["Load event (fast, default)", "DOM content loaded (fastest)", "Network idle (slow, best for JS-heavy pages)"],
+      "enum": [
+        "load",
+        "domcontentloaded",
+        "networkidle"
+      ],
+      "enumTitles": [
+        "Load event (fast, default)",
+        "DOM content loaded (fastest)",
+        "Network idle (slow, best for JS-heavy pages)"
+      ],
       "default": "load"
     },
     "delayMs": {
@@ -99,6 +131,21 @@
       "type": "string",
       "description": "Before capturing, wait up to 10s for this CSS selector to become visible, e.g. '.chart-loaded' or '#app-root img'. More reliable than 'Network idle' for SPAs that keep a background connection open after the content you actually want has rendered. If the selector never appears, the run returns an error row for that URL instead of a blank/partial capture.",
       "editor": "textfield"
+    },
+    "compareUrl": {
+      "title": "Compare against this URL (optional \u2014 turns on visual diff mode)",
+      "type": "string",
+      "description": "Leave empty for normal screenshots. Set it to turn each URL above into a visual-diff/regression check: the Actor captures your URL and this one, pixel-diffs them, and returns the change percentage plus a highlighted diff image. Typical use: staging vs production, or a saved page vs its live version after a deploy. Compare mode always captures PNG (a lossy JPEG would invent differences that are not there), ignores the raw HTML input, and charges ONE event per comparison row even though it takes two captures.",
+      "editor": "textfield"
+    },
+    "diffThreshold": {
+      "title": "Diff sensitivity (compare mode only)",
+      "type": "number",
+      "description": "Per-pixel colour-distance tolerance from 0 to 1. Lower is stricter: 0.02 flags faint antialiasing and font-rendering shifts, the 0.1 default ignores them but catches any real visual change, 0.3+ only flags large blocks of colour. Only used when a compare URL is set.",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.1,
+      "unit": "0-1"
     }
   },
   "required": []

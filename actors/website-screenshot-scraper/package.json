@@ -2,7 +2,14 @@
   "name": "website-screenshot-scraper",
   "version": "0.1.0",
   "type": "module",
-  "description": "Screenshot any public URL as JPEG/WebP/PNG/PDF, with device presets, element capture, OG-card sizing, raw-HTML input and selector-based wait.",
-  "dependencies": { "apify": "^3.4.0", "playwright": "*" },
-  "scripts": { "start": "node src/main.js" }
+  "description": "Screenshot any public URL as JPEG/PNG/PDF, with device presets, element capture, OG-card sizing, raw-HTML input, selector-based wait and two-URL visual diff.",
+  "dependencies": {
+    "apify": "^3.4.0",
+    "playwright": "*",
+    "pngjs": "^7.0.0",
+    "pixelmatch": "^6.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
 }

@@ -3,32 +3,243 @@
   "fields": {
     "type": "object",
     "properties": {
-      "url": { "type": ["string", "null"], "title": "URL" },
-      "format": { "type": "string", "title": "Format" },
-      "success": { "type": "boolean", "title": "Success" },
-      "error": { "type": ["string", "null"], "title": "Error" },
-      "imageUrl": { "type": ["string", "null"], "title": "Image URL" },
-      "screenshotKey": { "type": ["string", "null"], "title": "Screenshot key" },
-      "contentType": { "type": ["string", "null"], "title": "Content type" },
-      "byteSize": { "type": ["integer", "null"], "title": "Byte size" },
-      "capturedAt": { "type": "string", "title": "Captured at" }
+      "url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "URL"
+      },
+      "format": {
+        "type": "string",
+        "title": "Format"
+      },
+      "success": {
+        "type": "boolean",
+        "title": "Success"
+      },
+      "error": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Error"
+      },
+      "imageUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Image URL"
+      },
+      "screenshotKey": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Screenshot key"
+      },
+      "contentType": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Content type"
+      },
+      "byteSize": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Byte size"
+      },
+      "capturedAt": {
+        "type": "string",
+        "title": "Captured at"
+      },
+      "compareUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Compared URL"
+      },
+      "compareImageUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Compared image URL"
+      },
+      "compareScreenshotKey": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Compared screenshot key"
+      },
+      "diffImageUrl": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Diff image URL"
+      },
+      "diffScreenshotKey": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Diff screenshot key"
+      },
+      "diffPixels": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Differing pixels"
+      },
+      "comparedPixels": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Pixels compared"
+      },
+      "diffPercent": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "title": "Diff %"
+      },
+      "changed": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Changed"
+      },
+      "baselineWidth": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Baseline width (px)"
+      },
+      "baselineHeight": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Baseline height (px)"
+      },
+      "compareWidth": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Compared width (px)"
+      },
+      "compareHeight": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Compared height (px)"
+      },
+      "sizeMismatch": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "title": "Size mismatch"
+      }
     }
   },
   "views": {
     "overview": {
       "title": "Overview",
       "transformation": {
-        "fields": ["url", "format", "success", "imageUrl", "byteSize", "error"]
+        "fields": [
+          "url",
+          "format",
+          "success",
+          "imageUrl",
+          "byteSize",
+          "error"
+        ]
       },
       "display": {
         "component": "table",
         "properties": {
-          "url": { "label": "URL", "format": "link" },
-          "format": { "label": "Format" },
-          "success": { "label": "Success" },
-          "imageUrl": { "label": "Image", "format": "link" },
-          "byteSize": { "label": "Bytes" },
-          "error": { "label": "Error" }
+          "url": {
+            "label": "URL",
+            "format": "link"
+          },
+          "format": {
+            "label": "Format"
+          },
+          "success": {
+            "label": "Success"
+          },
+          "imageUrl": {
+            "label": "Image",
+            "format": "link"
+          },
+          "byteSize": {
+            "label": "Bytes"
+          },
+          "error": {
+            "label": "Error"
+          }
+        }
+      }
+    },
+    "compare": {
+      "title": "Visual diff",
+      "transformation": {
+        "fields": [
+          "url",
+          "compareUrl",
+          "changed",
+          "diffPercent",
+          "diffPixels",
+          "diffImageUrl",
+          "sizeMismatch",
+          "error"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "url": {
+            "label": "Baseline URL",
+            "format": "link"
+          },
+          "compareUrl": {
+            "label": "Compared URL",
+            "format": "link"
+          },
+          "changed": {
+            "label": "Changed"
+          },
+          "diffPercent": {
+            "label": "Diff %"
+          },
+          "diffPixels": {
+            "label": "Diff px"
+          },
+          "diffImageUrl": {
+            "label": "Diff image",
+            "format": "link"
+          },
+          "sizeMismatch": {
+            "label": "Size mismatch"
+          },
+          "error": {
+            "label": "Error"
+          }
         }
       }
     }

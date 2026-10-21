@@ -7,6 +7,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 - Full-page or viewport-only capture, a single CSS-selector element, or a fixed 1200x630 Open Graph card.
 - Device presets (desktop, iPhone 14, Pixel 7, iPad) or a custom viewport size.
 - Optional `waitForSelector` to capture only once a specific element has rendered — more precise than a fixed delay or `networkidle` for single-page apps.
+- **Visual diff mode**: set `compareUrl` and each URL is captured twice (yours and the comparison target), pixel-diffed, and returned with the differing-pixel count, change percentage and a highlighted diff image — staging vs production, or a page before vs after a deploy. One charged event per comparison, not two.
 - Pay per successful capture: a URL that fails to load (timeout, DNS error, 4xx/5xx) returns an error row and is **never charged**.
 - The run start is free; you only pay for screenshots actually returned.
 
@@ -14,7 +15,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 | Field | Type | Description |
 |---|---|---|
 | `urls` | array of strings | Pages to screenshot (default `["https://example.com"]`) |
-| `html` | string | Render this raw HTML instead of fetching a URL (ignores `urls`, produces one row) |
+| `html` | string | Render this raw HTML instead of fetching a URL (ignores `urls`, produces one row; ignored in visual diff mode) |
 | `format` | string | `jpeg` (default, recommended), `png` (lossless), or `pdf` |
 | `quality` | integer | JPEG quality 10-100 (default 80) |
 | `fullPage` | boolean | Capture full scrollable height, not just the first screen (default true) |
@@ -25,6 +26,8 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 | `waitUntil` | string | `load` (default), `domcontentloaded`, or `networkidle` |
 | `delayMs` | integer | Extra wait after load before capturing (0-15000ms) |
 | `waitForSelector` | string | CSS selector to wait for (up to 10s) before capturing, e.g. `.chart-loaded` |
+| `compareUrl` | string | Turns on visual diff mode: pixel-compare every URL in `urls` against this one (always PNG, one charge per comparison) |
+| `diffThreshold` | number | Diff sensitivity 0-1 (default 0.1). Lower is stricter; 0.02 catches antialiasing shifts, 0.3+ only large colour blocks |
 
 ## Output
 One row per URL (or one row for raw HTML):
@@ -44,6 +47,40 @@ One row per URL (or one row for raw HTML):
 ```
 A failed URL returns `success: false`, `error` set to the failure reason, and `imageUrl: null` — it is not counted as a charged result.
 
+### Visual diff mode output
+With `compareUrl` set, each row carries the same fields plus the comparison:
+
+```json
+{
+  "url": "https://news.ycombinator.com",
+  "format": "png",
+  "success": true,
+  "error": null,
+  "imageUrl": "https://api.apify.com/v2/key-value-stores/.../records/screenshot-1792575281654-2.png",
+  "screenshotKey": "screenshot-1792575281654-2.png",
+  "contentType": "image/png",
+  "byteSize": 235200,
+  "capturedAt": "2026-10-21T09:34:41.995Z",
+  "compareUrl": "https://example.com",
+  "compareImageUrl": "https://api.apify.com/v2/key-value-stores/.../records/compare-1792575281762-2.png",
+  "compareScreenshotKey": "compare-1792575281762-2.png",
+  "diffImageUrl": "https://api.apify.com/v2/key-value-stores/.../records/diff-1792575281915-2.png",
+  "diffScreenshotKey": "diff-1792575281915-2.png",
+  "diffPixels": 129232,
+  "comparedPixels": 2073600,
+  "diffPercent": 6.2323,
+  "changed": true,
+  "baselineWidth": 1920,
+  "baselineHeight": 1215,
+  "compareWidth": 1920,
+  "compareHeight": 1080,
+  "sizeMismatch": true
+}
+```
+Real row from run `54YvM4KAyrUjhlEdq` (build 0.1.17, 2026-10-21): Hacker News compared against `example.com` at the default `diffThreshold: 0.1`. The same run compared `example.com` against itself and returned `diffPixels: 0`, `changed: false`, `sizeMismatch: false` — an unchanged page reads as exactly zero, not as rendering noise.
+
+`changed` is simply `diffPixels > 0` at your chosen `diffThreshold`. `diffPercent` is measured over `comparedPixels`, which is the overlapping top-left region of the two captures: full-page screenshots of two pages rarely have identical heights, so when the dimensions differ the Actor diffs the overlap and sets `sizeMismatch: true` (with all four dimensions in the row) rather than failing the comparison. For a like-for-like comparison of two long pages, set `fullPage: false` or a fixed `viewportWidth`/`viewportHeight` so both captures are the same size.
+
 ## Pricing
 `result` — $0.002 per successful screenshot/PDF, charged only when a capture succeeds. No start fee.
 
@@ -60,6 +97,10 @@ $0.00061/result on its higher plans — cheaper than our flat $0.002/result, so 
 image is all you need, it's the better price. `moonweil/url-screenshot-api` matches our feature
 set closely (raw HTML, OG preset, device presets, PDF) but charges a flat $0.004/result, twice
 ours — if you want the HTML-input or OG-preset feature set at the lower price, we're the fit.
+The one feature `moonweil` had and we didn't was visual diffing; as of build 0.1.17 (2026-10-21)
+`compareUrl` closes that, so the diff mode is now available at half its per-result price.
+`cheapapi/website-screenshot-api` has no diff mode at all — both rivals' input schemas were read
+live from their own build OpenAPI documents on 2026-10-21, not from Store marketing copy.
 
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
@@ -71,6 +112,12 @@ ours — if you want the HTML-input or OG-preset feature set at the lower price,
 **Does it work for pages that need JavaScript to render?** Yes, it uses a real Chromium browser. Set `waitUntil: "networkidle"` for JS-heavy single-page apps that load content after the initial page load. If the page keeps a background connection open (polling, websockets, analytics beacons) `networkidle` can time out even after your content is ready — set `waitForSelector` to a selector that only exists once the real content has rendered (e.g. a chart container or the last row of a table) instead; it's a more precise signal than a fixed delay or network state.
 
 **What if a URL fails to load?** You get a row with `success: false` and an `error` message describing why (timeout, DNS failure, HTTP error, etc.) — the run continues to the next URL and you are not charged for the failure.
+
+**How do I check whether a deploy changed a page?** Put the production URL in `urls` and the staging/preview URL in `compareUrl`. You get one row per pair with `diffPercent`, `diffPixels` and a diff image where every changed pixel is highlighted. For a *time*-based check (same URL, before vs after), screenshot it now, then on a later run compare the live URL against the stored baseline image's URL. Note the Actor compares two live URLs, not a URL against an uploaded image file.
+
+**Why do I get a non-zero diff on a page I did not change?** Fonts, antialiasing, lazy-loaded images, carousels, ad slots, timestamps and animations all shift between two loads of the same page. Raise `diffThreshold` (0.2-0.3) to ignore rendering noise, set `waitForSelector` so both captures happen at the same render state, and prefer `fullPage: false` for pages with infinite scroll. A sub-0.1% diff on a dynamic page is usually noise, not a regression.
+
+**Am I charged twice in compare mode?** No. A comparison captures two screenshots and writes three images (baseline, comparison, diff) but charges a single `result` event — $0.002 per comparison row. A comparison that fails returns an error row and is not charged at all.
 
 **Can I render my own HTML instead of fetching a URL?** Yes — set `html` to a raw HTML string (e.g. an email template or an Open Graph card you built) and leave `urls` unset; it's rendered directly with no network request.
 
