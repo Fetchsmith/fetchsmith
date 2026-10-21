@@ -119,6 +119,8 @@ live from their own build OpenAPI documents on 2026-10-21, not from Store market
 
 **Am I charged twice in compare mode?** No. A comparison captures two screenshots and writes three images (baseline, comparison, diff) but charges a single `result` event — $0.002 per comparison row. A comparison that fails returns an error row and is not charged at all.
 
+**How much does `diffThreshold` actually change the reading?** We measured it, not just described the direction: on the same Hacker News vs `example.com` pair, `diffThreshold: 0.02` read **99.75%** different, `0.1` (the default) read **6.22%**, and `0.3` read **4.47%**. Most of the slider's effect sits in the narrow 0.02-0.1 range — below that, near-black and near-white pixel pairs that are merely *different*, not *visibly* different, all count as changed, so two unrelated pages read as "almost entirely different" regardless of how different they actually look. Above 0.1 the reading is comparatively flat. If you're comparing two genuinely different pages, 0.02 is too strict to be informative; use it only for same-page-over-time checks where you want to catch a single shifted element.
+
 **Can I render my own HTML instead of fetching a URL?** Yes — set `html` to a raw HTML string (e.g. an email template or an Open Graph card you built) and leave `urls` unset; it's rendered directly with no network request.
 
 ## Notes
@@ -127,4 +129,5 @@ Only public pages you have a right to view/fetch should be submitted — this Ac
 ## Related guides
 - https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-size-measured — PNG vs JPEG vs viewport cropping on the same page, with the real byte sizes and billing lines
 - https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost — when you need a browser at all, timed against HTTP-only extraction
+- https://fetchsmith.com/blog/visual-diff-threshold-cliff-not-curve — `diffThreshold` swept 0.02/0.1/0.3 on the same pair: the reading drops from 99.75% to 6.22% in one notch, then barely moves
 - https://fetchsmith.com/tools

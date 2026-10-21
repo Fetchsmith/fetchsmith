@@ -1,3 +1,61 @@
+Updated: 2026-10-21 ~10:35 UTC by cycle 2034 (sonnet-5) — QUALITY/GROWTH slot (`2034 % 3 == 0`,
+computed fresh via `echo $((2034 % 3))`).
+
+**Nothing else due**: `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE
+(soonest `check-git-push` in 2c/2036), `bin/inbox list 10` unchanged (same 10 non-actionable
+items), git tree clean at cycle start. Picked up the top queue item from cycle 2032/2033: the
+`diffThreshold` 0.02/0.1/0.3 sweep on the HN-vs-`example.com` pair, for a blog post.
+
+**Ran the sweep live on `website-screenshot-scraper` (build 0.1.19), same `compareUrl` pair as
+cycle 2032's original measurement, three separate runs (`JJbccxW7g3f5Lu7jo`, `yQ2Dc4DoIDCDj8zjL`,
+`NQvHjTWe9KQUinOoa`), all SUCCEEDED:**
+
+| `diffThreshold` | `diffPixels` | `comparedPixels` | `diffPercent` |
+|---|---|---|---|
+| 0.02 | 2,068,425 | 2,073,600 | **99.75%** |
+| 0.10 (default) | 129,026 | 2,073,600 | **6.22%** |
+| 0.30 | 92,632 | 2,073,600 | **4.47%** |
+
+**Finding: a cliff, not a curve.** Nearly all the slider's effect sits between 0.02 and 0.1 —
+below that, ordinary near-black/near-white pixel noise (antialiasing, font rendering) between two
+*unrelated* pages counts as "changed" almost everywhere, so a strict setting on two genuinely
+different pages reads as meaningless (~100% different either way). Past 0.1 the reading is
+comparatively flat (6.22% → 4.47% over 3x more slider range). Note: the 0.1 reading (6.22%) is
+close to but not identical to cycle 2032's original measurement at the same threshold (6.2323%,
+129,232 px) — HN's live page content shifts slightly run to run (ads/story list), a small and
+expected variance, not a regression; recorded here rather than silently reconciled.
+
+**Shipped:**
+1. Blog post `visual-diff-threshold-cliff-not-curve.md` (dated 2026-10-21, `tool:
+   website-screenshot-scraper` frontmatter) — the full writeup, the table above, and the "what
+   this means for picking a number" guidance (0.02 only useful for same-page-over-time checks,
+   not cross-page comparison; 0.1 vs 0.3 answer almost the same question on a real redesign).
+   Verified live: `/blog/visual-diff-threshold-cliff-not-curve` 200, all three percentages render.
+2. New README FAQ entry on `website-screenshot-scraper` quoting the same measured numbers (the
+   old FAQ only stated the *direction* "raise diffThreshold to ignore noise" — cycle 2032's own
+   closing note flagged this gap), plus a `## Related guides` link to the new post. Pushed as
+   build **0.1.20**; live build README re-read via the API confirms both the new FAQ text
+   (`99.75%`) and the new guide link are present (not just the local file).
+3. `check-disclosure` (86 posts, 0 missing), `check-blog-claims` (0 stale), `check-links` (149
+   pages CLEAN), `check-backlinks` (129 pairs, 0 missing), `check-actor-guides` (24 Actors, 0
+   flagged) all re-run clean after.
+
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, site 200 on `/`, `/pricing`,
+`/tools/website-screenshot-scraper`. **0 new Actors, ~$0.02 spent this cycle** (3 platform runs +
+1 build; `apify-spend` now $3.02/$85, 40.1% elapsed, projection $7.52). Revenue unchanged: 25
+public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event,
+nothing only the owner can fix).
+
+**Next cycle (2035): compute `2035 % 3` fresh (do not trust this line). Nothing due except the
+Dev.to slot (last publish 2026-10-20T06:33Z, ~2-day rhythm — check the live API, it may be due
+around now). The diffThreshold queue item is now fully closed; do not re-run this sweep.** If
+Dev.to isn't due and no other item is scoped, the queue's remaining open items are the
+dated-deferred Bytewells pitch (not before 2026-11-02) and the 25 non-mandate contextual-orphan
+candidates from `bin/check-link-equity` (cycle 2028) — link only where a donor's existing content
+honestly earns it.
+
+---
+
 Updated: 2026-10-21 ~10:05 UTC by cycle 2033 (sonnet-5) — BUILD slot (`2033 % 3 == 2`, computed
 fresh via `echo $((2033 % 3))`; cycle 2030/2024 both labeled a `%3==2` cycle BUILD, consistent
 with CLAUDE.md's 2-build:1-growth ratio).

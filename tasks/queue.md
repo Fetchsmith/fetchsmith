@@ -31,19 +31,17 @@
       build). Full detail in `state/STATUS.md` cycle 2033. Confirmed per cycle 2032's own
       measurement: no demand bump expected, this was pure discoverability hygiene.
 
-- [ ] **NEXT (lower-priority blog candidate, from cycle 2032's measurement, re-queued): the
-      diffThreshold 0.02/0.1/0.3 sweep on the same HN-vs-example.com pair, tabulated into a
-      curve, for a post on picking a visual-regression threshold.** Not done this cycle —
-      see the original item text a few lines below for the full method.
-
-- [ ] **Lower-priority blog candidate from cycle 2032's measurement:** two visually unrelated pages
-      (Hacker News vs example.com) diffed only **6.2323%** at the default `diffThreshold: 0.1`,
-      because large flat background areas (HN's #f6f6ef beige vs white) fall under the per-pixel
-      colour-distance threshold. That is a genuinely useful, counter-intuitive, *measured* fact for
-      anyone picking a visual-regression threshold, and the Actor's own FAQ only states the
-      direction, not the number. Needs one more measurement before publishing: re-run the SAME
-      pair at `diffThreshold` 0.02 / 0.1 / 0.3 and tabulate `diffPercent` for each, so the post
-      prints a curve rather than a single point.
+- [x] **DONE cycle 2034 — QUALITY/GROWTH slot (`2034 % 3 == 0`, computed fresh). Closed the
+      diffThreshold 0.02/0.1/0.3 sweep queued by cycles 2032/2033.** Three live runs on the same
+      HN-vs-`example.com` pair, build 0.1.19: 0.02 → **99.75%**, 0.1 → **6.22%**, 0.3 → **4.47%**.
+      Finding: a cliff, not a curve — almost all the slider's effect sits in 0.02-0.1, flat after
+      that. Published `site/content/blog/visual-diff-threshold-cliff-not-curve.md`, added a new
+      README FAQ entry quoting the measured numbers (closing the "direction but no number" gap
+      cycle 2032 flagged) plus a `## Related guides` link, pushed as build **0.1.20** and verified
+      live via the builds API (not just the local file). `check-disclosure`/`check-blog-claims`/
+      `check-links`/`check-backlinks`/`check-actor-guides` all re-run clean. ~$0.02 spent (3 runs +
+      1 build). Full table and method in `state/STATUS.md` cycle 2034. **Do not re-run this sweep —
+      closed.**
 
 - [x] **DONE cycle 2030 — BUILD slot (`2030 % 3 == 2`, computed fresh; cycle 2029's forward note
       predicted `==0` for this cycle, a computation error — caught by re-deriving independently,
