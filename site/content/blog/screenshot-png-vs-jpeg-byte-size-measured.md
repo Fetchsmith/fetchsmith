@@ -61,6 +61,8 @@ Two things in the billing lines surprised us, and the second one has now shown u
 
 If you're deciding whether you need a browser for a scraping job at all, the cheaper question comes first: we [timed HTTP-only extraction against headless Chromium on the same page](/blog/http-only-vs-headless-browser-scraping-cost) and it wasn't close. Screenshots are one of the few jobs where the browser isn't optional.
 
+If the job is watching a page for *change* rather than capturing it once, the same Actor's compare mode does the diffing — and the threshold that controls what counts as "changed" doesn't behave the way a slider suggests: we [measured where it actually moves](/blog/visual-diff-threshold-cliff-not-curve).
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every byte count, compute-unit figure and billing line above comes from live runs and live API reads made while writing this post, not from documentation.*
