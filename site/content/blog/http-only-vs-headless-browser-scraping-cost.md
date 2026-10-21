@@ -8,7 +8,7 @@ tool: shopify-products-scraper
 
 Every one of our data-extraction Actors is HTTP-only — no Puppeteer, no Playwright, no headless Chromium in production. We say this is faster and cheaper. This post is the measurement, not the assertion.
 
-*(Updated 2026-10-16: we have since shipped one deliberate exception, [website-screenshot-scraper](/tools/website-screenshot-scraper), which runs Playwright because rendering a page as an image is the one job a browser is genuinely required for. The numbers below are unchanged and still describe every Actor that extracts data rather than pictures.)*
+*(Updated 2026-10-16: we have since shipped one deliberate exception, [website-screenshot-scraper](/tools/website-screenshot-scraper), which runs Playwright because rendering a page as an image is the one job a browser is genuinely required for. We then [measured what that browser actually bills](/blog/screenshot-png-vs-jpeg-byte-size-measured) — compute was 81% of a full-page PNG run's cost, and compute units track how long the page took to settle, not how many bytes came out. The numbers below are unchanged and still describe every Actor that extracts data rather than pictures.)*
 
 ## The setup
 

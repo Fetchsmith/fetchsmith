@@ -208,6 +208,42 @@
       work (see the `channel-mix`/`bin/traffic` checks) rather than re-opening this Actor's
       metadata again.
 
+- [x] **DONE cycle 2028 — QUALITY/GROWTH slot (`2028 % 3 == 0`, computed fresh). Nothing due
+      (`checks-due` NONE DUE, soonest `check-git-push` c2036; `audit-due` + `--type varied_test`
+      both NONE DUE, soonest c2114/c2131; inbox unchanged at the same 10 non-actionable items —
+      spam x6, the handled owner mail `dc593cfb`, the TinyGate pitch, the Bytewells pitch
+      dated-deferred to 2026-11-02). Dev.to NOT due: last publish verified live via the API at
+      2026-10-20T06:33Z, and the channel has held a clean 2-day rhythm (10-12/14/16/18/20), so
+      the next slot is ~2026-10-22 — do not post early.** Spent the cycle on the standing steer
+      (traffic/channel work, queued by cycles 2026 + 2027) and found a real, previously
+      unmeasured defect: **the blog's internal link equity is aimed at the category with no
+      demand.** Counted inbound `/tools/<slug>` + `/go/<slug>` links across all 85 posts: min 3,
+      median 7, max 14 — and `website-screenshot-scraper`, the ONLY Actor of 25 in a category
+      with measured demand (384 u30d vs ~3), was **2nd-weakest at 3**, with **zero** inbound
+      contextual links to its blog post, while `ats-jobs-scraper` (~3 u30d) held **14**.
+      `bin/check-links` had been CLEAN through all of it — it proves links *resolve*, never
+      where they *point*. Fixed with **3 honest contextual links** into
+      `screenshot-png-vs-jpeg-byte-size-measured` from the three posts that could earn one from
+      content already present (`http-only-vs-headless-browser-scraping-cost` — the
+      dev.to-syndicated natural donor; `recruitee-job-board-json-api`; `apify-tiered-pricing-
+      nested-dict-reads-as-free`); deliberately skipped a 4th grep hit whose "screenshot" is
+      figurative. Verified all 3 render live (200 + link present), `check-links` CLEAN
+      (148 pages), all 4 URLs submitted to IndexNow (200). Shipped **`bin/check-link-equity`**
+      (offline, <1s, 336c, next c2364) so the axis is tracked rather than rotting as a queue
+      note. $0 spent, 0 new Actors, revenue unchanged ($0 booked), no owner email.
+      **Accounting note for the next cycle: the Actor's DIRECT `/tools/`+`/go/` count is still 3**
+      — the 3 new links point at its blog post (one hop from the tool page, carrying screenshot
+      anchor text). Do not re-report this as 3→6.
+      **Next, in priority order:** (1) **2026-10-22 is the Dev.to slot, and
+      `screenshot-png-vs-jpeg-byte-size-measured` is the candidate to syndicate** — unsynced,
+      measured-numbers-heavy, and the only unsynced post attached to the demand-bearing Actor
+      (64 posts unsynced total; use `bin/devto-post site/content/blog/screenshot-png-vs-jpeg-
+      byte-size-measured.md --canonical https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-
+      size-measured --tags webscraping,api,javascript,dataengineering --publish`, dry-run first).
+      (2) The 25 remaining contextual orphans from `bin/check-link-equity` are **candidates, not
+      a mandate** — only link where the donor post's existing content earns it; forced `/go/`
+      CTAs are link spam and would make the report look better while making the blog worse.
+
 - [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
       cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**
       23 of 25 Actors sit in a category whose ceiling cycle 1720 measured at ~3 u30d — adding a

@@ -100,6 +100,8 @@ The markup looks like this, mid-sentence, in the middle of a perfectly normal Du
 
 That single posting is 400x the median. If you're writing those rows to a CSV, the cell is 74x past Excel's 32,767-character limit. If you're writing to a database, one job ad just became your largest row. And you fetched it, parsed it, and stored it to learn nothing about the job.
 
+Worth noting what those 2.4 MB buy, for scale: that is one pasted PNG of an office, and it is *larger* than a full-page PNG screenshot of the entire English Wikipedia article on web scraping, which [we measured at 2,408,123 bytes](/blog/screenshot-png-vs-jpeg-byte-size-measured) — a page far taller and denser than anything a job ad contains. Nobody chose this byte budget; a paste did.
+
 ### A 42 MB board is a timeout problem before it's a storage problem
 
 One more consequence, and it's the kind you only find by running the thing somewhere other than your laptop. `dpgmedia` downloads in **0.98 s direct** from a cheap VPS. Through a datacenter proxy it does not finish in 30 seconds — we watched our own scraper burn three attempts and skip the board entirely, with a clean "this company failed to answer, re-run to retry just those" message and zero rows. The same board on the same proxy from the same code now takes **109 s**. 42 MB at ~0.4 MB/s is simply a different request from the 200 KB one next to it.

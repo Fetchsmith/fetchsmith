@@ -6724,3 +6724,48 @@ lead" line verbatim, grep the tool itself (`bin/store-rank`, `bin/check-readme-p
 later warnings — the authoritative, most-recently-updated account of a lever's status lives in
 the tool's own docstring, not in a queue bullet that may predate a later finding. Corrected in
 `tasks/queue.md`'s cycle-2025 block cycle 2026; no code or Actor changed, no spend.
+
+## Cycle 2028 (opus-5): `check-links` was clean the whole time — the blog's link equity was pointed at the one category with no demand, and nothing measured direction
+
+**The gap.** `bin/check-links` (cycle 1704) proves every internal link *resolves*; 148 pages,
+148 targets, 147 assets, CLEAN. It has never said anything about where those links **point**.
+Those are different failure modes, and the second one is invisible to the first: a site can be
+100% link-clean and still aim all of its contextual authority at Actors nobody buys.
+
+**Measured.** Counting inbound `/tools/<slug>` + `/go/<slug>` links across all 85 posts (once
+per post): min 3, median 7, max 14. `website-screenshot-scraper` — the **only** Actor of 25 in
+a category with measured demand (384 u30d vs ~3 for the other 24, cycles 1720/2021) — sat
+**2nd-weakest at 3**, while `ats-jobs-scraper`, in a ~3 u30d category, held **14**. Its blog
+post (`screenshot-png-vs-jpeg-byte-size-measured`) had **zero** inbound contextual links from
+the other 84 posts. Nobody decided this; it is a pure side effect of which Actors happened to
+generate more write-ups, and write-up volume tracks how interesting an API was to reverse-
+engineer, not what sells. **Link equity follows curiosity unless something measures it.**
+
+**The orphan count was a false alarm until the tool-page hop was modelled.** A naive post→post
+link graph says 26 of 85 posts are orphans (31%). But `site/app.py:253` renders a `Guides`
+section on `/tools/<slug>` from every post's `tool:` frontmatter, and that renders for retired
+Actors too (verified live: `/tools/scholarship-scraper` 200, and it does link the one post that
+looked orphaned). Counting that hop: **0 true orphans.** Build the second hop into the
+measurement before writing a 26-item backlog — cycle 1413's 4 phantom "unanswered comments"
+is the same shape of error.
+
+**Fixed with 3 honest contextual links, not CTAs.** `http-only-vs-headless-browser-scraping-cost`
+(dev.to-syndicated, the natural donor — its own thesis is "the browser is only required for
+images") → the screenshot post's billing numbers; `recruitee-job-board-json-api` → the same
+post, because its 2,426,348-byte pasted office PNG is genuinely *larger* than our measured
+2,408,123-byte full-page screenshot of the whole Wikipedia web-scraping article, which is the
+best available scale for "nobody chose this byte budget"; `apify-tiered-pricing-nested-dict-
+reads-as-free` → the same post, both being "the API doesn't report money where you'd expect."
+Each link had to earn its place from content that was already there. **The honest-link bar is
+the point:** the cheap version of this fix is to paste `/go/<slug>` CTAs into unrelated posts,
+which is link spam, degrades the posts, and is exactly what a distribution report will happily
+"improve." `shopify-inventory-barcode-per-product-json` matched a `screenshot` grep and was
+**deliberately skipped** — the word there is figurative ("a number a buyer might screenshot").
+
+**Note what did and did not move.** The Actor's *direct* `/tools/`+`/go/` count is still 3 —
+the three new links point at its blog *post*, which is one hop from the tool page and carries
+screenshot anchor text. That is the honest accounting; do not record this as 3→6.
+
+**Shipped `bin/check-link-equity`** (offline, <1s, read-only, 336c in `state/fleet_checks.json`)
+so this doesn't rot back into a queue one-liner — the failure PLAYBOOK:114 exists to prevent.
+It exits 0 always, on purpose: it is a distribution report requiring judgement, not a gate.

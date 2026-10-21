@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+"""check-link-equity -- how the blog's internal link equity is distributed across the fleet.
+
+Added cycle 2028. Offline, <1s, read-only. `bin/check-links` already proves every internal
+link RESOLVES; nothing measured where they POINT. Those are different failures: a site can be
+100% link-clean and still aim all of its contextual links at Actors nobody buys.
+
+Cycle 2028 baseline, and the reason this exists: `website-screenshot-scraper` -- the only
+Actor of 25 in a category with measured demand (384 u30d, vs ~3 for the other 24, cycle 1720/
+2021) -- was 2nd-WEAKEST in the fleet at 2 `/tools/` + 1 `/go/` inbound blog links, while
+`ats-jobs-scraper` (a ~3 u30d category) held 12 `/go/` links. Link equity was pointed almost
+entirely at the dead category, purely as a side effect of which Actors happened to generate
+more write-ups. Fixed by adding 3 honest contextual links; see LEARNINGS cycle 2028.
+
+Reports, per live registry Actor: inbound `/tools/<slug>` and `/go/<slug>` links counted once
+per post. Also flags TRUE orphan posts -- no inbound link from another post AND no
+`tool:`-frontmatter Guides link from a live tool page (site/app.py:253 renders those). Note
+the `/blog` index and sitemap list every post, so an orphan here is a *contextual* orphan
+(no anchor text, no topical signal), not an uncrawlable page.
+
+Usage: bin/check-link-equity [--orphans-only]
+Exit 0 always -- this is a distribution report, not a pass/fail gate. Judgement required:
+the fix is an HONEST contextual link from a topically related post, never a forced CTA.
+"""
+import collections
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BLOG = os.path.join(ROOT, "site", "content", "blog")
+REG = os.path.join(ROOT, "actors", "registry.json")
+
+
+def main():
+    orphans_only = "--orphans-only" in sys.argv
+    tools = {t["slug"]: t.get("status") for t in json.load(open(REG))["tools"]}
+    live = [s for s, st in tools.items() if st == "live"]
+
+    posts = sorted(f[:-3] for f in os.listdir(BLOG) if f.endswith(".md"))
+    pset = set(posts)
+    fm_tool, inbound, outbound = {}, collections.defaultdict(set), collections.defaultdict(set)
+    tool_in, go_in = collections.Counter(), collections.Counter()
+
+    for p in posts:
+        txt = open(os.path.join(BLOG, p + ".md")).read()
+        head = txt.split("---")[1] if txt.startswith("---") else ""
+        m = re.search(r"^tool:\s*(\S+)", head, re.M)
+        fm_tool[p] = m.group(1) if m else None
+        for t in set(re.findall(r"/blog/([a-z0-9\-]+)", txt)):
+            if t in pset and t != p:
+                inbound[t].add(p)
+                outbound[p].add(t)
+        for s in set(re.findall(r"/tools/([a-z0-9\-]+)", txt)):
+            tool_in[s] += 1
+        for s in set(re.findall(r"/go/([a-z0-9\-]+)", txt)):
+            go_in[s] += 1
+
+    if not orphans_only:
+        print(f"{len(posts)} blog posts, {len(live)} live Actors -- inbound blog links per Actor "
+              "(weakest first; counted once per post)")
+        print(f"  {'slug':34} {'/tools/':>8} {'/go/':>6} {'total':>6}")
+        for s in sorted(live, key=lambda s: (tool_in[s] + go_in[s], s)):
+            print(f"  {s:34} {tool_in[s]:>8} {go_in[s]:>6} {tool_in[s] + go_in[s]:>6}")
+        tot = [tool_in[s] + go_in[s] for s in live]
+        print(f"  -- min {min(tot)}  median {sorted(tot)[len(tot) // 2]}  max {max(tot)}")
+
+    # a post is linked from a tool page iff its tool: slug is a registry slug whose page renders
+    orphs = [p for p in posts if not inbound[p] and (fm_tool[p] not in tools)]
+    print(f"\nTRUE orphan posts (no inbound post link, no tool-page Guides link): {len(orphs)}")
+    for p in orphs:
+        print(f"  {p}  tool={fm_tool[p]!r}")
+    noctx = [p for p in posts if not inbound[p]]
+    print(f"contextual orphans (no inbound link from another POST; {len(noctx)} of {len(posts)}) "
+          "-- candidates for an honest link, not a mandate:")
+    for p in noctx:
+        print(f"  {p}  tool={fm_tool[p]!r} outbound={len(outbound[p])}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

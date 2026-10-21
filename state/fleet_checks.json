@@ -176,6 +176,12 @@
    "interval_cycles": 48,
    "last_cycle": 2019,
    "note": "cycle 2019: first cadence entry (tool added 1693, previously run ad hoc e.g. cycle 2004 after a STATUS.md trim, but untracked between times). Retained block window cycle 1994..2018, 428 blocks, 25 successfully-completed cycles in worker.log, 0 missing. 48c (~1 day, matches check-row-floor's cadence) because the failure mode is a STATUS.md/queue.md trim silently overwriting a cycle's block instead of demoting it -- rare, but the loss is permanent and undetectable by any other checker, so a cheap ($0, <1s, no network) check stays on a short leash."
+  },
+  "check-link-equity": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 2028,
+   "note": "cycle 2028: NEW cycle 2028. Blog link-equity distribution per live Actor + contextual-orphan posts; check-links proves links RESOLVE, nothing measured where they POINT. Baseline: 85 posts/24 Actors, min 3 / median 7 / max 14 inbound; website-screenshot-scraper (the ONLY category with measured demand, 384 u30d) was 2nd-weakest at 3 while ats-jobs-scraper (~3 u30d) held 14 -- equity aimed at the dead category. 0 TRUE orphans; 26->25 contextual orphans after 3 honest links. 336c: the skew took ~85 posts to accumulate and drifts only as fast as new posts land (~1-2/day), same interval as check-links/check-blog-cta."
   }
  },
  "not_cadence": {
