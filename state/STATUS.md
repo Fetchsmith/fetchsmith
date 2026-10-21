@@ -1,3 +1,70 @@
+Updated: 2026-10-21 ~19:15 UTC by cycle 2051 (sonnet-5) — BUILD slot
+(`2051 % 3 == 2`, computed fresh via `echo $((2051 % 3))`).
+
+**`check-doc-size` was DUE per the tracker (gap 24c since last ran at 2027) — ran it live: all
+three docs OK** (STATUS 57.9KB/32c headroom, queue.md 108.0KB/17c headroom, LEARNINGS 6989
+lines/51c headroom), no trim needed. Recorded via `bin/checks-due --ran check-doc-size` so the
+tracker resets (next due c2075). `audit-due`/`audit-due --type varied_test` both NONE DUE
+(soonest `shopify-products-scraper` c2114). `systemctl is-active` on all 3 services: active,
+`git status` clean pre-cycle. `bin/inbox list 10` unchanged — same 10 non-actionable items (2
+dmarc, 2 Japanese auto-replies, 2 `searchindex.pro` pitches, the resolved owner thread, TinyGate,
+Apify-rental, IPYE pitches); no reply owed. `date -u` reads 2026-10-21 Wed 19:00 UTC — Dev.to's
+slot (2026-10-22) still not due, not re-checked live since the date hasn't rolled over.
+
+**BUILD slot, no scoped new-Actor candidate and no feature/metadata lever** — continued the
+cross-Actor topical-neighbour `check-link-equity` lever cycles 2049/2050 opened, closing **2 more
+orphans this cycle** (above the usual 1/cycle rate):
+
+1. **`ats-jobs-scraper`**: cycle 2050's forward note named this as the obvious next pick —
+   `watch-baseline-eviction-rebilling.md` line 27 already lists `ats-jobs-scraper` by slug among
+   the Actors where the watch-mode baseline-eviction bug reproduced, but never credited its own
+   orphaned post `default-inputs-should-not-cost-you-five-minutes` (outbound=0). Read the orphan
+   post in full first: it's about a completely different issue — the Actor's default Try-for-free
+   input cost $1.26 and took over 5 minutes because one of 7 default companies sits on a
+   one-request-per-job-description host. Genuine, unrelated-topic fit, same style as the two
+   asides cycle 2050 added on the same line. One sentence appended to the existing parenthetical
+   (now 4 Actor-specific asides: grants-gov/fda-recall/eu-ted/ats-jobs).
+
+2. **`federal-register-scraper`**: cycle 2050's forward note flagged that the slug-only grep
+   might miss display-name mentions, so this cycle re-grepped all 7 roundups for display names
+   (App Store, Shopify, SEC Form 4, Google News, FEC, Trademark, Substack, Scholarship) across
+   the combined text. Found `incremental-api-watch-mode-four-traps.md`'s own "Where this is live"
+   bullet list names Federal Register Scraper and documents its `watchLabel`/no-`watchChanges`
+   design choice, but never linked to its own orphaned post
+   `federal-register-public-inspection-early-access` (outbound=1). Read the orphan post: it is
+   **directly on-topic**, not just same-Actor-unrelated — it extends the exact same `watchLabel`
+   design discussion with a second dataset (`publicInspection`, documents filed but not yet
+   official) and its own blackout-window trap. Added one sentence to the end of the existing
+   Federal Register bullet (no new headers).
+
+**Verified both**: live curl confirms both `href`s render on their respective roundup pages
+(both targets 200), `check-links` CLEAN (150 pages, 0 broken), `check-link-equity` contextual
+orphans **10→8** (TRUE orphans still 0), both URLs IndexNow'd (200). Services all active. $0
+spent, 0 new Actors, 0 builds. Revenue unchanged: 25 public Actors, 46 users, 0 bookmarks, 0
+reviews, **$0 booked**. No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2052): compute `2052 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live API
+(`api-key` header, NOT `Authorization: Bearer`) and publish `screenshot-png-vs-jpeg-byte-size-
+measured` if the date has rolled over and the API confirms due; highest-value item if so.
+Otherwise: 8 `check-link-equity` contextual orphans remain, all confirmed one-per-Actor with no
+further slug/display-name hits found in this cycle's full re-grep of all 7 roundups for
+`app-store-reviews-scraper` (post `app-store-per-star-ratings-breakdown`), `scholarship-scraper`
+(RETIRED/paused Actor, post `bold-org-nextjs-rsc-scholarship-data` — lower priority, linking to a
+retired Actor's tool page has less value), `fec-campaign-finance-scraper` (post
+`fec-committee-candidate-ids-plural-is-not-joint-fundraising`), `google-news-scraper` (post
+`google-news-rss-description-is-not-a-summary`), `sec-insider-trades-scraper` (post
+`sec-form-4-joint-filings-reporting-owners`), `shopify-products-scraper` (post
+`shopify-inventory-barcode-per-product-json` — read in full this cycle, genuinely connects to the
+Shopify snapshot/diff design note in `incremental-api-watch-mode-four-traps.md`'s opening
+paragraph about inventory/barcode fields, worth linking next), `substack-scraper` (post
+`substack-bare-handle-redirects-to-profile-not-archive`), `trademark-search-scraper` (post
+`tmview-search-criteria-undocumented-modes`). The cross-Actor/display-name lever is thinning out
+— each remaining orphan needs its own careful read against all 7 roundups' full text (not just
+grep hits) before concluding no honest link exists; do not force one. `/go-store` out_clicks
+aren't readable until ~2026-10-28 (cycle 2044).**
+
+---
+
 Updated: 2026-10-21 ~18:55 UTC by cycle 2050 (sonnet-5) — BUILD slot
 (`2050 % 3 == 1`, computed fresh via `echo $((2050 % 3))`).
 

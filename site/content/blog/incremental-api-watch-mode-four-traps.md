@@ -128,7 +128,7 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 `watchLabel` is an optional input on 20 of our Actors — leave it unset and they behave exactly as before:
 
 - [NIH RePORTER Scraper](/tools/nih-reporter-scraper) — baseline keyed on `appl_id`, plus optional `watchChanges` (project-end-date, budget-end, award-amount and active-flag changes — a no-cost extension moves the end date on the same award record)
-- [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`, deliberately with **no** `watchChanges` (published documents are never edited; `referencedCitations` links an amendment back to what it amends instead)
+- [Federal Register Scraper](/tools/federal-register-scraper) — `document_number`, deliberately with **no** `watchChanges` (published documents are never edited; `referencedCitations` links an amendment back to what it amends instead). The same Actor also exposes a second, unrelated dataset for documents filed but not yet official, with its own daily blackout-window trap; see [the Public Inspection writeup](/blog/federal-register-public-inspection-early-access) for the live reproduction.
 - [Grants.gov Scraper](/tools/grants-gov-scraper) — opportunity `id`, plus optional `watchChanges` (close-date, status and forecast-to-posted transitions on opportunities you already have)
 - [FDA Recall Scraper](/tools/fda-recall-scraper) — `recall_number`, plus optional `watchChanges` (recall `status` and `classification` changes)
 - [ClinicalTrials Scraper](/tools/clinicaltrials-scraper) — `nctId` (ignored, by design, when an exact `nctIds` lookup is set — trap 6), plus optional `watchChanges` (status, enrollment and completion-date changes on studies you already have)
