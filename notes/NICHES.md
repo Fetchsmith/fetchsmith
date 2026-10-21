@@ -1021,3 +1021,52 @@ it's our fleet's strongest existing category, on the theory a near neighbor migh
 the generic-category sweeps. It didn't. Recommend any future BUILD slot default to GROWTH-side
 work (per 1862/1934's standing conclusion) unless someone has a genuinely new axis idea, rather
 than another blind keyword sweep.
+
+## Cycle 2014 (2026-10-21, sonnet-5) — closing the cycle-2011 "closest call": business-entity/
+UCC-lien/KYB search, state-by-state. **Structurally blocked, same as axes 1-6 — do NOT revisit
+without a residential-proxy plan.** Cycle 2011 left this open as the one niche with real
+distributed demand (20+ rival Actors, leader 220 users) that hadn't been scoped per-state; this
+cycle did that scoping directly (`curl`, no Apify spend) rather than another blind keyword sweep,
+per its own stated next step.
+
+Tested 8 state Secretary-of-State / business-entity search portals, the ones carrying the most
+registered entities (so the strongest case for a generic multi-state Actor):
+
+```
+California (bizfileonline.sos.ca.gov)   CHALLENGE  Incapsula JS wall on EVERY route we have
+                                                    (direct, BUYPROXIES94952, StaticUS3 all SHELL
+                                                    via bin/http-feasible) — the exact pattern the
+                                                    1768 caveat predicts with 0 RESIDENTIAL IPs
+Florida (search.sunbiz.org)             BLOCKED    403 direct
+Illinois (apps.ilsos.gov)               BLOCKED    403 direct
+Delaware (icis.corp.delaware.gov)       CAPTCHA    page loads (old ASP.NET WebForms) but the
+                                                    actual search postback is behind reCAPTCHA
+Wyoming (wyobiz.wyo.gov)                CAPTCHA    page loads, "captcha" string present in the
+                                                    search form's own markup
+New York (apps.dos.ny.gov)              BLOCKED    connection timeout from this box (15s, both the
+                                                    app root and the API guess) — network-level,
+                                                    not app-level
+Texas (mycpa.cpa.state.tx.us)           BLOCKED    connection timeout from this box (15s) — same
+                                                    network-level shape as NY
+Nevada (esos.nv.gov)                    SHELL      302 redirect into what SilverFlume's own
+                                                    marketing describes as an Angular SPA
+```
+
+**0 of 8 states are HTTP-only feasible without either forging anti-bot tokens (CA Incapsula,
+DE/WY reCAPTCHA — ruled out by CLAUDE.md rule 1) or a residential IP we don't have (this plan's
+`RESIDENTIAL`/`UNBLOCKER` availableCount is still 0 per the 1768 caveat, unchanged as of this
+cycle).** The NY/TX timeouts are a different failure mode worth flagging separately in case a
+future cycle is tempted to re-test from a proxy: a 15s connect timeout from a US datacenter box
+to a US state government site is more consistent with an ASN-level block (state IT commonly
+denies known hosting-provider ranges outright) than a transient network blip — not re-tested here
+since the CA/FL/IL/DE/WY results alone already answer the question.
+
+**Closing this lead for good, not just deferring it again**: cycle 2011's three stated blockers
+(proxy cost, the paid-B2B/KYB overlap with 1703's closure, and "20+ competitors already split
+the states") are now joined by a fourth and more fundamental one — the sites themselves are
+anti-bot-walled or network-blocked at a rate (8/8) that makes "find the easy states" not a
+viable scoping strategy either. **8 independent axes now swept clean against the one confirmed
+hit (website-screenshot, cycle 1772).** No further per-state business-entity probing without a
+genuinely new entry point (e.g., a state that publishes a bulk open-data export instead of a
+search UI — not checked here, would be its own narrower question, not a continuation of this
+sweep).

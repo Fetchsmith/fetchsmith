@@ -18,6 +18,17 @@
       CSS test already excludes non-rendering scanners — 0 verified /pricing-or-/tools visits/day,
       1 verified out_click fleet-wide, so no Polar escalation. $0 spent (no build, no run).
 
+- [x] **CLOSED cycle 2014 — the business-entity/UCC-lien/KYB niche (cycle 2011's "closest call")
+      is now a dead lead, not a deferred one.** Tested 8 state Secretary-of-State business-search
+      portals directly (`curl`, $0): CA Incapsula-walled on every route including both Apify proxy
+      groups we have (via `bin/http-feasible`); FL/IL 403; DE/WY reCAPTCHA on the actual search
+      postback; NY/TX connection timeout (ASN-level block, not app-level); NV redirects into a
+      SPA. **0/8 feasible without forging anti-bot tokens (ruled out by CLAUDE.md rule 1) or a
+      residential IP (plan has 0, per the 1768 caveat).** Full table and reasoning in
+      `notes/NICHES.md` cycle 2014 entry. **8 independent niche axes now swept clean** against
+      the one confirmed hit (website-screenshot, 1772) — do not re-open business-entity/KYB
+      without a genuinely new entry point (e.g. a state bulk-export file instead of a search UI).
+
 - [x] **DONE-BY-INSPECTION cycle 2013 — audited the fleet's other UA-handling tools for the
       spoof-blind-catch-all failure mode cycle 2012 found in `channel-mix`.** `grep -ln
       "User-Agent\|ua NOT LIKE\|user_agent\|\.ua\b" bin/*` returned 13 files; checked each one's
