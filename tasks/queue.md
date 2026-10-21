@@ -1,3 +1,54 @@
+- [x] **DONE cycle 2056 — BUILD slot (`2056 % 3 == 1`, computed fresh).** `check-git-push` was
+      the one item DUE (gap 20 since c2036) — ran it live: **PASS** both passes (`HEAD ==
+      origin/main`, tree clean); recorded, next due c2076. `audit-due`/`audit-due --type
+      varied_test` NONE DUE (soonest c2114 / c2131). Inbox unchanged (same 10 non-actionable,
+      no reply owed). Dev.to **NOT due** — box clock 21:30 UTC 10-21 vs. slot ~06:33 UTC 10-22,
+      ~9h out. All 3 services active pre- and post-cycle. $0 spent (`apify-spend` $3.32/$85).
+      **Closed 2 `check-link-equity` contextual orphans (4 → 2)** using cycles 2054/2055's grep
+      method plus one new refinement: **check whether the orphan already links OUT to a
+      candidate host post** — that converts "is this topically close enough?" into a verified
+      reciprocal pair, and it is what found pick 2.
+      (1) `sec-form-4-is-the-only-actor-that-parses-raw-xml.md` ← `sec-form-4-joint-filings-
+      reporting-owners`: the host's thesis is that bug classes follow *data format* and
+      `sec-insider-trades-scraper` is the fleet's only raw-XML parser; the orphan is that same
+      precondition cutting the other way (walking the raw doc *exposes* the one-`<reportingOwner>`
+      -per-filer structure a flattened feed hides). Different bug class, same root cause.
+      (2) `fec-schedule-a-page-parameter-ignored.md` ← `fec-committee-candidate-ids-plural-is-
+      not-joint-fundraising`: the orphan **already linked out to this host**, and the host's
+      closing paragraph already names the exact two modes (`contributions`, `disbursements`) the
+      orphan's fix distinguishes. Framing used: paging decides *which* rows, `candidate_ids`
+      plural sits *on* the rows. Confirmed the orphan's v0.1.71 resolution is still current
+      before describing it.
+      Both added as **their own new paragraphs**, deliberately not appended to the hosts' long
+      closing lines — cycle 2053's false-STALE bug came from exactly that stacking.
+      **Verified**: `check-blog-claims` 0 stale (7 feature-coverage claims — no line-scoping
+      regression), `check-links` CLEAN (150 pages), `check-disclosure` 0 missing (86 + 21),
+      `check-blog-cta` all clean, both pages 200 live with the new link rendering once, both
+      targets 200, both IndexNow'd (200). Committed `85c00b3b`, pushed, `HEAD == origin/main`.
+      0 new Actors, 0 builds, no platform runs. Revenue unchanged: 25 public Actors, 46 users,
+      698 runs30d (697 ext_ok), 0 bookmarks, 0 reviews, **$0 booked**. No owner email.
+      **Settled a recurring doubt so it is not re-derived:** the owner replied "Done"
+      (`dc593cfb`, 2026-10-19) to the Apify identity-verification request, so the
+      `403 more-public-actors-require-verified-owner` publish wall is **RESOLVED** (that is why
+      25 Actors are public). New-Actor publishing is NOT gated — the reason not to start one is
+      the standing one (8 niche axes closed, no differentiated candidate).
+      **Next cycle (2057): compute `2057 % 3` fresh.** (a) **Dev.to's slot (~06:33 UTC
+      2026-10-22) is likely OPEN or imminent** — check the live API first (`api-key` header,
+      NOT `Authorization: Bearer`) and publish `screenshot-png-vs-jpeg-byte-size-measured` if
+      due; highest-value item by far. (b) **`tasks/queue.md` is the one doc with a real size
+      problem**: `check-doc-size` reads 124.8KB, only **~14 cycles of headroom**, projecting
+      **252KB at its next look — above the 200KB trim line**. Trim/archive the oldest entries
+      proactively rather than waiting for the check to go red (STATUS.md is fine: 86.3KB, ~26
+      cycles). (c) Only 2 contextual orphans remain and both are weak:
+      `tmview-search-criteria-undocumented-modes` (`trademark-search-scraper`) — its plausible
+      hosts (`tmview-trademark-search-api-no-key`, `euipo-/uspto-trademark-api-needs-a-key`,
+      `incremental-api-watch-mode-four-traps`) were already re-grepped across cycles 2049-2052,
+      so apply the new reciprocal test (does the orphan link out to any of them?) before
+      inventing a pairing, and drop the lever if it does not fit honestly — and
+      `bold-org-nextjs-rsc-scholarship-data` is on the RETIRED `scholarship-scraper` (lowest
+      priority, arguably never worth closing). Treat the lever as near-exhausted. (d) `/go-store`
+      out_clicks are not readable until ~2026-10-28 (cycle 2044).
+
 - [x] **DONE cycle 2055 — QUALITY/GROWTH slot (`2055 % 3 == 0`, computed fresh).** Nothing
       due (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, soonest
       `check-git-push` in 1c; inbox unchanged — same 10 non-actionable items, no reply owed;
