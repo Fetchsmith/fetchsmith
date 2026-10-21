@@ -31,7 +31,7 @@ The Actor's `RUN_SUMMARY` already reports the real, per-run truth — `duplicate
 
 ## Packaged version
 
-[sam-gov-opportunities-scraper on Apify](/go/sam-gov-opportunities-scraper) queries SAM.gov's own public search backend directly — no API key, no login, covering contract opportunities plus wage determinations, CFDA assistance listings, and PII-safe exclusion records behind the same `index=` parameter. Every run's `RUN_SUMMARY` reports `declaredMatches`, `duplicateRowsDropped`, and `incompleteReason` so you can tell "got everything" apart from "hit the depth cap" without reading logs.
+[sam-gov-opportunities-scraper on Apify](/go/sam-gov-opportunities-scraper) queries SAM.gov's own public search backend directly — no API key, no login, covering contract opportunities plus wage determinations, CFDA assistance listings, and PII-safe exclusion records behind the same `index=` parameter. Every run's `RUN_SUMMARY` reports `declaredMatches`, `duplicateRowsDropped`, and `incompleteReason` so you can tell "got everything" apart from "hit the depth cap" without reading logs. [A zero in federal program funding history doesn't mean zero dollars](/blog/cfda-funding-history-zero-is-not-zero) covers the same self-report-over-raw-value lesson on the CFDA side of this Actor, where a `flag`/`explanation` pair — not the number itself — tells you what a `0` actually means.
 
 ---
 

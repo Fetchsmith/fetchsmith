@@ -107,7 +107,7 @@ The README has been corrected to say that, with these numbers, instead of the sa
 
 ## Related
 
-[SAM.gov's exclusions list looked key-gated — the dataset wasn't, the endpoint was](/blog/sam-gov-key-free-federal-datasets-one-endpoint) covers how the keyless backend this measurement runs on was found in the first place; [SAM.gov's wage-determination search doesn't match trades](/blog/sam-gov-wage-determination-keyword-matches-reference-number-not-trade) is a sibling dataset's own silent-wrong-answer trap, where a single space turns an exact match into a 106-row OR.
+[SAM.gov's exclusions list looked key-gated — the dataset wasn't, the endpoint was](/blog/sam-gov-key-free-federal-datasets-one-endpoint) covers how the keyless backend this measurement runs on was found in the first place; [SAM.gov's wage-determination search doesn't match trades](/blog/sam-gov-wage-determination-keyword-matches-reference-number-not-trade) is a sibling dataset's own silent-wrong-answer trap, where a single space turns an exact match into a 106-row OR. [SAM.gov's 10,000-row depth cap doesn't promise 10,000 rows](/blog/sam-gov-depth-cap-yield-varies) is the same lesson on the search side of this Actor — read the backend's own self-reported signal (`RUN_SUMMARY`'s `duplicateRowsDropped`/`incompleteReason` there, `flag`/`explanation` here) instead of trusting the raw number.
 
 ---
 
