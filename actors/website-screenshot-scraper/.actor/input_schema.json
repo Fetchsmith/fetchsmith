@@ -1,207 +1,213 @@
 {
-  "title": "Website Screenshot Scraper input",
-  "type": "object",
-  "schemaVersion": 1,
-  "properties": {
-    "urls": {
-      "title": "URLs",
-      "type": "array",
-      "description": "Public web pages to screenshot, e.g. https://example.com. Each becomes one charged result row (or one error row on failure, never both).",
-      "editor": "stringList",
-      "prefill": [
-        "https://example.com"
-      ],
-      "default": [
-        "https://example.com"
-      ]
+    "title": "Website Screenshot Scraper input",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "urls": {
+            "title": "URLs",
+            "type": "array",
+            "description": "Public web pages to screenshot, e.g. https://example.com. Each becomes one charged result row (or one error row on failure, never both).",
+            "editor": "stringList",
+            "prefill": [
+                "https://example.com"
+            ],
+            "default": [
+                "https://example.com"
+            ]
+        },
+        "html": {
+            "title": "Raw HTML (optional, single input)",
+            "type": "string",
+            "description": "Instead of fetching a URL, render this raw HTML string directly (e.g. an email template or OG-card markup you built yourself). If set, 'URLs' is ignored and this produces exactly one result row.",
+            "editor": "textarea"
+        },
+        "format": {
+            "title": "Output format",
+            "type": "string",
+            "description": "JPEG is smaller than PNG for the same page with no visible quality loss at quality ~80 -- measured 15% smaller on a text-heavy page, 63% smaller on a photo-heavy one. Use PNG only if you need pixel-exact/lossless output, or PDF for a printable document.",
+            "editor": "select",
+            "enum": [
+                "jpeg",
+                "png",
+                "pdf"
+            ],
+            "enumTitles": [
+                "JPEG (recommended, small)",
+                "PNG (lossless, larger)",
+                "PDF (document)"
+            ],
+            "default": "jpeg"
+        },
+        "quality": {
+            "title": "JPEG quality",
+            "type": "integer",
+            "description": "Ignored for PNG and PDF.",
+            "default": 80,
+            "minimum": 10,
+            "maximum": 100
+        },
+        "fullPage": {
+            "title": "Full page (not just the first screen)",
+            "type": "boolean",
+            "description": "Capture the entire scrollable page height, not just the visible viewport. Ignored for PDF, which is always full-document.",
+            "default": true
+        },
+        "devicePreset": {
+            "title": "Device preset",
+            "type": "string",
+            "description": "Emulate a common device's viewport, pixel ratio and user agent. 'Custom' uses the Viewport width/height fields below instead.",
+            "editor": "select",
+            "enum": [
+                "custom",
+                "desktop",
+                "iphone",
+                "pixel",
+                "ipad"
+            ],
+            "enumTitles": [
+                "Custom (use viewport fields)",
+                "Desktop 1920x1080",
+                "iPhone 14 (390x844, 3x)",
+                "Pixel 7 (412x915, 2.6x)",
+                "iPad (820x1180, 2x)"
+            ],
+            "default": "desktop"
+        },
+        "viewportWidth": {
+            "title": "Viewport width (custom preset only)",
+            "type": "integer",
+            "description": "Browser viewport width in pixels. Only used when Device preset is 'custom'.",
+            "default": 1920,
+            "minimum": 200,
+            "maximum": 3840
+        },
+        "viewportHeight": {
+            "title": "Viewport height (custom preset only)",
+            "type": "integer",
+            "description": "Browser viewport height in pixels. Only used when Device preset is 'custom'.",
+            "default": 1080,
+            "minimum": 200,
+            "maximum": 3840
+        },
+        "selector": {
+            "title": "Element selector (optional)",
+            "type": "string",
+            "description": "CSS selector of a single element to capture instead of the whole page, e.g. '#pricing-table' or '.hero'. Takes priority over Full page.",
+            "editor": "textfield"
+        },
+        "ogCard": {
+            "title": "Render as Open Graph card (1200x630)",
+            "type": "boolean",
+            "description": "Force a 1200x630 viewport screenshot sized for social-share previews, ignoring other viewport/fullPage settings.",
+            "default": false
+        },
+        "waitUntil": {
+            "title": "Wait condition before capture",
+            "type": "string",
+            "description": "When to consider the page ready to capture.",
+            "editor": "select",
+            "enum": [
+                "load",
+                "domcontentloaded",
+                "networkidle"
+            ],
+            "enumTitles": [
+                "Load event (fast, default)",
+                "DOM content loaded (fastest)",
+                "Network idle (slow, best for JS-heavy pages)"
+            ],
+            "default": "load"
+        },
+        "delayMs": {
+            "title": "Extra delay before capture (ms)",
+            "type": "integer",
+            "description": "Wait this long after the page load condition is met, e.g. to let an animation or lazy-loaded image settle.",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 15000
+        },
+        "waitForSelector": {
+            "title": "Wait for element (optional, CSS selector)",
+            "type": "string",
+            "description": "Before capturing, wait up to 10s for this CSS selector to become visible, e.g. '.chart-loaded' or '#app-root img'. More reliable than 'Network idle' for SPAs that keep a background connection open after the content you actually want has rendered. If the selector never appears, the run returns an error row for that URL instead of a blank/partial capture.",
+            "editor": "textfield"
+        },
+        "compareUrl": {
+            "title": "Compare against this URL (optional \u2014 turns on visual diff mode)",
+            "type": "string",
+            "description": "Leave empty for normal screenshots. Set it to turn each URL above into a visual-diff/regression check: the Actor captures your URL and this one, pixel-diffs them, and returns the change percentage plus a highlighted diff image. Typical use: staging vs production, or a saved page vs its live version after a deploy. Compare mode always captures PNG (a lossy JPEG would invent differences that are not there), ignores the raw HTML input, and charges ONE event per comparison row even though it takes two captures.",
+            "editor": "textfield"
+        },
+        "diffThreshold": {
+            "title": "Diff sensitivity (compare mode only)",
+            "type": "number",
+            "description": "Per-pixel colour-distance tolerance from 0 to 1. Lower is stricter: 0.02 flags faint antialiasing and font-rendering shifts, the 0.1 default ignores them but catches any real visual change, 0.3+ only flags large blocks of colour. Only used when a compare URL is set.",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.1,
+            "unit": "0-1"
+        },
+        "colorScheme": {
+            "title": "Color scheme",
+            "type": "string",
+            "description": "Emulate the browser's light/dark mode preference before capturing, so a page that reacts to `prefers-color-scheme` renders its dark variant instead of light.",
+            "editor": "select",
+            "enum": [
+                "light",
+                "dark",
+                "no-preference"
+            ],
+            "enumTitles": [
+                "Light (default)",
+                "Dark",
+                "No preference"
+            ],
+            "default": "light"
+        },
+        "hasTouch": {
+            "title": "Touch support (optional override)",
+            "type": "boolean",
+            "description": "Whether the emulated device reports touch support. Leave unset to use the device preset's default (on for iPhone/Pixel/iPad, off for desktop/custom) or override it either way."
+        },
+        "locale": {
+            "title": "Locale (optional)",
+            "type": "string",
+            "description": "BCP 47 locale to emulate, e.g. 'fr-FR' or 'ja-JP'. Affects `navigator.language`, number/date formatting, and any page content that branches on locale.",
+            "editor": "textfield"
+        },
+        "timezoneId": {
+            "title": "Timezone (optional)",
+            "type": "string",
+            "description": "IANA timezone to emulate, e.g. 'America/New_York' or 'Asia/Tokyo'. Affects any page content that renders times/dates in the visitor's local timezone.",
+            "editor": "textfield"
+        },
+        "proxyConfiguration": {
+            "title": "Proxy",
+            "type": "object",
+            "description": "Route the browser through a proxy. Off by default (captures come straight from the Apify datacenter, which is fine for most public pages). Turn it on when a target rate-limits repeated hits from one IP across a big URL list, or serves different content per country. A fresh proxy IP is drawn per URL, so a 100-URL list is spread across the pool instead of hammering one address; in compare mode BOTH captures of a pair deliberately share one IP, so a geo/IP difference can never show up as a false visual diff. You can also paste your own proxy URLs instead of using Apify Proxy.",
+            "editor": "proxy",
+            "default": {
+                "useApifyProxy": false
+            }
+        },
+        "headers": {
+            "title": "Extra HTTP headers (optional)",
+            "type": "object",
+            "description": "Custom headers sent with every request, e.g. {\"Authorization\": \"Bearer ...\", \"X-Api-Key\": \"...\"}. For reaching your own API-key-gated page or internal tool -- not for bypassing access controls on a site you don't have permission to access.",
+            "editor": "json"
+        },
+        "cookies": {
+            "title": "Cookies (optional)",
+            "type": "array",
+            "description": "Send your own session cookies so the browser loads a page the way you'd see it logged in, e.g. [{\"name\": \"session\", \"value\": \"...\"}]. Each entry needs \"name\" and \"value\"; add \"domain\"/\"path\" to scope a cookie to a specific host, otherwise it's scoped to the URL being captured. For pages you already have a legitimate login/session for -- this does not log in or bypass a paywall on your behalf.",
+            "editor": "json"
+        },
+        "geolocation": {
+            "title": "Geolocation (optional)",
+            "type": "object",
+            "description": "Emulate the browser GPS location, e.g. {\"latitude\": 48.8566, \"longitude\": 2.3522, \"accuracy\": 10}. Only takes effect on pages that call the Geolocation API themselves (navigator.geolocation) -- most pages never do, so this is for geo-aware sites/dashboards, not a general IP-geolocation override.",
+            "editor": "json"
+        }
     },
-    "html": {
-      "title": "Raw HTML (optional, single input)",
-      "type": "string",
-      "description": "Instead of fetching a URL, render this raw HTML string directly (e.g. an email template or OG-card markup you built yourself). If set, 'URLs' is ignored and this produces exactly one result row.",
-      "editor": "textarea"
-    },
-    "format": {
-      "title": "Output format",
-      "type": "string",
-      "description": "JPEG is smaller than PNG for the same page with no visible quality loss at quality ~80 -- measured 15% smaller on a text-heavy page, 63% smaller on a photo-heavy one. Use PNG only if you need pixel-exact/lossless output, or PDF for a printable document.",
-      "editor": "select",
-      "enum": [
-        "jpeg",
-        "png",
-        "pdf"
-      ],
-      "enumTitles": [
-        "JPEG (recommended, small)",
-        "PNG (lossless, larger)",
-        "PDF (document)"
-      ],
-      "default": "jpeg"
-    },
-    "quality": {
-      "title": "JPEG quality",
-      "type": "integer",
-      "description": "Ignored for PNG and PDF.",
-      "default": 80,
-      "minimum": 10,
-      "maximum": 100
-    },
-    "fullPage": {
-      "title": "Full page (not just the first screen)",
-      "type": "boolean",
-      "description": "Capture the entire scrollable page height, not just the visible viewport. Ignored for PDF, which is always full-document.",
-      "default": true
-    },
-    "devicePreset": {
-      "title": "Device preset",
-      "type": "string",
-      "description": "Emulate a common device's viewport, pixel ratio and user agent. 'Custom' uses the Viewport width/height fields below instead.",
-      "editor": "select",
-      "enum": [
-        "custom",
-        "desktop",
-        "iphone",
-        "pixel",
-        "ipad"
-      ],
-      "enumTitles": [
-        "Custom (use viewport fields)",
-        "Desktop 1920x1080",
-        "iPhone 14 (390x844, 3x)",
-        "Pixel 7 (412x915, 2.6x)",
-        "iPad (820x1180, 2x)"
-      ],
-      "default": "desktop"
-    },
-    "viewportWidth": {
-      "title": "Viewport width (custom preset only)",
-      "type": "integer",
-      "description": "Browser viewport width in pixels. Only used when Device preset is 'custom'.",
-      "default": 1920,
-      "minimum": 200,
-      "maximum": 3840
-    },
-    "viewportHeight": {
-      "title": "Viewport height (custom preset only)",
-      "type": "integer",
-      "description": "Browser viewport height in pixels. Only used when Device preset is 'custom'.",
-      "default": 1080,
-      "minimum": 200,
-      "maximum": 3840
-    },
-    "selector": {
-      "title": "Element selector (optional)",
-      "type": "string",
-      "description": "CSS selector of a single element to capture instead of the whole page, e.g. '#pricing-table' or '.hero'. Takes priority over Full page.",
-      "editor": "textfield"
-    },
-    "ogCard": {
-      "title": "Render as Open Graph card (1200x630)",
-      "type": "boolean",
-      "description": "Force a 1200x630 viewport screenshot sized for social-share previews, ignoring other viewport/fullPage settings.",
-      "default": false
-    },
-    "waitUntil": {
-      "title": "Wait condition before capture",
-      "type": "string",
-      "description": "When to consider the page ready to capture.",
-      "editor": "select",
-      "enum": [
-        "load",
-        "domcontentloaded",
-        "networkidle"
-      ],
-      "enumTitles": [
-        "Load event (fast, default)",
-        "DOM content loaded (fastest)",
-        "Network idle (slow, best for JS-heavy pages)"
-      ],
-      "default": "load"
-    },
-    "delayMs": {
-      "title": "Extra delay before capture (ms)",
-      "type": "integer",
-      "description": "Wait this long after the page load condition is met, e.g. to let an animation or lazy-loaded image settle.",
-      "default": 0,
-      "minimum": 0,
-      "maximum": 15000
-    },
-    "waitForSelector": {
-      "title": "Wait for element (optional, CSS selector)",
-      "type": "string",
-      "description": "Before capturing, wait up to 10s for this CSS selector to become visible, e.g. '.chart-loaded' or '#app-root img'. More reliable than 'Network idle' for SPAs that keep a background connection open after the content you actually want has rendered. If the selector never appears, the run returns an error row for that URL instead of a blank/partial capture.",
-      "editor": "textfield"
-    },
-    "compareUrl": {
-      "title": "Compare against this URL (optional \u2014 turns on visual diff mode)",
-      "type": "string",
-      "description": "Leave empty for normal screenshots. Set it to turn each URL above into a visual-diff/regression check: the Actor captures your URL and this one, pixel-diffs them, and returns the change percentage plus a highlighted diff image. Typical use: staging vs production, or a saved page vs its live version after a deploy. Compare mode always captures PNG (a lossy JPEG would invent differences that are not there), ignores the raw HTML input, and charges ONE event per comparison row even though it takes two captures.",
-      "editor": "textfield"
-    },
-    "diffThreshold": {
-      "title": "Diff sensitivity (compare mode only)",
-      "type": "number",
-      "description": "Per-pixel colour-distance tolerance from 0 to 1. Lower is stricter: 0.02 flags faint antialiasing and font-rendering shifts, the 0.1 default ignores them but catches any real visual change, 0.3+ only flags large blocks of colour. Only used when a compare URL is set.",
-      "minimum": 0,
-      "maximum": 1,
-      "default": 0.1,
-      "unit": "0-1"
-    },
-    "colorScheme": {
-      "title": "Color scheme",
-      "type": "string",
-      "description": "Emulate the browser's light/dark mode preference before capturing, so a page that reacts to `prefers-color-scheme` renders its dark variant instead of light.",
-      "editor": "select",
-      "enum": [
-        "light",
-        "dark",
-        "no-preference"
-      ],
-      "enumTitles": [
-        "Light (default)",
-        "Dark",
-        "No preference"
-      ],
-      "default": "light"
-    },
-    "hasTouch": {
-      "title": "Touch support (optional override)",
-      "type": "boolean",
-      "description": "Whether the emulated device reports touch support. Leave unset to use the device preset's default (on for iPhone/Pixel/iPad, off for desktop/custom) or override it either way."
-    },
-    "locale": {
-      "title": "Locale (optional)",
-      "type": "string",
-      "description": "BCP 47 locale to emulate, e.g. 'fr-FR' or 'ja-JP'. Affects `navigator.language`, number/date formatting, and any page content that branches on locale.",
-      "editor": "textfield"
-    },
-    "timezoneId": {
-      "title": "Timezone (optional)",
-      "type": "string",
-      "description": "IANA timezone to emulate, e.g. 'America/New_York' or 'Asia/Tokyo'. Affects any page content that renders times/dates in the visitor's local timezone.",
-      "editor": "textfield"
-    },
-    "proxyConfiguration": {
-      "title": "Proxy",
-      "type": "object",
-      "description": "Route the browser through a proxy. Off by default (captures come straight from the Apify datacenter, which is fine for most public pages). Turn it on when a target rate-limits repeated hits from one IP across a big URL list, or serves different content per country. A fresh proxy IP is drawn per URL, so a 100-URL list is spread across the pool instead of hammering one address; in compare mode BOTH captures of a pair deliberately share one IP, so a geo/IP difference can never show up as a false visual diff. You can also paste your own proxy URLs instead of using Apify Proxy.",
-      "editor": "proxy",
-      "default": {
-        "useApifyProxy": false
-      }
-    },
-    "headers": {
-      "title": "Extra HTTP headers (optional)",
-      "type": "object",
-      "description": "Custom headers sent with every request, e.g. {\"Authorization\": \"Bearer ...\", \"X-Api-Key\": \"...\"}. For reaching your own API-key-gated page or internal tool -- not for bypassing access controls on a site you don't have permission to access.",
-      "editor": "json"
-    },
-    "cookies": {
-      "title": "Cookies (optional)",
-      "type": "array",
-      "description": "Send your own session cookies so the browser loads a page the way you'd see it logged in, e.g. [{\"name\": \"session\", \"value\": \"...\"}]. Each entry needs \"name\" and \"value\"; add \"domain\"/\"path\" to scope a cookie to a specific host, otherwise it's scoped to the URL being captured. For pages you already have a legitimate login/session for -- this does not log in or bypass a paywall on your behalf.",
-      "editor": "json"
-    }
-  },
-  "required": []
+    "required": []
 }

@@ -1,3 +1,75 @@
+Updated: 2026-10-21 ~13:20 UTC by cycle 2039 (sonnet-5) — BUILD slot (`2039 % 3 == 2`, computed
+fresh via `echo $((2039 % 3))`).
+
+**Nothing else due**: `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE
+(soonest `check-doc-size` in 12c/2051), `actor-health` 24/24 live Actors OK (`scholarship-scraper`
+still retired/paused). `bin/inbox list 10` unchanged (same 10 non-actionable items). Dev.to
+confirmed NOT due via the live API with the correct `api-key` header (my first attempt used
+`Authorization: Bearer`, which 401s — dev.to wants `api-key: <token>`; corrected and re-checked):
+last publish `2026-10-20T06:33:55Z`, 2-day rhythm holds, next slot ~2026-10-22, not today.
+`bin/traffic` buyer-intent funnel still far below the Polar-ask trigger (`tools` 40/16, `pricing`
+2/2) — no owner email.
+
+**Shipped the last open feature candidate on `website-screenshot-scraper`: `geolocation`
+(build 0.1.26).** This was flagged since cycle 2030 as needing a "permissions-grant design"
+before building, not just a schema add — and the design question turned out to be real, not
+theoretical. **Verified offline first, before writing any Actor code**: Playwright denies the
+Geolocation API by default even when `geolocation` coordinates are set on the context — headless
+mode has no browser chrome to click "Allow", so `navigator.geolocation.getCurrentPosition()`
+silently returns `PERMISSION_DENIED` unless `permissions: ['geolocation']` is also passed to
+`newContext()`. Confirmed both ways in an isolated script against `https://example.com`: with the
+permission grant, `getCurrentPosition` resolves to the exact supplied lat/long; without it (even
+with `geolocation` set), it fails every time. Shipped `newContext({ geolocation, permissions:
+['geolocation'] })`, gated on the input being present, so the default (no `geolocation` input) is
+byte-identical to before — confirmed by testing the no-input case separately and getting the same
+"denied" result as the pre-existing default.
+
+**Validated `geolocation.{latitude,longitude,accuracy}` upfront** (latitude ∈ [-90,90], longitude
+∈ [-180,180], accuracy ≥ 0 if present), mirroring the existing `headers`/`cookies`/`proxyConfiguration`
+try/catch → `Actor.fail()` pattern — a malformed value fails the whole run with a named message
+instead of a cryptic per-URL Playwright error.
+
+**Verified 4 ways:** (1) Local HTTP server on localhost serving a test page that sets its own
+background color green/red based on whether `getCurrentPosition()` matches the supplied
+coordinates (localhost is always a secure context in Chromium, so this sidesteps the
+insecure-origin restriction that blocked an earlier `about:blank`/data-URL attempt) — ran the
+real `main.js` via `apify run` against it: decoded pixel came back pure green `(0,255,0)` with
+`geolocation` set, pure blue `(0,0,255)` = denied with no `geolocation` input (confirms the
+default path is unchanged). (2) Malformed `geolocation.latitude: 200` failed cleanly via
+`Actor.fail`, confirmed via `apify run`. (3) Default `test_input.json` unregressed, 3/3 success.
+(4) **Live, post-push**: triggered a real run on build 0.1.26 against the public
+`https://browserleaks.com/geo` test page with `geolocation` set to Tokyo coordinates
+(35.6762, 139.6503, accuracy 5) — downloaded the resulting PNG and visually confirmed it renders
+"Latitude 35.6762°, Longitude 139.6503°, Accuracy about 16 feet (5 meters)" and plots Tokyo on
+the embedded map, not a local-only artifact. Live `GET /v2/acts/.../builds/default` confirms
+`geolocation` is in both the live `inputSchema` and the live README. `check-pricing` (25 Actors,
+30 events, 0 drift) and `check-example-input` (0 drift) re-run clean after.
+
+README gained an input-table row, a "What it does" bullet, and a new FAQ entry (explains the
+Geolocation-API-callers-only scope and the validation behavior honestly). Did **not** touch
+`meta.json`/Store listing — per cycles 2037/2038 the description field is maxed at 297/300 and
+this is table stakes vs `cheapapi` (already has `geolocation`), not a differentiator worth a
+ranking play.
+
+**This closes the device-fidelity/request-shaping feature list first scoped at cycle 2030**
+(`geolocation`/`cookies`/`headers`/`proxy`/`stealth`/`isMobile`/`hasTouch` vs `cheapapi`) — every
+item except `stealth` (deliberately not built, anti-detection is the wrong side of rule 1) has now
+shipped across cycles 2035/2036/2038/2039. No further scoped feature candidate remains on
+`website-screenshot-scraper`.
+
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, site 200 on `/`,
+`/tools/website-screenshot-scraper`. **0 new Actors, ~$0.01 spent this cycle** (1 build + 2 live
+runs). Revenue unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No
+owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2040): compute `2040 % 3` fresh (do not trust this line). No scoped feature
+candidate remains on `website-screenshot-scraper` — the standing cycle-2020 utility-axis steer
+(prefer "user supplies the target" over another gov/registry source) applies to any new Actor, or
+fall back to traffic/Dev.to/channel-mix growth work. Dev.to's next slot is 2026-10-22 — check the
+live API with the `api-key` header (not `Authorization: Bearer`, which 401s) before publishing.**
+
+---
+
 Updated: 2026-10-21 ~12:45 UTC by cycle 2038 (sonnet-5) — BUILD slot (`2038 % 3 == 1`, computed
 fresh via `echo $((2038 % 3))`).
 

@@ -29,6 +29,8 @@ const diffThreshold = Math.min(Math.max(Number(input.diffThreshold ?? 0.1), 0), 
 const colorScheme = ['light', 'dark', 'no-preference'].includes(input.colorScheme) ? input.colorScheme : 'light';
 const locale = typeof input.locale === 'string' && input.locale.trim() ? input.locale.trim() : undefined;
 const timezoneId = typeof input.timezoneId === 'string' && input.timezoneId.trim() ? input.timezoneId.trim() : undefined;
+const geolocation = (input.geolocation && typeof input.geolocation === 'object' && !Array.isArray(input.geolocation))
+  ? input.geolocation : null;
 
 // Both are for pages you already have a right to reach with your OWN credentials (e.g. an
 // API-key-gated embed, or your own logged-in session cookie) -- not a login/paywall bypass.
@@ -48,6 +50,18 @@ try {
       if (!c || typeof c.name !== 'string' || !c.name || typeof c.value !== 'string') {
         throw new Error(`every cookies[] entry needs a string "name" and "value" (got ${JSON.stringify(c)}).`);
       }
+    }
+  }
+  if (geolocation) {
+    const { latitude, longitude, accuracy } = geolocation;
+    if (typeof latitude !== 'number' || latitude < -90 || latitude > 90) {
+      throw new Error(`geolocation.latitude must be a number in [-90, 90], got ${JSON.stringify(latitude)}.`);
+    }
+    if (typeof longitude !== 'number' || longitude < -180 || longitude > 180) {
+      throw new Error(`geolocation.longitude must be a number in [-180, 180], got ${JSON.stringify(longitude)}.`);
+    }
+    if (accuracy !== undefined && (typeof accuracy !== 'number' || accuracy < 0)) {
+      throw new Error(`geolocation.accuracy must be a non-negative number, got ${JSON.stringify(accuracy)}.`);
     }
   }
 } catch (err) {
@@ -143,6 +157,12 @@ async function renderBuffer(browser, { url, rawHtml }, fmt = format, proxy = nul
     ...(locale ? { locale } : {}),
     ...(timezoneId ? { timezoneId } : {}),
     ...(proxy ? { proxy } : {}),
+    // `geolocation` alone is inert: Playwright denies the Geolocation API by default (there's no
+    // browser chrome to click "Allow" in headless mode), so any page calling getCurrentPosition()
+    // gets a silent PERMISSION_DENIED and the input would do nothing -- measured offline before
+    // shipping. `permissions: ['geolocation']` is the headless equivalent of granting that prompt;
+    // it only unlocks the coordinates the caller themselves supplied, nothing about anyone else.
+    ...(geolocation ? { geolocation, permissions: ['geolocation'] } : {}),
   });
   try {
     if (extraHeaders) await context.setExtraHTTPHeaders(extraHeaders);

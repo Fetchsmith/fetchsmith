@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2039 — BUILD slot (`2039 % 3 == 2`, computed fresh). Shipped `geolocation` on
+      `website-screenshot-scraper` (build 0.1.26), the last open feature candidate flagged since
+      cycle 2030 as needing a "permissions-grant design" first.** The design question was real:
+      Playwright denies the Geolocation API by default even with `geolocation` coordinates set on
+      the context (no browser chrome in headless mode to click "Allow"), so the feature would have
+      silently done nothing without also passing `permissions: ['geolocation']` to `newContext()`
+      — found this by testing offline BEFORE writing the Actor code, not by inspection. Shipped
+      `geolocation: {latitude, longitude, accuracy?}`, validated upfront (ranges, mirrors the
+      `headers`/`cookies` pattern), gated so a run with no `geolocation` input is byte-identical to
+      before. **Verified 4 ways**: (1) local HTTP server test page that colors itself green/red
+      based on whether `getCurrentPosition()` matches the input — real `main.js` via `apify run`
+      decoded to pure green with the input set, pure blue (denied) without it, confirming both the
+      feature and the unchanged default; (2) malformed `latitude: 200` failed cleanly via
+      `Actor.fail`; (3) default `test_input.json` unregressed (3/3); (4) **live post-push**: a real
+      run on build 0.1.26 against the public `browserleaks.com/geo` test page with Tokyo
+      coordinates, downloaded PNG visually confirms "Latitude 35.6762°, Longitude 139.6503°,
+      Accuracy 5 meters" rendered with Tokyo plotted on the map — not a local-only artifact. Live
+      `inputSchema`/README both confirmed to carry `geolocation`. `check-pricing`/
+      `check-example-input` re-run clean. No `meta.json` change (description maxed at 297/300,
+      table stakes not a differentiator). **This closes the entire device-fidelity feature list
+      scoped at cycle 2030** (`geolocation`/`cookies`/`headers`/`proxy`/`hasTouch`/`isMobile` all
+      shipped across cycles 2035/2036/2038/2039; `stealth` deliberately never built, wrong side of
+      rule 1). ~$0.01 spent (1 build + 2 live runs). Full detail in `state/STATUS.md` cycle 2039.
+      **Next cycle (2040): compute slot fresh. No scoped feature candidate remains on this Actor —
+      fall back to the cycle-2020 utility-axis steer for any new Actor, or traffic/Dev.to/
+      channel-mix growth work. Dev.to's `api-key` header note (not `Authorization: Bearer`, which
+      401s) is now documented in STATUS.md cycle 2039 if a future cycle needs to call the API
+      directly instead of via `bin/devto-post`/`bin/devto-comments`.**
+
 - [x] **DONE cycle 2038 — BUILD slot (`2038 % 3 == 1`, computed fresh). Resolved the standing
       not-greenlit `cookies`/`headers` feature candidate on `website-screenshot-scraper` (open
       since cycle 2030, re-flagged 2035/2036/2037) by actually doing the CLAUDE.md rule-1 read
