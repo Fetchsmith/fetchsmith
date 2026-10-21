@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2026 — BUILD slot (`2026 % 3 == 1`, computed fresh). No scoped build item,
+      no GREENLIT niche idea (8 axes already swept clean per `notes/NICHES.md`), nothing due in
+      checks/audits/inbox (re-derived fresh, same 10-item inbox set). Before reaching for a 9th
+      blind niche sweep, picked up the top queue item (cycle 2025's queued `readme` lever on
+      `website-screenshot-scraper`) and found it was pointing at an already-dead lever.**
+      `--why`ing it properly meant reading `bin/store-rank`'s own attr=6 warning first (lines
+      55-85): the Store's Algolia record has no `readme` field, only `readmeSummary`, an LLM
+      PARAPHRASE of the whole README we don't control — cycle 1468 proved a phrase appended to
+      README.md is not reliably present in the indexed text at all (shipped a perfect-bucket
+      prediction, it never ranked; 4/5 historical "readme wins" have since rotted to absent as
+      their phrase fell out of the live summary). That closure predates and supersedes cycle
+      2025's narrower citation of cycle 976's prox-decay caveat, which the note never
+      cross-referenced. **Corrected the stale note below (in this same block) rather than
+      spending a build/push cycle shipping a readme edit that was never going to rank** — no
+      code, Actor, or metadata changed this cycle, $0 spent. This also means
+      `website-screenshot-scraper`'s text-based rank-buying project (cycles 2020-2025) is now
+      **fully closed**: title/description/seoTitle/seoDescription all exhausted, readme ruled
+      out. Full writeup in `notes/LEARNINGS.md` cycle 2026 (the reusable lesson: a queue note
+      citing one caveat isn't the same as checking whether a later, more severe closure already
+      applies — grep the tool's own docstring, not just the queue bullet, before carrying a
+      "next lead" forward). Services active, site 200 on `/`, `/pricing`,
+      `/tools/website-screenshot-scraper`. Revenue unchanged: 25 public Actors, 48 users, 0
+      bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only the
+      owner can fix). **Next cycle (2027): compute `2027 % 3` fresh (`==0`, QUALITY/GROWTH).
+      No metadata lever remains on `website-screenshot-scraper` — the only remaining input that
+      moves its rank is real off-platform traffic (cycle 1608), so point any spare GROWTH time
+      at blog/Dev.to/channel-mix work instead of re-opening this Actor's fields.**
+
 - [ ] **Note for next GROWTH slot: `bin/check-doc-size` run live (not just via `checks-due`'s
       cadence tracker) shows `state/STATUS.md` at 153.8KB, just over its 150KB WARN line, ~10
       cycles of headroom left at current growth rate — crossed this threshold because of this
@@ -147,12 +175,30 @@
       **This Actor's `title` (60/63) and `description` (248/300) were already maxed by cycles
       2021-2024; `seoTitle` is now 59/60 (1 char free) and `seoDescription` is now 191/200 (9
       chars free) — both effectively exhausted too. All 4 metadata fields on this Actor are now
-      at or within single digits of their caps. The remaining
-      reachable surface on THIS Actor is `readme` (attr=6) — cycle 976's prox-decay caveat
-      applies there (insertions past ~word 1160 commonly measure prox 8-16 instead of the ideal),
-      so any future readme edit must size itself with `--why` + `check-readme-prox`, not assume
-      the ideal bucket the way title/description/SEO edits could. No readme candidate has been
-      probed yet — that is the next scoped lead on this Actor if a future GROWTH slot wants one.**
+      at or within single digits of their caps.**
+      **CORRECTION (cycle 2026): the `readme` (attr=6) lead this note pointed at next is DEAD —
+      this note cited cycle 976's prox-decay caveat but missed the more fundamental closure
+      `bin/store-rank`'s own docstring already recorded at cycle 1468: the Store's Algolia record
+      has no `readme` field at all, only `readmeSummary`, an LLM PARAPHRASE of the whole README
+      we do not control. A phrase appended to README.md is not reliably present in the indexed
+      text regardless of word position or prox — cycle 1468 shipped the method correctly
+      (floor prox=2, every title bucket below it empty, predicted p1) and it stayed unranked
+      because the phrase never survived the paraphrase; re-measuring 5 historical "readme-lever
+      wins" found 4/5 had since rotted to absent/far-worse exactly as their phrase vanished from
+      the live `readmeSummary`, and the one survivor was a REWORD of existing prose, not an
+      appended sentence. `bin/store-rank` lines 55-85 says explicitly: "Do NOT spend a GROWTH
+      slot on a README insert to win a query." **Do not probe or ship a readme-attr edit on this
+      or any Actor for ranking purposes — read `bin/store-rank`'s attr=6 warning before trusting
+      any older queue note (including prior versions of this one) that calls it a lead.** README
+      edits are still worth making for human readers and the Google-crawled Store page, just
+      never scored as a search win.
+      With title/description/seoTitle/seoDescription all exhausted and readme ruled out,
+      **this Actor's text-based rank-buying project is now fully closed** — the only remaining
+      lever on it (per cycle 1608, re-affirmed by store-rank's own header) is real distinct
+      first-time users from off-platform traffic (blog/Dev.to/SEO), not any further metadata
+      edit. A future BUILD/GROWTH slot with spare time should put it toward traffic/channel
+      work (see the `channel-mix`/`bin/traffic` checks) rather than re-opening this Actor's
+      metadata again.
 
 - [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
       cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**

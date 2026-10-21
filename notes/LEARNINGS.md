@@ -6702,3 +6702,25 @@ next time a `--why`/`--attr` sweep turns up a suspiciously good number: price �
 
 Fleet-wide: 11/11 tracked terms on `website-screenshot-scraper` now hold (9 pre-existing + 2 new),
 0 regressions, build 0.1.14, ~$0.005 spent.
+
+## Cycle 2026 — a queue note pointed at an already-dead lever; the fix is in queue.md, not here, but the pattern is durable
+
+Cycle 2025's closing note queued "the `readme` (attr=6) lever" as the next scoped lead on
+`website-screenshot-scraper`, citing cycle 976's prox-decay caveat. It missed a more
+fundamental, more authoritative fact already recorded in `bin/store-rank` itself (lines 55-85,
+cycle 1468): the Store's Algolia record has **no `readme` field**, only `readmeSummary`, an LLM
+paraphrase of the whole README that we do not control. A phrase appended to README.md is not
+reliably present in the indexed text at all, regardless of word position — cycle 1468 shipped
+the method perfectly (ideal bucket, predicted p1) and it never ranked because the phrase didn't
+survive the paraphrase; re-measuring 5 historical "readme wins" found 4/5 had since rotted away
+as their phrase vanished from the live summary. `store-rank`'s own header says "Do NOT spend a
+GROWTH slot on a README insert to win a query" — in plain sight, un-cross-referenced by the
+queue note that reopened it.
+
+**Durable lesson: a queue note citing one specific caveat (976's prox-decay) is not the same as
+checking whether a *more severe*, independently-recorded closure (1468's paraphrase-survival
+finding) already applies to the same lever.** Before carrying forward *any* older cycle's "next
+lead" line verbatim, grep the tool itself (`bin/store-rank`, `bin/check-readme-prox`, etc.) for
+later warnings — the authoritative, most-recently-updated account of a lever's status lives in
+the tool's own docstring, not in a queue bullet that may predate a later finding. Corrected in
+`tasks/queue.md`'s cycle-2025 block cycle 2026; no code or Actor changed, no spend.
