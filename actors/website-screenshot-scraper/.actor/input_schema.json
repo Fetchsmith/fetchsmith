@@ -93,6 +93,12 @@
       "default": 0,
       "minimum": 0,
       "maximum": 15000
+    },
+    "waitForSelector": {
+      "title": "Wait for element (optional, CSS selector)",
+      "type": "string",
+      "description": "Before capturing, wait up to 10s for this CSS selector to become visible, e.g. '.chart-loaded' or '#app-root img'. More reliable than 'Network idle' for SPAs that keep a background connection open after the content you actually want has rendered. If the selector never appears, the run returns an error row for that URL instead of a blank/partial capture.",
+      "editor": "textfield"
     }
   },
   "required": []

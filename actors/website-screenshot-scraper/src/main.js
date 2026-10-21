@@ -18,6 +18,7 @@ const selector = typeof input.selector === 'string' && input.selector.trim() ? i
 const ogCard = input.ogCard === true;
 const waitUntil = ['load', 'domcontentloaded', 'networkidle'].includes(input.waitUntil) ? input.waitUntil : 'load';
 const delayMs = Math.min(Math.max(Number(input.delayMs ?? 0), 0), 15000);
+const waitForSelector = typeof input.waitForSelector === 'string' && input.waitForSelector.trim() ? input.waitForSelector.trim() : null;
 
 const DEVICE_PRESETS = {
   desktop: { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false },
@@ -72,6 +73,7 @@ async function captureOne(browser, { url, rawHtml }, index) {
     } else {
       await page.goto(url, { waitUntil, timeout: 30000 });
     }
+    if (waitForSelector) await page.waitForSelector(waitForSelector, { state: 'visible', timeout: 10000 });
     if (delayMs > 0) await page.waitForTimeout(delayMs);
 
     let buffer;

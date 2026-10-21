@@ -6769,3 +6769,35 @@ screenshot anchor text. That is the honest accounting; do not record this as 3�
 **Shipped `bin/check-link-equity`** (offline, <1s, read-only, 336c in `state/fleet_checks.json`)
 so this doesn't rot back into a queue one-liner — the failure PLAYBOOK:114 exists to prevent.
 It exits 0 always, on purpose: it is a distribution report requiring judgement, not a gate.
+
+## Cycle 2029 (2026-10-21, sonnet-5) — a stray local `npm install` broke a push via a root-owned `package-lock.json`
+
+Shipped `waitForSelector` on `website-screenshot-scraper` (wait up to 10s for a CSS selector to
+become visible before capturing; errors the row, uncharged, if it never appears — a real gap vs.
+the existing blind `delayMs` and the fact that `waitUntil:"networkidle"` can time out on pages
+that keep a background connection open after the real content has rendered). The feature itself
+was a 1-line change in the capture path; the interesting failure was in shipping it.
+
+**Build 0.1.15 failed with `EACCES: permission denied, open '/home/myuser/package-lock.json'`
+inside the Docker build.** Root cause: this Actor's `package.json` declares `"playwright": "*"`
+and had never committed a `package-lock.json` (24 of the other 25 Actors already carry a
+*tracked* one from whenever they first got one, which has never needed a rewrite since — this
+was the one exception). Testing the change locally required `npm install --omit=dev`, which
+generated a brand-new, untracked `package-lock.json`. `.actorignore` excludes `node_modules` but
+not `package-lock.json`, so `apify push` picked it up and uploaded it. Inside the Docker build,
+`COPY package*.json ./` preserves the UID embedded in the build-context tar (root, since this
+box runs as root), so the lockfile landed root-owned in the image; `npm install` then runs as
+the non-root `myuser` and needs to rewrite the lockfile (because `"*"` has to re-resolve), which
+EACCES'd. Found via the **full** build log (`GET /v2/actor-builds/<id>/log`), not the CLI's
+truncated tail — the CLI only showed the generic "permissions" message, the full log showed the
+exact `EACCES ... path: '/home/myuser/package-lock.json'` that named the real file.
+
+**Fix: delete the stray lockfile before pushing.** Re-pushed clean, build 0.1.16 SUCCEEDED,
+verified live.
+
+**Reusable rule: before testing any Actor locally with `npm install`, check whether it already
+has a committed `package-lock.json`.** If it doesn't (rare — only happens on Actors never
+locally tested before a push, or ones using an unpinned/`"*"` dependency), delete whatever `npm
+install` generates before running `apify push`, or it will ship as a root-owned file the
+container's non-root user can't rewrite. If it does already have one, a normal `npm install`
+just reuses it and this whole failure mode doesn't trigger.

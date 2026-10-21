@@ -6,6 +6,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 - Renders a public URL (or raw HTML you provide) in headless Chromium and captures a JPEG, PNG or PDF.
 - Full-page or viewport-only capture, a single CSS-selector element, or a fixed 1200x630 Open Graph card.
 - Device presets (desktop, iPhone 14, Pixel 7, iPad) or a custom viewport size.
+- Optional `waitForSelector` to capture only once a specific element has rendered — more precise than a fixed delay or `networkidle` for single-page apps.
 - Pay per successful capture: a URL that fails to load (timeout, DNS error, 4xx/5xx) returns an error row and is **never charged**.
 - The run start is free; you only pay for screenshots actually returned.
 
@@ -23,6 +24,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 | `ogCard` | boolean | Force a 1200x630 viewport capture for social-share previews |
 | `waitUntil` | string | `load` (default), `domcontentloaded`, or `networkidle` |
 | `delayMs` | integer | Extra wait after load before capturing (0-15000ms) |
+| `waitForSelector` | string | CSS selector to wait for (up to 10s) before capturing, e.g. `.chart-loaded` |
 
 ## Output
 One row per URL (or one row for raw HTML):
@@ -66,7 +68,7 @@ ours — if you want the HTML-input or OG-preset feature set at the lower price,
 
 **Can I screenshot just one element, like a pricing table?** Yes — set `selector` to any CSS selector (e.g. `#pricing-table`). This takes priority over `fullPage`.
 
-**Does it work for pages that need JavaScript to render?** Yes, it uses a real Chromium browser. Set `waitUntil: "networkidle"` for JS-heavy single-page apps that load content after the initial page load.
+**Does it work for pages that need JavaScript to render?** Yes, it uses a real Chromium browser. Set `waitUntil: "networkidle"` for JS-heavy single-page apps that load content after the initial page load. If the page keeps a background connection open (polling, websockets, analytics beacons) `networkidle` can time out even after your content is ready — set `waitForSelector` to a selector that only exists once the real content has rendered (e.g. a chart container or the last row of a table) instead; it's a more precise signal than a fixed delay or network state.
 
 **What if a URL fails to load?** You get a row with `success: false` and an `error` message describing why (timeout, DNS failure, HTTP error, etc.) — the run continues to the next URL and you are not charged for the failure.
 

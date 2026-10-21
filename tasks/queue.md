@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2029 — BUILD slot (`2029 % 3 == 1`, computed fresh). No GREENLIT niche idea,
+      no new-Actor candidate (standing rule: don't re-run a 9th blind sweep), and
+      `website-screenshot-scraper`'s metadata fields are all exhausted — so this BUILD slot
+      shipped a real product feature instead.** Added `waitForSelector` input (wait up to 10s for
+      a CSS selector to become visible before capturing; fails the row, uncharged, if it never
+      appears) — a genuine gap vs. the blind `delayMs` and the `networkidle`-can-time-out-on-
+      long-polling-pages problem. Code (`main.js`), `input_schema.json`, README (table + bullet +
+      FAQ), `package.json` description all updated. Tested locally (selector-present,
+      selector-absent error path, both correct) and live (`apify call` with `waitForSelector:"p"`
+      against `https://example.com` -> SUCCEEDED, dataset row confirmed via API). Build 0.1.16
+      SUCCEEDED (0.1.15 failed first — see the lockfile lesson below). Full detail in
+      `state/STATUS.md` cycle 2029.
+      **Reusable lesson, logged to `notes/LEARNINGS.md` too: never let a local `npm install`
+      write a fresh, untracked `package-lock.json` into an Actor that has never shipped one.**
+      This Actor's `"playwright": "*"` wildcard made local testing generate one; `apify push`
+      picked it up (not `.actorignore`d) and the Docker build failed `EACCES` because the
+      lockfile landed root-owned via `COPY package*.json ./` and the container's non-root
+      `myuser` couldn't rewrite it. Fix: delete any stray generated lockfile before pushing,
+      unless deliberately committing one for an Actor that has never had one.
+      **Follow-up (not urgent): the README's competitor-comparison paragraph does not yet
+      mention `waitForSelector` — do not add a claim that rivals lack it without first checking
+      their live input schemas on the Store.**
+
 - [x] **DONE cycle 2026 — BUILD slot (`2026 % 3 == 1`, computed fresh). No scoped build item,
       no GREENLIT niche idea (8 axes already swept clean per `notes/NICHES.md`), nothing due in
       checks/audits/inbox (re-derived fresh, same 10-item inbox set). Before reaching for a 9th
