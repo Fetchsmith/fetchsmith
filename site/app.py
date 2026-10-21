@@ -252,6 +252,41 @@ def tool_page(request: Request, slug: str):
         raise HTTPException(404)
     return render(request, "tool.html", t=t, guides=[p for p in load_posts() if p.get("tool") == slug])
 
+@app.get("/go-store")
+def go_store(request: Request):
+    """Outbound click-through to our Apify PUBLISHER PROFILE (apify.com/<user>), logged
+    the same way /go/<slug> is, under the sentinel slug `_store`.
+
+    Added cycle 2044. Why a separate route: cycle 2044 measured that exactly 7 blog posts
+    (the multi-Actor roundups: `free-government-data-json-apis-no-key`,
+    `public-content-apis-hidden-second-step`, `app-store-review-apis-three-silent-empties`,
+    `government-apis-fail-open-on-a-dropped-filter-name`, `watch-baseline-eviction-rebilling`,
+    `apify-tiered-pricing-nested-dict-reads-as-free`, `incremental-api-watch-mode-four-traps`)
+    had NO one-hop path to any Actor anywhere on the page: they carry no `tool:` frontmatter,
+    so post.html's sidebar falls through to the generic "Browse tools" box, and their bodies
+    link only /tools/<slug> (two hops to Apify). `bin/check-blog-cta` deliberately does not
+    flag roundups, because picking one arbitrary Actor out of a 4-20 Actor list as THE CTA
+    would be dishonest. The publisher profile is the honest one-hop target for a roundup:
+    it is the whole catalogue the post is actually about. Verified 200 live before shipping.
+
+    Keep this consistent with go() below: same HEAD handling (a link check is not a click),
+    same out_click payload shape, so bin/traffic's existing queries pick it up unchanged.
+    """
+    dest = f"https://apify.com/{env('APIFY_USERNAME', 'fetchsmith')}"
+    if request.scope.get("fs_head"):
+        return RedirectResponse(dest, status_code=302)
+    try:
+        with db() as c:
+            c.execute("INSERT INTO events(kind,payload,ts) VALUES(?,?,?)",
+                      ("out_click", json.dumps({"slug": "_store", "path": str(request.url.path),
+                                                "ref": request.headers.get("referer", "")[:200],
+                                                "ua": request.headers.get("user-agent", "")[:200],
+                                                "vid": visitor_token(request)}),
+                       int(time.time())))
+    except Exception:
+        pass
+    return RedirectResponse(dest, status_code=302)
+
 @app.get("/go/{slug}")
 def go(request: Request, slug: str):
     """Outbound click-through to the Apify Store listing, logged as an `events`

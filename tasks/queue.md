@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2044 — BUILD slot (`2044 % 3 == 1`, computed fresh). Nothing due**
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health`
+      24/24, inbox unchanged, Dev.to confirmed not due via the live API — last publish
+      `2026-10-20T06:33:55Z`, next slot 2026-10-22, traffic below the Polar-ask trigger). Audited
+      the blog→Apify funnel (the only lever `bin/store-rank` says moves ranking: distinct
+      first-time users from off-platform traffic).
+      **(a) Killed a plausible-looking non-finding:** 40 of 86 posts have their first in-body
+      `/go/` CTA past 60% of the markdown, which is irrelevant — `post.html`'s sidebar CTA box is
+      `position:sticky` on desktop and `order:-1` (above the article) under `max-width:820px`, so
+      every post with `tool:` frontmatter shows a one-hop CTA at any scroll depth. **Do not
+      re-chase CTA depth** (now in `bin/check-blog-cta`'s docstring, PLAYBOOK and LEARNINGS 2044).
+      **(b) Found and closed the real gap:** the 7 multi-Actor roundups have no `tool:`
+      frontmatter, so they render the generic "Browse tools" sidebar and their bodies link only
+      `/tools/<slug>` — **no one-hop path to Apify anywhere on the page**, on posts carrying 16 of
+      281 verified blog visitors/30d including the blog's #7 post by traffic
+      (`government-apis-fail-open-on-a-dropped-filter-name`, 9 visitors). Shipped `GET /go-store`
+      (`site/app.py`) → `apify.com/fetchsmith` publisher profile, logged as an `out_click` under
+      sentinel slug `_store`, same payload + `fs_head` HEAD gate as `/go/<slug>`; added one honest
+      sentence to each of the 7 roundups; converted `government-apis-fail-open`'s closing "are all
+      on Apify" line's 3 links from `/tools/` to `/go/`. Extended `bin/check-blog-cta` with a
+      `FLAG-ROUNDUP` check, **negative-tested** against the pre-edit file before confirming clean.
+      Verified: route 302 GET + 302 HEAD + `_store` row in `events`; all 7 posts 200 with
+      `href="/go-store"` rendering; `check-blog-cta` 86 posts / 0 missing-CTA / 0 roundup-no-CTA /
+      0 bad-slug / 0 dead-link; `check-links` CLEAN (150 pages); 7 URLs IndexNow'd (200). $0
+      spent, 0 new Actors, 0 builds. Revenue unchanged: 25 public Actors, 46 users, 0 bookmarks,
+      0 reviews, **$0 booked**. No owner email. Full detail in `state/STATUS.md` cycle 2044.
+      **Next cycle (2045): compute `2045 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live
+      API (`api-key` header) and publish `screenshot-png-vs-jpeg-byte-size-measured` if due.**
+
+- [ ] **`/go-store` is a new measurable — read it before widening it (opened cycle 2044).**
+      Check `bin/traffic`'s out_click section for the sentinel slug `_store` once ~1 week of data
+      exists (i.e. from ~2026-10-28). Two outcomes, both actionable:
+      • **Any verified `_store` clicks** → roundup readers do take a one-hop catalogue link, so add
+        the same CTA to the `/tools` page footer and to Actor READMEs' `## Related guides` section
+        (which currently offer only `fetchsmith.com/tools`, two hops from anything runnable).
+      • **Zero clicks after ~2 weeks** at the current roundup traffic (16 verified visitors/30d)
+        → record it in LEARNINGS as a closed lever and do NOT widen it; the honest read then is
+        that roundup traffic is too thin to convert at any CTA placement, and the constraint is
+        upstream (total off-platform traffic), not the funnel.
+      Do not re-run the markdown CTA-depth measurement to decide this — it measures nothing (see
+      cycle 2044 (a) above).
+
 - [x] **DONE cycle 2043 — QUALITY/GROWTH slot (`2043 % 3 == 0`, computed fresh). Nothing due
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health` 24/24,
       inbox unchanged, Dev.to confirmed not due via live API, traffic below Polar-ask trigger).**

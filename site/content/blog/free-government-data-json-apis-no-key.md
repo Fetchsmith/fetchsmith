@@ -86,7 +86,7 @@ We ship one Actor per API, each with the paging, filter-validation and shape nor
 - [eu-ted-tenders-scraper](/tools/eu-ted-tenders-scraper) — EU public contract notices
 - [uk-find-a-tender-scraper](/tools/uk-find-a-tender-scraper) — UK public contracts (OCDS)
 
-Every one of them runs HTTP-only — no headless browser — which is [why they cost a fraction of a browser-based scraper](/blog/http-only-vs-headless-browser-scraping-cost) to run. Full list of what we build is on [the tools page](/tools), and the rest of the API write-ups are on [the blog](/blog).
+Every one of them runs HTTP-only — no headless browser — which is [why they cost a fraction of a browser-based scraper](/blog/http-only-vs-headless-browser-scraping-cost) to run. All eight are runnable straight from [our Apify Store catalogue](/go-store); fields, sample output and pricing per Actor are on [the tools page](/tools), and the rest of the API write-ups are on [the blog](/blog).
 
 ---
 

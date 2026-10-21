@@ -9,9 +9,26 @@
 #
 # Flags a post only when BOTH hold:
 #   - it references exactly ONE distinct /tools/<slug> (a single-Actor post, not a roundup)
-#   - it has NO direct Apify CTA link at all (either raw apify.com/fetchsmith/<slug>, or the
-#     logged /go/<slug> redirect shipped in cycle 1509 -- both count as one-hop)
-# Multi-Actor roundups legitimately use /tools/ as a hub and are NOT flagged.
+#   - it has NO direct Apify CTA link at all (either raw apify.com/fetchsmith/<slug>, the
+#     logged /go/<slug> redirect shipped in cycle 1509, or /go-store added cycle 2044 --
+#     all three are one-hop)
+#
+# SECOND CHECK, added cycle 2044: multi-Actor ROUNDUPS with no direct CTA of any kind.
+# These were deliberately exempt above (picking one Actor out of a 4-20 Actor list as THE
+# CTA would be dishonest), which left 7 posts -- 16 verified visitors/30d, incl. the blog's
+# #7 post by traffic -- with NO one-hop path to Apify anywhere on the page. Cycle 2044
+# shipped /go-store (logged, -> apify.com/<user> publisher profile) as the honest roundup
+# target: it is the whole catalogue the roundup is already about. A roundup now needs some
+# direct CTA; /go-store satisfies it.
+#
+# DO NOT re-chase in-body CTA *depth* (cycle 2044 measured it and closed it): 40 of 86 posts
+# have their first in-body /go/ link past 60% of the markdown, which looks like a funnel leak
+# and is not one. post.html renders an Actor-specific "Run on Apify Store" box in <aside
+# class="side">; style.css makes it `position:sticky` on desktop and `order:-1` (moved ABOVE
+# the article) under max-width:820px, so every post carrying `tool:` frontmatter shows a
+# one-hop CTA at any scroll depth on both breakpoints. The ONLY posts without that box are
+# the ones with no `tool:` frontmatter -- which is exactly the roundup set this check now
+# covers. Measuring markdown offsets tells you nothing about what a reader sees.
 #
 # Also verifies every internal link resolves and every apify.com/fetchsmith/<slug> or /go/<slug>
 # link names a real Actor dir -- a dead link in the only acquisition channel is a silent revenue leak.
@@ -27,19 +44,25 @@ cd "$(dirname "$0")/.."
 BLOG=site/content/blog
 BASE=${BASE:-https://fetchsmith.com}
 
-flag=0; checked=0
+flag=0; checked=0; round=0
 echo "== single-Actor posts missing a direct Apify CTA"
 for f in "$BLOG"/*.md; do
   checked=$((checked+1))
   slugs=$(grep -ohE '/tools/[a-z0-9-]+' "$f" | sort -u)
   n=$(printf '%s' "$slugs" | grep -c . || true)
-  apify=$(grep -cE 'apify\.com/fetchsmith/|\]\(/go/[a-z0-9-]+\)' "$f" || true)
+  apify=$(grep -cE 'apify\.com/fetchsmith/|\]\(/go/[a-z0-9-]+\)|\]\(/go-store\)' "$f" || true)
   if [ "$n" = "1" ] && [ "$apify" = "0" ]; then
     echo "  FLAG $(basename "$f") -> ${slugs##*/} (two-hop only; add a direct Apify link)"
     flag=$((flag+1))
   fi
+  # Cycle 2044: roundups (2+ Actors) need SOME one-hop path -- /go-store is the honest one.
+  if [ "$n" -gt 1 ] && [ "$apify" = "0" ]; then
+    echo "  FLAG-ROUNDUP $(basename "$f") -> $n Actors, no direct CTA (add /go-store)"
+    round=$((round+1))
+  fi
 done
 [ "$flag" = "0" ] && echo "  none -- every single-Actor post links straight to its Actor"
+[ "$round" = "0" ] && echo "  none -- every multi-Actor roundup has a one-hop path to Apify"
 
 echo "== apify.com/fetchsmith/<slug> or /go/<slug> links that name no local Actor dir"
 bad=0
@@ -56,4 +79,4 @@ for p in $(grep -rohE '\]\((/(tools|blog|docs|pricing)[^)#]*)' "$BLOG" | sed 's/
 done
 [ "$dead" = "0" ] && echo "  none"
 
-echo "== $checked posts checked; $flag missing-CTA, $bad bad-slug, $dead dead-link"
+echo "== $checked posts checked; $flag missing-CTA, $round roundup-no-CTA, $bad bad-slug, $dead dead-link"

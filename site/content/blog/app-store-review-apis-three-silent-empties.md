@@ -44,7 +44,7 @@ Each Actor below already implements its platform's specific fix — full-range p
 - [google-play-reviews-scraper](/tools/google-play-reviews-scraper) — Google Play reviews + app metadata, any locale
 - [steam-reviews-scraper](/tools/steam-reviews-scraper) — Steam reviews, store records and live player counts (see also: [Steam hides review-bomb reviews from its score by default](/blog/steam-off-topic-review-bombs-hidden-by-default))
 
-The rest of the write-ups are on [the blog](/blog); the full Actor list is on [the tools page](/tools).
+All three run from [our Apify Store catalogue](/go-store); fields, sample output and pricing per Actor are on [the tools page](/tools), and the rest of the write-ups are on [the blog](/blog).
 
 ---
 

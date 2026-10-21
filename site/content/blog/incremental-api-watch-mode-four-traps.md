@@ -150,7 +150,7 @@ One last design note that is easy to get backwards: **mark a row as delivered on
 
 The first run under a new label seeds and charges nothing. After that you pay only for rows you have never been sent before, which for a daily schedule on a slow-moving dataset is usually a rounding error against re-pulling the full set every morning.
 
-If you want the underlying APIs themselves, all four are free and key-free, and each has its own separate way of returning `HTTP 200` with the wrong answer — we catalogued those in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key).
+If you want the underlying APIs themselves, all four are free and key-free, and each has its own separate way of returning `HTTP 200` with the wrong answer — we catalogued those in [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key). Every Actor listed above is runnable from [our Apify Store catalogue](/go-store), with per-Actor fields and pricing on [the tools page](/tools).
 
 ---
 

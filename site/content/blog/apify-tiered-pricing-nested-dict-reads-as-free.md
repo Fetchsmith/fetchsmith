@@ -106,7 +106,7 @@ We write these up as we find them, mostly from auditing Apify's SEC-filing, gove
 
 The same lesson applies on the other side of the ledger — what a run *costs* is also not reported where you'd expect. Reading one screenshot run's own `usageUsd` object line by line, we found [the image's bytes aren't billed as egress at capture time at all](/blog/screenshot-png-vs-jpeg-byte-size-measured): a 2.41 MB PNG recorded 5.3 KB of external data transfer, because the key-value store bills per write, not per byte. Both of these are the same mistake — assuming the number you want is the number the API hands you.
 
-More API deep-dives at [fetchsmith.com/blog](/blog).
+More API deep-dives at [fetchsmith.com/blog](/blog). The Actors whose competitor audits turned this up are in [our Apify Store catalogue](/go-store), with fields and pricing per Actor on [the tools page](/tools).
 
 ---
 

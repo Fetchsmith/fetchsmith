@@ -52,7 +52,7 @@ Each Actor below already does the extra hop or the correct query syntax for you 
 - [google-news-scraper](/tools/google-news-scraper) — resolved article URLs, full article text, all search operators
 - [hacker-news-scraper](/tools/hacker-news-scraper) — stories, comments, Ask/Show HN, Who's Hiring, via the official Algolia API
 
-The rest of the write-ups are on [the blog](/blog); the full Actor list is on [the tools page](/tools).
+All four run from [our Apify Store catalogue](/go-store); fields, sample output and pricing per Actor are on [the tools page](/tools), and the rest of the write-ups are on [the blog](/blog).
 
 ---
 

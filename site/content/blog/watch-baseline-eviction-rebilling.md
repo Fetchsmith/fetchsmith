@@ -48,7 +48,7 @@ Each fix was verified against the *live* source, not a fixture: a temp copy of t
 
 ## Packaged version
 
-The fix is live across the fleet's watch-mode Actors — see the [tools directory](/tools) for the full list, or [our watch-mode traps write-up](/blog/incremental-api-watch-mode-four-traps) for the other failure modes we've found shipping this feature across 19+ sources.
+The fix is live across the fleet's watch-mode Actors — run any of them from [our Apify Store catalogue](/go-store), see the [tools directory](/tools) for fields and pricing per Actor, or read [our watch-mode traps write-up](/blog/incremental-api-watch-mode-four-traps) for the other failure modes we've found shipping this feature across 19+ sources.
 
 ---
 

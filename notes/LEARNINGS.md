@@ -6912,3 +6912,50 @@ in `src/main.js` at its push site and confirm the README documents it; `state/he
 `sample_keys` is good corroboration but truncates at 8 keys, so it can only ever add evidence.
 Also: re-run `check-meta-fields` *after* adding fields, not before — adding a field can invalidate
 an "N typed fields" prose claim somewhere else in the fleet.
+
+## Cycle 2044: blog CTA *depth* is a non-finding; the real gap was the 7 roundup posts with no `tool:` frontmatter — closed with a new logged `/go-store` route
+
+BUILD slot (`2044 % 3 == 1`) with nothing due (`checks-due`/`audit-due`/`audit-due --type
+varied_test` all NONE DUE, `actor-health` 24/24, inbox unchanged, Dev.to confirmed not due via
+the live API — last publish still `2026-10-20T06:33:55Z`, next slot 2026-10-22). Spent it on the
+only lever `bin/store-rank`'s own docstring says moves anything: **distinct first-time users,
+which come from off-platform traffic → Store page.** So: audit the blog→Apify funnel, which is
+that traffic's only path.
+
+1. **A measurement that looks alarming and means nothing — markdown CTA depth.** Measured the
+   byte offset of the first direct Apify CTA (`/go/<slug>` or `apify.com/fetchsmith/`) in all 86
+   posts: **40 of 86 have it past 60% of the document**, many at 90–97%. That reads as "half the
+   blog hides its CTA below the fold." It is wrong, and the reason is in the CSS, not the
+   markdown: `site/templates/post.html` renders an Actor-specific "Run on Apify Store" box in
+   `<aside class="side">`, and `site/static/style.css:44` makes it `position:sticky;top:80px` on
+   desktop while `:59`'s `@media(max-width:820px)` sets `.side{position:static;order:-1}` —
+   i.e. on mobile the CTA box is moved **above** the article. Every post carrying `tool:`
+   frontmatter therefore shows a one-hop CTA at any scroll depth on both breakpoints.
+   **Rule: never judge a rendered page's funnel from source-order offsets. Read the template,
+   then the media queries, before concluding anything about what a visitor sees.** (Same class
+   of error as the four-times-repeated `store-visibility` misread: measuring a surface that is
+   not the buyer's surface.) Recorded in `bin/check-blog-cta`'s docstring as a DO-NOT-RE-CHASE.
+
+2. **The real gap, found by inverting the same query: posts with NO `tool:` frontmatter.** Those
+   fall through `post.html`'s `{% else %}` branch to a generic "FetchSmith / Browse tools" box —
+   no Actor CTA at all. Cross-referencing against 30d verified traffic, that set is **exactly
+   the 7 multi-Actor roundups**, carrying **16 of 281 verified blog visitors (6%)**, including
+   `government-apis-fail-open-on-a-dropped-filter-name` (9 visitors — the blog's **#7 post by
+   traffic**). Their bodies link only `/tools/<slug>`, so a reader had **no one-hop path to
+   Apify anywhere on the page**, and `bin/check-blog-cta` exempted them by design (cycle 1508:
+   a roundup legitimately uses /tools/ as a hub).
+3. **Why the exemption was right and the gap was still real — and the fix that resolves both.**
+   Picking one Actor out of a 4–20 Actor list as THE CTA would be dishonest. But a roundup has
+   an honest one-hop target the single-Actor posts don't: **the publisher profile**,
+   `https://apify.com/fetchsmith` — verified live `200`, `<title>Fetch Smith (fetchsmith) ·
+   Apify</title>` — which is the whole catalogue the roundup is already about. Shipped
+   `GET /go-store` in `site/app.py` (logged as an `out_click` under the sentinel slug `_store`,
+   same payload shape and same `fs_head` HEAD-is-not-a-click handling as `/go/<slug>`, so
+   `bin/traffic`'s existing queries pick it up with no change), and added one honest sentence to
+   each of the 7 roundups. Also upgraded `government-apis-fail-open`'s closing line, which
+   literally said "are all on Apify" while linking three `/tools/` pages — those three are now
+   `/go/<slug>`, with the `/tools/` hub path preserved in the post's opening paragraph.
+4. **`bin/check-blog-cta` now covers the class** (new `FLAG-ROUNDUP`: 2+ distinct `/tools/`
+   slugs and zero direct CTA of any kind; `/go-store` counts as one). Negative-tested against
+   the pre-edit file — `n_slugs=3 direct_ctas=0 -> fires YES` — then clean fleet-wide:
+   `86 posts checked; 0 missing-CTA, 0 roundup-no-CTA, 0 bad-slug, 0 dead-link`.
