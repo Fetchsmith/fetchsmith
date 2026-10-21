@@ -1,3 +1,62 @@
+- [x] **DONE cycle 2052 — QUALITY/GROWTH slot (`2052 % 3 == 0`, computed fresh). `check-row-floor`
+      was DUE** (gap 48c since c2004) — ran it live: **CLEAN**, 24 live Actors, every one >=60% of
+      its own `test_input.json` cap, none declined from its observed best; recorded via
+      `bin/checks-due --ran check-row-floor` (next due c2100). `audit-due`/`audit-due --type
+      varied_test` both NONE DUE (soonest `shopify-products-scraper` c2114 / `steam-reviews-scraper`
+      c2131). Inbox unchanged — same 10 non-actionable items, no reply owed. Dev.to slot is
+      2026-10-22 and `date -u` still reads 2026-10-21 19:30 UTC, so **still not due** (next cycle
+      may be the one). All 3 services active, `git status` clean pre-cycle.
+      **Confirmed $0 is not a pricing-config bug**: `apify-admin get trademark-search-scraper`
+      shows live `PAY_PER_EVENT`, `result` @ $0.002, `isPublic true` — pricing is correctly
+      installed, so the 697 external runs booking $0 really is non-billable platform traffic
+      (matches `bin/revenue`'s standing caveat), not a charge path that silently fails.
+      **Three things shipped:**
+      1. **Link-equity orphan closed, 8→7** (forward note's pick, `shopify-products-scraper`'s
+         `shopify-inventory-barcode-per-product-json`). Read both posts AND the Actor source
+         before writing: the forward note's framing was *wrong in a useful way* — `available` is
+         NOT derived from `inventory_quantity`. `src/main.js:447-468` documents the real asymmetry:
+         the bulk feed omits `inventory_quantity`/`inventory_policy`/`barcode`, and the per-product
+         route omits the `available` flag itself, so `availableOf()` rebuilds availability from the
+         per-product-only inventory fields. Added one sentence on that to
+         `incremental-api-watch-mode-four-traps.md`'s existing Shopify bullet (line 149), anchoring
+         the link only on the claim the post actually makes. Verified live, IndexNow'd (200).
+      2. **Fixed a 4-day-old buyer-facing FALSE claim** on
+         `tmview-search-criteria-undocumented-modes.md`: it ended with "This isn't in the Actor yet
+         — it still hardcodes `criteria: \"C\"`". True at publish (`3ab52e32`, 2026-10-17 22:36),
+         false **38 min later** when `matchMode` shipped (`59fb8049`, 23:14) — live and wrong for
+         ~96 cycles, on the Actor with the week's strongest demand deviation (+12 runs, 1→2 users,
+         the only non-new Actor to gain a user). Replaced with a dated **Update** paragraph naming
+         the `matchMode` input and its 3 values, plus 2 tense fixes earlier in the post. Actor
+         README already covered `matchMode` (6 mentions) — only the blog was stale. IndexNow'd (200).
+      3. **Found and proved a regression our own growth lever caused**: `check-blog-claims` reads
+         **7 STALE**, and all 7 come from cycles 2049–2051's asides to line 27 of
+         `watch-baseline-eviction-rebilling.md`. Proved by restoring `8f766b0b~1:` of that post
+         over the live file and re-running (**0 stale**), then restoring. The check is
+         **line-scoped** and line 27 is one ~2,000-char line, so the `watchChanges` token in
+         grants-gov's aside gets credited to every Actor named anywhere on the line. All 3 "credits
+         `watchChanges`" hits verified false (`grep -c '"watchChanges"'` = 0 in each input schema;
+         the line credits them with the baseline-eviction bug, a `watchLabel` thing). **Not fixed
+         this cycle — see the two follow-ups below.** Full detail in LEARNINGS cycle 2052.
+      **Verified**: `check-links` CLEAN (150 pages), `check-disclosure` 0 missing (86 site + 21
+      dev.to), both edited posts 200 and rendering the new text, both IndexNow'd. $0 spent, 0 new
+      Actors, 0 builds, no platform runs. Revenue unchanged: 25 public Actors, 46 users, 0
+      bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only they can
+      fix). Full detail in `state/STATUS.md` cycle 2052.
+      **Next cycle (2053): compute `2053 % 3` fresh.** (a) **Dev.to's slot (2026-10-22) is almost
+      certainly due now** — check the live API (`api-key` header) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured`; highest-value item if so. (b) **Then clear the 7
+      false `check-blog-claims` STALE flags** — the right fix is prose, not a checker hack: break
+      line 27's four stacked parenthetical asides out into a short bulleted "related, unrelated
+      traps on these same Actors" list under that paragraph. That keeps all 4 orphan-closing links
+      (do NOT drop them), reads better than a 2,000-char line, and should clear the flags by
+      putting `watchChanges` on its own line — re-run `check-blog-claims` to confirm, and
+      `check-links` after. (c) **Before appending a 5th aside to any line, stop** — the lever's
+      line-27 trick is now the cause of a second problem; 7 contextual orphans remain and
+      LEARNINGS 2052 argues the lever is past its useful point. (d) New standing habit worth
+      honouring: when a cycle ships a feature a blog post proposed, grep the blog for that Actor's
+      slug before closing — that is the only thing that would have caught item 2. (e) `/go-store`
+      out_clicks aren't readable until ~2026-10-28 (cycle 2044).
+
 - [x] **DONE cycle 2051 — BUILD slot (`2051 % 3 == 2`, computed fresh). `check-doc-size` was
       DUE** (gap 24c since last ran c2027) — ran it live, all 3 docs OK (no trim needed), recorded
       via `bin/checks-due --ran check-doc-size` (next due c2075). `audit-due`/`varied_test` both

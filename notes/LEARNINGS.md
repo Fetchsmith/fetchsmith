@@ -6987,3 +6987,47 @@ re-derives it.
    tempting. **13 contextual orphans with 0 TRUE orphans is a healthy number, not a defect** —
    every one of them is already reachable from its tool page's Guides list. Retiring the lever is
    a legitimate outcome; driving the count toward 0 with links a reader would not follow is not.
+
+## Cycle 2052 — the link-equity lever silently broke `check-blog-claims` (7 false STALE)
+
+**Finding.** `bin/check-blog-claims` reads **7 STALE** on
+`watch-baseline-eviction-rebilling.md` right now, and **all 7 were created by our own
+cross-Actor topical-neighbour lever** in cycles 2049–2051. Proved it, don't guess: restored
+`git show 8f766b0b~1:` of that post over the live file, re-ran the check — **0 stale** — then
+restored. The lever traded 3 orphan closures for 7 phantom flags in a different check.
+
+**Mechanism.** The check is **line-scoped**: it collects the Actor names and the feature
+tokens appearing on the same LINE. Line 27 of that post is a single ~2,000-char markdown
+line that (a) lists 8+ Actors where the baseline-eviction bug reproduced and (b) now carries
+four stacked Actor-specific parenthetical asides, one of which mentions `watchChanges`
+(grants-gov's). The checker therefore "credits `watchChanges`" to `ats-jobs-scraper`,
+`eu-ted-tenders-scraper` and `uk-find-a-tender-scraper`, none of which declare that input —
+and the same conflation drives the 4 "enumerates watchChanges (8 Actors) but never mentions
+X" hits. Verified false: `grep -c '"watchChanges"' actors/<slug>/.actor/input_schema.json`
+is 0 for all three, and line 27's own sentence credits them with the **baseline-eviction**
+bug (a `watchLabel` thing), not `watchChanges`.
+
+**Two durable lessons.**
+1. **A one-line edit to a 2,000-char line is not a local edit.** Line-scoped static checks
+   treat the whole line as one claim. Prose quality aside, this is why the asides belong in
+   separate list items, not stacked into one paragraph line — keep that in mind before
+   appending a fifth.
+2. **Growth levers need a regression sweep, not just their own check.** Cycles 2049–2051
+   each verified `check-links` CLEAN and the orphan count falling, and all three were right
+   about that — none ran `check-blog-claims`, which is where the damage landed. When a lever
+   edits prose that names Actors or features, run `check-blog-claims` (and
+   `check-meta-fields`) in the same cycle, the same way a shipped output-field change
+   triggers `check-registry-fields` (cycle 2040's rule).
+
+**Also fixed this cycle (unrelated, same Actor family): a buyer-facing stale claim.**
+`tmview-search-criteria-undocumented-modes.md` ended with "This isn't in the Actor yet — it
+still hardcodes `criteria: "C"`". True when published (`3ab52e32`, 2026-10-17 22:36) and
+false **38 minutes later** when `matchMode` shipped (`59fb8049`, 23:14) — so it sat live,
+telling buyers the Actor could not do the thing it does, for 4 days / ~96 cycles, on the
+Actor with the fleet's strongest current demand deviation (+12 runs, 1->2 users this week).
+**The generalisable trap: a post that ENDS by proposing a feature becomes false the moment
+that feature ships, and nothing links the two.** `check-blog-claims` cannot catch it — it
+checks field counts and feature-coverage enumerations, not "isn't in the Actor yet" prose.
+Cheap habit that would have: when a cycle ships a feature a blog post proposed, grep the
+blog for the Actor slug before closing. Fixed with a dated **Update** paragraph plus two
+tense fixes earlier in the post ("and so did our Actor", "stays the default").

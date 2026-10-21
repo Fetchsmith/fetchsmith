@@ -12,7 +12,7 @@ tool: trademark-search-scraper
 {"page":"1","pageSize":"50","criteria":"C","basicSearch":"solarwinds"}
 ```
 
-The web UI always sends `"C"`, and so does [our Actor](/go/trademark-search-scraper) — it's the only value anyone writes about, because it's the only value the UI ever exercises. We tried the rest of the alphabet against the live endpoint to see what else the parameter accepts.
+The web UI always sends `"C"`, and so did [our Actor](/go/trademark-search-scraper) when we started digging — it's the only value anyone writes about, because it's the only value the UI ever exercises. We tried the rest of the alphabet against the live endpoint to see what else the parameter accepts.
 
 ## Only three values work, and lowercase doesn't count
 
@@ -50,9 +50,9 @@ So the three modes are: **contains** (substring, any position, no word-boundary 
 
 ## Why this is worth using directly
 
-`C` is the right default for a general "has anyone registered something like this" sweep, which is what [our Actor](/go/trademark-search-scraper) exposes today. But for the specific question a lot of clearance searches are actually asking — *"does anyone already hold a mark that **starts with** my exact proposed name"* — `C` is the wrong tool: it also returns every mark that merely contains your word in the middle (`PRO SOLAR MAX`, `PHOTOSOLAR`), which is noise for that question, not signal. On the `solar` query, `C` returns 69,675 rows to wade through; `W` answers the narrower, more actionable question directly in 42,875 — still broad for a generic word, but the ratio flips hard on a distinctive brand term, where `contains` mixes in unrelated compounds (`SOLARWINDS` is one; it's also a substring of nothing real, but a shorter root word collects them) that `starts with` filters out by construction.
+`C` is the right default for a general "has anyone registered something like this" sweep, and it stays the default in [our Actor](/go/trademark-search-scraper). But for the specific question a lot of clearance searches are actually asking — *"does anyone already hold a mark that **starts with** my exact proposed name"* — `C` is the wrong tool: it also returns every mark that merely contains your word in the middle (`PRO SOLAR MAX`, `PHOTOSOLAR`), which is noise for that question, not signal. On the `solar` query, `C` returns 69,675 rows to wade through; `W` answers the narrower, more actionable question directly in 42,875 — still broad for a generic word, but the ratio flips hard on a distinctive brand term, where `contains` mixes in unrelated compounds (`SOLARWINDS` is one; it's also a substring of nothing real, but a shorter root word collects them) that `starts with` filters out by construction.
 
-This isn't in the Actor yet — it still hardcodes `criteria: "C"` — but it's a cheap, well-scoped addition (one more enum input, three valid values, already proven not to need any other request change) worth sizing as a real feature rather than leaving as a blog-only curiosity.
+**Update (2026-10-21): this now ships.** When this post first went up the Actor still hardcoded `criteria: "C"`; it was a cheap, well-scoped addition (one enum input, three valid values, no other request change), so it went in the same evening. [trademark-search-scraper](/go/trademark-search-scraper) now takes a **Match mode** input (`matchMode`) with exactly the three values above — `contains` (the default, unchanged behaviour), `startsWith` and `endsWith` — and anything else falls back to `contains` with a warning rather than being passed through to earn a `400`.
 
 If you want the normalised version of the default search — 22 flat fields, 81 offices, the capital-L `oppositionDeadline` key already fixed — it's [trademark-search-scraper](/go/trademark-search-scraper) on Apify. For the transport-level trap on this same endpoint (no `User-Agent` means no HTTP response at all, not a 403) and the per-office field-availability gaps, see [the first TMview post](/blog/tmview-trademark-search-api-no-key).
 
