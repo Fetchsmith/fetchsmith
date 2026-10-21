@@ -6534,3 +6534,55 @@ buyer query, 556 hits — is p84**, and the two highest-intent PDF queries (`url
 adjacent to "url"/"html" there. Per cycle 876's attribute map (`description` is the
 second-strongest field and ahead of both SEO fields, 300-char budget vs the title's 63) there is a
 real lever here, and per the tool's own advice the next step is `--why`, not a guess.
+
+## Cycle 2021 — mining the `description` field is a real, cheap, durable rank lever: 2/2 predicted and 4/4 held, zero eviction cost
+
+Followed up on 2020's `website-screenshot-scraper` finding with the exact sequence it scoped:
+`--why` first (not `--attr`, not a guess), protect-by-construction (edit only `description`,
+leave `title`/`seoTitle`/`seoDescription` untouched so the title-block wins can't be touched),
+ship, re-measure. `--why "website screenshot"`/`--attr` both confirmed first that query is a dead
+end — we're already in the ideal title-match bucket (span 0, "already in the title block") and
+p84 is pure storePosition queue depth within it; **no text edit reaches a bucket we're not already
+in.** `--why` on the other three did show real, countable gains: `open graph image` was sitting at
+p58 in an `exact=1` (fuzzy) readme-attr bucket when the *literal* 3-word phrase would jump to an
+`exact=3 prox=2 attr=2 (description)` bucket of only 10 records (~p3-p12); `url to pdf`/`html to
+pdf` had **zero** description-attr competitors at all, so inserting the literal phrase would create
+a brand-new, uncontested bucket right behind the title block (predicted ~p20-30 range on both).
+
+Old description (132/300 chars, 168 unused): "Capture any public URL as a JPEG, PNG or PDF
+screenshot with device presets, element capture, OG-card sizing and raw-HTML rendering." New
+(198/300 chars): "Website screenshot API to capture any public URL as JPEG, PNG or PDF — device
+presets, element capture, open graph image sizing, url to pdf and html to pdf rendering, plus raw
+HTML input support." Every concept in the old copy survives (OG-card → "open graph image",
+raw-HTML → "raw HTML input"); nothing was deleted, only the unused 168 chars were spent making 3
+existing concepts literal, contiguous, query-shaped phrases. Shipped via `apify-admin publish` +
+`apify push --force` (build 0.1.12, metadata-only PUT with `isPublic` already true — confirmed
+again this does NOT burn a publish-rate-limit slot, per cycle 20/100's standing finding),
+re-measured ~100s after reindex:
+
+| query | before (c2020) | after (c2021) | predicted bucket matched? |
+|---|---|---|---|
+| `open graph image` | p58 | **p4** | yes — landed inside the predicted 10-record bucket |
+| `url to pdf` | p606 | **p21** | yes — new uncontested description-attr bucket |
+| `html to pdf` | p397 | **p28** | yes — new uncontested description-attr bucket |
+| `screenshot scraper` | p3 | p2 | held (title-block win, untouched) |
+| `webpage screenshot` | p16 | p14 | held |
+| `website screenshot` | p84 | p40 | held+ (see below) |
+| `screenshot api` | p113 | p87 | held+ |
+| `screenshot` | p129 | p70 | held+ |
+| `full page screenshot` | p276 | p272 | held+ |
+
+**Zero regressions, 2 of 2 brand-new-bucket predictions landed exactly, and the title-block queries
+improved too** — not from the description edit (they're in buckets the description can't reach,
+confirmed above) but because `storePosition` itself moved **57283 → 38047** between the two
+measurements, a day-over-day drift independent of this edit (consistent with cycle 1608's model:
+storePosition tracks cumulative usage/age on its own clock, not text). **Lesson for the next
+description-mining candidate**: `--why` with a slug argument is what makes this safe — it tells you
+BEFORE you edit whether a query is bucket-locked (`website screenshot`: don't bother) or has a
+reachable, literal, verbatim-indexed (`description`, not `readme`) bucket worth the words
+(`open graph image`/`url to pdf`/`html to pdf`: did). Check `description` char budget
+(`len(meta.json['description'])` vs 300) on any Actor before assuming there's room — this one had
+168 unused chars sitting idle since it was built. 24 other Actors have not had this same audit;
+worth a future QUALITY cycle once a second candidate with genuine unused budget AND a `--why`-
+confirmed reachable bucket turns up (don't mine description blind — the `url to pdf`/`html to pdf`
+win depended on an *uncontested* bucket existing; a crowded one buys nothing).

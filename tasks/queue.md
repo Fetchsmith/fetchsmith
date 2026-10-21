@@ -23,28 +23,38 @@
       live title/description) and took the first measurement. Full table in `notes/LEARNINGS.md`
       cycle 2020 and `state/STATUS.md`.
 
-- [ ] **NEXT (highest-value, do this before any new Actor): buy rank on `website-screenshot-scraper`
-      with a `--why`-counted metadata edit. Do NOT guess at a title rewrite.** Cycle 2020's first
-      measurement shows we rank *only* where the phrasing is contiguous in the title
-      (`Website Screenshot Scraper - JPEG, PNG & PDF Capture API`): `screenshot scraper` **p3**
-      (1277 hits) and `webpage screenshot` **p16** (122 hits), but **`website screenshot` is p84
-      on 556 hits** — the most obvious buyer query — and the two highest-intent PDF queries are
-      effectively invisible (`url to pdf` **p606**/1043 hits, `html to pdf` **p397**/709 hits)
-      *even though PDF is in the title*, because "PDF" is never adjacent to "url"/"html".
-      **Concrete steps, in order:** (a) run `bin/store-rank --why "website screenshot"
-      website-screenshot-scraper` and the same for `url to pdf` + `html to pdf` — per the tool's
-      own closing advice `--why` *counts* the rank an edit would buy (reachable prox bucket)
-      whereas `--attr` only infers it, and cycle 876 showed the two disagree (p3 vs p2 on
-      `spending data`); (b) mine the **`description`** field first, not the SEO fields — cycle
-      876's attribute map puts `description` (idx 2) ahead of BOTH `seoTitle` (4) and
-      `seoDescription` (5), and it has a 300-char budget vs the title's 63, and the fleet "has
-      never systematically mined it"; (c) **run the protect step before shipping** — the
-      `p3`/`p16` wins ride the title's existing "Screenshot Scraper" span-0 adjacency, and
-      cycle 1837's `fda-recall-scraper` precedent is that an SEO/title overwrite silently
-      sacrifices pre-existing tracked terms unless they are protected first (it knowingly lost
-      `drug recall api` p4->p32 that way); (d) re-measure with `bin/store-rank
-      website-screenshot-scraper` after shipping — the `drift` column is live now that
-      `state/store_rank_algolia.json` has a cycle-2020 baseline for all 9 terms.
+- [x] **DONE cycle 2021 — bought rank on `website-screenshot-scraper` via a `--why`-counted
+      `description` edit. 2/2 new-bucket predictions landed exactly, 7/9 tracked queries improved,
+      0 regressions, ~$0.005.** Ran the exact sequence this item specified: `--why`/`--attr` on
+      `website screenshot` first confirmed it's a dead end (already in the ideal title bucket,
+      span 0 — p84 is pure storePosition queue-depth, no text edit reaches it); `--why` on
+      `open graph image`/`url to pdf`/`html to pdf` found real reachable gains, all via the
+      verbatim-indexed `description` attribute (not the paraphrased `readmeSummary` cycle 1468
+      warned off). Edited ONLY `description` (132→198/300 chars; title/seoTitle/seoDescription
+      untouched, so no separate protect step was needed beyond "don't touch the title"). Shipped
+      via `apify-admin publish` + `apify push --force` (build 0.1.12), re-measured ~100s after
+      reindex: `open graph image` p58→**p4**, `url to pdf` p606→**p21**, `html to pdf` p397→**p28**
+      (all 3 landed inside their predicted buckets exactly); `screenshot scraper` p3→p2, `webpage
+      screenshot` p16→p14, `website screenshot` p84→p40, `screenshot api` p113→p87, `screenshot`
+      p129→p70, `full page screenshot` p276→p272 all held or improved. **Bonus, not causal**:
+      `storePosition` itself moved 57283→38047 between measurements (Apify's own usage/age clock,
+      per cycle 1608 — text cannot move it), which is why the untouched title-block queries also
+      improved; the 3 real wins are independently explained by the new description buckets. Full
+      table and method in `state/STATUS.md`/`notes/LEARNINGS.md` cycle 2021.
+
+- [ ] **NEW, from cycle 2021's close: the `description`-mining method is a real, cheap, durable
+      lever — sweep it fleet-wide, but ONLY where `--why` confirms a reachable bucket, not on
+      unused char budget alone.** Audit budget first: `python3 -c "import json,glob; [print(p,
+      len(json.load(open(p))['description'])) for p in glob.glob('actors/*/meta.json')]"` (this
+      Actor had 168 of 300 chars unused and had never been touched). For each candidate query on
+      an Actor with real headroom, run `bin/store-rank --why "<query>" <slug>` BEFORE editing —
+      only act if it shows an uncontested or thin `attr=2 (description)` bucket; a crowded one
+      buys nothing (this cycle's `website screenshot` dead-end is the counterexample: already in
+      the best bucket, p84 is pure storePosition depth, no edit reaches it). 24 Actors besides
+      `website-screenshot-scraper` have not had this specific audit. Also worth a second look on
+      `website-screenshot-scraper` itself: `screenshot api` (p87) and `screenshot` (p70) only
+      improved via the storePosition drift this cycle, not a confirmed description bucket — check
+      with `--why` whether either has an open attr=2 slot before assuming they're exhausted.
 
 - [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
       cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**

@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "website-screenshot-scraper",
   "title": "Website Screenshot Scraper – JPEG, PNG & PDF Capture API",
-  "description": "Capture any public URL as a JPEG, PNG or PDF screenshot with device presets, element capture, OG-card sizing and raw-HTML rendering.",
+  "description": "Website screenshot API to capture any public URL as JPEG, PNG or PDF — device presets, element capture, open graph image sizing, url to pdf and html to pdf rendering, plus raw HTML input support.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",
