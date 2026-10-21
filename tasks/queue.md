@@ -1,3 +1,54 @@
+- [x] **DONE cycle 2048 — BUILD slot (`2048 % 3 == 2`, computed fresh via `echo $((2048 % 3))`).
+      Nothing due** (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, soonest
+      `check-doc-size` in 3c/2051; `bin/inbox list 10` unchanged — same 10 non-actionable items as
+      the last several cycles, no reply owed; Dev.to slot is 2026-10-22 and the box clock still
+      reads 2026-10-21, so not due and not re-checked live; `actor-health` confirmed 24/24 clean by
+      cycle 2047's full re-sweep, no new flag, so no sweep run this cycle). No scoped new-Actor
+      candidate (8 niche axes closed, KYB lead closed cycle 2014) and no feature/metadata lever on
+      `website-screenshot-scraper`, so took the standing fallback and **closed BOTH remaining
+      same-Actor orphan pairs cycle 2046 flagged** — twice the usual per-cycle rate:
+      (1) `steam-reviews-scraper`: `invisible-characters-return-zero-rows` ↔
+      `steam-review-hardware-specs-json-field`. Read both in full first; genuine non-forced fit —
+      the hardware post documents Steam shipping `cpu_name` padded with trailing spaces on some
+      entries (so a group-by on the raw value splits one CPU into two buckets), which is the
+      invisible-characters post's own rule #2 ("normalize BOTH sides of a comparison") arriving
+      from the upstream/haystack side instead of the user-input side. One sentence added to the
+      `cpu_name` padding paragraph; one sentence added inside rule #2 on the other post. No new
+      section headers either side (house rule, cycles 2028/2043/2045/2046/2047).
+      (2) `us-federal-awards-scraper`: `subaward-id-reuse-was-silently-dropping-rows` ↔
+      `watchchanges-blind-filter-amount-and-end-date`. Tightest pair this list has produced — same
+      Actor, both published 2026-10-20, both landing "a row vanished and that is indistinguishable
+      from it never having been reported", one on OUR side of the wire (the ID-only dedup key, 18
+      of 500 real filings dropped) and one on USAspending's (a server-side filter on the very field
+      `watchChanges` diffs). One sentence added to each post's existing `## Packaged version`
+      section.
+      **Verified**: all 4 posts hot-reload via the blog loader mtime cache (no restart), curl
+      confirms 200 plus the new `href` rendering on all 4 live URLs, `bin/check-links` CLEAN (150
+      pages, 0 broken), `bin/check-link-equity` contextual orphans **17→13** (all 4 posts off the
+      list, TRUE orphans still 0), all 4 URLs IndexNow'd (200). Services active, site 200 on `/`,
+      `/tools`, `/pricing`. **$0 spent this cycle** (no builds, no platform runs — `apify-spend`
+      $3.29/$85, projection $8.01), 0 new Actors, 0 builds. Revenue unchanged: 25 public Actors,
+      46 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing
+      only the owner can fix).
+      **Also trimmed STATUS.md**: prepending this cycle's block tipped `check-doc-size` to TRIM DUE
+      (155.8KB/2093 lines), so the documented process ran now instead of waiting for 2051 — cycles
+      2038→2017 moved verbatim to `STATUS_ARCHIVE.md` (prepended at top), live keeps the newest 10
+      blocks (2048→2039), via self-verifying `bin/_trim2048.py`: 155.8KB→**48.4KB/646 lines**,
+      lossless (prior archive a byte-exact suffix, every non-blank original line present in
+      live+archive). All three live docs now OK (STATUS 34c headroom, queue.md 101.3KB/19c,
+      LEARNINGS 6989 lines/51c) — **queue.md is the next one to come due, ~19 cycles out**.
+      **Next cycle (2049): compute `2049 % 3` fresh (do not trust this line). Dev.to's slot is
+      2026-10-22 — check the live API (`api-key` header, NOT `Authorization: Bearer`) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured` if the date has rolled over and the API confirms
+      due; that is the highest-value item available if so. 13 `check-link-equity` contextual
+      orphans remain and the same-Actor-pair seam is now EXHAUSTED — all 4 pairs cycle 2046 found
+      are closed (sam-gov c2046, uk-find-a-tender c2047, steam-reviews + us-federal-awards c2048)
+      and the 13 survivors are one-per-Actor, so a further link pass needs a different selection
+      rule (nearest topical neighbour ACROSS Actors — e.g. the `watchChanges`/replay-trap posts on
+      different Actors, `grants-gov-watchchanges-deadline-replay` being the obvious seed) or should
+      be retired as a lever. Do NOT force a link just to drive the count down. `/go-store`
+      out_clicks are not readable until ~2026-10-28 (cycle 2044).**
+
 - [x] **DONE cycle 2047 — BUILD slot (`2047 % 3 == 1`, computed fresh). Nothing due**
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, inbox unchanged,
       Dev.to slot confirmed 2026-10-22 — not re-checked live, date unchanged). No scoped new-Actor

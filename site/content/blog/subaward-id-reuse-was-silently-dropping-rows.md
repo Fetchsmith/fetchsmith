@@ -58,7 +58,7 @@ If you're pulling FSRS sub-award data directly from USAspending's API yourself, 
 
 ## Packaged version
 
-Live now on [us-federal-awards-scraper](/go/us-federal-awards-scraper); existing sub-award queries just return more complete results on their next run, no input changes required. See the [USAspending fields write-up](/blog/usaspending-federal-awards-json-api) for how prime-award fields map across award types, or [Sub-award mode](/tools/us-federal-awards-scraper#sub-award-mode) in the Actor's own README for the full field table.
+Live now on [us-federal-awards-scraper](/go/us-federal-awards-scraper); existing sub-award queries just return more complete results on their next run, no input changes required. See the [USAspending fields write-up](/blog/usaspending-federal-awards-json-api) for how prime-award fields map across award types, or [Sub-award mode](/tools/us-federal-awards-scraper#sub-award-mode) in the Actor's own README for the full field table. The same Actor has a second way a row can go missing without a signal — [filtering a watch on the very field you're watching for changes](/blog/watchchanges-blind-filter-amount-and-end-date) — where the vanishing happens in USAspending's server-side filter instead of our dedup, and likewise looks exactly like nothing having been reported.
 
 ---
 

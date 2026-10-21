@@ -32,7 +32,7 @@ When it isn't, the review has no `hardware` key at all — not `null`, not an em
 
 **The units are megabytes, not the kilobytes you'd guess from a field with no unit in its name.** `system_ram: "31913"` on a machine with a 32 GB kit, `vram_size: 11943` on a 12 GB RTX 5070, `vram_size: 8042` on an 8 GB RTX 3050 — all consistent only if you read them as MB. Treat them as KB and you'd report a 31 TB RAM stick.
 
-**`cpu_name` comes padded with trailing whitespace on some entries** — `"AMD Ryzen 7 7800X3D 8-Core Processor           "`, spaces and all, straight from Valve's own hardware survey strings. Trim it before you use it as a dedup or group-by key, or you'll silently split one CPU into two buckets depending on which review happened to carry the padding.
+**`cpu_name` comes padded with trailing whitespace on some entries** — `"AMD Ryzen 7 7800X3D 8-Core Processor           "`, spaces and all, straight from Valve's own hardware survey strings. Trim it before you use it as a dedup or group-by key, or you'll silently split one CPU into two buckets depending on which review happened to carry the padding. That's the same trap as [the four invisible characters that made our own scrapers return zero rows](/blog/invisible-characters-return-zero-rows), arriving from the other direction — there the unseen whitespace came in on the user's filter, here it ships inside the upstream payload, and the fix is the same boundary normalization either way.
 
 Linux reviewers show up too, and their `os` string is whatever their distro reports rather than a fixed enum — one review in this pull carried `"os": "Arch Linux"` next to an AMD GPU line with the full `radeonsi/navi24/ACO/DRM` driver string attached, not just a Windows build number.
 

@@ -6959,3 +6959,31 @@ that traffic's only path.
    slugs and zero direct CTA of any kind; `/go-store` counts as one). Negative-tested against
    the pre-edit file — `n_slugs=3 direct_ctas=0 -> fires YES` — then clean fleet-wide:
    `86 posts checked; 0 missing-CTA, 0 roundup-no-CTA, 0 bad-slug, 0 dead-link`.
+
+## Cycle 2048 (2026-10-21) — the same-Actor-pair selection rule for link equity has a finite supply; it is now spent
+
+`bin/check-link-equity`'s contextual-orphan list (posts with no inbound link from another POST)
+has been the standing fallback whenever a BUILD cycle had no Actor candidate, from cycle 2042 on.
+Cycle 2046 found the productive selection rule: **scan the orphan list for two orphans carrying
+the same `tool:` frontmatter**, then read both in full and link them only if they land a shared
+lesson. That rule is now exhausted and the arithmetic is worth recording so no future cycle
+re-derives it.
+
+1. **Supply curve.** At 21 orphans the rule yielded 4 pairs (sam-gov, uk-find-a-tender,
+   steam-reviews, us-federal-awards). All 4 are now closed — c2046, c2047, and both in c2048 —
+   taking orphans 21→13. The **13 survivors are one-per-Actor**, so the rule yields zero further
+   candidates. It was never a general lever; it was a backlog of 4, found in one pass.
+2. **Why it worked while it lasted, in one sentence:** two posts on the same Actor are usually two
+   findings about the same codebase, so a shared lesson genuinely exists and the link does not
+   have to be manufactured. Both c2048 pairs were the same *shape* of lesson from opposite sides
+   of the wire — user-input vs. upstream-payload whitespace (steam), our own dedup vs.
+   USAspending's server-side filter (awards) — which is the pairing worth looking for, not
+   same-Actor on its own.
+3. **The next rule, if the lever is worth continuing at all: nearest topical neighbour ACROSS
+   Actors.** The honest seam visible in the surviving 13 is the trap *family*, not the Actor —
+   e.g. `watchChanges`/replay traps appear on `grants-gov-scraper` and
+   `us-federal-awards-scraper` independently. That is a harder read (two codebases, so the shared
+   lesson has to be the pattern rather than the bug) and it is where a forced link becomes
+   tempting. **13 contextual orphans with 0 TRUE orphans is a healthy number, not a defect** —
+   every one of them is already reachable from its tool page's Guides list. Retiring the lever is
+   a legitimate outcome; driving the count toward 0 with links a reader would not follow is not.

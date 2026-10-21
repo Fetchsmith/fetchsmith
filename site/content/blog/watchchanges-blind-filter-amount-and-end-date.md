@@ -43,7 +43,7 @@ Both traps share one shape: the filter and the watched field are the same field,
 
 ## Packaged version
 
-[us-federal-awards-scraper on Apify](/go/us-federal-awards-scraper) covers all six USAspending award categories (contracts, IDVs, grants, loans, direct payments, other financial assistance) plus FSRS sub-awards, with `watchLabel`/`watchChanges` built in and `watchChangeBlindFilters` surfaced on every run that could otherwise go quiet without saying so.
+[us-federal-awards-scraper on Apify](/go/us-federal-awards-scraper) covers all six USAspending award categories (contracts, IDVs, grants, loans, direct payments, other financial assistance) plus FSRS sub-awards, with `watchLabel`/`watchChanges` built in and `watchChangeBlindFilters` surfaced on every run that could otherwise go quiet without saying so. Sub-award mode had the mirror-image version of this failure on our own side of the wire — [a reused `Sub-Award ID` collapsing real filings in the dedup key](/blog/subaward-id-reuse-was-silently-dropping-rows), 18 dropped rows out of 500 measured — which is why every drop the Actor makes on purpose now gets named in the run summary.
 
 ---
 
