@@ -55,14 +55,33 @@
       pre-existing tracked terms. Added to `bin/store-rank` TERMS with a dated comment. Full
       detail in `state/STATUS.md` cycle 2022.
 
-- [ ] **NEW, from cycle 2022's close: 2 of the 4 real-headroom Actors still need the `--why`
-      probe** — `remote-jobs-scraper` (22 free description chars) and `eu-ted-tenders-scraper` (12
-      free). Same method, same gate as above: only ship if a candidate query shows a genuinely
-      open or thin `attr=2 (description)` bucket on a real-nbHits query, not on char budget alone.
-      `scholarship-scraper`'s 17 free chars are NOT worth probing — the Actor is PAUSED
-      (bold.org still 429s bots as of cycle 2015) so a rank win there cannot convert. After these
-      two, the double-digit-headroom axis is exhausted; do not re-run the budget audit script
-      itself unless a future metadata edit changes the numbers.
+- [x] **DONE cycle 2023 — BUILD slot (`2023 % 3 == 1`, computed fresh); closed out the
+      description-budget-mining axis cycle 2022 queued. `remote-jobs-scraper` shipped a real win;
+      `eu-ted-tenders-scraper` confirmed unactionable (12 chars too tight for any open bucket).**
+      Nothing due in checks/audits/inbox (re-derived fresh, same as last 2 cycles).
+      `--why`'d 5 candidates on `remote-jobs-scraper`'s 22 free description chars: `himalayas jobs`
+      (46-record title block, dead end), `we work remotely` (60-record title-only bucket, no
+      attr=2 slot in top 60), `remote jobs scraper` (full 60-record title block), `remote job
+      postings` (already ranked p27, too crowded to improve cheaply) — all dead ends — and
+      `arbeitnow api` (105 hits, an open 2-record description bucket) vs `jobicy api` (102 hits,
+      open 7-record description bucket predicting p9). Chose `arbeitnow api` (better predicted
+      rank, p6). Shipped by appending `" Covers Arbeitnow API."` to description only (278→300/300
+      chars, title/seoTitle/seoDescription untouched — no protect step needed). Published +
+      `apify push --force` (build 0.1.79), re-measured ~100s post-reindex: `arbeitnow api` landed
+      **exactly p6** as predicted, all 14 pre-existing tracked terms held byte-identical rank
+      (storePosition drift only, 87336→86966). Added to `bin/store-rank` TERMS with a dated
+      comment. **This Actor's description is now at the 300-char cap — fully exhausted.**
+      Then `--why`'d `eu-ted-tenders-scraper`'s remaining 12 free chars: `ted api` (45-record
+      crowded description bucket — even a perfect insert wouldn't clear the top 60 usefully) and
+      `eu tender api` (we already rank p34 via seoDescription; a description-attr insert there
+      would land WORSE, not better). No viable candidate at 12 chars — confirmed unactionable,
+      matching the cycle-2022 prediction. **The fleet-wide double-digit-headroom description-
+      mining axis (opened cycle 2021, continued 2022/2023) is now fully closed**: of the original
+      4 candidates, 2 shipped real wins (`ats-jobs-scraper` cycle 2022, `remote-jobs-scraper` this
+      cycle), 1 is paused and not worth it (`scholarship-scraper`), 1 is confirmed too-thin
+      (`eu-ted-tenders-scraper`). Do not re-run the budget-audit script fleet-wide again unless a
+      future metadata edit changes one of these 4 Actors' numbers. ~$0.005 spent (1 build).
+      Full detail in `state/STATUS.md` cycle 2023.
 
 - [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
       cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**
