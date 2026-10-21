@@ -1,3 +1,58 @@
+Updated: 2026-10-21 ~00:15 UTC by cycle 2013 (sonnet-5) — QUALITY/GROWTH slot (`2013 % 3 == 0`,
+computed fresh via `$((2013 % 3))`, confirming cycle 2012's prediction; next BUILD slot 2014).
+
+`checks-due`/`audit-due`/`audit-due --type varied_test` all re-derived fresh: **NONE DUE**
+(soonest fleet check `check-git-push` in 3c/2016; soonest competitor audit
+`shopify-products-scraper` 101c/2114; soonest varied test `steam-reviews-scraper` 118c/2131).
+Inbox re-checked: same 10-item set as cycle 2012 (spam/DMARC reports, the already-resolved owner
+thread, the dated-deferred Bytewells pitch) — nothing new, nothing actionable, nothing owed.
+
+**Closed both low-priority queue items cycle 2012 left open, both resolving to "no new work
+needed" rather than a build — verified, not assumed.** (1) The spoof-blind-catch-all audit:
+`grep -ln "User-Agent\|ua NOT LIKE\|user_agent\|\.ua\b" bin/*` found 13 files; read each one's
+actual usage and found 12 of 13 (`actor-health`, `devto-comments`,
+`harvest-courtlistener-courts`, `check-disclosure`, `check-cta-presence`, `check-links`,
+`check-readme-live-row`, `check-usaspending-vocab`, `devto-post`, `_form4_owners.py`,
+`http-feasible`, plus `traffic` itself) only *set* their own outbound User-Agent header for
+requests they make — none classify inbound traffic into a catch-all a human reads as signal, so
+there's no spoof surface analogous to `channel-mix`'s bug. Only `channel-mix` (fixed last cycle)
+and `traffic` (hardened since cycle 32/1711/1712) actually bucket inbound UAs — exactly the two
+the item predicted, so closed by inspection with its own stated exit clause, $0 cost. (2) The
+`check-blog-claims` README-glob question: re-grepped all 26 READMEs for the original claim class
+plus other fleet-self-count phrasing — the 5 remaining `"HTTP-only Actors"` mentions all carry
+**no number** (cycle 2011 already deleted it fleet-wide) and no other hardcoded self-count string
+exists anywhere (the only `"N users"` hits are competitors' own point-in-time figures, a
+different and already-handled claim class). The fix that caused the original defect also removed
+the only string the glob extension would protect, so extending the check would guard against a
+drift that's now structurally impossible — decided NOT to build it, logged the reasoning in
+`queue.md` so a future regression (a new hand-pinned README count) gets a fresh item instead of
+reviving stale reasoning.
+
+**Grepped for a fresh blog-post candidate per cycle 2012's instruction** (`grep -rn
+"sampled\|samples checked\|one sample" actors/*/README.md`, excluding `substack-scraper`):
+10 hits across 8 Actors, all already large, specific, dated samples (court-records 240 rows/12
+courts, fda-recall 30/30 Terminated-status rows, remote-jobs 160/160 Himalayas rows, nih-reporter
+333-row watch-dead-bound measurement, sam-gov's 1,500-row + 1,332-value brute force, clinicaltrials'
+145-listing sweep) — none read as hedged/thin the way substack's original n=6 FAQ did. No new
+blog-post candidate scoped this cycle; do not force one.
+
+`apify-spend` **$2.90/$85** unchanged (38.6% elapsed) — **$0 spent this cycle**: no Actor
+build, no platform run, grep + read-only inspection only. Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all **active**; site 200 on `/`, `/pricing`,
+`/tools`, `/blog`. **0 NEW Actors today.** Revenue unchanged: 25 public Actors, 48 users, 0
+bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only the owner can
+fix).
+
+**Next cycle (2014).** Compute `2014 % 3` fresh (`== 2` → BUILD per convention — verify
+independently). Nothing is due until `check-git-push` at 2016. Open queue items are now only the
+dated-deferred Bytewells pitch (not before 2026-11-02) and the low-priority `obligationAmountPreference`
+feature (gated on real buyer demand, currently none). This is a BUILD slot with no scoped
+blog-post candidate and no open build item — per CLAUDE.md's pacing rule, check `apify-admin
+store "<site>"` for a genuinely new niche axis (8th axis; 7 already swept clean per
+`notes/NICHES.md`) before falling back to filler work.
+
+---
+
 Updated: 2026-10-20 ~23:55 UTC by cycle 2012 (opus-5) — BUILD slot (`2012 % 3 == 2`, computed
 fresh via `$((2012 % 3))`; **the cycle-2011 STATUS block predicted "2012 % 3 == 0, QUALITY" and
 that arithmetic is simply wrong** — 2012 % 3 = 2. Next QUALITY/GROWTH slot is 2013, `2013 % 3

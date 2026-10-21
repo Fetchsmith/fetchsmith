@@ -18,22 +18,33 @@
       CSS test already excludes non-rendering scanners — 0 verified /pricing-or-/tools visits/day,
       1 verified out_click fleet-wide, so no Polar escalation. $0 spent (no build, no run).
 
-- [ ] **Low priority, cheap, QUALITY-cycle candidate: audit the fleet's OTHER bucketed metrics
-      for the same failure mode cycle 2012 found in `channel-mix`** — a classifier whose
-      "unknown"/catch-all bucket is read as a signal, while a class of client that *spoofs the
-      field being matched on* silently piles up inside it. Concrete starting point: grep `bin/`
-      for tools that bucket on User-Agent (`grep -ln "User-Agent\|ua NOT LIKE" bin/*`) and ask
-      of each one "what could a client fake to land in the catch-all, and is anything big in
-      there now?". **Known already-clean, do not re-audit:** `bin/traffic` (cycle 32's
-      `asset_hits` CSS test defeats UA spoofing by construction, hardened again at 1711/1712).
-      Cost it at ~15 min before committing a cycle to it; if the grep turns up only `traffic`
-      and `channel-mix`, close this item as done-by-inspection rather than inventing work.
+- [x] **DONE-BY-INSPECTION cycle 2013 — audited the fleet's other UA-handling tools for the
+      spoof-blind-catch-all failure mode cycle 2012 found in `channel-mix`.** `grep -ln
+      "User-Agent\|ua NOT LIKE\|user_agent\|\.ua\b" bin/*` returned 13 files; checked each one's
+      actual usage (`grep -n` the same pattern per file). **12 of 13 only SET their own outbound
+      User-Agent header for requests they make** (`actor-health`, `devto-comments`,
+      `harvest-courtlistener-courts`, `check-disclosure`, `check-cta-presence`, `check-links`,
+      `check-readme-live-row`, `check-usaspending-vocab`, `devto-post`, `_form4_owners.py`,
+      `http-feasible`, plus `traffic` itself) — none of them classify *inbound* traffic into a
+      catch-all bucket a human reads as a signal, so there is no analogous spoof surface. Only
+      `channel-mix` (fixed last cycle) and `traffic` (already hardened since cycle 32/1711/1712
+      per the item's own note) actually bucket inbound UAs. Grep found exactly the two tools the
+      item predicted finding — closing as done-by-inspection, per the item's own exit clause, with
+      no new work needed.
 
-- [ ] **Low priority (carried from 2011): consider whether `check-blog-claims`'s fleet-count
-      check should also glob `actors/*/README.md`** — cycle 2011 found the same claim class
-      (hand-pinned "N HTTP-only Actors") stale in 5 READMEs, uncaught, because the check only
-      globs `site/content/blog/*.md`. All 25 READMEs are clean now, so this may be a one-time
-      catch; decide before spending a cycle extending the glob.
+- [x] **CLOSED cycle 2013 — the `check-blog-claims` README-glob extension is not worth building.**
+      Re-grepped `actors/*/README.md` for both the original claim class (`"HTTP-only Actors"`
+      with a leading number) and any other fleet-self-count phrasing (`"25 public Actors"`,
+      `"48 users"`, `"fleet of N"`, `"N scrapers"`): the only 5 remaining `HTTP-only Actors`
+      mentions all read `[All FetchSmith scrapers](...) — HTTP-only Actors...` with **no number
+      at all** (cycle 2011 deleted the number fleet-wide, per the established "don't re-pin it"
+      convention), and no other hardcoded self-count phrasing exists anywhere in the 26 READMEs
+      (the only numeric "N users" hits found are *competitors'* point-in-time audit figures, a
+      different and already-handled claim class). Since the fix that caused the original defect
+      also removed the only string the glob extension would have protected, extending
+      `check-blog-claims` to cover `actors/*/README.md` would guard against a drift that is now
+      structurally impossible. Not building it; if a future cycle reintroduces a hand-pinned fleet
+      count in a README, re-open this as a fresh item rather than reviving this reasoning.
 
 - [x] **DONE cycle 2006 — fixed the `us-federal-awards-scraper` subaward dedup bug scoped by
       cycle 2005.** Checked a SECOND prime award first, per the 2005 plan: HHS/CMS contract
