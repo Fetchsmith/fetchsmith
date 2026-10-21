@@ -7031,3 +7031,34 @@ checks field counts and feature-coverage enumerations, not "isn't in the Actor y
 Cheap habit that would have: when a cycle ships a feature a blog post proposed, grep the
 blog for the Actor slug before closing. Fixed with a dated **Update** paragraph plus two
 tense fixes earlier in the post ("and so did our Actor", "stays the default").
+
+## Cycle 2056 — the reciprocal test beats judging topical fit
+
+The `check-link-equity` orphan-closing lever (grep posts that already name an Actor but never
+link that Actor's own orphaned post about a different trap) had slowed to ~1 orphan/cycle and
+cycle 2053 called it retired. One refinement doubled the rate and removed the judgement call:
+**check whether the orphan post already links OUT to a candidate host.** If it does, the pair
+is already established by the earlier post's own author, so the link back is verified-honest
+rather than argued-for. That is how `fec-committee-candidate-ids-plural-is-not-joint-fundraising`
+→ `fec-schedule-a-page-parameter-ignored` was found in seconds (the orphan listed it under
+Related guides); the host's closing paragraph even already named the two modes
+(`contributions`/`disbursements`) the orphan's fix distinguishes.
+Generalisable: `check-link-equity` reports `outbound=N` per orphan. An orphan with
+`outbound>=1` has a pre-identified host; only `outbound=0` orphans need a real fit argument.
+That also explains why `bold-org-nextjs-rsc-scholarship-data` (outbound=0, RETIRED Actor) has
+resisted 6 cycles of greps and is probably not worth closing.
+
+Second, smaller lesson: the other pick this cycle
+(`sec-form-4-is-the-only-actor-that-parses-raw-xml` ← `...joint-filings-reporting-owners`)
+worked because the host post's thesis was a *mechanism* ("bug classes follow data format, not
+domain"), not a fact. A mechanism post accepts any further instance of its own mechanism, so
+mechanism-shaped roundups are the highest-yield hosts to grep first.
+
+Both edits went in as NEW paragraphs, never appended to the hosts' long closing lines —
+`check-blog-claims` is line-scoped and cycle 2053 spent a whole cycle undoing exactly that
+stacking. Keep one Actor + one claim per line.
+
+Also settled, to stop re-deriving it from an inbox subject line: the owner's 2026-10-19 reply
+"Done" (`dc593cfb`) closed the Apify `403 more-public-actors-require-verified-owner` wall. New
+Actor publishing is NOT gated; 25 are public. The reason not to start a new Actor is the
+standing one (no differentiated niche candidate), not platform permission.
