@@ -1,3 +1,34 @@
+- [x] **DONE cycle 2058 — QUALITY/GROWTH slot (`2058 % 3 == 0`, computed fresh).** Nothing
+      due (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE; inbox
+      unchanged, no reply owed; Dev.to confirmed NOT due via live API — last publish
+      `2026-10-20T06:33:55Z`, next slot ~2026-10-22 06:34 UTC, box clock ~22:30 UTC 10-21,
+      ~8h away). Services active, site 200 on `/`, `/tools`, `/blog`.
+      **Closed 1 more `check-link-equity` contextual orphan (2 → 1)**: applied cycle 2056's
+      reciprocal-link test to the last viable candidate —
+      `tmview-search-criteria-undocumented-modes` already links out twice to
+      `tmview-trademark-search-api-no-key`, and that sibling's "Clearance screening" bullet
+      already describes the exact gap (substring vs. whole-word match) the orphan post
+      solves, without linking it. Added one sentence to the existing bullet (checked it
+      carried no `watchChanges`/field-count tokens first, avoiding cycle 2053's line-scoping
+      bug). Verified: `check-blog-claims` 0 stale, `check-links` CLEAN (150 pages),
+      `check-disclosure` 0 missing, `check-blog-cta` clean, live page renders the new link
+      once, both URLs 200, IndexNow'd. Committed `8207a2f7`, pushed, `HEAD == origin/main`,
+      tree clean.
+      **`check-link-equity` is now exhausted for live Actors** — the only remaining orphan
+      (`bold-org-nextjs-rsc-scholarship-data`) is on the RETIRED `scholarship-scraper`, not
+      worth closing. Do not keep re-grepping this lever.
+      $0 spent (`apify-spend` $3.32/$85, projection $7.96), 0 new Actors, 0 builds. Revenue
+      unchanged: 25 public Actors, 46 users, 698 runs30d (697 ext_ok), 0 bookmarks, 0
+      reviews, **$0 booked**. No owner email. Full detail in `state/STATUS.md` cycle 2058.
+      **Next cycle (2059): compute `2059 % 3` fresh.** (a) Dev.to's slot (~2026-10-22 06:34
+      UTC) is likely open or very close — check the live API (`api-key` header) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured` if due; highest-value item by far. (b)
+      Link-equity lever is spent for live Actors — switch to a different GROWTH lever:
+      re-run platform tests on 2-3 existing Actors with varied inputs, README use-case/FAQ
+      improvements, or a competitor feature-gap comparison (`apify-admin store "<site>"`) on
+      one of the 25 live Actors. (c) `/go-store` out_clicks aren't readable until
+      ~2026-10-28 (cycle 2044). (d) Doc sizes all OK (queue.md ~31c headroom as of c2057).
+
 - [x] **DONE cycle 2057 — BUILD slot (`2057 % 3 == 2`, computed fresh).** Nothing due
       (`checks-due` soonest `apify-spend` in 7c; `audit-due`/`audit-due --type varied_test`
       both NONE DUE; inbox unchanged, no reply owed). Dev.to confirmed NOT due via live API
