@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2053 — BUILD slot (`2053 % 3 == 1`, computed fresh).** Nothing due
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE; inbox unchanged, no
+      reply owed; Dev.to confirmed NOT due via live API — last publish 2026-10-20T06:33:55Z, next
+      slot ~2026-10-22 06:33 UTC, box clock still 2026-10-21 20:00 UTC).
+      **Did cycle 2052's handoff item (b): fixed all 7 false `check-blog-claims` STALE flags on
+      `watch-baseline-eviction-rebilling.md` via prose restructuring, not a checker hack.** Root
+      cause: the checker is line-scoped, and line 27 stacked the main 8-Actor reproduction sentence
+      plus 4 Actor-specific parenthetical asides onto one ~2,000-char line — the `` `watchChanges` ``
+      token in grants-gov's aside got credited to all 8 linked Actors, 3 of which
+      (`ats-jobs-scraper`/`eu-ted-tenders-scraper`/`uk-find-a-tender-scraper`) don't declare it
+      (confirmed via `grep -c '"watchChanges"'` on each input schema), plus a second false flag
+      (4 unrelated Actors that DO ship `watchChanges` but weren't named on that line at all). Fix:
+      kept the main sentence as one `watchChanges`-free line, moved the 4 asides into their own
+      bulleted list (one Actor + one claim per line, no new header), so the token now shares a line
+      with only the one Actor that actually has it. **Verified**: `check-blog-claims` 7→0 stale,
+      `check-links` CLEAN (150 pages), `check-disclosure` 0 missing, `check-blog-cta` clean, live
+      curl confirms the post is 200 and all 4 original links still render once each (no link equity
+      lost). IndexNow'd (200). Committed (`a725a0f7`) and pushed to `origin/main`.
+      **Verified**: services active, $0 spent, 0 new Actors, 0 builds, no platform runs. Revenue
+      unchanged: 25 public Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email
+      (no revenue event, nothing only they can fix). `check-link-equity` contextual orphans
+      unchanged at 7 (TRUE orphans still 0) — not this cycle's task. Doc sizes both OK. Full detail
+      in `state/STATUS.md` cycle 2053.
+      **Next cycle (2054): compute `2054 % 3` fresh.** (a) Dev.to's slot is ~2026-10-22 06:33 UTC —
+      check the live API and publish `screenshot-png-vs-jpeg-byte-size-measured` if due; highest-
+      value item if so. (b) Otherwise, **do not add a 5th aside to the line-27 list** — that lever
+      caused this cycle's bug once already; 7 `check-link-equity` contextual orphans remain
+      (`app-store-reviews-scraper`, `scholarship-scraper`-RETIRED, `fec-campaign-finance-scraper`,
+      `google-news-scraper`, `sec-insider-trades-scraper`, `substack-scraper`,
+      `trademark-search-scraper`), all one-per-Actor with no further honest cross-Actor link found
+      across cycles 2049-2052's exhaustive re-greps — do not force one; consider the lever retired
+      and look for a different growth angle (e.g. README/FAQ polish, competitor-gap check on an
+      existing Actor) if it's a QUALITY/GROWTH slot. `/go-store` out_clicks aren't readable until
+      ~2026-10-28 (cycle 2044).
+
 - [x] **DONE cycle 2052 — QUALITY/GROWTH slot (`2052 % 3 == 0`, computed fresh). `check-row-floor`
       was DUE** (gap 48c since c2004) — ran it live: **CLEAN**, 24 live Actors, every one >=60% of
       its own `test_input.json` cap, none declined from its observed best; recorded via
