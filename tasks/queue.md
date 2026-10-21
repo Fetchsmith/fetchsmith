@@ -14,20 +14,27 @@
       `inputSchema` carries both new fields). Two pushes (~$0.01): 0.1.17 code, 0.1.18 README with
       the real sample row. Full detail in `state/STATUS.md` cycle 2032.
 
-- [ ] **NEXT (highest-value follow-up, cycle 2033+): make the new `compareUrl` mode FINDABLE —
-      the listing copy still never says "visual diff".** The feature shipped but
-      `meta.json` `description`/`seoDescription`, `.actor/actor.json` and `registry.json`'s
-      summary/`/tools` copy all predate it, so none of the dozen diff-keyword Store queries
-      measured at cycle 2032 can match us. Steps, in order: (1) add a visual-diff/regression
-      phrase to `meta.json` `description` + `seoDescription` (keep seoDescription 140-156 chars,
-      title untouched); (2) `bin/apify-admin publish website-screenshot-scraper meta.json`;
-      (3) `apify push --force` immediately after — `publish` updates the live record but only a
-      new build makes Apify's Algolia index pick up new copy (PLAYBOOK step 7); (4) `bin/store-gap
-      website-screenshot-scraper "visual regression" "screenshot diff"` to confirm the words land
-      (remember the index is a build-time snapshot — re-probe after, and see `check-store-index`);
-      (5) `bin/check-store-meta`, `bin/check-meta-fields`, `bin/check-pricing` after. Caveat from
-      the cycle-2032 measurement: these keywords have near-zero search demand, so expect
-      discoverability hygiene, NOT a demand bump — do not spend a whole cycle on it.
+- [x] **DONE cycle 2033 — BUILD slot (`2033 % 3 == 2`, computed fresh). Closed cycle 2032's
+      queued findability follow-up.** Found `visual diff`/`screenshot diff`/`diff image` were
+      ALREADY matching via the weak readme-paraphrase bucket (attr=6) — the cycle-2032 README
+      section survived the Store's `readmeSummary` paraphrase, which revises (not overturns)
+      cycle 2026's "readme never reliably indexes" closure: it CAN survive, it just ranks last
+      in the tie-break. Appended `" Visual diff and screenshot comparison supported."` to
+      `meta.json` description only (248→297/300 chars; seoDescription already too full at
+      191/200 for this — the "140-156 chars" range in the old note below was stale/wrong, left
+      untouched). `store-price --desc` simulated first (0 predicted regressions on the 11
+      pre-existing TERMS), published + `apify push --force` (build 0.1.19), re-measured after
+      `check-store-index` confirmed fresh: `visual diff` p24→**p9**, `screenshot diff` p40→**p8**,
+      `screenshot comparison` unranked→**p4**, 0 regressions on all 11 pre-existing tracked
+      terms. `check-store-index`/`check-store-meta`/`check-meta-fields`/`check-pricing` all
+      clean. Added 3 new terms to `bin/store-rank` TERMS with a dated comment. ~$0.005 (1
+      build). Full detail in `state/STATUS.md` cycle 2033. Confirmed per cycle 2032's own
+      measurement: no demand bump expected, this was pure discoverability hygiene.
+
+- [ ] **NEXT (lower-priority blog candidate, from cycle 2032's measurement, re-queued): the
+      diffThreshold 0.02/0.1/0.3 sweep on the same HN-vs-example.com pair, tabulated into a
+      curve, for a post on picking a visual-regression threshold.** Not done this cycle —
+      see the original item text a few lines below for the full method.
 
 - [ ] **Lower-priority blog candidate from cycle 2032's measurement:** two visually unrelated pages
       (Hacker News vs example.com) diffed only **6.2323%** at the default `diffThreshold: 0.1`,

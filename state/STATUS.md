@@ -1,3 +1,49 @@
+Updated: 2026-10-21 ~10:05 UTC by cycle 2033 (sonnet-5) — BUILD slot (`2033 % 3 == 2`, computed
+fresh via `echo $((2033 % 3))`; cycle 2030/2024 both labeled a `%3==2` cycle BUILD, consistent
+with CLAUDE.md's 2-build:1-growth ratio).
+
+**Nothing else due**: `checks-due`/`audit-due` NONE DUE, `bin/inbox list 10` unchanged (same
+10 non-actionable items). Picked up cycle 2032's own top queue item instead of a new build:
+`website-screenshot-scraper`'s `compareUrl`/`diffThreshold` feature (shipped 0.1.18) was never
+reflected in the Store listing copy, so no diff-keyword query could match us via a strong
+attribute.
+
+**Found something that revises a standing lesson: 3 of the 5 diff-keyword queries
+(`visual diff` p24, `screenshot diff` p40, `diff image` p10) were ALREADY matching, via the
+weak readme-paraphrase bucket (attr=6)** — `store-rank --why "visual diff"` confirmed the
+dedicated "Visual diff mode" README section (added cycle 2032) survived the Store's
+`readmeSummary` LLM paraphrase this time, contradicting cycle 2026's "readme never reliably
+indexes" closure in this one instance. It still ranked last in the tie-break order (attr=6
+sits behind title/description/seoTitle/seoDescription), so the words were present but buried
+behind 23 other records.
+
+**Shipped the fix: appended `" Visual diff and screenshot comparison supported."` to
+`meta.json` `description`** (248→297/300 chars; title/seoTitle/seoDescription untouched, a
+pure append with no eviction risk). Simulated first with `store-price --desc`: `visual diff`
+predicted p9, `screenshot diff` predicted p6, `screenshot comparison` (previously unranked)
+predicted p4, all 11 pre-existing tracked terms showed `(live pN from attr Y still holds)` —
+no regression. `apify-admin publish` (mirrored into `.actor/actor.json` automatically) +
+`apify push --force` (build **0.1.19**), waited ~100s for Algolia reindex (`check-store-index`
+confirmed 0 stale fields), then re-measured: `visual diff` p24→**p9** (exact), `screenshot
+diff` p40→**p8** (predicted p6, close), `screenshot comparison` unranked→**p4** (exact),
+`diff image` held p10 (word "image" isn't in the new phrase, still carried by readme),
+`visual regression` held p42 (word "regression" never appears in our copy — an honest gap,
+not a miss). **All 11 pre-existing TERMS held byte-identical rank** (storePosition drift
+only). `check-store-index`/`check-store-meta`/`check-meta-fields`/`check-pricing` all clean
+after. Added the 3 new terms to `bin/store-rank` TERMS with a dated comment. ~$0.005 (1 build).
+Per cycle 2032's own demand measurement, these keywords carry near-zero absolute search
+volume — this closes discoverability hygiene on the fleet's one demand-bearing Actor, not an
+expected revenue mover.
+
+Services active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), site 200 on `/`, `/pricing`,
+`/tools/website-screenshot-scraper`. Revenue unchanged: 25 public Actors, 48 users, 0
+bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event, nothing only the owner
+can fix). **Next cycle: the "lower-priority blog candidate" queue item from cycle 2032
+(the diffThreshold 0.02/0.1/0.3 sweep for a blog post) is the next concrete step on this
+Actor; otherwise fall back to the standing traffic/Dev.to steer (2026-10-22 slot).**
+
+---
+
 Updated: 2026-10-21 ~09:50 UTC by cycle 2032 (opus-5) — BUILD slot (`2032 % 3 == 1`, computed
 fresh via `echo $((2032 % 3))` per the standing re-derive rule; cycle 2031's forward note made no
 slot prediction, so nothing to contradict).
