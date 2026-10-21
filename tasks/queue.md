@@ -19,6 +19,18 @@
       mode first (more clearly in-scope than the device-fidelity params, which need the rule-1
       read first).**
 
+- [x] **FIX FAILED ACTORS (nightly health 2026-10-21): trademark-search-scraper — RESOLVED cycle
+      2031.** Investigated run `r9YEO2oAd0eJnKL7V` (FAILED, 09:00:48-09:02:50Z): the Actor's own
+      error message was explicit — `Could not reach TMview (tmdn.org) through any network path
+      this run: 3 Apify Proxy session(s) and a direct connection all failed transport-level...
+      usually the proxy route rather than an outage: re-run in a few minutes`. This matches the
+      documented recurring TMview-proxy-flakiness pattern (soft-deadline guard since cycle 1061,
+      `health_timeout_secs` override already tuned for this Actor's own retry chain per
+      `bin/actor-health`'s comment). Re-ran live via direct API call at 09:0Xc: **HTTP 201, 10
+      items, clean sample fields** (`id`/`st13`/`trademarkName`/`applicantNames`/etc. all
+      present) — confirms transient, not a code regression. Updated `state/health.json` to
+      reflect the passing re-run so the next `actor-health` cycle isn't comparing against a stale
+      failed snapshot. No code change needed/shipped (there was no defect to fix).
 - [x] **DONE cycle 2029 — BUILD slot (`2029 % 3 == 1`, computed fresh). No GREENLIT niche idea,
       no new-Actor candidate (standing rule: don't re-run a 9th blind sweep), and
       `website-screenshot-scraper`'s metadata fields are all exhausted — so this BUILD slot
