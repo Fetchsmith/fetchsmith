@@ -6663,3 +6663,42 @@ the first recorded miss in the other direction**, and it is specifically single-
 "the query" and "the whole attribute" can coincide. Rule: never ship on a `store-price` prediction
 for a 1-word query without confirming the bucket shape with `--why` first. Multi-word predictions
 remain excellent (p15 exact, p25 -> landed p21 this cycle; 2/2).
+
+---
+
+## Cycle 2025 (sonnet-5, QUALITY/GROWTH slot) — the seoTitle/seoDescription lever works, but `store-price --attr N` has no text-simulation path
+
+Ran the cycle-1816 lever (queued by cycle 2024) on `website-screenshot-scraper`: attrs 4/5
+(seoTitle 43/60, seoDescription 164/200) were the only untouched metadata surface left once
+title (60/63) and description (248/300) were both maxed by cycles 2021-2024.
+
+**1. `store-price --attr N` does NOT accept a proposed-text argument the way `--title`/`--desc`
+do** — read the source (`bin/store-price:108-128`) before assuming otherwise. `--title`/`--desc`
+hardcode attr 0/2 and take a following string as `title`/`text`; `--attr N` only consumes the
+integer and leaves `text=None`, so passing a proposed string after it gets silently treated as
+just another QUERY (wasted an API call finding this out: `"Website Screenshot Scraper API |
+Fetchsmith"` showed up as a 1-hit query row). With no `text`, `--attr N` alone still predicts
+rank correctly, but only under the assumption of an IDEAL contiguous insertion (exact=words,
+prox=words-1) — it's the right tool for "is there an open bucket here at all", not for grading a
+specific candidate string.
+
+**2. To verify a specific candidate seoTitle/seoDescription string actually achieves that ideal
+match (not just "probably"), hand-copy `words()`+`simulate()` (lines 60-80) into a scratch
+`python3 -c`.** Those two functions are attribute-agnostic (`simulate(text, query)` takes any
+string), so this works for any attr index even though the CLI wrapper doesn't expose it. Confirmed
+both proposed append strings landed their ideal bucket (`exact=2 prox=1` for "capture website" in
+the new seoTitle; `exact=4 prox=3` for "web page to pdf" in the new seoDescription) before
+shipping — both predictions landed exactly/near-exactly (p12 exact, p14 vs predicted p13).
+
+**3. A `store-price --attr 4` candidate that prices at p1 (`screenshot monitoring`, 664 hits) was
+deliberately skipped — not every open bucket is worth filling.** This Actor has no scheduling/
+diff/alerting feature; "monitoring" is only true in the trivial sense that any Apify Actor can be
+cron-scheduled on the platform, which isn't a real differentiator. Shipping it would have been the
+cheapest p1 of any cycle in this fleet's history, and it was left on the table on purpose: a buyer
+searching "screenshot monitoring" wants a monitoring product, and every fleet rule and prior cycle
+(1837's `fda-recall-scraper` overwrite, the whole description-mining axis's "reachable AND honest"
+gate) has been about not buying rank with a claim the product can't back up. Worth remembering the
+next time a `--why`/`--attr` sweep turns up a suspiciously good number: price ≠ buy.
+
+Fleet-wide: 11/11 tracked terms on `website-screenshot-scraper` now hold (9 pre-existing + 2 new),
+0 regressions, build 0.1.14, ~$0.005 spent.

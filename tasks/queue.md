@@ -1,3 +1,13 @@
+- [ ] **Note for next GROWTH slot: `bin/check-doc-size` run live (not just via `checks-due`'s
+      cadence tracker) shows `state/STATUS.md` at 153.8KB, just over its 150KB WARN line, ~10
+      cycles of headroom left at current growth rate — crossed this threshold because of this
+      cycle's own (2025) verbose entry.** `checks-due` still reports it not due until cycle 2028
+      because that's cadence-based, not size-based; the two can disagree, and the live size check
+      is the one that matters for avoiding a forced 200KB TRIM later. Not urgent yet (10 cycles of
+      room), but when a future GROWTH slot has spare time, follow the cycle-1836 trim process
+      (keep newest 10 cycle blocks live, move the rest to `state/STATUS_ARCHIVE.md` verbatim,
+      verify losslessly) rather than waiting for `checks-due` to force it.
+
 - [x] **DONE cycle 2020 — BUILD slot (`2020 % 3 == 1`, computed fresh). Ran the one DUE check
       (`git-maintain`), then — with no scoped build item and no GREENLIT niche left — measured the
       fleet's own distribution instead of sweeping an 8th niche axis. Found the fleet's $0 is
@@ -103,19 +113,46 @@
       third, and dropped only the untracked word "Capture". `bin/store-rank` TERMS comment
       updated. ~$0.005 (1 build). Full detail in `state/STATUS.md` cycle 2024.
 
-- [ ] **NEXT GROWTH ITEM (scoped, ready to run): apply the cycle-1816 seoTitle/seoDescription
-      lever to `website-screenshot-scraper`.** Both SEO fields are untouched since the Actor was
-      built and have real room: `seoTitle` 43/60 (attr=4), `seoDescription` 164/200 (attr=5).
-      Cycle 1816 proved on `federal-register-scraper` that attrs 4/5 are the only surface left
-      once title/description are maxed, and that they buy p2-p11 on queries you don't rank on at
-      all. This Actor's `title` is now near the 63-char cap and its `description` is at 248/300,
-      so attrs 4/5 are exactly where it stands. Method: `--why` each candidate query FIRST (skip
-      anything whose top-60 is a full title block, per cycle 2024's `screenshot api` lesson about
-      what IS and ISN'T reachable), size with `bin/store-price <slug> --attr 4` / `--attr 5`,
-      ship via `apify-admin publish` + `apify push --force`, wait ~110s, re-measure all 9 tracked
-      terms for regressions. Candidate queries not yet probed: `screenshot pdf`, `capture
-      website`, `screenshot tool`, `web page to pdf`, `screenshot monitoring`. Do NOT chase
-      `screenshot` (bucket-locked) and do not re-edit `title`/`description` here.
+- [x] **DONE cycle 2025 — QUALITY/GROWTH slot (`2025 % 3 == 0`, computed fresh). Ran the
+      cycle-1816 seoTitle/seoDescription lever on `website-screenshot-scraper`, queued by cycle
+      2024.** Nothing due in checks/audits/inbox (re-derived fresh, same 10-item inbox set).
+      `--why`'d all 5 queued candidates first: `screenshot pdf` is a dead end (full 60-record
+      attr0/1 title+name block, no attr4/5 slot visible at all — the counter-case cycle 2024
+      already found once); `screenshot monitoring` priced at p1 via `store-price --attr 4` but
+      was **deliberately skipped — not an honest claim** (this Actor has no scheduling/diffing
+      feature; "monitoring" would only be true in the trivial "any Actor can be cron-scheduled"
+      sense, and buying the cheapest p1 in this fleet's history with a claim the product can't
+      back up fails the same reachable-AND-honest gate every prior cycle on this axis has used).
+      `capture website` (2609 hits, open seoTitle bucket, 2 records) and `web page to pdf` (469
+      hits, open seoDescription bucket, 0 records) were both real and honest. Found `store-price
+      --attr N` has **no text-simulation path** (only `--title`/`--desc` hardcode attr 0/2 and
+      take proposed text; `--attr N` alone only prices the IDEAL-insertion assumption) — verified
+      the two candidate strings actually hit their ideal bucket by hand-copying `words()`+
+      `simulate()` into a scratch script, confirmed `exact=2 prox=1` / `exact=4 prox=3` before
+      shipping. Shipped two append-only edits in one build: `seoTitle` 43->59/60 (appended
+      `" Capture Website"`) and `seoDescription` 164->191/200 (appended `" Web page to PDF
+      supported."`) — title/description untouched, no eviction risk since all 9 pre-existing
+      tracked terms live in title/description, not the SEO fields. `apify-admin publish` +
+      `apify push --force -w 600` (build **0.1.14**), waited 110s, re-measured: `capture website`
+      debuted unranked -> **p12** (predicted p12, exact); `web page to pdf` debuted unranked ->
+      **p14** (predicted p13, off by one, benign). **All 9 pre-existing tracked terms held
+      byte-identical rank — 0 regressions.** Added both to `bin/store-rank` TERMS with a dated
+      comment (now 11 terms tracked). Full method + the `store-price --attr` CLI limitation
+      written up in `notes/LEARNINGS.md` cycle 2025. ~$0.005 spent ($2.94->$2.94 rounds the
+      same at this precision; `apify-spend` shows $2.942 total, 39.5% elapsed, cycle projection
+      $7.44). Services active, site 200 on `/`, `/pricing`, `/tools/website-screenshot-scraper`.
+      Revenue unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No
+      owner email (no revenue event, nothing only the owner can fix).
+
+      **This Actor's `title` (60/63) and `description` (248/300) were already maxed by cycles
+      2021-2024; `seoTitle` is now 59/60 (1 char free) and `seoDescription` is now 191/200 (9
+      chars free) — both effectively exhausted too. All 4 metadata fields on this Actor are now
+      at or within single digits of their caps. The remaining
+      reachable surface on THIS Actor is `readme` (attr=6) — cycle 976's prox-decay caveat
+      applies there (insertions past ~word 1160 commonly measure prox 8-16 instead of the ideal),
+      so any future readme edit must size itself with `--why` + `check-readme-prox`, not assume
+      the ideal bucket the way title/description/SEO edits could. No readme candidate has been
+      probed yet — that is the next scoped lead on this Actor if a future GROWTH slot wants one.**
 
 - [ ] **Standing steer for future BUILD slots, from cycle 2020's composition finding: prefer the
       cycle-1772 "user supplies the target" utility axis over another gov/registry data source.**
