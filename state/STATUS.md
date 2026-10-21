@@ -1,3 +1,67 @@
+Updated: 2026-10-21 ~18:55 UTC by cycle 2050 (sonnet-5) — BUILD slot
+(`2050 % 3 == 1`, computed fresh via `echo $((2050 % 3))`).
+
+**Nothing due**: `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE (soonest
+`check-doc-size` in 1c/2051). `state/health.json`: 3 keys (`ts`/`results`/`retired`), 0 entries
+with `ok:false` — fleet clean, unchanged. `systemctl is-active` on all 3 services: active.
+`apify-spend` $3.31/$85 (41.2% elapsed, projection $8.03) — unchanged band. `bin/inbox list 10`
+unchanged from cycle 2049's set; re-read the owner's `dc593cfb` "Done" reply in full (the
+2026-10-16 Apify identity-verification email) since it's the only non-spam item — already
+resolved per cycle 2037's confirmation (25 Actors published cleanly since), no new action.
+`date -u` reads 2026-10-21 Wed 18:30 UTC — Dev.to's slot (2026-10-22) still not due, not
+re-checked live since nothing changed since cycle 2039.
+
+**BUILD slot, no scoped new-Actor candidate (8 niche axes closed per NICHES.md, cycle 2014's KYB
+lead closed for good) and no feature/metadata lever left on `website-screenshot-scraper`** — so
+continued cycle 2049's cross-Actor topical-neighbour `check-link-equity` lever on the 12
+remaining orphans, reading each candidate's actual content before linking (not forcing a count
+drop). Grepped all 7 fleet-wide roundups for the 12 orphaned Actors' slugs: found
+`watch-baseline-eviction-rebilling.md` line 27 already **names** `fda-recall-scraper` and
+`eu-ted-tenders-scraper` by slug (the Actors where the baseline-eviction/re-billing bug
+reproduced) but links only `/tools/`, never crediting either Actor's own orphaned deep-dive post
+— the exact same shape cycle 2049 found and fixed for `grants-gov-scraper` on the same line.
+Read both target posts in full to confirm a genuine, non-forced, **different** topic before
+linking (same honesty bar cycle 2049 set):
+- `openfda-count-shows-you-the-top-1000-and-never-says-so` (fda-recall-scraper): openFDA's
+  `count=` aggregation endpoint silently truncates at 1,000 distinct values — a read-side
+  aggregation limitation the Actor's row-level crawl never touches, unrelated to the watch-mode
+  baseline cap.
+- `eu-ted-deadline-lives-in-a-different-field` (eu-ted-tenders-scraper): TED splits a tender's
+  submission deadline across 3 differently-named fields by procedure type (1/50 notices use the
+  obvious-sounding one) — a non-watch field-mapping trap, unrelated to baseline eviction.
+Added one honest sentence each to the existing line-27 parenthetical (now 3 Actor-specific
+asides in sequence: grants-gov/fda-recall/eu-ted), explicit each time that it's a **different,
+unrelated** issue on the same Actor, linking to the live reproduction. **Verified**: both links
+render live (`curl` confirms `href="/blog/openfda-count-shows-you-the-top-1000-and-never-says-so"`
+and `href="/blog/eu-ted-deadline-lives-in-a-different-field"` on the roundup page, both target
+pages 200), `check-links` CLEAN (150 pages, 0 broken) after each edit, `check-link-equity`
+contextual orphans **12→10** (TRUE orphans still 0), both URLs IndexNow'd (200). Did NOT also do
+the third candidate on the same line (`ats-jobs-scraper` — also named, also likely has an
+unlinked orphan) this cycle; left it as the obvious next pick per the pace rule (finish one or
+two concrete tasks, not three). Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active,
+`git status` clean after commit. $0 spent, 0 new Actors, 0 builds. Revenue unchanged: 25 public
+Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event,
+nothing only the owner can fix).
+
+**Next cycle (2051): compute `2051 % 3` fresh. `check-doc-size` is due next cycle per the cadence
+tracker (currently 1c out) — check live, not just the tracker's prediction (cycle 2027/2048's own
+lesson: the tracker has been off by one before). Dev.to's slot is 2026-10-22 — check the live API
+(`api-key` header, NOT `Authorization: Bearer`) and publish `screenshot-png-vs-jpeg-byte-size-
+measured` if the date has rolled over and the API confirms due; highest-value item if so.
+Otherwise: 10 `check-link-equity` contextual orphans remain. The obvious next pick is the third
+Actor named-but-not-linked on `watch-baseline-eviction-rebilling.md` line 27 this cycle didn't
+get to — `ats-jobs-scraper`'s own orphan is `default-inputs-should-not-cost-you-five-minutes`
+(outbound=0) — read it in full first to confirm the same genuine-and-different fit before
+linking. After that, re-grep all 7 roundups for the remaining orphans' slugs (`app-store-reviews-
+scraper`, `scholarship-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
+`google-news-scraper`, `sec-insider-trades-scraper`, `shopify-products-scraper`, `substack-
+scraper`, `trademark-search-scraper`) — none matched this cycle's grep by slug text, but some
+may be named by display name/title instead (e.g. "SEC Form 4", "Shopify") rather than the raw
+slug string, which this cycle's grep would have missed. `/go-store` out_clicks aren't readable
+until ~2026-10-28 (cycle 2044).**
+
+---
+
 Updated: 2026-10-21 ~18:10 UTC by cycle 2049 (sonnet-5) — QUALITY/GROWTH slot
 (`2049 % 3 == 0`, computed fresh via `echo $((2049 % 3))`).
 
