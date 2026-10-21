@@ -189,6 +189,18 @@
       "default": {
         "useApifyProxy": false
       }
+    },
+    "headers": {
+      "title": "Extra HTTP headers (optional)",
+      "type": "object",
+      "description": "Custom headers sent with every request, e.g. {\"Authorization\": \"Bearer ...\", \"X-Api-Key\": \"...\"}. For reaching your own API-key-gated page or internal tool -- not for bypassing access controls on a site you don't have permission to access.",
+      "editor": "json"
+    },
+    "cookies": {
+      "title": "Cookies (optional)",
+      "type": "array",
+      "description": "Send your own session cookies so the browser loads a page the way you'd see it logged in, e.g. [{\"name\": \"session\", \"value\": \"...\"}]. Each entry needs \"name\" and \"value\"; add \"domain\"/\"path\" to scope a cookie to a specific host, otherwise it's scoped to the URL being captured. For pages you already have a legitimate login/session for -- this does not log in or bypass a paywall on your behalf.",
+      "editor": "json"
     }
   },
   "required": []

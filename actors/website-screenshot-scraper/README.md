@@ -10,6 +10,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 - **Visual diff mode**: set `compareUrl` and each URL is captured twice (yours and the comparison target), pixel-diffed, and returned with the differing-pixel count, change percentage and a highlighted diff image — staging vs production, or a page before vs after a deploy. One charged event per comparison, not two.
 - Emulate dark mode (`colorScheme`), a locale/timezone (`locale`/`timezoneId`), or touch support (`hasTouch`) before capturing, for pages that render differently based on any of these.
 - Optional proxy (`proxyConfiguration`) — Apify Proxy or your own proxy URLs, with a fresh IP drawn per URL so a long list is spread across the pool instead of hitting a rate limit from one address.
+- Optional custom HTTP headers (`headers`) and cookies (`cookies`) for pages that need your own API key or an existing logged-in session to render correctly — not a login or paywall bypass.
 - Pay per successful capture: a URL that fails to load (timeout, DNS error, 4xx/5xx) returns an error row and is **never charged**.
 - The run start is free; you only pay for screenshots actually returned.
 
@@ -35,6 +36,8 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 | `locale` | string | BCP 47 locale to emulate, e.g. `fr-FR` (affects `navigator.language`, number/date formatting) |
 | `timezoneId` | string | IANA timezone to emulate, e.g. `America/New_York` (affects locally-rendered times/dates) |
 | `proxyConfiguration` | object | Route the browser through Apify Proxy or your own proxy URLs (off by default). A fresh IP per URL; in compare mode both captures of a pair share one IP |
+| `headers` | object | Extra HTTP headers sent with every request, e.g. `{"Authorization": "Bearer ..."}` |
+| `cookies` | array | Cookies to send, e.g. `[{"name": "session", "value": "..."}]` — add `domain`/`path` to scope beyond the captured URL |
 
 ## Output
 One row per URL (or one row for raw HTML):
@@ -134,8 +137,10 @@ live from their own build OpenAPI documents on 2026-10-21, not from Store market
 
 **Can I screenshot through a proxy?** Yes — set `proxyConfiguration` to use Apify Proxy (pick groups/country in the input editor) or paste your own `proxyUrls`. It is **off by default**, because most public pages do not need it and a direct capture is faster. Turn it on when you are capturing a long URL list from one site and hitting per-IP rate limits, or when the page serves different content per country. The Actor draws a fresh IP per URL rather than per run, so the list is spread across the pool. One deliberate exception: in visual diff mode both captures of a pair go through the **same** IP — otherwise a geo-routed page would diff as "changed" when nothing had changed.
 
+**Can I capture a page that needs an API key or my own logged-in session?** Yes — set `headers` for an API key or bearer token (e.g. `{"Authorization": "Bearer ..."}`), or `cookies` to send a session cookie you already have (e.g. `[{"name": "session", "value": "..."}]`). This is for pages you already have a legitimate right to access with your own credentials, like an internal dashboard, a staging environment behind basic headers, or your own account on a site — it does not log in for you or defeat any access control on content you don't already have permission to view. A malformed `headers`/`cookies` entry (missing `name`/`value`) fails the whole run with a clear message rather than a silent per-URL error.
+
 ## Notes
-Only public pages you have a right to view/fetch should be submitted — this Actor does not bypass logins or paywalls. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
+Only public pages you have a right to view/fetch should be submitted — this Actor does not log you in or bypass a paywall/login you don't already have access to. `headers`/`cookies` let you pass credentials you already hold (an API key, your own session cookie); they do not grant access to anything you couldn't already reach yourself. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
 - https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-size-measured — PNG vs JPEG vs viewport cropping on the same page, with the real byte sizes and billing lines

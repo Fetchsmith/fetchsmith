@@ -30,6 +30,31 @@ const colorScheme = ['light', 'dark', 'no-preference'].includes(input.colorSchem
 const locale = typeof input.locale === 'string' && input.locale.trim() ? input.locale.trim() : undefined;
 const timezoneId = typeof input.timezoneId === 'string' && input.timezoneId.trim() ? input.timezoneId.trim() : undefined;
 
+// Both are for pages you already have a right to reach with your OWN credentials (e.g. an
+// API-key-gated embed, or your own logged-in session cookie) -- not a login/paywall bypass.
+// Validated upfront so a typo fails the whole run with one clear message instead of a cryptic
+// per-URL Playwright error repeated across every item.
+const extraHeaders = (input.headers && typeof input.headers === 'object' && !Array.isArray(input.headers))
+  ? input.headers : null;
+const cookies = Array.isArray(input.cookies) && input.cookies.length ? input.cookies : null;
+try {
+  if (extraHeaders) {
+    for (const [k, v] of Object.entries(extraHeaders)) {
+      if (typeof v !== 'string') throw new Error(`headers["${k}"] must be a string, got ${typeof v}.`);
+    }
+  }
+  if (cookies) {
+    for (const c of cookies) {
+      if (!c || typeof c.name !== 'string' || !c.name || typeof c.value !== 'string') {
+        throw new Error(`every cookies[] entry needs a string "name" and "value" (got ${JSON.stringify(c)}).`);
+      }
+    }
+  }
+} catch (err) {
+  await Actor.fail(`Input error: ${err.message}`);
+  throw err;
+}
+
 // Returns undefined when the caller left the proxy off (or picked `useApifyProxy: false` with no
 // custom URLs), which is the default. A bad group name / an Apify group this account cannot use
 // throws here rather than at capture time, so fail the run with the SDK's own message instead of
@@ -120,6 +145,16 @@ async function renderBuffer(browser, { url, rawHtml }, fmt = format, proxy = nul
     ...(proxy ? { proxy } : {}),
   });
   try {
+    if (extraHeaders) await context.setExtraHTTPHeaders(extraHeaders);
+    // A cookie needs either an explicit domain/path or a `url` to derive them from -- only
+    // meaningful when we're actually navigating to a URL (not raw HTML).
+    if (cookies && url) {
+      await context.addCookies(cookies.map((c) => ({
+        name: c.name,
+        value: c.value,
+        ...(c.domain ? { domain: c.domain, path: c.path || '/' } : { url }),
+      })));
+    }
     // `newPage()` can throw on a bad user-supplied `timezoneId` -- keep it inside the try so an
     // invalid value still reaches the `finally` below instead of leaking the context.
     const page = await context.newPage();

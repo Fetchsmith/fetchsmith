@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2038 — BUILD slot (`2038 % 3 == 1`, computed fresh). Resolved the standing
+      not-greenlit `cookies`/`headers` feature candidate on `website-screenshot-scraper` (open
+      since cycle 2030, re-flagged 2035/2036/2037) by actually doing the CLAUDE.md rule-1 read
+      instead of deferring again.** Decision: GREENLIT. The user supplies credentials they already
+      hold (their own API key or session cookie) for a URL they already choose — the Actor never
+      logs in or defeats access control on anyone's behalf, the same trust boundary `urls` itself
+      already has. Matches `cheapapi/website-screenshot-api`'s existing feature, framed the same
+      way. Shipped `headers` (object) + `cookies` (array of `{name,value,domain?,path?}`), build
+      **0.1.25**, via `context.setExtraHTTPHeaders()`/`context.addCookies()` in `renderBuffer()`.
+      **Found and fixed a real bug before shipping: the first validation cut threw an uncaught
+      exception (crashed the process) instead of a clean `Actor.fail()`** — caught by testing the
+      malformed-input path, not by inspection; fixed by mirroring the existing `proxyConfiguration`
+      try/catch pattern. Verified 5 ways: isolated Playwright script against public
+      `httpbin.org/headers`+`/cookies` echo endpoints; local `main.js` run via `CRAWLEE_STORAGE_DIR`
+      with the **decoded output PNG itself showing** `X-Api-Key: sekret123` / `Cookie:
+      mycookie=cookieval`; malformed-cookie input now fails cleanly; default `test_input.json`
+      unregressed (3/3 success); **live post-push run on build 0.1.25**, PNGs downloaded from the
+      real key-value store and visually confirmed the same header/cookie values rendered (not a
+      local-only artifact). README (input table, feature bullet, FAQ) and the existing "Notes"
+      disclaimer extended, not weakened: "`headers`/`cookies` let you pass credentials you already
+      hold ... they do not grant access to anything you couldn't already reach yourself." No
+      `meta.json`/Store listing change (description maxed at 297/300 per cycle 2037, not a ranking
+      play). `check-pricing`/`check-example-input` re-run clean. ~$0.01 spent (1 build + 2 live
+      runs). Full detail in `state/STATUS.md` cycle 2038. **Next cycle (2039): compute slot fresh;
+      the only remaining feature candidate on this Actor is `geolocation` (needs a
+      permissions-grant design — think through what "permission" means for a non-interactive batch
+      Actor before building, same rigor as this cycle's rule-1 read); otherwise fall back to the
+      cycle-2020 utility-axis steer for any new Actor or traffic/Dev.to/channel-mix growth work.**
+
 - [x] **DONE cycle 2037 — QUALITY/GROWTH slot (`2037 % 3 == 0`, computed fresh). Closed cycle
       2036's own queued follow-up: the Store listing never said "proxy" even though
       `proxyConfiguration` shipped build 0.1.23, so `screenshot proxy`/`proxy screenshot` (262/251
