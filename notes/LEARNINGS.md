@@ -6872,3 +6872,43 @@ us nothing per screenshot, while a residential option would have put an $8/GB li
 $0.002/result price. A bad group name throws inside `Actor.createProxyConfiguration()` at startup,
 so that call is wrapped to `Actor.fail()` with the SDK's own message rather than letting every URL
 in the list produce the same cryptic error row.
+
+## Cycle 2040 — shipping a feature is not the same as selling it; and a check gated on the wrong event rots
+
+Five consecutive BUILD cycles (2035–2039) added 11 input properties and a whole compare-mode
+output shape to `website-screenshot-scraper`. Every one of them updated `src/main.js`, the
+`inputSchema`, the README and (where relevant) `.actor/dataset_schema.json`. **Not one touched
+`actors/registry.json`** — so for ~5 cycles fetchsmith.com's own storefront copy described a
+weaker product than the one we were actually running. The worst omission was not even a new
+feature: **visual diff mode had never been in the summary at all**, despite being the Actor's main
+differentiator and having a dedicated blog post on the same site.
+
+Two durable lessons:
+
+1. **`registry.json`'s `summary` is a storefront, not a label.** It renders in five places at once
+   — the `/tools/<slug>` lead paragraph, the page `<meta name="description">`, the JSON-LD
+   `SoftwareApplication.description`, and the cards on `/`, `/tools` and `/pricing`
+   (`site/templates/tool.html:3,4,6` + the card rows in `home.html`/`tools.html`/`pricing.html`).
+   A feature that is not in that string is invisible to every buyer and every crawler. Add
+   "update the registry summary + `output_fields`" to the mental checklist for any BUILD cycle
+   that adds a user-visible capability — the README is for someone who already clicked.
+   `registry.json` is read per-request (`site/app.py:83-87`), so a copy fix needs no restart and
+   no build: it is the cheapest shipping action available, which makes forgetting it worse, not
+   more forgivable.
+
+2. **A check is only as good as the event it is gated on.** `bin/check-registry-fields` exists
+   precisely to catch advertised-vs-real field drift, is offline, and runs fleet-wide in under a
+   second — and it was sitting RED on 4 Actors (19 unadvertised fields total) because it is
+   classified `rotation_support`, i.e. it only fires inside the competitor_audit rotation. But
+   this drift is *created* in BUILD cycles and the relevant audits were hundreds of cycles out
+   (`sec-insider-trades-scraper`'s last audit: c1805). Cycle 2019's lesson was "an untracked check
+   rots"; this is the next layer: **a tracked check whose trigger is uncorrelated with the defect
+   it detects also rots, and looks compliant while doing it.** When classifying a check, ask what
+   *event* produces the defect, not just how often it seems worth re-running.
+
+Smaller, reusable: a field appearing in `.actor/dataset_schema.json` is **not** proof the Actor
+emits it — the schema is hand-maintained. Before advertising a field on the public site, grep it
+in `src/main.js` at its push site and confirm the README documents it; `state/health.json`'s
+`sample_keys` is good corroboration but truncates at 8 keys, so it can only ever add evidence.
+Also: re-run `check-meta-fields` *after* adding fields, not before — adding a field can invalidate
+an "N typed fields" prose claim somewhere else in the fleet.

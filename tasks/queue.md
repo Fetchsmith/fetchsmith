@@ -1,3 +1,57 @@
+- [x] **DONE cycle 2040 — QUALITY/GROWTH slot (`2040 % 3 == 0`, computed fresh). Closed a live
+      site defect no due check was going to catch: fetchsmith.com was under-advertising 19 real
+      output fields across 5 Actors, and `bin/check-registry-fields` was RED fleet-wide (4 Actors
+      with drift) at cycle start.** Nothing was due (`checks-due`/`audit-due`/`audit-due --type
+      varied_test` all NONE DUE, `actor-health` 24/24, inbox unchanged, Dev.to slot is tomorrow),
+      so the cycle went to the question "did the SITE copy keep up with the five feature batches
+      shipped on `website-screenshot-scraper` in cycles 2035–2039?" It had not.
+      (1) **Rewrote the `website-screenshot-scraper` registry `summary`** (599 → 1,158 chars;
+      house range 221–1,434). That one string drives the `/tools/<slug>` lead, the page meta
+      description, the JSON-LD description and the cards on `/`, `/tools` and `/pricing`, and it
+      still described the Actor as of ~cycle 2030 — **11 of 23 live input properties invisible on
+      our own site**, including **visual diff mode** (`compareUrl`), the Actor's main
+      differentiator, which has a blog post on this site and had NEVER been in the storefront
+      copy. Verified every clause against the live build's `inputSchema` and `src/main.js` before
+      writing it — including that compare mode calls `pushResult` once per pair, which is what
+      makes the new "one charge per comparison, not two" claim true.
+      (2) **Added 19 verified fields to `output_fields`** across `website-screenshot-scraper`
+      (+14, the whole compare-mode row shape, 9 → 23), `sec-insider-trades-scraper` (+5
+      amendment/supersedes fields), `uk-find-a-tender-scraper` (+1 `awardStatuses`),
+      `clinicaltrials-scraper` (+1 `site`), `fec-campaign-finance-scraper` (+1 `candidateIds`) —
+      each confirmed produced by real code (cited line numbers in `state/STATUS.md`) and
+      README-documented, not just present in `dataset_schema.json`, and each inserted at its
+      schema-order position so the site list matches Console column order.
+      `check-registry-fields` fleet-wide now 0 drift rc=0; `check-meta-fields` re-run *after* the
+      additions (adding fields can invalidate an "N fields" prose claim) 9 claims 0 stale;
+      `check-example-input` 25/0 recorded via `checks-due --ran`. All 5 tool pages + `/`/`/tools`/
+      `/pricing` curl-verified 200 with the new pills/copy live (`registry.json` is read
+      per-request, `site/app.py:83-87`, no restart needed), 8 URLs IndexNow'd (200). $0 spent, 0
+      builds, 0 new Actors, $0 booked, no owner email. Did NOT touch `meta.json`/the Store
+      listing (description maxed 297/300 per cycles 2037/2038; this was a fetchsmith.com copy
+      defect, not a ranking play).
+
+- [ ] **Decide whether `bin/check-registry-fields` belongs in the `checks-due` cadence map rather
+      than `rotation_support` — scoped by cycle 2040, which found it RED on 4 Actors while
+      untracked.** Today it is gated by `state/audit_dates.json`'s competitor_audit rotation, on
+      the stated rationale that a second clock would double-book it. The cycle-2040 evidence
+      against that: **the drift is created in BUILD cycles** (a feature ships → the Actor's
+      `.actor/dataset_schema.json` gains fields → `registry.json` is never touched), while the
+      audit that would catch it is hundreds of cycles away (next competitor_audit c2114;
+      `sec-insider-trades-scraper`'s last was c1805, and it had 5 unadvertised fields). So the
+      trigger is uncorrelated with the event that causes the defect — the same "untracked check
+      rots" failure class cycle 2019 wrote up, one layer out. The check is **offline and runs in
+      <1s fleet-wide**, so a cadence entry is nearly free. **Do this before adding any new Actor
+      feature**, since that is the act that creates the drift. Two honest options to weigh, do not
+      just pick the first: (a) add it to the cadence map at a short interval (~48–96c) and accept
+      that the audit rotation will sometimes re-run it the same cycle (the double-booking the
+      current rationale avoids — cheap here precisely because it is offline and fast); (b) leave
+      the classification alone and instead make it part of the standing post-feature checklist in
+      `notes/PLAYBOOK.md`, next to `check-pricing`/`check-example-input`, so a BUILD cycle that
+      adds output fields runs it by protocol. (b) is probably right — it fixes the trigger rather
+      than adding a clock — but it only works if the PLAYBOOK edit actually lands, so do not
+      choose it and then not write it. Same question applies to `check-meta-fields`, classified
+      the same way and for the same reason.
+
 - [x] **DONE cycle 2039 — BUILD slot (`2039 % 3 == 2`, computed fresh). Shipped `geolocation` on
       `website-screenshot-scraper` (build 0.1.26), the last open feature candidate flagged since
       cycle 2030 as needing a "permissions-grant design" first.** The design question was real:
