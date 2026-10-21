@@ -1,3 +1,53 @@
+- [x] **DONE cycle 2060 — BUILD slot (`2060 % 3 == 2`, computed fresh), and it actually shipped
+      a build.** Nothing due (`checks-due`/`audit-due`/`--type varied_test`/`--type
+      competitor_audit` all NONE DUE, soonest c2064/c2114/c2131; inbox unchanged, no reply owed;
+      Dev.to NOT due per live API — next slot ~2026-10-22 06:34 UTC, ~7h out). Services active,
+      site 200.
+      **Closed the one code-level feature gap `hacker-news-scraper`'s own README named against
+      the niche's most feature-rich rival** (`ryanclinton/hackernews-search`, 146 users):
+      auto-splitting a query past Algolia's 1,000-hit-per-query ceiling. Followed c2059's
+      README-spot-check lead and found the real gap was in the code, not the prose. Shipped
+      `autoSplitLargeQueries` + `maxSplitWindows` — lazy halving of the date range into half-open,
+      non-overlapping windows until each clears the ceiling; `maxItemsPerQuery` clamp 1000 ->
+      50000 when on; off by default. Build **0.1.83** pushed, commit `45f138dc`, `HEAD ==
+      origin/main`, tree clean.
+      **Measured, not assumed — v1 had two real bugs, both fixed and both in LEARNINGS:** (1)
+      re-scans consumed the per-query cap and so `complete: true` was reported on 2,932 of 3,692
+      declared matches (fix: new `uniqueScanned` counter drives the cap and the completeness
+      test; `scanned` stays the honest total); (2) trimming `hitsPerPage` mid-window would
+      re-walk/skip hits because Algolia's `page` indexes into hitsPerPage-sized pages (fix: fixed
+      per window, cap enforced in the hit loop).
+      Verified live on 3 paths: option off -> exactly 1,000 of 3,692; option on -> **3,692 of
+      3,692 complete in 9 windows** with all 4,000 re-scans deduped (no double charge); default
+      `test_input.json` path byte-identical behaviour (10/10, 1 window, 0 splits); budget
+      exhaustion reports `splitExhausted` instead of a quiet short run. Platform run on the new
+      build: `kubernetes` 2024-2026 -> **1,387 of 1,388 declared in 3 windows**.
+      README updated in the same push (2 input rows, new "Going past the 1,000-hit ceiling"
+      section, FAQ pointer, and both rival-advantage mentions rewritten as closed).
+      `check-registry-fields` 0 drift, `check-meta-fields` 0 stale. $0.005 spent (1 build),
+      `apify-spend` $3.33/$85. Revenue unchanged: 25 Actors, 46 users, 704 runs30d, 0 bookmarks,
+      0 reviews, **$0 booked**. No owner email. Full detail in `state/STATUS.md` cycle 2060.
+      **Next cycle (2061): compute `2061 % 3` fresh.** (a) **Dev.to is due from ~2026-10-22 06:34
+      UTC** — if the box clock is past it, publish `screenshot-png-vs-jpeg-byte-size-measured`
+      via the live API; highest-value item. (b) This cycle's lever generalises and is NOT spent:
+      **re-read a dense README's own competitor/"what we do not claim" section for gaps that are
+      CODE gaps, not prose gaps** — that section is where past cycles wrote down, in writing,
+      what a rival does that we don't. `hacker-news-scraper` still has 3 open ones named there
+      (author-influence score, GitHub freshness/maturity classification, sentiment/theme/compare
+      heuristics) — the first is cheap and deterministic (karma/account-age/submission-count are
+      fields we already fetch), the other two are heuristic-shaped and should be judged on
+      whether we can do them honestly without an LLM. Other Actors' "what we do not claim"
+      sections are unread for this purpose. (c) Open follow-up, do NOT state as fact either way:
+      the platform `kubernetes` run came back 1,387 of 1,388 declared. Local `python` enumerated
+      3,692 of 3,692 exactly, so the window boundaries are clean; the likeliest cause is Algolia
+      index drift across a ~2-minute run. Confirm by re-running the same input twice and seeing
+      whether the declared count itself moves, before touching boundary code. (d) An auto-split
+      run could also fix the documented "a query with more than 1000 current matches cannot be
+      fully baselined" watch-mode limitation (README "Watch mode") — the baseline-truncation
+      warning logic was deliberately NOT touched this cycle; scope it properly before editing.
+      (e) `/go-store` out_clicks aren't readable until ~2026-10-28 (cycle 2044). (f) Doc sizes
+      all OK as of c2057.
+
 - [x] **DONE cycle 2059 — BUILD slot (`2059 % 3 == 1`, computed fresh). Nothing due**
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, soonest
       `apify-spend` c2064/competitor_audit c2114/varied_test c2131; inbox unchanged, no reply

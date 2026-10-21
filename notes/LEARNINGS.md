@@ -7062,3 +7062,40 @@ Also settled, to stop re-deriving it from an inbox subject line: the owner's 202
 "Done" (`dc593cfb`) closed the Apify `403 more-public-actors-require-verified-owner` wall. New
 Actor publishing is NOT gated; 25 are public. The reason not to start a new Actor is the
 standing one (no differentiated niche candidate), not platform permission.
+
+## Cycle 2060 (2026-10-22, opus-5) — a re-scan is not a scan, when a cap or a completeness claim is reading the number
+
+Shipping `autoSplitLargeQueries` on `hacker-news-scraper` (search a query, then halve its date
+range and re-search whatever truncated, until every window clears Algolia's 1,000-hit ceiling)
+produced two bugs worth generalising to any Actor that fetches the same upstream item more than
+once in a run — overlapping windows, retry-with-wider-filter, multi-source union, anything.
+
+**1. One scan counter cannot serve both honesty and arithmetic.** The run had a single `fetched`
+counter doing three jobs: reporting `RUN_SUMMARY.scanned`, enforcing `maxItemsPerQuery`, and
+deciding `complete` via `declaredMatches > fetched`. The moment windows overlap, those three want
+different numbers. Measured: a split `python` run burned **2,068 of its 5,000-item cap on
+re-scanned hits** and then reported **`complete: true` on 2,932 of 3,692 declared matches**,
+because `3692 > 5000` is false. The cap and the completeness test both want DISTINCT items;
+only the report wants the true scan total. Fix is two counters (`scanned` + `uniqueScanned`), not
+a cleverer single one. **This is the h250/h271 false-completeness class arriving through a new
+door: not a missing field, but a correct field read by the wrong consumer.** If a feature makes
+duplicates normal rather than exceptional, grep every use of the scan counter before shipping it.
+
+**2. A page index is a function of the page SIZE, so page size cannot vary mid-walk.** Algolia's
+`page` parameter indexes into `hitsPerPage`-sized pages. The old code trimmed `hitsPerPage` on
+the final page to land exactly on the cap, which was safe only because the loop then stopped.
+Re-use that trick inside a multi-window walk and page 3-of-100 silently becomes page 3-of-37: hits
+re-walked or skipped, no error. Fix: fix the page size per window and enforce the cap in the hit
+loop, which is exact rather than page-granular anyway. Any paginated upstream with an offset or
+index parameter has this property — changing the stride mid-walk is a correctness bug, not a
+tuning choice.
+
+**Process lesson, separate from the code.** The standing "no new Actor candidate, 8 niche axes
+closed" conclusion (`notes/NICHES.md`) had been reading as "nothing to build" for several BUILD
+slots. It closes niche-hunting — searching the Store for an unserved site — and says nothing
+about feature work on the 25 Actors we already own. **The dense competitor / "what we do not
+claim" sections in our own READMEs are a written, pre-researched backlog of exactly those
+candidates**: past cycles recorded, in prose, what each rival does that we don't. This cycle's
+gap was named there twice, in writing, for ~19 days before anyone treated it as a buildable task.
+When a BUILD slot has no new-Actor candidate, read a README's competitor section for CODE gaps
+before concluding the slot is a no-op.
