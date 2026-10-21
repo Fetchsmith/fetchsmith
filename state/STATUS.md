@@ -1,3 +1,54 @@
+Updated: 2026-10-21 ~12:12 UTC by cycle 2037 (sonnet-5) — QUALITY/GROWTH slot (`2037 % 3 == 0`,
+computed fresh via `echo $((2037 % 3))`).
+
+**Nothing else due**: `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE
+(soonest `check-doc-size` in 14c/2051), `actor-health` 24/24 live Actors OK (`scholarship-scraper`
+still retired/paused). `bin/inbox list 10` unchanged — same 10 non-actionable items (dmarc
+reports, 2 contact-form auto-replies, 2 SEO-listing spam pitches, the owner's "Done" reply
+confirming the Apify identity-verification blocker from 2026-10-16 is resolved — it already is,
+confirmed by 25 public Actors publishing cleanly since, so no action needed — the TinyGate API
+gateway pitch, and the Bytewells Actor-rental pitch deferred to 2026-11-02). Dev.to slot is
+2026-10-22, not today.
+
+**Closed cycle 2036's own queued follow-up: the Store listing never said "proxy" even though
+`proxyConfiguration` shipped build 0.1.23, so `screenshot proxy`/`proxy screenshot` (262/251
+Store-search hits) could only match us via a weak attr=0/prox=8 title coincidence (p73/p67).**
+`meta.json`'s `description` was at 297/300 chars (3 free) — not enough room to append, so this
+needed a reword, not the usual append. Replaced "Full page screenshot and viewport capture
+supported." with "Full page screenshot, proxy, and viewport capture supported." — the 3-word
+"full page screenshot" phrase stays contiguous (its own prox=2 match is untouched) while
+"screenshot" and "proxy" land adjacent, ideal prox=1 for both new queries. `store-price --desc`
+simulated first: both new queries predicted p2, all 14 pre-existing tracked terms predicted
+unaffected (either byte-identical bucket or still carried by another attribute this edit never
+touched) — 0 predicted regressions. Published via `apify-admin publish` (mirrored into
+`.actor/actor.json` automatically), then `apify push --force` (build **0.1.24**) to force the
+Algolia reindex, waited ~100s, re-measured live: `screenshot proxy` p73->**p2** (exact),
+`proxy screenshot` p67->**p2** (exact), all 14 pre-existing terms held (only ±1 storePosition
+churn on 2 of them, traced to attr=0/4/5 matches this edit never touched — not a regression).
+`check-store-index` (0 stale)/`check-store-meta` (0 drift)/`check-meta-fields` (0 stale)/
+`check-pricing` (25 Actors, 30 events, 0 drift) all re-run clean. Added both new terms to
+`bin/store-rank`'s TERMS for this slug with a dated comment. The claim is honest — proxy support
+is real, shipped cycle 2036. Per cycle 2032/2033's own measurement this axis has near-zero
+absolute search demand — this is discoverability hygiene on the fleet's one demand-bearing
+Actor, not an expected revenue mover.
+
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, site 200 on `/`,
+`/tools/website-screenshot-scraper`. **0 new Actors, ~$0.005 spent this cycle** (1 build). Revenue
+unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no
+revenue event, nothing only the owner can fix — the one email needing attention, the Apify
+verification blocker, already has the owner's "Done" reply and is confirmed resolved).
+
+**Next cycle (2038): compute `2038 % 3` fresh (do not trust this line) — likely a BUILD slot.**
+Dev.to slot lands 2026-10-22; if this cycle is on or after that date, check the live API before
+assuming it's due (last publish 2026-10-20T06:33:55Z per cycle 2036's note). No new metadata
+lever remains queued on `website-screenshot-scraper` after this cycle's fix — the standing
+cycle-2020 steer (prefer the "user supplies the target" utility axis over another gov/registry
+source for any new Actor) and the still-not-greenlit `cookies`/`headers` (needs the CLAUDE.md
+rule-1 read)/`geolocation` (needs a permissions-grant design) feature candidates on
+`website-screenshot-scraper` are the only open leads.
+
+---
+
 Updated: 2026-10-21 ~11:55 UTC by cycle 2036 (opus-5) — BUILD slot (`2036 % 3 == 2`, computed
 fresh via `echo $((2036 % 3))`; slot 0 = QUALITY/GROWTH, 1 and 2 = BUILD, per 2033/2034/2035).
 

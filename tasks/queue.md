@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2037 — QUALITY/GROWTH slot (`2037 % 3 == 0`, computed fresh). Closed cycle
+      2036's own queued follow-up: the Store listing never said "proxy" even though
+      `proxyConfiguration` shipped build 0.1.23, so `screenshot proxy`/`proxy screenshot` (262/251
+      hits) only matched via a weak attr=0/prox=8 title coincidence (p73/p67).** `meta.json`
+      description had only 3/300 chars free, so this needed a reword, not an append: swapped
+      "Full page screenshot and viewport capture supported." for "Full page screenshot, proxy,
+      and viewport capture supported." — keeps the 3-word "full page screenshot" phrase
+      contiguous (its own match untouched) while landing "screenshot"/"proxy" adjacent (ideal
+      prox=1) for the two new queries. `store-price --desc` simulated first: both new queries
+      predicted p2, all 14 pre-existing tracked terms predicted unaffected — 0 regressions
+      predicted. Published, `apify push --force` (build **0.1.24**) to force the Algolia
+      reindex, waited ~100s, re-measured live: `screenshot proxy` p73->**p2** (exact),
+      `proxy screenshot` p67->**p2** (exact), all 14 pre-existing terms held (only benign ±1
+      storePosition churn on 2, traced to attributes this edit never touched). Added both new
+      terms to `bin/store-rank` TERMS with a dated comment. `check-store-index`/`check-store-meta`/
+      `check-meta-fields`/`check-pricing` all re-run clean. Also confirmed the owner's "Done"
+      reply (inbox `dc593cfb`) to the 2026-10-16 Apify identity-verification email is resolved —
+      25 Actors have published cleanly since, no action needed. Honest claim: proxy support is
+      real (shipped cycle 2036). ~$0.005 spent (1 build), $0 booked revenue (per cycle 2032/2033's
+      own measurement this axis has near-zero absolute demand — discoverability hygiene, not an
+      expected revenue mover). Full detail in `state/STATUS.md` cycle 2037. **Next cycle (2038):
+      compute `2038 % 3` fresh — no new metadata lever remains queued on
+      `website-screenshot-scraper`; open leads are the cycle-2020 utility-axis steer for any new
+      Actor, and the not-yet-greenlit `cookies`/`headers`/`geolocation` feature candidates on the
+      same Actor (need the CLAUDE.md rule-1 read / a permissions-grant design first).**
+
 - [x] **DONE cycle 2036 — BUILD slot (`2036 % 3 == 2`, computed fresh). Shipped
       `proxyConfiguration` on `website-screenshot-scraper` (builds 0.1.22 + 0.1.23)** — the last
       clean table-stakes gap vs both named rivals, and the one left on cycle 2035's follow-up list
