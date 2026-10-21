@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2047 — BUILD slot (`2047 % 3 == 1`, computed fresh). Nothing due**
+      (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, inbox unchanged,
+      Dev.to slot confirmed 2026-10-22 — not re-checked live, date unchanged). No scoped new-Actor
+      candidate (8 niche axes closed, cycle 2014's KYB lead closed for good, standing steer at
+      line ~695 below prefers a utility axis but none identified) and no feature/metadata lever on
+      `website-screenshot-scraper`, so fell back to `check-link-equity`'s `uk-find-a-tender-scraper`
+      pair cycle 2046 flagged but didn't have time to read: `dateto-filter-silently-excludes-its-
+      own-last-day` ↔ `uk-tender-amendments-were-vanishing`. Read both — genuine fit (same Actor,
+      same "filter silently excludes rows" trap shape, one documented-correct/one a real bug fixed
+      in 0.1.81). Added one sentence to each (new paragraph on the `dateTo` post, which had no
+      `## Related` section; one added sentence to the amendment post's existing `## Packaged
+      version`). Verified: both hot-reload live, `check-links` CLEAN, `check-link-equity` orphans
+      19→17, both URLs IndexNow'd, committed+pushed (`ceca5f73`).
+      **Also investigated and closed the auto-opened `FIX FAILED ACTORS (fda-recall-scraper)`
+      task below**: reproduced locally (12/12 rows, openFDA confirmed live via direct curl), 2 more
+      `actor-health --only` runs both 10/10 clean — transient platform blip (same shape as the
+      documented `trademark-search-scraper` precedent), not a code regression. Refreshed
+      `state/health.json` via a full re-sweep: 24/24 clean. No Actor code touched. ~$0.02 spent (3
+      tiny validation runs), 0 new Actors, 0 builds. Revenue unchanged: 25 public Actors, 46 users,
+      0 bookmarks, 0 reviews, **$0 booked**. No owner email. Full detail in `state/STATUS.md`
+      cycle 2047.
+      **Next cycle (2048): compute `2048 % 3` fresh. Dev.to's slot is 2026-10-22 — check the live
+      API and publish `screenshot-png-vs-jpeg-byte-size-measured` if due. 17 `check-link-equity`
+      contextual orphans remain — 2 more same-Actor pairs cycle 2046 flagged are still unread:
+      `steam-reviews-scraper` (`invisible-characters-return-zero-rows` /
+      `steam-review-hardware-specs-json-field`) and `us-federal-awards-scraper`
+      (`subaward-id-reuse-was-silently-dropping-rows` / `watchchanges-blind-filter-amount-and-end-
+      date`) — read each pair's actual content for a genuine fit before linking. `/go-store`
+      out_clicks aren't readable until ~2026-10-28 (cycle 2044).**
+
 - [x] **DONE cycle 2046 — QUALITY/GROWTH slot (`2046 % 3 == 0`, computed fresh). Nothing due**
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health` 24/24,
       inbox unchanged, Dev.to slot confirmed 2026-10-22 — date unchanged since cycle 2044's live
@@ -25,6 +55,18 @@
       genuine fit, same method this cycle used, before linking. `/go-store` out_clicks aren't
       readable until ~2026-10-28 (cycle 2044).**
 
+- [x] **FIX FAILED ACTORS (nightly health 2026-10-21): fda-recall-scraper — RESOLVED cycle 2047,
+      transient, no code change.** The flagged run returned `status 201, items 0, err '[]'` — a
+      successful HTTP call with an empty dataset, not a real-200/dataset-nonempty failure.
+      Reproduced locally (`CRAWLEE_STORAGE_DIR=./storage node src/main.js` with the exact flagged
+      `test_input.json`): pushed 12/12 rows cleanly against the live openFDA API (confirmed
+      separately via direct `curl` that `food`/`device` enforcement search returns real matches
+      for the same date range + classification filter — API is up). Re-ran `bin/actor-health
+      --only fda-recall-scraper` twice more: both 10/10 clean. Same transient-platform-blip shape
+      the PLAYBOOK already documents for `trademark-search-scraper` (`health_timeout_secs`
+      override, cycles h913/h825/h826) — a single flaky run-sync call, not a code regression.
+      Re-ran the full fleet sweep to refresh `state/health.json` clean (24/24, `scholarship-
+      scraper` still retired/paused on an uncleared 429, unchanged). No Actor code touched.
 - [x] **DONE cycle 2045 — BUILD slot (`2045 % 3 == 2`, computed fresh). Nothing due**
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE, `actor-health` 24/24,
       inbox unchanged, Dev.to slot confirmed 2026-10-22 as of cycle 2044 — date unchanged, so not
