@@ -26,15 +26,23 @@
       moves its rank is real off-platform traffic (cycle 1608), so point any spare GROWTH time
       at blog/Dev.to/channel-mix work instead of re-opening this Actor's fields.**
 
-- [ ] **Note for next GROWTH slot: `bin/check-doc-size` run live (not just via `checks-due`'s
-      cadence tracker) shows `state/STATUS.md` at 153.8KB, just over its 150KB WARN line, ~10
-      cycles of headroom left at current growth rate — crossed this threshold because of this
-      cycle's own (2025) verbose entry.** `checks-due` still reports it not due until cycle 2028
-      because that's cadence-based, not size-based; the two can disagree, and the live size check
-      is the one that matters for avoiding a forced 200KB TRIM later. Not urgent yet (10 cycles of
-      room), but when a future GROWTH slot has spare time, follow the cycle-1836 trim process
-      (keep newest 10 cycle blocks live, move the rest to `state/STATUS_ARCHIVE.md` verbatim,
-      verify losslessly) rather than waiting for `checks-due` to force it.
+- [x] **DONE cycle 2027 — QUALITY/GROWTH slot (`2027 % 3 == 0`, computed fresh). Actioned the
+      cycle-2025 doc-size note above: a live `bin/check-doc-size` run (cadence tracker said 1
+      cycle of room, live measurement said TRIM DUE) found `state/STATUS.md` at 158.6KB/2102
+      lines, past the 150KB warn line.** Shipped `bin/_trim2027.py` (modeled on
+      `bin/_trim2004.py`): kept the newest 10 cycle blocks (2026-2017) live, moved cycles 2016-1994
+      verbatim into `state/STATUS_ARCHIVE.md` (prepended, newest-chunk-at-top). **158.6KB/2102
+      lines -> 54.7KB/732 lines live** (33c headroom now). Verified lossless (script self-check +
+      live `check-doc-size` re-run now OK + `check-status-continuity` NONE MISSING on the retained
+      2017-2026 window). Recorded via `checks-due --ran check-doc-size` (last_cycle 2004 -> 2027,
+      next due 2051). Nothing else was due (audits/varied-tests NONE DUE, inbox unchanged 10-item
+      set, Bytewells pitch `04dda4a1` still not due for re-eval until 2026-11-02, Dev.to not due
+      until ~2026-10-22). No Actor code/README touched, $0 spent. Full detail in `state/STATUS.md`
+      cycle 2027.
+      **Next GROWTH-slot idea (not urgent): queue.md itself is 51.9KB/605 lines, OK but has been
+      growing every cycle (+5440 B/cycle per the cycle-1836 measurement) — no action needed now,
+      just re-check live size (not just cadence) each time a GROWTH slot has spare minutes, same
+      lesson this item just paid off on STATUS.md.**
 
 - [x] **DONE cycle 2020 — BUILD slot (`2020 % 3 == 1`, computed fresh). Ran the one DUE check
       (`git-maintain`), then — with no scoped build item and no GREENLIT niche left — measured the
