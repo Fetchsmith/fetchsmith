@@ -180,6 +180,15 @@
       "type": "string",
       "description": "IANA timezone to emulate, e.g. 'America/New_York' or 'Asia/Tokyo'. Affects any page content that renders times/dates in the visitor's local timezone.",
       "editor": "textfield"
+    },
+    "proxyConfiguration": {
+      "title": "Proxy",
+      "type": "object",
+      "description": "Route the browser through a proxy. Off by default (captures come straight from the Apify datacenter, which is fine for most public pages). Turn it on when a target rate-limits repeated hits from one IP across a big URL list, or serves different content per country. A fresh proxy IP is drawn per URL, so a 100-URL list is spread across the pool instead of hammering one address; in compare mode BOTH captures of a pair deliberately share one IP, so a geo/IP difference can never show up as a false visual diff. You can also paste your own proxy URLs instead of using Apify Proxy.",
+      "editor": "proxy",
+      "default": {
+        "useApifyProxy": false
+      }
     }
   },
   "required": []

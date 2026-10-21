@@ -30,6 +30,35 @@ const colorScheme = ['light', 'dark', 'no-preference'].includes(input.colorSchem
 const locale = typeof input.locale === 'string' && input.locale.trim() ? input.locale.trim() : undefined;
 const timezoneId = typeof input.timezoneId === 'string' && input.timezoneId.trim() ? input.timezoneId.trim() : undefined;
 
+// Returns undefined when the caller left the proxy off (or picked `useApifyProxy: false` with no
+// custom URLs), which is the default. A bad group name / an Apify group this account cannot use
+// throws here rather than at capture time, so fail the run with the SDK's own message instead of
+// letting every URL produce an identical cryptic error row.
+let proxyConfiguration;
+try {
+  proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration);
+} catch (err) {
+  await Actor.fail(`Proxy configuration rejected: ${err.message}`);
+  throw err;
+}
+
+// A session id is NOT optional here. `newUrl()` with no session returns a session-less Apify Proxy
+// URL, and the proxy then picks an exit IP per CONNECTION -- measured live (cycle 2036): the two
+// captures of one compare pair came back through 107.172.69.119 and 107.175.80.80 and diffed at
+// 146 px purely because the page echoed the caller's IP. Keying the session on the item index
+// pins one IP per URL, and lets a compare pair ask for the same index twice and get one IP.
+const runSalt = (Actor.getEnv().actorRunId ?? `local${Date.now()}`).replace(/[^\w-]/g, '');
+// Playwright wants the credentials split out of the URL; it does not read user:pass from `server`.
+async function proxyFor(index) {
+  if (!proxyConfiguration) return null;
+  const u = new URL(await proxyConfiguration.newUrl(`${runSalt}_${index}`.slice(0, 50)));
+  return {
+    server: `${u.protocol}//${u.host}`,
+    ...(u.username ? { username: decodeURIComponent(u.username) } : {}),
+    ...(u.password ? { password: decodeURIComponent(u.password) } : {}),
+  };
+}
+
 if (compareUrl && input.format && input.format !== 'png') {
   log.info(`Compare mode: forcing PNG output (requested '${input.format}' is lossy/non-raster, which would corrupt the pixel diff).`);
 }
@@ -78,7 +107,8 @@ const extFor = { jpeg: 'jpg', png: 'png', pdf: 'pdf' };
 const contentTypeFor = { jpeg: 'image/jpeg', png: 'image/png', pdf: 'application/pdf' };
 
 // Render one target to a buffer. `fmt` overrides the run-level format (compare mode needs PNG).
-async function renderBuffer(browser, { url, rawHtml }, fmt = format) {
+// `proxy` is per-context (not per-browser) so a URL list rotates IPs without relaunching Chromium.
+async function renderBuffer(browser, { url, rawHtml }, fmt = format, proxy = null) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
     deviceScaleFactor: viewport.deviceScaleFactor,
@@ -87,6 +117,7 @@ async function renderBuffer(browser, { url, rawHtml }, fmt = format) {
     colorScheme,
     ...(locale ? { locale } : {}),
     ...(timezoneId ? { timezoneId } : {}),
+    ...(proxy ? { proxy } : {}),
   });
   try {
     // `newPage()` can throw on a bad user-supplied `timezoneId` -- keep it inside the try so an
@@ -119,7 +150,7 @@ async function storeBuffer(buffer, name, index, fmt = format) {
 
 async function captureOne(browser, { url, rawHtml }, index) {
   try {
-    const buffer = await renderBuffer(browser, { url, rawHtml });
+    const buffer = await renderBuffer(browser, { url, rawHtml }, format, await proxyFor(index));
     const { key, imageUrl } = await storeBuffer(buffer, 'screenshot', index);
     return pushResult({
       url: url ?? null,
@@ -150,8 +181,11 @@ function cropRGBA(src, srcW, srcH, w, h) {
 
 async function compareOne(browser, url, index) {
   try {
-    const baseBuf = await renderBuffer(browser, { url, rawHtml: null }, 'png');
-    const cmpBuf = await renderBuffer(browser, { url: compareUrl, rawHtml: null }, 'png');
+    // One IP for BOTH sides of the pair: a geo-routed or per-IP-personalised page rendered through
+    // two different exit nodes would diff as "changed" when nothing actually changed.
+    const pairProxy = await proxyFor(index);
+    const baseBuf = await renderBuffer(browser, { url, rawHtml: null }, 'png', pairProxy);
+    const cmpBuf = await renderBuffer(browser, { url: compareUrl, rawHtml: null }, 'png', pairProxy);
     const basePng = PNG.sync.read(baseBuf);
     const cmpPng = PNG.sync.read(cmpBuf);
 

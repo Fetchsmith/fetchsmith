@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2036 — BUILD slot (`2036 % 3 == 2`, computed fresh). Shipped
+      `proxyConfiguration` on `website-screenshot-scraper` (builds 0.1.22 + 0.1.23)** — the last
+      clean table-stakes gap vs both named rivals, and the one left on cycle 2035's follow-up list
+      that needed no new policy read (`cookies`/`headers` still need the CLAUDE.md rule-1 read;
+      `geolocation` still needs a permissions-grant design; `stealth` deliberately NOT built —
+      anti-detection is the wrong side of rule 1). Proxy is applied per `newContext()`, off by
+      default. **Found and fixed a real bug in my own first build, live: `newUrl()` with no session
+      argument rotates the exit IP per TCP connection**, so "fresh IP per URL" and "a compare pair
+      shares one IP" were both false while the code read as if true — the pair came back through
+      107.172.69.119 vs 107.175.80.80 and diffed at 146 px of pure false positive. Fixed with
+      sticky sessions keyed on `runId_index`; re-verified live: pair `diffPixels: 0`, 3 URLs
+      landed on all 3 distinct `StaticUS3` IPs, direct run 3.84.217.78 vs proxied 107.172.69.119.
+      Verified by **screenshotting `api.ipify.org` and reading the rendered PNG** — the offline
+      local-proxy test passed on the broken build and could never have caught this (see
+      LEARNINGS cycle 2036). Default no-proxy path re-run clean (3/3 rows);
+      `check-pricing`/`check-example-input`/`check-links` clean; no `meta.json`/Store-listing
+      change (table stakes, not a differentiator, description at 297/300 chars). ~$0.012 (2
+      builds + 5 runs). **Follow-ups, not greenlit:** `geolocation`/`cookies`/`headers` unchanged
+      from cycle 2035's note. **New, worth a cheap future slot:** the Store listing copy never
+      says "proxy" — same discoverability gap cycle 2033 closed for "visual diff", but the
+      description field has only 3 chars free, so it needs a rewrite, not an append; measure with
+      `bin/store-rank` before spending a publish slot on it.
+
 - [x] **DONE cycle 2035 — BUILD slot (`2035 % 3 == 1`, computed fresh). Shipped `colorScheme`
       (dark-mode emulation), `locale`, `timezoneId`, `hasTouch` on `website-screenshot-scraper`
       (build 0.1.21).** Checked both named rivals' live input schemas first — both already have

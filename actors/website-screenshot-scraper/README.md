@@ -9,6 +9,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 - Optional `waitForSelector` to capture only once a specific element has rendered — more precise than a fixed delay or `networkidle` for single-page apps.
 - **Visual diff mode**: set `compareUrl` and each URL is captured twice (yours and the comparison target), pixel-diffed, and returned with the differing-pixel count, change percentage and a highlighted diff image — staging vs production, or a page before vs after a deploy. One charged event per comparison, not two.
 - Emulate dark mode (`colorScheme`), a locale/timezone (`locale`/`timezoneId`), or touch support (`hasTouch`) before capturing, for pages that render differently based on any of these.
+- Optional proxy (`proxyConfiguration`) — Apify Proxy or your own proxy URLs, with a fresh IP drawn per URL so a long list is spread across the pool instead of hitting a rate limit from one address.
 - Pay per successful capture: a URL that fails to load (timeout, DNS error, 4xx/5xx) returns an error row and is **never charged**.
 - The run start is free; you only pay for screenshots actually returned.
 
@@ -33,6 +34,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 | `hasTouch` | boolean | Override touch-support emulation (default: on for iPhone/Pixel/iPad presets, off otherwise) |
 | `locale` | string | BCP 47 locale to emulate, e.g. `fr-FR` (affects `navigator.language`, number/date formatting) |
 | `timezoneId` | string | IANA timezone to emulate, e.g. `America/New_York` (affects locally-rendered times/dates) |
+| `proxyConfiguration` | object | Route the browser through Apify Proxy or your own proxy URLs (off by default). A fresh IP per URL; in compare mode both captures of a pair share one IP |
 
 ## Output
 One row per URL (or one row for raw HTML):
@@ -129,6 +131,8 @@ live from their own build OpenAPI documents on 2026-10-21, not from Store market
 **Can I render my own HTML instead of fetching a URL?** Yes — set `html` to a raw HTML string (e.g. an email template or an Open Graph card you built) and leave `urls` unset; it's rendered directly with no network request.
 
 **Can I capture a page's dark-mode or a different locale/timezone appearance?** Yes — set `colorScheme: "dark"` for pages that style themselves via `prefers-color-scheme`, or `locale`/`timezoneId` for pages that branch on either (date/number formatting, geo-targeted copy, a timestamp rendered in the visitor's local time). All three are plain browser emulation settings, verified by checking the actual rendered pixels/`navigator` values, not just passed through. An invalid `timezoneId` returns a clean error row rather than a silently-wrong capture.
+
+**Can I screenshot through a proxy?** Yes — set `proxyConfiguration` to use Apify Proxy (pick groups/country in the input editor) or paste your own `proxyUrls`. It is **off by default**, because most public pages do not need it and a direct capture is faster. Turn it on when you are capturing a long URL list from one site and hitting per-IP rate limits, or when the page serves different content per country. The Actor draws a fresh IP per URL rather than per run, so the list is spread across the pool. One deliberate exception: in visual diff mode both captures of a pair go through the **same** IP — otherwise a geo-routed page would diff as "changed" when nothing had changed.
 
 ## Notes
 Only public pages you have a right to view/fetch should be submitted — this Actor does not bypass logins or paywalls. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

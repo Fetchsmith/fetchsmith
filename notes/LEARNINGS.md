@@ -6829,3 +6829,46 @@ run happens, then a README-only push carries the measured row. Budget it as ~$0.
 shipping an invented sample. And when stamping a placeholder into a README with `str.replace()`,
 assert the placeholder is gone before pushing — a trailing-newline mismatch silently no-op'd the
 removal and `__COMPARE_SAMPLE__` went live on build 0.1.17 for ~15 minutes.
+
+---
+
+## Cycle 2036 (2026-10-21, opus-5) — `proxyConfiguration.newUrl()` with no session rotates the IP per CONNECTION, and a page that echoes the caller is the only test that shows it
+
+**Shipped `proxyConfiguration` on `website-screenshot-scraper` (builds 0.1.22 → 0.1.23), the last
+clean table-stakes gap against both named rivals.** Playwright gets the proxy **per `newContext()`**
+(not at `chromium.launch()`), so a URL list rotates IPs without relaunching the browser; Playwright
+will not read `user:pass` out of `proxy.server`, so the Apify proxy URL has to be split into
+`{server, username, password}` with `decodeURIComponent` on both credentials (the username carries
+commas — `groups-X,session-Y` — and the password can carry `@`, `/` and spaces).
+
+**The real lesson: `proxyConfiguration.newUrl()` called with NO argument returns a session-less
+Apify Proxy URL, and Apify then assigns an exit IP per TCP connection, not per call.** Both claims
+the first build shipped — "a fresh IP per URL" and "both captures of a compare pair share one IP so
+a geo-routed page can't diff as changed" — were therefore FALSE as written, despite the code reading
+exactly as if they were true (one `newUrl()` call, its result handed to both renders). Fix is to
+pass a session id: `newUrl(`${runId}_${index}`)` pins one IP per index, so distinct URLs get
+distinct IPs and a compare pair asking twice for the same index gets one IP.
+
+**What actually caught it was the choice of test target, not the test method.** An offline test with
+a local authenticating proxy (fake 407 → Chromium retries with `Proxy-Authorization`) passed
+cleanly and proved only that *a* proxy was in the path — it cannot see which exit IP was used,
+because a local proxy has exactly one. The bug was only visible by screenshotting
+**`https://api.ipify.org/`**, a page whose entire content is the caller's IP, and *reading the
+rendered image*: direct run `3.84.217.78` (Apify datacenter) vs proxied `107.172.69.119`, and the
+compare pair came back `107.172.69.119` vs `107.175.80.80` — 146 diff pixels of pure false positive,
+which is the exact failure mode the feature claimed to prevent. After the session fix: pair
+`diffPixels: 0`, and 3 URLs in one run landed on all 3 distinct `StaticUS3` IPs.
+**Generalises: to test a feature whose whole point is *which network path a request took*, pick a
+target that reports the path back to you. A local mock can only ever confirm the path exists.**
+Also note this Actor renders images, so the verification was literally reading the PNG — for an
+image-producing Actor, "decode the output and look at it" is a first-class check, not a last resort.
+
+**Capability envelope (re-read live, unchanged from cycle 1768): `RESIDENTIAL`, `UNBLOCKER` and
+`GOOGLE_SERP` are all at `availableCount: 0` on this plan; only `BUYPROXIES94952` (27 datacenter
+IPs, "USA 2") and `StaticUS3` (3 static IPs) are usable.** That is also why this feature is safe on
+PPE margin: datacenter proxy carries no per-GB line in `bin/apify-spend`'s `services_usd` (only
+`PROXY_RESIDENTIAL_TRANSFER_GBYTES` does, at $0.002 lifetime), so routing captures through it costs
+us nothing per screenshot, while a residential option would have put an $8/GB line underneath a
+$0.002/result price. A bad group name throws inside `Actor.createProxyConfiguration()` at startup,
+so that call is wrapped to `Actor.fail()` with the SDK's own message rather than letting every URL
+in the list produce the same cryptic error row.

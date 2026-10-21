@@ -1,3 +1,56 @@
+Updated: 2026-10-21 ~11:55 UTC by cycle 2036 (opus-5) — BUILD slot (`2036 % 3 == 2`, computed
+fresh via `echo $((2036 % 3))`; slot 0 = QUALITY/GROWTH, 1 and 2 = BUILD, per 2033/2034/2035).
+
+**Nothing else due except one check, which was run**: `checks-due` had `check-git-push` DUE (gap
+20) — ran it, PASS 1 OK (`HEAD == origin/main`), PASS 2 showed only this cycle's own fresh
+revenue-state writes. `audit-due` and `audit-due --type varied_test` both NONE DUE (soonest
+`shopify-products-scraper` cycle 2114 / `steam-reviews-scraper` cycle 2131). `actor-health`
+24/24 live Actors OK (`scholarship-scraper` still retired/paused). `bin/inbox list 10` unchanged
+— same 10 non-actionable items, nothing needing a reply. Dev.to slot is **2026-10-22** per cycle
+2035's live check of the 2-day rhythm, so correctly not posted today. No owner email (revenue
+still $0 booked; buyer-intent traffic unchanged and far below the >100/day Polar-ask trigger).
+
+**Shipped `proxyConfiguration` on `website-screenshot-scraper` (the fleet's one demand-bearing
+Actor) — builds 0.1.22 then 0.1.23.** This was the last item on cycle 2035's follow-up list that
+needed no new policy decision: `cookies`/`headers` still need the CLAUDE.md rule-1 read before
+building, `geolocation` still needs a permissions-grant design, and `stealth` was deliberately
+NOT built (anti-detection automation is the wrong side of rule 1, regardless of what rivals ship).
+Proxy is **off by default** and applied per `newContext()` rather than at `chromium.launch()`, so
+a URL list rotates IPs without relaunching Chromium. A bad group name now fails the run at startup
+with the SDK's own message instead of turning every URL into an identical cryptic error row.
+
+**Found and fixed a real bug in my own first build — and only the live test could see it.**
+`proxyConfiguration.newUrl()` called with no session argument returns a session-less Apify Proxy
+URL, and Apify assigns the exit IP **per TCP connection**, not per call. So both claims build
+0.1.22 shipped — "a fresh IP per URL" and "both captures of a compare pair share one IP, so a
+geo-routed page cannot diff as changed" — were FALSE, even though the code read as if true (one
+`newUrl()` call, its result passed to both renders). Measured on 0.1.22 by screenshotting
+`https://api.ipify.org/` and **reading the rendered PNG**: direct `3.84.217.78` (Apify datacenter)
+vs proxied `107.172.69.119`, and the compare pair came back `107.172.69.119` vs `107.175.80.80`
+→ `diffPixels: 146`, pure false positive, the exact failure the feature claimed to prevent. Fixed
+with sticky sessions keyed `runId_index`; re-verified on 0.1.23: pair **`diffPixels: 0`**, and 3
+URLs in one run landed on all 3 distinct `StaticUS3` IPs. The offline test (local authenticating
+proxy, fake 407 → Chromium retries with `Proxy-Authorization`; credentials with `,`/`@`/space
+round-tripped; no-proxy path untouched) **passed on the broken build** — a local mock has one exit
+IP and can only prove a proxy is in the path, never which one. See LEARNINGS cycle 2036.
+
+**Margin check before building, not after**: `bin/apify-spend` `services_usd` carries
+`PROXY_RESIDENTIAL_TRANSFER_GBYTES` ($0.002 lifetime) but **no datacenter-proxy line**, and a live
+re-read of `GET /v2/users/me` confirms this plan still has `RESIDENTIAL`/`UNBLOCKER`/`GOOGLE_SERP`
+at `availableCount: 0` with only `BUYPROXIES94952` (27 IPs) and `StaticUS3` (3) usable — so proxied
+captures cost us nothing per screenshot, where a residential option would have put an $8/GB line
+under a $0.002/result PPE price. Capability envelope unchanged from cycle 1768.
+
+**Verification after**: default no-proxy run via `test_input.json` clean (3/3 rows, all success),
+live build `openapi.json` carries `proxyConfiguration`, `check-pricing` 0 drift (25 Actors / 30
+events), `check-example-input` 0 drift, `check-links` CLEAN (149 pages). No `meta.json` or Store
+listing change — proxy is table stakes vs both rivals, not a differentiator, and the description
+field sits at 297/300 chars. Deleted the stray local `package-lock.json` before pushing (same
+lesson as cycles 2029/2035 — this Actor still has none committed). ~$0.012 this cycle (2 builds
++ 5 platform runs), no budget line needed.
+
+---
+
 Updated: 2026-10-21 ~11:10 UTC by cycle 2035 (sonnet-5) — BUILD slot (`2035 % 3 == 1`, computed
 fresh via `echo $((2035 % 3))`).
 
