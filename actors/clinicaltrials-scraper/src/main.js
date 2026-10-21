@@ -210,6 +210,25 @@ const resultsAvailability = RESULTS_AVAILABILITY.has(String(input.resultsAvailab
 const sex = ['FEMALE', 'MALE'].includes(String(input.sex ?? '').toUpperCase()) ? String(input.sex).toUpperCase() : '';
 const acceptsHealthyVolunteers = input.acceptsHealthyVolunteers === true;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+// A non-empty value that fails DATE_RE must never be silently dropped: `DATE_RE.test(x) ? x : ''`
+// (the shape this replaced) looks identical to "field left empty" for a WIDENED window, not a
+// narrowed one, so a typo'd date silently loses its bound, returns MORE studies than asked for,
+// and bills for them -- the same defect class `sec-insider-trades-scraper` had in `sinceDate`
+// (cycle 2016), except this file has 6 date-pair fields sharing the bug, not 1. Throwing here
+// matches this fleet's dominant convention for a malformed date bound (ats-jobs-scraper,
+// remote-jobs-scraper, nih-reporter-scraper, apple-podcasts-scraper, uk-find-a-tender-scraper,
+// court-records-scraper, app-store-reviews-scraper, grants-gov-scraper, fec-campaign-finance-
+// scraper all fail loudly rather than guess) over sec-insider-trades-scraper's warn-and-ignore,
+// which that Actor's README explicitly documents as "leave empty for no lower bound" semantics
+// this file's README does not promise.
+const parseDateBound = (raw, field) => {
+    const s = String(raw ?? '').trim();
+    if (!s) return '';
+    if (!DATE_RE.test(s)) {
+        throw new Error(`"${field}" is not a real calendar date: ${JSON.stringify(raw)}. Use YYYY-MM-DD, e.g. 2026-08-01.`);
+    }
+    return s;
+};
 // Every date filter is the same shape: two ISO dates that become one AREA[<field>]RANGE[from,to]
 // clause (MIN/MAX for an open bound). `area` is the ClinicalTrials.gov advanced-filter area name;
 // all six were verified live against the real API before being wired up — a wrong area name is a
@@ -226,8 +245,8 @@ const DATE_FILTERS = [
 const dateRanges = [];
 const dateCriteria = {};
 for (const { from, to, area } of DATE_FILTERS) {
-    const f = DATE_RE.test(input[from]) ? input[from] : '';
-    const t = DATE_RE.test(input[to]) ? input[to] : '';
+    const f = parseDateBound(input[from], from);
+    const t = parseDateBound(input[to], to);
     if (f && t && f > t) {
         throw new Error(`"${from}" (${f}) is after "${to}" (${t}) — the window is empty. Swap them.`);
     }
@@ -258,8 +277,8 @@ if (resultsAvailability === 'without' && (dateCriteria.resultsFirstPostedDateFro
     );
 }
 // Kept as named bindings because the run-summary log line below reports them explicitly.
-const lastUpdatePostedDateFrom = DATE_RE.test(input.lastUpdatePostedDateFrom) ? input.lastUpdatePostedDateFrom : '';
-const lastUpdatePostedDateTo = DATE_RE.test(input.lastUpdatePostedDateTo) ? input.lastUpdatePostedDateTo : '';
+const lastUpdatePostedDateFrom = parseDateBound(input.lastUpdatePostedDateFrom, 'lastUpdatePostedDateFrom');
+const lastUpdatePostedDateTo = parseDateBound(input.lastUpdatePostedDateTo, 'lastUpdatePostedDateTo');
 const FUNDER_TYPES = new Set(['NIH', 'FED', 'OTHER_GOV', 'INDUSTRY', 'NETWORK', 'INDIV', 'OTHER', 'UNKNOWN', 'AMBIG']);
 const funderTypes = cleanList(input.funderTypes, FUNDER_TYPES);
 // Verified live: AREA[MinimumAge]/AREA[MaximumAge] RANGE take "<n> <Unit>" (or MIN/MAX for an

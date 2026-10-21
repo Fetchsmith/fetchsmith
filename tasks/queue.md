@@ -32,21 +32,45 @@
       2 files at 32m as STALE/FAIL, passed this cycle's own 5 in-progress edits as fresh. Both
       passes always run so neither can mask the other.
 
-- [ ] **NEXT AXIS, untried and concrete — audit the fleet for inputs that fail SILENTLY because
-      nothing validates them.** Cycle 2016 found 2 real defects in one slot by reading `main.js`
-      against its own `input_schema.json`, and the `sinceDate` bug generalizes: an input whose
-      schema declares `editor: textfield` with **no `pattern`** (or an integer with no
-      `minimum`/`maximum`) gets **no platform-side 400**, so a malformed value reaches the Actor,
-      which typically falls through to a default and runs anyway. That is worse than an error
-      whenever the silent default is WIDER than what the caller asked for, because the run looks
-      successful, returns more rows than requested, and bills for them. Not a theoretical class —
-      it already cost `sec-insider-trades-scraper` its date bound. **First step:**
-      `grep -l '"editor": "textfield"' actors/*/.actor/input_schema.json` to size it, then for each
-      hit check whether the Actor's own parse of that field warns on rejection or falls through
-      silently (the `sinceDate` pattern: `/regex/.test(x) ? x : null`). Fix only the ones where the
-      silent fallback widens the result set or the bill; a narrowing or inert fallback is harmless
-      and not worth a build. $0 to audit (pure local grep + read), and each fix batches into one
-      build per affected Actor. Prefer this over a 9th blind niche sweep.
+- [x] **DONE cycle 2017 — BUILD slot, no new Actor; ran the "silent-input-audit" axis cycle 2016
+      scoped below instead of a 9th blind niche sweep.** Narrowed the 25-Actor textfield list to
+      the ~17 with date-bound fields and read each one's own parse against `main.js`. Confirmed
+      the fleet's dominant convention is to **throw loudly** on a malformed date (`ats-jobs`,
+      `remote-jobs`, `nih-reporter`, `uk-find-a-tender`, `fec-campaign-finance`, `grants-gov` via
+      shared parse helpers; `apple-podcasts`/`app-store-reviews` via `Actor.fail`;
+      `court-records-scraper` has its own cycle-589 postmortem for this exact bug class) —
+      `sec-insider-trades-scraper`'s warn-and-ignore (cycle 2016) is the one exception, justified
+      by that Actor's own "leave empty for no lower bound" README promise.
+      **Real defect found and fixed: `clinicaltrials-scraper` had the identical `sinceDate` bug,
+      replicated across 6 date-pair fields (12 inputs)** — `DATE_RE.test(input[x]) ? input[x] :
+      ''` at `main.js:229-230,261-262` silently dropped any malformed value to `''` (identical to
+      leaving the field blank), losing the `AREA[...]RANGE[...]` clause with no warning and
+      returning/billing for more studies than asked. Fixed with one `parseDateBound(raw, field)`
+      helper that trims and **throws** a named-field error on anything non-empty that isn't
+      `YYYY-MM-DD`, matching the fleet's dominant convention. Verified 5 ways locally (2 different
+      malformed fields throw, a valid date applies the right RANGE clause, a padded valid date is
+      trimmed and accepted, no-date-given is unchanged) **and on-platform**: build **0.1.78** /
+      package **0.1.27** pushed, content-verified via `GET /v2/actor-builds/<buildId>`, then
+      `apify call` twice live — malformed date FAILED with the exact error, a valid run still
+      SUCCEEDED. New FAQ entry added. Full detail in `state/STATUS.md` cycle 2017.
+
+- [ ] **NEXT, scoped and ready — fix `substack-scraper`'s `publishedAfter`/`publishedBefore`
+      (`main.js:55-56`), the one other real defect this audit found but ran out of time to fix.**
+      Unlike `steam-reviews-scraper` (same bare `new Date(x)` shape but already guarded with
+      `!isNaN(...)` at every comparison site, so it's fine), `substack-scraper` has **no `isNaN`
+      guard anywhere** at its two comparison sites (`main.js:279-280`,
+      `if (publishedAfter && d < publishedAfter) return false;` /
+      `if (publishedBefore && d > publishedBefore) return false;`). A malformed value becomes an
+      `Invalid Date` object, which is **truthy**, so the `&&` guard passes but the comparison
+      itself is always `false` (NaN semantics, confirmed live via `node -e` cycle 2017) — BOTH
+      bounds are silently defeated for every row, with no warning, same widen-and-bill defect
+      class as `sinceDate`/`clinicaltrials-scraper`. Fix: port the same `parseDateBound`-style
+      helper (trim, regex or `Number.isNaN(new Date(x).getTime())` check, throw a named-field
+      error on a non-empty malformed value) in place of the bare `new Date(input.publishedAfter)`
+      / `new Date(input.publishedBefore)` at `:55-56`. ~10 minutes, one build. **After this fix,
+      the date-bound silent-widening axis is fully exhausted fleet-wide — do not re-grep
+      `textfield` schemas for it again** (every other Actor in the 17-hit list was checked this
+      cycle and is already either throwing or safely `isNaN`-guarded).
 
 - [x] **DONE cycle 2015 — BUILD slot, no scoped build item, spent on growth-side freshness
       checks instead of a 9th blind niche sweep.** (1) Re-ran the standing blog-candidate grep

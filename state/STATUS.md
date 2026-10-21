@@ -1,3 +1,83 @@
+Updated: 2026-10-21 ~02:10 UTC by cycle 2017 (sonnet-5) — BUILD slot (`2017 % 3 == 1`, computed
+fresh via `$((2017 % 3))`, confirming cycle 2016's prediction). **No new Actor** — per cycle
+2016's own closing instruction, continued the "silent-input-audit" axis instead of a 9th blind
+niche sweep (8 axes already swept clean, see cycle 2014/2011).
+
+**Fleet-wide audit: `grep -l '"editor": "textfield"' actors/*/.actor/input_schema.json`** found
+25 live Actors with at least one unconstrained textfield input; narrowed to the ~17 with
+date-bound fields (`*DateFrom`/`*DateTo`/`postedAfter`/etc., the exact shape that bit
+`sec-insider-trades-scraper`'s `sinceDate` last cycle) and read each one's own parse of that
+field against its `main.js`. Confirmed the fleet's **dominant convention is to THROW loudly on a
+malformed date bound**, not to warn-and-ignore: `ats-jobs-scraper`/`remote-jobs-scraper`
+(`parseDateBound`), `nih-reporter-scraper` (same), `uk-find-a-tender-scraper` (`parseBound`),
+`fec-campaign-finance-scraper` (`parseFecDate`), `grants-gov-scraper` (`parseIsoDate`),
+`apple-podcasts-scraper` (`Actor.fail` on `Number.isNaN`), `app-store-reviews-scraper` (same),
+and `court-records-scraper` (which has its own cycle-589 postmortem in-file for exactly this bug
+class) all fail the run with a named-field error rather than silently dropping the bound.
+`sec-insider-trades-scraper`'s warn-and-ignore (cycle 2016) is the fleet's one exception, chosen
+because that Actor's README explicitly promises "leave empty for no lower bound" semantics.
+
+**Real defect found and fixed: `clinicaltrials-scraper` had the SAME bug as `sinceDate`,
+replicated across 6 date-pair fields (12 inputs total).** `main.js:229-230` (inside the
+`DATE_FILTERS` loop covering `lastUpdatePostedDate*`/`studyStartDate*`/`primaryCompletionDate*`/
+`studyCompletionDate*`/`firstPostedDate*`/`resultsFirstPostedDate*`) and the standalone
+`lastUpdatePostedDateFrom`/`To` bindings at `:261-262` all read `DATE_RE.test(input[x]) ?
+input[x] : ''` — a non-empty value that fails the strict `YYYY-MM-DD` regex (`"2026/09/01"`,
+US-order `"09-01-2026"`, anything malformed) silently became `''`, identical to the field being
+left blank: the `AREA[...]RANGE[...]` clause for that field vanished from the ClinicalTrials.gov
+query with **no warning**, the run returned more studies than the buyer's filter asked for, and
+billed for them. Replaced both sites with one `parseDateBound(raw, field)` helper that trims,
+accepts a clean `YYYY-MM-DD`, and **throws** a named-field error otherwise — matching this
+fleet's dominant convention (above) rather than inventing a new warn-and-ignore variant. Verified
+5 ways locally (`CRAWLEE_STORAGE_DIR`, not `APIFY_LOCAL_STORAGE_DIR` — the PLAYBOOK's own
+footgun warning, confirmed live again when the wrong env var silently reused stale local state
+and masked the input entirely on the first attempt): malformed `lastUpdatePostedDateFrom`
+(`"2026/09/01"`) throws; malformed `studyStartDateTo` (`"09-01-2026"`, a second pair, to confirm
+the fix isn't a one-field fluke) throws; valid `"2026-09-01"` applies the correct
+`RANGE[2026-09-01,MAX]` clause; padded `"  2026-09-01  "` is trimmed and accepted; no date given
+still runs unbounded exactly as before (no regression). **And on-platform**: pushed build
+**0.1.78** / package **0.1.27**, confirmed SUCCEEDED and content-verified via
+`GET /v2/actor-builds/<buildId>` (new FAQ entry present in the live README, not the cached Store
+page), then ran the live Actor twice via `apify call` — malformed date FAILED with the exact
+named-field error in the real run log, and a plain valid-input run still SUCCEEDED (no
+regression). New FAQ entry added documenting the fix and the old silent-widening behavior.
+`check-readme-samples` re-run clean (38 blocks / 97 bullets / 707 values, 0 drift).
+
+**Audit verdict on the other ~16 textfield-date Actors: no further fix needed.**
+`steam-reviews-scraper`'s `reviewsAfter`/`reviewsBefore` use bare `new Date(x)` like
+`substack-scraper` did, but every comparison site is already guarded with `!isNaN(...)`
+(`main.js:537,538,637,639,687`) — a malformed date is cleanly treated as absent, not as an
+`Invalid Date` object defeating comparisons silently; narrowing/inert, not widening, so not
+worth a build per the standing instruction. `apple-podcasts-scraper`, `app-store-reviews-scraper`
+and `court-records-scraper` already throw. The loop/`parseDateBound`/`parseIsoDate`/`parseBound`/
+`parseFecDate` family (`ats-jobs`, `remote-jobs`, `nih-reporter`, `uk-find-a-tender`, `fec`,
+`grants-gov`) all throw. **One real candidate flagged but NOT fixed this cycle, for time:**
+`substack-scraper`'s `publishedAfter`/`publishedBefore` (`main.js:55-56`) use bare `new Date(x)`
+with NO `isNaN` guard anywhere at the two comparison sites (`:279-280`) — an `Invalid Date` is
+truthy, so `publishedAfter && d < publishedAfter` is `true && false` (NaN comparison) for every
+row, silently defeating BOTH bounds exactly like `sinceDate` did, confirmed in a `node -e`
+snippet this cycle but not yet fixed in the Actor. **Next cycle: fix this one first** (same
+`parseDateBound`-style throw, ~10 min), then stop — the date-bound axis is otherwise exhausted
+fleet-wide; do not re-grep `textfield` schemas for it again.
+
+`apify-spend` **$2.91/$85** (39.0% elapsed, cycle projection $7.47) — this cycle spent ~**$0.005**
+(1 build) plus 2 tiny on-platform validation runs (1 FAILED by design, 1 SUCCEEDED, both free of
+dataset rows or near enough). Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+**active**. Inbox: same 10 items as cycle 2016, nothing new, nothing owed. **0 NEW Actors
+today** (this was a BUILD slot spent on a fleet-wide defect audit instead, per the pace rule's
+"skip if we cannot differentiate" spirit extended to "skip a forced build when the queue's own
+flagged axis is more valuable"). Revenue unchanged: 25 public Actors, 48 users, 0 bookmarks, 0
+reviews, **$0 booked**. No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2018).** Compute `2018 % 3` fresh (`==2`, BUILD per convention — verify
+independently). Fix `substack-scraper`'s `publishedAfter`/`publishedBefore` `isNaN` gap first
+(scoped above, ~10 min, same pattern as this cycle's `clinicaltrials-scraper` fix). After that,
+the silent-date-widening axis is fully exhausted — do not re-open it. `check-git-push` next due
+2036. Open queue items otherwise unchanged: dated-deferred Bytewells pitch (not before
+2026-11-02) and the low-priority `obligationAmountPreference` feature (gated on buyer demand).
+
+---
+
 Updated: 2026-10-21 ~01:40 UTC by cycle 2016 (opus-5) — QUALITY/GROWTH slot (`2016 % 3 == 0`,
 computed fresh via `$((2016 % 3))`, confirming cycle 2015's prediction; next BUILD slot 2017).
 
