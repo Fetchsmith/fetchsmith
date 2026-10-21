@@ -23,12 +23,31 @@ const input = (await Actor.getInput()) ?? {};
 let queries = (input.queries ?? []).map((q) => String(q).trim()).filter((q) => q.length);
 const tags = (input.tags ?? ['story']).filter(Boolean);
 const sortBy = input.sortBy === 'date' ? 'search_by_date' : 'search';
-const maxItemsPerQuery = Math.min(Number(input.maxItemsPerQuery ?? 100), 1000);
+// Auto-split past Algolia's 1000-hit ceiling (see ALGOLIA_MAX_HITS below). Off by default: it
+// re-searches the same query several times over, which costs requests and wall clock, and a buyer
+// asking for 100 rows of a hot keyword neither needs nor wants that.
+const autoSplitLargeQueries = input.autoSplitLargeQueries === true;
+const maxSplitWindows = Math.max(3, Math.min(Number(input.maxSplitWindows ?? 24), 200));
+// The ceiling is a hard per-query limit ONLY when the query is searched once. With auto-split on,
+// the query is searched once per date window, so the reachable total is the window budget's worth.
+const maxItemsPerQuery = Math.min(Number(input.maxItemsPerQuery ?? 100), autoSplitLargeQueries ? 50000 : 1000);
 const maxResults = Math.min(Number(input.maxResults ?? 200), 5000);
 const includeComments = input.includeComments !== false;
 const numericFilters = [];
 if (input.postedAfter) numericFilters.push(`created_at_i>${Math.floor(new Date(input.postedAfter).getTime() / 1000)}`);
 if (input.postedBefore) numericFilters.push(`created_at_i<${Math.floor(new Date(input.postedBefore).getTime() / 1000)}`);
+// Half-open [from, to) epoch-second bounds for the buyer's own date range, used as the root window
+// auto-split halves. Chosen to reproduce the two filters just above EXACTLY, so an auto-split run
+// searches the same span as an unsplit one: Algolia's `created_at_i>X` on integer seconds is
+// `>=X+1`, and `<Y` is already half-open. Unbounded ends fall back to HN item 1 and "now".
+const HN_FIRST_ITEM_SEC = 1160418111; // 2006-10-09, HN's oldest item
+const baseWindowFrom = input.postedAfter ? Math.floor(new Date(input.postedAfter).getTime() / 1000) + 1 : HN_FIRST_ITEM_SEC;
+const baseWindowTo = input.postedBefore
+  ? Math.floor(new Date(input.postedBefore).getTime() / 1000)
+  : Math.floor(Date.now() / 1000) + 60; // +60s so an item posted mid-run is still inside the root window
+// Floor on how narrow a split may get. An hour of HN has never held 1000 items of one keyword, so
+// a window this small that STILL truncates is a signal to narrow the query, not to keep halving.
+const MIN_SPLIT_WINDOW_SEC = 3600;
 const minPointsNum = input.minPoints ? Number(input.minPoints) : null;
 const minCommentsNum = input.minComments ? Number(input.minComments) : null;
 if (minPointsNum != null) numericFilters.push(`points>=${minPointsNum}`);
@@ -643,13 +662,26 @@ const summaryFor = (query) => ({
   incompleteReason: null,
   hitPaginationCeiling: false,
   scanCap: null,
+  // Auto-split bookkeeping. `windowsSearched` is 1 on every unsplit query (including with the
+  // option off), so "did splitting happen here" reads as windowsSplit > 0, not as a null check.
+  windowsSearched: 0,
+  windowsSplit: 0,
+  // Non-null only when auto-split was on and still could not get this query under the ceiling:
+  // 'max-split-windows' (raise maxSplitWindows) or 'min-window-width' (narrow the query instead).
+  splitExhausted: null,
 });
 for (const query of queries) {
   const querySummary = summaryFor(query);
   summaries.push(querySummary);
   if (!keepGoing || timeBudgetExceeded) continue; // keep walking so every unsearched query gets a `notReached` record
-  let page = 0;
-  let fetched = 0;
+  let fetched = 0; // every hit Algolia handed back for this query, re-scans included
+  // Auto-split re-searches overlapping date windows, so the SAME hit is scanned again in each
+  // window that covers it. `fetched` must keep counting those (it is what RUN_SUMMARY.scanned
+  // honestly reports, and the per-window ceiling maths is positional), but the per-query cap and
+  // the completeness comparison against declaredMatches have to run on DISTINCT items -- cycle
+  // 2060 measured a split `python` run burning 2,068 of its 5,000-item cap on re-scans and then
+  // reporting `complete: true` on 2,932 of 3,692 declared matches, because 3,692 > 5,000 is false.
+  let uniqueFetched = 0;
   let requestFailed = false;
   const deliveredBefore = pushed;
   const filteredBefore = excluded + duplicates + domainFiltered + commentDepthFiltered;
@@ -698,101 +730,183 @@ for (const query of queries) {
   // maxItemsPerQuery only means "cost cap" when there's no baseline to scan past; once
   // watchLabel is set, seeding or not, the scan cap is SEED_CAP and maxResults alone
   // governs what's actually delivered and charged.
-  const queryCap = Math.min(watchMode ? SEED_CAP : maxItemsPerQuery, ALGOLIA_MAX_HITS);
+  // Without auto-split the scan can never pass Algolia's 1000-hit window, so maxItemsPerQuery is
+  // clamped to it. With auto-split each WINDOW is bounded by the ceiling instead and the window
+  // budget bounds the query, so the clamp moves to ALGOLIA_MAX_HITS * maxSplitWindows.
+  const queryCap = Math.min(
+    watchMode ? SEED_CAP : maxItemsPerQuery,
+    autoSplitLargeQueries ? ALGOLIA_MAX_HITS * maxSplitWindows : ALGOLIA_MAX_HITS,
+  );
   querySummary.scanCap = queryCap;
-  while (keepGoing && !timeBudgetExceeded && fetched < queryCap) {
-    if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
-    const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
-    if (query) url.searchParams.set('query', query);
-    if (wantTags) url.searchParams.set('tags', wantTags);
-    if (numericFilters.length) url.searchParams.set('numericFilters', numericFilters.join(','));
-    url.searchParams.set('hitsPerPage', String(Math.min(100, queryCap - fetched)));
-    url.searchParams.set('page', String(page));
-    log.info(`Fetching: ${url.toString()}`);
-    let body;
-    let lastErr;
-    // got's own `retry` only fires for a fixed errorCodes list that does not include the
-    // connection-establishment faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on
-    // this same got-scraping version in cycle 616 — about 1 in 4 fresh connections. Without an
-    // outer retry, one blip drops the rest of this query's pages, distinguishable from
-    // "genuinely 0 hits" only by the erroredQueries note. Retry a handful of times before giving up.
-    for (let attempt = 1; attempt <= 3; attempt += 1) {
-      try {
-        const res = await gotScraping({ url: url.toString(), timeout: { request: 30000 }, retry: { limit: 2 }, responseType: 'json' });
-        body = res.body;
-        lastErr = null;
-        break;
-      } catch (e) {
-        lastErr = e;
-        if (attempt < 3) {
-          log.warning(`Query failed (${query || '<none>'}, page ${page}), attempt ${attempt}/3: ${e.message} — retrying.`);
-          await new Promise((r) => setTimeout(r, attempt * 1000));
+  // Work stack of date windows to search for this query. A single `null` entry means "the buyer's
+  // own date range, unsplit" -- and it stays the only entry unless autoSplitLargeQueries is on AND
+  // a window actually hits the ceiling, so the default path is the same single pass as before.
+  //
+  // Splitting is LAZY (search, then halve what truncated) rather than planned up front from nbHits,
+  // because how many windows a query needs is a function of how hot it is in each stretch of time,
+  // not of its total: `python` fits under the ceiling in monthly slices (256-447/month) while `ai`
+  // needs ~weekly ones (3,368 in a single month). A fixed width computed from the total over-splits
+  // the quiet years and still truncates the busy weeks; halving only what actually truncated lands
+  // on the right width per stretch, which is the same manual procedure the README documents.
+  // Re-scanning hits the unsplit pass already returned is not a double charge: `seenIds` dedupes
+  // them, and only delivered rows are billed.
+  const windowStack = [null];
+  let windowsSearched = 0;
+  let windowsSplit = 0;
+  while (windowStack.length && keepGoing && !timeBudgetExceeded && uniqueFetched < queryCap) {
+    const win = windowStack.pop();
+    windowsSearched += 1;
+    // A sub-window REPLACES the buyer's own created_at_i bounds (it is always a sub-range of
+    // them, computed from baseWindowFrom/baseWindowTo), and leaves every other filter
+    // (points, num_comments) untouched.
+    const winFilters = win
+      ? [...numericFilters.filter((f) => !f.startsWith('created_at_i')), `created_at_i>=${win.from}`, `created_at_i<${win.to}`]
+      : numericFilters;
+    let page = 0;
+    let fetchedInWindow = 0;
+    // Fixed for the whole window. Algolia's `page` is an index INTO hitsPerPage-sized pages, so
+    // changing the size mid-window would re-walk or skip hits; the per-query cap is enforced in the
+    // hit loop below instead, which is also exact rather than page-granular.
+    const perPage = Math.min(100, Math.max(1, queryCap - uniqueFetched));
+    let windowDeclared = null;
+    let windowCeiling = false;
+    while (keepGoing && !timeBudgetExceeded && uniqueFetched < queryCap && fetchedInWindow < ALGOLIA_MAX_HITS) {
+      if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
+      const url = new URL(`https://hn.algolia.com/api/v1/${sortBy}`);
+      if (query) url.searchParams.set('query', query);
+      if (wantTags) url.searchParams.set('tags', wantTags);
+      if (winFilters.length) url.searchParams.set('numericFilters', winFilters.join(','));
+      url.searchParams.set('hitsPerPage', String(Math.min(perPage, ALGOLIA_MAX_HITS - fetchedInWindow)));
+      url.searchParams.set('page', String(page));
+      log.info(`Fetching: ${url.toString()}`);
+      let body;
+      let lastErr;
+      // got's own `retry` only fires for a fixed errorCodes list that does not include the
+      // connection-establishment faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on
+      // this same got-scraping version in cycle 616 — about 1 in 4 fresh connections. Without an
+      // outer retry, one blip drops the rest of this query's pages, distinguishable from
+      // "genuinely 0 hits" only by the erroredQueries note. Retry a handful of times before giving up.
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+          const res = await gotScraping({ url: url.toString(), timeout: { request: 30000 }, retry: { limit: 2 }, responseType: 'json' });
+          body = res.body;
+          lastErr = null;
+          break;
+        } catch (e) {
+          lastErr = e;
+          if (attempt < 3) {
+            log.warning(`Query failed (${query || '<none>'}, page ${page}), attempt ${attempt}/3: ${e.message} — retrying.`);
+            await new Promise((r) => setTimeout(r, attempt * 1000));
+          }
         }
       }
-    }
-    if (lastErr) {
-      log.warning(`Query failed (${query || '<none>'}, page ${page}) after 3 attempts: ${lastErr.message}`);
-      requestFailed = true;
-      break;
-    }
-    // Read nbHits from page 0 only: it is the same number on every page, and past the
-    // 1000-hit window Algolia answers with an empty-hits page whose nbHits is the exhaustive
-    // recount (exhaustiveNbHits flips true) -- overwriting the real figure with it would
-    // understate exactly the shortfall this record exists to report.
-    if (page === 0 && typeof body.nbHits === 'number') {
-      querySummary.declaredMatches = (sortBy === 'search' && !query)
-        ? (await accurateNbHits(wantTags, numericFilters)) ?? body.nbHits
-        : body.nbHits;
-    }
-    const hits = body.hits || [];
-    if (!hits.length) {
-      // 200 + zero hits at a page we asked for past hit 1000 is Algolia's pagination cap, not
-      // the end of the match set; it carries an explanatory `message` the plain end-of-results
-      // response does not have.
-      if (fetched >= ALGOLIA_MAX_HITS || body.message) querySummary.hitPaginationCeiling = true;
-      break;
-    }
-    for (const hit of hits) {
-      fetched += 1;
-      scanned += 1;
-      if (seenIds.has(hit.objectID)) { duplicates += 1; continue; }
-      seenIds.add(hit.objectID);
-      hit._query = query || null;
-      const mapped = mapHit(hit);
-      if (excludedByKeyword(mapped)) { excluded += 1; continue; }
-      if (!matchesDomainFilter(mapped)) { domainFiltered += 1; continue; }
-      // Skip the GitHub lookup for rows that pushResult will drop uncharged anyway
-      // (seeding baseline, or already delivered under this watch label) -- those never
-      // reach the buyer, so spending part of GitHub's 60/hr unauthenticated budget on them
-      // would only starve the rows that actually get returned.
-      const willDeliver = !(watchMode && (seeding || watchSeen.has(String(hit.objectID))))
-        || isMilestoneRedelivery(hit.objectID, mapped);
-      if (enrichGithubLinks && willDeliver) {
-        if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
-        await enrichGithub(mapped);
+      if (lastErr) {
+        log.warning(`Query failed (${query || '<none>'}, page ${page}) after 3 attempts: ${lastErr.message}`);
+        requestFailed = true;
+        break;
       }
-      // Same willDeliver gate as GitHub enrichment above, for the same reason: the parent-chain
-      // walk costs one request per not-yet-cached ancestor, so skip it for rows pushResult would
-      // drop uncharged anyway. Unlike GitHub enrichment this one can also DROP the row (depth
-      // too deep) -- which is exactly right here, since a row we would skip computing depth for
-      // was never going to be charged either way.
-      if (mapped.type === 'comment' && maxCommentDepth != null && willDeliver) {
-        if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
-        mapped.commentDepth = await computeCommentDepth(hit.objectID, mapped.parentId, mapped.storyId);
-        if (mapped.commentDepth != null && mapped.commentDepth > maxCommentDepth) { commentDepthFiltered += 1; continue; }
+      // Read nbHits from page 0 only: it is the same number on every page, and past the
+      // 1000-hit window Algolia answers with an empty-hits page whose nbHits is the exhaustive
+      // recount (exhaustiveNbHits flips true) -- overwriting the real figure with it would
+      // understate exactly the shortfall this record exists to report.
+      if (page === 0 && typeof body.nbHits === 'number') {
+        const declaredHere = (sortBy === 'search' && !query)
+          ? (await accurateNbHits(wantTags, winFilters)) ?? body.nbHits
+          : body.nbHits;
+        windowDeclared = declaredHere;
+        // Only the unsplit pass covers the buyer's whole date range, so only it can speak for the
+        // query. A half-window's nbHits is a fact about that half, not about the query.
+        if (win === null) querySummary.declaredMatches = declaredHere;
       }
-      keepGoing = await pushResult(mapped, hit.objectID);
-      if (!keepGoing) break;
+      const hits = body.hits || [];
+      if (!hits.length) {
+        // 200 + zero hits at a page we asked for past hit 1000 is Algolia's pagination cap, not
+        // the end of the match set; it carries an explanatory `message` the plain end-of-results
+        // response does not have.
+        if (fetchedInWindow >= ALGOLIA_MAX_HITS || body.message) windowCeiling = true;
+        break;
+      }
+      for (const hit of hits) {
+        // The cap counts distinct items, so it has to be checked here rather than by trimming
+        // hitsPerPage: a page of a split run can be entirely re-scans and consume none of it.
+        if (uniqueFetched >= queryCap) break;
+        fetched += 1;
+        fetchedInWindow += 1;
+        scanned += 1;
+        if (seenIds.has(hit.objectID)) { duplicates += 1; continue; }
+        seenIds.add(hit.objectID);
+        uniqueFetched += 1;
+        hit._query = query || null;
+        const mapped = mapHit(hit);
+        if (excludedByKeyword(mapped)) { excluded += 1; continue; }
+        if (!matchesDomainFilter(mapped)) { domainFiltered += 1; continue; }
+        // Skip the GitHub lookup for rows that pushResult will drop uncharged anyway
+        // (seeding baseline, or already delivered under this watch label) -- those never
+        // reach the buyer, so spending part of GitHub's 60/hr unauthenticated budget on them
+        // would only starve the rows that actually get returned.
+        const willDeliver = !(watchMode && (seeding || watchSeen.has(String(hit.objectID))))
+          || isMilestoneRedelivery(hit.objectID, mapped);
+        if (enrichGithubLinks && willDeliver) {
+          if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
+          await enrichGithub(mapped);
+        }
+        // Same willDeliver gate as GitHub enrichment above, for the same reason: the parent-chain
+        // walk costs one request per not-yet-cached ancestor, so skip it for rows pushResult would
+        // drop uncharged anyway. Unlike GitHub enrichment this one can also DROP the row (depth
+        // too deep) -- which is exactly right here, since a row we would skip computing depth for
+        // was never going to be charged either way.
+        if (mapped.type === 'comment' && maxCommentDepth != null && willDeliver) {
+          if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
+          mapped.commentDepth = await computeCommentDepth(hit.objectID, mapped.parentId, mapped.storyId);
+          if (mapped.commentDepth != null && mapped.commentDepth > maxCommentDepth) { commentDepthFiltered += 1; continue; }
+        }
+        keepGoing = await pushResult(mapped, hit.objectID);
+        if (!keepGoing) break;
+      }
+      page += 1;
+      // nbPages is already clamped to the 1000-hit window, so running out of pages while the
+      // index declares more matches than we scanned IS the ceiling, not the end of the results.
+      if (page >= (body.nbPages ?? 1)) {
+        if (fetchedInWindow >= ALGOLIA_MAX_HITS && (windowDeclared ?? 0) > fetchedInWindow) windowCeiling = true;
+        break;
+      }
     }
-    page += 1;
-    // nbPages is already clamped to the 1000-hit window, so running out of pages while the
-    // index declares more matches than we scanned IS the ceiling, not the end of the results.
-    if (page >= (body.nbPages ?? 1)) {
-      if (fetched >= ALGOLIA_MAX_HITS && (querySummary.declaredMatches ?? 0) > fetched) querySummary.hitPaginationCeiling = true;
-      break;
+    // The inner loop can also exit on its own `fetchedInWindow < ALGOLIA_MAX_HITS` guard,
+    // before either in-loop ceiling check runs -- scanning exactly to the window's limit with
+    // more matches declared behind it IS the ceiling.
+    if (fetchedInWindow >= ALGOLIA_MAX_HITS && (windowDeclared == null || windowDeclared > fetchedInWindow)) windowCeiling = true;
+    if (!windowCeiling) continue;
+    // This window truncated. Halve it if we can; otherwise report the ceiling honestly, exactly as
+    // the pre-auto-split code did.
+    const from = win ? win.from : baseWindowFrom;
+    const to = win ? win.to : baseWindowTo;
+    const width = to - from;
+    const roomForTwoMore = windowsSearched + windowStack.length + 2 <= maxSplitWindows;
+    if (autoSplitLargeQueries && width >= MIN_SPLIT_WINDOW_SEC * 2 && roomForTwoMore) {
+      const mid = from + Math.floor(width / 2);
+      // Half-open [from, to) bounds, pushed newest-first so `pop()` walks them chronologically:
+      // no gap and no overlap between halves, so a split cannot lose an item at a boundary.
+      windowStack.push({ from: mid, to }, { from, to: mid });
+      windowsSplit += 2;
+      log.info(
+        `Query "${query || '<none>'}" hit Algolia's ${ALGOLIA_MAX_HITS}-hit ceiling on the window `
+        + `${new Date(from * 1000).toISOString().slice(0, 10)}..${new Date(to * 1000).toISOString().slice(0, 10)}`
+        + ` — splitting it in half and re-searching both halves (window ${windowsSearched} of at most ${maxSplitWindows}).`,
+      );
+    } else {
+      querySummary.hitPaginationCeiling = true;
+      if (autoSplitLargeQueries) {
+        // Distinguish "you did not ask for splitting" from "splitting ran out of road", which have
+        // different fixes (raise maxSplitWindows vs. narrow the query / add minPoints).
+        querySummary.splitExhausted = !roomForTwoMore ? 'max-split-windows' : 'min-window-width';
+      }
     }
   }
+  querySummary.windowsSearched = windowsSearched;
+  querySummary.windowsSplit = windowsSplit;
+
   querySummary.scanned = fetched;
+  querySummary.uniqueScanned = uniqueFetched;
   querySummary.delivered = pushed - deliveredBefore;
   querySummary.filteredOut = (excluded + duplicates + domainFiltered + commentDepthFiltered) - filteredBefore;
   if (requestFailed) {
@@ -809,10 +923,10 @@ for (const query of queries) {
     // the same time, which is the exact case this record exists to expose (cycle 642 lesson).
     const declared = querySummary.declaredMatches;
     if (querySummary.hitPaginationCeiling) querySummary.incompleteReason = 'algolia-pagination-ceiling';
-    else if (fetched >= queryCap && (declared == null || declared > fetched)) querySummary.incompleteReason = watchMode ? 'seed-cap' : 'max-items-per-query';
+    else if (uniqueFetched >= queryCap && (declared == null || declared > uniqueFetched)) querySummary.incompleteReason = watchMode ? 'seed-cap' : 'max-items-per-query';
     else if (timeBudgetExceeded) querySummary.incompleteReason = 'time-budget';
     else if (!keepGoing) querySummary.incompleteReason = pushed >= maxResults ? 'max-results' : 'charge-limit';
-    else if (declared != null && declared > fetched) querySummary.incompleteReason = 'scan-short-of-declared';
+    else if (declared != null && declared > uniqueFetched) querySummary.incompleteReason = 'scan-short-of-declared';
     querySummary.complete = querySummary.incompleteReason == null;
   }
 }
@@ -901,9 +1015,19 @@ for (const s of truncatedSummaries) {
     + `, delivered ${s.delivered} (${s.incompleteReason}).`
     + (s.hitPaginationCeiling
       ? ` Algolia's HN index never serves more than ${ALGOLIA_MAX_HITS} hits for one query, whatever maxItemsPerQuery says`
-        + ' -- split the query by date window (postedAfter/postedBefore) to retrieve the rest exhaustively. Raising minPoints'
-        + ' only narrows to a higher-scoring subset (there is no maxPoints to pair it with), so it cannot recover the'
-        + ' lower-scoring items left behind by the ceiling.'
+        + (s.splitExhausted === 'max-split-windows'
+          ? ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and ran out at maxSplitWindows=${maxSplitWindows};`
+            + ' raise maxSplitWindows (or narrow the date range) to finish it.'
+          : s.splitExhausted === 'min-window-width'
+            ? ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and still truncated at the`
+              + ` ${MIN_SPLIT_WINDOW_SEC / 3600}-hour floor, so this query is too broad to enumerate by date alone; narrow the`
+              + ' keywords or add minPoints/minComments.'
+            : autoSplitLargeQueries
+              ? ' -- autoSplitLargeQueries is on but could not be applied here.'
+              : ' -- set autoSplitLargeQueries:true to have the run halve the date range for you until each window fits'
+                + ' under the ceiling, or split it yourself by date window (postedAfter/postedBefore).')
+        + ' Raising minPoints only narrows to a higher-scoring subset (there is no maxPoints to pair it with), so it cannot'
+        + ' recover the lower-scoring items left behind by the ceiling.'
       : ''),
   );
 }
@@ -925,6 +1049,9 @@ await Actor.setValue('RUN_SUMMARY', {
   scanned,
   maxResults,
   paginationCeiling: ALGOLIA_MAX_HITS,
+  autoSplitLargeQueries,
+  maxSplitWindows: autoSplitLargeQueries ? maxSplitWindows : null,
+  windowsSearched: summaries.reduce((n, s) => n + s.windowsSearched, 0),
   complete: truncatedSummaries.length === 0 && notReachedSummaries.length === 0 && notReachedUsers.length === 0,
   timeBudgetExceeded,
   queries: summaries,
