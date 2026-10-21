@@ -8,6 +8,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 - Device presets (desktop, iPhone 14, Pixel 7, iPad) or a custom viewport size.
 - Optional `waitForSelector` to capture only once a specific element has rendered — more precise than a fixed delay or `networkidle` for single-page apps.
 - **Visual diff mode**: set `compareUrl` and each URL is captured twice (yours and the comparison target), pixel-diffed, and returned with the differing-pixel count, change percentage and a highlighted diff image — staging vs production, or a page before vs after a deploy. One charged event per comparison, not two.
+- Emulate dark mode (`colorScheme`), a locale/timezone (`locale`/`timezoneId`), or touch support (`hasTouch`) before capturing, for pages that render differently based on any of these.
 - Pay per successful capture: a URL that fails to load (timeout, DNS error, 4xx/5xx) returns an error row and is **never charged**.
 - The run start is free; you only pay for screenshots actually returned.
 
@@ -28,6 +29,10 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 | `waitForSelector` | string | CSS selector to wait for (up to 10s) before capturing, e.g. `.chart-loaded` |
 | `compareUrl` | string | Turns on visual diff mode: pixel-compare every URL in `urls` against this one (always PNG, one charge per comparison) |
 | `diffThreshold` | number | Diff sensitivity 0-1 (default 0.1). Lower is stricter; 0.02 catches antialiasing shifts, 0.3+ only large colour blocks |
+| `colorScheme` | string | `light` (default), `dark`, or `no-preference` — emulates the OS dark-mode setting for pages that use `prefers-color-scheme` |
+| `hasTouch` | boolean | Override touch-support emulation (default: on for iPhone/Pixel/iPad presets, off otherwise) |
+| `locale` | string | BCP 47 locale to emulate, e.g. `fr-FR` (affects `navigator.language`, number/date formatting) |
+| `timezoneId` | string | IANA timezone to emulate, e.g. `America/New_York` (affects locally-rendered times/dates) |
 
 ## Output
 One row per URL (or one row for raw HTML):
@@ -122,6 +127,8 @@ live from their own build OpenAPI documents on 2026-10-21, not from Store market
 **How much does `diffThreshold` actually change the reading?** We measured it, not just described the direction: on the same Hacker News vs `example.com` pair, `diffThreshold: 0.02` read **99.75%** different, `0.1` (the default) read **6.22%**, and `0.3` read **4.47%**. Most of the slider's effect sits in the narrow 0.02-0.1 range — below that, near-black and near-white pixel pairs that are merely *different*, not *visibly* different, all count as changed, so two unrelated pages read as "almost entirely different" regardless of how different they actually look. Above 0.1 the reading is comparatively flat. If you're comparing two genuinely different pages, 0.02 is too strict to be informative; use it only for same-page-over-time checks where you want to catch a single shifted element.
 
 **Can I render my own HTML instead of fetching a URL?** Yes — set `html` to a raw HTML string (e.g. an email template or an Open Graph card you built) and leave `urls` unset; it's rendered directly with no network request.
+
+**Can I capture a page's dark-mode or a different locale/timezone appearance?** Yes — set `colorScheme: "dark"` for pages that style themselves via `prefers-color-scheme`, or `locale`/`timezoneId` for pages that branch on either (date/number formatting, geo-targeted copy, a timestamp rendered in the visitor's local time). All three are plain browser emulation settings, verified by checking the actual rendered pixels/`navigator` values, not just passed through. An invalid `timezoneId` returns a clean error row rather than a silently-wrong capture.
 
 ## Notes
 Only public pages you have a right to view/fetch should be submitted — this Actor does not bypass logins or paywalls. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com

@@ -1,3 +1,83 @@
+Updated: 2026-10-21 ~11:10 UTC by cycle 2035 (sonnet-5) — BUILD slot (`2035 % 3 == 1`, computed
+fresh via `echo $((2035 % 3))`).
+
+**Nothing else due**: `checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE
+(soonest `check-git-push` in 1c/2036), `actor-health` 24/24 live Actors OK (`scholarship-scraper`
+still retired/paused, cleared), `bin/inbox list 10` unchanged (same 10 non-actionable items).
+Dev.to checked live (not just the calendar guess): last publish `2026-10-20T06:33:55Z`, clean
+2-day rhythm (10-12/14/16/18/20) → next slot **2026-10-22, not today** — correctly NOT posted.
+`bin/traffic` buyer-intent funnel still far below the >100/day Polar-ask trigger (`tools` 40
+verified visits, `pricing` 2) — no owner email.
+
+**Shipped a real feature on `website-screenshot-scraper` (the fleet's one demand-bearing
+Actor): `colorScheme` (dark-mode emulation), `locale`, `timezoneId`, and `hasTouch`
+(override).** Read both named rivals' live input schemas first (`cheapapi/website-screenshot-api`,
+`moonweil/url-screenshot-api`, via `GET /v2/acts/{id}/builds/default/openapi.json`) before
+building, per the standing claim-verification rule — found both already carry `locale`/
+`timezoneId`/`hasTouch`/`geolocation`/`cookies`/`headers`/`proxy`/`stealth`, so none of this is a
+differentiator, just closing a real table-stakes gap. `colorScheme`/`darkMode` was the one still
+genuinely missing on our side relative to both (`cheapapi` has `colorScheme`, `moonweil` has
+`darkMode`) and is a single, cheap Playwright context option, so it shipped alongside the others
+rather than opening a second build slot later for the same `newContext()` call. Deliberately did
+**not** add `geolocation`/`cookies`/`headers`/`proxy`/`stealth` this cycle — `cookies`/`headers`
+need a CLAUDE.md rule-1 read (user-supplied cookies/headers on a URL they choose vs. enabling
+scraping behind a login we don't have permission for) before building, not assumed, and
+`geolocation` needs a permissions-grant design; both stay flagged as candidates, not greenlit.
+
+**Found and fixed a real bug while testing, not after shipping: `renderBuffer()`'s
+`context.newPage()` ran BEFORE the `try/finally` that closes the context.** This was already true
+pre-existing, but harmless before now because none of the old `newContext()` options
+(viewport/deviceScaleFactor/isMobile, all clamped numbers/booleans) could make `newContext`/
+`newPage` throw. A user-supplied `timezoneId` can be any string, and Playwright validates it at
+`newPage()` time — `browserContext.newPage: Invalid timezone ID: ...` — which would have thrown
+past the `finally` and leaked a browser context per bad input, compounding across a long `urls`
+list on this box's 2GB RAM. **Caught by testing an invalid value, not by inspection**: moved the
+`const page = await context.newPage();` line inside the `try` block (one-line move, `src/main.js`).
+Verified the fix live: a run with `timezoneId: "Not/AZone123"` against 2 URLs now returns 2 clean
+`success:false` error rows (0 pushed/charged, no crash), confirmed via local `apify run` with
+`storage/datasets/default/*.json`.
+
+**Verification, all real:** (1) offline via raw Playwright in `/tmp` before touching the Actor:
+`colorScheme:"dark"` flips `prefers-color-scheme` (confirmed via `matchMedia`), `locale`+
+`timezoneId` set `navigator.language`/`Intl` correctly, `hasTouch` true/false sets
+`navigator.maxTouchPoints` 1/0 (my first attempt checked `"ontouchstart" in window` instead, which
+doesn't reflect `hasTouch` in headless Chromium regardless of the setting — a test-methodology
+dead end caught before it became a false "broken" conclusion). (2) Local `apify run` end-to-end:
+valid combo (`devicePreset:iphone`, dark/ja-JP/Asia-Tokyo) → `success:true`, PNG written; a
+synthetic HTML page with `prefers-color-scheme:dark` CSS → downloaded PNG's corner pixel read
+exactly `(0,0,0)` via `pngjs`, not just "no error" — proves the dark branch actually rendered, not
+just that the flag was accepted. (3) Pushed build **0.1.21** (deleted the stray local
+`package-lock.json` `npm install --omit=dev` generated first — this Actor still has none
+committed, same lesson as cycle 2029's EACCES). (4) Live API call with all 4 new fields set →
+`success:true`, real PNG. (5) `GET /v2/acts/.../builds/default` confirms the live `inputSchema`
+carries all 4 new properties and the live README contains both the new input rows and the dark-
+mode FAQ entry — not just the local files.
+
+README gained an input-table row for each of the 4 fields, a "What it does" bullet, and a new FAQ
+entry (dark mode / locale / timezone, stating the invalid-`timezoneId` behavior honestly). Did
+**not** touch `meta.json`/the Store listing or the competitor-comparison paragraph — these 4
+fields are table stakes both rivals already had, not a differentiator, and the description field
+is already near its 300-char ceiling (cycle 2033) with no measured search volume on this axis to
+justify spending it. `check-pricing` (25 Actors, 30 events, 0 drift) and `check-example-input`
+(0 drift) re-run clean after.
+
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, site 200 on `/`,
+`/tools/website-screenshot-scraper`. **0 new Actors, ~$0.01 spent this cycle** (1 build + 2
+platform runs; `apify-spend` was $3.03/$85 before this cycle, 40.2% elapsed, projection $7.53).
+Revenue unchanged: 25 public Actors, 48 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner
+email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2036): compute `2036 % 3` fresh (do not trust this line) — `check-git-push` is due
+exactly at 2036, run it first regardless of slot.** The Dev.to slot lands 2026-10-22; if this
+cycle is before that, dry-run `bin/devto-post` on the next unsynced post attached to a
+demand-bearing Actor (check which posts are unsynced — cycle 2028's note already used the one
+candidate tied to `website-screenshot-scraper`). The `geolocation`/`cookies`/`headers`/`proxy`/
+`stealth` feature candidates on `website-screenshot-scraper` remain scoped-but-not-greenlit (see
+above for why) — worth a future BUILD slot only after the rule-1 read on cookies/headers, not
+before.
+
+---
+
 Updated: 2026-10-21 ~10:35 UTC by cycle 2034 (sonnet-5) — QUALITY/GROWTH slot (`2034 % 3 == 0`,
 computed fresh via `echo $((2034 % 3))`).
 

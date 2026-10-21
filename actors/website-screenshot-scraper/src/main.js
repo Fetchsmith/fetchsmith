@@ -26,27 +26,33 @@ const waitUntil = ['load', 'domcontentloaded', 'networkidle'].includes(input.wai
 const delayMs = Math.min(Math.max(Number(input.delayMs ?? 0), 0), 15000);
 const waitForSelector = typeof input.waitForSelector === 'string' && input.waitForSelector.trim() ? input.waitForSelector.trim() : null;
 const diffThreshold = Math.min(Math.max(Number(input.diffThreshold ?? 0.1), 0), 1);
+const colorScheme = ['light', 'dark', 'no-preference'].includes(input.colorScheme) ? input.colorScheme : 'light';
+const locale = typeof input.locale === 'string' && input.locale.trim() ? input.locale.trim() : undefined;
+const timezoneId = typeof input.timezoneId === 'string' && input.timezoneId.trim() ? input.timezoneId.trim() : undefined;
 
 if (compareUrl && input.format && input.format !== 'png') {
   log.info(`Compare mode: forcing PNG output (requested '${input.format}' is lossy/non-raster, which would corrupt the pixel diff).`);
 }
 
 const DEVICE_PRESETS = {
-  desktop: { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false },
-  iphone: { width: 390, height: 844, deviceScaleFactor: 3, isMobile: true },
-  pixel: { width: 412, height: 915, deviceScaleFactor: 2.6, isMobile: true },
-  ipad: { width: 820, height: 1180, deviceScaleFactor: 2, isMobile: true },
+  desktop: { width: 1920, height: 1080, deviceScaleFactor: 1, isMobile: false, hasTouch: false },
+  iphone: { width: 390, height: 844, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
+  pixel: { width: 412, height: 915, deviceScaleFactor: 2.6, isMobile: true, hasTouch: true },
+  ipad: { width: 820, height: 1180, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
 };
 function resolveViewport() {
-  if (ogCard) return { width: 1200, height: 630, deviceScaleFactor: 1, isMobile: false };
-  const preset = DEVICE_PRESETS[input.devicePreset];
-  if (preset) return preset;
-  return {
-    width: Math.min(Math.max(Number(input.viewportWidth ?? 1920), 200), 3840),
-    height: Math.min(Math.max(Number(input.viewportHeight ?? 1080), 200), 3840),
-    deviceScaleFactor: 1,
-    isMobile: false,
-  };
+  const base = ogCard
+    ? { width: 1200, height: 630, deviceScaleFactor: 1, isMobile: false, hasTouch: false }
+    : DEVICE_PRESETS[input.devicePreset] ?? {
+        width: Math.min(Math.max(Number(input.viewportWidth ?? 1920), 200), 3840),
+        height: Math.min(Math.max(Number(input.viewportHeight ?? 1080), 200), 3840),
+        deviceScaleFactor: 1,
+        isMobile: false,
+        hasTouch: false,
+      };
+  // Preset/custom picks a sensible hasTouch default (true for the phone/tablet presets); let the
+  // caller override it explicitly either way, e.g. a touch-capable desktop kiosk or a non-touch iPad.
+  return { ...base, hasTouch: typeof input.hasTouch === 'boolean' ? input.hasTouch : base.hasTouch };
 }
 const viewport = resolveViewport();
 
@@ -77,9 +83,15 @@ async function renderBuffer(browser, { url, rawHtml }, fmt = format) {
     viewport: { width: viewport.width, height: viewport.height },
     deviceScaleFactor: viewport.deviceScaleFactor,
     isMobile: viewport.isMobile,
+    hasTouch: viewport.hasTouch,
+    colorScheme,
+    ...(locale ? { locale } : {}),
+    ...(timezoneId ? { timezoneId } : {}),
   });
-  const page = await context.newPage();
   try {
+    // `newPage()` can throw on a bad user-supplied `timezoneId` -- keep it inside the try so an
+    // invalid value still reaches the `finally` below instead of leaking the context.
+    const page = await context.newPage();
     if (rawHtml) {
       await page.setContent(rawHtml, { waitUntil, timeout: 30000 });
     } else {

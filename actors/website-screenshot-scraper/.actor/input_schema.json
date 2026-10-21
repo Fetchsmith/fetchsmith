@@ -146,6 +146,40 @@
       "maximum": 1,
       "default": 0.1,
       "unit": "0-1"
+    },
+    "colorScheme": {
+      "title": "Color scheme",
+      "type": "string",
+      "description": "Emulate the browser's light/dark mode preference before capturing, so a page that reacts to `prefers-color-scheme` renders its dark variant instead of light.",
+      "editor": "select",
+      "enum": [
+        "light",
+        "dark",
+        "no-preference"
+      ],
+      "enumTitles": [
+        "Light (default)",
+        "Dark",
+        "No preference"
+      ],
+      "default": "light"
+    },
+    "hasTouch": {
+      "title": "Touch support (optional override)",
+      "type": "boolean",
+      "description": "Whether the emulated device reports touch support. Leave unset to use the device preset's default (on for iPhone/Pixel/iPad, off for desktop/custom) or override it either way."
+    },
+    "locale": {
+      "title": "Locale (optional)",
+      "type": "string",
+      "description": "BCP 47 locale to emulate, e.g. 'fr-FR' or 'ja-JP'. Affects `navigator.language`, number/date formatting, and any page content that branches on locale.",
+      "editor": "textfield"
+    },
+    "timezoneId": {
+      "title": "Timezone (optional)",
+      "type": "string",
+      "description": "IANA timezone to emulate, e.g. 'America/New_York' or 'Asia/Tokyo'. Affects any page content that renders times/dates in the visitor's local timezone.",
+      "editor": "textfield"
     }
   },
   "required": []

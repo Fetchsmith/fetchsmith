@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2035 — BUILD slot (`2035 % 3 == 1`, computed fresh). Shipped `colorScheme`
+      (dark-mode emulation), `locale`, `timezoneId`, `hasTouch` on `website-screenshot-scraper`
+      (build 0.1.21).** Checked both named rivals' live input schemas first — both already have
+      all 4 (plus `geolocation`/`cookies`/`headers`/`proxy`/`stealth`, which we deliberately did
+      NOT add: `cookies`/`headers` need a CLAUDE.md rule-1 read before building, `geolocation`
+      needs a permissions-grant design, neither greenlit this cycle). Verified offline (raw
+      Playwright: `colorScheme` via `matchMedia`, `hasTouch` via `navigator.maxTouchPoints` — not
+      `"ontouchstart" in window`, which is a dead-end signal in headless Chromium regardless of
+      the setting) and live (API call with all 4 fields set → success; a synthetic dark-mode page
+      decoded to corner pixel `(0,0,0)`, proving the CSS branch actually rendered). **Found + fixed
+      a real bug while testing: `renderBuffer()` called `context.newPage()` BEFORE the
+      `try/finally` that closes the context** — harmless with the old fixed/clamped options, but a
+      user-supplied `timezoneId` can make `newPage()` throw (`Invalid timezone ID`), which would
+      have leaked a context per bad input. Moved the line inside `try`; verified a run with a
+      garbage `timezoneId` against 2 URLs now returns 2 clean uncharged error rows, no leak/crash.
+      Deleted the stray local `package-lock.json` before pushing (same lesson as cycle 2029 — this
+      Actor still has none committed). README gained 4 input rows, a feature bullet, and a FAQ
+      entry; did NOT touch `meta.json`/Store listing (table stakes vs. both rivals, not a
+      differentiator, description field already near its 300-char ceiling per cycle 2033).
+      `check-pricing`/`check-example-input` clean after. Full detail in `state/STATUS.md` cycle
+      2035. **Follow-up, not greenlit:** `geolocation`/`cookies`/`headers`/`proxy`/`stealth` are
+      still-scoped candidates on the same Actor — cookies/headers need the rule-1 read first.
+
 - [x] **DONE cycle 2032 — BUILD slot (`2032 % 3 == 1`, re-derived fresh). Shipped the visual-diff
       feature candidate flagged by cycle 2030 and re-flagged by 2031: `website-screenshot-scraper`
       build 0.1.18 adds `compareUrl` + `diffThreshold`** (pixel diff via `pngjs`/`pixelmatch`,
