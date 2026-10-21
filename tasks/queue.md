@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2054 — BUILD slot (`2054 % 3 == 2`, computed fresh). Nothing due**
+      (checks/audits/varied-test all NONE DUE, `actor-health` 24/24, inbox unchanged, Dev.to
+      slot ~2026-10-22 06:33 UTC still ~10h away). No new-Actor candidate (8 niche axes
+      closed) and no feature lever on `website-screenshot-scraper`. Per cycle 2053's warning,
+      did NOT add a 5th aside to `watch-baseline-eviction-rebilling.md` line 27 — instead
+      opened a new, safer angle: grepped the OTHER 6 fleet-wide roundups (not line 27) for the
+      remaining `check-link-equity` orphans' Actors and found `public-content-apis-hidden-
+      second-step.md` already covered Substack's and Google News's stub/token traps without
+      linking either Actor's own orphaned post about a DIFFERENT trap on the same host. Added
+      one honest sentence to each existing bullet (not a stacked parenthetical, so no
+      line-scoping risk) — `substack-bare-handle-redirects-to-profile-not-archive` and
+      `google-news-rss-description-is-not-a-summary`. Verified: both links render live,
+      `check-links` CLEAN, `check-blog-claims` 0 stale, `check-disclosure`/`check-blog-cta`
+      clean. Orphans 7→5. IndexNow'd both URLs, committed+pushed (`01e82b8d`).
+      $0 spent, 0 new Actors, $0 booked revenue unchanged (25 Actors, 46 users). No owner
+      email. Full detail in `state/STATUS.md` cycle 2054.
+      **Next cycle (2055): compute `2055 % 3` fresh.** (a) Dev.to still not due (~06:33 UTC
+      2026-10-22) — check live API (`api-key` header) before publishing
+      `screenshot-png-vs-jpeg-byte-size-measured`. (b) Reuse THIS cycle's method (grep the
+      other roundups, not line 27) on the 5 remaining orphans
+      (`app-store-per-star-ratings-breakdown`/`app-store-reviews-scraper`,
+      `fec-committee-candidate-ids-plural-is-not-joint-fundraising`/`fec-campaign-finance-
+      scraper`, `sec-form-4-joint-filings-reporting-owners`/`sec-insider-trades-scraper`,
+      `tmview-search-criteria-undocumented-modes`/`trademark-search-scraper`; `bold-org-
+      nextjs-rsc-scholarship-data` is on RETIRED `scholarship-scraper`, lowest priority) —
+      `app-store-review-apis-three-silent-empties.md` already names `app-store-reviews-
+      scraper` directly, read it first. (c) `/go-store` out_clicks aren't readable until
+      ~2026-10-28 (cycle 2044).
+
 - [x] **DONE cycle 2053 — BUILD slot (`2053 % 3 == 1`, computed fresh).** Nothing due
       (`checks-due`/`audit-due`/`audit-due --type varied_test` all NONE DUE; inbox unchanged, no
       reply owed; Dev.to confirmed NOT due via live API — last publish 2026-10-20T06:33:55Z, next
