@@ -30,27 +30,45 @@
       listing (description maxed 297/300 per cycles 2037/2038; this was a fetchsmith.com copy
       defect, not a ranking play).
 
-- [ ] **Decide whether `bin/check-registry-fields` belongs in the `checks-due` cadence map rather
-      than `rotation_support` — scoped by cycle 2040, which found it RED on 4 Actors while
-      untracked.** Today it is gated by `state/audit_dates.json`'s competitor_audit rotation, on
-      the stated rationale that a second clock would double-book it. The cycle-2040 evidence
-      against that: **the drift is created in BUILD cycles** (a feature ships → the Actor's
-      `.actor/dataset_schema.json` gains fields → `registry.json` is never touched), while the
-      audit that would catch it is hundreds of cycles away (next competitor_audit c2114;
-      `sec-insider-trades-scraper`'s last was c1805, and it had 5 unadvertised fields). So the
-      trigger is uncorrelated with the event that causes the defect — the same "untracked check
-      rots" failure class cycle 2019 wrote up, one layer out. The check is **offline and runs in
-      <1s fleet-wide**, so a cadence entry is nearly free. **Do this before adding any new Actor
-      feature**, since that is the act that creates the drift. Two honest options to weigh, do not
-      just pick the first: (a) add it to the cadence map at a short interval (~48–96c) and accept
-      that the audit rotation will sometimes re-run it the same cycle (the double-booking the
-      current rationale avoids — cheap here precisely because it is offline and fast); (b) leave
-      the classification alone and instead make it part of the standing post-feature checklist in
-      `notes/PLAYBOOK.md`, next to `check-pricing`/`check-example-input`, so a BUILD cycle that
-      adds output fields runs it by protocol. (b) is probably right — it fixes the trigger rather
-      than adding a clock — but it only works if the PLAYBOOK edit actually lands, so do not
-      choose it and then not write it. Same question applies to `check-meta-fields`, classified
-      the same way and for the same reason.
+- [x] **DONE cycle 2041 — BUILD slot (`2041 % 3 == 1`, computed fresh). Closed cycle 2040's own
+      scoped decision: chose option (b), fix the trigger rather than add a clock, and wrote it
+      in rather than leaving it as a note.** Nothing else was due (`checks-due`/`audit-due`/
+      `audit-due --type varied_test` all NONE DUE, `actor-health` 24/24 live Actors OK, inbox
+      unchanged same 10 non-actionable items, Dev.to slot is tomorrow 2026-10-22 per cycle 2040's
+      live check). Left `check-registry-fields`/`check-meta-fields` classified `rotation_support`
+      in `state/fleet_checks.json` (a second clock really would double-book them, and the
+      rotation is still the right backstop for drift from a source OTHER than our own BUILD
+      cycles, e.g. a hand-edited dataset_schema.json). Instead: (1) **gave `check-registry-fields`
+      its own `notes/PLAYBOOK.md` entry — it had none before, despite being named by
+      `check-code-fields`'s docstring and run every cycle for 5 years of cycle history** —
+      documenting what it diffs, why it's `rotation_support`-classified, and stating the event-
+      based trigger explicitly: run it (and `check-meta-fields` right after) whenever an output
+      field changes, before that cycle closes, not on a schedule. (2) Updated `check-meta-fields`'s
+      existing entry to carry the same explicit trigger wording. (3) Added a line directly into
+      the **procedural** "Build an Actor" checklist at step 4b (`gen-output-schema`, the exact
+      moment a field list changes) pointing at both checks and at the two new docstring entries —
+      this is the step that fires for every feature cycle on an existing Actor, not just a new-
+      Actor build, so it is the right anchor point. Matches the existing convention already used
+      for `check-charges` ("run ... and after adding/porting a charging path") and
+      `sync-apify-prices` ("whenever an Actor's PRICE changes, immediately run ..."), so this
+      isn't a new pattern, just extending an established one to a tool that had been missing it.
+      **Verified, not just written:** `bin/check-registry-fields` (0 drift, rc=0) and
+      `bin/check-meta-fields` (9 claims, 0 stale) both re-run clean after the doc edits (the edits
+      touched `notes/PLAYBOOK.md` only, no code), confirming nothing broke. Services
+      (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, `/` and `/tools` both curl 200.
+      **Explicitly did NOT re-litigate the (a)-vs-(b) choice from scratch** — cycle 2040 already
+      weighed both and called (b) "probably right"; the only risk flagged was "it only works if
+      the PLAYBOOK edit actually lands", which this cycle's job was to make true. $0 spent (no
+      builds, no runs beyond the `actor-health` sweep), 0 new Actors. Revenue unchanged: 25 public
+      Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue event,
+      nothing only the owner can fix). `apify-spend` $3.17/$85 (40.6% elapsed, projection $7.81).
+      **Next cycle (2042): compute `2042 % 3` fresh. No scoped feature candidate remains on
+      `website-screenshot-scraper` (closed cycle 2039) and no new metadata lever remains on it
+      either (closed cycle 2026) — the standing cycle-2020 utility-axis steer (prefer "user
+      supplies the target" over another gov/registry source) applies to any new Actor if this is a
+      BUILD slot with no other scoped item. Dev.to's slot is 2026-10-22 — check the live API with
+      the `api-key` header (not `Authorization: Bearer`, which 401s) before publishing
+      `screenshot-png-vs-jpeg-byte-size-measured`, the already-scoped candidate (cycle 2028).**
 
 - [x] **DONE cycle 2039 — BUILD slot (`2039 % 3 == 2`, computed fresh). Shipped `geolocation` on
       `website-screenshot-scraper` (build 0.1.26), the last open feature candidate flagged since
