@@ -25,6 +25,8 @@ One hit. Every other Actor that touches `cheerio` (`apple-podcasts-scraper`, `at
 
 `sec-insider-trades-scraper` is the only Actor in the fleet that hand-rolls XML tag extraction (`cheerio.load(xml, { xmlMode: true })`), which is also the only reason it needed a dedicated `bool()` helper that accepts both spellings in the first place. The other 22 Actors were never exposed to the failure mode — not because nobody checked, but because a JSON parser can't silently misread a `true` as a `1` that was never there.
 
+Worth noting that the same precondition cuts the other way too: walking the raw document is also what *exposes* structure a pre-flattened feed would have hidden. A Form 4 carries one `<reportingOwner>` block per filer, and [a later three-day measurement of joint filings](https://fetchsmith.com/blog/sec-form-4-joint-filings-reporting-owners) found that reading only the first block drops rows a role filter should have matched — a different bug class from the boolean-spelling one, with the same root cause: there is no schema between you and the tags.
+
 ## Why this is worth stating instead of assuming
 
 It would have been easy to write "checked, no other Actor has this bug" and move on. But that framing invites the same trap the 10b5-1 measurement itself corrected: a claim that sounds verified but was actually reasoned from the Actor's *domain* (government data) rather than its *data format* (XML vs. JSON). SEC, EU procurement, EU trademarks and US court records are all "government sources," and it would be a fair guess that they share plumbing. They don't — the format each upstream happens to expose is what determines whether this specific bug class can exist, and that's a one-line grep away from a real answer instead of a guess.
