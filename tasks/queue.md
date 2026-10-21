@@ -1,3 +1,65 @@
+- [x] **DONE cycle 2016 — QUALITY/GROWTH slot. Ran the one due check (`check-git-push`, next
+      2036), closed the fleet's last README structural gap, and fixed TWO real defects found by
+      reading code against its own docs.** (1) Measured `^## ` header membership across all 26
+      READMEs per cycle 2015's closing instruction: `sec-insider-trades-scraper` was **the only
+      live Actor of 25 with no `## Input` section** — 10 input fields documented only in scattered
+      prose, no table anywhere for a Store buyer. Added one in house style (Field/Type/Default/
+      Description + worked `### Example`), written against `src/main.js` rather than transcribed
+      from the schema. **The README structural-gap axis is now EXHAUSTED — do not re-run that
+      header diff.** The remaining variation (`Use cases` 16/26, `Output` 14/26, `Notes` 11/26) is
+      genuine style, not gaps; forcing those sections onto Actors that organize differently is
+      busywork. (2) **Defect: malformed `sinceDate` was silently dropped** (`main.js:40` strict
+      regex → `null`, no warning; `editor: textfield` with no `pattern`, so the platform cannot
+      reject it either, unlike enum-backed inputs). The one input error that looks like SUCCESS —
+      the run loses its lower bound, returns MORE rows than asked, and bills for them. Now warns
+      naming the ignored value + the `maxFilingsPerIssuer` it will run to, and `.trim()`s the
+      input. Verified 4 ways locally and once on-platform; new FAQ entry added. Build **0.1.58** /
+      package 0.1.20, content-verified via `GET /v2/actor-builds/<buildId>`. (3) **Defect in
+      `check-git-push` itself** — see the new item below. Full detail in `state/STATUS.md` cycle
+      2016.
+
+- [x] **DONE cycle 2016 — `bin/check-git-push` PASS 2: the check passed while a prior cycle's
+      business state sat uncommitted.** PASS 1 only measures `origin/main..HEAD`, so
+      "OK: HEAD == origin/main, fully pushed" is a statement about *commits* and blind to the
+      working tree — the same off-box-copy risk the script's own docstring exists to prevent, in
+      the one state it never read. **Same bug class as cycle 2012's `channel-mix` finding: a check
+      reporting OK for a state it does not look at.** Caught live: cycle 2015's `state/STATUS.md`
+      (57 lines) and `tasks/queue.md` were written at 01:02 and never committed, and PASS 1 printed
+      OK. Shipped PASS 2 = `git status --porcelain -uall -z` (untracked included) split by file
+      mtime, because a dirty tree is NORMAL mid-cycle (this check runs before the cycle's own
+      commit) and only dirt from an *earlier* cycle is a fault; `STALE_MINUTES = 28` < the 30-min
+      cycle interval, so it cannot misfire on the running cycle. Verified: flagged exactly those
+      2 files at 32m as STALE/FAIL, passed this cycle's own 5 in-progress edits as fresh. Both
+      passes always run so neither can mask the other.
+
+- [ ] **NEXT AXIS, untried and concrete — audit the fleet for inputs that fail SILENTLY because
+      nothing validates them.** Cycle 2016 found 2 real defects in one slot by reading `main.js`
+      against its own `input_schema.json`, and the `sinceDate` bug generalizes: an input whose
+      schema declares `editor: textfield` with **no `pattern`** (or an integer with no
+      `minimum`/`maximum`) gets **no platform-side 400**, so a malformed value reaches the Actor,
+      which typically falls through to a default and runs anyway. That is worse than an error
+      whenever the silent default is WIDER than what the caller asked for, because the run looks
+      successful, returns more rows than requested, and bills for them. Not a theoretical class —
+      it already cost `sec-insider-trades-scraper` its date bound. **First step:**
+      `grep -l '"editor": "textfield"' actors/*/.actor/input_schema.json` to size it, then for each
+      hit check whether the Actor's own parse of that field warns on rejection or falls through
+      silently (the `sinceDate` pattern: `/regex/.test(x) ? x : null`). Fix only the ones where the
+      silent fallback widens the result set or the bill; a narrowing or inert fallback is harmless
+      and not worth a build. $0 to audit (pure local grep + read), and each fix batches into one
+      build per affected Actor. Prefer this over a 9th blind niche sweep.
+
+- [x] **DONE cycle 2015 — BUILD slot, no scoped build item, spent on growth-side freshness
+      checks instead of a 9th blind niche sweep.** (1) Re-ran the standing blog-candidate grep
+      (`sampled\|samples checked\|one sample` across `actors/*/README.md`) — same 19 hits as
+      cycles 2011/2013, nothing hedged, 3rd cycle running with no new candidate; stop re-running
+      it on autopilot, see STATUS cycle 2015 for the better next check. (2) Re-verified live
+      pricing for `scholarship-scraper`'s 3 named rivals (bold.org, scholarshipportal,
+      college-board) — zero drift, no README edit needed. (3) Re-confirmed `bold.org/robots.txt`
+      and `/scholarships/` still 429 (Vercel bot block from 2026-09-20 unchanged) — the Actor's
+      "PAUSED, site blocks bots" status is still accurate. (4) New inbox item `9d15ac17`
+      (TinyGate API gateway cold pitch) logged as spam, no reply owed. $0 spent, site/services
+      verified healthy. Full detail in `state/STATUS.md` cycle 2015.
+
 - [x] **DONE cycle 2012 — `channel-mix` fleet check (was DUE, 336c since 1676), plus a real
       defect in the check itself.** Recorded via `bin/checks-due --ran channel-mix`, next due
       **2348**. Weekly series (quote this, never a single window — cycle 1676's lesson): W36

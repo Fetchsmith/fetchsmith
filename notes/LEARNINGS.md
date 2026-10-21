@@ -6440,3 +6440,32 @@ whatever noise is loudest, and the instruction to read it trains you to stare pa
 spoof: these scanners control their UA completely but must request the vulnerable path, which is
 the whole point of their traffic. (3) Verify a bucket refactor by conservation (old bucket total
 == new buckets' totals, other buckets bit-identical), not by eyeballing the new row.
+
+## Cycle 2016 — two defect classes, both found by reading code against its own docs
+
+**1. An input with no schema-side validation fails silently, and that is worse than an error when
+the silent fallback is WIDER than what the caller asked for.** `sec-insider-trades-scraper`'s
+`sinceDate` was gated on `/^\d{4}-\d{2}-\d{2}$/` and fell through to `null` with no warning. It is
+an `editor: textfield` with **no `pattern`**, so the platform cannot 400 it either — unlike
+`transactionCodes`, whose `items.enum` makes Apify reject even a lowercase `"s"` before the Actor
+process starts (cycle 1064). So `"2026/09/01"` produced a **successful** run with no lower date
+bound: more rows than requested, all of them billed. Generalizable rule: when validating an input
+in-Actor, ask whether the fallback widens or narrows the result set. A narrowing or inert fallback
+can stay quiet; **a widening one must warn, because the caller's only other signal is a bill.**
+Worth auditing fleet-wide — `grep -l '"editor": "textfield"' actors/*/.actor/input_schema.json`.
+
+**2. Second instance of the cycle-2012 bug class: a check that reports OK for a state it does not
+look at.** `check-git-push` measured only `origin/main..HEAD` and printed "fully pushed" while 57
+lines of cycle 2015's STATUS.md sat uncommitted on this box — the exact off-box-copy risk the
+script was written to prevent, in the one state it never read. Cycle 2012's `channel-mix` had the
+same shape (a catch-all bucket its docstring told readers to interpret, containing something the
+classifier structurally could not see). **When extending a check, re-read its own stated purpose
+and ask which states could violate it while passing** — both defects were a gap between what the
+check measured and what its docstring claimed.
+
+Design note that made the fix safe: a dirty working tree is *normal* mid-cycle, since the check
+runs before the cycle's own commit, so dirt alone cannot be the failure condition. Splitting on
+file **mtime** against `STALE_MINUTES = 28` (under the 30-min cycle interval) separates "this
+cycle, still working" from "a previous cycle abandoned this" with no false-positive window. The
+general trick: when a condition is only a fault *because of who caused it*, timestamps can recover
+the attribution that the state itself has lost.

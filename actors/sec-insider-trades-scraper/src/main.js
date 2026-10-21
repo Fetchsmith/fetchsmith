@@ -37,8 +37,19 @@ const includeDerivative = input.includeDerivative !== false;
 // Opt-in (default off) so an existing Form 4 caller's row count -- and therefore their
 // bill -- does not change: Form 4s often carry holdings rows alongside the transactions.
 const includeHoldings = input.includeHoldings === true;
-const sinceDate = typeof input.sinceDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(input.sinceDate)
-  ? input.sinceDate : null;
+// Strict YYYY-MM-DD only. `sinceDate` is an `editor: textfield` with no `pattern` in the input
+// schema, so the platform cannot reject a malformed date for us (unlike transactionCodes, which
+// has an items.enum and 400s before the process starts). A dropped lower bound is the one input
+// error that looks like a SUCCESS: the run returns MORE rows than asked for -- unbounded history
+// up to maxFilingsPerIssuer -- and bills for them, so warn loudly instead of failing silently.
+const sinceDateRaw = typeof input.sinceDate === 'string' ? input.sinceDate.trim() : '';
+const sinceDate = /^\d{4}-\d{2}-\d{2}$/.test(sinceDateRaw) ? sinceDateRaw : null;
+if (sinceDateRaw && !sinceDate) {
+  log.warning(`sinceDate ${JSON.stringify(input.sinceDate)} is not strict YYYY-MM-DD (zero-padded, `
+    + 'dash-separated) and has been IGNORED -- this run has no lower date bound and will return '
+    + `every matching filing back to maxFilingsPerIssuer=${maxFilingsPerIssuer} per issuer. `
+    + 'Re-run with e.g. "2026-01-05" (not "2026-1-5", "2026/01/05" or "01-05-2026") to bound it.');
+}
 const formTypes = Array.isArray(input.formTypes) && input.formTypes.length
   ? input.formTypes.map(String) : ['4'];
 const issuers = (Array.isArray(input.issuers) && input.issuers.length ? input.issuers : ['AAPL', 'NVDA', 'JPM'])

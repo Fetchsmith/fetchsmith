@@ -43,6 +43,45 @@ parser yourself.
 - **Corporate-governance and proxy analysts** needing a board's starting positions, not just its trades: `formTypes: ["3"]` with `includeHoldings: true` returns each insider's held position (`rowType: "holding"`, position in `sharesOwnedAfter`, vesting terms in `footnotes`) instead of the zero rows a Form-3 run otherwise produces.
 - **Fintech and dashboard builders** who want Form 4 as flat rows over HTTP with no EDGAR parser, no API key and no headless browser to host — `ticker` is resolved against SEC's own `company_tickers.json`, so a bad symbol is warned about rather than silently returning nothing.
 
+## Input
+
+Every field is optional. With an empty input you get the 100 most recent Form 4 transaction rows
+for Apple, NVIDIA and JPMorgan.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `issuers` | array | `["AAPL","NVDA","JPM"]` | Ticker symbols (`AAPL`, `NVDA`) or raw CIK numbers (`320193`). Resolved against SEC's own `company_tickers.json`, so a ticker SEC does not list is skipped **with a warning** rather than silently returning nothing. |
+| `formTypes` | array | `["4"]` | Any of `3`, `4`, `5`, `3/A`, `4/A`, `5/A`. Form 4 is the trade signal (reported within 2 business days); Form 5 is an annual catch-up and does carry real transactions; **Form 3 contains no transaction at all**, so selecting it alone returns zero rows unless `includeHoldings` is on (the run warns if you do). The `/A` forms are SEC's separate **amendment** form types — select `4/A` alongside `4` to get corrections; see "Amendments" below. |
+| `sinceDate` | string | `""` (no lower bound) | Earliest filing date, **strict zero-padded `YYYY-MM-DD`**. SEC's index is newest-first, so this stops paging as soon as it passes the date. Anything else (`2026-1-5`, `2026/01/05`, `01-05-2026`) is **ignored with a warning** and the run comes back unbounded — the input schema has no `pattern`, so the platform cannot reject it for you (see FAQ). |
+| `maxFilingsPerIssuer` | integer | `20` (max 200) | How many matching ownership filings to open per company. One filing usually yields 1–4 transaction rows. Caps **filings fetched, not rows kept** — a strict filter below can exhaust this budget long before `maxResults`, and the run log says so when it does. |
+| `includeDerivative` | boolean | `true` | Derivative rows are options, RSUs and convertibles (with exercise price, expiration, underlying share count). Turn off for non-derivative common-stock rows only — but note `C`, `X`, `O`, `E`, `H` and `K` are reported **only** on derivative rows, so selecting one of those in `transactionCodes` with this off matches nothing (the run warns and names them). |
+| `includeHoldings` | boolean | `false` | Also return positions the insider *holds* rather than traded, as rows with `rowType: "holding"` (`transactionDate`/`transactionCode`/`shares`/`pricePerShare` null, position in `sharesOwnedAfter`). Off by default so an existing Form 4 caller's row count — and bill — does not change. See "Holdings rows" below. |
+| `transactionCodes` | array | `[]` (all) | Keep only these SEC transaction codes; all 20 official codes are selectable. `["P","S"]` gives open-market buys and sells only. Holding rows carry no code, so this filter always excludes them. |
+| `minTransactionValue` | integer | `0` (off) | USD floor compared on the **absolute** value, so a $2M sale clears a `500000` floor exactly like a $2M purchase. Rows with no reportable value (holdings, and grants filed with no price) cannot be shown to clear it and are excluded. |
+| `insiderRoles` | array | `[]` (all) | Any of `officer`, `director`, `tenPercentOwner`, `other`. Matched against **every** reporting owner on the filing, including joint-filing co-filers — not just the first. |
+| `maxResults` | integer | `100` (max 5000) | Hard cap on transaction rows returned, and therefore on what you are charged. |
+
+`transactionCodes`, `minTransactionValue` and `insiderRoles` are combined with AND and applied to
+each parsed row **before it is pushed or charged** — see "Narrowing the feed" below for the live
+measurements behind them.
+
+### Example
+
+```json
+{
+  "issuers": ["AAPL", "MSFT"],
+  "formTypes": ["4"],
+  "sinceDate": "2026-09-01",
+  "transactionCodes": ["P", "S"],
+  "minTransactionValue": 250000,
+  "insiderRoles": ["officer"],
+  "maxFilingsPerIssuer": 50,
+  "maxResults": 500
+}
+```
+
+Only open-market buys and sells over $250k, by an officer, filed since 1 September 2026.
+
 ## Output fields
 
 `id`, `rowType`, `accessionNumber`, `formType`, `isAmendment`, `amendsOriginalFilingDate`,
@@ -351,6 +390,17 @@ worth naming.
 **The run said "Succeeded" but my dataset is empty — how do I find out why?** Read the run's **status message**: a run that delivers zero rows now ends with a one-line explanation naming the cause it actually hit, visible on the run in Console and as `statusMessage` on the API's run object (no need to read the log). It distinguishes the cases that need different fixes: filters dropped every parsed row (it names the active filters and their counts), no filings of that form exist in the window searched, the tickers didn't resolve to a CIK, every selected filing was holdings-only or a pre-2003 legacy filing, a derivative-only `transactionCodes` selection with `includeDerivative` off, or the run hitting its time budget before any row was delivered (that last one is *not* a "no match" answer — raise the timeout rather than widening dates). The input-shaped causes (derivative-only codes, Form-3-only with holdings off, empty/unresolved issuers) are independent of each other and named together when more than one applies in the same run, rather than only the first.
 
 **Does `sinceDate` miss older filings for a prolific filer?** No — EDGAR's own per-issuer submissions file only inlines the larger of ~1000 filings or the trailing 12 months; this Actor follows the older paginated index pages too (up to 30 per issuer), so a heavy filer like JPMorgan (~26,000 filings/year in the inlined window alone) doesn't silently stop at whatever the inlined window covers.
+
+**I set `sinceDate` and got back filings from well before it — why?** Almost certainly a format
+slip: `sinceDate` is accepted only as strict zero-padded `YYYY-MM-DD`. The input schema declares it
+as a plain text field with no `pattern`, so unlike `transactionCodes` (whose `items.enum` makes the
+platform reject a bad value with a 400 before the Actor even starts) a malformed date reaches the
+run, which cannot guess whether `01-05-2026` means 5 January or 1 May and so drops the bound
+entirely. Since cycle 2016 that is **logged as a warning naming the value it ignored and the
+`maxFilingsPerIssuer` it will now run to** — before that it was silent, which made it the one
+input error that looks like success, because the run returns *more* rows than you asked for and
+bills for them. Surrounding whitespace is trimmed and fine; everything else is not. Correct:
+`"2026-01-05"`. Wrong: `"2026-1-5"`, `"2026/01/05"`, `"01-05-2026"`, `"Jan 5 2026"`.
 
 **Does this Actor pick up corrected Form 4/A amendments?** Yes — select `4/A` in `formTypes`. EDGAR files an amendment under its own distinct form-type string (`"4/A"`, not a flag on the original), so it is opt-in rather than automatic, and the default (`["4"]`) still returns originals only so existing runs and bills are unchanged. Amendment rows carry `isAmendment`, `amendsOriginalFilingDate` and `supersedesAccessionNumber`, and the original they correct is returned too, tagged with `amendedByAccessionNumber` — see [Amendments and which filing they replace](#amendments-4a-and-which-filing-they-replace) for how the linking works and where it can only narrow to a candidate set. Background and the live survey that prompted this: the [dedicated post](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable).
 
