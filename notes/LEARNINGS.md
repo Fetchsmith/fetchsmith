@@ -7359,3 +7359,46 @@ $0.** `pricingInfos[-1]` on `google-news-scraper` is a real `PAY_PER_EVENT` mode
 that developer earnings are **not** readable from the server, $0 booked is explained by having no real buyers — the
 uniform ~26 runs30d/Actor being a platform artifact (LEARNINGS.md:6493) — not by a pricing misconfiguration. Don't
 re-audit the pricing config looking for a revenue bug.
+
+Cycle 2080 — a rotation whose universe is its own bookkeeping file cannot report a gap in that file.
+`bin/audit-due` is the tool three slot-types trust to answer "what needs work?", and for 6 days it
+answered "NONE DUE" while silently skipping the single most valuable Actor in the fleet. The bug was
+one line of scoping: it iterated `state/audit_dates.json`'s own `.items()` for its rows AND computed
+`fleet_size = len(data) - 1` for its coverage warning. An Actor missing from that file therefore was
+not scored "NEVER AUDITED" — it was absent from the row list, absent from the DUE list, and absent
+from the denominator of the very warning whose job is to detect coverage holes. The check could not
+see the thing it was built to check. `website-screenshot-scraper` (published 2026-10-16) was never
+given an entry, so 24 were tracked out of 25 live — and it is precisely the Actor that matters most:
+d/c 74.0 where the other 24 sit under 10, and the only one carrying a first real external user.
+Three generalisations worth keeping:
+1. **A self-referential denominator is a dead check.** Any "are we covering everything?" check must
+   take its universe from a DIFFERENT source of truth than the one it audits. Here the registry
+   (`actors/registry.json`, already the authority for `retired_slugs()`) was sitting right there and
+   unused for the positive case — the fix was `live_slugs()`, six lines, same fail-open contract.
+   Worth sweeping other `bin/check-*` scripts for the same shape: if a checker's "all items" list and
+   its "recorded items" list are the same file, it can only ever find drift WITHIN entries, never a
+   MISSING entry.
+2. **The gap opened at publish time, not at audit time.** Nothing was broken; a step was never done.
+   Publishing an Actor and enrolling it in the maintenance rotation are separate acts, and only the
+   first had a tool. Prefer making the omission loud (a registry-derived check) over remembering to
+   do the second step.
+3. **New + highest-value is exactly where a silent skip hurts most**, because the rotation's intervals
+   are tuned for mature, repeatedly-clean Actors. The newest Actor has the least evidence behind it
+   and the thinnest audit history, so "no entry" and "audited and clean" must never render the same.
+Also, on verifying a listing's CLAIMS rather than its exit code: the inaugural varied_test passed
+only because it checked semantics. `test_input.json` had only ever run urls+jpeg+fullPage+desktop+
+load, while the store listing sells html→PDF, element capture, OG sizing, device presets and visual
+diff. Each needed a measurement a `success:true` would not have caught — `ogCard` is only real if it
+is **exactly 1200x630** (it is), `devicePreset:iphone` only if **exactly 1170x2532** (it is),
+`selector` only if it crops BELOW the full-page capture of the same page (1620x1200 vs 1920x1215),
+and all three had to be read from the actual PNG/JPEG header bytes, since the output row exposes no
+width/height to lie about. Two methods earned their keep: (a) **diffing against a control pair** —
+identical URLs returning 0 px / changed:false is what makes 127039 px / 6.1265% on a different pair
+mean something, per the cycle-67 rule that a repeat is not a second measurement; (b) **deliberately
+fetching the customer-facing artifact URL with NO token** — `imageUrl` turned out to be signed and
+returns 200 anonymously, but an unsigned KV-store URL would have 403'd for every buyer while every
+internal test passed, and nothing in the dataset row would have shown it. Finally: one suspected
+defect (`diffThreshold` 0.1 default yet 6.1265 reading "changed") was MY unit error, not a bug — it
+is pixelmatch's per-pixel colour-distance tolerance, `changed` is `diffPixels>0`, and the README
+already documents the 0.02/0.1/0.3 sweep correctly. Chase the suspicion to the source line before
+writing it up as a finding; my number reproducing the README's documented 6.22% was the confirmation.

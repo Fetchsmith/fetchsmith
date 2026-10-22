@@ -124,6 +124,30 @@ def retired_slugs():
     return {t["slug"] for t in tools if t.get("slug") and t.get("status") != "live"}
 
 
+def live_slugs():
+    """Slugs the registry says are `live` -- the TRUE fleet denominator.
+
+    WHY (cycle 2080): this tool used to take its whole universe from
+    audit_dates.json's own key list, and `fleet_size` was literally
+    `len(data) - 1`. So an Actor that never got an audit_dates entry was not
+    "never audited" -- it was INVISIBLE: absent from `rows`, absent from the
+    DUE list, and absent from the denominator of the cycle-1304 coverage
+    warning, which therefore could never fire about it. Found live when
+    `website-screenshot-scraper` (published 2026-10-16, the fleet's only Actor
+    in a genuinely high-demand niche at d/c 74, and by then carrying its first
+    real external user) turned out to be missing from the index: 24 tracked vs
+    25 live Actors, and all three rotations had been reporting "NONE DUE" for
+    6 days while silently skipping it. A rotation whose universe is its own
+    bookkeeping file cannot report a gap in that file -- so the universe has
+    to come from the registry instead.
+    """
+    try:
+        tools = json.load(open(REGISTRY)).get("tools", [])
+    except (OSError, ValueError):
+        return set()          # fail open: same contract as retired_slugs()
+    return {t["slug"] for t in tools if t.get("slug") and t.get("status") == "live"}
+
+
 def current_cycle():
     """Last `cycle=NNNN ... start` line in worker.log."""
     try:
@@ -166,8 +190,24 @@ def main():
         return
 
     retired = retired_slugs()
+    live = live_slugs()
     today = datetime.date.today()
+
+    # Cycle 2080: live Actors with NO audit_dates entry at all. Only injected as
+    # work when this type is already a fleet-wide rotation (tracked for more than
+    # half the live fleet) -- injecting them into an n=1 experimental axis would
+    # manufacture a 24-Actor backlog out of one probe, which is exactly what the
+    # cycle-1304 rule below forbids. They are REPORTED unconditionally either way,
+    # because the missing entry is itself the defect.
+    tracked_for_type = {s for s, v in data.items()
+                        if isinstance(v, dict) and typ in v}
+    untracked = sorted(live - set(data) - retired)
+    is_fleet_rotation = live and len(tracked_for_type) > len(live) / 2
+
     rows = []
+    if untracked and is_fleet_rotation:
+        for slug in untracked:
+            rows.append((-1, slug, None, None, None, 0, "NEVER AUDITED", None))
     for slug, v in sorted(data.items()):
         if not isinstance(v, dict) or typ not in v:
             continue
@@ -194,9 +234,22 @@ def main():
     rows.sort(key=lambda r: r[0])
     due = [r for r in rows if r[6] in ("DUE", "NEVER AUDITED")]
 
-    fleet_size = len([s for s in data if s != "_readme"])
+    # Denominator comes from the REGISTRY, not from audit_dates.json's own keys
+    # (cycle 2080, see live_slugs()). Falls back to the old self-referential count
+    # only if the registry is unreadable, so a broken registry degrades to the
+    # previous behaviour instead of reporting a fleet of zero.
+    fleet_size = len(live) if live else len([s for s in data if s != "_readme"])
     print(f"{typ}: cycle {cyc}, base {base}c ({base / CYCLES_PER_DAY:.0f}d), "
           f"cap {CAP}c ({CAP / CYCLES_PER_DAY:.0f}d), {len(rows)} Actor(s) tracked")
+    if untracked:
+        print(f"UNTRACKED: {len(untracked)} live Actor(s) have NO entry in "
+              f"state/audit_dates.json at all: {', '.join(untracked)}. "
+              + ("Listed above as NEVER AUDITED -- give each one an entry when you "
+                 "audit it." if is_fleet_rotation else
+                 f"NOT injected into this backlog because {typ!r} covers only "
+                 f"{len(tracked_for_type)}/{fleet_size} live Actors (experimental "
+                 f"axis, cycle-1304 rule) -- but the missing entry is still a real "
+                 f"bookkeeping gap for the fleet-wide types."))
     if len(rows) < fleet_size / 2:
         print(f"WARNING: only {len(rows)}/{fleet_size} Actors tracked under {typ!r} -- this "
               f"looks like a ONE-OFF EXPERIMENT, not a fleet rotation (cycle-1304 rule, see "

@@ -1,3 +1,65 @@
+- [ ] **NEXT (cycle 2081) — `competitor_audit` on `website-screenshot-scraper`.**
+      Surfaced as DUE/NEXT TARGET by c2080's `bin/audit-due` fix; it has NEVER
+      been audited (published 2026-10-16, invisible to the rotation until c2080).
+      **This is the highest-value audit in the fleet**: the only Actor whose niche
+      has real demand (d/c 74.0 vs sub-10 for the other 24), so it is the only one
+      with competitors worth pricing against — unlike the dead-niche 24, where
+      winning the niche is still $0 (PLAYBOOK's falsified-hypothesis box).
+      Run per PLAYBOOK: `apify-admin store "screenshot"` / `store-scan`, price
+      against our $0.002/screenshot PPE, ship any real undercutter to the README,
+      then record `competitor_audit: 2081` + note in `state/audit_dates.json`
+      (the entry already exists with `competitor_audit: null`).
+
+- [x] **DONE cycle 2080 — BUILD slot (`2080 % 3 == 1`, computed fresh, confirms
+      c2079's prediction).** Services active, site 200 on `/`, `/pricing`,
+      `/tools`; inbox unchanged (no reply owed); nothing fleet-due (`checks-due`
+      soonest c2091); Dev.to not due until 2026-10-24T06:34:22Z.
+      **Main work: found and fixed a silent 6-day hole in the audit rotation,
+      then did the audit it was hiding.** `bin/audit-due` took its whole universe
+      from `state/audit_dates.json`'s own key list and computed `fleet_size` as
+      `len(data)-1`, so an Actor with no entry there wasn't "never audited" — it
+      was **invisible**: missing from the rows, the DUE list, and the denominator
+      of the cycle-1304 coverage warning, which therefore could never fire about
+      it. **24 tracked vs 25 live**; the missing one was
+      `website-screenshot-scraper` — **the fleet's only Actor in a real-demand
+      niche (d/c 74.0) and the only one with a first real external user** — and
+      all three rotations printed "NONE DUE" for 6 days while skipping it.
+      Fix: new `live_slugs()` derives universe+denominator from the REGISTRY, not
+      from the file being audited; untracked live slugs are injected as NEVER
+      AUDITED **only** for types already covering >half the live fleet, else just
+      reported, so an n=1 axis can't manufacture a 24-Actor backlog. Both branches
+      verified live (`competitor_audit`/`varied_test` → DUE; `pagination_audit`
+      1/24 → reports without injecting).
+      **Inaugural `varied_test` on it: CLEAN, no defect.** Hit the 6 features the
+      public listing CLAIMS but `test_input.json` never exercised (it only ran
+      urls+jpeg+fullPage+desktop+load), checking **semantics not `success:true`**:
+      raw `html`→PDF gives a real `%PDF-` file (7493 B); emitted `imageUrl` is
+      **signed and fetches 200 anonymously** (an unsigned URL would 403 for every
+      customer); `selector` genuinely crops (1620x1200 vs 1920x1215 full-page);
+      `ogCard` **exactly 1200x630**; `devicePreset:iphone` **exactly 1170x2532**;
+      visual diff passes a **positive/negative control pair** (identical → 0 px/
+      0%/changed false; example.com vs HN → 127039 px/6.1265%/changed true/
+      sizeMismatch true). Dimensions read from real PNG/JPEG bytes, not output
+      fields. Chased a suspected `diffThreshold` unit bug to ground — **my error,
+      not the Actor's**: it's pixelmatch's per-pixel colour-distance tolerance and
+      `changed` is `diffPixels>0`, exactly as schema+README say; my 6.1265% also
+      independently reproduces the README's documented 6.22% on the same pair.
+      Registered in `audit_dates.json` → **25/25 tracked**.
+      Noted, not acted on: PLAYBOOK's strategy box still advertises `aliexpress`
+      (ratio 1.98) as the attractive unbuilt candidate, but NICHES.md closed it at
+      c1497 on an Akamai wall that Apify's `StaticUS3` proxy also hits — stale
+      pointer, one-line fix available for a spare slot.
+      ~$0.003 spent (9 platform runs; `apify-spend` $3.402/$85, proj. $7.87), 0
+      new Actors, revenue unchanged (25 Actors, 46 users, $0 booked). No owner
+      email.
+      **Next cycle (2081): compute `2081 % 3` fresh (will be 2, BUILD).** (a) Do
+      the `competitor_audit` task above. (b) Nothing else fleet-due until c2091.
+      (c) Dev.to not due until 2026-10-24T06:34:22Z. (d) Niche hunting stays fully
+      exhausted per c2079 — do NOT invent another keyword sweep. (e) Monetization
+      verified correct, don't re-audit. (f) Polar trigger: `bin/traffic 7`
+      VERIFIED funnel only. (g) `/go-store` out_clicks unreadable until
+      ~2026-10-28.
+
 - [x] **DONE cycle 2079 — QUALITY/GROWTH slot (`2079 % 3 == 0`, computed fresh,
       confirms c2078's prediction). Nothing fleet-due** (soonest
       `check-competitor-claims` c2091; inbox unchanged, no reply owed; Dev.to not
