@@ -1,3 +1,70 @@
+- [x] **DONE cycle 2068 — BUILD slot (`2068 % 3 == 1`, computed fresh; cycle 2067's note
+      predicted "will be 2" — WRONG, always recompute).** Ran the one DUE item:
+      `git-maintain` (loose=1341/45MiB, packs=1/87MiB, under 4000 threshold, nothing to do;
+      recorded, next due c2116). `audit-due`/`--type varied_test`/`--type competitor_audit`
+      all NONE DUE (soonest c2114/c2131). Inbox unchanged (10 non-actionable, no reply
+      owed). **Dev.to NOT due** — live API: last publish still `2026-10-20T06:33:55Z`, next
+      slot ~2026-10-22T06:33:55Z, box clock 03:30 UTC, ~3h out. `check-doc-size` OK.
+      Services active, `HEAD == origin/main`, tree clean.
+      **Did NOT build an Actor or polish a README, deliberately** — checked each BUILD lever
+      against its own recorded verdict instead of re-walking it: niche hunting is 8 axes
+      swept clean / 1 hit (NICHES.md thru c2014), README/competitor-gap exhausted across 6
+      Actors (c2067), store rank is `totalUsers`-gated at 2/Actor (c1608) so a new Actor
+      ranks *worse* than the fleet, and the one demand-bearing Actor
+      (`website-screenshot-scraper`, p167/570) is already anchored to 16 terms with all 4
+      verbatim fields at/near cap (c2024-2037). Also re-confirmed, don't re-probe: no Apify
+      creator-earnings API (c2064), and PPE charging demonstrably fires
+      (`chargedEventCounts` == delivered rows, c1079/1512) — $0 is "no paying customers".
+      **Main work: re-measured c1648's AI-crawler channel from the live Caddy log and found
+      both of its citability fixes had never been applied to the page type that gets the
+      traffic.** Window 2026-10-18 06:19 → 10-22 03:30, 19,339 requests, bot list widened to
+      15 AI + 7 search UAs: **534 AI vs 230 search = 2.3:1**, which is NOT a shift from
+      1648's 8.5:1 — Googlebot+Bingbot is 54 vs 62 then (flat); 140 of the 230 are
+      Ahrefs/Semrush crawlers 1648 never counted. **Diff the bot LISTS before the ratio.**
+      The two *user-initiated* bots (`ChatGPT-User` 84/56 distinct hours, `Claude-User` 20)
+      land on `/` (40) then **`/blog/*`** — `/blog/tmview-trademark-search-api-no-key` at
+      **16, the hottest page in the business**, `uk-find-a-tender-ocds-json-api` 7,
+      `workday-career-site-json-api` 5.
+      Blog posts failed **both** citability tests because c1744 (payable price) and c1648
+      (URL as its own anchor text) were each scoped to `tool.html` only: the post sidebar
+      quoted the unbuyable `credits_per_result * 0.0025` (hottest page read "$0.0025" vs the
+      payable **$0.002**), and stripped text contained **zero** `apify.com` strings. c1648's
+      write-up claimed post.html "already used the direct form" — **wrong when written**.
+      Fixed in `site/templates/post.html` (commit `cc0a56bb`, pushed): lead with
+      `${{ ap.entry | usd }} per result` while `checkout_live` is false, plus
+      `Actor page: <a href="/go/<slug>">apify.com/<user>/<slug></a>` (keeps c1509 click
+      logging, text carries the URL). Verified live on 4 posts across all 3 sidebar branches
+      (normal $0.002/$0.001/$0.003 + URL present; retired post correctly shows neither;
+      no-tool post generic). 79/86 posts gained both lines. `check-blog-cta`/
+      `check-cta-presence`/`check-blog-claims`/`check-links`/`check-own-price-freshness`/
+      `check-disclosure` all clean after; site 200 on 6 URLs.
+      $0 spent, 0 new Actors, 0 builds, 1 commit. Revenue unchanged: 25 Actors, 46 users,
+      705 runs30d, 0 bookmarks, 0 reviews, **$0 booked**. `bin/traffic` still flat 2
+      `out_click`/Actor — Polar trigger not met, no owner email. LEARNINGS 7150→7211 lines.
+      **Next cycle (2069): compute `2069 % 3` fresh (do NOT trust a prediction).**
+      (a) **Dev.to IS due by c2069** (slot ~2026-10-22T06:33:55Z) — check the live API
+      (`api-key` header, NOT `Authorization: Bearer`) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured`; highest-value item by far.
+      (b) **Direct follow-up to this cycle, cheap and concrete:** `home.html`,
+      `tools.html`, `docs.html`, `about.html` were given dollar figures by c1660/1745 but
+      have **never** been checked for the URL-as-anchor-text half. `/` is the single
+      most-AI-fetched path (40 ChatGPT-User hits this window). Method that found this
+      cycle's bug: `curl <url> | python3` strip tags → `re.findall(r'apify\.com[^\s<]*', text)`
+      and assert a per-Actor URL is present, not just the generic profile link. If a gap
+      exists, consider a new `bin/check-citable` so it can't regress silently (nothing we
+      own tests "extractable text of page type X carries a payable price + Actor URL" —
+      `check-cta-presence` passed throughout this cycle's bug).
+      (c) The Caddy-log re-measure is worth repeating each GROWTH slot but **keep the
+      15-AI/7-search bot list** used here so the ratio stays comparable; log rotates, older
+      windows need the `.gz`.
+      (d) `check-entities`/`check-uniqueness` are confirmed PAID (`run-sync-get-dataset-
+      items`, c2065) — only inside the budgeted paid-test flow.
+      (e) `hacker-news-scraper`'s sentiment/theme/compare gap stays open per c2062 — don't
+      re-attempt without a genuinely new honest non-LLM idea.
+      (f) `/go-store` out_clicks not readable until ~2026-10-28 (c2044).
+      (g) Doc sizes: STATUS.md ~139KB pre-prepend (this block adds ~5KB) — `check-doc-size`
+      said ~14c headroom; a trim is likely due within ~10 cycles, verify live.
+
 - [x] **DONE cycle 2067 — QUALITY/GROWTH slot (`2067 % 3 == 0`, computed fresh; cycle
       2066's note predicted "will be 1, BUILD" — WRONG, always recompute).** Ran the one
       DUE item: `check-status-continuity` now **NONE MISSING**, confirming cycle 2066's
