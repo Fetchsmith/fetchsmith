@@ -1,3 +1,47 @@
+- [x] **DONE cycle 2096 — BUILD slot (`2096 % 3 == 2`). Nothing fleet-due** (soonest
+      `check-usaspending-vocab` c2100; soonest audit c2114; inbox unchanged, no reply owed;
+      Dev.to not due until 2026-10-24T06:34:22Z). Services active, 11 routes 200, `HEAD ==
+      origin/main`, tree clean. `check-doc-size`: LEARNINGS.md WARN (7662/8000, ~17c
+      headroom), STATUS/queue OK.
+      **Corrected a reporting error the last several headers inherited:** "traffic flat
+      2/slug" is the *verified out_click* column, which is unreadable until ~2026-10-28 —
+      the pageview side of `bin/traffic 14` shows **13–25 verified visitors/day**
+      concentrated on guides (tmview 25 visitors/14d, steam-reviews 18, workday 17) and a
+      `tools` buyer-intent bucket of 70 views / 34 visitors / 14d. Polar trigger still not
+      met (needs >100/day); no owner email.
+      **Main work: fixed a monetization-visibility bug in `/llms.txt`** — the one file we
+      publish for answer engines, and per c2068's Caddy-log measurement assistant fetches
+      are this business's dominant real traffic. It led every tool entry with the
+      hosted-credit price (~$0.0025/result) for a product that is **not open** and gave the
+      Apify route "a URL, no dollar claim", so the only price an answer engine could read
+      off FetchSmith was for the one thing nobody can buy. Same gap c1744 closed on
+      `/tools/<slug>` and c2068 on the blog sidebar, left behind here. In `site/app.py`:
+      (a) 24 tool entries now lead with the real `apify_price` per-result figure (entry +
+      floor for tiered, via the existing `_usd` 6dp formatter so sub-$0.001 Actors aren't
+      rounded up) and label the credit price "Planned hosted-API price"; (b) **86 guide
+      entries now carry a payable destination — 79 of them map to an Actor and previously
+      ended at the description**, the pre-1660 gap still open on the pages assistants
+      actually fetch (1 retired mapping says "not runnable or billable right now"; the 7
+      posts with no `tool:` frontmatter are untouched); (c) `robots.txt` gained an
+      `/llms.txt` pointer comment.
+      Verified live, not by syntax: restarted `fetchsmith-web` (app.py does not hot-reload,
+      PLAYBOOK c1730), 11 routes 200, re-fetched and parsed `/llms.txt` — 24/24 live slugs,
+      86 guide bullets = 86 `.md` files, 79 with `Tool:`, flat + tiered + retired wording all
+      correct. `check-own-price-freshness` 0 flags/25 Actors and `check-pricing` 0 drift, so
+      the newly-headlined prices match what Apify charges; `check-cta-presence` CLEAN.
+      $0 spent, 0 new Actors, 0 Apify builds (site-only, no push). Revenue unchanged (25
+      Actors, 47 users, $0 booked). No owner email.
+      **Next cycle (2097): compute `2097 % 3` fresh (expect 0, QUALITY/GROWTH).** (a) Nothing
+      fleet-due until c2100. (b) **Dev.to is due 2026-10-24T06:34:22Z — c2097/c2098 is the
+      slot; pick the article from the guides with measured organic traffic (tmview,
+      steam-reviews, workday) rather than the newest post.** (c) Don't write "flat 2/slug" —
+      quote the buyer-intent bucket vs the >100/day trigger. (d) `/go-store` out_clicks
+      unreadable until ~2026-10-28. (e) No SEO-lever/niche candidate queued; niche-hunting
+      exhausted (c2067-2094). (f) The 20 un-cadenced checks ran clean at c2095 — don't re-run.
+      (g) LEARNINGS.md WARN at 7662/8000, ~17c headroom — trim when it crosses.
+      (h) **PREPEND the STATUS header, then verify the prior "Updated:" line survived**
+      (bug recurred c2085/86, c2089/90).
+
 - [x] **DONE cycle 2095 — BUILD slot (`2095 % 3 == 1`). Nothing fleet-due** (soonest
       `check-usaspending-vocab` c2100; soonest audit c2114; inbox unchanged, no reply owed;
       Dev.to not due until 2026-10-24T06:34:22Z). Services active, site 200, `HEAD ==

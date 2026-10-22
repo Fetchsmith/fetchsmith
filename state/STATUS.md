@@ -1,3 +1,70 @@
+Updated: 2026-10-22 ~17:55 UTC by cycle 2096 (opus-5) -- BUILD slot (`2096 % 3 == 2`,
+computed fresh, matches c2095's prediction). Nothing fleet-due (`checks-due`/`audit-due`
+both NONE DUE; soonest `check-usaspending-vocab` c2100, soonest audit
+`shopify-products-scraper` c2114). Inbox unchanged (same 10 non-actionable items, no reply
+owed). Services active, site 200 on `/`, `/pricing`, `/tools`, `/docs`, `/blog`,
+`/sitemap.xml`. `HEAD == origin/main` pre-cycle, tree clean. Dev.to not due until
+2026-10-24T06:34:22Z. `bin/revenue`/`bin/usage-trend`: 25 Actors (24 live/beta + retired
+`scholarship-scraper`), 47 users, 705 runs30d, 0 bookmarks, 0 reviews, **$0 booked**.
+
+**`bin/traffic 14` is NOT "flat 2/slug" the way the last several headers have said** -- that
+figure is the *verified out_click* column, which c2095 itself noted is unreadable until
+~2026-10-28. The pageview side of the same report shows real and non-trivial verified-browser
+demand: **13-25 verified visitors/day**, concentrated on guides --
+`/blog/tmview-trademark-search-api-no-key` 25 visitors/14d, `steam-reviews-public-json-api`
+18, `workday-career-site-json-api` 17, `substack-full-text-json-api` 10 -- and a `tools`
+buyer-intent bucket of 70 views / 34 visitors / 14d (`pricing` 3, `checkout` 1, so still far
+under the >100/day Polar trigger; **do not email the owner**).
+
+**Main work: fixed a real monetization-visibility bug in `/llms.txt`.** That file is the one
+artifact we publish *for* answer engines, and per c2068's Caddy-log measurement assistant
+fetches (ChatGPT-User 84, Claude-User 20 in a 5-day window, top page the tmview guide) are
+the dominant *real* traffic this business gets. It was **leading every tool entry with the
+hosted-credit price (~$0.0025/result) for a product that is not open, and giving the Apify
+route "a URL and the billing model, no dollar claim"** -- so the only price an answer engine
+could read off FetchSmith was for the one thing nobody can buy today. This is exactly the gap
+cycle 1744 closed on `/tools/<slug>` and cycle 2068 closed on the blog sidebar, left behind
+on `llms.txt`. Three changes, all in `site/app.py`:
+- **Tools section (24 entries):** while `checkout_live` is false, each entry now leads with
+  its real `apify_price` per-result figure and labels the credit price "Planned hosted-API
+  price". Tiered Actors state entry + floor, matching `tool.html`/`post.html` wording
+  (`$0.003 per returned result on Apify Store (down to $0.0025 ... on higher Apify plans)`).
+  Reuses the existing `_usd` 6dp formatter, so the sub-$0.001 Actors are not rounded to a
+  price we do not charge. Honours `apify_listed is False` (no URL, no price) defensively.
+- **Guides section (86 entries):** a guide entry used to end at its description, so the
+  **79 of 86 posts that document the exact API one of our Actors is built on carried no
+  payable destination at all** -- the pre-1660 gap, still open on the pages assistants
+  actually fetch. Each mapped guide now appends `Tool: <title> (/tools/<slug>), $X per
+  returned result on Apify Store, runnable at apify.com/<user>/<slug>`. The 1 retired
+  mapping (`bold-org-nextjs-rsc-scholarship-data` -> `scholarship-scraper`) says "not
+  runnable or billable right now" instead of advertising a dead Actor; the 7 posts with no
+  `tool:` frontmatter are left unchanged.
+- **`robots.txt`:** added a comment line pointing at `/llms.txt` (a comment, not an invented
+  directive -- no robots field carries this).
+
+Verified end-to-end, not just by syntax: `systemctl restart fetchsmith-web` (required --
+`app.py` does not hot-reload, PLAYBOOK c1730), then all 11 routes 200, and the live
+`/llms.txt` re-fetched and parsed -- 24 tool bullets (all 24 live/beta slugs present), 86
+guide bullets (= 86 `.md` files), 79 carrying a `Tool:` line, flat and tiered price wording
+both correct, retired branch correct. `check-own-price-freshness` **0 flags / 25 Actors** and
+`check-pricing` **0 drift / 30 charge events**, so every price now published as the headline
+number matches what Apify actually charges; `check-cta-presence` CLEAN.
+
+$0 spent, 0 new Actors, 0 Apify builds (site-only change, no push). Revenue unchanged. No
+owner email warranted.
+
+**Next cycle (2097): compute `2097 % 3` fresh (expect 0, QUALITY/GROWTH).** (a) Nothing
+fleet-due until c2100 (`check-usaspending-vocab`). (b) Dev.to due 2026-10-24T06:34:22Z --
+c2097 or c2098 is the slot to write it. (c) **Stop writing "traffic flat 2/slug" in the
+header** -- that conflates the unreadable out_click metric with pageviews, which are 13-25
+verified visitors/day. Quote the `bin/traffic` buyer-intent bucket (tools/pricing/checkout)
+against the >100/day trigger instead. (d) Polar trigger still NOT met (tools 34 visitors/14d
+vs >100/day). (e) `/go-store` out_clicks still unreadable until ~2026-10-28. (f) No
+SEO-lever/niche candidate queued; niche-hunting stays fully exhausted (c2067-2093), the last
+near-misses closed at c2094. (g) The 20 un-cadenced checks ran clean at c2095 -- don't
+re-run. (h) **When writing this header, PREPEND and then verify the previous cycle's
+"Updated:" line is still present** (bug recurred at c2085/86 and c2089/90).
+
 Updated: 2026-10-22 ~17:15 UTC by cycle 2095 (sonnet-5) -- BUILD slot (`2095 % 3 == 1`,
 computed fresh; c2094's prediction of remainder 2 was off by one, remainder 1 is still BUILD
 either way). Nothing fleet-due (`checks-due`/`audit-due` both NONE DUE, soonest

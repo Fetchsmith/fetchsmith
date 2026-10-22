@@ -363,7 +363,12 @@ for page in ("terms", "privacy", "refunds", "contact", "about"):
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
-    return "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /webhooks/\nSitemap: https://fetchsmith.com/sitemap.xml\n"
+    # Cycle 2096: the llms.txt pointer is a comment, not a directive -- no robots.txt field
+    # carries it, and inventing one would be ignored at best. It is here because an agent
+    # fetching robots.txt first is the one most likely to want the curated index.
+    return ("User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /webhooks/\n"
+            "Sitemap: https://fetchsmith.com/sitemap.xml\n"
+            "# LLM-readable index of every tool, price and guide: https://fetchsmith.com/llms.txt\n")
 
 @app.get("/llms.txt", response_class=PlainTextResponse)
 def llms():
@@ -371,32 +376,83 @@ def llms():
     # price. llms.txt is the one file we publish *for* answer engines, and it previously gave
     # neither -- a model summarising it could name our tools but could not tell a buyer what a
     # row costs or where to run one. Same gap cycle 1656 closed on `/` and `/tools`.
-    # The $/result figure is derived from CREDIT_PACKS (the hosted-credit product) -- do NOT
-    # restate it as the Apify price: the two are separate products with separate prices
-    # (LEARNINGS cycle 480). Apify gets a URL and the billing model, no dollar claim.
+    # The credit $/result figure is derived from CREDIT_PACKS (the hosted-credit product) -- do
+    # NOT conflate it with the Apify price: the two are separate products with separate prices
+    # (LEARNINGS cycle 480), so each is quoted against its own product by name.
+    # Cycle 2096: this file still LED with the credit price for a hosted product that is not
+    # open, and gave the Apify route a URL with "no dollar claim" -- so the only price an answer
+    # engine could read off it was for the one thing nobody can buy today. That is exactly the
+    # gap cycle 1744 closed on /tools/<slug> and cycle 2068 closed on the blog sidebar, left
+    # behind on the one file we publish *for* answer engines (and per cycle 2068's Caddy-log
+    # measurement, assistant fetches are the dominant real traffic). While checkout_live is
+    # false, lead every entry with the Apify per-result price from registry `apify_price` --
+    # the payable-today number -- and label the credit price as planned.
     au = env("APIFY_USERNAME", "fetchsmith")
     starter = next((p for p in CREDIT_PACKS if p["id"] == "starter"), None)
     rate = (starter["usd"] / starter["credits"]) if starter else 0.0025
+    checkout_live = bool(polar_products())
+
+    def apify_price_phrase(t):
+        """'$0.002 per returned result' for a listed Actor, else None. Tiered Actors state the
+        entry price and the floor, matching the tool page and blog sidebar wording."""
+        ap = t.get("apify_price") or {}
+        if t.get("apify_listed") is False or not ap.get("entry"):
+            return None
+        s = f"${_usd(ap['entry'])} per returned result on Apify Store"
+        if ap.get("floor") and ap["floor"] != ap["entry"]:
+            s += f" (down to ${_usd(ap['floor'])} per result on higher Apify plans)"
+        return s
+
     lines = ["# FetchSmith", "",
-             "> Pay-per-result web data extraction tools: hosted APIs and Apify Actors. No subscription required; buy credits, call an endpoint, get JSON."
-             f" Most tools cost 1 credit per returned result, i.e. about ${rate:.4f} per result on the smallest prepaid pack; you are charged only for rows actually returned, and failed or empty runs cost nothing."
-             f" Hosted checkout is opening shortly; every tool runs today on Apify Store under the FetchSmith publisher account (https://apify.com/{au}) with pay-per-event billing through your Apify account.",
+             "> Pay-per-result web data extraction tools, runnable today as Apify Actors. No subscription required; you are charged only for rows actually returned, and failed or empty runs cost nothing."
+             f" Every tool runs under the FetchSmith publisher account on Apify Store (https://apify.com/{au}) with pay-per-event billing through your Apify account, at the per-result price given on each entry below."
+             + ("" if checkout_live else
+                f" A hosted API on prepaid credits (about ${rate:.4f} per result) is planned but NOT open yet, so the Apify price is the one a buyer can pay today."),
              "", "## Tools",
-             "Each entry gives the tool's documentation page, then its price and the Apify Actor URL you can run it from today."]
+             "Each entry gives the tool's documentation page, then the price and the Apify Actor URL you can run it from today."]
     for t in public_tools():
         cpr = int(t.get("credits_per_result", 1) or 1)
-        price = f"{cpr} credit{'' if cpr == 1 else 's'} per returned result (about ${rate * cpr:.4f} per result on the smallest prepaid pack)"
+        credit = f"{cpr} credit{'' if cpr == 1 else 's'} per returned result (about ${rate * cpr:.4f} per result on the smallest prepaid pack)"
+        ap_phrase = apify_price_phrase(t)
+        if ap_phrase and not checkout_live:
+            price = f"{ap_phrase}. Planned hosted-API price: {credit}"
+        elif ap_phrase:
+            price = f"{credit} on the hosted API; {ap_phrase}"
+        else:
+            price = credit
+        run = ("" if t.get("apify_listed") is False
+               else f" Run it on Apify Store: https://apify.com/{au}/{t['slug']}")
         lines.append(f"- [{t['title']}]({SITE_URL}/tools/{t['slug']}): {t.get('summary','')} "
-                     f"Price: {price}. Run it on Apify Store: https://apify.com/{au}/{t['slug']}")
+                     f"Price: {price}.{run}")
     lines += ["", "## Pricing",
               "Prepaid credit packs for the hosted API (credits never expire, one credit is one returned result for most tools):"]
     for p in CREDIT_PACKS:
         lines.append(f"- {p['name']}: ${p['usd']} for {p['credits']:,} credits (${p['usd'] / p['credits']:.4f} per result) -- {p['blurb']} {SITE_URL}/pricing")
     lines.append(f"- Usage-based alternative, available now: run any tool as an Apify Actor at https://apify.com/{au} and pay per event through your Apify account.")
     if load_posts():
-        lines += ["", "## Guides"]
+        # Cycle 2096: a guide entry used to end at its description, so the 79-of-86 posts that
+        # document the exact API one of our Actors is built on gave an answer engine no payable
+        # destination -- the same gap the Tools section had before cycle 1660. Each mapped guide
+        # now names its tool, its price and its runnable URL. A retired tool says so instead of
+        # advertising an Actor that cannot return data (mirrors tool.html / post.html).
+        by_slug = {t["slug"]: t for t in readable_tools()}
+        lines += ["", "## Guides",
+                  "Technique notes measured against the live API, each linked to the tool built on it."]
         for p in load_posts():
-            lines.append(f"- [{p['title']}]({SITE_URL}/blog/{p['slug']}): {p['description']}")
+            entry = f"- [{p['title']}]({SITE_URL}/blog/{p['slug']}): {p['description']}"
+            t = by_slug.get(p.get("tool"))
+            if t and t.get("status") == "retired":
+                entry += (f" Tool: {t['title']} ({SITE_URL}/tools/{t['slug']}) -- not runnable or"
+                          " billable right now; the guide stands on the technique alone.")
+            elif t:
+                ap_phrase = apify_price_phrase(t)
+                entry += f" Tool: [{t['title']}]({SITE_URL}/tools/{t['slug']})"
+                if ap_phrase:
+                    entry += (f", {ap_phrase}, runnable at "
+                              f"https://apify.com/{au}/{t['slug']}.")
+                else:
+                    entry += "."
+            lines.append(entry)
     lines += ["", "## Docs", f"- [API docs]({SITE_URL}/docs)", f"- [Pricing]({SITE_URL}/pricing)",
               f"- [Apify Store profile (all {len(public_tools())} tools, runnable today)](https://apify.com/{au})"]
     return "\n".join(lines) + "\n"
