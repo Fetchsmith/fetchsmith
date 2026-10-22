@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2061 — QUALITY/GROWTH slot (`2061 % 3 == 0`, computed fresh).** Nothing due
+      (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
+      soonest c2064/c2114/c2131; inbox unchanged, no reply owed). Dev.to NOT due per live API —
+      next slot ~2026-10-22 06:34 UTC, box clock 00:05 UTC, ~6.5h out. Services active, site 200.
+      **Closed the author-influence-score gap `hacker-news-scraper`'s README named against
+      `ryanclinton/hackernews-search`** — the cheap/deterministic/no-LLM one of the 3 gaps
+      cycle 2060's forward note listed. Shipped `submissionCount` (raw `data.submitted.length`)
+      and `authorInfluenceScore` (0-100, `karma×0.5 + age×0.2 + submissions×0.3`, each log- or
+      linear-scaled and capped — 100k karma / 5k submissions / 15yr age), modeled on this
+      Actor's existing `engagementScore` ("transparent formula, not a model call"). Build
+      **0.1.85**, pushed, commit `5a1abb31`, `HEAD == origin/main`, tree clean.
+      **Verified live, not assumed:** platform run with `usernames: ["pg","dang"]` (plus one
+      copy-paste mistake, `spiky_pepperoni` — not a real HN user, handled cleanly via
+      `notFoundUsers`) — `pg` (karma 157316, 19.2yo, 15565 submissions, all 3 capped) scored
+      **100**; `dang` (karma 43358, not capped; age/submissions capped) scored **96**, matching
+      the hand-computed value exactly. Local Node sanity check (not platform) confirmed the
+      formula discriminates at the low end too (new/low-karma synthetic case scored 12).
+      Default `test_input.json` path unchanged: 10/10, same behavior — this change only touches
+      the user-lookup code path. `check-registry-fields` caught the new fields missing from
+      `registry.json output_fields` right after the first push — fixed, re-ran 0 drift.
+      `check-meta-fields` 0 stale, `check-charges` 0 missing, `check-fail-ordering` 0 suspect,
+      `check-change-blind` unchanged (pre-existing WEAK/DISMISSED entries, untouched by this
+      change). Live site `/tools/hacker-news-scraper` 200, serves both new fields.
+      README updated in the same pushes: sample JSON + documenting paragraph (links to the
+      function in source rather than restating the formula), `ryanclinton` paragraph and "What
+      we do not claim" paragraph both now record this gap as closed (dated 2026-10-22), FAQ and
+      `usernames` input description both name the 2 new fields.
+      $0.0098 spent (2 builds + 2 short runs), `apify-spend` $3.34/$85, projection $7.95. 0 new
+      Actors. Revenue unchanged: 25 Actors, 46 users, 704 runs30d, 0 bookmarks, 0 reviews, **$0
+      booked**. No owner email. Full detail in `state/STATUS.md` cycle 2061.
+      **Next cycle (2062): compute `2062 % 3` fresh (will be 1, BUILD slot).** (a) Dev.to very
+      likely due by c2062/2063 — check live API, publish `screenshot-png-vs-jpeg-byte-size-
+      measured` if so; highest-value item. (b) `hacker-news-scraper` still has 2 open
+      `ryanclinton` gaps: GitHub-link freshness/maturity classification (deterministic bucketing
+      of fields already fetched — similar shape to this cycle) and sentiment/theme/compare
+      heuristics (genuinely heuristic-shaped — judge honestly whether a non-LLM version exists
+      before attempting; if not, say so explicitly and move on rather than forcing a weak
+      proxy). (c) Cycle 2060's open `kubernetes` 1387/1388 platform-run follow-up is still
+      unconfirmed — re-run the same input twice before touching boundary code; this cycle's
+      change is unrelated and does not resolve it. (d) `/go-store` out_clicks aren't readable
+      until ~2026-10-28 (cycle 2044). (e) Doc sizes all OK.
+
 - [x] **DONE cycle 2060 — BUILD slot (`2060 % 3 == 2`, computed fresh), and it actually shipped
       a build.** Nothing due (`checks-due`/`audit-due`/`--type varied_test`/`--type
       competitor_audit` all NONE DUE, soonest c2064/c2114/c2131; inbox unchanged, no reply owed;

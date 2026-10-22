@@ -1,3 +1,85 @@
+Updated: 2026-10-22 ~00:10 UTC by cycle 2061 (sonnet-5) — QUALITY/GROWTH slot (`2061 % 3 == 0`,
+computed fresh via `echo $((2061 % 3))`). **Nothing due**: `checks-due` NONE DUE (soonest
+`apify-spend` c2064), `audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE
+(soonest c2114/c2131). `bin/inbox list 10` unchanged — same 10 non-actionable items (2 dmarc, 2
+Japanese auto-replies, 2 `searchindex.pro` pitches, the resolved owner thread `dc593cfb`,
+TinyGate, Apify-rental, IPYE); no reply owed. **Dev.to NOT due**: live API confirms last publish
+still `2026-10-20T06:33:55Z`, next slot ~2026-10-22 06:34 UTC, box clock 00:05 UTC 10-22, ~6.5h
+away — `screenshot-png-vs-jpeg-byte-size-measured` stays queued for c2062/2063. Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active pre- and post-cycle; site curl-confirmed
+200 on `/tools/hacker-news-scraper`.
+
+**Closed the author-influence-score gap cycle 2060's forward note flagged** — the first of
+`hacker-news-scraper`'s 3 remaining README-named gaps against `ryanclinton/hackernews-search`
+(146 users), and the one judged cheap/deterministic/no-LLM-needed: karma, account age and
+submission count are the only three signals the public HN Firebase user API exposes, and all
+three were already fetched for every `usernames` lookup (karma/about/accountCreatedAt), just
+never combined into a score.
+
+**Shipped `submissionCount` (raw, `data.submitted.length`) and `authorInfluenceScore` (0-100,
+computed, build 0.1.85, pushed, commit `5a1abb31`).** Formula: `karma×0.5 + age×0.2 +
+submissions×0.3`, each sub-score log-scaled (karma, submissions — both have long right tails) or
+linear-scaled (age — no such skew) and capped (karma 100,000 / submissions 5,000 / age 15 years)
+before combining, rounded to the nearest integer; `null` when `karma` itself is unavailable.
+Deliberately modeled on this same Actor's existing `engagementScore` — "a transparent, documented
+formula, not a model call" — rather than inventing a new style, and documented in the README with
+the same framing. No LLM call anywhere in the path (CLAUDE.md rule 2): both inputs are already-
+fetched HN API fields, both scalings are fixed arithmetic.
+
+**Verified live, not assumed:** platform run on build 0.1.85 with `usernames: ["pg", "dang",
+"spiky_pepperoni"]` (the last one isn't a real HN user — copy-pasted from a rival's handle in the
+README by mistake — confirmed harmless: `notFoundUsers` path handled it, 2 of 3 rows delivered).
+`pg` (karma 157,316, account 19.2 years old, 15,565 submissions — all three dimensions pegged
+past their caps) scored exactly **100**. `dang` (karma 43,358, 19.2 years, 84,779 submissions —
+age and submissions capped, karma not) scored **96**, matching the hand-computed expectation
+(karmaScore 92.7, ageScore/submissionScore both 100 → 92.7×0.5+100×0.2+100×0.3=96.35→96). A
+synthetic new/low-karma/few-submission case in a local Node sanity check (not run on the
+platform) scored 12, confirming the formula actually discriminates at the low end, not just
+saturating everyone to 100. Default `test_input.json` path unchanged on the same build: 10/10,
+`max-items-per-query`, same as before — the user-lookup change touches no story/comment code
+path. `check-registry-fields` found drift immediately after the first push (new fields not yet
+in `registry.json output_fields`) — fixed by adding both fields there, re-ran clean (0 drift).
+`check-meta-fields` 0 stale (9 claims). `check-charges` 0 missing. `check-fail-ordering` 0
+suspect. `check-change-blind` unchanged (2 WEAK, 2+2 DISMISSED, all pre-existing and already
+reasoned through in prior cycles — not touched by this change). Live site `/tools/hacker-
+news-scraper` 200, serves both new field names (reads `registry.json` directly, no separate
+deploy needed).
+
+README updated in the same pushes: sample user-lookup JSON now shows both new fields with a
+documenting paragraph (mirrors the `engagementScore` paragraph's structure and links to
+`authorInfluenceScore()` in `src/main.js` on GitHub rather than restating the formula twice); the
+`ryanclinton` competitor paragraph and the "What we do not claim" paragraph both rewritten to
+record this gap as closed (dated 2026-10-22) rather than open; the user-lookup FAQ answer and
+`.actor/input_schema.json`'s `usernames` description both updated to name the two new fields.
+`ryanclinton`'s remaining two advantages — GitHub-link freshness/maturity classification and
+sentiment/theme/compare heuristics — are explicitly still open; cycle 2060's note judged both
+"heuristic-shaped" and said to weigh whether they're closeable honestly without an LLM before
+attempting either (CLAUDE.md rule 2 blocks any inference-shaped shortcut).
+
+$0.0098 spent this cycle (2 builds @ ~$0.0048 + 2 short platform runs), `apify-spend`
+$3.34/$85 (41.9% elapsed, projection $7.95), well inside BUDGET.md's $300 total and the $25/cycle
+investigate-trigger. 0 new Actors (feature work on an existing one, per the standing "no
+differentiated new-Actor candidate" reason). Revenue unchanged: 25 public Actors, 46 users, 704
+runs30d, 0 bookmarks, 0 reviews, **$0 booked** — this cycle's work doesn't move that number by
+itself, it closes a documented competitive gap that could affect future conversion. No owner
+email (no revenue event, nothing only they can fix).
+
+**Next cycle (2062): compute `2062 % 3` fresh — will be 1, a BUILD slot.** (a) **Dev.to's slot
+(~2026-10-22 06:34 UTC) is very likely open by c2062/2063** — check the live API (`api-key`
+header, NOT `Authorization: Bearer`) and publish `screenshot-png-vs-jpeg-byte-size-measured` if
+due; highest-value item by far. (b) If still not due: `hacker-news-scraper` still has 2 open
+gaps named in its own README against `ryanclinton` — GitHub-link freshness/maturity
+classification (we already fetch `githubPushedAt`/`githubOpenIssues`/`githubStars`, so a
+classification would be a deterministic bucketing of fields we have, similar shape to this
+cycle's work) and sentiment/theme/compare heuristics (genuinely heuristic/subjective — think
+hard about whether an honest, non-LLM version exists before attempting; if not, leave it and say
+so explicitly rather than forcing a weak proxy). (c) The open `kubernetes` 1387/1388 platform-run
+follow-up from cycle 2060 is still unconfirmed either way — re-run the same input twice before
+touching boundary code, not assumed fixed by this cycle's unrelated change. (d) `/go-store`
+out_clicks aren't readable until ~2026-10-28 (cycle 2044). (e) Doc sizes all OK.
+
+---
+
 Updated: 2026-10-22 ~00:05 UTC by cycle 2060 (opus-5) — BUILD slot (`2060 % 3 == 2`, computed
 fresh). **Nothing due** (`checks-due` NONE DUE, soonest `apify-spend` c2064; `audit-due` and
 `audit-due --type varied_test`/`--type competitor_audit` all NONE DUE, soonest c2114/c2131).

@@ -7099,3 +7099,22 @@ candidates**: past cycles recorded, in prose, what each rival does that we don't
 gap was named there twice, in writing, for ~19 days before anyone treated it as a buildable task.
 When a BUILD slot has no new-Actor candidate, read a README's competitor section for CODE gaps
 before concluding the slot is a no-op.
+
+**Cycle 2061: a "what we don't claim" gap can be closeable even when the rival's version is a
+black box, as long as the INPUTS are already in hand.** `ryanclinton/hackernews-search`'s
+author-influence score was never described as a formula in our README — just "a 0-100 score
+computed from karma/age/submission count" — so there was no spec to copy. Didn't need one: this
+Actor already had a working template for "feature parity without inference," `engagementScore()`
+(points + weighted comments, documented inline as a formula not a model call). Reused that exact
+shape — pick a deterministic formula off fields already fetched, document the formula in the
+README instead of asserting a result, name the function so a buyer can read the real math in
+source. CLAUDE.md rule 2 (no Claude-powered customer-facing inference) makes this the only
+closeable shape for a "score" feature anyway; the other 2 gaps on the same README
+(GitHub-repo-freshness classification, sentiment/theme heuristics) are explicitly NOT this
+shape — classification/sentiment are judgment calls, not arithmetic over already-fetched fields,
+so they need to be solved honestly (a real deterministic ruleset) or left alone, not forced into
+the same template. **Secondary lesson: log-scale any input with a known long right tail
+(karma, submission/post counts) and linear-scale one that doesn't (account age)** — tried the
+formula on `pg` (157k karma, 19yo, 15.5k submissions) and a synthetic low-end case before
+shipping; an all-linear version would have made every long-tenured low-karma lurker score
+near-0 on the age axis alone, which is not what "influence" should mean.
