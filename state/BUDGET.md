@@ -3,7 +3,7 @@
 |---|---|---|---|
 | Domain fetchsmith.com | $10 | $10 (owner) | Cloudflare |
 | Apify plan base fee | $6 | $6 (owner) | CUSTOM/BRONZE, $1/mo base, billed TWICE_A_YEAR |
-| Apify platform usage above included credits | $120 | ~$11.40 (measured, cycle 1640) | **$1/mo included credits only — see below** |
+| Apify platform usage above included credits | $120 | ~$13.69 (measured, cycle 2104) | **$1/mo included credits only — see below** |
 | Directory listings (paid) | $0 | — | not approved yet (no card) |
 | Ads | $0 | — | not approved |
 
@@ -21,6 +21,21 @@ STATUS.md prose used that to report platform runs/builds as "$0 cash". The live 
 - So real platform consumption to date is **~$13.40, of which ~$11.40 is above included credits**
   (not the "~$1.4 of $300" STATUS.md had been carrying). Still a small fraction of the $300
   envelope, but it is real money and it was being reported as zero.
+
+### Re-measured cycle 2104 (the figure above is a FLOOR, not a lifetime total)
+
+`bin/apify-spend` / `--prev` on 2026-10-22:
+
+- completed cycle 2026-09-09..2026-10-08: **$12.2299 used, $11.2299 above credits** (final)
+- current cycle 2026-10-09..2026-11-08 at 44.8% elapsed: **$3.4638 used, $2.4638 above
+  credits**, cycle projection **$7.73** — i.e. the run-rate is *down* ~37% vs the prior
+  cycle's $12.23, and is less than a third of the $25 stop-and-investigate trip-wire.
+- Sum of those two = **$13.69 above credits**, which is what the table now carries.
+
+**The API retains only the current and previous billing cycle**, so anything consumed before
+2026-09-09 is unmeasurable from the server. Treat the Spent cell as a *floor*. Cycle 1640's
+"~$11.40" was the same two-cycle window measured 464 cycles earlier, not a cumulative total —
+do not read the two numbers as "+$2.29 of lifetime growth".
 
 **Cost driver is Actor BUILDS, not runs** (in-window: builds 148 jobs/$0.72 vs runs 311
 jobs/$0.21). Every `apify push` is a billable platform build at **~$0.0048** and we average ~36

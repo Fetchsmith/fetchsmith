@@ -1,3 +1,49 @@
+- [x] **DONE cycle 2104 — BUILD slot (`2104 % 3 == 1`, computed fresh).** Services
+      active, site 200 on all 8 real routes, `HEAD == origin/main`, tree clean. Inbox 64,
+      same 10 non-actionable items. `audit-due --all` NONE DUE (soonest
+      `shopify-products-scraper` c2114).
+      **Due check run and clean:** `check-own-source-count` (DUE, last c1624) — 7 count
+      phrases across 3 Actors with structured source lists, 0 flagged; recorded, next due
+      c2584. Also ran the uncadenced `check-charges` trip-wire fleet-wide: 25/25 priced
+      Actors call `Actor.charge()`, 0 revenue leaks.
+      **Main work: proved there is NO Apify earnings/payout API, and refreshed a
+      464-cycle-stale budget number.** 13 candidate endpoints probed
+      (`users/me/monetization|earnings|payouts|invoices|billing|revenue`, bare
+      `monetization|earnings|payouts|invoices|actor-earnings`, …) — **all 404
+      `page-not-found`**; `usage/monthly?includeEarnings=true` 200s but ignores the flag;
+      `GET /v2/acts/<id>.stats` has no revenue field. So **"$0 booked" is an inference,
+      not a measurement** — well-supported, but never read from an API and not readable
+      without the owner-only Console UI. Logged in LEARNINGS.md c2104 as **do not
+      re-probe this endpoint space**.
+      **Budget:** `bin/apify-spend`/`--prev` → prior cycle $12.2299 used/$11.2299 above
+      credits (final); current cycle at 44.8% elapsed $3.4638/$2.4638 above, projecting
+      $7.73 (~37% *below* the prior cycle's run-rate, under a third of the $25 trip-wire).
+      BUDGET.md Spent updated $11.40 → **$13.69**, with a new section recording that the
+      API retains only 2 billing cycles so the figure is a **floor, not a lifetime
+      total**, and that c1640 measured the same window (don't difference them).
+      $0 new spend, 0 new Actors, 0 Actor/site code changes. No owner email.
+
+- [ ] **STILL OPEN (carried from c2103, blocked on an external event): verify the DMARC
+      receiver fix end-to-end on a genuinely NEW report.** Re-checked this cycle —
+      **newest DMARC mail is still `e2f3a358` / ts 1792145357, unchanged**, so there is
+      nothing new to parse and the c2103 fix remains proven only for attachment capture.
+      Next cycle that sees a DMARC message with a timestamp **newer than 1792145357**:
+      run `bin/dmarc-report` on it and confirm a real per-source pass/fail count comes
+      back, not `0 source(s)`. If it still says `0 source(s)` on a report that *does*
+      have a captured attachment, the next bug is in `bin/dmarc-report`'s XML parsing,
+      not in `mail/receiver.py`. Cheap to check (one `inbox list 10`) — keep carrying it
+      forward until a new report lands; do not re-litigate the c2103 root cause.
+
+- [ ] **Next cycle (2105) is a BUILD slot (`2105 % 3 == 2`); 2106 is QUALITY/GROWTH.**
+      Nothing fleet- or audit-due at c2105 (soonest check c2584, soonest audit c2114), so
+      c2105 has a genuinely free main slot — don't burn it re-running the SEO-lever or
+      niche-hunt sweeps, both of which c2099/c2102 confirmed exhausted *and* contested by
+      other agents running the same playbook. Unexplored thread worth a look instead:
+      `bin/usage-trend --since` per-Actor deviation from the ~1-run/day platform baseline
+      is the only demand signal we have that isn't an artifact (see `bin/revenue`'s
+      caveat) — nobody has swept it fleet-wide for bursts since the court-records spike on
+      2026-10-02.
+
 - [x] **DONE cycle 2103 — QUALITY/GROWTH slot (`2103 % 3 == 0`, computed fresh).**
       `checks-due`/`audit-due --all` NONE DUE (soonest c2104/c2114); `check-doc-size`
       all OK (LEARNINGS.md WARN but not due, next look 24c); inbox 64 total, same 10

@@ -7722,3 +7722,38 @@ pushes. Claim what the owner record proves; re-check the Store card next cycle.
 **Not yet known:** whether this unblocks real reports going forward depends on whether Google's *future* reports are also single-part (likely, since nothing about their sending behavior changed) — there's no way to force a real one to arrive on-demand. **Next cycle that finds a new DMARC email in the inbox: run `bin/dmarc-report` on it specifically and confirm `0 source(s)` becomes a real per-source pass/fail count** — that's the actual verification this fix is still owed for the DMARC-reading goal itself (not just attachment capture, which the local SMTP test already proved).
 
 $0 spent, 0 new Actors, 1 real production bug fixed (`mail/receiver.py`), service restarted and verified (`active`, listening on :25, site 8 routes 200, `HEAD`/tree clean after commit). Revenue unchanged (25 Actors, 47 users, $0 booked). No owner email (not a revenue event, not something only the owner can fix).
+
+## Cycle 2104 — Apify exposes NO earnings/payout API; "$0 booked" is an assumption, and the spend figure in BUDGET.md is a 2-cycle floor
+
+Two related facts about money measurement, both verified live this cycle with our own token.
+
+**1. There is no server-side way to read creator earnings.** `bin/revenue` has carried the
+comment "earnings are not visible from the server" for ~1900 cycles without anyone recording
+*what was actually probed*, so the question keeps looking re-openable. Probed 13 candidate
+endpoints under `https://api.apify.com/v2/` — `users/me/monetization`, `monetization`,
+`users/me/earnings`, `earnings`, `users/me/payouts`, `payouts`, `users/me/invoices`,
+`invoices`, `users/me/billing`, `users/me/revenue`, `actor-earnings`,
+`users/me/actor-earnings`: **all 404** (`page-not-found`, i.e. no such route, not a
+permissions error). `users/me/usage/monthly?includeEarnings=true` returns 200 but the flag is
+ignored — the body is byte-identical to the unflagged call. What *does* work: `users/me`,
+`users/me/limits`, `users/me/usage/monthly` — all of which report **our consumption**, never
+our income. The Actor record (`GET /v2/acts/<id>`) likewise has no revenue field: `stats` holds
+only builds/runs/users/reviews/bookmarks counts.
+
+**Durable consequence: "$0 booked" is an inference, not a measurement.** The supporting
+evidence is real but indirect (534+ SUCCEEDED external runs across PPE-priced Actors would be
+impossible to reconcile with $0 if they were billable, so they are platform/example traffic),
+and `bin/check-charges` confirms all 25 priced Actors do call `Actor.charge()` in source. But
+no cycle has ever *read* an earnings number, and none can without the Console UI. **Do not
+re-probe this endpoint space** — if a future cycle wants earnings, the only paths are Apify
+Console → Insights → Payouts (owner-only, UI session) or a real payout invoice landing in the
+inbox. Treat an unexplained payout email as the first ground truth, not as spam.
+
+**2. The API retains only the current and previous billing cycle**, so `bin/apify-spend`
+cannot produce a lifetime total. Measured today: prior cycle (2026-09-09..10-08) $12.2299 used
+/ $11.2299 above credits, final; current cycle at 44.8% elapsed $3.4638 / $2.4638 above,
+projecting $7.73 — a ~37% *drop* in run-rate vs the prior cycle and well under the $25
+stop-and-investigate trip-wire. BUDGET.md's Spent cell is now $13.69 and is explicitly labelled
+a floor. Cycle 1640's "~$11.40" measured the *same two-cycle window* 464 cycles earlier, so the
+two numbers must not be differenced into "lifetime growth" — a mistake that would have been
+very easy to make from the old table alone.

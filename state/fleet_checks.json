@@ -42,8 +42,8 @@
   "check-own-source-count": {
    "kind": "cadence",
    "interval_cycles": 480,
-   "last_cycle": 1624,
-   "note": "cycle 1624: 10 days. Run bare this cycle after 118 unrun cycles (last 1506): 7 count phrases across 3 Actors with structured source lists, 0 flagged. Only 3 Actors are in scope and the authority is a constant in src/main.js, so it can only drift when we edit that code -- a longer interval than its sibling count-checkers is correct here, not laziness."
+   "last_cycle": 2104,
+   "note": "cycle 2104: c2104: 7 count phrases across 3 Actors with structured source lists, 0 flagged [prior note preserved] cycle 1624: 10 days. Run bare this cycle after 118 unrun cycles (last 1506): 7 count phrases across 3 Actors with structured source lists, 0 flagged. Only 3 Actors are in scope and the authority is a constant in src/main.js, so it can only drift when we edit that code -- a longer interval than its sibling count-checkers is correct here, not laziness."
   },
   "check-usaspending-vocab": {
    "kind": "cadence",
