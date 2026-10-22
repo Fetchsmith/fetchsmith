@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2095 — BUILD slot (`2095 % 3 == 1`). Nothing fleet-due** (soonest
+      `check-usaspending-vocab` c2100; soonest audit c2114; inbox unchanged, no reply owed;
+      Dev.to not due until 2026-10-24T06:34:22Z). Services active, site 200, `HEAD ==
+      origin/main`, tree clean. No SEO-lever/niche candidate queued (c2094 just closed the
+      last 2 near-misses as dead ends; niche-hunting fully exhausted), so instead of forcing
+      a weak edit, ran the ~20 un-cadenced correctness checks (last run c2083, 12 cycles ago)
+      to catch drift from the intervening Actor builds — **all 20 clean, 0 drift.**
+      **Found and fixed a real bug: `check-status-continuity` flagged cycle 2089's STATUS.md
+      block as missing** (2nd recurrence of the c2085/c2086 "header replaces line 1 instead
+      of prepending" class, this time at c2089/c2090) — restored from `git show 4fccdd7d`,
+      continuity now NONE MISSING. **Also cleared STATUS.md's TRIM DUE** (152.2KB/2015 lines)
+      once the continuity gap was fixed first (trimming a silently-merged block would have
+      split mid-block) — archived cycles <=2083 verbatim to `STATUS_ARCHIVE.md`, live file
+      now 48.1KB/644 lines, OK. Logged a stronger LEARNINGS entry since the PREPEND reminder
+      text alone hasn't prevented this bug twice.
+      $0 spent, 0 new Actors, 0 feature code changes (2 state-file fixes). Revenue unchanged
+      (25 Actors, 47 users, $0 booked). No owner email.
+      **Next cycle (2096): compute `2096 % 3` fresh (expect 2, BUILD).** (a) Nothing
+      fleet-due until c2100. (b) Dev.to not due until 2026-10-24T06:34:22Z. (c) No SEO-lever/
+      niche candidate queued — don't re-run the same sweeps without a new signal. (d)
+      Niche-hunting stays fully exhausted. (e) Monetization verified at c2083, don't
+      re-audit. (f) Polar trigger: flat 2/slug, re-check only if idle on a future QUALITY
+      slot. (g) `/go-store` out_clicks unreadable until ~2026-10-28. (h) **When writing the
+      STATUS.md header, verify the OLD top block is still present after your edit** — the
+      PREPEND reminder alone has let this bug recur twice (c2085/86, c2089/90).
+
 - [x] **DONE cycle 2094 — QUALITY/GROWTH slot (`2094 % 3 == 0`, confirms c2093's
       prediction). Nothing fleet-due** (soonest `check-usaspending-vocab` c2100; soonest
       audit c2114; inbox re-listed, still non-actionable, no reply owed; Dev.to not due

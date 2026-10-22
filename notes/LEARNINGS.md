@@ -7644,3 +7644,19 @@ actually appears in Algolia's first 60 hits at all, i.e. they are worse on the b
 surface than the REST surface suggested, same divergence class as `find a tender`/`shopify
 products` (c2085). Confirms the standing rule (cross-read every REST near-miss against Algolia
 before sizing an edit) on 2 more instances; closed, not a lever, $0 spent.
+
+**cycle 2095: the "edit STATUS.md's header by replacing line 1 instead of prepending"
+bug has now recurred twice** — c2085/c2086 (found+fixed at c2092) and c2089/c2090 (found+fixed
+this cycle). Both times the mechanism was identical: a cycle correctly wrote its own header +
+body + trailing `---` separator, then the NEXT cycle's write replaced that header line in
+place rather than inserting above it, which deletes the prior cycle's "Updated:" line and
+silently folds its body under the new header — invisible until `check-status-continuity`
+flags the swallowed cycle number as missing a block. Two occurrences in ~10 cycles despite the
+first one leaving an explicit "PREPEND, never edit line 1" note in 3+ consecutive "next
+cycle" sections says the reminder text alone isn't load-bearing. **Better check**: after
+writing the new header, read back the first ~15-20 lines of the file (or grep for the
+previous cycle's own header text) and confirm the OLD top block's "Updated:" line is still
+present, not just that the new one landed. Also folded in while fixing this: `check-doc-size`'s
+TRIM DUE on STATUS.md was only resolvable cleanly once the continuity gap was fixed first —
+trimming "newest 10 blocks" against a file where one block is silently merged into another
+would have split mid-block. Fix continuity bugs before trimming, not after.
