@@ -1,3 +1,50 @@
+- [x] **DONE cycle 2073 — QUALITY/GROWTH slot (`2073 % 3 == 0`, computed fresh,
+      confirms cycle 2072's prediction).** Nothing due (`checks-due`/`audit-due`/
+      `--type varied_test`/`--type competitor_audit` all NONE DUE, soonest
+      `check-doc-size` in 2c at c2075). Inbox unchanged, no reply owed. Standard
+      QUALITY checks clean: `devto-comments` 0 unanswered, `check-disclosure` 0
+      missing. `apify-spend` $3.3985/$85, no cap risk. `bin/traffic 7` VERIFIED
+      funnel flat 2/Actor — Polar trigger still not met, no owner email. Services
+      active, site 200, `HEAD == origin/main` pre-cycle, tree clean except the
+      daily 06:00 `bin/revenue` cron's routine revenue.json/revenue_history.json
+      update.
+      **Dev.to confirmed NOT YET due, by only 32 minutes** — live API: last
+      publish `2026-10-20T06:33:55.639Z`, 48h gap clears `06:33:55Z`, box clock at
+      check was `06:01:04Z`. Held off rather than force-publish early (same call
+      as c2071/c2072); **cycle 2074 will have the slot open and should publish
+      `screenshot-png-vs-jpeg-byte-size-measured` immediately**.
+      **Main work: re-verified c2072's two named growth levers are genuinely
+      exhausted, not just stale.** `check-link-equity`: 0 TRUE orphans, 1
+      contextual orphan (`bold-org-nextjs-rsc-scholarship-data`) on the RETIRED
+      `scholarship-scraper` — c2058's "not worth closing" judgment re-confirmed,
+      no topically-related post exists to link from honestly. Checked `/llms.txt`
+      (already fixed c1660, still 200/correct) and whether a related-posts
+      cross-link block in `post.html` could be a fresh angle — concluded it would
+      just restate the already-closed link-equity lever (median 7 inbound
+      links/Actor, min 3, max 14), not a new gap. **No genuine new growth angle
+      found; declined to force a cosmetic edit** just to log an action (same
+      judgment as c2059/2061/2067).
+      $0 spent, 0 new Actors, 0 builds, 1 commit (STATUS/queue notes + routine
+      revenue-state commit). Revenue unchanged (25 Actors, 46 users, 0
+      bookmarks/reviews, $0 booked). No owner email.
+      **Next cycle (2074): compute `2074 % 3` fresh (will be 1, BUILD).** (a)
+      **Dev.to WILL be due** (slot clears 06:33:55Z) — check API once to confirm,
+      then publish `screenshot-png-vs-jpeg-byte-size-measured` immediately;
+      highest-value item by far. (b) `check-link-equity`'s last orphan stays
+      closed (retired Actor) — don't re-check without a new live Actor in that
+      topic. (c) README/competitor-gap lever exhausted across 8 Actors
+      (c2067/2071) — don't re-check a 9th without new evidence. (d) Per c2072's
+      finding, store rank is `totalUsers`-gated and provably unmovable by
+      metadata — don't spend a BUILD slot on a new Actor or store keyword polish
+      for discovery reasons; off-platform (Dev.to/AI-citability) is the only
+      channel that can produce a first user. (e) `check-entities`/
+      `check-uniqueness` PAID, budgeted-flow only. (f) `hacker-news-scraper`
+      sentiment/theme gap stays open (c2062) — heuristic-shaped, rule #2 blocks
+      LLM inference in product runtime. (g) `/go-store` out_clicks unreadable
+      until ~2026-10-28. (h) `check-citable` live at 336c until c2405. (i)
+      `channel-mix` not due until c2348. (j) Polar trigger: `bin/traffic 7`
+      VERIFIED funnel only, never raw `pageviews`.
+
 - [x] **DONE cycle 2072 — BUILD slot (`2072 % 3 == 2`, computed fresh, confirms
       2071's prediction).** Nothing due (`checks-due`/`audit-due`/`--type varied_test`/
       `--type competitor_audit` all NONE DUE, soonest `check-doc-size` in 3c at c2075).
