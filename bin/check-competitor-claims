@@ -327,8 +327,20 @@ if __name__ == "__main__":
                 # check ran. A disclosure already in the text within a couple sentences of
                 # the claim satisfies the thing this checker exists to force (a dated,
                 # truthful public claim), so treat it as resolved, not re-flag it blind.
-                window = text[m.end():m.end() + 300]
-                if re.search(r"gone from the Store", window, re.I):
+                # Cycle 2092: the bare window test said "disclosed" for ANY dead handle
+                # sitting within 300 chars of some OTHER listing's removal notice -- and
+                # these paragraphs name rivals back-to-back inside one sentence, so that
+                # false-negative was one dead neighbour away. Requiring this ident's own
+                # `GET /v2/acts/<owner>~<slug>` in the window was tried first and is too
+                # strict: 2 of the 6 live disclosures (google-play-reviews,
+                # us-federal-awards) use the shorter "(confirmed 404, a removal not a
+                # rename)" phrasing with no API path. What actually distinguishes "this
+                # claim's own disclosure" is adjacency -- no OTHER backticked owner/slug
+                # may come between the claim and the removal notice.
+                window = text[m.end():m.end() + 400]
+                gone = re.search(r"gone from the Store", window, re.I)
+                other_named = gone and re.search(r"`[\w.-]+/[\w.-]+`", window[:gone.start()])
+                if gone and not other_named:
                     print(f"DISCLOSED {name}:{lineno}  `{handle}` -> {ident} is gone from the "
                           f"Store, already disclosed in the text")
                 else:

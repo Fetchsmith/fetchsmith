@@ -1,3 +1,60 @@
+Updated: 2026-10-22 ~15:50 UTC by cycle 2092 (opus-5) -- RECOVERY CYCLE. Cycle 2091
+timed out (`rc=124`, `error_during_execution`, 28 min, 53 turns) and left ALL of its work
+staged-but-uncommitted: 22 files in the index (20 actor READMEs, `bin/check-competitor-claims`,
+`state/fleet_checks.json`), `HEAD` still at c2090's `e7d4cc41`, STATUS.md still carrying
+c2090's header. Nothing was lost. Pre-cycle: services active (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`), site 200 on `/`, `/pricing`, `/tools`, `HEAD == origin/main`.
+Slot arithmetic: `2092 % 3 == 1` (BUILD), but the recovery took the cycle.
+
+**1. Adopted c2091's work only after re-verifying it from scratch.** Re-ran
+`bin/check-competitor-claims` end-to-end: **589 user-count claims and 207 competitor
+paragraphs, 0 stale, 0 undated, 0 unresolvable.** So c2091's 52 auto-fixed counts, its 2
+newly-found dead listings (`vortex_data/google-news` and
+`joyouscam35875/rss-news-aggregator`, both disclosed on `google-news-scraper` with the
+standard dated "is gone from the Store as of 2026-10-22 (... now 404s ...)" phrasing) and
+its `website-screenshot-scraper` paragraph re-dating are all real and live-accurate.
+Committed as `c0aa27c6`, pushed; the c2092 work below is this cycle's second commit.
+
+**2. Found one stale count the auto-fixer structurally cannot reach.** The checker's regex
+only reads `(N users)`-shaped spans, so `app-store-reviews-scraper/README.md:122` still read
+"`sourabhbgp` has since grown past all four, to 199" while the same file's span had been
+bumped to 223. That sentence had also become false on its own terms: `code-node-tools` is
+live at **226**, so 223 has NOT passed all four. Rewrote it to state the live 223 plus the
+2026-10-22 verification date instead of the superlative. **Then scanned the whole fleet for
+this class** (any old value still present elsewhere in a file whose span was bumped) --
+~90 hits, all false positives (dates, docket numbers, prices, sweep counts), **no other true
+positive.** This is a durable blind spot in the checker, not a one-off: see LEARNINGS c2092.
+
+**3. Tightened c2091's own checker fix, which was too loose to trust.** c2091 made a dead
+listing count as resolved if "gone from the Store" appeared within 300 chars after the claim.
+But these paragraphs name rivals back-to-back inside a single sentence, so ANY dead handle
+standing next to a *different* listing's removal notice would have read as disclosed -- a
+silent false negative in the one checker whose whole job is forcing truthful public claims.
+First attempt (require this ident's own `GET /v2/acts/<owner>~<slug>` in the window) proved
+too strict and was rejected by measurement, not by argument: 2 of the 6 live disclosures
+(`google-play-reviews-scraper:104`, `us-federal-awards-scraper:245`) use the shorter
+"(confirmed 404, a removal not a rename)" phrasing with no API path and both flagged STALE
+under it. **Final rule is adjacency: the notice clears the claim only if no OTHER backticked
+`owner/slug` comes between them.** Re-ran: all 6 real disclosures pass, 0 stale, 0 undated.
+
+**4. Published only the Actor whose change was material to a buyer.** `google-news-scraper`'s
+public README was naming two undercutters that no longer exist -- pushed build **0.1.83**
+(~$0.0048) and verified via the builds API that the live store README is **byte-identical to
+local** (49,607 chars, both disclosures present, `count == 2`). The other 19 READMEs are
+1-2-user drift with no decision content for a buyer, so per the **c1671/c1623 precedent**
+they were NOT pushed -- they ride along free on each Actor's next push for any other reason.
+`state/fleet_checks.json` keeps `last_cycle: 2091` (the check really did run then); the note
+records both the c2092 tightening and the push/no-push split.
+
+**Money:** ~$0.0048 spent this cycle (one build, against the $120 Apify-usage budget line at
+~$11.40 spent). 0 new Actors. Revenue NOT re-measured this cycle (recovery work took it) --
+last measured c2090: 25 public Actors, 46 users, **$0 booked**. No owner email: no revenue
+event and nothing only the owner can fix.
+
+**Blockers:** none new. Polar checkout still deferred by owner decision (traffic flat at
+~2/slug at c2090, far under the >100/day trigger). `/go-store` out_clicks unreadable until
+~2026-10-28. `check-doc-size`: LEARNINGS.md WARN (~7603/8000 lines), not at the trim line.
+
 Updated: 2026-10-22 ~14:35 UTC by cycle 2090 (sonnet-5) -- BUILD slot (`2090 % 3 == 2`,
 computed fresh, confirms c2089's prediction). `checks-due`/`audit-due` both NONE DUE (soonest
 `check-competitor-claims` c2091; soonest audit `shopify-products-scraper` c2114). Inbox

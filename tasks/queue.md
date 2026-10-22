@@ -1,3 +1,59 @@
+- [x] **DONE cycle 2092 — RECOVERY of cycle 2091, which timed out (`rc=124`,
+      `error_during_execution`, 28 min, 53 turns) with all of its work
+      *staged but never committed* and STATUS.md still on c2090's header.**
+      22 files were sitting in the index: 20 actor READMEs, `bin/check-competitor-claims`
+      and `state/fleet_checks.json`. Verified the work was genuinely complete
+      before adopting it — re-ran `bin/check-competitor-claims` from scratch:
+      **589 claims / 207 paragraphs, 0 stale, 0 undated, 0 unresolvable.**
+      So c2091's 52 user-count fixes, its 2 new dead-listing disclosures
+      (`vortex_data/google-news`, `joyouscam35875/rss-news-aggregator` on
+      `google-news-scraper`) and its `website-screenshot-scraper` dating fix are
+      all real and live-accurate. Committed + pushed as `c0aa27c6`; the c2092
+      additions below land in this cycle's second commit.
+      **Three things c2092 added on top:**
+      (a) **One prose count the auto-fixer structurally cannot see.**
+      The checker's regex only reads `(N users)`-shaped spans, so
+      `app-store-reviews-scraper/README.md:122` still said ``sourabhbgp`` "has
+      since grown past all four, to 199" while the same file's span had been
+      updated to 223. That sentence was *also* now false on its own terms —
+      `code-node-tools` is live at 226, so 223 has not passed all four.
+      Rewrote it to state the live 223 and the 2026-10-22 verification date
+      instead of the superlative. **A fleet-wide scan for this class
+      (old value still present elsewhere in the same file after the span was
+      bumped) found no other true positive** — the other ~90 hits were dates,
+      docket numbers, prices and sweep counts.
+      (b) **Tightened c2091's own checker fix, which was too loose.** It cleared
+      a dead listing if "gone from the Store" appeared within 300 chars *after*
+      the claim — but these paragraphs name rivals back-to-back inside one
+      sentence, so any dead handle standing next to a *different* listing's
+      removal notice would read as disclosed. Tried requiring this ident's own
+      `GET /v2/acts/<owner>~<slug>` in the window first; that is too strict
+      (2 of the 6 live disclosures — `google-play-reviews`, `us-federal-awards` —
+      use the shorter "(confirmed 404, a removal not a rename)" phrasing with no
+      API path, and both correctly flagged STALE under it). Landed on adjacency:
+      the notice clears the claim only if **no other backticked `owner/slug`
+      comes between them**. All 6 real disclosures still pass, 0 stale.
+      (c) **Published the one Actor whose change was material to a buyer.**
+      `google-news-scraper` was naming two undercutters that no longer exist;
+      pushed build **0.1.83** and verified via the builds API that the live
+      store README is **byte-identical to local** (49,607 chars, both
+      disclosures present). ~$0.0048. The other 19 READMEs are 1-2-user drift
+      with no decision content, so per the **cycle 1671/1623 precedent** they
+      were NOT pushed — they ride along free on each Actor's next push for any
+      other reason.
+      **Next cycle (2093): compute `2093 % 3` fresh (expect 2, BUILD).** Run
+      `checks-due`/`audit-due` fresh — `check-competitor-claims` is now stamped
+      `last_cycle: 2091` on a 144c cadence, so next due ~c2235; soonest audit is
+      `shopify-products-scraper` c2114. (a) No SEO-lever task is queued —
+      c2090 re-closed that thread and found no new lever, so do NOT re-run the
+      fleet `check-store-rank` sweep without a new signal. (b) Inbox was
+      unchanged at c2090 (10 non-actionable items, owner's `dc593cfb` reply
+      already resolved at c2037) — recheck, nothing owed as of c2092.
+      (c) **Watch for a repeat of c2091's timeout**: 28 min on a 589-claim
+      fleet-wide check is near the ceiling. If `check-competitor-claims` is ever
+      due again in a cycle with other work queued, commit the README edits
+      incrementally rather than at the end, so a timeout cannot strand them.
+
 - [x] **DONE cycle 2090 — BUILD slot (`2090 % 3 == 2`, computed fresh,
       confirms c2089's prediction). Nothing fleet-due** (soonest
       `check-competitor-claims` c2091; inbox unchanged — 10 non-actionable

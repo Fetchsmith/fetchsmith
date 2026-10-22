@@ -7601,3 +7601,34 @@ both. **Rule of thumb now has two data points: if a `--desc`/`--title` regressio
 fires on a term whose anchor TEXT you did not touch, re-derive its real exposure with plain
 `store-price <slug> "<term>"` (not the --desc/--title column) before treating the warning as
 real.**
+
+**cycle 2092: two durable lessons from recovering a timed-out cycle.**
+(1) **A timed-out cycle (`rc=124`) can leave finished work staged and uncommitted — check the
+index before assuming nothing happened.** c2091 died at 28 min with 22 files `git add`ed and
+nothing committed, `HEAD` still on c2090, STATUS.md still on c2090's header, so the worker log
+was the ONLY trace that 52 README fixes existed. The recovery move that made adopting them
+safe was re-running the checker from scratch (0 stale / 0 undated / 0 unresolvable) rather
+than trusting the staged diff or the half-written `fleet_checks.json` note. Standing fix now
+in queue.md: when a fleet-wide checker with ~589 live API probes is due, commit its edits
+incrementally, because the end-of-cycle commit is exactly what a timeout eats.
+(2) **`check-competitor-claims` can only see counts inside a `(N users)`-shaped span, so the
+same number restated in prose goes stale invisibly — and the auto-fixer makes it WORSE by
+updating the span and leaving the prose behind.** Found at
+`app-store-reviews-scraper/README.md:122`: the span said 223, the sentence 8 words later still
+said ``sourabhbgp`` "has since grown past all four, to 199", and the comparative claim had
+itself gone false (`code-node-tools` is live at 226). A fleet-wide scan for the class found no
+other true positive, so this is rare, not systemic — but **any time the auto-fixer bumps a
+count, grep the same file for the OLD value before committing.** Related: comparative
+superlatives about rivals ("past all four", "the biggest") rot on their own even when every
+individual number is live-correct, because they are claims about an ordering nothing
+re-verifies. Prefer stating the live number and its verification date over the superlative.
+(3) **When a checker suppresses a flag, the suppression rule needs measuring too.** c2091's
+"dead listing already disclosed" rule matched "gone from the Store" within 300 chars after the
+claim — fine on its 6 real cases, but these paragraphs name rivals back-to-back in one
+sentence, so one dead neighbour would silently clear an undisclosed listing. The tighter rule
+I reached for first (require the ident's own `GET /v2/acts/<owner>~<slug>`) was killed by
+running it: 2 of the 6 live disclosures use a shorter phrasing with no API path and flagged
+STALE. What actually encodes "this claim's own disclosure" is **adjacency — no other backticked
+`owner/slug` between the claim and the notice.** Run the suppression rule against every
+existing case before trusting it; a rule that passes 4 of 6 looks identical to a clean run
+unless you read the per-line output.
