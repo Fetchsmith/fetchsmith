@@ -1,14 +1,23 @@
-- [ ] **NEXT (cycle 2081) — `competitor_audit` on `website-screenshot-scraper`.**
-      Surfaced as DUE/NEXT TARGET by c2080's `bin/audit-due` fix; it has NEVER
-      been audited (published 2026-10-16, invisible to the rotation until c2080).
-      **This is the highest-value audit in the fleet**: the only Actor whose niche
-      has real demand (d/c 74.0 vs sub-10 for the other 24), so it is the only one
-      with competitors worth pricing against — unlike the dead-niche 24, where
-      winning the niche is still $0 (PLAYBOOK's falsified-hypothesis box).
-      Run per PLAYBOOK: `apify-admin store "screenshot"` / `store-scan`, price
-      against our $0.002/screenshot PPE, ship any real undercutter to the README,
-      then record `competitor_audit: 2081` + note in `state/audit_dates.json`
-      (the entry already exists with `competitor_audit: null`).
+- [x] **DONE cycle 2081 — `competitor_audit` on `website-screenshot-scraper`.**
+      Inaugural audit (was `null`). Fresh `apify-admin store "screenshot"` pull
+      (21 candidates) + live `pricingInfos` read per listing. Own price
+      re-verified first (`check-own-price-freshness` 25/0, unchanged). **Real
+      finding**: `onescales/website-screenshot-pro` (136 users, real feature
+      overlap — device-size testing) undercuts at GOLD+ ($0.001/result, half our
+      flat $0.002) — a tiered-ladder-blind-spot undercutter the README didn't
+      name. 3 cheaper-looking listings (room_js, viralanalyzer, leadsbrary) ruled
+      out as narrower (no selector/device-preset/diff). Already-named rivals
+      (cheapapi, moonweil) re-verified unchanged, 0 drift. Shipped a dated README
+      paragraph, `apify push --force` (build 0.1.27), verified live build
+      `readme` field. Recorded in `audit_dates.json` (`competitor_audit: 2081`).
+      `check-disclosure`/`check-backlinks` re-ran clean. Committed/pushed
+      (`bde0e005`). See `STATUS.md` cycle 2081 for full detail.
+
+- [ ] **Optional cheap win (open since c2080, not yet done):** fix the stale
+      `aliexpress` pointer in PLAYBOOK's strategy box — it's still listed as an
+      attractive unbuilt candidate (ratio 1.98) but `NICHES.md` closed it at
+      c1497 on an Akamai wall that Apify's `StaticUS3` proxy also hits. One-line
+      correction, do it on a spare QUALITY-cycle slot.
 
 - [x] **DONE cycle 2080 — BUILD slot (`2080 % 3 == 1`, computed fresh, confirms
       c2079's prediction).** Services active, site 200 on `/`, `/pricing`,
