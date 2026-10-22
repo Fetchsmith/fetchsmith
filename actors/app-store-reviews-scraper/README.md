@@ -114,21 +114,21 @@ overcharging. Everyone else charges meaningfully more once every fee is counted:
 $0.0175 one-time setup fee, a $0.00005 Actor-start fee and $0.00001 per dataset row;
 `easyapi/app-store-reviews-scraper` (545 users) is $0.00299/review plus a **$0.09** Actor-start fee
 (900x our whole per-review price, charged before a single review is scraped);
-`sourabhbgp/apple-app-store-scraper` (199 users, corrected cycle 1805 — was stale at 178) is a flat $0.002/review, 20x ours.
+`sourabhbgp/apple-app-store-scraper` (223 users, corrected cycle 1805 — was stale at 178) is a flat $0.002/review, 20x ours.
 
 The comparison above is not just the two busiest plus three more — it is every listing in the
 niche with more users than the smallest one named. A fresh Store sweep, verified 2026-10-02, found
 four more App Store review scrapers bigger than `sourabhbgp`'s user count at sweep time (178;
-`sourabhbgp` has since grown past all four, to 199 — the ordering below reflects sweep time, not
-today), none of them previously named
+`sourabhbgp` is 223 now, and every count in this section was re-verified live 2026-10-22, so the
+ordering below reflects sweep time, not today), none of them previously named
 and none of them cheaper: `jdtpnjtp/apple-app-store-scraper` (163 users) charges $0.00065/review,
-6.5x ours; `brilliant_gum/google-play-app-store-scraper` (160 users, a combined Google Play + App
+6.5x ours; `brilliant_gum/google-play-app-store-scraper` (179 users, a combined Google Play + App
 Store scraper, not App-Store-only) charges **$0.006/review, 60x ours** — its own README pricing table
 names this as the `Review scraped` event; an earlier version of this paragraph quoted $0.004, which is
 that listing's `Search / chart result scraped` event, not what a reviews run is charged (fixed
 2026-10-03, cycle 1178, same isPrimaryEvent-vs-rival's-own-table class as the `westerly_breaker` fix in
 `eu-ted-tenders-scraper`'s README); `code-node-tools/app-reviews-scraper`
-(199 users, re-verified 2026-10-18) charges $0.0005/review tiered down to $0.0003 on Gold and up, 3x-5x ours (an earlier version
+(226 users, re-verified 2026-10-18) charges $0.0005/review tiered down to $0.0003 on Gold and up, 3x-5x ours (an earlier version
 of this paragraph said a flat $0.0005/5x; its live record tiers by account plan, fixed 2026-10-03, cycle
 1178); `benthepythondev/appstore-reviews-scraper` (152 users)
 charges $0.002/review tiered down to $0.0014 on Diamond, 14x-20x ours at every tier, same ballpark
@@ -150,7 +150,7 @@ re-verified all twelve rivals named above with **zero price drift**, but reading
 just below `nexgendata/ios-app-store-reviews-scraper`'s 32 users found two genuine price threats
 this README's earlier "no listing found in this sweep, named or not, undercuts our price" line
 (just above) no longer covers:
-`apihq/app-store-reviews-scraper` (28 users) charges a flat **$0.00008/review with no start fee —
+`apihq/app-store-reviews-scraper` (32 users) charges a flat **$0.00008/review with no start fee —
 20% below our $0.0001, at every volume, with no crossover**; `automation-lab/apple-app-store-reviews-scraper`
 (27 users) tiers its review price by the buyer's own Apify plan, $0.0001725 (Free) down to
 $0.000042 (Diamond) — dearer than us on Free/Bronze/Silver (1.2x-1.7x our rate) but **cheaper from
@@ -461,7 +461,7 @@ five listings whose event set was too ambiguous for the batch script. The honest
 
 Cheaper than us at **every** account plan with **no start fee** (strictly cheaper at any run size):
 
-- `lergassy/app-store-reviews-scraper` (2 users, re-verified 2026-10-19) — **$0.00008 (Free) → $0.000072 (Bronze) →
+- `lergassy/app-store-reviews-scraper` (6 users, re-verified 2026-10-19) — **$0.00008 (Free) → $0.000072 (Bronze) →
   $0.000064 (Silver) → $0.000056 (Gold+)** per review, no fee: **20% to 44% cheaper than us at
   every volume.** A pure per-review App Store export with country and star filters, i.e. a direct
   substitute on features as well as price. The cheapest unconditional rate in this niche to date.
@@ -494,7 +494,7 @@ the same asymmetry first noted in the 2026-10-05 block; most buyers are not on t
 
 - `cleanfeed/app-store-reviews-scraper` (1 user) — $0.0001 (Free) → **$0.000048 (Gold+)**, no fee.
   Half our rate for a Gold customer, and the joint-lowest rate in the niche.
-- `plainrows/app-store-reviews-scraper` and `plainrows/app-reviews-scraper` (2 users each) —
+- `plainrows/app-store-reviews-scraper` and `plainrows/app-reviews-scraper` (3 users each) —
   $0.0001 (Free) → **$0.00005 (Gold+)**, $0.002 start fee.
 - `webdatatools/app-store-reviews-scraper` (2 users) — $0.0001 (Free) → **$0.00006 (Gold+)**,
   $0.00005 start fee.
@@ -568,7 +568,7 @@ rate that looked competitive to a Free-tier shopper. The new tiers keep the Free
 (still ties the historical volume leaders `thewolves`/`theagents`), and make every paying tier
 cheaper than the old flat rate — Silver ties `workstream`'s unconditional $0.00008, and Gold+ sits
 one tick above `lergassy`'s $0.000056 Gold+ rate rather than matching it exactly, since `lergassy`
-has 2 users (re-verified 2026-10-19) and no track record and losing 0.000014/review to the single cheapest listing in a
+has 6 users (re-verified 2026-10-19) and no track record and losing 0.000014/review to the single cheapest listing in a
 crowded niche is a reasonable price for not having raced to the bottom. **Platform finding, not
 previously documented:** Apify's tiered-pricing API silently collapses GOLD/PLATINUM/DIAMOND to one
 value — a publish that set PLATINUM to $0.00006 and DIAMOND to $0.000056 came back live with both

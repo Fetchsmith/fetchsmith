@@ -99,7 +99,7 @@ Real row from run `54YvM4KAyrUjhlEdq` (build 0.1.17, 2026-10-21): Hacker News co
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
 (8,789 users) only does full-page/viewport PNG or JPEG — no element selector, device presets,
 OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
-`cheapapi/website-screenshot-api` (247 users) and `moonweil/url-screenshot-api` (185 users) both
+`cheapapi/website-screenshot-api` (247 users) and `moonweil/url-screenshot-api` (216 users) both
 already never charge for a failed capture and both support full-page, element and device-preset
 capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
 Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
@@ -113,7 +113,7 @@ The one feature `moonweil` had and we didn't was visual diffing; as of build 0.1
 `cheapapi/website-screenshot-api` has no diff mode at all — both rivals' input schemas were read
 live from their own build OpenAPI documents on 2026-10-21, not from Store marketing copy.
 
-**Competitor audit, 2026-10-22**: a full re-sweep of the Store's `screenshot` listings (21
+**Competitor audit, verified live 2026-10-22**: a full re-sweep of the Store's `screenshot` listings (21
 candidates, live pricing pulled from each Actor's own `pricingInfos`) found one real new
 undercutter: `onescales/website-screenshot-pro` (136 users) tests across multiple device sizes —
 real feature overlap, not a bare screenshotter — and its PAY_PER_EVENT ladder drops to

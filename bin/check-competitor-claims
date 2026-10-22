@@ -319,8 +319,21 @@ if __name__ == "__main__":
             claimed = int(claimed.replace(",", ""))
             actual = live_users(ident, headers)
             if actual is None:
-                flagged += 1
-                print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
+                # Cycle 2091: a dead listing's historical user-count mention re-flags
+                # STALE forever once gone (there is no live number to compare against),
+                # even after the prose already discloses the removal with its own date --
+                # 6 fleet-wide cases were already disclosed ("is gone from the Store as of
+                # ...", confirmed 404) yet kept showing up as DUE work every cycle this
+                # check ran. A disclosure already in the text within a couple sentences of
+                # the claim satisfies the thing this checker exists to force (a dated,
+                # truthful public claim), so treat it as resolved, not re-flag it blind.
+                window = text[m.end():m.end() + 300]
+                if re.search(r"gone from the Store", window, re.I):
+                    print(f"DISCLOSED {name}:{lineno}  `{handle}` -> {ident} is gone from the "
+                          f"Store, already disclosed in the text")
+                else:
+                    flagged += 1
+                    print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
             elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
                 flagged += 1
                 print(f"STALE {name}:{lineno}  claims {ident} has {claimed} users, live is {actual}")
