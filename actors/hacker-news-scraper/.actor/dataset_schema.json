@@ -158,6 +158,20 @@
           "null"
         ]
       },
+      "submissionCount": {
+        "title": "SubmissionCount",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "authorInfluenceScore": {
+        "title": "AuthorInfluenceScore",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
       "githubRepo": {
         "title": "GithubRepo",
         "type": [

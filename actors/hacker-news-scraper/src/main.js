@@ -445,6 +445,8 @@ function mapHit(hit) {
     karma: null,
     about: null,
     accountCreatedAt: null,
+    submissionCount: null,
+    authorInfluenceScore: null,
     githubRepo: null,
     githubStars: null,
     githubLanguage: null,
@@ -582,7 +584,27 @@ async function computeCommentDepth(objectId, parentId, storyId) {
   return depthCache.get(objectId);
 }
 
+// A transparent, documented 0-100 author-influence score — the one gap this README names
+// against ryanclinton/hackernews-search that is honestly closeable without an LLM: karma,
+// submission count and account age are the only three signals the public HN user API exposes,
+// and all three are already fetched for every profile lookup. Same "transparent, documented
+// formula" spirit as engagementScore() above, not a black-box model call. Karma and submission
+// count are LOG-scaled (both have long right tails — a handful of accounts sit orders of
+// magnitude above the median) and age is LINEAR-scaled (tenure has no such skew).
+const INFLUENCE_KARMA_CAP = 100000; // very few HN accounts have ever crossed this
+const INFLUENCE_SUBMISSION_CAP = 5000; // top submitters sit in the low thousands
+const INFLUENCE_AGE_CAP_DAYS = 5475; // 15 years — HN launched 2007-02, so reachable but not trivial
+function authorInfluenceScore(karma, accountCreatedAtSec, submissionCount) {
+  if (karma == null) return null; // no profile data to score (mirrors engagementScore's null-on-no-data rule)
+  const karmaScore = Math.min(100, (Math.log10(Math.max(0, karma) + 1) / Math.log10(INFLUENCE_KARMA_CAP + 1)) * 100);
+  const ageDays = accountCreatedAtSec ? Math.max(0, (Date.now() / 1000 - accountCreatedAtSec) / 86400) : 0;
+  const ageScore = Math.min(100, (ageDays / INFLUENCE_AGE_CAP_DAYS) * 100);
+  const submissionScore = Math.min(100, (Math.log10((submissionCount ?? 0) + 1) / Math.log10(INFLUENCE_SUBMISSION_CAP + 1)) * 100);
+  return Math.round(karmaScore * 0.5 + ageScore * 0.2 + submissionScore * 0.3);
+}
+
 function mapUser(username, data) {
+  const submissionCount = Array.isArray(data.submitted) ? data.submitted.length : null;
   return {
     id: data.id ?? username,
     type: 'user',
@@ -603,6 +625,8 @@ function mapUser(username, data) {
     karma: data.karma ?? null,
     about: data.about ?? null,
     accountCreatedAt: data.created ? new Date(data.created * 1000).toISOString() : null,
+    submissionCount,
+    authorInfluenceScore: authorInfluenceScore(data.karma ?? null, data.created ?? null, submissionCount),
     githubRepo: null,
     githubStars: null,
     githubLanguage: null,

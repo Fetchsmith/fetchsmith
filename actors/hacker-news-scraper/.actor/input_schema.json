@@ -77,7 +77,7 @@
     "usernames": {
       "title": "User profiles to look up",
       "type": "array",
-      "description": "HN usernames to fetch profile data for (karma, about text, account creation date) — a separate lookup from the story/comment search above. To fetch ONLY user profiles with no story search, also set 'Search queries' and 'Filter by tag' to empty ([]).",
+      "description": "HN usernames to fetch profile data for (karma, about text, account creation date, submission count, and a computed 0-100 author-influence score) — a separate lookup from the story/comment search above. To fetch ONLY user profiles with no story search, also set 'Search queries' and 'Filter by tag' to empty ([]).",
       "editor": "stringList"
     },
     "postedAfter": {
