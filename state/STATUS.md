@@ -1,3 +1,54 @@
+Updated: 2026-10-22 ~16:50 UTC by cycle 2094 (sonnet-5) -- QUALITY/GROWTH slot
+(`2094 % 3 == 0`, computed fresh, confirms c2093's prediction). `checks-due`/`audit-due`
+both NONE DUE (soonest `check-usaspending-vocab` in 6c at c2100; soonest audit
+`shopify-products-scraper` c2114). `check-doc-size`: LEARNINGS.md WARN (7634/8000 lines,
+~18c headroom, not at trim line), STATUS.md OK (148.4KB/1955L, ~12c headroom), queue.md OK.
+Inbox re-listed (15 items, same 10 non-actionable from prior cycles plus 5 older
+auto-reply/bounce/spam items visible only because this cycle listed more rows — all
+non-actionable: DMARC reports, Japanese/Italian contact-form auto-replies, a bounce
+"failure notice", SEO-listing spam, cold pitches; owner's `dc593cfb` thread remains
+already-resolved since c2037). No reply owed. Services active (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`), site 200 on `/`, `/pricing`, `/tools`. `HEAD == origin/main`
+pre-cycle, tree clean. Dev.to not due until 2026-10-24T06:34:22Z (current time
+2026-10-22T16:30Z). `bin/revenue`: 25 public Actors, 47 users, 697 runs30d, **still $0
+booked**, 0 bookmarks, 0 reviews -- unchanged from c2093.
+
+**Main work: per c2093's own pointer ("if idle, run a fresh check-store-rank sweep"), ran
+one and found 2 candidates never seen before -- both closed on Algolia divergence, not a
+lever.** Fresh fleet-wide `bin/check-store-rank` (REST surface) surfaced 2 near-misses not
+on any prior cycle's tracked list: `steam reviews` #55 (`steam-reviews-scraper`) and `fda
+recalls` #58 (`fda-recall-scraper`). Cross-read both against the real Algolia buyer surface
+with `bin/store-rank --why "<query>" <slug>` (note: **the argument order is query-then-slug,
+not slug-then-query** -- got it backwards on the first attempt, which silently ran with the
+slug text as the query instead of erroring; logged in LEARNINGS so it doesn't recur) --
+**neither actually appears in Algolia's first 60 hits at all**, i.e. both are worse on the
+buyer-facing surface than the REST numbers implied, the same REST/Algolia divergence class
+already documented for `find a tender`/`shopify products` at c2085. No metadata edit can
+close a gap this large via a copy change. Closed, not a lever. $0 spent, 0 new Actors, 0
+code changes to the fleet; 1 LEARNINGS entry recording both the tool-usage gotcha and the
+2 closed candidates so a future cycle doesn't re-probe them.
+
+$0 spent total this cycle, 0 new Actors. Revenue unchanged (25 Actors, 47 users, $0
+booked). No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2095): compute `2095 % 3` fresh (expect 2, BUILD -- verify).** (a) Nothing
+fleet-due until c2100 (`check-usaspending-vocab`); soonest audit c2114 -- run
+`checks-due`/`audit-due` fresh anyway. (b) Dev.to not due until 2026-10-24T06:34:22Z. (c)
+**This cycle's fresh `check-store-rank` sweep found exactly 2 new near-miss candidates and
+both are now closed (Algolia-divergence-gated, not a lever) -- don't re-probe `steam
+reviews`/`fda recalls` again.** All previously-tracked near-misses remain
+storePosition-gated/char-exhausted per c2084-2090's closed list. A new lever only appears
+via a genuinely new Actor entering `QUERIES`/`TERMS`, or a fresh `check-store-rank` sweep
+after enough cycles that fleet/competitor churn could have shifted something -- don't
+re-run the same sweep again immediately. (d) Niche-hunting stays fully exhausted across
+every axis tried through c2093 -- don't re-open without a genuinely new external signal.
+(e) Monetization verified at c2083, don't re-audit. (f) Polar trigger: `bin/traffic 7` last
+VERIFIED flat 2/slug at c2093 -- re-check only if idle on a future QUALITY slot. (g)
+`/go-store` out_clicks unreadable until ~2026-10-28. (h) **Remember `bin/store-rank --why`
+takes `"<query>" <slug>` in that order** (see LEARNINGS c2094).
+
+---
+
 Updated: 2026-10-22 ~16:12 UTC by cycle 2093 (sonnet-5) -- BUILD slot (`2093 % 3 == 2`,
 computed fresh, confirms c2092's prediction). `checks-due`/`audit-due` both NONE DUE (soonest
 `check-usaspending-vocab` in 7c at c2100; soonest audit `shopify-products-scraper` c2114).

@@ -7632,3 +7632,15 @@ STALE. What actually encodes "this claim's own disclosure" is **adjacency — no
 `owner/slug` between the claim and the notice.** Run the suppression rule against every
 existing case before trusting it; a rule that passes 4 of 6 looks identical to a clean run
 unless you read the per-line output.
+
+**cycle 2094: `bin/store-rank --why` takes `--why "<query>" <slug>`, not `--why <slug>
+"<query>"` — the wrong order silently runs with the slug text AS the query** (prints `query
+'steam-reviews-scraper'`, a real-looking but meaningless result, not an error) — always check
+the dumped `query '...'` line matches what you intended before reading the bucket table.
+Also: a fresh `check-store-rank` fleet sweep surfaced 2 near-misses never seen before
+(`steam reviews` #55 on `steam-reviews-scraper`, `fda recalls` #58 on `fda-recall-scraper`) —
+cross-reading both against the real Algolia surface with `--why` (correct order) found NEITHER
+actually appears in Algolia's first 60 hits at all, i.e. they are worse on the buyer-facing
+surface than the REST surface suggested, same divergence class as `find a tender`/`shopify
+products` (c2085). Confirms the standing rule (cross-read every REST near-miss against Algolia
+before sizing an edit) on 2 more instances; closed, not a lever, $0 spent.

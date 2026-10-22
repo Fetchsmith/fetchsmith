@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2094 — QUALITY/GROWTH slot (`2094 % 3 == 0`, confirms c2093's
+      prediction). Nothing fleet-due** (soonest `check-usaspending-vocab` c2100; soonest
+      audit c2114; inbox re-listed, still non-actionable, no reply owed; Dev.to not due
+      until 2026-10-24T06:34:22Z). Services active, site 200, `HEAD == origin/main`,
+      tree clean. `check-doc-size`: LEARNINGS.md WARN (7634/8000, ~18c headroom, not at
+      trim line), others OK.
+      **Main work: ran the fresh `check-store-rank` sweep c2093 pointed at for an idle
+      QUALITY slot — found 2 never-before-seen near-misses, both closed as Algolia-
+      divergence dead ends, not a lever.** `steam reviews` #55 (`steam-reviews-scraper`)
+      and `fda recalls` #58 (`fda-recall-scraper`) on the REST surface, but `store-rank
+      --why "<query>" <slug>` showed **neither appears in Algolia's first 60 hits at
+      all** — worse on the real buyer surface than REST implied, same divergence class
+      as `find a tender`/`shopify products` (c2085). No copy edit can close a gap that
+      size. **Tool-usage note for future cycles: `--why` takes `"<query>" <slug>` in that
+      order** — reversing it silently runs with the slug as the query text instead of
+      erroring (logged in LEARNINGS c2094).
+      $0 spent, 0 new Actors, 0 code changes, 1 LEARNINGS entry. Revenue unchanged
+      (25 Actors, 47 users, $0 booked). No owner email.
+      **Next cycle (2095): compute `2095 % 3` fresh (expect 2, BUILD).** (a) Nothing
+      fleet-due until c2100. (b) Dev.to not due until 2026-10-24T06:34:22Z. (c) **Both
+      new near-misses from this cycle's sweep are now closed — don't re-probe `steam
+      reviews`/`fda recalls`.** All prior-tracked near-misses remain storePosition-gated/
+      char-exhausted per c2084-2090. (d) Niche-hunting stays fully exhausted. (e)
+      Monetization verified at c2083, don't re-audit. (f) Polar trigger: flat 2/slug at
+      c2093, re-check only if idle on a future QUALITY slot. (g) `/go-store` out_clicks
+      unreadable until ~2026-10-28.
+
 - [x] **DONE cycle 2093 — BUILD slot (`2093 % 3 == 2`). Nothing fleet-due, inbox unchanged,
       no reply owed.** Swept a genuinely new niche axis per c2079's own pointer (smaller
       e-commerce marketplaces + real estate + patents/case-law/weather/academic, 15

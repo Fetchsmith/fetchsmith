@@ -4075,5 +4075,362 @@
     "scanned": 23
    }
   ]
+ },
+ {
+  "ts": 1792686671,
+  "date": "2026-10-22",
+  "scan": 300,
+  "rows": [
+   {
+    "slug": "app-store-reviews-scraper",
+    "query": "app store reviews",
+    "rank": 215,
+    "total": 1667,
+    "scanned": 216
+   },
+   {
+    "slug": "app-store-reviews-scraper",
+    "query": "ios app reviews",
+    "rank": 181,
+    "total": 371,
+    "scanned": 182
+   },
+   {
+    "slug": "apple-podcasts-scraper",
+    "query": "apple podcasts",
+    "rank": 74,
+    "total": 253,
+    "scanned": 75
+   },
+   {
+    "slug": "apple-podcasts-scraper",
+    "query": "podcast charts",
+    "rank": 26,
+    "total": 98,
+    "scanned": 27
+   },
+   {
+    "slug": "ats-jobs-scraper",
+    "query": "greenhouse jobs",
+    "rank": null,
+    "total": 1545,
+    "scanned": 256
+   },
+   {
+    "slug": "ats-jobs-scraper",
+    "query": "lever jobs",
+    "rank": null,
+    "total": 6644,
+    "scanned": 246
+   },
+   {
+    "slug": "clinicaltrials-scraper",
+    "query": "clinical trials",
+    "rank": 121,
+    "total": 265,
+    "scanned": 122
+   },
+   {
+    "slug": "clinicaltrials-scraper",
+    "query": "clinicaltrials.gov",
+    "rank": 82,
+    "total": 201,
+    "scanned": 83
+   },
+   {
+    "slug": "court-records-scraper",
+    "query": "court records",
+    "rank": 28,
+    "total": 9405,
+    "scanned": 29
+   },
+   {
+    "slug": "court-records-scraper",
+    "query": "pacer court",
+    "rank": 16,
+    "total": 1028,
+    "scanned": 17
+   },
+   {
+    "slug": "eu-ted-tenders-scraper",
+    "query": "eu tenders",
+    "rank": 108,
+    "total": 490,
+    "scanned": 109
+   },
+   {
+    "slug": "eu-ted-tenders-scraper",
+    "query": "ted tenders",
+    "rank": 62,
+    "total": 463,
+    "scanned": 63
+   },
+   {
+    "slug": "fda-recall-scraper",
+    "query": "fda recalls",
+    "rank": 57,
+    "total": 285,
+    "scanned": 58
+   },
+   {
+    "slug": "fda-recall-scraper",
+    "query": "food recall",
+    "rank": 71,
+    "total": 247,
+    "scanned": 72
+   },
+   {
+    "slug": "fec-campaign-finance-scraper",
+    "query": "fec campaign finance",
+    "rank": 14,
+    "total": 36,
+    "scanned": 15
+   },
+   {
+    "slug": "fec-campaign-finance-scraper",
+    "query": "political donations",
+    "rank": null,
+    "total": 65,
+    "scanned": 57
+   },
+   {
+    "slug": "federal-register-scraper",
+    "query": "federal register",
+    "rank": 79,
+    "total": 540,
+    "scanned": 80
+   },
+   {
+    "slug": "federal-register-scraper",
+    "query": "us regulations",
+    "rank": 89,
+    "total": 319,
+    "scanned": 90
+   },
+   {
+    "slug": "google-news-scraper",
+    "query": "google news",
+    "rank": 228,
+    "total": 3119,
+    "scanned": 229
+   },
+   {
+    "slug": "google-news-scraper",
+    "query": "news scraper",
+    "rank": null,
+    "total": 25038,
+    "scanned": 249
+   },
+   {
+    "slug": "google-play-reviews-scraper",
+    "query": "google play reviews",
+    "rank": 205,
+    "total": 1064,
+    "scanned": 206
+   },
+   {
+    "slug": "google-play-reviews-scraper",
+    "query": "android app reviews",
+    "rank": 24,
+    "total": 381,
+    "scanned": 25
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "grants.gov",
+    "rank": 90,
+    "total": 164,
+    "scanned": 91
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "government grants",
+    "rank": 19,
+    "total": 229,
+    "scanned": 20
+   },
+   {
+    "slug": "hacker-news-scraper",
+    "query": "hacker news",
+    "rank": 219,
+    "total": 615,
+    "scanned": 220
+   },
+   {
+    "slug": "hacker-news-scraper",
+    "query": "hn scraper",
+    "rank": 7,
+    "total": 423,
+    "scanned": 8
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih reporter",
+    "rank": 16,
+    "total": 64,
+    "scanned": 17
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih grants",
+    "rank": 15,
+    "total": 77,
+    "scanned": 16
+   },
+   {
+    "slug": "remote-jobs-scraper",
+    "query": "remote jobs",
+    "rank": null,
+    "total": 5141,
+    "scanned": 252
+   },
+   {
+    "slug": "remote-jobs-scraper",
+    "query": "jobicy",
+    "rank": 38,
+    "total": 144,
+    "scanned": 39
+   },
+   {
+    "slug": "sam-gov-opportunities-scraper",
+    "query": "sam.gov opportunities",
+    "rank": 8,
+    "total": 245,
+    "scanned": 9
+   },
+   {
+    "slug": "sam-gov-opportunities-scraper",
+    "query": "government bids",
+    "rank": 17,
+    "total": 695,
+    "scanned": 18
+   },
+   {
+    "slug": "scholarship-scraper",
+    "query": "scholarships",
+    "rank": 12,
+    "total": 46,
+    "scanned": 13
+   },
+   {
+    "slug": "scholarship-scraper",
+    "query": "scholarship search",
+    "rank": 6,
+    "total": 33,
+    "scanned": 7
+   },
+   {
+    "slug": "sec-insider-trades-scraper",
+    "query": "sec insider trading",
+    "rank": 20,
+    "total": 192,
+    "scanned": 21
+   },
+   {
+    "slug": "sec-insider-trades-scraper",
+    "query": "form 4 insider",
+    "rank": 31,
+    "total": 312,
+    "scanned": 32
+   },
+   {
+    "slug": "shopify-products-scraper",
+    "query": "shopify products",
+    "rank": 54,
+    "total": 1762,
+    "scanned": 55
+   },
+   {
+    "slug": "shopify-products-scraper",
+    "query": "shopify store",
+    "rank": null,
+    "total": 1712,
+    "scanned": 251
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam reviews",
+    "rank": 54,
+    "total": 1313,
+    "scanned": 55
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam games",
+    "rank": 116,
+    "total": 1742,
+    "scanned": 117
+   },
+   {
+    "slug": "substack-scraper",
+    "query": "substack",
+    "rank": 196,
+    "total": 593,
+    "scanned": 197
+   },
+   {
+    "slug": "substack-scraper",
+    "query": "newsletter scraper",
+    "rank": 96,
+    "total": 3113,
+    "scanned": 97
+   },
+   {
+    "slug": "trademark-search-scraper",
+    "query": "trademark search",
+    "rank": 27,
+    "total": 194,
+    "scanned": 28
+   },
+   {
+    "slug": "trademark-search-scraper",
+    "query": "nice classification",
+    "rank": 0,
+    "total": 737,
+    "scanned": 1
+   },
+   {
+    "slug": "uk-find-a-tender-scraper",
+    "query": "uk tenders",
+    "rank": 84,
+    "total": 313,
+    "scanned": 85
+   },
+   {
+    "slug": "uk-find-a-tender-scraper",
+    "query": "find a tender",
+    "rank": 50,
+    "total": 1701,
+    "scanned": 51
+   },
+   {
+    "slug": "us-federal-awards-scraper",
+    "query": "usaspending",
+    "rank": 186,
+    "total": 277,
+    "scanned": 187
+   },
+   {
+    "slug": "us-federal-awards-scraper",
+    "query": "federal contracts",
+    "rank": null,
+    "total": 930,
+    "scanned": 243
+   },
+   {
+    "slug": "website-screenshot-scraper",
+    "query": "website screenshot",
+    "rank": 140,
+    "total": 579,
+    "scanned": 141
+   },
+   {
+    "slug": "website-screenshot-scraper",
+    "query": "url to pdf",
+    "rank": 23,
+    "total": 1085,
+    "scanned": 24
+   }
+  ]
  }
 ]
