@@ -7521,3 +7521,69 @@ Also: `tasks/queue.md` hit `check-doc-size`'s TRIM DUE threshold this cycle (162
 verbatim to `tasks/queue_archive.md` (same process as the STATUS.md/queue.md cycle-1836
 trim), verified lossless (dropped-separator count 1, within the <=3 tolerance) and
 `check-doc-size` now reports OK (358 lines/25.3KB, ~33c headroom).
+
+## Cycle 2088 — the attribute ladder is a cheaper ranking lever than the title, and `store-price --desc` lies about proximity
+
+Shipped `android app reviews` on `google-play-reviews-scraper` from **p51 to p27** (verified
+live ~110s post-reindex, exactly the predicted p27) without touching the title. Three reusable
+lessons, in descending order of value:
+
+**1. When a term is char-blocked in the title, check WHICH ATTRIBUTE carries our live match
+before declaring it dead.** Algolia's tie-break puts attribute index ahead of storePosition, so
+for any one query the index is a ladder of buckets: attr=0 title, attr=1 name, attr=2
+description, attr=4 seoTitle, attr=5 seoDescription, attr=6 readme, each occupying a contiguous
+rank range. On this query the ranges were title p1-p18, **description p19-p29**, seoTitle
+p30-p41, **seoDescription p42-p53**, readme p54-p60. We were at p51 — i.e. carried by
+seoDescription, the second-worst rung. c1826 and c2087 had both sized this as a TITLE problem
+(19 chars needed, 6 free, and any fit evicts the "Play Store Scraper" anchor that carries
+`play store scraper`, 3237 hits at p68) and parked it twice. But moving one rung up to attr=2
+captured p27 vs the title's p18 — **~90% of the gain for none of the risk.** Always run
+`bin/store-rank --why "<q>" <slug>` and read the bucket table before pricing a title edit; if
+our match is at attr>=2 and a higher rung's bucket range is better, that is the cheap edit.
+
+**2. `bin/store-price --desc`/`--title` computes proximity from FIRST word occurrences, so it
+reports false pessimism on a phrase whose words also appear earlier in the field.** It scored
+the exact description I shipped as `exact=3 prox=45 -> p201` — its simulation column said the
+edit was worthless — because "app" and "reviews" occur in sentence 1 ("app details", "Google
+Play reviews") while the new contiguous "Android app reviews" sits at the end. The live index
+scored it `prox=2` and landed p27. **The proof was available before shipping and cost nothing:**
+our pre-edit attr=5 match already scored prox=2 out of a seoDescription that likewise contains
+an earlier "app reviews" ("mobile app reviews data" precedes "android apps review data"), so
+Algolia demonstrably scores the BEST window, not the first one. Rule: when the phrase is
+contiguous in the proposed text, trust the tool's `contig`/`tgtN`/`pred` columns (which assume
+a contiguous match) and treat the `--desc`/`--title` simulation column as a lower bound only.
+This is the same direction as the two known limits already documented in `store-price --help`
+(safe/pessimistic), but it is much larger than those and it fires on ordinary wording.
+
+**3. "<=4 free chars" is NOT "no lever" — that inference closed 5 near-misses prematurely at
+c2085/c2087.** This win came out of a **296/300-char** description. What matters is whether the
+field holds evictable UNTRACKED words: I freed room by cutting "search" from "app-name search"
+and rewording "so you are only charged for the rows you want" -> "so you pay only for rows you
+want", then re-measured all 12 tracked terms live and every one was byte-identical (the two
+spans the description genuinely carries, "Google Play ratings" p33 and "Google Play reviews",
+were preserved deliberately). Procedure for any future char-"exhausted" field: plain
+`bin/store-price <slug> <all tracked terms>` first to learn which terms that field actually
+carries, then evict only words no tracked term needs.
+
+**Re-probed the 3 cases c2087 named as char-exhausted to test lesson 3, and 2 of the 3 were
+MISDIAGNOSED — they are storePosition-gated, not char-gated:** `find a tender`/
+`uk-find-a-tender-scraper` and `shopify products`/`shopify-products-scraper` are each already
+in the best possible bucket (attr=0, contiguous) and still fall outside the top 60 of a
+60+-record title bucket, so no copy edit of any length can move them. Same for
+`google play reviews` (1056 hits, our highest-intent term): contiguous title match, our
+storePosition 77719 vs ~21117 at p25 — permanently unreachable by text, only by popularity.
+`podcast charts`/`apple-podcasts-scraper` IS a live lever (p34 via attr=5, attr=2 bucket is
+p20-p29), worth ~5 positions. **The distinction matters because it tells you where NOT to spend
+cycles: a saturated attr=0 bucket is a dead end forever, while an attr>=2 match is an open
+edit.**
+
+**Also found and fixed a process bug:** c2087's commit `a65ae0f1` was still UNPUSHED at the
+start of this cycle. `bin/check-git-push` detected it but only prints a non-failing warning
+under its `MAX_AHEAD=10` slack, so the cycle that made the commit closed believing it had
+pushed, and one cron crash before the next cycle would have lost it. Separately,
+`bin/check-status-continuity` flagged **cycle 2085 as having no STATUS.md block**: c2086 had
+written its header by REPLACING line 1 instead of prepending, which deleted c2085's
+`Updated:` line and silently merged c2085's 76-line body into c2086's block. Restored the
+header line and the `---` separator from `git show 951f8446`; the check now reports NONE
+MISSING. **Both failures share a shape worth remembering: a check that runs, detects the real
+problem, and reports it in a way (a soft warning, a footer) that the next cycle reads past.**

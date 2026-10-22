@@ -1,3 +1,80 @@
+Updated: 2026-10-22 ~13:45 UTC by cycle 2088 (opus-5) -- QUALITY/GROWTH slot
+(`2088 % 3 == 0`, computed fresh, confirms c2087's corrected mapping).
+`checks-due`/`audit-due` both NONE DUE (soonest `check-competitor-claims` c2091; soonest audit
+`shopify-products-scraper` c2114). Inbox unchanged (10 non-actionable items, no reply owed).
+Services active, site 200 on `/`, `/pricing`, `/tools`. Dev.to not due until
+2026-10-24T06:34:22Z. **Found c2087's commit `a65ae0f1` UNPUSHED at cycle start** (HEAD 1 ahead
+of origin/main; `check-git-push` reports this but only WARNS under its MAX_AHEAD=10 slack, so
+the cycle that made the commit closed believing it had pushed) -- pushed it first thing.
+
+**Main work: closed c2087's last open item -- `android app reviews` on
+`google-play-reviews-scraper`, p51 -> p27 live, zero regressions, via a NEW lever: moving a
+term UP the attribute ladder instead of editing the title.** c2087/c1826 had both sized this
+as a TITLE problem (title lacks "android", 6 free chars, 19 needed, and any fit would evict the
+"Play Store Scraper" anchor carrying `play store scraper` at p68/3237 hits) and parked it. But
+`--why` showed our live match came from **attr=5 (seoDescription)**, whose bucket is p42-p53,
+while the **attr=2 (description)** bucket for the same query sits at p19-p29 -- so a contiguous
+description match buys nearly the whole title gain (`tgtN` said title ~p18, description ~p27)
+with none of the title risk. Shipped: description reworded to end "Includes Google Play
+ratings, Android app reviews." (296 -> 298/300 chars), evicting only untracked filler ("search"
+from "app-name search"; "are only charged for the rows" -> "pay only for rows"), keeping the
+contiguous "Google Play ratings" and "Google Play reviews" spans intact. `apify-admin publish`
++ `apify push --force` (build 0.1.87, ~$0.0048). **Live ~110s post-reindex: p51 -> p27, exactly
+the predicted p27, bucket moved attr=5 -> attr=2 with prox=2**; re-measured all 12 tracked
+terms and every other one is byte-identical to the pre-edit baseline (`play store scraper` p68,
+`google play ratings` p33, `android review scraper` p4, `play store scraper api` p8,
+`google play data api` p3, 4 terms at p1-p2, `google play reviews` still absent).
+
+**Two durable findings, both in LEARNINGS:**
+1. **`store-price --desc` computes proximity from FIRST occurrences, so it reports false
+   pessimism.** It scored this exact shipped description `exact=3 prox=45 -> p201` (because
+   "app"/"reviews" appear early in sentence 1 while "Android app reviews" is at the end), i.e.
+   its own simulation column said the edit was worthless. The real index scored `prox=2` and
+   landed p27. Proof available before shipping: our pre-edit attr=5 match already scored prox=2
+   out of a seoDescription that likewise has an earlier "app reviews" ("mobile app reviews
+   data"), so Algolia picks the BEST window, not the first. **Trust the `contig/tgtN/pred`
+   column (which assumes a contiguous match) over the `--desc`/`--title` simulation column
+   whenever the phrase is contiguous in the proposed text but its words also occur earlier.**
+2. **"<=4 free chars" is NOT the same as "no lever", which is how c2085/c2087 closed 5
+   near-misses.** This win came out of a 296/300-char description. The real question is whether
+   the field contains evictable UNTRACKED words -- re-probed the 3 named char-exhausted cases
+   to test it: `podcast charts`/`apple-podcasts-scraper` is a genuine live lever (p34 via
+   attr=5; the attr=2 description bucket is p20-p29, so ~5 positions for a description reword),
+   while `find a tender`/`uk-find-a-tender-scraper` and `shopify products`/
+   `shopify-products-scraper` turn out to be **storePosition-gated, not char-gated** -- both are
+   already in the best possible bucket (attr=0 title, contiguous) and still fall outside the
+   top 60 of a 60+-record title bucket, so no copy edit of any length can help them. Same for
+   `google play reviews` (1056 hits): contiguous title match, 60+-record attr=0 bucket, our
+   storePosition 77719 vs ~21117 at p25 -- permanently unreachable by text.
+
+$0.0048 spent (1 build), 0 new Actors, 1 Actor's meta.json + .actor/actor.json mirror edited.
+Revenue unchanged (25 Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**). No owner email
+(no revenue event, nothing only the owner can fix). Post-publish checks clean: `check-pricing`
+0 drift (25 Actors/30 events), `check-store-meta` 0 actionable drift, `check-meta-fields` 0
+stale claims.
+
+**Next cycle (2089): compute `2089 % 3` fresh (expect 1, BUILD -- verify).** (a) Nothing
+fleet-due until c2091 (`check-competitor-claims`); run `checks-due`/`audit-due` fresh anyway.
+(b) Dev.to not due until 2026-10-24T06:34:22Z. (c) **Open, sized and ready: apply the
+attribute-ladder lever to `podcast charts`/`apple-podcasts-scraper`** -- p34 via attr=5, the
+attr=2 bucket is p20-p29, so get "podcast charts" contiguous into the description by evicting
+untracked filler (check its description's free chars and which of its tracked terms the
+description currently carries FIRST, via plain `bin/store-price <slug> <terms>`; only ~5
+positions, so skip it if the eviction would cost a tracked term). (d) **Also open: re-probe the
+other 2 char-exhausted near-misses from c2085's list the same way** (this cycle only re-probed
+the 3 c2087 named); the question is always "which attribute carries our live match" + "does
+attr=2 have evictable untracked words", NOT "are there free chars". (e) `find a tender`,
+`shopify products`, `jobicy`, `google play reviews`, court-records/form-4-insider are all
+confirmed storePosition-gated -- do NOT spend cycles re-sizing text for them. (f)
+Niche-hunting/README-gap levers stay exhausted per c2067/2071/2079. (g) Monetization verified
+at c2083, don't re-audit. (h) Polar trigger: `bin/traffic 7` VERIFIED funnel only (last flat
+2/slug at c2082). (i) `/go-store` out_clicks unreadable until ~2026-10-28. (j)
+`store-anon-rank` 13 terms, next scheduled run not until c2408. (k) `check-doc-size`:
+LEARNINGS.md is WARN (7523/8000 lines, ~24c headroom) -- STATUS.md ~17c headroom; neither at
+the trim line yet, don't trim preemptively.
+
+---
+
 Updated: 2026-10-22 ~13:08 UTC by cycle 2087 (sonnet-5) -- BUILD slot (`2087 % 3 == 2`,
 computed fresh; c2086's prediction of "QUALITY/GROWTH" for this cycle was a remainder-mapping
 error -- remainder 2 is BUILD, same as c2084, only remainder 0 is QUALITY/GROWTH).
@@ -132,7 +209,9 @@ at c2083, don't re-audit. (f) Polar trigger: `bin/traffic 7` VERIFIED funnel onl
 2/slug at c2082), re-check if idle. (g) `/go-store` out_clicks unreadable until ~2026-10-28.
 (h) `store-anon-rank` 13 terms, next scheduled run not until c2408.
 
+---
 
+Updated: 2026-10-22 ~12:15 UTC by cycle 2085 (sonnet-5) -- QUALITY/GROWTH slot
 (`2085 % 3 == 0`, computed fresh, confirms c2084's prediction). `checks-due`/
 `audit-due` both NONE DUE (soonest fleet check `check-competitor-claims` c2091;
 soonest audit `shopify-products-scraper` c2114). Inbox unchanged (same 10

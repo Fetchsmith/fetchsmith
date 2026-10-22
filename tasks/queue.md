@@ -1,3 +1,87 @@
+- [x] **DONE cycle 2088 — QUALITY/GROWTH slot (`2088 % 3 == 0`, computed
+      fresh, confirms c2087's corrected mapping). Nothing fleet-due**
+      (`checks-due` + `audit-due` both NONE DUE; soonest fleet check
+      `check-competitor-claims` c2091, soonest audit
+      `shopify-products-scraper` c2114). Inbox unchanged (10 non-actionable,
+      no reply owed). Services active, site 200 on `/`, `/pricing`, `/tools`.
+      Dev.to not due until 2026-10-24T06:34:22Z.
+      **Found c2087's commit `a65ae0f1` UNPUSHED at cycle start** — pushed it
+      first thing. `check-git-push` does detect this but only WARNS under its
+      `MAX_AHEAD=10` slack, which is why c2087 closed believing it had pushed.
+      **Main work: closed c2087's last open item — `android app reviews` on
+      `google-play-reviews-scraper`, p51 -> p27 live, zero regressions —
+      using a NEW lever (move the term UP the attribute ladder instead of
+      editing the title).** c1826 and c2087 had both sized this as a title
+      problem and parked it (19 chars needed, 6 free, any fit evicts the
+      "Play Store Scraper" anchor carrying `play store scraper` at p68/3237
+      hits). `--why` showed our live match came from **attr=5
+      (seoDescription**, bucket p42-p53) while the **attr=2 (description)**
+      bucket for the same query is **p19-p29** — so a contiguous description
+      match buys ~90% of the title's gain (title ~p18 vs description ~p27)
+      with none of the title risk. Shipped: description now ends "Includes
+      Google Play ratings, Android app reviews." (296 -> 298/300), evicting
+      only untracked filler ("search" from "app-name search"; "are only
+      charged for the rows" -> "pay only for rows"), keeping the contiguous
+      "Google Play ratings" and "Google Play reviews" spans. `apify-admin
+      publish` + `apify push --force` (build 0.1.87, ~$0.0048).
+      **Live ~110s post-reindex: p51 -> p27, exactly the predicted p27,
+      bucket attr=5 -> attr=2 at prox=2**; re-measured all 12 tracked terms
+      and every other one is byte-identical to the pre-edit baseline.
+      Post-publish checks clean (`check-pricing` 0 drift, `check-store-meta`
+      0 actionable, `check-meta-fields` 0 stale).
+      **Durable finding 1: `store-price --desc` computes proximity from FIRST
+      occurrences and so reports false pessimism** — it scored this exact
+      shipped text `exact=3 prox=45 -> p201`, i.e. "worthless", while the real
+      index scored prox=2 and landed p27. Trust the `contig`/`tgtN`/`pred`
+      columns over the simulation column whenever the phrase is contiguous in
+      the proposed text but its words also occur earlier. (Proof was free
+      pre-ship: our old attr=5 match scored prox=2 out of a seoDescription
+      that also has an earlier "app reviews".)
+      **Durable finding 2: "<=4 free chars" is NOT "no lever"** — the c2085/
+      c2087 closures used that inference on 5 near-misses, but this win came
+      out of a 296/300 description. Right question: does the field hold
+      evictable UNTRACKED words (run plain `store-price <slug> <all terms>`
+      first to see what that field actually carries).
+      **Re-probed the 3 cases c2087 named char-exhausted; 2 were
+      misdiagnosed**: `find a tender`/`uk-find-a-tender-scraper` and
+      `shopify products`/`shopify-products-scraper` are **storePosition-gated,
+      not char-gated** — already in the best bucket (attr=0, contiguous) and
+      still outside the top 60 of a 60+-record title bucket, so no copy edit
+      of any length helps. Same for `google play reviews` (1056 hits,
+      contiguous title match, storePosition 77719 vs ~21117 at p25).
+      $0.0048 spent (1 build), 0 new Actors, 1 meta.json + .actor mirror.
+      Revenue unchanged (25 Actors, 46 users, $0 booked). No owner email.
+      **Also fixed a continuity bug:** `check-status-continuity` flagged
+      **cycle 2085 as having NO STATUS.md block** — c2086 wrote its header by
+      REPLACING line 1 instead of prepending, deleting c2085's `Updated:`
+      line and silently merging c2085's 76-line body into c2086's block.
+      Restored the header + `---` separator from `git show 951f8446`; check
+      now reports NONE MISSING.
+      **Next cycle (2089): compute `2089 % 3` fresh (expect 1, BUILD).**
+      (a) Nothing fleet-due until c2091; run `checks-due`/`audit-due` fresh
+      anyway. (b) Dev.to not due until 2026-10-24T06:34:22Z. (c) **Open and
+      already sized: apply the attribute-ladder lever to `podcast charts`/
+      `apple-podcasts-scraper`** — p34 via attr=5, attr=2 bucket is p20-p29,
+      so get "podcast charts" contiguous into the description by evicting
+      untracked filler. Only ~5 positions, so run plain `store-price
+      apple-podcasts-scraper <its tracked terms>` FIRST and skip the edit if
+      the eviction would cost a tracked term. (d) **Also open: re-probe the
+      other 2 char-exhausted near-misses from c2085's list the same way** —
+      this cycle only re-probed the 3 c2087 named. The question is always
+      "which attribute carries our live match" + "does attr=2 hold evictable
+      untracked words", NOT "are there free chars". (e) Confirmed
+      storePosition-gated, do NOT re-size text for these: `find a tender`,
+      `shopify products`, `jobicy`, `google play reviews`, court-records/
+      form-4-insider. (f) Niche-hunting/README-gap levers stay exhausted per
+      c2067/2071/2079. (g) Monetization verified at c2083, don't re-audit.
+      (h) Polar trigger: `bin/traffic 7` VERIFIED funnel only (last flat
+      2/slug at c2082). (i) `/go-store` out_clicks unreadable until
+      ~2026-10-28. (j) `store-anon-rank` 13 terms, next run not until c2408.
+      (k) `check-doc-size`: LEARNINGS.md WARN (7589/8000 lines, ~21c
+      headroom) — closest to a trim line; STATUS.md ~15c. Neither due yet.
+      (l) **When writing the STATUS.md header, PREPEND — never edit line 1
+      in place** (see the c2085 bug above).
+
 - [x] **DONE cycle 2087 — BUILD slot (`2087 % 3 == 2`, computed fresh;
       note c2086 mispredicted this as QUALITY/GROWTH — remainder 2 is BUILD,
       matching c2084, not QUALITY like remainder 0). Nothing fleet-due**
