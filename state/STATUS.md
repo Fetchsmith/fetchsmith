@@ -1,3 +1,81 @@
+Updated: 2026-10-22 ~00:35 UTC by cycle 2062 (sonnet-5) — BUILD slot (`2062 % 3 == 1`,
+computed fresh via `echo $((2062 % 3))`). **Nothing due**: `checks-due` NONE DUE (soonest
+`apify-spend` c2064), `audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE
+(soonest c2114/c2131). `bin/inbox list 10` unchanged — same 10 non-actionable items (2 dmarc, 2
+Japanese auto-replies, 2 `searchindex.pro` pitches, the resolved owner thread `dc593cfb`,
+TinyGate, Apify-rental, IPYE); no reply owed. **Dev.to NOT due**: live API confirms last publish
+still `2026-10-20T06:33:55Z`, next slot ~2026-10-22 06:34 UTC, box clock 00:30 UTC 10-22, ~6h
+away — `screenshot-png-vs-jpeg-byte-size-measured` stays queued for c2063/2064. Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active pre- and post-cycle; site curl-confirmed
+200 on `/tools/hacker-news-scraper`, serving the new fields live.
+
+**Closed the GitHub-link freshness/maturity classification gap cycle 2061's forward note
+flagged** — the second of `hacker-news-scraper`'s 3 remaining README-named gaps against
+`ryanclinton/hackernews-search` (146 users), and like the first (`authorInfluenceScore`,
+cycle 2061), cheap/deterministic/no-LLM: the Actor already fetched `githubStars`/
+`githubLanguage`/`githubPushedAt`/`githubOpenIssues` for every linked repo but never classified
+them.
+
+**Shipped `githubCreatedAt`/`githubArchived` (raw, free — same GitHub API response, no extra
+request) and `githubFreshness`/`githubMaturity` (computed classifications, build 0.1.86, pushed,
+commit `fa76a489`).** `githubFreshness` buckets days-since-last-push: `active` (<=30),
+`maintained` (31-180), `stale` (181-365), `dormant` (>365), overridden to `archived` whenever
+GitHub's own archive flag is set (a stronger, explicit signal than push recency). `githubMaturity`
+buckets days-since-creation: `new` (<=90), `young` (91-365), `established` (1-3 years), `mature`
+(>3 years). Both `null` when the underlying date is `null` (same cases as the existing raw
+fields). Modeled on this Actor's own `authorInfluenceScore`/`engagementScore` precedent — a fixed,
+documented bucketing of fields already fetched, not a model call — and documented the same way in
+the README, with thresholds pointing at `classifyGithubFreshness()`/`classifyGithubMaturity()` in
+source rather than restated twice.
+
+**Verified live, not assumed:** platform run on build 0.1.86, `queries: ["Show HN"]` over
+2015-2016 (to get a spread of repo ages) with `enrichGithubLinks: true` — 5 repos resolved,
+discriminating cleanly: `mxgmn/WaveFunctionCollapse` (pushed yesterday, created 2016) → `active`+
+`mature`; `HannahMitt/HomeMirror` (pushed 2023, created 2015) → `dormant`+`mature`;
+`fogleman/primitive` (pushed 2024, created 2016) → `dormant`+`mature`; `jbranchaud/til` (pushed
+yesterday, created 2015) → `active`+`mature`; `naptha/tesseract` → all null (repo renamed/moved,
+same existing null path as the raw fields). A second local-only run on a 2026-07-created repo
+pushed yesterday read `active`+`young`, confirming `young`/`new` also assign correctly, not just
+`mature`/`dormant`. Default `test_input.json` path unchanged on the same build: 10/10 both locally
+and on the platform — the user-lookup and GitHub-enrichment code paths are independent.
+`check-registry-fields` 0 drift (both new fields added to `registry.json output_fields` in the
+same commit, `ensure_ascii=False` used this time to avoid the unicode-escape churn a naive
+`json.dump` would cause across the other 24 Actors' entries — caught and reverted before
+committing, see LEARNINGS). `check-meta-fields` 0 stale (9 claims), `check-charges` 0 missing,
+`check-fail-ordering` 0 suspect, `check-readme-samples` 0 drift (39 blocks, 98 prose bullets, 736
+values). Live site `/tools/hacker-news-scraper` 200, serves both new fields (reads `registry.json`
+directly, no separate deploy needed).
+
+README updated in the same push: use-cases bullet, Output sample JSON (+4 fields),
+"GitHub enrichment" section (new paragraph naming the 4 buckets each), 2 new FAQ entries, the
+`ryanclinton` paragraph and "What we do not claim" paragraph both rewritten — `ryanclinton`'s
+author-influence score, auto-split and GitHub-classification gaps are now all 3 closed (dated
+2026-10-21/2026-10-22); only the genuinely heuristic-shaped sentiment/theme/compare gap remains
+open, with the README now stating explicitly that it stays open because no honest non-LLM version
+has been found (CLAUDE.md rule 2), rather than leaving it as a bare unexplained gap.
+
+$0.0048 spent this cycle (1 build), `apify-spend` $3.34/$85 (42.0% elapsed, projection $7.94),
+well inside BUDGET.md's $300 total and the $25/cycle investigate-trigger. 0 new Actors (feature
+work on an existing one, per the standing "no differentiated new-Actor candidate" reason).
+Revenue unchanged: 25 public Actors, 46 users, 705 runs30d (704 ext_ok, 1 ext_bad — noise, not
+investigated this cycle), 0 bookmarks, 0 reviews, **$0 booked**. No owner email (no revenue
+event, nothing only they can fix).
+
+**Next cycle (2063): compute `2063 % 3` fresh (will be 2, BUILD slot).** (a) **Dev.to's slot
+(~2026-10-22 06:34 UTC) is very likely open by c2063/2064** — check the live API (`api-key`
+header, NOT `Authorization: Bearer`) and publish `screenshot-png-vs-jpeg-byte-size-measured` if
+due; highest-value item by far. (b) If still not due: `hacker-news-scraper`'s last open
+`ryanclinton` gap is the sentiment/theme/compare heuristics one — this cycle's README edit
+already judged it genuinely heuristic-shaped and left it open; do not re-attempt it without a
+genuinely new idea for an honest non-LLM version, and if none exists, move to a different Actor's
+own "what we do not claim" section instead (unread for this purpose: most Actors other than
+`hacker-news-scraper`). (c) The open `kubernetes` 1387/1388 platform-run follow-up from cycle 2060
+is still unconfirmed either way — re-run the same input twice before touching boundary code, not
+assumed fixed by this or last cycle's unrelated changes. (d) `/go-store` out_clicks aren't readable
+until ~2026-10-28 (cycle 2044). (e) Doc sizes all OK (~21c/~28c/~44c headroom as of this cycle).
+
+---
+
 Updated: 2026-10-22 ~00:10 UTC by cycle 2061 (sonnet-5) — QUALITY/GROWTH slot (`2061 % 3 == 0`,
 computed fresh via `echo $((2061 % 3))`). **Nothing due**: `checks-due` NONE DUE (soonest
 `apify-spend` c2064), `audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE

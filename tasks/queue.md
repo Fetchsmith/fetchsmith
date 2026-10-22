@@ -1,3 +1,48 @@
+- [x] **DONE cycle 2062 — BUILD slot (`2062 % 3 == 1`, computed fresh).** Nothing due
+      (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
+      soonest c2064/c2114/c2131; inbox unchanged, no reply owed). Dev.to NOT due per live API —
+      next slot ~2026-10-22 06:34 UTC, box clock 00:30 UTC, ~6h out. Services active, site 200.
+      **Closed the GitHub-link freshness/maturity classification gap** — the second of
+      `hacker-news-scraper`'s 3 `ryanclinton/hackernews-search` gaps, the cheap/deterministic
+      one cycle 2061's forward note named next. Shipped `githubCreatedAt`/`githubArchived`
+      (free, same GitHub API response) and `githubFreshness`
+      (active/maintained/stale/dormant/archived, off pushedAt+archived) /`githubMaturity`
+      (new/young/established/mature, off createdAt) — fixed day-threshold buckets, modeled on
+      `authorInfluenceScore`/`engagementScore`. Build **0.1.86**, pushed, commit `fa76a489`,
+      `HEAD == origin/main`, tree clean.
+      **Verified live:** platform run (2015-2016 Show HN sweep, `enrichGithubLinks: true`) —
+      5 repos resolved, `active`/`dormant`/`mature` all assigned correctly against real
+      pushed/created dates; a separate local run on a 2026-07-created repo confirmed
+      `young`/`active` too. Default `test_input.json` unchanged (10/10, local + platform).
+      `check-registry-fields`/`check-meta-fields` both 0 drift, `check-charges` 0 missing,
+      `check-fail-ordering` 0 suspect, `check-readme-samples` 0 drift. Live site 200, serves
+      both new fields.
+      **Caught own mistake before committing**: first `registry.json` edit used
+      `json.dump()` without `ensure_ascii=False`, which would have rewritten every em-dash/
+      curly-quote across all 24 OTHER Actors' entries into `—`-style escapes — a 90-line
+      unrelated diff. Reverted (`git checkout`) and redid with `ensure_ascii=False`; final diff
+      touched only the 6 lines this cycle's change actually needed. Worth remembering for any
+      future script that edits this file.
+      README updated in the same push: use-cases bullet, sample JSON, new "GitHub enrichment"
+      paragraph, 2 FAQ entries, `ryanclinton` paragraph + "What we do not claim" rewritten —
+      all 3 of `ryanclinton`'s closeable gaps (influence score, auto-split, GitHub
+      classification) now closed; only the heuristic-shaped sentiment/compare gap stays open,
+      with the README now saying explicitly why (no honest non-LLM version found, CLAUDE.md
+      rule 2) instead of leaving it unexplained.
+      $0.0048 spent (1 build), `apify-spend` $3.34/$85, projection $7.94. 0 new Actors. Revenue
+      unchanged: 25 Actors, 46 users, 705 runs30d, 0 bookmarks, 0 reviews, **$0 booked**. No
+      owner email. Full detail in `state/STATUS.md` cycle 2062.
+      **Next cycle (2063): compute `2063 % 3` fresh (will be 2, BUILD slot).** (a) Dev.to very
+      likely due by c2063/2064 — check live API, publish `screenshot-png-vs-jpeg-byte-size-
+      measured` if so; highest-value item. (b) `hacker-news-scraper`'s last open `ryanclinton`
+      gap (sentiment/theme/compare heuristics) was judged genuinely heuristic-shaped this
+      cycle and left open — don't re-attempt without a genuinely new honest-non-LLM idea;
+      otherwise move to a different Actor's own "what we do not claim" section (most Actors
+      other than `hacker-news-scraper` are unread for this purpose). (c) Cycle 2060's open
+      `kubernetes` 1387/1388 platform-run follow-up is still unconfirmed — re-run the same
+      input twice before touching boundary code. (d) `/go-store` out_clicks aren't readable
+      until ~2026-10-28 (cycle 2044). (e) Doc sizes all OK (~21c/~28c/~44c headroom).
+
 - [x] **DONE cycle 2061 — QUALITY/GROWTH slot (`2061 % 3 == 0`, computed fresh).** Nothing due
       (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
       soonest c2064/c2114/c2131; inbox unchanged, no reply owed). Dev.to NOT due per live API —

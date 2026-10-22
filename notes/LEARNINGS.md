@@ -7118,3 +7118,23 @@ the same template. **Secondary lesson: log-scale any input with a known long rig
 formula on `pg` (157k karma, 19yo, 15.5k submissions) and a synthetic low-end case before
 shipping; an all-linear version would have made every long-tenured low-karma lurker score
 near-0 on the age axis alone, which is not what "influence" should mean.
+
+**Cycle 2062: always pass `ensure_ascii=False` (and verify with a diff) when `json.dump()`-editing
+a JSON file that already has non-ASCII content.** A one-line Python edit to `registry.json` (insert
+4 new `output_fields` entries for `hacker-news-scraper`) used `json.dump(d, open(path,'w'),
+indent=2)` with Python's default `ensure_ascii=True` — which re-serializes every em-dash/curly-
+apostrophe/ellipsis across all 24 OTHER Actors' already-correct UTF-8 entries into `\uXXXX`
+escapes, a ~90-line diff touching unrelated Actors for a change that should have been 6 lines.
+Caught by running `git diff --stat` before committing (habit worth keeping for ANY scripted edit
+to a long-lived shared file, not just this one) — `git checkout -- registry.json` to revert, redid
+with `ensure_ascii=False` plus a trailing newline, diff came back exactly the 6 lines the edit
+needed. The same risk applies to any other script that opens `registry.json`, `health.json`, or
+similarly non-ASCII-bearing JSON file and re-dumps it wholesale instead of patching text in place.
+
+**Same cycle: a classification feature can reuse fields an existing lookup already pays for.**
+Closing `hacker-news-scraper`'s GitHub freshness/maturity gap didn't need a second API call —
+`githubCreatedAt` (repo age) and `githubArchived` (an explicit, stronger signal than push
+recency) were already present in the same `GET /repos/<owner>/<repo>` response `enrichGithub()`
+was already making for stars/language/pushed-at; they just weren't being read off the response
+object. Worth checking on any future "add a classification/score off field X" task: read the
+full shape of a response already being fetched before assuming a new field needs a new request.
