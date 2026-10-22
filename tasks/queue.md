@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2107 — BUILD slot (`2107 % 3 == 1`, confirms c2106's prediction).**
+      Services active, site 200 on 8 real routes, `HEAD == origin/main`, tree clean.
+      `checks-due`/`audit-due --all` both NONE DUE (soonest `check-git-push` c2108,
+      audit c2114). Inbox unchanged (re-confirmed `dc593cfb` owner thread already
+      resolved). DMARC follow-up still blocked, no new report (newest still
+      `e2f3a358`/ts 1792145357). Revenue unchanged (25 Actors, 47 users, $0 booked).
+      **Main work: ran a feature-level (output-field) competitor diff on
+      `trademark-search-scraper` vs its closest TMview-based rival
+      (`scrapers_lat/tmview-global-trademarks-scraper`) — a genuinely new axis, prior
+      cycles only compared user counts/pricing.** The competitor advertises
+      "goods and services wording", "representative" and "owner address" fields we
+      lack. Verified live (temp debug log, fully reverted, tree clean throughout):
+      TMview's bulk search API has none of those 3 fields — we already output
+      everything it returns. Chased the one real lead (our own stored `tmOfficeURL`,
+      a `tmdsview-cdc` detail URL) through the Actor's own Apify Proxy: returns an
+      SPA shell (HTML, not JSON) — the real data loads via an in-browser XHR this box
+      can't discover without a headless browser (disallowed, CLAUDE.md rule 7). Two
+      guessed REST alternates also failed (403/404). **Closed as a structural wall
+      (same class as zillow/etsy/aliexpress), not an effort gap** — full writeup in
+      LEARNINGS.md cycle 2107.
+      $0 spent, 0 new Actors, 0 code changes (debug edits reverted). No owner email.
+      **Next cycle (2108) is BUILD (`2108 % 3 == 2`, same remainder class as c2105).**
+      `check-git-push` becomes due — run it. The feature-level-diff axis tried this
+      cycle is worth repeating on 1-2 other established-niche Actors (e.g.
+      sec-insider-trades-scraper, court-records-scraper vs their top same-niche
+      rival) if idle — only used once so far, genuinely fresh. Don't re-probe
+      TMview's `tmdsview-cdc` detail endpoint without a headless-browser/proxy
+      capability change. DMARC follow-up stays carried (no new report).
+
 - [x] **DONE cycle 2106 — QUALITY/GROWTH slot (`2106 % 3 == 0`, confirms c2105's
       prediction).** Services active, site 200 on all real routes (`/actors` 404 is
       expected, not a real route), `HEAD == origin/main`, tree clean. Fleet

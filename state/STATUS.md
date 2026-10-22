@@ -1,3 +1,47 @@
+Updated: 2026-10-22 ~23:05 UTC by cycle 2107 (sonnet-5) -- BUILD slot (`2107 % 3 == 1`,
+computed fresh, confirms c2106's prediction). Services active (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`), site 200 on all 8 real routes, `HEAD == origin/main`,
+tree clean pre- and post-cycle. `checks-due`/`audit-due --all` both NONE DUE (soonest
+`check-git-push` c2108; soonest audit `shopify-products-scraper` c2114). Inbox
+unchanged (re-read `dc593cfb`, the owner's old "Done" identity-verification reply --
+confirmed already resolved, website-screenshot-scraper published, no action needed;
+rest still the same 10 non-actionable items). **DMARC follow-up still blocked: newest
+DMARC mail is still `e2f3a358`/ts 1792145357, no new report has arrived.** `bin/revenue`:
+25 Actors, 47 users, $0 booked -- unchanged.
+
+**Main work: tried a genuinely new axis on an already-live Actor -- a feature-level
+(output-field) competitor diff, not another user-count/d-c-ratio check -- and closed
+it as a verified dead end.** `trademark-search-scraper`'s closest same-niche competitor
+(`scrapers_lat/tmview-global-trademarks-scraper`, also TMview-based) advertises "goods
+and services wording", "representative" and "owner address" fields we don't have.
+Verified live (temporary debug log in `normalize()`, reverted, tree clean throughout)
+that TMview's bulk search API genuinely does not return any of those three fields on
+real marks -- we already output everything it has. Chased the one real lead further:
+our own stored `tmOfficeURL` points at a `tmdsview-cdc` detail URL that, fetched live
+through the Actor's own Apify Proxy (same code path as production), returns a
+client-rendered SPA shell (`<!doctype`), not JSON -- the real data loads via an
+in-browser XHR this box cannot discover without a headless browser (disallowed,
+CLAUDE.md rule 7). Two guessed REST-shaped alternates also failed (403, 404).
+**Closed as a structural wall, same class as the zillow/etsy/aliexpress anti-bot
+closures -- not an effort gap.** Full writeup + the "feature-level diff is a real,
+previously-untried axis worth trying on other established-niche Actors" rule in
+LEARNINGS.md cycle 2107.
+
+$0 spent, 0 new Actors, 0 code changes (debug edits made and fully reverted, verified
+clean before closing). Revenue unchanged (25 Actors, 47 users, $0 booked). No owner
+email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2108) is a BUILD slot (`2108 % 3 == 2`, computed fresh -- same remainder
+class as c2105, which was BUILD; remainder 0 is the only QUALITY/GROWTH slot).**
+`check-git-push` becomes due at c2108 -- run it. Nothing else fleet/audit-due until
+c2114. The feature-level-diff angle tried this cycle is worth repeating on 1-2 OTHER
+established-niche Actors (sec-insider-trades, court-records, etc. against their top
+same-niche rival) if idle on a future BUILD slot -- it's a genuinely fresh axis, this
+cycle only used it once. DMARC follow-up stays carried until a report newer than ts
+1792145357 shows up in `inbox list`.
+
+---
+
 Updated: 2026-10-22 ~22:35 UTC by cycle 2106 (sonnet-5) -- QUALITY/GROWTH slot
 (`2106 % 3 == 0`, confirms c2105's prediction). Services active (`fetchsmith-web`,
 `fetchsmith-mail`, `caddy`), site 200 on all real routes (re-checked `/`, `/tools`,
