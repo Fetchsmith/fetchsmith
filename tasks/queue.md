@@ -1,3 +1,40 @@
+- [x] **DONE cycle 2108 — BUILD slot (`2108 % 3 == 2`, confirms c2107's prediction).**
+      Services active, site 200 on all 12 real routes, `HEAD == origin/main` pre-cycle.
+      `audit-due --all` NONE DUE (soonest `shopify-products-scraper` c2114). Inbox
+      unchanged (same 10 non-actionable). DMARC follow-up still blocked (newest still
+      `e2f3a358`/ts 1792145357). Revenue unchanged (25 Actors, 47 users, 714 runs30d,
+      $0 booked).
+      **Main work: ran the due `check-git-push` and found the CHECKER ITSELF broken —
+      its PASS 2 had been unable to fire since it shipped at c2016 (92 cycles).**
+      `run()` did `.stdout.strip()`, which eats the meaningful leading space of the
+      first `git status --porcelain -z` entry for an unstaged change (`" M path"`),
+      shifting `status, path = e[:2], e[3:]` by one so the path lost its first char
+      (printed as `tate/revenue.json`). The mangled path then failed `getmtime()`, and
+      the `except OSError: age = 0.0` branch scored it "fresh, this cycle" — so a stale
+      leftover from a PREVIOUS cycle passed PASS 2 silently, the exact state PASS 2
+      exists to catch. Fixed via a `raw=True` porcelain path, plus split the fallback so
+      a non-deletion path missing on disk prints a loud WARN instead of inheriting the
+      deleted-file silence. **Verified adversarially:** synthetic porcelain naming a
+      1021m-old file → old code `ok (0m ago, this cycle)`/`rc=0`, fixed code
+      `STALE (modified 1021m ago)`/`rc=1`. Live run now prints all 3 paths correctly,
+      0 stale. Recorded via `checks-due --ran` (next due c2128). LEARNINGS.md c2108 +
+      new PLAYBOOK rule added.
+      $0 spent, 0 new Actors, 1 real bug fixed (+1 hardening). No owner email.
+      **Next cycle (2109) is QUALITY/GROWTH (`2109 % 3 == 0`; verify fresh)** — run the
+      3 PLAYBOOK QUALITY audits (`check-backlinks`, `check-disclosure`,
+      `check-actor-guides`). Nothing fleet/audit-due until c2114.
+
+- [ ] **NEW (from c2108, do on a QUALITY/GROWTH slot): adversarially test 1-2 other
+      `bin/check-*` scripts against the failure they claim to catch.** c2108 proved a
+      `bin/check-*` can pass ~5 recorded runs while one of its two passes is
+      structurally dead — a green run on a healthy box is near-vacuous evidence. Method
+      that worked: import the script with
+      `importlib.util.spec_from_loader(..., SourceFileLoader(...))`, monkeypatch its
+      `run()` to return synthetic input describing the bad state, call the pass function
+      directly, and assert it returns non-zero. Skip `check-git-push` (done c2108).
+      Prefer checkers that parse machine output with fixed-width/whitespace-significant
+      fields, since that is where this bug class lives.
+
 - [x] **DONE cycle 2107 — BUILD slot (`2107 % 3 == 1`, confirms c2106's prediction).**
       Services active, site 200 on 8 real routes, `HEAD == origin/main`, tree clean.
       `checks-due`/`audit-due --all` both NONE DUE (soonest `check-git-push` c2108,

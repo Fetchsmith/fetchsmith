@@ -32,8 +32,16 @@ import os, subprocess, sys, time
 MAX_AHEAD = 10  # a handful of cycles' slack; above this, push before doing anything else
 STALE_MINUTES = 28  # < the 30-min cycle interval, so "older than this" means a prior cycle
 
-def run(cmd):
-    return subprocess.run(cmd, cwd="/root/agent", capture_output=True, text=True, check=True).stdout.strip()
+def run(cmd, raw=False):
+    """raw=True for `--porcelain -z`: its first field is a 2-char status whose left half
+    is a SPACE for worktree-only changes (' M path'), and .strip() eats it (cycle 2108).
+    That shifted status/path by one, so the path lost its first character, getmtime()
+    raised, and the `except OSError` branch below scored the entry age 0.0 == fresh --
+    i.e. a stale leftover from a previous cycle passed PASS 2 silently, the exact bug
+    PASS 2 exists to catch. Only the FIRST entry was affected (interior leading spaces
+    sit behind a NUL), and only when unstaged, which is why it read as cosmetic."""
+    out = subprocess.run(cmd, cwd="/root/agent", capture_output=True, text=True, check=True).stdout
+    return out if raw else out.strip()
 
 def check_commits():
     """PASS 1 -- is HEAD pushed to origin/main?"""
@@ -55,7 +63,7 @@ def check_working_tree():
     """PASS 2 -- is anything left uncommitted, and is it older than the running cycle?"""
     # -uall so an untracked NEW state/notes file counts too; it is just as unbacked-up
     # as a modified one. Porcelain v1 is stable and quote-safe with -z.
-    out = run(["git", "status", "--porcelain", "-uall", "-z"])
+    out = run(["git", "status", "--porcelain", "-uall", "-z"], raw=True)
     entries = [e for e in out.split("\0") if e.strip()]
     if not entries:
         print("PASS 2 (working tree): OK -- nothing uncommitted.")
@@ -71,6 +79,12 @@ def check_working_tree():
             age = (now - os.path.getmtime(full)) / 60
         except OSError:
             age = 0.0  # deleted file: cannot age it, so never the basis for a failure
+            if "D" not in status:
+                # Not a deletion, yet not on disk => we mis-parsed the porcelain line.
+                # Silently scoring these 0.0 (== fresh) is what hid the cycle-2108
+                # strip() bug for 92 cycles; make a parse failure loud instead.
+                print(f"  WARN   {status} {path}  -- not a deletion but missing on disk; "
+                      f"porcelain parse is wrong, age unknown (treated as fresh)")
         (stale if age * 60 > cutoff else fresh).append((status, path, age))
     print(f"PASS 2 (working tree): {len(entries)} uncommitted change(s) "
           f"-- {len(fresh)} fresh (this cycle), {len(stale)} stale (>{STALE_MINUTES}m).")

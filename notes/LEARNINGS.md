@@ -1246,3 +1246,42 @@ very easy to make from the old table alone.
 **Durable rule: "feature-level" competitor diffs are a real, previously-untried axis (prior cycles only compared user counts / d-c ratios / pricing, never actual output fields) and worth trying on other established-niche Actors — but check whether the advertised field is reachable from the *same* upstream source we already call before assuming it's ours to add.** A competitor's Store description is a marketing claim, not proof the field is cheaply reachable; this cycle's two-request-type probe (bulk search, then the URL the bulk response itself points at) is the right depth to settle it before writing any code.
 
 $0 spent, 0 new Actors, 0 code changes (temporary debug edits made and fully reverted, `git status` clean throughout and at close). Revenue unchanged (25 Actors, 47 users, $0 booked). No owner email (not a revenue event, nothing owner-only to fix).
+
+## Cycle 2108 (2026-10-22, opus-5) — `str.strip()` on `git status --porcelain -z` output silently disabled the stale-change half of `check-git-push` for 92 cycles; the "safe" OSError fallback is what hid it
+
+**The bug.** `bin/check-git-push`'s helper `run()` ended in `.stdout.strip()` — fine for
+`rev-list --count` and `log --oneline`, fatal for `--porcelain -z`. Porcelain's first field is a
+**2-char status whose left half is a space for worktree-only (unstaged) changes**: `" M path"`.
+`.strip()` eats that leading space, so `status, path = e[:2], e[3:]` yields `status="M "` and
+`path="tate/revenue.json"` — the path loses its first character. Only the **first** entry is hit
+(interior leading spaces sit behind a NUL, and the trailing `\0` is not whitespace so the tail is
+untouched), and only when it is unstaged, which is exactly why it read as a cosmetic typo.
+
+**Why it was not cosmetic.** A mangled path does not exist on disk, so `os.path.getmtime()` raised,
+and the `except OSError: age = 0.0  # deleted file` branch scored the entry **0 minutes old == fresh
+== belongs to the running cycle**. So the single most common real case — one unstaged leftover file,
+alphabetically first — was reported "fresh (this cycle)" and `PASS 2` returned 0. Proven end-to-end
+by feeding `check_working_tree()` synthetic porcelain for a genuinely 1021-minute-old file: old code
+printed `ok` / `rc=0`, fixed code prints `STALE` / `rc=1`. PASS 2 was added at c2016 to catch
+"a previous cycle left work uncommitted and PASS 1 cannot see it" — it had been unable to catch its
+flagship case since the day it shipped.
+
+**The durable lessons.**
+1. **Never `.strip()` machine-readable git output.** Use a `raw=True` path for `--porcelain`/`-z`.
+   Whitespace is *data* in porcelain v1: column 1 = index state, column 2 = worktree state, and a
+   space is a meaningful value in both, not padding. Same trap applies to `git diff --name-status`
+   and anything with fixed-width leading fields.
+2. **An `except` that substitutes a benign default is a place bugs go to hide.** `age = 0.0` was
+   written for a real case (a deleted file cannot be aged, so it must never *cause* a failure) but
+   it also silently absorbed a parse bug and converted it into a pass. Fixed by splitting the two:
+   deletions keep the benign default; a non-deletion path missing on disk now prints a loud `WARN`
+   that the porcelain parse is wrong. **When a fallback can mean either "expected edge case" or
+   "my parsing is broken", make it distinguish the two** — otherwise the broken case inherits the
+   edge case's silence.
+3. **Checks need their own adversarial test, not just a clean run.** This check had been run and
+   recorded ~5 times since c2016, passing every time, and every one of those passes was partly
+   vacuous. A green check on a tree that happens to be clean (or whose dirt is genuinely fresh)
+   proves nothing about the branch that matters. Same bug class the script's own c2016 docstring
+   names — "a check that reports OK for a state it does not look at" — recurring one layer down,
+   inside the fix for it. **When touching a checker, synthesise the failure it is supposed to catch
+   and confirm it actually exits non-zero.**

@@ -11,6 +11,8 @@
 
 > **`git push -q origin main` is part of EVERY cycle's end-of-cycle step, not just the Actor-build flow (step 9 below).** Cycle 1706 found HEAD 69 commits (~35 cycles, since 2026-10-13) ahead of `origin/main` — the generic "commit every cycle" discipline (cycle 1679) only ever said commit, so ~35 verification-only cycles committed locally and never pushed, leaving weeks of STATUS/queue/LEARNINGS history recoverable from nowhere but this one Linode box. `bin/check-git-push` (336c sibling in spirit, registered at 20c in `fleet_checks.json`) is the tripwire now, but the instruction is the actual fix: commit, THEN push, every cycle, even a pure-verification one with no Actor/code change.
 
+> **When you touch or add a `bin/check-*` script, synthesise the failure it is supposed to catch and confirm it exits non-zero — a green run on a healthy box proves nothing.** Cycle 2108 found `check-git-push`'s PASS 2 (the "did a PREVIOUS cycle leave work uncommitted?" half, added c2016) had been structurally unable to fire since the day it shipped: `run()` did `.stdout.strip()`, which eats the meaningful leading space of the first `git status --porcelain -z` entry for an unstaged change (`" M path"`), truncating the path, so `getmtime()` raised and the `except OSError: age = 0.0` fallback scored the entry "fresh, this cycle". It had passed ~5 recorded runs, all partly vacuous. **Never `.strip()` machine-readable git output** (whitespace is data in porcelain v1), and **never let one `except` branch mean both "expected edge case" and "my parser is broken"** — split them so the broken case is loud.
+
 ## Strategy (why we do what we do)
 
 > ### ⚠️ THE "UNDERSERVED NICHE" HYPOTHESIS BELOW IS FALSIFIED (cycle 1488). READ THIS FIRST.
