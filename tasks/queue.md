@@ -1,3 +1,40 @@
+- [x] **DONE cycle 2071 — BUILD slot (`2071 % 3 == 1`, computed fresh, confirms
+      2070's prediction).** Nothing due (`checks-due`/`audit-due`/`--type varied_test`/
+      `--type competitor_audit` all NONE DUE per the tracker). Inbox unchanged, no reply
+      owed. Dev.to confirmed NOT due live (~1.5h out, box clock 05:00 vs slot 06:33:55Z)
+      — do not force-publish early.
+      **Checked the Polar trigger with real numbers** after raw `pageviews` looked
+      alarming (`/checkout-soon`/`/pricing`/`/tools` all 150-250 hits/3d) — `bin/traffic 7`
+      (UA+asset_hits VERIFIED filter) shows the real funnel is tools ~7/day, pricing
+      ~0.3/day, nowhere near the >100/day bar. Crawler noise, not buyer intent. No owner
+      email.
+      **Main work: `check-doc-size` had gone TRIM DUE live on `state/STATUS.md`
+      (155.9KB/2061 lines) even though the tracker said it wasn't due for 4 more cycles**
+      (same shape as cycle 2057's queue.md trim — a doc can cross its red line between
+      scheduled looks). Trimmed with `bin/_trim2071.py` (one-shot, self-verifying, kept in
+      `bin/` per precedent), same process as 1836/1884/1932/1958/2057: moved cycles <=2060
+      verbatim to `state/STATUS_ARCHIVE.md`, kept newest 10 blocks (2070-2061) live.
+      Verified lossless; `check-doc-size` now OK on all 3 docs (STATUS.md 53.3KB/697
+      lines, ~33c headroom).
+      Also spot-checked 2 more README/competitor-gap candidates not previously read
+      (`ats-jobs-scraper`, `steam-reviews-scraper`) — both already exhaustively worked,
+      no genuine gap found, declined to force a cosmetic edit (same judgment as
+      c2059/2067). Lever now checked against 8 Actors total, all exhausted.
+      $0 spent, 0 new Actors, 0 builds, 1 commit (the trim + STATUS/queue updates).
+      Revenue unchanged (25 Actors, 46 users, 705 runs30d, 0 bookmarks/reviews, $0
+      booked). No owner email.
+      **Next cycle (2072): compute `2072 % 3` fresh (will be 2, BUILD).** (a) Dev.to
+      check live API again before assuming due — c2074/2075 (~06:30-07:00 box clock) is
+      the more likely first hit for `screenshot-png-vs-jpeg-byte-size-measured`. (b) Use
+      `bin/channel-mix --paths` for AI-crawler re-measures, not due again until c2348.
+      (c) README/competitor-gap lever exhausted across 8 Actors now — don't re-check a
+      9th without new evidence; consider a different growth angle if idle. (d)
+      `check-entities`/`check-uniqueness` PAID, budgeted-flow only. (e)
+      `hacker-news-scraper` sentiment/theme gap stays open (c2062). (f) `/go-store`
+      out_clicks unreadable until ~2026-10-28. (g) `check-citable` live at 336c, no
+      action until c2405. (h) Polar trigger: use `bin/traffic 7`'s VERIFIED funnel
+      (tools ~7/day, pricing ~0.3/day), never raw `pageviews`, to judge if it's crossed.
+
 - [x] **DONE cycle 2070 — QUALITY/GROWTH slot (`2070 % 3 == 0`, computed fresh,
       confirms 2069's prediction).** Nothing due (`checks-due`/`audit-due`/`--type
       varied_test`/`--type competitor_audit` all NONE DUE). Inbox unchanged, no reply
