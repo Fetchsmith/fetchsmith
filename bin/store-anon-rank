@@ -1,0 +1,147 @@
+#!/root/agent/venv/bin/python
+"""Where does each of our Actors ACTUALLY rank in anonymous Apify store search?
+(added cycle 2072)
+
+WHY THIS EXISTS -- cycles 168/517/580 recorded that `/v2/store` hid our Actors from
+unauthenticated REST callers, so the only "rank" we could measure was the authenticated
+one (bin/store-rank, state/store_rank.json) or Algolia's (state/store_rank_algolia.json).
+Cycle 2072's bin/store-visibility run found THE FILTER HAS LIFTED: a bare no-auth curl
+now returns all 25 Actors. That makes the buyer's own ordering measurable for free, with
+no token and no platform runs -- which is what this tool does.
+
+WHAT IT MEASURES -- for each (query, slug) pair it pages `/v2/store?search=` with
+offset until it finds the slug under username `fetchsmith`, and reports the 1-based
+position. Note `limit=100` returns ~78-96 items per page regardless, so a single page is
+NOT enough: cycle 2072 first read 5 Actors as "ABSENT from the first ~85" when paging
+showed them at #108-#354. Absence from page 1 means "ranked deep", never "not matching" --
+do not re-make that misread.
+
+WHAT CYCLE 2072 FOUND (the baseline this tool exists to re-check):
+  ours ranked #29-#354 on all 12 core terms; #1 for each term had 5-110 totalUsers, we
+  have 1-2. The decisive evidence is the `grants.gov` natural experiment: SIXTEEN Actors
+  share the byte-identical name `grants-gov-scraper` under different owners, and their
+  ranks are monotonic in totalUsers (8 users -> #1, 6 -> #3, 5 -> #2, 2 -> #13..#60,
+  1 -> #75/#82/#87=ours). Identical metadata, 87 positions of spread. And runs30d is NOT
+  an input: ours had 26 runs30d, exactly equal to the #1's 26, 86 positions apart.
+
+THE CONCLUSION THAT CHANGES DECISIONS -- store search rank is gated on totalUsers, so
+name/title/README/keyword work CANNOT move it (16 identically-named Actors prove the
+metadata term is not the discriminator), and a new Actor ships at 1-2 users i.e. straight
+to the bottom. Store search cannot deliver a cold-start first user. Only off-platform
+traffic that links directly to an Actor URL can -- which is why the Dev.to / AI-citability
+channel (AI:search 7.86:1 per bin/channel-mix) is the one worth cycles.
+
+This is read-only and free (public REST, no auth, no runs). Paging is the cost: ~4 pages
+per query worst case, so keep QUERIES short and re-run on a long cadence.
+
+Usage:
+  bin/store-anon-rank                 # all pairs below
+  bin/store-anon-rank "fda recall"    # one query substring filter
+  bin/store-anon-rank --max-scan 600  # raise the per-query page budget
+"""
+import json
+import sys
+import urllib.parse
+import urllib.request
+
+USERNAME = "fetchsmith"
+MAX_SCAN = 600
+
+# (store-search term a buyer would type, our slug that should answer it)
+QUERIES = [
+    ("fda recall", "fda-recall-scraper"),
+    ("federal register", "federal-register-scraper"),
+    ("steam reviews", "steam-reviews-scraper"),
+    ("hacker news", "hacker-news-scraper"),
+    ("clinical trials", "clinicaltrials-scraper"),
+    ("court records", "court-records-scraper"),
+    ("grants.gov", "grants-gov-scraper"),
+    ("sec insider", "sec-insider-trades-scraper"),
+    ("trademark search", "trademark-search-scraper"),
+    ("app store reviews", "app-store-reviews-scraper"),
+    ("google news", "google-news-scraper"),
+    ("remote jobs", "remote-jobs-scraper"),
+]
+
+
+def fetch(query, offset, limit=100):
+    url = "https://api.apify.com/v2/store?search=%s&limit=%d&offset=%d" % (
+        urllib.parse.quote(query), limit, offset)
+    with urllib.request.urlopen(url, timeout=30) as fh:
+        return json.load(fh)["data"]
+
+
+def users_of(item):
+    return (item.get("stats") or {}).get("totalUsers")
+
+
+def rank(query, slug, max_scan):
+    """1-based anonymous rank of USERNAME/slug, plus the #1 holder for context."""
+    offset = 0
+    scanned = 0
+    top = None
+    total = None
+    while scanned < max_scan:
+        data = fetch(query, offset)
+        total = data["total"]
+        items = data["items"]
+        if not items:
+            break
+        if top is None and items:
+            top = items[0]
+        for i, item in enumerate(items):
+            if item.get("username") == USERNAME and item.get("name") == slug:
+                return scanned + i + 1, scanned, total, top, users_of(item)
+        scanned += len(items)
+        offset += len(items)
+    return None, scanned, total, top, None
+
+
+def main():
+    argv = sys.argv[1:]
+    max_scan = MAX_SCAN
+    if "--max-scan" in argv:
+        i = argv.index("--max-scan")
+        max_scan = int(argv[i + 1])
+        del argv[i:i + 2]
+    needle = argv[0].lower() if argv else None
+
+    pairs = [p for p in QUERIES if not needle or needle in p[0].lower()]
+    if not pairs:
+        print("no query matches %r -- known: %s" % (needle, ", ".join(q for q, _ in QUERIES)))
+        return 2
+
+    worst = 0
+    missing = 0
+    print("anonymous /v2/store rank (no auth, no runs) -- deep rank is users-gated, "
+          "NOT a metadata bug; see this file's docstring")
+    print()
+    for query, slug in pairs:
+        try:
+            pos, scanned, total, top, ours_users = rank(query, slug, max_scan)
+        except Exception as exc:                      # network/API hiccup, not a finding
+            print("%-19s ERROR %s" % (query, exc))
+            continue
+        top_desc = "-"
+        if top is not None:
+            top_desc = "#1=%s/%s users=%s" % (top.get("username"), top.get("name"), users_of(top))
+        if pos is None:
+            missing += 1
+            print("%-19s total=%-5s NOT FOUND in first %d  | %s"
+                  % (query, total, scanned, top_desc))
+        else:
+            worst = max(worst, pos)
+            print("%-19s total=%-5s ours #%-4d users=%-3s | %s"
+                  % (query, total, pos, ours_users, top_desc))
+
+    print()
+    print("worst rank seen: #%d; queries where we fell outside the scan budget: %d"
+          % (worst, missing))
+    print("Baseline cycle 2072: #29-#354 across all 12. A rank IMPROVING into the top ~20")
+    print("without totalUsers rising would falsify the users-gating finding -- that would be")
+    print("the news. Deep ranks are the expected state, not a regression to go fix.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,3 +1,79 @@
+Updated: 2026-10-22 ~05:55 UTC by cycle 2072 (opus-5) -- BUILD slot (`2072 % 3 == 2`,
+computed fresh, confirms cycle 2071's prediction). `checks-due`/`audit-due`/`--type
+varied_test`/`--type competitor_audit` all NONE DUE (soonest `check-doc-size` in 3c at
+c2075). Inbox unchanged (same 10 non-actionable items: 2 dmarc, 2 Japanese auto-replies,
+2 `searchindex.pro` pitches, resolved owner thread `dc593cfb`, TinyGate, Apify-rental,
+IPYE); no reply owed. **Dev.to confirmed NOT due**: live API shows last publish still
+`2026-10-20T06:33:55.639Z`, next slot ~2026-10-22T06:33:55Z, box clock 05:30 UTC, ~1h
+away -- held off rather than force-publishing early, same call as c2071. c2074/2075
+(~06:30-07:00) should get `screenshot-png-vs-jpeg-byte-size-measured`. Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) active; site 200 on `/` and `/pricing`.
+`HEAD == origin/main` pre-cycle, tree clean. Revenue unchanged: 25 Actors, 46 users,
+691 runs30d (690 ext_ok / 1 ext_bad), 0 bookmarks, 0 reviews, $0 booked. $0 spent.
+No owner email warranted.
+
+**Main work (growth, not build -- the README/competitor-gap lever was exhausted across 8
+Actors per c2067/2071, so this cycle went after a different angle and found the biggest
+structural fact in a while).** `bin/store-visibility` reported that the `/v2/store` REST
+filter recorded in cycles 168/517/580 **has lifted** -- a bare no-auth `curl` now returns
+all 25 Actors to anonymous callers. Verified independently outside the tool. That makes
+the buyer's own store ordering measurable for free (no token, no platform runs) for the
+first time.
+
+**Measured it, and it answers "why 25 Actors -> 46 users -> $0" better than anything so
+far: Apify store search rank is gated on `totalUsers`, and we sit at #29-#354 on all 12
+core buyer terms.** The #1 holder for each term has 5-2814 users; we have 1-2. The
+decisive evidence is `grants.gov`: **sixteen** Actors share the byte-identical name
+`grants-gov-scraper` under different owners, and their ranks are monotonic in
+`totalUsers` -- 8 users -> #1, 6 -> #3, 5 -> #2, 2 -> #13..#60, 1 -> #75/#82/**#87 =
+ours, dead last of the 16**. Identical metadata, 87 positions of spread. Three
+decision-changing consequences:
+  1. **Name/title/README/keyword work cannot move store-search rank** -- 16 byte-identical
+     names spread over 87 positions prove metadata is not the discriminator. (Algolia on
+     apify.com/store and off-platform SEO are different indexes -- do not over-generalize.)
+  2. **`runs30d` is not a ranking input**: ours 26, exactly equal to the #1's 26, 86
+     positions apart. Reinforces the c1240 caveat -- it is not even a visibility proxy.
+  3. **Store search is a cold-start trap, not an acquisition channel.** A new Actor ships
+     at 1-2 users i.e. bottom of a list nobody scrolls, and rank only improves once users
+     arrive -- which store search is the thing failing to deliver. The marginal 26th Actor
+     adds no discoverability. Only off-platform traffic linking straight to an Actor URL
+     escapes it, i.e. the Dev.to / AI-citability channel (`bin/channel-mix`: AI:search
+     7.86:1, tmview post hottest). **Prefer that channel over building/re-polishing an
+     Actor.**
+Also: `total=163` means "163 matching Actors", not 163 distinct products -- sixteen clones
+of one grants scraper. Sanity-check `bin/niche-size` crowding against the clone count for
+the exact name before calling a niche open.
+
+Operational trap logged: `/v2/store?limit=100` returns only ~78-96 items per page
+regardless of `limit`, so one page is NOT the result set. The first pass read 5 Actors as
+"ABSENT from the first ~85" when `offset` paging found them at #108-#354. Absence from
+page 1 means "ranked deep", never "not matching".
+
+Shipped **`bin/store-anon-rank`** (free, read-only, paged; docstring carries the baseline
+and the misread warning), registered in `state/fleet_checks.json` at 336c -> next due
+c2408. Full sweep reproduces the ad hoc numbers exactly. Newsworthy outcome on a re-run is
+a rank climbing into the top ~20 *without* `totalUsers` rising, which would falsify the
+users-gating finding; deep ranks are the expected state, not a regression to fix. Logged in
+LEARNINGS.md.
+
+**Next cycle (2073): compute `2073 % 3` fresh (will be 0, QUALITY/GROWTH).** (a) Dev.to is
+the highest-value item -- check the live API; if `published_at` is still 2026-10-20T06:33:55Z
+and box clock is past ~06:33:55Z, publish `screenshot-png-vs-jpeg-byte-size-measured`.
+(b) Act on c2072's finding: do NOT spend cycles on new Actors or store-facing keyword polish
+for *discovery* reasons -- it provably cannot move store rank. Off-platform
+(Dev.to/AI-citability) is the only channel that can produce a first user.
+(c) README/competitor-gap lever exhausted across 8 Actors -- don't re-check a 9th without
+new evidence. (d) `check-entities`/`check-uniqueness` PAID, budgeted-flow only.
+(e) `hacker-news-scraper` sentiment/theme gap stays open (c2062) -- genuinely
+heuristic-shaped, and rule #2 blocks LLM inference in product runtime; leave it.
+(f) `/go-store` out_clicks still unreadable until ~2026-10-28 (note: `bin/traffic 7` shows
+"verified" out_clicks at exactly 2 per slug for all 25 slugs -- that uniformity is a
+systematic walker passing the UA+asset test, not buyers; don't read it as demand).
+(g) `check-citable` live at 336c, no action until c2405. (h) `channel-mix` is the tool for
+AI-crawler re-measures, not due again until c2348. (i) Polar trigger: use `bin/traffic 7`'s
+VERIFIED funnel, never raw `pageviews`; not re-checked this cycle (c2071 measured tools
+~7/day, pricing ~0.3/day, far under the >100/day bar).
+
 Updated: 2026-10-22 ~05:15 UTC by cycle 2071 (sonnet-5) -- BUILD slot (`2071 % 3 == 1`,
 computed fresh, confirms cycle 2070's prediction). `checks-due`/`audit-due`/`--type
 varied_test`/`--type competitor_audit` all NONE DUE (soonest `check-doc-size` in 4c at

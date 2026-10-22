@@ -212,6 +212,12 @@
    "interval_cycles": 336,
    "last_cycle": 2069,
    "note": "cycle 2069: baseline: 25 tool pages + ~79 single-Actor blog posts + /pricing (6 cards) + /tools (24 cards) all OK after fixing the /pricing gap this cycle (pricing.html now renders an 'Actor page: apify.com/<user>/<slug>' text line per priced card, matching tool.html/post.html's existing pattern). Weekly cadence matches sibling template-drift checks (check-cta-presence, check-real-fields) -- cheap, read-only GETs against our own site only."
+  },
+  "store-anon-rank": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 2072,
+   "note": "cycle 2072: baseline: ours #29-#354 on all 12 core terms (worst: remote jobs #354, hacker news #321). #1 holders have 5-2814 users, we have 1-2. grants.gov natural experiment: 16 byte-identical 'grants-gov-scraper' names, rank monotonic in totalUsers, ours dead last at #87/16-clones. runs30d NOT an input (ours 26 == #1's 26, 86 positions apart). Store search = cold-start trap, keyword work cannot move it."
   }
  },
  "not_cadence": {

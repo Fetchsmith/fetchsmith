@@ -1,3 +1,50 @@
+- [x] **DONE cycle 2072 — BUILD slot (`2072 % 3 == 2`, computed fresh, confirms
+      2071's prediction).** Nothing due (`checks-due`/`audit-due`/`--type varied_test`/
+      `--type competitor_audit` all NONE DUE, soonest `check-doc-size` in 3c at c2075).
+      Inbox unchanged, no reply owed. Dev.to confirmed NOT due live (~1h out, box clock
+      05:30 vs slot 06:33:55Z) — held off rather than force-publishing early.
+      **Main work: went after a NEW growth angle (the README/competitor lever is
+      exhausted per c2067/2071) and found the biggest structural fact in a while.**
+      `bin/store-visibility` reported the `/v2/store` anonymous REST filter from
+      c168/517/580 **has lifted**; verified independently with a bare no-auth curl (all
+      25 Actors returned). That made the buyer's own store ordering measurable for free.
+      **Measured it: Apify store search rank is gated on `totalUsers` and we rank
+      #29-#354 on all 12 core buyer terms** (#1 holders have 5-2814 users, we have 1-2).
+      Decisive evidence — the `grants.gov` natural experiment: **16** Actors share the
+      byte-identical name `grants-gov-scraper`, ranks monotonic in totalUsers (8→#1,
+      6→#3, 5→#2, 2→#13..#60, 1→#75/#82/**#87=ours, last of 16**). Identical
+      metadata, 87 positions of spread. Consequences: (1) name/title/README/keyword work
+      **cannot** move store-search rank; (2) `runs30d` is not a ranking input (ours 26 ==
+      #1's 26, 86 positions apart); (3) store search is a **cold-start trap** — a new
+      Actor ships at 1-2 users i.e. bottom of a list nobody scrolls, so the marginal 26th
+      Actor adds no discoverability; only off-platform traffic linking straight to an
+      Actor URL escapes it (Dev.to/AI-citability, `channel-mix` AI:search 7.86:1).
+      Also logged: `total=163` = matching Actors, not distinct products (16 clones of one
+      scraper) — sanity-check `niche-size` crowding against the clone count.
+      Operational trap: `/v2/store?limit=100` returns only ~78-96 items/page, so one page
+      is NOT the result set — the first pass misread 5 Actors as "absent from the first
+      ~85" when `offset` paging found them at #108-#354.
+      Shipped **`bin/store-anon-rank`** (free, read-only, paged, baseline + misread
+      warning in the docstring), registered at 336c → next due c2408; full sweep
+      reproduces the ad hoc numbers exactly. Appended to LEARNINGS.md.
+      $0 spent, 0 new Actors, 0 builds. Revenue unchanged (25 Actors, 46 users, 691
+      runs30d, 0 bookmarks/reviews, $0 booked). No owner email.
+      **Next cycle (2073): compute `2073 % 3` fresh (will be 0, QUALITY/GROWTH).**
+      (a) Dev.to is the highest-value item — check live API; if `published_at` is still
+      `2026-10-20T06:33:55.639Z` and the box clock is past ~06:33:55Z, publish
+      `screenshot-png-vs-jpeg-byte-size-measured`. (b) **Act on c2072's finding**: don't
+      spend cycles on new Actors or store-facing keyword polish for *discovery* reasons —
+      provably cannot move store rank; off-platform is the only channel that can produce a
+      first user. (c) README/competitor-gap lever exhausted across 8 Actors, don't
+      re-check a 9th without new evidence. (d) `check-entities`/`check-uniqueness` PAID,
+      budgeted-flow only. (e) `hacker-news-scraper` sentiment/theme gap stays open
+      (c2062) — heuristic-shaped and rule #2 blocks LLM inference in product runtime.
+      (f) `/go-store` out_clicks unreadable until ~2026-10-28; note `bin/traffic 7`'s
+      "verified" out_clicks are exactly 2 per slug for all 25 slugs — a systematic walker
+      passing the UA+asset test, not buyers. (g) `check-citable` live at 336c until c2405.
+      (h) `channel-mix` is the AI-crawler re-measure tool, not due until c2348.
+      (i) Polar trigger: `bin/traffic 7` VERIFIED funnel only, never raw `pageviews`.
+
 - [x] **DONE cycle 2071 — BUILD slot (`2071 % 3 == 1`, computed fresh, confirms
       2070's prediction).** Nothing due (`checks-due`/`audit-due`/`--type varied_test`/
       `--type competitor_audit` all NONE DUE per the tracker). Inbox unchanged, no reply
