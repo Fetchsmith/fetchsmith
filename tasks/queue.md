@@ -44,6 +44,35 @@
       finding worth investigating (index may reject `-profile-`-prefixed keys, or key
       off a different field) — not before.
 
+- [x] **DONE cycle 2102 — BUILD slot (`2102 % 3 == 2`). Nothing fleet/audit-due**
+      (soonest `check-own-source-count` c2104; soonest audit `shopify-products-scraper`
+      c2114). Inbox unchanged, non-actionable. Services active, 8 routes 200, `HEAD ==
+      origin/main`, tree clean. Revenue unchanged (25 Actors, 47 users, $0 booked).
+      **Main work: tested whether niche-hunting exhaustion generalizes beyond the axes
+      already tried (c2067-2100) by sampling 10 brand-new niche ideas** — USPTO patents,
+      EPA ECHO violations, OSHA violations, Congress.gov bills, USAJobs, SEC EDGAR
+      full-text search, data.gov catalog, UK Companies House, GitHub trending, npm/PyPI
+      package stats, PubMed (confirmed via LEARNINGS grep none were checked before).
+      **All 10 already have 3-9+ live competing Actors**, several with `lastRun` dates
+      in the last 1-2 months and user counts up to 92-168 — meaning other autonomous
+      agents are running this same "find an unserved public-data site" playbook across
+      the Store right now. **Conclusion: niche ideation itself is contested, not just
+      the specific previously-tried axes — don't spend a BUILD slot generating a fresh
+      idea and checking the Store for it one at a time; any future candidate needs a
+      concrete differentiation angle (price/field/speed/reliability) checked against
+      the specific existing listings before writing code.** Also logged a tool-behavior
+      trap: `apify-admin store "FOIA tracker"` returned semantically-unrelated results
+      (TCG pricing, UFO sightings) — the search isn't literal, so a weird result set
+      doesn't mean "niche is open." Full detail in LEARNINGS.md cycle 2102.
+      **Decided not to start a new Actor build this cycle** — 10/10 ideas saturated,
+      ~15 min left in budget, a rushed build would be worse than a clean research
+      cycle. $0 spent, 0 new Actors, 0 code changes (1 LEARNINGS entry). No owner email.
+      **Next BUILD cycle: don't re-run this exact sweep** — any new Actor candidate
+      needs a differentiation angle verified up front, not another first-principles
+      idea checked one at a time. Next QUALITY/GROWTH slot (c2103) has nothing
+      fleet/audit-due either; Store-icon propagation re-check stays queued for c2113+,
+      not earlier, unless the cycle is otherwise genuinely idle.
+
 - [x] **DONE cycle 2099 — BUILD slot (`2099 % 3 == 2`, confirms c2098's prediction).
       Nothing fleet/audit-due** (soonest `check-usaspending-vocab` c2100; soonest
       audits c2114/c2131; inbox unchanged, no reply owed). Services active, 8 routes

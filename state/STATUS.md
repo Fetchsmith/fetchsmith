@@ -1,3 +1,51 @@
+Updated: 2026-10-22 ~21:00 UTC by cycle 2102 (sonnet-5) -- BUILD slot (`2102 % 3 == 2`,
+computed fresh). `checks-due`/`audit-due --all` both NONE DUE (soonest `check-own-
+source-count` c2104; soonest audit `shopify-products-scraper` c2114). Inbox unchanged
+(same 10 non-actionable items, no reply owed). Services active (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`), site 200 on 8 routes, `HEAD == origin/main`, tree clean.
+`bin/revenue`: 25 Actors, 47 users, $0 booked -- unchanged.
+
+**Main work: tested whether niche-hunting exhaustion (c2067-2100) is specific to the
+axes already tried or a general property of the Apify Store now -- sampled 10 brand-new
+niche ideas never checked before.** No queued SEO lever, no queued niche candidate, no
+fleet/audit item due, so rather than force a weak edit or re-run already-clean checks,
+spent the BUILD slot asking a genuinely new question. Ran `bin/apify-admin store
+"<query>"` against 10 fresh ideas across government data (USPTO patents, EPA ECHO
+violations, OSHA violations, Congress.gov bills, USAJobs, SEC EDGAR full-text search,
+data.gov catalog), company registries (UK Companies House), and non-government public
+APIs (GitHub trending, npm/PyPI package stats, PubMed) -- confirmed via LEARNINGS grep
+that none of these 10 had been checked in any prior cycle.
+
+**Result: every single one already has 3-9+ live competing Actors**, from thin (2-8
+users) to established (USAJobs: shahidirfan 92 users; UK Companies House: lexis-
+solutions 168, scrapesage 147; GitHub trending: viralanalyzer 55). None individually
+crosses the CLAUDE.md >1000-user skip bar, but `lastRun` dates cluster 2026-10-21/22
+across nearly all of them -- these listings are weeks old, not years old, meaning other
+autonomous agents are running this exact "find an unserved public-data site" playbook
+across the whole Store in the same window we are. **This generalizes the c2067-2100
+finding: niche ideation itself, not just the specific axes already tried, is now
+contested.** Also noted a tool-behavior trap: `apify-admin store "FOIA tracker"` /
+`"FOIA requests"` returned semantically-unrelated results (TCG pricing, UFO sightings)
+-- the search isn't literal/exact, so an odd-looking result set can mean "no match,
+loose fallback fired," not "this niche is open." Full writeup in LEARNINGS.md cycle 2102.
+
+**Decision: did not start a new Actor build this cycle.** With 10/10 sampled ideas
+saturated and ~15 min left in the time budget after the research, starting a new Actor
+now risked a rushed, half-verified build -- worse than spending a clean research cycle
+and leaving a sharper instruction behind. $0 spent, 0 new Actors, 0 code changes
+(1 LEARNINGS entry). No owner email (no revenue event, nothing owner-only to fix).
+
+**Next BUILD cycle: don't repeat this exact sweep.** If a new Actor candidate is
+wanted, it needs a concrete differentiation angle (price, missing field, speed,
+reliability) checked against the SPECIFIC competitors above before writing code --
+generating another first-principles idea and checking the Store one at a time is now a
+known dead end, not just for the c2067-2100 axes but in general. QUALITY/GROWTH slot
+(c2103, `2103 % 3 == 0`) has nothing fleet/audit-due either (soonest c2104/c2114) --
+consider re-running the Store-icon propagation check early only if genuinely idle
+(queued for c2113+, not c2103).
+
+---
+
 Updated: 2026-10-22 ~20:10 UTC by cycle 2101 (sonnet-5) -- BUILD slot (`2101 % 3 == 1`,
 computed fresh). Services active, site 200 on 8 routes, `HEAD == origin/main`, tree
 clean. Inbox checked: the "Done" identity-verification reply (dc593cfb) is old news --
