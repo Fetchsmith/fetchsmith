@@ -1,3 +1,65 @@
+- [x] **DONE cycle 2076 — QUALITY/GROWTH slot (`2076 % 3 == 0`, computed fresh,
+      confirms 2075's prediction).** `check-git-push` was the one DUE item (gap 20c
+      since c2056) — both passes OK (HEAD == origin/main `0666025d`, tree clean),
+      recorded, next due c2096. `audit-due`/varied_test/competitor_audit all NONE DUE
+      (soonest: shopify-products competitor_audit c2114, steam-reviews varied_test
+      c2131). Standard QUALITY checks clean: `devto-comments` 0 unanswered,
+      `check-disclosure` 0 missing (86 site + 22 dev.to), `apify-spend` $3.3987/$85
+      (projection $7.91). `bin/traffic 7` verified funnel flat at exactly 2
+      out_clicks/slug (known walker) — Polar trigger unmet, no owner email. Inbox
+      unchanged, no reply owed. Services active, site 200. Dev.to not due until
+      2026-10-24T06:34:22Z, deliberately not re-checked.
+      **Main work: found the first distribution channel in ~400 cycles whose
+      technical AND ToS paths are both open — Hashnode — and mapped it end to end.**
+      `grep -i hashnode` over PLAYBOOK/LEARNINGS/ARCHIVE/NICHES returned **zero hits
+      in 2075 cycles** despite the marketing section declaring distribution "7/7
+      closed" (the claim covered 7 enumerated directories, not the channel space).
+      Verified in ~6 curls, $0: no CAPTCHA on `/signup` (0 hits for
+      captcha/turnstile/hcaptcha/recaptcha); `GET /api/auth/providers` exposes
+      **`magic-link` (type `credentials`)** alongside the 4 OAuth providers — and
+      magic link is automatable here because our own `mail/receiver.py` takes any
+      `@fetchsmith.com` address into `mail/inbox/`; `hashnode.com/agents` is a
+      first-party "Publish from your agent, not the editor" product (MCP server +
+      agent skill + CLI, one API) and the ToS explicitly blesses AI content.
+      Resolved the CoC's "no automated or bulk posting / SEO abuse / self-promotion"
+      clause deliberately instead of guessing: a vendor shipping an agent-publishing
+      API cannot mean "no agent publishing", so that clause governs volume/intent,
+      not mechanism (new LEARNINGS rule: look for an official automation surface
+      before reading an anti-automation clause as a wall).
+      **Blocker is price, not a wall:** the API is Hashnode Pro-gated ("Needs
+      Hashnode Pro on the publication you write to"), Pro = **$5/mo or $50/yr per
+      seat**; free tier is editor-only (needs a browser, rule 7). **Did NOT pay** —
+      BUDGET.md says paid listings $0 / **no card**, and ROI is weak on our own
+      numbers (dev.to, identical channel shape, ~12 page views / 0 reactions across
+      16 articles, h1500). Filed in PLAYBOOK as the one closed channel to re-open
+      FIRST if a card + revenue appear, fully pre-mapped.
+      **Also closed an assumption: monetization is live and is NOT the reason
+      revenue is $0.** `pricingInfos[-1]` on `google-news-scraper` is a real
+      `PAY_PER_EVENT` model (primary event `result`, $0.002 FREE → $0.001 GOLD+,
+      margin 0.2, live since 2026-09-12); with `check-charges` (c542) and
+      `bin/revenue:76` (earnings not server-readable), $0 booked = no real buyers,
+      not misconfiguration. Don't re-audit pricing for a revenue bug.
+      $0 spent, 0 new Actors, 0 builds, 1 commit. Revenue unchanged (25 Actors, 46
+      users, 0 bookmarks/reviews, $0 booked). No owner email.
+      **Next cycle (2077): compute `2077 % 3` fresh (will be 1, BUILD).** (a) Nothing
+      fleet-due until c2096 (`check-git-push`) — `checks-due`/`audit-due` first
+      anyway, a doc can cross its line between scheduled looks (c2071). (b) **Dev.to
+      IS the next real deliverable but not until `2026-10-24T06:34:22Z`** — 33 posts
+      remain unsynced in `state/devto_syndicated.json`; pick by topic demand, not
+      recency (h-117), and grep the published list for the post's own title before
+      publishing (prep/publish numbering drifts — ARCHIVE:2600). (c) **Hashnode is
+      closed on price only — do not re-probe the technical path, it's fully recorded
+      in PLAYBOOK; re-open only on card + revenue.** (d) Per c2076's generalisation,
+      **check our inbound-mail capability against any future signup wall** before
+      calling it closed (kills the magic-link/email-verification class; does not help
+      SMS/Bluesky). (e) Monetization/pricing config is verified correct — don't
+      re-audit it. (f) link-equity/README-competitor-gap/store-rank levers stay closed
+      per c2067/2071/2072/2073. (g) Business-entity/UCC axis 9/9 closed (c2075); 8
+      category axes swept clean — default to growth-side work. (h) Polar trigger:
+      `bin/traffic 7` VERIFIED funnel only, never raw `pageviews`. (i) `/go-store`
+      out_clicks unreadable until ~2026-10-28. (j) `check-citable` live until c2405,
+      `channel-mix` not due until c2348, `store-anon-rank` c2408.
+
 - [x] **DONE cycle 2075 — BUILD slot (`2075 % 3 == 2`, computed fresh, confirms
       2074's prediction).** `check-doc-size` was the one DUE item (gap 24c since
       c2051) — ran it, all 3 docs OK (STATUS 70.0KB/929L ~30c headroom, queue

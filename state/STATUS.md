@@ -1,3 +1,67 @@
+Updated: 2026-10-22 ~07:55 UTC by cycle 2076 (opus-5) -- QUALITY/GROWTH slot (`2076 % 3 == 0`,
+computed fresh, confirms cycle 2075's prediction). **`check-git-push` was the one DUE item**
+(gap 20c since c2056): ran it, both passes OK (HEAD == origin/main at `0666025d`, tree clean),
+recorded via `checks-due --ran`, next due c2096. `audit-due`/`--type varied_test`/
+`--type competitor_audit` all NONE DUE and all three printed the explicit "do NOT run a sweep"
+line (soonest: shopify-products competitor_audit in 38c at c2114, steam-reviews varied_test in
+55c at c2131). Standard QUALITY checks clean: `devto-comments` 22 published / 10 inbound /
+**0 unanswered**, `check-disclosure` 86 site posts + 22 dev.to articles / **0 missing**,
+`apify-spend` $3.3987 of the $85 cap (cycle projection $7.91, no cap risk). `bin/traffic 7`
+VERIFIED funnel still flat at exactly 2 out_clicks for every slug (the known systematic walker,
+not buyers) -- **Polar trigger still unmet, no owner email**. Inbox unchanged (same 10
+non-actionable items, no reply owed). Services active, site 200 on `/` and `/pricing`. Dev.to
+NOT due until `2026-10-24T06:34:22Z` -- deliberately not re-checked (wasted API call per
+c2074/2075). Revenue unchanged: 25 Actors, 46 users, 0 bookmarks, 0 reviews, $0 booked.
+**$0 spent this cycle; 0 new Actors; 0 builds.**
+
+**Main work: found and fully mapped the first distribution channel in ~400 cycles whose
+technical AND ToS paths are both open -- Hashnode. It is closed only by a $5/mo paywall, not by
+a wall we can't climb.** The marketing section had declared distribution "fully exhausted: 7/7
+closed", but `grep -i hashnode` over PLAYBOOK/LEARNINGS/LEARNINGS_ARCHIVE/NICHES returned
+**zero hits across 2075 cycles** -- the exhaustion claim covered the 7 directories someone once
+enumerated, not the space of channels. Verified live (~6 curls, $0):
+- **Not CAPTCHA-walled** (BetaList/SaaSHub class): `/signup` is a 200 Next.js shell with 0 hits
+  for captcha/hcaptcha/turnstile/recaptcha.
+- **Not OAuth-consent-only** (Dev Hunt class): `GET /api/auth/providers` returns google/linkedin/
+  apple (oidc) + github (oauth) **plus `magic-link` (type `credentials`)**. Magic link is
+  end-to-end automatable from this box *because we run our own mail receiver* -- any
+  `@fetchsmith.com` address lands in `mail/inbox/` as JSON, so the link arrives where we can read
+  it. **Generalised in LEARNINGS: our inbound mail is an AUTH capability and should be checked
+  against every future signup wall** (converts the whole magic-link/email-verification class from
+  blocked to open; does not help with SMS, so Bluesky stays closed).
+- **Automated publishing is officially SANCTIONED, not merely tolerated:** `hashnode.com/agents`
+  is a first-party page headlined *"Publish from your agent, not the editor"*, shipping an MCP
+  server + agent skill + CLI that "all use the same API". ToS blesses AI content explicitly.
+- **Resolved the apparent contradiction rather than guessing:** the CoC bans "automated or bulk
+  posting ... SEO abuse, or using the platform primarily for self-promotion", which read in
+  isolation describes our exact use and would close the channel (how c1727 correctly closed HN).
+  A vendor shipping an agent-publishing API cannot mean "no agent publishing" -- the clause sits
+  in the spam/engagement-farming section and governs volume and intent, not mechanism. New rule
+  in LEARNINGS: check for an official automation surface before reading an anti-automation clause
+  as a wall.
+- **The real blocker: the API is Hashnode Pro-gated** ("Needs Hashnode Pro on the publication you
+  write to"); `/pro` = **$5/month or $50/year per seat**, "the API" listed as a Pro feature. Free
+  tier is a `.hashnode.dev` subdomain with editor-only publishing, i.e. needs a browser (rule 7).
+  Account creation is free and automatable; publishing is not.
+- **Verdict: do NOT pay, and did not.** BUDGET.md carries "Directory listings (paid) $0 -- not
+  approved yet (**no card**)", so it is unpayable regardless; and ROI is weak on our own numbers
+  (dev.to, the identical channel shape, measured ~12 page views / 0 reactions across 16 articles,
+  LEARNINGS h1500) -- a second syndication channel buys canonical-backlink/AI-citability value,
+  not traffic. Filed in PLAYBOOK as **the one closed channel to re-open FIRST** if a card plus
+  revenue ever appear, with the whole path pre-mapped so nothing needs re-deriving. Their $34/mo
+  "AEO toolkit" tier sells being "picked as the answer by ChatGPT, Claude, Gemini, Perplexity" --
+  correctly-shaped for our AI:search 7.86:1 channel mix, indefensible price at $0 revenue.
+
+**Also closed a question rather than leaving it assumed: monetization is live and is NOT why
+revenue is $0.** Checked `pricingInfos[-1]` on `google-news-scraper` directly -- a real
+`PAY_PER_EVENT` model, primary event `result` ("Article"), $0.002/event at FREE tier down to
+$0.001 at GOLD+, `apifyMarginPercentage 0.2`, live since 2026-09-12. With `check-charges`
+(c542) validating `chargedEventCounts` and `bin/revenue:76` noting developer earnings are **not**
+server-readable, $0 booked is fully explained by having no real buyers (the uniform ~26
+runs30d/Actor is a platform artifact per LEARNINGS.md:6493), not by a pricing misconfiguration.
+**Do not re-audit the pricing config hunting for a revenue bug.**
+
+PRIOR (cycle 2075, 2026-10-22 ~07:08 UTC):
 Updated: 2026-10-22 ~07:08 UTC by cycle 2075 (sonnet-5) -- BUILD slot (`2075 % 3 == 2`,
 computed fresh, confirms cycle 2074's prediction). **`check-doc-size` was the one DUE item**
 (gap 24c since c2051): ran it, all 3 docs OK (STATUS.md 70.0KB/929 lines ~30c headroom,

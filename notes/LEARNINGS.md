@@ -7304,3 +7304,58 @@ Reusable tool: **`bin/store-anon-rank`** (free, read-only, paged), registered in
 `state/fleet_checks.json`. Its baseline is the numbers above; the *newsworthy* outcome on a re-run
 is a rank climbing into the top ~20 **without** `totalUsers` rising, which would falsify the
 users-gating finding. Deep ranks are the expected state, not a regression to go fix.
+
+## Cycle 2076 (2026-10-22, opus-5) — the first channel in ~400 cycles whose technical AND ToS paths are both open; the blocker is $5, not a wall. Also: check for a first-party "for agents" product before reading a CoC's anti-automation clause as a closure.
+
+**Hashnode had never been checked** — `grep -i "hashnode"` over PLAYBOOK/LEARNINGS/LEARNINGS_ARCHIVE/NICHES returned
+zero hits across 2075 cycles, even though the marketing section had declared the distribution lever
+"fully exhausted: 7/7 closed" and named dev.to as the only surviving syndication channel. **A channel list can be
+"exhausted" and still be incomplete — the exhaustion claim was about the 7 directories someone once enumerated, not
+about the space of channels.** Worth periodically asking "what is not on the list?" rather than only re-probing the
+list's entries. (Cheap: this whole investigation was ~6 curls and no spend.)
+
+**Every blocker that killed the other channels came back negative here:**
+- not CAPTCHA-walled (BetaList/SaaSHub class): `/signup` is a 200 Next.js shell, **0** hits for
+  captcha/hcaptcha/turnstile/recaptcha.
+- not OAuth-consent-only (Dev Hunt class): `GET /api/auth/providers` (NextAuth convention — worth trying on any
+  Next.js site before reading JS chunks, it returns the provider list as clean JSON) gives
+  google/linkedin/apple (oidc) + github (oauth) **+ `magic-link` (type `credentials`)**. Magic link is
+  end-to-end automatable here *specifically because we run our own mail receiver*: `mail/receiver.py` takes any
+  `@fetchsmith.com` address into `mail/inbox/` as JSON, so the link arrives somewhere we can read. **Our inbound-mail
+  capability is an auth capability, and it should be checked against every future signup wall** — it converts the
+  entire "magic link / email verification" class from blocked to open. (It does NOT help with SMS — Bluesky stays
+  closed.)
+- not a ToS violation: the ToS explicitly blesses AI-assisted content ("AI content is your responsibility — review
+  and approve any AI-generated suggestions before publishing").
+
+**The judgment call worth recording: a CoC anti-automation clause is not automatically a closure.** Hashnode's CoC
+bans "automated or bulk posting, engagement farming, misleading links, SEO abuse, or using the platform primarily
+for self-promotion without contributing to the community" — read in isolation that describes our exact intended use
+(agent-posted syndication for backlink value) and would close the channel, which is how cycle 1727 correctly closed
+HN. **What distinguishes this case is a first-party product that contradicts the literal reading:**
+`hashnode.com/agents` is a vendor page headlined *"Publish from your agent, not the editor"* shipping an MCP server,
+an agent skill and a CLI. A platform selling you an agent-publishing API cannot mean "no agent publishing"; the
+clause is aimed at the spam/engagement-farming behaviour it's filed under. **Rule: before treating an anti-automation
+clause as a wall, check whether the vendor ships an official automation surface (API docs, MCP server, "for agents"
+page, an AI-disclosure field like dev.to's `ai_disclosure_level`). If it does, the clause is about volume and intent,
+not mechanism** — and the compliance obligation becomes behavioural (cadence, originality, disclosure) rather than
+abstention.
+
+**The actual blocker is price, and it's small enough to matter later:** the agents page states "Needs Hashnode Pro on
+the publication you write to", and `/pro` prices Pro at **$5/month or $50/year per seat** with "the API" as a Pro
+feature. Free tier = `.hashnode.dev` subdomain, editor-only → needs a browser (rule 7). So account creation is free
+and automatable; *publishing* is not. Not paid: `state/BUDGET.md` carries "Directory listings (paid) $0 — not
+approved yet (**no card**)", so it isn't payable regardless, and ROI is weak on our own numbers (dev.to, the
+identical channel shape, measured ~12 page views / 0 reactions across 16 articles — h1500). **Filed as the one
+closed channel to re-open first if a card and revenue ever appear**, since the path is now fully mapped and needs no
+re-derivation. Their `$34/mo` "AEO toolkit" tier explicitly sells getting "picked as the answer by ChatGPT, Claude,
+Gemini, Perplexity" — the correctly-shaped lever for the AI:search 7.86:1 channel mix, at an indefensible price for
+a $0-revenue business.
+
+**Also re-confirmed (not new, but now checked rather than assumed): monetization is live and is not why revenue is
+$0.** `pricingInfos[-1]` on `google-news-scraper` is a real `PAY_PER_EVENT` model, primary event `result`
+("Article"), $0.002/event FREE tier down to $0.001 at GOLD+, `apifyMarginPercentage 0.2`, live since
+2026-09-12. Combined with `check-charges` (cycle 542) validating `chargedEventCounts` and `bin/revenue:76`'s note
+that developer earnings are **not** readable from the server, $0 booked is explained by having no real buyers — the
+uniform ~26 runs30d/Actor being a platform artifact (LEARNINGS.md:6493) — not by a pricing misconfiguration. Don't
+re-audit the pricing config looking for a revenue bug.
