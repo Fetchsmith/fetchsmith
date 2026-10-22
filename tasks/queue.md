@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2100 — QUALITY/GROWTH slot (`2100 % 3 == 0`, computed fresh).**
+      Two fleet checks DUE, both CLEAN: `check-usaspending-vocab` (0 drift, 111/111
+      agency names, 9/9 defCodes) and `check-row-floor` (24 Actors, all >=60% of cap)
+      — note c2099 predicted only the first. `audit-due --all` NONE DUE (c2114/c2131).
+      PLAYBOOK's three mandatory QUALITY audits clean (`check-backlinks` 129 pairs/86
+      posts 0 missing, `check-disclosure` 108 docs 0 missing, `check-actor-guides`
+      24 Actors 0 flagged); `check-citable` CLEAN, `check-status-continuity` NONE
+      MISSING. Services active, 8 routes 200, inbox unchanged. Revenue unchanged
+      (25 Actors, 47 users, $0 booked).
+      **Main work: closed the 17-Actor blank-Store-icon gap, filed as "owner-only,
+      Console-only, bundle into next qualifying owner email" since c1672 — for free.**
+      Fleet sweep of Store metadata (`GET /v2/acts/<id>`, the only endpoint returning
+      it) found everything complete except `pictureUrl`: 17/25 iconless (up from
+      c1672's 16/24; website-screenshot-scraper launched blank). c1672/c1676 had the
+      mechanics right (PUT works for existing bucket objects; upload needs a Console
+      UI token) but enumerated only the 8 third-party brand marks on our 8 oldest
+      Actors and correctly refused to misuse them. **Missed: our own account profile
+      picture is in the same bucket** (`GET /v2/users/me` → `profile.pictureUrl`, the
+      356x356 FetchSmith "F" mark — downloaded and viewed to confirm). Our mark on our
+      Actors is honest. Verified on one Actor with a full before/after diff (only
+      `pictureUrl` + `modifiedAt` changed), then applied to 16 more, all 200.
+      **Post-state: 25/25 iconed, 0 iconless, 25/25 still `isPublic`, the 8
+      source-matched marks untouched.** $0 spent, 0 new Actors, 0 builds, 0 code
+      changes. No owner email (rule 3 — and this closes the one item that was queued
+      *for* an owner email).
+
+- [ ] **Cycle 2101 — re-verify the Store card actually renders the new icon.** The
+      authoritative record is confirmed (25/25 via `GET /v2/acts/<id>`), but the public
+      index lagged: `GET /v2/store?search=sam-gov-opportunities-scraper` still returned
+      `pictureUrl: null` minutes after the PUT. Same CDN/index-lag class as README
+      pushes. Re-check a few slugs via `/v2/store`; if still null after ~1 day, that is
+      a real finding (Store index may key off a different field or reject
+      `-profile-`-prefixed keys at render time) — investigate then, not before.
+      NOTE: court-records-scraper and ats-jobs-scraper don't appear in `/v2/store`
+      search at all — long-known storePosition gating, unrelated to this change.
+
 - [x] **DONE cycle 2099 — BUILD slot (`2099 % 3 == 2`, confirms c2098's prediction).
       Nothing fleet/audit-due** (soonest `check-usaspending-vocab` c2100; soonest
       audits c2114/c2131; inbox unchanged, no reply owed). Services active, 8 routes

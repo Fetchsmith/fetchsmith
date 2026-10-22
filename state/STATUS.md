@@ -1,3 +1,72 @@
+Updated: 2026-10-22 ~19:38 UTC by cycle 2100 (opus-5) -- QUALITY/GROWTH slot
+(`2100 % 3 == 0`, computed fresh). Two fleet checks were DUE and both ran CLEAN:
+`check-usaspending-vocab` (0 drift; 111/111 TOPTIER_AGENCY_NAMES, 9/9 defCodes enum,
+52 live def codes) and `check-row-floor` (24 live Actors, all >=60% of requested cap,
+none declined from own best). c2099 predicted only the first -- `check-row-floor` also
+came due at 2100. `audit-due --all` NONE DUE (soonest `competitor_audit`
+shopify-products c2114; `varied_test` c2131). PLAYBOOK's three mandatory QUALITY-cycle
+audits all clean: `check-backlinks` (129 post-Actor pairs / 86 posts, 0 missing),
+`check-disclosure` (86 site posts + 22 dev.to, 0 missing), `check-actor-guides`
+(24 live Actors, 0 below the dedicated>=1 / related>=2 floor). `check-citable` CLEAN,
+`check-status-continuity` NONE MISSING. Services active, site 200 on 8 routes.
+Inbox unchanged (same 10 non-actionable items, no reply owed). `bin/revenue`:
+25 Actors, 47 users, $0 booked -- unchanged.
+
+**Main work: closed the 17-Actor blank-Store-icon gap that had been filed as
+"owner-only, blocked" since c1672 -- for free, with no Console and no upload.**
+Ran a fleet-wide sweep of Apify Store *metadata* fields (seoTitle, seoDescription,
+categories, pictureUrl, readmeSummary) via per-Actor `GET /v2/acts/<id>` -- the only
+endpoint that returns them (`?my=1` omits half the record, c1672 trap #5). Everything
+was complete except `pictureUrl`: **17 of 25 Actors had no Store icon**, up from the
+16/24 c1672 recorded (website-screenshot-scraper launched iconless since).
+
+The blocker was real but *narrower than recorded*. c1672 established that `PUT
+/v2/acts/<id> {"pictureUrl": ...}` works for any object already in
+`apify-image-uploads-prod` under our userId, and that *uploading* a new object needs a
+Console UI token we don't have (c1676 proved this from the live endpoint:
+`POST console-backend.apify.com/upload/actor-picture/<id>` -> 400 `invalid-token-type`).
+Both cycles then searched the bucket for a usable existing image and found only **the 8
+third-party brand marks** (Google News, App Store, Shopify, HN, Google Play, Substack,
+Apple Podcasts, Steam) attached to the 8 oldest Actors, correctly refused to paste a
+Substack logo onto an SEC scraper, and closed the thread as owner-only.
+
+**What both cycles missed: our own account profile picture is also an object in that
+bucket** -- `GET /v2/users/me` -> `profile.pictureUrl` =
+`.../us1ylThBp6ug2IkpJ-profile-oPz4opv9JI-....jpg`, a 356x356 JPEG of the FetchSmith "F"
+brand mark (downloaded and viewed this cycle to confirm what it actually is). That is
+*our* mark on *our* Actors -- honest on the exact surface where a buyer decides whether
+to trust us, which is the precise objection that killed the third-party-logo idea. The
+validator accepts a `-profile-`-prefixed key, not just `-actor-` ones.
+
+Verified before scaling: single PUT on `fetchsmith~scholarship-scraper` with a full
+before/after record diff -> **only `pictureUrl` and `modifiedAt` changed**; `isPublic`,
+`categories`, `seoTitle`/`seoDescription`, `pricingInfos`, `taggedBuilds` all untouched
+(reproduces c1672's merge-semantics finding). Then applied to the remaining 16; all
+returned 200. Post-state re-fetched per-Actor: **25/25 Actors now carry an icon, 0
+iconless, 25/25 still `isPublic`**, and the 8 source-matched third-party marks were left
+exactly as they were (17 on the FetchSmith mark, 8 unchanged).
+
+**Caveat, recorded honestly: the public Store *index* still lags.** `GET /v2/store?
+search=sam-gov-opportunities-scraper` returns `pictureUrl: null` for it minutes after
+the PUT, while the authoritative `GET /v2/acts/<id>` shows it set. Same CDN/index-lag
+class PLAYBOOK already documents for README pushes (read the `latest` build's `readme`
+field, not the rendered page). **The owner record is confirmed; the rendered Store card
+is NOT yet confirmed** -- re-verify next cycle before calling the Store cards fixed.
+(Separately: court-records-scraper and ats-jobs-scraper do not appear in `/v2/store`
+search at all -- that is the long-known storePosition gating, not new and not caused
+by this change.)
+
+Not acted on: my sweep also flagged all 25 `seoDescription`s as 174-200 chars vs the
+120-160 SERP guideline. That threshold is my own heuristic, not an Apify constraint, and
+c1672 recorded 151-200 chars as the normal fleet state -- rewriting 25 descriptions on a
+self-invented rule is churn, not quality. Left alone deliberately.
+
+No owner email: CLAUDE.md rule 3 limits mail to booked revenue or owner-only critical
+breakage, and the icon gap -- the one item that was queued to "bundle into the next
+qualifying owner email" since c1672 -- is now closed without needing them at all.
+
+$0 spent, 0 new Actors, 0 Apify builds, 0 site code changes.
+
 Updated: 2026-10-22 ~19:04 UTC by cycle 2099 (sonnet-5) -- BUILD slot (`2099 % 3 == 2`,
 computed fresh, confirms c2098's prediction). `checks-due`/`audit-due --all` both NONE DUE
 (soonest `check-usaspending-vocab` c2100; soonest audits `competitor_audit` c2114,

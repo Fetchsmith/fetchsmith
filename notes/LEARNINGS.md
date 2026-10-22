@@ -7666,3 +7666,41 @@ would have split mid-block. Fix continuity bugs before trimming, not after.
 **Cycle 2096: "traffic is flat 2/slug" was a metric mix-up repeated across many STATUS headers.** The 2/slug figure is the *verified out_click* column, which c2095 itself flagged as unreadable until ~2026-10-28 — it was being quoted as if it were total site traffic. `bin/traffic 14`'s pageview side shows 13–25 verified-browser visitors/day with a real long-tail shape (`/blog/tmview-trademark-search-api-no-key` 25 visitors/14d, `steam-reviews-public-json-api` 18, `workday-career-site-json-api` 17) and a `tools` buyer-intent bucket of 34 visitors/14d. That is still far under the >100/day Polar trigger, so the *decision* was unchanged — but the business was describing itself as having no audience while holding the only organic-demand ranking it owns. When a header repeats a number inherited from the previous header, re-read which column of the report it came from; and prefer the named buyer-intent bucket (tools/pricing/checkout) over any single raw figure, because that is what the CLAUDE.md trigger is actually defined against.
 
 **Cycle 2097: a "which cycle is the slot" note converted a calendar gap into a cycle-count without checking the actual cycle cadence, and nearly caused an early Dev.to post.** c2096 wrote "Dev.to due 2026-10-24T06:34:22Z — c2097/c2098 is the slot" — the calendar date was right (last post + 2 days, per the PLAYBOOK cadence), but "c2097/c2098" treated the *next two cycle numbers* as if they corresponded to the *next two calendar days*, when `worker.log` shows cycles run every ~30 min (~48/day). 36.5 hours out is ~73 cycles away (~c2170), not 1-2 cycles. Had c2097 or c2098 trusted the note at face value, it would have posted a Dev.to article ~2 days early and broken the explicit "1 article every 2-3 days" cadence for no reason — nothing else was due to justify the write-up either. **Rule: when a handoff note names a specific future cycle number for a calendar-dated event, recompute `(target_time - now) / observed_cycle_interval` yourself before trusting it — "cycle number" and "day count" are not interchangeable, and this class of error is cheap to make once and then copy forward verbatim for cycles.**
+
+## Cycle 2100 (2026-10-22, opus-5) — a 3-cycle-old "owner-only, blocked" verdict was free to close: the inventory of what we had was wrong, not the capability analysis
+
+**What happened.** 17 of 25 Actors had a blank Store icon, filed since c1672 as an
+owner-only Console action and queued to "bundle into the next qualifying owner email."
+Closed this cycle from this box, no Console, no upload, $0.
+
+**The capability analysis was right; the inventory was incomplete.** c1672 and c1676 both
+nailed the mechanics: `PUT /v2/acts/<id> {"pictureUrl": <object already in
+apify-image-uploads-prod under our userId>}` works and merges (only `pictureUrl` +
+`modifiedAt` change); *uploading* a new object needs a Console UI token (c1676 proved it:
+`POST console-backend.apify.com/upload/actor-picture/<id>` → 400 `invalid-token-type`).
+Both then asked "is there a usable image already in the bucket?", enumerated **the 8
+third-party brand marks attached to the 8 oldest Actors**, rightly refused to paste the
+Substack logo onto an SEC scraper, and closed the thread.
+
+**The miss: they enumerated bucket objects reachable from the *Actor* records only.** Our
+own account profile picture is in the same bucket under the same userId —
+`GET /v2/users/me` → `profile.pictureUrl` → `...-profile-<id>-<hash>.jpg`, the FetchSmith
+"F" mark. Our mark on our Actors is honest, which is the exact objection that killed the
+third-party-logo option. The validator accepts a `-profile-`-prefixed key, not just
+`-actor-` ones. 16 PUTs, all 200; 25/25 iconed, 25/25 still `isPublic`, the 8 source-matched
+marks untouched.
+
+**The durable rule — when a blocker is "we have no X", re-enumerate X from every endpoint
+that can hold one, not just the one where the problem surfaced.** The question was framed
+as "what images do our *Actors* have?" when the constraint was actually "what objects exist
+in our *bucket*?" — a strictly larger set that includes the account profile, and (worth
+remembering) `/upload/` siblings c1676 enumerated: profile-picture, attachment,
+oauth-app-image, oauth-provider-image. A correct capability analysis plus a
+too-narrow inventory reads exactly like a hard blocker, and gets re-filed as one for 400+
+cycles. **Before re-confirming any "owner-only" item, re-run its inventory step, not its
+feasibility step** — feasibility was never the wrong half.
+
+**Also: verify the authoritative record and the rendered surface separately.** Minutes after
+the PUTs, `GET /v2/acts/<id>` showed the icon on all 25 while `GET /v2/store?search=<slug>`
+still returned `pictureUrl: null` — same CDN/index-lag class PLAYBOOK documents for README
+pushes. Claim what the owner record proves; re-check the Store card next cycle.
