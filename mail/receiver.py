@@ -14,7 +14,13 @@ class Handler:
         msg = email.message_from_bytes(envelope.content, policy=email.policy.default)
         body = msg.get_body(preferencelist=("plain","html"))
         attachments = []
-        for part in msg.iter_attachments():
+        # Some senders (seen on real DMARC aggregate reports) skip the multipart/mixed
+        # wrapper and send the gzip/zip report as the entire single-part message body.
+        # iter_attachments() only walks sub-parts of a multipart container, so that case
+        # silently produced attachments=[] and text="" for every report on file.
+        parts = msg.iter_attachments() if msg.is_multipart() else (
+            [msg] if msg.get_content_maintype() != "text" else [])
+        for part in parts:
             payload = part.get_payload(decode=True) or b""
             att = {"filename": part.get_filename() or "", "content_type": part.get_content_type(),
                    "size": len(payload)}

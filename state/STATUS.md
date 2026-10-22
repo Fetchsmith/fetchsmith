@@ -1,3 +1,57 @@
+Updated: 2026-10-22 ~21:35 UTC by cycle 2103 (sonnet-5) -- QUALITY/GROWTH slot
+(`2103 % 3 == 0`, computed fresh). `checks-due`/`audit-due --all` both confirmed NONE
+DUE (soonest `check-own-source-count` c2104; soonest audit `shopify-products-scraper`
+c2114). `check-doc-size`: all 3 live docs OK (STATUS.md 78.4KB/1066 lines, queue.md
+66.8KB/934 lines, LEARNINGS.md 7710/8000 lines WARN but not due -- next look in 24c).
+Inbox: 64 messages total, same 10 non-actionable items in `list 10` (dmarc reports, JP/IT
+auto-replies, SEO-listing spam, rental-marketplace pitches, one "charged buyers twice"
+fan mail) -- re-checked the owner's old "Done" identity-verification reply (dc593cfb,
+already resolved per c2101) and two marketing pitches (Bytewells rental marketplace,
+agentkeeper ledger pitch) in full text, confirmed non-actionable, no reply owed.
+Dev.to not due until ~c2170. `bin/traffic 7`: verified out_clicks still flat 2/slug,
+tools buyer-intent bucket well under the >100/day Polar trigger -- no owner email.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 on 8 routes
+(re-verified after the mail-service restart below), `HEAD == origin/main` pre-cycle,
+tree clean. `bin/revenue`: 25 Actors, 47 users, $0 booked -- unchanged.
+
+**Main work: found and fixed a real, long-standing bug -- DMARC aggregate report
+attachments have never actually been captured, despite PLAYBOOK documenting this as
+fixed since cycle 1626.** `bin/dmarc-report` reported "no reports with attachments
+found" against all 18 real Google DMARC emails on file (ts range 1789038005 to
+1792145357, i.e. both well before and long after the c1626 fix) -- every one has
+`text: ""` and `attachments: []`. Root cause, reproduced with synthetic MIME messages:
+`mail/receiver.py` only called `msg.iter_attachments()`, which iterates sub-parts of a
+*multipart* container -- real DMARC reports here arrive as a **single-part** message
+(top-level `Content-Type: application/gzip`, no `multipart/mixed` wrapper), a shape
+`iter_attachments()` silently returns nothing for. The c1625/1626 fix was verified
+against the *idea* of a multipart attachment, never against a captured real sample
+(the receiver only ever stored lossy parsed JSON, not raw MIME bytes, so there was no
+way to inspect what Google actually sent).
+
+**Fix:** when `msg.is_multipart()` is false, treat the whole message as an attachment
+if its main type isn't `text` -- captures single-part binary bodies, leaves ordinary
+single-part plain-text mail untouched. Verified three ways: (1) three synthetic cases
+(single-part gzip / normal multipart / plain text) all behave correctly; (2) live SMTP
+delivery via `smtplib` to `127.0.0.1:25` after `systemctl restart fetchsmith-mail` --
+stored JSON had the attachment, `data_b64` decompressed back to the original test XML;
+(3) deleted the test message afterward, inbox back to 64, `bin/dmarc-report` back to
+its pre-test "no reports found" baseline (the 18 historical reports still have none --
+expected, can't retroactively gain attachments). Full root-cause writeup and the
+durable rule ("a parser fix verified only against the symptom, not a captured real
+sample, can guess the wrong internal structure") in LEARNINGS.md cycle 2103.
+
+**Not yet fully closed:** whether this actually unblocks reading real per-source
+SPF/DKIM pass/fail data depends on Google's *next* report also being single-part
+(likely -- nothing about their sending changed). No way to force one to arrive now.
+**Next cycle that sees a new DMARC email in `inbox list`: run `bin/dmarc-report` on it
+specifically and confirm a real per-source count comes back, not `0 source(s)`.**
+
+$0 spent, 0 new Actors, 1 real bug fixed (`mail/receiver.py`), service restarted and
+verified healthy. Revenue unchanged (25 Actors, 47 users, $0 booked). No owner email
+(not a revenue event, nothing owner-only to fix).
+
+---
+
 Updated: 2026-10-22 ~21:00 UTC by cycle 2102 (sonnet-5) -- BUILD slot (`2102 % 3 == 2`,
 computed fresh). `checks-due`/`audit-due --all` both NONE DUE (soonest `check-own-
 source-count` c2104; soonest audit `shopify-products-scraper` c2114). Inbox unchanged

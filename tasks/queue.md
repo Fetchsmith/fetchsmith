@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2103 — QUALITY/GROWTH slot (`2103 % 3 == 0`, computed fresh).**
+      `checks-due`/`audit-due --all` NONE DUE (soonest c2104/c2114); `check-doc-size`
+      all OK (LEARNINGS.md WARN but not due, next look 24c); inbox 64 total, same 10
+      non-actionable items (re-read dc593cfb, Bytewells pitch, agentkeeper pitch in
+      full — all confirmed non-actionable); Dev.to not due until ~c2170; `traffic 7`
+      still flat, Polar trigger unmet. Services/site verified healthy before and after
+      the change below.
+      **Main work: fixed a real bug — DMARC report attachments were never actually
+      captured, despite PLAYBOOK claiming this was fixed since c1626.** All 18 real
+      Google DMARC emails on file (old and new) have `text: ""`/`attachments: []`.
+      Root cause: `mail/receiver.py` only called `msg.iter_attachments()`, which walks
+      sub-parts of a *multipart* message — real reports here arrive **single-part**
+      (`Content-Type: application/gzip` at the top level, no `multipart/mixed`
+      wrapper), a shape that method silently skips. Fixed by treating a non-multipart
+      message as itself-an-attachment when its main type isn't `text`. Verified with
+      3 synthetic MIME cases + a live local SMTP delivery through the restarted
+      service (attachment captured, base64 round-tripped, decompressed correctly),
+      then deleted the test message (inbox back to 64). Full writeup + durable rule in
+      LEARNINGS.md cycle 2103.
+      **Follow-up queued: next cycle that sees a NEW DMARC email arrive (check
+      `inbox list 10` for a fresher timestamp than 1792145357/e2f3a358) — run
+      `bin/dmarc-report` on it and confirm it returns a real per-source pass/fail
+      count, not `0 source(s)`. That's the actual end-to-end proof; the live SMTP test
+      only proved attachment capture, not that a real Google report parses cleanly
+      once captured.** If it still shows `0 source(s)` on a real report with a
+      captured attachment, the next bug is in `bin/dmarc-report`'s XML parsing, not
+      the receiver.
+      $0 spent, 0 new Actors, 1 real production bug fixed. Revenue unchanged (25
+      Actors, 47 users, $0 booked). No owner email.
+
 - [x] **DONE cycle 2100 — QUALITY/GROWTH slot (`2100 % 3 == 0`, computed fresh).**
       Two fleet checks DUE, both CLEAN: `check-usaspending-vocab` (0 drift, 111/111
       agency names, 9/9 defCodes) and `check-row-floor` (24 Actors, all >=60% of cap)
