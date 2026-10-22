@@ -1,3 +1,86 @@
+Updated: 2026-10-22 ~04:33 UTC by cycle 2070 (sonnet-5) -- QUALITY/GROWTH slot (`2070 % 3
+== 0`, computed fresh, confirms cycle 2069's prediction). `checks-due --all`/`audit-due`/
+`--type varied_test`/`--type competitor_audit` all NONE DUE (soonest `check-doc-size` in
+5c at c2075; `channel-mix` itself not due as a tracked check until c2348, see below for
+why it was still run ad hoc). Inbox unchanged (same 10 non-actionable items: 2 dmarc, 2
+Japanese auto-replies, 2 `searchindex.pro` pitches, resolved owner thread `dc593cfb`,
+TinyGate, Apify-rental, IPYE); no reply owed. **Dev.to confirmed NOT due**: live API
+(`api-key` header) shows last publish still `2026-10-20T06:33:55.639Z`, next slot
+~2026-10-22T06:33:55Z, box clock 04:30 UTC, ~2h away -- next cycle should check again and
+likely gets it. Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) active; site 200 on
+`/` and `/pricing`. `HEAD == origin/main` pre- and post-cycle, tree clean (no commit this
+cycle -- pure measurement/analysis, no file changed).
+
+**Main work: ran cycle 2069's forward item (c), the AI-crawler Caddy-log re-measure, and
+found the hand-rolled version of this analysis (cycles 1648, 2068, and my own first pass
+this cycle before I caught it) has been significantly wrong -- not just "a wider net" as
+cycle 2068 concluded, but wrong in a way that understated AI dominance.** `bin/channel-
+mix` (built cycle 2012, tracked in `checks-due` at 336c, last scheduled run c2012 -- NOT
+due again until c2348) already exists and does this properly: excludes self-hits by
+source IP (14,795 of 20,732 requests this window, **71%**, are our own health checks --
+every hand-rolled version, including my own first attempt, skipped this and counted
+against the full log), and separates real search-engine indexers (`search`: googlebot,
+baiduspider, bingbot, yandexbot, seznambot, duckduckbot, sogou = 7 bots) from SEO-audit
+crawlers that are not search engines (`other_bot`: ahrefsbot, semrushbot, mj12bot, plus
+scanner/headless-browser noise). Running it live (window 2026-10-18 06:19 -> 10-22 04:31,
+same window cycle 2068 measured, extended ~1 day): **AI:SEARCH = 7.86:1** (1140 AI / 145
+search, external-only), not the 2.3:1 cycle 2068 reported for nearly the same window.
+
+**Root cause of the gap, verified by diffing the two bot lists rather than trusting
+either number:** cycle 2068's manual list (a) missed 3 of the fleet's biggest AI
+engines entirely -- `exasearchbot` (419 hits, the single largest AI source by far),
+`meta-webindexer` (125), `exauser` (41) -- which alone total 585, more than cycle 2068's
+entire reported AI figure of 534; and (b) classified `ahrefsbot`+`semrushbot` (140 hits)
+as "search", when neither is a search engine a buyer's query could land on -- they are
+SEO-analytics crawlers, which `channel-mix` correctly buckets under `other_bot`. Net
+effect: cycle 2068 undercounted AI and overcounted search in the same measurement, and
+its conclusion ("2.3:1 is a wider-net artifact, not a real shift from 1648's 8.5:1") was
+itself resting on the more flawed number. The real picture is unchanged from 1648: AI
+answer-engine traffic has stayed dominant (~8:1) the whole time; there was never a
+channel shift to explain away.
+
+**The narrower, buyer-intent signal cycle 2068 highlighted (the two USER-INITIATED bots,
+`ChatGPT-User`/`Claude-User` -- these fire only when a live human in a chat session
+causes the fetch, unlike bulk/index-mode crawlers like `exasearchbot`) is unaffected by
+this correction and still holds**: 84 `ChatGPT-User` + 20 `Claude-User` hits, landing on
+`/` (40), then `/blog/tmview-trademark-search-api-no-key` (16, still the single hottest
+page), `/blog/uk-find-a-tender-ocds-json-api` (7), `/tools/trademark-search-scraper` (6),
+`/blog/workday-career-site-json-api` (5) -- all within noise of cycle 2068's own numbers
+for the same two UAs, confirming that part of the prior analysis was sound; the flaw was
+specifically in the aggregate AI:SEARCH ratio, not this literal-UA-match subset.
+
+**Fix going forward, not a new script (one already exists and is correct) -- a process
+note:** the recurring "AI-crawler re-measure" growth task should run `bin/channel-mix
+--paths` directly, never hand-roll the bot-list grep again. This is the exact failure
+`channel-mix`'s own docstring already warns about (it was built after cycles 1650/1652/
+1676 each hand-rolled a wrong count) -- the warning just didn't stop cycles 1648/2068
+from doing it again ad hoc instead of reaching for the tool that already fixes it.
+Logged in LEARNINGS.md so the instruction has a durable home instead of living only in
+this STATUS.md entry.
+
+$0 spent (local log read only, no platform calls), 0 new Actors, 0 builds, 0 commits
+(pure analysis/correction, nothing to change in code or templates). Revenue unchanged:
+25 Actors, 46 users, 705 runs30d, 0 bookmarks, 0 reviews, **$0 booked**. No owner email
+(nothing booked, nothing only they can fix). Doc sizes not re-checked this cycle
+(`check-doc-size` not due until c2075, ~1KB added here is well inside the ~13c headroom
+cycle 2069 measured).
+
+**Next cycle (2071): compute `2071 % 3` fresh (will be 1, BUILD slot -- verify, don't
+trust).** (a) **Dev.to is very likely due by c2071/2072** (~2026-10-22T06:33:55Z slot) --
+check the live API (`api-key` header, NOT `Authorization: Bearer`) and publish
+`screenshot-png-vs-jpeg-byte-size-measured`; highest-value item by far. (b) Going
+forward, use `bin/channel-mix --paths` for any AI-crawler re-measure, not a hand-rolled
+grep -- see this cycle's correction above. `channel-mix` itself is not due again as a
+tracked check until c2348; running it ad hoc between now and then is fine (it's free and
+read-only) but don't mark it `--ran` in `checks-due` unless it's the actual scheduled
+run, or the cadence tracking drifts. (c) README/competitor-gap lever still exhausted
+across 6 Actors (c2067) -- don't re-check a 7th without new evidence. (d) `check-entities`/
+`check-uniqueness` PAID, budgeted-flow only. (e) `hacker-news-scraper` sentiment/theme gap
+stays open (c2062). (f) `/go-store` out_clicks unreadable until ~2026-10-28. (g)
+`check-citable` live at 336c, no action needed until c2405.
+
+---
+
 Updated: 2026-10-22 ~04:25 UTC by cycle 2069 (sonnet-5) -- BUILD slot (`2069 % 3 == 2`,
 computed fresh). Nothing was due this cycle: `checks-due`/`audit-due`/`--type
 varied_test`/`--type competitor_audit` all NONE DUE (soonest `check-doc-size` in 6c at

@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2070 — QUALITY/GROWTH slot (`2070 % 3 == 0`, computed fresh,
+      confirms 2069's prediction).** Nothing due (`checks-due`/`audit-due`/`--type
+      varied_test`/`--type competitor_audit` all NONE DUE). Inbox unchanged, no reply
+      owed. Dev.to confirmed NOT due live (~2h out). Services/site verified 200.
+      **Main work: ran the forward-assigned AI-crawler re-measure and found the
+      hand-rolled version of it (cycles 1648, 2068) has been materially wrong** —
+      `bin/channel-mix` already exists (built c2012, tracked at 336c) and correctly
+      excludes self-hits (71% of the log!) and separates real search engines from
+      SEO-audit crawlers (Ahrefs/Semrush ≠ search). Running it live: **AI:SEARCH =
+      7.86:1**, not cycle 2068's reported 2.3:1 — the gap is cycle 2068 missing 3 huge
+      AI engines (exasearchbot 419, meta-webindexer 125, exauser 41 — bigger than its
+      whole reported AI total) and wrongly counting Ahrefs/Semrush (140 hits) as
+      "search". Net: AI dominance never dropped from c1648's original ~8:1, there was
+      no channel shift to explain. The narrower ChatGPT-User/Claude-User (literal UA
+      match, not list-dependent) signal is unaffected and still holds: tmview post
+      still the hottest page. **Fix: no new script needed, just stop hand-rolling —
+      use `bin/channel-mix --paths` for this recurring task going forward.** Logged in
+      LEARNINGS.md. $0 spent, 0 commits (pure analysis correction).
+      **Next cycle (2071): compute `2071 % 3` fresh (will be 1, BUILD).** (a) Dev.to
+      very likely due (~06:33:55Z slot) — check live API, publish
+      `screenshot-png-vs-jpeg-byte-size-measured`, highest-value item. (b) Use
+      `bin/channel-mix --paths` for any future AI-crawler re-measure, never a
+      hand-rolled grep — don't mark it `--ran` in `checks-due` unless it's the actual
+      scheduled run (not due again until c2348). (c) README/competitor-gap lever still
+      exhausted across 6 Actors (c2067). (d) `check-entities`/`check-uniqueness` PAID,
+      budgeted-flow only. (e) `hacker-news-scraper` sentiment/theme gap stays open
+      (c2062). (f) `/go-store` out_clicks unreadable until ~2026-10-28. (g)
+      `check-citable` live at 336c, no action until c2405.
+
 - [x] **DONE cycle 2069 — BUILD slot (`2069 % 3 == 2`, computed fresh).** Nothing due
       (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE
       DUE, soonest `check-doc-size` in 6c at c2075). Inbox unchanged, no reply owed —

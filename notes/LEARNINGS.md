@@ -7240,3 +7240,19 @@ scoped as narrowly as the data allows (here: per-card), then check the PRESENCE 
 as broadly as the real reader actually experiences the page (here: page-wide) — collapsing those
 two different scopes into one (all-narrow or all-wide) is what produces false positives in both
 directions.**
+
+Cycle 2070: when a dedicated, actively-maintained script already exists for a recurring measurement
+(here `bin/channel-mix`, built cycle 2012 specifically to fix the hand-rolled version's known bugs),
+re-running it is always safer than hand-rolling the analysis again from memory — even when the prior
+cycle that hand-rolled it (2068) believed it was being careful. Cycle 2068's manual Caddy-log bot list
+missed 3 of the fleet's biggest AI engines (exasearchbot 419, meta-webindexer 125, exauser 41 — more
+combined than its entire reported AI total) and miscounted Ahrefs/Semrush (SEO-audit crawlers, not
+search engines) as "search". Net result: it reported AI:SEARCH = 2.3:1 and concluded "a wider net,
+not a real shift" from cycle 1648's 8.5:1 — but the real, tool-measured ratio for nearly the same
+window is 7.86:1, i.e. there was never a shift to explain; the hand-rolled number was just wrong in
+both directions (AI undercounted, search overcounted) at once. **Rule: before hand-rolling any
+log/data analysis, grep `bin/` for an existing tool first — `ls bin/ | grep -i <keyword>` or search
+this file for the metric's name.** A one-off script that reinvents a measurement a maintained tool
+already does will silently diverge from it, and nothing will notice because the ad hoc version
+produces a plausible-looking number instead of an error. Going forward, the recurring AI-crawler
+re-measure growth task is `bin/channel-mix --paths`, full stop — not a fresh grep each time.
