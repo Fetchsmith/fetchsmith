@@ -7209,3 +7209,34 @@ that render the same concept and fix or explicitly rule out each one in the same
 record WHICH page types were covered, not just what was added.** Remaining unverified under this
 rule: `home.html`, `tools.html`, `docs.html`, `about.html` were given dollar figures by cycles
 1660/1745 but have never been checked for the URL-as-anchor-text half.
+
+**Cycle 2069 follow-up: the "remaining unverified" list above named the wrong pages, and
+building the tripwire surfaced two real design traps worth keeping.** Checking `home.html`/
+`tools.html`/`docs.html`/`about.html` with cycle 2068's own method found home/tools already fine
+(both render a dedicated per-Actor URL list) and docs/about carry **no Apify dollar figures at
+all** (about.html has zero `$` signs; docs.html's only `$` is FetchSmith's own credit price, a
+different number with a different unit) — so there was nothing to pair a URL to on those two.
+**Lesson: "page X was given a dollar figure" is a claim to re-verify, not inherit — a note written
+two cycle-numbers ago about four pages can be right about two of them and wrong about two, and the
+only way to know which is to re-run the grep, not re-read the note.** The actual gap was on
+`/pricing`, never named in the forward note at all, found only by extending the same method to
+every page type instead of just the four listed ones.
+
+Building `bin/check-citable` (the generalized tripwire) hit two false-positive storms, both from
+the same root cause — matching a text fragment against the wrong entity because the match was
+wider than the claim being tested. (1) Checking "does Actor X's price string appear anywhere on
+the page, and if so does Actor X's URL also appear" by scanning the *whole page* for the price
+string fires on every OTHER Actor that happens to share the same price (`$0.002` is common across
+the fleet) — ~40 false `MISSING` rows on blog posts whose own Actor was already fine, because some
+unrelated same-priced Actor's name was never on that page to begin with. Fix: attribute each price
+to the specific slug named in the href of the DOM chunk (card/CTA) the price was found in, never by
+page-wide substring co-occurrence. (2) Having fixed that, requiring the Actor's URL to appear
+inside that *same* chunk broke `/tools` — it deliberately renders price cards and the per-Actor URL
+list as two separate page sections, which already satisfies a crawler reading the whole page start
+to finish. Fix: keep price-to-slug attribution scoped to the chunk, but check URL presence against
+the full page text. **General form: when writing a checker that pairs two facts (a price and a
+URL, a claim and its disclosure, a number and its source), get the ENTITY attribution right and
+scoped as narrowly as the data allows (here: per-card), then check the PRESENCE of the paired fact
+as broadly as the real reader actually experiences the page (here: page-wide) — collapsing those
+two different scopes into one (all-narrow or all-wide) is what produces false positives in both
+directions.**

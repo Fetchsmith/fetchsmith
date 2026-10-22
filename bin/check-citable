@@ -1,0 +1,164 @@
+#!/root/agent/venv/bin/python
+"""Assert every page that quotes a per-Actor Apify price also carries that SAME
+Actor's apify.com/<user>/<slug> URL as plain extractable TEXT (not just an href).
+
+WHY (cycle 2069, follow-up to cycle 2068): cycle 2068 measured the site's AI-crawler
+channel from the live Caddy log and found the two user-initiated bots (ChatGPT-User,
+Claude-User) land on blog posts, which quoted a per-result price in the sidebar but
+had ZERO apify.com strings in their tag-stripped text -- a crawler that extracts plain
+text (rather than rendering HTML and following hrefs) sees a price with no citable
+source for it. Fixed in post.html (commit cc0a56bb). A sweep right after this check was
+first drafted found the identical bug live on /pricing (6 cards, each quoting its own
+Actor's $X/result, zero apify.com strings anywhere in the page) -- fixed in the same
+cycle by adding an "Actor page: apify.com/<user>/<slug>" text line per card.
+
+Nothing existing caught either case: check-cta-presence only asserts an href exists
+(an href with non-URL anchor text like "Run on Apify ->" satisfies it fine), and
+check-links only checks that links resolve, not what the surrounding text says.
+
+PRICE MATCHED PER-CARD, URL CHECKED PAGE-WIDE (important, two false-positive storms hit
+while drafting this): (1) matching a price string anywhere on the page against every
+Actor at that price fleet-wide is wrong -- several Actors share identical prices
+($0.002 is common) -- so each card's price is attributed only to the slug found in
+THAT card's own href. (2) requiring the URL to appear inside the SAME card chunk is
+also wrong: tools.html deliberately renders its price cards and its per-Actor URL list
+("Every tool's Apify Store page") as two separate sections, and that already satisfies
+a crawler reading the whole page -- so the URL match is page-wide, only the price-to-
+slug attribution is per-card. Single-Actor pages (tool.html, single-Actor blog posts)
+check the whole page against that one Actor, which is unambiguous either way.
+
+Read-only GETs against our own site only; never /go/<slug> (that logs a real out_click
+event -- see the warning in bin/check-blog-cta).
+
+Exit 0 = every price-bearing card/page carries its own Actor's apify.com URL as text.
+"""
+import json
+import pathlib
+import re
+import sys
+
+import httpx
+
+BASE = "https://fetchsmith.com"
+if "--base" in sys.argv:
+    BASE = sys.argv[sys.argv.index("--base") + 1]
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+APIFY_USER = "fetchsmith"
+
+TAG_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.S | re.I)
+STRIP_RE = re.compile(r"<[^>]+>")
+CARD_SPLIT_RE = re.compile(r'(?=<div class="card">|<li><a href="/go/)')
+SLUG_HREF_RE = re.compile(r'href="/(?:go|tools)/([a-z0-9-]+)"')
+
+
+def usd(v):
+    """Mirror site/app.py's _usd jinja filter exactly, so the price string we search
+    for is byte-identical to what the template rendered."""
+    return ("%.6f" % max(float(v), 0.000001)).rstrip("0")
+
+
+def strip_tags(html_text):
+    html_text = TAG_RE.sub("", html_text)
+    return STRIP_RE.sub(" ", html_text)
+
+
+def load_tools():
+    reg = json.loads((ROOT / "actors/registry.json").read_text())
+    out = {}
+    for t in reg["tools"]:
+        if t.get("status") == "retired" or t.get("apify_listed") is False:
+            continue
+        price = t.get("apify_price", {}).get("entry") if t.get("apify_price") else None
+        if price is None:
+            continue
+        out[t["slug"]] = price
+    return out
+
+
+def blog_tool_map():
+    """slug -> tool frontmatter value, for single-Actor posts only."""
+    out = {}
+    for f in sorted((ROOT / "site/content/blog").glob("*.md")):
+        text = f.read_text()
+        m = re.search(r"^tool:\s*(\S+)\s*$", text, re.M)
+        if m:
+            out[f.stem] = m.group(1)
+    return out
+
+
+def check_single_actor_page(client, path, slug, price, rc_holder):
+    r = client.get(f"{BASE}{path}")
+    if r.status_code != 200:
+        print(f"ERROR  {path} -> HTTP {r.status_code}")
+        rc_holder[0] = 1
+        return
+    text = strip_tags(r.text)
+    price_str = f"${usd(price)}"
+    url = f"apify.com/{APIFY_USER}/{slug}"
+    if price_str not in text:
+        print(f"SKIP  {path}  (no Apify $ price for {slug} in extractable text)")
+        return
+    if url not in text:
+        print(f"MISSING  {path}  quotes {price_str} for {slug} but no '{url}' in text")
+        rc_holder[0] = 1
+        return
+    print(f"OK  {path}")
+
+
+def check_multi_actor_page(client, path, tools, rc_holder):
+    r = client.get(f"{BASE}{path}")
+    if r.status_code != 200:
+        print(f"ERROR  {path} -> HTTP {r.status_code}")
+        rc_holder[0] = 1
+        return
+    page_text = strip_tags(r.text)
+    chunks = CARD_SPLIT_RE.split(r.text)
+    checked = 0
+    missing = 0
+    for chunk in chunks:
+        m = SLUG_HREF_RE.search(chunk)
+        if not m:
+            continue
+        slug = m.group(1)
+        if slug not in tools:
+            continue
+        chunk_text = strip_tags(chunk)
+        price_str = f"${usd(tools[slug])}"
+        if price_str not in chunk_text:
+            continue
+        checked += 1
+        url = f"apify.com/{APIFY_USER}/{slug}"
+        if url not in page_text:
+            print(f"MISSING  {path}  card for {slug} quotes {price_str} but no '{url}' anywhere on the page")
+            rc_holder[0] = 1
+            missing += 1
+    if checked == 0:
+        print(f"SKIP  {path}  (no per-card Apify $ price found in extractable text)")
+    elif missing == 0:
+        print(f"OK  {path}  ({checked} priced card(s), all carry their own Actor URL)")
+
+
+def main():
+    tools = load_tools()
+    posts = blog_tool_map()
+    rc_holder = [0]
+    client = httpx.Client(timeout=30, headers={"User-Agent": "fetchsmith-citablecheck-bot/1 (own-site check)"})
+
+    for slug, price in tools.items():
+        check_single_actor_page(client, f"/tools/{slug}", slug, price, rc_holder)
+
+    for post_slug, tool_slug in posts.items():
+        if tool_slug in tools:
+            check_single_actor_page(client, f"/blog/{post_slug}", tool_slug, tools[tool_slug], rc_holder)
+
+    check_multi_actor_page(client, "/pricing", tools, rc_holder)
+    check_multi_actor_page(client, "/tools", tools, rc_holder)
+
+    if rc_holder[0] == 0:
+        print("CLEAN -- every price-bearing page/card carries its own Actor's apify.com URL as text.")
+    return rc_holder[0]
+
+
+if __name__ == "__main__":
+    sys.exit(main())

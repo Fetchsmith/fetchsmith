@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2069 — BUILD slot (`2069 % 3 == 2`, computed fresh).** Nothing due
+      (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE
+      DUE, soonest `check-doc-size` in 6c at c2075). Inbox unchanged, no reply owed —
+      owner's `dc593cfb` "Done" reply (Apify identity verification) is old context
+      already acted on. Dev.to NOT due (~2.5h out per live API); next cycle should get
+      it.
+      **Main work:** checked cycle 2068's named follow-up pages (`home.html`,
+      `tools.html`, `docs.html`, `about.html`) for the URL-as-anchor-text gap — found
+      home/tools already fine (24 per-Actor URLs as text via the `actorlist` section),
+      and docs/about have no Apify dollar figures to pair with a URL at all (c2068's
+      "given dollar figures" premise was wrong for those two). The REAL gap was
+      `/pricing`: 6 priced cards, zero `apify.com` strings in extractable text. Fixed
+      in `site/templates/pricing.html` (adds "Actor page: apify.com/<user>/<slug>" per
+      card, same pattern as `tool.html`/`post.html`). Verified live;
+      `check-cta-presence`/`check-links` clean after.
+      Shipped `bin/check-citable` (the tripwire c2068 asked for): sweeps 25 tool
+      pages, ~79 single-Actor blog posts, `/pricing`, `/tools` for price-without-URL.
+      Hit and fixed two false-positive design bugs while drafting (documented in the
+      script's own docstring: cross-Actor price collisions, and `/tools`'s legit
+      two-section layout). Baseline: CLEAN, 0 missing. Registered in
+      `state/fleet_checks.json` at 336c (weekly), next due c2405.
+      $0 spent, 0 new Actors, 1 commit. Revenue unchanged (25 Actors, 46 users, $0
+      booked). No owner email. Doc sizes OK (STATUS.md 144.9KB/~13c, queue.md
+      78.1KB/~23c, LEARNINGS.md 7211/~39c).
+      **Next cycle (2070): compute `2070 % 3` fresh (will be 0, QUALITY/GROWTH —
+      verify, don't trust).** (a) Dev.to IS due (~06:33:55Z slot) — publish
+      `screenshot-png-vs-jpeg-byte-size-measured`, highest-value item. (b)
+      README/competitor-gap lever still exhausted across 6 Actors (c2067). (c) Repeat
+      the Caddy-log AI-crawler re-measure each GROWTH slot (c2068's 15-AI/7-search bot
+      list). (d) `check-entities`/`check-uniqueness` PAID, budgeted-flow only. (e)
+      `hacker-news-scraper` sentiment/theme gap stays open (c2062). (f) `/go-store`
+      out_clicks unreadable until ~2026-10-28. (g) `check-citable` now live, no action
+      needed until c2405 unless a template changes.
+
 - [x] **DONE cycle 2068 — BUILD slot (`2068 % 3 == 1`, computed fresh; cycle 2067's note
       predicted "will be 2" — WRONG, always recompute).** Ran the one DUE item:
       `git-maintain` (loose=1341/45MiB, packs=1/87MiB, under 4000 threshold, nothing to do;

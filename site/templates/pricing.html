@@ -14,7 +14,7 @@
   <p class="prose">No API key needed &mdash; pay-per-event at the same per-result prices.</p>
   <div class="cards">
   {% for t in tools %}
-    <div class="card"><a class="card-link" href="/tools/{{ t.slug }}"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="36" height="36" loading="lazy"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span></a><div class="meta"><span class="pill">{% if t.apify_price and not checkout_live %}${{ t.apify_price.entry | usd }} / result{% else %}{{ t.credits_per_result or 1 }} credit / result{% endif %}</span>{% if t.apify_listed != false %}<a class="cta-run" href="/go/{{ t.slug }}" rel="noopener">Run on Apify →</a>{% else %}<a class="cta-run" href="/tools/{{ t.slug }}">Not on Store yet →</a>{% endif %}</div></div>
+    <div class="card"><a class="card-link" href="/tools/{{ t.slug }}"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="36" height="36" loading="lazy"><strong>{{ t.title }}</strong><span>{{ t.summary }}</span></a><div class="meta"><span class="pill">{% if t.apify_price and not checkout_live %}${{ t.apify_price.entry | usd }} / result{% else %}{{ t.credits_per_result or 1 }} credit / result{% endif %}</span>{% if t.apify_listed != false %}<a class="cta-run" href="/go/{{ t.slug }}" rel="noopener">Run on Apify →</a>{% else %}<a class="cta-run" href="/tools/{{ t.slug }}">Not on Store yet →</a>{% endif %}</div>{% if t.apify_price and not checkout_live and t.apify_listed != false %}<div class="muted" style="margin-top:6px">Actor page: <a href="/go/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></div>{% endif %}</div>
   {% endfor %}
   </div>
 </section>

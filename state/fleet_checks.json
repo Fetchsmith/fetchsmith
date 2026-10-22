@@ -206,6 +206,12 @@
    "interval_cycles": 336,
    "last_cycle": 2065,
    "note": "cycle 2065: cycle 2065: first-ever fleet run (was pattern-matched as a paid-run risk by c2064 grep; full code read confirms free -- GETs existing SUCCEEDED runs only, never launches one). 24 actors checked, 0 drift. Added to tracker at 336c (1wk), matching check-readme-samples/check-blog-claims cadence."
+  },
+  "check-citable": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 2069,
+   "note": "cycle 2069: baseline: 25 tool pages + ~79 single-Actor blog posts + /pricing (6 cards) + /tools (24 cards) all OK after fixing the /pricing gap this cycle (pricing.html now renders an 'Actor page: apify.com/<user>/<slug>' text line per priced card, matching tool.html/post.html's existing pattern). Weekly cadence matches sibling template-drift checks (check-cta-presence, check-real-fields) -- cheap, read-only GETs against our own site only."
   }
  },
  "not_cadence": {
