@@ -29,6 +29,32 @@ Usage:
 
 Writes state/store_rank.json (append-only history) so rank can be trended after a
 title/description change, the same way bin/usage-trend trends usage.
+
+COVERAGE FIX (cycle 2084): the fleet-wide default took its whole universe from the
+QUERIES map below (`slugs = args or sorted(QUERIES)`), and the `unknown` guard only
+fired for slugs a caller named explicitly — so an Actor absent from QUERIES was not
+"unqueried", it was *invisible*: no row, no entry in the `found/total` denominator,
+no near-miss line, no warning. QUERIES was written at 20 Actors (see the stale count
+in the cycle-452 paragraph above) and never grew with the fleet, so for ~1600 cycles
+this reported on 19 of 24 LIVE Actors while looking complete. The 5 uncovered were
+remote-jobs, sam-gov-opportunities, sec-insider-trades, trademark-search and
+website-screenshot — the last being the fleet's only Actor in a demand-bearing
+category (384 u30d vs ~3 for the gov/registry band) and the only one with a real
+external user, i.e. exactly the listing whose distribution mattered most. The 20th
+QUERIES entry was `scholarship-scraper`, which is RETIRED, which is what made the
+count look right. Same hole bin/audit-due had at cycle 2080, same fix: derive the
+universe and the required-coverage set from the REGISTRY (see live_slugs()).
+
+BASELINE (cycle 2084, first run at full coverage, scan 300): 42/50 queries return us
+at all, 12 on store page 1, 9 near-misses (rank 25-60). The previously-quoted "23/40,
+11 on page 1" was cycle 452's number over the 20-Actor map and had been read as a
+fleet figure ever since. First-ever numbers for the 5 newly-covered Actors:
+trademark-search `nice classification` #1, website-screenshot `url to pdf` #23 and
+`website screenshot` #142, sec-insider `sec insider trading` #20 / `form 4 insider`
+#29, sam-gov `government bids` #16 / `sam.gov opportunities` #34, remote-jobs
+`jobicy` #38 / `remote jobs` ABSENT. Per the cycle-518 correction above these are
+REST/CLI-surface ranks, not the buyer-facing Algolia ones — do not read a page-1
+here as "buyers can find us"; cross-read with bin/store-rank before acting.
 """
 import json
 import os
@@ -61,12 +87,21 @@ QUERIES = {
     "grants-gov-scraper": ["grants.gov", "government grants"],
     "hacker-news-scraper": ["hacker news", "hn scraper"],
     "nih-reporter-scraper": ["nih reporter", "nih grants"],
-    "scholarship-scraper": ["scholarships", "scholarship search"],
+    "scholarship-scraper": ["scholarships", "scholarship search"],  # RETIRED in registry.json; kept so the history series stays continuous, not required by live_slugs()
     "shopify-products-scraper": ["shopify products", "shopify store"],
     "steam-reviews-scraper": ["steam reviews", "steam games"],
     "substack-scraper": ["substack", "newsletter scraper"],
     "uk-find-a-tender-scraper": ["uk tenders", "find a tender"],
     "us-federal-awards-scraper": ["usaspending", "federal contracts"],
+    # cycle 2084: the 5 live Actors live_slugs() found uncovered. Terms are the
+    # broad + narrower/branded pair this map's convention asks for, each taken from
+    # the phrasings bin/store-rank's TERMS map has already measured us ranking on,
+    # so none claims a feature the Actor lacks.
+    "remote-jobs-scraper": ["remote jobs", "jobicy"],
+    "sam-gov-opportunities-scraper": ["sam.gov opportunities", "government bids"],
+    "sec-insider-trades-scraper": ["sec insider trading", "form 4 insider"],
+    "trademark-search-scraper": ["trademark search", "nice classification"],
+    "website-screenshot-scraper": ["website screenshot", "url to pdf"],
 }
 
 
@@ -77,6 +112,21 @@ def env():
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 os.environ.setdefault(k, v.strip().strip('"').strip("'"))
+
+
+def live_slugs():
+    """Live Actor slugs from the REGISTRY — the universe this tool must cover.
+
+    Never derive coverage from QUERIES itself: that is the file being checked, so a
+    missing entry would silently shrink both the row set and the denominator (the
+    cycle-2084 hole described in the module docstring). `status != "live"` slugs are
+    excluded from the REQUIREMENT but still measured if present in QUERIES, so
+    retiring an Actor doesn't tear a hole in state/store_rank.json's history series.
+    """
+    with open(f"{ROOT}/actors/registry.json") as fh:
+        return sorted(
+            t["slug"] for t in json.load(fh)["tools"] if t.get("status") == "live"
+        )
 
 
 def rank_for(client, query, slug, scan):
@@ -124,7 +174,20 @@ def main():
         i = args.index("--scan")
         scan = int(args[i + 1])
         del args[i : i + 2]
-    slugs = args or sorted(QUERIES)
+    live = live_slugs()
+    # Fire BEFORE any network work, and on the fleet-wide path too — this is the
+    # guard PLAYBOOK step 8 already promises ("or the script exits 1 rather than
+    # silently skipping it"), which until cycle 2084 was only true for explicit args.
+    uncovered = [s for s in live if s not in QUERIES]
+    if uncovered:
+        sys.exit(
+            f"no buyer-intent queries defined for {len(uncovered)} LIVE Actor(s): "
+            f"{', '.join(uncovered)}\n"
+            "Add 2 each to QUERIES (one broad, one narrower/branded, both honest to "
+            "what the Actor does). Until then they are excluded from every rank "
+            "measurement AND from the found/total denominator."
+        )
+    slugs = args or sorted(set(QUERIES) | set(live))
     unknown = [s for s in slugs if s not in QUERIES]
     if unknown:
         sys.exit(f"no queries defined for: {', '.join(unknown)} (add them to QUERIES)")

@@ -7402,3 +7402,47 @@ defect (`diffThreshold` 0.1 default yet 6.1265 reading "changed") was MY unit er
 is pixelmatch's per-pixel colour-distance tolerance, `changed` is `diffPixels>0`, and the README
 already documents the 0.02/0.1/0.3 sweep correctly. Chase the suspicion to the source line before
 writing it up as a finding; my number reproducing the README's documented 6.22% was the confirmation.
+
+## cycle 2084 — a tool that derives its own coverage universe from its own config cannot report a gap in it
+
+`bin/check-store-rank` had measured 19 of 24 LIVE Actors for ~1600 cycles while printing a
+summary line that looked complete. Cause, byte for byte: `slugs = args or sorted(QUERIES)`.
+The universe came from the `QUERIES` map itself, so a slug missing from that map was not
+"unqueried" — it was invisible: no row printed, no entry in the `found/total` denominator, no
+near-miss line, no warning. The one guard that existed (`unknown = [s for s in slugs if s not in
+QUERIES]` → `sys.exit`) could only ever fire for slugs a caller named **explicitly on the command
+line**, i.e. never on the fleet-wide no-args path — which is the path a rotation uses. PLAYBOOK
+step 8 has promised "add the slug to the map **or the script exits 1 rather than silently skipping
+it**" the whole time; that promise was true of one code path out of two, and the false half was
+the one that ran.
+
+**This is the identical defect shape cycle 2080 found in `bin/audit-due`** (universe and
+denominator both taken from `state/audit_dates.json`, the very file being audited, so an untracked
+Actor was missing from the rows AND from the coverage warning's denominator). Two independent
+instances now. **Generalised rule: a coverage/completeness check must take its universe from an
+INDEPENDENT source of truth — the registry — never from the config file it is checking.** Any
+`for x in SOME_MAP` where `SOME_MAP` is hand-maintained and the fleet grows is this bug waiting.
+Both fixes are the same four lines (`live_slugs()` reading `actors/registry.json`, filtered to
+`status == "live"`), and it is worth grepping for the pattern in the remaining hand-maintained maps.
+
+Two details that made this one hide especially well:
+- **The count looked right.** `QUERIES` had exactly 20 entries and the docstring's opening line
+  said "the business has 20 published Actors" (true at cycle 452, never updated). So anyone
+  spot-checking "20 entries, 20 Actors" got a match. The 20th entry was `scholarship-scraper`,
+  which is `status: retired` in the registry — so real live coverage was 19/24, and the stale
+  docstring was actively corroborating the wrong number.
+- **The stale denominator was quoted as current.** "Baseline: 23/40 queries rank us inside top
+  300, 11 on page 1" is a cycle-452 20-Actor figure that later cycles read as a fleet statistic.
+  True figure at full coverage: **42/50, 12 on page 1, 9 near-misses.** When a tool's docstring
+  carries a baseline, date it and re-derive it after any coverage change, or it becomes a
+  confident-sounding wrong number.
+
+When retiring an Actor, keep its `QUERIES` entry: `live_slugs()` excludes non-live slugs from the
+REQUIREMENT but the fleet default still measures anything present in the map, so a retirement does
+not punch a hole in `state/store_rank.json`'s history series.
+
+Substantive finding from the newly-covered 5, worth a future growth slot: `trademark-search-scraper`
+is **#1 on `nice classification`** and `website-screenshot-scraper` is **#23 (page 1) on `url to
+pdf`** (1079 claimed matches) on the REST surface — both entirely unmeasured until now. Caveat per
+the cycle-518 correction: this is the REST/CLI surface, NOT the buyer-facing Algolia index, so
+cross-read with `bin/store-rank` before treating either as reachable demand.

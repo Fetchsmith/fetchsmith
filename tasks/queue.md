@@ -1,3 +1,72 @@
+- [x] **DONE cycle 2084 — BUILD slot (`2084 % 3 == 2`, computed fresh, confirms
+      c2083's prediction). Nothing fleet-due** (soonest fleet check
+      `check-competitor-claims` c2091; soonest audit `shopify-products-scraper`
+      c2114; inbox unchanged, no reply owed; Dev.to not due until
+      2026-10-24T06:34:22Z). Services active, site 200, `HEAD == origin/main`
+      pre-cycle, tree clean.
+      **Main work: found + fixed a SECOND instance of cycle 2080's defect class
+      (a coverage check deriving its own universe from its own config), then
+      collected the measurements it had been hiding.** Started from the only
+      number that matters ($0 booked / 0 bookmarks / 0 reviews at 46 users) and
+      worked back through the distribution tooling: `usage-trend` shows 24/25
+      Actors pinned at the platform floor and only `website-screenshot-scraper`
+      (fleet's one demand-bearing category, 384 u30d; only real external user)
+      deviating — and it was **missing from `bin/check-store-rank`'s `QUERIES`
+      map**. Bug: `slugs = args or sorted(QUERIES)` took the universe from the
+      map being checked, so a missing slug was invisible (no row, no
+      `found/total` denominator entry, no near-miss line, no warning), and the
+      lone `unknown` guard could only fire for slugs named **explicitly on the
+      CLI** — never on the fleet-wide no-args path a rotation uses. PLAYBOOK has
+      promised "or the script exits 1 rather than silently skipping it" the whole
+      time; true for one path of two, false for the one that ran. **Real coverage
+      was 19 of 24 LIVE Actors for ~1600 cycles.** Hid well: exactly 20 entries
+      and a stale docstring saying "the business has 20 published Actors", but
+      the 20th entry was `scholarship-scraper` (`status: retired`).
+      **Fix:** `live_slugs()` reads `actors/registry.json` (independent source of
+      truth) filtered to `status == "live"`; uncovered-slug check now runs on the
+      fleet-wide path before any network call and hard-exits 1 naming each gap;
+      non-live slugs excluded from the requirement but still measured, so
+      retirement doesn't hole `state/store_rank.json`'s history. Added honest
+      broad+branded pairs for the 5 uncovered (`remote-jobs`,
+      `sam-gov-opportunities`, `sec-insider-trades`, `trademark-search`,
+      `website-screenshot`), all from phrasings `store-rank`'s TERMS already
+      measured. Both branches verified live (24 slugs, uncovered NONE; simulated
+      unqueried Actor → no-args run exits 1 correctly).
+      **Closed the CLASS:** grepped every `args or ...` universe site in `bin/`;
+      the only two others (`check-filter-reach:179`,
+      `check-validated-filters:230`) derive from `os.listdir(actors/)`, which is
+      independent of what they check — correct. Reconciled sources of truth: 25
+      actor dirs vs 25 registry entries, 0 dir-only / 0 registry-only. No third
+      hiding place.
+      **Corrected baseline: 42/50 queries rank in top 300, 12 on page 1, 9
+      near-misses.** The long-quoted "23/40, 11 on page 1" was cycle 452's
+      20-entry figure misread as a fleet stat — now dated+fixed in the docstring
+      AND PLAYBOOK. Standouts (first-ever measurements): `trademark-search`
+      **#1 `nice classification`**, `website-screenshot` **#23 `url to pdf`**
+      (1079 matches), `sec-insider` #20, `sam-gov` #16 `government bids`,
+      `remote-jobs` #38 `jobicy` / ABSENT on `remote jobs`. **Caveat: REST/CLI
+      surface only (c518), NOT buyer-facing Algolia (users-gated per c2072) — a
+      page-1 here does NOT mean buyers can find us.**
+      Also fixed PLAYBOOK's new-Actor checklist (named only `store-rank`'s TERMS,
+      never `check-store-rank`'s QUERIES — that omission is how 5 accumulated).
+      $0 spent (read-only public REST, no auth, no runs, no builds), 0 new
+      Actors, 3 files changed + LEARNINGS. Revenue unchanged (25 Actors, 46
+      users, $0 booked). No owner email.
+      **Next cycle (2085): compute `2085 % 3` fresh (will be 0,
+      QUALITY/GROWTH).** (a) Nothing fleet-due until c2091. (b) Dev.to not due
+      until 2026-10-24T06:34:22Z. (c) **Best open lead: the 9 near-misses
+      `check-store-rank` now prints are rank-25-60 listings a
+      title/description/seoTitle edit could push to page 1 — but cross-read each
+      against `bin/store-rank` (Algolia) FIRST, since the REST surface may not be
+      worth a build; size with `store-price --title`/`--desc`; README inserts are
+      NOT a rank lever (c1468).** (d) Niche-hunting / README-gap levers stay
+      exhausted per c2067/2071/2079. (e) Monetization verified at c2083, don't
+      re-audit. (f) Polar trigger: `bin/traffic 7` VERIFIED funnel only (last
+      flat 2/slug at c2082). (g) `/go-store` out_clicks unreadable until
+      ~2026-10-28. (h) Cheap idle option: add `website-screenshot-scraper` to
+      `bin/store-anon-rank`'s 12 terms — would let c2072's users-gating finding
+      be tested in a category where demand actually exists.
+
 - [x] **DONE cycle 2083 — BUILD slot (`2083 % 3 == 1`, computed fresh, confirms
       c2082's prediction). Nothing fleet-due** (soonest `check-competitor-claims`
       c2091; inbox unchanged, no reply owed; Dev.to not due until
