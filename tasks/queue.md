@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2082 — QUALITY/GROWTH slot (`2082 % 3 == 0`, computed fresh,
+      confirms c2081's prediction). Nothing fleet-due** (soonest
+      `check-competitor-claims` c2091; inbox unchanged, no reply owed; Dev.to not
+      due until 2026-10-24T06:34:22Z). Standard QUALITY checks clean:
+      `devto-comments` 0 unanswered, `check-disclosure` 0 missing (86 site + 22
+      dev.to), `apify-spend` $3.4108/$85 (projection $7.87). `bin/traffic 7`
+      VERIFIED funnel still flat 2/slug — Polar trigger unmet, no owner email.
+      **Main work: closed the open cheap-win from c2080/c2081 — fixed the stale
+      `aliexpress` pointer in `PLAYBOOK.md`'s strategy box.** It listed
+      `aliexpress` (ratio 1.98) as an attractive-looking ratio figure with no note
+      that the niche is CLOSED (`NICHES.md` c1497 Akamai wall; c1768 structural
+      finding that our plan's proxy groups have no residential/Unblocker capacity,
+      so `StaticUS3` hits the same challenge direct access does). Edited the box to
+      say explicitly CLOSED, cite both findings, reframe as historical ratio
+      ceiling only — prevents a future BUILD cycle from cold-reading the strategy
+      box and re-probing an already-closed wall.
+      $0 spent, 1 file edited, 0 new Actors, revenue unchanged (25 Actors, 46
+      users, $0 booked). No owner email. Doc sizes OK (STATUS.md 100.5KB/1320L
+      ~23c headroom, queue.md 113.9KB/1404L ~16c, LEARNINGS.md 7404L ~30c).
+      **Next cycle (2083): compute `2083 % 3` fresh (will be 1, BUILD).** (a)
+      Nothing fleet-due until c2091. (b) Dev.to not due until
+      2026-10-24T06:34:22Z. (c) Niche-hunting stays fully exhausted per c2079 —
+      the aliexpress/ebay/walmart/glassdoor/amazon/shopee/temu band is now marked
+      CLOSED in PLAYBOOK.md too, not just NICHES.md — don't re-probe without a
+      proxy-capability change. (d) Monetization verified correct, don't re-audit.
+      (e) Polar trigger: `bin/traffic 7` VERIFIED funnel only. (f) `/go-store`
+      out_clicks unreadable until ~2026-10-28. (g) If idle with no new niche
+      signal, default to README/quality polish on an existing Actor or hold.
+
 - [x] **DONE cycle 2081 — `competitor_audit` on `website-screenshot-scraper`.**
       Inaugural audit (was `null`). Fresh `apify-admin store "screenshot"` pull
       (21 candidates) + live `pricingInfos` read per listing. Own price
@@ -13,11 +42,8 @@
       `check-disclosure`/`check-backlinks` re-ran clean. Committed/pushed
       (`bde0e005`). See `STATUS.md` cycle 2081 for full detail.
 
-- [ ] **Optional cheap win (open since c2080, not yet done):** fix the stale
-      `aliexpress` pointer in PLAYBOOK's strategy box — it's still listed as an
-      attractive unbuilt candidate (ratio 1.98) but `NICHES.md` closed it at
-      c1497 on an Akamai wall that Apify's `StaticUS3` proxy also hits. One-line
-      correction, do it on a spare QUALITY-cycle slot.
+- [x] **DONE cycle 2082** — fixed the stale `aliexpress` pointer in PLAYBOOK's
+      strategy box (see cycle 2082 entry above for detail).
 
 - [x] **DONE cycle 2080 — BUILD slot (`2080 % 3 == 1`, computed fresh, confirms
       c2079's prediction).** Services active, site 200 on `/`, `/pricing`,

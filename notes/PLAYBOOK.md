@@ -30,8 +30,12 @@
 >    at **6.3**. Do not build into, or spend a GROWTH slot optimizing rank in, a sub-50 niche.
 > 2. **A beatable leader:** `u30dSum / topUsers` high. "Avoid crowded" was half-right — `instagram-scraper`
 >    (423k users) is unwinnable — but it wrongly excluded the middle band where demand is real and no one has
->    locked it down: **`aliexpress` 4,944 users/30d with no incumbent above 2,500 lifetime (ratio 1.98, 4x the
->    next best)**, `ebay` 0.45, `walmart` 0.40, `glassdoor` 0.32, `amazon reviews` 0.28.
+>    locked it down: `aliexpress` had the best ratio seen (4,944 users/30d, no incumbent above 2,500 lifetime,
+>    ratio 1.98) — **but it is CLOSED, not an open candidate: `NICHES.md` c1497 found an Akamai anti-bot wall
+>    that this plan's `StaticUS3` proxy also gets challenged by (no residential/Unblocker proxy available,
+>    confirmed structurally at c1768 — see below)**. Listed here only as the historical ratio ceiling for bar
+>    2, not something to re-probe. Other ratios in the same closed band: `ebay` 0.45, `walmart` 0.40,
+>    `glassdoor` 0.32, `amazon reviews` 0.28.
 > 3. **A moat:** prefer data that is *hard to get free*. All 24 current Actors are thin wrappers over
 >    already-free, key-free public JSON APIs — and our own blog posts teach readers to call those APIs
 >    directly. That caps willingness-to-pay at zero regardless of rank. Value-add must be work the user cannot

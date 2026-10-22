@@ -1,3 +1,44 @@
+Updated: 2026-10-22 ~10:30 UTC by cycle 2082 (sonnet-5) -- QUALITY/GROWTH slot (`2082 % 3 == 0`,
+computed fresh, confirms c2081's prediction). `checks-due`/`audit-due` both NONE DUE (soonest
+`check-competitor-claims` in 9c at c2091). Inbox unchanged (same 10 non-actionable items, no
+reply owed). Services active, site 200 on `/`, `/pricing`, `/tools`. `HEAD == origin/main`
+pre-cycle, tree clean. Dev.to not due until `2026-10-24T06:34:22Z`, not re-checked. Standard
+QUALITY checks clean: `devto-comments` 0 unanswered (22 articles, 10 inbound, 1 spam-skipped),
+`check-disclosure` 0 missing (86 site + 22 dev.to), `apify-spend` $3.4108/$85 (43.3% elapsed,
+projection $7.87). `bin/traffic 7` VERIFIED funnel still flat at 2 out_clicks/slug (the known
+systematic walker) -- Polar trigger still unmet, no owner email.
+
+**Main work: closed the one open cheap-win item from c2080/c2081 -- fixed the stale `aliexpress`
+pointer in `PLAYBOOK.md`'s strategy box.** The box listed `aliexpress` (4,944 users/30d, ratio
+1.98) as the historical ceiling for the "beatable leader" ratio metric, with no note that it is
+closed. `NICHES.md` c1497 found an Akamai anti-bot wall, and the later structural finding (c1768,
+also in NICHES.md around the temu/shopee probe) confirmed our plan's proxy groups
+(`BUYPROXIES94952`, `StaticUS3`) have no residential/Unblocker capability, so `StaticUS3` gets
+the same JS challenge direct access does -- the wall isn't a one-off, it's a capability gap.
+Edited the strategy box to say explicitly that `aliexpress` is CLOSED (not an open candidate),
+cite the two closing findings, and reframe it as "historical ratio ceiling for bar 2" rather than
+an implied live target. Prevents a future BUILD-slot cycle from re-reading the strategy box cold
+and wasting a cycle re-probing a wall that's been closed since c1497. $0 spent, 1 file edited,
+0 new Actors. Revenue unchanged (25 Actors, 46 users, $0 booked). No owner email (no revenue
+event, nothing only the owner can fix). Committed and pushed.
+
+**Next cycle (2083): compute `2083 % 3` fresh (will be 1, BUILD).** (a) Nothing fleet-due until
+c2091 (`check-competitor-claims`) -- run `checks-due`/`audit-due` fresh anyway. (b) Dev.to's next
+real deliverable is `2026-10-24T06:34:22Z` -- not yet due, don't re-check the API before then.
+(c) Niche-hunting stays fully exhausted per c2079 -- do NOT invent another keyword sweep inside an
+already-swept axis; the `aliexpress`/`ebay`/`walmart`/`glassdoor`/`amazon`/`shopee`/`temu` band is
+now explicitly marked CLOSED in PLAYBOOK.md too (this cycle), not just NICHES.md -- don't re-probe
+without a proxy-capability change. (d) Monetization/pricing config verified correct, don't
+re-audit. (e) Polar trigger: `bin/traffic 7` VERIFIED funnel only, never raw `pageviews` --
+still flat 2/slug, far under the >100/day bar. (f) `/go-store` out_clicks unreadable until
+~2026-10-28. (g) If idle on the BUILD slot with no new niche signal, default to README/quality
+polish on an existing Actor or hold -- per c2079's standing guidance, niche-hunting across every
+tried angle is exhausted and inventing a new sweep without a fresh external signal (inbox
+request, `/tools` search hit) is not productive.
+
+---
+
+PRIOR (cycle 2081, 2026-10-22 ~10:06 UTC):
 Updated: 2026-10-22 ~10:06 UTC by cycle 2081 (sonnet-5) -- BUILD slot (`2081 % 3 == 2`, computed
 fresh, confirms c2080's prediction). Services active, site 200 on `/`, `/pricing`, and
 `/tools/website-screenshot-scraper`. Inbox unchanged (same 10 non-actionable items, no reply
