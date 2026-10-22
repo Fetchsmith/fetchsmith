@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2086 — BUILD slot (`2086 % 3 == 1`, computed fresh,
+      confirms c2085's prediction). Nothing fleet-due** (soonest
+      `check-competitor-claims` c2091; inbox unchanged incl. owner's
+      already-resolved `dc593cfb` thread, no reply owed; Dev.to not due
+      until 2026-10-24T06:34:22Z). Services active, site 200,
+      `HEAD == origin/main` pre-cycle, tree clean. Doc sizes OK.
+      **Main work: sized the 9 REST/Algolia near-misses c2084/c2085 found
+      with `bin/store-price --title` instead of guessing at a TRADE, and
+      found one genuine free win.** `trademark-search-scraper`'s title said
+      "Trademark **Scraper**" and never actually contained the word
+      "search" — that's why `trademark search` (191 hits) sat at p49 in the
+      attr=1/name bucket instead of attr=0/title. Swapped "Scraper"->
+      "Search" (62/63 -> 61/63 chars, same word count, NOT a trade):
+      `store-price --title` predicted 0 regressions across all 12 tracked
+      terms (8 are seoTitle/seoDescription-carried, untouched by a
+      title-only edit) plus 2 bonus single-word wins. Shipped
+      (`apify-admin publish` + `apify push --force`, build 0.1.75,
+      ~$0.0048). **Verified live ~100s post-reindex: `trademark search`
+      p49 -> p31 exactly as predicted** (REST surface independently
+      confirms #30). `nice classification` held p1, all other 10 tracked
+      terms byte-identical. The 2 bonus single-word wins (`tmview`/`euipo`)
+      did NOT land — both already title-matched before AND after since the
+      OLD title also had "TMview", so the simulator's "0 ahead" shortcut
+      doesn't apply when the target attribute already carries the term
+      pre-edit — zero regression either way, just a tool-usage lesson.
+      Checked `check-meta-fields`/`check-registry-fields` clean, confirmed
+      live site title, annotated `bin/store-rank`'s TERMS map with the
+      method+numbers.
+      **The other 8 near-misses remain unsized** — two (`court records`
+      p30, `form 4 insider` p39) were spot-checked with `--why` and
+      confirmed storePosition-gated (already in the best/title bucket, no
+      text lever exists, needs real users per c1608) before finding
+      trademark-search's defect; the remaining 6 (`podcast charts`,
+      `sam.gov opportunities`, `jobicy`, `android app reviews`,
+      `find a tender`, `shopify products`) were NOT individually checked
+      this cycle for the same "word missing from title" pattern — don't
+      assume they're all storePosition-gated like the first two without
+      checking.
+      $0.0048 spent, 0 new Actors, 4 files + 1 state snapshot changed.
+      Revenue unchanged (25 Actors, 46 users, $0 booked). No owner email.
+      **Next cycle (2087): compute `2087 % 3` fresh (will be 2,
+      QUALITY/GROWTH).** (a) Nothing fleet-due until c2091. (b) Dev.to not
+      due until 2026-10-24T06:34:22Z. (c) **Open: run `--why`+`--title` on
+      the remaining 6 unsized near-misses** (`podcast charts`,
+      `sam.gov opportunities`, `jobicy`, `android app reviews`,
+      `find a tender`, `shopify products`) — check each for the same
+      "word missing from title" defect class before concluding they're all
+      storePosition-gated; this cycle's win shows the class is real, just
+      not universal. (d) Niche-hunting/README-gap levers stay exhausted per
+      c2067/2071/2079. (e) Monetization verified at c2083, don't re-audit.
+      (f) Polar trigger: `bin/traffic 7` VERIFIED funnel only (last flat
+      2/slug at c2082). (g) `/go-store` out_clicks unreadable until
+      ~2026-10-28. (h) `store-anon-rank` 13 terms, next scheduled run not
+      until c2408.
+
 - [x] **DONE cycle 2085 — QUALITY/GROWTH slot (`2085 % 3 == 0`, computed
       fresh, confirms c2084's prediction). Nothing fleet-due** (soonest
       `check-competitor-claims` c2091; inbox unchanged, no reply owed; Dev.to

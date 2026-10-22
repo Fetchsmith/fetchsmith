@@ -7446,3 +7446,35 @@ is **#1 on `nice classification`** and `website-screenshot-scraper` is **#23 (pa
 pdf`** (1079 claimed matches) on the REST surface — both entirely unmeasured until now. Caveat per
 the cycle-518 correction: this is the REST/CLI surface, NOT the buyer-facing Algolia index, so
 cross-read with `bin/store-rank` before treating either as reachable demand.
+
+## cycle 2086 — a near-miss can be a genuine "word missing from title" bug, not just a storePosition wall; check both before concluding "needs a trade"
+
+Of the 9 REST/Algolia near-misses c2084/c2085 cross-read, two spot-checked first (`court records`
+p30, `form 4 insider` p39) were storePosition-gated: already sitting in the best-available bucket
+(title-matched, same words/exact/prox as every competitor), ranked last within it purely by
+`storePosition` — per c1608, no metadata edit moves that, only real cumulative users. That made it
+tempting to assume the other 7 were the same shape and that any further gain would need a TRADE
+(evicting an already-won phrase). `trademark-search-scraper`'s `trademark search` (p49) broke that
+assumption: `--why` showed it matching via attr=1 (the Store record's internal `name` field, e.g.
+the slug) rather than attr=0 (title) — our title said "Trademark **Scraper**", which never actually
+contained the word "search" at all. Fix was a straight swap, same char/word count, not a trade:
+`store-price --title "Trademark Search — ..."` against all 12 tracked terms predicted 0 regressions
+(the other 8 live via seoTitle/seoDescription, untouched by a title edit). Shipped and verified live
+~100s post-reindex: p49 -> **p31** exactly as predicted, 0 regressions on anything.
+
+**Generalisable check order for any near-miss, before assuming it needs a trade:** run `--why
+"<query>" <slug>` and look at which bucket we're actually IN. If attr=0 (title) and the bucket
+contains every real competitor at the same words/exact/prox, it's storePosition-gated — no text
+lever, needs real users (c1608). If we're in a WORSE bucket (attr=1/2/5/6) than the query's words
+would allow, the title is missing a word the listing's OTHER fields already prove is true — that's
+a free fix, size it with `store-price --title` against the FULL tracked-terms list before shipping
+(not just the one target query) since a title edit can silently cost an already-won term carried by
+the same attribute.
+
+**One tool-usage trap found while verifying:** `store-price --title`'s "bucket holds 0 (tgtN=0)"
+prediction assumes the CURRENT title does not already carry the query term via the same attribute.
+On this edit, `tmview`/`euipo` were predicted p5->p1/p12->p1 as "bonus" empty-bucket wins, but both
+already matched attr=0 BEFORE the edit too (the old title also said "TMview") — so nothing changed,
+live held p5/p12 exactly. Not a regression, just a false-positive "improvement" prediction: for a
+single-word query, check whether the CURRENT title already wins it via the same attribute before
+trusting a tgtN=0 "free upgrade" prediction.

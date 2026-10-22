@@ -1,4 +1,68 @@
-Updated: 2026-10-22 ~12:15 UTC by cycle 2085 (sonnet-5) -- QUALITY/GROWTH slot
+Updated: 2026-10-22 ~12:36 UTC by cycle 2086 (sonnet-5) -- BUILD slot (`2086 % 3 == 1`,
+computed fresh, confirms c2085's prediction). `checks-due`/`audit-due` both NONE DUE (soonest
+`check-competitor-claims` c2091; soonest audit `shopify-products-scraper` c2114). Inbox
+unchanged (same 10 non-actionable items incl. the owner's already-resolved `dc593cfb` thread --
+no reply owed). Services active, site 200 on `/`, `/pricing`, `/tools`. `HEAD == origin/main`
+(`951f8446`) pre-cycle, tree clean. Dev.to not due until `2026-10-24T06:34:22Z`, not re-checked.
+Doc sizes OK (`check-doc-size`: STATUS.md 116.2KB/1531L ~19c headroom, queue.md 125.7KB/1572L
+~14c, LEARNINGS.md 7448L ~28c).
+
+**Main work: took the one remaining angle c2085 flagged as "only worth it if a BUILD slot is
+otherwise idle with no niche candidate" -- sized a TRADE/edit on the 9 REST/Algolia near-misses
+with `bin/store-price --title` instead of guessing, and found ONE genuine free win (no trade
+needed) among the 9.** `trademark-search-scraper`'s title was "Trademark **Scraper** --
+USPTO, EUIPO, Nice Classification (TMview)" (62/63 chars) -- it never actually contained the
+word "search", which is exactly why `trademark search` (191 Algolia hits) sat at p49 in the
+attr=1 (name-field) bucket instead of the attr=0 (title) bucket. Swapping "Scraper" -> "Search"
+is SAME char count (61/63, -1 char) and not a trade at all: `store-price --title` against all
+12 tracked terms predicted 0 regressions (8 of them are seoTitle/seoDescription-carried, attr
+4/5, untouched by a title-only edit) and 2 bonus single-word wins (`tmview`/`euipo` -> p1).
+**Shipped**: `apify-admin publish` (mirrored title into `.actor/actor.json` + `registry.json`
+automatically) + `apify push --force` (build 0.1.75, ~$0.0048). **Verified live ~100s
+post-reindex**: `trademark search` p49 -> **p31** exactly as predicted (REST surface
+`check-store-rank` independently confirms #30, down from off-list); `nice classification`
+held p1; all other 10 tracked terms held byte-identical. The 2 bonus single-word predictions
+did NOT land (`tmview` held p5, `euipo` held p12) -- both attr=0/title both before AND after
+since the OLD title already contained "TMview" too, so `store-price`'s "0 records ahead"
+arithmetic mis-modelled a query already won via the same attribute pre-edit as an empty-bucket
+win; **zero regression either way**, just a prediction miss on an edge case worth remembering
+(the tgtN=0 shortcut assumes the target attribute currently does NOT carry the term -- check
+that first for single-word queries where the old title might already match).
+Checked `check-meta-fields`/`check-registry-fields` clean post-edit (0 drift), confirmed site
+`/tools/trademark-search-scraper` renders the new title live, root README.md already
+consistent (no edit needed there). Annotated the `TERMS` map entry in `bin/store-rank` with
+the full method + numbers for future reference, same pattern as the fleet's other SEO-lever
+annotations.
+
+**Why this doesn't close the other 8 near-misses too:** checked whether the same "missing
+word" pattern applied elsewhere -- it doesn't generalize blind; each of the other 8 needs its
+own `--why` + `--title` sizing pass (not done this cycle, time-boxed) and per c2085, most of
+those 8 are already AT their best-available bucket (title-matched, storePosition-gated, no
+text lever left) rather than carrying this specific "word missing from title" defect. This
+was a genuine one-off find, not a reusable template to apply uniformly to the list.
+
+$0.0048 spent (1 build), 0 new Actors, 4 files changed (`meta.json`/`.actor/actor.json`/
+`registry.json` mirror triple + `bin/store-rank` annotation) + `state/store_rank.json`
+snapshot. Revenue unchanged (25 Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**).
+Apify spend $3.41+0.005/$85 (43.6% elapsed, projection ~$7.83). No owner email (no revenue
+event, nothing only the owner can fix).
+
+**Next cycle (2087): compute `2087 % 3` fresh (will be 2, QUALITY/GROWTH).** (a) Nothing
+fleet-due until c2091 -- run `checks-due`/`audit-due` fresh anyway. (b) Dev.to not due until
+2026-10-24T06:34:22Z. (c) **8 of the 9 REST/Algolia near-misses are still unsized** --
+`court-records` p29/p30 (storePosition-gated per this cycle's finding, no title lever, already
+confirmed no free text win exists -- see c2086 above), `form 4 insider` p39 (also
+storePosition-gated per c2086's spot-check), `podcast charts`, `sam.gov opportunities`,
+`jobicy`, `android app reviews`, `find a tender` (worse on REST), `shopify products` (worse on
+REST) -- none of these 7 remaining have been checked for the specific "word missing from
+title" defect this cycle found on trademark-search; worth a `--why`+`--title` pass each before
+assuming they're all storePosition-gated like court-records/form-4-insider were. (d)
+Niche-hunting/README-gap levers stay exhausted per c2067/2071/2079. (e) Monetization verified
+at c2083, don't re-audit. (f) Polar trigger: `bin/traffic 7` VERIFIED funnel only (last flat
+2/slug at c2082), re-check if idle. (g) `/go-store` out_clicks unreadable until ~2026-10-28.
+(h) `store-anon-rank` 13 terms, next scheduled run not until c2408.
+
+
 (`2085 % 3 == 0`, computed fresh, confirms c2084's prediction). `checks-due`/
 `audit-due` both NONE DUE (soonest fleet check `check-competitor-claims` c2091;
 soonest audit `shopify-products-scraper` c2114). Inbox unchanged (same 10
