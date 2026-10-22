@@ -1,3 +1,46 @@
+- [x] **DONE cycle 2067 — QUALITY/GROWTH slot (`2067 % 3 == 0`, computed fresh; cycle
+      2066's note predicted "will be 1, BUILD" — WRONG, always recompute).** Ran the one
+      DUE item: `check-status-continuity` now **NONE MISSING**, confirming cycle 2066's
+      header-reattach fix held (recorded, next due c2115). `audit-due`/`--type
+      varied_test`/`--type competitor_audit` all NONE DUE (soonest c2114/c2131). Inbox
+      unchanged (10 non-actionable, no reply owed). Dev.to NOT due — next slot
+      ~2026-10-22T06:33:55Z, box clock 03:00 UTC, ~3.5h out. Services active, `HEAD ==
+      origin/main`, tree clean.
+      Standard QUALITY-cycle checks, both clean: `devto-comments` 0 unanswered (21
+      articles, 10 inbound, 1 spam-skipped), `check-disclosure` 0 missing (86 site + 21
+      dev.to). `apify-spend` $3.3787/$85, projection $7.98, no cap risk. `bin/traffic` flat
+      2 out_clicks/Actor, no deviation — Polar trigger still not met, no owner email.
+      **Main work: read 3 README/competitor-gap candidates from cycle 2060's list never
+      re-checked this rotation** (`apple-podcasts-scraper`, `nih-reporter-scraper`,
+      `federal-register-scraper`) **and found all three already exhaustively worked** —
+      each has a long, actively-maintained competitor-pricing section (multiple re-sweep
+      passes, explicit "what we do not claim" paragraphs with crossover arithmetic for
+      every real undercutter) and a thorough FAQ covering its own edge cases. Declined to
+      force a cosmetic edit (same judgment cycle 2059 made). Noted but did NOT act on: all
+      3 pricing sections are 13-19 days stale (last re-swept 2026-10-03 through -09) — a
+      fresh re-sweep is intentionally tracker-gated (`competitor_audit` soonest c2114);
+      running one ad hoc now would undercut that throttling, per cycle 2059's reasoning.
+      $0 spent, 0 new Actors, 0 builds, 0 commits (nothing to commit). Revenue unchanged:
+      25 Actors, 46 users, 705 runs30d, 0 bookmarks, 0 reviews, **$0 booked**. No owner
+      email. Doc sizes: STATUS.md ~141KB/~1 cycle headroom before next trim is due (not
+      flagged red — `check-doc-size` itself NONE DUE this cycle), queue.md 70.8KB/811
+      lines, LEARNINGS.md 7150 lines — all OK. Full detail in `state/STATUS.md` cycle 2067.
+      **Next cycle (2068): compute `2068 % 3` fresh (will be 2, BUILD slot — verify, don't
+      trust).** (a) Dev.to's slot (~2026-10-22T06:33:55Z) is very likely open by c2068 —
+      check the live API (`api-key` header, NOT `Authorization: Bearer`) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured` if due; highest-value item by far. (b) If
+      still idle: the README/competitor-gap lever is looking exhausted across 6 Actors now
+      checked with no gap found (`apple-podcasts-scraper`, `google-news-scraper`,
+      `google-play-reviews-scraper`, `website-screenshot-scraper`, `nih-reporter-scraper`,
+      `federal-register-scraper`) — before re-checking a 7th, consider whether `check-
+      doc-size` is close enough to trim proactively (STATUS.md ~1c headroom per this
+      cycle's estimate — verify live, don't trust this note's eyeball figure) or whether a
+      genuinely new angle (not README polish) is overdue. (c) `check-entities`/`check-
+      uniqueness` are confirmed PAID (`run-sync-get-dataset-items`) per cycle 2065 — only
+      run within the normal paid-test budget. (d) `hacker-news-scraper`'s sentiment/theme/
+      compare gap stays open per c2062 — don't re-attempt without a genuinely new honest
+      non-LLM idea. (e) `/go-store` out_clicks not readable until ~2026-10-28 (c2044).
+
 - [x] **DONE cycle 2066 — BUILD slot (`2066 % 3 == 2`, computed fresh).** Nothing due
       (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
       soonest `check-status-continuity` c2067; inbox unchanged, no reply owed). Dev.to NOT

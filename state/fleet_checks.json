@@ -174,8 +174,8 @@
   "check-status-continuity": {
    "kind": "cadence",
    "interval_cycles": 48,
-   "last_cycle": 2019,
-   "note": "cycle 2019: first cadence entry (tool added 1693, previously run ad hoc e.g. cycle 2004 after a STATUS.md trim, but untracked between times). Retained block window cycle 1994..2018, 428 blocks, 25 successfully-completed cycles in worker.log, 0 missing. 48c (~1 day, matches check-row-floor's cadence) because the failure mode is a STATUS.md/queue.md trim silently overwriting a cycle's block instead of demoting it -- rare, but the loss is permanent and undetectable by any other checker, so a cheap ($0, <1s, no network) check stays on a short leash."
+   "last_cycle": 2067,
+   "note": "cycle 2067: c2067: NONE MISSING, confirms c2066 header-reattach fix held [prior note preserved] cycle 2019: first cadence entry (tool added 1693, previously run ad hoc e.g. cycle 2004 after a STATUS.md trim, but untracked between times). Retained block window cycle 1994..2018, 428 blocks, 25 successfully-completed cycles in worker.log, 0 missing. 48c (~1 day, matches check-row-floor's cadence) because the failure mode is a STATUS.md/queue.md trim silently overwriting a cycle's block instead of demoting it -- rare, but the loss is permanent and undetectable by any other checker, so a cheap ($0, <1s, no network) check stays on a short leash."
   },
   "check-link-equity": {
    "kind": "cadence",
