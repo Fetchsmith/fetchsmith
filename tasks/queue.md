@@ -1,3 +1,56 @@
+- [x] **DONE cycle 2089 — BUILD slot (`2089 % 3 == 1`, computed fresh,
+      confirms c2088's prediction). Nothing fleet-due** (soonest
+      `check-competitor-claims` c2091; inbox unchanged, no reply owed;
+      Dev.to not due until 2026-10-24T06:34:22Z). Services active, site 200,
+      `HEAD == origin/main` pre-cycle, tree clean.
+      **Main work: shipped the one item STATUS left "open, sized and
+      ready" — the attribute-ladder lever on `podcast charts` /
+      `apple-podcasts-scraper`, p34 -> p30 live, zero regressions.**
+      `--why` showed the live attr=5 (seoDescription) bucket at p34 vs. an
+      attr=2 (description) bucket at p20-p30 for the same query — evicted
+      untracked filler from the 298/300-char description ("listener", "the",
+      "or"->"and") to fit "podcast charts" contiguous (295/300), leaving the
+      "iTunes podcast data API." tail fragment (which alone carries 2 other
+      tracked p1 terms) byte-identical. Published + `apify push --force`
+      (build 0.1.93, ~$0.0048). `store-price --desc` flagged the edit
+      `!! WORSE than live p1` on those 2 protected terms pre-ship —
+      recognized as the SAME first-occurrence false-pessimism bug c2088
+      found (an earlier "podcast" token confuses the simulator; the real
+      index still finds the unchanged tail window) and shipped on that
+      basis. **Verified live ~100s post-reindex: exactly the predicted
+      p30**; all 17 tracked terms on the Actor, including the 2 flagged
+      ones, byte-identical to baseline. Logged as a 2nd confirmed instance
+      in LEARNINGS with the generalized rule (re-check any --desc/--title
+      regression warning on untouched anchor text with plain `store-price`
+      before trusting it).
+      **This closes the c2084-2088 near-miss thread entirely** — all 6
+      originally-unsized candidates (`podcast charts`, `sam.gov
+      opportunities`, `jobicy`, `android app reviews`, `find a tender`,
+      `shopify products`) are now individually resolved (2 shipped wins,
+      1 trade, 3 storePosition/char-gated with no lever). **Don't re-mine
+      this list** — a fresh `check-store-rank` + `store-price` pass is
+      needed to generate the next candidate set before a BUILD slot has a
+      sized SEO task ready again.
+      $0.0048 spent (1 build), 0 new Actors, 1 Actor's meta.json +
+      .actor/actor.json mirror + 1 `bin/store-rank` TERMS annotation + 1
+      LEARNINGS entry. Revenue unchanged (25 Actors, 46 users, $0 booked).
+      No owner email (no revenue event, nothing only the owner can fix).
+      **Next cycle (2090): compute `2090 % 3` fresh (expect 2, BUILD).**
+      (a) Nothing fleet-due until c2091 — may already be due by the time
+      2090 runs, check fresh. (b) Dev.to not due until 2026-10-24T06:34:22Z.
+      (c) **No sized SEO-lever task is queued** — run `bin/check-store-rank`
+      fleet-wide first to find fresh near-misses before guessing at an
+      edit, or fall back to niche-hunting status (exhausted per
+      c2067/2071/2079, re-verify rather than assume). (d) Confirmed
+      storePosition-gated, no lever, don't re-size: `find a tender`,
+      `shopify products`, `jobicy`, `google play reviews`,
+      court-records/form-4-insider. (e) Monetization verified at c2083,
+      don't re-audit. (f) Polar trigger: `bin/traffic 7` VERIFIED funnel
+      only (last flat 2/slug at c2082). (g) `/go-store` out_clicks
+      unreadable until ~2026-10-28. (h) `store-anon-rank` 13 terms, next
+      scheduled run not until c2408. (i) LEARNINGS.md WARN (~7603/8000
+      lines) — not at trim line yet.
+
 - [x] **DONE cycle 2088 — QUALITY/GROWTH slot (`2088 % 3 == 0`, computed
       fresh, confirms c2087's corrected mapping). Nothing fleet-due**
       (`checks-due` + `audit-due` both NONE DUE; soonest fleet check

@@ -7587,3 +7587,17 @@ written its header by REPLACING line 1 instead of prepending, which deleted c208
 header line and the `---` separator from `git show 951f8446`; the check now reports NONE
 MISSING. **Both failures share a shape worth remembering: a check that runs, detects the real
 problem, and reports it in a way (a soft warning, a footer) that the next cycle reads past.**
+
+**cycle 2089: second confirmed instance of `store-price --desc`'s first-occurrence
+false-pessimism bug (c2088 found the first).** Shipped `apple-podcasts-scraper`'s "podcast
+charts" attribute-ladder move (attr=5 p34 -> attr=2 p30, exactly as `--why`'s bucket table
+predicted) even though `store-price --desc` flagged the edit `!! WORSE than live p1` on two
+*other* already-won tracked terms (`podcast data api`, `itunes podcast api`), both anchored in
+an untouched tail fragment ("iTunes podcast data API."). The flag was a tool artifact: adding
+"podcast charts" earlier in the description gave the simulator an earlier "podcast" token to
+anchor its first-occurrence proximity math, while the real index still finds the best
+(unchanged, contiguous) window at the tail. Live measurement confirmed zero regression on
+both. **Rule of thumb now has two data points: if a `--desc`/`--title` regression warning
+fires on a term whose anchor TEXT you did not touch, re-derive its real exposure with plain
+`store-price <slug> "<term>"` (not the --desc/--title column) before treating the warning as
+real.**

@@ -1,6 +1,6 @@
 {
   "title": "Apple Podcasts Scraper – Episodes, Reviews & Podcast Publishers",
-  "description": "Scrape Apple Podcasts: every episode (title, date, duration, description, audio URL, RSS feed), listener reviews with star ratings, keyword search, the top-shows or trending-episodes chart per storefront, or every show a publisher runs. HTTP-only, no login, pay per result. iTunes podcast data API.",
+  "description": "Scrape Apple Podcasts: every episode (title, date, duration, description, audio URL, RSS feed), reviews with star ratings, keyword search, top-shows and trending-episodes podcast charts per storefront, or every show a publisher runs. HTTP-only, no login, pay per result. iTunes podcast data API.",
   "seoTitle": "Podcast Metadata API, Podcast Analytics API, Podcast Dataset",
   "seoDescription": "A podcast monitoring API and podcast discovery API with a podcast JSON API. Includes itunes RSS feed data, podcast catalog API, top podcasts API, podcast ratings API, and podcast chart API rankings.",
   "categories": [
