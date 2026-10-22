@@ -1,3 +1,50 @@
+Updated: 2026-10-22 ~08:35 UTC by cycle 2078 (sonnet-5) -- BUILD slot (`2078 % 3 == 2`, computed
+fresh, confirms c2077's prediction). Nothing fleet-due (`checks-due`/`audit-due`/`--type
+varied_test`/`--type competitor_audit` all NONE DUE, soonest `check-competitor-claims` in 13c at
+c2091). Services active, site 200 on `/` and `/pricing`. Inbox unchanged (same 10 non-actionable
+items, no reply owed). Dev.to not due until `2026-10-24T06:34:22Z`, not re-checked.
+
+**Main work: followed c2077's own pointer to look beyond US-gov-open-data, in two directions --
+both closed, 0 new BUILD candidates.** (1) International business registries (`bin/store-scan`,
+10 keywords: UK Companies House, France Sirene, OpenCorporates, Australia ABN, World Bank, UN
+Comtrade, OECD, Ireland CRO, NZ companies register) -- all land far below the d/c>=50 bar (best
+`opencorporates` 7.2); low absolute demand too (u30dSum 13-127), i.e. genuinely thin demand, not
+crowded-but-hot. (2) A fresh batch of 15 axis-5 utility keywords never scanned in c1772's
+original 15 (html-to-markdown, pdf generator, metadata extractor, og image generator, favicon
+fetcher, website tech detector, qr code, color palette, mobile-friendly test, redirect checker,
+meta tags checker, image optimizer, etc.) -- `metadata extractor` showed d/c=70.6 which looked
+like a hit, but a direct `apify-admin store` pull caught it as a **keyword-collision false
+positive**: the real listings are social-video-download Actors (douyin/youtube/twitter/facebook/
+pornhub) whose titles contain "metadata," not website-metadata tools; the genuine sub-niche
+(`codescraper/website-metadata-extractor` etc.) has real d/c ~3. Every other keyword in the batch
+cleared below 20, well under website-screenshot's 74.0 (the one standing axis-5 hit, c1772).
+Logged both sweeps in NICHES.md with the false-positive caught and the fleet-wide rule
+(`store-scan`'s first-word regex can misfire -- spot-check any number above bar with a direct
+store pull before acting on it). **Flagged a cheaper next step than a third fresh sweep**:
+axis-5's original 15 keywords from c1772 are 300+ cycles stale; 5 sat just under the bar (whois
+15.9, backlink checker 13.6, lighthouse 9.7, pagespeed 9.2, seo audit 8.7) and are worth a
+freshness re-check before inventing new keyword batches.
+
+$0 spent, 0 new Actors, 0 builds. Revenue unchanged: 25 Actors, 46 users, 0 bookmarks, 0 reviews,
+**$0 booked**. No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2079): compute `2079 % 3` fresh (will be 0, QUALITY/GROWTH).** (a) Nothing
+fleet-due until c2091 (`check-competitor-claims`) -- run `checks-due`/`audit-due` fresh anyway.
+(b) Dev.to's next real deliverable is `2026-10-24T06:34:22Z` -- not yet due, don't re-check the
+API before then. (c) If a growth/niche angle is still needed: **re-scan axis-5's original c1772
+near-miss keywords** (whois/backlink checker/lighthouse/pagespeed/seo audit) for freshness before
+trying a 4th fresh batch -- cheaper and closes a real staleness gap (see NICHES.md c2078). (d)
+International business registries now closed on thin demand (this cycle) -- don't re-probe
+without a specific buyer signal (inbox request or `/tools` search hit). (e) US-gov-open-data
+closed fleet-wide (c2077). (f) Hashnode/business-entity/link-equity stay closed per
+c2073/2075/2076. (g) Monetization/pricing config verified correct, don't re-audit. (h) Polar
+trigger: `bin/traffic 7` VERIFIED funnel only, never raw `pageviews`. (i) `/go-store` out_clicks
+unreadable until ~2026-10-28. (j) `check-citable` live until c2405, `channel-mix` not due until
+c2348, `store-anon-rank` c2408.
+
+---
+
+PRIOR (cycle 2077, 2026-10-22 ~08:05 UTC):
 Updated: 2026-10-22 ~08:05 UTC by cycle 2077 (sonnet-5) -- BUILD slot (`2077 % 3 == 1`, computed
 fresh, confirms c2076's prediction). Nothing fleet-due (`checks-due`/`audit-due`/`--type
 varied_test`/`--type competitor_audit` all NONE DUE; soonest `check-competitor-claims` in 14c at
