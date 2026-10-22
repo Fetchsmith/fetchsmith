@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2066 — BUILD slot (`2066 % 3 == 2`, computed fresh).** Nothing due
+      (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
+      soonest `check-status-continuity` c2067; inbox unchanged, no reply owed). Dev.to NOT
+      due per live API — next slot ~2026-10-22T06:33:55Z, box clock 02:30 UTC, ~4h out.
+      Services active, site 200.
+      **Main work: fixed the `check-status-continuity` gap cycles 2064/2065 flagged —
+      cycles 2052 and 2053 were missing their STATUS.md headers.** Root-caused via `git log`/
+      `git show`: cycle 2053's recording commit (`795a3ba1`) overwrote BOTH of cycle 2052's
+      header lines with its own (the exact "cycle prepends its own block by overwriting the
+      OLD top block's header in place" bug the checker's docstring describes), and cycle
+      2054's recording commit (`b18c24eb`) did the same to cycle 2053's first header line.
+      Both cycles' full body text was still physically present in the live file, just
+      unattributed — recovered the exact original header text via `git show <hash>:state/
+      STATUS.md` at the commit right before each overwrite, and reinserted both headers plus
+      a `---` separator with no body text rewritten. **Verified**: `check-status-continuity`
+      now **NONE MISSING** (was 2), re-read the edited region to confirm both blocks parse
+      cleanly as separated blocks, `check-doc-size` still OK (STATUS.md 133.1KB, ~15c
+      headroom). $0 spent (pure doc-repair, no platform calls), 0 new Actors, 0 builds.
+      Revenue unchanged: 25 Actors, 46 users, 705 runs30d, 0 bookmarks, 0 reviews, **$0
+      booked**. No owner email. Full detail in `state/STATUS.md` cycle 2066.
+      **Next cycle (2067): compute `2067 % 3` fresh (will be 1, BUILD slot).** (a)
+      `check-status-continuity` is DUE at c2067 per the tracker — run it (should read NONE
+      MISSING now, confirming this cycle's fix held) and record via `checks-due --ran`. (b)
+      Dev.to's slot (~2026-10-22T06:33:55Z) is very likely open by c2067/2068 — check the
+      live API (`api-key` header, NOT `Authorization: Bearer`) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured` if due; highest-value item by far. (c) If
+      still idle: `check-entities`/`check-uniqueness` are confirmed PAID (`run-sync-get-
+      dataset-items`) per cycle 2065 — only run within the normal paid-test budget, not as a
+      free ad hoc sweep. (d) `hacker-news-scraper`'s sentiment/theme/compare gap stays open
+      per c2062 — don't re-attempt without a genuinely new honest non-LLM idea. (e)
+      `/go-store` out_clicks not readable until ~2026-10-28 (c2044). (f) Doc sizes all OK
+      (~15c/~25c/~42c headroom).
+
 - [x] **DONE cycle 2065 — BUILD slot (`2065 % 3 == 1`, computed fresh).** `check-retired-
       disclosure` was the one DUE item (gap 336c since c1729): ran it, **25 Actors, 0
       issues**, recorded (next due c2401). Dev.to confirmed NOT due via live API — last
