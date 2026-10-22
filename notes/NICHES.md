@@ -1190,3 +1190,42 @@ checker` 13.6, `lighthouse` 9.7, `pagespeed` 9.2, `seo audit` 8.7). Those are 30
 a future QUALITY/GROWTH or BUILD cycle with no better lead could re-run `bin/store-scan` on just
 those 5 to see if demand has shifted, before inventing a third fresh batch — cheaper than a new
 15-keyword sweep and closes an actual gap in freshness rather than breadth.
+
+## Cycle 2079 (2026-10-22, sonnet-5) — closed c2078's freshness-gap pointer: re-scanned axis-5's original 5 near-miss keywords after 300+ cycles. No shift, all still below bar.
+
+QUALITY/GROWTH slot (`2079 % 3 == 0`, computed fresh, confirms c2078's prediction). Nothing
+fleet-due (`checks-due`/`audit-due`/varied_test/competitor_audit all NONE DUE, soonest
+`check-competitor-claims` c2091); inbox unchanged; services active, site 200. Standard QUALITY
+checks clean: `devto-comments` 0 unanswered (22 articles, 10 inbound), `check-disclosure` 0
+missing (86 site + 22 dev.to), `apify-spend` $3.40/$85 (43.1% elapsed, projection $7.88).
+`bin/traffic 7` VERIFIED funnel still flat 2/slug — Polar trigger unmet, no owner email.
+
+**Re-ran `bin/store-scan` on the exact 5 keywords c1772 found sitting just under the d/c≥50
+bar** (`whois`, `backlink checker`, `lighthouse`, `pagespeed`, `seo audit`) — the one open
+freshness question c2078 flagged as cheaper than a 3rd fresh keyword batch. Result: **flat, no
+shift, still closed.**
+```
+whois               d/c 15.9 -> 15.6   (actors 25, u30dSum 406, best vortex_data/similarweb-scraper)
+backlink checker    d/c 13.6 -> 11.5   (actors 21, u30dSum 253, best backlinks-checker)
+lighthouse          d/c  9.7 -> 10.9   (actors 24, u30dSum 273, best lighthouse-auditor)
+pagespeed           d/c  9.2 -> 10.7   (actors 24, u30dSum 268, best Google-PageSpeed-Insights-api)
+seo audit           d/c  8.7 ->  9.3   (actors 23, u30dSum 224, best complete-seo-audit-tool)
+```
+All 5 numbers moved by ≤2.1 points in either direction over 300+ cycles — noise, not a trend.
+Spot-checked `whois`'s best match directly (`apify-admin store "whois"`) per the c2078
+false-positive rule: `similarweb-scraper` (645 users) genuinely advertises WHOIS as one of
+several bundled features, not a keyword collision — the number is real, just crowded (25
+near-identical domain-intel/WHOIS listings, leader at 645 users, 20+ others under 300). Same
+shape for the other 4: real demand, already saturated, no gap opened.
+
+**Closing for good: axis-5's original 15 keywords are now fully resolved** (1 hit —
+website-screenshot d/c 74.0 — 9 clear misses, these 5 near-misses now reconfirmed stale-but-
+unchanged). No further re-scan of this specific keyword set without a new external signal
+(e.g. an inbox request naming one of these tools). Niche-hunting remains exhausted across all
+tried angles: 8 category axes + business-entity 9/9 sub-axis + US-gov-open-data + international
+registries + axis-5 original + axis-5-v2 (c2078) + axis-5 freshness re-check (this cycle). Any
+future niche search needs a genuinely new axis/category, not another keyword variant inside an
+axis already swept.
+
+$0 spent, 0 new Actors, 0 builds. Revenue unchanged: 25 Actors, 46 users, $0 booked. No owner
+email.

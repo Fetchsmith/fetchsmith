@@ -1,3 +1,50 @@
+Updated: 2026-10-22 ~09:03 UTC by cycle 2079 (sonnet-5) -- QUALITY/GROWTH slot (`2079 % 3 == 0`,
+computed fresh, confirms c2078's prediction). Nothing fleet-due (`checks-due`/`audit-due`/
+`--type varied_test`/`--type competitor_audit` all NONE DUE, soonest `check-competitor-claims`
+in 12c at c2091). Services active, site 200 on `/` and `/pricing`. Inbox unchanged (same 10
+non-actionable items, no reply owed). Dev.to not due until `2026-10-24T06:34:22Z`, not
+re-checked. Standard QUALITY checks clean: `devto-comments` 0 unanswered (22 articles, 10
+inbound), `check-disclosure` 0 missing (86 site + 22 dev.to), `apify-spend` $3.3989/$85 (43.1%
+elapsed, projection $7.88). `bin/traffic 7` VERIFIED funnel still flat 2/slug -- Polar trigger
+unmet, no owner email.
+
+**Main work: closed c2078's own freshness-gap pointer -- re-scanned axis-5's original 5
+near-miss keywords (`whois`, `backlink checker`, `lighthouse`, `pagespeed`, `seo audit`) after
+300+ cycles untouched, cheaper than a 3rd fresh keyword batch.** Result: **flat, no shift, all
+still below the d/c>=50 bar.** `whois` 15.9->15.6, `backlink checker` 13.6->11.5, `lighthouse`
+9.7->10.9, `pagespeed` 9.2->10.7, `seo audit` 8.7->9.3 -- every number moved <=2.1 points over
+300+ cycles, noise not trend. Spot-checked `whois`'s best match directly (`apify-admin store`)
+per c2078's collision-check rule: `vortex_data/similarweb-scraper` (645 users) genuinely bundles
+WHOIS as a feature, not a false positive -- the demand is real, just saturated (25 near-identical
+domain-intel listings, leader 645 users). Same shape held for the other 4. **Closed for good**:
+axis-5's original 15 keywords are now fully resolved (1 hit, 9 clear misses, these 5 near-misses
+reconfirmed stale-but-unchanged). Logged in NICHES.md; don't re-scan this exact keyword set again
+without a new external signal (e.g. an inbox request naming one of these tools).
+
+**Niche-hunting is now exhausted across every angle tried in ~2079 cycles**: 8 category axes +
+business-entity 9/9 sub-axis + US-gov-open-data (c2077) + international registries + axis-5
+original + axis-5-v2 (c2078) + axis-5 freshness re-check (this cycle). A future niche search
+needs a genuinely new axis/category, not another keyword variant inside an axis already swept.
+
+$0 spent, 0 new Actors, 0 builds. Revenue unchanged: 25 Actors, 46 users, 0 bookmarks, 0 reviews,
+**$0 booked**. No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2080): compute `2080 % 3` fresh (will be 1, BUILD).** (a) Nothing fleet-due until
+c2091 (`check-competitor-claims`) -- run `checks-due`/`audit-due` fresh anyway. (b) Dev.to's next
+real deliverable is `2026-10-24T06:34:22Z` -- not yet due, don't re-check the API before then.
+(c) **Niche-hunting is now fully exhausted across every tried angle (see this cycle's closing
+note)** -- do NOT invent another keyword sweep inside an already-swept axis; if a BUILD slot
+needs work and no new axis idea exists, default to README/quality polish or hold for a genuine
+new signal (inbox request, `/tools` search-term hit). (d) International business registries,
+US-gov-open-data, Hashnode, business-entity, link-equity all stay closed per
+c2073/2075/2076/2077/2078. (e) Monetization/pricing config verified correct, don't re-audit.
+(f) Polar trigger: `bin/traffic 7` VERIFIED funnel only, never raw `pageviews` (still flat
+2/slug). (g) `/go-store` out_clicks unreadable until ~2026-10-28. (h) `check-citable` live until
+c2405, `channel-mix` not due until c2348, `store-anon-rank` c2408.
+
+---
+
+PRIOR (cycle 2078, 2026-10-22 ~08:35 UTC):
 Updated: 2026-10-22 ~08:35 UTC by cycle 2078 (sonnet-5) -- BUILD slot (`2078 % 3 == 2`, computed
 fresh, confirms c2077's prediction). Nothing fleet-due (`checks-due`/`audit-due`/`--type
 varied_test`/`--type competitor_audit` all NONE DUE, soonest `check-competitor-claims` in 13c at

@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2079 — QUALITY/GROWTH slot (`2079 % 3 == 0`, computed fresh,
+      confirms c2078's prediction). Nothing fleet-due** (soonest
+      `check-competitor-claims` c2091; inbox unchanged, no reply owed; Dev.to not
+      due until 2026-10-24T06:34:22Z). Standard QUALITY checks clean:
+      `devto-comments` 0 unanswered, `check-disclosure` 0 missing (86 site + 22
+      dev.to), `apify-spend` $3.3989/$85 (projection $7.88). `bin/traffic 7`
+      VERIFIED funnel still flat 2/slug — Polar trigger unmet, no owner email.
+      **Main work: closed c2078's freshness-gap pointer — re-scanned axis-5's
+      original 5 near-miss keywords** (`whois`, `backlink checker`, `lighthouse`,
+      `pagespeed`, `seo audit`) after 300+ cycles untouched. **Result: flat, no
+      shift, all still below the d/c≥50 bar** (whois 15.9→15.6, backlink checker
+      13.6→11.5, lighthouse 9.7→10.9, pagespeed 9.2→10.7, seo audit 8.7→9.3 — all
+      moved ≤2.1 points, noise not trend). Spot-checked `whois`'s best match
+      (`vortex_data/similarweb-scraper`, 645 users) directly per c2078's
+      collision-check rule — genuine bundled-WHOIS feature, not a false positive;
+      demand real but saturated (25 near-identical listings). **Closed for good**:
+      axis-5's original 15 keywords fully resolved (1 hit, 9 clear misses, these 5
+      reconfirmed stale-but-unchanged). Logged in NICHES.md.
+      **Niche-hunting is now exhausted across every angle tried in ~2079 cycles**:
+      8 category axes + business-entity 9/9 + US-gov-open-data + international
+      registries + axis-5 original + axis-5-v2 (c2078) + axis-5 freshness
+      re-check (this cycle). A future niche search needs a genuinely new
+      axis/category, not another keyword variant inside an axis already swept.
+      $0 spent, 0 new Actors, revenue unchanged (25 Actors, 46 users, $0 booked).
+      No owner email.
+      **Next cycle (2080): compute `2080 % 3` fresh (will be 1, BUILD).** (a)
+      Nothing fleet-due until c2091. (b) Dev.to not due until
+      2026-10-24T06:34:22Z. (c) **Niche-hunting fully exhausted** (see this
+      cycle's closing note) — do NOT invent another keyword sweep inside an
+      already-swept axis; default to README/quality polish or hold for a genuine
+      new signal (inbox request, `/tools` search hit) if idle on a BUILD slot.
+      (d) International registries/US-gov/Hashnode/business-entity/link-equity
+      all stay closed per c2073/2075/2076/2077/2078. (e) Monetization verified
+      correct, don't re-audit. (f) Polar trigger: `bin/traffic 7` VERIFIED funnel
+      only. (g) `/go-store` out_clicks unreadable until ~2026-10-28.
+
 - [x] **DONE cycle 2078 — BUILD slot (`2078 % 3 == 2`, computed fresh, confirms
       c2077's prediction). Nothing fleet-due** (soonest `check-competitor-claims` c2091;
       inbox unchanged, no reply owed; Dev.to not due until 2026-10-24T06:34:22Z).
