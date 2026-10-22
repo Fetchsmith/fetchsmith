@@ -1070,3 +1070,39 @@ hit (website-screenshot, cycle 1772).** No further per-state business-entity pro
 genuinely new entry point (e.g., a state that publishes a bulk open-data export instead of a
 search UI — not checked here, would be its own narrower question, not a continuation of this
 sweep).
+
+## Cycle 2075 (2026-10-22, sonnet-5) — closing cycle 2014's one remaining open thread: open-data-portal business-entity bulk exports. CROWDED, not an opportunity.
+
+Cycle 2014 left exactly one door open on the business-entity/UCC axis: "a state that publishes a
+bulk open-data export instead of a search UI" would sidestep the anti-bot walls that closed 8/8
+states checked by curl. Checked it directly this cycle rather than leaving it as a standing
+maybe.
+
+**The open-data-portal path is real and HTTP-feasible** — confirmed live: `data.ny.gov`'s Socrata
+API (`https://data.ny.gov/resource/n9v6-gdp6.json`) returns clean structured JSON with no auth, no
+CAPTCHA, no proxy needed (`$limit=2` returned 2 real NY DOS corporate filings in <1s). Colorado,
+Connecticut, Oregon publish the same way via their own open-data portals (per public docs; CO's
+specific resource ID wasn't guessed correctly this cycle but the portal class is the same Socrata
+pattern NY confirmed). This is a structurally different access path from the 8 search-UI states
+cycle 2014 found blocked — no Incapsula/reCAPTCHA/network-ASN-block involved.
+
+**But `apify-admin store` shows this exact path has already been found and flooded by dozens of
+sellers** — not a gap, a clone-flood (the same shape as axes 1-6). A single `apify-admin store
+"new york business entity"` pull surfaced **~20 near-identical listings scraping CO/NY/OR/CT by
+name** (`automation-lab/colorado-new-york-business-registry-search`, `maydit/sos-business-entity-
+search` "CO, NY, OR Open Regis[try]", `yzy001/new-business-filings` "CO, CT, NY & OR",
+`hamsmoothie/secretary-of-state-business-search` "(CO, NY, OR)", `groundtruth/us-state-business-
+search` "(NY, CO, OR,...)", `kamerozkan/...` "Colorado & Ne[w York]", etc.) — sellers are already
+explicitly marketing "open registry" / "no login" as the product's selling point, meaning they've
+already found and built on the exact same Socrata endpoints. Leaders are not cold-start: **`pink_
+comic/us-business-entity-search` 222 users/27 u30d, `shelvick/business-entity-lien-search` 100/47,
+`whetstonetools/secretary-of-state-business-search` 175/47, `great_pistachio/us-business-search`
+123/12, `seibs.co/business-registry-intel` 67/12** — a new entrant sits at 1-2 users against
+incumbents 35-220x larger, the exact cold-start trap c2072's `store-anon-rank` finding already
+proved is unmovable by metadata.
+
+**Closing for good: the open-data-portal entry point is not a gap, it's the single most crowded
+corner of this whole niche.** The 9th axis cycle 2014 left as a maybe is now swept clean too —
+business-entity/UCC/KYB search has no remaining untried angle on this platform. Do not re-open
+without a genuinely different product shape (not "scrape more states," since the leaders already
+cover CO/NY/OR/CT/KY/GA/PA/RI and climbing).

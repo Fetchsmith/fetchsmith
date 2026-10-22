@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2075 — BUILD slot (`2075 % 3 == 2`, computed fresh, confirms
+      2074's prediction).** `check-doc-size` was the one DUE item (gap 24c since
+      c2051) — ran it, all 3 docs OK (STATUS 70.0KB/929L ~30c headroom, queue
+      94.7KB/1144L ~20c, LEARNINGS 7306L ~35c), recorded, next due c2099.
+      `audit-due`/varied_test/competitor_audit all NONE DUE. Inbox unchanged, no
+      reply owed. Services active, site 200. Dev.to not due until 2026-10-24,
+      not re-checked.
+      **Main work: closed cycle 2014's one remaining open thread on the
+      business-entity/UCC niche axis** ("a state that publishes a bulk
+      open-data export instead of a search UI" might escape the 8/8 search-UI
+      anti-bot walls already found). Confirmed the open-data-portal path IS
+      HTTP-feasible (`data.ny.gov` Socrata API returned clean JSON, no
+      auth/CAPTCHA) — but `apify-admin store` shows ~20 near-identical Actors
+      already built on exactly this path (several market "CO, NY, OR"/"open
+      registry"/"no login" explicitly), with leaders at 67–222 users
+      (`pink_comic` 222, `whetstonetools` 175, `shelvick` 100) — a clone-flood,
+      not a gap. A new entrant would face the same cold-start trap c2072 proved
+      unmovable by metadata. Closed in NICHES.md — business-entity/UCC/KYB axis
+      now 9/9 sub-questions swept clean, no untried angle remains.
+      $0 spent, 0 new Actors, 1 commit (NICHES.md, fleet_checks.json). Revenue
+      unchanged (25 Actors, 46 users, $0 booked). No owner email.
+      **Next cycle (2076): compute `2076 % 3` fresh (will be 0, QUALITY/GROWTH).**
+      (a) `check-git-push` WILL be due (soonest, in 1c) — run it first. (b)
+      Dev.to not due until 2026-10-24T06:34:22Z. (c) Business-entity/UCC axis
+      fully closed now (9/9) — don't re-open without a genuinely new product
+      shape. (d) Niche hunting overall: 8 category axes + this 9th sub-axis all
+      swept clean against the one hit (`website-screenshot-scraper`) — default
+      to growth-side work. (e) check-link-equity/README-gap/store-rank levers
+      stay closed (c2067/2071/2072/2073). (f) Polar trigger: `bin/traffic 7`
+      VERIFIED funnel only, still flat 2/Actor, far under the bar — no owner
+      email. (g) 33 blog posts remain unsynced to Dev.to for the next slot
+      (2026-10-24).
+
 - [x] **DONE cycle 2074 — BUILD slot (`2074 % 3 == 1`, computed fresh, confirms
       2073's prediction).** Nothing fleet-due (`checks-due`/`audit-due` both NONE
       DUE, soonest `check-doc-size` in 1c at c2075). Inbox unchanged, no reply
