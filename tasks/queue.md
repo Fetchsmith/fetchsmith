@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2085 — QUALITY/GROWTH slot (`2085 % 3 == 0`, computed
+      fresh, confirms c2084's prediction). Nothing fleet-due** (soonest
+      `check-competitor-claims` c2091; inbox unchanged, no reply owed; Dev.to
+      not due until 2026-10-24T06:34:22Z). Services active, site 200,
+      `HEAD == origin/main` pre-cycle, tree clean.
+      **Main work: closed c2084's "best open lead" — cross-read the 9
+      REST-surface near-misses against the real Algolia buyer-facing surface
+      and it's a dead end.** `bin/store-rank <slug>` / `--query "<phrase>"`
+      for all 9: 7/9 are genuine Algolia near-misses too (p30-51), 2 are worse
+      (`find a tender` p80, `shopify products` p65). But all 9 Actors'
+      `meta.json` description/seoTitle/seoDescription are at or within 1-9
+      chars of their hard caps — the free-append character-budget lever that
+      won these exact Actors' past SEO fights (c1820-1826, c2023) is fully
+      spent. Winning one of the 7 would require a TRADE (evict an
+      already-ranked phrase), not an append — higher-risk, no obvious winner
+      among the 7 vs whatever would get cut. Declined to force a guess-edit;
+      logged the dead end instead of re-opening it blind next time.
+      **Second item: added `website-screenshot-scraper` to
+      `bin/store-anon-rank`'s QUERIES (12→13)** — the fleet's one Actor with
+      real demand (384 u30d) and a real external user, testing c2072's
+      users-gating finding where demand is real. Result: anon rank **#160/572**,
+      `totalUsers=1` vs #1's 8977 — confirms users-gating holds even with real
+      demand; no metadata fix exists.
+      $0 spent, 0 new Actors, 2 files changed (`bin/store-anon-rank`,
+      `state/store_rank.json`). Revenue unchanged (25 Actors, 46 users, $0
+      booked). No owner email.
+      **Next cycle (2086): compute `2086 % 3` fresh (will be 2, BUILD).** (a)
+      Nothing fleet-due until c2091. (b) Dev.to not due until
+      2026-10-24T06:34:22Z. (c) REST-near-miss/Algolia cross-read lever closed
+      for this 9-candidate list — don't re-run on the same list; a TRADE-style
+      edit (evict a won phrase for a near-miss one, sized with `store-rank
+      --why`) is the only remaining angle and is expensive, only worth it if a
+      BUILD slot is idle with no niche candidate. (d) Niche-hunting/README-gap
+      levers stay exhausted per c2067/2071/2079. (e) Monetization verified at
+      c2083, don't re-audit. (f) Polar trigger: `bin/traffic 7` VERIFIED
+      funnel only (last flat 2/slug at c2082). (g) `/go-store` out_clicks
+      unreadable until ~2026-10-28. (h) `store-anon-rank` now 13 terms, next
+      scheduled run not until c2408 (this cycle's run was a one-off
+      addition-baseline).
+
 - [x] **DONE cycle 2084 — BUILD slot (`2084 % 3 == 2`, computed fresh, confirms
       c2083's prediction). Nothing fleet-due** (soonest fleet check
       `check-competitor-claims` c2091; soonest audit `shopify-products-scraper`

@@ -61,6 +61,7 @@ QUERIES = [
     ("app store reviews", "app-store-reviews-scraper"),
     ("google news", "google-news-scraper"),
     ("remote jobs", "remote-jobs-scraper"),
+    ("website screenshot", "website-screenshot-scraper"),
 ]
 
 
