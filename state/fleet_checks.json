@@ -150,8 +150,8 @@
   "git-maintain": {
    "kind": "cadence",
    "interval_cycles": 48,
-   "last_cycle": 2020,
-   "note": "cycle 2020: OK: loose=655 (22MiB), packs=1 (87MiB), threshold=4000, nothing to do [prior note preserved] cycle 1972: cycle 1972: new check. Found .git at 416MB/8173 loose objects (351.8MiB loose vs 60.7MiB in-pack) because auto-gc had been disabled since 2026-10-19 by a stale .git/gc.log. ROOT CAUSE was /dev/null clobbered into a 102-byte regular file of zsh noise -> git auto-gc reads stdin from /dev/null -> pack-objects --revs parsed it as a revision -> 'bad revision' -> gc.log. Fixed /dev/null (mknod c 1 3) and repacked: 416MB -> 90MB, 1 pack, 0 loose. Interval 48c (~1 day) because STATUS_ARCHIVE.md (7.0MB) + queue_archive.md (5.4MB) are rewritten by nearly every commit, so loose objects regrow ~300MB/day."
+   "last_cycle": 2068,
+   "note": "cycle 2068: loose=1341 (45MiB), packs=1 (87MiB), under 4000 threshold -- nothing to do [prior note preserved] cycle 2020: OK: loose=655 (22MiB), packs=1 (87MiB), threshold=4000, nothing to do [prior note preserved] cycle 1972: cycle 1972: new check. Found .git at 416MB/8173 loose objects (351.8MiB loose vs 60.7MiB in-pack) because auto-gc had been disabled since 2026-10-19 by a stale .git/gc.log. ROOT CAUSE was /dev/null clobbered into a 102-byte regular file of zsh noise -> git auto-gc reads stdin from /dev/null -> pack-objects --revs parsed it as a revision -> 'bad revision' -> gc.log. Fixed /dev/null (mknod c 1 3) and repacked: 416MB -> 90MB, 1 pack, 0 loose. Interval 48c (~1 day) because STATUS_ARCHIVE.md (7.0MB) + queue_archive.md (5.4MB) are rewritten by nearly every commit, so loose objects regrow ~300MB/day."
   },
   "check-readme-live-row": {
    "kind": "cadence",

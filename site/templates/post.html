@@ -16,11 +16,26 @@
   <a class="btn" href="/tools">Browse working tools</a>
   <a class="btn ghost" href="/tools/{{ tool.slug }}">Why it is paused</a>
 {% elif tool %}
-  <div class="price">{{ tool.credits_per_result or 1 }} credit <small>per result</small></div>
-  <div class="muted">About ${{ '%.4f' % ((tool.credits_per_result or 1) * 0.0025) }}/result on the Starter pack — {{ tool.title }}</div>
+{% set ap = tool.apify_price %}
+{# Cycle 2068: this sidebar quoted ONLY the flat $0.0025/result credit price for a hosted
+   API that is not open yet -- the same bug cycle 1744 fixed on /tools/<slug>, left behind
+   here -- and carried no canonical Actor URL in EXTRACTABLE TEXT (the gap cycle 1648 fixed
+   on tool.html, also left behind here: the only apify.com href on a post was the generic
+   nav/footer profile link). Measured reason this page type matters most: in the Caddy log
+   window 2026-10-18..22, every user-initiated AI-assistant fetch concentrated on /blog/*
+   (ChatGPT-User 84 hits, Claude-User 20; top page /blog/tmview-trademark-search-api-no-key
+   at 16 of them), so a post is where an answer engine most needs a payable price and a
+   billable destination. Lead with the Apify price while checkout_live is false. #}
+{% if ap and not checkout_live %}  <div class="price">${{ ap.entry | usd }} <small>per result</small></div>
+  <div class="muted">Pay per result on the Apify Store — {{ tool.title }}{% if ap.floor and ap.floor != ap.entry %} (down to ${{ ap.floor | usd }} per result on higher Apify plans){% endif %}. A run that returns nothing is free.</div>
+{% else %}  <div class="price">{{ tool.credits_per_result or 1 }} credit <small>per result</small></div>
+  <div class="muted">About ${{ '%.4f' % ((tool.credits_per_result or 1) * 0.0025) }}/result on the Starter pack — {{ tool.title }}{% if ap %} On Apify, ${{ ap.entry | usd }} per result{% if ap.floor and ap.floor != ap.entry %} (down to ${{ ap.floor | usd }} on higher plans){% endif %}.{% endif %}</div>
+{% endif %}
 {% if checkout_live %}  <a class="btn" href="/pricing">Buy credits</a>
   {% if tool.apify_listed != false %}<a class="btn ghost" href="/go/{{ tool.slug }}" rel="noopener">Run on Apify Store</a>{% endif %}{% elif tool.apify_listed != false %}  <a class="btn" href="/go/{{ tool.slug }}" rel="noopener">Run on Apify Store</a>
   <a class="btn ghost" href="/tools/{{ tool.slug }}">Tool details</a>{% else %}  <a class="btn" href="/tools/{{ tool.slug }}">Tool details</a>{% endif %}
+{% if tool.apify_listed != false %}  <div class="muted" style="margin-top:10px">Actor page: <a href="/go/{{ tool.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ tool.slug }}</a></div>{% endif %}
+{% if ap and not checkout_live %}  <div class="muted" style="margin-top:10px">A hosted API ({{ tool.credits_per_result or 1 }} credit per result, about ${{ '%.4f' % ((tool.credits_per_result or 1) * 0.0025) }}) is planned but not open yet — today the Actor above is the way to run this.</div>{% endif %}
 {% else %}
   <div class="price">FetchSmith</div>
   <div class="muted">Pay-per-result extraction tools. No browser farm, no subscription.</div>
