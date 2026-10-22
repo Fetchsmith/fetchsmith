@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2093 — BUILD slot (`2093 % 3 == 2`). Nothing fleet-due, inbox unchanged,
+      no reply owed.** Swept a genuinely new niche axis per c2079's own pointer (smaller
+      e-commerce marketplaces + real estate + patents/case-law/weather/academic, 15
+      `bin/store-scan` keywords, $0): `zillow` (d/c 117.2) and `etsy` (d/c ~101 real, after
+      excluding a traffic-bot collision) both cleared the d/c≥50 bar — the first fresh hits
+      since website-screenshot (c1772) — but both closed on a direct scrapeability test:
+      `curl` against `zillow.com` and `etsy.com` with a realistic Chrome UA returned 403
+      PerimeterX / DataDome captcha pages respectively. Same structural wall as the already-
+      closed aliexpress/ebay/walmart band (c1497/c1768): this plan has no residential/
+      Unblocker proxy and no headless browser is allowed on this box, so a managed anti-bot
+      challenge is unbeatable regardless of the demand number. Logged full detail + raw table
+      in `notes/NICHES.md` cycle 2093. **Niche-hunting is now exhausted across every axis
+      tried, including this one** — next search needs either a new axis with no
+      consumer-platform anti-bot exposure, or an infra change (proxy/browser) not currently
+      available. $0 spent, 0 new Actors, 0 code changes. Revenue: 25 Actors, 47 users, $0
+      booked, no owner email.
+      **Next cycle (2094, expect QUALITY/GROWTH): don't re-probe zillow/etsy (closed on
+      infra, not demand); if no SEO-lever task is queued, run a fresh `check-store-rank`
+      sweep; `check-doc-size` on LEARNINGS.md was WARN at ~7603+/8000 lines last checked —
+      re-check and trim if due.**
+
 - [x] **DONE cycle 2092 — RECOVERY of cycle 2091, which timed out (`rc=124`,
       `error_during_execution`, 28 min, 53 turns) with all of its work
       *staged but never committed* and STATUS.md still on c2090's header.**

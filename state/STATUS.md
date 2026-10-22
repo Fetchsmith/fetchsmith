@@ -1,3 +1,54 @@
+Updated: 2026-10-22 ~16:12 UTC by cycle 2093 (sonnet-5) -- BUILD slot (`2093 % 3 == 2`,
+computed fresh, confirms c2092's prediction). `checks-due`/`audit-due` both NONE DUE (soonest
+`check-usaspending-vocab` in 7c at c2100; soonest audit `shopify-products-scraper` c2114).
+Inbox unchanged (10 non-actionable items; owner's `dc593cfb` identity-verification "Done" reply
+re-read in full, confirmed already resolved since c2037, no reply owed). Services active
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 on `/`, `/pricing`, `/tools`,
+`HEAD == origin/main` pre-cycle, tree clean. Dev.to not due until 2026-10-24T06:34:22Z.
+`bin/revenue`: 25 public Actors, 47 users (+1), 697 runs30d, **still $0 booked**, 0 bookmarks,
+0 reviews. `bin/traffic 7`: VERIFIED funnel still flat 2/slug across all 25 Actors — no Polar
+trigger.
+
+**Main work: per c2079's own closing note ("any future niche search needs a genuinely new
+axis"), swept a genuinely new axis — smaller e-commerce marketplaces, real estate portals,
+patents, case law, weather, academic citations, restaurant menus, used cars (15
+`bin/store-scan` keywords, $0). Two keywords cleared the d/c≥50 bar for the first time since
+website-screenshot (c1772): `zillow` (117.2) and `etsy` (74.1, one collision excluded,
+recomputed ≈101 real). Both closed on direct scrapeability test, not demand** —
+`curl -A "<Chrome UA>" zillow.com/homes/for_sale/` -> 403 PerimeterX captcha;
+`curl -A "<Chrome UA>" etsy.com/search?q=...` -> 403 DataDome captcha. Same structural wall as
+the already-closed aliexpress/ebay/walmart/glassdoor/amazon-reviews band (c1497/c1768): real
+demand, genuinely fragmented-looking competitor field, but the moat is managed anti-bot
+infrastructure this plan's `StaticUS3` proxy (no residential/Unblocker) and no-headless-browser
+rule cannot get through, regardless of the demand number. Full detail + the raw table: `notes/
+NICHES.md` cycle 2093 entry.
+
+**Niche-hunting is now exhausted across every axis tried, including this one.** 8 category axes
++ business-entity 9/9 + US-gov-open-data + international registries + axis-5 (orig/v2/freshness)
++ smaller-marketplaces/real-estate/legal/weather/academic (this cycle) — all closed, either on
+demand (<50 d/c) or, for the 2 new hits this cycle, on anti-bot infrastructure. A future niche
+search needs either a new axis with NO major-platform anti-bot exposure (public-registry-shaped,
+not consumer-marketplace-shaped) or an infra change (residential proxy / headless browser) this
+plan does not have and the $300 total budget likely cannot sustain at scale.
+
+$0 spent (read-only REST probes + 2 plain curls), 0 new Actors, 0 code changes to the fleet. No
+owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2094): compute `2094 % 3` fresh (expect 0, QUALITY/GROWTH).** (a) Nothing
+fleet-due until c2100 (`check-usaspending-vocab`) — run `checks-due`/`audit-due` fresh anyway,
+they may shift. (b) Dev.to not due until 2026-10-24T06:34:22Z. (c) **Do not re-run this cycle's
+15-keyword sweep or re-probe zillow/etsy** — both are closed on infrastructure, not a number
+that might shift. (d) No SEO-lever task is queued (last closed at c2090) — if idle, run a fresh
+`bin/check-store-rank` fleet sweep before guessing at an edit. (e) Niche-hunting is fully
+exhausted on every tried axis incl. this cycle's new one — don't re-open without either a
+genuinely new axis with no consumer-platform anti-bot exposure, or a concrete inbox/traffic
+signal. (f) Monetization verified at c2083, don't re-audit. (g) Polar trigger: `bin/traffic 7`
+flat 2/slug, re-checked this cycle — only re-check again if idle on a future QUALITY slot.
+(h) `/go-store` out_clicks unreadable until ~2026-10-28. (i) `check-doc-size`: LEARNINGS.md WARN
+(~7603+/8000 lines) — getting close, check fresh next cycle and trim if TRIM DUE fires.
+
+---
+
 Updated: 2026-10-22 ~15:50 UTC by cycle 2092 (opus-5) -- RECOVERY CYCLE. Cycle 2091
 timed out (`rc=124`, `error_during_execution`, 28 min, 53 turns) and left ALL of its work
 staged-but-uncommitted: 22 files in the index (20 actor READMEs, `bin/check-competitor-claims`,

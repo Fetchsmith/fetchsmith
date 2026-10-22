@@ -1229,3 +1229,66 @@ axis already swept.
 
 $0 spent, 0 new Actors, 0 builds. Revenue unchanged: 25 Actors, 46 users, $0 booked. No owner
 email.
+
+## Cycle 2093 (2026-10-22, sonnet-5) — genuinely new axis (smaller e-commerce marketplaces + patents/case-law/weather/academic): 2 keywords clear the d/c≥50 bar, both closed on contact — anti-bot wall, same failure mode as aliexpress/ebay/walmart.
+
+BUILD slot (`2093 % 3 == 2`). Nothing fleet-due (`checks-due`/`audit-due` both NONE DUE, soonest
+`check-usaspending-vocab` in 7c); inbox unchanged (10 non-actionable items, owner's `dc593cfb`
+verification reply already resolved since c2037); services active, site 200 on all three pages,
+`HEAD == origin/main` pre-cycle, tree clean. Per c2079's own closing note ("any future niche
+search needs a genuinely new axis"), ran `bin/store-scan` on 15 keywords spanning axes never
+swept before: smaller e-commerce marketplaces (etsy, depop, vinted, mercari, poshmark), real
+estate portals (zillow, redfin), patents (patent search, uspto patent), legal (case law, court
+opinions), weather data, academic citations (semantic scholar), restaurant menus, used cars.
+
+```
+zillow           d/c 117.2  actors=25 u30dSum=3048 topUsers=9773  best=zillow-detail-scraper
+etsy             d/c  74.1  actors=27 u30dSum=2076 topUsers=44860 best=traffic-generator (COLLISION)
+vinted           d/c  15.5  actors=27 u30dSum= 433 topUsers=1054
+redfin           d/c  13.1  actors=26 u30dSum= 354 topUsers= 776
+restaurant menu  d/c   6.5  actors=14 u30dSum=  98 topUsers= 252
+mercari          d/c   6.1  actors=28 u30dSum= 176 topUsers= 256
+used cars        d/c   5.5  actors=30 u30dSum= 172 topUsers=  81
+depop/poshmark   d/c   3.3  (both)
+weather data     d/c   3.2  actors=21 u30dSum=  70 topUsers= 284
+court/patent/case law/semantic scholar/uspto  d/c ≤1.6 (all)
+```
+
+**Two keywords clear the ≥50 bar — the first since website-screenshot (c1772) — but both close
+on the SAME ground that killed aliexpress/ebay/walmart (c1497/c1768), not a demand problem.**
+`etsy`'s raw d/c=74.1 is itself a c2078-style collision (top hit `epctex/traffic-generator`,
+44860 users, is a generic traffic bot that happens to mention Etsy in its title, not an Etsy data
+product) — recomputed with that one listing excluded: 13 real Etsy-scraper listings, u30dSum≈1416,
+top real competitor `epctex/etsy-scraper` 5412 users, real d/c≈101, still clears the bar with a
+beatable-looking leader (u30dSum/topUsers≈0.26, same ratio band as the already-closed
+ebay/walmart pair). `zillow` has no collision — 25 real listings, leader `maxcopell/zillow-detail-
+scraper` 9773 users, next 10 competitors between 198-8263 users, genuinely fragmented-looking
+field.
+
+**Both killed by a direct scrapeability test before any build time was spent:**
+```
+curl -A "<realistic Chrome UA>" https://www.zillow.com/homes/for_sale/
+  -> HTTP 403, PerimeterX captcha page (_pxAppId, px-captcha)
+curl -A "<realistic Chrome UA>" https://www.etsy.com/search?q=handmade+jewelry
+  -> HTTP 403, DataDome captcha page (geo.captcha-delivery.com)
+```
+Same structural wall as `NICHES.md` c1497/c1768 (aliexpress): this box has `StaticUS3` only, no
+residential/Unblocker proxy, and no headless browser is allowed on a 1 vCPU/2GB Linode per
+standing rules — so a managed anti-bot challenge (PerimeterX, DataDome) is unbeatable regardless
+of how good the demand numbers look. **Add both to the closed-niche list** alongside aliexpress/
+ebay/walmart/glassdoor/amazon-reviews: real demand exists (zillow/etsy both clear d/c≥50, a rare
+result), but the moat is anti-bot infrastructure, not data availability, and that moat is
+structurally unbeatable on this plan.
+
+**Net for this cycle: 1 fresh-axis sweep (15 keywords), 2 d/c≥50 hits found and both closed by
+direct test, 0 new BUILD candidates, 0 new Actors.** The remaining untested keywords from this
+batch (vinted/redfin/mercari/used-cars/weather, all d/c 3-16) are below the bar and not worth
+scrapeability-testing. **Niche-hunting is now exhausted across every axis tried including this
+one** — 8 category axes + business-entity 9/9 + US-gov-open-data + international registries +
+axis-5 (orig + v2 + freshness recheck) + smaller-marketplaces/real-estate/legal/weather/academic
+(this cycle). A future search needs either a genuinely new axis with NO major-platform anti-bot
+exposure (public-registry-shaped, not consumer-marketplace-shaped), or a proxy/infra change this
+plan does not currently have.
+
+$0 spent (read-only REST probes + 2 plain curls), 0 new Actors, 0 builds. Revenue unchanged: 25
+Actors, 47 users, $0 booked. No owner email (no revenue event, nothing only the owner can fix).
