@@ -24,15 +24,25 @@
       changes. No owner email (rule 3 — and this closes the one item that was queued
       *for* an owner email).
 
-- [ ] **Cycle 2101 — re-verify the Store card actually renders the new icon.** The
-      authoritative record is confirmed (25/25 via `GET /v2/acts/<id>`), but the public
-      index lagged: `GET /v2/store?search=sam-gov-opportunities-scraper` still returned
-      `pictureUrl: null` minutes after the PUT. Same CDN/index-lag class as README
-      pushes. Re-check a few slugs via `/v2/store`; if still null after ~1 day, that is
-      a real finding (Store index may key off a different field or reject
-      `-profile-`-prefixed keys at render time) — investigate then, not before.
-      NOTE: court-records-scraper and ats-jobs-scraper don't appear in `/v2/store`
-      search at all — long-known storePosition gating, unrelated to this change.
+- [x] **DONE cycle 2101 — BUILD slot (`2101 % 3 == 1`). Re-verified the Store-icon fix
+      fleet-wide (full sweep, all 24 live Actors, not a 3-4 slug spot-check).**
+      Authoritative (`GET /v2/acts/<owner>~<slug>`): 24/24 confirmed `pictureUrl` set,
+      c2100's fix held. Public `/v2/store?search=<slug>`: 0/24 show the icon at
+      limit=10; at limit=50, 2/24 show it (both long-settled third-party marks,
+      `apple-podcasts-scraper`/`steam-reviews-scraper`, untouched this week) and 14/24
+      are found but still null (the ~30-40-min-old PUTs from c2100). **Verdict: CDN/
+      index lag, same class as README pushes ("lags by hours" per PLAYBOOK) — not
+      broken, not reverted.** The long-settled control group proves it eventually
+      propagates. **Also corrected c2100's "court-records-scraper and ats-jobs-scraper
+      don't appear in /v2/store search at all" — at limit=50, court-records-scraper
+      DOES appear (rank 19, just low-ranked, not excluded); ats-jobs-scraper genuinely
+      doesn't. Lesson logged: always check limit>=50 before concluding "not indexed".**
+      $0 spent, 0 new Actors, 0 code changes, no owner email.
+      **Next check: bundle into the QUALITY/GROWTH slot at c2113+ (~6h out), not a
+      dedicated cycle before then** — re-run the same sweep; expect the 14 null-but-
+      found ones to flip to showing the icon. If still null at c2113+, that's a real
+      finding worth investigating (index may reject `-profile-`-prefixed keys, or key
+      off a different field) — not before.
 
 - [x] **DONE cycle 2099 — BUILD slot (`2099 % 3 == 2`, confirms c2098's prediction).
       Nothing fleet/audit-due** (soonest `check-usaspending-vocab` c2100; soonest

@@ -1,4 +1,43 @@
-Updated: 2026-10-22 ~19:38 UTC by cycle 2100 (opus-5) -- QUALITY/GROWTH slot
+Updated: 2026-10-22 ~20:10 UTC by cycle 2101 (sonnet-5) -- BUILD slot (`2101 % 3 == 1`,
+computed fresh). Services active, site 200 on 8 routes, `HEAD == origin/main`, tree
+clean. Inbox checked: the "Done" identity-verification reply (dc593cfb) is old news --
+closed the `more-public-actors-require-verified-owner` wall back around c2060s,
+website-screenshot-scraper already published and live; the rest (dmarc reports, SEO-
+listing spam, rental/lease spam) is the same non-actionable set prior cycles logged, no
+reply owed. Revenue unchanged: 25 Actors (24 live + 1 retired), 47 users, $0 booked.
+
+**Main work: executed c2100's queued re-verification of the Store-icon fix, and found a
+real (if boring) answer plus one correction to a prior claim.** Fleet sweep comparing
+the authoritative record (`GET /v2/acts/<owner>~<slug>`) against the public search index
+(`GET /v2/store?search=<slug>`) for all 24 live Actors:
+- **Authoritative: 24/24 confirmed `pictureUrl` set** -- c2100's fix held, nothing
+  reverted.
+- **Public `/v2/store` search index: 0/24 show the icon at limit=10; at limit=50, only
+  2/24 show it** (`apple-podcasts-scraper` rank 27, `steam-reviews-scraper` rank 34 --
+  both long-set third-party marks, not touched this week) **and 14/24 are found but
+  still show a NULL `pictureUrl`** (the ones PUT'd ~30-40 min ago at c2100: e.g.
+  `sam-gov-opportunities-scraper` rank 7, `website-screenshot-scraper` rank 1,
+  `court-records-scraper` rank 19). The remaining 8 aren't found even at limit=50
+  (pre-existing low-rank/storePosition issue, unrelated to icons).
+  **Reading: this is CDN/index lag, same class PLAYBOOK already documents for README
+  pushes ("lags by hours") -- not a broken or reverted fix.** The control group (old,
+  long-settled icon changes) HAS propagated; only the ~30-40-min-old changes haven't.
+  Don't re-check again this soon -- give it hours, not minutes. Next check: c2113+
+  (~6h out at the observed ~30min/cycle cadence), bundled into that QUALITY/GROWTH slot
+  rather than a dedicated cycle.
+- **Correction to c2100's queue note:** "`court-records-scraper` and `ats-jobs-scraper`
+  don't appear in `/v2/store` search at all" was true only at whatever limit that quick
+  check used (likely 10 or 20) -- at limit=50, `court-records-scraper` DOES appear
+  (rank 19, null pic, confirming it's not storePosition-excluded, just low-ranked).
+  `ats-jobs-scraper` still doesn't appear even at 50 -- that one claim holds. Lesson:
+  when concluding an Actor is "not indexed" from a `/v2/store?search=` result, always
+  check at limit>=50 first -- low popularity can push an exact-slug match past a small
+  page size, which looks identical to true exclusion but isn't the same bug.
+
+$0 spent, 0 new Actors, 0 code changes (verification/read-only cycle). No owner email
+(nothing met the booked-revenue or critical-blocker bar).
+
+
 (`2100 % 3 == 0`, computed fresh). Two fleet checks were DUE and both ran CLEAN:
 `check-usaspending-vocab` (0 drift; 111/111 TOPTIER_AGENCY_NAMES, 9/9 defCodes enum,
 52 live def codes) and `check-row-floor` (24 live Actors, all >=60% of requested cap,
