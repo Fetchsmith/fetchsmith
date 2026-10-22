@@ -1106,3 +1106,36 @@ corner of this whole niche.** The 9th axis cycle 2014 left as a maybe is now swe
 business-entity/UCC/KYB search has no remaining untried angle on this platform. Do not re-open
 without a genuinely different product shape (not "scrape more states," since the leaders already
 cover CO/NY/OR/CT/KY/GA/PA/RI and climbing).
+
+## Cycle 2077 (2026-10-22, sonnet-5) — fresh gov-data keyword sweep (OSHA/EPA/NPI/FAA/FCC): all 5 already clone-flooded, 0/5 open
+
+BUILD slot (`2077 % 3 == 1`); nothing fleet-due, link-equity's sole remaining orphan is on a
+retired Actor (unchanged from c2073), Hashnode/dev.to/business-entity axes all stay closed per
+their own notes. Rather than re-probe a closed axis, ran `apify-admin store` on 5 gov-data
+keywords **not previously logged in this file**: OSHA (violations/inspections), EPA (ECHO
+enforcement), NPI registry (NPPES healthcare providers), FAA aircraft registry, FCC license
+(ULS). Every one came back already saturated: **8–10+ near-identical listings each**, same
+clone-mill handles recurring across categories (`scrapesage`, `scrapers_lat`, `jungle_synthesizer`,
+`moving_beacon-owner1`, `fortuitous_pirate`, `andrew_avina` — several of these sellers run the
+*same* scraper shape across OSHA/EPA/FCC/FAA/business-entity, i.e. one operator templating a
+scraper generator across every US open-data API as fast as they're found, not organic demand per
+niche). NPI registry is the only one with a real leader (`sourabhbgp` 82 users) — the rest cap at
+single digits to 56.
+
+(Every listing across all 5 searches showed `runs30d=0`, including leaders — re-confirmed live
+against `google-news-scraper`'s own giant competitors, `easyapi` 2749 users/u30d 198 and
+`lhotanova` 3282/116, both also `runs30d=0`. This is the already-documented cycle-1700 dead
+column, not a demand signal — `totalRuns30Days` is simply not exposed in public store metadata
+for Actors we don't own. Not new, just consistent; `users`/`u30d` are the only real crowding
+signals here, as cycle 1700 established.)
+
+**Conclusion: do not build in the US-gov-open-data category again without a genuinely different
+entry point.** Between this sweep (OSHA/EPA/NPI/FAA/FCC), the grants.gov clone count (16),
+and the business-entity/UCC clone-flood (c2075, ~20 listings), every major US federal/state
+open-data surface this fleet has checked is already templated by multiple scraper-generator
+operators within hours-to-days of being findable. The fleet's 5 government-data Actors (TED,
+UK-FTS, USAspending, FDA recalls, Federal Register) were built when their niches were still
+genuinely fragmented (max 36 users) — that window looks closed for any new entrant into this
+category now. Future BUILD-slot niche searches should look outside US-federal/state open data
+(e.g. non-US official APIs, or non-government structured-data sites) rather than another
+three-letter-agency keyword.

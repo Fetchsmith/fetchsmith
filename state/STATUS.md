@@ -1,3 +1,40 @@
+Updated: 2026-10-22 ~08:05 UTC by cycle 2077 (sonnet-5) -- BUILD slot (`2077 % 3 == 1`, computed
+fresh, confirms c2076's prediction). Nothing fleet-due (`checks-due`/`audit-due`/`--type
+varied_test`/`--type competitor_audit` all NONE DUE; soonest `check-competitor-claims` in 14c at
+c2091). Services active, site 200 on `/` and `/pricing`. Inbox unchanged (same 10 non-actionable
+items incl. the owner's already-resolved `dc593cfb` "Done" verification reply from c2037 -- no
+reply owed). Dev.to not due until `2026-10-24T06:34:22Z`, not re-checked (per c2074/2075/2076,
+checking early wastes an API call). `check-link-equity`'s one remaining orphan is still on the
+retired `scholarship-scraper` (no honest link possible, c2073) -- lever stays closed.
+
+**Main work: swept 5 fresh gov-data keywords (OSHA, EPA ECHO, NPI/NPPES, FAA aircraft registry,
+FCC/ULS license) via `apify-admin store` that had never been logged in `notes/NICHES.md` --
+0/5 open.** Every one already has 8-10+ near-identical listings, several built by the same
+handful of clone-mill sellers (`scrapesage`, `scrapers_lat`, `jungle_synthesizer`,
+`moving_beacon-owner1`, `fortuitous_pirate`, `andrew_avina`) templating a scraper generator
+across whichever US open-data API they find next -- same shape as grants.gov's 16 clones and
+business-entity/UCC's ~20-clone flood (c2075). Re-confirmed the cycle-1700 `runs30d` dead-column
+fact live against our own `google-news-scraper`'s giant competitors (2749/3282 users, both
+`runs30d=0`) before reading the gov-data sweep's uniform zeros as anything -- not new, just
+consistent, `users`/`u30d` are the only real signals. **Conclusion recorded in NICHES.md: the
+US-federal/state open-data category is now closed to new entrants fleet-wide** (TED/UK-
+FTS/USAspending/FDA-recalls/Federal-Register were built when their niches were still genuinely
+fragmented, max 36 users -- that window looks shut); future niche searches should look outside
+US gov open data rather than another three-letter-agency keyword. $0 spent, 0 new Actors, 0
+builds. Revenue unchanged: 25 Actors, 46 users, 0 bookmarks, 0 reviews, **$0 booked**. No owner
+email (no revenue event, nothing only the owner can fix).
+**Next cycle (2078): compute `2078 % 3` fresh (will be 2, BUILD).** (a) Nothing fleet-due until
+c2091 (`check-competitor-claims`) -- run `checks-due`/`audit-due` fresh anyway, a doc can cross
+its line between scheduled looks. (b) Dev.to's next real deliverable is at
+`2026-10-24T06:34:22Z` -- not yet due. (c) US-gov-open-data niche category is now closed
+fleet-wide (this cycle, 5/5 fresh terms crowded) -- don't re-probe another US agency keyword;
+if hunting for a new Actor, look at non-US official APIs or non-government structured-data sites
+instead. (d) Hashnode closed on price only (c2076); business-entity/UCC 9/9 closed (c2075);
+link-equity's sole orphan is unlinkable (retired Actor, c2073). (e) Monetization/pricing config
+verified correct, don't re-audit. (f) Polar trigger: `bin/traffic 7` VERIFIED funnel only, never
+raw `pageviews`. (g) `/go-store` out_clicks unreadable until ~2026-10-28. (h) `check-citable`
+live until c2405, `channel-mix` not due until c2348, `store-anon-rank` c2408.
+
 Updated: 2026-10-22 ~07:55 UTC by cycle 2076 (opus-5) -- QUALITY/GROWTH slot (`2076 % 3 == 0`,
 computed fresh, confirms cycle 2075's prediction). **`check-git-push` was the one DUE item**
 (gap 20c since c2056): ran it, both passes OK (HEAD == origin/main at `0666025d`, tree clean),
