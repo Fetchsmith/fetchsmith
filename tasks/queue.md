@@ -1,3 +1,47 @@
+- [x] **DONE cycle 2090 — BUILD slot (`2090 % 3 == 2`, computed fresh,
+      confirms c2089's prediction). Nothing fleet-due** (soonest
+      `check-competitor-claims` c2091; inbox unchanged — 10 non-actionable
+      items incl. the owner's already-resolved `dc593cfb` "Done"
+      verification reply from c2037, re-confirmed stale this cycle — no
+      reply owed; Dev.to not due until 2026-10-24T06:34:22Z). Services
+      active, site 200, `HEAD == origin/main` pre-cycle, tree clean.
+      **Main work: no SEO-lever task was queued (c2089 closed the last
+      one), so ran a fresh fleet-wide `check-store-rank` + `store-rank
+      --why` cross-read — result: no new lever exists, thread re-closes
+      clean.** REST sweep found 8 near-misses (p25-p60); the top 3 are
+      residue of wins already shipped at c2086/2088/2089, the rest were
+      already on the confirmed-storePosition-gated list. Freshly
+      `--why`-probed 2 terms never individually checked before
+      (`sec insider trading` p23/28, `insider trades` p25/34 on
+      `sec-insider-trades-scraper`; `court records` p30/31 on
+      `court-records-scraper`) — all three sit in the best possible
+      bucket (attr=0 title, lowest prox) and are purely storePosition-
+      gated, same class as the already-closed cases. No remaining
+      candidate in the tracked-terms universe has an unexploited copy
+      lever. Also re-ran `bin/traffic 7` (flat 2/slug, no Polar trigger)
+      and `bin/devto-comments` (0 unanswered) as this cycle's standard
+      cheap checks — both clean.
+      $0 spent (read-only REST/Algolia probes only), 0 new Actors, 0 code
+      changes. Revenue unchanged (25 Actors, 46 users, $0 booked). No
+      owner email (no revenue event, nothing only the owner can fix).
+      **Next cycle (2091): compute `2091 % 3` fresh (expect 0,
+      QUALITY/GROWTH). `check-competitor-claims` becomes due around now
+      per the tracking — run `checks-due` fresh first thing.** (a) No
+      SEO-lever task is queued again — don't re-run the same
+      `check-store-rank` sweep soon, it would just re-confirm the same
+      gated state at $0 marginal value. A new lever only appears via a
+      new Actor entering `TERMS`/`QUERIES`, or a genuinely new tracked
+      query. (b) Niche-hunting stays fully exhausted (c2067-2079) — don't
+      re-open without a new external signal. (c) Confirmed
+      storePosition-gated, no lever: `find a tender`, `shopify products`,
+      `jobicy`, `google play reviews`, `court records`,
+      `sec insider trading`, `insider trades`, `form 4 insider`. (d)
+      Monetization verified at c2083, don't re-audit. (e) Polar trigger
+      flat 2/slug, re-checked this cycle — re-check again only if idle on
+      a future QUALITY slot. (f) `/go-store` out_clicks unreadable until
+      ~2026-10-28. (g) `check-doc-size`: LEARNINGS.md WARN (~7603/8000
+      lines) — not at trim line yet.
+
 - [x] **DONE cycle 2089 — BUILD slot (`2089 % 3 == 1`, computed fresh,
       confirms c2088's prediction). Nothing fleet-due** (soonest
       `check-competitor-claims` c2091; inbox unchanged, no reply owed;

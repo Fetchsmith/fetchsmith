@@ -5872,5 +5872,186 @@
     "storePosition": 85555
    }
   ]
+ },
+ {
+  "ts": 1792679505,
+  "date": "2026-10-22",
+  "rows": [
+   {
+    "slug": "app-store-reviews-scraper",
+    "query": "app store reviews",
+    "rank": 280,
+    "nbHits": 1661,
+    "storePosition": 77078
+   },
+   {
+    "slug": "apple-podcasts-scraper",
+    "query": "apple podcasts",
+    "rank": 90,
+    "nbHits": 252,
+    "storePosition": 86144
+   },
+   {
+    "slug": "ats-jobs-scraper",
+    "query": "recruitee",
+    "rank": 324,
+    "nbHits": 10112,
+    "storePosition": 76741
+   },
+   {
+    "slug": "clinicaltrials-scraper",
+    "query": "clinical trials",
+    "rank": 140,
+    "nbHits": 265,
+    "storePosition": 76437
+   },
+   {
+    "slug": "court-records-scraper",
+    "query": "docket scraper",
+    "rank": 11,
+    "nbHits": 522,
+    "storePosition": 86805
+   },
+   {
+    "slug": "eu-ted-tenders-scraper",
+    "query": "ted tenders",
+    "rank": 105,
+    "nbHits": 462,
+    "storePosition": 77438
+   },
+   {
+    "slug": "fda-recall-scraper",
+    "query": "fda recall",
+    "rank": 81,
+    "nbHits": 284,
+    "storePosition": 76383
+   },
+   {
+    "slug": "fec-campaign-finance-scraper",
+    "query": "super pac",
+    "rank": 1,
+    "nbHits": 33,
+    "storePosition": 78861
+   },
+   {
+    "slug": "federal-register-scraper",
+    "query": "federal register",
+    "rank": 103,
+    "nbHits": 539,
+    "storePosition": 76491
+   },
+   {
+    "slug": "google-news-scraper",
+    "query": "google news",
+    "rank": 293,
+    "nbHits": 3115,
+    "storePosition": 77079
+   },
+   {
+    "slug": "google-play-reviews-scraper",
+    "query": "google play reviews",
+    "rank": 264,
+    "nbHits": 1061,
+    "storePosition": 77719
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "grants.gov",
+    "rank": 101,
+    "nbHits": 164,
+    "storePosition": 86186
+   },
+   {
+    "slug": "hacker-news-scraper",
+    "query": "hacker news",
+    "rank": 325,
+    "nbHits": 615,
+    "storePosition": 77075
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih reporter",
+    "rank": 20,
+    "nbHits": 64,
+    "storePosition": 76158
+   },
+   {
+    "slug": "remote-jobs-scraper",
+    "query": "jobicy",
+    "rank": 44,
+    "nbHits": 143,
+    "storePosition": 86433
+   },
+   {
+    "slug": "sam-gov-opportunities-scraper",
+    "query": "sam.gov opportunities",
+    "rank": 11,
+    "nbHits": 245,
+    "storePosition": 74233
+   },
+   {
+    "slug": "scholarship-scraper",
+    "query": "scholarship",
+    "rank": 17,
+    "nbHits": 46,
+    "storePosition": 94291
+   },
+   {
+    "slug": "sec-insider-trades-scraper",
+    "query": "sec insider trading",
+    "rank": 23,
+    "nbHits": 192,
+    "storePosition": 75771
+   },
+   {
+    "slug": "shopify-products-scraper",
+    "query": "shopify products",
+    "rank": 65,
+    "nbHits": 1761,
+    "storePosition": 37316
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam reviews",
+    "rank": 76,
+    "nbHits": 1311,
+    "storePosition": 77815
+   },
+   {
+    "slug": "substack-scraper",
+    "query": "substack scraper",
+    "rank": 179,
+    "nbHits": 421,
+    "storePosition": 76999
+   },
+   {
+    "slug": "trademark-search-scraper",
+    "query": "tmview",
+    "rank": 5,
+    "nbHits": 23,
+    "storePosition": 73536
+   },
+   {
+    "slug": "uk-find-a-tender-scraper",
+    "query": "find a tender",
+    "rank": 79,
+    "nbHits": 1695,
+    "storePosition": 77655
+   },
+   {
+    "slug": "us-federal-awards-scraper",
+    "query": "usaspending",
+    "rank": 225,
+    "nbHits": 276,
+    "storePosition": 77561
+   },
+   {
+    "slug": "website-screenshot-scraper",
+    "query": "website screenshot",
+    "rank": 177,
+    "nbHits": 575,
+    "storePosition": 85555
+   }
+  ]
  }
 ]
