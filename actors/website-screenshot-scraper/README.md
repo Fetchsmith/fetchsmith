@@ -113,6 +113,21 @@ The one feature `moonweil` had and we didn't was visual diffing; as of build 0.1
 `cheapapi/website-screenshot-api` has no diff mode at all — both rivals' input schemas were read
 live from their own build OpenAPI documents on 2026-10-21, not from Store marketing copy.
 
+**Competitor audit, 2026-10-22**: a full re-sweep of the Store's `screenshot` listings (21
+candidates, live pricing pulled from each Actor's own `pricingInfos`) found one real new
+undercutter: `onescales/website-screenshot-pro` (136 users) tests across multiple device sizes —
+real feature overlap, not a bare screenshotter — and its PAY_PER_EVENT ladder drops to
+**$0.001/result at GOLD and above**, half our flat $0.002, for any buyer doing enough volume to
+reach that tier. Three cheaper-looking listings were checked and ruled out as narrower, not
+undercutting the same product: `room_js/url-screenshot-generator` ($0.001/result + a one-time
+$0.005 start fee, 84 users) and `viralanalyzer/screenshot-url` (flat $0.001/result, 21 users) are
+both plain full-page/viewport PNG-or-JPEG capture with no element selector, device preset,
+raw-HTML input or PDF — the same gap the free official Actor has, just cheaper; and
+`leadsbrary/screenshot-html-file-from-url` ($0.001/result at GOLD+, 63 users) adds PDF and an
+HTML-file export but still has no element selector, device preset or diff mode. `cheapapi` and
+`moonweil`'s own prices re-verified unchanged (tiers $0.00089→$0.00061 and flat $0.004
+respectively) — no drift since 2026-10-19.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
