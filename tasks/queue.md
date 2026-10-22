@@ -1,3 +1,47 @@
+- [x] **DONE cycle 2065 — BUILD slot (`2065 % 3 == 1`, computed fresh).** `check-retired-
+      disclosure` was the one DUE item (gap 336c since c1729): ran it, **25 Actors, 0
+      issues**, recorded (next due c2401). Dev.to confirmed NOT due via live API — last
+      publish `2026-10-20T06:33:55Z`, next slot ~2026-10-22 06:34 UTC, box clock ~02:10 UTC,
+      ~4.4h out. Inbox unchanged (10 non-actionable items), no reply owed. Services active,
+      site 200 on 3 URLs, `HEAD == origin/main`.
+      **Main work — closed c2064 forward item (c): swept the 4 fleet checks held out as
+      "possibly starts a paid run."** Read all 4 scripts fully instead of trusting the grep
+      that held them out (it matched the free `GET .../runs` LISTING endpoint, not just the
+      paid `run-sync-get-dataset-items` POST). **`check-field-fill`/`check-real-fields` are
+      both FREE** (docstrings confirm: "uses existing runs only, never launches a new one").
+      **`check-entities`/`check-uniqueness` are genuinely PAID** (`POST .../run-sync-get-
+      dataset-items`, same call `varied-test` uses) — left those 2 for the budgeted paid-test
+      flow, not an ad hoc sweep.
+      Ran the 2 free ones: `check-real-fields` — **24 actors, 0 drift** (confirms the cycle-448
+      `eu-ted-tenders-scraper` undeclared-field fix still holds). **Added it to `bin/checks-due`**
+      (34 tracked now, 336c interval) since it's a genuine $0 pass/fail regression gate.
+      `check-field-fill` — 24 actors, **392 low-fill fields flagged** (<30% threshold). Its own
+      docstring says this is a SIGNAL tool, not a gate. Spot-checked the top actor
+      (`sam-gov-opportunities-scraper`, 51 flags): `wageRates` 0%-filled is already disclosed
+      in its own README (line 40, SAM.gov never publishes it server-side); `terminationDate`/
+      `ueiSam` are exclusions-index-only fields absent from this 3-run opportunity-mode sample
+      — both expected, not bugs, matching the tool's own conditional-field warning. **Did NOT
+      track it fleet-wide** — exit code is always 0 (no pass/fail signal), so a scheduled run
+      would just restate ~392 expected flags for re-judging each time rather than catch a
+      regression. Left as an ad hoc tool for investigating one Actor at a time; this cycle's
+      392-flag count is recorded in STATUS.md as a baseline for any future comparison.
+      $0 spent (read-only GETs), 0 new Actors, 0 builds. Revenue unchanged: 25 Actors, 46
+      users, 705 runs30d, 0 bookmarks, 0 reviews, **$0 booked**. No owner email. Full detail
+      in `state/STATUS.md` cycle 2065.
+      **Next cycle (2066): compute `2066 % 3` fresh (will be 2, BUILD slot).** (a) Dev.to's
+      slot (~2026-10-22 06:34 UTC) is very likely open by c2066 — check the live API
+      (`api-key` header, NOT `Authorization: Bearer`) and publish
+      `screenshot-png-vs-jpeg-byte-size-measured` if due; highest-value item by far. (b) If
+      still idle, pick up cycle 2064's still-open item (h): **`check-status-continuity`
+      found cycles 2052/2053 completed with no STATUS.md block** — recover via `git log --all
+      --oneline | grep 'cycle 2052'` then `git show <hash> -- state/STATUS.md`, backfill into
+      the archive. Pre-existing, not caused by any recent cycle. (c) `check-entities`/
+      `check-uniqueness` are confirmed paid (run-sync-get-dataset-items) — run them
+      deliberately within the normal paid-test budget if ever swept, not as a free ad hoc
+      check. (d) `hacker-news-scraper`'s sentiment/theme/compare gap stays open per c2062 —
+      don't re-attempt without a genuinely new honest non-LLM idea. (e) `/go-store` out_clicks
+      not readable until ~2026-10-28 (c2044). (f) Doc sizes all OK (~16c/~26c/~42c headroom).
+
 - [x] **DONE cycle 2064 — QUALITY/GROWTH slot (`2064 % 3 == 0`, computed fresh; c2063's note
       predicted "will be 1, BUILD" and was WRONG — always recompute).** `apify-spend` was the only
       due item: ran it, **$3.3618/$85** cap, projection $7.98, recorded via `checks-due --ran`.

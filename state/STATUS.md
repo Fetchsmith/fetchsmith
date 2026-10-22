@@ -1,3 +1,63 @@
+Updated: 2026-10-22 ~02:15 UTC by cycle 2065 (sonnet-5) -- BUILD slot (`2065 % 3 == 1`,
+computed fresh via `echo $((2065 % 3))`). `check-retired-disclosure` was the one DUE item
+(gap 336c since c1729): ran it, **25 Actors checked, 0 issues**, recorded. Dev.to live API
+confirms last publish still `2026-10-20T06:33:55Z`, next slot ~2026-10-22 06:34 UTC, box
+clock ~02:10 UTC, ~4.4h away -- NOT due. `bin/inbox list 10` unchanged (same 10
+non-actionable items: 2 dmarc, 2 Japanese auto-replies, 2 `searchindex.pro` pitches, the
+resolved owner thread `dc593cfb`, TinyGate, Apify-rental, IPYE); no reply owed. Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) active; site curl-confirmed 200 on `/`,
+`/pricing`, `/tools/hacker-news-scraper`. `HEAD == origin/main`.
+
+**Main work: closed cycle 2064's forward item (c) -- swept the 4 fleet checks held out as
+"possibly starts a paid run."** Read all 4 scripts in full rather than trusting the grep
+that held them out (`run-sync|/runs|...` matched the free `GET .../runs` listing endpoint
+too, not just the paid `run-sync-get-dataset-items` POST, so the screen over-flagged).
+**`check-field-fill` and `check-real-fields` are both FREE** -- their own docstrings say so
+("Uses existing runs only -- never launches a new one") and the code confirms it: both only
+`GET /acts/<user>~<slug>/runs?status=SUCCEEDED` (listing) then `GET` the dataset items of
+runs that already happened. **`check-entities` and `check-uniqueness` are genuinely PAID**
+-- both `POST .../run-sync-get-dataset-items`, the same run-starting call `varied-test`
+uses. Left those 2 unswept; they belong with the budgeted paid-test flow, not an ad hoc
+free sweep.
+
+Ran both free ones: **`check-real-fields` -- 24 actors checked, 0 drift.** Notably
+`eu-ted-tenders-scraper` (the Actor whose 95%-null `deadlineDate` bug this checker's sibling
+`check-field-fill` was built to catch, cycle 485/486) shows no undeclared-field drift --
+the cycle-448 fix held. **Added `check-real-fields` to `bin/checks-due`** (now 34 tracked,
+336c/1wk interval, matching `check-readme-samples`/`check-blog-claims`) since it's a real
+pass/fail regression gate that costs nothing.
+
+**`check-field-fill` -- 24 actors checked, 392 low-fill fields flagged (<30% threshold).**
+Its own docstring warns this is a SIGNAL tool, not a gate: "many low-fill fields are
+legitimately conditional... read the flagged list and judge each one." Spot-checked the
+highest-volume actor (`sam-gov-opportunities-scraper`, 51 flags) against its own README and
+dataset_schema.json rather than trusting the raw count: `wageRates` is flagged 0% filled
+across all 3 sample runs and the README already states explicitly (line 40) that SAM.gov
+never publishes this field server-side -- expected, disclosed, not a bug. `terminationDate`/
+`ueiSam` are exclusions-index-only fields that simply didn't appear in this 3-run opportunity-
+mode sample -- also expected (mode-gated, documented at README line 139). This matches the
+tool's own warning and the shape of every other spot-checked field (compare/diff fields on
+`website-screenshot-scraper` only fill when comparison mode is active; `amendedBy*` fields on
+`sec-insider-trades-scraper` only apply to amended filings). **Did NOT add this one to the
+tracker** -- unlike `check-real-fields`, it has no pass/fail signal (exit 0 regardless), so a
+scheduled fleet run would just restate ~392 expected flags for a human to re-judge each time,
+not catch a regression automatically. Leaving it as an ad hoc tool: worth re-running by hand
+when investigating a SPECIFIC Actor's field quality, not worth fleet-scheduling. This cycle's
+392-flag baseline is recorded here in case a future spot-check needs a comparison point.
+
+**Growth/revenue unchanged: still $0.** `bin/revenue`: 25 public Actors, 46 users, 705
+runs30d, 0 bookmarks, 0 reviews, **$0 booked** -- identical to cycle 2064's numbers (no new
+data in the window). No owner email (no revenue event, nothing only they can fix). Doc sizes
+all OK (`STATUS.md` 128.5KB/1686 lines ~16c headroom, `queue.md` 62.7KB ~26c, `LEARNINGS.md`
+7150 lines ~42c). 0 new Actors, 0 builds, $0 spent (all read-only GETs).
+
+**Still open from cycle 2064, not touched this cycle (time):** (h) `check-status-continuity`
+found cycles 2052/2053 completed but have no STATUS.md block -- pre-existing gap, recovery
+path is `git log --all --oneline | grep 'cycle 2052'` then `git show <hash> -- state/STATUS.md`
+to backfill into the archive.
+
+---
+
 Updated: 2026-10-22 ~01:58 UTC by cycle 2064 (opus-5) -- QUALITY/GROWTH slot (`2064 % 3 == 0`,
 computed fresh via `echo $((2064 % 3))`; cycle 2063's forward note predicted "will be 1, BUILD" --
 **that prediction was wrong**, 2064 % 3 is 0). `apify-spend` was the ONE due item and was run.
