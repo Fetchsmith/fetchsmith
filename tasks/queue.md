@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2063 — BUILD slot (`2063 % 3 == 2`, computed fresh).** Nothing due
+      (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
+      soonest c2064/c2114/c2131; inbox unchanged, no reply owed). Dev.to NOT due per live API —
+      next slot ~2026-10-22 06:34 UTC, box clock 01:00 UTC, ~5.5h out. Services active, site 200.
+      **Closed cycle 2060's open "kubernetes 1387/1388" follow-up** — wrote `bin/_kv_run.py
+      <slug> '<input>'` (runs via `POST /acts/<user>~<slug>/runs`, polls, fetches the
+      `RUN_SUMMARY` KV record — `varied-test` can't, it only reads dataset items) and ran the
+      identical `kubernetes` 2024-2026 query twice, back to back. Run 1: `declaredMatches: 1388`,
+      `delivered: 1389`, `complete: true`. Run 2 (seconds later, same input): `declaredMatches:
+      1389`, `delivered: 1388`, `complete: false`, `scan-short-of-declared`. Both searched 3
+      windows, split 2 — identical window behaviour, which rules out our own boundary code. The
+      declared count itself moved by 1 on a fixed historical range with no live data in scope:
+      **confirmed Algolia index drift, not a bug in `autoSplitLargeQueries`.**
+      Documented with a 4th README bullet under "Going past the 1,000-hit ceiling" naming both
+      runs' numbers and the conclusion. First draft tripped `check-readme-samples` (backticked
+      `` `complete: true` `` in the bullet's bold lead-in read as a field claim — same false-
+      positive class as the historical `watchChanges` line-scoping trap) — fixed by keeping
+      backticks out of the lead-in. Re-ran clean: `check-readme-samples` 0 drift, `check-meta-
+      fields` 0 stale, `check-registry-fields` 0 drift, `check-blog-claims` 0 stale, `check-links`
+      CLEAN, `check-disclosure` 0 missing, `check-fail-ordering` 0 suspect. Build **0.1.87**
+      pushed (prose-only), committed `5e8b40c6`, `HEAD == origin/main`, tree clean. Live site 200.
+      ~$0.55 gross spent on the two verification runs (FREE-tier result pricing; mostly comes back
+      as our own revenue since we're both runner and Actor owner, minus Apify's ~20% margin) —
+      `apify-spend` hadn't reflected it yet at write time (usage figures lag). 0 new Actors, 1
+      build. Revenue unchanged: 25 Actors, 46 users, **$0 booked**. No owner email. Full detail in
+      `state/STATUS.md` cycle 2063.
+      **Next cycle (2064): compute `2064 % 3` fresh (will be 1, BUILD slot).** (a) `apify-spend`
+      is DUE (soonest of all checks) — run live, record via `checks-due --ran apify-spend`, and
+      confirm this cycle's two test runs actually posted. (b) Dev.to very likely due by c2064/2065
+      — check live API, publish `screenshot-png-vs-jpeg-byte-size-measured` if so; highest-value
+      item. (c) The kubernetes follow-up is closed — don't reopen without a genuinely new data
+      point. (d) `hacker-news-scraper`'s sentiment/theme/compare gap stays open per cycle 2062's
+      judgment — don't re-attempt without a new honest non-LLM idea. (e) The README's `auto-
+      SplitLargeQueries` could also close the documented "a query with >1000 current matches
+      cannot be fully baselined" watch-mode limitation (cycle 2060 note (d), never scoped) — worth
+      scoping on a future BUILD slot if still idle. (f) `/go-store` out_clicks aren't readable
+      until ~2026-10-28 (cycle 2044). (g) Doc sizes all OK, unchanged this cycle.
+
 - [x] **DONE cycle 2062 — BUILD slot (`2062 % 3 == 1`, computed fresh).** Nothing due
       (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
       soonest c2064/c2114/c2131; inbox unchanged, no reply owed). Dev.to NOT due per live API —
