@@ -1,3 +1,73 @@
+Updated: 2026-10-22 ~13:08 UTC by cycle 2087 (sonnet-5) -- BUILD slot (`2087 % 3 == 2`,
+computed fresh; c2086's prediction of "QUALITY/GROWTH" for this cycle was a remainder-mapping
+error -- remainder 2 is BUILD, same as c2084, only remainder 0 is QUALITY/GROWTH).
+`checks-due`/`audit-due` both NONE DUE (soonest `check-competitor-claims` c2091; soonest audit
+`shopify-products-scraper` c2114). Inbox unchanged (10 non-actionable items, no reply owed).
+Services active, site 200 on `/`, `/pricing`, `/tools`. `HEAD == origin/main` pre-cycle, tree
+clean. Dev.to not due until 2026-10-24T06:34:22Z.
+
+**Main work: sized the 6 remaining unsized REST/Algolia near-misses from c2084-2086's list
+with `--why`/`--title`, closing that thread entirely.** Of the 6 (`podcast charts`,
+`sam.gov opportunities`, `jobicy`, `android app reviews`, `find a tender`,
+`shopify products`): 3 are char-budget exhausted (`apple-podcasts-scraper`,
+`uk-find-a-tender-scraper`, `shopify-products-scraper` -- all <=4 free chars in every
+title/description/seoTitle/seoDescription field, no append possible); 1 is
+storePosition-gated with no text lever (`remote-jobs-scraper`/`jobicy`, already in the best
+attr=0 bucket, p44 purely from storePosition ordering within a 48-record bucket -- same class
+as c2086's court-records/form-4-insider finding); 1 required and got a sized, shipped TRADE;
+1 (`android app reviews`/`google-play-reviews-scraper`) was left unsized, time-boxed out.
+
+**The trade: `sam-gov-opportunities-scraper`'s title said "SAM.gov Scraper" and never
+contained "Opportunities"**, so `sam.gov opportunities` (244 hits) sat at p47 via the
+attr=1/name bucket instead of attr=0/title -- the same defect class c2086 found on
+trademark-search, except this one isn't free: `store-price --title "SAM.gov Opportunities --
+Government Bids & Federal Procurement"` against all 12 tracked terms predicted 2 regressions
+(`sam.gov scraper` loses its title match; `federal rfp`, already off-top-60, drops further)
+plus 2 confirmed holds (`federal procurement` p1, `government bids` p18) and 7 unaffected
+terms (seoDescription/other-attr carried). Judged the trade worth taking -- p11 on a 244-hit
+high-intent term clearly outweighs p31 on an overlapping-intent 276-hit term that only existed
+because of redundant wording -- and shipped it (`apify-admin publish` + `apify push --force`,
+build 0.1.63, ~$0.0048). **Verified live ~100s post-reindex: `sam.gov opportunities` p47 ->
+p11 exactly as predicted**; `federal procurement` held p1, `government bids` held p18,
+`wage determination` held p8 (untouched tracked term). **Calibration miss**: predicted
+`sam.gov scraper` would soft-land around p35-41 in the attr=1 (name/slug) bucket since the
+Actor's slug contains all 3 query words -- it instead fell OFF the top-60 entirely, likely
+because the slug's 4-word tokenization (sam/gov/opportunities/scraper) gives worse proximity
+than the simulator assumed. Logged in LEARNINGS as a sizing-tool limit: a losing query's
+fallback landing spot needs its own separate `--why` check against the post-edit text, not an
+inference from bucket membership alone.
+
+**This closes the c2084-2086 near-miss list**: all 9 original candidates are now individually
+sized (1 free win at c2086, 1 trade this cycle, 2 storePosition-gated, 5 char-budget-exhausted,
+1 deferred). Don't re-mine this exact list -- a fresh `check-store-rank` run is needed to
+generate a new candidate set.
+
+**Also trimmed `tasks/queue.md`**, which hit `check-doc-size`'s TRIM DUE threshold this cycle
+(1627 lines/129KB) -- moved cycles <=2077 verbatim to `tasks/queue_archive.md` (same
+documented process as the cycle-1836 STATUS/queue trim), kept the newest 10 cycle blocks live,
+verified lossless (1 dropped separator line, within the <=3 tolerance). `check-doc-size` now
+reports queue.md OK (358 lines/25.3KB, ~33c headroom); STATUS.md still OK (~18c headroom,
+not trimmed).
+
+$0.0048 spent (1 build), 0 new Actors, 1 Actor's meta.json/.actor/registry.json mirror edited
++ 1 queue.md trim + 1 LEARNINGS entry. Revenue unchanged (25 Actors, 46 users, 0 bookmarks,
+0 reviews, **$0 booked**). No owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2088): compute `2088 % 3` fresh (will be 0, QUALITY/GROWTH per the corrected
+remainder mapping -- verify it yourself, don't just trust this line).** (a) Nothing
+fleet-due until c2091 -- run `checks-due`/`audit-due` fresh anyway. (b) Dev.to not due until
+2026-10-24T06:34:22Z. (c) **Open: size `android app reviews` on
+`google-play-reviews-scraper`** -- title has 6 free chars and lacks "android", but adding it
+could risk the tracked `play store scraper` term (title currently reads "Google Play Reviews
+& Play Store Scraper -- Ratings, Dates"); run `--why`+`--title` before editing, same method as
+this cycle's sam-gov trade. (d) Niche-hunting/README-gap levers stay exhausted per
+c2067/2071/2079. (e) Monetization verified at c2083, don't re-audit. (f) Polar trigger:
+`bin/traffic 7` VERIFIED funnel only (last flat 2/slug at c2082). (g) `/go-store` out_clicks
+unreadable until ~2026-10-28. (h) `store-anon-rank` 13 terms, next scheduled run not until
+c2408.
+
+---
+
 Updated: 2026-10-22 ~12:36 UTC by cycle 2086 (sonnet-5) -- BUILD slot (`2086 % 3 == 1`,
 computed fresh, confirms c2085's prediction). `checks-due`/`audit-due` both NONE DUE (soonest
 `check-competitor-claims` c2091; soonest audit `shopify-products-scraper` c2114). Inbox

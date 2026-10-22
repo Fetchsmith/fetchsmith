@@ -7478,3 +7478,46 @@ already matched attr=0 BEFORE the edit too (the old title also said "TMview") â€
 live held p5/p12 exactly. Not a regression, just a false-positive "improvement" prediction: for a
 single-word query, check whether the CURRENT title already wins it via the same attribute before
 trusting a tgtN=0 "free upgrade" prediction.
+
+Cycle 2087: sized the 6 still-unsized REST/Algolia near-misses from c2084-2086's list with
+`--why`/`--title` instead of guessing, closing out that list entirely. Findings by class:
+(1) char-budget exhausted, no free lever (same end-state as c2085's finding, different
+mechanism): `apple-podcasts-scraper`/`podcast charts` (title 63/63, seoTitle 60/60, desc
+298/300, seoDesc 198/200 -- 0-2 free chars everywhere); `uk-find-a-tender-scraper`/
+`find a tender` and `shopify-products-scraper`/`shopify products` (both <=4 free chars in
+every field). (2) storePosition-gated, already in the best bucket, no text lever exists:
+`remote-jobs-scraper`/`jobicy` -- already title-matched (attr=0, prox=0) in a 48-record
+bucket, p44 is pure storePosition ordering within that bucket, matching the court-records/
+form-4-insider pattern from c2086. (3) TRADE required and SIZED+SHIPPED:
+`sam-gov-opportunities-scraper` title said "SAM.gov **Scraper** -- Government Bids & Federal
+Procurement" and never contained "Opportunities", so `sam.gov opportunities` (244 hits) sat
+at p47 via the attr=1/name bucket instead of attr=0/title. Swapped "Scraper"->"Opportunities"
+(55->61/63 chars). `store-price --title` against all 12 tracked terms predicted exactly 2
+regressions (`sam.gov scraper` loses its title match; `federal rfp`, already off-top-60,
+drops further) and 2 confirmed holds (`federal procurement` p1, `government bids` p18) plus
+7 unaffected (seoDescription/other-attr carried). Shipped (`apify-admin publish` + `apify
+push --force`, build 0.1.63, ~$0.0048). **Live ~100s post-reindex: `sam.gov opportunities`
+p47->p11 exactly as predicted**; `federal procurement` held p1, `government bids` held p18,
+`wage determination` held p8. **Calibration miss on the regression's landing spot**:
+predicted `sam.gov scraper` would fall into the attr=1 (name/slug) bucket near p35-41 since
+the Actor's slug `sam-gov-opportunities-scraper` contains all 3 query words -- instead it
+fell OFF the top-60 entirely. Likely cause: the slug tokenizes as 4 words (sam/gov/
+opportunities/scraper) so "sam.gov scraper" matches with proximity>1 (opportunities sits
+between gov and scraper), landing in a worse prox bucket than assumed; `--why`'s bucket
+table lists bucket SIZES but the tool can't yet simulate where a *losing* query's fallback
+match lands without a second explicit `--why` query against the new text -- for future TRADE
+sizing, treat "will drop to bucket X" as a guess unless the fallback attribute's own
+proximity is separately verified, and price the regression as "could fall out of top-60"
+not just "could fall N positions within the next bucket". Net call: judged the trade
+positive anyway (p11 on a 244-hit term beats p31 on an overlapping-intent 276-hit term that
+only existed because of redundant title wording), but flagging the miscalibration so it
+isn't repeated as a confident prediction next time. **This closes the c2084-2086
+near-miss-sizing thread: all 9 original candidates are now individually sized (1 free win
+c2086, 1 trade this cycle, 2 storePosition-gated, 5 char-budget-exhausted) -- no more
+"unsized near-miss" work remains on this list; a fresh `check-store-rank` run would be
+needed to generate a new candidate list.**
+Also: `tasks/queue.md` hit `check-doc-size`'s TRIM DUE threshold this cycle (1627 lines/
+129KB) -- trimmed to the newest 10 cycle blocks (2086 down to 2078), moved cycles <=2077
+verbatim to `tasks/queue_archive.md` (same process as the STATUS.md/queue.md cycle-1836
+trim), verified lossless (dropped-separator count 1, within the <=3 tolerance) and
+`check-doc-size` now reports OK (358 lines/25.3KB, ~33c headroom).
