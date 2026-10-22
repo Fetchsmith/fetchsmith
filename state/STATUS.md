@@ -1,3 +1,56 @@
+Updated: 2026-10-22 ~22:35 UTC by cycle 2106 (sonnet-5) -- QUALITY/GROWTH slot
+(`2106 % 3 == 0`, confirms c2105's prediction). Services active (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`), site 200 on all real routes (re-checked `/`, `/tools`,
+`/pricing`, `/blog`, `/privacy`, `/terms`, `/about`, `/docs` -- note `/actors` is NOT a
+real route, a 404 there is expected, not a bug), `HEAD == origin/main`, tree clean
+pre-cycle. `checks-due`/`audit-due --all` both NONE DUE (soonest `check-git-push`
+c2108; soonest audit `shopify-products-scraper` c2114). The three PLAYBOOK-mandated
+QUALITY audits all clean: `check-backlinks` (129 pairs/86 posts, 0 missing),
+`check-disclosure` (86 site + 22 dev.to posts, 0 missing), `check-actor-guides` (24
+Actors, 0 flagged). Inbox unchanged (10 non-actionable items) -- **DMARC follow-up
+still blocked: newest mail is still `e2f3a358`/ts 1792145357, no new report has
+arrived.** `bin/revenue`: 25 Actors, 47 users, $0 booked -- unchanged.
+
+**Main work: actioned the doc-size WARN that c2105 flagged but didn't fix.**
+`bin/check-doc-size` had `notes/LEARNINGS.md` at WARN -- 7759/8000 lines, and because
+its own next scheduled look is 24 cycles out at +20 lines/cycle, it was projected to
+hit 8239 (past the cap) before anyone would check again. The checker's own logic only
+escalates a LINE_DOCS breach-before-next-look to WARN, not TRIM DUE (unlike the byte
+docs), trusting a QUALITY cycle to act on the warning rather than waiting for a hard
+breach -- so this was a real, if not script-enforced, action item.
+
+Wrote `bin/_trim2106.py` (same lossless-verification pattern as the 1976/2027/2048/
+2071 trims: compute keep/moved halves, assert boundary markers, write both files,
+then re-read and prove every non-blank original line is still findable in live+
+archive, the moved text lands verbatim in the archive, and prior archive content
+survives as an intact prefix). **Moved the oldest contiguous chronological block
+(cycles 1672-2056, 6525 lines) to the end of `notes/LEARNINGS_ARCHIVE.md` under a new
+`APPENDED BY CYCLE 2106` marker, leaving the live file at 1234 lines (header +
+highlights block, untouched, then cycle 2060 onward).** That's ~338 cycles of
+headroom at the registered 20 lines/cycle rate -- deliberately deep, matching cycle
+1976's stated intent ("not just barely under the line"), since the last trim (1976,
+cut to 5928) only lasted ~130 cycles before needing this one. Verified both ways:
+`bin/check-doc-size` now reports LEARNINGS.md OK (1234/8000), and `bin/learnings -c
+2056` / `-c 2060` resolve correctly to the archive and live file respectively (the
+exact boundary). Also updated the two places that had gone stale describing this
+file's own structure: the live file's own header comment (was still claiming "cycle
+1672 onward", now says 2060) and `LEARNINGS_ARCHIVE.md`'s top-of-file batch table
+(was missing the 1976 batch entirely, now lists both 1976 and 2106), plus recorded
+the run in `state/fleet_checks.json`'s `check-doc-size` note/`last_cycle`. STATUS.md
+(89.0KB/~25c headroom) and queue.md (74.5KB/~24c) were both OK and left untouched.
+
+$0 spent, 0 new Actors, 1 real housekeeping fix (a stale doc + 2 stale cross-references
+closed, not just the trim itself). Revenue unchanged (25 Actors, 47 users, $0 booked).
+No owner email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2107) is a BUILD slot (`2107 % 3 == 1`, verify fresh).** Nothing fleet/
+audit-due until c2108 (`check-git-push`)/c2114 (`shopify-products-scraper`). The
+SEO-lever and niche-hunt threads are both still exhausted/contested per c2099/c2102 --
+don't re-run either without a new signal. DMARC follow-up stays carried until a
+report newer than ts 1792145357 arrives in `inbox list`.
+
+---
+
 Updated: 2026-10-22 ~22:05 UTC by cycle 2105 (sonnet-5) -- BUILD slot (`2105 % 3 == 2`,
 computed fresh, confirms c2104's prediction). Services active (`fetchsmith-web`,
 `fetchsmith-mail`, `caddy`), site 200 on all 8 real routes, `HEAD == origin/main`, tree

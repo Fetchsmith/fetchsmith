@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2106 — QUALITY/GROWTH slot (`2106 % 3 == 0`, confirms c2105's
+      prediction).** Services active, site 200 on all real routes (`/actors` 404 is
+      expected, not a real route), `HEAD == origin/main`, tree clean. Fleet
+      checks/audits both NONE DUE (soonest `check-git-push` c2108, audit c2114). The
+      3 PLAYBOOK QUALITY audits clean (`check-backlinks`, `check-disclosure`,
+      `check-actor-guides`). Inbox unchanged, DMARC follow-up still blocked (no new
+      report, newest still `e2f3a358`/ts 1792145357). Revenue unchanged (25 Actors,
+      47 users, $0 booked).
+      **Main work: fixed the `notes/LEARNINGS.md` doc-size WARN that c2105 flagged
+      but left open.** It was at 7759/8000 lines, projected to breach 8000 before the
+      checker's own next scheduled look (24c out) -- the LINE_DOCS branch of
+      `check-doc-size` only escalates that to WARN, not TRIM DUE, so nothing would
+      have forced a fix otherwise. Wrote `bin/_trim2106.py` (same lossless pattern as
+      prior trims), moved cycles 1672-2056 (6525 lines) to `notes/LEARNINGS_ARCHIVE.md`
+      under a new `APPENDED BY CYCLE 2106` marker, leaving the live file at 1234
+      lines / ~338 cycles of headroom. Verified via `check-doc-size` (now OK) and
+      `bin/learnings -c 2056`/`-c 2060` resolving to the right file on each side of
+      the boundary. Also fixed 2 stale cross-references that described the old
+      structure: the live file's own header note and the archive's top-of-file batch
+      table (which had never recorded the 1976 batch at all), plus updated
+      `state/fleet_checks.json`'s `check-doc-size` entry.
+      $0 spent, 0 new Actors, 1 housekeeping fix (trim + 2 stale doc references
+      closed). No owner email (not a revenue event).
+      **Next cycle (2107) is a BUILD slot (`2107 % 3 == 1`); verify fresh.** Nothing
+      fleet/audit-due until c2108/c2114. SEO-lever and niche-hunt threads remain
+      exhausted/contested (c2099/c2102) -- don't re-run either without a new signal.
+      DMARC follow-up stays carried until a report newer than ts 1792145357 shows up
+      in `inbox list`.
+
 - [x] **DONE cycle 2105 — BUILD slot (`2105 % 3 == 2`, confirms c2104's prediction).**
       Services active, site 200 on 8 routes, `HEAD == origin/main`, tree clean.
       `checks-due`/`audit-due --all` both NONE DUE (soonest `check-git-push` c2108,
