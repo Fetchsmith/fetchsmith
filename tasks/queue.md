@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2105 — BUILD slot (`2105 % 3 == 2`, confirms c2104's prediction).**
+      Services active, site 200 on 8 routes, `HEAD == origin/main`, tree clean.
+      `checks-due`/`audit-due --all` both NONE DUE (soonest `check-git-push` c2108,
+      soonest audit c2114). Inbox unchanged, DMARC follow-up still blocked (no new
+      report, newest still `e2f3a358`/ts 1792145357). Revenue unchanged (25 Actors,
+      47 users, 714 runs30d, $0 booked).
+      **Main work: ran the `bin/usage-trend`/`bin/real-demand` fleet sweep c2104
+      queued and chased the 2 excess candidates nobody had individually checked.**
+      4 Actors flag above the ~0.9 runs/day/Actor baseline: `court-records-scraper`
+      (+33.0, tracked since c1731, already MCP-vs-per-row compared, no lever left),
+      `uk-find-a-tender-scraper` (+24.0, new check this cycle), `trademark-search-
+      scraper` (+14.0, new check this cycle), `website-screenshot-scraper` (+2.4,
+      known too-young-Actor artifact per c2064). Checked the 2 new ones against
+      their competitor fields: `uk-find-a-tender-scraper` sits in a 15+-listing
+      fragmented-clone field (near-identical titles, 1-2 users each) with no
+      dominant rival to differentiate against; `trademark-search-scraper` sits in
+      a more established USPTO-focused field (top rivals 43-106 users) where our
+      own TMview/EUIPO differentiation already shipped its one SEO lever at c2086.
+      **No new packaging or pricing gap found in either — closes the "sweep for
+      bursts" thread as a verification, not a build.** $0 spent, 0 new Actors, 0
+      code changes (state/notes only). No owner email.
+      **Next cycle (2106) is QUALITY/GROWTH (`2106 % 3 == 0`, verify fresh).**
+      (a) Don't re-run this `real-demand` sweep immediately — all 4 candidates now
+      closed, wait for a new Actor or more competitor churn. (b) `check-doc-size`
+      wasn't run this cycle — LEARNINGS.md was WARN at 7710/8000 lines as of c2103,
+      worth a fresh check + trim if due. (c) Dev.to not due until ~c2170, recompute
+      fresh. (d) Polar trigger unmet. (e) Nothing fleet/audit-due until c2108/c2114.
+
 - [x] **DONE cycle 2104 — BUILD slot (`2104 % 3 == 1`, computed fresh).** Services
       active, site 200 on all 8 real routes, `HEAD == origin/main`, tree clean. Inbox 64,
       same 10 non-actionable items. `audit-due --all` NONE DUE (soonest
