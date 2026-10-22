@@ -452,6 +452,10 @@ function mapHit(hit) {
     githubLanguage: null,
     githubPushedAt: null,
     githubOpenIssues: null,
+    githubCreatedAt: null,
+    githubArchived: null,
+    githubFreshness: null,
+    githubMaturity: null,
   };
 }
 
@@ -478,6 +482,33 @@ function extractGithubRepo(item) {
     }
   }
   return null;
+}
+
+// Classifies a linked repo's freshness/maturity off fields the same GitHub API response already
+// carries (no extra request) -- same "formula, not a model call" spirit as authorInfluenceScore.
+const GITHUB_FRESHNESS_ACTIVE_DAYS = 30;
+const GITHUB_FRESHNESS_MAINTAINED_DAYS = 180;
+const GITHUB_FRESHNESS_STALE_DAYS = 365;
+function classifyGithubFreshness(pushedAt, archived) {
+  if (archived) return 'archived'; // a strong, explicit GitHub signal -- overrides how recent the last push looks
+  if (!pushedAt) return null;
+  const days = (Date.now() - new Date(pushedAt).getTime()) / 86400000;
+  if (days <= GITHUB_FRESHNESS_ACTIVE_DAYS) return 'active';
+  if (days <= GITHUB_FRESHNESS_MAINTAINED_DAYS) return 'maintained';
+  if (days <= GITHUB_FRESHNESS_STALE_DAYS) return 'stale';
+  return 'dormant';
+}
+
+const GITHUB_MATURITY_NEW_DAYS = 90;
+const GITHUB_MATURITY_YOUNG_DAYS = 365;
+const GITHUB_MATURITY_ESTABLISHED_DAYS = 1095; // 3 years
+function classifyGithubMaturity(createdAt) {
+  if (!createdAt) return null;
+  const days = (Date.now() - new Date(createdAt).getTime()) / 86400000;
+  if (days <= GITHUB_MATURITY_NEW_DAYS) return 'new';
+  if (days <= GITHUB_MATURITY_YOUNG_DAYS) return 'young';
+  if (days <= GITHUB_MATURITY_ESTABLISHED_DAYS) return 'established';
+  return 'mature';
 }
 
 async function enrichGithub(item) {
@@ -525,7 +556,11 @@ async function enrichGithub(item) {
       githubLanguage: d.language ?? null,
       githubPushedAt: d.pushed_at ?? null,
       githubOpenIssues: d.open_issues_count ?? null,
+      githubCreatedAt: d.created_at ?? null,
+      githubArchived: d.archived ?? null,
     };
+    fields.githubFreshness = classifyGithubFreshness(fields.githubPushedAt, fields.githubArchived);
+    fields.githubMaturity = classifyGithubMaturity(fields.githubCreatedAt);
     githubCache.set(repoFullName, fields);
     Object.assign(item, fields);
   } catch (e) {
@@ -632,6 +667,10 @@ function mapUser(username, data) {
     githubLanguage: null,
     githubPushedAt: null,
     githubOpenIssues: null,
+    githubCreatedAt: null,
+    githubArchived: null,
+    githubFreshness: null,
+    githubMaturity: null,
   };
 }
 

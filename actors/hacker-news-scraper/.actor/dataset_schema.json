@@ -206,6 +206,34 @@
           "number",
           "null"
         ]
+      },
+      "githubCreatedAt": {
+        "title": "GithubCreatedAt",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "githubArchived": {
+        "title": "GithubArchived",
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "githubFreshness": {
+        "title": "GithubFreshness",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "githubMaturity": {
+        "title": "GithubMaturity",
+        "type": [
+          "string",
+          "null"
+        ]
       }
     }
   },
