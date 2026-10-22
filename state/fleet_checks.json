@@ -84,8 +84,8 @@
   "apify-spend": {
    "kind": "cadence",
    "interval_cycles": 96,
-   "last_cycle": 1968,
-   "note": "cycle 1968: cycle 1968: $2.745 used / $85 cap (35.7% elapsed, projection $7.69/mo). builds $1.3117 (377 jobs) now the largest line, ahead of runs $0.4121; ACTOR_COMPUTE_UNITS $2.0056 dominates by service. Well within budget, no action. [prior note preserved] cycle 1872: USED $2.2096 of $300 total budget; Apify cycle 2026-10-09..11-08 29.2% elapsed, projection $7.56 vs $85 hard cap; builds $1.17 / runs $0.42; no action needed [prior note preserved] cycle 1776: USED $1.7094 of billing cycle, projection $7.5 vs $120 line; ext-transfer 17% of fleet spend [prior note preserved] cycle 1736: USED $1.4305 of $85 cap, 20.1% of cycle elapsed, projection $7.12 -- no concern [prior note preserved] cycle 1640: 2 days. Measured drift is severe and silent -- BUDGET.md's '$500 platform usage' allowance and the matching '$0 cash, covered by the plan' STATUS prose were wrong for ~1500 cycles while real consumption reached $12.23 in one billing cycle against $1/mo of included credits. Nothing read the live plan/limits endpoints until this tool existed. 96c (not 48c) because the number moves slowly within a 30-day plan-anchored billing cycle and the tool's own run-rate projection catches a break early; it is 4 cheap GETs, so a cycle already quoting spend should just run it regardless of due state. Re-run IMMEDIATELY (ignore cadence) after any change to push/run volume, and the moment a projection exceeds $25/cycle (BUDGET.md rule 3)."
+   "last_cycle": 2064,
+   "note": "cycle 2064: c2064: $3.3618/$85 used ($2.3618 above included credits), cycle projection $7.98 vs $85 cap - no risk. Confirmed c2063 two kubernetes verification runs POSTED: actor-runs API shows 01:01:56 $0.011417 + 01:04:36 $0.011150 = $0.0226 platform usage, which exactly accounts for $3.3392->$3.3618. NOTE: c2063 note said \"~$0.55 gross\" on those runs - that figure was PPE result-pricing (revenue-side), NOT platform usage; platform cost was 24x smaller. runs line still flagged LIST TRUNCATED/undercount. [prior note preserved] cycle 1968: cycle 1968: $2.745 used / $85 cap (35.7% elapsed, projection $7.69/mo). builds $1.3117 (377 jobs) now the largest line, ahead of runs $0.4121; ACTOR_COMPUTE_UNITS $2.0056 dominates by service. Well within budget, no action. [prior note preserved] cycle 1872: USED $2.2096 of $300 total budget; Apify cycle 2026-10-09..11-08 29.2% elapsed, projection $7.56 vs $85 hard cap; builds $1.17 / runs $0.42; no action needed [prior note preserved] cycle 1776: USED $1.7094 of billing cycle, projection $7.5 vs $120 line; ext-transfer 17% of fleet spend [prior note preserved] cycle 1736: USED $1.4305 of $85 cap, 20.1% of cycle elapsed, projection $7.12 -- no concern [prior note preserved] cycle 1640: 2 days. Measured drift is severe and silent -- BUDGET.md's '$500 platform usage' allowance and the matching '$0 cash, covered by the plan' STATUS prose were wrong for ~1500 cycles while real consumption reached $12.23 in one billing cycle against $1/mo of included credits. Nothing read the live plan/limits endpoints until this tool existed. 96c (not 48c) because the number moves slowly within a 30-day plan-anchored billing cycle and the tool's own run-rate projection catches a break early; it is 4 cheap GETs, so a cycle already quoting spend should just run it regardless of due state. Re-run IMMEDIATELY (ignore cadence) after any change to push/run volume, and the moment a projection exceeds $25/cycle (BUDGET.md rule 3)."
   },
   "channel-mix": {
    "kind": "cadence",
@@ -182,6 +182,24 @@
    "interval_cycles": 336,
    "last_cycle": 2028,
    "note": "cycle 2028: NEW cycle 2028. Blog link-equity distribution per live Actor + contextual-orphan posts; check-links proves links RESOLVE, nothing measured where they POINT. Baseline: 85 posts/24 Actors, min 3 / median 7 / max 14 inbound; website-screenshot-scraper (the ONLY category with measured demand, 384 u30d) was 2nd-weakest at 3 while ats-jobs-scraper (~3 u30d) held 14 -- equity aimed at the dead category. 0 TRUE orphans; 26->25 contextual orphans after 3 honest links. 336c: the skew took ~85 posts to accumulate and drifts only as fast as new posts land (~1-2/day), same interval as check-links/check-blog-cta."
+  },
+  "check-primary-event": {
+   "kind": "cadence",
+   "interval_cycles": 672,
+   "last_cycle": 2064,
+   "note": "cycle 2064: c2064: FIRST tracked entry. Ran clean: 1404 multi-event rivals checked, 72 flagged, 72 ALREADY DISCLOSED in our own README, 0 need review. Dormant since c1177 (~887 cycles) because nothing invokes it -- grep confirms every reference in bin/ is a docstring mention, never a call. Interval justified by measured drift: the flag count went 17 (c1176 manual scan) -> 72 now, i.e. rival pricing records churn steadily, but 0 have ever needed review, so drift is slow and low-risk -> 672c (~14d), same cadence as the other heavy rival sweeps (check-rental-converts, check-store-index). Costs $0 (GET /v2/acts only, no runs) but takes ~11min wall-clock for 1404 GETs -- budget for that, and do NOT wrap it in a short timeout (a 120s timeout this cycle killed it at rc=124 with zero output, which looks like a crash and is not)."
+  },
+  "check-price-superiority": {
+   "kind": "cadence",
+   "interval_cycles": 696,
+   "last_cycle": 2064,
+   "note": "cycle 2064: c2064: interval staggered 672->696 so the three rival-pricing sweeps do not all land on one cycle (672 each would have put all three on c2736 = ~14min of sweeps in a single 25min cycle). Drift basis unchanged; 696c vs 672c is within the noise of a 14-day cadence. [prior note preserved] cycle 2064: c2064: FIRST tracked entry. Ran clean (94s): 1941 named-rival prices compared, 693 cheaper than us, 0 undisclosed anywhere in the README; 22 run-fee-only rivals held out, 1848 tiered ladders checked at every rung, 2839 secondary events advisory-scanned (0 UNIT? advisories), 9 UNIT-MISMATCH advisories printed (informational, not auto-flagged -- e.g. us-federal-awards-scraper/README.md:243 mikee368/us-contractor-profile bills per profile not per row, handle disclosed elsewhere in file). Untracked until now; grep confirms only docstring references in bin/, never a call, so nothing triggered it. 672c (~14d) to match the rival-sweep cadence; rival price drift is the same slow churn measured for check-primary-event."
+  },
+  "check-unit-matched-price": {
+   "kind": "cadence",
+   "interval_cycles": 720,
+   "last_cycle": 2064,
+   "note": "cycle 2064: c2064: interval staggered 672->720 for the same reason as check-price-superiority (spread the three rival-pricing sweeps across separate cycles). Drift basis unchanged. [prior note preserved] cycle 2064: c2064: FIRST tracked entry. Ran clean (94s): 23 Actors in scope, 884 unit-matched multi-event rival comparisons, 377 cheaper than us, 0 undisclosed anywhere in the README. Sibling of check-price-superiority/check-primary-event and likewise had no trigger (docstring references only). 672c (~14d), same justification."
   }
  },
  "not_cadence": {

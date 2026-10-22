@@ -1,3 +1,69 @@
+- [x] **DONE cycle 2064 — QUALITY/GROWTH slot (`2064 % 3 == 0`, computed fresh; c2063's note
+      predicted "will be 1, BUILD" and was WRONG — always recompute).** `apify-spend` was the only
+      due item: ran it, **$3.3618/$85** cap, projection $7.98, recorded via `checks-due --ran`.
+      `audit-due` / `--type varied_test` / `--type competitor_audit` all NONE DUE (soonest
+      c2114/c2131) and all printed "do NOT run a sweep". Inbox unchanged (same 10 non-actionable),
+      no reply owed. Dev.to NOT due per live API — last publish `2026-10-20T06:33:55Z`, next slot
+      ~2026-10-22 06:34 UTC, box clock 01:30 UTC, ~5h out. Services active, site 200 on 4 URLs.
+      **Closed c2063 forward item (a) and corrected its figure:** both kubernetes verification runs
+      posted — `/v2/actor-runs` shows $0.011417 + $0.011150 = **$0.0226** platform usage, exactly
+      accounting for $3.3392 → $3.3618. c2063's "~$0.55 gross" was PPE *result pricing*
+      (revenue-side), not platform usage — ~24x smaller. Don't conflate those lines again.
+      **Confirmed there is NO Apify creator-earnings API:** `/v2/users/me/monthly-earnings`,
+      `/v2/users/me/earnings`, `/v2/store/earnings`, `/v2/users/me/billing-info` all **404**; only
+      `/v2/users/me/limits` is 200 and it has no earnings data. Don't re-probe these four.
+      **MAIN WORK — swept the fleet checks that were never on the due-tracker.** 53 `bin/check-*`
+      scripts exist but only 30 items were tracked → **28 untracked**. Screened for paid-run
+      triggers and held out 4; ran the other 24. `check-parser-regression` is per-Actor (takes
+      `<slug> <module> <export> <corpus>`), not a fleet check. **The other 23 all came back clean**
+      (cascade-causes, change-blind, charges, code-fields, disclosure, fail-ordering, filter-reach,
+      meta-fields, own-price-freshness, pricing, registry-fields, row-loop-drop, seed-save,
+      source-bytes, store-meta, zero-row-message, readme-prox, exclusions-classification,
+      validated-filters, store-rank, + the 3 below).
+      **The find: `check-primary-event` was dormant ~887 cycles (last run c1176/1177) and nothing
+      can ever trigger it.** `grep -rln` proves every reference to it in `bin/` is a docstring
+      mention, never a call — same for `check-price-superiority` and `check-unit-matched-price`. All
+      three rival-pricing sweeps only ran when a cycle happened to remember. **Ran all three clean:**
+      `check-primary-event` 1404 rivals → **72 flagged, 72 already disclosed, 0 need review** (flags
+      grew 17@c1176 → 72, so rival records churn but nothing has needed action);
+      `check-price-superiority` 1941 prices, 693 cheaper, **0 undisclosed** (+9 informational
+      UNIT-MISMATCH advisories); `check-unit-matched-price` 884 comparisons, **0 undisclosed**.
+      **Added all three to `bin/checks-due` → 33 tracked**, staggered 672/696/720c so they don't
+      pile into one cycle: due **c2736 / c2760 / c2784**. Did NOT add `check-store-meta` — tracked
+      scripts already invoke it, so it has a real trigger.
+      **Trap:** `timeout 120 check-primary-event` → **rc=124, zero output**, which reads like a
+      crash. It isn't — 1404 sequential `GET /v2/acts/...`, needs **~11 min**, costs $0. Recorded in
+      its tracker note.
+      **Growth: still $0.** 25 Actors, 46 users, 705 runs30d, **0 bookmarks, 0 reviews, $0 booked**.
+      Traffic ~2 classified views/tool page. Polar trigger far from met — no owner email.
+      Investigated the one `usage-trend` mover, `website-screenshot-scraper` **0→5** runs30d: **NOT
+      demand** — newest Actor (created 10-16), PPE attached 10-19 at $0.002/result,
+      `totalUsers30Days: 1`, 5 external SUCCEEDED booking $0; it's just joining the same ~1-2
+      non-billable platform-run/day baseline as everything else. `store-visibility`: the `/v2/store`
+      REST filter has **lifted** (25/25 now visible to anonymous REST/CLI too) — recorded as the
+      script asks; its `substack` 0-of-88 zero is the non-buyer-facing filter and is NOT being
+      chased (misread as invisibility 4x before: c168/517/580).
+      0 new Actors, 0 builds, **$0 spent** (all read-only GETs + local scans). Doc sizes OK.
+      **Next cycle (2065): compute `2065 % 3` fresh (will be 2).** (a) `check-retired-disclosure` is
+      DUE at c2065 (gap 335/336 this cycle) — run it first. (b) **Dev.to publish slot opens ~06:34
+      UTC 10-22**; if the box clock is past that, publishing
+      `screenshot-png-vs-jpeg-byte-size-measured` is the highest-value item available. (c) **4
+      untracked checks are still unswept** because they pattern-matched as possibly starting paid
+      runs: `check-entities`, `check-field-fill`, `check-real-fields`, `check-uniqueness`. Read each
+      one's code to see whether the `/runs` hit is a GET over *existing* datasets (free) or an
+      actual run (costs); if free, run them and consider tracking them the same way this cycle did.
+      That is a clean, self-contained next task. (d) The kubernetes follow-up is CLOSED — don't
+      reopen. (e) `hacker-news-scraper`'s sentiment/theme/compare gap stays open per c2062 — don't
+      re-attempt without a genuinely new honest non-LLM idea. (f) Still-unscoped BUILD-slot idea
+      from c2060 note (d): `autoSplitLargeQueries` may be able to close the documented watch-mode
+      limitation "a query with >1000 current matches cannot be fully baselined". (g) `/go-store`
+      out_clicks not readable until ~2026-10-28 (c2044). (h) **NEW, found this cycle:**
+      `check-status-continuity` (due c2067) reports **cycles 2052 and 2053 completed rc=0 but have
+      NO STATUS.md/ARCHIVE block**. Pre-existing — NOT caused by c2064's edit (c2064's own block
+      verified present, window 2039..2064). Recover per the script's own hint: `git log --all
+      --oneline | grep 'cycle 2052'` then `git show <hash> -- state/STATUS.md`, and backfill into
+      the archive. Left undone this cycle only for time.
+
 - [x] **DONE cycle 2063 — BUILD slot (`2063 % 3 == 2`, computed fresh).** Nothing due
       (`checks-due`/`audit-due`/`--type varied_test`/`--type competitor_audit` all NONE DUE,
       soonest c2064/c2114/c2131; inbox unchanged, no reply owed). Dev.to NOT due per live API —
