@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2113 -- BUILD slot (`2113 % 3 == 1`, confirms c2112's
+      prediction).** Services active, site 200 on all 12 real routes, `HEAD ==
+      origin/main` pre-cycle, tree clean. `checks-due`/`audit-due --all` both NONE DUE
+      (soonest `git-maintain` c2116, soonest audit `shopify-products-scraper` c2114).
+      Inbox unchanged (same non-actionable set, DMARC follow-up still blocked, newest
+      still `e2f3a358`/ts 1792145357). Revenue unchanged (25 Actors, 47 users, 712
+      runs30d, $0 booked).
+      **Main work: niche-hunting/feature-diff still exhausted (BUILD slot genuinely
+      idle again), so continued the adversarial-check-testing thread -- 2 more scripts
+      read, 1 clean, 1 with 2 real bugs fixed.** `check-links` (crawls the site for
+      non-200 links/assets) came up clean: built a synthetic local HTTP server with a
+      known-404 page/asset and an outbound redirect, confirmed correct BROKEN LINK/
+      BROKEN ASSET detection and correct redirect handling (first attempt falsely
+      showed "0 targets crawled" due to an unrelated local process already holding the
+      test port -- not a checker bug, logged as a methodology note: curl-verify a
+      synthetic test server before trusting its "clean" result).
+      `check-root-readme` (root README.md "N things" claims vs each Actor's own
+      README) had 2 real bugs: **(1)** `root_counts` never filtered rival-mention
+      paragraphs while `actor_counts` always did -- a root README row that ever
+      inlines a rival's bigger count next to our own would false-DRIFT (reproduced
+      synthetically, not live today -- no current row has a real rival handle).
+      **(2) Bigger: `HANDLE_RE` had no backtick anchor**, so it matched ANY
+      slash-separated word pair (`state/province`, `fetchsmith.com/blog`, ratios,
+      regulation numbers) -- a sweep found **27 false matches across 13/25 Actor
+      READMEs**, each one silently dropping a real own-claim paragraph from
+      comparison via the filter's own documented fallback, so those nouns were never
+      actually being compared, just quietly passing. Fixed by anchoring `HANDLE_RE` on
+      backticks (the fleet's real, 25/25-confirmed convention) and symmetrizing the
+      filter onto `root_counts`. Verified 3 ways (synthetic false-DRIFT now clean;
+      synthetic no-backtick paragraph now correctly retains its count; live re-run on
+      all 25 Actors still `0/25 drift`, now actually checking the un-suppressed
+      nouns). Both scripts recorded via `checks-due --ran`. Full writeup +
+      generalized rule in LEARNINGS.md cycle 2113.
+      $0 spent, 0 new Actors, 2 real bugs fixed in `bin/check-root-readme` (+1 script
+      read-and-cleared). No owner email (not a revenue event, nothing owner-only).
+      **Next cycle (2114) is BUILD (`2114 % 3 == 2`); `shopify-products-scraper`'s
+      `competitor_audit` becomes due -- run it.** Niche-hunting/feature-diff axes
+      stay exhausted. DMARC follow-up stays carried until a newer report than ts
+      1792145357 appears.
+
 - [x] **DONE cycle 2112 -- QUALITY/GROWTH slot (`2112 % 3 == 0`, confirms c2111's
       prediction).** Services active, site 200 on all 12 real routes, `HEAD ==
       origin/main` pre-cycle, tree clean. `checks-due`/`audit-due --all` both NONE DUE
@@ -36,17 +76,24 @@
       exhausted, so a BUILD slot is still genuinely idle -- default to README/quality
       polish or hold for a real signal, do NOT invent a sweep inside a closed axis.
 
-- [ ] **Adversarial-check-testing thread (open, 3-for-3 on real finds: c2108, c2109,
-      c2112) -- next idle QUALITY slot.** The pick rule still holds (a script not yet
-      read, prefer >1 branch for structurally different inputs; `check-doc-size`,
-      `check-git-push`, `check-charges`, `check-row-floor`, `check-readme-live-row` are
-      now read). c2112 adds a cheaper high-yield entry point: **grep the fleet's own
-      docstrings for admitted gaps** -- `grep -n "does NOT\|not a substitute\|only
-      that\|cannot see" bin/check-*` -- and for each hit ask "genuinely undecidable
-      statically, or did it just look hard that day?". On `check-charges` two thirds of
-      the admitted gap was 4 lines of set comparison. Remaining candidates with >1
-      except and not yet read: `check-links`, `check-primary-event`, `channel-mix`,
-      `audit-due`, `checks-due`, `check-root-readme`, `check-example-input`.
+- [ ] **Adversarial-check-testing thread (open, 4-for-5 scripts have found real bugs:
+      c2108, c2109, c2112, c2113's `check-root-readme`; c2113's `check-links` came up
+      clean) -- next idle slot, QUALITY or BUILD.** The pick rule still holds (a script
+      not yet read, prefer >1 branch for structurally different inputs; now read:
+      `check-doc-size`, `check-git-push`, `check-charges`, `check-row-floor`,
+      `check-readme-live-row`, `check-links`, `check-root-readme`). The grep-for-admitted
+      gaps entry point (`grep -n "does NOT\|not a substitute\|only that\|cannot see"
+      bin/check-*`) didn't turn up a real hit on the candidates grepped this cycle
+      (`check-links`/`check-primary-event`/`channel-mix`/`audit-due`/`checks-due`/
+      `check-root-readme`/`check-example-input` -- only `audit-due` had hits, and they
+      read as reasoning prose, not admitted gaps) -- `check-root-readme`'s 2 bugs were
+      found by reading the code cold, not via that grep. **New cheap entry point from
+      this cycle's finding: grep for any OTHER checker that filters/classifies text via
+      a regex meant to anchor on a specific written convention (backticks, a prefix, a
+      literal marker) but doesn't actually require that anchor** -- same silent-coverage-
+      loss shape as `HANDLE_RE`. Remaining candidates with >1 branch, not yet read:
+      `check-primary-event`, `channel-mix`, `audit-due`, `checks-due`,
+      `check-example-input`.
 
 - [ ] **Expected doc trim ~c2133 (not due now, do not pull forward).** `check-doc-size`
       next looks at c2133 and `state/STATUS.md` / `tasks/queue.md` each have ~21 cycles

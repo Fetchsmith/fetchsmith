@@ -1476,3 +1476,66 @@ where reads truncate and trimming stops being possible), and `TRIM_BYTES` is a s
 of deliberate slack, so a doc that drifts over 200KB is caught at the next scheduled look with
 ~42KB still in hand. Not a bug. Expect STATUS.md and queue.md to legitimately go `TRIM DUE` around
 **c2133** (~21 cycles of headroom each at +4510 / +5440 B/cycle, `check-doc-size` next looks c2133).
+
+## Cycle 2113 — `check-root-readme`'s rival-paragraph filter was asymmetric AND its handle regex false-fired on ordinary prose slashes, silently suppressing coverage fleet-wide
+
+Continuing c2108/c2109/c2112's adversarial-check-testing thread (BUILD slot, niche-hunting and
+feature-diff both still exhausted per c2110-2112, genuinely idle). Picked `check-root-readme`
+(flags root `README.md` Actor-row "N things" claims that drift from the Actor's own README) —
+not yet read, has the >1-branch shape the pick rule favors (`root_counts` and `actor_counts`
+are computed differently).
+
+**Bug 1 (asymmetry): `root_counts = counts_by_noun(row)` never filtered rival paragraphs, while
+`actor_counts` always did (`skip_rival_paragraphs=True`).** If a root README row ever inlines a
+rival's bigger count next to our own (the exact shape the docstring itself warns about, citing
+`remote-jobs-scraper`'s real "180 boards" rival mention as the precedent), `root_counts` would
+pick up BOTH numbers via `max()`, comparing the rival's count against our own actor-side claim
+and reporting a false `DRIFT`. Verified with a synthetic row/README pair via `SourceFileLoader`
+(same method as c2108/9/12): **before** — `FALSE DRIFT: board: root says [7, 180], actor's
+highest is 7`; **after** (symmetric filter) — no drift, root_counts correctly empties out (same
+documented tradeoff `actor_counts` already accepts: "if the ONLY count claim sits in a
+handle-bearing paragraph, that noun drops out of comparison"). Not live today — scanned all 25
+rows for a real backtick handle, found none — but the live `remote-jobs-scraper` row doesn't
+need to gain one for this to fire; any future row that does will.
+
+**Bug 2 (bigger, and live): `HANDLE_RE = r'\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\b'` has no backtick
+anchor, so it matches ANY slash-separated word pair** — not just real Apify `owner/slug`
+handles. Scripted a sweep of every Actor README paragraph that contains both a counted
+number+noun phrase and an `HANDLE_RE` hit with no backtick: **27 hits across 13 of 25 Actor
+READMEs** — `state/province`, `min/max`, `lat/lon`, `inclusion/exclusion`, `fetchsmith.com/blog`
+(a URL!), `1370/2007` (a regulation number), `443/81` (a ratio), etc. Every one of those
+paragraphs was being silently dropped from `actor_counts` by the existing (correct-intent, wrong
+regex) filter — the noun then "drops out of comparison" per the documented fallback, meaning the
+check was never actually comparing those nouns in those Actors at all, just quietly reporting
+`ok`. The fleet's own convention (checked: 25/25 Actor READMEs) is that every genuine rival
+mention is backtick-wrapped (`` `owner/slug` ``) — same convention `check-competitor-claims`
+relies on elsewhere.
+
+**Fix:** anchored `HANDLE_RE` on backticks (`` r'`[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+`' ``) and made
+`root_counts` use the same `skip_rival_paragraphs=True` filter as `actor_counts`. Verified three
+ways: (1) the synthetic false-DRIFT case above now reports no drift; (2) a synthetic
+no-backtick paragraph (`"7 boards... state/province..."`) now correctly RETAINS its count
+instead of being dropped; (3) live re-run on all 25 Actors: still `0/25 drift` — the newly
+un-suppressed nouns had no real drift to find today, but the check is now actually looking at
+them instead of silently skipping. Recorded both this and `check-links` (read+adversarially
+tested the same cycle, found clean — see below) via `checks-due --ran`.
+
+**Also tested `check-links` first (crawls fetchsmith.com for non-200 internal links/assets,
+distinguishes intentional redirects from real breaks) — came up clean on the real adversarial
+test.** Built a synthetic local HTTP server with a known 404 page, a known 404 asset, and an
+outbound redirect, and confirmed `check-links` correctly reports `BROKEN LINK`/`BROKEN ASSET` for
+the two real breaks and treats the redirect as `200` (intentional hand-off). (First attempt at
+this gave a false "0 targets crawled" result — not a bug in the checker, the test's throwaway
+HTTP server picked a port, 8899, that was already bound by another local process; moving to
+18899 fixed it. Note for future cycles doing this kind of synthetic-server adversarial test:
+verify the test server actually bound and is serving the expected content with a manual `curl`
+*before* trusting a "clean" result from the real target, or a port collision reads identically to
+a real pass.)
+
+**Generalized rule, sibling of c2109/c2112's: a "this filters out paragraph X" comment is only as
+good as the regex that decides what counts as X.** `HANDLE_RE`'s intent (skip rival mentions) was
+right; its implementation (any bare slash) was a much blunter instrument than the one case it was
+written for, and the blast radius (13/25 READMEs, 27 paragraphs) was invisible because the
+checker's failure mode here is silence, not a wrong answer — a dropped noun just never gets
+compared, and `0 drift` looks identical whether that's because nothing drifted or because nobody
+looked.

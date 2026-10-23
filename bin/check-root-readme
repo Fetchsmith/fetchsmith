@@ -35,8 +35,12 @@ import sys
 
 NOUNS = r"boards?|feeds?|modes?|datasets?|indices|sites?|sources?|types?|endpoints?|offices?"
 
-# An Apify Actor handle, "owner/slug" — the marker that a paragraph is about a rival.
-HANDLE_RE = re.compile(r'\b[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\b')
+# An Apify Actor handle, `owner/slug` — the marker that a paragraph is about a rival.
+# Anchored on backticks (the fleet-wide convention every real rival mention uses,
+# cycle 2113: 25/25 Actor READMEs) because the bare word/word form matches constantly
+# in ordinary prose (URLs, ratios, date ranges, "yes/no"-shaped pairs) and was silently
+# dropping the own-claim paragraph it was supposed to leave alone.
+HANDLE_RE = re.compile(r'`[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+`')
 
 NUM_WORDS = {
     'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7,
@@ -87,7 +91,12 @@ def main(argv):
         except FileNotFoundError:
             continue
         checked += 1
-        root_counts = counts_by_noun(row)
+        # Same rival-paragraph filter on both sides (cycle 2113): a root README row is
+        # one line, so this only drops the row's counts entirely when it inlines a
+        # rival's backtick handle next to its own number — the one shape that produced
+        # a real false DRIFT in adversarial testing (root picks up the rival's bigger
+        # count, actor_counts never saw it, mismatch).
+        root_counts = counts_by_noun(row, skip_rival_paragraphs=True)
         actor_counts = counts_by_noun(actor_readme, skip_rival_paragraphs=True)
         problems = []
         for noun, nums in root_counts.items():

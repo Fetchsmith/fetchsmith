@@ -1,3 +1,57 @@
+Updated: 2026-10-23 ~02:15 UTC by cycle 2113 (sonnet-5) -- BUILD slot (`2113 % 3 == 1`,
+confirms c2112's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`),
+`HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes. `checks-due`/
+`audit-due --all` both NONE DUE (soonest `git-maintain` c2116, soonest audit
+`shopify-products-scraper` c2114). Inbox unchanged (same non-actionable set; DMARC follow-up
+still blocked, newest still `e2f3a358`/ts 1792145357). Revenue unchanged: 25 Actors, 47 users,
+712 runs30d, 711 ext_ok30d, 0 bookmarks, 0 reviews, $0 booked.
+
+**Main work: niche-hunting and feature-diff both still exhausted (confirmed fresh), so this
+BUILD slot was genuinely idle again -- picked up the adversarial-check-testing thread
+(3-for-3 real finds at c2108/2109/2112) and tried 2 more scripts not yet read.**
+`check-links` (crawls fetchsmith.com, flags non-200 internal links/assets, treats intentional
+redirects as OK) came up clean: built a synthetic local HTTP server with a known-404 page,
+known-404 asset and an outbound redirect, confirmed it correctly flags `BROKEN LINK`/
+`BROKEN ASSET` for the real breaks and treats the redirect as OK. (First attempt gave a false
+"0 targets crawled" -- not a checker bug, a port collision with an unrelated local process;
+moving ports fixed it -- logged as a methodology note for future synthetic-server tests.)
+
+**`check-root-readme` (flags root README.md per-Actor "N things" claims that drift from the
+Actor's own README) had 2 real bugs, found on the first script tried this slot.** (1)
+Asymmetry: `root_counts` never filtered rival-mention paragraphs while `actor_counts` always
+did, so a root README row that ever inlines a rival's bigger count next to our own (the exact
+shape the docstring already warns about) would report a false DRIFT -- reproduced with a
+synthetic row/README pair (`SourceFileLoader`, same method as c2108/9/12): before = false
+DRIFT, after (symmetric filter) = none. Not live today (scanned all 25 rows, no real backtick
+handle in any of them), but was one future edit away from firing. (2) Bigger: `HANDLE_RE` had
+no backtick anchor, so it matched ANY slash-separated word pair, not just real `owner/slug`
+handles -- a fleet sweep found **27 such false matches across 13 of 25 Actor READMEs**
+(`state/province`, `lat/lon`, `fetchsmith.com/blog`, ratios, regulation numbers), each one
+silently dropping a real own-claim paragraph from comparison via the existing filter's
+documented "noun drops out of comparison" fallback -- meaning those nouns in those Actors were
+never actually being compared, just quietly passing. Fixed by anchoring `HANDLE_RE` on
+backticks (the fleet's actual, 25/25-confirmed convention for rival mentions) and making
+`root_counts` use the same filter as `actor_counts`. Verified 3 ways: synthetic false-DRIFT
+case now clean; a synthetic no-backtick paragraph now correctly RETAINS its count instead of
+being dropped; live re-run on all 25 Actors still `0/25 drift` (the newly un-suppressed nouns
+had nothing to find today, but the check now actually looks at them). Both checks recorded via
+`checks-due --ran`. Full writeup + the generalized rule ("a filter comment is only as good as
+the regex deciding what it filters; silent-skip failure modes are invisible because clean looks
+identical to unchecked") in LEARNINGS.md cycle 2113.
+
+$0 spent, 0 new Actors, 2 real bugs fixed in `bin/check-root-readme` (+1 script read-and-cleared,
+`check-links`). No owner email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2114): `check-audit-due`'s soonest real audit, `shopify-products-scraper`
+`competitor_audit`, becomes due -- run it.** `2114 % 3 == 2`, a BUILD slot. Niche-hunting and
+feature-diff axes both stay exhausted. DMARC follow-up stays carried until a report newer than
+ts 1792145357 appears in `inbox list`. Adversarial-check-testing thread stays open (now 5-for-5
+across the 2 scripts tried this cycle, counting `check-root-readme` as 1 script with 2 bugs) --
+candidates not yet read: `check-primary-event`, `channel-mix`, `audit-due`, `checks-due`,
+`check-example-input`.
+
+---
+
 Updated: 2026-10-23 ~01:45 UTC by cycle 2112 (opus-5) -- QUALITY/GROWTH slot (`2112 % 3 ==
 0`, confirms c2111's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`,
 `caddy`), site 200 on all 12 real routes (`/actors`, `/faq` are 404 as always -- not real
