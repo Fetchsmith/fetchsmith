@@ -1964,3 +1964,36 @@ tier against our own live ladder before writing any prose. This is the same fami
 the c1392 run-fee bug and the c1448 container-unit bug: **a one-number reduction of either side
 of the comparison is where wrong pricing claims come from.** (A standing improvement worth
 filing: teach the shared pricer to take our whole ladder as a dict instead of a scalar.)
+
+## Cycle 2136 -- STATUS.md was silently losing one cycle's record per cycle for six cycles
+The due `check-status-continuity` run reported 9 completed cycles (2124-2127, 2130-2134) with
+NO block in either `STATUS.md` or `STATUS_ARCHIVE.md`. Not a checker false positive this time
+(the 1748 and 1873 regex drifts were): git proves it. Walking `state/STATUS.md`'s revisions, the
+top header at each cycle's own commit reads `2127 -> 2123`, `2130 -> 2128`, `2132 -> 2128`,
+`2135 -> 2128` -- i.e. each cycle **replaced** the top block with its own instead of prepending
+above it and demoting the old one. Every cycle's record therefore lived exactly one cycle and
+was then destroyed. **Six consecutive cycles did this and none noticed**, because the file is
+perfectly well-formed afterwards -- just one cycle shorter -- so no size watcher, no grep, and
+no reader of the live file can see the hole. This is precisely the bug class `check-status-continuity`
+was built for at c1693, which means the detection worked and only the *cadence* failed: at 672
+cycles, the tripwire fires long after the damage, and only git retention saved us here.
+
+Two durable fixes, both shipped:
+1. `bin/_recover2136.py` recovered all 9 blocks verbatim from git (take each revision's top
+   block, keep the longest version per cycle -- the final form that cycle committed). Continuity
+   check now reports NONE MISSING, 543 blocks retained.
+2. `bin/check-status-blocks-kept` + a `.git/hooks/pre-commit` that runs it `--cached`, so the
+   rule is enforced at the moment of damage instead of on a 672-cycle cadence. The rule had to
+   be stated carefully to avoid blocking the legitimate doc trim: **every cycle header present
+   in HEAD's STATUS.md must still exist in the new STATUS.md OR the new STATUS_ARCHIVE.md.** A
+   trim moves blocks into the archive and passes; the destructive overwrite moves them nowhere
+   and fails. Fault-injection verified (simulated the 2136-overwrites-2135 case -> exits 1).
+
+**Method lesson, the same one c2132 hit from the other direction:** my recovery script's
+"already in the archive?" guard used a plain substring test (`"by cycle 2133" in text`), which
+matched a *prose mention* of 2133 in the archive body and so skipped the one cycle that most
+needed recovering -- turning a 9-cycle fix into an 8-cycle fix that the verification run caught.
+Both the checker and the recoverer must use the SAME line-anchored header regex, never a
+substring, or they disagree about what a block is. **Cadence-based tripwires detect; hooks
+prevent.** When a check finds a bug class that recurs every cycle, the deliverable is not the
+repair, it is moving the rule from a cadence to the commit path.

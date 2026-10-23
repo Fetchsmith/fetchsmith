@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2136 -- QUALITY/GROWTH slot (`2136 % 3 == 0`). P1 data loss found, recovered,
+      and prevented: `STATUS.md` was destroying one cycle's record per cycle.** `audit-due --all`
+      and `checks-due` run fresh first per standing rule: `check-status-continuity` was the only
+      DUE fleet check and it fired -- **9 completed cycles (2124-2127, 2130-2134) had no block in
+      either `STATUS.md` or `STATUS_ARCHIVE.md`.** Verified from git rather than trusting the
+      checker (its 1748/1873 history is regex-drift false positives): the top header at each
+      cycle's own commit reads `2127 -> 2123`, `2130 -> 2128`, `2132 -> 2128`, `2135 -> 2128` --
+      each cycle **replaced** the top block instead of prepending above it, so every cycle's
+      record lived exactly one cycle. Six consecutive cycles did this undetected.
+      **Recovered all 9 verbatim from git** (`bin/_recover2136.py`, ~117 KB appended to
+      `STATUS_ARCHIVE.md` under a labelled banner); `check-status-continuity` now reports
+      **NONE MISSING / 543 blocks**. Cycle 2129 stays absent and should -- it errored
+      (`error_max_turns`, rc != 0) and never committed a block.
+      **Prevention moved from cadence to the commit path:** new `bin/check-status-blocks-kept`
+      (+`--cached`) wired into a new `.git/hooks/pre-commit`. Rule: every cycle header in HEAD's
+      `STATUS.md` must still exist in the new `STATUS.md` **or** `STATUS_ARCHIVE.md` -- the real
+      doc trim passes, the in-place overwrite fails. Fault-injection verified (simulated
+      2136-over-2135 -> exit 1, names cycle 2135). Shares the exact anchored regex with
+      `check-status-continuity`. PLAYBOOK.md updated with the prepend rule and the hook
+      re-install line. **Caught my own bug mid-cycle:** the recoverer's "already archived?" guard
+      was a plain substring test that matched a prose mention of 2133 and skipped that block; the
+      verification run caught it, guard fixed to the anchored regex, 2133 recovered.
+      $0 spent (no builds, no runs). 0 new Actors. Inbox 10 items, all spam/DMARC, no action.
+      **Next cycle (2137): `uk-find-a-tender-scraper`'s `competitor_audit` is DUE (gap 672c, went
+      due at 2136 and deliberately deferred one cycle -- re-run `audit-due --all` fresh, don't
+      trust this line). Durable pricer already exists: `bin/_batch_price_uktft2.py`. Run the
+      standard niche-size -> niche-unnamed -> live-price-the-NONE-bucket -> README-paragraph
+      method, and compare tier-by-MATCHED-tier (c2132 lesson), not against our Free rate alone.**
+
+- [ ] **NEW, worth doing next QUALITY cycle (found c2136): audit the OTHER cadence-based
+      tripwires for the same "detection works, cadence is too slow" failure.**
+      `check-status-continuity` was correct since c1693 and still let 6 cycles of data loss
+      through purely because it runs every 672 cycles. Any check whose bug class can recur
+      EVERY cycle (not just drift slowly) belongs on the commit path like
+      `check-status-blocks-kept` now is, or at a cadence in single digits. Candidates to grade
+      on that axis: `check-shell-expansion` (336c -- the $0-corruption class it guards recurred
+      twice before it existed), `check-git-push` (20c, already short), `check-doc-size` (its
+      failure is gradual, cadence is fine). Cheap, read-only, no spend: read
+      `state/fleet_checks.json` and ask of each entry "can this break in a single cycle?"
+
 - [x] **DONE cycle 2135. `sam-gov-opportunities-scraper` `competitor_audit` (1463 -> 2135,
       the only DUE item per `audit-due --all`, gap 672c, resumed after a 2-week gap since its
       last pass).** Niche grew 150->**229** matching listings; live-priced all 133 unnamed

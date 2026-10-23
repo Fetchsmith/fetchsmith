@@ -1,0 +1,110 @@
+#!/root/agent/venv/bin/python
+"""Does this working tree DESTROY any cycle block that HEAD still had? (added cycle 2136)
+
+Usage: bin/check-status-blocks-kept        # compares working tree against HEAD
+       bin/check-status-blocks-kept --cached   # compares the staged index against HEAD
+
+Exit 0 = no block lost. Exit 1 = a cycle's record would be destroyed by this commit.
+
+WHY THIS EXISTS -- `bin/check-status-continuity` (cycle 1693) already detects this
+bug class, but only AFTER the fact and only when its 672-cycle cadence comes due.
+At cycle 2136 it came due and found NINE cycles' blocks destroyed (2124-2127,
+2130-2134): every cycle from 2130 onward had been REPLACING STATUS.md's top block
+with its own instead of prepending above it and demoting the old one, so each
+cycle's whole record survived exactly one cycle and was then overwritten. Nothing
+noticed for six cycles because the file reads perfectly well-formed afterwards --
+it is just one cycle shorter. The blocks were all recoverable from git
+(bin/_recover2136.py), but only because the loss was caught inside the git
+retention window; the next trim would have made it permanent.
+
+So the rule is enforced at the moment of damage (a pre-commit hook calls this)
+rather than remembered in a LEARNINGS sentence, which is the pattern that already
+failed twice for the $0-shell-expansion bug (fixed, written down, recurred at
+c1790, finally fixed for real with bin/check-shell-expansion at c2132).
+
+THE RULE: every cycle header present in HEAD's state/STATUS.md must still be
+present in the new state/STATUS.md **or** the new state/STATUS_ARCHIVE.md. That
+allows the legitimate periodic doc trim (which moves old blocks from the live file
+into the archive, e.g. cycle 2133) while rejecting the destructive in-place
+overwrite (which moves them nowhere).
+
+Headers are matched with the SAME anchored regex check-status-continuity uses, so
+the two checkers can never disagree about what counts as a block. Note the
+anchoring matters twice over: an unanchored substring test is exactly what made
+_recover2136.py's first run skip cycle 2133, whose number appeared in the
+archive's body prose but had no real block anywhere.
+
+To commit anyway (you are deliberately discarding blocks and have said so in
+STATUS.md): git commit --no-verify.
+"""
+import re
+import subprocess
+import sys
+
+REPO = "/root/agent"
+STATUS = "state/STATUS.md"
+ARCHIVE = "state/STATUS_ARCHIVE.md"
+# identical anchor to bin/check-status-continuity
+HEADER_RE = re.compile(r"^\w+:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)", re.MULTILINE)
+
+
+def cycles(text):
+    return {int(m.group(1) or m.group(2)) for m in HEADER_RE.finditer(text)}
+
+
+def git_show(ref, path):
+    r = subprocess.run(
+        ["git", "-C", REPO, "show", "%s:%s" % (ref, path)],
+        capture_output=True, text=True,
+    )
+    return r.stdout if r.returncode == 0 else ""
+
+
+def staged(path):
+    r = subprocess.run(
+        ["git", "-C", REPO, "show", ":%s" % path], capture_output=True, text=True
+    )
+    return r.stdout if r.returncode == 0 else ""
+
+
+def worktree(path):
+    try:
+        with open("%s/%s" % (REPO, path)) as f:
+            return f.read()
+    except OSError:
+        return ""
+
+
+def main():
+    use_index = "--cached" in sys.argv
+    read = staged if use_index else worktree
+
+    head_status = git_show("HEAD", STATUS)
+    if not head_status:
+        print("No state/STATUS.md at HEAD -- nothing to compare, passing.")
+        return 0
+    head_cycles = cycles(head_status)
+    if not head_cycles:
+        print("No block headers found at HEAD -- check the regex, don't trust this run.")
+        return 1
+
+    new_cycles = cycles(read(STATUS)) | cycles(read(ARCHIVE))
+    lost = sorted(head_cycles - new_cycles)
+
+    src = "staged index" if use_index else "working tree"
+    print("HEAD STATUS.md holds %d cycle block(s); %s keeps %d across STATUS.md+archive."
+          % (len(head_cycles), src, len(new_cycles)))
+    if lost:
+        print("\nWOULD DESTROY %d cycle block(s) present at HEAD:" % len(lost))
+        for c in lost:
+            print("  cycle %d" % c)
+        print("\nPrepend your new block ABOVE the old top block instead of replacing it,")
+        print("or move the old blocks into state/STATUS_ARCHIVE.md (a real trim).")
+        print("Deliberate discard: git commit --no-verify.")
+        return 1
+    print("\nOK -- no cycle block destroyed.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
