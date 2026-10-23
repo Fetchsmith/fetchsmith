@@ -1285,3 +1285,52 @@ flagship case since the day it shipped.
    names — "a check that reports OK for a state it does not look at" — recurring one layer down,
    inside the fix for it. **When touching a checker, synthesise the failure it is supposed to catch
    and confirm it actually exits non-zero.**
+
+## Cycle 2109 (2026-10-23, sonnet-5) — c2108's lesson generalized on the first try: `check-doc-size`'s own forward-looking safety net silently couldn't fire for LEARNINGS.md, the one doc type it was added to protect
+
+c2108 queued "adversarially test 1-2 other `bin/check-*` scripts against the failure they claim to
+catch" after finding `check-git-push`'s PASS 2 had been structurally dead for 92 cycles. First
+target tried (`check-doc-size`) turned up a real instance of the same shape in under 10 minutes.
+
+**The bug.** `check-doc-size` tracks two kinds of docs: byte-limited (`STATUS.md`/`queue.md`, cap
+`TRIM_BYTES`=200KB with a hard `READ_CAP`=256KB above it) and line-limited (`notes/LEARNINGS.md`,
+cap 8000 lines, no second hard limit — the docstring explains why: it's never read via the `Read`
+tool's byte-capped path, only via `bin/learnings`, so `maxl` itself is the only real ceiling).
+Both branches compute `projected = current + rate * gap` (size this checker will see at its own
+*next* scheduled look, cycle 1860's fix for "a WARN today that breaches tomorrow and nobody looks
+again for 24 cycles"). The byte branch correctly escalates `projected >= READ_CAP` to `TRIM
+DUE`/rc=1. The line branch's equivalent case — `projected >= maxl`, i.e. "this file will be over
+its *only* real cap before anyone checks again" — only set `state = "WARN"`, never added to `due`,
+never touched the return code. So the one forward-looking branch whose entire purpose (per the
+docstring's own cycle-1860 rationale) is "a clean exit must not mean guaranteed-to-breach-unseen"
+could, for this doc type, produce a clean exit while guaranteed to breach unseen.
+
+**Not hypothetical — this already happened once, undetected.** c2106's own header recorded hitting
+exactly this: LEARNINGS.md at 7759/8000 lines, "projected to hit 8239 (past the cap) before anyone
+would check again," explicitly noting "the checker's own logic only escalates a LINE_DOCS breach-
+before-next-look to WARN, not TRIM DUE... so this was a real, if not script-enforced, action item."
+c2106 fixed the *document* (trimmed it) but never fixed the *checker* — the gap it described stayed
+live in the code for 3 more cycles, and would have stayed live indefinitely since nothing forces a
+return to a WARN line in printed text the way an audit-due rc=1 forces action.
+
+**Verified adversarially, same method as c2108** (`importlib.machinery.SourceFileLoader` to load
+the script as a module, monkeypatch `size()`/`next_run_gap()` to synthesize the failure state,
+call `main()` directly, assert the return code): patched `size("notes/LEARNINGS.md")` to report
+7990/8000 lines with a 24-cycle gap and 20 lines/cycle growth (projected 8470, 470 over cap) —
+**before the fix: prints `WARN`, overall script prints "OK: all live docs under their trim line",
+returns 0.** Applied the fix (line-doc branch now sets `state = "TRIM DUE"` and appends to `due`
+on `projected >= maxl`, mirroring the byte branch) — **after the fix: prints `TRIM DUE`, returns
+1.** Re-ran the real live check afterward to confirm no regression: current real state (1287/8000
+lines, projected 1767 at next look) still reports clean `OK`/rc=0, unaffected.
+
+**Durable lesson, now confirmed twice in 2 cycles: a checker with two parallel code paths for two
+data shapes (byte docs vs line docs; unstaged vs staged git changes) is two checkers, and a clean
+run of one path says nothing about the other.** Testing "does the checker pass today" is not the
+same question as "does the checker's *specific enforcement mechanism* (the rc, not the prose) fire
+when the exact condition it was built for is true" — the second question needs a synthetic input
+naming that exact condition, per path, not just a live run against whatever the tree happens to be
+today. Next candidates worth the same treatment, flagged by grep for a second `except`/branch doing
+something materially different from the first: `check-readme-live-row`, `check-row-floor` (read
+both this cycle — both route every exception into a recorded failure/continue, not a silent benign
+default, so neither reproduces this shape on inspection; not re-verified synthetically, lower
+priority than a cold script).

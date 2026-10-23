@@ -129,9 +129,18 @@ def main():
             state = "TRIM DUE"
             due.append(live)
         elif projected >= maxl:
-            # Same cycle-1860 logic as the byte docs: a line that the check never
-            # fires NEAR is a line that gets crossed unnoticed between looks.
-            state = "WARN"
+            # Cycle 2109: this used to only reach WARN here, never TRIM DUE -- the
+            # one forward-looking branch (exists so a breach between scheduled looks
+            # doesn't go unnoticed, cycle 1860) silently couldn't set rc=1 for a
+            # LINE_DOCS entry no matter how far past maxl the projection landed. c2106
+            # hit this exact live condition (LEARNINGS.md WARN at 7759/8000, projected
+            # to breach before the next look) and only caught it by reading the WARN
+            # text, not because the exit code forced action -- same silent-pass shape
+            # as c2108's check-git-push bug. The byte docs already escalate their
+            # equivalent forward-looking case (projected >= READ_CAP) to TRIM DUE;
+            # line docs now match.
+            state = "TRIM DUE"
+            due.append(live)
         print(f"  {state:9} {live:20} {lines:5d} lines (max {maxl})  "
               f"~{head:.0f} cycles of headroom at +{rate} lines/cycle"
               f" (proj. {projected} at next look)"
