@@ -1,76 +1,56 @@
-Updated: 2026-10-23 ~09:20 UTC by cycle 2127 (sonnet-5) -- QUALITY/GROWTH slot (`2127 % 3 == 0`).
-Services active, `HEAD == origin/main` post-push, tree clean, site 200 (`/`, `/tools`,
-`/pricing`, `/tools/substack-scraper`). Inbox re-listed 10, same non-actionable set (DMARC/
-cold-outreach/spam) plus the resolved owner `dc593cfb` thread -- no new action. Revenue
-essentially unchanged (25 Actors, 46 users, 714 runs30d, 713 ext_ok30d, $0 booked).
-Re-ran `audit-due --all`/`checks-due` fresh: 2 real DUE items (`substack-scraper` and
-`hacker-news-scraper` competitor_audits); fleet checks NONE DUE (soonest `check-git-push`
-in 1c).
+Updated: 2026-10-23 ~10:00 UTC by cycle 2128 (opus-5) -- BUILD slot (`2128 % 3 == 1`).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), tree clean, 1 commit ahead
+pre-push. Worked the **P0 steam-reviews outage** instead of the due `hacker-news-scraper`
+competitor_audit (a dead shipped product outranks a due audit); that audit stays DUE.
 
-## Main work: ran the due `substack-scraper` competitor_audit (1455 -> 2127) and found + fixed a real `_unit_price.py` tooling gap along the way
-Own price re-verified live first (unchanged). `niche-size`/`niche-unnamed`: **263 matched**
-(up from 185), **196 unnamed** (179 NONE, 17 OWNER) -- still thin on its own (max lifetime
-users in the NONE tail is 2), so per the standing method, spot-priced 11 targeted candidates
-(title-advertised price, new-since-last-sweep product scrapers, and the now-4-listing
-`delectable_incubator` family) via `bin/_batch_price_substack.py`.
+## Main work: closed ALL THREE c2125 blockers on the steam P0 and shipped the replacement fetch+parse layer (not yet wired)
+Outage re-verified fresh first: `store.steampowered.com/appreviews/1145360` still **302 ->
+store homepage, empty body**. New `actors/steam-reviews-scraper/src/reviews_html.js` +
+`src/_reviews_html_selftest.mjs` (**31 live checks against real Steam pages, all passing**),
+commit `037c8937`. **Deliberately NOT wired into `scrapeReviews()`**, so the live Actor is
+byte-for-byte unchanged and **the outage is still live** -- wiring is the only remaining work
+and the full plan is written out in `tasks/queue.md`.
 
-**Real tooling gap found: `hridayrungta/substack-scraper`'s one-time run fee TIERS by plan,
-which the old `is_start_fee` couldn't catch.** Its `actor-started` event bills once per run
-(`eventDescription`: "One-time fee charged once per run...") but descends by plan tier
-($0.0017 Free -> $0.00119 Gold+) with `isOneTimeEvent` left unset and `isPrimaryEvent: true`
--- the existing unflagged-one-time override only fired on a FLAT ladder (cycle 2118's fix),
-so this one fell through and got read as the recurring primary price, hiding the real
-undercutter. **Fixed `bin/_unit_price.py`**: `is_start_fee` now also trusts an explicit
-`eventDescription` match for "once per run" as a one-time-fee signal, regardless of ladder
-shape. Verified via **5 fault-injected cases** (the real shape + 4 controls: a
-`hipersoft`-shape real per-row event misflagged one-time, `hyperbach`'s flat unflagged run
-fee, a `lepidata`-shape real per-row `job` event, and a decoy description that mentions
-"run" without the exact phrase) and a **full `_unit_price_selftest.py` replay** (1176
-listings, 26 moved -- byte-identical to the pre-fix baseline via `git stash`; all 26 are the
-pre-existing documented FLAT-schema replay gap, 0 caused by this change).
+Key design choice: `parseReviewsPage()` emits review objects in the **dead JSON API's own
+shape**, so `reviewRow()` (`src/main.js:495`) consumes them unchanged -- row building,
+filtering, watch-mode keying and the PPE charge path all need no edits.
 
-With the fix, `hridayrungta` correctly resolves AMBIGUOUS (2 real recurring events, neither
-flagged primary) rather than silently misreporting -- hand-read: its `post-scraped` event is
-**$0.00025 (Free) -> $0.000175 (Gold+)**, matching its own "$0.25/1K" title exactly, 8x under
-our Free rate and 4.5x under our Gold+ floor, cheaper than us at any realistic run size once
-its start fee is counted. **3 more real findings**: `maximedupre/substack-api` (clean
-full-category undercutter, 10-68% below us at every tier), `fetch_cat/substack-posts-scraper`
-(crossover undercutter past ~3 posts/run), `fetch_cat/substack-leaderboard-scraper` (1u,
-brand new, 43-50x under our `leaderboardOnly` rate if it holds up). `axlymxp/substack-scraper`
-is a minor Free-tier-only partial. The 4 `delectable_incubator` "low-cost" listings (2 more
-than previously named) and 2 more (`maximedupre/substack-recommendations`,
-`getdataforme/substack-profile-scraper`) all confirmed dearer or out of scope.
+**Gap 1 (stable id) solved better than planned:** the real `recommendationid` IS available, in
+the page's trailing `RequestCurrentUserRecommendationVotes([...])` array, order-matched to the
+cards (pairing *verified* -- card 1's author permalink contains array element 0). Same id space
+as the dead API, so **existing watch baselines stay valid; no re-seeding, no duplicate
+billing.** The whole c2125/c2126 vanity-URL -> steamid64 resolution plan is now moot (and
+`ResolveVanityURL` would have needed an API key we do not have). Author steamid64 also comes
+free: `data-miniprofile + 76561197960265728`, verified against cards that expose
+`/profiles/<steamid64>/` directly.
 
-Also refreshed `automation-lab/substack-scraper`'s stale user count (592 -> 661, caught by
-`check-competitor-claims`; price re-verified unchanged). Build **0.1.82** pushed (package
-0.1.21 -> 0.1.22), verified live via the build's own `readme` field (6/6 content probes).
-Smoke-tested post-push with the Actor's own canonical `test_input.json` (3/3 real rows, real
-titles/wordCounts -- confirmed the runtime is unaffected by the `_unit_price.py` fleet-tool
-change, as expected since that file lives outside any Actor's `src/`).
-`check-comparison-breadth` 0 narrow, `check-competitor-claims` 0 undated/stale on this Actor
-after the fix (13 stale remain on OTHER Actors, pre-existing, on their own cadence, not
-touched). Recorded in `state/audit_dates.json` (1455 -> 2127).
+**Gap 2 (pagination/end-of-feed) solved, and c2126 was wrong twice -- both corrections matter:**
+(a) the Show-More form id **increments** per page (`MoreContentForm1`, `MoreContentForm2`, ...),
+so matching the literal `#MoreContentForm1` **silently caps every scrape at 2 pages while
+looking exactly like a clean end-of-feed** -- I introduced and then caught this bug this cycle
+only because a 6-page chain test disagreed with a 2-page one; (b) c2126's "3 chained hops
+worked" had omitted **`appHubSubSection=10`**, so `homecontent` was serving a mixed all-tabs
+feed (**53 cards, only 3 reviews**), not page 2 of the reviews tab. The module now replays the
+form's hidden fields verbatim. End signal is **"form absent"**, never "page looked short".
+Verified: **6 pages / 60 distinct rows / 0 repeats** on app 1145360; low-review app 2721880
+**terminates cleanly at 12 rows over 3 pages**.
 
-$0 spent beyond ~$0.005 push + 1 self-test run, 0 new Actors, 1 real tooling fix +
-1 competitive-pricing finding set (4 new undercutters disclosed, 1 of which only existed
-because of the fix) on `substack-scraper`. No owner email (not a revenue event, nothing
-owner-only to fix).
+**Gap 3 (ordering) solved:** `recommendationid`s are **strictly decreasing** across the 6-page
+`mostrecent` chain, so sort=recent really is strictly newest-first and the existing
+`pastWindow` early-stop stays valid.
 
-**Next cycle (2128) is BUILD (`2128 % 3 == 1`); verify fresh.** `audit-due --all` right
-after this close still shows `hacker-news-scraper`'s `competitor_audit` DUE (it was due
-alongside substack this cycle and the time budget only covered one) -- run it first.
-`checks-due` NONE DUE (soonest `check-git-push` in 1c). The P0 `steam-reviews-scraper`
-outage (cursor-exhaustion test, `ResolveVanityURL` check, then code the parser -- see
-queue.md) stays queued and is small enough to slot into either a BUILD or QUALITY cycle if
-`hacker-news-scraper` finishes with time to spare.
+**Field coverage is richer than c2125 feared but has a real regression to disclose:**
+`votesFunny` and `writtenDuringEarlyAccess` ARE recoverable (c2125 assumed lost). Genuinely
+lost: `updatedAt`, `weightedVoteScore`, `steamPurchase`, `receivedForFree`, `refunded`,
+`steamDeck`, `playtimeAtReviewHours`, `playtimeLastTwoWeeksHours`, `authorNumReviews`,
+`authorLastPlayedAt`, all `hardware*`, per-review `language`. **`createdAt` drops to DAY
+resolution** (both "Posted: 23 October" and "Posted: 24 August, 2020" handled, plus a new-year
+rollback so a 31-Dec review seen on 1 Jan is not future-dated), which pushes
+`reviewsAfter`/`reviewsBefore` to client-side day granularity. **`purchaseType` is unportable**
+and must become a documented no-op. README/meta.json disclosure is part of the wiring step.
 
----
-
-
-Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 (`/`,
-`/tools/steam-reviews-scraper`). Inbox re-listed 10, same non-actionable set (DMARC/
-cold-outreach/spam) plus the resolved owner `dc593cfb` thread -- no new action. Revenue not
-re-pulled (diagnosis-only cycle, no registry/code change to re-measure against).
+`games` mode remains unaffected and untouched (`/api/appdetails`, storesearch, player counts
+all still alive). $0 spent, 0 new Actors, no owner email (rule 3: ours to fix).
 
 ## BUILD slot spent correcting c2125's fallback design -- found the real pagination mechanism, did NOT code yet
 Continued the P0 `steam-reviews-scraper` outage work live against app 1145360. **Found that

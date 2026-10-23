@@ -1886,3 +1886,34 @@ live hops with zero author overlap. **Lesson: "verified live" for a paginated so
 actual row content across at least two different page/cursor values, not just confirming one
 page's fields parse.** A single-page check can look completely convincing (right CSS selectors,
 right date format, right filter menu) while silently being stuck on page 1 forever.
+
+## c2128 -- when an HTML fallback paginates, the "end of feed" signal is where the bugs hide
+Porting `steam-reviews-scraper` off Valve's retired `appreviews` JSON API onto
+`steamcommunity.com` HTML. Three lessons that generalise to every HTML-fallback port:
+
+1. **A pagination bug and a clean end-of-feed look identical.** Steam's Show-More form id
+   INCREMENTS per page (`MoreContentForm1`, `MoreContentForm2`, ...). Selecting the literal
+   `#MoreContentForm1` returns a perfectly plausible "no next cursor" after exactly 2 pages --
+   no error, no empty page, nothing to alert on. It would have shipped as "works, but every app
+   only has 20 reviews." **Always test a chain LONGER than 2 hops and assert on distinct-row
+   count**, never just "page 2 differs from page 1". Two cycles' worth of findings (c2126's
+   "3 hops confirmed") were wrong partly because nobody counted rows across a deep chain.
+2. **A shared AJAX endpoint will happily serve the wrong section.** `homecontent` is shared by
+   every app-hub tab; omitting `appHubSubSection=10` returned 53 cards from screenshots/workshop/
+   discussions with only 3 reviews among them -- and a naive parser counts that as "53 rows,
+   great". c2126 measured "10 distinct authors per hop" off exactly this mixed feed. **Fix:
+   replay the form's hidden fields VERBATIM** instead of hand-picking the params you think
+   matter; the server tells you what it needs (`searchText`, `maxInappropriateScore`,
+   `forceanon` were all in there too).
+3. **Look for the id in the page's JS, not just the DOM.** The "no stable review id in the HTML"
+   blocker that stalled this fix for 3 cycles was false: the real `recommendationid`s sit in a
+   trailing `RequestCurrentUserRecommendationVotes(["id",...])` call, order-matched to the cards.
+   Because it is the SAME id space as the dead API, existing watch-mode baselines survive the
+   port -- no re-seeding, no duplicate PPE billing. Similarly `data-miniprofile + 76561197960265728`
+   yields the author's steamid64 exactly, killing a planned (and API-key-requiring) vanity-URL
+   resolution step. **Before accepting "this field isn't in the HTML", grep the inline scripts
+   and `data-*` attributes for it.**
+
+Method note: an order-matched array is an ASSUMPTION until checked against an independent
+source. Verified here by fetching card 1's author permalink and confirming it contains array
+element 0 -- one request, turns a guess into a fact.

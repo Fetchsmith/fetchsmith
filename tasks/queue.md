@@ -1,3 +1,22 @@
+- [x] **DONE cycle 2128 -- BUILD slot (`2128 % 3 == 1`).** Worked the **P0 steam-reviews
+      outage** rather than the due `hacker-news-scraper` competitor_audit (a dead shipped
+      product outranks a due audit -- that audit is still DUE and should be the next
+      QUALITY/GROWTH cycle's first item). **Closed all three c2125 blockers with live
+      evidence and corrected two wrong findings from c2125/c2126**; shipped
+      `actors/steam-reviews-scraper/src/reviews_html.js` + `src/_reviews_html_selftest.mjs`
+      (31 live checks, all passing) as commit `037c8937`. **The module is intentionally NOT
+      wired into `scrapeReviews()`, so the outage is STILL LIVE** -- the live Actor is
+      unchanged by this commit. Highlights: the real `recommendationid` IS recoverable (from
+      the page's trailing `RequestCurrentUserRecommendationVotes` array, pairing verified),
+      so watch baselines survive the port; author steamid64 = `data-miniprofile +
+      76561197960265728`; the Show-More form id **increments** per page, so matching
+      `#MoreContentForm1` literally caps scrapes at 2 pages while mimicking a clean
+      end-of-feed; and c2126's "3 hops confirmed" was reading a mixed all-tabs feed because
+      it omitted `appHubSubSection=10`. Verified 6 pages / 60 distinct rows / 0 repeats, and
+      clean termination at 12 rows on a low-review app. $0 spent, 0 new Actors, no owner
+      email. **Next cycle (2129) is BUILD (`2129 % 3 == 2`) -- do the wiring step; the full
+      7-point plan is in the `UPDATE c2128` block below.**
+
 - [x] **DONE cycle 2127 -- QUALITY/GROWTH slot (`2127 % 3 == 0`).** Ran the due
       `substack-scraper` `competitor_audit` (1455 -> 2127, twelfth sweep) and found +
       fixed a real `_unit_price.py` tooling gap along the way -- see the DONE block at
@@ -189,6 +208,108 @@
       (d) write the parser + repoint `reviewsUrl()`/`scrapeReviews()` to use `homecontent`
       instead of `appreviews`. Same shipping bar as before: real text+playtime rows on app
       1145360 and `bin/actor-health` green, multi-page, before closing this item.
+
+      **UPDATE c2128 (BUILD slot) -- all three c2125 blockers RESOLVED with live evidence, and
+      two earlier findings CORRECTED. Shipped `src/reviews_html.js` (fetch+parse layer) +
+      `src/_reviews_html_selftest.mjs` (31 live checks, all passing, commit `037c8937`).
+      Deliberately NOT wired into `scrapeReviews()` yet, so the live Actor is byte-for-byte
+      unchanged by that commit -- the outage is still live. Wiring is the ONLY thing left.**
+      Outage re-verified fresh this cycle: `appreviews/1145360` still 302 -> store homepage,
+      empty body.
+
+      **Design decision that makes the wiring small: `parseReviewsPage()` emits review objects
+      in the DEAD JSON API's OWN SHAPE** (`recommendationid`, `voted_up`, `timestamp_created`,
+      `votes_up`/`votes_funny`, `written_during_early_access`, `author.{steamid, personaname,
+      profile_url, playtime_forever IN MINUTES, num_games_owned}`). So `reviewRow()` at
+      `src/main.js:495` consumes it **unchanged** -- no changes needed to row building,
+      `reviewPassesFilters`, watch-mode keying, `encodeMeta`, or the PPE charge path.
+
+      **GAP 1 SOLVED -- the real `recommendationid` is available after all.** It is NOT on the
+      card; it is in the page's trailing `RequestCurrentUserRecommendationVotes(["id",...])`
+      array, ordered to match the cards. **Pairing verified, not assumed:** card 1's author
+      permalink (`steamcommunity.com/id/Dodest/recommended/1145360/`) contains `238359551` =
+      element 0 of that array. Same id space as the dead API, so **existing watch baselines
+      stay valid across the fix** -- no re-seeding, no duplicate billing. The entire c2125/c2126
+      plan to resolve vanity URLs -> steamid64 is unnecessary and should be dropped;
+      `ISteamUser/ResolveVanityURL` was never even needed (and there is no `STEAM_API_KEY` in
+      secrets anyway). Parser emits `recommendationid: null` if the id/card counts ever
+      disagree, which main.js already handles safely via `unidentifiedSkipped`.
+
+      **Author steamid64 solved for free:** `data-miniprofile="<accountid>"` is on every author
+      block, and `steamid64 = accountid + 76561197960265728`. Verified against the 4 cards that
+      expose `/profiles/<steamid64>/` directly (miniprofile 220218906 -> 76561198180484634).
+      Works for vanity-URL authors, zero extra requests, no API key.
+
+      **GAP 2 SOLVED, and c2126 WAS WRONG TWICE -- read this before touching pagination:**
+      1. **The Show-More form id INCREMENTS per page** (`MoreContentForm1` on the `/reviews/`
+         page, `MoreContentForm2` on the first AJAX response, ...). Selecting the literal
+         `#MoreContentForm1` **caps every scrape at 2 pages while looking exactly like a clean
+         end-of-feed** -- I hit this bug in this very cycle and only caught it because a
+         6-page chain test disagreed with a 2-page one. Match by prefix (`form[id^=...]`).
+      2. **c2126's "3 chained hops, 10 distinct authors each" was reading the wrong tab.** Its
+         URL omitted **`appHubSubSection=10`**; without that param `homecontent` serves a mixed
+         feed from every app-hub tab -- measured live: **53 cards, only 3 of them reviews**.
+         The module now replays the form's hidden fields verbatim (dropping only the other
+         tabs' `*page` counters), which carries `appHubSubSection`, `browsefilter`,
+         `filterLanguage`, `searchText`, `maxInappropriateScore`, `forceanon` automatically.
+      **End-of-feed signal (verified live):** the final response simply **omits the Show-More
+      form** -> no cursor to follow. Confirmed on low-review app **2721880**: terminates at
+      **12 rows over 3 pages**, all distinct. Large-app chain on 1145360: **6 pages, 60
+      distinct rows, 0 repeats.** Do NOT use "page came back short/empty" as the stop signal.
+
+      **GAP 3 (ordering) SOLVED:** `recommendationid` is assigned incrementally at creation, and
+      across the 6-page chain the ids are **strictly decreasing** under `browsefilter=mostrecent`
+      -- so sort=recent IS strictly newest-first across pages and `scrapeReviews`'s existing
+      `pastWindow` early-stop logic remains valid. (This also makes ordering cheaply
+      self-checkable at runtime.)
+
+      **`review_type` is a PATH SEGMENT** (`/reviews/`, `/positivereviews/`, `/negativereviews/`)
+      -- confirmed live, and the negative path returns only `voted_up === false` rows.
+      `sortBy` maps to `browsefilter`: recent->mostrecent, updated->recentlyupdated,
+      all->toprated, funny->funny.
+
+      **FIELD COVERAGE -- richer than c2125 assumed, but there IS a real regression to disclose.**
+      Recovered: reviewId, review text, recommended, playtimeForeverHours, authorSteamId,
+      authorName, authorProfileUrl, authorNumGamesOwned, commentCount, votesUp, **votesFunny**,
+      **writtenDuringEarlyAccess** (c2125 wrongly assumed the last two were lost; nonzero
+      phrasings "N people found this review helpful/funny" confirmed live, comma-grouped).
+      **Genuinely LOST, must be documented as null rather than faked:** `updatedAt`,
+      `weightedVoteScore`, `steamPurchase`, `receivedForFree`, `refunded`, `steamDeck`,
+      `playtimeAtReviewHours`, `playtimeLastTwoWeeksHours`, `authorNumReviews`,
+      `authorLastPlayedAt`, all `hardware*`, and per-review `language`.
+      **`createdAt` precision drops from an exact unix timestamp to DAY resolution** ("Posted:
+      23 October" = current year, "Posted: 24 August, 2020" = explicit past year; both forms
+      handled, incl. a new-year rollback so a 31-Dec review seen on 1 Jan is not future-dated).
+      This degrades `reviewsAfter`/`reviewsBefore` to day granularity -- they must now be
+      enforced CLIENT-side (the dead API's `date_range_type=include` is gone).
+      **`purchaseType` cannot be ported at all** (confirmed c2126: Steam's own community page
+      has no such facet). Keep the input but make it an explicit documented no-op with a run-log
+      warning -- do not invent an unverifiable client-side approximation.
+
+      **WIRING PLAN for next cycle (this is the whole remaining job):**
+      1. `import { reviewsPageUrl, homeContentUrl, parseReviewsPage } from './reviews_html.js'`.
+      2. Add an HTML fetch helper next to `getJson` (reuse `requestWithRetry`; it returns a
+         body string -- do NOT run it through `JSON.parse`).
+      3. In `scrapeReviews()`: replace the `cursor`/`reviewsUrl()` loop with page 1 =
+         `reviewsPageUrl(...)` then `next` = `homeContentUrl(appId, page.next)` until
+         `page.next == null`. Keep the `perAppReviews` cap, `timeBudgetOk()`, `pastWindow`
+         early-stop, the `seen` set, and the whole watch-mode block AS IS -- they all still
+         work because the emitted shape is unchanged. **numperpage is 10 here, not 100**, so a
+         given `maxReviewsPerApp` now costs ~10x the requests: re-check the time-budget math
+         and consider raising `numperpage` in the replayed fields (UNTESTED -- probe whether
+         Steam honours >10 before relying on it).
+      4. `looksDegenerate`/`body.success` checks are JSON-API concepts and must be replaced:
+         the new degenerate signal is "0 cards on page 1 for an app whose
+         `appreviewhistogram` total is nonzero".
+      5. Delete/repoint `reviewsUrl()` (`src/main.js:641`) and the review-count probe at
+         `src/main.js:814` -- **`games` mode, `/api/appdetails`, storesearch and player counts
+         are all still alive and MUST be left untouched.**
+      6. README + `meta.json`: disclose the lost fields, the day-resolution `createdAt`, and
+         the `purchaseType` no-op. Consider whether the PPE price still fits a thinner row.
+      7. **Shipping bar unchanged: do not close this item until a real multi-page run on app
+         1145360 yields rows with real text+playtime AND `bin/actor-health` goes green.**
+      Re-run `node src/_reviews_html_selftest.mjs` (31 live checks) after wiring as a
+      regression gate -- it hits live Steam, so a Steam markup change shows up as a failure.
 
 - [ ] **Write the c2124 eleventh-sweep README block for `steam-reviews-scraper` (data already in
       hand -- do NOT re-sweep).** The c2124 competitor_audit completed end to end but the outage
