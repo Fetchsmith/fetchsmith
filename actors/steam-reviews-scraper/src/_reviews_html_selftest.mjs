@@ -14,6 +14,10 @@ ok(parsePostedDate('Posted: 23 October', now) === Date.UTC(2026, 9, 23) / 1000, 
 ok(parsePostedDate('Posted: 24 August, 2020', now) === Date.UTC(2020, 7, 24) / 1000, 'explicit past year');
 ok(parsePostedDate('Posted: 31 December', new Date('2027-01-01T12:00:00Z')) === Date.UTC(2026, 11, 31) / 1000, 'new-year rollback (no future-dating)');
 ok(parsePostedDate('garbage') === null, 'unparseable date -> null');
+// The homecontent AJAX response (every page after the first) renders the SAME dates
+// month-then-day instead of day-then-month — found live while testing page 2 of a chain.
+ok(parsePostedDate('Posted: October 22', now) === Date.UTC(2026, 9, 22) / 1000, 'AJAX-page month-then-day, year-omitted');
+ok(parsePostedDate('Posted: December 20, 2023', now) === Date.UTC(2023, 11, 20) / 1000, 'AJAX-page month-then-day, explicit past year');
 ok(reviewsPageUrl(1145360, { reviewType: 'positive', sortBy: 'recent', language: 'english' }).includes('/positivereviews/?browsefilter=mostrecent'), 'review_type is a path segment, sort maps to browsefilter');
 ok(reviewsPageUrl(1145360, { reviewType: 'negative', sortBy: 'all' }).includes('/negativereviews/?browsefilter=toprated'), 'negative + toprated mapping');
 
@@ -36,6 +40,9 @@ const h2 = await get(homeContentUrl(APP, p1.next));
 const p2 = parseReviewsPage(h2, APP);
 const ids1 = new Set(p1.reviews.map((r) => r.recommendationid));
 ok(p2.cardCount > 0 && p2.reviews.every((r) => !ids1.has(r.recommendationid)), `page2 is ${p2.cardCount} fully distinct rows (cursor paging works)`);
+// This is the check that would have caught the month-then-day AJAX date bug: page1's dates
+// parse fine on their own format, so only a page-2+ assertion exercises the other branch.
+ok(p2.reviews.every((r) => r.timestamp_created > 0), 'every page2 (AJAX) row has a parsed date too');
 ok(p2.next != null, 'page2 still exposes a next cursor (form id increments, matched by prefix)');
 ok(p2.next && p2.next.cursor !== p1.next.cursor, 'cursor advanced on page2');
 ok(p2.next && p2.next.fields.appHubSubSection === '10', 'replayed fields keep appHubSubSection=10 (reviews tab only)');

@@ -59,19 +59,25 @@ export const steamIdFromMiniprofile = (mini) => {
 };
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-// "Posted: 23 October" (current year, year omitted) or "Posted: 24 August, 2020" (past year).
-// Both forms verified live. Day resolution only — the dead API gave exact unix timestamps, so
-// this is a real precision loss that the README has to state rather than paper over.
+// Two DIFFERENT word orders exist and both must be handled: the initial /reviews/ or
+// /positivereviews/ page renders "Posted: 23 October" / "Posted: 24 August, 2020"
+// (day-then-month), but the "Show More" homecontent AJAX response — i.e. every page after
+// the first — renders the SAME dates as "Posted: October 22" / "Posted: December 20, 2023"
+// (month-then-day). Found live while testing page 2+ of a chain: the day-then-month-only
+// regex silently matched nothing past page 1, nulling timestamp_created for every row
+// beyond the first page (which also breaks the reviewsAfter/reviewsBefore early-stop, since
+// it compares against that field). Day resolution only either way — the dead API gave exact
+// unix timestamps, so this is a real precision loss that the README has to state.
 export function parsePostedDate(text, now = new Date()) {
-  const m = /Posted:\s*(\d{1,2})\s+([A-Za-z]+)(?:,\s*(\d{4}))?/.exec(text || '');
+  const m = /Posted:\s*(?:(\d{1,2})\s+([A-Za-z]+)|([A-Za-z]+)\s+(\d{1,2}))(?:,\s*(\d{4}))?/.exec(text || '');
   if (!m) return null;
-  const day = Number(m[1]);
-  const month = MONTHS.indexOf(m[2].toLowerCase());
+  const day = Number(m[1] ?? m[4]);
+  const month = MONTHS.indexOf((m[2] ?? m[3]).toLowerCase());
   if (month < 0 || !(day >= 1 && day <= 31)) return null;
-  let year = m[3] ? Number(m[3]) : now.getUTCFullYear();
+  let year = m[5] ? Number(m[5]) : now.getUTCFullYear();
   // Year-omitted means "this year", but a run on 1 Jan can legitimately see "31 December"
   // from days earlier; without this the row would be dated ~1 year into the future.
-  if (!m[3]) {
+  if (!m[5]) {
     const asThisYear = Date.UTC(year, month, day);
     if (asThisYear > now.getTime() + 86400000) year -= 1;
   }
