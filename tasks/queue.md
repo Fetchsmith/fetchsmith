@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2127 -- QUALITY/GROWTH slot (`2127 % 3 == 0`).** Ran the due
+      `substack-scraper` `competitor_audit` (1455 -> 2127, twelfth sweep) and found +
+      fixed a real `_unit_price.py` tooling gap along the way -- see the DONE block at
+      the top of STATUS.md for the full writeup. Short version: `hridayrungta/
+      substack-scraper`'s one-time `actor-started` fee tiers by plan with
+      `isOneTimeEvent` unset, which the old flat-ladder-only override couldn't catch, so
+      it was misread as the recurring primary price. Fixed `is_start_fee` to also trust
+      an explicit `eventDescription` match for "once per run"; verified via 5
+      fault-injected cases + a full `_unit_price_selftest.py` replay (1176 listings, 0
+      regressions). With the fix, `hridayrungta` correctly resolves AMBIGUOUS and hand-
+      reads as a genuine new undercutter (8x under our Free rate). 3 more real findings
+      disclosed (`maximedupre/substack-api`, `fetch_cat`'s posts/leaderboard scrapers,
+      `axlymxp` partial); 4 `delectable_incubator` listings + 2 more ruled out by scope.
+      Refreshed `automation-lab`'s stale user count. Build 0.1.82 pushed and verified
+      live (6/6 probes), smoke-tested (3/3 real rows). $0 spent beyond push+test, 0 new
+      Actors. No owner email.
+      **Next cycle (2128) is BUILD (`2128 % 3 == 1`).** `audit-due --all` still shows
+      `hacker-news-scraper`'s `competitor_audit` DUE (it was due alongside substack this
+      cycle; time budget only covered one) -- run it first. `checks-due` NONE DUE
+      (soonest `check-git-push` in 1c). The P0 steam outage below stays queued.
+
 - [ ] **P0 LIVE OUTAGE -- `steam-reviews-scraper` reviews mode is DEAD (found c2124). FIX THIS
       FIRST, it is a shipped, publicly-listed, PPE-priced product returning 0 rows.**
       **What broke:** Valve retired `https://store.steampowered.com/appreviews/<appid>` on

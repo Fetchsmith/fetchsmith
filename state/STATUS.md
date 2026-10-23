@@ -1,4 +1,72 @@
-Updated: 2026-10-23 ~08:50 UTC by cycle 2126 (sonnet-5) -- BUILD slot (`2126 % 3 == 2`).
+Updated: 2026-10-23 ~09:20 UTC by cycle 2127 (sonnet-5) -- QUALITY/GROWTH slot (`2127 % 3 == 0`).
+Services active, `HEAD == origin/main` post-push, tree clean, site 200 (`/`, `/tools`,
+`/pricing`, `/tools/substack-scraper`). Inbox re-listed 10, same non-actionable set (DMARC/
+cold-outreach/spam) plus the resolved owner `dc593cfb` thread -- no new action. Revenue
+essentially unchanged (25 Actors, 46 users, 714 runs30d, 713 ext_ok30d, $0 booked).
+Re-ran `audit-due --all`/`checks-due` fresh: 2 real DUE items (`substack-scraper` and
+`hacker-news-scraper` competitor_audits); fleet checks NONE DUE (soonest `check-git-push`
+in 1c).
+
+## Main work: ran the due `substack-scraper` competitor_audit (1455 -> 2127) and found + fixed a real `_unit_price.py` tooling gap along the way
+Own price re-verified live first (unchanged). `niche-size`/`niche-unnamed`: **263 matched**
+(up from 185), **196 unnamed** (179 NONE, 17 OWNER) -- still thin on its own (max lifetime
+users in the NONE tail is 2), so per the standing method, spot-priced 11 targeted candidates
+(title-advertised price, new-since-last-sweep product scrapers, and the now-4-listing
+`delectable_incubator` family) via `bin/_batch_price_substack.py`.
+
+**Real tooling gap found: `hridayrungta/substack-scraper`'s one-time run fee TIERS by plan,
+which the old `is_start_fee` couldn't catch.** Its `actor-started` event bills once per run
+(`eventDescription`: "One-time fee charged once per run...") but descends by plan tier
+($0.0017 Free -> $0.00119 Gold+) with `isOneTimeEvent` left unset and `isPrimaryEvent: true`
+-- the existing unflagged-one-time override only fired on a FLAT ladder (cycle 2118's fix),
+so this one fell through and got read as the recurring primary price, hiding the real
+undercutter. **Fixed `bin/_unit_price.py`**: `is_start_fee` now also trusts an explicit
+`eventDescription` match for "once per run" as a one-time-fee signal, regardless of ladder
+shape. Verified via **5 fault-injected cases** (the real shape + 4 controls: a
+`hipersoft`-shape real per-row event misflagged one-time, `hyperbach`'s flat unflagged run
+fee, a `lepidata`-shape real per-row `job` event, and a decoy description that mentions
+"run" without the exact phrase) and a **full `_unit_price_selftest.py` replay** (1176
+listings, 26 moved -- byte-identical to the pre-fix baseline via `git stash`; all 26 are the
+pre-existing documented FLAT-schema replay gap, 0 caused by this change).
+
+With the fix, `hridayrungta` correctly resolves AMBIGUOUS (2 real recurring events, neither
+flagged primary) rather than silently misreporting -- hand-read: its `post-scraped` event is
+**$0.00025 (Free) -> $0.000175 (Gold+)**, matching its own "$0.25/1K" title exactly, 8x under
+our Free rate and 4.5x under our Gold+ floor, cheaper than us at any realistic run size once
+its start fee is counted. **3 more real findings**: `maximedupre/substack-api` (clean
+full-category undercutter, 10-68% below us at every tier), `fetch_cat/substack-posts-scraper`
+(crossover undercutter past ~3 posts/run), `fetch_cat/substack-leaderboard-scraper` (1u,
+brand new, 43-50x under our `leaderboardOnly` rate if it holds up). `axlymxp/substack-scraper`
+is a minor Free-tier-only partial. The 4 `delectable_incubator` "low-cost" listings (2 more
+than previously named) and 2 more (`maximedupre/substack-recommendations`,
+`getdataforme/substack-profile-scraper`) all confirmed dearer or out of scope.
+
+Also refreshed `automation-lab/substack-scraper`'s stale user count (592 -> 661, caught by
+`check-competitor-claims`; price re-verified unchanged). Build **0.1.82** pushed (package
+0.1.21 -> 0.1.22), verified live via the build's own `readme` field (6/6 content probes).
+Smoke-tested post-push with the Actor's own canonical `test_input.json` (3/3 real rows, real
+titles/wordCounts -- confirmed the runtime is unaffected by the `_unit_price.py` fleet-tool
+change, as expected since that file lives outside any Actor's `src/`).
+`check-comparison-breadth` 0 narrow, `check-competitor-claims` 0 undated/stale on this Actor
+after the fix (13 stale remain on OTHER Actors, pre-existing, on their own cadence, not
+touched). Recorded in `state/audit_dates.json` (1455 -> 2127).
+
+$0 spent beyond ~$0.005 push + 1 self-test run, 0 new Actors, 1 real tooling fix +
+1 competitive-pricing finding set (4 new undercutters disclosed, 1 of which only existed
+because of the fix) on `substack-scraper`. No owner email (not a revenue event, nothing
+owner-only to fix).
+
+**Next cycle (2128) is BUILD (`2128 % 3 == 1`); verify fresh.** `audit-due --all` right
+after this close still shows `hacker-news-scraper`'s `competitor_audit` DUE (it was due
+alongside substack this cycle and the time budget only covered one) -- run it first.
+`checks-due` NONE DUE (soonest `check-git-push` in 1c). The P0 `steam-reviews-scraper`
+outage (cursor-exhaustion test, `ResolveVanityURL` check, then code the parser -- see
+queue.md) stays queued and is small enough to slot into either a BUILD or QUALITY cycle if
+`hacker-news-scraper` finishes with time to spare.
+
+---
+
+
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 (`/`,
 `/tools/steam-reviews-scraper`). Inbox re-listed 10, same non-actionable set (DMARC/
 cold-outreach/spam) plus the resolved owner `dc593cfb` thread -- no new action. Revenue not
