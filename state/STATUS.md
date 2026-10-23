@@ -1,5 +1,66 @@
-Updated: 2026-10-23 ~12:44 UTC by cycle 2134 (sonnet-5) -- grants-gov-scraper competitor_audit.
-Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main`.
+Updated: 2026-10-23 ~13:16 UTC by cycle 2135 (sonnet-5) -- sam-gov-opportunities-scraper competitor_audit.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## sam-gov-opportunities-scraper: competitor_audit (1463 -> 2135), 6 real new undercutters found and disclosed
+`bin/audit-due --all` first per standing rule: `sam-gov-opportunities-scraper` was the only DUE
+item (gap 672c, resumed after a 2-week gap since its last pass at 2026-10-09). `checks-due`
+showed NONE DUE, so no fleet check was re-run for its own sake. Own price re-read first from
+`meta.json`/live `pricingInfos`: flat $0.0015/row, one `result` event, no start fee, 0 drift.
+
+`niche-size` (15-term sweep) found real growth: 150 -> **229** matching listings (2,025 distinct
+listings seen). `niche-unnamed` showed 148 of those unnamed (133 NONE / 15 OWNER). Live-priced
+all 133 NONE via the existing durable pricer `bin/_batch_price_sgos2.py`, 0 unresolvable, 4
+AMBIGUOUS (no-primary-flag event lists) hand-read.
+
+**6 genuine new undercutters, none named in the README before:**
+- `j0401/sam-gov-contracts` is the standout: flat **$0.00005/notice tapering to $0.00003**
+  (GOLD+), no start fee -- 30x-50x under our rate at every tier, reading the same SAM.gov notice
+  index we do, no API key.
+- `tiger19935/sam-gov-usaspending-contracts` tiers **$0.001 -> $0.0007** on its opportunity-record
+  event, no start fee -- cheaper at every tier (its separate USAspending award-record event is a
+  different dataset, not compared).
+- `usefulapi/sam-gov-opportunities` bills flat $0.001/notice behind a $0.005 start fee off
+  "SAM.gov's own public daily file" (our exact backend) -- crossover ~row 11.
+- `owlabee/gov-opportunity-feed` (a Grants.gov+SAM.gov+USAspending combo, also named in
+  `grants-gov-scraper`'s README) bills its SAM.gov event at $0.001 + a $0.00005 start fee --
+  cheaper from row 1.
+- `badboxx_newlife/sam-gov-grants-gov-scraper` (also named in `grants-gov-scraper`'s README)
+  bills $0.0009 behind a $0.005 start fee -- crossover ~row 9.
+- `ayuki/samgov-contract-opportunities` has no pricing record ($0/row) but, like `bovi` already
+  named, requires the buyer's own free SAM.gov API key.
+
+**2 partial undercutters:** `tabulary/sam-gov-contract-notices` ties our rate on FREE but adds a
+$0.001 start fee there (dearer in practice), undercutting from BRONZE past row 7 / DIAMOND past
+row 3. `rowcraft/sam-gov-contract-opportunities-scraper` undercuts from GOLD+ ($0.0014 + $0.00005
+start) from row 1 at that tier.
+
+**Ruled out by scope** (same different-dataset distinction the README already draws for
+`tagadanar/usaspending-federal-awards`): `amygraphics/usaspending-awards-scraper` (USAspending
+awards, cheaper per-row but a different dataset) and `opendatalabs/grants-gov-monitor`
+(Grants.gov-only, matched the sweep only via the phrase "Assistance Listing" referring to a
+Grants.gov field, not SAM.gov's CFDA dataset -- cheaper per-row too, but out of scope). **4
+AMBIGUOUS listings hand-read, all dearer:** `factline/us-company-lookup-sec` (vestigial
+default-item beside a $0.01 primary), `signalscouter/us-federal-contracts-signals` ($0.002-
+$0.005 across all events), `kempt_horizon_yzk/samgov-opportunities` ($0.004/$0.01).
+
+Shipped a dated README paragraph plus `audit_dates.json` (1463 -> 2135, full note). **Caught and
+fixed a disclosure-wording bug before closing:** the first draft named `amygraphics` and
+`opendatalabs` as ruled-out-by-scope without stating they're cheaper, which fleet-wide
+`check-price-superiority` correctly flagged as 2 UNDISCLOSED hits (both are named and genuinely
+cheaper, even though out of scope); added "cheaper" wording to both sentences and re-ran clean.
+`apify push --force` -> **build 0.1.66 SUCCEEDED**, verified **byte-identical in the live build's
+`readme` field** (81251 == 81251 bytes, pulled from the Builds API). `actor-health --only
+sam-gov-opportunities-scraper`: **10/10 rows, ok: True**. Fleet-wide `check-price-superiority`:
+**2096 compared / 758 cheaper / 0 undisclosed anywhere** (up from 2069 at c2134). Also clean:
+`check-readme-samples` 0 drift (39 blocks/98 bullets/736 values), `check-comparison-breadth` 0
+narrow.
+
+$0 spent beyond two ~$0.005 Apify builds (the second to fix the disclosure wording) and
+read-only GETs otherwise. 0 new Actors. No owner email (routine audit, not a revenue event or
+owner-only blocker). Inbox unchanged (10 items, all previously triaged as non-actionable -- 2
+DMARC reports, 2 JP contact-form autoreplies, 2 SEO-listing spams, 1 CN API-gateway pitch, 1 IP-
+lease pitch, 1 "monthly rentals" pitch, and the owner's long-resolved `dc593cfb` thread). Revenue
+not re-polled this cycle (no new booking signal since last check).
 
 ## grants-gov-scraper: competitor_audit (1797 -> 2134), 11 real new rivals found and disclosed
 `bin/audit-due --all` first per standing rule: `grants-gov-scraper` was the only DUE item

@@ -1,3 +1,34 @@
+- [x] **DONE cycle 2135. `sam-gov-opportunities-scraper` `competitor_audit` (1463 -> 2135,
+      the only DUE item per `audit-due --all`, gap 672c, resumed after a 2-week gap since its
+      last pass).** Niche grew 150->**229** matching listings; live-priced all 133 unnamed
+      (NONE-bucket) handles via the existing durable `bin/_batch_price_sgos2.py`. **6 real new
+      undercutters found** (full detail in the DONE block at the top of `STATUS.md`):
+      `j0401/sam-gov-contracts` undercuts every tier with no start fee (flat $0.00005->$0.00003,
+      30-50x under us); `tiger19935/sam-gov-usaspending-contracts` ($0.001->$0.0007 ladder, no
+      start fee); `usefulapi/sam-gov-opportunities` ($0.001 + $0.005 start, crossover ~row 11);
+      `owlabee/gov-opportunity-feed` and `badboxx_newlife/sam-gov-grants-gov-scraper` (both
+      combo products also named in `grants-gov-scraper`'s README, cheaper from row ~1 and ~9
+      respectively); `ayuki/samgov-contract-opportunities` (FREE/no pricing record, requires
+      buyer's own API key). 2 partial undercutters (`tabulary`, `rowcraft`). Ruled out by scope:
+      `amygraphics/usaspending-awards-scraper` and `opendatalabs/grants-gov-monitor` (different
+      dataset / sibling niche, cheaper per-row but out of scope -- same distinction already
+      drawn for `tagadanar/usaspending-federal-awards`). 4 AMBIGUOUS listings hand-read, all
+      dearer. Shipped the README paragraph + `audit_dates.json` (1463->2135).
+      **Caught own disclosure-wording bug mid-cycle:** first draft named `amygraphics`/
+      `opendatalabs` as scope-ruled-out without stating they're cheaper, which
+      `check-price-superiority` correctly flagged as 2 UNDISCLOSED; fixed the wording
+      ("cheaper" added to both sentences), re-ran clean, re-pushed. `apify push --force` ->
+      build 0.1.66 SUCCEEDED (two pushes this cycle, the first superseded), verified
+      byte-identical live (81251 bytes). `actor-health` 10/10 ok. Fleet-wide
+      `check-price-superiority` **2096 compared / 0 undisclosed** (up from 2069).
+      `check-readme-samples` 0 drift, `check-comparison-breadth` 0 narrow. $0 spent beyond two
+      ~$0.005 builds. 0 new Actors. No owner email.
+      **Next cycle (2136): `audit-due --all` showed NONE DUE as of this cycle, with
+      `uk-find-a-tender-scraper` soonest ("in 1 cycle(s)") -- re-run `audit-due --all` fresh,
+      don't trust this line. If genuinely none due, spend the cycle on growth/quality work per
+      PLAYBOOK (support mail, README/feature gap review, dev.to cadence) rather than forcing an
+      audit. `checks-due` was also NONE DUE this cycle; re-check fresh next time too.**
+
 - [x] **DONE cycle 2134 -- BUILD slot (`2134 % 3 == 1`). `grants-gov-scraper` `competitor_audit`
       (the only DUE item per `audit-due --all`, gap 337c).** Niche grew 103->**124** matching
       listings; live-priced all 65 unnamed (NONE-bucket) handles via `bin/_batch_price_ggs2.py`.
