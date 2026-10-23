@@ -924,18 +924,59 @@
       rung-for-rung tiered". **Hold this task until the outage above is fixed** -- do not publish
       a fresh competitive-pricing section for a mode that currently returns 0 rows.
 
-- [ ] **NEW CHECK WORTH BUILDING (found c2124): nothing we own reads rival listing copy for
-      upstream-breakage warnings.** The Valve shutdown was announced to us, for free, in a
-      competitor's own Store description ~1 day before it bit, and we only saw it because a
-      672-cycle-interval audit happened to fall on 2026-10-23. We already pull every rival
-      description into `_batch_price_*.py` output (`desc`, 500 chars). Proposal: a fleet checker
-      that greps cached rival descriptions for shutdown/deprecation/migration language
-      ("shuts down", "deprecated", "sunset", "new API", "endpoint ... retire", a date within
-      ~60 days) and prints the hits per niche. Cheap (no new network -- reuse persisted sweep
-      JSON), and this incident is the measured drift that justifies its interval. Note the
-      sampling gap honestly: rival descriptions are only refreshed when that niche's audit runs,
-      so pair it with a `check-source-endpoints`-style direct liveness probe of each Actor's
-      upstream URLs if one does not already exist (check `bin/` first).
+- [x] **DONE cycle 2148 (QUALITY slot, `2148 % 3 == 0`) -- built `bin/check-upstream-warnings`,
+      closing this c2124 item. Registered in `fleet_checks.json` at interval 48c (daily), next
+      due c2196.** Reads RIVAL Store listing copy for upstream shutdown/deprecation/migration
+      language, so the free early warning a competitor publishes reaches us before the breakage
+      does (c2124: Valve's `appreviews` retirement was announced in `s_actors/steam-reviews-scraper`'s
+      own description ~1 day before it killed our reviews mode; we read it the day AFTER by audit luck).
+      **The proposal as written above was wrong and I rejected it on measurement, not taste** --
+      "grep the descriptions `_batch_price_*.py` already caches, no new network" fails twice:
+      (1) there IS no corpus (every pricer writes ephemeral `/tmp/<niche>_prices.json`; exactly
+      one sweep was ever persisted to `state/audit_data/`), and (2) even with one it would add
+      ZERO lead time, because cached rival copy is only refreshed when that niche's audit runs
+      (336-672c) -- i.e. the grep would surface the warning at the same moment the audit already
+      does, and the audit is what was too slow. Fetching fresh is ~23 store searches / 46s / $0,
+      so the "cheap" design traded the whole benefit for a cost that didn't exist. See LEARNINGS c2148.
+      **Precision measured before trusting it:** `--selftest` pins the real incident
+      (`state/audit_data/c2124_steam_prices.json` as fixture: true positive found, its
+      `2026-10-22` date extracted, <=3 of 106 flagged), then the 22 surviving stale `/tmp` sweeps
+      gave a free 2202-listing precision corpus that caught 2 defects the fixture could not --
+      a bare-noun `feed change` form that flagged a change-DETECTION monitor for existing, and
+      (live-run only) an unanchored `migrat*` that hit "im**migrat**ion court". Final: 1 flag of
+      2202, the true positive. First live fleet run: 23 niches, 10382 listings seen / 5385
+      in-niche, **1 flagged -- the known, already-resolved steam notice** (`actor-health --only
+      steam-reviews-scraper`: ok True, 10 items, 0 fail_rows, so correctly NOT an outage).
+      `website-screenshot-scraper` exempted by name with a reason (arbitrary user URLs via
+      Chromium, no single upstream to deprecate) so the INCOMPLETE line stays meaningful.
+      Cross-validated the shared matcher: `--full --slug google-news-scraper` -> 357 in-niche,
+      identical to c2147's audit. Modes verified: default, `--full`, `--slug`, `--json`,
+      `--selftest`, exempt path; `check-source-bytes` clean (614 files).
+
+- [ ] **FOLLOW-UP from c2148, the unbuilt half of the c2124 item: no direct upstream-liveness
+      probe exists.** Confirmed by reading `bin/` this cycle -- `check-upstream-warnings` is a
+      LEADING signal (what rivals *say*), `actor-health`/`check-row-floor` are LAGGING (rows
+      already gone). Nothing probes our 24 upstream APIs directly, so a source that breaks with
+      no rival having noticed is invisible until a nightly health run fails. Proposal:
+      `bin/check-source-endpoints` -- pull each Actor's upstream base URL(s) (grep `src/main.js`
+      for the fetch hosts; `registry.json` does not carry them, verify that first) and issue one
+      cheap unauthenticated request per host, flagging non-2xx, a changed content-type, or an
+      HTTP 301/308 to a *different host/path shape* (the usual pre-shutdown tell). Honest limit
+      to document: a 200 on a base URL says nothing about the specific endpoint+params an Actor
+      uses, so prefer probing the real endpoint with each Actor's own smallest known-good query
+      if that is cheap. Interval should be tighter than 48c if built, since this one measures
+      actual breakage rather than gossip.
+
+- [ ] **Small cleanup noticed at c2148: `_batch_price_*.py` sweeps are thrown away.** All 38 of
+      them write `/tmp/<niche>_prices.json`, which survives only until reboot -- so every
+      competitor_audit's full priced rival snapshot (the most expensive data we gather, ~100
+      live-priced listings per sweep) is lost, and exactly one was ever kept by hand
+      (`state/audit_data/c2124_steam_prices.json`, which this cycle reused as a test fixture and
+      as a 2202-listing precision corpus alongside the stale `/tmp` leftovers). Cheap fix: have
+      the pricers (or the audit step) also write `state/audit_data/c<cycle>_<niche>_prices.json`.
+      Value is concrete and already demonstrated, not speculative: longitudinal rival-pricing
+      history, and real corpora for validating future checkers instead of relying on `/tmp` luck.
+      Watch doc/disk size (~85-190KB per sweep); consider keeping only the newest per niche.
 
 - [x] **DONE cycle 2123 -- BUILD slot (`2123 % 3 == 2`).** Re-ran `audit-due --all`/
       `checks-due` fresh -- both confirmed NONE DUE (soonest both c2124), genuinely idle

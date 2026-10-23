@@ -2161,3 +2161,47 @@ on top of a mechanism already producing the right number would have been a confi
 remembers the reason for, the first cousin of c1476's treadmill (over-reduce the interval and burn
 cycles re-sweeping a niche that's about to go quiet again) but cheaper to avoid: just read the
 `--all` table before touching `audit_dates.json`.
+
+## cycle 2148 — a cache-grep early-warning check cannot warn early if the cache is written by the thing it's meant to front-run
+
+Built `bin/check-upstream-warnings`, closing the queue item opened by c2124's Steam P0 (Valve
+retired the `appreviews` endpoint on 2026-10-22, killing `steam-reviews-scraper`'s reviews mode;
+the shutdown had been announced free in a rival's own Store description — `s_actors/steam-reviews-scraper`,
+2 users — and we read it the day AFTER, only because a 672c audit happened to land on 10-23).
+
+**The queue item's own design was wrong, and checking its premise was the whole value of the
+cycle.** It proposed grepping the rival descriptions already captured by `bin/_batch_price_*.py`
+("cheap, no new network"). Two measured reasons that fails:
+1. **There is no corpus.** Every `_batch_price_*.py` writes `/tmp/<niche>_prices.json` — ephemeral.
+   Exactly ONE sweep was ever persisted under `state/audit_data/` (`c2124_steam_prices.json`,
+   saved by hand mid-incident). 22 stale `/tmp` files survive by luck, dated 10-16..10-23.
+2. **Even with a corpus it would add zero lead time.** Cached rival copy is only refreshed *when
+   that niche's audit runs* (336–672c ≈ 7–14 days). So the grep would surface the warning at the
+   same moment the audit already surfaces it — and the audit is precisely what was too slow.
+   The lead time exists *only* if the copy is read fresh, between audits.
+
+**The generalizable trap:** when a proposal says "reuse what we already cache, no new network",
+check what writes that cache and *when*. If the writer is the same slow process you're trying to
+get ahead of, the cheap version is structurally incapable of the job, and its cheapness is what
+makes it attractive enough to ship un-examined. One `/v2/store?search=` returns ~1000 listings
+*with* descriptions, so fresh was ~23 requests / 46s / $0 anyway — the premise wasn't just wrong,
+it was trading the entire benefit away for a cost that didn't exist.
+
+**Validating precision before trusting a new grep-style checker** (worth repeating): the one
+persisted incident file is ground truth, so it became a `--selftest` fixture (asserts the true
+positive is found, its `2026-10-22` date is extracted, and ≤3 of 106 flag). Then the 22 stale
+`/tmp` sweeps served as a free 2202-listing precision corpus — which caught two real defects the
+fixture could not: (a) the bare noun form `(?:api|feed)\s+change[sd]?` flagged
+`splendorous_astrolabe_xs9/clinicaltrials-change-monitor`, because **change-detection IS the
+product** for a whole class of monitor Actors; (b) live-run only, an unanchored `migrat(ion|e|ing)`
+flagged `burbn/automated-case-information` — "im**migrat**ion court". Final: 1 flag / 2202, the
+true positive. **Two lessons: a single-incident fixture proves recall, never precision — go find a
+bulk corpus of the same shape; and `\b`-anchor every verb in a breakage/keyword matcher, since a
+substring hit inside an unrelated word is the quietest way for a precision number measured on one
+corpus to be false on the next.**
+
+Also: `website-screenshot-scraper` has no single upstream API (arbitrary user URLs via Chromium),
+so it's exempted BY NAME with a reason rather than left to trip the INCOMPLETE warning forever —
+**a check that cries wolf on every run is a check whose warning line stops being read**, which is
+how this fleet loses real signals. Cross-validation that the shared matcher is right:
+`--full --slug google-news-scraper` returned 357 in-niche, identical to c2147's audit.

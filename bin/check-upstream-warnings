@@ -1,0 +1,324 @@
+#!/root/agent/venv/bin/python
+"""check-upstream-warnings -- read RIVAL Store listing copy for upstream-breakage notices
+(an API shutting down, an endpoint deprecating, a source migrating) before it bites us.
+
+WHY THIS EXISTS (incident at cycle 2124, built 2148)
+----------------------------------------------------
+Valve retired the `appreviews` endpoint on 2026-10-22 and it killed
+`steam-reviews-scraper`'s reviews mode outright (P0, 0 rows). The shutdown had been
+announced to us FOR FREE, in a competitor's own Store description, ~1 day before it bit:
+
+    s_actors/steam-reviews-scraper (2 users):
+    "...on Valve's new reviews API (the old appreviews endpoint shuts down 22 Oct 2026)."
+
+We only ever saw that sentence because a 672-cycle `competitor_audit` happened to fall on
+2026-10-23 -- i.e. we read the warning the day AFTER the outage, by luck, not by process.
+Rivals scraping the same upstream as us hit the same breakages, and the ones who migrate
+early advertise it. That makes rival listing copy a free, already-paid-for early-warning
+feed on our own 24 upstream sources. This tool reads it on a schedule instead of by luck.
+
+WHAT IT DOES NOT DO
+-------------------
+It does not probe our upstreams directly (no `check-source-endpoints` exists yet; see
+queue). It reads what RIVALS SAY, which is a leading signal with no liveness guarantee --
+a niche where nobody has noticed yet reads clean here and can still break tomorrow. A
+clean run is "no rival is advertising a migration", NOT "our sources are healthy".
+`bin/actor-health` + `bin/check-row-floor` remain the lagging/actual-breakage detectors.
+
+DESIGN NOTE -- why this FETCHES rather than grepping cached sweeps (measured at 2148)
+-------------------------------------------------------------------------------------
+The original proposal (queue, c2124) was to grep the rival descriptions already captured
+by `bin/_batch_price_*.py` -- "cheap, no new network". That was checked and rejected on
+two counts:
+  1. There is no corpus. Every `_batch_price_*.py` writes to `/tmp/<niche>_prices.json`,
+     which is ephemeral; exactly ONE sweep was ever persisted under `state/audit_data/`
+     (`c2124_steam_prices.json`, saved by hand during the incident).
+  2. Even with a corpus it would not have helped. Cached descriptions are only refreshed
+     WHEN THAT NICHE'S AUDIT RUNS, at a 336-672 cycle interval (~7-14 days). So a
+     cache-grep checker would surface the warning at the same moment the audit already
+     surfaces it -- zero added lead time, which is the entire point. The lead time only
+     exists if the copy is read FRESH, between audits.
+One `/v2/store?search=` call returns up to ~1000 listings WITH their descriptions, so a
+fresh read costs one request per niche in the default mode. That is cheaper than the
+rejected design's premise assumed, and it is the only version that can warn early.
+
+RECALL LIMIT, STATED HONESTLY
+-----------------------------
+Default mode issues ONE query per niche (the authoritative base phrase from
+`bin/niche-size`'s NICHE_TERMS) and keeps listings matching that niche. `--full` uses the
+same multi-term `TERM_VARIANTS`/`auto_variants` set as `niche-size`/`niche-unnamed` for
+full niche recall at ~12x the requests. Default is the base phrase because this tool needs
+to find ONE rival saying "X shuts down", not to enumerate the niche -- but a warning that
+only ever appears in a listing ranking below the base phrase's cutoff WILL be missed in
+default mode. Run `--full` when a niche's upstream is known to be in flux.
+
+PRECISION
+---------
+Validated with `--selftest` against the real incident: 1 flagged of 106 real listings,
+and the 1 is the true positive. Benign copy that trips naive patterns ("no login needed",
+"no longer need an API key") is excluded explicitly -- see BENIGN. Every hit prints its
+surrounding sentence; this tool RANKS and SHOWS, it does not decide. Read the context.
+
+Usage: bin/check-upstream-warnings [--slug SLUG] [--full] [--json] [--selftest]
+Exit 1 if any hit is flagged (so it can gate), 0 if clean.
+"""
+import argparse
+import datetime
+import json
+import os
+import re
+import sys
+import types
+
+sys.path.insert(0, "/root/agent/bin")
+
+ROOT = "/root/agent"
+FIXTURE = f"{ROOT}/state/audit_data/c2124_steam_prices.json"
+OUR_USER = "fetchsmith"
+
+# Breakage verbs. Deliberately narrow: each one is a thing an owner only writes when a
+# source actually changed under them. "migrate"/"new api" are included because the real
+# incident's rival led with "Valve's NEW reviews API" before naming the shutdown.
+# Every verb is \b-anchored on the left. Measured live at 2148: an unanchored
+# `migrat(ion|e|ing)` flagged `burbn/automated-case-information` because "imMIGRATion
+# court" contains it -- a substring hit inside an unrelated word, the quietest way for a
+# precision claim measured on one corpus to be wrong on the next.
+BREAKAGE = [
+    r"\bshuts?\s+down", r"\bshutting\s+down", r"\bshutdown",
+    r"\bdeprecat\w*", r"\bsunset\w*", r"\bretir(?:e[sd]?|ing|ement)",
+    r"\bdiscontinu\w*", r"\bend[-\s]of[-\s]life",
+    r"\bno\s+longer\s+(?:available|works?|working|supported|returns?|serves?)",
+    r"\bhas\s+been\s+(?:removed|disabled|shut)", r"\bwas\s+(?:removed|disabled)",
+    # Verb forms only. The bare noun form ("API changes", "feed change") was measured at
+    # 2148 against 2202 real listings and its ONLY hit was a false positive: a rival named
+    # "...Trial Diff Feed Change-detection feed..." -- change-detection IS the product for a
+    # whole class of monitor Actors, so the noun form flags competitors for existing.
+    r"(?:api|endpoint|feed|source)\s+(?:changed|broke|broken|is\s+changing|will\s+change)",
+    r"\bnew\s+(?:reviews?\s+)?api", r"\bmigrat(?:e[sd]?|ing|ion)",
+    r"\breplac(?:es|ed|ing)\s+the\s+(?:old|legacy|deprecated)",
+    r"\bbreaking\s+change",
+]
+# Benign phrasings that trip the verbs above. Measured on real Store copy: scraper
+# listings constantly advertise what you DON'T need, which collides with "no longer".
+BENIGN = [
+    r"no\s+longer\s+need", r"no\s+longer\s+have\s+to", r"you\s+no\s+longer",
+    r"migrat(?:e|ing)\s+(?:your|the)\s+(?:data|results?|output|dataset)",
+    r"data\s+migration", r"migrate\s+to\s+(?:our|this)\s+actor",
+    r"change[-\s]detection", r"detect\w*\s+changes",
+]
+BREAKAGE_RE = [re.compile(p, re.I) for p in BREAKAGE]
+BENIGN_RE = [re.compile(p, re.I) for p in BENIGN]
+
+# A near-future or just-passed date next to a breakage verb is the strongest form of this
+# signal (the real incident had "shuts down 22 Oct 2026"). Window is generous on the past
+# side so an already-bitten change is still reported loudly.
+MONTHS = ("jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec")
+DATE_RES = [
+    re.compile(rf"\b(\d{{1,2}})\s+({MONTHS})\w*\.?\s+(\d{{4}})\b", re.I),
+    re.compile(rf"\b({MONTHS})\w*\.?\s+(\d{{1,2}}),?\s+(\d{{4}})\b", re.I),
+    re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b"),
+]
+MONTH_NUM = {m: i + 1 for i, m in enumerate(
+    ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"])}
+DATE_WINDOW_DAYS = 120
+
+
+def find_dates(text, today):
+    """Return dates in `text` within +/- DATE_WINDOW_DAYS of today, as ISO strings."""
+    out = []
+    for i, rx in enumerate(DATE_RES):
+        for m in rx.finditer(text):
+            try:
+                if i == 0:
+                    d, mo, y = int(m.group(1)), MONTH_NUM[m.group(2)[:3].lower()], int(m.group(3))
+                elif i == 1:
+                    mo, d, y = MONTH_NUM[m.group(1)[:3].lower()], int(m.group(2)), int(m.group(3))
+                else:
+                    y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+                dt = datetime.date(y, mo, d)
+            except (ValueError, KeyError):
+                continue
+            if abs((dt - today).days) <= DATE_WINDOW_DAYS:
+                out.append(dt.isoformat())
+    return sorted(set(out))
+
+
+def scan_text(text, today):
+    """Return list of {verb, context, dates} for breakage language in `text`."""
+    if not text:
+        return []
+    hits = []
+    for rx in BREAKAGE_RE:
+        for m in rx.finditer(text):
+            lo, hi = max(0, m.start() - 110), min(len(text), m.end() + 130)
+            ctx = " ".join(text[lo:hi].split())
+            if any(b.search(ctx) for b in BENIGN_RE):
+                continue
+            hits.append({"verb": m.group(0), "context": ctx, "dates": find_dates(ctx, today)})
+    # One hit per distinct verb span is enough; dedupe identical contexts.
+    seen, uniq = set(), []
+    for h in hits:
+        key = (h["verb"].lower(), h["context"][:60])
+        if key not in seen:
+            seen.add(key)
+            uniq.append(h)
+    return uniq
+
+
+def load_niche_size():
+    """Exec bin/niche-size as a module to share NICHE_TERMS/TERM_VARIANTS/MATCH_SYNONYMS
+    and its matching rule -- the same idiom bin/niche-unnamed uses, so all three tools
+    always agree on what "in the niche" means."""
+    ns = types.ModuleType("niche_size")
+    src = open(f"{ROOT}/bin/niche-size").read().replace(
+        'if __name__ == "__main__":\n    sys.exit(main())\n', "")
+    ns.__dict__["__file__"] = f"{ROOT}/bin/niche-size"
+    exec(compile(src, "niche-size", "exec"), ns.__dict__)
+    return ns
+
+
+def niche_matcher(ns, slug, base):
+    """Rebuild niche-size's name+title+description match rule for one slug."""
+    def stem(w):
+        return w[:-1] if len(w) > 3 and w.endswith("s") else w
+    words = [base] + ns.MATCH_SYNONYMS.get(slug, [])
+    return [re.compile(r"\b" + r"\s+".join(re.escape(stem(w)) + "s?" for w in phrase.split()) + r"\b")
+            for phrase in words]
+
+
+# Live Actors with NO single upstream API that could be deprecated, so there is nothing
+# for a rival to pre-announce. Exempted BY NAME with a reason rather than left to trip the
+# INCOMPLETE warning on every run: a check that cries wolf every single run is a check
+# whose warning line stops being read, which is how this fleet loses real signals.
+NO_UPSTREAM = {
+    "website-screenshot-scraper": "renders arbitrary user-supplied URLs in Chromium; "
+                                  "its 'upstream' is the open web, not one API",
+}
+
+
+def live_slugs():
+    reg = json.load(open(f"{ROOT}/actors/registry.json"))["tools"]
+    return [t["slug"] for t in reg
+            if t.get("status") == "live" and t["slug"] not in NO_UPSTREAM]
+
+
+def selftest():
+    """Validate patterns against the one real incident we have ground truth for."""
+    if not os.path.exists(FIXTURE):
+        print(f"selftest: FIXTURE MISSING {FIXTURE}", file=sys.stderr)
+        return 1
+    rows = json.load(open(FIXTURE))
+    today = datetime.date(2026, 10, 23)  # the incident's audit date, not today
+    flagged = []
+    for r in rows:
+        hits = scan_text(f"{r.get('title', '')} {r.get('desc') or ''}", today)
+        if hits:
+            flagged.append((r["handle"], hits))
+    print(f"selftest: {len(rows)} real listings from the c2124 steam sweep, {len(flagged)} flagged")
+    for handle, hits in flagged:
+        for h in hits:
+            print(f"  {handle}: [{h['verb']}] dates={h['dates']} {h['context'][:150]}")
+    want = "s_actors/steam-reviews-scraper"
+    names = [h for h, _ in flagged]
+    ok_tp = want in names
+    ok_fp = len(flagged) <= 3
+    got_date = any("2026-10-22" in h["dates"] for hs in
+                   [hs for n, hs in flagged if n == want] for h in hs)
+    print(f"  true positive {want} found: {ok_tp}")
+    print(f"  dated 2026-10-22 extracted from its copy: {got_date}")
+    print(f"  false-positive budget (<=3 flagged of 106): {ok_fp}")
+    if ok_tp and ok_fp and got_date:
+        print("selftest: PASS")
+        return 0
+    print("selftest: FAIL", file=sys.stderr)
+    return 1
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--slug")
+    ap.add_argument("--full", action="store_true", help="multi-term sweep (full niche recall)")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args()
+    if a.selftest:
+        return selftest()
+
+    ns = load_niche_size()
+    today = datetime.date.today()
+    slugs = [a.slug] if a.slug else live_slugs()
+    report, own_notes, failed, n_seen, n_matched = [], [], [], 0, 0
+
+    exempt = []
+    for slug in slugs:
+        if slug in NO_UPSTREAM:  # reachable only via an explicit --slug
+            exempt.append(f"{slug}: {NO_UPSTREAM[slug]}")
+            continue
+        base = ns.NICHE_TERMS.get(slug)
+        if not base:
+            failed.append(f"{slug} (no NICHE_TERMS entry)")
+            continue
+        terms = (ns.TERM_VARIANTS.get(slug) or ns.auto_variants(base)) if a.full else [base]
+        seen = {}
+        for term in terms:
+            try:
+                body, _st = ns.get_json(f"{ns.API}/store",
+                                        params={"search": term, "limit": 1000}, timeout=60)
+                for it in ((body or {}).get("data") or {}).get("items") or []:
+                    seen[f"{it['username']}/{it['name']}"] = it
+            except Exception as e:  # a dead term must not kill the sweep, but must be counted
+                failed.append(f"{slug}:{term} ({e})")
+            ns.time.sleep(0.2)
+        match_res = niche_matcher(ns, slug, base)
+        n_seen += len(seen)
+        for ident, it in seen.items():
+            blob = f"{it.get('name', '')} {it.get('title', '')} {it.get('description') or ''}".lower()
+            if not any(p.search(blob) for p in match_res):
+                continue
+            n_matched += 1
+            # `notice` is a first-class Store field and the obvious place an owner puts a
+            # deprecation banner, so it is scanned alongside title+description.
+            text = " ".join(str(it.get(k) or "") for k in ("title", "description", "notice"))
+            hits = scan_text(text, today)
+            if not hits:
+                continue
+            rec = {"slug": slug, "handle": ident,
+                   "users": (it.get("stats") or {}).get("totalUsers", 0), "hits": hits}
+            (own_notes if it.get("username") == OUR_USER else report).append(rec)
+
+    # Dated hits first (strongest form), then by rival size.
+    report.sort(key=lambda r: (-max(len(h["dates"]) for h in r["hits"]), -r["users"]))
+    if a.json:
+        print(json.dumps({"flagged": report, "own": own_notes, "failed": failed,
+                          "seen": n_seen, "matched": n_matched}, indent=1))
+        return 1 if report else 0
+
+    mode = "full multi-term" if a.full else "base-term"
+    print(f"check-upstream-warnings: {len(slugs) - len(exempt)} niche(s) swept, {mode}, "
+          f"{n_seen} listings seen / {n_matched} in-niche, {today}")
+    for e in exempt:
+        print(f"  exempt (no single upstream) -- {e}")
+    if failed:
+        print(f"  WARNING: INCOMPLETE -- {len(failed)} query/queries failed, a clean "
+              f"result below is NOT trustworthy: {'; '.join(failed[:6])}", file=sys.stderr)
+    if not report:
+        print("CLEAN -- no rival listing in any niche advertises an upstream shutdown, "
+              "deprecation or migration. (Leading signal only: this does NOT mean our "
+              "sources are healthy -- see actor-health / check-row-floor for that.)")
+    for r in report:
+        print(f"\n  [{r['slug']}] {r['handle']}  ({r['users']} users)")
+        for h in r["hits"]:
+            d = f"  DATED {','.join(h['dates'])}" if h["dates"] else ""
+            print(f"    [{h['verb']}]{d}\n      {h['context'][:300]}")
+    if own_notes:
+        print(f"\n  (own copy, not a signal: {len(own_notes)} of our own listings "
+              f"mention a breakage -- expected after we document one)")
+        for r in own_notes:
+            print(f"    {r['handle']}: {r['hits'][0]['verb']}")
+    print(f"\n{'FLAGGED ' + str(len(report)) + ' rival listing(s) -- read the context above'
+            if report else 'CLEAN'}")
+    return 1 if report else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

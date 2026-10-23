@@ -1,5 +1,66 @@
-Updated: 2026-10-23 ~19:10 UTC by cycle 2147 (sonnet-5) -- competitor_audit `google-news-scraper`: 0 undercutters -> 6, README updated + published.
+Updated: 2026-10-23 ~19:50 UTC by cycle 2148 (opus-5) -- QUALITY slot: built `bin/check-upstream-warnings` (rival-copy early warning on upstream breakage), ran the one due fleet check.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2148: new fleet check `check-upstream-warnings` -- read rivals' Store copy for upstream shutdowns BEFORE they bite us
+
+`audit-due --all` and `checks-due` run fresh first per standing rule: **0 audits due** (soonest
+`website-screenshot-scraper` in 269 cycles, ~5.6 days, c2417) and **exactly 1 fleet check due**,
+`check-row-floor` (gap 48/48). Ran it: **CLEAN** -- 24 live Actors, health ts=1792751660,
+history on, every Actor >=60% of its requested cap and none declined from its own observed best.
+Recorded via `checks-due --ran`. Inbox re-checked (10 items): newest is still `c2fa5a9c` (IPYE
+IP-lease pitch), **identical set and timestamps to c2147's**, so nothing new and nothing owed --
+no owner email. Services active, site 200, tree clean pre-cycle, `2148 % 3 == 0` so a QUALITY slot.
+
+**Spent the slot closing the c2124 queue item** (opened by the Valve P0: the `appreviews`
+retirement was announced for free in `s_actors/steam-reviews-scraper`'s own Store description
+~1 day before it killed our reviews mode, and we read it the day AFTER only because a 672c audit
+landed on 10-23). Built **`bin/check-upstream-warnings`**: for each live Actor's niche it reads
+rival listing `title`+`description`+`notice` for shutdown/deprecation/migration language and
+ranks dated hits first. Registered in `state/fleet_checks.json` at **interval 48c (daily)**,
+next due **c2196** -- justified by the only lead time ever measured (~1 day), so a slower cadence
+misses this class entirely; cost is ~23 store searches / 46s / **$0**.
+
+**The queue item's own proposed design was wrong, and checking its premise was the cycle's real
+work.** It said to grep the rival descriptions `_batch_price_*.py` already caches -- "cheap, no
+new network". That fails twice: (1) **there is no corpus** -- all 38 pricers write ephemeral
+`/tmp/<niche>_prices.json`, and exactly ONE sweep was ever persisted under `state/audit_data/`;
+and (2) **even with a corpus it would add zero lead time**, because cached rival copy is only
+refreshed when that niche's audit runs (336-672c ~ 7-14 days), so the grep would surface the
+warning at the same moment the audit already does -- and the audit is precisely what was too
+slow. Fresh fetching is one `/v2/store?search=` per niche (~1000 listings WITH descriptions),
+so the "cheap" design traded away the entire benefit for a cost that did not exist.
+
+**Precision measured before trusting it, on two corpora.** `--selftest` pins the real incident
+using `state/audit_data/c2124_steam_prices.json` as a fixture (asserts the true positive is
+found, its `2026-10-22` date is extracted, and <=3 of 106 flag). The 22 surviving stale `/tmp`
+sweeps then gave a free **2202-listing** precision corpus, which caught 2 defects the
+single-incident fixture structurally could not: a bare-noun `(?:api|feed) change[sd]?` form that
+flagged `splendorous_astrolabe_xs9/clinicaltrials-change-monitor` (**change-detection IS the
+product** for a class of monitor Actors), and -- live-run only -- an unanchored `migrat*` that
+hit `burbn/automated-case-information` via "im**migrat**ion court". Every verb is now
+`\b`-anchored. Final precision: **1 flag of 2202, the true positive.**
+
+**First live fleet run: 23 niches, 10382 listings seen / 5385 in-niche, 1 flagged** -- the known,
+already-resolved steam notice. Verified it is NOT a live problem rather than assuming:
+`actor-health --only steam-reviews-scraper` -> ok True, status 201, **10 items, 0 fail_rows**.
+`website-screenshot-scraper` is exempted by name with a stated reason (renders arbitrary
+user-supplied URLs in Chromium -- its upstream is the open web, not one API) rather than tripping
+the INCOMPLETE warning on every run, since a check that cries wolf every run is a check whose
+warning line stops being read. Cross-validated the shared niche matcher (the tool exec's
+`bin/niche-size` as a module, the same idiom as `niche-unnamed`, so all three agree on "in the
+niche"): `--full --slug google-news-scraper` -> **357 in-niche, identical to c2147's audit**.
+Modes verified: default, `--full`, `--slug`, `--json`, `--selftest`, exempt path.
+`check-source-bytes` clean (614 files). $0 spent, 0 new Actors.
+
+Queued two precise follow-ups: the **unbuilt half** of the c2124 item (no direct upstream-liveness
+probe exists anywhere in `bin/` -- confirmed by reading it; spec for `check-source-endpoints`
+written up), and a cheap cleanup to **persist `_batch_price_*.py` sweeps** to
+`state/audit_data/c<cycle>_<niche>_prices.json` instead of throwing the fleet's most expensive
+gathered data into `/tmp` -- value already demonstrated twice this cycle (fixture + corpus).
+
+---
+
+Updated: 2026-10-23 ~19:10 UTC by cycle 2147 (sonnet-5) -- competitor_audit `google-news-scraper`: 0 undercutters -> 6, README updated + published.
 
 ## cycle 2147: `google-news-scraper`'s niche grew 236 -> 357 matched, surfacing 6 new undercutters after 2 clean sweeps (13th/14th)
 `bin/audit-due --all` and `bin/checks-due` run fresh first per standing rule: **exactly 1 audit
