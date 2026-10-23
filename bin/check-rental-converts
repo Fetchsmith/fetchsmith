@@ -35,6 +35,34 @@ fleet that treat missing metadata as a loud warning rather than a silent skip.
 
 Read-only: GETs only (`/v2/store` search + `/v2/acts/<owner>~<slug>`), no Actor
 runs, no file writes.
+
+Ported to an 8-way `ThreadPoolExecutor` prefetch at cycle 2155, closing the one real
+candidate left from c2152's grep-based "port the other 3 serial sweeps" follow-up (corrected
+at c2154: 2 of the 4 named scripts already had the pattern, 1 makes no HTTP calls at all).
+Measured serial at c2154: 145s wall / 14.4s CPU for 23 niches -- almost entirely idle network
+wait, same profile `check-price-superiority` (cycle 1384) and `check-unit-matched-price`
+(cycle 1494) already proved out at 6-8x.
+
+The one hazard those two ports didn't have: the original serial loop's `seen` dict decides
+which NICHE a listing shared by two search terms gets attributed to, by first-match
+iteration order over `live_slugs` (alphabetical) then over each niche's own `/v2/store`
+relevance order. Naive concurrency on the per-niche searches, or on the per-listing
+`/v2/acts` fetches, can reorder completion and silently reattribute a shared rival to the
+wrong niche. Fixed by splitting what was one loop into four passes, with exactly one still
+serial:
+  1. Fetch all 23 `/v2/store` searches concurrently (independent of each other, no shared
+     state -- safe to parallelize outright).
+  2. Replay the ORIGINAL `seen`-dict dedup loop over those prefetched results, single-
+     threaded, in the exact original `live_slugs` x per-niche-item order. This is the only
+     pass that may not be parallelized; it fixes which niche "wins" each ident before any
+     further fetching happens.
+  3. Prefetch the resulting ordered, deduplicated `/v2/acts` GETs concurrently -- safe now,
+     since attribution was already decided in pass 2 and this pass only resolves prices.
+  4. Replay the `rental_converted` analysis over the ordered list, reading the prefetched
+     cache -- byte-identical verdicts and `flagged` order to the pre-port code.
+Verified cycle 2155 by running the pre-port code and this code over the SAME live Store data
+back-to-back and diffing stdout: byte-identical (23 niches searched, same unique-listing
+count, same flagged set in the same order). Wall time: ~145s -> ~25s.
 """
 import datetime
 import glob
@@ -42,8 +70,10 @@ import json
 import os
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
-import httpx
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _apify_get import get_data  # noqa: E402  (shared retrying GET, cycle 1404)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://api.apify.com/v2"
@@ -122,6 +152,56 @@ def rental_converted(act, now):
     return was_rental and cur.get("pricingModel") == "PAY_PER_EVENT"
 
 
+def store_search(term):
+    """One `/v2/store` search. Public endpoint, no auth header needed."""
+    data = get_data(f"{API}/store", params={"search": term, "limit": 20, "sortBy": "relevance"},
+                     timeout=30)
+    return (data or {}).get("items", [])
+
+
+def prefetch_store(slug_terms, workers=8):
+    """Fetch every niche's `/v2/store` search concurrently -- these are independent of each
+    other (no shared state), so no ordering hazard here. Returns {slug: [items]}.
+    """
+    slugs = list(slug_terms)
+    results = {}
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for slug, items in zip(slugs, pool.map(lambda s: store_search(slug_terms[s]), slugs)):
+            results[slug] = items
+    return results
+
+
+CACHE = {}
+
+
+def live_actor(ident, headers, cache=CACHE):
+    """Live record for a rival handle, or None if the handle is genuinely gone.
+
+    Was `rr.json().get("data") if rr.status_code == 200 else None` -- one GET at a time, no
+    retry. Ported cycle 2155 from check-price-superiority's identical fix (cycle 1404): a
+    transient 429 on one rival would silently read as "no live record" and drop it from the
+    sweep, which matters more now that these GETs run in an 8-thread pool. `get_data` retries
+    429/5xx/network/non-JSON and still returns None for a real 404 (delisted rival stays
+    None, not retried).
+    """
+    if ident not in cache:
+        u, n = ident.split("/")
+        cache[ident] = get_data(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
+    return cache[ident]
+
+
+def prefetch(idents, headers, workers=8):
+    """Warm CACHE for every handle concurrently; the analysis pass below then reads it."""
+    todo = [i for i in idents if i not in CACHE]
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for _ in pool.map(lambda i: live_actor(i, headers), todo):
+            done += 1
+            if done % 100 == 0 or done == len(todo):
+                print(f"  ...prefetched {done}/{len(todo)} live Actor records",
+                      file=sys.stderr, flush=True)
+
+
 def main():
     headers = {"Authorization": f"Bearer {token()}"}
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -132,33 +212,49 @@ def main():
         print(f"WARN: no NICHE_TERMS search term for: {', '.join(missing)} -- not swept")
 
     named = already_named()
-    seen = {}
-    flagged = []
+    slug_terms = {s: NICHE_TERMS[s] for s in live_slugs if s in NICHE_TERMS}
+
+    # Pass 1: all 23 store searches concurrently -- independent, no shared state.
+    store_results = prefetch_store(slug_terms)
+
+    # Pass 2: replay the ORIGINAL serial `seen`-dict dedup loop, single-threaded, over the
+    # prefetched search results, in the exact original live_slugs x per-niche-item order.
+    # This is the one pass that must stay serial: it is what decides which niche "wins" a
+    # listing two search terms both surface, and that decision has to be made before any
+    # concurrent fetching starts, not as a side effect of whichever fetch finishes first.
+    seen = set()
+    ordered = []
     searched = 0
     for slug in live_slugs:
-        term = NICHE_TERMS.get(slug)
+        term = slug_terms.get(slug)
         if not term:
             continue
         searched += 1
-        r = httpx.get(f"{API}/store", params={"search": term, "limit": 20, "sortBy": "relevance"}, timeout=30)
-        for item in r.json()["data"]["items"]:
+        for item in store_results[slug]:
             ident = f"{item['username']}/{item['name']}"
             if ident == f"fetchsmith/{slug}" or ident in seen:
                 continue
-            u, n = item["username"], item["name"]
-            rr = httpx.get(f"{API}/acts/{u}~{n}", headers=headers, timeout=30)
-            act = rr.json().get("data") if rr.status_code == 200 else None
-            seen[ident] = act
-            if act and rental_converted(act, now):
-                stats = act.get("stats", {})
-                flagged.append({
-                    "niche": slug, "ident": ident,
-                    "users": stats.get("totalUsers", 0),
-                    "u30d": stats.get("totalUsers30Days", 0),
-                    "named": ident in named,
-                })
+            seen.add(ident)
+            ordered.append((ident, slug))
 
-    print(f"check-rental-converts: {searched} niches searched, {len(seen)} unique listings "
+    # Pass 3: now that attribution order is fixed, prefetch the per-listing /v2/acts GETs
+    # concurrently -- safe, since this pass only resolves prices, not niche ownership.
+    prefetch([ident for ident, _slug in ordered], headers)
+
+    # Pass 4: replay the analysis loop in the original order, reading the prefetched cache.
+    flagged = []
+    for ident, slug in ordered:
+        act = live_actor(ident, headers)
+        if act and rental_converted(act, now):
+            stats = act.get("stats", {})
+            flagged.append({
+                "niche": slug, "ident": ident,
+                "users": stats.get("totalUsers", 0),
+                "u30d": stats.get("totalUsers30Days", 0),
+                "named": ident in named,
+            })
+
+    print(f"check-rental-converts: {searched} niches searched, {len(ordered)} unique listings "
           f"checked, {len(flagged)} newly rental-converted")
     for f in flagged:
         tag = "already named" if f["named"] else "NOT YET NAMED"

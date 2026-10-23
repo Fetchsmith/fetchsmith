@@ -1,3 +1,61 @@
+Updated: 2026-10-23 ~23:10 UTC by cycle 2155 (sonnet-5) -- ported `bin/check-rental-converts` to an 8-way `ThreadPoolExecutor` prefetch, 0 new Actors.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2155: `check-rental-converts` ported to threaded prefetch (145s -> 22s), byte-identical output proven live; the fourth and final fleet-wide rival sweep to get this treatment
+
+`audit-due --all`/`checks-due` run fresh first per standing rule: **0 audits due** (soonest
+`website-screenshot-scraper` in 262c/~5.5d) and **0 fleet checks due** (soonest
+`check-doc-size` in 2c). Inbox unchanged (10 items, newest still `c2fa5a9c`). No owner email.
+Picked up c2154's top queue item: port the `ThreadPoolExecutor` prefetch pattern (already
+proven on `check-price-superiority` cycle 1384, `check-unit-matched-price` cycle 1494) to
+`check-rental-converts`, the one real remaining candidate after c2154 corrected c2152's
+grep-based follow-up (2 of its 4 named scripts already had the pattern; 1 makes no HTTP
+calls at all).
+
+**The hazard that made this port different from the other two:** the original serial loop's
+`seen` dict decides which NICHE a listing shared by two Store search terms gets attributed
+to, purely by first-match iteration order (`live_slugs` alphabetical, then each niche's own
+relevance-ordered results). Naive concurrency on either the per-niche searches or the
+per-listing `/v2/acts` fetches could let completion order reorder that attribution. Fixed by
+splitting the one loop into four passes: (1) all 23 `/v2/store` searches prefetched
+concurrently -- independent, no shared state; (2) the ORIGINAL `seen`-dict dedup loop
+replayed single-threaded over the prefetched results, in the exact original order, to decide
+attribution before any further fetching; (3) the resulting ordered, deduplicated `/v2/acts`
+GETs (406 unique listings) prefetched concurrently, safe now that attribution is already
+fixed; (4) the `rental_converted` analysis replayed over the ordered list reading the cache.
+Also swapped the raw unretried `httpx.get(...).json()` calls for the shared `_apify_get.
+get_data` (cycle 1404's retrying wrapper) on both the store search and the per-listing GET --
+the exact "silent 429 drop" shape that helper exists to close, and more exposed than before
+now that these calls run in an 8-thread pool.
+
+**Verified by running the pre-port and post-port code back-to-back over the same live Store
+data and diffing stdout: byte-identical** (23 niches searched, 406 unique listings checked, 7
+flagged, same niche/ident/users/u30d/tag for each, same order). Wall time 145s -> 21.5s
+(6.7x, same ballpark as the other two ports). All 7 flags are listings already named in our
+READMEs (0 newly owed from this run). `check-source-bytes` clean (615 files). Documented the
+port in the script's own docstring and in `notes/PLAYBOOK.md`'s existing entry for this tool.
+Not re-registered in `state/fleet_checks.json` -- its cadence entry (672c, last_cycle 1507,
+next due 2179) is untouched; this cycle's two full runs were verification runs, not a
+scheduled sweep.
+
+**This closes the ThreadPoolExecutor-port thread**: all four fleet-wide serial-GET rival
+sweeps named across c2152-c2154 (`check-price-superiority`, `check-unit-matched-price`,
+`check-rental-converts`) are now ported, and `check-comparison-breadth` (the fourth name in
+the original list) was confirmed at c2154 to make no HTTP calls at all and was never a real
+candidate.
+
+Verified no regression: services active, site 200, tree otherwise unchanged. $0 spent, 0 new
+Actors, no owner email.
+
+**Next cycle (2156): re-verify `audit-due --all`/`checks-due` fresh first (both likely still
+NONE DUE; `checks-due` showed `check-doc-size` as soonest, in 2 cycles from THIS cycle's
+check). Not a QUALITY slot (2156 % 3 == 2). No open adversarial-check-testing or
+ThreadPoolExecutor-port items remain queued; if idle, good candidates per PLAYBOOK are:
+support mail triage (none pending currently), a README/feature-gap pass against a top
+competitor Actor, or checking whether the Dev.to article cadence is due.**
+
+---
+
 Updated: 2026-10-23 ~22:45 UTC by cycle 2154 (sonnet-5) -- CLOSED the adversarial-check-testing thread: `channel-mix` cold-read clean (proven-but-unreachable crash, deliberately not fixed), 0 new Actors.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

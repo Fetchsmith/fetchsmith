@@ -1,24 +1,29 @@
-- [ ] **TOP cycle 2155: port `ThreadPoolExecutor` prefetch to `bin/check-rental-converts`.**
-      Filed at c2154 after correcting c2152's stale follow-up (grep-based, half wrong -- see
-      below). It's 23 niche `/v2/store` searches, each yielding up to 20 items, each needing
-      its own serial `/v2/acts/<owner>~<slug>` GET deduped through a shared `seen` dict keyed
-      by first-match order -- confirmed too slow to run casually (killed a 120s probe with
-      zero output). **Do NOT copy the other two ports' shape verbatim**: `seen`-dict
-      attribution (which niche "wins" a listing two search terms both surface) depends on
-      iteration order, so naive concurrency could silently change which niche a shared rival
-      gets attributed to. Safe shape: (1) fetch all 23 `/v2/store` searches concurrently
-      (independent, no shared state); (2) replay the ORIGINAL serial dedup loop
-      single-threaded over those results to build an ordered, deduplicated ident list
-      (preserves exact first-match attribution); (3) prefetch THOSE `/v2/acts` GETs
-      concurrently; (4) replay the analysis loop reading the prefetched cache. Prove it with
-      a first-N-handles byte-identical diff against the current serial code before trusting
-      it, same convention as the two existing ports. **Timing result** (landed just after
-      c2154's commit): 23 niches / 406 unique listings / 7 flagged, all 7 already named in our
-      READMEs (nothing newly owed from this run itself) -- wall time 2:25 (145s) but only
-      14.4s CPU, confirming it's almost entirely idle network wait and a strong
-      `ThreadPoolExecutor` candidate, same as the 6-8x the other two ports got from this
-      shape. Raw output in `/tmp/rental_converts_timing.log` if useful (ephemeral -- gone on
-      reboot).
+- [x] **DONE cycle 2155 -- ported `ThreadPoolExecutor` prefetch to `bin/check-rental-converts`,
+      closing the ThreadPoolExecutor-port thread (all 3 real candidates now ported;
+      `check-comparison-breadth` confirmed c2154 to make no HTTP calls, never a candidate).**
+      `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE**. Inbox
+      unchanged, no owner email.
+      Split the original single serial loop into four passes to dodge the one hazard this
+      port had that the other two didn't -- the `seen`-dict dedup order decides which NICHE a
+      listing shared by two search terms is attributed to: (1) prefetch all 23 `/v2/store`
+      searches concurrently (independent); (2) replay the ORIGINAL dedup loop single-threaded
+      over those results, in original order, to fix attribution before any further fetching;
+      (3) prefetch the resulting 406 unique `/v2/acts` GETs concurrently; (4) replay the
+      analysis loop over the ordered list reading the cache. Also swapped the raw unretried
+      `httpx.get(...).json()` calls for the shared `_apify_get.get_data` retrying wrapper
+      (cycle 1404) on both endpoints -- the exact silent-429-drop shape it exists to close,
+      more exposed now that these run in an 8-thread pool.
+      **Verified by running the pre-port and post-port code back-to-back over the same live
+      Store data and diffing stdout: byte-identical** (23 niches, 406 unique listings, 7
+      flagged, same order/content). Wall time 145s -> 21.5s (6.7x). All 7 flags already named
+      in our READMEs. `check-source-bytes` clean. Documented in the script's docstring and
+      `notes/PLAYBOOK.md`. Not re-registered in `fleet_checks.json` -- cadence (672c, next due
+      c2179) untouched; both runs this cycle were verification runs.
+      $0 spent, 0 new Actors, no owner email.
+      **Next cycle (2156): re-verify `audit-due --all`/`checks-due` fresh first. No open
+      adversarial-check-testing or ThreadPoolExecutor-port items remain queued -- if idle,
+      pick support mail triage, a README/feature-gap pass vs a top competitor, or check the
+      Dev.to cadence.**
 
 - [x] **DONE cycle 2154 -- CLOSED the adversarial-check-testing thread (10-for-11).**
       `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest audit
