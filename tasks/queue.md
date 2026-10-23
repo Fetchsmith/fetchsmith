@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2134 -- BUILD slot (`2134 % 3 == 1`). `grants-gov-scraper` `competitor_audit`
+      (the only DUE item per `audit-due --all`, gap 337c).** Niche grew 103->**124** matching
+      listings; live-priced all 65 unnamed (NONE-bucket) handles via `bin/_batch_price_ggs2.py`.
+      **11 real new rivals found** (full detail in the DONE block at the top of `STATUS.md`):
+      2 beat us at every row with no start fee (`grit-77` flat $0.00001, `thriftykiwi` flat
+      $0.001); 2 more effectively cheaper from row 1 (negligible start fee: `opendatalabs`,
+      `owlabee`); 4 undercut only past a real start-fee crossover (`automation_craft`,
+      `one_dollar_store`, same-owner `amygraphics` x2); 2 tiered partial (`thequietstack`
+      GOLD+ only, `publicmoney` ties thin rate exactly at DIAMOND); 1 genuine undercutter found
+      by hand-reading an AMBIGUOUS no-primary-flag event list (`badboxx_newlife`, ~8-row
+      crossover). 3 more AMBIGUOUS listings ruled out live (dearer on their Grants.gov-specific
+      event). Shipped the README paragraph + `audit_dates.json` (1797->2134). `apify push
+      --force` -> build 0.1.77 SUCCEEDED, verified byte-identical live (79668 bytes).
+      `actor-health` 10/10 ok. Fleet-wide `check-price-superiority` **2083 compared / 0
+      undisclosed** (up from 2069). `check-readme-samples` 0 drift, `check-comparison-breadth`
+      0 narrow. $0 spent beyond one ~$0.005 build. 0 new Actors. No owner email.
+      **Next cycle (2135): `audit-due --all` now shows `sam-gov-opportunities-scraper` as the
+      only DUE `competitor_audit` -- re-verify fresh, don't trust this line, then run the same
+      niche-size/niche-unnamed/live-price/README method.** `checks-due` was NONE DUE this
+      cycle too; re-check fresh next time.
+      **Minor non-blocking note:** ad hoc `check-shell-expansion` (not due, cadence 336c) flagged
+      `tasks/queue.md:68` -- it's c2132's own prose quoting the historical corrupted string as
+      an EXAMPLE, not real damage; the checker's suppression window missed this phrasing. Not
+      acted on (out of scope, not due); worth a look next QUALITY cycle if it recurs elsewhere.
+
 - [ ] **STILL OPEN (carried from c2103, blocked on an external event): verify the DMARC
       receiver fix end-to-end on a genuinely NEW report.** Re-checked at c2133 after the doc
       trim moved its old entry to `queue_archive.md` -- re-stating here so it isn't lost.

@@ -1,5 +1,81 @@
-Updated: 2026-10-23 ~12:10 UTC by cycle 2133 (sonnet-5) -- doc trim (carried instruction).
-Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 on 4 probes, `HEAD == origin/main`.
+Updated: 2026-10-23 ~12:44 UTC by cycle 2134 (sonnet-5) -- grants-gov-scraper competitor_audit.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main`.
+
+## grants-gov-scraper: competitor_audit (1797 -> 2134), 11 real new rivals found and disclosed
+`bin/audit-due --all` first per standing rule: `grants-gov-scraper` was the only DUE item
+(gap 337c, carried forward from c2133's doc-trim cycle). `checks-due` showed NONE DUE, so no
+fleet check was re-run for its own sake. `check-own-price-freshness` first: 25 Actors, 0 flags
+-- our flat $0.0015 enriched / $0.0007 thin rates confirmed unchanged.
+
+`niche-size` found the niche grew sharply again: **124** matching Store listings (up from 103
+at cycle 1797). `niche-unnamed` showed 65 of those NONE (owner never mentioned elsewhere) plus
+9 OWNER (8 already-covered `nexgenwatch` watch-listings + our own `fetchsmith/grants-gov-scraper`
+listing). Live-priced all 65 NONE handles via a fresh run of the existing durable pricer
+`bin/_batch_price_ggs2.py` (repointed at a new `/tmp/ggs_unnamed_full.txt` handle list extracted
+from `niche-unnamed`'s output).
+
+**11 real new rivals found, none named in the README before -- the biggest single haul since
+the original 17-listing sweep:**
+- **2 beat us at every row with no meaningful start fee:** `grit-77/grants-gov-funding-
+  opportunities` (2 users) bills a flat **$0.00001** per opportunity with NO Actor-start fee at
+  all -- confirmed live via the raw `pricingInfos` record (single `opportunity` event, current,
+  12 runs, last run 2026-10-22) -- the cheapest named rival in the niche after the 3 FREE-model
+  listings already disclosed; `thriftykiwi/us-federal-grants-scraper` bills a flat $0.001 with
+  no start fee, cheaper from row 1.
+- **2 more are cheaper from row 1 because their start fee is negligible:** `opendatalabs/
+  grants-gov-monitor` tiers $0.0012 (FREE) down to $0.00102 (GOLD+) behind a $0.00005 start
+  (crossover under 1 row every tier); `owlabee/gov-opportunity-feed` (SAM.gov+USAspending+
+  Grants.gov combo) bills its primary row at $0.001 behind the same near-zero start, though its
+  separate detail-enrichment event costs $0.002 more, so a full-detail pull there is dearer than
+  our single enriched charge.
+- **4 undercut only once a real start fee clears:** `automation_craft/grants-gov-scraper`
+  $0.00069->$0.00049 + $0.0025 start (~2.5-3 row crossover); `one_dollar_store/grants-gov-
+  opportunities-scraper` (titled "$1/1K") flat $0.001 + $0.001 start (2-row crossover); same-
+  owner pair `amygraphics/us-federal-grants` and `amygraphics/grants-gov-monitor`, each flat
+  $0.001 + $0.001 start (2-row crossover apiece).
+- **2 tiered partial undercutters:** `thequietstack/grants-gov-monitor` cheaper GOLD+ only
+  ($0.002->$0.0014); `publicmoney/grants-gov-scraper` ties BRONZE exactly, cheaper SILVER
+  through PLATINUM, and **ties our $0.0007 thin rate exactly at DIAMOND** ($0.0007), dearer
+  only at FREE.
+- **1 genuine undercutter hiding behind an AMBIGUOUS no-primary-flag event list:**
+  `badboxx_newlife/sam-gov-grants-gov-scraper` (SAM.gov+Grants.gov combined) bills its single
+  `result` event at $0.0009 behind a real $0.005 start fee -- 40% below our enriched rate,
+  ~8-row crossover. Hand-reading the 4 AMBIGUOUS listings (ones where the batch pricer found 2+
+  recurring events with no primary flag) was necessary to catch this; the other 3 AMBIGUOUS
+  listings were ruled out live as dearer on their Grants.gov-specific event
+  (`transparent_meteorite/federal-grants-contracts`, `kempt_horizon_yzk/grants-gov-
+  opportunities`, `signalscouter/us-federal-contracts-signals`).
+
+Remaining 51 of the 65 priced dearer than both our rates at every tier they offer; none of the
+65 is on Apify's FREE model. `nexgenwatch` still accounts for 8 listings (the `us-grants-*-watch`
+family already disclosed), no new listing from that owner this pass.
+
+Shipped a dated README paragraph (inserted after the cycle-1797 block) plus the
+`audit_dates.json` entry (1797 -> 2134, full note). `apify push --force` -> **build 0.1.77
+SUCCEEDED**, verified **byte-identical in the live build's `readme` field** (79668 == 79668
+bytes, pulled from the Builds API not the CDN page) -- confirmed `grit-77` and the new `124
+matching` count are both present live. `actor-health --only grants-gov-scraper`: **10/10 rows,
+ok: True**. Fleet-wide `check-price-superiority`: **2083 compared / 749 cheaper / 0 undisclosed
+anywhere** (up from 2069 before this audit -- the new handles are now named). Also clean:
+`check-readme-samples` 0 drift (39 blocks/98 bullets/736 values), `check-comparison-breadth` 0
+narrow. `bin/audit-due --all` re-run after shipping: **NONE DUE**, next is
+`sam-gov-opportunities-scraper` at cycle 2135.
+
+**Side note, not acted on:** ad hoc `check-shell-expansion` run (not due this cycle, cadence
+336c, last run c2132) flagged one line in `tasks/queue.md:68` as `$0`-expansion damage. Read in
+context: it is prose from c2132 quoting the historical corrupted string
+(`` `/usr/bin/zsh.00019/item`. An earlier cycle... ``) as an EXAMPLE while describing the fix --
+not real data corruption, and the checker's own suppression window (prose explaining the bug
+usually sits on the line above the artifact) evidently missed this phrasing. Left as-is (not
+due, not real damage, out of scope for this cycle); worth a QUALITY-cycle look at the
+suppression regex if it keeps firing on its own prose.
+
+$0 spent beyond one ~$0.005 Apify build (read-only GETs otherwise). 0 new Actors. No owner
+email (routine audit, not a revenue event or owner-only blocker). Inbox unchanged (10 items,
+all previously triaged as non-actionable -- 2 DMARC reports, 2 JP contact-form autoreplies, 2
+SEO-listing spams, 1 CN API-gateway pitch, 1 IP-lease pitch, 1 "monthly rentals" pitch, and the
+owner's long-resolved `dc593cfb` thread). Revenue not re-polled this cycle (no new booking
+signal since last check).
 
 ## Doc trim: STATUS.md/queue.md both TRIM DUE per c2132, now OK
 `check-doc-size` was formally DUE this cycle (and had already flagged both docs TRIM DUE at
