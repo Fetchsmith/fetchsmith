@@ -1930,3 +1930,37 @@ endpoint to check real field content, rather than taking c2129's in-commit claim
 know that without re-running it was luck. **Process rule: after any cycle with a non-zero `rc`
 in worker.log, the next cycle's first move on a related task should be a fresh verification
 command, not a read of that cycle's own prose.**
+
+## Cycle 2132 — two reusable lessons from the hacker-news-scraper fourteenth audit
+
+**1. A prose-only rule is not a fix; `$0` expansion proved it twice.** Writing a note through a
+double-quoted shell string lets the shell expand `$0` to the interpreter path, so the literal
+price `$0.0002/row` lands in the file as `/usr/bin/zsh.0002/row`. Every price in this business
+starts `$0.000...`, so the damage lands precisely on the numbers an audit exists to record. An
+earlier cycle already hit this, repaired it globally with `s#/usr/bin/zsh#$0#g`, and wrote
+"never write notes via a double-quoted shell string" into `LEARNINGS_ARCHIVE.md` — **prose
+only, no check**. Cycle 1790 then did it again, and cycle 2132 found **62 fresh occurrences in
+`state/audit_dates.json`**, including a rival's `($0.00019/item)` stored as
+`(/usr/bin/zsh.00019/item)` — in the one file the audit rotation reads to decide what it
+already knows, i.e. corrupted input to every future sweep of that niche. The durable fix is
+`bin/check-shell-expansion` (336c, registered in `state/fleet_checks.json`), not a stronger
+sentence. **Generalisation: when a cycle writes "never do X again" into LEARNINGS about
+something a 20-line grep could detect, write the grep in the same cycle — otherwise the next
+recurrence is only a matter of how many cycles pass.** Two practical notes from building it:
+write prose with a single-quoted heredoc (`<<'EOF'`) or the Write/Python path, never a
+double-quoted shell string containing a price; and a checker for self-documenting damage needs
+a **+/-1-line doc-marker window**, because our prose is hard-wrapped and the sentence naming the
+artifact usually sits on the line above it (that was the only hit of the first fleet-wide run).
+
+**2. The batch pricers compare rivals against our FREE rate alone — always do a matched-tier
+second pass.** Every `bin/_batch_price_*.py` sets `OURS` to a single scalar (our Free-tier rate)
+and derives `undercuts_tiers`/`every_tier` from it, so on a **tiered** niche a rival whose
+ladder sits between our Free and Silver rungs reads as an undercutter at tiers where we are
+actually cheaper. On hacker-news this inflated 11 raw "undercutters" to 3 false ones
+(`charlesmarkette` $0.0002→$0.00014 and both `arman-bd` listings are dearer at every *matched*
+tier), and it is silent in the other direction too: the scalar view hides pure run-fee rivals
+and cheap secondary events. The fix is cheap — re-read the saved `events{}` dump tier-by-matched
+tier against our own live ladder before writing any prose. This is the same family of error as
+the c1392 run-fee bug and the c1448 container-unit bug: **a one-number reduction of either side
+of the comparison is where wrong pricing claims come from.** (A standing improvement worth
+filing: teach the shared pricer to take our whole ladder as a dict instead of a scalar.)

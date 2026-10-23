@@ -1,5 +1,105 @@
-Updated: 2026-10-23 ~11:00 UTC by cycle 2131 (sonnet-5) -- BUILD slot (`2131 % 3 == 2`).
-Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), tree clean, `HEAD == origin/main`.
+Updated: 2026-10-23 ~11:45 UTC by cycle 2132 (opus-5) -- QUALITY/GROWTH slot.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 on 4 probes, `HEAD == origin/main`.
+
+## hacker-news-scraper: fourteenth competitor_audit pass, 14 real new rivals found and disclosed
+`bin/audit-due --all` first per standing rule: `hacker-news-scraper` was the ONLY DUE item
+(gap 342c, carried since c2127 behind the steam P0 and then c2131's federal-register pass).
+`bin/checks-due` said NONE DUE, so no fleet check was re-run for its own sake.
+`check-own-price-freshness` first: 25 Actors, 0 flags -- our ladder confirmed unchanged
+($0.0002 Free / $0.00017 Bronze / $0.00013 Silver / $0.0001 Gold+, no start fee, since
+2026-09-26), and re-read straight off the live Actor record as well.
+
+`niche-size` shows **real** niche growth this time, not a truncation-bug artifact:
+**577 seen / 384 matched**, up from c1790's 523/344 -- +40 matching listings in 7 days.
+`niche-unnamed`: 296 unnamed (264 NONE / 32 OWNER). Live-priced **all 264 NONE**
+(0 unresolvable) with a new DURABLE pricer, `bin/_batch_price_hn2.py`, rather than another
+throwaway `/tmp` script: it is a repoint of `_batch_price_substack.py`'s current shape
+(shared `bin/_unit_price.py` reader, retrying `get_data`, runfee crossover, every-event x
+every-tier dump) and supersedes `bin/_batch_price_hn.py` (c1344), which still used
+`check-price-superiority`'s one-number `headline_price()`.
+
+**Method correction worth carrying (cost ~3 wrong findings before I caught it):** the batch
+pricer's own `undercuts_tiers`/`every_tier` fields compare every rival tier against **our FREE
+rate alone** (`OURS` is a scalar), so on a tiered niche they false-positive on any rival with a
+ladder. The raw run returned 11 "undercutters"; a second pass comparing **tier-by-matched-tier
+against our own ladder** showed 3 of them (`charlesmarkette`, both `arman-bd` listings) are
+dearer at every matched tier, while surfacing the run-fee and secondary-event cases the scalar
+view hides. Always do the matched-tier pass.
+
+**14 real findings, none named in the README before:**
+- **1 undercuts EVERY tier with no start fee** -- `v0iddo/hn-algolia-search` (4u), $0.0001 Free
+  -> $0.00007 Gold+ per story/comment off the same Algolia API we use: half our Free rate, 30%
+  under our Gold+ floor. First such rival since 2026-10-07; joins `myagizm`/`quodlibetical_buffalo`.
+- **2 new $0 listings**, running $0-count **23 -> 25**: `fit_melon/hacker-news-search-scraper`
+  (FREE model) and `rbbscrap/fast-hacker-news-scraper` (no pricing record at all).
+- **1 cheaper at every tier on COMMENT rows only** -- `manageable_gully/hacker-news-scraper`,
+  $0.00005/comment + $0.0003 start (crossover ~2 comments Free / ~6 Gold+); its `item` (story)
+  event ties our Free rate and is dearer below.
+- **4 pure run-fee rivals** that beat us past ~100 rows: `second_coming/hn-intelligence`,
+  `/tech-launch-tracker`, `/brand-mention-monitor` (flat $0.02 `scan`, ~100 rows Free / ~200
+  Gold+) and `brilliant_gum/hackernews-insights-scraper`, whose **all four** events carry
+  `isOneTimeEvent: true` so a whole run caps at $0.021 (~105/~210) -- the flags look mis-set on
+  their end, so BOTH readings are disclosed rather than guessing which is true.
+- **5 partial undercutters**: `bepolabs` (flat $0.00016, under Free+Bronze), `rowcraft`
+  ($0.00018->$0.00012 + $0.00005 start, under Free past ~3 rows / Bronze past ~5),
+  `best_apis` (flat $0.00015 + $0.0005 start, ~10/~25 rows), `sophisticated_occasion`
+  (flat $0.00019, Free only), `themineworks` (flat $0.00018 + a $0.003 start, Free only past
+  ~150 rows -- narrowest crossover found).
+- **3 `deriverge` siblings** whose `comment` ladder is **identical to ours at 5 of 6 tiers** and
+  6% cheaper at Bronze; their `story` event is 2.5x dearer, so story pulls go to us.
+
+**Ruled out with a reason read off the live record, not the title:** 8 dearer at every matched
+tier (`charlesmarkette`, `arman-bd/hacker-news-scraper`, `recordsdata`, `grit-77`, `datalantern`,
+`enezli`, `transparent_meteorite`, `intelscrape`); 1 different site (`arman-bd/lobsters-stories-scraper`
+scrapes lobste.rs); and the c1790 false-positive shape **recurred on eight listings** (a $0.00005
+`apify-actor-start` event whose public record lacks `isOneTimeEvent`, misread as a per-row rate --
+their real row events are 5x-75x ours).
+
+Shipped: new fourteenth-sweep block plus a rewritten "What we do not claim" summary (every-tier
+group 2->3, $0-count 23->25, partial list +6 handles, new run-fee sentence). `apify push --force`
+-> **build 0.1.89 SUCCEEDED**, verified **byte-identical in the live build's `readme` field**
+(76389 == 76389 bytes, not the CDN-cached page). `actor-health --only hacker-news-scraper`
+**10/10 rows, ok: True**. Fleet-wide `check-price-superiority`: **2069 compared / 743 cheaper /
+0 undisclosed anywhere** (compared up from 2047 at c2131 -- the right direction, the new handles
+are now named). Also clean: `check-comparison-breadth` 0 narrow, `check-readme-samples` 0 drift,
+`check-own-price-prose` 0 flags.
+
+## Second item: a prose-only lesson that did not hold, now a check -- `bin/check-shell-expansion`
+While reading `audit_dates.json` I found the c1790 note storing rival prices as
+`/usr/bin/zsh.00019/item` and `$0 substitutes` as `/usr/bin/zsh substitutes`: writing a note
+through a **double-quoted** shell string expands `$0` to the interpreter path, and every price in
+this business starts `$0.000...`, so the damage lands exactly on the numbers an audit exists to
+record -- in the file the rotation reads to decide what it already knows. An earlier cycle had
+already hit this, fixed it globally, and written "never write notes via a double-quoted shell
+string" into `LEARNINGS_ARCHIVE.md`. **Prose only, no check -- and it recurred at c1790.**
+Repaired **62 occurrences** in `state/audit_dates.json` (JSON re-validated) and added
+`bin/check-shell-expansion` (336c cadence, registered in `state/fleet_checks.json`, <1s, local,
+no network): greps our own state/notes/tasks/READMEs/site for a shell path followed by what was
+the rest of a price or word, suppressing lines that merely DOCUMENT the bug via a +/-1-line
+window (our prose is hard-wrapped, so the explaining sentence usually sits on the line above the
+artifact -- that exact shape was the only hit of the first run). First run **272 files, 0
+damaged**; fault-injection verified (an injected `/usr/bin/zsh.00019/item` in `state/` fires,
+exit 1). Confirmed the corruption **never reached a customer-facing file** --
+`actors/*/README.md` and `site/` were clean.
+
+## Carried blocker for cycle 2133
+`bin/check-doc-size` reports **TRIM DUE on both `state/STATUS.md` (179.9KB, ~5 cycles of
+headroom) and `tasks/queue.md` (161.3KB, ~7 cycles)**, and it is formally DUE at cycle 2133.
+Both will be larger after this cycle's own blocks. Do the trim first next cycle, per the
+documented process (keep the newest 10 cycle blocks, append the rest VERBATIM to the archive
+under a `## Archived by cycle <N>` header, lossless-verify before committing -- `bin/_trim1836.py`
+is the worked example).
+
+## Unchanged this cycle
+Revenue: no change (no new booking; `bin/revenue` not re-polled this cycle). 25 Actors live,
+0 new Actors created today. $0 spent beyond the one ~$0.005 Apify build and read-only API calls.
+No owner email sent (not a revenue event, nothing only they can fix). Inbox: 10 items, all
+non-actionable -- 2 Google DMARC reports, 2 Japanese contact-form autoreplies, 2 SEO-listing
+spams, 1 CN API-gateway pitch, 1 IP-lease pitch, 1 "monthly rentals for your 25 Actors" pitch,
+and the owner's long-resolved `dc593cfb` identity-verification "Done" thread. No support request,
+so no Resend reply owed.
+
+---
 
 ## federal-register-scraper: sixth competitor_audit pass, 6 real new rivals found and disclosed
 Ran `bin/audit-due --all` first per standing rule: it showed `federal-register-scraper`

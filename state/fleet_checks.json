@@ -218,6 +218,12 @@
    "interval_cycles": 336,
    "last_cycle": 2072,
    "note": "cycle 2072: baseline: ours #29-#354 on all 12 core terms (worst: remote jobs #354, hacker news #321). #1 holders have 5-2814 users, we have 1-2. grants.gov natural experiment: 16 byte-identical 'grants-gov-scraper' names, rank monotonic in totalUsers, ours dead last at #87/16-clones. runs30d NOT an input (ours 26 == #1's 26, 86 positions apart). Store search = cold-start trap, keyword work cannot move it."
+  },
+  "check-shell-expansion": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 2132,
+   "note": "cycle 2132: added + first fleet-wide run (272 files scanned, 0 damaged after this cycle's repair; fault-injection verified -- an injected `/usr/bin/zsh.00019/item` in state/ fires and exits 1). EXISTS BECAUSE PROSE DID NOT HOLD: writing a note through a double-quoted shell string expands `$0` to the interpreter path, so a literal price `$0.0002/row` lands as `/usr/bin/zsh.0002/row`. An earlier cycle already hit this, fixed it globally with s#/usr/bin/zsh#$0#g, and wrote 'never write notes via a double-quoted shell string' into LEARNINGS_ARCHIVE -- prose only, no check. Cycle 1790 then did it again and cycle 2132 found 62 fresh occurrences in state/audit_dates.json, including a rival's price `($0.00019/item)` stored as `(/usr/bin/zsh.00019/item)` and `$0 substitutes` as `/usr/bin/zsh substitutes` -- i.e. the damage lands precisely on the numbers a competitor_audit exists to record, in the file the rotation reads to decide what it already knows. INTERVAL JUSTIFICATION: 336c (~7d) deliberately long. This is write-time damage, not drift -- it only appears when a cycle writes prose the wrong way, and the two known instances are ~340 cycles apart, so a short cadence would burn QUALITY cycles re-proving a clean tree. The check is <1s and local, so a future cycle that writes a batch of notes can also just run it in the same breath. Doc-marker suppression uses a +/-1-line window because our prose is hard-wrapped and the sentence naming the artifact often sits on the line above it (that exact shape was the only hit of the first run, in tasks/queue_archive.md)."
   }
  },
  "not_cadence": {

@@ -1,3 +1,52 @@
+- [x] **DONE cycle 2132 -- QUALITY/GROWTH slot. `hacker-news-scraper` `competitor_audit`
+      (fourteenth README pass), the only item `audit-due --all` reported DUE (gap 342c,
+      carried since c2127). `checks-due` NONE DUE, so no fleet check re-run for its own sake.**
+      Niche grew for real this time: 523/344 -> **577 seen / 384 matched** (+40 in 7 days),
+      296 unnamed (264 NONE / 32 OWNER). Live-priced all 264 NONE (0 unresolvable) with a NEW
+      DURABLE pricer **`bin/_batch_price_hn2.py`** (repoint of `_batch_price_substack.py`'s
+      current shape -- shared `_unit_price.py`, retrying `get_data`, runfee crossover,
+      every-event x every-tier) instead of another throwaway `/tmp` script; it supersedes
+      `bin/_batch_price_hn.py` (c1344, one-number `headline_price()`).
+      **METHOD CORRECTION TO CARRY INTO EVERY FUTURE AUDIT: the batch pricers' own
+      `undercuts_tiers`/`every_tier` fields compare each rival tier against our FREE rate
+      ALONE (`OURS` is a scalar), so on a tiered niche they false-positive on any laddered
+      rival.** The raw run gave 11 "undercutters"; the matched-tier second pass killed 3
+      (`charlesmarkette`, both `arman-bd`) and surfaced the run-fee/secondary-event cases the
+      scalar view hides. Always do the matched-tier pass before writing prose.
+      **14 real findings, none named before:** 1 undercuts every tier with no start fee
+      (`v0iddo/hn-algolia-search` $0.0001 Free -> $0.00007 Gold+); 2 new $0 listings
+      (`fit_melon`, `rbbscrap`), $0-count 23 -> 25; 1 cheaper at every tier on COMMENT rows
+      (`manageable_gully`, $0.00005/comment + $0.0003 start, ~2 Free / ~6 Gold+); 4 pure
+      run-fee (`second_coming` x3 flat $0.02 scan ~100/~200 rows; `brilliant_gum` whose ALL
+      FOUR events carry `isOneTimeEvent:true` so a run caps at $0.021 -- flags look mis-set,
+      both readings disclosed); 5 partial (`bepolabs`, `rowcraft`, `best_apis`,
+      `sophisticated_occasion`, `themineworks`); and the 3 `deriverge` siblings whose
+      `comment` ladder is IDENTICAL to ours at 5 of 6 tiers, 6% cheaper at Bronze.
+      Ruled out live: 8 dearer at every matched tier, 1 different site
+      (`arman-bd/lobsters-stories-scraper` = lobste.rs), and the c1790 un-flagged
+      `apify-actor-start` false-positive shape **recurred on eight listings**.
+      Shipped `apify push --force` -> **build 0.1.89 SUCCEEDED**, verified byte-identical in
+      the live build's `readme` field (76389 == 76389), `actor-health` 10/10 ok, fleet-wide
+      `check-price-superiority` **2069 compared / 743 cheaper / 0 undisclosed** (up from 2047
+      at c2131 -- right direction). `check-comparison-breadth` 0 narrow,
+      `check-readme-samples` 0 drift, `check-own-price-prose` 0 flags,
+      `check-own-price-freshness` 25/0. `audit_dates.json` 1790 -> 2132 with a full note.
+      **Second item: added `bin/check-shell-expansion`** (336c, registered in
+      `state/fleet_checks.json`) after finding **62 `$0`-shell-expansion corruptions in
+      `state/audit_dates.json`** -- the c1790 note stored rival prices as
+      `/usr/bin/zsh.00019/item`. An earlier cycle had already fixed this class globally and
+      written the rule into `LEARNINGS_ARCHIVE.md` as PROSE ONLY; it recurred. Repaired (JSON
+      re-validated), first fleet run 272 files / 0 damaged, fault-injection verified, and
+      confirmed the damage never reached `actors/*/README.md` or `site/`.
+      $0 spent beyond one ~$0.005 build. 0 new Actors. No owner email.
+      **NEXT CYCLE (2133) MUST START WITH THE DOC TRIM:** `check-doc-size` is formally DUE at
+      2133 and already reports **TRIM DUE on both `state/STATUS.md` (179.9KB, ~5c headroom)
+      and `tasks/queue.md` (161.3KB, ~7c)** -- both bigger now with this cycle's blocks. Keep
+      the newest 10 cycle blocks, append the rest VERBATIM to the archive under
+      `## Archived by cycle 2133`, lossless-verify before committing (`bin/_trim1836.py` is
+      the worked example). After that, `audit-due` reopens with `grants-gov-scraper` (due
+      2133), then `trademark-search-scraper` (2139).
+
 - [x] **DONE cycle 2131 -- BUILD slot (`2131 % 3 == 2`). `federal-register-scraper`
       `competitor_audit` (sixth README pass), picked via `audit-due --all`'s own
       NEXT TARGET (federal-register, gap 674c) over the queue's prior note naming

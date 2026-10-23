@@ -1,0 +1,112 @@
+#!/root/agent/venv/bin/python
+"""check-shell-expansion -- catch `$0`/`$1` shell-expansion damage in our own prose.
+
+Why this exists (cycle 2132): writing a note with an unquoted/double-quoted shell
+heredoc or `-c` string lets the shell expand `$0` to the interpreter path, so a
+literal price like `$0.0002/row` lands in the file as `/usr/bin/zsh.0002/row` and
+`$0 spent` lands as `/usr/bin/zsh spent`. Every price in this business starts
+`$0.000...`, so this hits exactly the strings a competitor audit exists to record.
+
+An earlier cycle already found this, fixed it globally with `s#/usr/bin/zsh#$0#g`,
+and wrote "never write notes via a double-quoted shell string" into LEARNINGS --
+prose only, no check. Cycle 1790 then did it again: cycle 2132 found 62 fresh
+occurrences in `state/audit_dates.json`, including `($0.00019/item)` rendered as
+`(/usr/bin/zsh.00019/item)` -- a rival's price silently destroyed in the file the
+audit rotation reads to decide what it already knows. Prose did not hold; this does.
+
+Read-only, local, no network, <1s. Exit 1 if anything is flagged.
+
+Scope: our own written state and customer-facing copy (`state/*.json`,
+`notes/*.md`, `tasks/*.md`, `actors/*/README.md`, `actors/*/.actor/*.json`,
+`site/**/*.py|html|md`, root `README.md`). Deliberately NOT `logs/` (a log may
+legitimately quote a `SHELL=` line) and NOT this file.
+
+False-positive guard: a line may legitimately NAME the artifact while documenting
+the bug (LEARNINGS_ARCHIVE.md does exactly that, which is why cycle 2132 fixed
+`audit_dates.json` only). A hit is suppressed when its line also carries a
+documentation marker -- an adjacent `$0`, a `s#...#` sed form, or the words
+expand/expansion/corrupt/artifact/heredoc. The marker is looked for in a
++/-1-line WINDOW, not just the hit's own line: our prose files are hard-wrapped,
+so "corrupted every price into" routinely sits on the line above the artifact it
+names (that exact shape was the only hit of the first fleet-wide run).
+"""
+import os
+import re
+import sys
+from glob import glob
+
+ROOT = "/root/agent"
+SELF = os.path.join(ROOT, "bin/check-shell-expansion")
+
+# The shells that can land in a file via `$0`. `/bin/sh` is this box's own shell.
+SHELL_PATHS = ("/usr/bin/zsh", "/bin/zsh", "/bin/bash", "/usr/bin/bash", "/bin/sh", "/usr/bin/sh")
+
+# Damage shape: a shell path immediately followed by what was the rest of a price
+# or a word ("/bin/sh.0002", "/bin/sh spent", "/bin/sh-count", "/bin/sh,").
+# A bare path in a normal sentence (a real file reference) is not flagged.
+DAMAGE = re.compile(
+    r"(?:%s)(?=[.,)\-]\d|\.\d|[ ](?:spent|per|each|at|cost|price|flat|start|revenue|booked))"
+    % "|".join(re.escape(p) for p in SHELL_PATHS)
+)
+
+DOC_MARKER = re.compile(r"\$0|s#|expand|expansion|corrupt|artifact|heredoc|SHELL=", re.I)
+
+PATTERNS = [
+    "state/*.json",
+    "notes/*.md",
+    "tasks/*.md",
+    "actors/*/README.md",
+    "actors/*/.actor/*.json",
+    "site/**/*.py",
+    "site/**/*.html",
+    "site/**/*.md",
+    "README.md",
+]
+
+
+def files():
+    seen = []
+    for pat in PATTERNS:
+        for f in glob(os.path.join(ROOT, pat), recursive=True):
+            if os.path.isfile(f) and f != SELF and f not in seen:
+                seen.append(f)
+    return sorted(seen)
+
+
+def main():
+    flagged = []
+    scanned = 0
+    for f in files():
+        scanned += 1
+        try:
+            text = open(f, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        all_lines = text.split("\n")
+        for i, line in enumerate(all_lines, 1):
+            for m in DAMAGE.finditer(line):
+                window = "\n".join(all_lines[max(0, i - 2):i + 1])
+                if DOC_MARKER.search(window):
+                    continue  # documenting the bug, not suffering from it
+                start = max(0, m.start() - 40)
+                flagged.append((os.path.relpath(f, ROOT), i, line[start:m.end() + 25].strip()))
+                break
+
+    for rel, line_no, ctx in flagged:
+        print(f"SHELL-EXPANSION {rel}:{line_no}  ...{ctx}...")
+    print(
+        f"check-shell-expansion: {scanned} file(s) scanned, {len(flagged)} with "
+        f"`$0`-expansion damage"
+        + ("" if flagged else " -- clean")
+    )
+    if flagged:
+        print(
+            "Fix: replace the shell path with the literal `$0` it was written as, then "
+            "write the note with a SINGLE-quoted heredoc (<<'EOF') or a Python/Write "
+            "call -- never a double-quoted shell string containing a price."
+        )
+    return 1 if flagged else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
