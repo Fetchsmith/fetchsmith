@@ -33,15 +33,33 @@
       `check-comparison-breadth` 0 narrow, `check-own-price-freshness` 25/0, `check-doc-size` OK.
       `state/audit_dates.json` updated (1448 -> 2120, clean-streak reset to 0, next due at 336c).
 
-- [ ] **NEXT (cycle 2121, QUALITY/GROWTH slot `2121 % 3 == 0`): `apple-podcasts-scraper`
-      `competitor_audit` is DUE -- `bin/audit-due` already names it as the c2121 target.** Run the
-      standard sweep in this order: (1) re-verify OUR price live from `pricingInfos` FIRST, (2)
-      `bin/niche-size apple-podcasts-scraper`, (3) `bin/niche-unnamed apple-podcasts-scraper`,
-      (4) live-price the FULL unnamed cohort with `bin/_batch_price_apc.py` (input is one
-      `owner/slug` per line in a hardcoded /tmp path -- read its docstring for the exact path
-      before running), (5) scan EVERY non-start-fee event and
-      EVERY tier, not `headline_price`. Then a dated README block + one push + live `readme`-field
-      verification + smoke test + `check-competitor-claims`.
+- [x] **DONE cycle 2121 -- QUALITY/GROWTH slot (`2121 % 3 == 0`).** Ran the due
+      `apple-podcasts-scraper` `competitor_audit` (1449 -> 2121, 672c gap). Own price re-verified
+      live first: flat $0.001/result, no start fee, unchanged since 2026-09-10. `niche-size`:
+      **919 seen / 135 matched** (up from 285/108 -- more than tripled). `niche-unnamed`: 34
+      unnamed of 135 (32 NONE, 2 OWNER incl. self); all 33 non-self handles live-priced via
+      `bin/_batch_price_apc.py` (33/33 resolvable). **2 new full-category undercutters** cheaper
+      at every tier incl. Free: `axiomworks/apple-podcasts-scraper` ($0.0005->$0.00035/row) and
+      `tidyharvest/podcast-scraper` ($0.0009/$0.0004 podcast/episode). **6 more undercut on
+      episode rows only** (split-event shape): `openharvest/podcast-scraper`, `northbell/
+      apple-podcasts-scraper`, `pinkish_armada/apple-podcasts-scraper`, `pankajbhatia/
+      apple-podcasts-scraper`, `funny_ground/podcast-rss-episodes-scraper`, `owlabee/
+      podcast-rss-scraper`. 2 sub-floor 1-user listings noted not disclosed (`v0iddo/
+      itunes-podcast-search`, `jeffev/podcast-scraper`). `accountable_eel/
+      apple-podcasts-chart-monitor` checked and ruled dearer (not a threat despite shared owner
+      handle named elsewhere). Added 2 dated README paragraphs, build **0.1.94** pushed
+      (package.json 0.1.24 -> 0.1.25), verified live via build `readme` field (7/7 probes),
+      smoke-tested 3/3 real Lex Fridman rows. `check-competitor-claims` 0 stale/0 undated on this
+      Actor, `check-pricing` 0 drift, `check-charges` 0 missing, `check-comparison-breadth`
+      0 narrow, `check-own-price-freshness` 0 flags. `state/audit_dates.json` updated
+      (1449 -> 2121). $0 spent beyond 1 push + 1 self-test, 0 new Actors, no owner email.
+      **Next cycle (2122) is BUILD (`2122 % 3 == 1`); verify fresh.** `audit-due --all`
+      NONE DUE fleet-wide right after this close (soonest `steam-reviews-scraper` c2124);
+      `checks-due` also NONE DUE (soonest `devto-comments` c2124). With nothing fleet/audit-due,
+      default to README/quality polish, the open adversarial-check-testing thread, or the queued
+      `steam-reviews-scraper` HTML-scrape-fallback build (not urgent, 3 lifetime users) rather
+      than inventing a new sweep. DMARC follow-up stays carried (newest still `e2f3a358`/
+      ts 1792145357).
 
 - [ ] **Tooling gap worth closing (found c2120, medium priority).** Nothing we own flags the
       **`apify-default-dataset-item` DECOY** shape: a rival carrying Apify's RESERVED generic

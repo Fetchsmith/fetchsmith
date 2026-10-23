@@ -1,3 +1,53 @@
+Updated: 2026-10-23 ~06:12 UTC by cycle 2121 (sonnet-5) -- QUALITY/GROWTH slot (`2121 % 3 == 0`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 5 probed routes
+(`/`, `/tools`, `/pricing`, `/blog`, `/tools/apple-podcasts-scraper`). Inbox unchanged (same 10
+non-actionable items, DMARC follow-up still blocked, newest still `e2f3a358`/ts 1792145357,
+owner's `dc593cfb` thread already resolved). Revenue essentially unchanged (25 Actors, 47 users,
+701 runs/30d, $0 booked). `checks-due` NONE DUE (soonest `devto-comments` c2124).
+
+**Main work: ran the due `apple-podcasts-scraper` `competitor_audit` (last 1449, 672c gap,
+confirmed by `audit-due --all` as the sole DUE item at the top of the cycle).** Own price
+re-verified live first: flat $0.001/result, no Actor-start fee, unchanged since 2026-09-10.
+`niche-size` resweep: **919 seen / 135 matched** (up from 285/108 at 1449 -- more than tripled).
+`niche-unnamed` found 34 unnamed of 135 (32 NONE, 2 OWNER incl. our own self-listing); all 33
+non-self handles live-priced individually via `bin/_batch_price_apc.py` (33/33 resolvable, ~20s).
+
+**Findings: 2 new full-category undercutters, cheaper than us at every tier including Free, no
+caveat.** `axiomworks/apple-podcasts-scraper` (2u) prices every row $0.0005 (Free) -> $0.00035
+(Gold+), 50-65% under our flat $0.001, only a reserved $0.00005 Actor-start fee. `tidyharvest/
+podcast-scraper` (2u) prices podcasts $0.0009 -> $0.00045 and episodes $0.0004 -> $0.0002, 10-80%
+under, no start fee. **6 more undercut on episode rows only** (the split-event shape this README
+already documents repeatedly): `openharvest/podcast-scraper` (3u, episode $0.0003 vs podcast
+$0.001 tie), `northbell/apple-podcasts-scraper` (2u, episode $0.0005->$0.0004, podcast dearer),
+`pinkish_armada/apple-podcasts-scraper` (2u, episode $0.0002, podcast ties), `pankajbhatia/
+apple-podcasts-scraper` (2u, episode $0.0003, podcast dearer), `funny_ground/
+podcast-rss-episodes-scraper` (2u, episodes-only, flat $0.0005), `owlabee/podcast-rss-scraper`
+(2u, episode $0.0005, show ties, also sells a transcript add-on we lack). 2 sub-floor 1-user
+listings noted but not individually disclosed (`v0iddo/itunes-podcast-search`, `jeffev/
+podcast-scraper`). One listing checked and ruled **not** a threat despite a shared owner handle
+already named elsewhere: `accountable_eel/apple-podcasts-chart-monitor` (2u) is dearer at every
+tier ($0.003->$0.0015 vs our $0.001). Remaining unnamed are transcription/lead-gen exclusions
+(same categories already ruled out in this README) or in-scope but dearer/parity listings.
+
+Added 2 dated README paragraphs, build **0.1.94** pushed (package.json 0.1.24 -> 0.1.25),
+verified live via the build's own `readme` field (7/7 probes). Smoke-tested 3/3 real Lex Fridman
+rows via a live search run. `check-competitor-claims` 0 stale/0 undated on this Actor,
+`check-pricing` 0 drift (25/30), `check-charges` 0 missing (25/25), `check-comparison-breadth`
+0 narrow, `check-own-price-freshness` 0 flags. `state/audit_dates.json` updated (1449 -> 2121).
+$0 spent beyond 1 push + 1 self-test run, 0 new Actors, 0 code changes. No owner email (not a
+revenue event, nothing owner-only to fix).
+
+**Next cycle (2122) is BUILD (`2122 % 3 == 1`); verify fresh.** `audit-due --all` right after
+this close: NONE DUE fleet-wide, soonest `steam-reviews-scraper` at c2124. `checks-due` also
+NONE DUE, soonest `devto-comments` c2124. With nothing fleet/audit-due, default to README/quality
+polish or hold for a real signal rather than inventing a sweep inside an already-closed axis.
+DMARC follow-up stays carried until a report newer than ts 1792145357 appears in `inbox list`.
+The open adversarial-check-testing thread (candidates not yet read: `check-primary-event`,
+`channel-mix`, `audit-due`, `checks-due`, `check-example-input`) and the steam-reviews-scraper
+HTML-scrape-fallback build (queued c2117, not urgent, 3 lifetime users) both remain open for a
+future idle slot.
+
+---
 Updated: 2026-10-23 ~05:50 UTC by cycle 2120 (opus-5) -- BUILD slot (`2120 % 3 == 2`).
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on all probed routes
 (`/`, `/tools`, `/pricing`, `/blog`, `/tools/google-play-reviews-scraper`). Inbox: 0 new since
