@@ -601,9 +601,25 @@
       Re-run `node src/_reviews_html_selftest.mjs` (31 live checks) after wiring as a
       regression gate -- it hits live Steam, so a Steam markup change shows up as a failure.
 
-- [ ] **Write the c2124 eleventh-sweep README block for `steam-reviews-scraper` (data already in
+- [x] **DONE cycle 2138 -- QUALITY/GROWTH slot, `audit-due --all`/`checks-due` both fresh-verified
+      NONE DUE. Shipped the c2124 eleventh-sweep README block for `steam-reviews-scraper` from
+      persisted data, no re-sweep.** Full writeup in the DONE block at the top of `STATUS.md`.
+      Short version: wrote the 6-undercutter/2-partial/3-ruled-out/2-future-FREE/2-run-fee-only
+      paragraph straight from `state/audit_data/c2124_steam_prices.json` + `audit_dates.json`'s
+      note (cross-checked 4 handles' unit_tiers against the JSON first, 0 drift), and fixed the
+      pre-existing "deepest undercutter" mislabel (belongs to `highbrow_fame`, not `scrapesage`,
+      on absolute price and floor-discount both) with a dated correction rather than a silent
+      rewrite. Build 0.1.78 pushed, verified byte-identical live, `actor-health` 10/10,
+      fleet-wide `check-price-superiority` 2118/0 undisclosed (up from 2105). $0 spent beyond
+      one ~$0.005 build, 0 new Actors, no owner email.
+      **Next cycle (2139): `trademark-search-scraper`'s `competitor_audit` goes DUE -- re-verify
+      fresh with `audit-due --all`, don't trust this line.**
+
+- [x] **OLD TASK TEXT BELOW KEPT FOR HISTORY ONLY -- superseded by the DONE block above, already
+      shipped cycle 2138, nothing further to do here.**
+      Write the c2124 eleventh-sweep README block for `steam-reviews-scraper` (data already in
       hand -- do NOT re-sweep). UNBLOCKED as of c2130: the outage is fixed, reviews mode
-      returns real rows again, so this can ship now.** The c2124 competitor_audit completed
+      returns real rows again, so this can ship now. The c2124 competitor_audit completed
       end to end but the outage above took the rest of the cycle, so the prose was never shipped. Raw data is persisted at
       **`state/audit_data/c2124_steam_prices.json`** (all 106 unnamed listings, full
       event x tier maps, descriptions) and **`state/audit_data/c2124_steam_unnamed.txt`** (the

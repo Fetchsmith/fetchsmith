@@ -1,5 +1,58 @@
-Updated: 2026-10-23 ~14:10 UTC by cycle 2137 (sonnet-5) -- uk-find-a-tender-scraper competitor_audit.
+Updated: 2026-10-23 ~14:40 UTC by cycle 2138 (sonnet-5) -- steam-reviews-scraper eleventh-sweep README write-up (QUALITY/GROWTH, no audits/checks due).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## steam-reviews-scraper: shipped the queued eleventh-sweep README paragraph (data already in hand, no re-sweep)
+`bin/audit-due --all` and `bin/checks-due` run fresh first per standing rule: both **NONE DUE**
+(soonest `trademark-search-scraper` audit in 1 cycle, `check-row-floor` in 10 cycles) --
+confirmed a genuine idle QUALITY/GROWTH slot. Services active, site 200 on `/` and `/tools`,
+`HEAD == origin/main`, tree clean pre-cycle. Inbox unchanged (10 items, all previously triaged
+spam/DMARC/resolved-owner-thread; `bin/inbox show dc593cfb` returned nothing new to add).
+
+Picked the open queue item from c2124: that cycle's `competitor_audit` found the Valve
+`appreviews` outage (fixed at c2128-2130) and a real 6-undercutter pricing result, but ran out of
+time before writing the README prose. Data was fully persisted
+(`state/audit_data/c2124_steam_prices.json`, 106 listings; `audit_dates.json`'s note) so this
+cycle wrote the prose **without re-sweeping**, per the explicit carried instruction.
+
+Cross-checked the note's numbers against the persisted JSON before writing (`tubetext`,
+`deriverge`, `tidyharvest`, `s_actors` unit_tiers/start_fee all matched exactly, 0 drift) and
+wrote the eleventh-sweep paragraph covering all of it: 4 automated-flag undercutters
+(`tubetext` $0.0002->$0.00015 no-start-fee-crossover-row-1, `deriverge` $0.00045->$0.000225 no
+start fee, `tidyharvest` $0.0005->$0.00024 no start fee, marginal `s_actors` $0.00049/$0.00038/
+$0.00029 + $0.001 start fee), 2 hand-read AMBIGUOUS undercutters (`pushbuild/steam-store` flat
+$0.0002, `mediapro-tools` flat $0.0003 tying our GOLD+ floor), 2 partials (`olsols4`, `joey001`),
+3 ruled out (`best_apis`, both `recordsdata` listings), 2 future-dated FREE flips
+(`luminar` 2026-10-24, `entrogix_works` 2026-10-25, out of scope), and 2 run-fee-only listings
+(`brilliant_gum`, `remarkable_whipscorpion`, the second excluded as analysis-only not a scraper).
+
+**Also fixed the pre-existing inaccuracy c2124 flagged but didn't fix:** the tenth-sweep
+paragraph called `scrapesage/steam-scraper` "the deepest undercutter in this niche" while the
+same paragraph names `highbrow_fame/steam-games-reviews` at a cheaper absolute rate ($0.0001
+flat) and a deeper discount against our floor (3x vs 2.3x) -- requalified scrapesage's label to
+"deepest rung-for-rung tiered" with a dated correction note rather than silently rewriting it.
+
+Bumped `package.json` 0.1.21->0.1.22, `apify push --force` -> build **0.1.78 SUCCEEDED**,
+verified **byte-identical live via the Builds API** (56563 == 56563 bytes, "eleventh sweep"
+string confirmed present). `actor-health --only steam-reviews-scraper`: **10/10 rows, ok: True**.
+Fleet-wide `check-price-superiority`: **2118 compared / 773 cheaper / 0 undisclosed** (up from
+2105 at c2137). Also clean: `check-comparison-breadth` 0 narrow, `check-readme-samples` 0 drift
+(39 blocks/98 bullets/736 values), `check-own-price-freshness` 25/0. `audit_dates.json`'s note
+updated in place to record the shipped write-up (no cycle-number bump -- the audit itself is
+still dated 2124; this was finishing its deferred write-up, not a new sweep).
+
+$0 spent beyond one ~$0.005 Apify build (read-only GETs otherwise). 0 new Actors. No owner email
+(routine README catch-up, not a revenue event or owner-only blocker).
+
+**Next cycle (2139): `trademark-search-scraper`'s `competitor_audit` goes DUE -- re-verify fresh
+with `bin/audit-due --all`, don't trust this line. `checks-due` was NONE DUE (soonest
+`check-row-floor` in 9 cycles after this one).** If genuinely idle again, remaining open
+QUALITY-slot items in `queue.md`: the adversarial-check-testing thread (read one of
+`check-primary-event`/`channel-mix`/`audit-due`/`checks-due`/`check-example-input`), the
+cadence-vs-commit-path audit of other fleet checks (c2136), or the new shutdown-language checker
+proposal (c2124).
+
+Updated: 2026-10-23 ~14:10 UTC by cycle 2137 (sonnet-5) -- uk-find-a-tender-scraper competitor_audit.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main`.
 
 ## uk-find-a-tender-scraper: competitor_audit (1464 -> 2137), niche re-opened hard, 8 new undercutters found and disclosed
 `bin/audit-due --all` first per standing rule: `uk-find-a-tender-scraper` was the only DUE item
