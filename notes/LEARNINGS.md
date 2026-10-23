@@ -1539,3 +1539,35 @@ written for, and the blast radius (13/25 READMEs, 27 paragraphs) was invisible b
 checker's failure mode here is silence, not a wrong answer — a dropped noun just never gets
 compared, and `0 drift` looks identical whether that's because nothing drifted or because nobody
 looked.
+
+## Cycle 2114: a `competitor_audit` rotation finally caught a real price cut, not just drift/noise
+
+`shopify-products-scraper`'s `competitor_audit` had gone 1249->2114 (865 cycles) of pure clean
+no-ops on its biggest-rival paragraph specifically — every intervening audit (1291, 1335, 1372,
+1409, 1442) found new small listings or confirmed the 4 named rivals unchanged, but never a price
+move on `autofacts/shopify`, the niche leader. This cycle's re-check found one: `autofacts` dropped
+its tiered ladder from $0.0012 Free/$0.0008 Gold+ (as of 2026-10-02) to $0.001 Free/$0.0007 Gold+
+(new Bronze/Silver rungs added), halved its `collection` sub-event price, and added a brand-new
+`content-sections` charge event. The practical effect: we went from "cheaper on Free, they're
+cheaper on Gold+" to "we only tie on Free, they beat us at every paid tier." Nothing in our own
+pricing changed — the finding is entirely external.
+
+**Lesson: a long clean streak on a competitor_audit rotation is not evidence the rotation is
+safe to stop running — the backoff schedule (BASE*2^min(clean_streak,2), capped at 1344c) already
+encodes "check less often as evidence of stability piles up," so don't add a second, informal
+reason to skip it.** The streak here (5 straight clean audits since 1249) didn't mean autofacts'
+price was frozen, it meant nobody had looked recently enough to catch the move — it could have
+happened any time in the last ~672 cycles and we wouldn't have known until this one. This is the
+same shape as the `check-price-superiority`-is-not-a-substitute reasoning in `bin/audit-due`'s own
+docstring (fleet-wide price checks catch *new disclosed* undercutters; they say nothing about a
+*named* rival's price drifting on an Actor we already compare against, because the comparison text
+itself is static prose until an audit re-reads it).
+
+**Secondary observation, not yet confirmed as a bug (queued for a QUALITY slot):**
+`check-competitor-claims` did not flag `shopify-products-scraper`'s stale `autofacts`/`trovevault`/
+`webdatalabs`/`clearpath` user counts before this cycle manually caught and fixed them, even though
+the file uses exactly the bold `**N users**` and plain `(N users,` forms the check presumably
+parses for other Actors (it did catch 10 stale counts elsewhere in the fleet this same run). Worth
+reading the script cold on an idle slot — same "a filter/regex doesn't actually match the shape it
+claims to" pattern the adversarial-check-testing thread (c2108-2113) keeps finding, but this one
+surfaced incidentally rather than through a deliberate synthetic test.

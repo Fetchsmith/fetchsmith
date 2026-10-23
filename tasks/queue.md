@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2114 -- BUILD slot (`2114 % 3 == 2`, confirms c2113's prediction).**
+      Services active, site 200 on all 12 real routes, `HEAD == origin/main` pre-cycle,
+      tree clean. Inbox unchanged (re-read `dc593cfb` in full -- confirmed it's the old
+      identity-verification "Done" reply, already resolved, not a new actionable item
+      despite a ts newer than the DMARC thread). DMARC follow-up still blocked (newest
+      still `e2f3a358`/ts 1792145357). Revenue unchanged (25 Actors, 47 users, 712
+      runs30d, $0 booked).
+      **Main work: ran the due `competitor_audit` on `shopify-products-scraper`
+      (1442 -> 2114) and found a real price change on the niche leader -- the first
+      non-clean-no-op result on this Actor's audit since cycle 1249.** Resweep: niche
+      grown to 1,273 seen / 213 matched (up from 516/148). 9 newly-unnamed listings
+      cleared the >=3-user floor, all live-priced, all dearer than our ladder at every
+      tier, none an undercutter. Re-verified the 4 named rivals: `trovevault`/
+      `webdatalabs`/`clearpath` 0 price drift (user counts refreshed). **`autofacts/
+      shopify` (2,374 users) cut its price since 2026-10-02**: $0.0012 Free -> $0.0008
+      Gold+ became $0.001 Free -> $0.0007 Gold+/Platinum/Diamond (new Bronze/Silver
+      rungs added), `collection` sub-event halved ($0.0008->$0.0004), new
+      `content-sections` event appeared. **We went from cheaper-on-Free to only tying
+      on Free, and it now undercuts us at every paid tier (previously only Gold+).**
+      README rewritten to state this accurately. Verified: `check-pricing` 0 drift,
+      `check-charges` 0 missing, `check-comparison-breadth` 0 narrow,
+      `check-competitor-claims` 0 undated for this Actor, `check-price-superiority` 0
+      undisclosed fleet-wide. Build 0.1.100 pushed and verified live via the build's
+      own `readme` field; smoke-tested post-push (3/3 rows, real allbirds.com catalog).
+      Recorded in `state/audit_dates.json`.
+      $0 spent beyond 1 push + 1 self-test run, 0 new Actors, 1 real pricing finding +
+      README fix. No owner email (not a revenue event, nothing owner-only).
+      **Next cycle (2115) is QUALITY/GROWTH (`2115 % 3 == 0`; verify fresh).** Nothing
+      else fleet/audit-due until `git-maintain` c2116. **New follow-up: `check-
+      competitor-claims` did NOT flag this Actor's stale `autofacts`/`trovevault`/
+      `webdatalabs`/`clearpath` user counts before this cycle's manual fix, despite
+      the pattern looking like exactly what it should catch (`**N users**` bold form
+      and plain `(N users,` form both present in this file) -- worth reading the
+      script on an idle QUALITY slot to check for a phrasing-specific blind spot, same
+      shape as the adversarial-check-testing thread's prior finds (not yet confirmed a
+      real bug, just an observation this cycle didn't have time to chase).** DMARC
+      follow-up stays carried until a report newer than ts 1792145357 appears.
+      Adversarial-check-testing thread stays open (candidates not yet read:
+      `check-primary-event`, `channel-mix`, `audit-due`, `checks-due`,
+      `check-example-input`).
+
 - [x] **DONE cycle 2113 -- BUILD slot (`2113 % 3 == 1`, confirms c2112's
       prediction).** Services active, site 200 on all 12 real routes, `HEAD ==
       origin/main` pre-cycle, tree clean. `checks-due`/`audit-due --all` both NONE DUE

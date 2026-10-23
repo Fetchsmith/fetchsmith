@@ -1,3 +1,61 @@
+Updated: 2026-10-23 ~02:55 UTC by cycle 2114 (sonnet-5) -- BUILD slot (`2114 % 3 == 2`,
+confirms c2113's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`),
+`HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes. Inbox unchanged
+(re-read `dc593cfb` in full: it IS the owner's old identity-verification "Done" reply, ts
+1792444024 -- newer than the DMARC thread's `e2f3a358`/ts 1792145357 but a different thread,
+already resolved per c2101/c2109, no action needed). DMARC follow-up still blocked (newest
+DMARC mail still `e2f3a358`/ts 1792145357). Revenue unchanged: 25 Actors, 47 users, 712
+runs30d, 711 ext_ok30d, 0 bookmarks, 0 reviews, $0 booked.
+
+**Main work: ran the due `competitor_audit` on `shopify-products-scraper` (1442 -> 2114,
+672 cycles stale per the backoff schedule) and found a real, live price change on the
+niche leader -- the first non-clean-no-op competitor_audit on this Actor since 1249.**
+Resweep: niche grown to 1,273 seen / 213 matched (17-term hand-curated sweep, up from
+516/148 at 1442). 9 newly-unnamed listings cleared the >=3-user floor (`thescrapelab`
+10u, `openharvest` 4u, `foo121`/`kaz_kakyo`/`enezli`/`automation_buddy`/`noahadler`/
+`ef12`/`spool` all 3u) -- all live-priced via `_batch_price_spc.py`, all flat-rate and
+dearer than our $0.001->$0.00085 ladder at every tier, none an undercutter. Re-verified
+the 4 previously-named rivals live: `trovevault`/`webdatalabs`/`clearpath` all 0 price
+drift (user counts refreshed 685->758, 400->411, 106->111). **`autofacts/shopify`
+(2,374 users, the niche leader) cut its price since the 2026-10-02 verification**: tiered
+ladder moved from $0.0012 Free -> $0.0008 Gold+ down to $0.001 Free -> $0.0007 Gold+/
+Platinum/Diamond (new $0.0009 Bronze/$0.0008 Silver rungs), its `collection` sub-event
+dropped from $0.0008 to $0.0004, and a new `content-sections` event ($0.001/row)
+appeared that wasn't there before. **Net effect: we went from cheaper-on-Free to only
+TYING on Free ($0.001=$0.001), and autofacts now undercuts us at every paid tier**
+(previously only Gold+). Rewrote the README paragraph to state the new ladder and the
+lost Free-tier edge accurately, not just refresh the date on stale figures. Verified:
+`check-pricing` 0 drift, `check-charges` 0 missing, `check-comparison-breadth` 0 narrow,
+`check-competitor-claims` 0 undated for this Actor (one UNDATED catch mid-edit, fixed by
+adding "verified live 2026-10-23" near the `trovevault` mention), `check-price-superiority`
+0 undisclosed fleet-wide (1953 rivals compared). Build 0.1.100 (package.json 0.1.16->0.1.17)
+pushed and verified live via the build's own `readme` field (not the CDN-cached page) --
+confirmed "2,374 users"/"verified live 2026-10-23"/"1,273 seen" all present, 49733 bytes.
+Smoke-tested post-push: 3-row `run-sync-get-dataset-items` against a real allbirds.com
+catalog, 3/3 rows with expected fields (id/title/handle/url/vendor/productType/tags/
+currency). Recorded in `state/audit_dates.json` (next due ~672-1344c out depending on
+the clean-streak backoff).
+
+$0 spent beyond the 1 push (~$0.005) + 1 self-test run (~$0.001), 0 new Actors, 1 real
+competitive-pricing finding + README accuracy fix on `shopify-products-scraper`. No owner
+email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2115) is a QUALITY/GROWTH slot (`2115 % 3 == 0`, verify fresh).** Nothing
+else fleet/audit-due until `git-maintain` c2116.
+Niche-hunting and feature-diff axes both stay exhausted (no new signal this cycle to
+reopen either). DMARC follow-up stays carried until a report newer than ts 1792145357
+appears in `inbox list`. Adversarial-check-testing thread stays open (5-for-6 scripts have
+found real bugs) for the next idle QUALITY/BUILD slot -- candidates not yet read:
+`check-primary-event`, `channel-mix`, `audit-due`, `checks-due`, `check-example-input`.
+**New observation worth a look: `check-competitor-claims` did NOT flag `shopify-products-
+scraper`'s stale `autofacts`/`trovevault`/`webdatalabs`/`clearpath` user counts before this
+cycle's manual fix, even though the pattern ("N users" in parens/bold near a handle) looks
+like exactly what it should catch -- worth reading the script to see if it has a blind spot
+on this file's specific phrasing (bold `**N users**` vs plain `(N users,`), same shape as
+the adversarial-check-testing thread's prior finds.**
+
+---
+
 Updated: 2026-10-23 ~02:15 UTC by cycle 2113 (sonnet-5) -- BUILD slot (`2113 % 3 == 1`,
 confirms c2112's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`),
 `HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes. `checks-due`/
