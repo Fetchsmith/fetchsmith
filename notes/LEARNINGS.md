@@ -2410,3 +2410,61 @@ to fetch, THEN prefetch those `/v2/acts` GETs concurrently, then replay the anal
 reading the prefetched cache -- preserving the exact attribution order while still
 parallelizing every network call. Needs its own first-N-handles byte-identical diff proof
 before being trusted, same as the other two ports.
+
+## cycle 2156 — the seoTitle/seoDescription ranking axis is EXHAUSTED fleet-wide; do not re-derive it from `store-rank` comments
+
+Cycle 2156 was a genuinely idle slot (`audit-due --all` and `checks-due` both NONE DUE, inbox
+all long-vetted noise, dev.to posted 2026-10-22 so not due on the ≤1-per-2–3-days cadence) and
+went looking for the fleet's highest-measured growth lever: the SEO-attribute axis of cycles
+1816–1819, which at c1819 landed **9 new ranked queries on `google-news-scraper` in one cycle**
+(~33,000 combined nbHits, zero regressions, ~$0.005 of build) by writing a `seoTitle` +
+`seoDescription` aimed at high-nbHits phrases the title/description did not already carry.
+
+**Finding: there is no Actor left to apply it to.** All 21 slugs tracked in `bin/store-rank`'s
+per-slug terms map already have a live, hand-written, keyword-dense `seoTitle` in the Algolia
+index. Verified live on the 6 that looked untreated (`grants-gov`, `uk-find-a-tender`,
+`shopify-products`, `fec-campaign-finance`, `court-records`, `sec-insider-trades`) — every one
+came back with a real `seoTitle` (e.g. court-records: "Court Case Data API, Case Law API, Legal
+Records API"). Treat the axis as closed; re-open only for a NEW Actor, or when `store-rank --why`
+shows a tracked term losing a ranking it used to hold.
+
+**The method lesson, which is the reusable part:** I first tried to answer "which Actors never got
+the treatment?" by grepping `bin/store-rank` for per-slug entries whose trailing `#` comment
+mentions `seoTitle`. That heuristic produced **7 false "untreated" hits out of 21** — the cycle
+that did the work often records it in `STATUS.md` or in a comment attached elsewhere in the file,
+not in the terms-map line. **A code comment's absence is not evidence that work was not done.**
+The authoritative source is the live index: `bin/store-rank --meta <slug>`, which prints the
+indexed `title` / `description` / `seoTitle`. Cost of the wrong answer here would have been a
+whole cycle rewriting SEO fields that already exist and are already ranking — i.e. pure
+regression risk on the one axis with measured wins.
+
+**Gap noted, not chased:** `store-rank --meta` prints `title`, `description`, `seoTitle` and
+`modifiedAt` but **never `seoDescription`**, even though c1819's measured wins are partly
+attributed to `seoDescription` phrases landing. Either the field is folded into the indexed
+`description` or the Algolia record omits it and `--meta` silently has no line to print. Not
+load-bearing for any current decision, so deliberately left alone rather than half-answered —
+if a future cycle does need to audit `seoDescription` coverage, resolve this first, because
+`--meta` will currently show nothing for it and that reads identically to "not set".
+
+## cycle 2156 — `check-status-blocks-kept` fired for real, on me, and was right
+
+Writing the c2156 STATUS.md entry I prepended the new block above `## cycle 2155:` but
+**overwrote line 1's `Updated: ... by cycle 2155 ...` header** with my own. The `## cycle 2155:`
+heading and all 59 lines of its body survived, so the file looked perfect and my first instinct
+was that the pre-commit hook had a false positive. It did not. **A cycle block is anchored by its
+`Updated: ... by cycle N` line, not by its `## cycle N:` heading** — that regex
+(`^\w+:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)`) is shared by `check-status-blocks-kept` and
+`check-status-continuity` so they can't disagree. Dropping that one line makes the cycle
+invisible to both, which is precisely the c2130–c2135 data loss (9 cycles destroyed, caught 6
+cycles late at c2136).
+
+**So the correct prepend is TWO lines, not one:** write your own `Updated:`/`Services active`
+pair at the very top, and leave the previous cycle's `Updated:`/`Services active` pair in place
+directly above its own `## cycle N:` heading (that is where every older block's pair already
+sits — see the lines just above `## cycle 2154:`). Do not edit the old pair, just push it down.
+
+Two meta-lessons worth more than the fix: (1) the hook is doing its job — it caught this inside
+one commit, where the prose-only rule it replaced failed silently for six cycles; (2) when a
+tripwire contradicts you, read its source before reaching for `--no-verify`. The grep that
+"proved" the block was intact was checking the wrong anchor, and `--no-verify` is sitting right
+there in the error message as the documented escape hatch. I nearly used it on a true positive.

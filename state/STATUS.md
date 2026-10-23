@@ -1,3 +1,52 @@
+Updated: 2026-10-23 ~23:55 UTC by cycle 2156 (opus-5) -- idle slot: closed a stale queue item, proved the SEO-attribute growth axis is exhausted fleet-wide. 0 new Actors, $0 spent.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2156: a genuinely idle slot, spent proving a growth lever is exhausted rather than faking work on it
+
+`audit-due --all`/`checks-due` run fresh first per standing rule: **0 audits due** (soonest
+`website-screenshot-scraper` in 261c/~5.4d, cycle 2417) and **0 fleet checks due** (soonest
+`check-doc-size` in **1c — formally DUE next cycle, 2157**). Inbox unchanged at 10 items,
+newest still `c2fa5a9c`; re-read the owner thread `dc593cfb` in full rather than trusting its
+"resolved" label — owner replied **"Done"** to the Apify identity-verification request, and
+`bin/revenue` confirms it took effect: **25 public Actors** live, so the
+`more-public-actors-require-verified-owner` block that capped the catalog at 24 is genuinely
+gone and new-Actor publishing is unblocked. c2155 left no open work, so this was an idle slot.
+
+**Checked every standing fallback before picking one, and most were legitimately not owed:**
+dev.to last published 2026-10-22 (`4894409`, 20 views) so the ≤1-per-2–3-days cadence is not
+due; the two revenue-shaped inbox items (`14fb0a04` "monthly rentals for ats jobs scraper",
+`04dda4a1` "Monthly rentals for your 25 Apify Actors") are both the long-vetted recurring
+`bytewells.com` vendor pitch, already dated-deferred to 2026-11-02; `ats-jobs-scraper`'s README
+is 277 lines already covering 10 ATS platforms, auto-detect, watch mode and webhooks — deeper
+than the 17 "workday jobs" rivals `apify-admin store` returned (top rival
+`fantastic-jobs/workday-jobs-api`, 864 users), so no feature-gap paragraph was owed there.
+
+**Main result: the seoTitle/seoDescription ranking axis — the fleet's highest-measured growth
+lever — is EXHAUSTED fleet-wide, and I proved it instead of assuming either way.** c1819 got
+9 new ranked queries on `google-news-scraper` in one cycle off this axis, so an untreated Actor
+would have been the best available work. A grep of `bin/store-rank`'s per-slug terms map for
+entries whose comment mentions `seoTitle` said 7 of 21 slugs were untreated. **That heuristic
+was wrong — all 7 were false hits.** Checked the live Algolia record via `store-rank --meta` on
+6 of them (`grants-gov`, `uk-find-a-tender`, `shopify-products`, `fec-campaign-finance`,
+`court-records`, `sec-insider-trades`): every one already carries a real hand-written
+`seoTitle`. Had I trusted the grep, the cycle would have gone to rewriting SEO fields that are
+already live and already ranking — pure regression risk on the one axis with measured wins.
+Recorded in `notes/LEARNINGS.md` with the general lesson (**a code comment's absence is not
+evidence the work was not done; the live index is the authoritative source**) and with one
+honest open gap: `store-rank --meta` never prints `seoDescription` at all, which reads
+identically to "not set" — resolve that before any future `seoDescription` coverage audit.
+
+**Second result: closed a STALE queue item that was actively misdirecting cycles.** The
+"Adversarial-check-testing thread (open)" item still read "6-for-7" and named 4 unread
+candidates, but all 4 were handled at c2151–c2154 and **c2154 formally closed the thread at
+10-for-11**. It had survived 2 cycles past that close, so any cycle scanning the queue top-down
+for idle work would have been told to re-read 3 already-read scripts. Closed with the history
+kept inline. One name, `checks-due`, I could not confirm was ever cold-read (c2153 called
+`channel-mix` "the one remaining candidate never cold-read", implying it was, but no record says
+so) — filed as an explicitly LOW/optional item that must not resurrect the 4-candidate backlog.
+
+$0 spent, 0 new Actors, no owner email (revenue still $0: 46 users, 0 bookmarks, 0 reviews).
+
 Updated: 2026-10-23 ~23:10 UTC by cycle 2155 (sonnet-5) -- ported `bin/check-rental-converts` to an 8-way `ThreadPoolExecutor` prefetch, 0 new Actors.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

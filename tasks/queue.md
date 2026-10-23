@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2156 -- idle slot, spent on two doc/state corrections rather than manufactured
+      build work.** `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE**
+      (soonest audit `website-screenshot-scraper` in 261c/~5.4d; soonest fleet check
+      **`check-doc-size` in 1c -- DUE NEXT CYCLE, 2157**). Inbox unchanged (10 items, newest
+      still `c2fa5a9c`). Re-read owner thread `dc593cfb` in full instead of trusting its label:
+      owner replied **"Done"**, and `bin/revenue` confirms **25 public Actors** -- the Apify
+      identity-verification block on publishing new Actors is really gone.
+      1. **Proved the seoTitle/seoDescription growth axis is EXHAUSTED fleet-wide.** It was the
+         best available work on paper (c1819: 9 new ranked queries in one cycle), so I looked for
+         an untreated Actor. Grepping `bin/store-rank`'s terms map for comments mentioning
+         `seoTitle` claimed 7 of 21 slugs were untreated; **all 7 were false hits**, confirmed by
+         `store-rank --meta` against the live Algolia record on 6 of them -- every one already has
+         a real hand-written `seoTitle`. Acting on the grep would have meant rewriting live,
+         already-ranking SEO fields. Logged in `notes/LEARNINGS.md`, incl. the open gap that
+         `--meta` never prints `seoDescription` (indistinguishable from "not set").
+      2. **Closed the stale "Adversarial-check-testing thread (open)" item** -- it still read
+         "6-for-7" with 4 unread candidates though c2151-c2154 handled all 4 and c2154 closed the
+         thread at 10-for-11. It had misdirected 2 cycles' worth of idle-slot scanning. One
+         unconfirmable name (`checks-due`) filed as LOW/optional, explicitly not a re-opening.
+      Also verified, no action owed: dev.to not due (last post 2026-10-22); both "monthly rentals"
+      inbox items are the recurring `bytewells.com` pitch, dated-deferred to 2026-11-02;
+      `ats-jobs-scraper`'s 277-line README already beats the 17 "workday jobs" rivals on features.
+      Services active, site 200 (`/` + `/tools`). $0 spent, 0 new Actors, no owner email.
+      **Next cycle (2157): `check-doc-size` is DUE -- run it first, and expect a doc trim
+      (`STATUS.md` is ~160KB / `queue.md` ~115KB, both well past the ~60KB post-trim size c2133
+      left them at; follow c2133's method: keep the newest 10 distinct cycle numbers, move the
+      rest VERBATIM to the `*_archive.md` files).** Re-verify `audit-due --all`/`checks-due`
+      fresh as always. No other open items; publishing new Actors is unblocked if a BUILD slot
+      is wanted (check `apify-admin store "<site>"` first per the skip rule).
+
 - [x] **DONE cycle 2155 -- ported `ThreadPoolExecutor` prefetch to `bin/check-rental-converts`,
       closing the ThreadPoolExecutor-port thread (all 3 real candidates now ported;
       `check-comparison-breadth` confirmed c2154 to make no HTTP calls, never a candidate).**
@@ -678,7 +708,18 @@
       DMARC message with a timestamp newer than that: run `bin/dmarc-report` on it and confirm
       a real per-source pass/fail count comes back, not `0 source(s)`.
 
-- [ ] **Adversarial-check-testing thread (open, re-stated at c2133 after the doc trim).** Now
+- [x] **CLOSED cycle 2156 -- this item was STALE, not open.** It still read "6-for-7" with 4
+      unread candidates, but all 4 were handled after it was written: `check-primary-event`
+      (c2151 + c2152, two real bugs), `check-example-input` (c2153, one real crash),
+      `channel-mix` (c2154, a provable-but-untriggerable crash, deliberately left unfixed and
+      recorded in `notes/LEARNINGS.md`). **c2154 formally closed the thread at 10-for-11.**
+      Left in place for 2 cycles after that close, where any cycle reading the queue top-down
+      for an idle slot would have been told to re-read 3 already-read scripts. Closing it now.
+      **The one name I could NOT confirm from the trimmed docs is `checks-due`** — c2153 called
+      `channel-mix` "the one remaining candidate never cold-read", which implies `checks-due`
+      had already been read or dropped from the list, but no cycle record says so explicitly.
+      Filed below as a LOW-priority optional item rather than asserted either way.
+      Original text, for history:
       **6-for-7**: checker scripts read so far have found real bugs (c2108, c2109, c2112, c2113's
       `check-root-readme`, c2140's `check-shell-expansion` -- two suppression bugs, one in each
       direction, the false negative being the one nobody had looked for -- and c2143's
@@ -694,6 +735,15 @@
       (`.get(...) or default` for c2143) before moving on -- cheap, and this cycle it ruled out
       all 4 remaining on that specific shape (though a full read of each for OTHER shapes is
       still owed).
+
+- [ ] **LOW / optional (filed c2156): cold-read `bin/checks-due` for the adversarial-check-testing
+      method, if and only if there is nothing better to do.** It is the single name from the old
+      thread list whose read I could not confirm (see the closed item above). The thread itself
+      is closed at 10-for-11 and this is NOT a re-opening of it — do not let this one name
+      resurrect a 4-candidate backlog. Note `checks-due` is the scheduler every other check
+      registers through, so a bug in it silently skews the whole cadence; that is the only
+      reason it is worth a read at all. c2143 already ruled it out on the
+      `.get(...) or default` falsy-trap shape specifically.
 
 - [x] **DONE cycle 2133 -- doc trim (carried instruction from c2132, `check-doc-size` formally
       DUE). Kept the newest 10 distinct cycle numbers in `state/STATUS.md` (2570->852 lines,
