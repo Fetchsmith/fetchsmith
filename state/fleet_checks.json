@@ -180,7 +180,7 @@
   "check-primary-event": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 2064,
+   "last_cycle": 2152,
    "note": "cycle 2064: c2064: FIRST tracked entry. Ran clean: 1404 multi-event rivals checked, 72 flagged, 72 ALREADY DISCLOSED in our own README, 0 need review. Dormant since c1177 (~887 cycles) because nothing invokes it -- grep confirms every reference in bin/ is a docstring mention, never a call. Interval justified by measured drift: the flag count went 17 (c1176 manual scan) -> 72 now, i.e. rival pricing records churn steadily, but 0 have ever needed review, so drift is slow and low-risk -> 672c (~14d), same cadence as the other heavy rival sweeps (check-rental-converts, check-store-index). Costs $0 (GET /v2/acts only, no runs) but takes ~11min wall-clock for 1404 GETs -- budget for that, and do NOT wrap it in a short timeout (a 120s timeout this cycle killed it at rc=124 with zero output, which looks like a crash and is not)."
   },
   "check-price-superiority": {

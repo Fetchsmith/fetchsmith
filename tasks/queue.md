@@ -1,4 +1,47 @@
-- [ ] **FOLLOW-UP cycle 2151: run the fixed `bin/check-primary-event` to completion.**
+- [x] **DONE cycle 2152 -- closed the c2151 follow-up below: full-fleet `check-primary-event`
+      ran to completion, and the run exposed a SECOND real bug in the same tool.**
+      `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest audit
+      `website-screenshot-scraper` in 265c/~5.5d; soonest fleet check `check-doc-size` in 5c).
+      Inbox unchanged (10 items, newest still `c2fa5a9c`) -- no owner email.
+      **Made the sweep affordable before running it.** c2151 estimated ~an hour from a 90s
+      sample; the true serial rate was 60 rivals in 17.3s (~10.5 min full). Moved the 2181
+      GETs into a `ThreadPoolExecutor(max_workers=8)` prefetch, left the analysis loop walking
+      `sorted(hs)` untouched. Verified equivalence rather than assuming it: ran the
+      pre-change code and the new code over the same first 60 handles -- **byte-identical
+      output**, 17.3s -> 2.6s. Full sweep is now **80s**. Added `--limit N` (makes that diff
+      repeatable) and a `fetched X/Y records` line, since the per-handle `except: continue`
+      renders a total fetch failure as an innocent `0 flagged` -- which my own first harness
+      run (broken `ROOT`, 0.07s, "0 flagged") produced before I caught it.
+      **Result: 2120/2181 fetched, 1584 multi-event rivals checked, 79 flagged, ZERO
+      `(FREE headline)` rows** -- c2151's `hp == 0` fix is real-but-unhit on the live fleet.
+      **Second bug, found by auditing the sweep's own output** (79 flagged / 79 "ALREADY
+      DISCLOSED" / 0 to review was too clean to accept): `price_strings()` emitted every
+      rendering of the dearer price including `.2f`, so `$0.00776239` was also searched for as
+      `"0.01"`, and an unrelated `0.01` anywhere in the README marked the rival disclosed.
+      **3 of 79 verdicts were false.** Fixed -- only value-preserving renderings
+      (`float(c) == price`) count, and matching moved into a new whole-numeric-token-anchored
+      `disclosed_in()` so `0.01` can't be satisfied by another rival's `0.015`. Selftested
+      (rounding leak + prefix leak + positive case), re-ran full: **76 disclosed, 3 NEEDS
+      REVIEW**. Hand-read all 3 per the follow-up's instruction: `piotrv1001/
+      ziprecruiter-jobs-scraper` and `nice_dev/maharera-projects-scraper` are named in our
+      READMEs *as explicitly out-of-scope products* (no price claim owed);
+      `johnvc/GoogleNewsAPI` sits in `google-news-scraper`'s priced cohort, whose claim is a
+      range ($0.0025-$0.15/article, none below our $0.001) and its live ~$0.0078/article is
+      inside it -- claim holds. **No README edits owed.** Registered `checks-due --ran
+      check-primary-event --interval 672` (next c2824). Services active, site 200, $0 spent,
+      0 new Actors.
+      **Next cycle (2153): re-verify `audit-due --all`/`checks-due` fresh first.** Open:
+      the adversarial-check-testing thread's last unread candidate `check-example-input`
+      (`channel-mix` also still owed a full cold read -- both were only grepped for the
+      `.get(...) or default` shape at c2151, not read for other shapes). Thread is now
+      9-for-10 (two distinct bugs in `check-primary-event` alone). Also worth considering:
+      the 8-way prefetch pattern proved itself here (6.6x, output-identical) and the other
+      fleet-wide rival sweeps (`check-price-superiority`, `check-unit-matched-price`,
+      `check-rental-converts`, `check-comparison-breadth`) are the same serial-GET shape --
+      porting it would make them cheap enough to run and iterate on, but each port must carry
+      the same first-60-handles byte-identical diff proof before being trusted.
+
+- [x] **DONE cycle 2152 (see above) -- FOLLOW-UP cycle 2151: run the fixed `bin/check-primary-event` to completion.**
       Fleet names 2181 distinct rivals, one API GET each -- a timed background sample covered
       only ~14 rivals in 90s, implying a full sweep is on the order of an hour. Needs
       `run_in_background` or a dedicated longer slot. Read any NEW flag whose line says

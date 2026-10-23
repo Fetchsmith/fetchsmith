@@ -40,6 +40,7 @@ import os
 import re
 import sys
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,10 +50,33 @@ FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
 SKIP_PREFIX = ("bin/", "cpvCodes/", "field/", "src/", "state/", "actors/", "notes/", "logs/")
 
 
+_TOKEN = None
+
+
 def token():
-    env = open(os.path.join(ROOT, "secrets/env")).read()
-    m = re.search(r"APIFY_TOKEN=(\S+)", env)
-    return m.group(1)
+    global _TOKEN
+    if _TOKEN is None:
+        env = open(os.path.join(ROOT, "secrets/env")).read()
+        _TOKEN = re.search(r"APIFY_TOKEN=(\S+)", env).group(1)
+    return _TOKEN
+
+
+def fetch(h):
+    """GET one rival's public Actor record. Returns (handle, data|None); never raises.
+
+    Serial fetching made a full fleet sweep ~hour-class (cycle 2151 could only sample
+    ~14 of 2181 rivals in 90s), which is why the c2151 fix went un-verified against the
+    real fleet. Read-only GETs, so they parallelize safely; the analysis below still
+    walks `sorted(hs)` so output ordering is unchanged.
+    """
+    owner, slug = h.split("/", 1)
+    try:
+        with urllib.request.urlopen(
+            f"https://api.apify.com/v2/acts/{owner}~{slug}?token={token()}", timeout=30
+        ) as r:
+            return h, json.load(r)["data"]
+    except Exception:
+        return h, None
 
 
 def our_handles():
@@ -94,25 +118,49 @@ def price_of(d):
 
 
 def price_strings(price):
-    """Plausible ways this price might be written in prose, for a whole-file disclosure check."""
-    out = {f"{price:g}", f"{price:.2f}", f"{price:.4f}", f"{price:.5f}"}
+    """Plausible ways this price might be written in prose, for a whole-file disclosure check.
+
+    Only renderings that round-trip to the SAME value count (cycle 2152). The old version
+    accepted every rendering, so a sub-cent price was also searched for as its `.2f` form --
+    `$0.00776239` became `"0.01"`, and any unrelated `0.01` elsewhere in the README marked the
+    rival ALREADY DISCLOSED. That turned 3 real NEEDS REVIEW rows into silent passes.
+    """
+    out = {c for c in {f"{price:g}", f"{price:.2f}", f"{price:.4f}", f"{price:.5f}"}
+           if float(c) == price}
     if price == int(price):
         out.add(str(int(price)))
     return out
 
 
+def disclosed_in(text, price):
+    """True if `price` appears in `text` as a whole numeric token.
+
+    Token-anchored rather than a bare substring, so `0.01` cannot be satisfied by the `0.015`
+    of some other rival in the same table.
+    """
+    return any(re.search(r"(?<![0-9.])" + re.escape(s) + r"(?![0-9])", text)
+               for s in price_strings(price))
+
+
 def main():
     hs = our_handles()
-    print(f"check-primary-event: scanning {len(hs)} distinct named rivals across the fleet")
+    names = sorted(hs)
+    limit = None
+    if "--limit" in sys.argv:
+        limit = int(sys.argv[sys.argv.index("--limit") + 1])
+        names = names[:limit]
+    print(f"check-primary-event: scanning {len(names)} distinct named rivals across the fleet"
+          + (f" (--limit {limit})" if limit is not None else ""))
+    token()  # resolve once, before the pool reads it from several threads
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        records = dict(pool.map(fetch, names))
+    fetched = sum(1 for v in records.values() if v is not None)
+    print(f"check-primary-event: {fetched}/{len(names)} records fetched "
+          f"({len(names) - fetched} unreachable/deleted, skipped)")
     checked = flagged = disclosed = 0
-    for h in sorted(hs):
-        owner, slug = h.split("/", 1)
-        try:
-            with urllib.request.urlopen(
-                f"https://api.apify.com/v2/acts/{owner}~{slug}?token={token()}", timeout=30
-            ) as r:
-                d = json.load(r)["data"]
-        except Exception:
+    for h in names:
+        d = records.get(h)
+        if d is None:
             continue
         p = effective(d.get("pricingInfos"))
         if not p or p.get("pricingModel") != "PAY_PER_EVENT":
@@ -142,7 +190,7 @@ def main():
         files = hs[h]
         all_text = " ".join(open(p).read() for _, p in files)
         dear_price, dear_event = max(worse, key=lambda x: x[1])[1], max(worse, key=lambda x: x[1])[0]
-        is_disclosed = any(s in all_text for s in price_strings(dear_price))
+        is_disclosed = disclosed_in(all_text, dear_price)
         tag = "ALREADY DISCLOSED" if is_disclosed else "NEEDS REVIEW"
         if is_disclosed:
             disclosed += 1

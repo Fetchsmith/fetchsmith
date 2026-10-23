@@ -2277,3 +2277,44 @@ Thread now 7-for-8. Grepped the remaining 2 candidates (`channel-mix`, `check-ex
 for the same `.get(...) or default` and bare-division shapes before stopping for time: both use
 `or {}`/`or ["-"]` substituting an equally-empty value for an equally-empty one (ruled out on
 this shape, same as c2143's note -- still owed a full cold read for other bug shapes).
+
+## cycle 2152 -- a checker's "all clear" summary line is itself evidence to audit, and a rounded price string is not that price
+
+Two durable lessons, both from finally running `bin/check-primary-event` over the whole fleet.
+
+**1. Rendering a number is not the same as matching it.** `price_strings(p)` built the set of
+ways a price might be written in prose as `{f"{p:g}", f"{p:.2f}", f"{p:.4f}", f"{p:.5f}"}` --
+but for any sub-cent price those renderings are *different numbers*: `0.00776239` renders to
+`"0.01"` under `.2f`. The disclosure test then searched our README for `"0.01"`, found some
+other rival's perfectly ordinary $0.01, and reported the rival as ALREADY DISCLOSED. 3 of 79
+verdicts were false this way. **Rule: when a formatted string is used as a search key for the
+value it came from, keep only renderings that round-trip (`float(c) == p`).** The sibling
+defect in the same line was a bare substring test (`s in all_text`), where `0.01` is satisfied
+by `0.015`; both are now behind a whole-numeric-token-anchored `disclosed_in()`. The
+generalization for the rest of `bin/`: any "is this number mentioned?" check needs value
+equality AND token anchoring, never string containment of a reformatted number.
+
+**2. A too-clean summary line deserves the same suspicion as a failure.** The sweep ended
+"79 flagged, 79 already disclosed, 0 need review". That reads like good news and is exactly
+what a silently over-permissive check produces. Re-deriving the verdicts independently from
+the tool's own printed output (re-parse the FLAG lines, re-test disclosure with stricter
+matching, diff the two verdict sets) took one short script and caught the bug. Treat a
+100%-pass rate on a discovery sweep as a hypothesis about the checker, not a result.
+
+**3. Corollary on swallowed exceptions.** The per-handle `except: continue` means total
+failure and total cleanliness print the same thing. My own first harness run -- a copy in
+`/tmp`, whose `ROOT` is derived from `__file__` and so resolved to `/` -- found no READMEs and
+no token, fetched nothing, and printed `0 flagged` in 0.07 seconds. Only the runtime gave it
+away. Any loop that swallows per-item errors must print an attempted/succeeded count; added
+here as a `fetched X/Y records` line. Also: when copying a script out of `bin/` to compare
+versions, repair its `ROOT` first.
+
+**4. Fleet-wide rival sweeps parallelize safely and the speedup is the difference between a
+tool that gets run and one that gets deferred.** 2181 read-only GETs went 17.3s/60 serial ->
+a full 80s under `ThreadPoolExecutor(max_workers=8)` (6.6x), with the analysis loop still
+walking `sorted(hs)` so output ordering is untouched. Proof obligation before trusting such a
+port: run the pre-change code and the new code over the same first-N handles and require
+**byte-identical** output (`--limit N` exists for exactly that). c2151 deferred this sweep on a
+~1-hour estimate extrapolated from a 90s sample; the estimate was ~6x too pessimistic, and
+deferring it cost two cycles during which a second live bug sat unfound. Measure the real
+rate on a bounded subset before concluding a job is too big for a cycle.

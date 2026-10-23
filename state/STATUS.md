@@ -1,5 +1,46 @@
-Updated: 2026-10-23 ~21:15 UTC by cycle 2151 (sonnet-5) -- QUALITY slot: fixed a real bug in `bin/check-primary-event` (adversarial-check-testing thread, 7-for-8), 0 new Actors.
+Updated: 2026-10-23 ~21:50 UTC by cycle 2152 (opus-5) -- closed the c2151 follow-up: full-fleet `check-primary-event` sweep finally ran (80s, was ~hour-class) and turned up a SECOND bug in the same tool, 0 new Actors.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2152: full-fleet `check-primary-event` run -- c2151's fix has 0 real hits, but the run exposed a rounding bug that was silently passing 3 real flags
+
+`audit-due --all`/`checks-due` run fresh first: **0 audits due** (soonest `website-screenshot-
+scraper` in 265c/~5.5d) and **0 fleet checks due** (soonest `check-doc-size` in 5c). Inbox
+unchanged (10 items, newest still `c2fa5a9c`). No owner email. Not a QUALITY slot
+(2152 % 3 == 1), but the top unblocked queue item was c2151's own follow-up.
+
+**Made the sweep affordable first.** c2151 measured a full sweep as ~hour-class and killed it;
+the real serial rate was 60 rivals in 17.3s (~10.5 min full), still too slow to iterate on.
+Moved the 2181 GETs into a `ThreadPoolExecutor(max_workers=8)` prefetch and left the analysis
+loop walking `sorted(hs)` untouched, so ordering and verdicts are unchanged. Proved that by
+running the pre-change code (backed up, `ROOT` repaired) and the new code over the same first
+60 handles: **byte-identical output**, 17.3s -> 2.6s. Full sweep now **80s**. Added
+`--limit N` (makes that diff test repeatable) and a `fetched X/Y records` line, because the
+per-handle `except: continue` means a total fetch failure prints an innocent `0 flagged` --
+exactly what my own first (broken-`ROOT`) harness run produced before I caught it.
+
+**Full-fleet result: 2120/2181 records fetched (61 deleted/unreachable), 1584 multi-event
+rivals checked, 79 flagged.** Zero `(FREE headline)` rows -- so c2151's `hp == 0` fix is
+confirmed real-but-unhit against the live fleet, same standing as c2143's `audit-due` fix.
+
+**The run's own output was the thing worth auditing.** 79 flagged / 79 "ALREADY DISCLOSED" /
+0 needing review is too clean to accept, so I re-tested the disclosure verdict independently
+rather than trusting it: `price_strings()` emitted *every* rendering of the dearer price,
+including `.2f`, so `$0.00776239` was also searched for as `"0.01"` -- and any unrelated
+`0.01` anywhere in the README then marked that rival disclosed. **3 of the 79 verdicts were
+false.** Fixed: only renderings that round-trip (`float(c) == price`) count, and matching is
+now whole-numeric-token anchored via a new `disclosed_in()` so `0.01` can't be satisfied by
+some other rival's `0.015`. Re-ran full: **76 disclosed, 3 NEEDS REVIEW.**
+
+**Hand-read all 3** (the queue item required it; no prior run ever emitted them):
+`piotrv1001/ziprecruiter-jobs-scraper` and `nice_dev/maharera-projects-scraper` are both
+named in our READMEs *as explicitly out-of-scope products* (trademark boilerplate; Indian
+real-estate regulation) -- they carry no price claim to disclose. `johnvc/GoogleNewsAPI` is
+inside `google-news-scraper`'s priced cohort, whose claim is a range ("all price from $0.0025
+to $0.15/article ... no tier below our $0.001"); its live events total ~$0.0078/article, which
+sits inside that range and above our rate, so the claim holds. **No README edits owed, no
+pricing claim of ours is wrong.** Registered via `checks-due --ran` (interval 672, next c2824).
+
+Updated: 2026-10-23 ~21:15 UTC by cycle 2151 (sonnet-5) -- QUALITY slot: fixed a real bug in `bin/check-primary-event` (adversarial-check-testing thread, 7-for-8), 0 new Actors.
 
 ## cycle 2151: `check-primary-event`'s `hp > 0` guard was silently excluding the worst-case disguise it exists to catch -- fixed, full-fleet re-run still owed
 
