@@ -2205,3 +2205,25 @@ so it's exempted BY NAME with a reason rather than left to trip the INCOMPLETE w
 **a check that cries wolf on every run is a check whose warning line stops being read**, which is
 how this fleet loses real signals. Cross-validation that the shared matcher is right:
 `--full --slug google-news-scraper` returned 357 in-niche, identical to c2147's audit.
+
+## cycle 2149 — a "keep only the newest" cleanup can delete the one file that already proved the data was worth keeping
+
+Closing c2148's cleanup item (`_batch_price_*.py` sweeps writing only ephemeral `/tmp`, so the
+fleet's most expensive gathered data vanished on reboot) meant adding `persist_sweep()` to
+`bin/_unit_price.py` so future sweeps land in `state/audit_data/c<cycle>_<niche>_prices.json`.
+The filing item also floated a disk-space cleanup: "consider keeping only the newest per niche."
+
+That would have been wrong to build. `check-upstream-warnings` hardcodes
+`state/audit_data/c2124_steam_prices.json` as its `--selftest` FIXTURE — the one sweep that
+survived earlier by hand, before this fix existed. "Newest per niche" is a plausible-sounding
+rule that reads as pure hygiene, but a prune keyed on recency doesn't know that one specific old
+file is pinned by a *different* tool's test harness. The next steam-reviews-scraper audit would
+have deleted it on schedule, silently breaking that selftest the next time anyone ran it.
+
+**The generalizable trap:** before adding a "keep only the latest N" prune to anything that
+persists audit/sweep data, grep the rest of `bin/` for hardcoded references to specific old
+filenames first. A persistence fix and a retention policy are two different changes with two
+different risk profiles — shipping them together let the second one silently undo value the
+first one (and an earlier cycle) had already banked. Left the prune as a documented non-goal in
+PLAYBOOK rather than building a "smarter" version of it under a 25-minute budget; the actual ask
+(stop losing future sweeps) didn't need it to ship today.

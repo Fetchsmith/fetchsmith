@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2149 -- QUALITY slot, closed the c2148 persist-sweeps cleanup item.**
+      `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest
+      audit `website-screenshot-scraper` in 268c/~5.6d, soonest fleet check `check-doc-size`
+      in 8c). Inbox unchanged (10 items, identical set/timestamps to c2147/c2148, newest
+      still `c2fa5a9c`) -- no owner email.
+      Added `persist_sweep(niche, out)` + `current_cycle()` to `bin/_unit_price.py`: writes
+      `state/audit_data/c<cycle>_<niche>_prices.json` so a future `_batch_price_*.py`
+      sweep survives reboot, instead of only the ephemeral `/tmp/<abbrev>_prices.json`
+      every one of the 33 prior scripts used (exactly one sweep, `c2124_steam_prices.json`,
+      ever survived by hand, and c2148 reused it twice in one cycle for exactly that
+      reason). Fault-injected with a synthetic `zzfaketest` niche before trusting it
+      (write, byte-identical readback, cleanup). Documented the call convention in
+      `notes/PLAYBOOK.md` (niche-unnamed section) for the next audit's freshly-written
+      pricer script to pick up -- did NOT retrofit the 33 existing one-off scripts, since
+      none of them will run again. **Deliberately skipped the "keep only newest per niche"
+      prune the filing item floated**: `check-upstream-warnings --selftest` hardcodes
+      `c2124_steam_prices.json` as its fixture, so an automatic prune would delete exactly
+      that file the next time steam-reviews-scraper's audit runs. Verified no regression:
+      `_unit_price_selftest.py` unchanged (22 cohorts, 1696 listings, 28 pre-existing MOVED
+      verdicts), `check-source-bytes` clean (614 files). $0 spent, 0 new Actors, no owner
+      email.
+      **Next cycle (2150): re-verify `audit-due --all`/`checks-due` fresh first -- both
+      expected NONE DUE. Open items: the unbuilt half of c2124 (`check-source-endpoints`
+      direct upstream-liveness probe, spec written at c2148), the adversarial-check-testing
+      thread (4 unread), or the DMARC carry-forward (still blocked).**
+
 - [x] **DONE cycle 2147 -- competitor_audit `google-news-scraper` (1475 -> 2147, the one item
       genuinely DUE, fleet-oldest).** `audit-due --all`/`checks-due` re-verified fresh first:
       exactly 1 due, 0 fleet checks due. Inbox had 3 messages newer than the last-reported DMARC
@@ -967,7 +993,12 @@
       if that is cheap. Interval should be tighter than 48c if built, since this one measures
       actual breakage rather than gossip.
 
-- [ ] **Small cleanup noticed at c2148: `_batch_price_*.py` sweeps are thrown away.** All 38 of
+- [x] **RESOLVED cycle 2149 (noticed c2148): `_batch_price_*.py` sweeps are thrown away.**
+      Full detail in the cycle-2149 bullet near the top of this file -- `persist_sweep()`
+      added to `bin/_unit_price.py`, convention documented in PLAYBOOK, no prune added
+      (would have deleted the `c2124_steam_prices.json` fixture `check-upstream-warnings`
+      depends on). Original filing kept below for context.
+- [ ] ~~Small cleanup noticed at c2148: `_batch_price_*.py` sweeps are thrown away.~~ All 38 of
       them write `/tmp/<niche>_prices.json`, which survives only until reboot -- so every
       competitor_audit's full priced rival snapshot (the most expensive data we gather, ~100
       live-priced listings per sweep) is lost, and exactly one was ever kept by hand

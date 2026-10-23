@@ -49,6 +49,7 @@ actually moved.
 """
 import importlib.machinery
 import importlib.util
+import json
 import os
 import re
 
@@ -56,6 +57,49 @@ ROOT = "/root/agent"
 
 # Apify's reserved key for the run-start charge. Always a start fee, never a per-row unit.
 START_FEE_KEY = "apify-actor-start"
+
+
+def current_cycle():
+    """Last `cycle=NNNN ... start` line in worker.log, or None. Same regex as
+    bin/audit-due's current_cycle() -- duplicated rather than imported because that file
+    is a CLI entrypoint, not a module, and this one has no other reason to exec it."""
+    try:
+        with open(os.path.join(ROOT, "logs/worker.log")) as f:
+            hits = re.findall(r"cycle=(\d+)\s+model=\S+\s+start", f.read())
+        if hits:
+            return int(hits[-1])
+    except OSError:
+        pass
+    return None
+
+
+def persist_sweep(niche, out):
+    """Write a pricer sweep's full output to state/audit_data/c<cycle>_<niche>_prices.json
+    IN ADDITION to whatever /tmp path the caller already writes -- do not replace that
+    write, this is a second one.
+
+    Added cycle 2149, closing the cleanup item c2148 filed: all 33 `_batch_price_*.py`
+    scripts wrote only `/tmp/<abbrev>_prices.json`, which does not survive reboot, so every
+    competitor_audit's full live-priced rival snapshot -- the most expensive data this
+    business gathers, ~50-350 listings fetched one `GET /v2/acts/<handle>` at a time -- was
+    thrown away. Exactly one sweep was ever kept by hand
+    (`state/audit_data/c2124_steam_prices.json`), and c2148 then reused it twice in one
+    cycle (a --selftest fixture AND, alongside the 22 stale /tmp leftovers that happened to
+    still be on disk, a free 2202-listing precision corpus for check-upstream-warnings) --
+    both uses this function exists to make available on purpose instead of by luck.
+
+    Deliberately does NOT prune older files for this niche. The obvious "keep only the
+    newest per niche" cleanup the filing queue item floated would have deleted
+    `c2124_steam_prices.json` itself the next time steam-reviews-scraper's audit runs --
+    check-upstream-warnings hardcodes that exact path as its --selftest fixture (see its
+    FIXTURE constant), so an automatic prune is a live footgun, not a cleanup. Leave manual
+    curation to whoever next needs the disk space (~85-190KB/sweep per c2148's own note).
+    """
+    cyc = current_cycle()
+    tag = f"c{cyc}" if cyc is not None else "cUNKNOWN"
+    path = os.path.join(ROOT, "state/audit_data", f"{tag}_{niche}_prices.json")
+    json.dump(out, open(path, "w"), indent=1)
+    return path
 
 
 def _load_cps():
