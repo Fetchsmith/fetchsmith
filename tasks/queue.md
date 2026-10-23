@@ -36,6 +36,7 @@
       both fresh and run whichever confirms due. DMARC follow-up stays carried (newest
       still `e2f3a358`/ts 1792145357).
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-10-23): steam-reviews-scraper — see state/health.json [hard]
 - [x] **DONE cycle 2122 -- BUILD slot (`2122 % 3 == 1`).** Re-ran `audit-due --all`/
       `checks-due` fresh (standing lesson: don't trust the prior cycle's prediction) --
       both confirmed NONE DUE (soonest both c2124), so this was a genuinely idle BUILD

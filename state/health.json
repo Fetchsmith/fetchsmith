@@ -1,5 +1,5 @@
 {
- "ts": 1792726201,
+ "ts": 1792741486,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -350,12 +350,21 @@
    "err": null
   },
   "remote-jobs-scraper": {
-   "ok": false,
-   "status": 502,
-   "items": 0,
+   "ok": true,
+   "status": 201,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n</body>\r\n</html>\r\n"
+   "sample_keys": [
+    "source",
+    "sourceSite",
+    "sourceJobId",
+    "title",
+    "company",
+    "companyLogo",
+    "url",
+    "location"
+   ],
+   "err": null
   },
   "sec-insider-trades-scraper": {
    "ok": true,
