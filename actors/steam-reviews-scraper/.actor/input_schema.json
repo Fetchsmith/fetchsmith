@@ -77,7 +77,7 @@
     "purchaseType": {
       "title": "Purchase type",
       "type": "string",
-      "description": "steam = reviews from players who bought the game on Steam (excludes key activations and free weekends).",
+      "description": "Currently a no-op (2026-10-23 source change — Steam's community review pages, which this Actor now reads, have no purchase-type filter). Kept here in case that changes.",
       "default": "all",
       "enum": [
         "all",
@@ -94,7 +94,7 @@
     "includeOffTopic": {
       "title": "Include off-topic review bombs",
       "type": "boolean",
-      "description": "Steam hides reviews from periods Valve flagged as off-topic review-bomb activity (a controversy rather than the game itself). Turn this on to get the unfiltered set — e.g. Total War: ROME II returns 88,334 reviews filtered vs 94,228 unfiltered. Also applies to the review totals on Game details rows.",
+      "description": "Currently a no-op (2026-10-23 source change — Steam's community review pages, which this Actor now reads, have no off-topic filter in either direction). Kept here in case that changes.",
       "default": false
     },
     "sortBy": {
@@ -119,7 +119,7 @@
     "dayRange": {
       "title": "Last N days (Most helpful only)",
       "type": "integer",
-      "description": "With Sort = Most helpful, restrict to reviews from the last N days (1-365). Steam applies a 30-day window by default in that mode if you leave this blank, so set it to 365 for a true all-time 'most helpful' pull. Steam honours a day range in NO other sort mode, so this is ignored (with a warning) for Most recent / Recently updated / Funniest - use 'Reviews after/before' for a date window instead.",
+      "description": "Currently a no-op (2026-10-23 source change — Steam's community review pages, which this Actor now reads, have no day-range control in any sort mode). Use 'Reviews after/before' with Sort = Most recent for a date window instead.",
       "minimum": 1,
       "maximum": 365,
       "editor": "number"

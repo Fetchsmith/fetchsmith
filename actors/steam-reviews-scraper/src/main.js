@@ -1,6 +1,7 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
+import { reviewsPageUrl, homeContentUrl, parseReviewsPage } from './reviews_html.js';
 
 await Actor.init();
 // apps/searchTerms carry no length cap, and each app can cost up to 200 sequential paginated review
@@ -69,31 +70,42 @@ const includePlayerCount = input.includePlayerCount === true;
 // populated on all of them, while SteamSpy's playtime fields (average_forever / median_forever /
 // *_2weeks) are a flat 0 on every single one — dead since Valve hid profile playtime. So this ships
 // owners/peak-CCU/tags and deliberately does NOT claim playtime estimates.
-// Steam honours day_range only in its most-helpful ordering, so say so rather than letting the
-// buyer believe a window was applied. `recent`/`updated` are already chronological (use
-// reviewsAfter/reviewsBefore instead); `funny` is all-time and has no date control at all.
-if (dayRange && sortBy !== 'all') {
+// dayRange had a real HTML path while this Actor used the JSON appreviews API (day_range only
+// applied in the most-helpful ordering). Valve retired that API 2026-10-22; the
+// steamcommunity.com HTML fallback this Actor now scrapes has no day-range control at all —
+// not even in its "most helpful" (toprated) view — so this is now an unconditional no-op,
+// not merely conditional on sortBy. Say so once, up front.
+if (dayRange && dataType === 'reviews') {
   log.warning(
-    `"Last N days" (${dayRange}) is ignored with sortBy="${sortBy}" — Steam only honours a day range in its `
-    + 'most-helpful ordering. '
-    + (sortBy === 'funny'
-      ? 'The funniest ordering is always all-time and Steam offers no date filter for it; use sortBy="recent" '
-        + 'with "Reviews after/before" if you need a date window.'
-      : 'This ordering is already newest-first, so use "Reviews after/before" for a date window.'),
+    `"Last N days" (${dayRange}) is ignored — Steam's review HTML page has no day-range control `
+    + '(the JSON API this Actor used to call had one, but Valve retired that API 2026-10-22 and the '
+    + 'replacement HTML source has no equivalent). Use "Reviews after/before" with sortBy="recent" for a date window instead.',
   );
 }
 const includeOwnerEstimates = input.includeOwnerEstimates === true;
 if (includeOwnerEstimates && dataType !== 'games') {
   log.warning('includeOwnerEstimates is ignored for dataType:"reviews" — owner estimates and tags describe a game, not a review. Set dataType:"games" to get them.');
 }
-// Valve flags "off-topic review bomb" periods (a controversy, not the game) and Steam's review
-// endpoint excludes them by default (filter_offtopic_activity=1). Turning this on asks for the
-// unfiltered set, which is exactly what a buyer studying a backlash wants. Verified 2026-09-17 on
-// Total War: ROME II (214950): 88,334 reviews filtered vs 94,228 unfiltered.
+// Valve flags "off-topic review bomb" periods (a controversy, not the game). The dead JSON API's
+// review endpoint excluded them by default (filter_offtopic_activity=1) and this input asked for
+// the unfiltered set instead — exactly what a buyer studying a backlash wants. Verified
+// 2026-09-17 on Total War: ROME II (214950): 88,334 reviews filtered vs 94,228 unfiltered.
 const includeOffTopic = input.includeOffTopic === true;
-const offTopicParam = includeOffTopic ? '0' : '1';
 const minPlaytimeHours = input.minPlaytimeHours != null ? Number(input.minPlaytimeHours) : null;
 const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase() || null;
+
+// Valve retired the appreviews JSON API on 2026-10-22 (verified live; see reviews_html.js). Two
+// of this Actor's filters have no equivalent anywhere on the steamcommunity.com HTML replacement
+// (searched the full rendered page, not just the visible menus, confirmed c2126/c2129): purchase
+// type (steam vs non-steam) — dataType:"reviews" only, dataType:"games" already gets its own more
+// specific warning below — and the off-topic-activity toggle, which both modes used to honor via
+// the dead API's filter_offtopic_activity param and is now an unconditional no-op in either one.
+if (dataType === 'reviews' && purchaseType !== 'all') {
+  log.warning(`purchaseType ("${purchaseType}") is ignored — Steam's review HTML page has no purchase-type filter (the retired JSON API's steam-vs-non-steam facet has no UI equivalent to port). Every review for the app is scanned regardless.`);
+}
+if (includeOffTopic) {
+  log.warning('includeOffTopic is ignored — Steam\'s review HTML page has no off-topic-activity control at all (the retired JSON API\'s default — review-bomb periods excluded — has no UI toggle to port). Every review for the app is scanned regardless.');
+}
 
 if (!apps.length && !searchTerms.length) {
   await Actor.fail('Provide at least one game in "apps" (Steam store URL or numeric App ID), or at least one query in "searchTerms".');
@@ -418,19 +430,43 @@ const getJson = async (url, opts = {}) => {
     throw new Error(`${host} returned HTTP ${resp.statusCode} with a body that is not JSON (${resp.body ? `starts with ${JSON.stringify(String(resp.body).slice(0, 60))}` : 'empty body'}) — usually a Steam error or maintenance page.`);
   }
 };
+// Same transport as getJson, but for the steamcommunity.com HTML pages (reviews_html.js) — the
+// body is markup, not JSON, so it must NOT go through JSON.parse.
+const getHtml = async (url, opts = {}) => {
+  const resp = await requestWithRetry(url, opts);
+  const host = new URL(url).hostname;
+  if (resp.statusCode >= 400) {
+    const hint = resp.statusCode === 429
+      ? ` ${host} is rate-limiting this run; wait a few minutes, or lower "maxResults"/the number of apps per run.`
+      : (resp.statusCode >= 500 ? ` ${host} is having a server-side problem; this is usually temporary.` : '');
+    throw new Error(`${host} returned HTTP ${resp.statusCode}.${hint}`);
+  }
+  return resp.body;
+};
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Steam serves a COMPLETE query_summary (review_score_desc / total_reviews / total_positive / …) on
-// the first review page whenever review_type and purchase_type are both unfiltered — including when
-// the honest answer is "no reviews", which comes back as total_reviews:0. So under those defaults a
-// first page of success:1 + reviews:[] + a summary with NO total_reviews key is Steam handing back a
-// degenerate body, not a real empty result. (Observed 2026-09-15 for ~hours across two apps with
-// 142k/1.5M real reviews and two different IPs; recovered on its own.) With review_type or
-// purchase_type set, Steam trims the summary to {num_reviews} even on legitimate empty answers, so
-// the signal is unavailable and this check correctly stays off.
-const unfilteredQuery = reviewType === 'all' && purchaseType === 'all';
-const looksDegenerate = (body) => unfilteredQuery && body?.success === 1
-  && !(body.reviews?.length) && body?.query_summary?.total_reviews === undefined;
+// appreviewhistogram is aggregate-only (no review text/author/playtime — confirmed c2124) but it
+// is NOT part of the retired appreviews API and is still live, so it is repurposed here as the
+// review-total source both the games-mode summary and the reviews-mode degenerate check used to
+// get from query_summary on the dead API's first page. Sums every weekly rollup's up/down counts;
+// `weeks` (the current partial week) is included alongside `rollups` (completed weeks) since Steam
+// splits them into two separate arrays rather than one.
+const histogramCache = new Map();
+async function getReviewTotals(appId) {
+  if (histogramCache.has(appId)) return histogramCache.get(appId);
+  let totals = null;
+  try {
+    const body = await getJson(`https://store.steampowered.com/appreviewhistogram/${appId}?l=english`);
+    if (body?.success === 1) {
+      const buckets = [...(body.results?.rollups ?? []), ...(body.results?.weeks ?? [])];
+      const totalPositive = buckets.reduce((s, b) => s + (b.recommendations_up || 0), 0);
+      const totalNegative = buckets.reduce((s, b) => s + (b.recommendations_down || 0), 0);
+      totals = { totalReviews: totalPositive + totalNegative, totalPositive, totalNegative };
+    }
+  } catch (e) { log.debug(`review histogram failed for ${appId}: ${e.message}`); }
+  histogramCache.set(appId, totals);
+  return totals;
+}
 
 // Steam store URLs are /app/<appid>/<slug>/; a bare numeric ID is also accepted.
 const parseAppId = (s) => (s.match(/\/app\/(\d+)/)?.[1] || s.match(/^\d{1,8}$/)?.[0] || s.match(/[?&]appids?=(\d+)/)?.[1] || null);
@@ -608,40 +644,13 @@ async function getPlayerCount(appId) {
   } catch (e) { log.debug(`player count failed for ${appId}: ${e.message}`); return null; }
 }
 
-// Steam's own start_date/end_date/date_range_type=include filters at the source instead of paging
-// back from "now" and discarding everything newer than the window client-side — verified live that
-// it holds across cursor pages (0 overlap, strictly decreasing timestamps, clean termination) when
-// combined with filter="recent" (forced above whenever a date window is set). filter="all" + this
-// combo is NOT safe: measured live, it gets stuck returning the same cursor/page forever. Also:
-// start_date=0 is silently treated as absent and drops end_date filtering too, so a window with only
-// "reviewsBefore" needs a real nonzero placeholder rather than 0 — Steam review IDs don't predate 2010.
-const NO_LOWER_BOUND_SENTINEL = 1;
-function reviewsUrl(appId, cursor) {
-  const p = new URLSearchParams({
-    json: '1',
-    filter: sortBy,
-    language,
-    review_type: reviewType,
-    purchase_type: purchaseType,
-    filter_offtopic_activity: offTopicParam,
-    num_per_page: '100',
-    cursor,
-  });
-  // day_range only applies to filter=all (Steam's "most helpful over the last N days" mode).
-  // Verified live 2026-09-26 that filter=funny ignores it outright: day_range 7 vs 365 vs absent all
-  // return the byte-identical page, and funny is all-time by default (unlike `all`, which Steam caps
-  // to 30 days). Sending it anyway would be a silent no-op, so it is withheld and warned about below.
-  if (dayRange && sortBy === 'all') p.set('day_range', String(dayRange));
-  if (hasDateWindow) {
-    p.set('date_range_type', 'include');
-    const start = reviewsAfter && !isNaN(reviewsAfter) ? Math.floor(reviewsAfter.getTime() / 1000) : NO_LOWER_BOUND_SENTINEL;
-    p.set('start_date', String(start));
-    if (reviewsBefore && !isNaN(reviewsBefore)) p.set('end_date', String(Math.floor(reviewsBefore.getTime() / 1000)));
-  }
-  return `https://store.steampowered.com/appreviews/${appId}?${p.toString()}`;
-}
+// sortBy=recent is the only chronological ordering (forced above whenever a date window is set),
+// and reviewsAfter/reviewsBefore are enforced client-side against each row's parsed createdAt —
+// the dead JSON API's server-side start_date/end_date/date_range_type=include is gone, so this is
+// no longer a source-side filter and date resolution is now DAY, not exact-timestamp (see
+// reviews_html.js's parsePostedDate). The pastWindow early-stop below still holds because
+// recommendationid is strictly decreasing under sort=recent across pages (verified c2128).
 
-const summaries = new Map();
 async function scrapeReviews(appId) {
   const info = await getGameInfo(appId);
   // An app absent from the baseline is seeded in place rather than having its whole back
@@ -651,35 +660,42 @@ async function scrapeReviews(appId) {
   if (watchMode && !seeding && appSeeding) {
     log.info(`App ${appId}: not in the baseline for "${watchLabel}" yet — baselining it this run instead of delivering its existing reviews.`);
   }
-  let cursor = '*';
   let got = 0;
   let filteredOut = 0;
   let newForApp = 0;
   const seen = new Set();
   let degenerate = false;
-  for (let page = 0; page < 200 && got < perAppReviews && keepGoing; page++) {
+  let next = null; // homecontent's replayed form fields for page 2+; unused on page 0
+  // numperpage is 10 here, not the dead API's 100 — a given maxReviewsPerApp now costs ~10x the
+  // page fetches, so the page-count ceiling scales with it instead of a flat 200.
+  const maxPages = Math.max(30, Math.ceil(perAppReviews / 10) + 5);
+  for (let page = 0; page < maxPages && got < perAppReviews && keepGoing; page++) {
     if (!timeBudgetOk()) { keepGoing = false; log.warning(TIME_BUDGET_WARNING); break; }
-    let body;
-    try { body = await getJson(reviewsUrl(appId, cursor)); } // URLSearchParams below already encodes the cursor — do not encode it twice
-    catch (e) { log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`); break; }
-    // An incomplete first page is usually a short-lived Steam hiccup, so give it two spaced retries
-    // before believing it — got-scraping's own retries fire too fast to outlast one.
-    for (let attempt = 1; attempt <= 2 && page === 0 && looksDegenerate(body); attempt++) {
-      log.warning(`Steam returned an incomplete review response for app ${appId} (no reviews and no review totals) — retrying in ${attempt * 5}s (attempt ${attempt}/2).`);
-      await sleep(attempt * 5000);
-      try { body = await getJson(reviewsUrl(appId, cursor)); }
-      catch (e) { log.warning(`retry ${attempt} failed for ${appId}: ${e.message}`); break; }
+    let html;
+    try {
+      html = await getHtml(page === 0
+        ? reviewsPageUrl(appId, { reviewType, sortBy, language })
+        : homeContentUrl(appId, next));
+    } catch (e) { log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`); break; }
+    const parsed = parseReviewsPage(html, appId);
+    if (page === 0 && parsed.cardCount === 0) {
+      // Unlike the dead JSON API, the HTML page has no query_summary to distinguish "really no
+      // reviews" from an upstream glitch on its own — 0 cards looks identical either way. The
+      // still-live aggregate histogram disambiguates: a nonzero total alongside 0 cards here is a
+      // fetch fault, not Steam's honest answer.
+      const totals = await getReviewTotals(appId);
+      if (totals && totals.totalReviews > 0) degenerate = true;
+      break;
     }
-    if (page === 0 && looksDegenerate(body)) { degenerate = true; break; }
-    if (body?.success !== 1) { log.warning(`Steam refused the review query for app ${appId} (success=${body?.success}).`); break; }
-    if (page === 0 && body.query_summary) summaries.set(appId, body.query_summary);
-    const reviews = body.reviews ?? [];
+    const reviews = parsed.reviews;
     if (!reviews.length) break;
     let pastWindow = false;
     for (const r of reviews) {
       if (got >= perAppReviews || !keepGoing) break;
-      if (seen.has(r.recommendationid)) continue; // Steam repeats the last page when the cursor runs out
-      seen.add(r.recommendationid);
+      // Defensive only: a clean multi-page chain measured 0 duplicate ids live (c2128), unlike the
+      // dead API, which really did repeat its last page once the cursor ran out.
+      if (r.recommendationid != null && seen.has(r.recommendationid)) continue;
+      if (r.recommendationid != null) seen.add(r.recommendationid);
       got += 1;
       const item = { ...reviewRow(appId, r, info), scrapedAt: new Date().toISOString() };
       // sort=recent is strictly newest-created-first, so once we're older than "reviewsAfter"
@@ -736,9 +752,10 @@ async function scrapeReviews(appId) {
       keepGoing = await pushResult(item, watchId, appSeeding, metaCode);
     }
     if (pastWindow) break;
-    const next = body.cursor;
-    if (!next || next === cursor) break; // same cursor twice = end of feed
-    cursor = next;
+    // End of feed is the Show-More form being ABSENT from the response, never "the page came back
+    // short" — Steam silently clamps/repeats instead of signalling an empty page (verified c2128).
+    if (!parsed.next) break;
+    next = parsed.next;
   }
   // maxReviewsPerApp caps reviews SCANNED, before keyword/minPlaytimeHours filtering — if the cap
   // was hit and some scanned reviews were dropped by a filter, matching reviews may still sit
@@ -808,17 +825,17 @@ if (dataType === 'games') {
     }
     let summary = null;
     try {
-      // Language/purchase filters are deliberately left off so the totals are the game's own, but
-      // the off-topic flag follows the run's setting: a row whose reviewScore silently excluded a
-      // review bomb the buyer explicitly asked to include would contradict its own reviews.
-      const body = await getJson(`https://store.steampowered.com/appreviews/${id}?json=1&num_per_page=0&language=all&purchase_type=all&filter_offtopic_activity=${offTopicParam}`);
-      summary = body?.query_summary ?? null;
-      // Nothing here can legitimately return an empty set, so a missing total_reviews is
-      // unambiguously Steam serving an incomplete body — say so instead of shipping a row with
-      // silently null review scores.
-      if (summary && summary.total_reviews === undefined) {
-        log.warning(`Steam returned an incomplete review summary for app ${id} — reviewScore/totalReviews will be null in this row. Upstream fault; re-run later for those fields.`);
-        summary = null;
+      // The dead appreviews API's query_summary gave an all-language, all-purchase-type total plus
+      // Valve's own review_score/review_score_desc bucket (e.g. "Overwhelmingly Positive"). The
+      // still-live appreviewhistogram gives the same up/down totals (summed below) but has no score
+      // bucket at all — gameRow() below sets reviewScore/reviewScoreDesc to null rather than
+      // inventing an approximation of Valve's own algorithm with no ground truth to check it
+      // against. filter_offtopic_activity has no histogram equivalent either, so totals here are
+      // always the all-activity (off-topic-included) count regardless of includeOffTopic.
+      const totals = await getReviewTotals(id);
+      summary = totals ? { total_reviews: totals.totalReviews, total_positive: totals.totalPositive, total_negative: totals.totalNegative } : null;
+      if (!summary) {
+        log.warning(`Steam returned no review histogram for app ${id} — reviewScore/totalReviews/totalPositive/totalNegative will be null in this row. Upstream fault; re-run later for those fields.`);
       }
     } catch (e) { log.debug(`review summary failed for ${id}: ${e.message}`); }
     const players = includePlayerCount ? await getPlayerCount(id) : null;
@@ -870,16 +887,16 @@ if (dataType === 'games') {
     if (degenerate) {
       upstreamDegraded.push(id);
       log.warning(
-        `Steam's review API kept returning an incomplete response for app ${id} after 2 retries — `
-        + `success, but no reviews and no review totals. This is an upstream Steam fault, not a filter `
-        + `problem and not a sign that the app has no reviews; re-run this input later.`,
+        `App ${id}: the review page came back with 0 review cards, but the review histogram says it has `
+        + `reviews. This is an upstream Steam fault, not a filter problem and not a sign that the app has `
+        + `no reviews; re-run this input later.`,
       );
     } else if (got === 0) {
       emptyIds.push(id);
-      const s = summaries.get(id);
-      log.warning(s && s.total_reviews === 0
+      const totals = await getReviewTotals(id);
+      log.warning(totals && totals.totalReviews === 0
         ? `App ${id} has no Steam reviews at all yet (that is Steam's data, not a scrape failure).`
-        : `Steam returned no reviews for app ${id} with language="${language}", review_type="${reviewType}", purchase_type="${purchaseType}" — try language "all" or a different filter.`);
+        : `Steam returned no reviews for app ${id} with language="${language}", review_type="${reviewType}" — try language "all" or a different filter.`);
     }
   }
 }

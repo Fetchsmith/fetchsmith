@@ -144,7 +144,12 @@ export function parseReviewsPage(html, appId, now = new Date()) {
     const thumb = card.find('.thumb img').first().attr('src') || '';
     const voted = /thumbsUp/i.test(thumb) ? true : (/thumbsDown/i.test(thumb) ? false : null);
 
-    const authorLink = card.find('.apphub_CardContentAuthorName a').first();
+    // `.apphub_CardContentAuthorName` always carries TWO <a> tags to the same profile URL — the
+    // first is empty (no text content at all) and the second carries the real persona name.
+    // `.first()` silently grabbed the empty one, nulling authorName on every real row tested
+    // (10/10 in a local run against app 1145360) without erroring. Verified live across 10 cards:
+    // always exactly this [empty, name] order, never reversed.
+    const authorLink = card.find('.apphub_CardContentAuthorName a').last();
     const mini = card.find('.apphub_friend_block').first().attr('data-miniprofile');
     const steamid = steamIdFromMiniprofile(mini);
     const owned = /([\d,]+)\s+products? in account/i.exec(card.find('.apphub_CardContentMoreLink').first().text());

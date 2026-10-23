@@ -29,6 +29,7 @@ ok(p1.cardCount === 10 && p1.idCount === 10, `page1 cards==ids==10 (got ${p1.car
 ok(p1.reviews.every((r) => r.recommendationid), 'every page1 row has a recommendationid');
 ok(p1.reviews.every((r) => r.author.steamid && /^\d{17}$/.test(r.author.steamid)), 'every page1 row has a 17-digit steamid64');
 ok(p1.reviews.every((r) => r.review && r.review.length > 0), 'every page1 row has review text');
+ok(p1.reviews.every((r) => r.author.personaname), 'every page1 row has a non-empty author persona name');
 ok(p1.reviews.every((r) => r.timestamp_created > 0), 'every page1 row has a parsed date');
 ok(p1.reviews.every((r) => r.author.playtime_forever != null && r.author.playtime_forever > 0), 'every page1 row has playtime');
 ok(p1.reviews.every((r) => typeof r.voted_up === 'boolean'), 'every page1 row has a recommendation verdict');

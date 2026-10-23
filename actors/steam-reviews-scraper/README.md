@@ -4,9 +4,20 @@ Scrape **Steam player reviews** and **Steam store data** into JSON, CSV or Excel
 
 It doubles as a video game data API: point it at any Steam app and pull the store record — price, discount, genres, developers, Metacritic score — plus Steam player stats such as live concurrent players, peak concurrency yesterday and an estimated owner range.
 
-Give it Steam store URLs, numeric App IDs, or just game names to search for. You get every review with its full text, the reviewer's **playtime**, whether they recommend the game, helpfulness votes, whether it was a real Steam purchase, and (optionally) the game's name, developer, publisher, genres and release date attached to every row.
+Give it Steam store URLs, numeric App IDs, or just game names to search for. You get every review with its full text, the reviewer's **playtime**, whether they recommend the game, helpfulness votes, and (optionally) the game's name, developer, publisher, genres and release date attached to every row.
 
 **Pay per result: $0.000575 per review or game record on the free plan, dropping to $0.0003 on Gold and above** (Bronze $0.0005, Silver $0.00039). **No start fee** — a run that returns nothing costs nothing.
+
+**Source change (2026-10-23):** Valve retired the review API this Actor used to call. Reviews now
+come from Steam's own community review pages instead — same review text, recommendation,
+playtime, author and votes, but a few fields Valve's old API alone exposed are gone for good:
+`steamPurchase`, `receivedForFree`, `refunded`, `steamDeck`, `weightedVoteScore`, `updatedAt`,
+`playtimeAtReviewHours`, `playtimeLastTwoWeeksHours`, `authorNumReviews`, `authorLastPlayedAt`,
+every `hardware*` field, and per-review `language` are now always `null`. `createdAt` is now
+**day-resolution**, not an exact timestamp. `purchaseType`, `dayRange` and `includeOffTopic` no
+longer filter anything (every review is scanned regardless — see the Input table). Everything
+else — review text, `recommended`, playtime, author identity, `votesUp`/`votesFunny`,
+`writtenDuringEarlyAccess`, watch mode, `reviewId` stability — is unaffected.
 
 ## What you can do with it
 
@@ -14,7 +25,7 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 - **Find bug reports in the wild** — set `keyword` to `crash`, `stutter`, `controller` or `refund` and get only the reviews that mention it.
 - **Filter out drive-by reviews** — `minPlaytimeHours: 10` keeps only reviewers who actually played the game.
 - **Pull reviews from an exact historical window** — `reviewsAfter`/`reviewsBefore` (e.g. a specific patch, a controversy, a launch week years ago) reach any point in a game's history, not just the last year.
-- **Study a review bomb** — `includeOffTopic: true` returns the reviews Steam itself hides when Valve flags a stretch of time as off-topic activity. On War Thunder that is 125,691 reviews you cannot see anywhere on the store page.
+- **Study a review bomb** — Steam's own review-bomb filtering (`includeOffTopic`) has no equivalent on the community pages this Actor now reads, so every review is scanned regardless of this flag (currently a no-op — see the notice above and the Off-topic section below).
 - **Competitive research** — `dataType: "games"` returns price, discount, genres, developer, Metacritic score, the full review-score summary (total positive/negative, % positive) and, optionally, the **live concurrent player count**.
 - **Build a steam games list from any batch of titles** — put dozens of App IDs or search terms in one run and `dataType: "games"` returns price, discount, genres and review score for every match.
 - **Size a market, not just a game** — `includeOwnerEstimates: true` adds an estimated owner range, peak concurrent players yesterday and Steam's **crowd-voted tags with vote counts** to every game row. Those tags are what players actually call a game (Hades: `Action Roguelike`, `Rogue-lite`, `Hack and Slash`) rather than the three broad genres the store API returns (`Action`, `Indie`, `RPG`).
@@ -33,10 +44,10 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 | `maxResults` | integer | `2000` | Hard cap on rows pushed — also caps what you are charged |
 | `language` | string | `english` | Steam language code, or `all` |
 | `reviewType` | string | `all` | `positive` / `negative` to keep only thumbs-up / thumbs-down |
-| `purchaseType` | string | `all` | `steam` excludes key activations and free weekends |
-| `includeOffTopic` | boolean | `false` | Include reviews from periods Valve flagged as **off-topic review bombs** — see below |
+| `purchaseType` | string | `all` | **Currently a no-op** (2026-10-23 source change — see notice above). Kept in the input schema in case Steam's community pages grow this filter back. |
+| `includeOffTopic` | boolean | `false` | **Currently a no-op** (2026-10-23 source change — see notice above and the Off-topic section below) |
 | `sortBy` | string | `recent` | `recent`, `updated`, `all` (Steam's helpfulness ranking) or `funny` (Steam's "Funny" tab — most funny votes, all-time) |
-| `dayRange` | integer | — | With `sortBy: "all"`, restrict to the last N days (1–365). Ignored in every other sort mode (Steam has no day range there) — the run warns rather than silently dropping it |
+| `dayRange` | integer | — | **Currently a no-op** (2026-10-23 source change — see notice above). Use `reviewsAfter`/`reviewsBefore` with `sortBy: "recent"` for a date window instead. |
 | `reviewsAfter` | string | — | ISO date (`2024-01-01`) — keep only reviews created on/after this date. Reaches any point in history, forces `sortBy` to `recent`. |
 | `reviewsBefore` | string | — | ISO date — keep only reviews created before this date. Combine with `reviewsAfter` for an exact window. |
 | `minPlaytimeHours` | integer | — | Keep only reviewers with at least this many hours in the game |
@@ -52,23 +63,18 @@ Give it Steam store URLs, numeric App IDs, or just game names to search for. You
 
 ## Off-topic review bombs (`includeOffTopic`)
 
-When a game gets review-bombed over something that isn't the game — a publisher decision, a
-storefront policy, a controversy — Valve flags that stretch of time as *off-topic activity* and
-Steam hides those reviews from its own review lists and score. **That is Steam's default, so it is
-this Actor's default too.** Set `includeOffTopic: true` to get the unfiltered set instead, which is
-exactly what you want if the backlash *is* the thing you are studying.
+**Currently unavailable, as of the 2026-10-23 source change above.** Valve's old review API let
+this Actor ask for the unfiltered set when it hid reviews from a flagged off-topic period (a
+publisher decision, a storefront policy, a controversy — not the game itself); the retired API's
+replacement, Steam's own community review pages, has no such control at all, in either direction.
+`includeOffTopic` is kept in the input schema (currently a no-op) in case that changes. The table
+below is historical — it describes how the old API behaved, not this Actor's current output.
 
-The difference is not cosmetic (checked 2026-09-17):
-
-| Game | Reviews with the flag hidden (default) | With `includeOffTopic: true` |
+| Game | Reviews with the flag hidden (old API default) | With `includeOffTopic: true` on the old API |
 |---|---|---|
 | Total War: ROME II (`214950`) | 88,334 | 94,228 |
 | War Thunder (`236390`) | 784,322 | 910,013 |
 | NARAKA: BLADEPOINT (`1203220`) | 302,783 | 343,134 |
-
-It applies to `dataType: "reviews"` **and** to the `reviewScore` / `totalReviews` fields on
-`dataType: "games"` rows, so a game row never reports a score that contradicts the reviews you
-pulled alongside it. See [the full write-up](https://fetchsmith.com/blog/steam-off-topic-review-bombs-hidden-by-default) for a third game and the underlying mechanism.
 
 ## Watch mode — only new reviews since the last run
 
@@ -115,34 +121,34 @@ Details worth knowing:
   "appId": 1145360,
   "reviewId": "234888482",
   "review": "Best roguelike I have ever played, and the story actually lands.",
-  "language": "english",
+  "language": null,
   "recommended": true,
-  "createdAt": "2026-09-10T03:35:39.000Z",
-  "updatedAt": "2026-09-10T03:37:38.000Z",
+  "createdAt": "2026-09-10T00:00:00.000Z",
+  "updatedAt": null,
   "votesUp": 0,
   "votesFunny": 0,
-  "weightedVoteScore": 0.5,
+  "weightedVoteScore": null,
   "commentCount": 0,
-  "steamPurchase": true,
-  "receivedForFree": false,
+  "steamPurchase": null,
+  "receivedForFree": null,
   "writtenDuringEarlyAccess": false,
-  "refunded": false,
-  "steamDeck": false,
+  "refunded": null,
+  "steamDeck": null,
   "playtimeForeverHours": 3.9,
-  "playtimeAtReviewHours": 3.9,
-  "playtimeLastTwoWeeksHours": 3.7,
+  "playtimeAtReviewHours": null,
+  "playtimeLastTwoWeeksHours": null,
   "authorSteamId": "76561197974061804",
   "authorName": "BobbyRunout",
-  "authorProfileUrl": "https://steamcommunity.com/id/BobbyRunout/",
+  "authorProfileUrl": "https://steamcommunity.com/profiles/76561197974061804/",
   "authorNumGamesOwned": 1180,
-  "authorNumReviews": 100,
-  "authorLastPlayedAt": "2026-09-13T04:15:54.000Z",
+  "authorNumReviews": null,
+  "authorLastPlayedAt": null,
   "reviewUrl": "https://steamcommunity.com/profiles/76561197974061804/recommended/1145360/",
-  "hardwareOs": "Windows 11",
-  "hardwareCpu": "13th Gen Intel(R) Core(TM) i7-13620H",
-  "hardwareGpu": "NVIDIA GeForce RTX 4050 Laptop GPU",
-  "hardwareRamMb": 16008,
-  "hardwareVramMb": 5920,
+  "hardwareOs": null,
+  "hardwareCpu": null,
+  "hardwareGpu": null,
+  "hardwareRamMb": null,
+  "hardwareVramMb": null,
   "gameName": "Hades",
   "developers": ["Supergiant Games"],
   "publishers": ["Supergiant Games"],
@@ -181,7 +187,8 @@ them). If you want a filtered set of individual reviews, use `dataType: "reviews
   "genres": ["Action", "Adventure", "Indie"],
   "platforms": ["windows", "mac", "linux"],
   "metacriticScore": 90,
-  "reviewScoreDesc": "Overwhelmingly Positive",
+  "reviewScore": null,
+  "reviewScoreDesc": null,
   "totalReviews": 560648,
   "totalPositive": 543211,
   "totalNegative": 17437,
@@ -211,7 +218,7 @@ Six extra fields are added to each game row. Real output for Hades (`1145360`):
 ## Pricing
 Pay per result: **$0.000575 per row** (review or game record) at the FREE tier, dropping to $0.0005 (BRONZE), $0.00039 (SILVER) and $0.0003/row on GOLD and above. **No Actor-start fee** — an empty or filtered-out run costs you nothing. Set `maxResults`/`maxReviewsPerApp` to cap any run.
 
-The closest Store competitor by users is `automation-lab` (111 users, re-verified live 2026-10-16, `automation-lab/steam-game-reviews-scraper`) — it matches our per-row price exactly on FREE ($0.000575), BRONZE ($0.0005), SILVER ($0.00039) and GOLD ($0.0003), then keeps tapering where we flatten: **$0.0002 on PLATINUM and $0.00014 on DIAMOND, against our $0.0003**. It also bills a **$0.003 one-time Actor-start fee** on every run that we don't, which is what decides small pulls: on FREE through GOLD an equal-sized pull costs strictly more there, and on PLATINUM/DIAMOND its start fee only pays for itself past roughly **30,000 / 19,000 rows per run** — above that, it is genuinely cheaper than us and we do not claim otherwise. **Checked its live input schema directly (build still the 2026-09-02 rebuild, unchanged), not its listing copy** — a prior version of this paragraph claimed it has no `purchaseType`/`reviewType` filters, no exact date window and no game-metadata attachment, all three of which its schema has actually carried since that rebuild (`purchaseType`, `reviewType`, `startDate`/`endDate`, and `includeGameInfo` — the last one under the identical property name). It genuinely still has no keyword or minimum-playtime filter, no off-topic review-bomb toggle, no `games` mode (so no live player counts or owner-estimate enrichment either), no watch mode, and no webhook, all of which this Actor ships at no extra charge. Verified live 2026-10-03.
+The closest Store competitor by users is `automation-lab` (111 users, re-verified live 2026-10-16, `automation-lab/steam-game-reviews-scraper`) — it matches our per-row price exactly on FREE ($0.000575), BRONZE ($0.0005), SILVER ($0.00039) and GOLD ($0.0003), then keeps tapering where we flatten: **$0.0002 on PLATINUM and $0.00014 on DIAMOND, against our $0.0003**. It also bills a **$0.003 one-time Actor-start fee** on every run that we don't, which is what decides small pulls: on FREE through GOLD an equal-sized pull costs strictly more there, and on PLATINUM/DIAMOND its start fee only pays for itself past roughly **30,000 / 19,000 rows per run** — above that, it is genuinely cheaper than us and we do not claim otherwise. **Checked its live input schema directly (build still the 2026-09-02 rebuild, unchanged), not its listing copy** — a prior version of this paragraph claimed it has no `purchaseType`/`reviewType` filters, no exact date window and no game-metadata attachment, all three of which its schema has actually carried since that rebuild (`purchaseType`, `reviewType`, `startDate`/`endDate`, and `includeGameInfo` — the last one under the identical property name). It genuinely still has no keyword or minimum-playtime filter, no off-topic review-bomb toggle (currently unavailable on our side too, as of the 2026-10-23 source change above), no `games` mode (so no live player counts or owner-estimate enrichment either), no watch mode, and no webhook, all of which this Actor ships at no extra charge. Verified live 2026-10-03.
 
 A newer, faster-growing competitor is `memo23/steam-reviews-scraper` (created 2026-09-07 — every one of its users joined in the last 30 days, the fastest growth in this niche by far). It pitches an exact review-date window and no required Steam API key; this Actor already has both (`reviewsAfter`/`reviewsBefore`, and never needed a key). Its schema is thin next to ours — still the same 8 properties (app ids, a review cap, language, `reviewType`, `purchaseType`, the date window, and the off-topic toggle) vs. this Actor's 22, confirmed unchanged against its latest build despite a same-day version bump — with no search-by-name, no keyword or playtime filter, no `games` mode, no watch mode, no webhook. It's also pricier: a **$0.005 one-time start fee** (none here) plus a flat **$0.001/review** with no volume tiers, vs. this Actor's tiered $0.000575 down to $0.0003 and no start fee. Verified live 2026-10-03.
 
