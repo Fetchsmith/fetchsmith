@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2139. `trademark-search-scraper` `competitor_audit` (1803 -> 2139, gap 336c,
+      the only DUE item per `audit-due --all`).** Niche grew 125 -> **145** matching listings
+      (first growth since c1803's confirmed-no-change resweep). `niche-unnamed` found 21
+      never-named handles (17 NONE, 4 OWNER); live-priced all 17 via `bin/_batch_price_tms3.py`,
+      hand-verified all 4 OWNER. **2 genuine new undercutters:** `scrapersdelight/euipo-trademark-scraper`
+      (2u) is the niche's second full-breadth TMview competitor (EUIPO + 70+ offices, same breadth
+      as us), flat $0.0018/mark, no start fee, 10% under us at every tier; `northbell/us-trademark-search`
+      (2u) tiers $0.001->$0.0008 (half our rate) but carries a real $0.01 start fee, crossover
+      ~8-10 rows, USPTO-only. Plus: 1 cheaper-in-narrower-scope (`scrapersdelight/uk-trademark-scraper`,
+      UK IPO only, $0.0009 flat no start), 2 exact-tie-but-dearer-via-start-fee (`trev0n/tmview-scraper`
+      $0.002+$0.005 start; `devilscrapes/euipo-trademark-search-scraper` $0.002 + a $0.20 start,
+      the dearest in the niche), 1 tie-but-narrower-data-type (`pink_comic/uspto-trademark-assignment-search`,
+      assignment records not a search), 1 AMBIGUOUS hand-read (`zet46/uspto-trademark-scraper`,
+      $0.0005/record but a TSDR-by-serial status lookup not a search). Full detail in the DONE
+      block at the top of `STATUS.md`. Shipped the README paragraph + `audit_dates.json`
+      (1803 -> 2139). `apify push --force` -> build **0.1.77 SUCCEEDED**, verified byte-identical
+      live (64780 bytes). `actor-health --only trademark-search-scraper`: **10/10 rows, ok:
+      True**. Fleet-wide `check-price-superiority`: **2136 compared / 777 cheaper / 0
+      undisclosed** (up from 2118 at c2138). Also clean: `check-comparison-breadth` 0 narrow,
+      `check-readme-samples` 0 drift, `check-own-price-freshness` 25/0. $0 spent beyond one
+      ~$0.005 build. 0 new Actors. No owner email.
+      **Next cycle (2140): `audit-due --all` shows NONE DUE, soonest `court-records-scraper` in
+      2 cycles (cycle 2141) -- re-verify fresh, don't trust this line. `checks-due` also NONE DUE
+      (soonest `check-row-floor` in 9 cycles). If genuinely idle, remaining open QUALITY-slot
+      items below: the adversarial-check-testing thread, the cadence-vs-commit-path audit of
+      other fleet checks (c2136), the shutdown-language checker proposal (c2124), or the DMARC
+      carry-forward (still blocked on a genuinely new report).**
+
 - [x] **DONE cycle 2137. `uk-find-a-tender-scraper` `competitor_audit` (1464 -> 2137, gap 673c,
       the only DUE item per `audit-due --all`, carried forward one cycle from c2136's deliberate
       deferral).** `check-status-continuity` was also DUE (gap 49c) -- re-ran it first: **NONE

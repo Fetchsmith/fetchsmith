@@ -1,3 +1,66 @@
+Updated: 2026-10-23 ~15:10 UTC by cycle 2139 (sonnet-5) -- trademark-search-scraper competitor_audit (1803 -> 2139).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## trademark-search-scraper: competitor_audit (1803 -> 2139), 2 genuine new undercutters found and disclosed
+`bin/audit-due --all` first per standing rule: `trademark-search-scraper` was the only DUE item
+(gap 336c). `checks-due` showed NONE DUE. Own price re-read first (`check-own-price-freshness`
+25/0): flat $0.002/result, no start fee, unchanged.
+
+Niche grew for the first time since cycle 1803's confirmed-no-change resweep: a fresh 20-term
+sweep found **145** matching listings (up from 125), 2,337 distinct listings seen (up from
+2,268). `niche-unnamed` found 21 never-named handles (17 NONE, 4 OWNER). Live-priced all 17 NONE
+via the existing durable `bin/_batch_price_tms3.py`; hand-verified all 4 OWNER handles to confirm
+the existing rule-out/naming still covers them (one, `devilscrapes/euipo-trademark-search-scraper`,
+turned out to need its own new disclosure).
+
+**2 genuine new undercutters:** `scrapersdelight/euipo-trademark-scraper` (2u) is the niche's
+second full-breadth TMview competitor (claims EUIPO + 70+ offices, same breadth as us) at flat
+$0.0018/mark, no start fee, 10% under us at every tier. `northbell/us-trademark-search` (2u)
+tiers $0.001->$0.0008 (half our rate) but carries a real $0.01 start fee, crossover ~8-10 rows,
+USPTO-only. **1 single-office cheaper-in-scope:** `scrapersdelight/uk-trademark-scraper` (2u)
+flat $0.0009, no start fee, UK IPO only. **2 exact-tie-but-dearer-via-start-fee:**
+`trev0n/tmview-scraper` (2u, ~80 offices, ties $0.002 + $0.005 start) and
+`devilscrapes/euipo-trademark-search-scraper` (2u, ties $0.002 + repeats owner's $0.20 start,
+the dearest start fee in the niche). **1 tie-but-narrower-data-type:**
+`pink_comic/uspto-trademark-assignment-search` (2u, ties $0.002 + $0.0001 start, assignment
+records not a registration search, same shape as the already-named `parseforge` listing). **1
+AMBIGUOUS hand-read:** `zet46/uspto-trademark-scraper` (1u, sole no-primary-flag event,
+$0.0005/record cheaper than us but a TSDR-by-serial status lookup not a search, same shape as
+the already-named `openrows` listing). Remaining 10 NONE handles dearer or differently-shaped
+(phrase-checkers, watch feeds, a domain-name generator) -- all read live, none undercuts. 4
+OWNER handles hand-verified: `getascraper/wildberries-seller-scraper` (29u, trademark is 1 of 9
+fields in Russian marketplace seller data, same exclusion shape as other `getascraper`
+listings), `maged120/social-username-checker` (19u, optional add-on to a username checker, same
+bundled-product exclusion as `maged120/brand-username-checker`), `devilscrapes/euipo-trademark-search-scraper`
+(the new tie-but-dearer listing above), `fetchsmith/trademark-search-scraper` (our own listing).
+
+Shipped a dated README paragraph plus `audit_dates.json` (1803 -> 2139, full note). Bumped
+`package.json` 0.1.18 -> 0.1.19, `apify push --force` -> build **0.1.77 SUCCEEDED**, verified
+**byte-identical via the Builds API** (64780 == 64780 bytes, `scrapersdelight` and `145` both
+confirmed present live). `actor-health --only trademark-search-scraper`: **10/10 rows, ok:
+True**. Fleet-wide `check-price-superiority`: **2136 compared / 777 cheaper / 0 undisclosed**
+(up from 2118 at c2138). Also clean: `check-comparison-breadth` 0 narrow, `check-readme-samples`
+0 drift (39 blocks/98 bullets/736 values), `check-own-price-freshness` 25/0.
+
+$0 spent beyond one ~$0.005 Apify build (read-only GETs otherwise). 0 new Actors. No owner email
+(routine audit, not a revenue event or owner-only blocker). Inbox unchanged (10 items, all
+previously triaged non-actionable: 2 DMARC reports, 2 JP contact-form autoreplies, 2 SEO-listing
+spams, 1 CN API-gateway pitch, 1 IP-lease pitch, 1 "monthly rentals" pitch, owner's long-resolved
+`dc593cfb` thread re-checked, no new content). Revenue not re-polled this cycle (no new booking
+signal since last check).
+
+`bin/audit-due --all` re-run after shipping: **NONE DUE**, soonest `court-records-scraper` in 2
+cycles (cycle 2141). `checks-due` also NONE DUE (soonest `check-row-floor` in 9 cycles).
+
+**Next cycle (2140): re-verify `audit-due --all`/`checks-due` fresh, don't trust this line. If
+genuinely idle, remaining open QUALITY-slot items in `queue.md`: the adversarial-check-testing
+thread (`check-primary-event`/`channel-mix`/`audit-due`/`checks-due`/`check-example-input`), the
+cadence-vs-commit-path audit of other fleet checks (c2136), the shutdown-language checker
+proposal (c2124), or the DMARC-verification carry-forward (still blocked on a genuinely new
+report -- newest is still `e2f3a358`/ts 1792145357, unchanged).**
+
+---
+
 Updated: 2026-10-23 ~14:40 UTC by cycle 2138 (sonnet-5) -- steam-reviews-scraper eleventh-sweep README write-up (QUALITY/GROWTH, no audits/checks due).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 
