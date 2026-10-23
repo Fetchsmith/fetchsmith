@@ -1,0 +1,160 @@
+#!/root/agent/venv/bin/python
+"""Catch README prose describing our OWN price SHAPE (flat vs. tiered) that has drifted
+from the live record -- the half of the 2026-10-16 `app-store-reviews-scraper` incident
+(cycle 2116) that `bin/check-own-price-freshness` cannot see.
+
+That incident: our price went tiered at 04:01 UTC, ~20 minutes AFTER cycle 1780 wrote
+"flat $0.0001 per review result, one price on every account plan" plus a parenthetical
+"they tier by account plan, we do not" framing a whole rival comparison group. Both
+claims were about PRICE SHAPE, not a specific rate -- and the specific rate named
+($0.0001) stayed correct (it is still our live FREE-tier price), so
+`check-own-price-freshness`'s Leg A/Leg B (which only diff individual dollar figures
+against the live price record) passed clean the entire 336-cycle staleness window. A
+shape claim can be stale while every number it's built from is still individually true.
+
+Two legs, symmetric, no live-API network call needed beyond the one GET per Actor this
+fleet already makes for pricing checks:
+
+  LEG FLAT-STALE: the README claims (in a first-person paragraph) that our price is
+  FLAT / one price on every plan, but the live record is actually TIERED (an event's
+  price varies by account tier).
+
+  LEG TIERED-STALE: the README claims (in a first-person paragraph) that we tier by
+  plan / quotes a tier name as applying to our own price, but the live record is
+  actually FLAT (every event has exactly one price across all tiers).
+
+Both legs skip paragraphs carrying a backticked `owner/slug` rival handle -- those
+sentences are about a RIVAL's shape, not ours -- and paragraphs reading as explicitly
+historical ("previously", "used to", "no longer", "correction", ...), using the same
+exclusion regexes as `check-own-price-freshness` so a dated correction note does not
+flag forever.
+
+This is advisory, not exhaustive: it is a phrase list (the moment the own-price-
+freshness tool deliberately rejected for numeric drift, because here we are matching a
+CLAIM ABOUT SHAPE, which is inherently a small, stable vocabulary -- "flat"/"one price
+on every plan" on one side, tier names applied to "we"/"our" on the other -- not an
+arbitrary number). Read-only: GET /v2/acts/<id> per Actor. Exit 1 on any flag.
+"""
+import glob
+import os
+import re
+import sys
+
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_data  # noqa: E402
+
+API = "https://api.apify.com/v2"
+TIERS = ("FREE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
+
+RIVAL_HANDLE = re.compile(r"`[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+`")
+HISTORICAL = re.compile(
+    r"(?i)correction|previously|used to|no longer|was cut|cut from|before the cut|stale|"
+    r"retracted|until 20\d\d|had (?:long )?said|old(?:er)? ladder|as of 20\d\d")
+
+FLAT_CLAIM = re.compile(
+    r"(?i)\bflat\s+\$[\d.]+|\bone price (?:on|across) every|\bwe do not tier\b|"
+    r"\bsame price (?:on|across) every(?: account)? plan\b|\bsingle(?:,)? flat price\b")
+# Deliberately narrow (unlike FLAT_CLAIM's "flat $X", a bare tier-name mention is nearly
+# always about a RIVAL's ladder or a crossover comparison, not a claim about OUR shape --
+# cycle 2123 found this broad on the first live run: "undercut us on the Bronze tier" and
+# "an earlier version claimed we were cheapest on the Free and Bronze tiers" both false-
+# flagged under a loose "(we|our) near a tier word" rule). Only match phrasings that name
+# OUR price/rate/ladder itself as tiered.
+TIER_CLAIM = re.compile(
+    r"(?i)\bwe (?:also |do )?tier\b|\bour (?:price|rate)s? (?:is|are) tiered\b|"
+    r"\bwe tier by (?:account )?plan\b|\bour (?:ladder|pricing) is tiered\b")
+
+
+def paragraphs(text):
+    out, buf, start = [], [], 1
+    for i, line in enumerate(text.splitlines(), 1):
+        if line.strip():
+            if not buf:
+                start = i
+            buf.append(line)
+        elif buf:
+            out.append((start, "\n".join(buf)))
+            buf = []
+    if buf:
+        out.append((start, "\n".join(buf)))
+    return out
+
+
+def token():
+    env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env")
+               if "=" in l and not l.startswith("#"))
+    return env["APIFY_TOKEN"]
+
+
+def event_is_tiered(ev):
+    """True if a single charge event's price varies by account tier."""
+    if not ev or "eventTieredPricingUsd" not in ev:
+        return False
+    tiers = ev.get("eventTieredPricingUsd") or {}
+    vals = {(tiers.get(t) or {}).get("tieredEventPriceUsd") for t in TIERS}
+    vals.discard(None)
+    return len(vals) > 1
+
+
+def current_entry(pricing_infos, now):
+    import datetime
+    dated = [p for p in (pricing_infos or []) if p.get("startedAt")]
+    past = [p for p in dated
+            if datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) <= now]
+    return past[-1] if past else None
+
+
+def is_tiered(entry):
+    events = (entry.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
+    return any(event_is_tiered(ev) for ev in events.values())
+
+
+def excluded(para):
+    return bool(RIVAL_HANDLE.search(para)) or bool(HISTORICAL.search(para))
+
+
+def quote(para, m):
+    lo = max(0, m.start() - 60)
+    return " ".join(para[lo:m.end() + 60].split())
+
+
+def main():
+    import datetime
+    H = {"Authorization": "Bearer " + token()}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    actors = flags = 0
+
+    for path in sorted(glob.glob("/root/agent/actors/*/README.md")):
+        slug = os.path.basename(os.path.dirname(path))
+        if slug.startswith("_"):
+            continue
+        act = get_data(f"{API}/acts/fetchsmith~{slug}", headers=H, timeout=30)
+        if not act or not act.get("isPublic"):
+            continue
+        entry = current_entry(act.get("pricingInfos"), now)
+        if not entry:
+            continue  # check-pricing owns the "no price in effect" case
+        actors += 1
+        tiered_live = is_tiered(entry)
+
+        text = open(path).read()
+        for ln, para in paragraphs(text):
+            if excluded(para):
+                continue
+            if tiered_live:
+                for m in FLAT_CLAIM.finditer(para):
+                    flags += 1
+                    print(f"{slug}:{ln}: FLAT-shape claim but live price is TIERED -- "
+                          f"...{quote(para, m)}...")
+            else:
+                for m in TIER_CLAIM.finditer(para):
+                    flags += 1
+                    print(f"{slug}:{ln}: TIERED-shape claim but live price is FLAT -- "
+                          f"...{quote(para, m)}...")
+
+    print(f"check-own-price-prose: {actors} public Actors, {flags} flag(s)")
+    return 1 if flags else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

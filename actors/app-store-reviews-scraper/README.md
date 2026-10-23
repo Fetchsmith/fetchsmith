@@ -478,27 +478,45 @@ Cheaper than us at **every** account plan with **no start fee** (strictly cheape
   the 2026-10-05 block: an unpriced new listing usually means pricing not yet set, not a free
   product, so re-read it rather than treating free as settled.
 
-Cheaper than us **above a crossover**, verified live 2026-10-16 (they carry a start or per-app fee;
-the figure is the run size above which the rival wins, computed against our flat $0.0001):
+Cheaper than us **above a crossover, on the Free plan** (verified live 2026-10-16; re-verified
+2026-10-23 against our now-tiered ladder — our per-row rate falls as low as $0.00007 on Gold+, so a
+crossover computed against the single $0.0001 rate we charged before 2026-10-16's tiering overstates
+how often these rivals actually win):
 
 - `wintersworks/appstore-reviews-scraper` (2 users) — $0.00008/review + **$0.001/app-details**:
-  wins above **~50 reviews**, i.e. on essentially every real export.
+  wins above **~50 reviews on Free**, above **~100 on Bronze** — and never on Silver or above, where
+  our $0.00008/$0.00007 per-row rate already ties or beats its $0.00008 before the fee is even added.
 - `cheapapi/app-store-google-play-scraper` (3 users) — $0.00009/review + **$0.003/app-details** (and
-  a $0.0005 per-request minimum top-up): wins above **~300 reviews**.
+  a $0.0005 per-request minimum top-up): wins above **~300 reviews on Free only** — its $0.00009
+  per-row rate ties our Bronze rate exactly, so its fee makes it dearer than us on Bronze and every
+  tier above, at any run size.
 - `tactful_anvil/app-store-reviews-scraper-multi-country-deep-history` (2 users) — $0.00008 (Free)
   → $0.000056 (Gold+) + **$0.01 start fee**: wins above **~500 reviews** on the Free plan, sooner on
   paid plans.
 
-Cheaper for any **paying** customer, parity on the Free plan (they tier by account plan, we do not —
-the same asymmetry first noted in the 2026-10-05 block; most buyers are not on the Free plan):
+Cheaper for any **paying** customer, parity on the Free plan (re-verified 2026-10-23: our own price
+is ALSO tiered now, by the same account plan — see the correction below — so this is a rung-by-rung
+tie-or-beat on Free with a real per-row edge on Bronze and up, not an asymmetry where only they
+tier; most buyers are not on the Free plan):
 
-- `cleanfeed/app-store-reviews-scraper` (1 user) — $0.0001 (Free) → **$0.000048 (Gold+)**, no fee.
-  Half our rate for a Gold customer, and the joint-lowest rate in the niche.
-- `plainrows/app-store-reviews-scraper` and `plainrows/app-reviews-scraper` (3 users each) —
-  $0.0001 (Free) → **$0.00005 (Gold+)**, $0.002 start fee.
+- `cleanfeed/app-store-reviews-scraper` (1 user) — $0.0001 (Free) → $0.00008 (Bronze) → $0.000063
+  (Silver) → **$0.000048 (Gold+)**, no fee. Cheaper than our ladder at every paid tier (11%-31%
+  under), joint-lowest rate in the niche at Gold+.
 - `webdatatools/app-store-reviews-scraper` (2 users) — $0.0001 (Free) → **$0.00006 (Gold+)**,
-  $0.00005 start fee.
-- `euroscrape/app-reviews` (2 users) — $0.0001 (Free) → **$0.00007 (Gold+)**, $0.003 start fee.
+  $0.00005 start fee — small enough to amortize within the first review, so still cheaper than us
+  at every paid tier for any realistic run.
+- `plainrows/app-store-reviews-scraper` and `plainrows/app-reviews-scraper` (3 users each) —
+  $0.0001 (Free) → **$0.00005 (Gold+)**, but behind a real **$0.002 start fee**: the per-row saving
+  over us (as little as $0.00001/review on Bronze) needs ~200 reviews on Bronze to clear that fee,
+  fewer on Silver/Gold+ — cheaper above that run size, not from the first row (not yet re-verified
+  rung-by-rung on Silver; flagged in queue.md for a follow-up pass).
+
+**Not an undercut, despite the tiered headline rate:** `euroscrape/app-reviews` (2 users) —
+$0.0001 (Free) → $0.00009 (Bronze) → $0.00008 (Silver) → **$0.00007 (Gold+)** ties our own ladder
+exactly, rung for rung, and then adds a **$0.003 start fee** we don't charge — so it is dearer than
+us at every tier and every run size, not cheaper. Previously grouped with the paying-customer
+undercutters above on the strength of its headline Gold+ number alone; re-verified 2026-10-23
+against the full ladder while chasing this page's stale "we do not tier" framing.
 
 Ruled out from the same batch, verified live 2026-10-16: `bikram07/competitor-teardown` (FREE model, but a battle-card
 analysis product, not a review export — the different-product-shape exclusion), and three of the
@@ -516,11 +534,13 @@ one batch (`GET /v2/acts/<handle>` each, 0 unresolvable, 0 ambiguous).
 was re-read live and is **no longer flat**: it is tiered by the buyer's Apify plan — **$0.0001 (Free) → $0.00009 (Bronze) →
 $0.00008 (Silver) → $0.00007 (Gold/Platinum/Diamond)**, still with no start fee. That ladder went
 live **2026-10-16 at 04:01 UTC**, roughly 20 minutes *after* the 2026-10-16 ~03:40 block above was
-written. So two phrasings in the blocks above are now wrong and are superseded by this one: "flat
-$0.0001 per review result, one price on every account plan", and the parenthetical "they tier by
-account plan, we do not". We do tier, which means the "parity on the Free plan, cheaper for any
-paying customer" group above is measured against the wrong baseline — those rivals are re-compared
-rung-by-rung against the real ladder here, not against a flat $0.0001.
+written. Two phrasings in the blocks above read this stale baseline for 336 cycles — "flat $0.0001
+per review result, one price on every account plan", and the parenthetical "they tier by account
+plan, we do not" — until this pass (2026-10-23) rewrote both blocks in place against the real
+tiered ladder: the crossover group above now states each rival's per-tier win window instead of one
+flat-baseline figure, and the parity group was re-verified rung-by-rung (cleanfeed/webdatatools
+still cheaper at every paid tier, euroscrape reclassified as NOT an undercut — it ties our ladder
+exactly and then adds a start fee we lack, so it's dearer everywhere).
 
 Cheaper than us at **every** plan rung with **no start fee** (strictly cheaper at any run size):
 
