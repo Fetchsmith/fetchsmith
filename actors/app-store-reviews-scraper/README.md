@@ -506,6 +506,63 @@ five hand-read ambiguous listings, all dearer — `pushbuild/app-store-reviews` 
 dearer), `contented_catwalk/app-store-reviews-monitor` and `.../google-play-reviews-monitor`
 ($0.00015/review plus $0.005/run). The other 160 priced at or above our rate.
 
+**Sixth full-tail resweep, verified live 2026-10-23 ~03:45 UTC (cycle 2116).** 1,924 distinct
+listings seen across the 15 queries, **308 title-matched** (up from 190 at the 2026-10-05 sweep,
+down from 403 at 2026-10-16 — the matched count moves both ways as listings are delisted), 207 of
+them not named in this file. **All 170 of those unnamed listings at 2+ users were live-priced** in
+one batch (`GET /v2/acts/<handle>` each, 0 unresolvable, 0 ambiguous).
+
+**First, a correction to our own side of every comparison above** (verified 2026-10-23). Our rate
+was re-read live and is **no longer flat**: it is tiered by the buyer's Apify plan — **$0.0001 (Free) → $0.00009 (Bronze) →
+$0.00008 (Silver) → $0.00007 (Gold/Platinum/Diamond)**, still with no start fee. That ladder went
+live **2026-10-16 at 04:01 UTC**, roughly 20 minutes *after* the 2026-10-16 ~03:40 block above was
+written. So two phrasings in the blocks above are now wrong and are superseded by this one: "flat
+$0.0001 per review result, one price on every account plan", and the parenthetical "they tier by
+account plan, we do not". We do tier, which means the "parity on the Free plan, cheaper for any
+paying customer" group above is measured against the wrong baseline — those rivals are re-compared
+rung-by-rung against the real ladder here, not against a flat $0.0001.
+
+Cheaper than us at **every** plan rung with **no start fee** (strictly cheaper at any run size):
+
+- `apivault_labs/app-store-reviews-scraper` (2 users) — flat **$0.00002/review on every plan**, no
+  fee, and its own title advertises "$0.02/1K". That is **5x under our Free rate and 3.5x under our
+  Gold+ rate** — the lowest unconditional rate ever recorded in this niche, below the $0.00005
+  floor the 2026-10-16 block called the bottom.
+- `agentsgearbox/app-store-reviews-scraper` (2 users) — **$0.00006 (Free) → $0.000054 (Bronze) →
+  $0.000045 (Silver) → $0.000036 (Gold+)**, no fee: **40%–49% under us at every rung.** Bundles
+  Google Play but prices the App Store review row per review, so a genuine substitute on shape.
+- `tidyharvest/appstore-reviews-scraper` (2 users) — **$0.00009 (Free) → $0.000081 (Bronze) →
+  $0.000068 (Silver) → $0.000054 (Gold+)**, no fee: **10%–23% under us at every rung.**
+
+One listing reads as an undercutter on its per-review rate alone but is **not** one once its run fee
+is counted — the arithmetic matters, so it is recorded here rather than in the list above:
+
+- `hyperbach/app-store-reviews-scraper` (2 users) — $0.0001 (Free, ties us) → **$0.000085 (Bronze,
+  under our $0.00009)** → **$0.0000767 (Silver, under our $0.00008)** → $0.0000767 (Gold+, *dearer*
+  than our $0.00007). But it also charges a flat **$0.0011 "Run start"** fee on every run, which
+  alone costs the equivalent of 11 reviews at our Free rate. Its best-case Bronze saving is
+  $0.000005/review, so it needs **~220 reviews in a single run** to pay that fee off: below that run
+  size we are cheaper, above it the gap is fractions of a cent. Note its `start` event is **not**
+  flagged `isOneTimeEvent`, so a per-row price comparison that trusts the owner's own event flags
+  reads this listing as a plain Bronze/Silver undercutter and silently drops the fee.
+
+Three listings now carry a **byte-identical copy of our own new tier ladder**
+($0.0001 / $0.00009 / $0.00008 / $0.00007), which is parity rather than an undercut:
+`pennydata/appstore-reviews-rss` (2 users, whose title advertises "$0.10 per 1,000" — our exact Free
+rate), `luzivanlt/app-store-reviews-scraper` (2 users), and `brisaworks/app-store-reviews` (2 users,
+which adds a $0.00005 Actor-start fee and so is marginally dearer in practice). Also re-priced and
+ruled out: `larkmoor/app-store-reviews` (2 users, $0.0001 Free then $0.000095→$0.000085 — *dearer*
+than us at every paid rung, since its ladder discounts more slowly than ours) and
+`tubetext/google-play-reviews-ai` (2 users, Google-Play-first with a $0.00005 start fee and
+$0.000095→$0.000075 reviews, dearer at every paid rung). The other 161 of the 170 priced at or above
+our rate at every rung.
+
+**Still open after this pass:** the 24 unnamed listings sitting at exactly 1 user and the 13 whose
+owner is mentioned elsewhere in this file were not priced this round. The 2+-user floor is used
+because Apify pins a brand-new listing at 1–2 users, so a 1-user cut selects for listing age rather
+than for price; the three undercutters found above all sat at 2 users, which is where new
+undercutters in this niche have consistently appeared.
+
 **Why this tail had been invisible, and what it invalidates.** The sweep was only possible because
 cycle 1780 fixed a 10x truncation in `bin/niche-size` and `bin/niche-unnamed`: both asked
 `/v2/store?search=...` for `limit=100` when that endpoint reports `total` in the thousands and

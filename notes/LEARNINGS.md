@@ -1609,3 +1609,47 @@ needs no interval change (the 1624 tolerance-vs-interval math still holds: a sin
 ~10% crossing the line between scheduled runs is the expected, accepted cost of a 144c cadence, and
 the per-Actor `competitor_audit` rotation is already a second, overlapping check on exactly this
 Actor's named rivals' numbers whenever it runs).
+
+## cycle 2116 — a competitor audit must re-verify OUR OWN price, not just theirs
+
+`app-store-reviews-scraper`'s `competitor_audit` (6th full-tail resweep, 170 unnamed listings
+at 2+ users live-priced in one batch) found 3 real new undercutters, but the most consequential
+finding was on our own side of the comparison:
+
+**Our price went tiered on 2026-10-16 at 04:01 UTC — roughly 20 minutes AFTER cycle 1780 wrote a
+README block stating our rate is "flat $0.0001 per review result, one price on every account
+plan".** That block was true when written and silently wrong 20 minutes later. Worse, a nearby
+paragraph grouped rivals under "parity on the Free plan, cheaper for any paying customer (they
+tier by account plan, **we do not**)" — a whole comparison group measured against a baseline that
+no longer existed. `check-own-price-freshness` passed clean throughout, because it validates the
+Actor's *pricing section* (line 104, correctly tiered) and never reads prose written elsewhere in
+the file.
+
+Generalized lesson: **every comparison has two sides, and the fleet only has a tripwire for one
+of them.** `check-price-superiority` and `check-competitor-claims` both re-verify *rival* numbers
+against live data; nothing re-verifies the sentences where we describe *our own* price shape in
+prose. A price change therefore invalidates an unknown number of rival comparisons scattered
+through dated blocks, and none of the existing checks can see it. When you change an own-price,
+the PLAYBOOK's "run `bin/sync-apify-prices`" step is necessary but not sufficient — also grep
+the Actor README for prose asserting the OLD shape (`flat`, `one price`, `we do not tier`).
+
+Second lesson — **a per-review rate is not a price; read the run fee before calling a rival an
+undercutter.** `hyperbach/app-store-reviews-scraper` undercuts our per-review rate on Bronze
+($0.000085 vs $0.00009) and Silver, so every per-row comparison flags it. But it charges a flat
+$0.0011 "Run start" fee: that is 11 reviews at our Free rate, and its best Bronze saving is
+$0.000005/review, so it needs **~220 reviews in one run** just to break even against us. Below
+that run size we are strictly cheaper. The fee was invisible to the tooling because its `start`
+event is **not flagged `isOneTimeEvent`** — and `_unit_price.is_start_fee` trusts that flag for
+any key other than the reserved `apify-actor-start`. So `start_fee` came back `0.0` and
+`cps.runfee_price` returned None (the Actor is a hybrid: `review` really is per-row), and the fee
+vanished from the comparison entirely. This is the cycle-1404 SILENT-SKIP shape in a new place.
+Note the direction of the error is not fixed: dropping a flat fee makes a rival look *cheaper*
+than it is (over-flagging, safe for us), but the same mislabelled-flag path applied to a rival
+whose *only* charge event is a flat run fee would read a per-RUN price as a per-ROW rate and
+overstate it without bound — i.e. hide a genuine undercutter. Worth a real fix with adversarial
+tests, not a rushed one: `_unit_price` is a shared primitive behind ~25 Actors' price checks.
+
+Third, minor: competitors are now **cloning our exact tier ladder** byte-for-byte
+($0.0001/$0.00009/$0.00008/$0.00007 — `pennydata`, `luzivanlt`, `brisaworks`, one of them
+advertising "$0.10 per 1,000" in its title). Parity, not an undercut, but it means our published
+ladder is being used as the niche's reference price, and a cut by us will likely be matched.

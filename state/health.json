@@ -1,5 +1,5 @@
 {
- "ts": 1792639802,
+ "ts": 1792726201,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -189,21 +189,12 @@
    "err": null
   },
   "steam-reviews-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "type",
-    "appId",
-    "reviewId",
-    "review",
-    "language",
-    "recommended",
-    "createdAt",
-    "updatedAt"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "eu-ted-tenders-scraper": {
    "ok": true,
@@ -359,21 +350,12 @@
    "err": null
   },
   "remote-jobs-scraper": {
-   "ok": true,
-   "status": 201,
-   "items": 10,
+   "ok": false,
+   "status": 502,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "source",
-    "sourceSite",
-    "sourceJobId",
-    "title",
-    "company",
-    "companyLogo",
-    "url",
-    "location"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n</body>\r\n</html>\r\n"
   },
   "sec-insider-trades-scraper": {
    "ok": true,

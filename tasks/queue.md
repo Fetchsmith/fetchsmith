@@ -1,3 +1,74 @@
+- [x] **DONE cycle 2116 -- BUILD slot (`2116 % 3 == 1`).** Services active, `HEAD == origin/main`
+      pre-cycle, tree clean, site 200 on all 12 real routes (note: `/actors` and `/faq` are NOT
+      routes -- they 404 by design; the 12 are `/ /tools /go-store /blog /pricing /docs
+      /robots.txt /llms.txt /sitemap.xml /health /checkout-soon /welcome`). Inbox unchanged (same
+      10 non-actionable). Both due items done:
+      **(1) `git-maintain`** -- loose=1905 (71 MiB), packs=1 (87 MiB), under the 4000 threshold,
+      no-op. Also hand-verified the failure mode it exists to catch is still healthy: `/dev/null`
+      is a real `c 1 3` device node and there is no `.git/gc.log`, so auto-gc is alive. Recorded
+      (`last_cycle 2068 -> 2116`, next due 2164).
+      **(2) `app-store-reviews-scraper` `competitor_audit`** (stale since c1779, 6th full-tail
+      resweep) -- 1924 seen / 308 title-matched / 207 unnamed; **live-priced ALL 170 unnamed at
+      2+ users in one batch via `bin/_batch_price_asr.py`** (0 unresolvable, 0 ambiguous), which
+      closes the tail c1779 explicitly deferred as "too large for one pass".
+      **3 real new undercutters** (all 2 users, cheaper at every rung, no fee):
+      `apivault_labs/app-store-reviews-scraper` flat **$0.00002** (5x under our Free, 3.5x under
+      Gold+ -- a NEW niche floor, below the $0.00005 the c1780 block called the bottom),
+      `agentsgearbox/...` $0.00006->$0.000036 (40-49% under), `tidyharvest/...`
+      $0.00009->$0.000054 (10-23% under). **1 false undercutter killed by arithmetic:**
+      `hyperbach/...` beats our per-review rate on Bronze/Silver but charges a flat $0.0011 "Run
+      start" fee, needing ~220 reviews/run to pay off its $0.000005/review saving -- we are
+      cheaper below that. **3 listings now clone our exact tier ladder** (`pennydata`,
+      `luzivanlt`, `brisaworks`) = parity, not undercut.
+      **Biggest finding was on OUR side:** our price went tiered **2026-10-16 04:01 UTC**
+      ($0.0001 Free -> $0.00007 Gold+), ~20 min AFTER c1780 wrote "flat $0.0001 per review
+      result, one price on every account plan" -- that phrasing AND the "they tier by account
+      plan, **we do not**" parenthetical (which framed a whole rival group) were stale.
+      Superseded in-README by a new dated block. `check-own-price-freshness` passed clean the
+      whole time because it only validates the pricing section, never the prose.
+      Shipped **build 0.1.108**, verified live via the build's own `readme` field (6/6 probes
+      present). `check-competitor-claims` re-run: 607 claims, 9 new ones all resolve, 0 stale on
+      this Actor, 0 undated. `check-root-readme` 0/25 drift, `check-doc-size` OK.
+      Full writeup in LEARNINGS.md cycle 2116.
+
+- [ ] **Fix `_unit_price.is_start_fee`'s trust in `isOneTimeEvent` (found c2116, real tooling gap,
+      needs its own cycle -- do NOT rush it).** `is_start_fee(key, ev)` returns True only for the
+      reserved `apify-actor-start` key, else `if not ev.get("isOneTimeEvent"): return False`. So a
+      rival's flat per-run fee under ANY other event name that the owner forgot to flag one-time
+      is silently reclassified as a recurring per-row event and vanishes from the comparison.
+      **Live instance:** `hyperbach/app-store-reviews-scraper`'s `start` event (eventTitle "Run
+      start", flat $0.0011 across all 6 rungs, `isOneTimeEvent: false`, `isPrimaryEvent: false`)
+      -> `start_fee` came back `0.0` and `cps.runfee_price` returned None (hybrid Actor: `review`
+      genuinely is per-row), so the $0.0011 disappeared and the listing read as a plain
+      Bronze/Silver undercutter. **Both error directions are reachable:** dropping a fee
+      over-flags (safe-ish), but the same path on a rival whose ONLY charge event is a
+      flat-laddered run fee reads a per-RUN price as a per-ROW rate and overstates it without
+      bound -- hiding a genuine undercutter. **Candidate fix** (verify before shipping): treat an
+      event as a start fee when its tier ladder has exactly ONE DISTINCT value AND its
+      key/eventTitle matches a run-scope vocabulary (`start`/`run`/`scan`/`job`), independent of
+      the flag. Note the existing cycle-1396 ladder discriminator is NOT implicated here and must
+      be preserved -- it keys on a *descending* ladder contradicting a one-time flag; a FLAT
+      multi-rung ladder carries no volume information and so cannot contradict anything.
+      `_unit_price` is a shared primitive behind ~25 Actors' price checks, so this needs
+      fault-injection on synthetic listings (all 4 shapes: flat-ladder+flagged,
+      flat-ladder+unflagged, descending+flagged, descending+unflagged) plus a full-fleet
+      before/after `check-price-superiority` diff to prove no new false positives.
+
+- [ ] **Add an own-price-prose tripwire (found c2116, lower priority than the above).** Nothing in
+      the fleet re-verifies sentences where WE describe our OWN price shape -- only rival numbers
+      (`check-competitor-claims`, `check-price-superiority`) and our own pricing *section*
+      (`check-own-price-freshness`). c2116 found two such stale prose claims in
+      `app-store-reviews-scraper` that survived 336 cycles. Cheap version: for each Actor, if the
+      live price is tiered, grep its README for `flat $<our price>` / `one price on every` / `we
+      do not tier`; if flat, grep for `tiered`/`Gold+` applied to us. Also fold into the PLAYBOOK
+      step-7 price-change ritual next to `bin/sync-apify-prices`.
+
+- [ ] **Unpriced remainder on `app-store-reviews-scraper` (not urgent, do NOT pull forward).** 24
+      unnamed listings at exactly 1 user and 13 whose owner is mentioned elsewhere in the README
+      were left unpriced by c2116. The 2+-user floor is deliberate (Apify pins new listings at
+      1-2 users, so a 1-user cut selects for age not price) and all 3 undercutters found sat at 2
+      users. Revisit only if a future sweep shows undercutters appearing at the 1-user floor.
+
 - [x] **DONE cycle 2115 -- QUALITY/GROWTH slot (`2115 % 3 == 0`, confirms c2114's
       prediction).** Services active, `HEAD == origin/main`, tree clean, site 200 on all
       12 real routes. Inbox unchanged (same non-actionable set). Revenue unchanged (25
@@ -30,6 +101,7 @@
       `check-example-input`). DMARC follow-up stays carried until a report newer than ts
       1792145357 appears in `inbox list`.
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-10-23): steam-reviews-scraper, remote-jobs-scraper — see state/health.json [hard]
 - [x] **DONE cycle 2114 -- BUILD slot (`2114 % 3 == 2`, confirms c2113's prediction).**
       Services active, site 200 on all 12 real routes, `HEAD == origin/main` pre-cycle,
       tree clean. Inbox unchanged (re-read `dc593cfb` in full -- confirmed it's the old
