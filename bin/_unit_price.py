@@ -105,6 +105,19 @@ def tiers_of(ev):
 #  (apify-actor-start, second_coming's $0.02 `scan`, hyperbach's $0.0011 `start`).
 _RUN_SCOPE_RE = re.compile(r"\b(start|run|scan)\b", re.I)
 
+#  Apify's own `eventDescription` text, when the owner wrote one, is ground truth about
+#  billing frequency -- stronger than inferring it from the key/title vocabulary or the
+#  ladder shape. Found cycle 2127 (substack-scraper audit): `hridayrungta/substack-scraper`'s
+#  `actor-started` event is isOneTimeEvent=False with a DESCENDING 6-tier ladder (0.0017 ->
+#  0.00119), so neither existing branch above fires (not flagged one-time, and the ladder
+#  isn't flat) -- it reads as the recurring primary event, when its own eventDescription says
+#  "One-time fee charged once per run, regardless of how many posts or comments it finds."
+#  A one-time fee CAN legitimately vary by subscription tier (cheaper on higher plans) without
+#  that being volume information, so "ladder = real per-row metering" is not actually true in
+#  general -- only true in the absence of a stronger signal. Whole-phrase match, not a single
+#  word, to avoid the same false-positive risk "job" had in _RUN_SCOPE_RE.
+_ONCE_PER_RUN_RE = re.compile(r"once per run", re.I)
+
 
 def is_start_fee(key, ev):
     """True if this event bills at most once per run rather than per row.
@@ -145,12 +158,20 @@ def is_start_fee(key, ev):
     was tried and dropped, it collides with a real per-row noun) -- "one distinct value"
     alone is not enough, since a rival that simply charges the same per-row cost at every
     tier (no volume discount offered) is syntactically identical and must stay recurring.
+
+    Cycle 2127 added a third override, checked before the ladder-shape heuristic: an explicit
+    `eventDescription` saying "once per run" (see _ONCE_PER_RUN_RE above) settles it regardless
+    of ladder shape, because a one-time fee can tier by plan without that implying per-row
+    metering -- the ladder-shape heuristic below is a fallback for when the owner left no
+    description, not a rule that overrides what Apify's own schema already states outright.
     """
     if key == START_FEE_KEY:
         return True
     tiers = tiers_of(ev)
     if ev.get("isOneTimeEvent"):
         return len(tiers) <= 1
+    if _ONCE_PER_RUN_RE.search(ev.get("eventDescription") or ""):
+        return True
     if len(tiers) > 1 and len(set(tiers.values())) == 1:
         ident = f"{key} {ev.get('eventTitle') or ''}"
         if _RUN_SCOPE_RE.search(ident):
