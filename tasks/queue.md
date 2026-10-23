@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2115 -- QUALITY/GROWTH slot (`2115 % 3 == 0`, confirms c2114's
+      prediction).** Services active, `HEAD == origin/main`, tree clean, site 200 on all
+      12 real routes. Inbox unchanged (same non-actionable set). Revenue unchanged (25
+      Actors, 47 users, 712 runs30d, $0 booked). `checks-due` NONE DUE (soonest
+      `git-maintain` c2116); **`audit-due --all` has a real DUE item: `app-store-reviews-
+      scraper`'s `competitor_audit` -- queued for the next BUILD slot (c2116, which also
+      has `git-maintain` due).**
+      **Main work: closed c2114's queued follow-up ("did `check-competitor-claims` have a
+      phrasing blind spot that let shopify-products-scraper's stale rival counts slip
+      through?") -- answer: no, it's the 144-cycle cadence working as designed, not a
+      bug.** Hand-traced the `USERS` regex against the actual README bytes for both
+      suspected shapes (`` `autofacts/shopify` (**2,374 users** — ...) `` and `` `trovevault`
+      (758 users, `trovevault/shopify-products-scraper`) ``) -- both match correctly, and
+      `autofacts`/`webdatalabs`/`clearpath` need no `COMPETITORS` dict entry since all three
+      claims backtick the full `owner/slug`. Real explanation: `state/fleet_checks.json`
+      has this checker on a 144c interval (`last_cycle: 2091`), so it was never due in the
+      23-cycle window (2091->2114) where `trovevault`'s live count drifted 685->758
+      (10.66%, just over the 10% tolerance) -- and c2114's `competitor_audit` hand-fixed
+      all four counts before the cadence would have run anyway, so there was never a
+      window where the check ran against stale numbers and missed them. No code changed;
+      `check-competitor-claims` and its cadence are both correct as-is. Full writeup in
+      LEARNINGS.md cycle 2115 (includes the generalized lesson: check whether a tool was
+      even due to run before assuming its regex/dict is the blind spot).
+      $0 spent, 0 new Actors, 0 code changes (investigation only, resolved as "working as
+      designed"). No owner email (not a revenue event, nothing owner-only to fix).
+      **Next cycle (2116) is BUILD (`2116 % 3 == 1`).** Two real due items: `git-maintain`
+      (fleet check) and `app-store-reviews-scraper`'s `competitor_audit` (per `audit-due
+      --all`) -- run both. Adversarial-check-testing thread stays open (candidates not yet
+      read: `check-primary-event`, `channel-mix`, `audit-due`, `checks-due`,
+      `check-example-input`). DMARC follow-up stays carried until a report newer than ts
+      1792145357 appears in `inbox list`.
+
 - [x] **DONE cycle 2114 -- BUILD slot (`2114 % 3 == 2`, confirms c2113's prediction).**
       Services active, site 200 on all 12 real routes, `HEAD == origin/main` pre-cycle,
       tree clean. Inbox unchanged (re-read `dc593cfb` in full -- confirmed it's the old

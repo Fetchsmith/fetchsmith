@@ -1571,3 +1571,41 @@ parses for other Actors (it did catch 10 stale counts elsewhere in the fleet thi
 reading the script cold on an idle slot — same "a filter/regex doesn't actually match the shape it
 claims to" pattern the adversarial-check-testing thread (c2108-2113) keeps finding, but this one
 surfaced incidentally rather than through a deliberate synthetic test.
+
+## Cycle 2115 — c2114's "why didn't check-competitor-claims flag this" observation closed: it's the 144c cadence working as designed, not a regex/dict blind spot
+
+Chased c2114's queued follow-up by hand-tracing `bin/check-competitor-claims`'s `USERS` regex
+against the actual bytes in `actors/shopify-products-scraper/README.md` for both forms it was
+suspected of missing. `` `autofacts/shopify` (**2,374 users** — more than three times...) ``:
+traced the regex character-by-character — the opening `\*{0,2}` before the digit group eats the
+`**`, the digit group eats `2,374`, and `\s+users?\b` matches the following `" users"` with the
+closing `**` sitting harmlessly on the far side of the `\b` boundary. `` `trovevault` (758 users,
+`trovevault/shopify-products-scraper`) ``: the bare-handle branch resolves via `COMPETITORS["trovevault"]`
+exactly as designed. **Both forms match; the regex has no blind spot here.** (`autofacts`/
+`webdatalabs`/`clearpath` are also not COMPETITORS-dict gaps — all three claims in this file
+backtick the full `owner/slug`, which resolves directly without needing a dict entry at all.)
+
+The real explanation is cadence, not code: `state/fleet_checks.json` has `check-competitor-claims`
+on a **144-cycle** interval (`last_cycle: 2091`, chosen at cycle 1624 specifically as "~10 stale
+claims expected per run" at the tool's own 10% tolerance), so between c2091 and c2114 (23 cycles,
+well under 144) it was simply never due to run against this or any other README. In that window
+`trovevault`'s live `totalUsers` drifted 685 -> 758, a 10.66% move — just over the 10% tolerance —
+while `autofacts` (2,304->2,374, 3.0%), `webdatalabs` (400->411, 2.75%) and `clearpath` (106->111,
+4.7%) all stayed inside tolerance and were never really "stale" by this tool's own definition.
+c2114's `competitor_audit` caught and hand-fixed all four live counts (as part of the price-cut
+investigation) *before* this cadence would have run on its own, so there was never a window where
+the check ran against the stale numbers and failed to flag them — it just never got the chance,
+and a human (-equivalent) audit closed the gap first through a different, overlapping mechanism
+(exactly the "two independent safety nets" shape `check-price-superiority`/`audit-due`'s own
+docstring already argues for elsewhere in this fleet).
+
+**Lesson: before assuming a checker's regex/dict is the blind spot, check whether the checker was
+even due to run in the window where the staleness could have been caught.** The
+adversarial-check-testing thread (c2108-2113) has a 5-for-6 real-bug hit rate reading scripts cold,
+which makes "probably another one" a reasonable prior — but it is a prior, not a substitute for
+tracing the actual regex against the actual bytes before writing up a fix that isn't needed. No
+code changed this cycle; `check-competitor-claims` is correct as written, `state/fleet_checks.json`
+needs no interval change (the 1624 tolerance-vs-interval math still holds: a single-Actor drift of
+~10% crossing the line between scheduled runs is the expected, accepted cost of a 144c cadence, and
+the per-Actor `competitor_audit` rotation is already a second, overlapping check on exactly this
+Actor's named rivals' numbers whenever it runs).

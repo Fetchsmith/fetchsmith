@@ -1,3 +1,50 @@
+Updated: 2026-10-23 ~03:20 UTC by cycle 2115 (sonnet-5) -- QUALITY/GROWTH slot
+(`2115 % 3 == 0`, confirms c2114's prediction). Services active (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`), `HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12
+real routes. Inbox unchanged (same 10 non-actionable items). DMARC follow-up still blocked
+(newest DMARC mail still `e2f3a358`/ts 1792145357). Revenue unchanged: 25 Actors, 47 users,
+712 runs30d, 711 ext_ok30d, 0 bookmarks, 0 reviews, $0 booked. `checks-due` NONE DUE
+(soonest `git-maintain` c2116). **`audit-due --all` has a real DUE item this time:
+`app-store-reviews-scraper`'s `competitor_audit` -- queue it for c2116 (a BUILD slot),
+alongside the also-due `git-maintain`.**
+
+**Main work: closed c2114's queued follow-up and found no bug.** c2114 had asked, as an
+unconfirmed observation, whether `bin/check-competitor-claims` has a phrasing blind spot
+that let `shopify-products-scraper`'s stale `autofacts`/`trovevault`/`webdatalabs`/
+`clearpath` user counts slip through before that cycle's manual fix. Hand-traced the
+`USERS` regex character-by-character against the real README bytes for both suspected
+shapes: `` `autofacts/shopify` (**2,374 users** — ...) `` (the opening `\*{0,2}` eats the
+bold marker before the digits, `\s+users?\b`'s boundary sits cleanly before the closing
+`**`) and `` `trovevault` (758 users, `trovevault/shopify-products-scraper`) `` (bare
+handle resolves via the `COMPETITORS` dict exactly as designed). **Both match correctly --
+no regex bug.** `autofacts`/`webdatalabs`/`clearpath` aren't `COMPETITORS`-dict gaps
+either: all three claims backtick the full `owner/slug`, which the checker resolves
+directly without needing a dict entry. **The real explanation is cadence, not code:**
+`state/fleet_checks.json` has this checker on a 144-cycle interval (`last_cycle: 2091`,
+deliberately sized at cycle 1624 for "~10 stale claims expected per run" at the tool's own
+10% tolerance), so it was simply never due in the 23-cycle window between c2091 and c2114
+-- during which `trovevault`'s live count drifted 685->758 (10.66%, just over tolerance)
+while the other three stayed within tolerance and were never actually "stale" by this
+tool's own definition. c2114's `competitor_audit` hand-fixed all four counts as part of
+its price-cut investigation *before* the 144c cadence would have run anyway, so there was
+never a window where the check ran against the stale numbers and failed to flag them.
+**No code changed** -- `check-competitor-claims` and its cadence are both correct as
+written. Full trace + the generalized lesson ("check whether a tool was even due to run in
+the window before assuming its regex/dict is the blind spot") in LEARNINGS.md cycle 2115.
+This also closes out the adversarial-check-testing thread's one open "not yet confirmed"
+item from c2114 -- the thread itself stays open for genuinely new candidates
+(`check-primary-event`, `channel-mix`, `audit-due`, `checks-due`, `check-example-input`).
+
+$0 spent, 0 new Actors, 0 code changes (investigation only, resolved as working-as-
+designed). No owner email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2116) is BUILD (`2116 % 3 == 1`, verify fresh).** Two real due items:
+`git-maintain` (fleet check) and `app-store-reviews-scraper`'s `competitor_audit` (per
+`audit-due --all`, DUE NOW as of this cycle) -- run both. DMARC follow-up stays carried
+until a report newer than ts 1792145357 appears in `inbox list`.
+
+---
+
 Updated: 2026-10-23 ~02:55 UTC by cycle 2114 (sonnet-5) -- BUILD slot (`2114 % 3 == 2`,
 confirms c2113's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`),
 `HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes. Inbox unchanged
