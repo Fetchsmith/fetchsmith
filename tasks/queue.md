@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2141. `court-records-scraper` `competitor_audit` (1469 -> 2141, gap 672c,
+      the only DUE item per `audit-due --all`).** Niche grew 141 -> **156** matching listings.
+      `niche-unnamed` found 74 never-named handles (60 OWNER, 14 NONE); live-priced all 14 via
+      `bin/_batch_price_crs.py`. **1 genuine new in-scope undercutter:** `zerobreak/CourtListener-Scraper`
+      (opinions+dockets+oral-arguments+judge-profiles+citations), dearer through Silver, a
+      marginal ~0.5% under us from Gold up ($0.00199 vs $0.002), same from-Gold-up crossover
+      shape as `hipersoft`/`logiover` already named. **3 out-of-scope-but-cheaper:**
+      `clearpath/cendoj-scraper` and `brii3343/cendoj-case-law-scraper` (2nd/3rd Spanish CENDOJ
+      rival), `yodeling_november/portuguese-case-law` (Portugal dgsi.pt). Remaining 10 of 14
+      dearer, out of scope, or not a court-records product at all (`normdata` Brazil DataJud;
+      `s-r`/`texxupport`/`unrivaled_fortress`/`owlabee` CourtListener/PACER dearer; `titan_coder`
+      bankruptcy-only far dearer; `quarterly_jingo` Florida-only dearer; `upstanding_biobot` ADA
+      scanner and `dev00` EUIPO trademark search both false matches; `webdata_labs` Portugal
+      auctions different product). Shipped README paragraph + `audit_dates.json` (1469 -> 2141)
+      + `package.json` 0.1.20 -> 0.1.21. `apify push --force` -> build **0.1.67 SUCCEEDED**,
+      verified byte-identical live (64882 bytes). `actor-health --only court-records-scraper`:
+      **10/10 rows, ok: True**. Fleet-wide `check-price-superiority`: **2150 compared / 779
+      cheaper / 0 undisclosed** (up from 2136 at c2139). Also clean: `check-comparison-breadth`
+      0 narrow, `check-readme-samples` 0 drift. $0 spent beyond one ~$0.005 build. 0 new Actors.
+      No owner email.
+      **Next cycle (2142): `audit-due --all` showed soonest next item `fec-campaign-finance-scraper`
+      in 642 cycles (nothing else due for hundreds of cycles) -- re-verify fresh, don't trust
+      this line. `checks-due` also NONE DUE (soonest `check-row-floor` in ~7c). If genuinely
+      idle, remaining open QUALITY-slot items below: `check-git-push` move onto the end of
+      `bin/run.sh` (graded c2140, queued), the adversarial-check-testing thread, the
+      shutdown-language checker proposal (c2124), or the DMARC carry-forward (still blocked on
+      a genuinely new report).**
+
 - [x] **DONE cycle 2139. `trademark-search-scraper` `competitor_audit` (1803 -> 2139, gap 336c,
       the only DUE item per `audit-due --all`).** Niche grew 125 -> **145** matching listings
       (first growth since c1803's confirmed-no-change resweep). `niche-unnamed` found 21

@@ -1,3 +1,66 @@
+Updated: 2026-10-23 ~16:10 UTC by cycle 2141 (sonnet-5) -- court-records-scraper competitor_audit (1469 -> 2141).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## court-records-scraper: competitor_audit (1469 -> 2141, gap 672c), 1 genuine new undercutter and 3 out-of-scope-but-cheaper rivals disclosed
+`bin/audit-due --all` first per standing rule: `court-records-scraper` was the only DUE item
+(gap 672c). `checks-due` showed NONE DUE (soonest `check-row-floor` in 7c). Inbox 10 items
+re-checked: all previously-triaged spam/DMARC plus the owner's long-resolved `dc593cfb` thread
+(re-opened, nothing new). Own price re-read first (`check-own-price-freshness` 25/0): flat
+$0.002/result, no start fee, unchanged.
+
+A 20-term sweep found **156 matching listings, up from 141** at the last rotation pass.
+`niche-unnamed` found 74 never-named handles (60 already covered by an owner named in the
+README, 14 genuinely new); live-priced all 14 via the existing `bin/_batch_price_crs.py`
+regardless of how their titles read, per this README's own standing lesson that a title is
+marketing, not a scope verdict.
+
+**1 genuine new in-scope undercutter, on paid plans only:** `zerobreak/CourtListener-Scraper`
+(opinions, dockets, oral arguments, judge profiles, citations — one index wider than us but
+without our `courtJurisdiction` label, `startUrl` or watch mode) tapers $0.00499 (Free) down to
+**$0.00199 (Gold and up)** — dearer through Silver, a marginal ~0.5% under us from Gold up, same
+from-Gold-up crossover shape as the already-named `hipersoft`/`logiover` listings.
+
+**3 more undercut us on price but are out of scope on jurisdiction** (disclosed per the
+2026-10-08 convention for non-US rivals): `clearpath/cendoj-scraper` and
+`brii3343/cendoj-case-law-scraper` are a 2nd and 3rd Spanish CENDOJ rival alongside the two
+already named; `yodeling_november/portuguese-case-law` covers Portugal's dgsi.pt courts, tying
+us on Free and undercutting from Silver up.
+
+**Remaining 10 of the 14 dearer, out of scope, or not a court-records product at all:**
+`normdata/datajud-scraper` (Brazil, dearer anyway); `s-r/courtlistener-scraper`,
+`texxupport/court-filing-alerts-courtlistener`, `unrivaled_fortress/us-court-pacer-docket-filings-radar`,
+`owlabee/federal-court-docket-monitor` (all CourtListener/PACER in scope, all dearer at every
+tier); `titan_coder/federal-court-docket-bankruptcy-radar` (bankruptcy-only, far dearer);
+`quarterly_jingo/florida-court-records-scraper` (Florida-only, dearer); `upstanding_biobot/ada-wcag-compliance-scan`
+and `dev00/euipo-trademark-search` (both false matches on the sweep vocabulary, not court-records
+products); `webdata_labs/portugal-e-leiloes-auctions-api` (Portuguese property auctions, different
+product/unit).
+
+Shipped the dated README paragraph, `audit_dates.json` (1469 -> 2141, full note),
+`package.json` 0.1.20 -> 0.1.21, `apify push --force` -> build **0.1.67 SUCCEEDED**, verified
+**byte-identical live** (64882 == 64882 bytes, `zerobreak` confirmed present). `actor-health
+--only court-records-scraper`: **10/10 rows, ok: True**. Fleet-wide `check-price-superiority`:
+**2150 compared / 779 cheaper / 0 undisclosed** (up from 2136 at c2139). Also clean:
+`check-comparison-breadth` 0 narrow, `check-readme-samples` 0 drift (39 blocks/98 bullets/736
+values).
+
+$0 spent beyond one ~$0.005 Apify build (read-only GETs otherwise). 0 new Actors. No owner email
+(routine audit, not a revenue event or owner-only blocker). Revenue not re-polled this cycle (no
+new booking signal since last check at c2140: 25 Actors, 46 users, $0 booked).
+
+`bin/audit-due --all` re-run after shipping: soonest next item is `fec-campaign-finance-scraper`
+in 642 cycles (the rest of the fleet is on a long 672-1344c cadence and none else is due).
+`checks-due` also NONE DUE (soonest `check-row-floor` in ~7c, cycle 2148).
+
+**Next cycle (2142): re-verify `audit-due --all`/`checks-due` fresh, don't trust this line. If
+genuinely idle, remaining open QUALITY-slot items in `queue.md`: `check-git-push` move onto the
+end of `bin/run.sh` (graded c2140, the one remaining commit-path gap — a pre-commit hook can't
+catch an absent push), the adversarial-check-testing thread, the shutdown-language checker
+proposal (c2124), or the DMARC-verification carry-forward (still blocked on a genuinely new
+report).**
+
+---
+
 Updated: 2026-10-23 ~15:45 UTC by cycle 2140 (opus-5) -- tripwire cadence grading; check-shell-expansion moved onto the commit path.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 
