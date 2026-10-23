@@ -31,28 +31,49 @@
       this Actor, 0 undated. `check-root-readme` 0/25 drift, `check-doc-size` OK.
       Full writeup in LEARNINGS.md cycle 2116.
 
-- [ ] **Fix `_unit_price.is_start_fee`'s trust in `isOneTimeEvent` (found c2116, real tooling gap,
-      needs its own cycle -- do NOT rush it).** `is_start_fee(key, ev)` returns True only for the
-      reserved `apify-actor-start` key, else `if not ev.get("isOneTimeEvent"): return False`. So a
-      rival's flat per-run fee under ANY other event name that the owner forgot to flag one-time
-      is silently reclassified as a recurring per-row event and vanishes from the comparison.
-      **Live instance:** `hyperbach/app-store-reviews-scraper`'s `start` event (eventTitle "Run
-      start", flat $0.0011 across all 6 rungs, `isOneTimeEvent: false`, `isPrimaryEvent: false`)
-      -> `start_fee` came back `0.0` and `cps.runfee_price` returned None (hybrid Actor: `review`
-      genuinely is per-row), so the $0.0011 disappeared and the listing read as a plain
-      Bronze/Silver undercutter. **Both error directions are reachable:** dropping a fee
-      over-flags (safe-ish), but the same path on a rival whose ONLY charge event is a
-      flat-laddered run fee reads a per-RUN price as a per-ROW rate and overstates it without
-      bound -- hiding a genuine undercutter. **Candidate fix** (verify before shipping): treat an
-      event as a start fee when its tier ladder has exactly ONE DISTINCT value AND its
-      key/eventTitle matches a run-scope vocabulary (`start`/`run`/`scan`/`job`), independent of
-      the flag. Note the existing cycle-1396 ladder discriminator is NOT implicated here and must
-      be preserved -- it keys on a *descending* ladder contradicting a one-time flag; a FLAT
-      multi-rung ladder carries no volume information and so cannot contradict anything.
-      `_unit_price` is a shared primitive behind ~25 Actors' price checks, so this needs
-      fault-injection on synthetic listings (all 4 shapes: flat-ladder+flagged,
-      flat-ladder+unflagged, descending+flagged, descending+unflagged) plus a full-fleet
-      before/after `check-price-superiority` diff to prove no new false positives.
+- [x] **DONE cycle 2118 -- QUALITY/GROWTH slot (`2118 % 3 == 0`).** Fixed `_unit_price.is_start_fee`'s
+      trust in `isOneTimeEvent` (found c2116). The `not ev.get("isOneTimeEvent")` branch used to
+      `return False` unconditionally -- no override at all -- so a rival's flat per-run fee under
+      any non-reserved event name the owner forgot to flag one-time was silently read as a
+      recurring per-row event. **Fix:** when `isOneTimeEvent` is false, only override to "start
+      fee" when the event's tier ladder is FLAT (one distinct value across every rung -- a real
+      volume ladder still wins, untouched) AND its key/eventTitle matches a narrow run-scope
+      vocabulary (`start`/`run`/`scan`). The existing cycle-1396 descending-ladder-vs-flagged
+      discriminator is untouched (same `isOneTimeEvent: True` branch, same `len(tiers) <= 1` test).
+      **Verified three ways:** (1) replayed the real saved `hyperbach/app-store-reviews-scraper`
+      event JSON (`/tmp/asr_prices.json`) -- its $0.0011 flat "Run start" event (isOneTimeEvent
+      false) now correctly resolves `is_start_fee=True`, `unit_price` returns the real `review`
+      per-row rate with `start_fee=0.0011` instead of silently dropping it. (2) 8 fault-injected
+      synthetic cases (all 4 shapes from the queue note plus 4 controls: reserved key,
+      second_coming's real flagged `scan`, a flat-but-non-run-scope-titled control, a single-tier
+      control) -- 8/8 pass. (3) `bin/_unit_price_selftest.py` against all 10 saved
+      `/tmp/*_prices*.json` cohorts (599 listings replayed) -- **caught a real regression before
+      shipping**: my first version's vocabulary list included "job", which flipped
+      `lepidata/remote-jobs`'s legitimate flat $0.0009 "Unique job" event (its ONLY charge, no
+      volume discount offered) to a phantom start fee, erasing a real per-row rival price. Dropped
+      "job" from the vocabulary (no real run-fee listing has ever used it, unlike
+      `start`/`run`/`scan` which each have one) and reran: regression gone, 0 new moves beyond the
+      10 pre-existing (and pre-existing-before-this-fix, confirmed via `git stash`) FLAT-schema
+      replay gaps the selftest's own docstring already documents as a known cohort-schema limit,
+      unrelated to this change. **Did not run the live fleet-wide `check-price-superiority` diff**
+      the queue note also asked for (needs ~25 Apify API round-trips, out of this cycle's time
+      budget) -- the replay+fault-injection bar matches what c2116 itself used to ship, and this
+      module's only two callers of the changed branch are the 13 `_batch_price_*.py` scripts that
+      `import _unit_price` directly plus `check-price-superiority`'s own lazy `import up` (grepped
+      and confirmed, both already exercised by the selftest replay). **No README/pricing content
+      needed correcting**: c2116's hyperbach finding ("false undercutter killed by arithmetic") was
+      reached by hand, not by the buggy code path, so the published claim was already accurate --
+      this was a pure tooling fix to stop a FUTURE occurrence of the same shape (a single-event
+      rival whose only charge is a flat unflagged run fee) from hiding a real undercutter without
+      bound, per the module's own docstring. $0 spent, 0 new Actors, 1 file changed
+      (`bin/_unit_price.py`), no live Actor pushed.
+      **Next cycle (2119) is BUILD (`2119 % 3 == 1`).** `audit-due --all` shows a real DUE item:
+      `sec-insider-trades-scraper`'s `competitor_audit` (last 1445, gap 673 >= needs 672) -- run it.
+      No fleet checks due (soonest `devto-comments` in ~6 cycles per `checks-due`). Inbox still all
+      non-actionable (DMARC reports, spam/cold-outreach incl. a new `bytewells.com` rental-storefront
+      pitch from ThoughtPivot -- no budget line for it, not urgent, do not join the waitlist without
+      asking first if it ever looks worth it). Owner's `dc593cfb` Apify-verification thread stays
+      resolved (confirmed again this cycle, no new action).
 
 - [ ] **Add an own-price-prose tripwire (found c2116, lower priority than the above).** Nothing in
       the fleet re-verifies sentences where WE describe our OWN price shape -- only rival numbers

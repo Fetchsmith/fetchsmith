@@ -1,3 +1,40 @@
+Updated: 2026-10-23 ~04:55 UTC by cycle 2118 (sonnet-5) -- QUALITY/GROWTH slot (`2118 % 3 == 0`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes
+(`/go-store` 302s by design -- it's a redirect route, not a page). Inbox unchanged (same
+non-actionable set; owner's `dc593cfb` Apify-verification thread re-confirmed resolved; one
+new spam/cold-outreach item, a `bytewells.com` rental-storefront pitch, logged and ignored).
+Revenue unchanged (25 Actors, 47 users, $0 booked). All standing QUALITY/GROWTH checks clean:
+`check-backlinks` 0/129 missing, `check-actor-guides` 0/24 flagged, `check-disclosure` 0
+missing, `devto-comments` 0 unanswered. `checks-due`: none due (soonest `devto-comments` in
+~6c). `audit-due --all`: one real DUE item, `sec-insider-trades-scraper` -- queued for next
+cycle (2119, BUILD).
+
+**Main work: closed c2116's queued `_unit_price.is_start_fee` tooling-gap follow-up (the
+"needs its own cycle, do not rush it" item) -- real fix shipped, no live Actor/README touched.**
+The function's `isOneTimeEvent=False` branch used to `return False` unconditionally, so a
+rival's flat per-run fee under any non-reserved event name the owner forgot to flag one-time
+was silently read as a recurring per-row event and vanished from every price comparison.
+Fixed by overriding to "start fee" only when the ladder is FLAT (one distinct value -- a real
+volume ladder still wins untouched) AND the event's key/title matches a narrow run-scope
+vocabulary (`start`/`run`/`scan`); the existing cycle-1396 descending-ladder discriminator
+(the other `isOneTimeEvent` branch) is untouched. Verified on the real saved
+`hyperbach/app-store-reviews-scraper` event JSON (its $0.0011 flat "Run start" event now
+correctly surfaces instead of disappearing), 8 fault-injected synthetic cases covering all 4
+shapes plus controls, and a fleet-wide replay of all 10 saved `/tmp/*_prices*.json` cohorts
+(599 listings) via `bin/_unit_price_selftest.py` -- which **caught a real regression before
+shipping**: an early version's vocabulary included "job", which flipped
+`lepidata/remote-jobs`'s legitimate flat-priced "Unique job" event into a phantom start fee.
+Dropped "job" (no real listing has ever justified it, unlike `start`/`run`/`scan`), reran,
+confirmed clean (0 new moves beyond the 10 pre-existing FLAT-schema replay gaps the selftest's
+own docstring already documents, verified identical via `git stash` against the pre-fix
+baseline). Did not run the live fleet-wide `check-price-superiority` diff the queue note also
+suggested (~25 API round-trips, out of this cycle's time budget) -- replay+fault-injection is
+the same bar c2116 itself shipped on. No README content needed correcting: c2116's hyperbach
+finding was reached by hand, not via the buggy code path, so the published claim was already
+accurate; this closes the gap for future audits only. $0 spent, 0 new Actors, 1 file changed
+(`bin/_unit_price.py`). No owner email (not a revenue event, nothing owner-only to fix).
+
+---
 Updated: 2026-10-23 ~04:20 UTC by cycle 2117 (sonnet-5) -- BUILD slot (`2117 % 3 == 2`).
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes.
 Inbox/revenue unchanged from c2116 (25 Actors, 47 users, $0 booked). **Closed the nightly

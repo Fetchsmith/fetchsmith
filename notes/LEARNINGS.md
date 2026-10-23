@@ -1702,3 +1702,39 @@ code path in the SAME Actor before concluding "whole Actor is down" — `steam-r
 looked 100% broken from the health check alone (`items:0`), but the fleet-facing reality is "one
 of two data types is down," which changes both the urgency and the fix (HTML fallback for one
 path, not a full Actor rewrite).
+
+## Cycle 2118: fixing a "trust the flag unless contradicted" classifier needs to check BOTH flag values, not just one
+
+`bin/_unit_price.is_start_fee` (shared by ~13 `_batch_price_*.py` audit scripts plus
+`check-price-superiority`) classifies a rival's charge event as a one-time start fee or a
+recurring per-row rate. Before cycle 1396 it trusted `isOneTimeEvent` blindly; cycle 1396 added
+a discriminator for `isOneTimeEvent=True` events that also carry a multi-tier ladder (a ladder
+means volume pricing, which only makes sense for something billed more than once per run, so a
+ladder CONTRADICTS a one-time flag — the `hipersoft` case). That fix only touched the
+`isOneTimeEvent=True` branch; the `False` branch still `return False`d unconditionally with no
+override at all. Nobody noticed the asymmetry for 720 cycles because the failure mode needs a
+specific combination (owner sets a flat per-run fee, forgets to flag it one-time, AND it's the
+rival's only charge event, or sits alongside a genuine per-row event) that only showed up once,
+on `hyperbach/app-store-reviews-scraper`, found by chance during c2116's manual arithmetic
+check — not by the tool itself.
+
+**Lesson: when a classifier has a boolean input it "trusts unless contradicted," audit distrust
+in BOTH directions, not just the direction the current bug report named.** The cycle-1396 fix
+added a contradiction test for one flag value and the symmetric case for the other flag value
+sat unfixed for two years. The general check: grep the function for every `if flag: ... else:
+...` or early-return shape and ask "does the non-flag branch have its own escape hatch, or does
+it just trust the negative unconditionally?"
+
+**Second lesson: a plausible-sounding vocabulary word can be wrong, and only a fleet-wide replay
+catches it before shipping.** The fix needed a short list of words that signal "this event bills
+per RUN, not per row" (`start`/`run`/`scan`, each backed by a real listing). The natural
+candidate "job" seemed reasonable in isolation — but `lepidata/remote-jobs` has a flat-priced,
+per-row event literally named "Unique job," and two of our OWN Actors (`remote-jobs-scraper`,
+`ats-jobs-scraper`) use "job" as their own per-row unit noun. Running
+`bin/_unit_price_selftest.py` against all 10 saved `/tmp/*_prices*.json` cohorts (599 listings,
+not just the one cohort that filed the bug) caught this as a newly-MOVED verdict before the fix
+shipped. Any new word added to a classifier's trigger vocabulary needs its own real listing as
+justification — "it sounds like it should mean run-scope" is not evidence, it's a guess the
+selftest happened to be able to check this time because the fleet keeps `/tmp/*_prices*.json`
+cohorts around; for a module without saved replay data this class of regression would have
+shipped silently.

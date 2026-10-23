@@ -93,6 +93,19 @@ def tiers_of(ev):
     return {"FREE": p} if isinstance(p, (int, float)) else {}
 
 
+#  A charge that bills once per RUN (not once per row) regardless of its volume tier --
+#  the vocabulary a rival owner actually uses for that event's key/eventTitle. Whole-word,
+#  case-insensitive (see is_start_fee's cycle-2118 branch below). Deliberately does NOT
+#  include "job": fault injection against the real `lepidata/remote-jobs` listing (flat
+#  $0.0009 "Unique job" event, its ONLY charge, no volume discount offered) proved it
+#  collides with a per-row noun -- both the fleet's own OUR_UNIT_SYNONYMS for
+#  remote-jobs-scraper/ats-jobs-scraper and plenty of rivals bill PER job, not per RUN of
+#  jobs, so "job" in a key/title is no evidence of run-scope at all. Only add a word here
+#  with a real run-fee listing backing it, the same bar "start"/"run"/"scan" clear
+#  (apify-actor-start, second_coming's $0.02 `scan`, hyperbach's $0.0011 `start`).
+_RUN_SCOPE_RE = re.compile(r"\b(start|run|scan)\b", re.I)
+
+
 def is_start_fee(key, ev):
     """True if this event bills at most once per run rather than per row.
 
@@ -115,12 +128,34 @@ def is_start_fee(key, ev):
     (the real run-fee rival cycle 1392 hand-verified) both pass that test and stay held out.
 
     So: one tier = believe isOneTimeEvent; a ladder = the flag is the owner's error.
+
+    Cycle 2116 found the error also runs the OTHER way (fixed cycle 2118): the
+    `not ev.get("isOneTimeEvent")` branch returned False unconditionally, trusting a False
+    flag with no override at all. `hyperbach/app-store-reviews-scraper`'s `start` event
+    ("Run start", isOneTimeEvent=False) bills a flat $0.0011 on EVERY one of its 6 tiers --
+    a FLAT ladder, which per the paragraph above carries no volume information and so
+    cannot be evidence of real per-row metering, unlike hipersoft's genuinely descending
+    one. Reclassifying flat+unflagged as recurring reads a per-RUN fee as this rival's
+    per-ROW rate and hides the real fee entirely (it has a separate genuine per-row `review`
+    event, so the $0.0011 just vanishes rather than being promoted -- the single-event case
+    would instead understate the rival without bound, same failure shape as the flagged
+    side). The override only fires when BOTH the ladder is flat (one distinct value --
+    anything else is real volume information and must still win) AND the event's own
+    key/title uses run-scope vocabulary (`start`/`run`/`scan`, see _RUN_SCOPE_RE -- "job"
+    was tried and dropped, it collides with a real per-row noun) -- "one distinct value"
+    alone is not enough, since a rival that simply charges the same per-row cost at every
+    tier (no volume discount offered) is syntactically identical and must stay recurring.
     """
     if key == START_FEE_KEY:
         return True
-    if not ev.get("isOneTimeEvent"):
-        return False
-    return len(tiers_of(ev)) <= 1
+    tiers = tiers_of(ev)
+    if ev.get("isOneTimeEvent"):
+        return len(tiers) <= 1
+    if len(tiers) > 1 and len(set(tiers.values())) == 1:
+        ident = f"{key} {ev.get('eventTitle') or ''}"
+        if _RUN_SCOPE_RE.search(ident):
+            return True
+    return False
 
 
 def unit_price(events):
