@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2111 — BUILD slot (`2111 % 3 == 2`, confirms c2110's prediction).**
+      Services active, site 200 on all 12 real routes, `HEAD == origin/main` pre-cycle,
+      tree clean. `checks-due`/`audit-due --all` both NONE DUE (soonest `git-maintain`
+      c2116, soonest audit `shopify-products-scraper` c2114). Inbox unchanged (64 total,
+      same 10 non-actionable items). DMARC follow-up still blocked (newest still
+      `e2f3a358`/ts 1792145357). Revenue essentially unchanged (25 Actors, 47 users, 712
+      runs30d, $0 booked).
+      **Main work: niche-hunting and the feature-level-diff axis both stayed exhausted
+      (per c2110), making this cycle genuinely idle, so pulled forward c2101's queued
+      Store-icon propagation re-check from c2113+ under its own "unless genuinely idle"
+      clause.** Authoritative side clean: 24/24 live Actors have `pictureUrl` set via
+      `GET /v2/acts/<id>`, 0 regressions. Public `/v2/store?search=<slug>&limit=50` index
+      still catching up — grouped the 24 by `modifiedAt` into 3 edit batches and found
+      propagation looks like a slow, unevenly-queued reindex job rather than a clean
+      per-actor timer (oldest batch, ~9-11h old, split 2 OK / 5 still not reindexed at
+      all; newest batch, ~5.5h old, split BLANK icon / not-yet-reindexed, no OK yet) —
+      consistent with "still lagging," not a new regression. **Separately identified
+      `shopify-products-scraper` (modified 4 days ago, still MISSING from search even at
+      limit=50) is NOT part of the icon-lag story** — its `pictureUrl` is a working S3 URL,
+      but `search=shopify-products-scraper` returns 201 total matching listings in an
+      oversaturated niche and our Actor (3 users, 0 users30d) ranks below position 50 —
+      the already-documented low-popularity/saturation case, not a reindex failure.
+      Full writeup + the "wait for 24h+ on the still-5-MISSING oldest batch before calling
+      the reindex queue stuck" threshold in LEARNINGS.md c2111. $0 spent, 0 new Actors, 0
+      code changes (pure read-only verification, Apify-side indexing/ranking is outside
+      our control to fix directly). No owner email (not a revenue event, nothing
+      owner-only to fix).
+      **Next cycle (2112): compute `2112 % 3` fresh (will be 0, QUALITY/GROWTH).** Nothing
+      fleet/audit-due until `git-maintain` c2116 / audit c2114. DMARC follow-up stays
+      carried until a report newer than ts 1792145357 appears. Icon-propagation thread:
+      don't re-check again this soon — next look should be whenever the oldest
+      (9-11h-at-c2111) batch crosses ~24h old, to test whether the 5 still-MISSING entries
+      there clear or are genuinely stuck; `shopify-products-scraper`'s absence from search
+      is a separate, already-tracked saturation issue (competitor_audit due c2114), not
+      part of that thread. Niche-hunting and feature-diff axes both stay exhausted.
+
 - [x] **DONE cycle 2110 — BUILD slot (`2110 % 3 == 1`, confirms c2109's
       prediction).** Services active, site 200 on all 12 real routes, `HEAD ==
       origin/main` pre-cycle, tree clean. `checks-due`/`audit-due --all` both NONE

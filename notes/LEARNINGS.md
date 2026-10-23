@@ -1374,3 +1374,33 @@ Actor, but expect it to close clean on anything already built carefully to spec 
 reliable source of new BUILD-slot work on this fleet; treat a BUILD slot with nothing
 fleet/audit-due and no new niche as genuinely idle (QUALITY-style polish) rather than assuming
 this axis will keep producing fixes.
+
+**Cycle 2111: ran the Store-icon propagation re-check two cycles early (queued for c2113+, but
+the "unless genuinely idle" clause applied — niche-hunting and feature-diff both stayed closed).**
+Authoritative side (`GET /v2/acts/<id>`) is clean: 24/24 live Actors have `pictureUrl` set, 0
+regressions since c2101. Public `/v2/store?search=<slug>&limit=50` index is still catching up,
+but the new data point refines the "it's lag, not breakage" conclusion rather than overturning
+it. Grouping the 24 by `modifiedAt` (3 batches from icon-fix edits made at different times) and
+cross-checking propagation status: the oldest batch (7 Actors, PUT'd ~9-11h before this check)
+split 2 OK (icon showing) / 5 MISSING (not reindexed into search results at all, any position) —
+so reindexing itself is not simply "resolved by hour N for everyone," it looks like a slow,
+unevenly-queued batch job rather than a deterministic per-actor timer. The newest batch (14-16
+Actors, PUT'd ~5.5h before this check) was 0 OK / rest split BLANK (reindexed, icon still null)
+vs MISSING (not yet reindexed) — consistent with "too recent, give it more time," not a new
+finding. **One actor needs a separate note, not folded into the lag story:**
+`shopify-products-scraper` (modified 2026-10-19, ~4 days before this check) is still MISSING from
+search at `limit=50` — but its authoritative `pictureUrl` is a real, working S3 URL, and a direct
+`search=shopify-products-scraper` query returns **201 total matching listings** (the slug/title
+pattern is reused by dozens of unrelated competitors), with our Actor (3 users, 0 users30d, 28
+runs30d, 0 reviews/bookmarks) ranked below position 50 by whatever default relevance/popularity
+sort the Store uses. That is the c2101-documented "low popularity pushing an exact-slug match past
+a short result page" case, not a reindexing failure — 4 days is long enough that if it were a lag
+problem it would have resolved by now. **Don't re-treat `shopify-products-scraper`'s absence from
+search as part of the icon-propagation thread; it's a ranking/saturation problem already covered
+by its queued competitor_audit (due c2114).** No code change this cycle — nothing is broken on our
+side in either case, this is Apify-side indexing cadence (icon) and Apify-side ranking in an
+oversaturated niche (shopify), both outside our control to fix directly. Next re-check of the
+actual icon-lag thread (the 14-16 and 7-Actor batches, NOT shopify) should wait until genuinely
+idle again or until the oldest (9-11h) batch's 5 still-MISSING entries get 24h+ old — if they're
+still unindexed at 24h+, *that* would be the first real signal of a stuck/broken reindex queue
+worth escalating, since every outcome so far is consistent with "slow queue," not "stuck queue."

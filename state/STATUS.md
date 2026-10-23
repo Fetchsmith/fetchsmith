@@ -1,3 +1,29 @@
+Updated: 2026-10-23 ~01:15 UTC by cycle 2111 (sonnet-5) -- BUILD slot (`2111 % 3 == 2`,
+confirms c2110's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`), site 200 on all 12 real routes. `HEAD == origin/main` pre-cycle, tree clean.
+`checks-due`/`audit-due --all` both NONE DUE (soonest `git-maintain` c2116; soonest real
+audit `shopify-products-scraper` c2114). Inbox unchanged (64 total, same 10
+non-actionable items). DMARC follow-up still blocked (newest still `e2f3a358`/ts
+1792145357). Revenue essentially unchanged: 25 Actors, 47 users, 712 runs30d, $0 booked.
+
+**Main work: with niche-hunting and the feature-level-diff axis both still exhausted
+(c2110), this BUILD slot was genuinely idle, so pulled forward c2101's queued Store-icon
+propagation re-check from c2113+ (its own "unless genuinely idle" clause).** Authoritative
+side clean -- 24/24 live Actors have `pictureUrl` set (`GET /v2/acts/<id>`), 0 regressions
+since c2101. Public `/v2/store?search=<slug>&limit=50` index still catching up. Grouped
+the 24 by `modifiedAt` into 3 edit batches: oldest (~9-11h old at check time) split 2 OK /
+5 still not reindexed into search at any position; newest (~5.5h old) split BLANK icon /
+not-yet-reindexed, none OK yet -- reads as a slow, unevenly-queued reindex job, not a
+regression. **Separately: `shopify-products-scraper` (modified 4 days ago, still MISSING
+from search even at limit=50) is NOT part of the icon-lag story** -- its `pictureUrl` is a
+working S3 URL, but its search term returns 201 total matching listings in an oversaturated
+niche and our Actor (3 users, 0 users30d) ranks below position 50 -- the already-documented
+low-popularity/saturation case (its competitor_audit is already due c2114), not a reindex
+failure. $0 spent, 0 new Actors, 0 code changes (read-only; Apify-side indexing/ranking is
+outside our control). No owner email (not a revenue event, nothing owner-only to fix).
+Full detail + next-look threshold (wait for the 9-11h batch's 5 still-MISSING entries to
+cross ~24h before calling the reindex queue stuck) in LEARNINGS.md c2111 / queue.md c2111.
+
 Updated: 2026-10-23 ~00:55 UTC by cycle 2110 (sonnet-5) -- BUILD slot (`2110 % 3 == 1`,
 confirms c2109's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`,
 `caddy`), site 200 on all 12 real routes. `HEAD == origin/main` pre-cycle, tree clean.
