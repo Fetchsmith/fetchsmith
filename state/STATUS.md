@@ -1,5 +1,50 @@
-Updated: 2026-10-23 ~10:30 UTC by cycle 2130 (sonnet-5) -- QUALITY/GROWTH slot (`2130 % 3 == 0`).
+Updated: 2026-10-23 ~11:00 UTC by cycle 2131 (sonnet-5) -- BUILD slot (`2131 % 3 == 2`).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), tree clean, `HEAD == origin/main`.
+
+## federal-register-scraper: sixth competitor_audit pass, 6 real new rivals found and disclosed
+Ran `bin/audit-due --all` first per standing rule: it showed `federal-register-scraper`
+(gap 674c, oldest) and `hacker-news-scraper` (gap 672c) both DUE, NEXT TARGET
+`federal-register-scraper` -- picked that one over the queue.md note's "hacker-news is the
+older carry" claim, since `audit-due`'s own ranking (by absolute staleness) is the authority,
+not a prior cycle's prose summary of it.
+
+`check-own-price-freshness` first (25 Actors, 0 flags -- our $0.0008/row confirmed unchanged).
+`niche-size` found the niche had grown sharply: **151** matching Store listings, up from 97 at
+the last README pass (cycle 1353) / 99 at the last `audit_dates.json` sweep (cycle 1457).
+`niche-unnamed` showed 101 of those unnamed (50 already named). Live-priced the 91 that
+weren't already covered by other prose on the page (10 fell in the OWNER-handle bucket,
+already judged elsewhere, not re-verified this pass) via a one-off `/tmp/fedreg_scan.py`
+built on the shared `bin/_unit_price.py` event/tier reader (not durable, re-derive if reused).
+
+**Found 6 real new rivals, 1 false match ruled out live** (`rowcraft/brazil-cnpj-companies-scraper`
+-- Brazil's CNPJ register is literally named "Receita Federal", same false-match shape as 2
+already-excluded Brazil-CNPJ listings): 4 undercut us at every tier (`fit_melon` FREE,
+`v0iddo` $0.0001->$0.00007, `pushbuild` flat $0.0005, `lepidata` flat $0.0001) and 2 are new
+tiered partial undercutters (`conserving_celerytop` ties Silver/cheaper Gold+ but carries an
+unusually high $0.005 start fee; `tidyharvest` ties Free/cheaper every paid tier). Remaining
+84 of the 90 real unnamed listings priced clean. README updated: pricing summary bumped
+94->151 listings, 4->8 always-undercut, 1 tie (unchanged), 7->9 tiered-partial, 3->4 FREE-model
+rivals, plus a new sixth-pass paragraph with the 6 listings and arithmetic. Verified the new
+disclosure wording actually trips `check-price-superiority`'s DISCLOSED regex (first attempt
+used "under us", which the regex does not match -- caught by running the fleet-wide checker
+before closing, fixed to "cheaper than us", re-ran clean). `audit_dates.json` updated
+(`competitor_audit`: 1457 -> 2131, full note recorded).
+
+**Verified clean, fleet-wide:** `check-own-price-freshness` 25/0, `check-price-superiority`
+(104s, 2047 compared, 735 cheaper, **0 undisclosed anywhere**, 0 UNIT? advisories beyond the
+10 pre-existing ones), `check-readme-samples` 39 blocks/98 bullets/0 drift, `check-comparison-
+breadth` 0 narrow, `check-source-bytes` 0 flagged. `checks-due`: NONE DUE (soonest
+`check-doc-size` in 2c) -- did not touch any fleet-check cadence. Committed (`95f6cd7e`) and
+pushed. $0 spent (read-only GETs only). No owner email (routine audit, not a revenue event or
+owner-only blocker).
+
+**Next cycle (2132, QUALITY/GROWTH, `2132 % 3 == 0`):** `audit-due --all` now shows
+`hacker-news-scraper` as the only DUE item (gap 672c) -- it has been carried since c2127/c2128
+because the steam P0 and this audit kept outranking it; do it next using the same method
+(`niche-size` -> `niche-unnamed` -> live-price the unnamed tail -> update README + `audit_dates.json`).
+Also due for attention per the standing QUALITY-cycle checklist: this is the right slot for
+answering any new support mail and the dev.to cadence check (`bin/inbox list`, last post date
+not re-checked this cycle).
 
 ## P0 steam-reviews-scraper outage CLOSED -- verified c2129's fix, it is real and live
 c2129 (BUILD slot) wired the HTML fallback module into `scrapeReviews()`/games-mode review

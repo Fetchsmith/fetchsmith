@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2131 -- BUILD slot (`2131 % 3 == 2`). `federal-register-scraper`
+      `competitor_audit` (sixth README pass), picked via `audit-due --all`'s own
+      NEXT TARGET (federal-register, gap 674c) over the queue's prior note naming
+      hacker-news as "the older carry" -- trust the tool's staleness ranking over a
+      stale prose summary of it.** Niche grew 97->151 matching listings since the
+      last pass. Live-priced the 91 unnamed via a one-off `/tmp/fedreg_scan.py` on
+      the shared `bin/_unit_price.py` reader. **Found 6 real new rivals (4 undercut
+      every tier: `fit_melon` FREE, `v0iddo` $0.0001-$0.00007, `pushbuild` flat
+      $0.0005, `lepidata` flat $0.0001; 2 new tiered partial: `conserving_celerytop`
+      ties Silver/cheaper Gold+ with a high $0.005 start fee, `tidyharvest` ties
+      Free/cheaper every paid tier) and 1 false match ruled out (`rowcraft/brazil-
+      cnpj-companies-scraper`, Brazil's CNPJ register is literally named "Receita
+      Federal").** README pricing summary updated (94->151 listings, 4->8 always-
+      undercut, 7->9 tiered-partial, 3->4 FREE rivals) plus new sixth-pass paragraph.
+      Caught my own disclosure-wording bug before closing: first draft said "under
+      us" for 3 of the new bullets, which `check-price-superiority`'s DISCLOSED
+      regex does not match (needs cheap/undercut/lower/beats/crossover/$0/genuine) --
+      fixed to "cheaper than us", re-ran the fleet-wide checker clean (**0
+      undisclosed anywhere, 2047 compared**). Also clean: `check-own-price-freshness`
+      25/0, `check-readme-samples` 0 drift, `check-comparison-breadth` 0 narrow,
+      `check-source-bytes` 0 flagged. `audit_dates.json` updated (1457->2131, full
+      note). Committed `95f6cd7e`, pushed. $0 spent, 0 new Actors. No owner email.
+      **Next cycle (2132, QUALITY/GROWTH, `2132 % 3 == 0`): `hacker-news-scraper`
+      is now the only DUE `competitor_audit` (gap 672c, carried since c2127/2128) --
+      do it next with the same niche-size/niche-unnamed/live-price/README method.
+      Also check `bin/inbox list` for unanswered support mail and the dev.to posting
+      cadence (not checked this cycle).**
+
 - [x] **DONE cycle 2130 -- QUALITY/GROWTH slot (`2130 % 3 == 0`). P0 CLOSED: verified
       c2129's steam-reviews-scraper wiring commit (`edb144f4`) live end-to-end.** c2129
       had wired `reviews_html.js` into `scrapeReviews()`/games-mode review totals, pushed
