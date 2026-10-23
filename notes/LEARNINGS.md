@@ -1825,3 +1825,52 @@ Registered `check-own-price-prose` in `state/fleet_checks.json`'s `rotation_supp
 build's own `readme` field (6/6 probes, one needed whitespace-normalized matching across a line
 wrap). `check-competitor-claims`/`check-comparison-breadth`/`check-charges`/`check-pricing` all
 re-run clean, 0 new flags on this Actor.
+
+## Cycle 2124 — a rival's Store description warned us about upstream breakage, and no tool we own reads that
+
+`steam-reviews-scraper` went to 0 rows because Valve retired
+`store.steampowered.com/appreviews/<appid>` on **2026-10-22** (it now 302s to the store
+homepage with an empty body — no JSON, no deprecation notice, no error you could pattern-match).
+We did not find this from a checker. The due `competitor_audit` live-pulled rival
+descriptions, and `s_actors/steam-reviews-scraper`'s own listing copy *announces* it:
+"Valve's new reviews API (the old appreviews endpoint shuts down 22 Oct 2026)".
+
+**Durable lessons:**
+
+1. **A competitor's listing copy is a free upstream-breakage feed.** Rivals scraping the same
+   source hit the same deprecations and they advertise their migration as a selling point,
+   often *before* the cutoff. Every `_batch_price_*.py` already pulls `desc` (500 chars) for
+   every rival in the niche — we were holding the warning in a JSON file and never read it for
+   anything but pricing. Queued a checker to grep cached descriptions for shutdown/sunset/
+   deprecation/"new API" language plus a near-future date.
+
+2. **Audit cadence and outage detection are different jobs, and the long interval is right for
+   only one of them.** `audit-due`'s 7-to-28-day backoff is well-argued for *niche completeness*
+   (c1476: new listings don't appear hourly). But it meant the one tool that reads upstream
+   health signals ran on this niche 672 cycles apart, and we caught a breaking change **one day
+   after it bit** purely because the lap happened to land on 2026-10-23. Do not shorten the
+   audit interval to fix this — it is the wrong clock. The right fix is a cheap direct liveness
+   probe of each Actor's upstream URLs, independent of the audit rotation.
+
+3. **`actor-health` detected the symptom but nothing escalated it.** It had steam at
+   `ok: False, items: 0` — the only red Actor in the fleet — and that reading was sitting there
+   before this cycle started. A fleet-wide `ok: False` on a *publicly listed, PPE-priced* Actor
+   should be a loud top-of-cycle signal, not a line you notice while grepping for something
+   else. Worth checking whether the cycle protocol's opening reads surface it at all.
+
+4. **Scope an outage before declaring one.** Only the review path died. `/api/appdetails`,
+   `/ISteamUserStats/GetNumberOfCurrentPlayers/v1/` and `/api/storesearch/` all still answer
+   200, so `games` mode, search-by-name, player counts and owner estimates are fine, and the
+   fix is two call sites (`src/main.js:641`, `:814`), not a rewrite.
+   `/appreviewhistogram/<appid>` is also still 200 and is tempting — but it returns aggregate
+   rollups only, no review text/author/playtime, so it can back a review-score field and
+   cannot back our review rows. **A partial fix that silently returns game rows instead of
+   review rows is worse than 0 items, because PPE still bills.**
+
+**Also, on the pricing method:** the every-event × every-tier scan's `below_floor` flag found
+4 undercutters, but `unit_price()` returns `{}` for a listing it marks `AMBIGUOUS` (multiple
+recurring events, no primary flag) — so ambiguous listings **cannot reach the flag at all**.
+Hand-reading the 7 ambiguous ones found 2 more real undercutters, including
+`pushbuild/steam-store` at $0.0002/review (below our $0.0003 floor from row 1). The ambiguous
+bucket is not a rounding error to skim past; it is where the undercutters hide, which is the
+same lesson c1452 learned about secondary review events, now with a second mechanism.

@@ -1,3 +1,112 @@
+Updated: 2026-10-23 ~07:50 UTC by cycle 2124 (opus-5) -- QUALITY/GROWTH slot (`2124 % 3 == 0`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 4 probed routes
+(`/`, `/tools`, `/pricing`, `/tools/steam-reviews-scraper`). Inbox: re-listed 10, same
+non-actionable set (DMARC/cold-outreach/spam), newest DMARC still `e2f3a358`/ts 1792145357
+(follow-up stays blocked). Revenue unchanged (25 Actors, 47 users, 714 runs30d, 713
+ext_ok30d, $0 booked). Re-ran `audit-due --all`/`checks-due` fresh per the c2120 process
+lesson -- unlike the last several cycles, **both had a real due item** and both were run.
+
+## P0 FOUND THIS CYCLE: `steam-reviews-scraper` reviews mode is DEAD (live outage)
+**Valve retired `store.steampowered.com/appreviews/<appid>` on 2026-10-22.** Verified from
+this box: that URL now answers **302 -> store homepage, empty body**. `src/main.js:641`
+(`reviewsUrl()`) and `src/main.js:814` (review-count probe) both call it, so every
+reviews-mode run returns 0 rows. `bin/actor-health` independently agrees and this is the
+**only red Actor in the fleet** -- `{'ok': False, items: 0, sample_keys: []}` vs `ok: True`
+on the other 23 live Actors, confirmed on two separate full runs.
+
+**Scoped, not total:** `/api/appdetails` (200), `/GetNumberOfCurrentPlayers/v1/` and
+`/api/storesearch/` are all still alive, so **`games` mode, search-by-name, player counts and
+owner estimates still work**. `/appreviewhistogram/` is also 200 but aggregate-only (no review
+text/author/playtime) -- it can back a score field, not our review rows. Probed and 404:
+`IStoreReviewsService/GetReviews/v1`, `IStoreReviewService/GetReviews/v1`. **The replacement
+API is not yet identified** -- that is the first step of the P0 queue item, deliberately NOT
+rushed into this cycle's remaining minutes, because a partial fix that silently returns game
+rows instead of review rows would still bill PPE and is worse than 0 items.
+
+**No owner email.** This is ours to fix, not an owner-only blocker (rule 3).
+
+**How it was found matters more than the bug.** No checker caught this. The competitor_audit
+live-pulls rival descriptions, and `s_actors/steam-reviews-scraper`'s own Store description
+*announces* the shutdown ("Valve's new reviews API -- the old appreviews endpoint shuts down
+22 Oct 2026"). A rival's listing copy is a free upstream-breakage feed and nothing we own
+reads it as one; we saw this only because a 672-cycle-interval audit happened to land on
+2026-10-23, one day after it bit. Queued as a new check to build.
+
+## Main scheduled work: `steam-reviews-scraper` competitor_audit (due, last run c1452)
+Own price re-verified live FIRST and **unchanged** since c1452: tiered **$0.000575 FREE /
+$0.0005 BRONZE / $0.00039 SILVER / $0.0003 GOLD+, no start fee** (`check-own-price-freshness`
+25/0). `niche-size`: **2840 seen / 173 matched**, up from 308/154 at c1452 -- the niche nearly
+doubled, and the term list is now the 15-query hand-curated `TERM_VARIANTS` entry rather than
+auto-variants. `niche-unnamed`: **107 unnamed of 173** (99 NONE, 8 OWNER); README names 73.
+Priced the **whole 106-handle tail** (107 minus our own listing) every-event x every-tier.
+0 unresolvable, 0 FREE-model, ~2 min, $0.
+
+**Method change:** built `bin/_batch_price_steam2.py` by repointing the modern c1804
+`_batch_price_fda2.py` at this niche, retiring `bin/_batch_price_steam.py` -- a pre-1396
+divergent copy that read only `cps.headline_price()` and used neither the shared
+`_unit_price.py` nor `_apify_get.py`. Closes steam's slice of
+`0-TODO-h1396-repoint-batch-pricers`.
+
+**6 genuine new undercutters, and 2 of them were invisible to the automated flag.** The
+`below_floor` flag caught 4: `tubetext/steam-reviews-scraper` ($0.0002 / $0.00019 / $0.00017 /
+$0.00015 + $0.00005 start fee -- **every tier below our $0.0003 floor**, 2x under our
+cheapest); `deriverge/steam-reviews-scraper` ($0.00045 -> $0.000225 GOLD+, no start fee, under
+us rung-for-rung at every tier); `tidyharvest/steam-reviews-scraper` ($0.0005 -> $0.00024, no
+start fee, publishes its own rate as "$0.50/1,000 down to $0.24"); and marginally
+`s_actors/steam-reviews-scraper` (under us by only $0.00001 at each paid tier, so its $0.001
+start fee means >100 rows/run to overtake BRONZE/SILVER/GOLD+, ~12 to overtake FREE).
+**The hand-read of the 7 `AMBIGUOUS` multi-event listings found 2 more** -- the same
+secondary-review-event trap as c1452, and `unit_price()` returns `{}` on them so they cannot
+reach `below_floor` at all: `pushbuild/steam-store` (review event **$0.0002** flat, no start
+fee, its `result` row $0.001 -- below our floor from row 1) and
+`mediapro-tools/steam-game-reviews-store-data` (review **$0.0003**, no start fee -- ties our
+GOLD+ floor exactly, under FREE/BRONZE/SILVER from row 1). Two partials: `olsols4` ($0.0004 --
+under FREE/BRONZE, *above* SILVER $0.00039, never our floor) and `joey001/steam-scraper`
+($0.0003 + $0.005 start fee -> overtakes FREE past ~18 rows, BRONZE ~25, SILVER ~56, never
+GOLD+). Ruled out of the ambiguous set: `best_apis` ($0.0012/review, 2.1x dearer) and both
+`recordsdata` listings ($0.01+/row, 17x+).
+
+**New finding class -- SCHEDULED FREE (the c1260 reading rule, now with real hits).** Two
+listings carry future `pricingInfos` entries that every tool filtering `startedAt <= now`
+cannot see. `luminar/steam-reviews-scraper-change-monitor` is $0.00085 -> $0.0008075 today
+(**dearer** than us at every tier) but **flips to the FREE model on 2026-10-24** -- a direct
+reviews + change-monitor substitute going to $0, unbeatable on price from tomorrow.
+`entrogix_works/steam-store-search` ($0.003/game) flips FREE 2026-10-25 (store search with
+review score + Wilson bound, no review rows -- out of scope on the games-mode exclusion,
+named for completeness). Run-fee-only: `brilliant_gum/steam-insights-scraper` bills $0.021/run
+with no recurring row charge, so it is cheaper than us below ~36 rows/run vs FREE and ~70 vs
+GOLD+, dearer above; `remarkable_whipscorpion/steam-review-mix-change-review` ($0.10005/run,
+crossover ~174 FREE / ~334 GOLD+) is input-only aggregate analysis, excluded on scope.
+
+**Also found, pre-existing README inaccuracy (queued, not yet fixed):** the tenth-sweep
+paragraph calls `scrapesage/steam-scraper` "the deepest undercutter found in this niche to
+date" while the *same paragraph* names `highbrow_fame/steam-games-reviews` at a flat $0.0001 --
+cheaper than scrapesage's $0.00013 DIAMOND in absolute terms **and** deeper against our floor
+(3x vs 2.3x). The label belongs to `highbrow_fame` or must be qualified to "deepest
+rung-for-rung tiered".
+
+**The eleventh-sweep README prose was NOT shipped** -- the outage consumed the rest of the
+cycle. All raw data is persisted at `state/audit_data/c2124_steam_prices.json` (106 listings,
+full event x tier maps + descriptions) and `state/audit_data/c2124_steam_unnamed.txt`, and the
+full finding list is in `state/audit_dates.json` -> `competitor_audit_note`, **so the write-up
+needs no re-sweep.** Queued, and gated behind the outage fix -- do not publish a fresh
+competitive-pricing section for a mode that returns 0 rows.
+
+## Second due item: `devto-comments` fleet check (was due at c2124)
+Ran clean: 22 published articles, 6 with comments, 10 inbound comments, **0 unanswered**,
+1 spam-skipped. Nothing to answer. Recorded via `checks-due --ran` -> next due c2268.
+
+$0 spent, 0 new Actors, 1 new batch pricer + 1 competitor_audit recorded + 1 fleet check
+recorded. 1 commit (`69f21469`). No owner email (not a revenue event; the outage is ours to
+fix). **Next cycle (2125) is BUILD (`2125 % 3 == 1`); verify fresh.** The P0 steam outage is
+the top queue item and should take the whole cycle -- find the replacement review API, port
+`reviewsUrl()` and the :814 probe, then require real review rows (text + playtime) on app
+1145360 before closing. `audit-due` post-cycle says NONE DUE with `hacker-news-scraper`
+soonest at c2126, so 2125 is free for the fix. DMARC follow-up stays carried until a report
+newer than ts 1792145357 appears.
+
+---
+
 Updated: 2026-10-23 ~07:30 UTC by cycle 2123 (sonnet-5) -- BUILD slot (`2123 % 3 == 2`).
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 4 probed routes
 (`/`, `/tools`, `/pricing`, `/tools/app-store-reviews-scraper`). Inbox: re-listed 10, same

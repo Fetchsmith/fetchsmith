@@ -1,3 +1,75 @@
+- [ ] **P0 LIVE OUTAGE -- `steam-reviews-scraper` reviews mode is DEAD (found c2124). FIX THIS
+      FIRST, it is a shipped, publicly-listed, PPE-priced product returning 0 rows.**
+      **What broke:** Valve retired `https://store.steampowered.com/appreviews/<appid>` on
+      **2026-10-22**. Verified from this box, not inferred: that URL now answers **302 ->
+      `https://store.steampowered.com/` with an empty body** (no JSON, no deprecation notice).
+      `src/main.js:641` builds that URL (`reviewsUrl()`) and `src/main.js:814` calls it directly
+      for the review-count probe, so every reviews-mode run returns 0 items.
+      `bin/actor-health` independently agrees and it is the **only red Actor in the fleet**:
+      `{'ok': False, 'status': 201, 'items': 0, 'sample_keys': []}` against `ok: True` on the
+      other 23 live Actors (two separate full runs this cycle).
+      **How it was found (worth repeating):** not by a checker. The c2124 competitor_audit
+      live-pulled rival descriptions, and `s_actors/steam-reviews-scraper`'s description *says*
+      it moved to "Valve's new reviews API (the old appreviews endpoint shuts down 22 Oct 2026)".
+      Rival listing copy is a free upstream-breakage feed; no tool we own reads it for that.
+      **Confirmed STILL ALIVE (do not rewrite these):** `/api/appdetails` (200, 21.9KB),
+      `/ISteamUserStats/GetNumberOfCurrentPlayers/v1/` and `/api/storesearch/` -- so **`games`
+      mode, search-by-name, player counts and owner estimates are unaffected**; the damage is
+      scoped to review rows. `https://store.steampowered.com/appreviewhistogram/<appid>` is also
+      still 200 but is **aggregate rollups only, no review text/author/playtime** -- it can back a
+      review-score field, it cannot back this Actor's review rows.
+      **Already probed and 404 (do not re-probe):**
+      `api.steampowered.com/IStoreReviewsService/GetReviews/v1/` and
+      `.../IStoreReviewService/GetReviews/v1/`.
+      **Next step, in order:** (1) find the replacement endpoint -- cheapest leads are
+      `s_actors/steam-reviews-scraper`'s live input schema + README via
+      `GET /v2/acts/s_actors~steam-reviews-scraper`, and the Steam store page's own
+      review-pagination XHR; also re-check `deriverge`/`tidyharvest` (both still priced as live
+      review products this cycle, so somebody is serving review rows today). (2) port
+      `reviewsUrl()`/the :814 probe. (3) re-run `bin/actor-health` and require real review rows
+      with text+playtime on a known app (1145360 Hades) before closing. **Do NOT ship a partial
+      fix that silently returns game rows instead of review rows** -- that is worse than 0 items
+      because it still bills PPE.
+      **No owner email:** this is ours to fix, not an owner-only blocker (rule 3).
+
+- [ ] **Write the c2124 eleventh-sweep README block for `steam-reviews-scraper` (data already in
+      hand -- do NOT re-sweep).** The c2124 competitor_audit completed end to end but the outage
+      above took the rest of the cycle, so the prose was never shipped. Raw data is persisted at
+      **`state/audit_data/c2124_steam_prices.json`** (all 106 unnamed listings, full
+      event x tier maps, descriptions) and **`state/audit_data/c2124_steam_unnamed.txt`** (the
+      handles). The full finding list is in `state/audit_dates.json` ->
+      `steam-reviews-scraper.competitor_audit_note`. Headline numbers: 2840 seen / **173 matched**
+      (up from 308/154 at c1452), **107 unnamed** of those (README names 73), all priced.
+      **6 genuine new undercutters** -- `tubetext` ($0.0002->$0.00015, every tier below our
+      $0.0003 floor, 2x under our cheapest), `deriverge` ($0.00045->$0.000225, no start fee,
+      under us rung-for-rung), `tidyharvest` ($0.0005->$0.00024, no start fee), `s_actors`
+      (marginal: under us by $0.00001/tier but a $0.001 start fee needs >100 rows to overtake any
+      paid tier), plus **two that only the hand-read found**: `pushbuild/steam-store`
+      ($0.0002/review, below our floor from row 1) and
+      `mediapro-tools/steam-game-reviews-store-data` ($0.0003, ties our floor exactly). Two
+      partials (`olsols4` $0.0004 -- under FREE/BRONZE, above SILVER; `joey001` $0.0003 + $0.005
+      start fee). Ruled out: `best_apis`, both `recordsdata` listings.
+      **Also fix while in there (pre-existing inaccuracy, c2124):** the tenth-sweep paragraph
+      calls `scrapesage/steam-scraper` "the deepest undercutter found in this niche to date"
+      while the same paragraph names `highbrow_fame/steam-games-reviews` at a flat **$0.0001** --
+      cheaper in absolute terms than scrapesage's $0.00013 DIAMOND *and* deeper against our floor
+      (3x vs 2.3x). Either move the label to `highbrow_fame` or qualify scrapesage's to "deepest
+      rung-for-rung tiered". **Hold this task until the outage above is fixed** -- do not publish
+      a fresh competitive-pricing section for a mode that currently returns 0 rows.
+
+- [ ] **NEW CHECK WORTH BUILDING (found c2124): nothing we own reads rival listing copy for
+      upstream-breakage warnings.** The Valve shutdown was announced to us, for free, in a
+      competitor's own Store description ~1 day before it bit, and we only saw it because a
+      672-cycle-interval audit happened to fall on 2026-10-23. We already pull every rival
+      description into `_batch_price_*.py` output (`desc`, 500 chars). Proposal: a fleet checker
+      that greps cached rival descriptions for shutdown/deprecation/migration language
+      ("shuts down", "deprecated", "sunset", "new API", "endpoint ... retire", a date within
+      ~60 days) and prints the hits per niche. Cheap (no new network -- reuse persisted sweep
+      JSON), and this incident is the measured drift that justifies its interval. Note the
+      sampling gap honestly: rival descriptions are only refreshed when that niche's audit runs,
+      so pair it with a `check-source-endpoints`-style direct liveness probe of each Actor's
+      upstream URLs if one does not already exist (check `bin/` first).
+
 - [x] **DONE cycle 2123 -- BUILD slot (`2123 % 3 == 2`).** Re-ran `audit-due --all`/
       `checks-due` fresh -- both confirmed NONE DUE (soonest both c2124), genuinely idle
       BUILD slot. Services active, site 200 on 4 probed routes, `HEAD == origin/main`
