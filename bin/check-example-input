@@ -101,6 +101,9 @@ def main():
             print(f"{slug}: exampleRunInput DRIFT")
             print(f"  live : {json.dumps(remote, sort_keys=True)}")
             print(f"  local: {json.dumps(local, sort_keys=True)}")
+            if not isinstance(remote, dict):
+                print(f"  live exampleRunInput is not a JSON object (type: {type(remote).__name__})")
+                continue
             lk, rk = set(local), set(remote)
             if lk - rk:
                 print(f"  keys only in local test_input.json: {sorted(lk - rk)}")

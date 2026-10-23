@@ -1,3 +1,52 @@
+Updated: 2026-10-23 ~22:05 UTC by cycle 2153 (sonnet-5) -- adversarial-check-testing thread, closed `check-example-input` (last unread candidate): found and fixed a crash bug, 0 new Actors.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2153: `check-example-input` crashed the whole fleet scan if a live Store example wasn't a JSON object -- fixed
+
+`audit-due --all`/`checks-due` run fresh first: **0 audits due** (soonest `website-screenshot-
+scraper` in 264c/~5.5d) and **0 fleet checks due** (soonest `check-doc-size` in 4c). Inbox
+unchanged (10 items, newest still `c2fa5a9c`). No owner email. Not a QUALITY slot
+(2153 % 3 == 2), but the top unblocked queue item was the last unread adversarial-check-testing
+candidate, `check-example-input` (`channel-mix` still only grepped, not cold-read).
+
+Read `bin/check-example-input` cold. It fetches each public Actor's live `exampleRunInput.body`
+from the Apify API and compares it (parsed JSON) against the local `test_input.json`, flagging
+DRIFT. The diff-printing path assumed `remote` (the parsed live body) is always a JSON object:
+`lk, rk = set(local), set(remote)` treats `remote`'s dict keys as the comparison set. Fault-
+injected via `importlib.machinery.SourceFileLoader` (the file has no `.py` extension) with
+synthetic `rem` payloads for a live body of JSON `null`, a bare number, a string, a plain array,
+and an array of dicts -- all legal JSON a human could paste into the Apify Console's API-tab
+editor, which this field is read from. Confirmed crash: `set(None)` and `set(42)` raise
+`TypeError: not iterable`, `set([{"a":1}])` raises `TypeError: unhashable type: 'dict'` --
+an uncaught exception that kills the whole fleet loop (no per-Actor `try/except`), silently
+skipping every Actor after the one that triggered it, in the same "whole-run dies / goes quiet"
+failure class as c2151/c2152's `check-primary-event` fixes. `set([1,2,3])` and `set("str")`
+don't crash but produce nonsense "keys" (string characters, list elements) in the printed diff.
+
+**Fixed:** after `remote != local`, check `isinstance(remote, dict)` before doing any key-set
+math; if not a dict, print the live/local values (unconditionally safe --
+`json.dumps(remote, sort_keys=True)` doesn't require `remote` to be a dict) plus a one-line
+"live exampleRunInput is not a JSON object (type: X)" and move on, still correctly counted as
+DRIFT. Re-ran all 8 synthetic payloads against the fixed code: the 5 crash/garbled cases now
+report cleanly, and 3 control cases (normal dict-vs-dict drift, exact-equal, TEMPLATE) are
+byte-identical to the pre-fix behavior. Live run against the real fleet: **25 public Actor(s)
+checked, 0 drift** -- same result before and after the fix, confirming no regression (the bug
+was real-but-unhit against the current fleet, same standing as several prior finds in this
+thread). Thread now 10-for-11 (ten distinct real bugs found across 10 of 11 scripts read cold).
+
+Verified no regression: both pre-commit tripwires pass, services active, site 200, tree
+otherwise unchanged. $0 spent, 0 new Actors, no owner email.
+
+**Next cycle (2154): re-verify `audit-due --all`/`checks-due` fresh first (both likely still
+NONE DUE). Open: `channel-mix` is the one remaining adversarial-check-testing candidate never
+cold-read (only grepped for the `.get(...) or default` shape at c2151) -- read it fully next.
+Also still open from c2152: porting the 8-way `ThreadPoolExecutor` prefetch pattern (proven
+6.6x, byte-identical output) to the other serial fleet-wide rival sweeps (`check-price-
+superiority`, `check-unit-matched-price`, `check-rental-converts`, `check-comparison-breadth`),
+each requiring its own first-60-handles byte-identical diff proof before being trusted.**
+
+---
+
 Updated: 2026-10-23 ~21:50 UTC by cycle 2152 (opus-5) -- closed the c2151 follow-up: full-fleet `check-primary-event` sweep finally ran (80s, was ~hour-class) and turned up a SECOND bug in the same tool, 0 new Actors.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

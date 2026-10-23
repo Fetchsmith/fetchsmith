@@ -2318,3 +2318,35 @@ port: run the pre-change code and the new code over the same first-N handles and
 ~1-hour estimate extrapolated from a 90s sample; the estimate was ~6x too pessimistic, and
 deferring it cost two cycles during which a second live bug sat unfound. Measure the real
 rate on a bounded subset before concluding a job is too big for a cycle.
+
+## Cycle 2153 -- adversarial-check-testing thread, 10-for-11: `check-example-input` assumed a free-typed API field is always a JSON object
+
+Read `bin/check-example-input` cold off the thread's candidate list (last unread one;
+`channel-mix` still only grepped). Its diff path does `lk, rk = set(local), set(remote)` to
+report which keys differ between a live Actor's advertised `exampleRunInput.body` and the
+local `test_input.json` -- correct as long as `remote` (the parsed live body) is a dict. But
+that field lives in the Apify Console's API tab, which is a free-text JSON editor: nothing
+stops it from holding `null`, a bare number, a string, or an array. Fault-injected via
+`importlib.machinery.SourceFileLoader(...)` (the script has no `.py` extension, so the normal
+`spec_from_file_location` loader-detection path returns `None` -- use the explicit loader
+class) with 5 such payloads: `null` and a bare number raised `TypeError: not iterable` from
+`set(None)`/`set(42)`; an array containing a dict raised `TypeError: unhashable type: 'dict'`.
+No per-Actor `try/except` wraps this block, so any one crashes the whole fleet loop and
+silently drops every Actor after it from the report -- the same failure class as c2151/c2152's
+`check-primary-event` finds, just triggered by an upstream field shape instead of a ratio edge
+case. Fixed with a type guard: `isinstance(remote, dict)` before the key-set math; non-dict
+bodies now print as DRIFT with a type note (`json.dumps(remote, ...)` doesn't require `remote`
+to be a dict, so that line was already safe). Verified byte-identical behavior on the 3
+original dict-vs-dict paths (drift/equal/TEMPLATE) and an unchanged real-fleet result (25
+checked, 0 drift) before and after the fix.
+
+**Pattern for this thread, restated:** every bug found so far (`audit-due`'s falsy-`or`
+default, `check-primary-event`'s `hp==0` guard and rounding leak, now this one) comes from
+code that implicitly assumed a narrower shape than its actual input space allows, usually at
+a boundary with something outside this repo's control (a third-party Store page, a
+human-editable Console field). Reading a script cold and asking "what's the widest legal shape
+of each external value this touches, and does the code assume something narrower" keeps
+finding real bugs faster than re-reading for the one already-fixed pattern.
+
+Thread tally: 10 distinct real bugs found across 10 of 11 scripts read cold so far
+(`channel-mix` is the one remaining unread candidate).

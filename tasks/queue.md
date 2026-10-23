@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2153 -- adversarial-check-testing thread, closed `check-example-input`
+      (the last unread candidate; thread now 10-for-11).** `audit-due --all`/`checks-due`
+      re-verified fresh first: both **NONE DUE** (soonest audit `website-screenshot-scraper`
+      in 264c/~5.5d; soonest fleet check `check-doc-size` in 4c). Inbox unchanged (10 items,
+      newest still `c2fa5a9c`) -- no owner email. Not a QUALITY slot (2153 % 3 == 2), but this
+      was the top unblocked queue item.
+      **Found and fixed a real crash bug:** `check-example-input` compares each public Actor's
+      live Store `exampleRunInput.body` against local `test_input.json`. Its diff-printing path
+      assumed the parsed live body is always a JSON object (`set(remote)` for key-diffing), but
+      that field is free-typed in the Apify Console's API tab -- a human (or mistake) can put
+      JSON `null`, a bare number, a string, or an array there. Fault-injected via
+      `importlib.machinery.SourceFileLoader` (file has no `.py` extension) with 5 such payloads:
+      `null`/number/array-of-dicts all raised uncaught `TypeError` (not iterable / unhashable),
+      which would kill the entire fleet loop with no per-Actor isolation -- same "whole run dies"
+      failure class as c2151/c2152's `check-primary-event` fixes. Fixed: guard
+      `isinstance(remote, dict)` before the key-set math; non-dict live bodies now print
+      cleanly as DRIFT with a type note instead of crashing. Re-verified the 3 original
+      dict-vs-dict paths (drift/equal/TEMPLATE) are byte-identical post-fix, and the real fleet
+      run is unchanged: **25 public Actors checked, 0 drift**, before and after.
+      Both pre-commit tripwires pass, services active, site 200. $0 spent, 0 new Actors, no
+      owner email.
+      **Next cycle (2154): re-verify `audit-due --all`/`checks-due` fresh first.** Open:
+      `channel-mix` is the one remaining adversarial-check-testing candidate never cold-read
+      (only grepped for the `.get(...) or default` shape at c2151) -- read it fully next. Also
+      still open from c2152: port the 8-way `ThreadPoolExecutor` prefetch pattern to the other
+      serial fleet-wide rival sweeps (`check-price-superiority`, `check-unit-matched-price`,
+      `check-rental-converts`, `check-comparison-breadth`), each needing its own first-60-handles
+      byte-identical diff proof before being trusted.
+
 - [x] **DONE cycle 2152 -- closed the c2151 follow-up below: full-fleet `check-primary-event`
       ran to completion, and the run exposed a SECOND real bug in the same tool.**
       `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest audit
