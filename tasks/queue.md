@@ -1,3 +1,22 @@
+- [x] **DONE cycle 2146 -- QUALITY slot, closed the c2144 follow-up (full detail moved into its
+      own RESOLVED bullet below, search "RESOLVED cycle 2146").** `audit-due --all`/`checks-due`
+      re-verified fresh first: **both NONE DUE** (soonest `google-news-scraper` audit in 1 cycle,
+      cycle 2147; soonest fleet check `check-row-floor` in 2 cycles). Inbox unchanged (10 items,
+      all previously-triaged spam/DMARC/resolved-owner-thread; newest DMARC still `e2f3a358`/ts
+      1792145357, carry-forward stays blocked on a genuinely new report). Services active, site
+      200, tree clean pre-cycle. Short version: `clinicaltrials-scraper`'s 0->16 undercutter jump
+      at c2144 did NOT need a manual `competitor_audit_min_interval` override -- the existing
+      clean-streak backoff in `bin/audit-due` already reset its interval to the 336c (7d) floor
+      on its own, confirmed live in the `--all` table (`needs 336  clean 0`). No code change, no
+      JSON edit; this was a verification task, not a build task. $0 spent, 0 new Actors, no owner
+      email (routine QUALITY-cycle verification, not a revenue event). Full derivation in
+      `notes/LEARNINGS.md` cycle 2146.
+      **Next cycle (2147): re-verify `audit-due --all`/`checks-due` fresh first -- `google-news-
+      scraper`'s `competitor_audit` is expected DUE (672c interval). If genuinely idle instead,
+      remaining open QUALITY-slot items: the adversarial-check-testing thread (4 unread:
+      `check-primary-event`, `channel-mix`, `checks-due`, `check-example-input`; thread 6-for-7),
+      the shutdown-language checker proposal (c2124), or the DMARC carry-forward (still blocked).**
+
 - [x] **DONE cycle 2145 -- competitor_audit `nih-reporter-scraper` (1473 -> 2145, the one item
       genuinely DUE).** `audit-due --all`/`checks-due` re-run fresh first: exactly 1 due
       (`nih-reporter-scraper`), 0 fleet checks due. Inbox unchanged (10 items, all
@@ -77,18 +96,22 @@
       `actorDefinition.readme` (59124 chars, contains the 2144 block). `audit_dates.json` updated
       to 2144 with the full note; `audit-due` now NONE DUE (soonest `nih-reporter-scraper` at 2145).
 
-- [ ] **FOLLOW-UP for a near-term cycle (opened 2144): consider whether `clinicaltrials-scraper`'s
-      672-cycle audit interval is now too long for THIS niche.** The clean-streak backoff assumes
-      stability, and this niche just produced 16 undercutters in one interval after a 0-undercutter
-      lap -- exactly the evidence the backoff is supposed to respond to in the other direction.
-      `audit_dates.json` supports a per-Actor `competitor_audit_min_interval` override (and as of
-      c2143 a value of `0` finally works), so the mechanism is there. Do NOT just shorten it on
-      instinct: the c1476 arithmetic against treadmilling still holds fleet-wide, and
-      `check-price-superiority` already catches price REGRESSIONS on named rivals every cycle --
-      the only thing the sweep adds is completeness on NEW listings. The honest question is
-      whether this one niche's listing-creation rate (145 -> 337 seen in 2 weeks) justifies a
-      336c override for it alone. Decide with the numbers, and if yes set the override field
-      rather than editing the global BASE.
+- [x] **RESOLVED cycle 2146 (opened 2144): `clinicaltrials-scraper`'s audit interval needs NO
+      manual override -- the automatic clean-streak backoff already did the job on its own.**
+      Checked the numbers rather than trusting instinct, per the carried instruction. The 2144
+      note's 16-undercutter finding matches `audit-due`'s `NOTCLEAN` regex, which resets
+      `clean_streak(note)` to 0 for this Actor; `interval = BASE * 2 ** min(streak, 2)` with
+      `streak=0` collapses straight to `BASE` (336c/7d), NOT the 672c the prior clean streak had
+      earned. Confirmed live in `bin/audit-due --all`'s cycle-2146 table: `clinicaltrials-scraper`
+      row reads `needs 336  clean 0` -- the floor, same as every other Actor with a broken streak,
+      with zero code change and zero manual edit. No `competitor_audit_min_interval` key exists
+      for it in `audit_dates.json` (confirmed) and none is needed: if the next sweep comes back
+      clean, the streak and interval will lengthen again exactly as designed; if this niche stays
+      volatile, repeated NOTCLEAN notes will keep it pinned at the 336c floor automatically. The
+      mechanism the follow-up asked "should we build" already exists and already fired -- this
+      was a verification task, not a build task. Full derivation in `notes/LEARNINGS.md` cycle
+      2146. The c1476 anti-treadmill arithmetic stays untouched (no BASE/CAP edit, no per-Actor
+      override written).
 
 - [x] **DONE cycle 2143 -- QUALITY slot, adversarial-check-testing thread.** `audit-due --all`
       and `checks-due` both re-verified fresh: **NONE DUE** (soonest `clinicaltrials-scraper` in

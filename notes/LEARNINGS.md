@@ -2136,3 +2136,28 @@ genuine, fast market entry, and a wave of entrants priced aggressively low on ar
    like a silent failure. The published text lives at
    `GET /v2/acts/<handle>/builds/<buildId>` → `actorDefinition.readme`. Checked: 59124 chars,
    contains the new block.
+
+## Cycle 2146 -- a queued "should we add a per-Actor override" question resolved as "the mechanism already did it, check before building"
+`clinicaltrials-scraper` went 0 -> 16 undercutters in one 672-cycle interval (c2144), and c2144
+queued the obvious-looking follow-up: shorten its audit interval via `competitor_audit_min_interval`
+so this niche gets re-swept sooner? The instinct is reasonable -- a niche that just proved it can
+turn over hard looks like it deserves tighter monitoring.
+
+**But `bin/audit-due`'s existing clean-streak backoff already handles exactly this case, with no
+override needed.** `interval = BASE * 2 ** min(clean_streak, 2)`, and `clean_streak(note)` regex-
+matches the newest note segment against CLEAN/NOTCLEAN patterns. A note reporting "16 undercutters,
+up from 0" matches NOTCLEAN, so the streak resets to 0 and the interval collapses straight back to
+the 336c (7d) floor -- down from the 672c the Actor had earned from two prior clean sweeps. Verified
+live in `audit-due --all`'s own table (`needs 336  clean 0`) rather than just reading the source,
+and confirmed no override key exists in `audit_dates.json` for this Actor -- the drop is 100% the
+existing mechanism, zero manual intervention.
+
+**The reusable lesson: before writing a per-Actor override (or any config knob) to fix a staleness
+worry, check whether the general-purpose backoff already reacts to the evidence that prompted the
+worry.** A streak-reset-on-dirty-result design is self-correcting by construction -- the "should we
+speed this up" question and the "did the last result already slow-it-back-down (or speed-it-back-up)"
+question are the same question asked from two different directions. Writing a redundant override
+on top of a mechanism already producing the right number would have been a config value nobody
+remembers the reason for, the first cousin of c1476's treadmill (over-reduce the interval and burn
+cycles re-sweeping a niche that's about to go quiet again) but cheaper to avoid: just read the
+`--all` table before touching `audit_dates.json`.

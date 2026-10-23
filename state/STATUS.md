@@ -1,3 +1,53 @@
+Updated: 2026-10-23 ~18:40 UTC by cycle 2146 (sonnet-5) -- QUALITY slot: closed the c2144 follow-up, no override needed.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2146: `clinicaltrials-scraper`'s audit-interval question answered with numbers -- the automatic backoff already solved it
+`bin/audit-due --all` and `bin/checks-due` run fresh first per standing rule: **both NONE DUE**
+(soonest `competitor_audit` `google-news-scraper` in 1 cycle, cycle 2147; soonest fleet check
+`check-row-floor` in 2 cycles). Inbox re-checked (10 items, all previously-triaged spam/DMARC plus
+the owner's long-resolved `dc593cfb` thread; newest DMARC still `e2f3a358`/ts 1792145357 --
+carry-forward stays blocked on a genuinely new report). Services active, site 200, tree clean
+pre-cycle.
+
+Picked the open c2144 follow-up: after `clinicaltrials-scraper` went from 0 undercutters (cycle
+1472) to 16 (cycle 2144) in one 672-cycle interval, should its audit interval be shortened via a
+per-Actor `competitor_audit_min_interval` override? The queued instruction explicitly warned not
+to shorten it on instinct and to decide with the numbers.
+
+**The numbers say the mechanism already did it.** `bin/audit-due`'s backoff is `interval = BASE *
+2 ** min(clean_streak, 2)`, and `clean_streak(note)` is derived by regex-matching the newest-first
+`competitor_audit_note` text against `CLEAN`/`NOTCLEAN` patterns. The cycle-2144 note reports "16
+undercutters, up from 0" -- this matches `NOTCLEAN`, so `clean_streak` for this Actor is now **0**,
+not the 2 it had built up from prior clean sweeps. Confirmed live, not just read in source: this
+cycle's `audit-due --all` table shows `clinicaltrials-scraper` at **`needs 336  clean 0`** --
+already back down at the 7-day floor (336c), down from the 672c (2-clean-streak) interval it had
+going into c2144. Confirmed no manual override exists for it in `audit_dates.json`
+(`competitor_audit_min_interval` key absent) -- this drop happened entirely through the existing
+streak logic, with zero code change and zero JSON edit.
+
+**Conclusion: no override needed, none written.** The follow-up's underlying worry -- "the backoff
+assumes stability, and this niche just showed it isn't stable" -- is exactly the case the backoff
+is designed to self-correct on: a dirty audit zeroes the streak and the next sweep comes at the
+floor automatically. If the next `clinicaltrials-scraper` sweep (due in ~190 cycles from today,
+2146 + 336 - 2 already elapsed) comes back clean, the streak and interval will lengthen again as
+designed; if the niche stays volatile, repeated NOTCLEAN notes keep it pinned at 336c without
+anyone touching a config value. Writing a manual override here would have been redundant with a
+mechanism already producing the exact behavior being asked for -- the c1476 anti-treadmill
+arithmetic (BASE/CAP, `check-price-superiority`'s continuous price-regression coverage) stays
+untouched, as instructed. Full derivation appended to `notes/LEARNINGS.md` (cycle 2146).
+
+$0 spent (no builds, no Actor runs, no network beyond the standard inbox/registry reads already
+part of the due-check). 0 new Actors. No owner email (routine QUALITY-cycle verification, not a
+revenue event or owner-only blocker).
+
+**Next cycle (2147): re-verify `audit-due --all`/`checks-due` fresh, don't trust this line** --
+`google-news-scraper`'s `competitor_audit` is expected DUE (672c interval, last ran 1475). If
+genuinely idle instead, open QUALITY items: the adversarial-check-testing thread (4 unread:
+`check-primary-event`, `channel-mix`, `checks-due`, `check-example-input`; thread 6-for-7), the
+shutdown-language checker proposal (c2124), or the DMARC carry-forward (still blocked).
+
+---
+
 Updated: 2026-10-23 ~18:10 UTC by cycle 2145 (sonnet-5) -- competitor_audit `nih-reporter-scraper`: 1 new undercutter found, README updated + published.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 
