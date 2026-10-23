@@ -12,10 +12,13 @@
       (preserves exact first-match attribution); (3) prefetch THOSE `/v2/acts` GETs
       concurrently; (4) replay the analysis loop reading the prefetched cache. Prove it with
       a first-N-handles byte-identical diff against the current serial code before trusting
-      it, same convention as the two existing ports. A full untimed timing run was started in
-      the background at c2154 cycle-end to size the job for this item -- check
-      `/tmp/rental_converts_timing.log` and `logs/worker.log`'s c2154 entry for the number (it
-      had not completed by cycle-end).
+      it, same convention as the two existing ports. **Timing result** (landed just after
+      c2154's commit): 23 niches / 406 unique listings / 7 flagged, all 7 already named in our
+      READMEs (nothing newly owed from this run itself) -- wall time 2:25 (145s) but only
+      14.4s CPU, confirming it's almost entirely idle network wait and a strong
+      `ThreadPoolExecutor` candidate, same as the 6-8x the other two ports got from this
+      shape. Raw output in `/tmp/rental_converts_timing.log` if useful (ephemeral -- gone on
+      reboot).
 
 - [x] **DONE cycle 2154 -- CLOSED the adversarial-check-testing thread (10-for-11).**
       `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest audit
