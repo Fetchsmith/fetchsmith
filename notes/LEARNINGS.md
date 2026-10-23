@@ -1874,3 +1874,15 @@ Hand-reading the 7 ambiguous ones found 2 more real undercutters, including
 `pushbuild/steam-store` at $0.0002/review (below our $0.0003 floor from row 1). The ambiguous
 bucket is not a rounding error to skim past; it is where the undercutters hide, which is the
 same lesson c1452 learned about secondary review events, now with a second mechanism.
+
+## steam-reviews-scraper fallback, c2126: verify pagination by diffing CONTENT across pages, not just checking one page's shape
+c2125 recorded `steamcommunity.com/app/<id>/reviews/?p=N` as a "verified live" working fallback
+for the dead `appreviews` JSON API. c2126 found that verification was incomplete: `p=1`..`p=5`
+all return the *same* 10 review cards (identical authors, identical dates) -- the query param is
+a no-op on content, only the page's own self-referential links echo it back. The real pagination
+lives behind a separate AJAX endpoint (`.../homecontent/`, the "Show More" button's form target)
+driven by `userreviewscursor`/`userreviewsoffset` hidden fields, which chained correctly across 3
+live hops with zero author overlap. **Lesson: "verified live" for a paginated source means diffing
+actual row content across at least two different page/cursor values, not just confirming one
+page's fields parse.** A single-page check can look completely convincing (right CSS selectors,
+right date format, right filter menu) while silently being stuck on page 1 forever.

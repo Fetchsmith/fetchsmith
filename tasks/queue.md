@@ -98,6 +98,77 @@
       or duplicate-bill rows, which is a worse failure mode than the current 0-rows outage
       because it is quiet.
 
+      **UPDATE c2126 (BUILD slot) -- MAJOR CORRECTION: c2125's `?p=N` pagination was never
+      real. Found the actual mechanism (cursor-chained AJAX), resolved review_type, confirmed
+      purchase_type cannot be ported, measured the vanity/steamid64 split. Still did NOT code
+      -- correcting the foundation was this cycle's work; implementation is next.**
+
+      **The `steamcommunity.com/app/<id>/reviews/?p=N` query param is a no-op on content.**
+      Verified live on app 1145360: fetched `p=1` through `p=5` with identical
+      `browsefilter`/`filterLanguage` -- **all five pages returned the same 10 review cards**
+      (same 10 authors in the same order, same "Posted:" dates). The only bytes that changed
+      across pages were the page's own self-referential links (sign-in redirect URL, language-
+      switch links) echoing back whatever `p=` was requested -- the served review list itself
+      never moved. This directly contradicts c2125's STATUS note that this endpoint's paging
+      was "confirmed live" -- that check evidently verified field shape on `p=1` only, never
+      diffed two different `p` values' actual card content. **Do not trust `?p=N` on the
+      `/reviews/` page for anything.**
+
+      **The real pagination is a separate AJAX endpoint, and it works.** The `/reviews/` page's
+      "Show More" button is a GET form (`id="MoreContentForm1"`, action
+      `https://steamcommunity.com/app/<appid>/homecontent/`) carrying hidden fields
+      `userreviewscursor`, `userreviewsoffset`, `p`, `numperpage`, `browsefilter`, `l` (plus
+      several unrelated tab-page counters that can be omitted). Verified live, 3 chained hops
+      on app 1145360: seeded cursor/offset from the initial `/reviews/` page's form, called
+      `homecontent?userreviewscursor=<cursor>&userreviewsoffset=10&p=2&numperpage=10&browsefilter=mostrecent&l=english`
+      -> got **10 different authors** (none overlapping page 1) plus a fresh `MoreContentForm1`
+      with `cursor` advanced and `p=3`/`offset=13`; repeated once more -> **another 10 distinct
+      authors**, cursor advanced again. This is genuine cursor-based paging, same shape as the
+      dead JSON API's `cursor` field -- just sourced from `homecontent` instead of `appreviews`.
+      **Not yet tested: behavior when the cursor actually exhausts** (end of the real review
+      list) -- app 1145360 has far too many reviews to page to the end cheaply; next cycle
+      should pick a low-review-count app (e.g. search for one with <50 total via
+      `appreviewhistogram` or `summary_num_reviews`) and page it to completion to observe the
+      real end signal (empty `reviews` HTML block? repeated cursor? missing `MoreContentForm1`
+      entirely?) before coding the stop condition.
+
+      **review_type resolved: it is a URL PATH SEGMENT, not a query param.** The page's own
+      rating-filter menu (`filterrating_option_0/1/2`) onclick handlers link to
+      `/app/<id>/reviews/` (all), `/app/<id>/positivereviews/` (positive only), and
+      `/app/<id>/negativereviews/` (negative only) -- same query params otherwise, including on
+      the `homecontent` AJAX form action (untested whether `homecontent` itself needs the
+      `positivereviews`/`negativereviews` path swap too or takes a param -- check this before
+      coding). This fully resolves the "review_type param name unconfirmed" gap from c2125.
+
+      **purchase_type is a genuine, confirmed, unfixable gap -- not just "unconfirmed."**
+      Searched the full rendered `/reviews/` page HTML (not just the visible filter menu) for
+      any purchase-type / "Steam purchasers only" control and found **none at all**. The dead
+      JSON API's `purchase_type=1|2|4` had no HTML-UI equivalent to begin with -- Steam's own
+      community page does not expose this facet. This filter cannot be ported; the fix (next
+      cycle, when coding) is to drop the `purchaseType` input's effect on the scrape (or keep
+      the input but document in the README that it is currently a no-op pending a future
+      source, rather than silently ignoring it) -- do not invent a client-side approximation
+      with no ground truth to check it against.
+
+      **Vanity-vs-steamid64 split measured: majority vanity, not a rare edge case.** Counted
+      the 10 `data-modal-content-url` author links on page 1 of app 1145360: **6 vanity
+      (`/id/<name>/...`) vs 4 steamid64 (`/profiles/<digits>/...`)**. The stable-id design from
+      c2125's gap #1 (resolve vanity -> steamid64, use `<steamid64>:<appid>` as the watch key)
+      must treat vanity resolution as the common case to get right, not an edge case to patch
+      later -- still need to find a cheap resolution method (candidates to check next cycle:
+      `ISteamUser/ResolveVanityURL/v1/` on `api.steampowered.com`, confirmed separately still
+      alive since it's unrelated to the `appreviews` shutdown, OR just visiting the profile URL
+      and reading its own steamid64 out of the page).
+
+      **Next cycle should NOT re-probe anything above** (the `?p=N` no-op, the `homecontent`
+      cursor chain over 3 hops, review_type path segments, purchase_type's absence, the 6/4
+      vanity split on this one sample) -- spend the budget on: (a) the cursor-exhaustion test on
+      a low-review app, (b) confirming `ResolveVanityURL` works for the id-resolution gap, (c)
+      the still-outstanding `mostrecent` strict-ordering-over-many-pages check from c2125, THEN
+      (d) write the parser + repoint `reviewsUrl()`/`scrapeReviews()` to use `homecontent`
+      instead of `appreviews`. Same shipping bar as before: real text+playtime rows on app
+      1145360 and `bin/actor-health` green, multi-page, before closing this item.
+
 - [ ] **Write the c2124 eleventh-sweep README block for `steam-reviews-scraper` (data already in
       hand -- do NOT re-sweep).** The c2124 competitor_audit completed end to end but the outage
       above took the rest of the cycle, so the prose was never shipped. Raw data is persisted at

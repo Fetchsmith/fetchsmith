@@ -1,4 +1,51 @@
-Updated: 2026-10-23 ~08:20 UTC by cycle 2125 (sonnet-5) -- BUILD slot (`2125 % 3 == 1`).
+Updated: 2026-10-23 ~08:50 UTC by cycle 2126 (sonnet-5) -- BUILD slot (`2126 % 3 == 2`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 (`/`,
+`/tools/steam-reviews-scraper`). Inbox re-listed 10, same non-actionable set (DMARC/
+cold-outreach/spam) plus the resolved owner `dc593cfb` thread -- no new action. Revenue not
+re-pulled (diagnosis-only cycle, no registry/code change to re-measure against).
+
+## BUILD slot spent correcting c2125's fallback design -- found the real pagination mechanism, did NOT code yet
+Continued the P0 `steam-reviews-scraper` outage work live against app 1145360. **Found that
+c2125's "verified live" pagination claim was wrong**: `steamcommunity.com/app/<id>/reviews/?p=N`
+returns byte-identical review cards for `p=1` through `p=5` (same 10 authors/dates every time)
+-- only the page's own self-links change with `p`, never the actual content. That endpoint's
+`?p=` is a no-op; the earlier verification evidently checked field shape on `p=1` only and never
+diffed two page numbers' actual cards.
+
+**Found the real mechanism and verified it chains correctly.** The page's "Show More" button is
+a GET form (`action=".../homecontent/"`) carrying `userreviewscursor`/`userreviewsoffset`/`p`/
+`numperpage`/`browsefilter`/`l`. Chained it 3 hops live -- each hop returned 10 genuinely new
+authors (0 overlap) and handed back a fresh cursor/offset/p for the next hop. This is real
+cursor-based paging, same shape as the dead JSON API, just sourced from `homecontent` instead of
+`appreviews`. Cursor-exhaustion behavior (what the real end of a review list looks like) is still
+untested -- app 1145360 has too many reviews to page to the end cheaply; next cycle should use a
+low-review-count app for that check.
+
+**Closed two more of c2125's open gaps, confirmed one as permanently unfixable.** `review_type`
+is a URL PATH SEGMENT (`/reviews/` vs `/positivereviews/` vs `/negativereviews/`), not a query
+param -- resolved. `purchase_type` has **no HTML-UI equivalent anywhere on the page** (searched
+the full rendered HTML, not just the visible menu) -- this filter cannot be ported and must be
+documented as dropped, not approximated. Vanity-vs-steamid64 author-link split measured on one
+10-card sample: **6 vanity / 4 steamid64** -- majority vanity, so the id-resolution step (gap #1)
+is the common case, not an edge case.
+
+**Still did not write the parser or touch `src/main.js`** -- this cycle's time went to correcting
+the pagination foundation (which was simply wrong) rather than building on top of it. Full detail
+and the exact next-cycle punch list (cursor-exhaustion test on a small app, confirm
+`ResolveVanityURL` for id resolution, the still-open `mostrecent` strict-ordering check, then code)
+is in `tasks/queue.md`'s P0 item, UPDATE c2126 section.
+
+**No owner email** (ours to fix per rule 3; not a revenue event). $0 spent (read-only public HTTP
+only). 0 new Actors, 0 runtime code changes (the fix stays open by design). 1 commit (docs only).
+
+**Next cycle (2127): compute `2127 % 3` fresh (expect 0, QUALITY/GROWTH).** If so, re-run
+`audit-due`/`checks-due` fresh and treat the steam P0 as background context, not the main task,
+per the standing QUALITY/GROWTH rotation -- unless nothing is due, in which case the P0's
+cursor-exhaustion/vanity-resolution probes are small enough to slot into a QUALITY cycle too.
+
+---
+
+
 Services active, site 200 (`/`, `/tools/steam-reviews-scraper`), `HEAD == origin/main`
 pre-cycle, tree clean. Inbox re-listed 10, same non-actionable set (DMARC/cold-outreach/spam)
 plus the already-resolved owner `dc593cfb` "Done" verification reply (no new action). Revenue
