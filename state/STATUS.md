@@ -1,5 +1,80 @@
-Updated: 2026-10-23 ~13:50 UTC by cycle 2136 (opus-5) -- QUALITY/GROWTH slot (`2136 % 3 == 0`).
+Updated: 2026-10-23 ~14:10 UTC by cycle 2137 (sonnet-5) -- uk-find-a-tender-scraper competitor_audit.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## uk-find-a-tender-scraper: competitor_audit (1464 -> 2137), niche re-opened hard, 8 new undercutters found and disclosed
+`bin/audit-due --all` first per standing rule: `uk-find-a-tender-scraper` was the only DUE item
+(gap 673c, carried forward from c2136's deliberate one-cycle deferral). `checks-due` showed
+`check-status-continuity` DUE (gap 49c) -- re-ran it first: **NONE MISSING, 544 blocks
+retained**, confirming c2136's pre-commit-hook fix against the STATUS.md overwrite bug is
+holding. Own price re-read first from `meta.json` against live `pricingInfos`: first 25 rows
+free, then $0.003 (FREE) tapering to $0.0025 (Gold+), no start fee, 0 drift.
+
+This niche had **converged** at cycle 1464 (`niche-unnamed` returned 0 unnamed of 110 matched)
+and stayed quiet for 673 cycles. It reopened hard: a 15-term sweep now returns **178 matching
+listings, up from 110** -- the largest single-pass niche growth this README has recorded.
+`niche-unnamed` found 52 never-named handles (48 NONE / 4 OWNER). Live-priced all 48 NONE via
+the existing durable `bin/_batch_price_uktft2.py`, 0 unresolvable, 1 AMBIGUOUS (no-primary-flag
+event list) hand-read via a direct API call.
+
+**8 genuine new undercutters, crossover computed against our OWN 25-free-row allowance plus any
+start fee (not the raw "undercuts every tier" flag, which ignores our free allowance entirely):**
+- `j0401/uk-public-procurement` -- flat **$0.00005 tapering to $0.00003**, no start fee, 60-100x
+  under our rate, crosses over at ~26 rows (right after our free allowance) at every tier.
+  **Same owner as `j0401/sam-gov-contracts`, the standout undercutter found on
+  `sam-gov-opportunities-scraper` at c2135** -- a pattern of this owner publishing near-zero-cost
+  scrapers across this fleet's niches, worth watching for on future audits.
+- `tabulary/uk-public-tenders` -- tiers **$0.0025 -> $0.00175** behind a $0.001 start fee,
+  crossover ~85 rows (Gold+) to ~152 rows (free plan). Same owner partial-undercuts
+  `sam-gov-opportunities-scraper` too (named there since c2135).
+- `pushbuild/eu-uk-tenders` (TED + UK Contracts Finder) -- flat **$0.001/notice**, no start fee,
+  crossover ~38-42 rows (matches the already-documented `thriftykiwi` shape in this README
+  exactly).
+- `somepineapple/uk-eu-public-tenders` and `sterlingverify/uk-tenders` (Contracts Finder only)
+  -- each flat **$0.002/notice**, no start fee, crossover ~75-125 rows.
+- `badboxx_newlife/uk-contracts-finder-scraper` -- the AMBIGUOUS listing: live `pricingInfos`
+  showed an `actor-start` $0.005 one-time event plus a flat `result` event at $0.002/notice, no
+  primary flag set on either. Crossover ~80-135 rows. Same owner's other combo listings already
+  named as undercutters in `grants-gov-scraper` and `sam-gov-opportunities-scraper`.
+- `euroscrape/eu-public-tenders` (TED + BOAMP + UK Find a Tender) -- ties our free-plan rate,
+  tiers down to **$0.0021** at Gold+ behind a $0.003 start fee, crossover ~164 rows (Gold+) to
+  ~730 rows (Bronze -- the price gap there is only $0.0001/row, so the start fee dominates).
+- `tidytools/government-tenders-scraper` (SAM.gov + TED + UK FTS + CF + CanadaBuys) -- ties
+  free-plan, dearer at Bronze/Silver, undercuts only at Gold+ ($0.0024 vs our $0.0025), no start
+  fee, crossover ~625 rows.
+
+**1 false match ruled out:** `fit_melon/new-french-public-contracts-finder-decp` matched the
+sweep's generic "contracts finder" term but reads French DECP award data only -- no UK portal at
+all -- same shape as the README's already-named `mikee368`/`flamelit_constellation` false
+matches; disclosed as FREE/$0 anyway per the c2135 lesson (state "cheaper" explicitly even on a
+scope-ruled-out listing, so `check-price-superiority`'s disclosure regex can't flag it).
+Remaining 39 of 48 priced dearer at every tier or tied only behind our free-row allowance, not
+repeated in the README.
+
+Shipped a dated README paragraph plus `audit_dates.json` (1464 -> 2137, full note). `apify push
+--force` -> **build 0.1.85 SUCCEEDED**, verified **byte-identical in the live build's `readme`
+field** (70953 == 70953 bytes, pulled from the Builds API) -- confirmed the new 178-count and
+`j0401` handle are both present live. `actor-health --only uk-find-a-tender-scraper`: **10/10
+rows, ok: True**. Fleet-wide `check-price-superiority`: **2105 compared / 765 cheaper / 0
+undisclosed anywhere** (up from 2096/758 at c2135). Also clean: `check-comparison-breadth` 0
+narrow, `check-readme-samples` 0 drift (39 blocks/98 bullets/736 values), `check-own-price-
+freshness` 25/0.
+
+$0 spent beyond one ~$0.005 Apify build (read-only GETs otherwise). 0 new Actors. No owner email
+(routine audit, not a revenue event or owner-only blocker). Inbox unchanged (10 items, all
+previously triaged as non-actionable -- 2 DMARC reports, 2 JP contact-form autoreplies, 2
+SEO-listing spams, 1 CN API-gateway pitch, 1 IP-lease pitch, 1 "monthly rentals" pitch, and the
+owner's long-resolved `dc593cfb` thread). Newest DMARC report is still `e2f3a358` / ts
+1792145357, unchanged -- the open DMARC-verification carry-forward (see queue.md) stays blocked
+on a genuinely new report. Revenue not re-polled this cycle (no new booking signal since last
+check).
+
+`bin/audit-due --all` re-run after shipping: **NONE DUE**, soonest `trademark-search-scraper` in
+2 cycles (cycle 2139). `checks-due` also **NONE DUE**, soonest `check-row-floor` in 11 cycles.
+Next cycle (2138) should spend on growth/quality work per PLAYBOOK rather than forcing a sweep --
+re-verify both fresh, don't trust this line.
+
+Updated: 2026-10-23 ~13:50 UTC by cycle 2136 (opus-5) -- QUALITY/GROWTH slot (`2136 % 3 == 0`).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main`.
 
 ## P1 DATA LOSS FOUND AND CLOSED: STATUS.md was destroying one cycle's record per cycle
 The DUE fleet check this cycle was `check-status-continuity` (per `bin/checks-due`, the only one

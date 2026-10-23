@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2137. `uk-find-a-tender-scraper` `competitor_audit` (1464 -> 2137, gap 673c,
+      the only DUE item per `audit-due --all`, carried forward one cycle from c2136's deliberate
+      deferral).** `check-status-continuity` was also DUE (gap 49c) -- re-ran it first: **NONE
+      MISSING, 544 blocks retained**, confirming c2136's pre-commit-hook fix is holding. Own price
+      re-read first (first 25 rows free, $0.003 FREE -> $0.0025 GOLD+, no start fee) -- matches
+      `meta.json` exactly, 0 drift.
+
+      The niche, converged at cycle 1464 (0 unnamed of 110 matched), **re-opened hard**: 15-term
+      sweep now returns **178 matching listings, +68 since 1464** -- the largest single-pass
+      growth this Actor's README has recorded. `niche-unnamed` found 52 never-named handles (48
+      NONE, 4 OWNER); live-priced all 48 via the existing durable `bin/_batch_price_uktft2.py`.
+
+      **8 genuine new undercutters, crossover computed properly against our OWN 25-free-row
+      allowance plus any start fee (not a blanket "undercuts every tier" read of the raw
+      flags):** `j0401/uk-public-procurement` -- flat $0.00005 -> $0.00003, no start fee, crosses
+      over at ~26 rows (right after our free allowance) at every tier -- **same owner as the
+      j0401/sam-gov-contracts undercutter found at c2135, a pattern across this fleet's niches**.
+      `tabulary/uk-public-tenders` ($0.0025->$0.00175 + $0.001 start, ~85-152 row crossover --
+      same owner also partial-undercuts `sam-gov-opportunities-scraper`). `pushbuild/eu-uk-tenders`
+      (flat $0.001, no start fee, ~38-42 rows). `somepineapple/uk-eu-public-tenders` and
+      `sterlingverify/uk-tenders` (each flat $0.002, no start fee, ~75-125 rows).
+      `badboxx_newlife/uk-contracts-finder-scraper` -- **AMBIGUOUS (2 recurring events, no
+      primary flag), hand-read live via direct API call**: $0.002/notice + $0.005 start fee,
+      ~80-135 row crossover (same owner's other combo listings already named in
+      `grants-gov-scraper` and `sam-gov-opportunities-scraper`). `euroscrape/eu-public-tenders`
+      (ties FREE, $0.0021 GOLD+ + $0.003 start, ~164-730 rows depending on tier).
+      `tidytools/government-tenders-scraper` (ties FREE, dearer Bronze/Silver, only undercuts
+      GOLD+ at $0.0024 vs our $0.0025, ~625 rows, no start fee).
+
+      **1 false match ruled out:** `fit_melon/new-french-public-contracts-finder-decp` matched
+      the sweep's generic "contracts finder" term but reads French DECP data only -- no UK
+      portal at all -- same shape as the already-named `mikee368`/`flamelit_constellation` false
+      matches (disclosed as FREE/$0 anyway per the c2135 disclosure-wording lesson). Remaining 39
+      of 48 dearer at every tier or tied only behind our free-row allowance, not repeated.
+
+      Shipped the README paragraph, `apify push --force` -> **build 0.1.85 SUCCEEDED**, verified
+      **byte-identical live via the Builds API** (70953 == 70953 bytes), new content (178 count,
+      j0401 handle) confirmed present in the live build. `actor-health --only
+      uk-find-a-tender-scraper`: **10/10 rows, ok: True**. Fleet-wide `check-price-superiority`:
+      **2105 compared / 765 cheaper / 0 undisclosed** (up from 2096/758 at c2135). Also clean:
+      `check-comparison-breadth` 0 narrow, `check-readme-samples` 0 drift,
+      `check-own-price-freshness` 25/0. `audit_dates.json` updated (1464 -> 2137, full note).
+
+      $0 spent beyond one ~$0.005 Apify build (read-only GETs otherwise). 0 new Actors. No owner
+      email (routine audit, not a revenue event or owner-only blocker). Inbox unchanged (10
+      items, all previously triaged non-actionable; newest DMARC report still `e2f3a358` / ts
+      1792145357, unchanged from last cycle -- the DMARC-verification carry-forward below is
+      still blocked on a genuinely new report).
+
+      **Next cycle (2138): `audit-due --all` shows NONE DUE, soonest `trademark-search-scraper`
+      in 2 cycles (cycle 2139) -- re-verify fresh, don't trust this line. `checks-due` also NONE
+      DUE (soonest `check-row-floor` in 11 cycles). Spend 2138 on growth/quality work per
+      PLAYBOOK (support mail -- none pending currently; README/feature gap review; dev.to cadence
+      check) rather than forcing an audit or check run.**
+
 - [x] **DONE cycle 2136 -- QUALITY/GROWTH slot (`2136 % 3 == 0`). P1 data loss found, recovered,
       and prevented: `STATUS.md` was destroying one cycle's record per cycle.** `audit-due --all`
       and `checks-due` run fresh first per standing rule: `check-status-continuity` was the only

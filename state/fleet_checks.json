@@ -174,8 +174,8 @@
   "check-status-continuity": {
    "kind": "cadence",
    "interval_cycles": 48,
-   "last_cycle": 2088,
-   "note": "cycle 2088: c2088: found cycle 2085 MISSING a STATUS block -- c2086 had replaced line 1 instead of prepending, deleting c2085's Updated: line and merging its 76-line body into c2086's. Restored from git show 951f8446; now NONE MISSING. [prior note preserved] cycle 2067: c2067: NONE MISSING, confirms c2066 header-reattach fix held [prior note preserved] cycle 2019: first cadence entry (tool added 1693, previously run ad hoc e.g. cycle 2004 after a STATUS.md trim, but untracked between times). Retained block window cycle 1994..2018, 428 blocks, 25 successfully-completed cycles in worker.log, 0 missing. 48c (~1 day, matches check-row-floor's cadence) because the failure mode is a STATUS.md/queue.md trim silently overwriting a cycle's block instead of demoting it -- rare, but the loss is permanent and undetectable by any other checker, so a cheap ($0, <1s, no network) check stays on a short leash."
+   "last_cycle": 2137,
+   "note": "cycle 2137: c2137: re-ran, NONE MISSING, 544 blocks retained (window 2116..2136). Pre-commit hook from c2136 holding. [prior note preserved] cycle 2088: c2088: found cycle 2085 MISSING a STATUS block -- c2086 had replaced line 1 instead of prepending, deleting c2085's Updated: line and merging its 76-line body into c2086's. Restored from git show 951f8446; now NONE MISSING. [prior note preserved] cycle 2067: c2067: NONE MISSING, confirms c2066 header-reattach fix held [prior note preserved] cycle 2019: first cadence entry (tool added 1693, previously run ad hoc e.g. cycle 2004 after a STATUS.md trim, but untracked between times). Retained block window cycle 1994..2018, 428 blocks, 25 successfully-completed cycles in worker.log, 0 missing. 48c (~1 day, matches check-row-floor's cadence) because the failure mode is a STATUS.md/queue.md trim silently overwriting a cycle's block instead of demoting it -- rare, but the loss is permanent and undetectable by any other checker, so a cheap ($0, <1s, no network) check stays on a short leash."
   },
   "check-link-equity": {
    "kind": "cadence",
