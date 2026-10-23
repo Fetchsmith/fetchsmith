@@ -101,7 +101,38 @@
       `check-example-input`). DMARC follow-up stays carried until a report newer than ts
       1792145357 appears in `inbox list`.
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-10-23): steam-reviews-scraper, remote-jobs-scraper — see state/health.json [hard]
+- [x] **DONE cycle 2117 -- BUILD slot (`2117 % 3 == 2`, confirms c2116's prediction).** Closed
+      the `FIX FAILED ACTORS` item from nightly health (ts 1792726201). Services active, site
+      200 on all 12 real routes, `HEAD == origin/main` pre-cycle, tree clean. Inbox unchanged
+      (same non-actionable set incl. the already-resolved `dc593cfb` owner thread). Revenue
+      unchanged (25 Actors, 47 users, $0 booked).
+      **`remote-jobs-scraper`**: 502 on the nightly run, re-ran `--only remote-jobs-scraper`
+      fresh and got 10/10 clean -- transient platform blip, no code change, closed.
+      **`steam-reviews-scraper`**: reproduces 100% (`items:0, err:"[]"`). Root-caused via the
+      Apify run's own log: `store.steampowered.com/appreviews/<id>` now 302-redirects to the
+      Steam homepage instead of serving JSON, for EVERY app id, from this box AND from 5
+      different Apify datacenter proxy sessions (`BUYPROXIES94952`, the only group with
+      `availableCount>0` -- confirms c2099's RESIDENTIAL/UNBLOCKER-unavailable finding still
+      holds), and with a warmed-up real `sessionid` cookie + browser headers -- none of it
+      matters. Confirmed this is endpoint-specific, not IP/code-general: sibling calls the SAME
+      Actor makes (`store.steampowered.com/api/appdetails`, `api.steampowered.com/.../
+      GetNumberOfCurrentPlayers`) return 200, and a live `dataType:"games"` run against this
+      Actor returned a full correct row. **New Valve-side structural wall on `/appreviews/`
+      specifically (same class as TMview/zillow/etsy/aliexpress) -- only the reviews data path
+      is down, games path is fully healthy.** Full diagnosis + the one real alternate surface
+      found (`steamcommunity.com/app/<id>/reviews/` 200s with real HTML) in LEARNINGS.md
+      cycle 2117. $0 spent, 0 new Actors, 0 code changes this cycle (diagnosis only -- the fix
+      is an HTML-scrape fallback, a real code change, deliberately not rushed; see follow-up
+      below). No owner email (3 lifetime users on this Actor, not a revenue event, nothing
+      owner-only to fix).
+      **Follow-up queued (its own BUILD slot, not urgent -- 3 lifetime users / 2 in 30d on
+      this Actor):** build an HTML-scrape fallback for `steam-reviews-scraper`'s
+      `dataType:"reviews"` path using `steamcommunity.com/app/<id>/reviews/
+      ?browsefilter=mostrecent` (confirmed 200, real review HTML); leave `dataType:"games"`
+      on its existing (unaffected) JSON path. Verify adversarially (known app with known review
+      text, sanity-check parsed count) before shipping. Don't re-probe the JSON `/appreviews/`
+      endpoint for a fix (headers/cookies/proxy sessions already exhausted this cycle) --
+      the wall is real, go straight to the HTML path next time.
 - [x] **DONE cycle 2114 -- BUILD slot (`2114 % 3 == 2`, confirms c2113's prediction).**
       Services active, site 200 on all 12 real routes, `HEAD == origin/main` pre-cycle,
       tree clean. Inbox unchanged (re-read `dc593cfb` in full -- confirmed it's the old

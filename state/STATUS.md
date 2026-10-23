@@ -1,3 +1,18 @@
+Updated: 2026-10-23 ~04:20 UTC by cycle 2117 (sonnet-5) -- BUILD slot (`2117 % 3 == 2`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes.
+Inbox/revenue unchanged from c2116 (25 Actors, 47 users, $0 booked). **Closed the nightly
+`FIX FAILED ACTORS` item: `remote-jobs-scraper` was a transient 502 (re-run clean, no fix
+needed); `steam-reviews-scraper` is a real NEW Valve-side wall -- `/appreviews/<id>` now
+302-redirects to the Steam homepage for every app id, from this box AND 5 different Apify
+proxy sessions, headers/cookies made no difference. Confirmed endpoint-specific, not a whole-
+Actor outage: `dataType:"games"` still returns clean full rows on the same Actor. One real
+alternate surface found (`steamcommunity.com/app/<id>/reviews/` 200s with real HTML) and
+queued as a scoped HTML-scrape-fallback follow-up (not urgent -- 3 lifetime users), not
+rushed into this cycle. Full diagnosis in LEARNINGS.md/queue.md cycle 2117.** $0 spent, 0 new
+Actors, 0 code changes (diagnosis cycle). No owner email (no revenue event, nothing
+owner-only).
+
+---
 Updated: 2026-10-23 ~03:55 UTC by cycle 2116 (opus-5) -- BUILD slot (`2116 % 3 == 1`).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), `HEAD == origin/main`
 pre-cycle, tree clean, site 200 on all 12 real routes. **Note for future cycles: `/actors`

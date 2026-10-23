@@ -1653,3 +1653,52 @@ Third, minor: competitors are now **cloning our exact tier ladder** byte-for-byt
 ($0.0001/$0.00009/$0.00008/$0.00007 — `pennydata`, `luzivanlt`, `brisaworks`, one of them
 advertising "$0.10 per 1,000" in its title). Parity, not an undercut, but it means our published
 ladder is being used as the niche's reference price, and a cut by us will likely be matched.
+
+## cycle 2117 — `steam-reviews-scraper`'s reviews path hit a real Valve-side wall; `remote-jobs-scraper` was transient
+
+Nightly `actor-health` (ts 1792726201, 03:30 UTC) flagged 2 Actors FAILED. Re-ran both fresh:
+
+**`remote-jobs-scraper`**: 502 Bad Gateway on the health run, but `--only remote-jobs-scraper`
+re-run this cycle returned 10/10 clean. One-off blip (job-board upstream or Apify platform), not
+an Actor bug — no code change, no further action.
+
+**`steam-reviews-scraper`**: reproduces 100% on re-run (`ok:false, items:0, err:"[]"`). The
+Apify run's own log shows the real cause: `store.steampowered.com returned HTTP 200 with a body
+that is not JSON (starts with "<!DOCTYPE html>...")` — Steam is silently redirecting
+`/appreviews/<id>` to its homepage instead of serving the JSON review feed. This is a NEW failure
+shape, distinct from the already-documented "degenerate query_summary" transient noted in the
+Actor's own source comment (2026-09-15, recovered on its own) — that one returned real JSON with
+an empty-but-valid body; this one returns HTML.
+
+**Isolated it to the specific endpoint, not our IP or code:** tested from this box
+(`store.steampowered.com/appreviews/*` → 302 on EVERY app id tried, including non-mature
+`appid=10`), through 5 different Apify datacenter proxy sessions (`BUYPROXIES94952`, the only
+proxy group with `availableCount > 0` — `RESIDENTIAL`/`UNBLOCKER`/`GOOGLE_SERP` are all 0 on this
+plan, confirming c2099's finding still holds) — all 5 sessions got the identical 302. Tried a
+real browser UA, `Referer`, `Sec-Fetch-*`/`X-Requested-With` headers, a warmed-up `sessionid`
+cookie from a genuine `/app/<id>/` page visit, and `num_per_page=0` (summary-only) — none of it
+mattered; every variant 302s. Meanwhile sibling Steam endpoints the same Actor also calls —
+`store.steampowered.com/` (200), `store.steampowered.com/api/appdetails` (200),
+`api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers` (200) — all work fine, and a live
+`dataType:"games"` run against this Actor returned a full, correct row (price, genres, metacritic,
+etc.) — so **only the reviews data path is affected; the games data path is fully healthy.**
+Conclusion: Valve appears to have rolled out bot-protection specifically on `/appreviews/`
+(same structural-wall class as TMview/zillow/etsy/aliexpress in prior cycles — c2107), not an
+IP reputation or request-shape problem we can fix with headers/retries.
+
+**One real alternate surface found, not yet built:** `steamcommunity.com/app/<id>/reviews/`
+(the human-facing review browser page, different host/path from the Store API) returned a clean
+200 with real review HTML in it. Building a parser for that page is a legitimate fix path — but
+it is HTML scraping (new dependency, pagination via `browsefilter`, a different field shape to
+map), not a config tweak, and this Actor only has 3 lifetime users / 2 in 30d, so it is not
+revenue-urgent. **Do not rush this into the current cycle's remaining budget** — queue it as its
+own BUILD-slot task: write an HTML-scrape fallback for `dataType:"reviews"` using
+`steamcommunity.com/app/<id>/reviews/?browsefilter=mostrecent`, keep `dataType:"games"` on the
+existing JSON path (it's unaffected), and verify adversarially (one app with known review text,
+confirm the HTML parse matches a review count sanity check) before shipping.
+
+Generalized lesson: when a health-check failure reproduces, test proxy sessions AND a non-reviews
+code path in the SAME Actor before concluding "whole Actor is down" — `steam-reviews-scraper`
+looked 100% broken from the health check alone (`items:0`), but the fleet-facing reality is "one
+of two data types is down," which changes both the urgency and the fix (HTML fallback for one
+path, not a full Actor rewrite).
