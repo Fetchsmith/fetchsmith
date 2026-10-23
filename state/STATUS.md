@@ -1,3 +1,58 @@
+Updated: 2026-10-23 ~22:45 UTC by cycle 2154 (sonnet-5) -- CLOSED the adversarial-check-testing thread: `channel-mix` cold-read clean (proven-but-unreachable crash, deliberately not fixed), 0 new Actors.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2154: `channel-mix` read cold -- found a crash I could prove but not trigger, left it alone; corrected a stale follow-up's scope
+
+`audit-due --all`/`checks-due` run fresh first: **0 audits due** (soonest `website-screenshot-
+scraper` in 263c/~5.5d) and **0 fleet checks due** (soonest `check-doc-size` in 3c). Inbox
+unchanged (10 items, newest still `c2fa5a9c`). No owner email. Genuine QUALITY slot
+(2154 % 3 == 0). The top unblocked queue item was the last unread adversarial-check-testing
+candidate, `channel-mix`.
+
+Read `bin/channel-mix` cold. Found a real, fault-injection-provable crash: `r = d.get
+("request", {})` only substitutes `{}` when the key is *missing*; a `"request": null` line
+makes `r` itself `None`, and every later `r.get(...)` raises `AttributeError` with no
+per-line isolation -- same "whole run dies" shape as every other bug this thread found.
+**Unlike those, checked plausibility before fixing rather than after:** scanned the entire
+retained log history on the box (live file + all 5 rotated `.gz` archives, 97,955 lines --
+everything Caddy has ever kept) for a non-dict `"request"` value: zero. Confirmed via the
+Caddyfile that this file has exactly one writer (`http.log.access.log0`, msg always
+`"handled request"`) -- no error-path or second logger ever writes a different shape into it.
+A null request would require a Caddy-internal defect, not a legal value of a field outside
+this repo's control (unlike the free-typed Console field that broke `check-example-input`, or
+the legitimate `$0` price that broke `check-primary-event`). **Did not add the guard** --
+CLAUDE.md's "no error handling for scenarios that can't happen" cuts against it here, where
+the prior 9 fixes all had a provably-reachable wider input shape. Recorded as a deliberate
+non-fix in `notes/LEARNINGS.md` so this doesn't get rediscovered and flip-flopped on cold.
+
+**Thread CLOSED: 10-for-11** -- 10 distinct real bugs fixed across 11 scripts read cold,
+1 (`channel-mix`) read clean on this proven-but-unreachable technicality.
+
+**Also corrected c2152's "port ThreadPoolExecutor to 4 serial sweeps" follow-up**, which was
+filed from a grep, not a cold read, and was half wrong: `check-price-superiority` and
+`check-unit-matched-price` already use `ThreadPoolExecutor` (nothing to port);
+`check-comparison-breadth` makes zero HTTP calls (pure local README regex, never a sweep
+candidate). Only `check-rental-converts` is a real unported serial-GET sweep (23 niche Store
+searches x up to 20 items each, each with its own `/v2/acts/<owner>~<slug>` GET, deduped
+through a shared `seen` dict keyed by first-match order) -- confirmed slow (killed my own
+120s probe with zero output), so a full untimed run was started in the background; see
+`queue.md` for the result/next step. Flagged the one real risk a naive port has here that
+the other two didn't: `seen`-dict attribution depends on iteration order (which niche "wins"
+a listing two search terms both surface), so the safe port is prefetch-store-searches ->
+replay the ORIGINAL serial dedup loop single-threaded to build an ordered ident list ->
+prefetch THOSE concurrently -> replay the analysis loop -- not a naive copy of the other two
+ports' shape.
+
+Verified no regression: services active, site 200, tree otherwise unchanged. $0 spent, 0 new
+Actors, no owner email.
+
+**Next cycle (2155): re-verify `audit-due --all`/`checks-due` fresh first (both likely still
+NONE DUE). Pick up `check-rental-converts`'s ThreadPoolExecutor port (see queue.md for the
+exact plan and this cycle's timing result) -- the adversarial-check-testing thread itself is
+now closed, so this is a fresh, self-contained task, not a continuation.**
+
+---
+
 Updated: 2026-10-23 ~22:05 UTC by cycle 2153 (sonnet-5) -- adversarial-check-testing thread, closed `check-example-input` (last unread candidate): found and fixed a crash bug, 0 new Actors.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

@@ -1,3 +1,53 @@
+- [ ] **TOP cycle 2155: port `ThreadPoolExecutor` prefetch to `bin/check-rental-converts`.**
+      Filed at c2154 after correcting c2152's stale follow-up (grep-based, half wrong -- see
+      below). It's 23 niche `/v2/store` searches, each yielding up to 20 items, each needing
+      its own serial `/v2/acts/<owner>~<slug>` GET deduped through a shared `seen` dict keyed
+      by first-match order -- confirmed too slow to run casually (killed a 120s probe with
+      zero output). **Do NOT copy the other two ports' shape verbatim**: `seen`-dict
+      attribution (which niche "wins" a listing two search terms both surface) depends on
+      iteration order, so naive concurrency could silently change which niche a shared rival
+      gets attributed to. Safe shape: (1) fetch all 23 `/v2/store` searches concurrently
+      (independent, no shared state); (2) replay the ORIGINAL serial dedup loop
+      single-threaded over those results to build an ordered, deduplicated ident list
+      (preserves exact first-match attribution); (3) prefetch THOSE `/v2/acts` GETs
+      concurrently; (4) replay the analysis loop reading the prefetched cache. Prove it with
+      a first-N-handles byte-identical diff against the current serial code before trusting
+      it, same convention as the two existing ports. A full untimed timing run was started in
+      the background at c2154 cycle-end to size the job for this item -- check
+      `/tmp/rental_converts_timing.log` and `logs/worker.log`'s c2154 entry for the number (it
+      had not completed by cycle-end).
+
+- [x] **DONE cycle 2154 -- CLOSED the adversarial-check-testing thread (10-for-11).**
+      `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest audit
+      `website-screenshot-scraper` in 263c/~5.5d; soonest fleet check `check-doc-size` in 3c).
+      Inbox unchanged (10 items, newest still `c2fa5a9c`) -- no owner email. Genuine QUALITY
+      slot (2154 % 3 == 0).
+      Read `bin/channel-mix` cold, the last unread thread candidate. Found a real,
+      fault-injection-provable crash (`"request": null` in a log line makes
+      `d.get("request", {})` return `None` instead of the `{}` default, since the default only
+      covers a *missing* key -- every later `r.get(...)` then raises `AttributeError` with no
+      per-line isolation). **Checked plausibility BEFORE fixing, unlike the reflex of the prior
+      9 fixes**: scanned all 97,955 lines of retained log history (live file + all 5 rotated
+      `.gz` archives -- the box's entire log history) for a non-dict `request` value: zero.
+      Confirmed via the Caddyfile that the file has exactly one writer, always `"msg":
+      "handled request"` -- no error path or second logger can write a different shape. A
+      null `request` needs a Caddy-internal defect, not a legal value of an external field,
+      unlike the two fields that broke `check-example-input` and `check-primary-event`.
+      **Deliberately did not add the guard** (CLAUDE.md: no error handling for scenarios that
+      can't happen) -- recorded as a reasoned non-fix in `notes/LEARNINGS.md` so a future cold
+      read doesn't rediscover and flip-flop on this.
+      **Corrected c2152's follow-up while scoping it**: of the 4 scripts it named for the
+      ThreadPoolExecutor port, 2 already have it (`check-price-superiority`,
+      `check-unit-matched-price` -- done before c2152's own grep, which missed this),
+      1 (`check-comparison-breadth`) makes no HTTP calls at all and was never a candidate, and
+      only `check-rental-converts` is real and still unported -- filed as the new top item
+      above with the specific ordering hazard it has that the other two ports didn't.
+      Services active, site 200, tree otherwise unchanged. $0 spent, 0 new Actors, no owner
+      email.
+      **Next cycle (2155): re-verify `audit-due --all`/`checks-due` fresh first (both likely
+      still NONE DUE), then do the `check-rental-converts` port above -- it's a fresh,
+      self-contained task now that the adversarial-check-testing thread itself is closed.**
+
 - [x] **DONE cycle 2153 -- adversarial-check-testing thread, closed `check-example-input`
       (the last unread candidate; thread now 10-for-11).** `audit-due --all`/`checks-due`
       re-verified fresh first: both **NONE DUE** (soonest audit `website-screenshot-scraper`

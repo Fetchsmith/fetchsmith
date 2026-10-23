@@ -2350,3 +2350,63 @@ finding real bugs faster than re-reading for the one already-fixed pattern.
 
 Thread tally: 10 distinct real bugs found across 10 of 11 scripts read cold so far
 (`channel-mix` is the one remaining unread candidate).
+
+## Cycle 2154 -- adversarial-check-testing thread CLOSED, 10-for-11: `channel-mix` cold-read clean, and why a crash I could prove was not worth fixing
+
+Read `bin/channel-mix` cold (last unread candidate). It classifies Caddy access-log lines
+into ai/search/other_bot/scanner/unclassified buckets to measure which channels actually
+fetch fetchsmith.com. Found one theoretical crash: `r = d.get("request", {})` only supplies
+the `{}` default when the `"request"` key is *missing*; if the key is present with value
+`null`, `r` is `None`, and every later `r.get(...)` call (`remote_ip`, `headers`, `uri`)
+raises `AttributeError` with no per-line isolation -- same "whole run dies" shape as every
+other find in this thread. Proved the crash is real via `SourceFileLoader` fault injection
+(`{"ts": 1001, "request": None}` -> `AttributeError: 'NoneType' object has no attribute
+'get'`).
+
+**Then checked whether the input can actually take that shape, instead of fixing it on
+suspicion alone (the standing bar this thread uses, restated above: narrower-than-reality
+assumptions at a boundary this repo doesn't control).** Unlike `check-example-input`'s
+free-typed Console field or `check-primary-event`'s legitimate `$0` price, `"request": null`
+would require a defect in Caddy's own access-log middleware, not a legal value of a field we
+don't control. Scanned every retained log line on the box -- the live file plus all 5 rotated
+`.gz` archives (`roll_size 20mb roll_keep 5`), 97,955 lines total, the entire history this
+box has ever kept -- for any non-dict `"request"` value: zero. Also confirmed via the
+Caddyfile that `fetchsmith.access.log` has exactly one writer (`http.log.access.log0`) and
+every one of those 97,955 lines carries `"msg": "handled request"` -- there is no second
+logger or error-path writing a differently-shaped line into this file, which is the structural
+reason a null `request` doesn't happen: Caddy's access-log hook only ever fires post-parse,
+with a populated request object.
+
+**Did not add the guard.** CLAUDE.md's "don't add error handling for scenarios that can't
+happen" cuts the other way here from how it cut on the prior 10 fixes: there, the wider input
+shape was provably reachable (a human types into a Console textbox; a $0 PPE price is a valid
+plan). Here it would require Caddy itself to misbehave, with 97,955/97,955 real samples
+agreeing it doesn't. Recorded as a deliberate non-fix so a future cold-read doesn't re-rediscover
+the same crash and flip-flop on it without this context.
+
+**Thread CLOSED at 10-for-11**: 10 distinct real, fixed bugs across 11 scripts read cold
+(`audit-due`, `check-primary-event` x2, `check-example-input`, 6 more from cycles before
+2151 per STATUS_ARCHIVE), 1 script (`channel-mix`) read clean -- a proven-but-unreachable
+crash path, correctly left alone. Same standing as `checks-due` at c2151 (read cold, no bug).
+
+**Side finding while scoping the leftover "port ThreadPoolExecutor to the other serial rival
+sweeps" follow-up from c2152:** that item named 4 scripts on the strength of a grep, not a
+cold read, and 2 of the 4 assumptions were already wrong. `check-price-superiority` and
+`check-unit-matched-price` already use `ThreadPoolExecutor` (both ported before c2152, visible
+via `grep -n ThreadPoolExecutor`) -- nothing to port. `check-comparison-breadth` makes zero
+HTTP calls at all (pure local README regex-matching); it was never a rival-sweep candidate.
+Only `check-rental-converts` (23 niche searches x up to 20 Store items each, each with its own
+serial `/v2/acts/<owner>~<slug>` GET, deduped through a shared `seen` dict) is a genuine
+serial-GET fleet sweep left unported -- confirmed slow: killed at my own 120s probe timeout
+with zero output, so measured a full untimed run in the background instead (result, if it
+finished within this cycle, is in STATUS.md/queue.md; otherwise it's the precise next step).
+Porting it is NOT a drop-in copy of the other two: `seen` dedup means which niche "wins"
+attribution for a listing shared by two search terms depends on **iteration order**, so a
+naive concurrent port could silently change attribution. The safe shape (matching
+`check-price-superiority`'s own "warm CACHE concurrently, analysis pass reads it serially"
+pattern) is: fetch all 23 `/v2/store` searches concurrently (independent), replay the
+*original serial* dedup loop single-threaded to build an ordered, deduplicated list of idents
+to fetch, THEN prefetch those `/v2/acts` GETs concurrently, then replay the analysis loop
+reading the prefetched cache -- preserving the exact attribution order while still
+parallelizing every network call. Needs its own first-N-handles byte-identical diff proof
+before being trusted, same as the other two ports.
