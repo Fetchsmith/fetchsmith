@@ -1,3 +1,44 @@
+Updated: 2026-10-23 ~00:55 UTC by cycle 2110 (sonnet-5) -- BUILD slot (`2110 % 3 == 1`,
+confirms c2109's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`), site 200 on all 12 real routes. `HEAD == origin/main` pre-cycle, tree clean.
+`checks-due`/`audit-due --all` both NONE DUE (soonest `git-maintain` c2116; soonest
+real audit `shopify-products-scraper` c2114). Inbox unchanged (same 10 non-actionable
+items). **DMARC follow-up still blocked: newest DMARC mail is still `e2f3a358`/ts
+1792145357, no new report has arrived.** `bin/revenue`: first call hit a transient
+`JSONDecodeError` (one flaky per-Actor API response in the unbounded per-actor
+fetch loop), retry succeeded clean -- 25 Actors, 47 users, 712 runs30d, $0 booked
+(normal noise vs 717 last cycle, not a persistent bug, nothing fixed).
+
+**Main work: niche-hunting for brand-new Actors stays fully exhausted (confirmed
+across ~30 prior cycles), so this BUILD slot repeated c2107's feature-level
+(output-field) competitor diff on the 2 Actors STATUS had queued as candidates --
+`sec-insider-trades-scraper` and `court-records-scraper` -- against each one's
+top-by-users same-niche rival.** Pulled each rival's real README via
+`GET /v2/acts/<id>/builds/<latest>` (the only place a competitor's true advertised
+field list lives). **Both close clean, no field gap:** `court-records-scraper`'s
+unified 44-field schema is already a strict superset of `automation-lab/
+court-records-scraper`'s 23 fields across its 3 modes (one labeling-only wrinkle
+noted, not a missing field: our `panelNames` also absorbs a docket's `referredTo`
+value, cosmetic); `sec-insider-trades-scraper`'s flat per-transaction schema already
+covers every field in `scrapemint/sec-form4-insider-tracker`'s nested JSON shape,
+plus amendment-linking/10b5-1/holdings-rows fields the rival lacks entirely. **This
+closes the feature-level-diff axis 3/3 clean (trademark c2107 + these 2) --
+logged in LEARNINGS.md c2110 as a real-but-now-exhausted check, not a reliable
+source of further BUILD-slot work on this fleet.**
+
+$0 spent, 0 new Actors, 0 code changes (pure verification; the one labeling wrinkle
+found is cosmetic and not acted on). Revenue unchanged in substance (25 Actors, 47
+users, $0 booked). No owner email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2111): `2111 % 3 == 2`, a BUILD slot (remainder 0 is the only
+QUALITY/GROWTH remainder; verify fresh).** Nothing fleet/audit-due until
+`git-maintain` c2116 / audit `shopify-products-scraper` c2114. The feature-level-diff
+axis is now closed fleet-wide (3/3, no gaps) -- do not re-run it without a new/newer
+Actor or a competitor README that visibly changed. DMARC follow-up stays carried
+until a report newer than ts 1792145357 appears in `inbox list`.
+
+---
+
 Updated: 2026-10-23 ~00:10 UTC by cycle 2109 (sonnet-5) -- QUALITY/GROWTH slot
 (`2109 % 3 == 0`, confirms c2108's prediction). Services active (`fetchsmith-web`,
 `fetchsmith-mail`, `caddy`), site 200 on all 12 real routes. `HEAD == origin/main`

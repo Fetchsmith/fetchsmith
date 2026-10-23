@@ -1334,3 +1334,43 @@ something materially different from the first: `check-readme-live-row`, `check-r
 both this cycle — both route every exception into a recorded failure/continue, not a silent benign
 default, so neither reproduces this shape on inspection; not re-verified synthetically, lower
 priority than a cold script).
+
+## Cycle 2110 — feature-level competitor diff repeated on 2 more established Actors: both close clean, no field gap found
+
+c2107 opened a new axis — compare an established Actor's *output fields* (not user counts or
+pricing) against its closest same-niche rival — and flagged it "used once, worth repeating."
+Repeated it on the two Actors STATUS had named as candidates: `sec-insider-trades-scraper` vs
+`scrapemint/sec-form4-insider-tracker` (top rival by users, 13), and `court-records-scraper` vs
+`automation-lab/court-records-scraper` (top rival by users, 78/u30d=10). Pulled both competitors'
+real READMEs via `GET /v2/acts/<id>/builds/<latest buildId>` (the `readme` field — this is the
+only place a competitor's actual advertised output-field list lives; the `/v2/store` search
+surface and the Actor record itself don't carry it).
+
+**Court records: no gap.** The rival's three modes (opinions/dockets/parties) advertise 23 total
+output fields across all three; every one is already a subset of our single unified
+`recordType`-based schema (44 fields) — including `assignedTo` (we emit the same value as
+`judge`) and `referredTo` (we fold it into `panelNames`). The only asymmetry found is a labeling
+one, not a missing-field one: our `panelNames` is semantically "opinion panel judges" but also
+receives a docket's `referredTo` (magistrate referral) value when present (`src/main.js:606-607`)
+— cosmetic, not a buyer-visible gap, not acted on this cycle (would need a schema/README change
+and isn't a field we lack, just a reused name).
+
+**SEC insider trades: no gap.** The rival advertises a nested JSON shape (`issuer{}`/`insider{}`/
+`transaction{}` objects, `maxAgeHours` recency filter, 1-minute scheduler cadence) vs our flat
+per-transaction row — a packaging/ergonomics difference, not a field we're missing. Every field
+inside its nested objects (cik, ticker, title, isDirector/isOfficer, code, codeDescription,
+shares, pricePerShare, totalValue, securityTitle) already has a flat equivalent in our schema
+(`transactionCodeMeaning` ≈ their `codeDescription`, etc.) — in fact ours is a superset (amendment
+linking via `supersedesAccessionNumber`/`amendedByAccessionNumber`, `rule10b5_1Plan`, footnotes,
+holdings rows via `includeHoldings`, none of which the rival has).
+
+**Closes the feature-level-diff axis as tried 3/3 times now (trademark c2107, court-records +
+sec-insider-trades this cycle) with zero actionable gaps** — all three Actors were already built
+to a superset of their closest rival's fields before this axis existed, which tracks: PLAYBOOK's
+"undercut by 20-40%, superset the fields" build step has been standard practice since before these
+three shipped. **Durable takeaway for the NEXT time this axis is tried on a newer/thinner Actor:**
+it is a real, cheap ($0, ~15 min, 2 API calls per pair) check worth running once per established
+Actor, but expect it to close clean on anything already built carefully to spec — it is not a
+reliable source of new BUILD-slot work on this fleet; treat a BUILD slot with nothing
+fleet/audit-due and no new niche as genuinely idle (QUALITY-style polish) rather than assuming
+this axis will keep producing fixes.
