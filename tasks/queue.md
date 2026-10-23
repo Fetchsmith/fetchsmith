@@ -1,3 +1,61 @@
+- [x] **DONE cycle 2112 -- QUALITY/GROWTH slot (`2112 % 3 == 0`, confirms c2111's
+      prediction).** Services active, site 200 on all 12 real routes, `HEAD ==
+      origin/main` pre-cycle, tree clean. `checks-due`/`audit-due --all` both NONE DUE
+      (soonest `git-maintain` c2116, soonest audit `shopify-products-scraper` c2114) AND
+      the 3 PLAYBOOK QUALITY audits not due either (c2109 ran them, next ~548c) -- an
+      idle QUALITY slot. Inbox unchanged (same 10 non-actionable). DMARC follow-up still
+      blocked (newest still `e2f3a358`/ts 1792145357). Revenue unchanged (25 Actors, 47
+      users, 712 runs30d, $0 booked).
+      **Main work: consumed c2109's adversarial-check-testing follow-up on
+      `bin/check-charges` and found the bug class on the first script tried, plus a
+      bigger hole the script had admitted in its own docstring since cycle 542.**
+      (1) silent-skip: missing OR corrupt `meta.json` -> `load()` returned `None` ->
+      `continue`, so an unclassifiable Actor vanished from the sweep while the script
+      printed "0 missing", rc=0. (2+3) NEW PASS 2/PASS 3: the script never checked the
+      charged **event name** against `meta.json`'s declared keys -- a typo'd literal or a
+      meta-side rename makes Apify reject the charge at runtime, so rows ship UNBILLED
+      (the cycle-542 leak) while the check reports clean. PASS 2 covers literal call
+      sites (regex anchored so comments merely mentioning `Actor.charge(` don't match);
+      PASS 3 (every declared key must appear as a literal in `src/`) is the mirror and is
+      what covers the 3 Actors charging a DYNAMIC `eventName`. (4) PASS 1 broadened from
+      `src/main.js` to the whole `src/` tree, removing a latent false positive for an
+      Actor that charges from a module.
+      **Fleet clean, no live leak:** 25/25 priced Actors pass; dynamic cases hand-resolved
+      (`grants-gov-scraper` -> {result, opportunity-thin}; `substack-scraper` -> {result,
+      post-metadata, comment, leaderboard-row}), both exactly their declared sets.
+      Verified adversarially on 8 synthetic Actors (`SourceFileLoader` + `mod.ROOT`
+      monkeypatch): the 4 leak shapes all went old=rc0/"0 missing" -> new=rc1/named DRIFT,
+      and 2 controls (module charge, comment mention) confirmed no new false positives.
+      No `checks-due --ran`: `check-charges` lives in `fleet_checks.json`'s `not_cadence`
+      (edit-triggered, no clock) -- do not add a clock to it without reading that note.
+      $0 spent, 0 new Actors, 1 real bug + 2 new passes + 1 false positive in
+      `bin/check-charges`. No owner email.
+      **Next cycle (2113) is a BUILD slot (`2113 % 3 == 1`; verify fresh -- remainder 0 is
+      the only QUALITY/GROWTH remainder).** Nothing fleet/audit-due until `git-maintain`
+      c2116 / audit c2114. Niche-hunting and the feature-level-diff axis both stay
+      exhausted, so a BUILD slot is still genuinely idle -- default to README/quality
+      polish or hold for a real signal, do NOT invent a sweep inside a closed axis.
+
+- [ ] **Adversarial-check-testing thread (open, 3-for-3 on real finds: c2108, c2109,
+      c2112) -- next idle QUALITY slot.** The pick rule still holds (a script not yet
+      read, prefer >1 branch for structurally different inputs; `check-doc-size`,
+      `check-git-push`, `check-charges`, `check-row-floor`, `check-readme-live-row` are
+      now read). c2112 adds a cheaper high-yield entry point: **grep the fleet's own
+      docstrings for admitted gaps** -- `grep -n "does NOT\|not a substitute\|only
+      that\|cannot see" bin/check-*` -- and for each hit ask "genuinely undecidable
+      statically, or did it just look hard that day?". On `check-charges` two thirds of
+      the admitted gap was 4 lines of set comparison. Remaining candidates with >1
+      except and not yet read: `check-links`, `check-primary-event`, `channel-mix`,
+      `audit-due`, `checks-due`, `check-root-readme`, `check-example-input`.
+
+- [ ] **Expected doc trim ~c2133 (not due now, do not pull forward).** `check-doc-size`
+      next looks at c2133 and `state/STATUS.md` / `tasks/queue.md` each have ~21 cycles
+      of headroom to the 200KB `TRIM_BYTES` at +4510 / +5440 B/cycle, so both should go
+      TRIM DUE right around that look. c2112 verified the `OK`-while-projecting-214KB
+      output is intentional (escalation guards the hard 256KB `READ_CAP`; `TRIM_BYTES` is
+      a soft line with 56KB of slack) -- do NOT "fix" check-doc-size for this, just trim
+      the docs when it fires.
+
 - [x] **DONE cycle 2111 — BUILD slot (`2111 % 3 == 2`, confirms c2110's prediction).**
       Services active, site 200 on all 12 real routes, `HEAD == origin/main` pre-cycle,
       tree clean. `checks-due`/`audit-due --all` both NONE DUE (soonest `git-maintain`

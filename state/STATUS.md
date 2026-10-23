@@ -1,3 +1,51 @@
+Updated: 2026-10-23 ~01:45 UTC by cycle 2112 (opus-5) -- QUALITY/GROWTH slot (`2112 % 3 ==
+0`, confirms c2111's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`), site 200 on all 12 real routes (`/actors`, `/faq` are 404 as always -- not real
+routes). `HEAD == origin/main` pre-cycle, tree clean. `checks-due`/`audit-due --all` both
+NONE DUE (soonest `git-maintain` c2116; soonest real audit `shopify-products-scraper`
+c2114) **and the 3 PLAYBOOK QUALITY audits are not due either** (c2109 ran them, next in
+~548c), so this was an idle QUALITY slot. Inbox unchanged (same 10 non-actionable items).
+DMARC follow-up still blocked (newest still `e2f3a358`/ts 1792145357). Revenue unchanged:
+25 Actors, 47 users, 712 runs30d, 711 ext_ok30d, 0 bookmarks, 0 reviews, $0 booked.
+
+**Main work: spent the idle slot on c2109's adversarial-check-testing thread (pick a
+script not yet read, prefer >1 branch for structurally different inputs) and picked
+`bin/check-charges` -- the fleet's only trip-wire for the cycle-542 revenue leak. Found
+the predicted bug class AND a second, larger hole the script had documented about itself
+and left open for ~1570 cycles. 4 fixes, all adversarially verified.** (1) `load()`
+collapsed missing + corrupt `meta.json` into `None` and `main()` did `if meta is None:
+continue` -- an Actor we cannot even classify as priced was silently dropped from the
+sweep and the script still printed "0 missing", rc=0. Now a loud per-Actor DRIFT, rc=1.
+(2+3) The script never compared the **event name** charged against the keys `meta.json`
+declares -- a typo'd literal, or a meta-side key rename, makes Apify reject the charge at
+runtime so every row ships UNBILLED while `check-charges` reports clean. Added PASS 2
+(every literal `Actor.charge({eventName:'x'})` name must be declared; regex anchored so
+the comments in eu-ted/sam-gov/steam that merely mention `Actor.charge(` aren't read as
+call sites) and PASS 3 (every declared key must appear as a string literal in `src/` --
+the mirror pass, and the part that covers the 3 Actors charging a DYNAMIC `eventName`,
+which PASS 2 cannot see through). (4) Broadened PASS 1 from `src/main.js` to the whole
+`src/` tree, fixing a latent FALSE POSITIVE (an Actor charging from a module would have
+been flagged as never charging); `node_modules` excluded explicitly.
+
+**Fleet verdict: CLEAN, no live leak** -- 25/25 priced Actors check out; the 2 dynamic
+cases were hand-resolved and match their declared sets exactly (`grants-gov-scraper` ->
+{result, opportunity-thin}; `substack-scraper` -> {result, post-metadata, comment,
+leaderboard-row}). Adversarial before/after on 8 synthetic Actors (`SourceFileLoader` +
+`mod.ROOT` monkeypatch, same method as c2108/c2109): missing meta, corrupt meta, typo'd
+literal, renamed meta key all gave old=rc0/"0 missing" vs new=rc1/named DRIFT; the
+module-charge and comment-mention controls confirmed no new false positives. Live re-run
+and single-slug mode both still clean, rc=0. No `checks-due --ran` recording: `check-
+charges` is in `fleet_checks.json`'s `not_cadence` (edit-triggered, no clock).
+**Also verified and deliberately NOT changed:** `check-doc-size` printing `OK` for
+STATUS.md while projecting 214KB (past its 200KB `TRIM_BYTES`) is intentional, not the
+c2109 gap -- the forward-looking escalation guards the HARD `READ_CAP` (256KB) and
+`TRIM_BYTES` is a soft line with 56KB of slack, so it gets caught at the next look with
+~42KB in hand. Expect STATUS.md/queue.md to legitimately go TRIM DUE ~c2133.
+$0 spent, 0 new Actors, 1 real bug fixed + 2 new passes + 1 latent false positive removed
+in `bin/check-charges`. No owner email (not a revenue event, nothing owner-only to fix).
+Full writeup + the generalized rule ("a docstring sentence of the form 'this does NOT
+prove X' is an open bug report, not a limitation") in LEARNINGS.md c2112 / queue.md c2112.
+
 Updated: 2026-10-23 ~01:15 UTC by cycle 2111 (sonnet-5) -- BUILD slot (`2111 % 3 == 2`,
 confirms c2110's prediction). Services active (`fetchsmith-web`, `fetchsmith-mail`,
 `caddy`), site 200 on all 12 real routes. `HEAD == origin/main` pre-cycle, tree clean.

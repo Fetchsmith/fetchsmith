@@ -16,26 +16,64 @@ This is deliberately a static, read-only source check (no platform runs, no cost
 A priced Actor with zero charge calls is a drift. The inverse (charge call with no
 pricing) is not flagged -- that's a local/dev no-op path, not a revenue leak.
 
+Cycle 2112 added two more passes, both closing holes this script's own docstring or
+error handling had left open:
+
+  PASS 2  every LITERAL event name passed to Actor.charge({ eventName: 'x' }) must be a
+          key meta.json declares. An undeclared name is rejected by the platform at
+          runtime, so the row ships but the buyer is never billed -- the same revenue
+          leak as cycle 542, except PASS 1 passes cleanly because a charge call does
+          exist. Typo'ing the literal, or renaming the key in meta.json without
+          touching the code, both land here.
+  PASS 3  every key meta.json declares must appear as a string literal somewhere in the
+          Actor's src tree. This is the mirror of PASS 2 and is what covers the three
+          Actors that charge a DYNAMIC `{ eventName, count: 1 }` (grants-gov,
+          substack, and any future one): PASS 2 cannot see through the variable, but a
+          declared key that is never even named in the source cannot be the thing that
+          variable resolves to. Renaming a declared key in meta.json alone trips this
+          on every Actor, literal or dynamic.
+
+Neither pass does interprocedural analysis -- a name built by concatenation would
+false-flag PASS 3. No Actor in the fleet does that; if one ever does, a loud flag that
+needs a one-line exception is the right failure mode for a revenue trip-wire.
+
 This does NOT prove every push path is charged (e.g. a charge call gated behind a
-condition that's always false), only that the capability exists in the source at all --
-it is a cheap first-line trip-wire, not a substitute for the live chargedEventCounts
-spot-check cycle 542 did by hand after any watch-mode or charging-logic change.
+condition that's always false), only that the capability exists in the source at all and
+that the names on both sides agree -- it is a cheap first-line trip-wire, not a
+substitute for the live chargedEventCounts spot-check cycle 542 did by hand after any
+watch-mode or charging-logic change.
+
+An Actor whose meta.json is missing or unparseable is reported LOUDLY and fails the run
+(cycle 2112): we cannot tell whether it is priced, and "cannot tell" must never be
+silently scored as "fine" -- that is the c2108/c2109 bug class (a branch for a
+structurally different input routing to a silent default instead of a recorded failure).
 
 Exit 0 = clean, 1 = drift found. Usage: check-charges [slug ...]
 """
+import glob
 import json
 import os
+import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Actor.charge({ eventName: 'result', count: 1 }) -- literal names only. The leading
+# `{` + `eventName` + quote is what keeps prose in comments that merely mention
+# "Actor.charge(" (several Actors have such comments) from matching.
+CHARGE_LITERAL_RE = re.compile(
+    r"Actor\.charge\(\s*\{[^}]*?\beventName\s*:\s*(['\"])([^'\"]+)\1"
+)
 
-def load(path, default=None):
-    try:
-        with open(os.path.join(ROOT, path)) as fh:
-            return json.load(fh)
-    except (FileNotFoundError, ValueError):
-        return default
+
+def src_files(adir):
+    """Every .js under the Actor's src/ tree. node_modules lives beside src/, not
+    inside it, but it is excluded explicitly so a vendored copy can never leak in."""
+    out = []
+    for p in sorted(glob.glob(os.path.join(adir, "src", "**", "*.js"), recursive=True)):
+        if "node_modules" not in p.split(os.sep):
+            out.append(p)
+    return out
 
 
 def main(argv):
@@ -52,27 +90,60 @@ def main(argv):
         adir = os.path.join(actors_dir, slug)
         if not os.path.isdir(adir):
             continue
-        meta = load(f"actors/{slug}/meta.json")
-        if meta is None:
+        # "cannot tell if priced" is a failure, never a silent skip (cycle 2112).
+        try:
+            with open(os.path.join(adir, "meta.json")) as fh:
+                meta = json.load(fh)
+        except FileNotFoundError:
+            print(f"DRIFT {slug}: meta.json not found -- cannot tell if priced "
+                  f"PAY_PER_EVENT, so cannot verify it charges")
+            drift += 1
             continue
-        priced = bool(meta.get("events"))
-        if not priced:
+        except ValueError as exc:
+            print(f"DRIFT {slug}: meta.json unparseable ({exc}) -- cannot tell if "
+                  f"priced PAY_PER_EVENT, so cannot verify it charges")
+            drift += 1
+            continue
+        declared = set((meta.get("events") or {}).keys())
+        if not declared:
             continue
         checked += 1
         main_js = os.path.join(adir, "src", "main.js")
-        try:
-            src = open(main_js).read()
-        except FileNotFoundError:
+        if not os.path.exists(main_js):
             print(f"DRIFT {slug}: priced PAY_PER_EVENT but src/main.js not found")
             drift += 1
             continue
-        if "Actor.charge(" not in src:
-            print(f"DRIFT {slug}: priced PAY_PER_EVENT ({list(meta['events'])}) but "
-                  f"src/main.js never calls Actor.charge()")
+        sources = {p: open(p).read() for p in src_files(adir)}
+        blob = "\n".join(sources.values())
+
+        # PASS 1: the charging capability exists at all.
+        if "Actor.charge(" not in blob:
+            print(f"DRIFT {slug}: priced PAY_PER_EVENT ({sorted(declared)}) but "
+                  f"src/ never calls Actor.charge()")
             drift += 1
+            continue
+
+        # PASS 2: every literal charged name is declared.
+        for path, src in sources.items():
+            rel = os.path.relpath(path, adir)
+            for _, name in set(CHARGE_LITERAL_RE.findall(src)):
+                if name not in declared:
+                    print(f"DRIFT {slug}: {rel} charges eventName '{name}' but "
+                          f"meta.json declares only {sorted(declared)} -- the platform "
+                          f"rejects an undeclared event, so those rows ship unbilled")
+                    drift += 1
+
+        # PASS 3: every declared name is at least named in the source.
+        for name in sorted(declared):
+            if f"'{name}'" not in blob and f'"{name}"' not in blob:
+                print(f"DRIFT {slug}: meta.json declares event '{name}' but no string "
+                      f"literal '{name}' appears anywhere in src/ -- nothing can ever "
+                      f"charge it (renamed key, or a typo on one side)")
+                drift += 1
 
     if drift == 0:
-        print(f"check-charges: {checked} priced Actors checked, 0 missing Actor.charge()")
+        print(f"check-charges: {checked} priced Actors checked, 0 missing "
+              f"Actor.charge(), 0 event-name drift")
     return 1 if drift else 0
 
 
