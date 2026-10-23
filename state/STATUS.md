@@ -35,8 +35,14 @@ before closing, fixed to "cheaper than us", re-ran clean). `audit_dates.json` up
 10 pre-existing ones), `check-readme-samples` 39 blocks/98 bullets/0 drift, `check-comparison-
 breadth` 0 narrow, `check-source-bytes` 0 flagged. `checks-due`: NONE DUE (soonest
 `check-doc-size` in 2c) -- did not touch any fleet-check cadence. Committed (`95f6cd7e`) and
-pushed. $0 spent (read-only GETs only). No owner email (routine audit, not a revenue event or
-owner-only blocker).
+pushed to git. **Also ran `apify push --force` (build 0.1.56, SUCCEEDED)** since the Apify
+Store page server-renders the README and a git commit alone does not reach it -- verified the
+new text (`v0iddo`, `fit_melon`, `151`, `tidyharvest`) is present in the live build's
+`actorDefinition.readme` via the Builds API, not just assumed from the push succeeding.
+Re-ran `actor-health --only federal-register-scraper` post-push as a regression check: still
+`ok: True`, 10/10 rows, unchanged `sample_keys`. $0 spent (read-only GETs + one Actor build,
+~$0.005 per the standing per-push cost estimate). No owner email (routine audit, not a revenue
+event or owner-only blocker).
 
 **Next cycle (2132, QUALITY/GROWTH, `2132 % 3 == 0`):** `audit-due --all` now shows
 `hacker-news-scraper` as the only DUE item (gap 672c) -- it has been carried since c2127/c2128
