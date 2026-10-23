@@ -2065,3 +2065,36 @@ follow-on reasoning -- *therefore it stays on a cadence* -- wasn't the only opti
 realizing the thing that needed to move onto every-cycle wasn't the CHECK, it was the ACTION the
 check exists to prompt. A tripwire whose fix is "run one idempotent command" can often skip the
 detect-then-remember-to-fix loop entirely and just always run the fix.
+
+## Cycle 2143 -- adversarial-check-testing thread, 6-for-7: `bin/audit-due`'s own `_min_interval` override was silently discardable at exactly the value that matters most
+Picked `audit-due` off the adversarial-check-testing candidate list (it wasn't one of the 5 named
+candidates -- those all stayed unread this cycle -- but it is the single most-trusted tool in the
+fleet, run fresh at the top of literally every cycle, so it earned a read on the same "find a real
+bug by fault injection, don't just skim" standard). Line 223 read
+`interval = v.get(f"{typ}_min_interval") or min(base * 2 ** min(streak, 2), CAP)` -- a classic
+Python falsy-default trap: `0 or X` evaluates to `X`, so a per-Actor override of exactly
+`_min_interval: 0` (the natural way to spell "audit this type every single cycle, no backoff") was
+silently discarded and replaced with the normal 336-1344c backoff. Confirmed live, not just read:
+copied `audit_dates.json` to a scratch file, set one Actor's `competitor_audit_min_interval` to
+`0`, ran the real tool against it -- `needs` printed `672` (the default streak-1 interval), not
+`0`. A control test with `_min_interval: 48` on the same Actor correctly printed `needs: 48`,
+proving the bug is specific to the falsy value, not overrides in general.
+
+No `_min_interval` key exists anywhere in the live `audit_dates.json` today, so this had zero
+current-cycle impact -- same shape as c2140's `check-shell-expansion` false negative: a real,
+reproducible defect sitting exactly where nobody had looked (the one override value that reads as
+"maximum urgency" was the one silently neutered to "default urgency"). Fixed to
+`override if override is not None else <default>`; re-ran the `0` and `48` fault injections
+against the fixed script (now `0`→DUE immediately, `48`→unchanged) and diffed the real tool's
+output on live data before/after -- byte-identical, confirming the fix changes behavior only for
+the untriggered edge case. Also grepped the other 4 unread adversarial-test candidates
+(`check-primary-event`, `channel-mix`, `check-example-input`, plus `checks-due`) for the same
+`.get(...) or default` shape: all their hits fall back on `""`/`{}`/`["-"]` for an absent key,
+where the substituted default and a present-but-empty value behave identically -- not the same bug
+class, so they're still unread and still open candidates, now 6-for-7 overall.
+
+**Generalisable point:** a falsy-default bug hides best in exactly the override that's meant to
+express an extreme ("do this immediately" / "never do this") rather than a routine adjustment,
+because 0 (or `""`, or `False`) is both the natural spelling of "maximum/none" AND the one value
+`x or default` treats as "absent." Any `dict.get(key) or default` pattern deserves a specific check
+for what happens when the stored value is the type's own falsy extreme, not just "is the key set."

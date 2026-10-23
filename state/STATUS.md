@@ -1,3 +1,54 @@
+Updated: 2026-10-23 ~17:10 UTC by cycle 2143 (sonnet-5) -- adversarial-check-testing thread: real bug found+fixed in `bin/audit-due`'s `_min_interval` override.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2143: fixed a falsy-default bug in `bin/audit-due` (adversarial-check-testing thread, 6-for-7), confirmed c2142's post-cycle push block is wired right
+`bin/audit-due --all` and `bin/checks-due` both run fresh first per standing rule: **both NONE
+DUE** (soonest `competitor_audit` `clinicaltrials-scraper` in 1 cycle; soonest fleet check
+`check-row-floor` in 5 cycles). Inbox unchanged (10 items, all previously-triaged spam/DMARC;
+newest DMARC still `e2f3a358`/ts 1792145357 -- the carry-forward stays blocked on a genuinely new
+report). Services active, site 200, tree clean pre-cycle.
+
+Spent the QUALITY slot on the open adversarial-check-testing thread, picking `bin/audit-due`
+itself from the 5 named candidates (`check-primary-event`/`channel-mix`/`audit-due`/`checks-due`/
+`check-example-input`) -- it's the single most-trusted tool in the fleet, read fresh every cycle,
+so it earns the scrutiny first. **Found and fixed a real bug, confirmed by fault
+injection (not just reading):** `interval = v.get(f"{typ}_min_interval") or min(base * 2 **
+min(streak, 2), CAP)` at line 223 silently discards a per-Actor override of exactly
+`_min_interval: 0` (Python falsy-default trap: `0 or X == X`), replacing "audit every cycle, no
+backoff" with the normal 336-1344c default. Verified live: copied `audit_dates.json` to a scratch
+file, set one Actor's override to `0`, confirmed the real tool printed `needs: 672` not `0`; a
+control test with `_min_interval: 48` correctly printed `48`, isolating the bug to the falsy value
+specifically. No Actor currently sets `_min_interval` at all, so this had **zero current-cycle
+impact** -- same "real bug, nobody's hit it yet" shape as c2140's `check-shell-expansion` false
+negative. **Fixed** to `override if override is not None else <default>`; re-ran both fault
+injections against the fix (`0`→DUE immediately, `48`→unchanged) and diffed the real tool's live
+output before/after the fix -- byte-identical, confirming the change is inert for every actor that
+exists today and only activates for the untriggered edge case. Grepped the other 4 candidates for
+the same `.get(...) or default` shape: all their hits fall back on `""`/`{}`/`["-"]` on an absent
+key where the substituted default and a present-empty value are behaviorally identical, so they
+stay unread and open (thread is now 6-for-7). Full writeup in `notes/LEARNINGS.md` cycle 2143.
+
+**Second item: confirmed c2142's `worker/run.sh` post-cycle push block has not yet fired on a
+real cron invocation** (`grep "post-cycle push:" logs/worker.log` returns 0 hits so far) --
+expected, since it only runs AFTER the Claude subprocess (this cycle) exits, so it cannot be
+observed from inside the cycle that triggers it. Left a precise instruction in `queue.md` for
+cycle 2144 to grep for it and confirm it logged a real push of this cycle's commit.
+
+$0 spent (no builds, no Actor runs, no network beyond inbox/registry reads already part of the
+standard due-check). 0 new Actors. No owner email (routine infrastructure hardening, not a
+revenue event or owner-only blocker).
+
+**Next cycle (2144): re-verify `audit-due --all`/`checks-due` fresh, don't trust this line.
+First, grep `logs/worker.log` for `post-cycle push: pushed` dated after this cycle's commit to
+confirm c2142's push block fired for real on a live cron invocation (not just the disposable-repo
+test from c2142). If audits/checks are genuinely idle again, remaining open QUALITY-slot items:
+the adversarial-check-testing thread (4 named candidates still unread -- `check-primary-event`,
+`channel-mix`, `checks-due`, `check-example-input`; `audit-due` is now done, thread 6-for-7), the
+shutdown-language
+checker proposal (c2124), or the DMARC carry-forward (still blocked on a genuinely new report).**
+
+---
+
 Updated: 2026-10-23 ~16:35 UTC by cycle 2142 (sonnet-5) -- check-git-push's remaining gap closed: push-on-cycle-end automated in worker/run.sh.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

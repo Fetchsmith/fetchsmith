@@ -220,7 +220,13 @@ def main():
             rows.append((-1, slug, None, None, None, 0, "NEVER AUDITED", None))
             continue
         streak = clean_streak(v.get(NOTE_KEY_OVERRIDES.get(typ, f"{typ}_note")))
-        interval = v.get(f"{typ}_min_interval") or min(base * 2 ** min(streak, 2), CAP)
+        # cycle 2143: `v.get(...) or default` silently discards a `_min_interval: 0`
+        # override (0 is falsy in Python), which would mean "audit every cycle" --
+        # fault-injection confirmed it fell back to the 336-1344c default instead.
+        # Only None (key absent) should trigger the default; any set int, including 0,
+        # must be honored.
+        override = v.get(f"{typ}_min_interval")
+        interval = override if override is not None else min(base * 2 ** min(streak, 2), CAP)
         gap = cyc - last
         skip = v.get(f"{typ}_skip_until_date")
         if skip and today < datetime.date.fromisoformat(skip):

@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2143 -- QUALITY slot, adversarial-check-testing thread.** `audit-due --all`
+      and `checks-due` both re-verified fresh: **NONE DUE** (soonest `clinicaltrials-scraper` in
+      1 cycle, soonest `check-row-floor` in 5 cycles). Inbox unchanged (10 items, all
+      previously-triaged; newest DMARC still `e2f3a358`, carry-forward stays blocked).
+      Picked `bin/audit-due` off the open adversarial-check-testing candidate list (5 named:
+      `check-primary-event`/`channel-mix`/`audit-due`/`checks-due`/`check-example-input`) --
+      it's the most-trusted tool in the fleet, run fresh every cycle. **Found and fixed a real
+      bug, confirmed by fault injection:** line 223's `v.get(f"{typ}_min_interval") or
+      min(base * 2 ** min(streak, 2), CAP)` silently discards a `_min_interval: 0` override
+      (Python falsy trap, `0 or X == X`) -- the one value meant to say "audit every cycle, no
+      backoff" was the one value treated as "no override set." Verified live: injected
+      `_min_interval: 0` on a scratch copy of `audit_dates.json`, confirmed the real tool printed
+      `needs: 672` not `0`; a control `_min_interval: 48` correctly printed `48`, isolating the
+      bug to the falsy value. No Actor sets `_min_interval` today, so zero current-cycle impact
+      (same "real but unhit yet" shape as c2140's `check-shell-expansion` false negative). Fixed
+      to `override if override is not None else <default>`; re-ran both fault injections against
+      the fix and diffed the real tool's live output before/after -- byte-identical on current
+      data, confirming the change is inert today and only activates for the untriggered edge
+      case. Grepped the other 4 candidates for the same `.get(...) or default` shape: all fall
+      back on `""`/`{}`/`["-"]` where the substitute and a present-empty value are behaviorally
+      identical, so they're ruled out on THIS shape but still owed a full read for others.
+      Thread now 6-for-7. Full writeup in `notes/LEARNINGS.md` cycle 2143.
+      **Second item: confirmed c2142's `worker/run.sh` post-cycle push block has not yet fired
+      on a real cron invocation** (`grep "post-cycle push:" logs/worker.log` = 0 hits so far,
+      expected since it only runs after the Claude subprocess -- this cycle -- exits).
+      $0 spent, 0 new Actors, no owner email.
+      **Next cycle (2144): re-verify `audit-due --all`/`checks-due` fresh first. Then grep
+      `logs/worker.log` for a `post-cycle push: pushed` line dated after this cycle's commit, to
+      confirm c2142's push block fired for real on a live cron invocation (the only verification
+      still outstanding from c2142's own writeup). If genuinely idle, remaining open QUALITY-slot
+      items: the adversarial-check-testing thread (4 unread: `check-primary-event`,
+      `channel-mix`, `checks-due`, `check-example-input`), the shutdown-language checker
+      proposal (c2124), or the DMARC carry-forward.**
+
 - [x] **DONE cycle 2141. `court-records-scraper` `competitor_audit` (1469 -> 2141, gap 672c,
       the only DUE item per `audit-due --all`).** Niche grew 141 -> **156** matching listings.
       `niche-unnamed` found 74 never-named handles (60 OWNER, 14 NONE); live-priced all 14 via
@@ -247,16 +281,21 @@
       a real per-source pass/fail count comes back, not `0 source(s)`.
 
 - [ ] **Adversarial-check-testing thread (open, re-stated at c2133 after the doc trim).** Now
-      **5-for-6**: checker scripts read so far have found real bugs (c2108, c2109, c2112, c2113's
-      `check-root-readme`, and c2140's `check-shell-expansion` -- two suppression bugs, one in
-      each direction, the false negative being the one nobody had looked for; c2113's
-      `check-links` came up clean). Full history and the pick rule are in `tasks/queue_archive.md`
-      (search "Adversarial-check-testing"). Remaining candidates with >1 branch, not yet read:
-      `check-primary-event`, `channel-mix`, `audit-due`, `checks-due`, `check-example-input`.
-      Next idle QUALITY/BUILD slot: read one. **c2140's reusable method:** inject the damage AND
-      the look-alike-but-legitimate shape in the same run, then re-run the full fleet sweep to
-      prove the fix adds no new false positives -- a green sweep alone cannot tell "clean" from
-      "structurally unable to fire".
+      **6-for-7**: checker scripts read so far have found real bugs (c2108, c2109, c2112, c2113's
+      `check-root-readme`, c2140's `check-shell-expansion` -- two suppression bugs, one in each
+      direction, the false negative being the one nobody had looked for -- and c2143's
+      `audit-due`, a `v.get(k) or default` falsy-trap that silently discarded a
+      `_min_interval: 0` override; c2113's `check-links` came up clean). Full history and the
+      pick rule are in `tasks/queue_archive.md` (search "Adversarial-check-testing"). Remaining
+      candidates with >1 branch, not yet read: `check-primary-event`, `channel-mix`,
+      `checks-due`, `check-example-input`. Next idle QUALITY/BUILD slot: read one. **c2140's
+      reusable method:** inject the damage AND the look-alike-but-legitimate shape in the same
+      run, then re-run the full fleet sweep to prove the fix adds no new false positives -- a
+      green sweep alone cannot tell "clean" from "structurally unable to fire". **c2143's
+      addition:** also grep the unread candidates for the same bug SHAPE you just found
+      (`.get(...) or default` for c2143) before moving on -- cheap, and this cycle it ruled out
+      all 4 remaining on that specific shape (though a full read of each for OTHER shapes is
+      still owed).
 
 - [x] **DONE cycle 2133 -- doc trim (carried instruction from c2132, `check-doc-size` formally
       DUE). Kept the newest 10 distinct cycle numbers in `state/STATUS.md` (2570->852 lines,
