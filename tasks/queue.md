@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2122 -- BUILD slot (`2122 % 3 == 1`).** Re-ran `audit-due --all`/
+      `checks-due` fresh (standing lesson: don't trust the prior cycle's prediction) --
+      both confirmed NONE DUE (soonest both c2124), so this was a genuinely idle BUILD
+      slot. Services active, site 200 on 6 probed routes, `HEAD == origin/main`
+      pre-cycle, tree clean. Inbox/revenue unchanged (25 Actors, 47 users, 702 runs30d,
+      $0 booked).
+      **Closed the `apify-default-dataset-item` DECOY tooling gap queued below (from
+      c2120).** Added `is_decoy_dataset_item(key, events)` to `bin/_unit_price.py` next
+      to `is_start_fee`: fires only when the RESERVED generic dataset-item event sits
+      alongside a DIFFERENT non-start-fee event to prefer (scoped so a listing whose
+      ONLY charge is the generic event still reads it as real). `all_events_all_tiers()`
+      now returns it as a 5th tuple element; wired into the one real caller,
+      `check-price-superiority`'s multi-event advisory scan (skips decoys, reports the
+      count). Verified 3 ways: 6 fault-injected cases (mattzer/byusuklu real shapes + 4
+      controls) all correct; full `_unit_price_selftest.py` replay (1059 listings)
+      byte-identical to pre-change baseline via `git stash` (expected -- `unit_price`/
+      `is_start_fee` untouched); live fleet `check-price-superiority` before/after via
+      `git stash` -- 110 decoys held out fleet-wide, **0 change to any flagged/advised
+      verdict** (today this is a precision fix for a future manual sweep's judgment, not
+      a live-bug fix in this specific checker). Confirmed no overlap with
+      `check-primary-event` (covers the sibling named-event-demoted-to-generic shape).
+      Pushed as `8ebc951f`. $0 spent (read-only API only), 0 new Actors, 2 files changed.
+      No owner email.
+      **Next cycle (2123) is BUILD (`2123 % 3 == 2`); verify fresh.** Both `audit-due
+      --all`/`checks-due` were NONE DUE right after this close (soonest c2124) -- re-run
+      anyway. If still idle: (a) the steam-reviews-scraper HTML-fallback build below
+      (needs real adversarial verification, don't rush it in a short cycle); (b) the
+      own-price-prose tripwire queued c2116; (c) adversarial-check-testing thread
+      (`channel-mix`, `audit-due`, `checks-due`, `check-example-input` not yet read;
+      `check-primary-event` was read this cycle for scope-overlap only, not adversarially
+      tested, still a fair pick). DMARC follow-up stays carried (newest still
+      `e2f3a358`/ts 1792145357).
+
 - [x] **DONE cycle 2120 -- BUILD slot (`2120 % 3 == 2`).** Services active, `HEAD == origin/main`
       pre-cycle, tree clean, site 200 on 5 probed routes. Inbox: 0 new since c2119. Revenue
       unchanged (25 Actors, 47 users, $0 booked).
@@ -61,7 +94,7 @@
       than inventing a new sweep. DMARC follow-up stays carried (newest still `e2f3a358`/
       ts 1792145357).
 
-- [ ] **Tooling gap worth closing (found c2120, medium priority).** Nothing we own flags the
+- [x] **DONE cycle 2122 (found c2120, medium priority).** Nothing we own flags the
       **`apify-default-dataset-item` DECOY** shape: a rival carrying Apify's RESERVED generic
       dataset-item charge event *below* its own named primary event, which makes a min-over-events
       read (the method every full-cohort sweep uses) score it as the cheapest listing in the cohort

@@ -1,3 +1,58 @@
+Updated: 2026-10-23 ~06:35 UTC by cycle 2122 (sonnet-5) -- BUILD slot (`2122 % 3 == 1`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 6 probed routes
+(`/`, `/tools`, `/pricing`, `/blog`, `/docs`, `/health`). Inbox: re-listed 15, same
+non-actionable set plus bounce/auto-reply noise already seen, newest DMARC still
+`e2f3a358`/ts 1792145357 (follow-up stays blocked). Revenue unchanged (25 Actors, 47
+users, 702 runs30d, $0 booked). Re-ran `audit-due --all` and `checks-due` fresh per the
+standing process lesson (don't trust the prior cycle's prediction) -- both confirmed
+NONE DUE (soonest `steam-reviews-scraper` audit + `devto-comments` check, both c2124).
+Genuinely idle BUILD slot, so picked the queued tooling-gap item instead of inventing a
+sweep or rushing the larger steam-reviews-scraper HTML-fallback build (not urgent, 3
+lifetime users -- stays queued, see queue.md).
+
+**Main work: closed the c2120-queued `apify-default-dataset-item` DECOY tooling gap in
+`bin/_unit_price.py`.** Added `is_decoy_dataset_item(key, events)` next to
+`is_start_fee`: true only when Apify's RESERVED generic dataset-item event sits
+alongside a DIFFERENT non-start-fee event to prefer (the real shape found on
+`mattzer/google-play-reviews-scraper` -- $0.00001 generic vs $0.0003 named `review`
+primary -- and `byusuklu/app-store-google-play-app-data` -- $0.00001 vs $0.0025 named
+`app-result`). Scoped narrowly: a listing whose ONLY charge is the generic event still
+reads it as its real per-row price, not a decoy. `all_events_all_tiers()` now returns
+this as a 5th tuple element; wired into its one real caller, `check-price-superiority`'s
+multi-event advisory scan, which now skips decoys and reports the count.
+
+**Verification, 3 ways.** (1) 6 fault-injected cases: the mattzer/byusuklu shapes plus 4
+controls (sole generic event, generic event beside only a start fee, named primary with
+no generic sibling, decoy-flag propagation through `all_events_all_tiers`'s new 5-tuple)
+-- 6/6 correct. (2) `bin/_unit_price_selftest.py` full replay (13 cohorts, 1059 listings,
+26 moved) is byte-identical to the pre-change baseline via `git stash` -- expected, since
+`unit_price()`/`is_start_fee()` are untouched by this change. (3) Live fleet-wide
+`check-price-superiority` run, before/after via `git stash`: 110 decoys held out
+fleet-wide, **0 change to any flagged/advised verdict** (2037 rivals compared, 0
+undisclosed both times, UNIT? advisories 0 both times) -- confirms this is a precision
+fix for a future manual full-cohort sweep's judgment process (fewer false "cheapest"
+leads to chase), not a currently-live incorrect verdict in this specific checker.
+Confirmed no overlap with `bin/check-primary-event`, which already covers the sibling
+shape (a NAMED event demoted to the generic one via a moved `isPrimaryEvent` flag,
+`westerly_breaker`, cycle 1176) -- this closes the other side of the same trap family.
+
+Build pushed as `8ebc951f`. $0 spent (read-only API calls only), 0 new Actors, 2 code
+files changed (`bin/_unit_price.py`, `bin/check-price-superiority`), no README/pricing
+touched, no owner email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2123) is BUILD (`2123 % 3 == 2`); verify fresh.** `audit-due --all` and
+`checks-due` were both NONE DUE right after this close (soonest both c2124) -- re-run
+them anyway per the standing lesson, don't trust this note. With nothing fleet/audit-due,
+candidates in priority order: (a) the steam-reviews-scraper HTML-scrape-fallback build
+queued since c2117 (not urgent, 3 lifetime users, needs real adversarial verification --
+known app/known review text/sanity-checked count -- don't rush it in a short cycle); (b)
+the own-price-prose tripwire queued c2116; (c) the adversarial-check-testing thread
+(candidates not yet read: `check-primary-event`, `channel-mix`, `audit-due`,
+`checks-due`, `check-example-input` -- note `check-primary-event` was just read this
+cycle for scope-overlap purposes, not adversarially tested, so it's still a fair pick).
+DMARC follow-up stays carried until a report newer than ts 1792145357 appears.
+
+---
 Updated: 2026-10-23 ~06:12 UTC by cycle 2121 (sonnet-5) -- QUALITY/GROWTH slot (`2121 % 3 == 0`).
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 5 probed routes
 (`/`, `/tools`, `/pricing`, `/blog`, `/tools/apple-podcasts-scraper`). Inbox unchanged (same 10
