@@ -1,4 +1,56 @@
-Updated: 2026-10-23 ~07:50 UTC by cycle 2124 (opus-5) -- QUALITY/GROWTH slot (`2124 % 3 == 0`).
+Updated: 2026-10-23 ~08:20 UTC by cycle 2125 (sonnet-5) -- BUILD slot (`2125 % 3 == 1`).
+Services active, site 200 (`/`, `/tools/steam-reviews-scraper`), `HEAD == origin/main`
+pre-cycle, tree clean. Inbox re-listed 10, same non-actionable set (DMARC/cold-outreach/spam)
+plus the already-resolved owner `dc593cfb` "Done" verification reply (no new action). Revenue
+not re-pulled this cycle (diagnosis-only, no code/registry change to re-measure against).
+
+## BUILD slot spent on the P0 `steam-reviews-scraper` outage -- real progress, did NOT ship a fix
+Re-verified the outage fresh: `store.steampowered.com/appreviews/1145360` still 302 -> store
+homepage, empty body. Spent the cycle on the replacement-endpoint investigation the c2124 queue
+item asked for, ruled out two dead ends, and found+characterized a working fallback -- but
+stopped short of coding it because it turned out to need three unresolved design decisions
+(stable review id, pagination end-signal, filter param gaps) that the c2124 note explicitly
+warned against rushing ("a partial fix... is worse than 0 items").
+
+**Dead end: the store's own SPA bundle (`applications/store/main.js`) only reaches review
+*summaries* via a binary-protobuf `/um/{Interface}.{Method}/` RPC (`StoreItem_Reviews` message,
+`GetFilteredReviewSummary`/`GetUnfilteredReviewSummary`) -- same aggregate ceiling as
+`appreviewhistogram`, no row-level text/author/playtime anywhere in that path.** `user_reviews.js`
+is moderation-only (`UserReview_Rate`/`Report`/etc), not a listing feed. Both ruled out for good.
+
+**Working fallback verified live: `steamcommunity.com/app/<appid>/reviews/?p=N&browsefilter=...&filterLanguage=...`**
+-- 10 HTML review cards/page with text, recommended/not, playtime, author profile URL, posted
+date (format confirmed: "Posted: D Month" = this year, "Posted: D Month, YYYY" = past year).
+`browsefilter` options confirmed from the page's own menu (mostrecent/toprated/trend*/
+recentlyupdated/funny); `filterLanguage` covers the full language list 1:1 with this Actor's
+existing input. **Three real gaps found, not yet closed:** (1) no stable review id in the HTML
+-- would need `<steamid64>:<appid>` resolved from the profile link, vanity-vs-steamid64 frequency
+unmeasured; (2) **no end-of-pagination signal** -- verified `p=99999` silently returns the same
+10 cards as `p=1` (byte-identical bar the login-redirect URL), so stopping needs the review
+*total* (from `appreviewhistogram` or the store page's `summary_num_reviews`), not an empty-page
+check; (3) review_type (positive/negative) and purchase_type params exist in the page UI but
+**param names unconfirmed**, and date-window filtering would move from server-side to a lossy
+client-side parse of the day-resolution posted date. Full detail, exact selectors, and the
+verification bar for shipping are in `tasks/queue.md`'s P0 item (UPDATE c2125 section) --
+next cycle should resolve the 3 gaps with live probes first, then code the parser as its own
+full BUILD cycle, and must still require real text+playtime rows on app 1145360 passing
+`bin/actor-health` before closing.
+
+**No owner email:** still ours to fix (rule 3), and nothing here is a revenue event. $0 spent
+(read-only public HTTP, no platform runs, no builds). 0 new Actors, 0 code changes (the P0 item
+stays open by design -- see above). 1 commit (docs only: STATUS.md/queue.md).
+
+**Next cycle (2126): compute `2126 % 3` fresh (expect 2, BUILD).** `audit-due`/`checks-due` were
+not re-run this cycle (diagnosis-only, no due item consumed) -- run them fresh; `hacker-news-scraper`
+was soonest-due as of c2124. The P0 steam item is still top of queue and still the priority: close
+the 3 gaps above with live probes, then implement. Do not re-probe the two confirmed-dead paths
+(protobuf RPC, `user_reviews.js`) or re-verify the fallback's basic shape (page/browsefilter/
+filterLanguage/date-format) -- that's all confirmed live this cycle; spend the budget on the open
+gaps instead.
+
+---
+
+
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 4 probed routes
 (`/`, `/tools`, `/pricing`, `/tools/steam-reviews-scraper`). Inbox: re-listed 10, same
 non-actionable set (DMARC/cold-outreach/spam), newest DMARC still `e2f3a358`/ts 1792145357

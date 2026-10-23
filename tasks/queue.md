@@ -21,16 +21,82 @@
       **Already probed and 404 (do not re-probe):**
       `api.steampowered.com/IStoreReviewsService/GetReviews/v1/` and
       `.../IStoreReviewService/GetReviews/v1/`.
-      **Next step, in order:** (1) find the replacement endpoint -- cheapest leads are
-      `s_actors/steam-reviews-scraper`'s live input schema + README via
-      `GET /v2/acts/s_actors~steam-reviews-scraper`, and the Steam store page's own
-      review-pagination XHR; also re-check `deriverge`/`tidyharvest` (both still priced as live
-      review products this cycle, so somebody is serving review rows today). (2) port
-      `reviewsUrl()`/the :814 probe. (3) re-run `bin/actor-health` and require real review rows
-      with text+playtime on a known app (1145360 Hades) before closing. **Do NOT ship a partial
-      fix that silently returns game rows instead of review rows** -- that is worse than 0 items
-      because it still bills PPE.
       **No owner email:** this is ours to fix, not an owner-only blocker (rule 3).
+
+      **UPDATE c2125 (BUILD slot) -- replacement endpoint investigated, ruled out the easy
+      paths, found and characterized a working HTML fallback, did NOT code it (scope too big
+      to rush safely in one cycle -- see gaps below). Re-verified the outage fresh first:
+      `appreviews/1145360` still 302 -> store homepage, empty body.**
+
+      **Dead end #1 -- the modern Steam store SPA uses a protobuf RPC, not JSON.** Pulled
+      `applications/store/main.js` (the store page's JS bundle) and found the real review
+      summary call is a binary-protobuf POST to `/um/{Interface}.{Method}/` (see
+      `CreateBrowserAPIURL`/`Send` in that bundle) carrying a `StoreItem_Reviews` message with
+      `GetFilteredReviewSummary()`/`GetUnfilteredReviewSummary()`. **This only returns
+      aggregate summary counts per language** (same ceiling as `appreviewhistogram`) -- no
+      review text/author/playtime live in this path at all, so even reverse-engineering the
+      protobuf schema would not solve the row-level need. Do not pursue this further.
+
+      **Dead end #2 -- `user_reviews.js` is moderation-only.** `/userreviews/ajaxgetrecentreviews`
+      and friends in that bundle are the vote/report/moderate endpoints (`UserReview_Rate`,
+      `UserReview_Report`, etc), not a review-listing feed.
+
+      **Working fallback found and verified live: `steamcommunity.com` server-rendered HTML.**
+      `GET https://steamcommunity.com/app/<appid>/reviews/?p=<page>&browsefilter=<sort>&filterLanguage=<lang>`
+      returns 200 with **10 review cards per page**, each containing: review text
+      (`.apphub_CardTextContent`, strip the leading `.date_posted` div), recommended/not
+      (thumbsUp/thumbsDown icon in `.thumb img`), playtime (`.hours` text, e.g. "49.1 hrs on
+      record"), posted date (`.date_posted`, format **"Posted: D Month"** = current year,
+      **"Posted: D Month, YYYY"** = past year -- verified both forms live, so year-inference is
+      a simple rule not a guess), author profile URL + persona name
+      (`.apphub_CardContentAuthorBlock a href` + `.apphub_CardContentAuthorName`), "products in
+      account" count, and a helpful-vote count buried in free text ("No one has rated this
+      review as helpful yet" / likely "N people found this review helpful" -- only saw the
+      zero-case live, confirm the nonzero phrasing before parsing it as a number).
+      Confirmed `browsefilter` values from the page's own filter menu: `mostrecent`, `toprated`,
+      `trendday/trendweek/trendmonth/trendthreemonths/trendsixmonths/trendyear`,
+      `recentlyupdated`, `funny`. `filterLanguage` accepts the full Steam language-code list
+      (maps 1:1 to this Actor's existing `language` input). A `Positive`/`Negative` toggle
+      exists in the page UI too -- **param name not yet confirmed, only saw the link text**, so
+      probe that before coding `reviewType`.
+
+      **Three real gaps, unresolved, that make this bigger than a straight port -- resolve
+      before writing code, not while writing it:**
+      1. **No stable review id in the HTML.** Current code keys watch-mode dedup off
+         `r.recommendationid`. The HTML only exposes a profile URL
+         (`data-modal-content-url`, either `/id/<vanity>/recommended/<appid>/` or
+         `/profiles/<steamid64>/recommended/<appid>/`) -- since a Steam user can only post one
+         review per app, `<resolved-steamid64>:<appid>` is a plausible substitute key, but the
+         vanity-URL form must always be resolved to steamid64 first (vanity names can change,
+         breaking the baseline) and this needs a live check of how often the vanity form
+         appears vs steamid64.
+      2. **No end-of-pagination signal.** Verified live: `p=99999` on app 1145360 returns the
+         **same 10 cards as `p=1`** (byte-identical except the login-redirect URL) -- Steam
+         silently clamps/wraps instead of 404ing or returning an empty page. A page-count must
+         come from the review *total* (still available from `appreviewhistogram` or the
+         `summary_num_reviews` in the store page's `data-props` JSON), not from "this page came
+         back empty," and/or a content-repeat check (hash the page against the previous page's
+         card set) as a safety net against an off-by-one in that total-based stop condition.
+      3. **No server-side date-window or (unconfirmed) review_type/purchase_type filtering
+         found yet.** `reviewsAfter`/`reviewsBefore` currently rely on Steam doing
+         `date_range_type=include` server-side; on this fallback that would have to be emulated
+         client-side against the parsed (and only day-resolution, year-inferred) posted date --
+         lossy compared to today's exact timestamps. `purchase_type` (steam vs non-steam) has no
+         confirmed param at all yet.
+      **Also unverified:** whether `mostrecent` ordering is strictly chronological across the
+      whole set (current code's `pastWindow` early-stop logic assumes sort=recent never regresses
+      -- the two sample dates seen in order, "23 October" then "22 October", are consistent with
+      that but are not a real test).
+
+      **Recommendation for next cycle:** spend the first chunk closing gaps 1-3 above with live
+      probes (confirm review_type/purchase_type params, steamid64-vs-vanity frequency, and the
+      mostrecent ordering guarantee over >1 page), THEN write the HTML parser + repoint
+      `reviewsUrl()`/`scrapeReviews()`, leaving `games` mode untouched. Treat this as its own
+      full BUILD cycle. **Still do NOT ship until a real multi-page run against app 1145360
+      yields review rows with real text+playtime and `bin/actor-health` goes green** -- a
+      half-solved id/pagination gap shipped anyway would silently corrupt watch-mode baselines
+      or duplicate-bill rows, which is a worse failure mode than the current 0-rows outage
+      because it is quiet.
 
 - [ ] **Write the c2124 eleventh-sweep README block for `steam-reviews-scraper` (data already in
       hand -- do NOT re-sweep).** The c2124 competitor_audit completed end to end but the outage
