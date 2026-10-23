@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2147 -- competitor_audit `google-news-scraper` (1475 -> 2147, the one item
+      genuinely DUE, fleet-oldest).** `audit-due --all`/`checks-due` re-verified fresh first:
+      exactly 1 due, 0 fleet checks due. Inbox had 3 messages newer than the last-reported DMARC
+      timestamp (`9d15ac17` TinyGate, `04dda4a1` Bytewells, `c2fa5a9c` IPYE) but all 3 confirmed
+      already-triaged by grepping STATUS_ARCHIVE rather than trusting the "previously-triaged"
+      label at face value -- nothing new, nothing owed.
+      **Niche grew 236 -> 357 matched (+51%).** `niche-unnamed` found 285 unnamed (265 NONE, 20
+      OWNER); live-priced the full >=3-user cohort (61 listings) via `bin/_batch_price_gn.py`, 0
+      unresolvable. **6 genuine new undercutters** -- first since the twelfth sweep, two clean
+      sweeps in between: `thescrappa` (flat $0.0003/article, deepest), `webdatatools` and
+      `datahamster` ($0.0005/article, full undercut), `agentictools` ($0.0005/article,
+      Google-News-sourced), `cycha` ($0.001 + $0.00005 start, undercuts lower tiers, ties
+      GOLD+), `ilborso` ($0.00049 + $0.005 start, crosses FREE ~4 articles/run, GOLD+ ~10).
+      Also disclosed-but-not-counted: `automation_craft`/`searchapi` tie-but-dearer via their
+      own start fees; `0xgollum` ties GOLD+ but different shape (multi-source trend detector);
+      `punctual_understanding/my-actor-2` is a dataset-item-decoy (real primary event is a flat
+      $0.01 actor-start). All 11 OWNER-bucket listings re-priced, none undercut, no drift.
+      Shipped README paragraph ("Fifteenth sweep"), `package.json` 0.1.20 -> 0.1.21, `apify push
+      --force` -> build **0.1.84 SUCCEEDED**, verified byte-identical live (53312 chars).
+      `actor-health --only google-news-scraper`: ok True, 8 items. Fleet-wide
+      `check-price-superiority`: **2197 compared, 0 undisclosed** (up from 2180). Also clean:
+      `check-comparison-breadth` 0 narrow, `check-readme-samples` 0 drift, `check-meta-fields` 0
+      stale, `check-own-price-prose` 0 flags. `audit_dates.json` updated (1475 -> 2147).
+      `audit-due --all` re-run after: NONE DUE, soonest `website-screenshot-scraper` in 270
+      cycles (~5.6 days) -- the fleet's audit backlog is now fully current. $0 spent beyond one
+      ~$0.005 build. 0 new Actors. No owner email.
+      **Next cycle (2148): re-verify `audit-due --all`/`checks-due` fresh first -- both are
+      expected NONE DUE, so 2148 is very likely a genuine QUALITY/GROWTH slot. Open items: the
+      adversarial-check-testing thread (4 unread: `check-primary-event`, `channel-mix`,
+      `checks-due`, `check-example-input`; thread 6-for-7), the shutdown-language checker
+      proposal (c2124), or the DMARC carry-forward (still blocked).**
+
 - [x] **DONE cycle 2146 -- QUALITY slot, closed the c2144 follow-up (full detail moved into its
       own RESOLVED bullet below, search "RESOLVED cycle 2146").** `audit-due --all`/`checks-due`
       re-verified fresh first: **both NONE DUE** (soonest `google-news-scraper` audit in 1 cycle,

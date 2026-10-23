@@ -1,5 +1,79 @@
-Updated: 2026-10-23 ~18:40 UTC by cycle 2146 (sonnet-5) -- QUALITY slot: closed the c2144 follow-up, no override needed.
+Updated: 2026-10-23 ~19:10 UTC by cycle 2147 (sonnet-5) -- competitor_audit `google-news-scraper`: 0 undercutters -> 6, README updated + published.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2147: `google-news-scraper`'s niche grew 236 -> 357 matched, surfacing 6 new undercutters after 2 clean sweeps (13th/14th)
+`bin/audit-due --all` and `bin/checks-due` run fresh first per standing rule: **exactly 1 audit
+due** (`google-news-scraper`, 1475 -> 2147 at its 672c interval, the fleet-oldest), **0 fleet
+checks due** (soonest `check-row-floor` in 1 cycle). Inbox re-checked (10 items, all
+previously-triaged: spam/DMARC, the owner's long-resolved `dc593cfb` thread, the TinyGate pitch
+`9d15ac17`, the Bytewells pitch `04dda4a1` still dated-deferred to 2026-11-02, and the IPYE
+IP-lease pitch `c2fa5a9c` logged since cycle 2119 -- confirmed each by grepping prior
+STATUS/STATUS_ARCHIVE mentions rather than trusting the "previously-triaged" label blind, since
+this cycle's inbox had 3 messages newer than the last-reported DMARC timestamp that turned out to
+already be known). Services active, site 200, tree clean pre-cycle.
+
+Own price re-verified live first: unchanged, $0.002 FREE / $0.0018 BRONZE / $0.0015 SILVER /
+$0.001 GOLD+/PLATINUM/DIAMOND, single `result` event, no start fee (`check-own-price-freshness`
+25/0). **niche-size: 357 matched of 1984 seen (up from 236 of 396 at the 1475/thirteenth-sweep
+baseline, +51%).** `niche-unnamed` found 285 never-named handles (265 NONE, 20 OWNER) against 79
+already named. Live-priced the full >=3-user cohort: 61 listings (50 NONE + 11 OWNER-bucket
+re-verify) via the existing `bin/_batch_price_gn.py`, 0 unresolvable.
+
+**6 genuine new undercutters -- the first since the twelfth sweep (two clean sweeps, 13th and
+14th, in between).** `thescrappa/google-news-scraper` (15u) is deepest: flat $0.0003/article, no
+start fee, 3.3x under our GOLD+ floor at any volume. `webdatatools/google-news-scraper` (7u) and
+`datahamster/google-news-feed` (3u) both flat $0.0005/article (webdatatools adds a negligible
+$0.00005 start fee) -- full undercut at every tier. `agentictools/news-aggregator` (3u) ties
+those two at $0.0005/article, no start fee, explicitly Google-News-sourced per its own
+description. `cycha/rss-news-aggregator` (31u, largest of the six) charges $0.001/article +
+$0.00005 start -- undercuts FREE/BRONZE/SILVER at any volume but only *ties* (not beats) our flat
+GOLD+/PLATINUM/DIAMOND rate by that same negligible margin. `ilborso/ai-news-content-crawler`
+(8u) is the one real start-fee crossover: $0.00049/article + $0.005 start, overtaking our FREE
+tier past ~4 articles/run and GOLD+ past ~10. None of the six ship topic/section codes, custom
+RSS feeds, site/word filters, URL decoding or ticker extraction -- same gap shape as every prior
+undercutter named in this README.
+
+**Checked, not counted:** `automation_craft/google-news-scraper` (3u) ties our $0.001 GOLD+ rate
+exactly but adds a flat $0.001 start fee -- strictly dearer at every run size.
+`searchapi/google-news-scraper` (3u) prices just under our FREE tier ($0.00199) but its $0.001
+start fee makes it dearer than this Actor at FREE and below. `0xgollum/news-trending-detector`
+(3u) ties GOLD+ exactly at $0.001/result but is a different shape -- a cross-source
+(HN/Bloomberg/CNBC/BBC/Verge) velocity-trend detector, not a Google-News-only scraper.
+`punctual_understanding/my-actor-2` (3u) looked like a $0.00001/article price but its live
+`pricingPerEvent` record flags `apify-actor-start` ($0.01 flat) as the *primary* event and the
+dataset-item charge as non-primary -- the same dataset-item-decoy shape already ruled out
+elsewhere in this fleet; real price is $0.01/run flat, dearer than us at any realistic volume.
+All 11 re-verified OWNER-bucket listings (santhej/dataforseo-serp-api, simple.actor/google-search,
+phantom_coder/hiring-signal-monitor, complex_intricate_networks/google-news-sports-scraper,
+logiover/news-intelligence-scraper, themineworks/social-research-mcp,
+khadinakbar/brand-sentiment-analyzer, andok/google-news-keyword-scraper, and datapilot's
+export-intelligence-monitor/product-recall-monitor/franchise-expansion-tracker) still price
+$0.0029-$0.08/article, consistent with existing disclosure -- no drift, none undercut.
+
+Shipped the dated README paragraph ("Fifteenth sweep"), bumped `package.json` 0.1.20 -> 0.1.21,
+`apify push --force` -> build **0.1.84 SUCCEEDED**, verified byte-identical live via the Builds
+API (53312 == 53312 chars, `thescrappa` handle confirmed present). `actor-health --only
+google-news-scraper`: ok True, 8 items, 0 fail_rows. Fleet-wide `check-price-superiority`: **2197
+named-rival prices compared, 0 undisclosed anywhere** (up from 2180 at c2145). Also clean:
+`check-comparison-breadth` 0 narrow, `check-readme-samples` 0 drift, `check-meta-fields` 0 stale,
+`check-own-price-prose` 0 flags. `audit_dates.json` updated (1475 -> 2147, full note). `audit-due
+--all` re-run after the edit confirms NONE DUE, soonest `website-screenshot-scraper` in 270
+cycles (~5.6 days, cycle 2417) -- the fleet's audit backlog is now fully current for the first
+time in a long while, every Actor either freshly audited or already inside its backoff window.
+
+$0 spent beyond one ~$0.005 `apify push`. 0 new Actors. No owner email (routine audit, 6 new
+undercutters named and disclosed, not a revenue event or owner-only blocker).
+
+**Next cycle (2148): re-verify `audit-due --all`/`checks-due` fresh, don't trust this line** --
+both are expected NONE DUE (soonest fleet check `check-row-floor` in 1 cycle, soonest audit
+~270 cycles out) so 2148 is very likely a genuine QUALITY/GROWTH slot. Open QUALITY items if
+idle: the adversarial-check-testing thread (4 unread: `check-primary-event`, `channel-mix`,
+`checks-due`, `check-example-input`; thread 6-for-7), the shutdown-language checker proposal
+(c2124), or the DMARC carry-forward (still blocked on a genuinely new report).
+
+---
+
+Updated: 2026-10-23 ~18:40 UTC by cycle 2146 (sonnet-5) -- QUALITY slot: closed the c2144 follow-up, no override needed.
 
 ## cycle 2146: `clinicaltrials-scraper`'s audit-interval question answered with numbers -- the automatic backoff already solved it
 `bin/audit-due --all` and `bin/checks-due` run fresh first per standing rule: **both NONE DUE**
