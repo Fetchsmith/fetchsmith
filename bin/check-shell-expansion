@@ -23,15 +23,44 @@ legitimately quote a `SHELL=` line) and NOT this file.
 
 False-positive guard: a line may legitimately NAME the artifact while documenting
 the bug (LEARNINGS_ARCHIVE.md does exactly that, which is why cycle 2132 fixed
-`audit_dates.json` only). A hit is suppressed when its line also carries a
-documentation marker -- an adjacent `$0`, a `s#...#` sed form, or the words
-expand/expansion/corrupt/artifact/heredoc. The marker is looked for in a
-+/-1-line WINDOW, not just the hit's own line: our prose files are hard-wrapped,
-so "corrupted every price into" routinely sits on the line above the artifact it
-names (that exact shape was the only hit of the first fleet-wide run).
+`audit_dates.json` only). A hit is suppressed when a documentation marker sits
+near it, in TWO tiers (cycle 2140):
+
+  NEAR -- the hit's OWN line only, full marker set: an adjacent `$0`, a `s#...#`
+  sed form, or the words expand/expansion/corrupt/artifact/heredoc/SHELL=.
+
+  WIDE (+/-3 lines) -- STRONG markers only, i.e. the same set MINUS a bare `$0`.
+
+Cycle 2132 instead used ONE window of +/-1 line with the full marker set. That
+shape was wrong in both directions, and cycle 2140 fault-injection showed both:
+
+  FALSE POSITIVE (found c2134, still live at c2140): `tasks/queue.md` documents
+  the c2132 repair across a hard-wrapped paragraph, and "62 `$0`-shell-expansion
+  corruptions in" sat TWO lines above the `/usr/bin/zsh.00019/item` it names --
+  out of a +/-1 window. The WIDE tier covers it, because "corruptions" and
+  "expansion" are strong markers.
+
+  FALSE NEGATIVE (found c2140): a bare `$0` honoured at +/-1 line meant a line
+  reading `$0 spent` -- which appears in nearly every STATUS/queue cycle block
+  and in most audit notes -- silently suppressed REAL damage on the next line.
+  An injected `Rival flat /usr/bin/zsh.0018/row` under a `$0 spent` line was not
+  reported. So a bare `$0` now only counts on the artifact's own line, which is
+  all the c2132 docstring ever claimed for it ("an ADJACENT `$0`"), and never in
+  the WIDE tier.
+
+Modes:
+  check-shell-expansion             # whole fleet, working tree (the cadence run)
+  check-shell-expansion --cached    # only the STAGED files, from the index
+
+`--cached` is what the pre-commit hook runs (added cycle 2140): this bug class is
+created by a SINGLE careless write, so a 336-cycle cadence can let it sit in the
+file for a week -- the same "detection works, cadence is too slow" failure that
+cost 9 cycles of STATUS.md blocks at c2136. The hook judges only what the commit
+introduces; the cadence run still sweeps everything else.
 """
 import os
 import re
+import subprocess
 import sys
 from glob import glob
 
@@ -50,6 +79,9 @@ DAMAGE = re.compile(
 )
 
 DOC_MARKER = re.compile(r"\$0|s#|expand|expansion|corrupt|artifact|heredoc|SHELL=", re.I)
+# Same markers minus a bare `$0` (ubiquitous as "$0 spent"), for the wider window.
+DOC_MARKER_STRONG = re.compile(r"s#|expand|expansion|corrupt|artifact|heredoc|SHELL=", re.I)
+NEAR, WIDE = 0, 3  # NEAR=0 means the hit's OWN line only; see the docstring
 
 PATTERNS = [
     "state/*.json",
@@ -73,30 +105,62 @@ def files():
     return sorted(seen)
 
 
+def staged_sources():
+    """(relpath, text) for every STAGED file that is in scope, read from the index."""
+    in_scope = {os.path.relpath(f, ROOT) for f in files()}
+    r = subprocess.run(
+        ["git", "-C", ROOT, "diff", "--cached", "--name-only", "--diff-filter=ACMR"],
+        capture_output=True, text=True,
+    )
+    out = []
+    for rel in sorted(set(r.stdout.split("\n"))):
+        if not rel or rel not in in_scope:
+            continue
+        blob = subprocess.run(
+            ["git", "-C", ROOT, "show", ":%s" % rel], capture_output=True, text=True,
+        )
+        if blob.returncode == 0:
+            out.append((rel, blob.stdout))
+    return out
+
+
+def scan(rel, text):
+    """Flagged (rel, line_no, context) triples for one file's text."""
+    hits = []
+    all_lines = text.split("\n")
+    for i, line in enumerate(all_lines, 1):
+        for m in DAMAGE.finditer(line):
+            near = "\n".join(all_lines[max(0, i - 1 - NEAR):i + NEAR])
+            wide = "\n".join(all_lines[max(0, i - 1 - WIDE):i + WIDE])
+            # documenting the bug, not suffering from it
+            if DOC_MARKER.search(near) or DOC_MARKER_STRONG.search(wide):
+                continue
+            start = max(0, m.start() - 40)
+            hits.append((rel, i, line[start:m.end() + 25].strip()))
+            break
+    return hits
+
+
 def main():
+    cached = "--cached" in sys.argv[1:]
+    if cached:
+        sources = staged_sources()
+    else:
+        sources = [
+            (os.path.relpath(f, ROOT), open(f, encoding="utf-8", errors="replace").read())
+            for f in files()
+        ]
     flagged = []
     scanned = 0
-    for f in files():
+    for rel, text in sources:
         scanned += 1
-        try:
-            text = open(f, encoding="utf-8", errors="replace").read()
-        except OSError:
-            continue
-        all_lines = text.split("\n")
-        for i, line in enumerate(all_lines, 1):
-            for m in DAMAGE.finditer(line):
-                window = "\n".join(all_lines[max(0, i - 2):i + 1])
-                if DOC_MARKER.search(window):
-                    continue  # documenting the bug, not suffering from it
-                start = max(0, m.start() - 40)
-                flagged.append((os.path.relpath(f, ROOT), i, line[start:m.end() + 25].strip()))
-                break
+        flagged.extend(scan(rel, text))
 
     for rel, line_no, ctx in flagged:
         print(f"SHELL-EXPANSION {rel}:{line_no}  ...{ctx}...")
     print(
-        f"check-shell-expansion: {scanned} file(s) scanned, {len(flagged)} with "
-        f"`$0`-expansion damage"
+        f"check-shell-expansion{' --cached' if cached else ''}: {scanned} file(s) "
+        f"scanned, {len(flagged)} with `$0`-expansion damage"
         + ("" if flagged else " -- clean")
     )
     if flagged:

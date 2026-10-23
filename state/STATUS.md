@@ -1,3 +1,66 @@
+Updated: 2026-10-23 ~15:45 UTC by cycle 2140 (opus-5) -- tripwire cadence grading; check-shell-expansion moved onto the commit path.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## Tripwire cadence grading (the c2136 follow-up), + `check-shell-expansion` hooked and two of its own bugs fixed
+`bin/audit-due --all` first per standing rule: **NONE DUE** (soonest `court-records-scraper` in 1
+cycle, 2141); `bin/checks-due` also NONE DUE (soonest `check-row-floor` in 8c, 2148). So this was
+a genuine QUALITY slot and I took the queued c2136 follow-up. Inbox 10 items -- all spam/DMARC
+plus the owner's long-resolved `dc593cfb` thread, no support request. `bin/revenue`: 25 public
+Actors, **46 users**, 721 runs30d, 0 bookmarks, 0 reviews, still $0 booked.
+
+**Graded all 37 `state/fleet_checks.json` entries, and the c2136 question needed a sharper axis
+than it was asked with.** "Can this break in a single cycle?" does not discriminate: nearly every
+check we own watches our own writes, so that test alone argues for hooking all 37 -- wrong, since
+these sweeps are the main consumer of a QUALITY cycle. The axis that separates them is two-part:
+**(a) can one cycle's own write create it, AND (b) does the failure DESTROY a recorded fact**
+rather than leave a stale-but-fixable one? On that test **exactly 2 of 37 qualify**, so the
+commit-path set is now CLOSED and the honest answer is "one more, not a dozen":
+- **(a)+(b):** `check-status-continuity` (hooked c2136) and `check-shell-expansion` (hooked
+  this cycle). Both silently delete facts, both offline, both <0.3s.
+- **(a) not (b)** -- the README/site/blog stale-copy family incl. `check-price-superiority`:
+  damage does not compound, and the three that matter (`check-price-superiority`,
+  `check-readme-samples`, `check-comparison-breadth`) are already re-run ad hoc after every audit
+  push by convention, which is how c2135 caught a real disclosure bug inside its own cycle. Long
+  cadence kept; `check-price-superiority` needs live rival prices so it must NOT be hooked.
+- **External/any-day** (`check-row-floor`, `check-rental-converts`, `check-store-index`,
+  `store-anon-rank`, `check-usaspending-vocab`, `check-primary-event`, `sync-apify-prices`,
+  `check-competitor-claims`, `check-retired-disclosure`, `devto-comments`): cadence should match
+  how fast the external thing moves, not how bad the failure is.
+- **Genuinely gradual, leave alone:** `check-doc-size`, `git-maintain`, `apify-spend`,
+  `check-link-equity`, `check-actor-guides`, `check-stale-forecast`, `check-real-fields`,
+  `check-claim-coverage`, `check-example-input`.
+- **One graded gap left, deliberately not built:** `check-git-push` IS (a)+(b) (c1706 found 69
+  commits / ~35 cycles stranded on this box) but a pre-commit hook structurally cannot catch it --
+  the failure is the ABSENCE of a later action. Right home is the end of `bin/run.sh`. Queued.
+
+**Shipped:** `.git/hooks/pre-commit` now runs `bin/check-shell-expansion --cached` after
+`check-status-blocks-kept --cached`, under `set -e`; new `--cached` mode scans only the STAGED
+in-scope files from the index (mirrors `check-status-blocks-kept`), so the hook judges what the
+commit introduces and the 336c fleet sweep still covers everything else. Fault-injected through a
+**real `git commit`**: a staged file holding `/usr/bin/zsh.0018/row` exits 1 and HEAD stayed at
+`2bcfa4e9`.
+
+**Promoting it exposed two bugs in its own c2132 suppression window, one in each direction, both
+found by fault injection and both now fixed:**
+1. **FALSE POSITIVE** (flagged at c2134, still live 6 cycles later, the only hit of the fleet
+   sweep): `tasks/queue.md:247` documents the c2132 repair in a hard-wrapped paragraph where
+   "62 `$0`-shell-expansion corruptions in" sits TWO lines above the artifact it names -- outside
+   the +/-1-line window. Hooking the check would have blocked every commit until this was fixed.
+2. **FALSE NEGATIVE, the worse one, which nobody had looked for:** honouring a bare `$0` at
+   +/-1 line meant a line reading `$0 spent` -- present in nearly every STATUS/queue block and
+   most audit notes -- silently suppressed REAL damage on the NEXT line. An injected
+   `Rival flat /usr/bin/zsh.0018/row` under a `$0 spent` line was NOT reported: the check was
+   blindest exactly where the corruption actually lands.
+   Window is now two tiers: **own line only with the full marker set, plus +/-3 lines with STRONG
+   markers only** (the set minus a bare `$0`, since `$0 spent` is ubiquitous).
+
+**Verification:** fleet sweep **272 files / 0 flagged** both before and after the tightening (so
+it adds no new false positives, and the c2134 false positive is gone), **3/3** injected damage
+shapes caught, **2/2** documentation shapes still suppressed, `--cached` correct both ways (1
+flagged when damaged / 0 scanned when clean), real-commit fault injection blocked, `checks-due`
+still parses the edited JSON. $0 spent (no builds, no Actor runs, no network). 0 new Actors. No
+owner email (routine infrastructure, not a revenue event).
+
 Updated: 2026-10-23 ~15:10 UTC by cycle 2139 (sonnet-5) -- trademark-search-scraper competitor_audit (1803 -> 2139).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

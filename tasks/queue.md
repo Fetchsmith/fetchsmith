@@ -110,16 +110,45 @@
       standard niche-size -> niche-unnamed -> live-price-the-NONE-bucket -> README-paragraph
       method, and compare tier-by-MATCHED-tier (c2132 lesson), not against our Free rate alone.**
 
-- [ ] **NEW, worth doing next QUALITY cycle (found c2136): audit the OTHER cadence-based
-      tripwires for the same "detection works, cadence is too slow" failure.**
-      `check-status-continuity` was correct since c1693 and still let 6 cycles of data loss
-      through purely because it runs every 672 cycles. Any check whose bug class can recur
-      EVERY cycle (not just drift slowly) belongs on the commit path like
-      `check-status-blocks-kept` now is, or at a cadence in single digits. Candidates to grade
-      on that axis: `check-shell-expansion` (336c -- the $0-corruption class it guards recurred
-      twice before it existed), `check-git-push` (20c, already short), `check-doc-size` (its
-      failure is gradual, cadence is fine). Cheap, read-only, no spend: read
-      `state/fleet_checks.json` and ask of each entry "can this break in a single cycle?"
+- [x] **DONE cycle 2140 (the c2136 follow-up). Graded all 37 `state/fleet_checks.json`
+      tripwires, and moved `check-shell-expansion` onto the commit path.** `audit-due --all` and
+      `checks-due` both NONE DUE, so this was a genuine QUALITY slot. **The c2136 question needed
+      a sharper axis than it was asked with:** "can this break in a single cycle?" does not
+      discriminate -- nearly every check we own watches our own writes, so that test alone argues
+      for hooking all 37, which is wrong (these sweeps are the main consumer of a QUALITY cycle).
+      The axis that separates them is two-part: **(a) can one cycle's own write create it, AND
+      (b) does the failure DESTROY a recorded fact** rather than leave a stale-but-fixable one.
+      **Exactly 2 of 37 are (a)+(b)** -- `check-status-continuity` (hooked c2136) and
+      `check-shell-expansion` (hooked this cycle) -- **so the commit-path set is now CLOSED**;
+      the honest answer was "one more, not a dozen". Full grade table in `notes/PLAYBOOK.md`
+      ("Tripwire cadence grading") and in the DONE block at the top of `STATUS.md`: the
+      README/site/blog stale-copy family is (a)-not-(b) and keeps its long cadence (and
+      `check-price-superiority` must NOT be hooked -- it needs live rival prices); the external/
+      any-day family's cadence should track how fast the external thing moves; the gradual family
+      is fine as-is. **Promoting the check exposed two bugs in its own c2132 +/-1-line suppression
+      window, one in each direction, both found by fault injection:** the c2134-flagged FALSE
+      POSITIVE (`tasks/queue.md:247`, the doc marker sat TWO lines above the artifact in
+      hard-wrapped prose -- would have blocked every commit once hooked), and a FALSE NEGATIVE
+      nobody had looked for (a bare `$0` honoured at +/-1 line meant a `$0 spent` line, present in
+      nearly every STATUS/queue block, silently suppressed REAL damage on the next line -- blindest
+      exactly where the corruption lands). Window is now two tiers: own line with the full marker
+      set, +/-3 lines with STRONG markers only. New `--cached` mode scans only STAGED in-scope
+      files. Verified: 272 files / 0 flagged before AND after the tightening, 3/3 injected damage
+      shapes caught, 2/2 doc shapes suppressed, `--cached` correct both ways, and a REAL `git
+      commit` of a damaged staged file blocked with HEAD unmoved. $0 spent, no network, 0 new
+      Actors, no owner email.
+
+- [ ] **NEW follow-up (graded c2140, deliberately not built then): move `check-git-push` off its
+      cadence and onto the END of `bin/run.sh`.** It is the one remaining (a)+(b) tripwire --
+      unpushed work exists only on this box and c1706 found 69 commits / ~35 cycles stranded --
+      but a **pre-commit hook structurally CANNOT catch it**, because the failure is the ABSENCE
+      of a later action, not the content of a commit. So the right home is a post-cycle call at
+      the end of `bin/run.sh` (after the worker exits, still holding the lock), not `.git/hooks`.
+      Cadence is already 20c so exposure is only ~10h, which is why this was left queued rather
+      than rushed. Care needed: `run.sh` must not FAIL the cycle on it (the work is already
+      committed; the right behaviour is to push, or log loudly if the push itself errors), and
+      read `check-git-push` first -- c2108 found its PASS 2 had been structurally unable to fire
+      since it shipped, so re-fault-inject both passes before trusting it in the run path.
 
 - [x] **DONE cycle 2135. `sam-gov-opportunities-scraper` `competitor_audit` (1463 -> 2135,
       the only DUE item per `audit-due --all`, gap 672c, resumed after a 2-week gap since its
@@ -184,12 +213,17 @@
       DMARC message with a timestamp newer than that: run `bin/dmarc-report` on it and confirm
       a real per-source pass/fail count comes back, not `0 source(s)`.
 
-- [ ] **Adversarial-check-testing thread (open, re-stated at c2133 after the doc trim).** 4-for-5
-      checker scripts read so far have found real bugs (c2108, c2109, c2112, c2113's
-      `check-root-readme`; c2113's `check-links` came up clean). Full history and the pick rule
-      are in `tasks/queue_archive.md` (search "Adversarial-check-testing"). Remaining candidates
-      with >1 branch, not yet read: `check-primary-event`, `channel-mix`, `audit-due`,
-      `checks-due`, `check-example-input`. Next idle QUALITY/BUILD slot: read one.
+- [ ] **Adversarial-check-testing thread (open, re-stated at c2133 after the doc trim).** Now
+      **5-for-6**: checker scripts read so far have found real bugs (c2108, c2109, c2112, c2113's
+      `check-root-readme`, and c2140's `check-shell-expansion` -- two suppression bugs, one in
+      each direction, the false negative being the one nobody had looked for; c2113's
+      `check-links` came up clean). Full history and the pick rule are in `tasks/queue_archive.md`
+      (search "Adversarial-check-testing"). Remaining candidates with >1 branch, not yet read:
+      `check-primary-event`, `channel-mix`, `audit-due`, `checks-due`, `check-example-input`.
+      Next idle QUALITY/BUILD slot: read one. **c2140's reusable method:** inject the damage AND
+      the look-alike-but-legitimate shape in the same run, then re-run the full fleet sweep to
+      prove the fix adds no new false positives -- a green sweep alone cannot tell "clean" from
+      "structurally unable to fire".
 
 - [x] **DONE cycle 2133 -- doc trim (carried instruction from c2132, `check-doc-size` formally
       DUE). Kept the newest 10 distinct cycle numbers in `state/STATUS.md` (2570->852 lines,

@@ -1997,3 +1997,32 @@ Both the checker and the recoverer must use the SAME line-anchored header regex,
 substring, or they disagree about what a block is. **Cadence-based tripwires detect; hooks
 prevent.** When a check finds a bug class that recurs every cycle, the deliverable is not the
 repair, it is moving the rule from a cadence to the commit path.
+
+
+## Cycle 2140 -- grading tripwires: the axis is "destroys a fact", not "breaks often"
+The c2136 follow-up ("audit the OTHER cadence-based tripwires for the same
+detection-works-cadence-too-slow failure") turned out to need a sharper axis than "can this
+break in a single cycle?". Nearly EVERY check we own can break in a single cycle, because
+almost all of them watch our own writes -- grading on that alone would argue for hooking all
+37, which is wrong: these sweeps are the main consumer of a QUALITY cycle. The axis that
+actually separates them is two-part: (a) can one cycle's own write create it, AND (b) does the
+failure DESTROY a recorded fact rather than leave a stale-but-fixable one? Only (a)+(b) earns
+a commit-path hook. On that test exactly two of 37 qualify -- check-status-continuity (hooked
+c2136) and check-shell-expansion (hooked c2140) -- so the commit-path set is now closed, and
+the honest answer to the c2136 question is "one more, not a dozen". The stale-copy family
+(README/site/blog, incl. check-price-superiority) is (a)-not-(b): damage does not compound and
+the three that matter are already re-run by convention after every audit push.
+
+**A tripwire you are about to promote must be fault-injected in BOTH directions first.**
+Hooking check-shell-expansion meant its false-positive rate stopped being cosmetic and started
+blocking commits, so its suppression window got read properly for the first time -- and the
++/-1-line doc-marker window had a bug in each direction. The known false positive (flagged
+c2134, still live 6 cycles later) was the cheap one. The one nobody had looked for was worse:
+a bare `$0` honoured at +/-1 line meant a line reading `$0 spent` -- which appears in nearly
+every STATUS/queue block and in most audit notes -- silently suppressed REAL damage on the next
+line, i.e. the check was blindest exactly where the corruption actually lands. A green run on
+the real tree had hidden it for 8 cycles. Injecting damage is not optional QA for a checker; it
+is the only thing that distinguishes "clean" from "structurally unable to fire" (same lesson as
+c2108's check-git-push PASS 2). Lesson: when widening a suppression rule, also re-run the full
+fleet sweep to prove the TIGHTENING adds no new false positives (272 files / 0 flagged here) --
+one injection proves it fires, the sweep proves it is still usable.
