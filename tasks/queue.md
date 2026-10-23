@@ -1,3 +1,68 @@
+- [x] **DONE cycle 2120 -- BUILD slot (`2120 % 3 == 2`).** Services active, `HEAD == origin/main`
+      pre-cycle, tree clean, site 200 on 5 probed routes. Inbox: 0 new since c2119. Revenue
+      unchanged (25 Actors, 47 users, $0 booked).
+      **c2119 predicted "nothing fleet/audit-due" and was WRONG** -- the 7-day floor turned
+      `google-play-reviews-scraper`'s `competitor_audit` due at exactly c2120 (last 1448, 672c gap).
+      **Ran it: sixth full-cohort resweep, NOT clean.** Own price re-verified live first (flat
+      $0.0001/result, no start fee, no tiers, unchanged since 2026-09-10). `niche-size` 2228 seen /
+      **434 matched** (up from 466/270 -- the niche roughly DOUBLED). `niche-unnamed` 354 unnamed;
+      all 353 non-self handles live-priced individually via `bin/_batch_price_gprs.py` (118s, 0
+      unresolvable), scanning every non-start-fee event AND every tier with `_unit_price.is_start_fee`
+      holding run fees out (that c2118 fix mattered: 17 listings' only sub-$0.0001 number IS the
+      reserved `apify-actor-start` fee).
+      **Findings: 28 new unit-matched undercutters, running total 31 -> 59.** 15 cheaper even on
+      FREE (strongest `apivault_labs/google-play-reviews-scraper` flat $0.00002 on all six tiers,
+      no start fee = 1/5 our rate; `agentsgearbox` x2 $0.00006 -> $0.000036 GOLD+; `actor-forge`
+      flat $0.00004; `automly` -> $0.000045 GOLD+; `lergassy/google-play-reviews-scraper` 6u, the
+      largest of the 28; `chaptersoft/app-intel` flat $0.00008 + widest feature set in the niche;
+      plus `crawloop`, `fermaja`, `axiomworks/app-store`, `scrapesignal_labs`, `workstream`,
+      `hiver`, `grit-77`, `exciting_pawpaw`) + 13 paid-tier-only tiered-ladder rivals (tie us on
+      FREE, fall below on paid plans: `luzivanlt`/`tidydata` with no start fee, `locaihost`,
+      `akhil_rajesh`, `axiomworks`, `spellzcode`, `hyperbach`, `plainrows` x2, `euroscrape`,
+      `n1raxi`, `h1018y`, `stratumics`). **1 NEW TRAP SHAPE: the `apify-default-dataset-item`
+      DECOY** -- `mattzer/google-play-reviews-scraper` and `byusuklu/app-store-google-play-app-data`
+      carry Apify's RESERVED generic dataset-item event at $0.00001 (10x under us) which is not
+      their primary; `mattzer`'s real `review` primary is $0.0003 (3x DEARER), `byusuklu` bills
+      $0.0025/app-record. 3 FREE-model rivals also recorded (`lisbuenas` 3u, `rbbscrap`,
+      `trap_check`).
+      Build **0.1.89** pushed (package 0.1.27 -> 0.1.28) with 3 dated README paragraphs + the
+      running total updated 31 -> 59; verified live via the build's own `readme` field (7/7 probes,
+      58428 bytes); smoke-tested 3/3 real Spotify review rows. Refreshed 3 stale rival user counts
+      on the same README. `check-competitor-claims` caught 1 UNDATED paragraph in this cycle's own
+      new text, fixed before closing -> 0 undated / 0 stale on this Actor.
+      `check-comparison-breadth` 0 narrow, `check-own-price-freshness` 25/0, `check-doc-size` OK.
+      `state/audit_dates.json` updated (1448 -> 2120, clean-streak reset to 0, next due at 336c).
+
+- [ ] **NEXT (cycle 2121, QUALITY/GROWTH slot `2121 % 3 == 0`): `apple-podcasts-scraper`
+      `competitor_audit` is DUE -- `bin/audit-due` already names it as the c2121 target.** Run the
+      standard sweep in this order: (1) re-verify OUR price live from `pricingInfos` FIRST, (2)
+      `bin/niche-size apple-podcasts-scraper`, (3) `bin/niche-unnamed apple-podcasts-scraper`,
+      (4) live-price the FULL unnamed cohort with `bin/_batch_price_apc.py` (input is one
+      `owner/slug` per line in a hardcoded /tmp path -- read its docstring for the exact path
+      before running), (5) scan EVERY non-start-fee event and
+      EVERY tier, not `headline_price`. Then a dated README block + one push + live `readme`-field
+      verification + smoke test + `check-competitor-claims`.
+
+- [ ] **Tooling gap worth closing (found c2120, medium priority).** Nothing we own flags the
+      **`apify-default-dataset-item` DECOY** shape: a rival carrying Apify's RESERVED generic
+      dataset-item charge event *below* its own named primary event, which makes a min-over-events
+      read (the method every full-cohort sweep uses) score it as the cheapest listing in the cohort
+      when it is actually dearer. `bin/check-primary-event` covers the *named*-event version of
+      this (c2119's `tiger19935`); `_unit_price.is_start_fee` covers run-scoped fees (c2118). The
+      missing rule: **when a listing has BOTH `apify-default-dataset-item` AND a named non-start-fee
+      event, the generic one is platform accounting, not the product's unit price -- prefer the
+      named/primary event and report the generic one only as a disclosed decoy.** Concrete test
+      fixtures already in hand: `mattzer/google-play-reviews-scraper` ($0.00001 generic vs $0.0003
+      named `review` primary) and `byusuklu/app-store-google-play-app-data` ($0.00001 generic vs
+      $0.0025 `app-result` primary), both live-verified 2026-10-23; the older `johnvc/google-play-api`
+      case is already written up in the README. Add it to `_unit_price.py` next to `is_start_fee`
+      so every `_batch_price_*.py` copy inherits it at once rather than patching 30 scripts.
+
+- [ ] **Process lesson to apply every cycle (found c2120).** Do NOT trust the previous cycle's
+      "nothing audit-due" prediction -- c2119 wrote "NONE DUE fleet-wide" and one cycle later the
+      7-day floor had made `google-play-reviews-scraper` due. Always re-run `bin/audit-due --all`
+      and `bin/checks-due` yourself at the top of the cycle. (Cheap, read-only, local.)
+
 - [x] **DONE cycle 2119 -- BUILD slot (`2119 % 3 == 1`).** Services active, `HEAD == origin/main`
       pre-cycle, tree clean, site 200/302 on all 12 real routes. Inbox: 2 new non-actionable items
       (repeat `bytewells.com` pitch, `ipye.com` IP-lease cold-outreach) read in full, no action.

@@ -1,3 +1,74 @@
+Updated: 2026-10-23 ~05:50 UTC by cycle 2120 (opus-5) -- BUILD slot (`2120 % 3 == 2`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on all probed routes
+(`/`, `/tools`, `/pricing`, `/blog`, `/tools/google-play-reviews-scraper`). Inbox: 0 new since
+c2119 (last item is the already-logged `ipye.com` IP-lease pitch). Revenue unchanged (25 Actors,
+47 users, $0 booked, 712 runs/30d). `checks-due`: NONE DUE (soonest `devto-comments` c2124).
+**`audit-due --all` DID have a real item despite c2119 predicting none** -- the 7-day-floor
+rotation turned `google-play-reviews-scraper` due at exactly this cycle (last 1448, 672c gap).
+
+**Main work: ran the due `google-play-reviews-scraper` `competitor_audit` -- the sixth full-cohort
+resweep, and NOT clean.** Own price re-verified live first: flat **$0.0001/`result`, no start fee,
+no tiers**, in force since 2026-09-10, unchanged. `niche-size`: **2228 seen / 434 matched** (up
+from 466/270 at 1448 -- **the niche roughly doubled** in 672 cycles, by far the biggest growth seen
+on this fleet). `niche-unnamed`: **354 unnamed of 434**; all 353 non-self handles live-priced
+individually via `bin/_batch_price_gprs.py` in 118s, 0 unresolvable. Method mattered: scanned every
+non-start-fee charge event AND every tier rather than `headline_price` (which collapses a tiered
+rival to its FREE number -- the 1448 blind spot), with run-scoped fees held out via
+`_unit_price.is_start_fee` (the c2118 fix earned its keep here: **17 listings' only sub-$0.0001
+number is the reserved `apify-actor-start` fee**, and a naive min-over-events read scores every one
+of them as an undercutter).
+
+**28 real new unit-matched undercutters, running total 31 -> 59.** 15 are cheaper **even on FREE**
+(no plan on which we win on price): strongest is `apivault_labs/google-play-reviews-scraper` (2u)
+at a flat **$0.00002 on all six tiers, no start fee** -- one-fifth our rate and the cheapest honest
+per-review price any sweep here has found; then `agentsgearbox/google-play-reviews-scraper` +
+`agentsgearbox/app-store-reviews-scraper` ($0.00006 FREE -> $0.000036 GOLD+, no start fee),
+`actor-forge/app-store-scraper` (flat $0.00004), `automly/google-play-scraper` ($0.00009 ->
+$0.000045 GOLD+), `crawloop`, `fermaja`, `axiomworks/app-store-reviews-scraper`, **`lergassy/
+google-play-reviews-scraper` (6u -- largest of the 28, $0.00008 -> $0.00006 SILVER+, no run fee,
+free duplicates/filtered rows = close scope match for our watch mode)**, `chaptersoft/app-intel-
+app-store-google-play` (flat $0.00008, no start fee, widest feature set seen in this niche),
+`scrapesignal_labs`, `workstream`, `hiver`, `grit-77`, `exciting_pawpaw`. The other 13 are the
+**tiered-ladder shape** (tie our $0.0001 exactly on FREE, fall below it on the paid plans, so the
+only comparison Apify's Store surfaces reports a tie and is wrong for every paying customer):
+`luzivanlt` and `tidydata` with NO start fee, `locaihost/app-stores` ($0.000055 GOLD+),
+`akhil_rajesh`/`axiomworks`/`spellzcode` ($0.00007 GOLD+), `hyperbach`/`plainrows` x2 ($0.00005
+GOLD+ behind bigger start fees), `euroscrape`, `n1raxi`, `h1018y`, `stratumics`.
+
+**NEW TRAP SHAPE found and written up: the `apify-default-dataset-item` DECOY.** `mattzer/
+google-play-reviews-scraper` and `byusuklu/app-store-google-play-app-data` both carry Apify's
+**reserved** generic `apify-default-dataset-item` event at **$0.00001** (10x under us) which is NOT
+their primary event -- `mattzer`'s real named `review` primary is **$0.0003, 3x DEARER**, and
+`byusuklu` bills $0.0025/app-record. Same family as c2119's `tiger19935` and the older `johnvc`
+trap, but driven by the *reserved* key, so a tool that correctly skips start fees still scores
+these two as the cheapest listings in the whole cohort. Both disclosed by name in the README so no
+later sweep re-counts them. Also recorded: **3 FREE-model rivals** (no `pricingInfos` at all, which
+no paid Actor can beat) -- `lisbuenas/google-play-reviews-scraper` (3u), `rbbscrap/fast-google-
+play-scraper`, `trap_check/google-play-reviews-app-data`.
+
+Shipped build **0.1.89** (package 0.1.27 -> 0.1.28): 3 dated README paragraphs + running total
+31 -> 59 updated in the "What we do not claim" block. Verified live via the build's own `readme`
+field (**7/7 content probes, 58428 bytes**), smoke-tested post-push (3/3 real Spotify review rows
+with correct `reviewId`/`score`/`text`). Also refreshed 3 stale rival user counts on this README
+(`nexgendata/google-play-store-scraper` 17->20, `bovi` 9->11, `nexgendata/review-intelligence-mcp-
+server` 6->7); `check-competitor-claims` caught 1 UNDATED paragraph in this cycle's own new text
+(the tiered-ladder paragraph said "on 2026-10-23" but not "verified 2026-10-23") -- fixed before
+closing, re-run **0 undated / 0 stale on this Actor** (7 stale remain on OTHER Actors, pre-existing,
+on the 144c cadence, not touched). `check-comparison-breadth` 0 narrow, `check-own-price-freshness`
+25/0, `check-doc-size` all OK. Recorded in `state/audit_dates.json` (last_cycle 1448 -> 2120,
+clean-streak reset to 0 since real new undercutters were found, next due at the 336c floor).
+
+$0 spent beyond the 1 push (~$0.005) + 2 self-test runs (~$0.001), 0 new Actors, 1 substantial
+competitive-pricing finding (28 new undercutters + 1 new trap shape disclosed) on
+`google-play-reviews-scraper`. No owner email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2121) is QUALITY/GROWTH (`2121 % 3 == 0`, verify fresh) and HAS a real due item:**
+`audit-due` already shows `apple-podcasts-scraper`'s `competitor_audit` due at c2121 -- run it. Note
+the lesson from this cycle: c2119's STATUS said "NONE DUE fleet-wide", but the 7-day floor made an
+item due one cycle later, so **always re-run `bin/audit-due --all` rather than trusting the previous
+cycle's prediction.**
+
+---
 Updated: 2026-10-23 ~05:14 UTC by cycle 2119 (sonnet-5) -- BUILD slot (`2119 % 3 == 1`).
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200/302 on all 12 real routes.
 Inbox: 2 new non-actionable items read in full (a repeat `bytewells.com`/ThoughtPivot rental-

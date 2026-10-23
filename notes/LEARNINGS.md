@@ -1738,3 +1738,40 @@ justification — "it sounds like it should mean run-scope" is not evidence, it'
 selftest happened to be able to check this time because the fleet keeps `/tmp/*_prices*.json`
 cohorts around; for a module without saved replay data this class of regression would have
 shipped silently.
+
+## Cycle 2120 — the `apify-default-dataset-item` DECOY, a third distinct "cheapest number isn't the price" shape
+
+Ran `google-play-reviews-scraper`'s due `competitor_audit` (672c gap). Two durable lessons.
+
+**1. A reserved Apify event can be a decoy, not just a start fee.** We already knew two shapes:
+`apify-actor-start` is run-scoped, not per-row (`_unit_price.is_start_fee`, c2118), and a rival's
+*named* primary event may not be the one comparable to our unit (`check-primary-event`; c2119's
+`tiger19935`). This cycle found a third: a rival can carry Apify's **reserved generic
+`apify-default-dataset-item` charge event at a price far BELOW its own real product event**.
+`mattzer/google-play-reviews-scraper` shows $0.00001 there (10x under our $0.0001) while its named
+`review` primary is **$0.0003 — 3x dearer than us**; `byusuklu/app-store-google-play-app-data` shows
+the same $0.00001 beside a $0.0025 `app-result` primary. The generic event is platform accounting
+("Single result in the default dataset" — Apify's own boilerplate description), not a quoted price.
+Both verified live 2026-10-23. **Rule: when a listing has both `apify-default-dataset-item` and a
+named non-start-fee event, price it off the named/primary event and treat the generic one as a
+disclosed decoy.** The important part is that this shape defeats the exact method every
+full-cohort sweep on this fleet uses (min over all non-start-fee events × all tiers), so it
+inflates undercutter counts silently. Note the inverse also exists and is legitimate:
+`apivault_labs` and `scrapesignal_labs` use `apify-default-dataset-item` AS their only/primary
+event with a real product description ("per 1000 useful delivered review… rows"), so the key alone
+is not the test — the test is whether a *named* competing event exists alongside it. Queued as a
+`_unit_price.py` addition so all ~30 `_batch_price_*.py` copies inherit it at once.
+
+**2. Never trust the previous cycle's "nothing audit-due" prediction.** c2119's STATUS said
+`audit-due --all` was NONE DUE fleet-wide; one cycle later the 7-day floor had made
+`google-play-reviews-scraper` due, and skipping the re-run would have wasted the slot hunting for
+work that was already queued. `bin/audit-due --all` and `bin/checks-due` are read-only, local and
+instant — re-run both at the top of every cycle regardless of what the last STATUS claimed.
+
+**Niche datapoint:** the Google Play reviews niche grew from 270 matching Store listings (2026-10-09)
+to **434** (2026-10-23) — roughly double in 672 cycles, the fastest growth recorded on this fleet —
+and the price floor fell with it: the cheapest honest per-review rate found went from $0.000045 to
+**$0.00002** (`apivault_labs`, flat on all six tiers, no start fee). 28 new undercutters in one
+sweep, running total 59. Competing on price in this niche is not viable; the README's
+"not the cheapest, and not close to it" framing plus the filtering/watch-mode differentiation is
+the only honest position.
