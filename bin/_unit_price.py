@@ -158,6 +158,37 @@ def is_start_fee(key, ev):
     return False
 
 
+DECOY_KEY = "apify-default-dataset-item"
+
+
+def is_decoy_dataset_item(key, events):
+    """True if `key` is Apify's RESERVED generic per-row event AND this listing ALSO has
+    a different, named, non-start-fee event to prefer instead.
+
+    Found cycle 2120 (google-play-reviews-scraper audit): `mattzer/google-play-reviews-
+    scraper` and `byusuklu/app-store-google-play-app-data` both carry
+    `apify-default-dataset-item` priced far below their real business -- $0.00001 vs
+    `mattzer`'s named `review` primary at $0.0003 (3x DEARER) and `byusuklu`'s named
+    `app-result` at $0.0025 (250x dearer). The generic event is real and billed (see
+    container_mismatch's ROW_WORDS comment above -- it is a genuine per-row event by
+    definition), so `unit_price()`'s own primary-event preference already gets this right
+    when the named event is flagged isPrimaryEvent. The actual gap is in a full-cohort
+    SWEEP that scans every non-start-fee event looking for the cheapest number (every
+    `_batch_price_*.py` script's stated method, and `check-price-superiority`'s
+    multi-event advisory scan below) -- that scan has no primary-event tie-break of its
+    own, so it picks up the reserved key as if it were the listing's real per-row rate.
+
+    Scoped narrowly: only fires when a DIFFERENT recurring event exists to prefer over
+    it. A listing whose ONLY charge is the generic event has no decoy to prefer over --
+    that IS its real (if generic) per-row price, same as any other sole recurring event,
+    and must keep reading as such.
+    """
+    if key != DECOY_KEY:
+        return False
+    others = [k for k, v in events.items() if k != key and not is_start_fee(k, v)]
+    return bool(others)
+
+
 def unit_price(events):
     """(unit_tiers, unit_key, start_fee, note) -- see module docstring for the rules."""
     onetime, recurring = {}, {}
@@ -181,7 +212,8 @@ def unit_price(events):
 
 
 def all_events_all_tiers(events):
-    """[(event_name, event_title, {tier: usd}, is_start_fee)] for EVERY live charge event.
+    """[(event_name, event_title, {tier: usd}, is_start_fee, is_decoy)] for EVERY live
+    charge event. `is_decoy` added cycle 2122 -- see `is_decoy_dataset_item` above.
 
     Closes 0-TODO-h1452-multi-event-cheap-leg (filed cycle 1452, from the steam-reviews-
     scraper audit). `unit_price` above and `cps._select_event` both reduce a rival to ONE
@@ -204,7 +236,8 @@ def all_events_all_tiers(events):
     those three produce stays byte-identical, per the 1392/1436 precedent of adding a new
     read path alongside the old one rather than editing it in place.
     """
-    return [(k, v.get("eventTitle"), tiers_of(v), is_start_fee(k, v))
+    return [(k, v.get("eventTitle"), tiers_of(v), is_start_fee(k, v),
+              is_decoy_dataset_item(k, events))
             for k, v in events.items()]
 
 

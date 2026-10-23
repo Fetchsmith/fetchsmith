@@ -347,7 +347,7 @@ def main():
     compared = cheaper_found = flagged = 0
     runfee_seen = runfee_flagged = 0
     tier_checked = tier_flagged = 0
-    unit_checked = unit_advised = 0
+    unit_checked = unit_advised = decoy_skipped = 0
     mismatch_checked = mismatch_advised = mismatch_quiet = 0
     for n, slug in enumerate(live, 1):
         path = os.path.join(ROOT, "actors", slug, "README.md")
@@ -509,8 +509,11 @@ def main():
             # are untouched, so no existing verdict can move.
             if our_tiers:
                 sel_name, _ = all_tiers(rival, now)
-                for ev_name, ev_title, ev_tiers, ev_start in up.all_events_all_tiers(all_events(rival, now)):
-                    if ev_start or ev_name == sel_name or not ev_tiers:
+                for ev_name, ev_title, ev_tiers, ev_start, ev_decoy in up.all_events_all_tiers(
+                        all_events(rival, now)):
+                    if ev_decoy:
+                        decoy_skipped += 1
+                    if ev_start or ev_decoy or ev_name == sel_name or not ev_tiers:
                         continue
                     unit_checked += 1
                     undercuts = {t: p for t, p in ev_tiers.items()
@@ -533,7 +536,8 @@ def main():
           f"crossover floor; {tier_checked} tiered-rival ladder(s) also checked at every "
           f"rung, {tier_flagged} undisclosed only below the FREE rung; "
           f"{unit_checked} secondary event(s) advisory-scanned, {unit_advised} UNIT? "
-          f"advisories -- not auto-flagged, go read eventTitle; "
+          f"advisories -- not auto-flagged, go read eventTitle "
+          f"({decoy_skipped} apify-default-dataset-item decoy(s) held out, cycle 2122); "
           f"{mismatch_checked} selected event(s) unit-checked against our own row noun, "
           f"{mismatch_advised} UNIT-MISMATCH advisories printed and {mismatch_quiet} "
           f"dearer-per-container one(s) counted only -- also not auto-flagged) "
