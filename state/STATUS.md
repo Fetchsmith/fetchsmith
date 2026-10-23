@@ -1,3 +1,61 @@
+Updated: 2026-10-23 ~21:15 UTC by cycle 2151 (sonnet-5) -- QUALITY slot: fixed a real bug in `bin/check-primary-event` (adversarial-check-testing thread, 7-for-8), 0 new Actors.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2151: `check-primary-event`'s `hp > 0` guard was silently excluding the worst-case disguise it exists to catch -- fixed, full-fleet re-run still owed
+
+`audit-due --all`/`checks-due` run fresh first: **0 audits due** (soonest `website-screenshot-
+scraper` in 266c/~5.5d) and **0 fleet checks due** (soonest `check-doc-size` in 6c). Inbox
+unchanged (10 items, newest still `c2fa5a9c`) -- confirmed the owner's `dc593cfb` Apify
+identity-verification thread is genuinely resolved (owner replied "Done"; `website-screenshot-
+scraper` is live as Actor #25 per `audit-due --all`'s 25-Actor count) rather than trusting the
+"already resolved" label blind. No owner email needed. Genuine QUALITY slot (2151 % 3 == 0).
+
+Continued the adversarial-check-testing thread off the 4 remaining candidates
+(`check-primary-event`, `channel-mix`, `checks-due`, `check-example-input`). Read `bin/checks-
+due` cold first -- fault-injected `last_cycle=0`, `interval_cycles=0`, `cyc < last_cycle`
+against a scratch `due_rows()` call, all handled correctly (it already uses `is not None`
+throughout, not the falsy-`or`-default shape that bit `audit-due` at c2143) -- clean, no bug.
+
+**Found and fixed a real bug in `bin/check-primary-event`.** Its job is catching a rival whose
+Store page flags a cheap GENERIC event (`apify-actor-start`/`apify-default-dataset-item`) as
+`isPrimaryEvent` while a real, materially dearer event sits undisclosed on the same record (the
+`westerly_breaker` ted-tender-monitor incident, c1176). The `hp > 0` guard on
+`price_of(v)/hp >= RATIO` (added to dodge `ZeroDivisionError`) also silently excluded a `$0`
+generic headline -- which is not a harmless edge case but the single WORST-CASE form of the
+exact disguise the tool exists to find, plausible for any pure-PPR Actor charging $0 on
+`actor-start` and real money on a per-row event. Confirmed by fault injection: a synthetic
+rival (`apify-actor-start@$0` primary, `row-scraped@$0.01` not-one-time) came back an empty
+`worse` list under the old code; a genuinely-free control (`$0`/`$0`, no disguise) correctly
+stayed empty either way; the two original ratio-based cases (1000x flag, 2x no-flag) stayed
+byte-identical before/after. Fixed to flag automatically when `hp == 0` and the other price is
+`> 0`, and replaced the print line's `{dear_price/hp:.0f}x` (itself a latent divide-by-zero the
+fixed logic could now reach) with a `"FREE headline"` label.
+
+**Fleet-wide impact not yet confirmed -- said so rather than guessing.** The live tool is one
+Apify API GET per named rival; the fleet names 2181 distinct rivals, and a 90s timed background
+sample covered only ~14, implying a full sweep is roughly an-hour-class -- too slow for this
+cycle's budget on a 1 vCPU box, so the sample was killed rather than left running past cycle
+end. Whether any currently-named rival actually has this exact `$0`-headline shape is therefore
+unverified; bug and fix are proven correct by synthetic fault injection only, same "real but
+unhit yet" shape as c2143's `audit-due` `_min_interval: 0` fix. Filed as the top queue item:
+run the fixed tool to completion (likely needs `run_in_background`) and hand-read any new
+`(FREE headline)` flag, same convention as c1177's manual read of the original 17 flags.
+
+Grepped the remaining 2 candidates (`channel-mix`, `check-example-input`) for the same
+`.get(...) or default` and bare-division shapes before stopping for time -- both only use `or
+{}`/`or ["-"]` substituting an equally-empty value, ruled out on this shape, still owed a full
+cold read for other bug shapes. Thread now **7-for-8**. Full writeup in `notes/LEARNINGS.md`
+cycle 2151.
+
+Verified no regression: `python3 -m py_compile`-equivalent syntax check clean, services active,
+site 200, tree otherwise unchanged. $0 spent, 0 new Actors, no owner email.
+
+**Next cycle (2152): re-verify `audit-due --all`/`checks-due` fresh first (both likely still
+NONE DUE). If genuinely idle, run the filed follow-up (full `check-primary-event` sweep) or
+pick up `check-example-input`, the last unread adversarial-check-testing candidate.**
+
+---
+
 Updated: 2026-10-23 ~20:35 UTC by cycle 2150 (sonnet-5) -- QUALITY slot: built `bin/check-source-endpoints`, closing the unbuilt half of c2124, 0 new Actors.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

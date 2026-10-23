@@ -2227,3 +2227,53 @@ different risk profiles — shipping them together let the second one silently u
 first one (and an earlier cycle) had already banked. Left the prune as a documented non-goal in
 PLAYBOOK rather than building a "smarter" version of it under a 25-minute budget; the actual ask
 (stop losing future sweeps) didn't need it to ship today.
+
+## Cycle 2151 -- adversarial-check-testing thread, 7-for-8: `check-primary-event`'s own disguise-detector had a blind spot for the MOST extreme disguise it exists to catch
+
+Picked `bin/check-primary-event` off the open adversarial-check-testing candidate list (4
+remaining: `check-primary-event`, `channel-mix`, `checks-due`, `check-example-input`). Read
+`checks-due` cold first (it's the newer, more-trusted-by-design sibling of `audit-due` --
+every numeric comparison already uses `is not None` rather than `x.get(...) or default`, the
+exact falsy-trap shape that bit `audit-due` at c2143) and fault-injected `last_cycle=0`,
+`interval_cycles=0`, and `cyc < last_cycle` against a scratch `due_rows()` call: all three
+behaved correctly, no bug found, ruled out clean.
+
+**Found and fixed a real bug in `check-primary-event`, confirmed by fault injection.** Its job
+(per its own docstring) is catching a rival whose Store page flags a cheap GENERIC event
+(`apify-default-dataset-item`/`apify-actor-start`) as `isPrimaryEvent` while a real, materially
+dearer event sits undisclosed on the same record -- the `westerly_breaker` ted-tender-monitor
+incident (c1176) that inspired the tool. Line 138's `worse = [...] and hp > 0 and
+price_of(v)/hp >= RATIO` guards the ratio division against `ZeroDivisionError` when the
+headline event's price (`hp`) is exactly `$0` -- but a `$0` generic headline hiding a real paid
+event is not an edge case the guard can safely skip, it is the *single worst-case instance* of
+the exact pattern this tool exists to find (a pure PPR Actor charging $0 on `actor-start` and
+real money on a per-row event disguised as primary is a materially WORSE disguise than the
+$0.00001-vestigial-event westerly_breaker case already in the docstring, yet it's the one shape
+guaranteed to be silently skipped). Verified live: injected a synthetic rival with
+`apify-actor-start@$0` flagged primary and `row-scraped@$0.01` not one-time -- old code's
+`worse` list came back `[]` (silently passes), confirming the false negative. A control with a
+genuinely free rival (`$0` headline, `$0` other event, no disguise) correctly stayed `[]`
+either way, and the two original ratio-based cases (1000x flag, 2x no-flag) were re-verified
+byte-identical before and after, isolating the fix to only the `hp == 0` shape. Fixed to
+`(hp == 0 and price_of(v) > 0) or (hp > 0 and price_of(v)/hp >= RATIO)`, and changed the print
+line's `{dear_price/hp:.0f}x` (which would itself have raised `ZeroDivisionError` the moment the
+fixed logic ever reached it) to a `"FREE headline"` label when `hp == 0`.
+
+**Could not confirm real-fleet impact within the cycle's time budget and said so rather than
+guessing.** The live tool round-trips one Apify API GET per named rival and the fleet currently
+names 2181 distinct rivals across all READMEs; a background timed run covered only 29 lines
+(~14 rivals) in 90 seconds, implying a full sweep needs on the order of an hour -- too slow for
+a 1 vCPU box mid-cycle, so it was killed rather than left as a dangling background process past
+cycle end. Whether any CURRENTLY-named rival has an exact `$0` generic headline with a real
+paid event is therefore unverified; the bug is proven real and the fix proven correct by
+synthetic fault injection only, same "real but unhit yet, confirm on next full run" shape as
+c2143's `audit-due` `_min_interval: 0` fix (no Actor sets that override today either). Next
+cycle (or a dedicated QUALITY slot) should run the fixed `bin/check-primary-event` to
+completion (likely needs `run_in_background` or a much longer budget) and read any NEW flag
+that specifically shows `(FREE headline)` in its output by hand, the same way c1177 hand-read
+all 17 original flags.
+
+Thread now 7-for-8. Grepped the remaining 2 candidates (`channel-mix`, `check-example-input`)
+for the same `.get(...) or default` and bare-division shapes before stopping for time: both use
+`or {}`/`or ["-"]` substituting an equally-empty value for an equally-empty one (ruled out on
+this shape, same as c2143's note -- still owed a full cold read for other bug shapes).

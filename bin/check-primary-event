@@ -134,8 +134,8 @@ def main():
         if hp is None or head not in GENERIC:
             continue
         worse = [(k, price_of(v)) for k, v in evs.items()
-                 if k != head and not v.get("isOneTimeEvent")
-                 and price_of(v) is not None and hp > 0 and price_of(v) / hp >= RATIO]
+                 if k != head and not v.get("isOneTimeEvent") and price_of(v) is not None
+                 and ((hp == 0 and price_of(v) > 0) or (hp > 0 and price_of(v) / hp >= RATIO))]
         if not worse:
             continue
         flagged += 1
@@ -146,9 +146,10 @@ def main():
         tag = "ALREADY DISCLOSED" if is_disclosed else "NEEDS REVIEW"
         if is_disclosed:
             disclosed += 1
+        ratio_str = "FREE headline" if hp == 0 else f"{dear_price/hp:.0f}x"
         print(f"  FLAG {h}  (named in: {', '.join(s for s, _ in files)}) [{tag}]")
         print(f"       headline={head}@${hp:g} (generic default)  dearer={dear_event}@${dear_price:g}"
-              f"  ({dear_price/hp:.0f}x)")
+              f"  ({ratio_str})")
     print(f"check-primary-event: {checked} multi-event rivals checked, {flagged} flagged, "
           f"{disclosed} already disclosed in our own README, {flagged - disclosed} need review")
     return 0

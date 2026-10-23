@@ -1,3 +1,46 @@
+- [ ] **FOLLOW-UP cycle 2151: run the fixed `bin/check-primary-event` to completion.**
+      Fleet names 2181 distinct rivals, one API GET each -- a timed background sample covered
+      only ~14 rivals in 90s, implying a full sweep is on the order of an hour. Needs
+      `run_in_background` or a dedicated longer slot. Read any NEW flag whose line says
+      `(FREE headline)` by hand (same convention as c1177's manual read of the original 17) --
+      that label only exists because of this cycle's fix and did not exist in any prior run's
+      output, so it cannot yet have been triaged. Full bug detail in `notes/LEARNINGS.md`
+      cycle 2151.
+
+- [x] **DONE cycle 2151 -- QUALITY slot, adversarial-check-testing thread (now 7-for-8).**
+      `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest audit
+      `website-screenshot-scraper` in 266c/~5.5d; soonest fleet check `check-doc-size` in 6c).
+      Inbox unchanged (10 items, newest still `c2fa5a9c`) -- confirmed the owner's `dc593cfb`
+      Apify-verification thread is genuinely resolved (owner replied "Done", and
+      `website-screenshot-scraper` is now live as Actor #25 per `audit-due --all`) rather than
+      trusting the "already resolved" label blind. No owner email needed.
+      Read `bin/checks-due` cold first (fault-injected `last_cycle=0`, `interval_cycles=0`,
+      `cyc < last_cycle` against a scratch `due_rows()` call) -- clean, no bug, already written
+      with `is not None` checks throughout rather than the falsy-`or`-default shape that bit
+      `audit-due` at c2143.
+      **Found and fixed a real bug in `bin/check-primary-event`:** the `hp > 0` guard added to
+      avoid a `ZeroDivisionError` in the ratio check (`price_of(v)/hp >= RATIO`) also silently
+      excluded the single worst-case disguise the tool exists to catch -- a rival whose generic
+      headline event (`apify-actor-start`/`apify-default-dataset-item`) is priced at exactly
+      `$0` while a real paid event sits undisclosed on the same record, plausible for any pure
+      PPR-model Actor. Confirmed by fault injection (synthetic rival, old code's `worse` list
+      came back empty; fixed code correctly flags it; a genuinely-free control and the two
+      original ratio-based cases stayed byte-identical). Fixed to special-case `hp == 0` as an
+      automatic flag when the other event's price is `>0`, and changed the print line's
+      `{dear_price/hp:.0f}x` (itself a latent `ZeroDivisionError` once the fixed logic could
+      reach it) to a `"FREE headline"` label.
+      **Could not confirm real-fleet impact within budget** -- 2181 named rivals, ~90s sample
+      covered only ~14, so a full sweep is ~an-hour-class; killed the background sample rather
+      than leave it running past cycle end. Bug and fix are proven by synthetic fault injection
+      only, same "real but unhit yet" shape as c2143's `audit-due` fix. Follow-up filed above
+      to run the fixed tool to completion and hand-read any `(FREE headline)` flag.
+      Full writeup in `notes/LEARNINGS.md` cycle 2151. $0 spent, 0 new Actors, no owner email.
+      **Next cycle (2152): re-verify `audit-due --all`/`checks-due` fresh first (both likely
+      still NONE DUE). If genuinely idle, run the follow-up above, or pick the last remaining
+      adversarial-check-testing candidate (`check-example-input`; `channel-mix` and
+      `check-example-input` were grepped for the same `.get(...) or default` shape this cycle
+      and ruled out on that shape only -- still owed a full cold read for other bug shapes).**
+
 - [x] **DONE cycle 2150 -- QUALITY slot, built `bin/check-source-endpoints` (closes the
       unbuilt half of the c2124 item filed at c2148).** `audit-due --all`/`checks-due`
       re-verified fresh first: both **NONE DUE** (soonest audit `website-screenshot-scraper`
