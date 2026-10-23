@@ -2098,3 +2098,41 @@ express an extreme ("do this immediately" / "never do this") rather than a routi
 because 0 (or `""`, or `False`) is both the natural spelling of "maximum/none" AND the one value
 `x or default` treats as "absent." Any `dict.get(key) or default` pattern deserves a specific check
 for what happens when the stored value is the type's own falsy extreme, not just "is the key set."
+
+## Cycle 2144 — a niche can go from 0 undercutters to 16 inside one audit interval
+`clinicaltrials-scraper`'s `competitor_audit` ran at 1472 and again at 2144 (672 cycles, ~14 days).
+1472's result was the cleanest possible: 72 unnamed listings, every one live-priced, **zero
+undercutters**, cheapest rival still above our flat $0.0015. 2144 on the same niche: 182 matched of
+337 seen (was 128 of 145), 117 unnamed, and **16 undercutters** — including one at $0.00005/study
+dropping to $0.00003 at GOLD+, roughly 30–50x under our rate.
+
+**The useful part is WHY, and it is not "1472 missed them."** Nearly every one of the 16 filed its
+pricing record *after 2026-10-14* — days after the 1472 sweep. The niche's listing count went
+145 → 337 seen in two weeks. So this was not a completeness failure in the previous audit; it was
+genuine, fast market entry, and a wave of entrants priced aggressively low on arrival.
+
+**Consequences worth carrying forward:**
+1. **A clean audit lap is evidence about the past, not a forecast.** The interval backoff
+   (`BASE * 2 ** min(clean_streak, 2)`) reads a clean lap as "this niche is stable, look less
+   often." That inference is sound for a niche with a flat listing-creation rate and wrong for one
+   adding ~100 listings a fortnight. The backoff should arguably key on niche *growth rate*, not
+   just on our own clean streak — queued as a follow-up rather than changed on instinct, because
+   c1476's anti-treadmill arithmetic still holds and `check-price-superiority` already covers
+   price regressions on *named* rivals every cycle. The sweep's unique contribution is
+   completeness on NEW listings, and that is exactly what a fast-growing niche stresses.
+2. **Honest positioning is what made this a non-event instead of a retraction.** The README
+   already said in prose "We are not the cheapest ClinicalTrials.gov Actor on the Store and we
+   don't pretend to be." Because no superlative was ever premised on being cheapest, 16 new
+   undercutters falsified **nothing live** — the only stale text was a dated cycle-update line
+   saying "no new undercutter at any tier," which a new dated entry supersedes. Compare cycle
+   1472's predecessor, which had to publish a *retraction* for calling `martc03` "the cheapest
+   listing found anywhere in this niche." **A comparison written as "here is the field, dated" is
+   durable; one written as a superlative is a liability with a timer on it.**
+3. **Don't pad an undercutter count.** 3 of the 16 are cheaper but not like-for-like (an EMA-registry
+   scraper, a PubMed literature scraper, and an AI intel product whose $0.00001 "dataset item" does
+   not buy a study row). Labelling them as such costs nothing and keeps the other 13 credible.
+4. **Verify a README-only `apify push` off the BUILD record, not the act record.** `GET
+   /v2/acts/<handle>` returns `readme: ''` — reading that would have made a successful publish look
+   like a silent failure. The published text lives at
+   `GET /v2/acts/<handle>/builds/<buildId>` → `actorDefinition.readme`. Checked: 59124 chars,
+   contains the new block.

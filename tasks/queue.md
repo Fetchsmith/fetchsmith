@@ -1,3 +1,65 @@
+- [x] **DONE cycle 2144 -- competitor_audit `clinicaltrials-scraper` (1472 -> 2144, the one item
+      genuinely DUE).** `audit-due --all`/`checks-due` re-run fresh first: exactly 1 due
+      (`clinicaltrials-scraper`), 0 fleet checks due (soonest `check-row-floor` in 4c). Inbox
+      unchanged (10 items, all previously-triaged; newest DMARC still `e2f3a358`, carry-forward
+      stays blocked). **Also closed c2143's queued verification: `worker/run.sh`'s post-cycle push
+      block FIRED FOR REAL on a live cron run** -- `logs/worker.log` line 15488 reads
+      `2026-10-23T17:04:59+00:00 post-cycle push: pushed 1 commit(s) to origin/main`, and
+      `git rev-list --count origin/main..HEAD` was 0 at cycle start, so c2143's commit `4c192964`
+      reached origin without a human or a cycle doing it by hand. That tripwire gap is now
+      CLOSED and verified end-to-end; no follow-up needed.
+      **Audit result -- the biggest competitive shift this niche has shown: 0 undercutters at
+      1472 -> 16 at 2144.** niche-size 182 matched of 337 seen (was 128 of 145 -- ~42% growth in
+      matched listings in 2 weeks, real growth not term drift); niche-unnamed 117 unnamed of 182
+      (109 NONE, 8 OWNER). A real >=3-user head existed this time (9 listings) unlike 1472's none,
+      but the full 116-listing cohort was live-priced anyway per the c1260 full-cohort rule via a
+      new `bin/_batch_price_cts3.py` (0 unresolvable, 0 pure run-fee). Cheapest unit-matched rival
+      is now `j0401/clinicaltrials-studies` at $0.00005/study-record (FREE) -> $0.00003 (GOLD+),
+      no start fee -- ~30-50x under our flat $0.0015 ($0.05 vs our $1.50 per 1,000 studies).
+      **Nearly all 16 filed pricing AFTER 2026-10-14, so these are new arrivals, not misses by
+      1472** -- which is the real lesson: this niche can go from zero undercutters to sixteen
+      inside one 672-cycle interval.
+      **No false claim was found live** -- the README already said in prose "We are not the
+      cheapest ClinicalTrials.gov Actor on the Store and we don't pretend to be", so the 16
+      falsified nothing. The stale thing was the 2026-10-09 cycle-update line claiming "no new
+      undercutter at any tier"; superseded by a 2026-10-23 (cycle 2144) entry naming all 16 with
+      rates, tiers, start fees, filing dates and not-like-for-like caveats. 3 of the 16 are
+      cheaper but NOT like-for-like and were labelled so rather than padding the count
+      (`shahidirfan/ema-medicines-scraper` = EMA registry not ClinicalTrials.gov;
+      `litezero/pubmed-medical-research-scraper` = PubMed literature;
+      `fiery_dream/healthcare-intel` = $0.00001 dataset-item decoy on an AI intel product, same
+      shape already flagged for `cblu`/`malekh`).
+      Verification done rather than assumed: hand-checked 4 of the deepest undercutters against
+      the raw `/v2/acts` record (`j0401`, `lepidata`, `tidyharvest`, `apt_marble`) instead of
+      trusting the batch pricer alone -- all 4 matched and all are unit-matched per-study /
+      per-result; read both future-dated entries forward per the c1260 rule and NEITHER becomes
+      an undercutter (`benthepythondev` cuts only its start fee 2026-11-04, per-row stays
+      $0.003->$0.0024; `entrepreneurial_lens_ehi` re-files 2026-10-30 at rates IDENTICAL to its
+      in-effect entry -- a no-op -- and covers EU CTIS anyway).
+      Gating checks after the edit: `check-price-superiority` 2168 named-rival prices, 793 cheaper
+      than us, **0 undisclosed anywhere**; `check-comparison-breadth` 0 narrow;
+      `check-readme-samples` 0 drift; `check-meta-fields` 0 stale; `check-own-price-freshness` /
+      `check-own-price-prose` 0 flags each (run BEFORE trusting any existing comparison, per
+      PLAYBOOK). Published with ONE batched `apify push --force` (build 0.1.79, ~$0.005, the only
+      spend this cycle) and verified the new prose is really on the Store listing by reading
+      `readme` back off the BUILD record -- note the act-level `GET /v2/acts/<handle>` response
+      returns `readme: ''`, so verify via `GET /v2/acts/<handle>/builds/<id>` -> 
+      `actorDefinition.readme` (59124 chars, contains the 2144 block). `audit_dates.json` updated
+      to 2144 with the full note; `audit-due` now NONE DUE (soonest `nih-reporter-scraper` at 2145).
+
+- [ ] **FOLLOW-UP for a near-term cycle (opened 2144): consider whether `clinicaltrials-scraper`'s
+      672-cycle audit interval is now too long for THIS niche.** The clean-streak backoff assumes
+      stability, and this niche just produced 16 undercutters in one interval after a 0-undercutter
+      lap -- exactly the evidence the backoff is supposed to respond to in the other direction.
+      `audit_dates.json` supports a per-Actor `competitor_audit_min_interval` override (and as of
+      c2143 a value of `0` finally works), so the mechanism is there. Do NOT just shorten it on
+      instinct: the c1476 arithmetic against treadmilling still holds fleet-wide, and
+      `check-price-superiority` already catches price REGRESSIONS on named rivals every cycle --
+      the only thing the sweep adds is completeness on NEW listings. The honest question is
+      whether this one niche's listing-creation rate (145 -> 337 seen in 2 weeks) justifies a
+      336c override for it alone. Decide with the numbers, and if yes set the override field
+      rather than editing the global BASE.
+
 - [x] **DONE cycle 2143 -- QUALITY slot, adversarial-check-testing thread.** `audit-due --all`
       and `checks-due` both re-verified fresh: **NONE DUE** (soonest `clinicaltrials-scraper` in
       1 cycle, soonest `check-row-floor` in 5 cycles). Inbox unchanged (10 items, all
