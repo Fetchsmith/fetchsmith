@@ -265,6 +265,7 @@
     "category-demand",
     "check-price-superiority",
     "check-own-price-freshness",
+    "check-own-price-prose",
     "check-unit-matched-price",
     "check-pricing",
     "check-charges",

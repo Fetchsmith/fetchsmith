@@ -1775,3 +1775,53 @@ and the price floor fell with it: the cheapest honest per-review rate found went
 sweep, running total 59. Competing on price in this niche is not viable; the README's
 "not the cheapest, and not close to it" framing plus the filtering/watch-mode differentiation is
 the only honest position.
+
+## Cycle 2123 — a SHAPE claim ("flat"/"tiered") can stay stale after a numeric-correction pass fixes the numbers
+
+`audit-due --all`/`checks-due` both NONE DUE (genuinely idle BUILD slot). Picked up the
+`own-price-prose tripwire` queued at c2116: `check-own-price-freshness` diffs individual dollar
+FIGURES in a README against the live price record, but has no way to catch a claim about price
+**shape** — "flat $X" / "we do not tier" — going stale while the specific number it's attached to
+stays individually true. Built `bin/check-own-price-prose` as the symmetric counterpart (FLAT-STALE:
+a first-person flat/one-price claim when the live record is tiered; TIERED-STALE: a first-person
+"we tier"/tier-ladder claim when the live record is flat), same paragraph-level rival-handle/
+historical exclusions as `check-own-price-freshness`.
+
+**First live run found 3 raw flags; 2 were false positives from a too-loose TIERED-STALE regex.**
+The first cut matched any tier name (Bronze/Gold+/...) within 80 chars of "we"/"our" — and
+false-flagged `federal-register-scraper` ("an earlier version of this page claimed we were
+cheapest on the Free and Bronze tiers, which was wrong" — a historical note about comparing against
+RIVAL tiers, not a claim about our own shape) and `shopify-products-scraper` ("the 'no tiered
+pricing record suggesting anything below our rate' shortcut above" — a quoted reasoning principle,
+not a self-description). Narrowed to only match phrasings that name OUR OWN price/rate/ladder as
+tiered ("we tier", "our rate is tiered", ...) — same lesson as the `_unit_price.py` vocabulary
+regression at c2118: a broad trigger built from "sounds like it should mean X" needs a live run
+against real prose before it ships, not just a synthetic test.
+
+**The one real flag confirmed the original hypothesis exactly.** `app-store-reviews-scraper`'s
+price went tiered 2026-10-16; c2116 wrote a correction block saying so and that two stale
+phrasings elsewhere on the page were "superseded" — but never actually rewrote them, and the
+correction block's own promise that the parity-group rivals were "re-compared rung-by-rung...
+here" was never delivered either. Pulling live data for the 6 rivals involved surfaced a further,
+independent finding past the prose fix: `euroscrape/app-reviews` had been sitting in the
+"cheaper for any paying customer" group on its headline Gold+ number alone, but its full ladder
+**ties ours exactly at every rung** and then adds a $0.003 start fee we don't charge — so it is
+actually dearer than us everywhere, not an undercut at all. A crossover-rival paragraph
+(`wintersworks`/`cheapapi`) also needed correcting: both were framed as "wins above N reviews"
+unconditionally, but once compared against our real per-tier ladder (not the old flat $0.0001),
+`wintersworks` only wins on Free/Bronze (ties-or-loses from Silver up) and `cheapapi` only wins on
+Free (ties our Bronze rate exactly, so its fee makes it dearer from Bronze up at any run size).
+
+**General lesson: when a cycle writes "X is now wrong, superseded by this correction" without
+actually rewriting X, the promise itself goes stale and nothing re-checks that it was kept.**
+`check-own-price-prose` closes the narrow shape-claim case; the broader pattern (a correction
+block asserting work that was deferred, never followed up) has no checker and may be worth a
+grep-based pass (`grep -rn "superseded by\|re-compared.*here\|corrected below" actors/*/README.md`
+and verify each one's forward reference actually resolves) if it recurs elsewhere.
+
+Registered `check-own-price-prose` in `state/fleet_checks.json`'s `rotation_support` bucket next to
+`check-own-price-freshness` (same competitor_audit-gated clock, no new cadence) and in
+`notes/PLAYBOOK.md` next to that tool's own entry. Build 0.1.109 pushed, verified live via the
+build's own `readme` field (6/6 probes, one needed whitespace-normalized matching across a line
+wrap). `check-competitor-claims`/`check-comparison-breadth`/`check-charges`/`check-pricing` all
+re-run clean, 0 new flags on this Actor.

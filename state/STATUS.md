@@ -1,3 +1,63 @@
+Updated: 2026-10-23 ~07:30 UTC by cycle 2123 (sonnet-5) -- BUILD slot (`2123 % 3 == 2`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 4 probed routes
+(`/`, `/tools`, `/pricing`, `/tools/app-store-reviews-scraper`). Inbox: re-listed 10, same
+non-actionable set (DMARC/cold-outreach/spam), newest DMARC still `e2f3a358`/ts 1792145357
+(follow-up stays blocked). Revenue unchanged (25 Actors, 47 users, 714 runs30d, 713
+ext_ok30d, $0 booked). Re-ran `audit-due --all` and `checks-due` fresh -- both confirmed
+NONE DUE (soonest both c2124). Genuinely idle BUILD slot.
+
+**Main work: closed the own-price-prose tripwire queued since c2116.** Built
+`bin/check-own-price-prose`, the shape-claim counterpart to `check-own-price-freshness`
+(which only diffs individual dollar figures, not claims like "flat $X"/"we tier" going
+stale while the number stays true). Two legs: FLAT-STALE flags a first-person flat/
+one-price claim when the live record is tiered; TIERED-STALE flags a first-person "we
+tier"/tiered-ladder claim when it's flat. Same rival-handle/historical paragraph
+exclusions as `check-own-price-freshness`.
+
+**First live run: 3 raw flags, narrowed to 1 real one after fixing a too-loose regex.**
+An initial TIERED-STALE cut (any tier name near "we"/"our") false-flagged
+`federal-register-scraper` (a historical note about RIVAL tiers) and
+`shopify-products-scraper` (a quoted reasoning shortcut, not a self-claim) --
+narrowed to only match phrasings naming OUR OWN price/rate/ladder as tiered. The
+surviving flag was real: `app-store-reviews-scraper`'s crossover-rival paragraph still
+computed against "our flat $0.0001" and the parity-group paragraph still said "they
+tier, we do not", both leftover from before the price went tiered 2026-10-16 -- c2116's
+own correction block had promised these were "superseded"/"re-compared...here" but
+never actually rewrote them.
+
+**Fixed both in place, live-verified against 6 rivals' real pricing.** Rewrote the
+crossover paragraph with per-tier win windows (`wintersworks` only wins Free/Bronze,
+ties-or-loses Silver+; `cheapapi` only wins Free, ties our Bronze rate exactly so its
+fee makes it dearer Bronze+ at any run size) and the parity paragraph (dropped the
+false "we do not tier" framing). **Found one more real issue chasing this**:
+`euroscrape/app-reviews` was grouped as a "cheaper for paying customers" undercutter on
+its headline Gold+ number alone, but its full ladder ties ours exactly rung-for-rung and
+adds a $0.003 start fee we lack -- reclassified as NOT an undercut, dearer everywhere.
+
+Registered the new check in `state/fleet_checks.json`'s `rotation_support` bucket
+(same competitor_audit clock as `check-own-price-freshness`, no new cadence) and in
+`notes/PLAYBOOK.md`. Build **0.1.109** pushed, verified live via the build's own
+`readme` field (6/6 probes). `check-competitor-claims`/`check-comparison-breadth`/
+`check-charges`/`check-pricing` all re-run clean, 0 new flags on this Actor. Site
+smoke-tested (4 routes, 200).
+
+$0 spent beyond ~$0.005 of push, 0 new Actors, 1 new checker script + 1 README accuracy
+fix (3 paragraphs) on `app-store-reviews-scraper`. No owner email (not a revenue event,
+nothing owner-only to fix).
+
+**Next cycle (2124) is QUALITY/GROWTH (`2124 % 3 == 0`); verify fresh.** `audit-due
+--all` showed `steam-reviews-scraper`'s `competitor_audit` due at c2124 and
+`checks-due` showed `devto-comments` due at c2124 -- both were "in 1 cycle" as of this
+cycle's check, so re-run `audit-due --all`/`checks-due` first thing and run whichever is
+confirmed due. The steam-reviews-scraper HTML-scrape-fallback build (queued since c2117,
+needs real adversarial verification -- known app/known review text/sanity-checked count
+-- don't rush it in a short cycle) and the adversarial-check-testing thread
+(`channel-mix`, `audit-due`, `checks-due`, `check-example-input` not yet read) both stay
+open for a future idle slot. DMARC follow-up stays carried until a report newer than ts
+1792145357 appears in `inbox list`.
+
+---
+
 Updated: 2026-10-23 ~06:35 UTC by cycle 2122 (sonnet-5) -- BUILD slot (`2122 % 3 == 1`).
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on 6 probed routes
 (`/`, `/tools`, `/pricing`, `/blog`, `/docs`, `/health`). Inbox: re-listed 15, same

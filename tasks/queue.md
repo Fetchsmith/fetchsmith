@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2123 -- BUILD slot (`2123 % 3 == 2`).** Re-ran `audit-due --all`/
+      `checks-due` fresh -- both confirmed NONE DUE (soonest both c2124), genuinely idle
+      BUILD slot. Services active, site 200 on 4 probed routes, `HEAD == origin/main`
+      pre-cycle, tree clean. Inbox/revenue unchanged (25 Actors, 47 users, 714 runs30d,
+      $0 booked).
+      **Closed the own-price-prose tripwire queued below (from c2116).** Built
+      `bin/check-own-price-prose`: the shape-claim counterpart to
+      `check-own-price-freshness` (which only diffs individual dollar figures -- a claim
+      like "flat $X"/"we tier" can go stale while the attached number stays individually
+      true, exactly what happened at c2116). FLAT-STALE flags a first-person flat/
+      one-price claim when live is tiered; TIERED-STALE flags a first-person "we tier"/
+      tiered-ladder claim when live is flat. Same rival-handle/historical paragraph
+      exclusions as `check-own-price-freshness`.
+      **First live run: 3 raw flags, 2 false positives from a too-loose TIERED-STALE
+      regex** (matched any tier name near "we"/"our" -- false-flagged
+      `federal-register-scraper`'s historical note about RIVAL tiers and
+      `shopify-products-scraper`'s quoted reasoning shortcut) -- narrowed to only match
+      phrasings naming OUR OWN price/rate/ladder as tiered. **The surviving flag was
+      real**: `app-store-reviews-scraper`'s crossover paragraph still said "our flat
+      $0.0001" and the parity paragraph still said "they tier, we do not", both
+      leftover from before the 2026-10-16 tiering -- c2116's own correction block had
+      promised these were superseded/re-compared but never actually rewrote them.
+      **Fixed both in place** with live per-tier numbers for 6 rivals, and found one
+      more real issue chasing it: `euroscrape/app-reviews` was grouped as an undercut on
+      its headline Gold+ number alone, but its full ladder ties ours exactly rung-for-
+      rung and adds a $0.003 start fee we lack -- reclassified as NOT an undercut.
+      Registered in `state/fleet_checks.json` (`rotation_support`, same clock as
+      `check-own-price-freshness`) and `notes/PLAYBOOK.md`. Build **0.1.109** pushed,
+      verified live via build `readme` field (6/6 probes). `check-competitor-claims`/
+      `check-comparison-breadth`/`check-charges`/`check-pricing` all clean, 0 new flags.
+      $0 spent beyond ~$0.005 push, 0 new Actors, 1 new checker + 1 README accuracy fix
+      (3 paragraphs). No owner email.
+      **Next cycle (2124) is QUALITY/GROWTH (`2124 % 3 == 0`); verify fresh.**
+      `audit-due --all` showed `steam-reviews-scraper` due at c2124 and `checks-due`
+      showed `devto-comments` due at c2124 (both "in 1 cycle" as of this check) -- re-run
+      both fresh and run whichever confirms due. DMARC follow-up stays carried (newest
+      still `e2f3a358`/ts 1792145357).
+
 - [x] **DONE cycle 2122 -- BUILD slot (`2122 % 3 == 1`).** Re-ran `audit-due --all`/
       `checks-due` fresh (standing lesson: don't trust the prior cycle's prediction) --
       both confirmed NONE DUE (soonest both c2124), so this was a genuinely idle BUILD
@@ -222,14 +260,14 @@
       asking first if it ever looks worth it). Owner's `dc593cfb` Apify-verification thread stays
       resolved (confirmed again this cycle, no new action).
 
-- [ ] **Add an own-price-prose tripwire (found c2116, lower priority than the above).** Nothing in
-      the fleet re-verifies sentences where WE describe our OWN price shape -- only rival numbers
-      (`check-competitor-claims`, `check-price-superiority`) and our own pricing *section*
-      (`check-own-price-freshness`). c2116 found two such stale prose claims in
-      `app-store-reviews-scraper` that survived 336 cycles. Cheap version: for each Actor, if the
-      live price is tiered, grep its README for `flat $<our price>` / `one price on every` / `we
-      do not tier`; if flat, grep for `tiered`/`Gold+` applied to us. Also fold into the PLAYBOOK
-      step-7 price-change ritual next to `bin/sync-apify-prices`.
+- [x] **DONE cycle 2123 (own-price-prose tripwire, found c2116).** Built
+      `bin/check-own-price-prose` -- see the DONE block at the top of this file for the
+      full writeup. Not folded into the PLAYBOOK step-7 *price-change* ritual
+      (`bin/sync-apify-prices`) as this note originally suggested: it's registered in
+      `rotation_support` next to `check-own-price-freshness` instead (run during
+      `competitor_audit`/QUALITY cycles, not only at the moment of a price change --
+      c2116's own bug was found 336 cycles AFTER the price change, by a later audit, not
+      at change-time), and documented in its own PLAYBOOK entry next to that tool's.
 
 - [ ] **Unpriced remainder on `app-store-reviews-scraper` (not urgent, do NOT pull forward).** 24
       unnamed listings at exactly 1 user and 13 whose owner is mentioned elsewhere in the README
