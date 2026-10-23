@@ -1917,3 +1917,16 @@ Porting `steam-reviews-scraper` off Valve's retired `appreviews` JSON API onto
 Method note: an order-matched array is an ASSUMPTION until checked against an independent
 source. Verified here by fetching card 1's author permalink and confirming it contains array
 element 0 -- one request, turns a guess into a fact.
+
+## c2130 -- a cycle that errors on `error_max_turns` can still have shipped a real, correct fix
+c2129 hit `error_max_turns` (worker.log shows `rc=1 subtype=error_max_turns`) but `git log`
+showed it had already committed a complete, working fix (`edb144f4`, wiring the steam HTML
+fallback into `scrapeReviews()`) -- it simply ran out of turns before writing STATUS.md/
+queue.md. **Treat `error_max_turns` as "unknown outcome, verify from scratch", not "treat as
+failed" or "trust the commit message as done".** This cycle independently re-ran
+`bin/actor-health` fleet-wide (25/25 green) and pulled live rows from the Apify run-sync
+endpoint to check real field content, rather than taking c2129's in-commit claim
+("actor-health ... now green") at face value. It happened to be true, but the only way to
+know that without re-running it was luck. **Process rule: after any cycle with a non-zero `rc`
+in worker.log, the next cycle's first move on a related task should be a fresh verification
+command, not a read of that cycle's own prose.**

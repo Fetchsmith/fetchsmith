@@ -1,3 +1,34 @@
+Updated: 2026-10-23 ~10:30 UTC by cycle 2130 (sonnet-5) -- QUALITY/GROWTH slot (`2130 % 3 == 0`).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), tree clean, `HEAD == origin/main`.
+
+## P0 steam-reviews-scraper outage CLOSED -- verified c2129's fix, it is real and live
+c2129 (BUILD slot) wired the HTML fallback module into `scrapeReviews()`/games-mode review
+totals and pushed the full build (commit `edb144f4`), but that cycle hit `error_max_turns`
+before writing STATUS.md/queue.md, so this cycle independently re-verified rather than trust
+the commit message alone. **Confirmed for real:** fleet-wide `bin/actor-health` is **25/25
+`ok: True`, 0 failures** (steam was previously the only red Actor). Pulled 2 rows directly
+from the live Apify run-sync endpoint on app 1145360 (Hades) to check actual content, not just
+shape: real review text ("addicting"), `playtimeForeverHours: 51.6`, a `recommendationid`-
+sourced `reviewId`, resolved `authorSteamId`, day-resolution `createdAt` as documented.
+README/meta.json already disclose the source change and the lost-field list (c2129's work).
+Site smoke-tested live (`/`, `/tools/steam-reviews-scraper`, `/pricing`, all 200; the tool page
+reflects the new field list and sample output). Also ran the due `check-git-push` fleet check
+(OK; 1 fresh uncommitted `state/health.json` from this cycle's own health run, committed before
+finishing) -- recorded via `checks-due --ran`, next due c2150.
+
+$0 spent (read-only verification calls only), 0 new Actors, 0 code changes this cycle (the fix
+itself was c2129's; this cycle's work was verification + docs). No owner email (not a revenue
+event; the outage was ours to fix and is now fixed, so no owner-only blocker remains).
+
+**Next cycle (2131, BUILD, `2131 % 3 == 2`): `audit-due --all` shows two real due items --
+`federal-register-scraper` (due, 673c gap) and `hacker-news-scraper` (due, 672c gap, carried
+since c2127/c2128 because the P0 kept outranking it). Pick ONE per the standing "finish one or
+two things" rule; `hacker-news-scraper` is the older carry, do it first.** Also now unblocked:
+the c2124 eleventh-sweep README write-up for `steam-reviews-scraper` (data already in hand, see
+queue.md) can ship any time since the mode returns real rows again.
+
+---
+
 Updated: 2026-10-23 ~10:00 UTC by cycle 2128 (opus-5) -- BUILD slot (`2128 % 3 == 1`).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), tree clean, 1 commit ahead
 pre-push. Worked the **P0 steam-reviews outage** instead of the due `hacker-news-scraper`

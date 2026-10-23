@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2130 -- QUALITY/GROWTH slot (`2130 % 3 == 0`). P0 CLOSED: verified
+      c2129's steam-reviews-scraper wiring commit (`edb144f4`) live end-to-end.** c2129
+      had wired `reviews_html.js` into `scrapeReviews()`/games-mode review totals, pushed
+      build changes (README, meta.json, package.json, input_schema.json, main.js) and
+      its own commit message already claimed `actor-health --only steam-reviews-scraper`
+      was green -- but the cycle hit `error_max_turns` before writing STATUS.md/queue.md,
+      so this cycle independently re-verified rather than trusting the commit message.
+      **Confirmed: full fleet `bin/actor-health` run, 25/25 Actors `ok: True`, 0 failures
+      (previously steam was the only red one).** Pulled 2 real rows directly from the live
+      Apify run-sync endpoint on app 1145360 (Hades) to check actual content, not just
+      shape: real review text ("addicting"), `playtimeForeverHours: 51.6`,
+      `recommendationid`-sourced `reviewId`, `authorSteamId` resolved, `createdAt` at day
+      resolution as documented. README already disclosed the source change and the lost-
+      field list (c2129 did this). Site smoke-tested (`/`, `/tools/steam-reviews-scraper`,
+      `/pricing`, all 200, tool page reflects the new field list/sample output). Also ran
+      the due `check-git-push` fleet check (OK, HEAD==origin/main; 1 fresh uncommitted
+      `state/health.json` from this cycle's own health run, committed before finishing) --
+      recorded via `checks-due --ran`, next due c2150. $0 spent beyond the already-
+      committed c2129 build + this cycle's read-only verification calls. No owner email
+      (not a revenue event; outage was ours to fix and is now fixed).
+      **Next cycle (2131, BUILD, `2131 % 3 == 2`): two real due competitor_audits
+      confirmed fresh by `audit-due --all` -- `federal-register-scraper` (due, gap 673c)
+      and `hacker-news-scraper` (due, gap 672c, has been DUE since c2127/c2128, carried
+      three cycles now because the P0 kept outranking it -- do this one first since it's
+      the older carry). Pick ONE per the standing "finish one or two things" rule; the
+      other stays DUE for the cycle after.**
+
 - [x] **DONE cycle 2128 -- BUILD slot (`2128 % 3 == 1`).** Worked the **P0 steam-reviews
       outage** rather than the due `hacker-news-scraper` competitor_audit (a dead shipped
       product outranks a due audit -- that audit is still DUE and should be the next
@@ -38,7 +65,11 @@
       cycle; time budget only covered one) -- run it first. `checks-due` NONE DUE
       (soonest `check-git-push` in 1c). The P0 steam outage below stays queued.
 
-- [ ] **P0 LIVE OUTAGE -- `steam-reviews-scraper` reviews mode is DEAD (found c2124). FIX THIS
+- [x] **CLOSED cycle 2130 -- wired c2129, verified c2130 (see DONE block at top of this
+      file). `bin/actor-health` is 25/25 green fleet-wide; real review text/playtime/
+      author pulled live from app 1145360 via the run-sync endpoint. No longer P0.**
+
+- [ ] [RESOLVED, kept for history] **P0 LIVE OUTAGE -- `steam-reviews-scraper` reviews mode is DEAD (found c2124). FIX THIS
       FIRST, it is a shipped, publicly-listed, PPE-priced product returning 0 rows.**
       **What broke:** Valve retired `https://store.steampowered.com/appreviews/<appid>` on
       **2026-10-22**. Verified from this box, not inferred: that URL now answers **302 ->
@@ -312,8 +343,9 @@
       regression gate -- it hits live Steam, so a Steam markup change shows up as a failure.
 
 - [ ] **Write the c2124 eleventh-sweep README block for `steam-reviews-scraper` (data already in
-      hand -- do NOT re-sweep).** The c2124 competitor_audit completed end to end but the outage
-      above took the rest of the cycle, so the prose was never shipped. Raw data is persisted at
+      hand -- do NOT re-sweep). UNBLOCKED as of c2130: the outage is fixed, reviews mode
+      returns real rows again, so this can ship now.** The c2124 competitor_audit completed
+      end to end but the outage above took the rest of the cycle, so the prose was never shipped. Raw data is persisted at
       **`state/audit_data/c2124_steam_prices.json`** (all 106 unnamed listings, full
       event x tier maps, descriptions) and **`state/audit_data/c2124_steam_unnamed.txt`** (the
       handles). The full finding list is in `state/audit_dates.json` ->
@@ -387,7 +419,8 @@
       both fresh and run whichever confirms due. DMARC follow-up stays carried (newest
       still `e2f3a358`/ts 1792145357).
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-10-23): steam-reviews-scraper — see state/health.json [hard]
+- [x] FIX FAILED ACTORS (nightly health 2026-10-23): steam-reviews-scraper — RESOLVED
+      cycle 2130, fleet-wide `bin/actor-health` re-run is 25/25 `ok: True`, 0 failures.
 - [x] **DONE cycle 2122 -- BUILD slot (`2122 % 3 == 1`).** Re-ran `audit-due --all`/
       `checks-due` fresh (standing lesson: don't trust the prior cycle's prediction) --
       both confirmed NONE DUE (soonest both c2124), so this was a genuinely idle BUILD
