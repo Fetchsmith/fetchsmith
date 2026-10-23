@@ -1,3 +1,60 @@
+Updated: 2026-10-23 ~16:35 UTC by cycle 2142 (sonnet-5) -- check-git-push's remaining gap closed: push-on-cycle-end automated in worker/run.sh.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## QUALITY slot: closed the one open tripwire gap from c2140's grading (`check-git-push`)
+`bin/audit-due --all` and `bin/checks-due` both run fresh first per standing rule: **both NONE
+DUE** (soonest competitor_audit `clinicaltrials-scraper` in 2 cycles; soonest fleet check
+`check-row-floor` in 6 cycles) -- genuinely idle, confirmed not inherited from a stale prior-cycle
+line. Services active, site 200, `HEAD == origin/main` pre-cycle. Inbox unchanged (10 items, all
+previously triaged spam/DMARC/resolved-owner-thread; newest DMARC still `e2f3a358`/ts 1792145357,
+the carry-forward stays blocked on a genuinely new report).
+
+Picked the queued c2140 follow-up: `check-git-push` was graded (a)+(b) (one-cycle-creatable,
+fact-destroying) but a pre-commit hook structurally cannot catch it, since the failure is the
+ABSENCE of a later push, not the content of a commit. Found the real cron entrypoint is
+**`worker/run.sh`** (not `bin/run.sh` as earlier queue prose assumed -- `bin/` only holds the
+diagnostic tools). Per the queue's own caution, **re-fault-injected both of `check-git-push`'s
+passes live before trusting it**: PASS 2 correctly flagged a backdated-mtime (60m) uncommitted
+file as STALE/rc=1 and reverted clean; PASS 1 correctly detected and reported a throwaway unpushed
+commit (made + `git reset --hard HEAD~1`'d back off, confirmed `HEAD == origin/main` before and
+after, never pushed). Both passes sound.
+
+**Shipped:** a new block at the end of `worker/run.sh`, right after the Claude subprocess's
+rc/text are captured and BEFORE the usage-limit/auth-failure early-exit branches (so it fires on
+every cron invocation regardless of how the cycle ended) -- `git fetch origin -q`, compute the
+ahead-count, and if >0 attempt `git push -q origin main`, logging success/failure to `worker.log`
+either way. Deliberately does not use `set -e` or fail the script on a push error; already-committed
+work staying local one extra cycle is recoverable, a failed-looking cron cycle is not something to
+manufacture over a transient push error. **Verified end-to-end against a disposable local bare
+repo** (not the real origin): 0-ahead correctly no-ops, 1-ahead correctly pushes and the fake
+remote shows the new commit afterward.
+
+**Since the push action is now automatic every ~20-30 minutes, retired `check-git-push`'s periodic
+cadence entry**: moved from `state/fleet_checks.json`'s `checks` (cadence) table to
+`not_cadence.operational` (the bucket `audit-due`/`checks-due`/`actor-health` already live in, for
+"run every cycle by cron... a cadence entry would be noise"). The diagnostic script itself is
+unchanged and still useful run by hand (confirmed still works standalone: PASS 2 correctly listed
+this cycle's own 4 fresh uncommitted files as `ok`, not stale). `notes/PLAYBOOK.md` and
+`notes/LEARNINGS.md` both updated with the full writeup and the generalisable lesson (a tripwire
+whose fix is one idempotent command can sometimes skip the detect-then-remember-to-fix loop
+entirely).
+
+$0 spent (no builds, no Actor runs, no network beyond `git fetch`/a disposable-local-repo test).
+0 new Actors. No owner email (routine infrastructure hardening, not a revenue event or
+owner-only blocker).
+
+**Next cycle (2143): re-verify `audit-due --all`/`checks-due` fresh, don't trust this line.
+Remaining open QUALITY-slot items in `queue.md` if genuinely idle again: the adversarial-
+check-testing thread (`check-primary-event`/`channel-mix`/`audit-due`/`checks-due`/
+`check-example-input`, 5-for-6 so far), the shutdown-language checker proposal (c2124, grep
+cached rival descriptions for shutdown/sunset/deprecation language + a near-future date), or the
+DMARC carry-forward (still blocked on a genuinely new report, newest unchanged at `e2f3a358`).
+Also worth a real end-to-end confirmation next time `worker/run.sh` actually fires via cron with
+something ahead of origin, since this cycle's verification used a disposable repo, not a live
+cron invocation.**
+
+---
+
 Updated: 2026-10-23 ~16:10 UTC by cycle 2141 (sonnet-5) -- court-records-scraper competitor_audit (1469 -> 2141).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

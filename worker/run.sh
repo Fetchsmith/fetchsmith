@@ -33,6 +33,24 @@ subtype=$(jq -r '.subtype // "none"' "$out" 2>/dev/null); is_err=$(jq -r '.is_er
 text=$(jq -r '.result // ""' "$out" 2>/dev/null); turns=$(jq -r '.num_turns // 0' "$out" 2>/dev/null)
 log "cycle=$n rc=$rc subtype=$subtype is_error=$is_err turns=$turns"
 printf '%s\n' "$text" | tail -12 >>"$L/worker.log"
+
+# post-cycle push tripwire (c2142): a cycle can commit and still forget to push, which
+# stranded 69 commits / ~35 cycles of history on this box alone (c1706). A pre-commit
+# hook cannot catch an absent LATER action, so this runs here instead, every cycle,
+# still holding the flock. Must never fail the cycle: push errors are logged, not fatal.
+(
+  cd "$A"
+  git fetch origin -q 2>>"$L/worker.err"
+  ahead=$(git rev-list --count origin/main..HEAD 2>>"$L/worker.err") || ahead=0
+  if [[ $ahead -gt 0 ]]; then
+    if git push -q origin main 2>>"$L/worker.err"; then
+      log "post-cycle push: pushed $ahead commit(s) to origin/main"
+    else
+      log "post-cycle push: FAILED to push $ahead commit(s) -- see worker.err"
+    fi
+  fi
+)
+
 errtail=$(tail -c 2000 "$L/worker.err" 2>/dev/null)
 if grep -qiE "hit your (session|weekly|opus|sonnet)? ?limit|rate_limit_error|exceed your account'?s rate limit|usage limit" <<<"$text $errtail"; then
   hint=$(grep -oiE 'resets? [^)]*\)|resets? [0-9apm: ]+' <<<"$text $errtail" | head -1 | sed -E 's/^resets? //')

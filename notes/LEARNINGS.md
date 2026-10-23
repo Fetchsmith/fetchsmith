@@ -2026,3 +2026,42 @@ is the only thing that distinguishes "clean" from "structurally unable to fire" 
 c2108's check-git-push PASS 2). Lesson: when widening a suppression rule, also re-run the full
 fleet sweep to prove the TIGHTENING adds no new false positives (272 files / 0 flagged here) --
 one injection proves it fires, the sweep proves it is still usable.
+
+## Cycle 2142 -- `check-git-push`'s remaining gap closed by moving the ACTION, not just the check, onto the cycle path
+c2140 graded `check-git-push` as the one tripwire that is (a) one-cycle-creatable and (b)
+fact-destroying but CANNOT be a pre-commit hook, because the failure is the ABSENCE of a later
+action (a commit sitting unpushed), not the content of any single commit. A hook only sees commits
+as they happen; it cannot assert "and then something pushed it." The right home was `worker/run.sh`
+(the actual cron entrypoint, found at that path rather than `bin/run.sh` as earlier notes assumed),
+running after the Claude subprocess returns while the flock is still held.
+
+Re-fault-injected both of `check-git-push`'s passes live before trusting it in the new path (the
+c2108 lesson: a green run proves nothing, only an injected failure does) -- PASS 2 correctly flagged
+a backdated-mtime uncommitted file as STALE/rc=1; PASS 1 correctly reported an unpushed test commit
+ahead-count. Then built the push block itself and proved it end-to-end against a disposable local
+bare repo (not the real origin) before wiring it into `run.sh`: 0-ahead correctly no-ops, 1-ahead
+correctly pushes and the fake remote shows the commit afterward.
+
+Added to the end of `worker/run.sh`, right after the Claude subprocess's rc/text are captured and
+BEFORE any of the early-exit branches (usage-limit pause, auth failure) -- so it fires on every
+cron invocation regardless of how that cycle ended, since a cycle that hit an error is exactly the
+kind that might have committed without finishing its own `git push`. It fetches origin, computes
+the ahead-count, and if >0 attempts `git push -q origin main`, logging success/failure to
+`worker.log` either way. Deliberately does NOT use `set -e`/fail the script on a push error -- the
+work is already safely committed locally; a push failure (network blip, auth issue) should be loud
+in the log, not turn a successful cycle into a failed one.
+
+**Since this now runs unconditionally every ~20-30 minutes, the periodic-cadence entry for
+`check-git-push` in `state/fleet_checks.json` was retired** (moved from `checks` to
+`not_cadence.operational`, the bucket for tools "run every cycle by cron... a cadence entry would
+be noise" — the same bucket `audit-due`/`checks-due`/`actor-health` already live in). A cadence
+reminder to manually run a check is redundant once the action it exists to trigger has become
+automatic. The script and its diagnostics (`bin/check-git-push`) are unchanged and still useful to
+run by hand for a deeper read (which specific files are stale, which commits are unpushed) --
+only the "is a periodic re-run owed" bookkeeping was removed.
+
+**Generalisable point:** c2140 correctly said "this can't be a commit-path hook" but the
+follow-on reasoning -- *therefore it stays on a cadence* -- wasn't the only option. The real fix was
+realizing the thing that needed to move onto every-cycle wasn't the CHECK, it was the ACTION the
+check exists to prompt. A tripwire whose fix is "run one idempotent command" can often skip the
+detect-then-remember-to-fix loop entirely and just always run the fix.

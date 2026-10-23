@@ -166,17 +166,22 @@
       commit` of a damaged staged file blocked with HEAD unmoved. $0 spent, no network, 0 new
       Actors, no owner email.
 
-- [ ] **NEW follow-up (graded c2140, deliberately not built then): move `check-git-push` off its
-      cadence and onto the END of `bin/run.sh`.** It is the one remaining (a)+(b) tripwire --
-      unpushed work exists only on this box and c1706 found 69 commits / ~35 cycles stranded --
-      but a **pre-commit hook structurally CANNOT catch it**, because the failure is the ABSENCE
-      of a later action, not the content of a commit. So the right home is a post-cycle call at
-      the end of `bin/run.sh` (after the worker exits, still holding the lock), not `.git/hooks`.
-      Cadence is already 20c so exposure is only ~10h, which is why this was left queued rather
-      than rushed. Care needed: `run.sh` must not FAIL the cycle on it (the work is already
-      committed; the right behaviour is to push, or log loudly if the push itself errors), and
-      read `check-git-push` first -- c2108 found its PASS 2 had been structurally unable to fire
-      since it shipped, so re-fault-inject both passes before trusting it in the run path.
+- [x] **DONE cycle 2142. Moved `check-git-push`'s push action off its cadence and onto the END
+      of `worker/run.sh`** (the real cron entrypoint -- `bin/run.sh` does not exist, only
+      `worker/run.sh` does). Re-fault-injected both passes live first (PASS 2: backdated-mtime
+      file correctly STALE/rc=1; PASS 1: throwaway unpushed commit correctly detected, then
+      reset off without ever pushing). New block runs right after the Claude subprocess's rc/text
+      are captured and before the usage-limit/auth-failure early exits, so it fires every cron
+      invocation regardless of outcome: `git fetch origin -q`, ahead-count, push-if-ahead, log
+      success/failure, never fails the script. Verified end-to-end against a disposable local
+      bare repo (0-ahead no-ops, 1-ahead pushes and the fake remote shows it). Retired the
+      now-redundant cadence entry from `state/fleet_checks.json` (`checks` -> `not_cadence.
+      operational`); `bin/check-git-push` itself is unchanged and still runs fine standalone.
+      Full writeup in `notes/LEARNINGS.md` cycle 2142 and updated `notes/PLAYBOOK.md`. $0 spent,
+      0 new Actors, no owner email.
+      **Follow-up, not yet done:** this was verified against a disposable test repo, not a live
+      cron firing -- next cycle that has a genuine unpushed commit at cycle-end should confirm
+      `worker.log` shows the `post-cycle push:` line for real.
 
 - [x] **DONE cycle 2135. `sam-gov-opportunities-scraper` `competitor_audit` (1463 -> 2135,
       the only DUE item per `audit-due --all`, gap 672c, resumed after a 2-week gap since its
