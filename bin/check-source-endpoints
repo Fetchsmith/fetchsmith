@@ -1,0 +1,209 @@
+#!/root/agent/venv/bin/python
+"""check-source-endpoints -- probe our own 24 upstream hosts directly and flag a
+DEVIATION from each host's own established baseline.
+
+WHY THIS EXISTS (unbuilt half of the c2124 item, filed c2148, built c2150)
+---------------------------------------------------------------------------
+`bin/check-upstream-warnings` (c2148) reads what RIVALS SAY about upstream breakage --
+a LEADING but gossip-only signal. `bin/actor-health`/`bin/check-row-floor` are LAGGING --
+they only notice after a nightly run already came back empty. Nothing probed our own
+upstream hosts directly, so a source that breaks with no rival having said anything is
+invisible for up to a day. This closes that gap with one cheap unauthenticated GET per
+unique host.
+
+HOST LIST, AND WHY IT IS NOT DERIVED FROM registry.json
+---------------------------------------------------------
+registry.json carries no upstream field (checked before writing this). Hosts live in
+`state/upstream_hosts.json`, curated by hand by grepping literal `https://` URLs out of
+each Actor's `src/main.js` on non-comment lines, then reading context to exclude: a
+User-Agent string that happens to contain a URL (remote-jobs-scraper's own
+"+https://fetchsmith.com"), a documented default-sample input value
+(substack-scraper's astralcodexten.substack.com), and a placeholder default for an
+arbitrary user-supplied URL (website-screenshot-scraper's example.com). Three Actors are
+EXEMPT with a stated reason each (website-screenshot-scraper and shopify-products-scraper
+take arbitrary user URLs with no fixed upstream; google-play-reviews-scraper goes through
+the google-play-scraper npm package, which has no literal host in OUR code to probe).
+`scholarship-scraper` is excluded for a different reason: registry.json says
+status=retired, it is not a live Actor.
+
+HONEST LIMIT, STATED PER THE ORIGINAL PROPOSAL
+------------------------------------------------
+This probes each host's bare root (https://<host>/), NOT each Actor's real
+endpoint+params -- a 200 on the root says nothing about whether the SPECIFIC endpoint an
+Actor depends on still works (`actor-health` running the real Actor input remains the
+authoritative liveness signal). It also means many of these hosts legitimately return a
+non-2xx on their bare root forever (a bot-check 403, a redirect to a docs page, a 404 for
+"no route at /") -- an absolute non-2xx is not itself meaningful. What IS meaningful is a
+CHANGE: this tool keeps a per-host baseline (status bucket, final redirected host,
+content-type family) in `state/source_endpoint_baseline.json` and flags when a
+previously-OK host starts erroring, or when it starts redirecting to a DIFFERENT
+registrable host than its own baseline (the pre-shutdown tell: an old API domain 301/308ing
+to a rewritten docs/migration page on another host). A brand-new host with no baseline
+establishes one silently on its first run; only a baseline MOVING is a flag.
+
+Usage: bin/check-source-endpoints [--json] [--selftest] [--reset-baseline HOST]
+Exit 1 if any live host is flagged DEVIATION, 0 if clean (including "baseline just
+established" and all EXEMPT/retired skips, which are informational only).
+"""
+import argparse
+import json
+import os
+import sys
+import urllib.parse
+
+import httpx
+
+ROOT = "/root/agent"
+HOSTS_FILE = f"{ROOT}/state/upstream_hosts.json"
+BASELINE_FILE = f"{ROOT}/state/source_endpoint_baseline.json"
+UA = "Mozilla/5.0 (compatible; FetchSmithSourceCheck/1.0; +https://fetchsmith.com)"
+TIMEOUT = 10.0
+
+
+def registrable(host):
+    parts = host.split(".")
+    return ".".join(parts[-2:]) if len(parts) >= 2 else host
+
+
+def status_bucket(code):
+    if code is None:
+        return "error"
+    if 200 <= code < 300:
+        return "ok"
+    if 300 <= code < 400:
+        return "redirect"
+    if 400 <= code < 500:
+        return "client-error"
+    return "server-error"
+
+
+def probe(host, client):
+    url = f"https://{host}/"
+    try:
+        r = client.get(url, headers={"User-Agent": UA}, timeout=TIMEOUT, follow_redirects=True)
+        final_host = urllib.parse.urlsplit(str(r.url)).hostname or host
+        ctype = (r.headers.get("content-type") or "").split(";")[0].strip()
+        return {"status": r.status_code, "bucket": status_bucket(r.status_code),
+                "final_host": final_host, "content_type": ctype, "error": None}
+    except httpx.HTTPError as e:
+        return {"status": None, "bucket": "error", "final_host": host,
+                "content_type": "", "error": type(e).__name__}
+
+
+def load(path, default):
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    return default
+
+
+def unique_hosts(hosts_cfg):
+    seen = {}
+    for slug, hosts in hosts_cfg["hosts"].items():
+        for h in hosts:
+            seen.setdefault(h, []).append(slug)
+    return seen
+
+
+def run_real(reset_host=None):
+    cfg = load(HOSTS_FILE, {"hosts": {}, "exempt": {}})
+    baseline = load(BASELINE_FILE, {})
+    if reset_host:
+        baseline.pop(reset_host, None)
+    host_to_slugs = unique_hosts(cfg)
+    results = []
+    with httpx.Client() as client:
+        for host in sorted(host_to_slugs):
+            r = probe(host, client)
+            r["host"] = host
+            r["slugs"] = host_to_slugs[host]
+            prev = baseline.get(host)
+            if prev is None:
+                r["verdict"] = "BASELINE-SET"
+            else:
+                moved = registrable(r["final_host"]) != registrable(prev["final_host"])
+                broke = prev["bucket"] in ("ok", "redirect") and r["bucket"] in ("error", "server-error")
+                r["verdict"] = "DEVIATION" if (moved or broke) else "ok"
+                r["baseline_was"] = prev
+            results.append(r)
+            baseline[host] = {"status": r["status"], "bucket": r["bucket"],
+                               "final_host": r["final_host"], "content_type": r["content_type"]}
+    with open(BASELINE_FILE, "w") as f:
+        json.dump(baseline, f, indent=1, sort_keys=True)
+        f.write("\n")
+    return results, cfg.get("exempt", {})
+
+
+def run_selftest():
+    """Fault-inject three synthetic hosts against the real probe/compare logic
+    (not the network): one with no prior baseline (expect BASELINE-SET), one whose
+    baseline was healthy and now errors (expect DEVIATION, broke=True), one whose
+    baseline redirected to host A and now redirects to unrelated host B
+    (expect DEVIATION, moved=True). A fourth, unchanged-ok host must stay clean."""
+    synthetic_baseline = {
+        "stable.example": {"status": 200, "bucket": "ok", "final_host": "stable.example", "content_type": "text/html"},
+        "broke.example": {"status": 200, "bucket": "ok", "final_host": "broke.example", "content_type": "text/html"},
+        "moved.example": {"status": 200, "bucket": "ok", "final_host": "old-api.example", "content_type": "application/json"},
+    }
+    fake_probes = {
+        "new.example": {"status": 200, "bucket": "ok", "final_host": "new.example", "content_type": "text/html", "error": None},
+        "stable.example": {"status": 200, "bucket": "ok", "final_host": "stable.example", "content_type": "text/html", "error": None},
+        "broke.example": {"status": None, "bucket": "error", "final_host": "broke.example", "content_type": "", "error": "ConnectTimeout"},
+        "moved.example": {"status": 301, "bucket": "redirect", "final_host": "totally-different.example", "content_type": "text/html", "error": None},
+    }
+    ok = True
+    for host, probe_result in fake_probes.items():
+        prev = synthetic_baseline.get(host)
+        if prev is None:
+            verdict = "BASELINE-SET"
+        else:
+            moved = registrable(probe_result["final_host"]) != registrable(prev["final_host"])
+            broke = prev["bucket"] in ("ok", "redirect") and probe_result["bucket"] in ("error", "server-error")
+            verdict = "DEVIATION" if (moved or broke) else "ok"
+        expect = {"new.example": "BASELINE-SET", "stable.example": "ok",
+                  "broke.example": "DEVIATION", "moved.example": "DEVIATION"}[host]
+        status = "PASS" if verdict == expect else "FAIL"
+        if verdict != expect:
+            ok = False
+        print(f"  {status} {host}: expected {expect}, got {verdict}")
+    print("SELFTEST " + ("PASS" if ok else "FAIL"))
+    return 0 if ok else 1
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--reset-baseline", metavar="HOST")
+    args = ap.parse_args()
+
+    if args.selftest:
+        sys.exit(run_selftest())
+
+    results, exempt = run_real(args.reset_baseline)
+    flagged = [r for r in results if r["verdict"] == "DEVIATION"]
+
+    if args.json:
+        print(json.dumps({"results": results, "exempt": exempt}, indent=1))
+        sys.exit(1 if flagged else 0)
+
+    print(f"check-source-endpoints: {len(results)} unique host(s) probed, "
+          f"{sum(1 for r in results if r['verdict'] == 'BASELINE-SET')} baseline(s) set, "
+          f"{len(flagged)} DEVIATION")
+    for name, reason in sorted(exempt.items()):
+        print(f"  EXEMPT {name}: {reason}")
+    for r in sorted(results, key=lambda x: x["verdict"] != "DEVIATION"):
+        if r["verdict"] == "DEVIATION":
+            print(f"  DEVIATION {r['host']} ({', '.join(r['slugs'])}): "
+                  f"was {r['baseline_was']['bucket']}/{r['baseline_was']['final_host']} "
+                  f"-> now {r['bucket']}/{r['final_host']} status={r['status']} err={r['error']}")
+        elif r["verdict"] == "BASELINE-SET":
+            print(f"  baseline-set {r['host']} ({', '.join(r['slugs'])}): "
+                  f"{r['bucket']} status={r['status']}")
+    if not flagged:
+        print("CLEAN -- no host deviated from its own baseline.")
+    sys.exit(1 if flagged else 0)
+
+
+if __name__ == "__main__":
+    main()

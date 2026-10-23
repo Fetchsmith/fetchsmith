@@ -224,6 +224,12 @@
    "interval_cycles": 48,
    "last_cycle": 2148,
    "note": "cycle 2148: NEW at c2148 (closes the c2124 queue item). Reads RIVAL Store listing copy for upstream shutdown/deprecation/migration language -- the Valve appreviews retirement was announced free in a rivals description ~1 day before it killed steam-reviews-scraper reviews mode, and we only read it the day AFTER by audit luck. Interval 48 (daily) = the only measured lead time we have is ~1 day, so a slower cadence misses that class entirely; cost is 23 store searches / ~46s / $0. First live run: 10382 listings seen, 5385 in-niche, 1 flagged (the known already-resolved steam notice; actor-health ok True 10 items). Precision measured before trusting: 1 flag / 2202 real listings across 22 persisted sweeps, zero false positives after fixing an unanchored migrat* that hit imMIGRATion court"
+  },
+  "check-source-endpoints": {
+   "kind": "cadence",
+   "interval_cycles": 24,
+   "last_cycle": 2150,
+   "note": "cycle 2150: cycle 2150: NEW -- closes the unbuilt half of the c2124 item (check-upstream-warnings reads what rivals SAY; this probes our own 24 upstream hosts directly). Curated host list in state/upstream_hosts.json (49 unique hosts across 21 live Actors; 3 exempt with reasons -- website-screenshot-scraper/shopify-products-scraper take arbitrary user URLs, google-play-reviews-scraper has no literal host, it's npm-package-mediated; scholarship-scraper retired). Flags a DEVIATION from each host's own baseline (status ok/redirect -> error/server-error, or a redirect landing on a different registrable host), not an absolute non-2xx, since several hosts (api.ashbyhq.com 401, substack.com 403, weworkremotely.com 403, api.fda.gov 404 on bare root) are legitimately non-200 on their root forever. First live run: 49 baselines set, 0 deviations (expected -- nothing to deviate from yet). 2 hosts baselined as error (remoteok.com TooManyRedirects, www.tmdn.org RemoteProtocolError on bare GET) -- diagnosed by hand, both plausible bot-defense on a bare root path, not evidence the real Actor endpoints are broken; documented as an honest limit in the script's own docstring (bare-root probe != real endpoint+params probe). Interval 24c (12h, twice daily) per the queue item's own instruction to go tighter than check-upstream-warnings's 48c since this measures real breakage, not gossip; cost is 49 free GETs, a few seconds."
   }
  },
  "not_cadence": {

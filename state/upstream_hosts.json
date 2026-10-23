@@ -1,0 +1,32 @@
+{
+  "_readme": "Curated map of slug -> upstream base host(s) that bin/check-source-endpoints probes directly, built cycle 2150 to close the unbuilt half of the c2124 item (bin/check-upstream-warnings reads what RIVALS say; nothing probed OUR upstreams directly). Hosts were verified by grepping each actors/<slug>/src/main.js for literal https:// URLs on non-comment lines (registry.json carries no upstream field -- checked first, confirmed absent). Exclusions made by hand after reading context, not mechanically: remote-jobs-scraper's 'https://fetchsmith.com' at main.js:19 is our own User-Agent string, not a fetch target; substack-scraper's 'https://astralcodexten.substack.com' is a documented DEFAULT_PUBLICATION_URLS sample, not a fixed upstream (the real fixed host is substack.com's own /api/v1/categories); website-screenshot-scraper's 'https://example.com' is a placeholder default for an arbitrary user-supplied URL. scholarship-scraper excluded entirely (status=retired in registry.json, not a live Actor). Re-derive by re-running the grep in notes/LEARNINGS.md cycle 2150 if an Actor's main.js changes.",
+  "exempt": {
+    "website-screenshot-scraper": "renders arbitrary user-supplied URLs via Chromium -- no single fixed upstream to probe, same exemption bin/check-upstream-warnings already uses for this Actor",
+    "shopify-products-scraper": "fetches arbitrary user-supplied storeUrl's /products.json -- no single fixed upstream, same shape as website-screenshot-scraper",
+    "google-play-reviews-scraper": "upstream reached only through the google-play-scraper npm package, which has no literal host string in our own src/main.js to probe (it talks to Google Play's internal, undocumented endpoints)"
+  },
+  "hosts": {
+    "apple-podcasts-scraper": ["podcasts.apple.com", "itunes.apple.com", "rss.marketingtools.apple.com"],
+    "app-store-reviews-scraper": ["apps.apple.com", "itunes.apple.com"],
+    "ats-jobs-scraper": ["boards-api.greenhouse.io", "api.ashbyhq.com", "api.lever.co", "apply.workable.com", "api.smartrecruiters.com", "jobs.smartrecruiters.com"],
+    "clinicaltrials-scraper": ["clinicaltrials.gov"],
+    "court-records-scraper": ["www.courtlistener.com", "storage.courtlistener.com"],
+    "eu-ted-tenders-scraper": ["api.ted.europa.eu"],
+    "fda-recall-scraper": ["api.fda.gov", "www.fda.gov"],
+    "fec-campaign-finance-scraper": ["api.open.fec.gov", "www.fec.gov"],
+    "federal-register-scraper": ["www.federalregister.gov"],
+    "google-news-scraper": ["news.google.com"],
+    "grants-gov-scraper": ["api.grants.gov", "www.grants.gov", "sam.gov"],
+    "hacker-news-scraper": ["hn.algolia.com", "news.ycombinator.com", "api.github.com", "hacker-news.firebaseio.com"],
+    "nih-reporter-scraper": ["api.reporter.nih.gov", "fallback.era.nih.gov", "reporter.nih.gov"],
+    "remote-jobs-scraper": ["remotive.com", "remoteok.com", "jobicy.com", "www.arbeitnow.com", "www.workingnomads.com", "himalayas.app", "weworkremotely.com"],
+    "sam-gov-opportunities-scraper": ["sam.gov"],
+    "scholarship-scraper": [],
+    "sec-insider-trades-scraper": ["www.sec.gov", "data.sec.gov"],
+    "steam-reviews-scraper": ["store.steampowered.com", "steamcommunity.com", "steamspy.com", "api.steampowered.com"],
+    "substack-scraper": ["substack.com"],
+    "trademark-search-scraper": ["www.tmdn.org"],
+    "uk-find-a-tender-scraper": ["www.find-tender.service.gov.uk", "www.contractsfinder.service.gov.uk"],
+    "us-federal-awards-scraper": ["api.usaspending.gov", "www.usaspending.gov"]
+  }
+}

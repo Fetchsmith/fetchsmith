@@ -1,0 +1,296 @@
+{
+ "api.ashbyhq.com": {
+  "bucket": "client-error",
+  "content_type": "text/plain",
+  "final_host": "api.ashbyhq.com",
+  "status": 401
+ },
+ "api.fda.gov": {
+  "bucket": "client-error",
+  "content_type": "text/html",
+  "final_host": "api.fda.gov",
+  "status": 404
+ },
+ "api.github.com": {
+  "bucket": "ok",
+  "content_type": "application/json",
+  "final_host": "api.github.com",
+  "status": 200
+ },
+ "api.grants.gov": {
+  "bucket": "client-error",
+  "content_type": "application/json",
+  "final_host": "api.grants.gov",
+  "status": 403
+ },
+ "api.lever.co": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.lever.co",
+  "status": 200
+ },
+ "api.open.fec.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "api.open.fec.gov",
+  "status": 200
+ },
+ "api.reporter.nih.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "api.reporter.nih.gov",
+  "status": 200
+ },
+ "api.smartrecruiters.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "developers.smartrecruiters.com",
+  "status": 200
+ },
+ "api.steampowered.com": {
+  "bucket": "client-error",
+  "content_type": "text/html",
+  "final_host": "api.steampowered.com",
+  "status": 404
+ },
+ "api.ted.europa.eu": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "api.ted.europa.eu",
+  "status": 200
+ },
+ "api.usaspending.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "api.usaspending.gov",
+  "status": 200
+ },
+ "apply.workable.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "apply.workable.com",
+  "status": 200
+ },
+ "apps.apple.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "apps.apple.com",
+  "status": 200
+ },
+ "boards-api.greenhouse.io": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.greenhouse.com",
+  "status": 200
+ },
+ "clinicaltrials.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "clinicaltrials.gov",
+  "status": 200
+ },
+ "data.sec.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "data.sec.gov",
+  "status": 200
+ },
+ "fallback.era.nih.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.era.nih.gov",
+  "status": 200
+ },
+ "hacker-news.firebaseio.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "accounts.google.com",
+  "status": 200
+ },
+ "himalayas.app": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "himalayas.app",
+  "status": 200
+ },
+ "hn.algolia.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "hn.algolia.com",
+  "status": 200
+ },
+ "itunes.apple.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.apple.com",
+  "status": 200
+ },
+ "jobicy.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "jobicy.com",
+  "status": 200
+ },
+ "jobs.smartrecruiters.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "jobs.smartrecruiters.com",
+  "status": 200
+ },
+ "news.google.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "consent.google.com",
+  "status": 200
+ },
+ "news.ycombinator.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "news.ycombinator.com",
+  "status": 200
+ },
+ "podcasts.apple.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "podcasts.apple.com",
+  "status": 200
+ },
+ "remoteok.com": {
+  "bucket": "error",
+  "content_type": "",
+  "final_host": "remoteok.com",
+  "status": null
+ },
+ "remotive.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "remotive.com",
+  "status": 200
+ },
+ "reporter.nih.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "reporter.nih.gov",
+  "status": 200
+ },
+ "rss.marketingtools.apple.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "rss.marketingtools.apple.com",
+  "status": 200
+ },
+ "sam.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "sam.gov",
+  "status": 200
+ },
+ "steamcommunity.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "steamcommunity.com",
+  "status": 200
+ },
+ "steamspy.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "steamspy.com",
+  "status": 200
+ },
+ "storage.courtlistener.com": {
+  "bucket": "ok",
+  "content_type": "application/xml",
+  "final_host": "storage.courtlistener.com",
+  "status": 200
+ },
+ "store.steampowered.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "store.steampowered.com",
+  "status": 200
+ },
+ "substack.com": {
+  "bucket": "client-error",
+  "content_type": "text/html",
+  "final_host": "substack.com",
+  "status": 403
+ },
+ "weworkremotely.com": {
+  "bucket": "client-error",
+  "content_type": "text/html",
+  "final_host": "weworkremotely.com",
+  "status": 403
+ },
+ "www.arbeitnow.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.arbeitnow.com",
+  "status": 200
+ },
+ "www.contractsfinder.service.gov.uk": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.contractsfinder.service.gov.uk",
+  "status": 200
+ },
+ "www.courtlistener.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.courtlistener.com",
+  "status": 200
+ },
+ "www.fda.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.fda.gov",
+  "status": 200
+ },
+ "www.fec.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.fec.gov",
+  "status": 200
+ },
+ "www.federalregister.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.federalregister.gov",
+  "status": 200
+ },
+ "www.find-tender.service.gov.uk": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.find-tender.service.gov.uk",
+  "status": 200
+ },
+ "www.grants.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.grants.gov",
+  "status": 200
+ },
+ "www.sec.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.sec.gov",
+  "status": 200
+ },
+ "www.tmdn.org": {
+  "bucket": "error",
+  "content_type": "",
+  "final_host": "www.tmdn.org",
+  "status": null
+ },
+ "www.usaspending.gov": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.usaspending.gov",
+  "status": 200
+ },
+ "www.workingnomads.com": {
+  "bucket": "ok",
+  "content_type": "text/html",
+  "final_host": "www.workingnomads.com",
+  "status": 200
+ }
+}

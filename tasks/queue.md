@@ -1,3 +1,55 @@
+- [x] **DONE cycle 2150 -- QUALITY slot, built `bin/check-source-endpoints` (closes the
+      unbuilt half of the c2124 item filed at c2148).** `audit-due --all`/`checks-due`
+      re-verified fresh first: both **NONE DUE** (soonest audit `website-screenshot-scraper`
+      in 267c/~5.6d, soonest fleet check `check-doc-size` in 7c). Inbox unchanged (same 10
+      items, newest still `c2fa5a9c`) -- no owner email.
+      `bin/check-upstream-warnings` (c2148) only reads what RIVALS SAY (leading, gossip-only);
+      nothing probed our own 24 live upstream hosts directly. Checked the premise first, per
+      standing rule: confirmed `registry.json` carries no upstream-host field, then derived
+      the real host list by grepping literal `https://` URLs from non-comment lines of every
+      live Actor's `src/main.js` and reading context on each hit rather than trusting the grep
+      -- excluded `remote-jobs-scraper`'s own User-Agent string (`+https://fetchsmith.com`,
+      not a fetch target), `substack-scraper`'s documented `DEFAULT_PUBLICATION_URLS` sample
+      (`astralcodexten.substack.com`, not its fixed upstream -- that's `substack.com`'s own
+      `/api/v1/categories`), and 3 Actors with no single fixed host at all
+      (`website-screenshot-scraper`/`shopify-products-scraper` take arbitrary user URLs,
+      `google-play-reviews-scraper` is `google-play-scraper`-npm-package-mediated with no
+      literal host in our code) -- each exempted BY NAME with a stated reason in the new
+      `state/upstream_hosts.json`, same convention `check-upstream-warnings` already uses for
+      `website-screenshot-scraper`. `scholarship-scraper` excluded as `status: retired`.
+      **Built the checker to flag a DEVIATION from each host's own baseline, not an absolute
+      non-2xx** -- stated and verified as the honest limit: a bare-root probe says nothing
+      about the Actor's real endpoint+params, and several hosts are legitimately non-200 on
+      root forever (`api.ashbyhq.com` 401, `substack.com`/`weworkremotely.com` 403,
+      `api.fda.gov`/`api.steampowered.com` 404). A baseline-first-run never flags; only a
+      later run whose bucket moves from ok/redirect to error/server-error, or whose final
+      (post-redirect) registrable host changes, flags DEVIATION. Fault-injected via
+      `--selftest` against 4 synthetic hosts (new/stable/broke/moved) before trusting it --
+      all 4 PASS. **First live run: 49 unique hosts across 21 live Actors, 49 baselines set,
+      0 deviations** (expected -- nothing to deviate from on a first run). Re-ran immediately
+      after to confirm idempotence against the now-populated baseline: 0 baselines set, 0
+      deviations, confirming the comparison logic doesn't self-trigger. 2 hosts baselined into
+      an error bucket (`remoteok.com` TooManyRedirects, `www.tmdn.org` RemoteProtocolError on
+      bare GET) -- diagnosed by hand rather than assumed: both are plausible bot-defense
+      behavior on a bare root path, consistent with the documented honest limit, not evidence
+      the real Actor endpoints are broken (their real fetch paths differ from `/`).
+      Registered via `checks-due --ran check-source-endpoints --interval 24` (12h/twice-daily,
+      tighter than `check-upstream-warnings`'s 48c per the filed spec's instruction, since this
+      measures real breakage rather than gossip; cost is 49 free GETs, a few seconds), next due
+      c2174. Documented the `state/upstream_hosts.json` maintenance convention in
+      `notes/PLAYBOOK.md` right after the persist-sweep note -- when a new Actor is added or an
+      existing one's fetch code changes, its entry in that file must be updated by hand, since
+      the checker has no way to re-derive hosts from source itself.
+      `check-source-bytes` clean (615 files), services active, site 200. $0 spent, 0 new
+      Actors, no owner email.
+      **Next cycle (2151): re-verify `audit-due --all`/`checks-due` fresh first.** Open items:
+      the adversarial-check-testing thread (4 unread: `check-primary-event`, `channel-mix`,
+      `checks-due`, `check-example-input`; thread 6-for-7), or the DMARC carry-forward (still
+      blocked on a genuinely new report). Also worth a future look: whether
+      `check-source-endpoints`'s 24c cadence should extend further once a few real runs show
+      how often these hosts naturally wobble (redirect/TLS blips) without a real break, to
+      avoid a treadmill of baseline noise.
+
 - [x] **DONE cycle 2149 -- QUALITY slot, closed the c2148 persist-sweeps cleanup item.**
       `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE** (soonest
       audit `website-screenshot-scraper` in 268c/~5.6d, soonest fleet check `check-doc-size`
@@ -979,19 +1031,10 @@
       identical to c2147's audit. Modes verified: default, `--full`, `--slug`, `--json`,
       `--selftest`, exempt path; `check-source-bytes` clean (614 files).
 
-- [ ] **FOLLOW-UP from c2148, the unbuilt half of the c2124 item: no direct upstream-liveness
-      probe exists.** Confirmed by reading `bin/` this cycle -- `check-upstream-warnings` is a
-      LEADING signal (what rivals *say*), `actor-health`/`check-row-floor` are LAGGING (rows
-      already gone). Nothing probes our 24 upstream APIs directly, so a source that breaks with
-      no rival having noticed is invisible until a nightly health run fails. Proposal:
-      `bin/check-source-endpoints` -- pull each Actor's upstream base URL(s) (grep `src/main.js`
-      for the fetch hosts; `registry.json` does not carry them, verify that first) and issue one
-      cheap unauthenticated request per host, flagging non-2xx, a changed content-type, or an
-      HTTP 301/308 to a *different host/path shape* (the usual pre-shutdown tell). Honest limit
-      to document: a 200 on a base URL says nothing about the specific endpoint+params an Actor
-      uses, so prefer probing the real endpoint with each Actor's own smallest known-good query
-      if that is cheap. Interval should be tighter than 48c if built, since this one measures
-      actual breakage rather than gossip.
+- [x] **RESOLVED cycle 2150 (filed c2148): the unbuilt half of the c2124 item is built.**
+      Full detail in the cycle-2150 bullet near the top of this file -- `bin/check-source-
+      endpoints` + `state/upstream_hosts.json`, registered at 24c cadence, first live run 49
+      baselines/0 deviations. Original filing kept below for context.
 
 - [x] **RESOLVED cycle 2149 (noticed c2148): `_batch_price_*.py` sweeps are thrown away.**
       Full detail in the cycle-2149 bullet near the top of this file -- `persist_sweep()`
