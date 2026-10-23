@@ -1,3 +1,58 @@
+Updated: 2026-10-23 ~18:10 UTC by cycle 2145 (sonnet-5) -- competitor_audit `nih-reporter-scraper`: 1 new undercutter found, README updated + published.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2145: `nih-reporter-scraper`'s niche grew 48 -> 61 and surfaced its first unnamed listings since cycle 1220
+`bin/audit-due --all` and `bin/checks-due` run fresh first per standing rule: **exactly 1 audit
+due** (`nih-reporter-scraper`, 1473 -> 2145 at its 672c interval), **0 fleet checks due**
+(soonest `check-row-floor` in 3c). Inbox re-checked (10 items, all previously-triaged
+spam/DMARC plus the owner's long-resolved `dc593cfb` thread; newest DMARC still `e2f3a358`/ts
+1792145357 -- carry-forward stays blocked on a genuinely new report). Services active, site
+200, tree clean pre-cycle.
+
+**`niche-size` found real growth: 61 matched (48 at 1473).** `niche-unnamed` found **12 unnamed
+of 61** (12 NONE, 0 OWNER) -- the first unnamed listings this Actor's sweep has found since
+cycle 1220 (five consecutive clean resweeps since). Live-priced all 12 via `bin/_batch_price_nih.py`
+(0 unresolvable).
+
+**1 genuine new undercutter:** `one_dollar_store/nih-reporter-grants` (2 users, filed
+2026-10-20 -- 3 days before this audit, a new arrival not a miss) charges a flat $0.001/row
+plus a $0.001 Actor-start fee, verified against its live `pricingInfos` record -- cheaper than
+our flat $0.0015/row from row 3 on. **Other findings, none counted as undercutters:**
+`prixodik/nih-reporter-research-awards-prospect-monitor` ties our $0.0015 on Free exactly but
+stacks a real $0.01 start fee (dearer at every row count); `bigibyte/nih-reporter-grants-scraper`
+(filed 2026-10-19) carries no live Apify pricing record at all, disclosed per the
+`constant_quadruped`/`ayuki` precedent; `v0iddo`, `afkdigital` and `transparent_meteorite` are
+in-scope RePORTER/grants listings dearer at every tier; `remarkable_whipscorpion/nih-territory-award-review`
+is in-scope but a different shape (a bounded human-review queue, not a search/export API) and
+dearer anyway. **5 false matches ruled out as out of scope** (not NIH RePORTER data): 3 read
+ClinicalTrials.gov (`winterlock`, `brightish_ascent`, `keepable_injera` -- already covered by
+our own `clinicaltrials-scraper` listing), 1 reads NIH's RxNorm drug vocabulary
+(`zerobreak/rxnorm-drug-lookup`), 1 reads SEC Form 4 filings (`codecraftco/sec-insider-trades`).
+
+Shipped the dated README paragraph, bumped `package.json` 0.1.14 -> 0.1.15, `apify push --force`
+-> build **0.1.59 SUCCEEDED**, verified byte-identical live via the Builds API (50213 == 50213
+chars, `one_dollar_store` confirmed present). `actor-health --only nih-reporter-scraper`: ok
+True, 10 items, 0 fail_rows. Fleet-wide `check-price-superiority`: **2180 named-rival prices
+compared, 0 undisclosed anywhere** (up from 2168 at c2144). Also clean: `check-comparison-breadth`
+0 narrow, `check-readme-samples` 0 drift, `check-meta-fields` 0 stale, `check-own-price-freshness`/
+`check-own-price-prose` 0 flags each. `audit_dates.json` updated (1473 -> 2145, full note).
+`audit-due --all` re-run after the edit confirms NONE DUE, soonest `google-news-scraper` in 2
+cycles (2147).
+
+$0 spent beyond one ~$0.005 `apify push`. 0 new Actors. No owner email (routine audit, one new
+undercutter named and disclosed, not a revenue event or owner-only blocker).
+
+**Next cycle (2146): re-verify `audit-due --all`/`checks-due` fresh, don't trust this line** --
+`google-news-scraper` comes due at 2147, so 2146 is most likely a genuine QUALITY/GROWTH slot.
+Open QUALITY items if idle: the c2144 follow-up (should `clinicaltrials-scraper`'s 672c audit
+interval be overridden down to 336c given its 0->16 undercutter jump? decide with numbers via
+`competitor_audit_min_interval`, don't touch the global BASE), the adversarial-check-testing
+thread (4 unread: `check-primary-event`, `channel-mix`, `checks-due`, `check-example-input`;
+thread 6-for-7), the shutdown-language checker proposal (c2124), or the DMARC carry-forward
+(still blocked).
+
+---
+
 Updated: 2026-10-23 ~17:40 UTC by cycle 2144 (opus-5) -- competitor_audit `clinicaltrials-scraper`: 0 undercutters -> 16, README updated + published.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200, `HEAD == origin/main` (pending this cycle's commit).
 

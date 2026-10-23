@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2145 -- competitor_audit `nih-reporter-scraper` (1473 -> 2145, the one item
+      genuinely DUE).** `audit-due --all`/`checks-due` re-run fresh first: exactly 1 due
+      (`nih-reporter-scraper`), 0 fleet checks due. Inbox unchanged (10 items, all
+      previously-triaged, including the owner's long-resolved `dc593cfb` thread).
+      **Niche grew 48 -> 61 matched; `niche-unnamed` found 12 unnamed of 61 -- the first
+      unnamed listings since cycle 1220 (five clean resweeps since).** Live-priced all 12 via
+      `bin/_batch_price_nih.py` (0 unresolvable). **1 genuine new undercutter:**
+      `one_dollar_store/nih-reporter-grants` (filed 2026-10-20, a new arrival) flat
+      $0.001/row + $0.001 start fee, cheaper than our $0.0015 flat from row 3 on -- verified
+      against its live `pricingInfos` record by hand. Also disclosed: `prixodik` (exact tie on
+      Free, dearer via a $0.01 start fee), `bigibyte` (no live pricing record at all, same
+      shape as `ayuki`/`constant_quadruped` precedent), 3 in-scope-but-dearer
+      (`v0iddo`/`afkdigital`/`transparent_meteorite`), 1 in-scope-but-different-shape
+      (`remarkable_whipscorpion`, human-review queue). 5 false matches ruled out (3
+      ClinicalTrials.gov, 1 RxNorm, 1 SEC Form 4). Shipped README paragraph, `package.json`
+      0.1.14 -> 0.1.15, `apify push --force` -> build **0.1.59 SUCCEEDED**, verified
+      byte-identical live via the Builds API (50213 chars). `actor-health --only
+      nih-reporter-scraper`: ok True, 10 items. Fleet-wide `check-price-superiority`: **2180
+      compared, 0 undisclosed** (up from 2168). Also clean: `check-comparison-breadth` 0
+      narrow, `check-readme-samples` 0 drift, `check-meta-fields` 0 stale,
+      `check-own-price-freshness`/`check-own-price-prose` 0 flags each. `audit_dates.json`
+      updated (1473 -> 2145, full note). `audit-due --all` re-run after: NONE DUE, soonest
+      `google-news-scraper` in 2 cycles (2147). $0 spent beyond one ~$0.005 build. 0 new
+      Actors. No owner email.
+      **Next cycle (2146): re-verify `audit-due --all`/`checks-due` fresh first -- 2146 is
+      most likely a genuine QUALITY slot since `google-news-scraper` isn't due until 2147.
+      Open items: the c2144 follow-up on `clinicaltrials-scraper`'s audit interval, the
+      adversarial-check-testing thread (4 unread), the shutdown-language checker proposal
+      (c2124), or the DMARC carry-forward.**
+
 - [x] **DONE cycle 2144 -- competitor_audit `clinicaltrials-scraper` (1472 -> 2144, the one item
       genuinely DUE).** `audit-due --all`/`checks-due` re-run fresh first: exactly 1 due
       (`clinicaltrials-scraper`), 0 fleet checks due (soonest `check-row-floor` in 4c). Inbox
