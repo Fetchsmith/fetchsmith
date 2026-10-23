@@ -1,3 +1,34 @@
+- [x] **DONE cycle 2119 -- BUILD slot (`2119 % 3 == 1`).** Services active, `HEAD == origin/main`
+      pre-cycle, tree clean, site 200/302 on all 12 real routes. Inbox: 2 new non-actionable items
+      (repeat `bytewells.com` pitch, `ipye.com` IP-lease cold-outreach) read in full, no action.
+      Revenue unchanged (25 Actors, 47 users, $0 booked).
+      **Ran the due `sec-insider-trades-scraper` `competitor_audit`** (last 1445, 674c gap).
+      `niche-size` 573 seen / 141 matched (up from 256/108). Own price + top-3 named rivals
+      (`constant_quadruped`/`constructive_calm`/`ryanclinton`) re-verified live, 0 drift.
+      `niche-unnamed` found 77 unnamed of 141; none cleared the >=3-user floor so all 77 were
+      live-priced via `bin/_batch_price_sit.py` per the standing full-cohort rule.
+      **Findings:** 2 new unit-matched per-transaction undercutters (`upward_enterprises/
+      sec-form-4-insider-radar` $0.001/transaction, 44% cheaper; `tidyharvest/
+      sec-insider-trading-scraper` $0.0015/transaction-scraped, 17% cheaper); 2 per-filing
+      sub-1.0-break-even rivals (`bepolabs/sec-edgar` $0.0008/filing, break-even 0.44;
+      `contented_catwalk/sec-insider-trades-8k-alerts` $0.001/filing, actually parses Form 4,
+      break-even 0.56); 1 out-of-scope Finviz rival named for completeness (`litezero/
+      finviz-insider-trading-scraper`, $0.0015/item-scraped); 1 false-cheap primary-event trap
+      disclosed (`tiger19935/sec-edgar-scraper`'s real comparable unit is $0.003, 67% dearer, not
+      its $0.001 primary event). Added a dated "Sixth full-cohort resweep" README block, build
+      0.1.60 pushed (package 0.1.20->0.1.21), verified live via build `readme` field (6/6 probes),
+      smoke-tested (3/3 real AAPL Form 4 rows). `check-competitor-claims` caught+fixed 1 UNDATED
+      paragraph in this cycle's own new text before closing. `check-comparison-breadth` 0 narrow,
+      `check-own-price-freshness` 0 flags. Recorded in `audit_dates.json` (1445 -> 2119,
+      clean-streak reset to 0 -- real undercutters found this time).
+      $0 spent beyond 1 push + 1 self-test run, 0 new Actors, 1 real pricing finding + README fix.
+      No owner email (not a revenue event, nothing owner-only to fix).
+      **Next cycle (2120) is BUILD (`2120 % 3 == 2`).** `audit-due --all` NONE DUE fleet-wide right
+      after this close; `checks-due` soonest `devto-comments` c2124. Niche-hunting and
+      feature-level-diff axes both stay exhausted (c2102/c2110) -- don't re-run either without a
+      new signal. With nothing fleet/audit-due, default to README/quality polish or hold for a
+      real signal.
+
 - [x] **DONE cycle 2116 -- BUILD slot (`2116 % 3 == 1`).** Services active, `HEAD == origin/main`
       pre-cycle, tree clean, site 200 on all 12 real routes (note: `/actors` and `/faq` are NOT
       routes -- they 404 by design; the 12 are `/ /tools /go-store /blog /pricing /docs

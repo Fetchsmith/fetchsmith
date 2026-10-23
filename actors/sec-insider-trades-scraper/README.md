@@ -308,6 +308,51 @@ rate alone and carry a $0.01 and $0.20 one-time Actor-start fee respectively on 
 at $0.003-$0.025/row, consistent with every prior sweep's modal range on this niche. No new rival
 worth naming.
 
+**Sixth full-cohort resweep (77 unnamed listings, checked live 2026-10-23 — the niche has grown to
+573 seen / 141 matched, up from 256/108 at the last full sweep).** Our own price was re-verified
+against the live record first: flat **$0.0018/`result`, no start fee**, unchanged; the niche's two
+biggest listings by users, `constant_quadruped/sec-edgar-filings-scraper` (now 111 users, still
+FREE) and `constructive_calm/sec-edgar-scraper` (now 62 users, still $0.0004/`filing-fetched` +
+$0.01 start), plus `ryanclinton/sec-insider-trading` (58 users, still $0.002/`trade-fetched` +
+$0.00005 start), all re-verified with **0 price drift**. Nothing in the 77-listing tail cleared
+the usual ≥3-user floor, so per the standing full-cohort rule all 77 were live-priced regardless.
+
+**Two genuine new unit-matched (per-transaction) undercutters:** `upward_enterprises/sec-form-4-insider-radar`
+(2 users, $0.001 per `transaction` — event titled "Insider transaction" — **44% cheaper** than our
+$0.0018, advertising insider name/role, buy-or-sell code, shares, price, value, holdings-after,
+10b5-1 flag and free per-company cluster signals — a close feature match, though not confirmed
+against our 20-code decode or the flag's four on-the-wire spellings) and
+`tidyharvest/sec-insider-trading-scraper` (2 users, $0.0015 per `transaction-scraped` — event
+titled "Insider transaction" — **17% cheaper**, listing claims the signed dollar value and 10b5-1
+flag, any ticker/CIK or whole-market, back to 2003).
+
+**Two more charge per filing rather than per transaction, and both break even below 1.0 — so, like
+the existing sub-1.0 group (`constructive_calm`/`mikee368`/`getascraper`/`mina_safwat` above), they
+are cheaper per transaction-equivalent at any filing density, not only for high-activity issuers
+like Apple:** `bepolabs/sec-edgar` ($0.0008/`filing`, no start fee — break-even **0.44** — a generic
+10-K/10-Q/8-K/Form-4 filing downloader returning document links, not parsed transaction fields) and
+`contented_catwalk/sec-insider-trades-8k-alerts` ($0.001/`filing`, no start fee — break-even
+**0.56** — this one actually parses Form 4 into clean rows (insider, role, code, shares, price,
+value, holdings-after) plus 8-K item alerts, the closest per-filing feature match to our own output
+found in this niche yet, though its per-row cost is still the one quoted since it bills by filing).
+
+**One more is cheaper than us on a unit-matched basis but out of scope, named for completeness the
+same way `saswave/advanced-finviz-scraper` and `scrapesage/finviz-scraper` already are above:**
+`litezero/finviz-insider-trading-scraper` ($0.0015 per `item-scraped`, event titled "Item Scraped"
+— 17% cheaper — but sourced from Finviz.com's own secondary display of insider transactions, not
+parsed EDGAR XML, so no transaction-code decode, signed value or 10b5-1 normalization behind it).
+
+**One looked like a steep undercut on its Store-displayed primary event and is not (verified live
+2026-10-23):** `tiger19935/sec-edgar-scraper`'s primary event is `filing-row` at $0.001 — a raw,
+unparsed EDGAR filing-index row — but its separate `parsed-form` event, the one that actually
+produces a Form 4/13F/Form D row with fields and the only unit comparable to ours, is **$0.003, 67%
+dearer** than our $0.0018. Read past the primary-event label before counting a rival as cheap.
+
+The remainder of the cohort (`akhil_rajesh/yahoo-finance-scraper`, `webdatatools/yahoo-finance-scraper`,
+`thirdwatch/sec-edgar-scraper` and the rest) are generic multi-purpose finance/EDGAR scrapers where
+insider trades are one minor feature among dozens — out of scope, the same ruling every prior sweep
+gave this shape — or sit at $0.003/row and up, dearer than us at every tier.
+
 ## Notes on the source
 
 - **Filings older than June 2003 are not machine-readable at all, and this Actor says so rather

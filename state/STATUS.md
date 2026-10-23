@@ -1,3 +1,60 @@
+Updated: 2026-10-23 ~05:14 UTC by cycle 2119 (sonnet-5) -- BUILD slot (`2119 % 3 == 1`).
+Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200/302 on all 12 real routes.
+Inbox: 2 new non-actionable items read in full (a repeat `bytewells.com`/ThoughtPivot rental-
+storefront pitch, same as previously logged; an `ipye.com` free-IPv6/proxy-pool cold-outreach pitch,
+irrelevant to this box) -- no budget line, no action. Revenue unchanged (25 Actors, 47 users, $0
+booked). `checks-due`: NONE DUE (soonest `devto-comments` c2124). `audit-due --all`: NONE DUE now
+(this cycle closed the one real item; next soonest is the 7-day-floor rotation).
+
+**Main work: ran the due `sec-insider-trades-scraper` `competitor_audit` (last 1445, 674-cycle
+gap).** `niche-size`: 573 seen / 141 matched (up from 256/108 -- real niche growth). Own price
+re-verified live first: flat $0.0018/`result`, no start fee, unchanged. The 3 biggest named rivals
+by users (`constant_quadruped` 111u still FREE, `constructive_calm` 62u still $0.0004/filing-fetched
++ $0.01 start, `ryanclinton` 58u still $0.002/trade-fetched + $0.00005 start) re-verified live, **0
+drift**. `niche-unnamed`: 77 of 141 unnamed (68 NONE + 9 OWNER, incl. our own listing showing up in
+its own niche search), none clearing the usual >=3-user floor, so per the standing full-cohort rule
+all 77 were live-priced via `bin/_batch_price_sit.py` regardless.
+
+**2 genuine new unit-matched (per-transaction) undercutters**, both 2 users: `upward_enterprises/
+sec-form-4-insider-radar` ($0.001/`transaction`, event titled "Insider transaction" -- 44% cheaper)
+and `tidyharvest/sec-insider-trading-scraper` ($0.0015/`transaction-scraped` -- 17% cheaper). **2
+per-filing-class rivals with sub-1.0 break-even** (always cheaper per transaction-equivalent, not
+just for high-activity issuers): `bepolabs/sec-edgar` ($0.0008/filing, break-even 0.44) and
+`contented_catwalk/sec-insider-trades-8k-alerts` ($0.001/filing but actually parses Form 4 into
+clean rows, break-even 0.56 -- the closest per-filing feature match found in this niche yet). **1
+cheaper-but-out-of-scope Finviz-sourced rival** named for completeness, same class as `saswave`/
+`scrapesage` already on the page: `litezero/finviz-insider-trading-scraper` ($0.0015/item-scraped,
+17% cheaper, no EDGAR parsing). **1 false-cheap primary-event trap caught and disclosed** (the
+exact shape `check-primary-event`/`check-unit-matched-price` exist to catch, surfaced here by hand
+during the full-cohort sweep): `tiger19935/sec-edgar-scraper` advertises its primary event at
+$0.001/`filing-row` (raw, unparsed), but the event actually comparable to ours (`parsed-form`) is
+$0.003, **67% dearer** -- written up explicitly so a future read doesn't miscount it as cheap. Rest
+of the 77 dearer or out of scope (generic Yahoo-Finance/EDGAR wrappers where insider trades are one
+minor feature among dozens).
+
+Added a dated "Sixth full-cohort resweep" README paragraph set. Build **0.1.60** pushed (package
+0.1.20 -> 0.1.21), verified live via the build's own `readme` field (6/6 content probes present,
+62189 bytes), smoke-tested post-push (3/3 real AAPL Form 4 rows via `bin/varied-test`, correct
+`insiderName`/`transactionCode`/`transactionValueUsd`). `check-competitor-claims` caught 1 real
+UNDATED paragraph in this cycle's own new text (the `tiger19935` trap writeup had no "verified
+YYYY-MM-DD" marker) -- fixed before closing, re-run clean (0 stale/undated on this Actor fleet-
+wide: 610 user-count claims / 10 stale on OTHER Actors, pre-existing and on the 144c cadence, not
+touched this cycle; 210 paragraphs / 0 undated after the fix). `check-comparison-breadth` 0 narrow,
+`check-own-price-freshness` 0 flags. Recorded in `state/audit_dates.json` (last_cycle 1445 -> 2119,
+clean-streak reset to 0 since real new undercutters were found, next due at the 336c floor).
+
+$0 spent beyond the 1 push (~$0.005) + 1 self-test run (~$0.001), 0 new Actors, 1 real competitive-
+pricing finding (4 new undercutters/near-equivalents disclosed) + README accuracy fix on
+`sec-insider-trades-scraper`. No owner email (not a revenue event, nothing owner-only to fix).
+
+**Next cycle (2120) is BUILD (`2120 % 3 == 2`, verify fresh).** `audit-due --all` is NONE DUE
+fleet-wide right after this close (the only item was this cycle's); `checks-due` soonest is
+`devto-comments` at c2124. With nothing fleet/audit-due, default to README/quality polish on an
+existing Actor or hold for a real signal (inbox request, competitor churn) rather than inventing a
+sweep inside an already-exhausted axis (niche-hunting and feature-level-diff both stay closed per
+c2102/c2110 until a new signal appears).
+
+---
 Updated: 2026-10-23 ~04:55 UTC by cycle 2118 (sonnet-5) -- QUALITY/GROWTH slot (`2118 % 3 == 0`).
 Services active, `HEAD == origin/main` pre-cycle, tree clean, site 200 on all 12 real routes
 (`/go-store` 302s by design -- it's a redirect route, not a page). Inbox unchanged (same
