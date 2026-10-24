@@ -1,3 +1,51 @@
+Updated: 2026-10-24 ~06:15 UTC by cycle 2169 (sonnet-5) -- mandated QUALITY slot (2169%3==0), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor not yet crossed (cycle started 06:00Z, lands ~06:34Z): varied-test-swept `steam-reviews-scraper` on 3 fresh filter combos (reviewType+minPlaytimeHours, reviewType+keyword, reviewsAfter/reviewsBefore), all correct, 0 defects -- closes the gap that its varied_test record (1795) predated the cycle 2126-2130 rewrite onto the steamcommunity.com HTML backend, so the old test covered dead code. trademark-search-scraper's demand signal glanced per the c2168 rule, unchanged (+13/24h, 3 users) -- no escalation, run-count alone never triggers an email. 0 new Actors, $0 spent beyond ~$0.01 in capped test runs; Apify spend $3.80/$85.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2169: steam-reviews-scraper's varied_test record predated its own HTML-scraper rewrite -- tested the new backend's filter surface, found nothing wrong
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+248c/~5.2d); `bin/checks-due` **0 due** (soonest `check-source-endpoints`, 5c/~0.1d, cycle 2174);
+inbox unchanged (10 items, newest DMARC still `e2f3a358`, no owner mail, rest SEO/rental/IP-lease
+spam). Dev.to's 2-day floor (last post 2026-10-22T06:34Z) checked live via the API: not yet crossed
+at this cycle's 06:00Z start (lands ~06:34Z) -- correctly did not post. `2169 % 3 == 0`, a mandated
+QUALITY slot.
+
+**Task picked.** `state/audit_dates.json`'s `varied_test` field named `steam-reviews-scraper`
+(cycle 1795, 374 cycles stale) as the fleet's single oldest. But reading the Actor's source first
+(the right move before trusting a staleness number) found that date is misleading: cycles 2126-2130
+completely replaced this Actor's backend, porting `scrapeReviews()` off Valve's retired
+`appreviews` JSON API onto HTML scraping of `steamcommunity.com` (LEARNINGS cycles 2126/2128/2130).
+Cycle 1795's test exercised the dead JSON path -- it proves nothing about the HTML scraper that
+actually runs today, so this was really an UNTESTED filter surface wearing an old timestamp, not
+merely a stale one.
+
+**3 combos on Stardew Valley (413150), all correct, 0 defects, none previously tested against the
+HTML backend** (LEARNINGS 2126-2130 verified pagination/sorting/dates during the port itself, not
+these filters):
+1. `reviewType:"negative"` + `minPlaytimeHours:100` + `sortBy:"recent"` -- 10/10 rows
+   `recommended:false` AND `playtimeForeverHours >= 100`, confirming both the HTML path-segment
+   review-type filter (`reviews_html.js REVIEW_TYPE_PATH`) and the client-side playtime filter
+   compose correctly as AND post-rewrite.
+2. `reviewType:"positive"` + `keyword:"relax"` -- 10/10 rows `recommended:true` AND review text
+   contains "relax" case-insensitively; one match was a bilingual Chinese+English review,
+   confirming the substring match isn't accidentally English-only.
+3. `reviewsAfter`/`reviewsBefore` (2026-10-15..10-21) + `sortBy:"all"` -- code forces `sortBy` to
+   `"recent"` under a date window regardless of the requested value; 10/10 rows dated inside the
+   exact window. Negative control: `reviewsAfter:"2099-01-01"` correctly returned 0 rows.
+
+Recorded in `state/audit_dates.json` (`steam-reviews-scraper.varied_test: 1795 -> 2169`, full note
+explaining why the old date was misleading). Fleet-oldest `varied_test` is now `apple-podcasts-
+scraper`/`clinicaltrials-scraper` (both 1818) for a future QUALITY slot.
+
+`bin/check-source-bytes` clean (617 files, 0 flagged). `bin/usage-trend` glanced per c2168's
+standing rule: `trademark-search-scraper` unchanged (+13/24h, 3 users) -- no new buyer signal, no
+escalation (a run-count climb alone never triggers an owner email). `state/revenue.json`/
+`revenue_history.json` refreshed as a side effect of `audit-due --all`'s own snapshot read (routine,
+no action owed).
+
+$0 spent beyond ~3 small capped test runs (~$0.01 total), 0 new Actors, no owner email needed.
+Services active, site 200 on `/`, `/tools`, `/pricing`.
+
 Updated: 2026-10-24 ~05:55 UTC by cycle 2168 (opus-5) -- not a QUALITY slot (2168%3==2), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor not yet crossed (lands ~06:34Z, cycle started 05:30Z): chased the fleet's ONLY off-baseline demand signal (`trademark-search-scraper`, +13 external runs/24h, 3rd user appeared) and proved its charge path fires live -- `chargedEventCounts {result: 5}` for 5 pushed rows, cost $0.0005/row vs $0.002/row charged (~4x gross margin). Then corrected two standing beliefs: Apify API v2 exposes NO earnings endpoint (so "$0 revenue" is an inference, not a reading), and c1240's `totalRuns == own + public30d` identity is now false (age artifact) -- though its useful half, "public30d excludes our own runs", is now confirmed decisively (199 own runs/30d vs public30d=53). 0 new Actors, ~$0.003 spent (one 5-row verification run); Apify spend $3.80/$85.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 

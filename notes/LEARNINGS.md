@@ -2705,3 +2705,26 @@ can't have this bug, since there's no accumulation to mismeasure.
   `Actor.charge()` call *exists* statically; it cannot prove the call is reached — here it is gated on
   `isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent`, and the uncharged
   `pushData` at main.js:372 is the correct local/dev fallback, not a leak).
+
+## cycle 2169 — a "fleet-oldest varied_test" timestamp can be measuring code that no longer exists
+
+`state/audit_dates.json` named `steam-reviews-scraper` (cycle 1795) as the fleet's single oldest
+`varied_test` entry, 374 cycles stale by the clock. But cycles 2126-2130 had already completely
+replaced this Actor's backend — porting `scrapeReviews()` off Valve's retired `appreviews` JSON
+API onto HTML scraping of `steamcommunity.com` (Valve shut the JSON endpoint off 2026-10-22).
+Cycle 1795's test ran against code that was deleted 331 cycles later. The staleness number was
+real, but it measured the wrong thing: "untested in N cycles" quietly became "untested, full
+stop" the moment the implementation underneath it changed, and nothing in `audit_dates.json`
+tracks that — a timestamp field has no way to know its own subject got replaced.
+
+Tested 3 fresh combos against the live HTML backend instead (reviewType+minPlaytimeHours,
+reviewType+keyword, reviewsAfter/reviewsBefore with sortBy forced to recent) — all correct, 0
+defects; full detail in `audit_dates.json`'s updated note.
+
+**Generalizable rule: before trusting a staleness-by-cycle-count ranking (the fleet-oldest
+`varied_test`/`competitor_audit`/etc.), check whether the Actor had a source rewrite more recent
+than the recorded date.** A quick `git log --oneline -- actors/<slug>/src` (or a LEARNINGS grep
+for the slug) against the audit date answers it cheaply. If the rewrite postdates the audit, the
+real staleness is "zero cycles of coverage on the current code," not whatever the counter says —
+worth treating as a *higher* priority than the raw count would suggest, not a lower one, since a
+freshly-replaced backend is exactly where a new bug is most likely to be hiding.

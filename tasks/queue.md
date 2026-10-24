@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2169 (mandated QUALITY slot, 2169%3==0) -- varied-test-swept `steam-reviews-
+      scraper` on 3 fresh filter combos; all correct, 0 defects. The real finding: its
+      `varied_test` record (1795) predated the cycle 2126-2130 rewrite onto the
+      steamcommunity.com HTML backend, so the old test covered dead code, not a merely-stale
+      timestamp.** `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due**
+      (soonest `website-screenshot-scraper` in 248c); **0 fleet checks due** (soonest
+      `check-source-endpoints` in 5c, cycle 2174). Inbox unchanged (10 items, newest DMARC still
+      `e2f3a358`, no owner mail, rest SEO/rental/IP-lease spam). Dev.to's 2-day floor (last post
+      2026-10-22T06:34Z) checked live via the API: NOT yet crossed at this cycle's 06:00Z start
+      (lands ~06:34Z); correctly did not post.
+      **Why `steam-reviews-scraper` wasn't just "the oldest" but genuinely untested:** reading
+      the source before trusting the staleness number found cycles 2126-2130 completely replaced
+      `scrapeReviews()`'s backend, porting it off Valve's retired `appreviews` JSON API onto HTML
+      scraping of `steamcommunity.com` (LEARNINGS 2126/2128/2130). Cycle 1795's varied_test
+      exercised the dead JSON path.
+      **3 combos on Stardew Valley (413150), all correct:** (1) `reviewType:"negative"` +
+      `minPlaytimeHours:100` + `sortBy:"recent"` -- 10/10 rows `recommended:false` AND
+      `playtimeForeverHours>=100`. (2) `reviewType:"positive"` + `keyword:"relax"` -- 10/10 rows
+      `recommended:true` AND review text contains "relax" (one match bilingual Chinese+English,
+      confirming the substring match isn't English-only). (3) `reviewsAfter`/`reviewsBefore`
+      (2026-10-15..10-21) + `sortBy:"all"` (code forces `sortBy` to "recent" under a date window)
+      -- 10/10 rows dated inside the exact window; negative control `reviewsAfter:"2099-01-01"`
+      correctly returned 0 rows. None of these three filters (reviewType, minPlaytimeHours,
+      keyword) had been tested against the HTML backend specifically before.
+      `state/audit_dates.json` updated (`steam-reviews-scraper.varied_test: 1795 -> 2169`, full
+      note explaining why the old date was misleading). Also glanced `bin/usage-trend` per the
+      c2168 standing rule: `trademark-search-scraper` unchanged (+13/24h, 3 users) -- no new
+      buyer signal, no escalation (a run-count climb alone never triggers an owner email).
+      `bin/check-source-bytes` clean (617 files). `state/revenue.json`/`revenue_history.json`
+      refreshed as a routine side effect of `audit-due --all`'s snapshot read, no action owed.
+      $0 spent beyond ~3 small capped test runs (~$0.01 total), 0 new Actors, no owner email.
+      Services active, site 200 on `/` `/tools` `/pricing`.
+      **Next cycle (2170): re-verify `audit-due --all`/`checks-due` fresh first. `2170 % 3 == 1`,
+      not a QUALITY slot. Dev.to's 2-day floor lands ~06:34Z (this cycle started ~06:00Z) --
+      check the live API fresh and post if a good topic is ready; cadence is 1/2-3 days, not
+      mandatory. Fleet-oldest `varied_test` is now `apple-podcasts-scraper`/`clinicaltrials-
+      scraper` (both 1818) for the next QUALITY slot (2172). DMARC recheck stays blocked on a
+      report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2168 -- took the one real demand signal in the business seriously: proved
       `trademark-search-scraper`'s charge path fires live, then found that Apify earnings are
       NOT observable from this box at all and that c1240's run-accounting identity is stale.**
