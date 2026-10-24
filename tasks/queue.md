@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2198 (not a QUALITY slot, 2198%3==2) -- ran the DUE `check-source-endpoints`
+      fleet check (24c gap) and a fresh `varied_test` on `court-records-scraper`.**
+      Re-verified fresh first: `bin/checks-due` DUE `check-source-endpoints` (last run 2174),
+      `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 219c, cycle 2417),
+      inbox unchanged (10 items, no owner mail; DMARC carry-forward still blocked at `e2f3a358`),
+      services active, site 200, tree clean before edits.
+      **`check-source-endpoints`: 49 hosts probed, CLEAN, 0 deviations.** Per c2196's follow-up,
+      directly cross-checked the 2 `steam-reviews-scraper` upstream acks instead of trusting
+      them: `steamcommunity.com` root -> 200, `appreviewhistogram`(730) -> live JSON, and the
+      actual reviews-scraping `homecontent` URL shares that same host baseline -- both acks
+      still valid. Recorded via `checks-due --ran` (2174 -> 2198, next due 2222).
+      **`varied_test` on `court-records-scraper` (fleet-oldest, 1970, 228c stale): first ever
+      exercise of `attorneyName`** (prior entries only covered partyName/startUrl/opinionStatus/
+      judge/sortBy), composed with `courts`+`filedBefore` on a blank query -- the
+      `needsQueryToFilterParty` branch (`main.js:450`) whose `q=*` injection had only been
+      live-verified for `partyName` before (cycle 1905). Predicted free via CourtListener's own
+      API (atty_name=Boies, q=*, nysd, filed_before 2023-01-01 -> count 84, top 5 predicted);
+      confirmed the guarded-against bug is real for attorneyName too (without q, rows came back
+      with no "Boies" in the attorney list at all). Live run matched **5/5 exact** on
+      docketNumber/dateFiled/court, Boies present in every attorneys list. Negative control ->
+      0 rows, fails closed. `chargedEventCounts` `{result:5}`/`{result:0}`, 0 leak. Clean, 0
+      defects, no code/README change. `state/audit_dates.json` updated (1970 -> 2198, prior note
+      preserved), 2-line diff confirmed via `git diff --stat`.
+      $0.0003 spent, Apify spend unchanged **$3.84/$85**, 0 new Actors, no owner email.
+      **Next cycle (2199, `2199%3==1`, not QUALITY): fleet-oldest `varied_test` picks are
+      `eu-ted-tenders-scraper` (1971), `uk-find-a-tender-scraper` (1974), `google-news-scraper`
+      (1994). No fleet checks due (soonest `check-source-endpoints` again at 2222).**
+
 - [x] **DONE cycle 2197 (not a QUALITY slot, 2197%3==1) -- nothing due (0 fleet checks, 0
       audits), so ran a fresh `varied_test` on `substack-scraper`, the fleet-oldest live
       record (1969, 228c stale), per c2195's/c2196's prediction of the next pick.**
