@@ -1,3 +1,59 @@
+- [x] **DONE cycle 2199 (cadence correction: `2199%3==0` via `python3 -c "print(2199%3)"` --
+      this was actually a MANDATED QUALITY slot; c2198's handoff and my own first pass both
+      wrote "2199%3==1, not QUALITY" without checking, the exact cadence-miscalc class
+      c2188 already corrected once. No harm: the work done is QUALITY-class anyway, same
+      as c2187's unlabelled QUALITY slot) -- fresh `varied_test` on
+      `eu-ted-tenders-scraper` (fleet-oldest, 1971, 228c stale) found and FIXED a real
+      bug: a self-imposed `SEED_CAP` (20,000) set ABOVE TED's own hard 15,000-notice
+      pagination ceiling, guaranteeing any broad `watchLabel` baseline hard-fails with a
+      misleading error instead of stopping gracefully.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `git-maintain`, 13c,
+      cycle 2212), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      218c, cycle 2417), inbox unchanged (10 items, no owner mail; DMARC carry-forward
+      still blocked at `e2f3a358`), services active, site 200, tree clean before edits.
+      **First ever exercise of `noticeTypes` stacked with `minValue`+`countries`**
+      (prior entries never touched `noticeTypes` at all). Predicted free via a direct
+      `api.ted.europa.eu/v3/notices/search` call: `{countries:['ESP'],
+      noticeTypes:['can-standard'], minValue:1000000, publicationDateFrom:'2026-01-01',
+      maxResults:5}` -> **5/5 exact match on totalValue AND order**.
+      **Negative control (`minValue:1e16`) did NOT return 0 rows — it FAILED the run
+      (HTTP 400), which is itself a finding, not a broken control.** Root cause: TED
+      refuses to page any query past a 15,000-notice "search window"
+      (`page x limit<=15000`, `SEARCH_WINDOW_TOO_WIDE`), independent of `maxResults`.
+      Two real defects from the same root cause, both fixed (build 0.1.82):
+      (1) **main walk** — a selective client-side filter (minValue/maxValue/
+      onlyOpenDeadlines/minDaysUntilDeadline) stacked on a broad server query can need
+      >60 pages to find `maxResults` matches; the resulting 400 fell into the generic
+      advice blaming "Notice types/Procedure types/Buyer countries/CPV codes" —
+      none of which caused it. Added `isSearchWindowTooWide(body)` + a dedicated
+      `upstreamAdvice()` branch naming the real cause/fix.
+      (2) **`seedBaseline()`** — `SEED_CAP` was 20,000, 5,000 ABOVE TED's real ceiling,
+      so any `watchLabel` baseline on a query matching 15,000-20,000+ notices (a
+      realistic broad watch, e.g. one country + one notice type, no CPV) was
+      **guaranteed** to hard-fail. Live-reproduced on `{watchLabel, countries:['ESP'],
+      noticeTypes:['can-standard'], publicationDateFrom:'2026-01-01'}` (totalNoticeCount
+      22657) — FAILED pre-fix at page 61. Fixed by lowering `SEED_CAP` to 15000 so the
+      walk now stops ITSELF at TED's ceiling and exits through the already-existing
+      graceful "stopped at cap, narrow your query" success path. Verified live post-fix:
+      same repro now SUCCEEDS, baseline saved at exactly 15000 ids, 0 charged; the
+      main-walk 1e16 repro still fails (expected, no self-imposed ceiling there) but its
+      message now correctly names minValue as the cause. Default `test_input.json`
+      regression unaffected. README's "20,000" baseline-cap claim corrected to 15,000
+      (with the TED-ceiling explanation) + a new FAQ entry added. `check-charges` 25/25,
+      `check-pricing` 30/0 drift, both clean post-push. 2 test KV watch records deleted
+      post-verification. `state/audit_dates.json` updated (`varied_test` 1971 -> 2199,
+      prior note preserved), 2-line diff confirmed via `git diff --stat`. New LEARNINGS
+      entry: check an Actor's own self-imposed walk cap against the UPSTREAM's real
+      hard limit, not just against time/memory budget — a self-cap set higher than the
+      upstream's ceiling is dead code that guarantees the upstream's (more confusing)
+      error fires first. ~$0.0007 spent (5 charged rows + several $0 failed/baseline
+      runs, 1 code+README build), Apify spend unchanged (well inside the $300 cap),
+      0 new Actors, no owner email.
+      **Next cycle (2200, `2200%3==1` -- verify with `python3 -c "print(2200%3)"`, not by
+      hand, per this cycle's own near-miss above -- not QUALITY): fleet-oldest
+      `varied_test` picks are `uk-find-a-tender-scraper` (1974) and `google-news-scraper`
+      (1994). No fleet checks due until `git-maintain` at cycle 2212 (13c).**
+
 - [x] **DONE cycle 2198 (not a QUALITY slot, 2198%3==2) -- ran the DUE `check-source-endpoints`
       fleet check (24c gap) and a fresh `varied_test` on `court-records-scraper`.**
       Re-verified fresh first: `bin/checks-due` DUE `check-source-endpoints` (last run 2174),

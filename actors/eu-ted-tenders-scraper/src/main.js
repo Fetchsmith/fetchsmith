@@ -296,7 +296,13 @@ log.info(`TED query: ${query}`);
 // store so it survives across scheduled runs; the default KV store is
 // per-run and would reset the baseline every time.
 const WATCH_STORE = 'fetchsmith-ted-watch';
-const SEED_CAP = 20000; // bound a seed walk against an unfiltered/very broad query
+// Live-confirmed cycle 2199: TED refuses to page past a 15,000-notice "search window"
+// (HTTP 400 SEARCH_WINDOW_TOO_WIDE), well below this cap's old value of 20,000 — so any
+// watchLabel baseline on a query matching 15,000-20,000 notices used to hard-FAIL here
+// instead of stopping gracefully. 15,000 (== PAGE_SIZE * 60, the last page TED allows) keeps
+// the walk inside TED's own ceiling, so it always exits via the existing "stopped at cap"
+// branch below rather than via the TED-side error.
+const SEED_CAP = 15000;
 const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
 let baselineTruncated = 0; // notice ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
 let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
@@ -447,8 +453,10 @@ let apiErrorMessage = null;
 // the stopping point is reported as "new" — and charged — on the first incremental run.
 let seedError = null;
 let seedErrorStatus = null;
+let seedErrorBody = null; // raw TED error body for seedErrorStatus, so upstreamAdvice can detect SEARCH_WINDOW_TOO_WIDE
 let seedTimedOut = false; // seedError was caused by the time budget, not a real TED-side error
 let httpErrorMessage = null;
+let httpErrorBody = null; // raw TED error body for httpError, so upstreamAdvice can detect SEARCH_WINDOW_TOO_WIDE
 
 // gotScraping runs with throwHttpErrors:false, so got's own `retry` never fires on a
 // non-2xx — a single TED 429 used to end the run instantly (seen live 2026-09-11: the
@@ -472,8 +480,30 @@ const HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
 // gets "shrink your filter lists" instead of a false "re-run in a few minutes".
 const INPUT_ERROR_STATUS = new Set([400, 404, 413, 422]);
 
+// TED refuses to page past a 15,000-notice "search window" (page x page-size), live-confirmed
+// cycle 2199: a query whose SERVER-SIDE match count exceeds that, combined with a selective
+// CLIENT-SIDE filter (minValue/maxValue, onlyOpenDeadlines/minDaysUntilDeadline) or a watchLabel
+// baseline seed, can need more pages than TED allows before collecting maxResults matches or
+// finishing the seed walk — and TED answers with a flat 400 SEARCH_WINDOW_TOO_WIDE. Without this
+// branch that 400 fell into the generic INPUT_ERROR_STATUS advice below, which blames "Notice
+// types", "Procedure types", "Buyer countries" or "CPV codes" — none of which is the real cause.
+// Notably this is BELOW our own advertised SEED_CAP of 20,000: any watchLabel baseline on a query
+// matching more than 15,000 notices hits this before the 20,000 cap is ever reached.
+function isSearchWindowTooWide(body) {
+  return body?.error?.type === 'SEARCH_WINDOW_TOO_WIDE';
+}
+
 // Tail sentence for a failure message: blame the input or blame TED, never both.
-function upstreamAdvice(statusCode) {
+function upstreamAdvice(statusCode, body) {
+  if (isSearchWindowTooWide(body)) {
+    return 'HTTP 400 means this query matches more notices than TED lets a single run page through '
+      + '(a 15,000-notice limit, independent of "maxResults" or the baseline cap), so re-running the same '
+      + 'input will not help — narrow the query itself so fewer notices need to be scanned (add or tighten '
+      + '"countries", "cpvCodes", "noticeTypes", "procedureType", or a "publicationDateFrom"/"publicationDateTo" '
+      + 'window), or relax "minValue"/"maxValue"/"onlyOpenDeadlines"/"minDaysUntilDeadline" if one of those is '
+      + 'set — those filters are applied after TED answers, so a selective one can force many more pages than '
+      + 'the raw match count suggests.';
+  }
   if (statusCode === 413) {
     return 'HTTP 413 means the query TED received was too large, so re-running the same input will not help — '
       + 'shrink "cpvCodes", "countries", "noticeTypes" or "procedureType" (fewer or shorter values), or split the '
@@ -579,6 +609,7 @@ async function seedBaseline() {
       log.warning(`Baseline walk: TED API returned ${resp.statusCode} on page ${seedPage}${upstream ? `: ${upstream}` : ''} — stopping baseline walk early.`);
       seedError = `TED returned HTTP ${resp.statusCode} on baseline page ${seedPage}${upstream ? `: ${upstream}` : ''}`;
       seedErrorStatus = resp.statusCode;
+      seedErrorBody = resp.body;
       break;
     }
     const body = resp.body;
@@ -614,6 +645,7 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
     log.warning(`TED API returned ${resp.statusCode} on page ${page}: ${JSON.stringify(resp.body).slice(0, 300)}`);
     httpError = resp.statusCode;
     httpErrorMessage = upstreamMessage(resp.body);
+    httpErrorBody = resp.body;
     break;
   }
 
@@ -751,7 +783,7 @@ if (!pushed && httpError) {
   await Actor.fail(
     `TED's API returned HTTP ${httpError}${retried}, so no notices could be fetched.`
     + (httpErrorMessage ? ` TED said: "${httpErrorMessage}".` : '')
-    + ` ${upstreamAdvice(httpError)}`,
+    + ` ${upstreamAdvice(httpError, httpErrorBody)}`,
   );
 }
 
@@ -868,7 +900,7 @@ if (seedError) {
         + 'codes, a shorter publication-date window) so the baseline walk finishes faster, then re-run.'
       : seedErrorStatus == null
         ? 'If this looks like a TED-side outage or rate limit, please re-run in a few minutes.'
-        : upstreamAdvice(seedErrorStatus)),
+        : upstreamAdvice(seedErrorStatus, seedErrorBody)),
   );
 } else if (apiErrorMessage) {
   await Actor.fail(

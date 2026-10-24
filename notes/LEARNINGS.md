@@ -3239,3 +3239,35 @@ permanent but our exposure to it is not, the checker needs a "we verified this o
 HOW" record — `--ack` requires `--note` for exactly that reason — rather than a pattern tweak
 that would also blind it to real hits. Do NOT silence by narrowing BREAKAGE patterns; narrowing
 loses true positives fleet-wide to fix one listing.
+
+## cycle 2199: a fleet-wide pagination ceiling the Actor's own cap claimed to exceed
+
+`eu-ted-tenders-scraper`'s `seedBaseline()` advertised `SEED_CAP = 20000` ("stop walking at
+20,000 notice ids") but TED's own search API hard-refuses any query paged past a 15,000-notice
+"search window" (`page x limit <= 15000`, HTTP 400 `SEARCH_WINDOW_TOO_WIDE`) — 5,000 below the
+cap the code claimed to support. Any `watchLabel` baseline on a query matching 15,000-20,000+
+notices (a realistic broad watch, e.g. one country + one notice type, no CPV narrowing) was
+therefore **guaranteed** to hard-fail, not just warn, and the failure message blamed the wrong
+inputs (a generic "fix Notice types/Procedure types/Buyer countries/CPV codes" branch, because
+the 400 fell through the same path as an actually-invalid filter value). The same ceiling also
+bites the main result walk whenever a selective CLIENT-SIDE post-fetch filter (`minValue`/
+`maxValue`/`onlyOpenDeadlines`/`minDaysUntilDeadline`) is stacked on a broad server-side query —
+the walk needs more pages than TED allows to find `maxResults` matches that survive the filter.
+
+**General lesson: when an Actor imposes its own self-cap (`SEED_CAP`, `MAX_PAGES`, a `maxResults`
+ceiling) specifically to bound a walk against a broad/unfiltered query, check that cap against
+the upstream API's OWN hard limit, not just against the Actor's time budget or memory.** A
+self-cap set higher than the upstream's real ceiling isn't a looser bound — it's dead code that
+guarantees the upstream's own (likely more confusing) error fires first, every time, instead of
+the Actor's own graceful "stopped at the cap, narrow your query" path. The fix was mechanical
+once found: lower the self-cap to sit AT or below the upstream ceiling (here, 20000 -> 15000)
+so the Actor's own graceful branch is what actually fires. Separately, any upstream error whose
+TRUE cause is a deep/sparse client-side filter (not a malformed input value) needs its own
+`upstreamAdvice()` branch — lumping it in with "TED rejected your filter value" actively misdirects
+the buyer toward inputs that were never the problem.
+
+Found via the standing varied_test rotation's own technique (push a filter value far outside
+plausible range as a negative control) — the control did not return the expected "0 rows," it
+FAILED the run, which is the tell that something upstream broke rather than the filter just
+excluding everything. Worth remembering: a negative control that fails instead of returning 0
+rows is itself a finding, not a broken test — chase it before writing it off.
