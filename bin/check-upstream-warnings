@@ -59,11 +59,34 @@ and the 1 is the true positive. Benign copy that trips naive patterns ("no login
 "no longer need an API key") is excluded explicitly -- see BENIGN. Every hit prints its
 surrounding sentence; this tool RANKS and SHOWS, it does not decide. Read the context.
 
+ACKS -- WHY RESOLVED WARNINGS MUST GO QUIET (added cycle 2196)
+--------------------------------------------------------------
+This tool runs every 48 cycles (~daily). The steam incident's rival listing copy is
+PERMANENT -- that sentence is still on their Store page and will be for as long as they
+keep the Actor up -- so from 2148 onward every single run reported `FLAGGED 1` for a
+breakage we already migrated off at c2129. That is exactly the failure mode this file
+already argues against for NO_UPSTREAM ("a check that cries wolf every single run is a
+check whose warning line stops being read"), and the cost here is worse than noise: a
+future cycle that has learned the standing flag is benign will skim the output and miss a
+SECOND, genuinely new flag printed next to it.
+
+So a hit can be acknowledged. `state/upstream_acks.json` stores a fingerprint per
+acked hit; acked hits print under ACKNOWLEDGED, below the live report, and do NOT set the
+exit code. The fingerprint is sha1 over slug|handle|verb|normalized-context|dates, which
+means it is deliberately BRITTLE: if the rival edits that copy at all, or a new date
+appears beside the verb (an escalation -- a second shutdown announced), the fingerprint
+changes and it re-flags as new. Acks fail toward re-flagging, never toward silence.
+An ack is a record that WE verified our own upstream is fine, not a claim the rival is
+wrong -- always write the verification in --note.
+
 Usage: bin/check-upstream-warnings [--slug SLUG] [--full] [--json] [--selftest]
-Exit 1 if any hit is flagged (so it can gate), 0 if clean.
+       bin/check-upstream-warnings --ack HANDLE --note "why this is resolved" [--slug S]
+       bin/check-upstream-warnings --list-acks
+Exit 1 if any UNACKED hit is flagged (so it can gate), 0 if clean or all hits acked.
 """
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -74,6 +97,8 @@ sys.path.insert(0, "/root/agent/bin")
 
 ROOT = "/root/agent"
 FIXTURE = f"{ROOT}/state/audit_data/c2124_steam_prices.json"
+ACK_FILE = f"{ROOT}/state/upstream_acks.json"
+LOG = f"{ROOT}/logs/worker.log"
 OUR_USER = "fetchsmith"
 
 # Breakage verbs. Deliberately narrow: each one is a thing an owner only writes when a
@@ -165,6 +190,65 @@ def scan_text(text, today):
     return uniq
 
 
+def current_cycle():
+    """Last `cycle=NNNN ... start` line in worker.log (same source as bin/checks-due)."""
+    try:
+        with open(LOG) as f:
+            hits = re.findall(r"cycle=(\d+)\s+model=\S+\s+start", f.read())
+        if hits:
+            return int(hits[-1])
+    except OSError:
+        pass
+    return None
+
+
+def fingerprint(slug, handle, hit):
+    """Stable id for ONE hit. Includes the normalized context and the dates found beside
+    the verb, so any edit to the rival's copy -- or a newly announced date -- produces a
+    different fingerprint and re-flags rather than staying silently acked."""
+    ctx = " ".join(hit["context"].lower().split())
+    raw = f"{slug}|{handle}|{hit['verb'].lower()}|{ctx}|{','.join(hit['dates'])}"
+    return hashlib.sha1(raw.encode()).hexdigest()[:12]
+
+
+def load_acks():
+    """{fingerprint: record}. A missing/corrupt file must not silence anything, and must
+    not kill the run either -- the whole point is that the sweep still reports."""
+    try:
+        with open(ACK_FILE) as f:
+            data = json.load(f)
+        return {r["fp"]: r for r in data.get("acks", []) if r.get("fp")}
+    except (OSError, ValueError, KeyError, AttributeError, TypeError):
+        return {}
+
+
+def save_acks(acks):
+    with open(ACK_FILE, "w") as f:
+        json.dump({"acks": sorted(acks.values(), key=lambda r: (r["slug"], r["fp"]))},
+                  f, indent=2)
+        f.write("\n")
+
+
+def split_acked(report, acks):
+    """Partition hits into (unacked_report, acked_report). A listing with one acked and
+    one new hit stays in the live report carrying ONLY its new hit -- otherwise acking a
+    rival's old sentence would hide the next one they write."""
+    live, acked = [], []
+    for r in report:
+        new_hits, old_hits = [], []
+        for h in r["hits"]:
+            fp = fingerprint(r["slug"], r["handle"], h)
+            if fp in acks:
+                old_hits.append(dict(h, fp=fp, ack=acks[fp]))
+            else:
+                new_hits.append(dict(h, fp=fp))
+        if new_hits:
+            live.append(dict(r, hits=new_hits))
+        if old_hits:
+            acked.append(dict(r, hits=old_hits))
+    return live, acked
+
+
 def load_niche_size():
     """Exec bin/niche-size as a module to share NICHE_TERMS/TERM_VARIANTS/MATCH_SYNONYMS
     and its matching rule -- the same idiom bin/niche-unnamed uses, so all three tools
@@ -202,6 +286,35 @@ def live_slugs():
             if t.get("status") == "live" and t["slug"] not in NO_UPSTREAM]
 
 
+def selftest_acks():
+    """Validate ack filtering in memory (never touches the real ACK_FILE). The three
+    properties that matter: an ack silences its own hit, an EDITED context re-flags, and
+    an ack never hides a different hit on the same handle."""
+    slug, handle = "steam-reviews-scraper", "s_actors/steam-reviews-scraper"
+    old = {"verb": "shuts down", "context": "old appreviews endpoint shuts down 22 Oct 2026",
+           "dates": ["2026-10-22"]}
+    edited = dict(old, context="old appreviews endpoint shuts down 22 Oct 2026 and v2 too")
+    other = {"verb": "deprecated", "context": "the storefront feed is deprecated", "dates": []}
+    fp_old = fingerprint(slug, handle, old)
+    acks = {fp_old: {"fp": fp_old, "slug": slug, "handle": handle, "verb": old["verb"],
+                     "note": "selftest", "acked_cycle": 0}}
+    rec = lambda hits: [{"slug": slug, "handle": handle, "users": 2, "hits": hits}]
+
+    live, acked = split_acked(rec([old]), acks)
+    p1 = (not live) and len(acked) == 1
+    live, acked = split_acked(rec([edited]), acks)
+    p2 = len(live) == 1 and not acked
+    live, acked = split_acked(rec([old, other]), acks)
+    p3 = (len(live) == 1 and len(live[0]["hits"]) == 1
+          and live[0]["hits"][0]["verb"] == "deprecated" and len(acked) == 1)
+    p4 = fingerprint(slug, handle, old) == fp_old  # stable across calls
+    print("  ack selftest: acked hit silenced:", p1)
+    print("  ack selftest: edited rival copy re-flags as new:", p2)
+    print("  ack selftest: ack does not hide a different hit on same handle:", p3)
+    print("  ack selftest: fingerprint stable:", p4)
+    return all([p1, p2, p3, p4])
+
+
 def selftest():
     """Validate patterns against the one real incident we have ground truth for."""
     if not os.path.exists(FIXTURE):
@@ -227,7 +340,8 @@ def selftest():
     print(f"  true positive {want} found: {ok_tp}")
     print(f"  dated 2026-10-22 extracted from its copy: {got_date}")
     print(f"  false-positive budget (<=3 flagged of 106): {ok_fp}")
-    if ok_tp and ok_fp and got_date:
+    ok_ack = selftest_acks()
+    if ok_tp and ok_fp and got_date and ok_ack:
         print("selftest: PASS")
         return 0
     print("selftest: FAIL", file=sys.stderr)
@@ -240,9 +354,25 @@ def main():
     ap.add_argument("--full", action="store_true", help="multi-term sweep (full niche recall)")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--ack", metavar="HANDLE",
+                    help="acknowledge every hit currently found on this rival handle "
+                         "(e.g. s_actors/steam-reviews-scraper); requires --note")
+    ap.add_argument("--note", help="why the acked warning is resolved for US")
+    ap.add_argument("--list-acks", action="store_true")
     a = ap.parse_args()
     if a.selftest:
         return selftest()
+    if a.list_acks:
+        acks = load_acks()
+        print(f"{len(acks)} acknowledged hit(s) in {ACK_FILE}")
+        for r in sorted(acks.values(), key=lambda r: (r["slug"], r["fp"])):
+            print(f"\n  {r['fp']}  [{r['slug']}] {r['handle']}  [{r['verb']}] "
+                  f"dates={r.get('dates') or []}")
+            print(f"    acked c{r.get('acked_cycle')} {r.get('acked_date')}: {r.get('note')}")
+            print(f"    context: {r.get('context', '')[:200]}")
+        return 0
+    if a.ack and not a.note:
+        ap.error("--ack requires --note (record HOW you verified our upstream is fine)")
 
     ns = load_niche_size()
     today = datetime.date.today()
@@ -288,9 +418,38 @@ def main():
 
     # Dated hits first (strongest form), then by rival size.
     report.sort(key=lambda r: (-max(len(h["dates"]) for h in r["hits"]), -r["users"]))
+
+    if a.ack:
+        acks, added = load_acks(), 0
+        cyc, iso = current_cycle(), today.isoformat()
+        for r in report:
+            if r["handle"] != a.ack:
+                continue
+            for h in r["hits"]:
+                fp = fingerprint(r["slug"], r["handle"], h)
+                if fp in acks:
+                    print(f"  already acked {fp} [{h['verb']}]")
+                    continue
+                acks[fp] = {"fp": fp, "slug": r["slug"], "handle": r["handle"],
+                            "verb": h["verb"], "dates": h["dates"],
+                            "context": h["context"][:300], "note": a.note,
+                            "acked_cycle": cyc, "acked_date": iso}
+                added += 1
+                print(f"  acked {fp} [{r['slug']}] {r['handle']} [{h['verb']}] "
+                      f"dates={h['dates']}")
+        if not added:
+            print(f"--ack {a.ack}: no new hits found on that handle in this sweep "
+                  f"(nothing written). Check the handle spelling against the report.")
+            return 1
+        save_acks(acks)
+        print(f"--ack: wrote {added} ack(s) to {ACK_FILE}")
+        return 0
+
+    report, acked = split_acked(report, load_acks())
     if a.json:
-        print(json.dumps({"flagged": report, "own": own_notes, "failed": failed,
-                          "seen": n_seen, "matched": n_matched}, indent=1))
+        print(json.dumps({"flagged": report, "acked": acked, "own": own_notes,
+                          "failed": failed, "seen": n_seen, "matched": n_matched},
+                         indent=1, default=str))
         return 1 if report else 0
 
     mode = "full multi-term" if a.full else "base-term"
@@ -302,7 +461,7 @@ def main():
         print(f"  WARNING: INCOMPLETE -- {len(failed)} query/queries failed, a clean "
               f"result below is NOT trustworthy: {'; '.join(failed[:6])}", file=sys.stderr)
     if not report:
-        print("CLEAN -- no rival listing in any niche advertises an upstream shutdown, "
+        print("CLEAN -- no rival listing in any niche advertises a NEW upstream shutdown, "
               "deprecation or migration. (Leading signal only: this does NOT mean our "
               "sources are healthy -- see actor-health / check-row-floor for that.)")
     for r in report:
@@ -310,13 +469,24 @@ def main():
         for h in r["hits"]:
             d = f"  DATED {','.join(h['dates'])}" if h["dates"] else ""
             print(f"    [{h['verb']}]{d}\n      {h['context'][:300]}")
+    if acked:
+        n = sum(len(r["hits"]) for r in acked)
+        print(f"\n  ACKNOWLEDGED ({n} hit(s), not a signal, exit code unaffected) -- "
+              f"re-flags automatically if the copy or its dates change:")
+        for r in acked:
+            for h in r["hits"]:
+                ack = h["ack"]
+                print(f"    {h['fp']} [{r['slug']}] {r['handle']} [{h['verb']}] "
+                      f"-- acked c{ack.get('acked_cycle')}: {ack.get('note')}")
     if own_notes:
         print(f"\n  (own copy, not a signal: {len(own_notes)} of our own listings "
               f"mention a breakage -- expected after we document one)")
         for r in own_notes:
             print(f"    {r['handle']}: {r['hits'][0]['verb']}")
+    tail = (f"CLEAN (+{sum(len(r['hits']) for r in acked)} acknowledged)"
+            if acked else "CLEAN")
     print(f"\n{'FLAGGED ' + str(len(report)) + ' rival listing(s) -- read the context above'
-            if report else 'CLEAN'}")
+            if report else tail}")
     return 1 if report else 0
 
 

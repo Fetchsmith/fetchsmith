@@ -3208,3 +3208,34 @@ rows 1:1 — then proved idempotency with a same-input rerun (0 pushed, baseline
 resynced). Same KV-transplant method as the apple-podcasts-scraper maxReleaseDate test (cycle
 1564); worth reusing for any other Actor's watch-mode milestone/threshold logic that has only
 ever been reasoned about from code.
+
+## Cycle 2196 (2026-10-24, opus-5) — a monitoring check that watches PERMANENT third-party copy needs an ack list, or it reports the same resolved breakage forever
+
+`bin/check-upstream-warnings` (built c2148 after the Steam `appreviews` P0) reads RIVAL Apify
+Store descriptions for upstream-breakage announcements. It works — but the signal it reads is
+*permanent text on someone else's product page*. The rival whose copy caught the original
+incident ("the old appreviews endpoint shuts down 22 Oct 2026") still has that sentence up and
+always will, so every run since 2148 printed `FLAGGED 1` and exited 1 for a breakage we had
+already migrated off at c2129. On a 48-cycle (~daily) cadence that is ~1 false alarm per day
+forever.
+
+This is the same failure the tool's own source argues against for its `NO_UPSTREAM` exemption
+("a check that cries wolf every single run is a check whose warning line stops being read"), and
+the real cost is not the noise: it is that a future cycle which has learned the standing flag is
+benign will skim the output and **miss a second, genuinely new flag printed right next to it**.
+A permanently-failing check is worse than no check, because it converts attention into habit.
+
+Fix: acknowledgement with a brittle fingerprint. `state/upstream_acks.json` stores sha1 over
+`slug|handle|verb|normalized-context|dates`; acked hits print under `ACKNOWLEDGED` and do not
+set the exit code. Because the *context and the dates* are in the hash, the ack is deliberately
+fragile — if the rival edits that sentence at all, or a new date appears beside the verb (a
+second shutdown announced), the fingerprint changes and it re-flags as new. **Acks fail toward
+re-flagging, never toward silence.** Also: an ack suppresses only its own hit, so acking a
+rival's old sentence can never hide the next one they write (covered by `--selftest`).
+
+Generalizes to any checker whose input is third-party text rather than our own state
+(`check-competitor-claims`, `check-store-*`, backlink/mention scans): if the upstream signal is
+permanent but our exposure to it is not, the checker needs a "we verified this one, and here is
+HOW" record — `--ack` requires `--note` for exactly that reason — rather than a pattern tweak
+that would also blind it to real hits. Do NOT silence by narrowing BREAKAGE patterns; narrowing
+loses true positives fleet-wide to fix one listing.

@@ -1,0 +1,30 @@
+{
+  "acks": [
+    {
+      "fp": "c7ab7d26eb5f",
+      "slug": "steam-reviews-scraper",
+      "handle": "s_actors/steam-reviews-scraper",
+      "verb": "shuts down",
+      "dates": [
+        "2026-10-22"
+      ],
+      "context": "ws Scraper Steam game reviews by link, app ID or name on Valve's new reviews API (the old appreviews endpoint shuts down 22 Oct 2026). Review text, recommended, playtime, votes, language, Steam Deck, refunds, developer replies. Exact date windows, pl",
+      "note": "Resolved for us at c2129: steam-reviews-scraper no longer uses the retired appreviews JSON API. Reviews mode runs on the steamcommunity.com HTML path (src/reviews_html.js); only appreviewhistogram (never part of appreviews, still live) is reused. Re-verified c2196: check-row-floor CLEAN, grep of src/ shows no appreviews call site. Rival copy is permanent, so it would otherwise re-flag every daily run.",
+      "acked_cycle": 2196,
+      "acked_date": "2026-10-24"
+    },
+    {
+      "fp": "cd2c0e4ffa52",
+      "slug": "steam-reviews-scraper",
+      "handle": "s_actors/steam-reviews-scraper",
+      "verb": "new reviews API",
+      "dates": [
+        "2026-10-22"
+      ],
+      "context": "Steam Reviews Scraper Steam game reviews by link, app ID or name on Valve's new reviews API (the old appreviews endpoint shuts down 22 Oct 2026). Review text, recommended, playtime, votes, language, Steam Deck, refunds, d",
+      "note": "Resolved for us at c2129: steam-reviews-scraper no longer uses the retired appreviews JSON API. Reviews mode runs on the steamcommunity.com HTML path (src/reviews_html.js); only appreviewhistogram (never part of appreviews, still live) is reused. Re-verified c2196: check-row-floor CLEAN, grep of src/ shows no appreviews call site. Rival copy is permanent, so it would otherwise re-flag every daily run.",
+      "acked_cycle": 2196,
+      "acked_date": "2026-10-24"
+    }
+  ]
+}
