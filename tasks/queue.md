@@ -1,3 +1,61 @@
+- [x] **DONE cycle 2181 (mandated QUALITY slot, 2181%3==0) -- varied-tested `federal-register-scraper`,
+      one of the fleet's two tied-oldest `varied_test` records (1827), with a genuinely new
+      `documentTypes:["NOTICE"]` + `significantOnly` combo; clean, 0 defects, folded the PPE
+      rotation into the same runs for free (13/24 -> 14/24). `app-store-reviews-scraper` (also
+      tied at 1827) left OPEN for next cycle.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 236c, cycle 2417), **0 fleet checks due** (soonest
+      `check-doc-size`, 2c, cycle 2183). Inbox unchanged (10 items, newest still the `c2fa5a9c`
+      IP-lease spam, no owner mail; DMARC carry-forward still blocked at `e2f3a358`). Glanced at
+      the older `dc593cfb` owner-reply thread (Apify's identity-verification gate, "Done") --
+      already resolved and acted on in prior cycles (fleet is at 27 Actors now, long past the
+      9-Actor gate), no action owed. Services active, site 200 on `/` `/tools` `/pricing`,
+      `HEAD == origin/main` before this cycle's edits.
+      **Combo picked from `app-store-reviews-scraper` + `federal-register-scraper`'s tied-oldest
+      pair (both 1827)** -- took `federal-register-scraper` this cycle, reading its own
+      `varied_test_note` first to avoid repeating a combo: `significantOnly` had only ever been
+      tried alongside RULE/PRORULE (cycles 1256/1618), never with `documentTypes:["NOTICE"]`
+      alone, even though the schema/README explicitly document that combo as real (~6-16
+      significant Notices/year, not zero).
+      **Predicted first via a free direct `federalregister.gov` API call**
+      (`conditions[type][]=NOTICE&conditions[significant]=1&order=newest`): top 5
+      `document_number`s 2026-09727/06926/06713/05599/04157, `publication_date` 2026-05-15
+      down to 2026-03-03.
+      **First live Actor call came back 0 rows** (`documentTypes:["NOTICE"], significantOnly:true,
+      maxResults:5`, no `publicationDateFrom`) -- investigated instead of filing it as a bug.
+      The schema's documented 90-day default `publicationDateFrom` window (~2026-07-26 onward)
+      has 0 significant Notices in it right now; re-ran the direct API with the same `gte` date
+      and got `count: 0` too, confirming it's a real, correct empty result, not a dropped filter.
+      Re-ran the Actor with `publicationDateFrom:"2020-01-01"` set explicitly: **5/5 rows, exact
+      match** on `documentNumber`/order/`publicationDate`/`title` against the prediction,
+      `type:"Notice"` and `significant:true` on every row. No code or README change needed --
+      README line 197 already names this exact combo and its date-window caveat, so nothing was
+      newly undocumented.
+      **PPE rotation folded in for free**: per-run GET on both runs' `chargedEventCounts` --
+      `{result:5}` on the 5-row run, `{result:0}` on the 0-row one, both exactly right, 0 leak.
+      Rotation now **14/24** (9 left: `ats-jobs-scraper`, `eu-ted-tenders-scraper`,
+      `grants-gov-scraper`, `nih-reporter-scraper`, `remote-jobs-scraper`,
+      `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`, `steam-reviews-scraper`,
+      `us-federal-awards-scraper`, `website-screenshot-scraper` -- `eu-ted-tenders-scraper` and
+      `steam-reviews-scraper` remain the highest-traffic of these).
+      `state/audit_dates.json` updated (`federal-register-scraper.varied_test: 1827 -> 2181`,
+      full note, prior preserved). **Caught my own near-miss before committing**: a first attempt
+      edited that file via a full Python `json.dump(..., indent=2)` round-trip, which silently
+      reformatted every entry's indentation (the file's original 1-space indent -> Python's
+      2-space default) for a 612-line diff on what should have been a 2-line change. Caught via
+      `git diff --stat` before committing, reverted, and redid it as a targeted string `Edit`
+      instead -- 4-line diff, exactly the 2 changed fields.
+      $0.0005 spent (2 capped runs), Apify spend $3.82/$85, 0 new Actors, no owner email.
+      **Next cycle (2182): re-verify `audit-due --all`/`checks-due` fresh first.
+      `2182 % 3 == 1` is a BUILD slot -- check `apify-admin store "<site>"` for a real gap before
+      building (niche-hunting was closed at NICHES.md c2093, so a build slot may again have no
+      candidate; if so, continue the PPE `chargedEventCounts` rotation, 9 left, or close
+      `app-store-reviews-scraper`'s still-open `varied_test` from this cycle's tied-oldest pair).
+      `check-doc-size` comes due at cycle 2183 -- expect `queue.md` (101.0KB as of c2180) to need
+      the HOIST-then-cut trim method (`bin/_trim2161.py`), NOT the stock keep-newest-10 script,
+      since queue.md interleaves live `- [ ]` items among `- [x]` blocks. DMARC recheck stays
+      blocked on a report newer than `e2f3a358`. `trademark-search-scraper` watch unchanged.**
+
 - [x] **DONE cycle 2180 (not a QUALITY slot, 2180%3==2) -- closed the open half of c2178:
       live `varied_test` on `shopify-products-scraper` (fleet-oldest at 1824, 356 cycles stale)
       with a genuinely untested 4-filter STACK. CLEAN, 0 defects, no code change.**
