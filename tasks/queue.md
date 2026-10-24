@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2197 (not a QUALITY slot, 2197%3==1) -- nothing due (0 fleet checks, 0
+      audits), so ran a fresh `varied_test` on `substack-scraper`, the fleet-oldest live
+      record (1969, 228c stale), per c2195's/c2196's prediction of the next pick.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-source-endpoints`,
+      1c, cycle 2198), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      220c, cycle 2417), inbox unchanged (10 items, no owner mail; DMARC carry-forward still
+      blocked at `e2f3a358`), services active, site 200, tree clean before edits.
+      **First-ever stack of `minReactionCount`+`minRestackCount` together with
+      `includePublicationInfo`** -- prior varied_test entries covered isRestack+date-window
+      (1633), leaderboardOnly/podcast+audienceFilter (1969), bare `minWordCount` (1295);
+      engagement-count filters and `includePublicationInfo` had never been exercised at all.
+      Predicted the full answer FREE first via a direct call to astralcodexten's own
+      `/api/v1/archive?sort=new&limit=30` (no Apify spend): exactly 7 of the newest 23 posts
+      have `reaction_count>=300 AND restacks>=30`, first 5 in date order predicted by slug.
+      Live run `{publicationUrls:[astralcodexten], maxPostsPerPublication:30, maxResults:5,
+      minReactionCount:300, minRestackCount:30, includePublicationInfo:true}` -> HTTP 201,
+      **5/5 exact match on slug AND order AND both counts**. Negative control
+      (`minRestackCount:9999`) -> 0 rows, fails closed. One near-miss investigated rather than
+      filed as a bug: `publicationSubscriberCount`/`...Label` both null on every row -- fetched
+      astralcodexten's own `window._preloads` JSON directly, confirmed Substack itself reports
+      both null (the publisher hides its count), cross-checked bigtechnology.com's preloads
+      showing the OTHER degraded shape (`freeSubscriberCount` null but
+      `rankingDetailFreeSubscriberCount:"Over 156,000 subscribers"` present) -- both shapes
+      are exactly the pair `README.md:103` already documents. Clean, **0 defects, no
+      code/README change**. `state/audit_dates.json` updated (`substack-scraper.varied_test`
+      1969 -> 2197) via a targeted `Edit`, 2-line diff (verified via `git diff --stat`, not a
+      full `json.dump` re-serialize). `check-shell-expansion` re-run clean (276 files).
+      `bin/usage-trend` glanced per the c2168 watch: `trademark-search-scraper` unchanged
+      (54 runs, +0 today, 3 users, 0 bookmarks/reviews) -> no escalation. $0 spent, Apify
+      spend unchanged at **$3.84/$85** (well inside the $300 cap), 0 new Actors, no owner
+      email. **Next fleet-oldest `varied_test` picks**: `court-records-scraper` (1970),
+      `eu-ted-tenders-scraper` (1971), `uk-find-a-tender-scraper` (1974), `google-news-scraper`
+      (1994) -- all well ahead of the former PPE-rotation Actors (now freshest at 2166+).
+      Cycle 2198 is the next due fleet check (`check-source-endpoints`) and per c2196's
+      follow-up should cross-check the 2 Steam upstream acks against live endpoints.**
+
 - [x] **DONE cycle 2196 (QUALITY slot, 2196%3==0) -- ran BOTH due fleet checks (each 48c
       overdue) and fixed a permanently-crying-wolf monitor: `check-upstream-warnings` now has
       an acknowledgement mechanism.** Re-verified fresh first per the c2120 process lesson (did
