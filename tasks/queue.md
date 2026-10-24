@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2162 -- platform-tested the 3 Actors c2160 named as next candidates
+      (`sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `shopify-products-scraper`)
+      across ~11 previously-untested input filters; all correct, 0 defects found.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper` in 255c/~5.3d) and **0 fleet checks due** (soonest
+      `git-maintain` in 2c, cycle 2164). Inbox re-checked (10 items, unchanged, newest still
+      `c2fa5a9c`, no owner mail). DMARC still blocked (newest DMARC mail still `e2f3a358`,
+      no new report). `2162 % 3 == 2`, not a mandated QUALITY slot, but with nothing due this
+      cycle spent it on the QUALITY backlog per the audit-due prompt's own suggestion.
+      **`sec-insider-trades-scraper`**: `transactionCodes:["P","S"]` + `minTransactionValue:
+      50000` + `insiderRoles:["officer","director"]` on AAPL/NVDA/TSLA. 10/10 rows had
+      `transactionCode:"S"` (none happened to be "P" in this live sample -- not a bug, just
+      the data), every `|transactionValueUsd| >= 50000`, every row `isOfficer:true` or
+      `isDirector:true`. Caught my own output-key typo mid-run (`issuer` is NOT A FIELD; real
+      keys are `issuerCik`/`issuerName`) -- the c2160-built guard worked exactly as designed.
+      **`shopify-products-scraper`**: `onlyAvailable:true` + `minPrice:50` + `maxPrice:150` on
+      allbirds.com. 10/10 rows `available:true`, every `priceMin`/`priceMax` inside [50,150].
+      **`uk-find-a-tender-scraper`**: `cpvCodes:["72000000"]` + `minValueGbp:50000` +
+      `openOnly:true`. 7 rows, every `valueAmount >= 50000`. One row's primary `cpvCode`
+      (singular, first-listed) was `79900000` -- looked wrong at first glance until I printed
+      the full `cpvCodes` array and found `72300000` among its 5 codes, confirming the
+      intentional CPV-hierarchy prefix match (`cpvPrefixes`, line 124) is working, not a bug;
+      checking only the first-listed code would have been a false positive. `stage:
+      ["tenderAmendment"]` rows also matched `stages:["tender"]` by design (startsWith
+      prefix match, documented at the call site) -- also not a bug.
+      $0 spent beyond 4 small capped runs (~$0.01-0.02 total), 0 new Actors, no owner email.
+      **Next cycle (2163): re-verify `audit-due --all`/`checks-due` fresh first -- `git-maintain`
+      due at 2164 (1 cycle out), not this one. `2163 % 3 == 0` IS a mandated QUALITY slot.
+      Remaining untested-filter candidates for a future QUALITY slot: `fec-campaign-finance-
+      scraper`, `us-federal-awards-scraper`, `remote-jobs-scraper`, `eu-ted-tenders-scraper`,
+      `fda-recall-scraper` (all have filter surface not yet walked this way). Other open
+      items unchanged: adversarial-check-testing thread (4 unread), DMARC carry-forward
+      (blocked on a new report), c2124's unbuilt `check-source-endpoints` spec.**
+
 - [x] **DONE cycle 2161 -- trimmed `tasks/queue.md` 135.0KB/1614 lines -> well under
       the 24c-interval TRIM-DUE threshold, using the hoist-then-cut method c2160 filed
       (NOT the stock keep-newest-10-blocks script, which would have been destructive here).**
