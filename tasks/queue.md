@@ -764,14 +764,21 @@
       all 4 remaining on that specific shape (though a full read of each for OTHER shapes is
       still owed).
 
-- [ ] **LOW / optional (filed c2156): cold-read `bin/checks-due` for the adversarial-check-testing
-      method, if and only if there is nothing better to do.** It is the single name from the old
-      thread list whose read I could not confirm (see the closed item above). The thread itself
-      is closed at 10-for-11 and this is NOT a re-opening of it — do not let this one name
-      resurrect a 4-candidate backlog. Note `checks-due` is the scheduler every other check
-      registers through, so a bug in it silently skews the whole cadence; that is the only
-      reason it is worth a read at all. c2143 already ruled it out on the
-      `.get(...) or default` falsy-trap shape specifically.
+- [x] **CLOSED cycle 2158 -- `bin/checks-due` cold-read, clean, no bug found.** Read the full
+      189-line script looking for the thread's established bug shapes (falsy-trap `.get(...)
+      or default`, divide-by-zero, non-dict/non-iterable live-data assumptions) and traced the
+      sort/footer/record logic by hand; none found. Structural reason: unlike the scripts that
+      had real bugs, `checks-due`'s only inputs are `worker.log` and `fleet_checks.json`, both
+      written by this same system in a fixed format -- not free-typed external API/Store data,
+      which is where every other bug in this thread actually lived. Thread is now 10-for-12
+      (12 scripts read cold total; `channel-mix` and `checks-due` both clean). This closes the
+      thread for good -- no names left to re-open it with.
+      Same cycle also found and fixed the actual reason this item surfaced at all: `check-doc-
+      size` was showing DUE again one cycle after c2157 ran it, because c2157 skipped calling
+      `checks-due --ran check-doc-size` afterward (its note claimed this followed c1836/c1799
+      precedent; the entry's own note history shows the opposite -- 9 prior run cycles back to
+      1932 all called `--ran`). Registered this cycle's run; false-due loop closed, next due
+      c2182.
 
 - [x] **DONE cycle 2133 -- doc trim (carried instruction from c2132, `check-doc-size` formally
       DUE). Kept the newest 10 distinct cycle numbers in `state/STATUS.md` (2570->852 lines,

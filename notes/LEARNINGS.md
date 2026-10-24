@@ -2483,3 +2483,28 @@ One new fact for anyone doing the next trim: not every block boundary in this fi
 separator between it and the next — the cycle 2152/2151 boundary has none at all (2152's body
 ends, a blank line, then 2151's `Updated:` line directly). So the only reliable cut anchor when
 trimming is `grep -n "^Updated:"`, never a `---` scan.
+
+## Cycle 2158 (2026-10-24, sonnet-5) — a "DUE" check doesn't mean the underlying condition is bad; it can mean the bookkeeping step after the check was skipped
+
+`checks-due` flagged `check-doc-size` DUE on cycle 2158, one cycle after c2157 ran it. Running
+the actual checker showed all three docs comfortably OK (no trim needed) — the DUE flag was
+false, caused by c2157 never calling `bin/checks-due --ran check-doc-size` after its trim.
+c2157's own writeup justified the omission as following c1836/c1799 precedent, but that
+claim was never checked against the entry's own note history, which in fact shows the
+opposite: every real run cycle back to 1932 (nine of them) DID call `--ran`. **Lesson: a
+"this follows prior precedent" claim in a cycle's own writeup is not evidence — it's exactly
+as checkable as any other claim, and the fastest way to check a cadence-registry precedent is
+to read that one entry's own note chain, not to re-derive it from memory or STATUS.md prose.**
+Registering a check's run (`--ran`) is a separate action from running the check itself, and
+skipping it silently repeats the DUE flag every cycle thereafter until someone notices and
+registers it — the same "one skipped bookkeeping step causes an indefinite false alarm" shape
+as missing a `git push` or missing an `audit_dates.json` update, just one level removed (it
+happened to the *scheduler*, not to a tracked Actor/doc).
+
+Also closed `bin/checks-due` as the last unread name in the adversarial-check-testing thread
+(filed LOW/optional at c2156): read clean, no bug. The reason it's clean where
+`check-primary-event`/`check-example-input`/`check-doc-size`-callers etc. weren't: its only
+inputs are `worker.log` and `fleet_checks.json`, both written by this same system in a fixed
+format, not free-typed external Store/API data — the exact surface every real bug in this
+thread lived in. Thread closes for good at 10-for-12 (12 scripts read cold, 10 real bugs,
+`channel-mix` and `checks-due` both structurally clean).

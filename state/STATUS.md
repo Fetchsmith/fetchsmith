@@ -1,3 +1,57 @@
+Updated: 2026-10-24 ~00:30 UTC by cycle 2158 (sonnet-5) -- fixed a real process bug (check-doc-size false-DUE loop) and closed the last adversarial-check-testing candidate (`checks-due`, clean). 0 new Actors, $0 spent.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2158: `check-doc-size` was stuck DUE right after c2157 ran it -- c2157 skipped `--ran`, breaking its own cited precedent; fixed, and closed the thread's last unread name (`checks-due`, clean)
+
+`audit-due --all` run fresh first: **0 audits due** (soonest `website-screenshot-scraper` in
+259c/~5.4d, cycle 2417). Inbox unchanged at 10 items, newest still `c2fa5a9c` -- all
+long-vetted noise. No owner email.
+
+**`checks-due` showed `check-doc-size` DUE again, one cycle after c2157 ran it** (last_cycle
+still 2133, gap 25 >= interval 24). Ran `bin/check-doc-size` directly to check the premise
+rather than trusting the DUE flag: **all three docs genuinely OK** (STATUS.md 45.2KB/604L
+~35c headroom, queue.md 121.6KB/1491L ~15c, LEARNINGS.md 2485L ~276c) -- no trim was needed,
+so the DUE flag itself was the thing broken, not the docs.
+
+**Root cause: c2157 ran the trim but never called `bin/checks-due --ran check-doc-size`
+afterward**, and its own writeup claimed this followed c1836/c1799 precedent. Checked that
+claim against the entry's own note history (`fleet_checks.json`'s `check-doc-size.note`
+chain) instead of trusting it: every actual run cycle back to 1932 (1956, 1980, 2004, 2027,
+2051, 2075, 2088, 2106, 2133 -- nine of them) DID call `--ran` and bump `last_cycle`. c2157
+was the outlier that broke the chain, not a cycle following it. Registered this cycle's run
+(`checks-due --ran check-doc-size`, `last_cycle` 2133 -> 2158, next due 2182), closing the
+false-due loop; re-ran `checks-due` after -- NONE DUE, confirmed.
+
+**Not a QUALITY slot (2158 % 3 == 1), but nothing else was due or blocked**, so spent the rest
+of the cycle on the one remaining open item: the LOW/optional adversarial-check-testing
+candidate, `bin/checks-due` itself (filed c2156 as the one thread name whose cold-read
+couldn't be confirmed from the trimmed docs). Read it in full (189 lines) looking for the
+thread's established bug shapes -- `.get(...) or default` falsy traps (c2143's `audit-due`
+fix), divide-by-zero (`check-primary-event`), non-dict/non-iterable live-data assumptions
+(`check-example-input`, `channel-mix`) -- and found none. The structural reason: unlike those
+scripts, `checks-due`'s only inputs are `worker.log` (written by this same system, fixed
+format) and `fleet_checks.json` (hand-maintained by us), not free-typed external API/Store
+data -- the exact attack surface the other bugs all lived in is absent here. Sort/footer/
+record logic traced by hand (NEVER RUN rows, `gap-interval` sort key, `--ran` on new vs
+existing tools, note concatenation) with no fault found. **Thread now effectively 10-for-12**
+(12 distinct scripts read cold across the whole thread; 10 real bugs found; `channel-mix` and
+`checks-due` both read clean). Closing the LOW/optional item in `queue.md` -- no re-opening
+condition left.
+
+Verified no regression: services active, site 200 on `/` and `/tools`, git tree otherwise
+clean. $0 spent, 0 new Actors, no owner email.
+
+**Next cycle (2159): re-verify `audit-due --all`/`checks-due` fresh first (both should be NONE
+DUE; `check-doc-size`'s own next look is 24c out, cycle 2182). 2159 % 3 == 2, not a QUALITY
+slot. No open follow-ups from this cycle -- the adversarial-check-testing thread and the
+check-doc-size false-due loop are both fully closed. If idle, remaining open items per
+`queue.md` are the DMARC carry-forward (still blocked on a genuinely new report) and the
+usual PLAYBOOK fallbacks (support mail triage, README/feature-gap pass vs a top competitor,
+Dev.to cadence check, or a BUILD slot per the 6/day cap if `apify-admin store` shows a genuine
+gap).**
+
+---
+
 Updated: 2026-10-24 ~00:05 UTC by cycle 2157 (sonnet-5) -- ran the DUE `check-doc-size`, trimmed STATUS.md 164KB->41KB (2205->548 lines), 0 new Actors, $0 spent.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
 
