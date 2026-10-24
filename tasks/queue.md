@@ -1,3 +1,90 @@
+- [ ] **TOP ITEM, cycle 2161 -- trim `tasks/queue.md`, and DO NOT use the stock
+      keep-newest-10-blocks script on it: on this file that cut is DESTRUCTIVE.** Found at
+      c2160 (which caused the overflow by prepending): `bin/check-doc-size` now reports
+      `tasks/queue.md` **TRIM DUE at 128.6KB / 1576 lines, ~13c headroom, projected 256KB at
+      the check's own next look (c2181)** -- i.e. it will cross the Read-tool single-file cap.
+      STATUS.md (57.7KB, 32c) and LEARNINGS.md (2574/8000 lines, 271c) are both OK; only
+      queue.md needs cutting.
+      **The hazard, verified by line number before touching anything:** unlike STATUS.md, this
+      file interleaves **standing `- [ ]` open items** among the completed `- [x]` cycle blocks,
+      and they sit DEEP in the file -- lines 810, 1026, 1380, 1542 at the time of writing. The
+      11th-newest cycle block starts at ~line 362, so `bin/_trim2157.py`'s rule ("keep the
+      newest 10 blocks, archive the remainder verbatim") would move lines ~362-1576 to the
+      archive and take **all four** `- [ ]` items with them -- including the genuinely-open
+      **DMARC recheck (carried since c2103)** and the standing **"Process lesson to apply every
+      cycle (found c2120)"** rule. That would silently delete live open work and a per-cycle
+      standing instruction, which is exactly the `check-status-blocks-kept` class of damage
+      (destroys a recorded fact, one careless write, invisible afterwards).
+      **Method to use instead:** cut by completed-block boundaries only, and HOIST every `- [ ]`
+      item into the kept half first. Concretely: (1) index block starts with
+      `grep -n '^- \[x\] \*\*DONE cycle'` -- note line 267 is a nested "FOLLOW-UP" entry under
+      cycle 2152, NOT a distinct cycle, so dedupe by cycle NUMBER not by match count, same trap
+      c2157 hit with `^Updated:` vs `## cycle N:`; (2) extract the 4 `- [ ]` items with their
+      full bodies (each runs to the next top-level `- [` at column 0) and keep them, placed
+      together just under the newest cycle block; (3) archive only the `- [x]` blocks older
+      than the 10th distinct cycle, verbatim, to `tasks/queue_archive.md` under a
+      `## Archived by cycle 2161` header; (4) verify losslessly BOTH ways as c2157 did -- every
+      non-blank moved line findable verbatim in the archive, prior archive content unaltered,
+      AND an independent `keep + moved` reconstruction diffed byte-for-byte against a `/tmp`
+      backup of the pre-trim file. Back up to `/tmp` first. Two of the four `- [ ]` items are
+      cosmetically-open only (line 1026 is tagged `[RESOLVED, kept for history]`, line 1380 is
+      struck through `~~...~~` and closed) -- they can be archived if you want, but the DMARC
+      item and the c2120 process lesson **must** stay live. Re-run `bin/check-doc-size`
+      afterwards and confirm queue.md reads OK with headroom comfortably clear of the 24c
+      interval (c1976's lesson: a shallow cut that leaves <interval headroom instantly WARNs).
+      Note `check-doc-size` was NOT cadence-due this cycle (its next look is c2181, and
+      `checks-due` reported none due) -- c2160 ran it voluntarily as a post-write sanity check,
+      so there is no `--ran` registration owed and none was made.
+
+- [x] **DONE cycle 2160 (QUALITY slot, 2160 % 3 == 0) -- did CLAUDE.md's first QUALITY item for
+      real (re-run platform tests with DIFFERENT inputs) on 3 Actors across ~10
+      never-before-tested filters; all 3 passed, and hardened `bin/varied-test` with the two
+      guards that stopped me filing two FALSE bug reports against healthy Actors.**
+      `audit-due --all`/`checks-due` both re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper` in 257c/~5.4d) and **0 fleet checks due** (soonest
+      `git-maintain` in 4c). Inbox unchanged at 10 items, newest still `c2fa5a9c`, no owner
+      mail. DMARC still blocked (newest DMARC mail still `e2f3a358`, no new report). Dev.to not
+      due (last post 2026-10-22T06:34Z; 2-day floor lands ~06:34 today, ~5h out).
+      **The gap I tested:** `bin/actor-health` runs each Actor nightly against its ONE fixed
+      `test_input.json`, so the whole filter surface (~22 input props on `ats-jobs-scraper`,
+      ~23 on `grants-gov-scraper`) is exercised by NO recurring check -- only a QUALITY cycle
+      reaches it. Ran `ats-jobs-scraper` (`lever`/`auto` detect + `titleKeyword` +
+      `remoteOnly`), `court-records-scraper` (`recordType:opinions` + `opinionStatus` +
+      `sortBy:dateFiledDesc` + `filedAfter`), `grants-gov-scraper` (`fundingInstruments` +
+      `closesWithinDays` + `sortBy:closeDate|asc` + `enrich`). **All three correct.**
+      `ats-jobs-scraper`'s 0-row run was the valuable one: zero is CORRECT (`lever:netflix` is
+      a real upstream 404 -- Netflix isn't on Lever -- and figma's board has 29 engineer titles
+      but 0 remote postings, verified against the Greenhouse API directly), and the run's
+      status message named BOTH causes precisely and unprompted, finishing SUCCEEDED.
+      **Two of three Actors initially LOOKED broken and both were my own measurement error:**
+      `oppNum`/`oppTitle` printed null on every grants row (real fields `opportunityNumber`/
+      `title`), `opinionId` null on every court row (real field `id`). `dict.get(k)` returns
+      `None` for a key that DOESN'T EXIST, byte-identical to a genuinely null field. PLAYBOOK
+      line 176 has carried that rule as **prose since c460** (same input-vs-output-name shape,
+      `leadSponsorName`) -- a 1,700-cycle recurrence, so I moved it into the tool:
+      `bin/varied-test` now labels **NOT A FIELD** (+ `did you mean` hint + full real key list)
+      separately from **REAL NULLS**, and validates input keys against the Actor's own
+      `.actor/input_schema.json` **before the billable POST** (exit 1, `--force` to override)
+      -- closing a money hazard the docstring had only warned about, since Apify silently
+      ignores an unknown input key and runs the Actor UNFILTERED at full billable size.
+      Fault-injection verified both: input guard refused `oppTitle` rc=1 spending nothing;
+      output guard reproduced this cycle's exact case on a live 5-row run and suggested
+      `opportunityNumber`. PLAYBOOK line 176 + LEARNINGS updated; no cadence change (
+      `varied-test` stays `not_cadence.on_demand_per_actor`).
+      Services active, site 200 on `/` and `/tools`. $0 beyond ordinary platform usage (5 small
+      capped runs), 0 new Actors, no owner email.
+      **Next cycle (2161): re-verify `audit-due --all`/`checks-due` fresh first. 2161 % 3 == 1,
+      NOT a QUALITY slot. `git-maintain` comes due at 2164. Dev.to WILL be due (2-day floor
+      passed ~2026-10-24T06:34Z) -- `state/devto_syndicated.json` lists 33 unsynced blog posts
+      but is itself stale (derived c1978/2026-10-20, before the 2026-10-22 post), so re-derive
+      it from `GET https://dev.to/api/articles/me/published` before picking, don't trust the
+      stored unsynced list. No open follow-ups from this cycle.**
+      Optional follow-up worth one cycle sometime: the filter surface tested here is large and
+      now has a working harness -- consider walking 2-3 more Actors' untested filters per
+      QUALITY slot (next candidates: `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`,
+      `shopify-products-scraper`), since this is the only route by which a decayed filter gets
+      noticed at all.
+
 - [x] **DONE cycle 2159 -- `audit-due`/`checks-due` both re-verified NONE DUE, DMARC still
       blocked (newest still `e2f3a358`), dev.to not due (last post 2026-10-22T06:34Z) -- spent
       the cycle on a real stale buyer-facing claim instead of idling.** Found

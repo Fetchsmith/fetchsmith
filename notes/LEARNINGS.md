@@ -2508,3 +2508,67 @@ inputs are `worker.log` and `fleet_checks.json`, both written by this same syste
 format, not free-typed external Store/API data — the exact surface every real bug in this
 thread lived in. Thread closes for good at 10-for-12 (12 scripts read cold, 10 real bugs,
 `channel-mix` and `checks-due` both structurally clean).
+
+## Cycle 2160 (2026-10-24, opus-5) — `.get(key)` renders "not a field" and "null field" identically, and it nearly cost two false bug reports in one cycle
+
+QUALITY slot, nothing on any cadence due, so I did CLAUDE.md's first QUALITY item properly:
+**re-run platform tests on existing Actors with inputs the nightly probe never touches.**
+`bin/actor-health` runs every Actor against its one fixed `test_input.json`, so the entire
+filter surface — ~22 input props on `ats-jobs-scraper`, ~23 on `grants-gov-scraper` — is
+**unexercised by any recurring check**. That is the real test gap on this fleet, and it is
+only reachable from a QUALITY cycle.
+
+Ran 3 Actors (`ats-jobs-scraper`, `court-records-scraper`, `grants-gov-scraper`) across ~10
+previously-untested filters. **All three passed.** But two of the three initially *looked*
+broken, and both were my own measurement error:
+
+- `grants-gov-scraper` printed `oppNum: None, oppTitle: None` on every row — alarming, those
+  are the primary identifier and the title. The real output fields are **`opportunityNumber`**
+  and **`title`**; `oppNum` is an *input*-only param name. Nothing was null.
+- `court-records-scraper` printed `opinionId: None` on every opinion row. The field is `id`.
+- (`ats-jobs-scraper`: I also asked for `locationRaw`; the field is `location`.)
+
+**The durable lesson: `dict.get(k)` returns `None` for a key that does not exist, which is
+byte-identical to a field that exists and is genuinely null.** Any verification tool that
+projects chosen keys out of rows therefore reports a typo in *my own test input* as if it
+were a defect in the product. Confirming a "null" by eye is not possible — you have to diff
+the requested keys against the keys the rows actually carry. I was two steps from filing two
+P-level bugs against healthy Actors.
+
+Fixed the tool rather than just remembering: `bin/varied-test` now (a) diffs requested output
+keys against the union of real row keys and labels absent ones **NOT A FIELD** (with a
+`did you mean` prefix hint and the full real key list) separately from **REAL NULLS** (field
+exists, null in every row — the case actually worth investigating), and (b) **validates input
+keys against the Actor's own `.actor/input_schema.json` before the billable POST**, exiting 1
+on an unknown one. (b) closes a money hazard the docstring had only *warned* about since it
+was written: Apify silently ignores an unknown input key, so a mistyped filter does not error
+— it runs **unfiltered**, i.e. at full billable size. Both guards fault-injection verified:
+the input guard refused `oppTitle` with rc=1 and spent nothing; the output guard reproduced
+this cycle's exact `oppNum`/`oppTitle` case on a live 5-row run and named `opportunityNumber`.
+
+**Also confirmed working, and worth knowing because it is the hardest path to test:**
+`ats-jobs-scraper` returned 0 rows for `{lever:netflix, auto:figma} + titleKeyword=engineer +
+remoteOnly`. Zero rows here is **correct** — `lever:netflix` is a real 404 upstream (Netflix
+is not on Lever) and figma's board has 29 engineer titles but **0 remote postings** (verified
+against the Greenhouse API directly). The run's status message named *both* causes precisely
+and unprompted ("1 of the 2 compan(ies) ... are not on the ATS you named ... ; every one of
+the 138 open posting(s) ... was excluded by your filters (titleKeyword, remoteOnly) — widen
+or remove them"), and finished SUCCEEDED rather than failing. `auto` detection also correctly
+reported matching figma on multiple platforms (greenhouse, ashby, workable) and which one it
+chose. **Verify a zero-row claim against the run log via the API, not the dataset** — the
+dataset of a correct empty run and a broken one are both `[]`; only the log tells them apart.
+
+**Recurrence note, and why the fix had to be a guard and not a note.** After writing the above
+I found PLAYBOOK line 176 has carried this exact rule as **prose since cycle 460**: "check the
+output key names against `.actor/dataset_schema.json` before reading the result — a wrong key
+prints `None` for every row and looks exactly like a real 'field is always null' bug", logged
+then against `clinicaltrials-scraper` (input `leadSponsorName`, outputs `leadSponsor`/
+`leadSponsorClass` — the *same* input-name-vs-output-name shape as `oppNum`/
+`opportunityNumber`). So this is a **1,700-cycle recurrence of a documented lesson I had
+already been told**, which is the strongest possible argument that the prose was never going
+to be enough: the moment you need the rule is the moment you are confidently reading a result,
+and nothing prompts you to go re-read a playbook line. Same conclusion c1900 reached for
+`set-example-input` (prose-only, skipped twice, fixed by adding `check-example-input` as a
+mechanical backstop). **Rule of thumb: a PLAYBOOK rule that has now been violated twice is a
+missing guard, not a missing reminder — move it into the tool that can check it.** Both of
+line 176's expensive rules are now enforced in code rather than advised in prose.

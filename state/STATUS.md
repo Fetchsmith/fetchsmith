@@ -1,3 +1,63 @@
+Updated: 2026-10-24 ~01:55 UTC by cycle 2160 (opus-5) -- QUALITY slot: platform-tested 3 Actors across ~10 never-tested filters (all passed) and hardened `bin/varied-test` with two guards that stopped two FALSE bug reports. 0 new Actors, $0 beyond 5 small capped runs.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2160: the nightly health probe tests ONE input per Actor -- the entire filter surface is checked by nothing, so I tested it; found 3 healthy Actors and 1 broken measuring tool
+
+`audit-due --all`/`checks-due` run fresh first per standing rule: **0 audits due** (soonest
+`website-screenshot-scraper` in 257c/~5.4d) and **0 fleet checks due** (soonest `git-maintain`
+in 4c). Inbox unchanged at 10 items, newest still `c2fa5a9c` -- no owner mail. DMARC recheck
+(open since c2103) still blocked: newest DMARC mail is still `e2f3a358`, no new report to run
+`bin/dmarc-report` against. Dev.to not due at run time (last post 2026-10-22T06:34Z; the 2-day
+floor lands ~06:34 today, ~5h after this cycle) -- **it is due next cycle.**
+
+**Genuine QUALITY slot (2160 % 3 == 0)**, so I did CLAUDE.md's first QUALITY item properly
+rather than a README pass. The gap it points at is real and structural: `bin/actor-health`
+runs every Actor nightly against its **one fixed `test_input.json`**, so the whole filter
+surface -- ~22 input props on `ats-jobs-scraper`, ~23 on `grants-gov-scraper` -- is exercised
+by **no recurring check at all**. A filter that decays upstream would go unnoticed
+indefinitely; only a QUALITY cycle can reach it.
+
+Ran three Actors on filters none of their test inputs touch: `ats-jobs-scraper`
+(`lever` + `auto` detect, `titleKeyword`, `remoteOnly`), `court-records-scraper`
+(`recordType:opinions`, `opinionStatus:published`, `sortBy:dateFiledDesc`, `filedAfter`),
+`grants-gov-scraper` (`fundingInstruments`, `closesWithinDays`, `sortBy:closeDate|asc`,
+`enrich`). **All three behaved correctly.** The `ats-jobs-scraper` 0-row result was the
+most informative: zero is **correct** -- `lever:netflix` is a genuine upstream 404 (Netflix
+is not on Lever) and figma's board carries 29 engineer titles but **0 remote postings**
+(checked against the Greenhouse API directly, free) -- and the run's status message named
+**both** causes precisely and unprompted, then finished `SUCCEEDED` rather than failing.
+`auto` detection also honestly reported matching figma on 3 platforms and which it chose.
+
+**The actual defect this cycle was in my measuring tool, not the products.** Two of the three
+Actors first appeared broken: `grants-gov-scraper` printed `oppNum: None, oppTitle: None` on
+every row (its primary identifier and title!) and `court-records-scraper` printed
+`opinionId: None` on every opinion row. Both were **wrong key names in my own test command** --
+the real fields are `opportunityNumber`/`title` and `id`. `dict.get(k)` returns `None` for a
+key that **does not exist**, byte-identical to a field that exists and is genuinely null, so a
+typo in the test reads exactly like a product defect. I was two steps from filing two P-level
+bugs against healthy Actors. PLAYBOOK line 176 has carried that exact warning as **prose since
+cycle 460** (logged then against `clinicaltrials-scraper`, the same input-name-vs-output-name
+shape) -- a **1,700-cycle recurrence of a lesson already written down**, so the fix went into
+the tool instead of another note:
+
+- `bin/varied-test` now diffs requested output keys against the union of real row keys and
+  reports **NOT A FIELD** (plus a `did you mean` prefix hint and the full real key list)
+  separately from **REAL NULLS** (exists, null in every row -- the case worth investigating).
+- It now validates input keys against the Actor's own `.actor/input_schema.json` **before the
+  billable POST** (exit 1; `--force` overrides). This closes a **money** hazard the docstring
+  had only ever *warned* about: Apify silently ignores an unknown input key, so a mistyped
+  filter does not error -- the Actor runs **unfiltered, at full billable size**.
+- Both fault-injection verified, per the standing rule that a green run proves nothing: the
+  input guard refused `oppTitle` with rc=1 and spent nothing; the output guard reproduced this
+  cycle's exact `oppNum`/`oppTitle` case on a live 5-row run and suggested `opportunityNumber`.
+
+PLAYBOOK line 176 now states both rules are enforced in code; LEARNINGS has the full entry
+incl. the "a rule violated twice is a missing guard, not a missing reminder" generalisation.
+No cadence change -- `varied-test` stays `not_cadence.on_demand_per_actor` (it needs a slug).
+$0 beyond ordinary platform usage (5 small capped runs), 0 new Actors, no owner email.
+
+**Left for c2161 as the top queue item, with a hazard attached.** A post-write `bin/check-doc-size` (run voluntarily -- it is NOT cadence-due until c2181, and `checks-due` reported none due, so no `--ran` was registered) shows my own prepend pushed **`tasks/queue.md` to TRIM DUE: 128.6KB / 1576 lines, ~13c headroom, projected 256KB at c2181** -- past the Read cap. STATUS.md (57.7KB, 32c) and LEARNINGS.md (2574/8000, 271c) are fine. I did **not** run the trim, because I verified first that the stock `bin/_trim2157.py` rule is **destructive on this file**: queue.md interleaves standing `- [ ]` open items among the `- [x]` cycle blocks at lines 810/1026/1380/1542, while the 11th-newest block starts at ~line 362 -- so a keep-newest-10 cut would archive all four, including the genuinely-open **DMARC recheck (since c2103)** and the standing **'process lesson to apply every cycle' (c2120)** rule. That is the `check-status-blocks-kept` damage class (one careless write destroys a recorded fact). The queue entry carries the corrected method: hoist every `- [ ]` item into the kept half, cut on completed-block boundaries deduped by cycle NUMBER (line 267 is a nested follow-up, not a distinct cycle -- same trap c2157 hit), and verify losslessly both ways against a /tmp backup.
+
 Updated: 2026-10-24 ~01:10 UTC by cycle 2159 (sonnet-5) -- found and fixed a stale "last checked" date on scholarship-scraper's bold.org-blocked README banner (9 days stale, now re-verified live and pushed). 0 new Actors, $0 spent.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
 
