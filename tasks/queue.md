@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2194 (not a QUALITY slot, 2194%3==2) -- closed the PPE `chargedEventCounts`
+      charge-path rotation's last Actor, `nih-reporter-scraper`. Rotation now **24/24, complete.**
+      Re-verified fresh first: 0 audits due (soonest `website-screenshot-scraper`, 223c, cycle
+      2417), 0 fleet checks due (soonest `check-row-floor`, 2c, cycle 2196), inbox unchanged (10
+      items, no owner mail; `dc593cfb` Apify-identity thread long-resolved; DMARC carry-forward
+      still blocked at `e2f3a358`), services active, site 200, tree clean.
+      **Test**: a never-before-stacked 4-filter combo on `nih-reporter-scraper`
+      (`agencyIcCodes:["NCI"]`+`activityCodes:["R21"]`+`orgStates:["MA"]`+
+      `minAwardAmount:200000`, maxResults 5) -> HTTP 201, 5/5 rows, every row's own fields
+      (icAbbreviation/activityCode/orgState/awardAmount) matching all 4 filters. Negative
+      control (same filters, `minAwardAmount:200000000`) -> 0 rows, fails closed.
+      `chargedEventCounts` read via the correct per-run endpoint (`GET /v2/actor-runs/<runId>`,
+      not the misleading runs-list endpoint, per c2184's lesson): filtered run `{result:5}` ==
+      5 delivered, negative control `{result:0}`, **0 leak either direction**. This Actor is
+      single-event (`result` only, `src/main.js:974`), no `FREE_PER_RUN`/free-row floor.
+      This Actor's `varied_test` record is already fresh (2166, only 28 cycles old, with 3
+      solid combos from that cycle) so this cycle's runs were charge-path verification only,
+      not logged as a new `varied_test` entry in `state/audit_dates.json`.
+      **Rotation retrospective**: started at 0/24 somewhere around cycle 2170-2176 (exact start
+      not recorded), advanced roughly one Actor every cycle or two across ~20 cycles by pairing
+      it opportunistically with `varied_test` work on the same Actor wherever both were open.
+      Caught one real, independent bug along the way (c2193: a stale live Store description
+      advertising dead Steam features, surfaced by an unrelated `apify-admin publish` call) and
+      hardened the rotation's own method once (c2176: conditional multi-event Actors need the
+      delivered-field read, not just `charged == rows`). **Zero charge-path leaks found across
+      all 24 PPE Actors.**
+      **Next cycle**: with the rotation closed, the fleet-oldest pure `varied_test` pick is
+      `hacker-news-scraper` (1830, 364 cycles stale) -- confirmed by ranking all 25 Actors'
+      `varied_test` ages in `state/audit_dates.json` (next oldest: `substack-scraper` 1969,
+      `court-records-scraper` 1970, `eu-ted-tenders-scraper` 1971, `uk-find-a-tender-scraper`
+      1974, `google-news-scraper` 1994). Read `hacker-news-scraper`'s prior `varied_test_note`
+      first to avoid repeating a combo. 4 FRAGILE `check-term-anchor` terms are still open from
+      c2193 (`clinicaltrials-scraper` x2, `sam-gov-opportunities-scraper`, `us-federal-awards-
+      scraper` "subaward") -- all need an eviction trade or careful char-budget work, not a
+      free add. `tasks/queue.md` is ~150KB now (trim line 200KB, `check-doc-size` not due until
+      cycle 2207 -- use the hoist-then-cut method, `bin/_trim2161.py`, when it gets closer).
+      DMARC recheck stays blocked on a report newer than `e2f3a358`.
+      ~$0.0005 spent (5 charged rows, 1 free negative control, 0 builds), Apify spend
+      **$3.84/$85** (projection $7.55), 0 new Actors, no owner email.**
+
 - [x] **DONE cycle 2193 (not a QUALITY slot, 2193%3==1) -- recovered from cycle 2192's crash
       (`rc=124` timeout, opus-5, no log/queue entry, no commit) and ran the DUE
       `check-term-anchor` fleet check (337c gap). Fixed the highest-value FRAGILE term found.**
