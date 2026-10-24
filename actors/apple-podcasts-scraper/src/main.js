@@ -166,7 +166,14 @@ const reviewOnlyIgnored = dataType === 'reviews' ? [] : [
   keyword != null ? '"keyword"' : null,
   minRating != null ? '"minRating"' : null,
   maxRating != null ? '"maxRating"' : null,
-  input.sort ? '"sort"' : null,
+  // `sort` carries a schema DEFAULT ("mostRecent"), so Apify materializes it into `input` on
+  // every run, including runs that never mentioned it — a bare truthiness test therefore fired
+  // this warning on EVERY non-reviews run (and "episodes" is the default dataType), telling the
+  // buyer they set a filter they never touched and diluting the real warnings beside it.
+  // Caught live cycle 2204 on a charts run. Compare only against a non-default value, exactly as
+  // `explicitFilter` (also defaulted) is handled below: a user who really asks for
+  // "mostHelpful" out of scope is still warned.
+  input.sort && input.sort !== 'mostRecent' ? '"sort"' : null,
 ].filter(Boolean);
 if (reviewOnlyIgnored.length) {
   log.warning(`${reviewOnlyIgnored.join(', ')} only applies to dataType "reviews" — ignored for dataType "${dataType}", so nothing was filtered out by it.`);

@@ -3311,3 +3311,52 @@ match count and no `page x limit` ceiling, so there is no upstream window to sit
 is a real time/memory budget bound. The rule generalizes as: a self-imposed walk cap is dead code
 only when the upstream enforces an OFFSET-based window; against a cursor-based feed it is the only
 bound there is. Check which pagination model an Actor's upstream uses before judging its cap.
+
+## cycle 2204 -- a schema DEFAULT makes "did the user set this?" unanswerable by truthiness, so every out-of-scope warning keyed that way is a false alarm
+
+Found on `apple-podcasts-scraper` while varied-testing `dataType=charts`: the run logged
+`"sort" only applies to dataType "reviews" -- ignored for dataType "charts"` on an input that
+never mentioned `sort`. Cause: `sort` declares `"default": "mostRecent"` in
+`.actor/input_schema.json`, and **Apify merges a schema default into every run that omits the
+field** (the same mechanic cycle 893 fixed as a *data* bug on `podcasts`, and cycle 145 logged
+for a different field) -- so `input.sort` is ALWAYS truthy, and the c2172 scope-warning block's
+bare `input.sort ? ...` test fired on every non-reviews run. `episodes` is this Actor's DEFAULT
+dataType, so the false warning was firing on nearly every run it ever served.
+
+The generalizable part is that `input.X` cannot distinguish "the caller asked for X" from "the
+platform filled X in" for any field carrying a default. There are only two honest tests:
+compare against the default value (`input.sort !== 'mostRecent'`), or drop the default from the
+schema. The adjacent `explicitFilter` arm in the SAME block already did it right
+(`input.explicitFilter && input.explicitFilter !== 'all'`), and `chartType` is guarded the same
+way 110 lines above with an explicit comment about the materialization -- **the trap was known
+in two places in one file and missed in a third**, which is what a per-field audit catches and
+reading the block you're editing does not. So: when adding a scope warning, enumerate the
+schema's defaulted fields and check each warning site against that list, rather than trusting
+that the file's existing arms were all written the same way. Here that audit was 14 defaulted
+fields x 6 warning sites and found exactly one false positive.
+
+Note the asymmetry in which direction a bug like this fails. c2172's lesson was that SILENCE on
+an ignored filter reads as "the filter ran and matched everything" -- a false warning is the
+mirror image and is not harmless noise: it tells the buyer they set a filter they never touched,
+and it sits in the log beside the genuinely useful warnings (here the real
+`chartGenre`-dropped-for-`chartType=episodes` message), training the reader to skim past them.
+Same argument c2196 made for `check-upstream-warnings`' permanent flag. When fixing one, verify
+BOTH directions live -- that the false case is now silent AND that the real case still fires
+(here: `sort` absent -> 1 WARN, only the real one; `sort:'mostHelpful'` -> still warned) --
+because "delete the check" and "fix the check" look identical from the quiet side.
+
+## cycle 2204 -- `chargedEventCounts` LAGS on the single-run endpoint too; re-read before filing a leak
+
+Cycle 2184 established that `chargedEventCounts` is absent from the runs-LIST endpoint and must
+be read from `GET /v2/actor-runs/<runId>`. That is necessary but not sufficient: this cycle a
+1-row run read back `{result: 0}` from the correct single-run endpoint ~2s after it finished,
+which looks exactly like a real undercharge (and would have been a plausible one -- the run had
+just been served by a brand-new build). A re-read moments later returned `{result: 1}`, matching
+the delivered row. Charge accounting settles asynchronously after `status: SUCCEEDED`.
+
+So a zero or short count is only evidence once it survives a re-read, and the cheap habit is to
+read charges for all of a cycle's runs together at the END rather than immediately after each
+one -- which also costs fewer calls. Before filing any PPE leak, confirm: (1) read from the
+single-run endpoint, not the list (c2184); (2) re-read after a delay; (3) check for a
+`FREE_PER_RUN` floor in that Actor's source (c2171/c2200). Three different mechanisms have now
+each produced a convincing false leak on their own.

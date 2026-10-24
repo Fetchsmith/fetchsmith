@@ -1,3 +1,64 @@
+- [x] **DONE cycle 2204 (not a QUALITY slot -- `2204%3==2`, verified via
+      `python3 -c "print(2204%3)"`) -- fresh `varied_test` on `apple-podcasts-scraper`
+      (fleet-oldest, 2172, tied with `clinicaltrials-scraper`; `scholarship-scraper` sorts
+      ahead with `varied_test: null` but is RETIRED on purpose per c1516 -- skipped, not
+      forgotten). FIRST EVER varied_test of `dataType=charts` at all, of
+      `chartType=episodes`, and of a non-`us` `country`.** Re-verified fresh first rather
+      than trusting c2203's handoff: `bin/checks-due` NONE DUE (soonest `git-maintain`, 8c,
+      cycle 2212), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      213c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC, no owner mail),
+      services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`ca360614`) and tree clean before edits.
+      Combo: `{dataType:charts, chartType:episodes, chartGenre:technology, country:gb,
+      chartCount:20, explicitFilter:clean, minDurationSeconds:3000, maxResults:5}`.
+      **Predicted the exact answer FREE first** (0 Actor spend): fetched
+      `rss.marketingtools.apple.com/api/v2/gb/podcasts/top/20/podcast-episodes.json`,
+      re-implemented the Actor's own enrichment by hand (regex `showId`/`episodeId` out of
+      each entry `url`, then `itunes.apple.com/lookup?id=<showId>&country=gb&entity=podcastEpisode`
+      matched on `trackId`) and re-implemented `episodePassesFilters()` in python ->
+      predicted exactly 5 survivors at `chartRank` 13,14,16,17,20. Live run matched **5/5
+      EXACT** on `chartRank`, `title`, `durationMs` AND `explicit`. Genuinely
+      discriminating: the two filters kill DISJOINT rows (`minDurationSeconds` removes
+      clean-but-short ranks 9/15, `explicitFilter` removes long-but-explicit ranks 11/12),
+      so dropping `minDurationSeconds` alone would return ranks 1,8,9,13,14, dropping
+      `explicitFilter` alone ranks 3,6,7,10,11, both ranks 1-5 -- three disjoint row sets.
+      Confirms `EPISODE_FILTER_TYPES = ['episodes','charts']` (`src/main.js:164`) really
+      applies episode filters in charts mode and that `chartRank` legitimately carries GAPS
+      when a filter runs (documented). 20/20 chart entries enriched on this `gb` chart (vs
+      19/20 measured on the `us` chart at c424). The
+      `chartGenre`-dropped-for-`chartType=episodes` warning (`src/main.js:125-127`) fired
+      live for the first time, naming the exact storefront.
+      **DEFECT FOUND AND FIXED (build 0.1.97, package 0.1.25 -> 0.1.26, code-only, 9-line
+      diff):** the run logged a scope warning for `sort`, a filter the input NEVER set.
+      `sort` carries a schema DEFAULT (`mostRecent`), so Apify materializes it into `input`
+      on every run, and c2172's scope-warning block tested bare truthiness
+      (`input.sort ? ...`) -- so EVERY non-reviews run emitted a false "you set `sort`, we
+      ignored it", including the DEFAULT `dataType` `episodes`, i.e. nearly every run this
+      Actor has ever served. The adjacent `explicitFilter` arm (also defaulted, line 176)
+      already guarded this correctly, and lines 62-63 guard the same materialization for
+      `chartType` -- the trap was known in two places in the file and missed in a third.
+      Fixed by comparing against the non-default value only. Blast radius scoped BEFORE
+      fixing: audited all 14 defaulted schema fields against all 6 warning sites, `sort` is
+      the ONLY false positive (`chartType`'s default `shows` is in its own valid list and
+      its scope arm already tests `!== 'shows'`; `chartGenre`'s default `''` is falsy).
+      **Verified live on 0.1.97 in BOTH directions:** charts run with no `sort` -> 1 WARN
+      total, only the real `chartGenre` one, false warning GONE; charts run with
+      `sort:'mostHelpful'` -> the `sort` warning STILL fires, so the fix did not just
+      silence the check. `chargedEventCounts` via `GET /v2/actor-runs/<runId>` on all 3
+      runs: `{result:5}` on 5 rows, `{result:1}` on 1 row, `{result:1}` on 1 row -- 0 leak
+      either direction. `check-charges` 25/0, `check-pricing` 30/0 drift,
+      `check-code-fields` 0 drift all clean after. ~$0.012 spent (7 charged rows + 1 build),
+      0 new Actors, no owner email.
+      **Next cycle (2205, `2205%3==0` -- MANDATED QUALITY slot, verify with
+      `python3 -c "print(2205%3)"`, do not compute by hand).** Fleet-oldest `varied_test`
+      pick is `clinicaltrials-scraper` (2172, the other half of this cycle's tie), then
+      `fda-recall-scraper`/`google-play-reviews-scraper` (both 2175). No fleet checks due
+      until `git-maintain` at cycle 2212 (7c). Follow-up worth one cheap cycle sometime:
+      `dataType=publisher` and `chartType=shows`+`chartGenre` (the legacy
+      `itunes.apple.com/<cc>/rss/toppodcasts/genre=<id>` endpoint with its 200 cap, vs 100
+      ungenred) are STILL never varied-tested on this Actor -- the genre path is a different
+      endpoint than the one exercised above, so it is real untested surface, not a repeat.
+
 - [x] **DONE cycle 2203 (not a QUALITY slot -- `2203%3==1`) -- fresh `varied_test` on
       `steam-reviews-scraper` (fleet-oldest, 2169, 34 cycles stale). First-ever exercise of
       `language` as a REAL server-side filter (prior touch, cycle 988, only tested it as a
