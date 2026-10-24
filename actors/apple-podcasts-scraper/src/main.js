@@ -156,6 +156,31 @@ if ((minReleaseDate && Number.isNaN(minReleaseDate.getTime())) || (maxReleaseDat
 const minDurationSeconds = input.minDurationSeconds != null ? Number(input.minDurationSeconds) : null;
 const explicitFilter = ['all', 'clean', 'explicitOnly'].includes(input.explicitFilter) ? input.explicitFilter : 'all';
 
+// Scope warnings for filters that only exist on one dataType. Apify drops nothing here — the
+// keys are declared, so they arrive in `input` and are simply never consulted, which reads to
+// the user exactly like "the filter ran and matched everything". Same contract as the
+// "chartType"/"chartGenre"/"watchLabel" warnings above; added cycle 2172 after a live run with
+// dataType "episodes" + keyword "AI" returned unfiltered rows and said nothing about it.
+const EPISODE_FILTER_TYPES = ['episodes', 'charts'];
+const reviewOnlyIgnored = dataType === 'reviews' ? [] : [
+  keyword != null ? '"keyword"' : null,
+  minRating != null ? '"minRating"' : null,
+  maxRating != null ? '"maxRating"' : null,
+  input.sort ? '"sort"' : null,
+].filter(Boolean);
+if (reviewOnlyIgnored.length) {
+  log.warning(`${reviewOnlyIgnored.join(', ')} only applies to dataType "reviews" — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
+}
+const episodeOnlyIgnored = EPISODE_FILTER_TYPES.includes(dataType) ? [] : [
+  minDurationSeconds != null ? '"minDurationSeconds"' : null,
+  input.explicitFilter && input.explicitFilter !== 'all' ? '"explicitFilter"' : null,
+  minReleaseDate ? '"minReleaseDate"' : null,
+  maxReleaseDate ? '"maxReleaseDate"' : null,
+].filter(Boolean);
+if (episodeOnlyIgnored.length) {
+  log.warning(`${episodeOnlyIgnored.join(', ')} only applies to dataType "episodes" (and "charts") — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
+}
+
 // Watch mode: a stateful "only episodes published since my last run" filter, same recipe as
 // app-store-reviews-scraper's watchLabel (copy, don't reinvent). Restricted to dataType
 // "episodes" — it's the only dataType here whose items are naturally append-only and uniquely

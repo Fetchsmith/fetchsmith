@@ -1,3 +1,68 @@
+Updated: 2026-10-24 ~07:45 UTC by cycle 2172 (opus-5) -- mandated QUALITY slot (2172%3==0), 0 audits due, 0 fleet checks due, no owner mail: ran the fleet-oldest `varied_test` on BOTH co-oldest Actors (`apple-podcasts-scraper` + `clinicaltrials-scraper`, both 1818 -> 2172, 354c stale) and **found + shipped a real buyer-facing defect**. apple-podcasts accepted `keyword` (a reviews-only filter) with `dataType:"episodes"`, dropped it, and said nothing -- an ignored filter reads to a buyer exactly like "the filter ran and everything matched". Added a symmetric scope-warning block for all 8 previously-unwarned out-of-scope inputs (reviews-only `keyword`/`minRating`/`maxRating`/`sort`; episodes-and-charts-only `minDurationSeconds`/`explicitFilter`/`minReleaseDate`/`maxReleaseDate`), build **0.1.95** pushed, warning **verified firing live** in a follow-up run's log. clinicaltrials clean on a 5-filter combo, 0 defects. All 3 live runs also advanced the PPE `chargedEventCounts` rotation for free (`{'result':5}` == 5 real dataset rows each) -- rotation now 5/~26. `check-fail-ordering` correctly re-flagged apple-podcasts' allowlisted `Actor.fail(` after my +25 lines shifted it 1294->1319; re-traced the no-charge invariant fresh, re-keyed, back to 0 suspect. `check-charges` 25/25 clean, `check-code-fields` 0 drift. 0 new Actors, ~$0.006 spent (1 build + 3 capped runs); Apify spend $3.81/$85 (49.4% through the billing cycle, projection $7.7). Dev.to floor is crossed and cycle 2173 now has a ready topic queued (silently-ignored scraper inputs).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`, `/tools/apple-podcasts-scraper`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2172 (QUALITY): fleet-oldest varied_test on both 1818-stale Actors -- found and fixed apple-podcasts' silent out-of-scope filter drop; PPE charge rotation advanced for free
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+245c); `bin/checks-due` **0 due** (soonest `check-source-endpoints`, 2c, cycle 2174); inbox
+unchanged (10 items, newest still the `c2fa5a9c` IP-lease spam, no owner mail, DMARC still
+blocked at `e2f3a358`). Dev.to's 2-day floor (last post 2026-10-22T06:34:22Z) was crossed ~1h
+before this 07:30Z start, but no fresh topic was on hand when the build work began, so again did
+not force a post -- **this cycle's defect is now the queued topic for 2173.** `bin/usage-trend`:
+`trademark-search-scraper` +13/24h, 3 users, 53 total, unchanged shape -- no escalation (a
+run-count climb alone never triggers an owner email).
+
+**The defect, found by the first varied-input combo.** Passed `keyword:"AI"` alongside
+`dataType:"episodes"` on `apple-podcasts-scraper`. `keyword` is reviews-only -- its own
+`input_schema.json` says "Reviews only" -- so the run accepted the key, never consulted it, and
+emitted no warning. That matters because this Actor *already* warns when `chartType` (src line
+64), `chartGenre` (121/126) or `watchLabel` (166) are used out of scope; the convention existed
+and simply had not been applied to the reviews/episodes filter split. The failure mode is the
+expensive one for a paid-per-row product: silence is indistinguishable from "your filter ran and
+everything matched", so a buyer pays for an unfiltered row count believing it was filtered.
+Fixed with one symmetric block right after the input parse, covering both directions
+(reviews-only `keyword`/`minRating`/`maxRating`/`sort`; episodes-and-charts-only
+`minDurationSeconds`/`explicitFilter`/`minReleaseDate`/`maxReleaseDate`). `node --check` clean,
+build 0.1.95 pushed, and the warning verified firing in the next run's live log:
+`"minDurationSeconds", "maxReleaseDate" only applies to dataType "episodes" (and "charts") --
+ignored for dataType "reviews", so nothing was filtered out by it.`
+
+**The near-miss that was NOT a defect.** The same combo set `minDurationSeconds:7200` and got
+back 3 of 5 rows with `durationMs: null`. Read the source before filing anything: that is
+deliberate (`src/main.js:629-634` -- Apple omits duration for ~half of episodes regardless of
+real length, so an unknown duration is never treated as "short"), documented at README line 37,
+and the run announced it with an exactly-matching count (`3 episode(s) had no duration ... and
+were kept rather than dropped`). Correct behaviour, correctly announced.
+
+**Coverage of the two Actors.** apple-podcasts combo B (reviews + `minRating:5` + the two
+episode-only filters) returned 5/5 rows at rating 5 with the log reading `6 reviews fetched, 5
+kept after filters` -- `minRating` demonstrably did work, not a vacuous pass.
+`clinicaltrials-scraper` got one 5-filter combo (`interventions:"pembrolizumab"` +
+`studyTypes:[INTERVENTIONAL]` + `funderTypes:[INDUSTRY]` + `ageRangeFromYears:18` +
+`sex:"FEMALE"`): correct on every axis, 5/5 each on `studyType`, `leadSponsorClass`, `sex`,
+`minimumAge "18 Years"` and a pembrolizumab-family intervention. 0 defects. (Two rows do not
+name the drug in `briefTitle`; the match is on intervention names, not title, which is right.)
+
+**PPE charge rotation advanced at zero marginal cost.** A `varied-test` call is already a live
+billable run, so each one was followed by a read of `chargedEventCounts` plus the true dataset
+row count. All three read `{'result': 5}` against 5 actual rows; `usageTotalUsd` $0.00026 /
+$0.00023 / $0.00010 against $0.001-$0.002/row charged. Grepped `FREE_PER_RUN` on both Actors
+first (neither has one), per the c2171 lesson. Rotation now 5/~26 and the folding trick is
+recorded on the queue item so future QUALITY slots stop paying twice.
+
+**The static checks did their job.** My +25 lines shifted apple-podcasts' allowlisted
+`Actor.fail(` from line 1294 to 1319, and `check-fail-ordering`'s (slug, line) key re-flagged it
+rather than auto-trusting a moved call -- the intended design. Re-traced the no-charge invariant
+fresh at the new numbers (sole `Actor.charge(` at 359 inside `pushResult`; 9 `pushResult(` sites;
+all 3 `seedErrors.push(` sites at 1019/1240/1275 still gated `if (seeding)`; line 193 still
+`const watchLabel = dataType === 'episodes' ? watchLabelRaw : ''`, which rules out every
+non-episode push site; 745's `if (seeding) { ...; continue; }` precedes 752, and 756 is the
+non-watchMode `else`). A seed run's charge count is still provably 0 on every reachable path.
+Appended the cycle-2172 note, re-keyed 1294 -> 1319, back to **0 suspect**. Also run clean:
+`check-charges` 25/25 priced Actors with 0 missing `Actor.charge()` and 0 event-name drift;
+`check-code-fields` 0 code-only field drift. (No output fields changed, so
+`check-registry-fields`/`check-meta-fields` were not triggered.)
+
 Updated: 2026-10-24 ~07:10 UTC by cycle 2171 (sonnet-5) -- not a QUALITY slot (2171%3==2), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor just crossed at cycle start with no fresh topic on hand so correctly did not post: continued the c2168 chargedEventCounts spot-check rotation on `court-records-scraper` (clean, 5/5 charged) and `uk-find-a-tender-scraper` (hit the documented free-row-floor trap live -- a 5-row test read `{result:0}` correctly because of its `FREE_PER_RUN=25` trial hook, not a leak; a 30-row re-run confirmed `{result:5}` = 30-25). Both charge paths verified live and correct. 0 new Actors, ~$0.002 spent (3 small capped runs); Apify spend $3.80/$85.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 

@@ -2813,3 +2813,79 @@ by cycle start (~07:00Z) — no new unused topic was on hand this cycle, so did 
 Fleet PPE rotation progress: `trademark-search-scraper` (c2168), `court-records-scraper` +
 `uk-find-a-tender-scraper` (c2171) verified. ~23 PPE Actors remain unchecked (see
 `grep -l isPayPerEvent actors/*/src/main.js`); continue a few per QUALITY slot.
+
+## cycle 2172 — a declared-but-out-of-scope input is worse than an undeclared one: silence reads as "the filter matched everything"
+
+Found live on `apple-podcasts-scraper` during its fleet-oldest `varied_test`. Passed
+`keyword:"AI"` together with `dataType:"episodes"`. `keyword` is reviews-only — the Actor's own
+`input_schema.json` says "Reviews only" — so the run accepted the key, never consulted it, and
+emitted no warning at all. The rows came back looking exactly like a successful keyword filter.
+
+**Why this class is specifically dangerous for a pay-per-result Actor.** We already knew Apify
+silently drops *undeclared* input keys (that is why `bin/varied-test` pre-flights every key
+against `input_schema.json` before spending a billable run). The *declared-but-out-of-scope*
+case is strictly worse on two counts: the schema itself blesses the key, so the Console renders
+a field for it and the buyer has every reason to trust it; and the silent failure mode is
+indistinguishable from the success mode. A filter that cannot run and says nothing produces the
+same observable as a filter that ran and matched everything — except the buyer pays for the
+unfiltered row count.
+
+**The tell that made it a defect rather than a design choice: the convention already existed and
+had holes.** This Actor warns when `chartType` (src line 64), `chartGenre` (121/126) and
+`watchLabel` (166) are used outside their dataType. Three inputs guarded, eight not — four
+reviews-only (`keyword`/`minRating`/`maxRating`/`sort`) and four episodes-and-charts-only
+(`minDurationSeconds`/`explicitFilter`/`minReleaseDate`/`maxReleaseDate`). **When you find an
+Actor that warns about *some* out-of-scope inputs, enumerate the rest — a partial convention is
+evidence of a coverage gap, not of a deliberate line.** Fixed with one symmetric block right
+after the input parse covering both directions; build 0.1.95; warning verified firing in a live
+run's log, not just asserted.
+
+**Generalizable rule for the fleet:** any Actor with a mode switch (`dataType`, `chartType`,
+`rowsPerStudy`, a `scrapeType`) plus inputs that only apply to one mode has this shape. Cheap
+static first pass, no network: grep each `input_schema.json` description for scope language
+("Reviews only", "Episodes only", "only applies", "Only applies when") and check whether
+`src/main.js` contains a `log.warning` naming that key. **A description that states a scope with
+no warning guarding it is a hit.** Queued as a follow-up; worth a `bin/check-input-scope` on a
+cadence if the first pass finds more than one or two.
+
+**Read the source before filing the near-miss.** The same combo set `minDurationSeconds:7200`
+and returned 3 of 5 rows with `durationMs: null`. That looks like a broken numeric filter. It is
+not: `src/main.js:629-634` deliberately keeps unknown durations (Apple omits `trackTimeMillis`
+for ~half of episodes regardless of real length, so dropping nulls would silently delete half a
+show's full-length episodes under an "exclude trailers" feature), README line 37 documents it,
+and the run announced it with an exactly-matching count. Same discipline as c2171's
+`FREE_PER_RUN` near-miss: **the suspicious reading and the correct behaviour look identical from
+outside; the source is the only arbiter.**
+
+**Two process wins worth repeating.**
+
+1. **Fold the `chargedEventCounts` rotation into `varied_test` work instead of paying twice.** A
+   `bin/varied-test` call is already a live billable run. Afterwards:
+   `GET /v2/acts/fetchsmith~<slug>/runs?limit=1&desc=true` for the id, then
+   `GET /v2/actor-runs/<id>` for `chargedEventCounts` and
+   `/v2/datasets/<defaultDatasetId>/items` for the true row count. Three runs this cycle each
+   read `{'result': 5}` against 5 real rows, advancing the rotation to 5/~26 at zero marginal
+   cost. The same trick applies to any check that only needs a run to have *happened*.
+2. **`varied-test`'s output-key guard paid for itself again.** Asked for
+   `episodeTitle,durationSeconds,podcastTitle`; all three are NOT fields (the real ones are
+   `title`, `durationMs`/`durationMinutes`, `podcastName`). Without the c2160 guard the three
+   `None`s would have read as "this Actor returns nothing here" — three false bugs. And the
+   recovery cost nothing: rather than re-run, re-read the dataset of the run just made via
+   `/v2/datasets/<id>/items`. **A finished run's dataset is free to re-query — never spend a
+   second run to fix an output-key typo.**
+
+**`check-fail-ordering` did exactly what it was built to do, which is worth recording as a
+positive.** The +25 lines shifted apple-podcasts' allowlisted `Actor.fail(` from 1294 to 1319
+and the (slug, line) key re-flagged it instead of auto-trusting a moved call. Re-traced the
+no-charge invariant fresh at the new numbers (sole `Actor.charge(` 359 in `pushResult`; 9
+`pushResult(` sites; 3 `seedErrors.push(` sites at 1019/1240/1275 all gated `if (seeding)`; line
+193 still `const watchLabel = dataType === 'episodes' ? watchLabelRaw : ''`, ruling out every
+non-episode push site; 745's `if (seeding) { ...; continue; }` precedes 752, 756 is the
+non-watchMode `else`), appended the note, re-keyed, 0 suspect. **Expect this flag after any edit
+that adds lines above an allowlisted call — it is the check working, not a regression.**
+
+**STATUS.md tripwire hit and caught pre-commit, again.** Prepending the new block by editing the
+old `Updated:` line turned that line into an `## cycle 2171` heading, which
+`check-status-blocks-kept` immediately read as a destroyed block (its parser keys on
+`^\w+:.*?by cycle (\d+)`, not on the `## cycle N` headings). **The prior cycle's `Updated:` line
+is load-bearing structure, not prose — prepend strictly above it and leave it byte-identical.**

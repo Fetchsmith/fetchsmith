@@ -35,7 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1294): (
+    ("apple-podcasts-scraper", 1319): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
         "seeding, the code records watch ids and `continue`s (line 632) without ever calling "
@@ -67,6 +67,22 @@ ALLOWLIST = {
         "the episode loop, where line 720 `if (seeding) { watchSeen.add(watchId); continue; }` "
         "precedes 727 and 731 is the non-watchMode `else` path. A seed run's charge count is "
         "still provably 0 on every reachable path."
+        "Re-verified cycle 2172 (still holds, line 1294 -> 1319, line shift only, +25 lines from "
+        "2172's own dataType-scope warning block added just after the input parse, which emits "
+        "log.warning only and adds no push or charge path). Surfaced as a LIVE FLAG again, the "
+        "keyed-on-line design working as intended. Gate still byte-identical: `if (watchMode && "
+        "seedErrors.length) { await Actor.fail(...) } else if (watchMode) { await "
+        "saveWatchRecord(...) }`. Chain re-traced fresh at the new numbers: the sole "
+        "`Actor.charge(` is line 359 inside `pushResult` (declared 357); `pushResult(` is called "
+        "at 9 sites (752, 756, 963, 1113, 1137, 1152, 1164, 1183, plus the 745 guard above the "
+        "first); all 3 `seedErrors.push(` sites (now 1019, 1240, 1275) are each gated `if "
+        "(seeding)`; `seeding` is only set inside `if (watchMode)`, and line 193 is still `const "
+        "watchLabel = dataType === 'episodes' ? watchLabelRaw : ''`, so `watchMode` implies "
+        "`dataType === 'episodes'`. That rules out 963 ('reviews'), 1113/1137 ('charts'), "
+        "1152/1164/1183 ('podcasts'/'publisher'/search), leaving only 752/756 in the episode "
+        "loop, where line 745 `if (seeding) { watchSeen.add(watchId); continue; }` precedes 752 "
+        "and 756 is the non-watchMode `else` path. A seed run's charge count is still provably 0 "
+        "on every reachable path."
         "Re-verified cycle 1982 (still holds, line 1259 -> 1294, line shift only, +35 lines from "
         "this cycle's own RUN_SUMMARY completeness-record feature added above it). Gate still "
         "byte-identical: `if (watchMode && seedErrors.length) { await Actor.fail(...) } else if "

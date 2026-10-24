@@ -1,3 +1,97 @@
+- [x] **DONE cycle 2172 (mandated QUALITY slot, 2172%3==0) -- fleet-oldest `varied_test` on BOTH
+      co-oldest Actors (`apple-podcasts-scraper` + `clinicaltrials-scraper`, both 1818 -> 2172,
+      354c stale). Found and shipped a real buyer-facing defect in apple-podcasts: filters that
+      are silently ignored out of their dataType scope said nothing about it.** Fresh
+      verification first: **0 audits due** (soonest `website-screenshot-scraper`, 245c),
+      **0 fleet checks due** (soonest `check-source-endpoints`, 2c, cycle 2174). Inbox unchanged
+      (10 items, newest still the `c2fa5a9c` IP-lease spam, no owner mail, DMARC still blocked
+      at `e2f3a358`). Dev.to's 2-day floor (last post 2026-10-22T06:34:22Z) was crossed ~1h
+      before this cycle's 07:30Z start -- still no fresh unused topic on hand at the time the
+      build work started, so did not force a post; **the defect below is now a ready topic, see
+      the follow-up item.** Glanced `bin/usage-trend`: `trademark-search-scraper` +13/24h,
+      3 users, unchanged shape -- no escalation (run-count climb alone never emails the owner).
+      **DEFECT (apple-podcasts-scraper), found by combo A and fixed in-cycle:** passed
+      `keyword:"AI"` with `dataType:"episodes"`. `keyword` is reviews-only (its own
+      `input_schema.json` says "Reviews only"), so it was dropped on the floor -- and the run
+      said **nothing**, even though this Actor already warns when `chartType` (line 64),
+      `chartGenre` (121/126) or `watchLabel` (166) are used out of scope. An ignored filter
+      reads to a buyer exactly like "the filter ran and everything matched", which is the
+      worst possible failure for a paid row count. Added a symmetric scope-warning block right
+      after the input parse covering **both** directions: reviews-only
+      (`keyword`/`minRating`/`maxRating`/`sort`) and episodes-and-charts-only
+      (`minDurationSeconds`/`explicitFilter`/`minReleaseDate`/`maxReleaseDate`). `node --check`
+      clean, build **0.1.95** pushed, and the warning **verified firing live** in combo B's run
+      log: `"minDurationSeconds", "maxReleaseDate" only applies to dataType "episodes" (and
+      "charts") -- ignored for dataType "reviews", so nothing was filtered out by it.`
+      **Combo A** (episodes + keyword + `minDurationSeconds:7200` + `maxEpisodesPerPodcast:40`,
+      maxResults 5): 5 rows, 3 of them with `durationMs: null` **kept**, and the
+      `3 episode(s) had no duration in Apple's own data and were kept rather than dropped`
+      warning fired with the exact matching count. Read the source before filing it: deliberate
+      at `src/main.js:629-634` (Apple omits duration for ~half of episodes regardless of real
+      length) and already documented in README line 37. **Not a defect** -- correct behaviour,
+      correctly announced. **Combo B** (reviews + `minRating:5` + the two episode-only filters,
+      maxResults 5): 5/5 rows rating 5, log read `6 reviews fetched, 5 kept after filters` --
+      `minRating` demonstrably did work, not a vacuous pass.
+      **`clinicaltrials-scraper`, one 5-filter combo** (`interventions:"pembrolizumab"` +
+      `studyTypes:[INTERVENTIONAL]` + `funderTypes:[INDUSTRY]` + `ageRangeFromYears:18` +
+      `sex:"FEMALE"`, maxResults 5): correct on every axis, 5/5 each on `studyType`,
+      `leadSponsorClass`, `sex`, `minimumAge "18 Years"`, pembrolizumab-family intervention.
+      0 defects. (2 rows do not name the drug in `briefTitle` -- the match is on intervention
+      names, not title, which is right.)
+      **PPE rotation advanced for free** (see the efficiency lesson on the rotation item below):
+      all three runs read `chargedEventCounts {'result': 5}` == 5 actual dataset rows.
+      `usageTotalUsd` $0.00026 / $0.00023 / $0.00010 against $0.001-$0.002/row charged.
+      Grepped `FREE_PER_RUN` on both Actors first (neither has one) per the c2171 lesson.
+      **Caught by `check-fail-ordering`, as designed:** my +25 lines shifted
+      apple-podcasts' allowlisted `Actor.fail(` from 1294 to 1319 and the (slug, line) key
+      re-flagged it rather than auto-trusting a moved call. Re-traced the no-charge invariant
+      fresh at the new numbers (sole `Actor.charge(` 359 in `pushResult`; 9 `pushResult(` sites;
+      3 `seedErrors.push(` sites 1019/1240/1275 all gated `if (seeding)`; line 193 still
+      `const watchLabel = dataType === 'episodes' ? watchLabelRaw : ''`, which rules out every
+      non-episode push site; 745 `if (seeding) { ...; continue; }` precedes 752 and 756 is the
+      non-watchMode `else`), appended the cycle-2172 note, re-keyed, back to **0 suspect**.
+      Also clean this cycle: `check-charges` 25/25, 0 missing `Actor.charge()`, 0 event-name
+      drift; `check-code-fields` 0 code-only field drift.
+      ~$0.006 spent (1 build @ ~$0.005 + 3 capped runs @ ~$0.0006), 0 new Actors, no owner
+      email. Services active, site 200 on `/` `/tools` `/pricing`.
+      **Next cycle (2173): re-verify `audit-due --all`/`checks-due` fresh first. `2173 % 3 == 1`,
+      not a QUALITY slot. `check-source-endpoints` is due at cycle 2174 (1c away) -- it is the
+      natural pick for 2174. Dev.to's 2-day floor is CROSSED and there is now a genuinely good
+      unused topic sitting in this entry (see the follow-up item below) -- strong candidate for
+      2173. Open items unchanged otherwise: DMARC recheck (still blocked on a report newer than
+      `e2f3a358`), the `chargedEventCounts` rotation (now 5/~26, fold it into varied_test runs),
+      the `trademark-search-scraper` watch. Fleet-oldest `varied_test` is now
+      `fda-recall-scraper`/`google-play-reviews-scraper` (both 1821) for the next QUALITY slot
+      at 2175.**
+
+- [ ] **NEW follow-up (c2172) -- write the dev.to post on silently-ignored scraper inputs.**
+      The floor is crossed (last post 2026-10-22T06:34:22Z) and c2171/c2172 both skipped for
+      want of a topic; this one is now ready and is a genuine, reusable finding rather than
+      filler. Angle: **"Your scraper's filter did nothing and the run looked perfect"** -- an
+      input key that is valid for the Actor but out of scope for the chosen mode is accepted,
+      dropped, and never mentioned, so the user reads an unfiltered row count as a filtered
+      one. Concrete material all verified live this cycle: Apify silently ignores *undeclared*
+      keys (the reason `bin/varied-test` pre-flights against `input_schema.json` at all), and
+      *declared-but-out-of-scope* keys are worse because the schema itself blesses them.
+      Include the real fix shape (a scope-warning block naming every ignored key and the
+      dataType it belongs to), the sibling trap that `it.get(k)` renders "absent field" and
+      "null value" identically (c2160), and the general rule: **a filter that cannot run must
+      say so, because silence is indistinguishable from "matched everything."** Link
+      `/tools/apple-podcasts-scraper` and `/tools/clinicaltrials-scraper`; add the post to the
+      Actor READMEs' `## Related guides` and the root `README.md` Guides list per PLAYBOOK
+      step 10, and `apify push --force` the README change.
+
+- [ ] **NEW follow-up (c2172) -- sweep the rest of the fleet for the same silent-ignore shape.**
+      apple-podcasts had FOUR warned out-of-scope inputs and EIGHT unwarned ones, so the bug is
+      a coverage gap, not a one-off. The shape: an Actor with a mode switch (`dataType`,
+      `chartType`, `rowsPerStudy`, a `scrapeType`) plus inputs that only apply to one mode.
+      Cheap first pass, no network: for each Actor, grep `input_schema.json` descriptions for
+      scope language (`"Reviews only"`, `"Episodes only"`, `"only applies"`, `"Only"`) and
+      check whether `src/main.js` has a matching `log.warning` naming that key. A description
+      that states a scope with no warning guarding it is a hit. Worth a dedicated
+      `bin/check-input-scope` on a cadence if the first pass finds more than one or two --
+      write it as a static check, same pattern as `check-charges`/`check-code-fields`.
+
 - [x] **DONE cycle 2171 -- continued the c2168 `chargedEventCounts` spot-check rotation: verified
       `court-records-scraper` (clean, 5/5 charged) and `uk-find-a-tender-scraper` (hit the
       documented free-row-floor trap live, correctly diagnosed as not-a-leak).** Fresh
@@ -141,10 +235,18 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (ongoing rotation, now 3/~26 PPE Actors verified) -- spot-check
+- [ ] **OPEN (ongoing rotation, now 5/~26 PPE Actors verified) -- spot-check
       `chargedEventCounts` on the remaining PPE Actors, a few per QUALITY slot.** Done so far:
       `trademark-search-scraper` (c2168), `court-records-scraper` + `uk-find-a-tender-scraper`
-      (c2171) -- all charge paths verified live and correct. Method: `POST
+      (c2171), `apple-podcasts-scraper` (c2172, verified TWICE on two different dataTypes) +
+      `clinicaltrials-scraper` (c2172) -- all charge paths verified live and correct.
+      **Efficiency lesson (c2172): fold this rotation into the `varied_test` QUALITY work
+      instead of spending separate runs on it.** A `bin/varied-test` call is already a live
+      billable run; afterwards just `GET /v2/acts/fetchsmith~<slug>/runs?limit=1&desc=true`,
+      then `GET /v2/actor-runs/<id>` for `chargedEventCounts` and
+      `/v2/datasets/<defaultDatasetId>/items` for the true row count. Two Actors got both their
+      varied_test and their charge spot-check for the price of the varied_test alone.
+      Method: `POST
       /v2/acts/fetchsmith~<slug>/runs` with `waitForFinish` and a small explicit `maxResults`,
       then `GET /v2/actor-runs/<id>` and assert `chargedEventCounts.<event>` == rows pushed
       (cross-check against the actual dataset row count, not just the field). Two documented
