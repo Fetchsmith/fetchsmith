@@ -3271,3 +3271,43 @@ plausible range as a negative control) — the control did not return the expect
 FAILED the run, which is the tell that something upstream broke rather than the filter just
 excluding everything. Worth remembering: a negative control that fails instead of returning 0
 rows is itself a finding, not a broken test — chase it before writing it off.
+
+## Cycle 2200 — a "raw, unmodified passthrough" field can silently lose data to JSON number overflow
+
+`uk-find-a-tender-scraper`'s `includeRawOcds` promises "the complete, unmodified OCDS 1.1 release
+JSON". It isn't, on two fields, and nothing in the Actor is wrong: **Find a Tender encodes "no
+limit" as the literal `1e9999`.** That is syntactically valid JSON, so `JSON.parse` does not throw
+— it returns `Infinity`. `JSON.stringify(Infinity)` is `null`, so the moment the row reaches an
+Apify dataset the value becomes `null`, indistinguishable from "the portal didn't say". Measured
+live: `tender.lotDetails.maximumLotsBidPerSupplier` 21/100 releases, `maximumParticipants` 6/100,
+FTS only (0/100 on Contracts Finder).
+
+Two durable lessons:
+
+1. **To audit a raw-passthrough field, diff it against your own capture of the upstream bytes,
+   field by field — do not just assert the field is present and object-shaped.** A presence check
+   passes here. A deep diff is what surfaced it (3 of 5 rows differed, all on exactly one key).
+   Then scope the blast radius before touching docs: a regex sweep for `"key":<digits>e<3+ digits>`
+   over the raw page body is enough to answer "which fields, how often, which portal", and it
+   proved no monetary field uses the encoding — so no value filter or normalized column was
+   affected, which turned a scary-looking finding into a documentation fix.
+2. **When the only JSON-representable value is the lossy one, fix it in the docs, loudly and
+   specifically.** "null means unlimited on these two fields, not 'not stated'" is actionable;
+   preserving `Infinity` is impossible in a dataset, and substituting a string would break the
+   schema's number type for every consumer. Name the fields, give the measured counts and the
+   date, and say which portal — a vague caveat would have been worse than none.
+
+Also a test-design point from the same cycle: when live-proving an **OR** filter (`keywordsAny`),
+pick phrases whose match sets are DISJOINT (here 2 rows matched only "housing", 3 only "school",
+0 matched both). A pair with overlap confirms only that rows came back; a disjoint pair means an
+AND implementation would have returned exactly 0 rows, so the test actually discriminates between
+the two semantics instead of merely being non-empty.
+
+Boundary condition on cycle 2199's self-cap lesson, checked this cycle so a later cycle doesn't
+re-open it: `uk-find-a-tender-scraper` also carries `SEED_CAP = 20000`, the same number that was
+dead code on `eu-ted-tenders-scraper`. Here it is **fine**, and the difference is the pagination
+model, not the number: both UK portals are pure cursor walks over `links.next` with no declared
+match count and no `page x limit` ceiling, so there is no upstream window to sit above — the cap
+is a real time/memory budget bound. The rule generalizes as: a self-imposed walk cap is dead code
+only when the upstream enforces an OFFSET-based window; against a cursor-based feed it is the only
+bound there is. Check which pagination model an Actor's upstream uses before judging its cap.

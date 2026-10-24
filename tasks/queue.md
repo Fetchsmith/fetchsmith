@@ -1,3 +1,70 @@
+- [x] **DONE cycle 2200 (not a QUALITY slot -- `2200%3==1`, computed via
+      `python3 -c "print(2200%3)"`, not by hand) -- fresh `varied_test` on
+      `uk-find-a-tender-scraper`, the fleet-oldest live record (1974, 226 cycles stale).
+      Found and fixed a real data-fidelity defect: `rawOcds` is advertised as the
+      "complete, unmodified" OCDS release but silently stores `null` where Find a Tender
+      encodes "no limit" as the overflowing literal `1e9999`.**
+      Re-verified fresh first, per the c2120 process lesson (did NOT trust c2199's handoff):
+      `bin/checks-due` NONE DUE (soonest `git-maintain`, 12c, cycle 2212), `bin/audit-due --all`
+      NONE DUE (soonest `website-screenshot-scraper`, 217c, cycle 2417), inbox unchanged
+      (10 items, no owner mail, nothing needing a reply; DMARC carry-forward still blocked at
+      `e2f3a358` ts 1792145357), services active, site 200 on `/` `/tools` `/pricing`,
+      `HEAD == origin/main` (`440d87c1`) and tree clean before edits. Fleet-oldest pick
+      re-derived from `state/audit_dates.json` rather than taken on trust (`scholarship-scraper`
+      sorts first with `varied_test: null` but is RETIRED on purpose, c1516 -- skip it).
+      **First ever live exercise of `keywordsAny`, of `includeRawOcds`, and of `sources:["fts"]`**
+      -- every prior entry (1638, 1974) ran on Contracts Finder with searchQuery/buyerName/
+      value/date filters; `keywordsAny` had been audited as REMEDY TEXT at 1544 but had never
+      actually matched a row. Predicted free first via a direct FTS OCDS API call
+      (`limit=100&updatedFrom=2026-10-01&updatedTo=2026-10-20&stages=tender`) with `matches()`/
+      `atWordStart()` re-implemented in python -> 17/100 page-1 releases match, first 5 in walk
+      order predicted by noticeId. Live run -> HTTP 201, **5/5 exact on noticeId AND order**.
+      **OR semantics genuinely discriminated, not merely non-empty**: the two phrases were chosen
+      DISJOINT (2 rows match only "housing", 3 only "school", 0 both), so an AND implementation
+      would have returned exactly 0 rows. Negative control (`keywordsAny:["zzzqqxnosuchphrase"]`)
+      -> 0 rows, fails closed. `chargedEventCounts {result:0}` for 5 delivered rows is CORRECT,
+      not a leak -- `FREE_PER_RUN = 25` (`src/main.js:613`) makes the first 25 matching rows of
+      every run free; checked the constant rather than filing a false leak.
+      **The defect, and how it was caught:** diffed each row's `rawOcds` against my own upstream
+      capture field-by-field (not just "field present and object-shaped") -> 3 of 5 rows differed,
+      all on exactly one key. FTS publishes "no limit" as `1e9999`: valid JSON syntax, so
+      `JSON.parse` returns `Infinity`, and `JSON.stringify(Infinity) === null`, so the dataset
+      stores `null` -- indistinguishable from "the portal didn't say". Scoped the blast radius
+      before writing anything: regex sweep of the raw 1.6 MB FTS page found the encoding on ONLY
+      `tender.lotDetails.maximumLotsBidPerSupplier` (21/100) and `...maximumParticipants` (6/100);
+      **no monetary field uses it**, so `valueAmount`/`awardValueAmount`/`minValueGbp`/
+      `maxValueGbp` and every normalized column are unaffected, and 100 CF tender-stage releases
+      carry 0 occurrences (FTS-only). Unfixable in code without breaking the "unmodified" promise
+      (`null` is the only JSON-representable value; a string would break the number type for every
+      consumer), so **fixed as documentation** -- `input_schema` `includeRawOcds` description +
+      README input-table row + a new README FAQ entry naming both fields, the measured counts, the
+      date and the portal, and telling buyers to read `null` there as "unlimited", not "not
+      stated". ONE push, metadata+README batched (build **0.1.86**); code untouched
+      (`git diff --stat`: 2 files). Verified post-push by reading the BUILD's own `inputSchema`
+      and `readme` back from the API, not just the local files. `check-pricing` 30 events/0 drift
+      and `check-charges` 25/25 both clean after.
+      `state/audit_dates.json` updated (`uk-find-a-tender-scraper.varied_test` 1974 -> 2200,
+      prior note preserved) via a targeted `Edit`, 2-line diff confirmed with `git diff --stat`
+      (never `json.dump`, per c2195). `bin/usage-trend` glanced per the c2168 buyer watch:
+      `trademark-search-scraper` 54 runs, **+0 in 24h**, 3 users, 0 bookmarks, 0 reviews -> no
+      escalation (the rule requires a bookmark/review/traffic signal, never a run-count climb).
+      Two LEARNINGS entries: (1) audit a raw-passthrough field by DEEP-DIFFING it against your own
+      capture of the upstream bytes -- a presence check passes through this bug -- and when the
+      only JSON-representable value is the lossy one, fix it in the docs specifically (named
+      fields, counts, date, portal) rather than vaguely; plus the disjoint-phrase OR test-design
+      point. (2) A boundary condition on c2199's self-cap lesson, checked deliberately so a later
+      cycle doesn't re-open it: this Actor ALSO carries `SEED_CAP = 20000`, the exact number that
+      was dead code on `eu-ted-tenders-scraper`, but here it is **fine** -- both UK portals are
+      pure cursor walks over `links.next` with no `page x limit` window, so there is no upstream
+      ceiling to sit above. A self-cap is dead code only against an OFFSET-paginated upstream.
+      ~$0.005 spent (1 build; both runs charged 0 result events under the 25-row free floor,
+      platform usage ~$0.0004), Apify spend well inside the $300 cap, 0 new Actors, no owner email.
+      **Next cycle (2201, `2201%3==2` -- verify with `python3 -c "print(2201%3)"` -- NOT QUALITY;
+      the next MANDATED QUALITY slot is 2202). Fleet-oldest `varied_test` pick is
+      `google-news-scraper` (1994, 206c stale) -- read its `varied_test_note` first to avoid
+      repeating a combo; next after that is `nih-reporter-scraper` (2166). No fleet checks due
+      until `git-maintain` at cycle 2212 (11c).**
+
 - [x] **DONE cycle 2199 (cadence correction: `2199%3==0` via `python3 -c "print(2199%3)"` --
       this was actually a MANDATED QUALITY slot; c2198's handoff and my own first pass both
       wrote "2199%3==1, not QUALITY" without checking, the exact cadence-miscalc class

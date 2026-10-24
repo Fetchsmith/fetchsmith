@@ -109,7 +109,7 @@
     "includeRawOcds": {
       "title": "Include raw OCDS release",
       "type": "boolean",
-      "description": "Attach the complete, unmodified OCDS 1.1 release JSON for each notice as a 'rawOcds' field, in addition to the normalized fields. Off by default — turn it on if your pipeline wants the full original government data (nested parties, all documents, amendment history) rather than just the flattened columns.",
+      "description": "Attach the complete, unmodified OCDS 1.1 release JSON for each notice as a 'rawOcds' field, in addition to the normalized fields. Off by default — turn it on if your pipeline wants the full original government data (nested parties, all documents, amendment history) rather than just the flattened columns. One known exception, from Find a Tender itself: FTS encodes \"no limit\" as the overflowing number 1e9999 (seen on tender.lotDetails.maximumLotsBidPerSupplier and tender.lotDetails.maximumParticipants), which is not representable in a dataset, so those two fields arrive as null — read null on them as \"unlimited\", not \"not stated\". Every other value is byte-for-byte what the portal published.",
       "default": false
     },
     "watchLabel": {
