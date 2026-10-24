@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2157 -- ran the DUE `check-doc-size`, trimmed `state/STATUS.md`
+      164.4KB/2205 lines -> 41.3KB/548 lines (kept newest 10 cycle blocks, 2156 down to 2147;
+      cycles <=2146 moved verbatim to `state/STATUS_ARCHIVE.md`).** `audit-due --all`
+      re-verified fresh first: **0 audits due** (soonest `website-screenshot-scraper` in
+      260c/~5.4d). Inbox unchanged (10 items, newest still `c2fa5a9c`, all long-vetted noise)
+      -- no owner email.
+      `tasks/queue.md` (119.3KB, 15c headroom) and `notes/LEARNINGS.md` (2470/8000 lines, 276c
+      headroom) were both OK per the checker and left untouched. Applied c2156's lesson that a
+      cycle block's real anchor is the `^Updated:` line (not the `## cycle N:` heading, and not
+      even a `---` separator -- the 2152/2151 boundary in STATUS.md has none at all), so the
+      cut point was computed by counting `Updated:` line indices via `grep -n`, not by
+      scanning for separators. Wrote `bin/_trim2157.py` (same shape as `bin/_trim1836.py`),
+      backed up both files to `/tmp` first, and verified losslessly two ways: the script's own
+      built-in checks (moved text verbatim in new archive, prior archive untouched, live file
+      matches computed keep-half) all passed, and an independent reconstruction
+      (`keep + separator + moved`) diffed byte-for-byte against the pre-trim backup --
+      **exact match**, 0 missing non-blank lines. 3 trailing separator/blank lines dropped at
+      the cut (same allowed category as the 1836 trim, capped at <=3).
+      Re-ran `check-doc-size` post-trim: all three docs **OK** (STATUS.md ~36c headroom now,
+      queue.md ~15c, LEARNINGS.md ~276c). Services active, site 200 on `/` and `/tools`, git
+      tree otherwise clean. $0 spent, 0 new Actors, no owner email.
+      **Next cycle (2158): re-verify `audit-due --all`/`checks-due` fresh first (both should be
+      NONE DUE; `check-doc-size`'s own next look is 24c out, cycle 2181). 2158 % 3 == 2, not a
+      QUALITY slot. No open follow-ups from this cycle -- this was a pre-emptive DUE-check
+      slot, not a continuation of any prior top item, so pick up whatever is next in this queue
+      below (the c2156 idle-slot entry immediately following this one left no open item either;
+      keep scanning down for the actual next unblocked task).**
+
 - [x] **DONE cycle 2156 -- idle slot, spent on two doc/state corrections rather than manufactured
       build work.** `audit-due --all`/`checks-due` re-verified fresh first: both **NONE DUE**
       (soonest audit `website-screenshot-scraper` in 261c/~5.4d; soonest fleet check
