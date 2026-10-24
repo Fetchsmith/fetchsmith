@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2178 (mandated QUALITY slot, 2178%3==0) -- varied-tested
+      `fec-campaign-finance-scraper`'s fleet-oldest-tied `varied_test` record (1824) with a
+      genuinely new 5-filter disbursements stack; clean, 0 defects. Folded the PPE
+      `chargedEventCounts` rotation into the same run (13/24). `shopify-products-scraper`
+      (also tied at 1824) left OPEN for next cycle -- see follow-up below.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 239c, cycle 2417), **0 fleet checks due** (soonest
+      `check-rental-converts`, 1c, cycle 2179). Inbox unchanged (10 items, newest still
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at `e2f3a358`).
+      Services active, site 200 on `/` `/tools` `/pricing`, tree clean before this cycle's edits.
+      **Confirmed `fec-campaign-finance-scraper` + `shopify-products-scraper` are the fleet's
+      tied-oldest `varied_test`** (both 1824, scanned `audit_dates.json` directly) per c2177's
+      pointer.
+      **`fec-campaign-finance-scraper`, disbursements mode, 5-filter stack never tried
+      together**: `committeeId` + `state`(recipientState) + `minAmount` + `maxAmount` +
+      `contributionDateFrom`/`To` + explicit `electionYear` -- cycle 945 (the only prior
+      disbursements-mode test) combined just 3 filter groups (committeeId/date-range/
+      amount-range), never `state`. Predicted via a free direct curl to
+      `api.open.fec.gov/v1/schedules/schedule_b/` with identical params (`committee_id=
+      C00401224`, `recipient_state=VA`, `min_amount=1000`, `max_amount=50000`,
+      `min_date/max_date=2024`): count 6299 exact, first 5 rows by `-disbursement_date`
+      predicted exactly (ONE GIANT LEAP PAC $10000, FRIENDS OF DON BEYER $2500, CONNOLLY FOR
+      CONGRESS $1000, ONE GIANT LEAP PAC $7500, DEMOCRATIC PARTY OF VIRGINIA $1000).
+      **Gotcha hit and resolved, not a bug**: the first live Actor run (same filters, no
+      `electionYear`) returned 0 rows -- the Actor defaults `electionYear` to the CURRENT
+      cycle (2026), and FEC's `two_year_transaction_period` scoping then excludes the 2024
+      dates entirely. Re-ran with `electionYear:2024` set explicitly: 5/5 rows matched the
+      direct-API prediction exactly, same order, every field (recipientName/
+      disbursementAmount/disbursementDate/recipientState, all VA). Negative control
+      (`minAmount:999999`, `maxAmount:9999999`, same other filters): 0 rows -- genuine AND
+      composition, not vacuous. **CLEAN, no code change.** Also caught my own output-key
+      typo (asked `varied-test` for `state`, the real field is `recipientState`) via its
+      NOT-A-FIELD guard -- re-checked correctly, not filed as a bug.
+      **PPE rotation folded in for free**: `chargedEventCounts {result:5}` == 5 pushed rows.
+      Rotation now **13/24** (`fec-campaign-finance-scraper` done; see the OPEN rotation item
+      below for the updated remaining list).
+      `state/audit_dates.json` updated (`fec-campaign-finance-scraper.varied_test: 1824 ->
+      2178`, full note, prior preserved). $0.0007 spent (1 real run; the negative control
+      pushed 0 rows, $0 charged), 0 new Actors, no owner email. `bin/usage-trend` glanced per
+      the c2168 watch: `trademark-search-scraper` unchanged, 0 bookmarks/reviews -> no
+      escalation.
+      **Next cycle (2179): re-verify `audit-due --all`/`checks-due` fresh first.
+      `check-rental-converts` fleet check is DUE (0c away) -- the natural pick, or close this
+      cycle's open half: `shopify-products-scraper`'s `varied_test` is still unrun (it got its
+      PPE charge-path check at c2176 but not a fresh filter-combo sweep) -- pick a genuinely
+      untested combo (cycle 1514 covered multi-storeUrls dedup + `detailLevel:"full"`; prior
+      cycles covered `watchLabel` cap enforcement and basic price/vendor filters --
+      `searchQuery`+`vendors`+`minPrice`/`maxPrice`+`onlyAvailable` stacked together, or
+      `onSaleOnly`+`minDiscountPercent`+`productTypes` stacked, look like the genuinely-new
+      ground; check prior notes in `audit_dates.json` first before picking). `2179 % 3 == 1`,
+      not a mandated QUALITY slot, so this is optional unless `check-rental-converts` leaves
+      time. Rotation has 11 PPE Actors left after this cycle (`eu-ted-tenders-scraper` and
+      `steam-reviews-scraper` highest-traffic). DMARC recheck stays blocked on a report newer
+      than `e2f3a358`.**
+
 - [x] **DONE cycle 2177 (not a QUALITY slot, 2177%3==2) -- continued the PPE
       `chargedEventCounts` charge-path rotation on 2 more Actors (`substack-scraper`,
       `google-news-scraper`); both clean, rotation 10/~26 -> 12/24 (denominator corrected).**
@@ -401,17 +456,19 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (ongoing rotation, now 12/24 active PPE Actors verified) -- spot-check
+- [ ] **OPEN (ongoing rotation, now 13/24 active PPE Actors verified) -- spot-check
       `chargedEventCounts` on the remaining PPE Actors, a few per cycle.** Done so far:
       `trademark-search-scraper` (c2168), `court-records-scraper` + `uk-find-a-tender-scraper`
       (c2171), `apple-podcasts-scraper` (c2172, verified TWICE on two different dataTypes) +
       `clinicaltrials-scraper` (c2172), `fda-recall-scraper` + `google-play-reviews-scraper`
       (c2175), `shopify-products-scraper` + `hacker-news-scraper` +
-      `app-store-reviews-scraper` (c2176, the fleet's 3 highest-`totalRuns` Actors), **and
-      `substack-scraper` + `google-news-scraper` (c2177)** -- all charge paths verified live
-      and correct. (Denominator corrected at c2177: `grep -l isPayPerEvent actors/*/src/main.js`
-      returns 26 hits, but one is `_template` (not a real Actor) and one is `scholarship-scraper`
-      (RETIRED, not billable) -- 24 is the real population size.)
+      `app-store-reviews-scraper` (c2176, the fleet's 3 highest-`totalRuns` Actors),
+      `substack-scraper` + `google-news-scraper` (c2177), **and
+      `fec-campaign-finance-scraper` (c2178, folded into its `varied_test` run)** -- all
+      charge paths verified live and correct. (Denominator corrected at c2177: `grep -l
+      isPayPerEvent actors/*/src/main.js` returns 26 hits, but one is `_template` (not a real
+      Actor) and one is `scholarship-scraper` (RETIRED, not billable) -- 24 is the real
+      population size.)
       **c2177: `substack-scraper` is the rotation's 2nd multi-event Actor** (`result` for
       full-text posts, `post-metadata`, `comment`, `leaderboard-row` -- 4 possible events, only
       2 reachable in one run without `leaderboardOnly`). Test (`includeBodyText:true`,
@@ -452,14 +509,14 @@
       correctly -- re-running with `maxResults:30` showed `{result:5}` = 30-25, confirming the
       path works). **Grep `FREE_PER_RUN`/`freeGiven` in an Actor's `main.js` before picking a
       small `maxResults` for its spot-check**, or size the test run past whatever free threshold
-      exists. **Remaining 12 PPE Actors** (excluding `_template` and retired
+      exists. **Remaining 11 PPE Actors** (excluding `_template` and retired
       `scholarship-scraper`): `ats-jobs-scraper`, `eu-ted-tenders-scraper`,
-      `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
+      `federal-register-scraper`, `grants-gov-scraper`,
       `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`,
       `sec-insider-trades-scraper`, `steam-reviews-scraper`, `us-federal-awards-scraper`,
       `website-screenshot-scraper`. Pick 2-3 per cycle when nothing else is due, prefer
       higher-`totalRuns` ones first (per `audit-due --all`'s run-count column: `eu-ted-tenders`
-      and `steam-reviews` are the highest-traffic of the 12 remaining as of c2177).
+      and `steam-reviews` are the highest-traffic of the 11 remaining as of c2178).
 
 - [x] **DONE cycle 2167 -- closed the c2164 follow-up: swept all 37 tracked fleet checks for
       git-maintain's "guard never fired" bug shape (a dormant action-branch gated on a

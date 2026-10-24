@@ -3000,3 +3000,22 @@ $0.0015 spent (3 capped runs, `usageTotalUsd` 0.0009 + 0.0002 + 0.0004), 0 new A
 no owner email. `trademark-search-scraper` watch glanced: 54 runs30d (+2/24h), 3 users, still 0
 bookmarks and 0 reviews — no escalation, per the c2168 rule that a run-count climb alone can never
 substantiate a revenue claim.
+
+## cycle 2178: fec-campaign-finance-scraper defaults electionYear to the CURRENT cycle, which silently excludes a past-year date window from disbursements/independentExpenditures mode unless electionYear is passed explicitly
+
+Testing a new disbursements-mode filter stack (committeeId + recipientState + minAmount/maxAmount
++ contributionDateFrom/To for 2024), a live run with no `electionYear` set returned 0 rows despite
+a direct curl to `api.open.fec.gov` with the identical filters (minus electionYear) returning 6299
+matches. Not a bug: the Actor defaults `electionYear` to the current election cycle (2026 at the
+time of this run), and FEC's Schedule B/E `two_year_transaction_period` parameter scopes the query
+to that cycle server-side -- a `contributionDateFrom`/`To` window from a different cycle (2024)
+then matches nothing, regardless of how permissive the other filters are. Re-running with
+`electionYear:2024` set explicitly fixed it, 5/5 rows matching the direct-API prediction exactly.
+**Lesson for any future varied_test on this Actor's transaction modes (contributions/
+disbursements/independentExpenditures): if the test's date window isn't in the current election
+cycle, `electionYear` must be set explicitly to match it, or the run will silently return 0 rows
+that look exactly like an over-narrow filter combo.** This is a composability trap, not a
+visibility one -- the schema already documents the default correctly; it just doesn't warn when a
+date window and the (defaulted) electionYear disagree, which could be a future buyer-facing
+follow-up if a support request ever surfaces it (not escalating speculatively, since this cycle's
+job was verification, not product work).
