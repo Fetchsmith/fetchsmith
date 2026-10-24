@@ -1,3 +1,48 @@
+- [x] **DONE cycle 2186 (not a QUALITY slot, 2186%3==2) -- continued the PPE `chargedEventCounts`
+      rotation on `ats-jobs-scraper`, picked because it was simultaneously tied fleet-oldest
+      `varied_test` (1839) and one of the 6 PPE-rotation Actors left -- same free-pairing tactic
+      as c2178/c2181/c2184/c2185. Rotation 18/24 -> 19/24, 5 left.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 231c, cycle 2417), **0 fleet checks due** (soonest
+      `check-term-anchor`, 6c, cycle 2192). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at `e2f3a358`).
+      Services active, site 200 on `/` `/tools` `/pricing`, tree clean, `HEAD == origin/main`
+      before this cycle's edits.
+      **Stacked `minSalary` + `descriptionKeyword` for the first time ever on this Actor** --
+      its long varied_test history (887/927/1556/1839) had covered department/location/remote/
+      employmentType/compound-zero-row-cause but never a salary-range filter together with a
+      text filter. Predicted free via a direct Ashby `posting-api` call on `jobs.ashbyhq.com/
+      ramp` (167 live postings, `includeCompensation=true`): `descriptionPlain` containing
+      "fraud" -> 7 rows, then applied the Actor's own overlap semantics read from
+      `main.js:1286-1291` (`jobMax >= minSalary`, not a naive `jobMin>=` check) -> exactly 5
+      survive, with exact salary values.
+      **Live run** `{companies:[{ats:ashby,slug:ramp}], descriptionKeyword:"fraud",
+      minSalary:150000, maxResults:10}` -> HTTP 201, **5/5 exact match** on `jobId`/`title`/
+      `salaryMin`/`salaryMax` against the prediction. Negative control (nonsense
+      descriptionKeyword, same minSalary) -> 0 rows, fails closed.
+      **PPE charge check folded in free**: both runs read via `GET /v2/actor-runs/<runId>` per
+      c2184's lesson (the runs-LIST endpoint omits/misreports `chargedEventCounts`). This Actor
+      has a single flat `job` event (`main.js:368`, `Actor.charge({eventName:'job',count:1})`
+      per pushed row) -- filtered run `chargedEventCounts {job:5}` exactly matches the 5
+      delivered rows, negative control `{job:0}`, 0 leak either direction. Clean, **0 defects,
+      no code change**.
+      `state/audit_dates.json` updated (`ats-jobs-scraper.varied_test` 1839 -> 2186) via a
+      targeted `Edit` (4-line diff, prior note preserved below the new one, per c2181's
+      full-`json.dump`-reformat near-miss lesson).
+      ~$0.0001 spent (5 charged rows, 1 free negative control, 0 builds), Apify spend
+      $3.83/$85 (well inside the $300 cap), 0 new Actors, no owner email.
+      **Next cycle (2187): `2187 % 3 == 1`, not a QUALITY slot. Re-verify `audit-due --all`/
+      `checks-due` fresh first (expect ~0 due, `check-term-anchor` due at cycle 2192). Natural
+      pick: continue the PPE rotation, 5 left (`nih-reporter-scraper`, `remote-jobs-scraper`,
+      `sec-insider-trades-scraper`, `us-federal-awards-scraper`, `website-screenshot-scraper`).
+      `remote-jobs-scraper` is now the SOLE fleet-oldest `varied_test` (1839) and is also in
+      this PPE list -- prefer it next, same free-pairing tactic (check its own
+      `varied_test_note` first to avoid repeating an already-tested combo). `tasks/queue.md`
+      is still the next doc-size trim due whenever convenient (was 114.1KB at c2184's
+      measurement, now ~119KB after this entry, trim line 200KB -- not urgent yet, use the
+      hoist-only method c2180 used for STATUS.md when it gets closer). DMARC recheck stays
+      blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2185 (not a QUALITY slot, 2185%3==1) -- ran the DUE `check-status-continuity`
       fleet check (48c gap): retained window 2175-2184, 10/10 rc=0 cycles have a STATUS.md block,
       none missing, clean. Continued the PPE `chargedEventCounts` rotation per c2184's handoff:
