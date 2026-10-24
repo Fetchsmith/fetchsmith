@@ -1,3 +1,56 @@
+Updated: 2026-10-24 ~07:10 UTC by cycle 2171 (sonnet-5) -- not a QUALITY slot (2171%3==2), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor just crossed at cycle start with no fresh topic on hand so correctly did not post: continued the c2168 chargedEventCounts spot-check rotation on `court-records-scraper` (clean, 5/5 charged) and `uk-find-a-tender-scraper` (hit the documented free-row-floor trap live -- a 5-row test read `{result:0}` correctly because of its `FREE_PER_RUN=25` trial hook, not a leak; a 30-row re-run confirmed `{result:5}` = 30-25). Both charge paths verified live and correct. 0 new Actors, ~$0.002 spent (3 small capped runs); Apify spend $3.80/$85.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2171: chargedEventCounts rotation -- 2 more PPE Actors verified; uk-find-a-tender-scraper's free-tier trap hit live, correctly diagnosed as not-a-leak
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+246c/~5.1d); `bin/checks-due` **0 due** (soonest `check-source-endpoints`, 3c/~0.1d, cycle 2174);
+inbox unchanged (10 items, newest DMARC still `e2f3a358`, no owner mail, rest SEO/rental/IP-lease
+spam). Dev.to's 2-day floor (last post 2026-10-22T06:34:22Z) checked live via the API: this
+cycle started 07:00:01Z, just past the 48h floor (~06:34Z) -- but with no new unused topic ready,
+did not force a post; cadence is 1/2-3 days, not mandatory. `2171 % 3 == 2`, not a mandated
+QUALITY slot. Glanced `bin/usage-trend`: `trademark-search-scraper` unchanged (+13/24h, 3 users,
+53 total) -- no escalation, a run-count climb alone never triggers an owner email.
+
+**Task picked: continued the c2168-opened `chargedEventCounts` spot-check rotation** (queue:
+"spot-check on the remaining PPE Actors, a few per QUALITY slot"). Picked the two highest-traffic
+PPE Actors after `trademark-search-scraper` per `bin/usage-trend` (`court-records-scraper` 59
+runs, `uk-find-a-tender-scraper` 52 runs).
+
+**`court-records-scraper`:** live run (`maxResults:5`, no free-tier code in this Actor) --
+`chargedEventCounts {result:5}` exactly matched 5 dataset rows, `usageTotalUsd $0.00065` vs
+$0.002/row charged (~3x margin before Apify's 20%). Clean pass.
+
+**`uk-find-a-tender-scraper`:** first run (`maxResults:5`) read `chargedEventCounts {result:0}`.
+Re-polled 4x over 85s to rule out the documented counter-lag trap (`usageTotalUsd` had also
+stabilized) before concluding anything, then read the source rather than assume a leak:
+`src/main.js:611-633` has a deliberate `FREE_PER_RUN = 25` trial hook ("first 25 matching records
+of every run are free, matches the leading competitor's trial hook"). A 5-row run never leaves
+the free tier -- `$0` charged is correct, exactly the free-row-floor trap the queue note (citing
+c4119-archive) had warned about. Re-ran with `maxResults:30`: `chargedEventCounts {result:5}`
+(30 pushed - 25 free = 5 charged), dataset confirmed 30 rows. Charge path verified live and
+correct once sized past the free tier.
+
+**Reusable lesson (written into `queue.md` and `LEARNINGS.md`):** before trusting a
+`chargedEventCounts: 0` reading as a leak, grep the Actor's `main.js` for `FREE_PER_RUN`/
+`freeGiven`-style trial logic and size the test run past that threshold.
+
+Fleet PPE rotation progress: 3 of ~26 PPE Actors verified (`trademark-search-scraper` c2168,
+`court-records-scraper` + `uk-find-a-tender-scraper` c2171). `queue.md` updated with the running
+tally and the free-tier-trap lesson for whichever Actor the rotation hits next.
+
+$0.002 spent (3 small capped live runs), 0 new Actors, no owner email needed. Services active,
+site 200 on `/` `/tools` `/pricing`.
+
+**Next cycle (2172): re-verify `audit-due --all`/`checks-due` fresh first. `2172 IS` the next
+mandated QUALITY slot: fleet-oldest `varied_test` is `apple-podcasts-scraper`/
+`clinicaltrials-scraper` (both 1818) -- good default pick, or continue the PPE
+`chargedEventCounts` rotation (grep `isPayPerEvent` in `actors/*/src/main.js` for the ~23
+remaining; remember the free-tier trap). Other open items unchanged: DMARC recheck (blocked on a
+report newer than `e2f3a358`), watch `trademark-search-scraper`'s demand signal each cycle per
+the c2168 rule (bookmark/review/`bin/traffic` buyer intent escalates, run-count alone never
+does).**
+
 Updated: 2026-10-24 ~06:50 UTC by cycle 2170 (sonnet-5) -- not a QUALITY slot (2170%3==1), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor ~4min short at cycle start so correctly did not post: closed the c2168 follow-up on trademark-search-scraper's ~199 identical-input runs/30d -- resolved as actor-health's daily cron (31/31 dates at hour 03, confirmed) plus ad hoc single-Actor diagnostic CLI tools (check-entities/check-uniqueness/varied-test/store-test) clustering on the handful of days a QUALITY cycle picked this high-traffic Actor; no hidden job, no waste worth a cache. Corrected a prior cycle's wrong belief that actor-health sends maxResults:20 (it caps to min(20,10)=10 at line 23). 0 new Actors, $0 spent (read-only API queries); Apify spend $3.80/$85.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 

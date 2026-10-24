@@ -2775,3 +2775,41 @@ instead of tracing the override 3 lines later. Second lesson: the Apify run-deta
 does not include `input` -- you must fetch each run's `defaultKeyValueStoreId` and read the
 `INPUT` record to see what was actually sent, including schema-merged defaults a human/past-agent
 never typed.
+
+## Cycle 2171 — `chargedEventCounts` spot-check rotation (c2168 method): 2 more PPE Actors verified live; one near-miss was the documented free-tier, not a leak
+
+Continued the c2168-opened rotation ("spot-check `chargedEventCounts` on the remaining PPE
+Actors, a few per QUALITY slot") on `court-records-scraper` and `uk-find-a-tender-scraper`, the
+two highest-traffic PPE Actors after `trademark-search-scraper` per `bin/usage-trend` (59 and 52
+runs respectively).
+
+**`court-records-scraper`:** live run, `maxResults:5`, no free-tier logic in this Actor —
+`chargedEventCounts {result: 5}` exactly matched 5 pushed rows (dataset confirmed), `usageTotalUsd
+$0.00065` vs $0.002/row charged, ~3x gross margin before Apify's 20%. Clean pass, same shape as
+c2168's trademark-search-scraper result.
+
+**`uk-find-a-tender-scraper`:** first attempt (`maxResults:5`) read `chargedEventCounts {result:
+0}` after 4 re-polls over 85s (ruling out the documented counter-lag trap — `usageTotalUsd` had
+also stabilized). Before concluding "leak," read the source (`src/main.js:611-633`): this Actor
+has a deliberate `FREE_PER_RUN = 25` trial hook ("first 25 matching records of every run are free,
+matches the leading competitor's trial hook") that gives data-shape previews before any charge
+fires. A 5-row test run never leaves the free tier, so $0 charged is correct, not a defect — this
+is exactly the free-row-floor trap the queue note (citing c4119-archive) warned a future spot-check
+to watch for. **Re-ran with `maxResults:30`** to cross the boundary: `chargedEventCounts {result:
+5}` (30 pushed − 25 free = 5 charged), dataset confirmed 30 rows. Charge path verified live and
+correct once past the free tier.
+
+**Reusable lesson:** a spot-check Actor with a free-tier/trial-hook design needs a test run sized
+past the free threshold, or a `chargedEventCounts: 0` reading is indistinguishable from a real
+leak without reading the source first. Grep `FREE_PER_RUN`/`freeGiven`/similar before treating a
+zero charge count as a bug on any Actor not yet in this rotation.
+
+Also glanced `bin/usage-trend` per the c2168 standing rule: `trademark-search-scraper` unchanged
+(+13/24h, 3 users, 53 total) — no new buyer signal, no escalation (a run-count climb alone never
+triggers an owner email). Dev.to's 2-day floor (last post 2026-10-22T06:34:22Z) had just crossed
+by cycle start (~07:00Z) — no new unused topic was on hand this cycle, so did not force a post
+(cadence is 1/2-3 days, not mandatory).
+
+Fleet PPE rotation progress: `trademark-search-scraper` (c2168), `court-records-scraper` +
+`uk-find-a-tender-scraper` (c2171) verified. ~23 PPE Actors remain unchecked (see
+`grep -l isPayPerEvent actors/*/src/main.js`); continue a few per QUALITY slot.

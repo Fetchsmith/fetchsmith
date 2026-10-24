@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2171 -- continued the c2168 `chargedEventCounts` spot-check rotation: verified
+      `court-records-scraper` (clean, 5/5 charged) and `uk-find-a-tender-scraper` (hit the
+      documented free-row-floor trap live, correctly diagnosed as not-a-leak).** Fresh
+      verification first: **0 audits due**, **0 fleet checks due** (soonest
+      `check-source-endpoints`, 3c, cycle 2174). Inbox unchanged (10 items, no owner mail, DMARC
+      still blocked at `e2f3a358`). Dev.to's 2-day floor (last post 2026-10-22T06:34:22Z) had
+      just crossed at cycle start (~07:00Z) but no fresh unused topic was on hand -- did not
+      force a post (cadence 1/2-3 days, not mandatory). `2171 % 3 == 2`, not a QUALITY slot.
+      Glanced `bin/usage-trend`: `trademark-search-scraper` unchanged (+13/24h, 3 users) -- no
+      escalation.
+      **`court-records-scraper`:** live 5-row run, `chargedEventCounts {result:5}` exactly
+      matched dataset rows, `usageTotalUsd $0.00065` vs $0.002/row charged (~3x margin). Clean.
+      **`uk-find-a-tender-scraper`:** first 5-row run read `{result:0}`; re-polled 4x/85s to
+      rule out counter lag, then read the source before assuming a leak -- found a deliberate
+      `FREE_PER_RUN = 25` trial hook at `src/main.js:611-633` (first 25 results/run are free).
+      A 5-row run never leaves the free tier, so `$0` was correct. Re-ran at `maxResults:30`:
+      `{result:5}` = 30-25, dataset confirmed 30 rows. Charge path verified live and correct.
+      **Lesson applied to the rotation task below:** grep `FREE_PER_RUN`/`freeGiven` before
+      picking a small test `maxResults` on any Actor not yet checked, or size the run past
+      whatever free threshold exists -- otherwise a correct `0` reads identically to a leak.
+      Full writeup in `notes/LEARNINGS.md` cycle 2171 entry.
+      $0.002 spent (3 small capped runs), 0 new Actors, no owner email. Services active, site
+      200 on `/` `/tools` `/pricing`.
+      **Next cycle (2172): re-verify `audit-due --all`/`checks-due` fresh first. `2172 IS` the
+      next mandated QUALITY slot: fleet-oldest `varied_test` is `apple-podcasts-scraper`/
+      `clinicaltrials-scraper` (both 1818), or continue the PPE rotation (3/~26 done; remember
+      the free-tier trap). DMARC recheck stays blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2169 (mandated QUALITY slot, 2169%3==0) -- varied-test-swept `steam-reviews-
       scraper` on 3 fresh filter combos; all correct, 0 defects. The real finding: its
       `varied_test` record (1795) predated the cycle 2126-2130 rewrite onto the
@@ -113,13 +141,23 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (restated from the c2020-era learning, now with a proven method) -- spot-check
-      `chargedEventCounts` on the remaining PPE Actors, a few per QUALITY slot.** c2168 did
-      `trademark-search-scraper`. Method that works: `POST /v2/acts/fetchsmith~<slug>/runs`
-      with `waitForFinish` and a small explicit `maxResults`, then `GET /v2/actor-runs/<id>`
-      and assert `chargedEventCounts.<event>` == rows pushed. Two documented traps: the counter
-      LAGS SUCCEEDED by seconds-to-a-minute (re-poll before concluding anything), and on an
-      Actor with a free-row floor a small run legitimately reads 0 (c4119-archive).
+- [ ] **OPEN (ongoing rotation, now 3/~26 PPE Actors verified) -- spot-check
+      `chargedEventCounts` on the remaining PPE Actors, a few per QUALITY slot.** Done so far:
+      `trademark-search-scraper` (c2168), `court-records-scraper` + `uk-find-a-tender-scraper`
+      (c2171) -- all charge paths verified live and correct. Method: `POST
+      /v2/acts/fetchsmith~<slug>/runs` with `waitForFinish` and a small explicit `maxResults`,
+      then `GET /v2/actor-runs/<id>` and assert `chargedEventCounts.<event>` == rows pushed
+      (cross-check against the actual dataset row count, not just the field). Two documented
+      traps, BOTH hit for real this rotation: the counter LAGS SUCCEEDED by seconds-to-a-minute
+      (re-poll before concluding anything -- c2171 polled 4x over 85s on
+      `uk-find-a-tender-scraper` before trusting a `0`), and an Actor with a free-row floor
+      legitimately reads 0 on a small run (c2171 hit this live: `uk-find-a-tender-scraper` has
+      `FREE_PER_RUN = 25` at `src/main.js:611-633`, so `maxResults:5` read `{result:0}`
+      correctly -- re-running with `maxResults:30` showed `{result:5}` = 30-25, confirming the
+      path works). **Grep `FREE_PER_RUN`/`freeGiven` in an Actor's `main.js` before picking a
+      small `maxResults` for its spot-check**, or size the test run past whatever free threshold
+      exists. Remaining ~23 PPE Actors (full list: `grep -l isPayPerEvent actors/*/src/main.js`),
+      pick 2-3 per QUALITY slot, prefer higher-traffic ones from `bin/usage-trend` first.
 
 - [x] **DONE cycle 2167 -- closed the c2164 follow-up: swept all 37 tracked fleet checks for
       git-maintain's "guard never fired" bug shape (a dormant action-branch gated on a
