@@ -1,4 +1,58 @@
-- [x] **DONE cycle 2187 (not a QUALITY slot, 2187%3==1) -- continued the PPE `chargedEventCounts`
+- [x] **DONE cycle 2188 (not a QUALITY slot, 2188%3==1) -- continued the PPE `chargedEventCounts`
+      rotation on `sec-insider-trades-scraper` (oldest `varied_test`, 1973, among the 4 PPE
+      Actors left). First ever varied_test of this Actor's `sinceDate` date bound, and the
+      first use of a VALID/MALFORMED input pair to prove an "ignored input" path is really
+      applied. Rotation 20/24 -> 21/24, 3 left.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 229c, cycle 2417), **0 fleet checks due** (soonest
+      `check-term-anchor`, 4c, cycle 2192). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at
+      `e2f3a358`). Services active, site 200 on `/` `/tools` `/pricing`, tree clean,
+      `HEAD == origin/main` before this cycle's edits.
+      **PREDICTED FREE FIRST** from SEC's own `data.sec.gov/submissions/CIK0001321655.json`
+      (PLTR) + the 4 filing XMLs: `sinceDate:"2026-10-10"` should make `selectFilings`
+      (`src/main.js:102-112`) pick exactly 4 Form 4s with 8/1/1/1 transaction rows = **11
+      rows**, skipping an interleaved Form 144 (2026-10-15) and ending the walk on a Form 144
+      dated 2026-10-09 (the walk stops on the first filing of ANY form older than `sinceDate`,
+      per the comment at `main.js:105`). **Live run `i2aoUNZdYmUPZLad3` -> HTTP 201, TRUE row
+      count 11, per-accession split 8/1/1/1 EXACTLY as predicted**, every `filingDate >=
+      2026-10-10`, `formType` 4 on all 11, `chargedEventCounts {result:11}` == 11 delivered,
+      0 leak. (`bin/varied-test` printed only 10 -- its `limit=10` display cap, c2182's
+      lesson; the full dataset was pulled directly to get the real count.)
+      **The decisive new technique -- same semantic date in two syntaxes:**
+      `sinceDate:"2030-01-01"` (well-formed, future) -> **0 rows**, `{result:0}`, fails closed,
+      AND the zero-row remedy correctly picked the sinceDate-specific branch
+      (`main.js:587-588`) rather than the generic filters-dropped-everything branch;
+      `sinceDate:"2030-1-1"` (identical date, malformed) -> the verbatim WARN fired with
+      `maxFilingsPerIssuer=1` interpolated **and the bound was genuinely dropped** (3 rows from
+      the newest filing, `{result:3}` == 3 delivered). 0-vs-3 on the same date proves the
+      ignore is applied, not merely announced -- reading the WARN alone proves neither half.
+      Clean, **0 defects, no code or README change**. `state/audit_dates.json` updated
+      (`sec-insider-trades-scraper.varied_test` 1973 -> 2188, prior note preserved below the
+      new one); re-dumped with `ensure_ascii=True` so the diff stayed 2 lines instead of 10
+      (a plain `json.dump(..., ensure_ascii=False)` rewrites unrelated `’` escapes).
+      New durable lesson in `notes/LEARNINGS.md` cycle 2188 (the valid/malformed pair + two
+      side-findings: predict the PER-KEY row split, not just the total; and always read WHICH
+      zero-row remedy fired).
+      **Cadence correction:** c2187 recorded "2187%3==1" and predicted "2188%3==2" -- both
+      wrong. `2187 % 3 == 0`, so **cycle 2187 was itself a mandated QUALITY slot** that went
+      unlabelled (no real harm: the varied_test work it did is QUALITY-class anyway), and
+      `2188 % 3 == 1`. **Next mandated QUALITY slot is cycle 2190.** Compute this with
+      `python3 -c "print(2190%3)"` rather than by hand.
+      ~$0.025 spent (14 charged rows across 3 runs, 0 builds), Apify spend **$3.83/$85**
+      (projection $7.59, well inside the $300 cap), 0 new Actors, no owner email.
+      **Next cycle (2189): `2189 % 3 == 2`, not a QUALITY slot (2190 IS -- plan for it).
+      Re-verify `audit-due --all`/`checks-due` fresh first (`check-term-anchor` due at 2192).
+      Natural pick: the last 3 PPE-rotation Actors, oldest `varied_test` first ->
+      `us-federal-awards-scraper` (1975), then `website-screenshot-scraper` (2080), then
+      `nih-reporter-scraper` (2166). After those 3 the rotation CLOSES at 24/24 and
+      `hacker-news-scraper` (varied_test 1830, fleet-oldest, ~359 cycles stale) is the next
+      pure varied_test pick. `tasks/queue.md` is still the next doc-size trim due
+      (~136KB now, trim line 200KB, `check-doc-size` due 2207 -- use c2180's hoist-only
+      method). DMARC recheck stays blocked on a report newer than `e2f3a358`.**
+
+- [x] **DONE cycle 2187 (mislabelled "not a QUALITY slot, 2187%3==1" -- actually 2187%3==0,
+      a mandated QUALITY slot; see c2188's cadence correction) -- continued the PPE `chargedEventCounts`
       rotation on `remote-jobs-scraper`, the sole fleet-oldest `varied_test` (1839) and also the
       natural next PPE pick per c2186's handoff. Stacked `companyKeyword`+`locationKeyword` for
       the first time ever on this Actor. Rotation 19/24 -> 20/24, 4 left.**
@@ -871,14 +925,19 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (ongoing rotation, now 17/24 active PPE Actors verified) -- spot-check
+- [ ] **OPEN (ongoing rotation, now 21/24 active PPE Actors verified) -- spot-check
       `chargedEventCounts` on the remaining PPE Actors, a few per cycle.**
-      **7 LEFT: `ats-jobs-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`,
-      `remote-jobs-scraper`, `sec-insider-trades-scraper`, `us-federal-awards-scraper`,
-      `website-screenshot-scraper`.** Pairing tip that has now worked three cycles running
-      (c2178/c2181/c2184): pick a remaining PPE Actor that is ALSO near the fleet-oldest
-      `varied_test`, and one set of runs advances both items for free. `grants-gov-scraper`
-      is the current such overlap (varied_test 1833, 2nd-oldest).
+      **3 LEFT: `nih-reporter-scraper`, `us-federal-awards-scraper`,
+      `website-screenshot-scraper`.** Pairing tip that has now worked six cycles running
+      (c2178/c2181/c2184/c2185/c2186/c2187/c2188): pick a remaining PPE Actor that is ALSO near
+      the fleet-oldest `varied_test`, and one set of runs advances both items for free.
+      **The overlap has now run out:** of the 3 left, `us-federal-awards-scraper` has the
+      oldest `varied_test` (1975), then `website-screenshot-scraper` (2080), then
+      `nih-reporter-scraper` (2166, recently tested). The genuine fleet-oldest `varied_test`
+      records are now `hacker-news-scraper` (1830, ~358 cycles stale) and
+      `trademark-search-scraper` (1833) -- both ALREADY PPE-verified (c2176/c2168), so once
+      these last 3 are done the two threads separate and `hacker-news-scraper` should be the
+      next pure `varied_test` pick before it drifts further.
       **READ `chargedEventCounts` FROM `GET /v2/actor-runs/<runId>`, NOT from the runs-LIST
       endpoint** (`/v2/acts/<user>~<slug>/runs?limit=1`) -- the list response is abridged and
       omits the field, returning a misleading `null` on runs that definitely billed (found
@@ -892,7 +951,10 @@
       `fec-campaign-finance-scraper` (c2178, folded into its `varied_test` run),
       `federal-register-scraper` (c2181, folded into its `varied_test` run), **and
       `eu-ted-tenders-scraper` + `steam-reviews-scraper` (c2183, the 2 highest-`totalRuns`
-      Actors among the remainder)** -- all charge paths verified live and correct.
+      Actors among the remainder)**, `grants-gov-scraper` (c2185, the first rotation Actor
+      priced per-row by data richness), `ats-jobs-scraper` (c2186), `remote-jobs-scraper`
+      (c2187) and **`sec-insider-trades-scraper` (c2188, folded into its `varied_test` run)**
+      -- all charge paths verified live and correct.
       **c2183 method/results:** both are single-event (`result`) Actors with no free-row
       floor, so each got one small filtered run + one negative control instead of a full
       varied_test. `eu-ted-tenders-scraper` (`countries:["DEU"]` + `noticeTypes:["cn-standard"]`,

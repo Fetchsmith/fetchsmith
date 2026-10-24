@@ -3123,3 +3123,34 @@ A corollary for the charge-leak check itself: the strongest evidence is the trip
 `Page 0: +79 rows` / `Pushed 5`, the dataset held 5 items, and the single-run endpoint said
 `{result:5}`, which together prove the 74 scanned-but-discarded rows were not billed. A charged
 count alone, with nothing to compare it to, proves much less.
+
+## cycle 2188 -- to test an "input was IGNORED" path, pair the SAME semantic value in valid and invalid syntax
+
+Several Actors deliberately *ignore* a malformed or inapplicable input and warn instead of failing
+(`sec-insider-trades-scraper`'s non-`YYYY-MM-DD` `sinceDate`, `src/main.js:45-53`;
+`sam-gov-opportunities-scraper`'s `naicsCodes`/`enrichDetail` on the wage-determination dataTypes,
+tested at c2184). Seeing the WARN line in the log proves only that the Actor *announced* the ignore
+-- it is weak evidence that the ignore was actually *applied*, which is the part a customer pays
+for. On a per-row PPE price a silently-applied-anyway bound and a silently-dropped bound bill very
+differently.
+
+**The cheap decisive test: run the same semantic value twice, once well-formed and once malformed,
+and let the ROW COUNT separate the two hypotheses.** This cycle: `sinceDate:"2030-01-01"` (a
+well-formed future date) returned **0 rows**, `chargedEventCounts {result:0}`; `sinceDate:"2030-1-1"`
+(the identical date, malformed) returned **3 rows** from the newest filing with the verbatim WARN.
+No other input differed in meaning. 0-vs-3 on the same date is unambiguous: the bound is real when
+parsed, and genuinely dropped when not. Reading the WARN alone would have proved neither half.
+The well-formed leg is normally FREE too (it is the fail-closed case, 0 rows -> 0 charged), so the
+whole pair costs only the malformed leg -- cap it with `maxResults`/`maxFilingsPerIssuer`, since by
+construction that leg is the UNBOUNDED one and is exactly the run shape that can bill a surprise.
+
+Two reusable side-findings from the same three runs:
+* **Predict the row count from the upstream index, not just the filter semantics.** SEC's
+  `data.sec.gov/submissions/CIK*.json` plus the 4 filing XMLs gave 8/1/1/1 = 11 rows *per accession*
+  before spending anything; the live run matched 11 and the per-accession split exactly. A total-only
+  prediction would have missed a mis-grouping; the per-key breakdown is strictly stronger and free.
+* **A zero-row run has several possible remedy messages, and picking the right one is itself
+  testable.** The future-`sinceDate` run emitted the sinceDate-specific remedy
+  (`main.js:587-588`), not the generic "your filters dropped everything" branch -- the same
+  misattributed-remedy bug class fixed at eu-ted 1552 / remote-jobs 1632 / this Actor's own 1637.
+  When a varied_test happens to produce a legitimate zero, always read WHICH remedy fired.
