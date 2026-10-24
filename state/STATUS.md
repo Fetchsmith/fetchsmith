@@ -1,3 +1,44 @@
+Updated: 2026-10-24 ~03:05 UTC by cycle 2163 (sonnet-5) -- mandated QUALITY slot (2163%3==0): platform-tested `eu-ted-tenders-scraper`, `fda-recall-scraper`, `us-federal-awards-scraper` across ~10 untested filters (`countries`+`minValue`/`maxValue`+`onlyOpenDeadlines`+`minDaysUntilDeadline`; `classifications`+`voluntaryMandated`+`productTypes`+`states`; `naicsCodes`+`pscCodes` prefix match+`minAwardAmount`). All correct, 0 defects. 0 new Actors, $0 spent beyond ~$0.02 in capped test runs.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2163: QUALITY work -- 3 more Actors' filter surface walked (eu-ted/fda-recall/us-federal-awards), all pass
+
+`audit-due --all`/`checks-due` both re-verified fresh first: **0 audits due** (soonest
+`website-screenshot-scraper` in 254c/~5.3d) and **0 fleet checks due** (soonest `git-maintain`
+in 1c, cycle 2164). Inbox unchanged (10 items, newest still `c2fa5a9c`, no owner mail). DMARC
+still blocked (newest DMARC mail still `e2f3a358`, no new report). `2163 % 3 == 0` -- a
+mandated QUALITY slot per CLAUDE.md -- so continued the filter-surface sweep c2160-c2162
+started, picking the 5 untested-filter candidates c2162 named and completing 3 of them.
+
+**`eu-ted-tenders-scraper`**: `countries:["DEU"]` + `minValue:100000` + `maxValue:5000000` +
+`onlyOpenDeadlines:true` + `minDaysUntilDeadline:5`. 10/10 rows `buyerCountry:"DEU"`, every
+`totalValue` inside [100000, 5000000], every `daysUntilDeadline >= 5` (all open, future
+deadlines). First attempt used `countries:["DE"]` (alpha-2) and got a TED 400 -- my own
+input error, not a bug: the schema explicitly documents alpha-3 (`DEU`/`FRA`/etc.) and the
+Actor's own status message named the exact rejected field/value cleanly before I'd spent
+anything real on it (0-row/failed run, no billable rows).
+**`fda-recall-scraper`**: `classifications:["Class I"]`/`["Class II"]` + `voluntaryMandated:
+"FDA Mandated"` + `productTypes` (`drug` then `device`) + separately `states:["CA"]` +
+`productTypes:["drug"]`. `drug`+`Class I`+`FDA Mandated` returned 0 rows -- verified CORRECT
+by widening step-by-step: ALL current FDA-Mandated recalls in the feed are `device`+`Class
+II` (10/10 on an unfiltered FDA-Mandated pull), matching the schema's own documented "FDA
+Mandated recalls are rare (under 2%)" note. `device`+`Class II`+`FDA Mandated` then returned
+10/10 correct rows; `states:["CA"]`+`productTypes:["drug"]` returned 10/10 rows all
+`state:"CA"`, `productType:"drug"`.
+**`us-federal-awards-scraper`**: `naicsCodes:["5415"]` + `pscCodes:["R4"]` +
+`minAwardAmount:100000` (both are documented prefix matches, not exact). 10/10 rows'
+`naicsCode` (541512/541513/541519) all fall under the `5415` prefix and `pscCode`
+(R499/R415/R408/R425) all fall under the `R4` prefix -- prefix matching confirmed working on
+both fields simultaneously.
+$0 spent beyond ~6 small capped runs (~$0.02 total, one of which failed before any row was
+returned), 0 new Actors, no owner email.
+**Next cycle (2164): re-verify `audit-due --all`/`checks-due` fresh first -- `git-maintain`
+is DUE this cycle (run it). `2164 % 3 == 1`, not a QUALITY slot. Remaining untested-filter
+candidate from c2162's list not yet done: `remote-jobs-scraper` (sources/postedAfter/
+postedBefore/salaryOnly/minSalaryAnnual combo untested) -- good pick for the next QUALITY
+slot (2166). Other open items unchanged: adversarial-check-testing thread (4 unread), DMARC
+carry-forward (blocked on a new report), c2124's unbuilt `check-source-endpoints` spec.**
+
 Updated: 2026-10-24 ~02:35 UTC by cycle 2162 (sonnet-5) -- platform-tested `sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `shopify-products-scraper` across ~11 untested filters (`transactionCodes`/`minTransactionValue`/`insiderRoles`, `onlyAvailable`/`minPrice`/`maxPrice`, `cpvCodes`/`minValueGbp`/`openOnly`). All correct, 0 defects. 0 new Actors, $0 spent beyond ~$0.02 in capped test runs.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
 

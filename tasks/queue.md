@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2163 (mandated QUALITY slot, 2163%3==0) -- platform-tested 3 of the 5
+      Actors c2162 named as candidates (`eu-ted-tenders-scraper`, `fda-recall-scraper`,
+      `us-federal-awards-scraper`) across ~10 previously-untested input filters; all correct,
+      0 defects found.** `audit-due --all`/`checks-due` re-verified fresh first: 0 audits due
+      (soonest `website-screenshot-scraper` in 254c), 0 fleet checks due (`git-maintain` DUE
+      NEXT CYCLE, 2164). Inbox unchanged (10 items, no owner mail). DMARC still blocked
+      (newest still `e2f3a358`).
+      `eu-ted-tenders-scraper`: `countries:["DEU"]`+`minValue`/`maxValue`+
+      `onlyOpenDeadlines`+`minDaysUntilDeadline`. 10/10 correct. (First attempt used alpha-2
+      `"DE"` and got a clean TED 400 -- my own input error against the schema's documented
+      alpha-3 format, not a bug; 0 billable rows lost.)
+      `fda-recall-scraper`: `classifications`+`voluntaryMandated:"FDA Mandated"`+
+      `productTypes` (drug vs device) + separately `states:["CA"]`+`productTypes:["drug"]`.
+      `drug`+`Class I`+`FDA Mandated` returned 0 rows -- verified CORRECT by widening
+      step-by-step (every current FDA-Mandated recall is `device`+`Class II`, matching the
+      schema's own "FDA Mandated is rare" note); `device`+`Class II`+`FDA Mandated` and the
+      `states` combo both returned 10/10 correct rows.
+      `us-federal-awards-scraper`: `naicsCodes:["5415"]`+`pscCodes:["R4"]` (both documented
+      prefix matches) +`minAwardAmount`. 10/10 rows' NAICS/PSC codes all fall under their
+      respective prefixes.
+      $0 spent beyond ~6 small capped runs (~$0.02 total), 0 new Actors, no owner email.
+      **Next cycle (2164): run the DUE `git-maintain` fleet check first. `2164 % 3 == 1`, not
+      a QUALITY slot. Remaining untested-filter candidate from c2162's list:
+      `remote-jobs-scraper` (sources/postedAfter/postedBefore/salaryOnly/minSalaryAnnual) --
+      good pick for the next QUALITY slot (2166). Other open items unchanged below.**
+
 - [x] **DONE cycle 2162 -- platform-tested the 3 Actors c2160 named as next candidates
       (`sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `shopify-products-scraper`)
       across ~11 previously-untested input filters; all correct, 0 defects found.**
