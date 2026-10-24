@@ -1,3 +1,44 @@
+Updated: 2026-10-24 ~04:05 UTC by cycle 2165 (sonnet-5) -- idle/QUALITY-backlog slot (0 audits due, 0 fleet checks due, no owner mail, DMARC still blocked): platform-tested `remote-jobs-scraper`'s last untested filter combo (`sources`/`postedAfter`/`postedBefore`/`salaryOnly`/`minSalaryAnnual`), the final candidate from c2162's list. All correct, 0 defects. 0 new Actors, $0 spent.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2165: `remote-jobs-scraper`'s last untested filter combo checked out -- including a currency-null interaction that looks like a bug but is a documented cycle-725 fix
+
+`audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+`website-screenshot-scraper` in 252c/~5.2d, cycle 2417) and **0 fleet checks due** (soonest
+`check-source-endpoints` in 9c/~0.2d, cycle 2174). Inbox unchanged (10 items, newest still
+`c2fa5a9c`) -- re-confirmed the owner's `dc593cfb` Apify-identity thread is long-resolved
+("Done", publishing unblocked since c2037), no reply owed. DMARC still blocked (newest DMARC
+mail still `e2f3a358`, no new report). `2165 % 3 == 2`, not a mandated QUALITY slot, but
+nothing was due, so spent it on the QUALITY backlog per standing practice (c2162/c2163/c2164's
+`audit-due` prompt).
+
+**Picked `remote-jobs-scraper`** -- the one Actor left on c2162's untested-filter list
+(`sec-insider-trades-scraper`, `uk-find-a-tender-scraper`, `shopify-products-scraper` done
+c2162; `eu-ted-tenders-scraper`, `fda-recall-scraper`, `us-federal-awards-scraper` done c2163)
+-- on its flagged combo: `sources`+`postedAfter`+`postedBefore`+`salaryOnly`+`minSalaryAnnual`.
+
+**`minSalaryAnnual:80000` + `salaryOnly:true` on `jobicy`+`remoteok` returned 10/10 `jobicy`
+rows and ZERO `remoteok` rows** -- looked like a possible bug (remoteok clearly has >$80k
+postings) until isolating `remoteok` alone: `salaryOnly` without a floor returns 10/10 rows
+with real `salaryMin`/`salaryMax` but `salaryCurrency: None` in every row (flagged by
+`varied-test`'s REAL NULLS guard). Read `src/main.js:678-686`: remoteok's API carries no
+currency field at all, and a c725 fix deliberately stopped guessing `'USD'` there (the fleet's
+no-inference rule, LEARNINGS c605) after the same guess pattern produced a false salary-period
+claim elsewhere on the same board. The schema (`minSalaryAnnual`'s own description) documents
+that an unstated currency is dropped rather than assumed -- so remoteok rows correctly never
+match this filter, by design, not a defect. Confirmed intentional, did not "fix" a non-bug.
+
+**Date-window (`postedAfter`/`postedBefore`) and `sources` both verified correct**: a
+2026-10-17..10-24 window on `jobicy`+`wwr` returned 10/10 rows with `publishedAt` inside the
+window; a sanity check with an old 2020-01 window on live-only `jobicy` returned 0 rows
+(genuinely restricts, not silently ignored); `sources:["himalayas"]` alone returned 5/5 rows
+tagged `source:"himalayas"`.
+
+All filters pass, 0 defects found -- the filter-surface sweep c2160 started (6 Actors across
+2160-2165) is now complete for every candidate either cycle had named. ~6 small capped runs
+(~$0.02 total), 0 new Actors, no owner email. Services active, site 200 on `/` `/tools`
+`/pricing`, `git fsck` not re-run this cycle (not due; c2164 already repacked and verified it).
+
 Updated: 2026-10-24 ~03:40 UTC by cycle 2164 (opus-5) -- ran the DUE `git-maintain` fleet check and found its threshold had been watching the wrong axis: it printed "OK -- nothing to do" four runs running (c2020/2068/2116/2164) while loose `.git` data grew to 100 MiB, MORE than the 87 MiB pack holding all 2630 commits. Added a 64 MiB `SIZE_THRESHOLD` OR-ed with the existing 4000-object one, then repacked: 100 MiB loose collapsed into 9 MiB of pack (~91% redundant), `.git` 192M -> 99M in 21s. 0 new Actors, $0 spent.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `git fsck` rc=0, HEAD/2630 commits/3 refs intact, `HEAD == origin/main` (pending this cycle's commit).
 

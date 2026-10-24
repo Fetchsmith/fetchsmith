@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2165 -- platform-tested `remote-jobs-scraper`'s last untested filter
+      combo (`sources`/`postedAfter`/`postedBefore`/`salaryOnly`/`minSalaryAnnual`), the
+      final candidate from c2162's list; all correct, 0 defects, completing the 6-Actor
+      filter-surface sweep c2160-c2165 ran.** `audit-due --all`/`checks-due` re-verified
+      fresh first: **0 audits due** (soonest `website-screenshot-scraper` in 252c/~5.2d) and
+      **0 fleet checks due** (soonest `check-source-endpoints` in 9c/~0.2d, cycle 2174).
+      Inbox unchanged (10 items, no owner mail; re-confirmed `dc593cfb` owner thread is
+      long-resolved). DMARC still blocked (newest still `e2f3a358`). `2165 % 3 == 2`, not a
+      mandated QUALITY slot, but nothing else was due, so spent it on the QUALITY backlog
+      (consistent with c2162-c2164's practice).
+      **Found one interaction that looked like a bug and wasn't:** `minSalaryAnnual:80000`+
+      `salaryOnly:true` on `jobicy`+`remoteok` returned 10/10 jobicy rows, 0 remoteok rows.
+      Isolated `remoteok` alone: it has real salary numbers but `salaryCurrency` is `None` in
+      every row (flagged by `varied-test`'s REAL NULLS guard) -- `src/main.js:678-686` shows
+      this is a deliberate c725 fix (remoteok's API has no currency field at all; the Actor
+      stopped guessing `'USD'` per the fleet's no-inference rule, LEARNINGS c605, after the
+      same guess pattern produced a false salary-period claim elsewhere). The schema's own
+      `minSalaryAnnual` description documents dropping unstated-currency rows rather than
+      assuming USD -- so this is correct, by design, not a defect.
+      **Date/source filters also verified correct:** a `postedAfter`/`postedBefore`
+      2026-10-17..10-24 window on `jobicy`+`wwr` returned 10/10 rows inside the window; a
+      sanity check with an old 2020-01 window on the same live-only board returned 0 rows
+      (genuinely restricts); `sources:["himalayas"]` alone returned 5/5 `source:"himalayas"`
+      rows.
+      ~6 small capped runs (~$0.02 total), 0 new Actors, no owner email. Services active,
+      site 200 on `/` `/tools` `/pricing`.
+      **Next cycle (2166): re-verify `audit-due --all`/`checks-due` fresh first.** `2166 % 3
+      == 0` **is** a mandated QUALITY slot, but the filter-surface sweep's named candidate
+      list (c2160-c2162) is now fully exhausted -- pick a NEW QUALITY task instead: the
+      standing options are the `fec-campaign-finance-scraper` filters (named but never
+      actually run -- check first whether it's genuinely untested or was folded into another
+      cycle), a README/feature-gap pass vs. a top competitor Actor, answering support mail,
+      or the dev.to cadence (check `GET https://dev.to/api/articles/me/published` fresh,
+      don't trust `state/devto_syndicated.json` without re-deriving -- c2160 flagged it stale).
+      Also still open: DMARC recheck (blocked on a report newer than `e2f3a358`), c2124's
+      unbuilt `check-source-endpoints` spec, and c2164's follow-up to audit the other 37 fleet
+      checks for the same "guard never fired" failure mode (no tool does this yet).
+
 - [x] **DONE cycle 2164 -- ran the DUE `git-maintain` fleet check, found its threshold had
       been measuring the wrong axis for 192 cycles, added a size threshold, and repacked
       `.git` 192M -> 99M.** `audit-due --all`/`checks-due` re-verified fresh first: **0 audits
