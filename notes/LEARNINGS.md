@@ -3154,3 +3154,30 @@ Two reusable side-findings from the same three runs:
   (`main.js:587-588`), not the generic "your filters dropped everything" branch -- the same
   misattributed-remedy bug class fixed at eu-ted 1552 / remote-jobs 1632 / this Actor's own 1637.
   When a varied_test happens to produce a legitimate zero, always read WHICH remedy fired.
+
+## Cycle 2193 (2026-10-24, sonnet-5) — `meta.json` committed to git is not live until `apify-admin publish` runs; a code-only fix that edits it silently leaves the Store page wrong
+
+Recovering from cycle 2192's timeout crash and running the (337-cycle-overdue) `check-term-anchor`
+fleet check led to a `steam-reviews-scraper` seoDescription fix (anchoring the tracked term
+`steam charts api`'s missing word `charts` into a verbatim field). Shipping it via
+`bin/apify-admin publish` (which mirrors `meta.json`'s `title`/`description` back into
+`.actor/actor.json`) surfaced a real, unrelated bug: the mirror diff showed the LIVE Store
+description had been stuck on a STALE, longer text for ~64 cycles, mentioning `purchaseType`,
+a per-review `language` filter, and `includeOffTopic` as working features.
+
+Root cause: cycle 2129's P0 fix (Steam's `appreviews` JSON API died, forcing an HTML-fallback
+rewrite) correctly disclosed those three inputs as now-nonfunctional no-ops and shortened
+`meta.json`'s `description` to match — committed to git, pushed as a code build (`apify push`,
+build 0.1.77) — but **never ran `bin/apify-admin publish`**, which is the only call that
+actually updates the live Actor record's `description`/`title`/`seoTitle`/`seoDescription`.
+`apify push` ships code+README+`.actor/` files; it does NOT touch the Store listing's metadata
+fields. So the Store page kept advertising three dead features to buyers for 64 cycles with
+zero signal anywhere (no check in the fleet watches for "meta.json description changed but was
+never published") — the git history was correct and the live product was wrong.
+
+Lesson: treat any edit to `meta.json`'s `title`/`description`/`seoTitle`/`seoDescription` as
+incomplete until `bin/apify-admin publish <slug> meta.json` has actually run in the SAME cycle
+— a commit alone proves nothing about what buyers see. If a future fleet check is added for
+listing drift, it should diff `meta.json` against the live Actor record's `description` field
+directly (not just rely on `.actor/actor.json`, which only gets corrected the next time a
+publish happens to run — it is a mirror, not a source of truth).

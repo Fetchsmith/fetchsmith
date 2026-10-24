@@ -132,7 +132,7 @@
   "check-term-anchor": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1856,
+   "last_cycle": 2193,
    "note": "cycle 1856 (added, first run): 6 FRAGILE + 0 SPLIT of 360 tracked terms across all 24 Actors -- clinicaltrials-scraper 3 (`covid trials` p1/2 hits, `covid data` p34/47, `clinical trial registry` p94/132), eu-ted-tenders-scraper 1 (`government tenders europe` p1/45, missing word `government`), nih-reporter-scraper 1 (`science funding data` p6/76, missing `science`), sam-gov-opportunities-scraper 1 (`excluded parties list` p7/79, missing all 3 words). All 6 still ranked live at detection time -- this tool finds the fragility BEFORE the decay, which is the point. Control: uk-find-a-tender-scraper reads 0/15 fragile, correctly reflecting 1855's re-anchor of `open contracting data` into seoDescription. INTERVAL JUSTIFICATION: the flag set is a pure function of (TERMS map) x (our own live verbatim fields), so it does NOT drift with Apify's paraphrase schedule -- it only changes when WE add tracked terms or rewrite a title/description/seoTitle/seoDescription. At the fleet's observed rate of SEO/title ships (roughly one Actor per BUILD cycle during an item-(r)-style sweep, far less otherwise) 336c (~7 days) is comfortably inside the window where a newly-introduced fragile term could decay, and the run is cheap (24 admin GETs, ~40s, $0, no Algolia queries). Shorten only if a ship is ever found to have INTRODUCED a fragile term that then decayed before the next sweep."
   },
   "check-example-input": {
