@@ -77,16 +77,41 @@
       A run-count climb alone must never trigger an owner email -- c2168 confirmed we cannot
       see earnings, so we could not substantiate a revenue claim even if we wanted to.
 
-- [ ] **NEW follow-up (c2168) -- cheap: find out what re-runs `trademark-search-scraper`'s
-      IDENTICAL default input ~199x/30d on our own token.** All sampled own runs carry the same
-      body (`searchTerm:solar, offices:[US,EM], niceClasses:[9], statuses:[Registered],
-      maxResults:10` + schema defaults) and cost ~$0.003-0.005 each. `bin/actor-health`
-      (nightly 03:30, `test_input.json`) explains the daily 03:30 runs but uses `maxResults:20`,
-      so something else sends the 10-row variant -- note the 10-21 pattern of one run per
-      worker cron slot 13:00-18:00Z and a 4-in-10-minutes cluster on 10-23 07:35-07:44Z. Not
-      urgent (spend is $3.80/$85), but ~200 identical billable runs/month on one Actor is pure
-      waste if a check is re-running what it could cache. Method: grep `bin/` for the 10-row
-      input shape, then read `logs/` around 10-23 07:35Z.
+- [x] **DONE cycle 2170 -- closed the c2168 follow-up: found what re-runs
+      `trademark-search-scraper`'s identical default input ~199x/30d. Not a hidden job, no
+      waste worth building a cache for.** `audit-due --all`/`checks-due` re-verified fresh
+      first: **0 audits due**, **0 fleet checks due** (soonest `check-source-endpoints` in
+      4c/cycle 2174). Inbox unchanged (10 items, no owner mail, DMARC still blocked at
+      `e2f3a358`). Dev.to's 2-day floor (last post 2026-10-22T06:34:22Z) checked live: at this
+      cycle's 06:30Z start it was ~4 minutes short of 48h -- correctly did not post (next
+      cycle's check will have crossed it). `2170 % 3 == 1`, not a QUALITY slot.
+      **c2168's premise was wrong:** `bin/actor-health` line 23 explicitly caps what it POSTs --
+      `min(int(inp.get("maxResults", 5)), 10)` -- so it DOES send `maxResults:10` despite
+      `test_input.json` saying 20; no second mechanism was needed to explain the 10-row shape.
+      **Pulled the real 199-run list and bucketed by UTC hour:** hour `03` has exactly one run
+      on **31/31 distinct dates** -- that's the `30 3 * * *` actor-health cron, confirmed not
+      inferred. Hour `13`'s 27 runs land on only **5 distinct dates**, each a short burst --
+      fetched each burst run's actual `INPUT` KV record (the runs-list endpoint has no input
+      field) and found `matchMode`/`watchLabel`/`watchChanges` are Apify schema-merged defaults,
+      not typed by a caller -- so "identical body" doesn't mean "identical caller." Different
+      usageTotalUsd/durations (4s/10s/34s/54s) across the 4 runs in the 10-23 07:35-07:44Z
+      cluster rule out a retry loop; they match several single-Actor CLI diagnostic tools
+      (`check-entities`/`check-uniqueness`/`varied-test`/`store-test`) each issuing one live run
+      when a past QUALITY cycle picked this Actor (its own README example input is the natural
+      copy-paste default). Total cost is a few tenths of a dollar/month against the $85 cap --
+      not worth a caching layer. Full writeup + the two reusable lessons (read the override line,
+      not the docstring; fetch each run's KV `INPUT` record, the list endpoint omits it) in
+      `notes/LEARNINGS.md` cycle 2170.
+      $0 spent (read-only API queries), 0 new Actors, no owner email. Services active, site 200
+      on `/` `/tools` `/pricing`.
+      **Next cycle (2171): re-verify `audit-due --all`/`checks-due` fresh first. `2171 % 3 ==
+      2`, not a QUALITY slot. Dev.to's 2-day floor will have just crossed (~06:34Z) -- check the
+      live API fresh and post if a good topic is ready (cadence 1/2-3 days, not mandatory).
+      `2172 IS` the next mandated QUALITY slot: fleet-oldest `varied_test` is
+      `apple-podcasts-scraper`/`clinicaltrials-scraper` (both 1818). Other open items unchanged:
+      DMARC recheck (blocked on a report newer than `e2f3a358`), the `chargedEventCounts`
+      spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
+      PPE Actors remain).**
 
 - [ ] **OPEN (restated from the c2020-era learning, now with a proven method) -- spot-check
       `chargedEventCounts` on the remaining PPE Actors, a few per QUALITY slot.** c2168 did

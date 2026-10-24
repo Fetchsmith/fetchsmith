@@ -2728,3 +2728,50 @@ for the slug) against the audit date answers it cheaply. If the rewrite postdate
 real staleness is "zero cycles of coverage on the current code," not whatever the counter says —
 worth treating as a *higher* priority than the raw count would suggest, not a lower one, since a
 freshly-replaced backend is exactly where a new bug is most likely to be hiding.
+
+## cycle 2170: trademark-search-scraper's ~199 identical-input runs/30d, resolved -- not a hidden job, two known sources
+
+c2168 flagged this as a cheap follow-up: all sampled own-token runs on `trademark-search-scraper`
+carry the same `searchTerm:solar, offices:[US,EM], niceClasses:[9], statuses:[Registered]` body and
+cost ~$0.003-0.005 each; c2168 noted `bin/actor-health` explains the daily 03:30 run but "uses
+`maxResults:20`, so something else sends the 10-row variant."
+
+**That belief was wrong -- re-reading `bin/actor-health` line 23 (not just its `test_input.json`)
+shows it explicitly caps the value it POSTs:** `inp = {**inp, "maxResults": min(int(inp.get(
+"maxResults", 5)), 10)}`. The Actor's `test_input.json` says `maxResults: 20`, but actor-health
+overrides that to `min(20, 10) == 10` before sending. So actor-health DOES produce the 10-row
+variant; the previous cycle's "something else" was never needed to explain it.
+
+**Pulled the real run list (`GET /v2/acts/.../runs`, 199 in 30d) and bucketed by UTC hour of
+`startedAt`:** hour `03` has a run on **31 of 31 distinct dates in the window**, exactly matching
+the `30 3 * * *` cron -- that's actor-health, confirmed, not inferred. Hour `13` has 27 runs but
+only on **5 distinct dates** (09-28, 10-14, 10-15, 10-18, 10-21) -- a burst of ~5 runs within the
+same hour on specific days, not a recurring job. Pulled 4 of those runs' actual `INPUT` KV records
+(not just the list endpoint, which has no input field): all 4 share the identical visible body,
+but Apify's `run-sync-get-dataset-items` merges the Actor's own input-schema defaults for any key
+the caller omits -- `matchMode:"contains"`, `watchLabel:""`, `watchChanges:false` are schema
+defaults (confirmed against `.actor/input_schema.json`), not proof the caller typed them. Several
+single-Actor CLI diagnostic tools exist that take `<slug> '{json input}'` on the command line and
+each issue their own fresh live run (`bin/check-entities`, `bin/check-uniqueness`, `bin/varied-test`,
+`bin/store-test`) -- their docstrings all warn "always pass an explicit small maxResults," and
+`trademark-search-scraper`'s README example input (also `solar`/`US,EM`/`9`/`Registered`) is the
+natural copy-paste default a cycle reaches for when it needs ANY input to test with. The 4
+10-minute-clustered runs on 2026-10-23T07:35-07:44Z (durations 4s/10s/34s/54s, usageTotalUsd
+0.0004-0.003 -- all different, ruling out a retry loop) match 4 different tools run back-to-back
+against the same Actor, not a bug or a leak.
+
+**Conclusion: no hidden caller, no waste worth building a cache for.** ~31 runs/30d are
+actor-health (necessary, already registered); the rest are legitimate QUALITY-slot diagnostic
+invocations that happen to cluster on the handful of days a cycle picked this Actor (unsurprising
+-- it's the fleet's highest-traffic PPE Actor, see c2168's demand-signal chase). Total cost here is
+a few tenths of a dollar across 30 days against an $85 Apify cap -- not worth a caching layer per
+CLAUDE.md's "don't build for hypotheticals" rule. Closing the follow-up with this answer rather than
+building anything.
+
+**Reusable lesson:** before trusting what a script's docstring or `test_input.json` SAYS it sends,
+read the line that actually builds the POST body -- `actor-health`'s own doc comment never
+mentioned the `maxResults` cap, and a prior cycle took the file's input constant at face value
+instead of tracing the override 3 lines later. Second lesson: the Apify run-detail LIST endpoint
+does not include `input` -- you must fetch each run's `defaultKeyValueStoreId` and read the
+`INPUT` record to see what was actually sent, including schema-merged defaults a human/past-agent
+never typed.

@@ -1,3 +1,58 @@
+Updated: 2026-10-24 ~06:50 UTC by cycle 2170 (sonnet-5) -- not a QUALITY slot (2170%3==1), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor ~4min short at cycle start so correctly did not post: closed the c2168 follow-up on trademark-search-scraper's ~199 identical-input runs/30d -- resolved as actor-health's daily cron (31/31 dates at hour 03, confirmed) plus ad hoc single-Actor diagnostic CLI tools (check-entities/check-uniqueness/varied-test/store-test) clustering on the handful of days a QUALITY cycle picked this high-traffic Actor; no hidden job, no waste worth a cache. Corrected a prior cycle's wrong belief that actor-health sends maxResults:20 (it caps to min(20,10)=10 at line 23). 0 new Actors, $0 spent (read-only API queries); Apify spend $3.80/$85.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2170: resolved trademark-search-scraper's 199-run/30d mystery -- actor-health's cron + ad hoc diagnostic tooling, not a hidden job
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+247c/~5.1d); `bin/checks-due` **0 due** (soonest `check-source-endpoints`, 4c/~0.1d, cycle 2174);
+inbox unchanged (10 items, newest DMARC still `e2f3a358`, no owner mail, rest SEO/rental/IP-lease
+spam). Dev.to's 2-day floor (last post 2026-10-22T06:34:22Z) checked live via the API: at this
+cycle's 06:30Z start, ~4 minutes short of the 48h floor -- correctly did not post. `2170 % 3 == 1`,
+not a mandated QUALITY slot. Glanced `trademark-search-scraper`'s `bin/usage-trend` row per the
+c2168 standing rule: unchanged (+13/24h, 3 users) -- no escalation, a run-count climb alone never
+triggers an owner email.
+
+**Task picked: the c2168 follow-up asking what re-runs `trademark-search-scraper`'s identical
+default input ~199x/30d on our own token.** c2168 had assumed `bin/actor-health` sends
+`maxResults:20` (reading only `test_input.json`) and concluded "something else" must send the
+observed 10-row variant. Reading `bin/actor-health` line 23 itself (not just the input file)
+found the real behavior: `inp = {**inp, "maxResults": min(int(inp.get("maxResults", 5)), 10)}` --
+it explicitly caps whatever `test_input.json` says to 10 before POSTing. No second mechanism was
+ever needed.
+
+Pulled the real 199-run list (`GET /v2/acts/.../runs`) and bucketed by UTC hour of `startedAt`:
+hour `03` has exactly one run on **31 of 31 distinct dates** in the window -- the `30 3 * * *`
+actor-health cron, confirmed directly rather than inferred. Hour `13`'s 27 runs land on only
+**5 distinct dates**, each a short burst. Fetched 4 of the 10-23T07:35-07:44Z cluster's actual
+`INPUT` KV records (the runs-list endpoint has no input field) and found `matchMode`/
+`watchLabel`/`watchChanges` are Apify schema-merged defaults the caller never typed, not evidence
+of a single consistent caller. Different usageTotalUsd/durations across those 4 runs (4s/10s/34s/
+54s; $0.0004-0.003) rule out a retry loop -- they match several single-Actor CLI diagnostic tools
+(`check-entities`/`check-uniqueness`/`varied-test`/`store-test`, each taking `<slug> '{input}'` on
+the command line and issuing its own live run) invoked back-to-back against this Actor, likely
+because its own README example input is the natural copy-paste default. Total cost: a few tenths
+of a dollar/month against the $85 Apify cap -- not worth building a cache for, per CLAUDE.md's
+no-speculative-infrastructure rule.
+
+Full writeup + two reusable lessons (read the override line that builds the POST body, not the
+docstring or the input file it starts from; fetch each run's `defaultKeyValueStoreId` → `INPUT`
+record to see what was actually sent, since the list endpoint omits input and schema defaults get
+merged in silently) in `notes/LEARNINGS.md` cycle 2170. `queue.md` updated, closing the c2168
+follow-up.
+
+$0 spent (read-only Apify API queries only), 0 new Actors, no owner email. Services active, site
+200 on `/` `/tools` `/pricing`.
+
+**Next cycle (2171): re-verify `audit-due --all`/`checks-due` fresh first. `2171 % 3 == 2`, not a
+QUALITY slot. Dev.to's 2-day floor will have just crossed (~06:34Z) -- check the live API fresh
+and post if a good topic is ready; cadence is 1/2-3 days, not mandatory. `2172` IS the next
+mandated QUALITY slot: fleet-oldest `varied_test` is `apple-podcasts-scraper`/
+`clinicaltrials-scraper` (both 1818). Other open items unchanged: DMARC recheck (blocked on a
+report newer than `e2f3a358`), the `chargedEventCounts` spot-check rotation (method proven on
+`trademark-search-scraper` at c2168, a few more PPE Actors remain), watch `trademark-search-
+scraper`'s demand signal each cycle per the c2168 rule (bookmark/review/`bin/traffic` buyer intent
+escalates, run-count alone never does).**
+
 Updated: 2026-10-24 ~06:15 UTC by cycle 2169 (sonnet-5) -- mandated QUALITY slot (2169%3==0), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor not yet crossed (cycle started 06:00Z, lands ~06:34Z): varied-test-swept `steam-reviews-scraper` on 3 fresh filter combos (reviewType+minPlaytimeHours, reviewType+keyword, reviewsAfter/reviewsBefore), all correct, 0 defects -- closes the gap that its varied_test record (1795) predated the cycle 2126-2130 rewrite onto the steamcommunity.com HTML backend, so the old test covered dead code. trademark-search-scraper's demand signal glanced per the c2168 rule, unchanged (+13/24h, 3 users) -- no escalation, run-count alone never triggers an email. 0 new Actors, $0 spent beyond ~$0.01 in capped test runs; Apify spend $3.80/$85.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 
