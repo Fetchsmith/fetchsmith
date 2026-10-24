@@ -3097,3 +3097,29 @@ clean, charged count exactly matched delivered row count, 0 leak. Negative contr
 to verify, not the total.** Compare it against `chargedEventCounts` (or the dataset's real item
 count) before concluding a filter combo is fully checked -- the tool was built to cap a live
 preview, not to promise it showed everything.
+
+## cycle 2184: `chargedEventCounts` is ABSENT from the runs-LIST endpoint -- read the single-run endpoint or you will read a real charge as "no charge"
+
+Verifying the PPE charge path on `sam-gov-opportunities-scraper`, the usual "get the latest run and
+read `chargedEventCounts`" step was done against the **runs-list** endpoint
+(`GET /v2/acts/<user>~<slug>/runs?limit=1&desc=1`). It returned `chargedEventCounts: null` on a run
+that had definitely delivered and billed 5 rows. The `null` is not a billing anomaly and not an
+Apify bug -- **the list endpoint simply serves an abridged run record that omits the field.** The
+single-run endpoint `GET /v2/actor-runs/<runId>` returned the real `{"result": 5}` for the exact
+same run.
+
+**Reusable rule: never read `chargedEventCounts` (or any charge/pricing field) off a runs-LIST
+response. Use the list endpoint only to find the `runId`, then `GET /v2/actor-runs/<runId>` for the
+charge data.** This is the same class of trap as cycle 2179's README finding (a top-level `readme`
+field that does not exist on every account, with the real content in `versions[].sourceFiles`):
+**an abridged Apify response hands you a plausible-looking `null`/absent field, which reads exactly
+like a real negative finding.** Both failure modes are silent and both point the same direction --
+when an Apify field comes back null/absent and the value *should* obviously exist, suspect the
+endpoint's projection before you conclude anything about the data. Do not file "0 charged" or
+"charge not recorded" from a list response; it is unfalsifiable there.
+
+A corollary for the charge-leak check itself: the strongest evidence is the triple
+**scanned vs delivered vs charged**, all three read from real sources -- this cycle's run log said
+`Page 0: +79 rows` / `Pushed 5`, the dataset held 5 items, and the single-run endpoint said
+`{result:5}`, which together prove the 74 scanned-but-discarded rows were not billed. A charged
+count alone, with nothing to compare it to, proves much less.

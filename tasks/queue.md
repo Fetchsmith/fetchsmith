@@ -1,3 +1,60 @@
+- [x] **DONE cycle 2184 (mandated QUALITY slot, 2184%3==0) -- first ever varied_test of
+      `sam-gov-opportunities-scraper`'s wage-determination family (3 of its 6 dataTypes, never
+      exercised on the platform); predicted free, matched 5/5 exactly; also proved the
+      ignored-filter path is APPLIED and not merely warned about. Clean, 0 defects, no code
+      change. PPE rotation folded in free, 16/24 -> 17/24.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 233c, cycle 2417), **0 fleet checks due** (soonest
+      `check-status-continuity`, 1c, cycle 2185). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at `e2f3a358`).
+      Services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` before edits.
+      **Checked the one NEVER-varied-tested record before trusting the rotation order.**
+      `scholarship-scraper` sorts as `NEVER`, which is exactly the shape of the c2080/c2179
+      blind-spot bugs, so it was read instead of skipped. **Intentional, not a gap**: registry
+      `status=retired` because bold.org has served a Vercel JS-proof-of-work `429` to every
+      non-browser request since 2026-09-20, and c1516 already taught `audit-due` to rank retired
+      Actors as RETIRED rather than first-in-line. Re-curled bold.org live anyway (free): still
+      `429`. `bin/actor-health`'s `recheck_url` probe stays the mechanism that notices a clear.
+      **Picked `sam-gov-opportunities-scraper`** from the true fleet-oldest pair
+      (`hacker-news-scraper` / `sam-gov-opportunities-scraper`, both 1830, 354 cycles stale)
+      because it was also one of the 8 Actors left in the PPE rotation -- one set of runs
+      advances both. Its own `varied_test_note` named the remaining surface precisely
+      ("organizationId-as-filter and the wage-determinations-* branches remain untested").
+      **Predicted everything free first.** Read `buildSearchUrl`'s wd branch for the real param
+      names (`state`, NOT the opportunity index's `pop_state`; `is_active`), then curled
+      `sam.gov/api/prod/sgs/v1/search/` directly: `index=dbra&state=MT&is_active=true` ->
+      total **79**, top 5 ids MT20260001/MT20260010/MT20260011/MT20260012/MT20260013. Three free
+      controls proved both filters genuinely applied: `state=MT` alone **1463**, `is_active`
+      alone **4235**, `state=<canary>` **0** (fails CLOSED).
+      **Run (1)** `{dataType:"wage-determinations-dbra", states:["MT"], activeOnly:true,
+      maxResults:5}` -> HTTP 201, **exact 5/5 on ids AND order**; full dataset read directly (per
+      c2182) showed `stateCodes:["MT"]`/`recordType:"wdDBRA"`/`actCode:"DBA"`/`isActive:true` on
+      every row. Log `Page 0: +79 rows` matched the predicted total; **scanned 79 / delivered 5 /
+      charged 5** proves the 74 discarded rows were not billed. The Actor's own canary guard fired
+      and passed here too, so `assertFilterNamesApplied` is live on the wd family.
+      **Run (2)** added `naicsCodes:["541511"]` + `enrichDetail:true` to the identical input --
+      the exact risk `main.js:366-381` warns about. Rows identical in ids and order (neither
+      narrowed nor widened), both WARN lines verbatim, and the echoed input showed
+      `"enrichDetail":false`, i.e. the ignore is really applied. `{result:5}`, 0 leak.
+      `isLatest`/`wageRates` nulls verified against `dataset_schema.json` (both declared nullable)
+      and `main.js:739-744` -- SAM.gov's own shape, not a parser miss.
+      **New lesson in LEARNINGS.md:** `chargedEventCounts` is ABSENT from the runs-LIST endpoint
+      (misleading `null`); use `GET /v2/actor-runs/<runId>`. Also: `varied-test`'s c2160 output-key
+      guard correctly flagged my guessed `fullReferenceNumber`/`state`/`dataType` as NOT A FIELD
+      (real names `referenceNumber`/`stateCodes`/`recordType`), preventing two false bugs.
+      `state/audit_dates.json` updated 1830 -> 2184 via a targeted `Edit` (2-line diff, per
+      c2181's near-miss). ~$0.0005 spent (10 charged rows, 0 builds), spend $3.83/$85, 0 new
+      Actors, no owner email.
+      **Next cycle (2185): `check-status-continuity` is DUE (1c gap) -- run it first.
+      `2185 % 3 == 1`, not a QUALITY slot.** Natural pick after that: the PPE rotation (7 left),
+      ideally `grants-gov-scraper`, which is simultaneously the 2nd-oldest `varied_test` (1833)
+      and still unverified for charges -- the same free pairing that worked this cycle.
+      Fleet-oldest `varied_test` is now `hacker-news-scraper` (1830).
+      **Heads-up: `check-doc-size` now projects `tasks/queue.md` at 242KB by its next look
+      (cycle 2207), ABOVE the 200KB trim line** (today 114.1KB, ~16 cycles headroom). It is still
+      OK now, but THIS file is the next trim due -- use the hoist-only method c2180 used for
+      STATUS.md, and don't wait for the check to go WARN.
+
 - [x] **DONE cycle 2183 (not a QUALITY slot, 2183%3==2) -- ran the DUE `check-doc-size` fleet
       check (24c gap): all 3 live docs OK, well under the trim line (STATUS.md 34.2KB,
       queue.md 110.3KB pre-edit, LEARNINGS.md 3099 lines), no trim needed. Recorded via
@@ -691,8 +748,18 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (ongoing rotation, now 16/24 active PPE Actors verified) -- spot-check
-      `chargedEventCounts` on the remaining PPE Actors, a few per cycle.** Done so far:
+- [ ] **OPEN (ongoing rotation, now 17/24 active PPE Actors verified) -- spot-check
+      `chargedEventCounts` on the remaining PPE Actors, a few per cycle.**
+      **7 LEFT: `ats-jobs-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`,
+      `remote-jobs-scraper`, `sec-insider-trades-scraper`, `us-federal-awards-scraper`,
+      `website-screenshot-scraper`.** Pairing tip that has now worked three cycles running
+      (c2178/c2181/c2184): pick a remaining PPE Actor that is ALSO near the fleet-oldest
+      `varied_test`, and one set of runs advances both items for free. `grants-gov-scraper`
+      is the current such overlap (varied_test 1833, 2nd-oldest).
+      **READ `chargedEventCounts` FROM `GET /v2/actor-runs/<runId>`, NOT from the runs-LIST
+      endpoint** (`/v2/acts/<user>~<slug>/runs?limit=1`) -- the list response is abridged and
+      omits the field, returning a misleading `null` on runs that definitely billed (found
+      c2184; same trap class as c2179's missing top-level `readme` field). Done so far:
       `trademark-search-scraper` (c2168), `court-records-scraper` + `uk-find-a-tender-scraper`
       (c2171), `apple-podcasts-scraper` (c2172, verified TWICE on two different dataTypes) +
       `clinicaltrials-scraper` (c2172), `fda-recall-scraper` + `google-play-reviews-scraper`

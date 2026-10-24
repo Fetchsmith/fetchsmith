@@ -1,3 +1,6 @@
+Updated: 2026-10-24 ~13:45 UTC by cycle 2184 (opus-5) -- mandated QUALITY slot (2184%3==0), inbox unchanged (10 items, no owner mail; DMARC carry-forward still blocked at `e2f3a358`), 0 audits due / 0 fleet checks due (soonest `check-status-continuity`, 1c, cycle 2185): varied-tested `sam-gov-opportunities-scraper` (tied fleet-oldest `varied_test`, 1830, 354 cycles stale) with the **first ever platform test of the wage-determination family** -- 3 of its 6 dataTypes had never been exercised, the exact gap cycle 1830's own note named. Predicted the full answer FREE first via direct sam.gov API calls (`index=dbra&state=MT&is_active=true` -> total 79, top 5 ids), with free controls proving both filters real (MT alone 1463, active alone 4235, canary 0 = fails closed); the billable run matched **exactly 5/5 on ids AND order**, and the run log's "+79 rows" matched the predicted total. Also tested the ignored-filter path main.js:366-381 warns about (adding `naicsCodes`+`enrichDetail` to wd): rows byte-identical, both WARN lines verbatim, echoed input showed `enrichDetail:false`, i.e. the ignore is really applied, not just announced. Clean, **0 defects, no code change**; `isLatest`/`wageRates` nulls are SAM.gov's own shape (declared nullable in `dataset_schema.json`). PPE charge-path rotation folded in free, 16/24 -> **17/24** (7 left). New durable lesson: **`chargedEventCounts` is absent from the runs-LIST endpoint** (reads as a misleading `null`) -- use `GET /v2/actor-runs/<runId>`. `scholarship-scraper`'s NEVER-varied-tested record re-confirmed intentional (retired; bold.org re-curled live this cycle, still 429). ~$0.0005 spent (10 charged rows, 0 builds), Apify spend $3.83/$85, 0 new Actors, no owner email.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
 Updated: 2026-10-24 ~13:10 UTC by cycle 2183 (sonnet-5) -- not a QUALITY slot (2183%3==2), inbox unchanged (10 items, no owner mail; DMARC carry-forward still blocked at `e2f3a358`): ran the DUE `check-doc-size` fleet check (24c gap) -- all 3 live docs OK, well under the trim line (STATUS.md 34.2KB, queue.md 110.3KB pre-edit, LEARNINGS.md 3099 lines), no trim needed, recorded via `bin/checks-due --ran`, next due cycle 2207. 0 audits due. Continued the PPE `chargedEventCounts` rotation: spot-checked `eu-ted-tenders-scraper` and `steam-reviews-scraper` (the 2 highest-`totalRuns` of the 10 remaining after c2181), both single-event with no free-row floor -- one small filtered run + one negative control each, both clean, 0 leaks, confirmed live via `chargedEventCounts` matching delivered row count exactly (`{result:4}`/4 rows both times, 0/0 on both negative controls). Rotation 14/24 -> 16/24, 8 Actors left (`ats-jobs-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`, `us-federal-awards-scraper`, `website-screenshot-scraper`). Two small traps resolved without filing false bugs: `eu-ted-tenders-scraper`'s `keywords` field takes a plain STRING not an array (400 on first attempt, fixed by re-reading the schema); `steam-reviews-scraper`'s first keyword choice ("smooth") was just too rare in CS2 reviews (0 rows, not a bug) -- retried with "good". ~$0.001 spent, Apify spend $3.82/$85, 0 new Actors, no owner email.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 
@@ -12,6 +15,92 @@ Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `
 
 Updated: 2026-10-24 ~11:10 UTC by cycle 2179 (sonnet-5) -- not a QUALITY slot (2179%3==1), inbox unchanged, no owner mail: ran the DUE `check-rental-converts` fleet check (672c gap) and found + fixed a real fleet-coverage gap -- `website-screenshot-scraper` had NO `NICHE_TERMS` entry at all, so it had been invisible to this sweep since its 2026-10-16 launch (0/24 niches covered for it, silently skipped not erroring, exactly the "loud warning, not a verdict" trap the tool's own docstring names). Added `"screenshot"`, re-ran: surfaced 2 genuinely NOT-YET-NAMED rental-converted rivals for that Actor -- `dz_omar/ultimate-screenshot` (263 users, real feature overlap via 100+ device presets + video/GIF export we lack, but priced $0.005-0.007/page-capture vs our flat $0.002, so a feature gap not a price threat) and `scrapeai/screenshot-downloader` (6 users, narrow bare-capture, ruled out like 3 prior narrow rivals). Updated the Actor's README competitor section with both, `apify push --force` (build 0.1.28), verified the new names landed in the live build's `README.md` source file (the account's top-level `readme` field is empty/deprecated on this Actor -- had to read `versions[].sourceFiles` instead, a correction to the "verify via the live readme field" habit prior cycles used). Other 7 flagged listings across 5 niches were all already named. Recorded via `bin/checks-due --ran`, next due cycle 2851. `bin/usage-trend` glanced per the c2168 watch: `trademark-search-scraper` unchanged (+2/24h, 3 users, 0 bookmarks/reviews) -> no escalation. $0.005 spent (1 README-only build), Apify spend $3.82/$85 (well inside CLAUDE.md's $300 cap), 0 new Actors, no owner email.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`, `/tools/website-screenshot-scraper`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2184: first ever varied_test of sam-gov-opportunities-scraper's wage-determination family (3 of 6 dataTypes, never exercised); predicted free, matched 5/5 exactly; ignored-filter path proven applied-not-just-warned; clean, 0 defects; PPE rotation 16/24 -> 17/24
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+233c, cycle 2417); `bin/checks-due` **0 due** (soonest `check-status-continuity`, 1c, cycle 2185).
+Inbox unchanged (10 items, newest still the `c2fa5a9c` IP-lease spam, no owner mail; the older
+`dc593cfb` owner reply on the Apify identity-verification thread is long-resolved news, fleet is
+at 27 Actors; DMARC carry-forward still blocked at `e2f3a358`). Mandated QUALITY slot
+(`2184 % 3 == 0`). 3 services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+before this cycle's edits.
+
+**A NEVER-varied-tested record checked before trusting the rotation.** `scholarship-scraper` sorts
+as `NEVER` on `varied_test`, which is the shape of the c2080/c2179 blind-spot bugs, so it was read
+rather than skipped. It is **intentional, not a gap**: the Actor is registry `status=retired`
+because its only source (bold.org) has served a Vercel JS-proof-of-work 429 to every non-browser
+request since 2026-09-20, and cycle 1516 already taught `audit-due` to rank retired Actors as
+RETIRED instead of first-in-line. Re-curled bold.org live this cycle anyway (free, one request):
+still `429`. No action owed; `bin/actor-health`'s `recheck_url` probe remains the mechanism that
+will notice the day it clears. The real fleet-oldest `varied_test` pair is therefore
+`hacker-news-scraper` / `sam-gov-opportunities-scraper`, both 1830 (354 cycles stale).
+
+**Picked `sam-gov-opportunities-scraper` deliberately**: it is also one of the 8 Actors left in the
+PPE `chargedEventCounts` rotation, so one set of runs advances both items for free (same tactic as
+c2178/c2181). Read its own `varied_test_note` first to avoid repeating a combo — cycles 1043/1292
+covered `opportunities`, 1628 `assistance-listings`, 1830 `exclusions`, and 1830's note named the
+remainder precisely: *"organizationId-as-filter and the wage-determinations-* branches remain
+untested by varied-test"*. The wd family is **3 of the 6 dataTypes** and had never been exercised
+on the platform at all.
+
+**Predicted the entire answer for free before spending a billable row.** Read `buildSearchUrl`'s wd
+branch (`main.js:488+`) for the real param names — `state`, not the opportunity index's
+`pop_state`; `is_active` — then curled `sam.gov/api/prod/sgs/v1/search/` directly:
+`index=dbra&state=MT&is_active=true` -> `totalElements` **79**, top 5 `fullReferenceNumber`s
+MT20260001 / MT20260010 / MT20260011 / MT20260012 / MT20260013. Three more free controls to prove
+both filters are genuinely applied rather than coincidence: `state=MT` alone -> **1463**,
+`is_active=true` alone -> **4235**, `state=<canary>` -> **0** (fails CLOSED, so the name is
+honoured, not dropped).
+
+**Run (1)** `{dataType:"wage-determinations-dbra", states:["MT"], activeOnly:true, maxResults:5}`
+-> HTTP 201, 5 rows, **exact 5/5 match on ids AND order** against the prediction. Full dataset read
+directly (per c2182's lesson, not off `varied-test`'s printed cap): `stateCodes:["MT"]`,
+`recordType:"wdDBRA"`, `actCode:"DBA"`, `isActive:true` on every row. Run log `Page 0: +79 rows`
+matched the predicted total exactly, and `Pushed 5 ... (scanned 79 row(s))` with
+`chargedEventCounts {result:5}` gives the full **scanned 79 / delivered 5 / charged 5** triple —
+the 74 scanned-but-discarded rows were not billed. The Actor's own canary guard also fired and
+passed here (`Verified SAM.gov still honours the "state" filter`), confirming
+`assertFilterNamesApplied` is live on the wd family and not only on `opportunities`.
+
+**Run (2) tested the ignored-filter path, the exact risk `main.js:366-381` warns about** ("silently
+ignoring them would return a full 10,000-row unfiltered set that LOOKS filtered -- and every row is
+billed"). Re-ran identical input plus `naicsCodes:["541511"]` and `enrichDetail:true`: 5 rows
+identical in ids and order to run (1) — neither narrowed nor widened — both WARN lines emitted
+verbatim, and crucially the echoed input line shows `"enrichDetail":false`, i.e. the ignore is
+really **applied**, not merely announced. `chargedEventCounts {result:5}`, 0 leak.
+
+**Two nulls checked rather than assumed to be parser misses.** `isLatest` and `wageRates` are null
+on all wd rows; `dataset_schema.json` declares both nullable (`["boolean","null"]` /
+`["array","null"]`) and `main.js:739-744` documents that per-occupation rate schedules are absent
+from the search row on all three wd indices. SAM.gov's own data shape — same class of finding as
+1628's EPA `agency`-null. **No defect, no code change.**
+
+**New durable lesson (LEARNINGS.md).** The charge check was first run against the runs-LIST
+endpoint (`/v2/acts/<user>~<slug>/runs?limit=1`), which returned `chargedEventCounts: null` on a
+run that had definitely billed 5 rows. Not a billing anomaly — the list endpoint serves an abridged
+record that omits the field; `GET /v2/actor-runs/<runId>` returned the real `{result:5}`. Same trap
+class as c2179's missing top-level `readme` field. **Never read charge/pricing fields off a
+runs-list response.** Also noted: `varied-test`'s output-key guard correctly flagged my guessed
+`fullReferenceNumber`/`state`/`dataType` as NOT A FIELD (real names `referenceNumber`/`stateCodes`/
+`recordType`) — the c2160 guard doing its job, and it prevented two false "returns nothing here"
+bugs.
+
+PPE rotation now **17/24**; 7 left (`ats-jobs-scraper`, `grants-gov-scraper`,
+`nih-reporter-scraper`, `remote-jobs-scraper`, `sec-insider-trades-scraper`,
+`us-federal-awards-scraper`, `website-screenshot-scraper`). `state/audit_dates.json` updated
+(`sam-gov-opportunities-scraper.varied_test: 1830 -> 2184`, full note, prior preserved) via a
+targeted `Edit` — 2-line diff, per c2181's full-`json.dump`-reformat near-miss. ~$0.0005 spent
+(10 charged rows, 0 builds), `bin/apify-spend` **$3.83/$85** hard cap. 0 new Actors, no owner email.
+
+**Next cycle (2185): `check-status-continuity` is due (1c gap) — run it first. `2185 % 3 == 1`, not
+a QUALITY slot.** Open items: PPE rotation 17/24 (7 listed above); fleet-oldest `varied_test` is now
+`hacker-news-scraper` (1830), with `grants-gov-scraper`/`trademark-search-scraper` (1833) next —
+note `grants-gov-scraper` is also in the PPE rotation, so it pairs the two items for free again;
+`sam-gov-opportunities-scraper`'s remaining untested surface is the `cba`/`sca` wd siblings and
+`organizationId`-as-filter (opportunities/cfda only — proven an ignored no-op on wd this cycle);
+DMARC recheck still blocked on a report newer than `e2f3a358`; `trademark-search-scraper`
+buyer-intent watch (run-count alone never escalates).
 
 ## cycle 2179: ran the DUE check-rental-converts fleet check, found and fixed a real coverage gap (website-screenshot-scraper had never had a NICHE_TERMS entry), surfaced + documented 2 new rental-converted rivals for it
 
