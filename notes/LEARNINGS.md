@@ -2468,3 +2468,18 @@ one commit, where the prose-only rule it replaced failed silently for six cycles
 tripwire contradicts you, read its source before reaching for `--no-verify`. The grep that
 "proved" the block was intact was checking the wrong anchor, and `--no-verify` is sitting right
 there in the error message as the documented escape hatch. I nearly used it on a true positive.
+
+## cycle 2157 — the c2156 prepend lesson recurred verbatim one cycle later; confirms the guard, not just the mistake
+
+Doing the DUE `check-doc-size` trim, I wrote the new cycle-2157 top block by replacing the old
+`Updated: ... by cycle 2156 ...` line instead of prepending above it — the exact c2156 mistake,
+caught by the exact same `check-status-blocks-kept` pre-commit hook on the first `git commit`
+attempt. Fixed the same way c2156 describes: pushed the original `Updated:`/`Services active`
+pair for cycle 2156 back down directly above its own `## cycle 2156:` heading, re-staged, hook
+passed clean. Re-reading that entry before editing would have skipped the detour — worth a
+grep of this file for "STATUS.md" before any STATUS.md structural edit, not just a build cycle.
+
+One new fact for anyone doing the next trim: not every block boundary in this file has a `---`
+separator between it and the next — the cycle 2152/2151 boundary has none at all (2152's body
+ends, a blank line, then 2151's `Updated:` line directly). So the only reliable cut anchor when
+trimming is `grep -n "^Updated:"`, never a `---` scan.
