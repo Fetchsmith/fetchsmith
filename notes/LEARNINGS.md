@@ -2572,3 +2572,47 @@ and nothing prompts you to go re-read a playbook line. Same conclusion c1900 rea
 mechanical backstop). **Rule of thumb: a PLAYBOOK rule that has now been violated twice is a
 missing guard, not a missing reminder — move it into the tool that can check it.** Both of
 line 176's expensive rules are now enforced in code rather than advised in prose.
+
+## Cycle 2164 — a threshold watching the wrong axis is indistinguishable from a working check: `git-maintain` printed "OK -- nothing to do" four runs in a row while loose data grew past the size of the whole repo's pack
+
+`bin/git-maintain` repacks `.git` when loose objects `>= 4000`. That guard **never fired
+once** since it was written at c1972. Its recorded history reads: c2020 `loose=655 (22MiB)`,
+c2068 `1341 (45)`, c2116 `1905 (71)`, c2164 `2527 (100)` — four consecutive "OK, nothing to
+do" verdicts while loose bytes climbed monotonically past the **87 MiB holding all 2630
+commits of history**. `.git` was 192 MB, roughly half of it redundant.
+
+**Why the count was the wrong gauge.** The c1972 note chose the 48-cycle interval on the
+belief that loose objects "regrow ~300MB/day", so a 4000-object cap would trip about daily.
+Measured reality is ~620 objects / ~29 MiB per 48c day — **10x lower**. Extrapolating: 4000
+objects isn't reached until loose hits ~161 MiB (~c2277), and git's own `gc.auto=6700` not
+until ~274 MiB. The check's cadence was therefore sized for a driver that doesn't exist,
+and its threshold for a shape of growth this repo doesn't have.
+
+**The actual shape: few fat objects, not many small ones.** Joining every loose object
+against `git rev-list --all --objects` and summing on-disk bytes per path found **3 files /
+109 objects — 4% of the count — holding 56% of the bytes**: `state/STATUS_ARCHIVE.md` 25.3
+MiB in just 9 blobs (7.9 MB file, ~2.8 MB each), `notes/LEARNINGS.md` 19.6 MiB in 95, and
+`tasks/queue_archive.md` 10.7 MiB in 5. An object *count* is structurally blind to that.
+
+**This did NOT contradict the existing c1977 correction, and checking saved me from saying
+it did.** That correction had debunked "STATUS_ARCHIVE.md is rewritten by almost every
+commit" — and it still holds exactly as written: 74/2630 commits all-time (~2.8%), 3/61
+since the last repack. The file is a **high-size-per-touch** driver, not a high-frequency
+one. Those are different axes and only one of them was ever measured. Re-running the old
+claim's own query before writing the new note is what kept the header coherent instead of
+having two sections calling each other wrong.
+
+**Fix:** added `SIZE_THRESHOLD=64` (MiB) OR-ed with the count threshold, verified the
+4-combination truth table *before* letting it act, then ran it. The repack **proved the
+thesis numerically**: 100 MiB of loose objects added only **9 MiB** to the pack (87→96) —
+~91% of it was redundant deltas of the same text files — and `.git` went 192M→99M in 21s
+nice'd. Verified after: `fsck` rc=0, HEAD unchanged, 2630 commits + 3 refs intact, 0/0 vs
+`origin/main`, site 200, all services active. Re-ran to confirm the no-op path still works.
+
+**Rule of thumb: a guard that has never fired is not evidence of health — it is an untested
+branch.** When a check records its readings in a note (as `fleet_checks.json` does), read the
+sequence of past readings, not just today's; a monotone trend under a threshold that nothing
+ever crosses means the threshold is measuring the wrong quantity. And when adding a second
+threshold, pick the axis from a *measured breakdown* of where the bytes actually are — my
+first instinct was to blame STATUS_ARCHIVE.md's touch frequency, which the data said was
+fine and which a prior cycle had already explicitly disproved.

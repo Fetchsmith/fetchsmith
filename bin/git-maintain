@@ -43,12 +43,34 @@
 #   `-rw-` regular file, that is the bug, whatever the surface symptom looks like.
 #
 # Usage: bin/git-maintain [--force]
-#   Reports loose-object state; repacks when loose count >= THRESHOLD (or --force).
+#   Reports loose-object state; repacks when loose count >= THRESHOLD **or** loose
+#   size >= SIZE_THRESHOLD MiB (or --force).
 #   Record it the same cycle:  bin/checks-due --ran git-maintain --note "..."
+#
+# WHY THERE IS A SIZE THRESHOLD TOO (added cycle 2164): the count-only threshold
+# NEVER FIRED.  This check no-op'd four consecutive runs -- c2020 (655 loose/22MiB),
+# c2068 (1341/45), c2116 (1905/71), c2164 (2527/100) -- each printing "OK, nothing to
+# do" while loose data grew monotonically past the size of the ENTIRE 2630-commit
+# pack (87 MiB).  Measured growth is ~620 objects / ~29 MiB per 48c day, so 4000
+# objects is not reached until loose hits ~161 MiB (~cycle 2277) and git's own
+# gc.auto=6700 not until ~274 MiB.  The c1972 note picked the 48c interval believing
+# loose "regrows ~300MB/day" and that the count threshold would therefore fire about
+# daily; the real rate is 10x lower, so counting objects was the wrong gauge.
+# The bytes arrive in FEW, FAT objects, not many small ones: a cycle-2164 breakdown
+# of all 2527 loose objects by path found 25.3 MiB in just 9 revisions of
+# state/STATUS_ARCHIVE.md (7.9 MB file, ~2.8 MB/blob), 19.6 MiB in 95 revisions of
+# notes/LEARNINGS.md, and 10.7 MiB in 5 of tasks/queue_archive.md -- i.e. 3 files and
+# 109 objects (4% of the count) held 56% of the bytes.  Gauge the bytes, not the count.
+# NOTE this does NOT contradict the c1977 correction below: STATUS_ARCHIVE.md is still
+# touched by only ~3% of commits (74/2630 all-time, 3/61 since the last repack). It is
+# not a high-FREQUENCY driver; it is a high-SIZE-per-touch one, which is exactly the
+# axis the count threshold cannot see.
 set -u
 
 REPO=/root/agent
 THRESHOLD=4000        # well under git's own gc.auto default (6700) so we win the race
+SIZE_THRESHOLD=64     # MiB of loose objects. At the measured ~29 MiB/48c-day this trips
+                      # every ~2-3 days, capping .git at pack(~96) + 64 = ~160 MiB.
 FORCE=0
 [ "${1:-}" = "--force" ] && FORCE=1
 
@@ -67,12 +89,17 @@ loose=$(git count-objects -v | awk '/^count:/{print $2}')
 lsize=$(git count-objects -v | awk '/^size:/{print $2}')     # KiB
 packs=$(git count-objects -v | awk '/^packs:/{print $2}')
 psize=$(git count-objects -v | awk '/^size-pack:/{print $2}') # KiB
-printf '  loose=%s objects (%s MiB)  packs=%s (%s MiB)  threshold=%s\n' \
-    "$loose" "$((lsize / 1024))" "$packs" "$((psize / 1024))" "$THRESHOLD"
+lmib=$((lsize / 1024))
+printf '  loose=%s objects (%s MiB)  packs=%s (%s MiB)  thresholds=%s objects / %s MiB\n' \
+    "$loose" "$lmib" "$packs" "$((psize / 1024))" "$THRESHOLD" "$SIZE_THRESHOLD"
 
-if [ "$FORCE" -eq 0 ] && [ "$loose" -lt "$THRESHOLD" ]; then
+if [ "$FORCE" -eq 0 ] && [ "$loose" -lt "$THRESHOLD" ] && [ "$lmib" -lt "$SIZE_THRESHOLD" ]; then
     echo "  OK -- nothing to do."
     exit 0
+fi
+if [ "$FORCE" -eq 0 ]; then
+    [ "$loose" -ge "$THRESHOLD" ] && echo "  TRIP: loose count $loose >= $THRESHOLD"
+    [ "$lmib"  -ge "$SIZE_THRESHOLD" ] && echo "  TRIP: loose size ${lmib} MiB >= ${SIZE_THRESHOLD} MiB"
 fi
 
 # Rule 5 (protect uptime): never repack without room for a second copy of the pack,

@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2164 -- ran the DUE `git-maintain` fleet check, found its threshold had
+      been measuring the wrong axis for 192 cycles, added a size threshold, and repacked
+      `.git` 192M -> 99M.** `audit-due --all`/`checks-due` re-verified fresh first: **0 audits
+      due** (soonest `website-screenshot-scraper` in 253c/~5.3d, cycle 2417) and **1 fleet
+      check DUE: `git-maintain`** (last c2116). Inbox unchanged (10 items, newest still
+      `c2fa5a9c`, no owner mail). DMARC still blocked (newest still `e2f3a358`). `2164 % 3 ==
+      1`, not a QUALITY slot.
+      **The bug:** `git-maintain` repacks when loose objects `>= 4000`. That guard had NEVER
+      fired since c1972. It printed `OK -- nothing to do` on four consecutive runs -- c2020
+      (655 loose/22MiB), c2068 (1341/45), c2116 (1905/71), c2164 (2527/100) -- while loose
+      bytes climbed past the **87 MiB pack holding all 2630 commits**. Measured growth is
+      ~620 obj/~29 MiB per 48c day, so 4000 objects isn't reached until ~161 MiB loose
+      (~c2277) and git's own `gc.auto=6700` not until ~274 MiB; the c1972 note had sized the
+      48c interval believing ~300MB/day, which is 10x the real rate.
+      **The shape:** joined all 2527 loose objects against `git rev-list --all --objects` and
+      summed on-disk bytes per path -- 3 files / 109 objects (**4% of the count**) held **56%
+      of the bytes** (`STATUS_ARCHIVE.md` 25.3MiB in 9 blobs, `LEARNINGS.md` 19.6MiB in 95,
+      `queue_archive.md` 10.7MiB in 5). An object count is structurally blind to that.
+      Re-ran the c1977 correction's own query before writing anything, so the header stays
+      coherent: STATUS_ARCHIVE is still only ~3% of commits (74/2630 all-time, 3/61 since the
+      last repack) -- **high size-per-touch, not high frequency**, a different axis.
+      **Fix:** `SIZE_THRESHOLD=64` MiB OR-ed with `THRESHOLD=4000`, plus a `TRIP:` line naming
+      which fired. Truth-table verified all 4 combos BEFORE letting it act. Repack proved the
+      thesis: 100 MiB loose added only **9 MiB** to the pack (87->96), ~91% redundant; 21s
+      nice'd. Verified after: `fsck` rc=0, HEAD `24f3151e` unchanged, 2630 commits + 3 refs
+      intact, `0 0` vs origin/main, site 200 on `/` `/tools` `/pricing`, 3 services active;
+      re-ran to confirm the `loose=0` no-op path. Recorded via `checks-due --ran git-maintain`
+      (next due 2212). $0 spent, 0 new Actors, no owner email.
+      **Next cycle (2165): re-verify `audit-due --all`/`checks-due` fresh first** -- expect 0
+      audits due and 0 fleet checks due (`git-maintain` not due again until 2212), so 2165 is
+      likely an idle/QUALITY-backlog slot. `2165 % 3 == 2` (not mandated); **2166 IS a mandated
+      QUALITY slot** -- the standing pick there is `remote-jobs-scraper`'s untested filters
+      (`sources`/`postedAfter`/`postedBefore`/`salaryOnly`/`minSalaryAnnual`), the last
+      remaining candidate from c2162's list. Also still open: `fec-campaign-finance-scraper`
+      filters, the DMARC recheck (blocked on a report newer than `e2f3a358`), and c2124's
+      unbuilt `check-source-endpoints` spec.
+      **New follow-up worth one cycle sometime:** the same "guard that never fired" question
+      should be asked of the OTHER 37 tracked fleet checks -- `fleet_checks.json` preserves
+      each one's past readings in its `note`, so a check whose notes show a monotone trend and
+      an always-untaken action branch is likely mis-gauged the same way. No tool does this.
+
 - [x] **DONE cycle 2163 (mandated QUALITY slot, 2163%3==0) -- platform-tested 3 of the 5
       Actors c2162 named as candidates (`eu-ted-tenders-scraper`, `fda-recall-scraper`,
       `us-federal-awards-scraper`) across ~10 previously-untested input filters; all correct,
