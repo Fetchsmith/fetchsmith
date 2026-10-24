@@ -3068,3 +3068,32 @@ schema text cost 30 seconds; a false bug report costs a cycle.
 * **allbirds.com did NOT 403 the default datacenter Apify Proxy today**, contradicting c1514's
   note. Store-level proxy bans are transient; don't reflexively pay for RESIDENTIAL on the
   strength of a 666-cycle-old observation -- try datacenter first and escalate on an actual 403.
+
+## cycle 2182 -- `bin/varied-test`'s 10-row print cap can hide rows the run actually delivered and charged for
+
+Closed `app-store-reviews-scraper`'s open `varied_test` (tied fleet-oldest at 1827 with
+`federal-register-scraper`, which c2181 took): stacked `reviewsAfter`/`reviewsBefore` as exact
+timestamps (not bare dates) with `minRating`+`keyword` for the first time -- no prior varied_test
+on this Actor (833/1089/1517/1827) had touched the date filters at all, and the only live check
+of bare-date-vs-instant semantics was a code-level verification (main.js comment, 2026-09-29), not
+a stacked-filter test.
+
+Tried to pre-compute the expected row set from a separate offline RSS fetch first (the c1514/c2180
+technique) but abandoned it: Apple's live review feed is append-only and moved between the
+prediction fetch and the billable run minutes later, so the two would never line up and a mismatch
+would be a false alarm, not a finding. Verified by reading instead: ran the real combo
+(4-hour exact-instant window, `minRating:4`, `keyword:"love"`), then checked every delivered row's
+own fields against all 3 filters directly.
+
+**The run returned 13 rows, but `bin/varied-test` only printed 10** -- its own documented display
+cap ("limit=10" in the tool's docstring applies to what it prints, not to the Actor's real
+`maxResults`/charge). `chargedEventCounts` read `{result:13}`, which is what caught the gap. Pulled
+the full dataset via the run's `defaultDatasetId` directly and confirmed all 13 (not just the first
+10) genuinely had `rating>=4`, `updatedAt` inside the window, and "love" in title/content --
+clean, charged count exactly matched delivered row count, 0 leak. Negative control
+(`keyword:"zzznotfoundxyz123"`, same window) returned 0 rows / `{result:0}` charged.
+
+**Reusable rule: whenever `bin/varied-test` reports `rows: N`, treat N as a lower bound on what
+to verify, not the total.** Compare it against `chargedEventCounts` (or the dataset's real item
+count) before concluding a filter combo is fully checked -- the tool was built to cap a live
+preview, not to promise it showed everything.

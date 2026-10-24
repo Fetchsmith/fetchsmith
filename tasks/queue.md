@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2182 (not a QUALITY slot, 2182%3==1) -- closed the OPEN half of c2181: varied-tested
+      `app-store-reviews-scraper`, the other fleet-oldest `varied_test` record (1827), with a
+      genuinely new `reviewsAfter`/`reviewsBefore` (exact timestamps) + `minRating` + `keyword`
+      combo; clean, 0 defects. Both tied-oldest records now closed -- fleet-oldest `varied_test`
+      is whatever is next in `audit-due --type varied_test`'s ranking.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due**, **0 fleet checks
+      due** (soonest `check-doc-size`, 1c, cycle 2183). Inbox unchanged (10 items, newest still
+      the `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at
+      `e2f3a358`). No prior date-filter varied_test existed on this Actor at all (833/1089/1517/
+      1827 never touched `reviewsAfter`/`reviewsBefore`); the only live date-logic check was a
+      code-level bare-date-vs-instant verification (main.js comment, 2026-09-29), not a
+      stacked-filter test.
+      **Tried the usual pre-compute-the-answer-first technique (offline RSS fetch, then run the
+      Actor) but abandoned it**: Apple's live review feed is append-only and had already moved
+      between the prediction fetch and the billable run minutes later, so a mismatch would have
+      been a false alarm about feed drift, not a real finding. Verified by reading the delivered
+      rows instead: input `apps:["324684580"]` (Spotify/us), `reviewsAfter:"2026-10-22T14:00:00-07:00"`,
+      `reviewsBefore:"2026-10-22T18:00:00-07:00"` (exact instants, not bare dates), `minRating:4`,
+      `keyword:"love"`, `maxReviewsPerApp:200`, `maxResults:50`.
+      **`bin/varied-test` printed `rows: 10` but `chargedEventCounts` read `{result:13}`** --
+      caught the display-cap gap (the tool's own docstring says it prints at most 10 rows, which
+      is not the same as the run only delivering 10). Pulled the full dataset via the run's
+      `defaultDatasetId` directly: all 13 rows (not just the 10 printed) genuinely had
+      `rating>=4`, `updatedAt` inside the exact window, and "love" in title/content. Charged
+      count (13) == delivered row count (13), 0 leak. Negative control
+      (`keyword:"zzznotfoundxyz123"`, same window) -> 0 rows, `{result:0}` charged, confirming
+      real AND enforcement. Clean, no code change. New lesson recorded in `notes/LEARNINGS.md`
+      cycle 2182: always cross-check `chargedEventCounts`/true dataset size against
+      `varied-test`'s printed "rows: N" before calling a check complete.
+      Re-confirmed (not newly added -- `app-store-reviews-scraper` was already verified in the
+      PPE rotation at c2176) that its charge path stays clean under a different, heavily-filtered
+      input shape; rotation tally unchanged at **14/24**. `state/audit_dates.json` updated
+      (`varied_test` 1827 -> 2182) via a targeted `Edit`, not a full re-serialize. $0.0009 spent
+      (13+0 charged rows), 0 new Actors, no owner email. Services active, site 200 on `/`
+      `/tools` `/pricing`.
+      **Next cycle (2183): `check-doc-size` will be due (1c gap) -- run it. 2183%3==2, not a
+      QUALITY slot.**
+
 - [x] **DONE cycle 2181 (mandated QUALITY slot, 2181%3==0) -- varied-tested `federal-register-scraper`,
       one of the fleet's two tied-oldest `varied_test` records (1827), with a genuinely new
       `documentTypes:["NOTICE"]` + `significantOnly` combo; clean, 0 defects, folded the PPE
