@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2190 (mandated QUALITY slot, 2190%3==0) -- ran the DUE `varied_test` on
+      `trademark-search-scraper` (357c gap, 1833 -> 2190), first ever test stacking `matchMode`
+      (startsWith/endsWith) with `niceClasses`+`statuses` together. 2 live runs 5/5 exact match
+      each, negative control fails closed. Clean, 0 defects. Also ran check-charges/
+      check-code-fields/check-registry-fields/devto-comments (all clean, 0 unanswered comments).**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 227c, cycle 2417), **0 fleet checks due** (soonest
+      `check-term-anchor`, 2c, cycle 2192). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at
+      `e2f3a358`). Services active, site 200 on `/` `/tools` `/pricing`
+      `/tools/trademark-search-scraper`, tree clean, `HEAD == origin/main` before this cycle's
+      edits.
+      TMview is unreachable direct from this box (cycle 1535), so verification read every
+      delivered row's fields against all 3 filters rather than a free upstream pre-check.
+      Run (1) `{searchTerm:"blue", matchMode:"startsWith", offices:[US], niceClasses:[25],
+      statuses:[Registered], maxResults:5}` -> 5/5 rows, every `trademarkName` literally
+      "BLUE", office US, status Registered, niceClasses containing 25. Run (2) `endsWith`
+      (never tested in ANY mode before): `{searchTerm:"mart", matchMode:"endsWith",
+      offices:[US], niceClasses:[35], statuses:[Registered], maxResults:5}` -> 5/5 rows
+      (MART/C MART/H MART/G MART/Q MART) -- **no WALMART-shaped hit**, confirming real
+      word-boundary semantics, not a bare substring match. Negative control (nonsense
+      searchTerm, same shape) -> 0 rows, fails closed. `state/audit_dates.json` updated
+      (`trademark-search-scraper.varied_test` 1833 -> 2190, prior note preserved) via a
+      targeted `Edit`, 2-line diff.
+      ~$0.02 spent (10 charged rows across 2 runs, flat $0.002/result, 0 builds), Apify spend
+      **$3.83/$85** (well inside the $300 cap), 0 new Actors, no owner email.
+      **Next cycle (2191): `2191 % 3 == 2`, not a QUALITY slot. Re-verify `audit-due --all`/
+      `checks-due` fresh first (`check-term-anchor` due at 2192, 1-2c away). Natural pick:
+      the PPE rotation's last 2 (`nih-reporter-scraper`, `website-screenshot-scraper`,
+      varied_test 2166/2080) -- `website-screenshot-scraper` is the older of the two. After
+      the rotation closes at 24/24, `hacker-news-scraper` (varied_test 1830, fleet-oldest) is
+      the next pure varied_test pick. `tasks/queue.md` is still the next doc-size trim due
+      whenever convenient (~137KB now, trim line 200KB, `check-doc-size` due 2207 -- use
+      c2180's hoist-only method). DMARC recheck stays blocked on a report newer than
+      `e2f3a358`.**
+
 - [x] **DONE cycle 2189 (not a QUALITY slot, 2189%3==2) -- continued the PPE `chargedEventCounts`
       rotation on `us-federal-awards-scraper` (oldest `varied_test`, 1975, among the 3 PPE
       Actors left, per c2188's handoff). First ever varied_test of `pscCodes` on this Actor,
