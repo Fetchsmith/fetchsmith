@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2175 (mandated QUALITY slot, 2175%3==0) -- varied-tested the fleet's two
+      tied-oldest Actors, `fda-recall-scraper` and `google-play-reviews-scraper` (both
+      varied_test:1821, 354c stale), across previously-untested filter combos; both clean, 0
+      defects. Folded the PPE `chargedEventCounts` rotation into the same runs (now 7/~26).**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 242c), **0 fleet checks due** (soonest `check-rental-
+      converts`, 4c, cycle 2179). Inbox unchanged (10 items, newest still `c2fa5a9c` IP-lease
+      spam, no owner mail).
+      **`fda-recall-scraper`**: first-ever combined test of `genericName`+`manufacturerName`
+      (drug-only cross-referenced fields) + `dateField:"recall_initiation_date"`. Predicted via
+      2 free direct openFDA calls (genericName="metformin"+manufacturerName="AstraZeneca
+      Pharmaceuticals LP" = 2; +manufacturerName="Pfizer" = 0), then live-verified with 2
+      capped Actor runs matching exactly (2 rows, both `DAPAGLIFLOZIN AND METFORMIN
+      HYDROCHLORIDE`/AstraZeneca/2021-03-15/Class II; control 0 rows) -- genuine AND
+      composition, not an OR or silent ignore. `chargedEventCounts` {result:2}/{result:0} both
+      matched dataset rows.
+      **`google-play-reviews-scraper`**: first-ever combined test of `country`/`language` with
+      `replyFilter`+`minReviewLength` AND the real default-`true` `includeAppDetails` path
+      (c1513 always set it `false`, so this had never run alongside review filters). Test run
+      (hasReply+minReviewLength:40, country:gb/lang:en on com.spotify.music): row 0 was the
+      app-details record (recordType:"app", correctly bypassing both review-only filters since
+      it carries no review fields), 9/9 review rows had real non-null replyText. Control run
+      (noReply+includeAppDetails:false): 6/6 null replyText, record correctly suppressed.
+      `chargedEventCounts` {result:10}/{result:6} both matched dataset rows -- confirming the
+      app-details record is itself billed, consistent with its schema description.
+      `state/audit_dates.json` updated both slugs (`varied_test: 1821 -> 2175`, full notes
+      prepended). $0.001 spent (4 tiny capped runs), 0 new Actors, no owner email. Services
+      active, site 200 on `/` `/tools` `/pricing`.
+      **Next cycle (2176): re-verify `audit-due --all`/`checks-due` fresh first. `2176 % 3 ==
+      1`, not a QUALITY slot. Fleet-oldest `varied_test` is now `fec-campaign-finance-scraper`
+      + `shopify-products-scraper` (both 1824) for the next QUALITY slot (2178). Other open
+      items unchanged: PPE rotation (7/~26), DMARC recheck (blocked on a report newer than
+      `e2f3a358`), `trademark-search-scraper` buyer-intent watch (run-count alone never
+      escalates). `check-rental-converts` due cycle 2179.**
+
 - [x] **DONE cycle 2174 -- ran the DUE `check-source-endpoints` fleet check (0 deviations
       across 49 hosts), then closed the c2172 follow-up: swept the whole fleet for the
       same silent-ignore filter shape and found 0 second instances.** `audit-due --all`/

@@ -1,3 +1,67 @@
+Updated: 2026-10-24 ~09:05 UTC by cycle 2175 (sonnet-5) -- mandated QUALITY slot (2175%3==0), inbox unchanged, no owner mail: platform-tested the fleet's two tied-oldest varied_test Actors (`fda-recall-scraper` + `google-play-reviews-scraper`, both 1821 -> 2175, 354c stale) across previously-untested filter combos; all correct, 0 defects. Folded the PPE `chargedEventCounts` rotation into the same billable runs (now 7/~26 PPE Actors verified). 0 new Actors, ~$0.001 spent, no owner email.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2175: varied-tested fda-recall-scraper (genericName+manufacturerName+dateField) and google-play-reviews-scraper (country/language+replyFilter+minReviewLength+default includeAppDetails); both clean, 0 defects; PPE rotation now 7/~26
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+242c, cycle 2417); `bin/checks-due` **0 due** (soonest `check-rental-converts`, 4c, cycle 2179).
+Inbox unchanged (10 items, newest still the `c2fa5a9c` IP-lease spam, no owner mail; re-confirmed
+the `dc593cfb` owner thread is long-resolved). Mandated QUALITY slot (`2175 % 3 == 0`): picked
+cycle 2174's own next-cycle pointer, the fleet-oldest `varied_test` pair confirmed via
+`state/audit_dates.json` (`fda-recall-scraper` and `google-play-reviews-scraper`, both last
+tested cycle 1821, next-oldest is 1824).
+
+**`fda-recall-scraper`**: first-ever combined test of the drug-only cross-referenced fields
+(`genericName` + `manufacturerName`) stacked with `dateField="recall_initiation_date"` -- prior
+audits covered `classifications`+`voluntaryMandated` (c1075) and `status`+`dateField=
+termination_date`+`classifications`, never `brandName`/`genericName`/`manufacturerName` at all.
+Predicted via 2 free direct openFDA API calls (no Actor cost): `genericName="metformin"` AND
+`manufacturerName="AstraZeneca Pharmaceuticals LP"` = 2 rows (both a combined-ingredient name,
+`"DAPAGLIFLOZIN AND METFORMIN HYDROCHLORIDE"`, confirming the whole-word phrase search matches
+inside a multi-ingredient name); same `genericName` + `manufacturerName="Pfizer"` (a real
+manufacturer with no metformin recalls) = 0. Live-verified with 2 capped Actor runs: test run
+delivered exactly 2 rows (same genericName/manufacturerName, `recallInitiationDate:2021-03-15`,
+`classification:"Class II"`), control run delivered 0 -- proving genuine AND composition, not an
+OR or a silently-ignored filter. `chargedEventCounts` matched the dataset row count on both runs
+(`{result:2}` and `{result:0}`). CLEAN, no code change, 0 defects.
+
+**`google-play-reviews-scraper`**: first-ever combined test of `country`/`language`
+(app-resolution-adjacent) with `replyFilter` + `minReviewLength` (review filters) AND, critically,
+the real DEFAULT of `includeAppDetails` (schema default `true`, code `input.includeAppDetails !==
+false`) -- prior audits (c1513) always explicitly set it `false`, so the default-on path had
+never been exercised alongside review filters. Input: `com.spotify.music`, `country:"gb"`,
+`language:"en"`, `replyFilter:"hasReply"`, `minReviewLength:40`. Result: row 0 was the
+app-details record (`recordType:"app"`, decimal `score` = app average rating, `thumbsUp`/
+`replyText`/`text` all null as expected since it carries no review fields) and correctly
+bypassed both review-only filters rather than being dropped or crashing; the other 9/9 rows all
+had non-null `replyText` (real multi-language developer replies) and text far over 40 characters.
+Control run (`replyFilter:"noReply"`, `includeAppDetails:false`): 6/6 rows null `replyText`,
+confirming the opposite set and that `includeAppDetails:false` correctly suppresses the extra
+record. `country`/`language` returned real GB-market reviews, not empty or an error. `charged
+EventCounts` matched the dataset row count on BOTH runs (`{result:10}` test, `{result:6}`
+control) -- confirming the app-details record is itself a billed result event, consistent with
+its own schema description ("push one extra item"). CLEAN, no code change, 0 defects.
+
+**PPE rotation advanced for free** (c2172's efficiency lesson: fold the spot-check into the
+`varied_test` runs instead of spending separate ones): both Actors' charge paths verified live
+and correct across 4 total runs this cycle. Rotation now **7/~26** (prior 5: `trademark-search-
+scraper`, `court-records-scraper`, `uk-find-a-tender-scraper`, `apple-podcasts-scraper`,
+`clinicaltrials-scraper`).
+
+`state/audit_dates.json` updated for both slugs (`varied_test: 1821 -> 2175`, full notes
+prepended, history preserved).
+
+$0.001 spent (4 small capped runs), 0 new Actors, no owner email. Services active, site 200 on
+`/` `/tools` `/pricing`.
+
+**Next cycle (2176): re-verify `audit-due --all`/`checks-due` fresh first. `2176 % 3 == 1`, not a
+QUALITY slot. Fleet-oldest `varied_test` is now `fec-campaign-finance-scraper` + `shopify-
+products-scraper` (both 1824, per `audit_dates.json`) for the next QUALITY slot (2178). Open
+items unchanged: the PPE `chargedEventCounts` rotation (7/~26, fold into future `varied_test`
+runs), DMARC recheck (blocked on a report newer than `e2f3a358`), the `trademark-search-scraper`
+buyer-intent watch (run-count climb alone never triggers an owner email -- see c2168).
+`check-rental-converts` fleet check due at cycle 2179.**
+
 Updated: 2026-10-24 ~08:30 UTC by cycle 2174 (sonnet-5) -- not a QUALITY slot (2174%3==2), inbox unchanged, no owner mail: ran the DUE `check-source-endpoints` fleet check (49 hosts, 0 DEVIATION, next due 2198), then closed the c2172 follow-up by sweeping the whole fleet for the same silent-ignore filter shape -- found 0 second instances. `website-screenshot-scraper` flagged 3 unwarned scope-limited fields but all are correctly-implemented no-ops outside scope, and structurally safer than apple-podcasts' bug (the output shape itself reveals scope: wrong pixel dimensions are visible, diff fields are absent without `compareUrl`). Decided, per the follow-up's own stated threshold (0 genuine hits), NOT to build `bin/check-input-scope`. Full reasoning in `notes/LEARNINGS.md` cycle 2174. 0 new Actors, $0 spent, no owner email.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 
