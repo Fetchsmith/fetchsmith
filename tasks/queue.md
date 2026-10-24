@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2189 (not a QUALITY slot, 2189%3==2) -- continued the PPE `chargedEventCounts`
+      rotation on `us-federal-awards-scraper` (oldest `varied_test`, 1975, among the 3 PPE
+      Actors left, per c2188's handoff). First ever varied_test of `pscCodes` on this Actor,
+      stacked with `expiringWithinDays`+`expiringAfterDays` together for the first time.
+      Rotation 21/24 -> 22/24, 2 left.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 228c, cycle 2417), **0 fleet checks due** (soonest
+      `check-term-anchor`, 3c, cycle 2192). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at
+      `e2f3a358`). Services active, site 200 on `/` `/tools` `/pricing`, tree clean,
+      `HEAD == origin/main` before this cycle's edits.
+      **PREDICTED FREE FIRST** via a direct `api.usaspending.gov/api/v2/search/spending_by_award/`
+      call replicating the Actor's own query shape (contracts, `psc_codes:['R425']`, 1-year
+      `time_period`, sort Award Amount desc) plus a local re-implementation of
+      `passesExpiringFilter()` (`src/main.js:373-378`) against each row's own End Date: 5
+      contracts fall in the 180-365-days-out window among the top page. **Live run
+      `{awardCategories:['contracts'], pscCodes:['R425'], expiringWithinDays:365,
+      expiringAfterDays:180, maxResults:5}` -> HTTP 201, 5/5 EXACT MATCH on awardId/awardAmount/
+      endDate/pscCode AND in the same order** (80MSFC18C0011 $2.01B ... 80GSFC21CA007 $438M).
+      `chargedEventCounts {result:5}` == 5 delivered (read via `GET /v2/actor-runs/<runId>`
+      per c2184's lesson, not the misleading runs-list endpoint). Negative control
+      (`pscCodes:['ZZZZ']`, same window) -> 0 rows, `{result:0}`, fails closed -- confirms
+      `pscCodes` is genuinely AND-applied alongside the expiring window, not a pass-through.
+      Clean, **0 defects, no code/README change**. `state/audit_dates.json` updated
+      (`us-federal-awards-scraper.varied_test` 1975 -> 2189, prior note preserved below the
+      new one) via a targeted `Edit`.
+      ~$0.0001 spent (5 charged rows, 1 free negative control, 0 builds), Apify spend
+      **$3.83/$85** (projection $7.58, well inside the $300 cap), 0 new Actors, no owner email.
+      **Next cycle (2190): `2190 % 3 == 0`, the mandated QUALITY slot (plan a QUALITY/GROWTH
+      cycle per CLAUDE.md -- re-run platform tests on 2-3 existing Actors with different
+      inputs, improve READMEs, compare vs top competitor, answer support mail, update site
+      copy -- not another plain varied_test). Re-verify `audit-due --all`/`checks-due` fresh
+      first (`check-term-anchor` due at 2192). The PPE rotation's last 2
+      (`nih-reporter-scraper`, `website-screenshot-scraper`) can still be folded in for free
+      if a QUALITY-slot varied_test happens to land on either of them. After the rotation
+      closes at 24/24, `hacker-news-scraper` (varied_test 1830, fleet-oldest, ~360 cycles
+      stale) is the next pure varied_test pick. `tasks/queue.md` is still the next doc-size
+      trim due whenever convenient (~136KB now, trim line 200KB, `check-doc-size` due 2207 --
+      use c2180's hoist-only method). DMARC recheck stays blocked on a report newer than
+      `e2f3a358`.**
+
 - [x] **DONE cycle 2188 (not a QUALITY slot, 2188%3==1) -- continued the PPE `chargedEventCounts`
       rotation on `sec-insider-trades-scraper` (oldest `varied_test`, 1973, among the 4 PPE
       Actors left). First ever varied_test of this Actor's `sinceDate` date bound, and the
