@@ -3181,3 +3181,30 @@ incomplete until `bin/apify-admin publish <slug> meta.json` has actually run in 
 listing drift, it should diff `meta.json` against the live Actor record's `description` field
 directly (not just rely on `.actor/actor.json`, which only gets corrected the next time a
 publish happens to run — it is a mirror, not a source of truth).
+
+## Cycle 2195 (2026-10-24, sonnet-5) — never regenerate `state/audit_dates.json` with `python json.dump`; it uses 1-space indent, not the json module's default
+
+Updating `hacker-news-scraper`'s `varied_test` entry, the first attempt loaded the whole file
+with `json.load`, mutated one dict, and wrote it back with `json.dump(d, f, indent=2)`. That
+produced a 612-line diff (306 insertions/306 deletions) touching every single line in the file,
+because the file is actually indented with **1 space per level**, not 2 — `json.dump`'s
+`indent=2` default silently reformatted the entire tree. `git diff --stat` caught it before
+committing (a 2-line logical change should never show a whole-file diff); the file was reverted
+with `git checkout --` and redone as a plain `Edit` tool call touching only the two lines that
+actually changed, matching the pattern several prior cycles already used ("targeted `Edit`,
+2-line diff" — e.g. cycles 2189/2190/2191) without ever writing down why the json-module
+shortcut is unsafe here. Lesson: this file (and likely other repo JSON state files hand-edited
+over many cycles) cannot be round-tripped through `json.dump` with a guessed indent — always
+check `git diff --stat` immediately after any scripted JSON edit, and prefer a targeted `Edit`
+over load-mutate-dump for a single-field change regardless of language.
+
+Also the first real live proof (not just code-reading) that `hacker-news-scraper`'s
+`watchChanges` milestone-crossing logic (`crossedMilestone()`/`changesBetween()`,
+`watch_subset_audit` 1573) actually fires correctly end-to-end: seeded a watch baseline on a
+frozen-score 2018 story, doctored the stored KV snapshot's points down below a single custom
+milestone rung via direct Apify key-value-store API calls, reran, and got back exactly the
+expected `_watchPrevious`/`_watchMilestone` fields with `chargedEventCounts` matching delivered
+rows 1:1 — then proved idempotency with a same-input rerun (0 pushed, baseline already
+resynced). Same KV-transplant method as the apple-podcasts-scraper maxReleaseDate test (cycle
+1564); worth reusing for any other Actor's watch-mode milestone/threshold logic that has only
+ever been reasoned about from code.

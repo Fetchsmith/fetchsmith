@@ -1,3 +1,49 @@
+- [x] **DONE cycle 2195 (not a QUALITY slot, 2195%3==2) -- ran a fresh `varied_test` on
+      `hacker-news-scraper`, the fleet-oldest (`1830`, 365 cycles stale) after the PPE rotation
+      closed. First ever LIVE proof of `watchChanges` milestone crossing on this Actor -- prior
+      coverage (`watch_subset_audit` 1573) only reasoned about `crossedMilestone()` from code.**
+      Re-verified fresh first: 0 audits due (soonest `website-screenshot-scraper`, 222c, cycle
+      2417), 0 fleet checks due (soonest `check-row-floor`, 1c, cycle 2196), inbox unchanged (10
+      items, no owner mail; `dc593cfb` Apify-identity thread long-resolved; DMARC carry-forward
+      still blocked at `e2f3a358`), services active, site 200, tree clean before edits.
+      **Method** (mirrors the apple-podcasts-scraper KV-transplant technique, cycle 1564):
+      seeded a fresh watch baseline (label `c2195-milestone-test`, `tags:[story]`,
+      `queries:["Stephen Hawking has died"]`) on a frozen 2018 story (id `16582136`, points
+      6015, unchanged across every call this cycle). Read the stored snapshot back from the
+      named `fetchsmith-hn-watch` KV store via direct API, doctored ONLY that entry's `p` field
+      down to 5999 (simulating an earlier lower-points sighting), wrote it back. Incremental run
+      with `watchChanges:true`, `watchPointMilestones:"6000"` (single rung, unambiguous) ->
+      `pushed:1`, `watchChangedCount:1`, dataset row carries `_watchChangeType:["pointsMilestone"]`,
+      `_watchPrevious:{points:5999}`, `_watchMilestone:{points:6000}` -- exactly the doctored/
+      live values. `chargedEventCounts {result:1}` == 1 delivered, 0 leak. **Idempotency
+      negative control**: immediate rerun, same input, no further doctoring (baseline resynced
+      to the real 6015 snapshot) -> `pushed:0`, `watchChangedCount:0` -- confirms no double-fire,
+      no double-charge once the baseline catches up. Test KV record deleted after (store
+      hygiene, per 1573's precedent). Clean, **0 defects, no code change**.
+      `state/audit_dates.json` updated (`hacker-news-scraper.varied_test` 1830 -> 2195, prior
+      note preserved) via a targeted `Edit`, 2-line diff (first attempt used `python json.dump`
+      and reformatted the WHOLE file due to an indent mismatch -- 1-space indent in the file vs
+      `indent=2` -- caught via `git diff --stat` before committing and reverted; redone as a
+      plain `Edit`. **New durable lesson for LEARNINGS.md**: never regenerate this file with
+      `json.dump`, always use a targeted string edit, since the file's indent width isn't the
+      json module's default and a full rewrite masks a 2-line change inside a 600-line diff).
+      `check-shell-expansion` re-run clean (275 files, 0 damage). ~$0.0002 spent (1 charged row
+      across 3 runs; seed + negative-control rerun both $0), Apify spend **$3.84/$85**
+      (well inside the $300 cap), 0 new Actors, no owner email.
+      **Next cycle: `2196 % 3 == 0`, a MANDATED QUALITY slot** (computed via
+      `python3 -c "print(2196%3)"`, not by hand, per c2188's cadence-correction lesson).
+      `check-row-floor` fleet check also comes due at cycle 2196 (1c away) -- run it as part of
+      the QUALITY slot's standing checks. After that, the fleet-oldest pure `varied_test` picks
+      are `substack-scraper` (1969), `court-records-scraper` (1970),
+      `eu-ted-tenders-scraper` (1971), `uk-find-a-tender-scraper` (1974), `google-news-scraper`
+      (1994) -- all well ahead of `nih-reporter-scraper` (2166, the PPE-rotation Actor, now the
+      fleet's freshest). 4 FRAGILE `check-term-anchor` terms are still open from c2193
+      (`clinicaltrials-scraper` x2, `sam-gov-opportunities-scraper`, `us-federal-awards-scraper`
+      "subaward") -- all need an eviction trade or careful char-budget work, not a free add.
+      `tasks/queue.md` is ~150KB (trim line 200KB, `check-doc-size` not due until cycle 2207 --
+      use the hoist-then-cut method, `bin/_trim2161.py`, when it gets closer). DMARC recheck
+      stays blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2194 (not a QUALITY slot, 2194%3==2) -- closed the PPE `chargedEventCounts`
       charge-path rotation's last Actor, `nih-reporter-scraper`. Rotation now **24/24, complete.**
       Re-verified fresh first: 0 audits due (soonest `website-screenshot-scraper`, 223c, cycle
