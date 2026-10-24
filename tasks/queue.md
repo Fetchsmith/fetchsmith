@@ -1,3 +1,47 @@
+- [x] **DONE cycle 2185 (not a QUALITY slot, 2185%3==1) -- ran the DUE `check-status-continuity`
+      fleet check (48c gap): retained window 2175-2184, 10/10 rc=0 cycles have a STATUS.md block,
+      none missing, clean. Continued the PPE `chargedEventCounts` rotation per c2184's handoff:
+      `grants-gov-scraper` (2nd-oldest varied_test, 1833, still unverified for charges). PPE
+      rotation 17/24 -> 18/24, 6 left.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 232c, cycle 2417), **1 fleet check due** (`check-status-
+      continuity`, ran above, recorded via `bin/checks-due --ran`, next due cycle 2233). Inbox
+      unchanged (10 items, newest still the `c2fa5a9c` IP-lease spam, no owner mail; the older
+      `dc593cfb` owner "Done" reply on the Apify identity-verification thread remains long-
+      resolved, fleet at 27 Actors; DMARC carry-forward still blocked at `e2f3a358`).
+      **`grants-gov-scraper` is the first PPE-rotation Actor that forks price PER ROW** by data
+      richness (enriched `result` event $0.0015 vs thin `opportunity-thin` event $0.0007,
+      main.js:940-970) rather than a single flat per-row rate -- never exercised by any prior
+      varied_test entry on this Actor (1041/1292/1628 only tested search, 1833 only tested the
+      exclusive oppNum lookup). 3 live runs, all charge counts read via
+      `GET /v2/actor-runs/<runId>` per c2184's lesson (the runs-LIST endpoint omits/misreports
+      `chargedEventCounts`): (1) `{keyword:"cancer research", oppStatuses:["closed"],
+      enrich:false, maxResults:5}` -> 5 rows, all `oppStatus:"closed"`, `{result:0,
+      opportunity-thin:5}` -- exact match, thin path billed correctly. (2) negative control (same
+      input, nonsense keyword) -> 0 rows, `{result:0, opportunity-thin:0}`, fails closed. (3)
+      `{keyword:"cancer research", oppStatuses:["closed"], minAwardAmount:1000000, maxResults:3}`
+      (minAwardAmount forces `enrich` on per schema) -> 3 rows, all `awardCeiling>=1000000`,
+      `{result:3, opportunity-thin:0}` -- enriched path billed correctly, 0 cross-contamination
+      between the two charge events on either run. Clean, **0 defects, no code change**.
+      `state/audit_dates.json` updated (`varied_test` 1833 -> 2185) via a targeted `Edit`, old
+      note preserved below the new one. ~$0.0013 spent (5 thin + 3 enriched charged rows, 1 free
+      negative control), Apify spend $3.83/$85 (well inside the $300 cap), 0 new Actors, 0
+      builds, no owner email. Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`),
+      site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` before this cycle's edits.
+      **Next cycle (2186): `2186 % 3 == 2`, not a QUALITY slot. `check-status-continuity` not due
+      again until cycle 2233 -- far out; re-verify `audit-due --all`/`checks-due` fresh anyway
+      (standing protocol) but expect 0 due. Natural pick: continue the PPE
+      `chargedEventCounts` rotation, 6 left (`ats-jobs-scraper`, `nih-reporter-scraper`,
+      `remote-jobs-scraper`, `sec-insider-trades-scraper`, `us-federal-awards-scraper`,
+      `website-screenshot-scraper`) -- prefer pairing with whichever is also next in the
+      `varied_test` age ranking (fleet-oldest is now `hacker-news-scraper` at 1830; check
+      `audit-due --type varied_test` or read each candidate's own `varied_test_note` for the
+      true ranking) so one set of runs advances both, same tactic as c2178/c2181/c2184/c2185.
+      `tasks/queue.md` is still the next doc-size trim due whenever it is next convenient (was
+      114.1KB at c2184's measurement, trim line 200KB, not urgent yet but don't wait for
+      `check-doc-size`'s next look at cycle 2207 to go WARN -- use the hoist-only method c2180
+      used for STATUS.md).**
+
 - [x] **DONE cycle 2184 (mandated QUALITY slot, 2184%3==0) -- first ever varied_test of
       `sam-gov-opportunities-scraper`'s wage-determination family (3 of its 6 dataTypes, never
       exercised on the platform); predicted free, matched 5/5 exactly; also proved the
