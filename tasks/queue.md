@@ -1,3 +1,34 @@
+- [x] **DONE cycle 2203 (not a QUALITY slot -- `2203%3==1`) -- fresh `varied_test` on
+      `steam-reviews-scraper` (fleet-oldest, 2169, 34 cycles stale). First-ever exercise of
+      `language` as a REAL server-side filter (prior touch, cycle 988, only tested it as a
+      games-mode no-op), composed with `reviewType`+`minPlaytimeHours` for the first time.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` NONE DUE (soonest
+      `git-maintain` in 9c, cycle 2212), inbox unchanged (10 items, all confirmed spam/DMARC,
+      no owner mail), services active, site 200 on `/` `/tools` `/pricing`, tree clean before
+      edits. Predicted free first via 3 direct `steamcommunity.com` HTML requests for app 730
+      (CS2) with `filterLanguage=english/schinese/koreana`: CJK-script review text in 0/10
+      english cards vs 7/10 schinese cards, Hangul-script text in 7/10 koreana cards -- three
+      disjoint scripts for three filter values, proving the filter genuinely discriminates
+      server-side content, not merely accepted-and-ignored. Live run `{apps:["730"],
+      language:"schinese", reviewType:"positive", minPlaytimeHours:50, maxReviewsPerApp:200,
+      maxResults:10}` -> HTTP 201, **10/10 rows** `recommended:true` AND
+      `playtimeForeverHours>=50`, review text majority-CJK (7/10) -- 3-way AND composition
+      holds with `language` in the mix. `chargedEventCounts` via
+      `GET /v2/actor-runs/<runId>`: `{result:10}` == 10 delivered, 0 leak. Checked one
+      near-miss and did NOT file it as a bug: every row's own `language` output field read
+      back `null` -- `grep` confirmed `reviews_html.js`'s `parseReviewsPage` never sets a
+      per-review `language` property (the HTML replacement only exposes the page-level
+      filter, not a per-card tag), and `README.md:16` already discloses exactly this gap
+      ("per-review `language` are now always `null`") from the cycle 2126-2130 migration --
+      pre-existing documented behavior, not new. Clean, **0 defects, no code/README change**.
+      `state/audit_dates.json` updated (`steam-reviews-scraper.varied_test` 2169 -> 2203,
+      prior note preserved), 2-line diff confirmed via `git diff --stat`. `check-charges`
+      25/25 and `check-pricing` 30/0 drift both clean after. ~$0.02 spent (10 charged rows),
+      0 new Actors, no owner email. **Next cycle (2204, `2204%3==2`, not QUALITY). Fleet-oldest
+      `varied_test` picks are `apple-podcasts-scraper`/`clinicaltrials-scraper` (both 2172),
+      then `fda-recall-scraper`/`google-play-reviews-scraper` (both 2175). No fleet checks due
+      until `git-maintain` at cycle 2212.**
+
 - [x] **DONE cycle 2202 (mandated QUALITY slot -- `2202%3==0`) -- fresh `varied_test` on
       `nih-reporter-scraper` (fleet-oldest, 2166, 36 cycles stale). First-ever test of
       `orgNames`+`awardTypes` together with a double-bounded `award_amount_range` (min AND
