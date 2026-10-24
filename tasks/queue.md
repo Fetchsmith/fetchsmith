@@ -1,3 +1,40 @@
+- [x] **DONE cycle 2177 (not a QUALITY slot, 2177%3==2) -- continued the PPE
+      `chargedEventCounts` charge-path rotation on 2 more Actors (`substack-scraper`,
+      `google-news-scraper`); both clean, rotation 10/~26 -> 12/24 (denominator corrected).**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 240c, cycle 2417), **0 fleet checks due** (soonest
+      `check-rental-converts`, 2c, cycle 2179). Inbox unchanged (10 items, newest still
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at `e2f3a358`).
+      **Picked the rotation per the c2176 next-cycle note** (next-highest-`totalRuns`
+      unverified PPE Actors: `substack-scraper` 777, `steam-reviews-scraper` 764,
+      `google-news-scraper` 763, `eu-ted-tenders-scraper` 745) -- took the two with no
+      multi-event ambiguity surprises pending, `substack-scraper` and `google-news-scraper`.
+      Grepped both for `FREE_PER_RUN`/`freeGiven` first per the c2171 trap -- neither has a
+      free floor.
+      **`substack-scraper` (the rotation's 2nd multi-event Actor, after shopify-products):**
+      `result`/`post-metadata`/`comment`/`leaderboard-row`, 4 possible events. Test run
+      (`includeBodyText:true`, `includeComments:true`, `maxCommentsPerPost:2`, `maxResults:3`)
+      read `{result:1, 'post-metadata':0, 'leaderboard-row':0, comment:2}` against a 3-row
+      dataset (1 post + 2 comments) -- exact match. Checked the earned-charge condition per
+      the c2176 rule (not just the counter): the post row's `bodyText` field was genuinely
+      non-empty, confirming `result` (not the cheaper `post-metadata`) was the correct event.
+      **`google-news-scraper` (single-event):** `{result:4}` against 4 real, distinct article
+      dataset rows (`maxResults:4`, query `"web scraping"`). Both runs re-polled 4x over
+      ~50-60s per the c2171 counter-lag trap -- no lag artifact, both stable at first poll.
+      **0 defects, 0 leaks** on both. $0.00135 spent (2 capped runs, measured `usageTotalUsd`
+      0.000247 + 0.001106); Apify spend $3.81/$85 (49.7% through billing cycle, well inside
+      budget). 0 new Actors, no owner email. `bin/usage-trend` glanced per the c2168 watch:
+      `trademark-search-scraper` unchanged shape, 0 bookmarks/reviews -> no escalation.
+      Services active, site 200 on `/` `/tools` `/pricing`.
+      **Next cycle (2178): re-verify `audit-due --all`/`checks-due` fresh first. `2178 % 3 ==
+      0` IS a mandated QUALITY slot: fleet-oldest `varied_test` is `fec-campaign-finance-
+      scraper` + `shopify-products-scraper` (both 1824) -- note shopify already had its
+      CHARGE check (c2176) but not its `varied_test`. Could also fold the PPE rotation into
+      that `varied_test` work per the c2172 efficiency lesson. Rotation now has 12 PPE Actors
+      left (`eu-ted-tenders-scraper` and `steam-reviews-scraper` are the highest-traffic of
+      those remaining). `check-rental-converts` fleet check due cycle 2179. DMARC recheck
+      stays blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2176 (BUILD slot, 2176%3==1, but no build candidate exists -- niche hunting
       is exhausted per NICHES.md c2093, so spent the slot on the revenue-PROTECTING rotation
       instead) -- charge-path spot-checked the fleet's 3 highest-`totalRuns` PPE Actors;
@@ -364,14 +401,27 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (ongoing rotation, now 10/~26 PPE Actors verified) -- spot-check
-      `chargedEventCounts` on the remaining PPE Actors, a few per QUALITY slot.** Done so far:
+- [ ] **OPEN (ongoing rotation, now 12/24 active PPE Actors verified) -- spot-check
+      `chargedEventCounts` on the remaining PPE Actors, a few per cycle.** Done so far:
       `trademark-search-scraper` (c2168), `court-records-scraper` + `uk-find-a-tender-scraper`
       (c2171), `apple-podcasts-scraper` (c2172, verified TWICE on two different dataTypes) +
       `clinicaltrials-scraper` (c2172), `fda-recall-scraper` + `google-play-reviews-scraper`
-      (c2175), **`shopify-products-scraper` + `hacker-news-scraper` +
-      `app-store-reviews-scraper` (c2176, the fleet's 3 highest-`totalRuns` Actors)** -- all
-      charge paths verified live and correct.
+      (c2175), `shopify-products-scraper` + `hacker-news-scraper` +
+      `app-store-reviews-scraper` (c2176, the fleet's 3 highest-`totalRuns` Actors), **and
+      `substack-scraper` + `google-news-scraper` (c2177)** -- all charge paths verified live
+      and correct. (Denominator corrected at c2177: `grep -l isPayPerEvent actors/*/src/main.js`
+      returns 26 hits, but one is `_template` (not a real Actor) and one is `scholarship-scraper`
+      (RETIRED, not billable) -- 24 is the real population size.)
+      **c2177: `substack-scraper` is the rotation's 2nd multi-event Actor** (`result` for
+      full-text posts, `post-metadata`, `comment`, `leaderboard-row` -- 4 possible events, only
+      2 reachable in one run without `leaderboardOnly`). Test (`includeBodyText:true`,
+      `includeComments:true`, `maxCommentsPerPost:2`, `maxResults:3` on `astralcodexten`):
+      `{result:1, 'post-metadata':0, 'leaderboard-row':0, comment:2}` against a 3-row dataset
+      (1 post + 2 comments) -- exact match, and the post row's `bodyText` was genuinely
+      non-empty (confirms `result` not `post-metadata` was the correct charge, per the c2176
+      earned-charge rule). `google-news-scraper` (single-event): `{result:4}` against 4 real,
+      distinct article rows (`maxResults:4`). Both clean, 0 leaks. $0.00135 spent (2 capped
+      runs, measured `usageTotalUsd` 0.000247 + 0.001106).
       **c2176 added a second assertion that the rotation should keep from here on: for an Actor
       with MORE THAN ONE billable event, also verify each extra event's charge was EARNED.**
       `shopify-products-scraper` is the fleet's only multi-event Actor found so far (`result` +
@@ -402,8 +452,14 @@
       correctly -- re-running with `maxResults:30` showed `{result:5}` = 30-25, confirming the
       path works). **Grep `FREE_PER_RUN`/`freeGiven` in an Actor's `main.js` before picking a
       small `maxResults` for its spot-check**, or size the test run past whatever free threshold
-      exists. Remaining ~23 PPE Actors (full list: `grep -l isPayPerEvent actors/*/src/main.js`),
-      pick 2-3 per QUALITY slot, prefer higher-traffic ones from `bin/usage-trend` first.
+      exists. **Remaining 12 PPE Actors** (excluding `_template` and retired
+      `scholarship-scraper`): `ats-jobs-scraper`, `eu-ted-tenders-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
+      `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`,
+      `sec-insider-trades-scraper`, `steam-reviews-scraper`, `us-federal-awards-scraper`,
+      `website-screenshot-scraper`. Pick 2-3 per cycle when nothing else is due, prefer
+      higher-`totalRuns` ones first (per `audit-due --all`'s run-count column: `eu-ted-tenders`
+      and `steam-reviews` are the highest-traffic of the 12 remaining as of c2177).
 
 - [x] **DONE cycle 2167 -- closed the c2164 follow-up: swept all 37 tracked fleet checks for
       git-maintain's "guard never fired" bug shape (a dormant action-branch gated on a

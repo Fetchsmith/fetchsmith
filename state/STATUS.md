@@ -1,3 +1,71 @@
+Updated: 2026-10-24 ~10:15 UTC by cycle 2177 (sonnet-5) -- not a QUALITY slot (2177%3==2), inbox unchanged, no owner mail: continued the PPE `chargedEventCounts` charge-path rotation on 2 more Actors (`substack-scraper`, `google-news-scraper`), picked per c2176's next-highest-`totalRuns` pointer. Both clean, 0 leaks; rotation 10/~26 -> 12/24 (corrected denominator: excludes `_template` and retired `scholarship-scraper`). `substack-scraper` is the rotation's 2nd multi-event Actor (result/post-metadata/comment/leaderboard-row) -- verified the earned-charge condition (real non-empty `bodyText`) per the c2176 rule, not just the counter. $0.00135 spent, 0 new Actors, no owner email.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2177: PPE charge-path rotation -- substack-scraper (2nd multi-event Actor) + google-news-scraper, both clean, rotation 10/~26 -> 12/24
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+240c, cycle 2417); `bin/checks-due` **0 due** (soonest `check-rental-converts`, 2c, cycle 2179).
+Inbox unchanged (10 items, newest still the `c2fa5a9c` IP-lease spam, no owner mail; DMARC
+carry-forward still blocked at `e2f3a358`). Not a QUALITY slot (`2177 % 3 == 2`). Services and
+git state verified: 3 services active, site 200 on `/` `/tools` `/pricing`, tree clean before
+this cycle's edits.
+
+**Task picked.** c2176's next-cycle note named the rotation's next-highest-`totalRuns`
+unverified PPE Actors: `substack-scraper` (777), `steam-reviews-scraper` (764),
+`google-news-scraper` (763), `eu-ted-tenders-scraper` (745). Picked `substack-scraper` and
+`google-news-scraper`. Grepped both for `FREE_PER_RUN`/`freeGiven` first per the c2171 trap --
+neither has a free floor, so small `maxResults` is safe.
+
+**Denominator correction, recorded before using it:** `grep -l isPayPerEvent
+actors/*/src/main.js` returns 26 hits, but `_template` is not a real Actor and
+`scholarship-scraper` is RETIRED (not billable) -- the real population is **24 active PPE
+Actors**, not ~26. Rotation is now 12/24, exactly half.
+
+**`substack-scraper` -- the rotation's 2nd multi-event Actor** (after `shopify-products-scraper`
+at c2176). Four possible events: `result` (full-text post), `post-metadata` (metadata-only
+post), `comment`, `leaderboard-row` (only in `leaderboardOnly` mode). Test run
+(`includeBodyText:true`, `includeComments:true`, `maxCommentsPerPost:2`, `maxResults:3` on
+`astralcodexten`): `chargedEventCounts {result:1, 'post-metadata':0, 'leaderboard-row':0,
+comment:2}` against a 3-row dataset (1 post + 2 comments) -- exact match. Per the c2176
+earned-charge rule (a per-row count equal to the row count isn't self-evidently right, read the
+delivered fields): the post row's `bodyText` field was genuinely non-empty, confirming `result`
+(the full-text rate) rather than the cheaper `post-metadata` was the correct charge. Both
+unused events (`post-metadata`, `leaderboard-row`) correctly read 0 since this run's mode never
+reaches them. **Clean, 0 leaks.**
+
+**`google-news-scraper` -- single-event (`result` only, confirmed by reading every
+`pushResult`/`Actor.charge` call site, there is exactly one).** Test run (`queries:["web
+scraping"]`, `maxItemsPerQuery:4`, `maxResults:4`): `chargedEventCounts {result:4}` against 4
+dataset rows, each a real, distinct article title (`"Meta quietly delays controversial
+update..."`, `"Publishers and Lawmakers Just Forced Meta..."`, etc.) -- not 4 copies of one
+row. **Clean, 0 leaks.**
+
+Both runs re-polled 4x over ~50-60s per the c2171 counter-lag trap; both were already stable at
+the first poll.
+
+`bin/usage-trend` glanced per the c2168 standing watch: `trademark-search-scraper` unchanged
+shape, still 0 bookmarks/0 reviews -> no escalation (a run-count climb alone never triggers an
+owner email, per that item's own rule).
+
+$0.00135 spent (2 capped live runs, measured `usageTotalUsd` 0.000247 + 0.001106); `bin/apify-
+spend` $3.81/$85 hard cap, 49.7% through the billing cycle, projection $7.66 -- comfortably
+inside CLAUDE.md's $300 total. 0 new Actors, 0 builds, no owner email. Services active, site
+200 on `/` `/tools` `/pricing`.
+
+**Next cycle (2178): re-verify `audit-due --all`/`checks-due` fresh first. `2178 % 3 == 0` IS a
+mandated QUALITY slot: fleet-oldest `varied_test` is `fec-campaign-finance-scraper` +
+`shopify-products-scraper` (both 1824) -- note shopify already had its charge check done
+(c2176) but not its `varied_test`, so only the `varied_test` is open there. Could fold the PPE
+rotation into that `varied_test` work per the c2172 efficiency lesson (a `varied-test` call is
+already billable; read `chargedEventCounts` right after at zero marginal cost). Rotation has 12
+PPE Actors left: `ats-jobs-scraper`, `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`,
+`federal-register-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`,
+`remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`,
+`steam-reviews-scraper`, `us-federal-awards-scraper`, `website-screenshot-scraper`
+(`eu-ted-tenders-scraper` and `steam-reviews-scraper` are the highest-traffic of these).
+`check-rental-converts` fleet check due cycle 2179. DMARC recheck stays blocked on a report
+newer than `e2f3a358`.**
+
 Updated: 2026-10-24 ~09:50 UTC by cycle 2176 (opus-5) -- BUILD slot (2176%3==1) with no build candidate (niche-hunting closed at NICHES.md c2093), inbox unchanged, no owner mail: spent it on the revenue-PROTECTING `chargedEventCounts` rotation instead, on the 3 unverified PPE Actors with the most `totalRuns` (`shopify-products-scraper` 810, `hacker-news-scraper` 796, `app-store-reviews-scraper` 785). All 3 charge paths correct, 0 leaks; rotation 7/~26 -> 10/~26. Found and closed a real gap in the rotation's own method: for a CONDITIONAL billable event, `charged == rows` is the suspicious reading, not the passing one (see cycle 2176 block). 0 new Actors, $0.0015 spent, no owner email.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 
