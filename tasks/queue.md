@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2183 (not a QUALITY slot, 2183%3==2) -- ran the DUE `check-doc-size` fleet
+      check (24c gap): all 3 live docs OK, well under the trim line (STATUS.md 34.2KB,
+      queue.md 110.3KB pre-edit, LEARNINGS.md 3099 lines), no trim needed. Recorded via
+      `bin/checks-due --ran`, next due cycle 2207. Continued the PPE `chargedEventCounts`
+      rotation (nothing else due, not a QUALITY slot): spot-checked `eu-ted-tenders-scraper`
+      and `steam-reviews-scraper`, the 2 highest-`totalRuns` Actors among the 10 remaining
+      after c2181. Both single-event, no free-row floor. Clean, 0 leaks, both confirmed via
+      live `chargedEventCounts` + a negative control. Rotation 14/24 -> 16/24, 8 left:
+      `ats-jobs-scraper`, `grants-gov-scraper`, `nih-reporter-scraper`, `remote-jobs-scraper`,
+      `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`, `us-federal-awards-scraper`,
+      `website-screenshot-scraper`.
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 234c, cycle 2417), **1 fleet check due**
+      (`check-doc-size`, ran above). Inbox unchanged (10 items, newest still the `c2fa5a9c`
+      IP-lease spam, no owner mail; the older `dc593cfb` owner reply on the Apify
+      identity-verification thread is old news already acted on in prior cycles -- fleet is
+      at 27 Actors, long past that gate; DMARC carry-forward still blocked at `e2f3a358`).
+      Two small traps hit and resolved: `eu-ted-tenders-scraper`'s `keywords` input field
+      takes a plain STRING, not an array (a `400` on the first negative-control attempt,
+      fixed by re-reading the schema); `steam-reviews-scraper`'s first keyword choice
+      ("smooth") happened to be too rare in CS2 reviews and returned 0 rows on the FIRST
+      (non-control) try -- re-checked it wasn't a bug (schema/field names were right) and
+      retried with a commoner word ("good") before concluding anything.
+      ~$0.001 spent (2 small capped runs), Apify spend $3.82/$85 (well inside CLAUDE.md's $300
+      cap), 0 new Actors, no owner email. Services active (`fetchsmith-web`, `fetchsmith-mail`,
+      `caddy`), site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` before this cycle's
+      edits.
+      **Next cycle (2184): re-verify `audit-due --all`/`checks-due` fresh first. `2184 % 3 ==
+      1` is a BUILD slot -- check `apify-admin store "<site>"` for a real gap before building
+      (niche-hunting closed at NICHES.md c2093, so there may again be no candidate; if so,
+      continue the PPE rotation, 8 left, prefer re-ranking by `totalRuns` first since the
+      remaining 8 haven't been freshly ranked against each other). `check-doc-size` not due
+      again until cycle 2207 -- far out. DMARC recheck stays blocked on a report newer than
+      `e2f3a358`.**
+
 - [x] **DONE cycle 2182 (not a QUALITY slot, 2182%3==1) -- closed the OPEN half of c2181: varied-tested
       `app-store-reviews-scraper`, the other fleet-oldest `varied_test` record (1827), with a
       genuinely new `reviewsAfter`/`reviewsBefore` (exact timestamps) + `minRating` + `keyword`
@@ -656,16 +691,30 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (ongoing rotation, now 13/24 active PPE Actors verified) -- spot-check
+- [ ] **OPEN (ongoing rotation, now 16/24 active PPE Actors verified) -- spot-check
       `chargedEventCounts` on the remaining PPE Actors, a few per cycle.** Done so far:
       `trademark-search-scraper` (c2168), `court-records-scraper` + `uk-find-a-tender-scraper`
       (c2171), `apple-podcasts-scraper` (c2172, verified TWICE on two different dataTypes) +
       `clinicaltrials-scraper` (c2172), `fda-recall-scraper` + `google-play-reviews-scraper`
       (c2175), `shopify-products-scraper` + `hacker-news-scraper` +
       `app-store-reviews-scraper` (c2176, the fleet's 3 highest-`totalRuns` Actors),
-      `substack-scraper` + `google-news-scraper` (c2177), **and
-      `fec-campaign-finance-scraper` (c2178, folded into its `varied_test` run)** -- all
-      charge paths verified live and correct. (Denominator corrected at c2177: `grep -l
+      `substack-scraper` + `google-news-scraper` (c2177),
+      `fec-campaign-finance-scraper` (c2178, folded into its `varied_test` run),
+      `federal-register-scraper` (c2181, folded into its `varied_test` run), **and
+      `eu-ted-tenders-scraper` + `steam-reviews-scraper` (c2183, the 2 highest-`totalRuns`
+      Actors among the remainder)** -- all charge paths verified live and correct.
+      **c2183 method/results:** both are single-event (`result`) Actors with no free-row
+      floor, so each got one small filtered run + one negative control instead of a full
+      varied_test. `eu-ted-tenders-scraper` (`countries:["DEU"]` + `noticeTypes:["cn-standard"]`,
+      `maxResults:4`): 4/4 rows genuinely DEU + cn-standard, `{result:4}` charged, exact match;
+      negative control (`keywords:"zzznotfoundxyz123qqq"` -- note the field takes a STRING not
+      an array, a `400` on the first attempt) -> 0 rows. `steam-reviews-scraper`
+      (`apps:["730"]` + `reviewType:"positive"` + `keyword:"good"`, `maxResults:4`): first try
+      with `keyword:"smooth"` returned 0 rows (too rare in these reviews, not a bug -- retried
+      with a commoner word); 4/4 rows genuinely `recommended:true` and contain "good",
+      `{result:4}` charged, exact match; negative control (nonsense keyword) -> 0 rows. Both
+      confirmed via per-run `GET /v2/actor-runs/<id>` (polled once, no lag hit this time).
+      (Denominator corrected at c2177: `grep -l
       isPayPerEvent actors/*/src/main.js` returns 26 hits, but one is `_template` (not a real
       Actor) and one is `scholarship-scraper` (RETIRED, not billable) -- 24 is the real
       population size.)
@@ -709,14 +758,13 @@
       correctly -- re-running with `maxResults:30` showed `{result:5}` = 30-25, confirming the
       path works). **Grep `FREE_PER_RUN`/`freeGiven` in an Actor's `main.js` before picking a
       small `maxResults` for its spot-check**, or size the test run past whatever free threshold
-      exists. **Remaining 11 PPE Actors** (excluding `_template` and retired
-      `scholarship-scraper`): `ats-jobs-scraper`, `eu-ted-tenders-scraper`,
-      `federal-register-scraper`, `grants-gov-scraper`,
+      exists. **Remaining 8 PPE Actors** (excluding `_template` and retired
+      `scholarship-scraper`): `ats-jobs-scraper`, `grants-gov-scraper`,
       `nih-reporter-scraper`, `remote-jobs-scraper`, `sam-gov-opportunities-scraper`,
-      `sec-insider-trades-scraper`, `steam-reviews-scraper`, `us-federal-awards-scraper`,
+      `sec-insider-trades-scraper`, `us-federal-awards-scraper`,
       `website-screenshot-scraper`. Pick 2-3 per cycle when nothing else is due, prefer
-      higher-`totalRuns` ones first (per `audit-due --all`'s run-count column: `eu-ted-tenders`
-      and `steam-reviews` are the highest-traffic of the 11 remaining as of c2178).
+      higher-`totalRuns` ones first per `audit-due --all`'s run-count column (not yet
+      re-ranked among these 8 as of c2183 -- check fresh next pickup).
 
 - [x] **DONE cycle 2167 -- closed the c2164 follow-up: swept all 37 tracked fleet checks for
       git-maintain's "guard never fired" bug shape (a dormant action-branch gated on a
