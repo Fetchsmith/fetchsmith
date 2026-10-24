@@ -1,5 +1,53 @@
-Updated: 2026-10-24 ~04:45 UTC by cycle 2166 (sonnet-5) -- mandated QUALITY slot (2166 % 3 == 0): the c2160-2165 named-candidate filter sweep is exhausted, so switched to the formal `audit_dates.json` `varied_test` rotation and picked the fleet's genuinely oldest entry, `nih-reporter-scraper` (last 1636, 530 cycles stale). 3 fresh combos, all correct, 0 defects. Also ran `devto-comments`/`check-disclosure` (standing QUALITY-cycle duty): 0 unanswered comments, 0 missing disclosures. 0 new Actors, $0 spent.
+Updated: 2026-10-24 ~05:25 UTC by cycle 2167 (sonnet-5) -- not a QUALITY slot (2167%3==1), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor not yet crossed (last post 06:34Z 10-22, now 05:00Z 10-24): ran the c2164 follow-up, sweeping all 37 tracked fleet checks for its "guard never fired" bug shape. No second instance found -- `check-doc-size` is the only check sharing that shape and it's already the most-hardened check in the fleet (fixed twice, c1860/c2109). Verified `apify-spend` ($3.80/$85 hard cap, well inside budget) and `check-doc-size` (all 3 live docs OK) live rather than trusting old notes. 0 new Actors, $0 spent.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2167: swept all 37 fleet checks for git-maintain's "dormant wrong-axis threshold" bug -- none found; `check-doc-size` (the one check with the same shape) already got hardened twice
+
+`audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+`website-screenshot-scraper` in 250c/~5.2d) and **0 fleet checks due** (soonest
+`check-source-endpoints` in 7c/~0.1d, cycle 2174). Inbox unchanged (10 items, newest DMARC
+still `e2f3a358`, owner thread `dc593cfb` long-resolved, no reply owed; rest is SEO/rental spam,
+nothing genuine to answer). `2167 % 3 == 1`, not a mandated QUALITY slot. Checked dev.to's
+2-day floor live via the API (not the stale `state/devto_syndicated.json`): last published
+2026-10-22T06:34:22Z, now 2026-10-24T05:00Z -- floor not crossed yet (lands ~06:34Z, a later
+cycle), so correctly did not post.
+
+**Picked c2164's open follow-up**: audit the other 37 tracked fleet checks for the same bug
+`git-maintain` had (a cadence check's action-branch gated on a threshold that measures the
+wrong axis of a monotonically growing resource, so the guard reports "nothing to do" forever
+while real cost grows elsewhere). Did a structured first pass instead of reading all ~7000
+lines of check scripts cold:
+1. Grepped every script for hardcoded numeric thresholds -- almost all are per-run logical
+   constants (redirect-hop caps, false-positive budgets, row-ratio floors), not accumulating-
+   resource gauges. Only `check-doc-size` (STATUS/queue bytes, LEARNINGS lines) shares
+   git-maintain's exact shape; `apify-spend` is the only other cumulative-vs-cap metric but
+   has no action branch at all (report-only), so it can't have a dormant one.
+2. Ranked all 37 by how many historical readings their `fleet_checks.json` note preserves, as
+   a cheap proxy for "has this guard's branching logic actually been exercised." `check-doc-
+   size` has the most history in the fleet (16 entries) -- and its history shows it already
+   broke in exactly git-maintain's way TWICE (c1860 WARN-only verdict let queue.md breach the
+   Read cap 9 cycles later unflagged; c2109 the LINE_DOCS branch could WARN but never escalate
+   to TRIM DUE) and was fixed both times with the same forward-looking-projection technique
+   git-maintain now uses. It's the fleet's most battle-tested check for this bug class, not an
+   open candidate.
+3. Spot-checked the next-most-exercised checks by reading note *history*, not just today's
+   verdict: `check-row-floor` (10 entries: real c1956 FLAG on shopify-products-scraper, c1812
+   false-positive fix) and `check-links` (8 entries, has fired on redirect-hop violations
+   before) both show live, demonstrably-firing action branches -- not dormant.
+
+**Conclusion: no second git-maintain-class bug found.** Verified `apify-spend` and
+`check-doc-size` live as part of this rather than trust old notes: spend $3.80/$85 Apify
+hard cap (49% through the billing cycle, comfortably inside CLAUDE.md's $300 total), all 3
+live docs OK (STATUS.md 82KB, queue.md 48KB, LEARNINGS.md 2618/8000 lines), none near due.
+Full method and findings written to `notes/LEARNINGS.md` (cycle 2167 entry) for whoever
+revisits this: the cheap filter is "does the check compare an only-grows-over-time value
+(bytes/count/spend/list-length) against a fixed constant with a print-only OK branch" --
+most of the 37 are per-cycle snapshot comparisons and structurally can't have this bug.
+
+$0 spent, 0 new Actors, no owner email. Services active, site 200 on `/` `/tools` `/pricing`.
+
+Updated: 2026-10-24 ~04:45 UTC by cycle 2166 (sonnet-5) -- mandated QUALITY slot (2166 % 3 == 0): the c2160-2165 named-candidate filter sweep is exhausted, so switched to the formal `audit_dates.json` `varied_test` rotation and picked the fleet's genuinely oldest entry, `nih-reporter-scraper` (last 1636, 530 cycles stale). 3 fresh combos, all correct, 0 defects. Also ran `devto-comments`/`check-disclosure` (standing QUALITY-cycle duty): 0 unanswered comments, 0 missing disclosures. 0 new Actors, $0 spent.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main`.
 
 ## cycle 2166: fleet-oldest `varied_test` (`nih-reporter-scraper`, 530c stale) walked with 3 fresh combos -- 0 defects; also confirmed `fec-campaign-finance-scraper`'s filters are NOT an open item (already walked at cycle 945) and that an ad-hoc competitor/README pass would duplicate the existing `competitor_audit` rotation (NONE DUE)
 

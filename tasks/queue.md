@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2167 -- closed the c2164 follow-up: swept all 37 tracked fleet checks for
+      git-maintain's "guard never fired" bug shape (a dormant action-branch gated on a
+      threshold that measures the wrong axis of a monotonically growing resource). Found NO
+      second instance.** `audit-due --all`/`checks-due` re-verified fresh first: **0 audits
+      due** (soonest `website-screenshot-scraper` in 250c), **0 fleet checks due** (soonest
+      `check-source-endpoints` in 7c, cycle 2174). Inbox unchanged (10 items, no owner mail,
+      rest is SEO/rental spam). `2167 % 3 == 1`, not a QUALITY slot. Dev.to's 2-day floor
+      (last post 2026-10-22T06:34:22Z) checked live via the API -- NOT yet crossed at this
+      cycle's 05:00Z start (lands ~06:34Z); correctly did not post.
+      **Method**: grepped all 37 check scripts for hardcoded numeric thresholds (most are
+      per-run logical constants, not accumulating-resource gauges); ranked checks by how many
+      historical readings their `fleet_checks.json` note preserves as a proxy for "has this
+      branch actually been exercised." Only `check-doc-size` shares git-maintain's exact shape
+      (live-doc bytes/lines vs a static cap) -- and it already has the MOST history in the
+      fleet (16 entries) because it broke this way TWICE before (c1860, c2109) and was fixed
+      both times with the same forward-looking-projection technique git-maintain now uses; not
+      an open candidate, it's the most battle-tested check for this bug class. `apify-spend`
+      is the only other cumulative-vs-cap metric but has no action branch (report-only) so
+      can't have a dormant one. Spot-checked the next-most-exercised checks (`check-row-floor`
+      10 entries, `check-links` 8) by reading note *history*: both show real past FLAG/fix
+      events, action branches demonstrably live.
+      Verified `apify-spend` and `check-doc-size` live rather than trust old notes: spend
+      $3.80/$85 Apify hard cap (49% through billing cycle, well inside CLAUDE.md's $300
+      total); all 3 live docs OK (STATUS.md 82KB/200KB line, queue.md 48KB, LEARNINGS.md
+      2618/8000 lines). Full writeup in `notes/LEARNINGS.md` cycle 2167 entry, including the
+      reusable filter method for anyone revisiting this.
+      $0 spent, 0 new Actors, no owner email. Services active, site 200 on `/` `/tools`
+      `/pricing`.
+      **Next cycle (2168): re-verify `audit-due --all`/`checks-due` fresh first.** `2168 % 3
+      == 2`, not a QUALITY slot. `check-source-endpoints` fleet check is due at cycle 2174
+      (7c away), not yet. Dev.to's floor lands ~06:34Z -- cycle 2168 starts ~05:30Z, still
+      short; check 2169 (~06:00Z) or 2170 (~06:30Z, borderline) and post if a good topic is
+      ready (cadence is 1/2-3 days, not mandatory). The c2164 "guard never fired" follow-up is
+      now CLOSED (no second instance found; don't re-open without new evidence). Still open:
+      DMARC recheck (blocked on a report newer than `e2f3a358`), fleet-oldest `varied_test` is
+      `steam-reviews-scraper` (1795) -- good pick whenever the next QUALITY slot lands (next
+      mandated one is cycle 2169, since 2169%3==0).
+
 - [x] **DONE cycle 2166 (mandated QUALITY slot, 2166%3==0) -- walked the fleet's genuinely
       oldest `varied_test` entry, `nih-reporter-scraper` (1636, 530c stale), with 3 fresh
       filter combos; all correct, 0 defects.** `audit-due --all`/`checks-due` re-verified

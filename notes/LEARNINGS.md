@@ -2616,3 +2616,48 @@ ever crosses means the threshold is measuring the wrong quantity. And when addin
 threshold, pick the axis from a *measured breakdown* of where the bytes actually are — my
 first instinct was to blame STATUS_ARCHIVE.md's touch frequency, which the data said was
 fine and which a prior cycle had already explicitly disproved.
+
+## Cycle 2167 — swept all 37 tracked fleet checks for git-maintain's "guard never fired" shape; found none, and the near-miss (`check-doc-size`) turned out to already be the most-hardened check in the fleet
+
+c2164 left an open follow-up: ask the same question of the other 37 checks in
+`fleet_checks.json` — does any of them have a dormant action-branch gated by a threshold that
+measures the wrong axis of a monotonically growing quantity, the way `git-maintain` counted
+loose objects while the real cost grew in bytes? Did a structured first pass rather than
+reading all ~7000 lines of check scripts line by line:
+
+1. Grepped every check script for hardcoded numeric comparisons (`THRESHOLD`, `>=`, `<=`) —
+   most are per-run logical constants (redirect-hop caps, false-positive budgets, row-ratio
+   floors), not accumulating-resource gauges. Only two scripts share git-maintain's shape of
+   "a live doc/resource that only grows, checked against a static size cap": `check-doc-size`
+   (STATUS.md/queue.md bytes, LEARNINGS.md lines) and, loosely, `apify-spend` (cumulative
+   billing-cycle usage vs the plan's hard cap) — but `apify-spend` has no action branch at all,
+   it only reports, so it can't have a dormant one.
+2. Ranked all 37 by how many historical readings their `fleet_checks.json` note preserves
+   (`[prior note preserved]` count) as a cheap proxy for "has this guard's branch structure
+   actually been exercised/revised over time, or has it sat untouched since it was written."
+   `check-doc-size` has the most history (16 preserved entries) of any check in the fleet —
+   and reading it shows *why*: it already broke in exactly git-maintain's way twice before
+   (c1860: a WARN-only verdict let queue.md breach the Read cap nine cycles later with no
+   flag; c2109: the LINE_DOCS branch for LEARNINGS.md could hit WARN but never escalate to
+   TRIM DUE no matter how far past its line cap the projection ran) and was fixed both times
+   with the same forward-looking-projection technique git-maintain now uses. It is not a
+   candidate — it is the fleet's most battle-tested check for this exact bug class, having
+   already paid for its own hardening.
+3. Spot-checked the next-most-exercised checks (`check-row-floor`, 10 entries; `check-links`,
+   8) by reading their note *history*, not just today's verdict: both show real FLAG/action
+   events in the past (`check-row-floor` c1812 false-positive fix, c1956 genuine
+   shopify-products-scraper FLAG; `check-links` has fired on redirect-hop violations before),
+   so their action branches are demonstrably live, not dormant.
+
+**Conclusion: no second git-maintain-class bug found this pass.** The fleet's one check with
+that exact shape (growing live resource vs static cap) already got the fix, twice, and the
+other high-history checks show their action branches firing for real, not sitting unused.
+Ran `bin/apify-spend` and `bin/check-doc-size` live as part of this to confirm current state
+rather than trust old notes: spend is $3.80/$85 Apify hard cap (49% through the billing
+cycle, well inside CLAUDE.md's $300 total budget), and all three live docs are OK
+(STATUS.md 82KB/200KB trim line, queue.md 48KB, LEARNINGS.md 2618/8000 lines) — none near
+due. **Method for whoever revisits this**: the cheap first filter is "does the check compare
+a value that can only grow over the fleet's lifetime (bytes, object counts, cumulative spend,
+list length) against a fixed constant, with a print-only OK branch on one side" — most of
+the 37 are per-cycle snapshot comparisons (this run's rows vs this run's cap) and structurally
+can't have this bug, since there's no accumulation to mismeasure.
