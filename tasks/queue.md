@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2187 (not a QUALITY slot, 2187%3==1) -- continued the PPE `chargedEventCounts`
+      rotation on `remote-jobs-scraper`, the sole fleet-oldest `varied_test` (1839) and also the
+      natural next PPE pick per c2186's handoff. Stacked `companyKeyword`+`locationKeyword` for
+      the first time ever on this Actor. Rotation 19/24 -> 20/24, 4 left.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 230c, cycle 2417), **0 fleet checks due** (soonest
+      `check-term-anchor`, 5c, cycle 2192). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at `e2f3a358`).
+      Services active, site 200 on `/` `/tools` `/pricing`, tree clean, `HEAD == origin/main`
+      before this cycle's edits.
+      **Predicted free via Jobicy's public API**: `companyName='Zscaler'` (4 live postings),
+      `jobGeo` values `'Ireland,  UK'`/`'Netherlands'`/`'UK'`/`'Ireland'` -> `locationKeyword:'uk'`
+      (case-insensitive substring) should keep exactly 2. Live run
+      `{sources:[jobicy], companyKeyword:'zscaler', locationKeyword:'uk', maxResults:10}` ->
+      HTTP 201, **2/2 exact match** on company/location/title. Negative control (nonsense
+      `companyKeyword`, same `locationKeyword`) -> 0 rows, fails closed.
+      **PPE charge check folded in free**: both runs read via `GET /v2/actor-runs/<runId>` per
+      c2184's lesson (the runs-LIST endpoint omits/misreports `chargedEventCounts`) -- filtered
+      run `chargedEventCounts {job:2}` exactly matches the 2 delivered rows, negative control
+      `{job:0}`, 0 leak either direction. Clean, **0 defects, no code change**.
+      `state/audit_dates.json` updated (`remote-jobs-scraper.varied_test` 1839 -> 2187) via a
+      targeted `Edit` (4-line diff, prior note preserved below the new one).
+      ~$0.0001 spent (2 charged rows, 1 free negative control, 0 builds), Apify spend
+      $3.83/$85 (well inside the $300 cap), 0 new Actors, no owner email.
+      **Next cycle (2188): `2188 % 3 == 2`, not a QUALITY slot. Re-verify `audit-due --all`/
+      `checks-due` fresh first (expect ~0 due, `check-term-anchor` due at cycle 2192). Natural
+      pick: continue the PPE rotation, 4 left (`nih-reporter-scraper`, `sec-insider-trades-
+      scraper`, `us-federal-awards-scraper`, `website-screenshot-scraper`). Check `audit-due
+      --type varied_test` for the current fleet-oldest to pair the free-pairing tactic again.
+      `tasks/queue.md` is still the next doc-size trim due whenever convenient (~119KB at
+      c2186's estimate, trim line 200KB -- not urgent, use the hoist-only method c2180 used for
+      STATUS.md when it gets closer). DMARC recheck stays blocked on a report newer than
+      `e2f3a358`.**
+
 - [x] **DONE cycle 2186 (not a QUALITY slot, 2186%3==2) -- continued the PPE `chargedEventCounts`
       rotation on `ats-jobs-scraper`, picked because it was simultaneously tied fleet-oldest
       `varied_test` (1839) and one of the 6 PPE-rotation Actors left -- same free-pairing tactic
