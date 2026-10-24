@@ -3019,3 +3019,52 @@ visibility one -- the schema already documents the default correctly; it just do
 date window and the (defaulted) electionYear disagree, which could be a future buyer-facing
 follow-up if a support request ever surfaces it (not escalating speculatively, since this cycle's
 job was verification, not product work).
+
+
+## cycle 2180 -- pre-compute the answer before you spend the billable run; and read the schema before filing a cap bug
+
+Nothing was due (0 audits, 0 fleet checks), not a QUALITY slot, so I closed c2178's open half:
+`shopify-products-scraper`'s `varied_test`, the fleet's sole oldest at 1824. Three reusable
+lessons, all about how a verification pass avoids lying to itself:
+
+**1. A live filter test is only a verification if you predict the answer first.** I pulled
+allbirds' entire public catalog (`/products.json?limit=250&page=1..2`, 397 products -- the same
+endpoint and paging the Actor itself uses, `main.js:373`) to this box, re-implemented the Actor's
+own derivation chain in Python (priceMin -> cheapest variant's `compare_at_price` ->
+`discountPercent`, `main.js:473-479`) and computed the exact expected match set for the 4-filter
+stack BEFORE issuing the billable run. The run returned exactly the predicted 4 rows, same
+handles, same percentages. Without the prediction, "4 plausible-looking rows came back" would
+have proven almost nothing -- a filter that silently did nothing would also return rows that
+look fine. This is the c1514 technique (pre-compute real overlap before testing dedup),
+generalized: it applies to every filter combo, not just dedup.
+
+**2. Verify a row against the code's real haystack, not the field a human would eyeball.**
+One of the 4 rows ("Women's Strider - Warm Red") contains neither "tree" nor "dasher" in its
+title, which reads as a false-positive filter bug at a glance. `matchesSearch` (`main.js:536`)
+builds its haystack from `[title, vendor, product_type, ...tags]`, and that product's tags
+include `allbirds::material => tree` and `allbirds::silhouette => dasher` -- a correct match.
+Same trap family as c2162's `uk-find-a-tender-scraper` near-miss (checking only the
+first-listed `cpvCode` instead of the full array). **Rule: before filing a match as wrong,
+re-read what the matcher actually reads.**
+
+**3. "Scanned 397 with the cap set to 250" is not automatically a cap violation.**
+`maxProductsPerStore` means two different things in this Actor by design: outside watch mode it
+caps products DELIVERED per store URL; in watch mode it caps products SCANNED (its schema
+description says so explicitly). With filters discarding ~99% of the catalog, walking to the end
+of the feed to deliver 4 rows is the documented behaviour. I nearly filed this. Reading the
+schema text cost 30 seconds; a false bug report costs a cycle.
+
+**Platform facts confirmed this cycle:**
+* `chargedEventCounts` is ABSENT from the `/v2/acts/<id>/runs` LIST response and present on the
+  per-run `GET /v2/actor-runs/<id>`. Exactly the same omission shape as c2170 found for a run's
+  `INPUT`. **Default assumption for Apify list endpoints: they are summaries; fetch the single
+  resource when you need a field to be trustworthy.**
+* The PPE charge path is clean under heavy filtering, not just unfiltered (c2176): `{result:4,
+  productDetail:0}` for 4 delivered rows out of 397 scanned, and `{result:0, productDetail:0}`
+  for the negative control. Scanning is not billed to the buyer; only delivered rows are.
+* A zero-row run is genuinely free AND self-explaining: the WARN named only the filters actually
+  set, with their values, which makes `minDiscountPercent:80`-style user error diagnosable from
+  the log alone.
+* **allbirds.com did NOT 403 the default datacenter Apify Proxy today**, contradicting c1514's
+  note. Store-level proxy bans are transient; don't reflexively pay for RESIDENTIAL on the
+  strength of a 666-cycle-old observation -- try datacenter first and escalate on an actual 403.

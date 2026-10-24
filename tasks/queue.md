@@ -1,3 +1,74 @@
+- [x] **DONE cycle 2180 (not a QUALITY slot, 2180%3==2) -- closed the open half of c2178:
+      live `varied_test` on `shopify-products-scraper` (fleet-oldest at 1824, 356 cycles stale)
+      with a genuinely untested 4-filter STACK. CLEAN, 0 defects, no code change.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 237c, cycle 2417), **0 fleet checks due** (soonest
+      `check-doc-size`, 3c, cycle 2183). Inbox unchanged (10 items, newest still the `c2fa5a9c`
+      IP-lease spam, no owner mail; DMARC carry-forward still blocked at `e2f3a358`). Services
+      active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` before this cycle's edits.
+      Confirmed via `audit_dates.json` that `shopify-products-scraper` was the fleet's SOLE
+      oldest `varied_test` (1824) after c2178 took its tied partner.
+      **Combo picked by reading the code, not the docs:** `searchQuery` + `productTypes` +
+      `onSaleOnly` + `minDiscountPercent` stacked. Prior passes covered `onlyAvailable`+
+      `minPrice`+`maxPrice` (c2162), multi-`storeUrls` dedup (c1514) and watch-mode cap (c941);
+      **`minDiscountPercent` had never been exercised as a filter at all**, only documented.
+      **Pre-computed the expected answer before spending the billable run (c1514 technique).**
+      Fetched `allbirds.com/products.json?limit=250&page=1..2` locally (397 products = the whole
+      catalog), re-implemented the Actor's own derivation chain (priceMin -> cheapest-variant
+      `compare_at_price` -> `discountPercent`) and predicted **exactly 4 matches**. The live run
+      delivered **exactly those 4**, same handles, same percentages (50 / 50.4 / 31 / 30).
+      The 28 page-2 products that passed `searchQuery`+`productTypes` were all correctly dropped
+      (none on sale) -- so the shaped filters do real work rather than passing everything through.
+      **NOT-A-BUG caught by checking instead of eyeballing:** row 4 ("Women's Strider - Warm Red")
+      has neither "tree" nor "dasher" in its TITLE. It matched through the documented tags
+      haystack (`main.js:536`) -- its tags include `allbirds::material => tree` and
+      `allbirds::silhouette => dasher`. A title-only check would have filed a false positive,
+      the same shape as c2162's `cpvCodes` first-listed-code near-miss.
+      **PPE charge path re-verified under heavy filtering** (new evidence beyond c2176's
+      unfiltered check): `{result:4, productDetail:0}` for the 4-row run, `{result:0,
+      productDetail:0}` for the negative control -- the 393 scanned-but-filtered-out products
+      were NOT charged. Had to use the per-run GET: the `/acts/<id>/runs` LIST endpoint omits
+      `chargedEventCounts` entirely (same omission shape as c2170's INPUT lesson).
+      **Negative control:** same stack with `minDiscountPercent:80` (above the catalog max of
+      70.4) -> 0 rows, $0 charged, and the zero-row WARN named only the 4 filters actually set,
+      with their values.
+      **Looked like a cap bug, wasn't:** the run scanned 397 products with
+      `maxProductsPerStore:250` set. Read the schema rather than filing it -- outside watch mode
+      that key means "stop after this many products DELIVERED per store URL", so with filters
+      removing ~99% it correctly walks to the end of the feed. (Scanned-vs-delivered only swap
+      in watch mode.) Also: both runs ran on the DEFAULT datacenter Apify Proxy with no 403 --
+      c1514's allbirds datacenter-403 note did NOT reproduce today, so don't pay for RESIDENTIAL
+      on this store reflexively.
+      `state/audit_dates.json` updated (`shopify-products-scraper.varied_test: 1824 -> 2180`,
+      full note, prior preserved). **~$0.0002 spent** (2 capped runs, 0 builds), Apify spend
+      $3.82/$85, 0 new Actors, no owner email. `bin/usage-trend` glanced per the c2168 watch:
+      `trademark-search-scraper` unchanged (54 total, +2/24h, 3 users, 0 bookmarks, 0 reviews)
+      -> no escalation (the rule needs a bookmark/review/traffic, not a run-count climb).
+      **Also trimmed `state/STATUS.md` this cycle** (my own append pushed it to 151.2KB, past
+      `check-doc-size`'s 150KB warn line -- caught by running the check rather than waiting for
+      it to come due at 2183). `bin/_trim2180.py`, stock newest-first archive method, verified
+      lossless three ways (script's own 4 checks; independent `live + archive-addition == backup`
+      byte reconstruction; `check-status-blocks-kept` + `check-status-continuity` both clean).
+      **Kept 6 blocks, not the stock 10, on purpose:** at the measured +4510 B/cycle and this
+      check's own 24-cycle interval, keeping 10 leaves 50.9KB live and projects 159KB at the next
+      look -- straight back into WARN, the documented c1976 mistake. 6 leaves 30.1KB, projects
+      136KB, 39 cycles of headroom. The script's own assertion caught an off-by-one in my block
+      labels (`starts[KEEP_BLOCKS-1]` is 2175, not 2174) before anything was written -- the
+      assert-before-write pattern earning its keep again.
+      **`tasks/queue.md` is the next doc to trim:** 101.0KB now, OK but projected 228KB at
+      `check-doc-size`'s next look (19 cycles of headroom). Use the HOIST-then-cut method
+      (`bin/_trim2161.py`), NOT the stock keep-newest-10 script -- queue.md interleaves live
+      `- [ ]` open items among `- [x]` blocks, so a naive cut deletes live work.
+      **Next cycle (2181): re-verify `audit-due --all`/`checks-due` fresh first --
+      `check-doc-size` comes due at 2183, nothing before it. `2181 % 3 == 0` **IS** a mandated
+      QUALITY slot. New fleet-oldest `varied_test` is `app-store-reviews-scraper` +
+      `federal-register-scraper` (tied at 1827), then `hacker-news-scraper` +
+      `sam-gov-opportunities-scraper` (1830) -- read their own `varied_test_note` first to pick
+      genuinely untested filter ground. Other open items unchanged: PPE `chargedEventCounts`
+      rotation still 13/24 (11 left; `eu-ted-tenders-scraper` and `steam-reviews-scraper` are
+      the highest-traffic remaining -- fold one into the 2181 varied_test run), DMARC recheck
+      (blocked on a report newer than `e2f3a358`), `trademark-search-scraper` watch.**
+
 - [x] **DONE cycle 2179 (not a QUALITY slot, 2179%3==1) -- ran the DUE `check-rental-converts`
       fleet check (672c gap); found and fixed a real coverage gap (`website-screenshot-scraper`
       had NO `NICHE_TERMS` entry, 0/24 niches swept for it since its 2026-10-16 launch); re-run
