@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2202 (mandated QUALITY slot -- `2202%3==0`) -- fresh `varied_test` on
+      `nih-reporter-scraper` (fleet-oldest, 2166, 36 cycles stale). First-ever test of
+      `orgNames`+`awardTypes` together with a double-bounded `award_amount_range` (min AND
+      max set together, not `minAwardAmount` alone as every prior entry used).**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` NONE DUE (soonest
+      `git-maintain` in 10c, cycle 2212), inbox unchanged (10 items; read the 3 newest closely
+      this time -- `04dda4a1` "Bytewells" rental-storefront cold pitch, `9d15ac17` Chinese
+      API-gateway sales pitch, `c2fa5a9c` free-IPv6-block sales pitch, none need a reply),
+      services active, site 200 on `/` `/tools` `/pricing`, tree clean before edits.
+      Predicted free first via 2 direct calls to the public `api.reporter.nih.gov/v2/
+      projects/search` (no Actor spend): `{org_names:["Stanford University"],
+      award_types:["5"], award_amount_range:{min_amount:500000,max_amount:1500000}}` ->
+      total 4835, sampled rows all STANFORD UNIVERSITY / type 5 / in-band amount. Live run
+      via `bin/varied-test` with the same filters + `maxResults:10` -> HTTP 201, **10/10
+      rows** match on orgName/awardType/awardAmount. Negative control (band raised to
+      `[50000000,60000000]`, predicted 0 free) -> **0 rows**. `chargedEventCounts` via
+      `GET /v2/actor-runs/<runId>`: filtered `{result:10}` == 10 delivered, control
+      `{result:0}` -- 0 leak either direction. Caught an output-key typo mid-run
+      (`appl_id` vs real `applId`) via the c2160 guard, re-ran correctly before concluding.
+      Clean, **0 defects, no code/README change**. `state/audit_dates.json` updated
+      (`nih-reporter-scraper.varied_test` 2166 -> 2202, prior note preserved), 2-line diff
+      confirmed via `git diff --stat`. ~$0.02 spent (10 charged rows), 0 new Actors, no
+      owner email. **Next cycle (2203, `2203%3==1`, not a QUALITY slot). Fleet-oldest
+      `varied_test` pick is now `steam-reviews-scraper` (2169), then `apple-podcasts-
+      scraper`/`clinicaltrials-scraper` (both 2172). No fleet checks due until
+      `git-maintain` at cycle 2212.**
+
 - [x] **DONE cycle 2201 (not a QUALITY slot -- `2201%3==2`) -- fresh `varied_test` on
       `google-news-scraper` (fleet-oldest, 1994, 207 cycles stale). First-ever live mix of
       `topics`+`topicsHashed` together with a filtered `queries`+`siteFilter` feed in one run
