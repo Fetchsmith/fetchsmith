@@ -2917,3 +2917,36 @@ fresh rather than trusting the "long-resolved" label from memory — confirmed i
 "Done" reply is already reflected everywhere (publishing unblocked since c2037, STATUS.md
 line 371) and needs no further action. A stale-looking inbox item is worth one re-read per
 cycle it surfaces in, cheaper than risking a real unresolved blocker going unnoticed.
+
+## cycle 2174: fleet-wide sweep for the c2172 silent-ignore filter shape -- 0 second instances, and why 3 near-misses don't count
+
+Closed the c2172 follow-up: grepped every Actor's `.actor/input_schema.json` for scope
+language ("Reviews only", "Episodes only", "Only used when", "Only applies", etc.) and
+checked whether `src/main.js` has a `log.warning`/`log.warn(` call near that key's usages.
+Cheap, no network, ~37 Actors in one pass.
+
+**Result: 0 genuine second instances.** Only `website-screenshot-scraper` flagged (3 keys:
+`viewportWidth`/`viewportHeight` scoped to `devicePreset:"custom"`, `diffThreshold` scoped to
+compare mode). Read the source (`resolveViewport()`, the `pixelmatch` call site) before
+concluding anything: all three are correctly implemented -- when out of scope they're simply
+unused, not silently mis-applied.
+
+**Why these don't share apple-podcasts' risk shape, even though they're technically
+unwarned.** The apple-podcasts bug was dangerous specifically because the OUTPUT STRUCTURE
+stayed identical whether or not the filter actually ran -- same fields, same row shape, so a
+buyer paying per row had zero signal that `keyword` was dropped on the floor. These three
+don't have that property: if `devicePreset != "custom"`, the rendered screenshot's actual
+pixel dimensions visibly reveal the preset won, and if `compareUrl` isn't set, the output
+record has NO diff fields at all (no `diffPixels`/`diffPercent`/`changed`), so there's nothing
+that looks like "diffThreshold ran and found no difference." The defect class this sweep was
+built for is specifically "same-shaped output, silently unfiltered" on a per-row-charged
+Actor -- not "a config field is a no-op outside its documented mode," which is normal,
+visibly-inspectable, and already disclosed in each field's `title` ("... (custom preset
+only)", "... (compare mode only)"), not just buried in the description.
+
+**Decided, per the threshold the queue item itself set:** "worth a dedicated
+`bin/check-input-scope` if the first pass finds more than one or two [real] hits" -- it found
+zero real hits, so no dedicated recurring check is being built. If a future QUALITY cycle
+finds a SECOND real instance of the apple-podcasts shape (same output structure regardless of
+whether a row-count-affecting filter ran), that's the trigger to revisit this decision, not a
+bare "field X is unwarned."

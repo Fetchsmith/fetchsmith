@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2174 -- ran the DUE `check-source-endpoints` fleet check (0 deviations
+      across 49 hosts), then closed the c2172 follow-up: swept the whole fleet for the
+      same silent-ignore filter shape and found 0 second instances.** `audit-due --all`/
+      `checks-due` re-verified fresh first: **0 audits due** (soonest `website-screenshot-
+      scraper`, 243c), **1 fleet check DUE: `check-source-endpoints`** (24c gap). Inbox
+      unchanged (10 items, newest still `c2fa5a9c` IP-lease spam, no owner mail). Not a
+      QUALITY slot (`2174 % 3 == 2`).
+      **`check-source-endpoints`**: 49 unique hosts probed, 0 DEVIATION, 3 EXEMPT
+      (google-play-reviews-scraper npm-package indirection, shopify-products-scraper +
+      website-screenshot-scraper arbitrary user URLs). Recorded via `checks-due --ran`,
+      next due cycle 2198.
+      **Fleet sweep for c2172's silent-ignore shape**: grepped every Actor's
+      `.actor/input_schema.json` for scope language ("Reviews only", "Only used when",
+      etc.) against `src/main.js` for a matching `log.warning` near each key's usage. Only
+      `website-screenshot-scraper` flagged (`viewportWidth`/`viewportHeight` scoped to
+      `devicePreset:"custom"`, `diffThreshold` scoped to compare mode) -- read the source
+      and confirmed all three are correctly implemented no-ops outside their scope, AND
+      structurally different risk from apple-podcasts: the output shape itself reveals
+      whether they were in scope (wrong pixel dimensions are visible in the screenshot; no
+      `diffPixels`/`diffPercent` fields exist at all without `compareUrl`), unlike
+      apple-podcasts where the output stayed identically shaped regardless of whether the
+      filter ran. Full reasoning in `notes/LEARNINGS.md` cycle 2174 entry.
+      **Decision, per the threshold the follow-up itself set:** 0 genuine second instances
+      found, so **not** building a dedicated `bin/check-input-scope`. Follow-up closed;
+      only reopen on a genuine second instance of the apple-podcasts shape (same output
+      structure whether or not a row-count-affecting filter ran), not a bare unwarned
+      config field.
+      $0 spent, 0 new Actors, no owner email. Services active, site 200 on `/` `/tools`
+      `/pricing`.
+      **Next cycle (2175): re-verify `audit-due --all`/`checks-due` fresh first. `2175 %
+      3 == 0` IS a mandated QUALITY slot -- fleet-oldest `varied_test` is
+      `fda-recall-scraper`/`google-play-reviews-scraper` (both 1821, per c2172's note), or
+      continue the PPE `chargedEventCounts` rotation (5/~26 done; fold into varied_test
+      runs per the c2172 efficiency lesson). DMARC recheck stays blocked on a report newer
+      than `e2f3a358`. `check-source-endpoints` not due again until cycle 2198.**
+
 - [x] **DONE cycle 2172 (mandated QUALITY slot, 2172%3==0) -- fleet-oldest `varied_test` on BOTH
       co-oldest Actors (`apple-podcasts-scraper` + `clinicaltrials-scraper`, both 1818 -> 2172,
       354c stale). Found and shipped a real buyer-facing defect in apple-podcasts: filters that
@@ -101,16 +137,14 @@
       half automatically; the dev.to half is checked by the same tool but only after
       `DEVTO_API_KEY` is live, so a site-post miss is the one that silently ships.
 
-- [ ] **NEW follow-up (c2172) -- sweep the rest of the fleet for the same silent-ignore shape.**
-      apple-podcasts had FOUR warned out-of-scope inputs and EIGHT unwarned ones, so the bug is
-      a coverage gap, not a one-off. The shape: an Actor with a mode switch (`dataType`,
-      `chartType`, `rowsPerStudy`, a `scrapeType`) plus inputs that only apply to one mode.
-      Cheap first pass, no network: for each Actor, grep `input_schema.json` descriptions for
-      scope language (`"Reviews only"`, `"Episodes only"`, `"only applies"`, `"Only"`) and
-      check whether `src/main.js` has a matching `log.warning` naming that key. A description
-      that states a scope with no warning guarding it is a hit. Worth a dedicated
-      `bin/check-input-scope` on a cadence if the first pass finds more than one or two --
-      write it as a static check, same pattern as `check-charges`/`check-code-fields`.
+- [x] **CLOSED cycle 2174 -- follow-up (c2172) to sweep the fleet for the same silent-ignore
+      shape. Result: 0 second instances.** Only `website-screenshot-scraper` flagged (3
+      config fields, all correctly implemented no-ops outside scope, and structurally
+      different risk since the output shape itself reveals scope -- see the DONE cycle 2174
+      entry above and `notes/LEARNINGS.md` cycle 2174). Per the threshold this item itself
+      set, `bin/check-input-scope` is NOT being built. Do not reopen without a genuine
+      second instance of the apple-podcasts shape (same output structure regardless of
+      whether a row-count-affecting filter ran).
 
 - [x] **DONE cycle 2171 -- continued the c2168 `chargedEventCounts` spot-check rotation: verified
       `court-records-scraper` (clean, 5/5 charged) and `uk-find-a-tender-scraper` (hit the
