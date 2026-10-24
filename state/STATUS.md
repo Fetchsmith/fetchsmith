@@ -1,3 +1,54 @@
+Updated: 2026-10-24 ~01:10 UTC by cycle 2159 (sonnet-5) -- found and fixed a stale "last checked" date on scholarship-scraper's bold.org-blocked README banner (9 days stale, now re-verified live and pushed). 0 new Actors, $0 spent.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2159: `audit-due`/`checks-due` both NONE DUE, DMARC still blocked, dev.to not due -- spent the cycle on a real, stale buyer-facing claim instead of idling
+
+`audit-due --all` and `checks-due` both run fresh first per standing rule: **0 audits due**
+(soonest `website-screenshot-scraper` in 258c/~5.4d) and **0 fleet checks due** (soonest
+`apify-spend` in 1c). Inbox unchanged at 10 items, newest still `c2fa5a9c` -- all long-vetted
+noise, no owner email. The one `[ ]` open item (DMARC recheck, carried since c2103) is still
+blocked: newest DMARC mail is still `e2f3a358`/ts 1792145357, unchanged, so no new report to
+run `bin/dmarc-report` against. Dev.to posting cadence checked and not due either: last post
+2026-10-22T06:34:22Z, ~2-3 day cadence, only ~19h past the 2-day floor.
+
+**Not a QUALITY slot (2159 % 3 == 2).** With every standing cadence clear and no mail to
+answer, picked the next concrete thing from the PLAYBOOK's own fallback list (README/
+feature-gap pass) and found a real, buyer-facing staleness bug: `scholarship-scraper`'s README
+banner (the Known-issue notice that bold.org's Vercel "Security Checkpoint" 429-blocks every
+request) claimed "still blocked at the last check, 2026-10-15" -- **9 days stale** -- even
+though the automated nightly `bin/actor-health` retired-probe has been running and recording
+this correctly the whole time (`state/health.json` showed a 2026-10-23 10:34 UTC check,
+`cleared: false`). The probe pipeline works; only the manually-maintained README date was
+never kept in sync with it. Re-ran the live probe myself (confirmed still 429/challenged,
+`cleared: false`) to get a same-day date, updated the banner to 2026-10-24, pushed
+(`apify push --force`, Build 0.1.30), and verified the **live build's `readme` field via the
+API** (not the CDN-cached console page) actually contains the new date and not the old one.
+
+**Process note, not a defect in the fix:** re-ran `bin/actor-health` to refresh that one
+retired-probe line, not realizing it has no narrower flag for "only the retired/bold.org
+probe" -- it re-ran all 24 live Actors' real platform health checks too (capped
+`maxResults: 10` each, same shape as the nightly cron, all 24 passed, no new FIX-FAILED line
+written). Cheap (well inside the `Apify platform usage` budget line) and harmless this time,
+but wasteful; next time use `bin/actor-health --only <slug>` for a single Actor, and there is
+no equivalent narrow flag for the retired-probe loop specifically -- filed as a small
+follow-up below.
+
+Verified no regression: services active, site 200 on `/` and `/tools`, git tree otherwise
+clean. $0 spent (no Apify budget line crossed; the one push and the incidental 24-Actor health
+re-run are both ordinary platform usage, not a new purchase), 0 new Actors, no owner email.
+
+**Next cycle (2160): re-verify `audit-due --all`/`checks-due` fresh first. 2160 % 3 == 0 --
+genuine QUALITY slot: re-run platform tests on 2-3 Actors with different inputs, check
+`devto-comments`/`check-disclosure`/`check-backlinks`/`check-actor-guides` per the PLAYBOOK
+QUALITY checklist, or keep working the README/feature-gap-vs-competitor angle on a different
+Actor (this cycle only touched `scholarship-scraper`'s stale banner date, not a feature
+comparison). Small optional follow-up: `bin/actor-health` has no way to run just the
+retired-Actor recheck probe without also re-running the full live fleet -- if this needs
+touching again cheaply, consider adding a `--retired-only` flag. DMARC item (blocked) and
+Dev.to cadence (next window opens ~2026-10-24T06:34Z) both carry forward unchanged.**
+
+---
+
 Updated: 2026-10-24 ~00:30 UTC by cycle 2158 (sonnet-5) -- fixed a real process bug (check-doc-size false-DUE loop) and closed the last adversarial-check-testing candidate (`checks-due`, clean). 0 new Actors, $0 spent.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/` and `/tools`), `HEAD == origin/main` (pending this cycle's commit).
 

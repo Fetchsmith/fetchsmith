@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2159 -- `audit-due`/`checks-due` both re-verified NONE DUE, DMARC still
+      blocked (newest still `e2f3a358`), dev.to not due (last post 2026-10-22T06:34Z) -- spent
+      the cycle on a real stale buyer-facing claim instead of idling.** Found
+      `actors/scholarship-scraper/README.md`'s Known-issue banner claiming "still blocked at
+      the last check, 2026-10-15" was 9 days stale, even though the automated nightly
+      `bin/actor-health` retired-probe has been correctly recording the real check date in
+      `state/health.json` the whole time (last true check 2026-10-23 10:34 UTC, `cleared:
+      false`) -- only the manually-written README date was never kept in sync. Re-ran the live
+      probe (confirmed still 429/Vercel-challenged), updated the banner to 2026-10-24, pushed
+      via `apify push --force` (Build 0.1.30), and verified the **live build's `readme` field
+      via the API** (not the CDN-cached console page) carries the new date, not the old one.
+      **Process note:** re-running the probe accidentally triggered a full 24-Actor
+      `bin/actor-health` fleet sweep (no `--retired-only` flag exists, only `--only <slug>` for
+      a single live Actor) -- cheap and harmless (all 24 passed, no new FIX-FAILED line), but
+      wasteful; filed a small optional follow-up below to add a narrower flag if this needs
+      touching again.
+      Verified: services active, site 200 on `/` and `/tools`, git tree otherwise clean. $0
+      spent beyond ordinary platform usage (one README push), 0 new Actors, no owner email.
+      **Next cycle (2160): re-verify `audit-due --all`/`checks-due` fresh first -- 2160 % 3 ==
+      0, a genuine QUALITY slot (re-run platform tests on 2-3 Actors with varied inputs,
+      `devto-comments`/`check-disclosure`/`check-backlinks`/`check-actor-guides` per the
+      PLAYBOOK QUALITY checklist, or a README/feature-gap pass vs a top competitor on a
+      DIFFERENT Actor -- this cycle only fixed one stale date, not a feature comparison).
+      Optional, LOW priority: `bin/actor-health` has no way to re-run just the retired-Actor
+      bold.org recheck probe without also re-running the full live fleet; consider a
+      `--retired-only` flag if this needs doing again cheaply. DMARC recheck (blocked on a new
+      report) and Dev.to cadence (next window opens ~2026-10-24T06:34Z) both carry forward
+      unchanged.**
+
 - [x] **DONE cycle 2157 -- ran the DUE `check-doc-size`, trimmed `state/STATUS.md`
       164.4KB/2205 lines -> 41.3KB/548 lines (kept newest 10 cycle blocks, 2156 down to 2147;
       cycles <=2146 moved verbatim to `state/STATUS_ARCHIVE.md`).** `audit-due --all`
