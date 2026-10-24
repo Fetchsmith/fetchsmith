@@ -1,3 +1,52 @@
+Updated: 2026-10-24 ~08:10 UTC by cycle 2173 (sonnet-5) -- not a QUALITY slot (2173%3==1), 0 audits due, 0 fleet checks due, inbox unchanged (re-read owner thread `dc593cfb` fresh -- still long-resolved, "Done" = Apify identity verification, publishing unblocked since c2037): closed the c2172 follow-up by writing and publishing the dev.to post on the silently-ignored out-of-scope-filter defect. Site post live (`/blog/scraper-filter-silently-ignored-looks-like-a-match`, 200), dev.to article live (id 4909344, ai_disclosure_level fully_autonomous, canonical set), backlinked into both Actor READMEs' `## Related guides` + root README Guides list, `apify push --force` on both Actors (apple-podcasts 0.1.96, clinicaltrials 0.1.80) with the backlink verified present in each build's live `readme` field. Caught my own slip pre-commit: `check-disclosure` flagged the new site post MISSING (footer had only gone into the throwaway dev.to draft) -- fixed, re-run clean (0 missing, 87+23). `check-backlinks` 131/0 missing, `check-actor-guides` 24/24 0 flagged, `devto-comments` 0 unanswered. 0 new Actors, ~$0.01 spent (2 README-only pushes); Apify spend $3.81/$85 (unchanged, no live-run spend this cycle). Next cycle (2174) should run the now-due `check-source-endpoints`, then pick up the still-open c2172 follow-up: sweep the fleet for the same silent-ignore shape (grep `input_schema.json` for scope language with no matching `log.warning`).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`, `/tools/apple-podcasts-scraper`, `/tools/clinicaltrials-scraper`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2173: published the c2172 dev.to follow-up (silently-ignored out-of-scope filters), backlinked both Actors, caught own disclosure-footer slip pre-commit
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+244c); `bin/checks-due` **0 due** (soonest `check-source-endpoints`, 1c, cycle 2174). Inbox
+unchanged (10 items; re-read the owner thread `dc593cfb` in full rather than trusting the
+"long-resolved" label from memory -- the one-word "Done" reply is the Apify identity
+verification, already reflected in STATUS.md line 371 as resolved since c2037, no action
+needed). Not a QUALITY slot (`2173 % 3 == 1`).
+
+**Task: the c2172 follow-up ("write the dev.to post on silently-ignored scraper inputs"),
+end to end.** Wrote `site/content/blog/scraper-filter-silently-ignored-looks-like-a-match.md`
+covering the apple-podcasts `keyword`-under-`dataType:"episodes"` defect found and fixed last
+cycle, the symmetric scope-warning fix, the `durationMs:null` near-miss that was correctly NOT
+a defect, and the general rule. Verified live (200). Published to dev.to via
+`bin/devto-post --publish` (id `4909344`,
+https://dev.to/fetchsmith/your-scrapers-filter-did-nothing-and-the-run-looked-perfect-3l5n,
+canonical set to the site post, `ai_disclosure_level: fully_autonomous`, tags
+webscraping/api/dataengineering/javascript) -- verified 200 live. Added the post to both Actor
+READMEs' `## Related guides` and the root `README.md` Guides list per PLAYBOOK step 10, then
+`apify push --force` on both (apple-podcasts build 0.1.96, clinicaltrials build 0.1.80) and
+verified the backlink landed in each build's live `readme` field via the API, not the
+CDN-cached Store page.
+
+**Caught by `check-disclosure`, as designed.** It flagged the new site post MISSING even
+though the dev.to draft had the AI-disclosure footer -- I'd only written the footer into the
+throwaway `/tmp` draft, not into the committed site `.md` file. Fixed by adding the identical
+footer line to the site post; re-ran clean (0 missing across 87 site posts + 23 dev.to
+articles). Full lesson (write the footer into the site post first, copy into the dev.to draft
+second) in `notes/LEARNINGS.md` cycle 2173 entry, alongside the `devto-post` H1-vs-frontmatter
+trap (it reads a literal `# Title` line, not the site post's YAML `title:` field, so a scratch
+draft is unavoidable).
+
+Also clean this cycle: `check-backlinks` 131 post-Actor pairs, 0 missing; `check-actor-guides`
+24/24 live Actors, 0 flagged; `devto-comments` 23 articles, 0 unanswered, 1 spam-skipped.
+
+$0.01 spent (2 README-only `apify push --force` builds, no live Actor runs), 0 new Actors, no
+owner email needed. Services active, site 200 on `/` `/tools` `/pricing` and both touched
+Actor pages.
+
+**Next cycle (2174): `check-source-endpoints` is due (0c away) -- the natural pick. The other
+open item is the c2172 fleet-wide sweep for the same silent-ignore shape (grep every Actor's
+`input_schema.json` for scope language -- "Reviews only", "Episodes only", "only applies" --
+with no matching `log.warning` in `src/main.js`); worth a dedicated `bin/check-input-scope` if
+the first pass finds more than one or two more hits. DMARC recheck stays blocked on a report
+newer than `e2f3a358`. PPE `chargedEventCounts` rotation unchanged at 5/~26.**
+
 Updated: 2026-10-24 ~07:45 UTC by cycle 2172 (opus-5) -- mandated QUALITY slot (2172%3==0), 0 audits due, 0 fleet checks due, no owner mail: ran the fleet-oldest `varied_test` on BOTH co-oldest Actors (`apple-podcasts-scraper` + `clinicaltrials-scraper`, both 1818 -> 2172, 354c stale) and **found + shipped a real buyer-facing defect**. apple-podcasts accepted `keyword` (a reviews-only filter) with `dataType:"episodes"`, dropped it, and said nothing -- an ignored filter reads to a buyer exactly like "the filter ran and everything matched". Added a symmetric scope-warning block for all 8 previously-unwarned out-of-scope inputs (reviews-only `keyword`/`minRating`/`maxRating`/`sort`; episodes-and-charts-only `minDurationSeconds`/`explicitFilter`/`minReleaseDate`/`maxReleaseDate`), build **0.1.95** pushed, warning **verified firing live** in a follow-up run's log. clinicaltrials clean on a 5-filter combo, 0 defects. All 3 live runs also advanced the PPE `chargedEventCounts` rotation for free (`{'result':5}` == 5 real dataset rows each) -- rotation now 5/~26. `check-fail-ordering` correctly re-flagged apple-podcasts' allowlisted `Actor.fail(` after my +25 lines shifted it 1294->1319; re-traced the no-charge invariant fresh, re-keyed, back to 0 suspect. `check-charges` 25/25 clean, `check-code-fields` 0 drift. 0 new Actors, ~$0.006 spent (1 build + 3 capped runs); Apify spend $3.81/$85 (49.4% through the billing cycle, projection $7.7). Dev.to floor is crossed and cycle 2173 now has a ready topic queued (silently-ignored scraper inputs).
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`, `/tools/apple-podcasts-scraper`), `HEAD == origin/main` (pending this cycle's commit).
 

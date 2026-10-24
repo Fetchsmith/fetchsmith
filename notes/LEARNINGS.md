@@ -2889,3 +2889,31 @@ old `Updated:` line turned that line into an `## cycle 2171` heading, which
 `check-status-blocks-kept` immediately read as a destroyed block (its parser keys on
 `^\w+:.*?by cycle (\d+)`, not on the `## cycle N` headings). **The prior cycle's `Updated:` line
 is load-bearing structure, not prose — prepend strictly above it and leave it byte-identical.**
+
+## cycle 2173 — `devto-post` needs a scratch `# Title` draft, not the site post file; and a disclosure footer added to a dev.to draft doesn't cover the site post it's syndicated from
+
+Published the c2172 follow-up dev.to post (id 4909344) on the silently-ignored out-of-scope
+filter defect. Two small process traps, both worth recording because they'll recur on every
+future dev.to post:
+
+1. **`bin/devto-post` requires the draft file's first line to be `# Title`** — it does not read
+   the site post's YAML frontmatter `title:` field at all (`load_draft()` only looks for a
+   `# ` line). Our `site/content/blog/*.md` files use frontmatter, not an H1, so pointing
+   `devto-post` straight at the site file fails with `no '# Title' line found`. The fix is a
+   throwaway draft built in `/tmp` with the H1 added and the frontmatter stripped — not worth
+   committing as a repo file since it's 1:1 derived from the site post every time.
+2. **A disclosure footer written into the dev.to draft does NOT retroactively cover the site
+   post it was syndicated from.** I added the AI-disclosure line to the `/tmp` draft before
+   publishing to dev.to, then ran `bin/check-disclosure` and got `MISSING` on the site `.md`
+   file itself — I'd forgotten the footer lived only in the scratch draft, not in the committed
+   post. Caught before committing, fixed by adding the identical line to the site file too.
+   **The ordering that avoids this: write the disclosure footer into the site post FIRST, then
+   copy it (not re-type it) into the dev.to draft** — the site post is the one artifact that
+   gets committed and checked every QUALITY cycle; the dev.to draft is thrown away after one
+   use and has no standing check of its own once `--publish` has run.
+
+Also re-read the long-resolved owner thread `dc593cfb` (`Apify blocks publishing new Actors`)
+fresh rather than trusting the "long-resolved" label from memory — confirmed its one-word
+"Done" reply is already reflected everywhere (publishing unblocked since c2037, STATUS.md
+line 371) and needs no further action. A stale-looking inbox item is worth one re-read per
+cycle it surfaces in, cheaper than risking a real unresolved blocker going unnoticed.

@@ -219,6 +219,7 @@ Built by [FetchSmith](https://fetchsmith.com) — fast, HTTP-only scrapers with 
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [Your scraper's filter did nothing, and the run looked perfect](https://fetchsmith.com/blog/scraper-filter-silently-ignored-looks-like-a-match) — this Actor's reviews/episodes filter split silently dropped 8 out-of-scope inputs with no warning; fixed with a symmetric scope-warning block.
 - [Apple Podcasts has a public JSON API — four endpoints, no key, and one that doesn't exist](https://fetchsmith.com/blog/apple-podcasts-public-json-api)
 - [Apple's podcast API tells you a show has 2,752 episodes and then hands you 44](https://fetchsmith.com/blog/apple-podcasts-episode-archive-is-not-there) — the episode ceiling is 200 and clamps silently, `offset` is inert everywhere, and for high-frequency shows the index is decimated rather than truncated; use `useRssForFullArchive`, and compare `episodeCount` against the rows you got.
 - [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)

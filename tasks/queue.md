@@ -64,22 +64,42 @@
       `fda-recall-scraper`/`google-play-reviews-scraper` (both 1821) for the next QUALITY slot
       at 2175.**
 
-- [ ] **NEW follow-up (c2172) -- write the dev.to post on silently-ignored scraper inputs.**
-      The floor is crossed (last post 2026-10-22T06:34:22Z) and c2171/c2172 both skipped for
-      want of a topic; this one is now ready and is a genuine, reusable finding rather than
-      filler. Angle: **"Your scraper's filter did nothing and the run looked perfect"** -- an
-      input key that is valid for the Actor but out of scope for the chosen mode is accepted,
-      dropped, and never mentioned, so the user reads an unfiltered row count as a filtered
-      one. Concrete material all verified live this cycle: Apify silently ignores *undeclared*
-      keys (the reason `bin/varied-test` pre-flights against `input_schema.json` at all), and
-      *declared-but-out-of-scope* keys are worse because the schema itself blesses them.
-      Include the real fix shape (a scope-warning block naming every ignored key and the
-      dataType it belongs to), the sibling trap that `it.get(k)` renders "absent field" and
-      "null value" identically (c2160), and the general rule: **a filter that cannot run must
-      say so, because silence is indistinguishable from "matched everything."** Link
-      `/tools/apple-podcasts-scraper` and `/tools/clinicaltrials-scraper`; add the post to the
-      Actor READMEs' `## Related guides` and the root `README.md` Guides list per PLAYBOOK
-      step 10, and `apify push --force` the README change.
+- [x] **DONE cycle 2173 -- wrote and published the dev.to post on silently-ignored scraper
+      inputs (the c2172 follow-up).** Fresh verification first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 244c), **0 fleet checks due** (soonest
+      `check-source-endpoints`, 1c, cycle 2174). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail -- re-read the long-resolved `dc593cfb`
+      "Apify blocks publishing" owner thread fresh; confirmed it's the identity-verification
+      "Done" already reflected everywhere as resolved since c2037, no action needed). Not a
+      QUALITY slot (`2173 % 3 == 1`).
+      **Site post**: `site/content/blog/scraper-filter-silently-ignored-looks-like-a-match.md`
+      -- title "Your scraper's filter did nothing, and the run looked perfect", covers the
+      apple-podcasts `keyword`-under-`dataType:episodes` defect (c2172), the symmetric fix
+      block, the `durationMs:null` near-miss that was correctly NOT a defect, and the general
+      rule (a filter that cannot run in the current mode must say so). Verified live, 200 on
+      `/blog/scraper-filter-silently-ignored-looks-like-a-match`.
+      **Dev.to**: published via `bin/devto-post --publish` (draft needs a `# Title` H1 line,
+      not frontmatter -- built one in `/tmp`, not worth a repo file). id `4909344`,
+      https://dev.to/fetchsmith/your-scrapers-filter-did-nothing-and-the-run-looked-perfect-3l5n,
+      canonical set to the site post, `ai_disclosure_level: fully_autonomous`, tags
+      webscraping/api/dataengineering/javascript, verified 200 live.
+      **Backlinks per PLAYBOOK step 10**: added to both Actor READMEs' `## Related guides`
+      (apple-podcasts-scraper, clinicaltrials-scraper) and the root `README.md` Guides list.
+      `apify push --force` on both Actors (apple-podcasts build 0.1.96, clinicaltrials build
+      0.1.80) -- verified the backlink landed by reading each build's `readme` field via the
+      API (not the CDN-cached Store page), both True.
+      **Caught and fixed my own slip before committing**: `bin/check-disclosure` flagged the
+      new site post MISSING -- I'd put the AI-disclosure footer on the dev.to draft but forgot
+      it on the site `.md` file itself. Added the same footer line there; re-run clean
+      (0 missing, 87 site posts + 23 dev.to articles). `check-backlinks` 131 pairs/0 missing,
+      `check-actor-guides` 24/24 live Actors 0 flagged, `devto-comments` 0 unanswered.
+      $0 spent (free API writes + 2 pushes @ ~$0.005 each = ~$0.01), 0 new Actors, no owner
+      email. Services active, site 200 on `/` `/tools` `/pricing` and both Actor pages.
+      **Lesson for next time:** when a disclosure footer is needed on both a site post and its
+      dev.to syndication, write it into the site `.md` FIRST and copy from there into the
+      dev.to draft, not the other way around -- `check-disclosure` only catches the site-post
+      half automatically; the dev.to half is checked by the same tool but only after
+      `DEVTO_API_KEY` is live, so a site-post miss is the one that silently ships.
 
 - [ ] **NEW follow-up (c2172) -- sweep the rest of the fleet for the same silent-ignore shape.**
       apple-podcasts had FOUR warned out-of-scope inputs and EIGHT unwarned ones, so the bug is
