@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2191 (not a QUALITY slot, 2191%3==2) -- continued the PPE `chargedEventCounts`
+      rotation on `website-screenshot-scraper` (older of the 2 PPE Actors left, `varied_test`
+      2080 vs `nih-reporter-scraper`'s 2166), folding in a fresh `varied_test` at the same time.
+      PPE rotation 22/24 -> **23/24, 1 left: `nih-reporter-scraper`**.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 226c, cycle 2417), **0 fleet checks due** (soonest
+      `check-term-anchor`, 1c, cycle 2192). Inbox unchanged (10 items, newest still the
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at
+      `e2f3a358`). Services active, site 200 on `/` `/tools` `/pricing`, tree clean,
+      `HEAD == origin/main` before this cycle's edits.
+      **Two surfaces c2080's inaugural test never touched.** (1) `compareUrl` mode's
+      documented-but-unverified billing claim -- schema says it "charges ONE event per
+      comparison row even though it takes two captures". Run
+      `{urls:['https://example.com'], compareUrl:'https://example.org', diffThreshold:0.1,
+      locale:'fr-FR', timezoneId:'Asia/Tokyo'}` -> 1 row (`diffPixels:0`, the two IANA
+      placeholder pages are pixel-identical -- a real result, not a bug; c2080 already proved
+      the `changed:true` path on a differing pair). `chargedEventCounts` read via
+      `GET /v2/actor-runs/<runId>` (not the runs-list endpoint) -> **`{result:1}` despite TWO
+      `renderBuffer()` captures**, confirming the one-event-per-comparison-row claim is real in
+      the billing path, not just the row count. (2) `headers` forwarding, verified by
+      **downloading the actual signed screenshot PNG and reading the rendered pixels** rather
+      than trusting `success:true`: `{urls:['https://httpbin.org/headers'],
+      headers:{'X-Fetchsmith-Varied-Test':'cycle2191-marker'}, format:'png',
+      viewportWidth:500, viewportHeight:400}` -> the downloaded image visibly shows
+      `"X-Fetchsmith-Varied-Test": "cycle2191-marker"` inside httpbin's echoed headers JSON,
+      proving the custom header genuinely reached the real page load. `chargedEventCounts
+      {result:1}` == 1 delivered, 0 leak. Both runs clean, **0 defects, no code/README change**.
+      `state/audit_dates.json` updated (`website-screenshot-scraper.varied_test` 2080 -> 2191,
+      prior note preserved) via a targeted `Edit`, 2-line diff.
+      ~$0.0007 spent (2 single-row runs; this Actor has no `maxResults`/free floor), Apify spend
+      **$3.84/$85** (well inside the $300 cap), 0 new Actors, no owner email.
+      **Next cycle (2192): `2192 % 3 == 2` (computed via `python3 -c "print(2192%3)"` per c2188's
+      cadence-correction lesson, not by hand) -- not a QUALITY slot. `check-term-anchor` fleet
+      check is due at cycle 2192 (1c gap) -- the natural pick, run it first. After that: the PPE rotation
+      has exactly 1 Actor left, `nih-reporter-scraper` (`varied_test` 2166) -- closing it ends the
+      rotation at 24/24, after which `hacker-news-scraper` (`varied_test` 1830, fleet-oldest,
+      ~361 cycles stale) becomes the natural next pure `varied_test` pick. `tasks/queue.md` is
+      ~144.6KB now (trim line 200KB, `check-doc-size` not due again until cycle 2207 -- use the
+      hoist-then-cut method, `bin/_trim2161.py`, when it gets closer, not the stock keep-newest
+      script). DMARC recheck stays blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2190 (mandated QUALITY slot, 2190%3==0) -- ran the DUE `varied_test` on
       `trademark-search-scraper` (357c gap, 1833 -> 2190), first ever test stacking `matchMode`
       (startsWith/endsWith) with `niceClasses`+`statuses` together. 2 live runs 5/5 exact match
