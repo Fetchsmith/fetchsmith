@@ -128,6 +128,16 @@ HTML-file export but still has no element selector, device preset or diff mode. 
 `moonweil`'s own prices re-verified unchanged (tiers $0.00089→$0.00061 and flat $0.004
 respectively) — no drift since 2026-10-19.
 
+**Two more rivals surfaced 2026-10-24** by Apify's rental-pricing-deprecation auto-conversion
+(both were FLAT_PRICE_PER_MONTH rentals until 2026-10, invisible to every per-result price
+comparison before that): `dz_omar/ultimate-screenshot` (263 users) has real overlap — 100+
+device presets and, unlike us, video (MP4) and GIF export — but its PAY_PER_EVENT ladder charges
+$0.007/page-capture at its lowest tier down to $0.005 at GOLD and above, 2.5x–3.5x our flat
+$0.002; it's a feature add for buyers who need video/GIF, not a price threat.
+`scrapeai/screenshot-downloader` (6 users, flat $0.00249/result) is a bare full-or-partial PNG/
+JPEG capture with no element selector, device preset, raw-HTML input, PDF or diff mode — the
+same narrow gap as the three already-ruled-out listings above, just newly visible.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 

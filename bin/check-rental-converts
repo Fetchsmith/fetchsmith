@@ -104,6 +104,7 @@ NICHE_TERMS = {
     "sam-gov-opportunities-scraper": "sam.gov",
     "remote-jobs-scraper": "remote jobs",
     "sec-insider-trades-scraper": "sec insider trading",
+    "website-screenshot-scraper": "screenshot",
 }
 
 

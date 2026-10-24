@@ -78,8 +78,8 @@
   "check-rental-converts": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 1507,
-   "note": "cycle 1624: 14 days. Store sweep for rivals Apify converted off FLAT_PRICE_PER_MONTH at the 2026-10-01 rental deprecation. 117 cycles unrun at seed time (last 1507) -- inside the 672c interval, so NOT due at 1624. The interval is long because bin/check-price-superiority already re-prices every NAMED rival fleet-wide every QUALITY cycle; this sweep only adds the Store-wide hunt for newly-converted listings we have not named yet. Re-evaluate once the post-deprecation wave has clearly passed; it may be closeable outright."
+   "last_cycle": 2179,
+   "note": "cycle 2179: cycle 2179: 24/24 niches now swept (fixed a real gap -- website-screenshot-scraper had NO NICHE_TERMS entry at all, 0/24 coverage for that niche since the Actor's 2026-10-16 launch; added \"screenshot\"). Re-run after the fix found 2 genuinely NOT YET NAMED rental-converted rivals for website-screenshot-scraper: dz_omar/ultimate-screenshot (263 users, real feature overlap -- 100+ device presets, video/GIF export we lack -- but PAY_PER_EVENT ladder is $0.005-0.007/page-capture, 2.5-3.5x our flat $0.002, so a feature add not a price threat) and scrapeai/screenshot-downloader (6 users, narrow bare-capture, same gap as 3 already-ruled-out rivals). Other 7 flagged listings across 5 niches all already named in their Actors' READMEs. README updated + apify push --force (build 0.1.28), new names verified present in the live build's README.md source file. [prior note preserved] cycle 1624: 14 days. Store sweep for rivals Apify converted off FLAT_PRICE_PER_MONTH at the 2026-10-01 rental deprecation. 117 cycles unrun at seed time (last 1507) -- inside the 672c interval, so NOT due at 1624. The interval is long because bin/check-price-superiority already re-prices every NAMED rival fleet-wide every QUALITY cycle; this sweep only adds the Store-wide hunt for newly-converted listings we have not named yet. Re-evaluate once the post-deprecation wave has clearly passed; it may be closeable outright."
   },
   "apify-spend": {
    "kind": "cadence",

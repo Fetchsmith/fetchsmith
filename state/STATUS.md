@@ -1,5 +1,80 @@
+Updated: 2026-10-24 ~11:10 UTC by cycle 2179 (sonnet-5) -- not a QUALITY slot (2179%3==1), inbox unchanged, no owner mail: ran the DUE `check-rental-converts` fleet check (672c gap) and found + fixed a real fleet-coverage gap -- `website-screenshot-scraper` had NO `NICHE_TERMS` entry at all, so it had been invisible to this sweep since its 2026-10-16 launch (0/24 niches covered for it, silently skipped not erroring, exactly the "loud warning, not a verdict" trap the tool's own docstring names). Added `"screenshot"`, re-ran: surfaced 2 genuinely NOT-YET-NAMED rental-converted rivals for that Actor -- `dz_omar/ultimate-screenshot` (263 users, real feature overlap via 100+ device presets + video/GIF export we lack, but priced $0.005-0.007/page-capture vs our flat $0.002, so a feature gap not a price threat) and `scrapeai/screenshot-downloader` (6 users, narrow bare-capture, ruled out like 3 prior narrow rivals). Updated the Actor's README competitor section with both, `apify push --force` (build 0.1.28), verified the new names landed in the live build's `README.md` source file (the account's top-level `readme` field is empty/deprecated on this Actor -- had to read `versions[].sourceFiles` instead, a correction to the "verify via the live readme field" habit prior cycles used). Other 7 flagged listings across 5 niches were all already named. Recorded via `bin/checks-due --ran`, next due cycle 2851. `bin/usage-trend` glanced per the c2168 watch: `trademark-search-scraper` unchanged (+2/24h, 3 users, 0 bookmarks/reviews) -> no escalation. $0.005 spent (1 README-only build), Apify spend $3.82/$85 (well inside CLAUDE.md's $300 cap), 0 new Actors, no owner email.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`, `/tools/website-screenshot-scraper`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2179: ran the DUE check-rental-converts fleet check, found and fixed a real coverage gap (website-screenshot-scraper had never had a NICHE_TERMS entry), surfaced + documented 2 new rental-converted rivals for it
+
+Fresh verification first: `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`,
+238c, cycle 2417); `bin/checks-due` **1 due: `check-rental-converts`** (672c gap, last run cycle
+1507) -- the natural pick per c2178's own next-cycle note. Inbox unchanged (10 items, newest
+still the `c2fa5a9c` IP-lease spam, no owner mail; DMARC carry-forward still blocked at
+`e2f3a358`). Not a QUALITY slot (`2179 % 3 == 1`). Services and git state verified: 3 services
+active, site 200 on `/` `/tools` `/pricing`, tree clean before this cycle's edits.
+
+**`check-rental-converts` is read-only (GETs only, no Actor runs, no writes) per its own
+docstring, so it was run directly without extra caution.** First pass: 23 niches searched, 407
+listings checked, 7 flagged as newly rental-converted, all tagged "already named" (real rivals
+already written into the relevant Actor READMEs). But the run also emitted `WARN: no
+NICHE_TERMS search term for: website-screenshot-scraper -- not swept` -- a loud warning, not a
+failure, exactly as the script's docstring says it's designed to do for a slug missing from its
+hand-curated `NICHE_TERMS` map.
+
+**Read the warning rather than letting it pass silently, since that's precisely the shape of bug
+this fleet has been burned by before (c2080's audit-due blind-spot for a brand-new Actor).**
+Checked `NICHE_TERMS`: `website-screenshot-scraper` (live since 2026-10-16, Actor #25) was never
+added. That means this fleet check had swept 0/24 niches for it since launch -- 8 days of zero
+rental-conversion coverage for an Actor whose own `competitor_audit` note (c2081) already
+confirmed "screenshot" is the right query term (used manually that cycle). Added
+`"website-screenshot-scraper": "screenshot"` to the dict, `python3 -m py_compile` clean, re-ran.
+
+**Second pass: 24/24 niches, 422 listings, 9 flagged.** The same 7 "already named" hits recurred
+(unchanged) plus 2 new ones for the now-covered niche, both genuinely NOT YET NAMED:
+- `dz_omar/ultimate-screenshot` (263 users, 10/30d) -- real feature overlap (100+ device
+  presets, plus video/MP4 and GIF export, which we don't offer at all), converted to
+  PAY_PER_EVENT 2026-10-16. Read its full tiered pricing live rather than trust the Store
+  listing: `page-capture` is $0.007 at the FREE tier down to $0.005 at GOLD+, 2.5x-3.5x our flat
+  $0.002 -- a genuine feature differentiator, not a price threat. Decided it still belongs in
+  the README (263 users is bigger than 3 of the 6 rivals already named there) so a buyer
+  comparing options sees the real tradeoff (cheaper here, video/GIF there).
+- `scrapeai/screenshot-downloader` (6 users, flat $0.00249/result) -- bare full-or-partial
+  PNG/JPEG capture, no element selector, device preset, raw-HTML input, PDF or diff mode. Same
+  narrow gap as the three rivals the c2081 competitor_audit already ruled out for the identical
+  reason -- noted, not added to the README (consistent with that precedent).
+
+**README updated and pushed.** Added a dated 2026-10-24 paragraph to
+`actors/website-screenshot-scraper/README.md`'s competitor section (after the existing
+2026-10-22 `competitor_audit` paragraph, same style) naming both findings with the reasoning
+above. `apify push --force` -> build **0.1.28**, SUCCEEDED.
+
+**Verification caught a stale habit from prior cycles.** Tried to verify the backlink the usual
+way (`GET /v2/acts/<slug>` -> read the top-level `readme` field, as c2173/c2173 described doing
+for other Actors) -- it came back empty (key absent, defaulted to `''`). Read the full actor
+record's keys instead of assuming a transient glitch: there is no top-level `readme` field on
+this account's response at all. The real content lives in `versions[0].sourceFiles`, one entry
+per file in the pushed source, `name == "README.md"`. Read that instead: both `dz_omar` and
+`scrapeai` strings present, confirming the push landed. **Correction for future verification
+steps:** check `versions[].sourceFiles` for `README.md`, not a top-level `readme` field, which
+may not exist on every account/Actor combination.
+
+Recorded via `bin/checks-due --ran check-rental-converts`, full note, next due cycle 2851 (a
+672-cycle gap matching the tool's cadence). `bin/usage-trend` glanced per the c2168 standing
+watch: `trademark-search-scraper` unchanged (+2/24h, 3 users, 54 total, 0 bookmarks/0 reviews)
+-- no escalation, a run-count climb alone never triggers an owner email.
+
+$0.005 spent (1 README-only `apify push --force` build, no live Actor runs); `bin/apify-spend`
+$3.82/$85 hard cap, well inside CLAUDE.md's $300 total budget. 0 new Actors, no owner email.
+Services active, site 200 on `/` `/tools` `/pricing` and `/tools/website-screenshot-scraper`.
+
+**Next cycle (2180): re-verify `audit-due --all`/`checks-due` fresh first. `2180 % 3 == 2`, not
+a QUALITY slot. `check-rental-converts` is not due again until cycle 2851 -- far out. Open items
+unchanged: PPE `chargedEventCounts` rotation (13/24, remaining 11 listed on its queue.md item,
+`eu-ted-tenders-scraper`/`steam-reviews-scraper` highest-traffic), `shopify-products-scraper`'s
+`varied_test` still open from c2178 (genuinely-new combo candidates noted there), DMARC recheck
+(blocked on a report newer than `e2f3a358`), `trademark-search-scraper` buyer-intent watch
+(run-count alone never escalates). If nothing else is due and `2181` (the next mandated QUALITY
+slot) hasn't arrived, the PPE rotation or the open shopify `varied_test` are the natural picks.**
+
 Updated: 2026-10-24 ~10:40 UTC by cycle 2178 (sonnet-5) -- mandated QUALITY slot (2178%3==0), inbox unchanged, no owner mail: varied-tested `fec-campaign-finance-scraper`'s fleet-tied-oldest `varied_test` record (1824) with a genuinely new 5-filter disbursements stack (committeeId+recipientState+minAmount+maxAmount+date range+explicit electionYear) -- cycle 945 had only ever combined 3 filter groups in that mode, never `state`. Predicted exactly via a free direct FEC API curl, matched live 5/5 after discovering (not a bug) that the Actor defaults `electionYear` to the current cycle so it must be passed explicitly to test a past year's date window; negative control (absurd amount range) correctly collapsed to 0. Folded the PPE `chargedEventCounts` rotation into the same run for free (12/24 -> 13/24). `shopify-products-scraper` (also tied at 1824) is left open for next cycle. $0.0007 spent, 0 new Actors, no owner email.
-Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main`.
 
 ## cycle 2178: varied-tested fec-campaign-finance-scraper's disbursements mode with a new 5-filter stack (committeeId+state+amount range+date range+electionYear); clean, 0 defects; PPE rotation 12/24 -> 13/24
 

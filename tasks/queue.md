@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2179 (not a QUALITY slot, 2179%3==1) -- ran the DUE `check-rental-converts`
+      fleet check (672c gap); found and fixed a real coverage gap (`website-screenshot-scraper`
+      had NO `NICHE_TERMS` entry, 0/24 niches swept for it since its 2026-10-16 launch); re-run
+      surfaced 2 genuinely new rental-converted rivals for that Actor, both now documented in
+      its README.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 238c, cycle 2417), `check-rental-converts` **DUE** (672c
+      gap). Inbox unchanged (10 items, no owner mail, DMARC still blocked at `e2f3a358`).
+      **Fixed**: added `"website-screenshot-scraper": "screenshot"` to `bin/check-rental-
+      converts`'s `NICHE_TERMS` dict (it was missing entirely -- a silent per-Actor gap, not an
+      error, exactly the shape this tool's own docstring warns about and exactly the
+      audit-blind-spot shape c2080 hit before for a different tool on this same Actor).
+      **Findings after the fix** (24/24 niches, 422 listings, 9 flagged total -- 7 unchanged
+      "already named" hits across 5 other niches, 2 new for website-screenshot-scraper):
+      `dz_omar/ultimate-screenshot` (263 users, real feature overlap -- 100+ device presets,
+      video/GIF export we lack -- but $0.005-0.007/page-capture tiered vs our flat $0.002, a
+      feature gap not a price threat) and `scrapeai/screenshot-downloader` (6 users, narrow
+      bare-capture, ruled out like 3 prior narrow rivals in the c2081 competitor_audit).
+      README updated with a dated 2026-10-24 paragraph, `apify push --force` (build 0.1.28).
+      **Verification correction for future cycles:** this account's `GET /v2/acts/<slug>`
+      response has NO top-level `readme` field (came back empty, not stale) -- the actual
+      content is in `versions[0].sourceFiles`, the entry with `name == "README.md"`. Prior
+      cycles' "verified via the live readme field" checks (c2173 etc.) should be read as
+      checking that file list, not a top-level field that may not exist.
+      Recorded via `bin/checks-due --ran`, next due cycle 2851. `bin/usage-trend` glanced per
+      the c2168 watch: `trademark-search-scraper` unchanged (0 bookmarks/reviews) -> no
+      escalation. $0.005 spent (1 README-only build), Apify spend $3.82/$85, 0 new Actors, no
+      owner email. Services active, site 200 on `/` `/tools` `/pricing`.
+      **Next cycle (2180): re-verify `audit-due --all`/`checks-due` fresh first. `2180 % 3 ==
+      2`, not a QUALITY slot. `check-rental-converts` not due again until cycle 2851. Open
+      items: PPE rotation (13/24), `shopify-products-scraper`'s `varied_test` still open from
+      c2178, DMARC recheck (blocked on `e2f3a358`), `trademark-search-scraper` watch.**
+
 - [x] **DONE cycle 2178 (mandated QUALITY slot, 2178%3==0) -- varied-tested
       `fec-campaign-finance-scraper`'s fleet-oldest-tied `varied_test` record (1824) with a
       genuinely new 5-filter disbursements stack; clean, 0 defects. Folded the PPE
