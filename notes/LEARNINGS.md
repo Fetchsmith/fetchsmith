@@ -2950,3 +2950,53 @@ zero real hits, so no dedicated recurring check is being built. If a future QUAL
 finds a SECOND real instance of the apple-podcasts shape (same output structure regardless of
 whether a row-count-affecting filter ran), that's the trigger to revisit this decision, not a
 bare "field X is unwarned."
+
+## Cycle 2176 (2026-10-24, opus-5) — charge-path rotation reaches 10/~26; the new lesson is that a per-row event count equal to the row count proves nothing on its own
+
+BUILD slot (`2176 % 3 == 1`) with **no build candidate** — `NICHES.md` c2093 closed niche-hunting
+across every axis tried, and `bin/revenue` still reads 25 Actors / 46 users / **0 bookmarks / 0
+reviews / $0 booked**. Spent the slot on the open `chargedEventCounts` rotation instead, on the 3
+unverified PPE Actors with the most `totalRuns` (`shopify-products-scraper` 810,
+`hacker-news-scraper` 796, `app-store-reviews-scraper` 785). All 3 clean; rotation 7 -> 10 of ~26.
+
+**The reusable lesson, and it is a real gap in how the first 7 spot-checks were done:**
+`shopify-products-scraper` is the first MULTI-event Actor the rotation has reached — `result`
+(per product) plus `productDetail` (per product enriched under `detailLevel:"full"`). A capped
+3-row run read `chargedEventCounts = {result: 3, productDetail: 3}` against exactly 3 dataset
+rows. Under the rotation's original assertion (`charged == rows pushed`) that is a clean pass on
+both events, and I nearly recorded it as one. **It isn't a pass, because `productDetail` is not a
+per-row event — it is a conditional one.** `src/main.js:657` only charges it when at least one
+detail-only field came back:
+
+```js
+if (seoTitle == null && seoDescription == null && ratingValue == null
+    && !detailVariants.length && !hasSubscriptionOption) return; // nothing found, nothing charged
+```
+
+So `productDetail == rowCount` is the correct reading **only if every row genuinely carries
+detail data** — and it is *also* exactly what a missing `return` in that guard would produce. The
+counter cannot distinguish "charged 3 times, earned 3 times" from "charged 3 times, earned 0".
+Resolved it by reading the delivered fields rather than the counter: all 3 rows had a real
+`seoTitle`, all 3 a real `totalInventory` (8 / 172 / 211 — a `.js`-route-only field the bulk
+`products.json` feed does not carry), one a real `ratingValue: 5`. Genuinely earned, no
+over-charging.
+
+**Generalisation for the remaining 16 PPE Actors: classify each billable event as per-row or
+conditional BEFORE picking the assertion.** For a per-row event, `charged == rows` is sufficient.
+For a conditional event, `charged == rows` is the *suspicious* case and needs a field-level check
+of the delivered rows; `charged < rows` is the reassuring one. Same shape as the c2174 silent-
+ignore lesson — a number that looks right because it matches another number is not evidence; you
+have to look at what was actually delivered. (Grep an Actor for more than one distinct
+`Actor.charge({ eventName:` literal to find the multi-event ones; shopify is the only one found
+so far.)
+
+**Also re-confirmed, cheaply:** the c2171 lag trap is real but bounded — all 3 runs' counters were
+already final at first poll and identical across 4 polls over ~75s. And the c2171 free-floor trap
+needs a grep, not a guess: `FREE_PER_RUN`/`freeGiven` is absent from all 3 of these Actors, which
+is why `maxResults: 3-4` was safe here where `maxResults: 5` read a misleading `0` on
+`uk-find-a-tender-scraper`.
+
+$0.0015 spent (3 capped runs, `usageTotalUsd` 0.0009 + 0.0002 + 0.0004), 0 new Actors, 0 builds,
+no owner email. `trademark-search-scraper` watch glanced: 54 runs30d (+2/24h), 3 users, still 0
+bookmarks and 0 reviews — no escalation, per the c2168 rule that a run-count climb alone can never
+substantiate a revenue claim.

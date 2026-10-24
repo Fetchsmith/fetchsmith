@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2176 (BUILD slot, 2176%3==1, but no build candidate exists -- niche hunting
+      is exhausted per NICHES.md c2093, so spent the slot on the revenue-PROTECTING rotation
+      instead) -- charge-path spot-checked the fleet's 3 highest-`totalRuns` PPE Actors;
+      all 3 clean, rotation 7/~26 -> 10/~26.**
+      `audit-due --all`/`checks-due` re-verified fresh first: **0 audits due** (soonest
+      `website-screenshot-scraper`, 241c, cycle 2417), **0 fleet checks due** (soonest
+      `check-rental-converts`, 3c, cycle 2179). Inbox unchanged (10 items, newest still
+      `c2fa5a9c` IP-lease spam, no owner mail; DMARC still blocked at `e2f3a358`).
+      **Why this and not a build:** `bin/revenue` reads 25 Actors / 46 users / 0 bookmarks /
+      0 reviews / $0, and `NICHES.md` c2093 closed niche-hunting across every axis tried. A
+      26th Actor has near-zero expected value; an Actor whose charge path is silently broken
+      earns $0 forever and we CANNOT detect it from earnings (Apify exposes no earnings
+      endpoint -- `bin/revenue:76`), so the only observable proxy is `chargedEventCounts`.
+      19 PPE Actors were still unverified at cycle start; picked the 3 with the most
+      `totalRuns` (`shopify-products-scraper` 810, `hacker-news-scraper` 796,
+      `app-store-reviews-scraper` 785) since those are where a leak would cost most.
+      Grepped all 3 for `FREE_PER_RUN`/`freeGiven` first per the c2171 trap -- none has a free
+      floor, so small `maxResults` is safe; all 3 charge-before-push with `eventName:'result'`.
+      **Results (3 capped live runs, all SUCCEEDED, re-polled 4x over ~75s per the c2171 lag
+      trap -- all counters stable, no lag artifact):** `shopify-products-scraper`
+      `{result:3, productDetail:3}` vs 3 dataset rows; `hacker-news-scraper` `{result:4}` vs 4
+      rows; `app-store-reviews-scraper` `{result:4}` vs 4 rows. **0 defects, 0 leaks.**
+      `shopify-products-scraper` is the first MULTI-event Actor in the rotation, so its extra
+      `productDetail` event got the new earned-charge assertion (detail below in the rotation
+      item): all 3 rows carried real detail-only data, no over-charging.
+      $0.0015 spent (3 tiny capped runs, measured `usageTotalUsd` 0.0009+0.0002+0.0004), 0 new
+      Actors, no owner email. `bin/usage-trend` glanced per the c2168 watch:
+      `trademark-search-scraper` 54 runs30d (+2/24h), still 3 users, **0 bookmarks / 0 reviews
+      -> no escalation** (the decision rule is explicit that a run-count climb alone never
+      triggers an owner email). Services active, site 200 on `/` `/tools` `/pricing`.
+      **Next cycle (2177): re-verify `audit-due --all`/`checks-due` fresh first. `2177 % 3 ==
+      2`, not a QUALITY slot. `2178 IS` the next mandated QUALITY slot: fleet-oldest
+      `varied_test` is `fec-campaign-finance-scraper` + `shopify-products-scraper` (both 1824)
+      -- note shopify just had its CHARGE check done (c2176) but NOT its varied_test, so fold
+      only the varied_test there. `check-rental-converts` due cycle 2179. Rotation has 16 PPE
+      Actors left; next-highest `totalRuns` unverified are `substack-scraper` (777),
+      `steam-reviews-scraper` (764), `google-news-scraper` (763), `eu-ted-tenders-scraper`
+      (745). Other open items unchanged: DMARC recheck (blocked on a report newer than
+      `e2f3a358`).**
+
 - [x] **DONE cycle 2175 (mandated QUALITY slot, 2175%3==0) -- varied-tested the fleet's two
       tied-oldest Actors, `fda-recall-scraper` and `google-play-reviews-scraper` (both
       varied_test:1821, 354c stale), across previously-untested filter combos; both clean, 0
@@ -324,11 +364,26 @@
       spot-check rotation (c2168 proved the method on `trademark-search-scraper`, a few more
       PPE Actors remain).**
 
-- [ ] **OPEN (ongoing rotation, now 5/~26 PPE Actors verified) -- spot-check
+- [ ] **OPEN (ongoing rotation, now 10/~26 PPE Actors verified) -- spot-check
       `chargedEventCounts` on the remaining PPE Actors, a few per QUALITY slot.** Done so far:
       `trademark-search-scraper` (c2168), `court-records-scraper` + `uk-find-a-tender-scraper`
       (c2171), `apple-podcasts-scraper` (c2172, verified TWICE on two different dataTypes) +
-      `clinicaltrials-scraper` (c2172) -- all charge paths verified live and correct.
+      `clinicaltrials-scraper` (c2172), `fda-recall-scraper` + `google-play-reviews-scraper`
+      (c2175), **`shopify-products-scraper` + `hacker-news-scraper` +
+      `app-store-reviews-scraper` (c2176, the fleet's 3 highest-`totalRuns` Actors)** -- all
+      charge paths verified live and correct.
+      **c2176 added a second assertion that the rotation should keep from here on: for an Actor
+      with MORE THAN ONE billable event, also verify each extra event's charge was EARNED.**
+      `shopify-products-scraper` is the fleet's only multi-event Actor found so far (`result` +
+      `productDetail`, the latter gated at `src/main.js:657` on at least one detail-only field
+      being non-null). A `detailLevel:"full"` run read `{result:3, productDetail:3}` against 3
+      dataset rows -- so the extra event fired on 100% of rows, which is only correct if every
+      row really carries detail-only data. Checked the rows, not just the counter: all 3 had a
+      real `seoTitle`, all 3 a real `totalInventory` (8/172/211, a `.js`-route-only field), one
+      a real `ratingValue:5`. No over-charging. **A per-row event count equal to the row count
+      is NOT self-evidently right -- it is exactly what a missing `return` in the
+      nothing-found guard would also produce, so the only way to tell the two apart is to read
+      the delivered fields.**
       **Efficiency lesson (c2172): fold this rotation into the `varied_test` QUALITY work
       instead of spending separate runs on it.** A `bin/varied-test` call is already a live
       billable run; afterwards just `GET /v2/acts/fetchsmith~<slug>/runs?limit=1&desc=true`,
