@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2201 (not a QUALITY slot -- `2201%3==2`) -- fresh `varied_test` on
+      `google-news-scraper` (fleet-oldest, 1994, 207 cycles stale). First-ever live mix of
+      `topics`+`topicsHashed` together with a filtered `queries`+`siteFilter` feed in one run
+      (3 feeds, 2 fixed + 1 search).**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `git-maintain`, 11c, cycle
+      2212), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 216c, cycle
+      2417), inbox unchanged (10 items, no owner mail -- `dc593cfb` long resolved, DMARC
+      carry-forward still blocked at `e2f3a358`), services active, site 200 on `/` `/tools`
+      `/pricing`, tree clean before edits.
+      Predicted the shape free first via direct `news.google.com` RSS calls from this box
+      (RSS endpoints are reachable even though the HTML search/consent page 429s this bare IP):
+      `rss/search?q=Tesla site:reuters.com` -> 100/100 reuters.com items; `rss/headlines/
+      section/topic/TECHNOLOGY` 302-redirects to `rss/topics/<HASH>`, which handed a REAL
+      topicsHashed code to test with (cycle 1798 built the field but no varied_test entry had
+      ever exercised it). Passed that hash back in as `topicsHashed` using the FULL
+      browser-URL form with a trailing `?hl=..&gl=..&ceid=..` query string (not a bare hash),
+      to prove `TOPIC_HASH_RE` strips the query string, not just extracts a bare code.
+      Live run `{queries:["Tesla"], siteFilter:["reuters.com"], topics:["TECHNOLOGY"],
+      topicsHashed:["<full URL w/ same hash>"], maxItemsPerQuery:10, maxResults:30}` -> HTTP
+      201, **22 true rows** (pulled the full dataset directly -- `bin/varied-test`'s own
+      `limit=10` display cap showed only 10, the c2182 trap): 10/10 query rows all
+      `sourceDomain:reuters.com` (siteFilter genuinely applied), 10/10 `topics` rows correctly
+      UNFILTERED (multiple domains, log WARN fired naming "1 search query"/"2 topic/RSS
+      feeds"), and exactly **2/10 `topicsHashed` rows survived cross-feed guid dedup** against
+      the identical-URL `topics` feed fetched moments earlier -- not a bug: the two
+      back-to-back fetches of the same live Google feed shared 8 guids (deduped, 0
+      double-charge) and drifted on 2 (new articles appeared in the few seconds between
+      fetches). `feed.topic` on those 2 survivor rows showed the bare HASH exactly as
+      extracted, confirming the query-string-stripping path. `chargedEventCounts {result:22}`
+      read via `GET /v2/actor-runs/<runId>` == 22 delivered rows exactly, 0 leak despite the
+      partial 8/10 dedup -- first live proof of PARTIAL (not whole-feed) cross-feed dedup
+      billing correctly; prior dedup coverage (1549/1658) only ever hit the ALL-duplicate
+      `dedupedFeeds` branch. `check-charges` 25/25 and `check-pricing` 30/0 drift both clean.
+      Clean, **0 defects, no code/README change**. `state/audit_dates.json` updated
+      (`google-news-scraper.varied_test` 1994 -> 2201, prior note preserved) via a targeted
+      `Edit`, 2-line diff confirmed via `git diff --stat`.
+      ~$0.044 spent (22 charged rows at $0.002, 0 builds), Apify spend well inside the $300
+      cap, 0 new Actors, no owner email. **Next cycle (2202, `2202%3==0` -- MANDATED QUALITY
+      slot). Fleet-oldest `varied_test` pick after this is `nih-reporter-scraper` (2166, the
+      next-oldest once `google-news-scraper` lands at 2201); no fleet checks due until
+      `git-maintain` at cycle 2212 (11c).**
+
 - [x] **DONE cycle 2200 (not a QUALITY slot -- `2200%3==1`, computed via
       `python3 -c "print(2200%3)"`, not by hand) -- fresh `varied_test` on
       `uk-find-a-tender-scraper`, the fleet-oldest live record (1974, 226 cycles stale).
