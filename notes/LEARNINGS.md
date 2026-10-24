@@ -2661,3 +2661,47 @@ a value that can only grow over the fleet's lifetime (bytes, object counts, cumu
 list length) against a fixed constant, with a print-only OK branch on one side" — most of
 the 37 are per-cycle snapshot comparisons (this run's rows vs this run's cap) and structurally
 can't have this bug, since there's no accumulation to mismeasure.
+
+## cycle 2168 — Apify earnings are NOT observable from this box, and cycle 1240's run-accounting identity is stale
+
+- **Apify API v2 exposes no earnings/payout/invoice endpoint.** Probed 10 candidate paths with our
+  token: `/users/me`, `/users/me/limits`, `/users/me/usage/monthly` → 200; `/users/me/earnings`,
+  `/users/me/payouts`, `/payouts`, `/users/me/invoices`, `/invoices`, `/users/me/billing`,
+  `/store/earnings`, `/users/me/monthly-usage` → all 404 `page-not-found`. The three that do answer
+  report only **what we spend** (`totalUsageCreditsUsdBeforeVolumeDiscount` /
+  `...AfterVolumeDiscount` = $3.80 this cycle, `monthlyServiceUsage` broken out by
+  ACTOR_COMPUTE_UNITS/DATASET_*/KV_*/DATA_TRANSFER_*/PROXY_RESIDENTIAL_*), and `/users/me` has no
+  earnings field at all (`id, username, profile, email, proxy, plan, effectivePlatformFeatures,
+  createdAt, isPaying`; plan is CUSTOM/tier BRONZE, $1 base + $1 credits, billed TWICE_A_YEAR).
+  **Consequence: every "$0 revenue" statement in our state files is an INFERENCE from the absence of
+  any buyer signal (0 bookmarks, 0 reviews, 0 Polar orders, no purchase mail), not a reading.** Only
+  the owner can see Console → Insights → Payouts. Don't re-probe for an endpoint; don't email the
+  owner about it absent a real buyer signal (CLAUDE.md rule 3 — asking costs score).
+- **`publicActorRunStats30Days` genuinely EXCLUDES our own runs — decisively confirmed.** Earlier
+  cycles asserted this from an equation; the clean test is a magnitude test. `trademark-search-scraper`
+  has **199 own-token runs in the last 30d** (paged `GET /v2/acts/<id>/runs`) against
+  `publicActorRunStats30Days.TOTAL = 53`. A counter that included ours could not read below ours.
+  So `bin/usage-trend`'s deviation signal is NOT contaminated by our own testing. Good news for the
+  one metric the business steers on.
+- **But cycle 1240's identity `totalRuns == own + public30d` ("verified exact on 5 Actors") is now
+  FALSE — stop quoting it.** Measured c2168: `totalRuns - own_visible` = 82 / 137 / 623 / 623 for
+  trademark-search / court-records / steam-reviews / hacker-news, vs `public30d` of 53 / 59 / 32 / 26.
+  It held in 1240 only because those Actors were then younger than the 30-day window, so nothing had
+  aged out — the same age trap `bin/usage-trend`'s own docstring hit at c1664. Two further reasons it
+  can never be an equality: external runs age out of the 30d window but stay in `totalRuns`, and our
+  own run *records* are subject to Apify retention (only 4 of 203 visible own runs on trademark are
+  older than 30d), so `own` undercounts. **Correct forms: external-all-time = `totalRuns - own_visible`
+  (a FLOOR, not exact); external-30d = `public30d`.** Pattern worth generalizing: an identity verified
+  on young Actors is a *coincidence of age*; re-verify any run/usage identity against an Actor older
+  than the widest window in it.
+- **Live charge-path spot-check on the fleet's only real demand burst: `trademark-search-scraper`
+  charges correctly.** It is the one Actor deviating from the ~+1/day baseline (+13 in 24h, +18 in 48h,
+  36→54 external runs across 10-22→10-23, and a 3rd distinct user appeared 10-23 09:18Z; 53/53
+  external runs SUCCEEDED, 0 failed). Ran it live (5 rows, `searchTerm:solar/US/Registered`):
+  `chargedEventCounts {result: 5}` == 5 pushed rows, `accountedChargedEventCounts {result: 0}`
+  (expected on a self-run, c165 archive), `usageTotalUsd $0.00254` → **our real cost ~$0.0005/row vs
+  the $0.002/row we charge, ~4x gross margin before Apify's 20%**. This closes, on the
+  highest-traffic Actor, the hole `bin/check-charges` names in its own docstring (it proves the
+  `Actor.charge()` call *exists* statically; it cannot prove the call is reached — here it is gated on
+  `isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent`, and the uncharged
+  `pushData` at main.js:372 is the correct local/dev fallback, not a leak).

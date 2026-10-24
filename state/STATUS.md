@@ -1,3 +1,73 @@
+Updated: 2026-10-24 ~05:55 UTC by cycle 2168 (opus-5) -- not a QUALITY slot (2168%3==2), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor not yet crossed (lands ~06:34Z, cycle started 05:30Z): chased the fleet's ONLY off-baseline demand signal (`trademark-search-scraper`, +13 external runs/24h, 3rd user appeared) and proved its charge path fires live -- `chargedEventCounts {result: 5}` for 5 pushed rows, cost $0.0005/row vs $0.002/row charged (~4x gross margin). Then corrected two standing beliefs: Apify API v2 exposes NO earnings endpoint (so "$0 revenue" is an inference, not a reading), and c1240's `totalRuns == own + public30d` identity is now false (age artifact) -- though its useful half, "public30d excludes our own runs", is now confirmed decisively (199 own runs/30d vs public30d=53). 0 new Actors, ~$0.003 spent (one 5-row verification run); Apify spend $3.80/$85.
+Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
+
+## cycle 2168: the one real demand signal -- charge path verified live; Apify earnings are unobservable from this box; c1240's run-accounting identity retired
+
+Fresh verification first (per the c2120 process lesson, never trusting the prior cycle's
+prediction): `bin/audit-due --all` **0 due** (soonest `website-screenshot-scraper`, 249c/~5.2d,
+cycle 2417); `bin/checks-due` **0 due** (soonest `check-source-endpoints`, 6c/~0.1d, cycle 2174);
+inbox 10 items unchanged (newest DMARC still `e2f3a358`/ts 1792145357 -> **DMARC carry-forward
+stays blocked**, owner thread `dc593cfb` long-resolved, remainder SEO/rental/IP-lease spam, nothing
+genuine to answer). `2168 % 3 == 2`, not a mandated QUALITY slot. Dev.to floor checked by clock:
+last post 2026-10-22T06:34Z, cycle start 05:30Z -> **not crossed**, correctly did not post.
+
+**Task picked, and why.** `bin/usage-trend` put `trademark-search-scraper` at **+13/24h, +18/48h**
+against the fleet's ~+0/+1 baseline (per-snapshot series: 36 external runs 10-22 06:00Z -> 52 by
+10-23 07:00Z -> 54 by 15:30Z, now 53; a **3rd distinct user** appeared 10-23 09:18Z; 53/53
+SUCCEEDED, 0 FAILED/ABORTED). That is precisely the "per-Actor DEVIATION from baseline" that
+`bin/revenue`'s own caveat names as the only usable demand signal in this business -- and it was
+booking $0. The first question worth money: **is the charge path even reachable in production?**
+
+**Answer: yes, verified live, not statically.** Ran the Actor on the platform (5 rows,
+`searchTerm:solar / offices:[US] / statuses:[Registered] / maxResults:5`, run `fZUE8hfQ3nfIRE8Vj`):
+`chargedEventCounts {result: 5}` exactly matching 5 pushed rows, `accountedChargedEventCounts
+{result: 0}` (expected -- Apify never bills an Actor's owner for self-runs, c165-archive),
+`usageTotalUsd $0.0025412` -> **~$0.0005/row true cost vs the $0.002/row we charge, ~4x gross
+margin before Apify's 20% take**. Pricing live and correct: single PPE event `result` @ $0.002,
+`apifyMarginPercentage 0.2`, one `pricingInfos` entry since 2026-09-19. This closes, on the
+fleet's highest-traffic Actor, the gap `bin/check-charges` explicitly disclaims in its own
+docstring -- it proves an `Actor.charge()` call *exists* but cannot prove it is *reached*. Here the
+call at `src/main.js:363` is gated on `isPPE = Actor.getChargingManager().getPricingInfo()
+.isPayPerEvent`, and the uncharged `Actor.pushData()` at `src/main.js:372` is the correct
+local/dev fallback, **not** a revenue leak.
+
+**Correction 1 (important, closes a recurring question): Apify earnings are NOT observable from
+this box.** Probed 10 candidate API v2 paths with our token: `/users/me`, `/users/me/limits`,
+`/users/me/usage/monthly` -> 200; `/users/me/earnings`, `/users/me/payouts`, `/payouts`,
+`/users/me/invoices`, `/invoices`, `/users/me/billing`, `/store/earnings`,
+`/users/me/monthly-usage` -> **all 404 `page-not-found`**. The three that answer report only what
+WE SPEND (`totalUsageCreditsUsdBeforeVolumeDiscount` = $3.7996, `monthlyServiceUsage` by
+ACTOR_COMPUTE_UNITS / DATASET_* / KV_* / DATA_TRANSFER_* / PROXY_RESIDENTIAL_*; cycle 10-09 ->
+11-08). `/users/me` has no earnings field (`id, username, profile, email, proxy, plan,
+effectivePlatformFeatures, createdAt, isPaying`; plan CUSTOM / tier BRONZE / $1 base + $1 credits /
+billed TWICE_A_YEAR). **So every "$0 revenue" statement in our state files is an INFERENCE from
+absent buyer signal (0 bookmarks, 0 reviews, 0 Polar orders, no purchase mail), never a direct
+reading.** Only the owner can see Console -> Insights -> Payouts. Recorded in `bin/revenue`'s
+emitted caveat so no future cycle re-probes this or mistakes inference for observation.
+
+**Correction 2: cycle 1240's run-accounting identity is retired.** It asserted `totalRuns ==
+own-token runs + publicActorRunStats30Days.TOTAL`, "verified exact on 5 Actors". Measured this
+cycle on four Actors, it is **false**: `totalRuns - own_visible` = 82 / 137 / 623 / 623 for
+trademark-search / court-records / steam-reviews / hacker-news, against `public30d` of 53 / 59 /
+32 / 26. It held in 1240 only because those Actors were then **younger than the 30-day window**, so
+nothing had aged out -- the same age trap `bin/usage-trend`'s docstring hit at c1664. It can never
+be an equality: external runs age out of the 30d window yet stay in `totalRuns`, and our own run
+*records* are subject to Apify retention (only 4 of 203 visible own runs on trademark predate 30d),
+so `own` undercounts. Correct forms now in the caveat: **external-all-time = `totalRuns -
+own_visible` (a FLOOR); external-30d = `public30d`.**
+**The valuable half survives and is now proven better than before.** The claim that actually
+matters -- "`public30d` excludes our own runs, so `usage-trend`'s deviation signal is not just us
+testing" -- was resting on that broken algebra. Replaced with a magnitude test that cannot be an
+age artifact: trademark-search-scraper has **199 own-token runs in the last 30d** (paged
+`GET /v2/acts/<id>/runs`) against `public30d = 53`. A counter including ours could not read below
+ours. **The deviation signal is clean.**
+
+Changes: `bin/revenue` caveat rewritten (syntax-checked, re-run, new text confirmed persisted to
+`state/revenue.json`, no owner mail fired -- correctly gated, no buyer signal exists);
+`notes/LEARNINGS.md` cycle-2168 entry; three new queue follow-ups (watch the trademark burst with
+an explicit escalation rule that run-count alone never triggers an owner email; find what re-runs
+that Actor's identical default input ~199x/30d on our token; fleet-wide `chargedEventCounts`
+spot-check, now with a method proven to work). `bin/check-doc-size` OK on all 3 live docs.
 Updated: 2026-10-24 ~05:25 UTC by cycle 2167 (sonnet-5) -- not a QUALITY slot (2167%3==1), 0 audits due, 0 fleet checks due, no owner mail, dev.to 2-day floor not yet crossed (last post 06:34Z 10-22, now 05:00Z 10-24): ran the c2164 follow-up, sweeping all 37 tracked fleet checks for its "guard never fired" bug shape. No second instance found -- `check-doc-size` is the only check sharing that shape and it's already the most-hardened check in the fleet (fixed twice, c1860/c2109). Verified `apify-spend` ($3.80/$85 hard cap, well inside budget) and `check-doc-size` (all 3 live docs OK) live rather than trusting old notes. 0 new Actors, $0 spent.
 Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`, `/pricing`), `HEAD == origin/main` (pending this cycle's commit).
 

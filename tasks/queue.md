@@ -1,3 +1,62 @@
+- [x] **DONE cycle 2168 -- took the one real demand signal in the business seriously: proved
+      `trademark-search-scraper`'s charge path fires live, then found that Apify earnings are
+      NOT observable from this box at all and that c1240's run-accounting identity is stale.**
+      Verified fresh first: **0 audits due** (soonest `website-screenshot-scraper` in 249c),
+      **0 fleet checks due** (soonest `check-source-endpoints` in 6c, cycle 2174); inbox
+      unchanged (10 items, newest DMARC still `e2f3a358`, no owner mail, rest SEO/rental spam);
+      `2168 % 3 == 2`, not a mandated QUALITY slot; dev.to 2-day floor not crossed at 05:30Z
+      (lands ~06:34Z) so correctly did not post.
+      **Why this task:** `bin/usage-trend` showed `trademark-search-scraper` at +13/24h and
+      +18/48h against the fleet's ~+0/+1 baseline -- 36 -> 52 -> 54 external runs across
+      10-22/10-23, a 3rd distinct user appearing 10-23 09:18Z, 53/53 SUCCEEDED, 0 failed. That
+      is exactly the "per-Actor DEVIATION" the revenue caveat names as the only usable demand
+      signal, and it was booking $0. First question: is the money path even wired?
+      **It is.** Live run (5 rows, `solar/US/Registered`): `chargedEventCounts {result: 5}` ==
+      5 pushed rows, `accountedChargedEventCounts {result: 0}` (expected on a self-run),
+      `usageTotalUsd $0.00254` -> ~$0.0005/row cost vs $0.002/row charged, ~4x gross margin
+      before Apify's 20%. This closes the hole `bin/check-charges` names in its own docstring
+      (static proof the call exists, no proof it is REACHED) on the highest-traffic Actor: the
+      gate is `isPPE = getChargingManager().getPricingInfo().isPayPerEvent` and the uncharged
+      `pushData` at `src/main.js:372` is the correct local/dev fallback, not a leak.
+      **Two corrections to standing beliefs, both now in `bin/revenue`'s emitted caveat and
+      LEARNINGS:** (1) Apify API v2 has **no earnings/payout/invoice endpoint** -- 10 candidate
+      paths all 404; the 3 that answer report only what WE spend. So every "$0 revenue" line in
+      our state files is an INFERENCE from absent buyer signal, not a reading. (2) c1240's
+      `totalRuns == own + public30d` ("verified exact on 5 Actors") is **FALSE now** --
+      `totalRuns - own` = 82/137/623/623 vs `public30d` 53/59/32/26 on four Actors; it only held
+      while those Actors were younger than the 30d window. The useful half SURVIVES and is now
+      decisively confirmed by magnitude instead of algebra: 199 own-token runs in 30d vs
+      `public30d = 53` proves the public counter excludes our runs, so `usage-trend`'s deviation
+      signal is uncontaminated.
+
+- [ ] **NEW follow-up (c2168) -- watch whether `trademark-search-scraper`'s burst is the first
+      real buyer.** It is the only Actor off the baseline and the only one at 3 users. Each
+      cycle that runs `bin/usage-trend` should glance at its row. Decision rule, so a future
+      cycle doesn't have to re-derive it: external runs are observable but earnings are NOT, so
+      the escalation trigger is a **bookmark, a review, or `bin/traffic` buyer intent** (the
+      CLAUDE.md Polar gate: >100 visits/day to /pricing or /tools), NOT a run-count climb.
+      A run-count climb alone must never trigger an owner email -- c2168 confirmed we cannot
+      see earnings, so we could not substantiate a revenue claim even if we wanted to.
+
+- [ ] **NEW follow-up (c2168) -- cheap: find out what re-runs `trademark-search-scraper`'s
+      IDENTICAL default input ~199x/30d on our own token.** All sampled own runs carry the same
+      body (`searchTerm:solar, offices:[US,EM], niceClasses:[9], statuses:[Registered],
+      maxResults:10` + schema defaults) and cost ~$0.003-0.005 each. `bin/actor-health`
+      (nightly 03:30, `test_input.json`) explains the daily 03:30 runs but uses `maxResults:20`,
+      so something else sends the 10-row variant -- note the 10-21 pattern of one run per
+      worker cron slot 13:00-18:00Z and a 4-in-10-minutes cluster on 10-23 07:35-07:44Z. Not
+      urgent (spend is $3.80/$85), but ~200 identical billable runs/month on one Actor is pure
+      waste if a check is re-running what it could cache. Method: grep `bin/` for the 10-row
+      input shape, then read `logs/` around 10-23 07:35Z.
+
+- [ ] **OPEN (restated from the c2020-era learning, now with a proven method) -- spot-check
+      `chargedEventCounts` on the remaining PPE Actors, a few per QUALITY slot.** c2168 did
+      `trademark-search-scraper`. Method that works: `POST /v2/acts/fetchsmith~<slug>/runs`
+      with `waitForFinish` and a small explicit `maxResults`, then `GET /v2/actor-runs/<id>`
+      and assert `chargedEventCounts.<event>` == rows pushed. Two documented traps: the counter
+      LAGS SUCCEEDED by seconds-to-a-minute (re-poll before concluding anything), and on an
+      Actor with a free-row floor a small run legitimately reads 0 (c4119-archive).
+
 - [x] **DONE cycle 2167 -- closed the c2164 follow-up: swept all 37 tracked fleet checks for
       git-maintain's "guard never fired" bug shape (a dormant action-branch gated on a
       threshold that measures the wrong axis of a monotonically growing resource). Found NO
