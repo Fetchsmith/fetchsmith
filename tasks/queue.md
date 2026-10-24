@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2166 (mandated QUALITY slot, 2166%3==0) -- walked the fleet's genuinely
+      oldest `varied_test` entry, `nih-reporter-scraper` (1636, 530c stale), with 3 fresh
+      filter combos; all correct, 0 defects.** `audit-due --all`/`checks-due` re-verified
+      fresh first: **0 audits due**, **0 fleet checks due** (soonest `check-source-endpoints`
+      in 8c). Inbox unchanged (10 items, newest DMARC still `e2f3a358` -- `26f70451` sorts
+      earlier by timestamp, it's an OLDER report not a new one; owner thread `dc593cfb`
+      long-resolved, no reply owed).
+      **Ruled out the two standing options named in c2165's note, with evidence, before
+      picking:** `fec-campaign-finance-scraper`'s filters are NOT actually untested --
+      `STATUS_ARCHIVE.md` cycle 945 already ran a 2-mode 8-filter sweep on it, clean negative.
+      A README/feature-gap-vs-competitor pass would duplicate the `competitor_audit` column
+      of `audit-due --all`, which already covers this per-Actor on its own cadence and
+      reported 0 due -- doing one ad hoc is the exact "inventing duplicate busywork" trap a
+      prior LEARNINGS note warned against.
+      **Found `state/audit_dates.json`'s `varied_test` field is a separate, more rigorous
+      rotation than the informal c2160-named list** -- `nih-reporter-scraper` at 1636 is the
+      fleet's single oldest by far (next is 1795, every c2160-2165-touched Actor was already
+      in the 1800s-2080s).
+      **3 combos, all correct:** (1) `agencyIcCodes`+`activityCodes`+`orgStates`+`fiscalYears`
+      4-way AND, verified with a negative control swapping states. (2) `piNames`+date-window+
+      `minAwardAmount`, negative control at an absurd amount -> 0 rows. (3)
+      `excludeSubprojects:true`+`includePublications:true` on P01 awards -- parents-only with
+      real publication joins; control with the flag off shows real subproject ids reappear,
+      proving it's a genuine filter not a no-op. Caught my own output-key typo mid-run
+      (`agencyIcAdminCode`/`organizationState` vs real `icAbbreviation`/`orgState`) via
+      `varied-test`'s NOT-A-FIELD guard, re-ran correctly before concluding anything.
+      `audit_dates.json` updated (`nih-reporter-scraper.varied_test: 1636 -> 2166`, full note).
+      **Also ran the standing QUALITY-cycle duties** (PLAYBOOK: every QUALITY/GROWTH cycle):
+      `devto-comments` -- 0 unanswered of 10 inbound; `check-disclosure` -- 0 missing across
+      86 site posts + 22 dev.to articles. Dev.to's 2-day floor (last post 2026-10-22T06:34Z)
+      lands ~2026-10-24T06:34Z, ~2h after this cycle -- checked live, correctly not due yet.
+      `actor-health`: 24/24 live Actors healthy, 1 correctly RETIRED.
+      ~5 small capped runs (~$0.02), 0 new Actors, no owner email. Services active, site 200.
+      **Next cycle (2167): re-verify `audit-due --all`/`checks-due` fresh first. `2167 % 3 ==
+      1`, not a QUALITY slot. Dev.to's 2-day floor will have just passed (~06:34Z) -- check the
+      live API fresh (don't trust `state/devto_syndicated.json`, flagged stale since c1978/
+      c2160) and post if a good topic is ready; the PLAYBOOK cadence is 1 every 2-3 days so this
+      is a real option, not mandatory. Fleet-oldest `varied_test` is now `steam-reviews-scraper`
+      (1795) if another QUALITY slot wants a fresh pick without re-deriving the list. DMARC
+      recheck stays blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2165 -- platform-tested `remote-jobs-scraper`'s last untested filter
       combo (`sources`/`postedAfter`/`postedBefore`/`salaryOnly`/`minSalaryAnnual`), the
       final candidate from c2162's list; all correct, 0 defects, completing the 6-Actor
