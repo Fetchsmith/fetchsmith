@@ -3360,3 +3360,29 @@ one -- which also costs fewer calls. Before filing any PPE leak, confirm: (1) re
 single-run endpoint, not the list (c2184); (2) re-read after a delay; (3) check for a
 `FREE_PER_RUN` floor in that Actor's source (c2171/c2200). Three different mechanisms have now
 each produced a convincing false leak on their own.
+
+## cycle 2205 -- a watch-mode baseline's fingerprint must cover EVERY real server-side filter, not just the ones with their own typed input
+
+`clinicaltrials-scraper`'s `watchKeyFor()` hashes `watchCriteria` -- a hand-built object listing
+every typed filter -- to decide whether two runs under the same `watchLabel` are "the same saved
+search" (share a baseline) or "a different one" (get their own fresh, free seed). That object was
+built by enumerating typed input variables, which missed a filter source that does NOT have its
+own typed variable in every case: a `startUrl`'s `aggFilters` codes (status/phase/studyType/sex/
+healthy/ages/funderType) that arrive ONLY via the URL, with no matching typed input set. Those
+codes are real and genuinely narrow the live query (verified: `status:rec` vs `status:com` on the
+same condition is 483 vs 1,751 fully disjoint studies) but were invisible to the fingerprint, so
+two completely different saved searches sharing a label collided onto the same watchKey -- the
+second one silently skipped its free baseline-seed run and got charged immediately, merging two
+disjoint study populations into one baseline.
+
+The general lesson: when a baseline/dedup/fingerprint function is built by listing "the filters"
+by name, the real question is not "did I list every typed input" but "did I list every distinct
+thing that can change the live query" -- and any filter that is assembled from a Map/pass-through
+mechanism (here, `urlAggFilters`, built from parsing a pasted URL rather than from a declared
+input field) is exactly the kind of source that's easy to miss that way, because it was never one
+line in the input schema to begin with. Fix: compute the final, fully-merged set of query
+parameters ONCE, and fingerprint THAT object (or feed it into both the live request and the
+fingerprint from the same variable) rather than maintaining two independent enumerations that can
+silently drift apart. Also worth the general check on any other watch-mode Actor that has a
+`startUrl`-style URL-paste feature: does its own watch fingerprint cover everything the URL can
+set, or only the inputs that also have a named field?

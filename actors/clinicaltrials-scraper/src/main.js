@@ -346,6 +346,14 @@ const documentTypes = (Array.isArray(input.documentTypes) ? input.documentTypes 
     .filter((x) => DOCUMENT_TYPES.has(x));
 // Only `violation:y` is a real value (`violation:n` silently returns 0), so this is a boolean.
 const fdaRegulationViolation = input.fdaRegulationViolation === true;
+// The final set of aggFilters codes this run actually sends (startUrl-sourced codes not already
+// overridden by a typed input above, plus the three typed inputs that share the same Map). Built
+// ONCE here, rather than inline inside baseParams() below, so watchCriteria (next block) can
+// fingerprint exactly what the live query sends -- see the comment there for why that matters.
+const effectiveAggFilters = new Map(urlAggFilters);
+if (resultsAvailability) effectiveAggFilters.set('results', resultsAvailability);
+if (documentTypes.length) effectiveAggFilters.set('docs', documentTypes.join(' '));
+if (fdaRegulationViolation) effectiveAggFilters.set('violation', 'y');
 const titleOrAcronym = String(input.titleOrAcronym ?? '').trim();
 const outcomeMeasure = String(input.outcomeMeasure ?? '').trim();
 // An AREA(...) term is parsed as a query expression, so a multi-word value has to be quoted to
@@ -437,6 +445,22 @@ let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 // `.actor/input_schema.json`: no `default` on any of them, unlike federal-register-scraper's
 // last-90-days or fda-recall-scraper's last-365-days) -- `dateCriteria` already holds the buyer's
 // own explicit input (or null), never a computed value, so fingerprinting it directly is safe.
+//
+// BUG FOUND AND FIXED (cycle 2205, `varied_test`): a `startUrl`'s `aggFilters` codes that have no
+// typed-input override (e.g. `aggFilters=status:rec` with `overallStatus` left unset) used to be
+// completely invisible to this fingerprint -- `resultsAvailability`/`documentTypes`/
+// `fdaRegulationViolation` were already fingerprinted via their OWN typed fields above, but the
+// other 7 codes (status/phase/studyType/sex/healthy/ages/funderType) only existed in
+// `urlAggFilters`, which this object never read. Proven live: two runs sharing one `watchLabel`,
+// identical `conditions:"melanoma"` and no typed `overallStatus`, differing ONLY in
+// `startUrl`'s `aggFilters` (`status:rec` vs `status:com` -- 483 vs 1,751 real, disjoint
+// studies) hashed to the SAME watchKey. Run 2 came back `mode:"watch-incremental"` instead of
+// the free `"watch-seed"` a genuinely new saved search should get, delivered+CHARGED 3 rows, and
+// merged two disjoint study populations into one baseline (`baselineSize` 483 -> 486). Fixed by
+// fingerprinting `effectiveAggFilters` (computed once, above, and now shared with `baseParams()`
+// so the two can never drift apart again) -- empty for every run that doesn't hit this path, so
+// no existing baseline's fingerprint changes (same `ageRangeFromUnit` precedent as cycle 400:
+// only spread in a value that can shift the hash when it is genuinely non-default).
 const watchCriteria = {
     conditions, interventions, sponsors, locations, searchQuery, titleOrAcronym, outcomeMeasure,
     overallStatus: [...overallStatus].sort(),
@@ -445,6 +469,7 @@ const watchCriteria = {
     resultsAvailability,
     documentTypes: [...documentTypes].sort(),
     fdaRegulationViolation,
+    ...(effectiveAggFilters.size ? { aggFilters: [...effectiveAggFilters].map(([k, v]) => `${k}:${v}`).sort() } : {}),
     sex,
     acceptsHealthyVolunteers,
     funderTypes: [...funderTypes].sort(),
@@ -821,11 +846,8 @@ function baseParams({ countTotal = false } = {}) {
     // already stripped above when a typed input for that key is present). A typed `results`/`docs`/
     // `violation` input overwrites its own startUrl code here instead, since those three route
     // through this same Map -- the API takes the LAST value for a repeated key, not the intersection.
-    const agg = new Map(urlAggFilters);
-    if (resultsAvailability) agg.set('results', resultsAvailability);
-    if (documentTypes.length) agg.set('docs', documentTypes.join(' '));
-    if (fdaRegulationViolation) agg.set('violation', 'y');
-    if (agg.size) p.aggFilters = [...agg].map(([k, v]) => `${k}:${v}`).join(',');
+    // (`effectiveAggFilters` computed once, above, so this is the same Map watchCriteria fingerprints.)
+    if (effectiveAggFilters.size) p.aggFilters = [...effectiveAggFilters].map(([k, v]) => `${k}:${v}`).join(',');
     // studyType/phase/sex/healthyVolunteers/date-range are AREA-scoped fields, not top-level
     // filters — combine into filter.advanced. Verified live (this cycle): AREA[Sex](FEMALE),
     // AREA[HealthyVolunteers](true) and AREA[<field>]RANGE[from,to] (MIN/MAX for an open bound)

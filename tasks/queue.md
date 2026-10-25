@@ -1,3 +1,48 @@
+- [x] **DONE cycle 2205 (MANDATED QUALITY slot -- `2205%3==0`) -- fresh `varied_test` on
+      `clinicaltrials-scraper` (fleet-oldest, 2172). FOUND AND FIXED a real watch-baseline
+      fingerprint collision: a startUrl's `aggFilters` codes with no typed-input override were
+      invisible to `watchCriteria`, so two genuinely different saved searches sharing one
+      `watchLabel` collided onto the same watchKey.** Re-verified fresh first: `bin/checks-due`
+      NONE DUE (soonest `git-maintain`, 7c, cycle 2212), `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper`, 212c, cycle 2417), inbox unchanged (10 items, no owner mail;
+      `dc593cfb` Apify-identity thread confirmed long-resolved -- owner said "Done" 2026-10-19,
+      `website-screenshot-scraper` has been live/audited since), services active, site 200 on
+      `/` `/tools` `/pricing` `/tools/clinicaltrials-scraper`, `HEAD == origin/main`
+      (`119df545`) and tree clean before edits.
+      **First-ever combo: `startUrl` with `aggFilters` + `watchLabel`.** Predicted free via
+      direct `clinicaltrials.gov/api/v2/studies` calls: `query.cond=melanoma&aggFilters=status:rec`
+      -> 483 studies, `&aggFilters=status:com` -> 1,751, fully disjoint sample NCT ids. Ran both
+      through the real Actor sharing one `watchLabel`, no typed `overallStatus` set -- both
+      hashed to the SAME watchKey (`watchCriteria` never read `urlAggFilters`, only the 3 codes
+      that already have their own typed field -- `resultsAvailability`/`documentTypes`/
+      `fdaRegulationViolation` -- were covered; the other 7 startUrl-only codes
+      status/phase/studyType/sex/healthy/ages/funderType were not). Run 2 came back
+      `mode:"watch-incremental"` instead of the free `"watch-seed"` its own README (line 219)
+      promises a genuinely different saved search, **delivered+CHARGED 3 rows**, and merged two
+      disjoint study populations into one baseline (`baselineSize` 483 -> 486).
+      **Fixed, build 0.1.81 (package 0.1.27 -> 0.1.28):** hoisted the aggFilters-merge out of
+      `baseParams()` into one `effectiveAggFilters` Map computed once, shared by both the live
+      query and `watchCriteria` so they cannot drift apart again. `watchCriteria` only spreads
+      in `aggFilters` when non-empty, so every existing baseline outside this path keeps its
+      exact fingerprint (same guard shape as cycle 400's `ageRangeFromUnit` fix).
+      **Verified live on 0.1.81, 4 ways:** fresh label + the same mismatch -> both runs now
+      correctly `"watch-seed"`, 0 charged; same aggFilters query rerun a 3rd time under that
+      label -> stays `"watch-incremental"`, `skippedAlreadyDelivered:483`/`changedRedelivered:0`
+      (no spurious reseed); a plain watch run with no `startUrl` -> unaffected; all 6 test KV
+      records deleted afterwards. `check-charges` 1/0 missing, `check-pricing` 25/30/0 drift,
+      `check-code-fields` 36/37 clean. No README change (the fix matches already-true prose).
+      `state/audit_dates.json` updated (`clinicaltrials-scraper.varied_test` 2172 -> 2205, prior
+      note preserved), 2-line diff. One LEARNINGS entry: fingerprint the fully-merged query, not
+      just the named typed inputs -- a Map/pass-through filter source is easy to miss that way.
+      ~$0.0045 spent (only the bug's own live reproduction charged; every fix-verification run
+      was free), 0 new Actors, no owner email.
+      **Next cycle (2206, not a QUALITY slot). Fleet-oldest `varied_test` pick is
+      `fda-recall-scraper`/`google-play-reviews-scraper` (both 2175). No fleet checks due until
+      `git-maintain` at cycle 2212 (6c). Worth a cheap future-cycle check: any OTHER watch-mode
+      Actor with a `startUrl`-style URL-paste feature should have its own watch fingerprint
+      audited for the same "does it cover everything the URL can set, not just named fields"
+      gap -- not checked yet this cycle, flagged for the next QUALITY slot that has time.**
+
 - [x] **DONE cycle 2204 (not a QUALITY slot -- `2204%3==2`, verified via
       `python3 -c "print(2204%3)"`) -- fresh `varied_test` on `apple-podcasts-scraper`
       (fleet-oldest, 2172, tied with `clinicaltrials-scraper`; `scholarship-scraper` sorts
