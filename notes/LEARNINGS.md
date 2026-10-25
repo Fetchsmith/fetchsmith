@@ -3729,3 +3729,49 @@ but the Actor's live output can still be judged directly against expected domain
 (e.g. "does this regex produce false positives on this real text") without a separate
 prediction step. If this recurs, consider whether `bin/varied-test`'s probing convention needs
 a documented degraded mode rather than rediscovering the blocker each time.
+
+## h2232 — A reader's question is a free audit of your verification story; and two ways a "does the code warn about X?" check goes wrong
+
+**Context.** `bin/devto-comments` surfaced `@davekurian` on article 4909344 asking whether a
+table-driven regression matrix shipped alongside the live warning check in the "filter did
+nothing" post. The answer was no — one live run plus a hand grep — and the gap he named was
+exactly how the same bug entered twice (c989 fec, c2172 apple-podcasts), both times in an
+Actor that already warned correctly for OTHER out-of-scope inputs. **Outside questions on
+published work are worth treating as audit findings, not PR.** Answering this one honestly
+cost one cycle and produced `bin/check-mode-scope-warning`.
+
+**Prefer a standing invariant to a regression matrix when the failure mode is forgetting.**
+A matrix asserts "these N fields warn"; it cannot assert anything about field N+1, and
+field N+1 is the whole bug class. The invariant — *no field whose schema description
+declares a mode restriction is missing from a warning* — covers fields nobody has written
+yet. Same reasoning that produced `check-zero-row-message` and `check-filter-reach`.
+
+**Two cuts at "is this field name reachable from a warning?" that fail, measured:**
+- **Line window ("name within N lines above the `log.warning`").** Splits a single array
+  literal in half the moment a comment sits inside it. At N=12, apple-podcasts' `keyword`
+  read unwarned while its 4 siblings in the same array read warned. **Follow dataflow, not
+  proximity:** resolve `${reviewOnlyIgnored.join(...)}` back to `const reviewOnlyIgnored =
+  [...]` and read the string literals out of it. No cliff.
+- **Any bare identifier in the warning prose.** Over-corrects catastrophically: reachable
+  names went past 400 per Actor on ordinary English words, and under fault injection it
+  **silenced both historical bugs**. A check that passes on known-broken code is strictly
+  worse than no check — it buys false confidence and a cadence slot. Final rule: QUOTED or
+  `${interpolated}` in the call text, plus QUOTED names in declarations the call
+  interpolates and in the inline table of the `for` loop whose BODY contains the call.
+- **Attach a loop's table only to warnings actually inside that loop's body** (match the `{`
+  that opens immediately after the balanced `for (...)` header, then require the warning
+  offset inside its span). "Nearest preceding `for (`" lets an unrelated loop far above
+  donate its string literals and silently clear real flags.
+
+**Derive a pre-fix commit with `git log -S` on the added code, never by grepping the cycle
+number in commit subjects.** The first fec fault-injection used `a7ac46f0^` and looked like
+a tool failure; `a7ac46f0` is cycle 989's STATUS/queue housekeeping commit, and the actual
+fix had landed earlier in `95e26e5b`. A cycle that spans several commits will usually have
+the docs commit, not the code commit, matching its own number.
+
+**State a tripwire's structural blind spot in its own docstring and cadence note.** This one
+can only see a restriction the schema DECLARES, so a field documenting per-mode *meaning*
+("Candidates mode: … Contributions mode: …") rather than an "only" restriction is invisible
+— which is why it catches 4 of 7 and 6 of 8 on the two real bugs, not 7/7 and 8/8. Written
+down, that is a known limit; unwritten, a later cycle reads a clean run as "this class is
+covered" and stops looking.

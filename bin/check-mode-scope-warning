@@ -1,0 +1,309 @@
+#!/usr/bin/env python3
+"""Static tripwire for the "mode-scoped input silently ignored, no warning" bug class.
+
+The bug: an Actor with a mode switch (`dataType`, `searchMode`, `scrapeType`, ...) declares
+filter fields in the SAME `input_schema.json` that only apply to some of those modes. The
+schema accepts the key in every mode, the wrong-mode code path never reads it, and the run
+exits SUCCEEDED with a normal row count and no warning. A pay-per-result buyer cannot tell
+"the filter ran and everything matched" from "the filter never ran", and pays either way.
+
+Found BY HAND twice, never by any check:
+
+  cycle  989  `fec-campaign-finance-scraper` -- 7 of 14 mode-scoped fields fed the warning
+              loop and 7 did not (`office`, `party`, `minAmount`, `maxAmount`,
+              `contributionDateFrom`, `contributionDateTo`, `state`), while their siblings
+              in the same loop warned correctly for the identical shape.
+  cycle 2219  `apple-podcasts-scraper` -- `keyword`/`minRating`/`maxRating`/`sort` (reviews
+              only) and `minDurationSeconds`/`explicitFilter`/`minReleaseDate`/
+              `maxReleaseDate` (episodes only) were all silently dropped, in an Actor that
+              ALREADY warned for `chartType`/`chartGenre`/`watchLabel` -- a coverage gap in
+              a convention that was already half-applied, not a missing feature.
+
+Both were caught by a human-driven grep at audit time, so nothing stops a NEW field added
+to a shared schema later from reintroducing the gap. That is the question a dev.to reader
+(@davekurian, article 4909344, 2026-10-24) asked directly, and the honest answer was "no
+standing check". This is it. Same shape as check-zero-row-message / check-filter-reach:
+offline, no network, no Actor run, registered in state/fleet_checks.json.
+
+METHOD (two halves, both purely textual -- this is a tripwire, not a prover):
+
+  1. CLAIMED SCOPE. A schema property is mode-scoped if its own `description` says so:
+     "Reviews only:", "Charts only.", "dataType 'publisher' only", "only applies to
+     reviews", "only applies when ...". These are the Actors' own words to the buyer, so a
+     field that reads this way has PROMISED the buyer a mode restriction.
+  2. WARNED. The field name is quoted either inside a `log.warning(...)` call's own text in
+     src/main.js, or inside the DECLARATION of a variable that call interpolates. The link
+     is structural, not a line window: a first cut used "within N lines above" and split the
+     fleet's own idiom in half -- apple-podcasts' `reviewOnlyIgnored` array opens 13 lines
+     above its warning (an 8-line comment sits between), so `keyword` read as unwarned at
+     N=12 while its four siblings in the same array read as warned. Resolving
+     `${reviewOnlyIgnored.join(', ')}` back to `const reviewOnlyIgnored = [...]` and reading
+     the quoted names out of it has no such cliff. Resolution recurses one extra level
+     (DECL_DEPTH) for a warning that interpolates a variable built from a table.
+
+Judged-benign fields live in state/mode_scope_allow.json ({slug: {field: reason}}) so the
+check converges to 0 and a real regression is the only thing that ever prints. Adding an
+entry requires a reason string -- an empty one is itself flagged.
+
+Usage:
+  check-mode-scope-warning                  # whole fleet
+  check-mode-scope-warning <slug> [...]     # named Actors only
+  check-mode-scope-warning --show-allowed   # also list the allowlisted fields
+  check-mode-scope-warning --main <path> --schema <path>   # fault-injection on one pair
+
+Exit 0 always (reporting tool, like the other fleet sweeps); the flag count is the signal.
+"""
+import json
+import os
+import re
+import sys
+
+ACTORS = '/root/agent/actors'
+ALLOW = '/root/agent/state/mode_scope_allow.json'
+
+# How many times to follow "warning interpolates a variable -> read that variable's
+# declaration". 1 covers every real case in the fleet today (`log.warning(${xIgnored...})`
+# -> `const xIgnored = ['a','b']`); 2 covers a warning built from a table of tables without
+# letting a resolution walk the whole file.
+DECL_DEPTH = 2
+
+# A description that declares a mode restriction. The "<Mode> only" form is anchored to a
+# SENTENCE boundary, not just the string start, and must be followed by `:` or `.` -- both
+# guards earned: fec-campaign-finance-scraper writes the scope as a trailing sentence
+# ("Restrict to one office. Candidates mode only."), which a start-anchored pattern misses
+# entirely, while dropping the `only[:.]` requirement would match ordinary prose like
+# "keeps only the newest".
+SENT = r'(?:^|(?<=[.;!?])\s|\s[-—]\s)'
+SCOPE_PATTERNS = [
+    re.compile(SENT + r'\s*[A-Za-z][A-Za-z /\'"-]{0,30}?\s+only[:.]', re.I),
+    re.compile(r'\bApplies(?:\s+only)?\s+to\s+the\s+\w+\s+modes?\b', re.I),
+    re.compile(r'only applies (?:to|when|in)\b', re.I),
+    re.compile(r'\b(?:dataType|searchMode|scrapeType|mode)\s*[\'"]?[A-Za-z]+[\'"]?\s+only\b', re.I),
+    re.compile(r'^\s*Optional,\s*\w+\s+[\'"][A-Za-z]+[\'"]\s+only\b', re.I),
+]
+
+QUOTED = re.compile(r'[\'"`]([A-Za-z_][A-Za-z0-9_]*)[\'"`]')
+
+
+def scope_phrase(desc):
+    """Return the matched mode-scope phrase, or None."""
+    head = desc.strip().replace('\n', ' ')
+    for pat in SCOPE_PATTERNS:
+        m = pat.search(head)
+        if m:
+            return m.group(0).strip()
+    return None
+
+
+IDENT = re.compile(r'\b([A-Za-z_][A-Za-z0-9_]*)\b')
+# Identifiers a template literal actually INTERPOLATES. Seeding declaration-resolution
+# from every word in the warning text instead blew the reachable set past 400 names per
+# Actor and silenced both historical bugs in fault-injection -- a warning can only print a
+# variable it interpolates, so that is the only edge worth following.
+INTERP_IDENT = re.compile(r'\$\{\s*([A-Za-z_][A-Za-z0-9_]*)')
+OPEN, CLOSE = '([{', ')]}'
+
+
+def balanced_span(src, start):
+    """Substring from `start` (an opening bracket) through its matching close."""
+    depth = 0
+    for i in range(start, len(src)):
+        c = src[i]
+        if c in OPEN:
+            depth += 1
+        elif c in CLOSE:
+            depth -= 1
+            if depth == 0:
+                return src[start:i + 1]
+    return src[start:]
+
+
+_DECL_CACHE = {}
+
+
+def declaration_body(src, ident):
+    """Source text of `const/let/var <ident> = ...`, up to the end of the initializer."""
+    key = (id(src), ident)
+    if key in _DECL_CACHE:
+        return _DECL_CACHE[key]
+    _DECL_CACHE[key] = body = _declaration_body(src, ident)
+    return body
+
+
+def _declaration_body(src, ident):
+    m = re.search(r'\b(?:const|let|var)\s+' + re.escape(ident) + r'\s*=', src)
+    if not m:
+        return ''
+    rest = src[m.end():]
+    # Initializer ends at the first `;` outside brackets, or EOF.
+    depth = 0
+    for i, c in enumerate(rest):
+        if c in OPEN:
+            depth += 1
+        elif c in CLOSE:
+            depth -= 1
+        elif c == ';' and depth <= 0:
+            return rest[:i]
+    return rest[:2000]
+
+
+def warning_calls(src):
+    """(argument text, enclosing `for (...)` header text) for every `.warning(` call.
+
+    The enclosing loop header matters because the fleet's other idiom puts the field names
+    in a TABLE and warns from inside the loop that walks it -- fec-campaign-finance-scraper
+    runs `for (const [field, value, modes] of [['office', office, ['candidates']], ...])`
+    and warns `Ignoring ${field}`. The call text there names only the loop VARIABLES, so
+    resolving it alone reaches nothing. Returning the whole balanced `for (...)` header
+    covers both shapes at once: the names are read straight out of an inline table like
+    fec's, and a header that instead names a variable gets resolved like any other.
+    """
+    headers = []
+    for m in re.finditer(r'\bfor\s*\(', src):
+        span = balanced_span(src, m.end() - 1)
+        end = m.end() - 1 + len(span)
+        brace = src.find('{', end)
+        # Only a brace that opens immediately after the header is this loop's body; a
+        # single-statement loop has none, and attaching the nearest header unconditionally
+        # would let an unrelated loop far above donate its string literals to a warning.
+        if brace == -1 or src[end:brace].strip():
+            continue
+        body_end = brace + len(balanced_span(src, brace))
+        headers.append((brace, body_end, span))
+    out = []
+    for m in re.finditer(r'\.warning\s*\(', src):
+        call = balanced_span(src, m.end() - 1)
+        inside = [h[2] for h in headers if h[0] <= m.start() < h[1]]
+        out.append((call, inside[-1] if inside else ''))
+    return out
+
+
+def warned_names(main_src):
+    """Field names a warning can actually put in front of a buyer.
+
+    Two sources, deliberately different in strictness:
+      - From the warning call's own text: names that are QUOTED (`"keyword"`) or
+        INTERPOLATED (`${minAmount}`, fec's `Ignoring minAmount ${minAmount}: ...` idiom).
+        Counting every bare word in the prose instead was tried and reverted -- it pushed
+        the reachable set past 400 names per Actor on English words alone and silenced BOTH
+        historical bugs under fault-injection, which is the whole point of the tool.
+      - QUOTED names only, from declarations the call reaches: the variables it interpolates
+        and the table its enclosing loop walks. Declaration bodies are full of incidental
+        identifiers, so only the string literals in them count.
+    """
+    names = set()
+    for call, loop_header in warning_calls(main_src):
+        names.update(QUOTED.findall(call))
+        names.update(INTERP_IDENT.findall(call))
+        names.update(QUOTED.findall(loop_header))
+        seeds = set(INTERP_IDENT.findall(call)) | set(IDENT.findall(loop_header))
+        texts, seen_idents = [], set()
+        for ident in seeds:
+            seen_idents.add(ident)
+            body = declaration_body(main_src, ident)
+            if body:
+                texts.append(body)
+        for _ in range(DECL_DEPTH):
+            next_texts = []
+            for t in texts:
+                names.update(QUOTED.findall(t))
+                for ident in set(IDENT.findall(t)) - seen_idents:
+                    seen_idents.add(ident)
+                    body = declaration_body(main_src, ident)
+                    if body:
+                        next_texts.append(body)
+            texts = next_texts
+            if not texts:
+                break
+    return names
+
+
+def load_allow():
+    if not os.path.exists(ALLOW):
+        return {}
+    with open(ALLOW) as f:
+        return json.load(f)
+
+
+def audit(slug, schema_path, main_path, allow, show_allowed):
+    with open(schema_path) as f:
+        schema = json.load(f)
+    with open(main_path) as f:
+        main_src = f.read()
+
+    props = schema.get('properties') or {}
+    warned = warned_names(main_src)
+    slug_allow = allow.get(slug, {})
+
+    scoped, flagged, allowed, bad_reason = 0, [], [], []
+    for field, spec in props.items():
+        phrase = scope_phrase(spec.get('description') or '')
+        if not phrase:
+            continue
+        scoped += 1
+        if field in warned:
+            continue
+        if field in slug_allow:
+            reason = (slug_allow[field] or '').strip()
+            if reason:
+                allowed.append((field, phrase, reason))
+            else:
+                bad_reason.append(field)
+            continue
+        flagged.append((field, phrase))
+
+    if flagged or bad_reason or (show_allowed and allowed):
+        print(f'\n{slug}  ({scoped} mode-scoped field(s), {len(warned)} name(s) reachable from warnings)')
+    for field, phrase in flagged:
+        print(f'  FLAG  {field}  -- schema says "{phrase}", no log.warning names it')
+    for field in bad_reason:
+        print(f'  FLAG  {field}  -- allowlisted with an EMPTY reason; state an actual reason or remove it')
+    if show_allowed:
+        for field, phrase, reason in allowed:
+            print(f'  allow {field}  -- "{phrase}" :: {reason}')
+
+    return scoped, len(flagged) + len(bad_reason), len(allowed)
+
+
+def main():
+    args = sys.argv[1:]
+    show_allowed = '--show-allowed' in args
+    args = [a for a in args if a != '--show-allowed']
+
+    if '--main' in args and '--schema' in args:
+        main_path = args[args.index('--main') + 1]
+        schema_path = args[args.index('--schema') + 1]
+        scoped, flags, _ = audit('(fault-injection)', schema_path, main_path, {}, show_allowed)
+        print(f'\ncheck-mode-scope-warning: 1 pair, {scoped} mode-scoped field(s), {flags} flag(s)')
+        return
+
+    allow = load_allow()
+    wanted = set(args)
+    slugs = sorted(d for d in os.listdir(ACTORS) if not d.startswith('_'))
+    if wanted:
+        slugs = [s for s in slugs if s in wanted]
+        missing = wanted - set(slugs)
+        if missing:
+            print(f'unknown Actor slug(s): {", ".join(sorted(missing))}', file=sys.stderr)
+
+    n_actors = tot_scoped = tot_flags = tot_allowed = 0
+    for slug in slugs:
+        schema_path = os.path.join(ACTORS, slug, '.actor', 'input_schema.json')
+        main_path = os.path.join(ACTORS, slug, 'src', 'main.js')
+        if not (os.path.exists(schema_path) and os.path.exists(main_path)):
+            continue
+        n_actors += 1
+        scoped, flags, n_allow = audit(slug, schema_path, main_path, allow, show_allowed)
+        tot_scoped += scoped
+        tot_flags += flags
+        tot_allowed += n_allow
+
+    print(f'\ncheck-mode-scope-warning: {n_actors} Actor(s), {tot_scoped} mode-scoped field(s), '
+          f'{tot_allowed} allowlisted, {tot_flags} flag(s)')
+    if not tot_flags:
+        print('every field whose own schema description promises a mode restriction is named '
+              'by a log.warning when it is ignored.')
+
+
+if __name__ == '__main__':
+    main()

@@ -1,3 +1,81 @@
+- [x] **DONE cycle 2232 (MANDATED QUALITY slot -- `2232%3==0`, verified via
+      `python3 -c "print(2232%3)"`) -- answered a real dev.to technical question, and built
+      the standing check it asked for: `bin/check-mode-scope-warning`.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      1c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      185c, cycle 2417), inbox unchanged (10 items, known spam/DMARC/resolved `dc593cfb`
+      thread, nothing to answer), services active, site 200 on `/` `/tools` `/pricing`,
+      `HEAD == origin/main` (`237767fb`) and tree clean before edits.
+      **Trigger:** `bin/devto-comments` (PLAYBOOK: every QUALITY cycle) surfaced 1 genuinely
+      unanswered comment -- `@davekurian` on article 4909344 ("Your scraper's filter did
+      nothing, and the run looked perfect"), asking whether a table-driven regression matrix
+      shipped alongside the live warning check, so the next field added to a shared schema
+      is caught. The honest answer was NO: what existed was one live run plus a hand-driven
+      grep, both point-in-time -- and that is exactly how the bug got in twice (c989 fec,
+      c2172 apple-podcasts), since both Actors already warned correctly for OTHER out-of-
+      scope inputs and nobody noticed the convention had stopped being applied.
+      **Built `bin/check-mode-scope-warning`** (offline, no network, no Actor run, ~17s;
+      registered in `state/fleet_checks.json` at 96c with its interval justified in-note).
+      Rule: for each schema property whose own `description` DECLARES a mode restriction
+      ("Reviews only:", "Candidates mode only.", "only applies to..."), is that field name
+      reachable from any `log.warning` -- quoted or `${interpolated}` in the call text, or a
+      string literal in a declaration the call interpolates, or in the inline table of the
+      `for` loop whose BODY contains the call? The loop-table arm is load-bearing: the
+      fleet's two idioms (`['keyword',...].filter(...)` vs. `for (const [field, value,
+      modes] of [...])`) look nothing alike, and a check understanding only one reports the
+      other as 100% broken forever.
+      **FAULT-INJECTION VERIFIED against both real pre-fix trees, not synthetic files:**
+      `3786f807^` (apple-podcasts) flags 6 of the 8 fields c2172 fixed; `95e26e5b^` (fec)
+      flags `office`/`party`/`minAmount`/`maxAmount`, 4 of the 7 c989 fixed. **Note the
+      first fec attempt used `a7ac46f0^` and looked like a tool failure -- it was not; that
+      commit is cycle 989's STATUS/queue housekeeping, the code fix landed earlier in
+      `95e26e5b`. Re-derive the true pre-fix commit with `git log -S` on the added code, not
+      by grepping for the cycle number.** The remaining misses are STRUCTURAL and must not
+      be read as coverage: the check only sees a restriction the schema DECLARES, so fec's
+      `contributionDateFrom`/`contributionDateTo`/`state` (which document per-mode MEANING,
+      not an "only" restriction) and apple-podcasts' `minReleaseDate`/`maxReleaseDate`
+      (already quoted in an unrelated date-parse warning) are invisible to it.
+      **Two method cuts tried and REVERTED -- do not reintroduce (both recorded in the
+      module docstring and the cadence note):** (a) "within N lines above the warning" split
+      apple-podcasts' own array literal in half at N=12 because an 8-line comment sits
+      inside it, so `keyword` read unwarned while its 4 siblings read warned; (b) "any bare
+      identifier in the warning prose" pushed the reachable-name set past 400 per Actor on
+      English words and **silenced BOTH historical bugs under fault injection** -- a check
+      that passes on known-broken code is worse than no check.
+      **Replied on dev.to** by appending a `## Reader note:` section via
+      `PUT /api/articles/4909344` (no comment-creation API, c188/c1416), naming the
+      commenter, stating plainly that no matrix existed, why a standing check beats a matrix
+      here (a matrix only covers the fields you remembered to enumerate; forgetting IS the
+      failure mode), both reverted cuts, and the fault-injection numbers including the
+      misses. `bin/devto-comments` re-run after the edit: **0 unanswered**.
+      `bin/check-disclosure` run BEFORE and AFTER the article edit (the append rewrites
+      `body_markdown` in full, so the AI-authorship footer is exactly what an append can
+      drop): 87 site posts + 23 dev.to articles, 0 missing both times.
+      **$0 spent, 0 Actor runs, 0 `apify push`, 0 new Actors**, revenue still $0 booked, no
+      owner email warranted.
+
+- [ ] **NEW follow-up (c2232, MEDIUM) -- judge the 9 fields `check-mode-scope-warning`
+      flagged on its first fleet run.** These are CANDIDATES, not confirmed bugs; nobody has
+      read the code paths yet. Baseline 2232 (25 Actors, 42 mode-scoped fields, 9 flags):
+      `fec-campaign-finance-scraper` `candidateName`, `includeTotals`;
+      `google-news-scraper` `publishedAfter`, `publishedBefore`;
+      `steam-reviews-scraper` `maxReviewsPerApp`, `includePlayerCount`,
+      `includeOwnerEstimates`. For each: read the wrong-mode code path and decide whether a
+      buyer can be charged for unfiltered rows. **Default answer to a flag is to ADD the
+      warning, not to allowlist** -- `state/mode_scope_allow.json` exists (currently empty
+      on purpose, so these stay visible) and an entry requires a real reason sentence; the
+      check flags an empty one. Do one Actor per cycle and batch the warning + README into
+      that Actor's single push, per the BUDGET.md one-push-per-Actor-per-cycle rule.
+
+- [ ] **NEW follow-up (c2232, LOW) -- `bin/check-disclosure` is NOT in
+      `state/fleet_checks.json`.** Its "run on every QUALITY cycle" instruction lives only
+      in PLAYBOOK prose, which is the exact failure shape `fleet_checks.json`'s own `_readme`
+      was created (c1624) to close for `devto-comments` and `check-competitor-claims`. It
+      did get run this cycle, so nothing is currently rotting -- but it is unregistered and
+      therefore invisible to `bin/checks-due`. Decide deliberately: either register it with a
+      justified interval, or write into the `_readme` why a PLAYBOOK-cadence check is
+      exempt. Do not silently register it without picking an interval from measured drift.
+
 - [x] **DONE cycle 2231 (NOT a QUALITY slot -- `2231%3==2`, verified via
       `python3 -c "print(2231%3)"`) -- fresh `varied_test` on `google-news-scraper`
       (fleet-oldest, 2201, 30c stale). First-ever test of `extractTickers` combined with a

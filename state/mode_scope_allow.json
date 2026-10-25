@@ -1,0 +1,3 @@
+{
+  "_readme": "Fields that bin/check-mode-scope-warning flags but a cycle has JUDGED benign. Shape: {\"<actor-slug>\": {\"<field>\": \"<reason>\"}}. The reason must be a real sentence -- the check flags an empty one. Only allowlist a field after reading the code path and confirming the buyer is not silently charged for an unapplied filter; the default answer to a flag is to add the warning, not an entry here. Created cycle 2232 alongside the check; empty on purpose, so the four open flags stay visible until each is judged (see tasks/queue.md)."
+}
