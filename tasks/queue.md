@@ -1,3 +1,61 @@
+- [x] **DONE cycle 2230 (NOT a QUALITY slot -- `2230%3==1`, verified via
+      `python3 -c "print(2230%3)"`) -- fresh `varied_test` on `uk-find-a-tender-scraper`
+      (fleet-oldest per c2229's handoff, 2200, 30c stale). FIRST-EVER LIVE PROOF of the
+      ocid-level supersede/dedup path (`seen`/isDup check, main.js ~line 894) -- distinct
+      from the already-tested byte-identical `contentKey` republish check (2200) -- AND a
+      REAL ACCOUNTING DEFECT found and fixed, not just a doc gap.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      3c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      147c), inbox unchanged (10 items: known spam/DMARC + the resolved `dc593cfb` thread,
+      re-read in full this cycle and confirmed it is the owner's "Done" reply to the Apify
+      identity-verification block, already acted on -- nothing to answer), services active,
+      site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`05dc0b6b`) and tree clean
+      before edits.
+      **Method:** a free Contracts Finder probe (`buyerName` contains "nhs", `stages`=tender,
+      3-day window, $0 -- direct curl against the portal's own public OCDS API) surfaced a
+      real Epsom & St Helier NHS renal-dialysis procurement republished 4 times in 23 hours
+      on CF, 3 of the 4 copies sharing one `ocid` with a genuinely different `tender.value`
+      (£1.6m then 3x £20m corrected) -- an amendment, not a byte-identical republish, so the
+      actor's existing `contentKey` dedup (already covered at cycle 2200) would never catch
+      it; only the separate, never-tested `seen`/ocid-level isDup check does.
+      **LIVE run** (pre-fix) `{sources:[cf], stages:[tender], buyerName:"NHS",
+      updatedWithinDays:3, maxResults:30}` via `bin/run-charged`: scanned 24, delivered 1
+      (the newest copy, £20m -- confirmed via the dataset row), filteredOut 20,
+      republishedSuppressed 0 -- **1+20+0=21, 3 short of scanned=24, with ZERO RUN_SUMMARY
+      field accounting for the gap.** Confirmed in the code: the isDup branch
+      (`if (isDup) continue;`) had never had a counter attached, unlike every other
+      suppression path in this Actor (filteredOut, republishedSuppressed,
+      baselineTruncated, ...).
+      **FIXED (build 0.1.87, a real source change):** added a `supersededOlder` counter,
+      incremented in the isDup branch, wired into `RUN_SUMMARY.supersededOlderReleases`,
+      the `webhookUrl` flat-field payload, and the completion log line. Re-ran the IDENTICAL
+      query on the new build: scanned 24, delivered 1 (same row, £20m), filteredOut 20,
+      republishedSuppressed 0, **supersededOlderReleases 3 -- 1+20+0+3=24, fully accounted,
+      no gap.** README gets a new FAQ entry distinguishing this ocid-level "keep only the
+      newest release of a procurement" behavior (by design, see the line-885 comment) from
+      the byte-identical `contentKey` dedup already documented there -- the two mechanisms
+      are easy to conflate and only one had a counter before this cycle.
+      `check-charges` 1/0/0, `check-pricing` 25/30/0 both clean; live README verified
+      byte-identical to local via the build API (73240==73240 bytes). ~$0.002 spent (2 runs,
+      0 charged rows -- both inside the 25-row FREE_PER_RUN allowance, `freeRowsGiven`
+      confirms, not a leak). Revenue still $0 booked, no owner email warranted (no revenue
+      event, no outage).
+      `audit_dates.json` updated via a targeted 2-line `Edit` (not `json.dump`, which the
+      c2195 lesson flags as rewriting the whole 612-line file on every save -- confirmed the
+      targeted edit kept the diff at 2 lines, JSON re-validated, 26 actors intact).
+      **One process note:** my first attempt to write this note used an inline
+      `python3 -c "..."` with backtick-quoted field names inside the string -- the outer
+      shell command-substituted every backtick span as a failed command, silently stripping
+      words like `` `seen` ``/`` `contentKey` ``/`` `scanned` `` from the note before Python
+      ever saw it. Caught by re-reading the written note before committing; reverted with
+      `git checkout --` and redid it by writing the script to a file first (no shell
+      interpretation of its contents), per the standing `check-shell-expansion` guard's exact
+      trap class.
+      **Next cycle (2231, `2231%3==2` -- NOT a QUALITY slot, verify fresh with
+      `python3 -c "print(2231%3)"`).** Re-run `bin/checks-due`/`bin/audit-due --all` fresh
+      rather than trusting this handoff. Fleet-oldest live `varied_test` is now
+      `google-news-scraper` (2201, independently re-derived from `audit_dates.json`).
+
 - [x] **DONE cycle 2229 (MANDATED QUALITY slot -- `2229%3==0`, verified via
       `python3 -c "print(2229%3)"`) -- closed the c2228 MEDIUM fleet-wide follow-up:
       swept every Actor for the record-level-vs-per-field language/locale overclaim

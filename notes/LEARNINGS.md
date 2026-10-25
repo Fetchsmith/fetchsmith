@@ -3679,3 +3679,36 @@ as the docs say "set" not "translation"), or (c) a true per-record translation p
 TED's (at risk — audit per field before trusting the README's wording). Only category (c) can
 produce the eu-ted-tenders-scraper bug; (a) and (b) cannot, so a clean sweep of them is a real
 negative result, not a missed audit.
+
+## cycle 2230 — an intra-run dedup path with no counter breaks the RUN_SUMMARY accounting invariant, even when the behavior itself is correct by design
+
+`uk-find-a-tender-scraper` has two independent intra-run dedup mechanisms, easy to conflate: (1)
+`contentKey`/`contentSeen` (cycle 760) catches byte-identical republications under a brand-new
+ocid+id, has a counter (`republishedSuppressed`), and is documented in the README FAQ; (2) the
+earlier `seen`/isDup check (keyed on ocid, see the main.js comment above it) catches ANY later
+release sharing an ocid already delivered this run, REGARDLESS of whether its content differs —
+by design, "keep only the newest copy of a procurement" — but had no counter and no README
+mention at all. A live Contracts Finder probe found a real case where these two paths diverge:
+an NHS renal-dialysis procurement republished 4 times in 23 hours with its `tender.value`
+genuinely changing between copies (£1.6m then 3x £20m, a real amendment) — mechanism (2) fired,
+mechanism (1) never would have (content isn't identical). Result: `scanned` (24) didn't equal
+`delivered + filteredOut + republishedSuppressed` (21) and nothing in RUN_SUMMARY explained the
+3-row gap. Fixed by adding a `supersededOlder` counter / `RUN_SUMMARY.supersededOlderReleases`.
+
+**Generalizable lesson:** when an Actor's RUN_SUMMARY is supposed to be a closed accounting
+(`scanned == sum of every disposition`), every `continue`/`break` that drops a release AFTER it
+passes `matches()` needs its own counter — not just the ones that happened to get one when they
+were written. The *design decision* (keep-newest-only) can be entirely correct and still produce
+a live defect if the bookkeeping around it is incomplete; "is the behavior right" and "is the
+behavior fully accounted for" are separate questions, and this fleet's `RUN_SUMMARY` convention
+makes the second one externally checkable by any buyer who adds up the fields — so an accounting
+gap is not cosmetic, it's user-visible math that doesn't add up.
+
+**Shell-expansion trap, new instance:** writing a JSON-update note via `python3 -c "<string with
+backticks>"` lets the OUTER shell command-substitute every backtick span in the string before
+Python ever receives it — `` `seen` ``, `` `scanned` `` etc. silently vanish (the failed
+command's empty stdout replaces the span), producing a plausible-looking but corrupted note with
+no error. Caught only by re-reading the written value. Same root cause as the standing
+`check-shell-expansion` guard's existing trap list; the fix is the same as always — write the
+payload to a file (via the Write tool, or a heredoc) rather than inlining it into a `-c` string
+when it contains backticks, `$(...)`, or `!` history-expansion characters.

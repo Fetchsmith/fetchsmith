@@ -733,6 +733,16 @@ let filtered = 0;
 // Deduped across both portals: a contract can legitimately appear on each, and OCIDs are
 // portal-prefixed, so the ocid is the only key that could collide — check it as well as the id.
 const seen = new Set();
+// Count of releases dropped by the `seen`/isDup check below — distinct from `republished`
+// (byte-identical content under a DIFFERENT ocid, see the comment on contentSeen). This one
+// fires whenever a release shares an ocid ALREADY delivered this run, even when the content
+// differs (e.g. a genuine value revision between successive amendments) — found live cycle
+// 2230: a real Epsom & St Helier NHS renal-dialysis procurement republished 4 times in 23
+// hours, 3 of them with a DIFFERENT tender.value (£1.6m then 3x £20m), so contentKey alone
+// would not have caught them as "republished". Before this cycle these drops were invisible:
+// not `filtered` (matches() already passed), not `republishedSuppressed` (content differs),
+// not `pushed` — scanned minus every other RUN_SUMMARY field left an unexplained gap.
+let supersededOlder = 0;
 // Republication dedup (cycle 760). Distinct from `seen` above, which keys on ids: both portals
 // routinely re-publish the SAME notice under a brand-new ocid AND a brand-new release id, so
 // nothing id-based can catch it. Measured live over 374 tender-stage notices (30-day window,
@@ -894,7 +904,7 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
         const isDup = (key2 && seen.has(key2)) || (release.ocid && seen.has(release.ocid));
         if (key2) seen.add(key2);
         if (release.ocid) seen.add(release.ocid);
-        if (isDup) continue;
+        if (isDup) { supersededOlder += 1; continue; }
 
         // Keep the first copy the walk reaches, which is the newest (both portals page
         // newest-first), and never charge for the rest.
@@ -927,7 +937,7 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
         if (watchMode && watchId && pushed > beforePush) watchSeen.add(watchId);
     }
 }
-log.info(`Pushed ${pushed}/${maxResults}, filtered out ${filtered}, suppressed ${republished} republication(s), after ${page} page(s) scanned.`);
+log.info(`Pushed ${pushed}/${maxResults}, filtered out ${filtered}, suppressed ${republished} republication(s) and ${supersededOlder} older same-procurement release(s), after ${page} page(s) scanned.`);
 for (const c of cursors) perSource[c.key] = c.pushed;
 
 // Stop causes that can only be judged once the walk is over. A cursor that still has buffered
@@ -1172,6 +1182,12 @@ const runSummary = {
     // Byte-identical re-publications of a notice already delivered in this run (same portal),
     // suppressed so they are not charged. See the contentKey comment above.
     republishedSuppressed: republished,
+    // Older releases of a procurement ALREADY delivered this run under the same ocid, dropped
+    // even when their content differs (an amendment that changed the value/description, not
+    // just a byte-identical re-publish) — see the `supersededOlder` comment above `seen`.
+    // scanned == delivered + filteredOut + republishedSuppressed + supersededOlderReleases now
+    // holds with no unaccounted gap; before this field existed it did not.
+    supersededOlderReleases: supersededOlder,
     pages: page,
     pageCap: effectivePageCap,
     // Matching notices that were fetched but never handed over (maxResults/charge limit cut the
@@ -1248,6 +1264,7 @@ if (webhookUrl) {
         scanned,
         filtered,
         republishedSuppressed: republished,
+        supersededOlderReleases: supersededOlder,
         pagesScanned: page,
         watchLabel: watchMode ? watchLabel : null,
         watchSeeding: watchMode ? seeding : null,
