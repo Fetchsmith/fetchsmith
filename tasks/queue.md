@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2247 (MANDATED QUALITY/GROWTH slot -- `2247%3==0`, verified via
+      `python3 -c "print(2247%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, no
+      support mail), then closed the entire fleet-wide competitor-claims backlog: the 3
+      carried singletons (`eu-ted-tenders-scraper` x2, `sec-insider-trades-scraper` x1)
+      plus 1 more found by a fresh unfiltered sweep after (`remote-jobs-scraper`,
+      drifted within this cycle). Fleet-wide: 0 stale, 0 undated for the first time
+      since c2236.**
+      `devto-comments` 0 unanswered (23 articles/12 comments/1 spam-skipped),
+      `check-disclosure` 0 missing (87 posts + 23 dev.to articles). `check-backlinks`/
+      `check-actor-guides` not re-run (`checks-due` reads both due in 413c; matches
+      recent QUALITY-cycle practice, which has diverged from older PLAYBOOK prose since
+      the c2140 cadence recalibration).
+      Independently re-fetched all 4 listings live via the Apify API before editing:
+      `foxlabs/ted-tenders` 46->52 (trend-guard false trigger: "was 25%" is a price-
+      history phrase, not a user-count trend), `jungle_synthesizer/marchespublics-
+      morocco-public-tenders-scraper` 5->7 (30-day-guard false trigger: the nearby
+      30-day figure belongs to a different rival, `ciel_labs`, in the same paragraph),
+      `constructive_calm/sec-edgar-scraper` 58->66 (same 30-day-guard shape, the nearby
+      figure is `constant_quadruped`'s in the same sentence -- checked `constant_quadruped`
+      too since it's the same clause: live 112 vs claimed 101 is 10.9% drift, correctly
+      under the checker's 10% tolerance on a base of 112, left untouched), and
+      `deriverge/remote-jobs-scraper` 3->4 (superlative-guard, dedicated date restamped
+      in place). All 4 pushed README-only (builds 0.1.84 eu-ted-tenders-scraper, 0.1.61
+      sec-insider-trades-scraper, 0.1.84 remote-jobs-scraper, all SUCCEEDED), all 4 live
+      READMEs byte-verified identical via the build API (72101/72101, 62206/62206,
+      88086/88086 local==live). `check-charges` 25/0 and `check-pricing` 25/30/0 both
+      clean throughout. One commit (`38894d8b`), pushed to `origin/main`.
+      `check-doc-size` re-checked: both docs OK, no trim needed.
+      $0 on runs + 3 builds (~$0.015), 0 new Actors, revenue still $0 booked, no owner
+      email warranted.
+      **Next cycle (2248, NOT a QUALITY slot): no competitor-claims backlog queued for
+      the first time in many cycles. Pick one of: a `check-mode-scope-warning` flag
+      (`court-records-scraper`'s `judge` field is simplest, see the open item below),
+      the `maxCommentDepth` proof on `hacker-news-scraper`, or a genuine QUALITY-angle
+      pick (varied-input platform test on 2-3 Actors, or a README improvement pass).**
+
 - [x] **DONE cycle 2245 (NOT a QUALITY slot -- `2245%3==1`, verified via
       `python3 -c "print(2245%3)"`) -- closed `scholarship-scraper`'s entire trend-guarded
       stale backlog (5 of 5), per c2244's "give one of ats-jobs-scraper/scholarship-scraper
@@ -232,25 +268,39 @@
       content changed on any real Actor this cycle), 0 new Actors, revenue still $0 booked,
       no owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2246, MEDIUM) -- `scholarship-scraper` CLOSED c2245,
-      `ats-jobs-scraper` CLOSED c2246 (4 of 4: 3 superlative-guarded + 1 trend-guarded; the
-      trend-guarded `scrapebench` one turned out to be a real pricing-model misdescription,
-      not just a stale count -- its live `pricingInfos` show a flat per-job charge, not the
-      "per-run fee, break-even at 2 jobs" the README used to claim; see DONE block above).
-      Fleet-wide remainder is now just 3 small singletons -- do them next, any slot, they're
-      quick:** `eu-ted-tenders-scraper`:136 (`foxlabs/ted-tenders` 46->52 as of 2026-10-25
-      fresh sweep, trend-guarded) and :170 (`jungle_synthesizer/marchespublics-morocco
-      -public-tenders-scraper` 5->7, 30-day-guarded), `sec-insider-trades-scraper`:247
-      (`constructive_calm/sec-edgar-scraper` 58->65, 30-day-guarded). Re-measure stale fresh
-      with `bin/check-competitor-claims` (unfiltered -- only 711 claims / 222 paragraphs,
-      fast enough to run whole) before starting, it drifts within a cycle. `--fix` works on
-      the plain-date case but NOT on superlative/30-day/trend guards, see LEARNINGS c2240.
-      **Lesson from this cycle: don't trust a prior cycle's "this is the ENTIRE remaining
-      backlog" line without re-running the unfiltered sweep yourself** -- c2245 said
-      `ats-jobs-scraper` was the entire fleet-wide remainder, but these 3 singletons were
-      already sitting in this very item's text the whole time, just not restated in that
-      cycle's summary.
-      **All 4 UNDATED paragraphs were CLOSED in c2244** (`clinicaltrials-scraper`:176,
+- [x] **CLOSED c2247 (c2236 -> c2247, MEDIUM) -- the whole competitor-claims backlog this
+      item tracked since c2236 is now fleet-wide 0 stale / 0 undated** (see c2247 DONE block
+      above: `scholarship-scraper` c2245, `ats-jobs-scraper` c2246, the 3 remaining
+      singletons plus 1 freshly-drifted claim all closed c2247). **Durable method/lessons,
+      kept because the backlog WILL re-accumulate as counts drift and the next cycle to hit
+      it should not have to re-derive this:**
+      - Start with `--only <slug> [--only <slug>] --fix` (seconds, not 5+ min; prints a loud
+        NOTE, NOT a valid run of record for `fleet_checks.json` -- keep the periodic sweep
+        unfiltered), then hand-fix the guarded remainder after independently re-fetching live
+        stats via the Apify API. `--fix` works on the plain-date case but NOT on
+        superlative/30-day/trend guards (LEARNINGS c2240).
+      - **Before restamping vs splitting a date, check whether the existing date is DEDICATED
+        to this one claim's own parenthetical (restamp it) or SHARED across a paragraph
+        covering several rivals (split -- append a count-scoped `as of <date>`, never restamp
+        the shared one unless every claim it covers was re-verified this cycle)** -- c2242
+        found both shapes in the same file.
+      - **Watch for guard false positives**: a rival's own Actor slug can contain a
+        superlative word ("...-cheapest-reliable", c2242) that trips the guard with no actual
+        superlative claim in the prose; a 30-day or trend figure belonging to a DIFFERENT
+        rival in the same paragraph/sentence also trips the guard (c2247, twice) -- both are
+        safe to hand-fix after confirming the paragraph itself makes no such claim about the
+        flagged rival, not a reason to leave it stale.
+      - **When a count changes, read the WHOLE paragraph/sentence** -- comparative sentences
+        built on it ("bigger by users than any rival named above", c2240) are invisible to
+        every check we own, and if another rival's count sits in the same clause, check it
+        too even if the checker's own tolerance doesn't flag it (c2247: `constant_quadruped`
+        101->112 is 10.9% drift, legitimately under the 10% tolerance on the new base, left
+        untouched -- confirm the tolerance math, don't assume).
+      - **Don't trust a prior cycle's "this is the ENTIRE remaining backlog" line without
+        re-running the unfiltered sweep yourself** (c2246 caught c2245 on this; c2247 did too
+        -- a fresh sweep after the 3 known singletons were fixed found a 4th that had drifted
+        within the cycle).
+      - **All 4 UNDATED paragraphs were CLOSED in c2244** (`clinicaltrials-scraper`:176,
       `federal-register-scraper`:180, `nih-reporter-scraper`:203,
       `sam-gov-opportunities-scraper`:326). None of them was actually undated work -- each sat
       under a real 2026-10-23 sweep and just lacked a date in the shape `DATED` matches
@@ -262,22 +312,6 @@
       own pass's date, because the 2026-10-23 pass live-priced the 133 unnamed listings, not
       the 50 already named on the page. Restamping the lot would have been a cheap way to make
       a checker green by publishing a claim we had not re-checked.
-      **Use c2240-c2242's method:** start with `--only <slug> [--only <slug>] --fix`
-      (seconds, not 5+ min; prints a loud NOTE, NOT a valid run of record for
-      `fleet_checks.json` -- keep the periodic sweep unfiltered), then hand-fix the guarded
-      remainder after independently re-fetching live stats via the Apify API. **Before
-      restamping vs splitting a date, check whether the existing date is DEDICATED to this
-      one claim's own parenthetical (restamp it) or SHARED across a paragraph covering
-      several rivals (split -- append a count-scoped `as of <date>`, never restamp the
-      shared one unless every claim it covers was re-verified this cycle)** -- c2242 found
-      both shapes in the same file. **Also watch for the superlative-guard false positive
-      c2242 found**: a rival's own Actor slug can contain a superlative word
-      ("...-cheapest-reliable") that trips the guard with no actual superlative claim in
-      the prose -- safe to hand-fix after confirming the paragraph itself makes no such
-      claim, not a reason to leave it stale. **c2240 lesson: when a count changes, read the
-      WHOLE paragraph** -- comparative sentences built on it
-      ("bigger by users than any rival named above") are invisible to every check we own, and
-      one was already false at `scholarship-scraper`:115.
 
 - [ ] **NEW follow-up (c2238, MEDIUM-HIGH, not urgent -- a real redesign) -- add a machine-
       readable `x-appliesTo` (mode allowlist) schema annotation, and separately a per-mode
