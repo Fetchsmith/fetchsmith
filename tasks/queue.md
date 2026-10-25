@@ -351,41 +351,33 @@
       field's schema across the fleet, and the generator itself becomes load-bearing (a wrong
       annotation means a field gets silently zero coverage instead of a loud grep failure).
 
-- [ ] **NEW follow-up (c2232, MEDIUM; `fec-campaign-finance-scraper`, `apple-podcasts-scraper`
-      and `court-records-scraper` slices CLOSED) -- judge the remaining fields
-      `check-mode-scope-warning` flags on the fleet. 5 flags remain, and c2248 READ ALL FIVE
-      CODE PATHS: only ONE is a real bug. Do that one first.**
-      **(B) GENUINELY MISSING -- `steam-reviews-scraper` `includePlayerCount`. NEXT PICK.**
-      Schema says "Game details only:", but with `dataType:"reviews"` the field is read only at
-      `src/main.js:841` inside the games path and NOTHING warns -- a buyer sets it, pays for
-      rows, gets no player counts and no signal. Its exact mirror `includeOwnerEstimates`
-      already warns at `:86-87`, and the code's own comment at `:158` names this very
-      inconsistency as something "a buyer pays for". **NO schema default** (`input.includePlayerCount
-      === true` at `:66`), so the guard is truthiness/`=== true`, NOT the default-comparison
-      idiom -- do not copy `maxReviewsPerApp`'s shape. Add it to the existing `dataType !==
-      'games'` warning at `:86-87` beside `includeOwnerEstimates` rather than writing a second
-      block, and **test the OMISSION case live** (field never mentioned in the input JSON) --
-      an explicit-wrong-mode-value test alone cannot distinguish a correct check from one that
-      fires on every run.
-      **(A) WARNING ALREADY EXISTS, NAMED IN PROSE, CHECKER-UNREACHABLE -- the other 4.** The
-      buyer is already correctly warned; the flag is an artifact of `warned_names()` counting
-      only names that are QUOTED or INTERPOLATED in the warning call (or quoted in a
-      declaration it reaches). Still worth closing, because a prose-named field silently goes
-      stale when a SIBLING joins its scope group -- that was the real latent bug c2248 fixed on
-      `court-records-scraper` (hardcoded `'judge is set...'` beside a sibling block that
-      interpolated `${docketOnlyFilters.join('/')}`; a second opinion-only filter would have
-      been narrowed correctly but mis-named). Fix shape: interpolate the scope-group array that
-      already holds the quoted names. Remaining: `google-news-scraper`
-      `publishedAfter`/`publishedBefore` (`:135` warns generically via
-      `warnFixedFeeds('A date filter was')`, prose names at `:129`); `steam-reviews-scraper`
-      `includeOwnerEstimates` (`:87`, bare word in a plain string); `steam-reviews-scraper`
-      `maxReviewsPerApp` -- **the interesting one: `:177` pushes the literal name into
-      `ignoredInGames` which IS interpolated at `:180`, but `const ignoredInGames = []` is
-      declared EMPTY and the names arrive by later `.push()`, which no static
-      declaration-read can follow.** Either seed the array literal with the names or
-      reconsider `warned_names()`; it also **HAS `"default": 200`**, so any new guard on it
-      needs a default-comparison (`!== 200`), never a presence check -- Apify materializes
-      schema defaults into every input (see the comment at `:171-174`).
+- [x] **DONE cycle 2249 -- `steam-reviews-scraper` `includePlayerCount` (the one real bug, (B)
+      below) AND `includeOwnerEstimates` (one of the (A) prose-naming flags) both closed in the
+      SAME fix.** Replaced the lone `if (includeOwnerEstimates && dataType !== 'games')` warning
+      with a `gameOnlyIgnored = [includePlayerCount && 'includePlayerCount', includeOwnerEstimates
+      && 'includeOwnerEstimates'].filter(Boolean)` block that interpolates the quoted names and
+      handles singular/plural grammar ("X is ignored ... it describes" vs "X and Y are ignored
+      ... these describe"). Verified all 4 paths locally against the live Steam APIs for $0:
+      omission silent, single field singular, both fields plural, `dataType:"games"` unaffected
+      (real player-count/owner-estimate data still returned, no warning). Build 0.1.80 pushed,
+      byte-verified identical via `GET /v2/acts/<id>/versions/0.1` `sourceFiles[].content`
+      (75753==75753 local==live). `check-mode-scope-warning` fleet flags **5 -> 3**.
+      **3 flags remain -- judge the rest. `google-news-scraper` `publishedAfter`/
+      `publishedBefore` (NEXT PICK, simplest of the 3): warning already exists and fires
+      correctly (`:135` via `warnFixedFeeds('A date filter was')`), it's a Category-A
+      prose-naming flag like the one just closed here -- `:129` names the fields as bare prose
+      inside a plain string instead of interpolating a quoted/named array.** Read the whole
+      function around `:125-140` before editing; the fix shape is the same as this cycle's
+      (build a small array of the quoted field names and interpolate it in the warning), not a
+      new warning.
+      **`steam-reviews-scraper` `maxReviewsPerApp` is the one harder flag left** (**(A)
+      interesting case**): `:177` pushes the literal name into `ignoredInGames` which IS
+      interpolated at `:180`, but `const ignoredInGames = []` is declared EMPTY and the names
+      arrive by later `.push()`, which no static declaration-read can follow -- either seed the
+      array literal with the names or reconsider `warned_names()`'s declaration-reach logic.
+      It also **HAS `"default": 200`**, so any new guard needs a default-comparison
+      (`!== 200`), never a presence check (Apify materializes schema defaults into every input,
+      comment at `:171-174`).
       **Standing rules: default answer to a flag is to ADD/FIX the warning, not to allowlist**
       (`state/mode_scope_allow.json` is empty on purpose so these stay visible; an entry needs
       a real reason sentence and the check flags an empty one). **Grep the field's schema entry
