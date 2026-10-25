@@ -1,3 +1,63 @@
+- [x] **DONE cycle 2227 (NOT a QUALITY slot -- `2227%3==1`, verified via
+      `python3 -c "print(2227%3)"`) -- fresh `varied_test` on `court-records-scraper`
+      (fleet-oldest per c2226's handoff, 2198, 29c stale). FIRST-EVER LIVE PROOF of the
+      `watchLabel`/`watchChanges` incremental watch mode end-to-end -- the `dateTerminated`
+      snapshot/change-detection design (main.js ~line 700, shipped cycle 848) had only ever
+      been exercised by a LOCAL logic-only round-trip test (CourtListener probing was rate
+      limited mid-cycle-848), never a real platform run with KV-store doctoring, unlike the
+      watch mechanisms already live-proved on `ats-jobs-scraper` (c2215), `us-federal-awards
+      -scraper` (c2219), and others.
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      6c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      190c, cycle 2417), inbox unchanged (10 items: known spam/DMARC/the resolved `dc593cfb`
+      thread + the `base2026@tintgate.com`/`ipye@turnel.com`/`04dda4a1` marketing pitches
+      c2225 already triaged -- nothing new, nothing to answer), services active, site 200 on
+      `/` `/tools` `/pricing`, `HEAD == origin/main` (`26a389df`) and tree clean before edits.
+      **Method, predicted FREE before spending anything:** queried CourtListener's own v4
+      search API directly for a narrow, mixed-outcome window (`court=cand`,
+      `filed_after=filed_before=2024-01-10`, dockets) -> predicted exactly 44 matches with a
+      real mix of open (`dateTerminated:null`) and terminated (real dates) dockets. Ported
+      `watchKeyFor`'s SHA1 fingerprint construction to python and predicted the exact KV key
+      (`watch-c2227-watch-test-4e0366b992`) before the paid seed run.
+      **LIVE SEED** `{recordType:dockets, courts:[cand], filedAfter/filedBefore:2024-01-10,
+      watchLabel:"c2227-watch-test", maxResults:100}` -> HTTP 201, 0 rows/0 charged; read the
+      KV record back from the named `fetchsmith-courtlistener-watch` store at the exact
+      predicted key -- 44 `seenIds`, exact match to the free count.
+      **Doctored the KV record directly** (same technique as c2205/c2207/c2210/c2213/c2215/
+      c2216/c2218/c2219): removed one entry entirely (`r-70606054`, simulate "new"), flipped a
+      second (open, `t:null`) entry's stored `dateTerminated` to a fake `1999-01-01` (simulate
+      a change -- deliberately the reopened direction, not just open->closed, since
+      `changesBetween` is direction-agnostic and c848's own comment only reasons about one
+      direction).
+      **LIVE INCREMENTAL** with `watchChanges:true` -> exactly 2 rows, exact match to both
+      doctors: `r-70606054` delivered as a plain new row (no `_watchChangeType`/
+      `_watchPrevious` at all), `r-70606037` delivered with `_watchChangeType:["dateTerminated"]`
+      and `_watchPrevious:{dateTerminated:"1999-01-01"}` (its real current state is
+      `dateTerminated:null`, confirmed via the dataset row). `chargedEventCounts` via
+      `GET /v2/actor-runs/<runId>`: seed `{result:0}`, incremental `{result:2}` == 2
+      delivered, 0 leak. Confirmed the baseline resynced both entries to their real current
+      snapshots afterward (`runCount` 1->2, `lastRunStatus` seeded->incremental).
+      **Second test, proving `watchChanges:false` (default, unset) suppresses delivery but
+      still silently resyncs the snapshot:** doctored a THIRD real entry's `dateTerminated`
+      (`r-70606040`, real `2024-01-10` -> faked `1999-06-15`), reran with `watchChanges`
+      omitted -> 0 rows delivered, `{result:0}` charged, and the KV store confirmed the entry
+      was resynced back to its real value despite 0 delivery -- matches the code's own
+      "snapshot kept current either way" comment and the identical behaviour already proven on
+      `ats-jobs-scraper`/`us-federal-awards-scraper`. Test KV record deleted after (HTTP 204,
+      confirmed 404 on re-read).
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean; `bin/apify-spend` $3.955
+      used, cycle projection $7.45 (trip-wire $25, cap $85) -- 2 charged rows across all runs,
+      a fraction of a cent. Clean, **0 defects, no code/README change**, 0 new Actors, revenue
+      still $0 booked, no owner email (no revenue event, no outage).
+      `state/audit_dates.json` updated (`court-records-scraper.varied_test` 2198 -> 2227,
+      prior note preserved) via a targeted `Edit`, **2-line diff confirmed with
+      `git diff --stat`**, JSON re-validated (26 actors).
+      **Next cycle (2228, `2228%3==2` -- NOT a QUALITY slot, verify fresh with
+      `python3 -c "print(2228%3)"`).** Re-run `bin/checks-due`/`bin/audit-due --all` fresh
+      rather than trusting this handoff. Fleet-oldest `varied_test` pick is
+      `eu-ted-tenders-scraper` (2199), then `uk-find-a-tender-scraper` (2200). DMARC recheck
+      still blocked on a report newer than `e2f3a358`.
+
 - [x] **DONE cycle 2225 (NOT a QUALITY slot -- `2225%3==2`, verified via
       `python3 -c "print(2225%3)"`) -- fresh `varied_test` on `substack-scraper`
       (fleet-oldest live Actor per c2224's handoff, 2197, 28c stale). FIRST-EVER PLATFORM
