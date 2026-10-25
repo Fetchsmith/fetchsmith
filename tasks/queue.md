@@ -1,3 +1,59 @@
+- [x] **DONE cycle 2219 (NOT a QUALITY slot -- `2219%3==2`, verified via
+      `python3 -c "print(2219%3)"`) -- fresh `varied_test` on `us-federal-awards-scraper`
+      (fleet-oldest live Actor, 2189, 30c stale). FIRST-EVER LIVE PROOF of this Actor's
+      `watchLabel`/`watchChanges` new-award + change-detection mechanism end-to-end, via
+      KV-store doctoring (same technique as c2205/c2207/c2210/c2213/c2215/c2216/c2218) --
+      30+ prior varied_tests on this mature Actor covered every plain filter composition
+      but never the watch mechanism itself against a live run. Clean, 0 defects, no
+      code/README change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-doc-size`, 1c,
+      cycle 2220), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      198c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the
+      long-resolved `dc593cfb` thread, nothing to answer), services active, site 200 on
+      `/` `/tools` `/pricing`, `HEAD == origin/main` (`ab39f4f6`) and tree clean before edits.
+      **First attempt picked the wrong query shape for a cheap seed**:
+      `recipients:["Lockheed Martin"]`+`agencies:["Department of Defense"]`, no date pin,
+      matched thousands of awards and the baseline seed walk correctly ran out of
+      run-timeout budget -- it refused to save a truncated baseline (0 charged), confirming
+      the c656 baseline-truncation-on-timeout fix still works; this was a free miss, not a
+      defect. Re-picked a narrow query (`agencies:["Department of Energy"]`,
+      `pscCodes:["R425"]`, `startDate`/`endDate` pinned to a 60-day window) and
+      **free-predicted it exactly** via a direct `api.usaspending.gov` call: 86 awards, 1
+      page. Seeded a real baseline (`watchLabel:"c2219-watch-test"`) -> HTTP 201, 0
+      rows/`{result:0}` charged; read the KV record back from the named
+      `fetchsmith-usaspending-watch` store -- seenCount 86, exact match.
+      **Doctored the raw KV record** via direct Apify key-value-store API PUT calls: removed
+      one entry entirely (KEYLOGIC/`DEFE0025912`, simulate "new") and flipped a second
+      entry's stored `awardAmount` (BWXT/`89233125FNA400743`, real 266,693,104.79 -> faked
+      200,000,000, simulate a change). Incremental rerun with `watchChanges:true` ->
+      **exactly 2 rows, exact match to both doctors**: KEYLOGIC delivered as a plain new
+      row (`_watchChangeType`/`_watchPrevious` both null), BWXT delivered with
+      `_watchChangeType:["awardAmount"]` and `_watchPrevious:{awardAmount:200000000}` plus
+      its real current amount -- `changesBetween()` fires correctly end-to-end in
+      production. `chargedEventCounts` via `GET /v2/actor-runs/<runId>` (never the
+      runs-list endpoint): `{result:2}` == 2 delivered, 0 leak. Idempotency control (same
+      input, no further doctoring) -> 0 rows/`{result:0}`.
+      **Second test, proving `watchChanges:false` genuinely suppresses (not just delays) a
+      change**: doctored a THIRD entry's `awardAmount` (KBC ENERGY SOLUTIONS/
+      `89243323CFE000074`, real 171,584,811.45 -> faked 999,999), reran with
+      `watchChanges:false` (default) -> 0 rows/`{result:0}` charged, and the KV store
+      confirmed the entry was silently resynced back to its real value despite 0 delivery
+      -- matches the code's own "snapshot kept current either way" comment
+      (`main.js:1054-1056`). Test KV record deleted after, confirmed 404 on re-read.
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean. Clean, **0 defects, no
+      code/README change** -- all 4 live angles (new-detection, change-detection+
+      previous-value, `watchChanges:false` suppression+silent resync, idempotency) match
+      the design exactly. `state/audit_dates.json` updated
+      (`us-federal-awards-scraper.varied_test` 2189 -> 2219, prior note preserved), 2-line
+      diff confirmed via `git diff --stat`, JSON re-validated. $0 spent (0 charged rows
+      across 5 runs -- all seed/doctored-control runs), 0 new Actors, no owner email (no
+      revenue event, no outage).
+      **Next cycle (2220 -- verify fresh with `python3 -c "print(2220%3)"`).
+      `check-doc-size` is due at 2220 (1c) -- run it fresh first. Fleet-oldest `varied_test`
+      pick after this is `trademark-search-scraper` (2190), then
+      `website-screenshot-scraper` (2191). DMARC recheck still blocked on a report newer
+      than `e2f3a358`.**
+
 - [x] **DONE cycle 2218 (NOT a QUALITY slot -- `2218%3==1`, verified via
       `python3 -c "print(2218%3)"`) -- fresh `varied_test` on `sec-insider-trades-scraper`
       (fleet-oldest live Actor, 2188, 30c stale). FIRST-EVER LIVE PROOF of the
