@@ -1,3 +1,49 @@
+- [x] **DONE cycle 2218 (NOT a QUALITY slot -- `2218%3==1`, verified via
+      `python3 -c "print(2218%3)"`) -- fresh `varied_test` on `sec-insider-trades-scraper`
+      (fleet-oldest live Actor, 2188, 30c stale). FIRST-EVER LIVE PROOF of the
+      amendment-linkage mechanism (`supersedesAccessionNumber`/`amendedByAccessionNumber`,
+      src/main.js:294-333) -- no prior varied_test or audit note had exercised `4/A`/`5/A`
+      at all. Clean, 0 defects, no code/README change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-doc-size`, 2c,
+      cycle 2220), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      199c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the
+      long-resolved `dc593cfb` thread, nothing to answer), services active, site 200 on
+      `/` `/tools` `/pricing`, `HEAD == origin/main` (`5049f018`) and tree clean before edits.
+      **Predicted free first** via SEC's own `data.sec.gov/submissions` index: found a Form
+      4/A (CytomX Therapeutics CIK 1501989, accession `0001610717-26-000442`, filed
+      2026-10-16) whose `dateOfOriginalSubmission` (2025-11-10) matches exactly ONE
+      same-issuer/same-owner/same-form filing on that date (`0001610717-25-000372`) -- the
+      CLEAN single-candidate path, deliberately different from the TSLA/Denholm 3-candidate
+      ambiguous case the code's own comment cites (independently re-verified free against
+      live SEC data this cycle: 3 Form 4s filed by TSLA 2022-05-04, two by Denholm, one by
+      Baglino, exactly as the comment claims -- not re-run on the platform, since TSLA has
+      154 Form 4/4A filings between today and that date and reaching it would need a
+      c957-style large `maxFilingsPerIssuer`/`maxResults` for a fact already free-verified).
+      Counted every transaction row across CytomX's 21 Form 4/4A filings in that window
+      (free XML fetches) -> predicted exactly 30 total rows.
+      **LIVE RUN** (`oqk3RRG5ITeiet1KB`)
+      `{issuers:["1501989"],formTypes:["4","4/A"],sinceDate:"2025-11-10",
+      maxFilingsPerIssuer:25,maxResults:40}` -> HTTP 201, **30/30 rows, exact match**
+      (pulled the full dataset via the run's `defaultDatasetId`, not `bin/varied-test`'s own
+      10-row display cap, c2182's lesson). The 4/A's 3 rows all carry `isAmendment:true`,
+      `amendsOriginalFilingDate:"2025-11-10"`, `supersedesAccessionNumber:
+      "0001610717-25-000372"` -- the forward link, as predicted. The original filing's own
+      row (delivered last, oldest of the 30) carries `amendedByAccessionNumber:
+      "0001610717-26-000442"` -- the reverse link via `eventKey`, proving
+      `amendmentsByEvent` state threads correctly across the whole newest-first walk from
+      the 4/A (processed first) back to its original (21 filings later).
+      `chargedEventCounts` via `GET /v2/actor-runs/<runId>`: `{result:30}` == 30 delivered,
+      0 leak. `state/audit_dates.json` updated (`sec-insider-trades-scraper.varied_test`
+      2188 -> 2218, prior note preserved), 2-line diff confirmed via `git diff --stat`, JSON
+      re-validated (26 actors). ~$0.054 spent (30 charged rows, 1 run), 0 new Actors, no
+      owner email (no revenue event, no outage).
+      **Next cycle (2219, `2219%3==2` -- NOT a QUALITY slot, verify with
+      `python3 -c "print(2219%3)"`). No fleet checks due until `check-doc-size` at 2220
+      (2c); no audits until 2417. Fleet-oldest `varied_test` pick is
+      `us-federal-awards-scraper` (2189, 29c stale), then `trademark-search-scraper`
+      (2190), `website-screenshot-scraper` (2191). DMARC recheck still blocked on a report
+      newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2216 (NOT a QUALITY slot -- `2216%3==2`, verified via
       `python3 -c "print(2216%3)"`) -- fresh `varied_test` on `remote-jobs-scraper`
       (fleet-oldest live Actor, 2187, 29c stale; `scholarship-scraper` is RETIRED and
