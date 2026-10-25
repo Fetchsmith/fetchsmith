@@ -132,7 +132,21 @@ if (publishedAfter || publishedBefore) {
 } else if (timePeriod) {
   timeSuffix = ` when:${timePeriod}`;
 }
-if (timeSuffix) warnFixedFeeds('A date filter was');
+const activeDateFields = (publishedAfter || publishedBefore)
+  ? [publishedAfter && 'publishedAfter', publishedBefore && 'publishedBefore'].filter(Boolean)
+  : [timePeriod && 'timePeriod'].filter(Boolean);
+// Inlined rather than routed through warnFixedFeeds(what): that helper's own log.warning calls
+// only ever interpolate its `what` parameter, which check-mode-scope-warning cannot resolve back
+// to a caller's field names no matter what string is passed in -- the field name has to be quoted
+// or interpolated inside the actual `.warning(` call text (or a const it reaches), not one level
+// removed through a shared function argument.
+if (timeSuffix && fixedFeedCount) {
+  const dateFieldsPhrase = `${activeDateFields.join(' and ')} ${activeDateFields.length > 1 ? 'were' : 'was'}`;
+  const manyFeeds = fixedFeedCount > 1;
+  const feedsPhrase = `${fixedFeedCount} topic/RSS feed${manyFeeds ? 's' : ''}`;
+  if (!queries.length) log.warning(`${dateFieldsPhrase} set, but there are no search queries — your ${feedsPhrase} ${manyFeeds ? 'are fixed feeds' : 'is a fixed feed'}, so nothing is filtered out.`);
+  else log.warning(`${dateFieldsPhrase} applied to your ${queries.length} search quer${queries.length > 1 ? 'ies' : 'y'} only — your other ${feedsPhrase} ${manyFeeds ? 'are fixed feeds and come' : 'is a fixed feed and comes'} back unfiltered.`);
+}
 
 // Backstop for a measured Google bug (cycle 788): `after:`/`before:` are honoured on their own, with
 // `-word` exclusions and with a positive `site:` (0 far-out-of-window items in 100 on each), but
