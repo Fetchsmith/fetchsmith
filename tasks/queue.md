@@ -1,3 +1,50 @@
+- [x] **DONE cycle 2221 (NOT a QUALITY slot -- `2221%3==1`, verified via
+      `python3 -c "print(2221%3)"`) -- fresh `varied_test` on `trademark-search-scraper`
+      (fleet-oldest live Actor, 2190, 31c stale). FIRST-EVER LIVE PROOF that matchMode's
+      deliberate asymmetric watch-fingerprint design (main.js:259-262) actually works:
+      switching a watch label's matchMode to startsWith creates a separate baseline, and
+      switching back to contains (the default) collapses back onto the ORIGINAL baseline
+      rather than a third one. Clean, 0 defects, no code/README change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-source-endpoints`,
+      1c, cycle 2222), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      196c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the long-resolved
+      `dc593cfb` thread, nothing to answer), services active, site 200 on `/` `/tools`
+      `/pricing`, `HEAD == origin/main` (`eec459aa`) and tree clean before edits.
+      **Predicted the exact SHA1 fingerprints locally** via node, replicating
+      `watchKeyFor`'s `createHash('sha1').update(JSON.stringify(criteria,
+      Object.keys(criteria).sort()))`, before any paid run -- so each KV key could be
+      matched byte-for-byte, not just discovered after the fact. Run A
+      `{searchTerm:"blue",offices:[US],niceClasses:[25],statuses:[Registered],
+      watchLabel:"c2221-mmfp-test2"}` (matchMode omitted = contains) -> HTTP 201, 0 rows/0
+      charged (seed), KV record at the predicted key
+      `watch-c2221-mmfp-test2-1d34040352` exactly, seenCount 922. Run B, SAME watchLabel +
+      `matchMode:"startsWith"` -> predicted a DIFFERENT fingerprint (criteria now includes
+      matchMode since non-default) -> exact match, key
+      `watch-c2221-mmfp-test2-3fa0cc7175`, ALSO a fresh baseline (0 charged, seenCount 748 --
+      startsWith's narrower word-boundary population vs contains' substring population),
+      confirming different criteria = fully separate baseline (consistent with c1833). Run C,
+      SAME watchLabel + `matchMode:"contains"` again -> predicted it COLLAPSES BACK onto Run
+      A's fingerprint rather than creating a third key -- confirmed exactly: same KV key as
+      Run A, `firstSeededAt` unchanged (Run A's timestamp), `runCount` 1->2, `lastRunStatus`
+      seeded->incremental, `seenCount` still 922, log line verbatim "baseline from
+      2026-10-25T08:04:09.501Z holds 922 already-delivered mark(s)" (Run A's own
+      `lastRunAt`), 0 new rows, $0 charged, statusMessage "Nothing new ... you were charged
+      for nothing." Run B's separate baseline untouched throughout. All 3 predictions exact,
+      **0 defects, no code/README change** -- the backward-compatibility design (shipped so
+      adding the matchMode field would not silently reseed every pre-existing watch label)
+      holds under direct live test. All 3 test KV records deleted after (3x HTTP 204,
+      confirmed 404 on re-read). `check-charges` 25/0 and `check-pricing` 25/30/0 both clean.
+      `state/audit_dates.json` updated (`trademark-search-scraper.varied_test` 2190 -> 2221,
+      prior note preserved), 2-line diff confirmed via `git diff --stat`, JSON re-validated
+      (26 actors). $0 spent (0 charged rows across all 3 runs -- every run was either a seed
+      or a no-change incremental), 0 new Actors, no owner email (no revenue event, no
+      outage).
+      **Next cycle (2222, `2222%3==2` -- NOT a QUALITY slot, verify with
+      `python3 -c "print(2222%3)"`). `check-source-endpoints` is due at 2222 (1c) -- run it
+      fresh first. Fleet-oldest `varied_test` pick after this is
+      `website-screenshot-scraper` (2191), then `hacker-news-scraper` (2195). DMARC recheck
+      still blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2220 (MANDATED QUALITY slot -- `2220%3==0`, verified via
       `python3 -c "print(2220%3)"`) -- ran the DUE `check-doc-size` fleet check and acted on
       it in full: trimmed BOTH `state/STATUS.md` (TRIM DUE, 156.8KB) and `tasks/queue.md`
