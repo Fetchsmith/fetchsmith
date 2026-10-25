@@ -1,0 +1,106 @@
+#!/root/agent/venv/bin/python
+"""Run an Actor to completion and report rows pushed + chargedEventCounts + RUN_SUMMARY
+in one shot, with the charge counts settle-polled rather than trusted on the first
+terminal-status read.
+
+Promoted (cycle 2226, closing the cycle 2224 QUALITY follow-up in queue.md) from ad hoc
+/tmp throwaway scripts (e.g. c2224's /tmp/depth_run.py) into bin/, so every future
+varied_test that needs charge counts uses the same settle-poll instead of re-discovering
+the lag by hand.
+
+Why settle-poll: cycle 2224 proved chargedEventCounts is eventually consistent -- reading
+it in the SAME loop iteration that first sees status:SUCCEEDED read {result:5} for 6
+pushed rows on one run and {result:0} for 6 on another, both settling to {result:6} about
+20s later. A naive single read makes "charged < pushed" look exactly like a PPE leak --
+the loudest false-P0 shape a pay-per-event Actor has. This script keeps re-reading the run
+record after terminal status until chargedEventCounts stops changing between two polls, or
+a timeout elapses, then prints an explicit verdict:
+  - sum(charged) == rows             -> SETTLED, matches
+  - any single event count > rows    -> LEAK flagged (lag cannot explain this direction)
+  - sum(charged) < rows after timeout -> NOT SETTLED (inconclusive -- re-check manually,
+                                          do not file as a leak from this alone)
+Multi-event or conditional-event Actors (e.g. shopify-products-scraper's per-row `result`
+plus conditional `productDetail`) will not generally have sum(charged) == rows -- read the
+per-key breakdown this prints and judge against that Actor's own charging design rather
+than trusting the one-line verdict blindly.
+
+Usage: bin/run-charged <slug> '<json input>' [--settle-timeout SECONDS]
+"""
+import json, sys, time, httpx
+
+env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
+T = env["APIFY_TOKEN"]
+API = "https://api.apify.com/v2"
+user = httpx.get(f"{API}/users/me", headers={"Authorization": f"Bearer {T}"}).json()["data"]["username"]
+reg = {t["slug"]: t for t in json.load(open("/root/agent/actors/registry.json"))["tools"]}
+
+argv = sys.argv[1:]
+settle_timeout = 60
+if "--settle-timeout" in argv:
+    i = argv.index("--settle-timeout")
+    settle_timeout = int(argv[i + 1])
+    del argv[i:i + 2]
+
+if len(argv) < 2:
+    sys.exit("usage: bin/run-charged <slug> '<json input>' [--settle-timeout SECONDS]")
+
+slug, inp_raw = argv[0], argv[1]
+inp = json.loads(inp_raw)
+if slug not in reg:
+    sys.exit(f"unknown slug {slug!r} -- not in registry.json")
+mem = reg[slug].get("memory_mb", 1024)
+
+print(f"--- {slug} mem={mem} input={json.dumps(inp)}")
+r = httpx.post(f"{API}/acts/{user}~{slug}/runs", params={"token": T, "memory": mem}, json=inp, timeout=60)
+r.raise_for_status()
+run = r.json()["data"]
+run_id = run["id"]
+print("run started:", run_id)
+
+while True:
+    time.sleep(5)
+    run = httpx.get(f"{API}/actor-runs/{run_id}", params={"token": T}, timeout=30).json()["data"]
+    status = run["status"]
+    print("status:", status)
+    if status in ("SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"):
+        break
+
+dataset_id = run["defaultDatasetId"]
+kv_store_id = run["defaultKeyValueStoreId"]
+
+items = httpx.get(f"{API}/datasets/{dataset_id}/items", params={"token": T, "clean": "true"}, timeout=30).json()
+rows = len(items) if isinstance(items, list) else 0
+print("rows pushed:", rows)
+
+kv = httpx.get(f"{API}/key-value-stores/{kv_store_id}/records/RUN_SUMMARY", params={"token": T}, timeout=30)
+print("RUN_SUMMARY:", json.dumps(kv.json(), indent=2) if kv.status_code == 200 else f"none (HTTP {kv.status_code})")
+
+# Settle-poll: only accept chargedEventCounts once back-to-back reads agree, or time out.
+prev, charged = None, run.get("chargedEventCounts") or {}
+deadline = time.time() + settle_timeout
+while charged != prev and time.time() < deadline:
+    prev = charged
+    time.sleep(5)
+    run = httpx.get(f"{API}/actor-runs/{run_id}", params={"token": T}, timeout=30).json()["data"]
+    charged = run.get("chargedEventCounts") or {}
+
+settled = charged == prev
+print(f"chargedEventCounts ({'settled' if settled else 'TIMED OUT, may still be rising'}):",
+      json.dumps(charged))
+
+total = sum(charged.values())
+leak = {k: v for k, v in charged.items() if v > rows}
+if leak:
+    print(f"VERDICT: LEAK -- {leak} exceeds {rows} rows pushed; lag cannot explain this "
+          f"direction, actionable now")
+elif total < rows and not settled:
+    print(f"VERDICT: NOT SETTLED -- {total} charged < {rows} rows pushed, but the settle-poll "
+          f"timed out ({settle_timeout}s) before two reads agreed. Re-check manually rather "
+          f"than filing as a leak.")
+elif total < rows:
+    print(f"VERDICT: settled but {total} charged < {rows} rows pushed -- check whether this "
+          f"Actor has a free tier, conditional event, or genuinely leaks (read its charging "
+          f"code before concluding leak).")
+else:
+    print(f"VERDICT: clean -- {total} charged == {rows} rows pushed (single-event Actors) or "
+          f"a multi-event breakdown with no count exceeding rows.")

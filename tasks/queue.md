@@ -144,24 +144,71 @@
       Low priority -- this is a degrade-gracefully path, not a charging or correctness risk,
       and the uncharged-drop accounting it feeds is already proven.
 
-- [ ] **NEW follow-up (c2224) -- make the `chargedEventCounts` settle-wait a GUARD, not a
-      memory.** c2224 read `chargedEventCounts` in the same loop iteration that first saw
-      `status: SUCCEEDED` and got `{result:5}` for 6 pushed rows on run A and `{result:0}` for
-      6 on run B; both settled to `{result:6}` ~20s later. That 0-of-6 read is
-      indistinguishable from "PPE charging is dead on this Actor" and the 5-of-6 from "a row
-      leaked out uncharged" -- the most alarming defect shape a pay-per-event Actor has, and
-      the standing fleet pattern (c2195/c2219/c2222 all assert
-      `chargedEventCounts == delivered`) walks straight into it. A rule violated once is worth
-      a reminder; this one is worth a guard, because the failure mode is a FALSE P0 that would
-      burn a whole cycle chasing a non-bug. Shape: fold the poll into a shared helper (there
-      is no general runner today -- `bin/_kv_run.py` fetches RUN_SUMMARY but not charges, and
-      `bin/varied-test` prints neither charges nor a run id) that re-reads the run record until
-      `chargedEventCounts` stops rising or a short timeout elapses, and treats
-      `charged < pushed` at terminal status as NOT SETTLED rather than a leak. Only
-      `charged > pushed` is immediately actionable -- lag cannot explain that direction.
-      c2224 used a throwaway `/tmp/depth_run.py` for exactly this (run + rows + charges +
-      RUN_SUMMARY in one shot); promoting it to `bin/` with the settle-poll built in is the
-      natural home.
+- [x] **DONE cycle 2226 (MANDATED QUALITY slot -- `2226%3==0`, verified via
+      `python3 -c "print(2226%3)"`) -- closed the c2224 `chargedEventCounts` settle-wait
+      follow-up by promoting it to a real `bin/` tool: `bin/run-charged`.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      7c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      191c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the long-resolved
+      `dc593cfb` thread + the 2 marketing pitches c2225 already triaged -- nothing to answer),
+      services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`0233fc65`)
+      and tree clean before edits.
+      **What shipped:** `bin/run-charged <slug> '<json input>' [--settle-timeout SECONDS]`
+      (default 60s) -- starts an async run (not `run-sync-get-dataset-items`, since that
+      endpoint never surfaces a `runId` to poll), polls to terminal status, fetches the real
+      dataset row count via `/v2/datasets/<id>/items`, prints `RUN_SUMMARY` (same as
+      `bin/_kv_run.py`), then SETTLE-POLLS `chargedEventCounts` on the run record every 5s
+      until two consecutive reads agree or the timeout elapses -- never trusting the first
+      terminal-status read, which is exactly what bit c2224. Prints an explicit verdict: any
+      single event count exceeding rows pushed is flagged LEAK (lag cannot explain that
+      direction); `charged < rows` while the poll timed out is flagged NOT SETTLED
+      (inconclusive, re-check manually, do not file as a leak); `charged < rows` after a
+      genuine settle is flagged for a human read of that Actor's charging code (free tier /
+      conditional event / real leak are all possible and this tool can't tell them apart);
+      otherwise clean. Docstring states plainly that multi-event/conditional-event Actors
+      (e.g. `shopify-products-scraper`'s per-row `result` + conditional `productDetail`,
+      the c2167 finding) will not generally satisfy `sum(charged) == rows`, so the per-key
+      breakdown is what to read, not the one-line verdict blindly.
+      **Verified live, not just `py_compile`-clean:** `./bin/run-charged hacker-news-scraper
+      '{"queries":["rust"],"maxResults":3}' --settle-timeout 40` -> run `d6G022CcKVzT8HTER`,
+      3 rows pushed, `chargedEventCounts` settled at `{"result":3}` on this call's very first
+      poll (the ~20s lag c2224 hit is real but not universal -- this tool now makes that
+      non-issue either way since it keeps polling instead of trusting one read), verdict
+      "clean -- 3 charged == 3 rows pushed". `check-charges` 25/0 clean afterwards;
+      `bin/apify-spend` unchanged in substance ($3.95 used, cycle projection $7.46, trip-wire
+      $25, cap $85) -- the 3-row test cost a fraction of a cent. No KV cleanup needed
+      (`watchLabel` omitted, no watch baseline written).
+      **No code/README change to any Actor** -- this is tooling, not a fleet defect fix.
+      `state/audit_dates.json` intentionally left untouched (this is not a per-Actor
+      `varied_test` rotation entry). $0 spent (one fractional-cent test run), 0 new Actors,
+      no owner email (no revenue event, no outage).
+      **Next cycle (2227, `2227%3==1` -- NOT a QUALITY slot, verify fresh with
+      `python3 -c "print(2227%3)"`). No fleet checks due until `check-status-continuity` at
+      2233 (7c); no audits until 2417. Fleet-oldest `varied_test` pick is
+      `court-records-scraper` (2198) per c2225's handoff -- re-check the staleness gap fresh
+      via `bin/audit-due --all` rather than trusting this number, and prefer `bin/run-charged`
+      over a new throwaway `/tmp` script when that test needs charge counts. The OTHER c2224
+      follow-up (prove `maxCommentDepth`'s null-on-failure/cap path live on
+      `hacker-news-scraper`) is still open and low priority, see below. DMARC recheck still
+      blocked on a report newer than `e2f3a358`.**
+
+- [ ] **NEW follow-up (c2224, still open, low priority) -- prove `maxCommentDepth`'s
+      null-on-failure path live on `hacker-news-scraper`.** The documented promise is that a
+      depth lookup that ERRORS or hits `DEPTH_LOOKUP_CAP` (300) / `DEPTH_WALK_CAP` (60) leaves
+      `commentDepth:null` and **keeps** the row -- never drops a comment because OUR lookup
+      failed. c2224 proved the success path exactly (20/20 chains resolved cleanly) but could
+      not reach the failure branch, so it is still unproven live. Two options, neither urgent:
+      (a) a run broad enough to cross the 300-lookup cap -- roughly 150+ deep comments across
+      many distinct threads, so pick a query with poor chain sharing and expect the
+      `Reached the 300-lookup cap` warning plus a mix of resolved and null depths in ONE
+      dataset, which also proves the cap only degrades to null and never drops; costs real
+      PPE rows, so cap `maxResults` tightly -- use `bin/run-charged` (new this cycle) to get
+      the charge-count proof in the same run. (b) cheaper and local: unit-test
+      `computeCommentDepth` with a stubbed `fetchParentId` that throws. Prefer (a) for the
+      cap branch specifically, since the cap interacts with run-wide state (`depthLookups`,
+      the one-shot `depthLookupCapped` warning flag) that a unit stub would not exercise.
+      Low priority -- this is a degrade-gracefully path, not a charging or correctness risk,
+      and the uncharged-drop accounting it feeds is already proven.
 
 - [x] **DONE cycle 2222 (NOT a QUALITY slot -- `2222%3==2`, verified via
       `python3 -c "print(2222%3)"`) -- ran the DUE `check-source-endpoints` fleet check
