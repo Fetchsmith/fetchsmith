@@ -461,7 +461,7 @@ five listings whose event set was too ambiguous for the batch script. The honest
 
 Cheaper than us at **every** account plan with **no start fee** (strictly cheaper at any run size):
 
-- `lergassy/app-store-reviews-scraper` (6 users, re-verified 2026-10-19) — **$0.00008 (Free) → $0.000072 (Bronze) →
+- `lergassy/app-store-reviews-scraper` (9 users as of 2026-10-25, price re-verified 2026-10-19) — **$0.00008 (Free) → $0.000072 (Bronze) →
   $0.000064 (Silver) → $0.000056 (Gold+)** per review, no fee: **20% to 44% cheaper than us at
   every volume.** A pure per-review App Store export with country and star filters, i.e. a direct
   substitute on features as well as price. The cheapest unconditional rate in this niche to date.
@@ -486,7 +486,7 @@ how often these rivals actually win):
 - `wintersworks/appstore-reviews-scraper` (2 users) — $0.00008/review + **$0.001/app-details**:
   wins above **~50 reviews on Free**, above **~100 on Bronze** — and never on Silver or above, where
   our $0.00008/$0.00007 per-row rate already ties or beats its $0.00008 before the fee is even added.
-- `cheapapi/app-store-google-play-scraper` (3 users) — $0.00009/review + **$0.003/app-details** (and
+- `cheapapi/app-store-google-play-scraper` (2 users) — $0.00009/review + **$0.003/app-details** (and
   a $0.0005 per-request minimum top-up): wins above **~300 reviews on Free only** — its $0.00009
   per-row rate ties our Bronze rate exactly, so its fee makes it dearer than us on Bronze and every
   tier above, at any run size.
@@ -505,13 +505,13 @@ tier; most buyers are not on the Free plan):
 - `webdatatools/app-store-reviews-scraper` (2 users) — $0.0001 (Free) → **$0.00006 (Gold+)**,
   $0.00005 start fee — small enough to amortize within the first review, so still cheaper than us
   at every paid tier for any realistic run.
-- `plainrows/app-store-reviews-scraper` and `plainrows/app-reviews-scraper` (3 users each) —
+- `plainrows/app-store-reviews-scraper` (2 users) and `plainrows/app-reviews-scraper` (1 user) —
   $0.0001 (Free) → **$0.00005 (Gold+)**, but behind a real **$0.002 start fee**: the per-row saving
   over us (as little as $0.00001/review on Bronze) needs ~200 reviews on Bronze to clear that fee,
   fewer on Silver/Gold+ — cheaper above that run size, not from the first row (not yet re-verified
   rung-by-rung on Silver; flagged in queue.md for a follow-up pass).
 
-**Not an undercut, despite the tiered headline rate:** `euroscrape/app-reviews` (2 users) —
+**Not an undercut, despite the tiered headline rate:** `euroscrape/app-reviews` (1 user) —
 $0.0001 (Free) → $0.00009 (Bronze) → $0.00008 (Silver) → **$0.00007 (Gold+)** ties our own ladder
 exactly, rung for rung, and then adds a **$0.003 start fee** we don't charge — so it is dearer than
 us at every tier and every run size, not cheaper. Previously grouped with the paying-customer
@@ -645,7 +645,7 @@ rate that looked competitive to a Free-tier shopper. The new tiers keep the Free
 (still ties the historical volume leaders `thewolves`/`theagents`), and make every paying tier
 cheaper than the old flat rate — Silver ties `workstream`'s unconditional $0.00008, and Gold+ sits
 one tick above `lergassy`'s $0.000056 Gold+ rate rather than matching it exactly, since `lergassy`
-has 6 users (re-verified 2026-10-19) and no track record and losing 0.000014/review to the single cheapest listing in a
+has 9 users (as of 2026-10-25; price re-verified 2026-10-19) and no track record and losing 0.000014/review to the single cheapest listing in a
 crowded niche is a reasonable price for not having raced to the bottom. **Platform finding, not
 previously documented:** Apify's tiered-pricing API silently collapses GOLD/PLATINUM/DIAMOND to one
 value — a publish that set PLATINUM to $0.00006 and DIAMOND to $0.000056 came back live with both
