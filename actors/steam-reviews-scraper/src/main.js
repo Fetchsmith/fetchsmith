@@ -83,8 +83,19 @@ if (dayRange && dataType === 'reviews') {
   );
 }
 const includeOwnerEstimates = input.includeOwnerEstimates === true;
-if (includeOwnerEstimates && dataType !== 'games') {
-  log.warning('includeOwnerEstimates is ignored for dataType:"reviews" — owner estimates and tags describe a game, not a review. Set dataType:"games" to get them.');
+// Both fields are read only inside the dataType:"games" path below (getPlayerCount/SteamSpy calls) —
+// neither has any effect on a review row, so a reviews run that sets either gets charged for rows
+// and no signal that the field did nothing. Build the ignored-name list from the already-quoted
+// identifiers (not bare prose) so it stays interpolated if a third game-only field joins this group.
+const gameOnlyIgnored = dataType !== 'games'
+  ? [includePlayerCount && 'includePlayerCount', includeOwnerEstimates && 'includeOwnerEstimates'].filter(Boolean)
+  : [];
+if (gameOnlyIgnored.length) {
+  const plural = gameOnlyIgnored.length > 1;
+  log.warning(
+    `${gameOnlyIgnored.join(' and ')} ${plural ? 'are' : 'is'} ignored for dataType:"reviews" — `
+    + `${plural ? 'these describe' : 'it describes'} a game, not a review. Set dataType:"games" to get them.`,
+  );
 }
 // Valve flags "off-topic review bomb" periods (a controversy, not the game). The dead JSON API's
 // review endpoint excluded them by default (filter_offtopic_activity=1) and this input asked for
