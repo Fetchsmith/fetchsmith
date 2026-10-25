@@ -3914,3 +3914,71 @@ name which listing actually leads and to state the two that trail, with
 so the checker now monitors the comparison's own baseline instead of ignoring it.
 **Lesson: when --fix changes a number, read the whole paragraph -- the comparative sentences
 built on that number are invisible to every check we own.**
+
+## cycle 2244 -- an "UNDATED" flag is usually a PHRASING miss, not missing verification; and read the checker's regex before inventing prose to satisfy it
+
+All 4 remaining `check-competitor-claims` UNDATED paragraphs had been deferred for ~9 cycles as
+"quick QUALITY-slot fillers" that needed a live re-verification. None of them did. Every one sat
+under a real sweep performed 2026-10-23 (cycles 2144/2131/2145/2135, confirmed from each file's
+own section heading AND `state/audit_dates.json`, 2 days old against `MAX_AGE_DAYS = 45`). What
+they lacked was a date in the only shape the checker matches:
+
+    DATED = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
+
+i.e. the word and the date in the SAME sentence, within 40 chars, no period between them. So
+`All six were read live via pricingInfos on 2026-10-23` and `**Sixth sweep, 2026-10-23 (cycle
+2145)**` are both invisible to it -- the date is right there, it just isn't adjacent to a
+recognised word. Three of the four fixes were a single word each (`read live` -> `re-verified
+live`; `all live-priced.` -> `all live-priced and verified 2026-10-23.`).
+
+**Two lessons, and the second is the load-bearing one:**
+
+1. **Read the checker's pattern before writing prose to satisfy it.** Guessing a phrasing here
+   would have meant several push/build cycles (~$0.005 each) converging on a regex that takes
+   ten seconds to read. The cost of the guess is paid in builds, not in thought.
+
+2. **Scope the date to what the pass actually re-verified -- an UNDATED flag is NOT a licence to
+   restamp a paragraph.** `sam-gov-opportunities-scraper`:326's bottom line names ~25 rivals, but
+   the 2026-10-23 pass live-priced the 133 *unnamed* listings and did not re-price the 50 already
+   named on the page. The tempting fix -- open the paragraph with `Verified live 2026-10-23` --
+   turns the checker green by publishing a claim we had not re-checked, which is strictly worse
+   than the UNDATED flag it silences. The honest fix names the subset: "the \"and now\" names
+   below were live-priced and verified 2026-10-23; every other name carries the date of its own
+   pass above". **A green checker that cost us a true statement is a regression.** Same family as
+   the c2240 lesson (read the whole paragraph when a number changes) and the c2242 one (the
+   superlative guard can fire on a rival's slug, not a claim): these checks flag PROSE SHAPE, and
+   the fix always has to be judged against the underlying fact, never against the flag.
+
+## cycle 2244 -- check-doc-size's TRIM SOON is a work order, and the trim's KEEP_BLOCKS must be picked from the check's own interval
+
+`check-doc-size` reported TRIM SOON (not TRIM DUE) on STATUS.md and queue.md: positive headroom
+today, but ~240KB/~241KB projected at the check's OWN next look, 24 cycles out -- past both the
+warn and trim lines BETWEEN looks. That is the c1976 between-intervals miss, and the check now
+says so in its output. Treat TRIM SOON as due.
+
+**Pick `KEEP_BLOCKS` from the check's interval and growth rate, not from precedent.** c2220 kept
+8 blocks and argued it projected 143KB; it actually landed at 134.3KB -- right, but only by 16KB
+of margin on a 150KB line. Keeping 8 again this cycle would have left 36.7KB and projected
+146.8KB at cycle 2268, i.e. ON the warn line, guaranteeing another trim. Keeping 5 leaves 21.5KB
+and projects 131.6KB.
+
+**The constraint that limits the choice is not arithmetic, though: STATUS.md blocks are NOT
+stored strictly newest-first** (2236 sat above 2237 and 2238, because cycles write their own
+block and out-of-order cycles happen). A keep-newest-N cut is a PREFIX of the file, so the live
+cycle set is only hole-free for some N -- here 5 and 8, but not 6 or 7 -- and a hole makes
+`check-status-continuity` report a destroyed block. **Enumerate which prefixes are contiguous
+before choosing N**, and assert the resulting window in the trim script
+(`if live_cycles != set(range(2239, 2244))`).
+
+For queue.md the same prefix logic gives a worse answer, because its live open items are
+interleaved among DONE blocks: a prefix deep enough to include 2239 drags 2236/2237/2238 along
+(29.7KB, projecting 162KB). Keeping the same cycle window as STATUS.md as FOUR separate kept
+ranges plus hoisted open items gives 24.0KB and one story for both files.
+
+**Audit the open items while you are in there.** Hoisting is the only time anyone reads every
+`- [ ]` item in one pass, and this one found the c2224 `maxCommentDepth` follow-up present TWICE
+(:929 and :994), carried as two tasks for ~20 cycles. Don't eyeball the de-dup -- assert it:
+`words(DUPLICATE) - words(KEPT) == set()` on punctuation-stripped tokens proved :929 added
+nothing. The assertion also earned its keep immediately by failing first on two real punctuation
+diffs (`(c2224)` vs `(c2224,`, `tightly.` vs `tightly`), which is how you know it would have
+caught a genuine extra sentence rather than rubber-stamping the deletion.
