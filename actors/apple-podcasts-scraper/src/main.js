@@ -187,6 +187,14 @@ const episodeOnlyIgnored = EPISODE_FILTER_TYPES.includes(dataType) ? [] : [
 if (episodeOnlyIgnored.length) {
   log.warning(`${episodeOnlyIgnored.join(', ')} only applies to dataType "episodes" (and "charts") — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
 }
+// `maxPodcastsPerPublisher` carries a schema default (200) like `sort` above, but it is read
+// from the raw `input.maxPodcastsPerPublisher`, not the `?? 200`-defaulted local below — that
+// resolved variable is 200 on every run regardless of whether the caller touched the field, so
+// checking it here would warn on every single non-publisher run. Checking the raw input field
+// instead only fires when the caller actually set it.
+if (input.maxPodcastsPerPublisher !== undefined && dataType !== 'publisher') {
+  log.warning(`Ignoring "maxPodcastsPerPublisher": it only applies to dataType "publisher" (how many shows to return per publisher lookup), and this run is in dataType "${dataType}".`);
+}
 
 // Watch mode: a stateful "only episodes published since my last run" filter, same recipe as
 // app-store-reviews-scraper's watchLabel (copy, don't reinvent). Restricted to dataType
