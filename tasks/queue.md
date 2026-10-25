@@ -158,27 +158,66 @@
       throughout. One commit (`f41aabb0`). $0 on runs + 2 builds (~$0.01), 0 new Actors, no
       owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2241, MEDIUM) -- 18 stale competitor user-counts, 5 undated
+- [x] **DONE cycle 2242 (NOT a QUALITY slot -- `2242%3==1`, verified via
+      `python3 -c "print(2242%3)"`) -- closed `website-screenshot-scraper` (1 stale +
+      1 undated) and `substack-scraper` (3 guarded stale), both now 0 STALE/UNDATED.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox
+      unchanged (10 known spam/DMARC/resolved items), services/site healthy, tree clean at
+      `55cd924d`.
+      `website-screenshot-scraper`: `--only --fix` auto-fixed `cheapapi/website-screenshot
+      -api` 247->302 (date split, as the handoff predicted). The :131 UNDATED paragraph
+      named `dz_omar/ultimate-screenshot` and `scrapeai/screenshot-downloader` with a
+      discovery date but no verification word -- re-fetched both live (users and tiered
+      PAY_PER_EVENT pricing both within the checker's 10% tolerance, i.e. genuinely
+      unchanged) and appended a checker-legible `re-verified live 2026-10-25` phrase.
+      `substack-scraper`: all 3 guarded claims had drifted past 10% since the c2241 handoff
+      (fresh sweep, not the stale 1-claim handoff number) -- `brilliant_gum/substack
+      -insights-scraper` 199->231 users (30-day sub-figure also updated 72->57, dedicated
+      date restamped since it attests only to this one parenthetical); `contactminerlabs/
+      substack-email-scraper---advanced-cheapest-reliable` 57->64u (dedicated date
+      restamped) -- **the superlative guard fired on this one as a FALSE POSITIVE: the
+      word "cheapest" is baked into the Actor's own slug, not an actual superlative claim
+      in the paragraph's prose; worth tightening the guard regex to skip slug text, but
+      hand-verifying is cheap enough that it wasn't worth it this cycle**;
+      `haketa/substack-scraper` 3u->1u (count-scoped `as of` appended, NOT restamping the
+      paragraph's shared lead date which also covers 4 other rivals not re-verified this
+      cycle).
+      Both pushed README-only (builds 0.1.29 website-screenshot-scraper, 0.1.83
+      substack-scraper, both SUCCEEDED) and live READMEs verified byte-identical via the
+      build API (18657/18657 and 55566/55566 chars). `check-charges`/`check-pricing` clean
+      throughout. Two commits (`5fe0625d`, `438474b8`).
+      **Fresh fleet-wide re-run after both fixes: 18 -> 14 stale, 5 -> 4 undated** (not a
+      `--ran` run-of-record since the fleet isn't clean yet, same judgment call as c2236/
+      c2239).
+      $0 on runs (Apify metadata-read API calls only) + 2 builds (~$0.01), 0 new Actors,
+      revenue still $0 booked, no owner email warranted.
+
+- [ ] **CARRIED follow-up (c2236 -> c2242, MEDIUM) -- 14 stale competitor user-counts, 4 undated
       competitor paragraphs remain fleet-wide (re-measure fresh, it drifts within a cycle).
-      `--fix` now works on the date case but NOT on superlative/30-day/trend guards, see
-      LEARNINGS c2240.** Easiest next pick: `website-screenshot-scraper`:102 is a single
-      PLAIN STALE claim (`cheapapi/website-screenshot-api` 247->302, no guard) -- `--only
-      website-screenshot-scraper --fix` should close it in one shot; check its own :131
-      UNDATED paragraph in the same push. Then `substack-scraper`:236 (1 claim, guarded) and
-      `fec-campaign-finance-scraper`:270 (1 superlative-guarded claim). `ats-jobs-scraper`
-      (4) and `scholarship-scraper` (5, all trend-guarded in one dense paragraph) stay
-      deliberately deferred for an unhurried pass.
-      The 4 remaining UNDATED paragraphs (`clinicaltrials-scraper`:176,
-      `federal-register-scraper`:180, `nih-reporter-scraper`:203,
-      `sam-gov-opportunities-scraper`:326) still need a checker-legible date word
-      (`verified|checked|re-verified|rechecked`, c2235) -- `website-screenshot-scraper`:131
-      may be the 5th, check when doing that file. **Use c2240/c2241's method:** start with
-      `--only <slug> [--only <slug>] --fix` (seconds, not 5+ min; prints a loud NOTE, NOT a
-      valid run of record for `fleet_checks.json` -- keep the periodic sweep unfiltered),
-      then hand-fix the guarded remainder after independently re-fetching live stats via the
-      Apify API, SPLIT any existing date rather than restamping it, one push per Actor
-      (~$0.005 each), byte-diff the live build README against the build API. **c2240 lesson:
-      when a count changes, read the WHOLE paragraph** -- comparative sentences built on it
+      `--fix` works on the date case but NOT on superlative/30-day/trend guards, see
+      LEARNINGS c2240.** Easiest next pick: `fec-campaign-finance-scraper`:270 is a single
+      superlative-guarded claim (`parseforge/fec-campaign-finance-contributions-scraper`
+      9->11) -- re-fetch live, hand-verify the paragraph's superlative still holds against
+      the new number, fix by hand. `ats-jobs-scraper` (4) and `scholarship-scraper` (5, all
+      trend-guarded in one dense paragraph) stay deliberately deferred for an unhurried
+      pass -- consider actually doing one of them next, they've been deferred 3+ times now.
+      The 4 UNDATED paragraphs (`clinicaltrials-scraper`:176, `federal-register-scraper`:180,
+      `nih-reporter-scraper`:203, `sam-gov-opportunities-scraper`:326) still need a
+      checker-legible date word (`verified|checked|re-verified|rechecked`, c2235).
+      **Use c2240-c2242's method:** start with `--only <slug> [--only <slug>] --fix`
+      (seconds, not 5+ min; prints a loud NOTE, NOT a valid run of record for
+      `fleet_checks.json` -- keep the periodic sweep unfiltered), then hand-fix the guarded
+      remainder after independently re-fetching live stats via the Apify API. **Before
+      restamping vs splitting a date, check whether the existing date is DEDICATED to this
+      one claim's own parenthetical (restamp it) or SHARED across a paragraph covering
+      several rivals (split -- append a count-scoped `as of <date>`, never restamp the
+      shared one unless every claim it covers was re-verified this cycle)** -- c2242 found
+      both shapes in the same file. **Also watch for the superlative-guard false positive
+      c2242 found**: a rival's own Actor slug can contain a superlative word
+      ("...-cheapest-reliable") that trips the guard with no actual superlative claim in
+      the prose -- safe to hand-fix after confirming the paragraph itself makes no such
+      claim, not a reason to leave it stale. **c2240 lesson: when a count changes, read the
+      WHOLE paragraph** -- comparative sentences built on it
       ("bigger by users than any rival named above") are invisible to every check we own, and
       one was already false at `scholarship-scraper`:115.
 
