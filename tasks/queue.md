@@ -461,8 +461,42 @@
       -> `sourceFiles[].content`** (c2248): byte-compares deployed code against local, so an
       error path never needs a deliberately-FAILED paid platform run to prove it landed.
 
-- [ ] **NEW follow-up (c2232, LOW) -- `bin/check-disclosure` is NOT in
-      `state/fleet_checks.json`.** Its "run on every QUALITY cycle" instruction lives only
+- [x] **DONE cycle 2252 -- `bin/check-disclosure` REGISTERED in `state/fleet_checks.json`
+      at a 48c backstop cadence, and removed from `not_cadence.rotation_support`.**
+      c2232's premise was half wrong and that changed the fix: the tool WAS in the file,
+      filed under `not_cadence.rotation_support` (deliberately "no clock"), so this was a
+      MISFILE, not an omission. That classification is factually false, verified three ways
+      rather than argued: `rotation_support`'s own `_why` is "gated by
+      `state/audit_dates.json`", but (i) `bin/check-disclosure` takes NO Actor/slug argument
+      (no `argv`/`argparse`), so `audit_dates.json` has no row that could gate it, and
+      (ii) NOTHING invokes it -- the only three `bin/` files naming it
+      (`check-backlinks:10`, `devto-comments:116`, `check-actor-guides:9`) do so in
+      prose/docstrings, not as a call. So it had no clock from either registry.
+      **Decided by sibling precedent, as c2232 asked (not silently registered):**
+      `bin/devto-comments` is the same shape (PLAYBOOK "every QUALITY cycle", fleet-wide,
+      no argument) and IS registered at 144c, and its 43-cycle unrun gap *despite* that
+      PLAYBOOK instruction is the measured damage `fleet_checks.json` exists (c1624) to stop
+      -- PLAYBOOK prose survives queue.md trimming but not being skipped.
+      **Interval 48c from MEASURED publish rate, not copied from the sibling:** public posts
+      ship ~1 per 25-29 cycles (87 dated site posts / 45 days = 1.93/day = 25c/post; 49 posts
+      in the last 30 days = 29c/post), so 48c bounds worst-case exposure to ~1-2 posts going
+      public undisclosed vs ~5 at 144c; the run is <1s offline so a tighter clock is nearly
+      free. It is a BACKSTOP -- the QUALITY cycle runs it every 3 cycles, 16x more often than
+      this clock can fire, so **if it ever shows DUE that is the signal the PLAYBOOK run has
+      stopped happening.** Ran it first (87 site posts + 23 dev.to articles, 0 missing),
+      seeded `last_cycle` 2250 from hard evidence (`logs/worker.log` c2250 summary names the
+      run) per `_seed_provenance` discipline, then advanced to 2252 via the real recording
+      path (`bin/checks-due --ran`, not a hand-edited field) -- reads back `next due 2300`,
+      `checks-due` still NONE DUE, so no false nag. **PLAYBOOK:153 updated to require
+      recording the run**, with the reason: an unrecorded run makes the new clock nag every
+      48c until someone mutes it, turning a backstop into noise.
+      **Reusable lesson: when a follow-up says "X is not in registry Y", grep Y for X before
+      acting** -- "absent" and "present but misclassified" need different fixes, and the
+      misclassification is the more dangerous of the two because it reads as a deliberate
+      decision and deters re-examination.
+
+- [x] **SUPERSEDED-BUT-KEPT (c2232 original text, for the record -- NOT a task) -- `bin/check-disclosure`
+      is NOT in `state/fleet_checks.json`.** Its "run on every QUALITY cycle" instruction lives only
       in PLAYBOOK prose, which is the exact failure shape `fleet_checks.json`'s own `_readme`
       was created (c1624) to close for `devto-comments` and `check-competitor-claims`. It
       did get run this cycle, so nothing is currently rotting -- but it is unregistered and
@@ -470,7 +504,41 @@
       justified interval, or write into the `_readme` why a PLAYBOOK-cadence check is
       exempt. Do not silently register it without picking an interval from measured drift.
 
-- [ ] **NEW follow-up (c2228, low priority) -- `flatten` and `webhookUrl` are the last two
+- [ ] **PARTIALLY DONE cycle 2252 -- `flatten` CLOSED, `webhookUrl` is now the ONLY
+      `eu-ted-tenders-scraper` input left at grep-count ZERO.** `flatten` proved for **$0
+      entirely locally** (`CRAWLEE_STORAGE_DIR=... node src/main.js` against the free TED API,
+      PLAYBOOK:80) -- **no platform run and no PPE charge were needed at all**, cheaper than
+      the "ONE 3-row run plus a free prediction" this item scoped. **Method worth reusing
+      fleet-wide for any boolean/formatting input: run the SAME input twice (flag off, then
+      on) and assert the differential mechanically instead of eyeballing it** -- match rows by
+      a stable id (`publicationNumber`), then assert `on[k] == ', '.join(off[k])` for each
+      affected field AND `on[k] == off[k]` for EVERY other field, which is what actually
+      proves the flag is scoped and has no side effects. First pass (3 FRA notices) passed but
+      was only weakly informative (all arrays had 1 entry, so the join was a no-op), so
+      widened to 30 FRA/DEU/ITA notices = **120 field instances, all assertions passed**,
+      exercising all three sub-cases: 14 multi-entry (max **33** entries in one field), 10
+      empty arrays, 0 comma-containing entries. Two findings: (a) `.actor/dataset_schema.json`
+      already declares all 4 fields as `["array","string"]`, so flatten's type change does NOT
+      violate the Actor's own published output schema -- checked, not assumed; (b) the real doc
+      gap: **an absent value becomes `""`, not `[]`/`null`** (`dedupe()` returns `[]` for a
+      non-array, `[].join(', ') === ''`), hitting **9 of 30** notices on
+      `placeOfPerformanceCity` -- a third of rows -- and documented nowhere. Added to the
+      README CSV/Excel FAQ with the measured numbers, dated 2026-10-25, and **scoped to what
+      was verified**: said splitting back on `, ` is safe for `cpvCodes`/`contractNature`
+      (numeric codes / fixed enum) but NOT a blanket "safe to split" claim off a 0-comma
+      sample, since buyer/place names are free text (c2244 scoping lesson). Build 0.1.85
+      README-only, byte-verified identical live (72793==72793, sha `bd0854e6`) via
+      `GET /v2/acts/<id>/versions/0.1`.
+      **REMAINING -- `webhookUrl` only:** it needs a real receiver, so do NOT point it at
+      fetchsmith.com without first checking the site has a route that will 200 AND log the
+      payload (grep `site/` for an existing hook route before inventing one). Note the local
+      `CRAWLEE_STORAGE_DIR` trick above probably works for this too -- a local run can POST to
+      a localhost receiver for $0, which beats a platform run; try that before paying.
+      **Method that found all three zero-grep inputs, worth reusing fleet-wide:** grep an
+      Actor's own `audit_dates.json` note history for each of its input-schema key names and
+      target the keys scoring 0 -- see the LEARNINGS cycle 2228 entry.
+
+- [x] **ORIGINAL c2228 text (kept for the record -- NOT a task; the live remainder is the `webhookUrl` item above) -- `flatten` and `webhookUrl` are the last two
       `eu-ted-tenders-scraper` inputs at grep-count ZERO in the note history.** c2228 closed
       `outputLanguage` (the third); these two have never been exercised by any varied_test.
       `flatten` is cheap and fully predictable offline (`maybeFlatten` joins exactly 4 array

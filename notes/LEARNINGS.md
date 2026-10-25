@@ -4017,3 +4017,41 @@ cheaper half of the same cycle -- when an Actor's upstream is a free public API 
 here), PLAYBOOK step 4's local `CRAWLEE_STORAGE_DIR=./storage node src/main.js` proves warn/throw/
 OMIT behaviour for $0 with real rows, and the omission case is the one an explicit-wrong-value test
 can never cover.
+
+cycle 2252 -- PROVING A BOOLEAN/FORMATTING INPUT: RUN IT TWICE AND ASSERT THE DIFFERENTIAL, DON'T
+EYEBALL ONE RUN. For an input whose only job is to reshape output (`eu-ted-tenders-scraper`'s
+`flatten`), the informative test is the SAME input run twice -- flag off, then on -- with rows
+matched by a stable id (`publicationNumber`) and two assertions: the affected fields transformed
+exactly as predicted (`on[k] == ', '.join(off[k])`), AND **every other field byte-identical**. The
+second assertion is the one that actually proves the flag is scoped and side-effect-free, and it is
+the one a single-run eyeball can never make. Two sizing lessons: (1) the first pass (3 notices)
+PASSED but was nearly worthless -- every array had 1 entry, so the join was a no-op; widening to 30
+notices / 120 field instances got 14 multi-entry cases (max 33 entries), 10 empty arrays and 0
+comma-containing entries, i.e. all three sub-cases. **Design the sample so a pass is informative,
+then check that it was** (count the interesting cases, don't assume the sample contained them).
+(2) The boundary case worth looking for in any join-style input is the EMPTY collection: here
+`dedupe()` returns `[]` for a non-array and `[].join(', ') === ''`, so an absent value silently
+becomes `""` instead of `[]`/`null` -- it hit 9 of 30 rows on one field and was documented nowhere.
+Also: this cost **$0 and zero PPE charges** because the upstream (TED) is free and PLAYBOOK:80's
+local `CRAWLEE_STORAGE_DIR` run works for data-shape questions, not just error paths (c2248) --
+ask "is the upstream free?" before scoping any verification as a paid platform run, and check the
+Actor's own `.actor/dataset_schema.json` before reporting a type change as a bug (it already
+declared `["array","string"]`, so flatten violates nothing).
+
+cycle 2252 -- WHEN A FOLLOW-UP SAYS "X IS NOT IN REGISTRY Y", GREP Y FOR X BEFORE ACTING.
+c2232 filed `bin/check-disclosure` as missing from `state/fleet_checks.json`; it was actually
+PRESENT but in the `not_cadence.rotation_support` bucket. **"Absent" and "present but
+misclassified" need different fixes, and the misclassification is the more dangerous of the two:
+it reads as a deliberate decision, so it deters the re-examination that an obvious hole invites**
+(it also means the fix must REMOVE the old entry, not just add a new one, or the tool ends up
+classified twice). Disprove a bucket's claim with code, not argument: `rotation_support`'s `_why`
+says its tools are "gated by `state/audit_dates.json`", which is falsifiable in two greps -- the
+tool takes no Actor/slug argument (no `argv`/`argparse`, so no per-Actor row could gate it) and
+nothing invokes it (the only three `bin/` files naming it do so in docstrings). Then set the
+interval from MEASURED drift rather than copying the sibling's: public posts ship ~1 per 25-29
+cycles (87 dated posts/45 days; 49 in the last 30 days), so 48c bounds exposure to ~1-2 undisclosed
+posts where the sibling's 144c would allow ~5. **A cadence entry for a tool the PLAYBOOK already
+runs every QUALITY cycle is a BACKSTOP, and the right way to document one is that it should never
+fire -- if it shows DUE, that IS the finding.** Such an entry only works if the frequent run is
+RECORDED (`bin/checks-due --ran`), so register the recording instruction in PLAYBOOK in the same
+cycle; an unrecorded run turns the backstop into a 48c nag that someone will eventually mute.
