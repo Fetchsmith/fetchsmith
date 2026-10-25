@@ -1,3 +1,54 @@
+- [x] **DONE cycle 2213 (NOT a QUALITY slot -- `2213%3==2`, verified via
+      `python3 -c "print(2213%3)"`) -- fresh `varied_test` on `grants-gov-scraper`
+      (fleet-oldest, 2185, 28c stale). FIRST-EVER LIVE PROOF of this Actor's
+      `watchChanges` change-detection mechanism end-to-end (previously only
+      structurally confirmed by grep at `watch_subset_audit` 1569). CLEAN, 0 defects,
+      no code change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-doc-size`,
+      7c, cycle 2220), `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper`, 204c, cycle 2417), inbox unchanged (10 items, all
+      known spam/DMARC + the long-resolved `dc593cfb` thread, nothing to answer),
+      services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`fb1a5717`) and tree clean before edits.
+      **Method** (KV-doctoring technique, same shape as c2210/c2207/c2205): predicted
+      free via a direct `api.grants.gov/v1/api/search2` call (`keyword:"coral reef"`,
+      default `oppStatuses`) -> hitCount 11. Seeded a watch baseline
+      (`watchLabel:"c2213-watch-test"`, `watchChanges:true`, `maxResults:20`) -> 0
+      rows/0 charged; read the KV record back directly -- `seenIds` held exactly 11
+      ids, matching the free prediction, `awardCeiling`/`awardFloor`/`eligHash` all
+      null (seeding skips enrichment without an amount filter, per `main.js:1065-1073`
+      -- confirmed not a bug, since `changesBetween()`'s null-guard, `main.js:498/503`,
+      never compares an unsnapshotted field). Doctored opportunity `363852`'s stored
+      closeDate (real `10/26/2026` -> faked `08/15/2026`). Incremental rerun ->
+      **exactly 1 row, exact match**, `_watchChangeType:["closeDate"]`,
+      `_watchPrevious:{closeDate:"08/15/2026"}`, real current closeDate +
+      `awardCeiling` on the row. `chargedEventCounts` via `GET /v2/actor-runs/<runId>`
+      (never the runs-LIST endpoint): `{result:1}` == 1 delivered, 0 leak. Idempotency
+      control (no further doctoring) -> 0 rows/0 charged. Second test: doctored
+      opportunity `362034`'s closeDate too, reran with `watchChanges:false` -> **0
+      rows delivered**, and the KV store confirmed the snapshot was silently
+      refreshed back to the real value despite 0 delivery -- `watchChanges:false`
+      genuinely suppresses redelivery (not just a display filter), matching
+      `main.js:458-459`'s stale-state-prevention comment. Test KV record deleted after
+      (store confirmed empty). `check-charges` 25/0 and `check-pricing` 25/30/0 both
+      clean. Clean, **0 defects, no code/README change** -- all 4 live angles
+      (detection, previous-value reporting, `watchChanges:false` suppression,
+      idempotency) match the design exactly.
+      `state/audit_dates.json` updated (`grants-gov-scraper.varied_test` 2185 -> 2213,
+      prior note preserved); **2-line diff** confirmed via `git diff --stat`, JSON
+      re-validated (26 actors). ~$0.0015 spent (1 charged row across 4 runs), 0 new
+      Actors, no owner email (no revenue event, no outage).
+      **Next cycle (2214, `2214%3==0` -- MANDATED QUALITY slot, verify with
+      `python3 -c "print(2214%3)"`). No fleet checks due until `check-doc-size` at
+      2220 (7c). Fleet-oldest `varied_test` pick after this is `ats-jobs-scraper`
+      (2186), then `remote-jobs-scraper` (2187), `sec-insider-trades-scraper` (2188),
+      `us-federal-awards-scraper` (2189). On `grants-gov-scraper`, one cheap
+      follow-up worth flagging: the `watchChangeBlindFilters` warning itself has
+      still never been LIVE-triggered (only grep-confirmed at 1569) -- a watch run
+      with `watchChanges:true` + a narrowing filter like `closesWithinDays` set
+      should fire it live. DMARC recheck still blocked on a report newer than
+      `e2f3a358`.**
+
 - [x] **DONE cycle 2212 (NOT a QUALITY slot -- `2212%3==1`, verified via
       `python3 -c "print(2212%3)"`) -- ran the DUE `git-maintain` fleet check, then a
       `varied_test` on `app-store-reviews-scraper` (fleet-oldest, 2182, 30c stale).
