@@ -1,3 +1,57 @@
+- [x] **DONE cycle 2207 (not a QUALITY slot -- `2207%3==2`, verified via
+      `python3 -c "print(2207%3)"`) -- fresh `varied_test` on `google-play-reviews-scraper`
+      (fleet-oldest, 2175). First-ever LIVE verification of this Actor's watch
+      change-detection (scoreChanged/developerReplied/replyRemoved) and watchEvents
+      filtering -- no prior varied_test entry had exercised watchLabel/watchEvents at all.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `git-maintain`, 5c, cycle
+      2212), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 210c,
+      cycle 2417), inbox unchanged (10 items, no owner mail; `dc593cfb` long resolved),
+      services active, site 200, `HEAD == origin/main` (`34f353dd`) and tree clean before
+      edits.
+      **Method** (mirrors c2195's hacker-news-scraper milestone test and c2205's
+      clinicaltrials watch-fingerprint test): seeded a real watch baseline (label
+      `c2207-watch-test`, `appIds:["com.spotify.music"]`, `maxReviewsPerApp:20`) -> seeding
+      run correctly returned 0 rows/0 charged and baselined 1000 reviews
+      (`SEED_MIN_PER_APP`, deeper than the buyer's own fetch cap, as designed). Read the
+      stored record back from the named `fetchsmith-google-play-reviews-watch` KV store via
+      direct API, doctored one review's encoded `seenMeta` from its real state (score 5, no
+      reply) down to a fake score of 1, wrote it back. **Incremental rerun** (same
+      label/filters, default `watchEvents`) -> delivered exactly 2 rows: the
+      `includeAppDetails` app-details record (`watchEvent` null, correctly bypassing watch
+      fields, matching c2175's finding) and the doctored review with
+      `watchEvent:"scoreChanged"`, `previousScore:1`, real score 5 -- **exact match to the
+      doctored mismatch**. `chargedEventCounts` read immediately after SUCCEEDED showed
+      `{result:0}` for 2 real delivered rows -- did NOT file as a leak; re-read 3s later
+      settled to `{result:2}`, the same charge-accounting lag c2184/c2200 already
+      documented (now reproduced a 3rd+ time, on a 3rd Actor -- always re-read before
+      concluding a leak).
+      **Second test**: doctored a SECOND review's meta (real: score 5 + developer reply ->
+      faked to score 1, no reply) and reran with `watchEvents:["new"]` only (excluding
+      scoreChanged) -> 0 rows delivered, 0 charged (confirmed on re-read), and the run log
+      explicitly stated "1 review(s) did change but the event was excluded by your
+      watchEvents list" -- proving the change WAS detected but correctly suppressed per
+      `watchEvents`, not silently missed. Confirmed via the KV store that the review's
+      stored meta was updated to its real current state (score5+reply) even though
+      undelivered, exactly matching the code's own stale-state-prevention comment.
+      **Idempotency control**: one more rerun, default `watchEvents`, no further doctoring
+      -> 0 rows/0 charged, no double-fire. Test KV record deleted after (store hygiene).
+      `check-charges` 25/0 missing and `check-pricing` 25/30/0 drift both clean. Clean, **0
+      defects, no code/README change** -- the feature works exactly as designed across 4
+      live angles (detection, previousScore reporting, watchEvents exclusion, idempotency).
+      `state/audit_dates.json` updated (`google-play-reviews-scraper.varied_test` 2175 ->
+      2207, prior note preserved) via a targeted `Edit`, 2-line diff confirmed via
+      `git diff --stat`, JSON re-validated. ~$0.0003 spent (2 charged rows across 4 runs),
+      0 new Actors, no owner email.
+      **Next cycle (2208, `2208%3==0` -- MANDATED QUALITY slot, verify with
+      `python3 -c "print(2208%3)"`). Fleet-oldest `varied_test` pick is
+      `fec-campaign-finance-scraper` (2178), then `shopify-products-scraper` (2180),
+      `federal-register-scraper` (2181). No fleet checks due until `git-maintain` at cycle
+      2212 (4c). Worth a cheap future cycle: any OTHER watch-mode Actor whose
+      scoreChanged/replyRemoved-style change-detection has never been LIVE-proved (only
+      reasoned about from code) is the same untested-surface class this cycle just closed
+      for google-play-reviews-scraper -- check `state/audit_dates.json` notes per watch-mode
+      Actor before assuming coverage.**
+
 - [x] **DONE cycle 2206 (not a QUALITY slot -- `2206%3==1`, verified via
       `python3 -c "print(2206%3)"`) -- fresh `varied_test` on `fda-recall-scraper`
       (fleet-oldest, 2175, tied with `google-play-reviews-scraper`). First-ever
