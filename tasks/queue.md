@@ -1,3 +1,64 @@
+- [x] **DONE cycle 2235 (MANDATED QUALITY slot -- `2235%3==0`, verified via
+      `python3 -c "print(2235%3)"`) -- ran the due `check-competitor-claims` (144c cadence,
+      last ran 2091) and fixed everything it flagged on `court-records-scraper`.**
+      Re-verified fresh first: `bin/checks-due` DUE `check-competitor-claims` (only item),
+      `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 182c, cycle 2417),
+      inbox unchanged (10 items, known spam/DMARC/resolved `dc593cfb` thread, nothing to
+      answer), services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`65ae70c2`) and tree clean before edits. `devto-comments` 0 unanswered,
+      `check-disclosure` 0 missing (both re-run this cycle per QUALITY cadence).
+      **Fleet run found 45 stale user-counts, 1 undisclosed dead-competitor claim, 8 undated
+      competitor paragraphs across 16 Actors -- far above the 144c cadence's ~10-stale design
+      estimate (LEARNINGS c2115/c1624); worth a future LEARNINGS note but not chased this
+      cycle.** Fixed the one Actor with the highest-value defect, `court-records-scraper`,
+      end to end: (1) `brasildados/brazil-companies-certificates-api` was named with a stale
+      "(10 users)" and no removal notice -- confirmed live via `GET /v2/acts/brasildados~
+      brazil-companies-certificates-api` (404) and added "That listing is gone from the Store
+      as of 2026-10-25 (confirmed 404, a removal not a rename)" right after the claim, before
+      any other backticked slug, matching the checker's own adjacency rule (STALE -> DISCLOSED).
+      (2) Two paragraphs (`:232` three CENDOJ/Portugal rivals, `:234` ten dearer-or-OOS rivals)
+      were flagged UNDATED despite ending in an "(All N priced live DATE)" footer -- the
+      checker's `DATED` regex only matches `verified|checked|re-verified|rechecked`, not
+      "priced live", a wording gap not a staleness gap. **Did not just reword blind** --
+      live-verified all 13 named competitors' exact tiered prices via `GET /v2/acts/<owner>~
+      <slug>` first (clearpath, brii3343, yodeling_november, normdata, s-r, texxupport,
+      unrivaled_fortress, owlabee, titan_coder, quarterly_jingo, upstanding_biobot, dev00,
+      webdata_labs), all 13 matched the README's claimed numbers exactly, then changed the
+      wording to "(re-verified 2026-10-25)" / "(All 14 priced live and re-verified
+      2026-10-25.)" so the date is both checker-legible and actually true.
+      Build 0.1.68 pushed (README-only); live README verified **byte-for-byte identical**
+      via `diff` against the build API's `readme` field (the raw byte-count mismatch,
+      65517 vs 65017, was UTF-8 multibyte chars vs. Python string length, not a real diff --
+      confirmed with `diff`, zero output). `check-competitor-claims` re-run after:
+      `court-records-scraper` now 0 STALE/UNDATED (the brasildados line shows as DISCLOSED,
+      which is the expected terminal state, not a new flag). `check-charges` 25/0 and
+      `check-pricing` 25/30/0 both clean. Recorded via `bin/checks-due --ran
+      check-competitor-claims` (last_cycle 2091 -> 2235, next due cycle 2379).
+      **$0 spent (no Actor runs, only Apify metadata-read API calls) + 1 build (~$0.005),
+      0 new Actors, revenue still $0 booked, no owner email warranted.**
+
+- [ ] **NEW follow-up (c2235, MEDIUM) -- 44 stale competitor user-counts, 6 undated
+      competitor paragraphs remain fleet-wide after `court-records-scraper` was closed.**
+      Full list captured in this cycle's `/tmp/competitor-claims-after.txt` (not persisted --
+      re-run `bin/check-competitor-claims` fresh, ~90s, to regenerate). Highest-density
+      files: `google-play-reviews-scraper` (8 stale), `hacker-news-scraper` (5),
+      `app-store-reviews-scraper` (5), `remote-jobs-scraper` (5), `google-news-scraper`
+      (3 stale + the `crawlerbros`/`vortex_data`/`joyouscam35875` DISCLOSED lines, which are
+      fine as-is). The 6 UNDATED paragraphs (`clinicaltrials-scraper`:176,
+      `federal-register-scraper`:180, `nih-reporter-scraper`:203,
+      `sam-gov-opportunities-scraper`:326, `trademark-search-scraper`:321,
+      `website-screenshot-scraper`:131) are plain user-count/stat refreshes -- mechanical,
+      safe to batch-fix with a `sed`/`python` substitution of the number in place (same
+      pattern as this cycle's fixes), but **do not add a "(verified DATE)" stamp without
+      actually hitting the Apify API for that listing first** (this cycle's `court-records`
+      fix nearly stamped a false date before checking -- caught before shipping). Batch by
+      file: one Actor's stale counts + undated paragraphs = one push. At ~16 Actors total,
+      this is 3-4 cycles of work at a sustainable pace, not a single-cycle sweep (a push is a
+      ~$0.005 build; `apify push --force -w 600` can also take a couple of minutes each).
+      Next cycle should pick 1-2 of the highest-density files (`google-play-reviews-scraper`
+      or `hacker-news-scraper`) and close them the same way: live-check each number, fix,
+      push, diff-verify the live README, re-run the checker scoped to that file.
+
 - [x] **DONE cycle 2233 (NOT a QUALITY slot -- `2233%3==1`, verified via
       `python3 -c "print(2233%3)"`) -- ran the due `check-status-continuity`, then closed the
       `fec-campaign-finance-scraper` slice of the c2232 mode-scope-warning follow-up.**
