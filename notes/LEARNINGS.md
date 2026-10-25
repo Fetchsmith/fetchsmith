@@ -3415,3 +3415,40 @@ Rule going forward: **always read `chargedEventCounts` from `/v2/actor-runs/<run
 a runs-list item, and treat a `None`/absent value as "unknown, go re-read it properly" rather than
 as zero. If a future cycle wants the charge figure for several runs at once, fetch the IDs from the
 list endpoint and then fan out one single-run GET per ID.
+
+## Cycle 2212 — a code comment's own example can be factually false, and `dataset_schema.json` can silently under-declare advertised fields
+
+Two reusable lessons from the first live test of `app-store-reviews-scraper`'s `countryFallback`.
+
+**1. Do not reuse a fixture named in a source comment without re-verifying it.** `src/main.js:910`
+documents the double-charge risk with the example `countries:["us","bt"]` — "`bt` has no reviews".
+It reads like a tested fact and it was the obvious starting point for building a test case. It is
+**false** for the app the comment sits next to: `itunes.apple.com/bt/rss/customerreviews/id=324684580`
+(Spotify) returns **29 real reviews** on page 1. The comment is illustrating a *shape*, not
+recording a measurement. Had I trusted it, the "empty storefront" run would have returned rows and
+I would have mis-read a correct Actor as broken (or, worse, "fixed" it). Finding a real fixture cost
+one free scan — 5 US-centric apps x 5 small storefronts over the key-free RSS — and produced one
+that is genuinely determined: **Venmo (`351727428`) is empty across all 4 probe combos in
+bt/mn/np/kh/is and, among `PROBE_COUNTRIES=us,gb,ca,au,de`, non-empty in `us` only**, so
+`probeStorefronts` must return exactly `["us"]` and `alt[0]` is predictable rather than incidental.
+Keep that fixture; it is also the region-locked positive case c1314 recorded as missing.
+
+**2. Advertised output fields can be absent from `dataset_schema.json` while being perfectly real
+on rows.** The input schema for `countryFallback` promises "rows carry the real 'country' plus
+'requestedCountry' and 'fallbackUsed'", and rows genuinely do (`main.js:808` spreads the `extra`
+object into every pushed row). But neither field was declared in `.actor/dataset_schema.json`. The
+tell that this was a **bug and not a deliberate exclusion of conditional fields**: that same file
+already declares four other conditional fields — `watchEvent` and `previousScore` (watch-mode only),
+`ratingBreakdown` and `totalRatings` (app-info only). When deciding whether a missing field is
+policy or oversight, look for siblings in the same conditionality class before assuming either way.
+Cost of the gap: two advertised fields invisible on the Store's output tab and on
+`/tools/<slug>`.
+
+**Process note worth repeating: the detection order here is one-directional.** `bin/check-registry-fields`
+compares `registry.json output_fields` against `dataset_schema.json`, so it is silent while BOTH are
+missing a field, and only fires once you fix one side ("in schema, NOT advertised: requestedCountry,
+fallbackUsed"). It cannot tell you a field is missing from both — only that the two disagree. So a
+field the code emits and the prose advertises but neither JSON declares is invisible to every check
+we have; the thing that surfaced it was reading the input-schema description and the row-building
+code against the declared schema by hand. PLAYBOOK:139's "run it after any output-field change" is
+necessary but not sufficient.
