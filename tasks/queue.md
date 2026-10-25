@@ -1,3 +1,51 @@
+- [x] **DONE cycle 2222 (NOT a QUALITY slot -- `2222%3==2`, verified via
+      `python3 -c "print(2222%3)"`) -- ran the DUE `check-source-endpoints` fleet check
+      first, then a fresh `varied_test` on `website-screenshot-scraper` (fleet-oldest live
+      Actor, 2191, 31c stale). FIRST-EVER LIVE PROOF of `waitForSelector`'s
+      absent-selector error path on the real platform. Clean, 0 defects, no code/README
+      change.**
+      Re-verified fresh first: `bin/checks-due` **DUE `check-source-endpoints`** (last 2198,
+      24c gap), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 195c,
+      cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the long-resolved
+      `dc593cfb` thread, nothing to answer), services active, site 200 on `/` `/tools`
+      `/pricing`, `HEAD == origin/main` (`6368cf38`) and tree clean before edits.
+      **`check-source-endpoints`**: first run flagged 1 DEVIATION
+      (`rss.marketingtools.apple.com` for `apple-podcasts-scraper`, `ReadTimeout`). 3x manual
+      `curl` all came back 200 in 1.1-1.5s and an immediate re-run of the checker itself came
+      back CLEAN (0 deviations) -- a transient network blip, not a real upstream change.
+      Recorded via `bin/checks-due --ran check-source-endpoints` (2198 -> 2222, next due 2246).
+      **`varied_test` on `website-screenshot-scraper`**: c2029 shipped `waitForSelector` and
+      tested its absent-selector error path only locally/unit -- the one live `apify call` at
+      ship time used `waitForSelector:"p"` against `example.com`, the SUCCESS path only.
+      Confirmed free first (plain `curl`) that `example.com` has a real `<p>` tag and
+      `https://httpbin.org/image/png` renders as a bare `<img>` with no `<p>` anywhere, then
+      ran **one batch mixing both URLs** -- also the first test to combine a succeeding and a
+      failing URL in a single run, to prove per-URL isolation and the uncharged-error-row claim
+      together: `{urls:["https://example.com","https://httpbin.org/image/png"],
+      waitForSelector:"p", format:"jpeg"}` -> run `lNXfdhAoZoVOzm8ot` SUCCEEDED, 2 rows:
+      `example.com` `success:true` with a real signed `imageUrl`; the httpbin image
+      `success:false`, `error:"page.waitForSelector: Timeout 10000ms exceeded... waiting for
+      locator('p') to be visible"`, `imageUrl:null`, `screenshotKey:null` -- a genuine error
+      row, not a blank/partial capture, exactly as the schema promises. `chargedEventCounts`
+      via `GET /v2/actor-runs/<runId>`: **`{result:1}` despite 2 delivered rows** -- confirms
+      the error row is genuinely uncharged (`pushError` never reaches `pushResult`'s PPE charge
+      path) and that one failing URL in a batch neither aborts the run nor gets billed for the
+      others. `state/audit_dates.json` updated (`website-screenshot-scraper.varied_test` 2191
+      -> 2222, prior note preserved), 2-line diff confirmed via `git diff --stat`, JSON
+      re-validated. `check-charges` 25/0 and `check-pricing` 25/30/0 both clean,
+      `bin/apify-spend` $3.95/$85 (well inside the $300 cap). ~$0.002 spent (1 charged row), 0
+      new Actors, no owner email (no revenue event, no outage).
+      **Next cycle (2223, `2223%3==0` -- MANDATED QUALITY slot, verify fresh with
+      `python3 -c "print(2223%3)"`). No fleet checks due until `check-doc-size`-class checks
+      come due again (none due per this cycle's `checks-due` beyond `check-source-endpoints`
+      just closed); re-run `bin/checks-due`/`bin/audit-due --all` fresh rather than trusting
+      this handoff. Fleet-oldest `varied_test` pick after this is `hacker-news-scraper`
+      (2195, ~361c stale per earlier notes -- re-check the gap fresh). Per CLAUDE.md's QUALITY
+      cadence: re-run platform tests on 2-3 existing Actors, improve READMEs, close
+      competitor-feature gaps, answer support mail (none owed as of this cycle), or publish
+      the Dev.to article if due. DMARC recheck still blocked on a report newer than
+      `e2f3a358`.**
+
 - [x] **DONE cycle 2221 (NOT a QUALITY slot -- `2221%3==1`, verified via
       `python3 -c "print(2221%3)"`) -- fresh `varied_test` on `trademark-search-scraper`
       (fleet-oldest live Actor, 2190, 31c stale). FIRST-EVER LIVE PROOF that matchMode's
