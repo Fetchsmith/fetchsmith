@@ -174,18 +174,21 @@ if (watchDeadDateBound) {
 // unused here -- the summary call deliberately overrides both to "all" so reviewScore/totalReviews
 // are the game's own totals, which is the opposite of what a buyer who set them expects.
 if (dataType === 'games') {
-  const ignoredInGames = [];
-  if (keyword) ignoredInGames.push(`keyword ("${keyword}")`);
-  if (minPlaytimeHours != null) ignoredInGames.push(`minPlaytimeHours (${minPlaytimeHours})`);
-  if (reviewType !== 'all') ignoredInGames.push(`reviewType ("${reviewType}")`);
-  if (hasDateWindow) ignoredInGames.push('reviewsAfter/reviewsBefore');
   // Compared against the INPUT SCHEMA DEFAULT, not tested for presence: Apify materializes every
   // schema default into the input object before the Actor reads it, so `input.sortBy != null` is
   // true on every run and a presence check would warn about untouched fields forever (verified
   // live this cycle -- a bare games run warned about sortBy "recent" and maxReviewsPerApp 200).
-  if (sortBy !== 'recent') ignoredInGames.push(`sortBy ("${sortBy}")`);
-  if (dayRange) ignoredInGames.push(`dayRange (${dayRange})`);
-  if (perAppReviews !== 200) ignoredInGames.push(`maxReviewsPerApp (${perAppReviews})`);
+  // Built as one array literal (not `.push()`), matching gameOnlyIgnored above, so every quoted
+  // name sits in the declaration itself rather than arriving via a later mutation.
+  const ignoredInGames = [
+    keyword && `keyword ("${keyword}")`,
+    minPlaytimeHours != null && `minPlaytimeHours (${minPlaytimeHours})`,
+    reviewType !== 'all' && `reviewType ("${reviewType}")`,
+    hasDateWindow && 'reviewsAfter/reviewsBefore',
+    sortBy !== 'recent' && `sortBy ("${sortBy}")`,
+    dayRange && `dayRange (${dayRange})`,
+    perAppReviews !== 200 && `"maxReviewsPerApp" (${perAppReviews})`,
+  ].filter(Boolean);
   if (ignoredInGames.length) {
     log.warning(
       `These review filters are ignored in dataType:"games" — ${ignoredInGames.join(', ')}. A game row is a `
