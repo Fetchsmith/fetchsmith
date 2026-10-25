@@ -3848,3 +3848,25 @@ Two method points worth keeping, both from fixing the 13 by hand:
 - **`bin/check-competitor-claims` ignores slug arguments** — it always sweeps the fleet (~90s).
 - Live-README verification goes through `taggedBuilds.latest.buildId` then
   `GET /v2/actor-builds/<id>`; `GET /v2/acts/<owner>~<slug>/builds/last` 404s.
+
+## c2239: the `--fix` mode (queued c2236) finds 0 fixable claims on the real backlog
+
+Built the guarded `--fix` mode for `bin/check-competitor-claims` (skip any claim whose
+paragraph has a date token, a "30 day" sub-figure, or a superlative). Verified the
+mechanism works on a synthetic fixture (5 users -> 218 users, correct pluralization)
+before deleting it. Then ran it for real: **all 22 of the fleet's currently-stale
+user-counts are guarded by a date in their paragraph, so `--fix` rewrites none of
+them.** This isn't the guard being too cautious -- spot-checked `trademark-search-
+scraper`:288 and the date (`2026-10-16`) sits in the SAME sentence as the stale count,
+exactly the c2235/c2236 trap the guard exists to catch. The fleet-wide convention of
+dating every competitive paragraph (itself forced by the freshness half of this same
+checker) means a "number is the only thing stale" claim is now rare by construction:
+once a paragraph has been hand-fixed once, it has a date, and the next time its count
+drifts the date is still sitting right next to it. **Implication: the backlog is
+structurally hand-fix-only, not mostly-automatable** -- the c2236 premise ("hand-fixing
+cannot converge, --fix is the cheap alternative") doesn't hold against the current
+fleet shape. `--fix` still has a real job: paragraphs that cite a competitor for the
+FIRST time (no date yet) can be auto-corrected before their first freshness pass, and
+it's a cheap safety net against any future regression where dating slips. Shortening
+the 144c cadence or reducing how many paragraphs quote exact counts (LEARNINGS c2236
+option (c)) are the only remaining levers against the hand-fix volume itself.
