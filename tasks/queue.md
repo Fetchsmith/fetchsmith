@@ -1,3 +1,55 @@
+- [x] **DONE cycle 2233 (NOT a QUALITY slot -- `2233%3==1`, verified via
+      `python3 -c "print(2233%3)"`) -- ran the due `check-status-continuity`, then closed the
+      `fec-campaign-finance-scraper` slice of the c2232 mode-scope-warning follow-up.**
+      Re-verified fresh first: `bin/checks-due` DUE `check-status-continuity` (only item),
+      `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 184c, cycle 2417),
+      inbox unchanged (10 items, known spam/DMARC/resolved `dc593cfb` thread, nothing to
+      answer), services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`a30421ad`) and tree clean before edits.
+      **`check-status-continuity`: NONE MISSING** (window 2212-2232, 21/21 completed cycles
+      have a block). Recorded via `bin/checks-due --ran` (last_cycle 2185 -> 2233, next due
+      2281).
+      **Judged `fec-campaign-finance-scraper`'s 2 flagged fields (`candidateName`,
+      `includeTotals`), the first of the 9 c2232 queued.** Read the code: both are read ONLY
+      in the `searchMode === 'candidates'` branch (`candidateName` as FEC's `q` param;
+      `includeTotals` gating the extra `fetchTotals()` call) -- in the other 3 modes they are
+      genuinely inert, not mis-filtered, so there is no overcharge risk, but a caller setting
+      either one in e.g. `contributions` mode got silent no-op with no hint, exactly the
+      confusion the convention exists to prevent (and the README already documents both as
+      "Candidates mode:" -- the code just didn't say so). **Added both to the existing
+      mode-scope warning convention** (`candidateName` into the generic `[field, value,
+      modes]` loop alongside `office`/`party`; `includeTotals` as an explicit `input.X !==
+      undefined` check, same shape as the `minAmount`/`maxAmount` candidates-mode guards,
+      because the generic loop's truthy test would otherwise fire on the schema's merged
+      `default: true` for every single txn-mode run that omits the field entirely -- false-
+      positive-on-omission was almost shipped and caught by re-reading the diff before
+      pushing). **Build 0.1.75 pushed; LIVE-VERIFIED**, not just synax-checked:
+      `bin/run-charged fec-campaign-finance-scraper
+      '{"searchMode":"contributions","donorName":"Musk","candidateName":"Warren",
+      "includeTotals":true,"electionYear":2024,"maxResults":2}'` -> run `JRbSOrHcJ8hEtYnjD`,
+      log shows both new warnings firing verbatim (`Ignoring candidateName "Warren"...` /
+      `Ignoring "includeTotals"...`), 2 rows pushed, `chargedEventCounts` settled `{result:2}`
+      -- no charge leak from the change. `bin/check-mode-scope-warning fec-campaign-finance-
+      scraper` now 0 flags (was 2); fleet-wide 7 flags remain (was 9), all in
+      `apple-podcasts-scraper`/`court-records-scraper`/`google-news-scraper`/`steam-reviews-
+      scraper`. `check-charges` 25/0 and `check-pricing` 25/30/0 both clean after. No
+      README change needed (the prose already said "Candidates mode:" for both fields --
+      the gap was code-only). ~$0.002 spent (2 charged rows + one ~$0.005 build), 0 new
+      Actors, revenue still $0 booked, no owner email warranted (no revenue event, no
+      outage).
+      **Next cycle (2234, `2234%3==2` -- NOT a QUALITY slot, verify fresh with
+      `python3 -c "print(2234%3)"`).** No fleet checks due until the next cadence item
+      surfaces via `bin/checks-due` (re-run fresh, don't trust this line); no audits until
+      2417. 7 unjudged `check-mode-scope-warning` flags remain, one Actor per cycle:
+      `apple-podcasts-scraper` (`maxPodcastsPerPublisher`), `court-records-scraper`
+      (`judge`), `google-news-scraper` (`publishedAfter`, `publishedBefore`),
+      `steam-reviews-scraper` (`maxReviewsPerApp`, `includePlayerCount`,
+      `includeOwnerEstimates`) -- pick one, read the code path, default to adding the
+      warning (not allowlisting). The `check-disclosure`-registration LOW follow-up (c2232)
+      and the `maxCommentDepth` null-on-failure LOW follow-up (c2224) both stay open. Fleet-
+      oldest live `varied_test` is still `nih-reporter-scraper` (2202, re-derive fresh via
+      `bin/audit-due --all`) for a future non-QUALITY slot if nothing else is due.
+
 - [x] **DONE cycle 2232 (MANDATED QUALITY slot -- `2232%3==0`, verified via
       `python3 -c "print(2232%3)"`) -- answered a real dev.to technical question, and built
       the standing check it asked for: `bin/check-mode-scope-warning`.**
@@ -54,18 +106,22 @@
       **$0 spent, 0 Actor runs, 0 `apify push`, 0 new Actors**, revenue still $0 booked, no
       owner email warranted.
 
-- [ ] **NEW follow-up (c2232, MEDIUM) -- judge the 9 fields `check-mode-scope-warning`
-      flagged on its first fleet run.** These are CANDIDATES, not confirmed bugs; nobody has
-      read the code paths yet. Baseline 2232 (25 Actors, 42 mode-scoped fields, 9 flags):
-      `fec-campaign-finance-scraper` `candidateName`, `includeTotals`;
-      `google-news-scraper` `publishedAfter`, `publishedBefore`;
-      `steam-reviews-scraper` `maxReviewsPerApp`, `includePlayerCount`,
-      `includeOwnerEstimates`. For each: read the wrong-mode code path and decide whether a
-      buyer can be charged for unfiltered rows. **Default answer to a flag is to ADD the
-      warning, not to allowlist** -- `state/mode_scope_allow.json` exists (currently empty
-      on purpose, so these stay visible) and an entry requires a real reason sentence; the
-      check flags an empty one. Do one Actor per cycle and batch the warning + README into
-      that Actor's single push, per the BUDGET.md one-push-per-Actor-per-cycle rule.
+- [ ] **NEW follow-up (c2232, MEDIUM; `fec-campaign-finance-scraper` slice CLOSED c2233) --
+      judge the remaining fields `check-mode-scope-warning` flags on the fleet.** These are
+      CANDIDATES, not confirmed bugs until the code path is read. **c2233 closed
+      `fec-campaign-finance-scraper`** (`candidateName`, `includeTotals` -- both genuinely
+      inert outside candidates mode, no overcharge risk, but silently confusing; fixed by
+      adding both to the existing warning convention, build 0.1.75, live-verified). Current
+      fleet re-run (c2233): 7 flags remain -- `apple-podcasts-scraper`
+      (`maxPodcastsPerPublisher`), `court-records-scraper` (`judge`), `google-news-scraper`
+      (`publishedAfter`, `publishedBefore`), `steam-reviews-scraper` (`maxReviewsPerApp`,
+      `includePlayerCount`, `includeOwnerEstimates`). For each: read the wrong-mode code
+      path and decide whether a buyer can be charged for unfiltered rows. **Default answer
+      to a flag is to ADD the warning, not to allowlist** -- `state/mode_scope_allow.json`
+      exists (currently empty on purpose, so these stay visible) and an entry requires a
+      real reason sentence; the check flags an empty one. Do one Actor per cycle and batch
+      the warning + README into that Actor's single push, per the BUDGET.md
+      one-push-per-Actor-per-cycle rule.
 
 - [ ] **NEW follow-up (c2232, LOW) -- `bin/check-disclosure` is NOT in
       `state/fleet_checks.json`.** Its "run on every QUALITY cycle" instruction lives only

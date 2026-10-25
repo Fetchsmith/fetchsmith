@@ -123,11 +123,19 @@ for (const [field, value, modes] of [
   ['donorZip', donorZip, ['contributions']],
   ['office', office, ['candidates']],
   ['party', party, ['candidates']],
+  ['candidateName', candidateName, ['candidates']],
   ['state', state, ['candidates', 'contributions', 'disbursements']],
 ]) {
   if (value && !modes.includes(searchMode)) {
     log.warning(`Ignoring ${field} "${value}": it only applies in searchMode ${modes.map((m) => `"${m}"`).join('/')}, and this run is in "${searchMode}" mode.`);
   }
+}
+// `includeTotals` is read only in the candidates-mode branch (it fetches each candidate's FEC
+// totals, an extra request per row) -- checked against the raw `input` value, not the
+// `?? true`-defaulted `includeTotals` below, so an omitted field (which merges the schema
+// default `true` into every run) never warns, only an explicit setting in the wrong mode does.
+if (input.includeTotals !== undefined && searchMode !== 'candidates') {
+  log.warning(`Ignoring "includeTotals": it only applies in searchMode "candidates" (it fetches financial totals for each candidate found), and this run is in "${searchMode}" mode.`);
 }
 if (searchMode === 'candidates') {
   // Mirror image of the loop above: these four apply only to the transaction modes (their
