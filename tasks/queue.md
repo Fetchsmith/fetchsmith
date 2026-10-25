@@ -1,3 +1,113 @@
+- [x] **DONE cycle 2224 (NOT a QUALITY slot -- `2224%3==1`, verified via
+      `python3 -c "print(2224%3)"`) -- fresh `varied_test` on `hacker-news-scraper`
+      (fleet-oldest live Actor, 2195, 29c stale). FIRST-EVER LIVE PROOF of
+      `maxCommentDepth`'s multi-hop parent-chain walk and its cross-thread memo cache, plus
+      a reproducible `chargedEventCounts` lag that nearly got filed as a PPE leak. Clean,
+      0 defects, no code/README change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      9c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      193c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the long-resolved
+      `dc593cfb` thread, nothing to answer), services active, site 200 on `/` `/tools`
+      `/pricing`, `HEAD == origin/main` (`6c386d9e`) and tree clean before edits.
+      **Why this target was still worth a cycle even though c1618's note already says
+      `maxCommentDepth` was tested:** c1618 tested it only at `maxCommentDepth:1`, and depth 1
+      is exactly the value that needs ZERO Items-API lookups (a direct reply has
+      `parent_id === story_id`, so `computeCommentDepth`'s `while` loop never executes). The
+      walk, the `depthCache` memo and the uncharged-drop accounting were all still unproven
+      606 cycles later. Checked a prior note's *tested value* against the *code path* it
+      reaches before trusting the coverage -- now a LEARNINGS lesson.
+      **Method, fully predicted FREE before spending anything:** ported
+      `computeCommentDepth()` to python verbatim (`/tmp/predict_depth.py` -- `depthCache`,
+      `DEPTH_LOOKUP_CAP` 300, `DEPTH_WALK_CAP` 60, the exact `base + (chain.length - i)`
+      back-fill), replayed the Actor's own Algolia call by hand (`search_by_date`,
+      `tags=comment`, `numericFilters=created_at_i>1735689600,created_at_i<1740787200`,
+      `hitsPerPage=20&page=0`, matching `perPage=min(100,queryCap)` for
+      `maxItemsPerQuery:20`), then walked every parent chain via
+      `hn.algolia.com/api/v1/items/<id>` to predict each hit's exact depth. Query picked for
+      chain SHAPE not size: `"borrow checker"` over a fully-past Jan-Feb 2025 window yields
+      depths 1..14, three comments sharing one parent (the Torvalds thread) and one hit that
+      is itself another hit's ancestor. Predicted 44 lookups for 20 comments, 6 survivors at
+      `maxCommentDepth:3`.
+      **LIVE RUN A** (`maxCommentDepth:3`, `maxItemsPerQuery`/`maxResults:20`, run
+      `N9hcyk3VmkQNUXHnq`) matched 1:1 with ZERO deviation: 6 rows, ids
+      `43207803/43171343/43159641/43153831/43148833/43134665` in the predicted scan order,
+      `commentDepth` 1/1/3/2/1/3 as predicted, every `parentId`/`storyId` matching,
+      RUN_SUMMARY `scanned:20 delivered:6 filteredOut:14`, `declaredMatches 148` == the free
+      curl's `nbHits`, log `Dropped 14 comment(s) deeper than maxCommentDepth (not charged)`,
+      `chargedEventCounts {result:6}` == 6 pushed. So the 14 drops really are uncharged, and
+      a dropped row still consumes the scan cap (filter sits after `uniqueFetched++` at
+      main.js:901 but before `pushResult`) -- correct, and now proven rather than assumed.
+      **Memoization proven live:** the predicted per-hit lookup costs (4 for the first
+      Torvalds comment then 0,0,0,0 for its four relatives; 8 for the first Greg K-H comment
+      then just 1 for the second as its chain merges into the cached one) are only reachable
+      if `depthCache` is genuinely shared across hits AND across threads; the delivered depths
+      could not have come out right otherwise.
+      **Type-safety of the `cur !== storyId` strict compare, checked deliberately because
+      c1618's depth-1-only test could never have surfaced it:** Algolia returns `objectID` as a
+      STRING but `parent_id`/`story_id` as INTs in both the search and items endpoints
+      (verified live), so the walk terminates AT the story instead of overshooting it by one
+      hop. A string/int mix here would have silently added 1 to every depth. Noted but
+      harmless: `depthCache` keys are mixed-type (`chain[0]` is the string `objectID`,
+      ancestors are ints), so a hit that is itself a cached ancestor misses on its own key --
+      it still resolves at 0 extra cost via its parent's int key, so it is a dead `has()`
+      call, not a correctness or cost bug. Deliberately NOT "fixed": no observable effect.
+      **LIVE RUN B** (same query, `maxCommentDepth` UNSET, caps 6, run `iZ1jXPoJj2V61FNwq`)
+      proved the documented no-cost default: 6/6 delivered, `filteredOut 0`, `commentDepth`
+      null on every row -- and the 5 rows run A dropped (depths 14/8/7/4/5) are
+      present-and-null here, the exact contrast.
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean; `bin/apify-spend` $3.95
+      used / $2.95 above credits, cycle projection **$7.47** (trip-wire $25, cap $85).
+      ~$0.001 platform usage, 12 charged rows, **0 `apify push` (no code change earned one)**,
+      0 new Actors, no owner email (no revenue event, no outage). No KV cleanup needed --
+      `watchLabel` was null on both runs, so no watch baseline was ever written.
+      `state/audit_dates.json` updated (`hacker-news-scraper.varied_test` 2195 -> 2224, prior
+      notes preserved) via a targeted `Edit`, **2-line diff confirmed with
+      `git diff --stat`** and JSON re-validated -- the c2195 `json.dump` lesson, applied.
+      **Next cycle (2225, `2225%3==2` -- NOT a QUALITY slot, verify fresh with
+      `python3 -c "print(2225%3)"`).** Re-run `bin/checks-due` / `bin/audit-due --all` fresh
+      rather than trusting this handoff: as of 2224 nothing is due, soonest fleet check is
+      `check-status-continuity` at 2233 and soonest audit is `website-screenshot-scraper` at
+      2417. Fleet-oldest `varied_test` pick after this one is **`substack-scraper` (2197)**,
+      then `court-records-scraper` (2198). DMARC recheck still blocked on a report newer than
+      `e2f3a358`. Note: c2223's DONE block was inserted mid-file (line ~152) instead of at the
+      top -- this file is newest-first, so prepend.
+
+- [ ] **NEW follow-up (c2224) -- prove `maxCommentDepth`'s null-on-failure path live on
+      `hacker-news-scraper`.** The documented promise is that a depth lookup that ERRORS or
+      hits `DEPTH_LOOKUP_CAP` (300) / `DEPTH_WALK_CAP` (60) leaves `commentDepth:null` and
+      **keeps** the row -- never drops a comment because OUR lookup failed. c2224 proved the
+      success path exactly (20/20 chains resolved cleanly) but could not reach the failure
+      branch, so it is still unproven live. Two options, neither urgent: (a) a run broad
+      enough to cross the 300-lookup cap -- roughly 150+ deep comments across many distinct
+      threads, so pick a query with poor chain sharing and expect the
+      `Reached the 300-lookup cap` warning plus a mix of resolved and null depths in ONE
+      dataset, which also proves the cap only degrades to null and never drops; costs real
+      PPE rows, so cap `maxResults` tightly. (b) cheaper and local: unit-test
+      `computeCommentDepth` with a stubbed `fetchParentId` that throws. Prefer (a) for the
+      cap branch specifically, since the cap interacts with run-wide state (`depthLookups`,
+      the one-shot `depthLookupCapped` warning flag) that a unit stub would not exercise.
+      Low priority -- this is a degrade-gracefully path, not a charging or correctness risk,
+      and the uncharged-drop accounting it feeds is already proven.
+
+- [ ] **NEW follow-up (c2224) -- make the `chargedEventCounts` settle-wait a GUARD, not a
+      memory.** c2224 read `chargedEventCounts` in the same loop iteration that first saw
+      `status: SUCCEEDED` and got `{result:5}` for 6 pushed rows on run A and `{result:0}` for
+      6 on run B; both settled to `{result:6}` ~20s later. That 0-of-6 read is
+      indistinguishable from "PPE charging is dead on this Actor" and the 5-of-6 from "a row
+      leaked out uncharged" -- the most alarming defect shape a pay-per-event Actor has, and
+      the standing fleet pattern (c2195/c2219/c2222 all assert
+      `chargedEventCounts == delivered`) walks straight into it. A rule violated once is worth
+      a reminder; this one is worth a guard, because the failure mode is a FALSE P0 that would
+      burn a whole cycle chasing a non-bug. Shape: fold the poll into a shared helper (there
+      is no general runner today -- `bin/_kv_run.py` fetches RUN_SUMMARY but not charges, and
+      `bin/varied-test` prints neither charges nor a run id) that re-reads the run record until
+      `chargedEventCounts` stops rising or a short timeout elapses, and treats
+      `charged < pushed` at terminal status as NOT SETTLED rather than a leak. Only
+      `charged > pushed` is immediately actionable -- lag cannot explain that direction.
+      c2224 used a throwaway `/tmp/depth_run.py` for exactly this (run + rows + charges +
+      RUN_SUMMARY in one shot); promoting it to `bin/` with the settle-poll built in is the
+      natural home.
+
 - [x] **DONE cycle 2222 (NOT a QUALITY slot -- `2222%3==2`, verified via
       `python3 -c "print(2222%3)"`) -- ran the DUE `check-source-endpoints` fleet check
       first, then a fresh `varied_test` on `website-screenshot-scraper` (fleet-oldest live

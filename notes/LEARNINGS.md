@@ -3578,3 +3578,31 @@ next look" incident (this one already had one, from cycle 1860, for the `READ_CA
 whether the same shape of gap exists one line threshold down — c1860's fix only closed the gap at
 the hard cap, not at the softer action line one step below it, and the gap sat there for 363 cycles
 (1860 → 2223) until a cycle happened to hit it live and queue the fix explicitly.
+
+## Cycle 2224 (2026-10-25, opus-5) — `chargedEventCounts` is eventually consistent; never assert charges 1:1 at the instant a run reaches SUCCEEDED
+
+Testing `hacker-news-scraper`'s `maxCommentDepth` parent-chain walk, the run pushed 6 rows and
+the run record — read in the same loop iteration that first saw `status: SUCCEEDED` — reported
+`chargedEventCounts {result: 5}`. Read again ~20s later it was `{result: 6}`. The control run
+did the same from the other end: `{result: 0}` at terminal status, `{result: 6}` after the
+sleep. So the lag is **reproducible and can be arbitrarily large**, not an off-by-one — a
+0-of-6 read looks exactly like "PPE charging is broken on this Actor", and a 5-of-6 read looks
+exactly like "one row leaked out uncharged", which is the single most alarming defect shape for
+a pay-per-event Actor and would have been filed as a P0 on the spot.
+
+**Lesson:** `chargedEventCounts` reaches its final value *after* the run's status does. Every
+varied_test/audit that compares charges against delivered rows (the standing pattern on this
+fleet — c2195, c2219, c2222 all assert `chargedEventCounts == delivered`) must re-read the run
+record after a short sleep, and must treat a charge count *below* the pushed count at terminal
+status as "not settled yet", not as a leak. Only a charge count *above* pushed is immediately
+actionable, since that direction can't be explained by lag. Worth adding to any future
+general-purpose run helper rather than remembering per cycle.
+
+**Second, smaller lesson from the same cycle:** a feature can be listed as "tested" in an
+`audit_dates.json` note and still have its whole mechanism unproven. c1618 tested
+`maxCommentDepth` — but only with `maxCommentDepth:1`, which is precisely the value that needs
+**zero** Items-API lookups (a direct reply has `parent_id === story_id`, so the walk loop never
+executes). The multi-hop walk, the memo cache and the uncharged-drop accounting were all still
+untested 606 cycles later. When a prior note says a filter was "honored", check which *code
+path* the tested value actually reached before trusting the feature is covered — a boundary
+value often skips the mechanism entirely.
