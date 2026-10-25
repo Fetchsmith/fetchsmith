@@ -1,3 +1,60 @@
+- [x] **DONE cycle 2208 (MANDATED QUALITY slot -- `2208%3==0`, verified via
+      `python3 -c "print(2208%3)"`) -- fresh `varied_test` on `fec-campaign-finance-scraper`
+      (fleet-oldest, 2178, 30c stale). FIRST EVER live exercise of `payeeName`, the
+      independentExpenditures vendor free-text filter. CLEAN, 0 defects, no code change.**
+      Re-verified fresh first rather than trusting c2207's handoff: `bin/checks-due` NONE DUE
+      (soonest `git-maintain`, 4c, cycle 2212), `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper`, 209c, cycle 2417), inbox unchanged (10 items, all known
+      spam/DMARC + the long-resolved `dc593cfb` thread, nothing to answer), services active,
+      site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`82315ab7`) and tree clean
+      before edits.
+      **Picking genuinely untested ground.** This Actor has unusually heavy prior coverage
+      (varied_test at 945/1087/1515/2178, plus enum/pagination/unreachable-remedy/watch-subset
+      audits), so read every prior note in `audit_dates.json` before choosing. `payeeName` was
+      the gap: c1087 stacked candidateId+supportOppose+amounts+dates in this very mode but left
+      `payeeName` unset, and c2178's disbursements 5-stack used `committeeId`, never the sibling
+      `recipientName`. Neither free-text vendor filter had ever been run.
+      **Method.** Predicted the answer for free via direct curl to
+      `api.open.fec.gov/v1/schedules/schedule_e/` with identical params
+      (`candidate_id=P80001571`, `support_oppose_indicator=O`, `cycle=2024`,
+      `payee_name=GOOGLE`, `sort=-expenditure_date`): **371** matches
+      (`is_count_exact:true`) vs **9053** for the same query without `payee_name` -- and the
+      unfiltered top-5 is a completely different row set (EXTREME REACH / PDQ GILL'S PRINTING /
+      SCALE TO WIN), so the filter is load-bearing and the test discriminates rather than
+      merely returning data. Live run (`maxResults:5`): **5/5 rows matched the prediction
+      exactly, in the same order** -- `payeeName` all `GOOGLE LLC`, `expenditureDate` all
+      2024-12-30, amounts 17666.46/194.47/49091.67/7716.02/86663.26, `supportOppose` all
+      `oppose`, `committeeName` all REPUBLICAN ACCOUNTABILITY PAC -- and the run's own status
+      message declared **`371 declared match(es)`**, matching the direct-API count exactly.
+      All 3 filter-name fail-open guards fired correctly in the live log: `payee_name` COUNT
+      probe ("canary value returned 0 matches"), `candidate_id` + `support_oppose_indicator`
+      REJECT probes ("canary value was correctly rejected").
+      **Negative control, predicted free first** (`payee_name='SCALE TO WIN'` +
+      `support_oppose=S`, same candidate/cycle -> 0, while dropping `supportOppose` gives 205
+      and dropping `payeeName` gives a huge set): live run returned **0 rows**, proving genuine
+      AND composition of `payeeName` with `supportOppose` rather than a vacuous pass.
+      **Charges:** positive run `chargedEventCounts {result:5}` == 5 delivered rows; control
+      `{result:0}`. Also confirmed the status message's "15 already-fetched row(s) were not
+      delivered" (per_page=20 vs cap 5) are correctly **NOT** charged -- `maxResults` caps
+      billing, not just output. `check-charges` 25/0 and `check-pricing` 25/30/0 both clean.
+      **NEW METHOD TRAP FOUND (LEARNINGS entry added).** The runs-LIST endpoint
+      `/v2/acts/<id>/runs` **omits `chargedEventCounts` entirely** (reads as `None` even for a
+      run that really charged 5); only `/v2/actor-runs/<runId>` returns it. Verified both ways
+      against one single run ID (`zqp6ep3vSZLjpQowe`: `None` from the list, `{result:5}` from
+      the single-run endpoint, seconds apart). **This is NOT the c2184/c2200/c2207 charge
+      settle-lag** (a real `0` that later settles to N on the same endpoint) -- I initially
+      called it that mid-cycle and it was wrong. Read as 0 an absent field looks like a charge
+      leak and could get falsely filed; read as "nothing there" it silently skips the charge
+      check entirely. Grepped `bin/` to see whether our own tooling makes this mistake: nothing
+      reads `chargedEventCounts` programmatically (it is a by-hand spot check every cycle), so
+      no code fix is warranted -- the LEARNINGS rule is the fix.
+      `state/audit_dates.json` updated (`fec-campaign-finance-scraper.varied_test` 2178 ->
+      2208, all 4 prior notes preserved); **2-line diff** confirmed via `git diff --stat` after
+      first catching my own `indent=2`/`ensure_ascii=False` write reformatting all 306 lines --
+      reverted and rewrote with the file's real `indent=1`/ASCII-escaped/no-trailing-newline
+      shape, JSON re-validated (26 actors, note 7145 chars). ~$0.0017 usage / 5 billable rows
+      spent, 0 new Actors, no owner email (no revenue event, no outage).
+
 - [x] **DONE cycle 2207 (not a QUALITY slot -- `2207%3==2`, verified via
       `python3 -c "print(2207%3)"`) -- fresh `varied_test` on `google-play-reviews-scraper`
       (fleet-oldest, 2175). First-ever LIVE verification of this Actor's watch

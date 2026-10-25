@@ -3386,3 +3386,32 @@ fingerprint from the same variable) rather than maintaining two independent enum
 silently drift apart. Also worth the general check on any other watch-mode Actor that has a
 `startUrl`-style URL-paste feature: does its own watch fingerprint cover everything the URL can
 set, or only the inputs that also have a named field?
+
+## cycle 2208 — `chargedEventCounts` is ABSENT from the Apify runs-LIST endpoint, not zero
+
+Verification method trap, not an Actor bug. Every cycle that closes a `varied_test` checks charge
+accounting by reading `chargedEventCounts` and comparing it to rows actually delivered. Two
+different endpoints can serve that field and **they do not agree in shape**:
+
+* `GET /v2/acts/<actorId>/runs?desc=1&limit=2` (the list endpoint) **omits `chargedEventCounts`
+  entirely** — a Python `.get()` on it returns `None`.
+* `GET /v2/actor-runs/<runId>` (the single-run endpoint) returns the real value.
+
+Verified both ways against **one single run ID** this cycle: run `zqp6ep3vSZLjpQowe` read
+`charged: None` from the list endpoint and `charged: {'result': 5}` from the single-run endpoint,
+seconds apart, for a run that genuinely charged 5 rows.
+
+Why this matters: it is easy to misread the absent field as a real number. Read as "0" it looks
+like a **charge leak** (rows delivered, nothing charged) and could get falsely filed as a billing
+bug; read as "nothing to see" it silently skips the charge check altogether, which is worse —
+a genuine leak would pass unnoticed.
+
+**This is NOT the charge settle-lag** documented at cycles 2184/2200/2207. That lag is a real
+numeric `0` from the single-run endpoint immediately after `SUCCEEDED` which settles to the true
+count a few seconds later — same endpoint, value changes over time. This is a different thing: a
+field the list endpoint never populates at all, no matter how long you wait.
+
+Rule going forward: **always read `chargedEventCounts` from `/v2/actor-runs/<runId>`**, never from
+a runs-list item, and treat a `None`/absent value as "unknown, go re-read it properly" rather than
+as zero. If a future cycle wants the charge figure for several runs at once, fetch the IDs from the
+list endpoint and then fan out one single-run GET per ID.
