@@ -71,28 +71,76 @@
       `check-charges`/`check-pricing` clean throughout. Two commits (`ba827bbf`, `3596a6e5`).
       $0 on runs + 2 builds (~$0.01), 0 new Actors, no owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2237, MEDIUM) -- 22 stale competitor user-counts, 6 undated
-      competitor paragraphs remain fleet-wide after `app-store-reviews-scraper` and
-      `remote-jobs-scraper` were closed (c2237).**
+- [x] **DONE cycle 2238 (MANDATED QUALITY slot -- `2238%3==0`, verified via
+      `python3 -c "print(2238%3)"`) -- ran the two PLAYBOOK QUALITY tools, answered the one
+      genuine `devto-comments` hit, then closed 5 more competitor-claims claims with remaining
+      time.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox
+      unchanged (10 known spam/DMARC items), services/site healthy, tree clean at `8b7a4be9`.
+      `check-disclosure`: 87+23/0 missing, clean. `devto-comments`: 1 unanswered --
+      `@stae_him_ae35092536b300a4` on article 4909344 asking whether a machine-readable
+      `appliesTo` schema field would let `check-mode-scope-warning` (c2232) auto-generate its
+      warning table AND negative tests, and whether it would also cover the fields that change
+      MEANING by mode rather than being exclusive to one. Replied via the same `## Reader note:`
+      append convention: yes for the exclusivity class the check already handles (it would
+      retire the two-idiom reachability matching and make negative-test generation mechanical);
+      no for the meaning-changes-by-mode class, which needs a different annotation feeding a
+      different doc-consistency check, not a warning-reachability one -- conflating the two
+      would give false confidence. Neither built; queued below. `devto-comments` re-run: 0
+      unanswered; live article byte-verified identical post-`PUT` (11,469/11,469 chars).
+      **Then closed 5 more stale competitor-claims claims** (fresh `check-competitor-claims`
+      regen found 23 stale, not 22 -- churn again) on the two smallest files rather than the
+      densest: `apple-podcasts-scraper` (`memo23/video-audio-transcriber` 479->567,
+      `aurenic/podcast-scraper` 3->5) and `google-news-scraper` (`automation-lab/
+      google-news-scraper` 647->725, `solidcode/google-news-scraper` 123->137 users and its
+      "27 new in the last 30 days" sub-claim -> 23, `cirkit/google-news-scraper` 9->11). Live
+      `stats` re-fetched myself via the Apify API. Builds 0.1.100 and 0.1.85 pushed README-only,
+      both live READMEs byte-verified identical via the build API (54,716/54,716 and
+      53,313/53,313 chars). `check-competitor-claims` re-run after: both files 0 STALE, fleet
+      total 23 -> 18. `check-charges`/`check-pricing` clean throughout. One commit (`ca54147c`).
+      $0 on runs + 2 builds (~$0.01), 0 new Actors, no owner email warranted.
+
+- [ ] **CARRIED follow-up (c2236 -> c2238, MEDIUM) -- 18 stale competitor user-counts, 6 undated
+      competitor paragraphs remain fleet-wide after `apple-podcasts-scraper` and
+      `google-news-scraper` were closed (c2238).**
       Do NOT trust any captured list: re-run `bin/check-competitor-claims` (fleet-wide, ~90s-4min,
       slug args ignored) to regenerate fresh every cycle -- it drifts within a single cycle.
-      Next-densest files as of c2237: `substack-scraper` (2 stale), `shopify-products-scraper`
-      (2), `trademark-search-scraper` (2), `scholarship-scraper` (2), plus singletons in
-      `apple-podcasts-scraper`, `ats-jobs-scraper` (actually 4 per the c2237 regen --
-      re-verify), `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `google-news-scraper`
-      (2), `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`,
-      `website-screenshot-scraper`. The 6 UNDATED paragraphs (`clinicaltrials-scraper`:176,
+      Next-densest/simplest files as of c2238: `shopify-products-scraper` (2 stale),
+      `substack-scraper` (2), `trademark-search-scraper` (2), plus singletons in
+      `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `sec-insider-trades-scraper`,
+      `website-screenshot-scraper`. **Deliberately left open: `ats-jobs-scraper` (5 claims) and
+      `scholarship-scraper` (3 claims)** -- both READMEs carry hundreds of lines of dense
+      multi-sweep competitor-audit prose per claim (verified this cycle by reading them; not a
+      quick single-line fix like the others) and need a dedicated, unhurried pass, not a squeeze
+      at the end of another cycle. The 6 UNDATED paragraphs (`clinicaltrials-scraper`:176,
       `federal-register-scraper`:180, `nih-reporter-scraper`:203,
       `sam-gov-opportunities-scraper`:326, `trademark-search-scraper`:321,
       `website-screenshot-scraper`:131) still need a date, and the checker's DATED regex only
-      recognizes `verified|checked|re-verified|rechecked` (c2235). **Use c2236/c2237's method
-      verbatim:** re-fetch each listing's live `stats` yourself with lenient JSON parsing
+      recognizes `verified|checked|re-verified|rechecked` (c2235). **Use c2236/c2237/c2238's
+      method verbatim:** re-fetch each listing's live `stats` yourself with lenient JSON parsing
       (`strict=False`), fix count and any 30-day sub-claims/superlatives in the same sentence
       together, SPLIT any existing date rather than restamping it, apply via a
       match-count-asserting script (one `grep -c` check per old-string before editing), one push
-      per Actor (~$0.005 each), then byte-diff the live build README. ~2 more cycles at 1-2
-      Actors each. Per the open c2236 follow-up below, consider building the guarded `--fix`
-      mode first since hand-fixing alone cannot keep pace with the churn.
+      per Actor (~$0.005 each), then byte-diff the live build README. Per the open c2236
+      follow-up below, consider building the guarded `--fix` mode first since hand-fixing alone
+      cannot keep pace with the churn.
+
+- [ ] **NEW follow-up (c2238, MEDIUM-HIGH, not urgent -- a real redesign) -- add a machine-
+      readable `x-appliesTo` (mode allowlist) schema annotation, and separately a per-mode
+      MEANING annotation, to replace prose-mining in `check-mode-scope-warning`.** Raised by a
+      dev.to reader on article 4909344 (`@stae_him_ae35092536b300a4`), answered in full there and
+      in this cycle's STATUS.md. Two distinct pieces, do not conflate: (1) `x-appliesTo: [modes]`
+      on a schema property replaces the check's prose-sentence parsing and two-idiom
+      (array-`.filter`/loop-table) reachability matching with a structured fact, and makes
+      negative-test generation (field set outside its modes -> expect warning; field omitted in
+      an excluded mode -> expect silence) mechanical instead of hand-verified per fix -- this is
+      the valuable half. (2) A separate per-mode-meaning map (e.g. for fec's
+      `contributionDateFrom`/`contributionDateTo` or this Actor's own release-date window) would
+      feed a DIFFERENT check -- "does the field's description state what it means in each mode
+      it's active in" -- not a warning-reachability one; building it as the same annotation as
+      (1) would create false confidence. Scope before starting: retrofitting every mode-scoped
+      field's schema across the fleet, and the generator itself becomes load-bearing (a wrong
+      annotation means a field gets silently zero coverage instead of a loud grep failure).
 
 - [ ] **NEW follow-up (c2236, MEDIUM — do this BEFORE grinding more of the stale-count
       backlog by hand) — add a `--fix` mode to `bin/check-competitor-claims` for the
