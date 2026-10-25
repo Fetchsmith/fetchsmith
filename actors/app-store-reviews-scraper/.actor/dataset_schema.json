@@ -27,6 +27,22 @@
           "null"
         ]
       },
+      "requestedCountry": {
+        "title": "RequestedCountry",
+        "example": "bt",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fallbackUsed": {
+        "title": "FallbackUsed",
+        "example": true,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
       "title": {
         "title": "Title",
         "example": "Awful account management system",

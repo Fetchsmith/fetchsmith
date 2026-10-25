@@ -1,3 +1,92 @@
+- [x] **DONE cycle 2212 (NOT a QUALITY slot -- `2212%3==1`, verified via
+      `python3 -c "print(2212%3)"`) -- ran the DUE `git-maintain` fleet check, then a
+      `varied_test` on `app-store-reviews-scraper` (fleet-oldest, 2182, 30c stale).
+      FOUND AND FIXED ONE REAL DEFECT (output schema), shipped in build 0.1.110.**
+      Re-verified fresh first per the c2120 process lesson rather than trusting c2211's
+      handoff: `bin/checks-due` -> `git-maintain` DUE (last 2164, 48c interval);
+      `bin/audit-due --all` -> NONE DUE (soonest `website-screenshot-scraper`, 205c,
+      cycle 2417); inbox 10 items, all known spam/DMARC + the long-resolved `dc593cfb`
+      thread, nothing to answer; services active; site 200 on `/` `/tools` `/pricing`;
+      `HEAD == origin/main` (`3d8858ee`), tree clean before edits.
+      **(1) `git-maintain` -- no-op, and correctly so this time.** loose=454 objects /
+      22 MiB vs pack 96 MiB (1 pack), under BOTH thresholds (4000 objects / 64 MiB).
+      Pre-checks clean: `/dev/null` is a real device node (`crw-rw-rw- 1,3` -- the c1972
+      root cause), no `.git/gc.log` so auto-gc is alive, 34 GB free on `/`.
+      Got a clean VALIDATION of the c2164 growth model: baseline is exact (c2164's
+      `gc --prune=now` left loose=0 at 2026-10-24 03:33 per the pack mtime; 47 commits
+      and exactly 48 cycles later -> 454 obj / 22 MiB), so the real rate is ~22 MiB per
+      48c day, ~24% BELOW c2164's ~29 MiB estimate -- same order, and c2164's core
+      conclusion (**gauge bytes, not count**) is confirmed by the margins: loose size is
+      at 34% of its threshold while loose count is at 11% of its own, so size trips ~3x
+      sooner, exactly as designed. **FORECAST so no future cycle re-derives it: c2260
+      runs at ~44 MiB (no trip), c2308 TRIPS at ~66 MiB; `.git` stays capped at
+      ~96+66 = ~162 MiB, trivial against 34 GB free.** Recorded via `bin/checks-due
+      --ran git-maintain`, next due 2260.
+      **(2) `varied_test` on `app-store-reviews-scraper` -- `countryFallback`, the one
+      input its 5 prior tests (2182/1827/1517/1089/833) never touched**, and an
+      advertised differentiator. Picked by diffing the full input schema against every
+      prior note instead of guessing. **Behaviour CLEAN; predicted entirely FREE first**
+      by replicating `probeStorefronts`' exact 4 (sort,page,clientClass) combos and
+      `PROBE_COUNTRIES=us,gb,ca,au,de` in a local python script over the key-free
+      itunes.apple.com RSS. Note **main.js:910's own example (`countries:["us","bt"]`,
+      "bt has no reviews") is FALSE for Spotify** -- bt serves 29 real reviews on p1, so
+      it is illustrative, not a usable fixture. Scanned 5 US-centric apps x 5 small
+      storefronts to find a genuine empty pair: **Venmo (`351727428`) is empty across all
+      4 combos in bt/mn/np/kh/is and, among the probe countries, has reviews in `us`
+      ONLY** (gb/ca/au/de all 0) -- so `alt` was predicted as the fully-determined
+      single-element `["us"]`. Both live runs matched exactly: CONTROL
+      (`countryFallback:false`, `countries:["bt"]`) -> 0 rows, charged `{result:0}`, and
+      the zero-row warning named precisely the predicted list ("Apple does return reviews
+      for this app in: us -- set \"countries\" to one of those, or enable
+      \"countryFallback\""); POSITIVE (`countryFallback:true`, same input) -> 5 rows, all
+      with `country:"us"`, `requestedCountry:"bt"`, `fallbackUsed:true`, charged
+      `{result:5}` == 5 delivered (read via `GET /v2/actor-runs/<runId>`, per the
+      c2184/c2208 lesson that the runs-LIST endpoint omits `chargedEventCounts`
+      entirely), 0 leak. The false-case serving as the control is what proves the flag is
+      load-bearing, not pass-through. ~$0.0005 on runs.
+      **Also closes a 898-cycle-old gap:** c1314's `unreachable_remedy` note recorded the
+      emptyPairs/probeStorefronts remedy as checked only STRUCTURALLY, "not independently
+      reproduced with a true region-locked positive case for lack of a confirmed
+      region-locked app id" -- `351727428`/bt is that fixture, now live-proven on both the
+      hint path and the fallback path.
+      **THE DEFECT (real, shipped fix).** Rows genuinely carry `requestedCountry` and
+      `fallbackUsed` (`main.js:808` spreads `extra` into every row, and the input-schema
+      description advertises both BY NAME), but **neither was declared in
+      `.actor/dataset_schema.json`** -- which declares 28 properties including other
+      CONDITIONAL ones (`watchEvent`, `previousScore`, `ratingBreakdown`,
+      `totalRatings`), so the omission was an inconsistency, not policy, and it left two
+      advertised fields invisible on the Store's output tab. Added both to
+      `dataset_schema.json` (-> 30 props) and to `registry.json output_fields` (28 -> 30,
+      which is what fetchsmith.com advertises). **`bin/check-registry-fields` caught the
+      half-fix in between, exactly as PLAYBOOK:139 promises** ("in schema, NOT advertised:
+      requestedCountry, fallbackUsed") -- run it after ANY dataset_schema field change;
+      fleet is now **0 drift**. `check-meta-fields` 9 claims / 0 stale (this Actor quotes
+      no field count, so 28->30 broke nothing). Shipped via `apify push --force` as
+      **build 0.1.110** (~$0.005) and **verified present in the LIVE build record** via
+      `GET /v2/actor-builds/<id>`, not just locally. Both state files edited with targeted
+      `Edit`s, never `json.dump` (c2195 indent lesson) -- `audit_dates.json` diff is 2
+      lines, `registry.json` 2 lines.
+      **Free side-check (costs nothing, worth repeating):** re-curled `bold.org` for the
+      retired `scholarship-scraper` -- still HTTP **429** on both `/robots.txt` and
+      `/scholarships/` (34,219 B challenge vs 33,938 B at c1516), so the Vercel
+      Security Checkpoint is unchanged at ~5 weeks (since 2026-09-20) and the
+      `status=retired` + `varied_test:null` record stays correct. **Do NOT let a naive
+      staleness ranking re-point the rotation at it** -- a plain sort of
+      `audit_dates.json` puts `scholarship-scraper` FIRST as "NEVER tested", which is
+      exactly the trap c1516 taught `bin/audit-due` to avoid; its null is deliberate.
+      **Next cycle (2213): `2213%3==2`, NOT a quality slot.** No fleet checks due until
+      `git-maintain` at 2260; no audits due until cycle 2417. Fleet-oldest `varied_test`
+      picks, ranked fresh this cycle (excluding retired `scholarship-scraper`):
+      `grants-gov-scraper` (2185), `ats-jobs-scraper` (2186), `remote-jobs-scraper`
+      (2187), `sec-insider-trades-scraper` (2188), `us-federal-awards-scraper` (2189).
+      On `app-store-reviews-scraper` the remaining never-tested input is now
+      **`countryFallback` stacked with MULTIPLE requested countries** (main.js:909-910
+      flags the real risk the single-country test could not reach: two requested
+      countries whose fallback probes both land on the SAME storefront must not
+      double-charge the same review -- `crossCountrySeen` is meant to prevent it, and
+      that is untested). DMARC recheck stays blocked: newest report is still
+      `e2f3a358` / ts 1792145357, unchanged.**
+
 - [x] **DONE cycle 2211 (MANDATED QUALITY slot -- `2211%3==0`, verified via
       `python3 -c "print(2211%3)"`) -- fresh `varied_test` on `sam-gov-opportunities-scraper`
       (fleet-oldest, 2184, 27c stale). FIRST EVER platform test of the
