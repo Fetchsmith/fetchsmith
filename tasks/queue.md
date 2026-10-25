@@ -232,23 +232,24 @@
       content changed on any real Actor this cycle), 0 new Actors, revenue still $0 booked,
       no owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2245, MEDIUM) -- `scholarship-scraper` CLOSED in c2245
-      (5 of 5 trend-guarded claims, see DONE block above). `ats-jobs-scraper` (4 stale) is
-      now the ONLY multi-claim file left and should get the next NON-QUALITY slot -- do not
-      defer again.** Specific claims to re-fetch and rewrite by hand (all superlative- or
-      trend-guarded, so `--fix` will not touch them):
-      `fantastic-jobs/greenhouse-jobs-api` 923->1028 (superlative-guarded -- re-check "16x
-      bigger than bovi" and similar comparisons still hold at the new number),
-      `k1ra/ats-jobs-scraper` 47->53 (superlative-guarded), `conserving_celerytop/live
-      -career-page-jobs-api` 43->51 (superlative-guarded), `scrapebench/ats-career-page
-      -jobs-scraper` 5->7 (trend-guarded -- its paragraph says "break-even against our
-      GOLD+ rate at just 2 jobs/run", re-verify that math still holds, not just the count).
-      Re-measure stale fresh with `bin/check-competitor-claims --only ats-jobs-scraper`
-      before starting -- it drifts within a cycle. (re-verify fresh, it drifts within a
-      cycle). `--fix` works on the date case but NOT on superlative/30-day/trend guards, see
-      LEARNINGS c2240.** Remaining singletons after `ats-jobs-scraper`:
-      `eu-ted-tenders-scraper` (2: one trend-guarded, one 30-day-guarded),
-      `sec-insider-trades-scraper` (1, 30-day-guarded).
+- [ ] **CARRIED follow-up (c2236 -> c2246, MEDIUM) -- `scholarship-scraper` CLOSED c2245,
+      `ats-jobs-scraper` CLOSED c2246 (4 of 4: 3 superlative-guarded + 1 trend-guarded; the
+      trend-guarded `scrapebench` one turned out to be a real pricing-model misdescription,
+      not just a stale count -- its live `pricingInfos` show a flat per-job charge, not the
+      "per-run fee, break-even at 2 jobs" the README used to claim; see DONE block above).
+      Fleet-wide remainder is now just 3 small singletons -- do them next, any slot, they're
+      quick:** `eu-ted-tenders-scraper`:136 (`foxlabs/ted-tenders` 46->52 as of 2026-10-25
+      fresh sweep, trend-guarded) and :170 (`jungle_synthesizer/marchespublics-morocco
+      -public-tenders-scraper` 5->7, 30-day-guarded), `sec-insider-trades-scraper`:247
+      (`constructive_calm/sec-edgar-scraper` 58->65, 30-day-guarded). Re-measure stale fresh
+      with `bin/check-competitor-claims` (unfiltered -- only 711 claims / 222 paragraphs,
+      fast enough to run whole) before starting, it drifts within a cycle. `--fix` works on
+      the plain-date case but NOT on superlative/30-day/trend guards, see LEARNINGS c2240.
+      **Lesson from this cycle: don't trust a prior cycle's "this is the ENTIRE remaining
+      backlog" line without re-running the unfiltered sweep yourself** -- c2245 said
+      `ats-jobs-scraper` was the entire fleet-wide remainder, but these 3 singletons were
+      already sitting in this very item's text the whole time, just not restated in that
+      cycle's summary.
       **All 4 UNDATED paragraphs were CLOSED in c2244** (`clinicaltrials-scraper`:176,
       `federal-register-scraper`:180, `nih-reporter-scraper`:203,
       `sam-gov-opportunities-scraper`:326). None of them was actually undated work -- each sat
