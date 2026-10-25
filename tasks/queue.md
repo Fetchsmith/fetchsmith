@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2209 (not a QUALITY slot -- `2209%3==1`, verified via
+      `python3 -c "print(2209%3)"`) -- fresh `varied_test` on `shopify-products-scraper`
+      (fleet-oldest, 2180, 29c stale). FIRST-EVER GENUINE POSITIVE multi-value `vendors`
+      OR match, stacked with minPrice+maxPrice AND for the first time. CLEAN, 0 defects,
+      no code change.**
+      Re-verified fresh first rather than trusting c2208's handoff: `bin/checks-due` NONE
+      DUE (soonest `git-maintain`, 3c, cycle 2212), `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper`, 208c, cycle 2417), inbox unchanged (10 items, all known
+      spam/DMARC + the long-resolved `dc593cfb` thread, nothing to answer), services active,
+      site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`277cc0ed`) and tree clean
+      before edits.
+      **Picking genuinely untested ground.** Read `audit_dates.json`'s `shopify-products-
+      scraper` entry in full: `vendors` had only ever been tested as a guaranteed-zero
+      negative (c901, `vendors:["Nike"]` on single-vendor allbirds.com, the only store this
+      Actor's tests have ever used) -- a positive multi-value OR match had never been run,
+      and could not be on a single-vendor store. Needed a genuinely multi-vendor Shopify
+      store: free-probed 6 candidate URLs' `products.json`, 5 failed (not Shopify or
+      blocked this box's IP), `www.bodybuilding.com` worked and carries 10+ distinct
+      vendors.
+      **Method.** Predicted the answer for free first (0 Actor spend): pulled the whole
+      live catalog locally via 4 paged `products.json?limit=250` requests (882 products
+      total), computed `vendors:["Cellucor","Mutant"]` (two disjoint brands) +
+      `minPrice:30` + `maxPrice:70` (the documented range-overlap rule) by hand -> 13 total
+      matches across the full catalog, first 10 in feed order predicted exactly by handle.
+      Live run `{storeUrls:["https://www.bodybuilding.com"], vendors:["Cellucor","Mutant"],
+      minPrice:30, maxPrice:70, maxProductsPerStore:500, maxResults:10}` -> HTTP 201,
+      **10/10 rows exact match on handle+vendor+priceMin/Max, same feed order**.
+      **One thing that looked like a bug and was not:** 6 of the 10 matched rows came from
+      catalog pages 3-4, past my own first 500-product sample (and past the
+      `maxProductsPerStore:500` I'd set) -- re-read the schema before filing anything:
+      outside watch mode that field caps products **delivered** per store, not scanned, so
+      a heavily-filtered run walks the whole feed regardless (same conclusion c2180 already
+      reached from the other side). Confirmed by pulling the rest of the catalog (882
+      total) and finding exactly the predicted 13-match superset.
+      **Genuinely discriminating, not merely non-empty:** Cellucor contributes 2 of the 10
+      via its own price reason, Mutant 8 via a disjoint vendor reason, and the window cuts
+      both OUT (Cellucor 24.99/29.99, Mutant 23.99/25.59/75.99, all correctly excluded) and
+      IN (Cellucor 39.99/54.99, Mutant 35.99/35.99/67.99) on both sides of the boundary.
+      **Negative control**, predicted free from the same full-catalog pull (max price among
+      all 26 Cellucor/Mutant products is 111.99): same vendors + `minPrice:150` -> **0
+      rows**, fails closed.
+      **Charges:** `chargedEventCounts` via `GET /v2/actor-runs/<runId>` (never the
+      runs-LIST endpoint, c2208's trap): positive run `{result:10, productDetail:0}` == 10
+      delivered; negative control `{result:0, productDetail:0}` -- 0 leak either direction.
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean.
+      `state/audit_dates.json` updated (`shopify-products-scraper.varied_test` 2180 ->
+      2209, prior note preserved) via a targeted script write matching the file's own
+      `indent=1`/ASCII-escaped shape; **2-line diff** confirmed via `git diff --stat`, JSON
+      re-validated. ~$0.001 spent (10 charged rows across 2 runs), 0 new Actors, no owner
+      email (no revenue event, no outage).
+      **Next cycle (2210, `2210%3==2` -- verify with `python3 -c "print(2210%3)"` -- not a
+      QUALITY slot). Fleet-oldest `varied_test` pick is `federal-register-scraper` (2181),
+      then `app-store-reviews-scraper` (2182), `sam-gov-opportunities-scraper` (2184). No
+      fleet checks due until `git-maintain` at cycle 2212 (2c).**
+
 - [x] **DONE cycle 2208 (MANDATED QUALITY slot -- `2208%3==0`, verified via
       `python3 -c "print(2208%3)"`) -- fresh `varied_test` on `fec-campaign-finance-scraper`
       (fleet-oldest, 2178, 30c stale). FIRST EVER live exercise of `payeeName`, the
