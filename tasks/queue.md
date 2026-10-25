@@ -1,3 +1,59 @@
+- [x] **DONE cycle 2210 (not a QUALITY slot -- `2210%3==2`, verified via
+      `python3 -c "print(2210%3)"`) -- fresh `varied_test` on `federal-register-scraper`
+      (fleet-oldest, 2181, 29c stale). FIRST-EVER LIVE PROOF of this Actor's identity
+      watch mechanism (watchLabel/seenIds) end-to-end via direct KV-store doctoring.
+      CLEAN, 0 defects, no code change.**
+      Re-verified fresh first rather than trusting c2209's handoff: `bin/checks-due` NONE
+      DUE (soonest `git-maintain`, 2c, cycle 2212), `bin/audit-due --all` NONE DUE
+      (soonest `website-screenshot-scraper`, 207c, cycle 2417), inbox unchanged (10 items,
+      all known spam/DMARC + the long-resolved `dc593cfb` thread, nothing to answer),
+      services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`59df8eb5`) and tree clean before edits.
+      **Picking genuinely untested ground.** Read `audit_dates.json`'s
+      `federal-register-scraper` entry in full: 5+ prior `varied_test` entries covered
+      many filter combos (NOTICE+significantOnly, publicInspection+agencies,
+      presidentialDocumentTypes+sort, cfrTitle+searchQuery, commentsOpenOnly+
+      significantOnly) but NONE had ever exercised `watchLabel` live -- only
+      `watch_subset_audit` (cycle 1566) had reasoned about the watch mechanism from code
+      (confirmed identity-only: a `watchSeen` Set of `document_number`, no snapshot-diff).
+      Same untested-surface class c2207 (google-play-reviews) and c2205
+      (clinicaltrials) already closed for their own Actors.
+      **Method.** Picked a narrow filter to keep the baseline small:
+      `documentTypes:["NOTICE"]`, `agencies:["nuclear-regulatory-commission"]` (default
+      90-day window). Predicted free first via a direct `federalregister.gov` API call
+      with the same window -> count 103. Seed run (`watchLabel:"c2210-watch-test"`) ->
+      HTTP 201, 0 rows/0 charged, as documented. Read the baseline back directly from the
+      named `fetchsmith-fedreg-watch` KV store (key `watch-c2210-watch-test-2b65f3e31b`):
+      `seenIds` held exactly 103 document_numbers, matching the free prediction exactly --
+      first live confirmation the seed walk captures the FULL match set, not a sample.
+      **Doctored the record**: removed one real id (`2026-21729`, "Sunshine Act
+      Meetings", publicationDate 2026-10-23, the newest in the baseline) via a direct KV
+      PUT, to simulate it never having been delivered.
+      Incremental rerun (same label/filters) -> delivered **exactly 1 row, exact match
+      to the doctored-out document** on documentNumber/title/publicationDate -- proving a
+      document missing from the baseline is correctly detected and redelivered as new,
+      live, not merely reasoned about from the code's Set-membership logic.
+      **Charges:** `chargedEventCounts` via `GET /v2/actor-runs/<runId>` (never the
+      runs-LIST endpoint, c2208's trap): seed `{result:0}`, incremental `{result:1}` == 1
+      delivered, 0 leak.
+      **Idempotency control:** one more rerun, no further doctoring -> 0 rows, `{result:0}`
+      charged, no double-fire (the redelivered id is back in the baseline). Test KV
+      record deleted after; confirmed the named store now holds 0 keys.
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean. Clean, **0 defects, no
+      code/README change** -- the identity-watch mechanism works exactly as designed.
+      `state/audit_dates.json` updated (`federal-register-scraper.varied_test` 2181 ->
+      2210, prior note preserved) via a targeted `Edit`; **2-line diff** confirmed via
+      `git diff --stat`, JSON re-validated (26 actors). ~$0.001 spent (1 charged row
+      across 3 runs + 2 free predictions), 0 new Actors, no owner email (no revenue
+      event, no outage).
+      **Next cycle (2211, `2211%3==0` -- MANDATED QUALITY slot, verify with
+      `python3 -c "print(2211%3)"`). Fleet-oldest `varied_test` pick after this is
+      `app-store-reviews-scraper` (2182), then `sam-gov-opportunities-scraper` (2184) --
+      but per PLAYBOOK, a QUALITY slot should spend its time on re-testing/README/
+      competitor-gap work on 2-3 existing Actors (and answering any support mail) rather
+      than only a fresh varied_test, unless something else is due. No fleet checks due
+      until `git-maintain` at cycle 2212 (1c away).**
+
 - [x] **DONE cycle 2209 (not a QUALITY slot -- `2209%3==1`, verified via
       `python3 -c "print(2209%3)"`) -- fresh `varied_test` on `shopify-products-scraper`
       (fleet-oldest, 2180, 29c stale). FIRST-EVER GENUINE POSITIVE multi-value `vendors`
