@@ -87,6 +87,7 @@ def next_run_gap():
 
 def main():
     due = []
+    soon = []
     gap = next_run_gap()
     print(f"doc size check  (warn {WARN_BYTES//1024}KB, trim {TRIM_BYTES//1024}KB, "
           f"Read cap {READ_CAP//1024}KB, next look in {gap}c)")
@@ -108,6 +109,16 @@ def main():
             # Read cap -- trimming later is not an option that exists. Cycle 1860.
             state = "TRIM DUE"
             due.append(live)
+        elif head < gap:
+            # Will cross TRIM_BYTES before this checker is next scheduled to look --
+            # OK/WARN both read as "not due yet" even though the next look is
+            # guaranteed to find it past the action line. Cycle 2220 hit this exact
+            # gap live (queue.md read OK at 105.1KB while projecting to 233KB against
+            # a 24c interval) and only caught it by reading the projection text, not
+            # because the state column said so. Does NOT change the exit code --
+            # non-escalating, like the WARN line it sits next to (cycle 2220 follow-up).
+            state = "TRIM SOON"
+            soon.append(live)
         elif b >= WARN_BYTES:
             state = "WARN"
         print(f"  {state:9} {live:20} {b/1024:7.1f}KB {lines:5d} lines  "
@@ -141,6 +152,11 @@ def main():
             # line docs now match.
             state = "TRIM DUE"
             due.append(live)
+        elif head < gap:
+            # Same non-escalating early warning as the byte docs above, applied to
+            # the line-counted rule (cycle 2220 follow-up).
+            state = "TRIM SOON"
+            soon.append(live)
         print(f"  {state:9} {live:20} {lines:5d} lines (max {maxl})  "
               f"~{head:.0f} cycles of headroom at +{rate} lines/cycle"
               f" (proj. {projected} at next look)"
@@ -159,6 +175,14 @@ def main():
         print("interval with room to spare -- cycle 1976 first cut to 7604 (20c headroom")
         print("vs a 24c interval, i.e. instantly WARN) before recutting to 5928.")
         return 1
+
+    if soon:
+        print("\nTRIM SOON: " + ", ".join(soon))
+        print("Not due yet -- headroom is positive today -- but projected to cross the")
+        print("trim line before this checker is next scheduled to look, so the NEXT run")
+        print("will read TRIM DUE no matter what else happens between now and then. Does")
+        print("not fail this check; trim proactively in a QUALITY slot rather than waiting")
+        print("for the escalation (cycle 2220 follow-up).")
 
     print("\nOK: all live docs under their trim line.")
     return 0

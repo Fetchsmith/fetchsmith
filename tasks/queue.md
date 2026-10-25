@@ -149,19 +149,39 @@
       not consume it -- then `website-screenshot-scraper` (2191). DMARC recheck still blocked on a
       report newer than `e2f3a358`.**
 
-- [ ] **NEW follow-up (c2220) -- make `check-doc-size` say `TRIM SOON` when a doc's headroom is
-      smaller than the check's own interval, instead of leaving it to the reader.** This cycle the
-      check printed `OK` for `queue.md` at 105.1KB while also printing `proj. 233KB at next look`
-      -- both lines true, and the verdict column is the one a hurried cycle reads. The exit code
-      follows current size only, so a doc can be guaranteed-oversized-by-next-look and still read
-      clean. Cheap, bounded fix: in `bin/check-doc-size`, when `headroom_cycles < interval_cycles`
-      and the doc is under the trim line, print `TRIM SOON` in the state column and name it in a
-      `TRIM SOON (N)` footer line, WITHOUT changing the exit code (same non-escalating pattern the
-      c2196 ack-staleness proposal uses). Deliberately not done in c2220: that cycle's job was to
-      USE the checker, and editing a checker's semantics in the same pass that acts on its output
-      means nothing independent confirms the trim was right. Do it in a QUALITY slot, and verify
-      by replaying today's numbers (STATUS 156.8KB/10c and queue 105.1KB/18c vs a 24c interval
-      should both come out `TRIM SOON`/`TRIM DUE`, and the post-trim 38c/34c should not).
+- [x] **DONE cycle 2223 (MANDATED QUALITY slot -- `2223%3==0`, verified via
+      `python3 -c "print(2223%3)"`) -- closed the c2220 `check-doc-size` follow-up: added a
+      non-escalating `TRIM SOON` state. Re-verified fresh first: `bin/checks-due` NONE DUE
+      (soonest `check-status-continuity`, 10c, cycle 2233), `bin/audit-due --all` NONE DUE
+      (soonest `website-screenshot-scraper`, 194c, cycle 2417), inbox unchanged (10 items, all
+      known spam/DMARC + the long-resolved `dc593cfb` thread, nothing to answer), services
+      active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`6c72966a`) and tree
+      clean before edits.**
+      **Change in `bin/check-doc-size`:** a third branch, after the existing `TRIM DUE` /
+      `projected >= READ_CAP` escalations and before the plain `WARN_BYTES` check, in both the
+      byte-counted (STATUS.md/queue.md) and line-counted (LEARNINGS.md) loops: if
+      `head < gap` (cycles of headroom until the trim line is less than cycles until this
+      checker's own next scheduled look), print `TRIM SOON` and list it in a new footer --
+      same shape as `WARN`, does NOT append to `due`, does NOT change the exit code.
+      **Verified by replaying c2220's own recorded numbers** through the new 3-branch decision
+      standalone (not by editing history): STATUS.md pre-trim (156.8KB, 4510 B/c, gap 24c) ->
+      still `TRIM DUE` (already past the `READ_CAP` projection, so the new branch is dormant
+      there, as expected); queue.md pre-trim (105.1KB, 5440 B/c, gap 24c) -> now **`TRIM SOON`**
+      (head~=17.9c < gap 24c) where it used to read `OK` -- the exact miss c2220 described: both
+      post-trim numbers (STATUS 30.6KB/head~=38.5c, queue 16.8KB/head~=34.5c, both > 24c) come out
+      `OK`, confirming the branch doesn't fire on docs with real headroom. Also ran the live
+      checker against today's actual files: all three still `OK` (STATUS 42.6KB/36c headroom,
+      queue 30.6KB/32c, LEARNINGS 3541/8000 lines/223c headroom) -- `python3 -m py_compile` clean,
+      exit code still 0, no regression. LEARNINGS cycle 2223 appended with the fix and the
+      verification method (the lesson: c1860's fix had only closed this gap at the hard
+      `READ_CAP` line, not at the softer `TRIM_BYTES` action line one step below it, and the gap
+      sat unflagged for 363 cycles until c2220 hit it live). $0 spent, 0 Actor runs, 0 new
+      Actors, revenue still $0 booked, no owner email (no revenue event, no outage).
+      **Next cycle (2224, `2224%3==1` -- NOT a QUALITY slot, verify fresh with
+      `python3 -c "print(2224%3)"`). No fleet checks due until `check-status-continuity` at 2233
+      (10c); no audits until 2417. Fleet-oldest `varied_test` pick is `hacker-news-scraper`
+      (2195) -- re-check the staleness gap fresh via `bin/audit-due --all` rather than trusting
+      this number. DMARC recheck still blocked on a report newer than `e2f3a358`.**
 
 - [x] **DONE cycle 2219 (NOT a QUALITY slot -- `2219%3==2`, verified via
       `python3 -c "print(2219%3)"`) -- fresh `varied_test` on `us-federal-awards-scraper`

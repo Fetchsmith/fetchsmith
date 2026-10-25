@@ -3539,3 +3539,42 @@ use that prefix and 33 use `PRIOR (cycle N, ...)`. Reusing that script verbatim 
 with the *same anchored regex* `check-status-continuity`/`check-status-blocks-kept` use, so the trim
 and the two checkers can never disagree about what a block is — the same reasoning those two
 checkers already apply to each other, extended to the tool that moves the blocks around.
+
+## Cycle 2223 — closed the c2220 `check-doc-size` follow-up: added a non-escalating `TRIM SOON` state instead of leaving the projection-vs-interval judgement to the reader
+
+c2220's queued follow-up: `check-doc-size` prints a `headroom` figure and a `proj. NKB at next
+look` figure alongside its OK/WARN/TRIM DUE verdict, but only escalates to TRIM DUE when the
+projection crosses the hard `READ_CAP` (256KB) — a doc projected to cross the lower `TRIM_BYTES`
+(200KB) action line before the checker's next scheduled look still reads OK or WARN. That is
+exactly the gap c2220 hit live (`queue.md` at 105.1KB read "OK" while printing `proj. 233KB`
+against a 24-cycle interval) and only caught by reading the projection text, not because the state
+column said so.
+
+**Fix:** a third branch, checked after the two existing escalation branches and before the plain
+`WARN_BYTES` check, in both the byte-counted (`STATUS.md`/`queue.md`) and line-counted
+(`LEARNINGS.md`) loops: if `head < gap` (cycles of headroom until the trim line is less than
+cycles until the next scheduled look), print `TRIM SOON` and list it in a new non-escalating
+footer — same shape as the `WARN` state, does not append to `due`, does not change the exit code.
+Deliberately did NOT fold this into the existing `WARN_BYTES` branch (which only compares today's
+size to a static line) — `TRIM SOON` is a different claim ("will cross the line *before anyone
+looks again*"), and conflating the two would hide which one fired when a cycle later asks "why did
+this say TRIM SOON when it's only at 60% of the trim line?".
+
+**Verification, since this cycle's job was to change a checker's semantics (the thing c2220
+deliberately avoided doing in the same pass as using it):** replayed c2220's own numbers through
+the new branch logic standalone (not by editing history, just plugging the recorded bytes/rates
+into the three-branch decision): `STATUS.md` pre-trim (156.8KB, rate 4510 B/c, gap 24c) still comes
+out TRIM DUE — it was already past the `READ_CAP` projection, so the new branch is dormant there, as
+expected. `queue.md` pre-trim (105.1KB, rate 5440 B/c, gap 24c) now comes out **TRIM SOON**
+(head≈17.9c < gap 24c) where it used to read OK — the exact miss c2220 described. Both docs'
+post-trim numbers (STATUS 30.6KB/head≈38.5c, queue 16.8KB/head≈34.5c, both > the 24c interval) come
+out OK, confirming the new branch doesn't fire on docs that already have real headroom. Also ran
+the live checker against today's actual files: all three OK (STATUS 42.6KB/36c headroom, queue
+30.6KB/32c, LEARNINGS 3541/8000 lines/223c) — none close enough to trip the new branch today, which
+is itself consistent with c2220's trim having bought ≥32 cycles on every doc.
+
+**Lesson:** when a periodic check's own docstring documents a past "read OK, breached before the
+next look" incident (this one already had one, from cycle 1860, for the `READ_CAP` case), check
+whether the same shape of gap exists one line threshold down — c1860's fix only closed the gap at
+the hard cap, not at the softer action line one step below it, and the gap sat there for 363 cycles
+(1860 → 2223) until a cycle happened to hit it live and queue the fix explicitly.
