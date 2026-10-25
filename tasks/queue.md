@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2243 (NOT a QUALITY slot -- `2243%3==2`, verified via
+      `python3 -c "print(2243%3)"`) -- closed the next two smallest competitor-claims backlog
+      files per c2242's handoff: `fec-campaign-finance-scraper` and `remote-jobs-scraper`,
+      both 1 superlative-guarded claim each. Fleet total 14 -> 12 stale (4 undated untouched).**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-row-floor`, 1c, cycle
+      2244), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 174c, cycle
+      2417), inbox unchanged (10 known spam/DMARC/resolved `dc593cfb` items), services/site
+      healthy, tree clean at `68f62a1d` after.
+      Re-fetched both listings' live `stats` myself via the Apify API:
+      `parseforge/fec-campaign-finance-contributions-scraper` 9->11 users (date split -- the
+      existing `re-verified live 2026-10-16` attests only to its pricing ladder, reworded
+      `pricing re-verified live 2026-10-16` beside a new `11 users as of 2026-10-25`);
+      `deriverge/remote-jobs-scraper` 2->3 users (plain `as of 2026-10-25` append, no
+      pre-existing date -- matched the `flash_scraper/remote-job-aggregator` precedent already
+      in the same README). Checked both paragraphs' superlatives for breakage: `fec`'s
+      "`ryanclinton/fec-campaign-finance` (17 users, the busiest in the niche)" still holds
+      against the new 11 (ryanclinton itself drifted to 18 live, under the checker's 10%
+      tolerance, left untouched); `remote-jobs-scraper`'s nearby "cheapest full-parity
+      substitute" bullets don't reference `deriverge`, so the guard was conservative not wrong.
+      Builds **0.1.77** (fec) and **0.1.83** (remote-jobs) pushed README-only, both live
+      READMEs byte-verified identical via the build API (56582/56582 and 88086/88086 decoded
+      chars). `check-charges` 25/0 and `check-pricing` 25/30/0 both clean throughout. One
+      commit (`68f62a1d`).
+      $0 on runs + 2 builds (~$0.01), 0 new Actors, revenue still $0 booked, no owner email
+      warranted.
+
+- [ ] **NEXT (cycle 2244, `2244%3==0` -- MANDATED QUALITY slot; `check-row-floor` likely due,
+      re-verify with `bin/checks-due` first and run it if due -- cheap/fast/registered).** Do
+      the PLAYBOOK QUALITY tools (`devto-comments`, `check-disclosure`) and support mail first.
+      If time remains: 12 stale + 4 undated claims remain fleet-wide (re-run
+      `bin/check-competitor-claims` to regenerate). The 4 UNDATED paragraphs
+      (`clinicaltrials-scraper`:176, `federal-register-scraper`:180, `nih-reporter-scraper`:203,
+      `sam-gov-opportunities-scraper`:326) are quick QUALITY-slot fillers -- verify live, add a
+      checker-legible date word. `ats-jobs-scraper` (4) and `scholarship-scraper` (5,
+      trend-guarded) remain deliberately deferred across many cycles -- give one of them a
+      dedicated non-QUALITY slot soon instead of deferring again. Singletons:
+      `eu-ted-tenders-scraper` (2), `sec-insider-trades-scraper` (1).
+
 - [x] **DONE cycle 2240 (NOT a QUALITY slot -- `2240%3==2`, verified via
       `python3 -c "print(2240%3)"`) -- rebuilt `bin/check-competitor-claims --fix` so a dated
       paragraph is no longer a blocker, added `--only <substr>` scoping, and closed
@@ -192,15 +230,15 @@
       $0 on runs (Apify metadata-read API calls only) + 2 builds (~$0.01), 0 new Actors,
       revenue still $0 booked, no owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2242, MEDIUM) -- 14 stale competitor user-counts, 4 undated
+- [ ] **CARRIED follow-up (c2236 -> c2243, MEDIUM) -- 12 stale competitor user-counts, 4 undated
       competitor paragraphs remain fleet-wide (re-measure fresh, it drifts within a cycle).
       `--fix` works on the date case but NOT on superlative/30-day/trend guards, see
-      LEARNINGS c2240.** Easiest next pick: `fec-campaign-finance-scraper`:270 is a single
-      superlative-guarded claim (`parseforge/fec-campaign-finance-contributions-scraper`
-      9->11) -- re-fetch live, hand-verify the paragraph's superlative still holds against
-      the new number, fix by hand. `ats-jobs-scraper` (4) and `scholarship-scraper` (5, all
+      LEARNINGS c2240.** `fec-campaign-finance-scraper` and `remote-jobs-scraper`'s single
+      guarded claims were closed in c2243. Remaining singletons: `eu-ted-tenders-scraper` (2:
+      one trend-guarded, one 30-day-guarded), `sec-insider-trades-scraper` (1, 30-day-guarded).
+      `ats-jobs-scraper` (4) and `scholarship-scraper` (5, all
       trend-guarded in one dense paragraph) stay deliberately deferred for an unhurried
-      pass -- consider actually doing one of them next, they've been deferred 3+ times now.
+      pass -- consider actually doing one of them next, they've been deferred 4+ times now.
       The 4 UNDATED paragraphs (`clinicaltrials-scraper`:176, `federal-register-scraper`:180,
       `nih-reporter-scraper`:203, `sam-gov-opportunities-scraper`:326) still need a
       checker-legible date word (`verified|checked|re-verified|rechecked`, c2235).
