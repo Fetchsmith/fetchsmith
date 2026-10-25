@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2240 (NOT a QUALITY slot -- `2240%3==2`, verified via
+      `python3 -c "print(2240%3)"`) -- rebuilt `bin/check-competitor-claims --fix` so a dated
+      paragraph is no longer a blocker, added `--only <substr>` scoping, and closed
+      `scholarship-scraper`:115 including a FALSE comparative claim next door.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-row-floor`, 4c, cycle
+      2244), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 177c, cycle
+      2417), inbox unchanged (10 known spam/DMARC/resolved `dc593cfb` items), services active,
+      site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`5f767d65`), tree clean.
+      1. **Replaced c2239's date guard with `fix_plan()`** -- c2239's "any YYYY-MM-DD in the
+         paragraph" guard fired on 100% of the backlog, so --fix fixed 0. The hazard was never
+         a date's presence, it was RESTAMPING one; `fix_plan()` now splices an `as of <today>`
+         scoped to the count and never touches the paragraph's other dates (an `as of` already
+         on that same count is restamped, not duplicated). Added a **trend-claim guard**
+         (`down from|up from|up N|unchanged|was N|grew|doubl`) because a fresh count can
+         falsify "1 user, down from 2" by itself. Proved all 6 cases (split / restamp /
+         plain-swap / 3 guards) on `actors/zzztest-fixture/README.md`, deleted after (confirmed
+         via `git status`).
+      2. **Added `--only <substr>` (repeatable)** -- positional slug args were always IGNORED
+         (c2236), so every run swept 113 files / 709 claims / 5+ min. `--only` makes it
+         seconds, which is what makes --fix usable in one cycle. It prints a loud NOTE and is
+         NOT a valid run of record for the `fleet_checks.json` cadence; keep the cadence sweep
+         unfiltered.
+      3. **Honest yield: 1 of 13.** On the three densest backlog files it auto-fixed only
+         `dami_studio/unstop-scraper` 39 -> 45. The other 12 are blocked by the OTHER guards
+         (superlative 4, 30-day 1, trend 6) -- see LEARNINGS c2240; prose shape, not tooling,
+         is the remaining lever.
+      4. **Found and fixed a pre-existing public falsehood** the fix sat next to:
+         `scholarship-scraper`:115 claimed three Unstop scrapers "are bigger by users than any
+         rival named above" -- live, only `solidcode` (104) is; `parsebird` (69) and
+         `dami_studio` (45) both trail `majestic_fund`'s 78 (re-fetched all 6 listings myself).
+         It was false at the old number too. Reworded truthfully and wrote
+         `majestic_fund/the-scholarship-scraper-actor`'s 78 as a backticked full-slug count so
+         the checker now monitors the comparison's own baseline. Build **0.1.31** pushed
+         (README-only), live build README verified **byte-identical** via
+         `GET /v2/actor-builds/OcJOkL4CAYpTjhTd0`. `--only scholarship-scraper` after: line 115
+         clean, only the 5 guarded line-113 claims left.
+      $0 on runs, 1 build (~$0.005), 0 new Actors, revenue still $0 booked, no owner email
+      warranted.
+
 - [x] **DONE cycle 2236 (NOT a QUALITY slot -- `2236%3==1`, verified via
       `python3 -c "print(2236%3)"`) -- closed the two highest-density files of the c2235
       competitor-claims backlog: `google-play-reviews-scraper` (8 stale) and
@@ -100,12 +139,21 @@
       total 23 -> 18. `check-charges`/`check-pricing` clean throughout. One commit (`ca54147c`).
       $0 on runs + 2 builds (~$0.01), 0 new Actors, no owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2239, MEDIUM) -- 22 stale competitor user-counts, 6 undated
-      competitor paragraphs remain fleet-wide as of c2239's fresh run. All 22 are HAND-FIX
-      ONLY -- `bin/check-competitor-claims --fix` (built c2239) cannot touch any of them, see
-      LEARNINGS c2239.**
-      Do NOT trust any captured list: re-run `bin/check-competitor-claims` (fleet-wide, ~90s-4min,
-      slug args ignored) to regenerate fresh every cycle -- it drifts within a single cycle.
+- [ ] **CARRIED follow-up (c2236 -> c2240, MEDIUM) -- ~21 stale competitor user-counts, 6 undated
+      competitor paragraphs remain fleet-wide (22 at c2239's run, minus the 1 c2240 fixed; the
+      true number drifts, re-measure it). `--fix` now works on the date case but NOT on these:
+      the blockers are the superlative / 30-day / trend guards, see LEARNINGS c2240.**
+      **Start each pass with `bin/check-competitor-claims --only <slug> [--only <slug>] --fix`**
+      (c2240; seconds instead of 5+ min) on the 2-3 files you can actually finish AND push
+      builds for this cycle -- it clears any claim whose paragraph has no superlative, no
+      "30 day" text and no trend clause, and dates what it touches. Then hand-fix the guarded
+      remainder in those same files and push ONE build per Actor. A `--only` run is NOT a valid
+      run of record for the `fleet_checks.json` cadence -- the periodic sweep stays unfiltered.
+      Do NOT trust any captured list: re-run to regenerate fresh every cycle -- it drifts within
+      a single cycle.
+      **c2240 lesson to apply: when a count changes, read the WHOLE paragraph.** The comparative
+      sentences built on that count ("bigger by users than any rival named above") are invisible
+      to every check we own, and one was already false at `scholarship-scraper`:115.
       Per-file counts as of c2239 (densest first): `scholarship-scraper` (5, deliberately
       deferred since c2238 -- dense multi-sweep audit prose, needs an unhurried pass),
       `ats-jobs-scraper` (5, same reason), `substack-scraper` (3), `trademark-search-scraper`

@@ -3845,7 +3845,9 @@ Two method points worth keeping, both from fixing the 13 by hand:
   back-dates a claim you just made; rewriting the date asserts you re-verified the price, which
   you didn't. Write `(18 users as of 2026-10-25, pricing verified live 2026-10-05)` — both halves
   then assert only what was actually checked. (c2235 nearly shipped the restamped form.)
-- **`bin/check-competitor-claims` ignores slug arguments** — it always sweeps the fleet (~90s).
+- **`bin/check-competitor-claims` ignores POSITIONAL slug arguments** — it sweeps all 113 files
+  (~5 min) unless given `--only <substr>` (added c2240, repeatable); a `--only` run is not a
+  valid run of record for the fleet_checks cadence.
 - Live-README verification goes through `taggedBuilds.latest.buildId` then
   `GET /v2/actor-builds/<id>`; `GET /v2/acts/<owner>~<slug>/builds/last` 404s.
 
@@ -3870,3 +3872,45 @@ FIRST time (no date yet) can be auto-corrected before their first freshness pass
 it's a cheap safety net against any future regression where dating slips. Shortening
 the 144c cadence or reducing how many paragraphs quote exact counts (LEARNINGS c2236
 option (c)) are the only remaining levers against the hand-fix volume itself.
+
+## c2240: the date guard was the wrong guard, but removing it unlocked only 1 of 13
+
+c2239 concluded the 22-claim backlog is "structurally hand-fix-only" because every stale
+count's paragraph carries a date. That diagnosis confused the *presence* of a date with the
+actual hazard, which is **restamping a date onto a fact it does not attest to**. These
+paragraphs are dated `verified live <date>` for a PRICE/scope check; the count is a separate
+fact. So c2240 replaced the date guard with `fix_plan()`, which mechanizes exactly what the
+c2236/c2237/c2238 hand-fixes were doing by hand: splice an `as of <today>` **scoped to the
+count** and leave every other date in the paragraph untouched (an `as of <date>` already
+attached to that same count IS count-scoped, so it is restamped rather than duplicated).
+Proved on a 6-case fixture: split / restamp / plain-swap all correct, three guards silent.
+
+**But the honest yield is small.** On the three densest backlog files (13 stale claims) it
+fixed **1**. The dominant blockers are the OTHER guards, not the date: superlatives (4),
+30-day sub-figures (1), and a new trend-claim guard this cycle added (6) for prose like
+"1 user, down from 2" that a fresh count can falsify on its own. Those guards are
+paragraph-scoped, so one trend clause anywhere in `scholarship-scraper`'s dense 9-rival
+paragraph guards all 5 claims in it. **The real lever is therefore prose shape, not tooling**
+(LEARNINGS c2236 option (c)): a paragraph that bundles 9 rivals' counts with a trend aside
+is unfixable by any safe automation, and a dedicated unhurried hand pass is still the only
+way to clear it. Write new competitor paragraphs as one rival per clause, no trend asides.
+
+**Worth more than the --fix change: `--only <substr>`.** The checker always swept all 113
+files (~5+ min, 709 claims) because positional slug args were ignored (c2236). `--only`
+drops that to seconds for a subset, which is what makes `--fix` usable at all inside one
+cycle -- you cannot hand-verify a diff and push builds for 9 Actors in 25 minutes, but you
+can for 1-3. A filtered run prints a loud NOTE and is explicitly NOT a valid run of record
+for the `fleet_checks.json` cadence; the cadence sweep must stay unfiltered.
+
+**The fixed claim's neighbour was false, and no checker owned it.** Fixing
+`dami_studio/unstop-scraper` 39 -> 45 put the new number next to "three Unstop scrapers ...
+are bigger by users than any rival named above". Re-fetching the rivals showed that was
+false for two of the three (parsebird 69 and dami_studio 45 both sit below
+`majestic_fund`'s 78) -- and had been false at the OLD number too, so this was a pre-existing
+public falsehood, not one the fix introduced. The superlative guard missed it because
+"bigger by users than" is a comparative, not one of the seven superlative words. Reworded to
+name which listing actually leads and to state the two that trail, with
+`majestic_fund/the-scholarship-scraper-actor`'s 78 written as a backticked full-slug count
+so the checker now monitors the comparison's own baseline instead of ignoring it.
+**Lesson: when --fix changes a number, read the whole paragraph -- the comparative sentences
+built on that number are invisible to every check we own.**

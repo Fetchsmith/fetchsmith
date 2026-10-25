@@ -34,16 +34,27 @@ bare `handle` still needs a COMPETITORS entry below, and is reported as UNCHECKE
 silently skipped) until it gets one. Handles are matched only when backticked, so ordinary
 prose is safe.
 
---fix (cycle 2239): for the USER-COUNT check only, rewrite a stale number in place when it
-is the ONLY thing wrong with the claim. Three guards, each forced by a real c2235/c2236
-trap, keep this from ever touching the cases that need a human: (1) any date token
-(YYYY-MM-DD) anywhere in the claim's paragraph -- a count under a `verified DATE` clause
-must be SPLIT by hand, never restamped; (2) any "30 day(s)" text in the paragraph -- this
-checker never reads those sub-figures, so a number-only swap would leave the sentence half
-stale; (3) any superlative (largest/biggest/most active/busiest/cheapest/most popular/
-highest) in the paragraph -- those need re-checking against the new number, not a blind
-swap. Anything guarded prints as STALE exactly as before (still a hand-fix line); without
---fix nothing is written, same as every prior cycle's behaviour.
+--fix (cycle 2239, reworked 2240): for the USER-COUNT check only, rewrite a stale number in
+place when it is the ONLY thing wrong with the claim. Guards, each forced by a real
+c2235/c2236 trap, keep this from ever touching the cases that need a human: (1) any
+"30 day(s)" text in the paragraph -- this checker never reads those sub-figures, so a
+number-only swap would leave the sentence half stale; (2) any superlative (largest/biggest/
+most active/busiest/cheapest/most popular/highest) in the paragraph -- those need
+re-checking against the new number, not a blind swap; (3) any trend claim (down from/up
+from/up N/unchanged/was N/grew/doubled), which a new count can falsify by itself.
+Anything guarded prints as STALE exactly as before (still a hand-fix line); without --fix
+nothing is written, same as every prior cycle's behaviour.
+
+Cycle 2239 shipped a FOURTH guard -- any date token in the paragraph -- and that made --fix
+fix exactly 0 of the 22 backlogged claims: these paragraphs all carry a PRICE verification
+date from an earlier hand-fix, so the guard fired on 100% of them. Cycle 2240 replaced it
+with the thing the hand-fixes were actually doing (see fix_plan): when the paragraph holds
+any date, the rewrite attaches an `as of <today>` SCOPED TO THE COUNT and leaves every
+other date untouched, so no date is ever restamped onto a fact it does not attest to.
+
+--only <substr> narrows the sweep to matching files (repeatable) so a cycle can --fix a few
+Actors and still have time to push their builds. It is NOT a valid run of record for the
+fleet_checks.json cadence -- see sources().
 """
 import datetime
 import glob
@@ -283,42 +294,97 @@ def live_users(ident, headers, cache={}):
     return cache[ident]
 
 
-def sources():
+def sources(only=()):
     """Every doc that can make a competitor claim: Actor READMEs + published blog posts.
     Store meta.json descriptions were checked by hand (cycle 390) and carry no competitor
-    claims, only feature/price copy about ourselves -- not worth a permanent glob for that."""
-    return sorted(
+    claims, only feature/price copy about ourselves -- not worth a permanent glob for that.
+
+    Cycle 2240: `--only <substr>` narrows the sweep. Positional slug args were always
+    IGNORED (noted c2236), so every run was the full fleet -- ~709 claims, 5+ minutes --
+    which is the right default for a cadence check but makes `--fix` unusable in a single
+    cycle: you cannot push a build for 9 Actors' worth of rewrites in the time left over.
+    Narrowing lets one cycle fix a few Actors AND ship their builds. The SWEEP (the
+    fleet_checks.json cadence entry) must stay unfiltered -- a filtered run proves nothing
+    about the rest of the fleet, so it also refuses to be the run of record below."""
+    paths = sorted(
         glob.glob(os.path.join(ROOT, "actors/*/README.md"))
         + glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))
     )
+    if not only:
+        return paths
+    return [p for p in paths if any(o in os.path.relpath(p, ROOT) for o in only)]
+
+
+AS_OF = re.compile(r"\s+as of (\d{4}-\d{2}-\d{2})")
+
+
+def paragraph(text, start, end):
+    """The blank-line-to-blank-line paragraph containing [start:end).
+
+    Deliberately coarser than one sentence, so every guard below only ever skips MORE
+    than a human would, never less."""
+    p_start = text.rfind("\n\n", 0, start)
+    p_start = 0 if p_start == -1 else p_start + 2
+    p_end = text.find("\n\n", end)
+    return text[p_start:len(text) if p_end == -1 else p_end]
 
 
 def guard_reason(text, start, end):
     """Why a numeric claim must stay a hand-fix, or None if --fix may rewrite it.
 
-    Scoped to the whole paragraph (blank-line to blank-line), not just the one sentence --
-    coarser, so it only ever skips MORE than a human would, never less."""
-    p_start = text.rfind("\n\n", 0, start)
-    p_start = 0 if p_start == -1 else p_start + 2
-    p_end = text.find("\n\n", end)
-    p_end = len(text) if p_end == -1 else p_end
-    para = text[p_start:p_end]
-    if re.search(r"\d{4}-\d{2}-\d{2}", para):
-        return "date in paragraph -- split by hand, don't restamp"
+    Cycle 2240: a bare `\\d{4}-\\d{2}-\\d{2}` in the paragraph used to be a guard ("split by
+    hand, don't restamp"), which made every one of the 22 backlogged claims hand-fix-only --
+    these paragraphs all carry a PRICE verification date from a prior hand-fix, so the guard
+    fired on 100% of them and --fix converged on nothing (c2239). The real hazard was never
+    the presence of a date, it was RESTAMPING one that attests to a different fact. So the
+    date case moved out of here into fix_plan(), which splits instead: it attaches an
+    `as of <today>` scoped to the user count and never touches the paragraph's other dates.
+    What stays a guard is prose that the new number silently falsifies."""
+    para = paragraph(text, start, end)
     if re.search(r"30[\s-]days?", para, re.I):
         return "30-day sub-figure in paragraph -- needs a matching hand edit"
     if re.search(r"\b(largest|biggest|most active|busiest|cheapest|most popular|highest)\b", para, re.I):
         return "superlative in paragraph -- re-check it against the new number by hand"
+    # Cycle 2240: a trend clause ("1 user, down from 2", "up 1 from the last audit") is a
+    # claim ABOUT the delta, so a new count can flip it from true to false on its own --
+    # e.g. rewriting "1 user, down from 2" to "2 users, down from 2". Hand-fix those.
+    if re.search(r"\b(down from|up from|up \d|unchanged|was \d|grew|doubl)", para, re.I):
+        return "trend claim in paragraph -- the new count may falsify it, fix by hand"
     return None
 
 
+def fix_plan(text, m, new_suffix, actual, today):
+    """(end_offset, replacement) for a --fix rewrite of this claim's count.
+
+    When the paragraph carries any date, the rewrite also carries a count-scoped
+    `as of <today>` so a reader cannot read the paragraph's OTHER date (usually a price
+    verification) as attesting to the user count -- c2236's hand method, mechanized.
+    An `as of <date>` already attached to this count is restamped (it is count-scoped by
+    construction); any other date in the paragraph is left exactly as it is."""
+    count = f"{actual:,}{new_suffix}"
+    if not re.search(r"\d{4}-\d{2}-\d{2}", paragraph(text, m.start(), m.end())):
+        return m.end(4), count
+    already = AS_OF.match(text, m.end())
+    if already:
+        return already.end(), f"{count} as of {today}"
+    return m.end(4), f"{count} as of {today}"
+
+
 if __name__ == "__main__":
-    FIX = "--fix" in sys.argv[1:]
+    args = sys.argv[1:]
+    FIX = "--fix" in args
+    ONLY = tuple(args[i + 1] for i, a in enumerate(args) if a == "--only" and i + 1 < len(args))
+    if ONLY:
+        print(f"NOTE: --only {' '.join(ONLY)} -- PARTIAL sweep, {len(sources(ONLY))} file(s). "
+              f"This run does NOT satisfy the fleet_checks.json cadence; a clean result here "
+              f"says nothing about the other {len(sources()) - len(sources(ONLY))} file(s).")
+        if not sources(ONLY):
+            sys.exit("--only matched no file; pass a substring of actors/<slug>/README.md")
     headers = {"Authorization": f"Bearer {token()}"}
     today = datetime.date.today()
     checked = flagged = unresolved = fixed = 0
 
-    for path in sources():
+    for path in sources(ONLY):
         name = os.path.relpath(path, ROOT)
         competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
         # Cycle 1368: this loop used to read the file LINE BY LINE, which silently dropped
@@ -380,13 +446,20 @@ if __name__ == "__main__":
                     print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
             elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
                 reason = guard_reason(text, m.start(), m.end())
+                spelled = re.match(r"\s+users?\b", suffix)
+                if reason is None and not spelled and re.search(
+                        r"\d{4}-\d{2}-\d{2}", paragraph(text, m.start(), m.end())):
+                    # fix_plan would splice `as of <date>` straight onto the abbreviated
+                    # "4u" form ("4u as of 2026-10-25"); not worth a special case.
+                    reason = "abbreviated 'u' count in a dated paragraph -- fix by hand"
                 if FIX and reason is None:
                     new_suffix = suffix
-                    if re.match(r"\s+users?\b", suffix):
+                    if spelled:
                         new_suffix = re.sub(r"users?\b", "user" if actual == 1 else "users", suffix)
-                    file_edits.append((m.start(3), m.end(4), f"{actual:,}{new_suffix}"))
+                    edit_end, repl = fix_plan(text, m, new_suffix, actual, today)
+                    file_edits.append((m.start(3), edit_end, repl))
                     fixed += 1
-                    print(f"FIXED {name}:{lineno}  {ident} {claimed} -> {actual}")
+                    print(f"FIXED {name}:{lineno}  {ident} {claimed} -> {actual}  [{repl.strip()}]")
                 else:
                     flagged += 1
                     tag = "STALE" if reason is None else f"STALE (guard: {reason})"
@@ -406,7 +479,7 @@ if __name__ == "__main__":
 
     # -------------------------------------------------------------- freshness
     checked = stale = 0
-    for path in sources():
+    for path in sources(ONLY):
         name = os.path.relpath(path, ROOT)
         competitors = {**COMPETITORS, **FILE_OVERRIDES.get(name, {})}
         is_blog = name.startswith("site/content/blog/")
