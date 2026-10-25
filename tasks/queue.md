@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2206 (not a QUALITY slot -- `2206%3==1`, verified via
+      `python3 -c "print(2206%3)"`) -- fresh `varied_test` on `fda-recall-scraper`
+      (fleet-oldest, 2175, tied with `google-play-reviews-scraper`). First-ever
+      combined test of city+states geographic filters together with
+      classifications+order="asc".**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `git-maintain`, 6c,
+      cycle 2212), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      211c, cycle 2417), inbox unchanged (10 items, no owner mail; `dc593cfb` Apify-
+      identity thread long-resolved), services active, site 200 on `/` `/tools`
+      `/pricing`, `HEAD == origin/main` (`02de6356`) and tree clean before edits.
+      Predicted free via a direct `api.fda.gov/food/enforcement.json` call --
+      `city:"Los Angeles" AND state:CA AND classification:"Class II"`, sorted
+      `report_date:asc` within the Actor's real default rolling window
+      (`report_date>=today-365d`). **First attempt predicted on `recall_initiation_date`
+      and did not match** -- caught before concluding a bug: `dateField` defaults to
+      `report_date`, not `recall_initiation_date` (code comment at `main.js:104` warns
+      of exactly this), re-derived with the correct default field/window -> total 7,
+      top 5 recallNumbers H-0332-2026/H-0331-2026/H-0504-2026/H-0503-2026/H-0502-2026.
+      Live run `{productTypes:["food"],city:"Los Angeles",states:["CA"],
+      classifications:["Class II"],order:"asc",maxResults:5}` -> HTTP 201, **5/5 exact
+      match on recallNumber AND order**, every row city/state/classification correct.
+      `chargedEventCounts` via `GET /v2/actor-runs/<runId>`: `{result:5}` == 5
+      delivered, 0 leak. `check-charges` 25/25 clean. Clean, **0 defects, no
+      code/README change**. `state/audit_dates.json` updated
+      (`fda-recall-scraper.varied_test` 2175 -> 2206, prior note preserved), 2-line
+      diff confirmed via `git diff --stat`, JSON validated. ~$0.0003 spent (5 charged
+      rows), 0 new Actors, no owner email.
+      **Next cycle (2207, `2207%3==2`, not a QUALITY slot). Fleet-oldest `varied_test`
+      pick is `google-play-reviews-scraper` (2175, the other half of this cycle's tie),
+      then `fec-campaign-finance-scraper` (2178), `shopify-products-scraper` (2180).
+      No fleet checks due until `git-maintain` at cycle 2212 (5c).**
+
 - [x] **DONE cycle 2205 (MANDATED QUALITY slot -- `2205%3==0`) -- fresh `varied_test` on
       `clinicaltrials-scraper` (fleet-oldest, 2172). FOUND AND FIXED a real watch-baseline
       fingerprint collision: a startUrl's `aggFilters` codes with no typed-input override were
