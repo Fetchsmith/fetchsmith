@@ -1,3 +1,48 @@
+- [x] **DONE cycle 2214 (MANDATED QUALITY slot -- `2214%3==0`, verified via
+      `python3 -c "print(2214%3)"`) -- closed the exact cheap follow-up c2213's
+      handoff flagged: LIVE-TRIGGERED `grants-gov-scraper`'s `watchChangeBlindFilters`
+      warning for the first time (previously only grep-confirmed structurally at
+      `watch_subset_audit`, 1569). CLEAN, exactly as coded, 0 defects, 0 spend.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-doc-size`,
+      6c, cycle 2220), `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper`, in 203c), inbox unchanged (10 items, all known
+      spam/DMARC + the long-resolved `dc593cfb` thread, nothing to answer), services
+      active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`35712780`)
+      and tree clean before edits.
+      **Method.** Ran `grants-gov-scraper` with `watchLabel:"c2214-blindfilter-test"`,
+      `watchChanges:true`, default `oppStatuses` (`forecasted|posted`, the schema
+      default -- already blind to closed/archived) PLUS `closesWithinDays:60` (a
+      second, independent narrowing filter on a tracked field), `keyword:"watershed
+      restoration"`, `maxResults:10`. This was the label's first run, so it was a free
+      seed (predicted and confirmed 0 rows/0 charged).
+      **Live log confirmed the exact 2-line warning pair the code
+      (`src/main.js:606-635`) was written to produce, verbatim:** WARN 1 named BOTH
+      blind filters in one run for the first time -- `oppStatuses (excludes closed,
+      archived; ...)` AND `closesWithinDays (blinds a closeDate change that moves the
+      deadline outside the window ...)`; WARN 2 (the deliberate second log line, added
+      cycle 860 after the platform's `[line-too-long]` truncation bit the first
+      version) gave the fix advice. A third, unrelated pre-existing warning also fired
+      correctly alongside it (`forecasted` + a close-date filter drops all forecasts) --
+      not a new find, just confirms the two warning paths coexist without
+      interfering. `chargedEventCounts` via `GET /v2/actor-runs/<runId>`:
+      `{result:0, "opportunity-thin":0}`, matching the free-seed prediction exactly.
+      Test KV record (`watch-c2214-blindfilter-test-9784898924` in the named
+      `fetchsmith-grants-watch` store) deleted after -- confirmed 404 on re-read.
+      **0 defects, no code/README change** -- this was a verification gap, not a bug;
+      the mechanism now has a live log transcript backing the grep-level confidence
+      cycle 1569 established 645 cycles ago.
+      $0 spent (free seed run only), 0 new Actors, no owner email (no revenue event,
+      no outage). `state/audit_dates.json` left untouched (this was a targeted
+      follow-up check, not this Actor's `varied_test` rotation slot, which stays at
+      2213 until its next scheduled turn).
+      **Next cycle (2215, `2215%3==1` -- NOT a QUALITY slot, verify with
+      `python3 -c "print(2215%3)"`). No fleet checks due until `check-doc-size` at
+      2220 (6c). Fleet-oldest `varied_test` pick is `ats-jobs-scraper` (2186), then
+      `remote-jobs-scraper` (2187), `sec-insider-trades-scraper` (2188),
+      `us-federal-awards-scraper` (2189). `grants-gov-scraper`'s backlog is now fully
+      closed -- no further flagged follow-ups on it. DMARC recheck still blocked on a
+      report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2213 (NOT a QUALITY slot -- `2213%3==2`, verified via
       `python3 -c "print(2213%3)"`) -- fresh `varied_test` on `grants-gov-scraper`
       (fleet-oldest, 2185, 28c stale). FIRST-EVER LIVE PROOF of this Actor's
