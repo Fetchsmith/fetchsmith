@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2225 (NOT a QUALITY slot -- `2225%3==2`, verified via
+      `python3 -c "print(2225%3)"`) -- fresh `varied_test` on `substack-scraper`
+      (fleet-oldest live Actor per c2224's handoff, 2197, 28c stale). FIRST-EVER PLATFORM
+      TEST of the comments feature (`includeComments`/`maxCommentsPerPost`/
+      `minCommentCount`/`postUrls`) -- the flattening recursion, `parentCommentId`
+      derivation and the engagement-count filter had never been exercised by any varied_test.
+      Clean, 0 defects, no code/README change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      8c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      192c, cycle 2417), inbox unchanged (10 items: known spam/DMARC/the resolved `dc593cfb`
+      thread + 2 new spam offers -- `base2026@tintgate.com` TinyGate pitch and
+      `ipye@turnel.com` IP-lease pitch, neither needs a reply, "Monthly rentals for your 25
+      Apify Actors" `04dda4a1` is also unsolicited marketing, not a real support request --
+      nothing to answer), services active, site reachable, `HEAD == origin/main`
+      (`eca03923`) and tree clean before edits.
+      **Method, fully predicted FREE before spending anything:** `www.astralcodexten.com`
+      (the bare `astralcodexten.com` host 406s under a minimal curl UA -- a Mod_Security
+      quirk on THEIR box, unrelated to the Actor's own `getJson`, which sends a real browser
+      UA and is unaffected) `/api/v1/archive?sort=new&limit=5` found `against-against-handover`
+      (id `206469842`, `comment_count:615`); its own `/api/v1/post/206469842/comments?
+      all_comments=true&sort=best_first` gave the raw comment tree. Ported `flattenComments()`'s
+      pre-order DFS to python verbatim and predicted exactly 615 total flattened nodes (matches
+      `comment_count` exactly -- strong signal the tree-to-flat-list walk is lossless) plus the
+      first 10 ids+`parentCommentId` (from `ancestor_path`'s last dot-segment) through a
+      5-deep nested chain with one parent carrying two children (branch-and-merge coverage).
+      **LIVE RUN A** (`{postUrls:[.../p/against-against-handover], includeComments:true,
+      maxCommentsPerPost:10, minCommentCount:100, maxResults:20}`) matched 1:1 with ZERO
+      deviation on every id/parentCommentId `bin/varied-test`'s own read-limit (10, separate
+      from the Actor's `maxResults`) let through: 1 post row (`commentCount:615`,
+      `commentsRetrieved:615`, `commentsWithheld:false` -- confirms `commentsRetrieved` reports
+      the FULL fetched tree, NOT sliced by `maxCommentsPerPost`, matching the
+      main.js:365-369 doc comment) + 9 of the 10 `maxCommentsPerPost`-capped comment rows (the
+      10th, id `366568148`, was pushed by the Actor too but fell outside the tool's own
+      read-back limit -- a tooling artifact, not a gap). `minCommentCount:100` correctly let
+      the 615-comment post through.
+      **LIVE RUN B** (negative control, same post, `minCommentCount:9999`) -> 0 rows, fails
+      closed (the post is excluded before `fetchComments` is even called).
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean; `bin/apify-spend` $3.95
+      used (unchanged to the cent -- both runs together cost a fraction of a cent), cycle
+      projection $7.46 (trip-wire $25, cap $85). 0 `apify push` (no code change earned one),
+      0 new Actors, no owner email (no revenue event, no outage).
+      `state/audit_dates.json` updated (`substack-scraper.varied_test` 2197 -> 2225, prior
+      notes preserved) via a targeted `Edit`, **2-line diff confirmed with
+      `git diff --stat`** and JSON re-validated.
+      **Next cycle (2226, `2226%3==0` -- MANDATED QUALITY slot, verify fresh with
+      `python3 -c "print(2226%3)"`).** Re-run `bin/checks-due` / `bin/audit-due --all` fresh
+      rather than trusting this handoff. Per CLAUDE.md pace rules, this is a QUALITY/GROWTH
+      cycle: re-run platform tests on 2-3 existing Actors with different inputs, improve
+      READMEs, compare against top competitors, answer support mail, or update site copy --
+      NOT a new varied_test rotation pick (fleet-oldest after this one is
+      `court-records-scraper` (2198), then whatever is next after that). DMARC recheck still
+      blocked on a report newer than `e2f3a358`. The 2 new spam/marketing inbox items
+      (`base2026@tintgate.com`, `ipye@turnel.com`) need no action; `04dda4a1` ("Monthly
+      rentals...") likewise.
+
 - [x] **DONE cycle 2224 (NOT a QUALITY slot -- `2224%3==1`, verified via
       `python3 -c "print(2224%3)"`) -- fresh `varied_test` on `hacker-news-scraper`
       (fleet-oldest live Actor, 2195, 29c stale). FIRST-EVER LIVE PROOF of
