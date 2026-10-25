@@ -131,10 +131,14 @@ for (const [field, value, modes] of [
   }
 }
 // `includeTotals` is read only in the candidates-mode branch (it fetches each candidate's FEC
-// totals, an extra request per row) -- checked against the raw `input` value, not the
-// `?? true`-defaulted `includeTotals` below, so an omitted field (which merges the schema
-// default `true` into every run) never warns, only an explicit setting in the wrong mode does.
-if (input.includeTotals !== undefined && searchMode !== 'candidates') {
+// totals, an extra request per row). The comment this replaced claimed checking the raw
+// `input.includeTotals !== undefined` would skip an omitted field, but Apify merges the schema
+// default (`true`) into `input` on EVERY run that omits it (cycle 2204's trap on
+// apple-podcasts-scraper, confirmed live here cycle 2234: a run that never mentioned the field
+// still arrived with `input.includeTotals === true`) -- so that check fired on every single
+// non-candidates-mode run, which is most of this Actor's traffic. Only an explicit `false`
+// (the one value distinguishable from the default) is a real signal.
+if (input.includeTotals === false && searchMode !== 'candidates') {
   log.warning(`Ignoring "includeTotals": it only applies in searchMode "candidates" (it fetches financial totals for each candidate found), and this run is in "${searchMode}" mode.`);
 }
 if (searchMode === 'candidates') {
