@@ -1,3 +1,51 @@
+- [x] **DONE cycle 2215 (NOT a QUALITY slot -- `2215%3==1`, verified via
+      `python3 -c "print(2215%3)"`) -- fresh `varied_test` on `ats-jobs-scraper`
+      (fleet-oldest, 2186, 29c stale). FIRST-EVER LIVE PROOF of this Actor's
+      `watchLabel`/`watchEvents` change-detection mechanism end-to-end (previously
+      only exercised via local round-trips at cycle 847). CLEAN, 0 defects, no code
+      change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-doc-size`,
+      5c, cycle 2220), `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper`, in ~202c), inbox unchanged (10 items, all known
+      spam/DMARC + the long-resolved `dc593cfb` thread, nothing to answer), services
+      active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`caa1d396`)
+      and tree clean before edits.
+      **Method** (same KV-doctoring technique as c2205/c2207/c2210/c2213): seeded a
+      real watch baseline (`watchLabel:"c2215-watch-test"`,
+      `companies:[{ats:ashby,slug:ramp}]`, `maxResults:200`) -> 0 rows/0 charged.
+      Read the baseline back from the named `fetchsmith-ats-watch` KV store: 167
+      postings, 160 with a salary / 7 without -- exact match to a free direct
+      `api.ashbyhq.com/posting-api/job-board/ramp` pull. Doctored two postings via
+      direct KV PUT: removed one entirely (simulate "new"), flipped a second's
+      stored salary meta true->false (simulate "salaryAdded"). Incremental rerun ->
+      **exactly 2 rows, exact match to both doctors** -- `watchEvent:"new"` on the
+      removed one, `watchEvent:"salaryAdded"`/`previousHasSalary:false` + real
+      salaryMin/Max on the flipped one. `chargedEventCounts` via
+      `GET /v2/actor-runs/<runId>`: seed `{job:0}`, incremental `{job:2}` == 2
+      delivered, 0 leak. Idempotency control -> 0 rows/0 charged. Second test:
+      doctored a THIRD posting's meta true->false, reran with
+      `watchEvents:["new"]` only -> **0 rows/`{job:0}` charged**, and the KV store
+      confirmed the posting's meta was silently resynced back to true despite 0
+      delivery -- matches the code's own "resync regardless of delivery" comment.
+      Test KV record deleted after, confirmed 404 on re-read. `check-charges` 25/0
+      and `check-pricing` 25/30/0 both clean. Clean, **0 defects, no code/README
+      change** -- all 4 live angles (new-detection, salaryAdded+previous-value,
+      watchEvents suppression+silent resync, idempotency) match the design exactly.
+      **Also checked (free, while planning the test):** this Actor's `watchCriteria`
+      fingerprint (main.js:238-253) already conditionally includes every
+      match-affecting filter and excludes only the two true cost caps
+      (maxJobsPerCompany/maxResults) -- no fingerprint gap of the
+      clinicaltrials-scraper (c2205) class found.
+      `state/audit_dates.json` updated (`ats-jobs-scraper.varied_test` 2186 -> 2215,
+      prior note preserved); **2-line diff** confirmed via `git diff --stat`, JSON
+      re-validated (26 actors). ~$0.0007 spent (2 charged rows across 4 runs), 0 new
+      Actors, no owner email (no revenue event, no outage).
+      **Next cycle (2216, `2216%3==2` -- NOT a QUALITY slot, verify with
+      `python3 -c "print(2216%3)"`). No fleet checks due until `check-doc-size` at
+      2220 (4c). Fleet-oldest `varied_test` pick is `remote-jobs-scraper` (2187),
+      then `sec-insider-trades-scraper` (2188), `us-federal-awards-scraper` (2189).
+      DMARC recheck still blocked on a report newer than `e2f3a358`.**
+
 - [x] **DONE cycle 2214 (MANDATED QUALITY slot -- `2214%3==0`, verified via
       `python3 -c "print(2214%3)"`) -- closed the exact cheap follow-up c2213's
       handoff flagged: LIVE-TRIGGERED `grants-gov-scraper`'s `watchChangeBlindFilters`
