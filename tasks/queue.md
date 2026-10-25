@@ -50,26 +50,49 @@
       **$0 on runs (metadata reads only) + 2 builds (~$0.01), 0 new Actors, revenue still $0
       booked, no owner email warranted.**
 
-- [ ] **CARRIED follow-up (c2235 -> c2236, MEDIUM) -- 32 stale competitor user-counts, 6 undated
-      competitor paragraphs remain fleet-wide after `google-play-reviews-scraper` and
-      `hacker-news-scraper` were closed (c2236) on top of `court-records-scraper` (c2235).**
-      Do NOT trust any captured list: a fresh claim went stale inside cycle 2236's own 25
-      minutes, so re-run `bin/check-competitor-claims` (fleet-wide, ~90s, slug args ignored) to
-      regenerate. Next-densest files: `app-store-reviews-scraper` (5 stale),
-      `remote-jobs-scraper` (5), `substack-scraper` (2), `shopify-products-scraper` (2),
-      `trademark-search-scraper` (2), `scholarship-scraper` (2), plus singletons in
-      `google-news-scraper`, `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper`,
+- [x] **DONE cycle 2237 (NOT a QUALITY slot -- `2237%3==2`, verified via
+      `python3 -c "print(2237%3)"`) -- closed the next two densest files of the backlog,
+      `app-store-reviews-scraper` (5 stale) and `remote-jobs-scraper` (5 stale), both now
+      0 STALE. Fleet total 32 -> 22.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox
+      unchanged (10 known spam/DMARC items), services/site healthy, tree clean at `9859f998`.
+      Re-fetched all 10 listings' live `stats` via `GET /v2/acts/<owner>~<slug>` (needed
+      `json.loads(..., strict=False)` -- some READMEs embed raw control chars that break strict
+      JSON mode): `lergassy/app-store-reviews-scraper` 6->9 (x2 mentions, date split not
+      restamped), `cheapapi/app-store-google-play-scraper` 3->2, `plainrows/app-store-reviews
+      -scraper` + `plainrows/app-reviews-scraper` (was bundled "3 users each", now DIFFERENT at
+      2/1 -- reworded since "each" no longer holds), `euroscrape/app-reviews` 2->1 (singular);
+      `flash_scraper/remote-job-aggregator` 103->117, `automation-lab/jobgether-remote-jobs
+      -scraper` 40->45, `deepmine/remote-jobs-aggregator` 1->2, `tali-works/remote-jobs
+      -aggregator` 4->3 (a decline), `compass_lab/remote-jobs-aggregator` 1->2. None of the 10
+      carried a 30-day sub-figure or superlative needing a matching edit. Builds 0.1.111 and
+      0.1.82 pushed README-only, both live READMEs byte-verified identical via the build API.
+      `check-competitor-claims` re-run after: both files 0 STALE, fleet total 32 -> 22.
+      `check-charges`/`check-pricing` clean throughout. Two commits (`ba827bbf`, `3596a6e5`).
+      $0 on runs + 2 builds (~$0.01), 0 new Actors, no owner email warranted.
+
+- [ ] **CARRIED follow-up (c2236 -> c2237, MEDIUM) -- 22 stale competitor user-counts, 6 undated
+      competitor paragraphs remain fleet-wide after `app-store-reviews-scraper` and
+      `remote-jobs-scraper` were closed (c2237).**
+      Do NOT trust any captured list: re-run `bin/check-competitor-claims` (fleet-wide, ~90s-4min,
+      slug args ignored) to regenerate fresh every cycle -- it drifts within a single cycle.
+      Next-densest files as of c2237: `substack-scraper` (2 stale), `shopify-products-scraper`
+      (2), `trademark-search-scraper` (2), `scholarship-scraper` (2), plus singletons in
+      `apple-podcasts-scraper`, `ats-jobs-scraper` (actually 4 per the c2237 regen --
+      re-verify), `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `google-news-scraper`
+      (2), `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`,
       `website-screenshot-scraper`. The 6 UNDATED paragraphs (`clinicaltrials-scraper`:176,
       `federal-register-scraper`:180, `nih-reporter-scraper`:203,
       `sam-gov-opportunities-scraper`:326, `trademark-search-scraper`:321,
       `website-screenshot-scraper`:131) still need a date, and the checker's DATED regex only
-      recognizes `verified|checked|re-verified|rechecked` (c2235). **Use c2236's method
-      verbatim:** re-fetch each listing's live `stats` yourself (the checker's "live is N" is
-      right but gives you nothing for the 30-day user/run sub-claims in the same sentence, which
-      the checker never reads and which go stale together), fix count and sub-claims together,
-      SPLIT any existing date rather than restamping it, re-check superlatives the new number
-      could break, apply via a match-count-asserting script, one push per Actor (~$0.005 each),
-      then byte-diff the live build README. ~2-3 more cycles at 1-2 Actors each.
+      recognizes `verified|checked|re-verified|rechecked` (c2235). **Use c2236/c2237's method
+      verbatim:** re-fetch each listing's live `stats` yourself with lenient JSON parsing
+      (`strict=False`), fix count and any 30-day sub-claims/superlatives in the same sentence
+      together, SPLIT any existing date rather than restamping it, apply via a
+      match-count-asserting script (one `grep -c` check per old-string before editing), one push
+      per Actor (~$0.005 each), then byte-diff the live build README. ~2 more cycles at 1-2
+      Actors each. Per the open c2236 follow-up below, consider building the guarded `--fix`
+      mode first since hand-fixing alone cannot keep pace with the churn.
 
 - [ ] **NEW follow-up (c2236, MEDIUM — do this BEFORE grinding more of the stale-count
       backlog by hand) — add a `--fix` mode to `bin/check-competitor-claims` for the
