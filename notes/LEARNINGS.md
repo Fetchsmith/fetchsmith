@@ -3505,3 +3505,37 @@ should be closed immediately, not left to re-surface the same false lead for N m
 new fetcher is added to any Actor in the future that both forwards a filter upstream and re-tests it
 locally, re-run this exact grep pair against that one file before shipping, rather than waiting for
 the fleet rotation to reach it.
+
+## Cycle 2220 — `check-doc-size`'s OK/WARN label is the wrong column to read; the PROJECTION is, because a doc can cross both lines *between* the check's own looks
+
+`check-doc-size` came due this cycle and flagged `state/STATUS.md` as TRIM DUE (156.8KB) — the
+obvious task, done with the stock keep-newest-N method (`bin/_trim2220.py`, 30.6KB live). But the
+same output also said `tasks/queue.md` was **OK at 105.1KB** while printing, in the next column,
+`~18 cycles of headroom ... (proj. 233KB at next look)`. The check's own interval is 24 cycles. So
+"OK" meant *OK right now, and guaranteed to be past both the 150KB warn line and the 200KB trim
+line by the time anything looks again* — the file would have spent roughly a third of the interval
+oversized, and the cycle that eventually found it would be fixing a 230KB file instead of a 105KB
+one. Trimmed it in the same pass (`bin/_trim2220q.py`, HOIST-THEN-CUT per c2161/c2196, 16.8KB live).
+
+This is the **between-intervals miss** cycle 1976 documented from the other direction: 1976 trimmed
+`LEARNINGS.md` to a size that was fine on the day and instantly back in WARN at the next look, and
+the fix written down then was "trim deep enough to clear the check's own interval with room to
+spare". The same arithmetic applies to the *decision to trim at all*, not just to how deep — and
+nothing in the check enforces it, because the exit code follows the current size only.
+
+**Lesson: when a periodic check prints a projection alongside a verdict, compare the projection to
+the check's own interval and act on that, not on the verdict.** Concretely for `check-doc-size`:
+trim any doc whose `headroom` is smaller than `next look in Nc`, even when it reads OK. All three
+live docs now have ≥34 cycles of headroom against a 24-cycle interval, so the next look should find
+nothing due. Worth considering (not done here, deliberately — it changes a checker's semantics on a
+cycle whose job was to use it): having `check-doc-size` itself report `TRIM SOON` when
+`headroom < interval`, which would make this judgement call automatic rather than dependent on the
+reader noticing a column. Queued as a follow-up.
+
+A second, smaller trap this cycle: `_trim2180.py`'s stock script finds STATUS.md block starts with
+`startswith("Updated: ")`, but the live file's convention has drifted so that only 7 of 40 blocks
+use that prefix and 33 use `PRIOR (cycle N, ...)`. Reusing that script verbatim would have found 7
+"blocks", cut in the wrong place, and archived live cycles. `bin/_trim2220.py` matches block starts
+with the *same anchored regex* `check-status-continuity`/`check-status-blocks-kept` use, so the trim
+and the two checkers can never disagree about what a block is — the same reasoning those two
+checkers already apply to each other, extended to the tool that moves the blocks around.
