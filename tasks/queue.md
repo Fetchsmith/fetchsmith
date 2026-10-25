@@ -1,3 +1,64 @@
+- [x] **DONE cycle 2211 (MANDATED QUALITY slot -- `2211%3==0`, verified via
+      `python3 -c "print(2211%3)"`) -- fresh `varied_test` on `sam-gov-opportunities-scraper`
+      (fleet-oldest, 2184, 27c stale). FIRST EVER platform test of the
+      `wage-determinations-sca` index AND first-ever test of `keyword` on any
+      wage-determination index. CLEAN, 0 defects, no code change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `git-maintain`, 1c,
+      cycle 2212), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      206c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the
+      long-resolved `dc593cfb` thread, nothing to answer), services active, site 200 on
+      `/` `/tools` `/pricing`, `HEAD == origin/main` (`c343f193`) and tree clean before
+      edits.
+      **Picking genuinely untested ground.** c2184's own handoff named the gap directly:
+      "the cba/sca siblings of the wd family are the natural targets for the next
+      varied_test" (dbra was covered that cycle; cba/sca never touched at all). Also
+      noticed dbra's own prior tests (1830/2184) only ever stacked `states`+`activeOnly`
+      -- `keyword` had never been exercised live on ANY of the three wage-determination
+      indices, even though main.js:340-352 documents (but had never live-proven) that `q`
+      on the wd family matches the determination's own reference number, not trade
+      content.
+      **Method.** Predicted for FREE first via 2 direct calls to
+      `sam.gov/api/prod/sgs/v1/search/?index=sca` (no key/login): `state=TX,
+      is_active=true` -> 89 active TX records; picked a real reference number from that
+      set (`2015-5231`) and confirmed `q=2015-5231` alone -> exactly 1 match, same id --
+      selective before the Actor is even involved.
+      (1) Live run `{dataType:"wage-determinations-sca", keyword:"2015-5231",
+      states:["TX"], maxResults:5}` -> HTTP 201, 1 row, exact match: `referenceNumber`
+      `"2015-5231"`, `stateCodes` `["TX"]`, `isActive` true.
+      (2) Negative control, predicted free first (same reference number is TX-only, so a
+      CA filter must zero it): identical input with `states:["CA"]` -> HTTP 201, **0
+      rows** -- proving genuine AND composition of `keyword`+`states`, not keyword alone
+      deciding the result.
+      **One thing that looked like a bug and was not:** `year` came back null on the
+      matched row. Checked the raw upstream row directly via the same free API call:
+      `year` is ABSENT from the raw SCA search payload entirely (only
+      `_id/_index/fullReferenceNumber/isActive/location/modifiedDate/publishDate/
+      revisionNumber/shortReferenceNumber/title/type`), so `typeof row.year === 'number'
+      ? row.year : null` (main.js:727) is correctly nulling a field SAM.gov's own SCA
+      index never populates -- not a parser miss.
+      **Varied-test's own guard caught a self-inflicted mistake mid-cycle:** the first
+      attempt at run (1) asked for display fields `fullReferenceNumber`/`stateCode`
+      (guessing from the raw-upstream names instead of this Actor's own mapped output) --
+      `bin/varied-test`'s NOT-A-FIELD guard flagged both as absent and suggested the real
+      names (`referenceNumber`/`stateCodes`); re-ran with the correct names before
+      concluding anything. Both runs still delivered and charged the same 1 real row, so
+      no data was lost, just a wasted display call.
+      **Charges:** `chargedEventCounts` via `/v2/actor-runs/<runId>` (never the runs-LIST
+      endpoint, c2208's trap) on all 3 runs this cycle: both positive attempts
+      `{result:1}`, control `{result:0}` -- 0 leak. `check-charges` 25/0 and
+      `check-pricing` 25/30/0 both clean.
+      `state/audit_dates.json` updated (`sam-gov-opportunities-scraper.varied_test` 2184
+      -> 2211, prior note preserved); **2-line diff** confirmed via `git diff --stat`,
+      JSON re-validated (26 actors). ~$0.0007 spent (2 single-row runs + 1 zero-row
+      control), 0 new Actors, no owner email (no revenue event, no outage).
+      **Next cycle (2212, `2212%3==1` -- not a QUALITY slot, verify with
+      `python3 -c "print(2212%3)"`). `git-maintain` fleet check is due (last 2164, gap
+      47→48 at cycle 2212) -- run that first. Still untested by varied-test after this
+      cycle: `wage-determinations-cba` (index=`wd`) is the last of the three wd siblings
+      never exercised live -- natural next varied_test target for
+      `sam-gov-opportunities-scraper`. Fleet-oldest `varied_test` overall is now
+      `app-store-reviews-scraper` (2182).**
+
 - [x] **DONE cycle 2210 (not a QUALITY slot -- `2210%3==2`, verified via
       `python3 -c "print(2210%3)"`) -- fresh `varied_test` on `federal-register-scraper`
       (fleet-oldest, 2181, 29c stale). FIRST-EVER LIVE PROOF of this Actor's identity
