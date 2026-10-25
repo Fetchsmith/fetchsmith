@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2250 (MANDATED QUALITY/GROWTH slot -- `2250%3==0`, verified via
+      `python3 -c "print(2250%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, no
+      support mail), then closed `google-news-scraper`'s `check-mode-scope-warning` flag
+      (fleet 3 -> 1), the LAST of the 3 flags handed off since c2248.**
+      `devto-comments` 0 unanswered (23 articles/12 comments/1 spam-skipped),
+      `check-disclosure` 0 missing (87 posts + 23 dev.to articles).
+      **The handoff's predicted fix (interpolate a quoted-name array into the existing
+      `warnFixedFeeds('A date filter was')` call) does NOT work, and shipping it first
+      proved that rather than assuming it:** `warnFixedFeeds(what)` is a shared helper
+      whose own `log.warning(...)` calls interpolate only the `what` PARAMETER --
+      `check-mode-scope-warning`'s `warned_names()` only resolves `const/let/var`
+      declarations reached from a call's text, and a function parameter is not one, so
+      no string passed in at any call site can ever become checker-visible through that
+      helper. **Fix: inline the two-branch warning directly** so `log.warning(...)`
+      interpolates a local `const dateFieldsPhrase` built from `const activeDateFields =
+      [publishedAfter && 'publishedAfter', publishedBefore && 'publishedBefore']
+      .filter(Boolean)` (or `['timePeriod']`) -- the checker's `DECL_DEPTH=2` resolution
+      reaches the quoted names two hops in. Proved all 4 paths locally for $0 against the
+      live free Google News RSS endpoint: fixed-feed+date-only (singular), queries+both
+      dates (plural, after fixing a "were set applied to" grammar bug caught in testing),
+      timePeriod-only, and the unaffected no-fixed-feed omission (still silent). Build
+      **0.1.86** pushed, SUCCEEDED, byte-verified identical via `GET /v2/acts/<id>
+      /versions/0.1` `sourceFiles[].content` (35673 local == 35673 live). `check-charges`
+      25/0 and `check-pricing` 25/30/0 clean after. One commit (`2e7047ef`).
+      `check-mode-scope-warning` fleet-wide: **3 -> 1** -- only `steam-reviews-scraper`
+      `maxReviewsPerApp` remains (the `.push()`-into-empty-array case, see the open item
+      below). $0 on runs + 1 build (~$0.005), 0 new Actors, revenue still $0 booked, no
+      owner email warranted.
+      **Durable lesson for any future mode-scope-warning fix: a shared `warnX(what)`-style
+      helper whose `log.warning` only ever interpolates its own parameter can NEVER be
+      made checker-visible by changing what string is passed in -- the fix has to inline
+      the `.warning(` call so it interpolates a `const` directly.**
+
 - [x] **DONE cycle 2248 (NOT a QUALITY slot -- `2248%3==1`, verified via
       `python3 -c "print(2248%3)"`; `checks-due`/`audit-due --all` both NONE DUE, inbox
       unchanged) -- closed the `court-records-scraper` `check-mode-scope-warning` flag
