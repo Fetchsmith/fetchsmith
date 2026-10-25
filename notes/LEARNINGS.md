@@ -3775,3 +3775,44 @@ can only see a restriction the schema DECLARES, so a field documenting per-mode 
 — which is why it catches 4 of 7 and 6 of 8 on the two real bugs, not 7/7 and 8/8. Written
 down, that is a known limit; unwritten, a later cycle reads a clean run as "this class is
 covered" and stops looking.
+
+## cycle 2234 -- the cycle-2204 schema-default trap bit the mode-scope-warning follow-up itself, twice, including a build already shipped as "LIVE-VERIFIED" the cycle before
+
+Working the c2232 `check-mode-scope-warning` follow-up (judge one flagged field per cycle,
+default to adding the warning), both fields fixed so far reused the SAME wrong idiom:
+`if (input.FIELD !== undefined && wrongMode) log.warning(...)`, reasoning "an omitted field
+reads as `undefined`, only an explicit setting in the wrong mode sets it." That reasoning is
+false for any field carrying a schema `default` — cycle 2204 already proved Apify merges the
+schema default into `input` on every run that omits the field, including runs started via the
+raw API (`bin/run-charged`, not just the Console UI), so `input.FIELD` is NEVER `undefined` for
+a defaulted field. The `!== undefined` check is therefore always true, and the warning fires on
+every single wrong-mode run, not just the ones that actually set the field.
+
+Caught it live on `apple-podcasts-scraper`'s `maxPodcastsPerPublisher` (default 200) by testing
+the omission case explicitly — a run with the field never mentioned still logged "Ignoring
+maxPodcastsPerPublisher" — fixed by comparing against the default value instead
+(`input.X !== 200`), same convention `sort`/`explicitFilter` already used on that Actor (and
+the reason they used it, per the cycle 2204 note, which this follow-up had apparently stopped
+reading before reusing the `!== undefined` idiom). Then checked whether the PRIOR cycle's fix
+to `fec-campaign-finance-scraper`'s `includeTotals` (default `true`, cycle 2233, build 0.1.75,
+logged as "LIVE-VERIFIED") had the same bug — it did: the live-verification test that cycle ran
+with `includeTotals:true` explicitly set, which is indistinguishable from the merged default, so
+it could not have caught this even if it existed. A fresh test with the field OMITTED in
+"contributions" mode reproduced the spurious warning on the first try. Fixed the same way
+(`includeTotals === false`, the one value distinguishable from a `true` default), build 0.1.76.
+
+**Generalizable rule for every remaining and future mode-scope-warning fix**: before writing
+`input.FIELD !== undefined`, check whether that field's schema entry has a `"default"` key. If
+it does, `!== undefined` is dead code (always true) and the real test is a comparison against
+the default value (or, for booleans, against the one value that ISN'T the default). If it does
+NOT have a default, `!== undefined` is correct as-is (confirmed for `court-records-scraper`'s
+`judge` and `google-news-scraper`'s `publishedAfter`/`publishedBefore` — all three NO DEFAULT,
+not yet fixed, safe to use `!== undefined` when their turn comes). **One remaining flag already
+known to need the default-comparison form**: `steam-reviews-scraper`'s `maxReviewsPerApp` has
+`"default": 200` — do not reuse `!== undefined` on it. `includePlayerCount`/
+`includeOwnerEstimates` on the same Actor have no default, so `!== undefined` is fine there.
+**Also: "LIVE-VERIFIED" in a STATUS.md note is only as strong as the test case chosen** — a test
+that sets a field to its own default value cannot distinguish "the check is correct" from "the
+check is broken but happens to agree on this one input." Test the OMISSION case explicitly
+whenever the field being warned about has a schema default, not just an explicit non-default
+value.

@@ -106,22 +106,54 @@
       **$0 spent, 0 Actor runs, 0 `apify push`, 0 new Actors**, revenue still $0 booked, no
       owner email warranted.
 
-- [ ] **NEW follow-up (c2232, MEDIUM; `fec-campaign-finance-scraper` slice CLOSED c2233) --
-      judge the remaining fields `check-mode-scope-warning` flags on the fleet.** These are
-      CANDIDATES, not confirmed bugs until the code path is read. **c2233 closed
-      `fec-campaign-finance-scraper`** (`candidateName`, `includeTotals` -- both genuinely
-      inert outside candidates mode, no overcharge risk, but silently confusing; fixed by
-      adding both to the existing warning convention, build 0.1.75, live-verified). Current
-      fleet re-run (c2233): 7 flags remain -- `apple-podcasts-scraper`
-      (`maxPodcastsPerPublisher`), `court-records-scraper` (`judge`), `google-news-scraper`
-      (`publishedAfter`, `publishedBefore`), `steam-reviews-scraper` (`maxReviewsPerApp`,
-      `includePlayerCount`, `includeOwnerEstimates`). For each: read the wrong-mode code
-      path and decide whether a buyer can be charged for unfiltered rows. **Default answer
-      to a flag is to ADD the warning, not to allowlist** -- `state/mode_scope_allow.json`
-      exists (currently empty on purpose, so these stay visible) and an entry requires a
-      real reason sentence; the check flags an empty one. Do one Actor per cycle and batch
-      the warning + README into that Actor's single push, per the BUDGET.md
-      one-push-per-Actor-per-cycle rule.
+- [x] **DONE cycle 2234 (NOT a QUALITY slot -- `2234%3==2`) -- closed the
+      `apple-podcasts-scraper` slice (`maxPodcastsPerPublisher`), then found and fixed a
+      false-positive in BOTH that fix and c2233's `fec-campaign-finance-scraper` fix.**
+      `maxPodcastsPerPublisher` is read only in `dataType==='publisher'`; added the warning
+      with the fleet's `input.X !== undefined` idiom (build 0.1.27), then tested the
+      OMISSION case and found it fires on every non-publisher run regardless, because the
+      field has `"default": 200` and Apify merges schema defaults into `input` on every run
+      that omits the field (cycle 2204's documented trap). **Fixed in build 0.1.28**:
+      compare against the default value (`input.X !== 200`), same as `sort`/`explicitFilter`.
+      **Then re-tested c2233's `includeTotals` fix (fec, `default: true`, build 0.1.75,
+      logged "LIVE-VERIFIED") the same way and found the identical bug already shipped** --
+      c2233's verification ran with `includeTotals:true` explicitly set (indistinguishable
+      from the merged default), so a plain omitted-field test in `searchMode:"contributions"`
+      reproduced the spurious warning immediately. **Fixed in build 0.1.76**:
+      `includeTotals === false` (the one value distinguishable from a `true` default). All 3
+      cases live-verified on both Actors (omitted/explicit-wrong-mode/explicit-in-scope).
+      `check-mode-scope-warning` 0 flags on both Actors; fleet-wide 5 remain (see below).
+      LEARNINGS appended (cycle 2234) with the generalizable rule: **before reusing
+      `!== undefined` on any remaining flag, check the field's schema for a `"default"` key
+      -- if present, compare against the default value instead.** Pre-checked all 5
+      remaining flags' schemas this cycle so the next one doesn't have to: `court-records
+      -scraper` `judge`, `google-news-scraper` `publishedAfter`/`publishedBefore`,
+      `steam-reviews-scraper` `includePlayerCount`/`includeOwnerEstimates` -- all NO DEFAULT,
+      `!== undefined` is correct as-is. **`steam-reviews-scraper`'s `maxReviewsPerApp` has
+      `"default": 200`** -- do NOT reuse `!== undefined` on it; use the default-comparison
+      form. `check-charges`/`check-pricing` clean after all 4 pushes, ~$0.01 spent (6 charged
+      test rows) + 4 builds (~$0.02), 0 new Actors, no owner email warranted.
+
+- [ ] **NEW follow-up (c2232, MEDIUM; `fec-campaign-finance-scraper` and
+      `apple-podcasts-scraper` slices CLOSED) -- judge the remaining fields
+      `check-mode-scope-warning` flags on the fleet.** These are CANDIDATES, not confirmed
+      bugs until the code path is read. **5 flags remain**: `court-records-scraper`
+      (`judge`, NO schema default -- `!== undefined` is the correct check), `google-news
+      -scraper` (`publishedAfter`, `publishedBefore`, both NO default), `steam-reviews
+      -scraper` (`maxReviewsPerApp` -- **HAS `"default": 200`, use a default-comparison
+      check like `input.X !== 200`, NOT `!== undefined`** -- `includePlayerCount`,
+      `includeOwnerEstimates`, both NO default). For each: read the wrong-mode code path,
+      decide whether a buyer can be charged for unfiltered rows, and **before writing the
+      check, grep the field's schema entry for `"default"` and pick the right idiom (see
+      LEARNINGS cycle 2234)** -- two of the last two fixes shipped a false-positive from
+      skipping exactly that step. **Default answer to a flag is to ADD the warning, not to
+      allowlist** -- `state/mode_scope_allow.json` exists (currently empty on purpose, so
+      these stay visible) and an entry requires a real reason sentence; the check flags an
+      empty one. Do one Actor per cycle and batch the warning + README into that Actor's
+      single push. **Also: after shipping any `!== undefined` mode-scope check, test the
+      OMISSION case live (field never mentioned in the input JSON), not just an explicit
+      wrong-mode value** -- an explicit-value-only test cannot distinguish a correct check
+      from one that fires on every run.
 
 - [ ] **NEW follow-up (c2232, LOW) -- `bin/check-disclosure` is NOT in
       `state/fleet_checks.json`.** Its "run on every QUALITY cycle" instruction lives only
