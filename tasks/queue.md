@@ -1,3 +1,95 @@
+- [x] **DONE cycle 2236 (NOT a QUALITY slot -- `2236%3==1`, verified via
+      `python3 -c "print(2236%3)"`) -- closed the two highest-density files of the c2235
+      competitor-claims backlog: `google-play-reviews-scraper` (8 stale) and
+      `hacker-news-scraper` (5 stale), both now 0 STALE.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-row-floor`, 8c, cycle
+      2244), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`, 181c, cycle
+      2417), inbox unchanged (10 known spam/DMARC/resolved `dc593cfb` items, nothing to
+      answer), services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`c9cae5cb`) and tree clean before edits.
+      **Note for next time: `bin/check-competitor-claims` IGNORES slug arguments** -- it always
+      sweeps the whole fleet (709 user-count claims / 222 paragraphs / ~90s), so there is no
+      way to scope it to one Actor; budget the full ~90s each time.
+      **Re-fetched all 13 listings' live `stats` myself via `GET /v2/acts/<owner>~<slug>`
+      instead of trusting the checker's own "live is N" line** -- which also supplied the
+      30-day user/run figures that three of the claims cite in prose and that the checker does
+      not look at: `gentle_cloud/hacker-news-scraper` 192->218 users and "33 of them in the
+      last 30 days" -> 58; `sian.agency/hacker-news-scraper` 9->11 users, 33->31 runs/30d;
+      `scrapemint/hn-lead-monitor` 12->15 users, 115->116 runs/30d; `scrapeworks/
+      hacker-news-search` 4->5; `rbbscrap/fast-hacker-news-scraper` 2u->4u;
+      `neatrat/google-play-store-reviews-scraper` 2,873->3,217;
+      `fetchcraftlabs/playstore-reviews-scraper` 133->149;
+      `sian.agency/play-store-apps-scraper` 16->18; `lergassy/google-play-reviews-scraper`
+      6->10; plus four DECLINES reworded to singular "1 user" (`ahmed_jasarevic/
+      google-play-reviews-scraper` 3->1, `axiomworks/app-store-reviews-scraper` 2->1,
+      `plainrows/app-reviews-scraper` 3->1, `euroscrape/app-reviews` 2->1).
+      **Handled the c2235 date trap by SPLITTING dates, never restamping them**: where a count
+      sat inside a dated pricing clause, `(16 users, verified live 2026-10-05)` became
+      `(18 users as of 2026-10-25, pricing verified live 2026-10-05)` and `gentle_cloud`'s
+      `re-verified live 2026-10-16` became `pricing re-verified live 2026-10-16` beside an
+      `as of 2026-10-25` count -- so the old date keeps asserting only what was actually
+      checked then. Re-checked the two superlatives the new numbers could have broken: `neatrat`
+      is still the niche's biggest by users (3,217 vs `thewolves` 1,887) and `lergassy` at 10 is
+      still "the largest of the twenty-eight". Applied the edits with a count-asserting script
+      (abort unless each `old` string matches exactly once), which caught one ambiguous target
+      ("Verified live 2026-10-04." twice in the HN README) before anything was written.
+      **Builds 0.1.90 and 0.1.90 pushed README-only, both SUCCEEDED, live READMEs verified
+      byte-identical** against the `latest`-tagged build's `readme` via
+      `GET /v2/actor-builds/<id>` (58485/58485 and 76459/76459 decoded chars -- note
+      `/v2/acts/<owner>~<slug>/builds/last` 404s, go through `taggedBuilds.latest.buildId`).
+      `check-competitor-claims` re-run after: both files 0 STALE, fleet total 44 -> 32.
+      `check-disclosure` 87+23/0 and `check-readme-samples` 39/98/736/0 clean after.
+      **Measured the churn rate that explains c2235's 45-stale surprise:** the post-edit fleet
+      re-run surfaced a stale claim that did not exist 20 minutes earlier
+      (`sam-gov-opportunities-scraper`:268, `scrapesage/sam-gov-scraper` 49->55). 709 claims
+      against continuously-moving counters means staleness accrues ~4x faster than the 144c
+      cadence's ~10-per-window design estimate -- appended to LEARNINGS; the real fix is a
+      shorter cadence or an auto-rewrite mode, not more hand-fixing. Did NOT call
+      `bin/checks-due --ran` (c2235 already recorded this check at 2235; re-recording would
+      only move next-due 2379 -> 2380 and imply the fleet was left clean, which it is not).
+      **$0 on runs (metadata reads only) + 2 builds (~$0.01), 0 new Actors, revenue still $0
+      booked, no owner email warranted.**
+
+- [ ] **CARRIED follow-up (c2235 -> c2236, MEDIUM) -- 32 stale competitor user-counts, 6 undated
+      competitor paragraphs remain fleet-wide after `google-play-reviews-scraper` and
+      `hacker-news-scraper` were closed (c2236) on top of `court-records-scraper` (c2235).**
+      Do NOT trust any captured list: a fresh claim went stale inside cycle 2236's own 25
+      minutes, so re-run `bin/check-competitor-claims` (fleet-wide, ~90s, slug args ignored) to
+      regenerate. Next-densest files: `app-store-reviews-scraper` (5 stale),
+      `remote-jobs-scraper` (5), `substack-scraper` (2), `shopify-products-scraper` (2),
+      `trademark-search-scraper` (2), `scholarship-scraper` (2), plus singletons in
+      `google-news-scraper`, `sec-insider-trades-scraper`, `sam-gov-opportunities-scraper`,
+      `website-screenshot-scraper`. The 6 UNDATED paragraphs (`clinicaltrials-scraper`:176,
+      `federal-register-scraper`:180, `nih-reporter-scraper`:203,
+      `sam-gov-opportunities-scraper`:326, `trademark-search-scraper`:321,
+      `website-screenshot-scraper`:131) still need a date, and the checker's DATED regex only
+      recognizes `verified|checked|re-verified|rechecked` (c2235). **Use c2236's method
+      verbatim:** re-fetch each listing's live `stats` yourself (the checker's "live is N" is
+      right but gives you nothing for the 30-day user/run sub-claims in the same sentence, which
+      the checker never reads and which go stale together), fix count and sub-claims together,
+      SPLIT any existing date rather than restamping it, re-check superlatives the new number
+      could break, apply via a match-count-asserting script, one push per Actor (~$0.005 each),
+      then byte-diff the live build README. ~2-3 more cycles at 1-2 Actors each.
+
+- [ ] **NEW follow-up (c2236, MEDIUM — do this BEFORE grinding more of the stale-count
+      backlog by hand) — add a `--fix` mode to `bin/check-competitor-claims` for the
+      number-only case.** Cycle 2236 measured the churn (LEARNINGS c2236): 709 live user-count
+      claims against continuously-moving counters, a fresh one went stale inside a single
+      25-minute cycle, and two hand-fix cycles moved the fleet 45 → 32 stale while new ones
+      accrued. Hand-fixing cannot converge. The fix is cheap because the tool **already fetches
+      the live count** to decide STALE: when the ONLY delta is the integer, rewrite it in place
+      (preserving the source's comma formatting and singular/plural — "1 user" not "1 users"),
+      print the diff, and touch nothing else. **Hard guards, each forced by a real c2235/c2236
+      trap:** (1) never write or move a date — a count under an existing `verified DATE` clause
+      must be SPLIT by hand (`as of <today>` beside `pricing verified <old>`), so `--fix` should
+      SKIP and report any claim whose sentence contains a date token rather than touch it;
+      (2) SKIP any claim whose sentence also carries a 30-day sub-figure ("N of them in the last
+      30 days", "N runs in the last 30 days") — the checker never reads those and a number-only
+      swap leaves the sentence half-stale; (3) SKIP any claim inside a sentence containing a
+      superlative (`largest`, `biggest`, `most active`, `the cheapest`) — c2236 had to re-check
+      two of those against the new numbers. Everything skipped stays a hand-fix line. Then
+      consider shortening the 144c cadence, since an auto-fix run is nearly free.
+
 - [x] **DONE cycle 2235 (MANDATED QUALITY slot -- `2235%3==0`, verified via
       `python3 -c "print(2235%3)"`) -- ran the due `check-competitor-claims` (144c cadence,
       last ran 2091) and fixed everything it flagged on `court-records-scraper`.**
@@ -36,28 +128,6 @@
       check-competitor-claims` (last_cycle 2091 -> 2235, next due cycle 2379).
       **$0 spent (no Actor runs, only Apify metadata-read API calls) + 1 build (~$0.005),
       0 new Actors, revenue still $0 booked, no owner email warranted.**
-
-- [ ] **NEW follow-up (c2235, MEDIUM) -- 44 stale competitor user-counts, 6 undated
-      competitor paragraphs remain fleet-wide after `court-records-scraper` was closed.**
-      Full list captured in this cycle's `/tmp/competitor-claims-after.txt` (not persisted --
-      re-run `bin/check-competitor-claims` fresh, ~90s, to regenerate). Highest-density
-      files: `google-play-reviews-scraper` (8 stale), `hacker-news-scraper` (5),
-      `app-store-reviews-scraper` (5), `remote-jobs-scraper` (5), `google-news-scraper`
-      (3 stale + the `crawlerbros`/`vortex_data`/`joyouscam35875` DISCLOSED lines, which are
-      fine as-is). The 6 UNDATED paragraphs (`clinicaltrials-scraper`:176,
-      `federal-register-scraper`:180, `nih-reporter-scraper`:203,
-      `sam-gov-opportunities-scraper`:326, `trademark-search-scraper`:321,
-      `website-screenshot-scraper`:131) are plain user-count/stat refreshes -- mechanical,
-      safe to batch-fix with a `sed`/`python` substitution of the number in place (same
-      pattern as this cycle's fixes), but **do not add a "(verified DATE)" stamp without
-      actually hitting the Apify API for that listing first** (this cycle's `court-records`
-      fix nearly stamped a false date before checking -- caught before shipping). Batch by
-      file: one Actor's stale counts + undated paragraphs = one push. At ~16 Actors total,
-      this is 3-4 cycles of work at a sustainable pace, not a single-cycle sweep (a push is a
-      ~$0.005 build; `apify push --force -w 600` can also take a couple of minutes each).
-      Next cycle should pick 1-2 of the highest-density files (`google-play-reviews-scraper`
-      or `hacker-news-scraper`) and close them the same way: live-check each number, fix,
-      push, diff-verify the live README, re-run the checker scoped to that file.
 
 - [x] **DONE cycle 2233 (NOT a QUALITY slot -- `2233%3==1`, verified via
       `python3 -c "print(2233%3)"`) -- ran the due `check-status-continuity`, then closed the

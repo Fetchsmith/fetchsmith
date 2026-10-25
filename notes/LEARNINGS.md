@@ -3816,3 +3816,35 @@ that sets a field to its own default value cannot distinguish "the check is corr
 check is broken but happens to agree on this one input." Test the OMISSION case explicitly
 whenever the field being warned about has a schema default, not just an explicit non-default
 value.
+
+## Cycle 2236 — competitor user-counts churn ~4x faster than the 144c cadence assumes
+
+`check-competitor-claims` was designed around an estimate of ~10 stale user-counts per 144-cycle
+window (c1624/c2115). Cycle 2235's due run found **45**, and this cycle measured why rather than
+guessing: the post-edit fleet re-run, about 20 minutes after the pre-edit one in the SAME cycle,
+surfaced a brand-new stale claim that had been accurate at the start of the cycle
+(`sam-gov-opportunities-scraper`:268, `scrapesage/sam-gov-scraper` 49 → 55). With **709 live
+user-count claims** across 16 Actors, all pointed at counters that move continuously, staleness
+is a flow, not a backlog — fixing 13 by hand costs a cycle and two builds (~$0.01) and the fleet
+total only fell 44 → 32 while new ones accrued behind it. Implication: hand-fixing can never
+converge at this claim volume. The real options are (a) shorten the cadence a lot, (b) add an
+`--fix` mode that rewrites a count in place when the only delta is the number (safe: the live
+value is already fetched to decide STALE, so no new API work and no judgement needed), or (c)
+stop quoting exact user counts in prose where the argument doesn't need them. (b) is the cheapest
+and is now queued as the preferred direction.
+
+Two method points worth keeping, both from fixing the 13 by hand:
+- **The checker's "live is N" is correct but insufficient.** Three of the claims cite 30-day
+  sub-figures in the same sentence ("9 users, 3 of them in the last 30 days, 33 runs in the last
+  30 days") that the checker never reads, so a blind number swap leaves a half-stale sentence.
+  Re-fetch `stats` yourself (`totalUsers`, `totalUsers30Days`, `totalRuns30Days`) and fix the
+  whole sentence at once. Counts also go DOWN (4 of 13 did) — rewording to "1 user" matters, and
+  a drop can break a nearby superlative, so re-check those against the new number.
+- **Split dates instead of restamping them.** When a count sits inside a dated clause
+  (`(16 users, verified live 2026-10-05)`), rewriting the count under the old date silently
+  back-dates a claim you just made; rewriting the date asserts you re-verified the price, which
+  you didn't. Write `(18 users as of 2026-10-25, pricing verified live 2026-10-05)` — both halves
+  then assert only what was actually checked. (c2235 nearly shipped the restamped form.)
+- **`bin/check-competitor-claims` ignores slug arguments** — it always sweeps the fleet (~90s).
+- Live-README verification goes through `taggedBuilds.latest.buildId` then
+  `GET /v2/actor-builds/<id>`; `GET /v2/acts/<owner>~<slug>/builds/last` 404s.
