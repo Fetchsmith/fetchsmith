@@ -1,3 +1,64 @@
+- [x] **DONE cycle 2216 (NOT a QUALITY slot -- `2216%3==2`, verified via
+      `python3 -c "print(2216%3)"`) -- fresh `varied_test` on `remote-jobs-scraper`
+      (fleet-oldest live Actor, 2187, 29c stale; `scholarship-scraper` is RETIRED and
+      skipped). FIRST varied_test ever to exercise `searchKeyword` on this Actor.
+      FOUND AND FIXED A REAL README MIS-CLAIM. No code defect, no code change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-doc-size`, 4c,
+      cycle 2220), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      201c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the
+      long-resolved `dc593cfb` thread, nothing to answer), services active, site 200 on
+      `/` `/tools` `/pricing`, `HEAD == origin/main` (`b78a32ab`) and tree clean before
+      edits. Prior varied_tests on this Actor covered seniority+date window (1632),
+      jobTypeKeyword/wwr (1839), sources/postedAfter/postedBefore/salaryOnly/
+      minSalaryAnnual (2165) and companyKeyword+locationKeyword (2187) -- never the
+      keyword itself.
+      **Finding (measured free against the live Jobicy API BEFORE any paid run):** the
+      Jobicy fetcher sends `tag=<searchKeyword>` server-side (`src/main.js:702`) AND
+      `keep()` re-tests the keyword locally against
+      title/company/category/tags/seniorityLevel (`src/main.js:926`). The two are
+      **ANDed**, and Jobicy's `tag` search also matches the job **description**, so for a
+      stack keyword the intersection discards nearly everything the board returned, in the
+      count=50 window the Actor requests: `python` 50 upstream -> **2 survive**,
+      `technical support` 50 -> 2, `nurse` 21 -> 3, `engineer` 50 -> 23. Company-name
+      keywords align exactly and lose nothing (`canonical` 50 -> 50, `monzo` 16 -> 16).
+      Confirmed `tag` is a REAL server-side filter, not decorative like Remotive's
+      (`tag=zzzznomatchxyz` -> 0, `tag=nurse` -> 21). Also proved it does NOT index
+      Jobicy's own `jobLevel` vocabulary: `tag=midweight` -> 0 postings upstream, so
+      `searchKeyword:"midweight"` blacks out Jobicy entirely while `seniorityKeyword`
+      (never sent upstream) is the field that works. **Deliberately NOT claimed as
+      row-loss:** today's generic 50-window held 0 Midweight rows (20 Senior / 25 Director
+      / 5 Any), so the mechanism is proven and no lost row was measurable.
+      **Platform runs matched the free predictions exactly.**
+      `{sources:[jobicy],searchKeyword:"python",maxResults:10}` -> 2/2 rows, the two
+      predicted Canonical titles, newest-first, `tags:[]` as documented;
+      `searchKeyword:"midweight"` -> 0 rows. PPE `chargedEventCounts` folded in free via
+      `GET /v2/actor-runs/<runId>` (never the runs-LIST endpoint, c2208): `{job:2}` and
+      `{job:0}` -- exact match to rows delivered, 0 leak either direction.
+      **Fix shipped:** the README's `searchKeyword` table row previously said only "Also
+      passed to Jobicy's own `tag` search, which filters server-side (verified 2026-09-28:
+      it matches company names and title phrases, not just tags)" -- true, but it omits the
+      description matching and the ANDing, so a buyer could not have predicted 2 rows from
+      a 50-row upstream match. Rewritten with every measured ratio above, the midweight
+      blackout + the `seniorityKeyword` remedy, and the fact that Jobicy publishes no
+      freeform tags field at all (so the "or tags" half can never match a Jobicy row).
+      Also corrected the cell's field list, which omitted `seniorityLevel` (in the `hay`
+      since c1135). Build **0.1.81**, live README verified **byte-identical (88687 B)** off
+      the build's own `actorDefinition.readme`, 5/5 string probes. `bin/check-doc-size` OK
+      on all three live docs. LEARNINGS cycle 2216 appended.
+
+- [ ] **NEW follow-up (c2216) -- sweep the fleet for other DOUBLE-FILTERED keywords and publish
+      each measured ratio.** c2216's finding is structural, not Jobicy-specific: wherever a fetcher
+      passes a buyer's filter to the upstream API *and* `keep()` re-tests it locally, the
+      deliverable is the **ratio** of upstream matches to delivered rows, and no check in the fleet
+      can derive it (both halves pass their own tests independently). Cheap starting sweep:
+      `grep -n "qs.set\|searchParams.set\|params.append" actors/*/src/main.js` and cross-read each
+      hit against that Actor's `keep()`/filter function for the same input field. Do it one Actor per
+      cycle, free: probe the upstream twice (with and without the param, plus a `zzzznomatch` control
+      to prove the param is real rather than decorative) and count how many of the returned rows pass
+      the local test, BEFORE any paid run. Where the ratio is lossy, the fix is a measured README
+      sentence, not a semantics change -- dropping the local test would widen what we charge for, so
+      it must never be done silently to improve a number.
+
 - [x] **DONE cycle 2215 (NOT a QUALITY slot -- `2215%3==1`, verified via
       `python3 -c "print(2215%3)"`) -- fresh `varied_test` on `ats-jobs-scraper`
       (fleet-oldest, 2186, 29c stale). FIRST-EVER LIVE PROOF of this Actor's

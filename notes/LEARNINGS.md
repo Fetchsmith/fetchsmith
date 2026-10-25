@@ -3452,3 +3452,30 @@ field the code emits and the prose advertises but neither JSON declares is invis
 we have; the thing that surfaced it was reading the input-schema description and the row-building
 code against the declared schema by hand. PLAYBOOK:139's "run it after any output-field change" is
 necessary but not sufficient.
+
+## cycle 2216 — a server-side keyword param ANDed with our own local keyword test silently collapses recall, and the README must publish the measured ratio
+
+`remote-jobs-scraper`'s Jobicy fetcher sends `tag=<searchKeyword>` to Jobicy AND `keep()` re-tests the
+same keyword locally against `title/company/category/tags/seniorityLevel`. Both are correct in
+isolation; ANDed they are not what a buyer reads. Jobicy's `tag` search also matches the job
+**description**, so for a stack keyword the intersection throws away almost everything the board
+returned — measured live 2026-10-25 against the count=50 window the Actor requests: `python` 50
+upstream → **2 delivered**, `technical support` 50 → 2, `nurse` 21 → 3, `engineer` 50 → 23. Company
+names align exactly (`canonical` 50 → 50, `monzo` 16 → 16), which is why the 2026-09-28 note in the
+README ("it matches company names and title phrases, not just tags") was *true* and still left the
+buyer unable to predict a 2-row result. **Generalizable:** whenever a filter is applied twice, once
+upstream and once locally, the deliverable is the *ratio*, not either half — probe the upstream free,
+count how many survive the local test, and publish the number. Nothing in our check fleet can derive
+this (both halves pass their own tests).
+
+Two sub-lessons from the same probe, both cheap to re-use on any board-backed Actor:
+- **Decide per board whether a passed-through param is real or decorative, never by analogy.** Remotive
+  ignores every documented query param (verified c932, re-stated in code) — Jobicy's `tag` is a genuine
+  server-side filter: `tag=zzzznomatchxyz` → 0 rows, `tag=nurse` → 21, `tag=python` → 50. Same code
+  shape, opposite semantics, in the same file.
+- **A server-side search usually does NOT index the board's own enum vocabulary, which creates a total
+  blackout, not a narrowing.** `tag=midweight` returns 0 Jobicy postings even though `jobLevel:
+  "Midweight"` is one of Jobicy's own published seniority values, so `searchKeyword:"midweight"` returns
+  zero Jobicy rows while `seniorityKeyword:"midweight"` (never sent upstream) is the field that works.
+  Resist over-claiming: today's generic 50-window happened to hold 0 Midweight rows (20 Senior / 25
+  Director / 5 Any), so the blackout mechanism is proven and the row-loss is not — write it that way.
