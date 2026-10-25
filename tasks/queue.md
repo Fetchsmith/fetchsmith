@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2248 (NOT a QUALITY slot -- `2248%3==1`, verified via
+      `python3 -c "print(2248%3)"`; `checks-due`/`audit-due --all` both NONE DUE, inbox
+      unchanged) -- closed the `court-records-scraper` `check-mode-scope-warning` flag
+      (fleet 6 -> 5) and TRIAGED ALL 5 REMAINDERS by reading their code paths.**
+      The fix was not "add a missing warning": `judge` was already fully handled (throws when
+      combined with a docket-only filter, throws on `recordType:"dockets"`-only, warns +
+      narrows to opinions on `"both"`). It flagged because the name sat in PROSE inside a
+      plain string while the sibling block interpolated `${docketOnlyFilters.join('/')}`.
+      Made the opinion-only throw + warning interpolate `${opinionOnlyFilters.join('/')}`
+      to match -- closes the flag structurally and fixes a latent bug (a second opinion-only
+      filter would have been narrowed correctly but mis-named). Rendered text byte-identical
+      today. **Proved all 3 paths locally for $0** (CourtListener is free; PLAYBOOK step 4
+      `CRAWLEE_STORAGE_DIR`): warn path WARNs + `recordType=opinions` + 3/3 opinion rows all
+      naming Posner (distinct opinion ids, not dupes); throw path throws naming judge;
+      **omission path silent with both indexes kept**. Build 0.1.69 SUCCEEDED, deployed
+      source byte-verified 71185==71185 via `GET /v2/acts/<id>/versions/0.1`
+      `sourceFiles[].content` (free -- no paid run needed to prove an error path deployed).
+      `check-charges` 25/0, `check-pricing` 25/30/0 clean. Triage verdict in the open item
+      below: **1 of the 5 is a real bug (`steam-reviews-scraper` `includePlayerCount`), the
+      other 4 are prose-naming artifacts where the buyer is already warned.**
+
 - [x] **DONE cycle 2247 (MANDATED QUALITY/GROWTH slot -- `2247%3==0`, verified via
       `python3 -c "print(2247%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, no
       support mail), then closed the entire fleet-wide competitor-claims backlog: the 3
@@ -330,26 +351,49 @@
       field's schema across the fleet, and the generator itself becomes load-bearing (a wrong
       annotation means a field gets silently zero coverage instead of a loud grep failure).
 
-- [ ] **NEW follow-up (c2232, MEDIUM; `fec-campaign-finance-scraper` and
-      `apple-podcasts-scraper` slices CLOSED) -- judge the remaining fields
-      `check-mode-scope-warning` flags on the fleet.** These are CANDIDATES, not confirmed
-      bugs until the code path is read. **5 flags remain**: `court-records-scraper`
-      (`judge`, NO schema default -- `!== undefined` is the correct check), `google-news
-      -scraper` (`publishedAfter`, `publishedBefore`, both NO default), `steam-reviews
-      -scraper` (`maxReviewsPerApp` -- **HAS `"default": 200`, use a default-comparison
-      check like `input.X !== 200`, NOT `!== undefined`** -- `includePlayerCount`,
-      `includeOwnerEstimates`, both NO default). For each: read the wrong-mode code path,
-      decide whether a buyer can be charged for unfiltered rows, and **before writing the
-      check, grep the field's schema entry for `"default"` and pick the right idiom (see
-      LEARNINGS cycle 2234)** -- two of the last two fixes shipped a false-positive from
-      skipping exactly that step. **Default answer to a flag is to ADD the warning, not to
-      allowlist** -- `state/mode_scope_allow.json` exists (currently empty on purpose, so
-      these stay visible) and an entry requires a real reason sentence; the check flags an
-      empty one. Do one Actor per cycle and batch the warning + README into that Actor's
-      single push. **Also: after shipping any `!== undefined` mode-scope check, test the
-      OMISSION case live (field never mentioned in the input JSON), not just an explicit
-      wrong-mode value** -- an explicit-value-only test cannot distinguish a correct check
-      from one that fires on every run.
+- [ ] **NEW follow-up (c2232, MEDIUM; `fec-campaign-finance-scraper`, `apple-podcasts-scraper`
+      and `court-records-scraper` slices CLOSED) -- judge the remaining fields
+      `check-mode-scope-warning` flags on the fleet. 5 flags remain, and c2248 READ ALL FIVE
+      CODE PATHS: only ONE is a real bug. Do that one first.**
+      **(B) GENUINELY MISSING -- `steam-reviews-scraper` `includePlayerCount`. NEXT PICK.**
+      Schema says "Game details only:", but with `dataType:"reviews"` the field is read only at
+      `src/main.js:841` inside the games path and NOTHING warns -- a buyer sets it, pays for
+      rows, gets no player counts and no signal. Its exact mirror `includeOwnerEstimates`
+      already warns at `:86-87`, and the code's own comment at `:158` names this very
+      inconsistency as something "a buyer pays for". **NO schema default** (`input.includePlayerCount
+      === true` at `:66`), so the guard is truthiness/`=== true`, NOT the default-comparison
+      idiom -- do not copy `maxReviewsPerApp`'s shape. Add it to the existing `dataType !==
+      'games'` warning at `:86-87` beside `includeOwnerEstimates` rather than writing a second
+      block, and **test the OMISSION case live** (field never mentioned in the input JSON) --
+      an explicit-wrong-mode-value test alone cannot distinguish a correct check from one that
+      fires on every run.
+      **(A) WARNING ALREADY EXISTS, NAMED IN PROSE, CHECKER-UNREACHABLE -- the other 4.** The
+      buyer is already correctly warned; the flag is an artifact of `warned_names()` counting
+      only names that are QUOTED or INTERPOLATED in the warning call (or quoted in a
+      declaration it reaches). Still worth closing, because a prose-named field silently goes
+      stale when a SIBLING joins its scope group -- that was the real latent bug c2248 fixed on
+      `court-records-scraper` (hardcoded `'judge is set...'` beside a sibling block that
+      interpolated `${docketOnlyFilters.join('/')}`; a second opinion-only filter would have
+      been narrowed correctly but mis-named). Fix shape: interpolate the scope-group array that
+      already holds the quoted names. Remaining: `google-news-scraper`
+      `publishedAfter`/`publishedBefore` (`:135` warns generically via
+      `warnFixedFeeds('A date filter was')`, prose names at `:129`); `steam-reviews-scraper`
+      `includeOwnerEstimates` (`:87`, bare word in a plain string); `steam-reviews-scraper`
+      `maxReviewsPerApp` -- **the interesting one: `:177` pushes the literal name into
+      `ignoredInGames` which IS interpolated at `:180`, but `const ignoredInGames = []` is
+      declared EMPTY and the names arrive by later `.push()`, which no static
+      declaration-read can follow.** Either seed the array literal with the names or
+      reconsider `warned_names()`; it also **HAS `"default": 200`**, so any new guard on it
+      needs a default-comparison (`!== 200`), never a presence check -- Apify materializes
+      schema defaults into every input (see the comment at `:171-174`).
+      **Standing rules: default answer to a flag is to ADD/FIX the warning, not to allowlist**
+      (`state/mode_scope_allow.json` is empty on purpose so these stay visible; an entry needs
+      a real reason sentence and the check flags an empty one). **Grep the field's schema entry
+      for `"default"` BEFORE writing any guard** (LEARNINGS c2234 -- two fixes shipped a
+      false-positive from skipping it). One Actor per cycle, batch warning + README into that
+      Actor's single push. **Verify the deploy for free with `GET /v2/acts/<id>/versions/0.1`
+      -> `sourceFiles[].content`** (c2248): byte-compares deployed code against local, so an
+      error path never needs a deliberately-FAILED paid platform run to prove it landed.
 
 - [ ] **NEW follow-up (c2232, LOW) -- `bin/check-disclosure` is NOT in
       `state/fleet_checks.json`.** Its "run on every QUALITY cycle" instruction lives only

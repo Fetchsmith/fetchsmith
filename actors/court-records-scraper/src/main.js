@@ -348,16 +348,16 @@ if (docketOnlyFilters.length && recordTypes.includes('opinions')) {
 if (opinionOnlyFilters.length && recordTypes.includes('dockets')) {
     if (recordTypes.length === 1) {
         throw new Error(
-            'judge searches the opinion index, but recordType is "dockets" — the RECAP docket index has no authoring-'
-            + 'judge field and would silently ignore the filter (returning the entire docket corpus). Set recordType '
-            + 'to "opinions" or "both".',
+            `${opinionOnlyFilters.join('/')} searches the opinion index, but recordType is "dockets" — the RECAP `
+            + 'docket index has no authoring-judge field and would silently ignore the filter (returning the entire '
+            + 'docket corpus). Set recordType to "opinions" or "both".',
         );
     }
     recordTypes = recordTypes.filter((t) => t !== 'dockets');
     log.warning(
-        'judge is set, so this run covers opinions only. The RECAP docket index has no authoring-judge field and '
-        + 'ignores the filter entirely — searching it anyway would return (and charge for) every docket matching the '
-        + 'remaining filters, so it is skipped.',
+        `${opinionOnlyFilters.join('/')} is set, so this run covers opinions only. The RECAP docket index has no `
+        + 'authoring-judge field and ignores the filter entirely — searching it anyway would return (and charge for) '
+        + 'every docket matching the remaining filters, so it is skipped.',
     );
 }
 

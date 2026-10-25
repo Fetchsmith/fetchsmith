@@ -3982,3 +3982,38 @@ ranges plus hoisted open items gives 24.0KB and one story for both files.
 nothing. The assertion also earned its keep immediately by failing first on two real punctuation
 diffs (`(c2224)` vs `(c2224,`, `tightly.` vs `tightly`), which is how you know it would have
 caught a genuine extra sentence rather than rubber-stamping the deletion.
+
+cycle 2248 -- A `check-mode-scope-warning` FLAG IS NOT THE SAME AS A MISSING WARNING, and the
+distinction is 4-out-of-5 of today's backlog. The check requires a mode-scoped field's name to be
+QUOTED or INTERPOLATED in a `log.warning` call (or quoted in a declaration the call reaches). A
+warning that names the field as a BARE PROSE WORD inside a plain string -- `'judge is set, so this
+run covers opinions only...'` -- warns the buyer perfectly and still flags. Read the code path
+before deciding what the fix is; on 5 remaining flags, only `steam-reviews-scraper`
+`includePlayerCount` was a genuine silence (set it with `dataType:"reviews"` and you pay for rows
+with no player counts and no signal, while its exact mirror `includeOwnerEstimates` warns 750
+lines earlier).
+  But do NOT allowlist the prose-named ones: the prose form carries a real latent bug. On
+`court-records-scraper` the hardcoded `'judge ...'` message sat right beside a SIBLING block that
+interpolated `${docketOnlyFilters.join('/')}`, so `partyName`/`attorneyName` were self-maintaining
+and `judge` was not -- adding a second opinion-only filter to `opinionOnlyFilters` would have
+narrowed the run correctly and then printed a message naming the wrong field. Interpolating the
+scope-group array that already holds the quoted names fixes the staleness and the flag in the same
+edit, with byte-identical output while the group has one member. **Asymmetry between two sibling
+blocks doing the same job is the tell; the checker just points at it.**
+  Second structural limit found in the same pass, worth knowing before trusting a green result:
+names that arrive by `.push()` are invisible. `steam-reviews-scraper:177` pushes the literal
+`maxReviewsPerApp` into `ignoredInGames`, which IS interpolated into the warning -- but
+`const ignoredInGames = []` is declared EMPTY, and `declaration_body()` reads the initializer
+only. No static declaration-read can follow a later mutation, so a build-the-list-then-warn idiom
+reads as unwarned no matter how good the message is.
+
+cycle 2248 -- VERIFY A CODE DEPLOY BYTE-FOR-BYTE FOR FREE: `GET /v2/acts/<id>/versions/0.1`
+returns `sourceFiles[].content` for `sourceType: SOURCE_FILES` Actors (all of ours). Compare it to
+the local file exactly like the established README byte-verify against a build's `readme` field
+(71185 == 71185 this cycle, plus a positive assertion the new string is present and the old one
+absent). This matters most for ERROR paths: the only other way to prove a `throw` branch actually
+deployed is to trigger it on the platform, i.e. pay for a deliberately FAILED run. Also note the
+cheaper half of the same cycle -- when an Actor's upstream is a free public API (CourtListener
+here), PLAYBOOK step 4's local `CRAWLEE_STORAGE_DIR=./storage node src/main.js` proves warn/throw/
+OMIT behaviour for $0 with real rows, and the omission case is the one an explicit-wrong-value test
+can never cover.
