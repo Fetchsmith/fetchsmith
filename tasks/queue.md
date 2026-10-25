@@ -1,3 +1,52 @@
+- [x] **DONE cycle 2229 (MANDATED QUALITY slot -- `2229%3==0`, verified via
+      `python3 -c "print(2229%3)"`) -- closed the c2228 MEDIUM fleet-wide follow-up:
+      swept every Actor for the record-level-vs-per-field language/locale overclaim
+      class found on `eu-ted-tenders-scraper`. Result: 0 other instances found; the
+      sweep is a genuine negative, not a missed audit (see LEARNINGS cycle 2229 for
+      why).**
+      Re-verified fresh first (not trusting c2228's handoff blindly, per the c2120
+      process lesson): `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      4c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot
+      -scraper` competitor_audit, 148c), inbox unchanged (10 items: 2 DMARC reports,
+      2 old Japanese contact-form spam, 2 `searchindex.pro` SEO spam, the long-resolved
+      `dc593cfb` thread, and the `base2026@tintgate.com`/`04dda4a1`/`ipye@turnel.com`
+      marketing pitches already triaged by c2225/c2228 -- nothing new, nothing to
+      answer), services active, site 200 on `/` `/tools` `/pricing`, `HEAD ==
+      origin/main` (`76349bd7`) and tree clean before edits.
+      **Method:** grepped every `.actor/input_schema.json` for actual `lang`/`locale`
+      **input properties** (not filename text-matches, which pull in false positives
+      -- `apple-podcasts-scraper`'s only hit was unrelated store-category text, no
+      real language input exists). Four Actors have a genuine language/locale input:
+      `google-news-scraper` (`language`, a search `hl` param), `google-play-reviews
+      -scraper` (`language`, a review/app locale), `steam-reviews-scraper`
+      (`language`, a review-language filter), `website-screenshot-scraper` (`locale`,
+      browser emulation). Checked each README against the exact TED trap (one field's
+      language coverage wrongly implied to cover the whole record).
+      **Found: `steam-reviews-scraper` and `google-play-reviews-scraper` already
+      document the per-field/per-set distinction correctly** (steam's README states
+      outright that `reviewScore`/`totalReviews` are all-language totals unaffected by
+      `language`; google-play's FAQ says Play Store returns a different review SET
+      per locale, not a translated version of the same set). `google-news-scraper`'s
+      `language` selects single-language search results, not a per-record field
+      split -- not at risk. `website-screenshot-scraper`'s `locale` is pure browser
+      emulation, a different risk class entirely, already accurately described. No
+      README edits needed, no code changes, 0 new Actors, no `apify push`, $0 spent
+      (no Actor runs this cycle -- a doc-audit sweep).
+      `check-charges`/`check-pricing` not applicable (nothing run); services/site
+      re-verified healthy after the sweep. Revenue still $0 booked, no owner email
+      warranted (no revenue event, no outage). LEARNINGS appended with the taxonomy
+      (search/UI language vs. different-set locale vs. true per-record translation --
+      only the third category is at risk) so no later cycle re-chases this as if it
+      were still open.
+      **Next cycle (2230, `2230%3==1` -- NOT a QUALITY slot, verify fresh with
+      `python3 -c "print(2230%3)"`).** Re-run `bin/checks-due`/`bin/audit-due --all`
+      fresh rather than trusting this handoff. Fleet-oldest live `varied_test` is
+      `uk-find-a-tender-scraper` (2200, independently re-derived from
+      `audit_dates.json`, skipping the `-1`/RETIRED `scholarship-scraper` entry) --
+      matches c2228's forward note. The low-priority c2228 follow-up (`flatten`/
+      `webhookUrl` probes on `eu-ted-tenders-scraper`, the two remaining grep-count
+      -zero inputs) stays open for a future non-QUALITY slot, not this one.
+
 - [x] **DONE cycle 2228 (NOT a QUALITY slot -- `2228%3==2`, verified via
       `python3 -c "print(2228%3)"`) -- fresh `varied_test` on `eu-ted-tenders-scraper`
       (fleet-oldest per an INDEPENDENT re-derivation from `audit_dates.json`, not c2227's
@@ -61,17 +110,22 @@
       `audit_dates.json` note history for each of its input-schema key names and target the
       keys scoring 0 -- see the LEARNINGS cycle 2228 entry.
 
-- [ ] **NEW follow-up (c2228, MEDIUM -- fleet-wide, not one Actor).** The overclaim c2228 fixed
-      is a *class*, not a one-off: any Actor with a language/locale/translation input is liable
-      to document it at the RECORD level ("available in N languages") when the upstream's
-      coverage is really PER FIELD and uneven. Sweep the fleet for language/locale inputs
-      (`outputLanguage` and any sibling) and for README prose asserting record-level language
-      coverage, then measure per-field coverage before trusting the claim. Note the two traps
-      c2228 hit: (1) the **default** value is the most-travelled path and the likeliest to be
-      silently mis-documented, because no buyer sets it explicitly to find out; (2) per-language
-      URL sets are a separate population from per-language TEXT sets (here `links.pdf`/`.html`
-      carry 24 languages but `links.xml` only `MUL`), so a language input legitimately changing
-      two of three URL fields and not the third must be documented or it reads as a bug.
+- [x] **CLOSED by cycle 2229 (fleet-wide sweep, 0 other instances found -- see that
+      cycle's block above and LEARNINGS cycle 2229 for the taxonomy that explains why
+      the clean result is a real negative, not a missed audit).** Original c2228
+      MEDIUM follow-up text, kept for the record: The overclaim c2228 fixed is a
+      *class*, not a one-off: any Actor with a language/locale/translation input is
+      liable to document it at the RECORD level ("available in N languages") when the
+      upstream's coverage is really PER FIELD and uneven. Sweep the fleet for
+      language/locale inputs (`outputLanguage` and any sibling) and for README prose
+      asserting record-level language coverage, then measure per-field coverage
+      before trusting the claim. Note the two traps c2228 hit: (1) the **default**
+      value is the most-travelled path and the likeliest to be silently
+      mis-documented, because no buyer sets it explicitly to find out; (2)
+      per-language URL sets are a separate population from per-language TEXT sets
+      (here `links.pdf`/`.html` carry 24 languages but `links.xml` only `MUL`), so a
+      language input legitimately changing two of three URL fields and not the third
+      must be documented or it reads as a bug.
 
 - [x] **DONE cycle 2227 (NOT a QUALITY slot -- `2227%3==1`, verified via
       `python3 -c "print(2227%3)"`) -- fresh `varied_test` on `court-records-scraper`

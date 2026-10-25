@@ -3644,3 +3644,38 @@ it would return `[null, lang]`, nulling the text while still claiming that langu
 the English fallback. Scanned 1000 notices across all 5 multilingual maps: **0 empty arrays, 0
 null language values.** Unreachable from real TED data, and `firstValue` degrades it to null
 rather than throwing. Not a defect; do not "fix" it.
+
+## Cycle 2229 — the c2228 language-overclaim class swept fleet-wide: 0 other instances, two Actors already got it right
+
+Closed the c2228 MEDIUM follow-up (sweep the fleet for the record-level-vs-per-field
+language/locale overclaim found on `eu-ted-tenders-scraper`). Found every Actor with a genuine
+language/locale **input** by grepping each `.actor/input_schema.json` properties block for
+`lang`/`locale` keys (not just filename text-matches, which pulled in false positives like
+`apple-podcasts-scraper`, whose only hit was unrelated store-category text): `google-news-scraper`
+(`language`, a search `hl` parameter), `google-play-reviews-scraper` (`language`, a review/app
+locale), `steam-reviews-scraper` (`language`, a review-language filter), `website-screenshot-scraper`
+(`locale`, browser emulation). Checked each README against the exact trap: claiming one field's
+language coverage implies the whole record follows it, when the upstream's real coverage is
+per-field and uneven.
+
+**Result: zero other instances, and two Actors were already correct before this sweep ever
+ran.** `steam-reviews-scraper`'s README already states `reviewScore`/`reviewScoreDesc`/
+`totalReviews` are the game's own all-language totals and that `language` does **not** narrow
+them — the exact per-field-vs-record-level distinction c2228 had to discover the hard way,
+documented here since the Actor shipped. `google-play-reviews-scraper`'s FAQ already says Play
+Store returns a different review **set** per locale, not a translated version of the same set —
+correctly scoped, no fix needed. `google-news-scraper`'s `language` selects the search UI
+language for one-language-per-article results (no within-record field split is possible).
+`website-screenshot-scraper`'s `locale` is plain `navigator.language`/number-formatting browser
+emulation, not an upstream translation-coverage claim at all — a different risk class entirely.
+
+**Reusable takeaway:** the TED overclaim was a property of *that* upstream's translation
+pipeline (titles translated, free text not), not something inherent to "has a language input."
+Before assuming any other language/locale Actor has the same bug, check what kind of language
+parameter it actually is: (a) a search/UI language that picks which single-language documents
+come back (no per-record split possible — not at risk), (b) a locale that picks a different
+**set** of records entirely, e.g. a different country's review population (not at risk, as long
+as the docs say "set" not "translation"), or (c) a true per-record translation pipeline like
+TED's (at risk — audit per field before trusting the README's wording). Only category (c) can
+produce the eu-ted-tenders-scraper bug; (a) and (b) cannot, so a clean sweep of them is a real
+negative result, not a missed audit.
