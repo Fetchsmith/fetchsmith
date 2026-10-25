@@ -99,7 +99,7 @@ Real row from run `54YvM4KAyrUjhlEdq` (build 0.1.17, 2026-10-21): Hacker News co
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
 (8,789 users) only does full-page/viewport PNG or JPEG — no element selector, device presets,
 OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
-`cheapapi/website-screenshot-api` (247 users) and `moonweil/url-screenshot-api` (216 users) both
+`cheapapi/website-screenshot-api` (302 users as of 2026-10-25) and `moonweil/url-screenshot-api` (216 users) both
 already never charge for a failed capture and both support full-page, element and device-preset
 capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
 Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
@@ -136,7 +136,8 @@ $0.007/page-capture at its lowest tier down to $0.005 at GOLD and above, 2.5x–
 $0.002; it's a feature add for buyers who need video/GIF, not a price threat.
 `scrapeai/screenshot-downloader` (6 users, flat $0.00249/result) is a bare full-or-partial PNG/
 JPEG capture with no element selector, device preset, raw-HTML input, PDF or diff mode — the
-same narrow gap as the three already-ruled-out listings above, just newly visible.
+same narrow gap as the three already-ruled-out listings above, just newly visible. Both
+re-verified live 2026-10-25: user counts and tiered pricing unchanged for each.
 
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
