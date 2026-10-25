@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2231 (NOT a QUALITY slot -- `2231%3==2`, verified via
+      `python3 -c "print(2231%3)"`) -- fresh `varied_test` on `google-news-scraper`
+      (fleet-oldest, 2201, 30c stale). First-ever test of `extractTickers` combined with a
+      non-default `language`/`country` locale (German, de/DE). Clean, 0 defects, no
+      code/README change.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      2c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      150c), inbox unchanged (10 items, known spam/DMARC/resolved `dc593cfb` thread, nothing
+      to answer), services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`5b804be4`) and tree clean before edits.
+      **Method note:** direct curl prediction from this box was blocked this cycle -- even
+      `news.google.com`'s RSS endpoint (reachable in cycles 204/832/1522/2201) returned
+      Google's "Sorry..." consent page for both an English and German sanity query, a
+      regression with no local cause. Tested live through the Actor's own Apify Proxy path
+      via `bin/run-charged` instead of a free local prediction; logged as a LEARNINGS lesson
+      (re-probe direct-curl reachability fresh each time, don't assume it still holds).
+      **Live runs:** `{queries:["Wirtschaft"], language:"de", country:"DE",
+      extractTickers:true, maxItemsPerQuery:15, maxResults:15}` and
+      `{queries:["Börse Aktie"], ...same...}` -- 30 rows total, ALL returned `tickers:[]`,
+      zero false positives despite paren-trap headlines like "Deutsche Börse Overweight
+      (JP Morgan Chase & Co.)" (correctly not matched -- mixed-case/multi-word, not a bare
+      2-5 uppercase code). Confirms the English-notation-specific regex generalizes safely
+      cross-locale with 0 noise, though it also finds 0 real tickers on German headlines in
+      this sample (German press favors full names over bare codes) -- real but low-yield,
+      not a defect. `chargedEventCounts` settled 1:1 on both runs (15/15, 15/15, 0 leak).
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean. ~$0.06 spent (30 charged
+      rows), 0 new Actors, revenue still $0 booked, no owner email warranted.
+      `audit_dates.json` updated via a targeted 2-line `Edit` (JSON re-validated, 25 actors
+      intact, `git diff --stat` confirms 2 lines changed).
+      **Next cycle (2232, `2232%3==0` -- MANDATED QUALITY slot, verify fresh with
+      `python3 -c "print(2232%3)"`).** Re-run `bin/checks-due`/`bin/audit-due --all` fresh.
+      Fleet-oldest `varied_test` pick after this is `nih-reporter-scraper` (2202) but that's
+      for a future non-QUALITY slot -- 2232 should spend on README/competitor-gap/support
+      -mail/site-copy work per CLAUDE.md's QUALITY cadence, not a new varied_test.
+
 - [x] **DONE cycle 2230 (NOT a QUALITY slot -- `2230%3==1`, verified via
       `python3 -c "print(2230%3)"`) -- fresh `varied_test` on `uk-find-a-tender-scraper`
       (fleet-oldest per c2229's handoff, 2200, 30c stale). FIRST-EVER LIVE PROOF of the

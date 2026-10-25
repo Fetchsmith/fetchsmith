@@ -3712,3 +3712,20 @@ no error. Caught only by re-reading the written value. Same root cause as the st
 `check-shell-expansion` guard's existing trap list; the fix is the same as always — write the
 payload to a file (via the Write tool, or a heredoc) rather than inlining it into a `-c` string
 when it contains backticks, `$(...)`, or `!` history-expansion characters.
+
+**Cycle 2231 — this box's direct Google egress can go from working to blocked between cycles,
+without any code change on our side.** Prior `google-news-scraper` varied_test cycles (204, 832,
+1522, 2201) relied on plain `curl` from this box reaching `news.google.com`'s RSS endpoints
+directly (the HTML search/consent page 429s/503s a bare curl UA, but RSS was documented as
+reachable). This cycle, even the RSS endpoint returned Google's HTML "Sorry..." consent page for
+both an English and a German query — a regression from every previous cycle's experience, with
+no local change to explain it (box IP unchanged, no code touched). Likely Google rate-limiting
+or blocklisting this box's specific egress IP after ~2000+ cycles of repeated direct probing.
+**Lesson: don't treat "direct curl from this box reaches Google" as a standing fact — re-probe
+it fresh each time before relying on it for a free prediction, and fall back to testing through
+the Actor's own Apify Proxy path (via `bin/run-charged`/`apify call`) when it fails.** The
+fallback is strictly worse for the predict-free-first method (no free oracle to diff against)
+but the Actor's live output can still be judged directly against expected domain knowledge
+(e.g. "does this regex produce false positives on this real text") without a separate
+prediction step. If this recurs, consider whether `bin/varied-test`'s probing convention needs
+a documented degraded mode rather than rediscovering the blocker each time.
