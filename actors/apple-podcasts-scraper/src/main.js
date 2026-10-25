@@ -187,12 +187,13 @@ const episodeOnlyIgnored = EPISODE_FILTER_TYPES.includes(dataType) ? [] : [
 if (episodeOnlyIgnored.length) {
   log.warning(`${episodeOnlyIgnored.join(', ')} only applies to dataType "episodes" (and "charts") — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
 }
-// `maxPodcastsPerPublisher` carries a schema default (200) like `sort` above, but it is read
-// from the raw `input.maxPodcastsPerPublisher`, not the `?? 200`-defaulted local below — that
-// resolved variable is 200 on every run regardless of whether the caller touched the field, so
-// checking it here would warn on every single non-publisher run. Checking the raw input field
-// instead only fires when the caller actually set it.
-if (input.maxPodcastsPerPublisher !== undefined && dataType !== 'publisher') {
+// `maxPodcastsPerPublisher` carries a schema default (200), and Apify merges that default into
+// `input` on every run that omits the field (cycle 2204's exact trap, found live on this same
+// Actor's `sort` field) — so `input.maxPodcastsPerPublisher !== undefined` is ALWAYS true and
+// would warn on every single non-publisher run. Verified live: a run with the field never
+// mentioned still arrived with `input.maxPodcastsPerPublisher === 200`. Compare against the
+// default value instead, exactly like `sort`/`explicitFilter` above.
+if (input.maxPodcastsPerPublisher !== undefined && Number(input.maxPodcastsPerPublisher) !== 200 && dataType !== 'publisher') {
   log.warning(`Ignoring "maxPodcastsPerPublisher": it only applies to dataType "publisher" (how many shows to return per publisher lookup), and this run is in dataType "${dataType}".`);
 }
 
