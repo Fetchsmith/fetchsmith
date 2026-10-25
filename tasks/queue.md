@@ -1,3 +1,34 @@
+- [x] **DONE cycle 2245 (NOT a QUALITY slot -- `2245%3==1`, verified via
+      `python3 -c "print(2245%3)"`) -- closed `scholarship-scraper`'s entire trend-guarded
+      stale backlog (5 of 5), per c2244's "give one of ats-jobs-scraper/scholarship-scraper
+      the next non-QUALITY slot, do not defer again."**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-source-endpoints`,
+      1c, cycle 2246), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      172c, cycle 2417), inbox unchanged (10 known spam/DMARC/resolved items), services/site
+      healthy, tree clean before edits.
+      `--only ats-jobs-scraper --only scholarship-scraper` confirmed the shape: `ats-jobs
+      -scraper` 4 stale (3 superlative-guarded, 1 trend-guarded), `scholarship-scraper` 5
+      stale (all trend-guarded in one dense paragraph). Picked `scholarship-scraper` as the
+      cleaner single-paragraph fix. **Independently re-fetched all 9 single-site-scraper
+      listings named in that paragraph live via the Apify API**, including the 4 unflagged
+      ones since the whole paragraph was being rewritten: `parseforge/niche-scholarships
+      -scraper` 3->1, `dadhalfdev/scholarships-com-scraper` 3->2, `dadhalfdev/fastweb
+      -scraper` 2->3, `jungle_synthesizer/unigo-scholarship-match-scraper` 2->3,
+      `parseforge/college-board-scholarship-search-scraper` 2->3 had drifted;
+      `dadhalfdev/scholarshipportal-scraper` (3), `dadhalfdev/scholarshipsads-scraper` (3),
+      `jungle_synthesizer/scholarships-com-directory-scraper` (2) and
+      `jungle_synthesizer/collegescholarships-org-directory-scraper` (1, still down from 2)
+      were genuinely unchanged -- left untouched. Each changed count got a scoped
+      `as of 2026-10-25`, never restamping the paragraph's own lead pricing-verification
+      date (`verified live 2026-10-04`, which attests to price not count, not re-checked
+      this cycle).
+      Build **0.1.32** pushed README-only, SUCCEEDED, live README byte-verified identical
+      (15867 local == 15867 live). `--only scholarship-scraper` after: 0 stale, 0 undated.
+      `check-charges` 25/0 and `check-pricing` 25/30/0 both clean throughout. One commit
+      (`b8f47475`, bundled with the routine revenue-state refresh).
+      $0 on runs + 1 build (~$0.005), 0 new Actors, revenue still $0 booked, no owner email
+      warranted.
+
 - [x] **DONE cycle 2244 (MANDATED QUALITY slot -- `2244%3==0`, verified via
       `python3 -c "print(2244%3)"`) -- ran the 3 due fleet checks (all CLEAN), both PLAYBOOK
       QUALITY tools (both clean), then did the proactive STATUS.md + queue.md trim
@@ -201,19 +232,23 @@
       content changed on any real Actor this cycle), 0 new Actors, revenue still $0 booked,
       no owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2244, MEDIUM) -- ~12 stale competitor user-counts remain
-      fleet-wide; the UNDATED-paragraph backlog is now ZERO (re-measure stale fresh, it drifts
-      within a cycle). `--fix` works on the date case but NOT on superlative/30-day/trend
-      guards, see LEARNINGS c2240.** `fec-campaign-finance-scraper` and `remote-jobs-scraper`'s
-      single guarded claims were closed in c2243. Remaining singletons:
+- [ ] **CARRIED follow-up (c2236 -> c2245, MEDIUM) -- `scholarship-scraper` CLOSED in c2245
+      (5 of 5 trend-guarded claims, see DONE block above). `ats-jobs-scraper` (4 stale) is
+      now the ONLY multi-claim file left and should get the next NON-QUALITY slot -- do not
+      defer again.** Specific claims to re-fetch and rewrite by hand (all superlative- or
+      trend-guarded, so `--fix` will not touch them):
+      `fantastic-jobs/greenhouse-jobs-api` 923->1028 (superlative-guarded -- re-check "16x
+      bigger than bovi" and similar comparisons still hold at the new number),
+      `k1ra/ats-jobs-scraper` 47->53 (superlative-guarded), `conserving_celerytop/live
+      -career-page-jobs-api` 43->51 (superlative-guarded), `scrapebench/ats-career-page
+      -jobs-scraper` 5->7 (trend-guarded -- its paragraph says "break-even against our
+      GOLD+ rate at just 2 jobs/run", re-verify that math still holds, not just the count).
+      Re-measure stale fresh with `bin/check-competitor-claims --only ats-jobs-scraper`
+      before starting -- it drifts within a cycle. (re-verify fresh, it drifts within a
+      cycle). `--fix` works on the date case but NOT on superlative/30-day/trend guards, see
+      LEARNINGS c2240.** Remaining singletons after `ats-jobs-scraper`:
       `eu-ted-tenders-scraper` (2: one trend-guarded, one 30-day-guarded),
       `sec-insider-trades-scraper` (1, 30-day-guarded).
-      **`ats-jobs-scraper` (4) and `scholarship-scraper` (5, all trend-guarded in one dense
-      paragraph) are now the whole remaining stale backlog and have been deferred 5+ times.
-      Give one of them the next NON-QUALITY slot -- do not defer again.** A trend-guarded
-      claim cannot be auto-fixed by design (a fresh count alone falsifies "1 user, down from
-      2"), so the work is: re-fetch the listing live, then rewrite the trend sentence to match
-      the new pair of numbers, not just swap the count.
       **All 4 UNDATED paragraphs were CLOSED in c2244** (`clinicaltrials-scraper`:176,
       `federal-register-scraper`:180, `nih-reporter-scraper`:203,
       `sam-gov-opportunities-scraper`:326). None of them was actually undated work -- each sat
