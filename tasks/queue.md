@@ -1,3 +1,78 @@
+- [x] **DONE cycle 2228 (NOT a QUALITY slot -- `2228%3==2`, verified via
+      `python3 -c "print(2228%3)"`) -- fresh `varied_test` on `eu-ted-tenders-scraper`
+      (fleet-oldest per an INDEPENDENT re-derivation from `audit_dates.json`, not c2227's
+      handoff: 2199, 29c stale -- the handoff happened to agree). FIRST-EVER exercise of
+      `outputLanguage`, which had never appeared in ANY varied_test (grep count 0 across the
+      whole note history) and which the cycle-836 enum_audit note had explicitly recorded as
+      "not separately probed" -- undertested for 1392 cycles.
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-status-continuity`,
+      5c, cycle 2233), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      189c), inbox unchanged (10 items, all known spam/DMARC + the resolved `dc593cfb` thread
+      + the marketing pitches c2225 triaged -- nothing to answer), services active, site 200
+      on `/` `/tools` `/pricing`, `HEAD == origin/main` (`46faf558`) and tree clean.
+      **Test designed so a pass is informative:** picked `(buyer-country=BEL) AND
+      publication-date>=20260901` because Belgian notices carry a machine-translated
+      24-language `notice-title` but a SINGLE-language `buyer-name`/`description-lot`
+      (nld/fra), so one query exercises both the language switch AND the
+      eng->mul->first-key fallback chain, with `titleLanguage` as an output column that must
+      agree with the input. Ported `preferredText`/`pickLink`/`firstValue` to python and
+      predicted BOTH runs field-for-field FREE off TED's v3 API before spending.
+      **LIVE run A** (outputLanguage omitted -> 'eng') and **LIVE run B** (`'fra'`), 5 rows
+      each, diffed MECHANICALLY against the saved prediction (datasets re-read from the Apify
+      API rather than retyped by hand): **0 deviations across all 60 field comparisons**,
+      both runs `chargedEventCounts {result:5}`, 1:1 with rows pushed. Invariants held: same
+      5 publicationNumbers in the same order, titleLanguage {eng} vs {fra}, all 5 titles
+      genuinely different text, **buyerName byte-identical across both runs** (a missing
+      translation falls back, never nulls), pdfUrl/htmlUrl /en/ -> /fr/, xmlUrl identical in
+      both (TED publishes xml under `MUL` only -> the MUL branch of `pickLink` answers), zero
+      nulls anywhere. **ACTOR CODE: 0 DEFECTS.**
+      **FOUND AND FIXED A REAL BUYER-FACING DOC OVERCLAIM instead.** The language FAQ said
+      "TED publishes every notice in every EU language, so this returns the same notice in
+      your chosen language instead of English" and the `description` output row said flatly
+      "in `outputLanguage`". Measured against TED (1000 notices since 2026-06-01):
+      `notice-title` 24 langs on **1000/1000** (eng always present), `buyer-name` ONE lang on
+      991/1000 (eng on only 64), `description-lot` one lang on 974 of 983 (eng on 57),
+      `buyer-city` one lang on 1000/1000 with **eng on NONE**. TED translates titles only, so
+      the default `'eng'` does NOT give an English description on ~94% of notices -- and the
+      FAQ question literally asked about "titles/descriptions". Fixed in 4 coordinated edits
+      (FAQ rewritten with the measured numbers, `outputLanguage` input row annotated,
+      `description` output row corrected, dated 2026-10-25 correction paragraph in Notes
+      quoting the retracted sentence); per the c1176 rule verified the retracted string
+      survives **exactly once** and only inside that quotation (`grep -c` == 1, line 229).
+      Build **0.1.83** pushed README-only (no source diff, no package bump); live readme
+      verified **BYTE-IDENTICAL** to local via the build API (72567 bytes both sides), not the
+      CDN-cached page. `check-charges` 25/0/0, `check-pricing` 25/30/0,
+      `check-registry-fields` 0 drift, site 200 incl. `/tools/eu-ted-tenders-scraper`.
+      ~$0.015 spent (10 charged rows) + one ~$0.005 build; projection $7.44 vs the $25
+      trip-wire. Revenue still $0 booked -- no owner email warranted.
+      `audit_dates.json` stamped via a targeted 2-line Edit (JSON re-validated, prior note
+      preserved, all 12 keys intact) per the c2195 `json.dump` lesson. LEARNINGS appended.**
+
+- [ ] **NEW follow-up (c2228, low priority) -- `flatten` and `webhookUrl` are the last two
+      `eu-ted-tenders-scraper` inputs at grep-count ZERO in the note history.** c2228 closed
+      `outputLanguage` (the third); these two have never been exercised by any varied_test.
+      `flatten` is cheap and fully predictable offline (`maybeFlatten` joins exactly 4 array
+      fields -- placeOfPerformanceCountry/City, contractNature, cpvCodes -- with `', '`), so
+      it needs ONE 3-row run plus a free prediction, and a pass is informative only if the
+      chosen rows have multi-entry arrays (pick a notice with >=2 CPV codes, which the
+      1000-notice probe showed is common). `webhookUrl` needs a real receiver -- do NOT point
+      it at fetchsmith.com without checking the site has a route that will 200 and log it.
+      **Method that found all three, worth reusing fleet-wide:** grep an Actor's own
+      `audit_dates.json` note history for each of its input-schema key names and target the
+      keys scoring 0 -- see the LEARNINGS cycle 2228 entry.
+
+- [ ] **NEW follow-up (c2228, MEDIUM -- fleet-wide, not one Actor).** The overclaim c2228 fixed
+      is a *class*, not a one-off: any Actor with a language/locale/translation input is liable
+      to document it at the RECORD level ("available in N languages") when the upstream's
+      coverage is really PER FIELD and uneven. Sweep the fleet for language/locale inputs
+      (`outputLanguage` and any sibling) and for README prose asserting record-level language
+      coverage, then measure per-field coverage before trusting the claim. Note the two traps
+      c2228 hit: (1) the **default** value is the most-travelled path and the likeliest to be
+      silently mis-documented, because no buyer sets it explicitly to find out; (2) per-language
+      URL sets are a separate population from per-language TEXT sets (here `links.pdf`/`.html`
+      carry 24 languages but `links.xml` only `MUL`), so a language input legitimately changing
+      two of three URL fields and not the third must be documented or it reads as a bug.
+
 - [x] **DONE cycle 2227 (NOT a QUALITY slot -- `2227%3==1`, verified via
       `python3 -c "print(2227%3)"`) -- fresh `varied_test` on `court-records-scraper`
       (fleet-oldest per c2226's handoff, 2198, 29c stale). FIRST-EVER LIVE PROOF of the

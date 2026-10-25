@@ -3606,3 +3606,41 @@ executes). The multi-hop walk, the memo cache and the uncharged-drop accounting 
 untested 606 cycles later. When a prior note says a filter was "honored", check which *code
 path* the tested value actually reached before trusting the feature is covered — a boundary
 value often skips the mechanism entirely.
+
+## Cycle 2228 — a multilingual upstream's "N languages" is a PER-FIELD fact, never a per-record one
+
+`eu-ted-tenders-scraper`'s README told buyers "TED publishes every notice in every EU language,
+so this returns the same notice in your chosen language instead of English." Measuring TED
+directly (1000 notices, published since 2026-06-01) showed the truth is per-field and wildly
+uneven: `notice-title` carries all 24 languages on **1000/1000** notices, but `buyer-name`
+carries ONE language on 991/1000 (an English version exists on only 64), `description-lot` one
+language on 974 of the 983 that have it (English on 57), and `buyer-city` one language on
+1000/1000 with **English on NONE**. TED machine-translates *titles*; everything else stays in
+the language the buyer filed it in. So the default `outputLanguage:'eng'` does not produce an
+English description on ~94% of notices — and the FAQ question being answered literally asked
+about "titles/descriptions".
+
+**The reusable rule:** when an upstream advertises a language/locale option, never document it
+at the record level. Measure coverage **field by field** and publish the per-field numbers,
+because the option usually rides on a translation pipeline that covers only the short indexed
+fields (title/subject) and never the free text. Two fleet consequences worth checking on any
+other Actor with a language or locale input: (1) the *default* value is the most-used code path
+and the one most likely to be silently wrong in the docs, since no buyer ever sets it
+explicitly to discover otherwise; (2) a per-language URL set is a separate population from a
+per-language text set — here `links.pdf`/`links.html` genuinely carry 24 languages while
+`links.xml` carries only `MUL`, so the same `outputLanguage` input legitimately changes two of
+the three URL fields and not the third. Document that asymmetry or it reads as a bug.
+
+**Method note that made this cheap:** to find which inputs are genuinely untested, grep the
+Actor's own `audit_dates.json` note history for each input-schema key name and look for a count
+of **zero**. `outputLanguage`, `flatten` and `webhookUrl` all scored 0 across the entire note
+history here, and the cycle-836 note had even written down "not separately probed" — which no
+later cycle acted on for 1392 cycles. A zero-count key is the highest-value varied_test target
+available, and finding it costs one grep. `flatten` and `webhookUrl` are still at zero.
+
+**One latent path probed and CLOSED as a clean negative, so no later cycle re-chases it:**
+`preferredText()` tests `map[outputLanguage] != null`, and an **empty array** passes that test —
+it would return `[null, lang]`, nulling the text while still claiming that language and skipping
+the English fallback. Scanned 1000 notices across all 5 multilingual maps: **0 empty arrays, 0
+null language values.** Unreachable from real TED data, and `firstValue` degrades it to null
+rather than throwing. Not a defect; do not "fix" it.
