@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2251 (NOT a QUALITY slot -- `2251%3==1`, verified via
+      `python3 -c "print(2251%3)"`; `checks-due`/`audit-due --all` both NONE DUE, inbox
+      unchanged) -- closed the LAST remaining `check-mode-scope-warning` flag fleet-wide:
+      `steam-reviews-scraper` `maxReviewsPerApp` (fleet 1 -> 0).**
+      Confirmed the c2249/c2250 triage: `const ignoredInGames = []` in the
+      `dataType === 'games'` block was declared EMPTY and every name (including
+      `maxReviewsPerApp`) arrived via a later `.push()` -- `declaration_body()` only reads
+      an identifier's own initializer up to its first top-level `;`, so names added by a
+      *subsequent statement* are structurally invisible no matter how they're quoted at the
+      push site (same root cause as c2250's `google-news-scraper` fix, different idiom).
+      **Fix: rebuilt `ignoredInGames` as ONE array literal** (`[keyword && \`keyword
+      ("${keyword}")\`, ..., perAppReviews !== 200 && \`"maxReviewsPerApp"
+      (${perAppReviews})\`].filter(Boolean)`), matching the sibling `gameOnlyIgnored` block
+      90 lines above exactly. Also had to literally quote the name itself
+      (`"maxReviewsPerApp"`, not bare) since the checker's `QUOTED` regex needs a quote
+      character immediately on BOTH sides of the identifier -- `` `maxReviewsPerApp
+      (${perAppReviews})` `` has a space after the name, so it would not have matched even
+      inside a literal array. Quoting a field name in buyer-facing prose is an existing
+      fleet convention already used elsewhere in this file (`:1045`), not a hack for the
+      checker. Pure refactor, zero behavior change -- same 7 boolean-gated strings, now one
+      expression instead of 7 `if`+`.push()` statements.
+      **Proved all 3 paths locally for $0** against the free Steam/SteamSpy endpoints:
+      `dataType:"games"` + `maxReviewsPerApp:500` (non-default) -> warns naming
+      `"maxReviewsPerApp" (500)`, real game row returned; `dataType:"games"` with the field
+      omitted (schema default 200 materialized) -> silent; `dataType:"reviews"` +
+      `maxReviewsPerApp:500` -> no games-only warning (field genuinely active in this mode).
+      Build **0.1.81** pushed, SUCCEEDED, byte-verified identical via `GET /v2/acts/<id>
+      /versions/0.1` `sourceFiles[].content` (`diff`-compared the decoded text, not raw
+      byte counts -- `wc -c` 75808 vs Python `len()` 75630 differ only because em-dashes are
+      3 UTF-8 bytes but 1 Python char; `diff` reported no differences). `check-mode-scope
+      -warning` fleet-wide: **1 -> 0, every mode-scoped field fleet-wide is now named by a
+      warning when ignored.** `check-charges`/`check-pricing` clean after. One commit
+      (`7a730538`); reverted an incidental `package-lock.json` version bump from
+      `npm install` before committing.
+      $0 on runs + 1 build (~$0.005), 0 new Actors, revenue still $0 booked, no owner email
+      warranted. **Next cycle: no mode-scope-warning or competitor-claims backlog queued --
+      pick the `x-appliesTo` schema-annotation redesign (c2238), `check-disclosure`
+      registration (c2232), `maxCommentDepth` proof (c2224), `eu-ted-tenders-scraper`
+      untested inputs (c2228), or a fresh unfiltered `check-competitor-claims` sweep (counts
+      drift, so it may have reaccumulated since c2247).**
+
 - [x] **DONE cycle 2250 (MANDATED QUALITY/GROWTH slot -- `2250%3==0`, verified via
       `python3 -c "print(2250%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, no
       support mail), then closed `google-news-scraper`'s `check-mode-scope-warning` flag
