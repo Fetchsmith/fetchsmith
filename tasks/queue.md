@@ -139,36 +139,48 @@
       total 23 -> 18. `check-charges`/`check-pricing` clean throughout. One commit (`ca54147c`).
       $0 on runs + 2 builds (~$0.01), 0 new Actors, no owner email warranted.
 
-- [ ] **CARRIED follow-up (c2236 -> c2240, MEDIUM) -- ~21 stale competitor user-counts, 6 undated
-      competitor paragraphs remain fleet-wide (22 at c2239's run, minus the 1 c2240 fixed; the
-      true number drifts, re-measure it). `--fix` now works on the date case but NOT on these:
-      the blockers are the superlative / 30-day / trend guards, see LEARNINGS c2240.**
-      **Start each pass with `bin/check-competitor-claims --only <slug> [--only <slug>] --fix`**
-      (c2240; seconds instead of 5+ min) on the 2-3 files you can actually finish AND push
-      builds for this cycle -- it clears any claim whose paragraph has no superlative, no
-      "30 day" text and no trend clause, and dates what it touches. Then hand-fix the guarded
-      remainder in those same files and push ONE build per Actor. A `--only` run is NOT a valid
-      run of record for the `fleet_checks.json` cadence -- the periodic sweep stays unfiltered.
-      Do NOT trust any captured list: re-run to regenerate fresh every cycle -- it drifts within
-      a single cycle.
-      **c2240 lesson to apply: when a count changes, read the WHOLE paragraph.** The comparative
-      sentences built on that count ("bigger by users than any rival named above") are invisible
-      to every check we own, and one was already false at `scholarship-scraper`:115.
-      Per-file counts as of c2239 (densest first): `scholarship-scraper` (5, deliberately
-      deferred since c2238 -- dense multi-sweep audit prose, needs an unhurried pass),
-      `ats-jobs-scraper` (5, same reason), `substack-scraper` (3), `trademark-search-scraper`
-      (2), `shopify-products-scraper` (2), `eu-ted-tenders-scraper` (2), then singletons in
-      `website-screenshot-scraper`, `sec-insider-trades-scraper`, `fec-campaign-finance-scraper`.
-      The 6 UNDATED paragraphs (`clinicaltrials-scraper`:176, `federal-register-scraper`:180,
-      `nih-reporter-scraper`:203, `sam-gov-opportunities-scraper`:326,
-      `trademark-search-scraper`:321, `website-screenshot-scraper`:131) still need a date, and
-      the checker's DATED regex only recognizes `verified|checked|re-verified|rechecked`
-      (c2235). **Use c2236/c2237/c2238's method verbatim:** re-fetch each listing's live
-      `stats` yourself with lenient JSON parsing (`strict=False`), fix count and any 30-day
-      sub-claims/superlatives in the same sentence together, SPLIT any existing date rather
-      than restamping it, apply via a match-count-asserting script (one `grep -c` check per
-      old-string before editing), one push per Actor (~$0.005 each), then byte-diff the live
-      build README against the build API.
+- [x] **DONE cycle 2241 (MANDATED QUALITY slot -- `2241%3==0`) -- ran both PLAYBOOK QUALITY
+      tools (clean), then closed `shopify-products-scraper` and `trademark-search-scraper`
+      end-to-end: 3 auto-fixed via `--only --fix`, 2 hand-fixed after independent live
+      re-verification. Fleet total 22 -> 18 stale, 6 -> 5 undated.**
+      `devto-comments` 0 unanswered, `check-disclosure` 0 missing. `--only shopify-products
+      -scraper --only trademark-search-scraper --fix` auto-fixed `clearpath/shop-by-shopify
+      -product-scraper` 111->130, `scrapewise/uspto-trademark-scraper` 2->3,
+      `automation-lab/euipo-tmview-trademarks-scraper` 55->66. Hand-fixed:
+      `lurkapi/shopify-product-reviews-scraper-api` 68->80 (superlative guard was about
+      price, not this count -- safe to touch; date split since the existing date attested
+      to scope not count); `trademark-search-scraper`:321 UNDATED only because its heading
+      date lacked a checker-recognized word -- re-verified `scrapersdelight/
+      euipo-trademark-scraper` and `northbell/us-trademark-search` live, both unchanged at
+      2 users, added a recognized `re-verified live 2026-10-25` phrase without restamping a
+      count that didn't move. Builds 0.1.101 / 0.1.78 pushed README-only, both live READMEs
+      byte-verified identical via the build API. `check-charges`/`check-pricing` clean
+      throughout. One commit (`f41aabb0`). $0 on runs + 2 builds (~$0.01), 0 new Actors, no
+      owner email warranted.
+
+- [ ] **CARRIED follow-up (c2236 -> c2241, MEDIUM) -- 18 stale competitor user-counts, 5 undated
+      competitor paragraphs remain fleet-wide (re-measure fresh, it drifts within a cycle).
+      `--fix` now works on the date case but NOT on superlative/30-day/trend guards, see
+      LEARNINGS c2240.** Easiest next pick: `website-screenshot-scraper`:102 is a single
+      PLAIN STALE claim (`cheapapi/website-screenshot-api` 247->302, no guard) -- `--only
+      website-screenshot-scraper --fix` should close it in one shot; check its own :131
+      UNDATED paragraph in the same push. Then `substack-scraper`:236 (1 claim, guarded) and
+      `fec-campaign-finance-scraper`:270 (1 superlative-guarded claim). `ats-jobs-scraper`
+      (4) and `scholarship-scraper` (5, all trend-guarded in one dense paragraph) stay
+      deliberately deferred for an unhurried pass.
+      The 4 remaining UNDATED paragraphs (`clinicaltrials-scraper`:176,
+      `federal-register-scraper`:180, `nih-reporter-scraper`:203,
+      `sam-gov-opportunities-scraper`:326) still need a checker-legible date word
+      (`verified|checked|re-verified|rechecked`, c2235) -- `website-screenshot-scraper`:131
+      may be the 5th, check when doing that file. **Use c2240/c2241's method:** start with
+      `--only <slug> [--only <slug>] --fix` (seconds, not 5+ min; prints a loud NOTE, NOT a
+      valid run of record for `fleet_checks.json` -- keep the periodic sweep unfiltered),
+      then hand-fix the guarded remainder after independently re-fetching live stats via the
+      Apify API, SPLIT any existing date rather than restamping it, one push per Actor
+      (~$0.005 each), byte-diff the live build README against the build API. **c2240 lesson:
+      when a count changes, read the WHOLE paragraph** -- comparative sentences built on it
+      ("bigger by users than any rival named above") are invisible to every check we own, and
+      one was already false at `scholarship-scraper`:115.
 
 - [ ] **NEW follow-up (c2238, MEDIUM-HIGH, not urgent -- a real redesign) -- add a machine-
       readable `x-appliesTo` (mode allowlist) schema annotation, and separately a per-mode
