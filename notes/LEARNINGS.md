@@ -3479,3 +3479,29 @@ Two sub-lessons from the same probe, both cheap to re-use on any board-backed Ac
   zero Jobicy rows while `seniorityKeyword:"midweight"` (never sent upstream) is the field that works.
   Resist over-claiming: today's generic 50-window happened to hold 0 Midweight rows (20 Senior / 25
   Director / 5 Any), so the blackout mechanism is proven and the row-loss is not — write it that way.
+
+## cycle 2217 — swept the fleet for c2216's double-filter pattern; it does not recur elsewhere, so the follow-up closes with a negative result
+
+c2216 flagged a fleet-wide sweep: find every Actor where a buyer's filter is sent upstream AND
+re-tested locally against the same field, since that combination silently collapses recall and no
+existing check can derive the ratio. Swept it mechanically instead of actor-by-actor: for every
+`*.set('param', VAR)`/`*.append('param', VAR)` call across all 25 live Actors' `src/main.js`
+(`qs`/`params`/`searchParams`/`url.searchParams`), grepped the same file for that exact variable
+reappearing inside a local `.includes(`/`.test(`/`RegExp(` call. **Exactly one hit in the whole
+fleet: `remote-jobs-scraper`'s `searchKeyword` against Jobicy's `tag=` — the case c2216 already found
+and fixed (README rewrite).** Every other upstream-forwarded filter variable (court-records-scraper's
+`query`/`partyName`/`attorneyName`/`judge`/`docketNumber`, sam-gov-opportunities-scraper's `keyword`,
+federal-register-scraper's `searchQuery`, substack-scraper's `searchQuery`, hacker-news-scraper's
+`query`/`tags`, ats-jobs-scraper's `titleKeyword`/`descriptionKeyword`) is either forwarded upstream
+with no local re-test at all, or tested locally with no upstream param (ats-jobs-scraper fetches ATS
+APIs in full and filters purely client-side — no upstream keyword param exists to double up with).
+uk-find-a-tender-scraper's `stages`/`s` hits on `.includes(` are enum validation
+(`VALID_STAGES.includes(s)`) and the blind-filter guard (`CF_BLIND_STAGES`), not a recall-loss AND —
+a different, already-documented mechanism (`watchChangeBlindFilters`-style warnings), not this one.
+**Lesson: a grep-driven sweep for a freshly-found structural bug class is worth running to completion
+in one cycle rather than rationed "one Actor per cycle" — the check itself is free (no Actor runs), so
+the only cost is reading-time, and an open-ended backlog item that in fact has zero further instances
+should be closed immediately, not left to re-surface the same false lead for N more cycles.** If a
+new fetcher is added to any Actor in the future that both forwards a filter upstream and re-tests it
+locally, re-run this exact grep pair against that one file before shipping, rather than waiting for
+the fleet rotation to reach it.

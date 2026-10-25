@@ -46,18 +46,39 @@
       the build's own `actorDefinition.readme`, 5/5 string probes. `bin/check-doc-size` OK
       on all three live docs. LEARNINGS cycle 2216 appended.
 
-- [ ] **NEW follow-up (c2216) -- sweep the fleet for other DOUBLE-FILTERED keywords and publish
-      each measured ratio.** c2216's finding is structural, not Jobicy-specific: wherever a fetcher
-      passes a buyer's filter to the upstream API *and* `keep()` re-tests it locally, the
-      deliverable is the **ratio** of upstream matches to delivered rows, and no check in the fleet
-      can derive it (both halves pass their own tests independently). Cheap starting sweep:
-      `grep -n "qs.set\|searchParams.set\|params.append" actors/*/src/main.js` and cross-read each
-      hit against that Actor's `keep()`/filter function for the same input field. Do it one Actor per
-      cycle, free: probe the upstream twice (with and without the param, plus a `zzzznomatch` control
-      to prove the param is real rather than decorative) and count how many of the returned rows pass
-      the local test, BEFORE any paid run. Where the ratio is lossy, the fix is a measured README
-      sentence, not a semantics change -- dropping the local test would widen what we charge for, so
-      it must never be done silently to improve a number.
+- [x] **DONE cycle 2217 (MANDATED QUALITY slot -- `2217%3==0`, verified via
+      `python3 -c "print(2217%3)"`) -- closed the c2216 fleet-sweep follow-up in one pass
+      instead of rationing it one Actor per cycle. RESULT: NEGATIVE -- no further instances
+      of the double-filter pattern exist in the fleet.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `check-doc-size`, 3c,
+      cycle 2220), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`,
+      200c, cycle 2417), inbox unchanged (10 items, all known spam/DMARC + the
+      long-resolved `dc593cfb` thread, nothing to answer), services active, site 200 on
+      `/` `/tools` `/pricing`, `HEAD == origin/main` (`797b7b0d`) before edits.
+      **Method:** mechanically, not actor-by-actor -- for every `qs.set`/`params.set`/
+      `searchParams.set`/`.append('param', VAR)` call across all 25 live Actors'
+      `src/main.js`, grepped the same file for that exact VAR reappearing inside a local
+      `.includes(`/`.test(`/`RegExp(` call (the shape of c2216's Jobicy finding: same
+      variable sent upstream AND re-tested locally). **Exactly one hit in the whole
+      fleet: `remote-jobs-scraper`'s `searchKeyword` against Jobicy's `tag=` -- the case
+      c2216 already found and fixed.** Checked and ruled out by hand: court-records-scraper
+      (`query`/`partyName`/`attorneyName`/`judge`/`docketNumber` -- upstream-only, no local
+      re-test), sam-gov-opportunities-scraper (`keyword` -- upstream-only), federal-register-
+      scraper (`searchQuery` -- upstream-only via `conditions[term]`), substack-scraper
+      (`searchQuery` -- upstream-only), hacker-news-scraper (`query`/`tags` -- Algolia IS the
+      search, no local re-test), ats-jobs-scraper (`titleKeyword`/`descriptionKeyword` --
+      LOCAL-ONLY, no upstream param exists since ATS APIs are fetched in full and filtered
+      client-side, so no AND is possible). uk-find-a-tender-scraper's `stages`/`s` hits on
+      `.includes(` are enum validation (`VALID_STAGES.includes(s)`) and the unrelated
+      `CF_BLIND_STAGES` warning guard, not a recall-loss AND.
+      **No code or README change this cycle** -- this was a verification sweep, not a new
+      defect. LEARNINGS cycle 2217 appended with the exact grep pair so a future new fetcher
+      can be checked in seconds rather than waiting for fleet rotation. $0 spent (no Actor
+      runs needed -- static analysis only), 0 new Actors, no owner email.
+      **Next cycle (2218, `2218%3==1` -- NOT a QUALITY slot). No fleet checks due until
+      `check-doc-size` at 2220 (2c); no audits until 2417. Fleet-oldest `varied_test` pick is
+      `sec-insider-trades-scraper` (2188), then `us-federal-awards-scraper` (2189). DMARC
+      recheck still blocked on a report newer than `e2f3a358`.**
 
 - [x] **DONE cycle 2215 (NOT a QUALITY slot -- `2215%3==1`, verified via
       `python3 -c "print(2215%3)"`) -- fresh `varied_test` on `ats-jobs-scraper`
