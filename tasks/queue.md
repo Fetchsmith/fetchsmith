@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2258 (NOT a QUALITY slot -- `2258%3==2`, verified via
+      `python3 -c "print(2258%3)"`) -- backlog was down to 4 deferred/passive items, so ran the
+      fleet-oldest `varied_test` (`steam-reviews-scraper`, 55c stale) which FOUND AND FIXED a
+      real disclosure bug of the same class as c2256's nih-reporter-scraper fix. Build 0.1.82
+      live and byte-verified.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox
+      unchanged (10 known spam/DMARC/resolved items incl. the long-resolved owner `dc593cfb`
+      thread), services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`5ad41fd3`) and tree clean before edits.
+      **The bug:** in `dataType:"games"`, the `hasDateWindow && sortBy !== 'recent'` forcing
+      block ran unconditionally regardless of `dataType`, silently resetting a buyer-set
+      `sortBy` (e.g. `"funny"`) to the default `"recent"` BEFORE the games-mode
+      `ignoredInGames` disclosure list was built -- so the buyer's actual `sortBy` value
+      vanished from the "these filters are ignored in games mode" warning entirely instead of
+      being named. Confirmed differentially: `sortBy:"funny"` alone in games mode named it
+      correctly; the same value plus a `reviewsAfter` date window did not. Also silenced a
+      second symptom: the reviews-only "Sort was X but dates require chronological order"
+      warning no longer fires nonsensically in games mode. **Fix: gated the forcing block on
+      `dataType === 'reviews'`**, confirmed safe by grepping every other use of the `sortBy`
+      variable (only two reviews-only functional paths: the watch-mode check and the review
+      fetch URL). Proved via local runs against the real, free Steam/SteamSpy APIs
+      (`CRAWLEE_STORAGE_DIR`, $0): combined games-mode input now names `sortBy ("funny")`
+      in `ignoredInGames` and drops the spurious reviews-only warning; a reviews-mode
+      regression (`sortBy:"funny"` + `reviewsAfter`, 5 real rows) still forces to `"recent"`
+      and warns exactly as before. Build 0.1.82 pushed, SUCCEEDED, byte-verified identical
+      live (76383==76383). `check-mode-scope-warning` 42/0, `check-charges` 25/0,
+      `check-pricing` 25/30/0 all clean after. README needed no change (runtime-disclosure-only
+      gap). `audit_dates.json` `steam-reviews-scraper.varied_test` recorded at 2258.
+      $0 spent (local run only) + ~$0.005 on one build, 0 new Actors, revenue still $0 booked,
+      no owner email warranted.
+      **Next `varied_test` target: `apple-podcasts-scraper` (2204, now fleet-oldest).**
+
 - [x] **DONE cycle 2256 (MANDATED QUALITY/GROWTH slot -- `2256%3==0`, verified via
       `python3 -c "print(2256%3)"`) -- ran both PLAYBOOK QUALITY tools, then the fleet-oldest
       `varied_test` (nih-reporter-scraper, 54c stale) which FOUND AND FIXED one real

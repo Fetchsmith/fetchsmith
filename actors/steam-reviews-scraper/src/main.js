@@ -54,7 +54,15 @@ const SORTS = ['recent', 'updated', 'all', 'funny'];
 // Orderings that are not newest-first, so a scan window is not a time window.
 const NON_CHRONOLOGICAL = new Set(['all', 'funny']);
 let sortBy = SORTS.includes(input.sortBy) ? input.sortBy : 'recent';
-if (hasDateWindow && sortBy !== 'recent') {
+// Gated on dataType:"reviews": sortBy/reviewsAfter/reviewsBefore have no effect at all in
+// dataType:"games" (a game row is a store snapshot, not an ordered review list), so forcing
+// sortBy to "recent" there would (a) print a confusing warning about an irrelevant date/sort
+// interaction and (b) silently erase the buyer's non-default sortBy before the ignoredInGames
+// check below ever sees it -- "recent" IS that check's default, so a forced-but-unflagged value
+// vanishes from disclosure instead of being named. Found live this cycle: dataType:"games" +
+// sortBy:"funny" + reviewsAfter together printed the ignoredInGames list WITHOUT sortBy in it,
+// while sortBy:"funny" alone (no date window) correctly named it.
+if (dataType === 'reviews' && hasDateWindow && sortBy !== 'recent') {
   log.warning(`Sort was "${sortBy}" but "Reviews after/before" requires chronological order — using "recent" instead.`);
   sortBy = 'recent';
 }
