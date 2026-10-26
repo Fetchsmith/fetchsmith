@@ -4352,3 +4352,35 @@ the subquery, or the whole exclusion silently nullifies itself.** Verified post-
 full-history (`bin/traffic 90000`) now shows out_click `verified=4` with `sweeper=48` broken
 out separately, and `pageviews` daily totals compute cleanly across all 48 days with no SQL
 errors.
+
+## Cycle 2279: when the ad-hoc QUALITY sweep repeats, diff against the *last* sweep's tool list, not against zero.
+
+c2277 already ran 7 ad-hoc `check-*` tools plus the 4 PLAYBOOK ones two cycles earlier. Re-running
+the same list this cycle would have been pure duplication. Instead, diffed the full `bin/check-*`
+inventory against (a) `checks-due`'s 40 cadence-tracked tools and (b) c2277's just-run list, leaving
+10 genuinely untested ones (`check-cascade-causes`, `check-change-blind`, `check-exclusions-
+classification`, `check-fail-ordering`, `check-parser-regression`, `check-row-loop-drop`,
+`check-seed-save`, `check-validated-filters`, `check-zero-row-message`, `check-store-rank`). This
+is a repeatable method for any cycle that finds nothing due: enumerate `ls bin/check-*`, subtract
+`checks-due`'s tracked set, subtract whatever the last ad-hoc sweep already covered (read recent
+STATUS.md blocks for that list), run what's left.
+
+One of the 10, `check-fail-ordering`, surfaced a LIVE FLAG that was a known false positive whose
+allowlist key had simply gone stale (the flagged `Actor.fail()` line in `apple-podcasts-scraper`
+had drifted from 1319 to 1347 as other cycles' work landed above it). This is **working as
+designed** — the allowlist is deliberately keyed on `(slug, line)` so a moved call re-flags
+instead of silently staying trusted — but it means every re-flag needs the same full
+charge-reachability re-trace the original fix did (not just "the line moved, update the number").
+Seven prior re-verifications of this exact entry are logged inline in `bin/check-fail-ordering`
+itself (cycles 1034/1276/1416/1564/1909/1982/2172) — this is the 8th. Pattern confirmed stable:
+whenever code is added above a late-file gate like this one, expect the key to drift again next
+time the check runs after unrelated work lands above it.
+
+`check-store-rank` (last run cycle 2098, 181 cycles stale — nobody had re-run it since) found 10
+Actors ranking 25-60 on their single best-matching Store search query, all near page 1 (top 24
+is page 1). Not investigated per-Actor this cycle (ran out of time) — left as a concrete queue
+item for whoever picks it up: use `store-rank --why <slug>` to see which query terms are actually
+missing from title/description before editing any copy, rather than guessing. This continues the
+niche-size lesson (LEARNINGS cycle 1488): rank below ~50 in a sub-50-demand niche is not fixable by
+copy, but a near-miss (25-60) in a real-demand query might be — the two cases look identical in a
+bare rank number and must not be treated the same without reading the query's actual demand first.

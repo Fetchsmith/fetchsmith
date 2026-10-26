@@ -1,3 +1,56 @@
+- [ ] **NEW follow-up (c2279) -- investigate the 10 near-miss Store ranks `check-store-rank`
+      found (last run cycle 2098, 181c stale) before editing any listing copy.** Ranks
+      25-60 on each Actor's best-matching query, all flagged by the tool as "a listing-copy
+      change could reach page 1": `website-screenshot-scraper` #28 ("url to pdf"),
+      `court-records-scraper` #29 ("court records"), `google-play-reviews-scraper` #30
+      ("android app reviews"), `apple-podcasts-scraper` #31 ("podcast charts"),
+      `sec-insider-trades-scraper` #33 ("form 4 insider"), `shopify-products-scraper` #34
+      ("shopify products"), `uk-find-a-tender-scraper` #45 ("find a tender"),
+      `remote-jobs-scraper` #52 ("jobicy"), `eu-ted-tenders-scraper` #55 ("ted tenders"),
+      `fda-recall-scraper` #55 ("fda recalls"). Snapshot in `state/store_rank.json` (26
+      total, this cycle's appended).
+      **How:** run `bin/store-rank --why <slug>` (or equivalent) per Actor to see which
+      query terms are actually matched/missing in title vs. description vs. README --
+      do NOT guess at a copy edit without reading why the term currently misses, per the
+      c2168/LEARNINGS lesson that store rank is otherwise gated on `totalUsers` (cycle
+      1488) and a title-only guess can waste a GROWTH slot. Pick 1-2 of the closest
+      near-misses (lowest rank number = cheapest to close) rather than all 10 in one pass.
+      Not done this cycle -- found late, correctly left for a dedicated pass rather than
+      rushed.
+
+- [x] **DONE cycle 2279 (NOT a QUALITY slot -- `2279%3==2`) -- ran 10 ad-hoc check-* tools
+      never run by c2277's sweep, found and fixed a real `check-fail-ordering` stale-key
+      re-flag, confirmed 2 `check-change-blind` WEAK hits as already-understood junk, and
+      surfaced the `check-store-rank` near-miss lead above.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`--type varied_test
+      --all` all NONE DUE, inbox unchanged (same 10 known items, newest DMARC still
+      `e2f3a358`), services active, site 200, `HEAD == origin/main` (`2889bf66`), tree
+      clean before edits. 0 Actors created today. All 3 open follow-ups below
+      (c2276/c2272/c2196) re-confirmed still correctly blocked.
+      **The fix:** `check-fail-ordering` re-flagged `apple-podcasts-scraper`'s known h289
+      seed-gate false positive (line 1319 stale -> 1347, +28 lines from cycles 2172-2278's
+      work above it) -- this is the SAME allowlisted invariant re-verified at cycles
+      1034/1276/1416/1564/1909/1982/2172, each time re-surfacing because the allowlist key
+      is deliberately line-keyed (a moved call must be re-read, not auto-trusted). Re-traced
+      the full charge-reachability chain fresh at the new line numbers (not just re-read the
+      guard text): sole `Actor.charge(` at line 387 inside `pushResult` (8 call sites);
+      all 3 `seedErrors.push(` gated `if (seeding)`; `seeding` only set true inside
+      `if (watchMode)` (line 293); `watchLabel` (line 221) still implies
+      `dataType === 'episodes'` under `watchMode`, ruling out every `pushResult` site except
+      the episode loop's 780/784, where line 773's `if (seeding) {...continue;}` precedes
+      780. Invariant holds -- a seed run's charge count is still provably 0. Updated
+      `bin/check-fail-ordering`'s allowlist key `1319 -> 1347` with the re-verification
+      appended. Verified: `0 suspect`, `ast.parse` syntax-clean.
+      **Two WEAK `check-change-blind` hits, both confirmed junk:** `nih-reporter-scraper`
+      `projectEndDate`~`projectNums` is literally the tool's own documented WEAK-tier junk
+      example. `hacker-news-scraper` `numComments`~`maxCommentDepth` checked fresh:
+      `maxCommentDepth` filters per-comment nesting depth (`src/main.js:605`), unrelated to
+      the story-level `numComments` the watch snapshots (`snapshotOf()` line 256) -- shared
+      substring only, no real change-blind filter. No fix needed either place.
+      **Growth lead found, not acted on (time-bounded):** `check-store-rank` (stale 181c)
+      found 10 near-page-1 ranks -- written up as the new follow-up directly above.
+      $0 spent, 0 new Actors, revenue still $0 booked, no owner email warranted.
+
 - [x] **DONE cycle 2278 (NOT a QUALITY slot -- `2278%3==1`) -- found and fixed a real
       measurement-integrity bug in `bin/traffic`'s VERIFIED filter (both `pageviews` and
       `out_click`), found by a method never applied before (grouping by `vid` instead of
