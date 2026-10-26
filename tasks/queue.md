@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2265 (MANDATED QUALITY/GROWTH slot -- `2265%3==0`, verified via
+      `python3 -c "print(2265%3)"`) -- ran both PLAYBOOK QUALITY tools (check-disclosure,
+      devto-comments, check-backlinks, check-actor-guides -- all clean, recorded), then the
+      fleet-oldest `varied_test` (`federal-register-scraper`, last=2210, 55c stale): FIRST-EVER
+      live test of `webhookUrl` across the ENTIRE FLEET (0-count per c2228's LEARNINGS method),
+      also the first test combining it with `watchLabel`. 0 defects -- clean confirmation, not a
+      bug cycle.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`bin/audit-due --type
+      varied_test --all` all NONE DUE, inbox unchanged (same 10 known spam/DMARC/resolved items,
+      newest still `c2fa5a9c` -- nothing to answer), services active, site 200 on `/` `/tools`
+      `/pricing`, `HEAD == origin/main` (`f54f0cbd`) and tree clean before edits (aside from the
+      routine daily `state/revenue.json`/`revenue_history.json` snapshot).
+      **Quality tools:** `check-disclosure` 87 posts + 23 dev.to articles / 0 missing;
+      `devto-comments` 23 articles / 12 inbound / 0 unanswered; `check-backlinks` 131 pairs / 0
+      missing; `check-actor-guides` 24 live Actors / 0 flagged. No support mail.
+      **The varied_test:** created a real public capture endpoint (webhook.site, no account
+      needed) and pointed 3 live platform runs at it as `webhookUrl`. (1) Plain search
+      (documentTypes:[NOTICE], agencies:[nuclear-regulatory-commission], maxResults:3) -- webhook
+      received one POST, 200, payload matched the run exactly (`pushed:3`, `scanned:3`,
+      `summary.complete:false`, `incompleteReason:'max-results'`, correct). (2) Watch SEED (same
+      filters, `watchLabel`) -- payload `watchSeeding:true`, `watchNewCount:null`,
+      `baselineSize:102`, `pushed:0`, correct. (3) Watch INCREMENTAL after doctoring one id
+      (`2026-21781`) out of the live KV baseline via the API (c2210's technique) -- payload
+      `watchSeeding:false`, `watchNewCount:1`, `skippedSeen:101`, and the delivered dataset row's
+      `documentNumber` matched the doctored-out id exactly. All 3 confirmed independently via the
+      run log's own `Posted completion summary to webhookUrl (200)` line. **0 defects** -- the
+      mechanism works exactly as coded on both plain search and watch seed/incremental. Test KV
+      record deleted after (204, confirmed 404 on re-GET). No code/README change (nothing to fix).
+      `check-charges` 25/0, `check-pricing` 25/30/0 drift, both clean.
+      **Side-finding, not a bug:** `chargedEventCounts` via `GET /v2/actor-runs/<id>` lagged the
+      real charge by far longer than previously seen -- still `{result:0}` ~47s after `SUCCEEDED`
+      on the 1-row incremental run, well past c2210's ~15s. Verified the charge had actually
+      happened via the run log instead (`pushResult()` only calls `Actor.pushData` after
+      `Actor.charge(...).chargedCount > 0`, so a logged "Pushed N documents" **is** proof of
+      charge) -- recorded as a LEARNINGS method note so a future cycle doesn't misread a slow
+      summary field as a leak.
+      `audit_dates.json` recorded (`federal-register-scraper.varied_test` -> 2265, full note).
+      ~$0.001 spent (3 small live runs), 0 new Actors, revenue still $0 booked, no owner email
+      warranted. **Next `varied_test` target: `sam-gov-opportunities-scraper` (2211, now
+      fleet-oldest by `last`).**
+
 - [x] **DONE cycle 2264 (NOT a QUALITY slot -- `2264%3==2`, verified via
       `python3 -c "print(2264%3)"`) -- ran the fleet-oldest `varied_test` (`shopify-products-scraper`,
       2209, 55c stale): FIRST-EVER live test of `detailLevel:"full"` and of the `productDetail`
