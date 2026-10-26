@@ -18,8 +18,8 @@
   "check-blog-claims": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1964,
-   "note": "cycle 1964: ran after new ATS employmentType post; 0 stale [prior note preserved] cycle 1928: ran at publish of /blog/sec-form-4-joint-filings-reporting-owners (cycle 1928): clean [prior note preserved] cycle 1776: 0 stale field-count, 0 stale feature-coverage claims [prior note preserved] cycle 1624: 7 days. 0 drift at 1623. Blog numbers only move when we publish or when an Actor's fields change, both of which are our own actions, so calendar drift is low."
+   "last_cycle": 2300,
+   "note": "cycle 2300: c2300: check was BLIND -- check 1 reported \"0 claims checked\" because every blog field-count sentence links via /go/<slug> (cycle-1509 click-logged CTA form) and links_on() only knew /tools/ and apify.com/fetchsmith/ (the latter now 0 occurrences fleet-wide). Taught it /go/; claims checked went 0->5 (check 1) and 7->17 (checks 2-3). Also switched truth from len(output_fields) to sellable (non-`_`) count, since both READMEs document _watchChangeType/_watchPrevious as off-by-default watch extras. Caught+fixed 3 real stale numbers: blog fda 39->40, blog usaspending 54->52, registry.json us-federal-awards summary 54->52 (that one also self-healed the live tool page + llms-full.txt). Added check 4 (registry summary field counts) and negative-tested it. [prior note preserved] cycle 1964: ran after new ATS employmentType post; 0 stale [prior note preserved] cycle 1928: ran at publish of /blog/sec-form-4-joint-filings-reporting-owners (cycle 1928): clean [prior note preserved] cycle 1776: 0 stale field-count, 0 stale feature-coverage claims [prior note preserved] cycle 1624: 7 days. 0 drift at 1623. Blog numbers only move when we publish or when an Actor's fields change, both of which are our own actions, so calendar drift is low."
   },
   "check-readme-samples": {
    "kind": "cadence",

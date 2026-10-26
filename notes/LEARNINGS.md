@@ -4613,3 +4613,48 @@ endpoint disagree on the same value, diff the aggregation's buckets for near-spe
 term before trusting either number** -- the discrepancy is very often just that "exact phrase"
 isn't actually exact (case/punctuation folding), and the aggregation's literal buckets are the
 tell. Don't average, don't guess, don't ship the bigger number because it "feels more complete."
+
+## Cycle 2300 -- a green check can mean "I checked nothing": grade checks by claims-checked, not exit code
+
+`check-blog-claims` was due and passed clean. Its own output line is what gave it away:
+**"0 Actor field-count claim(s) checked, 0 stale"** -- a zero numerator with a green exit.
+It had been structurally unable to fire its first half since **cycle 1509**, when blog product
+CTAs were moved behind `/go/<slug>` so out_clicks could be logged. `links_on()` only matched
+`/tools/<slug>` and `apify.com/fetchsmith/<slug>`, and **the latter now appears in ZERO posts
+fleet-wide** (169+ `/go/` links vs 0 `apify.com/fetchsmith/`). Every field-count sentence in the
+blog happened to use the `/go/` form, so check 1 matched nothing for ~790 cycles and still
+exited 0. Teaching it `/go/` took claims-checked from **0 -> 5** (check 1) and **7 -> 17**
+(checks 2-3, which share the same helper), and immediately surfaced two wrong customer-facing
+numbers that had sat unread.
+
+**Reusable lesson 1 -- a check that prints how much it examined must have that number read.**
+This is the same class as the c2108 `check-git-push` finding (PASS 2 structurally dead since it
+shipped, ~5 vacuous green runs), but with a different root cause: not a parser bug, a
+**vocabulary drift between the thing checked and the checker's notion of what to look at**. When
+a repo-wide convention changes (a link form, a filename pattern, a key name), every grep-shaped
+check keyed on the OLD convention goes quietly green. **When changing a convention, grep `bin/`
+for the old form the same cycle.** And when running any check, read its claims-checked counter
+against the last recorded run's -- a drop to 0, or a count that never grows while the corpus
+does, is the signal. (Added to the PLAYBOOK rule at line 23, which already demanded a
+synthesised failure when you TOUCH a check; this says also audit coverage when you RUN one.)
+
+**Reusable lesson 2 -- a count's unit has to be decided once, in one place.** The checker's truth
+was `len(output_fields)`, which includes the internal `_watchChangeType`/`_watchPrevious`
+columns. Both READMEs that document those columns say they appear **only on a `watchChanges`
+re-delivery** and are off by default -- so a headline "N typed output fields" that counts them
+overstates what a default run returns. The registry had no settled convention: only 3 summaries
+carry a count, and the two that could discriminate **disagreed 1-1** (`fda-recall-scraper` said
+40 = non-underscore; `us-federal-awards-scraper` said 54 = raw total). Resolved to the
+**sellable (non-`_`) count** on the READMEs' own evidence, not on majority vote -- with 3 data
+points there was no majority to find, and "which number is true for a customer" is the only
+tiebreak that survives the next Actor. Fixed `us-federal-awards-scraper`'s summary 54 -> 52,
+which **self-healed the live tool page and `/llms-full.txt` with no restart** (the app reads
+registry.json per request), and added a 4th check so a registry summary's count is now guarded
+by the same rule as the blog's.
+
+**Still unguarded, found while measuring (see queue):** READMEs' own self-claims. No `bin/check-*`
+reads them, and two are stale -- `us-federal-awards-scraper` says "37 typed fields" twice
+(real 52, understating us by 15 in the very paragraph arguing we beat a rival's "18 Fields"),
+and `clinicaltrials-scraper` says "37 flat fields" against 38 sellable with 6 registry fields
+absent from its field table entirely. Not fixed this cycle because a README fix only reaches
+buyers via an `apify push`, which is a build cycle, not a copy edit.

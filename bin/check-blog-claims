@@ -7,8 +7,21 @@ prose does not.
 
 1. FIELD COUNTS (cycle 352) — '<N> flat/typed/normalized fields' vs registry.json.
    Added after two guides were found understating their own Actor by 16 and 3 fields.
-   Only sentences that link to an Actor (apify.com/fetchsmith/<slug> or /tools/<slug>)
-   are checked, so counts describing an UPSTREAM API's row shape are left alone.
+   Only sentences that LINK to an Actor are checked, so counts describing an UPSTREAM
+   API's row shape are left alone. See links_on() for the link forms that count.
+
+   Cycle 2300: this check had gone silently blind — it reported "0 claims checked"
+   while two guides carried wrong numbers. Two causes, both fixed here:
+     a. link forms. Blog product CTAs stopped pointing at apify.com directly in
+        cycle 1509 (they go through /go/<slug> now, so out_clicks are logged); the
+        /go/ form was never taught to this check, and apify.com/fetchsmith/<slug>
+        now appears in ZERO posts. Every field-count sentence in the blog happened
+        to use a /go/ link, so check 1 matched nothing at all and still exited 0.
+     b. what the number means. The truth was len(output_fields), which includes the
+        internal `_watchChangeType`/`_watchPrevious` columns. Neither the tool pages
+        nor the READMEs sell those as fields (the live /tools/fda-recall-scraper page
+        says "40 typed fields" against 42 registry entries), so counting them made
+        the check demand a number no customer-facing copy should ever print.
 
 2. FEATURE COVERAGE (cycle 356) — which Actors a post says ship `watchChanges` /
    `watchLabel`, vs each Actor's own .actor/input_schema.json. Added after the same
@@ -32,7 +45,20 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-reg = {t["slug"]: len(t.get("output_fields", [])) for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]}
+# Sellable field count = registry entries minus the internal `_`-prefixed watch columns,
+# which is what the tool pages and READMEs print. See docstring note 1b (cycle 2300).
+reg = {t["slug"]: len([f for f in t.get("output_fields", []) if not f.startswith("_")])
+       for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]}
+
+
+def links_on(line):
+    """Slugs this line links to. /go/<slug> is the click-logged CTA form every blog
+    product link uses since cycle 1509; /tools/<slug> is the on-site tool page.
+    apify.com/fetchsmith/<slug> is kept only so a hand-written direct link would
+    still be seen — no post has used one since cycle 1509."""
+    return {s for s in reg
+            if f"/go/{s}" in line or f"/tools/{s}" in line or f"fetchsmith/{s}" in line}
+
 
 # "<N> flat fields", "<N> typed output fields", "<N> normalized fields",
 # "<N> other typed fields" (cycle 374 near-miss: "~28 other typed fields" went unchecked), ...
@@ -45,7 +71,7 @@ for path in sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))):
         counts = COUNT.findall(line)
         if not counts:
             continue
-        slugs = [s for s in reg if f"fetchsmith/{s}" in line or f"/tools/{s}" in line]
+        slugs = sorted(links_on(line))
         if not slugs:
             continue  # count is about an upstream API, not one of ours
         checked += 1
@@ -73,10 +99,6 @@ def has_input(slug, prop):
     if not os.path.exists(p):
         return False
     return prop in json.load(open(p)).get("properties", {})
-
-
-def links_on(line):
-    return {s for s in reg if f"fetchsmith/{s}" in line or f"/tools/{s}" in line}
 
 
 truth = {f: {s for s in reg if has_input(s, f)} for f in FEATURES}
@@ -148,4 +170,21 @@ for path in sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))):
                 print(f"STALE {os.path.basename(path)}:{lineno}  says 'all {tok}' but links {len(linked)} Actors")
 
 print(f"check-blog-claims: {fchecked} Actor feature-coverage claim(s) checked, {flagged} total stale")
+
+# ------------------------------------------------- registry summaries (cycle 2300)
+# A summary's own field count is hand-written prose sitting next to the field list it
+# describes, and it is the number the tool page, /llms.txt and /llms-full.txt all print.
+# us-federal-awards-scraper's said "54 typed output fields" against 52 sellable ones
+# (it had counted the two off-by-default `_watch*` columns); nothing read it. Same check
+# as 1, different file -- a count whose owner is the output_fields list beside it.
+schecked = 0
+for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]:
+    for claimed in COUNT.findall(t.get("summary") or ""):
+        schecked += 1
+        if int(claimed) != reg[t["slug"]]:
+            flagged += 1
+            print(f"STALE registry.json  {t['slug']} summary claims {claimed} fields,"
+                  f" it has {reg[t['slug']]} sellable")
+
+print(f"check-blog-claims: {schecked} registry summary field-count claim(s) checked, {flagged} total stale")
 sys.exit(1 if flagged else 0)

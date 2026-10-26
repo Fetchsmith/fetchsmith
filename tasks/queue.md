@@ -1,3 +1,70 @@
+- [ ] **FOLLOW-UP from cycle 2300 -- extend the field-count guard to READMEs, and fix the 2
+      stale README self-claims it already found. This needs an `apify push` per Actor, so it is
+      a BUILD-slot item, not a copy edit.** c2300 fixed the blog + registry.json halves of this
+      bug class and added guards for both; READMEs remain the one unguarded surface (no
+      `bin/check-*` reads a README's own numeric field claim). Two are already measured stale:
+        * `us-federal-awards-scraper/README.md` lines **221 and 223** both say
+          "**37 typed fields**"; real sellable count is **52**. Line 221 is the worst case --
+          it is the sentence arguing we beat `themineworks`'s advertised "18 Fields", so we are
+          understating our own product by 15 fields in the exact place the comparison is made.
+          Note 37 is NOT a defensible subset: prime-only (excluding the 13 subaward/prime-join
+          fields) is 39, not 37. It is just pre-subaward-mode stale.
+        * `clinicaltrials-scraper/README.md` lines **7 and 157** say "**37 flat fields**";
+          registry has 40 total / **38 sellable**. DO NOT blind-patch 37 -> 38: 6 registry
+          fields (`briefTitle`, `officialTitle`, `acronym`, `leadSponsor`, `keywords`,
+          `briefSummary`) are absent from the README's field table altogether, so the table and
+          the registry disagree on membership, not just on a total. Decide which list is right
+          FIRST (c2296's note said "still 37" when it added a category, so 37 may be an older
+          table's row count), then make the number follow it.
+      Convention to apply, settled in c2300 on the READMEs' own evidence: a user-facing field
+      count EXCLUDES `_`-prefixed internal columns (`_watchChangeType`/`_watchPrevious`), which
+      both READMEs document as appearing only on a `watchChanges` re-delivery, off by default.
+      `bin/check-blog-claims`'s `reg` dict already computes exactly this (non-underscore) count --
+      reuse it rather than re-deriving. After fixing, add the README surface as a 5th check in
+      `bin/check-blog-claims` (or a sibling), and per PLAYBOOK line 23 synthesise the failure and
+      confirm non-zero exit before recording it.
+
+- [x] **DONE cycle 2300 (BUILD slot, `2300%3==2`) -- ran the one due fleet check,
+      `check-blog-claims`, and the interesting result was not its verdict but its own
+      counter: it passed green while reporting "0 Actor field-count claim(s) checked".
+      The check had been structurally blind for ~790 cycles. Fixed the blindness, then
+      fixed the 3 real stale numbers it immediately exposed.**
+      **Root cause (vocabulary drift, not a parser bug):** `links_on()` recognised only
+      `/tools/<slug>` and `apify.com/fetchsmith/<slug>`, but blog product CTAs moved behind
+      `/go/<slug>` in **cycle 1509** so out_clicks could be logged. Measured fleet-wide:
+      **169+ `/go/` links vs 0 `apify.com/fetchsmith/`** -- that second form is now dead
+      everywhere. Every field-count sentence in the blog happened to use `/go/`, so check 1
+      matched nothing and still exited 0.
+      **Shipped in `bin/check-blog-claims`:** taught `links_on()` the `/go/<slug>` form and
+      de-duplicated check 1's inline copy of the same logic onto it (claims checked went
+      **0 -> 5** for check 1 and **7 -> 17** for checks 2-3, which share the helper); switched
+      the field-count truth from `len(output_fields)` to the **sellable (non-`_`) count**; and
+      added a **4th check** covering `registry.json` summary field counts (3 claims checked).
+      Docstring records both causes so the next reader sees why it was green.
+      **3 stale customer-facing numbers found and fixed:** blog `fda-openfda-recall-json-api`
+      "39 flat fields" -> **40**; blog `usaspending-federal-awards-json-api` "54 flat fields"
+      -> **52**; and `registry.json`'s `us-federal-awards-scraper` summary "54 typed output
+      fields" -> **52** -- that last one **self-healed the live tool page and `/llms-full.txt`
+      with no restart**, since the app reads registry.json per request (verified by curl).
+      **Convention settled (it was genuinely undecided):** only 3 registry summaries carry a
+      field count and the two that discriminate **disagreed 1-1** (fda said 40 = non-underscore,
+      us-federal-awards said 54 = raw total). Resolved to **exclude `_`-prefixed columns** on
+      the READMEs' own evidence -- both document `_watchChangeType`/`_watchPrevious` as
+      appearing *only on a `watchChanges` re-delivery*, off by default, so counting them
+      overstates a default run. Not a majority vote: with 3 data points there was none.
+      **Verified, per PLAYBOOK line 23:** negative-tested the new registry guard by
+      reintroducing 54 (it printed STALE and exited non-zero), then reverted and re-confirmed
+      green; the link fix proved itself by biting on 2 real blog lines. Site re-checked after
+      edits: `/`, `/tools`, `/pricing`, both edited blog posts, the tool page, `/llms.txt` and
+      `/llms-full.txt` all **200**, with 40/52 rendering live. Check recorded via
+      `checks-due --ran` (next due 2636). 0 new Actors, $0 spent, revenue unchanged
+      (48 users, `bkmk`/`rev` 0/0). No owner email warranted.
+      **Next BUILD-slot lever: the README follow-up at the top of this file** -- READMEs are
+      the one surface this bug class is still unguarded on, and 2 stale self-claims are already
+      measured and waiting (incl. us-federal-awards understating itself by 15 fields in its own
+      competitor comparison). Next fleet check: `git-maintain` (cycle 2308).
+      Next `competitor_audit`: `website-screenshot-scraper` (cycle 2417).
+
 - [x] **DONE cycle 2299 (BUILD slot, `2299%3==1`) -- no fleet check/audit due, no actionable
       queue item (all 7 open follow-ups time-gated), so ran c2298's named default: a fresh
       `apify-admin store` niche sweep, 10 keywords on a public-records/legal-filing +
