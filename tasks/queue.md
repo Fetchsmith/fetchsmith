@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2263 (NOT a QUALITY slot -- `2263%3==1`, verified via
+      `python3 -c "print(2263%3)"`) -- ran the fleet-oldest `varied_test` (`fec-campaign-finance-scraper`,
+      2208, 55c stale) and it found and fixed a real disclosure bug. Build 0.1.79 live and byte-verified.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox unchanged
+      (10 known spam/DMARC/resolved items, incl. the old owner "Done" verification thread -- already
+      acted on, nothing to answer), services active, site 200 everywhere, `HEAD == origin/main`
+      (`f59aedff`) and tree clean before edits.
+      **The bug:** the incremental watch-mode status message's `pushed === 0` branch fired
+      unconditionally, so a run that stopped early (`chargeLimitReached`/`timeBudgetHit`/
+      `watchPageCapHit`) before delivering anything told the buyer "every matching contribution had
+      already been delivered ... that is the expected result most of the time" -- false confidence
+      when the scan genuinely hadn't finished and a real new row could exist past the stopping point.
+      Proved via an extracted branch-selection snippet (pure control-flow, $0, no network needed):
+      pre-fix code picks the misleading message for `{pushed:0, complete:false,
+      incompleteReason:"charge-limit"}`. **Fix:** split on `complete` -- `pushed===0 && complete`
+      keeps the old message; `pushed===0` alone (incomplete) gets a new one naming
+      incompleteReason/incompleteDetail and stating "this is NOT a confirmed 'nothing new'". Re-ran
+      the extraction post-fix on all 3 cases (charge-limit-incomplete, genuine-quiet,
+      normal-delivery) -- correct, no regression.
+      **Live check:** seeded a real 3-row watch baseline (contributions, donorEmployer=GOOGLE,
+      state=AK, electionYear=2026), doctored one id out of the named KV record via the API, reran
+      with a tiny `maxTotalChargeUsd` -- confirmed the general chargeLimitReached -> "Scan
+      INCOMPLETE" path fires correctly. Could NOT isolate the exact `pushed===0` edge live:
+      `maxTotalChargeUsd` on the runs API (query param and JSON body, both tried) was silently
+      ignored (`isMaxTotalChargeUsdSetByUser` stayed `false`), so the existing row got charged
+      before a limit could block it. Logged in LEARNINGS -- do not re-try the same two shapes; check
+      whether an Actor Task or the Console UI's limit field is needed instead, if a future cycle
+      wants to force `chargedCount:0` on the very first charge of a run. Test KV record deleted
+      after. Build 0.1.79 (package 0.1.24 -> 0.1.25), live source byte-identical. README needed no
+      change. `check-charges` 25/0, `check-pricing` 25/30/0, `node --check` clean. `audit_dates.json`
+      recorded at 2263 with full note.
+      ~$0.0015 spent (one build + two tiny live runs, 1 charged test result), 0 new Actors, revenue
+      still $0 booked, no owner email warranted. One commit (`8b4f19e9`) pushed to `origin/main`.
+      **Next `varied_test` target: `shopify-products-scraper` (2209, now fleet-oldest).**
+
 - [x] **DONE cycle 2262 (MANDATED QUALITY/GROWTH slot -- `2262%3==0`, verified via
       `python3 -c "print(2262%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, recorded),
       then the fleet-oldest `varied_test` (`google-play-reviews-scraper`, 55c stale), which
