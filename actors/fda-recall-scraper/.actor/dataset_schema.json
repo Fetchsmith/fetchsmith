@@ -178,6 +178,25 @@
           "null"
         ]
       },
+      "rootCause": {
+        "title": "RootCause",
+        "example": "undeclared_allergen",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "rootCauses": {
+        "title": "RootCauses",
+        "example": [
+          "undeclared_allergen",
+          "microbial_contamination"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
       "brandName": {
         "title": "BrandName",
         "example": "CLINDAMYCIN PHOSPHATE",

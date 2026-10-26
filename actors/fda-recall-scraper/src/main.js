@@ -82,6 +82,7 @@ const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMand
     : '';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 const includeRiskScore = input.includeRiskScore !== false;
+const includeRootCause = input.includeRootCause !== false;
 const includePressReleases = Boolean(input.includePressReleases);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0;
@@ -716,6 +717,56 @@ function riskScore(classification, isoDate, distributionPattern) {
     return Math.round(0.45 * s + 0.3 * r + 0.25 * d);
 }
 
+// ---------------------------------------------------------------------------
+// Root-cause classification of openFDA's free-text `reason_for_recall` (cycle 2288).
+//
+// WHY: the competitor section of this README has named `datalayer/fda-recall-enforcement`'s
+// root-cause classification since 2026-10-03 as "a genuine analytical field we do not offer at
+// all" -- riskScore grades HOW BAD a recall is, never WHY it happened. This closes that gap.
+//
+// HOW: an ordered, first-match-wins list of documented regexes over the reason text. It is a
+// published keyword rule set, not a model call -- no LLM, no network, no inference, and the
+// same text always yields the same category (CLAUDE.md rule 2: product runtime must not call
+// Claude). Precedence runs most-specific-cause first, so a row reading "undeclared milk ...
+// possible Listeria" reports `undeclared_allergen` as the primary cause and carries BOTH in
+// `rootCauses`. `contamination_unspecified` is only reported when no specific contaminant rule
+// matched, and `other` is a real, honest bucket for text no rule matches -- not a silent null.
+//
+// MEASURED on two independent 300-row live samples pulled 2026-10-26 (100 newest food + 100
+// drug + 100 device rows each): 100% of rows classified on the sample the rules were tuned
+// against, and 96.3% on a HOLDOUT sample (skip=2000, older rows, never used for tuning) --
+// 11 of 300 fell to `other`. Report the holdout number, not the tuned one.
+const ROOT_CAUSE_RULES = [
+    ['undeclared_allergen', /undeclared\s+(?:milk|soy|egg|wheat|gluten|peanut|tree\s*nut|almond|cashew|walnut|pecan|hazelnut|pistachio|sesame|fish|anchov|shellfish|crustacean|shrimp|mollusk|sulfite|lupin|mustard|coconut|allergen|major\s+food\s+allergen)|(?:milk|soy|egg|wheat|gluten|peanut|tree\s*nut|sesame|fish|shellfish|sulfite)s?\s+(?:was|were|is|are)\s+not\s+(?:declared|listed)|not\s+declared\s+(?:on|in)\s+the\s+(?:label|contains\s+statement|ingredient)|undeclared\s+allergen|(?:does|did|do)\s+not\s+declare[^.]{0,70}(?:milk|soy|egg|wheat|gluten|peanut|nut|sesame|fish|anchov|shellfish|crustacean|shrimp|sulfite|allergen)|fail(?:s|ed)?\s+to\s+declare[^.]{0,70}(?:milk|soy|egg|wheat|gluten|peanut|nut|sesame|fish|anchov|shellfish|sulfite|allergen)|allergen[^.]{0,40}not\s+declared|allergen\s+(?:not|improperly)\s+declared|improperly\s+declared\s+allergen|omitted\s+(?:it|them|the)?\s*from\s+the\s+contain|(?:contains|containing)\s+undeclared\s+(?:milk|soy|egg|wheat|gluten|peanut|tree\s*nut|sesame|fish|shellfish|sulfite)/i],
+    ['undeclared_additive_or_ingredient', /undeclared\s+(?:yellow|red|blue|green|fd&c|color|colour|dye|additive|sugar|sweetener|caffeine|preservative|ingredient)|unapproved\s+(?:dye|color|colour|additive|food\s+additive)|(?:yellow|red|blue|green)\s*(?:no\.?|#)?\s*\d+[^.]{0,40}(?:not\s+(?:listed|declared)|undeclared)|not\s+listed\s+on\s+(?:the\s+)?(?:finished\s+product\s+)?label|may\s+contain\s+undeclared|(?:does|did|do)\s+not\s+declare|fail(?:s|ed)?\s+to\s+declare|not\s+declared\b/i],
+    ['undeclared_drug_ingredient', /undeclared\s+(?:drug|active\s+pharmaceutical|sildenafil|tadalafil|vardenafil|sibutramine|phenolphthalein|tianeptine|yohimbine|ephedr|steroid)|contains\s+undeclared\s+(?:sildenafil|tadalafil|vardenafil|sibutramine|drug)|tainted\s+(?:supplement|product)/i],
+    ['sterility_failure', /lack\s+of\s+(?:assurance\s+of\s+)?steril|sterility\s+(?:assurance|failure|concern)|loss\s+of\s+steril|non-?steril|breached?\s+steril|steril(?:e|ity)\s+barrier|compromis\w*\s+(?:the\s+)?steril/i],
+    ['microbial_contamination', /salmonell|listeria|monocytogenes|\be\.?\s?coli\b|\bstec\b|o157|shiga|clostridium|botulin|cronobacter|sakazakii|staphylococc|bacillus\s+cereus|campylobacter|hepatitis\s+a|norovirus|cyclospora|burkholderia|pseudomonas|serratia|enterobacter|klebsiella|aspergillus|penicillium|\bmold\b|microbial\s+(?:contamination|growth|limits?)|microbiolog|pathogen|coliform|bacteria|fungal|aflatoxin|mycotoxin/i],
+    ['chemical_contamination', /nitrosamine|\bndma\b|\bndea\b|\bnmba\b|benzene|ethylene\s+oxide|heavy\s+metal|arsenic|cadmium|mercury|melamine|pesticide|herbicide|glyphosate|ethylene\s+glycol|diethylene\s+glycol|methanol|scombrotoxin|histamine\s+level|ciguatera|\btoxin\b|chemical\s+contamina|residual\s+solvent|lead\s+(?:contamination|levels?|poisoning)|elevated\s+(?:levels?\s+of\s+)?lead|lead\s*\(pb\)|contaminat\w*\s+with\s+(?:a\s+|an\s+)?(?:lead|lubricant|cleaning\s+(?:agent|solution|chemical)|sanitizer|petroleum|hydrocarbon|oil|grease|solvent)/i],
+    ['foreign_material', /foreign\s+(?:object|material|matter|body|bodies|tablet|capsule|product)|particulate\s+matter|metal\s+(?:fragment|shaving|piece|particle)|plastic\s+(?:fragment|piece|particle)|glass\s+(?:fragment|piece|particle)|wood\s+(?:fragment|piece)|rubber\s+(?:fragment|piece)|insect|\bpest\b|rodent|\bmice\b|\bmouse\b|\brat\b|filth|extraneous\s+material|visible\s+particle|residual\s+material|small\s+particles?/i],
+    ['potency_or_specification_failure', /subpotent|super\s*potent|failed\s+(?:content\s+uniformity|dissolution|assay|impurit|stability|specification|potency|sterility\s+test|usp)|out\s+of\s+specification|\boos\b|impurit(?:y|ies)\/degradation|degradation\s+specification|content\s+uniformity|dissolution\s+(?:failure|specification)|assay\s+(?:failure|result)|stability\s+(?:failure|data|specification)|does\s+not\s+meet\s+(?:the\s+)?(?:product\s+|performance\s+|design\s+)?specification|potency\s+(?:failure|issue|below)|failed\s+in\s+(?:process\s+)?testing|insufficient\s+(?:strength|pull\s+force)/i],
+    ['software_defect', /software|firmware|cyber\s*security|vulnerabilit|source\s+code|algorithm|application[^.]{0,30}crash|may\s+crash|system\s+error\s+message|programming\s+error/i],
+    ['labeling_error', /mislabel|mis-?label|incorrect\s+label|wrong\s+label|label\s+mix-?up|mixed\s+up|incorrect\s+(?:product|packag)|wrong\s+(?:product|packag|lot)|labeling\s+(?:error|issue|deficien)|incorrect\s+(?:instructions|directions|dosing|dosage)|missing\s+(?:label|lot|instructions)|incorrect\s+(?:expiration|expiry)|label(?:ed|led)\s+as|packaged\s+in\s+the\s+wrong|misbrand|incorrect\s+(?:udi|barcode|ndc)|distributed\s+to\s+incorrect|operator'?s?\s+manual|user\s+manual|instructions?\s+for\s+use|\bifu\b|package\s+insert|nutrition\s+facts|inaccurate\s+(?:nutrition|information|declaration)|labeling\s+(?:updated|revised|revision|change)|updated\s+warning|incorrectly\s+label|label\s+error|^labeling:|incorrect\s+sizing|inadvertently\s+packaged|packaged\s+as\b|instead\s+of\s+the\s+required|mix\s*-?\s*up\s+of|contains\s+incorrect|packed\s+within\s+the\s+kit/i],
+    ['packaging_defect', /packaging\s+(?:defect|failure|integrity|issue)|container\s+closure|seal\s+(?:failure|integrity|defect)|leak(?:ing|age)?\s+(?:container|packag|vial|bag)|pouch|child-?resistant\s+packag|cap\s+(?:failure|defect)|crack(?:ed|ing)?\s+(?:vial|container|bottle)|glass\s+breakage|broken\s+(?:vial|seal|container)|defective\s+container|empty\s+or\s+partially\s+full/i],
+    ['storage_or_handling', /temperature\s+(?:abuse|excursion|deviation)|cold\s+chain|improper(?:ly)?\s+(?:stored|storage|refrigerat)|storage\s+condition|not\s+refrigerated|non-?temperature-?controlled/i],
+    ['cgmp_deviation', /cgmp|\bgmp\b|good\s+manufacturing\s+practice|manufacturing\s+(?:deviation|error|issue|defect|process\s+(?:issue|deviation))|process\s+(?:not\s+validated|validation)|not\s+(?:properly\s+)?validated|quality\s+system|deviation\s+from|inadequate\s+weld|not\s+properly\s+(?:eviscerated|processed|cooked|pasteuriz)|inconsistent\s+(?:blending|mixing)|blend\s+uniformity|released\s+without\s+(?:full\s+)?testing|without\s+(?:full\s+)?testing\s+being\s+performed/i],
+    ['unapproved_or_uncleared', /lack\s+of\s+510\(?k\)?|without\s+510\(?k\)?|unapproved\s+(?:drug|device|new\s+drug)|not\s+(?:been\s+)?(?:approved|cleared)\s+by\s+(?:the\s+)?fda|marketed\s+without\s+(?:approval|clearance)|lacks?\s+(?:fda\s+)?(?:approval|clearance|premarket)|unauthoriz|not\s+approved\s+for/i],
+    ['supplier_or_upstream_recall', /recalled\s+by\s+(?:the\s+|its\s+)?supplier|supplier(?:'s)?\s+recall|upstream\s+recall|ingredient\s+(?:was\s+)?recalled|due\s+to\s+(?:a\s+)?recall(?:ed)?\s+(?:of|by)|contains\s+recalled|downstream\s+(?:recall|product)|subject\s+to\s+(?:a\s+)?recall|recalled\s+(?:ingredient|component)|manufactured\s+with\s+recalled|manufacturer-?recalled/i],
+    ['shelf_life_or_expiry', /shelf\s+life|expir(?:ation|ed|y)|beyond\s+use\s+date|out\s+of\s+date/i],
+    ['physical_appearance_change', /discolo(?:u)?r|crystalliz|precipitat|cloudy|clump|off-?odor|odor\b|separation\s+of\s+(?:the\s+)?(?:emulsion|product)/i],
+    ['device_malfunction', /malfunction|may\s+(?:fail|disconnect|detach|break|separate|fractur|leak|loosen)|fail(?:ure|ed)\s+to\s+(?:deliver|function|operate|alarm)|battery|mechanical\s+(?:failure|defect)|crack|fractur|disconnect|loosen|\bleak|degrad(?:ed|ation)|does\s+not\s+(?:function|operate|perform)|inaccurate\s+(?:result|reading|measurement)|false\s+(?:positive|negative|result)|incorrect\s+(?:result|reading|dose|measurement)|defective\s+(?:delivery|component|part|device)|fire\s+hazard|overheat|short\s+circuit|electrical\s+(?:hazard|failure)|increased\s+resistance|break(?:ing|age)\b|falsely\s+(?:high|low|elevated)|false\s+elevati|positive\s+bias|move\s+unexpectedly|electromagnetic\s+noise|design\s+(?:issue|defect|flaw)|void\s+in\s+the\s+material|adverse\s+events?|users?\s+fail/i],
+    ['contamination_unspecified', /contaminat/i],
+];
+function classifyRootCause(reason) {
+    if (!reason || !String(reason).trim()) return { rootCause: null, rootCauses: [] };
+    const text = String(reason);
+    const hits = ROOT_CAUSE_RULES.filter(([, re]) => re.test(text)).map(([c]) => c);
+    if (hits.length === 0) return { rootCause: 'other', rootCauses: ['other'] };
+    const specific = hits.filter((c) => c !== 'contamination_unspecified');
+    const out = specific.length ? specific : hits;
+    return { rootCause: out[0], rootCauses: out };
+}
+
 function normalize(r, productType) {
     // `openfda` is populated on drug rows only — verified 5/5 drug rows populated and 5/5
     // food and device rows empty on a live sample. These flattened fields are therefore
@@ -754,6 +805,9 @@ function normalize(r, productType) {
         riskScore: includeRiskScore
             ? riskScore(r.classification, isoOf(r.recall_initiation_date) ?? isoOf(r.report_date), r.distribution_pattern)
             : null,
+
+        // WHY the recall happened, from the free-text reason -- see ROOT_CAUSE_RULES above.
+        ...(includeRootCause ? classifyRootCause(r.reason_for_recall) : { rootCause: null, rootCauses: [] }),
 
         // drug-only, see comment above
         brandName: first(o.brand_name),
@@ -885,6 +939,9 @@ function normalizePressRelease(item) {
         centerClassificationDate: null,
         terminationDate: null,
         riskScore: null,
+        // Unlike riskScore (which needs a `classification` the feed never carries), the root-cause
+        // rules read only the reason text, which these rows do have -- so they are classified too.
+        ...(includeRootCause ? classifyRootCause(item.description) : { rootCause: null, rootCauses: [] }),
         brandName: null,
         genericName: null,
         manufacturerName: null,

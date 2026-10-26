@@ -2,7 +2,7 @@
   "actorSpecification": 1,
   "name": "fda-recall-scraper",
   "title": "FDA Recall Database API, Food, Drug, Device Enforcement Reports",
-  "description": "A recall scraper for the FDA database — food, drug and device — from openFDA, plus an optional press-release feed up to 9 days faster. 37 fields incl. severity, a documented 0-100 riskScore (not AI), recalling firm, ISO dates, NDC/UPC/brand on drug recalls. From $0.0024/result, no start fee. FDA API",
+  "description": "A recall scraper for the FDA database — food, drug and device — from openFDA, plus a press-release feed up to 9 days faster. 39 fields incl. severity, a 0-100 riskScore and a rootCause per reason (rules, not AI), recalling firm, ISO dates, NDC/UPC on drugs. From $0.0024/result, no start fee. FDA API",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

@@ -1,1 +1,8 @@
-{}
+{
+  "fda-recall-scraper": {
+    "fields": [
+      "description"
+    ],
+    "published_at": "2026-10-26T17:38:50Z"
+  }
+}

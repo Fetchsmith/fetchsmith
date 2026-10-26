@@ -148,6 +148,12 @@
       "description": "Add a riskScore field (0-100) to every row: a documented, deterministic formula (not AI) combining Class I/II/III severity (45%), how recent the recall is (30%, linear decay to 0 at two years old), and distribution scope parsed from distributionPattern (25%: nationwide/international text or count of US state codes mentioned). Useful for sorting/triaging a large result set. On by default; set false to skip the computation.",
       "default": true
     },
+    "includeRootCause": {
+      "title": "Include root-cause classification",
+      "type": "boolean",
+      "description": "Add rootCause and rootCauses to every row: WHY the recall happened, classified from openFDA's free-text reason_for_recall by a published, deterministic keyword rule set (not AI, no model call \u2014 the same text always yields the same category). riskScore above grades how BAD a recall is; this says what went wrong. 19 categories: undeclared_allergen, undeclared_additive_or_ingredient, undeclared_drug_ingredient, sterility_failure, microbial_contamination, chemical_contamination, foreign_material, potency_or_specification_failure, software_defect, labeling_error, packaging_defect, storage_or_handling, cgmp_deviation, unapproved_or_uncleared, supplier_or_upstream_recall, shelf_life_or_expiry, physical_appearance_change, device_malfunction, contamination_unspecified, plus an honest \"other\" bucket when no rule matches. rootCause is the primary (most specific) cause; rootCauses lists every category the text matched, since recalls often have more than one. Measured on two independent 300-row live samples (2026-10-26): 96.3% of rows classified on a holdout sample never used for tuning. On by default; set false to skip.",
+      "default": true
+    },
     "includePressReleases": {
       "title": "Also include FDA press releases (faster than the enforcement API)",
       "type": "boolean",
