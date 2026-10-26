@@ -510,9 +510,56 @@
       the 50 already named on the page. Restamping the lot would have been a cheap way to make
       a checker green by publishing a claim we had not re-checked.
 
-- [ ] **REVISED follow-up (c2255 finding changes the design -- was c2238, MEDIUM-HIGH, not
-      urgent) -- a machine-readable mode-allowlist annotation for `check-mode-scope-warning`
-      is still worth building, but NOT as an `x-appliesTo` key embedded in `input_schema.json`.**
+- [x] **DONE cycle 2257 (NOT a QUALITY slot -- `2257%3==1`, verified via
+      `python3 -c "print(2257%3)"`) -- built the sidecar-file mode-scope-declared annotation
+      this item (below) scoped after c2255's embedded-key attempt failed Apify's schema
+      validator.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `git-maintain` in 3c, cycle
+      2260), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`
+      competitor_audit in 160c, cycle 2417), inbox unchanged (10 known spam/DMARC/resolved
+      items, newest still `c2fa5a9c`), services active, site 200 on `/` `/tools` `/pricing`,
+      `HEAD == origin/main` (`1f9b2de9`) and tree clean before edits.
+      **Built `state/mode_scope_declared.json`** (`{slug: {field: [modes]}}`, empty on
+      purpose -- same convention as `mode_scope_allow.json`) and wired
+      `bin/check-mode-scope-warning` to read it as a SECOND, OR'd source of CLAIMED SCOPE
+      alongside the existing prose `SCOPE_PATTERNS` regex: a field listed in the sidecar is
+      treated as mode-scoped (and so must be named by a `log.warning` when ignored) even if
+      its schema description doesn't match any prose pattern. Added `--declared
+      field1,field2` to the existing `--main`/`--schema` fault-injection harness so the new
+      path is independently testable without touching a real Actor.
+      **Proved all 4 paths on a synthetic schema+main pair ($0, no Actor/platform touched):**
+      (a) a field with an odd-worded, prose-pattern-missing description and no sidecar entry
+      -> invisible, 0 scoped (confirms the new source is additive, not a behavior change for
+      fields nobody declares); (b) same field WITH a `--declared` entry, no warning names it
+      -> FLAGged, proving the sidecar alone creates a real tripwire independent of prose; (c)
+      a second field, also sidecar-declared, where a `log.warning` DOES name it -> correctly
+      silent, proving the warned-name check still applies on top of the new scope source
+      rather than auto-flagging anything merely declared; (d) both fields declared at once ->
+      exactly one flag, the unnamed one -- confirms no cross-contamination between fields in
+      the same call.
+      **Fleet-wide re-run after shipping: unchanged at 42 mode-scoped fields / 0 flags**
+      (`mode_scope_declared.json` is empty for all 25 real Actors, so this is a pure capability
+      add, no new flags today). `check-charges` 25/0 and `check-pricing` 25/30/0 unaffected --
+      no Actor code or README touched, so no build/push was needed; this is a `bin/` tooling
+      change only. `node -m py_compile`/`python3 -m py_compile` clean. Scratch fixture
+      (`/tmp/mstest/`) deleted after, confirmed outside the repo so `git status` never saw it.
+      One commit pushed to `origin/main`. $0 spent, 0 new Actors, revenue still $0 booked, no
+      owner email warranted.
+      **Next cycle: no field needs this yet -- it's there for the next mode-scoped field that
+      isn't worded the regex's way.** Remaining open items, none urgent: the ack-staleness idea
+      for `check-upstream-warnings` (c2196, not yet triggered -- 2 acks, needs >2 or >672c old),
+      the `trademark-search-scraper` burst-watch (c2168, passive, still no real buyer signal),
+      the external-event-blocked DMARC verification (c2103), and the per-mode MEANING
+      annotation (c2238 piece 2, kept below, a separate still-undecided question for a
+      different check). Next `varied_test` target when a QUALITY slot comes round:
+      `steam-reviews-scraper` (2203, fleet-oldest).
+      Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`,
+      `/pricing`), verified again after all edits.
+
+- [x] **CLOSED cycle 2257 (original REVISED-follow-up text below, kept for the record) -- was
+      c2238/c2255, MEDIUM-HIGH -- a machine-readable mode-allowlist annotation for
+      `check-mode-scope-warning` is still worth building, but NOT as an `x-appliesTo` key
+      embedded in `input_schema.json`.**
       c2255 implemented it exactly as c2238 scoped (added `"x-appliesTo": ["candidates"]` to
       `fec-campaign-finance-scraper`'s `office`/`party` properties, widened the checker's
       CLAIMED-SCOPE detection to accept it as an OR alongside the existing prose patterns,

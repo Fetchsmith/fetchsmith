@@ -45,11 +45,22 @@ Judged-benign fields live in state/mode_scope_allow.json ({slug: {field: reason}
 check converges to 0 and a real regression is the only thing that ever prints. Adding an
 entry requires a reason string -- an empty one is itself flagged.
 
+CLAIMED SCOPE has a second, machine-readable source: state/mode_scope_declared.json
+({slug: {field: [modes]}}). A field listed there is treated as mode-scoped even if its
+schema description doesn't match any SCOPE_PATTERNS regex -- for a field that IS restricted
+but worded in a way the prose patterns can't catch. This is a sidecar file, not an
+input_schema.json key: Apify's input-schema validator rejects unknown property keys outright
+(proved cycle 2255 -- an `x-appliesTo` key failed `apify push` schema validation before any
+build step ran), so there is no vendor-extension escape hatch inside the schema itself.
+
 Usage:
   check-mode-scope-warning                  # whole fleet
   check-mode-scope-warning <slug> [...]     # named Actors only
   check-mode-scope-warning --show-allowed   # also list the allowlisted fields
   check-mode-scope-warning --main <path> --schema <path>   # fault-injection on one pair
+  check-mode-scope-warning --main <path> --schema <path> --declared field1,field2
+                                             # same, with named fields treated as
+                                             # sidecar-declared scope regardless of prose
 
 Exit 0 always (reporting tool, like the other fleet sweeps); the flag count is the signal.
 """
@@ -60,6 +71,7 @@ import sys
 
 ACTORS = '/root/agent/actors'
 ALLOW = '/root/agent/state/mode_scope_allow.json'
+DECLARED = '/root/agent/state/mode_scope_declared.json'
 
 # How many times to follow "warning interpolates a variable -> read that variable's
 # declaration". 1 covers every real case in the fleet today (`log.warning(${xIgnored...})`
@@ -225,7 +237,14 @@ def load_allow():
         return json.load(f)
 
 
-def audit(slug, schema_path, main_path, allow, show_allowed):
+def load_declared():
+    if not os.path.exists(DECLARED):
+        return {}
+    with open(DECLARED) as f:
+        return json.load(f)
+
+
+def audit(slug, schema_path, main_path, allow, declared, show_allowed):
     with open(schema_path) as f:
         schema = json.load(f)
     with open(main_path) as f:
@@ -234,10 +253,14 @@ def audit(slug, schema_path, main_path, allow, show_allowed):
     props = schema.get('properties') or {}
     warned = warned_names(main_src)
     slug_allow = allow.get(slug, {})
+    slug_declared = declared.get(slug, {})
 
     scoped, flagged, allowed, bad_reason = 0, [], [], []
     for field, spec in props.items():
         phrase = scope_phrase(spec.get('description') or '')
+        modes = slug_declared.get(field)
+        if not phrase and modes:
+            phrase = f'sidecar-declared scope: {", ".join(modes)}'
         if not phrase:
             continue
         scoped += 1
@@ -273,11 +296,16 @@ def main():
     if '--main' in args and '--schema' in args:
         main_path = args[args.index('--main') + 1]
         schema_path = args[args.index('--schema') + 1]
-        scoped, flags, _ = audit('(fault-injection)', schema_path, main_path, {}, show_allowed)
+        fi_declared = {}
+        if '--declared' in args:
+            fields = args[args.index('--declared') + 1].split(',')
+            fi_declared = {'(fault-injection)': {f: ['(fault-injection)'] for f in fields}}
+        scoped, flags, _ = audit('(fault-injection)', schema_path, main_path, {}, fi_declared, show_allowed)
         print(f'\ncheck-mode-scope-warning: 1 pair, {scoped} mode-scoped field(s), {flags} flag(s)')
         return
 
     allow = load_allow()
+    declared = load_declared()
     wanted = set(args)
     slugs = sorted(d for d in os.listdir(ACTORS) if not d.startswith('_'))
     if wanted:
@@ -293,7 +321,7 @@ def main():
         if not (os.path.exists(schema_path) and os.path.exists(main_path)):
             continue
         n_actors += 1
-        scoped, flags, n_allow = audit(slug, schema_path, main_path, allow, show_allowed)
+        scoped, flags, n_allow = audit(slug, schema_path, main_path, allow, declared, show_allowed)
         tot_scoped += scoped
         tot_flags += flags
         tot_allowed += n_allow
