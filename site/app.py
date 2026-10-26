@@ -368,7 +368,79 @@ def robots():
     # fetching robots.txt first is the one most likely to want the curated index.
     return ("User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /webhooks/\n"
             "Sitemap: https://fetchsmith.com/sitemap.xml\n"
-            "# LLM-readable index of every tool, price and guide: https://fetchsmith.com/llms.txt\n")
+            "# LLM-readable index of every tool, price and guide: https://fetchsmith.com/llms.txt\n"
+            "# Full reference (every input parameter and output field): https://fetchsmith.com/llms-full.txt\n")
+
+def _apify_price_phrase(t):
+    """'$0.002 per returned result' for a listed Actor, else None. Tiered Actors state the
+    entry price and the floor, matching the tool page and blog sidebar wording.
+
+    Module-level since cycle 2272 so /llms.txt and /llms-full.txt cannot drift apart on the
+    one wording a buyer reads a price off."""
+    ap = t.get("apify_price") or {}
+    if t.get("apify_listed") is False or not ap.get("entry"):
+        return None
+    s = f"${_usd(ap['entry'])} per returned result on Apify Store"
+    if ap.get("floor") and ap["floor"] != ap["entry"]:
+        s += f" (down to ${_usd(ap['floor'])} per result on higher Apify plans)"
+    return s
+
+
+# ---------- Actor input schemas (read straight from the published .actor/ dirs) ----------
+_schema_cache = {"stamp": None, "schemas": {}}
+
+def input_schemas():
+    """{slug: input_schema dict} from actors/<slug>/.actor/input_schema.json.
+
+    These are the EXACT schemas Apify renders on each Actor page, so /llms-full.txt quotes the
+    same parameter names, types and descriptions a run will actually accept -- no second copy
+    to drift. mtime-stamped cache, same shape as _blog_cache; 26 small files, so a stat sweep
+    per request is cheaper than re-parsing."""
+    try:
+        files = sorted((ROOT / "actors").glob("*/.actor/input_schema.json"))
+    except OSError:
+        return {}
+    stamp = tuple((str(f), f.stat().st_mtime) for f in files)
+    if _schema_cache["stamp"] != stamp:
+        out = {}
+        for f in files:
+            try:
+                out[f.parent.parent.name] = json.loads(f.read_text())
+            except Exception:
+                log.exception("bad input schema %s", f)
+        _schema_cache.update(stamp=stamp, schemas=out)
+    return _schema_cache["schemas"]
+
+def _param_lines(schema):
+    """One '- `name` (type, required): description' line per input parameter, declared order."""
+    props = (schema or {}).get("properties") or {}
+    required = set((schema or {}).get("required") or [])
+    out = []
+    for name, p in props.items():
+        if not isinstance(p, dict):
+            continue
+        bits = [p.get("type") or "string"]
+        if name in required:
+            bits.append("required")
+        # `default` is what the Actor runs with when the field is omitted; `prefill` is only
+        # what Apify's Console form pre-types for a human and is NOT applied to an API call.
+        # 20 fields in the fleet carry prefill without default, so collapsing the two would
+        # quote a value an API caller never actually gets (cycle 2272).
+        if p.get("default") not in (None, [], {}):
+            bits.append(f"default {json.dumps(p['default'])}")
+        elif p.get("prefill") not in (None, [], {}):
+            bits.append(f"no default, Apify Console prefills {json.dumps(p['prefill'])}")
+        # The description is authored as Apify-flavoured markdown and can run multi-line;
+        # flatten it so each parameter stays exactly one greppable line.
+        desc = " ".join(str(p.get("description") or p.get("title") or "").split())
+        line = f"- `{name}` ({', '.join(bits)})"
+        if desc:
+            line += f": {desc}"
+        if p.get("enum"):
+            line += f" Allowed values: {', '.join(json.dumps(v) for v in p['enum'])}."
+        out.append(line)
+    return out
+
 
 @app.get("/llms.txt", response_class=PlainTextResponse)
 def llms():
@@ -392,16 +464,7 @@ def llms():
     rate = (starter["usd"] / starter["credits"]) if starter else 0.0025
     checkout_live = bool(polar_products())
 
-    def apify_price_phrase(t):
-        """'$0.002 per returned result' for a listed Actor, else None. Tiered Actors state the
-        entry price and the floor, matching the tool page and blog sidebar wording."""
-        ap = t.get("apify_price") or {}
-        if t.get("apify_listed") is False or not ap.get("entry"):
-            return None
-        s = f"${_usd(ap['entry'])} per returned result on Apify Store"
-        if ap.get("floor") and ap["floor"] != ap["entry"]:
-            s += f" (down to ${_usd(ap['floor'])} per result on higher Apify plans)"
-        return s
+    apify_price_phrase = _apify_price_phrase
 
     lines = ["# FetchSmith", "",
              "> Pay-per-result web data extraction tools, runnable today as Apify Actors. No subscription required; you are charged only for rows actually returned, and failed or empty runs cost nothing."
@@ -454,7 +517,80 @@ def llms():
                     entry += "."
             lines.append(entry)
     lines += ["", "## Docs", f"- [API docs]({SITE_URL}/docs)", f"- [Pricing]({SITE_URL}/pricing)",
-              f"- [Apify Store profile (all {len(public_tools())} tools, runnable today)](https://apify.com/{au})"]
+              f"- [Apify Store profile (all {len(public_tools())} tools, runnable today)](https://apify.com/{au})",
+              f"- [Full reference: every input parameter and output field of every tool]({SITE_URL}/llms-full.txt)"]
+    return "\n".join(lines) + "\n"
+
+
+@app.get("/llms-full.txt", response_class=PlainTextResponse)
+def llms_full():
+    """The llms.txt convention's full-content companion: every tool expanded in place.
+
+    Cycle 2272: this existed only as a 404. The Caddy access log shows real external agents
+    fetching /llms.txt and then immediately requesting /llms-full.txt -- agentcensus-crawler/1.0
+    did exactly that on 2026-10-24 -- and `bin/channel-mix` measures assistant/AI traffic at
+    ~7.9x search, so the file answer engines ask for by name is the highest-leverage page we
+    can add. It is not a reshuffle of /llms.txt: the per-parameter input reference below is
+    published NOWHERE else on fetchsmith.com (tool.html renders only example_input +
+    output_fields), so until now an answer engine could say what a tool returns but not how to
+    ask for it, and had to send the reader to Apify to find out."""
+    au = env("APIFY_USERNAME", "fetchsmith")
+    starter = next((p for p in CREDIT_PACKS if p["id"] == "starter"), None)
+    rate = (starter["usd"] / starter["credits"]) if starter else 0.0025
+    checkout_live = bool(polar_products())
+    schemas = input_schemas()
+    tools = public_tools()
+
+    lines = ["# FetchSmith -- full tool reference", "",
+             "> Full-content expansion of https://fetchsmith.com/llms.txt: for each of the"
+             f" {len(tools)} pay-per-result web data extraction tools, every input parameter"
+             " (name, type, default, allowed values) and every output field, as accepted by the"
+             " live Actor. You are charged only for rows actually returned; failed or empty runs"
+             " cost nothing, and there is no subscription. Every tool runs under the FetchSmith"
+             f" publisher account on Apify Store (https://apify.com/{au}) with pay-per-event"
+             " billing through your Apify account."
+             + ("" if checkout_live else
+                f" A hosted API on prepaid credits (about ${rate:.4f} per result) is planned but"
+                " NOT open yet, so the Apify price is the one a buyer can pay today."), ""]
+
+    for t in tools:
+        slug = t["slug"]
+        cpr = int(t.get("credits_per_result", 1) or 1)
+        credit = (f"{cpr} credit{'' if cpr == 1 else 's'} per returned result (about"
+                  f" ${rate * cpr:.4f} per result on the smallest prepaid pack)")
+        ap_phrase = _apify_price_phrase(t)
+        lines += [f"## {t['title']}", f"Documentation: {SITE_URL}/tools/{slug}"]
+        if ap_phrase:
+            lines.append(f"Run it today: https://apify.com/{au}/{slug} -- {ap_phrase}.")
+            lines.append(f"Planned hosted-API price: {credit}.")
+        else:
+            lines.append(f"Not listed on Apify Store right now. Planned hosted-API price: {credit}.")
+        if t.get("summary"):
+            lines += ["", t["summary"]]
+        params = _param_lines(schemas.get(slug))
+        if params:
+            lines += ["", f"### Input parameters ({len(params)})"] + params
+        if t.get("example_input"):
+            lines += ["", "### Example input", "```json",
+                      json.dumps(t["example_input"], indent=2), "```"]
+        if t.get("output_fields"):
+            fields = t["output_fields"]
+            lines += ["", f"### Output fields ({len(fields)})",
+                      ", ".join(f"`{f}`" for f in fields)]
+        lines.append("")
+
+    lines += ["## Pricing",
+              "Prepaid credit packs for the hosted API (credits never expire, one credit is one"
+              " returned result for most tools):"]
+    for p in CREDIT_PACKS:
+        lines.append(f"- {p['name']}: ${p['usd']} for {p['credits']:,} credits"
+                     f" (${p['usd'] / p['credits']:.4f} per result) -- {p['blurb']} {SITE_URL}/pricing")
+    lines.append("- Usage-based alternative, available now: run any tool as an Apify Actor at"
+                 f" https://apify.com/{au} and pay per event through your Apify account.")
+    lines += ["", "## Docs", f"- Tool index and measured guides: {SITE_URL}/llms.txt",
+              f"- API docs: {SITE_URL}/docs", f"- Pricing: {SITE_URL}/pricing",
+              f"- Apify Store profile (all {len(tools)} tools, runnable today):"
+              f" https://apify.com/{au}"]
     return "\n".join(lines) + "\n"
 
 _STATIC_PAGE_TEMPLATES = {
