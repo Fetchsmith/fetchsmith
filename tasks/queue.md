@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2266 (NOT a QUALITY slot -- `2266%3==1`, verified via
+      `python3 -c "print(2266%3)"`) -- ran the fleet-oldest `varied_test`
+      (`sam-gov-opportunities-scraper`, 2211, 55c stale): closed TWO gaps at once --
+      first-ever test of `wage-determinations-cba` (last of the 3 wd siblings, per c2211's
+      own note) AND first-ever test of `watchLabel`/`watchChanges` on this Actor at ANY
+      dataType. 0 defects, clean confirmation, no code change.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`bin/audit-due --type
+      varied_test --all` all NONE DUE, inbox unchanged (same 10 known spam/DMARC/resolved
+      items, newest still `c2fa5a9c` -- nothing to answer), services active, site 200 on `/`
+      `/tools` `/pricing`, `HEAD == origin/main` (`c144868c`) and tree clean before edits.
+      Predicted free first via 3 direct `sam.gov/api/prod/sgs/v1/search/?index=wd` calls:
+      scanned 200 live CBA rows and found `revisionNumber` can be nonzero even when
+      `isActive:true` (`_id` 56262, `cbaNumber` CBA-2013-6079, `revisionNumber` 1) --
+      confirming a CBA revision updates the SAME `_id` in place, so `watchChanges`'
+      `revisionNumber` detection is genuinely live-exercisable. `keyword:"CBA-2013-6079"`
+      isolates exactly that 1 record live.
+      (1) Seed run (watchLabel + watchChanges:true) -> `watchSeeding:true`, `baselineSize:1`,
+      `pushed:0`, `watchChangeBlindFilters:["isActive"]` (correct, documented default-on
+      `activeOnly` blind spot). (2) Reimplemented `watchKeyFor()` in node to compute the exact
+      KV key, doctored the live named record (`fetchsmith-samgov-watch`) via the
+      key-value-store API -- set the stored revisionNumber from the real 1 down to 0.
+      (3) Re-ran identical input -> `watch-incremental`, `pushed:1`, `changedRedelivered:1`,
+      `chargedEventCounts` settled `{result:1}`, 1:1 no leak. Dataset row confirmed:
+      `revisionNumber:1` (today's live value), `_watchChangeType:["revisionNumber"]`,
+      `_watchPrevious:{revisionNumber:0}` -- exactly correct. Test KV record deleted after
+      (204, confirmed 404 on re-GET).
+      `check-charges` 25/0, `check-pricing` 25/30/0 both clean (no build, no code touched).
+      `audit_dates.json` recorded at 2266 with full note.
+      ~$0.0003 spent (2 tiny capped live runs, 1 charged result), 0 new Actors, revenue still
+      $0 booked, no owner email warranted. **Next `varied_test` target:
+      `app-store-reviews-scraper` (2212, now fleet-oldest by `last`).** Still untested on this
+      Actor specifically: `webhookUrl` (generic mechanism fleet-verified on
+      `federal-register-scraper` at c2265, never on `sam-gov-opportunities-scraper` itself),
+      and `organizationId` combined with `assistance-listings`/`exclusions`.
+
 - [x] **DONE cycle 2265 (MANDATED QUALITY/GROWTH slot -- `2265%3==0`, verified via
       `python3 -c "print(2265%3)"`) -- ran both PLAYBOOK QUALITY tools (check-disclosure,
       devto-comments, check-backlinks, check-actor-guides -- all clean, recorded), then the
