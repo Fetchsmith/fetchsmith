@@ -414,7 +414,21 @@ function matchesPhrase(hay, phrase) {
 }
 
 function buildSearch(from, to) {
-    const clauses = [`${dateField}:[${from}+TO+${to}]`];
+    const clauses = [];
+    // The date clause used to be unconditional even in lookupMode -- so an EXPLICIT
+    // reportDateFrom/reportDateTo left on the input (not just the EARLIEST/today default
+    // computed above) was still ANDed against the exact recall_number/event_id clause, silently
+    // excluding the very recall being looked up whenever its real date fell outside that window.
+    // That directly contradicted the README/FAQ promise that recallNumber/eventId "overrides
+    // every other filter ... and automatically searches full history regardless of
+    // reportDateFrom/reportDateTo" -- verified live (2026-10-26) with a real recall
+    // (F-0276-2017, report_date 20161102): recall_number alone matches 1, but
+    // report_date:[20200101 TO 20261026]+AND+recall_number:"F-0276-2017" returns openFDA's
+    // literal "No matches found!", and the zero-row status message below asserted "full
+    // history, every other filter ignored as documented" while the explicit date window was in
+    // fact the cause. Fixed by dropping the date clause entirely in lookupMode, matching every
+    // other filter clause skipped below.
+    if (!lookupMode) clauses.push(`${dateField}:[${from}+TO+${to}]`);
     if (recallNumber) clauses.push(`recall_number:${quote(recallNumber)}`);
     if (eventId) clauses.push(`event_id:${quote(eventId)}`);
     // README/FAQ promise recallNumber/eventId "overrides every filter above except
@@ -904,7 +918,8 @@ async function pushResult(item) {
 }
 
 log.info(
-    `openFDA recalls: productTypes=[${productTypes.join(',')}] ${dateField} ${reportDateFrom}..${reportDateTo} `
+    `openFDA recalls: productTypes=[${productTypes.join(',')}] `
+    + (lookupMode ? `${dateField} window ignored (recallNumber/eventId lookup, full history) ` : `${dateField} ${reportDateFrom}..${reportDateTo} `)
     + `sort=${SORT} maxResults=${maxResults}`
     + (classifications.length ? ` classifications=[${classifications.join(', ')}]` : '')
     + (states.length ? ` states=[${states.join(',')}]` : '')

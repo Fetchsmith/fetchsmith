@@ -1,8 +1,13 @@
 {
   "name": "fda-recall-scraper",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "type": "module",
   "description": "Scrape US FDA food, drug and device recalls via the official free openFDA enforcement API",
-  "dependencies": { "apify": "^3.4.0", "got-scraping": "^4.0.0" },
-  "scripts": { "start": "node src/main.js" }
+  "dependencies": {
+    "apify": "^3.4.0",
+    "got-scraping": "^4.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js"
+  }
 }
