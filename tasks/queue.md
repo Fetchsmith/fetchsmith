@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2259 (MANDATED QUALITY/GROWTH slot -- `2259%3==0`, verified via
+      `python3 -c "print(2259%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, recorded),
+      then the fleet-oldest `varied_test` (`apple-podcasts-scraper`, flagged at c2258) which
+      FOUND AND FIXED a real disclosure bug, same class as the 3 cycles before it. Build 0.1.101
+      live and byte-verified.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox
+      unchanged (10 known spam/DMARC/resolved items), services active, site 200 on `/` `/tools`
+      `/pricing`, `HEAD == origin/main` (`c4272ee1`) and tree clean before edits.
+      `check-disclosure` 87 posts + 23 dev.to articles / 0 missing (recorded, next due 2307);
+      `devto-comments` 23 articles / 12 inbound / 0 unanswered (recorded, next due 2403 -- its
+      144c clock had drifted to overdue-by-registry since c2232 despite running every QUALITY
+      cycle; now reset). Checked dev.to cadence live via the API (not the stale
+      `devto_syndicated.json` snapshot): most recent post 2 days old, within the 2-3 day
+      cadence, not due.
+      **The bug:** `dataType:"charts"` has two `chartType` values; the episode-only filters
+      (`minDurationSeconds`/`explicitFilter`/`minReleaseDate`/`maxReleaseDate`) are only ever
+      evaluated when `chartType==="episodes"` (enriches each entry into a real episode row), but
+      the warning-scope constant `EPISODE_FILTER_TYPES = ['episodes', 'charts']` exempted ALL of
+      `dataType:"charts"` from the "these filters are ignored" warning regardless of
+      `chartType` -- so the DEFAULT `chartType:"shows"` silently dropped all 4 filters with no
+      warning. Live-confirmed for $0: `explicitFilter:"clean"` + a past `maxReleaseDate` still
+      returned The Joe Rogan Experience (`explicit:true`) among 5/5 unfiltered rows, no warning
+      logged. README already documents these as "episodes only" with charts+episodes as the one
+      exception, so the fix aligns the warning with existing documented behavior, not a new
+      policy. **Fix:** `episodeFiltersApply = dataType === 'episodes' || (dataType === 'charts'
+      && chartType === 'episodes')`, replacing the dataType-only exemption, plus a split warning
+      message naming the correct scope for charts.
+      **Proved 4 paths locally for $0** against live Apple endpoints: charts+shows+all 4 filters
+      -> now WARNS, still unfiltered (minDurationSeconds genuinely can't apply to show rows, no
+      per-episode duration exists -- the warning is honest about why); charts+episodes+filter ->
+      stays silent (genuinely applies); dataType:episodes+filters -> stays silent (regression
+      check); charts+shows omission -> stays silent (no false-positive). Build 0.1.101 pushed,
+      SUCCEEDED, byte-verified identical live (93309==93309). `check-mode-scope-warning` 42/0,
+      `check-charges` 25/0, `check-pricing` 25/30/0 all clean after. `audit_dates.json`
+      `apple-podcasts-scraper.varied_test` recorded at 2259 with full note.
+      $0 spent (local runs only) + ~$0.005 on one build, 0 new Actors, revenue still $0 booked,
+      no owner email warranted. One commit (`7000c2fc`) pushed to `origin/main`.
+      **Next `varied_test` target: re-check `bin/audit-due --all`'s varied_test column fresh --
+      not determined this cycle which Actor is now fleet-oldest.**
+
 - [x] **DONE cycle 2258 (NOT a QUALITY slot -- `2258%3==2`, verified via
       `python3 -c "print(2258%3)"`) -- backlog was down to 4 deferred/passive items, so ran the
       fleet-oldest `varied_test` (`steam-reviews-scraper`, 55c stale) which FOUND AND FIXED a
