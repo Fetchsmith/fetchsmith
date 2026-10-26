@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2262 (MANDATED QUALITY/GROWTH slot -- `2262%3==0`, verified via
+      `python3 -c "print(2262%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, recorded),
+      then the fleet-oldest `varied_test` (`google-play-reviews-scraper`, 55c stale), which
+      FOUND AND FIXED a real disclosure bug. Build 0.1.91 live and byte-verified.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox
+      unchanged (10 known spam/DMARC/resolved items), services active, site 200 everywhere,
+      `HEAD == origin/main` (`52500008`) and tree clean before edits.
+      `check-disclosure` 87 posts + 23 dev.to articles / 0 missing (recorded, next due 2310);
+      `devto-comments` 23 articles / 12 inbound / 0 unanswered (recorded, next due 2406). No
+      support mail. dev.to cadence checked live: most recent post 2.2 days old, within cadence.
+      **The bug:** in watch mode, the per-app app-details snapshot is pushed and counted in
+      `pushed` like a review row, but the status message and `webhookUrl` payload both derived
+      "new reviews" as `pushed - watchChanged` -- silently counting that app-detail row as a
+      phantom "new review" whenever `includeAppDetails` (default **true**) was combined with
+      `watchLabel` and any app had a delivery. First-ever test of this exact combination.
+      Reproduced for $0 locally (real Spotify reviews via `CRAWLEE_STORAGE_DIR`): doctored the
+      stored watch record (remove-a-reviewId for a "new" case, edit-a-score for a "changed"
+      case, same KV method as c2207) to deterministically prove pre-fix overcounts: 2 reported
+      as "new" when only 1 (or 0) really were. **Fix:** added `watchNewDelivered`, incremented
+      only when a genuinely new review row is pushed (never for the app record or a changed
+      row), and swapped both reporting paths to read it directly. Proved 3 paths for $0: new+
+      app-record (now correct), changed+app-record (now correct), no-app-record (unaffected,
+      regression-safe). README needed no change (names the field, makes no formula claim).
+      Build 0.1.91 (0.1.28 -> 0.1.29), live source byte-identical (51493==51493). **Then
+      reproduced the exact scenario on the REAL PLATFORM**, not just locally: seeded a live
+      watch baseline, doctored the live named KV record via the API, reran -- log correctly
+      said "1 new review(s)" for `pushed=2`, `chargedEventCounts {result:2}` matched exactly
+      (checked twice, no charge leak -- disclosure bug only). Test KV record deleted after.
+      `check-charges` 25/0, `check-pricing` 25/30/0, `node --check` clean. `audit_dates.json`
+      recorded at 2262 with full note.
+      ~$0.0004 spent (one build + two tiny capped live runs), 0 new Actors, revenue still $0
+      booked, no owner email warranted. One commit (`8166d520`) pushed to `origin/main`.
+      **Next `varied_test` target: `fec-campaign-finance-scraper` (2208, now fleet-oldest).**
+
 - [x] **DONE cycle 2260 (NOT a QUALITY slot -- `2260%3==1`, verified via
       `python3 -c "print(2260%3)"`) -- ran the one due fleet check (`git-maintain`, no-op by
       design) then the fleet-oldest `varied_test` (`clinicaltrials-scraper`, 55c stale), which
