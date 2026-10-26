@@ -251,6 +251,12 @@ function decodeMeta(code) {
 }
 let watchEventsFiltered = 0; // a real change the buyer's watchEvents list excluded
 let watchChanged = 0; // already-delivered reviews re-delivered this run because they changed
+// Genuinely new reviews delivered this run -- counted directly rather than derived as
+// `pushed - watchChanged`, because `pushed` also includes the per-app app-detail snapshot
+// (pendingAppRecord below) when includeAppDetails is set, and that snapshot is not a review at
+// all. The derived form silently counted one phantom "new review" per app that had any
+// delivery, inflating both the status message and the webhookUrl payload.
+let watchNewDelivered = 0;
 let baselineTruncated = 0; // reviewIds dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
 let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const seededApps = new Set(); // appIds whose existing reviews are already in the baseline
@@ -648,6 +654,7 @@ for (const appId of resolvedAppIds) {
       }
       const keepGoing = await pushResult(row, watchMode ? r.id : null, encodeMeta(r));
       if (!appSeeding) newForApp += 1;
+      if (watchMode && !appSeeding && verdict === 'new') watchNewDelivered += 1;
       if (!keepGoing) break;
     }
     // Only record the app as baselined if its walk actually finished -- a walk cut short by the
@@ -699,7 +706,7 @@ if (watchMode) {
     );
   } else {
     log.info(
-      `Watch label "${watchLabel}": ${pushed} item(s) since the last run — ${pushed - watchChanged} new review(s) and `
+      `Watch label "${watchLabel}": ${pushed} item(s) since the last run — ${watchNewDelivered} new review(s) and `
       + `${watchChanged} already-delivered review(s) whose star rating or developer reply changed (${watchSkipped} `
       + `unchanged/already-delivered review(s) skipped, not charged`
       + `${watchEventsFiltered ? `, of which ${watchEventsFiltered} really did change but were excluded by your watchEvents list` : ''}); `
@@ -827,7 +834,7 @@ if (webhookUrl) {
     finishedAt: new Date().toISOString(),
     pushed,
     watchLabel: watchMode ? watchLabel : null,
-    watchNewCount: watchMode && !seeding ? pushed - watchChanged : null,
+    watchNewCount: watchMode && !seeding ? watchNewDelivered : null,
     watchSkipped: watchMode ? watchSkipped : null,
     watchChangedCount: watchMode && !seeding ? watchChanged : null,
     watchSeeding: watchMode ? seeding : null,
