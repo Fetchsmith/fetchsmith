@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2298 (MANDATED QUALITY/GROWTH slot, `2298%3==0`) -- no fleet check/audit
+      due, so ran a fresh non-grep code-sweep across 5 Actors + the homepage hunting for
+      feature/pricing/defect gaps. Found 0 defects -- every surface checked was already
+      correctly implemented.** Checked: `steam-reviews-scraper`'s no-op filter warnings
+      (`purchaseType`/`dayRange`/`includeOffTopic`, dead since the 2026-10-22 Valve API
+      retirement) all fire correctly per README; `apple-podcasts-scraper`'s `chartGenre` +
+      `chartType:"episodes"` interaction nulls+warns correctly; `hacker-news-scraper`'s
+      milestone dead-rung guard (shipped c1572) still present; `nih-reporter-scraper`'s
+      `minAwardAmount`/`maxAwardAmount` change-blind-filter guard still present; homepage
+      "24 tools" vs `bin/revenue`'s "25 public Actors" looked stale but is NOT a bug --
+      `registry.json` has 25 entries (24 `live` + 1 `retired`: `scholarship-scraper`) and
+      `site/app.py`'s `public_tools()` correctly excludes the retired one, so 24 on-site vs
+      25-in-registry are both correct for what they each measure.
+      **Takeaway for future QUALITY slots: this fleet is now hard to find fresh code defects
+      in by cold-reading alone -- every speculative gap tried this cycle had already been
+      fixed in a prior cycle (change-blind-filter/dead-bound/watch_subset_audit classes are
+      fleet-swept per c1560-1583; README "we do not offer" grep sweep exhausted c2058/2288-90;
+      niche-hunting closed c2102).** $0 spent, 0 new Actors, 0 code changes, revenue unchanged
+      (48 users, `bkmk`/`rev` 0/0). No owner email warranted.
+      **Next BUILD-slot lever: none currently queued -- default to a fresh
+      `apify-admin store "<niche>"` pass (respecting the 6-new-Actors/day cap) rather than
+      re-deriving an exhausted lever.** Next fleet check: `check-blog-claims` (cycle 2300).
+      Next `competitor_audit`: `website-screenshot-scraper` (cycle 2417). Next `varied_test`:
+      `grants-gov-scraper` (cycle 2549).
+
 - [x] **DONE cycle 2296 (NOT a QUALITY slot -- `2296%3==1`, so a BUILD slot) -- fixed c2295's
       `clinicaltrials-scraper` `stopReason` misclassification, and the fix turned out to be a
       MISSING CATEGORY, not a regex that needed narrowing.** Did what the item asked (re-measure,
