@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2270 (NOT a QUALITY slot -- `2270%3==2`, verified via
+      `python3 -c "print(2270%3)"`) -- cleared the one DUE fleet check (`check-source-endpoints`,
+      last 2246) and fixed a real recurring false-positive in it rather than just dismissing the
+      flag again.**
+      Re-verified fresh first: `bin/checks-due` **1 DUE (`check-source-endpoints`, last 2246)**,
+      `bin/audit-due --all` NONE DUE (soonest `competitor_audit`: website-screenshot-scraper in
+      147c, cycle 2417), `bin/audit-due --type varied_test --all` NONE DUE (soonest
+      `grants-gov-scraper` in 279c, cycle 2549), inbox unchanged (same 10 known spam/DMARC/
+      resolved items, newest still `c2fa5a9c` -- nothing to answer), services active, site 200
+      on `/` `/tools` `/pricing`, `HEAD == origin/main` (`cb8bd384`) and tree clean before edits.
+      **The check:** `bin/check-source-endpoints` flagged 1 DEVIATION: `rss.marketingtools.
+      apple.com` (apple-podcasts-scraper's only non-exempt upstream) went `ok` -> `error`/
+      `ReadTimeout` on the bare root `/` under the script's 10s timeout. Direct `curl` and a
+      standalone `httpx` loop both got 200 in <3s immediately after; the real endpoint the
+      Actor actually depends on (`/api/v2/<country>/podcasts/top/<n>/podcasts.json`) also
+      answered correctly. **This exact false positive on this exact host already happened at
+      cycle 2222** (per `fleet_checks.json`'s own prior note) and was dismissed both times as "a
+      transient blip" with no code change -- so instead of writing a third identical dismissal,
+      reproduced the flake standalone (ran the unmodified checker 3x back-to-back: 1 DEVIATION,
+      then 0, 0, 0 -- genuinely intermittent, not a one-off) and fixed the root cause.
+      **The underlying bug this surfaced:** `run_real()` writes `baseline[host]=...`
+      unconditionally every run, including on an `error` bucket -- so a single flaky timeout
+      silently overwrites a healthy baseline to `error`, and a REAL future break on that same
+      host would then go undetected (error->error isn't `broke`) until the host happened to
+      self-heal on some later run. **Fix:** split `probe()` into `probe_once()` (original logic)
+      + a `probe()` wrapper that retries once, only on an `error` bucket, before accepting it
+      (`bin/check-source-endpoints`). `--selftest` still passes unchanged (exercises the
+      baseline-comparison logic directly, not the network path); 3 consecutive live runs
+      post-fix were all CLEAN. Documented as a LEARNINGS entry (does not fully eliminate the
+      false-positive window -- two flaky hits in a row is still possible, just far less likely --
+      so a repeat flag on this host even after the retry should be treated as real signal, not
+      dismissed a third time).
+      Recorded via `bin/checks-due --ran check-source-endpoints` -> next due 2294. 3 commits
+      pushed to `origin/main` (`6fcce322` code+LEARNINGS, `453e1b6e` fleet_checks.json state).
+      $0 spent (no Actor runs, no builds), 0 new Actors, revenue still $0 booked, `bkmk`/`rev`
+      0 across all 25 Actors (checked via `bin/audit-due --all`'s table, no change), no owner
+      email warranted.
+      Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`,
+      `/pricing`), verified again after all edits.
+
 - [x] **DONE cycle 2268 (MANDATED QUALITY/GROWTH slot -- `2268%3==0`, verified via
       `python3 -c "print(2268%3)"`) -- cleared the one DUE fleet check by TRIMMING both live
       docs proactively (STATUS.md 134.9KB->20.6KB, queue.md 101.6KB->21.4KB, losslessly), ran
