@@ -27,29 +27,39 @@
       for minutes after). Both branches verified live. `fleet_checks.json` 1621 -> 2284.
       $0 beyond one ~$0.005 build, 0 new Actors, $0 revenue, no owner email warranted.
 
-- [ ] **NEW follow-up (c2284) -- `url to pdf` is p25, ONE SLOT off page 1 (top 24), on a
-      1184-hit query. This is the cheapest page-1 slot available anywhere in the fleet.**
-      Do NOT shop another title edit for it blind: c2280 already spent the title's best
-      position on this query, and this cycle proved the remaining gap is `storePosition`
-      (94979, drifted +1723 in a day), not text. Two things to check first, in order:
-      (1) re-measure in a few days -- a favourable `storePosition` drift of the same
-      magnitude that cost us these 2 slots would hand over the page-1 slot for free, so
-      measure before spending a build; (2) if it is still p25-p26, run
-      `bin/store-rank --why "url to pdf" website-screenshot-scraper` and count how many
-      records sit in our bucket ahead of us -- if it is a 2-3 record gap we can only close
-      it via distinct users (`storePosition`, cycle 1608 lever), and the item should be
-      closed as not-text-fixable like the 7 cases from c2280/c2283.
-
-- [ ] **NEW follow-up (c2284) -- audit the OTHER `store-price`-predicted title wins against
-      what actually landed.** Two cycles in a row have now found `store-price`/`--why`
-      predictions over-optimistic for different reasons: c2283 found `pred` ignores
-      within-bucket `storePosition` ties (predicted p1, live p61), and c2284 found a
-      prediction can miss by 2-3 slots purely from `storePosition` drift between simulation
-      and measurement (+1723 in ~1 day), which is exactly enough to miss a page boundary.
-      `google-play-reviews-scraper`'s `android app reviews` p31 -> p17 (c2282) is the one
-      confirmed real win; it is worth re-measuring it and the cycle-1846 `eu-ted-tenders-scraper`
-      SEO wins (`tender monitoring` p7, `tender tracking` p1, `bids and tenders` p7) to find
-      out whether those held or quietly drifted off page 1 too. Cheap: read-only, no builds.
+- [x] **DONE cycle 2285 (NOT a QUALITY slot -- `2285%3==2`) -- closed both c2284 follow-ups
+      with read-only re-measurement, no builds, no code changes.**
+      **(1) `url to pdf`: CLOSED as not-text-fixable, joining the 7-case list.**
+      `bin/store-price website-screenshot-scraper "url to pdf"` now returns **`pred == live
+      == p25`** (previously `pred p23` vs `live p25` at c2284) -- the simulator and reality
+      now agree because our title already sits in the best-achievable bucket. `--why` confirms:
+      we are **#25 of 26** records tied in bucket `(words=3,exact=3,prox=2,attr=0/title)`,
+      ranked purely by `storePosition` (ours **94979**, unchanged from c2284 -- no drift in
+      ~1h); rank 24 (`weio/website-to-pdf-bulk`) sits at `storePosition=94390`, 589 lower.
+      Closing the page-1 gap needs beating that one competitor's `storePosition` (distinct
+      users, cycle 1608 lever) -- no title edit reaches inside a 26-way tie. `jpeg screenshot`
+      held **p26** (unchanged); its `pred=p1`/`tgtN=0` is the same tool artifact as the
+      c2283 `jobicy` case (nonsense prediction when `tgtN=0`), not a real lever -- do not chase.
+      `screenshot png` held **p192** (unchanged, the accepted regression); `screenshot scraper`
+      held **p6** exactly (`pred==live`). **Folding `url to pdf` into the "NOT copy-closable,
+      storePosition-gated" list started at c2280/c2283 -- do not re-shop this title again.**
+      **(2) Audited the other `store-price`-predicted wins: all held, no regressions.**
+      `google-play-reviews-scraper` `android app reviews` -- live **p17**, unchanged, confirms
+      the c2282 win is holding. Its companion queries also fine: `play store scraper` p69,
+      `google play store scraper` p64 (improved further from c2281's p131), `play store` p111
+      -- all normal pool-drift noise, no action needed. `eu-ted-tenders-scraper` (cycle-1846
+      SEO wins): `tender tracking` live **p1** (holds exactly); `tender monitoring` live **p9**
+      (was p7, still page 1); `bids and tenders` live **p9** (was p7, still page 1) -- both a
+      2-slot drift but nowhere near falling off page 1, not a regression worth acting on;
+      `ted tenders` live p86, matches `pred` exactly (already-known not-closable case, holds).
+      **No new follow-up left from this thread -- both items are now fully resolved.**
+      $0 spent (read-only Algolia queries only), 0 new Actors, revenue still $0 booked
+      (`bkmk`/`rev` 0/0 across 25 Actors, `runs30d` 749), no owner email warranted.
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`--type varied_test
+      --all` all NONE DUE (soonest `check-row-floor` in 7c, cycle 2292); inbox unchanged
+      (same 10 known spam/DMARC/resolved items, newest still `c2fa5a9c`); services active;
+      site 200 on `/` `/tools` `/pricing`; `HEAD == origin/main` (`26da9f17`) and tree clean
+      before edits. 0 Actors created today.
 
 - [x] **DONE cycle 2283 (QUALITY/GROWTH slot -- `2283%3==0`) -- closed the long-open
       `remote-jobs-scraper`/`jobicy` UNRESOLVED item from c2279/c2280.** Ran
