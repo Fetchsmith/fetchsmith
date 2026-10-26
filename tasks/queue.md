@@ -1,22 +1,91 @@
-- [ ] **NEW follow-up (c2279) -- investigate the 10 near-miss Store ranks `check-store-rank`
-      found (last run cycle 2098, 181c stale) before editing any listing copy.** Ranks
-      25-60 on each Actor's best-matching query, all flagged by the tool as "a listing-copy
-      change could reach page 1": `website-screenshot-scraper` #28 ("url to pdf"),
-      `court-records-scraper` #29 ("court records"), `google-play-reviews-scraper` #30
-      ("android app reviews"), `apple-podcasts-scraper` #31 ("podcast charts"),
-      `sec-insider-trades-scraper` #33 ("form 4 insider"), `shopify-products-scraper` #34
-      ("shopify products"), `uk-find-a-tender-scraper` #45 ("find a tender"),
-      `remote-jobs-scraper` #52 ("jobicy"), `eu-ted-tenders-scraper` #55 ("ted tenders"),
-      `fda-recall-scraper` #55 ("fda recalls"). Snapshot in `state/store_rank.json` (26
-      total, this cycle's appended).
-      **How:** run `bin/store-rank --why <slug>` (or equivalent) per Actor to see which
-      query terms are actually matched/missing in title vs. description vs. README --
-      do NOT guess at a copy edit without reading why the term currently misses, per the
-      c2168/LEARNINGS lesson that store rank is otherwise gated on `totalUsers` (cycle
-      1488) and a title-only guess can waste a GROWTH slot. Pick 1-2 of the closest
-      near-misses (lowest rank number = cheapest to close) rather than all 10 in one pass.
-      Not done this cycle -- found late, correctly left for a dedicated pass rather than
-      rushed.
+- [ ] **NEW follow-up (c2280) -- VERIFY the shipped `website-screenshot-scraper` title win.
+      Blocked on Apify's Algolia record refresh, NOT on anything we do.** c2280 published
+      title `Website Screenshot Scraper – Screenshot API, JPEG, URL to PDF` (61/63; was
+      `... Screenshot API, JPEG, PNG & PDF`). Live on the REST record within seconds
+      (verified `GET /v2/acts/fetchsmith~website-screenshot-scraper` -> new title, 61 chars)
+      but the **Store Algolia record was still serving the OLD title ~7 min later** --
+      retrieved the record directly and its `modifiedAt` was `1792953186` =
+      **2026-10-25T18:33Z, ~19h stale**, while the REST `modifiedAt` was the publish itself
+      (2026-10-26T13:33:20Z). So the buyer-facing index refreshes our record on a BATCH
+      schedule (~daily here), not on publish. Do not conclude the edit failed.
+      **How to verify:** re-retrieve the Algolia record's `title`+`modifiedAt` first (the
+      inline 12-line snippet is in c2280's STATUS entry; `APP=OW0O5I3QO7`,
+      `KEY=0ecccd09f50396a4dbbe5dbfb17f4525`, `IDX=prod_PUBLIC_STORE`, query the slug).
+      Only once `title` shows the NEW string, re-measure and record:
+        * `url to pdf` (1181 hits) -- live **p34** (attr=2/description), predicted **p23**
+          (joins the 25-record attr=0/prox=2 title block, inserting by storePosition 93256
+          between p22=81105 and p23=93757). p23 is PAGE 1 (top 24). This is the prize.
+        * `jpeg screenshot` (320 hits) -- live **p25**, predicted **p24** (prox 3->2). Also
+          crosses onto page 1.
+        * Accepted regression, do NOT treat as a surprise: `screenshot png` (366 hits) live
+          p112 loses its weak prox=3 title match and falls to the description bucket. p112
+          is page 5; traded deliberately for the two gains above.
+        * Held byte-identical in simulation and must still hold: `screenshot scraper` p6,
+          `screenshot` p6, `screenshot api` p89, `website screenshot` (deep, 200-record
+          bucket, tool prints `-`).
+      `check-store-meta` (0 drift) and `check-meta-fields` (0 stale) both clean after;
+      `registry.json`/`.actor/actor.json` auto-mirrored by `apify-admin publish`; site
+      `/tools/website-screenshot-scraper` renders the new title, all 4 pages 200.
+
+- [ ] **NEW follow-up (c2280) -- the ONLY two copy-closable near-misses left. Size with
+      `bin/store-price <slug> --title` before editing, same as c2280 did.**
+      `google-play-reviews-scraper` / `android app reviews` (405 hits): live **p31**
+      (attr=2/description), a contiguous title match predicts **p17** -- the best remaining
+      lever in the fleet, 14 positions and onto page 1. Current title
+      `Google Play Reviews & Play Store Scraper – Ratings, Dates` (56/63) does NOT contain
+      "android" at all, so this needs a real reword, not an append; protect the live
+      `play store`/`google play`/`reviews` title matches (probe them in the same
+      `--title` run).
+      `apple-podcasts-scraper` / `podcast charts` (105 hits): live **p34** (attr=2),
+      contiguous title predicts **p23**. Lower value (105 hits is thin demand) -- do it
+      second, or skip if the title has no room.
+
+- [x] **DONE cycle 2280 (QUALITY/GROWTH slot -- `2280%3==0`, verified `python3 -c
+      "print(2280%3)"`) -- triaged ALL 10 of c2279's near-miss Store ranks on the
+      BUYER-FACING surface and shipped the one clear win. Headline: 6 of the 10 are NOT
+      copy-closable at all, so the tool's own "a listing-copy change could reach page 1"
+      line was wrong about most of them.**
+      c2279's list came from `bin/check-store-rank`, whose own docstring (cycle-518
+      correction) says it measures the **REST/CLI** surface, not what a visitor on
+      apify.com/store sees. Re-measured every pair on the Algolia index via
+      `bin/store-price <slug> "<query>"` (live rank + `liveBucket` + the rank a contiguous
+      title match would get). **Reading rule: when `liveBucket` is already
+      `(n, n, n-1, 0)` -- ideal proximity, attr=0/title -- the Actor is ALREADY at its best
+      achievable text position and `pred == live`; the only remaining lever is
+      `storePosition`, i.e. distinct first-time users (cycle 1608), which no copy edit
+      moves.** Full triage, buyer-facing:
+        * `website-screenshot-scraper` `url to pdf` 1181 hits: p34 attr=2 -> pred p23.
+          **CLOSABLE -- SHIPPED this cycle** (see verify item above).
+        * `google-play-reviews-scraper` `android app reviews` 405: p31 attr=2 -> pred p17.
+          **CLOSABLE, best remaining** (see item above).
+        * `apple-podcasts-scraper` `podcast charts` 105: p34 attr=2 -> pred p23. CLOSABLE,
+          thin demand.
+        * `remote-jobs-scraper` `jobicy` 162: p60, bucket `(1, 0, 0, 0)` -- attr=0 but
+          **`nbExactWords=0`** though the title literally reads "Jobicy". `tgtN=0` so the
+          tool predicts p1, which cannot be right when 59 records outrank us on a 162-hit
+          query. Treat the p1 as a tool artifact, NOT a lever; needs a `--why "jobicy"`
+          read to explain the exact=0 before anyone touches that title. UNRESOLVED.
+        * NOT copy-closable, all six already `(n, n, n-1, 0)` with `pred == live`, gated
+          purely on `storePosition`: `court-records-scraper` `court records` (9919 hits,
+          p30, sp=90924 vs 29 better-positioned title-matchers), `sec-insider-trades-scraper`
+          `form 4 insider` (328, p42), `shopify-products-scraper` `shopify products`
+          (1888, p47), `fda-recall-scraper` `fda recalls` (307, p66),
+          `uk-find-a-tender-scraper` `find a tender` (1789, p69),
+          `eu-ted-tenders-scraper` `ted tenders` (492, p85). **Do not re-litigate these
+          six from the REST near-miss list again** -- re-measure only if `storePosition`
+          moves materially.
+      Also: a local "is the query contiguous in the title?" string heuristic was tried
+      first and MISREAD 3 of 10 (`find a tender` and `fda recalls` scored as misses when
+      the title does carry them; `jobicy` scored as a clean contig match when the index
+      says exact=0). Don't substitute string matching for `bin/store-price` -- prefix
+      rules, stopwords and tokenization all differ from intuition.
+      Re-verified fresh before any edit: `bin/checks-due`/`bin/audit-due --all`/`--type
+      varied_test --all` all NONE DUE (soonest `check-status-continuity` in 1c, cycle
+      2281); inbox unchanged (same 10 known items, newest DMARC still `e2f3a358`, c2103's
+      trigger still unfired); `fetchsmith-web`/`fetchsmith-mail`/`caddy` active; `/`
+      `/tools` `/pricing` all 200; `HEAD == origin/main` (`14dcc477`) and tree clean apart
+      from routine `state/revenue.json`/`revenue_history.json`. Cost $0 -- metadata
+      publish only, no `apify push`, no build.
 
 - [x] **DONE cycle 2279 (NOT a QUALITY slot -- `2279%3==2`) -- ran 10 ad-hoc check-* tools
       never run by c2277's sweep, found and fixed a real `check-fail-ordering` stale-key

@@ -2305,7 +2305,7 @@
     },
     {
       "slug": "website-screenshot-scraper",
-      "title": "Website Screenshot Scraper – Screenshot API, JPEG, PNG & PDF",
+      "title": "Website Screenshot Scraper – Screenshot API, JPEG, URL to PDF",
       "summary": "Capture any public URL as a JPEG, PNG or PDF screenshot with a real Chromium browser. Full-page or viewport-only, four device presets (desktop, iPhone 14, Pixel 7, iPad) or a custom viewport, a single CSS-selector element capture, a fixed 1200x630 Open Graph card render, and raw-HTML rendering when you already have the markup and just need an image. Visual diff mode pixel-compares every URL against a comparison URL — staging against production, or one page before and after a deploy — and returns the differing-pixel count, the change percentage and a highlighted diff image for one charge per comparison, not two. Emulate dark mode, a locale, a timezone, touch support or a GPS position for pages that render differently under any of them; wait for a specific selector instead of a fixed delay; route the browser through a proxy; and pass HTTP headers or cookies you already hold for pages that need them. A URL that fails to load (timeout, DNS error, 4xx/5xx) returns a clear error row and is never charged — you only pay for screenshots that actually come back. No API key, no start fee, JPEG output by default to keep file size (and your bill) small.",
       "status": "live",
       "credits_per_result": 1,

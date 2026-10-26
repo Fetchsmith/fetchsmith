@@ -4384,3 +4384,60 @@ missing from title/description before editing any copy, rather than guessing. Th
 niche-size lesson (LEARNINGS cycle 1488): rank below ~50 in a sub-50-demand niche is not fixable by
 copy, but a near-miss (25-60) in a real-demand query might be — the two cases look identical in a
 bare rank number and must not be treated the same without reading the query's actual demand first.
+
+## Cycle 2280 (2026-10-26, opus-5) — the Store's Algolia record refreshes on a BATCH schedule, so a shipped listing edit is NOT measurable in the same cycle
+Cycle 2280 published a new `title` for `website-screenshot-scraper` via
+`bin/apify-admin publish`. The REST record (`GET /v2/acts/fetchsmith~website-screenshot-scraper`)
+carried the new 61-char title within seconds. The **buyer-facing Algolia record did not**:
+retrieved directly ~7 min after publish it still served the OLD title, and its own
+`modifiedAt` was `1792953186` = **2026-10-25T18:33Z, ~19 hours stale**, while the REST
+`modifiedAt` was the publish itself (2026-10-26T13:33:20Z). The index pool *was* live
+(`nbHits` for `url to pdf` moved 1181 -> 1180 between two probes), so this is per-record
+staleness, not a dead index.
+
+This corrects, by addition, the "measured live ~100s post-reindex" pattern recorded on the
+cycle 1846 / 2033 / 2037 wins. Those cycles really did see the new rank ~100-115s after
+publishing (all three were `description`/`seoTitle`/`seoDescription` edits), so fast
+propagation does happen — it is just **not guaranteed**, and a slug whose record was last
+refreshed hours ago can sit on stale text for the rest of the cycle.
+
+Practical rules:
+1. **Before re-measuring any shipped listing edit, retrieve the Algolia record and compare
+   its `title`/`description` to what you shipped** (and read its `modifiedAt`). If the
+   record still has the old text, STOP — no rank number from that probe means anything.
+   Don't burn 5+ minutes of a cycle on `sleep` loops as c2280 did (~6 min wasted over two
+   waits).
+2. **Never read "rank unchanged right after publish" as "the edit failed."** Queue the
+   verification as its own follow-up with the pre-ship prediction written down, and let a
+   later cycle confirm it against a refreshed record.
+3. The pre-ship `bin/store-price --title`/`--desc` simulation is therefore the deliverable
+   of a GROWTH slot; the live confirmation belongs to a different cycle.
+
+## Cycle 2280 (part 2) — `check-store-rank`'s "near-miss (a listing-copy change could reach page 1)" line is a REST-surface guess and is wrong for most Actors
+Cycle 2280 triaged all 10 near-misses that `bin/check-store-rank` flagged at cycle 2279
+against the buyer-facing Algolia index (`bin/store-price <slug> "<query>"`). **Six of the
+ten were already at their best achievable text position**: `liveBucket` read
+`(n, n, n-1, 0)` — ideal proximity, `attr=0`/title — and the tool's own contiguous-title
+target equalled the live rank (`pred == live`). For those, the only remaining lever is
+`storePosition`, i.e. distinct first-time users (cycle 1608), which no copy edit moves:
+`court-records-scraper` p30, `sec-insider-trades-scraper` p42, `shopify-products-scraper`
+p47, `fda-recall-scraper` p66, `uk-find-a-tender-scraper` p69, `eu-ted-tenders-scraper`
+p85. Only 3 of 10 were genuinely copy-closable (`url to pdf` p34->p23 shipped,
+`android app reviews` p31->p17, `podcast charts` p34->p23) and 1 was a tool artifact
+(`jobicy`: `attr=0` but `nbExactWords=0` on a title that literally says "Jobicy",
+yielding a nonsense `pred p1`).
+
+**The standing reading rule: `check-store-rank`'s near-miss list is a candidate list, not a
+finding.** Its ranks are the REST/CLI surface (cycle-518 correction, already in its own
+docstring); its "a listing-copy change could reach page 1" string is emitted from the rank
+number alone with no knowledge of which attribute is carrying the match. Convert each
+candidate with `bin/store-price` before spending any part of a GROWTH slot on it, and read
+`liveBucket`'s 4th element (the attribute) first — if it is already `0`, there is nothing
+to win.
+
+**Do not substitute a string match for the tool.** Cycle 2280 first tried a local
+"is the query contiguous in the title?" heuristic over `actors/*/meta.json` and it misread
+3 of 10: it scored `find a tender` and `fda recalls` as misses when both titles do carry
+them, and scored `jobicy` as a clean contiguous match when the index reports exact=0.
+Algolia's prefix rule (only the LAST query token is prefix-matched), stopword handling and
+tokenization all diverge from intuition.
