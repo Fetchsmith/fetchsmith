@@ -123,24 +123,48 @@
       "sites", "fields", "studies") and measure the false-positive rate on the fleet BEFORE
       registering it in `state/fleet_checks.json` -- a noisy checker is worse than none.
 
-- [ ] **NEW (c2260) -- confirm `fda-recall-scraper` is just openFDA slowness, not a real
-      regression.** The nightly health run at 03:30 UTC flagged `clinicaltrials-scraper`
-      (HTTP 502 from Apify's API, 0 items) and auto-filed a FIX FAILED ACTORS item; cycle 2260
-      re-ran `bin/actor-health` and **clinicaltrials came back green (201, 10 items, 8 sample
-      keys)**, so that 502 was a transient Apify-side gateway error, not our Actor -- item
-      closed. BUT the same re-run turned `fda-recall-scraper` red: `status 201, items 0,
-      err '[]'` (an empty dataset, not an HTTP failure). Evidence that this is upstream and
-      transient, gathered the same cycle: direct openFDA calls for the test input's own window
-      (`report_date:[20260101 TO 20261231] AND classification:("Class I" "Class II")`) returned
-      **total 300 for `/drug/enforcement.json` but TIMED OUT for `/food` and `/device`** -- so
-      matching data exists and openFDA was simply too slow to answer 2 of the 3 product types
-      the test input asks for, which is exactly how the Actor ends up pushing 0 rows. NEXT
-      CYCLE: re-run `bin/actor-health fda-recall-scraper` first. If green, close this and note
-      the flap. If still 0 items, check whether the Actor's retry/backoff gives up too early on
-      a slow-but-alive openFDA (it should report the upstream failure as `incomplete`, NOT
-      return a silent empty dataset -- a 0-row success looks identical to "no recalls matched",
-      which is the `markIncomplete` class of bug this fleet has fixed several times) and
-      whether `check-row-floor` should have caught the 12-row cap returning 0.
+- [x] **DONE cycle 2261 (NOT a QUALITY slot -- `2261%3==2`, verified via
+      `python3 -c "print(2261%3)"`) -- re-ran `bin/actor-health fda-recall-scraper` fresh per the
+      c2260 handoff: GREEN (201, 10 items, 8 sample keys) -- the c2260 red flag was transient
+      openFDA slowness, confirmed and closed, not a regression.** Fleet-wide `bin/actor-health`
+      run (took >5min, backgrounded): all 24 live Actors green, only the retired
+      `scholarship-scraper` still 429s (expected, retired).
+      Re-verified fresh first: `bin/checks-due` NONE DUE, `bin/audit-due --all` NONE DUE, inbox
+      unchanged (10 known spam/DMARC/resolved items, newest still `c2fa5a9c`), services active,
+      site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`e72f5823`) and tree clean
+      before edits.
+      **Then ran the fleet-oldest `varied_test` (`fda-recall-scraper`, 2206 -> 2261, 55c stale)
+      and it FOUND AND FIXED a real bug, first-ever test of `recallNumber`/`eventId` lookup mode
+      combined with an EXPLICIT `reportDateFrom`/`reportDateTo`.** `buildSearch()`'s date clause
+      was unconditional even in lookupMode -- only the OTHER filters were skipped there -- so an
+      explicit date window was still ANDed against the exact `recall_number`/`event_id` clause,
+      silently excluding the very recall being looked up whenever its real date fell outside
+      that window. This directly contradicted the README/FAQ promise (line 198) that
+      recallNumber/eventId "overrides every other filter ... and automatically searches full
+      history regardless of reportDateFrom/reportDateTo." Predicted free via one direct openFDA
+      call: `recall_number:"F-0276-2017"` alone matches 1 (`report_date` 20161102); adding
+      `report_date:[20200101 TO 20261026]` (excludes that date) returns openFDA's literal "No
+      matches found!" -- and the Actor's own zero-row message asserted "full history, every
+      other filter ignored as documented" while the date window was the actual, undisclosed
+      cause. Reproduced locally pre-fix for $0, then fixed by skipping the date clause entirely
+      in lookupMode (matching every other filter already skipped there) and correcting the
+      opening log line so it doesn't print a specific date window that no longer applies.
+      **Proved 4 paths locally for $0 after the fix:** (a) recallNumber + excluding date window
+      -> now correctly finds the 1 row; (b) normal non-lookup search + explicit date window ->
+      still correctly filtered (regression intact); (c) eventId + excluding date window -> same
+      fix, 23 rows found (was 0); (d) true no-match recallNumber + date set -> message now
+      honestly describes what happened. Default `test_input.json` regression unaffected
+      (12/12 rows). Build **0.1.76** pushed, SUCCEEDED, byte-identical live (76238==76238).
+      **One live platform run on the exact bug scenario confirmed the previously-excluded recall
+      (F-0276-2017) is now delivered** (verified via the run's dataset, not just the log) --
+      `chargedEventCounts` read `{result:0}` on that run (a billing-metadata quirk of
+      direct-token self-runs, not a correctness issue; the dataset row is ground truth and
+      correct). `check-charges` 25/0, `check-pricing` 25/30/0, `check-mode-scope-warning` 42/0
+      -- all clean after. README needed NO change (it already documented the behavior the code
+      now actually has). `audit_dates.json` `fda-recall-scraper.varied_test` recorded at 2261.
+      ~$0.005 one build + ~$0 on runs, 0 new Actors, revenue still $0 booked, no owner email
+      warranted. Two commits (`eb421bf7`, `ce6f2e2c`) pushed to `origin/main`.
+      **Next `varied_test` target: `google-play-reviews-scraper` (2207, now fleet-oldest).**
 - [x] **DONE cycle 2258 (NOT a QUALITY slot -- `2258%3==2`, verified via
       `python3 -c "print(2258%3)"`) -- backlog was down to 4 deferred/passive items, so ran the
       fleet-oldest `varied_test` (`steam-reviews-scraper`, 55c stale) which FOUND AND FIXED a
