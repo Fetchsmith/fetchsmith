@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2264 (NOT a QUALITY slot -- `2264%3==2`, verified via
+      `python3 -c "print(2264%3)"`) -- ran the fleet-oldest `varied_test` (`shopify-products-scraper`,
+      2209, 55c stale): FIRST-EVER live test of `detailLevel:"full"` and of the `productDetail`
+      charge event, and it found and fixed a real ordering defect. Build 0.1.102 live and
+      byte-verified.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox unchanged
+      (same 10 known spam/DMARC/resolved items, newest `c2fa5a9c` -- nothing to answer), services
+      active, site 200 everywhere, `HEAD == origin/main` (`40947236`) and tree clean before edits.
+      **The live test:** every prior `varied_test` here ran basic detail (c2209/c2180/c2162 all
+      recorded `productDetail:0`), so the second charge event had never run on the platform.
+      Predicted free first (c1514 technique) from `allbirds.com/products.json?limit=5` + each
+      handle's `.js` route -> tracked-variant roll-up 8/169/210/160/61. Live run
+      (`detailLevel:full`, `maxProductsPerStore:5`, `maxResults:5`) -> 5/5 rows, `totalInventory`
+      matched all five predictions exactly, every variant carried barcode/inventoryQuantity/
+      inventoryManagement/inventoryTracked/inventoryPolicy, `quantityRule` correctly `null` on
+      Shopify's universal default (README claim verified live for the first time), and
+      `chargedEventCounts` (via `GET /v2/actor-runs/<runId>`, not the runs-LIST endpoint) was
+      `{result:5, productDetail:5}` -- one detail charge per enriched product, 0 leak.
+      **The bug:** `enrichWithDetail`'s `available`-resolution block (fills a null `available`/
+      `availableVariantCount`/per-variant `available` from the `.js` route's own flags) sat AFTER
+      the `nothing found, nothing charged` early return, so the case the README FAQ promises it for
+      skipped it: a store publishing no stock data at all (verified free on brooklinen.com -- its
+      `.js` route returns inventory_management/policy/quantity ALL null, so `hasInventoryData` is
+      false for every variant) whose product page also yielded nothing (bot-blocked -> no `<title>`,
+      no meta description, no rating) shipped `available: null` while the `.js` response in hand had
+      the answer. Not a charge bug either direction -- a data gap against a stated promise.
+      Proved $0 with a pure extraction of the function tail (`/tmp/prove_avail_order.js`): pre-fix
+      `charged=0 available=null`, post-fix `charged=0 available=true availableVariantCount=1`;
+      both other paths (seo-found, base-route-already-shipped-available) identical pre/post.
+      **Fix:** hoisted the fill above both gates (it is a BASE field and costs no request of its
+      own), charge rule untouched. Live post-fix regression on the deployed build: 2/2 rows, detail
+      fields intact, `{result:2, productDetail:2}`. Build 0.1.102 (package 0.1.17 -> 0.1.18), live
+      source byte-identical (76801==76801, sha `257dd1b8`). README needed no change (the FAQ claim
+      is now unconditionally true). `check-charges` 25/0, `check-pricing` 25/30/0, `node --check`
+      clean. `audit_dates.json` recorded at 2264 with full note.
+      ~$0.006 spent (1 push + 3 small live runs), 0 new Actors, revenue still $0 booked, no owner
+      email warranted. **Next `varied_test` target: `federal-register-scraper` (2210, now
+      fleet-oldest by `last`).**
+
 - [x] **DONE cycle 2263 (NOT a QUALITY slot -- `2263%3==1`, verified via
       `python3 -c "print(2263%3)"`) -- ran the fleet-oldest `varied_test` (`fec-campaign-finance-scraper`,
       2208, 55c stale) and it found and fixed a real disclosure bug. Build 0.1.79 live and byte-verified.**

@@ -654,6 +654,23 @@ async function enrichWithDetail(item, origin, handle) {
       }
     } catch (e) { log.warning(`${origin}/products/${handle}.js: stock/subscription fields unavailable (${e.message}).`); }
   }
+  // The `.js` route always carries a real `available` flag, so a full-detail run can resolve what
+  // the base route left unknown (stores that hide inventory quantities) at no extra request. Only
+  // fills in nulls — a flag the base route did ship is never overridden.
+  // Runs BEFORE the "nothing found" return and before the charge gate, deliberately: `available`
+  // is a base output field, not one of the paid detail fields, and this fill costs no request of
+  // its own. It used to sit after both gates, so the one case the docs promise it for most loudly
+  // — a store that publishes no stock data at all (brooklinen's `.js` route returns
+  // inventory_management/policy/quantity all null, so `hasInventoryData` is false for every
+  // variant) whose rendered page also yielded nothing (bot-blocked, no <title>, no rating) —
+  // skipped the fill entirely and shipped `available: null` while the `.js` response in hand had
+  // the answer. Charging is unchanged: that product still costs nothing (cycle 2264).
+  if (item.available === null && detailAvailability.length) {
+    item.available = detailAvailability.some((v) => v.available === true);
+    item.availableVariantCount = detailAvailability.filter((v) => v.available === true).length;
+    const availById = new Map(detailAvailability.map((v) => [v.id, v.available]));
+    for (const v of item.variants ?? []) if (v.available === null && availById.has(v.id)) v.available = availById.get(v.id);
+  }
   if (seoTitle == null && seoDescription == null && ratingValue == null && !detailVariants.length && !hasSubscriptionOption) return; // nothing found, nothing charged
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'productDetail', count: 1 });
@@ -661,15 +678,6 @@ async function enrichWithDetail(item, origin, handle) {
   }
   item.seoTitle = seoTitle; item.seoDescription = seoDescription; item.ratingValue = ratingValue; item.reviewCount = reviewCount;
   item.hasSubscriptionOption = hasSubscriptionOption; item.subscriptionPlans = subscriptionPlans;
-  // The `.js` route always carries a real `available` flag, so a full-detail run can resolve what
-  // the base route left unknown (stores that hide inventory quantities) at no extra request. Only
-  // fills in nulls — a flag the base route did ship is never overridden.
-  if (item.available === null && detailAvailability.length) {
-    item.available = detailAvailability.some((v) => v.available === true);
-    item.availableVariantCount = detailAvailability.filter((v) => v.available === true).length;
-    const availById = new Map(detailAvailability.map((v) => [v.id, v.available]));
-    for (const v of item.variants ?? []) if (v.available === null && availById.has(v.id)) v.available = availById.get(v.id);
-  }
   if (detailVariants.length) {
     const byId = new Map(detailVariants.map((v) => [v.id, v]));
     for (const v of item.variants ?? []) { // absent when includeVariants is off — totalInventory still lands
