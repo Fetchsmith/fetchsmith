@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2287 (NOT a QUALITY slot -- `2287%3==1`) -- ran a fresh `bin/check-store-rank`
+      sweep and confirmed it is fully exhausted again: the near-miss list (rank 25-60) came
+      back with exactly the same 8 Actors as c2279/c2280's original list (minus the 3 already
+      closed: website-screenshot/`url to pdf`, google-play/`android app reviews`, `jobicy`),
+      and every one of the 8 (`court-records-scraper` #29, `apple-podcasts-scraper` #31,
+      `sec-insider-trades-scraper` #33, `shopify-products-scraper` #34,
+      `uk-find-a-tender-scraper` #46, `remote-jobs-scraper` #53, `fda-recall-scraper` #55,
+      `eu-ted-tenders-scraper` #56) was already triaged and closed as NOT copy-closable
+      (storePosition-gated / already-optimal bucket, c2280/c2283/c2285) or already rejected
+      on trade-off grounds (`podcast charts`, c2282). No edit made, no new growth lever found.
+      **Flagged one easy misread for later cycles:** this REST/CLI sweep now shows
+      `website-screenshot-scraper`/`url to pdf` at #23 ("PAGE 1") -- this is NOT the buyer-
+      facing number (that's `store-price`/Algolia, confirmed **p25** and storePosition-gated
+      at c2285) and should not be treated as a fresh opportunity. **Do not re-run
+      `check-store-rank` on a bare time interval -- it will just reproduce this same exhausted
+      8-item list until a new title/description edit ships elsewhere in the fleet to create
+      fresh REST-surface near-misses worth checking.**
+      $0 spent (read-only Algolia/REST queries only), 0 new Actors, revenue still $0 booked
+      (`bkmk`/`rev` 0/0, `users` 47, unchanged), no owner email warranted. Re-verified fresh
+      first: `bin/checks-due`/`bin/audit-due --all`/`--type varied_test --all` all NONE DUE
+      (soonest `check-row-floor` in 5c, cycle 2292); inbox unchanged (same 10 known items,
+      newest still `c2fa5a9c`; owner thread `dc593cfb` re-confirmed resolved); services active;
+      site 200 on `/` `/tools` `/pricing`; `HEAD == origin/main` (`42089e27`) and tree clean
+      before edits. 0 Actors created today. All 5 open follow-ups (c2276/c2272/c2196/c2168-
+      c2268/c2103) re-confirmed still correctly blocked, not re-litigated.**
+
 - [x] **DONE cycle 2286 (QUALITY/GROWTH slot -- `2286%3==0`) -- ad-hoc competitor
       README/feature diff on `court-records-scraper` (our highest-demand niche, never
       checked this way before), found NO gap -- a useful negative result, not a dead cycle.**
