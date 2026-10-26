@@ -1,6 +1,6 @@
 # App Store Reviews Scraper (Apple)
 
-Get customer reviews for any iOS / macOS app from the Apple App Store, for any country storefront, as JSON, CSV or Excel. Each review includes rating, title, text, app version, author and date, plus optional app metadata (name, developer, average rating, rating count) and the **full per-star ratings breakdown** — how many 1★, 2★, 3★, 4★ and 5★ ratings the app has in that storefront. Pay only per review returned.
+Get customer reviews for any iOS / macOS app from the Apple App Store, for any country storefront, as JSON, CSV or Excel. Each review includes rating, title, text, app version, author and date, plus optional app metadata (name, developer, average rating, rating count) and the **full per-star ratings breakdown** — how many 1★, 2★, 3★, 4★ and 5★ ratings the app has in that storefront. Pay only per review returned, and the first 10 reviews of every run are free.
 
 ## Use cases
 - Product research and competitor analysis across countries
@@ -102,7 +102,9 @@ Useful for a 1★-share trend line over releases, for weighting sentiment agains
 
 ## Pricing
 `result` — charged per review returned, tiered by your Apify account plan from $0.0001 (Free) down to
-$0.00007 (Gold and up). App lookups, empty pages and errors are free. HTTP-only and fast.
+$0.00007 (Gold and up). **The first 10 reviews of every run are free, no matter your plan or how many
+apps/countries you pass** (added 2026-10-26, matching `reviewbot/apple-review-scraper`'s offer below —
+see the competitor section). App lookups, empty pages and errors are free. HTTP-only and fast.
 
 **Where this sits in the market. Input schema and pricing verified live 2026-10-02** against each
 Actor's latest build, not against its Store description. The two busiest App Store review scrapers
@@ -421,11 +423,11 @@ match further** (excluded here — this section counts the title-strict set). Li
 to matter before the next rotation) and found exactly **one real, previously-unnamed competitor at
 or below our rate**:
 
-- `reviewbot/apple-review-scraper` (43 users) — flat **$0.0001/review, our exact rate, but the first
-  10 reviews per run are free**, which we do not offer. A pure Apple App Store review scraper (no
-  Google Play bundling), so it is a genuine substitute, not a different-shape exclusion. Crossover:
-  strictly cheaper than us on any run of ≤10 reviews, exact parity above that — a fifth parity
-  listing by rate, the first with a free tier attached.
+- `reviewbot/apple-review-scraper` (43 users) — flat **$0.0001/review, our exact rate, with the first
+  10 reviews per run free**. A pure Apple App Store review scraper (no Google Play bundling), so it
+  is a genuine substitute, not a different-shape exclusion. **We matched this 2026-10-26**: the first
+  10 reviews of every run here are free too (see Pricing above), so this is now exact parity at
+  every run size, not a crossover in their favor below 10 reviews.
 
 The other 17 were read against their own live pricing (verified live 2026-10-16) and ruled out, all for reasons already
 established above (dearer, or a different product shape than a per-review export):

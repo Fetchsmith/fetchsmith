@@ -370,12 +370,22 @@ async function saveWatchRecord(status) {
 let pushed = 0;
 let chargeLimitHit = false; // the buyer's own pay-per-event charge limit was exhausted mid-run
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
+// First FREE_REVIEWS_PER_RUN reviews of a run are not charged -- matches reviewbot/apple-review-
+// scraper's free-first-10 offer (README competitor section), the one listing found cheaper than us
+// on a small run (c2293). Counts delivered rows, not attempts, so it's exactly "first N on your
+// dataset", not "first N scanned" -- filtered-out rows never consume the free count.
+const FREE_REVIEWS_PER_RUN = 10;
 // ratingSort buffers one (app,country) pair's whole passing-filter scan here instead of pushing
 // immediately, so it can be re-ordered by rating before delivery. Reset per pair (see the main
 // pair loop below) -- buffering globally would let one huge app dominate memory/ordering.
 let pairBuffer = [];
 async function chargeAndPush(item, watchId = null, metaCode = META_UNKNOWN) {
   if (isPPE) {
+    if (pushed < FREE_REVIEWS_PER_RUN) {
+      await Actor.pushData(item); pushed += 1;
+      if (watchMode && watchId != null) { watchSeen.add(watchId); watchMeta.set(watchId, decodeMeta(metaCode)); }
+      return pushed < maxResults;
+    }
     const r = await Actor.charge({ eventName: 'result', count: 1 });
     if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
