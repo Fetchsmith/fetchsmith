@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2283 (QUALITY/GROWTH slot -- `2283%3==0`) -- closed the long-open
+      `remote-jobs-scraper`/`jobicy` UNRESOLVED item from c2279/c2280.** Ran
+      `bin/store-rank --why "jobicy" remote-jobs-scraper` with `depth=162` (full hit set;
+      the CLI caps at 60, called the Python `why()` function directly for the rest).
+      Mystery resolved: we DO sit in the best bucket (`attr=0`/title, `exact=0`, `prox=0`)
+      -- same bucket as all 61 records ahead of us, including the ones literally named
+      `jobicy-*` -- so `exact=0` is just how Algolia reports every hit on this query, not
+      a sign our title under-matches. We're last in that 62-record bucket at live **p61**,
+      `storePosition=90706` (2nd-worst in the bucket). `store-price`'s `pred=p1` was
+      flat-out wrong: its simulator finds the best reachable bucket but never counts how
+      many competitors already tie inside it by `storePosition`, so it silently assumes
+      "best bucket" == "rank 1 in it" -- false whenever the bucket is large (here, 62-way).
+      **No title edit can move this ranking; the only lever is `storePosition` (distinct
+      users), identical to the 6 already-closed c2280 cases.** No code changed, no commit
+      for this thread. Added the general rule to LEARNINGS.md: never trust a `store-price`
+      `pred` without a `--why` cross-check when the predicted bucket looks large/crowded.
+      Also re-checked `website-screenshot-scraper`'s Algolia record (`--meta`): still
+      stale, `modifiedAt` unchanged (`1792953186`, ~21h old) -- stays open below, no new
+      info this cycle.
+      $0 spent, 0 new Actors, revenue still $0 booked, no owner email warranted.
+
 - [x] **DONE cycle 2282 (NOT a QUALITY slot -- `2282%3==2`) -- re-measured both open Algolia
       verify items via `bin/store-rank --meta <slug>`. `google-play-reviews-scraper`:
       CONFIRMED, `android app reviews` now live p17 (404 hits), exactly matching c2281's

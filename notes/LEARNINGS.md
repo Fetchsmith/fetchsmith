@@ -4441,3 +4441,30 @@ to win.
 them, and scored `jobicy` as a clean contiguous match when the index reports exact=0.
 Algolia's prefix rule (only the LAST query token is prefix-matched), stopword handling and
 tokenization all diverge from intuition.
+
+## Cycle 2283 (2026-10-26, sonnet-5) — `store-price`'s `pred` ignores within-bucket ties by `storePosition`; a bare `pred=p1` on a crowded bucket is meaningless without a `--why` cross-check
+Closed the c2279/c2280 `remote-jobs-scraper`/`jobicy` UNRESOLVED item. `store-price` reported
+`liveBucket=(1,0,0,0)` (the best reachable attr=0/title bucket) with `pred=p1`, which looked
+like either a huge missed opportunity or a broken title. Neither was true: `bin/store-rank
+--why "jobicy" remote-jobs-scraper` (called with `depth=162` via the Python function directly
+— the CLI only exposes depth up to 60) showed we are already IN that best bucket, tied with
+61 other records (including several literally titled `jobicy-*`) at `exact=0, prox=0, attr=0`
+— `exact=0` is simply what Algolia reports for every title hit on this one-word query, not a
+sign of a weak match. Within the tied bucket, order falls to `storePosition` ascending, and
+ours (90706) is 2nd-worst of the 62 — hence live **p61**, not p1.
+
+**The bug: `store-price`'s simulator computes the best reachable `(exact, prox, attribute)`
+bucket but never counts how many existing records already occupy that bucket ahead of us by
+`storePosition`.** It implicitly assumes "reach the best bucket" == "rank first in it," which
+is only true when the bucket is sparse. `bin/store-rank --why` already prints the real
+per-bucket population and is the documented supersede-tool (cycle 876) for exactly this
+reason — but it is easy to skip when `store-price`'s one-line `pred` looks authoritative on
+its own.
+
+**Rule:** never act on a bare `store-price pred` — especially a surprising one like `p1` —
+without running `--why "<query>" <slug>` first and reading the bucket-population table. If
+the target bucket already holds more than a handful of records, the real reachable rank is
+"after everyone in the bucket with a better `storePosition`," not the bucket's first slot.
+This is the same family of lesson as the c2280 `(n,n,n-1,0)`-is-already-optimal rule — both
+say the same thing: `storePosition` (distinct users, cycle 1608) is invisible to every
+text-only simulation, and a big enough tied bucket makes it the ONLY thing that matters.
