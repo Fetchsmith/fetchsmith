@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2271 (MANDATED QUALITY/GROWTH slot -- `2271%3==0`, verified via
+      `python3 -c "print(2271%3)"`) -- ran all 4 PLAYBOOK quality tools (all clean) and wrote +
+      published the dev.to-due blog post on the c2262 google-play-reviews-scraper watch-mode
+      "new review count" bug, closing a real content gap.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE, `bin/audit-due --all`/`--type
+      varied_test --all` both NONE DUE (`competitor_audit` explicitly says do not run a sweep
+      this cycle), inbox unchanged (same 10 known items, owner thread `dc593cfb` re-confirmed
+      resolved -- nothing to answer), services active, site 200 everywhere, `HEAD ==
+      origin/main` (`5e74d3bf`) and tree clean before edits.
+      **Quality tools:** `check-disclosure` 88 site posts + 24 dev.to articles / 0 missing;
+      `devto-comments` 23 articles / 0 unanswered; `check-backlinks` 131 pairs / 0 missing;
+      `check-actor-guides` 24 Actors / 0 flagged. Both backstop-cadence tools recorded via
+      `bin/checks-due --ran` (next due 2319 / 2415).
+      **The post:** last site post was ~2 days old (edge of the 2-3 day cadence), and a grep
+      across all 87 existing posts confirmed the c2262 fix (phantom "new review" count from a
+      per-app snapshot row riding along in the `pushed - watchChanged` formula) had never been
+      written up, despite being a concrete, numeric, buyer-relevant bug in the house voice.
+      Wrote `watch-mode-new-review-count-included-a-snapshot-row.md` using the already-live-
+      verified c2262 numbers (2 pushed/0 new reported as 2, should be 1; scoreChanged control
+      2 pushed/1 changed reported as 1, should be 0) and the real code diff; used the NEUTRAL
+      disclosure footer since no fresh live call was made specifically while writing this post
+      (the strong footer's "fetched while writing" claim would have been false here).
+      `check-blog-cta` caught a real omission before commit (linked `/tools/` instead of a
+      direct `/go/` CTA) -- fixed. Built the dev.to draft the documented way (cycle 2173
+      lesson: scratch `/tmp` file, H1 + stripped frontmatter) and additionally confirmed from a
+      previously-published article's live `body_markdown` that dev.to needs ABSOLUTE
+      `https://fetchsmith.com/...` links, not the site's relative ones -- rewrote them before
+      publishing (new finding, not previously documented; worth a LEARNINGS entry if this trips
+      again). Published dev.to id `4920453`, verified 200 live. `check-blog-claims`/
+      `check-blog-cta`/`check-backlinks`/`check-links`/`check-disclosure` all clean after.
+      3 commits pushed to `origin/main` (`7c656148` post, `ad530aab` fleet_checks.json state).
+      $0 spent (pure content work, no Actor runs, no builds), 0 new Actors, revenue still $0
+      booked, `bkmk`/`rev` 0 across all 25 Actors (unchanged), no owner email warranted.
+      **Still-unblogged content gaps for a future QUALITY slot (checked, confirmed not covered
+      by any existing post): the c2263 fec-campaign-finance-scraper watch-disclosure
+      "incomplete scan" fix, and the c2264 shopify-products-scraper `available`-field ordering
+      fix.** Next `varied_test` target when due: `grants-gov-scraper` (last 2213, due 2549).
+      Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`,
+      `/pricing`, and the new post URL), verified again after all edits.
+
 - [x] **DONE cycle 2270 (NOT a QUALITY slot -- `2270%3==2`, verified via
       `python3 -c "print(2270%3)"`) -- cleared the one DUE fleet check (`check-source-endpoints`,
       last 2246) and fixed a real recurring false-positive in it rather than just dismissing the
