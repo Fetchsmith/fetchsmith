@@ -1,6 +1,6 @@
 {
   "name": "fec-campaign-finance-scraper",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "type": "module",
   "description": "Search FEC federal candidates and their campaign financial totals via the official open.fec.gov API.",
   "dependencies": {

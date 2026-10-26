@@ -1214,12 +1214,24 @@ if (watchMode && !skipBaselineSave) {
     );
   } else {
     log.info(`Watch label "${watchLabel}": ${pushed} new contribution(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
-    if (pushed === 0) {
+    if (pushed === 0 && complete) {
       await Actor.setStatusMessage(
         `Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`
         + (watchPastDateBound
           ? ` NOTE: this run can no longer report ongoing new activity while contributionDateTo (${input.contributionDateTo}) is set and today's date is past it -- it is an upper bound on the transaction date, and current activity is newer than that. Drop it (see the warnings in the log).`
           : '')
+        + truncationNote(),
+      );
+    } else if (pushed === 0) {
+      // NOT the same claim as the branch above: the scan stopped (charge-limit/time-budget/
+      // watch-page-cap) before it could tell whether anything new exists -- "0 delivered" here is
+      // NOT evidence of "nothing new". A tight run-level charge limit is the sharpest case: it can
+      // make chargeLimitReached fire on the very first genuinely-new row, before pushed ever moves
+      // off 0, which previously fell into the confident "already delivered" message above and told
+      // the buyer their watch was quiet when a new contribution was in fact sitting there unbilled.
+      await Actor.setStatusMessage(
+        `Watch label "${watchLabel}": 0 row(s) delivered, but the scan did NOT finish -- ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}. `
+        + 'This is NOT a confirmed "nothing new": the scan may not have reached every matching contribution. See RUN_SUMMARY.'
         + truncationNote(),
       );
     } else if (baselineTruncated > 0 || !complete) {
