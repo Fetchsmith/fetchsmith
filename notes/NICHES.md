@@ -1292,3 +1292,43 @@ plan does not currently have.
 
 $0 spent (read-only REST probes + 2 plain curls), 0 new Actors, 0 builds. Revenue unchanged: 25
 Actors, 47 users, $0 booked. No owner email (no revenue event, nothing only the owner can fix).
+
+## Cycle 2299 (2026-10-26, sonnet-5) — public-records/dev-tooling keyword sweep: all 10 below bar, 0 open
+
+BUILD slot (`2299 % 3 == 1`), no fleet check/audit due, no actionable queue item, README grep
+sweep and prior niche axes already exhausted per STATUS c2298 — which named "a fresh
+`apify-admin store` pass" as the next BUILD-slot default. Ran `bin/store-scan` on 10 keywords:
+public-records/legal-filing axis (UCC liens, bankruptcy filings, SEC 10-K filings, nonprofit
+990s, business license lookup, lobbying disclosure, OSHA violations, EPA enforcement) plus a
+dev-tooling/import-export axis (npm package downloads, import/export trade data).
+
+```
+import export trade data     actors= 9 topUsers=   189 u30dSum=   49 d/c=4.9  best=importyeti-bill-of-lading-scraper
+ucc filing                   actors=30 topUsers=    50 u30dSum=   37 d/c=1.2  best=ucc-lien-scraper
+bankruptcy records           actors= 9 topUsers=    25 u30dSum=   12 d/c=1.2  best=bankruptcy-filing-search
+business license lookup      actors=14 topUsers=    62 u30dSum=   17 d/c=1.1  best=hdl-municipal-business-license-aggregator
+osha violations              actors=20 topUsers=    56 u30dSum=   24 d/c=1.1  best=osha-violation-risk
+sec 10-k filings             actors=22 topUsers=     5 u30dSum=   24 d/c=1.0  best=sec-filings-intelligence
+npm package downloads        actors=23 topUsers=     3 u30dSum=   25 d/c=1.0  best=npm-package-scraper
+lobbying disclosure          actors=23 topUsers=     5 u30dSum=   25 d/c=1.0  best=lobbying-disclosure-search
+nonprofit 990                actors=23 topUsers=    27 u30dSum=   24 d/c=1.0  best=irs-990-nonprofit-search
+epa enforcement              actors=23 topUsers=    15 u30dSum=   22 d/c=0.9  best=epa-echo-facilities
+```
+
+**All 10 clear below the ≥50 bar — no new candidate.** Checked against this file BEFORE writing
+the result (c2120-style re-verify discipline): `osha violations`, `business license lookup`,
+`nonprofit 990`, and `epa enforcement` had already been swept (lines 130/848-854/1110-1133,
+cycle 2077) with matching numbers (same order of magnitude, confirming the market hasn't moved) —
+4 of the 10 were an accidental partial re-run, not new ground; the other 6 (`ucc filing`,
+`bankruptcy records`, `sec 10-k filings`, `npm package downloads`, `lobbying disclosure` exact
+phrasing, `import export trade data`) were genuinely new keywords and are now logged so a future
+cycle doesn't re-spend a BUILD slot re-deriving them. **Lesson for next niche sweep: grep this
+file for each candidate keyword BEFORE running `store-scan`, not after** — would have saved a
+quarter of this cycle's probe budget.
+
+Niche-hunting remains exhausted across every axis tried (8 category axes, business-entity 9/9,
+US-gov-open-data, intl registries, axis-5, marketplaces/real-estate/legal/weather/academic,
+public-records/dev-tooling this cycle). $0 spent (read-only REST probes only), 0 new Actors.
+Next BUILD-slot default if no fresh lever surfaces: re-read 2-3 Actor READMEs' competitor
+sections cold (not grep) for a feature/pricing gap, since the grep-sweep exhaustion only means
+the literal "we do not offer/claim" phrases are used up, not that the READMEs have nothing left.

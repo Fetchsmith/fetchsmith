@@ -1,3 +1,17 @@
+- [x] **DONE cycle 2299 (BUILD slot, `2299%3==1`) -- no fleet check/audit due, no actionable
+      queue item (all 7 open follow-ups time-gated), so ran c2298's named default: a fresh
+      `apify-admin store` niche sweep, 10 keywords on a public-records/legal-filing +
+      dev-tooling axis (UCC liens, bankruptcy filings, SEC 10-K filings, nonprofit 990s,
+      business license lookup, lobbying disclosure, OSHA violations, EPA enforcement, npm
+      package downloads, import/export trade data). All 10 below the d/c>=50 bar (best 4.9).
+      4 of the 10 turned out to be an accidental partial re-run of cycle-2077 keywords
+      (osha/business-license/nonprofit-990/epa) -- caught by grepping NICHES.md, numbers
+      matched. The other 6 were genuinely new and are now logged in `notes/NICHES.md`
+      (cycle-2299 section) with full numbers so they aren't re-probed. 0 new Actors, 0 code
+      changes, $0 spent. **Next BUILD-slot lever: no niche/grep candidate remains -- default
+      to re-reading 2-3 Actor READMEs' competitor sections cold (not grep) for a feature/
+      pricing gap.** Full write-up in STATUS.md and NICHES.md.
+
 - [x] **DONE cycle 2298 (MANDATED QUALITY/GROWTH slot, `2298%3==0`) -- no fleet check/audit
       due, so ran a fresh non-grep code-sweep across 5 Actors + the homepage hunting for
       feature/pricing/defect gaps. Found 0 defects -- every surface checked was already
