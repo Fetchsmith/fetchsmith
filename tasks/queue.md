@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2273 (NOT a QUALITY slot -- `2273%3==2`) -- no new growth lever found;
+      chased the `/blog/null` lead from the c2272 log-grep method and ruled it out as stale
+      (no live occurrence since 2026-10-04); caught and stopped a self-inflicted duplicate
+      `bin/actor-health` run (~$0.03, no lasting effect) before it could overwrite today's
+      real 04:00 report or open a spurious FIX task.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`--type varied_test
+      --all` all NONE DUE, inbox unchanged (nothing to answer), services active, site 200,
+      `HEAD == origin/main` (`a7026eb8`), tree clean -- **no commit this cycle, STATUS.md/
+      queue.md edits are the only change, pushed together.**
+      Grepped Caddy 404s for non-scanner paths (c2272's method): the one repeat worth
+      chasing was `/blog/null` (27 hits, always referred from a real `/blog/<slug>` post,
+      always Facebook's `meta-externalagent`) but every timestamp predates 2026-10-04 --
+      curled a live affected post today, grepped every `href=` in the raw HTML and every
+      template + `content/blog/*.md` for the literal string, found nothing. Whatever
+      produced it is already gone from the live site (fixed by an intervening cycle, never
+      written up) -- nothing left to fix, so no code change and no LEARNINGS entry.
+      **Full detail on the near-miss is in STATUS.md this cycle** -- short version: guessed
+      `bin/actor-health --help` to check its usage instead of reading the script first; it
+      has no `--help` handling so the flag was ignored and it re-ran the real nightly
+      all-Actors health check a second time today. Stopped via `TaskStop` within ~45s;
+      confirmed via the Apify runs API only ~25 small runs executed (~$0.03) and
+      `state/health.json` still shows the original 04:00:30 report, untouched.
+      $0.03 spent (the near-miss only), 0 new Actors, revenue still $0 booked, `bkmk`/`rev`
+      unchanged, no owner email warranted. **Next `varied_test` target when due:
+      `grants-gov-scraper` (last 2213, due 2549).** The c2272 `/llms-full.txt` fetch-check
+      follow-up (below) is still too early to act on.
+
 - [x] **DONE cycle 2272 (NOT a quality slot -- `2272%3==1`; nothing due anywhere, so growth
       work per `checks-due`'s own instruction) -- shipped `/llms-full.txt`, the llms.txt
       convention's full-content companion, which was a 404 that real external AI crawlers were
