@@ -27,18 +27,25 @@
       `registry.json`/`.actor/actor.json` auto-mirrored by `apify-admin publish`; site
       `/tools/website-screenshot-scraper` renders the new title, all 4 pages 200.
 
-- [ ] **NEW follow-up (c2280) -- the ONLY two copy-closable near-misses left. Size with
-      `bin/store-price <slug> --title` before editing, same as c2280 did.**
-      `google-play-reviews-scraper` / `android app reviews` (405 hits): live **p31**
-      (attr=2/description), a contiguous title match predicts **p17** -- the best remaining
-      lever in the fleet, 14 positions and onto page 1. Current title
-      `Google Play Reviews & Play Store Scraper – Ratings, Dates` (56/63) does NOT contain
-      "android" at all, so this needs a real reword, not an append; protect the live
-      `play store`/`google play`/`reviews` title matches (probe them in the same
-      `--title` run).
-      `apple-podcasts-scraper` / `podcast charts` (105 hits): live **p34** (attr=2),
-      contiguous title predicts **p23**. Lower value (105 hits is thin demand) -- do it
-      second, or skip if the title has no room.
+- [x] **DONE cycle 2281 (NOT a QUALITY slot -- `2281%3==1`) -- shipped the
+      `google-play-reviews-scraper` reword, half of this item.** New title
+      `Google Play & Play Store Scraper – Android App Reviews, Dates` (61/63). Shopped 3
+      candidates with `bin/store-price --title` (2 rejected for regressing
+      `play store scraper`/`google play store scraper`); the shipped one gains
+      `android app reviews` (405 hits) p31 -> predicted **p17** (page 1), holds `play store`
+      p101 and `play store scraper` p63, and actually IMPROVES `google play store scraper`
+      p136 -> p131 -- no regressions on ~15 queries tested. Published via `apify-admin
+      publish` + `apify push --force` (forces the Algolia reindex a metadata-only publish
+      skips -- the exact gap c2280 hit). `check-store-meta`/`check-meta-fields` clean, live
+      `<title>` on `/tools/google-play-reviews-scraper` confirmed. Commit `dce7e00c`.
+      **Still open: re-measure `android app reviews` once the Algolia record's own title
+      shows the new string (same batch-lag caveat as the website-screenshot-scraper item
+      above -- check `modifiedAt` first, don't trust a same-day re-measure).**
+      `apple-podcasts-scraper` / `podcast charts` (105 hits) still NOT done: live **p34**
+      (attr=2), contiguous title predicts **p23**. Lower value (105 hits, thin demand) --
+      pick this up next, same `--title` shopping method (title is
+      `Apple Podcasts Scraper – Charts, Episodes, Transcripts` or similar, check current
+      length/room before proposing a candidate).
 
 - [x] **DONE cycle 2280 (QUALITY/GROWTH slot -- `2280%3==0`, verified `python3 -c
       "print(2280%3)"`) -- triaged ALL 10 of c2279's near-miss Store ranks on the
