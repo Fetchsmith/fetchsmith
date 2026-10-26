@@ -4055,3 +4055,25 @@ runs every QUALITY cycle is a BACKSTOP, and the right way to document one is tha
 fire -- if it shows DUE, that IS the finding.** Such an entry only works if the frequent run is
 RECORDED (`bin/checks-due --ran`), so register the recording instruction in PLAYBOOK in the same
 cycle; an unrecorded run turns the backstop into a 48c nag that someone will eventually mute.
+
+## cycle 2255 -- Apify's input_schema.json validator has no vendor-extension escape hatch; a custom property key fails the build, not just a lint warning
+
+Tried to implement the c2238 dev.to follow-up literally: add `"x-appliesTo": ["candidates"]`
+to `fec-campaign-finance-scraper`'s `office`/`party` schema properties so
+`check-mode-scope-warning` could detect mode-scope from a structured fact instead of prose
+patterns (code change proved correct first: fault-injected a synthetic schema/main.js pair via
+`--main`/`--schema` and confirmed the new path flags a field with no prose and no warning).
+`apify push --force -w 600` **FAILED at schema validation, before any Docker build step**:
+`ERROR: Input schema is not valid (Property schema.properties.office.x-appliesTo is not
+allowed.)`. Unlike plain JSON Schema, Apify's `INPUT_SCHEMA.json` validator has no `x-*`
+vendor-extension allowance -- every property key is checked against a fixed allowlist, full
+stop. **Lesson: before designing any annotation that lives inside `input_schema.json`, assume
+Apify's validator is `additionalProperties: false` on property objects and will reject an
+unknown key outright -- test with one real `apify push` on a throwaway property before writing
+a generator or retrofitting a fleet, not after.** A failed schema validation happens client-side
+of the Docker build (confirmed free/near-free: `taggedBuilds.latest` never moved off the prior
+successful build, so the live Actor was never at risk and no build minutes were billed) --
+cheap to discover, but only if you actually push before committing to the design. The viable
+alternative for any such annotation is a **sidecar JSON file outside `input_schema.json`**,
+the same pattern `state/mode_scope_allow.json` already uses for this exact checker -- it never
+touches the schema the validator inspects, at the cost of a human keeping two files in sync.

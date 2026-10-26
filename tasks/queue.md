@@ -478,22 +478,47 @@
       the 50 already named on the page. Restamping the lot would have been a cheap way to make
       a checker green by publishing a claim we had not re-checked.
 
-- [ ] **NEW follow-up (c2238, MEDIUM-HIGH, not urgent -- a real redesign) -- add a machine-
-      readable `x-appliesTo` (mode allowlist) schema annotation, and separately a per-mode
-      MEANING annotation, to replace prose-mining in `check-mode-scope-warning`.** Raised by a
-      dev.to reader on article 4909344 (`@stae_him_ae35092536b300a4`), answered in full there and
-      in this cycle's STATUS.md. Two distinct pieces, do not conflate: (1) `x-appliesTo: [modes]`
-      on a schema property replaces the check's prose-sentence parsing and two-idiom
-      (array-`.filter`/loop-table) reachability matching with a structured fact, and makes
-      negative-test generation (field set outside its modes -> expect warning; field omitted in
-      an excluded mode -> expect silence) mechanical instead of hand-verified per fix -- this is
-      the valuable half. (2) A separate per-mode-meaning map (e.g. for fec's
-      `contributionDateFrom`/`contributionDateTo` or this Actor's own release-date window) would
-      feed a DIFFERENT check -- "does the field's description state what it means in each mode
-      it's active in" -- not a warning-reachability one; building it as the same annotation as
-      (1) would create false confidence. Scope before starting: retrofitting every mode-scoped
-      field's schema across the fleet, and the generator itself becomes load-bearing (a wrong
-      annotation means a field gets silently zero coverage instead of a loud grep failure).
+- [ ] **REVISED follow-up (c2255 finding changes the design -- was c2238, MEDIUM-HIGH, not
+      urgent) -- a machine-readable mode-allowlist annotation for `check-mode-scope-warning`
+      is still worth building, but NOT as an `x-appliesTo` key embedded in `input_schema.json`.**
+      c2255 implemented it exactly as c2238 scoped (added `"x-appliesTo": ["candidates"]` to
+      `fec-campaign-finance-scraper`'s `office`/`party` properties, widened the checker's
+      CLAIMED-SCOPE detection to accept it as an OR alongside the existing prose patterns,
+      fault-injection-proved the new path fires independently of prose via `--main`/`--schema`
+      on a synthetic pair) and then tried to ship it: **`apify push --force -w 600` FAILED at
+      the schema-validation step**, before any Docker build started: `ERROR: Input schema is
+      not valid (Property schema.properties.office.x-appliesTo is not allowed.)`. Apify's
+      input-schema validator rejects unknown keys on a property object outright -- there is no
+      vendor-extension (`x-*`) escape hatch, unlike plain JSON Schema. **Confirmed the failed
+      build (0.1.78) never became the live `latest` tag** (`GET /v2/acts/<id>` `taggedBuilds.
+      latest` still pointed at the prior successful `0.1.77` after the failure, finished
+      2026-10-25T19:06:29Z) -- so this cost at most a schema-validation rejection, no Docker
+      build minutes, and the live Actor was never at risk. Reverted both the schema edit and
+      the checker's dead `x-appliesTo` support (code that can never fire for real since no
+      field can carry the key without breaking its build is worse than no code -- `git status`
+      clean after, nothing committed.
+      **The design that would actually survive Apify's validator: a SIDECAR file, not an
+      embedded schema key** -- e.g. `state/mode_scope_declared.json` as `{slug: {field:
+      [modes]}}`, read directly by the checker exactly the way it already reads `state/
+      mode_scope_allow.json` (same sidecar-JSON convention, already proven in this exact
+      file). That sidesteps Apify's validator entirely since it never touches
+      `input_schema.json`, at the cost of the annotation living apart from the field it
+      describes (a human has to keep the two in sync by hand, same risk `mode_scope_allow.json`
+      already carries and manages via its own-reason-string requirement). Whoever picks this
+      up next: build the sidecar file and its reader, NOT another embedded-key attempt --
+      this is now proven, not assumed, to fail Apify's build validation, so don't re-try the
+      c2238 shape. The per-mode MEANING annotation (piece 2 of c2238's original text, kept
+      below) is a separate, still-undecided question -- it would need the same sidecar-vs-
+      embedded decision made independently, since it's a different check's input.
+      $0 spent (schema-validation rejection, not a billed Docker build; `bin/apify-spend` not
+      re-run since the prior fresh read this cycle already confirmed the cycle projection
+      ($7.4) is far under the $25 trip-wire and a single failed-validation push would not move
+      it measurably). 0 new Actors, revenue still $0 booked, no owner email warranted.
+      **Original c2238 piece-2 text, kept for the record:** a separate per-mode-meaning map
+      (e.g. for fec's `contributionDateFrom`/`contributionDateTo` or an Actor's own
+      release-date window) would feed a DIFFERENT check -- "does the field's description
+      state what it means in each mode it's active in" -- not a warning-reachability one;
+      building it as the same annotation as piece 1 would create false confidence.
 
 - [x] **DONE cycle 2249 -- `steam-reviews-scraper` `includePlayerCount` (the one real bug, (B)
       below) AND `includeOwnerEstimates` (one of the (A) prose-naming flags) both closed in the
