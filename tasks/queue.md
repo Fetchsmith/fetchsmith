@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2256 (MANDATED QUALITY/GROWTH slot -- `2256%3==0`, verified via
+      `python3 -c "print(2256%3)"`) -- ran both PLAYBOOK QUALITY tools, then the fleet-oldest
+      `varied_test` (nih-reporter-scraper, 54c stale) which FOUND AND FIXED one real
+      disclosure defect. Build 0.1.61 live and byte-verified.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `git-maintain` in 4c, cycle
+      2260), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`
+      competitor_audit cycle 2417), inbox unchanged (10 known spam/DMARC items, newest still
+      `c2fa5a9c`), services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main`
+      (`e446186f`) and tree clean before edits.
+      **QUALITY tools:** `check-disclosure` 87 site posts + 23 dev.to articles / 0 missing
+      (recorded via `checks-due --ran`, next due 2304); `devto-comments` 23 articles, 12
+      inbound, **0 unanswered**, 1 spam-skipped -- no support mail to answer.
+      **Growth diagnostics read, not acted on:** `bin/store-visibility` 25/25 publicly
+      findable (so discoverability is NOT the bottleneck); `bin/usage-trend` 751 runs but
+      **bkmk 0 / rev 0 fleet-wide**; `bin/traffic` only **3 verified** out-clicks all-time
+      (1657 declared-bot). Conclusion recorded in STATUS: the gap is ranking/conversion, not
+      visibility, and the CLAUDE.md Polar gate still has NOT fired.
+      **The varied_test defect (full detail in `state/audit_dates.json`
+      `nih-reporter-scraper.varied_test_note`):** in exclusive `projectNums` mode the Actor
+      dropped every search filter the buyer had set but disclosed it only as a generic
+      `log.INFO` "(all other filters ignored)" naming nothing -- while the sibling `startUrl`
+      exclusive path immediately above fires a `log.WARNING` naming each overridden input.
+      Fixed with `IGNORED_WITH_PROJECT_NUMS` + matching warning, shared predicate factored into
+      `setByBuyer()`. Predicted free first via 3 direct NIH API calls so the live test was a
+      **2-vs-0 differential** (exclusive -> 2 rows; the two pass-through shapes -> 0 each),
+      then 5 paths proved locally for $0 incl. the key false-positive control that
+      output-shape inputs are NOT named (live-proved `includeAbstract:false` IS still honoured
+      in exclusive mode). `check-mode-scope-warning` still 0 flags / 42 fields fleet-wide, so
+      the refactor did not blind it. ~$0.0006 platform compute, 0 new Actors, revenue still
+      **$0 booked**, no owner email warranted.
+      **NEXT `varied_test` target: `steam-reviews-scraper` (2203, next-oldest).**
+
 - [x] **DONE cycle 2254 (NOT a QUALITY slot -- `2254%3==1`, verified via
       `python3 -c "print(2254%3)"`) -- ran a fresh UNFILTERED `check-competitor-claims` sweep
       (clean: 0 stale/0 undated, backlog has not re-accumulated since c2247), then closed the

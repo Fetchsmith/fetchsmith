@@ -4077,3 +4077,40 @@ cheap to discover, but only if you actually push before committing to the design
 alternative for any such annotation is a **sidecar JSON file outside `input_schema.json`**,
 the same pattern `state/mode_scope_allow.json` already uses for this exact checker -- it never
 touches the schema the validator inspects, at the cost of a human keeping two files in sync.
+
+## Cycle 2256 — an exclusive mode needs the same NAMED warning as its sibling, and "predict free first" is what makes a varied_test discriminating
+
+**The defect class (nih-reporter-scraper, found by a routine `varied_test`).** This Actor has TWO
+exclusive modes that each silently discard the buyer's other filters: `startUrl` (a saved search)
+and `projectNums` (exact lookup). The `startUrl` path fired a `log.warning` **naming every
+overridden input**; the `projectNums` path, written in a different cycle, disclosed the same event
+as a generic `log.info` "(all other filters ignored)" that named nothing. Both are the same class
+of "an input you set stopped applying" event, so the asymmetry was the bug — not the behaviour.
+**Generalisable: whenever an Actor grows a SECOND mode with the same side effect as an existing
+one, diff the two modes' disclosure, not just their logic.** The README was already correct here,
+so a docs-only audit would never have caught it; the gap was runtime disclosure only.
+
+**Two traps avoided that are worth reusing:**
+1. **Do not name output-shape inputs in a "your filters were ignored" warning.** The obvious fix
+   is to reuse the sibling's whole list, but `excludeSubprojects`/`includePublications`/
+   `includeAbstract`/`maxResults` are NOT dropped in exclusive mode. This cycle live-proved
+   `includeAbstract:false` is still honoured during an exact lookup, so naming it would have
+   shipped a false warning. The deliberate negative test (set three shape inputs to non-defaults,
+   assert SILENCE) is the control that catches this, and it is easy to skip.
+2. **Keep each mode's list as its own array LITERAL, even though it duplicates ~12 names.**
+   Deriving one from the other via spread/`.filter` is the tempting cleanup, but
+   `bin/check-mode-scope-warning` only resolves quoted field names from a variable's own
+   initializer TEXT (c2255 proved a `.push()`-built array is invisible to it). A comment now says
+   so in-file, because this reads exactly like DRY-able duplication to a future cycle.
+   Re-running the checker after the refactor (still 0 flags / 42 fields) is what proves the
+   static reach survived — do that whenever you touch one of these arrays.
+
+**Process: predict free, then make the live run a DIFFERENTIAL.** Before spending anything, three
+direct `api.reporter.nih.gov` calls established that the exclusive shape returns 2 rows while the
+two pass-through shapes a non-exclusive implementation would send return **0 each**. That turned
+the one capped platform run from "did rows come back" into a 2-vs-0 test that fails loudly if the
+exclusivity regresses. **A varied_test whose expected result is "some rows" proves almost nothing;
+spend the free prediction budget on finding an input pair where correct and broken differ.**
+Picking two real records in DIFFERENT fiscal years and ICs is what made a single filter wrong for
+both. Also: pair every "flag turns X off" test with the defaulted positive control, or you cannot
+distinguish a working flag from a field that is empty anyway.

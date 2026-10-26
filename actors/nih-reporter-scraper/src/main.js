@@ -495,13 +495,38 @@ const IGNORED_WITH_SEARCH_ID = [
     ['activeOnly', input.activeOnly === true], ['newlyAddedOnly', input.newlyAddedOnly === true],
 ];
 
+// The second exclusive mode needs the SAME courtesy (cycle 2256): before this, a buyer who sent
+// projectNums alongside fiscalYears/agencyIcCodes got only a generic `log.info` "(all other
+// filters ignored)" that named nothing, while the sibling startUrl path above named every
+// overridden input. Same class of "your input stopped applying" event, so it gets the same
+// named warning. Deliberately spelled out as its own literal array rather than derived from
+// IGNORED_WITH_SEARCH_ID by `.filter`/spread: `bin/check-mode-scope-warning` can only resolve
+// quoted field names from a variable's own initializer TEXT (cycle 2255 proved a `.push()`-built
+// array is invisible to it), so DRY-ing these two lists would silently blind the checker.
+// This list omits `projectNums` itself (it is the mode) and every OUTPUT-shape input --
+// excludeSubprojects / includePublications / includeAbstract / maxResults are NOT dropped in
+// this mode and must not be named: cycle 2256 live-proved includeAbstract:false is still
+// honoured during an exact lookup.
+const IGNORED_WITH_PROJECT_NUMS = [
+    ['keyword', keyword], ['fiscalYears', fiscalYears], ['agencyIcCodes', agencyIcCodes],
+    ['activityCodes', activityCodes], ['awardTypes', awardTypes], ['orgNames', orgNames],
+    ['orgStates', orgStates], ['piNames', piNames],
+    ['minAwardAmount', minAwardAmount], ['maxAwardAmount', maxAwardAmount],
+    ['awardNoticeDateFrom', awardNoticeDateFrom], ['awardNoticeDateTo', awardNoticeDateTo],
+    ['activeOnly', input.activeOnly === true], ['newlyAddedOnly', input.newlyAddedOnly === true],
+];
+
+// Every criteria input defaults to null/false in input_schema.json (re-verified cycle 2256), so a
+// presence test is correct here and no default-comparison is needed (the LEARNINGS c2234 trap).
+const setByBuyer = (pairs) => pairs
+    .filter(([, v]) => (Array.isArray(v) ? v.length > 0 : v !== null && v !== false && v !== ''))
+    .map(([k]) => k);
+
 function buildCriteria() {
     // A saved search IS the filter set -- NIH resolves it server-side and ignores anything we
     // send beside it, so there is no criteria object to build (and nothing to allowlist-check).
     if (searchId) {
-        const overridden = IGNORED_WITH_SEARCH_ID
-            .filter(([, v]) => (Array.isArray(v) ? v.length > 0 : v !== null && v !== false && v !== ''))
-            .map(([k]) => k);
+        const overridden = setByBuyer(IGNORED_WITH_SEARCH_ID);
         if (overridden.length) {
             log.warning(
                 `startUrl is set, so the pasted saved search decides the filters and these inputs are IGNORED: `
@@ -511,7 +536,18 @@ function buildCriteria() {
         }
         return {};
     }
-    if (exclusiveProjectNums) return assertCriteria({ project_nums: projectNums });
+    if (exclusiveProjectNums) {
+        const overridden = setByBuyer(IGNORED_WITH_PROJECT_NUMS);
+        if (overridden.length) {
+            log.warning(
+                `projectNums is an exact-lookup mode, so these inputs are IGNORED: ${overridden.join(', ')}. `
+                + 'Looking up a project number while a narrowing filter still applied would return zero rows, '
+                + 'which is indistinguishable from a wrong number -- so the number wins. Clear projectNums if you '
+                + 'want these filters to apply instead.',
+            );
+        }
+        return assertCriteria({ project_nums: projectNums });
+    }
     const c = {};
     if (keyword) {
         c.advanced_text_search = {
