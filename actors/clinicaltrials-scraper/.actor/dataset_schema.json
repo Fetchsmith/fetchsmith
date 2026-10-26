@@ -50,6 +50,24 @@
         "title": "WhyStopped",
         "example": "Slow enrollment, and unusable data"
       },
+      "stopReason": {
+        "title": "StopReason",
+        "example": "low_enrollment",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "stopReasons": {
+        "title": "StopReasons",
+        "example": [
+          "low_enrollment"
+        ],
+        "type": [
+          "array",
+          "null"
+        ]
+      },
       "studyType": {
         "type": [
           "string",

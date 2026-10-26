@@ -205,6 +205,12 @@
             "description": "Restrict to studies that accept healthy volunteers (not just patients with the condition).",
             "default": false
         },
+        "includeStopReason": {
+            "title": "Include stop-reason classification",
+            "type": "boolean",
+            "description": "Add stopReason and stopReasons to every row: WHY a study stopped, classified from the free-text whyStopped field above by a published, deterministic keyword rule set (not AI, no model call -- the same text always yields the same category). Categories: safety_or_adverse_event, lack_of_efficacy, drug_or_supply_issue, covid_19, low_enrollment, administrative_or_sponsor_decision, funding_or_business, logistical_or_operational, plus an honest \"other\" bucket when no rule matches. stopReason is the primary (most specific) cause; stopReasons lists every category the text matched, since sponsors often cite more than one. Measured on two independent 300-row live samples (2026-10-26): 82.2% of rows classified on a holdout sample never used for tuning (lower than a similar classifier on FDA recall reasons, 96.3%, because sponsor free text here is far more one-off and varied). On by default; set false to skip.",
+            "default": true
+        },
         "lastUpdatePostedDateFrom": {
             "title": "Last updated from",
             "type": "string",
