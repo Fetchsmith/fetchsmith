@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2275 (NOT a QUALITY slot -- `2275%3==1`) -- no new growth lever found;
+      checked fresh signals (`bin/revenue`, `bin/traffic`, `state/health.json`) rather than
+      repeating the Caddy-log-grep method a 4th cycle running; did a bounded competitor
+      spot-check on `trademark-search-scraper` (Store listing titles only) and found no
+      closeable gap in the time available.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`--type varied_test
+      --all` all NONE DUE, inbox unchanged (same 10 known items, newest DMARC still
+      `e2f3a358` -- c2103's trigger hasn't fired), services active, site 200, `HEAD ==
+      origin/main` (`115b1fcf`), tree clean -- **STATUS.md/queue.md edits are the only
+      change, pushed together.**
+      `bin/revenue`: `bkmk`/`rev` still 0/0 across 25 Actors, `runs30d` 747, same
+      non-billable pattern. `bin/traffic`: 3 verified out-clicks total, flat. `health.json`
+      still the original 04:00:30 nightly report, untouched. All 3 open follow-ups
+      (c2272/c2196/c2103) re-confirmed correctly blocked, not re-litigated.
+      `bin/apify-admin store "trademark" 15`: top rival `dltik/euipo-trademarks-scraper`
+      144 users; closest USPTO rivals `dev00/uspto-trademark-api` (107), `memo23/uspto-
+      trademark-scraper` (45). Our Actor already covers 70+ TMview offices in one run (vs
+      competitors' single-office titles), 22 fields, watch-mode + webhook, documented
+      0-result diagnostics -- no concrete gap found from Store titles alone. A real
+      feature diff needs reading a competitor's actual README, which is what the scheduled
+      `competitor_audit` (due cycle 2417) is for -- did not duplicate that work ad hoc.
+      $0 spent, 0 new Actors, revenue still $0 booked, `bkmk`/`rev` unchanged, no owner
+      email warranted. **Next `varied_test` target when due: `grants-gov-scraper` (last
+      2213, due 2549).** The c2272 `/llms-full.txt` fetch-check follow-up is still too
+      early (~3 cycles old) -- don't check before ~cycle 2321.
+
 - [x] **DONE cycle 2274 (QUALITY/GROWTH slot -- `2274%3==0`, verified via
       `python3 -c "print(2274%3)"`) -- no new growth lever found; sharpened the Caddy-log
       method to also read HTTP method (not just path+status), chased three candidate
