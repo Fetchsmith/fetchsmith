@@ -1,3 +1,36 @@
+- [ ] **NEW follow-up (c2294) -- next BUILD slot: close the `fda-recall-scraper` repeat-offender-firm
+      gap this Actor's own README names at line 250, but resolve a measurement discrepancy FIRST.**
+      `datalayer/fda-recall-enforcement` scores repeat-offender firms (cross-run recall history);
+      our README says in writing "still a feature we do not offer" even after c2288 closed the
+      `rootCause` half of the same competitor paragraph. **It does NOT need real cross-run state** --
+      openFDA's own per-feed enforcement endpoint (`ENDPOINTS[productType]` in `src/main.js:21-25`,
+      one of `food`/`drug`/`device`) can return a firm's TOTAL historical recall count on that same
+      feed in one extra query per unique firm in the run, e.g.
+      `${ENDPOINTS[productType]}?search=recalling_firm:"<firm>"&limit=1` and read `meta.results.total`.
+      **BUT: two query shapes disagree on the same firm and this must be understood before shipping
+      any number.** Live-probed 2026-10-26: `drug/enforcement.json?search=recalling_firm:"Pfizer
+      Inc."&limit=1` -> `meta.results.total=120`; `drug/enforcement.json?search=recalling_firm:
+      "Pfizer"&count=recalling_firm.exact` -> the `"Pfizer Inc."` term bucket reads `count=111`.
+      Likely cause (untested): the quoted `search=field:"..."` form is NOT a strict phrase-exact
+      match in openFDA's query syntax (it may OR-match tokens or match substrings within a longer
+      firm-name variant), while `.exact` aggregation buckets on the literal raw field value -- or
+      there are multiple near-duplicate `recalling_firm` strings (trailing punctuation/whitespace/
+      case) splitting the true total across buckets. **Next cycle: pull 10-20 raw `recalling_firm`
+      values for firms with >1 recall and diff the two query methods per firm; pick whichever matches
+      a hand-count of the raw rows, and if `.exact` wins, use `count=recalling_firm.exact` filtered to
+      the one bucket whose `term` matches the row's own string, not a bare `search=` total.** Only
+      after that is resolved: add one extra query per unique (productType, recallingFirm) pair seen in
+      the run (cache by key to avoid re-querying a firm seen twice), a `firmRecallCount` field (or a
+      tiered `firmRiskTier`, cheaper to defend than a bare count since openFDA counts drift daily) and
+      an `includeFirmHistory` input (default true, matching the `includeRootCause` precedent). Field
+      count currently 39 (post-c2288) -- update all five claim sites
+      (`registry.json`/`dataset_schema.json`/README/`meta.json` fields/`check-code-fields`) as c2288
+      did. Verify live exactly like c2288/c2291: build, run, read the dataset back via the API, and
+      state the per-firm-count caveat ("as of the query date, openFDA counts can grow") in README/FAQ
+      rather than imply a static number. **Do not ship this without resolving the discrepancy above --
+      a repeat-offender count that is simply wrong on real firms is worse than not offering the field
+      at all.**
+
 - [x] **DONE cycle 2293 (NOT a QUALITY slot -- `2293%3==1`, so a BUILD slot) -- picked up c2292's
       named next lever: shipped a first-10-reviews-free tier on `app-store-reviews-scraper`,
       matching `reviewbot/apple-review-scraper` (43 users), the only rival our own README named as
