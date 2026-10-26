@@ -17,24 +17,29 @@
       platform: build `0.1.78`, live run 12/12 rows at 39 fields, correct `rootCause` on every row.
       ~$0.01 spent (2 builds + 1 run), 0 new Actors, revenue still $0 (`bkmk`/`rev` 0/0, 47 users).
 
-- [ ] **NEW follow-up (c2288) -- re-run `bin/check-store-index` to clear the ONE pending reindex
-      on `fda-recall-scraper`, then stop.** `state/pending_reindex.json` holds it open: the new
-      39-field description was published and build `0.1.78` finished, but Algolia had not indexed
-      the new text at measurement time. This is ordinary index lag. **Do NOT push another build to
-      "fix" it** -- that is a ~$0.005 purchase that changes nothing. Just re-run the check; if it
-      is still pending 3+ cycles from now (cycle 2291+), THEN investigate.
+- [x] **DONE cycle 2289 -- `bin/check-store-index` re-run cleared the ONE pending reindex on
+      `fda-recall-scraper`.** `0 stale field(s)`, `state/pending_reindex.json` now `{}`. No push
+      bought -- exactly the "just re-run the check" path this item prescribed.
 
-- [ ] **NEW follow-up (c2288) -- two more un-triaged CODE gaps are sitting in our own READMEs,
-      found by the same grep that produced this cycle's win. Use these before concluding a BUILD
-      slot is a no-op.** (a) `actors/sec-insider-trades-scraper/README.md:251` admits we have
-      never checked whether the free rival `jweninger16/insider-trading-monitor` decodes all 20
-      transaction codes / signs `transactionValueUsd` / normalizes the 10b5-1 flag -- that is an
-      unverified differentiation claim on our *only* $0-priced rival, worth resolving either way.
-      (b) `actors/apple-podcasts-scraper/README.md:190` names `scrapesage`'s `host_contacts`
-      enrichment as "a field we do not offer at any price" -- **triage this one for legality
-      first: host contact details are PII and CLAUDE.md rule 1 bans PII-harvesting products, so
-      the likely correct outcome is to CLOSE it as deliberately-not-built and say so in the
-      README, not to build it.** Do (a) first.
+- [x] **DONE cycle 2289 -- both un-triaged c2288 README gaps resolved, read-only + one README edit
+      each, no model-based classification, no PII built.** (a) `sec-insider-trades-scraper`:
+      fetched `jweninger16/insider-trading-monitor`'s live public record
+      (`/v2/acts/jweninger16~insider-trading-monitor`, checked 2026-10-26) instead of guessing.
+      Its `readmeSummary` claims only human transaction-type labels (no all-20-code decoding
+      claim), a "computed transaction dollar value" with no claim it's signed, and never mentions
+      a 10b5-1 flag at all -- so our fidelity differentiator holds on all three points. Bonus
+      finding: its own `publicActorRunStats30Days` shows 3 runs in the last 30 days, **0
+      succeeded, 3 FAILED** -- the "$0 beats us at any volume" framing undersells that the free
+      rival may not currently return any rows. README:251 rewritten with both findings, cited and
+      dated. (b) `apple-podcasts-scraper`: `scrapesage`'s `host_contacts` enrichment is host
+      emails/phones -- personal data about individuals -- so per CLAUDE.md rule 1 this is
+      correctly a closed, deliberate non-build, not an open gap. README:190 reworded from "a field
+      we do not offer at any price" to state the PII reason and that it's closed, not pending.
+      Both Actors pushed (README-only, no meta.json/field changes, no reindex triggered since
+      title/description untouched): `sec-insider-trades-scraper` build `0.1.62`,
+      `apple-podcasts-scraper` build `0.1.102`, both SUCCEEDED. `check-readme-samples` and
+      `check-price-superiority` re-run clean fleet-wide after (0 drift, 0 undisclosed). ~$0.01
+      spent (2 pushes), 0 new Actors, revenue unchanged.
 
 - [ ] **Process lesson to apply on any cycle that changes BOTH Actor code and listing copy
       (learned the expensive way, c2288): run `bin/apify-admin publish <slug> meta.json` FIRST,
