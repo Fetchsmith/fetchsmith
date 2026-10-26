@@ -4585,3 +4585,31 @@ Two reusable pieces:
    Pair it with a deliberate **control row** in the live run (`NCT05618093` "Study device no
    longer available" must STAY `drug_or_supply_issue`) so the test proves where the new rule
    does *not* fire, not just where it does.
+
+## Cycle 2297: openFDA's quoted `search=field:"..."` is not exact-match -- `.exact` is
+
+c2294 left a real, named discrepancy open rather than shipping a guessed number: on the same
+firm ("Pfizer Inc."), `search=recalling_firm:"Pfizer Inc."` returned 120 but
+`count=recalling_firm.exact` bucketed that literal string at only 111. Diffed the aggregation
+directly instead of guessing which was right: 111 ("Pfizer Inc.") + 5 ("Pfizer Inc") + 2
+("PFIZER INC") + 2 ("PFIZER, INC") = 120 exactly -- the quoted `search=` clause is NOT a strict
+phrase match, it normalizes case/punctuation and folds distinct literal strings together.
+`search=recalling_firm.exact:"Pfizer Inc."` (the `.exact` suffix INSIDE the search clause, not
+just as a `count=` aggregation) returned 111, matching the hand-countable bucket.
+
+Shipped `firmRecallCount` on `fda-recall-scraper` using that `.exact` form, keyed per-row to the
+row's own literal `recalling_firm` string (not a merged "family" of spelling variants) --
+verified live: rows reading `"PFIZER INC"` got `firmRecallCount: 2` (matching that exact
+aggregation bucket) while rows reading `"Pfizer Inc."` got `111`, proving the per-row count
+tracks the row's own spelling rather than a general "Pfizer" lump. Shipped opt-in
+(`includeFirmHistory`, default `false`), unlike `includeRiskScore`/`includeRootCause` (pure
+local regex, free): this one is a real extra openFDA HTTP request per unique firm in the run
+(cached per firm within a run), so defaulting it on would silently add latency/compute cost to
+every existing scheduled/watch-mode run on upgrade -- the same reasoning `includePressReleases`
+already uses for its own default-false.
+
+Reusable lesson: **when any search API's "exact phrase" syntax and its own aggregation/count
+endpoint disagree on the same value, diff the aggregation's buckets for near-spellings of the
+term before trusting either number** -- the discrepancy is very often just that "exact phrase"
+isn't actually exact (case/punctuation folding), and the aggregation's literal buckets are the
+tell. Don't average, don't guess, don't ship the bigger number because it "feels more complete."

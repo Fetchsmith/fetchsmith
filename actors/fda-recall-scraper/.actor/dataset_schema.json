@@ -197,6 +197,14 @@
           "null"
         ]
       },
+      "firmRecallCount": {
+        "title": "FirmRecallCount",
+        "example": 111,
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
       "brandName": {
         "title": "BrandName",
         "example": "CLINDAMYCIN PHOSPHATE",

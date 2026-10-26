@@ -1,6 +1,6 @@
 {
   "title": "FDA Recall Database API, Food, Drug, Device Enforcement Reports",
-  "description": "A recall scraper for the FDA database — food, drug and device — from openFDA, plus a press-release feed up to 9 days faster. 39 fields incl. severity, a 0-100 riskScore and a rootCause per reason (rules, not AI), recalling firm, ISO dates, NDC/UPC on drugs. From $0.0024/result, no start fee. FDA API",
+  "description": "A recall scraper for the FDA database — food, drug and device — from openFDA, plus a press-release feed up to 9 days faster. 40 fields incl. severity, a 0-100 riskScore and a rootCause per reason (rules, not AI), recalling firm, ISO dates, NDC/UPC on drugs. From $0.0024/result, no start fee. FDA API",
   "seoTitle": "FDA Recall Data API, Food Recall Data, Device Recall Data",
   "seoDescription": "An FDA recall data API (food, drug, device): product safety data API, recall monitoring API, medical device recall API, FDA enforcement data, and recall risk score analytics.",
   "categories": [

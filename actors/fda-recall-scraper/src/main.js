@@ -83,6 +83,12 @@ const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMand
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
 const includeRiskScore = input.includeRiskScore !== false;
 const includeRootCause = input.includeRootCause !== false;
+// Unlike includeRiskScore/includeRootCause (pure local regex, zero network cost), this one issues
+// a real extra openFDA request per unique (productType, recallingFirm) pair seen in the run (cached,
+// so a firm repeated across rows costs one lookup) -- opt-in, default false, same shape as
+// includePressReleases, so upgrading to this version never silently slows or adds compute cost to
+// an existing scheduled/watch-mode run.
+const includeFirmHistory = Boolean(input.includeFirmHistory);
 const includePressReleases = Boolean(input.includePressReleases);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchMode = watchLabel.length > 0;
@@ -767,7 +773,57 @@ function classifyRootCause(reason) {
     return { rootCause: out[0], rootCauses: out };
 }
 
-function normalize(r, productType) {
+// Repeat-offender signal: how many recalls openFDA has on record for this EXACT firm string on
+// this same productType feed, all-time -- not the run's own window, which is why this needs its
+// own query rather than reusing the page the row came from.
+// RESOLVED 2026-10-26 (c2294 left this discrepancy open, c2297 closed it): a bare
+// `search=recalling_firm:"Pfizer Inc."` returns 120, but `count=recalling_firm.exact` buckets the
+// SAME firm at only 111. Live-diffed the aggregation: 111 ("Pfizer Inc.") + 5 ("Pfizer Inc") + 2
+// ("PFIZER INC") + 2 ("PFIZER, INC") = 120 exactly -- the bare `search=` clause is NOT a strict
+// phrase match, it normalizes case/punctuation and silently merges distinct literal strings,
+// which would overcount any firm with inconsistent capitalization in FDA's own data (common).
+// `search=recalling_firm.exact:"Pfizer Inc."` (the literal string, `.exact` suffix INSIDE the
+// search clause, not just as a `count=` aggregation) returns 111 -- matching the hand-countable
+// `.exact` bucket exactly, so that is the form used below. Caveat shipped in the README/FAQ, not
+// just here: openFDA's counts grow as new recalls are filed, so this is "as of the run", not a
+// permanent figure.
+const firmCountCache = new Map();
+let firmCountWarned = false;
+async function firmRecallCount(productType, firm) {
+    if (!includeFirmHistory || !firm) return null;
+    const key = `${productType}::${firm}`;
+    if (firmCountCache.has(key)) return firmCountCache.get(key);
+    // Deliberately NOT cached as null here -- a time-budget skip is run-state, not firm-state, so
+    // a later row (with less work left to do) should still get a real try.
+    if (!timeBudgetOk()) return null;
+    let total = null;
+    try {
+        const resp = await gotScraping({
+            url: `${ENDPOINTS[productType]}?search=recalling_firm.exact:${quote(firm)}&limit=1`,
+            responseType: 'text',
+            throwHttpErrors: false,
+            retry: { limit: 0 },
+            timeout: { request: 15000 },
+            headers: { accept: 'application/json' },
+        });
+        if (resp.statusCode === 200) {
+            total = JSON.parse(resp.body)?.meta?.results?.total ?? null;
+        } else if (resp.statusCode === 404) {
+            total = 0; // openFDA's "no matches" shape, same as fetchPage's handling above
+        } else {
+            throw new Error(`HTTP ${resp.statusCode}`);
+        }
+    } catch (err) {
+        if (!firmCountWarned) {
+            firmCountWarned = true;
+            log.warning(`firmRecallCount lookup failed (${err.message}); leaving firmRecallCount null on affected row(s) (logged once per run).`);
+        }
+    }
+    firmCountCache.set(key, total);
+    return total;
+}
+
+async function normalize(r, productType) {
     // `openfda` is populated on drug rows only — verified 5/5 drug rows populated and 5/5
     // food and device rows empty on a live sample. These flattened fields are therefore
     // advertised for drug recalls only; they come back null elsewhere.
@@ -808,6 +864,9 @@ function normalize(r, productType) {
 
         // WHY the recall happened, from the free-text reason -- see ROOT_CAUSE_RULES above.
         ...(includeRootCause ? classifyRootCause(r.reason_for_recall) : { rootCause: null, rootCauses: [] }),
+
+        // HOW OFTEN this firm has recalled on this feed, all-time -- see firmRecallCount above.
+        firmRecallCount: await firmRecallCount(productType, r.recalling_firm),
 
         // drug-only, see comment above
         brandName: first(o.brand_name),
@@ -942,6 +1001,9 @@ function normalizePressRelease(item) {
         // Unlike riskScore (which needs a `classification` the feed never carries), the root-cause
         // rules read only the reason text, which these rows do have -- so they are classified too.
         ...(includeRootCause ? classifyRootCause(item.description) : { rootCause: null, rootCauses: [] }),
+        // The press-release feed never carries a firm name (see recallingFirm: null above), so
+        // there is nothing to look up -- always null here, no network call.
+        firmRecallCount: null,
         brandName: null,
         genericName: null,
         manufacturerName: null,
@@ -1144,7 +1206,7 @@ if (watchMode && seeding) {
                 reader.pushed += 1;
                 const before = pushed;
                 keepGoing = await pushResult({
-                    ...normalize(row, reader.productType),
+                    ...(await normalize(row, reader.productType)),
                     _watchChangeType: change.types,
                     _watchPrevious: change.previous,
                 });
@@ -1153,7 +1215,7 @@ if (watchMode && seeding) {
             }
             reader.pushed += 1;
             const before = pushed;
-            keepGoing = await pushResult(normalize(row, reader.productType));
+            keepGoing = await pushResult(await normalize(row, reader.productType));
             // Recorded as delivered only after the charge actually succeeded -- anything dropped
             // by maxResults or a charge limit stays "new" for the next run.
             if (pushed > before) summaryFor(reader.productType).delivered += 1;

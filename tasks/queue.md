@@ -41,38 +41,43 @@
       ~$0.01 spent (1 build + 1 short run), 0 new Actors, revenue unchanged (48 users, `bkmk`/
       `rev` 0/0), no owner email warranted.
 
-- [ ] **NEW follow-up (c2294) -- next BUILD slot: close the `fda-recall-scraper` repeat-offender-firm
-      gap this Actor's own README names at line 250, but resolve a measurement discrepancy FIRST.**
-      `datalayer/fda-recall-enforcement` scores repeat-offender firms (cross-run recall history);
-      our README says in writing "still a feature we do not offer" even after c2288 closed the
-      `rootCause` half of the same competitor paragraph. **It does NOT need real cross-run state** --
-      openFDA's own per-feed enforcement endpoint (`ENDPOINTS[productType]` in `src/main.js:21-25`,
-      one of `food`/`drug`/`device`) can return a firm's TOTAL historical recall count on that same
-      feed in one extra query per unique firm in the run, e.g.
-      `${ENDPOINTS[productType]}?search=recalling_firm:"<firm>"&limit=1` and read `meta.results.total`.
-      **BUT: two query shapes disagree on the same firm and this must be understood before shipping
-      any number.** Live-probed 2026-10-26: `drug/enforcement.json?search=recalling_firm:"Pfizer
-      Inc."&limit=1` -> `meta.results.total=120`; `drug/enforcement.json?search=recalling_firm:
-      "Pfizer"&count=recalling_firm.exact` -> the `"Pfizer Inc."` term bucket reads `count=111`.
-      Likely cause (untested): the quoted `search=field:"..."` form is NOT a strict phrase-exact
-      match in openFDA's query syntax (it may OR-match tokens or match substrings within a longer
-      firm-name variant), while `.exact` aggregation buckets on the literal raw field value -- or
-      there are multiple near-duplicate `recalling_firm` strings (trailing punctuation/whitespace/
-      case) splitting the true total across buckets. **Next cycle: pull 10-20 raw `recalling_firm`
-      values for firms with >1 recall and diff the two query methods per firm; pick whichever matches
-      a hand-count of the raw rows, and if `.exact` wins, use `count=recalling_firm.exact` filtered to
-      the one bucket whose `term` matches the row's own string, not a bare `search=` total.** Only
-      after that is resolved: add one extra query per unique (productType, recallingFirm) pair seen in
-      the run (cache by key to avoid re-querying a firm seen twice), a `firmRecallCount` field (or a
-      tiered `firmRiskTier`, cheaper to defend than a bare count since openFDA counts drift daily) and
-      an `includeFirmHistory` input (default true, matching the `includeRootCause` precedent). Field
-      count currently 39 (post-c2288) -- update all five claim sites
-      (`registry.json`/`dataset_schema.json`/README/`meta.json` fields/`check-code-fields`) as c2288
-      did. Verify live exactly like c2288/c2291: build, run, read the dataset back via the API, and
-      state the per-firm-count caveat ("as of the query date, openFDA counts can grow") in README/FAQ
-      rather than imply a static number. **Do not ship this without resolving the discrepancy above --
-      a repeat-offender count that is simply wrong on real firms is worse than not offering the field
-      at all.**
+- [x] **DONE cycle 2297 (BUILD slot, `2297%3==2`) -- resolved c2294's openFDA query discrepancy
+      AND shipped `firmRecallCount` on `fda-recall-scraper`, closing the repeat-offender-firm gap
+      the README named since 2026-10-03.** Diffed the aggregation instead of guessing: on "Pfizer
+      Inc.", `search=recalling_firm:"Pfizer Inc."` returns 120 but `count=recalling_firm.exact`
+      buckets the literal string at 111; 111 + 5 ("Pfizer Inc") + 2 ("PFIZER INC") + 2
+      ("PFIZER, INC") = 120 exactly -- the quoted `search=` clause normalizes case/punctuation and
+      folds distinct literal spellings together, it is not a strict phrase match.
+      `search=recalling_firm.exact:"<firm>"` (the `.exact` suffix INSIDE the search clause) returns
+      111, matching the hand-countable bucket -- that's the form shipped.
+      **Implementation:** `firmRecallCount(productType, firm)` in `src/main.js`, one extra openFDA
+      request per unique `(productType, recallingFirm)` pair seen in the run, cached so a repeated
+      firm costs one lookup; respects the existing `timeBudgetOk()` guard (degrades to `null`, never
+      fails the run) and warns once per run on any lookup failure rather than spamming the log.
+      `normalize()` is now async to await it; both call sites (the watch-changed path and the
+      normal path) updated to `await`. New `includeFirmHistory` input, **default `false`** (not
+      `true` as this item originally proposed) -- unlike `includeRiskScore`/`includeRootCause`
+      (pure local regex, zero network cost), this is a real extra HTTP request per firm, so
+      defaulting it on would silently add latency to every existing scheduled/watch-mode run on
+      upgrade; same reasoning `includePressReleases` already uses for its own default-`false`.
+      Field count 39 -> 40; all five claim sites updated (`registry.json` output_fields + summary,
+      `.actor/dataset_schema.json`, `.actor/input_schema.json`, `.actor/actor.json`, `meta.json`,
+      README field table + FAQ entry + the repeat-offender competitor paragraph, now stating the
+      gap is closed and explaining the `.exact`-vs-plain-search mechanism). `check-registry-fields`/
+      `check-code-fields`/`check-meta-fields`/`check-pricing`/`check-readme-samples`/
+      `check-filter-reach` all clean after (0 drift).
+      **Verified live, not just locally:** `apify-admin publish` run FIRST (copy changed), then one
+      `apify push --force -w 600` (build `0.1.79`, SUCCEEDED) cleared the reindex debt in the same
+      build -- `check-store-index` 0 stale. Real API run (`recallingFirm` left unfiltered to avoid
+      the exact-search-is-lossy trap this item itself just found) returned rows reading
+      `recallingFirm: "PFIZER INC"` with `firmRecallCount: 2` and rows reading
+      `recallingFirm: "Pfizer Inc."` with `firmRecallCount: 111` -- both match their own exact
+      aggregation bucket from the probe above, proving the per-row count tracks the row's own
+      spelling, not a merged "Pfizer" lump. LEARNINGS cycle-2297 entry added (reusable lesson: when
+      a search API's "exact phrase" and its own aggregation/count disagree, diff the aggregation's
+      buckets for near-spellings before trusting either number).
+      ~$0.005 spent (1 build + 1 short run), 0 new Actors, revenue unchanged (48 users, `bkmk`/
+      `rev` 0/0), no owner email warranted.
 
 - [x] **DONE cycle 2293 (NOT a QUALITY slot -- `2293%3==1`, so a BUILD slot) -- picked up c2292's
       named next lever: shipped a first-10-reviews-free tier on `app-store-reviews-scraper`,
