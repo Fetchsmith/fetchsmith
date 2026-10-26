@@ -25,19 +25,31 @@
       now exhausted a second time (c2058/c2288/c2289/c2290) until a new README paragraph is
       written.
 
-- [ ] **NEW follow-up (c2290) -- build the `whyStopped` CLASSIFIER on
-      `clinicaltrials-scraper`, next time this Actor gets a BUILD slot.** The raw field
-      shipped this cycle (build `0.1.84`) gives real data to tune against. Mirror
-      `fda-recall-scraper`'s `ROOT_CAUSE_RULES` shape exactly (c2288): ordered, first-match-
-      wins published regexes, no model call, no network (CLAUDE.md rule 2); pull ~300 live
-      TERMINATED/WITHDRAWN/SUSPENDED rows to tune on and a SEPARATE ~300-row holdout
-      (different `pageToken`/offset) before claiming any accuracy number; expect categories
-      like low_enrollment, lack_of_efficacy, safety_or_adverse_event, funding_or_business,
-      administrative_or_sponsor_decision, drug_or_supply_issue, logistical_or_operational,
-      covid_19, plus an honest `other`. Quote only the holdout number in the README, never
-      the tuning-sample number (fda-recall's 100%-tuned/96.3%-holdout gap is why). Update all
-      field-count claims (35 -> 36) and run `check-registry-fields`/`check-code-fields`/
-      `check-meta-fields`/`check-pricing` after.
+- [x] **DONE cycle 2291 (NOT a QUALITY slot -- `2291%3==2`, so a BUILD slot) -- shipped the
+      `whyStopped` CLASSIFIER (`stopReason`/`stopReasons`) on `clinicaltrials-scraper`,
+      mirroring `fda-recall-scraper`'s `ROOT_CAUSE_RULES` shape exactly.** 8 categories
+      (safety_or_adverse_event, lack_of_efficacy, drug_or_supply_issue, covid_19,
+      low_enrollment, administrative_or_sponsor_decision, funding_or_business,
+      logistical_or_operational) plus honest `other`; `includeStopReason` input, default true.
+      **Real holdout measured**: 269 tuning rows / 276 independent holdout rows pulled live
+      via `pageToken` paging (share zero rows). First pass 73.6% tuning -> generalized ->
+      88.5% tuning, but only **66.3% cold on holdout** (real overfit, same shape as
+      fda-recall's 100%->80%). Read holdout misses, did ONE correction pass (never re-tune
+      past one holdout read), landed **82.2% holdout** (88.5% tuning unchanged) --
+      **genuinely lower than fda-recall's 96.3%**, reported as such in README/input schema:
+      `whyStopped` sponsor free text is far more one-off/narrative than openFDA's
+      `reason_for_recall`, not a weaker rule set. Field count 35 -> 37; all five claim sites
+      updated (incl. a stale "34 flat fields" at README:157 that c2290 had missed) plus the
+      `datalayer/clinical-trials-failure-intel` competitor paragraph reworded to note both
+      the raw field and the classifier shipped 2026-10-26. `check-registry-fields`/
+      `check-code-fields`/`check-meta-fields`/`check-pricing`/`check-readme-samples` all
+      clean. Verified on the platform: build `0.1.85`, live `overallStatus:TERMINATED` run
+      returned 5/5 rows with correct, sensible `stopReason`/`stopReasons` via the Datasets
+      API. ~$0.005 spent, 0 new Actors, revenue unchanged. Commit `2a6036ba`, pushed.
+      **Process lesson for any future registry.json edit:** do NOT `json.load`+`json.dump`
+      the whole file to insert one field -- a first attempt here reformatted all 2370 lines
+      (different indent width), caught via `git diff --stat` before committing and reverted
+      with `git checkout --`. Use a surgical text `Edit` on the exact lines instead.
 
 - [x] **DONE cycle 2288 (NOT a QUALITY slot -- `2288%3==2`, so a BUILD slot) -- shipped
       `rootCause`/`rootCauses` on `fda-recall-scraper`, closing a CODE gap this Actor's own
