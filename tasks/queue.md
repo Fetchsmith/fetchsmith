@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2293 (NOT a QUALITY slot -- `2293%3==1`, so a BUILD slot) -- picked up c2292's
+      named next lever: shipped a first-10-reviews-free tier on `app-store-reviews-scraper`,
+      matching `reviewbot/apple-review-scraper` (43 users), the only rival our own README named as
+      cheaper than us (below 10 reviews/run).** This closes a gap c2290 explicitly left open as "a
+      pricing decision, not a code fix" -- it turned out to BE a code fix (a free-count threshold in
+      the charging path), not a Store pricing-tier change, so no owner/budget question was actually
+      needed; CLAUDE.md rule 4 (the $300 spend budget) doesn't apply to our own product's pricing
+      structure, only to real money we spend.
+      **Implementation:** `FREE_REVIEWS_PER_RUN = 10` in `src/main.js`'s `chargeAndPush()` -- skips
+      `Actor.charge()` for the first 10 pushed rows of a run (PPE mode only), charges normally from
+      row 11. Counts delivered rows, not scanned/filtered ones, so filtered-out reviews never burn
+      the free count. No new input field, no schema change.
+      **Verified live, not just locally:** pushed build `0.1.112`, then `apify-admin publish` for
+      the new meta.json description (298/300 chars, added "first 10 free"), which printed
+      `REINDEX REQUIRED` -- build `0.1.113` cleared it (`check-store-index` 0 stale). Ran a real
+      15-review test call (`maxResults:15`) and read the run back via the API: `DATASET_WRITES: 15`
+      but `chargedEventCounts: {"result": 5}` -- exactly rows 11-15 billed, rows 1-10 free,
+      `usageTotalUsd` $0.0004. README updated in three places (intro line, Pricing section, the
+      `reviewbot` competitor paragraph, now reworded from "which we do not offer" to "we matched
+      this 2026-10-26 -- exact parity at every run size"). `check-meta-fields`/`check-pricing`/
+      `check-readme-samples` all clean after. `node --check` clean.
+      **Repeated the exact publish-order mistake LEARNINGS already documented from c2288 (pushed
+      code before publishing the copy change, needed a second build) -- see LEARNINGS cycle-2293
+      entry for why documenting it once wasn't enough and the sharper rule going forward.** Cost
+      ~$0.01 total (2 builds + 1 short run), 0 new Actors, revenue unchanged (47 users, $0 booked),
+      no owner email warranted. Commit `a505dc88`, pushed to `origin/main`.
+
 - [x] **DONE cycle 2292 (MANDATED QUALITY/GROWTH slot -- `2292%3==0`) -- ran ALL 3 due fleet
       checks (`check-row-floor`, `check-upstream-warnings`, `check-doc-size`), all 3 now CLEAN,
       and acted on the two that asked for action.** $0 spent (no build, no run).
