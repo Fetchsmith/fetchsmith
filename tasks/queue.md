@@ -1,22 +1,45 @@
-- [ ] **NEW follow-up (c2295) -- minor misclassification found in `clinicaltrials-scraper`'s
-      `stopReason` classifier via an ad-hoc varied-input smoke test, NOT yet fixed (needs a
-      proper holdout re-measurement, not a blind regex patch, per this fleet's own standing
-      discipline).** Live `overallStatus:["WITHDRAWN"]` test (2026-10-26, different status than
-      c2291's TERMINATED verification) returned a real row: `whyStopped` = "Due to the technical
-      problem in the laser device,it has not started." classified `stopReason=drug_or_supply_issue`
-      (via `src/main.js:1014`'s `technical\s+(?:difficulty|problem|issue|support)` branch, which
-      fires before `logistical_or_operational`'s narrower `technical\s+difficulty` at line 1019
-      since `drug_or_supply_issue` is earlier in `WHY_STOPPED_RULES` and the match is first-wins).
-      This is a device/equipment malfunction, not a drug-supply issue -- the phrase "technical
-      problem" is too broad in the drug_or_supply_issue branch and bleeds into logistical/device
-      cases. **Next BUILD slot:** narrow `drug_or_supply_issue`'s technical-term match to require a
-      drug/supply-adjacent noun nearby (mirror the `device[- ]related\s+issues` branch's own
-      specificity) or move the bare `technical\s+(?:problem|issue|support)` forms to
-      `logistical_or_operational` instead, THEN re-run the full tuning/holdout measurement
-      (c2291's 269/276 split or a fresh pull) before shipping -- a single anecdotal fix without
-      re-measuring holdout accuracy is exactly the mistake this fleet's own process notes warn
-      against. Other 5 WITHDRAWN rows in the same smoke test classified sensibly (low_enrollment,
-      administrative_or_sponsor_decision x2, funding_or_business, logistical_or_operational).
+- [x] **DONE cycle 2296 (NOT a QUALITY slot -- `2296%3==1`, so a BUILD slot) -- fixed c2295's
+      `clinicaltrials-scraper` `stopReason` misclassification, and the fix turned out to be a
+      MISSING CATEGORY, not a regex that needed narrowing.** Did what the item asked (re-measure,
+      don't blind-patch) but did one thing first that changed the answer: **printed every row in
+      the suspect `drug_or_supply_issue` category across BOTH measured samples before touching a
+      regex.** 7 of the 22 rows there were equipment/instrument failures, not study-material
+      availability ("Technical difficulty with Endo-PAT machine", "technical problems with
+      equipment from the main outcome", "Study currently suspended due to device-related issues",
+      "technical support not available", "technical issues", "Technical issues in testing
+      procedure", plus c2295's laser-device row) -- **a third of the category was wrong, so the
+      anecdote was a symptom, and either fix the item proposed (narrow the branch, or move the
+      bare forms into `logistical_or_operational`) would have mislabelled those 7 rows a second
+      time.**
+      **Shipped:** a 9th category `device_or_technical_issue` in `WHY_STOPPED_RULES`, ordered
+      BEFORE `drug_or_supply_issue` so an equipment failure wins over the supply reading, and
+      deliberately NOT matching a bare "device" noun so genuine supply text still classifies as
+      supply. Moved `device[- ]related issue`, `equipment failure|issue`, and the bare
+      `technical (difficulty|problem|issue|support)` forms out of `drug_or_supply_issue`, plus
+      `technical\s+difficulty` out of `logistical_or_operational` (now covered earlier, so
+      `stopReasons` no longer double-lists it). No new field, no field-count change (still 37).
+      **Re-measured as the item required, on re-pulled samples:** the ClinicalTrials.gov API
+      returns the same first two pages per status, so the pull reproduced c2291's samples exactly
+      (269 tuning / 276 holdout, 0 overlap) and reproduced c2291's baseline numbers to the decimal
+      (88.5% / 82.2%) -- which is itself the proof the measurement harness is sound. After the
+      split: **coverage UNCHANGED at 88.5% tuning / 82.2% holdout** (a relabel adds no matches)
+      and **exactly the 7 intended rows changed category, 0 collateral relabels** anywhere else
+      in either sample.
+      **Verified live on the platform, not just locally:** build `0.1.86`, then a real run on the
+      7 moved NCT IDs plus `NCT05618093` ("Study device no longer available") as a deliberate
+      CONTROL. Read back via the Datasets API: 8/8 rows, all 7 now `device_or_technical_issue`,
+      and the control still `drug_or_supply_issue` -- i.e. the split cut where intended.
+      Claim sites updated: README field table (8 -> 9 categories, the split dated and explained,
+      and the sample description corrected from "two independent 300-row live samples" to "300
+      studies each, 269 and 276 of which carry `whyStopped` text") and
+      `.actor/input_schema.json`'s `includeStopReason` description. `check-registry-fields`/
+      `check-code-fields`/`check-meta-fields`/`check-pricing`/`check-readme-samples` all clean
+      after; `check-store-index` 0 stale (meta.json title/description untouched, so no reindex --
+      and for once the publish-order trap did not apply, because there was no copy change to
+      publish). Also ran both due fleet checks: `check-cta-presence` CLEAN, `sync-apify-prices`
+      CLEAN (25 tools, 25 live prices, 0 updated), both recorded (next due 2632).
+      ~$0.01 spent (1 build + 1 short run), 0 new Actors, revenue unchanged (48 users, `bkmk`/
+      `rev` 0/0), no owner email warranted.
 
 - [ ] **NEW follow-up (c2294) -- next BUILD slot: close the `fda-recall-scraper` repeat-offender-firm
       gap this Actor's own README names at line 250, but resolve a measurement discrepancy FIRST.**

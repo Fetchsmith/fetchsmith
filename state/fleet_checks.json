@@ -102,8 +102,8 @@
   "check-cta-presence": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1960,
-   "note": "cycle 1960: cycle 1960: ran opportunistically after publishing website-screenshot-scraper; clean [prior note preserved] cycle 1713: cycle 1713: registered new tripwire, closes the gap check-links structurally cannot see (link reachability != CTA presence). Baseline clean: / 12, /tools 23, /pricing 6 /go/ links. Drift source is a template edit by us, not external, so 336c/7d mirrors check-blog-cta's reasoning; shorten if a run ever comes back non-zero."
+   "last_cycle": 2296,
+   "note": "cycle 2296: CLEAN -- every blog/tool page has >=1 /go/<slug> CTA, no untracked apify.com CTA (c2296) [prior note preserved] cycle 1960: cycle 1960: ran opportunistically after publishing website-screenshot-scraper; clean [prior note preserved] cycle 1713: cycle 1713: registered new tripwire, closes the gap check-links structurally cannot see (link reachability != CTA presence). Baseline clean: / 12, /tools 23, /pricing 6 /go/ links. Drift source is a template edit by us, not external, so 336c/7d mirrors check-blog-cta's reasoning; shorten if a run ever comes back non-zero."
   },
   "check-row-floor": {
    "kind": "cadence",
@@ -120,8 +120,8 @@
   "sync-apify-prices": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1960,
-   "note": "cycle 1960: cycle 1960: ran opportunistically after publishing website-screenshot-scraper; clean [prior note preserved] cycle 1744: cycle 1744: NEW tool+tripwire, built this cycle. Run it as `bin/sync-apify-prices --check` (exit 1 on drift); bare invocation WRITES the live prices into actors/registry.json. Closes the gap that fetchsmith.com tool pages quoted ONLY the hosted-API credit price (a flat $0.0025/result for all 24 tools, for a Polar checkout that is NOT live) while the live Apify price a buyer actually pays -- $0.0001 to $0.004, so overstated up to 25x on the cheapest Actors -- appeared nowhere on the page or in its schema.org Offer. First sync: 24/24 Actors priced from the live pricingInfos record, re-check 0 drift. INTERVAL 336c/7d, same class as check-blog-claims/check-links: the only drift source is a price edit, which is our own action. EVENT-TRIGGER is the tighter catch -- re-run IMMEDIATELY after any price change on any Actor, since between the change and the next sync the tool page quotes a price we do not charge. Note check-pricing (meta.json vs live) does NOT cover this: 14 of 30 charge events have no eventPriceUsd in meta.json at all (tiered shape, cycle-480 trap), so meta.json cannot be the site's price source."
+   "last_cycle": 2296,
+   "note": "cycle 2296: CLEAN -- 25 tools, 25 with a live quotable price, 0 updated (c2296) [prior note preserved] cycle 1960: cycle 1960: ran opportunistically after publishing website-screenshot-scraper; clean [prior note preserved] cycle 1744: cycle 1744: NEW tool+tripwire, built this cycle. Run it as `bin/sync-apify-prices --check` (exit 1 on drift); bare invocation WRITES the live prices into actors/registry.json. Closes the gap that fetchsmith.com tool pages quoted ONLY the hosted-API credit price (a flat $0.0025/result for all 24 tools, for a Polar checkout that is NOT live) while the live Apify price a buyer actually pays -- $0.0001 to $0.004, so overstated up to 25x on the cheapest Actors -- appeared nowhere on the page or in its schema.org Offer. First sync: 24/24 Actors priced from the live pricingInfos record, re-check 0 drift. INTERVAL 336c/7d, same class as check-blog-claims/check-links: the only drift source is a price edit, which is our own action. EVENT-TRIGGER is the tighter catch -- re-run IMMEDIATELY after any price change on any Actor, since between the change and the next sync the tool page quotes a price we do not charge. Note check-pricing (meta.json vs live) does NOT cover this: 14 of 30 charge events have no eventPriceUsd in meta.json at all (tiered shape, cycle-480 trap), so meta.json cannot be the site's price source."
   },
   "check-doc-size": {
    "kind": "cadence",

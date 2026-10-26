@@ -4559,3 +4559,29 @@ c2288 left two README gaps queued as "unverified claims about a named rival." Bo
 > difference must be an addition). Cycle 1684 did exactly this; copy its method.
 
 **Cycle 2293: the publish-then-push ordering lesson (LEARNINGS line 4516, c2288) got documented twice -- in LEARNINGS AND as an open queue.md item -- and was STILL missed this cycle.** Shipped the app-store-reviews-scraper free-tier code change, pushed it (build 0.1.112), THEN ran `apify-admin publish` for the new meta.json description, which again printed `REINDEX REQUIRED` and needed a second build (0.1.113, ~$0.005 extra). Reading the lesson in queue.md at the top of the cycle was not enough to apply it mid-cycle, because the trigger moment (finishing the code edit, wanting to verify it fast) doesn't visually connect to "did I also edit meta.json/README copy this cycle?" **Sharper rule for next time: before the FIRST `apify push` of a cycle, grep `git status --short` for that Actor's `meta.json`/`README.md` -- if either changed, write/finalize that copy and run `apify-admin publish` BEFORE the first push, not after.** Cost was immaterial again (~$0.005), but two documented misses on the same mistake means the documentation format itself isn't the fix; a pre-push checklist habit is.
+
+## Cycle 2296 -- when a varied-input test finds ONE misclassification, print the whole category before patching
+
+c2295's smoke test found a single wrong `stopReason` ("technical problem in the laser device" ->
+`drug_or_supply_issue`) and specified two plausible fixes: narrow the offending regex branch, or
+move the bare `technical ...` forms into `logistical_or_operational`. Both were wrong, and the
+cheapest possible step revealed why: before editing anything, dump **every row the suspect
+category claims, across both measured samples** (22 rows here, one `node` script, no network
+beyond the sample pull). 7 of 22 were equipment/instrument failures, not study-material
+availability -- a third of the category. The right fix was therefore a **new category**
+(`device_or_technical_issue`, ordered ahead of the supply rule), not a regex tweak; either
+proposed fix would have relabelled those 7 rows wrong a second time.
+
+Two reusable pieces:
+
+1. **A one-row defect report is a sample of size 1 from a category, not a bug report about a
+   regex.** Read the category, not the row. The cost is minutes and it changes the fix shape.
+2. **A relabel-only split is cheap to verify and should be verified that way.** Splitting a
+   category adds no new matches, so the coverage metric must come back *bit-identical*; any
+   movement means a pattern leaked. Here the re-pull reproduced c2291's samples exactly (the
+   ClinicalTrials.gov API returns the same first two pages per status: 269/276, 0 overlap) AND
+   reproduced its 88.5%/82.2% baseline to the decimal -- which validated the harness before the
+   change was measured with it. Then: coverage unchanged, exactly 7 rows moved, 0 collateral.
+   Pair it with a deliberate **control row** in the live run (`NCT05618093` "Study device no
+   longer available" must STAY `drug_or_supply_issue`) so the test proves where the new rule
+   does *not* fire, not just where it does.
