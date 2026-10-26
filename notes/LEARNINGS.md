@@ -4183,3 +4183,28 @@ opposite, so the clock and the evidence disagree and the evidence should win. Se
 c2228 noted `webhookUrl` scored a **0** across every Actor's `audit_dates.json` note history — never once live-verified that the POST actually arrives with correct content, only ever read from the code. Closed it on `federal-register-scraper` (fleet-oldest `varied_test` target) using a free public capture endpoint (webhook.site — create via `POST /token`, read via `GET /token/<uuid>/requests`, no account needed) as the `webhookUrl` value on 3 real platform runs: a plain search, a watch seed, and a watch incremental (doctored one id out of the live KV baseline first, same technique as c2210). All 3 payloads matched the run exactly (`pushed`/`scanned`/`watchSeeding`/`watchNewCount`/`skippedSeen`/`incompleteReason` all correct), and the run log's own `Posted completion summary to webhookUrl (200)` line confirmed delivery independent of the capture endpoint. **0 defects — the mechanism works as coded.** This generalizes: any other Actor with a `webhookUrl` input is an equally-untested surface (same 0-count method from c2228 applies), and webhook.site is now a usable $0 fixture for verifying one on any of them without touching production infrastructure.
 
 **The gotcha, worth remembering before calling a `chargedEventCounts:0` a leak:** on the plain-search run it took ~15s after `SUCCEEDED` to update from `{result:0}` to the correct `{result:3}` (matches c2210's own observed lag). On the watch-incremental run (only 1 pushed row) it was **still** `{result:0}` ~47s after `SUCCEEDED`, even though `usageTotalUsd` was already nonzero. The actual proof a charge happened is cheaper and immediate: `pushResult()` (`src/main.js:677`) only calls `Actor.pushData` if `Actor.charge(...).chargedCount > 0`, so a pushed row **is** a charged row by construction, and the run log's `Pushed N documents` / webhook's `pushed` field already settle the question without waiting on the summary endpoint at all. Don't re-fetch `chargedEventCounts` in a retry loop for up to a minute hoping it updates — read the log instead.
+
+## Cycle 2268 — the Apify `users` count is NOT a one-way ratchet: it is measurably reversible, so a +1 is never evidence a real user arrived
+
+The c2168 queue item asks every cycle running `bin/usage-trend` to watch `trademark-search-scraper`'s `users` column because it was "the only Actor off the baseline and the only one at 3 users". Re-derived both halves against `state/revenue_history.json` (400 snapshots, ~every 30 min) this cycle and **both halves were wrong** — and the more useful finding is *why* that kind of claim rots so fast.
+
+Exact transitions, read off the snapshot history:
+
+```
+10-18 00:04   wss=1 steam=2 shopify=3 tms=2
+10-19 23:00   wss=2                            <- +1
+10-20 13:35   wss=3                            <- +1
+10-21 11:30   wss=1                            <- -2, full round trip in ~36h
+10-22 16:00         steam=3                    <- +1
+10-23 09:18         steam=1                    <- -2 in 17h
+10-23 09:18                           tms=3
+10-24 16:03                 shopify=4
+```
+
+`website-screenshot-scraper` climbed 1 → 2 → 3 and fell straight back to 1 inside ~36 hours; `steam-reviews-scraper` went 2 → 3 → 1 in 17 hours. **The field is not cumulative** — a user that shows up can vanish, and a -2 step means it is not even a monotone count of distinct historical users. So `shopify-products-scraper`'s 3 → 4 (10-24 16:03) and `trademark-search-scraper`'s 2 → 3 (10-23 09:18) are both just as likely to evaporate as the two above, and "Actor X is off the baseline" is a statement with a shelf life of about a day.
+
+Three consequences, all cheap to apply:
+
+1. **Never escalate on a `users` climb** — which is what the c2168 item already concluded for a different reason (c2168 confirmed we cannot see earnings at all, so a run-count or user-count climb cannot substantiate a revenue claim). This adds the independent reason: the number itself retracts. The escalation trigger stays exactly what CLAUDE.md says — a **bookmark, a review, or `bin/traffic` buyer intent** (>100 verified visits/day to `/pricing` or `/tools`). `bkmk` and `rev` have been 0 across all 25 Actors every cycle so far, and they do not oscillate, which is precisely why they are the usable columns.
+2. **Don't write "the only Actor at N users" into a standing doc.** A named-leader claim in a `- [ ]` item is stale within ~a day on this metric and then silently misleads whoever reads it next (it misled for ~100 cycles here: trademark was at 1-2 users for most of the window the item described it as the sole leader at 3, and shopify sat at 3 the whole time). Write the *decision rule* into the standing item and re-derive the current numbers from `revenue_history.json` at read time — the history is local, free, and takes one python loop.
+3. **`revenue_history.json` is the right instrument for any "when did this change?" question about platform metrics**, not `bin/usage-trend`, which only prints now/+24h/+48h/+all deltas. Snapshots are `{ts, date, apify: {<slug>: {users, users30d, runs30d, runs, bookmarks, reviews, rating, ...}}}`; printing only the snapshots where a tuple of interest *changes* collapses 400 records to the handful of transition timestamps above and is how both round trips became visible at all.
