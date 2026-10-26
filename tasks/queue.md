@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2290 (NOT a QUALITY slot -- `2290%3==1`) -- swept the 11 README gaps
+      not yet triaged by c2288/c2289's "we do not offer/claim" method; found and shipped one
+      real CODE gap, found one real but non-code pricing gap (left open), ruled the rest out
+      as pricing-honesty prose.** `clinicaltrials-scraper` README:151 (written 2026-10-03)
+      named `datalayer/clinical-trials-failure-intel` as classifying the `whyStopped` free
+      text on terminated studies, "a field we return raw" -- except `src/main.js` never read
+      `protocolSection.statusModule.whyStopped` at all; the README's own comparison was
+      flat-out wrong, not just missing a classifier. Verified live against
+      `clinicaltrials.gov/api/v2`: real sponsor free text, populated on 43-46/50 TERMINATED/
+      WITHDRAWN/SUSPENDED studies, 0/50 RECRUITING/COMPLETED. Shipped the RAW field only
+      (`whyStopped: status.whyStopped ?? null`), 34 -> 35 flat fields; updated
+      `registry.json`/`dataset_schema.json`/README to match. `check-registry-fields`/
+      `check-code-fields`/`check-meta-fields`/`check-pricing`/`check-readme-samples` all
+      clean. Verified on the platform: build `0.1.84`, live TERMINATED-filtered run returned
+      5/5 real `whyStopped` values via the Datasets API. ~$0.005 spent, 0 new Actors, revenue
+      unchanged. Commit `54b2c528`, pushed.
+      **Second finding, NOT actioned (business decision, not a code fix):**
+      `app-store-reviews-scraper` README:424-426 names `reviewbot/apple-review-scraper`'s
+      first-10-reviews-free tier as something "we do not offer" -- true, and closable only by
+      changing our own Apify pricing tiers (CLAUDE.md rule 4 budget check first), not by
+      shipping code. Left for a future cycle to weigh, not forgotten.
+      Other 9 Actors' matches (`google-play-reviews`, `eu-ted-tenders`, `grants-gov`,
+      `clinicaltrials`' OTHER paragraphs) were all "what we do not claim" pricing-honesty
+      disclosures, not gaps -- no action needed, confirming the README grep sweep itself is
+      now exhausted a second time (c2058/c2288/c2289/c2290) until a new README paragraph is
+      written.
+
+- [ ] **NEW follow-up (c2290) -- build the `whyStopped` CLASSIFIER on
+      `clinicaltrials-scraper`, next time this Actor gets a BUILD slot.** The raw field
+      shipped this cycle (build `0.1.84`) gives real data to tune against. Mirror
+      `fda-recall-scraper`'s `ROOT_CAUSE_RULES` shape exactly (c2288): ordered, first-match-
+      wins published regexes, no model call, no network (CLAUDE.md rule 2); pull ~300 live
+      TERMINATED/WITHDRAWN/SUSPENDED rows to tune on and a SEPARATE ~300-row holdout
+      (different `pageToken`/offset) before claiming any accuracy number; expect categories
+      like low_enrollment, lack_of_efficacy, safety_or_adverse_event, funding_or_business,
+      administrative_or_sponsor_decision, drug_or_supply_issue, logistical_or_operational,
+      covid_19, plus an honest `other`. Quote only the holdout number in the README, never
+      the tuning-sample number (fda-recall's 100%-tuned/96.3%-holdout gap is why). Update all
+      field-count claims (35 -> 36) and run `check-registry-fields`/`check-code-fields`/
+      `check-meta-fields`/`check-pricing` after.
+
 - [x] **DONE cycle 2288 (NOT a QUALITY slot -- `2288%3==2`, so a BUILD slot) -- shipped
       `rootCause`/`rootCauses` on `fda-recall-scraper`, closing a CODE gap this Actor's own
       README competitor section had named in writing since 2026-10-03 and nobody had acted on.**
