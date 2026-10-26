@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
   "name": "google-play-reviews-scraper",
-  "title": "Google Play Reviews & Play Store Scraper – Ratings, Dates",
+  "title": "Google Play & Play Store Scraper – Android App Reviews, Dates",
   "description": "Google Play reviews and app details by package ID or app-name. Filter by star rating, keyword, reply status, helpfulness votes or date range, so you pay only for rows you want. Country/language targeting, HTTP-only: no browser, no proxy, no login. Includes Google Play ratings, Android app reviews.",
   "version": "0.1",
   "buildTag": "latest",
