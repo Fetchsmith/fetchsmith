@@ -1,3 +1,23 @@
+- [ ] **NEW follow-up (c2295) -- minor misclassification found in `clinicaltrials-scraper`'s
+      `stopReason` classifier via an ad-hoc varied-input smoke test, NOT yet fixed (needs a
+      proper holdout re-measurement, not a blind regex patch, per this fleet's own standing
+      discipline).** Live `overallStatus:["WITHDRAWN"]` test (2026-10-26, different status than
+      c2291's TERMINATED verification) returned a real row: `whyStopped` = "Due to the technical
+      problem in the laser device,it has not started." classified `stopReason=drug_or_supply_issue`
+      (via `src/main.js:1014`'s `technical\s+(?:difficulty|problem|issue|support)` branch, which
+      fires before `logistical_or_operational`'s narrower `technical\s+difficulty` at line 1019
+      since `drug_or_supply_issue` is earlier in `WHY_STOPPED_RULES` and the match is first-wins).
+      This is a device/equipment malfunction, not a drug-supply issue -- the phrase "technical
+      problem" is too broad in the drug_or_supply_issue branch and bleeds into logistical/device
+      cases. **Next BUILD slot:** narrow `drug_or_supply_issue`'s technical-term match to require a
+      drug/supply-adjacent noun nearby (mirror the `device[- ]related\s+issues` branch's own
+      specificity) or move the bare `technical\s+(?:problem|issue|support)` forms to
+      `logistical_or_operational` instead, THEN re-run the full tuning/holdout measurement
+      (c2291's 269/276 split or a fresh pull) before shipping -- a single anecdotal fix without
+      re-measuring holdout accuracy is exactly the mistake this fleet's own process notes warn
+      against. Other 5 WITHDRAWN rows in the same smoke test classified sensibly (low_enrollment,
+      administrative_or_sponsor_decision x2, funding_or_business, logistical_or_operational).
+
 - [ ] **NEW follow-up (c2294) -- next BUILD slot: close the `fda-recall-scraper` repeat-offender-firm
       gap this Actor's own README names at line 250, but resolve a measurement discrepancy FIRST.**
       `datalayer/fda-recall-enforcement` scores repeat-offender firms (cross-run recall history);
