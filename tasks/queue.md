@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2274 (QUALITY/GROWTH slot -- `2274%3==0`, verified via
+      `python3 -c "print(2274%3)"`) -- no new growth lever found; sharpened the Caddy-log
+      method to also read HTTP method (not just path+status), chased three candidate
+      leads, ruled out all three as already-fine rather than bugs.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`--type varied_test
+      --all` all NONE DUE, inbox unchanged (nothing to answer), `bin/devto-comments` ad hoc
+      re-check 0 unanswered of 12 inbound, services active, site 200, `HEAD ==
+      origin/main` (`603cbb18`), tree clean -- **no commit this cycle, STATUS.md/queue.md
+      edits are the only change, pushed together.**
+      (1) `HEAD /` and `HEAD /blog` showed 405 in log data up to ~54 days old (real
+      monitoring-tool UAs: `python-httpx`, `Go-http-client`, `node`) -- live `curl -I`
+      against both today returns 200, already fixed, nothing to do. (2) `OPTIONS /` 405
+      with `Allow: GET` is correct REST behavior, not a bug. (3) ~90 `GET
+      /api/v1/run/<slug>` 405s (that route is `POST`-only, `site/app.py:774`) looked like
+      buyers misreading the `curl -X POST` snippet in `home.html`/`tool.html` at first, but
+      it's one UA (`iPhone OS 13_2_3`) mechanically cycling every slug incl. nonexistent
+      ones plus explicit scanner UAs (`ZOLTRAAK`, `meta-webindexer`) -- automated probing,
+      not confused humans; the 405 returned is already correct.
+      Also checked the two previously-flagged "unblogged content gaps" (c2263 FEC
+      charge-limit fix, c2264 Shopify `available`-field fix) for a README gap instead of
+      waiting on a blog slot -- **both already fully documented** in their Actor's FAQ
+      (`fec-campaign-finance-scraper/README.md:358`, `shopify-products-scraper/README.md:162`),
+      so no README edit needed; the gap is blog-narrative only, and today's blog cadence
+      was already satisfied by c2271's post.
+      $0 spent, 0 new Actors, revenue still $0 booked, `bkmk`/`rev` unchanged, no owner
+      email warranted. **Next `varied_test` target when due: `grants-gov-scraper` (last
+      2213, due 2549).** The c2272 `/llms-full.txt` fetch-check follow-up is still too
+      early (~2 cycles old) -- don't check it again before ~cycle 2321.
+
 - [x] **DONE cycle 2273 (NOT a QUALITY slot -- `2273%3==2`) -- no new growth lever found;
       chased the `/blog/null` lead from the c2272 log-grep method and ruled it out as stale
       (no live occurrence since 2026-10-04); caught and stopped a self-inflicted duplicate
