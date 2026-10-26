@@ -1621,6 +1621,7 @@
         "officialTitle",
         "acronym",
         "overallStatus",
+        "whyStopped",
         "studyType",
         "phases",
         "enrollmentCount",

@@ -1020,6 +1020,12 @@ function normalizeStudy(study) {
         officialTitle: id.officialTitle ?? null,
         acronym: id.acronym ?? null,
         overallStatus: status.overallStatus ?? null,
+        // Only the registry sets this -- almost always on TERMINATED/WITHDRAWN/SUSPENDED studies,
+        // null on everything else (verified live 2026-10-26, 50-row samples: 0/50 RECRUITING,
+        // 0/50 COMPLETED, 43/50 TERMINATED, 46/50 WITHDRAWN, 45/50 SUSPENDED carry a value).
+        // Sponsor's own free text, shipped raw and undecoded on purpose -- same "source text, not
+        // a heuristic label" call as eligibilityCriteria above.
+        whyStopped: status.whyStopped ?? null,
         studyType: design.studyType ?? null,
         // Populated on ~81% of studies (measured live sample of 50) — absent for many
         // observational studies. Never advertised as guaranteed.

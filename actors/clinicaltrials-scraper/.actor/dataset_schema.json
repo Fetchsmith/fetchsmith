@@ -42,6 +42,14 @@
         "title": "OverallStatus",
         "example": "COMPLETED"
       },
+      "whyStopped": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "WhyStopped",
+        "example": "Slow enrollment, and unusable data"
+      },
       "studyType": {
         "type": [
           "string",
