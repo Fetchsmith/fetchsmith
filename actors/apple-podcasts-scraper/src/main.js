@@ -161,7 +161,17 @@ const explicitFilter = ['all', 'clean', 'explicitOnly'].includes(input.explicitF
 // the user exactly like "the filter ran and matched everything". Same contract as the
 // "chartType"/"chartGenre"/"watchLabel" warnings above; added cycle 2172 after a live run with
 // dataType "episodes" + keyword "AI" returned unfiltered rows and said nothing about it.
-const EPISODE_FILTER_TYPES = ['episodes', 'charts'];
+// `dataType: "charts"` only actually runs these filters when `chartType: "episodes"` (the
+// Trending Episodes chart, which enriches each entry into a real episode row) — the default
+// `chartType: "shows"` branch pushes podcast/show rows straight from the chart feed with no call
+// to `episodePassesFilters` at all (README :36-38/:129 already documents these as "episodes
+// only", with the charts+episodes case called out as the one exception). The ORIGINAL
+// `EPISODE_FILTER_TYPES = ['episodes', 'charts']` exemption did not make that distinction, so a
+// "charts" + default "shows" run that set e.g. `explicitFilter:"clean"` and `maxReleaseDate` in
+// the past silently kept an Explicit-flagged show released after that date and said nothing —
+// found live cycle 2259: 5/5 chart shows returned including one Explicit-flagged show, despite
+// both filters being set to exclude it.
+const episodeFiltersApply = dataType === 'episodes' || (dataType === 'charts' && chartType === 'episodes');
 const reviewOnlyIgnored = dataType === 'reviews' ? [] : [
   keyword != null ? '"keyword"' : null,
   minRating != null ? '"minRating"' : null,
@@ -178,14 +188,16 @@ const reviewOnlyIgnored = dataType === 'reviews' ? [] : [
 if (reviewOnlyIgnored.length) {
   log.warning(`${reviewOnlyIgnored.join(', ')} only applies to dataType "reviews" — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
 }
-const episodeOnlyIgnored = EPISODE_FILTER_TYPES.includes(dataType) ? [] : [
+const episodeOnlyIgnored = episodeFiltersApply ? [] : [
   minDurationSeconds != null ? '"minDurationSeconds"' : null,
   input.explicitFilter && input.explicitFilter !== 'all' ? '"explicitFilter"' : null,
   minReleaseDate ? '"minReleaseDate"' : null,
   maxReleaseDate ? '"maxReleaseDate"' : null,
 ].filter(Boolean);
 if (episodeOnlyIgnored.length) {
-  log.warning(`${episodeOnlyIgnored.join(', ')} only applies to dataType "episodes" (and "charts") — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
+  log.warning(dataType === 'charts'
+    ? `${episodeOnlyIgnored.join(', ')} only applies to dataType "charts" with chartType "episodes" — ignored for chartType "${chartType}", so nothing was filtered out by it.`
+    : `${episodeOnlyIgnored.join(', ')} only applies to dataType "episodes" (or "charts" with chartType "episodes") — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
 }
 // `maxPodcastsPerPublisher` carries a schema default (200), and Apify merges that default into
 // `input` on every run that omits the field (cycle 2204's exact trap, found live on this same
