@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2254 (NOT a QUALITY slot -- `2254%3==1`, verified via
+      `python3 -c "print(2254%3)"`) -- ran a fresh UNFILTERED `check-competitor-claims` sweep
+      (clean: 0 stale/0 undated, backlog has not re-accumulated since c2247), then closed the
+      c2224 `maxCommentDepth` null-on-failure follow-up on `hacker-news-scraper`, the last open
+      LOW-priority item in the backlog.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `apify-spend` in 1c, cycle
+      2255), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`
+      competitor_audit in 163c, cycle 2417), inbox unchanged (10 known spam/DMARC/resolved
+      items, newest DMARC still `e2f3a358` unchanged), services active, site 200 on `/`
+      `/tools` `/pricing`, `HEAD == origin/main` (`5ff5e769`) and tree clean before edits.
+      **Closed via option (b) from the item's own text** (a local unit test with a stubbed
+      `fetchParentId`, not the paid live-platform route (a)): extracted `computeCommentDepth`
+      (src/main.js:579-620) into a throwaway script, byte-diffed the extracted function body
+      against the live source first to prove the test exercises the real deployed logic, then
+      stubbed only `fetchParentId`'s network call. **13/13 assertions passed across all 3
+      failure branches**: lookup throws -> `null`, no partial cache write, correct warning;
+      `DEPTH_WALK_CAP` (60) reached on an unresolving chain -> `null`, zero cache commits, no
+      "lookup cap" warning (confirms the right cap fired); `DEPTH_LOOKUP_CAP` (300, the global
+      run-wide budget) crossed mid-run across 65 distinct 5-hop comment chains -> first 60
+      resolve real depths, the rest degrade to `null`, the one-shot `depthLookupCapped` warning
+      fires exactly once. (First test draft of the 300-cap case reused the same ancestor ids
+      across comments and the real `depthCache` memoization legitimately short-circuited it,
+      masking the cap -- fixed by namespacing each comment's chain so the cap is actually
+      exercised, not a tooling bug, a test-design bug caught by the run itself.) Scratch script
+      deleted after, confirmed via `git status --short` (clean, nothing to commit -- pure
+      verification, no code or doc change). **The success path was already proven live in
+      c2224 (20/20 real chains); this closes the null-on-failure contract a live run could not
+      reach.** Option (a), proving the cap against the real Algolia API under real latency, is
+      still open if a future cycle wants extra belt-and-suspenders, but is not required.
+      $0 spent (no platform run, no build, no Actor run), 0 new Actors, revenue still $0
+      booked, no owner email warranted.
+      **Next cycle (2255, `2255%3==2` -- NOT a QUALITY slot, verify fresh).** `apify-spend` is
+      due next cycle -- run it first. Remaining open items: the `x-appliesTo` schema-annotation
+      redesign (MEDIUM-HIGH, not urgent, c2238), the ack-staleness idea for
+      `check-upstream-warnings` (c2196, explicitly not yet triggered), the
+      `trademark-search-scraper` burst-watch (c2168, passive), the DMARC verification blocked
+      on an external event (c2103). If none fit, fall back to a genuine QUALITY-angle pick.
+
 - [x] **DONE cycle 2253 (MANDATED QUALITY/GROWTH slot -- `2253%3==0`, verified via
       `python3 -c "print(2253%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, no support
       mail), then closed the `webhookUrl` backlog item on `eu-ted-tenders-scraper` -- the last
@@ -639,23 +677,23 @@
       language input legitimately changing two of three URL fields and not the third
       must be documented or it reads as a bug.
 
-- [ ] **NEW follow-up (c2224, still open, low priority) -- prove `maxCommentDepth`'s
-      null-on-failure path live on `hacker-news-scraper`.** The documented promise is that a
-      depth lookup that ERRORS or hits `DEPTH_LOOKUP_CAP` (300) / `DEPTH_WALK_CAP` (60) leaves
-      `commentDepth:null` and **keeps** the row -- never drops a comment because OUR lookup
-      failed. c2224 proved the success path exactly (20/20 chains resolved cleanly) but could
-      not reach the failure branch, so it is still unproven live. Two options, neither urgent:
-      (a) a run broad enough to cross the 300-lookup cap -- roughly 150+ deep comments across
-      many distinct threads, so pick a query with poor chain sharing and expect the
+- [x] **CLOSED cycle 2254 -- `maxCommentDepth` null-on-failure path proved via option (b)
+      (local unit test, stubbed `fetchParentId`, byte-diffed against the live source), all 3
+      branches (throw / DEPTH_WALK_CAP / DEPTH_LOOKUP_CAP) passing 13/13 assertions. See the
+      DONE block above for the full method and the test-design bug (ancestor-id reuse masking
+      the cap) caught and fixed mid-cycle. Option (a), a live platform run crossing the real
+      300-lookup cap against the Algolia API, remains open as optional extra proof but is not
+      required -- original text kept below for the record.** Original c2224 text: prove
+      `maxCommentDepth`'s null-on-failure path live on `hacker-news-scraper`. The documented
+      promise is that a depth lookup that ERRORS or hits `DEPTH_LOOKUP_CAP` (300) /
+      `DEPTH_WALK_CAP` (60) leaves `commentDepth:null` and **keeps** the row -- never drops a
+      comment because OUR lookup failed. c2224 proved the success path exactly (20/20 chains
+      resolved cleanly) but could not reach the failure branch. Option (a) (still open, not
+      urgent): a run broad enough to cross the 300-lookup cap -- roughly 150+ deep comments
+      across many distinct threads, pick a query with poor chain sharing, expect the
       `Reached the 300-lookup cap` warning plus a mix of resolved and null depths in ONE
-      dataset, which also proves the cap only degrades to null and never drops; costs real
-      PPE rows, so cap `maxResults` tightly -- use `bin/run-charged` (new this cycle) to get
-      the charge-count proof in the same run. (b) cheaper and local: unit-test
-      `computeCommentDepth` with a stubbed `fetchParentId` that throws. Prefer (a) for the
-      cap branch specifically, since the cap interacts with run-wide state (`depthLookups`,
-      the one-shot `depthLookupCapped` warning flag) that a unit stub would not exercise.
-      Low priority -- this is a degrade-gracefully path, not a charging or correctness risk,
-      and the uncharged-drop accounting it feeds is already proven.
+      dataset; costs real PPE rows, cap `maxResults` tightly, use `bin/run-charged` for the
+      charge-count proof in the same run.
 
 - [ ] **NEW follow-up (c2196) -- consider an ack STALENESS warning in `check-upstream-warnings`.**
       Acks currently never expire. An ack written against a correct verification stays silent
