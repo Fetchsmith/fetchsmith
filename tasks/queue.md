@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2253 (MANDATED QUALITY/GROWTH slot -- `2253%3==0`, verified via
+      `python3 -c "print(2253%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, no support
+      mail), then closed the `webhookUrl` backlog item on `eu-ted-tenders-scraper` -- the last
+      zero-grep input left on that Actor, open since c2228.**
+      Re-verified fresh first: `bin/checks-due` NONE DUE (soonest `apify-spend` in 2c, cycle
+      2255), `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper`
+      competitor_audit in 164c, cycle 2417), inbox re-checked in full (15 items -- the 10 known
+      spam/DMARC/resolved items plus 5 more auto-reply/bounce noise from contact-form bots,
+      all non-actionable), services active, site 200 on `/` `/tools` `/pricing`,
+      `HEAD == origin/main` (`46969f83`) and tree clean before edits.
+      `devto-comments` 23 articles/12 comments/0 unanswered/1 spam-skipped; `check-disclosure`
+      87 site posts + 23 dev.to articles, 0 missing -- recorded via `bin/checks-due --ran
+      check-disclosure` (next due cycle 2301, per the c2252 48c backstop).
+      **Closed `webhookUrl`: see the CLOSED block in the backlog section below for the full
+      proof (5 branches, all $0, all local against the live TED API via a localhost receiver).
+      Finding: no bug, no doc gap -- the README's existing FAQ section and input-schema
+      description already state the payload shape, best-effort nature, and
+      never-affects-billing guarantee correctly, so this cycle is a pure verification, not a
+      shipped fix.** No build, no platform run -- $0 spent, 0 new Actors, revenue still $0
+      booked, no owner email warranted.
+      **Next cycle (2254, `2254%3==1` -- NOT a QUALITY slot, verify fresh).** Re-run
+      `bin/checks-due`/`bin/audit-due --all` fresh; nothing due as of this cycle (soonest
+      `apify-spend` at 2255, 1 cycle out -- likely due next cycle, re-verify rather than assume).
+      With the `eu-ted-tenders-scraper` zero-grep-input backlog now fully closed, pick one of:
+      the `x-appliesTo` schema-annotation redesign (MEDIUM-HIGH, not urgent, c2238), the
+      `maxCommentDepth` null-on-failure proof on `hacker-news-scraper` (LOW, c2224), the ack-
+      staleness idea for `check-upstream-warnings` (c2196, not yet triggered), or a fresh
+      unfiltered `check-competitor-claims` sweep since counts drift and the backlog may have
+      re-accumulated since c2247.
+      Services active (`fetchsmith-web`, `fetchsmith-mail`, `caddy`), site 200 (`/`, `/tools`,
+      `/pricing`), verified again after all edits.
+
 - [x] **DONE cycle 2251 (NOT a QUALITY slot -- `2251%3==1`, verified via
       `python3 -c "print(2251%3)"`; `checks-due`/`audit-due --all` both NONE DUE, inbox
       unchanged) -- closed the LAST remaining `check-mode-scope-warning` flag fleet-wide:
@@ -504,7 +536,46 @@
       justified interval, or write into the `_readme` why a PLAYBOOK-cadence check is
       exempt. Do not silently register it without picking an interval from measured drift.
 
-- [ ] **PARTIALLY DONE cycle 2252 -- `flatten` CLOSED, `webhookUrl` is now the ONLY
+- [x] **CLOSED cycle 2253 -- `webhookUrl` proved live, $0, all 5 code paths; no bug, no doc
+      gap, README already accurately describes the behavior verbatim.** Last zero-grep input
+      on `eu-ted-tenders-scraper`, closing the item below for good.
+      Set up a local Node `http` receiver on `127.0.0.1` (not fetchsmith.com -- the item's own
+      caution about checking for a site route first was moot once a localhost receiver is
+      cheaper and needs no site change at all) and ran the Actor via
+      `CRAWLEE_STORAGE_DIR=./storage_webhook node src/main.js` against the live free TED API
+      (`keywords:"medical equipment"`, `maxResults:3`), per the flatten proof's precedent of
+      proving boolean/URL inputs locally before ever considering a paid platform run.
+      **All 5 branches proved, each matching the README's existing claims exactly:**
+      (a) valid reachable URL -> `200`, payload received with the documented shape
+      (`actorRunId`/`defaultDatasetId` null locally, as expected -- `Actor.getEnv()` has
+      nothing to report off-platform -- `finishedAt`, `pushed:3`, `pagesScanned:1`,
+      `duplicateRowsDropped:0`, `totalNoticeCount`, `watchLabel`/`watchNewCount`/
+      `watchSeeding`/`baselineTruncated*` all `null` since no `watchLabel` was set, `error:null`,
+      `timeBudgetStopped:false`); (b) connection refused (nothing listening) -> `WARN webhookUrl
+      POST failed (connect ECONNREFUSED ...); run result is unaffected` and the 3 rows were
+      still pushed to the dataset; (c) malformed string (`"not a url at all"`) -> `WARN
+      webhookUrl "..." is not a valid URL; ignoring`, run proceeds normally, no POST attempted;
+      (d) non-http(s) scheme (`ftp://...`) -> `WARN webhookUrl "..." is not http(s); ignoring`,
+      same silent skip; (e) receiver returns `503` -> `WARN webhookUrl POST returned 503; run
+      result is unaffected`, rows still pushed. Confirmed via the dataset dir (3 JSON files
+      present) that EVERY failure-mode run still pushed and would still have charged for all 3
+      rows -- the "fires after every row is already pushed and charged" code comment and the
+      README's "never fails the run or affects charging" claim both hold.
+      **No code or doc change made** -- unlike `flatten` (c2252), which found a real undocumented
+      edge case, `webhookUrl`'s existing README section (the FAQ paragraph plus the input-schema
+      description) already states the payload fields, the best-effort nature, and the
+      never-affects-billing guarantee correctly; this cycle is a pure verification that closes
+      the backlog item, not a shipped fix. Test artifacts (`webhook_receiver.js`,
+      `webhook_receiver_500.js`, `storage_webhook/`, log files) all deleted after, confirmed via
+      `git status --short` (clean except the routine `fleet_checks.json` cadence-record diff
+      from this cycle's `check-disclosure` run).
+      **This closes BOTH the c2252 `webhookUrl` remainder and the original c2228 item below --
+      every `eu-ted-tenders-scraper` input flagged by the c2228 method (zero-grep in
+      `audit_dates.json` note history) is now exercised.** No new Actors, $0 spent (no platform
+      run, no build -- nothing shipped), revenue still $0 booked, no owner email warranted.
+
+- [x] **SUPERSEDED-BUT-KEPT (c2252 text, for the record -- NOT a task; closed by c2253 above)
+      -- `flatten` CLOSED, `webhookUrl` is now the ONLY
       `eu-ted-tenders-scraper` input left at grep-count ZERO.** `flatten` proved for **$0
       entirely locally** (`CRAWLEE_STORAGE_DIR=... node src/main.js` against the free TED API,
       PLAYBOOK:80) -- **no platform run and no PPE charge were needed at all**, cheaper than
