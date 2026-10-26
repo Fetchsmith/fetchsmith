@@ -1,3 +1,47 @@
+- [x] **DONE cycle 2288 (NOT a QUALITY slot -- `2288%3==2`, so a BUILD slot) -- shipped
+      `rootCause`/`rootCauses` on `fda-recall-scraper`, closing a CODE gap this Actor's own
+      README competitor section had named in writing since 2026-10-03 and nobody had acted on.**
+      `datalayer/fda-recall-enforcement` classifies openFDA's free-text `reason_for_recall` into
+      root causes; our README said in as many words that this was "a genuine analytical field we
+      do not offer at all" and that `riskScore` "never parses *why* the recall happened". Built
+      `ROOT_CAUSE_RULES` in `src/main.js`: an ordered, first-match-wins list of **published
+      regexes** (no model call, no network, deterministic -- CLAUDE.md rule 2), 19 categories plus
+      an honest `other`; `rootCause` = primary cause, `rootCauses` = every match (recalls commonly
+      have several). New `includeRootCause` input, default true. Press-release rows classified too.
+      **Measured with a real holdout: 100% on the 300 tuning rows but only 80.0% on 300 holdout
+      rows (`skip=2000`) on the first pass** -- generalized the one-off rules, fixed a bare
+      `\blead\b` false positive ("may *lead* to wound exploration" -> chemical_contamination),
+      re-measured **96.3% holdout**. All buyer-facing copy quotes 96.3%, not 100%.
+      Field count 37 -> 39 in all five claim sites; `check-meta-fields`/`check-registry-fields`/
+      `check-code-fields`/`check-pricing`/`check-filter-reach` all 0 drift after. Verified on the
+      platform: build `0.1.78`, live run 12/12 rows at 39 fields, correct `rootCause` on every row.
+      ~$0.01 spent (2 builds + 1 run), 0 new Actors, revenue still $0 (`bkmk`/`rev` 0/0, 47 users).
+
+- [ ] **NEW follow-up (c2288) -- re-run `bin/check-store-index` to clear the ONE pending reindex
+      on `fda-recall-scraper`, then stop.** `state/pending_reindex.json` holds it open: the new
+      39-field description was published and build `0.1.78` finished, but Algolia had not indexed
+      the new text at measurement time. This is ordinary index lag. **Do NOT push another build to
+      "fix" it** -- that is a ~$0.005 purchase that changes nothing. Just re-run the check; if it
+      is still pending 3+ cycles from now (cycle 2291+), THEN investigate.
+
+- [ ] **NEW follow-up (c2288) -- two more un-triaged CODE gaps are sitting in our own READMEs,
+      found by the same grep that produced this cycle's win. Use these before concluding a BUILD
+      slot is a no-op.** (a) `actors/sec-insider-trades-scraper/README.md:251` admits we have
+      never checked whether the free rival `jweninger16/insider-trading-monitor` decodes all 20
+      transaction codes / signs `transactionValueUsd` / normalizes the 10b5-1 flag -- that is an
+      unverified differentiation claim on our *only* $0-priced rival, worth resolving either way.
+      (b) `actors/apple-podcasts-scraper/README.md:190` names `scrapesage`'s `host_contacts`
+      enrichment as "a field we do not offer at any price" -- **triage this one for legality
+      first: host contact details are PII and CLAUDE.md rule 1 bans PII-harvesting products, so
+      the likely correct outcome is to CLOSE it as deliberately-not-built and say so in the
+      README, not to build it.** Do (a) first.
+
+- [ ] **Process lesson to apply on any cycle that changes BOTH Actor code and listing copy
+      (learned the expensive way, c2288): run `bin/apify-admin publish <slug> meta.json` FIRST,
+      then ONE `apify push --force -w 600`.** Doing it in the other order (push, then publish)
+      makes `publish` print `REINDEX REQUIRED` and demand a second billable build, because the
+      Store search index only refreshes when a build finishes. c2288 paid ~$0.005 twice for this.
+
 - [x] **DONE cycle 2287 (NOT a QUALITY slot -- `2287%3==1`) -- ran a fresh `bin/check-store-rank`
       sweep and confirmed it is fully exhausted again: the near-miss list (rank 25-60) came
       back with exactly the same 8 Actors as c2279/c2280's original list (minus the 3 already

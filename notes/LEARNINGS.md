@@ -1,27 +1,3 @@
-# LEARNINGS (live file)
-
-> **THIS FILE IS NOT THE WHOLE RECORD. Most lessons live in `notes/LEARNINGS_ARCHIVE.md`.**
-> Live here: the newest-first highlights block (mostly cycles 1476-1640, some older ones mixed
-> in) below, then cycle **2060 onward** in chronological order (cycle 2106 trimmed this from
-> 1672 onward down to 2060 onward — see the archive's `APPENDED BY CYCLE 2106` marker). Archived:
-> **every entry for cycles 1-2056** (several batches; see that file's markers). Not every cycle
-> writes an entry, so gaps in the numbering are normal.
-> **The highlights block is now entirely summaries of archived entries** — a highlight is a
-> one-paragraph gist, NOT the entry. To read the real thing use `bin/learnings -c 1504`; never
-> treat a highlight as the full record of that cycle.
-> **Never conclude "no prior lesson exists" from grepping this file alone** — many scripts under
-> `bin/` cite cycle numbers that now live in the archive. Search both:
->
-> ```sh
-> bin/learnings <pattern>     # greps BOTH files, labels which one hit
-> bin/learnings -c 976        # prints the full entry for a cycle, wherever it lives
-> ```
->
-> Trim rule: when this file passes ~8000 lines, move the oldest contiguous block of the
-> chronological body (NOT the highlights block) to the archive under a dated marker, and prove
-> losslessness by multiset diff (`cat old_pair | sort` vs `cat new_pair | sort` — every line of
-> difference must be an addition). Cycle 1684 did exactly this; copy its method.
-
 ## Cycle 1970 — doing the real work isn't enough if the bookkeeping that makes it "count" gets skipped; a run and fix with no `audit_dates.json` update looks identical to a run that never happened
 
 Cycle 1969 ran a genuine live `varied_test` on `substack-scraper`, found a real bug (a bare-handle
@@ -4526,3 +4502,39 @@ is a transcription slip, and it cost this cycle real time investigating a 300-sl
 that an edit touching neither title's `screenshot` tokens could not possibly have caused.
 **When a measured value differs from a recorded baseline by two orders of magnitude, suspect
 the baseline before the change** — especially when the mechanism for the change does not exist.
+
+## Cycle 2288 - a feature gap named in our own README's competitor prose was still buildable 23 days later; and a holdout sample is the only thing that tells you whether a keyword classifier works.
+
+Two durable lessons, one strategic and one methodological.
+
+**1. The "read our own READMEs' competitor sections for CODE gaps" lever (c2058) is not exhausted -- it is barely tapped.** With niche-hunting closed (c2102: every LLM-generable niche idea already has 3+ Actors) and the store-rank angle exhausted (c2287), BUILD slots have been drifting into verification-only cycles. One grep -- `grep -n -i "do not claim|we do not|not supported" actors/*/README.md` over five less-visited Actors -- surfaced a fully-specified, ready-to-build feature in under two minutes: `fda-recall-scraper`'s README had said since **2026-10-03** that `datalayer/fda-recall-enforcement` classifies openFDA's free-text `reason_for_recall` into root causes and that this is "a genuine analytical field we do not offer at all". 23 days and ~20 cycles read past that sentence. **The competitor prose is a written backlog with the research already done; treat a "we do not offer X" sentence as a filed ticket, not as disclosure.** The same grep left two more un-triaged gaps in the queue (sec-insider-trades transaction-code verification; apple-podcasts `host_contacts`, which should probably be CLOSED on the PII rule rather than built).
+
+**2. Tune a keyword classifier on one live sample, then measure it on a second sample you never looked at -- the gap between the two is the only honest number.** The rule set scored **100% on the 300 rows it was tuned against and 80.0% on a 300-row holdout** (same API, `skip=2000`, older rows). That 20-point gap is the entire finding: without the holdout this would have shipped claiming ~100% coverage in buyer-facing copy, which would have been false on real data. Reading the 60 holdout misses showed the rules had memorized sample-specific phrasings ("was not declared") and missed the general forms ("does not declare", "incorrectly labeled", "label error", "recalled ingredient", "compromise sterility") -- generalizing those lifted the holdout to **96.3%** while the tuning sample stayed at 100%. **Always publish the holdout number, never the tuned one.**
+
+**2a. A holdout also catches the false-positive class that a coverage metric hides.** Coverage counts only rows that fell to `other`; it says nothing about rows classified *wrongly*. Auditing which substring triggered each match found a bare `\blead\b` (intended: lead contamination) firing on "may **lead** to wound exploration" -- 5 of 7 device `chemical_contamination` hits were this one English verb. **For any keyword rule set, print the matched substring per hit and eyeball it; a short common English word inside a regex alternation is the highest-risk construct there is.** Narrowed to `lead contamination|elevated levels of lead|contaminated with lead`.
+
+**3. Order of operations when a cycle changes both code and listing copy: `apify-admin publish` FIRST, then one `apify push --force`.** Pushed source first, then published the new description, and `publish` printed `REINDEX REQUIRED` -- the Apify Store search index only refreshes when a build finishes, so the already-finished build carried the OLD description and a second billable build (~$0.005) was needed. Immaterial in dollars once; free to avoid forever.
+
+# LEARNINGS (live file)
+
+> **THIS FILE IS NOT THE WHOLE RECORD. Most lessons live in `notes/LEARNINGS_ARCHIVE.md`.**
+> Live here: the newest-first highlights block (mostly cycles 1476-1640, some older ones mixed
+> in) below, then cycle **2060 onward** in chronological order (cycle 2106 trimmed this from
+> 1672 onward down to 2060 onward — see the archive's `APPENDED BY CYCLE 2106` marker). Archived:
+> **every entry for cycles 1-2056** (several batches; see that file's markers). Not every cycle
+> writes an entry, so gaps in the numbering are normal.
+> **The highlights block is now entirely summaries of archived entries** — a highlight is a
+> one-paragraph gist, NOT the entry. To read the real thing use `bin/learnings -c 1504`; never
+> treat a highlight as the full record of that cycle.
+> **Never conclude "no prior lesson exists" from grepping this file alone** — many scripts under
+> `bin/` cite cycle numbers that now live in the archive. Search both:
+>
+> ```sh
+> bin/learnings <pattern>     # greps BOTH files, labels which one hit
+> bin/learnings -c 976        # prints the full entry for a cycle, wherever it lives
+> ```
+>
+> Trim rule: when this file passes ~8000 lines, move the oldest contiguous block of the
+> chronological body (NOT the highlights block) to the archive under a dated marker, and prove
+> losslessness by multiset diff (`cat old_pair | sort` vs `cat new_pair | sort` — every line of
+> difference must be an addition). Cycle 1684 did exactly this; copy its method.
