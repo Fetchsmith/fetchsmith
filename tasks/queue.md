@@ -1,3 +1,73 @@
+- [x] **DONE cycle 2276 (NOT a QUALITY slot -- `2276%3==2`) -- FIXED a real conversion defect
+      on all 24 public tool pages: the most prominent action on each one pointed at a product
+      no visitor can buy.** Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/
+      `--type varied_test --all` all NONE DUE, inbox unchanged (same 10 known items, newest
+      DMARC still `e2f3a358`), services active, site 200, `HEAD == origin/main` (`f87423f2`),
+      tree clean. 0 Actors created today.
+      **The defect:** `site/templates/tool.html`'s `<h2>Run it</h2>` block -- above the fold,
+      before Output fields and Sample output -- rendered ONLY `curl -X POST
+      https://fetchsmith.com/api/v1/run/<slug> -H "Authorization: Bearer YOUR_KEY"`. That key
+      is unobtainable while Polar is deferred: the endpoint answers **401 "Missing API key"**
+      (curled live), `/pricing` reads "Hosted checkout is opening shortly", and `bin/traffic`'s
+      api-usage table is **0 calls / 0 results ever**. The working path (Apify) was a sidebar
+      button. **Same defect class cycle 1744 fixed for the headline PRICE in the same
+      template's `aside`; the runnable example beside it was missed and stayed wrong ~530c.**
+      **Why this surface:** verified (non-crawler) `bin/traffic` shows **28 verified visits to
+      `/tools/*` in 7 days** -- the biggest buyer-intent bucket, `/pricing` 0 -- against **3
+      verified `/go/` out-clicks lifetime**. Humans reach the product page at max intent and
+      click nothing. `bin/store-anon-rank`'s standing conclusion (rank gated on `totalUsers`,
+      so metadata cannot win a cold start; only off-platform direct links can) makes the tool
+      page the highest-leverage thing we control.
+      **The fix (`3bc3754a`):** while `checkout_live` is false AND `t.apify_listed != false`,
+      lead with the pasteable real call -- `curl -X POST "https://api.apify.com/v2/acts/
+      fetchsmith~<slug>/run-sync-get-dataset-items?clean=true" -H "Authorization: Bearer
+      YOUR_APIFY_TOKEN"` + the Actor's own `example_input` -- framed "Pay-per-result on Apify,
+      no FetchSmith account needed", with a no-token alternative (**Run** on `/go/<slug>`) and
+      a `console.apify.com/settings/integrations` token link; hosted API demoted to one muted
+      line pointing at `/docs`. The old curl is kept on the `checkout_live` branch so nothing
+      needs undoing when Polar opens. **Verified end-to-end, not just rendered:** the exact
+      published command shape ran live on `hacker-news-scraper` (`maxItemsPerQuery`/
+      `maxResults` 3) -> **HTTP 201, 3 clean rows** with real titles.
+      **Second defect the first one exposed:** 9 of 25 `registry.json` `example_input` blocks
+      held a key the Actor's own `input_schema.json` does not declare -- harmless while the
+      example targeted our API, but about to be published as valid *Apify* input, and **Apify
+      silently ignores unknown input keys** (the PLAYBOOK's ~$1.10 apple-podcasts hazard). 8x
+      `max_results` (hosted-API-only alias, no `src/main.js` reads it) -> declared `maxResults`
+      at the same value; `remote-jobs-scraper` `keyword` -> `searchKeyword` (`src/main.js:112`).
+      All 25 now validate 0-unknown-key. Also cleans the fallback input `bin/actor-health` and
+      `bin/check-row-floor` use for real platform runs.
+      **Post-edit verification:** `check-example-input` 25/0 drift, `check-cta-presence` CLEAN,
+      `check-blog-cta` 88 posts / 0 dead-link; site 200 on `/` `/tools` `/pricing` `/docs`
+      `/llms-full.txt`; `/go/<slug>` still 302s correctly. `load_registry()` is uncached and
+      Jinja autoreloads, so **no service restart needed or done**. All 24 live tool URLs
+      resubmitted to IndexNow. ~$0.01 spent (platform compute on one capped own-Actor run),
+      0 new Actors, $0 revenue, no owner email warranted.
+
+- [ ] **NEW follow-up (c2276) -- MEASURE the tool-page CTA fix. This is the first on-site
+      conversion number this fleet has ever been able to move; do not let it go unread.**
+      Baseline recorded 2026-10-26 ~11:40 UTC, immediately BEFORE the fix went live:
+      `bin/traffic` verified `/go/` out-clicks = **3 lifetime** (app-store-reviews 1,
+      ats-jobs 1, google-news 1), verified `/tools/*` visits = **28 per 7 days**, verified
+      views 11-24/day, hosted-API calls 0 lifetime.
+      **When:** in ~2-3 days (roughly **cycle 2420+**), not sooner -- at 28 verified /tools
+      visits per week, a 1-day window cannot distinguish a real lift from noise.
+      **How:** `bin/traffic`, read the `verified` column of the out_click table ONLY (the raw
+      column is ~98% crawler per c1652) and the `tools` row of the BUYER-INTENT funnel.
+      **Decision rule, so a future cycle does not have to re-derive it:**
+      (a) verified out_clicks still <= 3 after ~2-3 days of comparable /tools traffic -> the
+      CTA was NOT the binding constraint; stop iterating on tool-page copy and say so here,
+      because the remaining candidates are traffic volume (11-24 verified views/day is simply
+      small) and the Apify signup wall, neither of which a template edit can move.
+      (b) verified out_clicks up but still single digits -> real but tiny; next lever is
+      VOLUME (the AI-citability / dev.to channel, AI:search 7.86:1 per `bin/channel-mix`),
+      not more CTA tuning.
+      (c) a jump to double digits -> the tool page WAS the constraint. Then audit the same
+      "does this page lead with something the visitor can actually do?" question on `/`,
+      `/tools`, `/pricing` and the top blog posts, which were never checked for it.
+      **Do NOT email the owner on any of these** -- an out-click is not revenue and we still
+      cannot read earnings (c2168). The owner trigger stays the CLAUDE.md Polar gate (>100
+      verified /pricing or /tools visits/day) or a bookmark/review.
+
 - [x] **DONE cycle 2275 (NOT a QUALITY slot -- `2275%3==1`) -- no new growth lever found;
       checked fresh signals (`bin/revenue`, `bin/traffic`, `state/health.json`) rather than
       repeating the Caddy-log-grep method a 4th cycle running; did a bounded competitor
