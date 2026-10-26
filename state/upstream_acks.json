@@ -1,6 +1,17 @@
 {
   "acks": [
     {
+      "fp": "0bc5bebecd62",
+      "slug": "steam-reviews-scraper",
+      "handle": "pinkish_gallop/steam-reviews-scraper",
+      "verb": "retired",
+      "dates": [],
+      "context": "Export Steam user reviews for any game via Valve's official IUserReviewsService API (the replacement for the retired appreviews endpoint) plus store app details. Filter by language, sentiment, purchase type, playtime and date. No login, no proxy,",
+      "note": "Same resolved situation as the two s_actors acks (c2129/c2196): re-verified c2292 that src/ has NO appreviews call site (only still-live appreviewhistogram); reviews run on the steamcommunity.com HTML path. The NEW part of this rival copy -- \"Valve official IUserReviewsService API (the replacement for the retired appreviews endpoint)\" -- was probed live c2292 and is NOT a keyless drop-in for us: GET api.steampowered.com/IUserReviewsService/GetIndividualRecommendations/v1/ returns HTTP 401 \"verify your key= parameter\", and IUserReviewsService is absent from ISteamWebAPIUtil/GetSupportedAPIList/v1 (27 keyless interfaces). Its param shape takes BOTH request[appids][] and request[steamids][], i.e. per-(user,app) lookup, not an app-wide review feed. We hold no Steam Web API key, so no action; rival copy is permanent and would otherwise re-flag daily.",
+      "acked_cycle": 2292,
+      "acked_date": "2026-10-26"
+    },
+    {
       "fp": "c7ab7d26eb5f",
       "slug": "steam-reviews-scraper",
       "handle": "s_actors/steam-reviews-scraper",
