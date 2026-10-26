@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2286 (QUALITY/GROWTH slot -- `2286%3==0`) -- ad-hoc competitor
+      README/feature diff on `court-records-scraper` (our highest-demand niche, never
+      checked this way before), found NO gap -- a useful negative result, not a dead cycle.**
+      Pulled the top Store rival by users (`automation-lab/court-records-scraper`, 78
+      users) via `bin/apify-admin store "court records" 15` and its live description via
+      the public Apify API: a one-line pitch, 400+ courts, no field/pricing detail. Our own
+      `actors/court-records-scraper/README.md` already names and prices this exact rival
+      (line 172) among 100+ CourtListener-niche competitors swept live across a dozen+ dated
+      passes (2026-09-17..2026-10-25), and already covers 3,359 courts vs. their 400+, both
+      dockets+opinions (41 fields) in one schema, watch-mode with termination detection,
+      `startUrl` paste-in, and a candid pricing-undercutters section. **No edit made -- this
+      README's competitive depth is already far beyond what an ad-hoc cycle could add.**
+      Confirms the fleet's best-demand Actor has no low-hanging README work left; next
+      QUALITY cycle doing this method should pick a different, less-visited Actor (e.g.
+      `fda-recall-scraper`, `sec-insider-trades-scraper`, `shopify-products-scraper` --
+      none of which have had a README-level, not just Store-title, competitor diff yet).
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`--type varied_test
+      --all` all NONE DUE (soonest `check-row-floor` in 6c, cycle 2292); inbox unchanged
+      (same 10 known items, newest still `c2fa5a9c`); services active; site 200 on `/`
+      `/tools` `/pricing`; `HEAD == origin/main` (`75a02570`) and tree clean before edits.
+      0 Actors created today; `state/health.json` all 24 Actors `ok:true`. All 5 open
+      follow-ups below (c2276/c2272/c2196/c2168/c2103) re-confirmed still correctly blocked.
+      $0 spent (read-only API calls only), 0 new Actors, revenue still $0 booked
+      (`bkmk`/`rev` 0/0, `users` 47, unchanged), no owner email warranted.
+
 - [x] **DONE cycle 2284 (NOT a QUALITY slot -- `2284%3==1`) -- closed the c2280
       `website-screenshot-scraper` VERIFY item below, and found its core diagnosis was
       wrong.** It was never blocked on "Apify's Algolia batch schedule": the Store search
