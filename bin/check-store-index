@@ -37,6 +37,7 @@ req = urllib.request.Request(
 alg = {h["name"]: h for h in json.load(urllib.request.urlopen(req))["hits"] if h.get("username") == "fetchsmith"}
 
 stale_total = 0
+verified_clean = []  # Actors confirmed fully in sync this run -- clears pending_reindex.json.
 unknown = []  # Actors whose index-vs-live comparison could NOT be completed (see cycle 1408 note).
 readme_not_indexed = []  # Actors where the index no longer exposes `readme` (cycle 1408).
 
@@ -108,12 +109,39 @@ for a in sorted(fleet["data"]["items"], key=lambda x: x["name"]):
                     print(f"    readme  indexed {len((hit.get('readme') or '').split())} words"
                           f"  vs build {len(bmd.split())} words")
     stale_total += len(stale)
+    if not stale:
+        verified_clean.append(n)
     print(f"{n:28s} idx={idx_mod}  build={build}  stale={stale or '-'}")
     if verbose and stale:
         for f in stale:
             if f in FIELDS:
                 print(f"    {f}\n      indexed: {(hit.get(f) or '')[:160]}\n      live   : {(live.get(f) or '')[:160]}")
 print(f"\n{stale_total} stale field(s) in the Store search index.")
+
+# Cycle 2284: this tool is the only thing that can honestly CLEAR a pending-reindex debt --
+# `apify-admin publish` records it and `bin/audit-due` reprints it every cycle, but neither
+# of them asks Algolia what is actually indexed. A build finishing is NOT proof the index
+# caught up (website-screenshot-scraper's 15:31 build still read idx=10-25 18:33 for
+# minutes afterwards), so clear strictly on an observed in-sync comparison, and only for
+# slugs this run really checked (so `check-store-index <slug>` can't clear the whole file).
+PENDING = "/root/agent/state/pending_reindex.json"
+try:
+    _pend = json.load(open(PENDING))
+except (FileNotFoundError, ValueError):
+    _pend = {}
+if _pend:
+    _cleared = [s for s in verified_clean if s in _pend]
+    for s in _cleared:
+        del _pend[s]
+    if _cleared:
+        with open(PENDING, "w") as _fh:
+            json.dump(_pend, _fh, indent=2, sort_keys=True)
+            _fh.write("\n")
+        print(f"PENDING REINDEX cleared (now indexed): {', '.join(sorted(_cleared))}")
+    if _pend:
+        print(f"PENDING REINDEX still open ({len(_pend)}): {', '.join(sorted(_pend))} -- "
+              f"published copy is not in Store search yet; a build must finish "
+              f"(`apify push --force -w 600`) and the index must then pick it up.")
 if readme_not_indexed:
     print(f"NOTE: readme NOT CHECKED for {len(readme_not_indexed)} Actor(s) -- Apify dropped the "
           f"`readme` attribute from prod_PUBLIC_STORE (only `readmeSummary`, a derived summary, "

@@ -54,8 +54,8 @@
   "check-store-index": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 1621,
-   "note": "cycle 1624: 14 days. Clean at 1621. Structural site/Store-index check; drift needs either a publish or an Apify-side index change."
+   "last_cycle": 2284,
+   "note": "cycle 2284: cycle 2284: ran fleet-wide; found website-screenshot-scraper the ONLY stale record (title+seoDescription), root-caused it to c2280's metadata-only publish never being followed by a build (idx timestamp == latest build finishedAt for all 25 Actors, exactly -- the index is build-gated, NOT on an Apify batch schedule as c2280-2283 assumed). Force-pushed (build 0.1.30, 15:31:44); index picked it up ~3 min later and the fleet went to 0 stale. Also wired this tool into the new pending_reindex.json debt loop: it is now the only thing that CLEARS a debt (on an observed in-sync comparison, checked slugs only). [prior note preserved] cycle 1624: 14 days. Clean at 1621. Structural site/Store-index check; drift needs either a publish or an Apify-side index change."
   },
   "check-root-readme": {
    "kind": "cadence",

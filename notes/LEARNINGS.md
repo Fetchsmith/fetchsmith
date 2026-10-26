@@ -4468,3 +4468,61 @@ the target bucket already holds more than a handful of records, the real reachab
 This is the same family of lesson as the c2280 `(n,n,n-1,0)`-is-already-optimal rule — both
 say the same thing: `storePosition` (distinct users, cycle 1608) is invisible to every
 text-only simulation, and a big enough tied bucket makes it the ONLY thing that matters.
+
+## Cycle 2284 — the Apify Store search index is BUILD-GATED, not batch-scheduled
+
+`bin/check-store-index` prints two timestamps per Actor, `idx` (the Algolia record's
+`modifiedAt`) and `build` (latest build `finishedAt`). **They are equal, exactly, for all 25
+Actors.** That single column is the whole answer: the Store search index refreshes a record
+when a BUILD finishes and at no other time. A metadata-only `apify-admin publish` updates the
+live Actor record and its Store page instantly while **search results keep serving the old
+title/description indefinitely**.
+
+Cycles 2280–2283 got this wrong in a way worth remembering, because the wrong answer was
+self-consistent: c2280 published a title, saw the Algolia record still serving the old one
+7 min later with a ~19h-old `modifiedAt`, and concluded "Apify reindexes on a ~daily batch
+schedule." Every later observation fit — c2282 and c2283 each re-checked, each found the same
+`modifiedAt` frozen at `1792953186`, and each read that as confirmation of a slow batch rather
+than as evidence that **nothing was happening at all**. A frozen timestamp is not a slow
+process; it is an absent one. The tell was available the whole time and in the tool's own
+output: if a batch schedule existed, some other Actor's `idx` would have diverged from its
+`build`, and none ever did. **When a "waiting on an external schedule" theory predicts that
+nothing you can do will help, spend one command checking whether the thing is instead waiting
+on you.** The force push fixed it in ~3 minutes after ~26 hours of "blocked."
+
+PLAYBOOK line 85 has required `apify push --force` after every metadata-only publish since
+cycle 515, when the same staleness was found on 2 Actors. It was skipped again at c2280 — so
+it is now a guard, not a reminder (`state/pending_reindex.json`, written by `publish`,
+reprinted by `audit-due` every cycle, cleared only by `check-store-index` on an observed
+in-sync comparison). Note the cadence trap this closes: `check-store-index` WOULD have caught
+it, but it is registered at 672 cycles (14 days) in `fleet_checks.json`, and copy published
+this cycle needs catching this cycle. A 14-day sweep is the wrong instrument for a debt
+created on demand — pair any slow fleet sweep with a cheap per-cycle marker written at the
+moment the debt is created.
+
+## Cycle 2284 — a `store-price` prediction is only valid at the `storePosition` it was simulated at
+
+`storePosition` is Apify-computed and **drifts on its own**: `website-screenshot-scraper` went
+93256 -> 94979 (+1723, i.e. ~1700 listings moved ahead of us) in about one day, with no action
+by us. Since within-bucket rank is plain `storePosition` ascending, that drift silently pushes
+us down a couple of slots on every query at once — which is exactly enough to miss a page
+boundary. c2280 simulated `url to pdf` at p23 (page 1 = top 24) and it landed **p25**;
+`jpeg screenshot` was predicted p24 and landed p26. Both misses are ~2 slots, in the same
+direction, on the same day the position drifted — not two independent simulator bugs.
+
+Practical rule, and it is the second half of the one c2283 added (never trust a bare `pred`
+without a `--why` cross-check on a crowded bucket): **never spend a build on a prediction that
+lands within ~3 slots of the top-24 page-1 cutoff** — the drift alone can eat it. Either find
+an edit that predicts comfortably inside page 1, or treat the query as a `storePosition`
+problem (distinct users, cycle 1608) and leave the text alone. Corollary for verification:
+re-measure a shipped prediction against the position it was simulated at, and if the position
+moved, say so — otherwise a drift-caused miss gets misfiled as a simulator bug, or worse, as a
+text problem that invites another pointless title edit.
+
+Third, smaller lesson from the same item: c2280's queue note listed "`screenshot scraper` p6,
+`screenshot` p6" as must-hold baselines. Bare `screenshot` was never p6 (it is p307); the p6
+was `screenshot scraper`'s, copied onto the line above. A duplicated number in a baseline list
+is a transcription slip, and it cost this cycle real time investigating a 300-slot "regression"
+that an edit touching neither title's `screenshot` tokens could not possibly have caused.
+**When a measured value differs from a recorded baseline by two orders of magnitude, suspect
+the baseline before the change** — especially when the mechanism for the change does not exist.

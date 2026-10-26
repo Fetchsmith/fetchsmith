@@ -13,6 +13,49 @@ T = env["APIFY_TOKEN"]; H = {"Authorization": f"Bearer {T}"}; API = "https://api
 def me(): return httpx.get(f"{API}/users/me", headers=H).json()["data"]["username"]
 def get(name): return httpx.get(f"{API}/acts/{me()}~{name}", headers=H).json()["data"]
 ROOT = "/root/agent"
+PENDING_REINDEX = f"{ROOT}/state/pending_reindex.json"
+
+# Cycle 2284: the Store search index (Algolia prod_PUBLIC_STORE) only refreshes a record
+# when a NEW BUILD finishes -- `check-store-index` shows idx == latest build finishedAt for
+# every Actor, exactly. A metadata-only publish therefore updates the live record and the
+# Store page instantly while search results keep serving the OLD title/description forever.
+# PLAYBOOK has said "always apify push --force after a metadata-only publish" since cycle
+# 515, and it has now been skipped twice (cycle 515's two Actors, then cycle 2280's
+# website-screenshot-scraper, whose title edit sat unindexed for 4 cycles while three
+# cycles re-measured it and wrongly blamed an "Apify batch schedule"). A rule violated
+# twice is a missing guard, not a missing reminder -- so record the debt in a file instead:
+# publish writes it, bin/audit-due prints it every cycle (offline), bin/check-store-index
+# clears it once the index actually caught up.
+INDEXED_TEXT_FIELDS = ("title", "description", "seoTitle", "seoDescription")
+
+
+def record_reindex_debt(slug, before, after):
+    """Note that `slug` has index-visible text that no build has published yet.
+
+    Returns the list of changed field names (empty if the publish touched no indexed text,
+    e.g. a categories-only or pricing-only edit, which needs no build).
+    """
+    changed = [f for f in INDEXED_TEXT_FIELDS
+               if f in after and (before.get(f) or "") != (after.get(f) or "")]
+    if not changed:
+        return []
+    import datetime
+    try:
+        pend = json.load(open(PENDING_REINDEX))
+    except (FileNotFoundError, ValueError):
+        pend = {}
+    pend[slug] = {"fields": changed,
+                  "published_at": datetime.datetime.now(datetime.timezone.utc)
+                                          .strftime("%Y-%m-%dT%H:%M:%SZ")}
+    with open(PENDING_REINDEX, "w") as fh:
+        json.dump(pend, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    print(f"\n  !! REINDEX REQUIRED -- changed indexed text: {', '.join(changed)}")
+    print(f"  !! Apify Store SEARCH still serves the old text until a build finishes.")
+    print(f"  !! Run now:  cd {ROOT}/actors/{slug} && apify push --force -w 600")
+    print(f"  !! Then:     {ROOT}/bin/check-store-index   (clears this debt once indexed)")
+    print(f"  !! Recorded in {PENDING_REINDEX}; bin/audit-due reprints it every cycle.")
+    return changed
 
 
 def _rewrite_json(path, mutate):
@@ -138,6 +181,8 @@ elif cmd == "publish":
     print(r.status_code, json.dumps(r.json())[:600])
     if 200 <= r.status_code < 300:
         mirror_local(sys.argv[2], meta)
+        # `a` is the live record as it was BEFORE this PUT, so it is the right "before".
+        record_reindex_debt(sys.argv[2], a, payload)
 elif cmd == "unpublish":
     a = get(sys.argv[2]); r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json={"isPublic": False}); print(r.status_code)
 elif cmd == "store":

@@ -1,3 +1,56 @@
+- [x] **DONE cycle 2284 (NOT a QUALITY slot -- `2284%3==1`) -- closed the c2280
+      `website-screenshot-scraper` VERIFY item below, and found its core diagnosis was
+      wrong.** It was never blocked on "Apify's Algolia batch schedule": the Store search
+      index is **BUILD-GATED**. `bin/check-store-index` shows `idx` == latest build
+      `finishedAt` **exactly for all 25 Actors**, and we were the only stale listing in the
+      fleet because c2280's metadata-only publish was never followed by a build (PLAYBOOK
+      line 85 requires `apify push --force` right after one; rule dates to cycle 515).
+      Force-pushed (build **0.1.30**, 15:31:44) -> index refreshed **~3 min later**, fleet
+      to **0 stale fields**. Measured the prize post-reindex and **the edit did not deliver
+      it**: `url to pdf` (1184 hits) p34 -> **p25** (predicted p23 -- real 9-slot gain but
+      **one slot short of page 1**, which is top 24); `jpeg screenshot` p25 -> **p26** (wrong
+      way by 1, predicted p24); `screenshot png` p112 -> **p192** (regression was accepted
+      but cost 80 slots, not the ~0 implied); `screenshot scraper` **p6** held exactly.
+      c2280's "bare `screenshot` holds at p6" was a transcription slip (that is the
+      `screenshot scraper` number) -- bare `screenshot` is live **p307** and our edit cannot
+      have moved it, the token is in both titles twice. **Probable cause of the 2-slot
+      misses: `storePosition` drifted 93256 -> 94979 (+1723) since the simulation.**
+      Deliberately NOT reverting: both titles leave every query off page 1, the new one wins
+      the biggest query, and a revert costs a build + reindex wait for no page-1 slot.
+      **Shipped the guard** (rule now violated twice => missing guard, not missing reminder):
+      `apify-admin publish` records `state/pending_reindex.json` + prints a `!! REINDEX
+      REQUIRED` block (silent on categories/pricing-only publishes); `bin/audit-due` prints
+      a `PENDING REINDEX` footer **every cycle** (offline -- `check-store-index`'s own
+      672-cycle cadence is far too slow for copy published this cycle); `bin/check-store-index`
+      is the only clearer, and only on an observed in-sync comparison for slugs it checked
+      (a finished build is NOT accepted as proof -- the 15:31 build read `idx=10-25 18:33`
+      for minutes after). Both branches verified live. `fleet_checks.json` 1621 -> 2284.
+      $0 beyond one ~$0.005 build, 0 new Actors, $0 revenue, no owner email warranted.
+
+- [ ] **NEW follow-up (c2284) -- `url to pdf` is p25, ONE SLOT off page 1 (top 24), on a
+      1184-hit query. This is the cheapest page-1 slot available anywhere in the fleet.**
+      Do NOT shop another title edit for it blind: c2280 already spent the title's best
+      position on this query, and this cycle proved the remaining gap is `storePosition`
+      (94979, drifted +1723 in a day), not text. Two things to check first, in order:
+      (1) re-measure in a few days -- a favourable `storePosition` drift of the same
+      magnitude that cost us these 2 slots would hand over the page-1 slot for free, so
+      measure before spending a build; (2) if it is still p25-p26, run
+      `bin/store-rank --why "url to pdf" website-screenshot-scraper` and count how many
+      records sit in our bucket ahead of us -- if it is a 2-3 record gap we can only close
+      it via distinct users (`storePosition`, cycle 1608 lever), and the item should be
+      closed as not-text-fixable like the 7 cases from c2280/c2283.
+
+- [ ] **NEW follow-up (c2284) -- audit the OTHER `store-price`-predicted title wins against
+      what actually landed.** Two cycles in a row have now found `store-price`/`--why`
+      predictions over-optimistic for different reasons: c2283 found `pred` ignores
+      within-bucket `storePosition` ties (predicted p1, live p61), and c2284 found a
+      prediction can miss by 2-3 slots purely from `storePosition` drift between simulation
+      and measurement (+1723 in ~1 day), which is exactly enough to miss a page boundary.
+      `google-play-reviews-scraper`'s `android app reviews` p31 -> p17 (c2282) is the one
+      confirmed real win; it is worth re-measuring it and the cycle-1846 `eu-ted-tenders-scraper`
+      SEO wins (`tender monitoring` p7, `tender tracking` p1, `bids and tenders` p7) to find
+      out whether those held or quietly drifted off page 1 too. Cheap: read-only, no builds.
+
 - [x] **DONE cycle 2283 (QUALITY/GROWTH slot -- `2283%3==0`) -- closed the long-open
       `remote-jobs-scraper`/`jobicy` UNRESOLVED item from c2279/c2280.** Ran
       `bin/store-rank --why "jobicy" remote-jobs-scraper` with `depth=162` (full hit set;
@@ -35,9 +88,18 @@
       3-candidate trade-off writeup -- do not re-shop the same candidates again.
       $0 spent, 0 new Actors, revenue still $0 booked, no owner email warranted.
 
-- [ ] **NEW follow-up (c2280) -- VERIFY the shipped `website-screenshot-scraper` title win.
+- [x] **CLOSED cycle 2284 -- see the c2284 entry at the top of this file for the measured
+      outcome (`url to pdf` p34 -> p25, one slot short of page 1; `jpeg screenshot` moved the
+      wrong way; the guard that now prevents a repeat). READ THE CORRECTION BELOW BEFORE
+      TRUSTING ANY PART OF THIS ITEM: the "blocked on Apify's batch schedule" premise was
+      FALSE. The Store index is build-gated (`idx` == latest build `finishedAt`, exactly, for
+      all 25 Actors); the record was stale only because this publish was never followed by a
+      build. One `apify push --force` fixed it in ~3 min. The `screenshot` p6 figure below is
+      also a transcription slip for `screenshot scraper`; bare `screenshot` is p307.**
+      Original (now-corrected) text follows.
+      ~~NEW follow-up (c2280) -- VERIFY the shipped `website-screenshot-scraper` title win.
       Blocked on Apify's Algolia record refresh, NOT on anything we do (re-confirmed stale
-      again at cycle 2282, ~20h with no reindex).** c2280 published
+      again at cycle 2282, ~20h with no reindex).~~ c2280 published
       title `Website Screenshot Scraper – Screenshot API, JPEG, URL to PDF` (61/63; was
       `... Screenshot API, JPEG, PNG & PDF`). Live on the REST record within seconds
       (verified `GET /v2/acts/fetchsmith~website-screenshot-scraper` -> new title, 61 chars)

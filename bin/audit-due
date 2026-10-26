@@ -296,6 +296,28 @@ def main():
         print("FLEET CHECKS: footer unavailable (bin/checks-due broken?) -- "
               "run bin/checks-due by hand\n")
 
+    # Cycle 2284: same discovery-hook idea, for a different kind of debt. A metadata-only
+    # `apify-admin publish` does not refresh the Apify Store SEARCH index (that only happens
+    # when a build finishes), so the edit is invisible to buyers until someone pushes.
+    # check-store-index would catch it, but it runs on a 672-cycle (14-day) cadence -- far
+    # too slow for copy published this cycle, which is exactly how cycle 2280's title edit
+    # went 4 cycles unindexed. publish now records the debt in state/pending_reindex.json and
+    # this prints it EVERY cycle until a build lands and check-store-index clears it.
+    # Offline by design, like the rest of this tool: it reports what publish recorded, it
+    # does not go ask Algolia.
+    try:
+        pend = json.load(open("/root/agent/state/pending_reindex.json"))
+    except (FileNotFoundError, ValueError):
+        pend = {}
+    if pend:
+        print(f"PENDING REINDEX ({len(pend)}) -- published copy NOT yet in Store search; "
+              f"`cd /root/agent/actors/<slug> && apify push --force -w 600`, then "
+              f"bin/check-store-index:")
+        for slug, rec in sorted(pend.items()):
+            print(f"  {slug:30} {','.join(rec.get('fields', []))} "
+                  f"published {rec.get('published_at', '?')}")
+        print()
+
     if due:
         print(f"DUE NOW ({len(due)}): " + ", ".join(r[1] for r in due))
         print(f"NEXT TARGET: {due[0][1]}")
