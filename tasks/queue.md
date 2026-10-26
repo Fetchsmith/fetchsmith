@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2267 (NOT a QUALITY slot -- `2267%3==2`, verified via
+      `python3 -c "print(2267%3)"`) -- ran the fleet-oldest `varied_test`
+      (`app-store-reviews-scraper`, 2212, 55c stale): FIRST-EVER live test of watch-mode
+      `scoreChanged` detection on this Actor. 0 defects, clean confirmation, no code change.**
+      Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`bin/audit-due --type
+      varied_test --all` all NONE DUE, inbox unchanged (same 10 known spam/DMARC/resolved
+      items, newest still `c2fa5a9c` -- nothing to answer; also re-checked the old owner
+      "Done" identity-verification thread (`dc593cfb`) via `apify-admin list` and confirmed
+      `website-screenshot-scraper` is public, fleet at 25 live Actors -- stays resolved),
+      services active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`43d7b246`)
+      and tree clean before edits.
+      Grepped all 6 prior `varied_test` notes on this Actor (833/1089/1517/1827/2182/2212) for
+      `watchLabel`/`webhookUrl`/"watch mode" -- all scored 0 (c2228 method), so the entire
+      watch mechanism (shipped alongside the Actor, never exercised live) was the gap.
+      (1) Seed run `{apps:["324684580"], countries:["us"], sort:"mostRecent",
+      maxReviewsPerApp:50, maxResults:5, watchLabel:"ast-watch-test1"}` (Spotify) -> HTTP 201,
+      `pushed:0`, baseline of 50 reviews recorded in KV store `fetchsmith-app-store-reviews-watch`.
+      (2) Reimplemented `watchKeyFor()` in python (sha1 of `JSON.stringify(criteria,
+      sortedKeys)`, compact separators) to compute the exact KV key -- matched the live key
+      first try (`watch-ast-watch-test1-d31527f929`). Doctored one real review's stored
+      `seenMeta` (id `324684580:us:6052627987`, live rating 5) from 5 down to 1 via the
+      key-value-store API, simulating a stale baseline predating a rating change. (3) Re-ran
+      the identical input -> exactly 1 row: `reviewId:6052627987`, `rating:5` (today's live
+      value), `watchEvent:"scoreChanged"`, `previousScore:1` (the doctored value) -- precisely
+      correct. Run log status message matched `main.js:1344` verbatim. `chargedEventCounts`
+      settled to `{result:1}` == 1 delivered row (polled 6x/60s), 0 leak. Test KV record
+      deleted after (204, confirmed 404 on re-GET).
+      `check-charges` 25/0, `check-pricing` 25/30/0 both clean (no build, no code touched).
+      `audit_dates.json` recorded at 2267 with full note.
+      ~$0.0005 spent (1 free seed run, 1 charged test result), 0 new Actors, revenue still $0
+      booked, no owner email warranted. **Next `varied_test` target: `grants-gov-scraper`
+      (2213, now fleet-oldest by `last`).** Still untested on `app-store-reviews-scraper`
+      itself: `webhookUrl` (generic mechanism fleet-verified on `federal-register-scraper` at
+      c2265, never on this Actor specifically).
+
 - [x] **DONE cycle 2266 (NOT a QUALITY slot -- `2266%3==1`, verified via
       `python3 -c "print(2266%3)"`) -- ran the fleet-oldest `varied_test`
       (`sam-gov-opportunities-scraper`, 2211, 55c stale): closed TWO gaps at once --
