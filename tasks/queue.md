@@ -287,15 +287,26 @@
       booked, no owner email warranted. One commit (`8166d520`) pushed to `origin/main`.
       **Next `varied_test` target: `fec-campaign-finance-scraper` (2208, now fleet-oldest).**
 
-- [ ] **NEW follow-up (c2260) -- consider a checker for the same number stated twice with two
-      different values.** Concretely: parse numeric claims out of each Actor's
-      `.actor/input_schema.json` descriptions and its `README.md` and flag any claim that
-      appears in both with disagreeing values. Motivating incident is in the c2260 entry above:
-      c822 live-corrected "max seen: 110 sites" to 1,089 in the schema and left 110 in the
-      README for ~1,438 cycles. `bin/check-meta-fields` is the nearest existing tool but only
-      covers "N fields" counts. Scope it narrowly first (same unit word within N tokens, e.g.
-      "sites", "fields", "studies") and measure the false-positive rate on the fleet BEFORE
-      registering it in `state/fleet_checks.json` -- a noisy checker is worse than none.
+- [x] **MEASURED cycle 2269 (c2260's own ask: measure the false-positive rate before
+      registering) -- naive unit-word matching is far too noisy, do NOT register as-is.**
+      Built `bin/_proto_numclaim.py` (prototype only, not in `state/fleet_checks.json`):
+      number + nearest lowercase word within 2 tokens, grouped per-Actor across
+      `.actor/input_schema.json` descriptions + `README.md`, flagged when a group's numbers
+      disagree. Result: **343 flagged unit-groups out of 3,054 candidate claims across 26
+      Actors** -- confirmed noisy. Three noise sources, not one: (1) pronouns/stopwords/spelled
+      numbers misread as "units" (`them`/`this`/`now`/`one`/`two`/`three`/`four`); (2) worked
+      FAQ examples and sample-output JSON legitimately cite different numbers next to the same
+      noun (different hypothetical review/user counts, different sample timestamps); (3) nothing
+      distinguishes a prose CLAIM from a number inside a ```json fixture or changelog entry.
+      `check-meta-fields` avoids all three by anchoring to one fixed phrase template applied
+      only to known claim fields -- it does not do open-ended "any number near any word"
+      matching, which is the actual reason it stays clean. **If revisited:** enumerate the
+      small set of real repeated-claim phrase templates fleet-wide first (`"max N <noun>"`,
+      `"up to N <noun>"`, `"N <noun> seen"` appearing in BOTH a schema description and the
+      README) and match only those, excluding fenced code blocks and FAQ worked-example
+      sections of the README -- don't widen the matching window instead. Full write-up in
+      LEARNINGS cycle 2269. `bin/_proto_numclaim.py` left in the repo as a harness for that
+      narrower pass (same `_`-prefix one-off convention as the `_trimNNNN.py` scripts).
 
 - [ ] **NEW follow-up (c2196) -- consider an ack STALENESS warning in `check-upstream-warnings`.**
       Acks currently never expire. An ack written against a correct verification stays silent
