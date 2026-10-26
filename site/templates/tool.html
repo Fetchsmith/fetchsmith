@@ -8,9 +8,26 @@
 <div>
 {% if t.description %}<div class="prose">{{ t.description | safe }}</div>{% endif %}
 {% if t.status != 'retired' %}<h2>Run it</h2>
-<pre><code>curl -X POST {{ site_url }}/api/v1/run/{{ t.slug }} \
+{# Cycle 2276: this block used to show ONLY the hosted-FetchSmith-API curl, which needs an
+   `Authorization: Bearer YOUR_KEY` that nobody can obtain while `checkout_live` is false
+   (POST /api/v1/run/<slug> answers 401 "Missing API key", /pricing says checkout is not
+   open, and bin/traffic has recorded 0 hosted-API calls ever). So the most prominent
+   action on every tool page -- above the fold, before the sample output -- pointed at a
+   product a visitor cannot buy, while the one path that works was a sidebar button. Same
+   defect class cycle 1744 fixed for the headline PRICE in the aside below; the runnable
+   example was missed then. Measured context: 28 verified (non-crawler) visits to /tools
+   pages in 7 days against 3 verified /go/ out-clicks lifetime, so this is the highest-
+   intent surface we have. Now: while checkout is closed and the Actor has a public Store
+   page, lead with the real Apify API call (Bearer auth verified 200 against
+   api.apify.com this cycle) and demote the hosted API to one muted line. #}
+{% if not checkout_live and t.apify_listed != false %}<p class="muted">Pay-per-result on Apify, no FetchSmith account needed. Use your own <a href="https://console.apify.com/settings/integrations" rel="noopener">Apify API token</a>, or hit <strong>Run</strong> on the <a href="/go/{{ t.slug }}" rel="noopener">Store page</a> with no token at all.</p>
+<pre><code>curl -X POST "https://api.apify.com/v2/acts/{{ apify_user }}~{{ t.slug }}/run-sync-get-dataset-items?clean=true" \
+  -H "Authorization: Bearer YOUR_APIFY_TOKEN" -H "Content-Type: application/json" \
+  -d '{{ t.example_input | tojson if t.example_input else '{"maxResults": 20}' }}'</code></pre>
+<p class="muted">Returns the rows as JSON when the run finishes. A hosted FetchSmith API (one key, no Apify account, see <a href="/docs">API docs</a>) is planned but not open yet.</p>
+{% else %}<pre><code>curl -X POST {{ site_url }}/api/v1/run/{{ t.slug }} \
   -H "Authorization: Bearer YOUR_KEY" -H "Content-Type: application/json" \
-  -d '{{ t.example_input | tojson if t.example_input else '{"max_results": 20}' }}'</code></pre>{% endif %}
+  -d '{{ t.example_input | tojson if t.example_input else '{"max_results": 20}' }}'</code></pre>{% endif %}{% endif %}
 {% if t.output_fields %}<h2>Output fields</h2><p class="prose">{% for f in t.output_fields %}<code>{{ f }}</code> {% endfor %}</p>{% endif %}
 {% if t.sample_output %}<h2>Sample output</h2><pre><code>{{ t.sample_output | tojson(indent=2) }}</code></pre>{% endif %}
 {% if guides %}<h2>Guides</h2><ul class="prose">{% for g in guides %}<li><a href="/blog/{{ g.slug }}">{{ g.title }}</a> — {{ g.description }}</li>{% endfor %}</ul>{% endif %}

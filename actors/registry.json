@@ -308,7 +308,7 @@
         ],
         "maxProductsPerStore": 250,
         "includeVariants": true,
-        "max_results": 250
+        "maxResults": 250
       },
       "output_fields": [
         "id",
@@ -474,7 +474,7 @@
         "country": "US",
         "maxItemsPerQuery": 50,
         "decodeUrls": true,
-        "max_results": 50
+        "maxResults": 50
       },
       "output_fields": [
         "title",
@@ -544,7 +544,7 @@
         ],
         "sort": "mostRecent",
         "maxReviewsPerApp": 100,
-        "max_results": 200
+        "maxResults": 200
       },
       "output_fields": [
         "reviewId",
@@ -636,7 +636,7 @@
         ],
         "sortBy": "relevance",
         "maxItemsPerQuery": 50,
-        "max_results": 50
+        "maxResults": 50
       },
       "output_fields": [
         "id",
@@ -709,7 +709,7 @@
         "sort": "NEWEST",
         "maxReviewsPerApp": 100,
         "includeAppDetails": true,
-        "max_results": 500
+        "maxResults": 500
       },
       "output_fields": [
         "recordType",
@@ -791,7 +791,7 @@
         "includeComments": true,
         "maxCommentsPerPost": 3,
         "maxPostsPerPublication": 4,
-        "max_results": 20,
+        "maxResults": 20,
         "includePublicationInfo": true
       },
       "output_fields": [
@@ -902,7 +902,7 @@
         "country": "us",
         "maxEpisodesPerPodcast": 25,
         "includePodcastInfo": true,
-        "max_results": 25
+        "maxResults": 25
       },
       "output_fields": [
         "type",
@@ -988,7 +988,7 @@
         "sortBy": "recent",
         "maxReviewsPerApp": 25,
         "includeGameInfo": true,
-        "max_results": 25
+        "maxResults": 25
       },
       "output_fields": [
         "type",
@@ -2136,7 +2136,7 @@
           "himalayas",
           "wwr"
         ],
-        "keyword": "python",
+        "searchKeyword": "python",
         "maxResults": 25
       },
       "output_fields": [
