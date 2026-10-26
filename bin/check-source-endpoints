@@ -77,7 +77,7 @@ def status_bucket(code):
     return "server-error"
 
 
-def probe(host, client):
+def probe_once(host, client):
     url = f"https://{host}/"
     try:
         r = client.get(url, headers={"User-Agent": UA}, timeout=TIMEOUT, follow_redirects=True)
@@ -88,6 +88,18 @@ def probe(host, client):
     except httpx.HTTPError as e:
         return {"status": None, "bucket": "error", "final_host": host,
                 "content_type": "", "error": type(e).__name__}
+
+
+def probe(host, client):
+    """One retry on a transient error bucket before accepting it -- a single
+    10s ReadTimeout (seen live on rss.marketingtools.apple.com, cycle 2270;
+    the real API endpoint answered in ~2s on direct retry) would otherwise both
+    flag a false DEVIATION and overwrite baseline to "error", masking a real
+    future break until the host happens to recover on its own next run."""
+    r = probe_once(host, client)
+    if r["bucket"] == "error":
+        return probe_once(host, client)
+    return r
 
 
 def load(path, default):
