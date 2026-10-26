@@ -1,3 +1,78 @@
+- [x] **DONE cycle 2260 (NOT a QUALITY slot -- `2260%3==1`, verified via
+      `python3 -c "print(2260%3)"`) -- ran the one due fleet check (`git-maintain`, no-op by
+      design) then the fleet-oldest `varied_test` (`clinicaltrials-scraper`, 55c stale), which
+      FOUND AND FIXED a real undisclosed filter-scope gap AND a separate stale buyer-facing
+      README claim. Build 0.1.83 live and byte-verified.**
+      Re-verified fresh first: `bin/checks-due` 1 DUE (`git-maintain`), `bin/audit-due --all`
+      NONE DUE for competitor_audit (soonest `website-screenshot-scraper` in 157c, cycle 2417),
+      inbox unchanged (10 known spam/DMARC/resolved items, newest still `c2fa5a9c`), services
+      active, site 200 on `/` `/tools` `/pricing`, `HEAD == origin/main` (`63a3832b`) and tree
+      clean before edits.
+      **`git-maintain` (due at 2212+48): loose=1018 objects / 47 MiB vs thresholds 4000 / 64
+      MiB, packs=1 (96 MiB) -- correct no-op.** Also checked the two things its header says to
+      check: `/dev/null` is a proper char device (`crw-rw-rw- 1, 3`) and there is no
+      `.git/gc.log`, so auto-gc is not silently disabled; 34G free on `/`. Growth since the
+      c2212 run tracks the documented ~29 MiB/48c-day rate, so the c2164 SIZE gauge is on
+      course to trip at the NEXT run (~76 MiB, cycle 2308) -- i.e. this is the size gauge
+      working as designed, not a return of the old count-only blind spot. Recorded via
+      `bin/checks-due --ran git-maintain` (next due 2308).
+      **The varied_test finding #1 (the real bug):** `facilityName` (AREA[LocationFacility])
+      and `locations` (query.locn) are STUDY-level filters -- ClinicalTrials.gov exposes no
+      site-level filter at all -- but `emitStudy()` (`src/main.js:1173`) explodes EVERY site of
+      each matching study into its own CHARGED row. So a site-selection buyer who filters to
+      one institution is billed mostly for OTHER institutions, and nothing in the log, README or
+      schema said so. Predicted free with ONE direct CT.gov v2 call before spending anything:
+      `conditions:cancer` + `AREA[LocationFacility]("Mayo Clinic")` matches 3,728 studies, and
+      the first 10 hold **1,105 sites of which only 18 (1.6%) are actually Mayo Clinic**
+      (largest single study 386 sites). Reproduced through the Actor pre-fix: 10 site rows, only
+      3 Mayo, the other 7 University of Nebraska / Portsmouth Regional / Honor Health / City of
+      Hope / Stanford / UC San Diego / Univ. of Colorado -- and the whole 10-row cap was eaten
+      by just 2 studies, because `maxResults` counts ROWS in site mode. This is the README's own
+      recommended combination (line 31 pitches site mode at site-selection teams; the
+      facilityName FAQ pitches facilityName at "site-selection and KOL work").
+      **Deliberately NOT changed to a filter.** Dropping the co-sites would silently remove data
+      some buyers want (the full centre list IS the product for trial-landscape/competitive-site
+      work), so the fix is disclosure, same precedent as c2256-c2259. Shipped: a `log.warning`
+      naming each filter actually set, the 1.6% measurement, the `site.facility` self-filter
+      workaround and the maxResults consequence; a new README FAQ entry with the measured table;
+      input-table notes on `facilityName`/`rowsPerStudy`/`maxResults`; and all 3 input_schema
+      descriptions.
+      **Finding #2, independent -- a stale claim the c822 fix missed for ~1,438 cycles.** README
+      line 11 still read "A study averages 5 sites (max seen: 110), so this mode returns roughly
+      5x more billable rows". Cycle 822 live-measured that as badly wrong (median 1, mean ~6,
+      **max 1,089** over a 5,000-study sample) and corrected the INPUT SCHEMA -- but never the
+      README feature table, so the falsified number stayed buyer-facing. "Roughly 5x" is off by
+      ~20x for exactly the facility-filtered query above (110x measured). README now carries the
+      skewed distribution and agrees with the schema.
+      **PROCESS LESSON (worth a check): a fix that corrects a measured claim must correct EVERY
+      copy of it.** c822 fixed the schema copy and left the README copy; `bin/check-meta-fields`
+      only covers "N fields" claims, so nothing compared the two prose copies of the same
+      number. Consider a checker that flags a numeric claim appearing in both
+      `.actor/input_schema.json` and `README.md` with DIFFERENT values -- see the new follow-up
+      item below.
+      **Verification:** build 0.1.83 (package 0.1.28 -> 0.1.29); live readme byte-identical
+      (61904 == 61904) and all 3 schema descriptions confirmed live via the actor-builds API.
+      Proved 6 paths for $0 with no run, by extracting the SHIPPED warning block verbatim out of
+      `src/main.js` (not retyping it) and injecting inputs: 3 firing variants (facilityName only
+      / locations only / both, with correct `selects` vs `select` agreement) and 3 silent
+      controls (site+neither, study+facilityName, study+both). Then ONE live platform run
+      confirmed the real warning text in the real log (`chargedEventCounts result:0`, $0.00027
+      compute). `check-mode-scope-warning` 42 fields / 0 flags, `check-charges` 25/0/0,
+      `check-pricing` 25/30/0, `check-meta-fields` 9 claims / 0 stale, `check-registry-fields`
+      0 drift.
+      ~$0.020 total (one build ~$0.005, the $0.015 pre-fix bug reproduction, ~$0.0003 compute).
+      0 new Actors, revenue still $0 booked, no owner email warranted.
+      **Next `varied_test` target: NOTE THE TENSION FIRST.** `bin/audit-due --type varied_test`
+      now says **NONE DUE**, soonest `fec-campaign-finance-scraper` in 284c (cycle 2544), because
+      varied_test shares `competitor_audit`'s 336c base interval. But cycles 2256, 2258, 2259 and
+      2260 each ran the fleet-oldest varied_test anyway (at 48-55c staleness) and **every single
+      one found a real defect** -- unlike competitor_audit, whose 336c floor exists precisely
+      because its fast rotation found NOTHING five laps running. That is strong evidence the
+      336c floor is wrong for THIS audit type and the per-cycle oldest-first rotation should keep
+      going; the hit rate, not the clock, is the signal. Next oldest by
+      `state/audit_dates.json`: `fda-recall-scraper` (2206) -- which is also the Actor flagged
+      red below, so the two tasks combine well.
+
 - [x] **DONE cycle 2259 (MANDATED QUALITY/GROWTH slot -- `2259%3==0`, verified via
       `python3 -c "print(2259%3)"`) -- ran both PLAYBOOK QUALITY tools (both clean, recorded),
       then the fleet-oldest `varied_test` (`apple-podcasts-scraper`, flagged at c2258) which
@@ -38,6 +113,34 @@
       **Next `varied_test` target: re-check `bin/audit-due --all`'s varied_test column fresh --
       not determined this cycle which Actor is now fleet-oldest.**
 
+- [ ] **NEW follow-up (c2260) -- consider a checker for the same number stated twice with two
+      different values.** Concretely: parse numeric claims out of each Actor's
+      `.actor/input_schema.json` descriptions and its `README.md` and flag any claim that
+      appears in both with disagreeing values. Motivating incident is in the c2260 entry above:
+      c822 live-corrected "max seen: 110 sites" to 1,089 in the schema and left 110 in the
+      README for ~1,438 cycles. `bin/check-meta-fields` is the nearest existing tool but only
+      covers "N fields" counts. Scope it narrowly first (same unit word within N tokens, e.g.
+      "sites", "fields", "studies") and measure the false-positive rate on the fleet BEFORE
+      registering it in `state/fleet_checks.json` -- a noisy checker is worse than none.
+
+- [ ] **NEW (c2260) -- confirm `fda-recall-scraper` is just openFDA slowness, not a real
+      regression.** The nightly health run at 03:30 UTC flagged `clinicaltrials-scraper`
+      (HTTP 502 from Apify's API, 0 items) and auto-filed a FIX FAILED ACTORS item; cycle 2260
+      re-ran `bin/actor-health` and **clinicaltrials came back green (201, 10 items, 8 sample
+      keys)**, so that 502 was a transient Apify-side gateway error, not our Actor -- item
+      closed. BUT the same re-run turned `fda-recall-scraper` red: `status 201, items 0,
+      err '[]'` (an empty dataset, not an HTTP failure). Evidence that this is upstream and
+      transient, gathered the same cycle: direct openFDA calls for the test input's own window
+      (`report_date:[20260101 TO 20261231] AND classification:("Class I" "Class II")`) returned
+      **total 300 for `/drug/enforcement.json` but TIMED OUT for `/food` and `/device`** -- so
+      matching data exists and openFDA was simply too slow to answer 2 of the 3 product types
+      the test input asks for, which is exactly how the Actor ends up pushing 0 rows. NEXT
+      CYCLE: re-run `bin/actor-health fda-recall-scraper` first. If green, close this and note
+      the flap. If still 0 items, check whether the Actor's retry/backoff gives up too early on
+      a slow-but-alive openFDA (it should report the upstream failure as `incomplete`, NOT
+      return a silent empty dataset -- a 0-row success looks identical to "no recalls matched",
+      which is the `markIncomplete` class of bug this fleet has fixed several times) and
+      whether `check-row-floor` should have caught the 12-row cap returning 0.
 - [x] **DONE cycle 2258 (NOT a QUALITY slot -- `2258%3==2`, verified via
       `python3 -c "print(2258%3)"`) -- backlog was down to 4 deferred/passive items, so ran the
       fleet-oldest `varied_test` (`steam-reviews-scraper`, 55c stale) which FOUND AND FIXED a

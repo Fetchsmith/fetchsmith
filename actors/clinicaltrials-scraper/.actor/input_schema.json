@@ -37,7 +37,7 @@
         "locations": {
             "title": "Location (city, state or country)",
             "type": "string",
-            "description": "Facility location text, e.g. \"Boston, Massachusetts\". Maps to query.locn.",
+            "description": "Facility location text, e.g. \"Boston, Massachusetts\". Maps to query.locn. Selects STUDIES, not sites: with rowsPerStudy=\"site\" the other sites of each matching study are returned and charged too -- filter site.facility/site.city on the rows yourself. See the README FAQ.",
             "editor": "textfield"
         },
         "searchQuery": {
@@ -376,7 +376,7 @@
         "facilityName": {
             "title": "Facility name",
             "type": "string",
-            "description": "Only studies running at a facility whose name matches this text, e.g. \"Mayo Clinic\". This is the site/hospital name, not the city — use \"Location\" above for a city/state/country. Maps to AREA[LocationFacility].",
+            "description": "Only studies running at a facility whose name matches this text, e.g. \"Mayo Clinic\". This is the site/hospital name, not the city -- use \"Location\" above for a city/state/country. Maps to AREA[LocationFacility]. Selects STUDIES, not sites: with rowsPerStudy=\"site\" you also get (and pay for) every co-site of each matching study -- on a live cancer + \"Mayo Clinic\" check only 1.6% of site rows were Mayo facilities. See the README FAQ.",
             "editor": "textfield"
         },
         "leadSponsorName": {
@@ -407,7 +407,7 @@
         "rowsPerStudy": {
             "title": "Row mode",
             "type": "string",
-            "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. Site count per study is heavily skewed: median is 1 site, mean is ~6, and the largest trials run into the hundreds (max seen: 1,089 sites on one study, live-measured 2026-09-26). So site mode's row multiplier is close to 1x for most studies but can be 100x-1000x+ for the largest multi-site trials — budget for that if you're not filtering to a specific study.",
+            "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. Site count per study is heavily skewed: median is 1 site, mean is ~6, and the largest trials run into the hundreds (max seen: 1,089 sites on one study, live-measured 2026-09-26). So site mode's row multiplier is close to 1x for most studies but can be 100x-1000x+ for the largest multi-site trials — budget for that if you're not filtering to a specific study. No input filters at the site level (ClinicalTrials.gov has none), so facilityName/locations still select whole studies and every one of their sites comes back as a charged row.",
             "editor": "select",
             "enum": [
                 "study",

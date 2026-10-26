@@ -8,7 +8,7 @@ Pulls studies from **ClinicalTrials.gov**, the US NIH/NLM clinical trial registr
 
 | Field | Why it matters |
 | --- | --- |
-| `rowsPerStudy: "site"` mode | One row per **trial site** instead of one per study — facility name, city, state, country, lat/lon and that site's **own recruitment `status`**, so a site-selection or patient-recruitment buyer doesn't have to explode the array themselves. A study averages 5 sites (max seen: 110), so this mode returns roughly 5x more billable rows for the same query. The per-site `status` is the one most buyers miss: it routinely disagrees with the study-level `overallStatus` — see the FAQ for measured rates. |
+| `rowsPerStudy: "site"` mode | One row per **trial site** instead of one per study — facility name, city, state, country, lat/lon and that site's **own recruitment `status`**, so a site-selection or patient-recruitment buyer doesn't have to explode the array themselves. The row multiplier is **heavily skewed, not an average** — median 1 site per study, mean ~6, and the largest trial we have measured runs 1,089 sites (live-measured over a 5,000-study sample, 2026-09-26) — so budget for the tail, and note `maxResults` counts site rows here. Two things to know before you filter: `facilityName`/`locations` select **studies**, not sites, so this mode also returns every co-site of each match (see the FAQ for a measured example), and the per-site `status` routinely disagrees with the study-level `overallStatus` — also in the FAQ. |
 | `phases`, `studyType`, `overallStatus` | Filterable and returned flat, not nested. |
 | `enrollmentCount`, `sex`, `minimumAge`, `maximumAge`, `healthyVolunteers`, `standardAges` | The eligibility snapshot without parsing free-text criteria. `enrollmentType` says whether that count is `ACTUAL` or `ESTIMATED` — an estimate on a running trial is a target, not a headcount. `standardAges` is the registry's own `CHILD`/`ADULT`/`OLDER_ADULT` bucketing, the same vocabulary the `ageGroups` filter uses. |
 | `eligibilityCriteria` | The full inclusion/exclusion text as the registry publishes it. We deliberately **don't** pre-split it into separate inclusion and exclusion lists the way some competitors do: the split is a guess at prose with no fixed format, and mislabelling an exclusion criterion as an inclusion one is the one error a trial-screening buyer cannot afford. |
@@ -76,14 +76,14 @@ Or skip the form entirely and paste the search URL from clinicaltrials.gov:
 | `studyCompletionDateFrom` / `studyCompletionDateTo` | Window on the **overall completion** date. Month-precision dates anchor to the 1st — see the partial-date FAQ below. |
 | `firstPostedDateFrom` / `firstPostedDateTo` | Window on the date the study was **first posted** to ClinicalTrials.gov — the "newly registered trials" query. |
 | `resultsFirstPostedDateFrom` / `resultsFirstPostedDateTo` | Window on the date **results** were first posted. Pairs with `resultsAvailability: "with"` (or a blank `resultsAvailability`). Pairing it with `"without"` fails fast with an error instead of silently returning 0 rows — see the FAQ. |
-| `facilityName` | Only studies running at a facility whose name matches, e.g. `Mayo Clinic`. This is the **site/hospital name**, not the city — `locations` is the city/state/country field. Multi-word values are matched as a phrase, not as loose terms. |
+| `facilityName` | Only studies running at a facility whose name matches, e.g. `Mayo Clinic`. This is the **site/hospital name**, not the city — `locations` is the city/state/country field. Multi-word values are matched as a phrase, not as loose terms. Selects **studies**, not sites: with `rowsPerStudy: "site"` you also get every co-site of each match — see the FAQ. |
 | `leadSponsorName` | Only studies whose **lead** sponsor matches, e.g. `Pfizer`. Narrower than `sponsors`, which also matches collaborators. |
 | `funderTypes` | Lead sponsor organization type: `NIH`, `FED` (other US federal), `OTHER_GOV`, `INDUSTRY`, `NETWORK`, `INDIV`, `OTHER` (academic/nonprofit), `UNKNOWN`, `AMBIG`. |
 | `titleOrAcronym` | Search only the official/brief title and acronym — narrower than `searchQuery`. |
 | `outcomeMeasure` | Search only the study's stated outcome measures, e.g. "overall survival". |
 | `sortBy` | Order results before `maxResults` truncates them: most recently updated, most recently first-posted, or largest enrollment first. Default is the API's own relevance order. |
-| `rowsPerStudy` | `"study"` (default) or `"site"`. |
-| `maxResults` | Up to 50,000. Token-based paging, no offset wall. |
+| `rowsPerStudy` | `"study"` (default) or `"site"`. In `"site"` mode `maxResults` counts site rows, and no input filters sites — see the FAQ. |
+| `maxResults` | Up to 50,000. Token-based paging, no offset wall. Counts **rows**, so in `rowsPerStudy: "site"` mode one large multi-site trial can use the whole cap. |
 | `watchLabel` | Name a saved search to get only studies new since this label's last run (see FAQ). Leave empty for the normal full-match-set behaviour. Ignored when `nctIds` is set. |
 | `watchChanges` | boolean | Optional, requires `watchLabel`. Also re-deliver an already-seen study if its `overallStatus`, `lastUpdatePostDate`, `enrollmentCount`, `primaryCompletionDate` or `completionDate` changed (default `false`) — see FAQ. |
 | `webhookUrl` | Optional. POST a small JSON completion summary (rows pushed, studies scanned, pages walked, dataset ID, watch new/changed counts, plus the full `summary` completeness object) here when the run finishes — see FAQ. |
@@ -236,6 +236,18 @@ There is no input filter for this — ClinicalTrials.gov's own sidebar filters o
 |---|---|---|---|---|
 | `conditions: "melanoma"` | 41 | 400 | **11.0%** | 30 `NOT_YET_RECRUITING`, 10 `ACTIVE_NOT_RECRUITING`, 4 `COMPLETED` |
 | `conditions: "type 2 diabetes"` | 103 | 400 | **41.2%** | 87 `NOT_YET_RECRUITING`, 54 `ACTIVE_NOT_RECRUITING`, 12 `WITHDRAWN`, 9 `COMPLETED`, 2 `SUSPENDED`, 1 `TERMINATED` |
+
+**I set `facilityName: "Mayo Clinic"` and `rowsPerStudy: "site"` — why are most rows other hospitals?**
+Because `facilityName` and `locations` select **studies**, not sites, and site mode then returns one row per site of every study that matched. ClinicalTrials.gov exposes no site-level filter at all (the same root cause as the `site.status` answer above), so a multi-centre trial that runs at Mayo Clinic *and* 230 other centres contributes all 231 rows, each billed. This is not a broken filter, and we do not silently drop the co-sites — for trial-landscape and competitive-site work the full centre list is the useful part — but you should know the ratio before you set a budget. Measured live 2026-10-26, `conditions: "cancer"` + `facilityName: "Mayo Clinic"` (3,728 studies matched):
+
+| | Count |
+|---|---|
+| First 10 matched studies | 10 |
+| Site rows they produce | 1,105 |
+| Rows actually at a Mayo Clinic facility | 18 (**1.6%**) |
+| Sites on the largest of those 10 studies | 386 |
+
+The Actor now logs a warning naming this whenever you combine either filter with site mode. To get only the facilities you asked for, keep site mode and filter `site.facility` on the returned rows (a substring match on what you typed reproduces the 18 above), or use the default `rowsPerStudy: "study"` and read the `locations` array, which costs one row per study instead of one per site. And remember `maxResults` counts site rows here: a default `maxResults: 100` on the query above never gets past the first study or two.
 
 **Does `rowsPerStudy: "site"` change what `watchLabel` tracks?**
 No — "new" is always decided per **study** (`nctId`), never per site row. A trial that was already delivered stays excluded even if `rowsPerStudy` or another display-only setting changes between runs; only filters that change which studies match start a fresh baseline.

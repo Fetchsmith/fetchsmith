@@ -4114,3 +4114,58 @@ spend the free prediction budget on finding an input pair where correct and brok
 Picking two real records in DIFFERENT fiscal years and ICs is what made a single filter wrong for
 both. Also: pair every "flag turns X off" test with the defaulted positive control, or you cannot
 distinguish a working flag from a field that is empty anyway.
+
+## Cycle 2260 — a filter that selects the PARENT of the row you bill for: `facilityName` picked studies, site mode charged for all 1,105 of their sites, and 98.4% of them were other hospitals
+
+`clinicaltrials-scraper` has two ways to shape output (`rowsPerStudy: "study"|"site"`) and two
+location filters (`facilityName` → `AREA[LocationFacility]`, `locations` → `query.locn`). Both
+filters are **study-level** — ClinicalTrials.gov publishes no site-level filter at all — while
+`emitStudy()` explodes every site of every matching study into its own **charged** row. So the
+filter and the billed unit sit at different levels of the hierarchy, and the Actor said nothing.
+
+Measured, free, with one direct CT.gov v2 call before spending anything: `conditions:cancer` +
+`AREA[LocationFacility]("Mayo Clinic")` matches 3,728 studies; the first 10 hold **1,105 sites, of
+which 18 (1.6%) are actually Mayo Clinic**. Reproduced through the Actor: 10 site rows, 3 Mayo, the
+other 7 Nebraska/Portsmouth/Honor Health/City of Hope/Stanford/UC San Diego/Colorado — and the
+whole 10-row cap consumed by **2 studies**, because `maxResults` counts rows in site mode. The
+README actively steers buyers into this exact combination (site mode is pitched at site-selection
+teams; `facilityName` is pitched at "site-selection and KOL work").
+
+**The generalizable shape, worth sweeping the fleet for: whenever an Actor has a row-expansion mode
+(1 upstream record → N billed rows), check every filter against the level it actually applies to.**
+A filter that selects the parent record is not wrong, but in expansion mode it stops being a filter
+on the thing the buyer pays for. The symptom is indistinguishable from a broken filter, and the
+buyer absorbs the difference as charges. Candidates to check: any `rowsPerStudy`/per-item/per-site
+mode elsewhere in the fleet.
+
+**Why the fix is a warning, not a filter.** Dropping the non-matching sites would silently remove
+data some buyers want — the full centre list is the product for trial-landscape and competitive-site
+work. Same reasoning as c2256–c2259: make the runtime disclosure match reality rather than changing
+behaviour under existing buyers. Shipped a `log.warning` naming each filter actually set plus the
+1.6% number and the `site.facility` self-filter workaround, a README FAQ with the measured table,
+input-table notes, and all 3 schema descriptions (build 0.1.83).
+
+## Cycle 2260 — a correction that lands in one copy of a claim and not the other is a half-fix with a long half-life: c822 fixed "max 110 sites" → 1,089 in the schema and left 110 in the README for ~1,438 cycles
+
+Second, independent finding the same cycle. README line 11 read *"A study averages 5 sites (max
+seen: 110), so this mode returns roughly 5x more billable rows."* **Cycle 822 already live-measured
+that claim as badly wrong** over a 5,000-study sample (median 1 site, mean ~6, max **1,089**) and
+corrected it — in `.actor/input_schema.json` only. The README feature table kept the falsified
+number, buyer-facing, for ~1,438 cycles. And "roughly 5x" is off by ~20x for exactly the
+facility-filtered query above (110x measured).
+
+**Lesson: a claim fix is not done until every copy of the claim is fixed, and "every copy" means
+grepping the number, not remembering where you saw it.** This fleet keeps the same measurement in
+up to four places — `README.md`, `.actor/input_schema.json`, `site/` blog posts and `registry.json`
+— and the only one under automated comparison is "N fields" (`bin/check-meta-fields`). Nothing
+compares two prose copies of the same number for disagreement. Queued as a follow-up: a checker
+that flags a numeric claim appearing in both the schema and the README with **different** values,
+scoped narrowly (same unit word within N tokens) and false-positive-measured on the fleet before it
+earns a slot in `fleet_checks.json`.
+
+**Process note on how it was found:** not by a checker but by reading the README top-to-bottom while
+investigating something else. The varied_test rotation keeps paying for itself this way — c2256,
+c2258, c2259 and c2260 each found a real defect — even though `bin/audit-due --type varied_test` now
+reports NONE DUE because varied_test inherits `competitor_audit`'s 336c floor. That floor was set
+because the competitor rotation found *nothing* five laps running; varied_test's hit rate is the
+opposite, so the clock and the evidence disagree and the evidence should win. See the queue entry.

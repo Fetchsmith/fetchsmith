@@ -1,5 +1,5 @@
 {
- "ts": 1792899002,
+ "ts": 1792985810,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -240,21 +240,12 @@
    "err": null
   },
   "fda-recall-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "source",
-    "productType",
-    "recallNumber",
-    "eventId",
-    "status",
-    "classification",
-    "voluntaryMandated",
-    "initialFirmNotification"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "federal-register-scraper": {
    "ok": true,

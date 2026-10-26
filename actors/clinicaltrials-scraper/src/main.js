@@ -393,6 +393,35 @@ if (input.watchLabel && nctIds.length) {
     );
 }
 
+// SITE-MODE SCOPE DISCLOSURE (added cycle 2260). `facilityName` (AREA[LocationFacility]) and
+// `locations` (query.locn) are STUDY-level filters: they select studies that have at least one
+// matching site, and ClinicalTrials.gov exposes no site-level filter at all (same root cause as
+// the site.status FAQ). emitStudy() then explodes EVERY site of each matching study into its own
+// charged row, so in site mode the great majority of delivered rows can be facilities that do not
+// match what the buyer typed. Measured live 2026-10-26 on `conditions:"cancer"` +
+// `facilityName:"Mayo Clinic"`: the first 10 matched studies hold 1,105 sites of which 18 (1.6%)
+// are actually Mayo Clinic, and a default `maxResults:100` run never gets past the first study or
+// two. The README steers site-selection buyers at exactly this combination, so saying nothing
+// here bills them ~98% rows they did not ask for and looks like a broken filter. Not a filter
+// change: dropping the non-matching sites would silently remove data existing buyers may rely on
+// (the co-site list is the point for some), so disclose and let them filter `site.facility`.
+const siteScopeIgnored = [];
+if (rowsPerStudy === 'site') {
+    if (facilityName) siteScopeIgnored.push(`facilityName="${facilityName}"`);
+    if (locations) siteScopeIgnored.push(`locations="${locations}"`);
+}
+if (siteScopeIgnored.length) {
+    log.warning(
+        `${siteScopeIgnored.join(' and ')} ${siteScopeIgnored.length > 1 ? 'select' : 'selects'} STUDIES, `
+        + 'not sites -- ClinicalTrials.gov has no site-level '
+        + 'filter. rowsPerStudy="site" then returns (and CHARGES for) every site of each matching study, '
+        + 'including facilities that do not match what you typed: on a live cancer + "Mayo Clinic" check, '
+        + 'only 1.6% of the site rows were Mayo Clinic facilities. Filter `site.facility` on the returned '
+        + 'rows yourself, and note maxResults counts SITE rows here, so a large multi-site trial can use up '
+        + 'your whole cap on its own.',
+    );
+}
+
 // THE DEFAULT-NARROWING TRAP (same class as nih-reporter-scraper's `keyword`, cycle 1904/1906;
 // same shape as the cycle-893/894/895 default-injection bug but in its narrowing form).
 // `conditions` used to carry a schema `default` of "cancer", which Apify merges into ANY run that
