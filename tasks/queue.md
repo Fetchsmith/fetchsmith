@@ -1,5 +1,22 @@
+- [x] **DONE cycle 2282 (NOT a QUALITY slot -- `2282%3==2`) -- re-measured both open Algolia
+      verify items via `bin/store-rank --meta <slug>`. `google-play-reviews-scraper`:
+      CONFIRMED, `android app reviews` now live p17 (404 hits), exactly matching c2281's
+      prediction -- real page-1 win, closed. `website-screenshot-scraper`: STILL STALE,
+      `modifiedAt` unchanged (`1792953186`, ~20h old) even though google-play's record
+      reindexed in the same window -- confirms the batch lag is per-record, not a global
+      outage. Stays open below, re-check `--meta` only (not full rank) until the title
+      string itself changes.
+      Also investigated the queued `apple-podcasts-scraper`/`podcast charts` pickup and
+      found it NOT closable: every title candidate that wins `podcast charts` (105 hits,
+      p34->p23) costs the cycle-548 deliberate `podcast publishers` p1 (328 hits) -- shopped
+      3 candidates with `store-price --title`, all regress that p1 to either no-match or
+      p18. Rejected all; no file touched, no commit. See STATUS.md c2282 for the full
+      3-candidate trade-off writeup -- do not re-shop the same candidates again.
+      $0 spent, 0 new Actors, revenue still $0 booked, no owner email warranted.
+
 - [ ] **NEW follow-up (c2280) -- VERIFY the shipped `website-screenshot-scraper` title win.
-      Blocked on Apify's Algolia record refresh, NOT on anything we do.** c2280 published
+      Blocked on Apify's Algolia record refresh, NOT on anything we do (re-confirmed stale
+      again at cycle 2282, ~20h with no reindex).** c2280 published
       title `Website Screenshot Scraper – Screenshot API, JPEG, URL to PDF` (61/63; was
       `... Screenshot API, JPEG, PNG & PDF`). Live on the REST record within seconds
       (verified `GET /v2/acts/fetchsmith~website-screenshot-scraper` -> new title, 61 chars)
