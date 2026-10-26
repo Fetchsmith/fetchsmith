@@ -4309,3 +4309,46 @@ empty `urlList` and also 400s — harmless, but it is not a "submit everything" 
 (2) `site/app.py`'s `load_registry()` re-reads `registry.json` on every request with no mtime
 cache, and Jinja autoreloads templates, so a `registry.json` + `.html` change needs **no**
 `systemctl restart fetchsmith-web` — unlike an `app.py` change (c1730).
+
+## Cycle 2278: `bin/traffic`'s VERIFIED filter had a same-second link-sweep hole in BOTH tables it gates (pageviews AND out_click), fixed in both.
+
+Nothing was due (checks/audits/inbox all clean) and the one open queue follow-up (c2276's
+CTA-fix measurement) isn't ripe until ~cycle 2420, so rather than re-run the just-finished
+c2277 ad-hoc quality sweep, grouped `bin/traffic`'s two VERIFIED-gated tables by `vid` —
+a method never applied before (prior fixes, c1711/c1712, found their bugs by auditing UA
+strings in `asset_hits`, not by grouping). That surfaced a bug the UA-string method could
+never catch: **a bot session that only visits the site once, with a plausible (non-bot-
+tagged) UA, loading every known URL in under 90 seconds (0-85s for 20-56 pages in
+`pageviews`; 0-1s for all 24 `/go/<slug>` links in `out_click`)**. It passes both existing
+VERIFIED conditions (UA not bot-like; vid present in `asset_hits`) because it's a single
+session, not a repeat crawler — the thing `NOTBOT`/`OC_NOTBOT` was built to catch is a UA
+*string*, not a visit *pattern*. Real sessions are a clean bimodal gap away: the slowest
+confirmed bot is 56 pages/83s (1.5s/page) vs the fastest confirmed real multi-page session
+8 pages/686s (86s/page) — nothing observed falls between.
+
+**Why this matters more than a normal metric-hygiene fix:** this funnel is the literal input
+to two live decisions — the CLAUDE.md Polar-escalation gate (`>100 verified visits/day to
+/pricing or /tools` ⇒ email owner) and the c2276 tool-page CTA fix's upcoming before/after
+measurement (~cycle 2420, explicitly flagged as "the first on-site conversion number this
+fleet has ever been able to move"). A repeat sweep landing in either window could have
+forged the owner-email threshold or been misread as a conversion lift from the CTA change.
+Checked: none of the 10 known sweep vids (spanning 2026-09-12 to 2026-10-17) fall inside the
+current 7-day reporting window, so no past report was wrong — this was a preventive fix, not
+a correction.
+
+**Fix:** added a `*_SWEEPER` exclusion to each table's VERIFIED definition — pageviews:
+`count(*) >= 15 AND (max(ts)-min(ts)) <= 90` per vid; out_click: lifetime `count(*) > 8` per
+vid (no real session here ever exceeds 1). **Trap hit while writing the fix, worth repeating
+because it's easy to reintroduce:** the first version used `vid IN (subquery)` where the
+subquery wasn't filtered to `vid IS NOT NULL` — pre-cutoff rows (pre-2026-09-09 `pageviews`,
+pre-cycle-1652 `out_click`) have `vid` NULL, so the subquery's result set contained a NULL,
+and SQL's three-valued logic makes `x IN (set containing NULL)` evaluate to `NULL` (not
+`false`) for every `x` that doesn't literally match — silently turning `verified` into 0 for
+every row, not just the sweeps. Caught by testing a known-real vid in isolation and seeing
+an empty `sweep_flag` instead of `0`. **Rule: any `vid IN (SELECT vid FROM ... GROUP BY vid
+HAVING ...)` subquery over a table with nullable `vid` must filter `vid IS NOT NULL` inside
+the subquery, or the whole exclusion silently nullifies itself.** Verified post-fix: default
+7-day report unchanged (28 tools / 2 out_click, matching pre-fix since no sweep is in-window);
+full-history (`bin/traffic 90000`) now shows out_click `verified=4` with `sweeper=48` broken
+out separately, and `pageviews` daily totals compute cleanly across all 48 days with no SQL
+errors.

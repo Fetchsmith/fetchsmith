@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2278 (NOT a QUALITY slot -- `2278%3==1`) -- found and fixed a real
+      measurement-integrity bug in `bin/traffic`'s VERIFIED filter (both `pageviews` and
+      `out_click`), found by a method never applied before (grouping by `vid` instead of
+      auditing UA strings).** Re-verified fresh first: `bin/checks-due`/`bin/audit-due
+      --all`/`--type varied_test --all` all NONE DUE, inbox unchanged (same 10 known items,
+      newest DMARC still `e2f3a358`), services active, site 200, `HEAD == origin/main`
+      (`1e812006`), tree clean. 0 Actors created today. `health.json` all 24 Actors `ok:true`.
+      **The bug:** a single-visit bot session with a plausible (non-bot-tagged) UA that
+      loads every known URL in under 90 seconds passed both existing VERIFIED conditions
+      (UA not bot-like; vid registered in `asset_hits`) because the filter only ever checked
+      UA *strings*, never visit *speed/pattern*. 10 such sweep vids found, spanning
+      2026-09-12 to 2026-10-17 (0-85s for 20-56 distinct pages, or all 24 `/go/<slug>` links
+      in 0-1s) vs. a clean gap from real multi-page sessions (8-20 pages taking 436-686s).
+      **Why now:** this funnel is the direct input to the CLAUDE.md Polar-escalation trigger
+      (`>100 verified visits/day`) and the pending c2276 CTA-fix measurement (~cycle 2420) --
+      a repeat sweep in either window could have forged the owner-email threshold or faked a
+      conversion lift. None of the 10 known sweeps fall in the current 7-day window, so no
+      past report was wrong -- this is preventive, timed before the 2420 window opens.
+      **Fix:** added a `*_SWEEPER` exclusion to each VERIFIED definition (`bin/traffic`) --
+      pageviews: `count(*)>=15 AND (max(ts)-min(ts))<=90` per vid; out_click: lifetime
+      `count(*)>8` per vid. Caught and fixed a self-inflicted NULL-poisoning bug while
+      building it (subquery needs `vid IS NOT NULL` or three-valued SQL logic silently
+      zeroes the whole `verified` count) -- documented as a reusable rule in LEARNINGS.
+      Verified post-fix: default 7-day report unchanged (28 tools / 2 verified out_clicks --
+      confirms no-op today, real guard going forward); full-history run clean, out_click
+      `verified=4` lifetime with `sweeper=48` broken out; `bash -n` syntax-clean; services
+      and site verified healthy before/after.
+      **Side finding:** c2276's "3 lifetime" out-click figure was actually a 7-day-window
+      figure mislabeled lifetime (`bin/traffic` defaults to `D=7`); true lifetime is 4. Does
+      not change the c2276 decision rule (still reads the 7-day default report).
+      $0 spent, 0 new Actors, revenue still $0 booked, no owner email warranted (a
+      false-positive-prevention fix is not itself a trigger event). **Next `varied_test`
+      target when due: `grants-gov-scraper` (last 2213, due 2549).** The c2276 CTA-fix
+      follow-up stays the next real growth checkpoint -- still too early (due ~2420).
+
 - [x] **DONE cycle 2277 (MANDATED QUALITY/GROWTH slot -- `2277%3==0`) -- pure fleet-health
       verification cycle, $0 spent, no code change needed; closed the one open thread c2275
       left behind.** Re-verified fresh first: `bin/checks-due`/`bin/audit-due --all`/`--type

@@ -32,9 +32,22 @@ SINCE="ts > strftime('%s','now')-$D*86400"
 # template, but WeChat in-app browsing by a real person produces the same string -- left in
 # rather than guess, and noted here so a future cycle doesn't re-derive it from scratch.
 NOTBOT="ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%' AND ua NOT LIKE 'curl%' AND ua NOT LIKE '%linkcheck%' AND ua NOT LIKE '%GoogleOther%' AND ua NOT LIKE '%HeadlessChrome%'"
-# Verified = browser-ish UA AND actually loaded our CSS. Both halves matter: the UA test
-# alone lets scanners through, and the asset test alone lets our own `curl` tests through.
-VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits)"
+# Cycle 2278: same bug class as the out_click one below, found the same way (grouping by
+# vid). Several vids load 20-56 DISTINCT paths within 0-85 seconds -- physically impossible
+# reading speed -- with a plausible UA and a registered asset_hit, so they passed both
+# existing VERIFIED halves. Real multi-page sessions in this data take 400-700+ seconds for
+# 8-20 pages (e.g. vid 36f1e934050811c7: 20 pages / 436s; e4d43d85f925c4c3: 8 pages / 686s),
+# a clean gap from the sweeps' <=85s. This funnel feeds the CLAUDE.md Polar-escalation
+# trigger (>100 verified visits/day to /pricing or /tools => email owner) -- a repeat sweep
+# landing on /tools/* could have forged that threshold. None of the known sweeps fall in the
+# current 7-day window (all >=9 days old), so no past report was wrong, but this closes the
+# hole before it can produce a false trigger or contaminate the pending c2276 CTA-fix
+# measurement (~cycle 2420).
+PV_SWEEPER="vid IN (SELECT vid FROM pageviews WHERE vid IS NOT NULL GROUP BY vid HAVING count(*) >= 15 AND (max(ts)-min(ts)) <= 90)"
+# Verified = browser-ish UA AND actually loaded our CSS AND not a same-second link sweep.
+# Both original halves still matter: the UA test alone lets scanners through, and the asset
+# test alone lets our own `curl` tests through.
+VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits) AND NOT ($PV_SWEEPER)"
 
 echo "== daily totals last $D days (raw = every hit; verified = loaded our CSS)"
 sqlite3 -header -column $DB "SELECT date(ts,'unixepoch') d, count(*) raw_views,
@@ -68,7 +81,18 @@ sqlite3 -header -column $DB "SELECT count(*) calls, coalesce(sum(results),0) res
 # as human. Same two-part test as pageviews above: browser-ish UA AND loaded our CSS.
 OC_UA="json_extract(payload,'\$.ua')"
 OC_NOTBOT="$OC_UA NOT LIKE '%bot%' AND $OC_UA NOT LIKE '%crawl%' AND $OC_UA NOT LIKE '%spider%' AND $OC_UA NOT LIKE 'curl%' AND $OC_UA NOT LIKE '%python-requests%' AND $OC_UA NOT LIKE '%Go-http-client%' AND $OC_UA NOT LIKE '%linkcheck%' AND $OC_UA NOT LIKE '%GoogleOther%' AND $OC_UA NOT LIKE '%HeadlessChrome%'"
-OC_VERIFIED="$OC_UA IS NOT NULL AND $OC_NOTBOT AND json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits)"
+# Cycle 2278: found by grouping verified out_clicks by vid -- 2 vids (10-16 and 10-17)
+# each clicked all 24 /go/<slug> links inside a single second, with a plausible
+# (non-'bot'-tagged) mobile/desktop UA AND a registered asset_hit, so both halves of
+# OC_NOTBOT/asset_hits passed and they counted as 24 "verified" humans apiece -- the
+# exact failure mode cycle 1652 set this filter up to catch, just not caught by it.
+# Real sessions in this dataset never exceed 1 out_click; no plausible human session
+# on a 24-tool site clicks >8 distinct outbound links, so exclude any vid whose
+# lifetime out_click row count tops that. Must stay due before the c2276 CTA-fix
+# measurement window (~cycle 2420): a repeat of this sweep during that window would
+# have been misread as a huge conversion lift.
+OC_SWEEPER="json_extract(payload,'\$.vid') IN (SELECT json_extract(payload,'\$.vid') FROM events WHERE kind='out_click' AND json_extract(payload,'\$.vid') IS NOT NULL GROUP BY json_extract(payload,'\$.vid') HAVING count(*) > 8)"
+OC_VERIFIED="$OC_UA IS NOT NULL AND $OC_NOTBOT AND json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits) AND NOT ($OC_SWEEPER)"
 
 echo "== outbound clicks to Apify (events kind=out_click, added cycle 1509 -- /go/<slug>"
 echo "   redirect+log; replaces blog/tool CTAs that used to link straight to apify.com"
@@ -80,6 +104,7 @@ sqlite3 -header -column $DB "SELECT
   sum(CASE WHEN $OC_UA IS NULL THEN 1 ELSE 0 END) unclassifiable_pre1652,
   sum(CASE WHEN $OC_UA IS NOT NULL AND NOT ($OC_NOTBOT) THEN 1 ELSE 0 END) declared_bot,
   sum(CASE WHEN $OC_UA IS NOT NULL AND $OC_NOTBOT AND NOT (json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits)) THEN 1 ELSE 0 END) ua_ok_no_css,
+  sum(CASE WHEN $OC_UA IS NOT NULL AND $OC_NOTBOT AND json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits) AND $OC_SWEEPER THEN 1 ELSE 0 END) sweeper,
   sum(CASE WHEN $OC_VERIFIED THEN 1 ELSE 0 END) verified
   FROM events WHERE kind='out_click' AND $SINCE;"
 echo "   -- verified out_clicks by slug/referrer:"
