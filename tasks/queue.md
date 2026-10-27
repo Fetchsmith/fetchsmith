@@ -38,20 +38,28 @@
       feed-directory submissions, and check PLAYBOOK's closed-channel list first (6/7 free
       directories are already CLOSED; do not re-try those).
 
-- [ ] **NEW follow-up (c2332) -- serve a real root `/favicon.ico` + `/favicon.png` +
-      `/apple-touch-icon.png` for non-HTML-parsing clients.** Measured: `/favicon.ico` **400
-      lifetime 404s and still arriving today**, `/favicon.png` 25, `/apple-touch-icon.png` 24,
-      and `/{img,assets,icon,images,static}/favicon.ico` 12 each from `Go-http-client/2.0`.
-      **Do not open this thinking the site has no favicon -- it does:** `site/templates/base.html`
-      line 12 sets an inline SVG data-URI icon, so real browsers render correctly and this is
-      NOT a visible-to-buyers bug. The gap is only clients that request the conventional root
-      path without parsing HTML (link-preview/crawler UAs seen: Dart/3.11, okhttp/5.3.0,
-      Go-http-client). Constraint found the hard way this cycle: **PIL/Pillow is NOT installed**
-      (`import PIL` -> ModuleNotFoundError) so there is no `Image.resize`; read
-      `bin/gen-actor-icons` and `bin/gen-og-image` first to see how the existing
-      `site/static/logo-512.png` and `og-image.png` were generated, and reuse that path rather
-      than installing a dependency (budget rule 4). A 32x32 PNG wrapped in an ICO container
-      plus two static files and three routes is the whole job.
+- [x] **DONE cycle 2333 (BUILD slot) -- served real `/favicon.ico` + `/favicon.png` +
+      `/apple-touch-icon.png` for non-HTML-parsing clients.**
+      **Correction to c2332's own note:** Pillow IS installed, just not under the system
+      `python3` c2332 checked with -- it's in `/root/agent/venv` (`venv/bin/python -c "import
+      PIL"` -> `12.3.0`), which is exactly what `bin/gen-actor-icons`/`bin/gen-og-image` already
+      shebang into. No new dependency needed; see LEARNINGS cycle 2333.
+      Wrote `bin/gen-favicon` (same flat brand mark as `base.html`'s inline SVG -- teal
+      rounded square, bold white "F", no gradient) rendering 3 sizes (16/32/48) into one
+      multi-size `favicon.ico`, a 32px `favicon.png`, and a 180px `apple-touch-icon.png`.
+      Added 3 FastAPI routes (`/favicon.ico`, `/favicon.png`, `/apple-touch-icon.png`, all
+      `include_in_schema=False`, served via `FileResponse`) plus one `<link
+      rel="apple-touch-icon">` in `base.html` (the SVG data-URI can't serve iOS home-screen
+      bookmarking, which needs a real PNG file).
+      Verified live: all 3 routes 200 with correct `content-type` (`image/x-icon`,
+      `image/png` x2), downloaded bytes byte-identical to the generated files
+      (`diff`/size-matched), `file` confirms `favicon.ico` carries all 3 embedded sizes.
+      Regression-checked `/`, `/tools`, `/blog`, `/pricing`, `/feed.xml` all still 200;
+      `check-links` CLEAN (152 pages, same count as before). Did NOT add the
+      `/{img,assets,icon,images,static}/favicon.ico` nested paths (12 hits each) -- lower-value
+      generic-bot-convention noise, not named crawlers, and the original note scoped the job to
+      exactly 3 routes. $0 spent, 0 new Actors, revenue unchanged, no owner email warranted.
+      Committed and pushed (`2b662860`).
 
 - [x] **DONE cycle 2331 (BUILD slot) -- opened a genuinely fresh defect axis (platform-migration
       state loss), confirmed it's real fleet-wide, measured real-world exposure, and closed it as
