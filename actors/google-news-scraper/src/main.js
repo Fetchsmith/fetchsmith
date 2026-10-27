@@ -205,15 +205,23 @@ if (fetchBody && input.decodeUrls === false) log.warning('fetchArticleBody needs
 let pushed = 0;
 const seen = new Set();
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
+// Both of these stop the run exactly like running out of feeds would, but silently -- any
+// queries/feeds not yet reached are simply never attempted, with nothing distinguishing that
+// from "Google had nothing for them" unless these are tracked and surfaced below.
+let chargeLimitReached = false;
+let maxResultsReached = false;
 async function pushResult(item) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
-    if (r.chargedCount === 0) return false; // user's budget exhausted: never push unpaid items
+    if (r.chargedCount === 0) { chargeLimitReached = true; return false; } // user's budget exhausted: never push unpaid items
     await Actor.pushData(item); pushed += 1;
-    return !r.eventChargeLimitReached && pushed < maxResults;
+    if (r.eventChargeLimitReached) { chargeLimitReached = true; return false; }
+    if (pushed >= maxResults) { maxResultsReached = true; return false; }
+    return true;
   }
   await Actor.pushData(item); pushed += 1; // non-PPE run (e.g. developer test): no charging
-  return pushed < maxResults;
+  if (pushed >= maxResults) { maxResultsReached = true; return false; }
+  return true;
 }
 // Google rate-limits the URL-decoding endpoint per source IP (see decodeUrl below); rotating
 // proxy IPs is the actual fix, not just a race against the rate limiter. Runs without proxy
@@ -412,8 +420,9 @@ const erroredFeeds = []; // the RSS request itself failed
 const dedupedFeeds = []; // items existed but were all duplicates of an earlier feed's guid
 let bodiesOk = 0; let bodiesFailed = 0; // only counted when fetchArticleBody is on
 let keepGoing = true;
-for (const feed of feeds) {
-  if (!keepGoing) break;
+let feedsSkipped = 0; // queries/feeds never reached because the cap/budget stopped a prior one
+for (const [feedIdx, feed] of feeds.entries()) {
+  if (!keepGoing) { feedsSkipped = feeds.length - feedIdx; break; }
   if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
   log.info(`Fetching feed: ${feed.url}`);
   let items = [];
@@ -479,7 +488,16 @@ const windowNote = outOfWindowDropped
 const timeBudgetNote = timeBudgetExceeded
   ? ` Stopped before finishing all queries because the run was approaching its time limit — the ${pushed} article(s) already found are complete and charged normally; re-run with fewer queries, a lower "Max articles per query", or "Extract full article text" off to cover the rest.`
   : '';
-if (pushed === 0 && feeds.length && !timeBudgetExceeded) {
+const skippedPhrase = feedsSkipped ? ` ${feedsSkipped} of your ${feeds.length} total querie(s)/feed(s) were not attempted at all.` : '';
+const capNote = maxResultsReached
+  ? ` Stopped after reaching the ${maxResults}-article "Max results" limit.${skippedPhrase} Raise "Max results" to get the rest.`
+  : '';
+const chargeNote = chargeLimitReached
+  ? ` Stopped because the run's pay-per-result charge/budget limit was reached.${skippedPhrase}`
+  : '';
+if (pushed === 0 && chargeLimitReached) {
+  await Actor.setStatusMessage(`No articles returned — the run's pay-per-result charge/budget limit was reached before any article could be charged.${skippedPhrase}${windowNote}`);
+} else if (pushed === 0 && feeds.length && !timeBudgetExceeded) {
   // Each feed lands in exactly one of these three buckets (or pushes successfully), so they never
   // double-count the same feed — but a run mixing an unreachable RSS URL with a query Google found
   // nothing for has a REAL cause in both buckets. Reporting only the first (e.g. cycle 1549's
@@ -498,8 +516,8 @@ if (pushed === 0 && feeds.length && !timeBudgetExceeded) {
   await Actor.setStatusMessage(`No articles returned — ${why.join('; ')}.${windowNote}`);
 } else if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No articles returned before the run approached its time limit.${timeBudgetNote}`);
-} else if (emptyFeeds.length || erroredFeeds.length || timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.${bodyNote}${decodeNote}${windowNote}${timeBudgetNote}`);
+} else if (emptyFeeds.length || erroredFeeds.length || timeBudgetExceeded || maxResultsReached || chargeLimitReached) {
+  await Actor.setStatusMessage(`Pushed ${pushed} items. No results for: ${emptyFeeds.join(', ') || 'none'}${erroredFeeds.length ? `; request failed for: ${erroredFeeds.join(', ')}` : ''}.${bodyNote}${decodeNote}${windowNote}${timeBudgetNote}${capNote}${chargeNote}`);
 } else if ((fetchBody && bodiesFailed) || decodeNote || windowNote) {
   await Actor.setStatusMessage(`Pushed ${pushed} items.${bodyNote}${decodeNote}${windowNote}`);
 }
