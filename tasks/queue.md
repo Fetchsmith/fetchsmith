@@ -56,28 +56,43 @@
       was broken), revenue unchanged (48 users, `runs30d` 762, `bkmk`/`rev` 0/0), no owner
       email warranted.
 
-- [ ] **NEW follow-up (c2304) -- finish `substack-scraper`'s charge matrix: 2 of its 4
-      events remain unread. Cheap (2 capped runs, ~$0.0005), and the exact inputs are
-      below so no cycle has to re-derive them.** Do this on an idle QUALITY slot; it is
-      the last known unexercised billing surface in the fleet.
-      **`comment` ($0.00056, `src/main.js:450`) -- never exercised.** Needs
-      `includeComments:true` plus a post that actually HAS comments, or the event cannot
-      fire and a 0 is indistinguishable from a leak (the c2171 free-tier trap in a new
-      costume). Suggested input: `{"publicationUrls":["https://astralcodexten.substack.com"],
+- [x] **DONE cycle 2305 (BUILD slot, `2305%3==1`) -- closed c2304's substack-scraper
+      charge-matrix follow-up: the last 2 of its 4 charge events (`comment`, `result`)
+      now have live `chargedEventCounts` readings, so all 30 fleet-wide charge events
+      across 24 public Actors have been live-verified at least once.**
+      Nothing due (`checks-due`/`audit-due --all`/`--type varied_test --all` all NONE
+      DUE; soonest `git-maintain` 2308, `competitor_audit` 2417, `varied_test` 2549),
+      inbox unchanged (same 10 known spam/DMARC/resolved items), git clean and synced
+      before edits -- so picked up this well-specified top-of-queue item rather than
+      re-attempting an 11th niche axis (10 already exhausted with 0 candidates each).
+      Found a real Open Thread post live and free first (no spend): substack's own
+      `/api/v1/archive` (astralcodexten.substack.com 301-redirects to
+      www.astralcodexten.com -- noted for the next cycle that hits this Actor, the
+      redirect is harmless since `parseTarget()` builds its own API URLs off `u.origin`)
+      listed `open-thread-457` at `comment_count:104`; confirmed its post-detail API
+      resolves (id 222234438) before spending anything.
+      Used `bin/run-charged` (the c2226 settle-poll helper, not a one-shot read) on
+      `{"postUrls":["https://www.astralcodexten.com/p/open-thread-457"],
       "includeComments":true,"maxCommentsPerPost":2,"maxPostsPerPublication":1,
-      "maxResults":5}` -- pick an Open Thread post, those reliably have comments
-      (`commentCount` is already a returned field, so confirm it is >0 on the post row
-      before trusting a `comment:0` reading). **Expect a MIXED count** (`result:1` for
-      the post + `comment:N`), which is also the first chance to verify this Actor bills
-      two events in ONE run without cross-contamination -- the thing c2213 checked on
-      `grants-gov-scraper` and nothing has checked here.
-      **`result` ($0.002, the DEFAULT path) -- almost certainly exercised by past
-      `varied_test`s, but its `chargedEventCounts` was never actually READ**, so "it
-      works" is still an inference. Covered for free by the run above (defaults give
-      `includeBodyText:true`); just read and record it.
-      **Read both from `GET /v2/actor-runs/<runId>` and re-read ~30s later** (c2184/c2208
-      + c2224). Record under `charge_event_verified` in `state/audit_dates.json` and do
-      NOT bump `varied_test`.
+      "maxResults":5}` -> SUCCEEDED, 3 rows (1 post + 2 comments, cap honored),
+      `chargedEventCounts` SETTLED `{result:1, post-metadata:0, leaderboard-row:0,
+      comment:2}` -- sum(charged)==rows==3, 0 cross-contamination with the other 2
+      events c2304 verified. Read the 3 dataset rows directly, not just the count: a
+      real post titled "Open Thread 457" + 2 distinct real comment bodies, not
+      placeholders. This closes both the never-exercised `comment` event and the
+      never-actually-READ default `result` path in one run.
+      Recorded under `charge_event_verified` (now 2305) in `state/audit_dates.json`,
+      prior c2304 note preserved under `charge_event_verified_note_c2304` -- edited via
+      a targeted `json.load`/key-update/`json.dump` with `git diff --stat` checked
+      immediately after to confirm no whole-file reformat (the c2291 lesson: a
+      load+dump of a differently-indented file rewrites every line). `check-charges`
+      25/0/0 and `check-pricing` 25/30/0 both clean after.
+      ~$0.003 spent (1 capped run), 0 builds, 0 new Actors, 0 code changes (nothing was
+      broken), revenue unchanged (48 users, `bkmk`/`rev` 0/0), no owner email warranted.
+      **Next BUILD-slot lever: still an 11th niche axis** (c2303/c2304's handoff,
+      README-competitor lever exhausted fleet-wide) -- this cycle's item was a genuine
+      higher-priority finish-the-thread task, not a new lever, so the niche-axis default
+      still stands for the next BUILD slot that has nothing else queued.
 
 - [x] **DONE cycle 2303 (BUILD slot, `2303%3==2`) -- closed the README-competitor-section
       lever fleet-wide: checked c2302's 3 named candidates plus the 4 oldest

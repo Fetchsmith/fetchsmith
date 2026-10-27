@@ -1,5 +1,5 @@
 {
- "ts": 1793064627,
+ "ts": 1793066416,
  "date": "2026-10-27",
  "apify": {
   "google-news-scraper": {
@@ -25,16 +25,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 28,
+   "runs30d": 27,
    "runs": 802,
-   "ext_ok30d": 28,
+   "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 28,
+    "SUCCEEDED": 27,
     "TIMED-OUT": 0,
-    "TOTAL": 28
+    "TOTAL": 27
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -44,16 +44,16 @@
    "public": true,
    "users": 4,
    "users30d": 1,
-   "runs30d": 30,
+   "runs30d": 29,
    "runs": 827,
-   "ext_ok30d": 30,
+   "ext_ok30d": 29,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 30,
+    "SUCCEEDED": 29,
     "TIMED-OUT": 0,
-    "TOTAL": 30
+    "TOTAL": 29
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -101,16 +101,16 @@
    "public": true,
    "users": 3,
    "users30d": 2,
-   "runs30d": 28,
-   "runs": 798,
-   "ext_ok30d": 28,
+   "runs30d": 33,
+   "runs": 801,
+   "ext_ok30d": 33,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 28,
+    "SUCCEEDED": 33,
     "TIMED-OUT": 0,
-    "TOTAL": 28
+    "TOTAL": 33
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -139,16 +139,16 @@
    "public": true,
    "users": 1,
    "users30d": 1,
-   "runs30d": 36,
+   "runs30d": 35,
    "runs": 780,
-   "ext_ok30d": 35,
+   "ext_ok30d": 34,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 1,
-    "SUCCEEDED": 35,
+    "SUCCEEDED": 34,
     "TIMED-OUT": 0,
-    "TOTAL": 36
+    "TOTAL": 35
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -196,16 +196,16 @@
    "public": true,
    "users": 2,
    "users30d": 2,
-   "runs30d": 55,
+   "runs30d": 53,
    "runs": 788,
-   "ext_ok30d": 55,
+   "ext_ok30d": 53,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 55,
+    "SUCCEEDED": 53,
     "TIMED-OUT": 0,
-    "TOTAL": 55
+    "TOTAL": 53
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -215,16 +215,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 28,
+   "runs30d": 27,
    "runs": 726,
-   "ext_ok30d": 28,
+   "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 28,
+    "SUCCEEDED": 27,
     "TIMED-OUT": 0,
-    "TOTAL": 28
+    "TOTAL": 27
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -234,16 +234,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 28,
+   "runs30d": 27,
    "runs": 716,
-   "ext_ok30d": 28,
+   "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 28,
+    "SUCCEEDED": 27,
     "TIMED-OUT": 0,
-    "TOTAL": 28
+    "TOTAL": 27
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -291,16 +291,16 @@
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 28,
+   "runs30d": 27,
    "runs": 656,
-   "ext_ok30d": 28,
+   "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 28,
+    "SUCCEEDED": 27,
     "TIMED-OUT": 0,
-    "TOTAL": 28
+    "TOTAL": 27
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -367,16 +367,16 @@
    "public": true,
    "users": 1,
    "users30d": 1,
-   "runs30d": 61,
+   "runs30d": 60,
    "runs": 309,
-   "ext_ok30d": 60,
+   "ext_ok30d": 59,
    "ext_bad30d": 1,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 60,
+    "SUCCEEDED": 59,
     "TIMED-OUT": 1,
-    "TOTAL": 61
+    "TOTAL": 60
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -424,25 +424,6 @@
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 28,
-   "runs": 211,
-   "ext_ok30d": 28,
-   "ext_bad30d": 0,
-   "ext_stats30d": {
-    "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 28,
-    "TIMED-OUT": 0,
-    "TOTAL": 28
-   },
-   "bookmarks": 0,
-   "reviews": 0,
-   "rating": 0
-  },
-  "sec-insider-trades-scraper": {
-   "public": true,
-   "users": 2,
-   "users30d": 1,
    "runs30d": 27,
    "runs": 211,
    "ext_ok30d": 27,
@@ -453,6 +434,25 @@
     "SUCCEEDED": 27,
     "TIMED-OUT": 0,
     "TOTAL": 27
+   },
+   "bookmarks": 0,
+   "reviews": 0,
+   "rating": 0
+  },
+  "sec-insider-trades-scraper": {
+   "public": true,
+   "users": 2,
+   "users30d": 1,
+   "runs30d": 26,
+   "runs": 211,
+   "ext_ok30d": 26,
+   "ext_bad30d": 0,
+   "ext_stats30d": {
+    "ABORTED": 0,
+    "FAILED": 0,
+    "SUCCEEDED": 26,
+    "TIMED-OUT": 0,
+    "TOTAL": 26
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -482,8 +482,8 @@
  "apify_totals": {
   "public_actors": 25,
   "users": 48,
-  "runs30d": 762,
-  "ext_ok30d": 760,
+  "runs30d": 756,
+  "ext_ok30d": 754,
   "ext_bad30d": 2,
   "bookmarks": 0,
   "reviews": 0,
