@@ -1057,16 +1057,29 @@ const addId = (id) => { if (id && !seenIds.has(id)) { seenIds.add(id); ids.push(
 // feature for shows not indexed by Apple, or when the caller already has the feed URL in hand).
 const rawFeeds = [];
 const seenFeeds = new Set();
+// Entries that are neither a parseable id/URL nor a bare URL (a show NAME, a typo, a malformed
+// link) — tracked so a mixed list doesn't silently drop them the way steam-reviews-scraper's
+// `apps` did (fixed cycle 2336): one other valid entry was enough to keep this path from ever
+// reaching a status-message branch at all.
+const unparsedPodcasts = [];
 for (const p of podcasts) {
   const id = parseId(p);
   if (id) { addId(id); continue; }
   if (/^https?:\/\//i.test(p)) { if (!seenFeeds.has(p)) { seenFeeds.add(p); rawFeeds.push(p); } }
-  else log.warning(`Cannot parse a podcast ID from "${p}" — use an Apple Podcasts URL (…/id1434243584), the numeric ID, or a direct RSS feed URL.`);
+  else {
+    unparsedPodcasts.push(p);
+    log.warning(`Cannot parse a podcast ID from "${p}" — use an Apple Podcasts URL (…/id1434243584), the numeric ID, or a direct RSS feed URL.`);
+  }
 }
 if (rawFeeds.length && dataType !== 'episodes') {
   log.warning(`${rawFeeds.length} direct RSS feed URL(s) given, but "What to scrape" is "${dataType}" — a raw feed only contains episode data, so direct feed URLs are only usable with dataType "episodes". Skipping: ${rawFeeds.slice(0, 3).join(', ')}${rawFeeds.length > 3 ? ', …' : ''}`);
   rawFeeds.length = 0;
 }
+// Shared across every branch below (no internal ';' — both cause lists this feeds join on '; ')
+// so the wording can't drift apart between the zero-row, partial-success and watch-mode paths.
+const unparsedCause = unparsedPodcasts.length
+  ? `no podcast ID could be parsed from ${unparsedPodcasts.length} "podcasts" entr${unparsedPodcasts.length === 1 ? 'y' : 'ies'}: ${unparsedPodcasts.map((p) => `"${p}"`).join(', ')} — those entries were skipped, and "podcasts" takes an Apple Podcasts URL/ID or a direct RSS feed URL, so show NAMES belong in "searchTerms"`
+  : null;
 
 // Sources a BASELINE run could not read because the request to Apple broke (h289). Populated only
 // while `seeding`, because only a seed run commits a record that later runs trust as "these already
@@ -1440,15 +1453,18 @@ if (watchMode && seeding) {
   statusMsg = `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing episode(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${timeBudgetNote}${evictionSuffix}`
     + (watchDeadDateBound
       ? ` NOTE: as configured it will never find anything new — "maxReleaseDate" (${input.maxReleaseDate}) excludes everything published after this baseline. Drop it (see the warnings in the log).`
-      : '');
+      : '')
+    + (unparsedCause ? ` NOTE: ${unparsedCause}.` : '');
 } else if (watchMode && pushed === 0) {
   // The NOTE (1556 rule): a permanently blind monitor must not masquerade as a healthy quiet run.
   statusMsg = `Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching episode(s) had already been delivered.${floorNote}${timeBudgetNote}${evictionSuffix}`
     + (watchDeadDateBound
       ? ` NOTE: this run can never report a new episode while "maxReleaseDate" (${input.maxReleaseDate}) is set — it is an upper bound on release date, and anything published since the baseline is newer than that. Drop it (see the warnings in the log).`
-      : '');
+      : '')
+    + (unparsedCause ? ` NOTE: ${unparsedCause}.` : '');
 } else if (watchMode) {
-  statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${floorNote}${timeBudgetNote}${evictionSuffix}`;
+  statusMsg = `Watch label "${watchLabel}": ${pushed} new episode(s) since the last run (${watchSkipped} already-delivered episode(s) skipped, not charged).${floorNote}${timeBudgetNote}${evictionSuffix}`
+    + (unparsedCause ? ` NOTE: ${unparsedCause}.` : '');
 } else if (pushed === 0 && timeBudgetExceeded) {
   statusMsg = `No results before the run approached its time limit.${timeBudgetNote}`;
 } else if (pushed === 0) {
@@ -1470,6 +1486,10 @@ if (watchMode && seeding) {
   if (archiveFilteredIds.length) causes.push(`your ${episodeFiltersSet.join(' / ')} filter(s) removed every episode in the full RSS archive of: ${archiveFilteredIds.join(', ')} — the log names each feed's real date coverage; relax the filter(s) to match it`);
   if (dataType === 'reviews' && (keyword || minRating != null || maxRating != null)) causes.push('every review Apple returned was removed by your minRating/maxRating/keyword filters');
   if (dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length) causes.push(`every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`);
+  // Only added when another source existed (ids/rawFeeds/searchTerms) — an ALL-unparseable
+  // "podcasts" list with no searchTerms must keep falling through to the default message below,
+  // byte-identical to before this fix (same guard steam-reviews-scraper's h988 regression needed).
+  if (unparsedCause && (ids.length || rawFeeds.length || searchTerms.length)) causes.push(unparsedCause);
   const why = causes.length ? causes.join('; ') : 'no valid podcast IDs could be parsed from your input';
   statusMsg = `No results — ${why}. See the log for details.`;
 } else {
@@ -1481,6 +1501,7 @@ if (watchMode && seeding) {
   if (windowFilteredIds.length) pushCauses.push(`Apple's lookup API returned only its recent-episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed everything in it for those show(s) — turn on "useRssForFullArchive" to search their full archive`);
   if (emptyIds.length) pushCauses.push(emptySourceLabel(emptyIds));
   if (failedIds.length) pushCauses.push(`the request to Apple failed for: ${failedIds.join(', ')} — re-run to get those`);
+  if (unparsedCause) pushCauses.push(unparsedCause);
   if (pushCauses.length || timeBudgetExceeded) {
     statusMsg = `Pushed ${pushed} results.${pushCauses.length ? ` ${pushCauses.join('; ')}.` : ''}${timeBudgetNote}`;
   } else if (ceilingNote) {
@@ -1507,6 +1528,7 @@ if (dataType === 'episodes') {
     finishedAt: new Date().toISOString(),
     pushed,
     sourcesRequested: ids.length + rawFeeds.length,
+    unparsedPodcasts,
     complete: episodesComplete,
     sources: episodeSources,
   });
