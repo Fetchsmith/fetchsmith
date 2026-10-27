@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2318 (BUILD slot, `2318%3==2`) -- ran the one due fleet check
+      (`check-source-endpoints`, CLEAN, 49 hosts/0 deviations), then ran c2317's handed-off
+      retry/backoff sweep to completion (confirmed EXHAUSTED fleet-wide, see below), and while
+      investigating a thin-looking candidate on that axis found a real, different gap on the
+      pagination/dedupe axis: `clinicaltrials-scraper`'s plain (non-watchMode) search loop had
+      NO within-run duplicate guard, unlike `federal-register-scraper`/`court-records-scraper`.**
+      Nothing else fleet-wide due, inbox unchanged, services/site healthy, git clean and synced
+      before edits.
+      **Retry axis closed for real:** `sec-insider-trades-scraper` has its own attempt loop;
+      `substack-scraper` uses `got`'s native budget-proportional retry; `google-play-reviews-scraper`'s
+      core `gplay.search/app/reviews` calls go through the `google-play-scraper` npm package, which
+      calls plain `got` with no retry override -- traced into `node_modules`, confirmed it inherits
+      `got`'s default `retry.limit:2` (`node -e "require('got').defaults.options.retry"`), so it
+      already retries invisibly to a grep of our own `main.js`. All 36 fleet-wide
+      `retry: { limit: 0 }` sites checked: each is either inside a hand-rolled attempt loop (disabling
+      `got`'s retry on purpose to avoid double-retrying) or a deliberate single-shot best-effort call
+      (fire-and-forget completion webhooks in `fec-campaign-finance-scraper`/`eu-ted-tenders-scraper`,
+      explicitly commented "run result is unaffected"; secondary currency/metadata lookups in
+      `shopify-products-scraper`/`google-play-reviews-scraper`, the existing c992 pattern). **Do not
+      re-open this axis without a new HTTP call site entering the fleet.**
+      **The dedupe fix:** `clinicaltrials-scraper`'s only duplicate guard (`watchSeen`) was gated
+      behind `if (watchMode && ...)` -- a plain one-shot search had nothing stopping the same
+      `nctId` from landing on two different pages of the same walk and being pushed (and PPE-charged,
+      `credits_per_result:1`, $0.0015/result) twice. Verified the risk live before fixing: the
+      Actor exposes a buyer-settable `sortBy=LastUpdatePostDate:desc` (one of 3 `SORT_VALUES`), and
+      `pageSize` is pinned to 1000 regardless of `maxResults`, so any >1000-match query pages. The
+      default (unsorted) order is stable in practice (two fresh fetches 3s apart were byte-identical,
+      zero page1/page2 overlap, confirmed live), but `LastUpdatePostDate` updates on ClinicalTrials.gov's
+      own daily batch cadence (confirmed live: day-granularity dates), so a study ticking to "today"
+      mid-walk can jump to the front of that sort and reappear on a later page -- the standard
+      cursor-pagination-over-a-mutable-sort-key failure mode `federal-register-scraper`'s unconditional
+      `seen` Set already exists to close. Added the same pattern here: `if (seen.has(nctId)) {
+      scanned += 1; continue; }` before the existing watchMode logic, applying regardless of
+      `watchLabel`. Build **0.1.88** (package.json 0.1.30), pushed.
+      **Verified live, not just locally:** ran a real `apify call` with `maxResults:1500`,
+      `sortBy:"LastUpdatePostDate:desc"` (the volatile sort, deliberately) -- SUCCEEDED over 2 pages,
+      log read `Pushed 1500 rows ... (scanned 1500 studies)` (scanned==pushed, guard didn't eat
+      anything on this particular run's boundary, consistent with the measured low real-world
+      volatility -- happy path not regressed). Pulled the actual dataset via the API: **1500/1500
+      unique `nctId`s**, confirming no duplicates reached the buyer. Noted explicitly in STATUS.md:
+      this run could not force the race to fire (it's rare, not reproducible on demand), so the test
+      proves no-regression, not that the guard caught a live duplicate -- not overclaimed either way.
+      `check-registry-fields`/`check-code-fields`/`check-meta-fields`/`check-pricing` all clean after
+      (0 drift, pure runtime change). ~$0.017 spent (1 build + 1 multi-page 1500-row run), 0 new
+      Actors, revenue unchanged (48 users, `bkmk`/`rev` 0/0), no owner email warranted. Committed and
+      pushed. Full detail in `state/STATUS.md` cycle-2318 entry.
+      **Next BUILD-slot lever: sweep the rest of the fleet for the same dedupe-gap shape** -- a
+      paginated, PPE-priced Actor whose non-watch-mode delivery loop's duplicate guard (if any) is
+      `watchMode`-gated rather than unconditional, especially one with a buyer-settable sort by a
+      field the upstream updates on its own schedule. Not yet checked this way: `sam-gov-opportunities-scraper`,
+      `us-federal-awards-scraper`, `fda-recall-scraper`, `uk-find-a-tender-scraper`,
+      `eu-ted-tenders-scraper`. `court-records-scraper` has its own `seenIdsThisRun` (spotted in this
+      cycle's grep) and is LIKELY already fine but was not read closely -- confirm, don't assume. If
+      this axis is exhausted too, fall back to a fresh defect shape.
+
 - [x] **DONE cycle 2317 (BUILD slot, `2317%3==1`) -- ran c2316's handed-off retry/backoff cold-read
       lever and found a real gap: `website-screenshot-scraper` had ZERO retries anywhere, the only
       live Actor in the fleet with none.** Nothing fleet-wide due, inbox unchanged, services/site

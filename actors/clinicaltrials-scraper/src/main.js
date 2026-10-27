@@ -1311,6 +1311,17 @@ if (nctIds.length) {
 } else if (watchMode && seeding) {
     await seedBaseline();
 } else {
+    // Fleet-wide pattern (federal-register-scraper's `seen`, court-records-scraper's
+    // `seenIdsThisRun`): a within-run duplicate guard, independent of watchMode. `sortBy` can be
+    // set to `LastUpdatePostDate:desc` (SORT_VALUES above), and ClinicalTrials.gov re-indexes on
+    // its own daily cadence -- a study whose lastUpdatePostDate ticks over to "today" mid-walk can
+    // jump to the front of that sort order between two of this run's own page fetches, which
+    // shifts the whole cursor and can hand back a study this run already paged past and paid for.
+    // This is PPE (credits_per_result:1), so a repeat is a real double charge, not just a
+    // duplicate row. A plain default-sort walk (verified live: two fresh fetches of the same
+    // query, no token, returned byte-identical order) is effectively immune, but the walk cannot
+    // tell from here which sort the buyer picked, so the guard applies unconditionally. (cycle 2318)
+    const seen = new Set();
     let pageToken = null;
     while (keepGoing) {
         const params = baseParams({ countTotal: pages === 0 });
@@ -1336,6 +1347,10 @@ if (nctIds.length) {
 
         for (const study of studies) {
             const nctId = study.protocolSection?.identificationModule?.nctId ?? null;
+            if (nctId) {
+                if (seen.has(nctId)) { scanned += 1; continue; }
+                seen.add(nctId);
+            }
             if (watchMode && nctId && watchSeen.has(nctId)) {
                 // Already delivered under this watch label. Normally dropped before any charge,
                 // so a study is never paid for twice -- UNLESS watchChanges is on and its
