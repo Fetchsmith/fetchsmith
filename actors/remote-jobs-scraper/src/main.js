@@ -1025,6 +1025,7 @@ function warnIfBlindFilter(src) {
 // ---------------------------------------------------------------- main
 
 const sourcesNotReached = [];
+const erroredSources = [];
 let runError = null;
 try {
   const collected = [];
@@ -1042,7 +1043,10 @@ try {
       warnIfWindowBelowFeedReach(src, rows, kept.length);
       collected.push(...kept);
     } catch (err) {
-      // One dead board must not kill a multi-board run.
+      // One dead board must not kill a multi-board run -- but the buyer must still be told,
+      // since `erroredSources` is the only record of this outside the Actor log (see the
+      // status-message build below; it was previously log-only, fleet-wide bug class c2336+).
+      erroredSources.push(src);
       log.warning(`${src}: fetch failed (${err.message}). Continuing with the other sources.`);
     }
   }
@@ -1203,12 +1207,32 @@ if (watchMode && !skipBaselineSave) {
   }
 }
 
+// Board-level problems apply equally whether or not watchMode is on -- a dead board or a
+// time-budget cutoff is the same fact either way, so build it once and fold it into every branch
+// below instead of letting it live only in the log (the gap this whole block closes: until this
+// fix, the default non-watchMode run had NO status-message branch at all, zero-row or not).
+const boardCauses = [
+  erroredSources.length ? `request failed for: ${erroredSources.join(', ')}` : null,
+  sourcesNotReached.length ? `board(s) not reached before the time budget ran out: ${sourcesNotReached.join(', ')}` : null,
+  // Pagination on arbeitnow/himalayas can be cut short by the SAME time budget without a whole
+  // board ever landing in `sourcesNotReached` (that array only gets an entry when a board was
+  // never even started) -- this is the mid-pagination variant, so it needs its own clause.
+  timeBudgetExceeded && !sourcesNotReached.length
+    ? 'the run approached its time budget and stopped collecting early (pagination on one or more boards was cut short)'
+    : null,
+].filter(Boolean);
+const boardCauseNote = boardCauses.length ? ` (${boardCauses.join('; ')})` : '';
+
 if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}${boardCauseNote}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — that is the expected result most of the time; you were charged for nothing.${evictionSuffix}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — that is the expected result most of the time; you were charged for nothing.${evictionSuffix}${boardCauseNote}`);
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}${boardCauseNote}`);
+} else if (pushed === 0) {
+  await Actor.setStatusMessage(`No job postings returned${boardCauses.length ? ` — ${boardCauses.join('; ')}` : ' — none of the requested boards had anything matching your filters'}. See the log for details.`);
+} else {
+  await Actor.setStatusMessage(`Pushed ${pushed} job posting(s).${boardCauseNote}`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never

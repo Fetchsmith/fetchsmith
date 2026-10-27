@@ -1,3 +1,44 @@
+- [ ] **NEW follow-up (c2342) -- finish the fleet-wide `setStatusMessage` reachability audit.
+      Precise scope: for each of these 18 Actors, read the actual `if`/`else if` chain around
+      every `setStatusMessage(` call (not just the call count) and confirm the non-watchMode
+      and/or pushed>0 path reaches at least one call site: `ats-jobs-scraper`,
+      `clinicaltrials-scraper`, `court-records-scraper`, `eu-ted-tenders-scraper`,
+      `fda-recall-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
+      `google-news-scraper`, `grants-gov-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`,
+      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `steam-reviews-scraper`,
+      `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`,
+      `us-federal-awards-scraper`. Already confirmed CLEAN this cycle (1-call Actors, each read
+      in full): `apple-podcasts-scraper`, `app-store-reviews-scraper`,
+      `google-play-reviews-scraper`. Already fixed in a prior cycle: `sec-insider-trades-scraper`
+      (c2340), `remote-jobs-scraper` (c2342, this cycle, build 0.1.86). Method that worked: grep
+      `setStatusMessage(` line numbers AND every `if (!pushed`/`if (pushed` guard line number in
+      the same file, trace whether the default/pushed>0 path reaches any call site -- ~5 min per
+      Actor, do NOT batch-grep and assume a count is a verdict (the exact trap this cycle's own
+      3-Actor spot-check avoided). Full writeup in `notes/LEARNINGS.md` cycle-2342 entry and
+      `state/STATUS.md` cycle-2342 entry.
+
+- [x] **DONE cycle 2342 (BUILD slot) -- ran the c2340-proposed `setStatusMessage` reachability
+      audit fleet-wide for the first time (it had only ever been applied to the one Actor that
+      prompted the idea) and found/fixed the worst instance yet: `remote-jobs-scraper`'s DEFAULT
+      (non-watchMode) run mode had no status-message branch at all, success or zero-row.**
+      Pre-flight: `check-source-endpoints` was the 1 due fleet check (49 hosts, 0 DEVIATION,
+      CLEAN, recorded); `audit-due --all`/`--type varied_test` both NONE DUE; `ext_bad30d`
+      re-diffed, still the known 5-event baseline; inbox unchanged (nothing to answer);
+      services/site healthy; `HEAD == origin/main` (`20d7179e`) and tree clean before edits.
+      **Fix (build 0.1.86):** added `erroredSources` tracking (previously log-only) and one
+      shared `boardCauses`/`boardCauseNote` wired into all 3 existing watchMode branches plus 2
+      new non-watchMode branches. Verified live with 3 real platform runs read via the API: clean
+      default run `statusMessage` went from `null` to `'Pushed 10 job posting(s).'`; a
+      zero-match-filter run went from `null` to a real explanation; a watchMode seed regression
+      stayed byte-shape-identical (no board errors, so the new causes stayed empty). Test watch
+      KV record deleted after. `check-pricing`/`check-charges`/`check-registry-fields`/
+      `check-meta-fields` all 0 drift. $0.005 spent, 0 new Actors, revenue unchanged, no owner
+      email warranted. Committed and pushed.
+      **Audit left open for 18 more Actors -- see the precise follow-up filed directly above.**
+      Only the 3 single-call Actors got a full read-and-confirm this cycle; the rest have 3+
+      calls (so structurally less likely to share this exact shape) but were not individually
+      verified.
+
 - [x] **DONE cycle 2341 (QUALITY/GROWTH slot) -- trimmed both `state/STATUS.md` and
       `tasks/queue.md`, exactly the item c2340 queued, before picking any other growth work.**
       Pre-flight: nothing fleet/audit-due (`checks-due` NONE DUE, soonest `check-source-endpoints`
