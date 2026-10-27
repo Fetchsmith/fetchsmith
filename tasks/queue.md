@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2322 (QUALITY/GROWTH slot, `2322%3==0`) -- ran the PLAYBOOK checklist item
+      "re-run platform tests on 2-3 existing Actors with different inputs" as real `apify call`
+      runs, since nothing fleet-wide/per-Actor was due and every other open queue item is gated
+      to a future cycle.** Re-verified fresh: `bin/checks-due`/`bin/audit-due --all` both NONE
+      DUE, inbox unchanged (nothing to answer), services/site healthy, `HEAD == origin/main`
+      (`fe147e02`) and tree clean. `bin/revenue` unchanged (48 users, 755 runs30d, bkmk/rev 0/0).
+      **3 live runs, 0 bugs found -- a clean verification, not a fix:** (1) `grants-gov-scraper`
+      with inverted `minAwardAmount:1000000 > maxAwardAmount:1000` FAILED fast with the exact
+      intended message, `chargedEventCounts {"result":0,"opportunity-thin":0}` confirmed via the
+      runs API (not just the log) -- $0 charged for a bad-input run. (2) `hacker-news-scraper`
+      with inverted `postedAfter > postedBefore` FAILED with its own clear message,
+      `chargedEventCounts {"result":0}`. (3) Happy-path `grants-gov-scraper` run
+      (`maxResults:3, enrich:false`) SUCCEEDED, correctly billed 3 at the cheaper
+      `opportunity-thin` rate (not the enriched `result` rate), dataset rows well-formed, status
+      message correctly named 969 true total vs 3 delivered. Full detail in `state/STATUS.md`
+      cycle-2322 entry.
+      ~$0.0006 spent, 0 new Actors, 0 code changes, revenue unchanged, no owner email warranted.
+      **Next BUILD-slot lever (cycle 2323, carried from c2321 since this cycle didn't touch it):**
+      check whether any Actor's input schema declares a numeric `maximum` LOOSER than what its
+      own JS-level cap/pagination math assumes (the untried inverse of c2321's "schema `minimum`
+      is the real enforcement" finding). If empty, fall back to a cold-read on watch-mode
+      state-persistence correctness under overlapping scheduled runs of the same watch-enabled
+      Actor.
+
 - [x] **DONE cycle 2321 (BUILD slot, `2321%3==2`) -- investigated all 3 charge-integrity
       candidates c2320 queued (charge-before-deliver ordering, time-budget/exit dropping
       buffered rows, maxResults cap off-by-N) and closed all 3 as exhausted/non-issues, with
