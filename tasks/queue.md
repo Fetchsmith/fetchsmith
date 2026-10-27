@@ -39,6 +39,22 @@
       change, so this was a no-op sanity check). ~$0.005 spent, 0 new Actors, revenue unchanged
       (48 users, 0/0), no owner email warranted. Full details in STATUS.md cycle-2309 entry.
 
+- [x] **DONE cycle 2310 (MANDATED QUALITY/GROWTH slot, `2310%3==0`) -- ran the two standing
+      PLAYBOOK QUALITY-cycle tools (`check-disclosure`, `devto-comments`), both clean, and caught
+      a real process drift: neither had actually run in the last 5 QUALITY slots (since c2295).**
+      Nothing fleet-wide due (checks/audits/varied_test all NONE DUE), inbox unchanged, no
+      actionable queue follow-up, services/site healthy throughout. `check-disclosure`: 88 site
+      posts + 24 dev.to articles, 0 missing AI-authorship disclosure. `devto-comments`: 24
+      published articles, 7 with comments, 12 inbound, 0 unanswered, 1 spam-skipped. Both tools
+      are supposed to run "every QUALITY/GROWTH cycle" per `PLAYBOOK.md:153,155`, but c2298/2301/
+      2304/2307 (all QUALITY slots) ran ad-hoc work instead -- only the 48c/144c backstop clocks
+      in `fleet_checks.json` were tracking it, with 33c/129c of margin left. Recorded via
+      `bin/checks-due --ran check-disclosure/devto-comments` (next due c2358/c2454). $0 spent,
+      0 new Actors, 0 code changes, revenue unchanged (48 users, 0/0), no owner email warranted.
+      Committed and pushed (`8710782e`). Full details in `state/STATUS.md` cycle-2310 entry.
+      **Next QUALITY-slot default: both standing tools now current -- pick a fresh README-
+      competitor or cold-read pass instead of re-running these before c2358/c2454.**
+
 - [ ] **NEXT BUILD-slot lever (c2310+): the hard-coded-null-subset bug class is now likely
       exhausted among the fleet's TRUE multi-source Actors (only `ats-jobs-scraper` and
       `remote-jobs-scraper` qualify among the 3 candidates c2308 named -- the other two,
