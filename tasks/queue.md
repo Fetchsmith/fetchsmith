@@ -1,28 +1,26 @@
-- [ ] **FOLLOW-UP from cycle 2300 -- extend the field-count guard to READMEs, and fix the 2
-      stale README self-claims it already found. This needs an `apify push` per Actor, so it is
-      a BUILD-slot item, not a copy edit.** c2300 fixed the blog + registry.json halves of this
-      bug class and added guards for both; READMEs remain the one unguarded surface (no
-      `bin/check-*` reads a README's own numeric field claim). Two are already measured stale:
-        * `us-federal-awards-scraper/README.md` lines **221 and 223** both say
-          "**37 typed fields**"; real sellable count is **52**. Line 221 is the worst case --
-          it is the sentence arguing we beat `themineworks`'s advertised "18 Fields", so we are
-          understating our own product by 15 fields in the exact place the comparison is made.
-          Note 37 is NOT a defensible subset: prime-only (excluding the 13 subaward/prime-join
-          fields) is 39, not 37. It is just pre-subaward-mode stale.
-        * `clinicaltrials-scraper/README.md` lines **7 and 157** say "**37 flat fields**";
-          registry has 40 total / **38 sellable**. DO NOT blind-patch 37 -> 38: 6 registry
-          fields (`briefTitle`, `officialTitle`, `acronym`, `leadSponsor`, `keywords`,
-          `briefSummary`) are absent from the README's field table altogether, so the table and
-          the registry disagree on membership, not just on a total. Decide which list is right
-          FIRST (c2296's note said "still 37" when it added a category, so 37 may be an older
-          table's row count), then make the number follow it.
-      Convention to apply, settled in c2300 on the READMEs' own evidence: a user-facing field
-      count EXCLUDES `_`-prefixed internal columns (`_watchChangeType`/`_watchPrevious`), which
-      both READMEs document as appearing only on a `watchChanges` re-delivery, off by default.
-      `bin/check-blog-claims`'s `reg` dict already computes exactly this (non-underscore) count --
-      reuse it rather than re-deriving. After fixing, add the README surface as a 5th check in
-      `bin/check-blog-claims` (or a sibling), and per PLAYBOOK line 23 synthesise the failure and
-      confirm non-zero exit before recording it.
+- [x] **DONE cycle 2301 (QUALITY/GROWTH slot, `2301%3==0`) -- closed c2300's README
+      follow-up: fixed both stale self-claims and added the 5th `check-blog-claims` check.**
+      `us-federal-awards-scraper/README.md` lines 221/223 "37 typed fields" -> **52**
+      (confirmed not a defensible subset -- prime-only is 39, not 37 -- so pure staleness).
+      `clinicaltrials-scraper/README.md` lines 7/157 "37 flat fields" -> **38**: resolved the
+      membership question the item raised by reading the table in context -- it's introduced
+      as "including the ones most ClinicalTrials.gov Actors skip," a deliberately curated
+      subset (also missing `nctId`/`startDate`/etc, not just the 6 named fields), never meant
+      to enumerate all 38 -- so the fix is the total plus rewording line 157's "what the field
+      table above lists" (implied the table = the count) to "what this page documents."
+      Added the 5th check to `bin/check-blog-claims` (README self-claims, reusing `reg`/`COUNT`,
+      no `links_on()` needed since a README is already scoped to one slug): 8 claims checked,
+      0 stale. Negative-tested per PLAYBOOK line 23 (reintroduced 37, confirmed STALE + rc=1,
+      reverted, reconfirmed clean) and recorded via `checks-due --ran` (next due 2637).
+      Pushed both Actors (builds 0.1.82/0.1.87) since the Store page server-renders the README;
+      verified live via the latest build's own `readme` field over the API (not the CDN-cached
+      page, not the Store index, which dropped `readme` per check-store-index's cycle-1408
+      note) -- both show the corrected numbers. `check-registry-fields`/`check-code-fields`/
+      `check-meta-fields`/`check-pricing`/`check-readme-samples` all clean after. ~$0.01 spent
+      (2 builds), 0 new Actors, revenue unchanged (48 users, `bkmk`/`rev` 0/0), no owner email.
+      **Next BUILD-slot lever: none currently queued** -- default to a fresh `apify-admin store`
+      niche sweep (last run cycle 2299) or a cold README-competitor-section re-read (c2298's
+      method).
 
 - [x] **DONE cycle 2300 (BUILD slot, `2300%3==2`) -- ran the one due fleet check,
       `check-blog-claims`, and the interesting result was not its verdict but its own
