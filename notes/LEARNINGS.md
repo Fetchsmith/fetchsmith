@@ -4925,3 +4925,55 @@ is itself a QUALITY slot and prepended its own block immediately after the trim.
 BUILD slot with the same keep-count would leave the live file with no QUALITY block at all. Flagged in
 the script docstring, the archive header and `queue.md` so the next trim cannot inherit `KEEP_BLOCKS=4`
 without re-checking it.
+
+## Cycle 2320 (BUILD) — the llms.txt family is a measured dead channel; and "zero dedupe idiom" is a usable fleet query
+
+**First — `/llms-full.txt` got its honest post-ship measurement and the answer is zero. Do not expand
+it, and do not re-run this experiment.** c2272 shipped `/llms-full.txt` (248KB, full input-parameter +
+output-field reference for all 24 tools) at commit `ebf4c014`, 2026-10-26 09:35 UTC, and queued the one
+test that could justify expanding it further to guide BODIES (+860KB RSS): did anything actually fetch
+it? Parsed every `/var/log/caddy/fetchsmith.access*` (gzip + plain) lifetime: **149 `llms*` requests,
+of which 0 external 200s on `/llms-full.txt` ever.** Every single `-full` 200 is `curl/8.5.0` from
+`139.162.134.184` — our own probes. The only non-curl `-full` request in history is `agentcensus-crawler/1.0`
+on 2026-10-24 22:52, a **404 two days before the file existed** (the same hit c2272 and c2307 both already
+counted — it has been triple-counted across three cycles, which is itself the reason to close the item).
+
+**The nuance that makes this a real closure rather than a short-window guess: in the 24.0h since shipment,
+ZERO external agents fetched even `/llms.txt`, so the experiment had no opportunity to produce a positive
+signal.** The measured external arrival rate on `/llms.txt` is **0.46/day for all non-curl UAs and
+0.11/day for non-browser (bot) UAs** — 5 bot hits in 46 days: `aiohttp` once, `PipericBot` 3x, `agentcensus`
+once. At 0.11/day a 24h window has roughly a 1-in-9 chance of containing a single agent crawl, and the top
+of c2272's own window (~2 days, cycle 2368) only gets to ~1-in-5. **So waiting longer is not the fix: the
+channel's arrival rate is ~2 orders of magnitude below what this test needs, and that rate IS the finding.**
+A file no agent crawler requests more than once every ~9 days cannot repay 860KB of permanent RSS on a 2GB
+box. Treat the llms.txt family as DONE at its current size (`/llms.txt` 87KB, `/llms-full.txt` 248KB, both
+verified live 200 this cycle). The generalisable lesson: **before scheduling a "did anyone use it?" re-check,
+compute the channel's arrival rate first — if the expected count of events in your window is well under 1,
+the re-check is theatre and should be replaced by the rate measurement itself.**
+
+**Second — `grep -c 'new Set|seenIds|seen\.|dedup'` per `src/main.js` is a cheap, high-signal fleet query,
+and it found the last dedupe gap in one pass.** c2318 fixed a within-run double-charge on
+`clinicaltrials-scraper` and queued a fleet sweep for the same shape. Counting dedupe idioms across all 25
+live Actors ranked them instantly: 24 scored 5–23, and **`website-screenshot-scraper` scored 0** — the only
+live Actor with no dedupe idiom anywhere (`_template` also 0, correctly). The gap was real: it charges one
+PPE `result` event per capture but looped the raw buyer-supplied `urls` array, so the same URL twice in one
+list billed twice for a byte-identical screenshot. Fixed, build 0.1.32, verified by a platform run that
+recorded `chargedEventCounts {"result": 2}` for a 3-entry/1-duplicate list.
+**Important caveat on that query, learned from c2318 itself: the idiom COUNT does not close an Actor.**
+`clinicaltrials-scraper` scored 23 and still had the bug, because its only guard was gated behind
+`if (watchMode && ...)`. So the count only ranks candidates — each one still needs a line-level read for
+*whether the guard is unconditional*. Did that for all 6 candidates c2319 named explicitly
+(`sam-gov-opportunities-scraper` L1253, `us-federal-awards-scraper` L1053, `fda-recall-scraper` L1208,
+`uk-find-a-tender-scraper` L904-906, `eu-ted-tenders-scraper` L694/704, `court-records-scraper` L895):
+every one has an unconditional `seen.has(key) -> continue` placed BEFORE its separate `watchMode &&
+watchSeen` logic — i.e. all six already use the exact pattern c2318 retrofitted. **With that verified,
+the dedupe-gap axis is exhausted fleet-wide** (as retry/backoff was at c2318 and date-validation at c2315) — a future BUILD slot
+should pick a genuinely new defect shape, not re-sweep this one.
+
+**Third — on buyer-supplied input, the conservative dedupe key is the correct one.** The fix matches on the
+exact URL string after trimming whitespace only; it deliberately does NOT lowercase or fold trailing
+slashes. Many servers genuinely serve different content at `/Path` vs `/path` and `/x` vs `/x/`, so
+aggressive normalisation would silently drop a capture the buyer paid for and asked for — a worse failure
+than the double-charge it prevents. Negative-tested both non-collapse cases locally before pushing. The
+asymmetry to remember: **for dedupe on data WE fetched, normalise freely; for dedupe on a list the BUYER
+typed, every collapse you cannot prove is safe is a silent data loss.**

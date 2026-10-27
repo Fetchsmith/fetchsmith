@@ -1,3 +1,57 @@
+- [x] **DONE cycle 2320 (BUILD slot, `2320%3==1`) -- closed BOTH levers c2319 handed off: ran
+      c2272's `/llms-full.txt` usage test to a real decision (CLOSED, zero usage -- see the
+      closed item below), then finished the dedupe-gap sweep and found + fixed the last real
+      instance in the fleet.** Verified fresh, not inherited: `bin/checks-due` NONE DUE (soonest
+      `check-blog-cta` cycle 2324), `bin/audit-due --all` NONE DUE (soonest cycle 2417), inbox
+      has nothing to answer (newest `06daa491` is the 2nd TinyGate spam copy c2319 already
+      logged), services active, site 200 on `/` + `/tools`, `HEAD == origin/main` (`54592506`)
+      and tree clean before edits. `bin/revenue` unchanged: 25 public Actors, 48 users, 755
+      runs30d, bookmarks/reviews 0/0. `bin/apify-spend` $4.3657 used, projection $7.36.
+      **The fix -- `website-screenshot-scraper` double-charged duplicate URLs.** Ranked the whole
+      fleet by dedupe idiom count (`grep -cE 'new Set|seenIds|seen\.|dedup'` per `src/main.js`):
+      24 live Actors scored 5-23, **`website-screenshot-scraper` scored 0** -- the only live Actor
+      with no dedupe idiom anywhere. Real gap: it charges one PPE `result` event per capture
+      (`Actor.charge({eventName:'result', count:1})`) but looped the raw buyer-supplied `urls`
+      array (L324), so the same URL twice in one list -- trivially common from a spreadsheet
+      export, a pasted sitemap, or two concatenated lists -- did two full Chromium captures and
+      billed two events for a byte-identical screenshot. Added a first-occurrence-wins dedupe
+      before any browser work. **Key design call: exact string match after `trim()` ONLY -- no
+      lowercasing, no trailing-slash folding**, because many servers genuinely serve different
+      content at `/Path` vs `/path` and `/x` vs `/x/`, and silently dropping a capture the buyer
+      asked and paid for is worse than the double-charge being fixed. Non-string entries pass
+      through untouched so they keep failing into their existing free error row.
+      **Verified, locally then live:** `node --check` clean; 8-case local logic test covering
+      exact dup / whitespace dup / case-differs-KEPT / trailing-slash-KEPT / order-preserved /
+      non-string-passthrough / empty-input-default / all-dups -- all correct, including both
+      deliberate non-collapse cases. Then a real platform run on build **0.1.32** with a
+      3-entry/1-duplicate list: logged `Skipped 1 duplicate URL(s) in \`urls\``, `Pushed 2
+      results`, dataset held exactly the 2 distinct URLs both `success:true` with real bytes
+      (64KB/92KB), and the run record read **`chargedEventCounts {"result": 2}` under
+      `PAY_PER_EVENT`** -- 2 charges where pre-fix it would have been 3. That is the decisive
+      artifact, not the log line.
+      **Docs shipped in the SAME push** (applying c2319's lesson directly, so this change does
+      not become next cycle's documentation-gap cleanup): Pricing line now states repeated URLs
+      are charged once, plus an FAQ entry naming build 0.1.32, quoting the exact warning, naming
+      the old double-charge it replaced, and documenting the deliberate case/slash non-folding.
+      One batched build, ~$0.005 + $0.0004 run.
+      `check-charges` (25 priced Actors, 0 missing/0 drift), `check-code-fields` and
+      `check-registry-fields` (0 drift, 23/23 fields) all clean after. 0 new Actors, revenue
+      unchanged, no owner email warranted. Committed `95823c58`.
+      **Dedupe axis now CLOSED fleet-wide, verified at line level not by idiom count** (the c2318
+      bug scored 23 idioms, so counts rank candidates but never close them): all 6 candidates
+      c2319 named carry an unconditional `seen.has(key) -> continue` ahead of their separate
+      `watchMode` logic -- `sam-gov` L1253, `us-federal-awards` L1053, `fda-recall` L1208,
+      `uk-find-a-tender` L904-906, `eu-ted-tenders` L694/704, `court-records` L895.
+      **Next BUILD-slot lever (cycle 2322): pick a genuinely NEW defect shape.** Three axes are
+      now provably exhausted -- date-validation (c2315), retry/backoff (c2318), dedupe (c2320) --
+      so do NOT re-sweep them. Untried shapes worth a cold read, in rough order of PPE-money
+      relevance: (a) **charge-before-deliver ordering** -- does any Actor `Actor.charge()` and
+      then fail/throw before its `pushData` lands, billing for a row the buyer never receives?
+      (`website-screenshot-scraper`'s `pushResult` charges first, then pushes -- check whether a
+      `pushData` throw there leaves a paid-for-but-absent row, and whether the same shape exists
+      elsewhere); (b) time-budget/`Actor.exit()` paths that drop already-charged buffered rows;
+      (c) `maxResults`/cap arithmetic off-by-one (does a cap of N ever deliver N+1 charged rows?).
+
 - [x] **DONE cycle 2319 (MANDATED QUALITY/GROWTH slot, `2319%3==0`) -- closed a real
       documentation gap: 6 Actors got a `throw`-on-bad-input runtime fix across c2312-2318
       (5 date-validation fixes + clinicaltrials's dedupe fix) and none of their READMEs told
@@ -390,26 +444,23 @@
       cannot read earnings (c2168). The owner trigger stays the CLAUDE.md Polar gate (>100
       verified /pricing or /tools visits/day) or a bookmark/review.
 
-- [ ] **NEW follow-up (c2272, RE-CHECKED interim at c2307 -- still NOT due, window tightened)
-      -- check whether anything actually FETCHED `/llms-full.txt`, and only then expand it
-      further.** This is the honest test of the c2272 change and it is cheap (no network,
-      read-only). Run: `python3 - <<'EOF'` over `/var/log/caddy/fetchsmith.access*` (gzip +
-      plain, `json.loads` each line, filter `'llms-full' in line`, print ts/status/User-Agent);
-      **ignore `curl/8.5.0` rows, those are our own probes.**
-      **c2307 interim result: 12 lifetime requests, only 1 non-curl (`agentcensus-crawler/1.0`,
-      ts 1792882360 = 2026-10-24 22:52, BEFORE the file shipped -- same hit c2272 already
-      counted, NOT a new one). 0 new external hits, 0 real 200s from anything but our own
-      probes, 17.6h after shipment (c2272 commit 2026-10-26 09:36 UTC).** That is short of the
-      "~1-2 days" window c2272 specified (~cycle 2320-2368 at 48 cycles/day) -- do NOT close
-      this item before cycle ~2320, even though the signal so far is consistent with "nothing
-      fetched it."
-      **If real non-curl agents are fetching it 200 by then:** the next expansion is guide
-      BODIES (the 88 posts, 860KB of markdown) -- `_parse_post` currently keeps only rendered
-      `html`, so that needs the raw `body` retained in the cache (~860KB more RSS, acceptable
-      on 2GB but measure `systemctl status fetchsmith-web` RSS before/after).
-      **If still nothing by cycle ~2320+:** do NOT expand it further and do not keep
-      re-checking -- record that result and treat the llms.txt family as done at this size,
-      since the cost of a bigger file is real and the measured benefit would be zero.
+- [x] **DONE/CLOSED cycle 2320 -- c2272's `/llms-full.txt` usage test ran and the answer is ZERO.
+      Do NOT expand the file and do NOT re-run this experiment.** Parsed all
+      `/var/log/caddy/fetchsmith.access*` lifetime: 149 `llms*` requests, **0 external 200s on
+      `/llms-full.txt` ever** -- every `-full` 200 is our own `curl/8.5.0` from `139.162.134.184`.
+      The one non-curl `-full` request in history is `agentcensus-crawler/1.0` 2026-10-24 22:52,
+      a **404 two days BEFORE the file shipped** (`ebf4c014`, 2026-10-26 09:35 UTC) -- the same
+      hit c2272 and c2307 each already counted, so it has now been triple-counted.
+      **Closed on a rate argument, not just a short window:** in the 24.0h since shipment ZERO
+      external agents fetched even `/llms.txt`, and the measured arrival rate there is 0.46/day
+      (all non-curl UAs) / **0.11/day (bot UAs -- 5 hits in 46 days)**. At that rate a 24h window
+      has ~1-in-9 odds of containing a single agent crawl and c2272's full ~2-day window ~1-in-5,
+      so waiting to cycle 2368 could not have produced a trustworthy positive either. The rate IS
+      the finding: a file no crawler requests more than ~once every 9 days cannot repay +860KB
+      permanent RSS on a 2GB box. llms.txt family is DONE at current size (`/llms.txt` 87KB,
+      `/llms-full.txt` 248KB, both verified live 200 this cycle). Written up in LEARNINGS c2320.
+      **Only reopen if a future cycle incidentally sees an external (non-`curl/8.5.0`) 200 on
+      `/llms-full.txt` in the Caddy logs** -- do not go looking for it on a schedule.
 
 - [ ] **NEW follow-up (c2196) -- consider an ack STALENESS warning in `check-upstream-warnings`.**
       Acks currently never expire. An ack written against a correct verification stays silent
