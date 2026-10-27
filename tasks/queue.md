@@ -55,17 +55,40 @@
       **Next QUALITY-slot default: both standing tools now current -- pick a fresh README-
       competitor or cold-read pass instead of re-running these before c2358/c2454.**
 
-- [ ] **NEXT BUILD-slot lever (c2310+): the hard-coded-null-subset bug class is now likely
-      exhausted among the fleet's TRUE multi-source Actors (only `ats-jobs-scraper` and
-      `remote-jobs-scraper` qualify among the 3 candidates c2308 named -- the other two,
-      `court-records-scraper`/`eu-ted-tenders-scraper`, each have exactly ONE upstream, so there
-      is no cross-source subset to be blind on).** Before declaring the bug class closed
-      fleet-wide, confirm no other multi-source Actor was missed: grep `registry.json`/READMEs
-      for "public, documented, no-auth" + plural board/API mentions. Unverified candidates:
-      `google-news-scraper`, `uk-find-a-tender-scraper`, `sam-gov-opportunities-scraper` -- check
-      whether any of these aggregates 2+ independent upstreams with asymmetric field coverage.
-      If that search comes up empty, this lever is closed and the default BUILD-slot action
-      reverts to a cold-read defect hunt on the next-oldest-touched Actor tier (c2307's method).
+- [x] **DONE cycle 2311 (BUILD slot, `2311%3==1`) -- closed the "hard-coded-null-subset" bug
+      class fleet-wide by checking the 3 remaining unverified candidates; 0 defects, 0 code
+      changes.** `google-news-scraper`: single upstream (Google News RSS, 3 URL shapes for
+      query/topic/topic-hash, all the same feed) -- not a multi-source aggregator, no
+      cross-source subset possible. `sam-gov-opportunities-scraper`: single upstream (sam.gov),
+      3 different endpoints (search/detail/attachments) of the SAME API, not independent
+      sources -- same verdict. `uk-find-a-tender-scraper` IS a genuine 2-source aggregator
+      (Find a Tender + Contracts Finder, both OCDS) -- but its one asymmetric filter (`stages`:
+      FTS's API only recognizes 3 of 5 OCDS stage values) already has a `CF_BLIND_STAGES`
+      runtime warning (`src/main.js:39-50`) plus a dated README section disclosing it --
+      i.e. this Actor already got the exact fix this bug class calls for, years before this
+      hunt started. Grepped for any OTHER `source.key`-conditional branch in the file (rate
+      limits, URL building, pagination, error messages) -- none affects field population or
+      filter correctness, only operational behavior identical in effect across both portals.
+      **Verdict: the bug class is fully exhausted fleet-wide** -- `ats-jobs-scraper` (c2308),
+      `remote-jobs-scraper` (c2309) got fixes; `court-records-scraper`/`eu-ted-tenders-scraper`
+      (single-upstream, c2309) and now `google-news-scraper`/`sam-gov-opportunities-scraper`
+      (single-upstream) /`uk-find-a-tender-scraper` (already guarded) are all ruled out. Do not
+      re-run this hunt without a new multi-source Actor entering the fleet.
+      Checked `bin/checks-due`/`audit-due --all`/`--type varied_test --all` first: all NONE DUE.
+      Inbox re-read in full (10 items, unchanged) -- the one owner reply (`dc593cfb`,
+      2026-10-19, "Done" re: Apify identity verification) is already resolved:
+      `website-screenshot-scraper` has lived in `registry.json` with a real `apify_actor_id`
+      since before c2310 counted 25 public Actors. Nothing to answer, no new signal.
+      $0 spent, 0 new Actors, 0 code changes, revenue unchanged (48 users, `bkmk`/`rev` 0/0),
+      no owner email warranted. Services/site re-verified healthy (systemd active x3, `/` and
+      `/tools` both 200), git clean before and after (nothing to commit from this cycle's
+      investigation besides this STATUS.md/queue.md update).
+      **Next BUILD-slot lever: none queued for the null-subset class (closed) -- default to a
+      cold-read defect hunt on the next-oldest-touched Actor tier (c2307's method, last used
+      successfully at c2308/c2309). Check `apify-admin store` output isn't needed; just pick
+      2-3 Actors not cold-read recently and look for a different defect shape (not
+      filter-blindness -- that axis is now exhausted) -- e.g. pagination edge cases, date-window
+      math, or a dedupe gap.**
 
 - [x] **DONE cycle 2307 (MANDATED QUALITY/GROWTH slot, `2307%3==0`) -- interim re-check of
       c2272's `/llms-full.txt` follow-up (still not due, window tightened to ~cycle 2320-2368)
