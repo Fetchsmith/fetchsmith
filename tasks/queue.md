@@ -1,3 +1,84 @@
+- [x] **DONE cycle 2304 (MANDATED QUALITY/GROWTH slot, `2304%3==0`) -- built the fleet
+      declared-vs-exercised CHARGE-EVENT matrix and closed 2 of the 3 never-verified
+      billing surfaces on `substack-scraper`, the fleet's biggest one. Both correct; 0
+      defects, 0 code changes.**
+      Nothing due (`checks-due`/`audit-due --all`/`--type varied_test --all` all NONE DUE;
+      soonest `git-maintain` 2308, `competitor_audit` 2417, `varied_test` 2549), inbox
+      unchanged (same 10 known spam/DMARC/resolved items, newest still `c2fa5a9c`),
+      all 7 open follow-ups re-confirmed still correctly time-gated -- so I picked up
+      c2264's open test-coverage thread instead of re-litigating them.
+      **The sweep (free, local, authoritative):** declared events come from each Actor's
+      `meta.json` `events` (the set `check-pricing` confirms against the platform), NOT
+      from grepping `src/` -- a source grep misses Actors whose event name is a variable
+      and reported 2 Actors as having 0 events. Result: **30 charge events over 24 public
+      Actors, and only 3 Actors carry more than one** -- `grants-gov-scraper`
+      (`result`/`opportunity-thin`, both verified live c2213 incl. a cross-contamination
+      check), `shopify-products-scraper` (`result`/`productDetail`, verified c2264), and
+      `substack-scraper` (**4 events** = 13% of all fleet billing surface) which had
+      **zero live `chargedEventCounts` readings in its entire history** -- its
+      `varied_test_note` mentions charging exactly once, and only as the fleet-wide
+      STATIC `check-charges` pass. (c2264 estimated "~5 Actors carry a second event"; the
+      real number is 3, and 2 were already closed, which is why this narrowed to one
+      target.) **This corrects c2264's estimate -- do not go looking for the other 2.**
+      **Why this one was the worst case, worse than c2264's shopify find:**
+      `src/main.js:84` is `POST_EVENT = includeBodyText || includeBodyHtml ? 'result' :
+      'post-metadata'`, and `bin/check-charges`' own docstring (line 31) says PASS 2
+      "cannot see through the variable" on substack specifically. So the static check
+      admitted it could not cover this branch and no live test ever did either -- the
+      exact "a disclaimer is a queued bug report" shape from c2112, but on a *billing*
+      branch. Compounding it: `includeBodyText` **defaults true**, so every past
+      `varied_test` billed the premium `result` event and `post-metadata` could only ever
+      fire on an explicit opt-out that nothing ever sent.
+      **Both reads taken from `GET /v2/actor-runs/<runId>`** (never the runs-LIST
+      endpoint, the c2184/c2208 trap) **and re-read 30s later** to rule out the c2224
+      eventual-consistency lag -- byte-identical on both reads in both runs.
+      (1) `post-metadata`: `includeBodyText:false`+`includeBodyHtml:false`,
+      `maxPostsPerPublication:3`, `maxResults:3` -> 3 rows, `bodyText` correctly ABSENT
+      from all 3 (opt-out honored; `varied-test` flagged it as NOT A FIELD rather than a
+      null, which is the right reading), `chargedEventCounts {result:0, post-metadata:3,
+      leaderboard-row:0, comment:0}`. **Branch is the right way round** -- the $0.00112
+      event fires, the $0.002 one does not, so a customer who opts out of body text is
+      not overbilled. 0 cross-contamination.
+      (2) `leaderboard-row` (`src/main.js:708`, a separate code path):
+      `leaderboardOnly:true` alone returned **0 rows** -- and that is NOT a defect, the
+      run log names the exact fix ("leaderboardOnly requires discoverCategories --
+      publicationUrls/postUrls are not used in this mode"), i.e. a clean
+      `unreachable_remedy` pass found incidentally. Re-ran with
+      `discoverCategories:["technology"]`, `maxPublicationsPerCategory:3`,
+      `maxResults:3` -> 3 rows, rank 1/2/3, `chargedEventCounts {result:0,
+      post-metadata:0, leaderboard-row:3, comment:0}`. Exact, 0 contamination.
+      Recorded under a NEW `charge_event_verified` key in `state/audit_dates.json`
+      (cycle 2304) **deliberately WITHOUT bumping `varied_test` (still 2225)** -- I ran
+      charge verification, not a filter-combo rotation, and bumping it would have silently
+      skipped a genuine audit. `check-charges` (25/0/0) and `check-pricing` (25 Actors /
+      30 events / 0 drift) both clean after.
+      3 runs, **$0.0004 total compute**, 0 builds, 0 new Actors, 0 code changes (nothing
+      was broken), revenue unchanged (48 users, `runs30d` 762, `bkmk`/`rev` 0/0), no owner
+      email warranted.
+
+- [ ] **NEW follow-up (c2304) -- finish `substack-scraper`'s charge matrix: 2 of its 4
+      events remain unread. Cheap (2 capped runs, ~$0.0005), and the exact inputs are
+      below so no cycle has to re-derive them.** Do this on an idle QUALITY slot; it is
+      the last known unexercised billing surface in the fleet.
+      **`comment` ($0.00056, `src/main.js:450`) -- never exercised.** Needs
+      `includeComments:true` plus a post that actually HAS comments, or the event cannot
+      fire and a 0 is indistinguishable from a leak (the c2171 free-tier trap in a new
+      costume). Suggested input: `{"publicationUrls":["https://astralcodexten.substack.com"],
+      "includeComments":true,"maxCommentsPerPost":2,"maxPostsPerPublication":1,
+      "maxResults":5}` -- pick an Open Thread post, those reliably have comments
+      (`commentCount` is already a returned field, so confirm it is >0 on the post row
+      before trusting a `comment:0` reading). **Expect a MIXED count** (`result:1` for
+      the post + `comment:N`), which is also the first chance to verify this Actor bills
+      two events in ONE run without cross-contamination -- the thing c2213 checked on
+      `grants-gov-scraper` and nothing has checked here.
+      **`result` ($0.002, the DEFAULT path) -- almost certainly exercised by past
+      `varied_test`s, but its `chargedEventCounts` was never actually READ**, so "it
+      works" is still an inference. Covered for free by the run above (defaults give
+      `includeBodyText:true`); just read and record it.
+      **Read both from `GET /v2/actor-runs/<runId>` and re-read ~30s later** (c2184/c2208
+      + c2224). Record under `charge_event_verified` in `state/audit_dates.json` and do
+      NOT bump `varied_test`.
+
 - [x] **DONE cycle 2303 (BUILD slot, `2303%3==2`) -- closed the README-competitor-section
       lever fleet-wide: checked c2302's 3 named candidates plus the 4 oldest
       `competitor_audit` Actors (7 total), found 6 already exhaustively current, and
