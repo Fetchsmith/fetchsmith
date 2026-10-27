@@ -1013,6 +1013,10 @@ let keepGoing = true;
 // would be missing everything past the failure point, and the next incremental run would deliver
 // and charge for all of it as "new" (see the eu-ted/fda-recall/etc. sweep in LEARNINGS.md).
 let seedError = false;
+// Categories where a page request exhausted postPage()'s own retries (persistent API error or
+// rate-limiting), as opposed to this run simply running out of time -- that case already has its
+// own `timeBudgetExceeded` flag, and double-counting it here would blame the wrong cause.
+const erroredCategories = [];
 
 for (const category of categories) {
     if (!keepGoing || pushed >= maxResults || timeBudgetExceeded) break;
@@ -1031,7 +1035,11 @@ for (const category of categories) {
     let categoryRows = 0;
     while (keepGoing && pushed < maxResults && page <= pageCap) {
         const body = await postPage({ filters, fields, page, limit: PAGE_SIZE, sort, order, subawards: isSubaward });
-        if (!body) { if (seeding) seedError = true; break; }
+        if (!body) {
+            if (seeding) seedError = true;
+            else if (!timeBudgetExceeded) erroredCategories.push(category);
+            break;
+        }
         const results = body.results ?? [];
         if (!results.length) break;
         scanned += results.length;
@@ -1193,6 +1201,31 @@ if (pushed === 0 && !watchMode) {
                 + 'is a narrow window and only counts categories that report a period-of-performance end date — contracts, grants, direct payments and other financial assistance, but NOT IDVs or loans, which report none and are always dropped. Try widening it or dropping it to confirm awards exist at all first.'
             : ''),
     );
+}
+
+// The two branches above only ever call `log.warning`/`log.info` -- a non-watch run (the
+// Actor's default and most common mode) never called `Actor.setStatusMessage()` at all, on any
+// outcome: a zero-match run, a category that errored out of its retries, or a run cut short by
+// the timeout all looked identical to a clean success on the console.
+if (!watchMode) {
+    if (pushed === 0) {
+        await Actor.setStatusMessage(
+            'No awards matched your filters.'
+            + (erroredCategories.length
+                ? ` Also, the USAspending API kept failing for: ${erroredCategories.join(', ')} -- those categories were skipped, not just empty.`
+                : '')
+            + (timeBudgetExceeded ? ' Also, this run ran out of run-timeout budget before finishing.' : '')
+            + ' See the log for details.',
+        );
+    } else {
+        const causes = [];
+        if (erroredCategories.length) causes.push(`the USAspending API kept failing for: ${erroredCategories.join(', ')} -- those categories' results may be incomplete`);
+        if (timeBudgetExceeded) causes.push('ran out of run-timeout budget before finishing every category/page -- narrow the filters or raise the timeout to see the rest');
+        if (pushed >= maxResults) causes.push(`hit your "maxResults" cap (${maxResults}) -- more matches may exist; raise it or narrow the filters to confirm`);
+        if (causes.length) {
+            await Actor.setStatusMessage(`Pushed ${pushed} row(s). NOTE -- this result may be incomplete: ${causes.join('. Also, ')}.`);
+        }
+    }
 }
 
 log.info(`Done. Scanned ${scanned} ${isSubaward ? 'sub-awards' : 'awards'}, pushed ${pushed}.`);
