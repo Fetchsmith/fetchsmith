@@ -1522,6 +1522,24 @@ if (detailFetchFailures) {
     );
 }
 
+// Independent causes that can each occur on an otherwise COMPLETE pushed>0 run (incompleteReason
+// stays null for all three: a number genuinely having no match, or one row's own detail lookup
+// failing, is not the same claim as "the walk itself was cut short"). Before this, none of the
+// three ever reached setStatusMessage -- only the log and RUN_SUMMARY, which a console-only buyer
+// never opens, same bug class as the other fleet Actors' pushed>0 silent-cause fixes.
+// failedOppNums is deliberately excluded here: pushing to it always also calls markIncomplete
+// (see walkOppNums), so that cause is already surfaced via the incompleteReason branch below.
+const pushedCauses = [];
+if (exclusiveOppNum && notFoundOppNums.length > 0) {
+    pushedCauses.push(`${notFoundOppNums.length} of ${oppNums.length} requested number(s) had no match: ${notFoundOppNums.join(', ')}.`);
+}
+if (droppedUnknownAward) {
+    pushedCauses.push(`${droppedUnknownAward} row(s) were dropped by the award-amount filter because their detail lookup failed, not because the agency set no ceiling.`);
+}
+if (detailFetchFailures) {
+    pushedCauses.push(`${detailFetchFailures} row(s) are missing enrichment (synopsis/award/attachments) because their detail lookup failed, not because those fields are empty.`);
+}
+
 // The whole point of this record: everything above is English in a log, and a pipeline reads
 // neither. 40 rows against a declared 2,113 matches looks exactly like a complete result set in
 // the dataset. Written to the run's key-value store so it is readable with no webhook
@@ -1597,6 +1615,8 @@ if (incompleteReason !== null) {
     // Last in the chain deliberately: an INCOMPLETE run or a truncated watch baseline is a
     // stronger thing to say than "nothing matched", and both of those can coincide with 0 rows.
     await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
+} else if (pushedCauses.length > 0) {
+    await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} opportunity(ies). ${pushedCauses.join(' Also, ')}`));
 }
 
 log.info(

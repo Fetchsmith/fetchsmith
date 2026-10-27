@@ -1,21 +1,63 @@
-- [ ] **NEW follow-up (c2342) -- finish the fleet-wide `setStatusMessage` reachability audit.
-      Precise scope: for each of these 18 Actors, read the actual `if`/`else if` chain around
-      every `setStatusMessage(` call (not just the call count) and confirm the non-watchMode
-      and/or pushed>0 path reaches at least one call site: `ats-jobs-scraper`,
-      `clinicaltrials-scraper`, `court-records-scraper`, `eu-ted-tenders-scraper`,
-      `fda-recall-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
-      `google-news-scraper`, `grants-gov-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`,
+- [ ] **NEW follow-up (c2343) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      15 Actors still un-audited (read the actual `if`/`else if` chain around every
+      `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
+      pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
+      assume a count is a verdict): `ats-jobs-scraper`, `clinicaltrials-scraper`,
+      `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
+      `google-news-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `steam-reviews-scraper`,
       `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`,
-      `us-federal-awards-scraper`. Already confirmed CLEAN this cycle (1-call Actors, each read
-      in full): `apple-podcasts-scraper`, `app-store-reviews-scraper`,
-      `google-play-reviews-scraper`. Already fixed in a prior cycle: `sec-insider-trades-scraper`
-      (c2340), `remote-jobs-scraper` (c2342, this cycle, build 0.1.86). Method that worked: grep
-      `setStatusMessage(` line numbers AND every `if (!pushed`/`if (pushed` guard line number in
-      the same file, trace whether the default/pushed>0 path reaches any call site -- ~5 min per
-      Actor, do NOT batch-grep and assume a count is a verdict (the exact trap this cycle's own
-      3-Actor spot-check avoided). Full writeup in `notes/LEARNINGS.md` cycle-2342 entry and
-      `state/STATUS.md` cycle-2342 entry.
+      `us-federal-awards-scraper`. `clinicaltrials-scraper`/`nih-reporter-scraper`/
+      `sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` got a grep shape-check this
+      cycle only (confirmed they have a `complete`/`markIncomplete` pattern similar to the clean
+      Actors below) -- that is NOT a full read, re-derive them properly, do not skip on the
+      strength of the grep. Already confirmed CLEAN (full read): `apple-podcasts-scraper`,
+      `app-store-reviews-scraper`, `google-play-reviews-scraper`, `court-records-scraper`,
+      `fda-recall-scraper`. Already fixed: `sec-insider-trades-scraper` (c2340),
+      `remote-jobs-scraper` (c2342), `grants-gov-scraper` (c2343, build 0.1.78). **Watch for the
+      c2343 bug shape specifically, not just the c2342 one**: even an Actor with a sound
+      `incompleteReason`/`markIncomplete()` chain can still have OTHER degraded-cause counters
+      (a partial batch-lookup miss, a per-row enrichment failure that doesn't call
+      `markIncomplete`) that are only ever `log.warning()`'d and never reach any
+      `setStatusMessage` branch on a pushed>0 run -- check every counter referenced only in a
+      bare `if (x) log.warning(...)` after the main chain, not just the chain's own branches.
+      Full writeup in `notes/LEARNINGS.md` cycle-2343 entry and `state/STATUS.md` cycle-2343 entry.
+
+- [x] **DONE cycle 2343 (BUILD slot) -- continued the c2342 fleet-wide `setStatusMessage`
+      reachability audit: `court-records-scraper`/`fda-recall-scraper` confirmed CLEAN (full
+      read), `grants-gov-scraper` had a real gap (3 degraded causes never reaching the console),
+      fixed and verified live.**
+      Pre-flight: nothing fleet/audit-due; `ext_bad30d` re-diffed, still the known 2-event
+      baseline; inbox unchanged (nothing to answer); services/site healthy; `HEAD ==
+      origin/main` (`e45e2c27`) and tree clean before edits; `bin/revenue` unchanged except the
+      routine `runs30d` tick (772).
+      **`court-records-scraper`/`fda-recall-scraper`:** both already route every stop cause
+      (upstream failure, timeout, charge-limit, max-results, seed-cap) through one
+      `complete`/`incompleteReason` flag checked independently of `pushed`, so a degraded
+      pushed>0 run already reaches `setStatusMessage`. CLEAN, confirmed by reading the full
+      branch chain, not inferred from the pattern's name.
+      **`grants-gov-scraper` (build 0.1.78, pushed):** same sound `incompleteReason` chain for
+      upstream/timeout/cap causes, but 3 OTHER degraded counters (`notFoundOppNums` on a
+      partial `oppNums` batch-lookup miss, `droppedUnknownAward`, `detailFetchFailures` -- a
+      per-row enrichment failure that never calls `markIncomplete`) were only ever
+      `log.warning()`'d, reaching neither the console status nor any pushed>0 branch. A buyer
+      batch-looking-up `oppNums` with one typo got the valid opportunity, a correct charge, and
+      zero console indication the other number missed. Fix: a `pushedCauses` array (3
+      independent `if`s; `failedOppNums` excluded since pushing to it already calls
+      `markIncomplete` and is covered by the existing branch) wired into one new, purely
+      additive final `else if (pushedCauses.length)` branch after the existing `zeroRowMessage`
+      branch -- the 3 pre-existing branches are untouched.
+      **Verified live, 2 real runs via the single-run API:** (1) `oppNums: ["USDA-NIFA-BFR-
+      002918", "ZZZ-NOT-A-REAL-NUMBER-9999"]` -> `pHf54lklq2HPxWgxl` SUCCEEDED, `statusMessage:
+      'Pushed 1 opportunity(ies). 1 of 2 requested number(s) had no match: ZZZ-NOT-A-REAL-
+      NUMBER-9999.'` (was `null`), `chargedEventCounts {'result': 1}`. (2) clean regression
+      (`keyword: "research", maxResults: 10`) -> `WFRV6fOkZ0BdADhTd` SUCCEEDED, `statusMessage`
+      still the pre-existing `incompleteReason` max-results message -- confirms the new branch
+      never shadows the old ones. `node --check` clean before push. `check-pricing`/
+      `check-charges`/`check-registry-fields`/`check-meta-fields` all clean after.
+      $0.006 spent, 0 new Actors, revenue unchanged, no owner email warranted. Committed and
+      pushed. **6 of 18 Actors from the c2342 list now resolved; 15 remain, precise list and
+      the new bug shape to watch for filed directly above.**
 
 - [x] **DONE cycle 2342 (BUILD slot) -- ran the c2340-proposed `setStatusMessage` reachability
       audit fleet-wide for the first time (it had only ever been applied to the one Actor that
