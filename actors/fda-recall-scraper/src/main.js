@@ -130,10 +130,25 @@ const compactDay = (d) => d.toISOString().slice(0, 10).replace(/-/g, '');
 const today = new Date();
 // openFDA's oldest enforcement reports are from 2004; 19000101 is a safe open lower bound.
 const EARLIEST = '19000101';
-const normDate = (v, fallback) => {
+// Round-trip through Date.UTC rather than just checking "8 digits": a digit-count-only check
+// (the pre-cycle-2315 version of this function) passed "99999999" and silently fell back to the
+// default window with no warning -- same for a calendar-impossible but well-formed-looking date
+// like "20260230". Date.UTC normalizes overflow (Feb 30 -> Mar 2) instead of rejecting it, so the
+// fix has to compare the normalized date back against what was asked for.
+const isValidYmd = (y, m, d) => {
+    if (!(m >= 1 && m <= 12)) return false;
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+};
+const normDate = (v, fallback, field) => {
     if (v == null || v === '') return fallback;
     const digits = String(v).replace(/[^0-9]/g, '');
-    return digits.length === 8 ? digits : fallback;
+    const valid = digits.length === 8
+        && isValidYmd(Number(digits.slice(0, 4)), Number(digits.slice(4, 6)), Number(digits.slice(6, 8)));
+    if (!valid) {
+        throw new Error(`"${field}" is not a real calendar date: ${JSON.stringify(v)}. Use YYYY-MM-DD or YYYYMMDD, e.g. 20260801.`);
+    }
+    return digits;
 };
 // An exact recallNumber/eventId lookup can be for any date, so default the window to full
 // history instead of the usual rolling year -- cheap even though it looks wide, because
@@ -143,8 +158,12 @@ const lookupMode = Boolean(recallNumber || eventId);
 const reportDateFrom = normDate(
     input.reportDateFrom,
     lookupMode ? EARLIEST : compactDay(new Date(today.getTime() - 365 * 86400_000)),
+    'reportDateFrom',
 );
-const reportDateTo = normDate(input.reportDateTo, compactDay(today));
+const reportDateTo = normDate(input.reportDateTo, compactDay(today), 'reportDateTo');
+if (reportDateFrom > reportDateTo) {
+    throw new Error(`"reportDateFrom" (${reportDateFrom}) is after "reportDateTo" (${reportDateTo}) — the window is empty. Swap them.`);
+}
 
 // The FDA press-release RSS feed (see fetchPressReleases below) has none of the structured
 // fields openFDA's enforcement API has -- no classification, state/country, firm, NDC, etc,

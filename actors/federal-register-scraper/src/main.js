@@ -144,16 +144,34 @@ const today = new Date();
 // (`en-CA` formats as YYYY-MM-DD; the Actor base image ships full ICU.)
 const ET_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' });
 const etDay = (d) => ET_DAY.format(d);
-const normDate = (v, fallback) => {
-    const digits = String(v ?? '').replace(/[^0-9]/g, '');
-    if (digits.length !== 8) return fallback;
+// Round-trip through Date.UTC rather than just checking "8 digits": a digit-count-only check
+// (the pre-cycle-2315 version of this function) passed "99999999" and silently fell back to the
+// default window with no warning -- same for a calendar-impossible but well-formed-looking date
+// like "20260230". Date.UTC normalizes overflow (Feb 30 -> Mar 2) instead of rejecting it, so the
+// fix has to compare the normalized date back against what was asked for.
+const isValidYmd = (y, m, d) => {
+    if (!(m >= 1 && m <= 12)) return false;
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+};
+const normDate = (v, fallback, field) => {
+    if (v == null || v === '') return fallback;
+    const digits = String(v).replace(/[^0-9]/g, '');
+    const valid = digits.length === 8
+        && isValidYmd(Number(digits.slice(0, 4)), Number(digits.slice(4, 6)), Number(digits.slice(6, 8)));
+    if (!valid) {
+        throw new Error(`"${field}" is not a real calendar date: ${JSON.stringify(v)}. Use YYYY-MM-DD, e.g. 2026-08-01.`);
+    }
     return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
 };
 // Unlike the TED/USAspending archives, this feed is read as "what has just been published",
 // so the default window is the last 90 days rather than all history. The archive reaches back
 // to 1994-01-03 (verified with order=oldest) if the user widens it.
-const dateFrom = normDate(input.publicationDateFrom, etDay(new Date(today.getTime() - 90 * 86400_000)));
-const dateTo = normDate(input.publicationDateTo, etDay(today));
+const dateFrom = normDate(input.publicationDateFrom, etDay(new Date(today.getTime() - 90 * 86400_000)), 'publicationDateFrom');
+const dateTo = normDate(input.publicationDateTo, etDay(today), 'publicationDateTo');
+if (dateFrom > dateTo) {
+    throw new Error(`"publicationDateFrom" (${dateFrom}) is after "publicationDateTo" (${dateTo}) — the window is empty. Swap them.`);
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -358,8 +376,8 @@ const watchCriteria = {
     cfrTitle,
     cfrPart,
     // explicit-only, see above
-    publicationDateFrom: normDate(input.publicationDateFrom, null),
-    publicationDateTo: normDate(input.publicationDateTo, null),
+    publicationDateFrom: normDate(input.publicationDateFrom, null, 'publicationDateFrom'),
+    publicationDateTo: normDate(input.publicationDateTo, null, 'publicationDateTo'),
 };
 
 const watchMode = watchLabel.length > 0;

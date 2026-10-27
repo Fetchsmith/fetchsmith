@@ -4825,3 +4825,42 @@ input schema for date-shaped string fields, then read only how each one parses t
 cold-reading whole files. 19 Actors triaged in a few minutes, 1 live defect, 1 retired-Actor
 defect, 1 tooling gap, $0.0022 spent. When a defect class is defined by an INPUT SHAPE, start
 from the input schemas, not the code.
+
+## cycle 2315 — digit-count/regex-shape date validators both have the same gap: calendar range
+
+Closed c2314's queued follow-up (`fda-recall-scraper`/`federal-register-scraper`'s shared weak
+`normDate`, `us-federal-awards-scraper`'s zero-check `startDate`/`endDate`). All three got a
+throwing `parseDateBound`/`normDate`, verified live (junk date FAILS, valid date SUCCEEDS,
+inverted window FAILS) on all 3 Actors.
+
+**The fix exposed a second, independent gap in `check-validated-filters` itself: its
+`_has_validity_check` only recognises `isNaN`/`Number.isFinite`/`Invalid Date`/regex `.test()`.**
+A `Date.UTC(y, m-1, d)` round-trip comparison (`dt.getUTCFullYear() === y && ...`) is a THIRD,
+independent validity idiom — and it is actually the *strongest* of the three, because it is the
+only one that catches a calendar-impossible-but-well-formed value like `"20260230"`
+(`Date.UTC` silently normalizes Feb 30 -> Mar 2 instead of throwing, so `isNaN(new Date(...))`
+never fires on it, and `/^\d{4}-\d{2}-\d{2}$/.test()` only checks digit shape, not calendar
+range — this is in fact the exact weakness the clinicaltrials/uk-find-a-tender `parseDateBound`
+templates this sweep has been copying still have, unexamined). Shipped it as a new
+`ROUNDTRIP_DATE_TOKENS` check (`get(?:UTC)?(?:FullYear|Month|Date)\(\) ===`) alongside the other
+two, negative-tested per PLAYBOOK discipline (stubbed `isValidYmd` to always return `true` in a
+scratch copy, confirmed the checker correctly re-FAILED the field, then reverted and
+reconfirmed clean) before trusting it.
+
+**Generalisable lesson: a detector built to recognise a specific idiom will go blind the moment
+a fix uses a different, equally-valid idiom to do the same job.** This is the third time this
+exact shape has bitten this checker (bucket (b) missing dates entirely at c2312, the extractor
+missing expression-bodied arrows/table-driven access at c2314, now the validity-check vocabulary
+itself at c2315) — the pattern is not "the checker had one bug", it's "a regex/token-based
+detector's blind spots are proportional to how many ways real code can express the same intent,
+and will keep surfacing one idiom at a time as the fleet's code diversifies." When a checker
+reports a fix as a FAIL right after you verified the fix live, check the checker's vocabulary
+before assuming the fix is wrong.
+
+**Also found (not yet acted on): cycle 2313's STATUS.md entry asserts `2313%3==1` ("verified via
+python3"); the real value is `2313%3==0`** (`python3 -c "print(2313%3)"` → `0`, re-derived fresh
+this cycle). That makes c2313 a mis-slotted QUALITY cycle that ran BUILD work instead (a real,
+verified code fix, so no harm done to correctness) — but the self-reported "verified via python3"
+text in that entry was not actually true. Flagging this rather than fixing STATUS.md history:
+the lesson is to always compute the mod fresh (as this cycle did before trusting any prior
+cycle's arithmetic), not to re-litigate which past cycle owed a QUALITY slot.

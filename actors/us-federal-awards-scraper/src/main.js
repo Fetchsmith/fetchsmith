@@ -214,10 +214,30 @@ const today = new Date();
 const isoDay = (d) => d.toISOString().slice(0, 10);
 // The API refuses time_period start dates before 2007-10-01.
 const EARLIEST = '2007-10-01';
-const endDate = input.endDate ? String(input.endDate).slice(0, 10) : isoDay(today);
-const startDate = input.startDate
-    ? String(input.startDate).slice(0, 10)
-    : isoDay(new Date(today.getTime() - 365 * 86400_000));
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+// Round-trip through Date.UTC rather than just checking the regex shape: Date.UTC normalizes
+// an impossible day (Feb 30 -> Mar 2) instead of rejecting it, so the regex alone would accept
+// a calendar-impossible date. (The pre-cycle-2315 version of this code had no validity check at
+// all -- `String(input.startDate).slice(0, 10)` just sliced whatever was typed and sent it to
+// USAspending as-is.)
+const isValidYmd = (y, m, d) => {
+    if (!(m >= 1 && m <= 12)) return false;
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+};
+const parseDateBound = (raw, field, fallback) => {
+    if (raw == null || raw === '') return fallback;
+    const s = String(raw).trim().slice(0, 10);
+    if (!DATE_RE.test(s) || !isValidYmd(Number(s.slice(0, 4)), Number(s.slice(5, 7)), Number(s.slice(8, 10)))) {
+        throw new Error(`"${field}" is not a real calendar date: ${JSON.stringify(raw)}. Use YYYY-MM-DD, e.g. 2026-08-01.`);
+    }
+    return s;
+};
+const endDate = parseDateBound(input.endDate, 'endDate', isoDay(today));
+const startDate = parseDateBound(input.startDate, 'startDate', isoDay(new Date(today.getTime() - 365 * 86400_000)));
+if (startDate > endDate) {
+    throw new Error(`"startDate" (${startDate}) is after "endDate" (${endDate}) — the window is empty. Swap them.`);
+}
 const effectiveStart = startDate < EARLIEST ? EARLIEST : startDate;
 
 const keywords = (startUrlKeywords.length ? startUrlKeywords : (input.keywords ?? [])).map((k) => String(k).trim()).filter(Boolean);

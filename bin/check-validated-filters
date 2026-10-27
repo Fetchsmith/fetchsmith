@@ -25,11 +25,15 @@ Every filter field in an Actor's input schema falls into one of three buckets:
                         `new Date(junk)` is an Invalid Date, which is silently truthy/
                         NaN, so the filter bound was defeated instead of rejected).
                         PASS requires either a schema `pattern`, or runtime code that
-                        THROWS on an unparseable value (isNaN/Invalid Date/NaN check, or
-                        a regex `.test()` guard) -- found either inline or inside a named
-                        helper function the field's value is piped through (e.g.
-                        `parseDateBound()`). A date field with neither is FAILED loudly
-                        here instead of silently, which is the whole point.
+                        DETECTS an unparseable/impossible value (isNaN/Invalid Date/NaN
+                        check, a regex `.test()` guard, or a Date-roundtrip component
+                        comparison -- `getUTCFullYear()/getUTCMonth()/getUTCDate() ===`,
+                        added cycle 2315, the only one of the three that catches a
+                        calendar-impossible-but-well-formed value like "20260230") --
+                        found either inline or inside a named helper function the field's
+                        value is piped through (e.g. `parseDateBound()`). A date field
+                        with none of these is FAILED loudly here instead of silently,
+                        which is the whole point.
 
 For every (c) field this prints the evidence lines so a cycle can ask the two questions
 that matter:
@@ -91,6 +95,14 @@ FACET_TOKENS = re.compile(r'\bawait\b|fetch\(|httpGet|apiGet|probe', re.I)
 # --- bucket (d): date-shaped string fields (cycle 2314) ---------------------------
 ISO_DESC_RE = re.compile(r'YYYY-MM-DD|ISO[- ]?8601', re.I)
 NAN_TOKENS = re.compile(r'isNaN|Number\.isNaN|Invalid Date|isFinite', re.I)
+# A second, independent validity idiom (cycle 2315, fda-recall-scraper/federal-register-scraper):
+# construct a Date from the parsed y/m/d components and compare the getters back against what was
+# asked for. This is NOT weaker than isNaN/regex -- it is the only one of the three idioms in the
+# fleet that actually catches a calendar-impossible-but-well-formed date like "20260230" (Date.UTC
+# normalizes Feb 30 -> Mar 2 instead of throwing, so isNaN(new Date(...)) never fires on it, and a
+# plain `/^\d{4}-\d{2}-\d{2}$/.test()` only checks digit shape, not calendar range). Missing this
+# idiom made the first run after these two Actors were fixed report a false FAILED.
+ROUNDTRIP_DATE_TOKENS = re.compile(r'get(?:UTC)?(?:FullYear|Month|Date)\(\)\s*===')
 CAMEL_TOKEN_RE = re.compile(r'[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])')
 DATE_TOKENS = {'date', 'dates', 'since', 'until', 'before', 'after', 'from', 'to'}
 FUNC_DECL_RE = re.compile(r'function\s+([\w$]+)\s*\(')
@@ -166,7 +178,7 @@ def date_shaped_fields(slug):
 
 
 def _has_validity_check(text):
-    return bool(NAN_TOKENS.search(text) or '.test(' in text)
+    return bool(NAN_TOKENS.search(text) or '.test(' in text or ROUNDTRIP_DATE_TOKENS.search(text))
 
 
 def _mode(text):

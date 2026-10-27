@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2315 (BUILD slot, `2315%3==2`) -- closed c2314's precisely-queued lever: fixed
+      all 3 confirmed `check-validated-filters` gaps (`fda-recall-scraper`/
+      `federal-register-scraper`'s shared weak `normDate`, `us-federal-awards-scraper`'s
+      zero-check `startDate`/`endDate`), each verified live on 3 paths (junk date FAILS, valid
+      date SUCCEEDS, inverted window FAILS) -- 9/9 platform runs confirmed.**
+      Nothing fleet-wide due, inbox unchanged, services/site healthy, git clean and synced before
+      edits. Builds: `fda-recall-scraper` 0.1.80, `federal-register-scraper` 0.1.58,
+      `us-federal-awards-scraper` 0.1.84, all SUCCEEDED.
+      **Validity check uses a `Date.UTC(y,m-1,d)` round-trip comparison, not a digit-count or
+      regex-shape check** -- verified in `node` first that `Date.UTC` silently NORMALIZES an
+      impossible day (`2026-02-30` -> `2026-03-02`) instead of rejecting it, so neither a
+      digit-count check (the old bug) nor a strict `/^\d{4}-\d{2}-\d{2}$/` regex (what
+      `clinicaltrials-scraper`/`uk-find-a-tender-scraper`'s `parseDateBound` templates already
+      use, left unchanged -- flagged as a quieter unexamined gap in LEARNINGS) catches a
+      calendar-impossible but well-formed value. Also added the inverted-window guard
+      (`from > to` throws) to all 3, matching the fleet's `minScore > maxScore` wording -- none
+      of the 3 had one before.
+      **This broke `check-validated-filters`'s own detector (a 2nd, independent gap, found and
+      closed the same cycle):** `_has_validity_check()` only recognised
+      `isNaN`/`Number.isFinite`/`Invalid Date`/regex `.test()`, so the first re-run after the fix
+      still reported `fda-recall-scraper`/`federal-register-scraper` as FAILED (not
+      `us-federal-awards-scraper`, which happens to use a literal `.test()`). Added a 3rd
+      recognised idiom, `ROUNDTRIP_DATE_TOKENS`. Negative-tested per PLAYBOOK discipline (stubbed
+      `isValidYmd` to always-true in a scratch edit, confirmed the checker correctly re-FAILED,
+      reverted, reconfirmed clean via `git diff --stat`) before trusting it. Fleet re-run: **0
+      FAILED** (52 date-shaped fields).
+      Full writeup (incl. the generalisable "a token-based detector goes blind to idioms it
+      wasn't written for -- 3rd time this exact checker has hit this shape" lesson, and a
+      flagged-but-unactioned discrepancy in c2313's self-reported `cycle % 3` arithmetic) in
+      `notes/LEARNINGS.md` cycle-2315 section and `state/STATUS.md`.
+      `check-registry-fields`/`check-code-fields`/`check-meta-fields`/`check-pricing` all clean
+      after (0 drift, as expected). ~$0.015 spent (3 builds + 9 small capped runs), 0 new Actors,
+      revenue unchanged (48 users, `bkmk`/`rev` 0/0), no owner email warranted.
+      **This closes the date-validation bug-class sweep AND its `check-validated-filters`
+      follow-up fleet-wide. No specific next BUILD-slot lever queued for this axis -- do not
+      re-open without a new date-ish field or a new validator idiom entering the fleet.** Next
+      BUILD slot with nothing else queued: fall back to a fresh cold-read defect hunt (c2307-2309's
+      method, 3/3 real fixes) for a defect shape other than filter-blindness or date-validation
+      (both now exhausted) -- e.g. pagination edge cases or dedupe gaps.
+
 - [x] **DONE cycle 2313 (BUILD slot, `2313%3==1`) -- closed c2312's named follow-up: settled
       `hacker-news-scraper`, the one remaining unverified candidate in the date-validation sweep.
       It WAS defective -- silently narrows to zero instead of widening, the opposite direction
