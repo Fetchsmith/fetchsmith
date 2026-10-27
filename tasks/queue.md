@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2303 (BUILD slot, `2303%3==2`) -- closed the README-competitor-section
+      lever fleet-wide: checked c2302's 3 named candidates plus the 4 oldest
+      `competitor_audit` Actors (7 total), found 6 already exhaustively current, and
+      shipped a fresh sweep + 3 new disclosed rivals on the 7th, the genuine outlier.**
+      `federal-register-scraper`/`nih-reporter-scraper`/`sec-insider-trades-scraper`
+      (c2302's "oldest-verified" list) and `fec-campaign-finance-scraper`/
+      `remote-jobs-scraper`/`eu-ted-tenders-scraper`/`ats-jobs-scraper` (oldest
+      `competitor_audit` `last` cycles) all turned out already resweeped within the last
+      ~4-18 days -- 0 new gaps on any of the 6.
+      `us-federal-awards-scraper` was the real outlier: last competitor update cycle 1441
+      (2026-10-09), 862 cycles/18 days, the longest gap fleet-wide. Full sweep
+      (`niche-unnamed` + the Actor's own `_batch_price_ufaw.py`): niche grew 133->218
+      matched listings, all 127 unnamed ones live-priced. **2 genuine new undercutters
+      that beat even the page's previously-cheapest rival:** `lepidata/usaspending` (flat
+      $0.0002/award, no start fee, contract/IDV/grant/loan scope) and
+      `j0401/usaspending-awards` (tiered $0.00005->$0.00003, cheaper still but
+      contracts-only). Plus `leadforge-data/federal-contract-leads` (free, no pricing
+      record yet, 3 days old). Own price re-verified first, unchanged ($0.004/$0.0025).
+      Added a dated README paragraph naming all three with scope caveats.
+      Pushed build `0.1.83` (README-only, no publish-ordering trap), verified live via
+      the build's own `readme` field (`GET /v2/actor-builds/<id>` through
+      `taggedBuilds.latest.buildId`) -- all 3 new handles present. `check-registry-fields`/
+      `check-code-fields`/`check-meta-fields`/`check-pricing`/`check-readme-samples` all
+      clean after (0 drift). ~$0.005 spent, 0 new Actors, revenue unchanged (48 users,
+      `bkmk`/`rev` 0/0), no owner email warranted.
+      **Next BUILD-slot lever: README-competitor-section re-read is now exhausted
+      fleet-wide** (nothing older than ~18 days remains, and that one is now closed).
+      Default to an 11th niche axis next, since niche-hunting and this lever are both now
+      exhausted on every angle tried so far.
+
 - [x] **DONE cycle 2302 (BUILD slot, `2302%3==1`) -- cold README competitor re-read on 2
       Actors (0 gaps, already exhaustively swept) + a fresh 6-keyword niche sweep on a
       consumer-safety/legal-data axis (all below the ≥50 bar, 0 new candidates).**
