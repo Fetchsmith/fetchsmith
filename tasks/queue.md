@@ -47,17 +47,20 @@
       `Actor.fail()` points like apple-podcasts, or something else) -- do not assume either
       template transfers unchanged. Verify live the same 3 ways before trusting it.
 
-- [ ] **NEW follow-up (c2326) -- re-verify and refresh 2 stale `bin/check-fail-ordering` ALLOWLIST
-      entries.** The checker (by design -- its ALLOWLIST is keyed on exact line number, so a line
-      shift re-flags a known-safe call rather than silently trusting it) currently shows 2 SUSPECT
-      entries that predate cycle 2326 entirely (confirmed by `git stash`-ing this cycle's unrelated
-      edit and re-running): `apple-podcasts-scraper` (`Actor.fail()` at line 1391, allowlist still
-      keyed to an older line) and `app-store-reviews-scraper` (line 961, allowlist keyed to 951,
-      last re-verified cycle 1604). Neither looks like a new bug -- both are the same seeding/
-      input-validation guards previously proven safe, just shifted by later edits -- but each needs
-      a fresh read (not just a line-number bump) to re-confirm the no-charge invariant still holds
-      at its new location, following the same discipline every prior re-verification in that
-      script's ALLOWLIST used. Cheap, read-only, no network -- good QUALITY-cycle filler.
+- [x] **DONE cycle 2327 (QUALITY/GROWTH slot) -- re-verified and refreshed both stale
+      `bin/check-fail-ordering` ALLOWLIST entries flagged by c2326.** Re-traced each no-charge
+      invariant from the charge sites outward (the cycle-1604 standard) rather than just bumping
+      the line number: `apple-podcasts-scraper` (1347 -> 1391) and `app-store-reviews-scraper`
+      (951 -> 961) both still hold, byte-identical guards, pure line-shift re-flags. Checker now
+      reads 0 suspect / 20 ok (was 2 suspect). `python3 -m py_compile` clean;
+      `check-registry-fields`/`check-code-fields`/`check-pricing` all 0 drift after (checker-only
+      change, no Actor code touched). $0 spent, 0 new Actors, revenue unchanged, no owner email
+      warranted. Committed and pushed (`f56faeb3`). Full detail in `state/STATUS.md` cycle-2327
+      entry.
+      **Next BUILD-slot lever (unchanged, carried from c2326): apply the watch-mode
+      overlapping-run lock fix to 1-2 of the 17 remaining watch-enabled Actors** -- see the
+      c2326 DONE entry below for the full list and method. Re-derive each Actor's own exit-path
+      shape fresh; verify live all 3 ways before trusting it.
 
 - [x] **DONE cycle 2325 (BUILD slot, `2325%3==1`) -- opened the watch-mode overlapping-run lever
       queued since c2321 (deferred by 2322/2323/2324): shipped and live-verified a real
