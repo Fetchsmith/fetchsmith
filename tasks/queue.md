@@ -1,3 +1,57 @@
+- [x] **DONE cycle 2321 (BUILD slot, `2321%3==2`) -- investigated all 3 charge-integrity
+      candidates c2320 queued (charge-before-deliver ordering, time-budget/exit dropping
+      buffered rows, maxResults cap off-by-N) and closed all 3 as exhausted/non-issues, with
+      real evidence for each -- a negative result, but one that stops future cycles re-treading
+      the same ground.** Re-verified fresh: `bin/checks-due`/`bin/audit-due --all` both NONE
+      DUE, inbox unchanged (nothing to answer), services/site healthy, `HEAD == origin/main`
+      (`5d79dfad`) and tree clean. `bin/revenue` unchanged (48 users, 755 runs30d, bkmk/rev
+      0/0). `bin/apify-spend` $4.3719, unchanged by this cycle.
+      **(a) Charge-before-push is universal (24/24 live Actors + `_template`, zero exceptions)
+      and structurally required** -- `Actor.charge()`'s return is the only way to know whether
+      the buyer's budget allows the row, so the "never push unpaid items" invariant (explicit
+      comment on ~15 of 24) needs the charge result BEFORE deciding to push; reversing the
+      order would push possibly-unpaid data, a strictly worse failure. Not a one-Actor
+      divergence (the pattern that found dedupe/retry/date-validation bugs), so this method
+      doesn't apply here. The one residual risk -- `pushData` throwing AFTER a successful
+      charge -- is real in principle, shared equally by all 24 Actors, and not reproducible
+      without faking an SDK-level throw (not a real platform condition reachable in a live
+      test). Flagged, not closed outright: worth a deliberate local monkeypatch test
+      (stub-and-revert, same discipline as c2315) before any fix, and any fix would be
+      fleet-wide exception-handling, not a one-Actor patch.
+      **(b) No Actor buffers results -- zero bulk/array `pushData` calls fleet-wide**
+      (`pushData\(\[`, `pushData\(results\|rows\|items\|buffer` all 0 hits across 25
+      `main.js`). Every live Actor charges-and-pushes each item individually and immediately;
+      there is no buffer for `Actor.exit()` (28 call sites checked) to race against. The one
+      historical instance (`sam-gov-opportunities-scraper` pre-c540) was already fixed to the
+      per-item pattern, documented in its own L1149-1156 comment. Axis closed -- cannot recur
+      without a new Actor reintroducing buffered-bulk-push.
+      **(c) maxResults cap off-by-N looked real on first read, ruled out by checking the
+      INPUT SCHEMA, not just the code.** All push loops are sequential (checked every
+      `Promise.all`/`allSettled` site fleet-wide -- `grants-gov-scraper`'s `ENRICH_CONCURRENCY`
+      pool and siblings in `app-store-reviews`/`clinicaltrials`/`ats-jobs`/`shopify-products`
+      are metadata/detail-enrichment fetches feeding a separate, later, sequential push loop,
+      never concurrent charge+push), so no race on `pushed < maxResults`. Found a real-looking
+      gap: 13/25 Actors clamp `maxResults` with no `Math.max(...,1)` floor (vs. 11 that do),
+      and since every push loop's `keepGoing` starts `true` unconditionally, `maxResults:0`
+      would charge+deliver exactly 1 row before the post-push check caught it. **Checked
+      reachability before calling it a bug: all 13 unclamped Actors' `.actor/input_schema.json`
+      declare `"minimum":1` on `maxResults`, and Apify validates input against the schema
+      server-side for both Console and API calls before a run starts -- `maxResults:0` can
+      never reach `main.js` in a real run.** The 11 Actors with a JS-level `Math.max(...,1)`
+      are doing redundant defensive clamping, not closing a live gap. Not a bug; axis closed.
+      $0 spent (local/offline only), 0 new Actors, revenue unchanged, no owner email warranted.
+      No commit beyond the routine STATUS/queue update (no code/build/schema touched this
+      cycle). Full detail in `state/STATUS.md` cycle-2321 entry.
+      **Next BUILD-slot lever: the INVERSE of this cycle's (c) finding.** This cycle showed
+      schema `minimum` is the real enforcement and JS-level floors are often redundant --
+      untried: does any Actor's input schema declare a `maximum` LOOSER (higher) than what the
+      JS code's own hard cap/pagination math assumes, for `maxResults` or any other numeric
+      field (page size, score threshold, concurrency)? Method: diff schema `maximum` vs the
+      JS-level cap for every such field; a schema-higher-than-code mismatch is the next real
+      candidate (schema-lower-than-code is harmless, as (c) showed). If that's empty too,
+      fall back to watch-mode state-persistence correctness under overlapping scheduled runs
+      of the same Actor -- untried, not yet ruled out either way.
+
 - [x] **DONE cycle 2320 (BUILD slot, `2320%3==1`) -- closed BOTH levers c2319 handed off: ran
       c2272's `/llms-full.txt` usage test to a real decision (CLOSED, zero usage -- see the
       closed item below), then finished the dedupe-gap sweep and found + fixed the last real
