@@ -190,6 +190,7 @@ async function fetchPublicationInfo(origin) {
   if (pubInfoCache.has(origin)) return pubInfoCache.get(origin);
   let info = EMPTY_PUB_INFO;
   if (remainingMs() <= PUB_INFO_MAX_MS + MIN_REQUEST_MS) {
+    pubInfoUnavailable.add(origin);
     log.warning(`${origin}: skipping the publication-info lookup — not enough run time left to spend on it. The publicationXxx fields will be null for this publication's rows; post content itself is unaffected.`);
     pubInfoCache.set(origin, info);
     return info;
@@ -217,8 +218,12 @@ async function fetchPublicationInfo(origin) {
         ? JSON.parse(JSON.parse(`"${inlineMatch[1]}"`))?.pub
         : null;
     if (pub) info = mapPublicationInfo(pub);
-    else log.warning(`Publication info not found in the homepage of ${origin} — returning null fields.`);
+    else {
+      pubInfoUnavailable.add(origin);
+      log.warning(`Publication info not found in the homepage of ${origin} — returning null fields.`);
+    }
   } catch (e) {
+    pubInfoUnavailable.add(origin);
     log.warning(`Publication info failed for ${origin}: ${e.message} — returning null fields.`);
   }
   pubInfoCache.set(origin, info);
@@ -527,6 +532,10 @@ async function resolveCategoryIds(wanted) {
   try {
     cats = await getJson('https://substack.com/api/v1/categories');
   } catch (e) {
+    // Not the same thing as a bad slug: both end up with zero resolved categories, but the old
+    // single `unknownCategories` flag told the buyer to go find a valid slug, which cannot help
+    // when substack.com/api/v1/categories itself is what failed. Re-running is the real remedy.
+    categoryListFailed = e.message;
     log.warning(`Could not load Substack category list: ${e.message}`);
     return [];
   }
@@ -545,7 +554,10 @@ async function resolveCategoryIds(wanted) {
   for (const w of wanted) {
     const hit = bySlug.get(w.toLowerCase());
     if (hit) out.push({ id: hit.id, slug: hit.slug ?? String(hit.id) });
-    else log.warning(`Unknown category "${w}" — skipped. Valid slugs come from substack.com/api/v1/categories (e.g. technology, business, finance, culture).`);
+    else {
+      unknownCategorySlugs.push(w);
+      log.warning(`Unknown category "${w}" — skipped. Valid slugs come from substack.com/api/v1/categories (e.g. technology, business, finance, culture).`);
+    }
   }
   return out;
 }
@@ -565,6 +577,22 @@ let discoverTypeSkipped = 0;
 // 25-publication page with more:true, so an empty `found` with no type-skips means the leaderboard
 // REQUEST failed, not that the category is thin. Record the failure so the message can say "re-run".
 const discoverFetchFailures = [];
+// cycle 2348: the three trackers below exist because every discovery-path problem used to be
+// reported ONLY through the two "nothing to do" branches, i.e. only when it took down the WHOLE
+// run. A PARTIAL miss — one typo'd slug among several good ones, one category's leaderboard
+// failing, or the time budget cutting the category walk short — left the run delivering real rows,
+// charging in full, and saying nothing at all about the category the buyer never got.
+// `unknownCategorySlugs` is distinct from the existing `unknownCategories` flag, which is true only
+// when EVERY requested slug failed to resolve.
+const unknownCategorySlugs = [];
+// Set to the error message when substack.com/api/v1/categories itself could not be read, so the
+// zero-row advice can say "re-run" instead of the misleading "use a valid slug".
+let categoryListFailed = null;
+// Categories that resolved fine but were never walked because timeBudgetOk() broke the loop.
+let categoriesNotScanned = 0;
+// Origins whose opt-in publication-info lookup was skipped (thin budget) or failed: those rows ship
+// with every publicationXxx field null even though the buyer explicitly asked for them.
+const pubInfoUnavailable = new Set();
 
 // Shared by both zero-row paths below (leaderboardOnly and post scraping) so their advice can never
 // drift apart, which is how the stale "raise maxPublicationsPerCategory" survived in one of them.
@@ -576,6 +604,37 @@ const noDiscoveryWhy = () => (discoverFetchFailures.length
   : `the "${leaderboardTier}" leaderboard returned no publications for ${discoverCategories.join(', ')}`
     + ' — try leaderboardTier="all", or a different category slug from substack.com/api/v1/categories'
     + ' (raising maxPublicationsPerCategory cannot help: the leaderboard was already read to its last page)');
+
+// The PARTIAL-miss counterpart of noDiscoveryWhy(), shared by both delivering branches
+// (leaderboardOnly and post scraping) for the same anti-drift reason. Each cause here is one a run
+// can hit while still returning rows, so each must be listed independently rather than picked:
+// a typo'd slug and a failed leaderboard are different problems with different remedies, and the
+// buyer paid for both categories. `discoverTypeSkipped` is deliberately NOT here — it only moves
+// when discoverType !== 'all', i.e. the buyer asked for that filtering, so reporting it on an
+// otherwise healthy run would be noise, not a degraded result.
+const partialDiscoveryNotes = () => {
+  const notes = [];
+  if (unknownCategorySlugs.length) {
+    notes.push(
+      `${unknownCategorySlugs.length} of the ${discoverCategories.length} discoverCategories you listed`
+      + ` is not a Substack category and was skipped, so nothing from it is in this result`
+      + ` (${unknownCategorySlugs.join(', ')}) — valid slugs come from substack.com/api/v1/categories`,
+    );
+  }
+  if (discoverFetchFailures.length) {
+    notes.push(
+      `the leaderboard request failed for ${discoverFetchFailures.join('; ')}, so no publications were`
+      + ' read from it — this is normally transient, re-run to pick that category up',
+    );
+  }
+  if (categoriesNotScanned) {
+    notes.push(
+      `${categoriesNotScanned} of the ${discoverCategories.length} categories were never opened —`
+      + ' the run ran out of time before reaching them; use fewer discoverCategories per run',
+    );
+  }
+  return notes;
+};
 
 async function discoverPublications(cat) {
   const found = [];
@@ -659,6 +718,7 @@ for (const raw of rawPostUrls) {
   else if (t) publicationTargets.push(t);
 }
 let unknownCategories = false;
+let categoriesScanned = 0;
 const leaderboardEntries = [];
 if (discoverCategories.length) {
   // Verified live cycle 839 across 3 categories at every page depth (culture/technology/humor,
@@ -677,12 +737,16 @@ if (discoverCategories.length) {
   }
   const cats = await resolveCategoryIds(discoverCategories);
   unknownCategories = cats.length === 0;
-  for (const cat of cats) {
-    if (!timeBudgetOk()) break;
+  for (const [i, cat] of cats.entries()) {
+    // A break here used to be invisible: the leaderboardOnly message below counted the categories
+    // the buyer ASKED for, not the ones actually walked, so a budget-truncated run claimed full
+    // coverage of categories it never opened.
+    if (!timeBudgetOk()) { categoriesNotScanned = cats.length - i; break; }
     const { found, entries } = await discoverPublications(cat);
     publicationTargets.push(...found);
     leaderboardEntries.push(...entries);
   }
+  categoriesScanned = cats.length - categoriesNotScanned;
 }
 
 if (leaderboardOnly) {
@@ -694,20 +758,41 @@ if (leaderboardOnly) {
     log.warning('leaderboardOnly is on — audienceFilter/contentType/publishedAfter/publishedBefore/minReactionCount/minCommentCount/minRestackCount/minWordCount/maxWordCount only apply to post scraping and are ignored for leaderboard rows.');
   }
   if (!leaderboardEntries.length) {
-    const why = unknownCategories
-      ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
-      : discoverTypeSkipped
-        ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help)`
-        : discoverCategories.length
-          ? noDiscoveryWhy()
-          : 'leaderboardOnly requires discoverCategories — publicationUrls/postUrls are not used in this mode';
+    const why = categoryListFailed
+      ? `Substack's category list could not be read (${categoryListFailed}), so no discoverCategories slug could be resolved — this is transient, re-run the Actor (the slugs you passed may be perfectly valid)`
+      : unknownCategories
+        ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
+          : discoverTypeSkipped
+            ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help)`
+            : discoverCategories.length
+              ? noDiscoveryWhy()
+              : 'leaderboardOnly requires discoverCategories — publicationUrls/postUrls are not used in this mode';
     log.warning(`Nothing to do — ${why}.`);
     await Actor.setStatusMessage(`No items returned — ${why}.`);
   } else {
+    let rowsLeft = false;
     for (const e of leaderboardEntries) {
-      if (!(await pushResult(mapLeaderboardEntry(e), 'leaderboard-row'))) break;
+      if (!(await pushResult(mapLeaderboardEntry(e), 'leaderboard-row'))) {
+        // pushResult() returns false on the maxResults cap, on eventChargeLimitReached, and on a
+        // charge that could not be made at all — all three truncate the leaderboard silently.
+        rowsLeft = pushed < leaderboardEntries.length;
+        break;
+      }
     }
-    await Actor.setStatusMessage(`Pushed ${pushed} leaderboard row(s) across ${discoverCategories.length} categor${discoverCategories.length === 1 ? 'y' : 'ies'}.`);
+    // Count what was actually walked, not what was asked for: a typo'd slug, a failed leaderboard
+    // request or a time-budget break all leave categoriesScanned below discoverCategories.length.
+    const notes = partialDiscoveryNotes();
+    if (rowsLeft) {
+      notes.push(
+        pushed >= maxResults
+          ? `stopped at your maxResults cap (${maxResults}) — ${leaderboardEntries.length - pushed} more leaderboard row(s) were discovered but not returned; raise maxResults to get them`
+          : `stopped early: the run could not charge for further rows (pay-per-event budget reached) — ${leaderboardEntries.length - pushed} discovered row(s) were not returned`,
+      );
+    }
+    await Actor.setStatusMessage(
+      `Pushed ${pushed} leaderboard row(s) across ${categoriesScanned} categor${categoriesScanned === 1 ? 'y' : 'ies'}.`
+      + (notes.length ? ` NOTE — this result is incomplete: ${notes.join('; ')}.` : ''),
+    );
   }
   await Actor.exit();
 }
@@ -748,27 +833,36 @@ const depthCapped = [];
 const profileRedirected = [];
 
 if (!publicationTargets.length && !postTargets.length) {
-  const why = unknownCategories
-    ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
-    : discoverTypeSkipped
-      ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help); use contentType="podcast" if you want podcast episodes rather than podcast-type publications`
-      : discoverCategories.length
-        ? noDiscoveryWhy()
-        : 'no publicationUrls, postUrls or discoverCategories were provided';
+  const why = categoryListFailed
+    ? `Substack's category list could not be read (${categoryListFailed}), so no discoverCategories slug could be resolved — this is transient, re-run the Actor (the slugs you passed may be perfectly valid)`
+    : unknownCategories
+      ? 'none of the discoverCategories matched a Substack category — use a slug from substack.com/api/v1/categories (e.g. technology, business, finance)'
+      : discoverTypeSkipped
+        ? `discoverType="${discoverType}" dropped every publication on the leaderboard(s) (${discoverTypeSkipped} in total) — Substack's category leaderboards are almost entirely "newsletter" publications, so set discoverType="all" (raising maxPublicationsPerCategory will not help); use contentType="podcast" if you want podcast episodes rather than podcast-type publications`
+        : discoverCategories.length
+          ? noDiscoveryWhy()
+          : 'no publicationUrls, postUrls or discoverCategories were provided';
   log.warning(`Nothing to do — ${why}.`);
   await Actor.setStatusMessage(`No items returned — ${why}.`);
 } else {
-  for (const t of postTargets) {
-    if (!keepGoing) break;
+  // Targets the loops below never even attempted because keepGoing went false (maxResults cap or
+  // the pay-per-event budget). Previously invisible: those publications land in none of
+  // errored/empty/filtered, so a 10-publication run truncated at publication 3 reported only on
+  // the 3 it reached and looked complete.
+  let unreachedTargets = 0;
+  for (const [i, t] of postTargets.entries()) {
+    if (!keepGoing) { unreachedTargets += postTargets.length - i; break; }
     const label = t.origin && t.postSlug ? `${t.origin}/p/${t.postSlug}` : t.origin;
     const detail = await fetchDetail(t.origin, t.postSlug);
     if (!detail) { errored.push(label); continue; }
     const pushedBefore = pushed;
-    if (!(await handlePost(detail, t.origin, detail))) break;
+    // Same accounting as the guard above — this break skips the remaining targets too, and
+    // bypasses the guard that would otherwise have counted them.
+    if (!(await handlePost(detail, t.origin, detail))) { unreachedTargets += postTargets.length - i - 1; break; }
     if (pushed === pushedBefore) filtered.push(label);
   }
-  for (const t of publicationTargets) {
-    if (!keepGoing) break;
+  for (const [i, t] of publicationTargets.entries()) {
+    if (!keepGoing) { unreachedTargets += publicationTargets.length - i; break; }
     const result = await scrapePublication(t.origin);
     // profileRedirected is more specific than a generic error — don't also report it there,
     // same dedup rule as depthCapped vs filtered (avoid two causes giving different advice).
@@ -780,6 +874,15 @@ if (!publicationTargets.length && !postTargets.length) {
   const timeBudgetNote = timeBudgetExceeded
     ? 'stopped early, approaching the run timeout — narrow publicationUrls/discoverCategories or lower maxPostsPerPublication/maxPublicationsPerCategory to get a complete run'
     : null;
+  // keepGoing also goes false on a timeout, but that already has its own note above — only report
+  // the cap/charge causes here so a timed-out run isn't blamed on maxResults it never reached.
+  const truncationNote = (keepGoing || timeBudgetExceeded)
+    ? null
+    : pushed >= maxResults
+      ? `stopped at your maxResults cap (${maxResults})${unreachedTargets ? `, leaving ${unreachedTargets} of the publication(s)/post(s) you asked for completely unscraped` : ''} — raise maxResults for a complete result`
+      : `stopped early: the run could not charge for further results (pay-per-event budget reached)${unreachedTargets ? `, leaving ${unreachedTargets} of the publication(s)/post(s) you asked for completely unscraped` : ''} — raise the Actor's spend limit for a complete result`;
+  // Discovery problems that left the run still delivering rows (partial, not total, failures).
+  const discoveryNotes = partialDiscoveryNotes();
   if (pushed === 0 && (publicationTargets.length || postTargets.length)) {
     // These causes are NOT mutually exclusive — e.g. the time budget can run out partway through
     // a publication whose posts seen so far were all filtered out, or one target can error while
@@ -790,15 +893,26 @@ if (!publicationTargets.length && !postTargets.length) {
     // still see 0 rows, since the real fix is widening the filter).
     const causes = [];
     if (timeBudgetNote) causes.push(timeBudgetNote);
+    if (truncationNote) causes.push(truncationNote);
+    causes.push(...discoveryNotes);
     if (profileRedirected.length) causes.push(`${profileRedirected.join(', ')} redirected to a Substack profile page instead of the archive — pass the exact custom domain or "<handle>.substack.com" homepage URL instead of the bare handle`);
     if (errored.length) causes.push(`the request failed for: ${errored.join(', ')} (see log for the error — check the publication/post URL is correct)`);
     if (filtered.length) causes.push(`every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`);
     if (depthCapped.length) causes.push(`hit maxPostsPerPublication (${maxPostsPerPublication}) for: ${depthCapped.join(', ')} before finding a match — the cap counts posts scanned before filters, so raise it to search deeper`);
     if (empty.length) causes.push(`no posts were found for: ${empty.join(', ')} — the publication may be empty, private, or the URL/handle is wrong`);
     await Actor.setStatusMessage(`No items returned — ${causes.join('; ')}.`);
-  } else if (errored.length || empty.length || filtered.length || depthCapped.length || profileRedirected.length || timeBudgetNote || postsWithCommentsWithheld) {
+  } else if (errored.length || empty.length || filtered.length || depthCapped.length || profileRedirected.length || timeBudgetNote || postsWithCommentsWithheld || truncationNote || discoveryNotes.length || pubInfoUnavailable.size) {
     const notes = [];
     if (timeBudgetNote) notes.push(timeBudgetNote);
+    if (truncationNote) notes.push(truncationNote);
+    notes.push(...discoveryNotes);
+    if (pubInfoUnavailable.size) {
+      notes.push(
+        `the publication profile lookup you asked for (includePublicationInfo) could not be read for`
+        + ` ${[...pubInfoUnavailable].join(', ')}, so every publicationXxx field is null on those rows`
+        + ' (the post content itself is unaffected) — re-run, or set includePublicationInfo:false if you do not need it',
+      );
+    }
     if (postsWithCommentsWithheld) {
       notes.push(
         `Substack withheld the comment section on ${postsWithCommentsWithheld} subscriber-only post(s)`
