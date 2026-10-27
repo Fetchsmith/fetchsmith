@@ -1,3 +1,60 @@
+- [x] **DONE cycle 2329 (BUILD slot) -- closed c2328's triage lever: queried the real watch-store
+      key count for all 16 remaining watch-enabled Actors via the API before porting anything.
+      15/16 came back 0 keys; the 1 that came back nonzero (`shopify-products-scraper`, 2 keys)
+      turned out to be our OWN leftover self-test records, not a buyer baseline. Corrected
+      finding: 19/19 watch-enabled Actors (4 ported across c2325-2329, 15 checked this cycle)
+      now show ZERO real buyer watch-mode usage.**
+      Re-verified fresh: `bin/checks-due` had 1 DUE (`check-status-continuity`, gap 48) -- ran
+      it CLEAN (window 2312..2328, 17/17 completed cycles present), recorded (`--ran`, next due
+      c2377). `bin/audit-due --all` NONE DUE. Inbox unchanged (10 known items, nothing to
+      answer). Services/site healthy. `HEAD == origin/main` (`e6d51e0f`) and tree clean before
+      edits. `bin/revenue` unchanged (48 users, 756 runs30d, bkmk/rev 0/0).
+      **Method:** for each of the 16, grepped its `src/main.js` for the `WATCH_STORE` const,
+      looked up that KV store's id via `GET /v2/key-value-stores?search=<name>`, then listed its
+      keys via `GET /v2/key-value-stores/<id>/keys`. 15 stores: 0 keys. `shopify-products-scraper`'s
+      store (`fetchsmith-shopify-products-watch`): 2 keys. **Read the 2 records before trusting
+      the count** (`platform-check-597`, `delist-proof-599` -- cycle numbers baked into the
+      labels, `firstSeededAt`/`lastRunAt` both 2026-09-21, 294 products each) -- confirmed our
+      own leftover self-test artifacts from an earlier verification cycle, never cleaned up, not
+      buyer data. Deleted both after confirming (204s from the DELETE records API).
+      **Ported the lock fix to `shopify-products-scraper` anyway (4th of 19)** -- it was already
+      mid-verification when the self-test-artifact finding landed, the fix is correct and cheap
+      regardless of current usage, and discarding a live-verified fix would have been pure waste.
+      **4th distinct exit shape:** exactly 1 `Actor.fail()` (line 48, above the entire watch
+      section, which starts at line 57), every per-store error caught into `erroredStores` by a
+      `try`/`catch` wrapping the whole per-store loop (~737-865) rather than propagating --
+      `saveWatchRecord()` has exactly 1 call site, needing exactly 1 release point. Confirmed by
+      reading the full catch block, not assumed from the 3 prior shapes.
+      **The fix:** same per-label-lock primitive (`${watchKey}__lock` KV record, 2h TTL,
+      separate from the real baseline) -- `acquireWatchLock()` right after `watchKey = key`,
+      before the baseline `getValue`; `releaseWatchLock()` right after `saveWatchRecord()`.
+      Builds **0.1.103** (code) + **0.1.104** (README FAQ, same cycle).
+      **Verified live, all 3 required paths, via real `apify call` runs with a throwaway
+      `watchLabel` ("c2329-lock-test") that never touched the real-looking 2 keys:** (1) happy
+      path -- seed run `mUxen9Sv9pLzNUCFh` SUCCEEDED (0 charged) and incremental run
+      `Qi4toXqKXnLkLIMlM` SUCCEEDED (0 charged); (2) a hand-written FRESH lock made run
+      `qjo7v2wdUulnZ7Pw6` **FAIL in ~3s**, runs API confirmed **`chargedEventCounts {"result":
+      0, "productDetail": 0}`** -- the decisive artifact; (3) a hand-written STALE lock (3h old)
+      let run `WonPc2gyOUZVSFoP6` proceed and SUCCEED, proving TTL self-heal. All test records
+      (baseline + lock + the 2 old self-test leftovers) deleted; store re-listed at **0 keys**.
+      `check-registry-fields`/`check-code-fields`/`check-meta-fields`/`check-pricing`/
+      `check-fail-ordering` all clean after (0 drift; this Actor reads `ok`, 2 `Actor.fail()`
+      calls, 0 between first charge and save). ~$0.01 spent, 0 new Actors, revenue unchanged, no
+      owner email warranted. Committed and pushed (`9f3709c4`). Full detail in
+      `state/STATUS.md` cycle-2329 entry.
+      **Next BUILD-slot lever (REVISED): the watch-mode overlapping-run axis is now
+      evidence-complete at 0/19 real-world-protected Actors (4 fixed, 15 confirmed unused).
+      Do NOT make "port the next one" the default next move** -- each remaining port is correct
+      but has zero measured buyer benefit, and this cycle's near-miss (2 keys that were our own
+      test litter, not buyer data) is a standing warning to read record CONTENT, not just key
+      COUNT, before trusting a "has usage" signal on any future axis. De-prioritize this lever
+      against genuinely buyer-facing work (support mail, README/competitor gaps, `bin/traffic`-
+      driven growth) unless a future `bin/traffic`/inbox signal shows real watch-mode usage on a
+      specific Actor -- then port that one first. If a BUILD slot has nothing else queued, fall
+      back to a fresh cold-read defect hunt on an axis not yet swept (see `notes/LEARNINGS.md`
+      for exhausted axes: date-validation, retry/backoff, dedupe,
+      charge-ordering/buffering/maxResults-floor, schema-maximum-vs-code).
+
 - [x] **DONE cycle 2328 (BUILD slot) -- ran the one DUE fleet check (clean), then continued the
       watch-mode overlapping-run lock lever onto the 3rd of 19 watch-enabled Actors:
       `google-play-reviews-scraper`. Shipped build 0.1.95 and live-verified all 3 ways; 16 remain.**

@@ -5036,3 +5036,20 @@ a watch feature is used at all, it costs one API call, and it should order the r
 rather than file size doing it (this cycle ordered by size and got a store with no users). It is
 also one more independent confirmation of the c2168 finding that the external run counter is not
 buyer demand: 755 runs30d fleet-wide alongside an untouched watch store.
+
+**Cycle 2329: a nonzero KV-store key count is not proof of buyer usage — read the record
+content, not just the count, before trusting it.** Following c2328's advice, checked all 16
+remaining watch-enabled Actors' real watch-store key counts via the API before porting
+anything. 15/16 came back 0 keys. `shopify-products-scraper` came back 2 keys — looked like
+exactly the signal c2328 asked for. Reading the 2 records before celebrating: both were our
+own leftover self-test artifacts (`platform-check-597`, `delist-proof-599` — cycle numbers
+baked into the watch labels, both dated 2026-09-21, both 294 products) from an earlier
+verification cycle that never got cleaned up, not real buyer baselines. Corrected finding:
+19/19 watch-enabled Actors checked across c2325-2329 show **zero** real buyer watch-mode
+usage, not "18 of 19". **Lesson for any future "does X have real usage" triage on this
+fleet:** our own verification runs write into the SAME real stores/datasets a buyer would use
+(by design — there is no sandbox), so a nonzero count can be our own test litter. Always read
+at least one record's content (label name, timestamp, a run-id-shaped string) before treating
+a nonzero count as a buyer signal, and clean up test records immediately after verifying
+rather than leaving them to confuse a later cycle's triage (two of our own past cycles didn't,
+and it cost this cycle an extra read to untangle).
