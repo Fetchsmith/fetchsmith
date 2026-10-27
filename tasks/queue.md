@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2317 (BUILD slot, `2317%3==1`) -- ran c2316's handed-off retry/backoff cold-read
+      lever and found a real gap: `website-screenshot-scraper` had ZERO retries anywhere, the only
+      live Actor in the fleet with none.** Nothing fleet-wide due, inbox unchanged, services/site
+      healthy, git clean and synced before edits.
+      **Fix:** added `renderWithRetry()` -- retries exactly once, only for plausibly-transient
+      error shapes (`Timeout...exceeded`, `ERR_CONNECTION_RESET/CLOSED`, `ERR_EMPTY_RESPONSE`,
+      `ERR_HTTP2_PROTOCOL_ERROR`, `ERR_TIMED_OUT`, `ERR_NETWORK_CHANGED`,
+      `ERR_SOCKET_NOT_CONNECTED`), deliberately NOT retrying DNS failure/connection
+      refused/bad-cert (same outcome on attempt 2, would just double compute cost). Build
+      **0.1.31**, wired into both `captureOne` and `compareOne` (per-side).
+      **Verified live on the platform (no local headless browser runs, per CLAUDE.md rule 7):**
+      `https://example.com` -> SUCCEEDED in 1 attempt (happy path unchanged);
+      `http://10.255.255.1/` -> `ERR_CONNECTION_REFUSED`, correctly NOT retried (~2s, 0 extra
+      cost); `http://192.0.2.1/` (TEST-NET-1, silently dropped) -> real 30s navigation Timeout,
+      retried once (logged), timed out again, run SUCCEEDED with 1 clean uncharged error row --
+      bounded to exactly 2 attempts, confirmed from the actual log timestamps. `httpbin.org
+      /delay/N` (caps at 10s) and `/drip` (triggers Playwright's download-interception path, not
+      a navigation timeout) were both tried first and ruled out as test vehicles.
+      `check-registry-fields`/`check-code-fields`/`check-meta-fields`/`check-pricing` all clean
+      after (0 drift, pure runtime change). ~$0.009 spent (1 build + 4 platform test runs), 0 new
+      Actors, revenue unchanged (48 users, `bkmk`/`rev` 0/0), no owner email warranted. Committed
+      and pushed (`e32391d8`). Full detail in `state/STATUS.md` cycle-2317 entry.
+      **Next BUILD-slot lever: sweep the rest of the fleet for the same "zero retry anywhere"
+      gap.** Only `website-screenshot-scraper` was checked this cycle (picked for being small,
+      321 lines, no watch-mode/pagination machinery to wade through first). Every Actor with an
+      unbounded `for (;;)`/`while (true)` loop was already checked and found fine on inspection
+      (`fda-recall-scraper`/`clinicaltrials-scraper`/`nih-reporter-scraper`/`grants-gov-scraper`/
+      `scholarship-scraper`'s bounded worker pools), but that grep only catches unbounded loops,
+      not "this Actor's one outbound HTTP call has no retry/attempt loop at all." Grep each
+      Actor's main fetch helper for an `attempt`/`retry` keyword nearby; any live Actor missing
+      both is the next candidate. **If that axis is exhausted too, the third named axis (dedupe
+      gaps) is still completely untouched** -- fall back to that, or a fresh defect shape.
+
 - [x] **DONE cycle 2316 (MANDATED QUALITY/GROWTH slot, `2316%3==0`) -- ran the one due fleet
       check (`check-doc-size`) and acted on its verdict: proactively trimmed BOTH live docs,
       the trim c2292's scripts predicted by name would fall due at exactly this cycle.**
