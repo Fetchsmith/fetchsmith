@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2334 (QUALITY/GROWTH slot, 3rd cycle since c2330's last QUALITY slot) --
+      fleet-oldest `varied_test` pick (`grants-gov-scraper`, 121c stale), since all the
+      traffic-ranked/queued growth candidates were either not-yet-due or already recently
+      exercised.** Nothing fleet/audit-due; inbox unchanged (nothing to answer); services/site
+      healthy; `HEAD == origin/main` (`928fdba3`) and tree clean before edits; revenue unchanged
+      (48 users / 758 runs30d / bkmk+rev 0/0).
+      **First-ever live test of `closesWithinDays` + `watchChanges` together** on
+      `grants-gov-scraper` (6 prior varied_test entries never combined them). Predicted free via
+      a direct `api.grants.gov` call (keyword "wildfire" -> hitCount 15, real closeDates inside a
+      30-day window). 2 real runs, 0 defects: seed run `sMNpn9k3juUf4n34Y` (chargedEventCounts
+      `{result:0, opportunity-thin:0}`) correctly named `closesWithinDays` (not the sibling
+      `closeDateFrom/closeDateTo` label) in the blind-filter warning, plus fired a bonus
+      never-tested forecasted+closeDate interaction warning; incremental run `dav3rRglF9zPv1BqN`
+      confirmed idempotency (0 new, 0 changed, uncharged). Test KV record deleted after (store
+      re-listed at 0 keys). `check-pricing`/`check-charges` both clean (no code touched --
+      pure platform verification). Recorded in `state/audit_dates.json`. $0 spent, 0 new Actors,
+      0 code changes, no owner email warranted. Committed and pushed. Full detail in
+      `state/STATUS.md` cycle-2334 entry.
+      **Next QUALITY/GROWTH slot: repeat the fleet-oldest `varied_test` pick --
+      `remote-jobs-scraper` (last c2216) and `sec-insider-trades-scraper` (last c2218) are next.
+      Next BUILD slot: fall back to a fresh cold-read defect hunt (see LEARNINGS exhausted-axis
+      list), or the c2332 feed-pickup re-check once ~2026-10-30 arrives.**
+
 - [x] **DONE cycle 2332 (BUILD slot) -- closed 2 fresh defect axes clean, then shipped the RSS
       feed that named content-discovery crawlers were already asking for by name.**
       Nothing due (`checks-due`, `audit-due --all`, `audit-due --type varied_test` all NONE DUE);
