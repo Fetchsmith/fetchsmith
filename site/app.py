@@ -1,5 +1,5 @@
 """FetchSmith web app: catalog, legal pages, API (keys + credits), Polar checkout/webhooks."""
-import os, json, time, secrets, sqlite3, hmac, hashlib, base64, logging
+import os, json, time, secrets, sqlite3, hmac, hashlib, base64, logging, re
 from datetime import date, datetime, timezone
 from pathlib import Path
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
@@ -369,7 +369,8 @@ def robots():
     return ("User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /webhooks/\n"
             "Sitemap: https://fetchsmith.com/sitemap.xml\n"
             "# LLM-readable index of every tool, price and guide: https://fetchsmith.com/llms.txt\n"
-            "# Full reference (every input parameter and output field): https://fetchsmith.com/llms-full.txt\n")
+            "# Full reference (every input parameter and output field): https://fetchsmith.com/llms-full.txt\n"
+            "# RSS 2.0 feed of the engineering blog: https://fetchsmith.com/feed.xml\n")
 
 def _apify_price_phrase(t):
     """'$0.002 per returned result' for a listed Actor, else None. Tiered Actors state the
@@ -622,6 +623,83 @@ def sitemap():
         for u, lm in entries
     )
     return Response(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>', media_type="application/xml")
+
+FEED_PATHS = ["/feed.xml", "/feed", "/feed/", "/rss", "/rss.xml", "/atom.xml"]
+_FEED_LIMIT = 30
+
+def _rfc822(d: str):
+    """RSS 2.0 pubDate. Posts carry a date-only frontmatter field, so noon UTC is used as the
+    time component -- a fixed, timezone-safe instant that cannot reorder posts across the
+    date line the way 00:00 can."""
+    try:
+        return datetime.strptime(d, "%Y-%m-%d").replace(
+            hour=12, tzinfo=timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    except (ValueError, TypeError):
+        return None
+
+_REL_LINK_RE = re.compile(r'(href|src)="/(?!/)')
+
+def _abs_links(html: str) -> str:
+    return _REL_LINK_RE.sub(rf'\1="{SITE_URL}/', html)
+
+def feed_xml():
+    """RSS 2.0 feed of the blog.
+
+    Why this exists (cycle 2332, measured, not assumed): the Caddy access log shows every
+    conventional feed path 404ing -- /rss.xml, /atom.xml, /feed, /feed/, /rss, /feed.xml at
+    11 requests each -- and the requesters are named content-discovery crawlers, not vuln
+    scanners: LivelapBot/0.2 (8 of each), OrbatNewsBot/1.0 "(source discovery)" and
+    PressHunt/1.0. Same shape as the /llms-full.txt find in cycle 2272: a file third parties
+    ask for BY NAME that we had simply never published. 88 posts were sitting behind an
+    HTML-only index.
+
+    One body is served at all six paths rather than redirecting the aliases, because a feed
+    reader that does not follow a 301 would silently see nothing; <atom:link rel="self">
+    names /feed.xml as the canonical URL for the ones that care. Full post HTML goes in
+    content:encoded (not just the summary) so a syndicating crawler gets the whole article
+    and a link back, which is the point of publishing it at all."""
+    from xml.sax.saxutils import escape, quoteattr  # stdlib, no new dep
+    posts = load_posts()[:_FEED_LIMIT]
+    # Post HTML is written for on-site rendering, so its links are root-relative. Measured on
+    # the first 30 posts: 197 of them, including 53 /go/<slug> CTAs -- the tracked outbound path
+    # to Apify, i.e. the only link in a post that can earn anything. In a feed reader those
+    # resolve against the reader's own origin and 404, so they are absolutised here (in the feed
+    # copy only, never in the cached html). (?!/) keeps protocol-relative //host URLs intact.
+    items = []
+    for p in posts:
+        url = f"{SITE_URL}/blog/{p['slug']}"
+        pub = _rfc822(p.get("date"))
+        items.append(
+            "<item>"
+            f"<title>{escape(p['title'])}</title>"
+            f"<link>{url}</link>"
+            f"<guid isPermaLink=\"true\">{url}</guid>"
+            + (f"<pubDate>{pub}</pubDate>" if pub else "")
+            + f"<description>{escape(p.get('description') or '')}</description>"
+            + "".join(f"<category>{escape(t)}</category>" for t in p.get("tags", []))
+            + "<content:encoded><![CDATA["
+            + _abs_links(p["html"]).replace("]]>", "]]&gt;")
+            + "]]></content:encoded>"
+            "</item>")
+    built = max((p.get("date") for p in posts), default=None)
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"'
+        ' xmlns:content="http://purl.org/rss/1.0/modules/content/">'
+        "<channel>"
+        "<title>FetchSmith — web data engineering notes</title>"
+        f"<link>{SITE_URL}/blog</link>"
+        "<description>Field notes on public web data sources: undocumented JSON APIs, "
+        "pagination limits, date filters that lie, and what each one costs to scrape.</description>"
+        "<language>en</language>"
+        f"<atom:link href={quoteattr(SITE_URL + '/feed.xml')} rel=\"self\" type=\"application/rss+xml\"/>"
+        + (f"<lastBuildDate>{_rfc822(built)}</lastBuildDate>" if _rfc822(built) else "")
+        + "".join(items)
+        + "</channel></rss>")
+    return Response(body, media_type="application/rss+xml")
+
+for _fp in FEED_PATHS:
+    app.add_api_route(_fp, feed_xml, methods=["GET"])
 
 @app.get("/health")
 def health():
