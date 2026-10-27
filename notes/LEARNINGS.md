@@ -4786,3 +4786,42 @@ Also worth keeping: c2212 wrote a falsifiable forecast ("no trip at c2260 ~44 Mi
 c2308 ~66 MiB") and it called both cycles correctly, under-stating size by only 7-12%. That one
 sentence saved this cycle from re-deriving the model, and is the reason c2308 left its own:
 no trip at c2356/c2404, **TRIPS at c2452**. Keep writing the falsifiable forecast.
+
+## cycle 2312 — "Invalid Date is truthy" is a whole defect class, and our own filter auditor is blind to it
+
+`google-play-reviews-scraper` shipped `const sinceDate = input.sinceDate ? new Date(input.sinceDate) : null;`
+and filtered with `if (sinceDate && (!d || d < sinceDate)) return false;`. That reads as safe and
+is not. **`new Date("last week")` is an Invalid Date, which is TRUTHY**, so the `sinceDate &&`
+guard passes while every comparison against it is false (NaN semantics). Measured, not assumed:
+every review that HAD a date was kept (the bound silently defeated) and every undated review was
+dropped (the `!d` branch). One typo therefore **widens the filter AND hides rows at the same
+time**, and on a PPE Actor the buyer is billed per result for the widened set. The `Date.parse`
+spelling is the same trap one step removed: it yields `NaN`, and **`NaN != null` is true**, so a
+`!= null` guard passes too (that was `scholarship-scraper`).
+
+Three generalisations worth carrying:
+
+1. **A schema `type: "string"` date field has NO validation.** Swept all 19 live Actors: not one
+   pins a `pattern` on any date-ish field, so every date bound in the fleet rests entirely on
+   runtime code. `editor: "datepicker"` is NOT validation either — it shapes the Console form and
+   does nothing to an API caller, which is the volume path for a PPE Actor.
+2. **Pick the validator to match the DOCUMENTED contract, not the strictest one available.**
+   substack-scraper's strict `/^\d{4}-\d{2}-\d{2}$/` is right there because its README says
+   YYYY-MM-DD; google-play's schema says "ISO 8601, e.g. 2026-01-01", so copying the regex would
+   have broken `2026-01-01T12:00:00Z` for existing callers. Used validity (`Number.isNaN(d.getTime())`)
+   instead. Same class, different correct fix — read the contract before cloning a sibling's guard.
+3. **`bin/check-validated-filters` has a real blind spot here, and it is the interesting part.**
+   It sorts every filter into (a) schema-enum, (b) free-text "no authority anywhere, nothing to
+   audit", or (c) runtime-validated. It files `sinceDate`/`untilDate` under **(b)** — so it
+   reported this Actor CLEAN while the live defect sat in a field it had explicitly dismissed. A
+   date bound is not free text: it has an authority (its format). **Bucket (b) is not a safe
+   bucket; it is an unexamined one.** Queued the checker fix. The wider lesson for any future
+   auditor we write: the category labelled "nothing to audit" deserves one pass of suspicion,
+   because that label is itself an unaudited claim — exactly what the tool's own docstring says
+   about bucket (c) and then fails to apply to (b).
+
+Method note that made this cheap: the hunt was a *schema-first* sweep (grep every live Actor's
+input schema for date-shaped string fields, then read only how each one parses them) rather than
+cold-reading whole files. 19 Actors triaged in a few minutes, 1 live defect, 1 retired-Actor
+defect, 1 tooling gap, $0.0022 spent. When a defect class is defined by an INPUT SHAPE, start
+from the input schemas, not the code.

@@ -25,8 +25,29 @@ const startUrls = (input.startUrls ?? []).map((u) => (typeof u === 'string' ? u 
 const openOnly = input.openOnly !== false;
 const includeEssayPrompt = input.includeEssayPrompt !== false;
 const minAwardAmount = input.minAwardAmount == null ? null : Number(input.minAwardAmount);
-const deadlineBefore = input.deadlineBefore ? Date.parse(input.deadlineBefore) : null;
-const deadlineAfter = input.deadlineAfter ? Date.parse(input.deadlineAfter) : null;
+// Both deadline bounds are schema type `string` with no `pattern`, so Apify's input validation
+// hands "next month" or "12/31/2026" straight through. `Date.parse` turns those into NaN, and NaN
+// is not == null, so the `deadlineBefore != null` guard in keep() still passes while every
+// comparison against it is false (NaN semantics) — the bound is silently defeated for every row
+// that HAS a deadline, and the `dl == null` branch then drops every rolling/undated scholarship.
+// So a typo both widens the filter and hides rows, and the buyer is charged per result for the
+// widened set. Throw instead, matching substack-scraper/clinicaltrials-scraper's convention for
+// this input shape (and the `YYYY-MM-DD` contract already documented in README.md).
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+function parseDeadlineBound(raw, fieldName) {
+    const s = String(raw ?? '').trim();
+    if (!s) return null;
+    if (!DATE_RE.test(s)) {
+        throw new Error(`"${fieldName}" must be YYYY-MM-DD (got ${JSON.stringify(raw)}). An unparseable date here used to be ignored silently, matching every scholarship regardless of this filter.`);
+    }
+    const t = Date.parse(s);
+    if (Number.isNaN(t)) {
+        throw new Error(`"${fieldName}" is not a real calendar date (got ${JSON.stringify(raw)}). Use YYYY-MM-DD, e.g. "2026-12-31".`);
+    }
+    return t;
+}
+const deadlineBefore = parseDeadlineBound(input.deadlineBefore, 'deadlineBefore');
+const deadlineAfter = parseDeadlineBound(input.deadlineAfter, 'deadlineAfter');
 const educationLevels = (input.educationLevels ?? []).map((s) => String(s).replace(/^_/, '').toLowerCase());
 // Free-text search. "scholarship(s)" is dropped as a stopword so "nursing scholarships" behaves
 // like "nursing"; every remaining token must appear somewhere in the record's text.

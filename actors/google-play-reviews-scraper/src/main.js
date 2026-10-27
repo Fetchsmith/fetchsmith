@@ -91,8 +91,33 @@ const appVersions = (input.appVersions ?? []).map((s) => String(s).trim()).filte
 const minThumbsUp = input.minThumbsUp != null ? Number(input.minThumbsUp) : null;
 const replyFilter = String(input.replyFilter ?? 'any').trim();
 const minReviewLength = input.minReviewLength != null ? Number(input.minReviewLength) : null;
-const sinceDate = input.sinceDate ? new Date(input.sinceDate) : null;
-const untilDate = input.untilDate ? new Date(input.untilDate) : null;
+// Both date bounds are schema type `string` with no `pattern`, so Apify's input validation hands
+// "last week" or "06/01/2026" through untouched. `new Date(junk)` is an *Invalid Date*, which is
+// TRUTHY, so the `sinceDate && ...` guards in keep() below still pass while every comparison
+// against it is false (NaN semantics) — the bound is silently defeated for every review that HAS
+// a date, and the `!d` branch then drops every undated one. A typo therefore both widens the
+// filter and hides rows, and this Actor is PPE: the buyer is charged per result for the widened
+// set. `editor: datepicker` only protects Console users; API callers (the volume path) are not
+// covered. Throw instead — the same widen-and-bill class substack-scraper's parseDateBound and
+// uk-find-a-tender-scraper's parseBound already guard, and which both name `sinceDate` here as
+// the exemplar. Validity-based rather than a YYYY-MM-DD regex on purpose: the schema documents
+// the wider "ISO 8601" contract, so `2026-01-01T12:00:00Z` must keep working.
+function parseDateBound(raw, fieldName) {
+  const s = String(raw ?? '').trim();
+  if (!s) return null;
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) {
+    throw new Error(`"${fieldName}" is not a parseable date (got ${JSON.stringify(raw)}). Use ISO 8601, e.g. "2026-01-01". An unparseable value here used to be ignored silently, matching every review regardless of this filter.`);
+  }
+  return d;
+}
+const sinceDate = parseDateBound(input.sinceDate, 'sinceDate');
+const untilDate = parseDateBound(input.untilDate, 'untilDate');
+// Symmetric with the minScore/maxScore guard above: an inverted window can never match a review,
+// and without this it is an indistinguishable silent-zero-rows run.
+if (sinceDate && untilDate && sinceDate > untilDate) {
+  throw new Error(`"sinceDate" (${input.sinceDate}) is after "untilDate" (${input.untilDate}) — the window is empty, so no review can ever match. Swap them.`);
+}
 const watchLabel = String(input.watchLabel ?? '').trim();
 // Watch-mode change events. "new" is the original behaviour (a review id never delivered under
 // this label); the other three are MUTATIONS of an already-delivered review -- Google Play keeps

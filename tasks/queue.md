@@ -1,3 +1,57 @@
+- [x] **DONE cycle 2312 (BUILD slot, `2312%3==2`) -- ran c2311's handed-off cold-read lever and
+      shipped a real `google-play-reviews-scraper` fix (unvalidated date bounds = widen-and-bill),
+      then swept that class across all 19 live Actors so it stays closed.**
+      Nothing due (`checks-due`/`audit-due --all`/`--type varied_test --all` all NONE DUE), inbox
+      unchanged (10 known items), services/site healthy, git clean and synced before edits.
+      **The defect:** `new Date(input.sinceDate)` with no validation -> an unparseable value is an
+      *Invalid Date*, which is TRUTHY, so `if (sinceDate && (!d || d < sinceDate)) return false;`
+      still passed while every comparison was false (NaN). Measured old behaviour locally first:
+      every dated review KEPT (bound defeated) + every undated review DROPPED, and the Actor is
+      PPE so the buyer was billed for the widened set. `editor: datepicker` protects Console users
+      but not API callers. Fixed with a throwing `parseDateBound()` + a symmetric
+      `sinceDate > untilDate` inverted-window throw (matching the Actor's own `minScore > maxScore`
+      guard); validity-based rather than substack's `YYYY-MM-DD` regex because this schema
+      documents the wider ISO-8601 contract. Build **0.1.93**, **both halves verified live**:
+      junk date now fails at input parse with 0 rows pushed (so 0 PPE charge), and
+      `"2026-01-01T00:00:00Z"` still SUCCEEDS with real reviews.
+      Swept the class fleet-wide: **no live Actor pins a `pattern` on any date field**, so all of
+      them rely on runtime validation; 14 were already guarded (`substack`/`uk-find-a-tender`/
+      `clinicaltrials`/`federal-register`/`apple-podcasts`/`ats-jobs`/`remote-jobs`/`court-records`/
+      `nih-reporter`/`fda-recall`/`steam-reviews`/`google-news`/`grants-gov`/`app-store-reviews`),
+      google-play was the one live gap. Full detail in `state/STATUS.md` cycle-2312 entry.
+      $0.0022 spent (1 build + 2 runs), 0 new Actors, revenue unchanged (48 users, `bkmk`/`rev`
+      0/0), no owner email warranted.
+      **Next BUILD-slot lever (precise, one live run settles it): finish this sweep's single
+      remaining unverified candidate, `hacker-news-scraper`.** `src/main.js:37-46` does
+      `Math.floor(new Date(input.postedAfter).getTime() / 1000)` with no validation, so a junk
+      date puts **`NaN` into an Algolia `numericFilters` string** (`created_at_i>NaN`) and into
+      `baseWindowFrom`/`baseWindowTo`. My *guess* is this fails loudly (Algolia 400) rather than
+      silently widening like google-play did -- but that is a GUESS, not a finding: run the Actor
+      once with `postedAfter:"last week"` and read the actual outcome before claiming either way.
+      If it is silent, apply the same throwing `parseDateBound()`; if it is a loud 400, the fix is
+      optional (a clear message beats an upstream 400) -- record the verdict either way so this
+      candidate is not re-opened a third time.
+
+- [ ] **NEW follow-up (c2312) -- `scholarship-scraper` carries an UNPUSHED code fix.** c2312 found
+      and fixed the same unvalidated-date-bound bug there (`Date.parse(...)` -> `NaN`, and
+      `NaN != null` is true, so the guard passes and the filter both widens and hides undated
+      rows). It was deliberately NOT pushed: that Actor is the fleet's only `status: retired`
+      registry entry and is PAUSED on the Store, so a ~$0.005 build buys nothing today.
+      **Action required only if/when it is ever un-retired: `apify push --force` it** so the live
+      build actually contains the fix. Do not spend a build on it before then.
+
+- [ ] **NEW follow-up (c2312) -- fix a real blind spot in `bin/check-validated-filters`.**
+      It classifies `sinceDate`/`untilDate` as bucket **(b) FREE_TEXT** ("free text with no
+      authority anywhere; nothing to audit"), which is wrong for date bounds: a date DOES have an
+      authority (its format), and bucket (b) is exactly where the widen-and-bill class hides. The
+      checker reported `google-play-reviews-scraper` clean while the live defect sat in a field it
+      had dismissed. Proposed fix: add a 4th bucket (or a (c) sub-case) for date-shaped string
+      fields -- name matches `/date|since|until|before|after|from$|to$/i` or the description says
+      `YYYY-MM-DD`/ISO 8601 -- and FAIL any such field whose Actor code does not either pin a
+      schema `pattern` or validate at runtime (`Number.isNaN`/regex/throw). c2312 did this sweep
+      by hand (19 live Actors, see STATUS.md) so the first run should come back clean; the value is
+      that it stays clean as new Actors land. Cheap, read-only, no network.
+
 - [x] **DONE cycle 2308 (BUILD slot, `2308%3==1`) -- ran the due `git-maintain` fleet check
       (TRIPPED: first live trip of the c2164 size gauge, `.git` 170 -> 106 MiB) and shipped a
       real `ats-jobs-scraper` fix found by cold-read defect hunt (silent salary-filter zero-rows
