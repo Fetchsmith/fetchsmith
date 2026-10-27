@@ -197,6 +197,25 @@ async function renderBuffer(browser, { url, rawHtml }, fmt = format, proxy = nul
   }
 }
 
+// Every other scraper in this fleet retries a transient upstream hiccup before giving up; this
+// Actor had zero retries anywhere, so a single dropped connection or a page that was merely slow
+// to answer (not broken) permanently failed that URL. Only retry error shapes that are plausibly
+// transient (timeout, connection reset/closed, empty response) -- NOT DNS failure, connection
+// refused, or a bad cert, which are the same outcome on attempt 2 and would just double the
+// compute cost for nothing.
+const TRANSIENT_RENDER_ERROR_RE = /Timeout.*exceeded|ERR_CONNECTION_RESET|ERR_CONNECTION_CLOSED|ERR_EMPTY_RESPONSE|ERR_HTTP2_PROTOCOL_ERROR|ERR_TIMED_OUT|ERR_NETWORK_CHANGED|ERR_SOCKET_NOT_CONNECTED/;
+const RENDER_RETRY_DELAY_MS = 1500;
+async function renderWithRetry(browser, target, fmt, proxy) {
+  try {
+    return await renderBuffer(browser, target, fmt, proxy);
+  } catch (err) {
+    if (!TRANSIENT_RENDER_ERROR_RE.test(err.message) || !timeBudgetOk()) throw err;
+    log.warning(`Transient failure rendering ${target.url ?? 'raw HTML'} (${err.message}) — retrying once.`);
+    await new Promise((r) => setTimeout(r, RENDER_RETRY_DELAY_MS));
+    return renderBuffer(browser, target, fmt, proxy);
+  }
+}
+
 async function storeBuffer(buffer, name, index, fmt = format) {
   const key = `${name}-${Date.now()}-${index}.${extFor[fmt]}`;
   await kvStore.setValue(key, buffer, { contentType: contentTypeFor[fmt] });
@@ -205,7 +224,7 @@ async function storeBuffer(buffer, name, index, fmt = format) {
 
 async function captureOne(browser, { url, rawHtml }, index) {
   try {
-    const buffer = await renderBuffer(browser, { url, rawHtml }, format, await proxyFor(index));
+    const buffer = await renderWithRetry(browser, { url, rawHtml }, format, await proxyFor(index));
     const { key, imageUrl } = await storeBuffer(buffer, 'screenshot', index);
     return pushResult({
       url: url ?? null,
@@ -239,8 +258,8 @@ async function compareOne(browser, url, index) {
     // One IP for BOTH sides of the pair: a geo-routed or per-IP-personalised page rendered through
     // two different exit nodes would diff as "changed" when nothing actually changed.
     const pairProxy = await proxyFor(index);
-    const baseBuf = await renderBuffer(browser, { url, rawHtml: null }, 'png', pairProxy);
-    const cmpBuf = await renderBuffer(browser, { url: compareUrl, rawHtml: null }, 'png', pairProxy);
+    const baseBuf = await renderWithRetry(browser, { url, rawHtml: null }, 'png', pairProxy);
+    const cmpBuf = await renderWithRetry(browser, { url: compareUrl, rawHtml: null }, 'png', pairProxy);
     const basePng = PNG.sync.read(baseBuf);
     const cmpPng = PNG.sync.read(cmpBuf);
 
