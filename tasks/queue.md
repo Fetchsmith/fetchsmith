@@ -1,3 +1,14 @@
+- [x] **DONE cycle 2307 (MANDATED QUALITY/GROWTH slot, `2307%3==0`) -- interim re-check of
+      c2272's `/llms-full.txt` follow-up (still not due, window tightened to ~cycle 2320-2368)
+      plus a cold-read defect hunt on `grants-gov-scraper` (oldest-touched Actor fleet-wide,
+      0 defects -- already correctly guarded on the change-blind-filter bug class).**
+      Nothing due (`checks-due`/`audit-due --all`/`--type varied_test --all` all NONE DUE),
+      inbox unchanged, git clean and synced before edits, 0 Actors created today. Full details
+      in `state/STATUS.md` cycle-2307 entry. $0 spent, 0 code changes, revenue unchanged (48
+      users, `bkmk`/`rev` 0/0), no owner email warranted. **Next BUILD-slot lever: still none
+      queued (niche-hunting + README-competitor exhausted c2302-2306) -- default to a cold-read
+      defect hunt on the next tier of Actors (all last-touched 2026-10-25, listed in STATUS.md).**
+
 - [x] **DONE cycle 2306 (BUILD slot, `2306%3==2`) -- repeated the `WebSearch`-for-new/
       deprecated-sources niche-hunting method (c1699/c1700), the one lever not re-run in
       600+ cycles; null result, lever downgraded to a calendar cadence.**
@@ -563,21 +574,26 @@
       cannot read earnings (c2168). The owner trigger stays the CLAUDE.md Polar gate (>100
       verified /pricing or /tools visits/day) or a bookmark/review.
 
-- [ ] **NEW follow-up (c2272) -- in ~1-2 days, check whether anything actually FETCHED
-      `/llms-full.txt`, and only then expand it further.** This is the honest test of the c2272
-      change and it is cheap (no network, read-only). Run:
-      `python3 - <<'EOF'` over `/var/log/caddy/fetchsmith.access*` (gzip + plain, `json.loads`
-      each line, filter `'llms-full' in line`, print ts/status/User-Agent) -- the same one-liner
-      shape c2272 used; **ignore `curl/8.5.0` rows, those are our own probes.** Baseline to
-      compare against: as of c2272 there were exactly 4 lifetime requests, ALL 404, of which 1
-      was external (`agentcensus-crawler/1.0`, ts 1792882360).
-      **If real non-curl agents are fetching it 200:** the next expansion is guide BODIES (the
-      88 posts, 860KB of markdown) -- `_parse_post` currently keeps only rendered `html`, so
-      that needs the raw `body` retained in the cache (~860KB more RSS, acceptable on 2GB but
-      measure `systemctl status fetchsmith-web` RSS before/after). **If nothing fetched it:**
-      do NOT expand it further and do not keep re-checking -- record that result and treat the
-      llms.txt family as done at this size, since the cost of a bigger file is real and the
-      measured benefit would be zero.
+- [ ] **NEW follow-up (c2272, RE-CHECKED interim at c2307 -- still NOT due, window tightened)
+      -- check whether anything actually FETCHED `/llms-full.txt`, and only then expand it
+      further.** This is the honest test of the c2272 change and it is cheap (no network,
+      read-only). Run: `python3 - <<'EOF'` over `/var/log/caddy/fetchsmith.access*` (gzip +
+      plain, `json.loads` each line, filter `'llms-full' in line`, print ts/status/User-Agent);
+      **ignore `curl/8.5.0` rows, those are our own probes.**
+      **c2307 interim result: 12 lifetime requests, only 1 non-curl (`agentcensus-crawler/1.0`,
+      ts 1792882360 = 2026-10-24 22:52, BEFORE the file shipped -- same hit c2272 already
+      counted, NOT a new one). 0 new external hits, 0 real 200s from anything but our own
+      probes, 17.6h after shipment (c2272 commit 2026-10-26 09:36 UTC).** That is short of the
+      "~1-2 days" window c2272 specified (~cycle 2320-2368 at 48 cycles/day) -- do NOT close
+      this item before cycle ~2320, even though the signal so far is consistent with "nothing
+      fetched it."
+      **If real non-curl agents are fetching it 200 by then:** the next expansion is guide
+      BODIES (the 88 posts, 860KB of markdown) -- `_parse_post` currently keeps only rendered
+      `html`, so that needs the raw `body` retained in the cache (~860KB more RSS, acceptable
+      on 2GB but measure `systemctl status fetchsmith-web` RSS before/after).
+      **If still nothing by cycle ~2320+:** do NOT expand it further and do not keep
+      re-checking -- record that result and treat the llms.txt family as done at this size,
+      since the cost of a bigger file is real and the measured benefit would be zero.
 
 - [ ] **NEW follow-up (c2196) -- consider an ack STALENESS warning in `check-upstream-warnings`.**
       Acks currently never expire. An ack written against a correct verification stays silent
