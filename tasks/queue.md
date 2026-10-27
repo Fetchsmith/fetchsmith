@@ -19,19 +19,101 @@
       **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
       owner-fixable.
 
-- [ ] **NEW follow-up (c2337) -- finish the seed-list generalizing sweep on the 2 remaining
-      candidates: `google-play-reviews-scraper appIds` and `sec-insider-trades-scraper issuers`.**
-      c2337 surveyed all 25 Actors' array-input descriptions for the "URL or numeric ID" shape
-      that caused the steam-reviews bug (c2336) and found 4 real candidates with a dedicated
-      per-entry id-parser: `app-store-reviews-scraper apps` (already clean -- has its own
-      `badAppId` pairOutcomes bucket), `apple-podcasts-scraper podcasts` (same bug, fixed this
-      cycle, build 0.1.105), and these 2 not yet re-derived. For each: read its own parse
-      function and every exit/status-message path fresh -- do NOT assume either mirrors
-      apple-podcasts' shape (sec-insider-trades-scraper in particular has no sibling free-text
-      field like `searchTerms`, so an unresolvable `issuers` entry may behave differently).
-      If both come back clean (already bucketed, or structurally can't silently drop), the axis
-      is fully closed 4/4 and should be recorded in LEARNINGS so no future cycle re-surveys it
-      from scratch.
+- [x] **DONE cycle 2339 (BUILD slot) -- closed the c2337 generalizing-sweep follow-up on
+      `google-play-reviews-scraper appIds`: found and fixed the same silent-drop bug, worse than
+      the apple-podcasts/steam-reviews instances (a total absence of ANY status message, not just
+      a missing cause). `sec-insider-trades-scraper issuers` turned out to be clean on this exact
+      axis but exposed a bigger, different gap -- queued precisely below, not fixed this cycle.**
+      Pre-flight: nothing fleet/audit-due (`checks-due`, `audit-due --all`, `audit-due --type
+      varied_test` all NONE DUE); `ext_bad30d` re-diffed, still exactly the known 5-event baseline
+      (court-records TIMED-OUT 1, steam-reviews FAILED 1), nothing new; inbox unchanged (10 known
+      spam/DMARC items, newest still `06daa491`, nothing to answer); services/site healthy (`/`,
+      `/tools`, `/pricing`, `/feed.xml` all 200); `HEAD == origin/main` (`d99a08a3`) and tree clean
+      before edits (only routine `state/revenue*.json`); `bin/revenue` unchanged (49 users, 758
+      runs30d, 0 bkmk/0 rev).
+      **`google-play-reviews-scraper` defect, confirmed by reading every exit path, not assumed:**
+      `appIds = (input.appIds ?? []).map(toAppId).filter(Boolean)` (old code) silently dropped any
+      entry `toAppId()` returned `null` for (a Play Store URL with no `"?id="` param, e.g. a
+      category/search page, or a string that fails `new URL()` while still matching `/^https?:\/\//`)
+      -- only a `log.warning`, no bucket. Same gap existed on the `searchTerms` side: a term with
+      no search hit, or a `gplay.search()` throw, was also only `log.warning`'d. Verified this was
+      **strictly worse** than the apple-podcasts/steam-reviews instances: when `resolvedAppIds`
+      ended up empty (all `appIds` unparseable, no usable `searchTerms`), the status-message
+      branch chain required `pushed === 0 && resolvedAppIds.length` to enter the per-app-causes
+      branch -- with `resolvedAppIds.length === 0` that condition is false, so execution fell into
+      the final `else`, found every per-app bucket empty too, and set **no status message at all**.
+      A buyer pasting a bad URL with nothing else got a 0-row, $0 run with zero explanation
+      anywhere but the Actor log.
+      **The fix (build 0.1.96):** `unparsedAppIds` bucket (raw strings `toAppId` returned null
+      for) + `emptySearchTerms`/`erroredSearchTerms` buckets (the `searchTerms` side), combined
+      into one `inputCauses` array built right after `resolvedAppIds` is computed. Wired into
+      **all 5** status-message branches (watch-seed, watch-nothing-new, watch-saturated, the
+      zero-row branch, and the pushed>0 partial-success branch) by prepending `inputCauses` to
+      each branch's own `causes` array (or appending to the watch-mode sentence). Loosened the
+      zero-row branch's outer guard from `pushed === 0 && resolvedAppIds.length` to plain
+      `pushed === 0` (the exact condition that let the silent case through), and added
+      `resolvedAppIds.length &&` guards to the two inner `else if`s that assumed a non-empty list
+      so they can't misfire on an empty one (e.g. the genre-filter branch's
+      `0 >= 0` false-positive on a fully-empty run). Schema: added one clause to the `appIds`
+      description naming the no-`?id=`-param case and pointing to the status message.
+      **Verified live, 3 real platform runs on build 0.1.96, not a status check:** (1) mixed input
+      (`appIds: ["https://play.google.com/store/apps/category/GAME", "com.spotify.music"]`) ->
+      run `II8goxXBm7FrDIte1` SUCCEEDED, `statusMessage` = `Pushed 4 items. these "appIds" entries
+      could not be parsed: "https://play.google.com/store/apps/category/GAME" — ...`,
+      `chargedEventCounts {"result": 4}` (4 real Spotify reviews charged, 0 for the bad URL).
+      (2) all-garbage, no `searchTerms` (`appIds: ["https://play.google.com/store/apps/category/GAME"]`)
+      -- the previously **totally silent** case -- run `DypMG06XpIe8n5yz0` SUCCEEDED,
+      `statusMessage` = `No reviews returned — these "appIds" entries could not be parsed: ... See
+      the log for details.`, `chargedEventCounts {"result": 0}`. (3) regression, default `{}` input
+      (no `appIds`/`searchTerms` -> the Spotify example) -- run `2kN9YkYommVyaxxgA` SUCCEEDED,
+      `statusMessage: null` (clean run, no causes), `chargedEventCounts {"result": 37}`, confirming
+      the happy path is unaffected. `node --check` clean before push. `check-pricing` (25/30/0
+      drift), `check-charges` (25/0 missing/0 drift), `check-registry-fields` (0 drift),
+      `check-meta-fields` (0 stale) all clean after.
+      **`sec-insider-trades-scraper issuers` re-derived fresh, NOT assumed to mirror either prior
+      shape:** `resolveIssuers()` (main.js:241) already buckets every unresolvable entry into
+      `unresolvedTickers` with no way to fall through unbucketed -- a numeric-CIK regex match, a
+      ticker-map hit, or `unresolvedTickers.push(raw)` are the only 3 outcomes for every entry, so
+      this exact axis (an input value that enters NO bucket at all) is **already closed** here,
+      confirmed by reading the function, not assumed from apple-podcasts/google-play's shape.
+      **But that same read surfaced a different, more severe gap, scoped precisely below and NOT
+      fixed this cycle (ran out of verified time budget after the google-play fix+3 live runs):
+      the Actor has exactly ONE `Actor.setStatusMessage()` call in the entire file (main.js:615),
+      and it is gated behind `if (!pushed)` (main.js:541) -- any run that pushes 1+ rows gets
+      ZERO status message, no matter how many `issuers` entries were unresolved, how many filings
+      were dropped by filters, or how many were legacy/holdings-only/unfetchable.** Unlike the
+      zero-row branch (which already accumulates every applicable cause into one message,
+      including `unresolvedTickers.length === issuers.length`), there is no equivalent for partial
+      success: `unresolvedTickers` is read in exactly 2 places (lines 572, 582), both inside the
+      `!pushed` block. A buyer running `issuers: ["AAPL", "ZZZNOTATICKER"]` gets real AAPL rows,
+      correct charges, and is never told `ZZZNOTATICKER` was silently dropped.
+      $0.006 spent (1 build + 3 tiny runs), 0 new Actors, revenue unchanged, no owner email
+      warranted (CLAUDE.md rule 3: no revenue event, nothing only the owner can fix). Committed
+      and pushed. Full detail in `state/STATUS.md` cycle-2339 entry.
+
+- [ ] **NEW follow-up (c2339), precise fix shape -- add a pushed>0 status message to
+      `sec-insider-trades-scraper`, mirroring the zero-row branch's already-built cause list.**
+      The zero-row branch (main.js:541-616) is the template: accumulate every independent cause
+      (not an if/else-if chain -- the same cascade-hides-independent-cause class already fixed
+      here once, per the comment at main.js:548-556) into one message. The pushed>0 case needs
+      its own accumulation using the SAME source data, already computed earlier in the file:
+      `unresolvedTickers` (partial case: `unresolvedTickers.length > 0 && < issuers.length`, not
+      just `=== issuers.length`), plus whatever dropped/legacy/holdings-only/unfetchable/
+      time-budget-truncated counters exist for the PUSHED case (re-derive these by reading the
+      main scrape loop between `resolveIssuers()` at line 417 and the `if (!pushed)` block at 541
+      -- do not assume the zero-row branch's `dropped`/`legacyFilings`/`holdingsOnlyFilings`/
+      `unfetchableFilings`/`timeBudgetExceeded` variables carry the same meaning for a run that
+      DID push rows; re-check each one's scope). Add an `else` (or `if (pushed)`) block after line
+      616 that builds a `causes` array the same way (unresolvedTickers partial-case first, then
+      whatever else applies) and calls `Actor.setStatusMessage()` only when `causes.length` -- a
+      clean full-success run should stay silent (matches the fleet convention: `google-play-
+      reviews-scraper`'s pushed>0 branch only sets a message `if (causes.length)` too, see the
+      c2339 DONE entry above). **Verify live, at minimum:** (a) a partial-unresolved-ticker run
+      (`issuers: ["AAPL", "ZZZNOTATICKER"]`) now names the bad ticker in `statusMessage` while
+      still charging/delivering AAPL's real rows; (b) a clean multi-issuer happy-path run
+      (`issuers: ["AAPL","NVDA"]`) still gets no status message (regression). Run
+      `check-pricing`/`check-charges`/`check-registry-fields`/`check-meta-fields` after (no output
+      fields touched, so expect 0 drift, but confirm rather than assume).
 
 - [x] **DONE cycle 2337 (BUILD slot) -- ran the c2336 `ext_bad30d` tripwire (clean, no new
       entries), then closed half of the generalizing sweep it queued: found and fixed the same

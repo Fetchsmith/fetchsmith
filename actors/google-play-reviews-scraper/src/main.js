@@ -40,7 +40,18 @@ function toAppId(raw) {
   return null;
 }
 
-let appIds = (input.appIds ?? []).map(toAppId).filter(Boolean);
+// An "appIds" entry that toAppId() cannot turn into a package name (a Play Store URL with no
+// "?id=" param, or a string that fails URL parsing while still looking like one) used to be
+// dropped by the old `.filter(Boolean)` with nothing but a log.warning — no bucket, so it never
+// reached any status-message branch. With no searchTerms either, that left resolvedAppIds empty,
+// the main per-app loop never ran, and NO status message was set at all: a buyer got a 0-row,
+// $0 run with zero explanation anywhere but the log. Tracked here so every branch below can say why.
+const unparsedAppIds = [];
+let appIds = (input.appIds ?? []).map((a) => String(a).trim()).filter(Boolean).map((raw) => {
+  const id = toAppId(raw);
+  if (id === null) unparsedAppIds.push(raw);
+  return id;
+}).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((s) => String(s).trim()).filter(Boolean);
 // "appIds" used to carry a schema-level "default": ["com.spotify.music"] so Apify's automated
 // Store quality test (a bare `{}` API call) had real output to check. But Apify silently merges a
@@ -478,6 +489,11 @@ async function pushResult(item, watchId = null, metaCode = META_UNKNOWN) {
   return !stop;
 }
 
+// Same silent-drop shape as unparsedAppIds above, on the other seed field: a searchTerm that
+// matches nothing on Google Play, or whose search() call itself fails, was only ever log.warning'd
+// -- never counted anywhere a status message could read it.
+const emptySearchTerms = [];
+const erroredSearchTerms = [];
 async function resolveAppIds() {
   const resolved = [...appIds];
   // A plain search() result carries no genre field (verified live 2026-09-28: undefined on every
@@ -503,9 +519,11 @@ async function resolveAppIds() {
         resolved.push(picked.appId);
       } else {
         log.warning(`No app found for search term "${term}"`);
+        emptySearchTerms.push(term);
       }
     } catch (e) {
       log.warning(`Search failed for "${term}": ${e.message}`);
+      erroredSearchTerms.push(term);
     }
   }
   return [...new Set(resolved)];
@@ -567,6 +585,29 @@ function mapReview(appId, r) {
 const resolvedAppIds = await resolveAppIds();
 if (!resolvedAppIds.length) {
   log.warning('No appIds resolved (empty appIds and searchTerms, or all searches failed). Nothing to do.');
+}
+// Input-level causes (never resolved to an app at all), shared by every status-message branch
+// below so none of them can go silent the way the zero-row path used to when resolvedAppIds was
+// empty and no per-app bucket had anything in it either.
+const inputCauses = [];
+if (unparsedAppIds.length) {
+  inputCauses.push(
+    `these "appIds" entries could not be parsed: ${unparsedAppIds.map((a) => JSON.stringify(a)).join(', ')} `
+    + '— "appIds" takes a Play Store URL with a "?id=" package param (e.g. '
+    + 'https://play.google.com/store/apps/details?id=com.example.app) or a bare package name',
+  );
+}
+if (emptySearchTerms.length) {
+  inputCauses.push(
+    `no app was found on Google Play for "searchTerms" entr${emptySearchTerms.length > 1 ? 'ies' : 'y'}: `
+    + emptySearchTerms.map((a) => JSON.stringify(a)).join(', '),
+  );
+}
+if (erroredSearchTerms.length) {
+  inputCauses.push(
+    `the search itself failed for "searchTerms" entr${erroredSearchTerms.length > 1 ? 'ies' : 'y'}: `
+    + `${erroredSearchTerms.map((a) => JSON.stringify(a)).join(', ')} (see log for the error)`,
+  );
 }
 
 const emptyApps = []; // Google Play returned zero reviews (wrong country/lang, or genuinely no reviews)
@@ -827,19 +868,19 @@ if (stop) {
 
 let statusMsg;
 if (watchMode && seeding) {
-  statusMsg = (`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.`);
+  statusMsg = (`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged.${inputCauses.length ? ` ${inputCauses.join('; ')}.` : ''} Run it again later to get only what's new.`);
 } else if (watchMode && pushed === 0) {
-  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change but the event was excluded by your watchEvents list.)` : ''}`);
+  statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change but the event was excluded by your watchEvents list.)` : ''}${inputCauses.length ? ` ${inputCauses.join('; ')}.` : ''}`);
 } else if (watchMode && saturatedApps.length) {
-  statusMsg = (`Pushed ${pushed} item(s) (${watchChanged} of them changed re-deliveries) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.`);
-} else if (pushed === 0 && resolvedAppIds.length) {
+  statusMsg = (`Pushed ${pushed} item(s) (${watchChanged} of them changed re-deliveries) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.${inputCauses.length ? ` ${inputCauses.join('; ')}.` : ''}`);
+} else if (pushed === 0) {
   // Without this branch, timing out before any app was even queried fell into the final default
   // below with an empty emptyApps list, asserting "Google Play returned zero reviews for: " (blank)
   // -- a false claim about Google Play's data when the real cause is our own clock.
   let why;
-  if (timeBudgetExceeded && appsAttempted.size === 0) {
+  if (timeBudgetExceeded && appsAttempted.size === 0 && resolvedAppIds.length) {
     why = 'the run was approaching the platform run timeout and stopped before any app could be checked';
-  } else if (genreSkippedApps.length + genreUnknownApps.length > 0
+  } else if (resolvedAppIds.length && genreSkippedApps.length + genreUnknownApps.length > 0
     && genreSkippedApps.length + genreUnknownApps.length >= appsAttempted.size) {
     // Checked before the per-app causes below: when the "genres" filter took every app out, no
     // review was ever fetched, so blaming any of those causes would point at an app list none of
@@ -858,13 +899,13 @@ if (watchMode && seeding) {
     // upright at all (it already returned every review it has).
     const depthCappedSet = new Set(depthCappedApps);
     const filteredOutOnlyApps = filteredOutApps.filter((a) => !depthCappedSet.has(a));
-    const causes = [];
+    const causes = [...inputCauses];
     if (invalidApps.length) causes.push(`these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`);
     if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
     if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')}${ratingSortUnreachable ? RATING_SORT_HINT : ' — raise maxReviewsPerApp to search deeper'}`);
     if (filteredOutOnlyApps.length) causes.push(`reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${filteredOutOnlyApps.join(', ')}`);
     if (emptyApps.length) causes.push(`Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`);
-    why = causes.length ? causes.join('; ') : 'no reviews were charged (check the log for the reason)';
+    why = causes.length ? causes.join('; ') : 'no "appIds" or "searchTerms" resolved to anything (check the log for details)';
   }
   statusMsg = (`No reviews returned — ${why}. See the log for details.`);
 } else {
@@ -877,7 +918,7 @@ if (watchMode && seeding) {
   // all, not even partially. Accumulate every applicable cause instead of picking one.
   const depthCappedSet = new Set(depthCappedApps);
   const filteredOutOnlyApps = filteredOutApps.filter((a) => !depthCappedSet.has(a));
-  const causes = [];
+  const causes = [...inputCauses];
   if (invalidApps.length) causes.push(`these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`);
   if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
   if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : '; raise maxReviewsPerApp to search further'}`);

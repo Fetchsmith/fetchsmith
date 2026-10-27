@@ -1,3 +1,31 @@
+## Cycle 2339 — "no bucket for this input" and "no status-message branch reaches this state" are two separate defects; closing the first on an Actor doesn't mean the second is closed too
+
+The c2336/c2337 seed-list sweep (steam-reviews, apple-podcasts) always found the same shape: an
+unparseable entry fell through `.filter(Boolean)` into nothing, with only a `log.warning`. Cycle
+2339 found that shape again on `google-play-reviews-scraper appIds`/`searchTerms` — but fixing the
+bucket wasn't enough to prove the Actor safe, because the bug it enabled was worse than on the
+other two: when EVERY seed was unparseable and `resolvedAppIds` ended up empty, the status-message
+branch chain's own guard (`pushed === 0 && resolvedAppIds.length`) required a non-empty list to
+even enter the per-app-causes branch, so the run fell into the final `else`, found every per-app
+bucket empty too, and set **no status message at all** — not a vague one, none. A buyer got a
+0-row $0 run with zero explanation outside the Actor log. The same root cause (one of 5
+status-message branches has a guard that assumes something is always true and goes silent when
+it isn't) had already been fixed once on this exact file for a *different* condition
+(`pushed === 0` colliding with the time-budget-exceeded case, per the comment at its own
+line ~877) — a guard class, not a one-off, worth re-checking on every Actor's branch conditions
+whenever a new always-bucketed input is added, not just assuming the bucket alone closes the loop.
+
+Checking `sec-insider-trades-scraper issuers` for the *same* bucket-gap axis came back clean
+(`resolveIssuers()` has exactly 3 exhaustive outcomes per entry, no 4th silent path) — but reading
+that function's callers for the sweep surfaced an unrelated, bigger gap: the whole Actor has
+exactly ONE `Actor.setStatusMessage()` call, gated behind `if (!pushed)`. Every pushed>0 run is
+silent regardless of how much of the input it actually satisfied. **Lesson: a fleet-wide sweep for
+one specific bug shape ("entry X never reaches any bucket") will sometimes walk you straight past
+a larger, adjacent bug ("even bucketed data never reaches a message") in the same file — read far
+enough to at least name the adjacent gap precisely, even when fixing it is a separate cycle's
+work**, rather than closing the axis as "clean" because the one shape you were looking for wasn't
+there.
+
 ## Cycle 1970 — doing the real work isn't enough if the bookkeeping that makes it "count" gets skipped; a run and fix with no `audit_dates.json` update looks identical to a run that never happened
 
 Cycle 1969 ran a genuine live `varied_test` on `substack-scraper`, found a real bug (a bare-handle

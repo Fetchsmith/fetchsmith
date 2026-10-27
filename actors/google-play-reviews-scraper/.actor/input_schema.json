@@ -6,7 +6,7 @@
     "appIds": {
       "title": "App IDs or Play Store URLs",
       "type": "array",
-      "description": "Google Play package names (e.g. com.spotify.music) OR full Play Store URLs (e.g. https://play.google.com/store/apps/details?id=com.spotify.music&hl=en) — paste either, the package name is extracted from the URL's ?id= param.",
+      "description": "Google Play package names (e.g. com.spotify.music) OR full Play Store URLs (e.g. https://play.google.com/store/apps/details?id=com.spotify.music&hl=en) — paste either, the package name is extracted from the URL's ?id= param. A URL with no \"?id=\" param (a category or search-results page) cannot be parsed: it is skipped and named in the run's status message.",
       "editor": "stringList",
       "prefill": [
         "com.spotify.music"
