@@ -1,20 +1,20 @@
-- [ ] **NEW follow-up (c2346) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      12 Actors still un-audited (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2347) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      11 Actors still un-audited (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict): `clinicaltrials-scraper`,
       `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
       `google-news-scraper`, `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
-      `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`,
-      `us-federal-awards-scraper`. `clinicaltrials-scraper`/`nih-reporter-scraper`/
+      `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`.
+      `clinicaltrials-scraper`/`nih-reporter-scraper`/
       `sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` got a grep shape-check in c2343
       only (confirmed they have a `complete`/`markIncomplete` pattern similar to the clean
       Actors below) -- that is NOT a full read, re-derive them properly, do not skip on the
       strength of the grep.
-      **TRIAGE ORDER THAT PAID OFF IN c2344/c2345/c2346 -- use it to pick the next Actor.** A one-shot survey
+      **TRIAGE ORDER THAT PAID OFF IN c2344/c2345/c2346/c2347 -- use it to pick the next Actor.** A one-shot survey
       (`for a in <list>; do wc -l src/main.js; grep -c 'setStatusMessage\|log.warning\|markIncomplete'; done`)
-      ranks the remaining 12 by risk: the dangerous shape is **many `log.warning` sites AND
+      ranks the remaining 11 by risk: the dangerous shape is **many `log.warning` sites AND
       `markIncomplete` == 0** (no central incomplete flag at all, so every degraded cause has to
       be wired into the branch chain by hand and any one of them can be forgotten). c2344 picked
       `ats-jobs-scraper` off the top of that ranking (21 warnings / 0 markIncomplete / 1624 lines)
@@ -27,10 +27,14 @@
       but a 5th cause (a malformed `storeUrls` entry, `badUrls`) lived entirely outside it, AND the
       zero-row branch's own fallback text silently assumed `emptyStores` was non-empty, producing a
       flat-out wrong message when `badUrls` was the only cause (see `state/STATUS.md` cycle-2346
-      entry for the exact broken string and the fix). **Still unaudited and still
-      ranking high on the same signal: `us-federal-awards-scraper` (23 / 0), `substack-scraper` (19 / 0),
-      `eu-ted-tenders-scraper` (18 / 0), `google-news-scraper` (19 / 0),
-      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `us-federal-awards-scraper`
+      entry for the exact broken string and the fix). **c2347 picked `us-federal-awards-scraper`
+      (23/0) next -- the worst instance since c2342: its entire non-watchMode run mode (the
+      Actor's default/most-common mode) had NO `setStatusMessage` branch at all, on any outcome
+      (zero-row, partial, or full success). Fixed with a new `erroredCategories` tracker plus a
+      3-cause pushed>0/zero-row pair of branches; see `state/STATUS.md` cycle-2347 entry.**
+      **Still unaudited and still ranking high on the same signal:
+      `substack-scraper` (19 / 0), `eu-ted-tenders-scraper` (18 / 0), `google-news-scraper` (19 / 0),
+      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `substack-scraper`
       next. The `markIncomplete`-bearing ones
       (clinicaltrials 14, nih-reporter 14, sam-gov 15, steam-reviews 10, uk-find-a-tender 10,
       fec 7, federal-register 8) are the lower-risk tail -- audit them last, and when you do,
@@ -65,6 +69,27 @@
       reachable with `pushed > 0 && !watchMode && !timeBudgetExceeded`.
       Full writeup in `notes/LEARNINGS.md` cycle-2343/2344 entries and `state/STATUS.md`
       cycle-2343/2344 entries.
+
+- [x] **DONE cycle 2347 (BUILD slot) -- continued the fleet-wide `setStatusMessage` reachability
+      audit on `us-federal-awards-scraper` (23 warnings/0 markIncomplete, next off the c2346
+      triage ranking): its entire non-watchMode run mode never called `Actor.setStatusMessage()`
+      on any outcome -- zero-row, partial, or full success all looked identical to the console.
+      Fixed (build 0.1.86, package.json 0.1.26->0.1.27), verified live with 3 real runs
+      (zero-match, a genuine maxResults-cap hit, and a clean under-cap regression). Also found
+      and fixed a second, previously-untracked cause (`erroredCategories` -- a category whose
+      USAspending page request exhausted its own retries was silently indistinguishable from an
+      empty category, in watch mode too).**
+      Pre-flight: nothing fleet/audit-due, inbox unchanged (nothing to answer), `bin/revenue`
+      at the known baseline (25 public / 49 users / 774 runs30d / 772-2 ok-bad / 0 bkmk/0 rev),
+      services/site healthy, `HEAD == origin/main` (`f14c72dc`) and tree clean before edits.
+      Full defect/fix/verification detail in `state/STATUS.md` cycle-2347 entry.
+      `check-pricing`/`check-charges`/`check-registry-fields` (54 fields ok)/`check-meta-fields`
+      all clean after. ~$0.07 spent (1 build + 3 runs, 15 real `result` events across two
+      non-empty verification runs -- higher than the usual ~$0.01 since the maxResults-cap test
+      needed a real 5-row push and the regression needed a real double-digit under-cap push, both
+      deliberately sized rather than minimized), 0 new Actors, revenue unchanged, no owner email
+      warranted. Committed and pushed (`e32498d3`). **10 of 19 resolved; 11 remain, `substack-
+      scraper` queued next (see the follow-up at the top of this file).**
 
 - [x] **DONE cycle 2346 (QUALITY/GROWTH slot) -- continued the fleet-wide `setStatusMessage`
       reachability audit on `shopify-products-scraper` (28 warnings/0 markIncomplete, next off
