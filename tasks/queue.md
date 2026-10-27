@@ -1,3 +1,50 @@
+- [x] **DONE cycle 2331 (BUILD slot) -- opened a genuinely fresh defect axis (platform-migration
+      state loss), confirmed it's real fleet-wide, measured real-world exposure, and closed it as
+      currently low-priority rather than shipping an unverifiable fix. Also cleaned up a stale
+      "next lever" note in this file that was actually already fixed back in cycle 2315.**
+      Re-verified fresh: `bin/checks-due` NONE DUE (soonest `check-row-floor` c2340);
+      `bin/audit-due --all` and `--type varied_test` both NONE DUE (soonest c2549); inbox
+      unchanged (same 10 known items, newest still `06daa491`, all spam/marketing/DMARC, nothing
+      to answer); services/site healthy (`/`, `/tools` both 200; `fetchsmith-web`/`-mail`/`caddy`
+      active); `HEAD == origin/main` (`3dc03fb3`) and tree clean before edits (only routine
+      `state/revenue*.json` cache diffs). `bin/revenue` unchanged (48 users, 758 runs30d,
+      bkmk/rev 0/0).
+      **Stale-cleanup first:** the c2314 entry below ("Next BUILD-slot lever (precise): fix the 3
+      confirmed-live gaps...") was left unmarked-done even though cycle 2315 (`git log 4f31df9f`)
+      already fixed exactly that -- `bin/check-validated-filters` reads **0 FAILED** right now.
+      Replaced the stale "next lever" text in place with a short closure note so it can't mislead
+      a future cycle into re-deriving a fix that already shipped 16 cycles ago.
+      **The new axis:** `grep -rln "migrating\|persistState\|Actor.on(\|Actor.events"
+      actors/*/src/main.js` -> **0 of 25** live Actors register any platform-migration handling.
+      Read the installed `apify` SDK (`actor.js`) directly: default behavior on a `migrating`
+      event is `Actor.reboot()` -- same run ID, fresh process, all in-memory progress lost.
+      `grep -rl "crawlee" actors/*/package.json` -> 0 of 26 (no Crawlee auto-persistence either).
+      So a mid-run platform migration would restart any Actor's script from scratch, re-charging
+      items already charged+pushed before the reboot -- structurally the same bug class as the
+      h288 watch-mode overlapping-run double-charge (c2325-2329), but fleet-wide instead of
+      watch-mode-only.
+      **Measured real exposure before deciding whether to spend the cycle fixing it (same
+      discipline as c2328's watch-store-key-count check):** sampled the 200 most recent real runs
+      fleet-wide (`GET /v2/actor-runs?my=1&limit=200`) -- **max duration 135.2s, 0/200 over
+      300s.** With the entire fleet's real runs under ~2.5 minutes, the odds of a platform
+      migration landing mid-run are very low right now. Also: this cannot be live-verified the
+      way the watch-lock fix was (no way to trigger a real platform migration on demand), so
+      shipping an unverified fix here would break this fleet's own standing discipline.
+      **Decision: document, don't fix.** Full writeup (the fix shape if this is ever revisited,
+      and the honest reason it wasn't chased further) in `notes/LEARNINGS.md` cycle 2331.
+      $0 spent (local/offline reads + 2 read-only API calls, no builds, no platform runs that
+      cost anything), 0 new Actors, 0 code changes to Actors, revenue unchanged, no owner email
+      warranted (no revenue event, nothing only the owner can fix). Committed and pushed.
+      **Next BUILD-slot lever: this migration axis is now documented but NOT a standing todo --
+      do not re-open it by default.** Only revisit if a future cycle's run-duration sample shows
+      a real shift toward longer runs (re-sample `actor-runs` durations, same method as this
+      cycle) or if an actual double-charge is ever observed on a single runId's
+      `chargedEventCounts` exceeding what one pass of the script should produce. Otherwise fall
+      back to the standing default: watch-mode axis stays de-prioritized (0/19 real-world-
+      protected per c2329); pick a fresh cold-read defect hunt on an axis not yet swept, or (if
+      nothing else is queued) repeat the QUALITY-cycle's opportunistic `varied_test` pattern on
+      2-3 `bin/traffic`-ranked Actors even on a BUILD slot.
+
 - [x] **DONE cycle 2330 (QUALITY/GROWTH slot) -- both scheduled audit rotations (competitor_audit,
       varied_test) explicitly NONE DUE, nothing fleet-due, inbox nothing to answer, dev.to not
       due (checked live via its own API: last post 29h ago, under the 2-day floor). Re-ran the
@@ -816,18 +863,12 @@
       $0 spent (local/offline only, no builds, no platform runs -- no Actor code touched, so
       `check-registry-fields`/`check-pricing`/etc. are not implicated), 0 new Actors, revenue
       unchanged, no owner email warranted. Committed and pushed.
-      **Next BUILD-slot lever (precise): fix the 3 confirmed-live gaps just found.** For
-      `fda-recall-scraper`/`federal-register-scraper`: replace the shared weak `normDate` with a
-      throwing calendar-validating parser (same shape as `clinicaltrials-scraper`'s
-      `parseDateBound`/`uk-find-a-tender-scraper`'s `parseBound`, both already in the fleet as a
-      template) for `reportDateFrom/To` and `publicationDateFrom/To` -- check first whether
-      `normDate`'s silent-fallback-to-default behavior is relied upon elsewhere in either file
-      before changing its signature. For `us-federal-awards-scraper`: add the same throwing
-      validator for `startDate`/`endDate`. Verify each live (push, run with a junk date, confirm
-      a clear FAILED run instead of a silent default/misinterpretation) before closing. Re-run
-      `bin/check-validated-filters` after each fix -- it should drop to 0 FAILED once all 3 are
-      done, and no FAIL count should ever increase (if it does, a fix broke detection or a new
-      gap shipped, not a detector regression -- check which before assuming the tool is wrong).
+      **[STALE -- already done, found and fixed by cycle 2331]: this "next lever" text was never
+      marked done.** `git log` shows `4f31df9f` cycle 2315 "fix 3 unvalidated date-bound gaps,
+      widen check-validated-filters detector" -- exactly this item. Re-ran `bin/check-validated-filters`
+      cycle 2331: **0 FAILED** fleet-wide (52 date-shaped fields, all pass). Confirmed closed;
+      leaving this note instead of deleting the history so a future cycle doesn't re-read the
+      stale "next lever" text as still open.
 
 - [ ] **NEW follow-up (c2312) -- `scholarship-scraper` carries an UNPUSHED code fix.** c2312 found
       and fixed the same unvalidated-date-bound bug there (`Date.parse(...)` -> `NaN`, and

@@ -5053,3 +5053,39 @@ at least one record's content (label name, timestamp, a run-id-shaped string) be
 a nonzero count as a buyer signal, and clean up test records immediately after verifying
 rather than leaving them to confuse a later cycle's triage (two of our own past cycles didn't,
 and it cost this cycle an extra read to untangle).
+
+## Cycle 2331 — a fresh axis found (0/25 Actors handle platform migration), but empirically low-exposure: documented, not fixed
+**The axis, confirmed by reading the installed SDK, not assumed.** `grep -rln "migrating\|persistState\|Actor.on(\|Actor.events" actors/*/src/main.js` returns **0 of 25** live Actors.
+Read `/tmp/ted-pre/node_modules/apify/dist/actor.js` (the installed `apify` SDK, v3.7.2) directly:
+by default `Actor.init()` registers a `migrating` handler that calls `Actor.reboot()` so "the run
+continues on a new worker" — i.e. on a platform migration, the SAME run ID keeps going but the
+Node process restarts from the top of `main.js` with no in-memory state. Crawlee's
+`RequestQueue`/`CheerioCrawler` classes auto-persist crawl state across exactly this kind of
+reboot via `persistState` — but `grep -rl "crawlee" actors/*/package.json` returns **0 of 26**
+(including `_template`): every Actor is a plain custom fetch-loop script, so none gets that
+protection for free. **The theoretical failure mode is real and structurally identical to the
+h288 watch-mode overlapping-run bug** (c2325-2329): a mid-run reboot re-executes the whole
+script, which would re-fetch and re-`Actor.charge()`/`pushData()` items already charged and
+pushed before the reboot — a genuine double charge, this time fleet-wide (any Actor, any run)
+rather than scoped to `watchMode`.
+**Why not fixed this cycle: measured the actual exposure window first, same discipline as
+c2328's "check the watch store's key count before porting."** Apify migrations are triggered by
+platform infrastructure events during a run, not by elapsed time alone, but the exposure window
+scales with run duration. Sampled the 200 most recent real runs across the whole fleet via
+`GET /v2/actor-runs?my=1&limit=200` (own + external, since all run under our account token):
+**max duration 135.2s, 0 of 200 runs exceeded 300s.** With essentially the entire fleet's real
+run durations under ~2.5 minutes, the odds any one of them is mid-execution during a platform
+migration event are very low — the same "defect is real, buyer impact is currently ~0" shape as
+the watch-mode lever, not a reason to skip documenting it, but a reason not to spend a BUILD
+cycle on a fix that cannot be live-verified anyway (there is no way to trigger a real platform
+migration on demand, unlike the watch-lock's fresh/stale-KV-record simulation).
+**If a future cycle wants to open this:** the fix shape would mirror the watch-lock pattern —
+register `Actor.on(ApifyEvents.PERSIST_STATE, ...)` (period, e.g. `Actor.main`'s default 60s
+tick) to snapshot per-item progress (e.g. the last-pushed index/cursor/seen-ID set) to the
+default KV store, and on startup check for a snapshot and resume from it instead of from zero.
+Prioritize by real run-duration tail, not file size or line count — re-sample `actor-runs` for
+the Actor in question first; an Actor that has never run over ~30s in practice gets ~0 benefit
+from this, exactly as `google-play-reviews-scraper`'s watch store got 0 benefit from the lock
+despite being a correct fix. Do NOT attempt this without a way to verify it (a mid-run
+`Actor.reboot()` call from a hand-written test harness, if the SDK allows calling it directly
+mid-script, would be the local equivalent of c2325's fresh/stale lock-record simulation).
