@@ -94,6 +94,7 @@ Real row from run `54YvM4KAyrUjhlEdq` (build 0.1.17, 2026-10-21): Hacker News co
 
 ## Pricing
 `result` — $0.002 per successful screenshot/PDF, charged only when a capture succeeds. No start fee.
+Repeated URLs in one `urls` list are captured and charged once, not once per copy (see the FAQ).
 
 **Where this sits in the market. Features and pricing verified live 2026-10-19** against each
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
@@ -149,6 +150,8 @@ re-verified live 2026-10-25: user counts and tiered pricing unchanged for each.
 **Does it work for pages that need JavaScript to render?** Yes, it uses a real Chromium browser. Set `waitUntil: "networkidle"` for JS-heavy single-page apps that load content after the initial page load. If the page keeps a background connection open (polling, websockets, analytics beacons) `networkidle` can time out even after your content is ready — set `waitForSelector` to a selector that only exists once the real content has rendered (e.g. a chart container or the last row of a table) instead; it's a more precise signal than a fixed delay or network state.
 
 **What if a URL fails to load?** You get a row with `success: false` and an `error` message describing why (timeout, DNS failure, HTTP error, etc.) — the run continues to the next URL and you are not charged for the failure.
+
+**What if the same URL appears twice in my `urls` list?** It is captured once and charged once. As of build 0.1.32 the Actor de-duplicates the list before any browser work starts and logs `Skipped N duplicate URL(s) in \`urls\` -- each unique URL is captured and charged exactly once.` Before that build, a list pasted from a spreadsheet export, a sitemap dump or two concatenated lists would capture the same page twice and bill two `result` events for a byte-identical screenshot. Matching is on the exact URL string after trimming surrounding whitespace, so `https://x.com/a` and ` https://x.com/a ` collapse. It deliberately does **not** fold case or trailing slashes — `/Path` vs `/path` and `/x` vs `/x/` are treated as different URLs and both captured, because many servers genuinely serve different content at those, and silently dropping one you meant to capture would be the worse failure.
 
 **How do I check whether a deploy changed a page?** Put the production URL in `urls` and the staging/preview URL in `compareUrl`. You get one row per pair with `diffPercent`, `diffPixels` and a diff image where every changed pixel is highlighted. For a *time*-based check (same URL, before vs after), screenshot it now, then on a later run compare the live URL against the stored baseline image's URL. Note the Actor compares two live URLs, not a URL against an uploaded image file.
 

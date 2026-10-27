@@ -13,7 +13,26 @@ function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.
 function timeBudgetOk() { return remainingMs() > 0; }
 
 const input = (await Actor.getInput()) ?? {};
-const urls = Array.isArray(input.urls) && input.urls.length ? input.urls : ['https://example.com'];
+const rawUrls = Array.isArray(input.urls) && input.urls.length ? input.urls : ['https://example.com'];
+// Dedupe the buyer-supplied list: this Actor charges one PPE `result` event per capture, so the
+// same URL twice in `urls` (easy to get from a spreadsheet export, a pasted sitemap, or two
+// concatenated lists) would bill twice for a byte-identical screenshot. Exact-string match after
+// trim ONLY -- deliberately no lowercasing and no trailing-slash folding, because path case and
+// trailing slashes are genuinely significant on many servers and collapsing them could silently
+// drop a URL the buyer meant to capture.
+const urls = [];
+const seenUrls = new Set();
+for (const u of rawUrls) {
+  // Non-strings keep their existing behaviour (they fail per-URL into a free error row).
+  if (typeof u !== 'string') { urls.push(u); continue; }
+  const trimmed = u.trim();
+  if (seenUrls.has(trimmed)) continue;
+  seenUrls.add(trimmed);
+  urls.push(trimmed);
+}
+if (urls.length < rawUrls.length) {
+  log.warning(`Skipped ${rawUrls.length - urls.length} duplicate URL(s) in \`urls\` -- each unique URL is captured and charged exactly once.`);
+}
 const html = typeof input.html === 'string' && input.html.trim() ? input.html : null;
 const compareUrl = typeof input.compareUrl === 'string' && input.compareUrl.trim() ? input.compareUrl.trim() : null;
 // Pixel diffing needs lossless input, so compare mode always captures PNG regardless of `format`.
