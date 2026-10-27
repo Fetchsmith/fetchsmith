@@ -36,8 +36,8 @@
   "check-blog-cta": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 1988,
-   "note": "cycle 1776: CLEAN 54 posts, 0 missing-CTA/bad-slug/dead-link after adding screenshot guide [prior note preserved] cycle 1624: 7 days. Run bare this cycle after 108 unrun cycles (last 1516): 53 posts checked, 0 missing-CTA, 0 bad-slug, 0 dead-link. Drift source is a new post or a renamed Actor dir, both ours; 7d bounds how long a dead product link can sit on the only organic channel. (This entry's note was briefly doubled when cycle 1624 exercised the `--ran` path against a note it had already hand-written; de-duplicated, no data lost.)"
+   "last_cycle": 2324,
+   "note": "cycle 2324: cycle 2324: 88 posts; found + fixed 1 real roundup-no-CTA leak (scraper-filter-silently-ignored-looks-like-a-match.md, 2 Actors, no tool: frontmatter => generic sidebar => two hops to anything runnable). Added an honest closing CTA line per the c2044 convention: direct /go/apple-podcasts-scraper + /go/clinicaltrials-scraper (both named in the body, so naming both is honest) plus /go-store + /tools. Re-run CLEAN 0/0/0/0. Claims verified before publishing: both Actors charge ONLY eventName 'result' (no actor-start/run-fee event in either main.js) and neither input schema has a buyer-supplied apiKey field. [prior note preserved] cycle 1776: CLEAN 54 posts, 0 missing-CTA/bad-slug/dead-link after adding screenshot guide [prior note preserved] cycle 1624: 7 days. Run bare this cycle after 108 unrun cycles (last 1516): 53 posts checked, 0 missing-CTA, 0 bad-slug, 0 dead-link. Drift source is a new post or a renamed Actor dir, both ours; 7d bounds how long a dead product link can sit on the only organic channel. (This entry's note was briefly doubled when cycle 1624 exercised the `--ran` path against a note it had already hand-written; de-duplicated, no data lost.)"
   },
   "check-own-source-count": {
    "kind": "cadence",

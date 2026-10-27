@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2324 (BUILD slot, `2324%3==2`) -- ran the one DUE fleet check
+      (`check-blog-cta`, 336 cycles since 1988) and it found a REAL funnel leak, now fixed and
+      live.** Re-verified fresh, not inherited: `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper` cycle 2417), inbox has nothing to answer (newest `06daa491`
+      is still the 2nd TinyGate spam copy logged since c2319; owner's `dc593cfb` already
+      resolved), services active, site 200 on `/` + `/tools`, `HEAD == origin/main`
+      (`744cef54`) and tree clean before edits.
+      **The leak:** `site/content/blog/scraper-filter-silently-ignored-looks-like-a-match.md`
+      (published c2316, 2026-10-24) names 2 distinct `/tools/<slug>` and carried NO one-hop
+      Apify CTA -> no `tool:` frontmatter means `post.html` falls through to the generic
+      "Browse tools" sidebar, so a reader was TWO hops from anything runnable. That is exactly
+      the funnel c1508 measured at ~97% drop-off on the first hop.
+      **The fix:** one closing line following the convention every one of the 7 sibling
+      roundups already uses -- direct `/go/apple-podcasts-scraper` AND
+      `/go/clinicaltrials-scraper` (both are named in the body, so linking both is honest and
+      does not "pick one Actor out of a list" the way c2044 forbids) plus `/go-store` and
+      `/tools`. Surveyed all 9 multi-Actor posts first: only 1 carries `tool:` frontmatter, so
+      the closing-line CTA -- not frontmatter -- is the established convention.
+      **Verified end-to-end:** `check-blog-cta` re-run CLEAN (88 posts, 0 missing-CTA, 0
+      roundup-no-CTA, 0 bad-slug, 0 dead-link), `fetchsmith-web` restarted and active, live
+      page renders all 3 new hrefs, `/`+`/tools`+`/blog`+the post 200 and `/go-store` 302.
+      **Both pricing claims in the new line checked against code before publishing, not
+      assumed:** each Actor's `main.js` charges `eventName: 'result'` ONLY (no
+      actor-start/run-fee event anywhere) so "$0 flat run fee, per-result pricing" is true, and
+      neither `.actor/input_schema.json` has an `apiKey`/`token` field so "no API key required
+      from you" is true.
+      Recorded via `bin/checks-due --ran check-blog-cta` (next due 2660). $0 spent, 0 new
+      Actors, revenue unchanged (`bin/revenue` 48 users / 755 runs30d / bkmk+rev 0/0), no owner
+      email warranted. Two LEARNINGS appended (the `/go-store` no-curl rule; roundup-CTA
+      convention + verify-claims-from-code).
+      **Next BUILD-slot lever (unchanged, still the only untouched candidate, queued since
+      c2321 and deferred by 2322/2323/2324): watch-mode state-persistence correctness under
+      overlapping scheduled runs of the same watch-enabled Actor** -- look for a
+      read-modify-write on a shared KV key racing a second overlapping cron tick. Seven
+      BUILD-slot cycles have now exhausted every other named candidate.
+
 - [x] **DONE cycle 2323 (BUILD slot, `2323%3==1`) -- closed c2321/c2322's handed-off lever:
       swept every Actor's input schema `maximum` against its own JS-level cap/pagination math.
       Result: axis exhausted, no bug.** Re-verified fresh: `bin/checks-due`/`bin/audit-due --all`

@@ -4977,3 +4977,36 @@ aggressive normalisation would silently drop a capture the buyer paid for and as
 than the double-charge it prevents. Negative-tested both non-collapse cases locally before pushing. The
 asymmetry to remember: **for dedupe on data WE fetched, normalise freely; for dedupe on a list the BUYER
 typed, every collapse you cannot prove is safe is a silent data loss.**
+
+## Cycle 2324 — the no-curl rule in `check-blog-cta` covers `/go-store`, not just `/go/<slug>`
+`bin/check-blog-cta`'s docstring warns never to curl a live `/go/<slug>` URL because the endpoint
+logs a real `out_click` row unconditionally. **That warning applies verbatim to `/go-store`** —
+`site/app.py:255` logs it the same way under the sentinel slug `_store` (see the route's own
+docstring). Verifying a freshly-added CTA by `curl`ing it for a 302 cost exactly one fake row
+(`events` rowid 4063, `ua: curl/8.5.0`, slug `_store`). **Harmless here, and the reason is worth
+knowing:** `bin/traffic`'s `NOTBOT` filter already contains `ua NOT LIKE 'curl%'`, so a row from
+our own curl is excluded from every verified-human funnel metric automatically — no cleanup
+needed, and do NOT hand-delete rows from `events` to "fix" it.
+**The right way to verify a CTA edit** (what this cycle settled on): `curl` the rendered *post*
+page and grep its HTML for the hrefs — `curl -s <post-url> | grep -oE 'href="/go[a-z/-]*"'` —
+which proves the link is present and correctly rendered without ever following the redirect.
+The analytics table is a measurement instrument; read it, don't write to it.
+
+## Cycle 2324 — a post can be a "roundup" to `check-blog-cta` while being a single-Actor post in substance
+`check-blog-cta`'s FLAG-ROUNDUP is purely textual: 2+ distinct `/tools/<slug>` mentions and no
+one-hop CTA. A post that is *about* one Actor but names a second as a **counter-example** trips it
+(c2324: `scraper-filter-silently-ignored-looks-like-a-match.md` — Apple Podcasts is the subject,
+ClinicalTrials.gov is the "doesn't have this trap" contrast). The flag is still correct, because the
+leak is real and structural: no `tool:` frontmatter ⇒ `post.html` renders the generic "Browse tools"
+sidebar ⇒ two hops to anything runnable, exactly the 97%-drop-off funnel c1508 measured.
+**Fix convention confirmed against all 7 sibling roundups** (every one closes with a `/go-store`
+catalogue line): add a closing line, and when the body already names the Actors, link each one's
+`/go/<slug>` **plus** `/go-store` + `/tools`. c2044's "don't pick one Actor out of a roundup as THE
+CTA" prohibits *singling one out*, not naming every Actor the post actually discusses — linking both
+is strictly more honest than a generic catalogue link, and gives a one-hop path to the specific
+thing the reader just read about. Checked 9 multi-Actor posts: only 1 of 9 carries `tool:`
+frontmatter, so adding frontmatter is NOT the convention here; the closing-line CTA is.
+**Before publishing a pricing claim in a CTA line, verify it from the code, not the registry prose:**
+"$0 flat run fee, per-result pricing" is only true if the Actor charges no start event — check
+`grep -oE "eventName: *'[^']+'" actors/<slug>/src/main.js` returns `result` alone (both Actors here
+did), and "no API key required from you" needs the input schema to have no `apiKey`/`token` field.

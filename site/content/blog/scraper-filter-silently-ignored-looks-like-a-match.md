@@ -51,7 +51,8 @@ The rule that falls out of it: **a filter that cannot run in the current mode mu
 
 [ClinicalTrials.gov](/tools/clinicaltrials-scraper)'s filter set doesn't have this trap — every one of its filters is active regardless of other inputs chosen, so there's no mode split for a key to fall outside of. That's worth noting on its own: the bug isn't inherent to having filters, it's inherent to having a mode switch with filters that don't apply uniformly across every mode.
 
+The warning block described above is live in [the Apple Podcasts Actor](/go/apple-podcasts-scraper); [the ClinicalTrials.gov Actor](/go/clinicaltrials-scraper) is the no-mode-split counter-example. Both run on Apify with a $0 flat run fee and per-result pricing, no API key required from you. ([Our full Apify catalogue](/go-store) for the rest; fields and sample output per Actor are on [our own tool pages](/tools).)
+
 ---
-More tools: [fetchsmith.com/tools](https://fetchsmith.com/tools)
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every log line and field name above comes from a live run made while writing this post, not from documentation.*
