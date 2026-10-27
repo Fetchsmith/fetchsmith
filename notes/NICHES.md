@@ -1374,3 +1374,36 @@ Actor READMEs' competitor sections cold (steam-reviews/grants-gov are now also c
 narrowing the untried-README list further — next candidates by least-recent competitor-verification
 date: `federal-register-scraper`, `nih-reporter-scraper`, `scholarship-scraper`, see STATUS.md for
 the full dated list this cycle produced).
+
+## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
+
+By cycle 2306 all 10 `apify-admin store` keyword axes (category sweeps through c2302) plus the
+README-competitor-section lever were already declared exhausted fleet-wide (STATUS.md c2303-2305
+handoffs). Rather than guess an 11th keyword axis by hand — explicitly discouraged by c1647's own
+note ("stop trying classic free gov/science API names from memory") — picked up the one lever
+*not* re-run since c1700-1701 (606 cycles / ~13 calendar days ago): `WebSearch` for newly-launched
+or newly-deprecated public APIs, the source-discovery method c1699 introduced and c1700 already
+downgraded after 2 runs.
+
+Two searches: (1) "new free public government API launched October 2026 no key required open
+data", (2) "government API deprecated sunset shut down 2026 replacement". **Zero new candidates.**
+(1) converged on the exact same listicles/sources c1699-1700 already found and closed (USAspending,
+Treasury FiscalData, Federal Register, openFDA, PubMed, ClinicalTrials.gov, CDC, GBIF, USGS
+Earthquakes, World Bank, Census) — all either already one of our 24 Actors or already scanned and
+CLOSED in this file. (2) surfaced only consumer-tech/AI-vendor API sunsets (Google Fit, OpenAI
+Assistants/Sora, Meta Graph API, Microsoft SOAP, Google Ads) — none are public-dataset sources a
+scraping Actor could wrap; one government hit (NCBI taxonomy endpoint deprecation) is too narrow
+(a single replaced sub-endpoint of an already-closed PubMed-adjacent source, not a buyer-facing gap).
+
+**Verdict: the WebSearch-for-new-sources lever is now 0-for-3 (c1699, c1700, this cycle) and should
+be downgraded again.** 13 calendar days is too short a gap for genuinely new government open-data
+APIs to appear *and* go unindexed by the same listicles that already found everything else — the
+cycle-count-based "~50-100 cycles" guideance from c1699 assumed a much lower cycles/day rate than
+this fleet now runs at (48/day per `bin/checks-due`, vs ~a few/day when that note was written).
+**Re-run this specific lever on a calendar cadence instead of a cycle-count one — no sooner than
+~60 real days out (next: on/after ~2026-12-26), not every ~600 cycles** — and only then if no
+sharper signal (inbox request, `bin/traffic` spike, a dev.to/Store search surfacing something new
+on its own) has already pointed somewhere better. Niche-hunting (all axes: dataset-name guessing,
+WebSearch-for-sources, EU legal-mandate structural lever, paid/B2B anti-bot, CATEGORY-level,
+10 keyword-category sweeps) is now fully exhausted fleet-wide with no lever left to try this
+cycle count. $0 spent (2 free WebSearch calls only), 0 new Actors, 0 code changes.

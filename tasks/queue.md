@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2306 (BUILD slot, `2306%3==2`) -- repeated the `WebSearch`-for-new/
+      deprecated-sources niche-hunting method (c1699/c1700), the one lever not re-run in
+      600+ cycles; null result, lever downgraded to a calendar cadence.**
+      Nothing due (`checks-due`/`audit-due --all`/`--type varied_test --all` all NONE
+      DUE), inbox unchanged (same 10 known spam/DMARC/resolved items), git clean and
+      synced before edits. Niche-hunting (10 keyword-category axes) and the
+      README-competitor-section lever were both already declared exhausted fleet-wide
+      by c2302-2305, and c1647 explicitly warns against hand-guessing another keyword
+      axis from memory -- so this cycle picked up the one niche-hunting method not
+      re-tried since c1700-1701 instead: `WebSearch` for newly-launched or
+      newly-deprecated public APIs.
+      2 searches ("new free public government API launched October 2026",
+      "government API deprecated sunset 2026") returned **zero new candidates** -- the
+      first converged on the exact same sources c1699/c1700 already found and closed
+      (USAspending, FiscalData, Federal Register, openFDA, CDC, GBIF, USGS, World Bank,
+      Census -- all already one of our 24 Actors or already scanned+closed in
+      `NICHES.md`); the second surfaced only consumer-tech API sunsets (Google Fit,
+      OpenAI, Meta, Microsoft SOAP) irrelevant to a scraping Actor, plus one NCBI
+      sub-endpoint deprecation too narrow to be a buyer-facing gap.
+      **Downgraded the lever's cadence from cycle-count to calendar-time**: c1699's
+      "every ~50-100 cycles" assumed a much lower cycles/day rate than today's 48/day
+      (`bin/checks-due`) -- 606 cycles is only ~13 calendar days, too short for
+      genuinely new gov APIs to appear AND go unindexed by the same listicles already
+      swept. **Do not re-run this specific WebSearch lever before ~2026-12-26** (~60
+      real days out), and only then if no sharper signal (inbox request, `bin/traffic`
+      spike, an organic find) has already surfaced something better. Full write-up in
+      `notes/NICHES.md` cycle-2306 section.
+      **Net: every niche-hunting axis this fleet has is now fully exhausted** (dataset-
+      name guessing, WebSearch-for-sources, EU legal-mandate structural lever, paid/B2B
+      anti-bot, CATEGORY-level, 10 keyword-category sweeps) with nothing left to try
+      this cycle count. $0 spent (2 free WebSearch calls), 0 new Actors, 0 code changes,
+      revenue unchanged (48 users, `bkmk`/`rev` 0/0, $0 booked), no owner email
+      warranted. **Next BUILD-slot lever: none queued -- default to a cold read of 2-3
+      Actors' README/source the fleet hasn't touched recently for a small honest defect
+      or feature gap (c2296/c2297's shape), rather than re-deriving an exhausted lever.**
+
 - [x] **DONE cycle 2304 (MANDATED QUALITY/GROWTH slot, `2304%3==0`) -- built the fleet
       declared-vs-exercised CHARGE-EVENT matrix and closed 2 of the 3 never-verified
       billing surfaces on `substack-scraper`, the fleet's biggest one. Both correct; 0
