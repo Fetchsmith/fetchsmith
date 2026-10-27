@@ -33,17 +33,38 @@ const maxSplitWindows = Math.max(3, Math.min(Number(input.maxSplitWindows ?? 24)
 const maxItemsPerQuery = Math.min(Number(input.maxItemsPerQuery ?? 100), autoSplitLargeQueries ? 50000 : 1000);
 const maxResults = Math.min(Number(input.maxResults ?? 200), 5000);
 const includeComments = input.includeComments !== false;
+// `new Date(junk)` is an *Invalid Date*, whose `.getTime()` is NaN. Unvalidated, that NaN flows
+// into `created_at_i>NaN` in the Algolia numericFilters string -- Algolia 400s on that syntax, but
+// got-scraping here does not throw on non-2xx (confirmed live, cycle 2313: a 400 body still reads
+// as valid JSON), so the query silently falls into the ordinary "fetched === 0" / status:"empty"
+// branch. The buyer sees a plausible "no stories/comments matched" result instead of a message
+// about their malformed date -- the widen-and-bill class's silent-narrow sibling, same root cause
+// (google-play-reviews-scraper, fixed cycle 2312). Throw instead, same shape as that fix.
+function parseDateBound(raw, fieldName) {
+  const s = String(raw ?? '').trim();
+  if (!s) return null;
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) {
+    throw new Error(`"${fieldName}" is not a parseable date (got ${JSON.stringify(raw)}). Use ISO 8601, e.g. "2026-01-01".`);
+  }
+  return Math.floor(d.getTime() / 1000);
+}
+const postedAfterSec = parseDateBound(input.postedAfter, 'postedAfter');
+const postedBeforeSec = parseDateBound(input.postedBefore, 'postedBefore');
+if (postedAfterSec != null && postedBeforeSec != null && postedAfterSec >= postedBeforeSec) {
+  throw new Error(`"postedAfter" (${input.postedAfter}) is on or after "postedBefore" (${input.postedBefore}) — the window is empty, so no item can ever match. Swap them.`);
+}
 const numericFilters = [];
-if (input.postedAfter) numericFilters.push(`created_at_i>${Math.floor(new Date(input.postedAfter).getTime() / 1000)}`);
-if (input.postedBefore) numericFilters.push(`created_at_i<${Math.floor(new Date(input.postedBefore).getTime() / 1000)}`);
+if (postedAfterSec != null) numericFilters.push(`created_at_i>${postedAfterSec}`);
+if (postedBeforeSec != null) numericFilters.push(`created_at_i<${postedBeforeSec}`);
 // Half-open [from, to) epoch-second bounds for the buyer's own date range, used as the root window
 // auto-split halves. Chosen to reproduce the two filters just above EXACTLY, so an auto-split run
 // searches the same span as an unsplit one: Algolia's `created_at_i>X` on integer seconds is
 // `>=X+1`, and `<Y` is already half-open. Unbounded ends fall back to HN item 1 and "now".
 const HN_FIRST_ITEM_SEC = 1160418111; // 2006-10-09, HN's oldest item
-const baseWindowFrom = input.postedAfter ? Math.floor(new Date(input.postedAfter).getTime() / 1000) + 1 : HN_FIRST_ITEM_SEC;
-const baseWindowTo = input.postedBefore
-  ? Math.floor(new Date(input.postedBefore).getTime() / 1000)
+const baseWindowFrom = postedAfterSec != null ? postedAfterSec + 1 : HN_FIRST_ITEM_SEC;
+const baseWindowTo = postedBeforeSec != null
+  ? postedBeforeSec
   : Math.floor(Date.now() / 1000) + 60; // +60s so an item posted mid-run is still inside the root window
 // Floor on how narrow a split may get. An hour of HN has never held 1000 items of one keyword, so
 // a window this small that STILL truncates is a signal to narrow the query, not to keep halving.

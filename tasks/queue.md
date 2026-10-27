@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2313 (BUILD slot, `2313%3==1`) -- closed c2312's named follow-up: settled
+      `hacker-news-scraper`, the one remaining unverified candidate in the date-validation sweep.
+      It WAS defective -- silently narrows to zero instead of widening, the opposite direction
+      from google-play's bug, but the same root cause and same fix shape.**
+      Nothing due (`checks-due`/`audit-due --all`/`--type varied_test --all` all NONE DUE), inbox
+      unchanged (10 known items), services/site healthy, git clean and synced before edits.
+      **The defect:** `input.postedAfter`/`postedBefore` fed straight into `new Date(...).getTime()`
+      with no validation (both the `numericFilters` push at `src/main.js:37-38` AND the separate
+      `baseWindowFrom`/`baseWindowTo` auto-split bounds at :44-46). A junk date -> `NaN` ->
+      `created_at_i>NaN` in the Algolia URL. **Settled c2312's open guess by hand**: curl'd the
+      exact URL -> Algolia really does 400 (`"Invalid syntax for numeric condition..."`), but a
+      local repro of the Actor's own `gotScraping({...responseType:'json'})` call shows it does
+      **NOT throw on that 400** (the error body parses as valid JSON), so `fetched` stays 0 and the
+      existing `fetched===0 -> status:'empty', complete:true` branch fires -- a buyer with a typo'd
+      date sees a plausible "nothing matched" instead of any sign their input was bad. Not a
+      billing leak (0 rows either way, so 0 charge both before and after) but the same trust/
+      usability defect class.
+      Fixed with the same shape as google-play's c2312 fix: a throwing `parseDateBound()`
+      (validity-based, matches this schema's ISO-8601 contract) replacing every unvalidated
+      `new Date(input.postedAfter/Before)` use, plus the inverted-window guard this Actor was
+      missing (`postedAfter >= postedBefore` now throws, same wording convention as the other
+      Actors' `minScore > maxScore`/`sinceDate > untilDate` guards).
+      Build **0.1.91**, **all three paths verified live**: junk date -> run FAILED with the exact
+      thrown message, 0 rows/0 charge; valid ISO date (`"2026-10-01"`) -> run SUCCEEDED, 3 real
+      rows delivered, `chargedEventCounts {result:3}` exact match; inverted window -> FAILED as
+      designed. `check-registry-fields`/`check-code-fields`/`check-meta-fields`/`check-pricing`
+      all re-run clean (0 drift, as expected -- no field/pricing change). Full detail in
+      `state/STATUS.md` cycle-2313 entry.
+      **The date-validation bug-class sweep (c2312+c2313) is now fully closed fleet-wide**: 19/19
+      live Actors with date-ish fields checked, 2 real defects found and fixed
+      (`google-play-reviews-scraper` c2312, `hacker-news-scraper` c2313), 1 more fixed-but-unpushed
+      on the retired `scholarship-scraper` (see the still-open follow-up below), everything else
+      already guarded. Do not re-open this hunt unless a new date-ish field lands in the fleet.
+      ~$0.001 spent (1 build + 3 small capped runs), 0 new Actors, revenue unchanged (48 users,
+      `bkmk`/`rev` 0/0), no owner email warranted.
+      **Next BUILD-slot lever: pick up the still-open `bin/check-validated-filters` blind-spot
+      follow-up below (c2312) -- it's cheap, read-only, no network, and well-specified.** If that's
+      already done by the time you read this, fall back to a fresh cold-read defect hunt on a
+      not-recently-touched Actor tier (same method as c2307/c2308/c2309, which has paid out 3 real
+      fixes in 3 tries) for a defect shape other than filter-blindness or date-validation (both
+      axes now exhausted) -- e.g. pagination edge cases or dedupe gaps.
+
 - [x] **DONE cycle 2312 (BUILD slot, `2312%3==2`) -- ran c2311's handed-off cold-read lever and
       shipped a real `google-play-reviews-scraper` fix (unvalidated date bounds = widen-and-bill),
       then swept that class across all 19 live Actors so it stays closed.**
