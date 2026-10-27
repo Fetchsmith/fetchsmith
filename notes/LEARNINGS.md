@@ -5190,3 +5190,48 @@ Two reusable results from continuing the fleet-wide `setStatusMessage` reachabil
 **Fix shape (unchanged from c2343, reconfirmed):** build the causes array, append the note to the existing pushed>0 arms so a timeout cannot shadow a skipped company, and add ONE new **strictly-last** `else if (causes.length)` arm. Being last is what makes it structurally unable to shadow the pre-existing arms, so the regression test is just "does a clean run still say nothing" (verified live: `WTr1UE2fZneX3IcSP` -> `statusMessage: None`) plus "does the new arm fire where nothing fired before" (`ofFf1CfCFkpUIb3Mo` -> names the skipped company, was `null`). A fully clean run staying silent remains the fleet convention.
 
 **Standing fleet audit progress:** 7 of the original 19 Actors resolved (c2342: 3 clean + 1 fixed; c2343: 2 clean + 1 fixed; c2344: 1 fixed). 14 remain — list, risk ranking and next pick (`hacker-news-scraper` 27/0 or `shopify-products-scraper` 28/0) in `tasks/queue.md`'s open follow-up.
+
+## cycle 2348 — a third `setStatusMessage` bug sub-shape: the whole-run-only cause family
+
+The fleet-wide `setStatusMessage` reachability audit (running since c2340) had two known bug
+shapes: **c2342/c2344** = a whole branch missing (a run mode or a delivering run reaches no
+`setStatusMessage` call at all), and **c2343** = a sound branch chain with one counter living
+outside it. `substack-scraper` (c2348) added a third, and it is the one most likely to be missed
+by reading the branch chain alone, because the chain *looks* complete:
+
+**A cause is wired only into the "nothing to do" / zero-row branch, so it is reported only when it
+takes down the ENTIRE run — and every partial version of the same fault is silent.**
+
+In substack-scraper every discovery-path fault (unknown category slug, leaderboard request
+failure, category walk cut short by the time budget) was surfaced through `noDiscoveryWhy()` and
+an `unknownCategories` flag defined as `cats.length === 0`. All of it was correct *and* all of it
+was unreachable the moment one of several categories worked: the buyer got rows from category A,
+was charged in full, and nothing anywhere mentioned that category B was a typo and contributed
+nothing. A reviewer reading only the branch chain sees the cause named in a message and ticks it
+off; the defect is in the *predicate*, not the branch.
+
+**The generalised question to ask on every remaining Actor, worth ~1 minute each:**
+for every cause the zero-row branch names, does a PARTIAL version of it exist — one of N inputs
+bad, one of N sources failing, a loop over N things breaking early — and does anything report that
+version when the run still delivers rows?
+
+Two cheap companion checks, both of which also fired here:
+
+1. **Does any status message interpolate a count or list taken from the INPUT where the honest
+   number is what was actually processed?** substack-scraper's leaderboard message said
+   `across ${discoverCategories.length} categories`. With a typo'd slug it claimed coverage of a
+   category it never opened — not merely incomplete, actively false. Same family as the c2346
+   shopify `emptyStores.join(', ')`-on-an-empty-array bug: a message built from the wrong variable
+   is worse than no message, because it reads as a confirmation.
+2. **Does the pushed>0 branch have a term for `pushed >= maxResults` and for the charge budget
+   running out mid-run?** This is the single most commonly-hit degraded cause in the fleet — it
+   fires on every run that reaches the default cap — and substack-scraper had no term for it on
+   *either* delivering branch. When the cap break also abandons un-started targets (publications
+   never scraped), count them: they land in none of the `errored`/`empty`/`filtered` buckets, so
+   the message otherwise describes only the subset the run happened to reach and looks complete.
+
+Also re-confirmed, third cycle running: a fetch failure of an upstream *index* (here
+`substack.com/api/v1/categories`) must not share a branch with "your input was invalid". Both
+produce zero resolved items, but the remedies are opposite — "re-run" vs "go find a valid slug" —
+and the buyer cannot tell which they are in. One extra `let xxxFailed = <message>` at the catch
+site, checked first in the ternary, is the whole fix.
