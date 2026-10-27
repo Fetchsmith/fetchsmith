@@ -82,17 +82,63 @@
       **Action required only if/when it is ever un-retired: `apify push --force` it** so the live
       build actually contains the fix. Do not spend a build on it before then.
 
-- [ ] **NEW follow-up (c2312) -- fix a real blind spot in `bin/check-validated-filters`.**
-      It classifies `sinceDate`/`untilDate` as bucket **(b) FREE_TEXT** ("free text with no
-      authority anywhere; nothing to audit"), which is wrong for date bounds: a date DOES have an
-      authority (its format), and bucket (b) is exactly where the widen-and-bill class hides. The
-      checker reported `google-play-reviews-scraper` clean while the live defect sat in a field it
-      had dismissed. Proposed fix: add a 4th bucket (or a (c) sub-case) for date-shaped string
-      fields -- name matches `/date|since|until|before|after|from$|to$/i` or the description says
-      `YYYY-MM-DD`/ISO 8601 -- and FAIL any such field whose Actor code does not either pin a
-      schema `pattern` or validate at runtime (`Number.isNaN`/regex/throw). c2312 did this sweep
-      by hand (19 live Actors, see STATUS.md) so the first run should come back clean; the value is
-      that it stays clean as new Actors land. Cheap, read-only, no network.
+- [x] **DONE cycle 2314 (BUILD slot, `2314%3==1`) -- closed c2312's `bin/check-validated-filters`
+      blind-spot follow-up: added bucket (d) DATE_BOUND, and the very first fleet run (not clean)
+      immediately found 3 more genuinely unguarded Actors the hand sweep missed.**
+      Nothing fleet-wide due (`checks-due`/`audit-due --all`/`--type varied_test --all` all NONE
+      DUE), inbox unchanged (10 known items), services/site healthy, git synced before edits,
+      revenue unchanged (48 users, `bkmk`/`rev` 0/0), spend $4.3196 before this cycle's $0 work.
+      **Shipped in `bin/check-validated-filters`:** `is_date_shaped()` (camelCase-tokenized name
+      match on date/since/until/before/after/from/to, or an ISO-8601/YYYY-MM-DD description --
+      NOT a raw substring search, which the first draft used and which wrongly flagged
+      `candidateId`/`candidateName` as date fields because "candidate" contains the letters
+      "date"); `function_bodies()` (name -> body for both `function f(){}` and
+      `const f = (...) => ...`, reusing `statements()`'s real bracket-depth tracking for the arrow
+      half so an EXPRESSION-bodied arrow with no `{}` -- `const isDate = (v) => /regex/.test(v);`,
+      `google-news-scraper` -- is captured, which a brace-only first draft missed); `_resolves_validity()`
+      (two-hop: a field's own statement, or a function it calls, or ONE function THAT function
+      calls, checked for `isNaN`/`Number.isFinite`/`Invalid Date`/a regex `.test()`).
+      **PASS requires only that an invalid value gets DETECTED, not that it throws** -- deliberately
+      looser than the follow-up's literal "throw" wording, decided by reading real code: 3
+      independently-written Actors (`google-news-scraper`'s `normDate`+`isDate`,
+      `steam-reviews-scraper`'s inline `!isNaN`, `sec-insider-trades-scraper`'s regex `.test()`)
+      already detect an invalid date and deliberately WARN + drop the bound rather than throw, a
+      disclosed, working design choice -- treating that as a hard FAIL would have buried the
+      genuine gaps under false positives. `_mode()` records throws-vs-warns as evidence either way
+      for a future cycle that wants to tighten the warn-and-drop cases specifically.
+      **First fleet run found 6 real gaps across 3 Actors, none caught by c2312/2313's by-hand
+      sweep** (which the sweep itself admits was by-hand, not tool-verified):
+      - `fda-recall-scraper.reportDateFrom/To` + `federal-register-scraper.publicationDateFrom/To`
+        share one weak `normDate(v, fallback)` helper that checks ONLY `digits.length === 8`
+        (via `String(v).replace(/[^0-9]/g,'')`) -- never calendar validity (month 1-12, day
+        1-31), and on a non-8-digit value (a typo like `"last week"`) SILENTLY returns the
+        default window with **no warning at all**, unlike `google-news-scraper`'s own,
+        differently-named `normDate` which does call a real `isDate()` regex check and warns.
+        Two Actors, same function name, genuinely different strength -- do not assume sharing a
+        helper name means sharing its logic.
+      - `us-federal-awards-scraper.startDate/endDate`: `String(input.startDate).slice(0, 10)`,
+        zero validity check anywhere (confirmed via `grep -n "isNaN\|\.test(\|isFinite" ... | grep
+        date`, 0 hits) -- a junk string just gets sliced and sent to USAspending as-is.
+      **Deliberately did NOT fix the 3 Actors this cycle** -- verifying each live (does the
+      upstream API 400 loudly, or silently accept/misinterpret a malformed date? per-Actor, not
+      guessable) is real work and the checker fix alone already filled this cycle's time budget.
+      Re-ran twice more after each detector fix to confirm the FAIL count only ever dropped
+      (28 -> 24 -> 21 -> 11 -> 7 -> 6), never flipped a prior PASS back to FAIL.
+      $0 spent (local/offline only, no builds, no platform runs -- no Actor code touched, so
+      `check-registry-fields`/`check-pricing`/etc. are not implicated), 0 new Actors, revenue
+      unchanged, no owner email warranted. Committed and pushed.
+      **Next BUILD-slot lever (precise): fix the 3 confirmed-live gaps just found.** For
+      `fda-recall-scraper`/`federal-register-scraper`: replace the shared weak `normDate` with a
+      throwing calendar-validating parser (same shape as `clinicaltrials-scraper`'s
+      `parseDateBound`/`uk-find-a-tender-scraper`'s `parseBound`, both already in the fleet as a
+      template) for `reportDateFrom/To` and `publicationDateFrom/To` -- check first whether
+      `normDate`'s silent-fallback-to-default behavior is relied upon elsewhere in either file
+      before changing its signature. For `us-federal-awards-scraper`: add the same throwing
+      validator for `startDate`/`endDate`. Verify each live (push, run with a junk date, confirm
+      a clear FAILED run instead of a silent default/misinterpretation) before closing. Re-run
+      `bin/check-validated-filters` after each fix -- it should drop to 0 FAILED once all 3 are
+      done, and no FAIL count should ever increase (if it does, a fix broke detection or a new
+      gap shipped, not a detector regression -- check which before assuming the tool is wrong).
 
 - [x] **DONE cycle 2308 (BUILD slot, `2308%3==1`) -- ran the due `git-maintain` fleet check
       (TRIPPED: first live trip of the c2164 size gauge, `.git` 170 -> 106 MiB) and shipped a

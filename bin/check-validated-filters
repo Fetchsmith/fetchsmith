@@ -14,6 +14,22 @@ Every filter field in an Actor's input schema falls into one of three buckets:
                         (a) nor (b), and the validator could only see 163 of 712 real
                         agency codes. The code that validates a filter is itself an
                         unaudited claim.
+  (d) DATE_BOUND     -- a date-shaped string field (a camelCase name token is
+                        date/since/until/before/after/from/to, or the description says
+                        YYYY-MM-DD/ISO 8601). Added cycle 2314: this class used to fall
+                        into (b)
+                        FREE_TEXT ("nothing to audit"), which is wrong -- a date HAS an
+                        authority (its format), and that bucket is exactly where cycle
+                        2312/2313 found two live widen-and-bill/narrow-to-zero defects
+                        (google-play-reviews-scraper, hacker-news-scraper: an unparsed
+                        `new Date(junk)` is an Invalid Date, which is silently truthy/
+                        NaN, so the filter bound was defeated instead of rejected).
+                        PASS requires either a schema `pattern`, or runtime code that
+                        THROWS on an unparseable value (isNaN/Invalid Date/NaN check, or
+                        a regex `.test()` guard) -- found either inline or inside a named
+                        helper function the field's value is piped through (e.g.
+                        `parseDateBound()`). A date field with neither is FAILED loudly
+                        here instead of silently, which is the whole point.
 
 For every (c) field this prints the evidence lines so a cycle can ask the two questions
 that matter:
@@ -66,7 +82,173 @@ BOOKKEEPING_RE = re.compile(r'seen|deliver|dedup|visit|attempt|summar|snapshot|p
                             r'watchMeta|watchNow|reached|emitted|charged|counts?$', re.I)
 DROP_TOKENS = re.compile(r'\b(Ignoring|ignored|dropp?(ing|ed)?|skipp?(ing|ed)?)\b', re.I)
 THROW_TOKENS = re.compile(r'\bthrow\b')
+# Rejects a bad value without a JS `throw`: the Apify SDK's own fail-the-run call.
+# `app-store-reviews-scraper` uses this form exclusively for its date-bound guard, and a
+# plain `\bthrow\b` search missed it on the first run of the new (d) bucket below.
+REJECT_TOKENS = re.compile(r'\bthrow\b|Actor\.fail\(')
 FACET_TOKENS = re.compile(r'\bawait\b|fetch\(|httpGet|apiGet|probe', re.I)
+
+# --- bucket (d): date-shaped string fields (cycle 2314) ---------------------------
+ISO_DESC_RE = re.compile(r'YYYY-MM-DD|ISO[- ]?8601', re.I)
+NAN_TOKENS = re.compile(r'isNaN|Number\.isNaN|Invalid Date|isFinite', re.I)
+CAMEL_TOKEN_RE = re.compile(r'[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])')
+DATE_TOKENS = {'date', 'dates', 'since', 'until', 'before', 'after', 'from', 'to'}
+FUNC_DECL_RE = re.compile(r'function\s+([\w$]+)\s*\(')
+ARROW_RE = re.compile(r'^\s*(?:async\s*)?\([^)]*\)\s*=>')
+CALLNAME_RE = re.compile(r'([\w$]+)\s*\(')
+
+
+def _brace_body(src, open_idx):
+    depth, i = 0, open_idx
+    while i < len(src):
+        if src[i] == '{':
+            depth += 1
+        elif src[i] == '}':
+            depth -= 1
+            if depth == 0:
+                return src[open_idx:i + 1]
+        i += 1
+    return src[open_idx:]
+
+
+def function_bodies(src):
+    """Name -> body text, for `function name(...) {}` and `const name = (...) => ...`.
+
+    Lets a validator one hop away from the field's own statement still count: the real
+    shape this bucket exists for is `const sinceDate = parseDateBound(input.sinceDate,
+    'sinceDate');` with the actual `throw`/`isNaN` living inside `parseDateBound`'s body,
+    not on the call-site line.
+
+    The arrow half reuses `statements()` rather than its own brace-only regex: a brace-
+    only extractor missed `const isDate = (v) => /^\\d{4}-\\d{2}-\\d{2}$/.test(v);`
+    (google-news-scraper) -- a concise, EXPRESSION-bodied arrow with no `{}` at all --
+    and `statements()` already handles both forms correctly via real bracket-depth
+    tracking (that is the whole reason it exists, see its own docstring above).
+    """
+    bodies = {}
+    for m in FUNC_DECL_RE.finditer(src):
+        brace = src.find('{', m.end())
+        if brace != -1:
+            bodies[m.group(1)] = _brace_body(src, brace)
+    for name, rhs, _off in statements(src):
+        if name not in bodies and ARROW_RE.match(rhs):
+            bodies[name] = rhs
+    return bodies
+
+
+def is_date_shaped(name, spec):
+    """Whole-token match on camelCase pieces, not a raw substring.
+
+    A raw `re.search('date', name, re.I)` flags `candidateId`/`candidateName` as date
+    fields, because "candidate" contains the letters "date" -- a false positive found
+    the first time this ran fleet-wide. Splitting into camelCase tokens first
+    (`studyStartDateFrom` -> study/Start/Date/From) keeps the real signal (a `date`/
+    `from`/`to`/etc. token) without matching letters that happen to appear mid-word.
+    """
+    if ISO_DESC_RE.search(spec.get('description') or ''):
+        return True
+    tokens = {t.lower() for t in CAMEL_TOKEN_RE.findall(name)}
+    return bool(tokens & DATE_TOKENS)
+
+
+def date_shaped_fields(slug):
+    path = os.path.join(ACTORS, slug, '.actor', 'input_schema.json')
+    if not os.path.exists(path):
+        return []
+    props = json.load(open(path)).get('properties', {})
+    out = []
+    for name, spec in props.items():
+        if NON_FILTER.match(name) or spec.get('type') != 'string' or spec.get('enum'):
+            continue
+        if is_date_shaped(name, spec):
+            out.append((name, spec))
+    return out
+
+
+def _has_validity_check(text):
+    return bool(NAN_TOKENS.search(text) or '.test(' in text)
+
+
+def _mode(text):
+    return 'throws/fails' if REJECT_TOKENS.search(text) else 'warns+drops, does not reject'
+
+
+def _resolves_validity(callname, bodies, depth=2, _seen=None):
+    """Does `callname`'s body check validity, directly or via one more call it makes?
+
+    One hop (e.g. `normDate()` calling `isDate()`) is a real shape in the fleet
+    (google-news-scraper): the field's own helper delegates the actual `/^\\d{4}-...$/
+    .test()` to a second, smaller function. Unbounded recursion would risk matching an
+    unrelated validity check elsewhere in the file; two hops mirrors the same tradeoff
+    `derived_vars()` above already made for the (c) bucket.
+    """
+    _seen = _seen or set()
+    if callname in _seen or callname not in bodies:
+        return False
+    _seen.add(callname)
+    body = bodies[callname]
+    if _has_validity_check(body):
+        return True
+    if depth <= 0:
+        return False
+    return any(_resolves_validity(n, bodies, depth - 1, _seen)
+               for n in CALLNAME_RE.findall(body) if n != callname)
+
+
+def date_validated(name, spec, src, bodies):
+    """True + evidence if a date-shaped field is checked for validity, else False.
+
+    PASS requires only that an invalid value gets DETECTED (isNaN/Invalid Date/
+    Number.isFinite/a regex `.test()`), not that it throws. The real blind spot this
+    bucket exists for is a field with NO validity check anywhere (`new Date(junk)` used
+    directly, Invalid-Date's truthiness silently defeating a naive comparison) --
+    cycle 2312/2313's actual fixes. Whether a detected-invalid value then throws
+    (`google-play`/`hacker-news`'s fix, `clinicaltrials`/`uk-find-a-tender`'s
+    `parseBound`) or is dropped with a disclosed `log.warning` (`google-news-scraper`'s
+    `normDate`, `steam-reviews-scraper`, `sec-insider-trades-scraper`) is a softer,
+    separate design choice three independently-written Actors already make on purpose --
+    flagging it as a hard FAIL here would bury the three genuine zero-validation gaps
+    this run actually found (`fda-recall-scraper`/`federal-register-scraper`'s shared
+    `normDate` checks only a digit COUNT, never calendar validity, and silently falls
+    back to a default with no warning at all; `us-federal-awards-scraper` does not check
+    validity anywhere) under false positives. `_mode()` records which kind it is as
+    evidence, for a future cycle that wants to tighten warn-and-drop cases separately.
+
+    Schema `pattern` is authoritative on its own (cycle 2312/2313 found NONE of the
+    fleet's 19 live date fields pin one, so in practice this always falls through to the
+    runtime check below).
+    """
+    if spec.get('pattern'):
+        return True, 'schema pattern'
+    seed = re.compile(r'\binput\.' + re.escape(name) + r'\b')
+    for sname, rhs, _off in statements(src):
+        if not seed.search(rhs):
+            continue
+        if _has_validity_check(rhs):
+            return True, f'{sname} inline validity check ({_mode(rhs)})'
+        for callname in CALLNAME_RE.findall(rhs):
+            if _resolves_validity(callname, bodies):
+                return True, f'{sname} via {callname}() ({_mode(bodies[callname])})'
+    # Fallback: used inline without an intermediate declaration (no const/let/var
+    # assignment to hang the match on -- the check sits directly around the read).
+    for m in seed.finditer(src):
+        window = src[max(0, m.start() - 300):m.end() + 300]
+        if _has_validity_check(window):
+            return True, f'inline proximity validity check ({_mode(window)})'
+    # Fallback: a config-table field. The name never appears as a literal `input.<name>`
+    # anywhere -- only as a quoted string naming a key in a shared table (e.g.
+    # `{ from: 'studyStartDateFrom', to: 'studyStartDateTo', area: 'StartDate' }`), read
+    # via `input[from]` inside a `for (... of TABLE)` loop. clinicaltrials-scraper's 6
+    # paired date-range filters are this exact shape, sharing one `parseDateBound()`.
+    # Literal-string proximity to a validating call is the only signal available short of
+    # tracing the destructured loop variable through the loop body.
+    literal = re.compile(r'[\'"]' + re.escape(name) + r'[\'"]')
+    for m in literal.finditer(src):
+        window = src[max(0, m.start() - 100):m.end() + 800]
+        for callname in CALLNAME_RE.findall(window):
+            if _resolves_validity(callname, bodies):
+                return True, f'config-table field via {callname}() ({_mode(bodies[callname])})'
+    return False, None
 
 
 def schema_filters(slug):
@@ -229,7 +411,8 @@ def main():
     all_buckets = '--all-buckets' in sys.argv
     slugs = args or sorted(d for d in os.listdir(ACTORS)
                            if os.path.isdir(os.path.join(ACTORS, d)) and not d.startswith('_'))
-    totals = {'a': 0, 'b': 0, 'c': 0}
+    totals = {'a': 0, 'b': 0, 'c': 0, 'd': 0}
+    date_flagged = []
     for slug in slugs:
         filters = schema_filters(slug)
         if filters is None:
@@ -252,9 +435,25 @@ def main():
             print(f'  {name} ({typ}) -> {tag}')
             for lineno, label, text in ev[:6]:
                 print(f'      L{lineno} [{label}] {text}')
+
+        bodies = function_bodies(src)
+        for name, spec in date_shaped_fields(slug):
+            totals['d'] += 1
+            ok, evidence = date_validated(name, spec, src, bodies)
+            if ok:
+                if all_buckets:
+                    print(f'  {name} (date) -> d:DATE_VALIDATED [{evidence}]')
+            else:
+                date_flagged.append(f'{slug}.{name}')
+                print(f'  FAIL {slug}.{name} -- date-shaped field, no schema pattern and '
+                      f'no runtime throw+validity guard found (widen/narrow-silently risk)')
     print(f"\n--- FLEET TOTALS: {totals['a']} (a) schema-enum, {totals['b']} (b) free-text, "
-          f"{totals['c']} (c) runtime-validated ---")
+          f"{totals['c']} (c) runtime-validated, {totals['d']} (d) date-shaped "
+          f"({len(date_flagged)} FAILED) ---")
+    if date_flagged:
+        print('check-validated-filters: FAILED date fields: ' + ', '.join(date_flagged))
+    return 1 if date_flagged else 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
