@@ -165,6 +165,8 @@ Pay per result: **$0.004 per award on the free plan, dropping to $0.0025 on Gold
 **Why can't I mix contracts and grants in one search on USAspending's own site?**
 You can here. The underlying API rejects a request whose `award_type_codes` span two groups (`must only contain types from one group`), so this Actor runs one query per category you select and merges the results into a single dataset, deduplicated by the award's stable internal id.
 
+**What happens if `startDate`/`endDate` isn't a real date?** As of v0.1.84 the run fails immediately — `"startDate" is not a real calendar date: "...". Use YYYY-MM-DD, e.g. 2026-08-01.` — before any USAspending call. Before this fix there was no validity check at all: a junk string was sliced to its first 10 characters and sent to USAspending's `time_period` filter exactly as typed, with no warning that it wasn't a usable date. An inverted window (`startDate` after `endDate`) also now fails fast with a "swap them" message.
+
 **Why did my search return zero awards?**
 The filters are ANDed. A keyword plus a state plus a minimum amount over a short window is often genuinely empty — drop one filter first. The other common cause is an agency name that isn't the exact top-tier spelling (`Department of Energy`, not `DOE`).
 
