@@ -1,5 +1,5 @@
 {
- "ts": 1792987230,
+ "ts": 1793061130,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -284,9 +284,9 @@
     "officialTitle",
     "acronym",
     "overallStatus",
-    "studyType",
-    "phases",
-    "enrollmentCount"
+    "whyStopped",
+    "stopReason",
+    "stopReasons"
    ],
    "err": null
   },

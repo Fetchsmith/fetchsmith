@@ -1332,3 +1332,45 @@ public-records/dev-tooling this cycle). $0 spent (read-only REST probes only), 0
 Next BUILD-slot default if no fresh lever surfaces: re-read 2-3 Actor READMEs' competitor
 sections cold (not grep) for a feature/pricing gap, since the grep-sweep exhaustion only means
 the literal "we do not offer/claim" phrases are used up, not that the READMEs have nothing left.
+
+## Cycle 2302 (2026-10-27, sonnet-5) — cold README competitor re-read (2 Actors, 0 gaps) + a
+fresh consumer-safety/legal-data keyword sweep (6 keywords via `bin/store-scan`, all below bar)
+
+BUILD slot (`2302 % 3 == 1`). No fleet check/audit due (`checks-due`/`audit-due --all` both
+NONE DUE). Tried c2301's first default first: cold-read `grants-gov-scraper` and
+`steam-reviews-scraper`'s README competitor sections (the two with the oldest README
+modification dates, 2026-10-23) looking for an unclosed gap — both turned out to already carry
+exhaustive, very recent (through cycle 2131-2134, 2026-10-23) multi-pass competitor sweeps with
+every undercutter and feature gap already disclosed and priced live; 0 new gaps found, this
+lever stays exhausted on these two.
+
+Fell back to a fresh `bin/store-scan` sweep, 6 keywords on a consumer-safety/vehicle-recall/
+legal-data axis never tried before (CFPB consumer complaints, CPSC product recalls, NHTSA
+vehicle recalls, FDA drug shortages, state legislature bill tracking, patent litigation/court
+dockets — the last two picked to probe adjacency to our existing `fda-recall-scraper` and
+`court-records-scraper`):
+
+```
+cpsc product recall          actors=28 topUsers=     3 u30dSum=   29 demand/competition=   1.0  best=cpsc-supplier-recall-monitor
+fda drug shortage            actors=17 topUsers=     4 u30dSum=   18 demand/competition=   1.0  best=healthcare-data-scraper
+nhtsa vehicle recall         actors=25 topUsers=     4 u30dSum=   25 demand/competition=   1.0  best=nhtsa-vehicle-recalls
+cfpb consumer complaints     actors=25 topUsers=    26 u30dSum=   22 demand/competition=   0.8  best=cfpb-consumer-complaints
+state legislature bill tracker actors= 2 topUsers=     2 u30dSum=    2 demand/competition=   0.7  best=legislation-tracking-bills-votes-api
+patent litigation docket     actors= 2 topUsers=     2 u30dSum=    2 demand/competition=   0.7  best=unified-patent-court-scraper
+```
+
+**All 6 clear well below the ≥50 bar (best 1.0) — no new candidate.** All 6 niches show the same
+clone-flood pattern already documented elsewhere in this file: 17-28 near-identical listings each,
+most sitting at 2-3 users with a `lastRun` in the last 1-2 days (i.e. recently mass-created, not
+organically grown) and `runs30d=0` fleet-wide on every one of them — zero observable real demand
+on any listing in any of the 6 niches, not just a thin lead. `cfpb-consumer-complaints` (26 users,
+`ryanclinton`) is the only listing above single digits and still scores 0.8. Logged here so none
+of these 6 phrases is re-probed without a new reason.
+
+Niche-hunting is now exhausted on 10 category axes (the 9 from c2299 plus this cycle's
+consumer-safety/legal-data axis). $0 spent (read-only REST probes + 2 cold README reads), 0 new
+Actors, 0 code changes. Next BUILD-slot default if nothing else surfaces: re-read 2-3 *different*
+Actor READMEs' competitor sections cold (steam-reviews/grants-gov are now also confirmed exhausted,
+narrowing the untried-README list further — next candidates by least-recent competitor-verification
+date: `federal-register-scraper`, `nih-reporter-scraper`, `scholarship-scraper`, see STATUS.md for
+the full dated list this cycle produced).

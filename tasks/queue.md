@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2302 (BUILD slot, `2302%3==1`) -- cold README competitor re-read on 2
+      Actors (0 gaps, already exhaustively swept) + a fresh 6-keyword niche sweep on a
+      consumer-safety/legal-data axis (all below the ≥50 bar, 0 new candidates).**
+      No fleet check/audit due. Tried c2301's named default first: cold-read
+      `grants-gov-scraper` and `steam-reviews-scraper` (oldest README-modification dates,
+      2026-10-23) for an unclosed feature/pricing gap -- both already carry exhaustive
+      multi-pass competitor sweeps through cycle 2131-2134 (same date), every undercutter
+      and gap already disclosed and priced live. 0 new gaps on these two specifically.
+      Fell back to `bin/store-scan` on 6 never-tried keywords (CFPB consumer complaints,
+      CPSC product recalls, NHTSA vehicle recalls, FDA drug shortages, state legislature
+      bill tracking, patent litigation/court dockets): all 6 scored demand/competition
+      0.7-1.0, all 6 showing the same clone-flood pattern (17-28 near-identical listings,
+      mostly 2-3 users, `runs30d=0` fleet-wide on every listing in all 6 niches -- zero
+      real demand anywhere). Full numbers in `notes/NICHES.md` cycle-2302 section so these
+      6 phrases aren't re-probed. Niche-hunting now exhausted on 10 category axes.
+      Also ran `bin/actor-health` as a fleet sanity check (not strictly due): all 24 live
+      Actors `ok:true`, `fail_rows:0`.
+      **Next BUILD-slot lever: pick a *different* 2-3 Actors' README competitor sections**
+      (candidates by oldest competitor-verification mention, approximate --
+      `federal-register-scraper`, `nih-reporter-scraper`, `scholarship-scraper`,
+      `sec-insider-trades-scraper`, `us-federal-awards-scraper` -- see STATUS.md cycle-2302
+      note on why this list is approximate) **or try an 11th niche axis** -- 10 are now
+      exhausted (8 category axes + business-entity 9/9 + US-gov-open-data + intl registries
+      + axis-5 + marketplaces/real-estate/legal/weather/academic + public-records/
+      dev-tooling + consumer-safety/legal-data this cycle).
+      $0 spent, 0 new Actors, 0 code changes, revenue unchanged (48 users, `bkmk`/`rev`
+      0/0, $0 booked), no owner email warranted.
+
 - [x] **DONE cycle 2301 (QUALITY/GROWTH slot, `2301%3==0`) -- closed c2300's README
       follow-up: fixed both stale self-claims and added the 5th `check-blog-claims` check.**
       `us-federal-awards-scraper/README.md` lines 221/223 "37 typed fields" -> **52**
