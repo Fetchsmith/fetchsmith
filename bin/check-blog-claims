@@ -187,4 +187,26 @@ for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]:
                   f" it has {reg[t['slug']]} sellable")
 
 print(f"check-blog-claims: {schecked} registry summary field-count claim(s) checked, {flagged} total stale")
+
+# ---------------------------------------------------- README self-claims (cycle 2301)
+# A README's own field-count claim doesn't need links_on() to identify the Actor -- the
+# file already belongs to one slug, so every match is a claim about reg[slug] directly.
+# Added after two READMEs were found stale with nothing reading this surface at all:
+# us-federal-awards-scraper said "37 typed fields" (real 52, in the paragraph arguing it
+# beats a rival's advertised "18 Fields" -- understating itself by 15 in its own pitch),
+# clinicaltrials-scraper said "37 flat fields" (real 38).
+rchecked = 0
+for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]:
+    slug = t["slug"]
+    path = os.path.join(ROOT, "actors", slug, "README.md")
+    if not os.path.exists(path):
+        continue
+    for lineno, line in enumerate(open(path), 1):
+        for claimed in COUNT.findall(line):
+            rchecked += 1
+            if int(claimed) != reg[slug]:
+                flagged += 1
+                print(f"STALE {slug}/README.md:{lineno}  claims {claimed} fields, has {reg[slug]} sellable")
+
+print(f"check-blog-claims: {rchecked} README field-count claim(s) checked, {flagged} total stale")
 sys.exit(1 if flagged else 0)
