@@ -739,6 +739,7 @@ const erroredStores = []; // products.json fetch failed (not Shopify, or endpoin
 const erroredStoreReasons = new Map();
 const emptyStores = []; // request succeeded but Shopify returned zero products for this URL
 const filteredOutStores = []; // products existed but onlyAvailable removed all of them
+const badUrls = []; // storeUrls entry wasn't even a parseable http(s) URL -- never reached Shopify
 // One structured record per input URL, so a machine reading this run can tell the outcomes apart
 // WITHOUT parsing the English status message. Zero rows has at least six different causes here —
 // endpoint disabled, genuinely empty collection, filters removed everything, every product already
@@ -760,6 +761,7 @@ for (const raw of storeUrls) {
   let ep;
   try { ep = endpointFor(raw); } catch {
     log.warning(`Bad URL: ${raw}`);
+    badUrls.push(raw);
     sourceOutcomes.push(sourceSummary(raw, null, 'badUrl', { reason: 'not a parseable http(s) URL' }));
     continue;
   }
@@ -1040,7 +1042,7 @@ if (duplicateProducts) {
 }
 log.info(`Done. Pushed ${pushed} products.`);
 const timeBudgetNote = timeBudgetExceeded ? ' Stopped early: approaching the run time limit — reduce storeUrls / maxProductsPerStore to get a complete run.' : '';
-if (watchMode && pushed === 0 && !erroredStores.length && !timeBudgetExceeded) {
+if (watchMode && pushed === 0 && !erroredStores.length && !badUrls.length && !timeBudgetExceeded) {
   await Actor.setStatusMessage(watchSeededThisRun
     ? `Baseline run for watch "${watchLabel}": recorded ${watchSeededThisRun} products, returned 0, charged 0. Re-run under the same label to get only what changed.`
     : `Watch "${watchLabel}": no changes since the last run (${watchUnchanged} products unchanged, 0 charged).`);
@@ -1058,12 +1060,18 @@ if (watchMode && pushed === 0 && !erroredStores.length && !timeBudgetExceeded) {
     ? `fetching products failed for: ${erroredStores.map((s) => (erroredStoreReasons.has(s) ? `${s} — ${erroredStoreReasons.get(s).replace(/\.\s*$/, '')}` : `${s} (store may not be Shopify, or products.json is disabled)`)).join('; ')}`
     : filteredOutStores.length && !emptyStores.length
       ? 'products were found but the filters you set ("onlyAvailable"/"searchQuery"/"vendors"/"productTypes"/"minPrice"/"maxPrice"/"onSaleOnly"/"minDiscountPercent") removed all of them'
-      : `Shopify returned zero products for: ${emptyStores.join(', ')}`;
+      : emptyStores.length
+        ? `Shopify returned zero products for: ${emptyStores.join(', ')}`
+        // Reached only when badUrls is the SOLE outcome (every other storeUrls entry would have
+        // landed in erroredStores/filteredOutStores/emptyStores above) -- without this clause the
+        // branch above falls through to an empty emptyStores.join('') and claims Shopify returned
+        // zero products for a store it never actually contacted.
+        : `none of your storeUrls entries were a parseable http(s) URL: ${badUrls.join(', ')}`;
   await Actor.setStatusMessage(`No products returned — ${why}. See the log for details.`);
 } else if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No products returned before the run approached its time limit.${timeBudgetNote}`);
-} else if (emptyStores.length || filteredOutStores.length || erroredStores.length || timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`)].join(', ')}.${timeBudgetNote}`);
+} else if (emptyStores.length || filteredOutStores.length || erroredStores.length || badUrls.length || timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`), ...badUrls.map((s) => `${s} (not a valid URL)`)].join(', ')}.${timeBudgetNote}`);
 }
 
 // The same per-URL outcomes as the webhook, written to the run's default key-value store so a

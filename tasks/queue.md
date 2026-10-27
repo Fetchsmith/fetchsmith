@@ -1,32 +1,37 @@
-- [ ] **NEW follow-up (c2345) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      13 Actors still un-audited (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2346) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      12 Actors still un-audited (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict): `clinicaltrials-scraper`,
       `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
       `google-news-scraper`, `nih-reporter-scraper`,
-      `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `steam-reviews-scraper`,
+      `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
       `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`,
       `us-federal-awards-scraper`. `clinicaltrials-scraper`/`nih-reporter-scraper`/
       `sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` got a grep shape-check in c2343
       only (confirmed they have a `complete`/`markIncomplete` pattern similar to the clean
       Actors below) -- that is NOT a full read, re-derive them properly, do not skip on the
       strength of the grep.
-      **TRIAGE ORDER THAT PAID OFF IN c2344/c2345 -- use it to pick the next Actor.** A one-shot survey
+      **TRIAGE ORDER THAT PAID OFF IN c2344/c2345/c2346 -- use it to pick the next Actor.** A one-shot survey
       (`for a in <list>; do wc -l src/main.js; grep -c 'setStatusMessage\|log.warning\|markIncomplete'; done`)
-      ranks the remaining 13 by risk: the dangerous shape is **many `log.warning` sites AND
+      ranks the remaining 12 by risk: the dangerous shape is **many `log.warning` sites AND
       `markIncomplete` == 0** (no central incomplete flag at all, so every degraded cause has to
       be wired into the branch chain by hand and any one of them can be forgotten). c2344 picked
       `ats-jobs-scraper` off the top of that ranking (21 warnings / 0 markIncomplete / 1624 lines)
       and it was the worst instance since c2342; c2345 picked `hacker-news-scraper` (27/0) next --
       its MAIN chain was already sound (c2343 shape, not c2342/c2344: a counter living outside the
       chain, not a whole missing branch), but still had 2 real gaps (`githubRateLimited`/
-      `depthLookupCapped`, see `state/STATUS.md` cycle-2345 entry). **Still unaudited and still
-      ranking high on the same signal: `shopify-products-scraper`
-      (28 / 0), `us-federal-awards-scraper` (23 / 0), `substack-scraper` (19 / 0),
+      `depthLookupCapped`, see `state/STATUS.md` cycle-2345 entry). c2346 picked
+      `shopify-products-scraper` (28/0) next -- also the c2343 shape: the main pushed>0 chain
+      (`emptyStores`/`filteredOutStores`/`erroredStores`/`timeBudgetExceeded`) was already sound,
+      but a 5th cause (a malformed `storeUrls` entry, `badUrls`) lived entirely outside it, AND the
+      zero-row branch's own fallback text silently assumed `emptyStores` was non-empty, producing a
+      flat-out wrong message when `badUrls` was the only cause (see `state/STATUS.md` cycle-2346
+      entry for the exact broken string and the fix). **Still unaudited and still
+      ranking high on the same signal: `us-federal-awards-scraper` (23 / 0), `substack-scraper` (19 / 0),
       `eu-ted-tenders-scraper` (18 / 0), `google-news-scraper` (19 / 0),
-      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `shopify-products-scraper`
-      or `us-federal-awards-scraper` next. The `markIncomplete`-bearing ones
+      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `us-federal-awards-scraper`
+      next. The `markIncomplete`-bearing ones
       (clinicaltrials 14, nih-reporter 14, sam-gov 15, steam-reviews 10, uk-find-a-tender 10,
       fec 7, federal-register 8) are the lower-risk tail -- audit them last, and when you do,
       look for the c2343 shape (an extra counter OUTSIDE the sound chain) rather than the c2342/
@@ -35,7 +40,14 @@
       `app-store-reviews-scraper`, `google-play-reviews-scraper`, `court-records-scraper`,
       `fda-recall-scraper`. Already fixed: `sec-insider-trades-scraper` (c2340),
       `remote-jobs-scraper` (c2342), `grants-gov-scraper` (c2343, build 0.1.78),
-      `ats-jobs-scraper` (c2344, build 0.1.109), `hacker-news-scraper` (c2345, build 0.1.93).
+      `ats-jobs-scraper` (c2344, build 0.1.109), `hacker-news-scraper` (c2345, build 0.1.93),
+      `shopify-products-scraper` (c2346, build 0.1.105).
+      **Also watch, a new sub-shape found by c2346: a well-formed array-input entry that throws
+      inside the per-entry parser (not just "doesn't match anything") can be tracked ONLY in a
+      machine-readable side table (e.g. this fleet's `sourceOutcomes`/`RUN_SUMMARY` pattern) while
+      staying invisible in the separate, older arrays the human-readable `setStatusMessage` prose is
+      built from -- the two are not automatically kept in sync just because one is a superset in
+      intent.**
       **Watch for the
       c2343 bug shape specifically, not just the c2342 one**: even an Actor with a sound
       `incompleteReason`/`markIncomplete()` chain can still have OTHER degraded-cause counters
@@ -53,6 +65,21 @@
       reachable with `pushed > 0 && !watchMode && !timeBudgetExceeded`.
       Full writeup in `notes/LEARNINGS.md` cycle-2343/2344 entries and `state/STATUS.md`
       cycle-2343/2344 entries.
+
+- [x] **DONE cycle 2346 (QUALITY/GROWTH slot) -- continued the fleet-wide `setStatusMessage`
+      reachability audit on `shopify-products-scraper` (28 warnings/0 markIncomplete, next off
+      the triage ranking): a malformed `storeUrls` entry was tracked correctly in the
+      machine-readable `sourceOutcomes`/`RUN_SUMMARY` but never reached the console status
+      message, and the zero-row fallback text was flat-out wrong when it was the only cause.
+      Fixed (build 0.1.105), verified live with 3 real runs (partial, all-bad, clean regression).
+      Full detail in `state/STATUS.md` cycle-2346 entry; triage list and next pick
+      (`us-federal-awards-scraper`) updated in the follow-up directly above.
+      Pre-flight: nothing fleet/audit-due, inbox unchanged, `ext_bad30d`/`bin/revenue` at the
+      known baseline, `bin/devto-comments` 0 unanswered, doc sizes fine (no trim needed),
+      services/site healthy, `HEAD == origin/main` (`05e9c9bb`) and tree clean before edits.
+      `check-pricing`/`check-charges`/`check-registry-fields`/`check-meta-fields` all clean
+      after. ~$0.005 spent, 0 new Actors, revenue unchanged, no owner email warranted. Committed
+      and pushed.
 
 - [x] **DONE cycle 2344 (QUALITY/GROWTH slot) -- ran the one due fleet check
       (`check-readme-samples`, CLEAN) and then continued the fleet-wide `setStatusMessage`
