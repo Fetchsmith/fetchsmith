@@ -1543,10 +1543,41 @@ function zeroRowCauses() {
   if (chargeBlocked) {
     causes.push("this run's pay-per-event budget was already spent, so no posting could be charged for or delivered — raise the run's maximum cost in the Actor's billing settings");
   }
+  // A partial board hides postings in the zero-row case too: the page that failed could have held
+  // the only posting that passed the filters, so "nothing matched" is not a safe reading either.
+  if (partialCompanies.length) causes.push(partialCause());
+  return causes;
+}
+// Shared by zeroRowCauses() and pushedCauses() — the sentence is true either way, because the
+// consequence of a dropped page is the same whether 0 or 50 postings came back from the rest.
+function partialCause() {
+  return `${partialCompanies.length} compan(ies) returned only PART of their board — a page fetch failed after retries (${partialCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) — so fewer postings than actually exist were scanned and a matching posting may have been missed; re-run to retry those`;
+}
+// Causes that matter on a run that DID deliver rows. Before this, all four were log.warning-only
+// in that case: zeroRowCauses() is computed only when pushed === 0 (below), so a buyer who listed
+// 10 companies with one misspelled slug got the other 9 boards, a full charge, and no console
+// indication at all that a company had been silently skipped. partialCompanies was worse still —
+// it reached no status message on ANY path, zero-row included.
+function pushedCauses() {
+  const causes = [];
+  if (notFoundCompanies.length) {
+    causes.push(`${notFoundCompanies.length} of the ${companies.length} compan(ies) you listed are not on the ATS you named for them (${notFoundCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}), so NONE of their postings are in this result — check the board slug in that company's own careers-page URL, or set "ats": "auto" to let the Actor detect which ATS it uses`);
+  }
+  if (erroredCompanies.length) {
+    causes.push(`${erroredCompanies.length} compan(ies) failed to answer after retries (${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}), so their postings are missing from this result — re-run to retry just those`);
+  }
+  if (partialCompanies.length) causes.push(partialCause());
+  if (chargeBlocked) {
+    causes.push("this run's pay-per-event budget ran out partway through, so delivery stopped early and the postings you got are only the ones that fit the budget — raise the run's maximum cost in the Actor's billing settings to get the rest");
+  }
   return causes;
 }
 const zeroCauses = pushed === 0 ? zeroRowCauses() : [];
 const zeroCauseNote = zeroCauses.length ? ` Why you got nothing: ${zeroCauses.join('; ')}.` : '';
+const deliveredCauses = pushed > 0 ? pushedCauses() : [];
+const deliveredCauseNote = deliveredCauses.length
+  ? ` NOTE — this result is incomplete: ${deliveredCauses.join('; ')}.`
+  : '';
 if (watchMode && seeding) {
   // A baseline that recorded nothing is indistinguishable from a healthy one on the next run, so
   // say why now rather than letting the buyer schedule a watch that can never fire.
@@ -1564,11 +1595,18 @@ if (watchMode && seeding) {
   // filters" info line) buried in the log.
   await Actor.setStatusMessage(`Pushed 0 job postings.${zeroCauseNote}${timeBudgetNote}`);
 } else if (watchMode && baselineTruncated > 0) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}${timeBudgetNote}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}${timeBudgetNote}${deliveredCauseNote}`);
 } else if (watchMode && timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${timeBudgetNote}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${timeBudgetNote}${deliveredCauseNote}`);
 } else if (timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} job posting(s).${timeBudgetNote}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} job posting(s).${timeBudgetNote}${deliveredCauseNote}`);
+} else if (deliveredCauses.length) {
+  // The gap this closes: a pushed>0 run that did NOT truncate its baseline and did NOT run out of
+  // time fell past every branch above and set no status message whatsoever, in watch mode and in
+  // the default mode alike — so a skipped company, a half-fetched board or an exhausted charge
+  // budget was invisible to anyone not reading the log. Deliberately still silent when there are
+  // no causes: a fully clean successful run says nothing, which is the fleet convention.
+  await Actor.setStatusMessage(`Pushed ${pushed} job posting(s)${watchMode ? ` for watch label "${watchLabel}"` : ''}.${deliveredCauseNote}`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
