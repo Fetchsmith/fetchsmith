@@ -1,0 +1,54 @@
+#!/root/agent/venv/bin/python
+"""Generate site/static/favicon.ico, favicon.png, apple-touch-icon.png from the same flat
+brand mark base.html already inlines as a data-URI <link rel="icon"> (teal rounded square,
+bold white "F") -- not a new design, just that mark rendered as real files.
+
+Why these exist (cycle 2333, measured in Caddy's access log by cycle 2332, same method as the
+RSS-feed find): link-preview/crawler clients that request the conventional root favicon path
+directly, without parsing HTML, 404 instead of seeing the inline SVG -- /favicon.ico (400
+lifetime 404s), /favicon.png (25), /apple-touch-icon.png (24), all from non-browser UAs
+(Dart/3.11, okhttp/5.3.0, Go-http-client/2.0). Real browsers are unaffected: they already
+render base.html's inline icon fine.
+
+Run: bin/gen-favicon   (idempotent; rewrites all 3 files)
+"""
+from PIL import Image, ImageDraw, ImageFont
+
+BRAND = (15, 118, 110)   # #0f766e, same as base.html's inline SVG
+WHITE = (255, 255, 255)
+BOLD = "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"
+SS = 4  # supersample factor, avoids a visible mask-edge seam at small sizes
+
+OUTDIR = "/root/agent/site/static"
+
+
+def make_mark(size):
+    big = size * SS
+    tile = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(tile)
+    d.rounded_rectangle([0, 0, big - 1, big - 1], radius=int(big * 0.22), fill=BRAND)
+    font = ImageFont.truetype(BOLD, int(big * 0.58))
+    d.text((big / 2, big * 0.54), "F", font=font, fill=WHITE, anchor="mm")
+    return tile.resize((size, size), Image.LANCZOS)
+
+
+def main():
+    icon16 = make_mark(16)
+    icon32 = make_mark(32)
+    icon48 = make_mark(48)
+    ico_path = f"{OUTDIR}/favicon.ico"
+    icon48.save(ico_path, format="ICO", sizes=[(16, 16), (32, 32), (48, 48)])
+
+    png_path = f"{OUTDIR}/favicon.png"
+    icon32.save(png_path, "PNG", optimize=True)
+
+    touch_path = f"{OUTDIR}/apple-touch-icon.png"
+    make_mark(180).convert("RGB").save(touch_path, "PNG", optimize=True)
+
+    for p in (ico_path, png_path, touch_path):
+        import os
+        print(f"{p}  {os.path.getsize(p)} bytes")
+
+
+if __name__ == "__main__":
+    main()
