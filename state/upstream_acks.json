@@ -1,6 +1,17 @@
 {
   "acks": [
     {
+      "fp": "273ed1d10aff",
+      "slug": "shopify-products-scraper",
+      "handle": "practical_ai_lab_jp/pal-shopify-product-image-inventory",
+      "verb": "migration",
+      "dates": [],
+      "context": "hopify Product Image & Alt Text Inventory Find public Shopify catalog image quality issues before a launch or migration. Export image URLs, alt text, variant-image links and flags for missing or weak content. Start with a prefilled Example to inspec",
+      "note": "Keyword false positive, not an upstream signal. The [migration] match is the rival's USE-CASE copy ('image quality issues before a launch or migration') -- a MERCHANT migrating their own store, not any Shopify API migration/deprecation. Our upstream re-verified c2340: shopify-products-scraper reads the public storefront /products.json (and /collections/<c>/products.json) route, which no Shopify deprecation touches; health.json green at 10/10 rows, fail_rows 0, and check-row-floor CLEAN fleet-wide this same cycle. Rival copy is permanent marketing text, so it would otherwise re-flag on every daily run.",
+      "acked_cycle": 2340,
+      "acked_date": "2026-10-27"
+    },
+    {
       "fp": "0bc5bebecd62",
       "slug": "steam-reviews-scraper",
       "handle": "pinkish_gallop/steam-reviews-scraper",

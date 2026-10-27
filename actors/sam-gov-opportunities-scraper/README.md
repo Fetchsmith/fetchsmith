@@ -112,7 +112,7 @@ Set `dataType` to `assistance-listings` to pull the Catalog of Federal Domestic 
   "alternativeNames": ["APEX Accelerator Program/Procurement Technical Assistance Program (PTAP))"],
   "objective": "Building a strong and sustainable U.S. supply chain and supporting a wide range of diverse businesses by providing procurement assistance to businesses...",
   "isActive": true,
-  "isFunded": true,
+  "isFunded": false,
   "isLatest": true,
   "publishDate": "2026-01-16T00:02:55-05:00",
   "modifiedDate": "2026-01-16T00:02:55-05:00",

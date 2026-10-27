@@ -91,8 +91,91 @@
       warranted (CLAUDE.md rule 3: no revenue event, nothing only the owner can fix). Committed
       and pushed. Full detail in `state/STATUS.md` cycle-2339 entry.
 
-- [ ] **NEW follow-up (c2339), precise fix shape -- add a pushed>0 status message to
+- [x] **DONE cycle 2340 (BUILD slot) -- closed the c2339 follow-up in full (pushed>0 status
+      message on `sec-insider-trades-scraper`), and the 4 due fleet checks surfaced a SECOND real
+      buyer-facing defect which was also fixed end-to-end.**
+      4 fleet checks were DUE (`check-row-floor`, `check-doc-size`, `check-readme-live-row`,
+      `check-upstream-warnings`) -- all 4 run and recorded. `audit-due --all` / `--type
+      varied_test` NONE DUE (soonest `sec-insider-trades-scraper` c2554 -- did NOT force early,
+      per c2338's lesson). Inbox unchanged; services/site healthy; `HEAD == origin/main`
+      (`ec202bc3`) and tree clean before edits; revenue unchanged (25 public / 49 users /
+      758 runs30d / bkmk+rev 0/0). `ext_bad30d` re-diffed: known baseline, nothing new.
+      **`ext_bad30d` tripwire refinement, worth carrying forward:** the one-liner in the tripwire
+      entry above prints a 5th line, `2026-10-20 scholarship-scraper {'FAILED': 1}`, which is NOT
+      a 6th event -- it is the 2026-10-08 `FAILED 2` **decaying** to 1 as runs age out of the 30d
+      window. The diff-on-change logic fires on any change, including a DECREASE. Rule: a count
+      that goes DOWN for an Actor already in the baseline is never a signal; only a NEW slug, or
+      a count that goes UP, is.
+      **Defect 1 (the c2339 follow-up): `sec-insider-trades-scraper` never explained PARTIAL
+      success.** The Actor had exactly one `Actor.setStatusMessage()`, gated behind `if (!pushed)`,
+      so any run delivering 1+ rows got NO message regardless of unresolved tickers, a transient
+      EDGAR index miss, the charge cap, the time budget, or legacy/holdings-only filings -- a
+      buyer who asked for 3 issuers and got rows for 2 saw a bare "Succeeded" and a short dataset.
+      **Fix (build 0.1.63):** an `else` branch after the `!pushed` block accumulating 8
+      INDEPENDENT `if`s (unresolved-partial, missingSubmissionIndex, chargeCapReached,
+      pushed>=maxResults, timeBudgetExceeded, unfetchableFilings, legacyFilings,
+      holdingsOnly-without-includeHoldings), joined on `' Also, '` through the existing
+      `clampStatusMessage` 500-char backstop, silent when `causes.length === 0`.
+      **Scope re-check done per variable as the c2339 note demanded (do not re-derive):** every
+      counter named above is a module-scope accumulator (`let` at lines ~22/182/234-239), so each
+      is as valid on a pushed>0 run as on a zero-row one. Two judgements recorded in code comments
+      so a future cycle does not "fix" them back: (1) `dropped`/`filtersActive` is deliberately
+      NOT reported -- on a run that delivered rows, filters removing the rest is the feature
+      working as asked, it is already logged at ~line 512, and reporting it would fire on nearly
+      every filtered run (the fastest way to make a status message unread); (2) the charge cap was
+      the only truncation cause with no counter left behind, because `keepGoing` is declared
+      INSIDE the `try` block and is out of scope by the status branches -- hence the new 2-line
+      `chargeCapReached` flag set in `pushResult`.
+      **Verified live, 2 real runs, both read back through the API rather than trusting the log:**
+      (a) `vTTtFtkwgZ6X2cdjb` SUCCEEDED, input `issuers: ["AAPL","ZZZNOTATICKER"]` -> `statusMessage`
+      names `ZZZNOTATICKER` and still delivered/charged AAPL's real rows,
+      `chargedEventCounts {"result": 12}`; (b) `5FkI6LfRejTE79cg2` SUCCEEDED, `issuers:
+      ["AAPL","NVDA"]` -> `statusMessage: None`, `{"result": 16}` -- clean full success stays
+      silent (regression held). Both runs used `maxFilingsPerIssuer: 2, maxResults: 200`
+      deliberately, so the new `pushed >= maxResults` truncation cause could not fire and
+      contaminate the silence test.
+      `check-pricing`/`check-charges`/`check-registry-fields` (42 fields ok)/`check-meta-fields`
+      all 0 drift (confirmed, not assumed -- no output fields touched), plus `check-zero-row-message`
+      0 MISS, `check-cascade-causes` 0 CASCADE over 2582 chains, `check-status-continuity` and
+      `check-status-blocks-kept` clean.
+      **Defect 2 (found by the due `check-readme-live-row`, fixed same cycle):**
+      `sam-gov-opportunities-scraper`'s README sample row advertised `"isFunded": true` for
+      assistance listing `12.002`; live SAM.gov now reports `false` (confirmed by a direct
+      `index=cfda&responseType=json&q=12.002` fetch -- `title`/`isActive`/`isLatest` all still
+      matched, so only that one field had rotted). README corrected, pushed (build 0.1.68), and
+      the live `readme` re-read **through the build API, not the CDN-cached Store page** -> carries
+      `false`. Re-run: 15 entries, 0 mismatches. Needed its own push because it is a different
+      Actor from defect 1 -- a repo-only fix would have left every buyer still reading the stale
+      sample on the Store page.
+      `check-row-floor` CLEAN (24 live Actors, all >=60% of cap). `check-upstream-warnings` CLEAN
+      (+4 acked): 1 new hit, `practical_ai_lab_jp/pal-shopify-product-image-inventory`
+      `[migration]`, acked **after verifying our own upstream** (the ack contract) -- the match is
+      the rival's USE-CASE copy about a MERCHANT migrating their own store, not a Shopify API
+      deprecation; our `/products.json` + `/collections/<c>/products.json` storefront routes are
+      untouched and `health.json` is green at 10/10 rows / 0 fail_rows.
+      ~$0.011 spent (2 builds + 2 tiny runs; `apify-spend` $4.44 in-cycle, projection $7.32 vs the
+      $25 investigate line), 0 new Actors, revenue unchanged, no owner email warranted.
+      **Next BUILD slot: the c2332 feed-pickup measurement is now due (~2026-10-30 has passed in
+      cadence terms -- check the entry below). Next QUALITY slot: TRIM `STATUS.md` + `queue.md`
+      FIRST (see the new c2340 entry directly below), it is the only mechanically-forecast item.**
+
+- [ ] **NEW follow-up (c2340) -- TRIM `state/STATUS.md` and `tasks/queue.md` on the next QUALITY
+      slot, BEFORE picking any other growth work.** `bin/check-doc-size` this cycle: STATUS.md
+      146.2KB / 432 lines (~12 cycles of headroom at +4510 B/cycle) and queue.md 110.8KB / 1302
+      lines (~17 cycles at +5440 B/cycle). Both are still UNDER the 150KB warn line, so the check
+      reads OK today -- but both are projected to cross it before the checker is next scheduled to
+      look (24c), which means **the next run reads TRIM DUE no matter what happens in between**.
+      The c2220 lesson is to trim proactively in a QUALITY slot rather than wait for the
+      escalation, and note this cycle ADDED to both files, so the forecast above is already
+      optimistic. Use the existing `bin/_trim<NNNN>.py` / `_trim<NNNN>q.py` pattern (one script
+      per file per cycle, archive the removed blocks -- `check-status-blocks-kept` and
+      `check-status-continuity` both gate on blocks never being DESTROYED, only moved to the
+      archive, so re-run both after trimming). LEARNINGS.md is fine (5144/8000 lines, ~143
+      cycles).
+
+- [ ] **(superseded, kept for the rationale) NEW follow-up (c2339), precise fix shape -- add a pushed>0 status message to
       `sec-insider-trades-scraper`, mirroring the zero-row branch's already-built cause list.**
+      **CLOSED by c2340 -- see the DONE entry directly above. Do not re-do.**
       The zero-row branch (main.js:541-616) is the template: accumulate every independent cause
       (not an if/else-if chain -- the same cascade-hides-independent-cause class already fixed
       here once, per the comment at main.js:548-556) into one message. The pushed>0 case needs

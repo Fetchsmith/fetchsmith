@@ -58,11 +58,16 @@ const issuers = (Array.isArray(input.issuers) && input.issuers.length ? input.is
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
+// The charge cap is the one truncation cause that leaves no counter behind: `keepGoing` is
+// declared inside the try block and is out of scope by the time the status-message branches
+// run, so record it here (cycle 2340, for the partial-success message at the end of the file).
+let chargeCapReached = false;
 async function pushResult(item) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
-    if (r.chargedCount === 0) return false;
+    if (r.chargedCount === 0) { chargeCapReached = true; return false; }
     await Actor.pushData(item); pushed += 1;
+    if (r.eventChargeLimitReached) chargeCapReached = true;
     return !r.eventChargeLimitReached && pushed < maxResults;
   }
   await Actor.pushData(item); pushed += 1;
@@ -613,6 +618,62 @@ if (!pushed) {
   }
   log.warning(zeroRowMessage);
   await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
+} else {
+  // --- Partial-success explanation (cycle 2340) ---------------------------------------------
+  // Until now ONLY the zero-row branch above ever set a statusMessage, so a buyer who asked for
+  // 3 issuers and silently got rows for 2 (bad ticker, transient EDGAR miss, charge cap, time
+  // budget) read a bare "Succeeded" against a short dataset and had to open the run log to find
+  // out why -- or, worse, read the short count as the real answer. Same construction as the
+  // zero-row branch: accumulate every cause THIS run actually observed as INDEPENDENT ifs, never
+  // an else-if chain (that is the cascade-hides-independent-causes defect already fixed once in
+  // this very file, see the comment at the top of the !pushed branch -- a run can easily hit an
+  // unresolved ticker AND the time budget AND a legacy filing at once). Stay SILENT when nothing
+  // applies, so a clean full-success run sets no message and the message keeps meaning something
+  // (fleet convention, cf. google-play-reviews-scraper's pushed>0 branch, cycle 2339).
+  // Every counter read below is module-scope and accumulates across the whole run, so each is as
+  // valid here as in the zero-row branch -- re-checked per variable this cycle, not inherited.
+  // Deliberately NOT reported: `dropped`/`filtersActive`. On a run that delivered rows, filters
+  // removing the rest is the feature working exactly as asked, not a partial failure; it is
+  // already logged at line ~512 and would fire on almost every filtered run, which is precisely
+  // how a status message stops being read. No internal `;` in any cause (the cycle-1592 trap).
+  const causes = [];
+  if (unresolvedTickers.length && unresolvedTickers.length < issuers.length) {
+    causes.push(`${unresolvedTickers.length} of the ${issuers.length} issuer(s) you asked for did not resolve to a `
+      + `CIK (${unresolvedTickers.join(', ')}) and contributed no rows. Use the ticker exactly as SEC lists it in `
+      + "company_tickers.json, or pass that issuer's numeric CIK instead.");
+  }
+  if (missingSubmissionIndex) {
+    causes.push(`SEC returned no submissions index for ${missingSubmissionIndex} resolved issuer(s), which therefore `
+      + 'contributed no rows. That is usually a transient EDGAR error -- re-run in a few minutes to pick them up.');
+  }
+  if (chargeCapReached) {
+    causes.push(`the run stopped at its pay-per-event charge limit after ${pushed} row(s), so these results are `
+      + 'truncated. Raise the charge limit for the run to get the rest.');
+  }
+  if (pushed >= maxResults) {
+    causes.push(`the run reached maxResults (${maxResults}), so these results are truncated. Raise maxResults for more.`);
+  }
+  if (timeBudgetExceeded) {
+    causes.push(`the run hit its time budget after ${pushed} row(s), so later issuers or filings may be missing. Raise `
+      + 'the run timeout, or narrow the request (fewer issuers, lower maxFilingsPerIssuer).');
+  }
+  if (unfetchableFilings) {
+    causes.push(`${unfetchableFilings} selected filing(s) could not be fetched from EDGAR and are missing from these `
+      + 'results. Re-run to retry just those.');
+  }
+  if (legacyFilings) {
+    causes.push(`${legacyFilings} selected filing(s) are pre-June-2003 legacy filings with no machine-readable XML, so `
+      + 'they yielded no rows.');
+  }
+  if (holdingsOnlyFilings && !includeHoldings) {
+    causes.push(`${holdingsOnlyFilings} selected filing(s) carried holdings only (no transactions) and yielded no rows. `
+      + 'Enable includeHoldings to return those positions.');
+  }
+  if (causes.length) {
+    const partialMessage = `${pushed} row(s) delivered, but: ${causes.join(' Also, ')}`;
+    log.warning(partialMessage);
+    await Actor.setStatusMessage(clampStatusMessage(partialMessage));
+  }
 }
 
 log.info(`Done. Pushed ${pushed} results.`);
