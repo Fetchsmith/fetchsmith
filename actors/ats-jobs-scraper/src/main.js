@@ -1256,6 +1256,21 @@ const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'publis
 // Workday's closed `timeType` vocabulary, already stripSep'd/lowercased to compare against
 // employmentTypeKeyword directly — see the warning at the company loop for the live evidence.
 const WORKDAY_TIME_TYPES = ['fulltime', 'parttime'];
+// The ATSes whose fetchers hard-code salaryMin/salaryMax to null on EVERY posting because the
+// upstream payload carries no compensation field at all (verified at each fetcher's own
+// "leave null, don't guess" comment: workable has no compensation key anywhere in the widget
+// payload, teamtailor/personio/smartrecruiters none observed on any real posting, workday none in
+// either the list rows or the job detail). Derived here instead of in the warning so this list and
+// the fetchers can be diffed against each other; the complement (greenhouse/ashby/lever/recruitee/
+// breezy) is what the warning text offers as the working alternative.
+const SALARY_BLIND_ATS = ['workable', 'teamtailor', 'personio', 'smartrecruiters', 'workday'];
+// Named the same way activeFilterNames() derives its list — from what this run actually SET — so
+// the warning can never name a filter the run did not use, or miss one it did.
+const salaryFilterNames = [
+  ...(hasSalary ? ['hasSalary'] : []),
+  ...(minSalary != null ? ['minSalary'] : []),
+  ...(maxSalary != null ? ['maxSalary'] : []),
+];
 
 function passesFilters(job, deferred = []) {
   const ready = (field) => !deferred.includes(field);
@@ -1357,6 +1372,21 @@ try {
         + ` "Part time", so employmentTypeKeyword ("${employmentTypeKeyword}") drops every posting`
         + ' on this board. Its contract/intern/temporary classification (workerSubType) is not'
         + ' exposed per posting. Use titleKeyword/descriptionKeyword for Workday companies instead.');
+    }
+    // Same upstream-caused silent-zero-row shape as the two employmentType cases above, on a
+    // different axis: five of the ten ATSes emit salaryMin/salaryMax as a hard-coded null for
+    // every posting (SALARY_BLIND_ATS — see the per-fetcher "leave null, don't guess" calls), so
+    // ANY salary filter drops those whole boards. passesFilters cannot defer this the way it
+    // defers description/location: the field is never populated at ANY stage, not merely late, so
+    // there is nothing to fix in the filter and the only honest answer is to say so per board.
+    // Warned here rather than left to zeroRowCauses because that message only fires when the run
+    // matched NOTHING AT ALL — on a mixed list (e.g. greenhouse + workday) the salary-capable
+    // boards return rows, totalMatched > 0, and the blind boards contribute 0 completely silently.
+    if (salaryFilterNames.length && SALARY_BLIND_ATS.includes(result.detectedAts ?? ats)) {
+      log.warning(`${result.detectedAts ?? ats}:${slug} — ${result.detectedAts ?? ats} boards do not`
+        + ` publish compensation, so ${salaryFilterNames.join('/')} drops every posting on this`
+        + ' board. Salary filters only work on greenhouse/ashby/lever/recruitee/breezy boards;'
+        + ' drop the salary filter for this company, or filter its pay text with descriptionKeyword.');
     }
     let scannedForCompany = 0;
     let deliveredForCompany = 0;

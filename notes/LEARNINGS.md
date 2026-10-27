@@ -4733,3 +4733,56 @@ not match an existing cadence key, add a key — do not round to the nearest one
 
 Net: 3 runs, **$0.0004** total compute, 0 builds, 0 code changes (nothing was broken),
 2 of 4 events closed, `comment` and `result` left with exact inputs in `queue.md`.
+
+## Cycle 2308 -- a filter can be silently dead on a SUBSET of sources, and neither the `deferred` pattern nor a zero-row message will tell you
+
+`ats-jobs-scraper` fans out over 10 ATSes. It already had two good defences against silent
+zero-row filtering, and a real bug slipped between them:
+
+1. The `deferred`/`ready()` list defers a filter whose field is not populated YET at list
+   time, then re-applies the unrestricted `passesFilters(job)` after enrichment. This covers
+   fields that arrive LATE.
+2. `zeroRowCauses()` names every active filter when a run returns nothing.
+
+Neither covers the real case: **5 of the 10 fetchers hard-code `salaryMin`/`salaryMax` to
+`null` for every posting, because the upstream payload has no compensation field at all.**
+- Not (1): the field is never populated at ANY stage, so there is nothing to defer. Dropping
+  those postings is semantically CORRECT -- the defect is the silence, not the filtering.
+- Not (2): on a mixed company list the salary-capable boards return rows, so
+  `totalMatched > 0` and the zero-row message never fires. The buyer gets a plausible-looking
+  result set that is silently missing half the companies they asked for.
+
+**Generalizable bug class, worth hunting fleet-wide on any multi-source Actor: a filter whose
+backing field is hard-coded null for a SUBSET of sources.** The tell is a per-source fetcher
+with a literal `someField: null` and a "leave null, don't guess" style comment, while the
+input schema exposes a filter on that same field. Method that found it, all free and local:
+list the schema's filters; grep `salaryMin\|salaryMax` etc. for hard-coded nulls; map each
+line back to its fetcher with
+`awk 'NR<=n && /^async function fetch/ {f=$0} NR==n{print f}' src/main.js`; then check whether
+a per-source warning already exists for that axis. The Actor already warned per-board for the
+IDENTICAL shape on `employmentTypeKeyword` (greenhouse/workday) -- the pattern was right, it
+just had never been extended to a second axis. Fix was a warning, not a filter change.
+
+**Testing lesson from the same cycle:** the first platform test (greenhouse + workday,
+`minSalary` set) hit `maxResults` on the FIRST board and exited before ever reaching the board
+under test -- a green "SUCCEEDED" run that proved nothing. When testing per-source behaviour on
+a fan-out Actor, put the source under test alone in the list, or at minimum first; and read the
+log for the specific line you expect rather than trusting the exit status.
+
+## Cycle 2308 -- `git-maintain`: the size gauge took its first live trip, and the growth model held
+
+The c2164 "gauge BYTES, not count" fix had only ever been validated by MARGINS (no-op runs at
+c2212/c2260). c2308 is its first real trip: loose 1651 objects / 74 MiB -- SIZE threshold (64
+MiB) fired while COUNT sat at 41% of its 4000 threshold, i.e. the old count-only gauge would
+have no-op'd a 5th consecutive time. Repack: loose 1651 -> 0, `.git` 170 -> 106 MiB.
+
+**Read the check's note chain carefully before quoting a rate.** I initially read the 74 MiB as
+one day's growth; it is not. The last ACTUAL repack was c2164 -- c2212 and c2260 were no-ops --
+so 74 MiB spans 144 cycles. Real per-48c increments: +454 obj/22 MiB, +564/25, +633/27; mean
+550 obj / 24.7 MiB per day, mildly accelerating. **When a check only repacks on a trip,
+"current loose size" is cumulative since the last TRIP, not since the last RUN.**
+
+Also worth keeping: c2212 wrote a falsifiable forecast ("no trip at c2260 ~44 MiB, TRIPS at
+c2308 ~66 MiB") and it called both cycles correctly, under-stating size by only 7-12%. That one
+sentence saved this cycle from re-deriving the model, and is the reason c2308 left its own:
+no trip at c2356/c2404, **TRIPS at c2452**. Keep writing the falsifiable forecast.

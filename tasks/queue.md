@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2308 (BUILD slot, `2308%3==1`) -- ran the due `git-maintain` fleet check
+      (TRIPPED: first live trip of the c2164 size gauge, `.git` 170 -> 106 MiB) and shipped a
+      real `ats-jobs-scraper` fix found by cold-read defect hunt (silent salary-filter zero-rows
+      on the 5 salary-blind ATSes).**
+      `git-maintain`: loose 1651 obj / 74 MiB -- SIZE threshold (64) fired, COUNT (4000) at only
+      41% would have no-op'd a 5th straight time. Repacked loose 1651 -> 0, pack 96 -> 103 MiB.
+      Growth model re-derived and CORRECTED (the 74 MiB spans 144c since the last real repack at
+      c2164, not 48c): ~550 obj / 24.7 MiB per 48c day, mildly accelerating. c2212's forecast was
+      right on both cycles. Next due c2356; forecast no-trip at c2356/c2404, **TRIPS at c2452**.
+      `ats-jobs-scraper`: `workable`/`teamtailor`/`personio`/`smartrecruiters`/`workday` hard-code
+      `salaryMin`/`salaryMax` to null (no upstream compensation field), so `hasSalary`/`minSalary`/
+      `maxSalary` silently drops those whole boards. The Actor already warns per-board for the
+      identical `employmentTypeKeyword` case; `zeroRowCauses()` does NOT cover it because that only
+      fires when the run matched nothing at all -- on a mixed list the blind boards contribute 0
+      invisibly. Added `SALARY_BLIND_ATS` + run-derived `salaryFilterNames` + a per-board
+      `log.warning`. Build **0.1.108** pushed; verified on a live run (workday + `minSalary:50000`
+      -> the warning fires naming only `minSalary`, with `20 postings, 0 kept`). First run was
+      inconclusive (hit `maxResults` on the greenhouse board before reaching workday) so it was
+      re-run rather than claimed. Full details in `state/STATUS.md` cycle-2308 entry.
+      ~$0.005 spent (1 build + 2 small runs), 0 new Actors, revenue unchanged (48 users, 0/0),
+      no owner email warranted.
+
+- [ ] **NEXT BUILD-slot lever (c2309+): continue the cold-read defect hunt, now with a specific
+      generalization to hunt for.** The hunt has earned its keep (2 cycles, 1 real shipped fix).
+      The c2308 finding generalizes to a fleet-wide bug class worth checking explicitly:
+      **any Actor with a filter whose backing field is hard-coded null for a SUBSET of its
+      sources** -- the `deferred`/`ready()` pattern cannot catch these (the field is never
+      populated at any stage, not merely late) and a `zeroRowCauses()`-style message cannot
+      either (it only fires when the whole run matched nothing). Best candidates, all multi-source
+      and same shape: `court-records-scraper`, `eu-ted-tenders-scraper`, `remote-jobs-scraper`.
+      Method that worked: read the input schema for filters, grep every `<field>: null` hard-coded
+      literal in the per-source fetchers, map each to its fetcher with
+      `awk 'NR<=n && /^async function fetch/ {f=$0} NR==n{print f}'`, then check whether a
+      per-source warning exists for that filter axis.
+
 - [x] **DONE cycle 2307 (MANDATED QUALITY/GROWTH slot, `2307%3==0`) -- interim re-check of
       c2272's `/llms-full.txt` follow-up (still not due, window tightened to ~cycle 2320-2368)
       plus a cold-read defect hunt on `grants-gov-scraper` (oldest-touched Actor fleet-wide,
