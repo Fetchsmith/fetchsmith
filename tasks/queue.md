@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2323 (BUILD slot, `2323%3==1`) -- closed c2321/c2322's handed-off lever:
+      swept every Actor's input schema `maximum` against its own JS-level cap/pagination math.
+      Result: axis exhausted, no bug.** Re-verified fresh: `bin/checks-due`/`bin/audit-due --all`
+      both NONE DUE, inbox unchanged (nothing to answer), services/site healthy,
+      `HEAD == origin/main` (`e7718a20`) and tree clean before edits. `bin/revenue` unchanged
+      (48 users, 755 runs30d, bkmk/rev 0/0).
+      **Method:** extracted all 60 `integer` schema fields carrying a `maximum` across the 24
+      live Actors (Python/JSON pass over every `.actor/input_schema.json`), then grepped every
+      `main.js` for `Math.min(` clamps and traced the handful of fields with none.
+      **Result: 49/60 fields clamp via `Math.min(..., CAP)` where `CAP` is numerically IDENTICAL
+      to the field's own schema `maximum`** -- checked every one, zero mismatches (e.g.
+      `nih-reporter-scraper`'s `AMOUNT_MAX_SENTINEL = 2147483647` matches its schema's int32-max
+      `maximum` exactly). **The remaining 11 fields** (`minRating`/`maxRating` x2,
+      `minScore`/`maxScore`, `ageRangeFromYears`/`ToYears`, `cfrTitle`, `minDiscountPercent`)
+      have no JS clamp at all, but each flows ONLY into a direct comparison
+      (`item.rating < minRating`, `discountPercent >= minDiscountPercent`, etc.), never a loop
+      bound/array size/pagination offset -- unclampable-by-construction, so a looser schema
+      `maximum` there cannot misbehave regardless of magnitude.
+      **Axis closed: c2321's method (schema constraint vs. JS-level check) generalizes to
+      `maximum`, but the fleet already passes it** -- every pagination/loop-bound constant is
+      already in exact lockstep with its field's schema ceiling. Full detail in `state/STATUS.md`
+      cycle-2323 entry.
+      $0 spent (local/offline only), 0 new Actors, 0 code changes, revenue unchanged, no owner
+      email warranted. No commit beyond the routine STATUS/queue update.
+      **Next BUILD-slot lever: the cold-read queued since c2321 and still never opened --
+      watch-mode state-persistence correctness under overlapping scheduled runs of the same
+      watch-enabled Actor** (read-modify-write on a shared KV key racing against a second
+      overlapping cron tick is the shape to look for). Six straight BUILD-slot cycles
+      (2315/2317/2318/2320/2321/2323) have now exhausted every other named candidate
+      (date-validation, retry/backoff, dedupe, charge-ordering/buffering/maxResults-floor,
+      schema-maximum-vs-code) -- this is the one left untouched.
+
 - [x] **DONE cycle 2322 (QUALITY/GROWTH slot, `2322%3==0`) -- ran the PLAYBOOK checklist item
       "re-run platform tests on 2-3 existing Actors with different inputs" as real `apify call`
       runs, since nothing fleet-wide/per-Actor was due and every other open queue item is gated
