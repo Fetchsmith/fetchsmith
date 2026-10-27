@@ -222,6 +222,47 @@ const watchLabel = dataType === 'episodes' ? watchLabelRaw : '';
 const watchMode = watchLabel.length > 0;
 const WATCH_STORE = 'fetchsmith-apple-podcasts-watch';
 const WATCH_KEEP = 60000; // bound the record size; oldest keys fall off first
+// h294: the baseline is read once at the top of the run and written once at the bottom, so two
+// runs started on the SAME watch label close together both read the same baseline, both compute
+// the same "new since baseline" set, and both charge+deliver it -- a real double charge, not a
+// hypothetical one, because nothing before this stopped a buyer (or an overlapping schedule tick)
+// from starting a second run while the first was still going. A per-label lock record (separate
+// KV key, so it never touches the real baseline) narrows the race from "the whole run's duration"
+// to the few KV round-trips between the check and the write -- not a true compare-and-swap (the
+// Apify KV API exposes no If-Match to the SDK), but a 100-1000x tighter window is the realistic
+// ceiling without platform support. TTL-based self-expiry, not an explicit release-on-crash
+// guarantee: this file has no single top-level try/finally to hang a release off of, so a run that
+// throws somewhere NOT covered by one of the three release points below leaves the lock to expire
+// on its own rather than wedging the label forever.
+const WATCH_LOCK_TTL_MS = 2 * 60 * 60 * 1000; // generous vs. any real run; see h294 above
+let watchLockKey = null;
+let watchLockHeld = false;
+
+async function acquireWatchLock(storeKey) {
+  watchLockKey = `${storeKey}__lock`;
+  const existingLock = await watchStore.getValue(watchLockKey);
+  if (existingLock && typeof existingLock.lockedAt === 'string') {
+    const age = Date.now() - new Date(existingLock.lockedAt).getTime();
+    if (age >= 0 && age < WATCH_LOCK_TTL_MS) {
+      await Actor.fail(
+        `Watch label "${watchLabel}" is already being processed by another run (started ${existingLock.lockedAt}`
+        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}). Running the same watch label concurrently `
+        + 'would read the same baseline twice and charge you twice for the same new episodes, so this run stopped '
+        + `before reading or charging anything. Wait for the other run to finish and try again (a stuck lock from a `
+        + `crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
+      );
+    }
+  }
+  await watchStore.setValue(watchLockKey, { lockedAt: new Date().toISOString(), runId: Actor.getEnv().actorRunId ?? null });
+  watchLockHeld = true;
+}
+
+async function releaseWatchLock() {
+  if (watchLockHeld && watchLockKey) {
+    await watchStore.setValue(watchLockKey, null);
+    watchLockHeld = false;
+  }
+}
 
 function watchKeyFor(label, criteria) {
   const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
@@ -270,6 +311,7 @@ if (watchMode) {
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
   watchKey = key;
+  await acquireWatchLock(key);
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
@@ -357,6 +399,7 @@ async function saveWatchRecord(status) {
 }
 
 if (dataType !== 'charts' && !podcasts.length && !searchTerms.length) {
+  await releaseWatchLock();
   await Actor.fail('Provide at least one podcast or publisher (Apple Podcasts show/artist URL, or numeric ID) in "podcasts", or at least one query in "searchTerms".');
 }
 
@@ -1344,6 +1387,7 @@ log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publ
 // truncation is deliberately NOT a seed error: that is exactly what the floor was built for, and
 // failing there would make a large input impossible to baseline at all.
 if (watchMode && seedErrors.length) {
+  await releaseWatchLock();
   await Actor.fail(
     `Baseline run for watch label "${watchLabel}" could not read ${seedErrors.length} source(s) from Apple: `
     + `${seedErrors.join(', ')}. The baseline was NOT saved — saving it would record those podcasts as `
@@ -1352,6 +1396,7 @@ if (watchMode && seedErrors.length) {
   );
 } else if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
+  await releaseWatchLock();
 }
 const timeBudgetNote = timeBudgetExceeded
   ? ' Stopped early: approaching the run time limit — reduce the number of podcasts/searchTerms or maxEpisodesPerPodcast/maxReviewsPerPodcast to get a complete run.'

@@ -1,3 +1,56 @@
+- [x] **DONE cycle 2325 (BUILD slot, `2325%3==1`) -- opened the watch-mode overlapping-run lever
+      queued since c2321 (deferred by 2322/2323/2324): shipped and live-verified a real
+      lock-based fix for `apple-podcasts-scraper`, 1 of 19 watch-enabled Actors; 18 remain.**
+      Re-verified fresh: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox unchanged
+      (nothing to answer), services/site healthy, `HEAD == origin/main` (`8d9b8b8f`) and tree
+      clean before edits. `bin/revenue` unchanged (48 users, 755 runs30d, bkmk/rev 0/0).
+      **The defect:** every watch-enabled Actor reads its baseline (`seenIds` keyed by
+      label+filter fingerprint) ONCE at the top of a run and writes it ONCE at the bottom, after
+      all scraping/charging. Two runs on the SAME label overlapping (buyer starts a 2nd run
+      manually, or a schedule tick fires before the last run finished) both read the same
+      baseline before either writes, both independently decide the same items are "new," and
+      both charge+deliver them -- a real cross-run double charge, structurally different from
+      the within-run dedupe-gap axis c2318/2320 already closed.
+      **The fix (shipped on `apple-podcasts-scraper` only this cycle):** a per-label lock as a
+      SEPARATE KV record (`${watchKey}__lock`, never touches the real baseline), written right
+      after the baseline key is computed. A 2nd run finding a lock younger than a 2h TTL fails
+      immediately, before reading/charging anything. Released at all 3 points the code can exit
+      the watch-affecting section normally (enumerated by grepping every `Actor.fail`/`throw`
+      between "store opened" and "record saved," not guessed). **Honestly scoped:** not true
+      compare-and-swap (Apify's KV API exposes no `If-Match` to the SDK -- checked the client
+      bundle), so the lock's own check-then-write has a race window too, just ~100-1000x tighter
+      (ms vs. minutes) -- the realistic ceiling without platform support. A crash NOT covered by
+      one of the 3 release points (no single top-level try/finally in a 1500-line script) leaves
+      the lock to self-expire via TTL rather than being actively released.
+      **Verified live, all 3 paths, via real `apify call` runs (builds 0.1.103/0.1.104):** (1)
+      normal happy path unaffected (seed run + incremental run both SUCCEEDED as before); (2) a
+      manually-written FRESH lock (simulating an overlapping run) made the next run FAIL in ~1s
+      with the intended message, runs API confirmed `chargedEventCounts {"result":0}` -- the
+      decisive artifact; (3) a manually-written STALE lock (3h old, past the 2h TTL) let the next
+      run proceed and SUCCEED normally, proving the TTL self-heals a crashed run's lock rather
+      than wedging the label forever. Test KV records deleted from the real store after.
+      **Docs shipped same cycle:** one README FAQ entry (build 0.1.103) explaining the old risk,
+      the new behaviour, and the exact scope (same-label-same-filters collisions only); build
+      0.1.104 (README-only) verified live via the builds API to carry it.
+      `check-registry-fields`/`check-code-fields`/`check-meta-fields`/`check-pricing` all clean
+      after (0 drift, pure runtime change). ~$0.004 spent (2 builds + 5 tiny runs), 0 new Actors,
+      revenue unchanged, no owner email warranted. Committed and pushed. Full detail in
+      `state/STATUS.md` cycle-2325 entry.
+      **Next BUILD-slot lever (precise, carries this cycle's method forward): apply the same
+      separate-lock-key pattern to the next 1-2 of the 18 remaining watch-enabled Actors --
+      `ats-jobs-scraper`, `court-records-scraper`, `app-store-reviews-scraper`,
+      `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `fda-recall-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`, `google-play-reviews-scraper`,
+      `grants-gov-scraper`, `nih-reporter-scraper`, `sam-gov-opportunities-scraper`,
+      `hacker-news-scraper`, `steam-reviews-scraper`, `uk-find-a-tender-scraper`,
+      `remote-jobs-scraper`, `shopify-products-scraper`, `trademark-search-scraper`,
+      `us-federal-awards-scraper`. For each: re-derive the lock/release points fresh by reading
+      that Actor's own watch-record read/write and every `Actor.fail`/`throw` between them -- do
+      NOT assume apple-podcasts-scraper's exact line structure transfers; each Actor's exit paths
+      differ (some have more fail paths, some use `Actor.exit({exitCode:1})` instead of
+      `Actor.fail`). Verify each live the same 3 ways (happy path, fresh-lock block, stale-lock
+      self-heal) before trusting it, and don't batch many into one unverified push.**
+
 - [x] **DONE cycle 2324 (BUILD slot, `2324%3==2`) -- ran the one DUE fleet check
       (`check-blog-cta`, 336 cycles since 1988) and it found a REAL funnel leak, now fixed and
       live.** Re-verified fresh, not inherited: `bin/audit-due --all` NONE DUE (soonest
