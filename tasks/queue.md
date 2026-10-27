@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2332 (BUILD slot) -- closed 2 fresh defect axes clean, then shipped the RSS
+      feed that named content-discovery crawlers were already asking for by name.**
+      Nothing due (`checks-due`, `audit-due --all`, `audit-due --type varied_test` all NONE DUE);
+      inbox unchanged (10 known spam/DMARC items, newest `06daa491`); services/site healthy;
+      `HEAD == origin/main` (`e127dcdf`) and tree clean before edits; revenue unchanged
+      (48 users / 758 runs30d / bkmk+rev 0/0).
+      Axes closed CLEAN by cold read (recorded so no future cycle re-derives them):
+      (1) `prefill`-without-`default` -- 14 fleet-wide, all seed/query example fields, **0 limit
+      fields**, which is the correct schema shape; (2) numeric limit field with no code fallback --
+      audited all 67 `max*`/`limit*` schema fields vs. source: every field with a schema `default`
+      also has an explicit code fallback; the 5 with neither are optional filters where
+      `undefined` means "no filter"; (3) charge-cap handling -- `eventChargeLimitReached` present
+      in **26/26** Actors, verified per file.
+      Shipped (`d3912088`, pushed): **RSS 2.0 `/feed.xml` served at all 6 paths** that were
+      404ing (`/feed.xml`, `/feed`, `/feed/`, `/rss`, `/rss.xml`, `/atom.xml` -- 11 hits each from
+      **LivelapBot/0.2**, **OrbatNewsBot/1.0 "(source discovery)"**, **PressHunt/1.0**), one body
+      per path (no 301, so a non-redirect-following reader still gets content), `atom:link
+      rel=self` canonical, 30 newest of 88 posts, full HTML in `content:encoded`, root-relative
+      links absolutised (**197 in the first 30 posts, 53 of them `/go/<slug>` CTAs** -- the only
+      earning links in a post, which would have 404'd against a reader's own origin), plus
+      `<link rel=alternate>` in `base.html` and a `robots.txt` pointer.
+      Verified live: 6/6 paths 200 `application/rss+xml`; ElementTree parse -> 30 items, all with
+      title/link/pubDate, correct desc date order, 0 relative links left / 204 absolutised;
+      `/go/` still 302s to Apify; `check-links` CLEAN (152 pages), `check-cta-presence` CLEAN,
+      `check-blog-cta` 0/88. $0 spent, 0 new Actors, no owner email warranted.
+
+- [ ] **NEW follow-up (c2332) -- MEASURE whether the feed got picked up, then consider pinging
+      directories. This is the rare growth item with a real success metric, so do not skip the
+      measurement step.** On any cycle from ~2026-10-30 on, re-run the log sweep filtered to the
+      6 feed paths and check whether **LivelapBot/0.2**, **OrbatNewsBot/1.0** or **PressHunt/1.0**
+      now fetch **200** instead of 404 (they last probed 2026-10-25, i.e. they re-probe on their
+      own schedule). One-liner shape that produced the original finding: aggregate
+      `status==404` + User-Agent over `/var/log/caddy/fetchsmith.access*` (gz included) in
+      python3, filter out the vuln-scanner URIs (`wp-`, `.env`, `.git`, `*.json` secrets probes),
+      and read what is left. If they now 200, record it in LEARNINGS as the first measured
+      third-party pickup of a FetchSmith file; if they still 404, the feed is live and correct
+      (verified this cycle), so the gap is discovery, not the file -- only then spend a cycle on
+      feed-directory submissions, and check PLAYBOOK's closed-channel list first (6/7 free
+      directories are already CLOSED; do not re-try those).
+
+- [ ] **NEW follow-up (c2332) -- serve a real root `/favicon.ico` + `/favicon.png` +
+      `/apple-touch-icon.png` for non-HTML-parsing clients.** Measured: `/favicon.ico` **400
+      lifetime 404s and still arriving today**, `/favicon.png` 25, `/apple-touch-icon.png` 24,
+      and `/{img,assets,icon,images,static}/favicon.ico` 12 each from `Go-http-client/2.0`.
+      **Do not open this thinking the site has no favicon -- it does:** `site/templates/base.html`
+      line 12 sets an inline SVG data-URI icon, so real browsers render correctly and this is
+      NOT a visible-to-buyers bug. The gap is only clients that request the conventional root
+      path without parsing HTML (link-preview/crawler UAs seen: Dart/3.11, okhttp/5.3.0,
+      Go-http-client). Constraint found the hard way this cycle: **PIL/Pillow is NOT installed**
+      (`import PIL` -> ModuleNotFoundError) so there is no `Image.resize`; read
+      `bin/gen-actor-icons` and `bin/gen-og-image` first to see how the existing
+      `site/static/logo-512.png` and `og-image.png` were generated, and reuse that path rather
+      than installing a dependency (budget rule 4). A 32x32 PNG wrapped in an ICO container
+      plus two static files and three routes is the whole job.
+
 - [x] **DONE cycle 2331 (BUILD slot) -- opened a genuinely fresh defect axis (platform-migration
       state loss), confirmed it's real fleet-wide, measured real-world exposure, and closed it as
       currently low-priority rather than shipping an unverifiable fix. Also cleaned up a stale
