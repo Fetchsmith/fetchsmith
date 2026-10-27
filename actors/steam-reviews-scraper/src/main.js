@@ -790,10 +790,21 @@ async function scrapeReviews(appId) {
 const ids = [];
 const seenIds = new Set();
 const addId = (id) => { if (id && !seenIds.has(id)) { seenIds.add(id); ids.push(id); } };
+// Entries of `apps` that are not a Steam store URL or a numeric App ID — e.g. a game NAME, which
+// belongs in `searchTerms`. Kept as a bucket rather than a log line only (h988 covered the
+// ALL-unparseable run, which falls through to its own "no valid Steam App IDs" message below; the
+// PARTIAL case was silent): with 1 of 2 apps unparseable the run pushed the other app's rows, hit
+// none of the per-id buckets, set NO status message at all, and reported appsRequested as the
+// resolved count — so a buyer pasting a mixed list of URLs and names was charged for a subset and
+// told nothing. Same silent-drop class as emptySearches in the partial branch (cycle 1592).
+const unparsedApps = [];
 for (const a of apps) {
   const id = parseAppId(a);
   if (id) addId(id);
-  else log.warning(`Cannot parse an App ID from "${a}" — use a Steam store URL (…/app/1145360/Hades/) or the numeric App ID.`);
+  else {
+    unparsedApps.push(a);
+    log.warning(`Cannot parse an App ID from "${a}" — use a Steam store URL (…/app/1145360/Hades/) or the numeric App ID.`);
+  }
 }
 
 const emptySearches = [];
@@ -942,6 +953,21 @@ log.info(`Done. Pushed ${pushed} ${dataType === 'games' ? 'games' : 'reviews'}.$
 // and 1591). Order is most-specific-first; every entry names the apps/terms it applies to so the
 // buyer can act per app instead of guessing which cause covers which id.
 const zeroCauses = [];
+// One wording, used by the zero-row, partial-success and watch branches alike, so the three paths
+// cannot drift apart the way emptySearches did before cycle 1592.
+const unparsedCause = unparsedApps.length
+  ? `no Steam App ID could be parsed from ${unparsedApps.length} "apps" entr${unparsedApps.length > 1 ? 'ies' : 'y'}: `
+    // No internal semicolon, deliberately: zeroCauses/partialCauses are joined with '; ', so one
+    // inside a cause string would read as a cause boundary (same trap fixed at cycle 1592).
+    + `${unparsedApps.map((a) => JSON.stringify(a)).join(', ')} — those entries were skipped, and "apps" takes `
+    + 'a store URL (…/app/1145360/Hades/) or a numeric App ID, so game NAMES belong in "searchTerms"'
+  : null;
+// Gated on something else having been seeded: with apps ALL unparseable and no searchTerms there is
+// nothing else to report, and the `why` chain below must keep falling through to h988's dedicated
+// "no valid Steam App IDs could be parsed from your input" message (verified live, cycle 1592).
+if (unparsedCause && (ids.length > 0 || searchTerms.length > 0)) {
+  zeroCauses.push(unparsedCause);
+}
 if (emptyIds.length) {
   zeroCauses.push(`Steam returned nothing for: ${emptyIds.join(', ')} (language "${language}", country "${country}")`);
 }
@@ -1016,6 +1042,9 @@ if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults
 if (watchMode && seeding && seedCapHit) markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-review cap; reviews past the cap will be delivered and charged as new on a later incremental run`);
 if (upstreamDegraded.length) markIncomplete('upstream-degraded', `Steam returned incomplete responses for: ${upstreamDegraded.join(', ')}`);
 if (depthCapped.length) markIncomplete('depth-cap', `maxReviewsPerApp (${perAppReviews}) was hit while filtering for: ${depthCapped.join(', ')} — matching reviews may sit deeper in the feed`);
+// Coverage of the REQUESTED input was incomplete even if every id that parsed answered fully, so a
+// pipeline reading `complete` must not treat a mixed URL/name list as a full delivery.
+if (unparsedApps.length) markIncomplete('unparsed-apps', unparsedCause);
 if (watchMode && !seeding && saturatedApps.length) markIncomplete('watch-saturated', `every scanned review was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed`);
 
 // A watch status message still has to carry the upstream-fault notice when only SOME apps were
@@ -1024,6 +1053,9 @@ if (watchMode && !seeding && saturatedApps.length) markIncomplete('watch-saturat
 const baselinedSuffix = baselinedInPlace.length
   ? ` Newly-watched app(s) ${baselinedInPlace.join(', ')} were baselined this run instead of having their whole review history delivered — you will get their new reviews from the next run on.`
   : '';
+// Watch-mode branches build their message from suffixes, not from partialCauses, so without this
+// an unparseable entry vanishes from every watch run's status line.
+const unparsedSuffix = unparsedCause ? ` Also: ${unparsedCause}.` : '';
 const degradedSuffix = upstreamDegraded.length
   ? ` Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; those apps were skipped, re-run them later.`
   : '';
@@ -1063,17 +1095,17 @@ const timeoutSuffix = idsNotReached.length
   ? ` ${truncationCause} — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}.${truncationAdvice}`
   : '';
 if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix} ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix} ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.${unparsedSuffix}`);
 } else if (timeBudgetExceeded && pushed === 0 && watchMode) {
-  await Actor.setStatusMessage(`No new reviews delivered for watch label "${watchLabel}" — the run was approaching the platform run timeout, not confirmation that nothing is new.${timeoutSuffix}`);
+  await Actor.setStatusMessage(`No new reviews delivered for watch label "${watchLabel}" — the run was approaching the platform run timeout, not confirmation that nothing is new.${timeoutSuffix}${unparsedSuffix}`);
 } else if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
 } else if (watchMode && saturatedApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}`);
+  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
 } else if (pushed === 0) {
   // timeBudgetExceeded checked FIRST: without it, timing out before any id was even attempted falls
   // into the final default below ("no valid Steam App IDs could be parsed from your input") -- a
@@ -1098,7 +1130,7 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
         : 'no valid Steam App IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}`);
 } else if (upstreamDegraded.length || depthCapped.length || allFilteredIds.length
-  || emptyIds.length || emptySearches.length) {
+  || emptyIds.length || emptySearches.length || unparsedApps.length) {
   // Partial success: other apps produced rows, so the run is not a failure, but the buyer still
   // needs to know which specific apps fell short and why. Accumulated for the same reason as
   // zeroCauses above — these buckets are filled independently per id in one loop, so a run where
@@ -1106,6 +1138,8 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   // once, and the else-if chain this replaced reported only the upstream fault and silently dropped
   // the other two (cascade class, cycles 1559/1591).
   const partialCauses = [];
+  // Listed first: it is the only cause here the buyer can fix by editing the input alone.
+  if (unparsedCause) partialCauses.push(unparsedCause);
   if (upstreamDegraded.length) {
     partialCauses.push(`Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input, so re-run those later`);
   }
@@ -1132,7 +1166,7 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   // start with field names like `maxReviewsPerApp`) read as a continuation instead of a new sentence.
   await Actor.setStatusMessage(`Pushed ${pushed} results — ${partialCauses.join('; ')}.${timeoutSuffix}`);
 } else if (timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results.${timeoutSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results.${timeoutSuffix}${unparsedSuffix}`);
 } else if (!complete) {
   // Reaches here only for a non-watch run that hit maxResults or the charge limit cleanly (no
   // upstream/depth/empty issue), which none of the branches above cover.
@@ -1146,8 +1180,12 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
 const runSummary = {
   mode: watchMode ? (seeding ? 'watch-seed' : 'watch-incremental') : dataType,
   dataType,
+  // Resolved ids only — an "apps" entry that is not a store URL or numeric App ID never becomes an
+  // id, so this UNDERCOUNTS what the buyer asked for. `unparsedApps` carries the difference.
   appsRequested: ids.length,
   delivered: pushed,
+  // Verbatim "apps" entries no App ID could be parsed from (a game name belongs in searchTerms).
+  unparsedApps,
   emptySearches,
   emptyIds,
   upstreamDegraded,

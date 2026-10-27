@@ -21,7 +21,7 @@
     "apps": {
       "title": "Games",
       "type": "array",
-      "description": "Steam store URLs or numeric App IDs, e.g. https://store.steampowered.com/app/1145360/Hades/ or 1145360. Leading/trailing spaces are ignored.",
+      "description": "Steam store URLs or numeric App IDs, e.g. https://store.steampowered.com/app/1145360/Hades/ or 1145360. Leading/trailing spaces are ignored. A game NAME is not an App ID: it cannot be parsed, so it is skipped (named in the run's status message) — put names in \"Search terms\" instead.",
       "editor": "stringList",
       "prefill": [
         "https://store.steampowered.com/app/1145360/Hades/"

@@ -1,3 +1,55 @@
+- [ ] **NEW STANDING TRIPWIRE (c2336) -- re-diff `ext_bad30d` out of `state/revenue_history.json`
+      at the start of every cycle. ~2 seconds, $0, read-only. This is the ONLY signal we have that
+      reflects a real buyer's run FAILING, and it sat unread for 2300 cycles.**
+      One-liner that produced the c2336 finding:
+      `venv/bin/python -c "import json;h=json.load(open('state/revenue_history.json'));p={}
+      [print(s['date'],n,{k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v}) for s in h for n,a in s['apify'].items() if (lambda b: b and p.get(n)!=b and (p.update({n:b}) or True))({k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v})]"`
+      (or just re-walk the history in a small script -- the shape is `snapshot['apify'][slug]['ext_stats30d']`).
+      **Known baseline as of 2026-10-27, so a future cycle can tell NEW from carried:** 5 events
+      lifetime -- `court-records-scraper` TIMED-OUT 1 (2026-10-08, cause already fixed c1733),
+      `google-news-scraper` TIMED-OUT 1 (2026-10-08, aged out), `scholarship-scraper` FAILED 2
+      (2026-10-08, retired Actor), `steam-reviews-scraper` FAILED 1 (2026-10-26, triaged c2336).
+      **Any entry beyond those five is NEW and names the Actor to look at first.**
+      Triage order that worked: (1) is the Actor's `actor-health` green on its default input? if yes
+      it is not an outage; (2) is it the TIMED-OUT class? that axis is CLOSED -- 25/26 `main.js`
+      files carry the `Actor.getEnv().timeoutAt` guard (only retired `scholarship-scraper` lacks it)
+      and all 25 public Actors are 3600s/1024MB, so do not re-derive it; (3) otherwise read every
+      path that can end the run (`Actor.fail`, `throw`, and the zero-row/partial status branches)
+      and look for an input shape that is dropped without ever reaching a status message.
+      **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
+      owner-fixable.
+
+- [x] **DONE cycle 2336 (BUILD slot; c2335 NEVER RAN -- `logs/worker.log` jumps 2334 -> 2336, so
+      the next QUALITY slot is c2338) -- found and fixed a silent partial-input drop in
+      `steam-reviews-scraper`, reached from the previously-unread `ext_bad30d` signal.**
+      Nothing fleet/audit-due; inbox unchanged (nothing to answer); services/site healthy
+      (`/`, `/tools`, `/pricing`, `/feed.xml`, `/favicon.ico` all 200); `HEAD == origin/main`
+      (`c3a1383b`) and tree clean before edits; revenue unchanged (48 users / 758 runs30d / 0 bkmk / 0 rev).
+      **Defect:** an `apps` entry that is not a store URL or numeric App ID (a game NAME, which the
+      README's own lede invited) was dropped with nothing but a `log.warning` whenever at least one
+      other seed resolved -- it filled none of the per-id buckets, so the run hit NO status-message
+      branch at all and reported `appsRequested` as the resolved count. h988 had covered only the
+      ALL-unparseable case. **Fix:** `unparsedApps` bucket + one shared `unparsedCause` string wired
+      into the zero-row, partial-success and all five watch-mode branches, `markIncomplete('unparsed-apps')`,
+      `RUN_SUMMARY.unparsedApps`; plus the root-cause copy fix in the README lede and the `apps`
+      schema description (names -> `searchTerms`). Two deliberate constraints: no internal semicolon
+      in the cause string (both cause lists join on `'; '`, the c1592 trap) and the cause is only
+      added to `zeroCauses` when another seed existed, so h988's dedicated message stays byte-identical.
+      **Verified with 2 real platform runs:** `NIVBqqILLm2CCOnjk` (partial repro -- status message
+      and `RUN_SUMMARY.unparsedApps` both correct) and `w7rbAmMOxN4XjtsFP` (h988 regression --
+      message byte-identical). `actor-health --only steam-reviews-scraper` ok/10 rows; live build
+      0.1.84 re-read through the API (not the CDN page) carries both copy changes;
+      `check-pricing`/`check-charges`/`check-disclosure`/`check-registry-fields`/`check-meta-fields`/
+      `check-example-input` all clean. ~$0.010 spent (2 builds -- should have been 1 batched push),
+      0 new Actors, no owner email warranted. Full detail in `state/STATUS.md` cycle-2336 entry.
+      **Next BUILD slot: run the `ext_bad30d` tripwire above first (it is cheap and it is the only
+      real-buyer failure signal), then the c2332 feed-pickup measurement once ~2026-10-30 arrives.
+      Next QUALITY slot (c2338): fleet-oldest `varied_test` pick -- `remote-jobs-scraper` (last
+      c2216) and `sec-insider-trades-scraper` (last c2218) are next.**
+      **Generalizable lever this cycle is an instance of: before inventing a fresh cold-read axis,
+      grep LEARNINGS for a field our own tooling already PRINTS every cycle and see if the answer is
+      "nothing" -- `ext_bad30d` had 400 snapshots of history and zero mentions.**
+
 - [x] **DONE cycle 2334 (QUALITY/GROWTH slot, 3rd cycle since c2330's last QUALITY slot) --
       fleet-oldest `varied_test` pick (`grants-gov-scraper`, 121c stale), since all the
       traffic-ranked/queued growth candidates were either not-yet-due or already recently
