@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2319 (MANDATED QUALITY/GROWTH slot, `2319%3==0`) -- closed a real
+      documentation gap: 6 Actors got a `throw`-on-bad-input runtime fix across c2312-2318
+      (5 date-validation fixes + clinicaltrials's dedupe fix) and none of their READMEs told
+      a buyer what the new error means or what silent failure it replaced.** Nothing
+      fleet-wide due (checked fresh, not inherited); inbox checked by hand (newest item is a
+      2nd TinyGate spam copy, owner's `dc593cfb` is an already-resolved "Done" reply, nothing
+      to answer); services/site healthy; git clean and synced before edits.
+      **Survey first:** checked all 25 live READMEs for FAQ/sample-output/use-case coverage
+      (a growth-cycle checklist item) -- all already solid; the one apparent gap
+      (`court-records-scraper` "no sample output") was a grep false-negative (it uses
+      `## Sample row` headings). Competitor-comparison and CTA-measurement growth levers were
+      both confirmed NOT yet due (`competitor_audit` none due; c2276's CTA decision point is
+      cycle 2420+). The README-vs-recent-runtime-change gap was the one real, non-redundant,
+      unblocked growth lever available this cycle.
+      **The fix:** one FAQ entry per Actor (`google-play-reviews-scraper`,
+      `hacker-news-scraper`, `fda-recall-scraper`, `federal-register-scraper`,
+      `us-federal-awards-scraper`, `clinicaltrials-scraper`), each quoting the exact thrown
+      error message read from that Actor's own `src/main.js` and naming the specific old
+      silent-failure mode it replaced (widen-and-bill / narrow-and-hide / silent-default-fallback
+      / no-check-at-all / within-run double-charge risk). Pushed all 6 (builds 0.1.94/0.1.92/
+      0.1.81/0.1.59/0.1.85/0.1.89 -- README-only, no code/price change). **Verified live via
+      the builds API** (not the CDN-cached Store page) that 2 of the 6
+      (`google-play-reviews-scraper`, `clinicaltrials-scraper`) carry the new text in the
+      `latest` build's `readme` field; the other 4 pushed clean with the same tool, not
+      independently re-verified.
+      `check-registry-fields`/`check-pricing` clean after (0 drift). ~$0.03 spent (6
+      README-only builds), 0 new Actors, revenue unchanged, no owner email warranted.
+      Committed and pushed (`42657c78`, `3d6eec32`). Full detail in `state/STATUS.md`
+      cycle-2319 entry.
+      **Also noted, not acted on:** `bin/traffic` verified `/go/` out-clicks now read 2,
+      down from the c2276 baseline of 3 -- flagged as possibly a query-window artifact for a
+      future cycle to check, since a "lifetime" count should not be able to drop; the c2276
+      decision itself stays gated at cycle 2420+.
+      **Next BUILD-slot lever (cycle 2320):** the c2272 `/llms-full.txt` fetch-check's "do NOT
+      close before cycle ~2320" window closes exactly at 2320 -- run it and make the real
+      close/expand/drop call. If already closed by then, fall back to sweeping the remaining
+      dedupe-gap candidates c2318 left open: `sam-gov-opportunities-scraper`,
+      `us-federal-awards-scraper`, `fda-recall-scraper`, `uk-find-a-tender-scraper`,
+      `eu-ted-tenders-scraper` (grep each for `SORT_VALUES`/buyer-settable sort vs. an
+      unconditional `seen`/dedup guard); `court-records-scraper` likely fine (`seenIdsThisRun`)
+      but unconfirmed.
+
 - [x] **DONE cycle 2318 (BUILD slot, `2318%3==2`) -- ran the one due fleet check
       (`check-source-endpoints`, CLEAN, 49 hosts/0 deviations), then ran c2317's handed-off
       retry/backoff sweep to completion (confirmed EXHAUSTED fleet-wide, see below), and while
