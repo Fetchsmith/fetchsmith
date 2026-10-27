@@ -1,3 +1,40 @@
+- [x] **DONE cycle 2330 (QUALITY/GROWTH slot) -- both scheduled audit rotations (competitor_audit,
+      varied_test) explicitly NONE DUE, nothing fleet-due, inbox nothing to answer, dev.to not
+      due (checked live via its own API: last post 29h ago, under the 2-day floor). Re-ran the
+      README-competitor-gap grep fleet-wide and confirmed it fully exhausted (54 matches, all
+      already-triaged pricing/scope prose or closed PII decisions, 0 new gaps), then fell back to
+      the PLAYBOOK's standing growth item: real `apify call` edge-case + happy-path verification
+      on 2 Actors picked by `bin/traffic` relevance.**
+      Re-verified fresh: `bin/checks-due` NONE DUE (soonest `check-row-floor` c2340);
+      `bin/audit-due --all` and `--type varied_test` both NONE DUE (soonest c2549 either way --
+      told explicitly not to sweep); services/site healthy; `HEAD == origin/main` (`5ce38fce`)
+      and tree clean before edits. `bin/revenue` unchanged (48 users, 758 runs30d, bkmk/rev 0/0).
+      **Picked `google-news-scraper` and `ats-jobs-scraper`** -- 2 of the 4 /tools pages with real
+      verified-human traffic this period (9 and 7 visits), chosen as the two with the longest gap
+      since their own last `varied_test` entry (99c and 115c, both still inside the 336c interval
+      so neither was formally due -- this was opportunistic traffic-driven selection).
+      **4 real platform runs, 0 defects, clean verification (not a fix):** (1) `google-news-scraper`
+      zero-result query (`queries:["zzxqwplkjasdfqwpoiuxyz9999nonsense"]`) -- run `rsrhSaJeuZvComwiY`
+      SUCCEEDED, `chargedEventCounts {"result":0}` confirmed via the runs API, correct zero-charge
+      status message. (2) same Actor happy path (`queries:["artificial intelligence"],
+      maxResults:3`) -- run `JlcMDI6yPR9ywZo17` SUCCEEDED, `chargedEventCounts {"result":3}`, 3
+      well-formed dataset rows. (3) `ats-jobs-scraper` nonexistent-slug edge case
+      (`companies:[{"ats":"greenhouse","slug":"zzznonexistentcompany999xyz"}]`) -- run
+      `ST5lI3CpM7T7E9cyA` SUCCEEDED (not failed), clear per-company WARN + buyer-facing status
+      message, `chargedEventCounts {"job":0}` confirmed. (4) same Actor happy path
+      (`companies:[{"ats":"greenhouse","slug":"airbnb"}], titleKeyword:"engineer"`) -- run
+      `QyrwWzwLaNTDMegcf` SUCCEEDED, `chargedEventCounts {"job":50}`, real Airbnb postings in the
+      dataset.
+      Recorded both in `state/audit_dates.json` (`varied_test`=2330, prior notes preserved).
+      ~$0.001 spent (4 tiny runs), 0 new Actors, 0 code changes, revenue unchanged, no owner email
+      warranted. Committed and pushed. Full detail in `state/STATUS.md` cycle-2330 entry.
+      **Next cycle: nothing fleet/audit-due until c2340 (`check-row-floor`); both audit rotations
+      stay NONE DUE until c2549.** BUILD slot fallback unchanged (watch-mode axis de-prioritized,
+      0/19 real-world-protected -- see c2329 below; or a fresh cold-read on an unswept axis).
+      QUALITY slot fallback: the README-competitor-gap grep is now confirmed exhausted (don't
+      re-run blind) -- repeat this cycle's opportunistic traffic-ranked `varied_test` pattern on
+      `trademark-search-scraper` (c2221, 109c gap) and `uk-find-a-tender-scraper` (c2230, 100c gap).
+
 - [x] **DONE cycle 2329 (BUILD slot) -- closed c2328's triage lever: queried the real watch-store
       key count for all 16 remaining watch-enabled Actors via the API before porting anything.
       15/16 came back 0 keys; the 1 that came back nonzero (`shopify-products-scraper`, 2 keys)
