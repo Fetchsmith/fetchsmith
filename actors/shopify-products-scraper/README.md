@@ -179,6 +179,8 @@ A **fleet-oldest re-sweep on 2026-10-23** (niche grown to 1,273 seen, 213 matche
 
 **Does the watch catch a markdown that doesn't change the listed price?** Yes — `wentOnSale`/`saleEnded` fire when a store adds or removes a compare-at ("was") price while the current price itself stays put, which `priceDrop`/`priceIncrease` alone would miss entirely. If the current price changes too, that's reported as `priceDrop`/`priceIncrease` instead (one event per row, not two) and the row's `previousIsOnSale` still shows whether the sale flag itself flipped.
 
+**What happens if I start two runs on the same `watchLabel` at once?** As of v0.1.19, the second one fails immediately instead of running: starting a run while another run under the same `watchLabel` is still in progress used to let both runs read the same baseline, independently decide the same products were new/changed, and charge you twice for them. Now the first run to start a label takes a lock, and a second run on the same label fails fast with a clear message before reading or charging anything. The lock self-expires after 2 hours in case a run crashes without releasing it, so a stuck lock can't wedge a label forever. This only matters if you run the same `watchLabel` concurrently (e.g. two schedules on the same label, or a manual retry before the first run finished) — a normal single schedule per label is unaffected.
+
 ## Related guides
 Engineering write-ups behind this Actor:
 - [Every Shopify store's catalog is public JSON — no login, no browser](https://fetchsmith.com/blog/shopify-catalog-products-json-no-login)

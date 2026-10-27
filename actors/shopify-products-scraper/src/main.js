@@ -120,10 +120,54 @@ let watchUnchanged = 0;
 let watchEventsFiltered = 0; // a real change the buyer's watchEvents list excluded
 let watchSeededThisRun = 0; // rows recorded as baseline instead of delivered
 const watchCounts = Object.fromEntries(WATCH_EVENTS.map((e) => [e, 0]));
+
+// Per-label lock against OVERLAPPING RUNS of the same watch label (h288, cycle 2325, ported here
+// cycle 2329). The baseline is read once near the top of a run and written once near the bottom
+// (saveWatchRecord), so two runs sharing a label+fingerprint both read the same watchPrev, both
+// decide the same products are new/changed, and both charge for them -- a real cross-run double
+// charge. Kept as a SEPARATE KV record (`${key}__lock`) so a lock write can never corrupt or
+// truncate the real baseline. Taken BEFORE the baseline getValue, so a blocked run reads nothing
+// and charges nothing. This Actor's only Actor.fail() call (line 48) sits above this entire block,
+// and every per-store error (the `try`/`catch` around the storeUrls loop, ~line 737-865) is caught
+// into erroredStores rather than ending the run -- so saveWatchRecord() has exactly ONE call site
+// and the lock needs exactly ONE release point, with no mid-run exit able to skip it. Same scope
+// and tradeoff as the other 3 ported Actors: not true compare-and-swap (the Apify KV API exposes
+// no If-Match to the SDK), and a run that crashes without releasing the lock self-heals via TTL.
+const WATCH_LOCK_TTL_MS = 2 * 60 * 60 * 1000;
+let watchLockKey = null;
+let watchLockHeld = false;
+
+async function acquireWatchLock(store, storeKey, label) {
+  watchLockKey = `${storeKey}__lock`;
+  const existingLock = await store.getValue(watchLockKey);
+  if (existingLock && typeof existingLock.lockedAt === 'string') {
+    const age = Date.now() - new Date(existingLock.lockedAt).getTime();
+    if (age >= 0 && age < WATCH_LOCK_TTL_MS) {
+      await Actor.fail(
+        `Watch label "${label}" is already being processed by another run (started ${existingLock.lockedAt}`
+        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}). Running the same watch label concurrently `
+        + 'would read the same baseline twice and charge you twice for the same new/changed products, so this run '
+        + 'stopped before reading or charging anything. Wait for the other run to finish and try again (a stuck '
+        + `lock from a crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
+      );
+    }
+  }
+  await store.setValue(watchLockKey, { lockedAt: new Date().toISOString(), runId: Actor.getEnv().actorRunId ?? null });
+  watchLockHeld = true;
+}
+
+async function releaseWatchLock(store) {
+  if (watchLockHeld && watchLockKey) {
+    await store.setValue(watchLockKey, null);
+    watchLockHeld = false;
+  }
+}
+
 if (watchMode) {
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel);
   watchKey = key;
+  await acquireWatchLock(watchStore, key, watchLabel);
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.products)) {
     watchRecord = existing;
@@ -983,6 +1027,7 @@ if (watchMode && watchEvents.has('delisted') && watchStoreSweeps.size && keepGoi
 }
 if (watchMode) {
   await saveWatchRecord();
+  await releaseWatchLock(watchStore);
   const breakdown = WATCH_EVENTS.filter((e) => watchCounts[e]).map((e) => `${e}: ${watchCounts[e]}`).join(', ') || 'none';
   log.info(`Watch "${watchLabel}": ${breakdown}. Unchanged and not charged: ${watchUnchanged}.${watchEventsFiltered ? ` Changed but excluded by watchEvents: ${watchEventsFiltered}.` : ''}${watchSeededThisRun ? ` Baselined this run: ${watchSeededThisRun}.` : ''}`);
 }
