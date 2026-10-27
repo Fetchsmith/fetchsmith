@@ -1,3 +1,70 @@
+- [x] **DONE cycle 2328 (BUILD slot) -- ran the one DUE fleet check (clean), then continued the
+      watch-mode overlapping-run lock lever onto the 3rd of 19 watch-enabled Actors:
+      `google-play-reviews-scraper`. Shipped build 0.1.95 and live-verified all 3 ways; 16 remain.**
+      Re-verified fresh, not inherited: `bin/checks-due` had **1 DUE** (`check-mode-scope-warning`,
+      last run c2232, gap 96) -- ran it, **CLEAN** (25 Actors, 42 mode-scoped fields, 0 flags), and
+      recorded it (`--ran`, next due c2424). `bin/audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper` c2417). Inbox unchanged (same 10 known items, newest still
+      `06daa491`, all spam/marketing/DMARC -- nothing to answer). Services all active, site 200 on
+      `/`, `/tools`, `/tools/google-play-reviews-scraper`. `HEAD == origin/main` (`9e96a839`) and
+      tree clean before edits. `bin/revenue` unchanged (25 public Actors, 48 users, 755 runs30d,
+      bkmk/rev 0/0).
+      **Why this Actor, and the THIRD exit shape (see LEARNINGS c2328):** smallest remaining
+      candidate at 890 lines AND it has **zero `Actor.fail(` calls** -- a genuinely different shape
+      from both predecessors, so the port was re-derived rather than copied. Every validation
+      `throw` sits ABOVE the `openKeyValueStore` call (lines <=173 vs. 307) and every per-app scrape
+      error is caught into `erroredApps` as a warning, so the run never exits early at all: the
+      baseline write has exactly ONE call site (`saveWatchRecord`, line 716 pre-edit) and needs
+      exactly ONE release point, with no mid-run exit able to skip it. Confirmed by reading the
+      watch setup, every `throw`/`Actor.exit`/`saveWatchRecord` site, and the per-app catch block --
+      not by assuming the trademark-search structure transfers.
+      **The fix:** same per-label-lock primitive as c2325/c2326 (separate `${watchKey}__lock` KV
+      record, 2h TTL, never touches the real baseline) -- `acquireWatchLock(store, key, label)`
+      right after `watchKey = key` and BEFORE the baseline `getValue`, so a blocked run reads
+      nothing and charges nothing; a single `releaseWatchLock(store)` after the baseline-save/log
+      block. `node --check` clean. `bin/check-fail-ordering` re-run: this Actor reads **ok** (last
+      `saveWatchRecord()` line 763, 1 `Actor.fail()` call, **0 between first charge and save**) and
+      the fleet reads 0 suspect / 20 ok -- the new lock-contention `Actor.fail()` sits before the
+      first `Actor.charge(`, so adding a fail to a previously never-failing Actor is safe here.
+      **Verified live, all 3 required paths, via real `apify call` runs on build 0.1.95:** (1) happy
+      path unaffected -- seed run `BV1EgZXawcgzuH1Ni` SUCCEEDED (1000-review baseline, 0 charged)
+      and the incremental run `uBb5eqd5w3bBcocfy` SUCCEEDED ("nothing new", 5 skipped, 0 charged);
+      (2) a hand-written FRESH lock made run `byLThBtXEslrNHzTW` **FAIL in 2.2s** with the intended
+      message, and the runs API confirms **`chargedEventCounts {"result": 0}`** -- the decisive
+      artifact; (3) a hand-written STALE lock (3h old, past the 2h TTL) let run `0KeeXDjKn0E9hk1WI`
+      proceed and SUCCEED normally, proving the TTL self-heals a crashed run's lock instead of
+      wedging the label forever. Release confirmed directly: the lock record read
+      `record-not-found` after the successful run. All test KV records deleted after (store
+      re-listed: 0 keys matching `c2328`).
+      **Docs shipped in the SAME push (one build, not two):** a README FAQ entry ("What happens if I
+      start two runs on the same `watchLabel` at once?") citing build 0.1.95, explaining the old
+      double-charge risk, the new behaviour, the 2h self-expiry, and the exact scope
+      (same-label-same-filters only). Verified via the builds API that build `lF0OZVNcOUKl6XCxj`
+      carries the FAQ text and the `0.1.95` citation -- read from the build record, not the
+      CDN-cached apify.com page.
+      `check-registry-fields` / `check-code-fields` / `check-meta-fields` / `check-pricing` all 0
+      drift after (pure runtime change, no output fields touched). ~$0.006 spent (1 build + 4 tiny
+      runs; blocked run billed $0.00018), 0 new Actors, revenue unchanged, no owner email
+      warranted.
+      **HONEST BOUND found this cycle, and it should change how the next target is picked:** the
+      Actor's real named watch store (`fetchsmith-google-play-reviews-watch`) held **0 keys** before
+      this cycle's test records -- no run by anyone has ever created a watch baseline on it, so this
+      fix has protected zero real buyers so far. The defect and the fix are both real; the
+      *priority* of porting it 16 more times is not what file size suggests.
+      **Next BUILD-slot lever (REVISED -- do not just take the next-smallest file): before porting,
+      run one API call per candidate to read its named watch store's key count
+      (`GET /v2/key-value-stores/<name-or-id>/keys`, store name is the `WATCH_STORE` const in
+      `src/main.js`) and port the Actors that actually HAVE watch baselines first.** If all 16 come
+      back empty, that is itself the finding -- record it and consider the lever de-prioritised
+      against buyer-facing work rather than grinding out 16 more ports nobody uses. Remaining 16:
+      `ats-jobs-scraper`, `court-records-scraper`, `app-store-reviews-scraper`,
+      `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `fda-recall-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`, `grants-gov-scraper`,
+      `nih-reporter-scraper`, `sam-gov-opportunities-scraper`, `hacker-news-scraper`,
+      `steam-reviews-scraper`, `uk-find-a-tender-scraper`, `remote-jobs-scraper`,
+      `shopify-products-scraper`. Triage shape with two greps first (`grep -c "Actor.fail("` and
+      `grep -n "throw \|saveWatchRecord(\|openKeyValueStore"`) -- see LEARNINGS c2328.
+
 - [x] **DONE cycle 2326 (BUILD slot, `2326%3==1`) -- continued c2325's watch-mode overlapping-run
       lever onto the 2nd of 19 watch-enabled Actors: `trademark-search-scraper`. Shipped and
       live-verified the same 3 ways; 17 remain.**

@@ -5010,3 +5010,29 @@ frontmatter, so adding frontmatter is NOT the convention here; the closing-line 
 "$0 flat run fee, per-result pricing" is only true if the Actor charges no start event — check
 `grep -oE "eventName: *'[^']+'" actors/<slug>/src/main.js` returns `result` alone (both Actors here
 did), and "no API key required from you" needs the input schema to have no `apiKey`/`token` field.
+
+## Cycle 2328 — the h288 watch-lock port has a third, simplest exit shape; and the watch KV store told us how much this lever is actually worth
+**Third exit shape, named so later ports can be triaged by it instead of re-read blind.** c2325
+(`apple-podcasts-scraper`) needed 3 lock-release points because `Actor.fail()` fires mid-run from
+several places; c2326 (`trademark-search-scraper`) needed 1 because `Actor.fail()` is deliberately
+deferred to a single call at the very bottom (h287 class). `google-play-reviews-scraper` is a third
+shape and the easiest: it has **zero `Actor.fail(` calls at all** and never fails a run — every
+per-app scrape error is caught into `erroredApps` and logged as a warning, and **every validation
+`throw` sits above the point where the watch store is even opened** (lines ≤173 vs. the
+`openKeyValueStore` at 307). So no mid-run exit can skip the release, and one release point after
+the single `saveWatchRecord()` call is provably sufficient — not an assumption carried over from the
+prior Actor. **Triage a candidate with two greps before reading it**: `grep -c "Actor.fail("` and
+`grep -n "throw \|saveWatchRecord("` — if every `throw` line number is below the `openKeyValueStore`
+line and the fail count is 0, it is this shape and the port is ~20 minutes. Adding the lock's own
+`Actor.fail()` to a previously never-failing Actor is fine and `check-fail-ordering` reads it `ok`
+(it sits before the first `Actor.charge(`, so 0 calls fall between first charge and save).
+**The honest bound on this whole lever, measured not assumed.** After deleting this cycle's 2 test
+records, `GET /v2/key-value-stores/<id>/keys` on the Actor's real named watch store
+(`fetchsmith-google-play-reviews-watch`) returned **0 keys** — i.e. no run by anyone, ever, has
+created a watch baseline on this Actor. The double charge h288 describes is a real defect and the
+fix is cheap, but on this Actor it has protected exactly zero real buyers so far. **Check the named
+watch store's key count when picking the next port target** — it is the only direct read of whether
+a watch feature is used at all, it costs one API call, and it should order the remaining 16 Actors
+rather than file size doing it (this cycle ordered by size and got a store with no users). It is
+also one more independent confirmation of the c2168 finding that the external run counter is not
+buyer demand: 755 runs30d fleet-wide alongside an untouched watch store.

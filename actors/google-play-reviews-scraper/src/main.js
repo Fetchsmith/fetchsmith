@@ -287,6 +287,52 @@ let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const seededApps = new Set(); // appIds whose existing reviews are already in the baseline
 let appSeeding = false; // set per app in the main loop: this app is being baselined, not delivered
 
+// Per-label lock against OVERLAPPING RUNS of the same watch label (h288, cycle 2325). The baseline
+// below is read once at the top of a run and written once near the bottom, so two runs sharing a
+// label+fingerprint both read the same `seenIds`, both decide the same reviews are new, and both
+// charge for them -- a real cross-run double charge, distinct from the within-run dedupe gap.
+// Kept as a SEPARATE KV record (`${key}__lock`) so a lock write can never corrupt or truncate the
+// real baseline. Taken BEFORE the baseline getValue, so a blocked run exits having read nothing and
+// charged nothing. This narrows the race from "the whole run's duration" to the few KV round-trips
+// between the check and the write -- not true compare-and-swap (the Apify KV API exposes no
+// If-Match to the SDK), but a 100-1000x tighter window is the realistic ceiling without platform
+// support. This Actor has the simplest exit shape of the watch-enabled fleet: every validation
+// throw happens ABOVE this point (before the store is even opened), every per-app scrape error is
+// caught into `erroredApps` rather than ending the run, and there is no Actor.fail() anywhere -- so
+// the baseline write has exactly ONE call site and the lock has exactly ONE release point, with no
+// mid-run exit able to skip it. A run that throws somewhere truly uncaught (the KV write itself
+// failing, say) still leaves the lock to expire via TTL rather than wedging the label forever --
+// same scope and tradeoff as apple-podcasts-scraper's and trademark-search-scraper's fixes.
+const WATCH_LOCK_TTL_MS = 2 * 60 * 60 * 1000;
+let watchLockKey = null;
+let watchLockHeld = false;
+
+async function acquireWatchLock(store, storeKey, label) {
+  watchLockKey = `${storeKey}__lock`;
+  const existingLock = await store.getValue(watchLockKey);
+  if (existingLock && typeof existingLock.lockedAt === 'string') {
+    const age = Date.now() - new Date(existingLock.lockedAt).getTime();
+    if (age >= 0 && age < WATCH_LOCK_TTL_MS) {
+      await Actor.fail(
+        `Watch label "${label}" is already being processed by another run (started ${existingLock.lockedAt}`
+        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}). Running the same watch label concurrently `
+        + 'would read the same baseline twice and charge you twice for the same new reviews, so this run stopped '
+        + 'before reading or charging anything. Wait for the other run to finish and try again (a stuck lock from a '
+        + `crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
+      );
+    }
+  }
+  await store.setValue(watchLockKey, { lockedAt: new Date().toISOString(), runId: Actor.getEnv().actorRunId ?? null });
+  watchLockHeld = true;
+}
+
+async function releaseWatchLock(store) {
+  if (watchLockHeld && watchLockKey) {
+    await store.setValue(watchLockKey, null);
+    watchLockHeld = false;
+  }
+}
+
 if (watchMode) {
   // EVERY filter that decides what gets delivered goes into the fingerprint, including the
   // client-side ones (score/keyword/version/date) -- they are applied in passesFilters() after
@@ -307,6 +353,7 @@ if (watchMode) {
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
+  await acquireWatchLock(watchStore, key, watchLabel);
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
@@ -739,6 +786,9 @@ if (watchMode) {
       + evictionSuffix,
     );
   }
+  // Released only after the baseline is durably written: releasing earlier would let a queued run
+  // start from the OLD baseline and re-charge everything this run just delivered.
+  await releaseWatchLock(watchStore);
 }
 
 log.info(`Done. Pushed ${pushed} items.${genreSkippedApps.length + genreUnknownApps.length ? ` Skipped ${genreSkippedApps.length + genreUnknownApps.length} app(s) on the "genres" filter (no reviews fetched or charged).` : ''}${duplicatesSkipped ? ` Skipped ${duplicatesSkipped} duplicate review(s) (not charged).` : ''}${unidentifiedSkipped ? ` Skipped ${unidentifiedSkipped} review(s) with no reviewId (cannot be tracked in watch mode, not charged).` : ''}`);
