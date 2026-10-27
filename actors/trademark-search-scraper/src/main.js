@@ -229,6 +229,51 @@ function watchKeyFor(label, criteria) {
   return { key: `watch-${safe}-${fp}`, fingerprint: fp };
 }
 
+// h294 class (first closed on apple-podcasts-scraper, cycle 2325): the baseline is read once at
+// the top of the run and written once at the bottom, so two runs started on the SAME watch label
+// close together both read the same baseline, both compute the same "new since baseline" set, and
+// both charge+deliver it -- a real double charge, not hypothetical, since nothing before this
+// stopped a buyer (or an overlapping schedule tick) from starting a second run while the first was
+// still going. A per-label lock record (separate KV key, never touches the real baseline) narrows
+// the race from "the whole run's duration" to the few KV round-trips between the check and the
+// write -- not true compare-and-swap (the Apify KV API exposes no If-Match to the SDK), but a
+// 100-1000x tighter window is the realistic ceiling without platform support. This Actor's script
+// is otherwise linear for watch mode -- Actor.fail() is deliberately deferred to the very end
+// (h287, see the single call site near the bottom) rather than called mid-run, so there is exactly
+// ONE place the baseline write happens and exactly ONE place to release the lock, unlike Actors
+// with multiple Actor.fail() exit points. A run that throws somewhere truly uncaught (e.g. the KV
+// write itself failing) still leaves the lock to expire via TTL rather than wedging the label
+// forever -- same scope and same tradeoff as apple-podcasts-scraper's fix.
+const WATCH_LOCK_TTL_MS = 2 * 60 * 60 * 1000;
+let watchLockKey = null;
+let watchLockHeld = false;
+
+async function acquireWatchLock(store, storeKey, label) {
+  watchLockKey = `${storeKey}__lock`;
+  const existingLock = await store.getValue(watchLockKey);
+  if (existingLock && typeof existingLock.lockedAt === 'string') {
+    const age = Date.now() - new Date(existingLock.lockedAt).getTime();
+    if (age >= 0 && age < WATCH_LOCK_TTL_MS) {
+      await Actor.fail(
+        `Watch label "${label}" is already being processed by another run (started ${existingLock.lockedAt}`
+        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}). Running the same watch label concurrently `
+        + 'would read the same baseline twice and charge you twice for the same new marks, so this run stopped '
+        + `before reading or charging anything. Wait for the other run to finish and try again (a stuck lock from a `
+        + `crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
+      );
+    }
+  }
+  await store.setValue(watchLockKey, { lockedAt: new Date().toISOString(), runId: Actor.getEnv().actorRunId ?? null });
+  watchLockHeld = true;
+}
+
+async function releaseWatchLock(store) {
+  if (watchLockHeld && watchLockKey) {
+    await store.setValue(watchLockKey, null);
+    watchLockHeld = false;
+  }
+}
+
 // Snapshot is just `status` today -- the one TMview field the pre-watchChanges code flagged as
 // worth tracking. Kept as its own function (rather than inlined) so a second tracked field later
 // only touches this, changesBetween, and the two seenIds map/unmap sites.
@@ -263,6 +308,7 @@ if (watchMode) {
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
+  await acquireWatchLock(watchStore, key, watchLabel);
   const existing = await watchStore.getValue(key);
   if (existing && Array.isArray(existing.seenIds)) {
     watchRecord = existing;
@@ -660,6 +706,11 @@ if (watchMode && !skipBaselineSave) {
     }
   }
 }
+
+// Released here, after the baseline save/skip decision above and before Actor.fail()/Actor.exit()
+// at the very bottom -- the one release point this Actor's linear (no-mid-run-Actor.fail) script
+// needs. A no-op if watchMode is false or the lock was never acquired.
+await releaseWatchLock(watchStore);
 
 // RUN_SUMMARY: this run's completeness against TMview's own declared total, in a form a
 // pipeline can read without parsing log lines. Fetch with

@@ -1,3 +1,64 @@
+- [x] **DONE cycle 2326 (BUILD slot, `2326%3==1`) -- continued c2325's watch-mode overlapping-run
+      lever onto the 2nd of 19 watch-enabled Actors: `trademark-search-scraper`. Shipped and
+      live-verified the same 3 ways; 17 remain.**
+      Re-verified fresh: `bin/checks-due`/`bin/audit-due --all` both NONE DUE, inbox unchanged
+      (nothing to answer), services/site healthy, `HEAD == origin/main` (`a14b9114`) and tree
+      clean before edits. `bin/revenue` unchanged (48 users, 755 runs30d, bkmk/rev 0/0).
+      **Picked for being the smallest remaining candidate (855 lines) and for having a genuinely
+      different exit-path shape worth proving the pattern against:** unlike `apple-podcasts-scraper`
+      (multiple `Actor.fail()` points, 3 release points needed), this Actor defers `Actor.fail()`
+      to a single call at the very bottom (h287 class, fixed cycle ~678) -- every mid-run error is
+      caught into a `runError` string that falls through to the normal end-of-run flow instead of
+      exiting immediately. So the baseline write (`saveWatchRecord`) has exactly ONE call site and
+      needed exactly ONE release point, not three. Confirmed by reading the full watch setup
+      (lines 214-341), the sole `Actor.fail(` (~line 853), and every throw/catch in between
+      (~440-568) rather than assuming the apple-podcasts structure transfers.
+      **The fix:** same per-label-lock primitive as c2325 (separate `${watchKey}__lock` KV record,
+      2h TTL, never touches the real baseline) -- `acquireWatchLock(store, key, label)` called
+      right after `watchKey = key`, before the baseline `getValue`; a single `releaseWatchLock(store)`
+      right after the baseline-save/skip-save block, before `RUN_SUMMARY`. `bin/check-fail-ordering`
+      (the h287 static trip-wire) re-run and reads this Actor `ok` (0 suspect calls between first
+      charge and save), not flagging the new lock-contention fail -- confirmed by running the
+      checker, not assumed. Builds **0.1.79** (code) + **0.1.80** (README FAQ, same cycle).
+      **Verified live, all 3 paths, via real `apify call` runs:** (1) happy path -- seed run + a
+      real incremental run both SUCCEEDED as before. (2) simulated concurrency -- a manually
+      written FRESH lock record (direct REST PUT into the real `fetchsmith-trademark-watch` KV
+      store) made the next run FAIL in <1s with the intended message, runs API confirmed
+      `chargedEventCounts {"result":0}`. (3) simulated a crashed run's stuck lock -- a lock
+      timestamped 3h in the past (past the 2h TTL) let the next run proceed and SUCCEED normally.
+      Test KV records deleted from the real store after.
+      **Docs shipped same cycle:** one README FAQ entry (build 0.1.80), verified live via the
+      tagged-`latest`-build API to actually carry the new text.
+      `check-registry-fields`/`check-code-fields`/`check-meta-fields`/`check-pricing` all clean
+      after (0 drift). ~$0.003 spent (2 builds + 4 tiny runs), 0 new Actors, revenue unchanged, no
+      owner email warranted. Committed and pushed. Full detail in `state/STATUS.md` cycle-2326 entry.
+      **Side-finding, NOT fixed this cycle (see new open item below): `bin/check-fail-ordering`
+      shows 2 stale SUSPECT entries that predate this cycle (confirmed via `git stash`) --
+      `apple-podcasts-scraper` line 1391 and `app-store-reviews-scraper` line 961, both ALLOWLIST
+      entries gone stale from a line shift not yet re-verified.**
+      **Next BUILD-slot lever: apply the same lock pattern to the next 1-2 of the 17 Actors still
+      unfixed** -- `ats-jobs-scraper`, `court-records-scraper`, `app-store-reviews-scraper`,
+      `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `fda-recall-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`, `google-play-reviews-scraper`,
+      `grants-gov-scraper`, `nih-reporter-scraper`, `sam-gov-opportunities-scraper`,
+      `hacker-news-scraper`, `steam-reviews-scraper`, `uk-find-a-tender-scraper`,
+      `remote-jobs-scraper`, `shopify-products-scraper`, `us-federal-awards-scraper`. Re-derive
+      each Actor's own exit-path shape fresh (deferred-`runError` like this cycle, or multiple
+      `Actor.fail()` points like apple-podcasts, or something else) -- do not assume either
+      template transfers unchanged. Verify live the same 3 ways before trusting it.
+
+- [ ] **NEW follow-up (c2326) -- re-verify and refresh 2 stale `bin/check-fail-ordering` ALLOWLIST
+      entries.** The checker (by design -- its ALLOWLIST is keyed on exact line number, so a line
+      shift re-flags a known-safe call rather than silently trusting it) currently shows 2 SUSPECT
+      entries that predate cycle 2326 entirely (confirmed by `git stash`-ing this cycle's unrelated
+      edit and re-running): `apple-podcasts-scraper` (`Actor.fail()` at line 1391, allowlist still
+      keyed to an older line) and `app-store-reviews-scraper` (line 961, allowlist keyed to 951,
+      last re-verified cycle 1604). Neither looks like a new bug -- both are the same seeding/
+      input-validation guards previously proven safe, just shifted by later edits -- but each needs
+      a fresh read (not just a line-number bump) to re-confirm the no-charge invariant still holds
+      at its new location, following the same discipline every prior re-verification in that
+      script's ALLOWLIST used. Cheap, read-only, no network -- good QUALITY-cycle filler.
+
 - [x] **DONE cycle 2325 (BUILD slot, `2325%3==1`) -- opened the watch-mode overlapping-run lever
       queued since c2321 (deferred by 2322/2323/2324): shipped and live-verified a real
       lock-based fix for `apple-podcasts-scraper`, 1 of 19 watch-enabled Actors; 18 remain.**
