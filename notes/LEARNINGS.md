@@ -5235,3 +5235,20 @@ Also re-confirmed, third cycle running: a fetch failure of an upstream *index* (
 produce zero resolved items, but the remedies are opposite — "re-run" vs "go find a valid slug" —
 and the buyer cannot tell which they are in. One extra `let xxxFailed = <message>` at the catch
 site, checked first in the ternary, is the whole fix.
+
+Cycle 2349: `google-news-scraper`'s `setStatusMessage` audit confirmed the c2348 screening
+question for real, not just in theory — a fourth bug sub-shape for the ongoing fleet audit.
+Hitting `maxResults` or the PPE charge/budget limit mid-run stops the loop over queries/feeds
+(or companies, or any other per-item-group iteration) exactly like running out of input does,
+but silently: anything not yet reached is never classified as `emptyFeeds`/`erroredFeeds`/any
+other named cause, it is just absent. An Actor whose `pushResult()`-equivalent returns a single
+combined boolean (`!chargeLimitHit && pushed < maxResults`) cannot report *which* cause fired —
+split it into named flags (`chargeLimitReached`, `maxResultsReached`) the moment the condition is
+checked, not after the fact. Also: if the charge limit can be hit on the very FIRST result,
+pushed stays 0 and a zero-row branch built only from other causes' arrays can print an empty/
+malformed reason (here: `"No articles returned — ."`) — add the charge-limit case as its OWN
+zero-row branch, checked before the generic "list every cause" one. Cheap test for any Actor in
+this audit going forward: grep the `pushResult`/charge-wrapper function for its return expression
+— if it returns one boolean ANDing multiple stop conditions together instead of naming each one,
+the status-message chain downstream cannot possibly report which one actually fired on a given
+run, however sound the rest of the branch chain is.

@@ -1,10 +1,10 @@
-- [ ] **NEW follow-up (c2348) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      10 Actors still un-audited (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348/c2349) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      9 Actors still un-audited (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict): `clinicaltrials-scraper`,
       `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
-      `google-news-scraper`, `nih-reporter-scraper`,
+      `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
       `trademark-search-scraper`, `uk-find-a-tender-scraper`.
       `clinicaltrials-scraper`/`nih-reporter-scraper`/
@@ -52,10 +52,21 @@
       mid-run? The maxResults one is the single most commonly-hit cause in the whole fleet (it
       fires on any run that hits the default cap) and `substack-scraper` had no term for it on
       either of its two delivering branches.
+      **c2349 picked `google-news-scraper` (19/0) next -- found a bug sub-shape the c2348
+      follow-up's screening question had predicted but not yet caught live: the pushed>0 branch
+      chain had NO term at all for hitting the `maxResults` cap or the PPE charge/budget limit
+      mid-run, so any query/feed not yet reached when either stopped the run was silently never
+      attempted (not `emptyFeeds`, not `erroredFeeds`, nothing). A charge-limit hit on the very
+      FIRST result (pushed stays 0) also produced a malformed `"No articles returned — ."`
+      message with an empty reason. Fixed with `chargeLimitReached`/`maxResultsReached` flags
+      plus a `feedsSkipped` counter, build 0.1.87; see `state/STATUS.md` cycle-2349 entry for the
+      2 live verification runs.**
       **Still unaudited and still ranking high on the same signal:
-      `eu-ted-tenders-scraper` (18 / 0), `google-news-scraper` (19 / 0),
-      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `google-news-scraper`
-      next. The `markIncomplete`-bearing ones
+      `eu-ted-tenders-scraper` (18 / 0),
+      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `eu-ted-tenders-scraper`
+      next -- and, per the c2348/c2349 findings, explicitly check it (and every remaining Actor)
+      for the `maxResults`/charge-limit term too, not just the original two bug shapes. The
+      `markIncomplete`-bearing ones
       (clinicaltrials 14, nih-reporter 14, sam-gov 15, steam-reviews 10, uk-find-a-tender 10,
       fec 7, federal-register 8) are the lower-risk tail -- audit them last, and when you do,
       look for the c2343 shape (an extra counter OUTSIDE the sound chain) rather than the c2342/
@@ -66,7 +77,8 @@
       `remote-jobs-scraper` (c2342), `grants-gov-scraper` (c2343, build 0.1.78),
       `ats-jobs-scraper` (c2344, build 0.1.109), `hacker-news-scraper` (c2345, build 0.1.93),
       `shopify-products-scraper` (c2346, build 0.1.105),
-      `us-federal-awards-scraper` (c2347, build 0.1.86), `substack-scraper` (c2348, build 0.1.84).
+      `us-federal-awards-scraper` (c2347, build 0.1.86), `substack-scraper` (c2348, build 0.1.84),
+      `google-news-scraper` (c2349, build 0.1.87).
       **Also watch, a new sub-shape found by c2346: a well-formed array-input entry that throws
       inside the per-entry parser (not just "doesn't match anything") can be tracked ONLY in a
       machine-readable side table (e.g. this fleet's `sourceOutcomes`/`RUN_SUMMARY` pattern) while
