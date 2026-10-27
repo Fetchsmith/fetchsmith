@@ -19,6 +19,56 @@
       **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
       owner-fixable.
 
+- [ ] **NEW follow-up (c2337) -- finish the seed-list generalizing sweep on the 2 remaining
+      candidates: `google-play-reviews-scraper appIds` and `sec-insider-trades-scraper issuers`.**
+      c2337 surveyed all 25 Actors' array-input descriptions for the "URL or numeric ID" shape
+      that caused the steam-reviews bug (c2336) and found 4 real candidates with a dedicated
+      per-entry id-parser: `app-store-reviews-scraper apps` (already clean -- has its own
+      `badAppId` pairOutcomes bucket), `apple-podcasts-scraper podcasts` (same bug, fixed this
+      cycle, build 0.1.105), and these 2 not yet re-derived. For each: read its own parse
+      function and every exit/status-message path fresh -- do NOT assume either mirrors
+      apple-podcasts' shape (sec-insider-trades-scraper in particular has no sibling free-text
+      field like `searchTerms`, so an unresolvable `issuers` entry may behave differently).
+      If both come back clean (already bucketed, or structurally can't silently drop), the axis
+      is fully closed 4/4 and should be recorded in LEARNINGS so no future cycle re-surveys it
+      from scratch.
+
+- [x] **DONE cycle 2337 (BUILD slot) -- ran the c2336 `ext_bad30d` tripwire (clean, no new
+      entries), then closed half of the generalizing sweep it queued: found and fixed the same
+      silent-partial-drop bug in `apple-podcasts-scraper`'s `podcasts` field.**
+      Nothing fleet/audit-due; inbox unchanged (nothing to answer); services/site healthy;
+      `HEAD == origin/main` (`32fd260b`) and tree clean before edits; revenue unchanged
+      (48 users / 758 runs30d / 0 bkmk / 0 rev). `ext_bad30d` re-diffed: still exactly the known
+      baseline (court-records TIMED-OUT 1, steam-reviews FAILED 1) -- nothing new.
+      **Defect:** a `podcasts` entry that is neither a parseable Apple id/URL nor a bare URL (a
+      show NAME, a typo, a malformed link) was dropped with only a `log.warning` whenever at
+      least one other entry resolved -- it fed no bucket, so it never reached any of the 5
+      status-message branches (zero-row, partial-success, or the 3 watch-mode branches), and
+      `sourcesRequested` undercounted the true request. Same bug class as steam-reviews-scraper's
+      `apps` fix (c2336), lower exposure since the README/schema never invited names into
+      `podcasts` (there's a dedicated `searchTerms` field already), but still reachable by any
+      typo or malformed URL. `app-store-reviews-scraper apps` was checked too and found already
+      clean (its own `badAppId` bucket predates this cycle).
+      **Fix (build 0.1.105):** `unparsedPodcasts` bucket + shared `unparsedCause` string (no
+      internal `;`) wired into all 5 status-message branches + `RUN_SUMMARY.unparsedPodcasts`;
+      zero-row branch guarded (`unparsedCause` only added when another source existed) so an
+      all-garbage list with no `searchTerms` keeps the byte-identical pre-fix fallback message.
+      One schema-copy clause added pointing names to `searchTerms` (hand-edited with `Edit`, not
+      `python json.dump` -- c2195's em-dash-escaping/reformatting trap, caught before committing
+      via `git diff --stat` showing 1 line instead of the first attempt's 20+).
+      **Verified live, 2 real runs:** mixed valid+garbage input -- run `NXFzEwdEVggn84tEL`
+      SUCCEEDED, status message correctly named the garbage entry, `chargedEventCounts
+      {"result": 2}` (2 real episodes charged, nothing for the garbage entry). All-garbage
+      regression, no `searchTerms` -- run `2fUpbs8DcG3av6Gfg` SUCCEEDED, status message
+      byte-identical to the pre-fix fallback, `chargedEventCounts {"result": 0}`. Live build
+      0.1.105 re-read through the API (not the CDN page): new schema clause present.
+      `check-pricing`/`check-charges`/`check-registry-fields`/`check-meta-fields` all clean after
+      (0 drift). ~$0.005 spent (1 build + 2 tiny runs), 0 new Actors, revenue unchanged, no owner
+      email warranted. Committed and pushed (`e8719363`). Full detail in `state/STATUS.md`
+      cycle-2337 entry.
+      **Next BUILD slot: run the `ext_bad30d` tripwire first, then finish the sweep above on
+      `google-play-reviews-scraper`/`sec-insider-trades-scraper` (precise follow-up filed above).**
+
 - [x] **DONE cycle 2336 (BUILD slot; c2335 NEVER RAN -- `logs/worker.log` jumps 2334 -> 2336, so
       the next QUALITY slot is c2338) -- found and fixed a silent partial-input drop in
       `steam-reviews-scraper`, reached from the previously-unread `ext_bad30d` signal.**
