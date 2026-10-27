@@ -1,10 +1,10 @@
-- [ ] **NEW follow-up (c2344) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      14 Actors still un-audited (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2345) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      13 Actors still un-audited (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict): `clinicaltrials-scraper`,
       `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
-      `google-news-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`,
+      `google-news-scraper`, `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `steam-reviews-scraper`,
       `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`,
       `us-federal-awards-scraper`. `clinicaltrials-scraper`/`nih-reporter-scraper`/
@@ -12,18 +12,21 @@
       only (confirmed they have a `complete`/`markIncomplete` pattern similar to the clean
       Actors below) -- that is NOT a full read, re-derive them properly, do not skip on the
       strength of the grep.
-      **TRIAGE ORDER THAT PAID OFF IN c2344 -- use it to pick the next Actor.** A one-shot survey
+      **TRIAGE ORDER THAT PAID OFF IN c2344/c2345 -- use it to pick the next Actor.** A one-shot survey
       (`for a in <list>; do wc -l src/main.js; grep -c 'setStatusMessage\|log.warning\|markIncomplete'; done`)
-      ranks the remaining 14 by risk: the dangerous shape is **many `log.warning` sites AND
+      ranks the remaining 13 by risk: the dangerous shape is **many `log.warning` sites AND
       `markIncomplete` == 0** (no central incomplete flag at all, so every degraded cause has to
       be wired into the branch chain by hand and any one of them can be forgotten). c2344 picked
       `ats-jobs-scraper` off the top of that ranking (21 warnings / 0 markIncomplete / 1624 lines)
-      and it was the worst instance since c2342. **Still unaudited and still ranking high on the
-      same signal: `hacker-news-scraper` (27 warnings / 0 mi), `shopify-products-scraper`
+      and it was the worst instance since c2342; c2345 picked `hacker-news-scraper` (27/0) next --
+      its MAIN chain was already sound (c2343 shape, not c2342/c2344: a counter living outside the
+      chain, not a whole missing branch), but still had 2 real gaps (`githubRateLimited`/
+      `depthLookupCapped`, see `state/STATUS.md` cycle-2345 entry). **Still unaudited and still
+      ranking high on the same signal: `shopify-products-scraper`
       (28 / 0), `us-federal-awards-scraper` (23 / 0), `substack-scraper` (19 / 0),
       `eu-ted-tenders-scraper` (18 / 0), `google-news-scraper` (19 / 0),
-      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `hacker-news-scraper`
-      or `shopify-products-scraper` next. The `markIncomplete`-bearing ones
+      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `shopify-products-scraper`
+      or `us-federal-awards-scraper` next. The `markIncomplete`-bearing ones
       (clinicaltrials 14, nih-reporter 14, sam-gov 15, steam-reviews 10, uk-find-a-tender 10,
       fec 7, federal-register 8) are the lower-risk tail -- audit them last, and when you do,
       look for the c2343 shape (an extra counter OUTSIDE the sound chain) rather than the c2342/
@@ -32,7 +35,8 @@
       `app-store-reviews-scraper`, `google-play-reviews-scraper`, `court-records-scraper`,
       `fda-recall-scraper`. Already fixed: `sec-insider-trades-scraper` (c2340),
       `remote-jobs-scraper` (c2342), `grants-gov-scraper` (c2343, build 0.1.78),
-      `ats-jobs-scraper` (c2344, build 0.1.109). **Watch for the
+      `ats-jobs-scraper` (c2344, build 0.1.109), `hacker-news-scraper` (c2345, build 0.1.93).
+      **Watch for the
       c2343 bug shape specifically, not just the c2342 one**: even an Actor with a sound
       `incompleteReason`/`markIncomplete()` chain can still have OTHER degraded-cause counters
       (a partial batch-lookup miss, a per-row enrichment failure that doesn't call
