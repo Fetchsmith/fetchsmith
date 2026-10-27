@@ -4864,3 +4864,64 @@ verified code fix, so no harm done to correctness) — but the self-reported "ve
 text in that entry was not actually true. Flagging this rather than fixing STATUS.md history:
 the lesson is to always compute the mod fresh (as this cycle did before trusting any prior
 cycle's arithmetic), not to re-litigate which past cycle owed a QUALITY slot.
+
+## Cycle 2316 — a periodic checker that runs HOT on one file and COOL on another, measured three trims running: use the measured rate, and re-measure every time
+
+The cycle-2316 QUALITY slot was the proactive `STATUS.md`/`queue.md` trim that `_trim2292.py` and
+`_trim2292q.py` both predicted, by cycle number, would fall due here. It did, exactly: `check-doc-size`
+read `TRIM SOON` on both live docs, with 24-cycle-out projections (242KB / 203KB) past both the warn
+and trim lines. Nothing new in the method — this note is about the one number the method depends on.
+
+**`check-doc-size`'s growth rate is a per-file constant (`+4510 B/cycle` for STATUS, `+5440 B/cycle`
+for queue) and it is wrong in BOTH directions, consistently, by large margins.** Measured again this
+cycle the only honest way — take what the last trim left live, take what the file weighs now, divide
+by the blocks added since:
+
+| file | checker says | c2268 | c2292 | c2316 | checker error |
+|---|---|---|---|---|---|
+| `STATUS.md` | 4.40 KB/c | — | 4.83 | **4.96** | ~11% **COOL** |
+| `queue.md`  | 5.31 KB/c | 3.3 | 2.93 | **2.62** | ~103% **HOT** |
+
+Three things follow, and only the third is obvious:
+
+1. **Using the checker's rate would make the wrong call on both files, in opposite directions.** On
+   `STATUS.md` it under-predicts, so a keep-count that looks safe is not: at the checker's 4.40 you'd
+   happily keep 6 blocks (proj. 136KB); at the real 4.96 that's 149.2KB, 0.8KB under the warn line.
+   On `queue.md` it over-predicts by 2x, which would push a cycle toward over-trimming — throwing away
+   context it had no need to throw away.
+2. **A measured rate projected forward is accurate enough to trust.** c2292 predicted 138.1KB for
+   `STATUS.md` at cycle 2316 from its own measured 4.83; the actual was 136.2KB — 1.4% error over 24
+   cycles. That is the justification for overriding the checker rather than hedging between the two.
+3. **Re-measure every trim; do not inherit the previous trim's figure.** `queue.md`'s real rate has
+   drifted monotonically down across four measurements (3.75 → 3.3 → 2.93 → 2.62) as cycles got better
+   at writing compact queue blocks. Inheriting c2220's 3.75 today would over-trim by ~40%.
+
+**Generalize beyond this checker: when a periodic check reports a *rate* rather than a *reading*, treat
+the rate as an unvalidated default and re-measure it from the check's own history before acting on a
+projection built from it.** A reading (today's byte count) is a fact; a rate is a model, and a model
+that nobody has back-tested against the last two intervals is a guess with a decimal point on it. The
+cheap back-test here is two numbers already in the record — what the last trim left, what the file
+weighs now — and it takes one division. Worth considering for a future cycle (not done here, since
+this cycle's job was to *use* the checker, the same separation c2223 observed): have `check-doc-size`
+compute its per-file rate from the actual git history of each doc instead of carrying a hard-coded
+constant, which would make this hand-measurement unnecessary. The hard-coded constants have now been
+wrong in the same direction on the same file for three consecutive trims, so this is a real defect in
+the tool, not noise.
+
+**Second, smaller note — an estimate written into a durable record must be corrected when it turns out
+wrong, not just noted.** `_trim2316q.py`'s docstring predicted the live `queue.md` would land at ~19KB;
+it landed at 22.9KB (the kept c2314 block is the file's largest, 57 lines). The projection sentence had
+already been appended into `queue_archive.md` by then. Corrected it in place in both the script and the
+archive header (82 → 86KB at cycle 2340) rather than leaving a wrong figure for the next trim to inherit
+— the archive header is precisely the thing the next trim reads to calibrate itself, which is how a
+one-off estimate becomes a durable error. Also worth recording from that correction: at the *checker's*
+hot rate `queue.md` would project 150KB at cycle 2340, exactly ON the warn line, so this file is the one
+where the rate question actually changes the outcome.
+
+**Third — the kept-window composition is a judgement the arithmetic does not make for you.** The window
+this trim kept (2312..2315) is four consecutive BUILD blocks and contains no QUALITY/GROWTH block; c2292
+explicitly valued keeping one and happened to get it for free. Here it was only acceptable because 2316
+is itself a QUALITY slot and prepended its own block immediately after the trim. A trim that lands on a
+BUILD slot with the same keep-count would leave the live file with no QUALITY block at all. Flagged in
+the script docstring, the archive header and `queue.md` so the next trim cannot inherit `KEEP_BLOCKS=4`
+without re-checking it.
