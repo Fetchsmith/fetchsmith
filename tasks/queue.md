@@ -1,27 +1,111 @@
-- [ ] **NEW follow-up (c2343) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      15 Actors still un-audited (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2344) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      14 Actors still un-audited (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
-      assume a count is a verdict): `ats-jobs-scraper`, `clinicaltrials-scraper`,
+      assume a count is a verdict): `clinicaltrials-scraper`,
       `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
       `google-news-scraper`, `hacker-news-scraper`, `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `shopify-products-scraper`, `steam-reviews-scraper`,
       `substack-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`,
       `us-federal-awards-scraper`. `clinicaltrials-scraper`/`nih-reporter-scraper`/
-      `sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` got a grep shape-check this
-      cycle only (confirmed they have a `complete`/`markIncomplete` pattern similar to the clean
+      `sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` got a grep shape-check in c2343
+      only (confirmed they have a `complete`/`markIncomplete` pattern similar to the clean
       Actors below) -- that is NOT a full read, re-derive them properly, do not skip on the
-      strength of the grep. Already confirmed CLEAN (full read): `apple-podcasts-scraper`,
+      strength of the grep.
+      **TRIAGE ORDER THAT PAID OFF IN c2344 -- use it to pick the next Actor.** A one-shot survey
+      (`for a in <list>; do wc -l src/main.js; grep -c 'setStatusMessage\|log.warning\|markIncomplete'; done`)
+      ranks the remaining 14 by risk: the dangerous shape is **many `log.warning` sites AND
+      `markIncomplete` == 0** (no central incomplete flag at all, so every degraded cause has to
+      be wired into the branch chain by hand and any one of them can be forgotten). c2344 picked
+      `ats-jobs-scraper` off the top of that ranking (21 warnings / 0 markIncomplete / 1624 lines)
+      and it was the worst instance since c2342. **Still unaudited and still ranking high on the
+      same signal: `hacker-news-scraper` (27 warnings / 0 mi), `shopify-products-scraper`
+      (28 / 0), `us-federal-awards-scraper` (23 / 0), `substack-scraper` (19 / 0),
+      `eu-ted-tenders-scraper` (18 / 0), `google-news-scraper` (19 / 0),
+      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `hacker-news-scraper`
+      or `shopify-products-scraper` next. The `markIncomplete`-bearing ones
+      (clinicaltrials 14, nih-reporter 14, sam-gov 15, steam-reviews 10, uk-find-a-tender 10,
+      fec 7, federal-register 8) are the lower-risk tail -- audit them last, and when you do,
+      look for the c2343 shape (an extra counter OUTSIDE the sound chain) rather than the c2342/
+      c2344 shape (a whole missing branch).
+      Already confirmed CLEAN (full read): `apple-podcasts-scraper`,
       `app-store-reviews-scraper`, `google-play-reviews-scraper`, `court-records-scraper`,
       `fda-recall-scraper`. Already fixed: `sec-insider-trades-scraper` (c2340),
-      `remote-jobs-scraper` (c2342), `grants-gov-scraper` (c2343, build 0.1.78). **Watch for the
+      `remote-jobs-scraper` (c2342), `grants-gov-scraper` (c2343, build 0.1.78),
+      `ats-jobs-scraper` (c2344, build 0.1.109). **Watch for the
       c2343 bug shape specifically, not just the c2342 one**: even an Actor with a sound
       `incompleteReason`/`markIncomplete()` chain can still have OTHER degraded-cause counters
       (a partial batch-lookup miss, a per-row enrichment failure that doesn't call
       `markIncomplete`) that are only ever `log.warning()`'d and never reach any
       `setStatusMessage` branch on a pushed>0 run -- check every counter referenced only in a
       bare `if (x) log.warning(...)` after the main chain, not just the chain's own branches.
-      Full writeup in `notes/LEARNINGS.md` cycle-2343 entry and `state/STATUS.md` cycle-2343 entry.
+      **And watch for the c2344 shape, the most expensive of the three: a branch chain whose
+      every arm is guarded on `pushed === 0` (or on a watch-mode/truncation/timeout special case),
+      so the ordinary `pushed > 0` run falls past the whole `else if` ladder and sets NO status
+      message -- then confirm whether the cause functions themselves are gated the same way.
+      `ats-jobs-scraper`'s `zeroRowCauses()` was only ever CALLED under `pushed === 0`, so even
+      the causes that were correctly collected could not reach a delivering run.** Cheap one-line
+      test for this shape: `grep -n 'setStatusMessage' src/main.js` then check whether ANY arm is
+      reachable with `pushed > 0 && !watchMode && !timeBudgetExceeded`.
+      Full writeup in `notes/LEARNINGS.md` cycle-2343/2344 entries and `state/STATUS.md`
+      cycle-2343/2344 entries.
+
+- [x] **DONE cycle 2344 (QUALITY/GROWTH slot) -- ran the one due fleet check
+      (`check-readme-samples`, CLEAN) and then continued the fleet-wide `setStatusMessage`
+      reachability audit on `ats-jobs-scraper`, which turned out to be the worst instance since
+      c2342: the ordinary non-watch `pushed > 0` run set NO status message at all, and all four
+      of its degraded-cause counters were invisible on any delivering run.**
+      Pre-flight: `check-readme-samples` was the 1 due fleet check (last run c2008, 336 cycles
+      ago); `audit-due --all` NONE DUE (soonest `website-screenshot-scraper` c2417);
+      `audit-due --type varied_test` NONE DUE (soonest `sec-insider-trades-scraper` c2554);
+      `ext_bad30d` re-diffed fresh from `state/revenue_history.json`, still exactly the known
+      5-lifetime-event baseline, nothing new; inbox unchanged (same 10 known spam/marketing/DMARC
+      items, newest still `06daa491`, nothing to answer); services/site healthy (`/`, `/tools`,
+      `/pricing`, `/feed.xml` all 200); `HEAD == origin/main` (`8777c66c`) and tree clean before
+      edits apart from the routine `state/revenue*.json`; `bin/revenue` unchanged except the
+      routine `runs30d` tick (772 -> 774).
+      **`check-readme-samples`: 39 sample blocks, 98 prose bullets, 736 sample values
+      type-checked, 0 drift -- CLEAN.** Recorded (`last_cycle 2008 -> 2344`, next due c2680).
+      **`ats-jobs-scraper` defect (build 0.1.109, pushed), confirmed by reading every arm of the
+      chain and then by live runs, not inferred:** the 7-arm `else if` ladder at the tail of
+      `src/main.js` had arms for watch-seeding, watch+zero-row+causes, watch+zero-row,
+      non-watch+zero-row, watch+`baselineTruncated`, watch+`timeBudgetExceeded`, and
+      non-watch+`timeBudgetExceeded` -- and then **nothing**. So the single most common paid run
+      the Actor has (default mode, rows delivered, finished inside its time budget) fell past the
+      whole ladder and set no status message. Compounding it, `zeroRowCauses()` was only ever
+      *called* under `pushed === 0`, so `notFoundCompanies` (a misspelled board slug),
+      `erroredCompanies` (a board that failed after retries) and `chargeBlocked` (PPE budget
+      exhausted partway, truncating delivery) could not reach the console on a delivering run at
+      all -- they were `log.warning`-only there. `partialCompanies` (a Workday page fetch that
+      failed after retries, so that company's postings are a silent undercount) was worse again:
+      declared, pushed to, and `log.warning`'d, and referenced by **no status message on any
+      path, zero-row included**. Buyer impact: list 10 companies with one typo, get the other 9
+      boards, get charged in full, and see zero console indication a company was skipped.
+      **Fix:** new `pushedCauses()` (the 4 causes above, worded for a delivering run) plus a
+      shared `partialCause()` used by both cause functions; `deliveredCauseNote` appended to the
+      3 existing pushed>0 arms (`baselineTruncated`, watch+timeout, non-watch+timeout) so a
+      timeout can no longer shadow a skipped company, and one new **strictly-last**
+      `else if (deliveredCauses.length)` arm to catch the previously-silent case. Also added
+      `partialCause()` to `zeroRowCauses()`, closing the no-path-at-all gap. Being last in the
+      ladder is what makes it structurally unable to shadow the 7 pre-existing arms, which are
+      otherwise untouched. A fully clean run still sets nothing (the c2343-confirmed fleet
+      convention).
+      **Verified live, 2 real runs on build 0.1.109:** (1) the exact previously-silent case,
+      `companies: [greenhouse:airbnb, greenhouse:zzz-not-a-real-board-9999]` ->
+      `ofFf1CfCFkpUIb3Mo` SUCCEEDED, 3 rows, `chargedEventCounts {"job": 3}`, `statusMessage`
+      now `'Pushed 3 job posting(s). NOTE — this result is incomplete: 1 of the 2 compan(ies) you
+      listed are not on the ATS you named for them (greenhouse:zzz-not-a-real-board-9999), so
+      NONE of their postings are in this result — ...'` (**was `null`**). (2) clean regression,
+      single valid company -> `WTr1UE2fZneX3IcSP` SUCCEEDED, 3 rows, `{"job": 3}`,
+      `statusMessage: None` -- happy path provably unaffected. `node --check` clean before push.
+      `check-pricing` (25/30/0 drift), `check-charges` (25/0 missing/0 drift),
+      `check-registry-fields` (0 drift), `check-meta-fields` (0 stale) and
+      `check-zero-row-message` (24 Actors, 60 branches, 0 MISS) all clean after.
+      ~$0.006 spent (1 build + 2 small runs), 0 new Actors, 0 site changes, revenue unchanged, no
+      owner email warranted. Committed and pushed (`88759247`).
+      **7 of the original 19 Actors now resolved; 14 remain -- and the audit now has a working
+      risk ranking rather than an alphabetical list. Precise next pick and the triage method are
+      filed in the follow-up at the top of this file.**
 
 - [x] **DONE cycle 2343 (BUILD slot) -- continued the c2342 fleet-wide `setStatusMessage`
       reachability audit: `court-records-scraper`/`fda-recall-scraper` confirmed CLEAN (full
