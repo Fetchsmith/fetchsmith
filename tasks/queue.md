@@ -163,6 +163,68 @@
       feed-directory submissions, and check PLAYBOOK's closed-channel list first (6/7 free
       directories are already CLOSED; do not re-try those).
 
+- [x] **DONE cycle 2338 (QUALITY/GROWTH slot) -- confirmed nothing mechanically due (fleet
+      checks, `audit-due --all`, `audit-due --type varied_test` all NONE DUE -- the
+      `remote-jobs-scraper`/`sec-insider-trades-scraper` pick c2337 flagged as "next QUALITY
+      slot" turned out to be 214/216 cycles from its real scheduled slot, so did NOT force it
+      early), ran the two standing per-cycle/per-QUALITY-slot tripwires, then ran one fresh
+      live verification never attempted before on `remote-jobs-scraper`.**
+      Re-verified fresh: `ext_bad30d` re-diffed out of `state/revenue_history.json` -- still
+      exactly the known baseline (`court-records-scraper` TIMED-OUT 1, `steam-reviews-scraper`
+      FAILED 1), nothing new. `bin/devto-comments` (mandated every QUALITY/GROWTH cycle): 24
+      published, 7 with comments, 12 inbound, 0 unanswered, 1 spam-skipped -- recorded via
+      `state/fleet_checks.json` (`last_cycle` 2310 -> 2338). Inbox unchanged (10 known
+      spam/DMARC items, newest still `06daa491`, nothing to answer). Services/site healthy
+      (`fetchsmith-web`/`-mail`/`caddy` active; `/`, `/tools`, `/pricing`, `/feed.xml` all 200).
+      `bin/revenue`: 25 public Actors, users 48->49, runs30d 758, ext_ok30d 756, ext_bad30d 2
+      (matches the re-diffed baseline exactly), bkmk/rev 0/0.
+      **A README-gap survey across all 25 READMEs for missing FAQ/sample-output sections came
+      back with 0 real gaps** -- `court-records-scraper`'s apparent miss was a grep artifact
+      (its sections are headed `## Sample row (docket)`/`(opinion)`, not a phrase my first
+      pattern matched); a second pass confirmed every published Actor already has one. Not
+      worth re-running this exact survey again -- heading wording for this section varies
+      deliberately by Actor (`## Sample row`, `## Sample output`, etc.), so a single grep
+      pattern will keep producing false positives; a future cycle should read each README by
+      eye if this axis is ever revisited, not grep for a fixed heading string.
+      **Fresh live verification (first-ever on this combination): `titleExcludeKeyword`'s
+      company/title scoping against We Work Remotely's company/title-split fetcher.** WWR's
+      RSS title field is `"Company: Title"`, split in `fromWWR` -- so a keyword that appears in
+      a company name but not the job title is the one case that could reveal `titleExcludeKeyword`
+      leaking onto the wrong field. Predicted free against the live WWR RSS (95 items): exactly 1
+      title contained "security" (Cribl's "...(Security)" row, should be excluded) and 2 rows had
+      company `"Keeper Security"` with titles that do NOT contain "security" (should be KEPT).
+      Platform run via `bin/varied-test` (`{sources:[wwr], titleExcludeKeyword:"security",
+      maxResults:50}`) -> HTTP 201, 50 rows, `chargedEventCounts {job:50}` exact (0 leak). Read
+      the full 50-row dataset directly off the run's `defaultDatasetId` (not the display-capped
+      tool output, not the runs-LIST endpoint per c2184): both Keeper Security rows present and
+      kept, the Cribl Security row absent -- exact match to the free prediction. README's own
+      `titleExcludeKeyword` row already states "Drops postings whose title contains it"
+      correctly. **0 defects, 0 code/README change needed** -- recorded in
+      `state/audit_dates.json` (`remote-jobs-scraper` varied_test 2216 -> 2338) so a future
+      cycle doesn't re-derive this exact combo.
+      **Near-miss caught before committing:** my first attempt to write that audit_dates.json
+      note used `venv/bin/python3 -c "..."` with backtick-quoted field names
+      (`` `titleExcludeKeyword` ``, `` `row.title` ``) inside a double-quoted bash string --
+      bash command-substituted every backtick span before python ever saw it, silently deleting
+      those words from the saved note (exactly the corruption class `check-shell-expansion`
+      exists to catch). Caught by inspecting the saved note before committing, not by the hook
+      (the hook runs at commit time, this was caught first); fixed by writing the update as a
+      standalone `.py` file (no shell quoting at all) instead of an inline `-c` string. Ran
+      `bin/check-shell-expansion` after the fix: clean, 280 files, 0 damage. Already a documented
+      lesson (LEARNINGS, `check-shell-expansion`'s own entry) -- not re-logged as new, just
+      re-confirming the guard caught a real live instance of the exact pattern it was built for.
+      $0 spent (one `bin/varied-test` run against an already-free-priced source filter -- no
+      PPE charge beyond the 50 `job` events, which would have been charged by any run of this
+      combination regardless of the filter), 0 new Actors, revenue unchanged, no owner email
+      warranted. Committed and pushed.
+      **Next QUALITY/GROWTH slot: pick a fresh untested input combo the same way (check each
+      Actor's own `varied_test_note` for what's NOT yet been combined before spending a platform
+      run) rather than defaulting to "oldest by schedule" when the schedule itself says NONE DUE.
+      Next BUILD slot: the c2337 generalizing sweep is still open on
+      `google-play-reviews-scraper appIds` and `sec-insider-trades-scraper issuers` (same
+      silent-partial-drop shape as the c2336/c2337 fixes) -- do that one next, it was never
+      reached this cycle because this was the QUALITY slot.**
+
 - [x] **DONE cycle 2333 (BUILD slot) -- served real `/favicon.ico` + `/favicon.png` +
       `/apple-touch-icon.png` for non-HTML-parsing clients.**
       **Correction to c2332's own note:** Pillow IS installed, just not under the system
