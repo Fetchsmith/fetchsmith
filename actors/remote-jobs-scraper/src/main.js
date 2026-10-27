@@ -989,6 +989,39 @@ function warnIfWindowBelowFeedReach(src, rows, keptCount) {
   );
 }
 
+// Same upstream-caused silent-zero-row shape ats-jobs-scraper's cycle-2308 salary fix found: a
+// board whose matched field is hard-coded null for EVERY posting (see each fetcher's own
+// `fieldName: null` literal above) drops silently on a mixed-source run, because the per-board
+// "N match the filters" line above reads identically to a board that genuinely had zero matches.
+// keep()'s own inline comments (search "structurally null" above) already explain this to a
+// reader of the source, but nothing told a buyer reading the run log. Warn per board instead, only
+// naming the filter(s) this run actually set, mirroring how `salaryFilterNames` is built there.
+const JOBTYPE_BLIND = ['remoteok', 'workingnomads']; // fromRemoteOk/fromWorkingNomads: jobType always null
+const SENIORITY_BLIND = ['remotive', 'remoteok', 'arbeitnow', 'workingnomads', 'wwr']; // seniorityLevel always null
+const SALARY_BLIND = ['arbeitnow', 'workingnomads', 'wwr']; // no salaryText AND no salaryMin/salaryMax on either side
+const salaryFilterNames = [
+  ...(salaryOnly ? ['salaryOnly'] : []),
+  ...(minSalaryAnnual != null ? ['minSalaryAnnual'] : []),
+];
+
+function warnIfBlindFilter(src) {
+  if (jobTypeKeyword && JOBTYPE_BLIND.includes(src)) {
+    log.warning(`${src}: this board publishes no job-type field at all, so jobTypeKeyword `
+      + `("${jobTypeKeyword}") drops every posting on this board — it is not an empty board. `
+      + 'Use searchKeyword against the title instead.');
+  }
+  if (seniorityKeyword && SENIORITY_BLIND.includes(src)) {
+    log.warning(`${src}: this board publishes no seniority field at all, so seniorityKeyword `
+      + `("${seniorityKeyword}") drops every posting on this board — it is not an empty board. `
+      + 'Only Jobicy and Himalayas rows can ever match it.');
+  }
+  if (salaryFilterNames.length && SALARY_BLIND.includes(src)) {
+    log.warning(`${src}: this board publishes no salary data at all, so ${salaryFilterNames.join('/')} `
+      + 'drops every posting on this board — it is not an empty board. Salary filters only match '
+      + 'Remotive, Remote OK, Jobicy and Himalayas rows.');
+  }
+}
+
 // ---------------------------------------------------------------- main
 
 const sourcesNotReached = [];
@@ -1005,6 +1038,7 @@ try {
       const rows = (await FETCHERS[src]()).map(normalizeSalary);
       const kept = rows.filter(keep);
       log.info(`${src}: fetched ${rows.length}, ${kept.length} match the filters.`);
+      warnIfBlindFilter(src);
       warnIfWindowBelowFeedReach(src, rows, kept.length);
       collected.push(...kept);
     } catch (err) {

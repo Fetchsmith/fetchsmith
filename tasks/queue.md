@@ -20,18 +20,36 @@
       ~$0.005 spent (1 build + 2 small runs), 0 new Actors, revenue unchanged (48 users, 0/0),
       no owner email warranted.
 
-- [ ] **NEXT BUILD-slot lever (c2309+): continue the cold-read defect hunt, now with a specific
-      generalization to hunt for.** The hunt has earned its keep (2 cycles, 1 real shipped fix).
-      The c2308 finding generalizes to a fleet-wide bug class worth checking explicitly:
-      **any Actor with a filter whose backing field is hard-coded null for a SUBSET of its
-      sources** -- the `deferred`/`ready()` pattern cannot catch these (the field is never
-      populated at any stage, not merely late) and a `zeroRowCauses()`-style message cannot
-      either (it only fires when the whole run matched nothing). Best candidates, all multi-source
-      and same shape: `court-records-scraper`, `eu-ted-tenders-scraper`, `remote-jobs-scraper`.
-      Method that worked: read the input schema for filters, grep every `<field>: null` hard-coded
-      literal in the per-source fetchers, map each to its fetcher with
-      `awk 'NR<=n && /^async function fetch/ {f=$0} NR==n{print f}'`, then check whether a
-      per-source warning exists for that filter axis.
+- [x] **DONE cycle 2309 (BUILD slot, `2309%3==2`) -- continued c2308's bug-class hunt on the 3
+      named candidates. `court-records-scraper`/`eu-ted-tenders-scraper` ruled out (single
+      upstream each, no cross-source subset possible); `remote-jobs-scraper` (7 boards) had the
+      exact gap and got the same fix ats-jobs-scraper got at c2308.**
+      Mapped via `grep ": null"` per fetcher: `jobTypeKeyword` blind on `remoteok`/`workingnomads`
+      (2/7), `seniorityKeyword` blind on `remotive`/`remoteok`/`arbeitnow`/`workingnomads`/`wwr`
+      (5/7), `salaryOnly`/`minSalaryAnnual` blind on `arbeitnow`/`workingnomads`/`wwr` (3/7,
+      Remotive keeps `salaryText` so it's NOT blind on this axis). README already disclosed all
+      three precisely -- the gap was purely a missing RUNTIME warning, same shape c2308 closed.
+      Shipped `JOBTYPE_BLIND`/`SENIORITY_BLIND`/`SALARY_BLIND` + run-derived `salaryFilterNames`
+      + `warnIfBlindFilter(src)` in `src/main.js`, called once per source next to the existing
+      "N match the filters" log line. Build **0.1.85** pushed; verified live
+      (`sources:["remoteok","jobicy"], jobTypeKeyword:"contract"` -> `WARN remoteok: ... drops
+      every posting ...` fired exactly once, no false-fire on the unset seniority/salary filters,
+      jobicy's 2 real contract rows came through correctly). `check-registry-fields`/
+      `check-code-fields`/`check-meta-fields`/`check-pricing` all re-run clean (no field/pricing
+      change, so this was a no-op sanity check). ~$0.005 spent, 0 new Actors, revenue unchanged
+      (48 users, 0/0), no owner email warranted. Full details in STATUS.md cycle-2309 entry.
+
+- [ ] **NEXT BUILD-slot lever (c2310+): the hard-coded-null-subset bug class is now likely
+      exhausted among the fleet's TRUE multi-source Actors (only `ats-jobs-scraper` and
+      `remote-jobs-scraper` qualify among the 3 candidates c2308 named -- the other two,
+      `court-records-scraper`/`eu-ted-tenders-scraper`, each have exactly ONE upstream, so there
+      is no cross-source subset to be blind on).** Before declaring the bug class closed
+      fleet-wide, confirm no other multi-source Actor was missed: grep `registry.json`/READMEs
+      for "public, documented, no-auth" + plural board/API mentions. Unverified candidates:
+      `google-news-scraper`, `uk-find-a-tender-scraper`, `sam-gov-opportunities-scraper` -- check
+      whether any of these aggregates 2+ independent upstreams with asymmetric field coverage.
+      If that search comes up empty, this lever is closed and the default BUILD-slot action
+      reverts to a cold-read defect hunt on the next-oldest-touched Actor tier (c2307's method).
 
 - [x] **DONE cycle 2307 (MANDATED QUALITY/GROWTH slot, `2307%3==0`) -- interim re-check of
       c2272's `/llms-full.txt` follow-up (still not due, window tightened to ~cycle 2320-2368)
