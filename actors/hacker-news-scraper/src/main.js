@@ -493,6 +493,7 @@ const githubCache = new Map(); // ownerRepo -> enrichment fields, or null once k
 const GITHUB_LOOKUP_CAP = 200; // bound cost against GitHub's unauthenticated 60/hr rate limit
 let githubLookups = 0;
 let githubRateLimited = false;
+let githubEnrichSkipped = 0; // items with a detected githubRepo that got NO star/language/pushed-at data because rate limit/cap was already hit
 
 function extractGithubRepo(item) {
   for (const haystack of [item.url, item.storyUrl, item.text, item.title]) {
@@ -540,7 +541,7 @@ async function enrichGithub(item) {
     Object.assign(item, githubCache.get(repoFullName) || {});
     return;
   }
-  if (githubRateLimited || githubLookups >= GITHUB_LOOKUP_CAP) return;
+  if (githubRateLimited || githubLookups >= GITHUB_LOOKUP_CAP) { githubEnrichSkipped += 1; return; }
   githubLookups += 1;
   try {
     const res = await gotScraping({
@@ -726,6 +727,7 @@ let duplicates = 0;
 let excluded = 0;
 let domainFiltered = 0;
 let commentDepthFiltered = 0;
+let commentDepthUnresolved = 0; // comments delivered with commentDepth:null (lookup failed or hit the cap) -- NOT checked against maxCommentDepth, so one could exceed it unfiltered
 let keepGoing = true;
 // One record per query, written to the RUN_SUMMARY key-value record and posted on the webhook.
 // The DATASET is the only surface a pipeline reads, and there a full 100 rows for a query
@@ -942,7 +944,8 @@ for (const query of queries) {
         if (mapped.type === 'comment' && maxCommentDepth != null && willDeliver) {
           if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
           mapped.commentDepth = await computeCommentDepth(hit.objectID, mapped.parentId, mapped.storyId);
-          if (mapped.commentDepth != null && mapped.commentDepth > maxCommentDepth) { commentDepthFiltered += 1; continue; }
+          if (mapped.commentDepth == null) commentDepthUnresolved += 1;
+          else if (mapped.commentDepth > maxCommentDepth) { commentDepthFiltered += 1; continue; }
         }
         keepGoing = await pushResult(mapped, hit.objectID);
         if (!keepGoing) break;
@@ -1233,7 +1236,7 @@ if (pushed === 0 && watchMode && !seeding) {
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   if (timeBudgetExceeded) reasons.push('the run stopped early, approaching the platform run timeout, before any result could be delivered — narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) and try again');
   await Actor.setStatusMessage(`No items returned — ${reasons.join('; ') || 'no queries or usernames provided'}.`);
-} else if (emptyQueries.length || notFoundUsers.length || truncatedSummaries.length || notReachedSummaries.length || notReachedUsers.length) {
+} else if (emptyQueries.length || notFoundUsers.length || truncatedSummaries.length || notReachedSummaries.length || notReachedUsers.length || commentDepthUnresolved || githubEnrichSkipped) {
   // Until cycle 643 this branch fired ONLY on emptyQueries/notFoundUsers, so a run that
   // delivered a full 100 rows against 60,108 declared matches -- or that stopped at maxResults
   // and never searched half the queries -- ended with no status message at all, i.e. looking
@@ -1257,17 +1260,36 @@ if (pushed === 0 && watchMode && !seeding) {
   }
   if (emptyQueries.length) notes.push(`no matches for: ${emptyQueries.join(', ')}`);
   if (notFoundUsers.length) notes.push(`no such HN user: ${notFoundUsers.join(', ')}`);
+  if (commentDepthUnresolved) notes.push(`could not resolve comment depth for ${commentDepthUnresolved} comment(s) (left commentDepth:null and NOT checked against maxCommentDepth=${maxCommentDepth} -- some may actually be deeper than requested)`);
+  if (githubEnrichSkipped) notes.push(`GitHub enrichment skipped for ${githubEnrichSkipped} item(s) after hitting GitHub's rate limit or the ${GITHUB_LOOKUP_CAP}-lookup cap (githubRepo is set, but githubStars/githubLanguage/githubPushedAt etc are null)`);
   await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
-} else if (watchMode && !seeding && baselineTruncated > 0) {
+} else if (watchMode && !seeding && (baselineTruncated > 0 || commentDepthUnresolved || githubEnrichSkipped)) {
   // Otherwise-clean delivering run: none of the branches above fire, so without this the
   // baseline-eviction re-charge risk would be invisible in the Console (same gap found and
-  // closed across the rest of the h285 arc).
-  await Actor.setStatusMessage(
-    `Pushed ${pushed} new item(s). WARNING: the baseline record dropped ${baselineTruncated} of the oldest `
-    + `already-delivered id(s) this run (${baselineTruncatedTotal} total) to stay under its ${WATCH_KEEP}-id `
-    + 'cap -- those will be charged for again as "new" on a future run unless you narrow the query/tags. '
-    + 'See the RUN_SUMMARY key-value record.',
-  );
+  // closed across the rest of the h285 arc). commentDepthUnresolved/githubEnrichSkipped can
+  // also land here on a watch run with no baseline truncation, so build the message from
+  // whichever causes are actually non-zero instead of assuming baselineTruncated fired.
+  const watchNotes = [];
+  if (baselineTruncated > 0) {
+    watchNotes.push(
+      `the baseline record dropped ${baselineTruncated} of the oldest already-delivered id(s) this run `
+      + `(${baselineTruncatedTotal} total) to stay under its ${WATCH_KEEP}-id cap -- those will be charged `
+      + 'for again as "new" on a future run unless you narrow the query/tags',
+    );
+  }
+  if (commentDepthUnresolved) {
+    watchNotes.push(
+      `could not resolve comment depth for ${commentDepthUnresolved} comment(s) (left commentDepth:null and `
+      + `NOT checked against maxCommentDepth=${maxCommentDepth} -- some may actually be deeper than requested)`,
+    );
+  }
+  if (githubEnrichSkipped) {
+    watchNotes.push(
+      `GitHub enrichment skipped for ${githubEnrichSkipped} item(s) after hitting GitHub's rate limit or the `
+      + `${GITHUB_LOOKUP_CAP}-lookup cap (githubRepo is set, but githubStars/githubLanguage/githubPushedAt etc are null)`,
+    );
+  }
+  await Actor.setStatusMessage(`Pushed ${pushed} new item(s). WARNING: ${watchNotes.join('; ')}. See the RUN_SUMMARY key-value record.`);
 }
 
 if (watchMode && seedFailure) {
