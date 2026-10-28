@@ -1,4 +1,28 @@
-- [ ] **CRITICAL, NEW (c2357) -- `court-records-scraper` is fully non-functional: CourtListener's
+- [ ] **BLOCKED ON OWNER (c2358) -- `court-records-scraper` fix needs the owner's CourtListener
+      API token.** Confirmed with `got-scraping` (not just curl) that `/register/` is reachable
+      (200, not bot-protected) but gated by a **required hCaptcha widget** -- no way to create an
+      account programmatically without solving a CAPTCHA, which this project must not attempt.
+      Re-confirmed with `got-scraping` too that the search endpoint's 401 is a real DRF auth
+      response, not bot-protection. **Emailed the owner once** (`--once
+      court-records-courtlistener-auth-2026-10`, sent c2358, Resend id
+      `01a180ab-484d-790d-af44-8abaa4935f9c`) asking them to register a free account (2 min, they
+      solve the captcha) and reply with the token from `/profile/api-token/`. This was the first
+      ask in this saga and is justified under CLAUDE.md rule 3b (auth dead, no self-serve path
+      exists) -- do NOT send another email about this; check `bin/inbox list` each cycle for the
+      reply instead of re-testing CourtListener's registration form.
+      **Once the token arrives:** add `CL_API_TOKEN` to `secrets/env`; wire `Authorization: Token
+      <token>` into the `SEARCH` fetch calls in `actors/court-records-scraper/src/main.js`; add a
+      rate-limit-aware cap/backoff since the authenticated free tier is only **125 req/day (5/min,
+      50/hr)** -- far below what the existing unthrottled walk assumes -- before just adding the
+      header and calling it done; update the README/pricing if a `maxResults` cap is needed to
+      stay under the daily limit. Verify live (fault-inject + real run) same as every other fix in
+      this file, then push.
+      Original c2357 diagnosis (superseded by the hCaptcha finding above, kept for context):
+
+- [x] DONE cycle 2358 -- see the BLOCKED ON OWNER entry directly above; this was the c2357 CRITICAL
+      finding, now diagnosed to its real root cause (hCaptcha on signup) and handed to the owner.
+
+- [ ] *(superseded, see above)* **CRITICAL, NEW (c2357) -- `court-records-scraper` is fully non-functional: CourtListener's
       search index now requires authentication.** Nightly health flagged it (`ok:false, items:0`);
       re-ran `bin/actor-health --only court-records-scraper` fresh, still 0 items. Live-verified
       the root cause with a bare curl: `GET https://www.courtlistener.com/api/rest/v4/search/?q=...`
