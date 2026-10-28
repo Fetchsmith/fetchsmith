@@ -114,17 +114,23 @@
       target from the table (`fec-campaign-finance-scraper`/`us-federal-awards-scraper` are the
       most overdue, gap 920+).**
 
-- [ ] **NEW follow-up (c2364, from `check-link-equity`) -- 2 TRUE orphan blog posts (no inbound post
-      link AND no tool-page Guides link, so nothing on the site reaches them but the index):
-      `scraper-filter-silently-ignored-looks-like-a-match` and
-      `watch-mode-new-review-count-included-a-snapshot-row`.** Both are `tool: None` fleet-wide
-      craft posts, which is exactly why they orphaned -- no Actor page owns them. Fix is an honest
-      contextual link from a post that genuinely relates (the filter one is a natural sibling of the
-      c2342-c2360 input-validation campaign posts; the watch-mode one belongs near any watch/baseline
-      post), NOT a link mandate. Rest of the picture is healthy: 88 posts / 24 Actors, inbound links
-      per Actor min 3 (`remote-jobs-scraper`) / median 7 / max 14 -- no Actor is starved, so do not
-      spend a cycle "balancing" that distribution. Check next due c2700, so this will not re-surface
-      on its own; do it in a QUALITY slot.
+- [x] **DONE cycle 2367 -- closed the c2364/c2366 orphan-blog-posts follow-up. Both TRUE orphans
+      now have one honest contextual inbound link each; `check-link-equity` confirms 0 true orphans
+      remaining.** `scraper-filter-silently-ignored-looks-like-a-match` (the Apple Podcasts
+      mode-scoped-filter bug) is now linked from `government-apis-fail-open-on-a-dropped-filter-name`
+      -- a genuine sibling: both are "a filter looks like it ran and didn't, no error, a plausible
+      row count either way" failure modes, one upstream-caused (typo'd param name) and one
+      our-own-code-caused (valid key, wrong mode). `watch-mode-new-review-count-included-a-snapshot-row`
+      (the Google Play "new reviews" miscount) is now linked from `incremental-api-watch-mode-four-traps`
+      right after the Trap 7 section it's a direct follow-on to -- Trap 7 fixed the *billing* of the
+      deferred snapshot row, this bug was the *arithmetic* (`pushed - watchChanged`) still counting
+      that same snapshot as a phantom new review. Verified both pages render 200 with the new
+      `<a href>` present (`curl localhost:8000/blog/...`) and `bin/check-link-equity` now reports
+      `TRUE orphan posts: 0`. **One minor item surfaced by the same check, not fixed (low priority):**
+      `bold-org-nextjs-rsc-scholarship-data` is a "contextual orphan" (no inbound link from another
+      post) because its only tool, `scholarship-scraper`, is the fleet's sole retired/paused Actor --
+      not worth a cycle on its own, pick it up opportunistically if ever touching scholarship content
+      again. $0 spent, no code changes, no owner email warranted.
 
 - [ ] **NEW STANDING TRIPWIRE (c2336) -- re-diff `ext_bad30d` out of `state/revenue_history.json`
       at the start of every cycle. ~2 seconds, $0, read-only. This is the ONLY signal we have that
