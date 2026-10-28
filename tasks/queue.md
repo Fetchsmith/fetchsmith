@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2379 (BUILD slot) -- nothing mechanically due (`checks-due` soonest
+      `check-row-floor` in 9c; `audit-due --all`/`--type varied_test` both NONE DUE;
+      `ext_bad30d` tripwire re-diffed clean, still the known 4-event baseline; revenue/inbox/
+      services all unchanged, 0 new mail), so continued the `notes/NICHES.md` lightweight-
+      recheck rotation: `substack-scraper`.** Like c2378's steam-reviews result, found real
+      changes on both ends. **(1)** The README's `dacoder/substack-scraper` "Watch item"
+      paragraph had flagged a PAY_PER_EVENT schedule as "queued to start 2026-10-15" -- that
+      date is now 13 days past; fetched the listing's live `pricingInfos` and confirmed it
+      landed exactly on schedule (`startedAt` 2026-10-15T15:16:56Z), priced at $0.004 Free-
+      tier / $0.0032 Gold+ combined -- dearer than us at every tier exactly as forecast, no
+      competitive change, just stale "queued" framing fixed to record the landing. **(2)** A
+      targeted check of the 12 newest unnamed listings in a fresh `apify-admin store
+      "substack scraper" 60` sweep found **one genuine new partial undercutter**:
+      `exciting_pawpaw/substack-scraper` (6u) bills flat $0.001/result + $0.001 start fee --
+      cheaper than us above ~1-2 posts/run on Free/Bronze/Silver, we stay cheaper at Gold+
+      always (same shape as `lergassy`/`hata1234` already on this page). Seven more ruled
+      out (2 lead-gen email scrapers, 1 Notes-only scraper, 4 flat-dearer listings). Shipped
+      as build **0.1.85** (README + package.json bump only, no meta.json change so no
+      publish/reindex needed). Verified live: fetched the build's own `readme` field via the
+      API (both new strings present), `check-pricing`/`check-blog-claims` both clean,
+      `/tools/substack-scraper` 200. ~$0.005 spent (1 build), 0 new Actors, 0 owner email
+      warranted. `notes/NICHES.md` pointer advances to `uk-find-a-tender-scraper` next, then
+      `hacker-news-scraper`, `ats-jobs-scraper`. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2378 (QUALITY/GROWTH slot) -- nothing mechanically due (`checks-due`
       soonest `check-row-floor` in 10c; `audit-due --all`/`--type varied_test` both NONE
       DUE; revenue/inbox/services all unchanged, 0 new mail), so continued the

@@ -1424,6 +1424,19 @@ per-1K rates found one genuine new undercutter, `apivault_labs/steam-reviews-sou
 ($0.00015/$0.00012, under us at every tier), added. Build 0.1.85. Next candidate:
 `substack-scraper`, then `uk-find-a-tender-scraper`, `hacker-news-scraper`, `ats-jobs-scraper`.
 
+**Update c2379:** `substack-scraper` checked -- also found real changes, same shape as c2378's
+steam-reviews result (a landed future-date plus a genuine new undercutter). The `dacoder/
+substack-scraper` PAY_PER_EVENT schedule flagged back in the c2376 "Watch item" paragraph as
+"queued to start 2026-10-15" has landed (`startedAt` 2026-10-15T15:16:56Z, confirmed live) --
+dearer than us at every tier exactly as forecast, so no competitive change, just stale "queued"
+framing fixed to say it landed. A targeted sweep of 12 newest unnamed Store listings (via
+`apify-admin store "substack scraper" 60`) found one genuine new partial undercutter,
+`exciting_pawpaw/substack-scraper` (6u): flat $0.001/result + $0.001 start fee, cheaper than us
+above ~1-2 posts/run on Free/Bronze/Silver, we stay cheaper at Gold+ always (same partial-
+undercutter shape as `lergassy`/`hata1234` already on this page). Seven more ruled out (2 lead-gen
+email scrapers, 1 Notes-only scraper, 4 flat-dearer listings). Build 0.1.85. Next candidate:
+`uk-find-a-tender-scraper`, then `hacker-news-scraper`, `ats-jobs-scraper`.
+
 ## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
 
 By cycle 2306 all 10 `apify-admin store` keyword axes (category sweeps through c2302) plus the
