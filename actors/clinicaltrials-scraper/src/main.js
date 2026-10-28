@@ -191,6 +191,20 @@ const nctIdsBadFormat = nctIdsRaw.filter((id) => !NCT_RE.test(id));
 if (nctIdsBadFormat.length) {
     log.warning(`Dropped ${nctIdsBadFormat.length} nctIds with bad format (expected NCT + 8 digits): ${nctIdsBadFormat.join(', ')}`);
 }
+// If EVERY supplied id was dropped, `nctIds` is empty and the dispatch below silently falls out of
+// direct-lookup into SEARCH mode -- and `conditions` carries a schema default of "cancer" that
+// Apify applies server-side to any input missing the field (see the resolveIdsChunk note), so
+// someone who asked for two specific trials would instead be delivered, and charged for, up to
+// `maxResults` arbitrary cancer studies. Nothing is charged yet at this point, so fail on the
+// input error exactly like the other input-validation throws above/below rather than running a
+// query the buyer never asked for. (cycle 2352)
+if (nctIdsRaw.length && !nctIds.length) {
+    throw new Error(
+        `Every value in "nctIds" was rejected as malformed (expected NCT followed by 8 digits, e.g. NCT04280705): `
+        + `${nctIdsBadFormat.join(', ')}. Fix the ids and re-run -- the run was stopped instead of falling back to a `
+        + 'filter search, which would have returned studies you did not ask for and charged you for them.',
+    );
+}
 
 let conditions = String(input.conditions ?? '').trim();
 const interventions = String(input.interventions ?? '').trim();
@@ -1449,6 +1463,33 @@ const clampStatusMessage = (msg) => {
     return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
 };
 
+// Direct-lookup shortfall, in one clause reusable by the zero-row message and the delivering-run
+// status message below (cycle 2352). Before this, a PARTIAL shortfall was invisible everywhere the
+// buyer looks: the zero-row branch only fires when NOTHING came back, and `markIncomplete` is
+// deliberately not called for not-found/malformed ids (an answered "absent" is a complete answer,
+// not a truncated run), so a 10-id lookup that delivered 7 set NO status message at all and read
+// in the console exactly like a perfect run. `declaredMatches` is `nctIds.length` -- the POST-drop
+// count -- so bad-format ids could not be recovered from the summary arithmetic either.
+// The four lists are disjoint by construction in resolveIdsChunk, and `nctIdsBadFormat` never
+// entered them, so the counts sum without double-counting.
+function lookupShortfallNote() {
+    if (!nctIds.length) return '';
+    const parts = [];
+    let missing = 0;
+    const add = (ids, text) => { if (ids.length) { missing += ids.length; parts.push(`${ids.length} ${text}`); } };
+    add(notFoundIds, 'not in the registry');
+    add(malformedIds, 'rejected by ClinicalTrials.gov as malformed');
+    // Kept separate from "not in the registry" for the same reason resolveIdsChunk keeps the lists
+    // apart: a request that was never answered cannot support the claim that a study is absent.
+    add(failedIds, 'never answered for (NOT known to be missing -- re-run those ids)');
+    add(notReachedIds, 'never requested, because the run stopped first');
+    add(nctIdsBadFormat, 'dropped before the run as bad format (expected NCT + 8 digits)');
+    if (!parts.length) return '';
+    const asked = nctIds.length + nctIdsBadFormat.length;
+    return ` ${missing} of the ${asked} id(s) you asked for returned no row: ${parts.join('; ')}.`
+        + ' See RUN_SUMMARY for the exact id lists.';
+}
+
 // Built once and reused below for `setStatusMessage` (cycle 1758) -- until this fix these were
 // log-only, so a complete run with 0 rows showed bare "Succeeded" in the Console with the cause
 // visible only in the log. Watch-mode SEEDING stays silent (0 rows there is the documented
@@ -1461,7 +1502,11 @@ if (pushed === 0 && watchMode && !seeding) {
     log.warning(zeroRowMessage);
 } else if (pushed === 0 && !seeding) {
     if (nctIds.length) {
-        zeroRowMessage = 'No studies matched. Every requested nctId was either malformed or not found on ClinicalTrials.gov — check the id list above.';
+        // The old wording asserted flatly that every id "was either malformed or not found", which
+        // is a claim about the registry that a never-answered request cannot support (and said
+        // nothing about ids the run never reached). The note states exactly which outcome each id
+        // got instead. (cycle 2352)
+        zeroRowMessage = `No studies were returned for the nctId(s) you asked for.${lookupShortfallNote()}`;
         log.warning(zeroRowMessage);
     } else {
         // Log form keeps the full 3-cause explanation (539 chars, past the status-message cap).
@@ -1517,6 +1562,10 @@ const runSummary = {
     skippedAlreadyDelivered: watchMode && !seeding ? skippedSeen : null,
     changedRedelivered: watchMode && !seeding ? changedCount : null,
     requestedIds: nctIds.length || null,
+    // Ids dropped by our own NCT-format check before any request was made. `requestedIds` (and
+    // `declaredMatches`) are the POST-drop count, so without this a pipeline cannot tell that the
+    // input asked for more than the run ever looked up. (cycle 2352)
+    badFormatIds: nctIds.length ? nctIdsBadFormat : null,
     notFoundIds: nctIds.length ? notFoundIds : null,
     malformedIds: nctIds.length ? malformedIds : null,
     failedIds: nctIds.length ? failedIds : null,
@@ -1536,11 +1585,15 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 // setStatusMessage call anywhere in this Actor before cycle 646.
 if (!complete) {
     const of = declaredMatches === null ? '' : ` of ${declaredMatches.toLocaleString('en-US')} declared`;
-    await Actor.setStatusMessage(
+    // `incompleteReason` is first-cause-wins, so on a direct lookup it names ONE of the things that
+    // went wrong (e.g. 'max-results') and stays silent about the rest; the shortfall note
+    // enumerates them all. truncationNote() and the note can never both be non-empty -- that one
+    // is watch-mode only, and watchMode requires `nctIds.length === 0`.
+    await Actor.setStatusMessage(clampStatusMessage(
         `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
         + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`
-        + truncationNote(),
-    );
+        + truncationNote() + lookupShortfallNote(),
+    ));
 } else if (baselineTruncated > 0) {
     // A complete run that evicted baseline ids would otherwise show nothing in the console at all
     // -- the shortfall is in a future bill, not in this run's row count.
@@ -1555,6 +1608,14 @@ if (!complete) {
     // already written to fit whole; this guards the watch-label branch, whose length depends on
     // a user-supplied watchLabel string with no schema-enforced length cap.
     await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
+} else if (nctIds.length && lookupShortfallNote()) {
+    // A DELIVERING direct lookup that still came up short on some ids. Reached only when the run is
+    // otherwise complete (`!complete` is handled above), i.e. the shortfall is not-found/malformed/
+    // bad-format ids -- real answers, but not the ones the buyer's row count implies. This arm is
+    // the whole point of the cycle-2352 fix: without it these runs set no status message at all.
+    await Actor.setStatusMessage(clampStatusMessage(
+        `Delivered ${pushed.toLocaleString('en-US')} row(s).${lookupShortfallNote()}`,
+    ));
 } else if (declaredMatches !== null && !watchMode && !nctIds.length) {
     log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} studies the registry declared for these filters.`);
 }
