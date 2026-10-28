@@ -265,7 +265,35 @@ const includePublications = input.includePublications !== false;
 const includeAbstract = input.includeAbstract !== false;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 
-const fiscalYears = listOf(input.fiscalYears).map((y) => Number(y)).filter((y) => Number.isInteger(y) && y >= 1985 && y <= 2100);
+const fiscalYearsRaw = listOf(input.fiscalYears);
+const fiscalYears = fiscalYearsRaw.map((y) => Number(y)).filter((y) => Number.isInteger(y) && y >= 1985 && y <= 2100);
+// THE SAME TRAP AS c2352's clinicaltrials-scraper nctIds, found live here too (fault-injected,
+// not inferred): `fiscalYears` is the ONE field among this Actor's filter inputs whose invalid
+// values are DROPPED rather than kept-and-warned (contrast agencyIcCodes/activityCodes/orgStates
+// below, which never drop). If every supplied value drops, fiscalYears.length hits 0 -- and
+// `otherScope` below reads that length, so a run with no other filter falls through to
+// KEYWORD_DEFAULT ("cancer"): a buyer who sent only `fiscalYears:[1800]` (a very typeable typo of
+// a 4-digit year) got charged for 3 unrelated cancer-grant rows under `Incomplete: ... offset-wall`
+// -- a message that looks like a healthy capped run and names nothing about the fiscal year filter
+// being rejected. (NIH's own API handles an out-of-range fiscal_years value fine -- a real,
+// correctly-filtered total:0, not a silent full-index return -- so this client-side range check was
+// never protecting against an upstream trap; it was creating one.) Refuse instead of silently
+// swapping the query, matching every other input-validation throw in this file.
+if (fiscalYearsRaw.length > 0 && fiscalYears.length === 0) {
+    throw new Error(
+        `fiscalYears was given (${JSON.stringify(input.fiscalYears)}) but none of the value(s) is a valid NIH `
+        + 'fiscal year (a whole number from 1985 to 2100). Refusing to run: falling back silently would run this '
+        + 'Actor\'s example keyword search ("cancer") instead if no other filter is set -- a different, unrelated, '
+        + 'CHARGED query, not the fiscal year(s) you asked for.',
+    );
+}
+if (fiscalYearsRaw.length > fiscalYears.length && fiscalYears.length > 0) {
+    const dropped = fiscalYearsRaw.filter((y) => !fiscalYears.includes(Number(y)));
+    log.warning(
+        `Dropped invalid fiscalYears value(s): ${dropped.join(', ')} (must be a whole number from 1985 to 2100). `
+        + `Running with the rest: ${fiscalYears.join(', ')}.`,
+    );
+}
 const agencyIcCodes = strList(input.agencyIcCodes).map((c) => c.toUpperCase());
 const activityCodes = strList(input.activityCodes).map((c) => c.toUpperCase());
 const awardTypes = strList(input.awardTypes);
