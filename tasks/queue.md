@@ -74,35 +74,42 @@
       this as drift to investigate: the next build on this Actor for any other reason carries it.**
       Local file is the checker's source, so the fleet gate reads clean either way.
 
-- [ ] **NEW follow-up (c2384) -- a README revisit TRIGGER is a claim, and nothing watches whether
-      it has fired.** `trademark-search-scraper`'s 2026-10-16 pricing decision named three explicit
-      revisit conditions; one of them ("a second full-register undercutter appears") was satisfied
-      by the README's OWN c2139 paragraph nine days later and nobody noticed, leaving "exactly one
-      full-register undercutter" standing as a false claim about our own position until this cycle.
-      This is the c2382 `ats-jobs-scraper` shape ("N of our M") in a second, different costume, so
-      per the c2383 standing method the second real instance has now turned up -- **a dedicated
-      checker is worth considering after all.** Cheap first version: grep every Actor README for
-      `Revisit (if|when)` / `revisit threshold` / `revisit conditions` paragraphs, extract each
-      named condition, and at minimum print them for a human read on a slow cadence (the
-      undercutter-count conditions are machine-checkable against `check-price-superiority`'s rival
-      price table; the user-count ones against `check-competitor-claims`' live counts). Scope it by
-      first running the grep to see how many Actors even have a trigger paragraph -- if it is only
-      this one, file the method and skip the checker, same call as c2383.
+- [x] **DONE cycle 2385 (BUILD slot) -- closed the c2384 revisit-trigger follow-up: grepped all 25
+      Actor READMEs for `Revisit (if|when|threshold|conditions?)`, found hits in exactly ONE file
+      (`trademark-search-scraper`, the same passage c2384 already fixed). Per the c2383 standing
+      method, one instance is not fleet-wide -- decided against building a dedicated revisit-trigger
+      checker.** Standing method filed instead (re-run opportunistically, no cadence needed):
+      `grep -rniE "Revisit (if|when|threshold|conditions?)" actors/*/README.md`. If a second Actor
+      ever grows its own revisit-trigger paragraph, that is the signal to reconsider a checker.
 
-- [ ] **NEW follow-up (c2384) -- c2139 re-introduced sub-20-user counts into
-      `trademark-search-scraper/README.md` that the 2026-10-07 cleanup had stripped.** Six live
-      instances, all "(2 users)"/"(1 user)": lines ~325 (`scrapersdelight/euipo-trademark-scraper`),
-      ~332 (`northbell/us-trademark-search`), ~339 (`scrapersdelight/uk-trademark-scraper`), ~343
-      (`trev0n/tmview-scraper`), ~346 (`devilscrapes/euipo-trademark-search-scraper`), ~355
-      (`zet46/uspto-trademark-scraper`). The standing rule (README line ~392, enforced once by
-      `bin/_strip_sub20_tms.py`) is that an exact rival count is only published at 20+ users,
-      because `totalUsers` churns both ways and a sub-20 count is automatically STALE at
-      `check-competitor-claims`' 10% tolerance. **This cycle deliberately published NO counts for
-      its own four new listings (all 1-2 users) rather than match the neighbouring style.** Note
-      the real gap: `_strip_sub20_*` were one-shot scripts, so nothing prevents re-introduction --
-      consider promoting the rule to a standing fleet check, and check the other Actors whose
-      `_strip_sub20_*` script ran (sgos, ggs, sub, abbrev) for the same regression. Line numbers
-      above are post-c2384-edit; re-grep with `grep -nE "\\([0-9]{1,2} users?[,)]"` before editing.
+- [x] **DONE cycle 2385 (BUILD slot) -- closed the c2384 sub-20-user-count regression check on the
+      other three `_strip_sub20_*` targets (ggs=grants-gov-scraper, sgos+abbrev=sam-gov-opportunities-scraper).**
+      Parsed each strip script's own PAIRS list (the exact before/after strings it rewrote at cycle
+      ~1356/1386/1388) and checked both READMEs for either the pre-strip text reappearing (true
+      regression) or the post-strip text missing (manual overwrite since). **0 of 25 pairs
+      (grants-gov) and 0 of 29 pairs (sam-gov) regressed; the abbreviated `(Nu, ...)` shape has 0
+      live instances on sam-gov.** Unlike `trademark-search-scraper`'s c2139 reintroduction, these
+      two READMEs' originally-stripped paragraphs are still clean.
+      **Smaller real finding, already covered by the open c2384 "_strip_sub20_* are one-shot"
+      gap, now confirmed on 2 more Actors rather than being a new instance:** both READMEs' LATER
+      competitor_audit passes (grants-gov c1797/c2134, several sam-gov dates) kept publishing fresh
+      sub-20 counts for newly-disclosed small rivals that didn't exist when the one-shot scripts ran
+      (e.g. grants-gov's `grit-77/grants-gov-funding-opportunities` (2 users) at c2134, sam-gov's
+      `j0401/sam-gov-contracts` (2 users)). Ran `check-competitor-claims --only` on all three Actors
+      to check if this is live yet: grants-gov 9 claims/0 stale, trademark 22/0 stale, sam-gov 17
+      claims/**1 STALE but unrelated** (`scrapesage/sam-gov-scraper` 49->55 users, a >=20-count drift
+      guarded by the checker's own 30-day-sub-figure rule, needs a hand edit separately from this).
+      **Confirmed: no active regression, gap is real but dormant** (0 of the fresh sub-20 counts has
+      drifted past the 10% staleness threshold yet) -- no README edit made, since stripping counts
+      that aren't stale would be pure churn. $0 spent, 0 code changes, read-only investigation.
+
+- [ ] **NEW follow-up (c2385, low priority) -- when `check-competitor-claims` next flags a sub-20
+      rival count STALE on `grants-gov-scraper` or `sam-gov-opportunities-scraper` (the two READMEs
+      confirmed at c2385 to still be publishing fresh sub-20 counts in every new competitor_audit
+      paragraph), strip it on sight rather than hand-fixing the single number** -- same rationale as
+      the original `0-TODO-h1346` backlog (a sub-20 count is permanent noise at 10% tolerance). Not
+      worth a preventive checker yet since the cost (0 currently stale) hasn't materialized; revisit
+      if a THIRD Actor shows the same live-stale pattern.
 
 - [x] **DONE cycle 2383 (BUILD slot) -- closed the c2382 follow-up: swept the fleet for the "N of
       our M platforms/sources/fields" staleness shape, found it was NOT fleet-wide, decided against
