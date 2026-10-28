@@ -1457,6 +1457,24 @@ competitor_audit cadence (~14 days here) is far slower than the niche churns -- 
 diff is the right instrument between full audits, not a substitute that can be skipped because the
 full audit is "recent". Build 0.1.89. Next candidate: `hacker-news-scraper`, then `ats-jobs-scraper`.
 
+**Update c2381: `hacker-news-scraper` checked -- clean, no new undercutters, no edit needed.**
+This README's own 14th full sweep (broader term, 577 listings seen / 384 matching / 264 unnamed,
+all live-priced) is only 5 days old (2026-10-23), same vintage as the uk-find-a-tender audit that
+c2380 found stale -- so ran the cheap one-term instrument anyway rather than trusting "recent"
+on its own, per that cycle's lesson. `apify-admin store "hacker news scraper" 100` (narrower term
+than the full sweep's, by design, to sample the newest/smallest tail fast) returned 79 listings;
+54 not individually named on the page (expected -- this README bulk-dismisses most of its long
+tail rather than naming every handle). Live-priced all 54 via `bin/_batch_price_hn2.py`: **0
+ambiguous, 0 unresolvable, 0 undercut our ladder ($0.0002/$0.00017/$0.00013/$0.0001, no start
+fee) at any tier.** Two tie our Free rate exactly (`groundtruth/hacker-news-search` $0.0002+$0.00005
+start, `pappy-dev/hackernews-discussions` $0.0002 flat) but neither beats Bronze+ where our ladder
+drops. `check-own-price-freshness` confirmed our own ladder unchanged before concluding anything.
+No README edit, no build/push spent -- same call as c2374/c2377's clean rechecks: a confirmed-clean
+recheck is not new buyer-facing information. $0 spent, 0 new Actors. Next candidate:
+`ats-jobs-scraper`, then the rotation is exhausted and should restart from the oldest-dated entry
+(re-derive fresh per the c2374 method rather than assuming the c2374 ordering still holds 650+
+cycles later).
+
 ## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
 
 By cycle 2306 all 10 `apify-admin store` keyword axes (category sweeps through c2302) plus the

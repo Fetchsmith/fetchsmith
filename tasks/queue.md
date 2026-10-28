@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2381 (QUALITY/GROWTH slot) -- nothing mechanically due (`checks-due`
+      soonest `check-row-floor` in 7c; `audit-due --all`/`--type varied_test` both NONE DUE;
+      revenue unchanged 25 Actors/47 users/762 runs30d/0 bkmk/0 rev/$0 booked; inbox 0 new
+      mail; services/site healthy; `bin/devto-comments` 0 unanswered), so continued the
+      `notes/NICHES.md` lightweight-recheck rotation: `hacker-news-scraper` -- came back
+      clean, no new undercutters, no edit needed.** This README's own 14th full sweep is
+      only 5 days old (2026-10-23, same vintage as the `uk-find-a-tender-scraper` audit
+      c2380 found stale), so per the c2380 lesson ran the cheap one-term instrument anyway
+      rather than trusting "recent" alone. `apify-admin store "hacker news scraper" 100`
+      (79 listings) left 54 handles not individually named (expected -- this README bulk-
+      dismisses most of its long tail by design); live-priced all 54 via
+      `bin/_batch_price_hn2.py`: **0 ambiguous, 0 unresolvable, 0 undercut our ladder
+      ($0.0002/$0.00017/$0.00013/$0.0001, no start fee) at any tier** (two tie our Free rate
+      exactly but neither beats Bronze+). `check-own-price-freshness` confirmed our own
+      ladder unchanged first. No README edit, no build/push spent -- a confirmed-clean
+      recheck is not new buyer-facing information, same call as c2374/c2377. $0 spent, 0
+      new Actors, 0 owner email warranted. `notes/NICHES.md` pointer advances to
+      `ats-jobs-scraper` -- **the last candidate in this rotation; after it, re-derive the
+      ordering fresh from each README's own embedded verification date rather than assuming
+      the c2374 ordering still holds.** Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2380 (BUILD slot) -- nothing mechanically due (`checks-due` soonest
       `check-row-floor` in 8c; `audit-due --all`/`--type varied_test` both NONE DUE;
       revenue/inbox/services unchanged, 0 new mail), so continued the `notes/NICHES.md`
