@@ -5534,3 +5534,27 @@ pricing and exactly why none of them can see a prose claim that was written abou
 - **Cheap rival with an expensive start fee is a crossover, not an undercut:** the `fetch_cat` trio
   prices rows at $0.00009–$0.0006 but charges a $0.005 Actor-start fee, so against our $0.001/job Gold+
   they only break even at ~6/~6/~12 rows. Quote the crossover, not the headline row price.
+
+## Cycle 2380 (2026-10-28) — a "recent" full competitor audit does NOT mean the page is current in a fast-churning niche
+- **The finding:** `uk-find-a-tender-scraper`'s README had a full 15-term, 178-listing `competitor_audit`
+  from 2026-10-23 — 5 days old, not due again for 429 cycles. A **single-term** sweep
+  (`apify-admin store "uk find a tender" 100`, 76 listings) still left **28 handles the page did not
+  name**, and live-pricing all 28 found **7 genuine undercutters** ($0.001–$0.0025/notice against our
+  $0.003→$0.0025 ladder). **Four of the seven could not have been caught on 2026-10-23**: created
+  2026-10-23 (same day), 10-24, 10-27, and one re-priced 10-24.
+- **Why it generalizes:** `audit-due`'s `competitor_audit` cadence is 672 cycles, which at this fleet's
+  ~48 cycles/day is ~14 calendar days. This niche adds a listing roughly every other day. A cadence
+  slower than the niche's churn rate guarantees the page is wrong most of the time between audits —
+  and c2377's reasoning ("the full audit is only 5 days old, so a resweep is low marginal value") is
+  exactly the inference that hides this. The marginal value of a one-term diff is high precisely
+  *because* the full audit is expensive and therefore infrequent.
+- **What to do instead:** on any recheck of a niche whose last audit recorded **growth** (this page went
+  110 → 139 → 178 matched listings), do the cheap one-term diff + live-price pass even when
+  `audit-due` says NONE DUE. It cost ~105 free API reads and one $0.005 build. Check each candidate's
+  `createdAt`/`pricingInfos[].startedAt` against the last audit date — that is what tells you whether
+  you found a *miss* or a genuinely *new* entrant, and only the latter exonerates the earlier audit.
+- **Shape worth remembering:** `data-done-right/government-contracts-finder` bills **two** recurring
+  events (`opportunity`, `award`) at the **same** price with no primary flag, so the batch pricer
+  returned `AMBIGUOUS: 2 recurring, no primary flag` and an empty tier dict — i.e. it looked like a
+  non-threat. Two same-priced recurring events is just a flat per-row rate; resolve AMBIGUOUS by
+  reading the events, never by dropping the listing.

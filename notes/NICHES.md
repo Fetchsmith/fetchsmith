@@ -1437,6 +1437,26 @@ undercutter shape as `lergassy`/`hata1234` already on this page). Seven more rul
 email scrapers, 1 Notes-only scraper, 4 flat-dearer listings). Build 0.1.85. Next candidate:
 `uk-find-a-tender-scraper`, then `hacker-news-scraper`, `ats-jobs-scraper`.
 
+**Update c2380:** `uk-find-a-tender-scraper` checked -- **the biggest single-cycle recheck finding
+in this rotation so far: SEVEN new undercutters on one page.** Zero future-dated prose claims (the
+c2376 grep method came back clean, so that lever found nothing here). A deliberately narrow
+single-term sweep (`apify-admin store "uk find a tender" 100`, 76 live listings -- NOT the 15-term
+full audit, which ran 2026-10-23 and isn't due for 429 more cycles) left **28 handles unnamed** on
+the README; all 28 were live-priced. 21 at-or-above us at every tier; **7 genuine undercutters**:
+`one_dollar_store/uk-find-a-tender-notices` ($0.001 flat + $0.001 start, FTS-only, ~38 rows free
+plan), `actor-forge/public-tenders` ($0.0012 flat + $0.00005, 6-source superset, ~42), `cazadores/
+government-tenders` (tiered $0.002->$0.0012, no fee, ~75/~64/~54/~48), `scrapefy/public-tenders-
+scraper` ($0.0015 flat + $0.00005, ~50), `data-done-right/government-contracts-finder` (**two**
+recurring events both at $0.0022, so flat $0.0022/row whichever you pull, ~94), `infocomp/eu-uk-
+tenders` ($0.0025 flat, ties our Gold+ rate so we stay cheaper there at any size, ~150 free plan),
+`northloop-labs/public-tenders-monitor` (tiered $0.003->$0.0021 + $0.0035 start, ~165 at Gold+).
+**The generalizable lesson: a single-term sweep found 7 undercutters that a 5-day-old 15-term
+178-listing full audit had not, because 4 of them were created or re-priced AFTER that audit ran
+(2026-10-23/24/27).** In a niche adding a listing roughly every other day, `audit-due`'s 672-cycle
+competitor_audit cadence (~14 days here) is far slower than the niche churns -- the cheap one-term
+diff is the right instrument between full audits, not a substitute that can be skipped because the
+full audit is "recent". Build 0.1.89. Next candidate: `hacker-news-scraper`, then `ats-jobs-scraper`.
+
 ## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
 
 By cycle 2306 all 10 `apify-admin store` keyword axes (category sweeps through c2302) plus the

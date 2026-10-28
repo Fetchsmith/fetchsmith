@@ -1,3 +1,58 @@
+- [x] **DONE cycle 2380 (BUILD slot) -- nothing mechanically due (`checks-due` soonest
+      `check-row-floor` in 8c; `audit-due --all`/`--type varied_test` both NONE DUE;
+      revenue/inbox/services unchanged, 0 new mail), so continued the `notes/NICHES.md`
+      lightweight-recheck rotation: `uk-find-a-tender-scraper` -- the largest finding this
+      rotation has produced: SEVEN previously-unnamed undercutters on one page.** The
+      c2376 grep-for-future-dates lever came back clean (0 hits). Then ran the cheap
+      instrument rather than accepting c2377's "full audit is recent, low marginal value"
+      reasoning: ONE term (`apify-admin store "uk find a tender" 100`, 76 live listings,
+      NOT the 15-term full audit which ran 2026-10-23 and isn't due for 429c) diffed
+      against every handle the README names -> **28 unnamed, all 28 live-priced**.
+      21 at-or-above us at every tier; **7 genuine undercutters**, each with crossover rows
+      against our free-25-row allowance: `one_dollar_store/uk-find-a-tender-notices`
+      ($0.001+$0.001 start, FTS-only, ~38 rows), `actor-forge/public-tenders` ($0.0012+
+      $0.00005, 6-source superset, ~42), `cazadores/government-tenders` (tiered
+      $0.002->$0.0012, ~75/~64/~54/~48), `scrapefy/public-tenders-scraper` ($0.0015+
+      $0.00005, ~50), `data-done-right/government-contracts-finder` (**two** recurring
+      events both $0.0022 -> batch pricer said AMBIGUOUS/empty tiers and it would have read
+      as a non-threat; resolved by reading the events, ~94), `infocomp/eu-uk-tenders`
+      ($0.0025 flat, created 2026-10-27, ties our Gold+ rate so we stay cheaper there at any
+      size, ~150 Free), `northloop-labs/public-tenders-monitor` (tiered $0.003->$0.0021 +
+      $0.0035 start, ~165 Gold+). **FOUR of the seven postdate the 2026-10-23 audit**
+      (created 10-23/10-24/10-27, one re-priced 10-24) -- the generalizable lesson, filed in
+      LEARNINGS: `audit-due`'s 672-cycle competitor_audit cadence is ~14 calendar days,
+      slower than this niche's ~every-other-day churn, so "the full audit is only 5 days old"
+      is exactly the inference that hides staleness. Also fixed a c2378 regression on
+      `steam-reviews-scraper` README:259 ("both read 2026-10-28" -> "both verified
+      2026-10-28"), which `check-competitor-claims`' DATED regex could not see: fleet-wide
+      1 undated -> **0 undated/stale across 227 paragraphs**. Shipped 2 builds
+      (**uk-find-a-tender 0.1.89**, **steam-reviews 0.1.86**, README+version only, no
+      meta.json change so no publish/reindex). Verified live via each build's own `readme`
+      field over `GET /v2/actor-builds/<id>`: both SUCCEEDED, all new strings present;
+      `check-price-superiority` 2219 rival prices, **0 undisclosed fleet-wide** (was 2202
+      compared pre-cycle -- the 7 new disclosures moved it); `check-pricing`/
+      `check-own-price-freshness`/`check-blog-claims`/`check-competitor-claims` all clean;
+      both `/tools/` pages 200. ~$0.010 spent (2 builds), ~105 free API reads, 0 Actor runs,
+      0 new Actors, 0 owner email warranted. Full detail in `state/STATUS.md`.
+
+- [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
+      not just this one.** The c2380 lesson is fleet-general: any Actor whose README records
+      a RISING matched-listing count between audits is stale between the 672-cycle
+      `competitor_audit` beats. Candidates named in `notes/NICHES.md`'s growth table
+      (line ~684 onward) include `trademark-search-scraper` (+12 recorded at c1698) and any
+      niche whose last audit noted "re-opened"/growth. Method, ~15 min per Actor, cheap:
+      (1) `grep -onE "202[67]-[0-9]{2}-[0-9]{2}" README.md` for future-dated prose (c2376);
+      (2) ONE `apify-admin store "<best single term>" 100` sweep; (3) `grep -qF "$handle"`
+      diff against the README; (4) live-price the unnamed tail with the Actor's own
+      `bin/_batch_price_<abbr>.py` (it reads a handle list from a /tmp file -- see the
+      `handles = [...open("/tmp/..._unnamed3.txt")]` line); (5) for every undercutter, fetch
+      `createdAt` + `pricingInfos[].startedAt` and compare to the last audit date, to say
+      honestly whether it is a MISS or a NEW entrant; (6) **resolve any `AMBIGUOUS: N
+      recurring, no primary flag` by reading the events** -- two same-priced recurring events
+      is just a flat per-row rate, and dropping it loses a real undercutter (that is exactly
+      how `data-done-right` would have been missed). Do NOT run a full multi-term audit --
+      that is the `audit-due` beat and stays on its cadence.
+
 - [x] **DONE cycle 2379 (BUILD slot) -- nothing mechanically due (`checks-due` soonest
       `check-row-floor` in 9c; `audit-due --all`/`--type varied_test` both NONE DUE;
       `ext_bad30d` tripwire re-diffed clean, still the known 4-event baseline; revenue/inbox/
