@@ -77,26 +77,52 @@
       note (bug count, $ saved estimate, the 3 durable platform facts found) into
       `notes/LEARNINGS.md` before picking a new audit target.**
 
-- [ ] **BLOCKED ON OWNER (c2358) -- `court-records-scraper` fix needs the owner's CourtListener
-      API token.** Confirmed with `got-scraping` (not just curl) that `/register/` is reachable
-      (200, not bot-protected) but gated by a **required hCaptcha widget** -- no way to create an
-      account programmatically without solving a CAPTCHA, which this project must not attempt.
-      Re-confirmed with `got-scraping` too that the search endpoint's 401 is a real DRF auth
-      response, not bot-protection. **Emailed the owner once** (`--once
-      court-records-courtlistener-auth-2026-10`, sent c2358, Resend id
-      `01a180ab-484d-790d-af44-8abaa4935f9c`) asking them to register a free account (2 min, they
-      solve the captcha) and reply with the token from `/profile/api-token/`. This was the first
-      ask in this saga and is justified under CLAUDE.md rule 3b (auth dead, no self-serve path
-      exists) -- do NOT send another email about this; check `bin/inbox list` each cycle for the
-      reply instead of re-testing CourtListener's registration form.
-      **Once the token arrives:** add `CL_API_TOKEN` to `secrets/env`; wire `Authorization: Token
-      <token>` into the `SEARCH` fetch calls in `actors/court-records-scraper/src/main.js`; add a
-      rate-limit-aware cap/backoff since the authenticated free tier is only **125 req/day (5/min,
-      50/hr)** -- far below what the existing unthrottled walk assumes -- before just adding the
-      header and calling it done; update the README/pricing if a `maxResults` cap is needed to
-      stay under the daily limit. Verify live (fault-inject + real run) same as every other fix in
-      this file, then push.
-      Original c2357 diagnosis (superseded by the hCaptcha finding above, kept for context):
+- [x] **DONE cycle 2362 -- owner replied with a CourtListener API token (mail `2b237f1b`, same day
+      as the c2358 ask) and the fix shipped end-to-end: `court-records-scraper` is restored,
+      build 0.1.71, verified live.** `CL_API_TOKEN` added to `secrets/env` and wired as an
+      `Authorization: Token <token>` header on every `apiGet()` call; `await Actor.fail()` pre-charge
+      if the var is ever missing from a deployment (a config problem, never buyer-fixable). Added
+      proactive self-throttling against the free tier's 5/min, 50/hr, **125/day** limits -- shared
+      by this ONE account token across every buyer's run, not per-run -- via a persisted
+      `fetchsmith-courtlistener-ratelimit` key-value store (same pattern as `WATCH_STORE`):
+      `paceRequest()` sleeps before a request already at the trailing-window cap (capped by
+      `remainingMs()`, same shape as the existing retry backoff); a new `rateLimited`/
+      `rateLimitExceeded` pair mirrors the existing `timedOut`/`timeBudgetExceeded` one exactly and
+      feeds a new `markIncomplete('rate-limit', ...)` cause wired into every place `'time-budget'`
+      already was (`seedFailure` set, both buyer-facing ternaries, RUN_SUMMARY). README's "no API
+      key" claims (headline, FAQ, data-source section, two field-removal footnotes) updated to stay
+      accurate -- buyers still need no account, but the *mechanism* changed and a very-large
+      `maxResults` run can now occasionally hit the shared daily cap.
+      **Non-obvious gotcha that cost real time, written into `notes/LEARNINGS.md` cycle 2362:**
+      setting the secret via `PUT /v2/acts/{id}/versions/0.1 {"envVars":[...]}` (the documented
+      cycle-255 pattern) did NOT take effect on the build that had already been pushed -- a real
+      platform run still hit the Actor's own "CL_API_TOKEN is not configured" guard even though the
+      API confirmed the envVar was saved. It only reached the container's `process.env` after a
+      SECOND `apify push --force` (0.1.70 -> 0.1.71) with no source change. **Order matters: set the
+      envVar, THEN build -- not the other way round.** Flagged a likely-related fleet risk: `fec-
+      campaign-finance-scraper`'s `FEC_API_KEY` (set cycle 255, same mechanism) has a silent `??
+      'DEMO_KEY'` fallback that would mask this exact failure mode and has never been end-to-end
+      verified to actually reach the container. **Follow-up for a future cycle:** check a real
+      platform run's `api.data.gov` rate-limit response headers against the much-lower shared
+      `DEMO_KEY` ceiling to confirm `FEC_API_KEY` is actually being used, not silently falling back.
+      Verified live end-to-end: `apiGet` via API-POST run (`o5Gn16d7TsMxz4w31`, build 0.1.71)
+      SUCCEEDED, 6 real Ninth-Circuit opinion/docket rows (not placeholders), `chargedEventCounts
+      {result: 0}` (expected, own-token test run); `bin/actor-health --only court-records-scraper`
+      now `ok:true, items:10` (was 0 since the c2357 nightly flag). Daily-exhaustion path verified
+      LOCALLY only (pre-seeded 120 fake timestamps into the rate-limit KV store, re-ran, got the
+      correct `rate-limit` incomplete reason with 0 requests sent / 0 charged) -- not reproduced on
+      the real platform, since that would mean actually spending the shared account's real quota.
+      `node --check` clean; `bin/check-fail-ordering` 20/20 clean (0 suspects, including this
+      Actor's 2 `Actor.fail()` sites); `check-pricing`/`check-charges`/`check-meta-fields` all clean.
+      Committed and pushed (`d6a0126b`). **Not done this cycle, left as follow-ups (see below):**
+      the `/blog/courtlistener-search-api-two-auth-tiers` post title is now stale (claims "needs no
+      key" fleet-wide) and needs a correction note; re-evaluate whether the now-authenticated token
+      could restore the `posture` field (dropped c2 for being permanently 0% while anonymous) if the
+      budget allows one `/clusters/` call per row on a small-maxResults run; the owner's free-tier
+      CourtListener account itself may be worth a `bin/notify` heads-up if it ever shows signs of
+      being near a *monthly* (not just daily) cap, which hasn't been checked since this account is
+      brand new.
+      Original c2357 diagnosis (superseded, kept for context):
 
 - [x] DONE cycle 2358 -- see the BLOCKED ON OWNER entry directly above; this was the c2357 CRITICAL
       finding, now diagnosed to its real root cause (hCaptcha on signup) and handed to the owner.
