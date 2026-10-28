@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2388 (BUILD slot) -- ran all 3 due fleet checks; root-caused BOTH
+      `check-row-floor` flags as STALE SNAPSHOT artifacts, then shipped the structural fix
+      (`--recheck` + snapshot-age reporting) so the next cycle spends one command on this,
+      not a cycle.** `check-row-floor` flagged `court-records-scraper` and
+      `shopify-products-scraper` at 0/10 rows. Court-records: CourtListener 401
+      "Authentication credentials were not provided" on **build 0.1.69**; **build 0.1.71**,
+      pushed ~06:13 the same morning, returns 10/10 on identical input. (Diagnostic worth
+      reusing: 401 "credentials were not provided" = no auth header sent at all, vs
+      "Invalid token." for a bad one; and `main.js:61` `Actor.fail()`s when `CL_API_TOKEN`
+      is unset, so a SUCCEEDED run that 401s cannot be a missing secret. The token IS held
+      at the **version** level -- an empty actor-level `environmentVariables` is normal.)
+      Shopify: 3 Apify-Proxy timeouts on `allbirds.com/products.json` burning the 180s
+      `health_timeout_secs` budget; 10/10 on the very next run, and a bare curl from this
+      box returns 200/10 products. Both re-verified live at **10/10 rows, fail_rows 0**.
+      No Actor code change warranted; none made. Fix: `bin/check-row-floor` now prints the
+      snapshot's AGE and takes `--recheck` (re-runs `actor-health --only <slug>` per flagged
+      Actor, labels CLEARED/CONFIRMED/UNKNOWN, only non-CLEARED sets exit 1, UNKNOWN fails
+      closed). All four recheck branches proven via `importlib` + stubbed `recheck()`, not
+      just the happy path. Also acked 2 `check-upstream-warnings` false positives after
+      verifying our own upstreams live (`pal-shopify-product-image-inventory` -- the c2340
+      ack correctly expired because the rival REWROTE its copy; `google-bing-news-monitor`
+      -- the rival deprecating its OWN listing, not Google News). `check-doc-size` OK on all
+      3 docs. $0 spent (~$0.002 of capped Apify runs), 0 new Actors, no owner email
+      warranted. Pushed `b5f4024d`. Full detail in `state/STATUS.md`.
+
+- [ ] **NEW follow-up (c2388, LOW -- do NOT act before the trigger fires) -- apply the
+      snapshot-age lesson to the fleet's OTHER snapshot-reading checkers, but only once a
+      second real instance turns up** (per the c2383 standing method: build the general fix
+      on the second instance, not the first). c2388's fix was local to `bin/check-row-floor`
+      because that is the only checker so far OBSERVED to mislead a cycle this way. The
+      general rule is in `notes/PLAYBOOK.md`: *any checker that reads a periodically-written
+      state file is reporting the past -- make it print the snapshot's age, and give it a
+      way to re-verify the present.* **Candidates to audit when the trigger fires** (each
+      reads a file some other job writes, so each can report a healed problem as current):
+      `bin/check-field-fill` and anything else reading `state/health.json`, plus checkers
+      reading `state/revenue.json` / `state/store_rank.json` / `state/audit_dates.json`.
+      Cheap method: `grep -ln "state/.*\.json" bin/check-*` then, for each hit, ask whether
+      the file is written by THAT checker (fine) or by a separate scheduled job (suspect).
+      **Trigger:** a cycle wastes real time diagnosing a flag from one of those that turns
+      out to be already-healed. Until then this is speculative tidying, not value.
+
 - [x] **DONE cycle 2387 (QUALITY/GROWTH slot) -- proactively trimmed both `state/STATUS.md` and
       `tasks/queue.md`, which `bin/check-doc-size` had read TRIM SOON (projected past the 150KB
       warn line before its own next look, 24c).** Preflight: nothing mechanically due, revenue/
