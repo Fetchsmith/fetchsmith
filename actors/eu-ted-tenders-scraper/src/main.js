@@ -415,10 +415,15 @@ if (watchDeadDateBound) {
 }
 
 let pushed = 0;
+// Set as soon as Apify reports the limit, even on the call that returns chargedCount:0
+// (the limit was already hit before this row), so a clean "cap reached" status message
+// below can tell a charge-limit stop apart from a maxResults stop.
+let chargeLimitReached = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 async function pushResult(item) {
   if (isPPE) {
     const r = await Actor.charge({ eventName: 'result', count: 1 });
+    if (r.eventChargeLimitReached) chargeLimitReached = true;
     if (r.chargedCount === 0) return false;
     await Actor.pushData(item); pushed += 1;
     return !r.eventChargeLimitReached && pushed < maxResults;
@@ -746,7 +751,7 @@ if (watchMode && seeding && seedError) {
   );
 } else if (watchMode) {
   await saveWatchRecord(
-    apiErrorMessage && !seeding ? 'failed-incremental'
+    (apiErrorMessage || httpError) && !seeding ? 'failed-incremental'
       : timeBudgetStopped ? 'time-budget-incremental'
         : seeding ? 'seeded' : 'incremental',
   );
@@ -772,19 +777,6 @@ if (watchMode && seeding && seedError) {
       + evictionSuffix,
     );
   }
-}
-
-// A run that scraped nothing because TED was erroring is a failure, not a quiet
-// success — exiting 0 with an empty dataset looks to the user like "no tenders match".
-if (!pushed && httpError) {
-  const retried = TRANSIENT_STATUS.has(httpError)
-    ? ` (retried ${HTTP_RETRY_DELAYS_MS.length} times)`
-    : ''; // a 4xx is not in TRANSIENT_STATUS, so claiming retries here was simply false
-  await Actor.fail(
-    `TED's API returned HTTP ${httpError}${retried}, so no notices could be fetched.`
-    + (httpErrorMessage ? ` TED said: "${httpErrorMessage}".` : '')
-    + ` ${upstreamAdvice(httpError, httpErrorBody)}`,
-  );
 }
 
 log.info(`Done. Pushed ${pushed} notices.`);
@@ -818,6 +810,23 @@ if (timeBudgetStopped) {
     + 'platform limit.';
   log.warning(`Time budget: ${partial}`);
   await Actor.setStatusMessage(`Incomplete (time budget): ${pushed} notice(s) delivered. ${partial}`);
+} else if (pushed > 0 && !httpError && !apiErrorMessage && (chargeLimitReached || pushed >= maxResults)) {
+  // A clean stop (no upstream error, httpError/apiErrorMessage fail the run further below) that
+  // still left matching notices unwalked -- until this fix, neither cause reached the console on
+  // a delivering run, the same "silent truncation" shape found fleet-wide on google-news-scraper
+  // (maxResults/charge-limit) and others in this audit.
+  const moreAvailable = Number.isFinite(total) && total > pushed
+    ? ` (totalNoticeCount for this query is ${total})` : '';
+  const cause = chargeLimitReached
+    ? "the run's PPE charge limit was reached"
+    : `the maxResults cap (${maxResults}) was reached`;
+  const advice = chargeLimitReached
+    ? "Raise the run's max charge limit"
+    : 'Raise maxResults';
+  const msg = `Pushed ${pushed} notice(s) and stopped because ${cause}${moreAvailable} -- more may still match your query. `
+    + `${advice}${watchMode ? ', or let a future incremental run on this watch label pick up the rest' : ''} to get them.`;
+  log.warning(msg);
+  await Actor.setStatusMessage(msg);
 } else if (pushed === 0 && watchMode && !seeding) {
   // Until this fix this was log-only, so a COMPLETE watch run (no httpError, nothing new)
   // reached the console as a plain green SUCCEEDED run with statusMessage: null -- same bug
@@ -908,6 +917,28 @@ if (seedError) {
     + `${pushed} notice(s) already in the dataset are valid and were kept`
     + (watchMode && !seeding ? ' and recorded in the watch baseline, so you will not be charged for them again' : '')
     + '. Please re-run in a few minutes.',
+  );
+} else if (httpError) {
+  // Moved here from an immediate `if (!pushed && httpError) await Actor.fail(...)` right after the
+  // walk loop: that only ever fired on a ZERO-row run, so an HTTP error on page 2+ (after some
+  // notices were already pushed and charged) fell through every branch above with pushed>0,
+  // ended the run SUCCEEDED, and set no status message at all -- the exact silent-truncation shape
+  // this audit keeps finding, and inconsistent with the sibling `apiErrorMessage` cause right above,
+  // which already deferred its fail here. Folding it in also makes `saveWatchRecord()`'s status
+  // argument (above) correctly record `failed-incremental` instead of a plain `incremental` for a
+  // walk an HTTP error cut short.
+  const retried = TRANSIENT_STATUS.has(httpError)
+    ? ` (retried ${HTTP_RETRY_DELAYS_MS.length} times)`
+    : ''; // a 4xx is not in TRANSIENT_STATUS, so claiming retries here was simply false
+  await Actor.fail(
+    `TED's API returned HTTP ${httpError}${retried}, so the walk stopped there`
+    + (pushed
+      ? ` — the ${pushed} notice(s) already in the dataset are valid and were kept`
+        + (watchMode && !seeding ? ' and recorded in the watch baseline, so you will not be charged for them again' : '')
+        + '.'
+      : ', so no notices could be fetched.')
+    + (httpErrorMessage ? ` TED said: "${httpErrorMessage}".` : '')
+    + ` ${upstreamAdvice(httpError, httpErrorBody)}`,
   );
 }
 
