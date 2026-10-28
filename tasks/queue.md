@@ -151,14 +151,27 @@
       this cycle — flagging as a fresh follow-up below, not fixed. Pattern written into
       `notes/PLAYBOOK.md` step 2 so future Actors ship it correctly from the start.
 
-- [ ] **NEW follow-up (c2357) -- `apple-podcasts-scraper` flagged SUSPECT by `bin/check-fail-ordering`
-      (`Actor.fail() before last saveWatchRecord() (line 1411): line 1404`), surfaced as a side effect
-      of re-running that check this cycle, not investigated further (out of scope/time for c2357).
-      Read the actual code around both line numbers — this is the exact h287 double-charge shape
-      (`Actor.fail()` firing after a charge but before the watch baseline save, so the next run
-      re-delivers and re-charges) that cycles 676-680 fixed on 4 other Actors. Could be a real bug or
-      a known-safe case that just needs allowlisting (2 such cases already exist in the checker for
-      `app-store-reviews-scraper`) — read it before assuming either way.**
+- [x] **DONE cycle 2361 -- closed the c2357 `apple-podcasts-scraper` fail-ordering follow-up.** It
+      was a pure line-shift false alarm, not a new bug: the h289 seed gate already allowlisted since
+      cycle 696 (and re-verified 7 times since) sits at a line number the checker keys its allowlist
+      on, and c2337's "name-in-podcasts silently dropped" fix added 13 lines above it, so the key
+      went stale (`1391` vs the code's new `1404`) and the checker correctly re-flagged it per its own
+      documented design ("a moved call must be re-read, not auto-trusted"). Re-traced the full
+      no-charge chain fresh from the charge site outward (not just re-read the guard text): sole
+      `Actor.charge(` still line 430 in `pushResult`; all 3 `seedErrors.push(` sites still gated
+      `if (seeding)`; `seeding` only set true inside `if (watchMode)`; `watchMode` implies
+      `dataType === 'episodes'`, ruling out the 6 other `pushResult(` call sites by dataType; the
+      remaining 2 (823/827) are gated by the seeding-continue at line 816 or only reachable when
+      `watchMode` is false. Invariant holds byte-identical. Updated the allowlist key
+      `1391 -> 1404` in `bin/check-fail-ordering` with the cycle-2361 re-verification note (same
+      style as the prior 7). `bin/check-fail-ordering` now clean fleet-wide: 20/20, 0 suspects.
+      No code bug, no Actor rebuild/push, $0 spent, no owner email. **Pick the next task from
+      `bin/audit-due`/`bin/checks-due` (both NONE DUE as of this cycle) or a QUALITY/GROWTH task
+      next slot (`2362%3==2`? no -- `2362%3==1`, so c2363 is the next QUALITY slot per the
+      `%3==2` rotation); if nothing else is queued, consider re-running the varied-input audit
+      (`bin/audit-due --type varied_test`) on an older Actor, or picking up a fresh competitor_audit
+      target from the table (`fec-campaign-finance-scraper`/`us-federal-awards-scraper` are the
+      most overdue, gap 920+).**
 
 - [x] **CLOSED c2360 -- campaign complete (both remaining Actors done: `steam-reviews-scraper` CLEAN c2359,
       `uk-find-a-tender-scraper` fixed c2360, build 0.1.88). Retro in `notes/LEARNINGS.md` cycle 2360.
