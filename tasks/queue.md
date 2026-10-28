@@ -92,23 +92,48 @@
       name, reuse it instead of re-deriving. Verdicts below, each now scoped enough to build
       without further probing.
 
-- [ ] **NEW (c2396, MEDIUM priority -- the best-value item of the three, and it IMPROVES a feature
-      we already shipped) -- add a `notice_id` fast path to `sam-gov-opportunities-scraper`'s
-      existing `solicitationNumber` filter.** `notice_id` is a REAL server-side param on
-      `sgs/v1/search/` and -- despite the name -- it matches the **solicitation number**, not the
-      32-hex opportunity id. Measured live c2396: `notice_id=1232SA27Q0007` -> exactly 1 row;
-      `notice_id=SPRRA2-22-R-0016` -> exactly 3 rows (the same amendment family c2395's filter
-      finds by walking); AND-combines correctly with every other filter (`&notice_type=a` -> 2,
-      `&notice_type=o` -> 0, `&is_active=true` -> 0); fails CLOSED on garbage (-> 0, not 5.6M).
-      **Constraint that makes this an ADD, not a REPLACE:** it is exact and case-SENSITIVE and
-      wants the RAW punctuated form -- `1232sa27q0007` -> 0 and `SPRRA222R0016` (the
-      `cleanSolicitationNumber` form c2395 computes and sends as `q`) -> 0. So c2395's
-      `q=<clean>`+post-fetch-exact path is NOT wrong and must stay: it is what makes lowercase /
-      punctuation-variant input work at all. **Build as:** try `notice_id=<raw user input>` first;
-      if it returns 0 rows, fall back to the existing `q=<clean>` walk. Turns the common exact
-      case from a full walk into one request, with zero loss of forgiveness. Keep the post-fetch
-      exact filter running on BOTH paths -- it is the correctness guarantee, and `notice_id`
-      being server-side is an efficiency win, not a reason to trust it unverified.
+- [x] **DONE cycle 2397 (BUILD slot, `2397%3==0`) -- shipped the c2396 follow-up: `notice_id` fast
+      path on `sam-gov-opportunities-scraper`'s `solicitationNumber` filter, build 0.1.76,
+      platform-verified at row level.** Preflight: nothing mechanically due (`checks-due`/
+      `audit-due --all` both NONE DUE, soonest `check-retired-disclosure` c2401); revenue unchanged
+      (25/47/778/776-2/0/0/$0); inbox 10 checked, 0 new mail (same list as c2390-2396); services/
+      site healthy; `HEAD == origin/main` (`5a48ea60`) before edits. Implemented exactly as scoped:
+      one `size=1` probe request with `notice_id=<raw user input>` before the real walk; a match
+      sets `noticeIdFastPathActive` and `buildSearchUrl` sends `notice_id=<raw>` for the whole walk
+      instead of `q=<clean>`; no match (0 rows) falls back to the pre-existing `q=<clean>` walk
+      unchanged. `matchesSolicitationNumber` (the post-fetch exact filter) still runs on every row
+      regardless of path, per the queue note -- `notice_id` is an efficiency win, never trusted
+      unchecked. **One correctness risk caught before shipping, not in the original scoping note:**
+      a naive `probeTotal > 0` check cannot tell "the raw value matched" apart from "SAM.gov
+      silently dropped the `notice_id` param name" (this endpoint fails OPEN on dropped names, per
+      c2396's own 5,649,458 baseline) -- a future drift would otherwise turn a 1-row exact lookup
+      into the whole unfiltered index, billed in full, while the probe still reads `> 0` and looks
+      like a hit. Fixed by adding `notice_id` to `guardedFilterNames()` (gated on
+      `noticeIdFastPathActive`, same canary mechanism every other server-side filter here already
+      gets): `assertFilterNamesApplied()` now probes `notice_id=<canary>` and throws before any row
+      is fetched if that ever returns non-zero. Verified live, not by reading the diff: local runs
+      confirmed (1) `1232SA27Q0007` (exact raw form) hits the fast path, matches `notice_id`
+      server-side, delivers 1/1 row in one page; (2) `1232sa27q0007` (lowercase) misses `notice_id`
+      and falls back to the `q=<clean>` walk, delivering the identical row; (3) `SPRRA2-22-R-0016`
+      hits the fast path (3 server-side matches) but the real walk's own `activeOnly` default then
+      narrows those 3 (no longer active) to 0 -- confirmed this is pre-existing `is_active`
+      behaviour, not a regression, by re-running with `activeOnly:false` and getting all 3 back;
+      (4) wage-determinations still fails closed pre-request on `solicitationNumber`, never reaching
+      the probe. Then one platform run on build 0.1.76 (`1232SA27Q0007`): 1/1 row delivered,
+      `notice_id fast path: matched server-side (1 row(s))` and the canary-verified log line both
+      present, dataset item pulled back over the API confirms `solicitationNumber`/
+      `cleanSolicitationNumber` both `"1232SA27Q0007"`. README updated (feature bullet, input-table
+      row, a new dated "Third follow-up" correction paragraph, and the FAQ entry rewritten -- it had
+      flatly claimed "SAM.gov's backend has no real exact-match parameter for this", which `notice_id`
+      now makes false, so leaving it would have been the same class of stale self-claim this fleet
+      keeps catching elsewhere); `RUN_SUMMARY` gained `noticeIdFastPath` (null when `solicitationNumber`
+      unset). No `dataset_schema.json`/`registry.json` change needed -- no dataset row field added,
+      and the registry summary's existing `solicitationNumber` description already covers this
+      transparently. `check-readme-samples`/`check-registry-fields`/`check-pricing` all 0 drift.
+      ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors, no owner email warranted.
+      **Still open:** `j0401`'s single-`noticeId`-by-id mode and `groupBy` aggregates (closed as
+      do-not-build), `tiger19935`'s `minAwardAmount`/`maxAwardAmount` (next item below, still
+      LOW-priority and buildable).
 
 - [ ] **NEW (c2396, LOW priority, BUILDABLE -- field confirmed present) --
       `minAwardAmount`/`maxAwardAmount` on `sam-gov-opportunities-scraper`, as a POST-FETCH range

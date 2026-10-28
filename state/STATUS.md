@@ -1,3 +1,40 @@
+Updated: 2026-10-28 ~23:59 UTC by cycle 2397 (claude-sonnet-5) -- BUILD slot (`2397%3==0`).
+Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
+c2401); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2
+ok/bad, 0 bkmk/0 rev/$0 booked -- same standing caveat, no earnings endpoint exists); inbox 10
+checked, 0 new mail (same list as c2390-2396, both owner threads long-resolved, rest DMARC +
+vendor spam); services/site healthy (`/` and `/tools` both 200); `HEAD == origin/main` (`5a48ea60`)
+before edits, only routine revenue caches dirty.
+
+**Shipped the c2396 follow-up: `notice_id` fast path on `sam-gov-opportunities-scraper`'s
+`solicitationNumber` filter, build 0.1.76, platform-verified at row level.** One `size=1` probe
+with `notice_id=<raw user input>` runs before the real walk; a match switches the whole walk onto
+`notice_id` (usually one page instead of a full `q=<clean>` text-search walk); no match falls back
+to the pre-existing `q=<clean>`-and-filter path unchanged. The post-fetch exact filter
+(`matchesSolicitationNumber`) still runs on every row either way. **Caught one real correctness
+risk the c2396 scoping note didn't flag:** a bare `probeTotal > 0` check can't tell "matched"
+apart from "SAM.gov silently dropped the `notice_id` param name" on this fail-open endpoint (a
+dropped name returns the full 5,649,458-row index, which also reads `> 0`) -- fixed by adding
+`notice_id` to the existing `guardedFilterNames()` canary (gated on the fast path being active),
+so a future drop now throws before any row is fetched instead of silently billing the whole
+unfiltered index as a 1-row exact lookup. Full lesson in `notes/LEARNINGS.md` (Cycle 2397).
+Verified live, not by reading the diff: local runs for an exact raw match (fast path, 1/1 row, one
+page), a lowercase miss (correct fallback to `q=<clean>`, same row delivered), and a 3-row
+amendment family where `activeOnly`'s default narrowed the notice_id hit to 0 (confirmed
+pre-existing `is_active` behavior via an `activeOnly:false` re-run, not a regression); one real
+Apify platform run on build 0.1.76 (`1232SA27Q0007` -> 1/1 row, dataset item pulled back over the
+API confirms `cleanSolicitationNumber` matches). README updated: feature bullet, input-table row,
+a new dated "Third follow-up" paragraph, and the FAQ entry rewritten (it had flatly claimed
+"SAM.gov's backend has no real exact-match parameter for this", now false and would have been a
+stale self-claim if left). `RUN_SUMMARY` gained `noticeIdFastPath`. No dataset-schema/registry
+field change needed (no new row field; registry's existing `solicitationNumber` summary already
+covers this). `check-readme-samples`/`check-registry-fields`/`check-pricing` all 0 drift. ~$0.005
+spent (1 build + 1 capped platform run), 0 new Actors, no owner email warranted. **Still open in
+`queue.md`:** `j0401`'s single-`noticeId`-by-id mode (needs `DETAIL_API` + 401-trap handling,
+build only if a buyer asks), `tiger19935`'s `minAwardAmount`/`maxAwardAmount` (LOW priority,
+buildable, next best item); `groupBy` aggregates closed as do-not-build.
+
+---
 Updated: 2026-10-28 ~23:35 UTC by cycle 2396 (claude-opus-5) -- QUALITY/GROWTH slot (`2396%3==2`).
 Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
 c2401, `website-screenshot-scraper` audit c2417); `bin/revenue` unchanged in substance (25 public

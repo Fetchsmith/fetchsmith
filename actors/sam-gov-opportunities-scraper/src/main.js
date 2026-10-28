@@ -610,6 +610,45 @@ function matchesSolicitationNumber(item) {
     if (clean.toUpperCase() !== solicitationNumberClean) { solicitationNumberMismatch += 1; return false; }
     return true;
 }
+// NOTICE_ID FAST PATH (cycle 2397, scoped+probed cycle 2396 -- see notes/LEARNINGS.md). `notice_id`
+// is a REAL server-side param on sgs/v1/search/ that -- despite its name -- matches the
+// SOLICITATION NUMBER, not the 32-hex opportunity id: measured live, `notice_id=SPRRA2-22-R-0016`
+// -> exactly 3 rows (the same amendment family the q=<clean> walk below finds by walking the whole
+// index), AND-combines correctly with every other opp-index filter, and fails CLOSED on garbage
+// (-> 0, never the unfiltered index). It is exact, case-SENSITIVE and wants the RAW punctuated
+// form -- the cleaned/uppercased value this Actor sends as `q` (e.g. "SPRRA222R0016") returns 0
+// against it -- so it cannot simply replace the q=<clean> walk below: a buyer typing lowercase or a
+// different punctuation style would get nothing. Tried FIRST instead, with one `size=1` probe
+// request (same zero-billable-rows shape as `assertFilterNamesApplied`'s canaries below): if the
+// raw value matches, the real walk runs on notice_id instead of q and usually finishes in one
+// page; if the probe returns 0 (wrong case, approximate input, or truly no match), fall back to
+// the existing q=<clean> walk unchanged. The post-fetch exact filter (`matchesSolicitationNumber`)
+// still runs on BOTH paths as the correctness guarantee -- notice_id being server-side is an
+// efficiency win, not a reason to trust it unchecked. And because this endpoint fails OPEN (not
+// closed) on a DROPPED filter NAME, `notice_id` is added to `guardedFilterNames()` below whenever
+// this path is active, so a future silent SAM.gov change can't turn "1 exact row" into "the whole
+// unfiltered index, billed in full" without the run erroring out first -- a `probeTotal > 0` check
+// alone cannot tell "the value matched" apart from "the param was dropped and this is the index
+// size", and 5,649,458 (this index's fail-open baseline, cycle 2396) would otherwise sail through
+// the `> 0` check same as a real 1-row match.
+let noticeIdFastPathActive = false;
+if (solicitationNumberActive) {
+    const probeParams = new URLSearchParams({
+        index: 'opp', responseType: 'json', page: '0', size: '1',
+        notice_id: solicitationNumberRaw,
+    });
+    const probeData = await apiGet(`${SEARCH_API}?${probeParams.toString()}`);
+    const probeTotal = Number.isFinite(probeData?.page?.totalElements) ? Number(probeData.page.totalElements) : null;
+    if (probeTotal !== null && probeTotal > 0) {
+        noticeIdFastPathActive = true;
+        log.info(`notice_id fast path: "${solicitationNumberRaw}" matched server-side (${probeTotal} row(s)); `
+            + 'walking on notice_id instead of the full-text q=<clean> search.');
+    } else {
+        log.info(`notice_id fast path: "${solicitationNumberRaw}" did not match server-side (wrong case, `
+            + 'approximate input, or no such notice); falling back to the q=<clean> full-text walk.');
+    }
+}
+
 // Shared by every site below that reconciles SAM's declared total against what this run actually
 // delivered (same reconciliation requirement as the date window, LEARNINGS cycle 2392 lesson 2):
 // both filters drop fetched rows pre-charge, so both must be subtracted together or a run using
@@ -761,7 +800,7 @@ log.info(`Starting SAM.gov ${ROW_NOUN} search (dataType=${dataType}, index=${SEA
     // are filters applied client-side, and a buyer debugging "why so few rows?" should see them
     // stated next to the server-side filters rather than inferred from the Done line.
     ...(dateWindowActive ? { postedFrom, postedTo, deadlineFrom, deadlineTo } : {}),
-    ...(solicitationNumberActive ? { solicitationNumber: solicitationNumberClean } : {}),
+    ...(solicitationNumberActive ? { solicitationNumber: solicitationNumberClean, noticeIdFastPath: noticeIdFastPathActive } : {}),
 });
 
 function buildSearchUrl(page, size) {
@@ -825,7 +864,12 @@ function buildSearchUrl(page, size) {
     // the walk far better than the default "contract" keyword, and correctness is guaranteed by
     // the exact post-fetch filter below regardless of what `q` returns (same reasoning
     // `assertFilterNamesApplied` already uses to exclude `q` from the dropped-filter-name canary).
-    if (solicitationNumberActive) params.set('q', solicitationNumberClean);
+    // When the notice_id probe above found this exact raw value server-side, use that instead of
+    // `q` -- it is EXACT (no false-positive neighbours, unlike the q=<clean> full-text match) and
+    // usually ends the walk in one page. `matchesSolicitationNumber` still runs on every row either
+    // way, so a (currently unobserved) notice_id false positive would still be caught and dropped.
+    if (noticeIdFastPathActive) params.set('notice_id', solicitationNumberRaw);
+    else if (solicitationNumberActive) params.set('q', solicitationNumberClean);
     else if (keyword) params.set('q', keyword);
     if (activeOnly) params.set('is_active', 'true');
     if (organizationId) params.set('organization_id', organizationId);
@@ -880,6 +924,11 @@ function guardedFilterNames() {
         if (noticeTypes.length) names.push('notice_type');
         if (states.length) names.push('pop_state');
         if (organizationId) names.push('organization_id');
+        // Guarded only when this run actually relies on it (`noticeIdFastPathActive`), same
+        // condition that put it in buildSearchUrl -- measured cycle 2396 to fail CLOSED on a
+        // non-matching value, so FILTER_CANARY is a valid probe for it, same as every other name
+        // in this branch.
+        if (noticeIdFastPathActive) names.push('notice_id');
     }
     // `is_active` and `q` are deliberately NOT probed. `is_active=<canary>` returns HTTP 400 (it is
     // parsed as a boolean, so a non-boolean value cannot be used as a canary -- measured cycle 748),
@@ -1879,6 +1928,10 @@ const runSummary = {
     solicitationNumber: solicitationNumberActive ? solicitationNumberClean : null,
     solicitationNumberMismatch: solicitationNumberActive ? solicitationNumberMismatch : null,
     solicitationNumberMissing: solicitationNumberActive ? solicitationNumberMissing : null,
+    // Whether the cycle-2397 notice_id fast path found this run's raw value server-side (one
+    // request, no full-text walk) versus falling back to the q=<clean> walk. Null, not false,
+    // when solicitationNumber was not set at all.
+    noticeIdFastPath: solicitationNumberActive ? noticeIdFastPathActive : null,
     lastApiError,
     maxResults,
     chargeLimitReached,

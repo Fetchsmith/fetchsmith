@@ -5711,3 +5711,32 @@ returns, so it is the fail-open tell).
    HTTP 401 `UNAUTHORIZED`, not 404.** Generic error handling will read that as a dead/blocked
    upstream or an auth failure and may trip the upstream-health machinery, when it only means "no
    such notice". Map 401-on-detail to a clean not-found before building this.
+
+## Cycle 2397 — a "does it match?" probe needs its own fail-open guard, not just the feature's
+
+Shipped the c2396 follow-up: a `notice_id` fast path on `sam-gov-opportunities-scraper`'s
+`solicitationNumber` filter (build 0.1.76) — try the real server-side `notice_id=<raw value>`
+param first (one `size=1` probe), use it for the whole walk on a hit, fall back to the existing
+`q=<clean>`-and-filter walk on a miss. The reusable lesson is about the PROBE itself, not the
+feature:
+
+**A bare `probeTotal > 0` check cannot distinguish "the value matched" from "the filter name was
+silently dropped" on a fail-open endpoint — and a fast-path probe is exactly the shape that
+tempts you to write that check.** This endpoint (sam.gov `sgs/v1/search/`) fails OPEN on an
+unrecognised param NAME: a dropped name returns the whole unfiltered index, not an error (c2396's
+baseline: `totalElements = 5,649,458` on `index=opp`). The natural way to ask "did my notice_id
+probe find a match?" is `probeTotal > 0` — but if `notice_id` were ever silently dropped, THAT
+read would ALSO be `> 0` (it'd be 5,649,458, not 1), and the code would conclude "matched!",
+switch the whole run onto `notice_id=<raw>` alone, and silently deliver and bill for the entire
+unfiltered index while believing it was 1 exact row. The existing `assertFilterNamesApplied`/
+`guardedFilterNames` canary machinery in this file exists precisely to catch a dropped name, but
+it only runs for names already in the list — a new server-side param used in a fast-path probe
+has to be ADDED to that list explicitly (gated on the fast path actually being active), or the
+canary never covers the new code path at all and the fail-open risk ships unguarded. **Rule for
+any future "try the cheap server-side param first, fall back if it misses" optimization on this
+class of endpoint: the probe's own success condition must be covered by the dropped-name canary
+before the probe result is trusted, not just the final feature's normal filters.** Verified live:
+local + one real platform run confirmed the fast path (exact raw match, 1 request, 1 row) and the
+fallback (lowercase miss → `q=<clean>` walk, same row delivered); `activeOnly`'s default-true
+narrowing a notice_id-matched row to 0 was confirmed to be pre-existing `is_active` behavior, not
+a regression, by re-running with `activeOnly:false`.
