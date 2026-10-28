@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2389 (BUILD slot) -- applied the c2380 growing-niche one-term-diff method to
+      `federal-register-scraper`, re-derived fresh rather than reusing the exhausted c2386 list.**
+      Found it by grepping all READMEs for a recorded `N -> M ... listings` growth trend; it's the
+      only match, with a self-documented 89->90->91->94->97->**151** history across six passes
+      (last one 5 days ago, c2131), and its full `competitor_audit` isn't due for ~156 more cycles.
+      Single-term `apify-admin store "federal register" 200` sweep -> 124 plausibly-relevant ->
+      78 unnamed -> all live-priced via `bin/_batch_price_fedreg.py`. Checked explicitly for the
+      FREE/empty-pricingInfos shape and AMBIGUOUS multi-event rows (c2384 lessons): 0 of either.
+      **Completeness holds: 0 of the 78 undercuts us** (cheapest, `rustic_soybean`, ties our
+      per-row rate but adds a start fee we don't charge, so is dearer overall). Shipped a dated
+      confirmation paragraph. **Also found and fixed a real stale claim while re-pricing** (not
+      introduced this cycle): `fit_melon/us-federal-register-search`, named as one of "four
+      FREE-model rivals," is gone from the Store (confirmed 404) -- disclosed per the standard
+      pattern and corrected the count to three. `check-competitor-claims --only` 0 stale (was 1)
+      after the fix. Shipped build **0.1.62** (README + package.json only, no `meta.json`),
+      verified live via the build's own `readme` field. `check-pricing` 25/30/0 drift,
+      `check-blog-claims` 0 stale. Committed `88a4599d`. ~$0.005 spent, 0 new Actors, no owner
+      email warranted. **Follow-up filed:** the growing-niche candidate list is exhausted again;
+      next cycle wanting a target should re-grep the `N -> M ... listings` trend shape fleet-wide
+      fresh rather than assume the same 5 Actors (grants-gov/sam-gov/clinicaltrials/eu-ted/
+      federal-register) are the only ones that ever record it. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2388 (BUILD slot) -- ran all 3 due fleet checks; root-caused BOTH
       `check-row-floor` flags as STALE SNAPSHOT artifacts, then shipped the structural fix
       (`--recheck` + snapshot-age reporting) so the next cycle spends one command on this,
@@ -240,16 +262,21 @@
       Do not build a dedicated fleet checker for this unless a second real instance turns up.
 
 - [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
-      not just this one. STILL OPEN, but `trademark-search-scraper` is now DONE (c2384) --
-      pick a different candidate.** c2384 ran the full six-step pass on it and the lesson
-      held hard: 46 unnamed on one term, 2 new undercutters (one a `pricingModel: FREE`
-      listing), 1 genuine sweep MISS predating the 2026-10-23 audit by 18 days, and a false
-      claim about our own pricing position. **Remaining candidates, in rough order:** any niche
+      not just this one. STILL OPEN, but `trademark-search-scraper` (c2384) and
+      `federal-register-scraper` (c2389) are now DONE -- pick a different candidate.**
+      c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
+      unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
+      sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
+      pricing position. c2389 did the same on federal-register-scraper (found via grepping
+      READMEs for a recorded `N -> M ... listings` trend, the method that should be reused
+      fresh each time): 0 real undercutters, but it did surface a real stale "gone from the
+      Store" claim while re-pricing. **Remaining candidates, in rough order:** any niche
       whose last audit noted "re-opened"/growth, and the `notes/NICHES.md` growth table
-      (line ~684 onward). `uk-find-a-tender-scraper` (+29) was done at c2380 and
-      `trademark-search-scraper` (+12 at c1698) at c2384, so the two explicitly-named gaps are
-      both closed -- **the next cycle taking this on must re-derive the candidate list from
-      each README's own recorded matched-listing trend rather than reuse this bullet's names.**
+      (line ~684 onward). `uk-find-a-tender-scraper` (+29) was done at c2380,
+      `trademark-search-scraper` (+12 at c1698) at c2384, `federal-register-scraper`
+      (97->151) at c2389 -- **the next cycle taking this on must re-derive the candidate list
+      fresh (re-grep `[0-9]+\s*(→|->)\s*[0-9]+ ... listings` fleet-wide) rather than reuse this
+      bullet's names, since any Actor's README could grow this shape between cycles.**
       The c2380 lesson is fleet-general: any Actor whose README records
       a RISING matched-listing count between audits is stale between the 672-cycle
       `competitor_audit` beats. Method, ~15 min per Actor, cheap:
