@@ -1,5 +1,43 @@
-- [ ] **NEW follow-up (c2348..c2359) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      1 Actor left, the last of the `markIncomplete`-bearing tail: `uk-find-a-tender-scraper`.**
+- [x] **DONE cycle 2360 -- CAMPAIGN COMPLETE. `uk-find-a-tender-scraper`, the last Actor on the list,
+      audited: found a REAL billing-correctness bug (the FIFTH distinct mechanism for the same shape),
+      fixed, build 0.1.88, verified live on 4 platform runs. The ~19-cycle, 22-Actor fleet-wide
+      `setStatusMessage`/input-validation audit (c2342-c2360) is finished and the retro is written into
+      `notes/LEARNINGS.md` (cycle 2360 entry: 5 bugs / 2 clean negatives, the 3 durable platform facts,
+      the standard fix template, and the process lesson). Do NOT re-open this campaign; pick a new
+      audit target from the follow-ups below.**
+      The bug on this Actor: every filter here is applied CLIENT-SIDE as `if (x.length) { ... }` in
+      `matches()`, and every list input was normalised with `.map(trim).filter(Boolean)`. So an
+      all-blank `cpvCodes:["  "]` / `keywordsAny:[""]` / `regions:["   "]` emptied the list and the
+      filter DISAPPEARED -- not zero rows, the whole unfiltered two-portal feed, every row pushed and
+      charged at $0.003 (default `maxResults:100` = 75 charged rows past the 25 free, none asked for).
+      The scalar text filters had the same shape one level down: `searchQuery:"   "` / `buyerName:"   "`
+      are truthy, so they passed the `input.x ? ... : null` guard and then `.trim()` emptied them.
+      Notably this Actor's own `malformedCpvCodes` comment explicitly defends against the *widening*
+      version of this hazard for wrong-digit-count codes ("an all-malformed cpvCodes list still
+      correctly filters everything out") -- while the `.filter(Boolean)` one line above it broke the
+      same line for blank ones. Second Actor in a row (after sam-gov c2356) where a defensive comment
+      named the class and the normalisation step above it was the hole: screening question 2 again.
+      Reachability verified live BEFORE writing any code (5 probe runs created then aborted, $0):
+      the platform ACCEPTS `cpvCodes:["  "]`, `keywordsAny:[""]`, `regions:["   "]`, `searchQuery:"   "`,
+      and REJECTS `stages:["zzz-bogus"]` with HTTP 400 `invalid-input` -- `stages`/`sources` are the
+      only two inputs here carrying an `items.enum`. Third live confirmation of the c2356 fleet rule.
+      Fix (build 0.1.88, the standard template): `arrayFilterInput(name, mapEntry)` + `textFilterInput(name)`
+      helpers; `Actor.fail()` pre-charge when the raw input was non-empty but normalises to empty;
+      partial drops stay a warning and surface in three places (`log.warning`, `blankDropNote()` on all
+      status-message arms incl. a NEW arm for the healthy delivering run, `RUN_SUMMARY.blankFilterEntriesDropped`).
+      Deliberately NOT failing on an empty string `""` for `searchQuery`/`buyerName` -- that is how the
+      Console and most pipelines send a cleared optional field, so failing it would be a regression;
+      only a non-empty string that trims away is unambiguous. Written into the LEARNINGS template.
+      Verified live post-fix (4 runs): `cpvCodes:["  "]` -> FAILED, full explanatory `statusMessage`,
+      `chargedEventCounts {result: 0}`, 0 items; `searchQuery:"   "` -> same; partial
+      `cpvCodes:["72000000","  "]` -> SUCCEEDED, 5 rows, note appended to the status message,
+      `RUN_SUMMARY.blankFilterEntriesDropped {cpvCodes: 1}`; clean `cpvCodes:["72000000"]` -> SUCCEEDED,
+      5 rows. **The partial and the clean run returned byte-identical rows and identical
+      `scanned`/`filteredOut` (200/62)** -- proof the surviving value is still applied and the note is
+      the only behavioural difference. `bin/check-fail-ordering` re-run: this Actor `ok` (0 fail-before-save).
+      README FAQ entry added in the same push ("What if a filter value is blank or just spaces").
+
+- [ ] *(campaign closed c2360 -- kept for the linked detail below, nothing left to do)*
       **`steam-reviews-scraper` audited c2359 -- CLEAN, no fix needed, a genuine negative result
       (second one this campaign, after `fec-campaign-finance-scraper` c2354).** Ran both standing
       screening questions plus a full read of the `markIncomplete`/`setStatusMessage`/RUN_SUMMARY
@@ -122,7 +160,11 @@
       a known-safe case that just needs allowlisting (2 such cases already exist in the checker for
       `app-store-reviews-scraper`) — read it before assuming either way.**
 
-- [ ] **NEW follow-up (c2348..c2356) -- continue the fleet-wide `setStatusMessage` reachability audit.
+- [x] **CLOSED c2360 -- campaign complete (both remaining Actors done: `steam-reviews-scraper` CLEAN c2359,
+      `uk-find-a-tender-scraper` fixed c2360, build 0.1.88). Retro in `notes/LEARNINGS.md` cycle 2360.
+      Kept below for the durable screening questions and platform facts, which still apply to any
+      future audit.**
+      *(original text)* **NEW follow-up (c2348..c2356) -- continue the fleet-wide `setStatusMessage` reachability audit.
       2 Actors still un-audited, both the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and

@@ -85,7 +85,59 @@ const useAbsoluteWindow = dateFromMs != null || dateToMs != null;
 const windowFromMs = dateFromMs ?? (Date.now() - updatedWithinDays * 86400_000);
 // Upper bound: explicit dateTo, else "now" (which is what both portals already did).
 const windowToMs = dateToMs ?? Date.now();
-const cpvCodes = (input.cpvCodes ?? []).map((c) => String(c).trim()).filter(Boolean);
+// Blank-entry guard for every client-side filter (fleet-wide bug class, cycles 2352/2353/2355/2356
+// on clinicaltrials/nih-reporter/federal-register/sam-gov; this Actor audited cycle 2360).
+// Every filter below is a client-side `matches()` gate written `if (x.length) { ... }`, and every
+// list input is normalised with a `.filter(Boolean)` that silently drops blank/whitespace-only
+// entries. So if EVERY value the buyer gave in a list was blank, the list ends up empty and the
+// gate does not become "matches nothing" -- it DISAPPEARS, and the run delivers the whole
+// UNFILTERED feed and charges $0.003 for every row of it (default maxResults 100 = 75 charged rows
+// past the 25 free, none of them asked for). An empty list (`[]`) or an absent field is a
+// deliberate "do not filter on this" and stays allowed; only a non-empty list that normalises to
+// nothing is the mistake. Reachability verified live cycle 2360: the platform ACCEPTS
+// `cpvCodes:["  "]`, `keywordsAny:[""]`, `regions:["   "]` and `searchQuery:"   "` on an
+// API-started run (4 runs created then aborted) -- only `stages`/`sources` are guarded for us,
+// because they are the two inputs carrying an `items.enum` (`stages:["zzz-bogus"]` -> HTTP 400
+// invalid-input before the run starts), matching the cycle-2356 fleet rule exactly.
+const blankFilterEntriesDropped = {};
+async function arrayFilterInput(name, mapEntry = (v) => String(v).trim()) {
+    const raw = Array.isArray(input[name]) ? input[name] : [];
+    const kept = raw.map(mapEntry).filter(Boolean);
+    if (raw.length > kept.length) blankFilterEntriesDropped[name] = raw.length - kept.length;
+    if (raw.length && !kept.length) {
+        // Pre-charge, pre-request: an input mistake the buyer can fix, not an upstream failure.
+        // Actor.fail() rather than a bare throw so the Console's statusMessage actually carries
+        // the reason (cycle 2357: a bare throw leaves statusMessage null, log stack trace only).
+        await Actor.fail(
+            `Every one of the ${raw.length} value(s) you gave in \`${name}\` is empty or whitespace-only, so the `
+            + `\`${name}\` filter would have been dropped entirely and this run would have returned notices `
+            + `UNFILTERED by ${name} -- not zero rows, but every notice both portals published in the window, `
+            + `each one pushed and charged at $0.003. Stopping before any unfiltered row is delivered or charged. `
+            + `Put real values in \`${name}\`, or remove the field to search without that filter deliberately.`,
+        );
+    }
+    return kept;
+}
+// Scalar text filters have the same shape one level down: `"   "` is truthy, so it passes the
+// `input.x ? ... : null` guard, then `.trim()` empties it and the gate below reads as "no filter".
+// `""` is NOT treated as a mistake -- an empty string is how the Console and most pipelines send a
+// cleared optional field, and failing those runs would be a regression; only a non-empty string
+// that trims away is unambiguous.
+async function textFilterInput(name) {
+    const raw = input[name];
+    if (raw == null) return null;
+    const normalised = String(raw).normalize('NFC').toLowerCase().trim();
+    if (String(raw).length && !normalised) {
+        await Actor.fail(
+            `\`${name}\` is whitespace-only (${JSON.stringify(String(raw))}), so the \`${name}\` filter would have `
+            + `been dropped entirely and this run would have returned notices UNFILTERED by ${name} -- every notice `
+            + `both portals published in the window, pushed and charged at $0.003 each. Stopping before any `
+            + `unfiltered row is delivered or charged. Put a real value in \`${name}\`, or remove the field.`,
+        );
+    }
+    return normalised || null;
+}
+const cpvCodes = await arrayFilterInput('cpvCodes');
 // Both portals' feeds only ever carry exactly-8-digit CPV codes (the CPV 2008 vocabulary has
 // no other length), and this Actor's own matching below is entirely client-side prefix-matching
 // against those feeds -- there is no upstream API to ask "is this a valid CPV code" the way TED's
@@ -125,25 +177,38 @@ const cpvPrefixes = wellFormedCpvCodes.map((c) => {
     const stripped = c.replace(/0+$/, '');
     return stripped.length >= 2 ? stripped : c.slice(0, 2);
 });
-const searchQuery = input.searchQuery ? String(input.searchQuery).normalize('NFC').toLowerCase().trim() : null;
+const searchQuery = await textFilterInput('searchQuery');
 // Narrower than searchQuery on purpose: searchQuery ORs across title/description/CPV/lots too,
 // so searchQuery="NHS" also returns council notices that merely mention the NHS.
-const buyerNameFilter = input.buyerName ? String(input.buyerName).normalize('NFC').toLowerCase().trim() : null;
+const buyerNameFilter = await textFilterInput('buyerName');
 // OR-of-phrases variant of searchQuery: searchQuery is AND-of-words within one phrase
 // (competitor gap check, cycle 415 — ciel_labs/neverempty both expose a comma/array "any of
 // these phrases" mode, which our single AND-only searchQuery can't express: e.g. "software OR
 // cyber OR cleaning" needs 3 separate runs today). Each phrase can itself be multi-word and is
 // matched as a whole unit, not split into words, so "IT support" stays one phrase — but it is
 // anchored to a word start like searchQuery's words are (cycle 1020, see atWordStart).
-const keywordsAny = (input.keywordsAny ?? [])
-    .map((k) => String(k).normalize('NFC').toLowerCase().trim())
-    .filter(Boolean);
+const keywordsAny = await arrayFilterInput('keywordsAny', (k) => String(k).normalize('NFC').toLowerCase().trim());
 // Regions filter (competitor gap, cycle 415 — neverempty's "regions"): OR-match against the
 // notice's own deliveryRegions/deliveryLocations arrays, both already computed for free by
 // normalize() as output fields but never filterable on until now.
-const regionFilter = (input.regions ?? [])
-    .map((r) => String(r).normalize('NFC').toLowerCase().trim())
-    .filter(Boolean);
+const regionFilter = await arrayFilterInput('regions', (r) => String(r).normalize('NFC').toLowerCase().trim());
+// A PARTIAL blank drop still applies the surviving values, so it is a warning rather than a stop --
+// but it silently narrows nothing and widens nothing the buyer can see, so it also has to reach a
+// surface the Console shows (blankDropNote(), appended to every status message below) and
+// RUN_SUMMARY. Without those, the only trace of it is this one console line.
+if (Object.keys(blankFilterEntriesDropped).length) {
+    log.warning(
+        `Ignored blank/whitespace-only entries in ${Object.entries(blankFilterEntriesDropped)
+            .map(([f, n]) => `${f} (${n})`).join(', ')}. The non-blank values you gave are still applied; `
+        + 'a blank is never guessed at, because an empty filter value here would match every notice.',
+    );
+}
+function blankDropNote() {
+    const fields = Object.entries(blankFilterEntriesDropped);
+    if (!fields.length) return '';
+    return ` NOTE: ${fields.map(([f, n]) => `${n} blank entr${n === 1 ? 'y' : 'ies'} in ${f}`).join(', ')} `
+        + 'ignored (not guessed at); the non-blank values you gave still applied.';
+}
 const minValueGbp = input.minValueGbp != null ? Number(input.minValueGbp) : null;
 const maxValueGbp = input.maxValueGbp != null ? Number(input.maxValueGbp) : null;
 if (minValueGbp != null && maxValueGbp != null && minValueGbp > maxValueGbp) {
@@ -1217,6 +1282,9 @@ const runSummary = {
     // Non-empty means one or more cpvCodes values are not 8 digits and were excluded from
     // matching -- see the malformedCpvCodes comment above cpvPrefixes.
     malformedCpvCodes: malformedCpvCodes.length ? malformedCpvCodes : null,
+    // Non-empty means some (not all -- all would have failed the run pre-charge) entries in a list
+    // filter were blank/whitespace-only and were ignored; the surviving values were still applied.
+    blankFilterEntriesDropped: Object.keys(blankFilterEntriesDropped).length ? blankFilterEntriesDropped : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 
@@ -1227,9 +1295,9 @@ if (!complete) {
     await Actor.setStatusMessage(
         seeding
             ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} notice(s) recorded — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.${blankDropNote()}`
             : `Incomplete: ${pushed.toLocaleString('en-US')} notice(s) delivered — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.${blankDropNote()}`,
     );
 } else if (baselineTruncated > 0) {
     // A COMPLETE run can still have evicted ids at the baseline cap, and that costs the buyer money
@@ -1237,13 +1305,19 @@ if (!complete) {
     await Actor.setStatusMessage(
         seeding
             ? `Baseline capped: ${baselineTruncated.toLocaleString('en-US')} oldest id(s) dropped at the `
-              + `${WATCH_KEEP.toLocaleString('en-US')}-notice limit — they will be charged again as new. Narrow the watch filters. See RUN_SUMMARY.`
+              + `${WATCH_KEEP.toLocaleString('en-US')}-notice limit — they will be charged again as new. Narrow the watch filters. See RUN_SUMMARY.${blankDropNote()}`
             : `${pushed.toLocaleString('en-US')} new notice(s) — but ${baselineTruncated.toLocaleString('en-US')} `
               + `already-delivered id(s) were dropped at the ${WATCH_KEEP.toLocaleString('en-US')}-notice baseline limit `
-              + 'and will be charged again. Narrow the watch filters. See RUN_SUMMARY.',
+              + `and will be charged again. Narrow the watch filters. See RUN_SUMMARY.${blankDropNote()}`,
     );
 } else if (zeroRowMessage) {
-    await Actor.setStatusMessage(zeroRowMessage);
+    await Actor.setStatusMessage(`${zeroRowMessage}${blankDropNote()}`);
+} else if (blankDropNote()) {
+    // A complete, non-empty run that still silently ignored some of what the buyer typed: the
+    // Console would otherwise show nothing at all for it.
+    await Actor.setStatusMessage(
+        `${pushed.toLocaleString('en-US')} notice(s) delivered.${blankDropNote()}`,
+    );
 } else {
     log.info(
         `Complete: every notice both portal(s) (${cursors.map((c) => c.source.label).join(', ')}) had for these `
