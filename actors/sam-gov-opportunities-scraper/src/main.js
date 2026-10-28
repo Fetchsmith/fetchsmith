@@ -350,14 +350,73 @@ const isExclusions = recordFamily === 'ei';
 // (253/35,195, measured cycle 708/709) but entity names have nothing to do with construction, so
 // defaulting to it would bias a first run toward an unrepresentative slice, same reasoning as cfda.
 const keyword = String(input.keyword ?? (isWd || isCfda || isExclusions ? '' : 'contract')).trim();
-const naicsCodes = (Array.isArray(input.naicsCodes) ? input.naicsCodes : []).map((v) => String(v).trim()).filter(Boolean);
-const setAsideTypes = canonSetAsides(
-    (Array.isArray(input.setAsideTypes) ? input.setAsideTypes : []).map((v) => String(v).trim()).filter(Boolean),
+// THE BLANK-ENTRY DROP (cycle 2356). Every array filter here normalises with
+// `.map(trim).filter(Boolean)`, so an empty or whitespace-only entry is DROPPED -- and if every
+// entry the buyer sent was blank, the list ends up empty and `buildSearchUrl` below then OMITS the
+// filter param entirely. That is not a zero-row result, it is an UNFILTERED one, pushed and CHARGED
+// in full. Measured live cycle 2356 on index=opp under this Actor's own default
+// `q=contract&is_active=true`: dropping `naics=541511` widens 33 -> 16,110 matches (488x), dropping
+// `pop_state=TX` widens 194 -> 16,110 (83x), dropping `set_aside=SBA` widens 3,405 -> 16,110 (4.7x).
+// Nothing else in this file can see it. The cycle-748 canary (`assertFilterNamesApplied`) only
+// probes filter NAMES the run is actually about to use, and an emptied list is not one. The
+// unknown-set-aside warning at `canonSetAsides` cannot fire, because the blank never reaches it --
+// which is the gap in that function's own cycle-748 reasoning ("dropping them could empty the list
+// and make the whole filter vanish from the query, which fails OPEN"): it holds the line for
+// unrecognised values and the `.filter(Boolean)` one call upstream of it breaks the same line for
+// blank ones. And the zero-row `appliedFilters` list is only reached when 0 rows come back, which
+// is precisely what a widened query does not do.
+// Blank entries are reachable, not theoretical: verified live cycle 2356 that the Apify platform
+// ACCEPTS `naicsCodes: [""]`, `states: [""]` and `setAsideTypes: [""]` on an API-started run (three
+// real runs, all created then aborted). That is exactly the shape an input built from a spreadsheet
+// column with an empty cell, or a templated schedule input, produces. `noticeTypes` is the one
+// array input the platform guards for us, because it is the only one with an `items.enum` -- also
+// verified live the same cycle: `noticeTypes: ["zzz"]` is rejected with HTTP 400 `invalid-input`
+// BEFORE the run starts, so its `Object.hasOwn(NOTICE_TYPE_CODES, ...)` filter below can only ever
+// drop a blank, never an unrecognised code. Do not rely on that for a stringList field: a schema
+// `enum` is enforced, a free-text `stringList` is not.
+const blankFilterEntriesDropped = {};
+function arrayFilterInput(name, normalise) {
+    const raw = Array.isArray(input[name]) ? input[name] : [];
+    const kept = raw.map((v) => String(v).trim()).filter(Boolean);
+    if (raw.length > kept.length) blankFilterEntriesDropped[name] = raw.length - kept.length;
+    if (raw.length && !kept.length) {
+        // Pre-charge, pre-request: an input mistake the buyer can fix, not an upstream failure.
+        throw new Error(
+            `Every one of the ${raw.length} value(s) you gave in \`${name}\` is empty or whitespace-only, so the `
+            + `filter would have been dropped from the SAM.gov query entirely and this run would have searched `
+            + `UNFILTERED by ${name} -- not zero rows, but the whole unnarrowed result set, every row of it pushed `
+            + `and charged (measured: an opportunities search narrowed by one NAICS code returns ~33 matches, the `
+            + `same search with the naics filter missing returns ~16,110). Stopping before any unfiltered row is `
+            + `delivered or charged. Put real values in \`${name}\`, or remove the field to search without it `
+            + `deliberately.`,
+        );
+    }
+    return normalise ? normalise(kept) : kept;
+}
+const naicsCodes = arrayFilterInput('naicsCodes');
+const setAsideTypes = arrayFilterInput('setAsideTypes', canonSetAsides);
+const noticeTypes = arrayFilterInput(
+    'noticeTypes',
+    (kept) => kept.map((v) => v.toLowerCase()).filter((v) => Object.hasOwn(NOTICE_TYPE_CODES, v)),
 );
-const noticeTypes = (Array.isArray(input.noticeTypes) ? input.noticeTypes : [])
-    .map((v) => String(v).toLowerCase().trim())
-    .filter((v) => Object.hasOwn(NOTICE_TYPE_CODES, v));
-const states = (Array.isArray(input.states) ? input.states : []).map((v) => String(v).toUpperCase().trim()).filter(Boolean);
+const states = arrayFilterInput('states', (kept) => kept.map((v) => v.toUpperCase()));
+// A PARTIAL blank drop still applies the surviving values, so it is a warning rather than a stop --
+// but it is a silent narrowing of what the buyer asked for, so it also has to reach a surface the
+// Console shows (see `blankDropNote()`, appended to every status message below) and RUN_SUMMARY.
+// Without that, the only trace of it is this one console line.
+if (Object.keys(blankFilterEntriesDropped).length) {
+    log.warning(
+        `Ignored blank/whitespace-only entries in ${Object.entries(blankFilterEntriesDropped)
+            .map(([f, n]) => `${f} (${n})`).join(', ')}. The non-blank values you gave are still applied; `
+        + 'a blank is never sent to SAM.gov, because an unrecognised value there matches nothing.',
+    );
+}
+function blankDropNote() {
+    const fields = Object.entries(blankFilterEntriesDropped);
+    if (!fields.length) return '';
+    return ` NOTE: ${fields.map(([f, n]) => `${n} blank entr${n === 1 ? 'y' : 'ies'} in ${f}`).join(', ')} `
+        + 'ignored (not guessed at); the non-blank values you gave still applied.';
+}
 const organizationId = String(input.organizationId ?? '').trim();
 const activeOnly = input.activeOnly !== false; // default true
 let enrichDetail = input.enrichDetail === true;
@@ -1511,6 +1570,10 @@ const runSummary = {
     complete,
     incompleteReason,
     incompleteDetail,
+    // Which filter(s) lost blank entries before the query was built, and how many each lost
+    // (cycle 2356). Null, not {}, when nothing was dropped, so a consumer can tell "this field
+    // existed and was empty" from "this build does not report it".
+    blankFilterEntriesDropped: Object.keys(blankFilterEntriesDropped).length ? blankFilterEntriesDropped : null,
     lastApiError,
     maxResults,
     chargeLimitReached,
@@ -1535,8 +1598,10 @@ if (!complete) {
         seeding
             ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} ${ROW_NOUN}(s) recorded${of} — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
+              + blankDropNote()
             : `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`
+              + blankDropNote(),
     );
 } else if (watchMode && !seeding && pushed === 0 && skippedSeen > 0) {
     // Every row this query matched was already delivered under this watch label and none changed
@@ -1548,7 +1613,8 @@ if (!complete) {
     await Actor.setStatusMessage(
         `Nothing new for watch label "${watchLabel}": all ${skippedSeen.toLocaleString('en-US')} matching ${ROW_NOUN}(s) `
         + `were already delivered on a prior run${watchChanges ? ' and none of their watched fields changed' : ''}. `
-        + `You were charged nothing.${watchChanges ? '' : ' Set watchChanges: true to also catch edits to already-delivered rows.'}`,
+        + `You were charged nothing.${watchChanges ? '' : ' Set watchChanges: true to also catch edits to already-delivered rows.'}`
+        + blankDropNote(),
     );
 } else if (!seeding && pushed === 0) {
     // The other way this Actor can reach SUCCEEDED with 0 rows and no markIncomplete cause above:
@@ -1572,10 +1638,24 @@ if (!complete) {
             ? `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has none once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied. `
               + 'Every value you gave is valid, so this is a genuinely empty search, not an input mistake -- drop or widen one filter at a '
               + 'time to find which one excludes everything. You were charged nothing.'
-            : `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has no ${ROW_NOUN} at all for this query, with no filter narrowing the run. You were charged nothing.`,
+              + blankDropNote()
+            : `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has no ${ROW_NOUN} at all for this query, with no filter narrowing the run. You were charged nothing.`
+              + blankDropNote(),
     );
-} else if (declaredMatches !== null && !watchMode) {
-    log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these filters.`);
+} else {
+    if (declaredMatches !== null && !watchMode) {
+        log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these filters.`);
+    }
+    // A clean run that DELIVERED rows is the one path that previously set no status message at all
+    // (cycle 2356) -- so a partial blank drop, which silently narrows the search the buyer asked
+    // for, was invisible in the Console on exactly the runs that get charged. Only set a message
+    // when there is actually something to say; a healthy unqualified run keeps Apify's default.
+    const note = blankDropNote();
+    if (note) {
+        await Actor.setStatusMessage(
+            `Delivered ${pushed.toLocaleString('en-US')} ${ROW_NOUN}(s).${note}`,
+        );
+    }
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never

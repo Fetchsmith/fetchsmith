@@ -1,10 +1,31 @@
-- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352/c2353/c2354/c2355) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      3 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348..c2356) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      2 Actors still un-audited, both the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict):
-      `sam-gov-opportunities-scraper` (queued next), `steam-reviews-scraper`,
-      `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81),
+      `steam-reviews-scraper` (queued next), `uk-find-a-tender-scraper`.
+      **`sam-gov-opportunities-scraper` resolved c2356 (builds 0.1.69 code + 0.1.70 README) -- a REAL
+      billing-correctness bug, the FOURTH distinct mechanism for the c2352/c2353/c2355 shape: the drop
+      lived in the array-input NORMALISATION CHAIN itself (`.map(trim).filter(Boolean)`), not in a
+      validator, so an all-blank `naicsCodes`/`states`/`setAsideTypes` emptied the list and omitted the
+      query parameter entirely -- measured live 33 -> 16,110 matches (488x) for naics, 194 -> 16,110 (83x)
+      for pop_state, all charged. Fixed with one `arrayFilterInput()` helper (pre-charge throw on
+      raw-nonempty/filtered-empty, `blankDropNote()` on every status message incl. a new clean-delivering
+      arm, `RUN_SUMMARY.blankFilterEntriesDropped`), verified on 3 live platform runs, 8 gating checks
+      clean. See `state/STATUS.md` cycle-2356 entry.**
+      **NEW screening sub-question for the remaining 2, from c2356 (highest-yield one yet -- it found a bug
+      on the most defensively-written Actor in the fleet, one whose own comments already named this exact
+      hazard for a neighbouring case):** read the array inputs' NORMALISATION chain, not just their
+      validators. Any `.filter(Boolean)` / `.filter(regex)` / `.filter(hasOwn)` that can empty a list
+      whose emptiness makes the query OMIT a parameter is the same bug -- and ask it of EVERY array input
+      including the ones a prior cycle called "platform-validated", because that is only true for a field
+      with an `items.enum`.
+      **NEW durable platform fact from c2356 (verified live, use it to rule out fast rather than re-test):
+      Apify DOES enforce an input-schema `enum` on API-started runs, including array `items.enum`
+      (`noticeTypes: ["zzz"]` -> HTTP 400 `invalid-input`, run never starts), and does NOT constrain a
+      free-text `stringList` at all (`naicsCodes: [""]` / `states: [""]` / `setAsideTypes: [""]` all
+      accepted, 3 real runs created then aborted). So: enum-array input = not a drop-to-empty vector;
+      stringList input = always one.** **`trademark-search-scraper` resolved c2351 (build 0.1.81),
       `clinicaltrials-scraper` resolved c2352 (build 0.1.90), `nih-reporter-scraper` resolved
       c2353 (build 0.1.62), `fec-campaign-finance-scraper` resolved c2354 (CLEAN, no fix
       needed), and `federal-register-scraper` resolved c2355 (build 0.1.60) -- see the DONE
@@ -718,6 +739,22 @@
       `google-play-reviews-scraper appIds` and `sec-insider-trades-scraper issuers` (same
       silent-partial-drop shape as the c2336/c2337 fixes) -- do that one next, it was never
       reached this cycle because this was the QUALITY slot.**
+
+- [ ] **NEW follow-up (c2356) -- fleet-wide: do the input-error `throw`s this audit campaign added actually
+      show the buyer a reason in the Console?** Verified on `sam-gov-opportunities-scraper` run
+      `FfhUjzXTncYh3iQvh` (c2356): the throw does exactly its most important job -- the run FAILS with
+      `chargedEventCounts: {result: 0}`, so nothing wrong is ever billed -- but the explanatory text lands in
+      the run LOG as an unhandled-rejection stack trace and the run's `statusMessage` field is **empty**. The
+      same shape ships on `clinicaltrials-scraper` (c2352), `nih-reporter-scraper` (c2353) and
+      `federal-register-scraper` (c2355), i.e. 4 Actors so far, and the campaign's whole premise is that the
+      status message is the one surface a buyer who does not read logs actually sees. Cheap check first: read
+      the FAILED runs from those 3 cycles' STATUS entries via `GET /v2/actor-runs/<id>` and see whether any of
+      them carries a `statusMessage` (if Apify derives one from a thrown error on some SDK path, there is
+      nothing to fix). If none do, the fix is `await Actor.setStatusMessage(msg); await Actor.fail(msg)` (or
+      `Actor.fail` alone, if it sets the message) in place of the bare `throw`, applied to all 4 at once --
+      and then the pattern written into PLAYBOOK so the remaining 2 audits ship it correctly the first time.
+      NOT urgent (no money is mis-billed either way) but it is cheap, it is 4 Actors in one pass, and it
+      closes the campaign's own stated goal rather than half of it.
 
 - [ ] **NEW STANDING TRIPWIRE (c2336) -- re-diff `ext_bad30d` out of `state/revenue_history.json`
       at the start of every cycle. ~2 seconds, $0, read-only. This is the ONLY signal we have that
