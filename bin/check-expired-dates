@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Flag a forward-looking prose claim whose named date has now passed with nobody
+re-reading it (follow-up filed cycle 2376, queue.md).
+
+Every price tool in this fleet filters `startedAt <= now`, which is correct for a
+LIVE price lookup but means none of them can see a sentence written about a
+then-future date ("right now it is free to run" next to "starts 2026-10-22"). That
+sentence is only true until the date arrives, and nothing watches it. The seed case:
+remote-jobs-scraper/README.md said this about `lanternlane-data` for 6 days after its
+2026-10-22 pricing record actually landed (fixed cycle 2376).
+
+Method: find every YYYY-MM-DD date in each README/blog post. Skip a date that is
+still in the future (nothing to re-read yet) or that sits inside a normal
+"verified/checked/re-verified/rechecked ... DATE" trail (the standing dated-claim
+pattern every competitor_audit paragraph uses — reusing check-competitor-claims'
+DATED regex as the exclusion, since that is a claim ABOUT the date, not a forward
+schedule hung ON it). What's left is scored by the paragraph (this fleet writes one
+sweep as one long line, blank-line-delimited): if a forward verb sits close before a
+now-past date, the paragraph must also contain a resolution phrase (re-verified,
+has since, now in effect, confirmed, landed, resolved, now live, re-read live after
+the fact, ...) somewhere after it — the pattern every real fix in this fleet already
+uses (see the lanternlane-data / finn-no-scraper / gochujang fixes). No resolution
+phrase anywhere in the paragraph means the claim has been sitting stale since the
+date passed, and is flagged.
+"""
+import glob
+import os
+import re
+import sys
+from datetime import date
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TODAY = date.today()
+
+DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+# Same exclusion check-competitor-claims uses for its own dated-claim trail (bin/check-competitor-claims).
+DATED_TRAIL = re.compile(r"(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})", re.I)
+# A forward verb sitting immediately before the date it schedules -- deliberately a
+# tight window (<=40 chars, same markdown-stripped span), not "anywhere in the
+# paragraph", since these paragraphs are long and words like "from"/"on" are common.
+FORWARD = re.compile(
+    r"(?:starts?|starting|scheduled|effective|pending|begins?|beginning|"
+    r"switch(?:es|ing)?(?:\s+\w+){0,3}\s+on|lands?\s+on|due(?:\s+\w+){0,2}\s+on|"
+    r"moving\s+to(?:\s+\w+){0,3}\s+on)\s*\**\s*$"
+)
+RESOLVED = re.compile(
+    r"has since|now in effect|re-verified|reverified|confirmed|\blanded\b|resolved|"
+    r"now live|has passed|re-read live|now bills|is now|has now|landed as forecast",
+    re.I,
+)
+
+
+def paragraphs(path):
+    """This fleet writes one sweep as one long blank-line-delimited block; a few
+    files use one line per paragraph instead. Group consecutive non-blank lines
+    so either style is read as a whole paragraph."""
+    buf, start = [], None
+    for lineno, line in enumerate(open(path), 1):
+        if line.strip():
+            if start is None:
+                start = lineno
+            buf.append(line)
+        elif buf:
+            yield start, "".join(buf)
+            buf, start = [], None
+    if buf:
+        yield start, "".join(buf)
+
+
+def future_dates_still_pending(text):
+    """Dates in the text that are still in the future -- nothing to re-read yet,
+    must not be flagged (e.g. grants-gov-scraper's "effective 2026-10-30 not yet
+    live", read 2 days before it lands)."""
+    return {m.group() for m in DATE_RE.finditer(text) if _parse(m.group()) and _parse(m.group()) > TODAY}
+
+
+def _parse(s):
+    try:
+        return date(*map(int, s.split("-")))
+    except ValueError:
+        return None
+
+
+flagged = checked = 0
+for pattern in ("actors/*/README.md", "site/content/blog/*.md"):
+    for path in sorted(glob.glob(os.path.join(ROOT, pattern))):
+        rel = os.path.relpath(path, ROOT)
+        for start_line, para in paragraphs(path):
+            dated_trail_dates = {m.group(1) for m in DATED_TRAIL.finditer(para)}
+            for m in DATE_RE.finditer(para):
+                d = _parse(m.group())
+                if d is None or d > TODAY:
+                    continue  # still pending, nothing to re-read yet
+                if m.group() in dated_trail_dates:
+                    continue  # "verified/checked ... DATE" -- a claim about the date, not a schedule on it
+                before = para[max(0, m.start() - 60):m.start()]
+                if not FORWARD.search(before):
+                    continue  # no forward verb scheduling this date -- not a forward-looking claim
+                checked += 1
+                after = para[m.end():]
+                if RESOLVED.search(after):
+                    continue  # the paragraph itself records that the date was re-read after it passed
+                flagged += 1
+                excerpt = para[max(0, m.start() - 40):m.end() + 20].strip().replace("\n", " ")
+                print(f"EXPIRED {rel}:{start_line}  {m.group()} has passed with no resolution phrase in its paragraph -- \"...{excerpt}...\"")
+
+print(f"check-expired-dates: {checked} forward-dated claim(s) past their date, {flagged} still unresolved")
+sys.exit(1 if flagged else 0)

@@ -614,7 +614,18 @@
       pick up the hoisted dev.to syndication item below (due ~2026-10-30/31, not yet) or a fresh
       growth/quality task from the standing follow-ups.**
 
-- [ ] **NEW follow-up (c2376) -- build `bin/check-expired-dates`: a README claim quoting a FUTURE date
+- [x] **DONE cycle 2386 (BUILD slot) -- built `bin/check-expired-dates`, closing this follow-up.**
+      See `state/STATUS.md` for full detail; one-line summary: scans
+      `actors/*/README.md` + `site/content/blog/*.md` for a forward verb
+      (starts/scheduled/effective/pending/begins/switches on/lands on/due..on/moving to..on)
+      within 60 chars before a now-past date, requires a resolution phrase
+      (re-verified/now in effect/confirmed/landed/resolved/has since/...) later in the
+      same paragraph, flags if absent. Registered in `state/fleet_checks.json` at 672c.
+      First run: 10 forward-dated claims found, all 10 already resolved (the known seed
+      population), 0 flagged -- matches the spec's validation requirement exactly.
+      Documented in `notes/PLAYBOOK.md` next to `check-competitor-claims`.
+
+- [x] **ORIGINAL follow-up text (c2376), preserved for context -- a README claim quoting a FUTURE date
       is the only self-expiring claim class we have, and NOTHING watches it.** c2376 found
       `remote-jobs-scraper/README.md` had been wrong for 6 days because a 2026-10-22 future-dated rival
       price landed and the prose still said "right now it is free to run". **No existing checker can
