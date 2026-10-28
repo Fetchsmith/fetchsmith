@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2393 (QUALITY/GROWTH slot) -- re-derived the c2380 growing-niche candidate
+      list fresh with a broader grep and confirmed every real candidate is already freshly
+      resweapt, so no sweep was run (correctly, not for lack of trying).** Preflight: nothing
+      mechanically due (`checks-due`/`audit-due --all` both NONE DUE); revenue unchanged in
+      substance; inbox 10 checked, 0 new mail -- same list as c2390-2392 (both owner threads
+      long-resolved, rest DMARC + vendor spam); services/site healthy; `HEAD == origin/main`
+      `11b56bca` before edits. The previous "exhausted" calls (c2389/c2390) only grepped for the
+      narrow `N -> M ... listings` wording and found 1 match; broadening to any `N -> M` arrow
+      shape found **9** Actors with a recorded growth number: `ats-jobs-scraper`,
+      `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `sam-gov-opportunities-scraper`,
+      `federal-register-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+      `us-federal-awards-scraper`, `uk-find-a-tender-scraper`. Checked each one's own last inline
+      resweep date rather than assuming the grep alone proves staleness: `us-federal-awards-scraper`
+      was resweapt **yesterday** (2026-10-27, cycle 2303 -- 133->218 listings, 2 new undercutters
+      already disclosed and priced); `fec-campaign-finance-scraper` and `remote-jobs-scraper` were
+      both spot-resweapt **today** (cycles 2375/2376); `trademark-search-scraper`/
+      `federal-register-scraper`/`uk-find-a-tender-scraper` were done at c2384/c2389/c2380;
+      `clinicaltrials-scraper`'s last full pass (2026-10-09) shows the niche oscillating 120-128,
+      not a clean climb worth a dedicated resweep. **Every genuine candidate is covered; nothing
+      here was stale.** Also closed the loose end from c2385's note that `scrapesage/sam-gov-scraper`
+      needed a hand user-count fix (49->55) -- confirmed it's already live in the README (re-verified
+      2026-10-28, presumably folded into an earlier cycle today) and `check-competitor-claims --only
+      sam-gov-opportunities-scraper` found 0 stale across 17 user-count claims + 13 paragraphs, so
+      no edit was needed. $0 spent, 0 code/README changes, 0 new Actors, no owner email warranted.
+      **Follow-up for whoever next finds nothing mechanically due:** the growing-niche well is dry
+      again and the broader 9-Actor grep is now the reference list -- don't re-run it verbatim next
+      time either, since any Actor's README can grow this shape between cycles; re-derive fresh, but
+      start from "has anything NOT on today's 9-Actor list grown a fresh arrow claim since?" rather
+      than re-checking all 9 from scratch if nothing else turned up. The explicitly under-used half
+      of the QUALITY instruction -- a feature-gap (not pricing) re-scan on an Actor whose rivals'
+      input schemas haven't been diffed recently -- is still open; `sam-gov-opportunities-scraper`
+      is now done twice (c2391/c2392), pick a different Actor next time (candidates not yet
+      feature-diffed this way: `website-screenshot-scraper`, `fda-recall-scraper`,
+      `apple-podcasts-scraper`, `hacker-news-scraper`).
+
 - [x] **DONE cycle 2392 (BUILD slot) -- shipped the c2391 follow-up: real
       `postedFrom`/`postedTo`/`deadlineFrom`/`deadlineTo` date windows on
       `sam-gov-opportunities-scraper`, build 0.1.74, platform-verified at row level.** Implemented

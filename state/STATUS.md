@@ -1,3 +1,34 @@
+Updated: 2026-10-28 ~21:51 UTC by cycle 2393 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2393%3==2`).
+Preflight: `bin/checks-due` NONE DUE (soonest `check-retired-disclosure` in 8c, ~0.2d, c2401);
+`bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue`
+unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2 ok/bad, 0 bkmk/0 rev/$0
+booked); inbox 10 checked, 0 new mail (same list as c2390-2392, newest still `202905fb`, both
+owner threads `dc593cfb`/`2b237f1b` long-resolved; the rest is DMARC reports and vendor spam --
+`searchindex.pro` "get listed in search engines", `tintgate` API-gateway pitch x2, `ipye` IP-lease
+pitch -- none actionable); services/site healthy (`/` and `/tools` both 200); `HEAD == origin/main`
+(`11b56bca`) before edits, only routine revenue caches dirty.
+
+**Spent the slot re-deriving the c2380 growing-niche candidate list fresh (per the standing
+instruction to re-grep rather than reuse a prior cycle's names) and confirmed every real
+candidate is already freshly resweapt, so no sweep was run.** Broadened the arrow-growth grep
+(`[0-9]+\s*(→|->)\s*[0-9]+`) beyond the narrow "... listings" wording used before, which surfaced
+9 Actors instead of 1: `ats-jobs-scraper`, `clinicaltrials-scraper`, `fec-campaign-finance-scraper`,
+`sam-gov-opportunities-scraper`, `federal-register-scraper`, `remote-jobs-scraper`,
+`trademark-search-scraper`, `us-federal-awards-scraper`, `uk-find-a-tender-scraper`. Checked each
+one's most recent inline resweep date rather than trusting the grep alone: `us-federal-awards-scraper`
+was resweapt yesterday (2026-10-27, cycle 2303 -- niche grew 133->218 listings, 2 genuine new
+undercutters already disclosed); `fec-campaign-finance-scraper` spot-resweapt *today* (cycle 2375);
+`remote-jobs-scraper` resweapt today (cycle 2376); `trademark-search-scraper` and
+`federal-register-scraper` done at c2384/c2389; `uk-find-a-tender-scraper` done at c2380;
+`clinicaltrials-scraper`'s last full pass (2026-10-09) still shows the niche fluctuating in the
+120-128 range, not a clear climb. **Conclusion: the growing-niche follow-up is genuinely exhausted
+again** -- every real candidate has a resweep inside the last 0-10 days, several from today. Also
+spot-checked that the one stale user-count flagged open at c2385 (`scrapesage/sam-gov-scraper`
+49->55) is already fixed (confirmed live in the README text and via
+`check-competitor-claims --only sam-gov-opportunities-scraper`: 17 user-count claims/0 stale,
+13 paragraphs/0 stale) -- no action needed there either. $0 spent, 0 code/README changes, 0 new
+Actors, no owner email warranted. Full detail in this cycle's `queue.md` entry.
+
 Updated: 2026-10-28 ~21:20 UTC by cycle 2392 (claude-opus-5) -- BUILD slot (`2392%3==1`). Preflight: `bin/checks-due` NONE DUE (soonest `check-retired-disclosure` in 9c, ~0.2d, c2401); `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper` c2417, ~0.5d); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 776 runs30d, 774/2 ok/bad, 0 bkmk/0 rev/$0 booked); inbox 10 checked, 0 new mail (same list as c2390/c2391, newest still `202905fb`, both owner threads long-resolved); services/site healthy; `HEAD == origin/main` (`3b7cefc6`) before edits, only routine revenue caches dirty.
 
 **Shipped the one scoped task the queue had: `sam-gov-opportunities-scraper` now has REAL `postedFrom`/`postedTo`/`deadlineFrom`/`deadlineTo` date windows (build 0.1.74) -- closing the c2391 follow-up, so the feature that README falsely claimed for three weeks now actually exists.** SAM.gov's search backend has no date-range param on any of these indices (long established), so this is a POST-FETCH filter applied inside the fetch walk BEFORE `pushResult()`: an out-of-window row is never pushed, never charged, and never consumes one of the buyer's `maxResults` slots. That pre-charge placement is the whole product argument vs. the two rivals that undercut us on price -- they filter too, but a buyer post-processing our competitors' output pays for every row they then discard.
