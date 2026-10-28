@@ -46,11 +46,81 @@ function timeBudgetOk() {
 const input = (await Actor.getInput()) ?? {};
 
 // CourtListener (Free Law Project) publishes a public REST API. The *search index* endpoint
-// used here needs NO API token, NO registration and NO cookies — verified live from a bare
-// curl on cycles 391 and 392. Only the /dockets/ and /opinions/ *detail* endpoints are
-// auth-gated (401), which is what an earlier cycle mistook for "the whole API needs a key".
+// used here needed NO API token, NO registration and NO cookies through cycle 392 — but
+// CourtListener changed policy sometime before cycle 2357, confirmed live with a bare curl
+// (401 `Authentication credentials were not provided.` on an anonymous request to the exact
+// same endpoint that answered anonymously before). Signup is itself hCaptcha-gated (cycle 2358),
+// so the owner created a free account by hand and supplied the token (cycle 2362) — this Actor
+// now sends it on every search request. Its free tier is rate-limited to 5/min, 50/hr, 125/day,
+// SHARED by this one account across every buyer's run (not per-buyer), so the pacing/budget
+// machinery below exists to stay under that ceiling proactively rather than just retrying on a
+// 429 after the fact.
 const BASE = 'https://www.courtlistener.com';
 const SEARCH = `${BASE}/api/rest/v4/search/`;
+const CL_API_TOKEN = process.env.CL_API_TOKEN ?? null;
+if (!CL_API_TOKEN) {
+    // A FetchSmith deployment problem, not anything fixable by input — fail loudly and fast,
+    // before any charge, rather than letting every walker's first request 401 and get
+    // misdiagnosed later as a source-error.
+    await Actor.fail(
+        'CL_API_TOKEN is not configured for this deployment. CourtListener now requires an authenticated '
+        + 'request for search (see README) -- this is a FetchSmith configuration problem, not something '
+        + 'fixable by any input. Nothing was charged.',
+    );
+}
+
+// Shared across every run of this Actor (same account token, since CourtListener's rate limit is
+// per-account, not per-run), persisted in a named key-value store, same design as WATCH_STORE
+// below. Best-effort only — two runs started at the same instant can still race on this value —
+// but even an undercounted shared budget beats no proactive self-throttling at all, given the
+// account-wide cooldown risk of repeatedly tripping 429s (observed cycle 715).
+const RATE_STORE = 'fetchsmith-courtlistener-ratelimit';
+const RATE_LIMIT_MINUTE = { windowMs: 60_000, max: 4 }; // CourtListener allows 5/min; stay under
+const RATE_LIMIT_HOUR = { windowMs: 3_600_000, max: 45 }; // allows 50/hr
+const RATE_LIMIT_DAY = { windowMs: 86_400_000, max: 115 }; // allows 125/day
+let rateStore = null;
+let requestLog = []; // epoch-ms timestamps of real requests sent, trimmed to the last 24h
+let rateLimitExceeded = false; // the shared daily budget ran out -- distinct from timeBudgetExceeded
+
+async function loadRateLog() {
+    rateStore = await Actor.openKeyValueStore(RATE_STORE);
+    const saved = await rateStore.getValue('timestamps');
+    const cutoff = Date.now() - RATE_LIMIT_DAY.windowMs;
+    requestLog = Array.isArray(saved) ? saved.filter((t) => typeof t === 'number' && t > cutoff) : [];
+}
+
+function countSince(windowMs) {
+    const cutoff = Date.now() - windowMs;
+    return requestLog.filter((t) => t > cutoff).length;
+}
+
+function dailyBudgetExhausted() { return countSince(RATE_LIMIT_DAY.windowMs) >= RATE_LIMIT_DAY.max; }
+
+// Sleeps as needed BEFORE a request so this run (and every other buyer's run sharing the same
+// account token) stays under CourtListener's minute/hour ceilings -- proactive pacing, not a
+// retry after a 429. Capped by remainingMs() the same way the existing retry backoff is, so
+// pacing can never itself blow through the platform run timeout; timeBudgetOk() re-checked right
+// after is what turns a capped wait into a clean time-budget stop instead of a request sent late.
+async function paceRequest() {
+    for (const { windowMs, max } of [RATE_LIMIT_MINUTE, RATE_LIMIT_HOUR]) {
+        const cutoff = Date.now() - windowMs;
+        const recent = requestLog.filter((t) => t > cutoff);
+        if (recent.length >= max) {
+            const waitMs = Math.max(0, recent[0] + windowMs - Date.now()) + 250;
+            await sleep(Math.min(waitMs, Math.max(0, remainingMs())));
+        }
+    }
+}
+
+async function recordRequest() {
+    requestLog.push(Date.now());
+    const cutoff = Date.now() - RATE_LIMIT_DAY.windowMs;
+    requestLog = requestLog.filter((t) => t > cutoff);
+    // Best-effort persistence after every request -- a crash mid-run still leaves the shared
+    // counter accurate up to the last completed request, rather than losing a whole run's worth
+    // of usage from the shared account's perspective.
+    await rateStore.setValue('timestamps', requestLog);
+}
 
 // The search index returns ~20 rows per page and pages with an opaque `cursor=` token carried
 // on the response's own `next` URL. There is no per_page knob that survives, and no offset
@@ -382,6 +452,18 @@ async function apiGet(url, state = null) {
             if (state) state.lastError = state.lastError ?? 'stopped: approaching run timeout';
             return null;
         }
+        if (dailyBudgetExhausted()) {
+            rateLimitExceeded = true;
+            if (state) state.lastError = state.lastError ?? 'stopped: CourtListener shared daily request quota reached';
+            return null;
+        }
+        await paceRequest();
+        // paceRequest's sleep can itself exhaust the remaining run budget -- re-check rather than
+        // send a request the time-budget guard above would otherwise have blocked.
+        if (!timeBudgetOk()) {
+            if (state) state.lastError = state.lastError ?? 'stopped: approaching run timeout';
+            return null;
+        }
         let resp;
         try {
             resp = await gotScraping({
@@ -390,7 +472,7 @@ async function apiGet(url, state = null) {
                 throwHttpErrors: false,
                 retry: { limit: 0 },
                 timeout: { request: 60000 },
-                headers: { accept: 'application/json' },
+                headers: { accept: 'application/json', authorization: `Token ${CL_API_TOKEN}` },
             });
         } catch (err) {
             // A network-level failure (timeout, ECONNRESET, DNS) throws instead of resolving with
@@ -404,6 +486,10 @@ async function apiGet(url, state = null) {
             await sleep(Math.min(waitS * 1000, Math.max(0, remainingMs())));
             continue;
         }
+        // Counts against the shared quota the moment a response (any status) comes back -- it
+        // reached CourtListener's server, which is what the quota actually meters. A caught
+        // network failure above never got that far, so it is deliberately NOT counted here.
+        await recordRequest();
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
             // Capped the same way -- without this, a hostile or just-large Retry-After header (a
             // real one observed: 3600s) would sleep clean past our own run timeout instead of
@@ -871,10 +957,13 @@ async function walk(state, target) {
         const page = await apiGet(state.url, state);
         first = false;
         if (!page) {
-            // Distinguish a proactive time-budget stop from a genuine upstream failure: the former
-            // is not a source problem, and `stop = true` here ends every OTHER walker's loop too
-            // (not just this one), since once the budget is gone it is gone for the whole run.
-            if (timeBudgetExceeded) { state.timedOut = true; stop = true; } else { state.failed = true; }
+            // Distinguish a proactive time-budget/rate-limit stop from a genuine upstream failure:
+            // neither of the first two is a source problem, and `stop = true` here ends every
+            // OTHER walker's loop too (not just this one), since once either budget is gone it is
+            // gone for the whole run.
+            if (timeBudgetExceeded) { state.timedOut = true; stop = true; }
+            else if (rateLimitExceeded) { state.rateLimited = true; stop = true; }
+            else { state.failed = true; }
             state.url = null;
             break;
         }
@@ -937,6 +1026,8 @@ async function walk(state, target) {
     return state.url;
 }
 
+await loadRateLog();
+
 const walkers = recordTypes.map((kind) => ({
     kind,
     url: firstUrl(kind),
@@ -948,6 +1039,7 @@ const walkers = recordTypes.map((kind) => ({
     exhausted: false,
     failed: false,
     timedOut: false,
+    rateLimited: false,
     lastError: null,
 }));
 
@@ -1021,6 +1113,19 @@ if (timedOutWalkers.length) {
 // to narrow it (fewer courts, a shorter filed-date window, a lower maxResults), not to retry the
 // identical input and expect a different result.
 const seedFailureIsTimeBudget = timedOutWalkers.length > 0;
+const rateLimitedWalkers = walkers.filter((w) => w.rateLimited);
+if (rateLimitedWalkers.length) {
+    markIncomplete(
+        'rate-limit',
+        `the run stopped early (${rateLimitedWalkers.map((w) => w.kind).join(' and ')} still had results left) because `
+        + 'CourtListener\'s free-tier daily request quota (125/day, shared across every buyer of this Actor, not '
+        + 'per-run) was reached; its remaining matches are missing from this run',
+    );
+}
+// Distinct from both causes above again: re-running sooner won't help (it's not your input) and
+// narrowing the query won't help either (the shared account is out of requests for the day, not
+// this run out of time) -- the only real fix is to wait for the quota to roll over.
+const seedFailureIsRateLimit = rateLimitedWalkers.length > 0;
 // A walker that still has a cursor to follow only happens because the shared `stop` flag fired
 // (maxResults, a charge limit, or the watch seed cap) — the redistribution loop above only ends
 // early via `stop`; otherwise it keeps rotating budget until every walker's `url` is null
@@ -1047,12 +1152,13 @@ if (stillOpen.length) {
 // the buyer already paid nothing for this run. `seed-cap` is deliberately excluded — that is the
 // buyer's own query being broader than WATCH_KEEP, already surfaced above, and a capped-but-real
 // baseline beats none (same policy as the rest of the fleet's h289 fixes).
-// 'time-budget' belongs in this set for the same reason as the other two: a seed cut short by
-// the run timeout has only scanned part of the match set, so saving it as the baseline would
-// make the next incremental run deliver -- and CHARGE for -- everything past the stopping point
-// as "new", even though the buyer paid nothing for this seed.
+// 'time-budget' and 'rate-limit' belong in this set for the same reason as the other two: a seed
+// cut short by the run timeout or the shared daily quota has only scanned part of the match set,
+// so saving it as the baseline would make the next incremental run deliver -- and CHARGE for --
+// everything past the stopping point as "new", even though the buyer paid nothing for this seed.
 const seedFailure = seeding
-    && (incompleteReason === 'source-error' || incompleteReason === 'stopped-early' || incompleteReason === 'time-budget');
+    && (incompleteReason === 'source-error' || incompleteReason === 'stopped-early'
+        || incompleteReason === 'time-budget' || incompleteReason === 'rate-limit');
 
 if (watchMode && seedFailure) {
     log.warning(
@@ -1063,7 +1169,11 @@ if (watchMode && seedFailure) {
             : seedFailureIsTimeBudget
                 ? 'The query is bigger than one run can seed in time -- narrow it (fewer courts, a '
                   + 'shorter filed-date window, or a lower maxResults) and re-run.'
-                : 'Re-run the seed once the source recovers.'}`,
+                : seedFailureIsRateLimit
+                    ? 'CourtListener\'s shared daily request quota was reached -- this is not about your input '
+                      + 'or query size; re-run after the quota resets (CourtListener\'s day boundary) rather than '
+                      + 'retrying sooner.'
+                    : 'Re-run the seed once the source recovers.'}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -1144,6 +1254,7 @@ const runSummary = {
         exhausted: w.exhausted,
         failed: w.failed,
         timedOut: w.timedOut,
+        rateLimited: w.rateLimited,
         lastError: w.lastError,
     }])),
     recordTypesRequested: recordTypes,
@@ -1248,7 +1359,10 @@ if (seedFailure) {
             : seedFailureIsTimeBudget
                 ? 'The query is bigger than one run can seed in time -- narrow it (fewer courts, a shorter '
                   + 'filed-date window, or a lower maxResults) and re-run, rather than retrying the same input.'
-                : 'Please re-run in a few minutes.'}`,
+                : seedFailureIsRateLimit
+                    ? 'CourtListener\'s shared daily request quota was reached -- re-run after the quota resets '
+                      + '(CourtListener\'s day boundary) rather than retrying immediately.'
+                    : 'Please re-run in a few minutes.'}`,
     );
 }
 
