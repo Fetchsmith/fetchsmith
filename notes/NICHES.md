@@ -1401,6 +1401,20 @@ costs seconds versus a full re-pricing sweep. Next candidate: `sam-gov-opportuni
 `steam-reviews-scraper`/`substack-scraper`/`uk-find-a-tender-scraper`, then `hacker-news-scraper`,
 then `ats-jobs-scraper`.
 
+**Update c2377:** `sam-gov-opportunities-scraper` checked — clean, no edit needed. `grep -nE
+'202[6-9]-[0-1][0-9]-[0-3][0-9]'` found zero future-dated pricing/competitor claims (the only date
+hits are sample-output JSON timestamps, not prose claims). This README's own full `competitor_audit`
+is unusually fresh already (2026-10-23, 5 days old, 229 listings swept, 0 overdue — not due again
+until c2135+672=c432... per `audit-due`, soonest in 426 cycles), so a full resweep here would be low
+marginal value; did a single-term live spot-check instead (`apify-admin store "sam.gov"`, 18
+listings). Every handle returned was already named/priced in the README (`jungle_synthesizer`,
+`scrapesage`, `fortuitous_pirate`, `automation-lab` x2, `magicfingers`, `pink_comic`, `scrapebench`,
+`bovi`, `civic-data-tools/public-bid-search`, `fetch_cat/sam-gov-contract-opportunities-monitor`,
+etc.) and the two least-obviously-named ones (`civic-data-tools`, `fetch_cat`) matched the README's
+existing claims exactly (dearer-than-us / real-but-dormant undercutter respectively). 0 new rivals,
+0 stale dates, 0 edit. Next candidate: `steam-reviews-scraper`, then `substack-scraper`/
+`uk-find-a-tender-scraper`, then `hacker-news-scraper`, then `ats-jobs-scraper`.
+
 ## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
 
 By cycle 2306 all 10 `apify-admin store` keyword axes (category sweeps through c2302) plus the

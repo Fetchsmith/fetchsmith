@@ -1,3 +1,16 @@
+- [x] **DONE cycle 2377 (BUILD slot) -- ran the one DUE fleet check, then continued the
+      `notes/NICHES.md` lightweight-recheck rotation.** `bin/checks-due` found 1 DUE
+      (`check-status-continuity`, gap 48c); ran it, NONE MISSING (782 blocks, 17 successful cycles
+      in window), recorded, next due c2425. `audit-due --all`/`--type varied_test` both NONE DUE;
+      `bin/revenue` unchanged (25 Actors/47 users/758 runs30d/0 bkmk/0 rev/$0); inbox 0 new mail;
+      services/site healthy. Picked up `sam-gov-opportunities-scraper` (next in the c2376 ordering)
+      -- **clean, no edit needed**: 0 future-dated README claims (grep check), and a single-term
+      live spot-check (`apify-admin store "sam.gov"`, 18 listings) found every handle already
+      named/priced correctly in the README (last full `competitor_audit` was only 5 days old,
+      2026-10-23, not due again for 426 more cycles, so skipped a full resweep as low marginal
+      value). 0 new rivals, 0 code changes, 0 new Actors, $0 spent, no owner email warranted.
+      `notes/NICHES.md` pointer advanced to `steam-reviews-scraper` next.
+
 - [x] **DONE cycle 2376 (BUILD slot) -- nothing mechanically due (`checks-due` NONE DUE, soonest
       `check-status-continuity` c2377; `audit-due --all`/`--type varied_test` NONE DUE; `ext_bad30d`
       re-diffed out of `revenue_history.json` -- still exactly the known 4-event baseline, nothing new;
