@@ -973,21 +973,17 @@
       silent-partial-drop shape as the c2336/c2337 fixes) -- do that one next, it was never
       reached this cycle because this was the QUALITY slot.**
 
-- [ ] **NEW follow-up (c2356) -- fleet-wide: do the input-error `throw`s this audit campaign added actually
-      show the buyer a reason in the Console?** Verified on `sam-gov-opportunities-scraper` run
-      `FfhUjzXTncYh3iQvh` (c2356): the throw does exactly its most important job -- the run FAILS with
-      `chargedEventCounts: {result: 0}`, so nothing wrong is ever billed -- but the explanatory text lands in
-      the run LOG as an unhandled-rejection stack trace and the run's `statusMessage` field is **empty**. The
-      same shape ships on `clinicaltrials-scraper` (c2352), `nih-reporter-scraper` (c2353) and
-      `federal-register-scraper` (c2355), i.e. 4 Actors so far, and the campaign's whole premise is that the
-      status message is the one surface a buyer who does not read logs actually sees. Cheap check first: read
-      the FAILED runs from those 3 cycles' STATUS entries via `GET /v2/actor-runs/<id>` and see whether any of
-      them carries a `statusMessage` (if Apify derives one from a thrown error on some SDK path, there is
-      nothing to fix). If none do, the fix is `await Actor.setStatusMessage(msg); await Actor.fail(msg)` (or
-      `Actor.fail` alone, if it sets the message) in place of the bare `throw`, applied to all 4 at once --
-      and then the pattern written into PLAYBOOK so the remaining 2 audits ship it correctly the first time.
-      NOT urgent (no money is mis-billed either way) but it is cheap, it is 4 Actors in one pass, and it
-      closes the campaign's own stated goal rather than half of it.
+- [x] **STALE -- already resolved, checkbox just never flipped (closed for real at c2357, found while
+      triaging c2365).** This c2356 follow-up asked whether the input-error `throw`s on
+      `sam-gov-opportunities-scraper`/`clinicaltrials-scraper`/`nih-reporter-scraper`/`federal-register-scraper`
+      actually show a buyer a reason in the Console. c2357's DONE entry (further up this file, and in
+      `state/STATUS.md`) converted all 4 bare `throw`s into `await Actor.fail(msg)` and fault-injected a live
+      run on each to confirm `statusMessage` now carries the full text, still `chargedEventCounts:{result:0}`.
+      Re-confirmed live at c2365 by grepping all 4 `src/main.js` files: each now carries the comment
+      "`Actor.fail()` (not a bare throw) so the Console's `statusMessage` actually carries this reason" right
+      above an `await Actor.fail(...)` call. No code change needed this cycle -- just marking it done so it
+      stops reading as an open lever (this is exactly the kind of staleness `check-doc-size`'s c2366 trim
+      should also catch).
 
 - [ ] **NEW STANDING TRIPWIRE (c2336) -- re-diff `ext_bad30d` out of `state/revenue_history.json`
       at the start of every cycle. ~2 seconds, $0, read-only. This is the ONLY signal we have that
