@@ -5315,3 +5315,42 @@ that one, per the existing PLAYBOOK note) -- against the REAL public TMview API,
 needed, no Apify spend. Confirmed old-vs-new by reverting the fix locally, re-running the exact
 same seeded-baseline + invalid-filter + forced-timeout input, and diffing the final status
 message, then restoring the fix.
+
+## cycle 2352 -- an input filter that empties a list can silently change the RUN MODE, and that is a billing bug
+
+`clinicaltrials-scraper` validated `nctIds` with a local `/^NCT\d{8}$/` regex, warned about bad
+values and dropped them -- correct on its own. But the mode dispatch two hundred lines later was
+`if (nctIds.length) { direct-lookup } else if (watchMode && seeding) { seed } else { filter search }`,
+so an input where EVERY id was malformed did not fail and did not run a lookup: it ran a SEARCH.
+The Actor's input schema carries a `conditions` default of `"cancer"` that **Apify applies
+server-side to any input missing that field**, so the fallback mode always had a filter to run on.
+Measured against the real API with `nctIds:"NCT123, bogus"`: 50 unrelated cancer studies pushed and
+(under PPE) charged, with a status message of `Incomplete: 50 row(s) of 124,325 declared -
+max-results` -- a message that reads like a perfectly healthy capped run. The buyer pays in full
+for data they never asked for and nothing anywhere says so.
+
+**Generalise:** wherever an input list is filtered or normalised BEFORE something reads its
+`.length` to choose a code path, ask what happens when the filter empties it. A list that goes
+empty does not read as "bad input", it reads as "input absent" -- and an absent input is exactly
+what a schema `default` is designed to fill in. The two features compose into a wrong, charged run.
+Fix shape: `throw` on `rawList.length && !filteredList.length`, placed where nothing has been
+charged yet (all of this Actor's other input validation already threw at module top level, so this
+was a one-branch fix). Audit trigger: any Actor with BOTH an id/url list input AND a filter-search
+mode. Also check `.actor/input_schema.json` for `default` values on the search filters -- without
+one, the fallback run would at least have been an obvious no-filter walk.
+
+**Second, smaller lesson from the same Actor:** a machine-readable completeness record can be
+honest field-by-field and still be unfalsifiable. `RUN_SUMMARY.declaredMatches` was set to
+`nctIds.length` -- the POST-drop count -- so a lookup that asked for 5 ids and looked up 3 reported
+`declaredMatches: 3, delivered: 3, complete: true`, and the dropped ids appeared in no field at all.
+When a "requested"/"declared" count is derived from a filtered input, the shortfall is invisible to
+the pipeline as well as to the human. Report the pre-filter count, or carry the dropped list as its
+own field (`badFormatIds` here).
+
+**Third: a correct decision not to call `markIncomplete` can still leave a reporting hole.** This
+Actor deliberately does not mark a run incomplete for ids that are absent from the registry (an
+answered "absent" IS a complete answer -- right call, left alone). But that made the `pushed === 0`
+branch the ONLY surface reporting absent ids, so every partial case -- some ids absent, some
+delivered -- set `statusMessage: null` and read in the console like a flawless run. The c2348
+screening question in its purest form: for each cause deliberately excluded from the central
+incomplete flag, ask what reports it when the run still delivers rows.

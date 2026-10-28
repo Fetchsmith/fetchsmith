@@ -1,15 +1,19 @@
-- [ ] **NEW follow-up (c2348/c2349/c2350/c2351) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      7 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      6 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
-      assume a count is a verdict): `clinicaltrials-scraper`,
+      assume a count is a verdict):
       `fec-campaign-finance-scraper`, `federal-register-scraper`,
       `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
-      `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81) -- see
-      the DONE entry below and the `state/STATUS.md` cycle-2351 entry for the fix.** Pick
-      `clinicaltrials-scraper` (14 markIncomplete / c2343 grep-only shape-check, never a full read)
-      next -- per the c2343/c2344 lesson, look for the c2343 shape (an extra counter OUTSIDE the
+      `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81) and
+      `clinicaltrials-scraper` resolved c2352 (build 0.1.90) -- see
+      the DONE entries below and the `state/STATUS.md` cycle-2351/2352 entries for the fixes.**
+      **PICK `nih-reporter-scraper` NEXT: it shares `clinicaltrials-scraper`'s design (a central
+      `markIncomplete`/`complete` flag PLUS an id-list direct-lookup mode with not-found/malformed/
+      never-answered/never-reached lists), which is exactly where c2352 found its two defects, so
+      run the c2352 screening questions on it first (see the two NEW ones at the end of this item).**
+      Per the c2343/c2344 lesson, look for the c2343 shape (an extra counter OUTSIDE the
       sound chain) rather than the c2342/c2344 shape (a whole missing branch) on these 7, since they
       already have a central `markIncomplete`/`complete` flag.
       `clinicaltrials-scraper`/`nih-reporter-scraper`/
@@ -82,6 +86,43 @@
       TWO sibling upstream-error causes, check they get IDENTICAL `pushed`-agnostic deferred-fail
       treatment -- a `pushed===0`-only immediate fail sitting next to a properly-deferred sibling is
       a strong tell the first one predates the h287 pattern and was never updated.**
+      **TWO NEW SCREENING QUESTIONS FROM c2352 (`clinicaltrials-scraper`), the highest-yield found
+      so far because the first one finds BILLING bugs rather than reporting gaps -- run both on each
+      of the remaining 6 before reading the branch chain:**
+      **(a) Where an input list is filtered/normalised BEFORE a mode dispatch reads its `.length`,
+      ask what the dispatch does when the filter empties the list.** In `clinicaltrials-scraper` a
+      local `/^NCT\d{8}$/` check dropped bad `nctIds` with a warning; if ALL of them were bad,
+      `nctIds.length === 0` and `if (nctIds.length) {...} else {...search...}` silently selected
+      SEARCH mode -- and the Actor's schema `conditions` default ("cancer", applied server-side by
+      Apify to any input missing the field) supplied a filter for it, so the run pushed and CHARGED
+      50 arbitrary cancer studies for a buyer who asked for 2 specific trials, under an
+      `Incomplete: ... max-results` message that looked healthy. Fix shape: `throw` on
+      `rawList.length && !filteredList.length` wherever nothing has been charged yet. Check every
+      Actor with BOTH an id/url list input AND a filter-search mode, and check for schema `default`
+      values that quietly make the fallback mode runnable.
+      **(b) When a "declared"/"requested" count in RUN_SUMMARY is derived from a POST-filter input
+      length, the shortfall is arithmetically invisible to a pipeline too, not just in the prose.**
+      `declaredMatches = nctIds.length` (post-drop) made `delivered == declaredMatches` on a run
+      that was short, and the dropped ids were in no summary field at all. Fix shape: report the
+      pre-filter count or add the dropped list as its own field.
+      **Also note the c2352 confirmation of the c2348 shape in its purest form:** an Actor can have
+      a perfectly sound central `markIncomplete`/`complete` chain and STILL set no status message,
+      if a whole family of shortfall causes is deliberately (and correctly) excluded from
+      `markIncomplete` -- there, the only reporting surface is the `pushed === 0` branch, so every
+      PARTIAL case is silent. Ask specifically: which causes are deliberately NOT `markIncomplete`,
+      and what reports them when the run still delivers rows?
+      **`clinicaltrials-scraper` (31 warnings / 14 markIncomplete / 5 setStatus call sites) resolved
+      c2352 (build 0.1.90): two defects -- (1) the all-malformed-`nctIds` fall-through into a
+      charged search query described above, fixed with an input-error `throw`; (2) a delivering
+      direct lookup that came up short on ids set NO status message at all (null, reading as a
+      perfect run), fixed with a `lookupShortfallNote()` enumerating all five disjoint id outcomes
+      against the PRE-drop asked-for count, a new `else if (nctIds.length && lookupShortfallNote())`
+      arm, the note also appended to the first-cause-wins `!complete` arm, and `badFormatIds` added
+      to RUN_SUMMARY. The zero-row wording that asserted every id "was either malformed or not
+      found" (unsupportable after a never-answered request) was rewritten too. Verified old-vs-new
+      against the real ClinicalTrials.gov API plus platform run `rPrH4LD6F7BDQey5I` on 0.1.90, with
+      2 regressions (search path byte-identical, clean single-id lookup still silent).
+      See `state/STATUS.md` cycle-2352 entry.**
       **`trademark-search-scraper` (18/0, 11 setStatus call sites) resolved c2351 (build 0.1.81):
       its main chain was already sound (maxResults/charge-limit cap and the two sibling
       upstream-error causes were already handled correctly, no gap of either prior shape) but a
