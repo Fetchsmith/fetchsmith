@@ -1,3 +1,109 @@
+- [x] **DONE cycle 2384 (QUALITY/GROWTH slot) -- executed the c2380 follow-up on its named
+      candidate `trademark-search-scraper`: found TWO new undercutters (one of them FREE), one
+      genuine sweep MISS, and a stale claim about our OWN competitive position whose revisit
+      trigger had already fired.** Preflight: nothing mechanically due (`checks-due` NONE DUE,
+      soonest `check-row-floor` in 4c, ~0.1d, c2388; `audit-due --all` NONE DUE, soonest
+      `website-screenshot-scraper` c2417; revenue unchanged 25 Actors/47 users/762 runs30d/
+      760-2 ok-bad/0 bkmk/0 rev/$0 booked; `ext_bad30d` tripwire re-diffed out of
+      `state/revenue_history.json` -- still exactly the known 4-event baseline, first-seen dates
+      scholarship 2026-10-10 FAILED 2 + 2026-10-20 FAILED 1, court-records 2026-10-10 TIMED-OUT 1,
+      steam-reviews 2026-10-26 FAILED 1, nothing new; inbox 10 checked, 0 new mail -- same list as
+      c2383, both owner threads `dc593cfb`/`2b237f1b` long-resolved, DMARC still capped at
+      `202905fb`; services/site healthy; `HEAD == origin/main` `71b7069f` before edits, only
+      routine revenue caches dirty).
+      **Method, exactly the c2380 six-step pass, no multi-term audit:** (1) future-date grep on the
+      README came back CLEAN (latest prose date 2026-10-25, 0 future); (2) ONE term,
+      `apify-admin store "trademark scraper" 100` -> 97 live listings; (3) `grep -qF` diff against
+      every handle the README names -> **46 unnamed**; (4) all 46 live-priced via the Actor's own
+      `bin/_batch_price_tms3.py` (handle list at `/tmp/tm_unnamed2.txt`, dump at
+      `/tmp/tm_prices2.json`); (5) `createdAt` + `pricingInfos[].startedAt` fetched on every find
+      to separate MISS from NEW ENTRANT; (6) the one `AMBIGUOUS` row hand-read rather than dropped.
+      Our own price re-read live first (`check-own-price-freshness` 25/0) -- still flat $0.002,
+      no start fee.
+      **Four listings newly named, and the big one is a FREE rival:**
+      `rbbscrap/fast-uspto-trademark-scraper` has `pricingModel: FREE` and an EMPTY `pricingInfos`
+      array -- **no charge event of any kind**, so it undercuts our $0.002 from row 1 with nothing
+      to amortise (USPTO-only, no opposition window / seniority / Vienna codes / territories /
+      watch mode; created **2026-10-24**, i.e. a NEW ENTRANT one day after the last sweep).
+      `jungle_synthesizer/j-platpat-patent-crawler` (created **2026-10-24**) is Japan J-PlatPat
+      only at $0.001 FREE/BRONZE -> $0.0009 SILVER -> $0.0008 GOLD+ plus a $0.0001 start -- half
+      our rate or better, and the THIRD single-office undercutter from that owner alongside its
+      DPMA and IP-Australia listings already named. `topapi/uspto-trademark-scraper` is the
+      **genuine MISS, not a new entrant** -- created **2026-10-05**, priced **2026-10-07**, both
+      well before the 2026-10-23 sweep that failed to name it -- at $0.0028/record (1.4x ours) plus
+      $0.0019 TSDR details, dearer at every tier. `automation-lab/canadian-trademarks-database-search`
+      (created 2026-10-23) is Canada-only, $0.005 start plus $0.00644 FREE -> $0.00336 GOLD+,
+      dearer at every tier before the start fee -- a DIFFERENT listing from the same owner's
+      already-named `automation-lab/euipo-tmview-trademarks-scraper`. The remaining 42 are the
+      usual non-register boilerplate matches (Crunchbase/ImportYeti/Sunbiz/Wildberries/Meta-Google
+      ad-library/TikTok) plus `scrapers_lat`'s Peru/Argentina/Canada/TTAB/EUIPO, `nexgenwatch`'s
+      CIPO/USPTO watches and `recordsdata`, all already ruled out by owner above and re-confirmed
+      dearer here ($0.015-$0.0128, $0.08-$0.0536, $0.02-$0.0175). The one AMBIGUOUS row
+      (`workstream/google-ads-transparency-scraper`, 2 recurring events, no primary flag) was
+      hand-read per c2380 step 6: $0.0015/ad + $0.002/ad-details, but it scrapes the Google Ads
+      Transparency Center, so it leaves the niche on SCOPE and never reaches a row-rate comparison.
+      **The more valuable finding is a false claim about ourselves.** The 2026-10-16 (c1786)
+      pricing decision holds flat $0.002 partly on "here there is exactly **one** full-register
+      undercutter", and its own revisit trigger was "a second full-register undercutter appears in
+      a future resweep". That trigger **had already fired twice** -- `scrapersdelight/euipo-trademark-scraper`
+      at c2139 (2026-10-23, the README itself calls it "the second full-breadth TMview competitor")
+      and now `rbbscrap` -- while the sentence still read "exactly one". Fixed BOTH ends: an inline
+      correction at the original paragraph pointing forward, and a re-affirmation of flat $0.002 on
+      CURRENT facts in the new paragraph. **The decision does not change, for a reason the original
+      trigger did not anticipate: no plan ladder we could publish undercuts $0.00, and both new
+      undercutters are single-office, so the gap they have on us is scope, not price.** Revisit
+      conditions restated to name a **multi-office** undercutter, a `foxlabs/euipo-trademark-data`
+      cut below $0.002, or any undercutter here crossing 20 users.
+      Shipped as build **0.1.82** (README + `package.json` 0.1.21 -> 0.1.22, NO `meta.json` change,
+      so no publish/reindex and no publication slot spent). Verified live by reading the build's own
+      `readme` field over `GET /v2/actor-builds/3Iwwz97dM3bEXwcoF`: SUCCEEDED, all 8 new strings
+      present. `check-pricing` 25 Actors/30 events/0 drift, `check-own-price-freshness` 25/0,
+      `check-blog-claims` 0 stale on all four passes, `check-competitor-claims` **0 undated/stale
+      across 228 paragraphs** (it flagged my new paragraph UNDATED on the first run -- "all prices
+      read live 2026-10-28" -- because its DATED regex only accepts verified|checked|re-verified|
+      rechecked; reworded to "verified live", exactly the c2380 steam-reviews fix),
+      `/tools/trademark-search-scraper` 200. ~$0.005 spent (1 build), ~51 free API reads, 0 Actor
+      runs, 0 new Actors, 0 owner email warranted. Full detail in `state/STATUS.md`.
+
+- [ ] **NEW follow-up (c2384) -- the local `trademark-search-scraper/README.md` is ONE WORD ahead
+      of shipped build 0.1.82.** The `check-competitor-claims` UNDATED fix ("read live" ->
+      "verified live" in the "Five-day recheck" paragraph heading) was made AFTER the push, and a
+      second $0.005 build for a non-factual one-word wording change is not worth it (PLAYBOOK
+      step 5 treats a push as a $0.005 purchase; builds are ~77% of our Apify spend). The live
+      Store README is factually identical -- every price, date and verdict matches. **Do not treat
+      this as drift to investigate: the next build on this Actor for any other reason carries it.**
+      Local file is the checker's source, so the fleet gate reads clean either way.
+
+- [ ] **NEW follow-up (c2384) -- a README revisit TRIGGER is a claim, and nothing watches whether
+      it has fired.** `trademark-search-scraper`'s 2026-10-16 pricing decision named three explicit
+      revisit conditions; one of them ("a second full-register undercutter appears") was satisfied
+      by the README's OWN c2139 paragraph nine days later and nobody noticed, leaving "exactly one
+      full-register undercutter" standing as a false claim about our own position until this cycle.
+      This is the c2382 `ats-jobs-scraper` shape ("N of our M") in a second, different costume, so
+      per the c2383 standing method the second real instance has now turned up -- **a dedicated
+      checker is worth considering after all.** Cheap first version: grep every Actor README for
+      `Revisit (if|when)` / `revisit threshold` / `revisit conditions` paragraphs, extract each
+      named condition, and at minimum print them for a human read on a slow cadence (the
+      undercutter-count conditions are machine-checkable against `check-price-superiority`'s rival
+      price table; the user-count ones against `check-competitor-claims`' live counts). Scope it by
+      first running the grep to see how many Actors even have a trigger paragraph -- if it is only
+      this one, file the method and skip the checker, same call as c2383.
+
+- [ ] **NEW follow-up (c2384) -- c2139 re-introduced sub-20-user counts into
+      `trademark-search-scraper/README.md` that the 2026-10-07 cleanup had stripped.** Six live
+      instances, all "(2 users)"/"(1 user)": lines ~325 (`scrapersdelight/euipo-trademark-scraper`),
+      ~332 (`northbell/us-trademark-search`), ~339 (`scrapersdelight/uk-trademark-scraper`), ~343
+      (`trev0n/tmview-scraper`), ~346 (`devilscrapes/euipo-trademark-search-scraper`), ~355
+      (`zet46/uspto-trademark-scraper`). The standing rule (README line ~392, enforced once by
+      `bin/_strip_sub20_tms.py`) is that an exact rival count is only published at 20+ users,
+      because `totalUsers` churns both ways and a sub-20 count is automatically STALE at
+      `check-competitor-claims`' 10% tolerance. **This cycle deliberately published NO counts for
+      its own four new listings (all 1-2 users) rather than match the neighbouring style.** Note
+      the real gap: `_strip_sub20_*` were one-shot scripts, so nothing prevents re-introduction --
+      consider promoting the rule to a standing fleet check, and check the other Actors whose
+      `_strip_sub20_*` script ran (sgos, ggs, sub, abbrev) for the same regression. Line numbers
+      above are post-c2384-edit; re-grep with `grep -nE "\\([0-9]{1,2} users?[,)]"` before editing.
+
 - [x] **DONE cycle 2383 (BUILD slot) -- closed the c2382 follow-up: swept the fleet for the "N of
       our M platforms/sources/fields" staleness shape, found it was NOT fleet-wide, decided against
       building a dedicated checker.** Preflight: nothing mechanically due (`checks-due` soonest
@@ -127,11 +233,19 @@
       0 new Actors, 0 owner email warranted. Full detail in `state/STATUS.md`.
 
 - [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
-      not just this one.** The c2380 lesson is fleet-general: any Actor whose README records
+      not just this one. STILL OPEN, but `trademark-search-scraper` is now DONE (c2384) --
+      pick a different candidate.** c2384 ran the full six-step pass on it and the lesson
+      held hard: 46 unnamed on one term, 2 new undercutters (one a `pricingModel: FREE`
+      listing), 1 genuine sweep MISS predating the 2026-10-23 audit by 18 days, and a false
+      claim about our own pricing position. **Remaining candidates, in rough order:** any niche
+      whose last audit noted "re-opened"/growth, and the `notes/NICHES.md` growth table
+      (line ~684 onward). `uk-find-a-tender-scraper` (+29) was done at c2380 and
+      `trademark-search-scraper` (+12 at c1698) at c2384, so the two explicitly-named gaps are
+      both closed -- **the next cycle taking this on must re-derive the candidate list from
+      each README's own recorded matched-listing trend rather than reuse this bullet's names.**
+      The c2380 lesson is fleet-general: any Actor whose README records
       a RISING matched-listing count between audits is stale between the 672-cycle
-      `competitor_audit` beats. Candidates named in `notes/NICHES.md`'s growth table
-      (line ~684 onward) include `trademark-search-scraper` (+12 recorded at c1698) and any
-      niche whose last audit noted "re-opened"/growth. Method, ~15 min per Actor, cheap:
+      `competitor_audit` beats. Method, ~15 min per Actor, cheap:
       (1) `grep -onE "202[67]-[0-9]{2}-[0-9]{2}" README.md` for future-dated prose (c2376);
       (2) ONE `apify-admin store "<best single term>" 100` sweep; (3) `grep -qF "$handle"`
       diff against the README; (4) live-price the unnamed tail with the Actor's own
@@ -141,7 +255,16 @@
       honestly whether it is a MISS or a NEW entrant; (6) **resolve any `AMBIGUOUS: N
       recurring, no primary flag` by reading the events** -- two same-priced recurring events
       is just a flat per-row rate, and dropping it loses a real undercutter (that is exactly
-      how `data-done-right` would have been missed). Do NOT run a full multi-term audit --
+      how `data-done-right` would have been missed). **(7) NEW at c2384 -- also grep the pricer
+      dump for the `FREE model / no pricing record -- $0` shape, not just for prices below ours.**
+      A `pricingModel: FREE` rival with an empty `pricingInfos` prints as
+      `None {'FREE': 0.0} ['FREE']`, which reads to the eye like an unresolved/missing-data row
+      but is actually the most aggressive price in the niche (that is how
+      `rbbscrap/fast-uspto-trademark-scraper` nearly got skipped). Same lesson as step 6 arriving
+      in a different empty-looking costume: read the listing, never drop it.
+      **(8) NEW at c2384 -- re-read the Actor's own pricing-decision paragraph and check whether
+      its stated REVISIT TRIGGER has already fired**, since a trigger is a claim and nothing
+      watches it (see the dedicated c2384 follow-up above). Do NOT run a full multi-term audit --
       that is the `audit-due` beat and stays on its cadence.
 
 - [x] **DONE cycle 2379 (BUILD slot) -- nothing mechanically due (`checks-due` soonest

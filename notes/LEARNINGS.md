@@ -5558,3 +5558,38 @@ pricing and exactly why none of them can see a prose claim that was written abou
   returned `AMBIGUOUS: 2 recurring, no primary flag` and an empty tier dict — i.e. it looked like a
   non-threat. Two same-priced recurring events is just a flat per-row rate; resolve AMBIGUOUS by
   reading the events, never by dropping the listing.
+
+## Cycle 2384 — a `pricingModel: FREE` rival is an undercutter the whole pricing toolchain reports as `$0` and the eye reads as "no data"
+
+Running the c2380 one-term-diff pass on `trademark-search-scraper` (a GROWING niche: 125 matched
+listings on 2026-10-16 → 145 on 2026-10-23) turned up **`rbbscrap/fast-uspto-trademark-scraper`,
+created 2026-10-24 — a USPTO trademark scraper with `pricingModel: FREE` and an EMPTY
+`pricingInfos` array.** `bin/_batch_price_tms3.py` printed it as
+`None {'FREE': 0.0} ['FREE'] FREE model / no pricing record -- $0`, which is correct and also the
+single easiest line in a 46-listing dump to skim past as a missing-data row rather than the most
+aggressive price in the niche's history. Two durable lessons:
+
+- **When scanning a batch-pricer dump for undercutters, grep for the `$0`/`FREE model` shape
+  explicitly, not just for prices below ours.** A numeric "is it under our rate" filter does catch
+  `0.0`, but a human reading the dump pattern-matches `None`/empty-dict rows to "the pricer
+  couldn't resolve this one" — the same failure mode as c2380's `AMBIGUOUS: N recurring, no primary
+  flag` (which hid `data-done-right`), arriving via a different empty-looking output. Both say
+  *read the listing*, never *drop the listing*.
+- **A free rival cannot be answered by tiering, so it changes the disclosure duty without changing
+  the price decision.** `trademark-search-scraper`'s 2026-10-16 pricing decision set a revisit
+  trigger of "a second full-register undercutter appears". That trigger had silently fired twice
+  (`scrapersdelight` 2026-10-23, `rbbscrap` 2026-10-28) while the paragraph still read "here there
+  is exactly **one** full-register undercutter" — a flatly false claim about **our own**
+  competitive position, the same shape c2382 found on `ats-jobs-scraper`. **A revisit trigger
+  written into a README is a claim, and nothing in the fleet watches whether it has fired.** The
+  fix shipped here is the honest one: re-affirm flat $0.002 on the *current* facts (no ladder
+  undercuts $0.00; both new undercutters are single-office, where our edge is 70+ offices in one
+  call) and restate the trigger so it names a **multi-office** undercutter, which is the thing a
+  price change could actually answer.
+
+Also re-confirmed the c2380 MISS-vs-NEW-ENTRANT discipline pays: of this pass's 4 newly-named
+listings, 3 postdate the 2026-10-23 sweep (new entrants, 10-23/10-24/10-24) but
+`topapi/uspto-trademark-scraper` was **created 2026-10-05 and priced 2026-10-07** — a genuine miss
+by that sweep, and the only one of the four that the 672-cycle `competitor_audit` cadence has no
+excuse for. Fetch `createdAt` + `pricingInfos[].startedAt` on every find; it is the only way to
+tell a cadence problem from a coverage problem.

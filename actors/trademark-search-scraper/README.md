@@ -296,7 +296,10 @@ undercutters and every serious named rival already tiered by plan, so our flat r
 the dearest option industry-wide. Here there is exactly **one** full-register undercutter, it
 is narrower in scope than us, and the only other listing that matches us structurally —
 `foxlabs/euipo-trademark-data`, same TMview source, same 70+-office breadth — prices **above**
-us at a flat $0.003 with no start fee. A buyer who needs more than USPTO is still cheaper here
+us at a flat $0.003 with no start fee. (**That "exactly one" count held on 2026-10-16 and is now
+out of date: there are three full-register undercutters as of 2026-10-28, one of them free. The
+decision to hold flat $0.002 is re-affirmed on those current facts — and the revisit conditions
+restated — in the "Five-day recheck" paragraph further down; read the two together.**) A buyer who needs more than USPTO is still cheaper here
 than anywhere else found in this niche; a USPTO-only buyer on a paid Apify plan saves at most
 15% by switching to a 2-user listing with none of our watch mode, validation or hosted-API
 coverage. Adding plan tiers here would shave margin off every buyer, on every plan, to match a
@@ -386,6 +389,66 @@ is this Actor's own Store listing.
 
 Our own price was re-read live during this sweep and is unchanged: a single `result` event at a
 flat $0.002 on every plan tier, no start fee.
+
+**Five-day recheck finds two more undercutters and one listing the 2026-10-23 sweep missed
+(all prices verified live 2026-10-28, cycle 2384).** This is a cheap one-term recheck rather than a
+full multi-term audit: one `trademark scraper` Store query (97 live listings) diffed against every
+handle this section names, leaving 46 unnamed, and the in-effect price of all 46 was pulled live —
+every charge event, every plan tier. Most of the 46 are the usual non-register boilerplate matches
+already excluded above (Crunchbase, ImportYeti, Sunbiz, Wildberries, Meta/Google ad-library and
+TikTok listings whose copy merely carries a trademark notice), and the `scrapers_lat` Peru/
+Argentina/Canada/TTAB/EUIPO listings, the `nexgenwatch` CIPO and USPTO watches and
+`recordsdata/uspto-trademark-status-scraper` are all already ruled out or priced by owner above
+and re-confirmed dearer here ($0.015–$0.0128, $0.08–$0.0536 and $0.02–$0.0175 respectively).
+Four listings are genuinely new to this section:
+
+- `rbbscrap/fast-uspto-trademark-scraper` is a **FREE** listing — `pricingModel: FREE`, no pricing
+  record at all, so it advertises **no charge event of any kind** and undercuts our $0.002 from
+  the first row with nothing to amortise. It is USPTO-only (wordmarks, serial and registration
+  numbers, LIVE/DEAD TSDR status, Nice classes, owners, attorney leads) where this Actor searches
+  70+ offices in one call, and it returns no opposition window, seniority claim, Vienna code,
+  territory or watch mode. It was **created 2026-10-24**, one day after the 2026-10-23 sweep, so
+  it is a new entrant rather than a miss — but it is the most aggressive price in this niche's
+  history and is named first for that reason.
+- `jungle_synthesizer/j-platpat-patent-crawler` searches Japan's J-PlatPat (patents, utility
+  models, trademarks and designs) and tiers **$0.001 (FREE/BRONZE), $0.0009 (SILVER), $0.0008
+  (GOLD+)** per record plus a $0.0001 start — half our rate or better, for the JP register alone.
+  **Created 2026-10-24**, also after the last sweep. It is the third single-office undercutter from
+  this owner alongside the German DPMA and IP Australia listings named above, and the same trade
+  applies: cheaper if one office is all you need, dearer than one call here the moment you want
+  `JP` in the same result set as `US`, `EM`, `GB`, `DE` and the rest.
+- `topapi/uspto-trademark-scraper` is a **genuine miss, not a new entrant**: a full USPTO register
+  search by brand, owner, goods, class or serial with a new-filings monitor, **created 2026-10-05
+  and priced 2026-10-07** — both well before the 2026-10-23 sweep that did not name it. It charges
+  **$0.0028 per trademark record** (1.4× ours) plus $0.0019 per TSDR detail event, so it is dearer
+  than us at every tier and every volume; recorded here because a missed listing that happens to
+  be dearer is still a gap in this section's completeness claim.
+- `automation-lab/canadian-trademarks-database-search` is a Canada-only register search (mark,
+  owner, application and registration identifiers) at a **$0.005 start plus $0.00644 (FREE)
+  tiering to $0.00336 (GOLD+)** per exported trademark — dearer than us at every tier before the
+  start fee is even counted. **Created 2026-10-23**, the same day as the last sweep. It is a
+  different listing from the same owner's `automation-lab/euipo-tmview-trademarks-scraper` named
+  below, which is the cheap-per-row, dear-per-start shape; this one is dear on both.
+
+One listing in the 46 came back `AMBIGUOUS: 2 recurring events, no primary flag` and was
+hand-read rather than dropped: `workstream/google-ads-transparency-scraper` bills $0.0015 per ad
+and $0.002 per ad-detail — but it scrapes the Google Ads Transparency Center, not any trademark
+register, so it leaves the niche on scope and never reaches a row-rate comparison.
+
+**The 2026-10-16 pricing decision's revisit trigger has now fired, and the decision is
+re-affirmed on current facts rather than left standing on stale ones.** That paragraph above
+holds flat $0.002 partly because "here there is exactly **one** full-register undercutter" — that
+sentence was true on 2026-10-16 and is **no longer true**: `scrapersdelight/euipo-trademark-scraper`
+(2026-10-23) was the second, and `rbbscrap/fast-uspto-trademark-scraper` (2026-10-28) is the
+third. The conclusion does not change, for a reason the original trigger did not anticipate: the
+new undercutters are a **free** USPTO-only listing and a **free-to-$0.0008 JP-only** listing, and
+plan tiering cannot answer either — no ladder we could publish undercuts $0.00, and shaving our
+rate for every buyer on every plan to chase two single-office listings would give up margin
+without closing the only gap they actually have on us, which is scope, not price. What a buyer
+pays us for remains 70+ offices in one result set plus opposition windows, seniority claims,
+Vienna codes, territories and watch mode. The revisit conditions are restated accordingly: tier
+if a **multi-office** listing (not a single-register one) undercuts our $0.002 at any tier, if
+`foxlabs/euipo-trademark-data` cuts below $0.002, or if any undercutter here crosses 20 users.
 
 **Cheaper than us once a run is big enough to amortise their start fee** (all four verified 2026-10-03). `automation-lab` (66 users as of 2026-10-25, re-verified live 2026-10-09, `automation-lab/euipo-tmview-trademarks-scraper`) charges a $0.005 start plus $0.0000355/record (FREE, down to $0.00001 on DIAMOND), so any run returning more than about 3 records costs less there — and it also offers application-date bounds and several search terms per run, which this Actor currently does not. `fetch_cat/uspto-trademarks-scraper` is the same shape against USPTO only: $0.005 start plus $0.00002875/record (FREE, to $0.000015 on GOLD+), crossing us at about 3 rows. `sian.agency/uspto-trademark-scraper` (30 users) undercuts us only on the upper plans: its record price tiers from $0.009 (FREE, 4.5× ours) through $0.003 (BRONZE) and $0.00225 (SILVER) down to $0.0015 on **GOLD, PLATINUM and DIAMOND** — an earlier version of this sentence said PLATINUM and DIAMOND only, which understated by one plan — and on those three tiers its $0.005 start is repaid at about 10 rows; on FREE, BRONZE or SILVER it costs more than we do at every volume, and its start fee is itself tiered at **$0.05 on FREE** (not the $0.005 this section used to quote flat, which is the BRONZE-and-above figure). It never leaves the US register, but it adds availability checks, class suggestions and a detail event. `jungle_synthesizer/euipo-trademark-scraper` matches our $0.002 on FREE, and its $0.10 start fee means it undercuts us only on large runs on its top tiers. Its filed price change took effect at **09:23 UTC on 2026-10-04**, and it moves against the buyer, not for them: FREE/BRONZE ($0.002), SILVER ($0.0018) and GOLD ($0.0016) are untouched, while PLATINUM went $0.0014 → $0.0016 and DIAMOND $0.0012 → $0.0016. Before that moment its DIAMOND rate of $0.0012 beat ours above roughly 125 rows; from it, the three top tiers are flattened onto one $0.0016 price and the volume at which it undercuts us moves out to about **250 rows**. Both schedules were read live from the listing on 2026-10-04 and are filed exactly as described here.
 
