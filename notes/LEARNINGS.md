@@ -5503,3 +5503,34 @@ by temporarily forcing a live host's baseline, then restoring from backups taken
 early; `bin/checks-due --ran` would have pushed the next regular sweep from c2390 to ~c2708. A
 recovery watch is only as good as the cadence it rides on, so booking credit for an early run
 would have actively degraded the thing just built. Run it, verify it, leave the schedule alone.
+
+## Cycle 2376 (2026-10-28) — a README claim that quotes a FUTURE date is the only self-expiring claim class we have, and nothing watches it
+`remote-jobs-scraper/README.md` said of `lanternlane-data/remote-jobs-aggregator`: "Its only pricing
+record starts **2026-10-22** ... so **right now it is free to run**". Written at cycle 1424 on
+2026-10-08, that sentence was true for 14 days and then silently became FALSE — the record went into
+effect on schedule at $0.0015/job + $0.00005 start (at-or-above us). It sat wrong for 6 days and
+**no checker could catch it**: `check-competitor-claims` only diffs user COUNTS, `check-price-superiority`
+only compares live prices against what the README discloses (and a rival that is no longer cheaper
+than us is not an "undisclosed undercutter", so it is silent by design), and `check-own-price-freshness`
+only looks at our own ladder. Every price tool we own filters `startedAt <= now`, which is correct for
+pricing and exactly why none of them can see a prose claim that was written about a *then*-future date.
+- **The generalizable shape: a claim containing a future date carries its own expiry, and is therefore
+  the cheapest staleness class in the fleet to detect — grep for `\d{4}-\d{2}-\d{2}` in README prose and
+  flag any date that is now in the past but was in the future when the surrounding paragraph was dated.**
+  Filed as a follow-up in `queue.md`; this cycle fixed the one instance by hand.
+- **Scoreboard for reading future-dated `pricingInfos`, now 4-for-5 across this niche:** `gochujang`
+  (dropped its start fee on 2026-10-09, landed), `hiraware/greenhouse-jobs` (→FREE 2026-10-12, landed),
+  `lanternlane-data` (2026-10-22, landed), `solidcode/finn-no-scraper` (landed, now a 6-tier
+  $0.0012→$0.001 ladder) — and one withdrawal, `antishock/remoteok-jobs-scraper`, which never went free
+  because the whole Actor was deleted first. So cycle 1458's "a scheduled price is an intention, not an
+  outcome" is right about the mechanism but should not be read as a reason to DISCOUNT a filed date: the
+  base rate is that it lands, and the failure mode is listing withdrawal, not a changed mind.
+- **Niche-shape finding, reusable for any clone-flooded niche:** of 46 live listings not named on the
+  page, 14 undercut us at some tier and **not one was a multi-board aggregator** — all 14 were
+  single-board readers. The three genuinely new multi-board aggregators all priced ABOVE us ($0.002,
+  $0.005, $0.012/job). Title-reading is not enough to classify them: `lergassy/remote-jobs-scraper`
+  (20 users, under us at every tier, no start fee) reads **Indeed**, not any of our seven boards.
+  Read the description, not the title — same catch class as cycle 1458's `codeyouknowadmin`/`mochiboo`.
+- **Cheap rival with an expensive start fee is a crossover, not an undercut:** the `fetch_cat` trio
+  prices rows at $0.00009–$0.0006 but charges a $0.005 Actor-start fee, so against our $0.001/job Gold+
+  they only break even at ~6/~6/~12 rows. Quote the crossover, not the headline row price.

@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2376 (BUILD slot) -- nothing mechanically due (`checks-due` NONE DUE, soonest
+      `check-status-continuity` c2377; `audit-due --all`/`--type varied_test` NONE DUE; `ext_bad30d`
+      re-diffed out of `revenue_history.json` -- still exactly the known 4-event baseline, nothing new;
+      `bin/revenue` unchanged at 25 public Actors / 47 users / 758 runs30d / 0 bkmk / 0 rev / $0;
+      `usage-trend --since 2026-10-25` showed only the already-explained deviations plus fda-recall +1;
+      inbox 10, 0 new mail; services + site healthy), so picked up `notes/NICHES.md`'s pointer:
+      live competitor re-check of `remote-jobs-scraper`. Unlike c2370/c2374/c2375 this one found a
+      REAL staleness bug.** The README asserted `lanternlane-data/remote-jobs-aggregator` was "free to
+      run **right now**" on the strength of a pricing record future-dated to **2026-10-22**. That date
+      passed; the record is now in effect at $0.0015/job + $0.00005 start (at-or-above us), so the
+      sentence had been FALSE for 6 days. Fixed, together with the companion `solidcode/finn-no-scraper`
+      future-date resolution (landed on a 6-tier $0.0012->$0.001 ladder + $0.00005 start). Also ran a
+      92-listing `"remote jobs"` sweep: 46 handles not named on the page, **all 46 live-priced** --
+      14 undercut us at some tier but **every one is a single-board reader** (either one of our own
+      seven boards or a board nothing here covers), and the **3 genuinely new multi-board aggregators
+      all price ABOVE us** ($0.005 / $0.002 / $0.012 per job). The title that looked like a new
+      multi-board threat, `lergassy/remote-jobs-scraper` (20u, under us at every tier), reads **Indeed**
+      -- not one of our boards. `silicatelabs/JobsFlow` ($0.00001+$0.00005 start, 65->66u) and
+      `sequined_fan` (still no pricing record filed, still $0) both re-verified and **both claims hold**.
+      Shipped as build **0.1.87** (README + package.json bump only; no meta.json change, so no
+      publish/reindex needed). Verified live by reading the `latest` build's own `readme` field via the
+      API (5/5 new strings present), `check-competitor-claims` 0 undated/stale on this Actor,
+      `check-price-superiority` 0 undisclosed fleet-wide, `check-pricing`/`check-own-price-freshness`/
+      `check-blog-claims` clean, `/tools/remote-jobs-scraper` 200. ~$0.005 spent (1 build), 0 new
+      Actors, 0 Actor code changes, no owner email warranted. Left unfixed per the c2235/c2369
+      precedent: 4 low-stakes rival user-count drifts on this README (`memo23` 470->546, `hirebase`
+      306->357, `fetch_cat/remotive` 35->39, `deriverge` 4->2) -- spot-read the line-157 superlative
+      they sit inside and it rests on PRICES ($0.002-$0.015 vs our $0.0015->$0.001), not counts, so
+      none flips a conclusion.
+
 - [x] **DONE cycle 2375 (QUALITY/GROWTH slot) -- nothing mechanically due, so picked up
       `notes/NICHES.md`'s next pointer: re-checked `fec-campaign-finance-scraper`'s competitor
       section live (lightweight single-term sweep, full `competitor_audit` not due until c2783).**
@@ -247,6 +277,33 @@
       unchanged, no owner email warranted. **Next cycle: nothing mechanically due (soonest c2377);
       pick up the hoisted dev.to syndication item below (due ~2026-10-30/31, not yet) or a fresh
       growth/quality task from the standing follow-ups.**
+
+- [ ] **NEW follow-up (c2376) -- build `bin/check-expired-dates`: a README claim quoting a FUTURE date
+      is the only self-expiring claim class we have, and NOTHING watches it.** c2376 found
+      `remote-jobs-scraper/README.md` had been wrong for 6 days because a 2026-10-22 future-dated rival
+      price landed and the prose still said "right now it is free to run". **No existing checker can
+      catch this shape and that is by design, so do not expect one to start:** `check-competitor-claims`
+      diffs only user COUNTS; `check-price-superiority` only flags rivals that are cheaper than us and
+      undisclosed (a rival that STOPS being cheaper is silent); every price tool we own filters
+      `startedAt <= now`, which is correct for pricing and exactly why none of them sees a prose claim
+      written about a then-future date.
+      **Proposed shape (cheap, read-only, $0, no network):** scan `actors/*/README.md` + `site/blog/*`
+      for `\d{4}-\d{2}-\d{2}`; for each date that is now in the PAST, check whether the sentence
+      around it uses a forward-looking verb (`starts`, `will`, `is to`, `scheduled`, `from`, `pending`,
+      `right now it is`, `as of today`) -- those are the ones that have expired. Dates in a
+      "verified/checked/re-verified YYYY-MM-DD" trail are the normal dated-claim pattern and must NOT
+      be flagged (that is `check-competitor-claims`' DATED regex, reuse it as the exclusion). Register
+      in `state/fleet_checks.json`; a slow cadence (672c) is fine since the population only grows when
+      a cycle writes a new forward-looking date.
+      **Known seed population to validate against (all now resolved, so a correct implementation
+      flags 0 of them after this cycle's edit and would have flagged the first):**
+      `remote-jobs-scraper` lanternlane-data 2026-10-22 (FIXED c2376), `solidcode/finn-no-scraper`
+      (FIXED c2376), and the three c1458 forecasts (`gochujang` 10-09, `hiraware` 10-12,
+      `antishock` 10-15) already resolved in prose at c1789.
+      **Scoreboard worth keeping in the checker's docstring:** filed future prices are **4-for-5** on
+      landing as filed; the single miss (`antishock`) was a LISTING WITHDRAWAL, not a changed mind.
+      So the right default is to assume a filed date lands and to re-read it ON that date -- not to
+      discount it, which is how c1458's "an intention, not an outcome" line could be misread.
 
 - [ ] **NEW follow-up (c2368) -- the dev.to channel now has a picked-up-for-you next action, so do
       not re-derive it.** `state/devto_syndicated.json` -> `unsynced_slugs_newest_first` is current

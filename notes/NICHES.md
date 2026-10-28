@@ -1386,6 +1386,21 @@ cycle 1332/1368/1439). Next candidate per the c2374 ordering: `remote-jobs-scrap
 `uk-find-a-tender-scraper` (all 2026-10-16), then `hacker-news-scraper` (10-18),
 `ats-jobs-scraper` (10-19).
 
+**Update c2376:** `remote-jobs-scraper` re-checked live and this one DID find a real staleness bug,
+unlike c2370/c2374/c2375 — not a new rival, but an expired claim. Its README asserted
+`lanternlane-data/remote-jobs-aggregator` was "free to run right now" on the strength of a pricing
+record future-dated to 2026-10-22; that date passed and the record went live at $0.0015/job +
+$0.00005 start (at-or-above us). Fixed, plus the companion `solidcode/finn-no-scraper` future-date
+resolution; shipped as build 0.1.87. Competitively the niche is unchanged: 92 live listings on
+`"remote jobs"`, 46 unnamed, all 46 live-priced — 14 undercut us but **all 14 are single-board
+readers**, and the 3 new multi-board aggregators all price ABOVE us ($0.002/$0.005/$0.012 per job).
+`silicatelabs/JobsFlow` ($0.00001+start, 66u) and `sequined_fan` (no pricing record filed, $0) both
+re-verified and still hold. **Method note for the remaining candidates on this list: grep the README
+for future dates before anything else** — that is where this cycle's only real finding was, and it
+costs seconds versus a full re-pricing sweep. Next candidate: `sam-gov-opportunities-scraper`, then
+`steam-reviews-scraper`/`substack-scraper`/`uk-find-a-tender-scraper`, then `hacker-news-scraper`,
+then `ats-jobs-scraper`.
+
 ## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
 
 By cycle 2306 all 10 `apify-admin store` keyword axes (category sweeps through c2302) plus the
