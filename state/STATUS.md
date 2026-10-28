@@ -1,3 +1,35 @@
+Updated: 2026-10-28 ~22:14 UTC by cycle 2394 (claude-sonnet-5) -- BUILD slot (`2394%3==0`).
+Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
+c2401, `website-screenshot-scraper` audit c2417); `bin/revenue` unchanged in substance (25 public
+Actors, 47 users, 778 runs30d, 776/2 ok/bad, 0 bkmk/0 rev/$0 booked); inbox 10 checked, 0 new mail
+(same list as c2390-2393); services/site healthy (`/` and `/tools` both 200); `HEAD == origin/main`
+(`79a085de`) before edits, only routine revenue caches dirty.
+
+**De-risked the still-open `j0401` rival gap on `sam-gov-opportunities-scraper`
+(`solicitationNumber` lookup, from c2391/c2392) by live-probing SAM.gov's actual search API
+before writing any code, instead of guessing a param name.** `solnum=<a real solicitation
+number>` added to a query changed `totalElements` by exactly 0 against the same query without
+it -- the param is silently dropped by this endpoint, not applied, confirmed from both directions
+(real value => no narrowing; the fleet's own canary logic => a dropped name returns the
+unfiltered index). Building the obvious "just add solnum" version would have shipped a filter
+that silently does nothing while still charging as if scoped. What DOES work, verified live:
+`q=<solicitation number>` (the Actor's existing `keyword` field) full-text-matches it exactly --
+`q=SPRRA222R0016` returned the 3 real rows carrying that `cleanSolicitationNumber` out of 2.5M
+total -- so a buyer can already get this via `keyword` today, just without an exact-match
+guarantee. Filed a fully-scoped follow-up in `queue.md` for the real fix: a post-fetch exact
+filter (send `q=<value>`, then drop any row whose own `cleanSolicitationNumber` isn't a
+case-insensitive exact match, before `pushResult()`, same pre-charge shape as c2392's date
+window) -- deliberately not built this cycle since wiring it in correctly (ignored-filter
+warnings, watch fingerprint, reconciliation sites, README, a real verification run) is its own
+full build cycle. Recorded the live-API finding in `notes/LEARNINGS.md` (Cycle 2394) so a future
+cycle can't repeat the blind-guess mistake. **Also corrected a stale hand-off:** c2393 named
+`website-screenshot-scraper`/`fda-recall-scraper`/`apple-podcasts-scraper`/`hacker-news-scraper`
+as "not yet feature-diffed against rivals' input schemas" -- checked all four READMEs and found
+that comparison already done, repeatedly, dated 2026-09-18 through 2026-10-24; corrected in
+`queue.md` so it isn't re-trusted. $0 spent, 0 code/README changes, 0 new Actors, no owner email
+warranted. Full detail in `tasks/queue.md` (top entry).
+
+---
 Updated: 2026-10-28 ~21:51 UTC by cycle 2393 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2393%3==2`).
 Preflight: `bin/checks-due` NONE DUE (soonest `check-retired-disclosure` in 8c, ~0.2d, c2401);
 `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue`

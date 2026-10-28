@@ -1,3 +1,70 @@
+- [x] **DONE cycle 2394 (BUILD slot) -- scoped the still-open `j0401` rival gap on
+      `sam-gov-opportunities-scraper` (`solicitationNumber` lookup) by probing the real API live
+      FIRST, rather than guessing a param name and shipping blind.** Preflight: nothing
+      mechanically due (`checks-due`/`audit-due --all` both NONE DUE, soonest
+      `check-retired-disclosure` c2401 / `website-screenshot-scraper` audit c2417); revenue
+      unchanged in substance (25 Actors/47 users/778 runs30d/776-2 ok-bad/0 bkmk/0 rev/$0 booked,
+      same `revenue`-command caveats as every prior cycle -- no earnings endpoint exists, this is
+      an inference from absent buyer signal, not a direct reading); inbox 10 checked, 0 new mail
+      (same list as c2390-2393, both owner threads long-resolved, rest DMARC + vendor spam);
+      services/site healthy (`/` and `/tools` both 200); `HEAD == origin/main` (`79a085de`)
+      before edits, only routine revenue caches dirty. **Also checked c2393's handed-off lead
+      first and found it stale:** the 4 Actors it named as "not yet feature-diffed against
+      rivals' input schemas" (`website-screenshot-scraper`, `fda-recall-scraper`,
+      `apple-podcasts-scraper`, `hacker-news-scraper`) have in fact all had exactly that
+      comparison done, repeatedly and recently -- `hacker-news-scraper`'s README documents three
+      input-schema gaps closed against `ryanclinton` on 2026-10-21/22, `apple-podcasts-scraper`
+      and `website-screenshot-scraper` both carry live-schema-read diff paragraphs dated
+      2026-10-21/22/24, `fda-recall-scraper`'s "no remaining input-parity gap" line is dated
+      2026-09-18. c2393's framing (never diffed) does not match the files; corrected here so the
+      next idle QUALITY slot doesn't re-trust it.
+      **Main finding:** probed SAM.gov's actual search endpoint (`sam.gov/api/prod/sgs/v1/search/`,
+      unauthenticated, same one `main.js` already reads) with real curl requests before writing
+      any code. `solnum=<a real solicitation number>` added to a query changed `totalElements` by
+      exactly 0 -- the param is silently dropped, not applied; the fleet's own
+      `assertFilterNamesApplied`-style canary logic (a dropped name returns the unfiltered index,
+      a real one fails closed to 0) confirms the same conclusion from the other direction. So
+      `j0401`'s "solicitationNumber lookup" cannot be built by just adding a `solnum` query param
+      -- that would ship a filter that silently does nothing, charging for an unfiltered run while
+      claiming to be scoped. What DOES work, verified live: `q=<solicitation number>` (our
+      existing `keyword` field) full-text-matches it -- `q=SPRRA222R0016` returned exactly the 3
+      real rows carrying that `cleanSolicitationNumber` out of 2.5M total -- so a buyer can
+      already do this today via `keyword`, just without a guarantee against false-positive
+      substring hits elsewhere in the title/description. **Scoped follow-up filed below** for
+      whoever next wants to close this gap for real: a post-fetch exact-match filter (send the
+      value as `q`, then drop any fetched row whose own `cleanSolicitationNumber` isn't a
+      case-insensitive exact match, before `pushResult()`) -- same pre-charge shape as the c2392
+      date-window work, opportunities-index only. **Deliberately not implemented this cycle**:
+      wiring it in correctly (ignored-filter warnings on wd/cfda/exclusions, `guardedFilterNames`,
+      watch fingerprint, README, a real platform verification run) is a full build task in its own
+      right, the same size as c2392's date-window cycle, and guessing the param name was the part
+      that needed de-risking before anyone spends a build on it. Recorded in
+      `notes/LEARNINGS.md` (Cycle 2394) so the "guess `solnum` and ship it" mistake can't happen
+      blind. $0 spent (a handful of free curl probes), 0 code/README changes, 0 new Actors, no
+      owner email warranted.
+
+- [ ] **NEW follow-up (c2394, scoped, ready for a dedicated BUILD cycle) -- implement
+      `solicitationNumber` on `sam-gov-opportunities-scraper` as a post-fetch EXACT-match filter,
+      NOT a `solnum` query param (confirmed live that param does nothing -- see c2394 DONE entry
+      and `notes/LEARNINGS.md`).** Shape, mirroring the c2392 `postedFrom`/`postedTo` pattern:
+      (1) opportunities-index only -- the field doesn't exist on wd/cfda/exclusions rows, so warn
+      wd/cfda/exclusions the same way `naicsCodes`/`states` already are, or fail closed like the
+      date fields do (decide which before writing code, per LEARNINGS lesson 5 on this same file);
+      (2) send the value as `q` (there is no better server-side narrowing available -- confirmed
+      `solnum` is dropped) so the fetch walk is at least roughly scoped before the exact filter
+      runs; (3) inside the fetch walk, before `pushResult()`, drop any row whose own
+      `cleanSolicitationNumber` does not case-insensitively equal the input value, counted
+      separately (e.g. `solicitationNumberMismatch`) the same way `dateWindowMissing` is counted;
+      (4) teach every declared-vs-delivered reconciliation site about the drop (same grep-the-file
+      step c2392 had to do for the date window) or the run will falsely report itself incomplete;
+      (5) add to the watch fingerprint and to `watchChangeBlindFilters` if `cleanSolicitationNumber`
+      changes are ever watchable (probably moot -- a solicitation's own number essentially never
+      changes, but confirm rather than assume). Verify with a real platform run reading every
+      delivered row's own `cleanSolicitationNumber`, not just the row count. `j0401`'s other two
+      gaps (single-`noticeId` mode, `groupBy` aggregates) and `tiger19935`'s
+      `minAwardAmount`/`maxAwardAmount` remain unscoped and unprobed -- don't assume their params
+      work either without the same live-canary check first.
+
 - [x] **DONE cycle 2393 (QUALITY/GROWTH slot) -- re-derived the c2380 growing-niche candidate
       list fresh with a broader grep and confirmed every real candidate is already freshly
       resweapt, so no sweep was run (correctly, not for lack of trying).** Preflight: nothing
