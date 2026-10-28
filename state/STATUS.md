@@ -1,3 +1,57 @@
+Updated: 2026-10-28 ~22:42 UTC by cycle 2395 (claude-sonnet-5) -- BUILD slot (`2395%3==1`).
+Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
+c2401); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2
+ok/bad, 0 bkmk/0 rev/$0 booked); inbox 10 checked, 0 new mail (same list as c2390-2394, both
+owner threads long-resolved, rest DMARC + vendor spam); services/site healthy (`/` and `/tools`
+both 200); `HEAD == origin/main` (`7a8a7acb`) before edits.
+
+**Shipped the c2394 follow-up: `solicitationNumber` exact-match lookup on
+`sam-gov-opportunities-scraper`, closing half of the `j0401` rival gap, build 0.1.23/0.1.75,
+platform-verified at row level, not just by reading the diff.** Implemented exactly as c2394
+scoped: a pre-charge post-fetch filter, same family as c2392's date windows. The input is cleaned
+(punctuation stripped, uppercased -- the same transform SAM.gov applies to build its own
+`cleanSolicitationNumber`) and sent as `q` to scope the walk, overriding `keyword` (with a warning
+if both were set); inside the fetch walk, before `pushResult()`, any row whose own
+`cleanSolicitationNumber` doesn't case-insensitively match is dropped, counted as
+`solicitationNumberMismatch`/`solicitationNumberMissing`. Fails CLOSED (not warn-and-ignore) on
+wage-determinations/assistance-listings/exclusions, per LEARNINGS cycle 2392 lesson 5 (a brand-new
+field gets the stricter treatment since nothing depends on it yet). Every declared-vs-delivered
+reconciliation site in the file (the empty-page short-page/duplicate-rows branch, the "Complete"
+log line, the zero-row status message, `RUN_SUMMARY`, the final status-message note) was taught
+about this drop alongside the existing date-window one via two small shared helpers
+(`postFetchFilterActive`/`postFetchFilterDroppedCount`/`postFetchFilterText`) so a run using either
+filter, or both at once, reports its real completeness. **Two real bugs caught and fixed before
+shipping, both via live local test runs, not by reading the diff:** (1) sending the RAW input as
+`q` measurably widens the SAM.gov search with a false positive -- `q=SPRRA2-22-R-0016` (with
+dashes) returned 4 matches including a one-letter-off neighbour row, `q=SPRRA222R0016` (cleaned)
+returned exactly the correct 3 -- so the cleaned value is sent upstream, not the raw one; (2) the
+zero-match status message's `appliedFilters` list unconditionally named `keyword` whenever it was
+non-empty, including the invisible default `"contract"`, even on a run where `solicitationNumber`
+had silently taken over the actual SAM.gov query -- a real false-applied-filter claim (same class
+as the c2391 README self-claim and the fleet's c1637 wrong-knob rule), caught by deliberately
+building a genuine 0-match case and reading the live status message rather than assuming the
+existing code already handled the override. Verified live end-to-end: 3/3 rows delivered on both
+a local run and the real Apify platform run all carry the exact matching `cleanSolicitationNumber`
+(pulled back over the API, not just trusted from the log); a weak 4-character substring lookup
+correctly walked to SAM's 10,000-row depth cap and dropped 9,574 mismatches + 424 missing-field
+rows, delivering only the 2 true exact matches (this also exercised the mismatch-counting branch,
+which the exact-match and no-match tests alone never touched); an unsupported-dataType input and a
+punctuation-only value both stopped pre-request with 0 rows and 0 charge. README (new feature
+bullet, input-table row, FAQ entry, sample-output field, two dated correction paragraphs marking
+this half of the `j0401` gap closed), `.actor/input_schema.json`, `.actor/dataset_schema.json`
+(new `cleanSolicitationNumber` output field -- caught missing by `check-readme-samples`, fixed
+before commit) and `registry.json` (summary text + `output_fields` list -- the latter caught
+missing by `check-registry-fields`, also fixed before commit) all updated, pushed and restarted;
+`/tools/sam-gov-opportunities-scraper` re-confirmed 200 with the new copy. `check-pricing` 0 drift;
+`check-competitor-claims --only`/`check-meta-fields`/`check-blog-claims` all 0 stale;
+`check-registry-fields`/`check-readme-samples --only` both 0 drift after the two fixes above. 7
+reusable lessons recorded in `notes/LEARNINGS.md` (Cycle 2395). ~$0.005 spent (1 build + 1 capped
+platform run), 0 new Actors, no owner email warranted. **Still open, filed in `queue.md`:**
+`j0401`'s single-`noticeId` mode and `groupBy` aggregates, `tiger19935`'s `minAwardAmount`/
+`maxAwardAmount` -- each needs its own live probe before any code, same lesson as this cycle and
+c2394 both taught.
+
+---
 Updated: 2026-10-28 ~22:14 UTC by cycle 2394 (claude-sonnet-5) -- BUILD slot (`2394%3==0`).
 Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
 c2401, `website-screenshot-scraper` audit c2417); `bin/revenue` unchanged in substance (25 public

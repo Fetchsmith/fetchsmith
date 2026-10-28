@@ -562,6 +562,69 @@ function dateWindowText() {
     if (deadlineFrom || deadlineTo) parts.push(`deadline ${deadlineFrom ?? 'any'}..${deadlineTo ?? 'any'}`);
     return parts.join(', ');
 }
+// SOLICITATION NUMBER EXACT LOOKUP (cycle 2395; de-risked cycle 2394, see notes/LEARNINGS.md).
+// `j0401`'s rival gap. SAM.gov's `solnum` query param does nothing -- probed live cycle 2394,
+// confirmed silently dropped, not applied -- so like the date windows above this is a POST-FETCH
+// filter: the value is sent as `q` to roughly scope the walk (there is no better server-side
+// option), then any fetched row whose own `cleanSolicitationNumber` does not match is dropped
+// before pushResult(). SAM.gov builds `cleanSolicitationNumber` by stripping every
+// non-alphanumeric character from `solicitationNumber` (measured live: "SPRRA2-22-R-0016" ->
+// "SPRRA222R0016") and matches it case-insensitively, so the input is normalised the same way --
+// a buyer typing the number with or without dashes/spaces gets the same exact match. Sending the
+// RAW value as `q` was measured to be WORSE, not just unnecessary: `q=SPRRA2-22-R-0016` (with
+// dashes) returned a false-positive neighbour row ("APRRA2-22-R-0016", one letter off, total 4)
+// that the cleaned form (`q=SPRRA222R0016`, total 3) does not, so the cleaned value is what is
+// sent upstream.
+const solicitationNumberRaw = String(input.solicitationNumber ?? '').trim();
+let solicitationNumberClean = null;
+if (solicitationNumberRaw) {
+    solicitationNumberClean = solicitationNumberRaw.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (!solicitationNumberClean) {
+        await Actor.fail(
+            `\`solicitationNumber\` ("${solicitationNumberRaw}") has no letters or digits once punctuation is `
+            + 'stripped, so it can never exactly match a real solicitation number. Stopping before any request '
+            + 'so you are charged nothing. Fix the value, or remove the field to search without it.',
+        );
+    }
+}
+const solicitationNumberActive = solicitationNumberClean !== null;
+// Opportunities-index only -- wd/cfda/exclusions rows carry no solicitation number at all. A
+// brand-new field gets the FAIL-CLOSED treatment (LEARNINGS cycle 2392 lesson 5), not the
+// warn-and-ignore one naicsCodes/states get on those dataTypes: that behaviour predates paying
+// buyers and cannot be changed now, whereas nothing depends on this field yet, so ignoring an
+// unsupported combination here would bill the entire unfiltered set while looking narrowed.
+if (solicitationNumberActive && (isWd || isCfda || isExclusions)) {
+    await Actor.fail(
+        `solicitationNumber is not supported for dataType "${dataType}": SAM.gov's "${dataType}" records carry no `
+        + 'solicitation number field, so there is nothing to compare your value against. Stopping before any row '
+        + 'is delivered or charged -- ignoring it would hand you every record matching your other filters, billed '
+        + 'in full, while looking filtered. Use dataType "opportunities" for a solicitation-number lookup.',
+    );
+}
+let solicitationNumberMismatch = 0; // fetched row carries a different solicitation number -- dropped, uncharged
+let solicitationNumberMissing = 0;  // fetched row carries no solicitation number at all -- dropped, uncharged
+function matchesSolicitationNumber(item) {
+    if (!solicitationNumberActive) return true;
+    const clean = item.cleanSolicitationNumber;
+    if (!clean) { solicitationNumberMissing += 1; return false; }
+    if (clean.toUpperCase() !== solicitationNumberClean) { solicitationNumberMismatch += 1; return false; }
+    return true;
+}
+// Shared by every site below that reconciles SAM's declared total against what this run actually
+// delivered (same reconciliation requirement as the date window, LEARNINGS cycle 2392 lesson 2):
+// both filters drop fetched rows pre-charge, so both must be subtracted together or a run using
+// either (or both at once) reports a false shortfall for working exactly as designed.
+const postFetchFilterActive = dateWindowActive || solicitationNumberActive;
+function postFetchFilterDroppedCount() {
+    return dateWindowDropped + dateWindowMissing + solicitationNumberMismatch + solicitationNumberMissing;
+}
+function postFetchFilterText() {
+    const parts = [];
+    if (dateWindowActive) parts.push(`your date window (${dateWindowText()})`);
+    if (solicitationNumberActive) parts.push(`solicitationNumber "${solicitationNumberRaw}"`);
+    return parts.join(' and ');
+}
+
 let enrichDetail = input.enrichDetail === true;
 let includeAttachments = input.includeAttachments === true;
 
@@ -683,12 +746,22 @@ if (webhookUrlRaw) {
     }
 }
 
+if (solicitationNumberActive && keyword && keyword !== 'contract') {
+    log.warning(
+        `Both \`keyword\` ("${keyword}") and \`solicitationNumber\` were given; solicitationNumber takes over the `
+        + 'search query (sent to SAM.gov as `q`) because an exact solicitation-number match narrows better than a '
+        + 'keyword, and `keyword` is ignored for this run\'s SAM.gov request. The result is still an exact match '
+        + 'on solicitationNumber regardless of this.',
+    );
+}
+
 log.info(`Starting SAM.gov ${ROW_NOUN} search (dataType=${dataType}, index=${SEARCH_INDEX})`, {
     keyword, naicsCodes, setAsideTypes, noticeTypes, states, organizationId, activeOnly, maxResults, enrichDetail, includeAttachments, watchLabel,
-    // Echoed only when set, so the window is visible in the run log from line one -- it is the one
-    // filter here that is applied client-side, and a buyer debugging "why so few rows?" should see
-    // it stated next to the server-side filters rather than inferred from the Done line.
+    // Echoed only when set, so the window/lookup is visible in the run log from line one -- both
+    // are filters applied client-side, and a buyer debugging "why so few rows?" should see them
+    // stated next to the server-side filters rather than inferred from the Done line.
     ...(dateWindowActive ? { postedFrom, postedTo, deadlineFrom, deadlineTo } : {}),
+    ...(solicitationNumberActive ? { solicitationNumber: solicitationNumberClean } : {}),
 });
 
 function buildSearchUrl(page, size) {
@@ -748,7 +821,12 @@ function buildSearchUrl(page, size) {
         index: 'opp', responseType: 'json',
         page: String(page), size: String(size),
     });
-    if (keyword) params.set('q', keyword);
+    // solicitationNumber takes over `q` entirely when set -- it is a full-text match that scopes
+    // the walk far better than the default "contract" keyword, and correctness is guaranteed by
+    // the exact post-fetch filter below regardless of what `q` returns (same reasoning
+    // `assertFilterNamesApplied` already uses to exclude `q` from the dropped-filter-name canary).
+    if (solicitationNumberActive) params.set('q', solicitationNumberClean);
+    else if (keyword) params.set('q', keyword);
     if (activeOnly) params.set('is_active', 'true');
     if (organizationId) params.set('organization_id', organizationId);
     // Multi-value params must be COMMA-JOINED, not repeated. Measured live cycle 540 by
@@ -849,6 +927,10 @@ function normalizeRow(row) {
         opportunityId: id,
         title: row.title ?? null,
         solicitationNumber: row.solicitationNumber ?? null,
+        // SAM.gov's own punctuation-stripped form of solicitationNumber (e.g. "SPRRA2-22-R-0016"
+        // -> "SPRRA222R0016", measured live cycle 2395) -- what `solicitationNumber` input below
+        // is matched against, so a buyer sees exactly the value the exact-match filter compared.
+        cleanSolicitationNumber: row.cleanSolicitationNumber ?? null,
         noticeTypeCode: row.type?.code ?? null,
         noticeType: row.type?.value ?? null,
         isActive: row.isActive ?? null,
@@ -1147,6 +1229,9 @@ const watchCriteria = {
     // they change WHICH rows match, so widening one must start a fresh baseline instead of
     // dumping every row the narrower window excluded as if it were brand new (cycle 2392).
     postedFrom, postedTo, deadlineFrom, deadlineTo,
+    // Same reasoning: a solicitation-number lookup changes WHICH rows match, so changing it (or
+    // clearing it) must start a fresh baseline rather than dumping every previously-excluded row.
+    solicitationNumber: solicitationNumberClean,
 };
 
 // Snapshot of the fields that can change on an already-delivered opportunity: `isActive`/
@@ -1474,19 +1559,19 @@ async function fetchRows(limit) {
                 // before calling an exhausted walk incomplete -- without this, every single
                 // windowed run would finish with a false `short-page` incompleteness and a scary
                 // Console status for working exactly as designed.
-                const windowDropped = dateWindowDropped + dateWindowMissing;
-                if (windowDropped > 0 && rows.length + duplicateRowsDropped + windowDropped >= reachNow) {
+                const clientDropped = postFetchFilterDroppedCount();
+                if (clientDropped > 0 && rows.length + duplicateRowsDropped + clientDropped >= reachNow) {
                     log.info(
                         `Walk complete: SAM.gov served all ${reachNow} row(s) it declared for these filters; `
-                        + `${windowDropped} fell outside your date window (${dateWindowText()})`
+                        + `${clientDropped} were dropped by ${postFetchFilterText()}`
                         + `${duplicateRowsDropped ? ` and ${duplicateRowsDropped} were repeats` : ''}, leaving `
-                        + `${rows.length} in-window ${ROW_NOUN_PLURAL}. Nothing is missing -- this run is COMPLETE.`,
+                        + `${rows.length} ${ROW_NOUN_PLURAL}. Nothing is missing -- this run is COMPLETE.`,
                     );
                 } else if (rows.length + duplicateRowsDropped >= reachNow) {
                     markIncomplete('duplicate-rows', `SAM.gov served ${reachNow} row(s) for this query but only ${rows.length} were distinct opportunities (${duplicateRowsDropped} repeat(s) dropped, uncharged)`);
                 } else {
                     markIncomplete('short-page', `SAM.gov returned an empty page ${page} after ${rows.length} of ${reachNow} reachable match(es)`
-                        + (windowDropped > 0 ? `, plus ${windowDropped} dropped by your date window (${dateWindowText()}) -- the shortfall is bigger than the window explains` : ''));
+                        + (clientDropped > 0 ? `, plus ${clientDropped} dropped by ${postFetchFilterText()} -- the shortfall is bigger than that explains` : ''));
                 }
             }
             break;
@@ -1503,6 +1588,10 @@ async function fetchRows(limit) {
             // which is what the empty-page reconciliation below reads to tell a windowed run from
             // a genuinely short one.
             if (!inDateWindow(item)) continue;
+            // Same pre-dedupe placement and reasoning as inDateWindow() above: a solicitation
+            // number lookup is also a pre-charge filter, and ordering it before the dedupe guards
+            // keeps duplicateRowsDropped meaning strictly "a repeat among rows that matched".
+            if (!matchesSolicitationNumber(item)) continue;
             const rowId = idOf(item);
             if (rowId) {
                 if (seenIds.has(rowId)) { duplicateRowsDropped += 1; continue; }
@@ -1739,6 +1828,10 @@ log.info(`Done. Pushed ${pushed} ${ROW_NOUN_PLURAL} (scanned ${scanned} row(s) o
     + (dateWindowActive
         ? ` Date window (${dateWindowText()}): ${dateWindowDropped} row(s) dropped outside it`
           + `${dateWindowMissing > 0 ? ` and ${dateWindowMissing} with no readable date` : ''}, uncharged.`
+        : '')
+    + (solicitationNumberActive
+        ? ` solicitationNumber "${solicitationNumberRaw}": ${solicitationNumberMismatch} non-matching row(s) dropped`
+          + `${solicitationNumberMissing > 0 ? ` and ${solicitationNumberMissing} with no solicitation number` : ''}, uncharged.`
         : ''));
 
 // ---------------------------------------------------------------------------
@@ -1781,6 +1874,11 @@ const runSummary = {
     dateWindow: dateWindowActive ? { postedFrom, postedTo, deadlineFrom, deadlineTo } : null,
     dateWindowDropped: dateWindowActive ? dateWindowDropped : null,
     dateWindowMissing: dateWindowActive ? dateWindowMissing : null,
+    // Same reconciliation role as the date-window fields above, for the solicitation-number
+    // exact-match filter (cycle 2395): null, not 0, when no value was given.
+    solicitationNumber: solicitationNumberActive ? solicitationNumberClean : null,
+    solicitationNumberMismatch: solicitationNumberActive ? solicitationNumberMismatch : null,
+    solicitationNumberMissing: solicitationNumberActive ? solicitationNumberMissing : null,
     lastApiError,
     maxResults,
     chargeLimitReached,
@@ -1834,7 +1932,10 @@ if (!complete) {
     // this dataType silently drops, would be the same wrong-knob mistake cycle 1637 already ruled
     // out elsewhere in this fleet.
     const appliedFilters = [];
-    if (keyword) appliedFilters.push(`keyword "${keyword}"`);
+    // keyword is never actually sent when solicitationNumber is active -- it takes over `q`
+    // entirely in buildSearchUrl -- so naming it here would be the exact false-applied-filter
+    // claim this block exists to avoid (cycle 1637).
+    if (keyword && !solicitationNumberActive) appliedFilters.push(`keyword "${keyword}"`);
     if (!isWd && !isCfda && !isExclusions && naicsCodes.length) appliedFilters.push(`naicsCodes ${naicsCodes.join(', ')}`);
     if (!isWd && !isCfda && !isExclusions && setAsideTypes.length) appliedFilters.push(`setAsideTypes ${setAsideTypes.join(', ')}`);
     if (!isWd && !isCfda && !isExclusions && noticeTypes.length) appliedFilters.push(`noticeTypes ${noticeTypes.join(', ')}`);
@@ -1846,6 +1947,10 @@ if (!complete) {
         appliedFilters.push(`your date window (${dateWindowText()}), which dropped `
             + `${dateWindowDropped + dateWindowMissing} fetched row(s)`);
     }
+    if (solicitationNumberActive) {
+        appliedFilters.push(`solicitationNumber "${solicitationNumberRaw}", which dropped `
+            + `${solicitationNumberMismatch + solicitationNumberMissing} fetched row(s)`);
+    }
     await Actor.setStatusMessage(
         appliedFilters.length
             ? `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has none once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied. `
@@ -1856,18 +1961,18 @@ if (!complete) {
               + blankDropNote(),
     );
 } else {
-    if (declaredMatches !== null && !watchMode && !dateWindowActive) {
+    if (declaredMatches !== null && !watchMode && !postFetchFilterActive) {
         log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these filters.`);
     } else if (declaredMatches !== null && !watchMode) {
         // Same line, but it must NOT claim to have delivered SAM's declared total when a date
-        // window was applied after the fetch -- `declaredMatches` is the pre-window count
-        // (cycle 2392), so saying "delivered every one of the 340" next to 12 pushed rows would be
-        // the same false-claim class this Actor's README was corrected for in cycle 2391.
+        // window or solicitation-number lookup was applied after the fetch -- `declaredMatches` is
+        // the pre-filter count (cycle 2392), so saying "delivered every one of the 340" next to 12
+        // pushed rows would be the same false-claim class this Actor's README was corrected for in
+        // cycle 2391.
         log.info(
             `Complete: of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these `
-            + `filters, ${pushed.toLocaleString('en-US')} fell inside your date window (${dateWindowText()}) and `
-            + `were delivered; ${(dateWindowDropped + dateWindowMissing).toLocaleString('en-US')} were read and `
-            + 'dropped outside it, uncharged.',
+            + `filters, ${pushed.toLocaleString('en-US')} matched ${postFetchFilterText()} and were delivered; `
+            + `${postFetchFilterDroppedCount().toLocaleString('en-US')} were read and dropped, uncharged.`,
         );
     }
     // A clean run that DELIVERED rows is the one path that previously set no status message at all
@@ -1879,9 +1984,9 @@ if (!complete) {
     // shows `delivered` next to nothing explaining why it is so much smaller than SAM.gov's own
     // declared total, and the window is applied after the fetch so that gap is expected, not a
     // fault (cycle 2392).
-    const windowNote = dateWindowActive
-        ? ` Date window (${dateWindowText()}) dropped ${(dateWindowDropped + dateWindowMissing).toLocaleString('en-US')} `
-          + `fetched row(s) before charging${declaredMatches !== null ? `, out of ${declaredMatches.toLocaleString('en-US')} SAM.gov declared for your other filters` : ''}.`
+    const windowNote = postFetchFilterActive
+        ? ` ${postFetchFilterDroppedCount().toLocaleString('en-US')} fetched row(s) dropped by ${postFetchFilterText()} `
+          + `before charging${declaredMatches !== null ? `, out of ${declaredMatches.toLocaleString('en-US')} SAM.gov declared for your other filters` : ''}.`
         : '';
     if (note || windowNote) {
         await Actor.setStatusMessage(

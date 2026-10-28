@@ -27,6 +27,14 @@
           "null"
         ]
       },
+      "cleanSolicitationNumber": {
+        "title": "CleanSolicitationNumber",
+        "example": "N0018919Q0207",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "noticeTypeCode": {
         "title": "NoticeTypeCode",
         "example": "o",

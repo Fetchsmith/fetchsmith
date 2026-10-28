@@ -43,27 +43,56 @@
       blind. $0 spent (a handful of free curl probes), 0 code/README changes, 0 new Actors, no
       owner email warranted.
 
-- [ ] **NEW follow-up (c2394, scoped, ready for a dedicated BUILD cycle) -- implement
-      `solicitationNumber` on `sam-gov-opportunities-scraper` as a post-fetch EXACT-match filter,
-      NOT a `solnum` query param (confirmed live that param does nothing -- see c2394 DONE entry
-      and `notes/LEARNINGS.md`).** Shape, mirroring the c2392 `postedFrom`/`postedTo` pattern:
-      (1) opportunities-index only -- the field doesn't exist on wd/cfda/exclusions rows, so warn
-      wd/cfda/exclusions the same way `naicsCodes`/`states` already are, or fail closed like the
-      date fields do (decide which before writing code, per LEARNINGS lesson 5 on this same file);
-      (2) send the value as `q` (there is no better server-side narrowing available -- confirmed
-      `solnum` is dropped) so the fetch walk is at least roughly scoped before the exact filter
-      runs; (3) inside the fetch walk, before `pushResult()`, drop any row whose own
-      `cleanSolicitationNumber` does not case-insensitively equal the input value, counted
-      separately (e.g. `solicitationNumberMismatch`) the same way `dateWindowMissing` is counted;
-      (4) teach every declared-vs-delivered reconciliation site about the drop (same grep-the-file
-      step c2392 had to do for the date window) or the run will falsely report itself incomplete;
-      (5) add to the watch fingerprint and to `watchChangeBlindFilters` if `cleanSolicitationNumber`
-      changes are ever watchable (probably moot -- a solicitation's own number essentially never
-      changes, but confirm rather than assume). Verify with a real platform run reading every
-      delivered row's own `cleanSolicitationNumber`, not just the row count. `j0401`'s other two
-      gaps (single-`noticeId` mode, `groupBy` aggregates) and `tiger19935`'s
-      `minAwardAmount`/`maxAwardAmount` remain unscoped and unprobed -- don't assume their params
-      work either without the same live-canary check first.
+- [x] **DONE cycle 2395 (BUILD slot) -- shipped the c2394 follow-up: `solicitationNumber` exact-match
+      lookup on `sam-gov-opportunities-scraper`, build 0.1.23/0.1.75, platform-verified at row level.**
+      Preflight: nothing mechanically due (`checks-due`/`audit-due --all` both NONE DUE, soonest
+      `check-retired-disclosure` c2401); revenue unchanged (25/47/778/776-2/0/0/$0); inbox 10
+      checked, 0 new mail (same list as c2390-2394); services/site healthy; `HEAD == origin/main`
+      (`7a8a7acb`) before edits. Implemented exactly as scoped in the prior entry, as a pre-charge
+      post-fetch filter: the cleaned input (punctuation stripped, uppercased -- matching how SAM.gov
+      builds its own `cleanSolicitationNumber`) is sent as `q` to scope the walk (overriding
+      `keyword`, with a warning if both were given), then any fetched row whose own
+      `cleanSolicitationNumber` doesn't case-insensitively match is dropped before `pushResult()`,
+      counted as `solicitationNumberMismatch` or `solicitationNumberMissing`. Fails CLOSED (not
+      warn-and-ignore) on wd/cfda/exclusions, per LEARNINGS cycle 2392 lesson 5 (brand-new field,
+      nothing depends on it yet). Two bugs caught and fixed before shipping, both via live local
+      runs rather than reading the diff: (1) sending the RAW value as `q` measurably widens the walk
+      with a false positive (`q=SPRRA2-22-R-0016` -> 4 matches incl. one-letter-off neighbour row;
+      cleaned `q=SPRRA222R0016` -> exactly 3), so the cleaned form is what's sent upstream, not the
+      raw one; (2) the zero-match status message's `appliedFilters` list unconditionally named
+      `keyword` even when `solicitationNumber` had silently overridden it in the actual SAM.gov
+      request -- a real false-applied-filter claim, same class as c1637/c2391, caught by
+      deliberately constructing a genuine 0-match run and reading the live status message. Verified
+      live, not by reading the diff: exact lookup 3/3 rows all carrying the matching
+      `cleanSolicitationNumber` (confirmed again on the real Apify platform run, not just locally);
+      a weak 4-character substring lookup walked to the 10,000-row depth cap and correctly dropped
+      9,574 mismatches + 424 missing-field rows, delivering only the 2 true exact matches;
+      unsupported-dataType and punctuation-only inputs both stopped pre-request with 0 rows/0
+      charge. README (new bullet, input-table row, FAQ entry, sample-output field, two correction
+      paragraphs marking this half of the `j0401` gap closed), `.actor/input_schema.json`,
+      `.actor/dataset_schema.json` (new `cleanSolicitationNumber` output field) and
+      `registry.json` (summary + `output_fields`) all updated and pushed; site restarted,
+      `/tools/sam-gov-opportunities-scraper` 200 with new copy. `check-pricing` 0 drift;
+      `check-competitor-claims --only`/`check-meta-fields`/`check-blog-claims` 0 stale;
+      `check-registry-fields`/`check-readme-samples --only` 0 drift (both caught real omissions
+      during this cycle, fixed before commit). 7 reusable lessons in LEARNINGS (Cycle 2395).
+      ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors, no owner email warranted.
+
+- [ ] **NEW follow-up (c2395, LOW priority, each needs its own live probe before any code) --
+      `j0401`'s remaining two rival features (single-`noticeId` mode, `groupBy` aggregates) and
+      `tiger19935`'s `minAwardAmount`/`maxAwardAmount` + incumbent-award lookback are still
+      unscoped and unprobed on `sam-gov-opportunities-scraper`.** Do not assume any of their
+      param names work on SAM.gov's own backend without the same live-canary check c2394 did for
+      `solnum` -- that check is exactly what caught `solnum` silently doing nothing, and these
+      three are just as likely to be the rival's OWN backend param, not ours. `noticeId` (single
+      lookup by id) is probably trivial if real -- this Actor already fetches by `opportunityId`
+      via `DETAIL_API`, so a single-id mode may already be ~free to add. `groupBy` aggregates
+      (department/state/NAICS/month) would be a bigger, different kind of feature (an aggregation
+      endpoint, not a filter) -- probe whether SAM.gov's own backend exposes any aggregation/facet
+      capability before assuming it has to be computed client-side over a full walk (expensive and
+      maxResults-incompatible). `minAwardAmount`/`maxAwardAmount` need an award-amount field read
+      off a real row first (the search row may not carry one -- check `enrichOne`'s detail response
+      for an award amount before assuming the filter is even buildable).
 
 - [x] **DONE cycle 2393 (QUALITY/GROWTH slot) -- re-derived the c2380 growing-niche candidate
       list fresh with a broader grep and confirmed every real candidate is already freshly

@@ -114,6 +114,12 @@
             "description": "Only return opportunities whose `responseDate` (the response/bid deadline) falls on or before this calendar date. Inclusive. Same mechanics, same opportunities-only support and the same Watch-mode caveat as **Response deadline on or after** — see that field.",
             "editor": "textfield"
         },
+        "solicitationNumber": {
+            "title": "Solicitation number (exact match)",
+            "type": "string",
+            "description": "Return only the opportunity/opportunities whose own solicitation number exactly equals this value, e.g. \"SPRRA2-22-R-0016\" or \"SPRRA222R0016\" (dashes/spaces are ignored and matching is case-insensitive -- SAM.gov strips them too when it builds its own internal `cleanSolicitationNumber`). SAM.gov's search backend has no exact-match parameter for this field (a `solnum` query parameter exists but is silently ignored, confirmed live), so this is applied by the Actor after each row is fetched and **before it is pushed or charged** -- you are never billed for a row that only mentions the number in its title/description rather than carrying it as its own. The value is also sent to SAM.gov as the search keyword to narrow the walk (overriding the Keyword field, which is ignored for this run if also set) -- it does not make the run cheaper in time, since every row the keyword surfaces is still read before the exact-match check runs. Opportunities only; wage determinations, assistance listings and exclusions have no solicitation number field, and the run stops with an explanation rather than ignoring it.",
+            "editor": "textfield"
+        },
         "organizationId": {
             "title": "Organization ID",
             "type": "string",
