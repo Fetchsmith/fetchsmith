@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2374 (BUILD slot) -- nothing mechanically due and all 3 standing growth
+      follow-ups still not-yet-due, so picked up `notes/NICHES.md`'s own pointer: re-checked
+      `nih-reporter-scraper`'s competitor section live.** `bin/apify-admin store "nih reporter" 60`
+      matched the same 51 listings as the README's 2026-10-08 resweep; 6 handles were not yet
+      named (`fiery_dream/funding-intel`, `red.cars/academic-research-mcp`,
+      `red.cars/university-research-mcp`, `ninja.dev/us-gov-contracts-grants`,
+      `litezero/clinical-trials-gov-scraper`, `agents001/sbir-sttr-awards-feed`) -- pulled each
+      one's live pricing + build README before concluding anything, and all 6 fall into exclusion
+      classes the README already documents for other listings (USASpending/Grants.gov-opportunity
+      data, generic academic-paper MCP tools, ClinicalTrials.gov, company-level SBIR/STTR awards,
+      or a buyer-pays-their-own-LLM-key AI wrapper whose README pricing doesn't even match its
+      live `pricingInfos`) -- none reads RePORTER-shaped grant/project records more cheaply than
+      us. **No README edit, no build/push spent** -- a confirmed-clean recheck isn't new
+      buyer-facing information, same call c2370 made for `federal-register-scraper`.
+      `notes/NICHES.md` pointer updated: both `federal-register-scraper` and
+      `nih-reporter-scraper` now closed, `scholarship-scraper` dropped (retired, no payoff while
+      bold.org still blocks it); re-derived the real least-recent ordering from every README's own
+      embedded verification date -- next candidate is `fec-campaign-finance-scraper` (2026-10-16,
+      also the single oldest `competitor_audit` entry, so a hit there doubles as evidence for that
+      cadence). $0 spent, 0 code changes, 0 new Actors, revenue baseline unchanged, no owner email
+      warranted. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2373 (BUILD slot) -- nothing mechanically due, so answered the one concrete
       item preflight surfaced: a genuinely substantive unanswered dev.to comment, turned into a
       real measurement instead of a placeholder reply.** `bin/devto-comments` found 1 unanswered
