@@ -23,8 +23,28 @@ arbitrary user-supplied URL (website-screenshot-scraper's example.com). Three Ac
 EXEMPT with a stated reason each (website-screenshot-scraper and shopify-products-scraper
 take arbitrary user URLs with no fixed upstream; google-play-reviews-scraper goes through
 the google-play-scraper npm package, which has no literal host in OUR code to probe).
-`scholarship-scraper` is excluded for a different reason: registry.json says
-status=retired, it is not a live Actor.
+`scholarship-scraper` was excluded for a different reason from c2150 to c2372:
+registry.json says status=retired, so it looked like "not a live Actor".
+
+RECOVERY WATCH (added c2372) -- why "retired" was the wrong reason to exclude
+-----------------------------------------------------------------------------
+That exclusion was backwards. `scholarship-scraper` is PAUSED, not unlisted: it is still
+`isPublic: true` and took 23 external SUCCEEDED runs in the 30d window read 2026-10-28
+(last 2026-10-27), all returning 0 rows because bold.org answers every automated request
+with Vercel's Security Checkpoint (429). Two things are explicitly WAITING on that block
+ending -- un-pausing the listing, and pushing the c2312 unvalidated-date-bound fix that is
+committed locally (67e74ce1) but absent from the live build 0.1.32. So "bold.org started
+answering again" is an action trigger, and nothing in the fleet could see it: bold.org was
+not probed at all, and even if it had been, the `broke` rule below only fires on
+ok/redirect -> error/server-error. It is structurally blind to a host RECOVERING.
+
+Hosts named in `state/upstream_hosts.json` -> `watch_recovery` therefore ALSO flag
+DEVIATION on client-error/server-error/error -> ok/redirect, printed as RECOVERED with
+that host's stated reason. This is opt-in per host on purpose, not a blanket rule: 9 of
+the 49 baselined hosts already sit at a non-2xx baseline (401/403/404 bot-walls and bare-
+root 404s), and two of those -- rss.marketingtools.apple.com and remoteok.com -- are
+TRANSIENT-error baselines that come back on their own, so a blanket recovery rule would
+have fired false DEVIATIONs on the very next run.
 
 HONEST LIMIT, STATED PER THE ORIGINAL PROPOSAL
 ------------------------------------------------
@@ -119,6 +139,8 @@ def unique_hosts(hosts_cfg):
 
 def run_real(reset_host=None):
     cfg = load(HOSTS_FILE, {"hosts": {}, "exempt": {}})
+    watch_recovery = {k: v for k, v in cfg.get("watch_recovery", {}).items()
+                      if not k.startswith("_")}
     baseline = load(BASELINE_FILE, {})
     if reset_host:
         baseline.pop(reset_host, None)
@@ -135,7 +157,11 @@ def run_real(reset_host=None):
             else:
                 moved = registrable(r["final_host"]) != registrable(prev["final_host"])
                 broke = prev["bucket"] in ("ok", "redirect") and r["bucket"] in ("error", "server-error")
-                r["verdict"] = "DEVIATION" if (moved or broke) else "ok"
+                recovered = (host in watch_recovery
+                             and prev["bucket"] in ("client-error", "server-error", "error")
+                             and r["bucket"] in ("ok", "redirect"))
+                r["verdict"] = "DEVIATION" if (moved or broke or recovered) else "ok"
+                r["recovered"] = recovered
                 r["baseline_was"] = prev
             results.append(r)
             baseline[host] = {"status": r["status"], "bucket": r["bucket"],
@@ -143,26 +169,39 @@ def run_real(reset_host=None):
     with open(BASELINE_FILE, "w") as f:
         json.dump(baseline, f, indent=1, sort_keys=True)
         f.write("\n")
-    return results, cfg.get("exempt", {})
+    return results, cfg.get("exempt", {}), watch_recovery
 
 
 def run_selftest():
-    """Fault-inject three synthetic hosts against the real probe/compare logic
-    (not the network): one with no prior baseline (expect BASELINE-SET), one whose
-    baseline was healthy and now errors (expect DEVIATION, broke=True), one whose
-    baseline redirected to host A and now redirects to unrelated host B
-    (expect DEVIATION, moved=True). A fourth, unchanged-ok host must stay clean."""
+    """Fault-inject synthetic hosts against the real probe/compare logic (not the
+    network): one with no prior baseline (expect BASELINE-SET), one whose baseline was
+    healthy and now errors (expect DEVIATION, broke=True), one whose baseline redirected
+    to host A and now redirects to unrelated host B (expect DEVIATION, moved=True), and
+    an unchanged-ok host that must stay clean.
+
+    Two more cover the c2372 recovery watch, and the SECOND is the one that matters --
+    it is the false positive the opt-in design exists to prevent:
+      recovered.example -- 429 client-error baseline -> 200, IS in watch_recovery
+                           => DEVIATION (this is the bold.org case)
+      notwatched.example -- identical 429 -> 200 transition, NOT in watch_recovery
+                           => ok (a bot-wall host that happens to answer today must not
+                           flag; nine real hosts sit at a non-2xx baseline)"""
     synthetic_baseline = {
         "stable.example": {"status": 200, "bucket": "ok", "final_host": "stable.example", "content_type": "text/html"},
         "broke.example": {"status": 200, "bucket": "ok", "final_host": "broke.example", "content_type": "text/html"},
         "moved.example": {"status": 200, "bucket": "ok", "final_host": "old-api.example", "content_type": "application/json"},
+        "recovered.example": {"status": 429, "bucket": "client-error", "final_host": "recovered.example", "content_type": "text/html"},
+        "notwatched.example": {"status": 429, "bucket": "client-error", "final_host": "notwatched.example", "content_type": "text/html"},
     }
     fake_probes = {
         "new.example": {"status": 200, "bucket": "ok", "final_host": "new.example", "content_type": "text/html", "error": None},
         "stable.example": {"status": 200, "bucket": "ok", "final_host": "stable.example", "content_type": "text/html", "error": None},
         "broke.example": {"status": None, "bucket": "error", "final_host": "broke.example", "content_type": "", "error": "ConnectTimeout"},
         "moved.example": {"status": 301, "bucket": "redirect", "final_host": "totally-different.example", "content_type": "text/html", "error": None},
+        "recovered.example": {"status": 200, "bucket": "ok", "final_host": "recovered.example", "content_type": "text/html", "error": None},
+        "notwatched.example": {"status": 200, "bucket": "ok", "final_host": "notwatched.example", "content_type": "text/html", "error": None},
     }
+    synthetic_watch = {"recovered.example": "synthetic watch_recovery entry"}
     ok = True
     for host, probe_result in fake_probes.items():
         prev = synthetic_baseline.get(host)
@@ -171,9 +210,13 @@ def run_selftest():
         else:
             moved = registrable(probe_result["final_host"]) != registrable(prev["final_host"])
             broke = prev["bucket"] in ("ok", "redirect") and probe_result["bucket"] in ("error", "server-error")
-            verdict = "DEVIATION" if (moved or broke) else "ok"
+            recovered = (host in synthetic_watch
+                         and prev["bucket"] in ("client-error", "server-error", "error")
+                         and probe_result["bucket"] in ("ok", "redirect"))
+            verdict = "DEVIATION" if (moved or broke or recovered) else "ok"
         expect = {"new.example": "BASELINE-SET", "stable.example": "ok",
-                  "broke.example": "DEVIATION", "moved.example": "DEVIATION"}[host]
+                  "broke.example": "DEVIATION", "moved.example": "DEVIATION",
+                  "recovered.example": "DEVIATION", "notwatched.example": "ok"}[host]
         status = "PASS" if verdict == expect else "FAIL"
         if verdict != expect:
             ok = False
@@ -192,11 +235,12 @@ def main():
     if args.selftest:
         sys.exit(run_selftest())
 
-    results, exempt = run_real(args.reset_baseline)
+    results, exempt, watch_recovery = run_real(args.reset_baseline)
     flagged = [r for r in results if r["verdict"] == "DEVIATION"]
 
     if args.json:
-        print(json.dumps({"results": results, "exempt": exempt}, indent=1))
+        print(json.dumps({"results": results, "exempt": exempt,
+                          "watch_recovery": watch_recovery}, indent=1))
         sys.exit(1 if flagged else 0)
 
     print(f"check-source-endpoints: {len(results)} unique host(s) probed, "
@@ -206,9 +250,12 @@ def main():
         print(f"  EXEMPT {name}: {reason}")
     for r in sorted(results, key=lambda x: x["verdict"] != "DEVIATION"):
         if r["verdict"] == "DEVIATION":
-            print(f"  DEVIATION {r['host']} ({', '.join(r['slugs'])}): "
+            kind = "RECOVERED" if r.get("recovered") else "DEVIATION"
+            print(f"  {kind} {r['host']} ({', '.join(r['slugs'])}): "
                   f"was {r['baseline_was']['bucket']}/{r['baseline_was']['final_host']} "
                   f"-> now {r['bucket']}/{r['final_host']} status={r['status']} err={r['error']}")
+            if r.get("recovered"):
+                print(f"    WHY THIS IS ACTIONABLE: {watch_recovery[r['host']]}")
         elif r["verdict"] == "BASELINE-SET":
             print(f"  baseline-set {r['host']} ({', '.join(r['slugs'])}): "
                   f"{r['bucket']} status={r['status']}")

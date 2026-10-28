@@ -83,6 +83,12 @@
   "final_host": "www.greenhouse.com",
   "status": 200
  },
+ "bold.org": {
+  "bucket": "client-error",
+  "content_type": "text/html",
+  "final_host": "bold.org",
+  "status": 429
+ },
  "clinicaltrials.gov": {
   "bucket": "ok",
   "content_type": "text/html",
@@ -174,10 +180,10 @@
   "status": 200
  },
  "rss.marketingtools.apple.com": {
-  "bucket": "error",
-  "content_type": "",
+  "bucket": "ok",
+  "content_type": "text/html",
   "final_host": "rss.marketingtools.apple.com",
-  "status": null
+  "status": 200
  },
  "sam.gov": {
   "bucket": "ok",

@@ -1,3 +1,21 @@
+- [x] **DONE cycle 2372 (QUALITY/GROWTH slot) -- closed a blind spot that made an existing plan
+      undetectable: nothing in the fleet could ever notice the bold.org block lifting, so the
+      c2312 held fix for `scholarship-scraper` had no trigger. Built the trigger.** Preflight found
+      nothing mechanically due (`checks-due`/`audit-due --all`/`--type varied_test` all NONE DUE),
+      `ext_bad30d` still the known 4-event baseline, services/site healthy, no new support mail.
+      `bin/usage-trend --since 2026-10-24` showed real per-Actor deviations (website-screenshot
+      6->11, substack +6, steam +4, scholarship +4) -- read `ext_stats30d` on all four: 100%
+      SUCCEEDED, 0 new FAILED, so no buyer-facing breakage, consistent with the standing
+      non-billable-traffic explanation. The scholarship +4 was the thread worth pulling: that Actor
+      is `isPublic: true` with 23 external SUCCEEDED runs/30d (last 2026-10-27) despite being
+      "retired", and `bold.org` was excluded from `state/upstream_hosts.json` entirely. Added it +
+      a new opt-in `watch_recovery` block; `bin/check-source-endpoints` now flags watched hosts
+      RECOVERED on non-2xx -> ok. Verified: selftest 6/6 PASS (incl. the false-positive guard),
+      real run 50 hosts / bold.org baselined `client-error/429` / 0 DEVIATION, and the recovery
+      path proven end-to-end on the real code path via a temporary forced baseline (printed
+      `RECOVERED` + reason, then both files restored exactly). $0 spent, 0 Actor builds, 0 new
+      Actors, revenue unchanged, no owner email warranted. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2370 (BUILD slot) -- preflight-only cycle, nothing actionable surfaced, one candidate lead ruled out.** `checks-due`/`audit-due --all` both NONE DUE, `ext_bad30d` unchanged, revenue baseline unchanged, both owner mail threads re-read in full and confirmed long-resolved (no new ask), services/site healthy. All 3 standing growth follow-ups below are explicitly not-yet-due by their own windows (dev.to ~10-30/31, feed-pickup ~10-30, tool-page CTA ~c2420+). Checked the one untried `notes/NICHES.md` "next BUILD-slot default" pointer -- `federal-register-scraper`'s competitor README against a fresh `bin/apify-admin store "federal register"` read (17 listings) -- and found it already fully covered (re-priced live 2026-10-23, all listings named/priced/dated, counts within natural ±0-1 drift). No code changes, no new Actors, $0 spent, no owner email. Full detail in `state/STATUS.md` cycle-2370 entry.
 
 - [x] **DONE cycle 2366 (QUALITY/GROWTH slot) -- did the trim c2364 queued for this slot (`bin/_trim2366.py` + `bin/_trim2366q.py`) and ran the one due fleet check.** `state/STATUS.md` (144.2KB->23.9KB, kept window 2360..2365) and `tasks/queue.md` (101.6KB->24.6KB, hoist-then-cut: 5 kept DONE blocks + 10 hoisted live open items, 3 archived as closed-but-unchecked since already resolved, rest moved verbatim to `tasks/queue_archive.md`) both trimmed proactively -- `check-doc-size` had read TRIM SOON on both (not yet over the 150KB warn line, but projected past it before the checker's next look). Both trim scripts verified lossless reconstruction before writing; `check-doc-size`/`check-status-continuity`/`check-status-blocks-kept` all clean after. `check-source-endpoints` (24c due) run: 49 hosts probed, 1 DEVIATION (`rss.marketingtools.apple.com` ReadTimeout) -- re-tested live (3 direct curls: 200/timeout/timeout) and via `bin/actor-health --only apple-podcasts-scraper` (`ok:true, items:5`), confirmed transient upstream flakiness already absorbed by the Actor's own retry logic, not a regression; recorded, next due c2390. Full detail in `state/STATUS.md` cycle-2366 entry. $0 spent, 0 code changes, 0 new Actors, revenue unchanged, no owner email warranted. **Deferred to next cycle for time-budget reasons: the orphan-blog-posts follow-up (hoisted this trim, still open below the kept DONE blocks).**
@@ -233,6 +251,21 @@
       registry entry and is PAUSED on the Store, so a ~$0.005 build buys nothing today.
       **Action required only if/when it is ever un-retired: `apify push --force` it** so the live
       build actually contains the fix. Do not spend a build on it before then.
+      **c2372 -- this item now has a real TRIGGER instead of depending on somebody remembering it.**
+      Re-probed bold.org live (2026-10-28): still `429` Vercel Security Checkpoint on
+      `/scholarships/`, `/sitemap.xml` AND `/scholarships/by-major/`, so the deferral still holds and
+      the date-bound bug is still unreachable (0 rows to filter). But the Actor is **PAUSED, not
+      unlisted** -- `isPublic: true`, 23 external SUCCEEDED runs in the 30d window, last 2026-10-27 --
+      and `bold.org` was absent from `state/upstream_hosts.json` entirely (`scholarship-scraper: []`,
+      excluded at c2150 for "status=retired"), so NOTHING in the fleet would ever have noticed the
+      block lifting. Added `bold.org` to the host list plus a new opt-in `watch_recovery` block, and
+      taught `bin/check-source-endpoints` to flag `client-error/server-error/error -> ok/redirect` as
+      `RECOVERED` for watched hosts only (its `broke` rule fires only on ok -> error, i.e. it was
+      structurally blind to recovery). Baseline now on file at `client-error/429`.
+      **So: when `check-source-endpoints` next prints `RECOVERED bold.org`, that is the signal to
+      un-pause the listing and push the held fix. Do not go re-probe bold.org by hand on spec.**
+      Honest limit: the checker runs on a 336c (~7d) cadence, so detection can lag the real lift by
+      up to a week -- vastly better than never, but do not treat it as real-time.
 
 - [ ] **Process lesson to apply on any cycle that changes BOTH Actor code and listing copy
       (learned the expensive way, c2288): run `bin/apify-admin publish <slug> meta.json` FIRST,
@@ -316,7 +349,12 @@
 
 - [ ] **NEW follow-up (c2371) -- accumulate DMARC sample before considering `p=reject`.**
       First post-fix report (`af5d9f7d`, 2026-10-27 range) was 1 source / 0 fails / 100%
-      pass. Not enough to decide anything yet. On a future cycle that finds 3-4 more weekly
+      pass. **Sample 2 of ~4-5 read c2372: `202905fb` (ts 1793184032, range 1793059200-
+      1793145599 = 2026-10-26), also 1 source / 0 fails -- `54.240.11.115`, `disposition=none`,
+      `dkim=pass` on BOTH `fetchsmith.com` (selector `resend`) and `amazonses.com`, `spf=pass`
+      on `send.fetchsmith.com`. Same single Resend/SES egress path as sample 1, so these two
+      samples are not independent evidence about OTHER senders -- they only confirm our one
+      real path aligns. Policy still `p=quarantine`.** Not enough to decide anything yet. On a future cycle that finds 3-4 more weekly
       reports on file (`bin/dmarc-report list`, all with real attachments, i.e. ts after
       1792822587 / 2026-10-24T06:16:27Z): if every source across all of them passes DKIM+SPF
       alignment, that is a reasonable basis to flip `_dmarc.fetchsmith.com` `p=quarantine` ->
