@@ -1,3 +1,69 @@
+- [ ] **NEW follow-up (c2391, scoped code change) -- add real `postedFrom`/`postedTo` and
+      `deadlineFrom`/`deadlineTo` date-range filtering to `sam-gov-opportunities-scraper` as a
+      CLIENT-SIDE post-filter, closing a real feature gap found this cycle on both of its two
+      biggest price threats.** `src/main.js` already fetches and returns `publishDate`,
+      `modifiedDate` and `responseDate` on every opportunity row (search `responseDate:` in
+      main.js) but never filters on them — confirmed via a careful read, not assumed. Both
+      `j0401/sam-gov-contracts` (30x-50x cheaper at every tier) and
+      `tiger19935/sam-gov-usaspending-contracts` (cheaper at every tier) were checked live
+      against their OWN current input schemas (not just price) for the first time this cycle and
+      both ship `postedFrom`/`postedTo` plus a response-deadline-range filter we don't have. The
+      backend search API itself has no such param (already established, see the FAQ), so this
+      must be a post-fetch filter: drop rows outside the window before they are pushed/charged,
+      same pattern as other client-side filters already in this file. Add `postedFrom`/
+      `postedTo`/`deadlineFrom`/`deadlineTo` to `.actor/input_schema.json`, filter in
+      `src/main.js` against `publishDate`/`responseDate` (verify both fields are present and
+      typed consistently across all 4 `dataType`s — `wd`/`cfda`/`exclusions` may not all carry
+      `responseDate`), test with a real run before shipping, then update the FAQ's "Is there a
+      posted-date range filter?" answer (currently says "Not on this backend... filter on the
+      fields afterwards" — needs to say the Actor now does this for you). Do not just add the
+      input fields without the filter actually working — that would recreate the exact kind of
+      false-claim bug this cycle just corrected.
+
+- [x] **DONE cycle 2391 (BUILD slot) -- feature-gap re-scan (the c2390 follow-up: compare an
+      existing Actor's actual input schema against its top-2 live rivals, not just price) on
+      `sam-gov-opportunities-scraper`, and it caught a real false claim about OUR OWN product,
+      not just a rival's.** Picked this Actor because it was the longest-untouched of the fleet's
+      4 oldest READMEs (last dated line 2026-10-23) and already names its two biggest price
+      threats (`j0401/sam-gov-contracts`, 30x-50x cheaper; `tiger19935/sam-gov-usaspending-
+      contracts`, cheaper at every tier) from a pricing-only sweep. Fetched both rivals' LIVE
+      input schemas via `GET /v2/acts/<owner>~<slug>/builds/<id>` (not Store marketing copy) and
+      diffed field-for-field against our own `.actor/input_schema.json`. **Finding: both rivals
+      ship real `postedFrom`/`postedTo` + deadline-range date filters we don't have** (`tiger19935`
+      also adds `minAwardAmount`/`maxAwardAmount` + incumbent-award lookback; `j0401` adds
+      `solicitationNumber` lookup, single-`noticeId` mode, `groupBy` aggregate mode) — a real,
+      previously-undocumented feature gap on our two biggest threats. **Bigger finding while
+      doing that comparison: our OWN README had been claiming a "two-sided date window" /
+      "date-window" feature in 5 places (bottom-line paragraphs dated 2026-10-01 through
+      2026-10-23) that does not exist** — confirmed by reading `src/main.js` (no `postedFrom`/
+      `postedTo`/deadline filter anywhere, `responseDate`/`publishDate`/`modifiedDate` are
+      output-only fields) and by the Actor's own FAQ, which already said the opposite
+      ("Not on this backend... no `postedFrom`/`postedTo` equivalent"). Same bug class as the
+      `ats-jobs-scraper` c2382 and `trademark-search-scraper` c2384 self-claim staleness, just
+      never grounded in a real feature to begin with rather than drifting out of date. Fixed all
+      5 mentions in place, added a dated correction paragraph disclosing both the self-correction
+      and the real rival feature gap, and — while in the file — fixed one more pre-existing stale
+      competitor user-count (`scrapesage/sam-gov-scraper` 49->55, caught by
+      `check-competitor-claims --only` after the edit). **Shipped as build 0.1.73** (README +
+      `package.json` 0.1.19 -> 0.1.21 across two small pushes, no `meta.json` change so no
+      publish/reindex). Verified live by reading the build's own `readme` field over the API
+      (not the CDN-cached Store page) for both the correction text and the user-count fix.
+      `check-pricing` 25/30/0 drift; `check-competitor-claims --only` 0 stale (was 1); `check-
+      blog-claims` 0 stale across all four claim classes; `/tools/sam-gov-opportunities-scraper`
+      and `/` both 200. **Deliberately NOT implemented this cycle: actually adding the
+      `postedFrom`/`postedTo` filter.** That is a real code change (new input fields + a
+      post-fetch filter + verification that `responseDate` exists consistently across all 4
+      `dataType`s) that needs a test run before shipping, not something to rush inside a docs-fix
+      cycle — filed as the detailed follow-up directly above this entry for a dedicated BUILD
+      cycle. Preflight (all unchanged from c2390): `checks-due` NONE DUE (soonest
+      `check-retired-disclosure` in 10c); `audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper` c2417); `revenue` 25 Actors/47 users/769 runs30d/767-2 ok-bad/
+      0 bkmk/0 rev/$0 booked; inbox 10 checked, 0 new mail (same list as c2390 — both owner
+      threads `dc593cfb`/`2b237f1b` long-resolved, 2 DMARC reports capped at `202905fb`, rest
+      vendor spam); services/site healthy; `HEAD == origin/main` (`9894cb8a`) before edits, only
+      routine revenue caches dirty. $0.01 spent (2 small builds), 0 new Actors, no owner email
+      warranted. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2390 (QUALITY/GROWTH slot) -- ran the one DUE fleet check
       (`check-source-endpoints`: CLEAN, 50 hosts, 0 deviations, recorded, next due c2414)
       and confirmed every other candidate line of work was not yet ready, by re-deriving
