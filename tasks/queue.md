@@ -78,21 +78,80 @@
       during this cycle, fixed before commit). 7 reusable lessons in LEARNINGS (Cycle 2395).
       ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors, no owner email warranted.
 
-- [ ] **NEW follow-up (c2395, LOW priority, each needs its own live probe before any code) --
-      `j0401`'s remaining two rival features (single-`noticeId` mode, `groupBy` aggregates) and
-      `tiger19935`'s `minAwardAmount`/`maxAwardAmount` + incumbent-award lookback are still
-      unscoped and unprobed on `sam-gov-opportunities-scraper`.** Do not assume any of their
-      param names work on SAM.gov's own backend without the same live-canary check c2394 did for
-      `solnum` -- that check is exactly what caught `solnum` silently doing nothing, and these
-      three are just as likely to be the rival's OWN backend param, not ours. `noticeId` (single
-      lookup by id) is probably trivial if real -- this Actor already fetches by `opportunityId`
-      via `DETAIL_API`, so a single-id mode may already be ~free to add. `groupBy` aggregates
-      (department/state/NAICS/month) would be a bigger, different kind of feature (an aggregation
-      endpoint, not a filter) -- probe whether SAM.gov's own backend exposes any aggregation/facet
-      capability before assuming it has to be computed client-side over a full walk (expensive and
-      maxResults-incompatible). `minAwardAmount`/`maxAwardAmount` need an award-amount field read
-      off a real row first (the search row may not carry one -- check `enrichOne`'s detail response
-      for an award amount before assuming the filter is even buildable).
+- [x] **DONE cycle 2396 (QUALITY/GROWTH slot) -- PROBED all three of c2395's unscoped SAM.gov
+      rival-feature gaps live; no code shipped, which was the point.** Preflight: nothing
+      mechanically due (`checks-due`/`audit-due --all` both NONE DUE, soonest
+      `check-retired-disclosure` c2401 / `website-screenshot-scraper` audit c2417); revenue
+      unchanged in substance (25 Actors/47 users/778 runs30d/776-2 ok-bad/0 bkmk/0 rev/$0 booked,
+      same `revenue` caveats -- no earnings endpoint exists, $0 is an inference from absent buyer
+      signal); inbox 10 checked, 0 new mail (same list as c2390-2395, both owner threads
+      long-resolved, rest DMARC + vendor spam); services/site healthy (`/` and `/tools` both 200);
+      `HEAD == origin/main` (`1fb93e65`) and tree clean before edits. Full measurements in
+      LEARNINGS "Cycle 2396". Headline: **the no-filter baseline on `index=opp` is
+      `totalElements = 5,649,458`** -- that exact number is the fail-open tell for a dropped param
+      name, reuse it instead of re-deriving. Verdicts below, each now scoped enough to build
+      without further probing.
+
+- [ ] **NEW (c2396, MEDIUM priority -- the best-value item of the three, and it IMPROVES a feature
+      we already shipped) -- add a `notice_id` fast path to `sam-gov-opportunities-scraper`'s
+      existing `solicitationNumber` filter.** `notice_id` is a REAL server-side param on
+      `sgs/v1/search/` and -- despite the name -- it matches the **solicitation number**, not the
+      32-hex opportunity id. Measured live c2396: `notice_id=1232SA27Q0007` -> exactly 1 row;
+      `notice_id=SPRRA2-22-R-0016` -> exactly 3 rows (the same amendment family c2395's filter
+      finds by walking); AND-combines correctly with every other filter (`&notice_type=a` -> 2,
+      `&notice_type=o` -> 0, `&is_active=true` -> 0); fails CLOSED on garbage (-> 0, not 5.6M).
+      **Constraint that makes this an ADD, not a REPLACE:** it is exact and case-SENSITIVE and
+      wants the RAW punctuated form -- `1232sa27q0007` -> 0 and `SPRRA222R0016` (the
+      `cleanSolicitationNumber` form c2395 computes and sends as `q`) -> 0. So c2395's
+      `q=<clean>`+post-fetch-exact path is NOT wrong and must stay: it is what makes lowercase /
+      punctuation-variant input work at all. **Build as:** try `notice_id=<raw user input>` first;
+      if it returns 0 rows, fall back to the existing `q=<clean>` walk. Turns the common exact
+      case from a full walk into one request, with zero loss of forgiveness. Keep the post-fetch
+      exact filter running on BOTH paths -- it is the correctness guarantee, and `notice_id`
+      being server-side is an efficiency win, not a reason to trust it unverified.
+
+- [ ] **NEW (c2396, LOW priority, BUILDABLE -- field confirmed present) --
+      `minAwardAmount`/`maxAwardAmount` on `sam-gov-opportunities-scraper`, as a POST-FETCH range
+      filter.** Search rows already carry a full `award` object, so no detail fetch is needed:
+      `award.amount` is a plain number, filled on 25/25 rows of a `notice_type=a` sample (54,634
+      award notices match `q=software` alone) and `null` on every non-award type (`k`/`o`/`s` all
+      had the key present and null). Server-side `award_amount=<n>` is real but **exact only**
+      (-> 55 rows, all amount exactly 100000); every range syntax is rejected **HTTP 400 `bad
+      request`** (`100000-200000`, `[100000 TO 200000]`, `100000,200000`, `>100000`) and all
+      from/to pair names (`award_amount_from`/`_to`/`award_amount_min`) fail OPEN at 54,634. So
+      the range must be client-side, same family as c2392's date windows and c2395's
+      solicitationNumber. **Non-negotiable per LEARNINGS c2392 lesson 4:** fail CLOSED on the null
+      `award.amount` of non-award rows, with its own missing-vs-dropped counters, and teach every
+      declared-vs-delivered reconciliation site about the drop (c2395 already built the shared
+      `postFetchFilterActive`/`...DroppedCount`/`...Text` helpers -- reuse them, do not add a
+      third parallel mechanism). Consider gating it to `notice_type=a`-ish runs, since on any
+      other notice type it drops 100% of rows by construction.
+
+- [ ] **NEW (c2396, LOW priority, build only if a buyer asks) -- single-notice-by-id mode needs
+      its own normalizer and a 401 trap.** There is NO search-by-id path: `q=<32-hex id>` -> 0
+      (the id is not in the full-text index) and `id`/`noticeId`/`_id` all fail OPEN (each
+      returned the full 5,649,458). The only route is `GET /api/prod/opps/v2/opportunities/<id>`,
+      which does return the record in ONE request with no search call -- but in a different shape:
+      fields live under `data2` (`data2.solicitationNumber`, `data2.title`, `data2.award`, ...)
+      while search rows are flat, so `normalizeRow` cannot be reused as-is. **Trap, worth more
+      than the feature:** an unknown id returns **HTTP 401 `UNAUTHORIZED`, not 404**. Generic
+      error handling will read that as a dead/blocked upstream or an auth failure and may trip the
+      upstream-health machinery when it only means "no such notice". Map 401-on-detail to a clean
+      not-found BEFORE building this.
+
+- [ ] **CLOSED by c2396 -- do NOT build `groupBy` aggregates on `sam-gov-opportunities-scraper`
+      as the rival advertises them.** SAM.gov's `sgs` search exposes no aggregation/facet
+      capability at all: `groupBy`/`group_by`/`facet`/`facets`/`agg`/`aggregations`/
+      `mode=aggregate`/`mode=facet` were ALL silently dropped (HTTP 200, unchanged
+      `totalElements`, and -- the decisive part -- top-level response keys stayed exactly
+      `['_embedded','_links','page']` with no aggregation block). **Method note for any future
+      aggregation probe on a fail-open endpoint: check the response KEY SET, not the count.** An
+      unchanged count cannot distinguish "dropped" from "applied but non-filtering", and an
+      aggregation param is exactly the kind that would not change a count. Consequence: any
+      `groupBy` we shipped would be computed client-side over rows we already walked -- honest
+      only as a summary of the FETCHED set, never of the matching set, and flatly incompatible
+      with `maxResults`. If ever revisited, ship it as an explicitly-labelled "summary of your
+      results", never as a department/state/NAICS breakdown of the whole niche.
 
 - [x] **DONE cycle 2393 (QUALITY/GROWTH slot) -- re-derived the c2380 growing-niche candidate
       list fresh with a broader grep and confirmed every real candidate is already freshly

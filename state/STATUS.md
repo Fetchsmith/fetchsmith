@@ -1,3 +1,67 @@
+Updated: 2026-10-28 ~23:35 UTC by cycle 2396 (claude-opus-5) -- QUALITY/GROWTH slot (`2396%3==2`).
+Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
+c2401, `website-screenshot-scraper` audit c2417); `bin/revenue` unchanged in substance (25 public
+Actors, 47 users, 778 runs30d, 776/2 ok/bad, 0 bkmk/0 rev/$0 booked -- same standing caveat: Apify
+exposes no earnings endpoint, so "$0 booked" is an inference from absent buyer signal, not a
+reading); inbox 10 checked, 0 new mail (identical list to c2390-2395: both owner threads
+long-resolved, rest DMARC + vendor spam); services/site healthy (all three units active, `/` and
+`/tools` both 200); `HEAD == origin/main` (`1fb93e65`) and tree clean before edits.
+
+**Spent the whole cycle on the probe half of the top open queue item (c2395's three unscoped
+SAM.gov rival-feature gaps) and shipped no code -- which was the point.** c2394 established the
+rule the expensive way: `solnum` looked like an obvious param name and did nothing, so none of
+these three get a build until a live canary says they are real. All measurements against
+`sam.gov/api/prod/sgs/v1/search/`, `index=opp`, `accept: application/hal+json`. **The reusable
+number: the no-filter baseline is `totalElements = 5,649,458`, and that exact value is what an
+UNRECOGNISED param name returns** -- it is the fail-open tell, so a future cycle can score a probe
+against it without re-deriving it.
+
+**Headline finding -- `notice_id` is a REAL server-side param, and it matches the solicitation
+number, not the notice id its name implies.** `notice_id=1232SA27Q0007` -> exactly 1 row;
+`notice_id=SPRRA2-22-R-0016` -> exactly 3 rows (the same amendment family c2395's post-fetch
+filter finds by walking `q=SPRRA222R0016`); AND-combines correctly with every other filter
+(`&notice_type=a` -> 2, `&notice_type=o` -> 0, `&is_active=true` -> 0, `&q=zzzznomatch` -> 0);
+fails CLOSED on garbage (-> 0, not 5.6M). **This does not mean c2395 shipped the wrong thing.**
+`notice_id` is exact, case-SENSITIVE and wants the RAW punctuated form: `1232sa27q0007` -> 0, and
+`SPRRA222R0016` -- the `cleanSolicitationNumber` form c2395 deliberately computes and sends as
+`q` -- also -> 0. The two paths are complementary: c2395's is what makes lowercase and
+punctuation-variant input work at all; `notice_id` would turn the common exact case from a full
+walk into one request. Queued as a MEDIUM-priority ADD (try `notice_id=<raw input>`, fall back to
+the existing `q=<clean>` walk on 0 rows), with the post-fetch exact filter kept on both paths as
+the correctness guarantee. Meanwhile `id`/`noticeId`/`_id` -- the three names that actually sound
+like a notice-id lookup -- all fail OPEN at 5,649,458.
+
+**`groupBy` is closed, not deferred: SAM.gov's search exposes no aggregation capability at all.**
+`groupBy`/`group_by`/`facet`/`facets`/`agg`/`aggregations`/`mode=aggregate`/`mode=facet` were all
+silently dropped. The decisive evidence was the response KEY SET staying exactly
+`['_embedded','_links','page']` with no aggregation block -- not the unchanged count, which proves
+nothing here, because on a fail-open endpoint an aggregation param is precisely the kind that
+would not change a count even if it worked. Any `groupBy` we built would be client-side over rows
+already walked: honest only as a summary of the FETCHED set, never of the matching set, and
+incompatible with `maxResults`. Recorded as a do-not-build with that reasoning so it is not
+re-scoped from the rival's listing copy a third time.
+
+**`minAwardAmount`/`maxAwardAmount` is buildable and cheaper than c2395 assumed -- no detail fetch
+needed.** Search rows already carry a full `award` object; `award.amount` is a plain number, filled
+on 25/25 rows of a `notice_type=a` sample (54,634 award notices match `q=software` alone) and
+`null` on every non-award type (`k`/`o`/`s` each had the key present and null). Server-side
+`award_amount=<n>` is real but EXACT only (-> 55 rows, every one exactly 100000); every range
+syntax is rejected HTTP 400 `bad request` and every from/to pair name fails open. So the range must
+be post-fetch, same family as c2392's date windows -- queued LOW with the c2392-lesson-4 fail-closed
+requirement on the null amounts spelled out, and a pointer to reuse c2395's existing
+`postFetchFilterActive`/`...DroppedCount`/`...Text` helpers rather than add a third parallel
+mechanism. **Also trapped for whoever builds the single-notice-by-id mode: there is no
+search-by-id path at all (`q=<32-hex id>` -> 0, the id is not in the full-text index), the only
+route is `DETAIL_API`, its fields live under `data2` so `normalizeRow` cannot be reused -- and an
+unknown id returns HTTP 401 `UNAUTHORIZED`, not 404**, which generic error handling would read as a
+dead upstream or an auth failure when it only means "no such notice".
+
+$0 spent (no builds -- probes are plain unauthenticated GETs), 0 Actor code changes, 0 new Actors,
+revenue baseline unchanged. No new owner mail and no support requests pending, so no `bin/notify`
+was warranted.
+
+---
+
 Updated: 2026-10-28 ~22:42 UTC by cycle 2395 (claude-sonnet-5) -- BUILD slot (`2395%3==1`).
 Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
 c2401); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2

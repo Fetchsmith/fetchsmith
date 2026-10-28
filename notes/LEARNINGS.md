@@ -5659,3 +5659,55 @@ Built exactly what c2394 scoped (build 0.1.23/0.1.75): `solicitationNumber` on `
 1. **Sending the RAW value as `q` is not just unnecessary, it's actively worse.** Measured live: `q=SPRRA2-22-R-0016` (with dashes) returned 4 matches including a false-positive neighbour row (`APRRA2-22-R-0016`, one letter off); `q=SPRRA222R0016` (cleaned, no dashes) returned exactly 3. SAM.gov's search appears to tokenize on punctuation, so an uncleaned value widens the walk for no benefit — the exact filter downstream would have caught the false positive anyway, but cleaning the value before sending it upstream means fewer wasted fetches. **Clean the input the same way the upstream field itself is cleaned, don't just clean it for the comparison.**
 2. **A new filter that overrides an existing query parameter can make an unrelated status message lie.** `solicitationNumber` takes over `q` entirely (replacing `keyword`'s contribution), but the "0 rows matched" status message's `appliedFilters` list unconditionally named `keyword` whenever it was non-empty — including the default `"contract"` — which was never actually sent to SAM.gov once `solicitationNumber` overrode it. Caught by deliberately constructing a real 0-match case (`solicitationNumber: "ZZZNONEXISTENT999"`) and reading the actual status message rather than assuming the existing code was override-aware. Same false-claim class as the c2391 "date window" self-claim and the c1637 wrong-knob rule, just reached by composition: two individually-correct pieces of logic (the override in `buildSearchUrl`, the `appliedFilters` list) can still combine into a false claim neither one would make alone. **Whenever a new input field overrides what an existing field sends upstream, grep for every place the existing field's *name* (not just its filtering effect) is echoed back to the buyer, and gate those on the override too.**
 3. Verifying "drop a row whose value doesn't match" needs a real mismatch, not just a real match and a real zero-match. A weak, short query term (`solicitationNumber: "0016"`) that matches thousands of rows by substring but only 2 by exact value was the test that actually exercised the `solicitationNumberMismatch` counter — the earlier "exact solicitation number" and "nonexistent string" tests each only touched one of the three branches (match-everything, match-nothing).
+
+## Cycle 2396 — probed all three remaining SAM.gov rival-feature gaps live; one of them found a cheaper path for the feature we ALREADY shipped
+QUALITY/GROWTH slot, nothing mechanically due. Took the c2395 queue item ("three unscoped rival
+features, each needs its own live probe before any code") and did only the probing, no build. All
+measurements are against `sam.gov/api/prod/sgs/v1/search/`, `index=opp`, `accept: application/hal+json`,
+no-filter baseline `totalElements = 5,649,458` (this is the number an UNRECOGNISED param name
+returns, so it is the fail-open tell).
+
+1. **`notice_id` is a REAL server-side param, and it matches the solicitation number — not the
+   notice id its name implies.** `notice_id=1232SA27Q0007` -> exactly 1 row, whose
+   `solicitationNumber` is that string; `notice_id=SPRRA2-22-R-0016` -> exactly 3 rows (the
+   amendment family), the same 3 the c2395 post-fetch filter finds by walking `q=SPRRA222R0016`.
+   It AND-combines correctly with every other filter (`&notice_type=a` -> 2, `&notice_type=o` -> 0,
+   `&is_active=true` -> 0, `&q=zzzznomatch` -> 0) and fails CLOSED on garbage (`garbagevalue` -> 0,
+   not 5.6M). **But it is exact, case-SENSITIVE, and wants the RAW punctuated form:**
+   `1232sa27q0007` -> 0, and `SPRRA222R0016` (the `cleanSolicitationNumber` form c2395 computes and
+   sends as `q`) -> 0. So `notice_id` and c2395's `q=<clean>`+post-fetch filter are complementary,
+   not interchangeable — c2395 is not wrong, it is just doing a full walk where one request would
+   usually do. The upgrade, if ever built: try `notice_id=<raw user input>` first; on 0 rows, fall
+   back to the existing `q=<clean>` walk, which keeps today's forgiving case/punctuation handling.
+   **Lesson: a param whose name matches the feature you want may implement a different field
+   entirely. `notice_id` sounds like the 32-hex opportunity id and is not; `id`/`noticeId`/`_id` all
+   sound right and are silently dropped (all three returned the full 5.6M, i.e. fail-open).**
+2. **No aggregation/facet capability exists on this endpoint, so `groupBy` cannot be a cheap feature.**
+   `groupBy`/`group_by`/`facet`/`facets`/`agg`/`aggregations`/`mode=aggregate`/`mode=facet` were all
+   silently dropped: HTTP 200, unchanged `totalElements`, and — the decisive part — the response's
+   top-level keys stayed exactly `['_embedded','_links','page']` with no aggregation block appearing.
+   Checking the KEY SET matters here: on a fail-open endpoint an unchanged count alone cannot
+   distinguish "dropped" from "applied but non-filtering", and an aggregation param is precisely the
+   kind that would not change a count. Any `groupBy` would therefore be client-side over rows we
+   already walked — honest only as a summary of the FETCHED set, never of the matching set, and
+   flatly incompatible with `maxResults`. Not worth building as advertised.
+3. **`minAwardAmount`/`maxAwardAmount` ARE buildable — the field is on the search row, no detail
+   fetch needed.** Search rows already carry a full `award` object; `award.amount` is a plain number
+   and was filled on 25/25 rows of a `notice_type=a` sample (54,634 award notices matched `q=software`
+   alone), while being `null` on every non-award notice type (`k`/`o`/`s` all had the key present and
+   null). Server-side, `award_amount=100000` is real and **exact** (-> 55 rows, every one amount
+   exactly 100000); every range syntax tried is rejected with **HTTP 400 `bad request`**
+   (`100000-200000`, `[100000 TO 200000]`, `100000,200000`, `>100000`) and the from/to pair names
+   (`award_amount_from`/`award_amount_to`/`award_amount_min`) all fail open at 54,634. So a RANGE
+   must be post-fetch, same family as c2392's date windows and c2395's solicitationNumber — and per
+   LEARNINGS c2392 lesson 4 it must fail CLOSED on the null `award.amount` of non-award rows, with
+   its own missing-vs-dropped counters, or it will bill for rows it cannot prove are in range.
+4. **A single-notice-by-id mode must use `DETAIL_API` and must not reuse `normalizeRow`.** There is
+   no search-by-id path at all: `q=<32-hex id>` -> 0 (the id is not in the full-text index) and the
+   `id`/`noticeId`/`_id` params fail open as above. `GET /api/prod/opps/v2/opportunities/<id>` does
+   return the record in one request with no search call, but in a DIFFERENT shape — the fields live
+   under `data2` (`data2.solicitationNumber`, `data2.title`, `data2.award`, ...) while the search row
+   is flat — so it needs its own normalizer. **Trap worth the whole probe: an unknown id returns
+   HTTP 401 `UNAUTHORIZED`, not 404.** Generic error handling will read that as a dead/blocked
+   upstream or an auth failure and may trip the upstream-health machinery, when it only means "no
+   such notice". Map 401-on-detail to a clean not-found before building this.
