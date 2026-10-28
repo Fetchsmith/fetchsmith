@@ -1,12 +1,17 @@
-- [ ] **NEW follow-up (c2348/c2349/c2350) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      8 Actors still un-audited (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348/c2349/c2350/c2351) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      7 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict): `clinicaltrials-scraper`,
       `fec-campaign-finance-scraper`, `federal-register-scraper`,
       `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
-      `trademark-search-scraper`, `uk-find-a-tender-scraper`.
+      `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81) -- see
+      the DONE entry below and the `state/STATUS.md` cycle-2351 entry for the fix.** Pick
+      `clinicaltrials-scraper` (14 markIncomplete / c2343 grep-only shape-check, never a full read)
+      next -- per the c2343/c2344 lesson, look for the c2343 shape (an extra counter OUTSIDE the
+      sound chain) rather than the c2342/c2344 shape (a whole missing branch) on these 7, since they
+      already have a central `markIncomplete`/`complete` flag.
       `clinicaltrials-scraper`/`nih-reporter-scraper`/
       `sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` got a grep shape-check in c2343
       only (confirmed they have a `complete`/`markIncomplete` pattern similar to the clean
@@ -77,11 +82,20 @@
       TWO sibling upstream-error causes, check they get IDENTICAL `pushed`-agnostic deferred-fail
       treatment -- a `pushed===0`-only immediate fail sitting next to a properly-deferred sibling is
       a strong tell the first one predates the h287 pattern and was never updated.**
-      **Still unaudited and still ranking high on the same signal:
-      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `trademark-search-scraper`
-      next -- and, per the c2348/c2349/c2350 findings, explicitly check it (and every remaining Actor)
-      for the `maxResults`/charge-limit term AND the two-sibling-error-cause asymmetry, not just the
-      original two bug shapes. The
+      **`trademark-search-scraper` (18/0, 11 setStatus call sites) resolved c2351 (build 0.1.81):
+      its main chain was already sound (maxResults/charge-limit cap and the two sibling
+      upstream-error causes were already handled correctly, no gap of either prior shape) but a
+      THIRD shape turned up -- the generic zero-row cascade's invalid-filter-value branch had no
+      `!timeBudgetStopped` guard, so an incremental watch run that both timed out AND had an
+      invalid filter value had its own correct "do not read this as nothing new" message silently
+      overwritten by the less-true "0 results because of invalid filter" one. Fixed with a one-line
+      guard; verified via local old-vs-new fault injection (real TMview API, `APIFY_TIMEOUT_AT` set
+      to 3s out) plus a clean platform regression run (maxResults-cap path, 20/20 pushed, message
+      unchanged). See `state/STATUS.md` cycle-2351 entry. New screening question: when a later,
+      unguarded cascade can also fire in a mode (watch) that has its OWN earlier, mode-aware
+      message for the same outcome, check the cascade can't win a race against the more-specific
+      message for a secondary cause.**
+      The remaining 7, all
       `markIncomplete`-bearing ones
       (clinicaltrials 14, nih-reporter 14, sam-gov 15, steam-reviews 10, uk-find-a-tender 10,
       fec 7, federal-register 8) are the lower-risk tail -- audit them last, and when you do,
@@ -94,7 +108,8 @@
       `ats-jobs-scraper` (c2344, build 0.1.109), `hacker-news-scraper` (c2345, build 0.1.93),
       `shopify-products-scraper` (c2346, build 0.1.105),
       `us-federal-awards-scraper` (c2347, build 0.1.86), `substack-scraper` (c2348, build 0.1.84),
-      `google-news-scraper` (c2349, build 0.1.87), `eu-ted-tenders-scraper` (c2350, build 0.1.86).
+      `google-news-scraper` (c2349, build 0.1.87), `eu-ted-tenders-scraper` (c2350, build 0.1.86),
+      `trademark-search-scraper` (c2351, build 0.1.81).
       **Also watch, a new sub-shape found by c2346: a well-formed array-input entry that throws
       inside the per-entry parser (not just "doesn't match anything") can be tracked ONLY in a
       machine-readable side table (e.g. this fleet's `sourceOutcomes`/`RUN_SUMMARY` pattern) while
@@ -118,6 +133,53 @@
       reachable with `pushed > 0 && !watchMode && !timeBudgetExceeded`.
       Full writeup in `notes/LEARNINGS.md` cycle-2343/2344 entries and `state/STATUS.md`
       cycle-2343/2344 entries.
+
+- [x] **DONE cycle 2351 (QUALITY/GROWTH slot) -- ran the one due fleet check (`apify-spend`,
+      CLEAN) plus the two standing QUALITY tripwires, then continued the fleet-wide
+      `setStatusMessage` reachability audit on `trademark-search-scraper` (18 warnings/0
+      markIncomplete/11 setStatus call sites, next off the c2350 triage ranking).**
+      Preflight: `bin/checks-due` 1 DUE (`apify-spend`); `bin/audit-due --all`/`--type
+      varied_test` NONE DUE; `bin/revenue` 25 public Actors/47 users/774 runs30d/772-2 ok-bad/0
+      bkmk-rev (users ticked 49->47, a windowed/active count per its own caveat, not a trend
+      signal); inbox unchanged (same 10 known spam/DMARC items, newest still `06daa491`, owner
+      thread `dc593cfb` long-resolved); services/site healthy (`/`, `/tools` both 200); `HEAD ==
+      origin/main` (`125b75e1`) and tree clean before edits.
+      **`apify-spend`: USED $4.51 of the $85 hard cap ($3.51 above the $1 included credit,
+      cycle projection $7.35 at 61.4% elapsed) -- well under cap, no action, recorded (next due
+      c2447).** `bin/devto-comments`: 24 published, 7 with comments, 12 inbound, 0 unanswered.
+      Doc sizes fine (STATUS.md 75.6KB, queue.md 58.9KB, both well under the 150KB trim line).
+      **`trademark-search-scraper` defect found and fixed (build 0.1.81), third bug shape in this
+      audit series:** its main `setStatusMessage` chain was already sound on the first two bug
+      shapes this audit has been hunting (the maxResults/charge-limit cap and the two sibling
+      upstream-error causes `httpError`-class treatment both already correct, unconditional on
+      `pushed`/watchMode). But the generic zero-row cascade's invalid-filter-value branch
+      (`pushed === 0 && zeroRowFilterCauses.length > 0`) had no `!timeBudgetStopped` guard, unlike
+      its sibling branch 19 lines above it which explicitly excludes `watchMode` for exactly this
+      reason. Result: an INCREMENTAL watch run that both timed out (its own clock, not TMview) AND
+      had an invalid filter value got its own watch-block message -- "Incomplete (time budget) ...
+      do not read this as nothing new" -- silently overwritten by the less-true, more-reassuring
+      "0 results because of invalid filter value ... not an empty search", hiding from a
+      monitoring buyer the one fact (the run never finished checking) that mattered most. Fixed
+      with a one-line guard (`&& !timeBudgetStopped`) plus a comment explaining why it only
+      affects watchMode (the non-watch timeBudget case was already caught by the branch above).
+      **Verified via local old-vs-new fault injection against the real public TMview API** (TMview
+      can't be made to time out on demand, so `APIFY_TIMEOUT_AT` was set 3s out to force
+      `remainingBudgetMs() < MIN_ATTEMPT_MS` on the first fetch attempt; `CRAWLEE_STORAGE_DIR`, not
+      `APIFY_LOCAL_STORAGE_DIR`, per the PLAYBOOK note that the installed SDK silently ignores the
+      latter): same seeded watch baseline, same invalid status filter, same forced timeout --
+      pre-fix code printed and kept the WRONG final status message (2 `[Status message]` log
+      lines, filter-cause one winning); post-fix code printed only the correct "Incomplete (time
+      budget)" line. Plus one clean platform regression run (`test_input.json`, no watch/no
+      timeout) -- `GcoZOPVChgcgR54Ll` SUCCEEDED, 20/20 pushed under the maxResults cap, correct
+      cap message unchanged, confirming the non-watch path is unaffected.
+      `node --check` clean before push. `check-pricing`/`check-charges`/`check-registry-fields`/
+      `check-meta-fields`/`check-zero-row-message`/`check-fail-ordering` all clean after.
+      ~$0.006 spent (1 build + 1 platform run; the fault-injection runs hit the free public TMview
+      API directly, no Apify spend), 0 new Actors, revenue unchanged, no owner email warranted.
+      **14 of 19 audited Actors now resolved; 7 remain, all the `markIncomplete`-bearing tail --
+      `clinicaltrials-scraper` queued next.** New screening question (a later unguarded cascade
+      racing against an earlier mode-aware message for the same outcome) written up in
+      `notes/LEARNINGS.md` and filed in the follow-up at the top of this file.
 
 - [x] **DONE cycle 2350 (BUILD slot) -- continued the fleet-wide `setStatusMessage` reachability
       audit on `eu-ted-tenders-scraper` (18 warnings/0 markIncomplete, next off the c2349 triage

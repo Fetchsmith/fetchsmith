@@ -796,7 +796,16 @@ if (timeBudgetStopped && !watchMode) {
       ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`
       : ''),
   );
-} else if (pushed === 0 && zeroRowFilterCauses.length > 0) {
+} else if (pushed === 0 && !timeBudgetStopped && zeroRowFilterCauses.length > 0) {
+  // `!timeBudgetStopped` matters only for watchMode: the non-watch timeBudget case is already
+  // caught by the branch above (gated on `!watchMode`), so this guard is a no-op there. In
+  // watchMode, though, an incremental run's own timeBudgetStopped branch (above, inside the
+  // `if (watchMode && !skipBaselineSave)` block) already set the "do not read this as nothing
+  // new" message for exactly this reason (a monitor the buyer schedules and stops watching must
+  // not be told a wrong, more-reassuring cause) -- without this guard, an incremental run that
+  // BOTH times out AND has an invalid filter value would silently overwrite that message with
+  // "0 results because of invalid filter", hiding the far more actionable fact that the run
+  // never finished checking for new marks at all.
   await Actor.setStatusMessage(
     `0 results because of ${zeroRowFilterCauses.length} invalid filter value${zeroRowFilterCauses.length > 1 ? 's' : ''}: `
     + `${zeroRowFilterCauses.join('; ')}. This is a filter-value problem, not an empty search.`,

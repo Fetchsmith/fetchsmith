@@ -5278,3 +5278,40 @@ run, however sound the rest of the branch chain is.
   still hits the live TED API and only the injected page returns a synthetic 400) -- this is the
   same fault-injection technique the h287/h289 fixes on other Actors used, just applied here
   without needing the full Apify platform (no charge, no build, instant iteration).
+
+## Cycle 2351: a mode-aware message can lose a race to a later, unguarded generic cascade
+
+`trademark-search-scraper`'s `setStatusMessage` chain had already closed the two bug shapes this
+audit series had been finding (c2349's missing `maxResults`/charge-limit term, c2350's
+inconsistently-deferred sibling upstream-error causes) -- but had a third one. Its watch block
+(reached first, higher up the script) sets a careful, mode-aware message when an incremental run's
+own clock stops it ("do not read this as nothing new"). Lower down, a GENERIC zero-row cascade
+meant for the non-watch path has its own `else if (pushed === 0 && zeroRowFilterCauses.length > 0)`
+branch for invalid filter values -- and unlike its neighbor branch one `else if` up (which
+explicitly excludes `watchMode`, with a comment explaining why), this one had no such exclusion
+and no `timeBudgetStopped` exclusion either. Both branches fire off the SAME shared variable
+(`pushed === 0`), so whichever one is physically later in the `if`/`else if` chain for a given
+input combination wins -- and because `watchMode` isn't part of its own condition, it could win
+even when a mode-specific message upstream had already (correctly) been set for a more urgent
+cause. Net effect: an incremental watch run that both timed out AND had an invalid filter value
+had its own correct timeout warning silently replaced by a less-true, more-reassuring
+filter-value explanation -- exactly the "wrong cause reported" class this fleet treats as the
+worst version of this bug (cf. h826, the "wrong-cause mistake").
+
+**New screening question for the rest of this audit (the `markIncomplete`-bearing tail):** when a
+script has BOTH a mode-specific message (set earlier, inside an `if (watchMode) {...}` or similar
+block) AND a later generic cascade that can also fire for the same `pushed`/zero-row condition,
+check whether the generic cascade's conditions are scoped tightly enough to never fire once the
+earlier, more specific branch already ran. A `grep -c setStatusMessage` or even a careful read of
+one chain in isolation won't catch this -- it only shows up when tracing which branch is LAST to
+run for a specific combination of flags across BOTH chains.
+
+**Testing note:** this Actor's time-budget guard reads `APIFY_TIMEOUT_AT`/`ACTOR_TIMEOUT_AT`
+directly (see comment at its `RUN_DEADLINE_MS` definition), so a watch-mode + timeout combination
+that's otherwise nearly impossible to provoke on demand can be forced locally by setting
+`APIFY_TIMEOUT_AT` a few seconds in the future before running `node src/main.js` with
+`CRAWLEE_STORAGE_DIR` set (not `APIFY_LOCAL_STORAGE_DIR` -- the installed SDK silently ignores
+that one, per the existing PLAYBOOK note) -- against the REAL public TMview API, no mocking
+needed, no Apify spend. Confirmed old-vs-new by reverting the fix locally, re-running the exact
+same seeded-baseline + invalid-filter + forced-timeout input, and diffing the final status
+message, then restoring the fix.
