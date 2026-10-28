@@ -1,14 +1,50 @@
-- [ ] **FOLLOW-UP from c2382 -- no checker watches prose "N of our M platforms/sources" counts for
-      staleness when WE change our own scope.** `check-blog-claims`/`check-registry-fields` catch
-      drift in structured field/output-schema claims; `check-competitor-claims` catches a rival's
-      user-count drift; nothing catches a competitor-comparison sentence going stale because OUR
-      OWN platform/field count changed (c2382 found `ats-jobs-scraper`'s whole Pricing section
-      stuck on "our 7 platforms" for 9 days after the Teamtailor/Personio/Breezy expansion to 10,
-      with one claim gone flatly false -- a rival's Personio coverage mislabeled "which we don't
-      support"). Only one instance found so far, not yet a proven recurring pattern -- worth a
-      `grep -n "of our [0-9]\+\|platforms\|sources\|fields we" ` sweep across the fleet's other
-      multi-source Actors (remote-jobs-scraper's 7 boards, nih-reporter's fields, etc.) next GROWTH
-      cycle to see if it is fleet-wide before building a dedicated check.
+- [x] **DONE cycle 2383 (BUILD slot) -- closed the c2382 follow-up: swept the fleet for the "N of
+      our M platforms/sources/fields" staleness shape, found it was NOT fleet-wide, decided against
+      building a dedicated checker.** Preflight: nothing mechanically due (`checks-due` soonest
+      `check-row-floor` in 5c; `audit-due --all`/`--type varied_test` both NONE DUE; revenue
+      unchanged 25 Actors/47 users/762 runs30d/0 bkmk/0 rev/$0 booked; `ext_bad30d` tripwire
+      re-diffed, still the known 4-event baseline; inbox 10 checked, 0 new mail -- same list as
+      c2382, both owner threads long-resolved; services/site healthy; `HEAD == origin/main`
+      `4211a44c` before edits, only routine revenue caches dirty; 16 Actor dirs already exist with
+      a 2026-10-28 mtime, well under the 6/day cap but moot since no new Actor was built).
+      Two greps across all 24 non-retired READMEs: (1) `of our [0-9]+ (platform|source|field|
+      board|portal)` and (2) a broader `[0-9]+ (platforms|sources|boards|portals|datasets|fields)`
+      scan for any other self-referential scope count. **Only `ats-jobs-scraper` and
+      `remote-jobs-scraper` use this phrasing at all, and `ats-jobs-scraper` was already fixed by
+      c2382 itself** (its one stale "of our 7" is now "of our 10" across the whole section).
+      `remote-jobs-scraper`'s many "our 7 boards"/"our seven boards" mentions are current --
+      checked against its own registry scope, which has not changed since We Work Remotely was
+      added at cycle 1319, so nothing there is stale. The broader scan (fda-recall's field counts,
+      trademark-search's 22 fields, us-federal-awards' 52 fields, scholarship's 32 vs rivals' 11,
+      etc.) turned up plenty of competitor-feature comparisons but none of them is a claim about
+      *our own* scope that we have since changed -- they're all either rival feature counts
+      (already covered by the existing claim-staleness checkers) or static field-schema
+      descriptions that haven't moved. **Verdict: this was a one-off caused by a specific platform
+      expansion (cycle 1953) landing between resweeps on one specific Actor, not a recurring fleet
+      pattern.** A dedicated checker for a shape that has fired once in 2383 cycles is not worth
+      the maintenance overhead right now -- the cheap manual grep above (two one-liners, $0, no
+      network) is enough to re-run opportunistically whenever a future scope-expanding feature
+      ships on a multi-source Actor (same trigger as this one: platform/board/source count went
+      up). Filed that as the standing method below instead of building `check-scope-count` now.
+      $0 spent, 0 code changes, 0 new Actors, revenue baseline unchanged, no owner email
+      warranted. **Next cycle: nothing mechanically due before c2388 (`check-row-floor`); dev.to
+      syndication and the feed-pickup measurement both come due ~2026-10-30/31, not yet. The
+      `notes/NICHES.md` competitor-recheck rotation is exhausted (c2381/c2382 already flagged
+      this) -- the next cycle wanting a recheck target should re-derive the least-recently-verified
+      ordering fresh. A naive regex re-derivation (grepping for "cycle NNNN" or a trailing date near
+      a verification keyword) is unreliable: different Actors' READMEs use different phrasing
+      ("Spot-checked"/"Re-checked"/"measured live"/dated paragraphs with no keyword at all), so
+      whoever does this should spend a few minutes reading each README's actual latest dated
+      sentence rather than trusting one regex's output.**
+
+- [ ] **STANDING METHOD (c2383) -- if a future cycle ships a platform/board/source-count expansion
+      on a multi-source Actor (the next most likely candidates: `remote-jobs-scraper`'s 7 boards,
+      `nih-reporter-scraper`'s claimed sources, `uk-find-a-tender-scraper`'s 2 portals), re-run
+      this cycle's two greps against that Actor's own README afterward to catch the
+      `ats-jobs-scraper`-shaped staleness before it sits for 9+ days:**
+      `grep -n "of our [0-9]\+ (platform\|source\|field\|board\|portal)" actors/<slug>/README.md`
+      and `grep -n "our \(seven\|ten\|[0-9]\+\) \(platforms\|sources\|boards\|portals\)" actors/<slug>/README.md`.
+      Do not build a dedicated fleet checker for this unless a second real instance turns up.
 
 - [x] **DONE cycle 2382 (BUILD slot) -- nothing mechanically due (`checks-due` soonest
       `check-row-floor` in 6c; `audit-due --all`/`--type varied_test` both NONE DUE; revenue
