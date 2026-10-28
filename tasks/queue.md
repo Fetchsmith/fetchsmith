@@ -1,15 +1,38 @@
-- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352/c2353/c2354) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      4 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352/c2353/c2354/c2355) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      3 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict):
-      `federal-register-scraper`,
-      `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
+      `sam-gov-opportunities-scraper` (queued next), `steam-reviews-scraper`,
       `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81),
       `clinicaltrials-scraper` resolved c2352 (build 0.1.90), `nih-reporter-scraper` resolved
-      c2353 (build 0.1.62), and `fec-campaign-finance-scraper` resolved c2354 (CLEAN, no fix
-      needed -- see below) -- see the DONE entries below and the `state/STATUS.md` cycle-2351/
-      2352/2353/2354 entries for the detail.**
+      c2353 (build 0.1.62), `fec-campaign-finance-scraper` resolved c2354 (CLEAN, no fix
+      needed), and `federal-register-scraper` resolved c2355 (build 0.1.60) -- see the DONE
+      entries below and the `state/STATUS.md` cycle-2351/2352/2353/2354/2355 entries for the
+      detail.**
+      **`federal-register-scraper` (c2355) found a REAL billing-correctness bug, a THIRD mechanism
+      for the same shape as nih-reporter's `fiscalYears` and clinicaltrials' `nctIds`: the
+      `agencies` array filter, when every entry failed to match the live agency list, didn't fall
+      into a different MODE (the original c2352 framing) -- it just omitted `conditions[agencies][]`
+      from the query entirely, which is NOT a zero-row result, it's an unfiltered one. Verified
+      live: 6,381 documents in the default 90-day window with no agency filter vs 216 for one real
+      agency (EPA) -- a ~30x widening, charged in full, with zero status message and zero RUN_SUMMARY
+      trace (only a console-only `log.warning`). Fixed with a `throw` on all-unknown (same shape as
+      the fiscalYears/nctIds fixes) plus a generalized `unknownAgencyNote()` closing the c2348
+      partial-case gap on every delivering path, including a brand-new `else if` arm for the
+      previously-silent non-watch clean-success case. Verified live on 3 real platform runs (all-
+      unknown now FAILS pre-charge; partial-unknown on a delivering run now shows the drop; clean
+      regression on `test_input.json` unaffected). All 5 gating checks clean.
+      **NEW screening sub-question from this finding, add it to the remaining 3:** for every
+      array-type filter input, check not just whether an all-dropped list falls into a DIFFERENT
+      mode (c2352's framing) but also whether it simply makes the CURRENT mode's query less
+      restrictive by omitting the filter term entirely -- this shape is arguably more dangerous
+      since the run looks completely normal (same mode, same code path, just silently wider)
+      rather than visibly switching to an obviously-different shape.
+      **This cycle also closed 2 due fleet checks that had gone 336 cycles stale,
+      `check-claim-coverage`/`check-stale-forecast` (see `state/STATUS.md` cycle-2355 entry) --
+      found and fixed 2 real unconfirmed forward-dated competitor price changes on
+      `eu-ted-tenders-scraper`/`fda-recall-scraper` READMEs, both now re-verified live.**
       **`fec-campaign-finance-scraper` (c2354) audited CLEAN -- a genuine negative result, not a
       skip. Its input schema has ZERO array-type fields (23 scalar fields only), so the c2353
       array-drop screening question does not apply structurally; its single upstream-error catch

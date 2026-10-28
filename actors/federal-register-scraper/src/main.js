@@ -276,9 +276,24 @@ async function resolveAgencies(wanted) {
     return { slugs: Array.from(new Set(slugs)), unknown };
 }
 
-const { slugs: agencySlugs, unknown: unknownAgencies } = await resolveAgencies(
-    (input.agencies ?? []).map((a) => String(a).trim()).filter(Boolean),
-);
+const rawAgencies = (input.agencies ?? []).map((a) => String(a).trim()).filter(Boolean);
+const { slugs: agencySlugs, unknown: unknownAgencies } = await resolveAgencies(rawAgencies);
+// Verified live (cycle 2355): dropping the agency filter entirely does not return zero rows, it
+// returns EVERY document in the date window -- the default 90-day window alone has ~6,381 rows
+// vs ~216 for a single real agency (EPA), a ~30x widening. Unlike the partial-miss case below
+// (kept and warned, since the rest of the list still narrows the query correctly), letting EVERY
+// value fail silently selects a materially different, much larger result set and charges for it
+// in full under PPE pricing -- the only warning for this is the log-only one just below, which a
+// buyer never sees. Same shape as the nih-reporter-scraper `fiscalYears` and clinicaltrials-scraper
+// `nctIds` bugs (c2352/c2353): throw before any charge happens instead of silently widening.
+if (rawAgencies.length && !agencySlugs.length) {
+    throw new Error(
+        `None of the agenc(ies) you listed could be matched: ${unknownAgencies.join(', ')}. Running anyway `
+        + 'would silently drop the agency filter and search the ENTIRE Federal Register instead (no agency '
+        + 'restriction at all), charging you for unrelated documents under a filter that looks honored but was '
+        + "not. Use the slug from a federalregister.gov/agencies/<slug> URL, or the agency's full name.",
+    );
+}
 if (unknownAgencies.length) {
     log.warning(
         `Ignoring ${unknownAgencies.length} unrecognised agency value(s): ${unknownAgencies.join(', ')}. `
@@ -815,6 +830,15 @@ function truncationNote() {
         + ' dropped -- those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
+// Empty unless some (not all -- that throws above, before any charge) of the agencies list failed
+// to match. Previously this only ever reached a `log.warning` (console-only, not buyer-visible) on
+// every path including a delivering run -- this surfaces it on the actual statusMessage instead.
+function unknownAgencyNote() {
+    if (!unknownAgencies.length) return '';
+    return ` NOTE: ${unknownAgencies.length} agency value(s) you listed could not be matched and were ignored `
+        + `(not guessed at): ${unknownAgencies.join(', ')}.`;
+}
+
 // A SEED walk cut short by an upstream error must save NOTHING (h287, 3rd variant, first fixed
 // on eu-ted-tenders-scraper cycle 680): saving the partial id set as the baseline would make the
 // first incremental run treat every document past the failure point as "new" and charge for it.
@@ -844,6 +868,7 @@ if (watchMode && seeding && runState.failed) {
         await Actor.setStatusMessage(
             `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing document(s) recorded, 0 charged. Run again later to get only what's new.`
             + truncationNote()
+            + unknownAgencyNote()
             + (watchDeadDateBound ? ' NOTE: publicationDateTo is fixed, so this watch will stop finding anything new once today passes that date -- see the warning above.' : ''),
         );
     } else {
@@ -851,10 +876,10 @@ if (watchMode && seeding && runState.failed) {
             `Watch label "${watchLabel}": ${pushed} new document(s) since the last run `
             + `(${skippedSeen} already-delivered row(s) skipped, uncharged); baseline now holds ${watchSeen.size}.`,
         );
-        if (pushed > 0 && baselineTruncated > 0) {
+        if (pushed > 0 && (baselineTruncated > 0 || unknownAgencies.length)) {
             // A run that delivered rows would otherwise leave the default status message in
-            // place and the truncation would only be visible in the log.
-            await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} document(s) delivered.` + truncationNote());
+            // place and the truncation/unknown-agency note would only be visible in the log.
+            await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} document(s) delivered.` + truncationNote() + unknownAgencyNote());
         }
     }
 }
@@ -867,6 +892,7 @@ if (pushed === 0 && watchMode && !seeding) {
     await Actor.setStatusMessage(
         `Nothing new for watch label "${watchLabel}" since its last run -- every matching document had already been delivered. That is the expected result most of the time; you were charged for nothing.`
         + truncationNote()
+        + unknownAgencyNote()
         + (watchDeadDateBound ? ' NOTE: publicationDateTo is fixed on this watch, so "nothing new" may mean the date cutoff has made it permanently blind rather than the normal quiet result -- see the warning above.' : ''),
     );
 } else if (pushed === 0 && !seeding && publicInspection) {
@@ -980,12 +1006,18 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 // setStatusMessage call anywhere in this Actor before cycle 654.
 if (!complete) {
     await Actor.setStatusMessage(
-        seeding
+        (seeding
             ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} document(s) recorded — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
             : `Incomplete: ${pushed.toLocaleString('en-US')} document(s) delivered — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`)
+        + unknownAgencyNote(),
     );
+} else if (!watchMode && pushed > 0 && unknownAgencies.length) {
+    // The only remaining gap: an ordinary (non-watch) run that completed cleanly and delivered
+    // rows had no status-message branch at all before this -- `unknownAgencies` only ever
+    // reached bullet (4) of the pushed===0 cause list above, never a delivering run.
+    await Actor.setStatusMessage(`Pushed ${pushed.toLocaleString('en-US')} document(s).${unknownAgencyNote()}`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
