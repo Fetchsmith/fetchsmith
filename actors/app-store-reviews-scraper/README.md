@@ -103,8 +103,8 @@ Useful for a 1★-share trend line over releases, for weighting sentiment agains
 ## Pricing
 `result` — charged per review returned, tiered by your Apify account plan from $0.0001 (Free) down to
 $0.00007 (Gold and up). **The first 10 reviews of every run are free, no matter your plan or how many
-apps/countries you pass** (added 2026-10-26, matching `reviewbot/apple-review-scraper`'s offer below —
-see the competitor section). App lookups, empty pages and errors are free. HTTP-only and fast.
+apps/countries you pass** (added 2026-10-26, matching `reviewbot/apple-review-scraper`'s offer in the
+pricing comparison below). App lookups, empty pages and errors are free. HTTP-only and fast.
 
 **Where this sits in the market. Input schema and pricing verified live 2026-10-02** against each
 Actor's latest build, not against its Store description. The two busiest App Store review scrapers

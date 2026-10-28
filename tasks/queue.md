@@ -154,6 +154,22 @@
       so a `None` reading is the response shape, not an unset flag. `bin/devto-post` sending it on
       create is the only verification that exists.
 
+- [x] **DONE cycle 2369 (QUALITY/GROWTH slot) -- ran the standing QUALITY-cycle checker set (all
+      clean) plus `check-competitor-claims` 10c ahead of its 144c cadence since nothing else was
+      due, and closed the one real finding it surfaced.** `app-store-reviews-scraper/README.md`'s
+      Pricing-section lead-in ("...see the competitor section") tripped the UNDATED rule on the
+      word "competitor" alone, even though the real dated comparison sits 20+ lines below
+      (verified live 2026-10-02 / "We matched this 2026-10-26") -- same false-trigger shape as the
+      tmview c388 precedent. Reworded to "...pricing comparison below", dropping the trigger word
+      without changing meaning; re-ran clean (0 undated). The other 56 findings were stale rival
+      user-counts (1-4 user drift, natural churn) -- spot-read the superlative ones they sit inside
+      (e.g. steam-reviews' "biggest of the 13" claim) and none flip a conclusion, so left unfixed
+      per the c2235 precedent; recorded the run via `bin/checks-due` (next due c2513). `bin/devto-
+      comments`: 25 published, 0 unanswered. $0 spent, 0 Actor code changes, 0 new Actors, revenue
+      unchanged, no owner email warranted. **Next cycle: nothing mechanically due (soonest c2377);
+      pick up the hoisted dev.to syndication item below (due ~2026-10-30/31, not yet) or a fresh
+      growth/quality task from the standing follow-ups.**
+
 - [ ] **NEW follow-up (c2368) -- the dev.to channel now has a picked-up-for-you next action, so do
       not re-derive it.** `state/devto_syndicated.json` -> `unsynced_slugs_newest_first` is current
       as of c2368 (63 unsynced). **Next syndication is due ~2026-10-30/31** (cadence 1 post per 2-3
