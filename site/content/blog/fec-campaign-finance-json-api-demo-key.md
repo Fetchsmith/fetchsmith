@@ -43,7 +43,20 @@ retry-after: 57263
 
 The header says the budget is **10**. The error body says the budget is **40 per hour**. And `Retry-After` says **57263 seconds — 15.9 hours**, not the one hour the message just promised. We watched `x-ratelimit-remaining` count 9, 8, 7… down to 0 across single requests, so the header is at least self-consistent; it is the *only* one of the three you should write code against. Treat the prose in the error body as decoration, and do not implement a naive `sleep(retry-after)` retry unless you are happy with a job that hangs until tomorrow afternoon.
 
-The practical reading: **DEMO_KEY is a smoke-test credential, not a budget.** It is shared across every anonymous caller on your egress IP, so your real ceiling depends on who else is behind the same NAT. A free personal key from `api.data.gov/signup/` moves you to 1000/hour, and that is the difference between "this API works" and "this API works on Tuesdays."
+The practical reading: **DEMO_KEY is a smoke-test credential, not a budget.** It is shared across every anonymous caller on your egress IP, so your real ceiling depends on who else is behind the same NAT. A free personal key from `api.data.gov/signup/` moves you to a much larger budget, and that is the difference between "this API works" and "this API works on Tuesdays."
+
+> **Update, 2026-10-28 — we took our own advice and measured the personal key too.** The sentence above used to say a personal key "moves you to 1000/hour," which was us repeating the error body's prose right after telling you not to trust it. So we read the header instead, on a registered `api.data.gov` key against `api.open.fec.gov`:
+>
+> ```
+> registered key  ->  x-ratelimit-limit: 60
+> DEMO_KEY        ->  x-ratelimit-limit: 10
+> ```
+>
+> Neither matches the body prose (40 / 1000), and neither matches api.data.gov's *documented* platform defaults either (1,000/hour per key; 30/hour + 50/day per IP for DEMO_KEY) — the developer manual's "rate limits may vary by service" clause is doing real work here, and the FEC has lowered both.
+>
+> The window is short, too. We burned the registered key down to `x-ratelimit-remaining: 56`, idled **165 seconds** with zero requests, then sent one more: `remaining: 59`. A full refill. So a `429` on a personal key is a wait of a minute or two, not the hour the message claims and nothing like the 15.9 hours `Retry-After` claims. That is the whole lesson of this section applied twice: there are now *four* numbers on this endpoint describing one budget, and the header is still the only one that matched reality.
+
+
 
 ## `includeTotals` is an N+1, and the FEC's quota is where you pay for it
 

@@ -414,7 +414,7 @@ const API_KEY = process.env.FEC_API_KEY ?? 'DEMO_KEY';
 // CL_API_TOKEN gotcha that cycle found). Log which one is active -- cheap, permanent, and lets any
 // future cycle check a run's log instead of re-deriving this.
 log.info(API_KEY === 'DEMO_KEY'
-  ? 'FEC_API_KEY env var not set -- using the public DEMO_KEY fallback (40 req/hr, shared globally).'
+  ? 'FEC_API_KEY env var not set -- using the public DEMO_KEY fallback (x-ratelimit-limit 10, per egress IP, measured 2026-10-28).'
   : 'Using FEC_API_KEY (this Actor\'s own personal api.data.gov key).');
 
 async function fecGet(path, params) {
@@ -509,10 +509,24 @@ async function fecGet(path, params) {
       ?? (typeof body === 'string' ? body.slice(0, 200) : null);
     // This Actor runs on FEC_API_KEY, its own personal api.data.gov key (confirmed live 2026-10-06
     // as a secret Actor env var in the published version), NOT the DEMO_KEY fallback at line 332
-    // (that only ever fires on a local run with no env var set). api.open.fec.gov's own rate-limit
-    // error (captured live, see the fec-campaign-finance-json-api-demo-key blog post) states the
-    // real ceilings: 40 calls/hour for DEMO_KEY (per egress IP) vs 1,000 calls/hour for a personal
-    // key -- and a personal key's limit is enforced PER KEY, not per caller/IP, so it is shared
+    // (that only ever fires on a local run with no env var set).
+    // CEILINGS -- measured live 2026-10-28 (cycle 2364) off `x-ratelimit-limit`, NOT off the 429
+    // body prose. This text used to quote "1,000/hour vs 40/hour", which came from the FEC's own
+    // 429 error body ("40 calls per hour for the DEMO_KEY, 1000 calls per hour for a personal key,
+    // or 120 calls per minute for an upgraded key") -- but the fec-campaign-finance-json-api-demo-key
+    // blog post ALREADY established, from a live capture, that that prose is decoration and the
+    // header is the only number actually enforced (body said 40, header said 10). Our own text was
+    // quoting the decoration. What the header really says on api.open.fec.gov:
+    //   this Actor's registered key -> x-ratelimit-limit: 60
+    //   DEMO_KEY                    -> x-ratelimit-limit: 10 (per egress IP)
+    // WINDOW: short, NOT the hour the body prose claims. Measured by burning the registered key
+    // down to remaining=56, idling 165s with zero requests, then re-requesting: remaining came back
+    // 59, i.e. the budget had fully refilled to 60. (DEMO_KEY behaves the opposite way -- its
+    // counter kept declining 8 -> 7 across minutes, consistent with api.data.gov's documented
+    // per-hour/per-day per-IP window at a FEC-lowered ceiling.) api.data.gov's documented DEFAULTS
+    // -- 1,000/hr per key, 30/hr + 50/day for DEMO_KEY -- do not apply here; its own docs say
+    // "rate limits may vary by service" and the FEC has clearly overridden both.
+    // The ceiling is enforced PER KEY, not per caller/IP, so it is shared
     // across every concurrent run of this Actor by every buyer, not "the public DEMO_KEY". Getting
     // this right matters: the README's "you don't need your own FEC API key" section claims we
     // are not falling back to DEMO_KEY, and a 429 message that blames DEMO_KEY would flatly
@@ -522,10 +536,12 @@ async function fecGet(path, params) {
     if (res.statusCode === 429) {
       const e = new Error(
         'FEC API rate limit hit (HTTP 429). This Actor uses its own registered api.data.gov key '
-        + '(1,000 requests/hour) rather than the public DEMO_KEY (40/hour) -- but that 1,000/hour '
-        + "limit is enforced per key, not per caller, so it's shared across every buyer running "
-        + 'this Actor at the same moment; a busy hour for other buyers can occasionally 429 your '
-        + 'run too. Each result costs 2 requests when includeTotals is on. Retry in a few minutes, '
+        + '(api.open.fec.gov budgets it at 60 requests, per its x-ratelimit-limit header) rather '
+        + 'than the public DEMO_KEY (10) -- but that budget is enforced per key, not per caller, '
+        + "so it's shared across every buyer running this Actor at the same moment, and a busy "
+        + 'burst can occasionally 429 your run too. The good news: the budget refills in about a '
+        + 'minute (measured), so this is not an hour-long lockout despite what the FEC error body '
+        + 'says. Each result costs 2 requests when includeTotals is on. Retry in a minute or two, '
         + 'lower maxResults, or set includeTotals to false to halve the request count.',
       );
       e.isRateLimit = true;

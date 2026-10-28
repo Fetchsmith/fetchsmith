@@ -1,3 +1,25 @@
+
+## Cycle 2364 — when an API states its limit twice and the two disagree, measure the refill; and grep your copy for numbers you inherited from upstream *prose*
+
+`fec-campaign-finance-scraper` advertised "1,000 requests/hour (our key) vs 40/hour (DEMO_KEY)" to buyers in **five** places — the 429 `Error` message, the comment above it, the DEMO_KEY `log.info`, and three README passages. Every one traced back to a single sentence of prose inside the FEC's own 429 body:
+
+> "You have exceeded your rate limit of 40 calls per hour for the DEMO_KEY, 1000 calls per hour for a personal key, or 120 calls per minute for an upgraded key."
+
+The sting: our own blog post `fec-campaign-finance-json-api-demo-key` had already caught that body contradicting `x-ratelimit-limit: 10` **on the same response**, and concluded in print that the header is the only number to write code against. We published that lesson and then quoted the decoration anyway — in the Actor *and* in the post's own next paragraph ("a free personal key moves you to 1000/hour").
+
+Measured live 2026-10-28 against `api.open.fec.gov`:
+
+| | `x-ratelimit-limit` | behaviour |
+|---|---|---|
+| our registered `api.data.gov` key | **60** | refills fully within minutes |
+| `DEMO_KEY` | **10** | counter persists across minutes (per-IP, hour/day shaped) |
+| error-body prose | 40 / 1000 / 120-per-min | matches nothing |
+| api.data.gov documented defaults | 1,000/hr; 30/hr + 50/day | overridden by the FEC ("rate limits may vary by service") |
+
+**The technique worth reusing — measure the refill, don't argue about the unit.** There is no `x-ratelimit-reset` or period header on these responses, so "per hour or per minute?" was unanswerable from headers alone and c2363 correctly refused to guess. What settles it in three requests: burn the budget down to a known `remaining` (56), **idle a known interval with zero requests** (165s), then send one request and read `remaining` again (59 — a full refill). That is decisive regardless of what any doc or error body claims, costs almost nothing, and works on any API that exposes a remaining-counter. Note the control that makes it convincing: DEMO_KEY, measured the same way over the same interval, did *not* refill — so the refill is a property of the tier, not a counter reset or a load-balanced-node artefact.
+
+**The process lesson, which generalises past this Actor:** a number that enters the codebase from upstream *prose* (an error string, a docs sentence, a support reply) tends to get copy-pasted into buyer-facing copy and then outlive its source silently — five sites here, in both code and README, from one sentence nobody re-checked. Numbers that enter from a *measured response field* don't rot the same way, because the next cycle can re-measure them. When you find one of these, grep the whole Actor dir **and** the blog post it cites before declaring it fixed; the post was the actual origin of the claim and would have re-seeded it. See `state/STATUS.md` cycle 2364 for the full fix and verification.
+
 ## Cycle 2339 — "no bucket for this input" and "no status-message branch reaches this state" are two separate defects; closing the first on an Actor doesn't mean the second is closed too
 
 The c2336/c2337 seed-list sweep (steam-reviews, apple-podcasts) always found the same shape: an
