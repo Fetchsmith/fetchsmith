@@ -422,6 +422,146 @@ function blankDropNote() {
 }
 const organizationId = String(input.organizationId ?? '').trim();
 const activeOnly = input.activeOnly !== false; // default true
+
+// POSTED / DEADLINE DATE WINDOWS (cycle 2392). SAM.gov's search backend exposes no date-range
+// parameter on ANY of these indices -- re-probed across several cycles, and this Actor's own FAQ
+// has said so since cycle 540 -- so unlike every other filter here these four are POST-FETCH:
+// the row is read, normalised, then dropped BEFORE pushResult(), so it is never pushed and never
+// charged. Three consequences a buyer has to be told about, all documented in the input schema:
+// the window does NOT reduce how much is read upstream (the walk keeps paging until `maxResults`
+// in-window rows are found, so a narrow window over a broad keyword can exhaust the time budget),
+// `declaredMatches` in RUN_SUMMARY stays SAM.gov's own PRE-window count, and a run can therefore
+// deliver far fewer rows than SAM declared without being incomplete (see the empty-page
+// reconciliation in fetchRows, which had to learn about this or every windowed run would end on a
+// false `short-page`).
+//
+// Both ends are INCLUSIVE and compared on the CALENDAR DATE THE ROW ITSELF CARRIES -- the leading
+// `YYYY-MM-DD` of its timestamp, never re-zoned. SAM.gov emits three shapes on these fields
+// (`2026-10-15T04:00:00.000Z` on wd rows normalised from epoch ms, `2026-01-16T00:02:55-05:00`,
+// `2023-07-12T19:23:54+00:00`); converting to UTC first would shift an evening US-Eastern posting
+// onto the next day and silently drop rows from a window the buyer thinks they asked for, while
+// the date as published is what sam.gov's own notice page shows.
+const CAL_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+async function dateWindowInput(name) {
+    const raw = String(input[name] ?? '').trim();
+    if (!raw) return null;
+    // A date window that cannot be parsed must never be silently dropped. A bad keyword fails
+    // CLOSED (zero rows, zero charge); a dropped date window fails OPEN -- every row outside the
+    // window is delivered AND CHARGED, which is the cycle-748 failure mode this file stops for
+    // everywhere else. So: same Actor.fail() treatment as the all-blank stringList above, pre-
+    // request and pre-charge. Actor.fail() (not a bare throw) so the reason reaches the Console's
+    // statusMessage, per the cycle-2357 finding.
+    const asUtc = CAL_DATE_RE.test(raw) ? new Date(`${raw}T00:00:00Z`) : null;
+    // The round-trip comparison is what rejects a well-shaped but non-existent date: JS rolls
+    // `2026-02-31` forward to 2026-03-03 instead of failing, so matching the regex is not enough.
+    if (!asUtc || Number.isNaN(asUtc.getTime()) || asUtc.toISOString().slice(0, 10) !== raw) {
+        await Actor.fail(
+            `\`${name}\` must be a real calendar date in YYYY-MM-DD form (e.g. 2026-01-31); got "${raw}". `
+            + 'Stopping before any row is delivered or charged: an unreadable date window cannot be applied, and '
+            + 'ignoring it would hand you the whole unwindowed result set -- every row of it billed -- while '
+            + 'looking like it had been filtered. Fix the value, or remove the field to search without a date '
+            + 'window deliberately.',
+        );
+    }
+    return raw;
+}
+const postedFrom = await dateWindowInput('postedFrom');
+const postedTo = await dateWindowInput('postedTo');
+const deadlineFrom = await dateWindowInput('deadlineFrom');
+const deadlineTo = await dateWindowInput('deadlineTo');
+// An inverted window is empty by construction: the run could only ever return 0 rows, and the
+// zero-row status message would blame "SAM.gov has none once your filters are applied" for what is
+// purely an input transposition. Cheaper and clearer to say so before the first request.
+// String comparison is sound here -- both sides are validated, zero-padded YYYY-MM-DD.
+for (const [fromName, fromVal, toName, toVal] of [
+    ['postedFrom', postedFrom, 'postedTo', postedTo],
+    ['deadlineFrom', deadlineFrom, 'deadlineTo', deadlineTo],
+]) {
+    if (fromVal && toVal && fromVal > toVal) {
+        await Actor.fail(
+            `\`${fromName}\` (${fromVal}) is AFTER \`${toName}\` (${toVal}), so the window is empty and this run `
+            + 'could only ever return 0 rows no matter what SAM.gov holds. Swap the two values (the "From" field is '
+            + 'the earlier date). Stopping before any request so you are charged nothing.',
+        );
+    }
+}
+// Which index carries which date, read off the normalisers in this file rather than assumed:
+// `publishDate` is emitted by normalizeRow, normalizeWdRow and normalizeCfdaRow, but the
+// exclusions row shape has no publish date at all (it carries activationDate/terminationDate
+// instead); `responseDate` is a solicitation response deadline and exists on opportunities only.
+// Unlike naicsCodes/setAsideTypes/states, which are WARNED-AND-IGNORED on the dataTypes that do
+// not support them, an unsupported date window STOPS the run. The deviation is deliberate: those
+// are server-side filters whose warn-and-ignore behaviour predates paying buyers and cannot be
+// changed without breaking existing runs, whereas these four fields are brand new (nothing
+// depends on them yet) and ignoring one would bill the buyer for the entire unwindowed set.
+// Fail closed while it is still free to do so.
+const postedWindowSupported = !isExclusions;
+const deadlineWindowSupported = !isWd && !isCfda && !isExclusions;
+const unsupportedWindowFields = [];
+if (!postedWindowSupported) {
+    if (postedFrom) unsupportedWindowFields.push('postedFrom');
+    if (postedTo) unsupportedWindowFields.push('postedTo');
+}
+if (!deadlineWindowSupported) {
+    if (deadlineFrom) unsupportedWindowFields.push('deadlineFrom');
+    if (deadlineTo) unsupportedWindowFields.push('deadlineTo');
+}
+if (unsupportedWindowFields.length) {
+    const why = unsupportedWindowFields.every((f) => f.startsWith('deadline'))
+        ? `a response/bid deadline is a property of a contract opportunity -- SAM.gov's "${dataType}" records have no `
+          + 'such field, so there is nothing to compare your window against'
+        : `SAM.gov's exclusion records carry no publish date at all (they carry \`activationDate\`/`
+          + '`terminationDate` instead), so there is nothing to compare your window against';
+    await Actor.fail(
+        `${unsupportedWindowFields.join(', ')} ${unsupportedWindowFields.length === 1 ? 'is' : 'are'} not supported `
+        + `for dataType "${dataType}": ${why}. Stopping before any row is delivered or charged -- ignoring the `
+        + 'window would hand you every record matching your other filters, billed in full, while looking filtered. '
+        + (unsupportedWindowFields.every((f) => f.startsWith('deadline'))
+            ? 'Use dataType "opportunities" for deadline windows'
+            + (postedWindowSupported ? ', or filter this dataType by `postedFrom`/`postedTo` instead' : '')
+            : 'Filter exclusions by `keyword`/`organizationId` and compare each row\'s own '
+              + '`activationDate`/`terminationDate` after delivery')
+        + '.',
+    );
+}
+const dateWindowActive = Boolean(postedFrom || postedTo || deadlineFrom || deadlineTo);
+let dateWindowDropped = 0; // rows read but outside the requested window -- never pushed, never charged
+let dateWindowMissing = 0; // rows whose own date field is absent/unreadable -- dropped, see inDateWindow()
+
+// The leading calendar date of whatever SAM.gov put in the field, or null if there isn't one.
+function calDateOf(value) {
+    if (value === null || value === undefined) return null;
+    const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(value));
+    if (m) return m[1];
+    // Defensive only: every normaliser in this file already emits ISO strings (normalizeWdRow runs
+    // epoch ms through toIso), so this branch should not fire -- but a shape change upstream must
+    // degrade to "unreadable date" and get the fail-closed treatment below, not to a silent keep.
+    const d = new Date(String(value));
+    return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+}
+
+// true = keep this row. Called on the NORMALISED item, so date shapes are already uniform.
+// A row whose own date is missing or unreadable is DROPPED, not kept: we cannot prove it is inside
+// the window the buyer paid to narrow to, and the whole point of a pre-charge filter is to never
+// bill for a row we cannot stand behind. Counted separately from a real out-of-window drop so
+// RUN_SUMMARY can distinguish "SAM.gov has lots of rows outside your window" from "SAM.gov served
+// rows with no usable date", which are different problems with different fixes.
+function inDateWindow(item) {
+    if (!dateWindowActive) return true;
+    for (const [from, to, field] of [[postedFrom, postedTo, 'publishDate'], [deadlineFrom, deadlineTo, 'responseDate']]) {
+        if (!from && !to) continue;
+        const d = calDateOf(item[field]);
+        if (d === null) { dateWindowMissing += 1; return false; }
+        if ((from && d < from) || (to && d > to)) { dateWindowDropped += 1; return false; }
+    }
+    return true;
+}
+function dateWindowText() {
+    const parts = [];
+    if (postedFrom || postedTo) parts.push(`posted ${postedFrom ?? 'any'}..${postedTo ?? 'any'}`);
+    if (deadlineFrom || deadlineTo) parts.push(`deadline ${deadlineFrom ?? 'any'}..${deadlineTo ?? 'any'}`);
+    return parts.join(', ');
+}
 let enrichDetail = input.enrichDetail === true;
 let includeAttachments = input.includeAttachments === true;
 
@@ -545,6 +685,10 @@ if (webhookUrlRaw) {
 
 log.info(`Starting SAM.gov ${ROW_NOUN} search (dataType=${dataType}, index=${SEARCH_INDEX})`, {
     keyword, naicsCodes, setAsideTypes, noticeTypes, states, organizationId, activeOnly, maxResults, enrichDetail, includeAttachments, watchLabel,
+    // Echoed only when set, so the window is visible in the run log from line one -- it is the one
+    // filter here that is applied client-side, and a buyer debugging "why so few rows?" should see
+    // it stated next to the server-side filters rather than inferred from the Done line.
+    ...(dateWindowActive ? { postedFrom, postedTo, deadlineFrom, deadlineTo } : {}),
 });
 
 function buildSearchUrl(page, size) {
@@ -999,6 +1143,10 @@ const watchCriteria = {
     dataType,
     keyword, naicsCodes: [...naicsCodes].sort(), setAsideTypes: [...setAsideTypes].sort(),
     noticeTypes: [...noticeTypes].sort(), states: [...states].sort(), organizationId, activeOnly,
+    // The date windows belong in the fingerprint for the same reason every other filter does:
+    // they change WHICH rows match, so widening one must start a fresh baseline instead of
+    // dumping every row the narrower window excluded as if it were brand new (cycle 2392).
+    postedFrom, postedTo, deadlineFrom, deadlineTo,
 };
 
 // Snapshot of the fields that can change on an already-delivered opportunity: `isActive`/
@@ -1106,13 +1254,35 @@ if (watchMode && watchChanges) {
             + 'that transition is never reported.',
         );
     }
+    // A third instance, same class as the two above but on the Actor's OWN post-fetch filter
+    // rather than a server-side one (cycle 2392): `responseDate` is a watched field, and
+    // `deadlineFrom`/`deadlineTo` drop rows on exactly that value. A deadline extension that
+    // pushes a row past `deadlineTo` -- the single highest-frequency real change in this niche per
+    // the comment above snapshotOf -- removes the row from the result set, so changesBetween() is
+    // never reached and the extension is never reported. Being client-side makes it no less blind.
+    if (deadlineWindowSupported && (deadlineFrom || deadlineTo)) {
+        watchChangeBlindFilters.push('responseDate');
+        log.warning(
+            'watchChanges cannot reliably see the deadline extension you are filtering on: '
+            + `deadlineFrom/deadlineTo drop rows whose responseDate falls outside ${deadlineFrom ?? 'any'}..`
+            + `${deadlineTo ?? 'any'}, and responseDate is also the field this run watches for changes. An `
+            + 'agency extending a deadline past your window removes that row from the results, so the extension '
+            + 'is never reported -- and a deadline moving INTO your window arrives as a brand-new row instead '
+            + 'of a change.',
+        );
+    }
     if (watchChangeBlindFilters.length) {
         log.warning(
             'What to do: for isActive, pass activeOnly:false on the watch run (you get both active and inactive '
             + 'rows back, and can filter on isActive yourself after delivery) or run two labels -- one '
             + 'activeOnly:true for new rows, one activeOnly:false with watchChanges for the inactive transition. '
             + 'For noticeTypeCode, drop noticeTypes from the watch run and filter on noticeTypeCode yourself, or '
-            + 'keep a separate unfiltered watchChanges label for lifecycle transitions.',
+            + 'keep a separate unfiltered watchChanges label for lifecycle transitions.'
+            + (watchChangeBlindFilters.includes('responseDate')
+                ? ' For responseDate, drop deadlineFrom/deadlineTo from the watchChanges run (a one-sided '
+                  + 'postedFrom window is change-blind to nothing, since publishDate never moves) and compare '
+                  + 'each row\'s responseDate yourself after delivery.'
+                : ''),
         );
     }
 }
@@ -1298,10 +1468,25 @@ async function fetchRows(limit) {
                 // Distinguish "SAM.gov quit early" from "SAM.gov served its whole set but repeated
                 // rows, so there were fewer distinct opportunities than it declared". Both come up
                 // short of the declared total; only the first is an upstream failure.
-                if (rows.length + duplicateRowsDropped >= reachNow) {
+                // A date window (cycle 2392) makes `rows.length < declared` the NORMAL outcome, not
+                // a shortfall: SAM.gov's declared total counts everything matching the SERVER-side
+                // filters, and the window is applied after the fetch. Reconcile the window drops
+                // before calling an exhausted walk incomplete -- without this, every single
+                // windowed run would finish with a false `short-page` incompleteness and a scary
+                // Console status for working exactly as designed.
+                const windowDropped = dateWindowDropped + dateWindowMissing;
+                if (windowDropped > 0 && rows.length + duplicateRowsDropped + windowDropped >= reachNow) {
+                    log.info(
+                        `Walk complete: SAM.gov served all ${reachNow} row(s) it declared for these filters; `
+                        + `${windowDropped} fell outside your date window (${dateWindowText()})`
+                        + `${duplicateRowsDropped ? ` and ${duplicateRowsDropped} were repeats` : ''}, leaving `
+                        + `${rows.length} in-window ${ROW_NOUN_PLURAL}. Nothing is missing -- this run is COMPLETE.`,
+                    );
+                } else if (rows.length + duplicateRowsDropped >= reachNow) {
                     markIncomplete('duplicate-rows', `SAM.gov served ${reachNow} row(s) for this query but only ${rows.length} were distinct opportunities (${duplicateRowsDropped} repeat(s) dropped, uncharged)`);
                 } else {
-                    markIncomplete('short-page', `SAM.gov returned an empty page ${page} after ${rows.length} of ${reachNow} reachable match(es)`);
+                    markIncomplete('short-page', `SAM.gov returned an empty page ${page} after ${rows.length} of ${reachNow} reachable match(es)`
+                        + (windowDropped > 0 ? `, plus ${windowDropped} dropped by your date window (${dateWindowText()}) -- the shortfall is bigger than the window explains` : ''));
                 }
             }
             break;
@@ -1310,6 +1495,14 @@ async function fetchRows(limit) {
         for (const row of pageRows) {
             if (isExclusions && row.noPublicDisplayFlag === 'T') { noPublicDisplaySuppressed += 1; continue; }
             const item = isWd ? normalizeWdRow(row) : isCfda ? normalizeCfdaRow(row) : isExclusions ? normalizeExclusionRow(row) : normalizeRow(row);
+            // The posted/deadline window (cycle 2392), applied here -- inside the walk, before the
+            // row is collected -- so an out-of-window row is never pushed and never charged, and
+            // does not consume one of the buyer's `maxResults` slots. Ordered BEFORE the dedupe
+            // guards on purpose: it keeps each counter unambiguous (`dateWindowDropped` = outside
+            // your window, `duplicateRowsDropped` = a repeat among the rows that were inside it),
+            // which is what the empty-page reconciliation below reads to tell a windowed run from
+            // a genuinely short one.
+            if (!inDateWindow(item)) continue;
             const rowId = idOf(item);
             if (rowId) {
                 if (seenIds.has(rowId)) { duplicateRowsDropped += 1; continue; }
@@ -1542,7 +1735,11 @@ if (watchMode && seedFailure) {
 
 log.info(`Done. Pushed ${pushed} ${ROW_NOUN_PLURAL} (scanned ${scanned} row(s) over ${pages} page(s)).`
     + (isExclusions ? ` ${noPublicDisplaySuppressed} row(s) suppressed by SAM.gov's own do-not-display flag.` : '')
-    + ((!isWd && !isCfda && !isExclusions && republishedRowsDropped > 0) ? ` ${republishedRowsDropped} republished duplicate row(s) dropped, uncharged.` : ''));
+    + ((!isWd && !isCfda && !isExclusions && republishedRowsDropped > 0) ? ` ${republishedRowsDropped} republished duplicate row(s) dropped, uncharged.` : '')
+    + (dateWindowActive
+        ? ` Date window (${dateWindowText()}): ${dateWindowDropped} row(s) dropped outside it`
+          + `${dateWindowMissing > 0 ? ` and ${dateWindowMissing} with no readable date` : ''}, uncharged.`
+        : ''));
 
 // ---------------------------------------------------------------------------
 // RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
@@ -1577,6 +1774,13 @@ const runSummary = {
     // (cycle 2356). Null, not {}, when nothing was dropped, so a consumer can tell "this field
     // existed and was empty" from "this build does not report it".
     blankFilterEntriesDropped: Object.keys(blankFilterEntriesDropped).length ? blankFilterEntriesDropped : null,
+    // The posted/deadline window this run applied, and what it cost you nothing to drop (cycle
+    // 2392). `declaredMatches` above is SAM.gov's PRE-window count -- these three fields are what
+    // reconcile it with `delivered`, and a consumer should not read `delivered < declaredMatches`
+    // as a shortfall without subtracting them first. Null, not 0/{}, when no window was set.
+    dateWindow: dateWindowActive ? { postedFrom, postedTo, deadlineFrom, deadlineTo } : null,
+    dateWindowDropped: dateWindowActive ? dateWindowDropped : null,
+    dateWindowMissing: dateWindowActive ? dateWindowMissing : null,
     lastApiError,
     maxResults,
     chargeLimitReached,
@@ -1636,6 +1840,12 @@ if (!complete) {
     if (!isWd && !isCfda && !isExclusions && noticeTypes.length) appliedFilters.push(`noticeTypes ${noticeTypes.join(', ')}`);
     if (!isCfda && !isExclusions && states.length) appliedFilters.push(`states ${states.join(', ')}`);
     if (!isWd && organizationId) appliedFilters.push(`organizationId ${organizationId}`);
+    // The date window is the one filter here that can be the sole reason for an empty run while
+    // SAM.gov itself declared hundreds of matches, so it names its own drop count (cycle 2392).
+    if (dateWindowActive) {
+        appliedFilters.push(`your date window (${dateWindowText()}), which dropped `
+            + `${dateWindowDropped + dateWindowMissing} fetched row(s)`);
+    }
     await Actor.setStatusMessage(
         appliedFilters.length
             ? `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has none once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied. `
@@ -1646,17 +1856,36 @@ if (!complete) {
               + blankDropNote(),
     );
 } else {
-    if (declaredMatches !== null && !watchMode) {
+    if (declaredMatches !== null && !watchMode && !dateWindowActive) {
         log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these filters.`);
+    } else if (declaredMatches !== null && !watchMode) {
+        // Same line, but it must NOT claim to have delivered SAM's declared total when a date
+        // window was applied after the fetch -- `declaredMatches` is the pre-window count
+        // (cycle 2392), so saying "delivered every one of the 340" next to 12 pushed rows would be
+        // the same false-claim class this Actor's README was corrected for in cycle 2391.
+        log.info(
+            `Complete: of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these `
+            + `filters, ${pushed.toLocaleString('en-US')} fell inside your date window (${dateWindowText()}) and `
+            + `were delivered; ${(dateWindowDropped + dateWindowMissing).toLocaleString('en-US')} were read and `
+            + 'dropped outside it, uncharged.',
+        );
     }
     // A clean run that DELIVERED rows is the one path that previously set no status message at all
     // (cycle 2356) -- so a partial blank drop, which silently narrows the search the buyer asked
     // for, was invisible in the Console on exactly the runs that get charged. Only set a message
     // when there is actually something to say; a healthy unqualified run keeps Apify's default.
     const note = blankDropNote();
-    if (note) {
+    // A windowed run also gets a message on the one path that otherwise sets none: the Console
+    // shows `delivered` next to nothing explaining why it is so much smaller than SAM.gov's own
+    // declared total, and the window is applied after the fetch so that gap is expected, not a
+    // fault (cycle 2392).
+    const windowNote = dateWindowActive
+        ? ` Date window (${dateWindowText()}) dropped ${(dateWindowDropped + dateWindowMissing).toLocaleString('en-US')} `
+          + `fetched row(s) before charging${declaredMatches !== null ? `, out of ${declaredMatches.toLocaleString('en-US')} SAM.gov declared for your other filters` : ''}.`
+        : '';
+    if (note || windowNote) {
         await Actor.setStatusMessage(
-            `Delivered ${pushed.toLocaleString('en-US')} ${ROW_NOUN}(s).${note}`,
+            `Delivered ${pushed.toLocaleString('en-US')} ${ROW_NOUN}(s).${windowNote}${note}`,
         );
     }
 }
