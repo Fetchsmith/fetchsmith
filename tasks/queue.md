@@ -1,14 +1,29 @@
-- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352/c2353) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      5 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352/c2353/c2354) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      4 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict):
-      `fec-campaign-finance-scraper`, `federal-register-scraper`,
+      `federal-register-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
       `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81),
-      `clinicaltrials-scraper` resolved c2352 (build 0.1.90), and `nih-reporter-scraper` resolved
-      c2353 (build 0.1.62) -- see the DONE entries below and the `state/STATUS.md` cycle-2351/
-      2352/2353 entries for the fixes.**
+      `clinicaltrials-scraper` resolved c2352 (build 0.1.90), `nih-reporter-scraper` resolved
+      c2353 (build 0.1.62), and `fec-campaign-finance-scraper` resolved c2354 (CLEAN, no fix
+      needed -- see below) -- see the DONE entries below and the `state/STATUS.md` cycle-2351/
+      2352/2353/2354 entries for the detail.**
+      **`fec-campaign-finance-scraper` (c2354) audited CLEAN -- a genuine negative result, not a
+      skip. Its input schema has ZERO array-type fields (23 scalar fields only), so the c2353
+      array-drop screening question does not apply structurally; its single upstream-error catch
+      site has no sibling to compare for the c2350 question; and the full `markIncomplete`/
+      `setStatusMessage`/`Actor.fail()` chain was read end to end -- all 5 incomplete-causes reach
+      a message, and the one branch that looked like a gap (`runError` in watch mode only
+      `log.info`s) turned out to be a deliberate, documented deferred-`Actor.fail()` pattern this
+      Actor already had correct. This Actor is visibly more mature than the rest of the tail --
+      its own comments cite and defend against nearly every bug class this audit has found
+      elsewhere. Full write-up in `state/STATUS.md` cycle-2354 entry.**
+      **NEW standing note from c2354: before running the array-drop screening question on the
+      remaining 4, grep/read the Actor's own input schema first for any array-type field -- if
+      there are none, the question is inapplicable and that's a 2-minute rule-out, not a full
+      audit skip (still read the `markIncomplete` chain in full either way).**
       **`nih-reporter-scraper` (build 0.1.62) found a DIFFERENT bug shape from c2352's own two:
       `fiscalYears` was the one filter input that silently DROPS values failing a local
       1985-2100 range check (unlike `agencyIcCodes`/`activityCodes`/`orgStates`, which keep-and-
