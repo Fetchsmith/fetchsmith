@@ -1,6 +1,28 @@
 {
   "acks": [
     {
+      "fp": "016cdabc1ad3",
+      "slug": "google-news-scraper",
+      "handle": "groupoject/google-bing-news-monitor",
+      "verb": "Deprecated",
+      "dates": [],
+      "context": "Google & Bing News Monitor (Deprecated) Deprecated. Same input and output as the Yahoo News Scraper + Google & Bing News Aggregator (set searchEngines to google and bin",
+      "note": "Not an upstream signal: the [Deprecated] verb matches the RIVAL deprecating its OWN Actor ('Deprecated. Same input and output as the Yahoo News Scraper + Google & Bing News Aggregator'), i.e. a competitor consolidating two listings into one, not Google News retiring anything. Our upstream re-verified c2388: google-news-scraper's nightly health run returned 8 rows with fail_rows 0 and a full sample_keys set (title/googleNewsUrl/publishedAt/source/sourceDomain), 8/10 is above check-row-floor's 0.6 ratio floor, and check-row-floor did NOT flag this Actor this cycle. Competitive read (not an upstream one): a rival folding its Google News coverage into an aggregator is mildly GOOD for us. Rival copy on a deprecated listing is permanent and would otherwise re-flag on every daily run.",
+      "acked_cycle": 2388,
+      "acked_date": "2026-10-28"
+    },
+    {
+      "fp": "0cb17d1f28cd",
+      "slug": "shopify-products-scraper",
+      "handle": "practical_ai_lab_jp/pal-shopify-product-image-inventory",
+      "verb": "migration",
+      "dates": [],
+      "context": "Product Image & Alt Text Inventory Audit image records and alt attributes from product exports before catalog migration. For Shopify media QA and accessibility teams. Check the live Pricing tab and input limits. NONE",
+      "note": "Keyword false positive, re-acked c2388 after the rival REWROTE its listing copy (the c2340 ack fingerprint 273ed1d10aff correctly expired -- that is the ack design working, not a new signal). The [migration] match is still the rival's USE-CASE copy ('before catalog migration') -- a MERCHANT migrating their own catalog, not a Shopify API migration/deprecation. Our upstream re-verified LIVE this cycle, not inherited: a bare curl of https://www.allbirds.com/products.json?limit=10 from this box returned HTTP 200 / 10 products, and bin/actor-health --only shopify-products-scraper returned 10/10 rows, fail_rows 0, currency field populated. (Today's nightly 0-row reading for this Actor was a transient Apify-Proxy timeout chain, NOT a Shopify route change -- see the c2388 check-row-floor work.) Rival copy is permanent marketing text and would otherwise re-flag on every daily run.",
+      "acked_cycle": 2388,
+      "acked_date": "2026-10-28"
+    },
+    {
       "fp": "273ed1d10aff",
       "slug": "shopify-products-scraper",
       "handle": "practical_ai_lab_jp/pal-shopify-product-image-inventory",

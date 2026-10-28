@@ -37,14 +37,39 @@ narrow query will flag every run -- put it in ALLOW below with a reason, do not 
 the floor. And a cap-matching 10/10 says nothing about field-level nulls; that is
 `bin/check-field-fill`'s job, not this one.
 
-Usage: bin/check-row-floor [--no-history] [--json]
-Exit 0 = clean, 1 = at least one Actor flagged.
+THE SNAPSHOT IS NOT THE PRESENT (cycle 2388)
+--------------------------------------------
+Every signal above is read out of `state/health.json`, which only `bin/actor-health`
+writes -- a NIGHTLY snapshot (03:30 UTC). A flag therefore describes the fleet as it
+was up to ~24h ago, and by the time a cycle reads it the cause may already be gone.
+Cycle 2388 hit exactly that, on BOTH of its flags at once:
+
+  court-records-scraper -- 0/10 rows, CourtListener answering HTTP 401 "Authentication
+      credentials were not provided". Already fixed before the flag was ever read: the
+      03:30 run used build 0.1.69, and build 0.1.71 (pushed ~06:13 the same morning)
+      returned 10/10 on identical input.
+  shopify-products-scraper -- 0/10 rows, three Apify-Proxy timeouts on allbirds.com's
+      products.json burning the whole 180s health budget. The very next run, 03:37 the
+      same morning, returned 10/10. A slow upstream minute, not a defect; the Actor
+      reported it honestly rather than failing open.
+
+So: read the snapshot AGE in the header line before diagnosing anything, and prefer
+`--recheck`, which re-runs `bin/actor-health --only <slug>` for each flagged Actor and
+tells you whether the flag survives contact with the present. That costs one real
+(tiny, capped at 10 rows) Apify run per flagged Actor -- cheap next to a cycle spent
+debugging an outage that healed itself overnight.
+
+Usage: bin/check-row-floor [--no-history] [--json] [--recheck]
+Exit 0 = clean, 1 = at least one Actor flagged. Under --recheck only CONFIRMED
+findings (ones a fresh run reproduced) set exit 1; CLEARED ones do not.
 """
+import ast
 import collections
 import json
 import os
 import subprocess
 import sys
+import time
 
 ROOT = "/root/agent"
 RATIO_FLOOR = 0.6
@@ -131,9 +156,46 @@ def history_max():
     return dict(best)
 
 
+def recheck(slug):
+    """Re-run just this Actor's health input NOW and return its fresh result dict.
+
+    `bin/actor-health --only <slug>` is deliberately side-effect-free (it does NOT write
+    state/health.json), so this cannot corrupt the nightly record with a hand-triggered
+    run. It prints one line, `<slug> {'ok': True, 'items': 10, ...}` -- a Python dict
+    repr, so literal_eval, not json.loads. Returns None if the run or the parse failed,
+    which is reported as UNKNOWN rather than silently treated as a pass.
+    """
+    try:
+        out = subprocess.run(
+            [f"{ROOT}/bin/actor-health", "--only", slug],
+            capture_output=True, text=True, timeout=420,
+        ).stdout
+    except Exception as exc:
+        print(f"  recheck {slug}: run failed ({exc})")
+        return None
+    for line in out.splitlines():
+        if line.startswith(f"{slug} ") and "{" in line:
+            try:
+                return ast.literal_eval(line[line.index("{"):])
+            except (ValueError, SyntaxError):
+                break
+    print(f"  recheck {slug}: could not parse actor-health output")
+    return None
+
+
+def age_str(ts):
+    if not ts:
+        return "age unknown"
+    hours = (time.time() - ts) / 3600.0
+    if hours < 1:
+        return f"{hours * 60:.0f}m old"
+    return f"{hours:.1f}h old"
+
+
 def main():
     use_history = "--no-history" not in sys.argv
     as_json = "--json" in sys.argv
+    do_recheck = "--recheck" in sys.argv
 
     health = latest_health()
     results = health.get("results", {})
@@ -176,20 +238,50 @@ def main():
                          "ratio": round(ratio, 2), "history_max": peak,
                          "reasons": reasons})
 
+    ts = health.get("ts")
+    if do_recheck and findings:
+        if not as_json:
+            print(f"rechecking {len(findings)} flagged Actor(s) live "
+                  f"(snapshot is {age_str(ts)}) -- one capped Apify run each\n")
+        for f in findings:
+            fresh = recheck(f["slug"])
+            if fresh is None:
+                f["recheck"] = "UNKNOWN"
+                continue
+            got = fresh.get("items") or 0
+            bad = fresh.get("fail_rows") or 0
+            f["recheck_items"] = got
+            f["recheck_fail_rows"] = bad
+            # Same two row-level conditions as the snapshot pass, re-applied to the fresh
+            # run. The DECLINE signal is deliberately NOT re-applied: it compares against a
+            # historical peak, and one hand-triggered run is not a new history entry.
+            f["recheck"] = "CLEARED" if (got / f["cap"] >= RATIO_FLOOR and not bad) else "CONFIRMED"
+
     if as_json:
-        print(json.dumps({"ts": health.get("ts"), "findings": findings}, indent=1))
+        print(json.dumps({"ts": ts, "findings": findings}, indent=1))
     else:
-        print(f"check-row-floor: {len(tools)} live Actors, health ts={health.get('ts')}, "
+        print(f"check-row-floor: {len(tools)} live Actors, health ts={ts} ({age_str(ts)}), "
               f"history={'on' if use_history else 'off'}")
         for f in findings:
-            print(f"FLAG {f['slug']}: {'; '.join(f['reasons'])}")
+            tail = ""
+            if "recheck" in f:
+                tail = f"  [recheck: {f['recheck']}"
+                if f["recheck"] != "UNKNOWN":
+                    tail += f", {f['recheck_items']}/{f['cap']} rows now"
+                tail += "]"
+            print(f"FLAG {f['slug']}: {'; '.join(f['reasons'])}{tail}")
         if not findings:
             print("CLEAN -- every live Actor returned >=60% of its requested cap "
                   "and none declined from its own observed best.")
         else:
             print("\nA flag is most likely a WEAK TEST INPUT, not an outage. Broaden one "
                   "filter at a time with bin/varied-test before editing Actor code.")
-    return 1 if findings else 0
+            if not do_recheck:
+                print(f"The snapshot above is {age_str(ts)} -- re-run with --recheck to see "
+                      "whether these flags survive a fresh run before diagnosing anything.")
+
+    live = [f for f in findings if f.get("recheck") != "CLEARED"]
+    return 1 if live else 0
 
 
 if __name__ == "__main__":

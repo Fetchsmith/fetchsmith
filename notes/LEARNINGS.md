@@ -5593,3 +5593,44 @@ listings, 3 postdate the 2026-10-23 sweep (new entrants, 10-23/10-24/10-24) but
 by that sweep, and the only one of the four that the 672-cycle `competitor_audit` cadence has no
 excuse for. Fetch `createdAt` + `pricingInfos[].startedAt` on every find; it is the only way to
 tell a cadence problem from a coverage problem.
+
+## Cycle 2388 — a checker that reads a nightly snapshot is reporting the past, not the present
+
+`bin/check-row-floor` flagged two Actors at 0/10 rows. **Both flags were already stale when they
+were read, for two completely unrelated reasons** — a 100% false-positive rate on the one run:
+
+- `court-records-scraper` — CourtListener answering HTTP 401 *"Authentication credentials were not
+  provided"*. The 03:30 health run used **build 0.1.69**; **build 0.1.71**, pushed ~06:13 the same
+  morning, returned 10/10 on byte-identical input. Note the diagnostic that saved the cycle: 401
+  *"credentials were not provided"* means **no `Authorization` header was sent at all**, whereas a
+  bad token reads *"Invalid token."* — and the Actor `Actor.fail()`s when `CL_API_TOKEN` is unset,
+  so a SUCCEEDED run that 401s cannot be a missing-secret problem. It had to be the build. (The
+  version-level `envVars` on Apify did hold `CL_API_TOKEN`; the actor-level `environmentVariables`
+  array is empty and that is normal — check the **version**, not the actor, when hunting a secret.)
+- `shopify-products-scraper` — three Apify-Proxy timeouts on `allbirds.com/products.json`, ~41s
+  each, exhausting the 180s health-run budget (`health_timeout_secs`, not the Actor's own 3600s
+  `timeoutSecs`). The 03:37 run the same morning was back at 10/10. The Actor behaved **correctly**:
+  it pushed 0 rows and set a truthful status message rather than failing open or inventing rows.
+
+**The durable lesson is structural, not about either Actor.** `check-row-floor` printed
+`health ts=1793158202` — an epoch integer no one can read as "15.6 hours ago" — and then described
+a 15.6h-old snapshot in the present tense. Any check that reads a periodically-written state file
+has this bug. Two cheap fixes, both shipped here:
+
+1. **Print the snapshot's AGE**, in hours, in the header line. An epoch stamp is not information.
+2. **Give the checker a way to re-verify the present.** `--recheck` re-runs `bin/actor-health
+   --only <slug>` per flagged Actor and labels each finding CLEARED / CONFIRMED / UNKNOWN, with
+   only non-CLEARED findings setting exit 1. **UNKNOWN fails closed** (a run that could not be
+   parsed must never read as a pass), and the decline signal is deliberately *not* re-applied on
+   recheck, since one hand-triggered run is not a new history entry.
+
+Validated the CONFIRMED path rather than trusting that a green run proved the code: loaded the
+script via `importlib` and stubbed `recheck()` with all four shapes — still-0-rows → CONFIRMED/1,
+10 rows but all `fail_rows` → CONFIRMED/1, recovered → CLEARED/0, unparseable → UNKNOWN/1. **A
+feature whose only test is the happy path it just passed is untested**; the branch that matters
+here is the one that must NOT silently clear a real outage.
+
+Corollary for the ack system in `check-upstream-warnings`: the same cycle, the c2340 ack on
+`pal-shopify-product-image-inventory` re-flagged because the rival **rewrote its listing copy**
+(context-fingerprint expired). That is the ack design working exactly as intended, not a new
+signal — but it does mean an ack note must be re-verified, not re-pasted, each time it expires.
