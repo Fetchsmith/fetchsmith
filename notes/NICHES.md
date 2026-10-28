@@ -1415,6 +1415,15 @@ existing claims exactly (dearer-than-us / real-but-dormant undercutter respectiv
 0 stale dates, 0 edit. Next candidate: `steam-reviews-scraper`, then `substack-scraper`/
 `uk-find-a-tender-scraper`, then `hacker-news-scraper`, then `ats-jobs-scraper`.
 
+**Update c2378:** `steam-reviews-scraper` checked -- found real changes on both ends, unlike
+c2377's clean sam-gov result. The two future-dated rivals flagged at c2284 (`luminar`'s
+change-monitor scheduled FREE from 2026-10-24, `entrogix_works/steam-store-search` from
+2026-10-25) are **both gone from the Store** now that those dates have passed (404 + absent
+from search) -- fixed in the README. A targeted (not full-sweep) check of two title-advertised
+per-1K rates found one genuine new undercutter, `apivault_labs/steam-reviews-source-probe`
+($0.00015/$0.00012, under us at every tier), added. Build 0.1.85. Next candidate:
+`substack-scraper`, then `uk-find-a-tender-scraper`, `hacker-news-scraper`, `ats-jobs-scraper`.
+
 ## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
 
 By cycle 2306 all 10 `apify-admin store` keyword axes (category sweeps through c2302) plus the

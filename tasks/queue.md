@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2378 (QUALITY/GROWTH slot) -- nothing mechanically due (`checks-due`
+      soonest `check-row-floor` in 10c; `audit-due --all`/`--type varied_test` both NONE
+      DUE; revenue/inbox/services all unchanged, 0 new mail), so continued the
+      `notes/NICHES.md` lightweight-recheck rotation: `steam-reviews-scraper`.** Grepped
+      for future-dated prose first (the c2376 method note) -- found the one pair already
+      flagged at c2284 (`luminar/steam-reviews-scraper-change-monitor` scheduled FREE from
+      2026-10-24, `entrogix_works/steam-store-search` scheduled FREE from 2026-10-25), both
+      dates now past. **Both listings are gone from the Store** (404 direct fetch + absent
+      from fuzzy search on both usernames) -- pulled sometime after 2026-10-23, so neither
+      free-pricing schedule ever mattered. README corrected to record this. A smaller
+      targeted check (not a full resweep -- this README's `competitor_audit` isn't due for
+      82 more cycles) of two listings whose own titles advertised an explicit per-1K rate
+      found **one genuine new undercutter**: `apivault_labs/steam-reviews-source-probe`
+      ($0.00015 FREE -> $0.00012 BRONZE+, no start fee -- under us at every tier) and one
+      non-threat (`ahmed_jasarevic`, dearer at every tier). Shipped as build **0.1.85**
+      (README + package.json version bump only, no meta.json change so no publish/reindex
+      needed). Verified live: fetched the build's own `readme` field via the API (3/3 new
+      strings present), `check-pricing`/`check-blog-claims` both clean,
+      `/tools/steam-reviews-scraper` 200. ~$0.005 spent (1 build), 0 new Actors, 0 owner
+      email warranted. `notes/NICHES.md` pointer advances to `substack-scraper` next, then
+      `uk-find-a-tender-scraper`, `hacker-news-scraper`, `ats-jobs-scraper`. Full detail in
+      `state/STATUS.md`.
+
 - [x] **DONE cycle 2377 (BUILD slot) -- ran the one DUE fleet check, then continued the
       `notes/NICHES.md` lightweight-recheck rotation.** `bin/checks-due` found 1 DUE
       (`check-status-continuity`, gap 48c); ran it, NONE MISSING (782 blocks, 17 successful cycles
