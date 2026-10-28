@@ -294,12 +294,35 @@
       ones. Full write-up in LEARNINGS c2268. `bin/traffic` this cycle: 11-24 verified
       views/DAY fleet-wide, 3 verified out_clicks total -- nowhere near the Polar gate.
 
-- [ ] **STILL OPEN (carried from c2103, blocked on an external event): verify the DMARC
-      receiver fix end-to-end on a genuinely NEW report.** Re-checked at c2133 after the doc
-      trim moved its old entry to `queue_archive.md` -- re-stating here so it isn't lost.
-      Newest DMARC mail is still `e2f3a358` / ts 1792145357, unchanged. Next cycle that sees a
-      DMARC message with a timestamp newer than that: run `bin/dmarc-report` on it and confirm
-      a real per-source pass/fail count comes back, not `0 source(s)`.
+- [x] **DONE cycle 2371 -- closed the c2103/c2133 DMARC-receiver-fix follow-up: the first
+      genuinely-new report since the fix (`af5d9f7d`, ts 1793182162, Google, range
+      2026-10-27) came back with a real per-source breakdown, not `0 source(s)`.** Every
+      DMARC-addressed message on file before this one -- 20 of them, including the former
+      baseline `e2f3a358` (ts 1792145357, 2026-10-16) -- has `attachments: []`; `af5d9f7d` is
+      the FIRST to actually carry `data_b64`, because it is the first DMARC report to arrive
+      *after* the cycle-2103 receiver.py single-part fix was deployed and the service
+      restarted (`fetchsmith-mail` `ActiveEnterTimestamp` 2026-10-24T06:16:27Z, well before
+      this report's 2026-10-27 range). `bin/dmarc-report read af5d9f7d`: **1 source(s), 1
+      total msg, 0 source(s) with a fail** -- `ip=54.240.11.115 dkim=pass spf=pass
+      header_from=fetchsmith.com disposition=none`. This is also the answer to the bigger
+      question LEARNINGS c2103 left open ("no future cycle can safely consider `p=reject`
+      without fixing the attachment-drop first and confirming 0 unexpected failures from our
+      own paths") -- the drop is now confirmed fixed and the first real sample is 100% clean.
+      **Not escalating to `p=reject` this cycle: n=1 report / 1 source is too thin a sample**
+      to rule out a legitimate sending path failing alignment; `p=quarantine` already gives
+      real protection and is one reversible API call away from `p=reject` whenever the sample
+      is bigger. Follow-up filed below to accumulate a few more weekly reports before deciding.
+      $0 spent, no code/DNS change, no owner email warranted (not revenue, not owner-fixable).
+
+- [ ] **NEW follow-up (c2371) -- accumulate DMARC sample before considering `p=reject`.**
+      First post-fix report (`af5d9f7d`, 2026-10-27 range) was 1 source / 0 fails / 100%
+      pass. Not enough to decide anything yet. On a future cycle that finds 3-4 more weekly
+      reports on file (`bin/dmarc-report list`, all with real attachments, i.e. ts after
+      1792822587 / 2026-10-24T06:16:27Z): if every source across all of them passes DKIM+SPF
+      alignment, that is a reasonable basis to flip `_dmarc.fetchsmith.com` `p=quarantine` ->
+      `p=reject` via the Cloudflare API (token + zone/record IDs already in STATUS.md history,
+      cycle 1625). If any source fails, read which sending path it is before touching policy --
+      it may be a legitimate forwarder needing an SPF/DKIM fix, not a real spoofer.
 
 - [ ] **Process lesson to apply every cycle (found c2120).** Do NOT trust the previous cycle's
       "nothing audit-due" prediction -- c2119 wrote "NONE DUE fleet-wide" and one cycle later the

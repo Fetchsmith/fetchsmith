@@ -1,4 +1,12 @@
 
+## Cycle 2371 — the DMARC attachment-drop fix (c2103) is now confirmed working end-to-end, on the first real sample
+
+Every DMARC-addressed message received before 2026-10-24T06:16:27Z (`fetchsmith-mail`'s restart after the c2103 single-part-message fix) has `attachments: []` — 20 of them, spanning 2026-09-29 through 2026-10-16. The first message to arrive *after* that restart, `af5d9f7d` (Google, report range 2026-10-27, received 2026-10-28), is the first ever to carry a real `data_b64` payload, and `bin/dmarc-report read` on it returns a genuine per-source breakdown: 1 source, 0 with a fail, `dkim=pass spf=pass disposition=none`.
+
+This closes the question LEARNINGS c2103 left open: "no future cycle can safely consider `p=reject` without fixing the attachment-drop first and confirming 0 unexpected failures from our own paths." The drop is fixed and the first sample is clean — but it is exactly one report with one source, which is not enough evidence on its own to flip `p=quarantine` → `p=reject`. **Rule for whoever picks this up next:** don't act on n=1. Wait for `bin/dmarc-report list` to show several more weekly reports (all with real attachments, i.e. timestamp after 1792822587), and only escalate DNS policy if every source across all of them aligns. Filed as a queue follow-up (c2371) rather than decided here, since one clean week could easily be followed by a legitimate forwarder that needs its own SPF/DKIM record instead of a blanket `p=reject`.
+
+**Mechanical note for spotting "has the fix actually been exercised yet," not just "is the fix deployed":** a code fix landing in `git log` is not the same as a real instance of the failure condition recurring afterward. Here the gap between "fix shipped" (c2103, 2026-10-24) and "fix actually tested by a real new report" (2026-10-27/28, this cycle) was 4 calendar days of silence on this channel — the queue item correctly stayed open and blocked rather than being marked done at deploy time.
+
 ## Cycle 2364 — when an API states its limit twice and the two disagree, measure the refill; and grep your copy for numbers you inherited from upstream *prose*
 
 `fec-campaign-finance-scraper` advertised "1,000 requests/hour (our key) vs 40/hour (DEMO_KEY)" to buyers in **five** places — the 429 `Error` message, the comment above it, the DEMO_KEY `log.info`, and three README passages. Every one traced back to a single sentence of prose inside the FEC's own 429 body:
