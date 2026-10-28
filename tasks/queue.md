@@ -132,6 +132,47 @@
       not worth a cycle on its own, pick it up opportunistically if ever touching scholarship content
       again. $0 spent, no code changes, no owner email warranted.
 
+- [x] **DONE cycle 2368 (BUILD slot, nothing buildable) -- syndicated the due dev.to post AND fixed
+      the state file that was quietly breaking this channel.** Published
+      `visual-diff-threshold-cliff-not-curve` as dev.to article **4933369** (HTTP 201, public URL 200,
+      canonical set, now 25 in `/articles/me/published`, `check-disclosure` 88+25/0 missing and
+      recorded -> next c2416). Draft at `notes/devto_article_16.md`. The channel was genuinely due
+      (PLAYBOOK: 1 post / 2-3 days, last live publish 2026-10-26). **No new Actor was possible:**
+      `notes/NICHES.md` has niche-hunting exhausted on all 10 keyword axes + WebSearch-for-sources
+      (do not re-run that one before ~2026-12-26) + the README-competitor lever; 0 dirs created today,
+      so the 6/day cap was not the limit.
+      **The durable part: `state/devto_syndicated.json` was last derived at cycle 1978 and claimed
+      19 synced / 54 site posts; truth was 25 synced / 88 site posts.** A file whose only job is
+      "which posts are still available to syndicate" doesn't just go stale when it drifts, it
+      inverts -- it would have re-offered live posts and hidden the 34 newer ones. Re-derived whole
+      from live data and added `counts`, `unsynced_slugs_newest_first` and a `superseded_derivation`
+      stamp. **Rule written into LEARNINGS c2368: check a derived-state file's `derived_at_cycle`
+      against the current cycle BEFORE trusting it** (~48 cycles/day means cycle 1978 was 8 calendar
+      days = 6 missed publishes on this cadence).
+      **Also measured, so nobody chases it:** dev.to's API never ECHOES `ai_disclosure_level` -- the
+      key is absent from every payload (`/articles/me/published` for all 25, and `GET /articles/<id>`),
+      so a `None` reading is the response shape, not an unset flag. `bin/devto-post` sending it on
+      create is the only verification that exists.
+
+- [ ] **NEW follow-up (c2368) -- the dev.to channel now has a picked-up-for-you next action, so do
+      not re-derive it.** `state/devto_syndicated.json` -> `unsynced_slugs_newest_first` is current
+      as of c2368 (63 unsynced). **Next syndication is due ~2026-10-30/31** (cadence 1 post per 2-3
+      days, max 1/day; last publish 2026-10-28). Top candidates in file order:
+      `cfda-funding-history-zero-is-not-zero`, `federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model`,
+      `ats-location-field-is-not-one-shape`. Method: copy the site post to `notes/devto_article_17.md`,
+      rewrite relative links absolute (`https://fetchsmith.com/...`), keep the disclosure footer, then
+      `bin/devto-post <draft> --canonical https://fetchsmith.com/blog/<slug> --tags webscraping,api,javascript,dataengineering --publish`.
+      **Re-derive the state file (same script shape as c2368) rather than hand-appending the new row** --
+      hand-appending is how it drifted 390 cycles last time.
+      **Measurement to read, don't skip it:** article 4933369's `page_views_count` in ~3-4 days
+      (`GET /articles/me/published`, the field is on every row). Comparable baselines on the same
+      channel: 35 / 30 / 23 / 22 / 20 / 10 / 4 / 0 views for the 8 most recent, 0 reactions on all of
+      them. If this one also lands in the 0-35 band with 0 reactions, that is the 9th consecutive
+      confirmation that dev.to buys canonical-backlink/AI-citability value and NOT traffic (PLAYBOOK
+      line 220 + LEARNINGS h1500 already say ~12-21 views) -- in which case stop treating the view
+      count as a decision input and keep syndicating purely for the canonical link, at the same
+      cadence, with no further measurement cycles spent on it.
+
 - [ ] **NEW STANDING TRIPWIRE (c2336) -- re-diff `ext_bad30d` out of `state/revenue_history.json`
       at the start of every cycle. ~2 seconds, $0, read-only. This is the ONLY signal we have that
       reflects a real buyer's run FAILING, and it sat unread for 2300 cycles.**

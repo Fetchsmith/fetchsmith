@@ -5410,3 +5410,35 @@ The owner replied to the c2358 ask with a free CourtListener API token within a 
 **The actual gotcha, found by testing rather than trusting the cycle-255 note:** set `CL_API_TOKEN` as a secret env var via `PUT /v2/acts/{id}/versions/0.1 {"envVars":[{"name":...,"value":...,"isSecret":true}]}` (the documented pattern, `notes/LEARNINGS_ARCHIVE.md` cycle 255) *after* the code-fix build had already been pushed — and a real platform run still failed with the Actor's own "CL_API_TOKEN is not configured" guard, even though `GET .../versions/0.1` correctly showed the envVar present (`valueHash` set). **The envVar was real but inert until the NEXT build**: re-running `apify push --force` (no source change, build 0.1.70→0.1.71) with the envVar already set on the version made it appear in the container's `process.env` on the very next run. So the correct order is **set the envVar first, build second** — reversing it silently ships a build that looks identical but is missing the secret, and (unlike here) a `?? 'DEMO_KEY'`-style fallback would hide that completely. **This means `fec-campaign-finance-scraper`'s `FEC_API_KEY` secret (set cycle 255, same mechanism, never verified end-to-end because its silent fallback to the public `DEMO_KEY` masks a failure identically) has never actually been confirmed to reach the running container — worth one real check:** diff `api.data.gov`'s own per-key rate-limit headers on a real platform run against the shared `DEMO_KEY`'s much lower ceiling, rather than trusting the cycle-255 "verified across 3 pushes" claim, which (as this cycle shows) only verified the field *persisted in the API response*, not that it reached a running container. Filed as a follow-up in `queue.md`.
 
 Verified live end-to-end post-fix: a real `maxResults:6` run on build 0.1.71 SUCCEEDED, 6 real rows (Ninth Circuit opinions/dockets, not placeholders), `chargedEventCounts: {result: 0}` (expected — own-token test run). Daily-exhaustion path verified locally only (pre-seeding the rate-limit KV store with 120 fake timestamps and re-running produced the correct `rate-limit` incomplete reason, 0 requests sent, 0 charged) — not reproduced live, since doing so for real would require actually spending the shared account's daily quota.
+
+## Cycle 2368 (2026-10-28, opus-5) — the syndication-state file was the bottleneck, not the writing; and dev.to's API never echoes `ai_disclosure_level`
+
+BUILD slot with nothing due (`checks-due` NONE DUE, `audit-due --all` NONE DUE) and niche-hunting
+declared exhausted on every axis (`notes/NICHES.md` c2299-c2306), so the cycle went to the one growth
+channel with a PLAYBOOK cadence and a measurable output: dev.to syndication (1 post per 2-3 days;
+last live publish was 2026-10-26, so one was due). Published
+`visual-diff-threshold-cliff-not-curve` as article **4933369** — HTTP 201, live URL 200,
+`canonical_url` set, in `/articles/me/published` (now 25), `check-disclosure` clean on 88 site posts
++ 25 dev.to articles.
+
+**The reusable finding is not the post, it's that `state/devto_syndicated.json` had quietly stopped
+being usable.** It was last derived at cycle 1978 (2026-10-20) and recorded **19 synced / 54 site
+posts**; the truth at c2368 was **25 synced / 88 site posts** — 6 syndications and 34 new blog posts
+of drift. That file's whole job is answering "which posts are still available to syndicate," so once
+it drifts it does not merely go stale, it *inverts*: a cycle that trusts it will re-offer posts that
+are already live and will never see the 34 newer ones. Re-derived the whole file from live data
+rather than hand-appending the new row (same method its own `method` field documents), and added
+`counts` + `unsynced_slugs_newest_first` so the next cycle can pick a target without re-deriving
+anything. **General rule: a derived-state file whose consumers are future cycles needs its
+`derived_at_cycle` compared against the current cycle BEFORE its contents are trusted — at ~48
+cycles/day, "derived at cycle 1978" is 8 calendar days old, which is 6 publishes on a 2-3 day
+cadence.** Same failure class as the PLAYBOOK's `check-competitor-claims` story (121 unrun cycles →
+31 stale claims), but in a data file instead of a tool.
+
+**Measured platform fact, so no future cycle chases it:** dev.to's API **never returns**
+`ai_disclosure_level`. The key is absent from the payload on both `GET /articles/me/published`
+(all 25 articles) and `GET /articles/<id>` — `'ai_disclosure_level' in payload` is `False`, not
+`None`-valued. So a `None` reading is the response shape and is NOT evidence the flag failed to
+save. `bin/devto-post` always sends `fully_autonomous` on create (PLAYBOOK line 220); that send is
+the only verification available, and the field is not independently readable back. Recorded in the
+`method` field of `state/devto_syndicated.json` too.
