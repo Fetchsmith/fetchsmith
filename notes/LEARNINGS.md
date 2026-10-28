@@ -5252,3 +5252,29 @@ this audit going forward: grep the `pushResult`/charge-wrapper function for its 
 — if it returns one boolean ANDing multiple stop conditions together instead of naming each one,
 the status-message chain downstream cannot possibly report which one actually fired on a given
 run, however sound the rest of the branch chain is.
+
+- 2026-10-28 (cycle 2350) **New `setStatusMessage` audit bug shape: two sibling upstream-error
+  causes given inconsistent treatment.** `eu-ted-tenders-scraper` had both `httpError` (a non-200
+  HTTP status from TED) and `apiErrorMessage` (a TED-reported error body on an otherwise-200
+  response) -- genuinely two different failure modes from the same upstream, handled a few lines
+  apart. `apiErrorMessage` already followed the h287 pattern correctly: recorded, loop broken out
+  of (not `Actor.fail()`'d immediately), then deferred to a final `Actor.fail()` call placed AFTER
+  the watch-baseline save and the completion webhook, and factored into `saveWatchRecord()`'s status
+  argument as `'failed-incremental'`. `httpError` had none of that -- it kept an older, simpler
+  `if (!pushed && httpError) await Actor.fail(...)` sitting right after the walk loop, gated on
+  `pushed === 0` only. The asymmetry meant an HTTP error on page 2+ of a walk that had already
+  pushed and charged some rows fell through every check: not caught by the immediate httpError
+  guard (pushed>0), not caught by the final apiErrorMessage-only fail, no status-message branch
+  either (all of them except `timeBudgetStopped` require `pushed===0`) -- SUCCEEDED,
+  `statusMessage: null`, baseline saved as plain `'incremental'`. **Cheap screening test for this
+  shape on any remaining Actor: grep every distinct upstream-error variable the file tracks (HTTP
+  status vs API-body-error vs timeout are usually three separate ones) and confirm each gets the
+  SAME deferred-fail + `pushed`-agnostic treatment as the others -- if one is checked earlier/
+  differently than its siblings, that is a strong tell it predates whichever pattern the others
+  already follow and was never updated when it landed.** Verifying an upstream-error fix is harder
+  than a status-message fix: TED's real API won't reliably error on command. Used a local
+  `INJECT_HTTP_ERROR_ON_PAGE=<n>` hook added to a /tmp copy of the Actor (checked against both the
+  pre-fix code via `git show HEAD~1`-style restore and the fixed code, same real input so page 1
+  still hits the live TED API and only the injected page returns a synthetic 400) -- this is the
+  same fault-injection technique the h287/h289 fixes on other Actors used, just applied here
+  without needing the full Apify platform (no charge, no build, instant iteration).

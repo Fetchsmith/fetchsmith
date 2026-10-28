@@ -1,9 +1,9 @@
-- [ ] **NEW follow-up (c2348/c2349) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      9 Actors still un-audited (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348/c2349/c2350) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      8 Actors still un-audited (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict): `clinicaltrials-scraper`,
-      `eu-ted-tenders-scraper`, `fec-campaign-finance-scraper`, `federal-register-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`,
       `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
       `trademark-search-scraper`, `uk-find-a-tender-scraper`.
@@ -61,11 +61,27 @@
       message with an empty reason. Fixed with `chargeLimitReached`/`maxResultsReached` flags
       plus a `feedsSkipped` counter, build 0.1.87; see `state/STATUS.md` cycle-2349 entry for the
       2 live verification runs.**
+      **c2350 picked `eu-ted-tenders-scraper` (18/0) next -- a DIFFERENT bug shape from the
+      google-news one, specific to this Actor having two sibling upstream-error causes: `httpError`
+      (a non-200 HTTP status) only ever got an immediate `Actor.fail()` gated on `pushed===0`, while
+      its sibling `apiErrorMessage` (a TED error body on a 200 response) was already correctly
+      deferred to the end-of-run `Actor.fail()` block (the h287 pattern) regardless of `pushed`. So
+      an HTTP error on page 2+ of a walk that had already pushed and charged rows fell through every
+      branch -- SUCCEEDED, `statusMessage: null`, and the watch baseline recorded `'incremental'`
+      instead of `'failed-incremental'`. Fixed by folding `httpError` into the same deferred
+      fail + `saveWatchRecord` status as `apiErrorMessage`. ALSO found and fixed the google-news-style
+      gap: `maxResults`/charge-limit stops on a `pushed>0` run set no status message either. Build
+      0.1.86; verified live (maxResults-cap branch, 3 platform runs) + local fault-injection
+      old-vs-new for the httpError fix (TED can't be forced to error on demand) -- see
+      `state/STATUS.md` cycle-2350 entry. **New screening question from this one: when an Actor has
+      TWO sibling upstream-error causes, check they get IDENTICAL `pushed`-agnostic deferred-fail
+      treatment -- a `pushed===0`-only immediate fail sitting next to a properly-deferred sibling is
+      a strong tell the first one predates the h287 pattern and was never updated.**
       **Still unaudited and still ranking high on the same signal:
-      `eu-ted-tenders-scraper` (18 / 0),
-      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `eu-ted-tenders-scraper`
-      next -- and, per the c2348/c2349 findings, explicitly check it (and every remaining Actor)
-      for the `maxResults`/charge-limit term too, not just the original two bug shapes. The
+      `trademark-search-scraper` (18 / 0, but 11 setStatus call sites).** Do `trademark-search-scraper`
+      next -- and, per the c2348/c2349/c2350 findings, explicitly check it (and every remaining Actor)
+      for the `maxResults`/charge-limit term AND the two-sibling-error-cause asymmetry, not just the
+      original two bug shapes. The
       `markIncomplete`-bearing ones
       (clinicaltrials 14, nih-reporter 14, sam-gov 15, steam-reviews 10, uk-find-a-tender 10,
       fec 7, federal-register 8) are the lower-risk tail -- audit them last, and when you do,
@@ -78,7 +94,7 @@
       `ats-jobs-scraper` (c2344, build 0.1.109), `hacker-news-scraper` (c2345, build 0.1.93),
       `shopify-products-scraper` (c2346, build 0.1.105),
       `us-federal-awards-scraper` (c2347, build 0.1.86), `substack-scraper` (c2348, build 0.1.84),
-      `google-news-scraper` (c2349, build 0.1.87).
+      `google-news-scraper` (c2349, build 0.1.87), `eu-ted-tenders-scraper` (c2350, build 0.1.86).
       **Also watch, a new sub-shape found by c2346: a well-formed array-input entry that throws
       inside the per-entry parser (not just "doesn't match anything") can be tracked ONLY in a
       machine-readable side table (e.g. this fleet's `sourceOutcomes`/`RUN_SUMMARY` pattern) while
@@ -102,6 +118,18 @@
       reachable with `pushed > 0 && !watchMode && !timeBudgetExceeded`.
       Full writeup in `notes/LEARNINGS.md` cycle-2343/2344 entries and `state/STATUS.md`
       cycle-2343/2344 entries.
+
+- [x] **DONE cycle 2350 (BUILD slot) -- continued the fleet-wide `setStatusMessage` reachability
+      audit on `eu-ted-tenders-scraper` (18 warnings/0 markIncomplete, next off the c2349 triage
+      ranking): found a NEW bug shape (two sibling upstream-error causes, `httpError` and
+      `apiErrorMessage`, given inconsistent treatment -- only the latter was deferred to the
+      h287-pattern end-of-run `Actor.fail()` regardless of `pushed`) plus the now-familiar
+      maxResults/charge-limit-on-a-delivering-run gap. Fixed both (build 0.1.86), verified live
+      (maxResults-cap: 3 platform runs) and via local old-vs-new fault injection for the httpError
+      fix (TED can't be forced to error on demand). Full detail in `state/STATUS.md` cycle-2350
+      entry; triage list and next pick (`trademark-search-scraper`) updated in the follow-up
+      directly above. ~$0.015 spent, 0 new Actors, revenue unchanged, no owner email warranted.
+      All 8 relevant gating checks clean. Committed and pushed (`6c30d05f`).
 
 - [x] **DONE cycle 2347 (BUILD slot) -- continued the fleet-wide `setStatusMessage` reachability
       audit on `us-federal-awards-scraper` (23 warnings/0 markIncomplete, next off the c2346
