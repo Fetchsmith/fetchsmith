@@ -1,3 +1,44 @@
+- [ ] **NEW follow-up (c2348..c2359) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      1 Actor left, the last of the `markIncomplete`-bearing tail: `uk-find-a-tender-scraper`.**
+      **`steam-reviews-scraper` audited c2359 -- CLEAN, no fix needed, a genuine negative result
+      (second one this campaign, after `fec-campaign-finance-scraper` c2354).** Ran both standing
+      screening questions plus a full read of the `markIncomplete`/`setStatusMessage`/RUN_SUMMARY
+      chain (~150 lines, every `else if` branch traced, not grep-counted):
+      1. Array-input drop-to-empty: `apps`/`searchTerms` (stringList, no enum) are already guarded
+         by an explicit `if (!apps.length && !searchTerms.length) await Actor.fail(...)` at the top
+         (h988-era fix) -- an all-blank `apps:[""]` with no `searchTerms` fails pre-charge, it does
+         not fall through to the schema-default game. The one array input that looked like a live
+         candidate, `watchEvents`, turned out NOT to be reachable: its schema carries an
+         `items.enum: ["new","recommendationChanged"]`, and the fleet's own c2356 durable fact says
+         Apify enforces array `items.enum` on API-started runs. **Verified live this cycle, not just
+         cited**: `POST /v2/acts/EDfr7BDOOsO7azSOv/runs` with `watchEvents:["bogus-value"]` ->
+         immediate `400 invalid-input` ("must be equal to one of the allowed values"), run never
+         starts -- so the "all-invalid watchEvents silently defaults to both events" shape I
+         hypothesized cannot actually happen via the API or the console UI. Saved a wasted fix by
+         checking the schema (enum) before writing code, per the c2356 shortcut.
+      2. Omit-the-filter-term widening: no other array/list inputs exist that feed a query-builder
+         the way `agencies`/`fiscalYears`/`naicsCodes` did on the other 3 fleet bugs -- `apps` and
+         `searchTerms` are both ID/term lists consumed per-entry (one fetch per id), not folded into
+         a single broader query, so a partially-empty list only drops specific apps/terms, it cannot
+         widen to "everything."
+      3. `reviewsAfter`/`reviewsBefore`: an invalid date string already degrades safely everywhere
+         it's read (`!isNaN(reviewsAfter)` guards all 3 use sites, confirmed by reading each one) --
+         not silently treated as "no date filter" with no trace; `hasDateWindow` just goes false.
+      4. Full `else if` chain read end to end (lines ~1097-1174): every cause (timeout, charge-limit,
+         maxResults, seed-cap, upstream-degraded, depth-cap, unparsed-apps, watch-saturated) reaches
+         a `setStatusMessage` call, including the cascade-accumulation pattern (`zeroCauses`/
+         `partialCauses` arrays, not first-match-wins) that cycles 1559/1591/1592 already fixed here.
+         This Actor's comments cite and defend against nearly every bug class this audit has found
+         elsewhere (h988 unparsed-apps cascade, h285 watch-eviction, h250 deferred-fail, the
+         timeout-vs-cap truncation-cause disambiguation) -- visibly one of the most mature Actors in
+         the fleet, likely because reviews_html.js's Oct 22 API migration forced a recent full
+         rewrite of this exact logic.
+      $0 spent (1 read-only API probe against Apify's own validation, no Actor run), 0 code changes,
+      0 new Actors, revenue unchanged, no owner email warranted. **`uk-find-a-tender-scraper` is the
+      LAST Actor in this ~12-cycle campaign (c2348-c2359) -- once it's done, write the summary/retro
+      note (bug count, $ saved estimate, the 3 durable platform facts found) into
+      `notes/LEARNINGS.md` before picking a new audit target.**
+
 - [ ] **BLOCKED ON OWNER (c2358) -- `court-records-scraper` fix needs the owner's CourtListener
       API token.** Confirmed with `got-scraping` (not just curl) that `/register/` is reachable
       (200, not bot-protected) but gated by a **required hCaptcha widget** -- no way to create an
