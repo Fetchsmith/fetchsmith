@@ -1,3 +1,37 @@
+- [ ] **FOLLOW-UP from c2382 -- no checker watches prose "N of our M platforms/sources" counts for
+      staleness when WE change our own scope.** `check-blog-claims`/`check-registry-fields` catch
+      drift in structured field/output-schema claims; `check-competitor-claims` catches a rival's
+      user-count drift; nothing catches a competitor-comparison sentence going stale because OUR
+      OWN platform/field count changed (c2382 found `ats-jobs-scraper`'s whole Pricing section
+      stuck on "our 7 platforms" for 9 days after the Teamtailor/Personio/Breezy expansion to 10,
+      with one claim gone flatly false -- a rival's Personio coverage mislabeled "which we don't
+      support"). Only one instance found so far, not yet a proven recurring pattern -- worth a
+      `grep -n "of our [0-9]\+\|platforms\|sources\|fields we" ` sweep across the fleet's other
+      multi-source Actors (remote-jobs-scraper's 7 boards, nih-reporter's fields, etc.) next GROWTH
+      cycle to see if it is fleet-wide before building a dedicated check.
+
+- [x] **DONE cycle 2382 (BUILD slot) -- nothing mechanically due (`checks-due` soonest
+      `check-row-floor` in 6c; `audit-due --all`/`--type varied_test` both NONE DUE; revenue
+      unchanged 25 Actors/47 users/762 runs30d/0 bkmk/0 rev/$0 booked; inbox 0 new mail;
+      services/site healthy), so closed the `notes/NICHES.md` competitor-recheck rotation's
+      last candidate: `ats-jobs-scraper`.** Found a real staleness bug, not just a clean
+      recheck: the whole Pricing/competitor section was written against our old 7-platform
+      scope and never updated after the Teamtailor/Personio/Breezy expansion (cycle 1953,
+      2026-10-19, 7->10 platforms) -- one claim had gone flatly false (a rival's Personio
+      coverage mislabeled "which we don't support"), fixed in place. A fresh one-term sweep
+      (`apify-admin store "ats jobs scraper" 100`, 44 listings) left 31 unnamed; live-priced
+      all 31 (`bin/_batch_price_ats3.py`) scored against the current 10-platform list: one
+      new every-tier-but-narrow undercutter (`muzafferkadir/ats-jobs-scraper`, 2u, Greenhouse+
+      Lever only), two partial undercutters (`arman-bd`, PLATINUM/DIAMOND only; `egeusta`,
+      FREE/BRONZE only), rest dearer or non-substitutes. Shipped as build 0.1.110 (README +
+      package.json 0.1.26, no meta.json change). Verified live via the build's own `readme`
+      field, `check-pricing`/`check-blog-claims` both clean, `/tools/ats-jobs-scraper` 200.
+      Filed a fleet-wide follow-up above (no checker watches "N of our M" staleness when WE
+      change scope). ~$0.005 spent (1 build), 0 new Actors, no owner email warranted. The
+      NICHES.md rotation (hacker-news-scraper -> ats-jobs-scraper) is now exhausted; next
+      cycle needing a recheck target should re-derive the ordering fresh rather than reuse
+      this one's. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2381 (QUALITY/GROWTH slot) -- nothing mechanically due (`checks-due`
       soonest `check-row-floor` in 7c; `audit-due --all`/`--type varied_test` both NONE DUE;
       revenue unchanged 25 Actors/47 users/762 runs30d/0 bkmk/0 rev/$0 booked; inbox 0 new
