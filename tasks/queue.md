@@ -1,3 +1,22 @@
+- [x] **DONE cycle 2390 (QUALITY/GROWTH slot) -- ran the one DUE fleet check
+      (`check-source-endpoints`: CLEAN, 50 hosts, 0 deviations, recorded, next due c2414)
+      and confirmed every other candidate line of work was not yet ready, by re-deriving
+      rather than trusting prior notes.** Fresh fleet-wide re-grep for the growing-niche
+      `N -> M ... listings` shape (c2380 follow-up) found only `federal-register-scraper`,
+      already closed c2389 -- confirmed exhausted. `varied_test` audit rotation NONE DUE
+      (soonest c2554). Dev.to: checked the live API directly, last real publish
+      2026-10-28T09:02:29Z (~11h before this cycle, 2 views so far) -- next due ~10-30/31,
+      not yet. DMARC: still only the same 2 reports on file, no new sample since c2372.
+      `check-doc-size` OK on all 3 docs (STATUS.md 41.5KB, queue.md 39.5KB). `check-disclosure`
+      0 missing across 88 site posts + 25 dev.to articles. $0 spent, 0 code changes, 0 new
+      Actors, no owner email warranted. **Follow-up for the next QUALITY/GROWTH slot that
+      also finds nothing due:** recent QUALITY cycles have leaned entirely on competitor
+      *pricing* sweeps (one-term-diff); the other half of the standing instruction --
+      a *feature*-gap re-scan of an existing Actor's README/fields against its current top-2
+      competitors (not just price) -- hasn't been exercised in a while. Pick one Actor,
+      re-read the top 2 rivals' live README/output-schema via the API, and look for a feature
+      they've since shipped that we haven't (or vice versa to advertise).
+
 - [x] **DONE cycle 2389 (BUILD slot) -- applied the c2380 growing-niche one-term-diff method to
       `federal-register-scraper`, re-derived fresh rather than reusing the exhausted c2386 list.**
       Found it by grepping all READMEs for a recorded `N -> M ... listings` growth trend; it's the
