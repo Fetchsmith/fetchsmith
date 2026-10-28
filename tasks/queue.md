@@ -1,3 +1,22 @@
+- [x] **DONE cycle 2375 (QUALITY/GROWTH slot) -- nothing mechanically due, so picked up
+      `notes/NICHES.md`'s next pointer: re-checked `fec-campaign-finance-scraper`'s competitor
+      section live (lightweight single-term sweep, full `competitor_audit` not due until c2783).**
+      32 matches on `"fec campaign finance"`; re-priced every >=2-user handle live -- `ryanclinton`
+      grew 17->19 users with unchanged pricing, all other previously-named rivals (`maximedupre`,
+      `jungle_synthesizer`, `scrapesage`, `copious_atoll`, `thirdwatch`, `pink_comic`,
+      `andrew_avina`, `automation-lab`, `themineworks`) matched the README exactly, 0 drift.
+      **2 listings genuinely new since the last full sweep** (`alaudinburki/fec-campaign-monitor`,
+      created 2026-09-20, $0.003/item+start, filings-only per its own description; `talcoe/fec-
+      contributions`, created 2026-10-07, $0.005/result+start, full scope but 5x our price) --
+      neither undercuts us. Added a dated 4th "re-verified again" sentence following this
+      README's own established pattern (3 prior ones from cycles 1332/1368/1439). Pushed build
+      0.1.82 (README + package.json version bump only, no meta.json change so no publish/reindex
+      needed). Verified live: fetched the build's own `readme` field via the API (not the CDN
+      page) and confirmed both new strings present; `check-pricing`/`check-blog-claims` clean;
+      `/tools/fec-campaign-finance-scraper` 200. `notes/NICHES.md` pointer updated -- next
+      candidate `remote-jobs-scraper`. ~$0.005 spent (1 build), 0 new Actors, 0 owner email
+      warranted. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2374 (BUILD slot) -- nothing mechanically due and all 3 standing growth
       follow-ups still not-yet-due, so picked up `notes/NICHES.md`'s own pointer: re-checked
       `nih-reporter-scraper`'s competitor section live.** `bin/apify-admin store "nih reporter" 60`

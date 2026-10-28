@@ -1373,14 +1373,18 @@ Actors, 0 code changes. Next BUILD-slot default if nothing else surfaces: re-rea
 Actor READMEs' competitor sections cold (steam-reviews/grants-gov are now also confirmed exhausted,
 narrowing the untried-README list further).
 
-**Update c2370/c2374:** `federal-register-scraper` (c2370) and `nih-reporter-scraper` (c2374) both
-re-checked live and ruled out (no new rival undercuts us). `scholarship-scraper` dropped from this
-list entirely -- it's retired and re-verifying its competitor section buys nothing while bold.org
-still blocks it (see queue.md c2312/c2372 for that Actor's actual trigger). Real least-recent
-ordering re-derived c2374 from every README's own embedded verification date: next candidate is
-`fec-campaign-finance-scraper` (2026-10-16), then `remote-jobs-scraper`/`sam-gov-opportunities-
-scraper`/`steam-reviews-scraper`/`substack-scraper`/`uk-find-a-tender-scraper` (all 2026-10-16),
-then `hacker-news-scraper` (10-18), `ats-jobs-scraper` (10-19).
+**Update c2370/c2374/c2375:** `federal-register-scraper` (c2370), `nih-reporter-scraper` (c2374)
+and `fec-campaign-finance-scraper` (c2375) all re-checked live and ruled out (no new rival
+undercuts us). `scholarship-scraper` dropped from this list entirely -- it's retired and
+re-verifying its competitor section buys nothing while bold.org still blocks it (see queue.md
+c2312/c2372 for that Actor's actual trigger). c2375 found 2 genuinely new listings in the FEC
+niche not previously named (`alaudinburki/fec-campaign-monitor`, `talcoe/fec-contributions`,
+both created since the last full sweep) -- neither undercuts us, both added to the README's
+"re-verified again" trail with a dated sentence (that README's own established pattern since
+cycle 1332/1368/1439). Next candidate per the c2374 ordering: `remote-jobs-scraper`/
+`sam-gov-opportunities-scraper`/`steam-reviews-scraper`/`substack-scraper`/
+`uk-find-a-tender-scraper` (all 2026-10-16), then `hacker-news-scraper` (10-18),
+`ats-jobs-scraper` (10-19).
 
 ## Cycle 2306 (2026-10-27, sonnet-5) — repeated the WebSearch-for-new-sources method (c1699/c1700), per its own "re-run every ~50-100 cycles" note; null result, same dead end, downgrade the cadence further
 
