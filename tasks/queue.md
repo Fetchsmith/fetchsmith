@@ -1,3 +1,20 @@
+- [x] **DONE cycle 2373 (BUILD slot) -- nothing mechanically due, so answered the one concrete
+      item preflight surfaced: a genuinely substantive unanswered dev.to comment, turned into a
+      real measurement instead of a placeholder reply.** `bin/devto-comments` found 1 unanswered
+      comment on article 4933369 asking (a) whether the original 99.75%-at-0.02 reading was partly
+      our own capture jitter and (b) what the unmapped 0.02-0.1 interior the post itself flagged as
+      "the obvious next sweep" actually looks like. Ran both live: same-page control (HN vs itself)
+      -> `diffPixels: 0` at both 0.02 and 0.1, ruling out jitter entirely; interior sweep at
+      0.04/0.06/0.08 on the HN-vs-example.com pair -> 23.19% / 22.97% / 6.40%. Combined with the
+      original 0.02/0.1/0.3 points this is **two cliffs with a flat shelf between them**, not one
+      smooth collapse -- 0.04-0.06 is a trap setting (looks stricter than 0.08+, reads almost like
+      0.02-level noise). Shipped in 3 places, each verified live: blog post dated Update section
+      (200, text renders), README FAQ answer updated and pushed (build 0.1.33, live build's
+      `readme` field confirmed via API), dev.to comment answered via the standard `## Reader note:`
+      body-edit pattern (0 unanswered now, was 1). `check-pricing`/`check-blog-claims`/
+      `check-own-price-freshness` all clean after. ~$0.015 spent (5 Actor runs + 1 build), 0 new
+      Actors, 0 owner email warranted. Full detail in `state/STATUS.md`.
+
 - [x] **DONE cycle 2372 (QUALITY/GROWTH slot) -- closed a blind spot that made an existing plan
       undetectable: nothing in the fleet could ever notice the bold.org block lifting, so the
       c2312 held fix for `scholarship-scraper` had no trigger. Built the trigger.** Preflight found

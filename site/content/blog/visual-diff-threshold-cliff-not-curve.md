@@ -36,9 +36,30 @@ The mechanism is ordinary once you look at the two screenshots instead of just t
 
 **0.02 is not "very strict regression detection" for two different pages — it's close to meaningless.** If you're comparing genuinely different pages (a competitor's site vs yours, or a redesign mockup vs the old layout), a result near 100% tells you nothing you didn't already know by looking at them; the number is dominated by antialiasing noise, not by the real difference. It's the right setting for comparing *the same page* against itself across a deploy, where you want to catch a single shifted button or a font substitution — not for comparing two unrelated layouts.
 
-**0.1 (the default) and 0.3 answered almost the same question here**, which is itself the useful finding: if two pages differ by an actual visible redesign, you don't need to tune this value carefully to see it, because the readings in that range are close together on real-world layouts. The place tuning actually matters is the cliff itself — somewhere between 0.02 and 0.1 is where "everything looks different" turns into "the real differences only." We haven't mapped that interior yet; it's the obvious next sweep if we revisit this.
+**0.1 (the default) and 0.3 answered almost the same question here**, which is itself the useful finding: if two pages differ by an actual visible redesign, you don't need to tune this value carefully to see it, because the readings in that range are close together on real-world layouts. The place tuning actually matters is the cliff itself — somewhere between 0.02 and 0.1 is where "everything looks different" turns into "the real differences only." **Update, 2026-10-28: we mapped that interior — see below. It's two cliffs, not one.**
 
 **Don't read the percentage as "percent of the page that changed" without checking what moved it.** A single large background-color swap can produce a bigger `diffPercent` than ten small text edits, because the metric counts pixels, not changes. If the number matters to a decision, open the diff image — it's returned alongside the percentage for exactly this reason.
+
+## Update, 2026-10-28: the interior, mapped — and it's two cliffs, not one
+
+A reader comment asked two fair questions about the original sweep: was any of the 0.02 reading actually our own rendering jitter rather than a real cross-page difference, and what does the unmapped interior between 0.02 and 0.1 actually look like? Both are answerable with more runs of the same Actor, so we ran them.
+
+**Same-page control: zero jitter, both ends of the scale.** Diffing Hacker News against itself — same URL for `urls` and `compareUrl`, two independent captures seconds apart — returned `diffPixels: 0` at both `diffThreshold: 0.02` and `0.1`. That rules out the explanation that the original 99.75% reading was partly our own capture noise (font rendering, a live headline rotating, a one-pixel antialiasing wobble between two screenshots of the *same* page). It wasn't. The near-100% reading at 0.02 is entirely the cross-page color distance described above, not jitter — which is a cleaner result than we expected going in, not a hedge.
+
+**The interior sweep, same HN-vs-`example.com` pair, four new points between 0.02 and 0.1:**
+
+| `diffThreshold` | `diffPixels` | `comparedPixels` | `diffPercent` |
+|---|---|---|---|
+| 0.02 | 2,068,425 | 2,073,600 | 99.75% |
+| 0.04 | 480,838 | 2,073,600 | **23.19%** |
+| 0.06 | 476,305 | 2,073,600 | 22.97% |
+| 0.08 | 132,634 | 2,073,600 | **6.40%** |
+| 0.10 | 129,026 | 2,073,600 | 6.22% |
+| 0.30 | 92,632 | 2,073,600 | 4.47% |
+
+That is not one cliff — it's two, with a shelf in between. 0.02→0.04 drops 76.6 points; 0.04→0.06 barely moves (23.19 → 22.97); 0.06→0.08 drops another 16.6 points; 0.08 onward is the same flat tail the original post already found. So "somewhere between 0.02 and 0.1 is where it collapses" undersells it — there appear to be two separate populations of low-contrast pixels collapsing out at two different tolerance levels (likely: antialiasing edges first, then the two background near-whites), with a plateau between them wide enough to land a setting on by accident and get a stable-looking but still-mostly-noise 23% reading. If you need a strict setting for genuine redesign detection rather than same-page regression, **0.06 is the worst choice in this range** — it reads almost identically to 0.04 while looking like it's halfway to the loose end.
+
+Five more Actor runs, charged at the same $0.002/comparison as every other measurement in this post.
 
 ## Packaged version
 
