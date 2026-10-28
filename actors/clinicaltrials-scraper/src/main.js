@@ -199,7 +199,10 @@ if (nctIdsBadFormat.length) {
 // input error exactly like the other input-validation throws above/below rather than running a
 // query the buyer never asked for. (cycle 2352)
 if (nctIdsRaw.length && !nctIds.length) {
-    throw new Error(
+    // Actor.fail() (not a bare throw) so the Console's statusMessage actually carries this reason --
+    // a bare throw lands only in the run log as a stack trace (verified empty statusMessage on the
+    // sibling sam-gov-opportunities-scraper fix's own FAILED run, cycle 2357).
+    await Actor.fail(
         `Every value in "nctIds" was rejected as malformed (expected NCT followed by 8 digits, e.g. NCT04280705): `
         + `${nctIdsBadFormat.join(', ')}. Fix the ids and re-run -- the run was stopped instead of falling back to a `
         + 'filter search, which would have returned studies you did not ask for and charged you for them.',

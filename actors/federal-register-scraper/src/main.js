@@ -287,7 +287,10 @@ const { slugs: agencySlugs, unknown: unknownAgencies } = await resolveAgencies(r
 // buyer never sees. Same shape as the nih-reporter-scraper `fiscalYears` and clinicaltrials-scraper
 // `nctIds` bugs (c2352/c2353): throw before any charge happens instead of silently widening.
 if (rawAgencies.length && !agencySlugs.length) {
-    throw new Error(
+    // Actor.fail() (not a bare throw) so the Console's statusMessage actually carries this reason --
+    // a bare throw lands only in the run log as a stack trace (verified empty statusMessage on the
+    // sibling sam-gov-opportunities-scraper fix's own FAILED run, cycle 2357).
+    await Actor.fail(
         `None of the agenc(ies) you listed could be matched: ${unknownAgencies.join(', ')}. Running anyway `
         + 'would silently drop the agency filter and search the ENTIRE Federal Register instead (no agency '
         + 'restriction at all), charging you for unrelated documents under a filter that looks honored but was '

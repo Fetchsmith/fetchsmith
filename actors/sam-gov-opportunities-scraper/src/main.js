@@ -375,13 +375,16 @@ const keyword = String(input.keyword ?? (isWd || isCfda || isExclusions ? '' : '
 // drop a blank, never an unrecognised code. Do not rely on that for a stringList field: a schema
 // `enum` is enforced, a free-text `stringList` is not.
 const blankFilterEntriesDropped = {};
-function arrayFilterInput(name, normalise) {
+async function arrayFilterInput(name, normalise) {
     const raw = Array.isArray(input[name]) ? input[name] : [];
     const kept = raw.map((v) => String(v).trim()).filter(Boolean);
     if (raw.length > kept.length) blankFilterEntriesDropped[name] = raw.length - kept.length;
     if (raw.length && !kept.length) {
         // Pre-charge, pre-request: an input mistake the buyer can fix, not an upstream failure.
-        throw new Error(
+        // Actor.fail() (not a bare throw) so the Console's statusMessage actually carries this
+        // reason -- a bare throw lands only in the run log as a stack trace (verified empty
+        // statusMessage on run FfhUjzXTncYh3iQvh, cycle 2357 follow-up to cycle 2356's fix).
+        await Actor.fail(
             `Every one of the ${raw.length} value(s) you gave in \`${name}\` is empty or whitespace-only, so the `
             + `filter would have been dropped from the SAM.gov query entirely and this run would have searched `
             + `UNFILTERED by ${name} -- not zero rows, but the whole unnarrowed result set, every row of it pushed `
@@ -393,13 +396,13 @@ function arrayFilterInput(name, normalise) {
     }
     return normalise ? normalise(kept) : kept;
 }
-const naicsCodes = arrayFilterInput('naicsCodes');
-const setAsideTypes = arrayFilterInput('setAsideTypes', canonSetAsides);
-const noticeTypes = arrayFilterInput(
+const naicsCodes = await arrayFilterInput('naicsCodes');
+const setAsideTypes = await arrayFilterInput('setAsideTypes', canonSetAsides);
+const noticeTypes = await arrayFilterInput(
     'noticeTypes',
     (kept) => kept.map((v) => v.toLowerCase()).filter((v) => Object.hasOwn(NOTICE_TYPE_CODES, v)),
 );
-const states = arrayFilterInput('states', (kept) => kept.map((v) => v.toUpperCase()));
+const states = await arrayFilterInput('states', (kept) => kept.map((v) => v.toUpperCase()));
 // A PARTIAL blank drop still applies the surviving values, so it is a warning rather than a stop --
 // but it is a silent narrowing of what the buyer asked for, so it also has to reach a surface the
 // Console shows (see `blankDropNote()`, appended to every status message below) and RUN_SUMMARY.

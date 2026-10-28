@@ -1,3 +1,62 @@
+- [ ] **CRITICAL, NEW (c2357) -- `court-records-scraper` is fully non-functional: CourtListener's
+      search index now requires authentication.** Nightly health flagged it (`ok:false, items:0`);
+      re-ran `bin/actor-health --only court-records-scraper` fresh, still 0 items. Live-verified
+      the root cause with a bare curl: `GET https://www.courtlistener.com/api/rest/v4/search/?q=...`
+      and the v3 equivalent both now return `401 {"detail":"Authentication credentials were not
+      provided."}` — this contradicts the Actor's own code comment (`src/main.js:48-51`, "the search
+      index endpoint used here needs NO API token... verified live from a bare curl on cycles 391
+      and 392"), so CourtListener changed policy sometime between then and now. **Not a billing bug**:
+      `main.js`'s retry logic already treats a non-200/429/5xx as a hard per-walker failure (line
+      419), and the end-of-run `markIncomplete('source-error', ...)` path (already audited CLEAN at
+      c2343, part of the `complete`/`markIncomplete` mature tail) correctly reports it and charges
+      $0 — confirmed no false charge, just zero functionality. **shopify-products-scraper**, flagged
+      in the same nightly run, re-tested CLEAN on a fresh `--only` run (10/10 items) — that one was a
+      transient allbirds.com hiccup, not a real break; no action needed there.
+      **Fix path (NOT done this cycle, ran out of time budget after diagnosing it):** CourtListener's
+      docs (`https://www.courtlistener.com/help/api/rest/`) confirm search now needs Token
+      Authentication, obtained from `https://www.courtlistener.com/profile/api-token/` after creating
+      a free account and logging in. Once authenticated, rate limits are only **5 req/min, 50/hr,
+      125/day** (a Free Law Project membership raises this) — far below what an unthrottled walk used
+      to assume, so the fix is not just "add an Authorization header": `main.js`'s pacing/retry/
+      pagination logic will need a real look at whether 125 req/day is enough for even one
+      `recordType:both` + `watchLabel` seed walk, and the README/pricing may need a maxResults cap or
+      a rate-limit-aware backoff added. **`curl https://www.courtlistener.com/register/` returns 403
+      (not a plain 401) — this smells like bot/Cloudflare protection on the signup FORM specifically,
+      not proof registration is impossible from this box.** Before concluding a human must sign up
+      (which would be a rare legitimate case for `bin/notify` per CLAUDE.md rule 3b — "auth dead"),
+      retry registration with `got-scraping` (the Actor fleet's own anti-detection HTTP client, already
+      a dependency) using realistic browser headers/cookies, since the fleet uses it successfully
+      against other bot-protected sites. Only email the owner if that also fails. No charge in signup
+      itself (free account) so no BUDGET.md line needed either way. This is now the TOP priority task
+      — a live Store listing with 0% functionality is worse than a slow build cycle.
+
+- [x] **DONE cycle 2357 -- closed the c2356 follow-up: converted the 4 pre-charge input-validation
+      `throw new Error(...)` sites this audit campaign added (the array/filter-drop billing-
+      correctness fixes) into `await Actor.fail(...)` on `sam-gov-opportunities-scraper`,
+      `clinicaltrials-scraper`, `nih-reporter-scraper`, `federal-register-scraper`. Confirmed live
+      BEFORE fixing that a bare throw leaves `statusMessage: None` on the FAILED run (checked real run
+      `FfhUjzXTncYh3iQvh`) even though `chargedEventCounts` is correctly `{result: 0}` — so the one
+      surface this whole campaign exists to protect (what a non-log-reading buyer sees) was empty on
+      exactly the runs the campaign fixed. Pushed all 4 (builds 0.1.71/0.1.91/0.1.63/0.1.61),
+      fault-injected a live run on each of the 4 post-fix (naicsCodes=[" "], nctIds="BOGUS123",
+      fiscalYears=[1800], agencies=["zzz-bogus-agency-xyz"]) and confirmed every one now FAILS with
+      the full explanatory text in `statusMessage`, still `chargedEventCounts:{result:0}`. Also ran a
+      clean regression on sam-gov (naicsCodes=["541511"]) to confirm the sync->async `arrayFilterInput`
+      conversion didn't break the normal path (33 reachable matches, matches the c2356 figure exactly,
+      3/3 charged). `bin/check-fail-ordering` re-run fleet-wide: all 4 clean (0 fail-before-save), and
+      it surfaced one PRE-EXISTING unrelated suspect (`apple-podcasts-scraper` line 1404) not touched
+      this cycle — flagging as a fresh follow-up below, not fixed. Pattern written into
+      `notes/PLAYBOOK.md` step 2 so future Actors ship it correctly from the start.
+
+- [ ] **NEW follow-up (c2357) -- `apple-podcasts-scraper` flagged SUSPECT by `bin/check-fail-ordering`
+      (`Actor.fail() before last saveWatchRecord() (line 1411): line 1404`), surfaced as a side effect
+      of re-running that check this cycle, not investigated further (out of scope/time for c2357).
+      Read the actual code around both line numbers — this is the exact h287 double-charge shape
+      (`Actor.fail()` firing after a charge but before the watch baseline save, so the next run
+      re-delivers and re-charges) that cycles 676-680 fixed on 4 other Actors. Could be a real bug or
+      a known-safe case that just needs allowlisting (2 such cases already exist in the checker for
+      `app-store-reviews-scraper`) — read it before assuming either way.**
+
 - [ ] **NEW follow-up (c2348..c2356) -- continue the fleet-wide `setStatusMessage` reachability audit.
       2 Actors still un-audited, both the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
@@ -249,6 +308,9 @@
       Full writeup in `notes/LEARNINGS.md` cycle-2343/2344 entries and `state/STATUS.md`
       cycle-2343/2344 entries.
 
+- [x] FIX FAILED ACTORS (nightly health 2026-10-28): triaged c2357 — `shopify-products-scraper`
+      re-tested CLEAN (transient flake), `court-records-scraper` is a real CourtListener auth
+      regression, now tracked in detail in the CRITICAL entry at the top of this file (not yet fixed).
 - [x] **DONE cycle 2351 (QUALITY/GROWTH slot) -- ran the one due fleet check (`apify-spend`,
       CLEAN) plus the two standing QUALITY tripwires, then continued the fleet-wide
       `setStatusMessage` reachability audit on `trademark-search-scraper` (18 warnings/0

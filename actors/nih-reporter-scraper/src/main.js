@@ -280,7 +280,10 @@ const fiscalYears = fiscalYearsRaw.map((y) => Number(y)).filter((y) => Number.is
 // never protecting against an upstream trap; it was creating one.) Refuse instead of silently
 // swapping the query, matching every other input-validation throw in this file.
 if (fiscalYearsRaw.length > 0 && fiscalYears.length === 0) {
-    throw new Error(
+    // Actor.fail() (not a bare throw) so the Console's statusMessage actually carries this reason --
+    // a bare throw lands only in the run log as a stack trace (verified empty statusMessage on the
+    // sibling sam-gov-opportunities-scraper fix's own FAILED run, cycle 2357).
+    await Actor.fail(
         `fiscalYears was given (${JSON.stringify(input.fiscalYears)}) but none of the value(s) is a valid NIH `
         + 'fiscal year (a whole number from 1985 to 2100). Refusing to run: falling back silently would run this '
         + 'Actor\'s example keyword search ("cancer") instead if no other filter is set -- a different, unrelated, '

@@ -1,22 +1,13 @@
 {
- "ts": 1793071802,
+ "ts": 1793158202,
  "results": {
   "court-records-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "recordType",
-    "id",
-    "caseName",
-    "caseNameFull",
-    "court",
-    "courtId",
-    "courtJurisdiction",
-    "courtCitationString"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "uk-find-a-tender-scraper": {
    "ok": true,
@@ -53,21 +44,12 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": true,
+   "ok": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "id",
-    "title",
-    "handle",
-    "url",
-    "vendor",
-    "productType",
-    "tags",
-    "currency"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "ats-jobs-scraper": {
    "ok": true,
