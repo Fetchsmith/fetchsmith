@@ -6,7 +6,9 @@ tags: webscraping, api, opendata, legal, government
 tool: court-records-scraper
 ---
 
-Every federal court docket in RECAP's public PACER mirror, and every published federal court opinion, is queryable with a single anonymous request:
+**Update, 2026-10-28:** CourtListener changed policy after this post was written — the search endpoint below now returns `401` for an anonymous request too, closing the gap this post describes. Everything below is accurate history of how the API worked through October 2026 (and the pagination/date/availability traps are still live and unchanged), but the "no key" framing in the title and the opening section no longer holds. [court-records-scraper](/go/court-records-scraper) now carries its own CourtListener API token server-side — buyers still need no account, but the Actor's free-tier token is capped at 125 requests/day, shared across every buyer. See the Actor's README FAQ for current detail.
+
+Every federal court docket in RECAP's public PACER mirror, and every published federal court opinion, used to be queryable with a single anonymous request (true through October 2026, see the update above):
 
 ```
 GET https://www.courtlistener.com/api/rest/v4/search/?q=patent+infringement&type=o
@@ -87,7 +89,7 @@ This is the same shape as [the CPV prefix trap](/blog/uk-find-a-tender-ocds-json
 
 ## Packaged version
 
-[court-records-scraper on Apify](/go/court-records-scraper) is built directly on the anonymous search index — no account, no token, no captcha — and merges opinions and dockets with the fair-share split described above, so asking for `recordType: "both"` never silently drops one type. `is_available` ships on every filing entry so you can filter on document availability instead of assuming it. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring. The opinion index's own metadata fields (`syllabus`, `neutralCite`, `judge`...) are just as unevenly distributed as auth and availability — see [why a court good for one sparse field isn't necessarily good for the others](/blog/court-opinion-metadata-fields-dont-travel-together).
+[court-records-scraper on Apify](/go/court-records-scraper) is built on the search index described above — no account or captcha needed *from you* (the Actor carries its own CourtListener API token server-side, required since the index stopped being anonymous in October 2026, see the update note up top) — and merges opinions and dockets with the fair-share split described above, so asking for `recordType: "both"` never silently drops one type. `is_available` ships on every filing entry so you can filter on document availability instead of assuming it. $0.002/result, no run-start fee, incremental `watchLabel` mode for scheduled monitoring. The opinion index's own metadata fields (`syllabus`, `neutralCite`, `judge`...) are just as unevenly distributed as auth and availability — see [why a court good for one sparse field isn't necessarily good for the others](/blog/court-opinion-metadata-fields-dont-travel-together).
 
 ---
 

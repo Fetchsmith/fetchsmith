@@ -409,6 +409,13 @@ async function pushResult(item, watchId) {
 
 const API_BASE = 'https://api.open.fec.gov/v1';
 const API_KEY = process.env.FEC_API_KEY ?? 'DEMO_KEY';
+// Cycle 2362 flagged that this secret has never been confirmed end-to-end to reach the running
+// container (the `?? 'DEMO_KEY'` fallback would mask that failure identically, same shape as the
+// CL_API_TOKEN gotcha that cycle found). Log which one is active -- cheap, permanent, and lets any
+// future cycle check a run's log instead of re-deriving this.
+log.info(API_KEY === 'DEMO_KEY'
+  ? 'FEC_API_KEY env var not set -- using the public DEMO_KEY fallback (40 req/hr, shared globally).'
+  : 'Using FEC_API_KEY (this Actor\'s own personal api.data.gov key).');
 
 async function fecGet(path, params) {
   const url = new URL(API_BASE + path);
