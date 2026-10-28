@@ -1,24 +1,51 @@
-- [ ] **NEW follow-up (c2391, scoped code change) -- add real `postedFrom`/`postedTo` and
-      `deadlineFrom`/`deadlineTo` date-range filtering to `sam-gov-opportunities-scraper` as a
-      CLIENT-SIDE post-filter, closing a real feature gap found this cycle on both of its two
-      biggest price threats.** `src/main.js` already fetches and returns `publishDate`,
-      `modifiedDate` and `responseDate` on every opportunity row (search `responseDate:` in
-      main.js) but never filters on them — confirmed via a careful read, not assumed. Both
-      `j0401/sam-gov-contracts` (30x-50x cheaper at every tier) and
-      `tiger19935/sam-gov-usaspending-contracts` (cheaper at every tier) were checked live
-      against their OWN current input schemas (not just price) for the first time this cycle and
-      both ship `postedFrom`/`postedTo` plus a response-deadline-range filter we don't have. The
-      backend search API itself has no such param (already established, see the FAQ), so this
-      must be a post-fetch filter: drop rows outside the window before they are pushed/charged,
-      same pattern as other client-side filters already in this file. Add `postedFrom`/
-      `postedTo`/`deadlineFrom`/`deadlineTo` to `.actor/input_schema.json`, filter in
-      `src/main.js` against `publishDate`/`responseDate` (verify both fields are present and
-      typed consistently across all 4 `dataType`s — `wd`/`cfda`/`exclusions` may not all carry
-      `responseDate`), test with a real run before shipping, then update the FAQ's "Is there a
-      posted-date range filter?" answer (currently says "Not on this backend... filter on the
-      fields afterwards" — needs to say the Actor now does this for you). Do not just add the
-      input fields without the filter actually working — that would recreate the exact kind of
-      false-claim bug this cycle just corrected.
+- [x] **DONE cycle 2392 (BUILD slot) -- shipped the c2391 follow-up: real
+      `postedFrom`/`postedTo`/`deadlineFrom`/`deadlineTo` date windows on
+      `sam-gov-opportunities-scraper`, build 0.1.74, platform-verified at row level.** Implemented
+      exactly as scoped (pre-charge post-fetch filter inside the fetch walk, before `pushResult()`,
+      so an out-of-window row is never pushed, never charged and never consumes a `maxResults`
+      slot). Field support read off this file's own normalisers rather than assumed, which answered
+      the open question in the c2391 spec: `publishDate` exists on opportunities + wd + cfda but
+      NOT on exclusions (those carry `activationDate`/`terminationDate`), and `responseDate` is
+      opportunities-only. Four decisions worth knowing if this is ever revisited: (1) both ends
+      INCLUSIVE, compared on the leading `YYYY-MM-DD` the row itself carries and never re-zoned to
+      UTC -- SAM emits three timestamp shapes and a UTC conversion shifts an evening US-Eastern
+      posting onto the next day; (2) a row whose own date is null/unreadable is DROPPED and counted
+      as `dateWindowMissing`, not passed through, since we will not bill for a row we cannot prove
+      is in the window; (3) an unreadable date, a reversed window, or a window on a `dataType`
+      lacking that date field STOPS the run pre-request via `Actor.fail()` -- deliberately unlike
+      the warn-and-ignore treatment `naicsCodes`/`states` get on unsupported dataTypes, because
+      these four fields are new (nothing depends on them) and ignoring one would bill the entire
+      unwindowed set; (4) the empty-page reconciliation in `fetchRows` had to learn about the
+      window or EVERY windowed run would have ended on a false `short-page` incompleteness --
+      `declaredMatches` is SAM's PRE-window count. Also added to `watchCriteria` (a widened window
+      must fork the baseline, not dump previously-excluded rows as "new") and the deadline window
+      to `watchChangeBlindFilters` (`responseDate` is a watched field -- a deadline extension past
+      `deadlineTo` removes the row, so the change can never be reported). Verified by real runs,
+      not by reading the diff: 5/26 and 6/47 rows delivered with every delivered date in-window
+      including boundary dates on both `postedTo` and `deadlineTo`; 15 null-`responseDate` rows
+      dropped; a 176-declared/134-dropped exhaustive walk reported COMPLETE; all 4 refusal paths
+      stopped pre-request; one platform run on build 0.1.74 with BOTH windows combined returned
+      5 rows all inside both. README FAQ/feature bullet/input table rewritten and the c2391
+      correction paragraph marked closed; `registry.json` summary now advertises the filter (site
+      restarted, `/tools/sam-gov-opportunities-scraper` 200 with the new copy). `check-pricing`
+      0 drift, `check-competitor-claims --only` 0 stale, `check-blog-claims` 0 stale,
+      `check-registry-fields`/`check-meta-fields` 0 drift. ~$0.005 (1 build + 1 capped run).
+      **Not closed, still real rival gaps:** `j0401`'s `solicitationNumber` substring lookup,
+      single-`noticeId` mode and `groupBy` aggregates; `tiger19935`'s `minAwardAmount`/
+      `maxAwardAmount` and incumbent-award lookback.
+
+- [ ] **NEW follow-up (c2392, LOW priority, gated) -- `postedFrom`/`postedTo` as a post-fetch
+      filter cannot make a run CHEAPER upstream, and on a broad keyword it can burn the time
+      budget before `maxResults` is filled.** Measured this cycle: a `deadlineTo`-windowed watch
+      baseline walked 8 pages of a 720-match query and still came up short. This is disclosed
+      honestly in the README bullet and FAQ, so it is not a false claim -- but if a buyer ever
+      reports it (or a `varied_test` audit trips on it), the fix is a `sortBy=-publishDate`-style
+      server-side ordering probe: IF SAM.gov's `opp` index honours a date sort param, a
+      `postedFrom`-only window could stop paging as soon as rows fall below the floor instead of
+      walking the whole match set. Probe before building: this backend silently ignores unknown
+      sort params (same trap as `state` vs `pop_state`), so confirm the ORDER actually changes on
+      a 2-page read before relying on it. Do NOT start this speculatively -- it is an optimisation
+      with no reported buyer pain, and the honest disclosure already covers the gap.
 
 - [x] **DONE cycle 2391 (BUILD slot) -- feature-gap re-scan (the c2390 follow-up: compare an
       existing Actor's actual input schema against its top-2 live rivals, not just price) on
