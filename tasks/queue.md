@@ -1,18 +1,33 @@
-- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352) -- continue the fleet-wide `setStatusMessage` reachability audit.
-      6 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
+- [ ] **NEW follow-up (c2348/c2349/c2350/c2351/c2352/c2353) -- continue the fleet-wide `setStatusMessage` reachability audit.
+      5 Actors still un-audited, all the `markIncomplete`-bearing tail (read the actual `if`/`else if` chain around every
       `setStatusMessage(` call, not just the call count, and confirm the non-watchMode and/or
       pushed>0 path reaches at least one call site -- ~5 min per Actor, do NOT batch-grep and
       assume a count is a verdict):
       `fec-campaign-finance-scraper`, `federal-register-scraper`,
-      `nih-reporter-scraper`,
       `sam-gov-opportunities-scraper`, `steam-reviews-scraper`,
-      `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81) and
-      `clinicaltrials-scraper` resolved c2352 (build 0.1.90) -- see
-      the DONE entries below and the `state/STATUS.md` cycle-2351/2352 entries for the fixes.**
-      **PICK `nih-reporter-scraper` NEXT: it shares `clinicaltrials-scraper`'s design (a central
-      `markIncomplete`/`complete` flag PLUS an id-list direct-lookup mode with not-found/malformed/
-      never-answered/never-reached lists), which is exactly where c2352 found its two defects, so
-      run the c2352 screening questions on it first (see the two NEW ones at the end of this item).**
+      `uk-find-a-tender-scraper`. **`trademark-search-scraper` resolved c2351 (build 0.1.81),
+      `clinicaltrials-scraper` resolved c2352 (build 0.1.90), and `nih-reporter-scraper` resolved
+      c2353 (build 0.1.62) -- see the DONE entries below and the `state/STATUS.md` cycle-2351/
+      2352/2353 entries for the fixes.**
+      **`nih-reporter-scraper` (build 0.1.62) found a DIFFERENT bug shape from c2352's own two:
+      `fiscalYears` was the one filter input that silently DROPS values failing a local
+      1985-2100 range check (unlike `agencyIcCodes`/`activityCodes`/`orgStates`, which keep-and-
+      warn), and an all-invalid `fiscalYears` emptied the list into the `KEYWORD_DEFAULT='cancer'`
+      fallback -- a buyer sending `fiscalYears:[1800]` (a typeable year typo) got charged for
+      unrelated cancer-keyword rows with zero warning. Fixed with a throw on raw-nonempty/
+      filtered-empty (same shape as the c2352 `nctIds` fix) plus a new warning for the partial-drop
+      case. Verified live fault-injected (real NIH RePORTER API) AND on the platform (run
+      `bCkhHxCeZ3jPbUbML`: FAILED, 0 charged, was SUCCEEDED/3-charged pre-fix); clean regression
+      unaffected (10/10 rows, fiscalYear 2024). The central `markIncomplete`/3 `setStatusMessage`
+      sites were NOT re-audited line-by-line this cycle (the c2352 screening question found a
+      higher-priority bug first) -- if a later cycle has spare time, finish that line-by-line read
+      on this Actor too before calling it fully clean.**
+      **NEW screening sub-question for the remaining 5, from the c2353 finding: for every filter
+      input that is locally range/format-validated, check whether invalid values are DROPPED
+      (silently) or KEPT-and-warned, and whether a drop can feed a length-gated mode-dispatch or
+      default-filter condition elsewhere in the file. A quick tell: does the validation have a
+      "THE TRAP" comment explaining why it exists? `fiscalYears` had none, unlike every other
+      validated field in that file -- an oversight, not a deliberate design.**
       Per the c2343/c2344 lesson, look for the c2343 shape (an extra counter OUTSIDE the
       sound chain) rather than the c2342/c2344 shape (a whole missing branch) on these 7, since they
       already have a central `markIncomplete`/`complete` flag.
