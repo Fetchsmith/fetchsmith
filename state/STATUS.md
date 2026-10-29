@@ -1,3 +1,44 @@
+Updated: 2026-10-29 ~22:20 UTC by cycle 2442 (claude-sonnet-5) -- BUILD slot (`2442%3==0`).
+Preflight: inbox 10 checked -- 0 new actionable mail (both owner threads `dc593cfb`/`2b237f1b`
+re-confirmed long-resolved per prior cycles' notes; newest new item was a 3rd-party marketing
+email, "Bytewells by ThoughtPivot" pitching a second Apify-Actor marketplace listing -- read in
+full, it is a legitimate dev.to-hosted pitch, not a scam, but not actionable without owner
+buy-in on a second storefront; rest is DMARC + rental/IP-lease/gateway spam, same as prior
+cycles). `bin/revenue`: 25 public Actors, 49 users, 782 runs30d (779/3 ok/bad, `ext_bad30d` ticked
+2->3, not investigated this cycle -- worth a glance next QUALITY slot), 0 bkmk/0 reviews, $0
+booked -- no owner email warranted. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/` and `/tools/federal-register-scraper` both 200 before and after the push.
+
+**Fixed `federal-register-scraper`, item (4) of the `Actor.fail()` clamp-reservation sweep, build
+0.1.64 (package 0.1.15 -> 0.1.16).** Found a SECOND, unqueued `Actor.fail()` site beyond the one
+c2437 measured (511 chars) -- the all-agencies-unmatched input-validation guard near the top of
+the file, which fires before any API call and echoes an unbounded agency list with no clamp at
+all. Same blind-spot class c2440 found on `clinicaltrials-scraper`: the c2437 sweep only grepped
+the shared watch-seed-failure string. Ported the fleet's `clampStatusMessage(msg, suffix='')`
+reservation into both sites, moved the helper (`STATUS_MESSAGE_MAX`/`clampStatusMessage`/
+`echoCap`) from its old post-walk location to just under `Actor.init()` (the early site needed it
+before the old declaration would have existed -- same TDZ concern as c2440), `echoCap`'d the
+unmatched-agency echo to 60 chars, and capped the one remaining unbounded upstream interpolation
+(`request failed: ${err.message}`) at 120 chars.
+**Verified live, not from the diff:** a local run forcing the early guard for real (2 bogus agency
+values) produced the intact message; a local run forcing the watch-seed failure for real by
+temporarily pointing the Actor's own `API` constant at a broken path (reverted immediately,
+`node --check` clean after) got a genuine HTTP 404 from the live Federal Register infrastructure
+and confirmed the clamp cuts the raw HTML error body first, leaving the "nothing was charged" +
+re-run advice intact at 477 chars; a clean local regression (12 real rows, unrelated
+`setStatusMessage` branch) was byte-for-byte unaffected; 1 real platform run (`vPcqYjduLuCNPpyKx`,
+build 0.1.64, forcing the early guard) came back FAILED as expected with `statusMessage` read back
+live at 414 chars, full message intact, `chargedEventCounts {result:0}`, 0 leak. `check-charges`
+25/0/0, `check-registry-fields` 0 drift. README got 2 new FAQ entries (the all-unmatched hard-fail
+case, the watch-baseline-failure case) in the same push, avoiding the c2436 README-lags-the-build
+slip. ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors created today.
+**4 Actors remain in the sweep:** `hacker-news-scraper` (504+), `nih-reporter-scraper`/
+`sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` (measured <500 under an illustrative
+label but genuinely unbounded). Full detail in `tasks/queue.md`'s c2442 entry -- next cycle should
+grep each remaining Actor for ALL `Actor.fail(` sites (not just the shared string) before fixing,
+since this is now the 2nd sweep Actor with an extra site the original measurement missed.
+
+---
 Updated: 2026-10-29 ~21:40 UTC by cycle 2441 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2441%3==2`).
 Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2440: 2 long-resolved owner
 threads, DMARC, CN API-gateway spam, Actor-rental spam, IP-lease spam). `bin/revenue` unchanged

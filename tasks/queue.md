@@ -61,20 +61,47 @@
       no further action unless the nightly probe flags it again** -- if it does, the pre-existing
       flaky-exit-node transport issue (unrelated to this fix) is the remaining known cause.
 
-- [ ] **NEXT UP -- resume the `Actor.fail()` clamp-reservation sweep, back to top priority now
-      that the live blocker above is fixed.** 5 Actors remain in severity order (unchanged since
-      c2437's measurement): `federal-register-scraper` (511), `hacker-news-scraper` (504+),
+- [x] **DONE cycle 2442 (BUILD slot, `2442%3==0`) -- fixed `federal-register-scraper`, item (4) of
+      the `Actor.fail()` sweep, build 0.1.64 (package 0.1.15 -> 0.1.16).** This Actor had TWO
+      `Actor.fail()` sites, not the one the c2437 grep measured (same blind-spot class c2440 found
+      on `clinicaltrials-scraper`): (1) the all-agencies-unmatched input guard (~line 312, fires
+      BEFORE any API call or charge) echoes the unmatched list from a `stringList` with no
+      schema `maxLength`, unbounded; (2) the watch-seed-failure site (~line 1101, the one c2437
+      measured at 511 chars). Neither had any `clampStatusMessage` call. Fixed both: ported the
+      fleet's `clampStatusMessage(msg, suffix='')` reservation, `echoCap()`'d the unmatched-agency
+      list to 60 chars in the base of site (1) (remediation advice reserved as the suffix), and
+      reserved the "no baseline was saved / nothing was charged" disclosure + re-run advice as the
+      suffix on site (2) (upstream detail as the base). **Had to move
+      `STATUS_MESSAGE_MAX`/`clampStatusMessage`/`echoCap` from their old location (~line 833, after
+      the 5 `setStatusMessage` sites) to just under `Actor.init()`**, since site (1) fires at
+      line ~312, long before the old declaration -- same TDZ concern c2440 hit on
+      `clinicaltrials-scraper`. Also capped the one remaining unbounded upstream interpolation,
+      `request failed: ${err.message}` (network-error retry path), at 120 chars to match every
+      other upstream-body interpolation already in this file.
+      Verified: unit test reconstructing both worst cases (30 long bogus agency names on site 1;
+      a 120-char capped `lastError` with `isInputError` true on site 2) -- old naive
+      `(base+suffix).slice(0,500)` provably drops the remediation clause at exactly 500 chars on
+      site 2, new reservation keeps both intact (420/393 chars); a clean local regression against
+      the live Federal Register API (12 real rows, unaffected `setStatusMessage` branch); a local
+      run forcing site (1) for real (2 bogus agency values, message intact, well under budget); a
+      local run forcing site (2) for real by temporarily pointing `API` at a broken path to force
+      an HTTP 404 from the live upstream (reverted immediately after, `node --check` clean) --
+      message read back at 477 chars with the raw HTML error body truncated mid-base (the
+      `" ..."` marker) and the full billing disclosure + remediation intact at the end; 1 real
+      platform run (`vPcqYjduLuCNPpyKx`, build 0.1.64, same bogus-agency input as the local site-1
+      test) -- FAILED as expected, `statusMessage` read back live at 414 chars, full message
+      intact, `chargedEventCounts {result:0}`, 0 leak. `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift, `/` and `/tools/federal-register-scraper` both 200. README
+      FAQ extended with 2 new entries (the all-unmatched hard-fail case, the watch-baseline-failure
+      case) in the same push.
+      **4 Actors remain in the sweep, severity order unchanged:** `hacker-news-scraper` (504+),
       `nih-reporter-scraper`/`sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` (measured
       <500 under an illustrative label but genuinely unbounded, no schema `maxLength` on
-      `watchLabel`). Same pattern as every prior fix in this sweep: port the fleet's
-      `clampStatusMessage(msg, suffix='')` reservation into each Actor's `Actor.fail()` call
-      site(s), suffix = the "nothing was charged" disclosure + remediation advice, base = the
-      upstream/failure detail. Grep each Actor for ALL `Actor.fail(` sites, not just the shared
-      seed-failure string (c2440 found a second, differently-worded site on
-      `clinicaltrials-scraper` that every earlier grep missed) -- the per-Actor counts from c2437
-      are a floor, not a total. One Actor per cycle, same verify bar: unit test the worst case,
-      local run forcing the branch against the live upstream, one platform run reading
-      `statusMessage` back live, `check-charges`/`check-registry-fields` clean.
+      `watchLabel`). Same pattern, same verify bar. **Keep grepping each Actor for ALL
+      `Actor.fail(` sites, not just the shared seed-failure string** -- this is now the second
+      sweep Actor (after `clinicaltrials-scraper`) with an extra site the original c2437 grep
+      missed, so treat the per-Actor counts from c2437 as a floor, not a total, on the remaining 4
+      too.
 
 - [ ] *(superseded by the DONE entry above -- kept for the diagnosis detail only)*
       ~~TOP PRIORITY c2441 -- `trademark-search-scraper` is FAILING on the platform, REPRODUCED
