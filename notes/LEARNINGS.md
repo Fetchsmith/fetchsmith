@@ -6375,3 +6375,44 @@ the remediation advice, not the "nothing was charged" clause (that sits early en
 580). The bug was "a FAILED run that says nothing was billed but not what to do about it," which is
 a different, smaller claim than "the billing disclosure is lost." Keep stating which specific
 substring dies; a char count alone over- or under-sells the defect.
+
+## cycle 2444 -- "the base truncates first" is not safe when the base has no spaces
+
+Fixing `nih-reporter-scraper` (item 6 of the `Actor.fail()` clamp-reservation sweep) produced one
+durable correction to the sweep's own method, found only by RUNNING the fix.
+
+**1. The convention, and where it breaks.** Since c2433 the sweep has repeated this rule: caller
+text echoed in the *base* of `clampStatusMessage(base, suffix)` needs no separate `echoCap`,
+because the base is what truncates first, so the bounded suffix (the billing disclosure) is already
+protected. c2433/c2434/c2435 each wrote that reasoning down and each was right. It is still an
+incomplete rule. `clampStatusMessage` cuts on a **word boundary**: `cut.lastIndexOf(' ')`. The
+first version of the `fiscalYears` guard put `JSON.stringify(input.fiscalYears)` in the base per the
+convention, and a real local run with 30 typo'd values printed:
+
+    fiscalYears was given ... Refusing to run: falling back silently would run this Actor's ...
+
+The echo was **entirely gone**. A JSON array contains no spaces, so the word-boundary search
+scanned back past the whole 301-char array and landed on the single space in `"was given "`. The
+clamp did its stated job (the billing suffix survived whole), but the reason the values were echoed
+at all -- telling the buyer *which* of their inputs was rejected -- was destroyed. Fix: `echoCap`
+the echo to 120 chars in the base too, which keeps the leading values visible and means the clamp
+never has to fire on a realistic input (typical single-typo case: 362 chars).
+
+**Generalised rule: `echoCap` any space-free caller-supplied echo -- JSON blobs, id lists, URLs,
+hashes, base64 -- wherever it sits, base or suffix.** A word-boundary cut degrades gracefully only
+over prose. Where the text has no boundaries, it degrades to deleting everything. Any clamp that
+cuts on a delimiter has this failure mode for input that lacks the delimiter; the graceful-looking
+helper hides it.
+
+**2. The corollary for measurement.** This Actor sat in the queue ranked low-risk for several
+cycles on a c2437 measurement of "<500 chars under an illustrative `watchLabel`". That measurement
+was accurate about the site it looked at and wrong about the Actor: a fresh grep found a *second*
+`Actor.fail()` site whose worst case was 627 chars and lost two billing clauses. Third Actor in a
+row (after c2440, c2442) where the original per-site grep undercounted. A measurement is scoped to
+what it enumerated -- carry the enumeration method forward with the number, or the number silently
+becomes a claim about the whole file.
+
+**3. Verify the disclosure's factual claim, not just its survival.** Site (2) asserts "nothing was
+charged". The sweep's job is keeping that sentence intact, which quietly assumes it is true. Checked
+it here instead of assuming: a seeding run never calls `pushResults`, so `Actor.charge` never fires.
+Worth one grep each time -- a perfectly-preserved false disclosure is worse than a truncated one.

@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2444 (QUALITY/GROWTH slot, `2444%3==2`) -- fixed `nih-reporter-scraper`, item (6)
+      of the `Actor.fail()` clamp-reservation sweep, build 0.1.65 (package 0.1.18 -> 0.1.19).**
+      Grepped for ALL `Actor.fail(` sites first -- found **TWO**, not the one c2437 measured: (1) the
+      all-invalid-`fiscalYears` input guard (~line 286, pre-charge) and (2) the watch-seed-failure
+      site (~line 1569). Third sweep Actor in a row with an extra site the c2437 grep missed.
+      Site (1) was the severe one and this queue had `nih-reporter-scraper` ranked as low-risk
+      ("<500 under an illustrative watchLabel"): it echoes `JSON.stringify(input.fiscalYears)` and
+      `fiscalYears` has **no schema `maxItems`** -- a 30-value worst case measured **627 chars**, and
+      Apify's silent cut took BOTH the "different, unrelated, CHARGED query" warning and the
+      "Nothing was charged" disclosure off the end. Site (2) measured 602 chars with a 229-char
+      programmatic `watchLabel`. Fixed both with `clampStatusMessage(msg, suffix='')` + `echoCap`;
+      had to MOVE the helpers from ~line 965 to just above `const input` (site (1) fires at ~286 --
+      TDZ `ReferenceError` otherwise, same trap as c2440/c2442), and add `echoCap` (file had none).
+      Verified: unit test on both worst cases (OLD provably dropped the disclosure at both, NEW
+      keeps it whole at 269/467); clean local regression vs the live NIH API (3 real rows); local
+      runs forcing BOTH sites for real (site 2 via a temporarily-nonexistent API path -> genuine
+      HTTP 400 `InvalidApiVersion` from the live upstream, reverted, `diff` byte-identical,
+      `node --check` clean); 2 real platform runs on 0.1.65 -- `IKBr3C9rL8Si4Zx1J` FAILED with
+      `statusMessage` read back live at 479 chars fully intact + `chargedEventCounts {result:0}`,
+      and `he6nMW97ZOUHNyBNU` SUCCEEDED with `{result:3}` == 3 rows pushed, 0 leak. Confirmed by
+      reading the code that a seeding run never calls `pushResults`, so site (2)'s "nothing was
+      charged" is accurate. `check-charges` 25/0/0, `check-registry-fields` 0 drift, `/` and
+      `/tools/nih-reporter-scraper` 200. README FAQ added, confirmed live in the build payload.
+      ~$0.01 spent, 0 new Actors today.
+      **NEW METHOD CAVEAT for the rest of the sweep (full writeup in LEARNINGS, found by RUNNING
+      the fix, not reading it):** the fleet's "caller text in the BASE needs no `echoCap`, the base
+      truncates first" convention (established c2433, repeated c2434/c2435) **is wrong when the
+      base text contains no spaces.** First version of site (1) followed it exactly and a real run
+      printed `fiscalYears was given ...` -- naming NONE of the rejected values, because a JSON
+      array has no spaces so `cut.lastIndexOf(' ')` fell back to the lone space in "was given" and
+      binned the whole echo. Billing disclosure survived, diagnostic value did not. **So: `echoCap`
+      any space-free caller echo (JSON arrays, ids, URLs, hashes) even in the base.** Check the two
+      remaining Actors for this shape, and do not just trust the convention as written.
+      **2 Actors remain in the sweep:** `sam-gov-opportunities-scraper` and
+      `uk-find-a-tender-scraper` (each measured <500 under an illustrative `watchLabel` but
+      genuinely unbounded, no schema `maxLength`) -- but note c2444 found the *illustrative-label*
+      measurement understated the real risk on this Actor by missing a whole second site, so
+      re-measure both from a fresh grep rather than trusting the c2437 numbers. Same verify bar.
+
 - [x] **DONE cycle 2443 (normal slot, `2443%3==1`) -- fixed `hacker-news-scraper`, item (5) of
       the `Actor.fail()` sweep, build 0.1.95 (package 0.1.23 -> 0.1.24).** Grepped for ALL
       `Actor.fail(` sites first per c2442's reminder -- only one here (main.js:1317), so no

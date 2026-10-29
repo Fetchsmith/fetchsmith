@@ -13,6 +13,31 @@ const TIME_BUDGET_MARGIN_MS = 45_000;
 function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
 function timeBudgetOk() { return remainingMs() > 0; }
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars (found cycle 1760 on other Actors in this
+// fleet) -- keyword/orgNames/piNames/watchLabel/projectNums/fiscalYears have no schema maxLength or
+// maxItems, so a long caller-supplied value could overflow any message built below. Word-boundary
+// cut, not a hard slice. `suffix` is RESERVED out of the budget rather than appended after clamping
+// (the clamp-reservation sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428): the
+// setStatusMessage site that appends blindNote()+truncationNote() can measure up to 446 chars of
+// note, and the old append-after-clamp order would cut the note itself -- a billing-relevant
+// disclosure -- instead of the (less important) base prose.
+// DECLARED HERE, not next to the setStatusMessage sites where it used to live (cycle 2444): the
+// fiscalYears input guard calls it around line 280, far above those sites, so a `const` declared
+// later is in its temporal dead zone and throws ReferenceError instead of failing with the reason.
+// Same TDZ trap c2440 hit on clinicaltrials-scraper and c2442 on federal-register-scraper.
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+// Raw caller-supplied text echoed into a SUFFIX must be capped independently of the backstop
+// above: reserving room for the suffix only works if the suffix itself is bounded. (Caller text
+// echoed in the BASE needs no echoCap -- the base is what truncates first.)
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
+
 const input = (await Actor.getInput()) ?? {};
 
 // NIH RePORTER's official public API (no API key, no auth). POST + JSON body, like Grants.gov
@@ -283,12 +308,23 @@ if (fiscalYearsRaw.length > 0 && fiscalYears.length === 0) {
     // Actor.fail() (not a bare throw) so the Console's statusMessage actually carries this reason --
     // a bare throw lands only in the run log as a stack trace (verified empty statusMessage on the
     // sibling sam-gov-opportunities-scraper fix's own FAILED run, cycle 2357).
-    await Actor.fail(
-        `fiscalYears was given (${JSON.stringify(input.fiscalYears)}) but none of the value(s) is a valid NIH `
-        + 'fiscal year (a whole number from 1985 to 2100). Refusing to run: falling back silently would run this '
-        + 'Actor\'s example keyword search ("cancer") instead if no other filter is set -- a different, unrelated, '
-        + 'CHARGED query, not the fiscal year(s) you asked for.',
-    );
+    // The echo of the rejected values is unbounded (fiscalYears has no schema maxItems), so the
+    // billing-relevant half -- "this would otherwise have been a different, CHARGED query" -- is
+    // reserved as the suffix and the echo truncates first. Before cycle 2444 this was one naive
+    // concat with no clamp at all: 30 bogus values pushed it past 500 and Apify's silent cut took
+    // the CHARGED warning off the end, leaving a message that only said the input was invalid.
+    // The echo is ALSO echoCap'd, even though it sits in the base: a JSON array contains no
+    // spaces, so clampStatusMessage's word-boundary cut would fall back to the lone space in
+    // "was given" and drop the echo ENTIRELY (measured live, cycle 2444 -- the message read
+    // "fiscalYears was given ..." and named none of the rejected values). Capping first keeps the
+    // leading values visible, which is the whole diagnostic point of echoing them.
+    await Actor.fail(clampStatusMessage(
+        `fiscalYears was given (${echoCap(JSON.stringify(input.fiscalYears), 120)}) but none of the value(s) `
+        + 'is a valid NIH fiscal year (a whole number from 1985 to 2100).',
+        ' Refusing to run: falling back silently would run this Actor\'s example keyword search ("cancer") '
+        + 'instead if no other filter is set -- a different, unrelated, CHARGED query, not the fiscal year(s) '
+        + 'you asked for. Nothing was charged for this run.',
+    ));
 }
 if (fiscalYearsRaw.length > fiscalYears.length && fiscalYears.length > 0) {
     const dropped = fiscalYearsRaw.filter((y) => !fiscalYears.includes(Number(y)));
@@ -962,25 +998,6 @@ function truncationNote() {
         : '';
 }
 
-const STATUS_MESSAGE_MAX = 500;
-// Apify silently truncates `statusMessage` at 500 chars (found cycle 1760 on other Actors in this
-// fleet) -- keyword/orgNames/piNames/watchLabel/projectNums have no schema maxLength, so a long
-// caller-supplied value could overflow the message built below. Word-boundary cut, not a hard
-// slice. `suffix` is RESERVED out of the budget rather than appended after clamping (the
-// clamp-reservation sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428): the one
-// call site below that appends blindNote()+truncationNote() can measure up to 446 chars of note,
-// and the old append-after-clamp order would cut the note itself -- a billing-relevant disclosure
-// -- instead of the (less important) base prose. watchLabel is echoed in the BASE text at that
-// call site, not the suffix, so the base-truncates-first order already protects it; no separate
-// echoCap needed (same reasoning as fec-campaign-finance-scraper cycle 2433).
-const clampStatusMessage = (msg, suffix = '') => {
-    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
-    if (msg.length <= budget) return msg + suffix;
-    const cut = msg.slice(0, Math.max(budget - 4, 0));
-    const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
-};
-
 // Names only the filters actually applied, so a plain no-match message never blames a filter the
 // search never set.
 function appliedFilterSummary() {
@@ -1566,10 +1583,16 @@ if (webhookUrl) {
 }
 
 if (watchMode && seedFailure) {
-    await Actor.fail(
-        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
-        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
-    );
+    // `seedFailure` carries an upstream NIH RePORTER error detail (unbounded) and `watchLabel` has
+    // no schema maxLength, so this was the sweep's classic shape: one naive concat that Apify's
+    // silent 500-char cut would trim from the END, dropping exactly the two things the buyer needs
+    // -- that no baseline was saved, and that re-running the same label seeds again. Reserve both
+    // as the suffix; echoCap the label because it is IN the suffix (the base truncates first).
+    await Actor.fail(clampStatusMessage(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}.`,
+        ` No baseline was saved for watch label "${echoCap(watchLabel)}" -- nothing was charged, and `
+        + 're-running with the same watchLabel will seed again.',
+    ));
 }
 
 await Actor.exit();

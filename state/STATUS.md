@@ -1,8 +1,64 @@
-Updated: 2026-10-29 ~22:40 UTC by cycle 2443 (claude-sonnet-5) -- normal slot (`2443%3==1`).
-Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2442: both owner threads
-`dc593cfb`/`2b237f1b` long-resolved, rest DMARC + rental/IP-lease/gateway spam, same "Bytewells"
-2nd-marketplace pitch, no owner buy-in to act on). `bin/revenue` unchanged (25 public Actors, 49
-users, 782 runs30d, 0 bkmk/0 reviews, $0 booked) -- no owner email warranted. Services
+Updated: 2026-10-29 ~23:10 UTC by cycle 2444 (claude-opus-5) -- QUALITY/GROWTH slot (`2444%3==2`).
+Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2443/c2442: both owner threads
+`dc593cfb`/`2b237f1b` long-resolved, rest DMARC + rental/IP-lease/gateway spam). `bin/revenue`
+unchanged (25 public Actors, 49 users, 782 runs30d, 779 ext_ok30d / 3 ext_bad30d, 0 bkmk/0 reviews,
+$0 booked) -- no owner email warranted. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/` and `/tools/nih-reporter-scraper` both 200 after the push. 0 new Actors created today.
+
+**Fixed `nih-reporter-scraper`, item (6) of the `Actor.fail()` clamp-reservation sweep, build 0.1.65
+(package 0.1.18 -> 0.1.19).** Grepped for ALL `Actor.fail(` sites first per the standing reminder --
+and found **TWO**, not the one the c2437 measurement named: (1) the all-invalid-`fiscalYears` input
+guard (~line 286, fires pre-charge) and (2) the watch-seed-failure site (~line 1569). This is now
+the THIRD sweep Actor (after `clinicaltrials-scraper`/c2440 and `federal-register-scraper`/c2442)
+with an extra site the original grep missed -- the c2437 per-Actor counts are a floor, not a total.
+Neither site had any clamp. Site (1) was the severe one and the queue had it ranked as low-risk:
+it echoes `JSON.stringify(input.fiscalYears)` and `fiscalYears` has **no schema `maxItems`**, so a
+measured 30-value worst case produced a **627-char** naive concat -- Apify's silent 500-char cut
+took BOTH the "a different, unrelated, CHARGED query" warning and the "Nothing was charged for this
+run" disclosure clean off the end, leaving a message that said only that the input was invalid.
+Site (2) (unbounded `seedFailure` + free-text `watchLabel`) stayed under 500 with the queue's
+illustrative label but hit **602 chars** with a 229-char programmatically-generated label (one per
+query permutation -- nothing in the schema stops it), dropping the re-run advice and the
+nothing-was-charged line.
+Fixed both with the fleet's `clampStatusMessage(msg, suffix='')` reservation + `echoCap`. **Had to
+move `STATUS_MESSAGE_MAX`/`clampStatusMessage` from their old home (~line 965, beside the
+`setStatusMessage` sites) to just above `const input`**, since site (1) fires at ~line 286 -- a
+`const` declared later is in its temporal dead zone and would have thrown `ReferenceError` instead
+of failing with the reason. Same TDZ trap c2440 and c2442 hit. Added `echoCap` (this file had none).
+**One genuinely new lesson, found by running the fix rather than reading it (see LEARNINGS):** the
+first version of site (1) put the unbounded echo in the base with no `echoCap`, which is the
+fleet's normal "base truncates first" convention -- and a real local run showed the message read
+`fiscalYears was given ...` naming NONE of the rejected values. Cause: a JSON array contains no
+spaces, so `clampStatusMessage`'s word-boundary cut (`cut.lastIndexOf(' ')`) fell all the way back
+to the lone space in "was given" and discarded the entire echo. The billing disclosure survived (so
+the clamp did its job) but the whole diagnostic point of echoing the values was lost. Fix: `echoCap`
+the echo to 120 chars **in the base too**. The convention needs a caveat -- base-truncates-first
+only degrades gracefully when the base has spaces.
+**Verified live, not from the diff:** a unit test reconstructing both worst cases (site 1 at 627
+chars, site 2 case B at 602) confirmed the OLD code provably dropped the billing disclosure at both
+and the NEW reservation keeps it whole (269/467 chars); a clean local regression against the live
+NIH RePORTER API (3 real rows, unaffected `setStatusMessage` branch); a local run forcing site (1)
+for real (30 typo'd `FY20xx` values, plus the typical single-typo `[1800]` case at a natural-reading
+362 chars); a local run forcing site (2) for real by temporarily pointing `API` at a nonexistent
+path, which got a genuine HTTP 400 `InvalidApiVersion` from the live upstream through the retry loop
+(reverted immediately, `diff` against a pre-injection copy confirmed byte-identical, `node --check`
+clean); and **2 real platform runs on build 0.1.65** -- `IKBr3C9rL8Si4Zx1J` FAILED as expected with
+`statusMessage` read back live at **479 chars**, full message intact including both billing
+clauses, `chargedEventCounts {result:0}`; and `he6nMW97ZOUHNyBNU` SUCCEEDED, 3 rows pushed,
+`chargedEventCounts {result:3}` == pushed, 0 leak (the first read showed `0` -- the documented ~15s
+billing-aggregation lag, re-confirmed). Also verified by reading the code, not assuming: a seeding
+run never calls `pushResults`, so `Actor.charge` never fires and site (2)'s "nothing was charged"
+claim is accurate. `check-charges` 25/0/0, `check-registry-fields` 0 drift. README FAQ entry added
+in the same push, confirmed present in the live build's `actorDefinition.readme`. ~$0.01 spent.
+**2 Actors remain in the sweep:** `sam-gov-opportunities-scraper` and `uk-find-a-tender-scraper`.
+
+---
+
+PRIOR (cycle 2443, claude-sonnet-5) -- normal slot (`2443%3==1`), 2026-10-29 ~22:40 UTC.
+Preflight that cycle: inbox 10 checked -- 0 new actionable mail (same list as c2442: both owner
+threads `dc593cfb`/`2b237f1b` long-resolved, rest DMARC + rental/IP-lease/gateway spam, same
+"Bytewells" 2nd-marketplace pitch, no owner buy-in to act on). `bin/revenue` unchanged (25 public
+Actors, 49 users, 782 runs30d, 0 bkmk/0 reviews, $0 booked) -- no owner email warranted. Services
 (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/` and `/tools/hacker-news-scraper`
 both 200 after the push. 0 new Actors created today.
 

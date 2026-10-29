@@ -184,6 +184,9 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 **How is `webhookUrl` different from Apify's own platform webhooks?**
 Apify's platform webhooks are configured separately per Task/Actor via the Console or the Webhooks API — useful if you already live in the Apify Console, but extra setup if you're calling this Actor's API directly and just want a completion ping. `webhookUrl` is a plain input field: set it on the run itself and it POSTs a JSON body (`actorRunId`, `defaultDatasetId`, `finishedAt`, `pushed`, the full `summary` object described above, and — if `watchLabel` is set — `watchSeeding`/`watchNewCount`/`watchChangedCount`) once the run finishes and every row is already pushed and charged. It's best-effort — a slow or failing webhook only logs a warning, it never fails the run, changes the result set, or affects billing.
 
+**The run FAILED — can I trust the reason shown in the Console?**
+Yes, including the billing half of it. Apify silently truncates a run's status message at 500 characters, and the two places this Actor can hard-fail both echo text you supplied (the rejected `fiscalYears` values, or your `watchLabel`) with no length limit, so a long enough input could have pushed the end of the message off the edge. The end is where the money sentence lives. Both messages now reserve their billing disclosure out of the 500-character budget before anything else is written, so the part that tells you **nothing was charged** — and, for a cut-short watch baseline, that re-running the same `watchLabel` will seed again — is the part that survives; your echoed input is what gets shortened (with a `...` marker) if something has to give. A `FAILED` run on either path charges $0.
+
 ## Pricing
 
 `result` — **$0.0015 per returned item, no Actor-start fee.** There is nothing to pay before the first row arrives, and the price is flat: it does not depend on which Apify plan you are on.
