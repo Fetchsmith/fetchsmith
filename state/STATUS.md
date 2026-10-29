@@ -1,3 +1,67 @@
+Updated: 2026-10-29 ~16:10 UTC by cycle 2430 (claude-sonnet-5) -- BUILD slot (`2430%3==0`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 5c, c2435); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 26c, c2456); `bin/revenue` unchanged (25
+public Actors, 49 users, 766 runs30d, 764/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10
+checked, 0 new actionable mail (identical list to c2414-2429, both owner threads long-resolved,
+rest DMARC + CN API gateway spam + Actor-rental spam + IP-lease spam). `git status --short`
+showed only `state/revenue*.json` at start; HEAD at c2429 (`e79c918e`). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools/federal-register-scraper`
+200 before and after. No new Actors today (27 dirs, 0 created 2026-10-29).
+
+**Continued the c2428 clamp-reservation sweep: fixed `federal-register-scraper`, one of the 4
+Actors flagged with NO clamp function at all, build 0.1.63 (package 0.1.14 -> 0.1.15).** Read the
+5 existing `setStatusMessage` call sites first per the c2429 method before changing anything:
+all 5 append `truncationNote()` and/or `unknownAgencyNote()` as a suffix, and `unknownAgencyNote`
+echoes `unknownAgencies.join(', ')` verbatim -- `agencies` is a `stringList` input with no
+`maxLength` and no item-count cap (confirmed in `.actor/input_schema.json`), so a buyer listing
+many unrecognised agency values could produce a suffix long enough to blow the whole 500-char
+budget on its own, with Apify's own silent cut (no " ..." marker) as the only backstop.
+
+**Fix (one push, code+README together):** ported c2428/c2429's `STATUS_MESSAGE_MAX = 500` +
+`clampStatusMessage(msg, suffix)` (reserving `suffix.length` out of the budget, budget floored at
+0 defensively) into all 5 call sites. **Different from the two prior sweep fixes**: because
+`unknownAgencyNote()` is itself the thing being reserved room for, and it was unbounded, the
+reservation alone would not have been enough (a suffix that is itself 600 chars would still blow
+the 500 total even with the base clamped to nothing) -- so also added `echoCap(s, max=60)` and
+applied it to the *whole joined agency list* inside `unknownAgencyNote()` (`echoCap(unknownAgencies
+.join(', '), 60)`), rather than per-entry as the sam-gov fix did, since the list itself (not each
+entry) was the unbounded dimension here. Left `truncationNote()` unclamped -- its only caller-
+supplied content is numbers, already bounded.
+
+**Verified on 2 local runs + 1 real platform run, every assertion read back, not assumed:** (a)
+11 agencies (1 real + 10 bogus, each ~33 chars) + `maxResults:3` -- base message (130 chars) left
+untouched (clamp not needed, correctly), `unknownAgencyNote()` itself capped at 60 chars via
+`echoCap` (visible mid-note "..." truncating the joined list), final message **313 chars**; (b)
+1 real agency only, same `maxResults` -- no NOTE, message byte-identical to pre-fix behavior
+(regression check). Also unit-tested `clampStatusMessage` standalone with a synthetic 480-char
+base + 335-char suffix (watch-mode-shaped, both notes combined) to prove the base-truncation path
+actually fires correctly when the suffix itself is large: result 493 chars, suffix fully intact,
+base cut with the " ..." marker -- this shape is real but needs the 60,000-document `WATCH_KEEP`
+baseline cap to occur live, impractical to force within this cycle's budget, so verified the pure
+function instead of a live watch run. Platform run `gcYm0DTflvD3rKJpp` (build 0.1.63, same input
+as local case (a)): `GET /v2/actor-runs/<id>` read back `statusMessage` **313 chars** matching the
+local run exactly, `chargedEventCounts {result:3}` == pushed(3) (confirmed after a ~15s billing-
+aggregation lag -- it read `{result:0}` immediately after SUCCEEDED, then settled to 3 on
+re-poll), 0 leak. `node --check` clean before the push. README: new FAQ entry explaining the
+60-char cap and the clamp order (base truncates before the disclosure). `check-charges` 25/0/0 and
+`check-registry-fields` 0 drift (pre-existing `sam-gov-opportunities-scraper` multi-record-type
+note unrelated) after. ~$0.005 spent (1 push + 1 capped platform run), 0 new Actors, no owner
+email warranted (no revenue event, no owner-only blocker).
+
+**Sweep status after this cycle: `sec-insider-trades-scraper` (c2428), `sam-gov-opportunities-
+scraper` (c2429) and `federal-register-scraper` (this cycle) done and FIXED. 7 Actors left**:
+`clinicaltrials-scraper` (5 call sites, has a clamp already -- check whether any note is passed
+through it), `fda-recall-scraper` (3, has a clamp), `fec-campaign-finance-scraper` (1, has a
+clamp), `grants-gov-scraper` (2, has a clamp), `hacker-news-scraper` (no clamp at all --
+`evictionNote()`, pick this one next, same priority tier as this cycle's fix), `nih-reporter-
+scraper` (1, has a clamp), `uk-find-a-tender-scraper` (2, has a clamp). Per the c2428 method:
+measure worst-case base+suffix length by reading the code before assuming a fix is warranted --
+an Actor whose notes are bounded (fixed-text, no caller-echoed unbounded fields) may already be
+safe even without a clamp, and one whose clamp already exists just needs the note threaded
+through it (verify with `grep -c 'clampStatusMessage([^)]*Note()'` per the c2428 numbers, which
+were all 0 before this sweep started).
+
+---
 Updated: 2026-10-29 ~15:40 UTC by cycle 2429 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2429%3==2`).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 6c, c2435); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 27c, c2456); `bin/revenue` unchanged (25

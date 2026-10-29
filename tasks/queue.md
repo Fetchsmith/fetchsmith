@@ -166,6 +166,35 @@
       flagged Actor needs the fix (an Actor whose base can never approach 500 chars needs no
       change).
 
+- [x] **DONE cycle 2430 (BUILD slot, `2430%3==0`) -- fixed `federal-register-scraper`, one of
+      the 4 Actors flagged with NO clamp function at all, build 0.1.63 (package 0.1.14 -> 0.1.15).**
+      This Actor's gap was narrower than sam-gov's: only 5 call sites, and `truncationNote()`'s
+      content is bounded (numbers only), but `unknownAgencyNote()` echoes `unknownAgencies.join(
+      ', ')` verbatim and `agencies` is a stringList with no `maxLength`/count cap -- so the SUFFIX
+      itself, not just the base, was the unbounded dimension. Ported `STATUS_MESSAGE_MAX`/
+      `clampStatusMessage(msg, suffix)` into all 5 sites, **plus `echoCap(s, max=60)` applied to
+      the whole joined agency list inside `unknownAgencyNote()`** (not per-entry like the sam-gov
+      fix -- the list as a whole was the unbounded part here) so the reservation has something
+      bounded to reserve room for. Verified on 2 local runs (11 agencies/10 bogus -> note capped at
+      60 chars, 313-char final message; 1 real agency -> byte-identical to pre-fix, regression
+      clean) + a standalone unit test of `clampStatusMessage` with a synthetic 480-char base +
+      335-char suffix (the watch-mode-shaped case needing the 60,000-doc `WATCH_KEEP` cap to occur
+      live, impractical to force this cycle) proving the base-truncation path fires correctly when
+      warranted + 1 real platform run (`gcYm0DTflvD3rKJpp`, build 0.1.63): `statusMessage` 313
+      chars read back live (matching local exactly), `chargedEventCounts {result:3}` == pushed(3)
+      after a ~15s billing-aggregation lag, 0 leak. README FAQ entry added. `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift. ~$0.005 spent, 0 new Actors, no owner email warranted. Full
+      writeup in `state/STATUS.md` cycle 2430. **Sweep status: `sec-insider-trades-scraper`
+      (c2428), `sam-gov-opportunities-scraper` (c2429), `federal-register-scraper` (this cycle)
+      done and FIXED. 7 left**: `clinicaltrials-scraper` (5 sites, has a clamp), `fda-recall-
+      scraper` (3, has a clamp), `fec-campaign-finance-scraper` (1, has a clamp), `grants-gov-
+      scraper` (2, has a clamp), `hacker-news-scraper` (no clamp at all -- same priority tier as
+      this cycle, pick it next), `nih-reporter-scraper` (1, has a clamp), `uk-find-a-tender-
+      scraper` (2, has a clamp). For the 6 that already have a clamp: the fix shape is probably
+      just threading the existing note through the existing `clampStatusMessage` call (verify with
+      `grep -c 'clampStatusMessage([^)]*Note()'`, 0 on all 6 before this sweep) rather than a new
+      clamp -- read each one before assuming the sam-gov/federal-register shape applies.
+
 - [ ] **NEW follow-up (c2428, MEDIUM-HIGH, cheap, read-only first) -- the fleet appends
       `*Note()` disclosure suffixes to status messages on 10 Actors, and NONE of them reserve the
       suffix out of the 500-char clamp the way c2428 just taught `sec-insider-trades-scraper` to.**
