@@ -210,8 +210,8 @@
   "store-anon-rank": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 2072,
-   "note": "cycle 2072: baseline: ours #29-#354 on all 12 core terms (worst: remote jobs #354, hacker news #321). #1 holders have 5-2814 users, we have 1-2. grants.gov natural experiment: 16 byte-identical 'grants-gov-scraper' names, rank monotonic in totalUsers, ours dead last at #87/16-clones. runs30d NOT an input (ours 26 == #1's 26, 86 positions apart). Store search = cold-start trap, keyword work cannot move it."
+   "last_cycle": 2408,
+   "note": "cycle 2408: c2408 QUALITY slot: all 13 queries re-measured anonymously (no auth, no runs). Ranks #21-#421, every one inside the c2072 baseline band and still monotone in totalUsers (best: trademark #21/206 at 3 users, court-records #28/10261 at 1 user; worst: remote-jobs #421/5743). No query fell outside the scan budget. #1 holders unchanged in character (2-9400 users). NOT a regression and NOT fixable by metadata -- users-gating finding re-confirmed, so no action taken. [prior note preserved] cycle 2072: baseline: ours #29-#354 on all 12 core terms (worst: remote jobs #354, hacker news #321). #1 holders have 5-2814 users, we have 1-2. grants.gov natural experiment: 16 byte-identical 'grants-gov-scraper' names, rank monotonic in totalUsers, ours dead last at #87/16-clones. runs30d NOT an input (ours 26 == #1's 26, 86 positions apart). Store search = cold-start trap, keyword work cannot move it."
   },
   "check-shell-expansion": {
    "kind": "cadence+commit-hook",

@@ -143,6 +143,11 @@ function resolveViewport() {
 }
 const viewport = resolveViewport();
 
+// Why these two exist: see the end-of-run status-message block at the bottom of this file. A
+// `0` / `false` here means "that stop did not happen", so a clean run stays silent.
+let timeBudgetStopped = 0;   // how many URLs were never attempted when the clock ran out
+let chargeLimitStopped = false;
+
 const cm = Actor.getChargingManager();
 const isPPE = cm.getPricingInfo().isPayPerEvent;
 let pushed = 0;
@@ -156,7 +161,9 @@ async function pushResult(item) {
   await Actor.pushData(item); pushed += 1;
   return true;
 }
+let failedCaptures = 0;
 async function pushError(url, message, extra = {}) {
+  failedCaptures += 1;
   await Actor.pushData({ url: url ?? null, format, success: false, error: message, imageUrl: null, screenshotKey: null, contentType: null, byteSize: null, capturedAt: new Date().toISOString(), ...extra });
 }
 
@@ -341,11 +348,11 @@ try {
     } else {
       if (html && compareUrl) log.warning('Compare mode ignores raw `html` input: a diff needs two fetched URLs.');
       for (let i = 0; i < urls.length; i++) {
-        if (!timeBudgetOk()) { log.warning('Time budget exhausted, stopping early.'); break; }
+        if (!timeBudgetOk()) { log.warning('Time budget exhausted, stopping early.'); timeBudgetStopped = urls.length - i; break; }
         const keepGoing = compareUrl
           ? await compareOne(browser, urls[i], i)
           : await captureOne(browser, { url: urls[i], rawHtml: null }, i);
-        if (!keepGoing) { log.info('Charge limit reached, stopping.'); break; }
+        if (!keepGoing) { log.info('Charge limit reached, stopping.'); chargeLimitStopped = true; break; }
       }
     }
   } finally {
@@ -355,5 +362,46 @@ try {
   log.exception(err, 'Run failed');
   await Actor.fail(`Run failed: ${err.message}`);
 }
+// --- Run status message (cycle 2408) ------------------------------------------------------------
+// Until now this Actor set NO status message on any path -- the only Actor in the fleet with none.
+// A buyer who sent 50 URLs and got 30 captures read a bare "Succeeded" against a short dataset:
+// the per-URL `success:false` / `error` rows DO explain it (and are free, charge verified at
+// {result:1} for 1 good + 1 bad URL on run TpmzU1xSKjrhBP7yQ), but only if you scan the dataset.
+// Same construction as sec-insider-trades-scraper (c2340) and substack/hacker-news: accumulate
+// every cause this run actually observed as INDEPENDENT ifs, never an else-if chain, and stay
+// SILENT on a clean full-success run so the message keeps meaning something. No internal `;` in
+// any cause (the c1592 trap). `failedCaptures` counts error rows, so it covers a DNS failure, a
+// nav timeout and a non-string `urls` entry alike -- the three shapes that reach pushError().
+const attempted = html && !compareUrl ? 1 : urls.length;
+const causes = [];
+if (failedCaptures) {
+  causes.push(`${failedCaptures} of the ${attempted} target(s) could not be captured and came back as free `
+    + 'rows with `success: false` and the reason in `error` (you are charged only for successful captures). '
+    + 'Check those rows for a bad URL, a site that blocks datacenter IPs (try proxyConfiguration), or a '
+    + 'page that needed longer than the timeout (raise delayMs or use waitUntil: networkidle)');
+}
+if (chargeLimitStopped) {
+  causes.push(`the run stopped at its pay-per-event charge limit after ${pushed} capture(s), so later URLs in `
+    + 'your list were not captured. Raise the charge limit for the run to get the rest');
+}
+if (timeBudgetStopped) {
+  causes.push(`the run hit its time budget with ${timeBudgetStopped} URL(s) still unattempted. Raise the run `
+    + 'timeout, or split the list across runs');
+}
+if (urls.length < rawUrls.length) {
+  causes.push(`${rawUrls.length - urls.length} duplicate URL(s) in \`urls\` were skipped -- each unique URL is `
+    + 'captured and charged exactly once');
+}
+if (pushed === 0) {
+  const why = causes.length ? causes.join('. Also, ') : 'no target produced an image';
+  const zeroRowMessage = `0 successful captures: ${why}.`;
+  log.warning(zeroRowMessage);
+  await Actor.setStatusMessage(zeroRowMessage.slice(0, 1000));
+} else if (causes.length) {
+  const partialMessage = `${pushed} capture(s) delivered, but: ${causes.join('. Also, ')}.`;
+  log.warning(partialMessage);
+  await Actor.setStatusMessage(partialMessage.slice(0, 1000));
+}
+
 log.info(`Done. Pushed ${pushed} results.`);
 await Actor.exit();
