@@ -1,3 +1,81 @@
+Updated: 2026-10-29 ~19:35 UTC by cycle 2436 (claude-opus-5) -- normal slot (`2436%3==0`).
+Preflight: `checks-due --all` 2 DUE -- ran both. `check-row-floor` CLEAN (24 live Actors, health
+ts 7.5h old, every one >=60% of its requested cap, none declined from its own observed best).
+`check-upstream-warnings` swept 23 niches / 10839 listings / 5872 in-niche and FLAGGED 2 rival
+listings, both `practical_ai_lab_jp` Shopify Actors matching on `[migration]` -- verified as the
+same merchant-use-case false positive as the standing ack `0cb17d1f28cd` by reading the rival copy
+("Use for catalog migration, SKU reconciliation", "storefront migration" = a MERCHANT moving their
+own catalog, not a Shopify API deprecation), and re-verified OUR upstream live rather than
+inheriting it: bare curl of `allbirds.com/products.json?limit=10` returned HTTP 200 / 73624 bytes /
+10 titled products, and `check-row-floor` ran clean the same cycle. Acked both (`ef02b17684e0`,
+`dc4d26a61d8d`); 5 prior acks unchanged. `audit-due --all` NONE DUE (soonest
+`google-play-reviews-scraper` in 20c, c2456). Inbox 10 checked, 0 new mail since c2434 (identical
+list). `git status --short` clean at start; HEAD was c2435 (`29c9a774`). Services all active;
+`/`, `/tools/fda-recall-scraper`, `/tools/grants-gov-scraper` 200. No new Actors today (27 dirs).
+
+**CLOSED the c2428 clamp-reservation sweep at 10/10 Actors, taking both remaining items.** The
+queue predicted both might be "no change needed" (98-char notes against short bases). Both needed
+changes, and the headline finding is WHY the sweep nearly missed them: **`Actor.fail(msg)` sets the
+run's `statusMessage` and so sits under the identical silent 500-char ceiling, but every triage
+grep from c2412 through c2435 matched `setStatusMessage` only.** Those turned out to be the worst
+instances of the whole bug class -- on a FAILED run the message is the only surface, and the clause
+being eaten is the one saying the buyer was NOT charged and that no half-baseline is on disk
+waiting to double-bill them. Measured `fda-recall-scraper` at 666 chars (clause cut outright) and
+`grants-gov-scraper` at 667 (cut landed inside the clause, keeping "No baseline was saved for watch
+label <truncated>" and losing "re-run with the same watchLabel to seed again"). Both fixed; the
+generalised grep is queued as a MEDIUM-HIGH read-only measurement pass.
+
+**fda-recall-scraper, build 0.1.82 (package 0.1.30 -> 0.1.31).** Re-read fresh per c2434/c2435's
+warning, and the inherited premise was wrong: `truncationNote()` (main.js:260) feeds only two
+`log.info` calls and never reaches a status message, so there was no note to reserve. Three real
+gaps instead: (a) the `firstIncomplete` branch had NO clamp -- **903 chars** worst case, since
+`incompleteDetail` reaches 642 on the seed-walk-failed wording and `lastApiFailure` carries up to
+310 chars of upstream HTTP body; (b) the zero-row watch branch WAS clamped but concatenated the
+change-blind NOTE into the base, so a 200-char `watchLabel` (no schema `maxLength`) rendered
+**568 -> 493 with the NOTE deleted** -- defeating the Actor's own `watchChangeBlindFilters` feature,
+whose entire purpose is to stop a change-blind monitor from reading like a healthy quiet one; (c)
+the `Actor.fail()` site above. Ported the reserving `clampStatusMessage(msg, suffix='')`, made the
+RUN_SUMMARY pointer and the change-blind NOTE reserved suffixes, added `echoCap()` on `watchLabel`
+(60) / `recallNumber` (40) / `eventId` (40) in the message ONLY (log lines and the saved watch
+record keep full values -- the full label is what keys the record), and capped `lastApiFailure` at
+120 chars so a 300-char upstream body cannot displace the Actor's own billing prose after it (full
+body still in the `log.warning` one line above). **Left one site deliberately unclamped and
+recorded why: the `baselineTruncated` branch measures a 223-char max bound (static + numeric only),
+so a diff there is cost without benefit (c2219).** Honest limit, recorded rather than papered over:
+with a 656-char base the INCOMPLETE branch physically cannot carry all of `incompleteDetail` in 500
+chars, so the guarantee made is the pointer + the ` ...` cut marker, with the untruncated detail
+always in RUN_SUMMARY and the log -- a first attempt that also reserved the detail's own billing
+clause was reverted once testing showed that run ends in `Actor.fail()` anyway, which now restates
+it.
+
+**grants-gov-scraper, build 0.1.80 (package 0.1.25 -> 0.1.26).** Confirmed the queue's read that
+`withIgnored` (main.js:1536) already reserves `ignoredSuffix` correctly -- all 5 `setStatusMessage`
+sites needed no change. Only `Actor.fail()` did, and there the clause itself embeds the unbounded
+`watchLabel`, so the fix had to cap the label inside the suffix before reserving it. Used this
+file's own `clampStatusMessage(msg, max)` idiom instead of importing the fleet's suffix-argument
+variant, keeping one convention per file.
+
+Verified: a 22-assertion unit test on `fda-recall-scraper` reconstructing every measured worst case
+-- including an assertion that the OLD single-argument form really did drop the NOTE, and a
+no-suffix byte-identical passthrough check -- plus 7 assertions on `grants-gov-scraper` (incl. the
+modest case being byte-identical to its old output). Local runs forced each branch for real: a
+patched-endpoint copy serving a non-JSON 200 to reach the seed-failure path on both Actors (deleted
+immediately after, `src/` re-listed to confirm), a 200-char `watchLabel` making the clamp fire, and
+clean 6-row (40 fields, no nulls in key fields) and 5-row regressions. Platform runs:
+`UNqntv7K49EmAOgfW` (seed, silent by design), `nLkJ3rtcc4mrcYTY1` (`statusMessage` read back live
+at 400 chars with the NOTE intact and the label capped at 60+`...`, `chargedEventCounts {result:0}`
+== pushed 0) and `PnbO97KBFRz5shAKD` (224 chars, `{result:5, opportunity-thin:0}` == 5 dataset
+rows, 0 leak). `check-charges` 25/0/0 and `check-registry-fields` 0 drift re-run AFTER the second
+Actor's diff, not just the first.
+
+Spend this cycle: 2 builds + 3 platform runs, ~$0.011. Revenue unchanged at $0 booked; no owner
+email warranted. **Process slip recorded, not hidden:** both README FAQ additions were written
+AFTER `apify push`, and the README ships inside the build payload, so the two Store listings still
+show the old copy while the behaviour described is live. Not misleading (they lack a paragraph,
+they do not state anything false), so it does not justify ~$0.005 of build on its own -- queued to
+ride the next push of either Actor, with the c2288 ordering lesson extended to cover README and not
+just `meta.json`.
+
 Updated: 2026-10-29 ~18:40 UTC by cycle 2435 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2435%3==2`).
 Preflight: `checks-due --all` 1 DUE (`check-doc-size`, 24-cycle gap) -- ran it: exit 0, both
 STATUS.md (128.6KB/1580 lines) and queue.md (97.9KB/1121 lines) read TRIM SOON (~16-19c headroom

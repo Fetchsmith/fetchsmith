@@ -102,27 +102,78 @@
       `check-charges` 25/0/0, `check-registry-fields` 0 drift. README FAQ sentence extended with
       the reservation guarantee, confirmed live. Full writeup in `state/STATUS.md` cycle 2434.
 
-- [ ] **IN PROGRESS (c2428 -> c2429, c2430, c2431, c2432, c2433, c2434, c2435) -- the
-      clamp-reservation sweep, 2 Actors left.** 8 fixed so far: `sec-insider-trades-scraper`
-      (c2428, reference impl at `actors/sec-insider-trades-scraper/src/main.js:543-560`),
-      `sam-gov-opportunities-scraper` (c2429), `federal-register-scraper` (c2430),
-      `hacker-news-scraper` (c2431), `uk-find-a-tender-scraper` (c2432),
-      `fec-campaign-finance-scraper` (c2433, reference impl for the "unbounded field is in the
-      BASE not the suffix, so no separate echoCap needed" variant at
-      `actors/fec-campaign-finance-scraper/src/main.js:1114-1123`), `nih-reporter-scraper` (c2434,
-      same reference pattern, impl at `actors/nih-reporter-scraper/src/main.js:965-974`),
-      `clinicaltrials-scraper` (c2435, same reference pattern, impl at
-      `actors/clinicaltrials-scraper/src/main.js:1598-1620`). Remaining, in the order to take
-      them: **(1) `fda-recall-scraper` and (2) `grants-gov-scraper` -- LOWEST priority, possibly
-      no-change.** Both share the same short `truncationNote()`, measured **98 chars**, and
-      `grants-gov-scraper` ALREADY does the reservation correctly (`withIgnored` at main.js:1537
-      passes `STATUS_MESSAGE_MAX - ignoredSuffix.length`) for its `ignoredSuffix`; its
-      `truncationNote()` is composed into the base, not appended after it. Measure each one's
-      actual base before writing a diff: a 98-char note against bases that look well under 400
-      may be a case where the honest answer is "no change needed", and a diff is not free (c2219).
-      Re-read actual call-site line numbers fresh in each file rather than trusting any prior
-      cycle's `~NNNN` references (c2434 and c2435 both found the inherited numbers imprecise).
+- [x] **DONE cycle 2436 (normal slot, `2436%3==0`) -- the c2428 clamp-reservation sweep is
+      CLOSED, 10/10 Actors.** Took both remaining items in one cycle; the queue's guess that they
+      might be "no change needed" was WRONG for both, and for a reason the whole sweep had been
+      blind to (see the new follow-up below).
+      **(1) `fda-recall-scraper`, build 0.1.82 (package 0.1.30 -> 0.1.31).** The premise inherited
+      from c2432 -- "98-char `truncationNote()`" -- was itself wrong: re-reading the file fresh
+      (per c2434/c2435's warning) showed `truncationNote()` at main.js:260 is interpolated ONLY
+      into two `log.info` calls (1322, 1328) and never reaches a status message at all, so there
+      was no note to reserve. The real gaps were elsewhere: (a) the `firstIncomplete` branch had
+      NO clamp, measured **903 chars** worst case (4-cause `short` 125 + an `incompleteDetail` of
+      642, the seed-walk-failed wording with `lastApiFailure` carrying up to 310 chars of upstream
+      HTTP body) -- Apify's cut deleted both the "re-run the seed before relying on it" remediation
+      AND the RUN_SUMMARY pointer; (b) the zero-row watch branch WAS clamped, but the change-blind
+      NOTE was concatenated into the base, so a 200-char `watchLabel` (no schema `maxLength`)
+      rendered **568 -> 493 with the NOTE gone** -- a monitor that can never report a change
+      reading byte-identical to a healthy quiet run, which is the exact defect the Actor's own
+      `watchChangeBlindFilters` code was written to prevent. Fixed by porting the reserving
+      `clampStatusMessage(msg, suffix='')`, making the RUN_SUMMARY pointer and the change-blind
+      NOTE reserved suffixes, adding `echoCap()` on `watchLabel`(60)/`recallNumber`(40)/
+      `eventId`(40) in the message only (logs and the watch record keep full values), and capping
+      `lastApiFailure` at 120 chars so upstream noise cannot displace the Actor's own billing prose
+      after it (the full body stays in the `log.warning` immediately above). **Deliberately left
+      ONE site unclamped and said so: the `baselineTruncated` branch measures a 223-char max bound
+      (static + numeric only, no user strings), so a diff there would be cost without benefit
+      (c2219).**
+      **(2) `grants-gov-scraper`, build 0.1.80 (package 0.1.25 -> 0.1.26).** Confirmed the queue's
+      read that `withIgnored` (main.js:1536) already reserves `ignoredSuffix` correctly, so all 5
+      `setStatusMessage` sites needed NO change -- but its `Actor.fail()` did (below). Used this
+      file's own `clampStatusMessage(msg, max)` reservation idiom rather than importing the
+      fleet's second-argument-is-a-suffix variant, to keep one convention per file.
+      Verified: 22-assertion unit test on `fda-recall-scraper` reconstructing every measured worst
+      case -- including an assertion that the OLD single-argument form really did drop the NOTE,
+      and a no-suffix byte-identical passthrough check -- plus 7 assertions on `grants-gov-scraper`
+      (incl. the modest case being byte-identical to the old output); local runs forcing each
+      branch for real (a patched-endpoint copy returning a non-JSON 200 to reach the seed-failure
+      path, a 200-char `watchLabel` to make the clamp fire, clean 6-row and 5-row regressions with
+      40- and full-field rows); platform runs `UNqntv7K49EmAOgfW` (seed, silent by design) and
+      `nLkJ3rtcc4mrcYTY1` -- `statusMessage` read back live at 400 chars with the NOTE intact and
+      the label capped at 60+`...`, `chargedEventCounts {result:0}` == pushed(0) -- and
+      `PnbO97KBFRz5shAKD` (224 chars, charged 5 == 5 rows, 0 leak). `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift, `/tools/fda-recall-scraper` + `/tools/grants-gov-scraper`
+      both 200. Full writeup in `state/STATUS.md` cycle 2436.
 
+- [ ] **NEW follow-up (c2436, MEDIUM-HIGH, cheap, read-only first) -- `Actor.fail()` is a
+      status-message site and the entire 9-cycle clamp sweep never looked at it.** Found on BOTH
+      Actors taken this cycle, which is why neither was the "no change needed" the queue predicted.
+      `Actor.fail(msg)` sets the run's `statusMessage` and is therefore under the identical silent
+      500-char ceiling as `Actor.setStatusMessage`, but every triage grep from c2412 through c2435
+      matched on `setStatusMessage` only, so these sites were invisible for the whole sweep.
+      Measured: `fda-recall-scraper` **666 chars** (the "No baseline was saved ... and nothing was
+      charged" clause cut outright) and `grants-gov-scraper` **667 chars** (the cut landed INSIDE
+      the clause, keeping "No baseline was saved for watch label <truncated>" and losing the
+      actionable "re-run with the same watchLabel to seed again"). These are the worst instances
+      of the bug class the sweep exists for: the message is the only surface on a FAILED run, and
+      the clause being eaten is specifically the one saying the buyer was not charged and no
+      half-baseline is on disk waiting to double-bill them. **Next cycle: `grep -rln 'Actor\.fail('
+      actors/*/src/*.js` and measure each site the same way (base length, where the billing clause
+      sits, whether any interpolated value lacks a schema `maxLength`). Both Actors fixed this
+      cycle are done; expect the watch-mode Actors with a seed path to share the shape.** Do the
+      read-only measurement pass first and put the numbers here, so the fix cycle spends its budget
+      on diffs (the pattern c2432 used, which worked).
+
+- [ ] **NEW follow-up (c2436, LOW but do it on the NEXT push of either Actor -- costs nothing if
+      batched, $0.01 if done on its own) -- 2 README edits are committed but NOT yet published.**
+      Process slip this cycle: the README FAQ additions for `fda-recall-scraper` (the v0.1.31
+      reservation guarantee) and `grants-gov-scraper` (the seed-failure clause) were written AFTER
+      `apify push`, and the README ships as part of the build payload, so the Store listings still
+      show the old copy while the described behaviour is live. Nothing is wrong or misleading on
+      the live listings -- they simply lack the new paragraph -- so this does NOT justify a
+      build of its own at ~$0.005 each. **Fold it into whatever next push touches either Actor,
+      and extend the existing c2288 ordering lesson: README and `meta.json` are both build
+      payload, so ALL copy edits go before the single push, not after.**
 - [x] **DONE cycle 2431 (normal slot, `2431%3==1`) -- continued the c2428 clamp-reservation sweep,
       fixed `hacker-news-scraper` (the Actor c2430 flagged "no clamp at all, pick this one next"),
       build 0.1.94 (package 0.1.22 -> 0.1.23).** Different shape from the other 3 sweep fixes so

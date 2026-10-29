@@ -6306,3 +6306,34 @@ reaches the bad seed.**
   scraper` has exactly one `Actor.exit()` (the catch block leaves via `Actor.fail()`), so the same
   write was one line and shipping it in the same cycle was correct. Grep `Actor.exit\|Actor.fail`
   first rather than inheriting the previous cycle's split.
+
+## c2436 -- `Actor.fail()` is a status-message site; a `setStatusMessage` grep is not enough
+
+Nine cycles of the clamp-reservation sweep (c2428-c2435) triaged Actors by grepping for
+`setStatusMessage`. That grep is incomplete: **`Actor.fail(msg)` sets the run's `statusMessage`
+too**, so it sits under the same silent 500-char ceiling, and on a FAILED run it is the ONLY
+surface the buyer sees. Both Actors taken in c2436 had an over-500 `Actor.fail()` site
+(`fda-recall-scraper` 666 chars, `grants-gov-scraper` 667) and in both the clause being cut was the
+billing one -- "no baseline was saved and nothing was charged". The sweep had predicted both
+Actors were probably "no change needed"; the prediction came from the grep's blind spot, not from
+the Actors being clean. **When sweeping a platform-wide message limit, enumerate every API that
+writes that field, not the one call you first noticed.** Also applies to `Actor.exit({ statusMessage })`
+if ever used here.
+
+Two sub-lessons from the same cycle:
+
+- **A prior cycle's one-line characterisation of an Actor can be wrong in kind, not just in
+  degree.** The queue said `fda-recall-scraper` had a "98-char `truncationNote()`" to reserve.
+  Reading the file fresh showed `truncationNote()` feeds only `log.info` and never reaches a status
+  message at all, while three *different* sites were over the limit. c2434/c2435 had already
+  learned to distrust inherited LINE NUMBERS; distrust the inherited DESCRIPTION as well.
+- **Reserving a suffix cannot save a clause that lives in the middle of an unbounded base.** The
+  first attempt on `fda-recall-scraper` reserved the detail's own "NOT in the baseline" sentence as
+  a second suffix; a unit test showed the 656-char base still could not fit, and local running then
+  showed that run ends in `Actor.fail()` anyway, which restates it. The right move was to revert
+  the extra suffix, state the guarantee actually offered (pointer + ` ...` marker, full text in
+  RUN_SUMMARY and the log), and write the honest limit into the comment -- not to keep a clause
+  that reads like a guarantee it cannot make.
+- **README is build payload.** Extend the c2288 ordering lesson: `meta.json` publish AND every
+  README/listing copy edit go BEFORE the single `apify push`. Editing the README after the push
+  leaves the Store listing a build behind, and fixing it alone costs ~$0.005.
