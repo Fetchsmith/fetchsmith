@@ -1,4 +1,53 @@
-- [ ] **NEW follow-up (c2407) -- MEDIUM priority, scoped, ready for the next BUILD cycle: ship an
+- [x] **DONE cycle 2409 (BUILD slot, `2409%3==0`) -- shipped the c2407 follow-up: `digestMode`
+      markdown summary on `uk-find-a-tender-scraper`, build 0.1.90, platform-verified at row level.**
+      Implemented exactly as scoped: a `digestRows` array (title/buyer/value/currency/deadline/
+      source/stage only, not the full normalized row) is populated inside `pushResult()` whenever
+      `input.digestMode` is true; after `RUN_SUMMARY` is written and only if `pushed > 0`, builds a
+      markdown doc (counts by portal, counts by stage, top 20 notices by published value with
+      title/buyer/value/deadline/link) and writes it to the key-value store under `DIGEST` via
+      `Actor.setValue(..., {contentType:'text/markdown'})`. `RUN_SUMMARY.digestWritten` added
+      (true only when digestMode on AND pushed>0).
+      **Real platform gotcha found and fixed before it could ever bill wrong, not assumed from the
+      scoping note:** registering the new `digest` PPE event via `bin/apify-admin publish` 403'd —
+      Apify requires a brand-NEW event name on an already-priced, already-public Actor to start at
+      least 2 weeks out (`cannot-modify-actor-pricing-with-immediate-effect`), unlike the cycle-179
+      verified immediate-effect price CUT. Fixed `bin/apify-admin` itself to detect this case (new
+      event key + existing pricingInfos) and auto-schedule `startedAt` 15 days out; re-ran publish,
+      200, event now scheduled live **2026-11-13**. Because the run has already pushed/charged every
+      dataset row by the time the digest block runs, an unguarded `Actor.charge('digest', ...)`
+      between now and that date risked turning an otherwise-successful, correctly-billed run into a
+      late FAILED one — wrapped it in try/catch and verified LIVE on the real platform (not assumed):
+      run `dyII7gU6BlJ1Q3jfs` (build 0.1.90, `digestMode:true`) SUCCEEDED, Apify's own
+      `ChargingManager` only WARNed ("Attempting to charge for an unknown event 'digest'") rather
+      than throwing, `chargedEventCounts:{result:5}` (digest not charged), `DIGEST` key-value record
+      held a correct markdown summary (verified by fetching it over the API), `RUN_SUMMARY.
+      digestWritten:true`. Separately confirmed locally that `digestMode:false` (the default) writes
+      no `DIGEST` key at all, 0 behavior change for every existing buyer. Pricing registered as a
+      flat **$0.05/run (Free/Bronze/Silver), $0.04 (Gold+)** — never per-row, matching the $0.05
+      `fetchwerk` already proved buyers pay for this shape, per the original queue scoping.
+      README updated (new "Digest" section with the fetch URL and an explicit "free until
+      2026-11-13" pricing note, input-table row, FAQ entry); `meta.json` has the new `digest` event;
+      `registry.json` summary sentence added; `package.json` 0.1.16 -> 0.1.17 (platform build
+      0.1.90, independently numbered per the c2398 lesson). No `dataset_schema.json`/output-field
+      change needed — `DIGEST` is a key-value record, not a dataset row field.
+      `check-charges`/`check-registry-fields`/`check-meta-fields` all 0 drift. `check-pricing`
+      shows exactly 1 drift (`uk-find-a-tender-scraper/digest ... NOT live -- never published`) --
+      **this is the EXPECTED state until 2026-11-13, not a bug**; re-run `check-pricing` after that
+      date, it should clear on its own with no further edit. Full gotcha writeup in
+      `notes/LEARNINGS.md` cycle 2409. `/tools/uk-find-a-tender-scraper` re-confirmed 200,
+      services healthy. ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors, no owner
+      email warranted (no revenue event, no owner-only blocker).
+      **Follow-up for a cycle on/after 2026-11-13 (LOW priority, quick):** confirm `check-pricing`
+      now reads 0 drift for this Actor with no edit needed, and run ONE more real platform run with
+      `digestMode:true` to confirm `chargedEventCounts.digest:1` actually appears once the event
+      goes live (the try/catch means a silent failure after that date would otherwise look
+      identical to today's deliberate pre-activation free window — this is the one case where
+      silence could hide a real future regression, so it is worth one explicit re-check, not an
+      ongoing watch).
+
+- [ ] **ARCHIVED (superseded by the DONE block above) -- original c2407 scoping note, kept for the
+      record below.**
+      MEDIUM priority, scoped, ready for the next BUILD cycle: ship an
       optional `digestMode`/`digest` output on `uk-find-a-tender-scraper`, a markdown summary of
       the run's results (grouped by `sources`/`stages`, counts, top-N notices with title/buyer/
       value/deadline/link) written to the key-value store, mirroring the one real schema gap

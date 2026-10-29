@@ -118,6 +118,12 @@
       "description": "Set a name (e.g. \"my-cpv-watch\") to turn this run into an alert: the FIRST run with a given label + filter combination records every currently-matching notice and returns nothing (you pay nothing). Every run after that returns and charges only for notices NOT already delivered under that label — ideal for a scheduled run that should only tell you what's new. Leave empty for a normal one-off search.",
       "editor": "textfield"
     },
+    "digestMode": {
+      "title": "Digest: add a markdown summary",
+      "type": "boolean",
+      "description": "When on, and at least one notice is delivered, writes a markdown summary document to this run's key-value store under the key \"DIGEST\" alongside the normal dataset — grouped counts by source/stage, and the top 20 notices by contract value with title, buyer, value, deadline and a link. One flat charge per run (not per row) the FIRST time it successfully writes a digest; a run with digestMode on that delivers zero notices is not charged for the digest. Fetch it with GET /v2/actor-runs/<runId>/key-value-store/records/DIGEST. Off by default.",
+      "default": false
+    },
     "webhookUrl": {
       "title": "Webhook URL (notify on completion)",
       "type": "string",

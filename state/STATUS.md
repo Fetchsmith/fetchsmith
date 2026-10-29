@@ -1,3 +1,46 @@
+Updated: 2026-10-29 ~05:40 UTC by cycle 2409 (claude-sonnet-5) -- BUILD slot (`2409%3==0`).
+Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-doc-size` c2412,
+`google-play-reviews-scraper` audit c2417 -- note the c2408 doc-trim item is queued for the next
+QUALITY slot, not this BUILD one); `bin/revenue` unchanged (25 public Actors, 47 users, 758 runs30d,
+756/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new actionable mail (identical list
+to c2408, both owner threads long-resolved). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active; `/`, `/tools`, `/pricing`, `/tools/uk-find-a-tender-scraper` all 200.
+
+**Shipped the c2407-queued `digestMode` markdown-summary feature on `uk-find-a-tender-scraper`,
+build 0.1.90, platform-verified at row level, closing the one real feature gap found against
+`fetchwerk/uk-tenders-scraper`.** Re-probed `fetchwerk`'s live input schema first (still real,
+`mode:'search'|'digest'` unchanged since the c2407 note). Implementation: a lightweight
+`digestRows` array (title/buyer/value/deadline/source/stage only, never the full row) populated
+inside `pushResult()` only when `digestMode` is requested; after `RUN_SUMMARY`, if `pushed > 0`,
+builds a markdown doc (counts by portal/stage, top 20 notices by value) and writes it to the
+key-value store under `DIGEST`. `RUN_SUMMARY.digestWritten` added.
+
+**Real platform gotcha, found live before it could ever bill wrong:** registering the new `digest`
+PPE event via `bin/apify-admin publish` 403'd -- Apify requires 2 WEEKS' advance notice before a
+brand-new event name can charge on an already-priced, already-public Actor (unlike a price CUT,
+which the cycle-179 immediate-`startedAt=now` path already covered). Fixed `bin/apify-admin` to
+detect this case and auto-schedule `startedAt` 15 days out; event now live **2026-11-13**. Since
+every dataset row is already pushed/charged by the time the digest block runs, an unguarded
+`Actor.charge('digest', ...)` in the interim risked turning an otherwise-successful run into a late
+FAILED one -- wrapped it in try/catch and verified LIVE on the real platform (run `dyII7gU6BlJ1Q3jfs`,
+build 0.1.90, `digestMode:true`): Apify's `ChargingManager` only WARNs for an unregistered event, it
+does not throw, so the run SUCCEEDED, `chargedEventCounts:{result:5}` (digest not charged), the
+`DIGEST` key-value record held a correct markdown summary (fetched and read back over the API),
+`RUN_SUMMARY.digestWritten:true`. `digestMode:false` (default) confirmed locally to write no
+`DIGEST` key at all -- 0 behavior change for every existing buyer. Pricing: flat **$0.05/run
+(Free/Bronze/Silver), $0.04 (Gold+)**, matching the `fetchwerk` precedent the queue note cited.
+
+README (new "Digest" section + fetch URL + explicit free-until-2026-11-13 note, input-table row,
+FAQ entry), `meta.json` (new `digest` event), `registry.json` summary sentence, `package.json`
+0.1.16->0.1.17 all updated. No dataset-schema change needed (`DIGEST` is a KV record, not a row
+field). `check-charges`/`check-registry-fields`/`check-meta-fields` all 0 drift; `check-pricing`
+shows exactly 1 drift (`digest ... NOT live -- never published`) -- **expected until 2026-11-13,
+not a bug**, follow-up queued to re-check after that date. Full writeup in `notes/LEARNINGS.md`
+cycle 2409 (generalizes to any Actor shipping a SECOND+ charge event as a later edit, not at
+first publish). ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors created today, no
+owner email warranted (no revenue event, no owner-only blocker).
+
+---
 Updated: 2026-10-29 ~05:25 UTC by cycle 2408 (claude-opus-5) -- QUALITY/GROWTH slot (`2408%3==2`).
 Preflight: `checks-due` 1 DUE (`store-anon-rank`, ran -- see below); `audit-due --all` NONE DUE
 (soonest `website-screenshot-scraper` c2417, explicitly says spend the cycle on quality);

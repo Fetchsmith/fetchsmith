@@ -31,6 +31,30 @@
           "tieredEventPriceUsd": 0.0025
         }
       }
+    },
+    "digest": {
+      "eventTitle": "Digest summary",
+      "eventDescription": "One-time, per-run charge for a markdown summary document (counts by portal/stage, top 20 notices by value) written to the key-value store under 'DIGEST'. Only charged when digestMode is on and at least one notice was delivered.",
+      "eventTieredPricingUsd": {
+        "FREE": {
+          "tieredEventPriceUsd": 0.05
+        },
+        "BRONZE": {
+          "tieredEventPriceUsd": 0.05
+        },
+        "SILVER": {
+          "tieredEventPriceUsd": 0.05
+        },
+        "GOLD": {
+          "tieredEventPriceUsd": 0.04
+        },
+        "PLATINUM": {
+          "tieredEventPriceUsd": 0.04
+        },
+        "DIAMOND": {
+          "tieredEventPriceUsd": 0.04
+        }
+      }
     }
   }
 }

@@ -219,6 +219,7 @@ const includeRawOcds = input.includeRawOcds === true;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
 const maxPagesScanned = Math.min(Math.max(Number(input.maxPagesScanned ?? 50), 1), 500);
 const watchLabel = String(input.watchLabel ?? '').trim();
+const digestMode = input.digestMode === true;
 
 // Convenience completion ping (same shape as grants-gov-scraper, cycle 421). A bad value is
 // warned and ignored rather than thrown -- this is a notification nicety, not core function.
@@ -679,22 +680,39 @@ const FREE_PER_RUN = 25;
 let pushed = 0;
 let freeGiven = 0;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
+// Lightweight digest source: only the handful of fields the markdown summary needs, not the
+// full normalized row -- keeps memory flat regardless of maxResults when digestMode is off
+// (the common case), since this array is never populated at all in that case.
+const digestRows = [];
+function recordForDigest(item) {
+    if (!digestMode) return;
+    digestRows.push({
+        source: item.sourceName ?? item.source ?? null,
+        stage: Array.isArray(item.stage) ? item.stage[0] ?? null : item.stage ?? null,
+        title: item.title ?? null,
+        buyerName: item.buyerName ?? null,
+        valueAmount: item.valueAmount ?? null,
+        valueCurrency: item.valueCurrency ?? null,
+        deadlineDate: item.deadlineDate ?? null,
+        noticeUrl: item.noticeUrl ?? null,
+    });
+}
 async function pushResult(item) {
     if (isPPE) {
         if (freeGiven < FREE_PER_RUN) {
             freeGiven += 1;
-            await Actor.pushData(item); pushed += 1;
+            await Actor.pushData(item); pushed += 1; recordForDigest(item);
             return pushed < maxResults;
         }
         const r = await Actor.charge({ eventName: 'result', count: 1 });
         // Both of these end the walk; only the charge limit is a cause the buyer set on the RUN
         // rather than in the input, so RUN_SUMMARY has to tell them apart.
         if (r.chargedCount === 0) { chargeLimitReached = true; return false; }
-        await Actor.pushData(item); pushed += 1;
+        await Actor.pushData(item); pushed += 1; recordForDigest(item);
         if (r.eventChargeLimitReached) chargeLimitReached = true;
         return !r.eventChargeLimitReached && pushed < maxResults;
     }
-    await Actor.pushData(item); pushed += 1;
+    await Actor.pushData(item); pushed += 1; recordForDigest(item);
     return pushed < maxResults;
 }
 
@@ -1285,8 +1303,67 @@ const runSummary = {
     // Non-empty means some (not all -- all would have failed the run pre-charge) entries in a list
     // filter were blank/whitespace-only and were ignored; the surviving values were still applied.
     blankFilterEntriesDropped: Object.keys(blankFilterEntriesDropped).length ? blankFilterEntriesDropped : null,
+    // true only when digestMode was requested AND at least one notice was delivered (the only
+    // case that writes the DIGEST key-value record and charges the one-off digest event below).
+    digestWritten: digestMode && pushed > 0,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
+
+// Digest: a markdown summary document for buyers who want something human-readable without
+// pulling the dataset themselves. Deliberately built from `digestRows` (collected above, not
+// re-derived here) rather than re-fetching the dataset -- pure post-processing over rows already
+// paid for, no extra upstream request. Only charged once the run has actually produced at least
+// one row, same "no data, no charge" shape as every other event in this fleet.
+if (digestMode && pushed > 0) {
+    const bySource = {};
+    const byStage = {};
+    for (const r of digestRows) {
+        const s = r.source ?? 'unknown';
+        const g = r.stage ?? 'unknown';
+        bySource[s] = (bySource[s] ?? 0) + 1;
+        byStage[g] = (byStage[g] ?? 0) + 1;
+    }
+    const fmtValue = (r) => (r.valueAmount != null
+        ? `${r.valueCurrency ?? 'GBP'} ${Number(r.valueAmount).toLocaleString('en-GB')}`
+        : 'not published');
+    const fmtDeadline = (r) => (r.deadlineDate ? String(r.deadlineDate).slice(0, 10) : 'n/a');
+    // Nulls sort last (no published value), not first -- Infinity would put them first instead.
+    const topNotices = [...digestRows]
+        .sort((a, b) => (b.valueAmount ?? -1) - (a.valueAmount ?? -1))
+        .slice(0, 20);
+    const lines = [
+        '# UK Public Sector Tenders — digest',
+        '',
+        `Generated ${new Date().toISOString()} — ${pushed.toLocaleString('en-US')} notice(s) delivered this run.`,
+        '',
+        '## By portal',
+        ...Object.entries(bySource).map(([k, v]) => `- ${k}: ${v}`),
+        '',
+        '## By stage',
+        ...Object.entries(byStage).map(([k, v]) => `- ${k}: ${v}`),
+        '',
+        `## Top ${topNotices.length} notice(s) by published contract value`,
+        ...topNotices.map((r) => `- **${r.title ?? 'Untitled notice'}** — ${r.buyerName ?? 'unknown buyer'} — `
+            + `${fmtValue(r)} — deadline ${fmtDeadline(r)} — ${r.noticeUrl ?? ''}`),
+    ];
+    await Actor.setValue('DIGEST', lines.join('\n'), { contentType: 'text/markdown' });
+    // The "digest" charge event was registered on 2026-10-29 with Apify's mandatory 2-week
+    // advance-notice window for a BRAND-NEW event on an already-priced Actor (see bin/apify-admin's
+    // cycle-2409 comment) -- it does not actually take effect until 2026-11-13. Charging for an
+    // event before its own startedAt throws, and that would happen AFTER every row this run is
+    // already pushed and charged for `result`, which must never turn an otherwise-successful run
+    // into a late FAILED one. So the charge is best-effort: before activation, the digest is
+    // delivered free (a harmless early-access window, same shape as the FREE_PER_RUN trial rows)
+    // and a warning is logged; after 2026-11-13 this charges normally every time.
+    if (isPPE) {
+        try {
+            await Actor.charge({ eventName: 'digest', count: 1 });
+        } catch (err) {
+            log.warning(`"digest" charge event not active yet (${err.message}) -- digest delivered free this run.`);
+        }
+    }
+    log.info(`Digest written to the key-value store (key "DIGEST"), summarizing ${digestRows.length} notice(s).`);
+}
 
 // A short run still SUCCEEDS (the rows it did get are real and already charged), so the status
 // message is the only place the Apify console itself shows the shortfall. There was no

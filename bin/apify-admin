@@ -169,13 +169,33 @@ elif cmd == "publish":
         # The API requires the pricingInfos array to start with the existing history
         # verbatim, plus exactly one new entry appended ("incorrect-pricing-modifier-prefix"
         # otherwise) - sending just a bare new entry also 400s separately ("createdAt is
-        # required"). Verified live cycle 179: a price cut applies immediately (startedAt=now);
-        # untested whether a price increase gets deferred/requires notice.
+        # required"). Verified live cycle 179: a price CUT on an already-priced Actor applies
+        # immediately (startedAt=now). Verified live cycle 2409: adding a brand-NEW event name
+        # to an Actor that already has at least one priced pricingInfos entry 403s with
+        # "cannot-modify-actor-pricing-with-immediate-effect" / "startedAt to at least 2 weeks
+        # from now" -- Apify requires advance notice before charging buyers for something new,
+        # even though the new event only fires when a buyer opts into a new input field that
+        # did not previously exist (so no existing buyer's bill changes on the start date; this
+        # protection appears to be unconditional on *any* new event key, not scoped to "would
+        # this change an existing buyer's charges"). A brand-new Actor's FIRST publish (no
+        # `existing` pricingInfos at all) is unaffected -- only an ADDITION to an
+        # already-priced Actor hits this. Schedule 15 days out (1-day buffer over the stated
+        # 14) whenever the new entry introduces an event key `existing_events` didn't have;
+        # a pure price change on already-existing events keeps the cycle-179 immediate behavior
+        # until a price INCREASE (as opposed to a cut) is actually tested against this same 403.
         import datetime
-        now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        now = now_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        existing_keys = set((existing_events or {}).keys())
+        new_keys = set(meta["events"].keys()) - existing_keys
+        started_at = (now_dt + datetime.timedelta(days=15)).strftime("%Y-%m-%dT%H:%M:%S.000Z") if (existing and new_keys) else now
         new_entry = {"pricingModel": "PAY_PER_EVENT", "pricingPerEvent": {"actorChargeEvents": meta["events"]},
-                     "createdAt": now, "startedAt": now, "apifyMarginPercentage": existing[-1]["apifyMarginPercentage"] if existing else 0.2}
+                     "createdAt": now, "startedAt": started_at, "apifyMarginPercentage": existing[-1]["apifyMarginPercentage"] if existing else 0.2}
         payload["pricingInfos"] = existing + [new_entry]
+        if started_at != now:
+            print(f"  NOTE: new event key(s) {sorted(new_keys)} scheduled to start {started_at} (2-week Apify notice rule) -- "
+                  f"Actor.charge() for {sorted(new_keys)} will fail/throw until then. Do not enable the buyer-facing input "
+                  f"for it in code until this date, or guard the charge call.")
     payload["isPublic"] = True
     r = httpx.put(f"{API}/acts/{a['id']}", headers=H, json=payload)
     print(r.status_code, json.dumps(r.json())[:600])
