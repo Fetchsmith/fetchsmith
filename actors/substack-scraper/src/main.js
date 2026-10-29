@@ -87,6 +87,45 @@ function attrFilterLabel() {
 const leaderboardTier = ['all', 'free', 'paid'].includes(input.leaderboardTier) ? input.leaderboardTier : 'all';
 const leaderboardOnly = input.leaderboardOnly === true;
 
+// Every discovery-scoped input is read ONLY inside discoverPublications(), which runs only under
+// the `if (discoverCategories.length)` walk below. With no discoverCategories they are accepted
+// and never honored: a buyer pairing publicationUrls/postUrls with requirePodcast:true got every
+// publication scraped unfiltered, a green "Succeeded" and a full dataset, with nothing anywhere --
+// not even a log line -- to say the filter never ran. (c2418 shipped requirePodcast/
+// requirePaymentsEnabled without this disclosure; bin/check-mode-scope-warning flagged both in
+// c2424.) The bare name and the buyer-facing prose live in ONE literal so neither has to be
+// parsed back out of the other, and so the names stay quoted in a declaration the warning
+// interpolates -- that is what keeps check-mode-scope-warning at 0 for this Actor.
+const discoveryOnlyIgnoredPairs = discoverCategories.length ? [] : [
+  ['discoverType', discoverType !== 'all', `discoverType="${discoverType}"`],
+  ['requirePodcast', requirePodcast, 'requirePodcast=true'],
+  ['requirePaymentsEnabled', requirePaymentsEnabled, 'requirePaymentsEnabled=true'],
+  ['leaderboardTier', leaderboardTier !== 'all', `leaderboardTier="${leaderboardTier}"`],
+].filter(([, active]) => active);
+const ignoredInputs = discoveryOnlyIgnoredPairs.map(([name]) => name);
+if (ignoredInputs.length) {
+  log.warning(
+    `${discoveryOnlyIgnoredPairs.map(([, , prose]) => prose).join(' and ')}`
+    + ` ${ignoredInputs.length === 1 ? 'is' : 'are'} IGNORED on this run: discovery filters only`
+    + ' apply to publications found through discoverCategories, and no discoverCategories were'
+    + ' provided, so every publicationUrls/postUrls target is scraped unfiltered. Set'
+    + ' discoverCategories to use them, or leave them off and read publicationType/'
+    + 'publicationHasPodcast/publicationPaymentsEnabled on your rows instead'
+    + ' (they need includePublicationInfo:true).',
+  );
+}
+// Short and bounded (4 names max), so unlike grants-gov-scraper this never needs a degraded
+// count-only form -- but the room still has to be reserved BEFORE the clamp, or the one run where
+// the dead filter is the only thing worth saying is the run that truncates the disclosure away.
+const STATUS_MESSAGE_MAX = 1000;
+const ignoredSuffix = ignoredInputs.length
+  ? ` NOTE — ${ignoredInputs.join(', ')} ${ignoredInputs.length === 1 ? 'was' : 'were'} IGNORED:`
+    + ' discovery filters need discoverCategories; see the log for what to do instead.'
+  : '';
+const withIgnored = (msg) => (ignoredSuffix
+  ? msg.slice(0, STATUS_MESSAGE_MAX - ignoredSuffix.length) + ignoredSuffix
+  : msg.slice(0, STATUS_MESSAGE_MAX));
+
 // Posts that come back without an article body are cheaper for us (no per-post detail request)
 // and are billed on their own, cheaper event — see the Pricing section of README.md.
 const POST_EVENT = includeBodyText || includeBodyHtml ? 'result' : 'post-metadata';
@@ -792,7 +831,7 @@ if (leaderboardOnly) {
                 ? noDiscoveryWhy()
                 : 'leaderboardOnly requires discoverCategories — publicationUrls/postUrls are not used in this mode';
     log.warning(`Nothing to do — ${why}.`);
-    await Actor.setStatusMessage(`No items returned — ${why}.`);
+    await Actor.setStatusMessage(withIgnored(`No items returned — ${why}.`));
   } else {
     let rowsLeft = false;
     for (const e of leaderboardEntries) {
@@ -813,10 +852,10 @@ if (leaderboardOnly) {
           : `stopped early: the run could not charge for further rows (pay-per-event budget reached) — ${leaderboardEntries.length - pushed} discovered row(s) were not returned`,
       );
     }
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(withIgnored(
       `Pushed ${pushed} leaderboard row(s) across ${categoriesScanned} categor${categoriesScanned === 1 ? 'y' : 'ies'}.`
       + (notes.length ? ` NOTE — this result is incomplete: ${notes.join('; ')}.` : ''),
-    );
+    ));
   }
   await Actor.exit();
 }
@@ -869,7 +908,7 @@ if (!publicationTargets.length && !postTargets.length) {
             ? noDiscoveryWhy()
             : 'no publicationUrls, postUrls or discoverCategories were provided';
   log.warning(`Nothing to do — ${why}.`);
-  await Actor.setStatusMessage(`No items returned — ${why}.`);
+  await Actor.setStatusMessage(withIgnored(`No items returned — ${why}.`));
 } else {
   // Targets the loops below never even attempted because keepGoing went false (maxResults cap or
   // the pay-per-event budget). Previously invisible: those publications land in none of
@@ -926,7 +965,7 @@ if (!publicationTargets.length && !postTargets.length) {
     if (filtered.length) causes.push(`every post matching ${filtered.join(', ')} was excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters — try widening those filters`);
     if (depthCapped.length) causes.push(`hit maxPostsPerPublication (${maxPostsPerPublication}) for: ${depthCapped.join(', ')} before finding a match — the cap counts posts scanned before filters, so raise it to search deeper`);
     if (empty.length) causes.push(`no posts were found for: ${empty.join(', ')} — the publication may be empty, private, or the URL/handle is wrong`);
-    await Actor.setStatusMessage(`No items returned — ${causes.join('; ')}.`);
+    await Actor.setStatusMessage(withIgnored(`No items returned — ${causes.join('; ')}.`));
   } else if (errored.length || empty.length || filtered.length || depthCapped.length || profileRedirected.length || timeBudgetNote || postsWithCommentsWithheld || truncationNote || discoveryNotes.length || pubInfoUnavailable.size) {
     const notes = [];
     if (timeBudgetNote) notes.push(timeBudgetNote);
@@ -955,7 +994,12 @@ if (!publicationTargets.length && !postTargets.length) {
         + ` — the cap counts posts scanned before filters, so raise it to search deeper`,
       );
     }
-    await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
+    await Actor.setStatusMessage(withIgnored(`Pushed ${pushed} items. ${notes.join('; ')}.`));
+  } else if (ignoredSuffix) {
+    // The easy branch to miss: a clean, complete run says nothing at all, which is exactly the
+    // run where a dead discovery filter is the ONLY thing worth saying. Without this the buyer
+    // sees a full dataset, a green "Succeeded" and an empty status message.
+    await Actor.setStatusMessage(withIgnored(`Pushed ${pushed} items.`));
   }
 }
 

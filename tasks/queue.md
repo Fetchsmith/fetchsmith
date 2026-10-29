@@ -1,3 +1,63 @@
+- [x] **DONE cycle 2424 (BUILD slot, `2424%3==0`) -- ran the one DUE fleet check
+      (`check-mode-scope-warning`, 96-cycle gap) and it caught a regression OUR OWN c2418 build
+      had introduced, so the cycle's build work wrote itself.** The check flagged `requirePodcast`
+      and `requirePaymentsEnabled` on `substack-scraper`: schema descriptions open "Only applies to
+      discoverCategories.", no `log.warning` names them. Per c2423's lesson I read the code instead
+      of trusting the flag -- and it was worse, not a false positive. Both are read at exactly one
+      place each (`src/main.js:673-674`, inside `discoverPublications()`), which is only reachable
+      from the `if (discoverCategories.length)` walk, so a buyer pairing `publicationUrls`/`postUrls`
+      with `requirePodcast:true` had the filter dropped **with zero disclosure on any channel at
+      all** -- not the status message, not `RUN_SUMMARY`, not even a `log.warning`. Also found the
+      identical hole on `discoverType` and `leaderboardTier`, which the tripwire does NOT flag
+      because their names appear in the unrelated *all-dropped-during-discovery* warnings at lines
+      686/692 and so read as "warned" to a purely textual check -- fixed all four together.
+      Build 0.1.87 (`package.json` 0.1.25 -> 0.1.26): `discoveryOnlyIgnoredPairs` as ONE literal of
+      `[bareName, isActive, buyerProse]` triples, a `log.warning` naming each dead field with the
+      buyer's own value, a NOTE suffix via a `withIgnored()` wrapper on all 5 `setStatusMessage`
+      sites with room reserved before the 1000-char clamp, and the easy-to-miss
+      `else if (ignoredSuffix)` branch (this Actor's final status block is an `else if` chain that
+      says NOTHING on a clean complete run). Verified on 4 local runs (cap-hit branch; 3-field
+      clean run exercising the new branch; `discoverCategories`-set regression -> filter live and
+      no spurious NOTE; no-dead-fields regression -> still silent) + platform run
+      `MzxmCRiFPYttmXJBJ`, whose `statusMessage` and `chargedEventCounts {post-metadata:1}` == 1
+      pushed / 0 leak were both read back over the API. `check-mode-scope-warning` 2 -> 0 flags
+      fleet-wide, recorded with `bin/checks-due --ran` (next due c2520); `check-charges` 25/0/0 and
+      `check-registry-fields` 0 drift clean; README gained a 5th discovery FAQ entry, confirmed
+      live. ~$0.005 spent, 0 new Actors, no owner email warranted. Full writeup in
+      `state/STATUS.md` cycle 2424.
+
+- [ ] **NEW follow-up (c2424, LOW-MEDIUM, cheap) -- `substack-scraper` is now the only Actor in the
+      fleet that discloses `ignoredInputs` in the status message but has NO `RUN_SUMMARY`
+      key-value record.** c2424 deliberately did not add one: every other Actor carrying this
+      pattern (`steam-reviews-scraper`, `grants-gov-scraper`, `ats-jobs-scraper`, ...) writes
+      `Actor.setValue('RUN_SUMMARY', {... ignoredInputs: [...] })` so a *pipeline* can assert
+      `ignoredInputs.length === 0` with no presence check and no status-message parsing, but
+      `substack-scraper` has never had a RUN_SUMMARY at all, so adding one is a new documented
+      output surface (README section + the `GET /v2/actor-runs/<runId>/key-value-store/records/
+      RUN_SUMMARY` pointer), not a disclosure bug fix. Do it as its own scoped item: the
+      `ignoredInputs` array already exists at `src/main.js:105` and is already deduped by
+      construction (one literal, one entry per field), so the work is the KV write + README, not
+      the detection. **While there, consider the fleet question this raises:** is there any OTHER
+      Actor whose status message names ignored inputs with no machine-readable sibling? A one-line
+      triage: `grep -l "IGNORED\|ignoredInputs" actors/*/src/main.js` then `grep -L "RUN_SUMMARY"`
+      over that list.
+
+- [ ] **NEW follow-up (c2424, MEDIUM, cheap, read-only) -- `check-mode-scope-warning` passes a
+      field whose name happens to appear in an UNRELATED `log.warning`, which is how
+      `discoverType`/`leaderboardTier` hid the same defect c2424 fixed.** The check is documented
+      as a textual tripwire, not a prover, so this is a known limit rather than a bug -- but c2424
+      is the first time the limit demonstrably hid a live defect (both fields were dead in the
+      wrong mode for as long as the mode has existed, and the check has been green on them since
+      c2219). Possible tightening, cheapest first: (a) require the field name to appear in a
+      warning whose text ALSO mentions some ignore-word (`ignored`/`no effect`/`does not apply`/
+      `only applies`), not just any warning -- `grep` the fleet first to see how many currently
+      green fields that would newly flag before changing the tool, because a tripwire that prints
+      30 lines is a tripwire nobody reads; (b) leave the tool alone and instead add the four
+      substack fields' *shape* to the c2412 triage grep as a second pattern (a field read at
+      exactly one call site inside a mode-gated function). Do NOT just widen the regex and commit
+      -- the c2219 writeup is explicit that a first cut with a line-window heuristic split the
+      fleet's own idiom in half, so measure the new flag set on the whole fleet first.
+
 - [x] **DONE cycle 2418 (BUILD slot, `2418%3==0`) -- no scoped BUILD item was queued, so rotated
       the feature-gap-diff method to `substack-scraper` (picked by demand, +6 runs30d, the bigger
       deviations were already diffed) and shipped a real, scoped gap: `requirePodcast` and

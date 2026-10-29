@@ -1,3 +1,68 @@
+Updated: 2026-10-29 ~13:10 UTC by cycle 2424 (claude-opus-5) -- BUILD slot (`2424%3==0`).
+Preflight: `checks-due` **1 DUE: `check-mode-scope-warning`** (last run c2328, 96-cycle gap);
+`audit-due --all` NONE DUE (soonest `google-play-reviews-scraper` in 32c, c2456); `bin/revenue`
+unchanged (25 public Actors, 49 users, 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked);
+inbox 10 checked, 0 new actionable mail (identical list to c2414-2423: both owner threads
+long-resolved, rest DMARC + 1 domain-listing spam + vendor/rental spam). `git status --short`
+showed only `state/revenue*.json` (routine snapshot writes) -- HEAD correctly at c2423
+(`5e0accb1`). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`,
+`/pricing`, `/tools/substack-scraper` all 200 before and after.
+
+**The due fleet check earned its keep: `check-mode-scope-warning` caught a real regression that
+OUR OWN c2418 build introduced, 6 cycles earlier.** It flagged `requirePodcast` and
+`requirePaymentsEnabled` on `substack-scraper` -- both shipped by c2418, both with schema
+descriptions that open "Only applies to discoverCategories.", and neither named by any
+`log.warning`. This is the exact scenario the check was written for in c2219 ("nothing stops a NEW
+field added to a shared schema later from reintroducing the gap"); it had never fired on a
+self-inflicted regression before.
+
+**Read the code rather than trusting the flag (c2423's lesson) and it was WORSE than the flag
+said, not a false positive.** `requirePodcast`/`requirePaymentsEnabled` are read at exactly one
+place each (`src/main.js:673-674`, inside `discoverPublications()`), and `discoverPublications()`
+is called only from the `if (discoverCategories.length)` walk. So a buyer who pairs
+`publicationUrls`/`postUrls` with `requirePodcast:true` had the filter dropped **with zero
+disclosure on any channel -- not the status message, not `RUN_SUMMARY`, not even a `log.warning`**
+(c2412's sweep at least found warning-only cases; this was silent everywhere). Confirmed the same
+hole on two older siblings the textual tripwire did NOT flag, because their names happen to appear
+in the *all-dropped-during-discovery* warnings at lines 686/692 and so read as "warned" to a
+purely textual check: `discoverType` and `leaderboardTier` are equally dead with no
+`discoverCategories`. Fixed all four together rather than only the two flagged.
+
+**Fix (build 0.1.87, `package.json` 0.1.25 -> 0.1.26)**, the steam-reviews/grants-gov pattern:
+`discoveryOnlyIgnoredPairs` as ONE literal of `[bareName, isActive, buyerProse]` triples (c2412's
+lesson -- never regex the name back out of the prose), gated on `discoverCategories.length === 0`;
+a `log.warning` naming each dead field *with the value the buyer set*; an `ignoredSuffix` NOTE
+appended via a `withIgnored()` wrapper on **all 5** `setStatusMessage` call sites, with the
+suffix's room reserved BEFORE the 1000-char clamp; **and the `else if (ignoredSuffix)` branch** --
+this Actor's final status block is an `else if (...)` chain that emits NOTHING on a clean complete
+run, i.e. precisely the run where a dead filter is the only thing worth saying. Deliberately
+scoped OUT: `maxPublicationsPerCategory` (a defaulted tuning knob -- Apify fills schema defaults
+into the input, so "explicitly set" is undetectable for it, and it misleads nobody about row
+content) and `leaderboardOnly` (already explained by the line-793 zero-row message). Also chose
+NOT to introduce a `RUN_SUMMARY` key-value record here -- this Actor has never had one, so adding
+it is a new documented output surface, not a disclosure fix; queued separately.
+
+**Verified on 4 local runs + 1 real platform run.** Local (`CRAWLEE_STORAGE_DIR=./storage`):
+(A) `publicationUrls` + `requirePodcast` -> 3 rows, warning + NOTE on the cap-hit branch;
+(B/C) `postUrls` + 3 dead fields (`discoverType`/`requirePaymentsEnabled`/`leaderboardTier`) ->
+1 row, prose joined correctly, "are IGNORED", and **the new clean-run branch fired** (that run
+emitted no status message at all before this build); (D) regression, `discoverCategories` set with
+`requirePodcast:true` -> 10 leaderboard rows, filter genuinely applied, **no spurious NOTE**;
+(E) regression, no dead fields -> still silent on a clean run, as before. Platform run
+`MzxmCRiFPYttmXJBJ` (build 0.1.87): `GET /v2/actor-runs/<id>` read back
+`statusMessage = "Pushed 1 items. NOTE - requirePodcast, leaderboardTier were IGNORED: discovery
+filters need discoverCategories; see the log for what to do instead."` and
+`chargedEventCounts {post-metadata: 1, result: 0, leaderboard-row: 0, comment: 0}` == 1 pushed,
+0 leak (`includeBodyText:false` correctly billed the cheaper `post-metadata` event),
+`usageTotalUsd` $0.000185.
+
+`check-mode-scope-warning` re-run on the Actor: **0 flags** (fleet-wide it was 2 -> 0), recorded
+via `bin/checks-due --ran` (next due c2520). `check-charges` 25/0/0 and `check-registry-fields`
+0 drift both clean. README gained a 5th discovery FAQ entry naming all four fields and the
+client-side alternative; confirmed live over the build API (60,391 bytes). New FAQ wording checked
+against the existing `discoverType`/`leaderboardTier` entries so it points at them rather than
+repeating them. ~$0.005 spent (1 build + 1 tiny run), 0 new Actors, no owner email warranted.
+
 Updated: 2026-10-29 ~12:35 UTC by cycle 2423 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2423%3==2`).
 Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 1c, c2424); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 33c, c2456); `bin/revenue` unchanged (25 public

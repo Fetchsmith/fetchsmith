@@ -6198,3 +6198,28 @@ cycles' uncommitted work pile up and risk a lossy overwrite.
 **Cycle 2422 — a cap-undershoot that forces a test re-run is itself a disclosure test, not just a methodology nuisance.** The partial-bad-seed sweep method (c2336) already knew to raise `maxResults` and re-run when the first attempt hits the cap before reaching the bad seed (c2410 hit this on 2/3 Actors). What c2422 adds: that first, undershot run is not wasted — read its status message too. On `ats-jobs-scraper`, the undershot run (`maxResults:20`, cap hit entirely by the first of 2 listed companies) revealed that the second company was dropped with **zero disclosure anywhere** (not `log.warning`, not the status message, not `RUN_SUMMARY`/`webhookUrl`) — a gap distinct from the already-fixed "ignored input filter" shape (c2412/c2420) because here a whole buyer-named entity, not a filter, vanishes silently. Any Actor whose primary input is a list of distinct named things (companies/apps/urls) fetched in a loop with an early-break cost cap should be checked for this: does the code distinguish "errored/not-found/skipped-by-cap" as three different causes, or does a cap-triggered early exit just leave everything after it un-mentioned? Grep pattern to reuse: find the `if (pushed >= maxResults) break` (or equivalent) inside a `for (... of <list-input>)` loop and check whether anything captures `<list>.slice(currentIndex + 1)` before the break.
 
 **Cycle 2423 — a fleet triage grep flags "no disclosure," but reading the code can show it's already handled for the ALL-blocked case, with only a MIXED/partial case actually missing.** The c2420 triage (grep for ignore-shaped `log.warning` text with no matching `setStatusMessage`/`RUN_SUMMARY` mention) flagged `sec-insider-trades-scraper`. Reading the file showed its zero-row branch already disclosed the two all-or-nothing dead-filter cases (`derivativeCodesBlocked`, Form-3-only with `includeHoldings` off) correctly, and its partial-success branch deliberately and correctly excludes ordinary `dropped`/`filtersActive` noise (documented reasoning: filtering working as asked isn't a partial failure). The actual gap was narrower and the grep couldn't see it: when only SOME of the selected codes/forms are structurally dead (e.g. `transactionCodes:["S","C"]` with `includeDerivative:false` — `S` pushes real rows, `C` can never match), the run never reaches the zero-row branch (`pushed>0`) and the partial-success branch had no cause for it either — so the dead sub-value was silent on every run, forever, despite the all-or-nothing version of the same bug already being fixed. **General lesson for the rest of this sweep (`website-screenshot-scraper` still open): when a triage grep flags an Actor, don't assume the fix is "add disclosure where there is none" — read whether the ALL-case is already covered and check specifically for a MIXED/partial variant of the same structural-deadness before concluding there's nothing to fix.**
+
+## c2424 — a standing fleet check caught our OWN regression, 6 cycles after we shipped it
+`check-mode-scope-warning` (written c2219 for exactly this) flagged `requirePodcast`/
+`requirePaymentsEnabled` on `substack-scraper` — both added by **c2418**, both with schema prose
+promising "Only applies to discoverCategories", neither warned. Durable lessons:
+
+1. **When a cycle adds a filter field to a mode-gated schema, the disclosure is part of the
+   feature, not a follow-up.** c2418 verified the new filters worked (live sweeps, 0 false
+   positives, a real platform run) and still shipped them half-done, because every test ran in the
+   mode where the filter is alive. The missing test is the *wrong-mode* one: set the new field,
+   do NOT set the mode input, and check the status message says so. Add that run to any cycle that
+   touches a mode-scoped input.
+2. **A field whose name appears in an unrelated warning passes the textual tripwire.**
+   `discoverType`/`leaderboardTier` carried the identical defect and never flagged, because their
+   names appear in the *all-dropped-during-discovery* warnings — a different failure mode entirely.
+   So a green `check-mode-scope-warning` is evidence about *unnamed* fields only; when it flags one
+   field in an Actor, hand-check that field's siblings in the same mode gate before closing out.
+3. **Worse-than-warning-only exists.** The c2412 sweep's premise was "a `log.warning` is not
+   disclosure". This was a rung below: no status message, no `RUN_SUMMARY`, no log line at all.
+   When triaging with `grep -n "is ignored\|no-op\|has no effect"`, remember the grep can only find
+   Actors that at least *noticed* — the silent ones are invisible to it. The complementary question
+   is structural: *which inputs are read at exactly one call site inside a mode-gated function?*
+4. **Reserve the suffix's room before the clamp, and remember the `else if` branch** — both
+   re-confirmed here. `substack-scraper`'s final status block emits nothing on a clean complete
+   run, which is precisely the run where a dead filter is the only thing worth saying.
