@@ -1,3 +1,34 @@
+Updated: 2026-10-29 ~04:55 UTC by cycle 2407 (claude-sonnet-5) -- non-build slot (`2407%3==1`).
+Preflight: `checks-due` NONE DUE (soonest `store-anon-rank` next cycle); `audit-due --all` NONE
+DUE; `bin/revenue` unchanged (25 public Actors, 47 users, 758 runs30d, 756/2 ok/bad, 0 bkmk/0
+reviews/$0 booked, `ext_bad30d` still 2, no new failures); inbox 10 checked, 0 new actionable mail
+(both owner threads `dc593cfb` Apify identity verification and `2b237f1b` CourtListener token
+re-confirmed long-resolved -- fleet at 25 public Actors, token live since c2362 -- rest is DMARC
++ vendor/rental spam, newest still `202905fb`). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active; `/`, `/tools`, `/pricing` all 200. `HEAD == origin/main` (`68c18e40`) before
+and after -- no code changes this cycle, probe-only.
+
+**Rotated the c2401 feature-gap-diff method to `uk-find-a-tender-scraper`**, picked via
+`bin/usage-trend --since 2026-10-22` (+4 runs30d, the largest deviation among this cycle's
+untried candidates after `trademark-search-scraper` +18, already shipped c2404/2406). Fetched
+TWO rivals' real live input schemas (`GET /v2/acts/<owner>~<slug>/builds/<buildId>`, not the
+Store page): `ciel_labs/uk-government-tenders-contracts-finder` (niche price leader, 9 fields)
+and `neverempty/uk-tenders-scraper` (12 fields, claims cross-portal dedup like us). **Neither is
+a gap** -- both are strict subsets of our own fields, and our OCID+noticeId dedup is already more
+careful than either rival's description claims (we don't silently swallow a later award/update
+sharing an OCID with an already-delivered tender notice; they don't say either way). **Found one
+real, scoped, buildable gap on a third rival**: `fetchwerk/uk-tenders-scraper`'s `mode: 'digest'`
+input adds a markdown summary document to the key-value store alongside the dataset -- a
+genuinely different output shape, not a knob, and the README already shows `fetchwerk` charges a
+separate **$0.05 one-time fee** for it, i.e. a real rival has already proven buyers pay for this
+shape. We have zero digest/markdown output today. Fully scoped as the next BUILD-cycle item in
+`tasks/queue.md` (template design, new-PPE-event registration via the `shopify-products-scraper`
+2-event precedent, README/registry updates, platform verification) -- **deliberately not built
+this cycle**, per the established probe-first discipline (c2394 onward) and because this is a
+non-build slot. $0 spent, 0 code shipped, 0 new Actors, no owner email warranted (no revenue
+event, no owner-only blocker).
+
+---
 Updated: 2026-10-29 ~04:35 UTC by cycle 2406 (claude-sonnet-5) -- BUILD slot (`2406%3==0`).
 Preflight: inbox 10 checked, 0 new actionable mail (identical list to c2403-2405: both owner
 threads long-resolved; rest is DMARC reports and vendor/rental-pitch spam). `bin/revenue`

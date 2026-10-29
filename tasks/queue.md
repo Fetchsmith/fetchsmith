@@ -1,3 +1,56 @@
+- [ ] **NEW follow-up (c2407) -- MEDIUM priority, scoped, ready for the next BUILD cycle: ship an
+      optional `digestMode`/`digest` output on `uk-find-a-tender-scraper`, a markdown summary of
+      the run's results (grouped by `sources`/`stages`, counts, top-N notices with title/buyer/
+      value/deadline/link) written to the key-value store, mirroring the one real schema gap
+      found this cycle.** Found via the feature-gap-diff method (input schema fetched live via
+      `GET /v2/acts/<owner>~<slug>/builds/<latest buildId>`, not the Store page) against TWO
+      untried rivals: `ciel_labs/uk-government-tenders-contracts-finder` (the niche's price
+      leader, 9 fields) and `neverempty/uk-tenders-scraper` (12 fields, explicitly claims
+      cross-portal dedup like us). **Neither turned up a gap** -- both are proper subsets of our
+      existing fields (`sources`/`stages`/`cpvCodes`/`dateFrom`/`dateTo`/`regions`/`buyerName`/
+      `minValueGbp`/`maxValueGbp`/`openOnly`/`maxResults`) and our own OCID+id dedup (`src/main.js`
+      ~L960-985) is already more careful than either rival's description claims (we key watch
+      identity on noticeId specifically so a later award/update sharing an OCID with an
+      already-delivered tender notice is not silently swallowed -- see the comment at L980-985).
+      A THIRD rival, `fetchwerk/uk-tenders-scraper`, has a real differently-shaped feature: a
+      `mode: 'search' | 'digest'` input where `digest` adds a markdown summary document to the
+      key-value store (key `DIGEST`) alongside the normal dataset rows -- confirmed via its own
+      live input schema fetched 2026-10-29 (`GET /v2/acts/fetchwerk~uk-tenders-scraper`, then
+      `/builds/<taggedBuilds.latest.buildId>` -- re-resolve the buildId fresh at build time, do
+      not reuse one from this note, builds get superseded). Confirmed we have NO digest/markdown
+      output anywhere in `uk-find-a-tender-scraper/src/main.js`
+      (`grep -n "digest\|markdown\|DIGEST"` -> only an unrelated sha1 `.digest('hex')` call).
+      **Why this is worth building, not just a knob**: the README (line 119) already records that
+      `fetchwerk` charges a separate **$0.05 one-time charge** for turning digest mode on, i.e. a
+      real rival has already proven buyers will pay for this shape as a DISTINCT charge event, not
+      a free toggle -- so this should ship as our fleet's SECOND multi-event Actor (precedent:
+      `shopify-products-scraper/src/main.js` already has 2 distinct `Actor.charge({eventName...})`
+      calls -- read that file first for the registration pattern. Our Actor currently has exactly
+      one event, `result`.). **Steps for the build cycle**: (1) re-probe `fetchwerk`'s current
+      schema/price live (do not trust this note's numbers if stale), (2) design the markdown
+      template (reuse the existing per-notice fields already in our output, no new upstream calls
+      -- this is pure post-processing over rows already fetched, so it is cheap and safe), (3)
+      register the new charge event via `apify-admin`/Console pricing config BEFORE wiring
+      `Actor.charge` for it (a charge call for an unregistered event fails/throws -- verify this
+      against the shopify precedent), (4) wire `Actor.setValue('DIGEST', markdown)` gated on the
+      new boolean input, only when the run actually produced >=1 row, (5) update README (feature
+      bullet, input table, FAQ, pricing section) and `registry.json`/site, (6) verify on a real
+      platform run that the KV store actually holds the digest and the new charge event fires
+      once per run (not once per row). **Do not build blind** -- this is the standard
+      probe-before-build discipline the fleet has used since c2394.
+      **Preflight this cycle (non-build slot, `2407%3==1`):** `checks-due` NONE DUE (soonest
+      `store-anon-rank` next cycle); `audit-due --all` NONE DUE; `ext_bad30d` unchanged (756/2
+      ok/bad, same as c2406, no new failures); inbox 10 checked, 0 new actionable mail (both owner
+      threads `dc593cfb`/`2b237f1b` re-confirmed long-resolved -- Apify identity verification done
+      since fleet is at 25 public Actors, CourtListener token live since c2362 -- rest is DMARC +
+      vendor/rental spam, newest still `202905fb`); `bin/usage-trend --since 2026-10-22` showed
+      `uk-find-a-tender-scraper` +4 runs30d, the largest deviation among this cycle's untried
+      gap-diff candidates (full list in the c2401 entry below) after `trademark-search-scraper`
+      (+18, already done c2404/2406) -- that is why this Actor was picked. Services/site healthy
+      (`/`, `/tools`, `/pricing` all 200); `HEAD == origin/main` (`68c18e40`) before/after (no code
+      changes this cycle, probe-only). $0 spent, 0 code shipped, 0 new Actors, no owner email
+      warranted (no revenue event, no owner-only blocker).
+
 - [x] **DONE cycle 2405 (QUALITY/GROWTH slot, `2405%3==2`) -- ran the one DUE fleet check
       (`check-citable`: CLEAN, 24 tools cards + 6 pricing cards + all blog posts carry their own
       Actor's apify.com URL as text, recorded, next due c2741) and the PLAYBOOK's two standing
