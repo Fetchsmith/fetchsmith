@@ -204,10 +204,16 @@ const DERIVATIVE_ONLY_CODES = ['C', 'X', 'O', 'E', 'H', 'K'];
 // off -- the zero-row remedy below must not blame maxFilingsPerIssuer/sinceDate in that case,
 // since no amount of widening either one can ever produce a match (verified live, cycle 1637).
 let derivativeCodesBlocked = false;
+// Set when SOME but not all selected codes are dead (cycle 2423): that run still pushes rows
+// from the live codes, so it never reaches the zero-row branch above and this would otherwise
+// only ever surface in the log -- a buyer reading a non-empty, correctly-filtered dataset has no
+// reason to suspect one of their codes silently contributed nothing on every run, forever.
+let mixedBlockedCodes = [];
 if (!includeDerivative && transactionCodes.length) {
   const blocked = transactionCodes.filter((c) => DERIVATIVE_ONLY_CODES.includes(c));
   if (blocked.length) {
     derivativeCodesBlocked = blocked.length === transactionCodes.length;
+    if (!derivativeCodesBlocked) mixedBlockedCodes = blocked;
     log.warning(`includeDerivative is off but transactionCodes selects ${blocked.join('/')}, which SEC `
       + 'only reports on derivative rows: those codes cannot match anything while derivative rows are '
       + 'excluded. Turn includeDerivative on, or drop those codes.');
@@ -413,7 +419,14 @@ function rowsFromXml(xml, ctx) {
 // Form 3 is a holdings snapshot: it never contains a transaction element, so asking for it
 // without includeHoldings can only ever return zero rows. Say so up front rather than
 // letting the buyer read "no transaction rows" once per filing and assume the feed is empty.
-if (formTypes.some((f) => baseForm(f) === '3') && !includeHoldings) {
+// `form3Mixed` (cycle 2423) is true only when formTypes also includes a non-"3" form: a
+// formTypes:["3"]-only request is already forced through the zero-row branch below (nothing
+// else could ever push a row), so only the MIXED case needs its own disclosure here -- that's
+// the one where the other form(s) push real rows and a buyer has no reason to open the log to
+// learn that Form 3 alone silently contributed none of them, on every run, forever.
+const form3Requested = formTypes.some((f) => baseForm(f) === '3');
+const form3Mixed = form3Requested && !includeHoldings && !formTypes.every((f) => baseForm(f) === '3');
+if (form3Requested && !includeHoldings) {
   log.warning('formTypes includes "3" but includeHoldings is off: Form 3 filings report holdings '
     + 'only (no transactions), so they will yield 0 rows. Enable includeHoldings to get those positions.');
 }
@@ -668,6 +681,20 @@ if (!pushed) {
   if (holdingsOnlyFilings && !includeHoldings) {
     causes.push(`${holdingsOnlyFilings} selected filing(s) carried holdings only (no transactions) and yielded no rows. `
       + 'Enable includeHoldings to return those positions.');
+  }
+  // These two (cycle 2423) are a different class from the deliberately-excluded dropped/
+  // filtersActive case above: they are not "filters removed some rows this run", they are
+  // "this specific code/form can never contribute a row under the current settings, on any
+  // run" -- the same structural-deadness the zero-row branch already treats specially via
+  // derivativeCodesBlocked/the formTypes==="3" check, just surfaced here for the mixed case
+  // where enough OTHER codes/forms still pushed rows to avoid ever reaching that branch.
+  if (mixedBlockedCodes.length) {
+    causes.push(`transactionCode(s) ${mixedBlockedCodes.join('/')} you asked for can never match: SEC reports them `
+      + 'only on derivative rows, and includeDerivative is off. Turn includeDerivative on, or drop those codes.');
+  }
+  if (form3Mixed) {
+    causes.push('form "3" in your formTypes can never match: it reports holdings only (no transactions), and '
+      + 'includeHoldings is off. Enable includeHoldings to include those positions.');
   }
   if (causes.length) {
     const partialMessage = `${pushed} row(s) delivered, but: ${causes.join(' Also, ')}`;

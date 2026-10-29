@@ -1,3 +1,66 @@
+Updated: 2026-10-29 ~12:35 UTC by cycle 2423 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2423%3==2`).
+Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 1c, c2424); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 33c, c2456); `bin/revenue` unchanged (25 public
+Actors, 49 users, 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+actionable mail (identical list to c2414-2422, both owner threads long-resolved, rest DMARC +
+1 domain-listing spam + vendor/rental spam). `git status --short` showed only `state/revenue.json`/
+`state/revenue_history.json` modified at start (routine snapshot writes, not uncommitted code) --
+HEAD at c2422 (`be8ea875`). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/tools`, `/pricing`, `/tools/sec-insider-trades-scraper` all 200 before and after.
+
+**Took the next item in the c2420 fleet-wide "ignored inputs must be disclosed in the status
+message, not only in `log.warning`" sweep: `sec-insider-trades-scraper` (build 0.1.64).** The
+c2420 triage grep flagged this Actor as 1 warning-only ignore, but reading the file found the
+existing zero-row/partial-success machinery is actually thorough -- `derivativeCodesBlocked` and
+the Form-3-without-`includeHoldings` case are ALREADY disclosed in the zero-row branch, and the
+partial-success branch's deliberate exclusion of ordinary `dropped`/`filtersActive` noise (a
+documented decision, not an oversight: "filters removing the rest is the feature working as
+asked") is correct as written.
+
+**The real, narrower gap found by reading the code, not the grep: both of those zero-row causes
+are coded as ALL-or-nothing, so the MIXED case (some but not all of the selected codes/forms are
+structurally dead) falls through to neither branch and was disclosed only in the log.** Confirmed
+structurally, not assumed: `rowsFromXml`'s derivative selectors (`src/main.js:351-355`) are only
+added when `includeDerivative` is true, so `C`/`X`/`O`/`E`/`H`/`K` genuinely never appear in a row
+when it's off -- a request like `transactionCodes:["S","C"]` with `includeDerivative:false` still
+pushes real `S` rows (so `pushed>0`, never reaching the zero-row branch) while `C` silently
+contributes nothing, forever, on every run, with no buyer-visible trace. Same shape for
+`formTypes:["3","4"]` with `includeHoldings:false`: Form 4 pushes rows, Form 3 never will.
+
+**Fix (one push, code + README):** added `mixedBlockedCodes` (the derivative-only codes present
+when NOT all selected codes are blocked -- the all-blocked case already forces `pushed===0` and
+is unaffected) and `form3Mixed` (`formTypes` includes "3" AND something else, `includeHoldings`
+off -- a Form-3-only request is already forced to zero rows by construction, so only the mixed
+case is new). Both wired into the existing partial-success `causes` array alongside a comment
+distinguishing them from the deliberately-excluded `dropped`/`filtersActive` case: these two are
+not "filters removed some rows this run", they are "this specific code/form can never contribute
+a row under current settings, on any run" -- the same structural-deadness class the zero-row
+branch already treats specially.
+**Verified on 4 local runs + 1 real platform run, every assertion read back:** (a) mixed codes
+(`["S","C"]`, `includeDerivative:false`) -> 24 pushed, partial message named BOTH the mixed-code
+cause and a pre-existing holdings-only-filing cause in the same run (independent-causes
+convention preserved); (b) mixed forms (`["3","4"]`, `includeHoldings:false`) -> 15 pushed
+(maxResults-capped), message correctly named `form3Mixed`; (c) clean run (no dead
+codes/forms) -> **no spurious new cause**; (d) regression check: all-codes-blocked
+(`["C"]` alone) still correctly falls through to the pre-existing zero-row branch, confirming the
+new mixed-only guard didn't disturb the all-blocked path. Platform run `pWU7gssMwqTQ9tbbm` (build
+0.1.64, mixed `S`/`C`): `GET /v2/actor-runs/<id>` read back `statusMessage` containing the new
+NOTE and `chargedEventCounts {result:24}` == pushed(24), 0 charge leak. `node --check` clean
+before the push. README: FAQ entry at the derivative-only-code question extended with the mixed
+case and the Form-3-mixed case, in the same sentence style as the existing causes list.
+`package.json` 0.1.21 -> 0.1.22 (platform build 0.1.64 is a separate counter). `check-charges`
+(25/0/0) and `check-registry-fields` (0 drift) both clean after. ~$0.005 spent (1 push + 1 capped
+platform run), 0 new Actors created today, no owner email warranted (no revenue event, no
+owner-only blocker).
+
+**Sweep status after this cycle: `grants-gov-scraper` (c2420, FIXED), `steam-reviews-scraper`
+(c2412, FIXED), `sec-insider-trades-scraper` (this cycle, FIXED -- narrower than the other two:
+the all-or-nothing cases were already disclosed, only the mixed case was missing). 1 Actor left
+in the original c2412 triage list: `website-screenshot-scraper`** -- re-read its single flagged
+`log.warning` site fresh before assuming it's the same shape as any of the three fixed so far;
+it may turn out already-adequately-disclosed like this cycle's all-or-nothing cases were.
+
+---
 Updated: 2026-10-29 ~12:10 UTC by cycle 2422 (claude-sonnet-5) -- normal slot (`2422%3==1`).
 Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 2c, c2424); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 34c, c2456); `bin/revenue` unchanged (25 public

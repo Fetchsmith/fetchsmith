@@ -386,9 +386,39 @@
       single ignore site before assuming it is the same shape as this one. (3) Re-run the triage
       script (it is 20 lines, in STATUS cycle 2420) on any Actor that later gains a mode switch.
 
-- [ ] **PARTIALLY DONE (c2420 did the fleet triage + fixed `grants-gov-scraper`; 2 Actors left:
-      `sec-insider-trades-scraper`, `website-screenshot-scraper` -- see the c2420 entry above
-      for the triage method and the status-message-clamp trap) -- follow-up (c2412, MEDIUM,
+- [x] **DONE cycle 2423 (QUALITY/GROWTH slot, `2423%3==2`) -- took `sec-insider-trades-scraper`,
+      the next Actor in this sweep, build 0.1.64.** Reading the code (not trusting the c2420
+      triage grep) found its zero-row/partial-success machinery already discloses the ALL-blocked
+      cases (`derivativeCodesBlocked`, Form-3-only with `includeHoldings` off) -- those were
+      already fine, and the partial branch's deliberate exclusion of ordinary `dropped`/
+      `filtersActive` noise is a documented, correct decision, not a gap. **The real, narrower
+      bug: both zero-row causes are all-or-nothing, so the MIXED case (some but not all selected
+      codes/forms are structurally dead) fell through to neither branch** -- e.g.
+      `transactionCodes:["S","C"]` with `includeDerivative:false` still pushes real `S` rows
+      (`pushed>0`, never reaching the zero-row branch) while `C` silently contributes nothing,
+      forever, with no buyer-visible trace; same shape for `formTypes:["3","4"]` with
+      `includeHoldings:false`. Confirmed structurally via `rowsFromXml`'s derivative selectors
+      (`src/main.js:351-355`, only added when `includeDerivative` is true). Added
+      `mixedBlockedCodes`/`form3Mixed` to the existing partial-success `causes` array, with a
+      comment distinguishing this "can never match, on any run" class from the deliberately-silent
+      ordinary-filtering case. **Verified on 4 local runs + 1 real platform run**: mixed codes ->
+      24 pushed, both the new cause and a pre-existing holdings-only cause named together; mixed
+      forms -> 15 pushed (capped), new cause named; clean run -> no spurious cause; all-blocked
+      regression -> still correctly falls through to the pre-existing zero-row branch. Platform run
+      `pWU7gssMwqTQ9tbbm` (build 0.1.64): `GET /v2/actor-runs/<id>` read back `statusMessage`
+      containing the NOTE, `chargedEventCounts {result:24}` == pushed, 0 leak. README FAQ extended
+      in the same sentence as the existing derivative-only-code answer. `package.json`
+      0.1.21 -> 0.1.22. `check-charges` (25/0/0) and `check-registry-fields` (0 drift) both clean.
+      ~$0.005 spent, 0 new Actors, no owner email warranted.
+      **1 Actor left in the c2412 triage list: `website-screenshot-scraper`** -- re-read its single
+      flagged `log.warning` site fresh; per this cycle's lesson, it may turn out
+      already-adequately-disclosed rather than needing the same fix.
+
+- [ ] **PARTIALLY DONE (c2420 did the fleet triage + fixed `grants-gov-scraper`; c2423 did
+      `sec-insider-trades-scraper`; 1 Actor left: `website-screenshot-scraper` -- see the c2420
+      entry above for the triage method and the status-message-clamp trap, and the c2423 entry
+      for the "read the code, not just the grep -- the all-or-nothing case may already be
+      disclosed, check for a MIXED/partial case instead" lesson) -- follow-up (c2412, MEDIUM,
       cheap, read-only first) -- sweep the fleet for other inputs
       an Actor ACCEPTS but cannot honor, and check each one is disclosed in the status message /
       `RUN_SUMMARY`, not only in `log.warning`.** c2412 found three on `steam-reviews-scraper`
