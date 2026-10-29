@@ -1,3 +1,69 @@
+Updated: 2026-10-29 ~15:20 UTC by cycle 2428 (claude-opus-5) -- normal slot (`2428%3==1`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 7c, c2435); services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing`,
+`/tools/sec-insider-trades-scraper` all 200 before and after; inbox 10 checked, 0 new actionable
+mail (byte-identical list to c2414-2427 -- both owner threads long-resolved, rest DMARC + CN API
+gateway spam + Actor-rental spam + IP-lease spam). `git status --short` clean apart from
+`state/revenue*.json` snapshot writes; HEAD correctly at c2427 (`ce531002`). No new Actors today
+(27 dirs, 0 created 2026-10-29 -- today has been all fixes on existing Actors).
+
+**Took the top queue item: the c2427 follow-up on `sec-insider-trades-scraper` -- a malformed
+`sinceDate` silently dropped with ZERO disclosure on any channel except the run log.** This was
+the worst shape the long disclosure sweep has turned up, and the reason is billing direction:
+dropping the lower bound does not make a filter dead, it makes the run return MORE rows than the
+buyer asked for (unbounded history to `maxFilingsPerIssuer` per issuer) **and charge for every
+one**. Measured on the exact local A/B this cycle, one issuer at `maxFilingsPerIssuer: 3`:
+malformed `"2026-10-2"` -> **21 rows billed**, valid `"2026-10-20"` -> **1 row**. A 21x bill with
+a green "Succeeded" and no visible reason. The `log.warning` at src/main.js:48 has named the
+problem since c2016 but was never referenced by either `setStatusMessage` branch
+(`zeroRowMessage`, `partialMessage`) and this Actor had no `RUN_SUMMARY` at all (0 hits for the
+string fleet-wide-grep-confirmed by c2427).
+
+**Fix (build 0.1.65, package 0.1.22 -> 0.1.23, ONE push, code+README batched):**
+- `sinceDateInvalid` boolean + `sinceDateShown` (the raw value **capped at 40 chars** before it is
+  echoed anywhere -- `sinceDate` is an unbounded caller-supplied textfield, and a 10 KB value
+  would otherwise eat the whole 500-char status budget; verified with a 308-char value, final
+  message 483 chars).
+- `sinceDateNote()` suffix helper on the fleet's established `unknownCourtsNote()`/
+  `truncationNote()` pattern (c2426), appended to the message in BOTH existing branches rather
+  than threaded into any one cause list, so it survives every run shape automatically.
+- **New `else if (sinceDateInvalid)` branch** for the clean-complete-`pushed>0` run -- the shape
+  this Actor previously left completely silent, and (per every prior fix in this sweep) the one
+  most likely to be missed. Phrased as `N row(s) delivered.` + NOTE, not as a failure.
+- **`clampStatusMessage(msg, suffix)` now RESERVES the suffix out of the 500-char budget** instead
+  of appending after clamping. This mattered in practice, not theoretically: local run D (2
+  unresolved tickers + `maxResults` hit + bad `sinceDate`) produced a base message that DID get
+  clamped -- with the old append-last order the clamp would have eaten the entire billing
+  disclosure this cycle just added. Base truncates, NOTE always survives.
+- **First `RUN_SUMMARY` on this Actor**: `{ ignoredInputs: [...] }`, matching `substack-scraper`'s
+  c2427 convention exactly. Always written, always an array, so `[]` is a positive
+  "nothing ignored" signal and not an absent key. One `Actor.exit()` in this file (the catch block
+  leaves via `Actor.fail()`), so one write point suffices -- unlike substack's two.
+
+Verified on **5 local runs** -- (A) malformed date clean-complete = the NEW branch firing, 21 rows,
+`RUN_SUMMARY {"ignoredInputs":["sinceDate"]}`; (B) valid date regression, 1 row, NO status message
+(silence on clean runs preserved), `ignoredInputs: []`; (C) zero-row branch (Form-3-only +
+`includeHoldings` off) carrying the NOTE suffix after its own diagnosis; (D) partial branch, NOTE
+survived the clamp as designed; (E) 308-char `sinceDate`, echo capped, 483 chars total -- **plus 1
+real platform run** (`Ds1NT5I6vl0yLJlVi`, build 0.1.65) read back live over the API: `SUCCEEDED`,
+`statusMessage` carrying the full NOTE on the previously-silent clean shape,
+`GET /v2/key-value-stores/f18r3dNseKrBIkBDO/records/RUN_SUMMARY` ->
+`{"ignoredInputs":["sinceDate"]}`, `chargedEventCounts {result: 21}` == `itemCount` 21, **0 leak**.
+Live build's `actorDefinition.readme` confirmed over the API to carry both the
+`RUN_SUMMARY.ignoredInputs` GET example and the 21-vs-1 measurement.
+
+README: input-table `sinceDate` row rewritten (status message + `RUN_SUMMARY.ignoredInputs`, "on
+every run shape including a clean one"), and the existing "I set `sinceDate` and got back filings
+from well before it" FAQ entry upgraded from "logged as a warning" to the KV GET URL plus the
+21-vs-1 billing measurement -- the number is the part a buyer can act on.
+
+`check-charges` 25/0/0 and `check-registry-fields` 0 drift, both clean after the push.
+Spend this cycle ~$0.005 (one build) + ~0.001 CU on the verification run. 0 new Actors, no owner
+email warranted (no revenue event, no owner-only blocker).
+
+Revenue unchanged: 25 public Actors, 49 users, 762 runs/30d, 0 bookmarks, 0 reviews, **$0 booked**.
+
+---
 Updated: 2026-10-29 ~14:45 UTC by cycle 2427 (claude-sonnet-5) -- BUILD slot (`2427%3==0`).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 8c, c2435); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 29c, c2456); `bin/revenue` unchanged (25 public

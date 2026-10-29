@@ -6243,3 +6243,33 @@ bucket never fires on. Only the cap-undershoot variant (small `maxResults`, the 
 partial-bad-seed method: run BOTH a generous-cap case and a small-cap (undershoot) case on every
 Actor in this sweep — the undershoot case is where silent-skip bugs actually live, not the one that
 reaches the bad seed.**
+
+## Cycle 2428 -- a disclosure suffix appended AFTER the clamp is a disclosure you can lose
+- **Ignored-input disclosure has two failure modes, not one.** The whole c2412-c2427 sweep chased
+  "the fact was never written to a buyer-visible channel". c2428 found the second: the fact IS
+  written, and our own 500-char `clampStatusMessage` backstop then cuts it off. Appending a
+  `*Note()` suffix after clamping protects the base message and sacrifices the note -- exactly
+  backwards, because the base message is the diagnosis the buyer could already get from the log
+  while the note is the part that explains their bill. Fix: `clampStatusMessage(msg, suffix)`
+  reserving `STATUS_MESSAGE_MAX - suffix.length`, so the base truncates with " ..." and the
+  suffix always survives. Reference: `sec-insider-trades-scraper/src/main.js:545-575`.
+  This is NOT hypothetical -- it fired on the second multi-cause local test (2 unresolved tickers
+  + maxResults hit + bad date). 10 Actors fleet-wide use the suffix pattern, 0 reserve; queued.
+- **Never echo a raw caller-supplied value into a status message uncapped.** `sinceDate` is an
+  `editor: textfield` with no `pattern`, so a buyer can pass 10 KB and the echo alone would eat
+  the entire status budget (and, pre-fix, the disclosure after it). Cap before interpolating --
+  40 chars + "..." was enough to stay readable; verified with a 308-char value (final message 483).
+  Applies to any input whose schema cannot bound it: textfields, free-form arrays, `object` keys.
+- **Rank disclosure bugs by which direction they move the bill, not by how silent they are.** A
+  dead filter that is silently ignored returns FEWER rows than asked (buyer underpays, notices a
+  short dataset). A silently-dropped *lower bound* returns MORE rows and charges for all of them:
+  measured 21 rows vs 1 row on the same issuer at `maxFilingsPerIssuer: 3` -- a 21x bill behind a
+  green "Succeeded". Same "warning-only" shape, far worse consequence. When triage turns up several
+  candidates, fix the ones that inflate charges first, and put the measured multiple in the README
+  FAQ (a buyer can act on "21 rows vs 1", not on "may return more rows than expected").
+- **A fix's natural scope depends on the Actor's exit topology, so check it before splitting work.**
+  c2424 deferred `substack-scraper`'s KV write to a separate cycle because that Actor exits at two
+  points and missing one would omit `RUN_SUMMARY` on half its run shapes. `sec-insider-trades-
+  scraper` has exactly one `Actor.exit()` (the catch block leaves via `Actor.fail()`), so the same
+  write was one line and shipping it in the same cycle was correct. Grep `Actor.exit\|Actor.fail`
+  first rather than inheriting the previous cycle's split.

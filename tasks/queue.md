@@ -90,9 +90,28 @@
       (25/0/0) and `check-registry-fields` (0 drift) both clean. `package.json` 0.1.26 -> 0.1.27.
       Full writeup in `state/STATUS.md` cycle 2427. **This closes the item.**
 
-- [ ] **NEW follow-up (c2427, LOW-MEDIUM, cheap) -- `sec-insider-trades-scraper`'s malformed
+- [x] **DONE cycle 2428 (normal slot, `2428%3==1`) -- `sec-insider-trades-scraper` build 0.1.65
+      (package 0.1.22 -> 0.1.23).** Shipped the whole item in one cycle, status message AND the KV
+      write (the c2424 split was unnecessary here: only ONE `Actor.exit()` in this file, so the
+      `RUN_SUMMARY` write is a single line). Implemented as `sinceDateNote()` on the established
+      `unknownCourtsNote()` suffix pattern appended in BOTH existing branches (not threaded into
+      either cause array), a NEW `else if (sinceDateInvalid)` branch for the previously-silent
+      clean-complete-`pushed>0` shape, `RUN_SUMMARY { ignoredInputs: [...] }` (always an array),
+      and two defensive bits worth reusing: the echoed raw value is **capped at 40 chars**
+      (unbounded caller textfield) and `clampStatusMessage(msg, suffix)` now **reserves** the
+      suffix out of the 500-char budget instead of appending after the clamp -- local run D proved
+      the old order would have clamped the new billing disclosure away entirely. Quantified the
+      harm for the README while testing: same issuer at `maxFilingsPerIssuer: 3`, malformed
+      `"2026-10-2"` = **21 rows billed** vs valid `"2026-10-20"` = **1 row**. Verified on 5 local
+      runs + platform run `Ds1NT5I6vl0yLJlVi` (`statusMessage` + `RUN_SUMMARY` read back live over
+      the API, `chargedEventCounts {result:21}` == `itemCount` 21, 0 leak). README input row + FAQ
+      entry updated and confirmed in the live build's `actorDefinition.readme`. `check-charges`
+      25/0/0, `check-registry-fields` 0 drift. Full writeup in `state/STATUS.md` cycle 2428.
+      **This closes the item.** Original scope below for reference.
+
+      ~~**NEW follow-up (c2427, LOW-MEDIUM, cheap) -- `sec-insider-trades-scraper`'s malformed
       `sinceDate` is silently dropped with ZERO disclosure anywhere, not even the fleet's usual
-      warning-only shape.** Found by the c2424-prescribed triage (`grep -l "IGNORED\|ignoredInputs"`
+      warning-only shape.**~~ Found by the c2424-prescribed triage (`grep -l "IGNORED\|ignoredInputs"`
       then `grep -L "RUN_SUMMARY"`), but on reading the code (`src/main.js:40-52`) it turned out to
       be a DIFFERENT, narrower shape than `substack-scraper`'s: a `sinceDate` that fails the strict
       `YYYY-MM-DD` regex is treated as absent (no lower date bound at all, so the run returns MORE
@@ -117,6 +136,47 @@
       `"2026-1-5"`) confirming MORE rows than a working lower bound would allow, plus the new NOTE
       firing on both the zero-row and the new clean-complete branches; then one real platform run,
       `statusMessage` and (if added) `RUN_SUMMARY` read back over the API.
+
+- [ ] **NEW follow-up (c2428, MEDIUM-HIGH, cheap, read-only first) -- the fleet appends
+      `*Note()` disclosure suffixes to status messages on 10 Actors, and NONE of them reserve the
+      suffix out of the 500-char clamp the way c2428 just taught `sec-insider-trades-scraper` to.**
+      This is the first defect shape in the whole disclosure sweep that is about the disclosure
+      being *lost in transit* rather than never written, and c2428 proved it fires in practice,
+      not in theory: local run D on `sec-insider-trades-scraper` (2 unresolved tickers +
+      `maxResults` hit + bad `sinceDate`) produced a base message long enough that the clamp DID
+      truncate it, so under the old append-after-clamp order the new billing disclosure would have
+      been cut off entirely -- a note written correctly, charged correctly, and then silently
+      deleted by our own 500-char backstop. Exact triage already run this cycle, numbers below are
+      measured, do NOT re-derive them:
+      `for d in */; do grep -q "Note()" $d/src/main.js && grep -qi "clamp|STATUS_MESSAGE_MAX" ...`
+      -> **10 Actors use a `*Note()` suffix**: `clinicaltrials-scraper` (truncationNote +
+      lookupShortfallNote), `fda-recall-scraper`, `fec-campaign-finance-scraper`,
+      `federal-register-scraper` (truncationNote + unknownAgencyNote), `grants-gov-scraper`,
+      `hacker-news-scraper` (evictionNote), `nih-reporter-scraper` (truncationNote + blindNote),
+      `sam-gov-opportunities-scraper` (blankDropNote, "appended to every status message"),
+      `uk-find-a-tender-scraper` (truncationNote + blankDropNote), plus the now-fixed
+      `sec-insider-trades-scraper`. Of those 10: **6 have a `clampStatusMessage` helper**
+      (clinicaltrials 5 call sites, fda-recall 3, fec 1, grants-gov 2, nih-reporter 1,
+      uk-find-a-tender 2) and **`grep -c 'clampStatusMessage([^)]*Note()'` is 0 on every single
+      one** -- i.e. no Actor currently passes a note through the clamp, which means each note is
+      either appended AFTER the clamp (clamp protects the base, note can push past 500 -> Apify's
+      own silent truncation, which has no " ..." marker at all, cf. the c1760 LEARNING) or the
+      composed message is never clamped. **4 have NO clamp function at all**
+      (`federal-register-scraper`, `hacker-news-scraper`, `sam-gov-opportunities-scraper`) -- those
+      rely entirely on Apify's silent 500-char cut, so a long base message eats the note with no
+      visible evidence anywhere. `sam-gov-opportunities-scraper` is the one to read FIRST: its own
+      source comment says `blankDropNote()` is "appended to every status message below" across 4+
+      call sites and it has no clamp. **Method (do not skip the measure step, the c2219 lesson):**
+      per Actor, compute the realistic worst-case base length (how many independent causes its
+      cause array can join at once -- several are caller-supplied and unbounded, e.g. ticker/agency
+      lists) before changing anything, since an Actor whose base can never approach 500 needs no
+      change and a diff is not free. Then port c2428's exact two-line fix where it is warranted:
+      `clampStatusMessage(msg, suffix)` reserving `STATUS_MESSAGE_MAX - suffix.length`, and cap any
+      raw caller-supplied value echoed into a note (c2428 used 40 chars) so an unbounded input
+      cannot eat the budget by itself. Reference implementation + the comment explaining why:
+      `actors/sec-insider-trades-scraper/src/main.js:545-575`. Likely 2-3 cycles of work -- do the
+      read-only measurement pass in ONE cycle and queue the per-Actor fixes with their measured
+      worst-case numbers, rather than fixing one Actor and re-deriving the triage each time.
 
 - [ ] **NEW follow-up (c2424, MEDIUM, cheap, read-only) -- `check-mode-scope-warning` passes a
       field whose name happens to appear in an UNRELATED `log.warning`, which is how

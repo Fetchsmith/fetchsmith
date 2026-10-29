@@ -44,7 +44,11 @@ const includeHoldings = input.includeHoldings === true;
 // up to maxFilingsPerIssuer -- and bills for them, so warn loudly instead of failing silently.
 const sinceDateRaw = typeof input.sinceDate === 'string' ? input.sinceDate.trim() : '';
 const sinceDate = /^\d{4}-\d{2}-\d{2}$/.test(sinceDateRaw) ? sinceDateRaw : null;
-if (sinceDateRaw && !sinceDate) {
+const sinceDateInvalid = Boolean(sinceDateRaw) && !sinceDate;
+// Echoed back to the buyer in the status message, which is caller-supplied and unbounded (the
+// textfield accepts any string), so cap it before it can eat the 500-char status budget.
+const sinceDateShown = sinceDateRaw.length > 40 ? `${sinceDateRaw.slice(0, 40)}...` : sinceDateRaw;
+if (sinceDateInvalid) {
   log.warning(`sinceDate ${JSON.stringify(input.sinceDate)} is not strict YYYY-MM-DD (zero-padded, `
     + 'dash-separated) and has been IGNORED -- this run has no lower date bound and will return '
     + `every matching filing back to maxFilingsPerIssuer=${maxFilingsPerIssuer} per issuer. `
@@ -542,12 +546,31 @@ const STATUS_MESSAGE_MAX = 500;
 // independent causes in one run (e.g. a derivativeCodesBlocked list plus an unresolved-tickers
 // list, both caller-supplied and unbounded), so the joined message needs the same word-boundary
 // backstop other Actors in the fleet already carry. The log keeps the full, unclamped text.
-const clampStatusMessage = (msg) => {
-  if (msg.length <= STATUS_MESSAGE_MAX) return msg;
-  const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+// `suffix` is RESERVED out of the budget rather than appended after clamping: the one suffix we
+// pass (sinceDateNote) is the disclosure that a buyer's bill grew because their input was
+// dropped, and a run with 4 joined causes can already approach 500 chars -- appending it last
+// would let the clamp silently eat the very fact this cycle (2428) added. The log keeps the
+// full, unclamped text either way.
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = STATUS_MESSAGE_MAX - suffix.length;
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, budget - 4);
   const lastSpace = cut.lastIndexOf(' ');
-  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
 };
+
+// Suffix shape (fleet convention, cf. court-records-scraper's unknownCourtsNote, cycle 2426):
+// appended to whatever the run's own status message is, so it survives every branch instead of
+// being threaded into one of them. A malformed sinceDate is NOT a "filter did nothing" case --
+// dropping the lower bound returns MORE rows and bills for all of them -- so it is worth saying
+// on every run shape, including a clean complete one.
+function sinceDateNote() {
+  if (!sinceDateInvalid) return '';
+  return ` NOTE: sinceDate "${sinceDateShown}" is not strict YYYY-MM-DD and was IGNORED, so this run had `
+    + `no lower date bound and searched (and charged for) every matching filing back to `
+    + `maxFilingsPerIssuer=${maxFilingsPerIssuer} per issuer. Re-run with e.g. "2026-01-05" to bound it. `
+    + 'See RUN_SUMMARY.ignoredInputs.';
+}
 
 // --- Zero-row explanation (cycle 1756) ----------------------------------------------------
 // Until now a complete run that delivered 0 rows set no statusMessage at all, so the Console
@@ -629,8 +652,8 @@ if (!pushed) {
     zeroRowMessage = `0 rows: the ${filingsSelected} ${forms} filing(s) searched for ${who} reported no transactions. `
       + 'Widen sinceDate, raise maxFilingsPerIssuer, or add form 5 / enable includeHoldings.';
   }
-  log.warning(zeroRowMessage);
-  await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
+  log.warning(zeroRowMessage + sinceDateNote());
+  await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage, sinceDateNote()));
 } else {
   // --- Partial-success explanation (cycle 2340) ---------------------------------------------
   // Until now ONLY the zero-row branch above ever set a statusMessage, so a buyer who asked for
@@ -698,10 +721,24 @@ if (!pushed) {
   }
   if (causes.length) {
     const partialMessage = `${pushed} row(s) delivered, but: ${causes.join(' Also, ')}`;
-    log.warning(partialMessage);
-    await Actor.setStatusMessage(clampStatusMessage(partialMessage));
+    log.warning(partialMessage + sinceDateNote());
+    await Actor.setStatusMessage(clampStatusMessage(partialMessage, sinceDateNote()));
+  } else if (sinceDateInvalid) {
+    // The branch this Actor did NOT have (c2427 triage): a clean, complete, pushed>0 run sets no
+    // status message at all, which is exactly the run shape where a dropped sinceDate is the only
+    // thing worth saying -- and the shape where it costs the buyer the most, since every row the
+    // missing lower bound added was charged. Deliberately not phrased as a failure.
+    const cleanMessage = `${pushed} row(s) delivered.${sinceDateNote()}`;
+    log.warning(cleanMessage);
+    await Actor.setStatusMessage(clampStatusMessage(cleanMessage));
   }
 }
+
+// Machine-readable sibling of the note above (fleet convention, cf. substack-scraper c2427):
+// a scheduled caller reading runs over the API should not have to regex a prose status message
+// to find out an input was dropped. Always written, always an array, so `[]` is a positive
+// "nothing was ignored" signal rather than an absent key.
+await Actor.setValue('RUN_SUMMARY', { ignoredInputs: sinceDateInvalid ? ['sinceDate'] : [] });
 
 log.info(`Done. Pushed ${pushed} results.`);
 await Actor.exit();

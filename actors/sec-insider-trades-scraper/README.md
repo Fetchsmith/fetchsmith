@@ -52,7 +52,7 @@ for Apple, NVIDIA and JPMorgan.
 |---|---|---|---|
 | `issuers` | array | `["AAPL","NVDA","JPM"]` | Ticker symbols (`AAPL`, `NVDA`) or raw CIK numbers (`320193`). Resolved against SEC's own `company_tickers.json`, so a ticker SEC does not list is skipped **with a warning** rather than silently returning nothing. |
 | `formTypes` | array | `["4"]` | Any of `3`, `4`, `5`, `3/A`, `4/A`, `5/A`. Form 4 is the trade signal (reported within 2 business days); Form 5 is an annual catch-up and does carry real transactions; **Form 3 contains no transaction at all**, so selecting it alone returns zero rows unless `includeHoldings` is on (the run warns if you do). The `/A` forms are SEC's separate **amendment** form types — select `4/A` alongside `4` to get corrections; see "Amendments" below. |
-| `sinceDate` | string | `""` (no lower bound) | Earliest filing date, **strict zero-padded `YYYY-MM-DD`**. SEC's index is newest-first, so this stops paging as soon as it passes the date. Anything else (`2026-1-5`, `2026/01/05`, `01-05-2026`) is **ignored with a warning** and the run comes back unbounded — the input schema has no `pattern`, so the platform cannot reject it for you (see FAQ). |
+| `sinceDate` | string | `""` (no lower bound) | Earliest filing date, **strict zero-padded `YYYY-MM-DD`**. SEC's index is newest-first, so this stops paging as soon as it passes the date. Anything else (`2026-1-5`, `2026/01/05`, `01-05-2026`) is **ignored** and the run comes back unbounded — the input schema has no `pattern`, so the platform cannot reject it for you. When that happens the run says so in its **status message** and in `RUN_SUMMARY.ignoredInputs`, on every run shape including a clean one (see FAQ). |
 | `maxFilingsPerIssuer` | integer | `20` (max 200) | How many matching ownership filings to open per company. One filing usually yields 1–4 transaction rows. Caps **filings fetched, not rows kept** — a strict filter below can exhaust this budget long before `maxResults`, and the run log says so when it does. |
 | `includeDerivative` | boolean | `true` | Derivative rows are options, RSUs and convertibles (with exercise price, expiration, underlying share count). Turn off for non-derivative common-stock rows only — but note `C`, `X`, `O`, `E`, `H` and `K` are reported **only** on derivative rows, so selecting one of those in `transactionCodes` with this off matches nothing (the run warns and names them). |
 | `includeHoldings` | boolean | `false` | Also return positions the insider *holds* rather than traded, as rows with `rowType: "holding"` (`transactionDate`/`transactionCode`/`shares`/`pricePerShare` null, position in `sharesOwnedAfter`). Off by default so an existing Form 4 caller's row count — and bill — does not change. See "Holdings rows" below. |
@@ -441,10 +441,20 @@ slip: `sinceDate` is accepted only as strict zero-padded `YYYY-MM-DD`. The input
 as a plain text field with no `pattern`, so unlike `transactionCodes` (whose `items.enum` makes the
 platform reject a bad value with a 400 before the Actor even starts) a malformed date reaches the
 run, which cannot guess whether `01-05-2026` means 5 January or 1 May and so drops the bound
-entirely. Since cycle 2016 that is **logged as a warning naming the value it ignored and the
-`maxFilingsPerIssuer` it will now run to** — before that it was silent, which made it the one
-input error that looks like success, because the run returns *more* rows than you asked for and
-bills for them. Surrounding whitespace is trimmed and fine; everything else is not. Correct:
+entirely. **You do not have to open the run log to find this out.** The run's **status message**
+names the value it dropped and the `maxFilingsPerIssuer` it ran to instead — on *every* run shape,
+including a clean complete one that delivered rows and would otherwise show a bare "Succeeded" —
+and `RUN_SUMMARY.ignoredInputs` carries the same fact machine-readably for schedulers:
+
+```
+GET https://api.apify.com/v2/key-value-stores/<defaultKeyValueStoreId>/records/RUN_SUMMARY
+-> { "ignoredInputs": ["sinceDate"] }     // [] when nothing was ignored
+```
+
+This matters more than a dead filter would: dropping the lower bound returns *more* rows than you
+asked for and **bills for them** (measured on one issuer at `maxFilingsPerIssuer: 3` — 21 rows
+unbounded vs. 1 row with the bound honoured), so it is the one input error that looks like a
+success. Surrounding whitespace is trimmed and fine; everything else is not. Correct:
 `"2026-01-05"`. Wrong: `"2026-1-5"`, `"2026/01/05"`, `"01-05-2026"`, `"Jan 5 2026"`.
 
 **Does this Actor pick up corrected Form 4/A amendments?** Yes — select `4/A` in `formTypes`. EDGAR files an amendment under its own distinct form-type string (`"4/A"`, not a flag on the original), so it is opt-in rather than automatic, and the default (`["4"]`) still returns originals only so existing runs and bills are unchanged. Amendment rows carry `isAmendment`, `amendsOriginalFilingDate` and `supersedesAccessionNumber`, and the original they correct is returned too, tagged with `amendedByAccessionNumber` — see [Amendments and which filing they replace](#amendments-4a-and-which-filing-they-replace) for how the linking works and where it can only narrow to a candidate set. Background and the live survey that prompted this: the [dedicated post](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable).
