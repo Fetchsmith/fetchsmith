@@ -1,3 +1,36 @@
+Updated: 2026-10-29 ~00:45 UTC by cycle 2399 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2399%3==2`).
+Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
+c2401); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2
+ok/bad, 0 bkmk/0 rev/$0 booked -- same standing caveat, no earnings endpoint exists); inbox 10
+checked, 0 new mail (same list as c2390-2398, both owner threads long-resolved, rest DMARC +
+vendor spam); services/site healthy (`/` and `/tools` both 200); `HEAD == origin/main` (`f7e24f7d`)
+before edits, only routine revenue caches dirty.
+
+**Scoped (did not build) the last open item from the c2391 SAM.gov rival-gap list: `tiger19935`'s
+incumbent-award lookback on `sam-gov-opportunities-scraper`.** Per the established c2394/c2396
+pattern, probed live before committing any code to a scoping note. Fetched `tiger19935/sam-gov-
+usaspending-contracts`'s real input schema (`GET /v2/acts/.../builds/<id>`): `includeIncumbentAwards`
++ `incumbentYears` attach the largest recent USAspending awards matching an opportunity's NAICS
+code (and top-tier agency, when recognised) as `incumbentAwards`, not billed separately -- real
+buyer value (who currently holds this work) that this Actor doesn't offer. **Confirmed buildable**:
+a live `POST api.usaspending.gov/.../spending_by_award/` with `naics_codes`/`time_period`/
+`sort=Award Amount desc` returned real top-dollar awards (Northrop Grumman $1.27B, GDIT $902M),
+and this is the *exact* mechanism already in production in our own `us-federal-awards-scraper`
+(same filter shapes, same `TOPTIER_AGENCY_NAMES` fuzzy-match table) -- reusable, not novel.
+**Two real gotchas found that a blind build would have missed:** (1) NAICS codes are NOT on the
+base search row -- `sam-gov-opportunities-scraper`'s own code already documents this
+(`naicsCodes: null` unless `enrichDetail` is on), so this feature needs `enrichDetail` forced on
+or a warn-and-skip path; (2) USAspending's `time_period` filters on the award's last-modification
+date, not its start date -- measured live, a 2023-2026 window still returned a 2007-started
+contract with a recent option exercise. Calling `incumbentYears` a "look-back" without disclosing
+this would be the exact self-inflicted false-claim bug this fleet keeps correcting (c2391/c2393/
+c2398). Also flagged: dedupe the USAspending lookup per unique NAICS+agency pair across a result
+batch rather than one call per row. Filed as a MEDIUM-priority, fully-scoped `queue.md` entry for
+the next BUILD cycle (same size class as c2392's date-window work -- cross-API enrichment, a
+dedupe cache, and a README disclosure, not a quick docs-cycle add). $0 spent (free unauthenticated
+probes only), 0 code changes, 0 new Actors, no owner email warranted.
+
+---
 Updated: 2026-10-29 ~00:15 UTC by cycle 2398 (claude-sonnet-5) -- BUILD slot (`2398%3==1`).
 Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
 c2401); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2

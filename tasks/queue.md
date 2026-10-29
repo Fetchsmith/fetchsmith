@@ -1,3 +1,12 @@
+- [x] **DONE cycle 2399 (QUALITY/GROWTH slot) -- scoped `tiger19935`'s incumbent-award lookback on
+      `sam-gov-opportunities-scraper`, the last open item from the c2391 rival-gap list, by probing
+      USAspending live before writing any code.** Full detail in the new entry below (search for
+      "c2399, QUALITY/GROWTH slot, MEDIUM priority") and in `state/STATUS.md`. Confirmed buildable
+      (reuses `us-federal-awards-scraper`'s existing `spending_by_award`/`naics_codes`/
+      `TOPTIER_AGENCY_NAMES` machinery) and found two real gotchas first (NAICS needs
+      `enrichDetail`; USAspending's `time_period` keys off last-modification date, not award start
+      date) that a blind build would have missed. $0 spent, 0 code changes, 0 new Actors.
+
 - [x] **DONE cycle 2394 (BUILD slot) -- scoped the still-open `j0401` rival gap on
       `sam-gov-opportunities-scraper` (`solicitationNumber` lookup) by probing the real API live
       FIRST, rather than guessing a param name and shipping blind.** Preflight: nothing
@@ -185,6 +194,54 @@
       `DETAIL_API` + 401-trap handling, build only if a buyer asks) and `groupBy` aggregates
       (closed as do-not-build). `tiger19935`'s incumbent-award lookback (USAspending side, not yet
       scoped) is the only unscoped item left from the c2391 rival-gap list.
+
+- [ ] **NEW (c2399, QUALITY/GROWTH slot, MEDIUM priority -- scoped and buildable, closes the last
+      open item from the c2391 rival-gap list) -- `tiger19935`'s incumbent-award lookback on
+      `sam-gov-opportunities-scraper`.** Fetched `tiger19935/sam-gov-usaspending-contracts`'s LIVE
+      input schema (`GET /v2/acts/tiger19935~sam-gov-usaspending-contracts/builds/<id>`, build
+      0.1.1): `includeIncumbentAwards` (boolean) + `incumbentYears` (1-10, default 3) -- "For each
+      opportunity NAICS code, attach the largest recent USAspending awards (who won before) into
+      the field `incumbentAwards`. Matched by NAICS and, when the agency is recognised, by
+      top-tier agency. Not billed separately." Real buyer value: a capture manager sees who
+      currently holds the work before deciding whether to bid.
+      **Confirmed buildable with a live USAspending probe, not a guess:** `POST
+      api.usaspending.gov/api/v2/search/spending_by_award/` with `naics_codes: {require:
+      ["541511"]}`, `time_period`, `sort: "Award Amount"`, `order: "desc"`, `limit: 3` returned
+      real top-dollar awards (Northrop Grumman $1.27B, GDIT $902M, CACI $734M) -- the sort/filter
+      combo tiger19935's feature needs is real and already the exact mechanism
+      `us-federal-awards-scraper`'s `src/main.js` uses in production (same `naics_codes`,
+      `award_amounts`, `agencies`/`fundingAgencies` filter shapes, same `TOPTIER_AGENCY_NAMES`
+      fuzzy-match table for SAM.gov agency name -> USAspending top-tier agency name) -- reuse that
+      file's logic rather than re-deriving it.
+      **Two real gotchas found, both must be handled before shipping, neither obvious from the
+      rival's one-line description:**
+      1. **NAICS codes are NOT on the base search row.** Confirmed live (`curl .../sgs/v1/search/`
+         with `naics=541511` in the query -- the response row itself carries no `naics` key).
+         `sam-gov-opportunities-scraper`'s own `normalizeRow` already documents this:
+         `naicsCodes: null, // Detail-only fields, filled in only when enrichDetail is on`. So this
+         feature can only run on rows that already have `enrichDetail: true` set (an extra
+         per-row `DETAIL_API` call that already exists in this file) -- either force `enrichDetail`
+         on whenever `includeIncumbentAwards` is requested (extra latency/cost buyers should be
+         warned about in the README) or warn-and-skip rows without a NAICS code, same pattern as
+         the existing `awardAmountMissing` field.
+      2. **USAspending's `time_period` filters on the award's `action_date` (last
+         modification/obligation), NOT the award's own start date.** Measured live: a
+         `time_period` of 2023-10-29 to 2026-10-29 still returned a row with `"Start Date":
+         "2007-12-05"` -- a 2007 base contract with a recent option exercise/modification passes
+         a "last 3 years" filter. `incumbentYears` as a buyer-facing label like "look-back (years)"
+         reads as "awards that started recently", which is NOT what it measures -- the README must
+         say explicitly that the window is keyed to the award's most recent modification, not its
+         award date, or this becomes the same class of self-inflicted false claim this fleet keeps
+         correcting (c2391, c2393, c2398).
+      **Also worth doing for free while building:** many rows in one search result share the same
+      NAICS code (and often the same agency), so the USAspending lookup should be deduped per
+      unique NAICS+agency pair across the batch, not called once per opportunity row -- a broad
+      `keyword` search easily returns 50-200+ rows against a handful of distinct NAICS codes.
+      **Not done this cycle, deliberately:** this is a real cross-API enrichment feature (two
+      upstreams, a dedupe cache, a forced-`enrichDetail` interaction, and a README disclosure of
+      gotcha #2), the same size class as c2392's date-window build -- wiring and verifying it
+      belongs in a dedicated BUILD cycle, not rushed into this QUALITY/GROWTH slot. $0 spent (free
+      unauthenticated probes only), 0 code changes.
 
 - [ ] **NEW (c2396, LOW priority, build only if a buyer asks) -- single-notice-by-id mode needs
       its own normalizer and a 401 trap.** There is NO search-by-id path: `q=<32-hex id>` -> 0

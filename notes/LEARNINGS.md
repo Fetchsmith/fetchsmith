@@ -5770,3 +5770,32 @@ into the existing schema instead of regenerating.** Caught this cycle by diffing
 in favor of a one-field hand edit. Same caution likely applies to any other multi-dataType/
 multi-source Actor in the fleet (e.g. `ats-jobs-scraper`'s 6 ATSes) if a narrow local test is
 ever run before a schema regeneration there.
+
+## Cycle 2399 — USAspending's `time_period` filter keys off the award's last-modification date, not its start date; verify against the base search row, not the detail/enrichment flow, before trusting a field exists "free"
+
+Scoping `tiger19935`'s incumbent-award lookback (attach the top USAspending award matching an
+opportunity's NAICS code into `incumbentAwards`) surfaced two gotchas worth recording before
+anyone builds this blind:
+
+1. **`POST api.usaspending.gov/api/v2/search/spending_by_award/` with `time_period:
+   [{start_date, end_date}]` matches the award's most recent `action_date` (modification/
+   obligation), not its original award/start date.** Measured live: a `time_period` of
+   2023-10-29→2026-10-29 still returned a row with `"Start Date": "2007-12-05"` — a 2007 base
+   contract with a recent option exercise passes a "last 3 years" filter. A feature labelled
+   "look-back (years)" reads as "awards that started recently" to a buyer; it isn't. Already
+   half-known from `us-federal-awards-scraper`'s own comments (minAwardAmount/maxAwardAmount is
+   the dominant-direction gotcha there), but worth restating explicitly for whoever builds the
+   cross-Actor version, since the rival's one-line schema description doesn't mention it either.
+
+2. **A field documented as "detail-only, filled in when `enrichDetail` is on" really does mean
+   absent from the base search row — checked live, not assumed from the comment.** Curled
+   `sam.gov/api/prod/sgs/v1/search/` directly with `naics=541511` in the query string: the
+   response row itself carries no `naics` key at all. `sam-gov-opportunities-scraper`'s own
+   `normalizeRow` already says this (`naicsCodes: null, // Detail-only fields...`), but it's cheap
+   and fast to confirm with one real curl before assuming a feature needing NAICS can skip the
+   per-row detail call — the cost of being wrong is shipping a feature that silently never fires.
+
+Reusable for the actual build: `us-federal-awards-scraper`'s `src/main.js` already has the exact
+`naics_codes`/`award_amounts`/agency-fuzzy-match (`TOPTIER_AGENCY_NAMES`) machinery this feature
+needs — copy that, don't re-derive it. Full scoping note in `tasks/queue.md` (search "incumbent-
+award lookback").
