@@ -1,3 +1,42 @@
+Updated: 2026-10-29 ~09:35 UTC by cycle 2417 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2417%3==2`).
+Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 7c, c2424); `audit-due --all`
+had exactly 1 DUE (`competitor_audit` on `website-screenshot-scraper`, last run c2081 -- see below,
+now recorded, next due c2456); `bin/revenue` unchanged in substance (25 public Actors, 48 users
+(47->48), 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+actionable mail (identical list to c2414-2416; both owner threads `dc593cfb`/`2b237f1b`
+long-resolved, rest DMARC + vendor/rental spam). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active; `/`, `/tools`, `/pricing`, `/tools/website-screenshot-scraper` all 200.
+
+**Ran the one DUE audit, `competitor_audit` on `website-screenshot-scraper` (last run c2081, 336c
+ago).** Fresh `bin/apify-admin store "screenshot"` pull: 16 live listings this time (vs 21 at
+c2081 -- Store churn, not a narrower search). Own price re-verified unchanged (flat $0.002/result,
+no start fee). **Checked every newly-visible listing's live `pricingInfos` (`GET /v2/acts/<slug>`)
+individually rather than trusting the Store list's summary -- 0 price or feature threat found,
+all 4 ruled out on the numbers:** `dz_omar/screenshot` (336 users, a SECOND listing from the
+`dz_omar/ultimate-screenshot` seller already named in the README) stacks a one-time $0.05->$0.01
+startup fee + $0.01->$0.005/capture + a per-30-second memory-time fee -- pricier than their own
+other listing, and narrower (cookie-header auth only, which we already cover via our own
+`cookies`/`headers` inputs; confirmed by reading our own `.actor/input_schema.json` before writing
+that claim). `i-scraper/website-screenshot` (315 users) is a flat $0.006/result bare PNG/JPG
+capture, 3x our price, zero feature overlap. `akash9078/website-screenshot-generator` (93 users)
+nets ~$0.02/screenshot once its actor-start and per-row fees stack onto its $0.01-$0.02 tier,
+pricier, bare capture only. `egra_van/website-screenshot-pro` (3 users) is the one genuine tiered
+undercut -- $0.0015/screenshot at GOLD+, below our flat $0.002 -- but has no element selector,
+raw-HTML input, OG-card preset or diff mode, the same ruled-out-narrower bucket as the
+already-named `room_js`/`viralanalyzer`/`leadsbrary` listings. `cheapapi`/`moonweil`/`onescales`/
+`dz_omar-ultimate-screenshot`/`scrapeai` all re-verified live, pricing unchanged since their
+last-dated README mentions -- 0 drift. **README given a new dated 2026-10-29 paragraph naming all
+4 new listings and the verdict on each**; `apify push --force` (build 0.1.35, README-only, no
+code/version-number change needed since nothing in `src/` moved); live build's
+`actorDefinition.readme` field read back over the API (not the CDN-cached Store page) and
+confirmed to contain the new paragraph. `state/audit_dates.json` updated in the same cycle
+(`competitor_audit: 2417`, prior c2081 note preserved inline, not deleted) and the JSON re-validated
+with `python3 -m json.tool` after editing. `bin/audit-due --all` re-run clean afterward: 0 DUE,
+next `competitor_audit` due c2456 (`google-play-reviews-scraper`). ~$0.005 spent (1 README-only
+push), $0 platform runs (no code changed, nothing to verify on a real run), 0 new Actors created
+today, no owner email warranted (no revenue event, no owner-only blocker).
+
+---
 Updated: 2026-10-29 ~09:20 UTC by cycle 2416 (claude-opus-5) -- normal slot (`2416%3==1`).
 Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-mode-scope-warning` 8c
 c2424; soonest audit `website-screenshot-scraper` c2417); inbox 10 checked, 0 new actionable mail

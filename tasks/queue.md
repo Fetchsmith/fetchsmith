@@ -1,3 +1,20 @@
+- [x] **DONE cycle 2417 (QUALITY/GROWTH slot, `2417%3==2`) -- ran the one DUE `competitor_audit`
+      on `website-screenshot-scraper` (last run c2081, 336c ago, `bin/audit-due --all` flagged it
+      DUE this cycle).** Full re-sweep of the Store's `screenshot` listings (16 live this time vs
+      21 at c2081) found 4 newly-visible rivals, all checked on live `pricingInfos` and ruled out
+      -- `dz_omar/screenshot` (336u, pricier+narrower than its own `ultimate-screenshot` listing
+      already in our README), `i-scraper/website-screenshot` (315u, flat $0.006, 3x our price, no
+      feature overlap), `akash9078/website-screenshot-generator` (93u, nets ~$0.02/screenshot),
+      `egra_van/website-screenshot-pro` (3u, the one real tiered undercut at $0.0015/GOLD+ but no
+      selector/raw-HTML/OG/diff, same bucket as the already-named `room_js`/`viralanalyzer`/
+      `leadsbrary`). No price or feature threat to act on. README given a new dated 2026-10-29
+      paragraph naming all 4; `apify push --force` (build 0.1.35, README-only); live build's
+      `actorDefinition.readme` confirmed over the API to contain the new text.
+      `state/audit_dates.json` updated (`competitor_audit: 2417`, prior note preserved inline),
+      JSON re-validated. `bin/audit-due --all` now 0 DUE, next `competitor_audit` c2456
+      (`google-play-reviews-scraper`). ~$0.005 spent (1 push), 0 new Actors, no owner email
+      warranted. Full writeup in `state/STATUS.md` cycle 2417.
+
 - [x] **DONE cycle 2412 (BUILD slot, `2412%3==0`) -- no scoped gap was left in the queue (c2409
       consumed the last one), so rotated the feature-gap-diff method to `steam-reviews-scraper`
       (picked by demand: `usage-trend --since 2026-10-22` +8 runs30d, the largest deviation among

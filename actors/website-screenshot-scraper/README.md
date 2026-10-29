@@ -140,6 +140,23 @@ JPEG capture with no element selector, device preset, raw-HTML input, PDF or dif
 same narrow gap as the three already-ruled-out listings above, just newly visible. Both
 re-verified live 2026-10-25: user counts and tiered pricing unchanged for each.
 
+**Full re-sweep 2026-10-29** (16 live `screenshot` Store listings, live `pricingInfos` pulled
+per Actor): four more now-visible rivals, all checked and ruled out, none a price or feature
+threat. `dz_omar/screenshot` (336 users, a second listing from the same seller as
+`ultimate-screenshot` above) charges a one-time $0.05→$0.01 startup fee *plus* $0.01→$0.005 per
+capture *plus* a per-30-second memory-time fee — more expensive than `ultimate-screenshot` for a
+narrower feature set (cookie-header auth only, no selector/device-preset/OG-card/diff; we already
+cover cookie auth via our own `cookies`/`headers` inputs). `i-scraper/website-screenshot` (315
+users) is a flat $0.006/result bare PNG/JPG capture — 3x our price with no selector, device
+preset, raw-HTML input, PDF or diff. `akash9078/website-screenshot-generator` (93 users) nets out
+near $0.02/screenshot once its actor-start and per-row fees are added to its $0.01–$0.02
+per-capture tier — pricier than us, same bare-capture feature set. `egra_van/website-screenshot-pro`
+(3 users) is the one tiered ladder cheaper than ours at its top rung ($0.0015/screenshot at
+GOLD+, +$0.001/PDF) but has no element selector, raw-HTML input, OG-card preset or diff mode —
+the same gap as the already-ruled-out `room_js`/`viralanalyzer`/`leadsbrary` listings, just a
+newer entrant. `cheapapi`, `moonweil` and `onescales` re-verified live, pricing unchanged since
+their last-dated mentions above.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
