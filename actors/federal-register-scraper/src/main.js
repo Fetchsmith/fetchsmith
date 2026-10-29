@@ -826,6 +826,25 @@ while (!seeding && keepGoing && pushed < maxResults) {
     if (!applyNext(walkParams, page.next_page_url)) { runState.exhausted = true; break; }
 }
 
+// Apify silently truncates `statusMessage` at 500 chars with no " ..." marker (c1760 LEARNING,
+// first ported to this fleet's note-suffix pattern on sec-insider-trades-scraper c2428). This
+// Actor has 5 setStatusMessage call sites that append truncationNote()/unknownAgencyNote() but
+// had NO clamp at all -- a long base plus the notes relied entirely on Apify's own silent cut.
+const STATUS_MESSAGE_MAX = 500;
+// `suffix` is RESERVED out of the budget rather than appended after clamping (same reasoning as
+// sec-insider-trades-scraper c2428): the suffix carries the one disclosure worth keeping intact,
+// so the base truncates first. Guards budget at 0 in case a future suffix ever grows unbounded.
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+// Raw caller-supplied text echoed into a note must be capped independently of the backstop above:
+// the backstop reserves room FOR the suffix, which only works if the suffix itself is bounded.
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
+
 // Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
 function truncationNote() {
     if (baselineTruncated <= 0) return '';
@@ -836,10 +855,13 @@ function truncationNote() {
 // Empty unless some (not all -- that throws above, before any charge) of the agencies list failed
 // to match. Previously this only ever reached a `log.warning` (console-only, not buyer-visible) on
 // every path including a delivering run -- this surfaces it on the actual statusMessage instead.
+// `agencies` is a stringList with no maxLength and no item-count cap, so the joined list is capped
+// via echoCap: an unresolved list alone can otherwise run past the whole 500-char budget before
+// truncationNote even joins.
 function unknownAgencyNote() {
     if (!unknownAgencies.length) return '';
     return ` NOTE: ${unknownAgencies.length} agency value(s) you listed could not be matched and were ignored `
-        + `(not guessed at): ${unknownAgencies.join(', ')}.`;
+        + `(not guessed at): ${echoCap(unknownAgencies.join(', '), 60)}.`;
 }
 
 // A SEED walk cut short by an upstream error must save NOTHING (h287, 3rd variant, first fixed
@@ -868,12 +890,12 @@ if (watchMode && seeding && runState.failed) {
                 + 'incremental run will report documents past the cap as new.'
                 : ''),
         );
-        await Actor.setStatusMessage(
-            `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing document(s) recorded, 0 charged. Run again later to get only what's new.`
-            + truncationNote()
+        await Actor.setStatusMessage(clampStatusMessage(
+            `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing document(s) recorded, 0 charged. Run again later to get only what's new.`,
+            truncationNote()
             + unknownAgencyNote()
             + (watchDeadDateBound ? ' NOTE: publicationDateTo is fixed, so this watch will stop finding anything new once today passes that date -- see the warning above.' : ''),
-        );
+        ));
     } else {
         log.info(
             `Watch label "${watchLabel}": ${pushed} new document(s) since the last run `
@@ -882,7 +904,7 @@ if (watchMode && seeding && runState.failed) {
         if (pushed > 0 && (baselineTruncated > 0 || unknownAgencies.length)) {
             // A run that delivered rows would otherwise leave the default status message in
             // place and the truncation/unknown-agency note would only be visible in the log.
-            await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} document(s) delivered.` + truncationNote() + unknownAgencyNote());
+            await Actor.setStatusMessage(clampStatusMessage(`Watch label "${watchLabel}": ${pushed} document(s) delivered.`, truncationNote() + unknownAgencyNote()));
         }
     }
 }
@@ -892,12 +914,12 @@ if (pushed === 0 && watchMode && !seeding) {
         `Nothing new for watch label "${watchLabel}" since its last run — all ${skippedSeen} matching document(s) `
         + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.',
     );
-    await Actor.setStatusMessage(
-        `Nothing new for watch label "${watchLabel}" since its last run -- every matching document had already been delivered. That is the expected result most of the time; you were charged for nothing.`
-        + truncationNote()
+    await Actor.setStatusMessage(clampStatusMessage(
+        `Nothing new for watch label "${watchLabel}" since its last run -- every matching document had already been delivered. That is the expected result most of the time; you were charged for nothing.`,
+        truncationNote()
         + unknownAgencyNote()
         + (watchDeadDateBound ? ' NOTE: publicationDateTo is fixed on this watch, so "nothing new" may mean the date cutoff has made it permanently blind rather than the normal quiet result -- see the warning above.' : ''),
-    );
+    ));
 } else if (pushed === 0 && !seeding && publicInspection) {
     log.warning(
         `No documents are on the Public Inspection desk for these filters. Scanned ${scanned} rows. The desk is `
@@ -1008,19 +1030,19 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 // message is the only place the Apify console itself shows the shortfall. There was no
 // setStatusMessage call anywhere in this Actor before cycle 654.
 if (!complete) {
-    await Actor.setStatusMessage(
-        (seeding
+    await Actor.setStatusMessage(clampStatusMessage(
+        seeding
             ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} document(s) recorded — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
             : `Incomplete: ${pushed.toLocaleString('en-US')} document(s) delivered — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`)
-        + unknownAgencyNote(),
-    );
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+        unknownAgencyNote(),
+    ));
 } else if (!watchMode && pushed > 0 && unknownAgencies.length) {
     // The only remaining gap: an ordinary (non-watch) run that completed cleanly and delivered
     // rows had no status-message branch at all before this -- `unknownAgencies` only ever
     // reached bullet (4) of the pushed===0 cause list above, never a delivering run.
-    await Actor.setStatusMessage(`Pushed ${pushed.toLocaleString('en-US')} document(s).${unknownAgencyNote()}`);
+    await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed.toLocaleString('en-US')} document(s).`, unknownAgencyNote()));
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
