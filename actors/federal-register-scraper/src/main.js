@@ -11,6 +11,25 @@ function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.
 function timeBudgetOk() { return remainingMs() > 0; }
 let timeBudgetExceeded = false;
 
+// Apify silently truncates `statusMessage` at 500 chars with no " ..." marker (c1760 LEARNING,
+// first ported to this fleet's note-suffix pattern on sec-insider-trades-scraper c2428). Declared
+// here, above Actor.init()'s own validation throws (c2437/c2442), because the very first
+// Actor.fail() in this file fires during input validation, before any walk has even started.
+const STATUS_MESSAGE_MAX = 500;
+// `suffix` is RESERVED out of the budget rather than appended after clamping (same reasoning as
+// sec-insider-trades-scraper c2428): the suffix carries the one disclosure worth keeping intact,
+// so the base truncates first. Guards budget at 0 in case a future suffix ever grows unbounded.
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+// Raw caller-supplied text echoed into a note must be capped independently of the backstop above:
+// the backstop reserves room FOR the suffix, which only works if the suffix itself is bounded.
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
+
 // The Federal Register publishes its own official public API (GSA/NARA). No API key, no auth.
 const API = 'https://www.federalregister.gov/api/v1';
 
@@ -215,7 +234,7 @@ async function apiGet(path, params, state = null) {
             const waitS = attempt * 10;
             const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
             log.warning(`Federal Register API request failed (${err.message}); retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
-            if (state) state.lastError = `request failed: ${err.message}`;
+            if (state) state.lastError = `request failed: ${String(err.message).slice(0, 120)}`;
             await sleep(waitMs);
             continue;
         }
@@ -290,12 +309,17 @@ if (rawAgencies.length && !agencySlugs.length) {
     // Actor.fail() (not a bare throw) so the Console's statusMessage actually carries this reason --
     // a bare throw lands only in the run log as a stack trace (verified empty statusMessage on the
     // sibling sam-gov-opportunities-scraper fix's own FAILED run, cycle 2357).
-    await Actor.fail(
-        `None of the agenc(ies) you listed could be matched: ${unknownAgencies.join(', ')}. Running anyway `
-        + 'would silently drop the agency filter and search the ENTIRE Federal Register instead (no agency '
-        + 'restriction at all), charging you for unrelated documents under a filter that looks honored but was '
-        + "not. Use the slug from a federalregister.gov/agencies/<slug> URL, or the agency's full name.",
-    );
+    // `agencies` is a stringList with no maxLength/item-count cap (same gap as unknownAgencyNote()
+    // below), so the echoed list is capped independently and the remediation -- the only
+    // actionable part -- is RESERVED as a clampStatusMessage suffix (c2442), not just appended
+    // after Apify's own silent 500-char cut.
+    await Actor.fail(clampStatusMessage(
+        `None of the agenc(ies) you listed could be matched: ${echoCap(unknownAgencies.join(', '), 60)}.`,
+        ' Running anyway would silently drop the agency filter and search the ENTIRE Federal Register instead '
+        + '(no agency restriction at all), charging you for unrelated documents under a filter that looks '
+        + "honored but was not. Use the slug from a federalregister.gov/agencies/<slug> URL, or the agency's "
+        + 'full name.',
+    ));
 }
 if (unknownAgencies.length) {
     log.warning(
@@ -826,24 +850,10 @@ while (!seeding && keepGoing && pushed < maxResults) {
     if (!applyNext(walkParams, page.next_page_url)) { runState.exhausted = true; break; }
 }
 
-// Apify silently truncates `statusMessage` at 500 chars with no " ..." marker (c1760 LEARNING,
-// first ported to this fleet's note-suffix pattern on sec-insider-trades-scraper c2428). This
-// Actor has 5 setStatusMessage call sites that append truncationNote()/unknownAgencyNote() but
-// had NO clamp at all -- a long base plus the notes relied entirely on Apify's own silent cut.
-const STATUS_MESSAGE_MAX = 500;
-// `suffix` is RESERVED out of the budget rather than appended after clamping (same reasoning as
-// sec-insider-trades-scraper c2428): the suffix carries the one disclosure worth keeping intact,
-// so the base truncates first. Guards budget at 0 in case a future suffix ever grows unbounded.
-const clampStatusMessage = (msg, suffix = '') => {
-    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
-    if (msg.length <= budget) return msg + suffix;
-    const cut = msg.slice(0, Math.max(budget - 4, 0));
-    const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
-};
-// Raw caller-supplied text echoed into a note must be capped independently of the backstop above:
-// the backstop reserves room FOR the suffix, which only works if the suffix itself is bounded.
-const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
+// STATUS_MESSAGE_MAX/clampStatusMessage/echoCap moved above Actor.init() (c2442) so the input-
+// validation Actor.fail() near the top of the file can use them too -- see that declaration for
+// the full rationale. This Actor has 5 setStatusMessage call sites plus 2 Actor.fail() sites that
+// all need the same reservation.
 
 // Empty unless WATCH_KEEP actually dropped something, so it can never add noise to a healthy run.
 function truncationNote() {
@@ -1088,15 +1098,20 @@ if (webhookUrl) {
 // baseline, stops a scheduled run from quietly reading "seeded" and moving on to incremental.
 if (watchMode && seeding && runState.failed) {
     const isInputError = INPUT_ERROR_STATUS.has(runState.lastErrorStatus);
-    await Actor.fail(
-        `The watch baseline could not be completed: ${runState.lastError ?? 'unknown API error'}. No baseline `
-        + 'was saved (a partial one would cause you to be charged twice for the same documents later) and '
-        + `nothing was charged. ${isInputError
+    // Measured at 511 chars under a full-length upstream detail (c2437) -- the silent 500-char cut
+    // landed inside the "No baseline was saved / nothing was charged" disclosure and the
+    // remediation clause. Both are reserved as the clampStatusMessage suffix (c2442); the upstream
+    // detail (already capped at 120 chars on the HTTP-body paths, see `lastError` assignments
+    // above) is the base that truncates first if anything still has to give.
+    await Actor.fail(clampStatusMessage(
+        `The watch baseline could not be completed: ${runState.lastError ?? 'unknown API error'}.`,
+        ' No baseline was saved (a partial one would cause you to be charged twice for the same documents '
+        + `later) and nothing was charged. ${isInputError
             ? 'This is the Federal Register API rejecting your input (e.g. an unrecognised agency, CFR title or '
                 + 'document type) — re-running with the same input will fail the same way; fix the filter values '
                 + 'above and re-run.'
             : 'Please re-run in a few minutes.'}`,
-    );
+    ));
 }
 
 await Actor.exit();
