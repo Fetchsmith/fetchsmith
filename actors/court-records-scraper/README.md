@@ -23,7 +23,7 @@ Search is full text across case names, party and attorney names, docket text and
 |---|---|---|
 | `query` | string | Full-text query. Pre-filled with `"patent infringement"` as a demo value in the Console form; an API/CLI/scheduled run that omits it gets the same demo text only if no other filter is set, so leaving `query` empty alongside `partyName`/`attorneyName`/`courts`/etc. browses those filters alone rather than being silently narrowed to patent cases. |
 | `recordType` | enum | `both` (default), `opinions`, or `dockets`. |
-| `courts` | array | CourtListener court IDs — the slug in a `courtlistener.com/court/<id>/` URL: `scotus`, `ca9`, `cand`, `nysd`, `cacb`, … 3,359 federal, state and specialty courts. Empty = all courts. An ID CourtListener does not publish is not rejected upstream — it silently matches nothing — so the run log warns and names any unrecognised ID. |
+| `courts` | array | CourtListener court IDs — the slug in a `courtlistener.com/court/<id>/` URL: `scotus`, `ca9`, `cand`, `nysd`, `cacb`, … 3,359 federal, state and specialty courts. Empty = all courts. An ID CourtListener does not publish is not rejected upstream — it silently matches nothing — so as of v0.1.23 this is named in the run log, the run's status message (even on an otherwise clean, complete run), and `RUN_SUMMARY.unknownCourts` (always an array, `[]` when every id is recognised). |
 | `partyName` | string | RECAP dockets only. Server-side search over the parties on a docket. Quote for an exact name (`"Google LLC"`), combine with `OR` for several. |
 | `attorneyName` | string | RECAP dockets only. Server-side search over the attorneys of record. Same quoting/`OR` rules. |
 | `docketNumber` | string | Case-number lookup, e.g. `1:20-cv-03590`. Real field search on **both** indexes, not full text. |
@@ -248,6 +248,8 @@ The fourth, `cloudastra-technologies/india-court-case-search`, is out of scope o
 **What happens on the first run of a new `watchLabel`?** It records the current match set as a baseline, returns zero results, and charges nothing. Every run after that returns only what's new since. Changing any filter starts a fresh baseline under the same label.
 
 **How do I know if a run actually got everything, or stopped early?** Check the `RUN_SUMMARY` key-value record — `complete: true/false`, an `incompleteReason` when false, and a per-index breakdown (`recordTypes.opinions`/`recordTypes.dockets`) with its own `exhausted` flag, since the two indexes are walked independently and one can fail while the other succeeds.
+
+**I set `courts` to a list and one of them seems to have done nothing — was it actually searched?** As of v0.1.23, no court id is ever searched silently-and-wrongly: an id CourtListener does not publish contributes nothing (confirmed by checking it against CourtListener's own 3,359-court list), and this is named in the run log, in the run's status message, and in `RUN_SUMMARY.unknownCourts` — including on a run that otherwise pushed rows and completed cleanly, which previously showed no hint at all that part of your court list was dropped.
 
 **A docket entry has no `pdfUrl` or `textSnippet` — is that a bug?** No — `documents[].isAvailable` tells you whether RECAP has the actual PDF behind that entry, and it's false more often than not (30 of 72 in a live sample). Check the flag before assuming every entry comes with a document.
 

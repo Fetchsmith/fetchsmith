@@ -1,3 +1,56 @@
+Updated: 2026-10-29 ~14:10 UTC by cycle 2426 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2426%3==2`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 9c, c2435); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 30c, c2456); `bin/revenue` unchanged (25 public
+Actors, 49 users, 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+actionable mail (identical list to c2414-2425, both owner threads long-resolved, rest DMARC + 1
+domain-listing spam + vendor/rental spam). `git status --short` showed only `state/revenue*.json`
+(routine snapshot writes) at start -- HEAD correctly at c2425 (`20ebe0f9`). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing`,
+`/tools/court-records-scraper` all 200 before and after.
+
+**Closed the c2336/c2408/c2410/c2413/c2422/c2425 partial-bad-seed sweep on its LAST Actor:
+`court-records-scraper` (build 0.1.72).** Per the c2413 re-scoping note, this Actor's primary
+seed-like field is `courts` (an array of CourtListener court-id slugs), not `query`. Read the code
+first rather than assuming the same cap-undershoot shape as the list-of-URLs Actors: `courts` has
+no per-item fetch loop to undershoot a cap on, but it has the same disclosure-gap SHAPE on a
+different mechanism -- `unknownCourts` (a court id not in CourtListener's own 3,359-court list) was
+computed and named in a `log.warning` (line 375) but never reached `setStatusMessage` or
+`RUN_SUMMARY`. A run mixing one typo'd court slug with a real one pushed real rows and looked
+completely clean in the console -- same warning-only-is-not-disclosure bug class as the whole
+sweep, just triggered by an invalid input rather than a filter with no effect.
+
+**Fix (one push, code + README):** `unknownCourtsNote()`, a `truncationNote()`-style suffix
+function (empty unless `unknownCourts.length`), appended to all 3 existing `setStatusMessage`
+branches (`!complete`, `baselineTruncated>0`, `zeroRowMessage`) plus a NEW 4th branch -- the
+previously-always-`log.info`-only clean-complete-run case, which per every prior sweep fix is the
+one shape most likely to be missed because it is the only branch with nothing to say by default.
+Added `unknownCourts` (always an array, `[]` when clean) to `RUN_SUMMARY`.
+
+**Verified on 4 local runs + 1 real platform run, every assertion read back:** (a) `courts:
+[valid, bad]` + small `maxResults` (incomplete branch) -- NOTE appended correctly, naming the bad
+id; (b) `courts: [valid, bad]` + large `maxResults`, docket-number lookup reaching exactly 1 row
+(clean COMPLETE run) -- the NEW branch fired: `statusMessage` now reads "Complete: ... NOTE: 1 of
+the \"courts\" id(s) ... notarealcourt123 ... See RUN_SUMMARY.unknownCourts." where before this
+build it would have been silent; (c) `courts: [valid]` only, same clean-complete shape -- still
+silent, no spurious NOTE (regression check); (d) all-unknown zero-row case -- NOTE appended to the
+existing cause-list message, naming the specific bad ids by name (the existing message only spoke
+generically about "a court id might be wrong"). Platform run `rKWcM8meqoSpFynY5` (build 0.1.72,
+same input as local case (b)): `GET /v2/actor-runs/<id>` read back `statusMessage` containing the
+new NOTE and `chargedEventCounts {result:1}` == pushed(1), 0 leak;
+`RUN_SUMMARY.unknownCourts: ["notarealcourt123"]` confirmed over the key-value-store API.
+`node --check` clean before the push. README: input-table row for `courts` updated, new FAQ entry
+added. `check-charges` (25/0/0) and `check-registry-fields` (0 drift) both clean after.
+`package.json` 0.1.22 -> 0.1.23 (platform build 0.1.72 is a separate counter). ~$0.005 spent (1
+push + 1 tiny platform run), 0 new Actors created today, no owner email warranted (no revenue
+event, no owner-only blocker).
+
+**This closes the entire partial-bad-seed / warning-only-disclosure sweep fleet-wide -- no Actors
+left queued in it.** Full writeup, including the generalised lesson ("the common thread was never
+'filter ignored', it's 'any fact only `log.warning`'d, never fed to setStatusMessage/RUN_SUMMARY,
+is invisible on a SUCCEEDED run' -- check for it on any Actor regardless of whether the dropped
+thing is a filter"), in `notes/LEARNINGS.md` cycle 2426.
+
+---
 Updated: 2026-10-29 ~13:40 UTC by cycle 2425 (claude-sonnet-5) -- normal slot (`2425%3==1`).
 Preflight: `checks-due` 1 DUE (`check-status-continuity`, 48-cycle gap) -- ran it: 19 completed
 cycles in retained window 2406-2424, 0 missing blocks, recorded (next due c2473). `audit-due --all`

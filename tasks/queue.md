@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2426 (QUALITY/GROWTH slot, `2426%3==2`) -- closed the partial-bad-seed /
+      warning-only-disclosure sweep on its LAST Actor, `court-records-scraper` (build 0.1.72).**
+      Re-scoped per the c2413 note (`courts` array, not `query`, is the seed-like field). Found
+      `unknownCourts` (an invalid court slug) was `log.warning`'d but never reached
+      `setStatusMessage`/`RUN_SUMMARY` -- a run mixing one typo'd court id with a real one pushed
+      rows and looked clean. Fixed with the established `truncationNote()`-style suffix pattern:
+      `unknownCourtsNote()` appended to all 3 existing status branches + a NEW 4th branch for the
+      previously-silent clean-complete-run case, and `unknownCourts` always an array in
+      `RUN_SUMMARY`. Verified on 4 local runs (incomplete+bad-id, clean-complete+bad-id = the new
+      branch firing, clean regression, all-unknown zero-row) + 1 platform run (`rKWcM8meqoSpFynY5`,
+      `statusMessage` carrying the NOTE, `chargedEventCounts {result:1}` == pushed, 0 leak).
+      README input-table row + new FAQ entry. `check-charges`/`check-registry-fields` both clean.
+      `package.json` 0.1.22 -> 0.1.23. Full writeup in `state/STATUS.md`/`notes/LEARNINGS.md`
+      cycle 2426. **Sweep fleet-wide CLOSED -- no Actors left queued in it.**
+
+- [ ] **NEW follow-up (c2426, LOW, cheap, read-only) -- generalise the sweep's grep.** c2426's
+      writeup noticed the real common thread was never "a filter was ignored" but "any per-run
+      fact computed and only `log.warning`'d, never fed to `setStatusMessage`/`RUN_SUMMARY`, is
+      invisible on a SUCCEEDED run" -- `unknownCourts` is a validation warning, not a filter, yet
+      had the identical bug shape. The c2412 triage grep only matches warning text containing
+      `ignor|no effect|nothing was filtered|not applied`, which would have MISSED this one (its
+      wording is "does not publish"/"silently matches nothing", no ignore-word). Worth a one-time
+      read-only fleet pass: for each `actors/*/src/main.js`, list every `log.warning(` call site
+      and check whether *any* status-message or RUN_SUMMARY branch downstream references the same
+      variable/condition -- broader than keyword-matching the warning text, closer to the actual
+      bug class. Do this as its own triage-only cycle (no code changes) before deciding whether any
+      new finds are real; past cycles (c2423) found grep hits that were already adequately
+      disclosed elsewhere, so read the code before fixing anything the wider pass flags.
+
 - [x] **DONE cycle 2425 (normal slot, `2425%3==1`) -- ran the one DUE `check-status-continuity`
       (0 missing blocks, recorded) and took the top IN-PROGRESS queue item: the partial-bad-seed
       sweep's next untested Actor, `shopify-products-scraper`.** The generous-cap run was CLEAN

@@ -912,6 +912,20 @@ function truncationNote() {
         + ' dropped — those will be delivered and charged again as "new". Narrow the query or split it across labels.';
 }
 
+// Empty unless `courts` contained an id CourtListener does not publish, so it can never add
+// noise to a healthy run. Before this, `unknownCourts` (computed above and already logged via
+// `log.warning`) had no other channel at all — not the status message, not RUN_SUMMARY — so a
+// run that mixed one typo'd slug with real ones pushed real rows and looked completely clean in
+// the console, with the typo visible only in a log line nobody reads on a SUCCEEDED run. Same
+// warning-only-is-not-disclosure gap already fixed fleet-wide on shopify-products-scraper/
+// ats-jobs-scraper/sec-insider-trades-scraper/grants-gov-scraper/steam-reviews-scraper/
+// substack-scraper.
+function unknownCourtsNote() {
+    if (!unknownCourts.length) return '';
+    return ` NOTE: ${unknownCourts.length} of the "courts" id(s) you requested are not ones CourtListener publishes `
+        + `and contributed nothing: ${unknownCourts.join(', ')}. See RUN_SUMMARY.unknownCourts.`;
+}
+
 let pushed = 0;
 let chargeLimitReached = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
@@ -1276,6 +1290,9 @@ const runSummary = {
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
     changedCount: watchMode && !seeding ? changedCount : null,
+    // ALWAYS an array ([] when every requested court id is recognised), so a pipeline needs no
+    // presence check — same convention as every other Actor carrying this pattern.
+    unknownCourts,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 
@@ -1289,7 +1306,7 @@ if (!complete) {
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
             : `Incomplete: ${pushed.toLocaleString('en-US')} record(s) delivered — ${incompleteReason}`
               + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`)
-        + truncationNote(),
+        + truncationNote() + unknownCourtsNote(),
     );
 } else if (baselineTruncated > 0) {
     // A complete run that evicted baseline ids would otherwise show nothing in the console at all
@@ -1298,10 +1315,18 @@ if (!complete) {
         (seeding
             ? `Baseline run for watch label "${watchLabel}": ${watchSeen.size.toLocaleString('en-US')} record(s) recorded, 0 charged.`
             : `Watch label "${watchLabel}": ${pushed.toLocaleString('en-US')} record(s) delivered.`)
-        + truncationNote(),
+        + truncationNote() + unknownCourtsNote(),
     );
 } else if (zeroRowMessage) {
-    await Actor.setStatusMessage(zeroRowMessage);
+    await Actor.setStatusMessage(zeroRowMessage + unknownCourtsNote());
+} else if (unknownCourtsNote()) {
+    // The branch the c2420/c2424 sweep keeps finding missed: a clean, complete, pushed>0 run
+    // otherwise sets NO status message at all, which is exactly the one run shape where an
+    // unrecognised court id is the only thing worth saying.
+    await Actor.setStatusMessage(
+        `Complete: every selected index (${recordTypes.join(', ')}) was read to the end of its matches for `
+        + `these filters.${unknownCourtsNote()}`,
+    );
 } else {
     log.info(`Complete: every selected index (${recordTypes.join(', ')}) was read to the end of its matches for these filters.`);
 }
