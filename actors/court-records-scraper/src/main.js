@@ -926,6 +926,27 @@ function unknownCourtsNote() {
         + `and contributed nothing: ${unknownCourts.join(', ')}. See RUN_SUMMARY.unknownCourts.`;
 }
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars (fleet-wide, found cycle 1760) -- and
+// `Actor.fail()`'s message sets that same field. Measured on this Actor's `Actor.fail()` call
+// below (cycle 2437): up to 805 chars, since two walkers (docket + opinion) can both fail in the
+// same run, doubling the upstream-error text `incompleteDetail` carries. `suffix` is RESERVED out
+// of the budget rather than appended after clamping (the clamp-reservation sweep's fleet
+// convention, cf. fec-campaign-finance-scraper cycle 2433): the "no partial baseline was saved /
+// nothing was charged" disclosure and the branch-specific remediation are billing-relevant and
+// must never be the part a long upstream error message pushes off the end -- `incompleteDetail`
+// is the part that may be, since its full text already reached RUN_SUMMARY.incompleteDetail and
+// (because `seeding` only becomes true inside the `watchMode` branch above, so `seedFailure`
+// always implies `watchMode`) the unclamped `log.warning` a few lines above this function always
+// fires first.
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+
 let pushed = 0;
 let chargeLimitReached = false;
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
@@ -1375,19 +1396,22 @@ if (webhookUrl) {
 // failing is free -- and failing loudly, instead of exiting 0 with no baseline saved, stops a
 // scheduled run from quietly reading "seeded" and moving on to incremental.
 if (seedFailure) {
+    const seedFailureAdvice = seedFailureIsInputError
+        ? 'This is CourtListener rejecting your input (an unrecognised court id or a malformed filter) — '
+            + 're-running with the same input will fail the same way; fix the filter values above and re-run.'
+        : seedFailureIsTimeBudget
+            ? 'The query is bigger than one run can seed in time -- narrow it (fewer courts, a shorter '
+              + 'filed-date window, or a lower maxResults) and re-run, rather than retrying the same input.'
+            : seedFailureIsRateLimit
+                ? 'CourtListener\'s shared daily request quota was reached -- re-run after the quota resets '
+                  + '(CourtListener\'s day boundary) rather than retrying immediately.'
+                : 'Please re-run in a few minutes.';
     await Actor.fail(
-        `The watch baseline could not be completed: ${incompleteDetail ?? incompleteReason}. No baseline was saved `
-        + '(a partial one would cause you to be charged twice for the same records later) and nothing was '
-        + `charged. ${seedFailureIsInputError
-            ? 'This is CourtListener rejecting your input (an unrecognised court id or a malformed filter) — '
-                + 're-running with the same input will fail the same way; fix the filter values above and re-run.'
-            : seedFailureIsTimeBudget
-                ? 'The query is bigger than one run can seed in time -- narrow it (fewer courts, a shorter '
-                  + 'filed-date window, or a lower maxResults) and re-run, rather than retrying the same input.'
-                : seedFailureIsRateLimit
-                    ? 'CourtListener\'s shared daily request quota was reached -- re-run after the quota resets '
-                      + '(CourtListener\'s day boundary) rather than retrying immediately.'
-                    : 'Please re-run in a few minutes.'}`,
+        clampStatusMessage(
+            `The watch baseline could not be completed: ${incompleteDetail ?? incompleteReason}.`,
+            ' No baseline was saved (a partial one would cause you to be charged twice for the same records '
+            + `later) and nothing was charged. ${seedFailureAdvice}`,
+        ),
     );
 }
 

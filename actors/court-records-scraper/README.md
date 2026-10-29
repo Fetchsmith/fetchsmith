@@ -255,6 +255,8 @@ The fourth, `cloudastra-technologies/india-court-case-search`, is out of scope o
 
 **I passed a malformed date and the run returned results from the 1700s — is that still a bug?** No, that was fixed in v0.1.20. A date that doesn't parse now stops the run with an error instead of silently widening the search to the entire archive (which is what used to happen, and every one of those out-of-range rows was billable).
 
+**A watch-label seed run FAILED instead of succeeding with 0 rows — what's in that message?** As of v0.1.24, the failure message is always long enough to say that no partial baseline was saved (so you will not be double-charged later), that nothing was charged for this run, and what to actually do next (fix the input, narrow the query, wait out CourtListener's shared daily quota, or just re-run) — that guarantee is reserved out of the console's 500-character status-message limit, so a long upstream error detail gets shortened first rather than silently deleting the part that matters.
+
 ## Data source, legality and privacy
 
 Data comes from [CourtListener](https://www.courtlistener.com/) / the [Free Law Project](https://free.law/), a non-profit that publishes US court records as open data, via its documented public REST API, using a free account's own API token (registered openly, no paywall bypassed and no page scraped behind authentication) — CourtListener began requiring that token for search in October 2026.
