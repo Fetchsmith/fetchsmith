@@ -137,6 +137,35 @@
       firing on both the zero-row and the new clean-complete branches; then one real platform run,
       `statusMessage` and (if added) `RUN_SUMMARY` read back over the API.
 
+- [x] **DONE cycle 2429 (QUALITY/GROWTH slot, `2429%3==2`) -- fixed `sam-gov-opportunities-scraper`,
+      the Actor the c2428 note below flagged "read FIRST" (no clamp at all, `blankDropNote()`
+      appended to every status message across 4 call sites), build 0.1.81 (package 0.1.25 ->
+      0.1.26).** Ported c2428's exact two-line pattern: `STATUS_MESSAGE_MAX`/`clampStatusMessage(msg,
+      suffix)` reserving the suffix out of the 500-char budget, wired into all 4 existing
+      `setStatusMessage` call sites (each refactored to build a plain base string so the suffix
+      passes separately). Also added `echoCap(s, max=40)` and applied it to the two raw
+      caller-supplied values echoed verbatim into the zero-row message (`keyword`,
+      `solicitationNumber` -- both unbounded free-text fields with no schema `maxLength`), since
+      those alone can exceed the whole budget before any other cause joins; left the
+      `naicsCodes`/`setAsideTypes`/`noticeTypes`/`states` array joins uncapped individually (the
+      base clamp already protects the suffix regardless of which part is long).
+      **Verified on 4 local runs + 1 real platform run, every assertion read back:** (a) zero-row
+      branch, long keyword (97 chars) + 15 states + 1 blank naicsCodes entry -- clamp fired (` ...`
+      marker before NOTE), keyword echo capped, final message **496 chars**, NOTE fully intact;
+      (b) zero-row branch, short base + 1 blank entry -- NOTE appended with NO truncation marker
+      (regression: short messages untouched); (c) incomplete branch, no blanks -- unaffected; (d)
+      incomplete branch WITH a blank entry -- NOTE appended correctly on this branch too,
+      `RUN_SUMMARY.blankFilterEntriesDropped` matched. Platform run `n5fGUaRkgsBtcp7qS` (build
+      0.1.81, same input as local (a)): `statusMessage` 496 chars read back live, NOTE intact,
+      `chargedEventCounts {result:0}` == pushed(0), 0 leak. README FAQ extended with the
+      reservation guarantee. `check-charges` 25/0/0, `check-registry-fields` 0 drift. ~$0.005
+      spent, 0 new Actors, no owner email warranted. Full writeup in `state/STATUS.md` cycle 2429.
+      **This closes 1 of the 10 Actors in the sweep below (sec-insider-trades-scraper was already
+      done at c2428) -- 8 remain, worst-case base length not yet measured on any of them.** Pick
+      the next one by reading its call sites first per the method below -- do not assume every
+      flagged Actor needs the fix (an Actor whose base can never approach 500 chars needs no
+      change).
+
 - [ ] **NEW follow-up (c2428, MEDIUM-HIGH, cheap, read-only first) -- the fleet appends
       `*Note()` disclosure suffixes to status messages on 10 Actors, and NONE of them reserve the
       suffix out of the 500-char clamp the way c2428 just taught `sec-insider-trades-scraper` to.**

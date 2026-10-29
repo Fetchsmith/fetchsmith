@@ -420,6 +420,28 @@ function blankDropNote() {
     return ` NOTE: ${fields.map(([f, n]) => `${n} blank entr${n === 1 ? 'y' : 'ies'} in ${f}`).join(', ')} `
         + 'ignored (not guessed at); the non-blank values you gave still applied.';
 }
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars with no " ..." marker (cycle 1760
+// LEARNING). This Actor has no clamp at all today, and `blankDropNote()` is appended LAST on
+// every one of the 4 setStatusMessage call sites below -- so on the zero-row branch, whose own
+// base message already joins several caller-supplied, unbounded values (keyword free text, plus
+// the naicsCodes/setAsideTypes/noticeTypes/states stringLists, none of which have a schema
+// length limit), the base alone can exceed 500 chars and Apify's own silent cut would eat the
+// blank-drop disclosure before a buyer ever sees it (same shape sec-insider-trades-scraper fixed
+// in cycle 2428). `suffix` is RESERVED out of the budget rather than appended after clamping, so
+// the base truncates first and the NOTE always survives. The log keeps the full, unclamped text.
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = STATUS_MESSAGE_MAX - suffix.length;
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, budget - 4);
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+// keyword and solicitationNumber are unbounded free-text fields (no schema maxLength) that get
+// echoed verbatim into the zero-row status message below -- cap the echo itself at 40 chars
+// (c2428's number) so a single caller-supplied value cannot eat the whole budget on its own,
+// independent of the clamp above which only protects the suffix.
+const echoCap = (s, max = 40) => (s.length > max ? `${s.slice(0, max)}...` : s);
 const organizationId = String(input.organizationId ?? '').trim();
 const activeOnly = input.activeOnly !== false; // default true
 
@@ -2358,15 +2380,12 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 // setStatusMessage call anywhere in this Actor before cycle 649.
 if (!complete) {
     const of = reachable() === null ? '' : ` of ${reachable().toLocaleString('en-US')} reachable`;
-    await Actor.setStatusMessage(
-        seeding
-            ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} ${ROW_NOUN}(s) recorded${of} — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
-              + blankDropNote()
-            : `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`
-              + blankDropNote(),
-    );
+    const incompleteBase = seeding
+        ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} ${ROW_NOUN}(s) recorded${of} — ${incompleteReason}`
+          + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
+        : `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
+          + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`;
+    await Actor.setStatusMessage(clampStatusMessage(incompleteBase, blankDropNote()));
 } else if (watchMode && !seeding && pushed === 0 && skippedSeen > 0) {
     // Every row this query matched was already delivered under this watch label and none changed
     // -- the common, expected result on a scheduled re-run, not a failure. Before this branch
@@ -2374,12 +2393,10 @@ if (!complete) {
     // green run next to an empty dataset with nothing to tell a buyer who only reads run status.
     // Seeding is excluded -- 0 rows on a baseline run is the DESIGNED result (see the
     // baseline-saved log line emitted during the walk), not a quiet incremental run.
-    await Actor.setStatusMessage(
-        `Nothing new for watch label "${watchLabel}": all ${skippedSeen.toLocaleString('en-US')} matching ${ROW_NOUN}(s) `
+    const nothingNewBase = `Nothing new for watch label "${watchLabel}": all ${skippedSeen.toLocaleString('en-US')} matching ${ROW_NOUN}(s) `
         + `were already delivered on a prior run${watchChanges ? ' and none of their watched fields changed' : ''}. `
-        + `You were charged nothing.${watchChanges ? '' : ' Set watchChanges: true to also catch edits to already-delivered rows.'}`
-        + blankDropNote(),
-    );
+        + `You were charged nothing.${watchChanges ? '' : ' Set watchChanges: true to also catch edits to already-delivered rows.'}`;
+    await Actor.setStatusMessage(clampStatusMessage(nothingNewBase, blankDropNote()));
 } else if (!seeding && pushed === 0) {
     // The other way this Actor can reach SUCCEEDED with 0 rows and no markIncomplete cause above:
     // every filter value supplied is valid and SAM.gov simply has no match -- covers a plain search
@@ -2394,7 +2411,7 @@ if (!complete) {
     // keyword is never actually sent when solicitationNumber is active -- it takes over `q`
     // entirely in buildSearchUrl -- so naming it here would be the exact false-applied-filter
     // claim this block exists to avoid (cycle 1637).
-    if (keyword && !solicitationNumberActive) appliedFilters.push(`keyword "${keyword}"`);
+    if (keyword && !solicitationNumberActive) appliedFilters.push(`keyword "${echoCap(keyword)}"`);
     if (!isWd && !isCfda && !isExclusions && naicsCodes.length) appliedFilters.push(`naicsCodes ${naicsCodes.join(', ')}`);
     if (!isWd && !isCfda && !isExclusions && setAsideTypes.length) appliedFilters.push(`setAsideTypes ${setAsideTypes.join(', ')}`);
     if (!isWd && !isCfda && !isExclusions && noticeTypes.length) appliedFilters.push(`noticeTypes ${noticeTypes.join(', ')}`);
@@ -2407,22 +2424,19 @@ if (!complete) {
             + `${dateWindowDropped + dateWindowMissing} fetched row(s)`);
     }
     if (solicitationNumberActive) {
-        appliedFilters.push(`solicitationNumber "${solicitationNumberRaw}", which dropped `
+        appliedFilters.push(`solicitationNumber "${echoCap(solicitationNumberRaw)}", which dropped `
             + `${solicitationNumberMismatch + solicitationNumberMissing} fetched row(s)`);
     }
     if (awardAmountActive) {
         appliedFilters.push(`your ${awardAmountText()} range, which dropped `
             + `${awardAmountDropped + awardAmountMissing} fetched row(s)`);
     }
-    await Actor.setStatusMessage(
-        appliedFilters.length
-            ? `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has none once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied. `
-              + 'Every value you gave is valid, so this is a genuinely empty search, not an input mistake -- drop or widen one filter at a '
-              + 'time to find which one excludes everything. You were charged nothing.'
-              + blankDropNote()
-            : `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has no ${ROW_NOUN} at all for this query, with no filter narrowing the run. You were charged nothing.`
-              + blankDropNote(),
-    );
+    const zeroRowBase = appliedFilters.length
+        ? `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has none once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied. `
+          + 'Every value you gave is valid, so this is a genuinely empty search, not an input mistake -- drop or widen one filter at a '
+          + 'time to find which one excludes everything. You were charged nothing.'
+        : `0 ${ROW_NOUN_PLURAL} matched: SAM.gov has no ${ROW_NOUN} at all for this query, with no filter narrowing the run. You were charged nothing.`;
+    await Actor.setStatusMessage(clampStatusMessage(zeroRowBase, blankDropNote()));
 } else {
     if (declaredMatches !== null && !watchMode && !postFetchFilterActive) {
         log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} ${ROW_NOUN}(s) SAM.gov declared for these filters.`);
@@ -2452,9 +2466,10 @@ if (!complete) {
           + `before charging${declaredMatches !== null ? `, out of ${declaredMatches.toLocaleString('en-US')} SAM.gov declared for your other filters` : ''}.`
         : '';
     if (note || windowNote) {
-        await Actor.setStatusMessage(
-            `Delivered ${pushed.toLocaleString('en-US')} ${ROW_NOUN}(s).${windowNote}${note}`,
-        );
+        await Actor.setStatusMessage(clampStatusMessage(
+            `Delivered ${pushed.toLocaleString('en-US')} ${ROW_NOUN}(s).${windowNote}`,
+            note,
+        ));
     }
 }
 
