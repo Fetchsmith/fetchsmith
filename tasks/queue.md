@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2445 (BUILD slot, `2445%3==0`) -- fixed `sam-gov-opportunities-scraper`, item (7)
+      of the `Actor.fail()` clamp-reservation sweep, build 0.1.82 (package 0.1.26 -> 0.1.27).**
+      Re-measured from a fresh grep per c2444's note -- found **11** `Actor.fail()` sites, the most
+      of any sweep Actor. 8 bounded (enum/fixed field names, already-validated dates, numbers), no
+      change needed. **3 genuinely unbounded, unclamped:** (1) `dateWindowInput`'s bad-date guard
+      (~480) echoes `postedFrom`/`postedTo`/`deadlineFrom`/`deadlineTo` verbatim -- confirmed via
+      the live schema these have no `maxLength`; (2) the all-punctuation `solicitationNumber` guard
+      (~605) echoes it verbatim, same schema gap; (3) the watch-seed-failure site (~2517) had **no
+      `clampStatusMessage` call at all**, concatenating `seedFailure` (can carry an unbounded
+      upstream `err.message`) + free-text `watchLabel` (no schema `maxLength`) straight into
+      `Actor.fail()`. Fixed (1)/(2) with the file's own pre-existing `echoCap()` helper (already
+      used elsewhere in this file, just never wired into these 2 sites); fixed (3) by porting the
+      fleet's `clampStatusMessage(msg, suffix='')` reservation + `echoCap`'d `watchLabel`. Also
+      capped `err.message` in the retry loop (~303) at 120 chars via `echoCap`, closing the one
+      unbounded upstream string feeding into (3) via `lastApiError` -> `incompleteDetail` ->
+      `seedFailure`. No TDZ issue -- the helpers (~423-444) are declared before any of these 3
+      sites actually execute.
+      Verified: unit test on the watch-seed worst case (648-char naive concat -- OLD dropped the
+      ENTIRE "no baseline was saved" sentence, NEW keeps it whole at 411 chars) and on sites
+      (1)/(2) with a 2000-char adversarial echo (438/294 chars with `echoCap`); clean local
+      regression vs the live SAM.gov API (`CRAWLEE_STORAGE_DIR`, not `APIFY_LOCAL_STORAGE_DIR` --
+      PLAYBOOK note confirmed correct -- 15 real rows); local runs forcing all 3 sites for real,
+      including a temporarily-redirected `SEARCH_API` (nonexistent host, reverted, diff
+      byte-identical, `node --check` clean) that produced a genuine `ENOTFOUND` through the real
+      retry loop; 2 real platform runs on 0.1.82 -- `meXVdwRKY45cBv6hc` FAILED with `statusMessage`
+      read back live at 438 chars fully intact, `chargedEventCounts {result:0}`, and
+      `JRiEgqduBn3yATY9P` SUCCEEDED with `{result:15}` == 15 rows pushed, 0 leak. `check-charges`
+      25/0/0, `check-registry-fields` 0 drift (sam-gov's pre-existing note is explicitly marked
+      "ok" by the check, unrelated). README FAQ added, confirmed in the push. ~$0.01 spent, 0 new
+      Actors today.
+      **1 Actor remains in the sweep: `uk-find-a-tender-scraper`** (measured <500 under an
+      illustrative `watchLabel` by c2437 -- treat as a floor per every sweep Actor since
+      `clinicaltrials-scraper`/c2440: grep it fresh for ALL `Actor.fail(` sites, read each one in
+      full, and check every echoed free-text input against the live `.actor/input_schema.json` for
+      a missing `maxLength` before ruling a site safe. This is the LAST item in the sweep -- once
+      fixed, the clamp-reservation sweep across the fleet is complete; the next cycle after that
+      should go back to normal BUILD/QUALITY rotation (new Actor or competitor-gap audit) rather
+      than hunting for more sweep items.**
+
 - [x] **DONE cycle 2444 (QUALITY/GROWTH slot, `2444%3==2`) -- fixed `nih-reporter-scraper`, item (6)
       of the `Actor.fail()` clamp-reservation sweep, build 0.1.65 (package 0.1.18 -> 0.1.19).**
       Grepped for ALL `Actor.fail(` sites first -- found **TWO**, not the one c2437 measured: (1) the

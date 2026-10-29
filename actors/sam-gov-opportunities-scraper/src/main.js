@@ -300,7 +300,13 @@ async function apiGet(url) {
                 headers: { accept: 'application/hal+json' }, // required: plain application/json 406s (cycle 539)
             });
         } catch (err) {
-            lastApiError = `request error: ${err.message}`;
+            // `err.message` is an upstream/network string with no length bound (DNS/TLS errors in
+            // particular can be long) and feeds the watch-seed-failure Actor.fail() message below
+            // (via lastApiError -> incompleteDetail -> seedFailure) where it competes for the same
+            // 500-char Apify status-message budget as the "nothing was charged" disclosure -- same
+            // bug class the rest of the fleet's clamp-reservation sweep has been fixing. Capped at
+            // 120 chars to match every other upstream-body interpolation in this file.
+            lastApiError = `request error: ${echoCap(err.message, 120)}`;
             log.warning(`SAM.gov request failed (${err.message}); retrying (${attempt}/4).`);
             await sleep(Math.max(Math.min(attempt * 2000, remainingMs()), 0));
             continue;
@@ -477,8 +483,12 @@ async function dateWindowInput(name) {
     // The round-trip comparison is what rejects a well-shaped but non-existent date: JS rolls
     // `2026-02-31` forward to 2026-03-03 instead of failing, so matching the regex is not enough.
     if (!asUtc || Number.isNaN(asUtc.getTime()) || asUtc.toISOString().slice(0, 10) !== raw) {
+        // `raw` is free text with no schema `maxLength` -- echoCap it so a buyer-supplied wall of
+        // text cannot push the "stopping before any row is delivered or charged" disclosure past
+        // Apify's silent 500-char statusMessage cut (same bug class the clamp-reservation sweep has
+        // been fixing elsewhere in the fleet, just on a pre-charge guard instead of a post-fetch one).
         await Actor.fail(
-            `\`${name}\` must be a real calendar date in YYYY-MM-DD form (e.g. 2026-01-31); got "${raw}". `
+            `\`${name}\` must be a real calendar date in YYYY-MM-DD form (e.g. 2026-01-31); got "${echoCap(raw)}". `
             + 'Stopping before any row is delivered or charged: an unreadable date window cannot be applied, and '
             + 'ignoring it would hand you the whole unwindowed result set -- every row of it billed -- while '
             + 'looking like it had been filtered. Fix the value, or remove the field to search without a date '
@@ -602,8 +612,11 @@ let solicitationNumberClean = null;
 if (solicitationNumberRaw) {
     solicitationNumberClean = solicitationNumberRaw.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
     if (!solicitationNumberClean) {
+        // Same echoCap reasoning as dateWindowInput above: `solicitationNumberRaw` is free text with
+        // no schema `maxLength`, and it is echoed BEFORE the "charged nothing" disclosure in the
+        // base, so an uncapped value could push that disclosure past the 500-char silent cut.
         await Actor.fail(
-            `\`solicitationNumber\` ("${solicitationNumberRaw}") has no letters or digits once punctuation is `
+            `\`solicitationNumber\` ("${echoCap(solicitationNumberRaw)}") has no letters or digits once punctuation is `
             + 'stripped, so it can never exactly match a real solicitation number. Stopping before any request '
             + 'so you are charged nothing. Fix the value, or remove the field to search without it.',
         );
@@ -2514,10 +2527,19 @@ if (webhookUrl) {
 }
 
 if (watchMode && seedFailure) {
-    await Actor.fail(
-        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
-        + `for watch label "${watchLabel}" -- ${seedRetryAdvice.replace(/^Re-run/, 're-run')}.`,
-    );
+    // `seedFailure` (via incompleteDetail, which can carry an upstream error string) and
+    // `watchLabel` (free text, no schema `maxLength`) are both caller/upstream-controlled and
+    // unbounded, same bug class as the rest of the fleet's clamp-reservation sweep: without a
+    // reservation, Apify's silent 500-char statusMessage cut could take the "no baseline was
+    // saved" disclosure and the re-run advice off the end, leaving a buyer with no idea their
+    // watch label has nothing saved. Base = the upstream failure detail; suffix = the
+    // baseline-not-saved disclosure + re-run advice, reserved out of the budget so it survives
+    // intact. `watchLabel` is echoCap'd in the suffix since it sits right next to that disclosure.
+    await Actor.fail(clampStatusMessage(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}.`,
+        ` No baseline was saved for watch label "${echoCap(watchLabel, 60)}" -- `
+        + `${seedRetryAdvice.replace(/^Re-run/, 're-run')}.`,
+    ));
 }
 
 await Actor.exit();

@@ -1,3 +1,71 @@
+Updated: 2026-10-29 ~23:35 UTC by cycle 2445 (claude-sonnet-5) -- BUILD slot (`2445%3==0`).
+Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2444: both owner threads
+`dc593cfb`/`2b237f1b` long-resolved, rest DMARC + a 2nd TinyGate pitch + rental/IP-lease spam).
+`bin/revenue` unchanged (25 public Actors, 49 users, 782 runs30d, 779 ext_ok30d / 3 ext_bad30d,
+0 bkmk/0 reviews, $0 booked) -- no owner email warranted. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/` and `/tools/sam-gov-opportunities-scraper` both 200
+after the push. 0 new Actors created today.
+
+**Fixed `sam-gov-opportunities-scraper`, item (7) of the `Actor.fail()` clamp-reservation sweep,
+build 0.1.82 (package 0.1.26 -> 0.1.27).** Per c2444's note that the c2437 per-Actor counts have
+understated three Actors in a row, re-measured from a fresh grep rather than trusting the old
+number -- found **11** `Actor.fail()` call sites in this file, the most of any sweep Actor so far.
+Read all 11 in full rather than assuming the shared watch-seed-failure site was the only risk.
+8 are bounded (fixed enum/field names, already-validated 10-char dates, or numbers) and needed no
+change. **3 genuinely unbounded, unclamped sites, none caught by the earlier illustrative-label
+measurement because none of them are the watch-seed site that measurement was based on:**
+(1) `dateWindowInput`'s bad-date guard (~line 480) echoes the raw `postedFrom`/`postedTo`/
+`deadlineFrom`/`deadlineTo` value verbatim -- confirmed via the live input schema these 4 fields
+have **no `maxLength`** (plain `textfield`, type string); (2) the all-punctuation
+`solicitationNumber` guard (~line 605) echoes `solicitationNumberRaw` verbatim -- same schema gap;
+(3) the watch-seed-failure site (~line 2517) concatenates `seedFailure` (which can carry an
+upstream `err.message` with no bound of its own) and `watchLabel` (also no schema `maxLength`)
+into `Actor.fail()` with **no `clampStatusMessage` call at all**, relying entirely on Apify's
+silent 500-char cut. All three put the billing-safety sentence ("stopping before any row is
+delivered or charged" / "charged nothing" / "no baseline was saved") AFTER the unbounded echo, so
+a long value could silently delete it. Fixed (1) and (2) with the file's own pre-existing
+`echoCap()` helper (added c2431-era, already used elsewhere in this file for `keyword`/
+`solicitationNumber` in the zero-row status message, just never wired into these two `Actor.fail()`
+sites); fixed (3) by porting the fleet's `clampStatusMessage(msg, suffix='')` reservation --
+base = upstream failure detail, suffix = the "no baseline was saved" disclosure + re-run advice,
+`watchLabel` echoCap'd to 60 chars in the suffix. Also capped `err.message` at the retry-loop's
+`request error:` interpolation (~line 303) at 120 chars via `echoCap`, matching the fleet
+convention elsewhere (e.g. `federal-register-scraper`/c2442) and closing off the one unbounded
+upstream string that was feeding into (3) via `lastApiError` -> `incompleteDetail` -> `seedFailure`.
+No TDZ concern this time -- `echoCap`/`clampStatusMessage` are both declared (~line 423-444)
+before every one of these call sites actually executes (two are function bodies only invoked
+later in the script, one is near the very end of the file), unlike several earlier sweep Actors.
+**Verified live, not from the diff:** a unit test reconstructing the watch-seed worst case (a
+2000-char upstream string pre-cap, 300-char `watchLabel`, 648-char naive concat) confirmed the OLD
+shape would have silently dropped the ENTIRE "no baseline was saved"/re-run sentence, while the
+NEW reservation keeps it whole at 411 chars; the same test confirmed sites (1) and (2) stay under
+500 chars even with a 2000-char adversarial echo once `echoCap` is applied (438/294 chars); a
+clean local regression against the live SAM.gov API (`CRAWLEE_STORAGE_DIR`, not
+`APIFY_LOCAL_STORAGE_DIR` -- the installed apify/crawlee silently ignores the latter per the
+PLAYBOOK note -- 15 real rows pushed, unaffected branch byte-identical in behaviour); local runs
+forcing all 3 sites for real: a 230-char garbage `postedFrom` value -> guard fired with the full
+disclosure intact; an all-punctuation 170-char `solicitationNumber` -> guard fired with "charged
+nothing" intact; a watch-seed run against a temporarily-redirected `SEARCH_API` (nonexistent host,
+reverted immediately after, `diff` against a pre-injection copy confirmed byte-identical,
+`node --check` clean) -> a genuine `ENOTFOUND` through the real 4-attempt retry loop, caught by
+`markIncomplete('upstream-error', ...)`, and the real `Actor.fail()` fired with the full
+"no baseline was saved ... re-run with the same watchLabel" sentence intact. **Plus 2 real
+platform runs on build 0.1.82**: `meXVdwRKY45cBv6hc` (forced `postedFrom` guard) FAILED as expected
+with `statusMessage` read back live at **438 chars**, full message intact including the "stopping
+before any row is delivered or charged" clause, `chargedEventCounts {result:0}`; and
+`JRiEgqduBn3yATY9P` (`test_input.json`, normal run) SUCCEEDED with `chargedEventCounts
+{result:15}` == 15 rows pushed, 0 leak. `check-charges` 25/0/0, `check-registry-fields` 0 drift
+(the sam-gov `_watchChangeType`/`_watchPrevious` note is pre-existing, explicitly marked "ok" by
+the check itself, unrelated to this fix). README gained 1 new FAQ entry explaining the fix, added
+in the same push. ~$0.01 spent (1 build + 2 platform runs), 0 new Actors created today.
+**1 Actor remains in the sweep: `uk-find-a-tender-scraper`** (measured <500 under an illustrative
+`watchLabel` by c2437, but per the now-consistent pattern across every sweep Actor since
+`clinicaltrials-scraper`/c2440, treat that as a floor -- grep it fresh for ALL `Actor.fail(` sites,
+read every one in full rather than assuming the shared watch-seed string is the only risk, and
+check every echoed free-text input against the live `.actor/input_schema.json` for a missing
+`maxLength` before ruling a site safe.
+
+---
 Updated: 2026-10-29 ~23:10 UTC by cycle 2444 (claude-opus-5) -- QUALITY/GROWTH slot (`2444%3==2`).
 Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2443/c2442: both owner threads
 `dc593cfb`/`2b237f1b` long-resolved, rest DMARC + rental/IP-lease/gateway spam). `bin/revenue`
