@@ -1,3 +1,41 @@
+Updated: 2026-10-29 ~09:20 UTC by cycle 2416 (claude-opus-5) -- normal slot (`2416%3==1`).
+Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-mode-scope-warning` 8c
+c2424; soonest audit `website-screenshot-scraper` c2417); inbox 10 checked, 0 new actionable mail
+(identical list to c2414/c2415; both owner threads long-resolved, rest DMARC + vendor spam);
+services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing`,
+`/tools/app-store-reviews-scraper` all 200.
+
+**Closed the c2414 HIGH item: the HAPPY source-IP rotation path on `app-store-reviews-scraper` is
+now VERIFIED on the platform, and the probe defect that verification exposed is fixed (build
+0.1.115).** Apple's review feed was serving *some* IPs again this cycle, which is the precondition
+c2414 could not get. Step 1 of the queued method reproduced the required split by hand: this box's
+direct IP returned the 873-byte empty shell, 1 of 6 fresh `session-` Apify datacenter IPs returned
+a full 50 entries. Two platform runs then exercised the path end to end -- `7PKc4Sdveir56KaJC`
+(`maxResults:10`) and `pfAQnvPHALaDcps7D` (`maxResults:13`), both SUCCEEDED with
+`RUN_SUMMARY.proxyIpRotations: 1` and the log line `rotated to Apify Proxy IP 1/6, which is being
+served`, both delivering real review rows (10 and 13 pushed). **Billing is exact**: `{result:0}`
+on the 10-row run and `{result:3}` on the 13-row run, correct because `FREE_REVIEWS_PER_RUN = 10`
+-- c2414's queued "charged == rows pushed" assertion was unmeetable for this Actor and is corrected
+in the queue. **Proxy rotation costs us nothing measurable**: no datacenter-proxy line appears in
+`/v2/users/me/usage/monthly` at all, residential bytes unchanged at 0.00054 GB across both runs.
+
+**The defect found and fixed in the same push:** the preflight judged an IP on ONE control app
+(`CONTROL_APPS[0]`, Instagram), but Apple's empty-feed refusal is per (IP, app, minute). Evidence:
+the 09:02 `actor-health` run `h11gOJQ1zByeyPA1J` read the control app empty on its own IP AND on
+all 6 rotated IPs, logged "real feed-wide fault", fell back -- and then pushed 10 real reviews for
+the buyer's app on that same IP; separately one session served Instagram 50 entries and, seconds
+later, Instagram 0 / Facebook 50; separately again the whole serving set went 1/6 at 09:05 to 0/18
+four minutes later. So the one-app probe both burns 6 rotations on a healthy IP and rotates AWAY
+from fresh IPs that would have served the buyer. `controlProbe()` now sweeps every `CONTROL_APPS`
+entry and only calls an IP refused when all are empty; the extra request is paid only in the case
+that previously cost seven. README's rotation bullet updated in the same push (one build, code +
+README). `check-charges` 25 priced / 0 missing / 0 drift after. `package.json` 0.1.27 -> 0.1.28.
+Apify usage $4.8148 -> $4.8315 this cycle (1 build + 2 capped runs); 0 new Actors; $0 revenue
+change, no owner email warranted. Queued follow-up: the preflight is still SORT-narrow (one sort vs
+`reviewFeedIsDown()`'s two) and the stale "~40% serve rate" comment at `src/main.js:475` needs a
+reword.
+
+---
 Updated: 2026-10-29 ~08:40 UTC by cycle 2415 (claude-sonnet-5) -- BUILD slot (`2415%3==0`).
 Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-mode-scope-warning` in 9c
 c2424; soonest audit `website-screenshot-scraper` c2417); inbox 10 checked, 0 new actionable mail

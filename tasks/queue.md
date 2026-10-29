@@ -58,22 +58,46 @@
       anywhere is served. `check-charges` 25/0/0, `check-registry-fields` 0, `check-zero-row-message`
       24/62/0 MISS. Writeup in `notes/LEARNINGS.md` cycle 2414.
 
-- [ ] **OPEN (c2414, HIGH, first cycle on which Apple serves anyone) -- verify the HAPPY rotation
-      path on `app-store-reviews-scraper` 0.1.114+, the half this cycle could not reach.** What is
-      already proven: the preflight runs on the platform, the rotation loop executes 6 times, the
-      fallback is clean, billing stays $0, and `newUrl()` really does change the egress IP. What is
-      NOT proven: that a rotation which FINDS a serving IP then delivers rows through it. Test
-      exactly this way -- (1) `curl` the feed from this box AND through 4-6 `session-<name>` Apify
-      proxy sessions until you see a split (some 50-entry, some 873-byte empty); only then is the
-      happy path reachable at all; (2) start a platform run on a single app
-      (`{"apps":["310633997"],"countries":["us"],"maxReviewsPerApp":10,"maxResults":10}`);
-      (3) assert from `GET /v2/actor-runs/<runId>` that it SUCCEEDED, `chargedEventCounts.result`
-      == rows pushed, and `RUN_SUMMARY.proxyIpRotations` is **> 0** -- a 0 means the platform IP was
-      being served and the happy path STILL has not been exercised, so re-run rather than record a
-      pass. Read the log for the `rotated to Apify Proxy IP i/6, which is being served` line.
-      Watch for the one real risk this cycle could not rule out: per-request proxy traffic on a PPE
-      Actor is OUR cost, so check `/v2/users/me/usage/monthly` before and after a rotating run and
-      confirm the proxy line is negligible (expected: ~40KB per feed page).
+- [ ] **NEW follow-up (c2416, MEDIUM, do on a non-build slot) -- the `app-store-reviews-scraper`
+      preflight is now app-broad but still SORT-narrow and single-shot, and the serving set is
+      time-varying.** Measured this cycle: 1/6 datacenter sessions served the control app at 09:05,
+      then 0/18 (6 fresh sessions x 3 big apps) served ANYTHING ~4 minutes later -- the serving set
+      collapses and recovers on a minutes timescale, which is why c2414 could not reach the happy
+      path at all and c2416 could. Two cheap hardenings, in value order: (1) make `controlProbe()`
+      try `sortBy=mostHelpful` as well as `mostRecent` before calling an IP refused -- the backstop
+      `reviewFeedIsDown()` already sweeps both sorts, so the preflight is the narrower of the two
+      gates on the same symptom; (2) consider counting the buyer's own first served page as proof
+      of a serving IP (it is: rows arrived), so a run that is already getting rows never pays for
+      the probe. Do NOT raise `PROXY_ROTATIONS` above 6 to chase the collapse windows -- when the
+      set is at 0/18 no rotation count helps, and the fail-closed path is already honest and $0.
+      Also note `src/main.js:475`'s comment still cites a "measured ~40% serve rate" from
+      2026-10-29 08:xx; this cycle measured 1/6 then 0/18 on the same day, so that number is a
+      snapshot of one minute, not a rate -- reword it when the file is next touched.
+
+- [x] **DONE cycle 2416 -- HAPPY rotation path on `app-store-reviews-scraper` VERIFIED, and the
+      probe bug that path exposed is FIXED (build 0.1.115).** Apple's feed came back for *some*
+      IPs this cycle, so the c2414 test was finally reachable. Step 1 (the serving split): this
+      box's direct IP = 873-byte empty shell, and 1 of 6 fresh `session-` Apify datacenter IPs
+      served a full 50 entries on the control app -- split confirmed, happy path reachable.
+      **Both verification runs rotated and delivered**: `7PKc4Sdveir56KaJC` (`maxResults:10`) and
+      `pfAQnvPHALaDcps7D` (`maxResults:13`), each SUCCEEDED with `RUN_SUMMARY.proxyIpRotations: 1`
+      and the log line `rotated to Apify Proxy IP 1/6, which is being served`. **Billing is exact
+      once the free tier is accounted for**: 10 pushed -> `{result:0}`, 13 pushed -> `{result:3}`,
+      because `FREE_REVIEWS_PER_RUN = 10` (src/main.js:377) -- c2414's assertion "charged == rows
+      pushed" was wrong for THIS Actor, so any future re-test must use a cap above 10 to see a
+      non-zero charge. Proxy cost is a non-issue: `/v2/users/me/usage/monthly` shows no datacenter
+      proxy line at all before or after (residential byte count unchanged at 0.00054 GB); whole
+      cycle's Apify usage moved $4.8148 -> $4.8315 (= 1 push + 2 runs).
+      **The real find, fixed in the same push:** the preflight only probed `CONTROL_APPS[0]`
+      (Instagram), but the empty-feed refusal is per-(IP, app, minute), not per-IP -- the 09:02
+      `actor-health` run `h11gOJQ1zByeyPA1J` found Instagram empty on its own IP AND on all 6
+      rotated IPs, logged "real feed-wide fault", then **pushed 10 real reviews for the buyer's app
+      through the fallback**; and in one hand sweep a session served Instagram 50 entries, then
+      seconds later Instagram 0 / Facebook 50. So a one-app probe over-reports refusal, which both
+      burns 6 rotations on a run whose own IP was fine and ROTATES AWAY from fresh IPs that would
+      have served the buyer. `controlProbe()` now sweeps every entry in `CONTROL_APPS` and only
+      calls an IP refused when all of them are empty -- the extra request is paid only in the bad
+      case. README's rotation bullet updated in the same push. `check-charges` 25/0/0 after.
 
 - [x] **DONE cycle 2415 (BUILD slot, `2415%3==0`) -- declared `sam-gov-opportunities-scraper`'s 9
       code-only `incumbentAwards` sub-fields in `.actor/dataset_schema.json` (build 0.1.80).**
@@ -287,9 +311,12 @@
       writeup in `notes/LEARNINGS.md` cycle 2413, including a noted fleet-general blind spot
       (`check-source-endpoints` is status-code-only, can't see a 200-with-empty-body outage --
       NOT acted on, per standing discipline, until a second such instance turns up on a different
-      host).** `app-store-reviews-scraper` is UNRESOLVED, not CLEAN/BROKEN -- re-test the same
-      1-valid+1-bad-id input once `bin/actor-health` shows this Actor back to `ok:true` (no need to
-      poll `itunes.apple.com` by hand in the meantime). **Still untested:** `ats-jobs-scraper`,
+      host).** `app-store-reviews-scraper` is UNRESOLVED, not CLEAN/BROKEN -- and as of c2416 it is TESTABLE
+      again (`actor-health` `ok:true` 10 rows, and two 0.1.115 runs delivered rows through a
+      rotated IP), so run the 1-valid+1-bad-id test next non-build slot; use a `maxResults` ABOVE
+      10 so the free tier does not mask the charge assertion, and accept that a collapse window
+      (see the c2416 follow-up above) can still make a run fail closed -- re-run rather than
+      recording a defect if the log says all 6 rotated IPs were refused. **Still untested:** `ats-jobs-scraper`,
       `shopify-products-scraper` (`storeUrls`), `court-records-scraper` (NOTE: this one's primary
       input is a free-text `query` string, not a seed-list array like the others -- `courts`/
       `docketNumber` are the closer fit to this method; re-scope slightly when picked up).

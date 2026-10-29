@@ -784,11 +784,22 @@ async function reviewFeedIsDown() {
 // every pair was empty, and in watch mode a rotation discovered that late would still leave the
 // baseline seeded from a refused IP.
 let servingIpChecked = false;
+// Sweeps EVERY control app before calling an IP refused, because the empty-feed symptom is
+// per-(IP, app, minute), not per-IP: measured 2026-10-29, one Apify datacenter session served
+// Instagram 50 entries and, seconds later in the same sweep, served Instagram 0 but Facebook 50 —
+// and platform run `h11gOJQ1zByeyPA1J` found Instagram empty on its own IP AND on all 6 rotated
+// IPs, then pushed 10 real reviews for the buyer's app through the fallback (its own IP). So a
+// one-app probe over-reports refusal, which costs twice: it burns 6 rotations on a run whose own
+// IP was fine, and — worse — it ROTATES AWAY from a fresh IP that would have served the buyer.
+// Cost is bounded and paid only in the bad case: 1 request when the first control answers (the
+// common case, unchanged), at most CONTROL_APPS.length when it does not.
 const controlProbe = async () => {
-  const [id, cc] = CONTROL_APPS[0];
-  // tolerateAll: an empty answer here is the signal, not an error to throw on.
-  const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=mostRecent/page=1/json`, 'default', true);
-  return entries.length;
+  for (const [id, cc] of CONTROL_APPS) {
+    // tolerateAll: an empty answer here is the signal, not an error to throw on.
+    const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=mostRecent/page=1/json`, 'default', true);
+    if (entries.length) return entries.length;
+  }
+  return 0;
 };
 async function ensureServingIp() {
   if (servingIpChecked) return;

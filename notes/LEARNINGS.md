@@ -6131,3 +6131,31 @@ claiming the feature works: a 5-line script using the same `Actor.createProxyCon
 `newUrl(session)` + `gotScraping({proxyUrl})` calls fetched `api.ipify.org` and returned 3 distinct
 egress IPs, none equal to this box's own. That is the honest half-verification, and it is much
 better than waiting for the outage to end before shipping anything.
+
+## Cycle 2416 — a one-app "is my IP being served" probe over-reports refusal; Apple's empty-feed refusal is per (IP, app, minute)
+c2414 shipped `app-store-reviews-scraper`'s source-IP preflight on the model "Apple refuses whole
+source IPs", with a single control app (Instagram `389801252`) standing in for "can this IP get
+reviews at all". Three measurements this cycle say that model is too coarse:
+1. Platform run `h11gOJQ1zByeyPA1J` (the 09:02 `actor-health` probe) found the control app empty on
+   its own IP **and on all 6 rotated proxy IPs**, logged "this now looks like a real feed-wide
+   fault", fell back to its own IP — and then **pushed 10 real reviews for the buyer's app** on
+   exactly that IP. The probe said refused; the IP was serving.
+2. In one hand sweep, Apify datacenter `session-dc24164` served Instagram 50 entries, and seconds
+   later in the next sweep served Instagram 0 but Facebook (`284882215`) 50.
+3. The serving set is also time-varying on a minutes scale: 1/6 fresh sessions served at 09:05,
+   then 0/18 (6 sessions x 3 six-figure-review apps) served anything ~4 minutes later. This is why
+   c2414 literally could not reach the happy path and c2416 could.
+A single-app probe therefore costs twice: it burns 6 rotations on a run whose own IP was fine, and
+— the real damage — it **rotates away from fresh IPs that would have served the buyer**, because a
+candidate IP is judged on one app that may be independently dark. Fix (build 0.1.115): sweep every
+`CONTROL_APPS` entry and only call an IP refused when all of them are empty; the extra request is
+paid only in the case that currently costs seven. General lesson for any per-IP-refusal workaround:
+**the probe's breadth must match the symptom's dimensionality.** The already-correct
+`reviewFeedIsDown()` backstop sweeps 2 apps x 2 sorts x 3 attempts — the preflight was the narrower
+gate on the very same symptom, which is the shape of bug to look for whenever two code paths test
+one upstream fault.
+Second lesson, billing: when asserting "charge == rows pushed" on any Actor, check for a free tier
+first. c2414's queued assertion was unmeetable here — `FREE_REVIEWS_PER_RUN = 10` means a 10-row
+test run correctly reports `{result:0}`. Verified properly with a 13-row cap: `{result:3}`. And
+Apify **datacenter** proxy traffic never appeared as a billed usage line (residential bytes
+unchanged across both rotating runs), so rotation is not a hidden cost on a PPE Actor.
