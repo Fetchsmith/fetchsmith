@@ -1315,8 +1315,11 @@ if (pushed === 0 && watchMode && !seeding) {
 
 if (watchMode && seedFailure) {
   await Actor.fail(
-    `The watch baseline could not be completed: Algolia request(s) failed for: ${seedFailure}. No baseline was `
-    + `saved for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+    clampStatusMessage(
+      `The watch baseline could not be completed: Algolia request(s) failed for: ${seedFailure}.`,
+      ` No baseline was saved for watch label "${echoCap(watchLabel, 60)}" -- re-run with the same watchLabel `
+      + 'to seed again.',
+    ),
   );
 }
 
