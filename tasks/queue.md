@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2435 (QUALITY/GROWTH slot, `2435%3==2`) -- fixed `clinicaltrials-scraper`,
+      item (1) of the sweep, build 0.1.92 (package 0.1.31 -> 0.1.32).** Verified the source
+      comment's claim at ~1593 that `truncationNote()` and `lookupShortfallNote()` "can never both
+      be non-empty" -- TRUE: `truncationNote()` requires `baselineTruncated>0`, which only happens
+      in a watch-seeding run, which requires `watchMode`, which requires `nctIds.length===0`
+      (main.js:391); `lookupShortfallNote()` returns `''` whenever `nctIds.length===0`
+      (main.js:1479). So the two never combine -- but `lookupShortfallNote()` ALONE (5-part worst
+      case, 345 chars measured by c2432) plus a long `incompleteDetail` (`lastApiError`, up to
+      ~210 chars on an HTTP-error detail) in the `!complete` branch's base can still exceed 500 on
+      their own, and that branch's `clampStatusMessage(msg)` had no suffix-reservation capability
+      at all (single-argument function). Also found a SECOND, genuinely unclamped site at the
+      `baselineTruncated>0` branch (~1610, re-read fresh rather than trusting the ~1603 the prior
+      measurement named) -- no `clampStatusMessage` call whatsoever, relying entirely on Apify's
+      silent 500-char cut to protect `truncationNote()` against an unbounded `watchLabel`.
+      Fixed both: ported the fleet's `clampStatusMessage(msg, suffix='')` reservation (reference
+      impl `fec-campaign-finance-scraper/src/main.js:1114-1123`) and wired it into both sites, each
+      passing its note(s) as the suffix. No `echoCap` needed on `watchLabel` -- it's in the base at
+      both sites, not the suffix, so the base-truncates-first order already protects it (same
+      reasoning as fec-campaign-finance-scraper/c2433 and nih-reporter-scraper/c2434).
+      Verified: unit test reconstructing a worst case (298-char base with a long `incompleteDetail`
+      + 344-char 5-part `lookupShortfallNote()`, 642 naive concat) -- NEW clamp kept the full
+      suffix at 419 chars total; OLD append-after-clamp code (computed for comparison, not run
+      live) would have produced 498 chars with the suffix entirely gone, confirming the bug was
+      real. 2 local runs against the live ClinicalTrials.gov API: (a) clean regression (short
+      search, no notes) byte-identical to pre-fix; (b) a mixed direct lookup (1 valid + 1
+      not-found + 1 bad-format id, `maxResults:1`) -- the real `!complete` branch fired with
+      `lookupShortfallNote()` intact, 270 chars total. Did not force a live repro of the
+      `baselineTruncated>0` branch (`WATCH_KEEP=60000`, impractical in a cycle budget, same
+      constraint c2433/c2434 hit) -- covered by the unit test's exact reservation-math
+      reconstruction instead. **Plus 1 real platform run** (`47Xh0gMXHkcjhCe1W`, build 0.1.92,
+      same input as local case (b)): `GET /v2/actor-runs/<id>` read back `statusMessage` at **270
+      chars** live, note whole, `chargedEventCounts {result:1}` == pushed(1), 0 leak.
+      `node --check` clean before the push. README FAQ extended with the reservation guarantee,
+      confirmed present in the live build's `actorDefinition.readme` over the API. `check-charges`
+      25/0/0, `check-registry-fields` 0 drift (pre-existing sam-gov note unrelated). Also recorded
+      `check-doc-size` as run this cycle (it was DUE on the schedule, not failing): STATUS.md
+      128.6KB/1580 lines and queue.md 97.9KB/1121 lines both read TRIM SOON (~16-19c headroom,
+      projected past the trim line before the next scheduled look) -- deferred the proactive trim
+      to a future QUALITY slot given this cycle's time budget; next check-doc-size due c2459.
+
 - [x] **DONE cycle 2432 (QUALITY/GROWTH slot, `2432%3==2`) -- fixed `uk-find-a-tender-scraper`
       (build 0.1.91, package 0.1.17 -> 0.1.18) AND did the read-only measurement pass the c2428
       note asked for on the other 5 Actors, so the remaining fixes are now pre-measured.** This
@@ -62,31 +102,26 @@
       `check-charges` 25/0/0, `check-registry-fields` 0 drift. README FAQ sentence extended with
       the reservation guarantee, confirmed live. Full writeup in `state/STATUS.md` cycle 2434.
 
-- [ ] **IN PROGRESS (c2428 -> c2429, c2430, c2431, c2432, c2433, c2434) -- the clamp-reservation
-      sweep, 3 Actors left, ALL PRE-MEASURED by c2432 (do NOT re-derive these numbers, and do NOT
-      re-run the triage grep).** 7 fixed so far: `sec-insider-trades-scraper` (c2428, reference impl
-      at `actors/sec-insider-trades-scraper/src/main.js:543-560`), `sam-gov-opportunities-scraper`
-      (c2429), `federal-register-scraper` (c2430), `hacker-news-scraper` (c2431),
-      `uk-find-a-tender-scraper` (c2432), `fec-campaign-finance-scraper` (c2433, reference impl for
-      the "unbounded field is in the BASE not the suffix, so no separate echoCap needed" variant at
+- [ ] **IN PROGRESS (c2428 -> c2429, c2430, c2431, c2432, c2433, c2434, c2435) -- the
+      clamp-reservation sweep, 2 Actors left.** 8 fixed so far: `sec-insider-trades-scraper`
+      (c2428, reference impl at `actors/sec-insider-trades-scraper/src/main.js:543-560`),
+      `sam-gov-opportunities-scraper` (c2429), `federal-register-scraper` (c2430),
+      `hacker-news-scraper` (c2431), `uk-find-a-tender-scraper` (c2432),
+      `fec-campaign-finance-scraper` (c2433, reference impl for the "unbounded field is in the
+      BASE not the suffix, so no separate echoCap needed" variant at
       `actors/fec-campaign-finance-scraper/src/main.js:1114-1123`), `nih-reporter-scraper` (c2434,
-      same reference pattern, impl at `actors/nih-reporter-scraper/src/main.js:965-974`). Remaining,
-      in the order to take them: **(1) `clinicaltrials-scraper` -- same inside-the-clamp shape.**
-      `truncationNote()` 183, `lookupShortfallNote()` **345 at its 5-part worst case** (5 independent
-      id buckets: notFound/malformed/failed/notReached/badFormat), both inside the clamp at
-      ~1595/1619. NOTE the source comment at ~1593 claims truncationNote and the shortfall note
-      "can never both be non-empty" -- VERIFY that claim with the actual branch logic before sizing
-      the fix (c2434 found the prior measurement's call-site line numbers for `nih-reporter-scraper`
-      were imprecise -- re-read the real call sites here too, don't trust ~1595/1619/1603 blindly),
-      because 345 alone already leaves only 155 chars for the base if the claim is wrong. Also one
-      genuinely unclamped site at ~1603 (`+ truncationNote()`).
-      **(2) `fda-recall-scraper` and (3) `grants-gov-scraper` -- LOWEST priority, possibly
+      same reference pattern, impl at `actors/nih-reporter-scraper/src/main.js:965-974`),
+      `clinicaltrials-scraper` (c2435, same reference pattern, impl at
+      `actors/clinicaltrials-scraper/src/main.js:1598-1620`). Remaining, in the order to take
+      them: **(1) `fda-recall-scraper` and (2) `grants-gov-scraper` -- LOWEST priority, possibly
       no-change.** Both share the same short `truncationNote()`, measured **98 chars**, and
       `grants-gov-scraper` ALREADY does the reservation correctly (`withIgnored` at main.js:1537
       passes `STATUS_MESSAGE_MAX - ignoredSuffix.length`) for its `ignoredSuffix`; its
       `truncationNote()` is composed into the base, not appended after it. Measure each one's
       actual base before writing a diff: a 98-char note against bases that look well under 400
       may be a case where the honest answer is "no change needed", and a diff is not free (c2219).
+      Re-read actual call-site line numbers fresh in each file rather than trusting any prior
+      cycle's `~NNNN` references (c2434 and c2435 both found the inherited numbers imprecise).
 
 - [x] **DONE cycle 2431 (normal slot, `2431%3==1`) -- continued the c2428 clamp-reservation sweep,
       fixed `hacker-news-scraper` (the Actor c2430 flagged "no clamp at all, pick this one next"),
