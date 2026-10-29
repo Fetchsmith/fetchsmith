@@ -18,6 +18,30 @@ function failureReason(fallback) { return timeBudgetExceeded ? 'time-budget' : f
 
 const input = (await Actor.getInput()) ?? {};
 
+// Apify truncates a run status message at 500 characters, silently, cutting from the end --
+// measured live on this Actor (`2KyoZrB1CUMjk6kqc`, the plain-no-match message cut mid-word at
+// exactly 500, losing cause (3)). Same fleet-wide defect closed on grants-gov-scraper (0.1.67)
+// and fda-recall-scraper (0.1.68); applied here with the same shape, cycle 1762.
+// `suffix` is RESERVED out of the budget rather than appended after clamping (the clamp-reservation
+// sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428, fec-campaign-finance-scraper
+// cycle 2433): truncationNote()/lookupShortfallNote() are billing-relevant disclosures (a dropped
+// baseline id will be re-charged as "new"; a direct lookup that came up short names exactly which
+// ids got no row), and the `!complete` call site below can join a base long enough on its own
+// (worst case: a `lookup-request-failed` detail plus a 5-part lookupShortfallNote(), measured at
+// 345 chars alone) that the old append-after-clamp order could silently delete the disclosure
+// instead of the less-important base prose. The log keeps the full, unclamped text.
+// `Actor.fail(msg)` ALSO sets the run's statusMessage, so it is under the same 500-char cut
+// (the fleet-wide blind spot found in cycle 2436) -- which is why this is declared up here rather
+// than beside the setStatusMessage sites: the all-ids-malformed fail() below needs it. (cycle 2440)
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+
 // ---------------------------------------------------------------------------
 // `startUrl` -- paste a ClinicalTrials.gov search URL instead of re-typing its filters by hand.
 // Two shapes are accepted (both verified live, cycle 376):
@@ -202,11 +226,17 @@ if (nctIdsRaw.length && !nctIds.length) {
     // Actor.fail() (not a bare throw) so the Console's statusMessage actually carries this reason --
     // a bare throw lands only in the run log as a stack trace (verified empty statusMessage on the
     // sibling sam-gov-opportunities-scraper fix's own FAILED run, cycle 2357).
-    await Actor.fail(
+    // `nctIds` is a free-text textarea with no schema maxLength, so the echoed id list is
+    // buyer-unbounded: measured 554 chars at 20 bad ids (974 at 50), i.e. past the silent cut,
+    // and the part deleted is exactly the clause explaining that the run was stopped to avoid
+    // charging for studies nobody asked for. Reserve that clause; let the id echo absorb the
+    // cut instead (the full list is already in the log.warning above). (cycle 2440)
+    await Actor.fail(clampStatusMessage(
         `Every value in "nctIds" was rejected as malformed (expected NCT followed by 8 digits, e.g. NCT04280705): `
-        + `${nctIdsBadFormat.join(', ')}. Fix the ids and re-run -- the run was stopped instead of falling back to a `
+        + `${nctIdsBadFormat.join(', ')}.`,
+        ' Fix the ids and re-run -- the run was stopped instead of falling back to a '
         + 'filter search, which would have returned studies you did not ask for and charged you for them.',
-    );
+    ));
 }
 
 let conditions = String(input.conditions ?? '').trim();
@@ -828,7 +858,11 @@ async function apiGet(params, { quiet = false } = {}) {
             // A network-level failure (timeout, ECONNRESET, DNS) throws instead of resolving with
             // a status code — without this catch it crashes the whole run instead of retrying like
             // a 429/5xx does, even though the same backoff is exactly as valid here.
-            lastApiError = `request failed: ${err.message}`;
+            // Capped like every other upstream-text interpolation in the fleet: `err.message` is
+            // the only unbounded one left here (got embeds the request URL, which carries the
+            // buyer's own query values), and `lastApiError` feeds the clamped status/fail
+            // messages where an unbounded base defeats the reservation math. (cycle 2440)
+            lastApiError = `request failed: ${err.message.slice(0, 200)}`;
             lastApiErrorStatus = null;
             const waitS = attempt * 10;
             if (!quiet) log.warning(`ClinicalTrials.gov API request failed (${err.message}); retrying in ${waitS}s (${attempt}/4).`);
@@ -1454,26 +1488,9 @@ if (watchMode && seedFailure) {
     }
 }
 
-// Apify truncates a run status message at 500 characters, silently, cutting from the end --
-// measured live on this Actor (`2KyoZrB1CUMjk6kqc`, the plain-no-match message cut mid-word at
-// exactly 500, losing cause (3)). Same fleet-wide defect closed on grants-gov-scraper (0.1.67)
-// and fda-recall-scraper (0.1.68); applied here with the same shape, cycle 1762.
-// `suffix` is RESERVED out of the budget rather than appended after clamping (the clamp-reservation
-// sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428, fec-campaign-finance-scraper
-// cycle 2433): truncationNote()/lookupShortfallNote() are billing-relevant disclosures (a dropped
-// baseline id will be re-charged as "new"; a direct lookup that came up short names exactly which
-// ids got no row), and the `!complete` call site below can join a base long enough on its own
-// (worst case: a `lookup-request-failed` detail plus a 5-part lookupShortfallNote(), measured at
-// 345 chars alone) that the old append-after-clamp order could silently delete the disclosure
-// instead of the less-important base prose. The log keeps the full, unclamped text.
-const STATUS_MESSAGE_MAX = 500;
-const clampStatusMessage = (msg, suffix = '') => {
-    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
-    if (msg.length <= budget) return msg + suffix;
-    const cut = msg.slice(0, Math.max(budget - 4, 0));
-    const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
-};
+// clampStatusMessage()/STATUS_MESSAGE_MAX are declared near the top of this file (just under
+// `Actor.init()`), not here, because the all-ids-malformed `Actor.fail()` at ~line 205 runs
+// before this point and a `const` declared here would be in its temporal dead zone. (cycle 2440)
 
 // Direct-lookup shortfall, in one clause reusable by the zero-row message and the delivering-run
 // status message below (cycle 2352). Before this, a PARTIAL shortfall was invisible everywhere the
@@ -1679,17 +1696,25 @@ if (webhookUrl) {
 // failing is free -- and failing loudly, instead of exiting 0 with no baseline saved, stops a
 // scheduled run from quietly reading "seeded" and moving on to incremental.
 if (watchMode && seedFailure) {
-    await Actor.fail(
-        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
-        + '(a partial one would cause you to be charged twice for the same studies later) and nothing was '
-        + `charged. ${seedFailureIsInputError
+    // Measured 580 chars (583 on the time-budget wording) once `seedFailure` carries a full-length
+    // upstream detail -- `lastApiError`'s worst bounded form is `HTTP <code>: <200 chars>
+    // (4 attempts exhausted)` = 233 -- so the silent cut landed inside the REMEDIATION clause and
+    // deleted it whole, leaving a FAILED run that says nothing was charged but not what to do
+    // about it. ("nothing was charged" itself sits early enough to survive at 580; it is reserved
+    // anyway so a longer detail can never reach it.) Base = the upstream detail, which is the
+    // least important part and the only unbounded one, so it absorbs the cut. (cycle 2440)
+    await Actor.fail(clampStatusMessage(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}.`,
+        ' No baseline was saved (a partial one would cause you to be charged twice for the same '
+        + 'studies later) and nothing was charged. '
+        + (seedFailureIsInputError
             ? 'This is ClinicalTrials.gov rejecting your input (an unrecognised filter value) -- re-running with '
                 + 'the same input will fail the same way; fix the filter values above and re-run.'
             : seedFailureIsTimeBudget
                 ? 'The run hit its own time limit with ClinicalTrials.gov still answering -- re-running unchanged '
                     + 'will stop at the same place; raise the run timeout or narrow the query, then re-run.'
-                : 'Please re-run in a few minutes.'}`,
-    );
+                : 'Please re-run in a few minutes.'),
+    ));
 }
 
 await Actor.exit();
