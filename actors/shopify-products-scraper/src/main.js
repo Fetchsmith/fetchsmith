@@ -959,8 +959,9 @@ for (const raw of storeUrls) {
 for (const raw of storeUrls.slice(sourceOutcomes.length)) {
   sourceOutcomes.push(sourceSummary(raw, null, 'notReached', { reason: 'the run stopped before this URL (time limit, maxResults, or charge budget)' }));
 }
-if (sourceOutcomes.some((s) => s.status === 'notReached')) {
-  log.warning(`${sourceOutcomes.filter((s) => s.status === 'notReached').length} of your ${storeUrls.length} storeUrls were never fetched — this run stopped early. They are reported as "notReached", not as empty.`);
+const notReachedStores = sourceOutcomes.filter((s) => s.status === 'notReached').map((s) => s.url);
+if (notReachedStores.length) {
+  log.warning(`${notReachedStores.length} of your ${storeUrls.length} storeUrls were never fetched — this run stopped early. They are reported as "notReached", not as empty.`);
 }
 // Shared by both delisted paths below (the batch sweep and the single-product 404 short-circuit)
 // so a delisted row always has the same shape and the same bookkeeping side effects.
@@ -1070,8 +1071,8 @@ if (watchMode && pushed === 0 && !erroredStores.length && !badUrls.length && !ti
   await Actor.setStatusMessage(`No products returned — ${why}. See the log for details.`);
 } else if (pushed === 0 && timeBudgetExceeded) {
   await Actor.setStatusMessage(`No products returned before the run approached its time limit.${timeBudgetNote}`);
-} else if (emptyStores.length || filteredOutStores.length || erroredStores.length || badUrls.length || timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`), ...badUrls.map((s) => `${s} (not a valid URL)`)].join(', ')}.${timeBudgetNote}`);
+} else if (emptyStores.length || filteredOutStores.length || erroredStores.length || badUrls.length || notReachedStores.length || timeBudgetExceeded) {
+  await Actor.setStatusMessage(`Pushed ${pushed} products. Issues: ${[...emptyStores.map((s) => `${s} (empty)`), ...filteredOutStores.map((s) => `${s} (filtered out)`), ...erroredStores.map((s) => `${s} (error)`), ...badUrls.map((s) => `${s} (not a valid URL)`), ...notReachedStores.map((s) => `${s} (not reached — run stopped early, see RUN_SUMMARY)`)].join(', ')}.${timeBudgetNote}`);
 }
 
 // The same per-URL outcomes as the webhook, written to the run's default key-value store so a
@@ -1139,6 +1140,7 @@ if (webhookUrl) {
     erroredStores,
     emptyStores,
     filteredOutStores,
+    notReachedStores,
     complete: runSummary.complete,
     sourcesIncomplete: runSummary.sourcesIncomplete,
     incompleteReason: runSummary.incompleteReason,
