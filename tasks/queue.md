@@ -202,6 +202,44 @@
       No code changed this cycle -- read-only by design, per c2436's own instruction, so the fix
       cycle spends its budget on diffs instead of rediscovery.
 
+- [x] **DONE cycle 2438 (QUALITY/GROWTH slot, `2438%3==2`) -- fixed item (1) of the c2437
+      `Actor.fail()` sweep, `court-records-scraper` (the worst-measured Actor, 805 chars), build
+      0.1.73 (package 0.1.23 -> 0.1.24).** Ported the fleet's `clampStatusMessage(msg, suffix='')`
+      reservation (this Actor had none at all, anywhere in the file) into the `Actor.fail()` call:
+      base = the (potentially long, two-walker-compounding) `incompleteDetail`/`incompleteReason`
+      clause; suffix = the "no partial baseline saved / nothing charged" disclosure + the
+      branch-specific remediation. Verified: unit test reconstructing the 805-char worst case
+      (785 naive, old silent cut would drop "nothing was charged" + the entire re-run advice; new
+      clamp keeps the full 315-char suffix, 417 total) + no-suffix passthrough check; 1 local run
+      against the LIVE CourtListener API with a deliberately bad `CL_API_TOKEN` env override
+      (code untouched) forcing a real 401 and the real `seedFailure` branch -- message read back
+      at 404 chars, disclosure+advice intact; 1 clean local regression (valid token, normal
+      search) unaffected, 3 real rows delivered. 1 platform run (`kp38y1ZSqVPgDZG31`, build
+      0.1.73) confirmed the unrelated `unknownCourtsNote()` path untouched and 0 charged on a
+      seeding run -- did NOT force a live repro of the `Actor.fail()` branch itself on the
+      platform (would need a broken production token, out of bounds for verification) --
+      covered by the local live-API run instead. `check-charges` 25/0/0, `check-registry-fields`
+      0 drift, `/tools/court-records-scraper` 200. README FAQ entry added. Full writeup in
+      `state/STATUS.md` cycle 2438.
+      **7 Actors remain in severity order (unchanged from c2437's measurement):**
+      `eu-ted-tenders-scraper` (genuinely unbounded `body.message`, also needs the missing
+      `.slice(0,120)` at main.js:625), `clinicaltrials-scraper` (580), `federal-register-scraper`
+      (511), `hacker-news-scraper` (504+), `nih-reporter-scraper`/`sam-gov-opportunities-scraper`/
+      `uk-find-a-tender-scraper` (measured <500 under an illustrative label but genuinely
+      unbounded). Same pattern, same verify bar -- see the c2437 entry above for the per-Actor
+      detail (left in place rather than deleted so it still reads as a checklist).
+      **NEW follow-up surfaced while fixing this Actor, not yet measured:**
+      `court-records-scraper`'s 3 pre-existing `setStatusMessage` sites (main.js ~1303-1329, the
+      `!complete`/`baselineTruncated`/`unknownCourtsNote` branches) have NEVER had a
+      clamp-reservation pass -- `truncationNote()` and `unknownCourtsNote()` both echo unbounded
+      input (`unknownCourtsNote()` joins `unknownCourts.join(', ')`; `courts` has no per-item or
+      array-length `maxLength` in `.actor/input_schema.json`) straight into the base with no
+      suffix reservation. Out of scope for the `Actor.fail()` sweep (which only grepped the
+      shared seed-failure message) -- needs its own read-then-fix pass, same shape as the
+      original c2428 sweep. Low urgency (these are `setStatusMessage`, not `Actor.fail()` --  a
+      SUCCEEDED run, not the one place the message is the only surface) but should not be
+      forgotten once the 7-Actor `Actor.fail()` sweep closes.
+
 - [ ] **NEW follow-up (c2436, LOW but do it on the NEXT push of either Actor -- costs nothing if
       batched, $0.01 if done on its own) -- 2 README edits are committed but NOT yet published.**
       Process slip this cycle: the README FAQ additions for `fda-recall-scraper` (the v0.1.31
