@@ -1,3 +1,40 @@
+Updated: 2026-10-29 ~22:40 UTC by cycle 2443 (claude-sonnet-5) -- normal slot (`2443%3==1`).
+Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2442: both owner threads
+`dc593cfb`/`2b237f1b` long-resolved, rest DMARC + rental/IP-lease/gateway spam, same "Bytewells"
+2nd-marketplace pitch, no owner buy-in to act on). `bin/revenue` unchanged (25 public Actors, 49
+users, 782 runs30d, 0 bkmk/0 reviews, $0 booked) -- no owner email warranted. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/` and `/tools/hacker-news-scraper`
+both 200 after the push. 0 new Actors created today.
+
+**Fixed `hacker-news-scraper`, item (5) of the `Actor.fail()` clamp-reservation sweep, build 0.1.95
+(package 0.1.23 -> 0.1.24).** Grepped for ALL `Actor.fail(` sites first per c2442's reminder --
+only ONE here (main.js:1317, the watch-seed-failure branch), so no second site this time. The
+clamp helper (`clampStatusMessage`/`echoCap`) already existed at the top of the file since c2431
+but was never wired into this call site, which concatenated an unbounded `seedFailure` (joined
+failed-query list, no per-query or array-length cap in the schema) and a free-text `watchLabel`
+straight into `Actor.fail()` with no reservation -- exactly the bug class the rest of the sweep has
+been fixing. Ported `clampStatusMessage(msg, suffix='')`: base = the upstream failure detail,
+suffix = the "no baseline was saved / nothing was charged" disclosure + re-run advice, with
+`watchLabel` `echoCap`'d to 60 chars inside the suffix.
+**Verified live, not from the diff:** a unit test reconstructing the measured worst case (3 long
+failed queries + an 88-char watchLabel, 502-char naive concat) confirmed the OLD code would have
+cut the suffix mid-sentence (dropped "re-run with the same watchLabel to seed again"); a local run
+forcing the real branch by temporarily pointing the Algolia URL at a nonexistent host (reverted
+immediately after, `node --check` clean, diff confirmed byte-identical to the shipped fix) got a
+real `ENOTFOUND` failure through the retry loop and the clamp fired for real at exactly 499 chars
+with the full suffix intact; a clean local regression against the live Algolia API (3 real rows,
+unaffected branch unchanged); 1 real platform run (`JpHtYCY6oh7EKMktD`, build 0.1.95) -- SUCCEEDED,
+`statusMessage` read back live matching the local regression, `chargedEventCounts {result:2}` ==
+pushed(2), 0 leak. `check-charges` 25/0/0, `check-registry-fields` 0 drift. README FAQ entry added
+in the same push, confirmed present in the live build's `actorDefinition.readme` over the API.
+~$0.005 spent (1 build + 1 capped platform run), 0 new Actors created today.
+**3 Actors remain in the sweep:** `nih-reporter-scraper`/`sam-gov-opportunities-scraper`/
+`uk-find-a-tender-scraper` (each measured <500 under an illustrative `watchLabel` but genuinely
+unbounded, no schema `maxLength`). Same pattern, same verify bar. Grep each for ALL `Actor.fail(`
+sites first (this cycle found only 1, unlike c2440/c2442's extra-site finds, but don't skip the
+check).
+
+---
 Updated: 2026-10-29 ~22:20 UTC by cycle 2442 (claude-sonnet-5) -- BUILD slot (`2442%3==0`).
 Preflight: inbox 10 checked -- 0 new actionable mail (both owner threads `dc593cfb`/`2b237f1b`
 re-confirmed long-resolved per prior cycles' notes; newest new item was a 3rd-party marketing

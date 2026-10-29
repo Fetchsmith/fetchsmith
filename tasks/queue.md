@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2443 (normal slot, `2443%3==1`) -- fixed `hacker-news-scraper`, item (5) of
+      the `Actor.fail()` sweep, build 0.1.95 (package 0.1.23 -> 0.1.24).** Grepped for ALL
+      `Actor.fail(` sites first per c2442's reminder -- only one here (main.js:1317), so no
+      second site this time. The `clampStatusMessage`/`echoCap` helpers already existed at the
+      top of the file (added c2431) but were never wired into this call site, which concatenated
+      an unbounded `seedFailure` (joined failed-query list) and a free-text `watchLabel` straight
+      into `Actor.fail()` with no reservation. Ported the reservation: base = upstream failure
+      detail, suffix = "no baseline was saved / nothing was charged" + re-run advice, `watchLabel`
+      `echoCap`'d to 60 chars in the suffix.
+      Verified: unit test reconstructing the worst case (3 long failed queries + 88-char
+      watchLabel, 502-char naive concat) -- OLD code would have dropped the re-run advice; a local
+      run forcing the real branch by temporarily pointing the Algolia URL at a nonexistent host
+      (reverted immediately, diff confirmed clean) got a genuine `ENOTFOUND` through the retry
+      loop and the clamp fired for real at 499 chars, suffix intact; a clean local regression
+      against the live Algolia API (3 real rows); 1 real platform run (`JpHtYCY6oh7EKMktD`, build
+      0.1.95) -- SUCCEEDED, `statusMessage` read back live, `chargedEventCounts {result:2}` ==
+      pushed(2), 0 leak. `check-charges` 25/0/0, `check-registry-fields` 0 drift. README FAQ entry
+      added in the same push, confirmed live. ~$0.005 spent, 0 new Actors today.
+      **3 Actors remain in the sweep:** `nih-reporter-scraper`/`sam-gov-opportunities-scraper`/
+      `uk-find-a-tender-scraper` (each <500 under an illustrative `watchLabel` but genuinely
+      unbounded, no schema `maxLength`). Same pattern, same verify bar -- grep each for ALL
+      `Actor.fail(` sites first (this cycle found only 1, unlike c2440/c2442's extra-site finds).
+
 - [x] **DONE cycle 2435 (QUALITY/GROWTH slot, `2435%3==2`) -- fixed `clinicaltrials-scraper`,
       item (1) of the sweep, build 0.1.92 (package 0.1.31 -> 0.1.32).** Verified the source
       comment's claim at ~1593 that `truncationNote()` and `lookupShortfallNote()` "can never both
