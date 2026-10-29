@@ -1320,6 +1320,7 @@ function passesFilters(job, deferred = []) {
 const notFoundCompanies = [];
 const erroredCompanies = [];
 const partialCompanies = []; // Workday: a later page failed after retries, so this company's jobs are an undercount, not a clean zero
+const skippedCompanies = []; // never even attempted -- maxResults was already reached by an earlier company in the list
 let runError = null;
 // Board sizes before filters, and how many postings passed passesFilters, summed over every
 // company. A zero-row run has to tell "no board answered" apart from "the boards are empty" and
@@ -1329,7 +1330,8 @@ let totalRawPostings = 0;
 let totalMatched = 0;
 
 try {
-  for (const { ats, slug } of companies) {
+  for (let companyIndex = 0; companyIndex < companies.length; companyIndex += 1) {
+    const { ats, slug } = companies[companyIndex];
     if (!timeBudgetOk()) { log.warning('Time budget nearly exhausted — stopping before remaining companies.'); break; }
     let result;
     try {
@@ -1414,7 +1416,14 @@ try {
       + (watchMode ? `, ${deliveredForCompany} delivered (new or salary-added).` : '.'));
     totalRawPostings += result.rawCount ?? result.jobs.length;
     totalMatched += scannedForCompany;
-    if (pushed >= maxResults) break;
+    if (pushed >= maxResults) {
+      // Every company after this one in the list is never fetched at all -- not errored, not
+      // not-found, just never reached -- so it needs its own cause, distinct from the other
+      // three, or a buyer who listed 5 companies and hit the cap on the 1st has no way to tell
+      // "company 2-5 don't exist" apart from "company 2-5 were never even checked".
+      skippedCompanies.push(...companies.slice(companyIndex + 1));
+      break;
+    }
     // A seeding run pushes nothing, so the maxResults stop above can never fire for it.
     if (seeding && watchSeen.size >= SEED_CAP) break;
   }
@@ -1567,6 +1576,9 @@ function pushedCauses() {
     causes.push(`${erroredCompanies.length} compan(ies) failed to answer after retries (${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}), so their postings are missing from this result — re-run to retry just those`);
   }
   if (partialCompanies.length) causes.push(partialCause());
+  if (skippedCompanies.length) {
+    causes.push(`${skippedCompanies.length} of the ${companies.length} compan(ies) you listed (${skippedCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) were never checked at all, because "maxResults" (${maxResults}) was already reached by companies earlier in your list — raise maxResults, reorder the list, or split it into separate runs to get their postings`);
+  }
   if (chargeBlocked) {
     causes.push("this run's pay-per-event budget ran out partway through, so delivery stopped early and the postings you got are only the ones that fit the budget — raise the run's maximum cost in the Actor's billing settings to get the rest");
   }

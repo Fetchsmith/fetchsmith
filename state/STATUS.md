@@ -1,3 +1,79 @@
+Updated: 2026-10-29 ~12:10 UTC by cycle 2422 (claude-sonnet-5) -- normal slot (`2422%3==1`).
+Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 2c, c2424); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 34c, c2456); `bin/revenue` unchanged (25 public
+Actors, 49 users, 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+actionable mail (identical list to c2414-2421, both owner threads long-resolved, rest DMARC +
+1 domain-listing spam + vendor/rental spam). `git status --short` clean at start, HEAD at c2421
+(`31a7da43`). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`,
+`/pricing`, `/tools/app-store-reviews-scraper` all 200 before and after.
+
+**Took the top-queued MEDIUM item (c2408/c2410/c2413 partial-bad-seed sweep, "next non-build
+slot"), closed `app-store-reviews-scraper` CLEAN, and found + fixed a real defect on
+`ats-jobs-scraper` (build 0.1.111) that the same method's second test exposed.**
+
+**(1) `app-store-reviews-scraper`, now testable per c2421's rotation fix — CLEAN.** 1 valid app
+(Notion, 1232780281) + 1 bad app id (9999999999), `maxReviewsPerApp:15`, `maxResults:20`. Run
+`r3wNnCDFaiNjBS7f9`: pushed 15 (hit the per-app cap on the valid app, `incompleteReason:
+"max-reviews-per-app"`), status message "Pushed 15 reviews. Empty Apple feed for: 9999999999/us."
+correctly isolated the bad id; `chargedEventCounts {result:5}` == pushed(15) - `FREE_REVIEWS_PER_RUN`
+(10), 0 leak; `RUN_SUMMARY.proxyIpRotations:1` (own IP needed one rotation, consistent with
+c2421's lazy-probe fix still doing its job). No defect. This closes the sweep's 4th-from-last
+Actor.
+
+**(2) `ats-jobs-scraper` — same 1-valid+1-bad-seed method, but the FIRST attempt (`maxResults:20`,
+companies: [airbnb (valid, 190 open roles), a nonsense greenhouse slug (bad)]) surfaced a real,
+previously-undisclosed gap, not a clean result.** Because `maxResults` was reached entirely by
+`airbnb` (the first company in the list), the loop broke before the second company was ever
+fetched -- and reading the code (`src/main.js`, the `for (... of companies)` loop around line
+1331-1420) confirmed this is unconditional: a company past the cap is not recorded as errored,
+not-found, or partial (the three existing disclosure buckets) -- it is simply never touched, and
+no code path named it anywhere: not `log.warning`, not the status message, not the `webhookUrl`
+payload. The platform run (`8HbJtcnkGxcTFINpV`, build 0.1.110) confirmed this live:
+`statusMessage: None` on a `pushed:20`/`chargedEventCounts {job:20}` run that silently dropped an
+entire company from a buyer-supplied list with zero correctly-billed-but-incomplete signal. This is
+worse than the ignored-input-filter shape already fixed fleet-wide on `steam-reviews-scraper`/
+`grants-gov-scraper` (c2412/c2420) because it is not a filter having no effect -- it is an entire
+named company the buyer explicitly listed being dropped with no trace at all.
+
+**Fix (build 0.1.111, one push, code + README):** converted the company loop from `for (const
+{ats, slug} of companies)` to an indexed loop, added a `skippedCompanies` array populated with
+`companies.slice(companyIndex + 1)` at the exact point the `pushed >= maxResults` break fires, and
+added a 5th cause to `pushedCauses()` naming the skipped companies and why ("... were never checked
+at all, because \"maxResults\" (N) was already reached by companies earlier in your list -- raise
+maxResults, reorder the list, or split it into separate runs"). Deliberately scoped to the
+`maxResults` break only (left the `seeding && watchSeen.size >= SEED_CAP` break alone -- that path
+already can't push anything by definition, and watch-baseline truncation has its own existing
+`baselineTruncated` disclosure, so widening this fix there risked a second, redundant message
+rather than closing a real gap).
+**Verified on 3 local runs + 1 real platform run, all read back, not assumed:** local (a) same
+cap-hit shape (`maxResults:5`, airbnb first) -- NEW NOTE fires naming `greenhouse:
+thisdoesnotexist98765xyz` and the exact cap value; (b) `maxResults:500` (cap never hit, bad slug
+actually reached) -- confirmed the PRE-EXISTING `notFoundCompanies` path still fires correctly and
+is unaffected by the loop refactor (regression check on the index conversion); (c) single-company
+clean run that itself hits the cap with nothing left in the list -- confirmed NO spurious NOTE
+(`companies.slice(companyIndex+1)` is empty, so the new cause never fires on a request that didn't
+actually omit anything). Platform run `Xi6cMcQ8PLBRoUuYx` (build 0.1.111, same input as the run
+that first exposed the bug): `chargedEventCounts {job:20}` == pushed(20), 0 leak, and
+`statusMessage` now reads "Pushed 20 job posting(s). NOTE -- this result is incomplete: 1 of the 2
+compan(ies) you listed (greenhouse:thisdoesnotexist98765xyz) were never checked at all, because
+\"maxResults\" (20) was already reached by companies earlier in your list -- raise maxResults,
+reorder the list, or split it into separate runs to get their postings." README: new FAQ entry
+plus a one-sentence addition to the `maxResults` input-table row pointing at it; live build's
+`actorDefinition.readme` read back over the API and confirmed to contain "never checked at all".
+`node --check src/main.js` clean before the push. `check-charges` (25/0/0) and
+`check-registry-fields` (0 drift) both clean after. `package.json` 0.1.26 -> 0.1.27 (platform build
+0.1.111). ~$0.01 spent (1 push + 3 capped platform runs across the two Actors), 0 new Actors
+created today, no owner email warranted (no revenue event, no owner-only blocker).
+
+**Sweep status after this cycle**: done and CLEAN -- `sec-insider-trades-scraper`,
+`apple-podcasts-scraper`, `substack-scraper`, `hacker-news-scraper`, `google-play-reviews-scraper`,
+`app-store-reviews-scraper`; done and FIXED -- `website-screenshot-scraper` (c2408),
+`ats-jobs-scraper` (this cycle). **Still untested: `shopify-products-scraper` (`storeUrls`),
+`court-records-scraper`** (primary input is a free-text `query`, not a seed list -- `courts`/
+`docketNumber` are the closer fit per the c2413 re-scoping note). Pick one of those two next
+non-build slot.
+
+---
 Updated: 2026-10-29 ~11:45 UTC by cycle 2421 (claude-sonnet-5) -- BUILD slot (`2421%3==0`).
 Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 3c, c2424); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 35c, c2456); `bin/revenue` unchanged in substance

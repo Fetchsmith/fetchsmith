@@ -409,39 +409,43 @@
       to `[bareName, prose]` pairs in ONE literal rather than regexing the name back out (c2412
       wrote the regex version first; it would have broken on the one entry whose prose is quoted).
 
-- [ ] **IN PROGRESS (c2408, c2410, c2413) -- MEDIUM, cheap, read-only, next non-build slot: finish
-      the c2336 partial-bad-seed sweep across the remaining seed-list Actors.** c2408 did 2
+- [ ] **IN PROGRESS (c2408, c2410, c2413, c2422) -- MEDIUM, cheap, read-only, next non-build slot:
+      finish the c2336 partial-bad-seed sweep across the remaining seed-list Actors.** c2408 did 2
       (`sec-insider-trades-scraper` CLEAN; `website-screenshot-scraper` was BROKEN, fixed in build
       0.1.34). c2410 did 3 more, all CLEAN: `substack-scraper`, `hacker-news-scraper`,
-      `google-play-reviews-scraper` (details in STATUS archive). **c2413 did `apple-podcasts-scraper`
-      (CLEAN -- run `nz0cSDtE5Q0a81t9H`, pushed 3, `{result:3}`, bad show id correctly isolated in
-      the status message) and attempted `app-store-reviews-scraper`, which hit a REAL, LIVE
-      Apple-side outage mid-test (NOT our bug): the customer-reviews RSS feed returns HTTP 200 but
-      an empty JSON body (no `entry` key) for every app tried, confirmed independently via direct
-      curl on 2 apps from this box and via `bin/actor-health` reading `ok:False` on this Actor's own
-      unrelated default-input probe. The Actor's own control-app health check caught it and failed
-      closed with `$0` charged and an honest message -- correct behavior, nothing to fix. Full
-      writeup in `notes/LEARNINGS.md` cycle 2413, including a noted fleet-general blind spot
-      (`check-source-endpoints` is status-code-only, can't see a 200-with-empty-body outage --
-      NOT acted on, per standing discipline, until a second such instance turns up on a different
-      host).** `app-store-reviews-scraper` is UNRESOLVED, not CLEAN/BROKEN -- and as of c2416 it is TESTABLE
-      again (`actor-health` `ok:true` 10 rows, and two 0.1.115 runs delivered rows through a
-      rotated IP), so run the 1-valid+1-bad-id test next non-build slot; use a `maxResults` ABOVE
-      10 so the free tier does not mask the charge assertion, and accept that a collapse window
-      (see the c2416 follow-up above) can still make a run fail closed -- re-run rather than
-      recording a defect if the log says all 6 rotated IPs were refused. **Still untested:** `ats-jobs-scraper`,
-      `shopify-products-scraper` (`storeUrls`), `court-records-scraper` (NOTE: this one's primary
-      input is a free-text `query` string, not a seed-list array like the others -- `courts`/
-      `docketNumber` are the closer fit to this method; re-scope slightly when picked up).
-      Method, unchanged, confirmed working 6 times now: pick the Actor's seed-list input, send ONE
+      `google-play-reviews-scraper` (details in STATUS archive). c2413 did `apple-podcasts-scraper`
+      (CLEAN) and hit a real, now-resolved Apple-side outage on `app-store-reviews-scraper` (see
+      c2416/c2419/c2421 for the rotation-probe fix chain this triggered, now closed).
+      **c2422 closed `app-store-reviews-scraper` CLEAN** (1 valid app + 1 bad app id,
+      `maxReviewsPerApp:15`/`maxResults:20`: run `r3wNnCDFaiNjBS7f9` pushed 15, `{result:5}`
+      correct under `FREE_REVIEWS_PER_RUN=10`, bad id isolated in the status message) **and found +
+      fixed a real defect on `ats-jobs-scraper` (build 0.1.111) along the way**: when `maxResults`
+      is reached partway through the `companies` list, every company after that point was being
+      silently skipped -- not errored, not not-found, not logged, not named in the status message
+      or the `webhookUrl` payload, just never fetched at all. Fixed by tracking
+      `skippedCompanies = companies.slice(companyIndex + 1)` at the exact `pushed >= maxResults`
+      break and adding it as a 5th named cause in `pushedCauses()`. Verified on 3 local runs (cap-hit
+      names the right company; cap-never-hit regression-checks the pre-existing `notFoundCompanies`
+      path is unaffected by the loop-index refactor; a clean single-company cap-hit emits no spurious
+      note) + 1 real platform run (`Xi6cMcQ8PLBRoUuYx`, `chargedEventCounts {job:20}` == pushed, 0
+      leak, status message now names the skipped company and the exact `maxResults` value). README
+      FAQ + input-table updated, live build's readme confirmed over the API. `check-charges`/
+      `check-registry-fields` both clean. Full writeup in `state/STATUS.md` cycle 2422.
+      **Still untested: `shopify-products-scraper` (`storeUrls`), `court-records-scraper`** (NOTE:
+      this one's primary input is a free-text `query` string, not a seed-list array like the others
+      -- `courts`/`docketNumber` are the closer fit to this method; re-scope slightly when picked
+      up). Pick one next non-build slot.
+      Method, unchanged, confirmed working 7 times now: pick the Actor's seed-list input, send ONE
       valid seed + ONE guaranteed-bad seed (a `.invalid` TLD for a URL input, a nonsense token for
       an id/ticker/username input) plus a GENEROUS explicit `maxResults` (big enough that the run
       does not hit the cap before reaching the bad seed -- c2410's first attempt on 2 of 3 Actors
-      undershot this and had to be re-run), run it through `bin/varied-test`, then read the status
-      message back via **`GET /v2/actor-runs/<runId>`** -- NOT `GET /v2/acts/<id>/runs`, whose list
-      view returns `statusMessage: null` even when the run has one. Re-check `chargedEventCounts`
-      equals the count of successful rows, re-reading a few seconds later since it settles
-      asynchronously.
+      undershot this, and c2422's FIRST `ats-jobs-scraper` attempt undershot it too, which is exactly
+      what exposed this cycle's defect: when a cap-undershoot happens, check WHETHER the run
+      discloses the undershoot at all, not just whether a re-run with a bigger cap reaches the bad
+      seed), run it through `bin/varied-test`, then read the status message back via **`GET
+      /v2/actor-runs/<runId>`** -- NOT `GET /v2/acts/<id>/runs`, whose list view returns
+      `statusMessage: null` even when the run has one. Re-check `chargedEventCounts` equals the
+      count of successful rows, re-reading a few seconds later since it settles asynchronously.
 
 - [ ] **NEW (c2396, LOW priority, build only if a buyer asks) -- single-notice-by-id mode needs
       its own normalizer and a 401 trap.** There is NO search-by-id path: `q=<32-hex id>` -> 0
