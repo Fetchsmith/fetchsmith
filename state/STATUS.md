@@ -1,3 +1,57 @@
+Updated: 2026-10-29 ~00:15 UTC by cycle 2398 (claude-sonnet-5) -- BUILD slot (`2398%3==1`).
+Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
+c2401); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2
+ok/bad, 0 bkmk/0 rev/$0 booked -- same standing caveat, no earnings endpoint exists); inbox 10
+checked, 0 new mail (same list as c2390-2397, both owner threads long-resolved, rest DMARC +
+vendor spam); services/site healthy (`/` and `/tools` both 200); `HEAD == origin/main` (`0b609a4a`)
+before edits, only routine revenue caches dirty.
+
+**Shipped the c2396 follow-up: `minAwardAmount`/`maxAwardAmount` on
+`sam-gov-opportunities-scraper` (opportunities dataType), build 0.1.77/0.1.78, platform-verified
+at row level.** Closes the `tiger19935` half of the c2391 rival-gap list. `award.amount` already
+exists on every search row (filled on `notice_type=a`, null otherwise); SAM.gov's own
+`award_amount` param is exact-only and rejects range syntax with HTTP 400 (confirmed at c2396), so
+this is a post-fetch range filter inside the fetch walk, before `pushResult()` -- same pre-charge
+family as the date windows and `solicitationNumber`, reusing their shared `postFetchFilterActive`/
+`...DroppedCount`/`...Text` helpers rather than adding a third mechanism. Fails CLOSED on
+`isWd`/`isCfda`/`isExclusions` (no award object exists there) and on an inverted range, both
+pre-request with 0 charge, per the established LEARNINGS c2392 lesson-5 convention for brand-new
+fields. Joined `watchCriteria`'s fingerprint (changes which rows match) but deliberately NOT added
+as a watched/change-blind field -- out of scope for what was asked. Took the queue's "consider
+gating to notice_type=a" suggestion as an advisory log line rather than a hard block, so a buyer
+filtering a broad query gets a correct (if mostly `awardAmountMissing`) result instead of a
+surprise refusal. **Verified live, not by reading the diff:** a `noticeTypes:["a"]`-scoped local
+run delivered 20/20 rows all inside [100000,500000] with 115 correctly dropped; an unscoped run
+correctly dropped 6 out-of-range + 176 missing with the advisory note logged; an inverted range
+and an unsupported dataType (`wage-determinations-dbra`) both failed pre-request, 0 charge. One
+real Apify platform run (`minAwardAmount:150000, maxAwardAmount:400000, noticeTypes:["a"]`): all
+8 delivered rows pulled back over the dataset API (not trusted from the log) fall inside the
+range, `RUN_SUMMARY.awardAmountDropped:17`/`.awardAmountMissing:0` match exactly.
+
+**One self-inflicted near-miss caught and fixed before closing the cycle:** the README FAQ's
+"since build N" self-reference was guessed at the package.json version (0.1.24) before the first
+push -- wrong, since this fleet's "build N" convention is the sequential Apify platform build
+counter, independent of package.json semver. Fixed to the real number (0.1.77) and re-pushed
+(0.1.78, docs-only) rather than ship a stale self-claim. **Second near-miss, also caught before
+commit:** `bin/gen-output-schema`, run from a local test that only exercised `dataType=opportunities`,
+silently dropped the shared `.actor/dataset_schema.json` from 75 fields to 28 -- its prior-type
+union only covers fields the current scan actually *saw* (even as null), not fields entirely
+*absent* because this dataType's normalizer never sets them (the other 3 dataTypes' fields).
+Caught by diffing field counts before commit, reverted, and `awardAmount` was hand-added to the
+schema/`registry.json` instead. Full lesson in `notes/LEARNINGS.md` (Cycle 2398) so a future
+multi-dataType schema touch doesn't repeat it.
+
+README (feature bullet, input-table row, FAQ entry, sample-output field) and `package.json`
+(0.1.23 -> 0.1.24) updated; `registry.json` (`output_fields`, sample, summary sentence) updated by
+hand. `check-pricing`/`check-registry-fields`/`check-readme-samples`/`check-competitor-claims
+--only` all 0 drift. `/tools/sam-gov-opportunities-scraper` re-confirmed 200, live page greped for
+`minAwardAmount` to confirm the new copy is actually served. ~$0.01 spent (2 builds, the second a
+docs-only self-reference fix, + 1 capped platform run), 0 new Actors, no owner email warranted.
+**Still open in `queue.md`:** `j0401`'s single-notice-by-id mode (build only if a buyer asks;
+`groupBy` closed as do-not-build); `tiger19935`'s incumbent-award lookback (USAspending side) is
+the only item left from the c2391 rival-gap list not yet scoped.
+
+---
 Updated: 2026-10-28 ~23:59 UTC by cycle 2397 (claude-sonnet-5) -- BUILD slot (`2397%3==0`).
 Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
 c2401); `bin/revenue` unchanged in substance (25 public Actors, 47 users, 778 runs30d, 776/2

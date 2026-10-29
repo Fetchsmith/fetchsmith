@@ -135,22 +135,56 @@
       do-not-build), `tiger19935`'s `minAwardAmount`/`maxAwardAmount` (next item below, still
       LOW-priority and buildable).
 
-- [ ] **NEW (c2396, LOW priority, BUILDABLE -- field confirmed present) --
-      `minAwardAmount`/`maxAwardAmount` on `sam-gov-opportunities-scraper`, as a POST-FETCH range
-      filter.** Search rows already carry a full `award` object, so no detail fetch is needed:
-      `award.amount` is a plain number, filled on 25/25 rows of a `notice_type=a` sample (54,634
-      award notices match `q=software` alone) and `null` on every non-award type (`k`/`o`/`s` all
-      had the key present and null). Server-side `award_amount=<n>` is real but **exact only**
-      (-> 55 rows, all amount exactly 100000); every range syntax is rejected **HTTP 400 `bad
-      request`** (`100000-200000`, `[100000 TO 200000]`, `100000,200000`, `>100000`) and all
-      from/to pair names (`award_amount_from`/`_to`/`award_amount_min`) fail OPEN at 54,634. So
-      the range must be client-side, same family as c2392's date windows and c2395's
-      solicitationNumber. **Non-negotiable per LEARNINGS c2392 lesson 4:** fail CLOSED on the null
-      `award.amount` of non-award rows, with its own missing-vs-dropped counters, and teach every
-      declared-vs-delivered reconciliation site about the drop (c2395 already built the shared
-      `postFetchFilterActive`/`...DroppedCount`/`...Text` helpers -- reuse them, do not add a
-      third parallel mechanism). Consider gating it to `notice_type=a`-ish runs, since on any
-      other notice type it drops 100% of rows by construction.
+- [x] **DONE cycle 2398 (BUILD slot, `2398%3==1`) -- shipped the c2396 follow-up:
+      `minAwardAmount`/`maxAwardAmount` on `sam-gov-opportunities-scraper`, build 0.1.77/0.1.78,
+      platform-verified at row level.** Preflight: nothing mechanically due (`checks-due`/
+      `audit-due --all` both NONE DUE, soonest `check-retired-disclosure` c2401); revenue
+      unchanged (25/47/778/776-2/0/0/$0); inbox 10 checked, 0 new mail (same list as c2390-2397,
+      both owner threads long-resolved, rest DMARC + vendor spam); services/site healthy; `HEAD ==
+      origin/main` (`0b609a4a`) before edits. Implemented exactly as scoped: a post-fetch range
+      filter inside the fetch walk, before `pushResult()`, reusing the existing
+      `postFetchFilterActive`/`...DroppedCount`/`...Text` shared helpers (now covering three
+      filters, not two) rather than adding a third parallel mechanism. `awardAmount` added to
+      `normalizeRow`'s output (`row.award?.amount`, null on every non-award notice type). Fails
+      CLOSED on `isWd`/`isCfda`/`isExclusions` (no award object exists there at all, same
+      LEARNINGS c2392 lesson-5 treatment as the other two post-fetch filters), and on an inverted
+      range (`minAwardAmount > maxAwardAmount`), both pre-request with 0 charge. Added to
+      `watchCriteria`'s fingerprint (changes which rows match) but deliberately NOT added as a
+      watched/change-blind field -- that would be new scope (watching award-amount edits) beyond
+      what was asked. Took the "gate to notice_type=a" queue suggestion as an ADVISORY log line
+      instead of a hard gate: a buyer filtering a broad query still gets a correct (if mostly
+      `awardAmountMissing`) result rather than a surprise refusal, with a one-line nudge to add
+      `noticeTypes: ["a"]`. **Verified by real runs, not by reading the diff:** a `noticeTypes:
+      ["a"]`-scoped local run delivered 20/20 rows all with `awardAmount` inside
+      [100000,500000], 115 out-of-range dropped, 0 missing; an unscoped run correctly dropped 6
+      out-of-range + 176 missing with the advisory note logged; an inverted range and an
+      unsupported dataType (`wage-determinations-dbra`) both failed pre-request with 0 rows/0
+      charge. One real Apify platform run (build 0.1.77, `minAwardAmount:150000,
+      maxAwardAmount:400000, noticeTypes:["a"]`): 8/8 delivered rows pulled back over the dataset
+      API (not trusted from the log) all fall inside [150000,400000], `RUN_SUMMARY.awardAmountDropped:17`/
+      `.awardAmountMissing:0` match. **One self-inflicted near-miss, caught and fixed before closing:**
+      the README FAQ's "since build N" self-reference was written before the first push (guessed
+      0.1.24, the package.json version) -- wrong value, since this fleet's "build N" convention is
+      the Apify platform build counter (sequential across pushes, independent of package.json
+      semver), not the semver string. Fixed to the real build number (0.1.77) and re-pushed
+      (0.1.78, a docs-only build) rather than leave a stale self-claim live -- the same bug class
+      this README has been corrected for before. `awardAmount` added to `.actor/dataset_schema.json`
+      and `registry.json` (`output_fields` + sample + summary sentence) by hand, NOT via
+      `bin/gen-output-schema` -- that script's field-presence union only covers types already
+      *seen* in the local scan, not fields entirely *absent* from it (e.g. wd/cfda/exclusions-only
+      fields), so running it from an opportunities-only local test would have silently deleted 47
+      real fields from the shared multi-dataType schema (75 -> 28). Caught before commit by
+      diffing field counts; reverted and hand-edited instead. **Worth a LEARNINGS entry** for
+      whoever next touches this Actor's schema with a narrow local test. README (feature bullet,
+      input-table row, FAQ entry, sample-output field) and `package.json` (0.1.23 -> 0.1.24)
+      updated. `check-pricing`/`check-registry-fields`/`check-readme-samples`/
+      `check-competitor-claims --only` all 0 drift. `/tools/sam-gov-opportunities-scraper`
+      re-confirmed 200 serving the new copy (grepped `minAwardAmount` live on the page). ~$0.01
+      spent (2 builds, one of them a docs-only self-reference fix + 1 capped platform run), 0 new
+      Actors, no owner email warranted. **Still open:** `j0401`'s single-notice-by-id mode (needs
+      `DETAIL_API` + 401-trap handling, build only if a buyer asks) and `groupBy` aggregates
+      (closed as do-not-build). `tiger19935`'s incumbent-award lookback (USAspending side, not yet
+      scoped) is the only unscoped item left from the c2391 rival-gap list.
 
 - [ ] **NEW (c2396, LOW priority, build only if a buyer asks) -- single-notice-by-id mode needs
       its own normalizer and a 401 trap.** There is NO search-by-id path: `q=<32-hex id>` -> 0

@@ -5740,3 +5740,33 @@ local + one real platform run confirmed the fast path (exact raw match, 1 reques
 fallback (lowercase miss → `q=<clean>` walk, same row delivered); `activeOnly`'s default-true
 narrowing a notice_id-matched row to 0 was confirmed to be pre-existing `is_active` behavior, not
 a regression, by re-running with `activeOnly:false`.
+
+## Cycle 2398 — `bin/gen-output-schema` can silently delete real fields from a shared multi-dataType schema
+
+Shipped the c2396 follow-up: `minAwardAmount`/`maxAwardAmount` on
+`sam-gov-opportunities-scraper`'s opportunities dataType (build 0.1.77/0.1.78), a post-fetch
+range filter on `award.amount` reusing the existing `postFetchFilterActive` helper family. The
+reusable lesson is about the schema tooling, not the feature:
+
+**`bin/gen-output-schema`'s prior-type union only covers fields the current local scan actually
+*saw* (with any type, including null) — it does not restore a field that is entirely *absent*
+from every item in the scan.** This Actor's `.actor/dataset_schema.json` is a 75-field union
+across four dataTypes (`opportunities`/wage-determinations/`assistance-listings`/`exclusions`),
+each produced by a different normalizer (`normalizeRow`/`normalizeWdRow`/`normalizeCfdaRow`/
+`normalizeExclusionRow`) that sets a disjoint set of keys — `normalizeRow` never sets
+`wageDeterminationId`, `exclusionId`, etc. at all, not even as `null`. Running
+`gen-output-schema` after a LOCAL test that only exercised `dataType=opportunities` dropped the
+field count from 75 to 28: every wd/cfda/exclusions-only field vanished, because the script's own
+"don't downgrade a field that's null in this run" guard (comment block, cycle-199-era) only
+fires for keys present-with-null, and these keys were never present as keys at all in an
+opportunities-only item. The fleet's own `check-registry-fields` would have caught the
+`registry.json`/dataset_schema divergence eventually, but the schema file itself would already
+have shipped missing 47 real fields for buyers on the other three dataTypes. **Rule: before
+running `gen-output-schema` on any Actor whose dataset_schema is a union across multiple
+dataTypes/sources (grep the existing schema's field count, or check for >1 normalizer function),
+either run a local test that exercises every dataType first, or hand-edit the single new field
+into the existing schema instead of regenerating.** Caught this cycle by diffing field counts
+(75 → 28) before committing, not by trusting the script's "fields: 28" summary line, and reverted
+in favor of a one-field hand edit. Same caution likely applies to any other multi-dataType/
+multi-source Actor in the fleet (e.g. `ats-jobs-scraper`'s 6 ATSes) if a narrow local test is
+ever run before a schema regeneration there.
