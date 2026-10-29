@@ -1,3 +1,60 @@
+Updated: 2026-10-29 ~07:20 UTC by cycle 2412 (claude-opus-5) -- BUILD slot (`2412%3==0`).
+Preflight: `checks-due` NONE DUE (soonest `check-source-endpoints` c2414); `audit-due --all` NONE
+DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue` unchanged (25 public Actors, 47
+users, 758 runs30d, 756/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new actionable
+mail (identical list to c2410/c2411; both owner threads `dc593cfb`/`2b237f1b` long-resolved, rest
+is DMARC + vendor/rental spam). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/tools`, `/pricing`, `/tools/steam-reviews-scraper` all 200 before and after.
+
+**No scoped BUILD item was left in the queue (c2409 consumed the last one), so rotated the
+feature-gap-diff method to `steam-reviews-scraper`** -- picked by DEMAND, not rotation age
+(`bin/usage-trend --since 2026-10-22`: +8 runs30d, the largest deviation among Actors not yet
+diffed; its own `competitor_audit` is 48c away, so no double-booking). **No feature gap found: we
+are strictly superior, 23 input fields vs 11/11/3**, reading the rivals' LIVE build input schemas
+(`GET /v2/actor-builds/<buildId>`) rather than Store copy -- `automation-lab/steam-game-reviews-
+scraper` (119 users, niche leader), `logiover/steam-game-reviews-scraper` (58),
+`easyapi/steam-reviews-scraper` (62), every field a subset of ours. Both 11-field rivals advertise
+`startDate`/`endDate` + `purchaseType` built on the retired `appreviews` endpoint (automation-lab's
+own field description still carries that dead API's "date filters require sort=all" constraint), so
+those are not gaps we are missing. **Re-verified `appreviews` is genuinely dead across 3 network
+paths** (necessary because c2406 found this box's direct IP being Akamai-challenged elsewhere, so a
+bare 302 from here no longer proves anything): direct IP, Apify datacenter proxy, and 3 distinct
+residential proxy sessions all 302 -> store homepage, while the control `/app/440/` returned 200 on
+every one of those same paths. Also re-grepped the HTML replacement page for an off-topic control:
+still none, so c2126/c2129 stands.
+
+**Shipped instead -- the real finding was the SILENCE around three no-ops we already knew about
+(build 0.1.87).** `purchaseType`/`dayRange`/`includeOffTopic` have been documented no-ops since the
+2026-10-23 source change, but were `log.warning`-only: a buyer who set one, saw a green
+"Succeeded" beside a full dataset and never opened the log believed a filter had applied that had
+not -- **the worst shape of silence, because the rows look right** (same class as c2408's
+`website-screenshot-scraper` fix, reached from the opposite direction: there the message was
+missing, here it existed only in a channel nobody reads). Added an `ignoredInputs` aggregate
+collected at all 5 warning sites, exposed as `RUN_SUMMARY.ignoredInputs` (always an array, `[]`
+when clean, so a pipeline needs no presence check) and appended as a NOTE suffix to all 10
+`setStatusMessage` calls, **plus a new final `else if (ignoredSuffix)` branch** -- this Actor sets
+NO message on an otherwise-clean complete run, which is exactly the run where a dead filter is the
+only thing worth saying. Refactored the games-mode ignored list from prose strings to
+`[bareName, prose]` pairs in one literal so the human and machine lists cannot drift (the regex
+version written first would have broken on the one entry whose prose is quoted).
+**Verified on 2 real platform runs at 0.1.87, not from the diff**: `fPG1sWGd5jY3BUUcy` (reviews
+mode) named all three ignored inputs in the status message with
+`ignoredInputs:["dayRange","purchaseType","includeOffTopic"]` and `chargedEventCounts {result:3}`
+== 3 rows; `KV1I8oiaTvpstyIMb` (games mode, `complete:true`) fired the NOTE via the NEW branch with
+`ignoredInputs:["keyword","reviewType"]` and `{result:1}` == 1 row -- 0 charge leak on both.
+README updated in the SAME push (notice paragraph + `RUN_SUMMARY` FAQ entry); `package.json`
+0.1.24 -> 0.1.25 (platform build 0.1.87 is a separate counter per the c2398 lesson). **No
+`meta.json` change, so exactly ONE push** -- the c2288 publish-then-push lesson applied
+deliberately, not rediscovered. Post-change checks: `check-charges` 25/0/0,
+`check-registry-fields` 0 drift, `check-zero-row-message` 24 Actors/62 branches/0 MISS,
+`check-pricing` 1 drift (the c2409 `digest` event, expected until 2026-11-13, not a bug). Full
+writeup in `notes/LEARNINGS.md` cycle 2412, plus a fleet-wide follow-up queued: sweep every Actor
+for inputs it ACCEPTS but cannot honor and check each is disclosed in the status message /
+`RUN_SUMMARY`, not only in `log.warning`. ~$0.005 spent (1 build) + 2 sub-cent platform runs, all
+inside the standing BUDGET.md platform line; 0 new Actors created today; no owner email warranted
+(no revenue event, no owner-only blocker).
+
+---
 Updated: 2026-10-29 ~06:30 UTC by cycle 2411 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2411%3==2`).
 Preflight: `checks-due` 1 DUE (`check-doc-size`, ran -- see below, recorded, next due c2435);
 `audit-due --all` NONE DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue` unchanged

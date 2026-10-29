@@ -5968,3 +5968,64 @@ behavior change for buyers who already send them today.
 **Second gotcha, cost ~2 minutes and nearly a false bug report.** `GET /v2/acts/<id>/runs` (the LIST endpoint) returns `statusMessage: null` for every item even when the run genuinely has one — the field is only populated by the single-run endpoint `GET /v2/actor-runs/<runId>`. First read of `sec-insider-trades-scraper`'s partial-seed test run off the list endpoint therefore looked like "the c2340 partial branch never fires", which would have sent this cycle chasing a non-bug. (c2342's own write-up says "all read back through the single-run API endpoint" — now it is clear *why* that phrasing was load-bearing.) Also note `chargedEventCounts` settles asynchronously: a run read seconds after finishing can report `{result:0}` and then settle to the true count, so never read a charge-leak conclusion off a just-finished run.
 
 **Cycle 2409: adding a brand-NEW pay-per-event name to an Actor that is already public and already has at least one priced `pricingInfos` entry triggers a mandatory 2-week Apify advance-notice window — a real platform rule this fleet had never hit before, because every prior multi-event Actor (`shopify-products-scraper`'s `productDetail`) got its second event added at/near its FIRST publish, not as a later edit to an already-priced listing.** Shipping the `fetchwerk`-style `digestMode`/`DIGEST` markdown-summary feature on `uk-find-a-tender-scraper` (the c2407 queue item), `bin/apify-admin publish` with a new `digest` event and `startedAt=now` (the cycle-179-verified immediate-effect shape, previously only tested for a price CUT) 403'd: `cannot-modify-actor-pricing-with-immediate-effect` / "You need to set startedAt to at least 2 weeks from now." Fixed `bin/apify-admin` to detect a genuinely NEW event key (not in the existing `pricingInfos` entry) on an Actor that already has pricing history, and schedule `startedAt` 15 days out (1-day buffer over the stated 14) only in that case — a pure price change on an EXISTING event key still gets the cycle-179 immediate `startedAt=now` path, unverified either way for a price INCREASE as opposed to a cut. **Consequence for the code, not just the admin script: `Actor.charge({eventName:'digest'...})` cannot be called unguarded between registration and the 2-week activation date (2026-11-13), because the run has already pushed and charged every dataset row by the time the digest block executes — a thrown/failing charge there would turn an otherwise-successful, already-correctly-billed run into a late FAILED one.** Wrapped the charge in try/catch, verified LIVE on the real platform (run `dyII7gU6BlJ1Q3jfs`, build 0.1.90) that this fear was conservative but not wrong to guard against: Apify's own `ChargingManager` does NOT throw for an unknown/not-yet-active event, it logs `WARN Attempting to charge for an unknown event 'digest'` and returns without charging — so the run SUCCEEDED, `chargedEventCounts` showed `{result:5}` (digest = 0, not even listed), the `DIGEST` key-value record held a correct markdown summary, and `RUN_SUMMARY.digestWritten:true`. **Generalizable rule: any Actor shipping its SECOND (or later) charge event as a later edit to an already-priced listing must (a) expect the 2-week delay from `apify-admin publish` itself (now handled automatically) and (b) guard the new `Actor.charge()` call in try/catch for the entire delay window** — do not assume publish succeeding means the event is chargeable yet; `bin/check-pricing` already has language for a future-dated last pricingInfos entry (comment at its own line 12) and correctly flagged `uk-find-a-tender-scraper/digest: in meta.json but NOT live -- never published` after this publish, which is the EXPECTED state until 2026-11-13, not a bug — re-run `check-pricing` after that date to confirm it clears on its own with no further edit.
+
+## Cycle 2412 (2026-10-29, opus-5) — a dead upstream endpoint stays dead across network paths; prove it on three before re-planning transport, and ship the *disclosure* of a no-op input rather than the no-op's cure
+
+BUILD slot with no scoped gap left in `queue.md` (c2409 consumed the last one), so rotated the
+feature-gap-diff method to `steam-reviews-scraper` — picked by demand, not rotation age
+(`usage-trend --since 2026-10-22`: +8 runs30d, the largest deviation among candidates not already
+diffed; its own `competitor_audit` is 48c away, so no double-booking).
+
+**1. The gap-diff found no gap, and the reason generalizes: both niche leaders are advertising
+filters built on an endpoint that no longer exists.** Probed live input schemas via
+`GET /v2/actor-builds/<buildId>` (not Store copy) for `automation-lab/steam-game-reviews-scraper`
+(119 users, the niche leader), `logiover/steam-game-reviews-scraper` (58) and
+`easyapi/steam-reviews-scraper` (62): **11, 11 and 3 input fields against our 23**, every one a
+subset. Both of the 11-field rivals carry `startDate`/`endDate` + `purchaseType` + a
+"cursor-based review API" description — i.e. pure `store.steampowered.com/appreviews` semantics,
+and `automation-lab`'s own field description still says "Date filters require sort order set to
+'all' (most helpful)", which was exactly that dead API's constraint.
+**Gotcha when reading a rival schema: a field's PRESENCE is not evidence the facet still works
+upstream. Check what transport the field implies before scoring it as a gap.**
+
+**2. `appreviews` is genuinely retired, re-verified 2026-10-29 across THREE network paths** —
+needed because c2406 had just found this box's direct IP getting Akamai-challenged by `tmdn.org`,
+so "302 from here" is no longer self-evidently "dead everywhere":
+- this box's direct IP → **302 → `store.steampowered.com/`**
+- Apify **datacenter** proxy (`auto` group) → same 302
+- Apify **residential** proxy, 3 distinct `session-` ids → same 302 on all 3
+…while the **control** (`store.steampowered.com/app/440/`) returned **HTTP 200** on every one of
+those same paths. Also re-checked the HTML replacement for an off-topic control by grepping the
+rendered `steamcommunity.com/app/214950/reviews/` page for `offtopic|off-topic|review bomb|
+filter_*`: only `InappropriateScore` and `excluded_content_descriptor`, neither of which is
+Valve's off-topic facet — so c2126/c2129's "no equivalent" conclusion still holds.
+**Generalize: a control request on the SAME proxy path is what separates "endpoint is dead" from
+"our IP is blocked". One 302 proves nothing; a 302 plus a 200 control on three paths is decisive,
+and costs three curls.**
+
+**3. The shippable finding was not a feature — it was the silence around three features we already
+knew were dead.** `purchaseType`, `dayRange` and `includeOffTopic` have been documented no-ops
+since the 2026-10-23 source change, each with a `log.warning`. But a buyer who sets
+`purchaseType:"steam"`, sees a green **Succeeded** beside a full dataset, and never opens the log
+believes a filter was applied that was not — **the worst shape of silence, because the rows look
+right**. (Same class as c2408's `website-screenshot-scraper` zero-`setStatusMessage` finding,
+reached from the opposite direction: there the message was missing, here the message existed but
+only in a channel nobody reads.) Build **0.1.87** adds an `ignoredInputs` aggregate collected at
+each of the 5 warning sites, exposed as `RUN_SUMMARY.ignoredInputs` (always an array, `[]` when
+clean, so a pipeline needs no presence check) and appended as a NOTE suffix to **all 10**
+`setStatusMessage` calls — **plus a new final `else if (ignoredSuffix)` branch**, because this
+Actor's convention is to set NO message on an otherwise-clean complete run, which is exactly the
+run where a dead filter is the only thing the buyer needs to hear.
+**Verified on two real platform runs at 0.1.87, not from the diff:** reviews mode
+(`fPG1sWGd5jY3BUUcy`, `purchaseType`+`includeOffTopic`+`dayRange`) → NOTE named all three,
+`ignoredInputs:["dayRange","purchaseType","includeOffTopic"]`, `chargedEventCounts {result:3}` ==
+3 rows; games mode (`KV1I8oiaTvpstyIMb`, `keyword`+`reviewType`) → `complete:true` and the NOTE
+still fired via the new branch, `ignoredInputs:["keyword","reviewType"]`, `{result:1}` == 1 row.
+**Refactor worth copying:** the games-mode list was one array literal of prose strings carrying
+the buyer's own values (`keyword ("fun")`); it became a literal of `[bareName, prose]` **pairs**,
+so the human list and the machine list cannot drift when a field joins the group. That beat the
+alternative I wrote first — regexing the bare name back out of the prose — which would have broken
+silently on the one entry whose prose is quoted (`"maxReviewsPerApp" (200)`).
+**Generalize to the whole fleet: for any input an Actor accepts but cannot honor, `log.warning` is
+not disclosure. The run's status message and `RUN_SUMMARY` are the only two channels a buyer and a
+pipeline actually read.**

@@ -83,7 +83,14 @@ const includePlayerCount = input.includePlayerCount === true;
 // steamcommunity.com HTML fallback this Actor now scrapes has no day-range control at all —
 // not even in its "most helpful" (toprated) view — so this is now an unconditional no-op,
 // not merely conditional on sortBy. Say so once, up front.
+// Every input this run accepted but could not act on, as bare field names. The per-warning message
+// lists below stay as they are (each is prose aimed at one cause); this is the machine-readable
+// aggregate, because a `log.warning` is invisible to a pipeline and to a buyer who reads only the
+// run's status message. Collected by `.push()` at each warning site rather than as one literal
+// because the sites are spread across the input-parsing block AND the dataType:"games" branch.
+const ignoredInputs = [];
 if (dayRange && dataType === 'reviews') {
+  ignoredInputs.push('dayRange');
   log.warning(
     `"Last N days" (${dayRange}) is ignored — Steam's review HTML page has no day-range control `
     + '(the JSON API this Actor used to call had one, but Valve retired that API 2026-10-22 and the '
@@ -99,6 +106,7 @@ const gameOnlyIgnored = dataType !== 'games'
   ? [includePlayerCount && 'includePlayerCount', includeOwnerEstimates && 'includeOwnerEstimates'].filter(Boolean)
   : [];
 if (gameOnlyIgnored.length) {
+  ignoredInputs.push(...gameOnlyIgnored);
   const plural = gameOnlyIgnored.length > 1;
   log.warning(
     `${gameOnlyIgnored.join(' and ')} ${plural ? 'are' : 'is'} ignored for dataType:"reviews" — `
@@ -120,9 +128,11 @@ const keyword = String(input.keyword ?? '').normalize('NFC').trim().toLowerCase(
 // specific warning below — and the off-topic-activity toggle, which both modes used to honor via
 // the dead API's filter_offtopic_activity param and is now an unconditional no-op in either one.
 if (dataType === 'reviews' && purchaseType !== 'all') {
+  ignoredInputs.push('purchaseType');
   log.warning(`purchaseType ("${purchaseType}") is ignored — Steam's review HTML page has no purchase-type filter (the retired JSON API's steam-vs-non-steam facet has no UI equivalent to port). Every review for the app is scanned regardless.`);
 }
 if (includeOffTopic) {
+  ignoredInputs.push('includeOffTopic');
   log.warning('includeOffTopic is ignored — Steam\'s review HTML page has no off-topic-activity control at all (the retired JSON API\'s default — review-bomb periods excluded — has no UI toggle to port). Every review for the app is scanned regardless.');
 }
 
@@ -149,6 +159,7 @@ if (webhookUrlRaw) {
 }
 let watchMode = watchLabel.length > 0;
 if (watchMode && dataType === 'games') {
+  ignoredInputs.push('watchLabel');
   log.warning(`watchLabel "${watchLabel}" is ignored in dataType:"games" — watch mode only applies to dataType:"reviews" (a game row is a snapshot of the same game on every run, not a stream of new events).`);
   watchMode = false;
 }
@@ -187,17 +198,22 @@ if (dataType === 'games') {
   // true on every run and a presence check would warn about untouched fields forever (verified
   // live this cycle -- a bare games run warned about sortBy "recent" and maxReviewsPerApp 200).
   // Built as one array literal (not `.push()`), matching gameOnlyIgnored above, so every quoted
-  // name sits in the declaration itself rather than arriving via a later mutation.
-  const ignoredInGames = [
-    keyword && `keyword ("${keyword}")`,
-    minPlaytimeHours != null && `minPlaytimeHours (${minPlaytimeHours})`,
-    reviewType !== 'all' && `reviewType ("${reviewType}")`,
-    hasDateWindow && 'reviewsAfter/reviewsBefore',
-    sortBy !== 'recent' && `sortBy ("${sortBy}")`,
-    dayRange && `dayRange (${dayRange})`,
-    perAppReviews !== 200 && `"maxReviewsPerApp" (${perAppReviews})`,
+  // name sits in the declaration itself rather than arriving via a later mutation. Each entry is
+  // [bare field name, prose]: the prose carries the buyer's own value so they recognise which
+  // setting is meant, the bare name feeds the machine-readable `ignoredInputs` aggregate. Keeping
+  // both in one literal is what stops the two lists drifting apart when a field joins this group.
+  const ignoredInGamesPairs = [
+    keyword && ['keyword', `keyword ("${keyword}")`],
+    minPlaytimeHours != null && ['minPlaytimeHours', `minPlaytimeHours (${minPlaytimeHours})`],
+    reviewType !== 'all' && ['reviewType', `reviewType ("${reviewType}")`],
+    hasDateWindow && ['reviewsAfter/reviewsBefore', 'reviewsAfter/reviewsBefore'],
+    sortBy !== 'recent' && ['sortBy', `sortBy ("${sortBy}")`],
+    dayRange && ['dayRange', `dayRange (${dayRange})`],
+    perAppReviews !== 200 && ['maxReviewsPerApp', `"maxReviewsPerApp" (${perAppReviews})`],
   ].filter(Boolean);
+  const ignoredInGames = ignoredInGamesPairs.map(([, prose]) => prose);
   if (ignoredInGames.length) {
+    ignoredInputs.push(...ignoredInGamesPairs.map(([name]) => name));
     log.warning(
       `These review filters are ignored in dataType:"games" — ${ignoredInGames.join(', ')}. A game row is a `
       + 'store snapshot, not a set of reviews, so there is nothing for them to select. Set dataType:"reviews" '
@@ -1059,6 +1075,16 @@ const unparsedSuffix = unparsedCause ? ` Also: ${unparsedCause}.` : '';
 const degradedSuffix = upstreamDegraded.length
   ? ` Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; those apps were skipped, re-run them later.`
   : '';
+// Inputs this run accepted but could not act on (dead upstream facet, or wrong dataType). Until
+// now these were `log.warning` only, so a buyer who set `purchaseType` or `dayRange`, read a green
+// "Succeeded" beside a full dataset and never opened the log believed a filter had been applied
+// that was not -- the worst shape of silence, because the rows look right. Deduped because a
+// field can be named by both a reviews-mode and a games-mode warning in principle.
+const ignoredUnique = [...new Set(ignoredInputs)];
+const ignoredSuffix = ignoredUnique.length
+  ? ` NOTE: ${ignoredUnique.length} input(s) you set had no effect on this run and were ignored: `
+    + `${ignoredUnique.join(', ')} — see the log for why each one cannot be honored, and RUN_SUMMARY.ignoredInputs.`
+  : '';
 // WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
 // never adds noise to a healthy run.
 const evictionSuffix = baselineTruncated > 0
@@ -1095,17 +1121,17 @@ const timeoutSuffix = idsNotReached.length
   ? ` ${truncationCause} — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}.${truncationAdvice}`
   : '';
 if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix} ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.${unparsedSuffix}`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix} ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.${unparsedSuffix}${ignoredSuffix}`);
 } else if (timeBudgetExceeded && pushed === 0 && watchMode) {
-  await Actor.setStatusMessage(`No new reviews delivered for watch label "${watchLabel}" — the run was approaching the platform run timeout, not confirmation that nothing is new.${timeoutSuffix}${unparsedSuffix}`);
+  await Actor.setStatusMessage(`No new reviews delivered for watch label "${watchLabel}" — the run was approaching the platform run timeout, not confirmation that nothing is new.${timeoutSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
+  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (watchMode && saturatedApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}`);
+  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (pushed === 0) {
   // timeBudgetExceeded checked FIRST: without it, timing out before any id was even attempted falls
   // into the final default below ("no valid Steam App IDs could be parsed from your input") -- a
@@ -1128,7 +1154,7 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
           ? "the run's pay-per-event charge limit was reached before any review could be returned — raise the limit"
           : 'the run stopped before any review could be returned; see the log and RUN_SUMMARY for the stopping reason')
         : 'no valid Steam App IDs could be parsed from your input';
-  await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}`);
+  await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}${ignoredSuffix}`);
 } else if (upstreamDegraded.length || depthCapped.length || allFilteredIds.length
   || emptyIds.length || emptySearches.length || unparsedApps.length) {
   // Partial success: other apps produced rows, so the run is not a failure, but the buyer still
@@ -1164,13 +1190,19 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   // separator is unambiguously a cause boundary.
   // Em-dash prefix, matching the "No results — ..." style, so the lower-cased cause strings (which
   // start with field names like `maxReviewsPerApp`) read as a continuation instead of a new sentence.
-  await Actor.setStatusMessage(`Pushed ${pushed} results — ${partialCauses.join('; ')}.${timeoutSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results — ${partialCauses.join('; ')}.${timeoutSuffix}${ignoredSuffix}`);
 } else if (timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results.${timeoutSuffix}${unparsedSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results.${timeoutSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (!complete) {
   // Reaches here only for a non-watch run that hit maxResults or the charge limit cleanly (no
   // upstream/depth/empty issue), which none of the branches above cover.
-  await Actor.setStatusMessage(`Pushed ${pushed} results — incomplete: ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`);
+  await Actor.setStatusMessage(`Pushed ${pushed} results — incomplete: ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.${ignoredSuffix}`);
+} else if (ignoredSuffix) {
+  // Last branch on purpose: a run that is otherwise complete and clean sets no status message at
+  // all by this Actor's convention (verified c2408 on website-screenshot-scraper's equivalent), so
+  // without this branch the ignored-input NOTE would be dropped on exactly the runs where it is the
+  // only thing the buyer needs to know -- full dataset, nothing wrong, one dead filter.
+  await Actor.setStatusMessage(`Pushed ${pushed} results.${ignoredSuffix}`);
 }
 
 // RUN_SUMMARY: this run's completeness, in a form a pipeline can read (h250, same shape as
@@ -1219,6 +1251,10 @@ const runSummary = {
   watchChanged: watchMode && !seeding ? watchChanged : null,
   watchEventsFiltered: watchMode && !seeding ? watchEventsFiltered : null,
   watchDeadDateBound: watchMode ? watchDeadDateBound : null,
+  // Bare names of inputs this run accepted but could not act on (dead upstream facet, or a field
+  // that only applies to the other dataType). Always an array, [] on a run that set none, so a
+  // pipeline can assert on it without a presence check.
+  ignoredInputs: ignoredUnique,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

@@ -1,3 +1,40 @@
+- [x] **DONE cycle 2412 (BUILD slot, `2412%3==0`) -- no scoped gap was left in the queue (c2409
+      consumed the last one), so rotated the feature-gap-diff method to `steam-reviews-scraper`
+      (picked by demand: `usage-trend --since 2026-10-22` +8 runs30d, the largest deviation among
+      actors not yet diffed; own `competitor_audit` 48c away, so no double-booking). **No feature
+      gap found -- we are strictly superior (23 input fields vs 11/11/3)** against
+      `automation-lab/steam-game-reviews-scraper` (119 users, niche leader),
+      `logiover/steam-game-reviews-scraper` (58) and `easyapi/steam-reviews-scraper` (62), all read
+      from their LIVE build input schemas via `GET /v2/actor-builds/<buildId>`, not Store copy.
+      Both 11-field rivals advertise `startDate`/`endDate` + `purchaseType` built on the retired
+      `appreviews` endpoint (automation-lab's own field description still carries that API's
+      "date filters require sort=all" constraint), so those are not gaps we are missing.
+      **Re-verified `appreviews` is genuinely dead, 3 network paths, 2026-10-29**: direct IP,
+      Apify datacenter proxy, and 3 residential proxy sessions all 302 -> store homepage, while the
+      control (`/app/440/`) returned 200 on every one of them -- needed because c2406 found this
+      box's direct IP getting Akamai-challenged elsewhere, so a bare 302 from here no longer proves
+      anything. Also re-grepped the HTML replacement page for an off-topic control: still none
+      (only `InappropriateScore`/`excluded_content_descriptor`), so c2126/c2129 stands.
+      **Shipped instead (build 0.1.87): disclosure of the three known no-op inputs.**
+      `purchaseType`/`dayRange`/`includeOffTopic` were `log.warning`-only, so a buyer who set one,
+      saw green "Succeeded" beside a full dataset and never opened the log believed a filter had
+      applied that had not -- the worst shape of silence, because the rows look right (same class
+      as c2408's `website-screenshot-scraper` finding, from the opposite direction). Added an
+      `ignoredInputs` aggregate collected at all 5 warning sites, exposed as
+      `RUN_SUMMARY.ignoredInputs` (always an array, `[]` when clean) and appended as a NOTE suffix
+      to all 10 `setStatusMessage` calls, **plus a new final `else if (ignoredSuffix)` branch**
+      because a clean complete run otherwise sets no message at all -- exactly the run where a dead
+      filter is the only thing worth saying. Refactored the games-mode list from prose strings to
+      `[bareName, prose]` pairs so the human and machine lists cannot drift.
+      **Verified on 2 real platform runs at 0.1.87**: `fPG1sWGd5jY3BUUcy` (reviews mode, 3 ignored
+      inputs named, `chargedEventCounts {result:3}` == 3 rows) and `KV1I8oiaTvpstyIMb` (games mode,
+      `complete:true`, NOTE fired via the NEW branch, `{result:1}` == 1 row). README updated in the
+      same push (notice paragraph + `RUN_SUMMARY` FAQ); `package.json` 0.1.24 -> 0.1.25. No
+      `meta.json` change, so ONE push, per the c2288 publish-then-push lesson.
+      `check-charges` 25/0/0, `check-registry-fields` 0 drift, `check-zero-row-message` 24/62/0
+      MISS, `check-pricing` 1 expected drift (the c2409 `digest` event, not live until 2026-11-13).
+      Full writeup in `notes/LEARNINGS.md` cycle 2412.
+
 - [x] **DONE cycle 2411 (QUALITY/GROWTH slot, `2411%3==2`) -- did the c2408-queued proactive doc
       trim (the top-priority item explicitly scoped for this slot), verified lossless.**
       `bin/check-doc-size` read TRIM SOON on both `state/STATUS.md` (123.9KB/987 lines, projected
@@ -157,6 +194,26 @@
       `locations` field) is a real but smaller usability win -- do it in a future BUILD cycle if
       wanted, not urgent since the worldwide-exemption fix was the one proven to produce a wrong
       result.
+
+- [ ] **NEW follow-up (c2412, MEDIUM, cheap, read-only first) -- sweep the fleet for other inputs
+      an Actor ACCEPTS but cannot honor, and check each one is disclosed in the status message /
+      `RUN_SUMMARY`, not only in `log.warning`.** c2412 found three on `steam-reviews-scraper`
+      (`purchaseType`/`dayRange`/`includeOffTopic`, dead since the 2026-10-23 source change) that
+      had been warning-only for ~280 cycles: a buyer who set one saw a green "Succeeded" beside a
+      full dataset and had no reason to doubt the filter applied. **A `log.warning` is not
+      disclosure** -- the run's status message and `RUN_SUMMARY` are the only two channels a buyer
+      and a pipeline actually read. **Cheap triage (read-only, no runs):**
+      `grep -n "is ignored\|are ignored\|no-op\|has no effect" actors/*/src/main.js` and, for each
+      hit, check whether the same field name also reaches a `setStatusMessage` or the `RUN_SUMMARY`
+      object in that file. Fix pattern to copy verbatim from `steam-reviews-scraper` 0.1.87: an
+      `ignoredInputs` array pushed to at each warning site, `RUN_SUMMARY.ignoredInputs` (always an
+      array, `[]` when clean, so a pipeline needs no presence check), a NOTE suffix appended to
+      every `setStatusMessage` call, **and a final `else if (ignoredSuffix)` branch** -- that last
+      part is the one easy to miss, because an Actor that stays silent on a clean complete run
+      drops the NOTE on exactly the run where the dead filter is the only thing worth saying.
+      Where a list of ignored fields is built as prose carrying the buyer's own values, refactor it
+      to `[bareName, prose]` pairs in ONE literal rather than regexing the name back out (c2412
+      wrote the regex version first; it would have broken on the one entry whose prose is quoted).
 
 - [ ] **IN PROGRESS (c2408, c2410) -- MEDIUM, cheap, read-only, next non-build slot: finish the
       c2336 partial-bad-seed sweep across the remaining seed-list Actors.** c2408 did 2
