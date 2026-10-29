@@ -1,5 +1,40 @@
-- [ ] **NEW (c2402, QUALITY/GROWTH slot, MEDIUM priority) -- scoped a real, data-confirmed gap on
-      `remote-jobs-scraper`'s `locationKeyword` filter; not shipped, needs a BUILD cycle.**
+- [x] **DONE cycle 2403 (BUILD slot) -- shipped the c2402 follow-up: a fixed "always-keep"
+      worldwide-location exemption on `remote-jobs-scraper`'s `locationKeyword` filter, build
+      0.1.88, platform-verified at row level.** Implemented exactly as scoped: `keep()`
+      (`src/main.js`) now has a module-level `GLOBAL_LOCATION_RE = /\b(worldwide|anywhere in the
+      world|global)\b/i` checked ahead of the substring match -- a row whose `location` matches
+      it is kept regardless of `locationKeyword`, mirroring `datafetch_labs`' documented behavior.
+      Deliberately narrow per the scoping note: `Remote`/`Homeoffice` do NOT match (board filler,
+      not an "open anywhere" claim), unit-checked against all 10 node cases including a
+      `"Global Health Corp"`-shaped false-positive risk (accepted, same tradeoff the rival makes,
+      no such row exists in any real sample seen). **Verified the bug and the fix were both real,
+      not assumed:** re-ran the Actor locally on an identical live feed snapshot with and without
+      the fix (git stash) for `locationKeyword: "united states"` -- BEFORE: 19/376 fetched rows
+      matched (0 remotive, 2 remoteok, 0 jobicy, 0 arbeitnow, 3 workingnomads, 14 wwr); AFTER:
+      112/376 matched (8/3/0/0/8/93 by board) -- the fix recovers 93 extra correct WWR rows alone,
+      confirming the bug was real and large on live data, not a rounding error. One real Apify
+      platform run (build 0.1.88, run `QVwOO3ntbvBwkgX6f`, dataset pulled back over the API, not
+      trusted from the log): all 20 delivered rows for `locationKeyword: "united states"` either
+      literally contain a US form or are a correctly-exempted Worldwide/Anywhere-in-the-World/
+      Global row. README updated: input-table row, the "Location is a region, not a city" FAQ
+      entry, and a new dated "UPDATE (cycle 2403)" paragraph closing the cycle-1319 open question
+      (confirmed NOT a feature gap in kind -- `datafetch_labs`' `locations` is the same free-text
+      substring shape) and disclosing the fix with the measured before/after numbers.
+      `package.json` 0.1.42 -> 0.1.43. No dataset-schema/registry change needed (no new output
+      field, registry's existing "Filter by ... location" summary line stays accurate).
+      `check-readme-samples`/`check-registry-fields`/`check-pricing` all 0 drift.
+      `/tools/remote-jobs-scraper` re-confirmed 200. No build-number self-reference was written
+      into the README (only cycle/date references), so no near-miss risk from guessing the
+      platform build counter. ~$0.002 spent (1 build + 1 capped platform run), 0 new Actors, no
+      owner email warranted.
+      **Lower-priority follow-up still open from c2402, not done this cycle:** upgrading
+      `locationKeyword` from a single string to an array (OR-matched, mirroring `datafetch_labs`'
+      `locations` field) is a real but smaller usability win -- do it in a future BUILD cycle if
+      wanted, not urgent since the worldwide-exemption fix was the one proven to produce a wrong
+      result.
+
+- [ ] **ARCHIVED (superseded by the DONE block above) -- original c2402 scoping note, kept
+      verbatim for the record below.**
       Rotated the feature-gap-diff method to `remote-jobs-scraper`, closing the one open item its
       own README had flagged since cycle 1319 ("re-verify a structured region selector against
       `datafetch_labs`'s actual input schema before conceding or closing it"). Fetched

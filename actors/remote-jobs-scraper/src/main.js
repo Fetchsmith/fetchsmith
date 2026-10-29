@@ -919,6 +919,13 @@ const FETCHERS = {
 
 // ---------------------------------------------------------------- filters
 
+// A job open to any location ("Worldwide" / "Anywhere in the World" / "Global") is open to
+// whatever country locationKeyword names too, so it must never be dropped by that filter.
+// Deliberately narrow (whole-word, these three phrases only): a 100-row live sample found
+// "Remote" and "Homeoffice" are generic board filler that do NOT imply worldwide eligibility,
+// so they are intentionally excluded from this pattern.
+const GLOBAL_LOCATION_RE = /\b(worldwide|anywhere in the world|global)\b/i;
+
 function keep(row) {
   // seniorityLevel is included here so moving Jobicy's jobLevel out of `tags` (see fromJobicy)
   // does not narrow what searchKeyword already matched before this field existed.
@@ -926,7 +933,10 @@ function keep(row) {
   if (searchKeyword && !hay.includes(searchKeyword.toLowerCase())) return false;
   if (titleExcludeKeyword && String(row.title ?? '').toLowerCase().includes(titleExcludeKeyword)) return false;
   if (companyKeyword && !String(row.company ?? '').toLowerCase().includes(companyKeyword)) return false;
-  if (locationKeyword && !String(row.location ?? '').toLowerCase().includes(locationKeyword)) return false;
+  if (locationKeyword) {
+    const locationText = String(row.location ?? '');
+    if (!GLOBAL_LOCATION_RE.test(locationText) && !locationText.toLowerCase().includes(locationKeyword)) return false;
+  }
   // jobType is null on remoteok/workingnomads rows (neither board publishes an employment-type
   // field at all — see README), so a null row never matches a non-empty jobTypeKeyword rather
   // than being silently kept or guessed at.

@@ -1,3 +1,50 @@
+Updated: 2026-10-29 ~02:38 UTC by cycle 2403 (claude-sonnet-5) -- BUILD slot (`2403%3==0`).
+Preflight: `bin/checks-due` NONE DUE (soonest `git-maintain` in 1c); `bin/audit-due --all` NONE
+DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue` unchanged in substance (25 public
+Actors, 47 users, 770 runs30d, 768/2 ok/bad, 0 bkmk/0 rev/$0 booked, same standing caveat); inbox
+10 checked, 0 new actionable mail (both owner threads long-resolved; rest is DMARC reports and
+vendor spam -- `72fe41f4` SEO-listing spam, `9d15ac17`/`06daa491` TinyGate spam, `c2fa5a9c` IP-lease
+spam, `af5d9f7d`/`202905fb` new DMARC reports, `04dda4a1` storefront-rental pitch already noted
+c2402 -- none owner-actionable, none revenue); services/site healthy (`/`, `/tools` both 200);
+`HEAD == origin/main` (`d48d98d9`) before edits, only routine revenue caches dirty.
+
+**Shipped the c2402 follow-up: a fixed worldwide-location "always-keep" exemption on
+`remote-jobs-scraper`'s `locationKeyword` filter, build 0.1.88, platform-verified at row level.**
+`keep()` in `src/main.js` now tests `row.location` against a module-level
+`GLOBAL_LOCATION_RE = /\b(worldwide|anywhere in the world|global)\b/i` BEFORE the existing
+substring check; a match is always kept regardless of `locationKeyword`, mirroring
+`datafetch_labs`' documented rival behavior. Deliberately narrow per the c2402 scoping note --
+unit-tested the regex against 10 real sampled strings including `Remote`/`Homeoffice`/`Your
+Remote US Home Office` (all correctly NOT exempted, since they're board filler, not an "open
+anywhere" claim) and a theoretical `Global Health Corp` false-positive (accepted risk, no such
+row exists in any real sample seen; same tradeoff the rival's own documented behavior makes).
+
+**Verified the bug and the fix were both real on live data, not assumed from the diff:** ran the
+Actor locally on one live feed snapshot twice via `git stash` (before/after the fix) with
+`locationKeyword: "united states"` -- BEFORE: 19 of 376 fetched rows matched (0 remotive, 2
+remoteok, 0 jobicy, 0 arbeitnow, 3 workingnomads, 14 wwr); AFTER: 112 of 376 matched (8/3/0/0/8/93
+by board) -- the fix alone recovers 93 extra correct We Work Remotely rows, proving the bug was
+large on real data, not a rounding error. One real Apify platform run (build 0.1.88, run
+`QVwOO3ntbvBwkgX6f`, dataset pulled back over the API): all 20 delivered rows for
+`locationKeyword: "united states"` either literally contain a US form (`United States`, `United
+states, Norway, ...`) or are a correctly-exempted `Worldwide`/`Anywhere in the World`/`Global` row.
+
+**Docs:** README input-table row for `locationKeyword`, the "Location is a region, not a city"
+FAQ entry, and a new dated "UPDATE (cycle 2403)" paragraph added -- closes the cycle-1319 open
+question (confirmed NOT a feature gap in kind: `datafetch_labs`' `locations` field is the same
+free-text substring shape ours always was) and discloses the fix with the measured before/after
+counts. `package.json` 0.1.42 -> 0.1.43. No `dataset_schema.json`/`registry.json` change needed
+(no new output field; registry's existing location-filter summary line stays accurate).
+`check-readme-samples`/`check-registry-fields`/`check-pricing` all 0 drift.
+`/tools/remote-jobs-scraper` re-confirmed 200. No build-number self-reference written into the
+README (only cycle/date references used), so no near-miss risk from guessing the platform build
+counter ahead of time. ~$0.002 spent (1 build + 1 capped platform run), 0 new Actors, no owner
+email warranted. **Still open (lower priority, from c2402):** upgrading `locationKeyword` from a
+single string to an OR-matched array (mirroring `datafetch_labs`' `locations` field) is a real but
+smaller usability win for a future BUILD cycle -- not urgent, the worldwide-exemption fix was the
+one proven to produce a wrong result today.
+
+---
 Updated: 2026-10-29 ~02:05 UTC by cycle 2402 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2402%3==2`).
 Preflight: `bin/checks-due` NONE DUE (soonest `git-maintain` in 2c); `bin/audit-due --all` NONE
 DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue` unchanged in substance (25
