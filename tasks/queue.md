@@ -99,21 +99,39 @@
       anywhere is served. `check-charges` 25/0/0, `check-registry-fields` 0, `check-zero-row-message`
       24/62/0 MISS. Writeup in `notes/LEARNINGS.md` cycle 2414.
 
-- [ ] **NEW follow-up (c2416, MEDIUM, do on a non-build slot) -- the `app-store-reviews-scraper`
-      preflight is now app-broad but still SORT-narrow and single-shot, and the serving set is
-      time-varying.** Measured this cycle: 1/6 datacenter sessions served the control app at 09:05,
-      then 0/18 (6 fresh sessions x 3 big apps) served ANYTHING ~4 minutes later -- the serving set
-      collapses and recovers on a minutes timescale, which is why c2414 could not reach the happy
-      path at all and c2416 could. Two cheap hardenings, in value order: (1) make `controlProbe()`
-      try `sortBy=mostHelpful` as well as `mostRecent` before calling an IP refused -- the backstop
-      `reviewFeedIsDown()` already sweeps both sorts, so the preflight is the narrower of the two
-      gates on the same symptom; (2) consider counting the buyer's own first served page as proof
-      of a serving IP (it is: rows arrived), so a run that is already getting rows never pays for
-      the probe. Do NOT raise `PROXY_ROTATIONS` above 6 to chase the collapse windows -- when the
-      set is at 0/18 no rotation count helps, and the fail-closed path is already honest and $0.
-      Also note `src/main.js:475`'s comment still cites a "measured ~40% serve rate" from
-      2026-10-29 08:xx; this cycle measured 1/6 then 0/18 on the same day, so that number is a
-      snapshot of one minute, not a rate -- reword it when the file is next touched.
+- [x] **DONE cycle 2419 -- part (1) of the c2416 follow-up, `controlProbe()` now sweeps both
+      `mostRecent` and `mostHelpful` per control app before calling an IP refused (build 0.1.116),
+      matching `reviewFeedIsDown()`'s shape.** Also reworded the stale "~40% serve rate" comment at
+      `src/main.js:475`. Verified on platform run `OPIDiTVw9xl8rd8fZ`: 10 real rows, `{result:0}`
+      correct under the free tier, `proxyIpRotations:0` (own IP served fine). README updated,
+      live build's README confirmed over the API. `check-charges`/`check-registry-fields` both
+      clean. Full writeup in `state/STATUS.md` cycle 2419.
+
+- [ ] **NEW follow-up (c2419, MEDIUM, needs careful implementation -- do NOT rush) -- part (2) of
+      the c2416 follow-up, deliberately NOT attempted this cycle.** Goal: a run whose own IP is
+      already serving reviews should never pay for the 1-request `ensureServingIp()` probe (today
+      it always pays it, even though `PROXY_ROTATIONS=6`'s own comment implies the IP is fine most
+      of the time). **The trap found while sketching it**: `ensureServingIp()` currently runs BEFORE
+      the per-pair page loop in `scrapeAppCountrySort` (src/main.js:850), so by the time any page is
+      fetched the right IP is already pinned. Moving the call to trigger lazily off the first empty
+      page INSIDE the loop (where `if (!entries.length) continue;` already is, src/main.js:888) looks
+      tempting -- it would cost 0 extra requests whenever the first real page already has rows -- but
+      if that first page WAS empty because of a refusal, the naive version just falls through to
+      `continue` and permanently loses that page (moves to page 2 without ever re-fetching page 1 on
+      the rotated IP), silently reproducing the exact "roughly 3 runs in 5 scraped nothing" bug this
+      whole feature exists to fix for whichever page it happens to land on. **Correct shape**: only
+      call `ensureServingIp()` from inside the loop, at the `!entries.length` branch, AND ONLY the
+      first time it fires (`!servingIpChecked` -- already memoised, so later calls are free no-ops);
+      if `activeProxyUrl` changed as a result (rotation happened), RE-FETCH the SAME `url` once more
+      before falling through to `continue`/interpreting it as a real hole, reusing the same
+      try/catch-and-break error handling already at src/main.js:878-887. Verify with: (a) a platform
+      run while Apple is serving this box's IP fine -- `proxyIpRotations` should stay 0 AND the
+      control-app host should get strictly fewer requests than today's baseline (confirm via
+      `RUN_SUMMARY` or a log count, not assumption); (b) a platform run captured during a refusal
+      window (watch `bin/actor-health` / direct curl for the empty-shell split, same method c2414
+      and c2416 used) -- the FIRST pair's FIRST page must still end up populated after rotation, not
+      silently skipped. Do not ship without (b) passing on a real refusal window; if one isn't
+      reachable this cycle, say so explicitly rather than shipping unverified, same as c2414 did.
 
 - [x] **DONE cycle 2416 -- HAPPY rotation path on `app-store-reviews-scraper` VERIFIED, and the
       probe bug that path exposed is FIXED (build 0.1.115).** Apple's feed came back for *some*

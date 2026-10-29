@@ -472,7 +472,11 @@ const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match
 // "that is an Apple-side fault ... re-run later" -- correct, $0 charged, and still a bad deal for
 // the buyer, who had to re-run and hope for a luckier IP. The cure is a DIFFERENT IP, not waiting.
 // RESIDENTIAL measured no better than DATACENTER here, so we rotate the cheap (auto/shared) group.
-const PROXY_ROTATIONS = 6; // 6 fresh IPs at the measured ~40% serve rate: ~95% chance one answers
+// 6 fresh IPs. The serve rate is NOT a stable number -- c2414 measured 3/8 datacenter + 1/5
+// residential sessions serving in one minute (~40%), c2416 measured it collapse to 1/6 then 0/18
+// four minutes later (see the c2416 queue follow-up) -- so this is a depth chosen to tolerate a
+// bad window, not a rate with a confidence bound.
+const PROXY_ROTATIONS = 6;
 let proxyConfig = null;
 let activeProxyUrl = null; // pinned for the rest of the run once an IP proves it is being served
 let proxyIpRotations = 0;
@@ -791,13 +795,19 @@ let servingIpChecked = false;
 // IPs, then pushed 10 real reviews for the buyer's app through the fallback (its own IP). So a
 // one-app probe over-reports refusal, which costs twice: it burns 6 rotations on a run whose own
 // IP was fine, and — worse — it ROTATES AWAY from a fresh IP that would have served the buyer.
-// Cost is bounded and paid only in the bad case: 1 request when the first control answers (the
-// common case, unchanged), at most CONTROL_APPS.length when it does not.
+// Also sweeps BOTH sort orders per app (c2419): the backstop below, reviewFeedIsDown(), already
+// checks mostRecent AND mostHelpful per app -- a mostRecent-only preflight was the narrower of the
+// two gates watching the same symptom, so it risked calling an IP refused on a sort that
+// mostHelpful would have shown was actually fine.
+// Cost is bounded and paid only in the bad case: 1 request when the first (app, sort) answers (the
+// common case, unchanged), at most CONTROL_APPS.length * 2 when it does not.
 const controlProbe = async () => {
   for (const [id, cc] of CONTROL_APPS) {
-    // tolerateAll: an empty answer here is the signal, not an error to throw on.
-    const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=mostRecent/page=1/json`, 'default', true);
-    if (entries.length) return entries.length;
+    for (const sortBy of ['mostRecent', 'mostHelpful']) {
+      // tolerateAll: an empty answer here is the signal, not an error to throw on.
+      const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=${sortBy}/page=1/json`, 'default', true);
+      if (entries.length) return entries.length;
+    }
   }
   return 0;
 };
