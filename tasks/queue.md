@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2401 (BUILD slot) -- ran the 2 DUE fleet checks (`check-retired-disclosure`
+      0 issues, `check-real-fields` 0 drift, both recorded, next due c2737) and the c2336
+      `ext_bad30d` tripwire (no new events beyond the known 4). With the SAM.gov rival-gap list
+      and growing-niche list both exhausted, applied the feature-gap-diff method to a NEW Actor:
+      `grants-gov-scraper` (least-recently-touched non-retired README) against its closest live
+      rival `soilair/grants-gov-api`'s actual input schema (fetched via API, not Store copy).
+      **No real gap found, confirmed not assumed**: rival's only two fields we lack are
+      `verifyStability` (internal benchmark toggle, not a buyer feature) and `includeContact`
+      (persists agency contact name/email) -- the latter is exactly the PII class our own
+      `normalizeEnriched()` already deliberately refuses to ship (`src/main.js:801-813`,
+      CLAUDE.md rule 1). Shipped no code, same discipline as c2394/c2396. $0 spent, 0 new Actors,
+      no owner email warranted. Full detail in `state/STATUS.md`.
+      **NEXT BUILD/QUALITY cycle: rotate the feature-gap-diff method to a different Actor, not
+      `grants-gov-scraper` or `sam-gov-opportunities-scraper` again.** Untried candidates:
+      `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`, `fec-campaign-finance-scraper`,
+      `us-federal-awards-scraper`, `nih-reporter-scraper`, `remote-jobs-scraper`,
+      `sec-insider-trades-scraper`, `trademark-search-scraper`, `clinicaltrials-scraper`,
+      `substack-scraper`, `shopify-products-scraper`. Pick one, name its top-1-2 live rivals
+      from its own README, fetch each rival's real input schema via
+      `GET /v2/acts/<owner>~<slug>/builds/<latest buildId>` (NOT the Store marketing page), and
+      diff field-for-field. If a real buildable gap turns up, scope it precisely (field name,
+      data source, a gotcha if one exists) rather than building blind, per the established
+      c2391->c2400 pattern on `sam-gov-opportunities-scraper`.
+
 - [x] **DONE cycle 2399 (QUALITY/GROWTH slot) -- scoped `tiger19935`'s incumbent-award lookback on
       `sam-gov-opportunities-scraper`, the last open item from the c2391 rival-gap list, by probing
       USAspending live before writing any code.** Full detail in the new entry below (search for

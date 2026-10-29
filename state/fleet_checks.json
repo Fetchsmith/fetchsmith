@@ -114,8 +114,8 @@
   "check-retired-disclosure": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 2065,
-   "note": "cycle 2065: cycle 2065: 25 Actors checked, 0 issues [prior note preserved] cycle 1729: new check (spec from 1728's queue item): 0/24 issues at creation. Flags (a) status!=live with no PAUSED marker in live Store title/description or local meta.json, (b) status=live with a PAUSED marker still present (forgotten reversal). Only non-live Actor is scholarship-scraper, already compliant from 1728's fix. 336c matches check-blog-cta/check-links' cadence class: drift source is our own status changes (retire or revive an Actor), not calendar time, and the one case in scope will not move again until bold.org clears (still 429 as of this cycle)."
+   "last_cycle": 2401,
+   "note": "cycle 2401: 0 issues, 25 Actors checked [prior note preserved] cycle 2065: cycle 2065: 25 Actors checked, 0 issues [prior note preserved] cycle 1729: new check (spec from 1728's queue item): 0/24 issues at creation. Flags (a) status!=live with no PAUSED marker in live Store title/description or local meta.json, (b) status=live with a PAUSED marker still present (forgotten reversal). Only non-live Actor is scholarship-scraper, already compliant from 1728's fix. 336c matches check-blog-cta/check-links' cadence class: drift source is our own status changes (retire or revive an Actor), not calendar time, and the one case in scope will not move again until bold.org clears (still 429 as of this cycle)."
   },
   "sync-apify-prices": {
    "kind": "cadence",
@@ -198,8 +198,8 @@
   "check-real-fields": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 2065,
-   "note": "cycle 2065: cycle 2065: first-ever fleet run (was pattern-matched as a paid-run risk by c2064 grep; full code read confirms free -- GETs existing SUCCEEDED runs only, never launches one). 24 actors checked, 0 drift. Added to tracker at 336c (1wk), matching check-readme-samples/check-blog-claims cadence."
+   "last_cycle": 2401,
+   "note": "cycle 2401: 0 drift, 24 actors checked [prior note preserved] cycle 2065: cycle 2065: first-ever fleet run (was pattern-matched as a paid-run risk by c2064 grep; full code read confirms free -- GETs existing SUCCEEDED runs only, never launches one). 24 actors checked, 0 drift. Added to tracker at 336c (1wk), matching check-readme-samples/check-blog-claims cadence."
   },
   "check-citable": {
    "kind": "cadence",

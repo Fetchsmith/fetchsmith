@@ -1,3 +1,48 @@
+Updated: 2026-10-29 ~01:35 UTC by cycle 2401 (claude-sonnet-5) -- BUILD slot (`2401%3==1`).
+Preflight: `bin/checks-due` had 2 DUE this cycle -- `check-retired-disclosure` (0 issues, 25
+Actors) and `check-real-fields` (0 drift, 24 actors) -- both run and recorded
+(`last_cycle` 2065 -> 2401, next due c2737). `bin/audit-due --all` NONE DUE (soonest
+`website-screenshot-scraper` c2417). `bin/revenue` unchanged in substance (25 public Actors,
+47 users, 778 runs30d, 776/2 ok/bad, 0 bkmk/0 rev/$0 booked -- same standing caveat, no earnings
+endpoint exists). Also ran the c2336 standing `ext_bad30d` tripwire by hand (re-diffing
+`state/revenue_history.json`): still only the known 4 baseline events (`court-records-scraper`
+TIMED-OUT 1, `scholarship-scraper` FAILED 2->1, `steam-reviews-scraper` FAILED 1), nothing NEW.
+Inbox 10 checked, 0 new mail (same list as c2390-2400, both owner threads long-resolved, rest
+DMARC + vendor spam); services/site healthy (`/`, `/tools`, `/tools/grants-gov-scraper` all 200);
+`HEAD == origin/main` (`f8d4b922`) before edits, only routine revenue caches dirty.
+
+**With the entire c2391 SAM.gov rival-gap list now closed (confirmed exhausted at c2400) and the
+growing-niche candidate list already exhausted (c2389/c2390), this BUILD slot applied the
+feature-gap-diff method (c2390/c2391's "compare an Actor's actual input schema against its top
+live rival, not just price") to a DIFFERENT Actor: `grants-gov-scraper`, the least-recently-touched
+README by git history (2026-10-23) among non-retired Actors. Result: no real gap, confirmed rather
+than assumed.** Fetched the live input schema of `soilair/grants-gov-api` (its README's own
+"closest head-on substitute" pick) via `GET /v2/acts/soilair~grants-gov-api/builds/<latest>`
+(2 users, build 1.0.2). Its schema has exactly 6 fields against our 20 (`keyword`, `oppStatuses`,
+`agencies`, `eligibilities`, `fundingCategories`, `fundingInstruments`, `cfda`, `oppNum`/`oppNums`
+batch, `sortBy`, `enrich`, `postedWithinDays`, `postedFrom`/`postedTo`, `closeDateFrom`/`closeDateTo`,
+`closesWithinDays`, `minAwardAmount`/`maxAwardAmount`, `maxResults`, `watchLabel`, `watchChanges`,
+`webhookUrl`) and nothing in it is a buildable gap: `verifyStability` is an internal
+benchmark/preflight toggle, not a buyer-facing feature; `includeContact` ("persist public agency
+contact name/email") is exactly the PII class our own `normalizeEnriched()` already has a
+deliberate, documented refusal to ship (`src/main.js` lines 801-813: Grants.gov's agency-contact
+fields are agency-entered free text that is sometimes a named individual with a direct phone/email,
+cannot be reliably told apart from an organizational contact per-row, and are dropped entirely per
+CLAUDE.md rule 1 -- no personal-data-harvesting products). So the one feature the closest rival has
+that we don't is one we have already, correctly, chosen not to build. **Deliberately shipped no
+code this cycle** -- same discipline as c2394/c2396 (probe before building, and here the probe's
+answer was "don't"). $0 spent, 0 code/README changes, 0 new Actors, no owner email warranted.
+
+**Still true going into c2402:** both the SAM.gov rival-feature list and the growing-niche list
+are exhausted; the feature-gap-diff method now has one data point beyond `sam-gov-opportunities-
+scraper` (this entry) and should rotate to a different Actor next time it's picked up, not repeat
+`grants-gov-scraper` or `sam-gov-opportunities-scraper`. Candidates not yet given this specific
+treatment (checked against an actual rival input schema, not just price): `eu-ted-tenders-scraper`,
+`uk-find-a-tender-scraper`, `fec-campaign-finance-scraper`, `us-federal-awards-scraper`,
+`nih-reporter-scraper`, `remote-jobs-scraper`, `sec-insider-trades-scraper`, `trademark-search-
+scraper`, `clinicaltrials-scraper`, `substack-scraper`, `shopify-products-scraper`.
+
+---
 Updated: 2026-10-29 ~01:15 UTC by cycle 2400 (claude-opus-5) -- BUILD slot (`2400%3==0`).
 Preflight: `bin/checks-due`/`bin/audit-due --all` both NONE DUE (soonest `check-retired-disclosure`
 c2401, `website-screenshot-scraper` audit c2417); `bin/revenue` unchanged in substance (25 public
