@@ -38,6 +38,43 @@
       projected past the trim line before the next scheduled look) -- deferred the proactive trim
       to a future QUALITY slot given this cycle's time budget; next check-doc-size due c2459.
 
+- [ ] **TOP PRIORITY c2441 -- `trademark-search-scraper` is FAILING on the platform, REPRODUCED
+      twice (nightly health + a c2440 re-probe ~5 min later).** Runs `H3faDD0y7eQPT4JyZ`
+      (21:05:48Z, nightly) and `4jGPrApTlc9GJY8oz` (21:10:39Z, c2440's re-probe), both build
+      0.1.83, both `exitCode 1`, both with the SAME statusMessage: *"Could not reach TMview
+      (tmdn.org) through any network path this run: 3 Apify Proxy session(s) and a direct
+      connection all failed transport-level -- last error: The operation was aborted due to
+      timeout."* So this is NOT the one-off transient that wording was written for -- two
+      independent runs 5 minutes apart exhausted all 4 routes (3 proxy sessions + direct).
+      **Good news, and the reason this is not an emergency: the Actor fails SAFELY.** Both runs
+      charged `{result: 0}` -- a buyer gets a FAILED run with an accurate, actionable message and
+      no bill, not silent garbage. The 500-char clamp work this sweep has been doing is exactly
+      what keeps that message intact. Nothing to refund, nothing misleading live.
+      **Diagnosis to do FIRST next cycle (do not start by editing code):** (a) probe `tmdn.org`
+      from this box directly AND through each Apify Proxy group to find out which routes are
+      actually dead now -- but note c2406's finding that this box's own direct IP is
+      Akamai-challenged (`tmdn.org/error/revise.html`), so a direct-from-box failure proves
+      nothing about the proxy path; (b) check whether TMview changed its edge (Akamai Bot Manager
+      now rejecting datacenter ranges wholesale would make the current DATACENTER-group default
+      permanently dead, not transient); (c) `bin/usage-trend --since` on this Actor to see when
+      the failures began -- if they are days old, the "re-run in a few minutes" advice in the
+      status message is now WRONG and misleading a buyer, which makes the copy a bug of its own.
+      **Candidate fixes in order of cost:** switch the default `proxyConfiguration` to RESIDENTIAL
+      for this Actor (the status message already tells buyers to do this by hand, which is an
+      admission the default is wrong -- but check the residential price delta against the PPE
+      price first, it may not be affordable at our per-result price); raise the proxy session
+      count / retry budget; or, if TMview's edge is now categorically closed to Apify ranges,
+      treat it as the same structural wall as zillow/etsy (c2107) and consider retiring or
+      re-scoping the Actor rather than shipping a product that cannot run. **This outranks the
+      remaining clamp sweep** -- a 25-Actor fleet with one Actor that cannot complete a run is a
+      bigger revenue/reputation problem than a status message that might get cut.
+      NOTE on method (c2440): `bin/actor-health` takes ONLY `--only <slug>`; it IGNORES positional
+      args, so `bin/actor-health check-charges` silently re-runs the FULL billable fleet probe
+      instead of the named check (that is what happened this cycle, ~25 real platform runs of
+      spend for nothing). The real checks are standalone: `bin/check-charges`,
+      `bin/check-registry-fields`. Use `bin/actor-health --only trademark-search-scraper` to
+      re-probe just this one.
+
 - [x] **DONE cycle 2432 (QUALITY/GROWTH slot, `2432%3==2`) -- fixed `uk-find-a-tender-scraper`
       (build 0.1.91, package 0.1.17 -> 0.1.18) AND did the read-only measurement pass the c2428
       note asked for on the other 5 Actors, so the remaining fixes are now pre-measured.** This
@@ -289,6 +326,53 @@
       (rest is DMARC reports + rental/IP-lease/gateway spam). `bin/revenue` unchanged ($0 booked);
       no owner email warranted. ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors
       created today.
+
+- [x] **DONE cycle 2440 (normal slot, `2440%3==1`) -- fixed item (3) of the c2437 `Actor.fail()`
+      sweep, `clinicaltrials-scraper` (build 0.1.93, package 0.1.32 -> 0.1.33), AND a second
+      `Actor.fail()` site on the same Actor that the sweep's grep never saw.**
+      (A) The queued site (watch seed-failure, main.js ~1682, measured 580): re-measured it live
+      first and the measurement sharpened the diagnosis -- at 580 chars the part the silent cut
+      deletes is the entire REMEDIATION clause ("fix the filter values and re-run" / "raise the
+      run timeout"), not the "nothing was charged" clause, which sits early enough to survive.
+      So the pre-fix bug was a FAILED run that correctly said nothing was billed but not what to
+      do about it. Fixed by putting the (bounded, 233-char worst case) upstream detail in the
+      clamped base and reserving billing clause + advice in the suffix; now 359/362 chars.
+      (B) **New finding -- a SECOND unclamped `Actor.fail()` at main.js ~205**, the
+      all-nctIds-malformed input guard, which echoes the rejected ids back and whose `nctIds`
+      input is a free-text textarea with NO schema `maxLength`: genuinely unbounded, measured
+      **554 chars at 20 bad ids and 974 at 50**, and the text deleted is the explanation that the
+      run was stopped deliberately so the buyer would not be charged for studies they never asked
+      for. This is the same blind spot c2436 found (every sweep grep since c2412 matched the
+      shared `"watch baseline could not be completed"` string, so an `Actor.fail()` with
+      different wording was invisible) -- worth re-checking on the remaining sweep Actors.
+      (C) Moved `STATUS_MESSAGE_MAX`/`clampStatusMessage` to just under `Actor.init()`: site (B)
+      runs at ~line 205, BEFORE the old line-1469 declaration, so clamping it in place would have
+      thrown a temporal-dead-zone ReferenceError on the one path that must never crash.
+      (D) Capped `lastApiError`'s `request failed: ${err.message}` at 200 chars -- the last
+      unbounded upstream interpolation in the file (got embeds the request URL, which carries the
+      buyer's own query values), and it feeds the clamped messages where an unbounded base defeats
+      the reservation math.
+      Verified: 14 unit assertions (both sites at measured worst cases; a 2000-char-detail stress
+      proving the reserved clause is now unreachable; byte-identical passthrough on the short,
+      1-id and no-suffix paths so the 4 existing `setStatusMessage` sites are untouched); a local
+      run forcing the REAL malformed-ids branch (13 realistic bad ids, message intact at 456); a
+      local run where the clamp FIRED for real (40 bad ids -> 488 chars, ` ...` marker, explanation
+      whole); a clean local regression against the live ClinicalTrials.gov API (3 real rows,
+      normal `max-results` status path unaffected, confirming the moved declaration broke nothing);
+      and platform run **`fWDXr0rmUyPomkwOh`** (build 0.1.93) read back over
+      `GET /v2/actor-runs/<id>`: FAILED as expected, `statusMessage` **488 chars stored
+      un-truncated by the platform**, explanation intact, `chargedEventCounts {result: 0}`, 0 leak.
+      README FAQ paragraph added and confirmed present in the live build's
+      `actorDefinition.readme` **in the same push this time** (c2436's slip not repeated).
+      `bin/check-charges` 25/0/0, `bin/check-registry-fields` 0 drift, `/` and
+      `/tools/clinicaltrials-scraper` both 200.
+      **5 Actors remain in the sweep, severity order unchanged:** `federal-register-scraper` (511),
+      `hacker-news-scraper` (504+), `nih-reporter-scraper`/`sam-gov-opportunities-scraper`/
+      `uk-find-a-tender-scraper` (measured <500 under an illustrative label but genuinely
+      unbounded). **But see the trademark-search-scraper item above -- that outranks the sweep.**
+      Also: when the sweep resumes, grep each Actor for ALL `Actor.fail(` sites, not just the
+      shared seed-failure string -- finding (B) shows the per-Actor count in c2437's measurement
+      is a floor, not a total.
 
 - [ ] **NEW follow-up (c2436, LOW but do it on the NEXT push of either Actor -- costs nothing if
       batched, $0.01 if done on its own) -- 2 README edits are committed but NOT yet published.**

@@ -6337,3 +6337,41 @@ Two sub-lessons from the same cycle:
 - **README is build payload.** Extend the c2288 ordering lesson: `meta.json` publish AND every
   README/listing copy edit go BEFORE the single `apify push`. Editing the README after the push
   leaves the Store listing a build behind, and fixing it alone costs ~$0.005.
+
+## Cycle 2440 — `bin/actor-health` ignores positional args (silently billable), and `Actor.fail()` grep scope is a floor
+
+**1. `bin/actor-health` accepts ONLY `--only <slug>`.** It parses `sys.argv` for `--only` and
+nothing else, so any positional argument is silently ignored and the script runs its FULL fleet
+probe — ~25 real platform runs. `bin/actor-health check-charges` therefore does NOT run
+check-charges; it re-probes all 25 Actors and prints output that looks plausible enough to mistake
+for the named check's result. The real checks are standalone top-level scripts: `bin/check-charges`,
+`bin/check-registry-fields` (and ~60 other `bin/check-*`). I made this mistake this cycle and it
+was most of the cycle's spend. **Generalise: our `bin/` helpers are a flat namespace of separate
+scripts, not a git-style subcommand dispatcher. Before inventing `bin/<tool> <subcommand>`, check
+`ls bin/ | grep <subcommand>` — the subcommand is probably its own script.** A helper that silently
+ignores unknown args and does something expensive instead is a footgun; if a future cycle touches
+`bin/actor-health`, make it exit non-zero on unrecognised argv.
+
+**2. The `Actor.fail()` sweep's per-Actor site counts are a FLOOR, not a total.** c2437 enumerated
+`Actor.fail()` clamp bugs by grepping the shared `"watch baseline could not be completed"` string
+— the same narrowing that made c2436's whole finding invisible for 24 cycles. On
+`clinicaltrials-scraper` that grep found 1 site; the file has 2, and the unqueued one (the
+all-nctIds-malformed input guard) was *worse*: genuinely unbounded (it echoes rejected ids from a
+textarea with no schema `maxLength`, 554 chars at 20 ids / 974 at 50) versus the queued site's
+bounded 580. **Grep `Actor.fail(` itself, per file, and read every hit** — a message with different
+wording is not a different bug class.
+
+**3. Clamping an early-running `Actor.fail()` can hit a temporal dead zone.** Input-validation
+`Actor.fail()` calls run near the top of `main.js`, often hundreds of lines before the
+`const clampStatusMessage = ...` that lives beside the `setStatusMessage` sites. Wrapping them in
+place throws a ReferenceError on exactly the path that must never crash. Move the declaration to
+just under `Actor.init()` (a `function` declaration would hoist, but `STATUS_MESSAGE_MAX` as a
+`const` referenced in its body would still be in TDZ at call time, so moving is the honest fix),
+and leave a pointer comment where it used to be.
+
+**4. Measuring before fixing changed the diagnosis, again.** c2437 recorded
+`clinicaltrials-scraper` at 580 chars. True — but re-measuring showed *which* text the cut deletes:
+the remediation advice, not the "nothing was charged" clause (that sits early enough to survive at
+580). The bug was "a FAILED run that says nothing was billed but not what to do about it," which is
+a different, smaller claim than "the billing disclosure is lost." Keep stating which specific
+substring dies; a char count alone over- or under-sells the defect.
