@@ -21,35 +21,48 @@
       the 656/598 numbers and the "the note is reserved, the explanation is what gets shortened"
       rule. The log keeps the full unclamped text on every branch, as before.
 
-- [ ] **IN PROGRESS (c2428 -> c2429, c2430, c2431, c2432) -- the clamp-reservation sweep, 5 Actors
-      left, ALL NOW PRE-MEASURED by c2432 (do NOT re-derive these numbers, and do NOT re-run the
-      triage grep).** 5 fixed so far: `sec-insider-trades-scraper` (c2428, reference impl at
+- [x] **DONE cycle 2433 (normal slot, `2433%3==1`) -- fixed `fec-campaign-finance-scraper`, item
+      (1) of the c2432 sweep (the only remaining Actor with a measured over-500 case AND no clamp
+      reservation), build 0.1.83 (package 0.1.27 -> 0.1.28).** Ported federal-register-scraper's
+      `Math.max(...,0)`-floored `clampStatusMessage(msg, suffix='')` onto the 4 watch-mode call
+      sites (main.js ~1234/1249/1263/1272), each refactored to pass base prose as `msg` and
+      `truncationNote() + (watchPastDateBound ? pastNote : '')` as `suffix`. No `echoCap` needed on
+      `watchLabel` (unlike federal-register's suffix-side fix) since the unbounded label is in the
+      BASE here, already protected by the base-truncation path. Verified: unit test reconstructing
+      c2432's measured 650-char worst case (clamped to 482, suffix intact); 4 local runs against
+      the live FEC API, including one where **the clamp fired for real** (539-char combined
+      base+suffix on a fresh nothing-new incremental run -> 495 chars, NOTE intact) and a
+      regression on the pre-existing default-suffix call site (byte-identical); 2 real platform
+      runs reproducing the same case (`UE9Y2uQybsp6MDvMA` seed, `4H8jeAIRWXgrCRNhq` incremental) --
+      `statusMessage` read back live at 497 chars, NOTE intact, `chargedEventCounts {result:0}` ==
+      pushed(0), 0 leak. Did not force a live repro of sites 3/4 (pushed>0-with-incomplete) --
+      covered by the unit test + identical-function argument instead, see `state/STATUS.md` cycle
+      2433 for the full caveat. README FAQ entry added, confirmed in the live build's
+      `actorDefinition.readme`. `check-charges` 25/0/0, `check-registry-fields` 0 drift. ~$0.005
+      spent, 0 new Actors, no owner email warranted. **4 Actors left in the sweep**, unchanged from
+      c2432's measurement, below.
+
+- [ ] **IN PROGRESS (c2428 -> c2429, c2430, c2431, c2432, c2433) -- the clamp-reservation sweep, 4
+      Actors left, ALL PRE-MEASURED by c2432 (do NOT re-derive these numbers, and do NOT re-run the
+      triage grep).** 6 fixed so far: `sec-insider-trades-scraper` (c2428, reference impl at
       `actors/sec-insider-trades-scraper/src/main.js:543-560`), `sam-gov-opportunities-scraper`
       (c2429), `federal-register-scraper` (c2430), `hacker-news-scraper` (c2431),
-      `uk-find-a-tender-scraper` (c2432). Remaining, in the order to take them:
-      **(1) `fec-campaign-finance-scraper` -- FIX THIS ONE NEXT, it is the only remaining Actor
-      with a measured over-500 case AND no clamp function at all on the affected sites.** It has
-      4 unclamped `setStatusMessage` call sites (main.js ~1226/1241/1255/1264), each appending
-      `truncationNote()` (180 chars at a 5-digit `baselineTruncated`) and two of them also a
-      `watchPastDateBound` NOTE (157 and 259 chars). Measured worst cases: site 1
-      (INCOMPLETE baseline) base 313 + 157 + 180 = **650**; site 2 (nothing-new watch) base 203 +
-      259 + 180 = **642**; site 3 487; site 4 419 -- and every one of the four echoes `watchLabel`,
-      which has no schema `maxLength`, so sites 3/4 cross 500 too on a long label. There IS a
-      `clampStatusMessage` at main.js:1118 and a single use at ~1333; port the reserving signature
-      onto it and route all 4 sites through `clampStatusMessage(base, truncationNote() + pastNote)`.
-      **(2) `nih-reporter-scraper` -- real but second, because its notes are at least INSIDE a
+      `uk-find-a-tender-scraper` (c2432), `fec-campaign-finance-scraper` (c2433, reference impl for
+      the "unbounded field is in the BASE not the suffix, so no separate echoCap needed" variant at
+      `actors/fec-campaign-finance-scraper/src/main.js:1114-1123`). Remaining, in the order to take
+      them: **(1) `nih-reporter-scraper` -- real but second, because its notes are at least INSIDE a
       clamp (no reservation).** `blindNote()` measures 180 and `truncationNote()` 266, and the
       three call sites at ~1401/1409/1448 append BOTH = **446 chars of note inside a 500-char
       clamp**, so any base over ~54 chars loses note text to our own cut (which does at least
       leave a ` ...` marker, unlike the platform's). The unclamped sites at ~1506/1513 carry no
       note, so they are NOT part of this fix.
-      **(3) `clinicaltrials-scraper` -- same inside-the-clamp shape.** `truncationNote()` 183,
+      **(2) `clinicaltrials-scraper` -- same inside-the-clamp shape.** `truncationNote()` 183,
       `lookupShortfallNote()` **345 at its 5-part worst case** (5 independent id buckets:
       notFound/malformed/failed/notReached/badFormat), both inside the clamp at ~1595/1619. NOTE
       the source comment at ~1593 claims truncationNote and the shortfall note "can never both be
       non-empty" -- VERIFY that claim before sizing the fix, because 345 alone already leaves only
       155 chars for the base. Also one genuinely unclamped site at ~1603 (`+ truncationNote()`).
-      **(4) `fda-recall-scraper` and (5) `grants-gov-scraper` -- LOWEST priority, possibly
+      **(3) `fda-recall-scraper` and (4) `grants-gov-scraper` -- LOWEST priority, possibly
       no-change.** Both share the same short `truncationNote()`, measured **98 chars**, and
       `grants-gov-scraper` ALREADY does the reservation correctly (`withIgnored` at main.js:1537
       passes `STATUS_MESSAGE_MAX - ignoredSuffix.length`) for its `ignoredSuffix`; its

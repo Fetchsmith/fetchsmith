@@ -1113,13 +1113,21 @@ function truncationNote() {
 
 const STATUS_MESSAGE_MAX = 500;
 // Apify silently truncates `statusMessage` at 500 chars (found cycle 1760 on other Actors in this
-// fleet) -- donorName/donorEmployer/donorOccupation/donorCity have no schema maxLength, so a long
-// caller-supplied value could overflow the message built below. Word-boundary cut, not a hard slice.
-const clampStatusMessage = (msg) => {
-  if (msg.length <= STATUS_MESSAGE_MAX) return msg;
-  const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+// fleet) -- donorName/donorEmployer/donorOccupation/donorCity/watchLabel have no schema maxLength,
+// so a long caller-supplied value could overflow the message built below. Word-boundary cut, not a
+// hard slice. `suffix` is RESERVED out of the budget rather than appended after clamping (the
+// clamp-reservation sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428): the
+// truncationNote()/watchPastDateBound NOTE this Actor appends is a billing-relevant disclosure
+// (stale baseline ids will be re-charged, or the watch can no longer detect new activity), and the
+// 4 watch-mode call sites below can already join a base message long enough on their own (measured
+// cycle 2432: up to 650 chars) that the old append-after-clamp order would have silently deleted
+// the disclosure instead of the (less important) base prose. The log keeps the full, unclamped text.
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, Math.max(budget - 4, 0));
   const lastSpace = cut.lastIndexOf(' ');
-  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
 };
 
 // Names only the filters actually applied in the active mode, so a plain no-match message never
@@ -1223,28 +1231,28 @@ if (watchMode && !skipBaselineSave) {
           ? ` NOTE: the baseline hit the ${WATCH_PAGE_CAP}-page scan cap before exhausting the match set. Narrow the filters.`
           : ''),
     );
-    await Actor.setStatusMessage(
-      (complete
+    await Actor.setStatusMessage(clampStatusMessage(
+      complete
         ? `Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing contribution(s) recorded, 0 charged. Run again later to get only what's new.`
         // An INCOMPLETE baseline is the costliest quiet outcome this Actor has: everything the
         // seed walk never reached is "new" to the first incremental run and gets charged.
         : `Baseline INCOMPLETE for watch label "${watchLabel}": ${watchSeen.size} contribution(s) recorded, 0 charged — ${incompleteReason}`
-          + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Narrow the filters and re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`)
-      + (watchPastDateBound
+          + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Narrow the filters and re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`,
+      (watchPastDateBound
         ? ` NOTE: once today's date passes contributionDateTo (${input.contributionDateTo}), this watch can no longer report ongoing new activity (see the warnings in the log). Drop it.`
         : '')
       + truncationNote(),
-    );
+    ));
   } else {
     log.info(`Watch label "${watchLabel}": ${pushed} new contribution(s) since the last run (${watchSkipped} already-delivered hit(s) skipped, not charged); baseline now holds ${watchSeen.size}.`);
     if (pushed === 0 && complete) {
-      await Actor.setStatusMessage(
-        `Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`
-        + (watchPastDateBound
+      await Actor.setStatusMessage(clampStatusMessage(
+        `Nothing new for watch label "${watchLabel}" since its last run -- every matching contribution had already been delivered. That is the expected result most of the time; you were charged for nothing.`,
+        (watchPastDateBound
           ? ` NOTE: this run can no longer report ongoing new activity while contributionDateTo (${input.contributionDateTo}) is set and today's date is past it -- it is an upper bound on the transaction date, and current activity is newer than that. Drop it (see the warnings in the log).`
           : '')
         + truncationNote(),
-      );
+      ));
     } else if (pushed === 0) {
       // NOT the same claim as the branch above: the scan stopped (charge-limit/time-budget/
       // watch-page-cap) before it could tell whether anything new exists -- "0 delivered" here is
@@ -1252,20 +1260,20 @@ if (watchMode && !skipBaselineSave) {
       // make chargeLimitReached fire on the very first genuinely-new row, before pushed ever moves
       // off 0, which previously fell into the confident "already delivered" message above and told
       // the buyer their watch was quiet when a new contribution was in fact sitting there unbilled.
-      await Actor.setStatusMessage(
+      await Actor.setStatusMessage(clampStatusMessage(
         `Watch label "${watchLabel}": 0 row(s) delivered, but the scan did NOT finish -- ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}. `
-        + 'This is NOT a confirmed "nothing new": the scan may not have reached every matching contribution. See RUN_SUMMARY.'
-        + truncationNote(),
-      );
+        + 'This is NOT a confirmed "nothing new": the scan may not have reached every matching contribution. See RUN_SUMMARY.',
+        truncationNote(),
+      ));
     } else if (baselineTruncated > 0 || !complete) {
       // A run that delivered rows would otherwise leave the default status message in place and
       // the truncation -- or a scan that stopped on a cap with new contributions still unread --
       // would only be visible in the log.
-      await Actor.setStatusMessage(
+      await Actor.setStatusMessage(clampStatusMessage(
         `Watch label "${watchLabel}": ${pushed} row(s) delivered.`
-        + (complete ? '' : ` Scan INCOMPLETE — ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}; more new contributions may be waiting. See RUN_SUMMARY.`)
-        + truncationNote(),
-      );
+        + (complete ? '' : ` Scan INCOMPLETE — ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}; more new contributions may be waiting. See RUN_SUMMARY.`),
+        truncationNote(),
+      ));
     }
   }
 }

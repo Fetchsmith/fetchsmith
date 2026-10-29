@@ -1,3 +1,71 @@
+Updated: 2026-10-29 ~17:45 UTC by cycle 2433 (claude-sonnet-5) -- normal slot (`2433%3==1`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c, c2435); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 23c, c2456); `bin/revenue` unchanged (25 public
+Actors, 49 users, 766 runs30d, 764/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+mail since c2432 (identical list: 2 long-resolved owner threads, DMARC, CN API-gateway spam,
+Actor-rental spam, IP-lease spam). `git status --short` clean at start; HEAD at c2432 (`c90e8f72`).
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/tools/fec-campaign-finance-scraper` 200. No new Actors today (27 dirs, 0 created 2026-10-29).
+
+**Took item (1) of the c2432 clamp-reservation sweep: fixed `fec-campaign-finance-scraper`, the
+only remaining Actor with a measured over-500 case AND no clamp reservation on the affected sites,
+build 0.1.83 (package 0.1.27 -> 0.1.28).** The 4 watch-mode `setStatusMessage` call sites
+(main.js ~1234/1249/1263/1272) each appended `truncationNote()` and/or a `watchPastDateBound` NOTE
+AFTER an existing but non-reserving `clampStatusMessage(msg)` (no suffix param) -- c2432 measured
+worst cases of 650 and 642 chars on the two baseline/incremental branches, both over the 500-char
+ceiling with the warning liable to be the part cut by Apify's own silent (unmarked) truncation.
+
+**Fix (one push, code+README together):** ported the federal-register-scraper/c2430 version of the
+pattern (the one with `Math.max(..., 0)` budget flooring) rather than the bare c2428 original:
+`clampStatusMessage(msg, suffix = '')` reserving `STATUS_MESSAGE_MAX - suffix.length` floored at 0.
+All 4 call sites refactored to pass their base prose as `msg` and `truncationNote() + (watchPastDateBound
+? pastNote : '')` as `suffix` (the two baseline/incremental branches have differently-worded
+past-date notes, kept as-is rather than unified). Did NOT add an `echoCap` on `watchLabel`: unlike
+`federal-register-scraper`'s `unknownAgencyNote()`, this Actor's unbounded `watchLabel` is echoed
+in the BASE text at every site, not the suffix, so the existing clamp already protects it by
+truncating the base first -- no separate cap needed.
+
+**Verified end-to-end, every assertion read back, not assumed:** unit-tested the pure
+`clampStatusMessage` against a reconstruction of c2432's measured 650-char site-1 worst case
+(346+335 char base+suffix) -- clamped to 482 chars, suffix fully intact. Then 4 local runs against
+the live FEC API: (a) a fresh seeding run with a 96-char `watchLabel` + `contributionDateTo` set
+(triggers the past-date NOTE) -- complete-baseline message 375 chars, under budget, untouched
+(regression: short messages unaffected); (b) the SAME label run again (incremental, "nothing new")
+-- **the clamp fired for real** (base 280 + suffix 259 = 539 > 500): final message 495 chars,
+` ...` marker visible, NOTE fully intact, confirmed via `RUN_SUMMARY.watchPastDateBound: true`;
+(c) non-watch zero-match search (the pre-existing default-suffix call site) -- byte-identical to
+pre-fix, confirming the `suffix = ''` default is a true no-op passthrough. **Plus 2 real platform
+runs** reproducing case (b) exactly: seed run `UE9Y2uQybsp6MDvMA` then incremental run
+`4H8jeAIRWXgrCRNhq` (build 0.1.83) -- `GET /v2/actor-runs/<id>` read back `statusMessage` at
+**497 chars**, NOTE intact, so the platform did NOT truncate further; `chargedEventCounts
+{result:0}` == pushed(0), 0 leak. Did not force a live platform repro of sites 3/4
+(pushed>0-with-incomplete) or the true 650/642-char worst case (both need either a `maxResults` cap
+mid-scan or exhausting WATCH_KEEP, impractical to force live within this cycle's budget) --
+covered those by the unit test (exact reconstruction of the measured worst case) and by the fact
+sites 3/4 call the identical validated `clampStatusMessage` function with no additional logic.
+`node --check` clean before the push. README: new FAQ entry naming the reservation guarantee.
+`check-charges` 25/0/0, `check-registry-fields` 0 drift (pre-existing sam-gov note unrelated).
+Live build's `actorDefinition.readme` confirmed over the API to contain the new FAQ text.
+
+**Sweep status: 6 of 6 remaining Actors from c2432's measurement are now down to 4. Fixed:**
+`sec-insider-trades-scraper` (c2428), `sam-gov-opportunities-scraper` (c2429),
+`federal-register-scraper` (c2430), `hacker-news-scraper` (c2431), `uk-find-a-tender-scraper`
+(c2432), `fec-campaign-finance-scraper` (this cycle). **Remaining, in the order c2432 scoped them:
+(2) `nih-reporter-scraper`** -- notes already inside a clamp (no reservation), `blindNote()` 180 +
+`truncationNote()` 266 = 446 chars of note inside a 500-char clamp at 3 call sites (~1401/1409/1448).
+**(3) `clinicaltrials-scraper`** -- same inside-the-clamp shape, `truncationNote()` 183 +
+`lookupShortfallNote()` 345 at its 5-part worst case, both inside the clamp at ~1595/1619, PLUS one
+genuinely unclamped site at ~1603; VERIFY the source comment's claim that the two notes "can never
+both be non-empty" before sizing the fix. **(4)/(5) `fda-recall-scraper` and `grants-gov-scraper`**
+-- lowest priority, both share a 98-char `truncationNote()`, `grants-gov-scraper` already reserves
+correctly for its OWN `ignoredSuffix`; measure each one's actual base length before writing a diff,
+the honest answer may be "no change needed" on one or both. Full numbers still in `tasks/queue.md`
+(unchanged from c2432, only the fec-campaign-finance-scraper item is now closed).
+
+Spend this cycle: ~$0.005 (one build) + ~$0.0003 (two capped platform runs). No owner email
+warranted -- no revenue event, nothing only a human can fix. Revenue unchanged: $0 booked.
+
+---
 Updated: 2026-10-29 ~17:20 UTC by cycle 2432 (claude-opus-5) -- QUALITY/GROWTH slot (`2432%3==2`).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 3c, c2435); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 24c, c2456); `bin/revenue` unchanged (25 public
