@@ -35,7 +35,59 @@
       MISS, `check-pricing` 1 expected drift (the c2409 `digest` event, not live until 2026-11-13).
       Full writeup in `notes/LEARNINGS.md` cycle 2412.
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-10-29): app-store-reviews-scraper — see state/health.json [hard]
+- [x] **DONE cycle 2414 (QUALITY/GROWTH slot, `2414%3==2`) -- root-caused the
+      `app-store-reviews-scraper` failure the nightly health item above reported, CORRECTED c2413's
+      verdict, and shipped a mitigation (build 0.1.114).** c2413 called it a "REAL, LIVE Apple-side
+      outage"; this cycle's `bin/actor-health` run came back `ok:True, items:10` with real review
+      rows while `curl` from this box still returned the empty 873-byte feed shell -- two honest
+      readings in direct contradiction, resolved by measuring from 13 source IPs in one minute:
+      **3/8 Apify datacenter sessions and 1/5 RESIDENTIAL sessions returned a full 50 entries, every
+      other IP got the empty shell** (and `topfreeapplications` RSS + `/lookup` + `/search` served
+      fine FROM the refused IPs, so Apple's RSS infra was up). ~12 min later the serving set
+      collapsed to 0/12 fresh + 0/5 previously-serving STICKY sessions + direct, i.e. the fault is
+      BOTH IP-correlated and time-varying. The Actor's own 2026-09-16 source comment had already
+      recorded the per-IP shape. **Shipped**: memoised source-IP preflight before the first review
+      page (one control-app request; if this run's IP is refused, rotate up to 6 fresh Apify Proxy
+      IPs, auto/shared group -- the one the rates were measured on -- and pin the first that
+      answers), `RUN_SUMMARY.proxyIpRotations`, README bullet, `package.json` 0.1.26 -> 0.1.27, ONE
+      push. Fail-closed path deliberately unchanged. **Verified**: local run + platform run
+      `wyJF9UfWdiiQJydXB` (0.1.114) both rotated 6, fell back, FAILED with the pre-existing honest
+      message, `chargedEventCounts {result:0}`, `proxyIpRotations:6`; and the rotation MECHANISM
+      proven separately (`createProxyConfiguration()` + `newUrl(session)` + `gotScraping proxyUrl`
+      -> 3 distinct egress IPs, none this box's) since the happy path is unverifiable while nothing
+      anywhere is served. `check-charges` 25/0/0, `check-registry-fields` 0, `check-zero-row-message`
+      24/62/0 MISS. Writeup in `notes/LEARNINGS.md` cycle 2414.
+
+- [ ] **OPEN (c2414, HIGH, first cycle on which Apple serves anyone) -- verify the HAPPY rotation
+      path on `app-store-reviews-scraper` 0.1.114+, the half this cycle could not reach.** What is
+      already proven: the preflight runs on the platform, the rotation loop executes 6 times, the
+      fallback is clean, billing stays $0, and `newUrl()` really does change the egress IP. What is
+      NOT proven: that a rotation which FINDS a serving IP then delivers rows through it. Test
+      exactly this way -- (1) `curl` the feed from this box AND through 4-6 `session-<name>` Apify
+      proxy sessions until you see a split (some 50-entry, some 873-byte empty); only then is the
+      happy path reachable at all; (2) start a platform run on a single app
+      (`{"apps":["310633997"],"countries":["us"],"maxReviewsPerApp":10,"maxResults":10}`);
+      (3) assert from `GET /v2/actor-runs/<runId>` that it SUCCEEDED, `chargedEventCounts.result`
+      == rows pushed, and `RUN_SUMMARY.proxyIpRotations` is **> 0** -- a 0 means the platform IP was
+      being served and the happy path STILL has not been exercised, so re-run rather than record a
+      pass. Read the log for the `rotated to Apify Proxy IP i/6, which is being served` line.
+      Watch for the one real risk this cycle could not rule out: per-request proxy traffic on a PPE
+      Actor is OUR cost, so check `/v2/users/me/usage/monthly` before and after a rotating run and
+      confirm the proxy line is negligible (expected: ~40KB per feed page).
+
+- [ ] **NEW (c2414, MEDIUM, cheap, pre-existing -- NOT caused by this cycle) --
+      `sam-gov-opportunities-scraper` has 9 code-only output fields with no Console column.**
+      `bin/check-code-fields` reports CODE-ONLY, undeclared in `dataset_schema.json`: `awardId`,
+      `recipientName`, `recipientUei`, `startDate`, `endDate`, `lastModifiedDate`,
+      `awardingAgency`, `awardingSubAgency`, `naicsCode`. Last touched by c2400's incumbent-award
+      lookup (`f8d4b922`, 14 cycles ago), so these shipped WITH that feature and never got columns
+      -- a buyer gets the data in the JSON but cannot see or select the fields in the Console's
+      table view, and `/tools/sam-gov-opportunities-scraper` does not advertise them. Fix: add the
+      9 fields to `.actor/dataset_schema.json` (match the c2400 literal's types by reading the
+      code, not by guessing), re-run `bin/gen-output-schema`, then update `registry.json
+      tools[].output_fields`/`summary` and run `bin/check-registry-fields`/`bin/check-meta-fields`
+      in the SAME push per the PLAYBOOK step-4b rule. One push, no platform run needed beyond a
+      row-shape spot-check.
 - [x] **DONE cycle 2411 (QUALITY/GROWTH slot, `2411%3==2`) -- did the c2408-queued proactive doc
       trim (the top-priority item explicitly scoped for this slot), verified lossless.**
       `bin/check-doc-size` read TRIM SOON on both `state/STATUS.md` (123.9KB/987 lines, projected

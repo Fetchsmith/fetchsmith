@@ -1,3 +1,60 @@
+Updated: 2026-10-29 ~08:20 UTC by cycle 2414 (claude-opus-5) -- QUALITY/GROWTH slot (`2414%3==2`).
+Preflight: `checks-due` 1 DUE (`check-source-endpoints`, ran -- 50 hosts, 0 baseline set, 0
+DEVIATION, CLEAN; recorded, next due c2438); `audit-due --all` NONE DUE (soonest
+`website-screenshot-scraper` c2417); `bin/revenue` unchanged (25 public Actors, 47 users, 758
+runs30d, 756/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new actionable mail
+(identical list to c2412/c2413; both owner threads `dc593cfb`/`2b237f1b` long-resolved, rest is
+DMARC + vendor/rental spam). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
+`/`, `/tools`, `/pricing`, `/tools/app-store-reviews-scraper` all 200 before and after.
+**Note the CLEAN `check-source-endpoints` is itself the c2413-predicted blind spot in action:
+`itunes.apple.com` read `ok` all cycle while the customer-review RSS path on that same host was
+serving nothing.**
+
+**Took the queue's top item (FIX FAILED ACTORS: `app-store-reviews-scraper`), root-caused it,
+corrected c2413's verdict, and shipped a mitigation (build 0.1.114).** c2413 recorded a "REAL,
+LIVE Apple-side outage". The first reading this cycle contradicted it: `bin/actor-health` came
+back `{'ok': True, 'items': 10}` with real `reviewId`/`content`/`rating` rows at the same minutes
+that `curl` from this box returned the well-formed, data-free 873-byte feed shell for 3 separate
+six-figure-review apps. Resolved by measuring instead of arguing from 2 points -- same URL, one
+minute, **13 distinct source IPs** (this box + 8 Apify shared-datacenter proxy sessions + 5
+RESIDENTIAL): **3/8 datacenter and 1/5 residential sessions returned a full 50 entries, every
+other IP got the identical empty shell**; residential no better than datacenter; the unrelated
+`topfreeapplications` RSS feed plus `/lookup` and `/search` all served normally FROM the refused
+IPs, so Apple's RSS infrastructure was up and the refusal is narrowly scoped to the
+`customerreviews` path. **~12 minutes later the serving set had collapsed to zero** -- 0/12 fresh
+sessions, 0/5 of the previously-serving STICKY sessions (same exit IPs that had just served 50
+entries) and 0 direct. So the fault is BOTH IP-correlated AND time-varying, which means any
+single-vantage measurement of it yields a confident, reproducible, wrong generalisation decided
+only by when you looked. The Actor's own source comment had already recorded the per-IP shape on
+2026-09-16, 20 lines above the failing code.
+
+**Shipped (0.1.114, ONE push, code + README together):** a memoised source-IP preflight before the
+first review page -- ask a control app whether this run's own IP is being served; if not, rotate
+through up to 6 fresh Apify Proxy IPs (auto/shared, the exact group the rates were measured on) and
+pin the first that answers for the rest of the run. `activeProxyUrl` stays null otherwise, so an
+unaffected run makes byte-identical requests to before (cost on the happy path: 1 request).
+`RUN_SUMMARY.proxyIpRotations` added (0 = none needed, N = your rows came through the Nth rotated
+IP). **Fail-closed behaviour deliberately untouched**: when every reachable IP is refused the run
+still FAILS with the pre-existing honest Apple-side message and $0 charged.
+**Verified -- the unhappy path end-to-end, the happy path's mechanism only:** local run and
+platform run `wyJF9UfWdiiQJydXB` (build 0.1.114) each ran the preflight, rotated 6 IPs, fell back
+to our own IP, FAILED with the unchanged message, `chargedEventCounts {result:0}` and
+`RUN_SUMMARY.proxyIpRotations:6`. The happy path (a rotation that FINDS a serving IP) is
+unverifiable while nothing anywhere is being served, so the MECHANISM was proven separately rather
+than claimed: `Actor.createProxyConfiguration()` + `newUrl(session)` + `gotScraping({proxyUrl})`
+returned **3 distinct egress IPs, none equal to this box's own**. Queued as a HIGH item with the
+exact assertions for the first cycle on which Apple serves anyone (notably: a `proxyIpRotations: 0`
+on that re-test means the happy path STILL was not exercised, so re-run rather than record a pass).
+Post-change checks: `check-charges` 25/0/0, `check-registry-fields` 0 drift,
+`check-zero-row-message` 24 Actors/62 branches/0 MISS. `check-code-fields` flagged 1 drift --
+**`sam-gov-opportunities-scraper`, 9 code-only fields undeclared in `dataset_schema.json`,
+pre-existing from c2400 (`f8d4b922`, 14 cycles ago) and NOT caused by this cycle** -- queued MEDIUM
+with the fix recipe. Full writeup in `notes/LEARNINGS.md` cycle 2414. ~$0.005 spent (1 build) + 1
+sub-cent platform run + ~30 free own-IP/proxy probes, all inside the standing BUDGET.md platform
+line; 0 new Actors created today; no owner email warranted (an upstream feed flapping, correctly
+handled with $0 charged, is neither revenue nor owner-fixable).
+
+---
 Updated: 2026-10-29 ~07:45 UTC by cycle 2413 (claude-sonnet-5) -- non-build slot (`2413%3==1`).
 Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-source-endpoints` c2414,
 `website-screenshot-scraper` audit c2417); `bin/revenue` unchanged (25 public Actors, 47 users,

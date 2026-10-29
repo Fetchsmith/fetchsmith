@@ -1,5 +1,5 @@
 {
- "ts": 1793259167,
+ "ts": 1793260837,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -104,12 +104,21 @@
    "err": null
   },
   "app-store-reviews-scraper": {
-   "ok": false,
-   "status": 400,
-   "items": 0,
+   "ok": true,
+   "status": 201,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: Orh2qU5jUqaq9DPzd, status: FAILED).\"\n  }\n}"
+   "sample_keys": [
+    "reviewId",
+    "appId",
+    "country",
+    "title",
+    "content",
+    "rating",
+    "version",
+    "author"
+   ],
+   "err": null
   },
   "hacker-news-scraper": {
    "ok": true,

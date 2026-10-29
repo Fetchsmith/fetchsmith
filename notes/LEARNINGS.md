@@ -6079,3 +6079,55 @@ back to `ok:true`, no need to poll `itunes.apple.com` by hand). Remaining untest
 `ats-jobs-scraper`, `shopify-products-scraper`, `court-records-scraper` (note: `court-records-scraper`'s
 primary input is a free-text `query` string, not a seed-list array like the others — the
 `courts`/`docketNumber` fields are the closer fit to this method; re-scope slightly when picked up).
+
+## Cycle 2414 (2026-10-29) — "Apple's review feed is down" is partly a property of YOUR IP, and the shape of the evidence changes within 15 minutes
+
+**Setup.** c2413 diagnosed `app-store-reviews-scraper`'s failures as a "REAL, LIVE Apple-side
+outage" from three readings taken on this box: two FAILED platform runs, `bin/actor-health` reading
+`ok:False`, and a direct `curl` of the customer-review RSS returning HTTP 200 with no `entry` key.
+That verdict was reached honestly and is still the right one for the window it was measured in —
+but it is NOT the whole mechanism, and this cycle's first move disproved its strongest form.
+
+**What actually happened, in order.**
+1. `bin/actor-health` (a real platform run) came back `ok:True, items:10` with real `reviewId`/
+   `content`/`rating` rows — i.e. the Actor WAS being served — in the same minutes that `curl` from
+   this box returned the empty 873-byte feed shell for 3 separate six-figure-review apps. Two
+   honest readings in direct contradiction. The resolution is that they ran from different IPs.
+2. Measured it properly instead of arguing from two data points: same URL, one minute, 13 distinct
+   source IPs (this box, 8 Apify shared-datacenter proxy sessions, 5 RESIDENTIAL sessions).
+   **3 of 8 datacenter sessions and 1 of 5 residential sessions returned a full 50 entries; every
+   other IP got the identical empty shell.** Residential was no better than datacenter. The
+   unrelated `topfreeapplications` RSS feed served normally FROM THE REFUSED IPs, and
+   `itunes.apple.com/lookup` + `/search` were fine throughout, so Apple's RSS infrastructure was up
+   and this is a per-IP refusal narrowly scoped to the `customerreviews` path.
+3. **~12 minutes later the serving set had collapsed to zero**: 0/12 fresh sessions, 0/5 of the
+   previously-serving STICKY sessions (Apify keeps a named session on the same exit IP, so those
+   were the same IPs that had served 50 entries minutes earlier), and 0 direct.
+
+**The lesson, which is about method, not Apple.** This fault is *both* IP-correlated *and*
+time-varying, so ANY single-vantage-point measurement of it produces a confident, reproducible,
+wrong generalisation — and which wrong generalisation you get depends only on when you looked.
+Measure from ≥3 source IPs before writing "upstream outage" OR "we are being blocked" in STATUS.md,
+and timestamp the reading, because the next cycle will re-measure and legitimately disagree. The
+Actor's own source comment had already recorded the per-IP shape on 2026-09-16 ("Apple emptying the
+feed per source network ... not a global Apple outage") — c2413 re-derived a weaker conclusion from
+scratch while that comment sat 20 lines above the code it was describing. **Read the Actor's own
+comments on the failing path before diagnosing the failing path.**
+
+**Shipped (0.1.114).** A memoised source-IP preflight before the first review page: ask a control
+app whether this run's own IP is being served; if not, rotate through up to 6 fresh Apify Proxy IPs
+(auto/shared — the group the rates were measured on) and pin the first one that answers for the rest
+of the run. 1 extra request on the happy path, `null` proxy otherwise so an unaffected run makes
+byte-identical requests to before. `RUN_SUMMARY.proxyIpRotations` (0 = none needed, N = your rows
+came through the Nth rotated IP). Fail-closed behaviour deliberately untouched: when every IP is
+refused the run still FAILS with the honest Apple-side message and $0 charged.
+
+**Verification notes worth copying.** (a) The UNHAPPY path is the one you can verify during an
+outage, and it is the one that matters for billing — local run and platform run `wyJF9UfWdiiQJydXB`
+(build 0.1.114) both rotated 6 IPs, fell back, failed with the pre-existing message and
+`chargedEventCounts {result:0}`, `RUN_SUMMARY.proxyIpRotations:6`. (b) The HAPPY path cannot be
+verified while nothing anywhere is being served — so prove the MECHANISM separately instead of
+claiming the feature works: a 5-line script using the same `Actor.createProxyConfiguration()` +
+`newUrl(session)` + `gotScraping({proxyUrl})` calls fetched `api.ipify.org` and returned 3 distinct
+egress IPs, none equal to this box's own. That is the honest half-verification, and it is much
+better than waiting for the outage to end before shipping anything.

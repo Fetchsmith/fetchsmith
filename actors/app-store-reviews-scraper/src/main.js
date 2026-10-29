@@ -458,6 +458,32 @@ async function pushResult(item, watchId = null, pairSeeding = false, metaCode = 
 // So the customer's own typo surfaced as a missing app or a JSON stack trace. Check the status
 // before parsing and say what is actually wrong. Same defect class as the 0.1.43 Shopify fix.
 const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match(/itunes\.apple\.com\/([^/]+)\/rss/)?.[1] ?? null;
+// SOURCE-IP ROTATION FOR THE EMPTY-FEED SHELL (added 2026-10-29, cycle 2414)
+// --------------------------------------------------------------------------
+// Apple empties the customer-review RSS PER SOURCE IP, not globally (the reviewFeedIsDown comment
+// below recorded that in 2026-09; this cycle measured how MUCH). 13 distinct source IPs, one
+// minute, same URL (WhatsApp/us, 6-figure review count): this box's own IP, 5 of 8 Apify shared-
+// datacenter sessions and 4 of 5 RESIDENTIAL sessions all returned the well-formed-but-data-free
+// 873-byte feed shell, while 3 datacenter sessions and 1 residential session returned a full 50
+// entries. Control apps and a different storefront/format/app id changed nothing; the unrelated
+// `topfreeapplications` RSS feed served normally from the empty IPs, so Apple's RSS infrastructure
+// is up and this is a per-IP refusal shaped like "this app has no reviews".
+// Consequence before this change: roughly 3 runs in 5 scraped nothing and FAILED honestly with
+// "that is an Apple-side fault ... re-run later" -- correct, $0 charged, and still a bad deal for
+// the buyer, who had to re-run and hope for a luckier IP. The cure is a DIFFERENT IP, not waiting.
+// RESIDENTIAL measured no better than DATACENTER here, so we rotate the cheap (auto/shared) group.
+const PROXY_ROTATIONS = 6; // 6 fresh IPs at the measured ~40% serve rate: ~95% chance one answers
+let proxyConfig = null;
+let activeProxyUrl = null; // pinned for the rest of the run once an IP proves it is being served
+let proxyIpRotations = 0;
+try {
+  // No `groups`, i.e. auto/shared -- exactly the configuration the 2026-10-29 rates were measured
+  // on. Returns undefined (not a throw) on a local run with no proxy configured.
+  proxyConfig = (await Actor.createProxyConfiguration()) ?? null;
+} catch (err) {
+  log.warning(`Apify Proxy is unavailable to this run (${err.message}); review fetches can only use this run's own IP, which Apple may serve an empty feed to.`);
+}
+
 // got's own `retry` only covers a fixed errorCodes list that excludes the connection-establishment
 // faults (ERR_HTTP2_ERROR / HPE_INVALID_CONSTANT) measured live on this got-scraping version in
 // cycle 616 — about 1 in 4 fresh connections. Without an outer retry a single blip reads as
@@ -535,6 +561,9 @@ async function fetchEntries(url, clientClass = 'default') {
   // useHeaderGenerator:false so got-scraping's generated desktop UA cannot override ours — the
   // whole point of this call is which class of UA Apple sees.
   const opts = ua ? { headers: { 'user-agent': ua, accept: '*/*' }, useHeaderGenerator: false } : {};
+  // Null until ensureServingIp() has had to rotate, so an unaffected run makes every request
+  // exactly as it did before this feature existed.
+  if (activeProxyUrl) opts.proxyUrl = activeProxyUrl;
   let entries = (await getJson(url, opts)).feed?.entry ?? [];
   if (!Array.isArray(entries)) entries = [entries];
   return entries;
@@ -745,6 +774,57 @@ async function reviewFeedIsDown() {
   return true;
 }
 
+// Run ONCE, lazily, immediately before the first review page this run fetches: ask a control app
+// that always has hundreds of thousands of reviews whether THIS run's source IP is being served at
+// all (see the per-IP measurement above). If it is -- the common case -- nothing changes and the
+// whole run costs 1 extra request. If it is not, rotate through fresh Apify Proxy IPs until one
+// answers and pin it for the rest of the run, so the buyer gets their reviews instead of an
+// honest-but-useless "Apple-side fault, re-run later". Deliberately a PREFLIGHT rather than a
+// retry bolted onto reviewFeedIsDown: by the time that probe runs the walk has already decided
+// every pair was empty, and in watch mode a rotation discovered that late would still leave the
+// baseline seeded from a refused IP.
+let servingIpChecked = false;
+const controlProbe = async () => {
+  const [id, cc] = CONTROL_APPS[0];
+  // tolerateAll: an empty answer here is the signal, not an error to throw on.
+  const { entries } = await fetchPage(`https://itunes.apple.com/${cc}/rss/customerreviews/id=${id}/sortBy=mostRecent/page=1/json`, 'default', true);
+  return entries.length;
+};
+async function ensureServingIp() {
+  if (servingIpChecked) return;
+  servingIpChecked = true;
+  try {
+    if (await controlProbe()) return; // this run's own IP is being served -- leave it alone
+  } catch (err) {
+    // A thrown probe (5xx/429/network) is not the empty-shell symptom this rotation treats, and
+    // fetchPage already retried it. Carry on on our own IP; reviewFeedIsDown remains the backstop.
+    log.warning(`Source-IP preflight could not complete (${err.message}); continuing on this run's own IP.`);
+    return;
+  }
+  if (!proxyConfig) {
+    log.warning("Apple served this run's own IP an empty review feed, and no Apify Proxy is available to rotate to — the run will probably find nothing. Re-run on the Apify platform, where proxy rotation is available.");
+    return;
+  }
+  for (let i = 1; i <= PROXY_ROTATIONS; i += 1) {
+    // A fresh session id per attempt is what actually changes the exit IP; reusing one session
+    // would pin us to the same refused IP for the whole run.
+    activeProxyUrl = await proxyConfig.newUrl(`rss${Date.now().toString(36)}${i}`);
+    proxyIpRotations = i;
+    try {
+      if (await controlProbe()) {
+        log.info(`Apple served this run's own IP an empty review feed (a known per-IP refusal, not an outage); rotated to Apify Proxy IP ${i}/${PROXY_ROTATIONS}, which is being served. Continuing through it.`);
+        return;
+      }
+    } catch (err) {
+      log.warning(`Rotated proxy IP ${i}/${PROXY_ROTATIONS} failed to answer (${err.message}); trying another.`);
+    }
+  }
+  // Every IP we can reach is refused: fall back to our own IP so the rest of the run behaves
+  // exactly as it did before this feature, and let reviewFeedIsDown report the outage verdict.
+  activeProxyUrl = null;
+  log.warning(`Apple served an empty review feed to this run's own IP and to all ${PROXY_ROTATIONS} rotated proxy IPs. This now looks like a real feed-wide fault rather than one refused IP; the run will report it.`);
+}
+
 // Scrapes one app in one storefront under one sort order. Returns how many NEW reviews Apple
 // served (before filters); `pushed` tracks how many were kept and charged. `seen` de-duplicates by
 // review id across pages and sorts — scanning past empty pages, the sort fallback and the
@@ -754,6 +834,9 @@ async function reviewFeedIsDown() {
 // It is called after the first page that actually returned entries, so a storefront Apple refuses
 // (`zz`, or an app absent from that storefront) now costs 1 request instead of 3.
 async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally, extra = {}, pairSeeding = false) {
+  // Memoised: the first review page of the run pays for the source-IP preflight, the rest inherit
+  // whatever IP it settled on.
+  await ensureServingIp();
   let got = 0;
   let hitCutoff = false;
   // Only "mostRecent" is date-ordered (verified live 2026-09-11: strictly descending across pages,
@@ -1411,6 +1494,11 @@ const runSummary = {
     ? `${firstShort.app}/${firstShort.country}: ${firstShort.incompleteReason ?? firstShort.reason ?? firstShort.status}`
       + (shortPairs > 1 ? ` (and ${shortPairs - 1} other pair(s); see \`pairs\`)` : '')
     : null,
+  // 0 = Apple served this run's own IP normally (the common case). >0 = Apple returned the empty
+  // feed shell to this run's own IP and the reviews in this dataset were fetched through the Nth
+  // rotated Apify Proxy IP instead. Not a defect and not a shortfall -- recorded because it is the
+  // only place a buyer can see that the run had to work around a per-IP refusal.
+  proxyIpRotations,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
   // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
