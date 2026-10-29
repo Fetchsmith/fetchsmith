@@ -102,6 +102,14 @@ const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000)
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
 
+// Bare names of inputs this run ACCEPTED but cannot honor, collected at every site that drops
+// one and surfaced in two places a buyer and a pipeline actually read: a NOTE suffix on the run
+// status message, and RUN_SUMMARY.ignoredInputs. A `log.warning` alone is not disclosure --
+// somebody who sees a green "Succeeded" beside a full dataset has no reason to open the log, so a
+// dropped filter reads exactly like a filter that ran and matched everything, and they pay per
+// result either way. Pattern copied from steam-reviews-scraper 0.1.87 (cycle 2412).
+const ignoredInputs = [];
+
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
 let webhookUrl = null;
 if (webhookUrlRaw) {
@@ -173,6 +181,7 @@ if (postedFrom !== null && postedTo !== null && postedFrom > postedTo) {
 const hasAbsoluteDateFilter = postedFrom !== null || postedTo !== null;
 if (hasAbsoluteDateFilter && postedWithinDays !== null) {
     log.warning('Both postedWithinDays and postedFrom/postedTo are set; ignoring postedWithinDays since an absolute range was given.');
+    ignoredInputs.push('postedWithinDays');
 }
 
 // Deadline (close date) range. Same client-side mechanism and the same zero-extra-request cost as
@@ -207,6 +216,7 @@ if (input.closesWithinDays !== undefined && input.closesWithinDays !== null && i
 }
 if (hasCloseDateFilter && closesWithinDays !== null) {
     log.warning('Both closesWithinDays and closeDateFrom/closeDateTo are set; ignoring closesWithinDays since an absolute range was given.');
+    ignoredInputs.push('closesWithinDays');
     closesWithinDays = null;
 }
 // Raw day count only goes into the watch fingerprint (see watchCriteria below), never a resolved
@@ -402,8 +412,59 @@ const WATCH_KEEP = 60000; // bound the record size; oldest ids fall off first
 
 if (watchLabel && exclusiveOppNum) {
     log.warning('watchLabel is ignored when Opportunity number (oppNum) or Opportunity numbers (oppNums) is set -- an exact opportunity-number lookup has no "new since last run" to track.');
+    ignoredInputs.push('watchLabel');
 }
 const watchMode = watchLabel.length > 0 && !exclusiveOppNum;
+
+// An exact opportunity-number lookup takes a DIFFERENT code path (walkOppNums), which sends only
+// `oppNum` plus an all-statuses sweep and skips baseParams() entirely -- so every search filter
+// the buyer may also have set is accepted by the schema and then never applied. Until cycle 2420
+// the only disclosure was the words "other filters ignored" inside the startup `log.info` line:
+// not a warning, not in the status message, not in RUN_SUMMARY. A buyer who paired oppNums with a
+// close-date window got rows outside that window, SUCCEEDED, and nothing anywhere said so.
+// Each entry is [bare field name, prose carrying the buyer's own value] in ONE literal, so the
+// machine-readable name and the human sentence cannot drift apart (c2412 lesson).
+// Deliberately NOT listed: minAwardAmount/maxAwardAmount (walkOppNums applies both, client-side,
+// exactly as the search path does), enrich, maxResults -- all three are honored here.
+// oppStatuses is compared against its SCHEMA DEFAULT rather than tested for presence: Apify
+// materializes the default into every input object, so a presence check would warn on every run.
+if (exclusiveOppNum) {
+    const hasPostedFilter = hasAbsoluteDateFilter || postedWithinDays !== null;
+    const hasAnyCloseFilter = hasCloseDateFilter || closesWithinDays !== null;
+    const oppNumIgnoredPairs = [
+        keyword && ['keyword', `keyword ("${keyword}")`],
+        Array.isArray(input.oppStatuses) && input.oppStatuses.length
+            && oppStatuses !== 'forecasted|posted' && ['oppStatuses', `oppStatuses ([${oppStatuses}])`],
+        agencies && ['agencies', `agencies (${agencyCodesQueried} code(s))`],
+        eligibilities && ['eligibilities', `eligibilities (${eligibilities.split('|').length})`],
+        fundingCategories && ['fundingCategories', `fundingCategories (${fundingCategories.split('|').length})`],
+        fundingInstruments && ['fundingInstruments', `fundingInstruments (${fundingInstruments.split('|').length})`],
+        cfda && ['cfda', `cfda ("${cfda}")`],
+        sortBy && ['sortBy', `sortBy ("${sortBy}")`],
+        hasPostedFilter && ['postedWithinDays/postedFrom/postedTo', 'the posted-date window (postedWithinDays/postedFrom/postedTo)'],
+        hasAnyCloseFilter && ['closesWithinDays/closeDateFrom/closeDateTo', 'the close-date window (closesWithinDays/closeDateFrom/closeDateTo)'],
+    ].filter(Boolean);
+    if (oppNumIgnoredPairs.length) {
+        ignoredInputs.push(...oppNumIgnoredPairs.map(([name]) => name));
+        log.warning(
+            `An exact opportunity-number lookup ignores ${oppNumIgnoredPairs.length} filter(s) you also set -- `
+            + `${oppNumIgnoredPairs.map(([, prose]) => prose).join(', ')}. The ${oppNums.length} requested number(s) `
+            + 'are returned if they exist at all, across every status, regardless of these. Drop oppNum/oppNums to '
+            + 'run a filtered search instead. (minAwardAmount/maxAwardAmount ARE still applied.)',
+        );
+    }
+}
+
+// watchChanges is meaningless with no watch label: there is no previous run to compare against,
+// so the flag silently does nothing rather than being rejected. Same silence as above, so it
+// gets the same disclosure.
+if (watchChanges && !watchMode) {
+    log.warning(
+        `watchChanges is ON but this run is not a watch run${exclusiveOppNum ? ' (an opportunity-number lookup cannot be one)' : ' (no watchLabel is set)'}, `
+        + 'so there is no previous baseline to compare against and nothing is reported as changed. Set a watchLabel to use it.',
+    );
+    ignoredInputs.push('watchChanges');
+}
 
 // Apify KV keys allow [a-zA-Z0-9!-_.'()] only, so the label is sanitised rather than trusted.
 // The criteria fingerprint is part of the key on purpose: if the buyer edits a filter, that is
@@ -1447,12 +1508,34 @@ let zeroRowMessage = null;
 // setStatusMessage must fit whole, and this clamp is the backstop for the branches whose length
 // depends on user input (an oppNums list has no bound).
 const STATUS_MESSAGE_MAX = 500;
-const clampStatusMessage = (msg) => {
-    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
-    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+const clampStatusMessage = (msg, max = STATUS_MESSAGE_MAX) => {
+    if (msg.length <= max) return msg;
+    const cut = msg.slice(0, max - 4);
     const lastSpace = cut.lastIndexOf(' ');
     return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
 };
+
+// Inputs this run accepted but could not honor, deduped (a field can be named by more than one
+// drop site -- postedWithinDays is dropped both by an absolute range and by oppNum mode).
+const ignoredUnique = [...new Set(ignoredInputs)];
+const ignoredSuffixFull = ignoredUnique.length
+    ? ` NOTE: ${ignoredUnique.length} input(s) you set had no effect on this run and were ignored: `
+        + `${ignoredUnique.join(', ')} -- see the log for why each one cannot be honored, and RUN_SUMMARY.ignoredInputs.`
+    : '';
+// oppNum mode can ignore 10 filters at once, which is ~400 characters of names on its own -- past
+// the 500-char status-message limit before the run's actual outcome is even said. The names are
+// always complete in RUN_SUMMARY, so the long form degrades to a count plus a pointer rather than
+// competing with the outcome for the budget. Measured against the limit, not guessed.
+const IGNORED_SUFFIX_MAX = 220;
+const ignoredSuffix = ignoredSuffixFull.length <= IGNORED_SUFFIX_MAX
+    ? ignoredSuffixFull
+    : ` NOTE: ${ignoredUnique.length} input(s) you set had no effect on this run and were ignored -- `
+        + 'RUN_SUMMARY.ignoredInputs lists them, and the log says why each one cannot be honored.';
+// Reserves the NOTE's room BEFORE clamping the outcome text: appending it afterwards would let the
+// clamp eat the one part of the message the buyer cannot reconstruct from the dataset.
+const withIgnored = (msg) => (ignoredSuffix
+    ? clampStatusMessage(msg, STATUS_MESSAGE_MAX - ignoredSuffix.length) + ignoredSuffix
+    : clampStatusMessage(msg));
 
 if (pushed === 0 && watchMode && !seeding) {
     zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching opportunity(ies) `
@@ -1593,6 +1676,10 @@ const runSummary = {
     // Machine-readable form of the change-blind-filter warning: a scheduled caller that never
     // reads the log can assert on this being empty before trusting "no changes this run".
     watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
+    // Bare names of every input this run accepted and then could not honor. ALWAYS an array (`[]`
+    // on a clean run), so a pipeline can assert `ignoredInputs.length === 0` with no presence
+    // check before trusting that the filters it asked for are the filters that ran.
+    ignoredInputs: ignoredUnique,
     // Machine-readable form of the dead-date-bound warning above: true means this watch's openDate
     // upper bound (postedTo) can never again admit a new opportunity once real time passes it.
     watchDeadDateBound: watchMode ? watchDeadDateBound : null,
@@ -1600,23 +1687,28 @@ const runSummary = {
 await Actor.setValue('RUN_SUMMARY', runSummary);
 
 if (incompleteReason !== null) {
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(withIgnored(
         `INCOMPLETE (${incompleteReason}): delivered ${pushed} row(s)`
         + (declaredMatches !== null ? ` of ${declaredMatches} declared match(es)` : '')
         + `. ${incompleteDetail} See the RUN_SUMMARY key-value record for the machine-readable detail.`,
-    );
+    ));
 } else if (baselineTruncated > 0) {
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(withIgnored(
         `Complete, but the watch baseline exceeded its ${WATCH_KEEP}-id cap and dropped ${baselineTruncated} old `
         + `id(s) this run (${baselineTruncatedTotal} total) -- those may be re-delivered and re-charged as "new" `
         + 'on a future run. Narrow the filters to keep the whole match set under the cap.',
-    );
+    ));
 } else if (zeroRowMessage) {
     // Last in the chain deliberately: an INCOMPLETE run or a truncated watch baseline is a
     // stronger thing to say than "nothing matched", and both of those can coincide with 0 rows.
-    await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
+    await Actor.setStatusMessage(withIgnored(zeroRowMessage));
 } else if (pushedCauses.length > 0) {
-    await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} opportunity(ies). ${pushedCauses.join(' Also, ')}`));
+    await Actor.setStatusMessage(withIgnored(`Pushed ${pushed} opportunity(ies). ${pushedCauses.join(' Also, ')}`));
+} else if (ignoredSuffix) {
+    // The branch that is easy to miss: a clean, complete, pushed>0 run sets no status message at
+    // all today, which is exactly the run where a dropped filter is the ONLY thing worth saying --
+    // and the only run shape where the dataset looks completely normal while a filter never ran.
+    await Actor.setStatusMessage(withIgnored(`Pushed ${pushed} opportunity(ies).`));
 }
 
 log.info(

@@ -335,7 +335,54 @@
       wanted, not urgent since the worldwide-exemption fix was the one proven to produce a wrong
       result.
 
-- [ ] **NEW follow-up (c2412, MEDIUM, cheap, read-only first) -- sweep the fleet for other inputs
+- [x] **DONE cycle 2420 (QUALITY/GROWTH slot, `2420%3==2`) -- ran the c2412 fleet triage below and
+      fixed the worst Actor it found, `grants-gov-scraper` (build 0.1.79).** Triage was the
+      read-only one the item prescribes, run fleet-wide as a script: per Actor, count `log.warning`
+      calls whose text says ignored/no-effect (excluding the `webhookUrl` nicety, which is a
+      notification not a filter) and cross-check against whether any `setStatusMessage` in the same
+      file mentions an ignore at all. **3 Actors flagged** (warning-only ignores, 0 status-message
+      disclosure): `grants-gov-scraper` (4), `sec-insider-trades-scraper` (1),
+      `website-screenshot-scraper` (1). Picked `grants-gov-scraper` because reading it found a
+      case WORSE than c2412's steam-reviews one: in exact-opportunity-number mode
+      (`oppNum`/`oppNums`) the code takes a different walker (`walkOppNums`) that sends only the
+      number plus an all-statuses sweep and never calls `baseParams()`, so **10 search filters are
+      accepted and silently never applied** -- and the only disclosure anywhere was the phrase
+      "other filters ignored" inside the startup **`log.info`** line (not even a warning, not in
+      the status message, not in `RUN_SUMMARY`). Also found `watchChanges` set with no `watchLabel`
+      is a total no-op with no disclosure of any kind. Applied the steam-reviews 0.1.87 pattern
+      verbatim: `ignoredInputs` array pushed to at all 5 drop sites, `RUN_SUMMARY.ignoredInputs`
+      (always an array), a `NOTE:` suffix on every `setStatusMessage` branch, **and the easy-to-miss
+      final `else if (ignoredSuffix)` branch** (a clean complete `pushed>0` run set NO status message
+      before, which is exactly the run where a dropped filter is the only thing worth saying).
+      Ignored-field lists are `[bareName, prose]` pairs in ONE literal per the c2412 note, and
+      `oppStatuses` is compared to its SCHEMA DEFAULT not tested for presence (Apify materializes
+      defaults, so a presence check warns forever). **One thing worth copying to the next Actor:**
+      grants-gov clamps its status message at Apify's measured 500-char limit, and oppNum mode can
+      ignore 10 fields = ~400 chars of names on its own, so appending the NOTE and then clamping
+      would have eaten the NOTE -- the fix reserves the suffix's room BEFORE clamping the outcome
+      text (`withIgnored()`), and the suffix itself degrades to "N input(s) ... see
+      RUN_SUMMARY.ignoredInputs" above 220 chars, since the names are always complete in
+      RUN_SUMMARY. **Verified on 3 local runs + 1 real platform run, all read back not assumed:**
+      local (a) oppNum mode with 9 ignored inputs -> short-form NOTE, and the delivered row proved
+      the filters really were dead (`closeDate 04/30/2027` against a requested `closeDateTo
+      2026-01-01`, `oppStatus "posted"` against a requested `["archived"]`); (b) one ignored input
+      -> full-form NOTE riding on the INCOMPLETE branch; (c) clean run -> **no NOTE, `[]`**, i.e. no
+      new noise. Platform run `h7R68v656l4UpuTO1` (build 0.1.79) SUCCEEDED, and `GET
+      /v2/actor-runs/<id>` returned the NOTE in `statusMessage` with `RUN_SUMMARY.ignoredInputs`
+      listing all 7 names; `chargedEventCounts {'result':0,'opportunity-thin':1}` == 1 pushed, 0
+      leak. README: `ignoredInputs` added to the sample `RUN_SUMMARY` + its prose, and a new FAQ
+      entry enumerating all 4 ignore cases (confirmed present in the LIVE build's readme over the
+      API). `package.json` 0.1.24 -> 0.1.25. `check-charges` (25/0/0), `check-registry-fields`
+      (0 drift), `check-doc-size` all clean. ~$0.005 spent, 0 new Actors.
+      **Remaining scope of the item below, in priority order:** (1) `sec-insider-trades-scraper`
+      and (2) `website-screenshot-scraper`, the other two the triage flagged -- re-read each one's
+      single ignore site before assuming it is the same shape as this one. (3) Re-run the triage
+      script (it is 20 lines, in STATUS cycle 2420) on any Actor that later gains a mode switch.
+
+- [ ] **PARTIALLY DONE (c2420 did the fleet triage + fixed `grants-gov-scraper`; 2 Actors left:
+      `sec-insider-trades-scraper`, `website-screenshot-scraper` -- see the c2420 entry above
+      for the triage method and the status-message-clamp trap) -- follow-up (c2412, MEDIUM,
+      cheap, read-only first) -- sweep the fleet for other inputs
       an Actor ACCEPTS but cannot honor, and check each one is disclosed in the status message /
       `RUN_SUMMARY`, not only in `log.warning`.** c2412 found three on `steam-reviews-scraper`
       (`purchaseType`/`dayRange`/`includeOffTopic`, dead since the 2026-10-23 source change) that

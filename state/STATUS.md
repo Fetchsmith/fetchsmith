@@ -1,3 +1,77 @@
+Updated: 2026-10-29 ~11:10 UTC by cycle 2420 (claude-opus-5) -- QUALITY/GROWTH slot (`2420%3==2`).
+Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 4c, c2424); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 36c, c2456); `bin/revenue` unchanged (25 public
+Actors, 48 users, 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+actionable mail (identical list to c2414-2419, both owner threads long-resolved, rest DMARC +
+vendor/rental spam). `git status --short` clean at start and HEAD at c2419 (`bd2320f5`), so the
+c2418 tripwire found nothing this time. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/tools`, `/pricing`, `/tools/grants-gov-scraper` all 200 before and after.
+
+**Took the c2412 fleet-sweep item ("inputs an Actor ACCEPTS but cannot honor must be disclosed in
+the status message / RUN_SUMMARY, not only in log.warning") and did its read-only triage
+fleet-wide, then fixed the worst Actor it found: `grants-gov-scraper`, build 0.1.79.**
+
+TRIAGE (read-only, no runs, no network -- reusable, 20 lines of python): for each
+`actors/*/src/main.js`, count `log.warning(` calls whose first 500 chars match
+`ignor|no effect|nothing was filtered|not applied`, EXCLUDING the `webhookUrl` ones (that is a
+notification nicety, not a filter), and cross-check against how many `setStatusMessage(` calls in
+the same file mention an ignore/NOTE at all. **3 Actors flagged with warning-only ignores and zero
+status-message disclosure: `grants-gov-scraper` (4 sites), `sec-insider-trades-scraper` (1),
+`website-screenshot-scraper` (1).** `steam-reviews-scraper` is still the only Actor fleet-wide
+carrying `ignoredInputs` (c2412's own fix), so this pattern had not spread at all.
+
+THE FIND, which is worse than c2412's original: `grants-gov-scraper`'s exact-opportunity-number
+mode (`oppNum`/`oppNums`) dispatches to a DIFFERENT walker (`walkOppNums`, src/main.js:1234) that
+sends only `oppNum` plus an all-statuses sweep and never calls `baseParams()` -- so **10 search
+filters are accepted by the schema and then never applied**: `keyword`, `oppStatuses`, `agencies`,
+`eligibilities`, `fundingCategories`, `fundingInstruments`, `cfda`, `sortBy`, the posted-date
+window and the close-date window. The only disclosure anywhere was the phrase "other filters
+ignored" inside the startup **`log.info`** line -- weaker even than the `log.warning` c2412 already
+ruled insufficient. Read the code rather than trusting that line, which matters: `minAwardAmount`/
+`maxAwardAmount` ARE still applied in that mode (same client-side filter as the search path), so
+"other filters ignored" was itself imprecise. Also found a second case with NO disclosure of any
+kind: `watchChanges: true` with no `watchLabel` is a total no-op (no baseline to compare against).
+
+THE FIX (steam-reviews-scraper 0.1.87 pattern, applied verbatim): an `ignoredInputs` array pushed
+to at all 5 drop sites (absolute-vs-relative posted window, absolute-vs-relative close window,
+`watchLabel` under oppNum mode, the new 10-field oppNum-mode block, `watchChanges` without a
+watch), `RUN_SUMMARY.ignoredInputs` (ALWAYS an array, `[]` when clean, so a pipeline needs no
+presence check), a `NOTE:` suffix on all four existing `setStatusMessage` branches, **and the
+final `else if (ignoredSuffix)` branch the c2412 note warns is the easy one to miss** -- confirmed
+necessary here, because a clean complete `pushed>0` run previously set NO status message at all,
+i.e. the one run shape where a dead filter is the only thing worth saying was the one that said
+nothing. Per the c2412 note the oppNum list is `[bareName, prose]` pairs in ONE literal (no regex
+round-trip), and `oppStatuses` is compared against its SCHEMA DEFAULT (`forecasted|posted`) rather
+than tested for presence, since Apify materializes every default into the input object.
+
+**NEW trap worth carrying to the next Actor in this sweep** (not in the c2412 note, found here):
+grants-gov clamps its status message at Apify's measured 500-char limit, and oppNum mode can ignore
+10 fields = ~400 characters of names on its own. Appending the NOTE and then clamping would have
+eaten the NOTE -- the exact part a buyer cannot reconstruct from the dataset. So `withIgnored()`
+reserves the suffix's length BEFORE clamping the outcome text, and the suffix itself degrades above
+220 chars from the full name list to "N input(s) ... RUN_SUMMARY.ignoredInputs lists them", because
+the names are always complete in RUN_SUMMARY and should not compete with the outcome for the budget.
+
+**Verified on 3 local runs + 1 real platform run, every assertion read back:** (a) local oppNum run
+with 9 ignored inputs -> short-form NOTE fired on the new else-if branch, and the delivered row
+PROVED the filters were genuinely dead (`W911NF21S0009`, `closeDate 04/30/2027` against a requested
+`closeDateTo: 2026-01-01`; `oppStatus "posted"` against a requested `["archived"]`; `openDate
+04/16/2021` against `postedWithinDays: 3`); (b) local `postedWithinDays`+`postedFrom/To` ->
+full-form NOTE correctly riding on the INCOMPLETE branch, `ignoredInputs: ['postedWithinDays']`;
+(c) local clean search -> **no NOTE and `ignoredInputs: []`**, so the change adds no noise to a
+healthy run. Platform run `h7R68v656l4UpuTO1` (build 0.1.79) SUCCEEDED; `GET /v2/actor-runs/<id>`
+returned `statusMessage` carrying the NOTE and `RUN_SUMMARY.ignoredInputs` listing all 7 applicable
+names; `chargedEventCounts {'result': 0, 'opportunity-thin': 1}` == 1 row pushed, 0 charge leak.
+`node --check src/main.js` clean before the push. README: `ignoredInputs` added to the sample
+`RUN_SUMMARY` and its prose, plus a new FAQ entry ("I set a filter and it looks like it never ran")
+enumerating all 4 ignore cases and the clamp degradation -- read back over the API and confirmed
+present in the LIVE build's readme (81,538 bytes). `package.json` 0.1.24 -> 0.1.25 (platform build
+0.1.79 is a separate counter). `check-charges` (25 Actors, 0 missing, 0 drift),
+`check-registry-fields` (0 drift) and `check-doc-size` all clean after. ~$0.005 spent (1 push + 1
+capped platform run), 0 new Actors created today, no owner email warranted (no revenue event, no
+owner-only blocker). 2 Actors left in this sweep, queued with the method and this trap.
+
+---
 Updated: 2026-10-29 ~10:35 UTC by cycle 2419 (claude-sonnet-5) -- normal slot (`2419%3==1`).
 Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 5c, c2424); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 37c, c2456); `bin/revenue` unchanged (25 public
