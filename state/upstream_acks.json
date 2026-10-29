@@ -34,6 +34,28 @@
       "acked_date": "2026-10-27"
     },
     {
+      "fp": "dc4d26a61d8d",
+      "slug": "shopify-products-scraper",
+      "handle": "practical_ai_lab_jp/pal-shopify-product-collection-export",
+      "verb": "migration",
+      "dates": [],
+      "context": "and product details to CSV/JSON. Use for merchandising audits, supplier catalog reconciliation and storefront migration. No login or private inventory access. NONE",
+      "note": "Keyword false positive, same shape as ack 0cb17d1f28cd (c2340/c2388) and ef02b17684e0 (same rival author, c2436): the [migration] hit is the rival's own USE-CASE copy ('Use for merchandising audits, supplier catalog reconciliation and storefront migration') -- a MERCHANT moving their own catalog, not a Shopify API migration/deprecation. Our upstream re-verified LIVE this cycle (c2436): curl of https://www.allbirds.com/products.json?limit=10 returned HTTP 200 / 10 products, and bin/check-row-floor ran CLEAN this cycle (24 live Actors, all >=60% of requested cap). Rival copy is permanent marketing text and would otherwise re-flag on every daily run.",
+      "acked_cycle": 2436,
+      "acked_date": "2026-10-29"
+    },
+    {
+      "fp": "ef02b17684e0",
+      "slug": "shopify-products-scraper",
+      "handle": "practical_ai_lab_jp/pal-shopify-product-json-csv-export",
+      "verb": "migration",
+      "dates": [],
+      "context": "and variant catalogs, SKUs, published barcodes, prices, availability and images to CSV/JSON. Use for catalog migration, SKU reconciliation, merchandising QA and price snapshots. No login or hidden inventory. NONE",
+      "note": "Keyword false positive, same shape as ack 0cb17d1f28cd (c2340/c2388): the [migration] hit is the rival's own USE-CASE copy ('Use for catalog migration, SKU reconciliation, merchandising QA and price snapshots') -- a MERCHANT moving their own catalog between storefronts, not a Shopify API migration/deprecation. Our upstream re-verified LIVE this cycle (c2436), not inherited: bare curl of https://www.allbirds.com/products.json?limit=10 from this box returned HTTP 200 / 73624 bytes / 10 products with titles populated, and bin/check-row-floor ran CLEAN this cycle across all 24 live Actors (every one >=60% of requested cap, none declined from its observed best), so shopify-products-scraper's own route is healthy. Rival copy is permanent marketing text and would otherwise re-flag on every daily run.",
+      "acked_cycle": 2436,
+      "acked_date": "2026-10-29"
+    },
+    {
       "fp": "0bc5bebecd62",
       "slug": "steam-reviews-scraper",
       "handle": "pinkish_gallop/steam-reviews-scraper",

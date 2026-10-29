@@ -535,7 +535,13 @@ async function fetchPage(productType, search, limit, skip) {
         if (resp.statusCode !== 200) {
             const detail = parsed?.error?.message ?? String(resp.body).slice(0, 300);
             log.warning(`openFDA ${productType} API ${resp.statusCode}: ${detail}`);
-            lastApiFailure = `HTTP ${resp.statusCode}: ${detail}`;
+            // `lastApiFailure` is interpolated into every `incompleteDetail` below, which is in
+            // turn the BASE of the INCOMPLETE status message. Upstream error bodies run to 300+
+            // chars, and left uncapped they displace the Actor's OWN words after them -- which is
+            // where the billing-relevant part lives ("recalls past that point are NOT in the
+            // baseline, so the next incremental run would deliver and charge them as new"). The
+            // full body is in the log.warning immediately above, so nothing is lost.
+            lastApiFailure = `HTTP ${resp.statusCode}: ${detail.length > 120 ? `${detail.slice(0, 120)}...` : detail}`;
             return null;
         }
         if (!parsed) {
@@ -1335,41 +1341,63 @@ if (watchMode && seedFailure) {
 // grants-gov-scraper build 0.1.67. Truncation drops the LAST causes, which are the least
 // obvious ones, so a long message is not merely shortened, it loses its most useful part.
 const STATUS_MESSAGE_MAX = 500;
-const clampStatusMessage = (msg) => {
-    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
-    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+// `suffix` is RESERVED out of the 500-char budget rather than appended after clamping (the
+// clamp-reservation sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428). Both
+// call sites below pass a disclosure that must survive the cut: the INCOMPLETE branch's pointer to
+// the untruncated RUN_SUMMARY record (measured cycle 2436 at 903 chars worst case with no clamp at
+// all -- the pointer AND the "re-run the seed before relying on it" remediation were both being
+// silently deleted by Apify's own cut), and the zero-row branch's change-blind NOTE (measured 568
+// chars with a 200-char watchLabel, clamping to 493 with the NOTE gone -- i.e. a monitor that can
+// never report a change looked byte-identical to a healthy quiet run). The log keeps the full text.
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
     const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
 };
+// watchLabel/recallNumber/eventId/searchQuery carry no schema maxLength, so a caller-supplied
+// value echoed into a status message is unbounded on its own.
+const echoCap = (s, max) => (String(s).length > max ? `${String(s).slice(0, max)}...` : String(s));
 
 // Built once and reused below for `setStatusMessage` (cycle 1759) -- until this fix these were
 // log-only, so a complete run with 0 rows showed bare "Succeeded" in the Console with the cause
 // visible only in the log. Watch-mode SEEDING stays silent (0 rows there is the documented
 // by-design baseline result, not an empty search), matching every prior Actor in this audit.
 let zeroRowMessage = null;
+// Reserved out of the clamp at the setStatusMessage call site below, never concatenated into
+// `zeroRowMessage` itself -- see the clampStatusMessage comment above for the measured case.
+let zeroRowSuffix = '';
 if (pushed === 0 && watchMode && !seeding) {
-    zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching recall(s) `
-        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.'
-        // Without this, a run that CAN NEVER report a change (see watchChangeBlindFilters above)
-        // is byte-for-byte indistinguishable from a healthy quiet run -- and this is a monitor, so
-        // the buyer schedules it and stops looking.
-        + (watchChangeBlindFilters.length
-            ? ` NOTE: this run also cannot report any ${watchChangeBlindFilters.join('/')} change at all `
-            + '(see the change-blind-filter warning above), so "nothing changed" is not evidence here.'
-            : '');
-    log.warning(zeroRowMessage);
+    // `watchLabel` has no schema maxLength, so the status-message copy is echo-capped while the
+    // log line below keeps the full label (the full value is what actually keys the watch record).
+    const nothingNew = (label) => `Nothing new for watch label "${label}" since its last run -- all ${skippedSeen} matching recall(s) `
+        + 'had already been delivered. That is the expected result most of the time; you were charged for nothing.';
+    // Without this, a run that CAN NEVER report a change (see watchChangeBlindFilters above)
+    // is byte-for-byte indistinguishable from a healthy quiet run -- and this is a monitor, so
+    // the buyer schedules it and stops looking.
+    zeroRowSuffix = watchChangeBlindFilters.length
+        ? ` NOTE: this run also cannot report any ${watchChangeBlindFilters.join('/')} change at all `
+        + '(see the change-blind-filter warning above), so "nothing changed" is not evidence here.'
+        : '';
+    zeroRowMessage = nothingNew(echoCap(watchLabel, 60));
+    log.warning(nothingNew(watchLabel) + zeroRowSuffix);
 } else if (pushed === 0 && !seeding && lookupMode) {
     // The causes below this branch are all about OTHER filters narrowing the result -- moot here,
     // since buildSearch() now skips every one of them in lookupMode (recallNumber/eventId is an
     // exact-identity lookup, not a narrowing filter). A miss means the value itself, or the
     // productTypes endpoint it was searched against, is wrong -- not a filter combination.
-    zeroRowMessage = `No recall matched ${recallNumber ? `recallNumber="${recallNumber}"` : ''}`
-        + `${recallNumber && eventId ? ' / ' : ''}${eventId ? `eventId="${eventId}"` : ''}`
+    // Same echo-cap reasoning as the watch branch: recallNumber/eventId carry no schema
+    // maxLength, and the two numbered causes at the end are the actionable part of this message --
+    // a 300-char typo'd id must not be what pushes them past Apify's cut.
+    const noLookupMatch = (rn, ev) => `No recall matched ${rn ? `recallNumber="${rn}"` : ''}`
+        + `${rn && ev ? ' / ' : ''}${ev ? `eventId="${ev}"` : ''}`
         + ` across productTypes=[${productTypes.join(',')}] (full history, every other filter ignored as documented). `
         + 'Most likely: (1) a typo in the exact value -- recall numbers look like "F-1233-2022", event ids are plain '
         + 'numbers like "90105"; (2) the recall lives on a product type not selected here -- recall numbers are not '
         + 'unique across food/drug/device, so set productTypes to all three (or leave it empty) if unsure which one.';
-    log.warning(zeroRowMessage);
+    zeroRowMessage = noLookupMatch(recallNumber && echoCap(recallNumber, 40), eventId && echoCap(eventId, 40));
+    log.warning(noLookupMatch(recallNumber, eventId));
 } else if (pushed === 0 && !seeding) {
     // Log form keeps the full 5-cause explanation (984 chars, well past the status-message cap).
     // The status message below is a SEPARATE, compact rendering of the same 5 causes in the same
@@ -1457,11 +1485,20 @@ if (firstIncomplete) {
         ...types.filter((s) => !s.complete).map((s) => `${s.productType}:${s.incompleteReason}`),
         ...(feedIncomplete ? [`press_release:${feedIncomplete.incompleteReason}`] : []),
     ].join(', ');
-    await Actor.setStatusMessage(
+    // The pointer is the SUFFIX, not part of the base: `incompleteDetail` alone runs to 452 chars
+    // (the seed-walk-failed wording, even with `lastApiFailure` capped), so with a 4-cause
+    // `short` the base measures 656 and a 500-char message physically cannot carry all of it.
+    // What matters is WHICH part is guaranteed, and it is this one -- a buyer who loses the
+    // pointer has no way to learn that the message they are reading is itself partial, whereas
+    // the untruncated detail is always in RUN_SUMMARY and in the log. (The one billing-relevant
+    // detail, a seed walk that saved no baseline, does not rely on this branch at all: that run
+    // ends in the clamped Actor.fail() at the bottom of this file, which restates it.)
+    await Actor.setStatusMessage(clampStatusMessage(
         `INCOMPLETE (${short}): delivered ${pushed} row(s)`
         + (runSummary.declaredMatches !== null ? ` of ${runSummary.declaredMatches} declared match(es)` : '')
-        + `. ${firstIncomplete.incompleteDetail} See the RUN_SUMMARY key-value record for the machine-readable detail.`,
-    );
+        + `. ${firstIncomplete.incompleteDetail}`,
+        ' See the RUN_SUMMARY key-value record for the machine-readable detail.',
+    ));
 } else if (baselineTruncated > 0) {
     await Actor.setStatusMessage(
         `Complete, but the watch baseline exceeded its ${WATCH_KEEP}-id cap and dropped ${baselineTruncated} old `
@@ -1471,10 +1508,13 @@ if (firstIncomplete) {
 } else if (zeroRowMessage) {
     // Last in the chain deliberately: an INCOMPLETE run or a truncated watch baseline is a
     // stronger thing to say than "nothing matched", and both of those can coincide with 0 rows.
-    // clampStatusMessage() is a backstop only -- the compact plain-no-match wording above is
-    // already written to fit whole; this guards the watch-label/lookup branches whose length
-    // depends on user-supplied strings (a long watchLabel, or many change-blind filters).
-    await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage));
+    // The compact plain-no-match wording above is already written to fit whole; the clamp guards
+    // the watch-label/lookup branches, whose length depends on user-supplied strings. The
+    // change-blind NOTE is passed as the reserved SUFFIX, not concatenated into the base: it is
+    // the only surface saying this monitor cannot report a change at all, so it has to outlive
+    // the cut (measured cycle 2436: a 200-char watchLabel made the old single-argument form drop
+    // it outright, leaving a quiet-run message indistinguishable from a healthy one).
+    await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage, zeroRowSuffix));
 }
 
 log.info(`Done. Pushed ${pushed} recalls from ${productTypes.length} product type(s) (scanned ${scanned} rows).`);
@@ -1521,12 +1561,18 @@ if (webhookUrl) {
 // failing is free -- and failing loudly, instead of exiting 0 with no baseline saved, stops a
 // scheduled run from quietly reading "seeded" and moving on to incremental.
 if (watchMode && seedFailure) {
-    await Actor.fail(
-        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
-        + '(a partial one would '
-        + 'cause you to be charged twice for the same recalls later) and nothing was charged. Please re-run in '
-        + 'a few minutes.',
-    );
+    // Actor.fail()'s message becomes the run's status message, so it lives under the SAME 500-char
+    // ceiling as every setStatusMessage above -- a `setStatusMessage`-only grep misses this site,
+    // which is why the clamp sweep did not catch it until cycle 2436. `seedFailure` is an
+    // `incompleteDetail` (up to 452 chars measured), and the billing clause sits AFTER it, so the
+    // old form rendered up to ~650 chars and Apify's silent cut deleted exactly the part a buyer
+    // needs: that nothing was charged and no half-baseline is now on disk waiting to double-bill
+    // them. Reserved as the suffix; the upstream cause truncates first, and it is in the log whole.
+    await Actor.fail(clampStatusMessage(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}.`,
+        ' No baseline was saved (a partial one would cause you to be charged twice for the same'
+        + ' recalls later) and nothing was charged. Please re-run in a few minutes.',
+    ));
 }
 
 await Actor.exit();

@@ -1768,9 +1768,20 @@ if (webhookUrl) {
 }
 
 if (watchMode && seedFailure) {
+    // Actor.fail()'s message becomes the run's status message, so it lives under the same 500-char
+    // ceiling as the setStatusMessage sites above -- a `setStatusMessage`-only grep misses this
+    // site, which is why the clamp-reservation sweep did not reach it until cycle 2436. Measured
+    // worst case 667 chars: `seedFailure` embeds a caller-supplied opportunity number (no schema
+    // maxLength) and the clause after it embeds `watchLabel` (likewise), so Apify's silent cut
+    // landed inside the clause and took the actionable half ("re-run with the same watchLabel")
+    // with it. Same reservation idiom as `withIgnored` above; the log keeps the full text.
+    const seedFailSuffix = ` No baseline was saved for watch label "${clampStatusMessage(watchLabel, 60)}"`
+        + ' -- re-run with the same watchLabel to seed again.';
     await Actor.fail(
-        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
-        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
+        clampStatusMessage(
+            `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}.`,
+            STATUS_MESSAGE_MAX - seedFailSuffix.length,
+        ) + seedFailSuffix,
     );
 }
 
