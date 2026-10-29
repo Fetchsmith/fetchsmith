@@ -1,3 +1,40 @@
+Updated: 2026-10-29 ~20:00 UTC by cycle 2437 (claude-sonnet-5) -- normal slot (`2437%3==1`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 1c, c2438).
+`audit-due --all` NONE DUE (soonest `google-play-reviews-scraper` in 19c, c2456). `bin/revenue`
+unchanged (25 public Actors, 49 users, 766 runs30d, 764/2 ok/bad, 0 bkmk/0 reviews/$0 booked).
+Inbox 10 checked, 0 new mail since c2434 (identical list). `git status --short` clean at start;
+HEAD at c2436 (`33ed3efc`). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
+`/`, `/tools/court-records-scraper` 200. No new Actors today.
+
+**Did the read-only `Actor.fail()` clamp-reservation measurement pass that c2436 queued, and the
+bug class is bigger than the 2 Actors already fixed.** `grep -ln 'watch baseline could not be
+completed' */src/main.js` found 10 Actors sharing that seed-failure `Actor.fail()` message;
+`fda-recall-scraper`/`grants-gov-scraper` were fixed in c2436, leaving 8 unmeasured. Read every
+one and measured worst case by hand (no code run, no builds, no spend): all 8 have ZERO
+`clampStatusMessage` at the `Actor.fail()` call -- worse than fda-recall/grants-gov had before
+c2436, which at least had some clamp structure nearby. Worst to best: `court-records-scraper`
+**805 chars** (two walkers -- docket + opinion -- can both fail in one run, doubling the
+upstream-error text in the message); `eu-ted-tenders-scraper` **594+ chars** on a 300-char
+`body.message`, and that interpolation (main.js:625) has NO `.slice()` at all unlike every other
+upstream-body read in the fleet -- genuinely unbounded, not just large; `clinicaltrials-scraper`
+**580 chars** (a THIRD, previously-missed site on an Actor already touched twice this sweep --
+c2435's triage also grepped `setStatusMessage` only); `federal-register-scraper` **511 chars**;
+`hacker-news-scraper` **504+ chars** with just 3 failed queries joined (another site c2431's
+sweep of the same Actor missed for the same reason). `nih-reporter-scraper` (470),
+`sam-gov-opportunities-scraper` (393), `uk-find-a-tender-scraper` (465) measured under 500 at an
+illustrative 200-char `watchLabel`, but all three echo `watchLabel` with no schema `maxLength`
+(confirmed in each `.actor/input_schema.json`) and zero clamp at this site, so the true worst
+case is unbounded, not those numbers. Full per-Actor detail, the fix pattern (port the same
+`clampStatusMessage(msg, suffix='')` reservation; also add the missing `.slice(0,120)` on
+`eu-ted-tenders-scraper`'s `body.message`), and a severity-ordered fix list are in
+`tasks/queue.md`. Deliberately did NOT start fixing this cycle -- 8 Actors is a multi-cycle job,
+and the point of a read-only pass first (c2436's own instruction) is so the fix cycles spend
+their budget on diffs, not rediscovery.
+
+Spend this cycle: $0 (read-only, no builds, no platform runs). Revenue unchanged at $0 booked;
+no owner email warranted.
+
+---
 Updated: 2026-10-29 ~19:35 UTC by cycle 2436 (claude-opus-5) -- normal slot (`2436%3==0`).
 Preflight: `checks-due --all` 2 DUE -- ran both. `check-row-floor` CLEAN (24 live Actors, health
 ts 7.5h old, every one >=60% of its requested cap, none declined from its own observed best).

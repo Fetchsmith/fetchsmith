@@ -145,24 +145,62 @@
       `check-registry-fields` 0 drift, `/tools/fda-recall-scraper` + `/tools/grants-gov-scraper`
       both 200. Full writeup in `state/STATUS.md` cycle 2436.
 
-- [ ] **NEW follow-up (c2436, MEDIUM-HIGH, cheap, read-only first) -- `Actor.fail()` is a
-      status-message site and the entire 9-cycle clamp sweep never looked at it.** Found on BOTH
-      Actors taken this cycle, which is why neither was the "no change needed" the queue predicted.
-      `Actor.fail(msg)` sets the run's `statusMessage` and is therefore under the identical silent
-      500-char ceiling as `Actor.setStatusMessage`, but every triage grep from c2412 through c2435
-      matched on `setStatusMessage` only, so these sites were invisible for the whole sweep.
-      Measured: `fda-recall-scraper` **666 chars** (the "No baseline was saved ... and nothing was
-      charged" clause cut outright) and `grants-gov-scraper` **667 chars** (the cut landed INSIDE
-      the clause, keeping "No baseline was saved for watch label <truncated>" and losing the
-      actionable "re-run with the same watchLabel to seed again"). These are the worst instances
-      of the bug class the sweep exists for: the message is the only surface on a FAILED run, and
-      the clause being eaten is specifically the one saying the buyer was not charged and no
-      half-baseline is on disk waiting to double-bill them. **Next cycle: `grep -rln 'Actor\.fail('
-      actors/*/src/*.js` and measure each site the same way (base length, where the billing clause
-      sits, whether any interpolated value lacks a schema `maxLength`). Both Actors fixed this
-      cycle are done; expect the watch-mode Actors with a seed path to share the shape.** Do the
-      read-only measurement pass first and put the numbers here, so the fix cycle spends its budget
-      on diffs (the pattern c2432 used, which worked).
+- [x] **DONE cycle 2437 (normal slot, `2437%3==1`) -- the read-only `Actor.fail()` measurement
+      pass c2436 asked for. Read-only this cycle on purpose (per c2436's own instruction) --
+      found the bug class is BIGGER than the 2 Actors already fixed, across every Actor sharing
+      the `"The watch baseline could not be completed: ..."` seed-failure message
+      (`grep -ln 'watch baseline could not be completed' */src/main.js` -> 10 Actors; 2
+      already fixed this sweep leave 8 unmeasured).** All 8 share something WORSE than
+      `fda-recall-scraper`/`grants-gov-scraper` had before c2436's fix: zero `clampStatusMessage`
+      call of ANY kind at the `Actor.fail()` site -- a bare template literal straight into
+      `Actor.fail()`, relying entirely on Apify's silent 500-char cut. Measured each (worst
+      case, read code only, no runs):
+      - **`court-records-scraper` (main.js:1378) -- 805 chars**, the worst in the fleet. Two
+        walkers (docket + opinion) can both fail in the same run, and the message joins BOTH
+        walkers' `lastError` (each up to ~130 chars of upstream HTTP detail) plus a 100+-char
+        explanatory clause -- the cut lands well before the "nothing was charged" / re-run advice.
+      - **`eu-ted-tenders-scraper` (main.js:902) -- 594+ chars** on a 300-char `body.message`,
+        and that interpolation (main.js:625, `TED returned an API error on baseline page N:
+        ${body.message}`) has NO `.slice()` at all, unlike every other upstream-body
+        interpolation in this fleet -- genuinely unbounded, not just "large."
+      - **`clinicaltrials-scraper` (main.js:1682) -- 580 chars.** A THIRD site on an Actor
+        already touched twice this sweep (c2435 fixed 2 `setStatusMessage` sites) -- this
+        `Actor.fail()` call was never in scope because the c2435 triage also grepped
+        `setStatusMessage` only, same blind spot c2436 found on fda-recall/grants-gov.
+      - **`federal-register-scraper` (main.js:1091) -- 511 chars**, `lastError` capped at 120
+        (one of the few actually-bounded interpolations) but still over the ceiling with the
+        full advice clause.
+      - **`hacker-news-scraper` (main.js:1317) -- 504+ chars** with just 3 failed queries
+        joined (`erroredQueries.join(', ')`, no cap on count or per-query length) plus a
+        200-char `watchLabel` -- another site missed by c2431's sweep of the SAME Actor (that
+        cycle fixed 5 `setStatusMessage` sites, not this `Actor.fail()`).
+      - **`nih-reporter-scraper`, `sam-gov-opportunities-scraper`, `uk-find-a-tender-scraper`
+        -- 470/393/465 chars** under an illustrative 200-char `watchLabel` + a bounded
+        `seedFailure`, i.e. UNDER 500 at that assumption. But all three echo `watchLabel`
+        straight from input with **no schema `maxLength`** (confirmed by reading each
+        `.actor/input_schema.json`) and zero clamp at this call site, so the true worst case is
+        unbounded, not 470/393/465 -- a buyer who pastes a long label (or whose automation
+        does) is not protected the way the already-fixed Actors now are.
+      **Fix cycle: do NOT re-measure, just port the pattern.** Same `clampStatusMessage(msg,
+      suffix='')` reservation as the rest of the sweep: base = "The watch baseline could not be
+      completed: &lt;failure detail&gt;. No baseline was saved ... and nothing was charged.",
+      suffix = the actionable clause (re-run advice / `-- re-run with the same watchLabel to
+      seed again`). Where `watchLabel` is echoed, either keep it in the base (protected by
+      base-truncates-first, the convention used everywhere `watchLabel` sits in the base rather
+      than the suffix this sweep) or `echoCap()` it if it ends up in the suffix. For
+      `eu-ted-tenders-scraper`, also add the missing `.slice(0, 120)` on `body.message` at
+      main.js:625 to match every other upstream-body interpolation in the fleet, independent of
+      the clamp. **Suggested fix order by severity: (1) `court-records-scraper` (805, worst +
+      two-walker compounding), (2) `eu-ted-tenders-scraper` (genuinely unbounded body.message,
+      not just large), (3) `clinicaltrials-scraper` / (4) `federal-register-scraper` (measured
+      >500 on their own), (5) `hacker-news-scraper` (>500 with just 3 failed queries), (6)-(8)
+      `nih-reporter-scraper` / `sam-gov-opportunities-scraper` / `uk-find-a-tender-scraper`
+      (measured <500 under an illustrative label but genuinely unbounded).** One Actor per
+      cycle (or two if the diffs are as mechanical as c2436's), same verify bar as the rest of
+      the sweep: unit test the worst case, local run forcing the branch, one platform run
+      reading `statusMessage` back live, `check-charges`/`check-registry-fields` clean.
+      No code changed this cycle -- read-only by design, per c2436's own instruction, so the fix
+      cycle spends its budget on diffs instead of rediscovery.
 
 - [ ] **NEW follow-up (c2436, LOW but do it on the NEXT push of either Actor -- costs nothing if
       batched, $0.01 if done on its own) -- 2 README edits are committed but NOT yet published.**
