@@ -58690,3 +58690,869 @@ NEXT (cycle 1916 — BUILD slot, 1916 % 3 == 1).
 
 
 
+
+## Archived by cycle 2411 (sonnet-5), 2026-10-29 -- tasks/queue.md had grown to 1291 lines / 111.9KB, projected past the 150KB warn line before check-doc-size's next scheduled look (24c). check-doc-size itself recommended trimming proactively in a QUALITY slot; 2411%3==2 is that slot -- this was the exact item c2408 queued "do this FIRST in the next QUALITY slot (c2411)". The live file keeps the 3 most recent DONE blocks that represent real shipped code (2409 digestMode, 2406 tmTypes, 2403 remote-jobs worldwide-exemption); the other cycles in STATUS.md's kept 2406..2410 window (2407/2408/2410) never added a queue.md DONE block of their own. ALL 18 genuinely-still-live open items were HOISTED: the c2408/c2410 partial-bad-seed sweep in progress, the c2396 notice-by-id (LOW) and groupBy (closed-do-not-build) items, the c2392 postedFrom/postedTo follow-up, the c2388 trigger-gated follow-up, the c2385 sub20-watch item, the c2383 scope-count standing method, the c2380 growing-niches follow-up, and the 10 long-standing tail items (dev.to c2368, ext_bad30d tripwire c2336, feed-pickup c2332, scholarship c2312, publish-before-push process lesson, tool-page-CTA c2276, ack-staleness c2196, revenue-trigger c2168/c2268, DMARC-accumulate c2371, audit-due-yourself process lesson c2120). The c2408 doc-trim item itself (the one being executed this cycle) is dropped from the live file entirely, replaced by this cycle's own fresh DONE block (prepended after this script runs) -- its content is superseded by the real trim having happened, not merely resolved-in-place. TWO open items were archived as CLOSED-BUT-UNCHECKED rather than hoisted: the ARCHIVED original c2407 digestMode scoping note and the ARCHIVED original c2402 worldwide-exemption scoping note, both explicitly superseded by their kept DONE blocks above (2409, 2403) which already summarize them. Everything else -- every other DONE block older than the kept set -- moved here verbatim, in original order.
+
+
+- [ ] **ARCHIVED (superseded by the DONE block above) -- original c2407 scoping note, kept for the
+      record below.**
+      MEDIUM priority, scoped, ready for the next BUILD cycle: ship an
+      optional `digestMode`/`digest` output on `uk-find-a-tender-scraper`, a markdown summary of
+      the run's results (grouped by `sources`/`stages`, counts, top-N notices with title/buyer/
+      value/deadline/link) written to the key-value store, mirroring the one real schema gap
+      found this cycle.** Found via the feature-gap-diff method (input schema fetched live via
+      `GET /v2/acts/<owner>~<slug>/builds/<latest buildId>`, not the Store page) against TWO
+      untried rivals: `ciel_labs/uk-government-tenders-contracts-finder` (the niche's price
+      leader, 9 fields) and `neverempty/uk-tenders-scraper` (12 fields, explicitly claims
+      cross-portal dedup like us). **Neither turned up a gap** -- both are proper subsets of our
+      existing fields (`sources`/`stages`/`cpvCodes`/`dateFrom`/`dateTo`/`regions`/`buyerName`/
+      `minValueGbp`/`maxValueGbp`/`openOnly`/`maxResults`) and our own OCID+id dedup (`src/main.js`
+      ~L960-985) is already more careful than either rival's description claims (we key watch
+      identity on noticeId specifically so a later award/update sharing an OCID with an
+      already-delivered tender notice is not silently swallowed -- see the comment at L980-985).
+      A THIRD rival, `fetchwerk/uk-tenders-scraper`, has a real differently-shaped feature: a
+      `mode: 'search' | 'digest'` input where `digest` adds a markdown summary document to the
+      key-value store (key `DIGEST`) alongside the normal dataset rows -- confirmed via its own
+      live input schema fetched 2026-10-29 (`GET /v2/acts/fetchwerk~uk-tenders-scraper`, then
+      `/builds/<taggedBuilds.latest.buildId>` -- re-resolve the buildId fresh at build time, do
+      not reuse one from this note, builds get superseded). Confirmed we have NO digest/markdown
+      output anywhere in `uk-find-a-tender-scraper/src/main.js`
+      (`grep -n "digest\|markdown\|DIGEST"` -> only an unrelated sha1 `.digest('hex')` call).
+      **Why this is worth building, not just a knob**: the README (line 119) already records that
+      `fetchwerk` charges a separate **$0.05 one-time charge** for turning digest mode on, i.e. a
+      real rival has already proven buyers will pay for this shape as a DISTINCT charge event, not
+      a free toggle -- so this should ship as our fleet's SECOND multi-event Actor (precedent:
+      `shopify-products-scraper/src/main.js` already has 2 distinct `Actor.charge({eventName...})`
+      calls -- read that file first for the registration pattern. Our Actor currently has exactly
+      one event, `result`.). **Steps for the build cycle**: (1) re-probe `fetchwerk`'s current
+      schema/price live (do not trust this note's numbers if stale), (2) design the markdown
+      template (reuse the existing per-notice fields already in our output, no new upstream calls
+      -- this is pure post-processing over rows already fetched, so it is cheap and safe), (3)
+      register the new charge event via `apify-admin`/Console pricing config BEFORE wiring
+      `Actor.charge` for it (a charge call for an unregistered event fails/throws -- verify this
+      against the shopify precedent), (4) wire `Actor.setValue('DIGEST', markdown)` gated on the
+      new boolean input, only when the run actually produced >=1 row, (5) update README (feature
+      bullet, input table, FAQ, pricing section) and `registry.json`/site, (6) verify on a real
+      platform run that the KV store actually holds the digest and the new charge event fires
+      once per run (not once per row). **Do not build blind** -- this is the standard
+      probe-before-build discipline the fleet has used since c2394.
+      **Preflight this cycle (non-build slot, `2407%3==1`):** `checks-due` NONE DUE (soonest
+      `store-anon-rank` next cycle); `audit-due --all` NONE DUE; `ext_bad30d` unchanged (756/2
+      ok/bad, same as c2406, no new failures); inbox 10 checked, 0 new actionable mail (both owner
+      threads `dc593cfb`/`2b237f1b` re-confirmed long-resolved -- Apify identity verification done
+      since fleet is at 25 public Actors, CourtListener token live since c2362 -- rest is DMARC +
+      vendor/rental spam, newest still `202905fb`); `bin/usage-trend --since 2026-10-22` showed
+      `uk-find-a-tender-scraper` +4 runs30d, the largest deviation among this cycle's untried
+      gap-diff candidates (full list in the c2401 entry below) after `trademark-search-scraper`
+      (+18, already done c2404/2406) -- that is why this Actor was picked. Services/site healthy
+      (`/`, `/tools`, `/pricing` all 200); `HEAD == origin/main` (`68c18e40`) before/after (no code
+      changes this cycle, probe-only). $0 spent, 0 code shipped, 0 new Actors, no owner email
+      warranted (no revenue event, no owner-only blocker).
+
+
+
+- [x] **DONE cycle 2405 (QUALITY/GROWTH slot, `2405%3==2`) -- ran the one DUE fleet check
+      (`check-citable`: CLEAN, 24 tools cards + 6 pricing cards + all blog posts carry their own
+      Actor's apify.com URL as text, recorded, next due c2741) and the PLAYBOOK's two standing
+      QUALITY-cycle tools (`devto-comments`: 25 articles/13 inbound/0 unanswered; `check-disclosure`:
+      88 site posts + 25 dev.to articles/0 missing, both recorded). `audit-due --all` NONE DUE
+      (explicitly says spend the cycle on growth/quality instead). Revenue/inbox/services all
+      unchanged/healthy -- see `state/STATUS.md`.**
+      **Followed up on c2404's flagged stale `dltik` user-count and found a second, independent
+      stale claim in the same README.** Ran `bin/check-competitor-claims --only
+      trademark-search-scraper`: it flagged `memo23/uspto-trademark-scraper` as stale (README said
+      43, live ~47-48) -- a claim c2404's note never mentioned. Verified both live via
+      `bin/apify-admin store`: `dltik/euipo-trademarks-scraper` = 148 (confirms c2404's figure),
+      `memo23/uspto-trademark-scraper` = 47. Fixed both numbers in
+      `actors/trademark-search-scraper/README.md` (141->148, 43->47 with updated "re-verified live"
+      date). Re-ran the checker clean (0 stale of 22 counts / 17 paragraphs) and
+      `check-pricing`/`check-registry-fields` fleet-wide, both still 0 drift. Confirmed this README
+      section isn't rendered on the live site (no restart needed); `/tools/trademark-search-scraper`
+      re-confirmed 200. **Deliberately did NOT ship the c2404 `tmTypes` build item** -- it's the
+      best next BUILD-cycle item, fully scoped below, but this was a QUALITY/GROWTH slot per the
+      established rotation. $0 spent (one README edit, free `apify-admin` reads), 0 code shipped,
+      0 new Actors, no owner email warranted.
+
+- [x] **DONE cycle 2404 (non-build slot, `2404%3==1`) -- ran the one DUE fleet check
+      (`git-maintain`: loose=1339/57MiB, packs=1/103MiB, both under the 4000-object/64MiB
+      thresholds, nothing to do, recorded, next due c2452) and rotated the c2401 feature-gap-diff
+      method to `trademark-search-scraper` -- picked because it is BOTH on c2401's untried list
+      AND carries the fleet's strongest live demand deviation.** Preflight: `audit-due --all`
+      NONE DUE (soonest `website-screenshot-scraper` c2417); services/site healthy (`/`, `/tools`,
+      `/pricing` all 200); `HEAD == origin/main` (`36564910`) before edits; inbox 10 checked, 0 new
+      mail (identical list to c2403 -- both owner threads long-resolved, rest DMARC + vendor spam);
+      revenue unchanged in substance (25 Actors, 47 users, 761 runs30d, 759/2 ok/bad, 0 bkmk/0
+      rev/$0 booked, same standing no-earnings-endpoint caveat). c2336 `ext_bad30d` tripwire:
+      still 2, no new failures.
+      **Demand signal that drove the target pick (`bin/usage-trend --since 2026-10-22`):**
+      `trademark-search-scraper` went 35->54 runs30d (+19 in 7d, ~2.7/day against the fleet's ~1/day
+      non-billable baseline) and users 2->3 -- the largest per-Actor deviation in the fleet, which is
+      the one metric `bin/revenue`'s own caveat names as USABLE. Next two were `uk-find-a-tender`
+      (+4) and `shopify-products` (+1 user). Still $0 booked, so this is attention, not proven
+      revenue -- but it is the right place to spend a gap-diff.
+      **Confirmed the input-schema diff was genuinely untried here** (no `input schema`/
+      `field-for-field` mention anywhere in its README, unlike the 4 Actors c2394 caught being
+      mis-flagged as never-diffed). Fetched `dltik/euipo-trademarks-scraper`'s REAL input schema
+      via `GET /v2/acts/dltik~euipo-trademarks-scraper/builds/HT4pM7y8gafJcIPVq` (not the Store
+      page): **26 fields against our 9.** Note `dltik` is now **148 users**, not the 73/141 figures
+      our README still carries in two places -- see the follow-up below.
+      **Ranked gap verdict, each probed live rather than assumed:**
+      1. `tmTypes` (filter by mark type) -- **REAL, BUILDABLE, SERVER-SIDE, and the best next
+         build.** Probed: TMview honors `fTMType` natively, same shape as the `fTMStatus`/
+         `fNiceClass`/`fOffices` params we already send. `basicSearch:'solar'` baseline 69710 ->
+         28833 for `['Word']`. So it costs the buyer nothing extra and wastes no fetching -- it is
+         NOT a post-fetch filter. Fully scoped below.
+      2. `applicationDateFrom`/`applicationDateTo` -- REAL and buildable as a post-fetch filter;
+         we already emit `applicationDate` (sampled live, ISO form `1973-03-08T12:00:00.000Z`).
+         Same shape as the shipped `sam-gov minAwardAmount` / `remote-jobs locationKeyword`
+         filters. Not probed for a server-side equivalent -- do that first, as with `fTMType`.
+      3. `applicationNumbers`/`registrationNumbers` direct lookup -- we already emit both fields,
+         but an exact-number lookup done post-fetch is wasteful by construction, so this is only
+         worth building if TMview honors a server-side number param. NOT probed yet.
+      4. `applicantName` (owner-portfolio search) -- **REAL, HIGH-VALUE, and NOT BUILDABLE on our
+         current upstream. Do not attempt it without a new upstream.** This is the most valuable
+         gap found (owner-portfolio mapping is a top trademark use case, and our own README's
+         "Competitor portfolio mapping" use case currently *fakes* it by telling the buyer to
+         search the brand name and eyeball `applicantNames` -- which cannot find a mark whose name
+         differs from its owner's). But TMview's public `/tmview/api/search/results` exposes no
+         applicant parameter at all: **21 candidate param names, 1 nested shape and 3 alternate
+         endpoints all negative**, with a POSITIVE control (`fOffices:['EM']` -> 2799053, honored)
+         and a NEGATIVE control (fake key -> baseline) both behaving correctly. `dltik` must be
+         using a different upstream (its own `enrichApplicant` copy mentions resolving French
+         applicants live, so it is multi-upstream). Next step if ever wanted: probe EUIPO eSearch
+         and USPTO for a real owner-search endpoint -- do NOT ship an owner search backed by a
+         post-fetch filter over a name search, it would silently under-return.
+      5. Deliberate non-builds: `enrichDetails`/`enrichApplicant`/`analyzeClearance`/
+         `referenceMark` are `dltik`'s separately-billed upsells ($0.01/$0.005/$0.02) and
+         `analyzeClearance` is AI scoring -- which we cannot offer at all under CLAUDE.md rule 2
+         (no Claude in product runtime, `ANTHROPIC_API_KEY` unset). `incrementalMode`/`stateKey`/
+         `includeUnchanged` are already covered by our `watchLabel`/`watchChanges`.
+         `detailConcurrency`/`searchConcurrency`/`pageSize`/`proxyConfig` are knobs, not features.
+         `fuzzySearch` is a genuine difference in kind from our `matchMode` (phonetic vs
+         substring/whole-word) -- unprobed, lower value than 1-3.
+      **Two gotchas recorded in LEARNINGS c2404, both caught the hard way this cycle** -- TMview
+      silently ignores unknown params and answers with the WHOLE 142,628,506-row register, and my
+      own first probe pass produced three false "HONORED" hits that a fake-key negative control
+      killed. $0 spent, 0 code shipped (probe-first discipline, same as c2394/c2396/c2399/c2401/
+      c2402), 0 new Actors, no owner email warranted (no revenue event, no owner-only blocker).
+
+
+
+- [ ] **ARCHIVED (superseded by the DONE block above) -- original c2402 scoping note, kept
+      verbatim for the record below.**
+      Rotated the feature-gap-diff method to `remote-jobs-scraper`, closing the one open item its
+      own README had flagged since cycle 1319 ("re-verify a structured region selector against
+      `datafetch_labs`'s actual input schema before conceding or closing it"). Fetched
+      `datafetch_labs/remote-jobs-scraper`'s real input schema via
+      `GET /v2/acts/datafetch_labs~remote-jobs-scraper/builds/WOJnNnFswvD603fQg` (13 fields).
+      **Verdict: it is NOT a structured region selector** -- `locations` is a plain
+      `stringList`-editor array (free text, same substring-matching shape as our own
+      `locationKeyword`), so cycle 1319's open question is answered and can close as "not a
+      feature gap in kind." **But comparing it surfaced a real, different, data-confirmed gap**:
+      the rival's schema documents "Worldwide/anywhere jobs are always kept" regardless of the
+      `locations` filter, and a local test run of our own Actor (`maxResults:10`, all 6
+      non-LinkedIn sources, see `storage/datasets/default/*.json` in the Actor dir) sampled real
+      `location` field values and found **8 rows literally `"Worldwide"`, 10 `"Anywhere in the
+      World"`, 4 `"Global"`** among 100 delivered rows. Our `keep()` (`src/main.js:929`) does
+      `row.location.toLowerCase().includes(locationKeyword)` with no exemption, so a buyer running
+      `locationKeyword: "United States"` to find US-open roles **silently drops every one of those
+      worldwide-open rows today** -- demonstrated, not assumed, with real sampled data in the same
+      run. **Scoped fix (small, no input-schema change needed):** add a fixed case-insensitive
+      "always-kept" check (`/\b(worldwide|anywhere in the world|global)\b/i` or similar, verify
+      against a larger sample first -- `"Remote"`/`"Homeoffice"` in the sample are NOT global
+      exemptions, they're board-generic filler text, so the pattern must stay narrow) in `keep()`
+      ahead of the `locationKeyword` substring check, mirroring the rival's documented behavior.
+      **Separately, lower priority:** the rival's `locations` field is an array (OR-matched), ours
+      is a single string -- upgrading `locationKeyword` to accept multiple comma-separated terms
+      would be a real but smaller usability win; do the worldwide-exemption fix first since it's
+      the one proven to produce a wrong (silently incomplete) result today, not just a convenience
+      gap. README's cycle-1319 paragraph (`src/README.md` "UPDATE (cycle 1319)...") needs a
+      follow-up correction noting the region-selector question is now closed and the worldwide-
+      exemption gap is the real finding. $0 spent, 0 code shipped this cycle (per the established
+      c2394/c2396/c2399 probe-before-build discipline), no owner email warranted.
+
+- [x] **DONE cycle 2401 (BUILD slot) -- ran the 2 DUE fleet checks (`check-retired-disclosure`
+      0 issues, `check-real-fields` 0 drift, both recorded, next due c2737) and the c2336
+      `ext_bad30d` tripwire (no new events beyond the known 4). With the SAM.gov rival-gap list
+      and growing-niche list both exhausted, applied the feature-gap-diff method to a NEW Actor:
+      `grants-gov-scraper` (least-recently-touched non-retired README) against its closest live
+      rival `soilair/grants-gov-api`'s actual input schema (fetched via API, not Store copy).
+      **No real gap found, confirmed not assumed**: rival's only two fields we lack are
+      `verifyStability` (internal benchmark toggle, not a buyer feature) and `includeContact`
+      (persists agency contact name/email) -- the latter is exactly the PII class our own
+      `normalizeEnriched()` already deliberately refuses to ship (`src/main.js:801-813`,
+      CLAUDE.md rule 1). Shipped no code, same discipline as c2394/c2396. $0 spent, 0 new Actors,
+      no owner email warranted. Full detail in `state/STATUS.md`.
+      **NEXT BUILD/QUALITY cycle: rotate the feature-gap-diff method to a different Actor, not
+      `grants-gov-scraper` or `sam-gov-opportunities-scraper` again.** Untried candidates:
+      `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`, `fec-campaign-finance-scraper`,
+      `us-federal-awards-scraper`, `nih-reporter-scraper`, `remote-jobs-scraper`,
+      `sec-insider-trades-scraper`, `trademark-search-scraper`, `clinicaltrials-scraper`,
+      `substack-scraper`, `shopify-products-scraper`. Pick one, name its top-1-2 live rivals
+      from its own README, fetch each rival's real input schema via
+      `GET /v2/acts/<owner>~<slug>/builds/<latest buildId>` (NOT the Store marketing page), and
+      diff field-for-field. If a real buildable gap turns up, scope it precisely (field name,
+      data source, a gotcha if one exists) rather than building blind, per the established
+      c2391->c2400 pattern on `sam-gov-opportunities-scraper`.
+
+- [x] **DONE cycle 2399 (QUALITY/GROWTH slot) -- scoped `tiger19935`'s incumbent-award lookback on
+      `sam-gov-opportunities-scraper`, the last open item from the c2391 rival-gap list, by probing
+      USAspending live before writing any code.** Full detail in the new entry below (search for
+      "c2399, QUALITY/GROWTH slot, MEDIUM priority") and in `state/STATUS.md`. Confirmed buildable
+      (reuses `us-federal-awards-scraper`'s existing `spending_by_award`/`naics_codes`/
+      `TOPTIER_AGENCY_NAMES` machinery) and found two real gotchas first (NAICS needs
+      `enrichDetail`; USAspending's `time_period` keys off last-modification date, not award start
+      date) that a blind build would have missed. $0 spent, 0 code changes, 0 new Actors.
+
+- [x] **DONE cycle 2394 (BUILD slot) -- scoped the still-open `j0401` rival gap on
+      `sam-gov-opportunities-scraper` (`solicitationNumber` lookup) by probing the real API live
+      FIRST, rather than guessing a param name and shipping blind.** Preflight: nothing
+      mechanically due (`checks-due`/`audit-due --all` both NONE DUE, soonest
+      `check-retired-disclosure` c2401 / `website-screenshot-scraper` audit c2417); revenue
+      unchanged in substance (25 Actors/47 users/778 runs30d/776-2 ok-bad/0 bkmk/0 rev/$0 booked,
+      same `revenue`-command caveats as every prior cycle -- no earnings endpoint exists, this is
+      an inference from absent buyer signal, not a direct reading); inbox 10 checked, 0 new mail
+      (same list as c2390-2393, both owner threads long-resolved, rest DMARC + vendor spam);
+      services/site healthy (`/` and `/tools` both 200); `HEAD == origin/main` (`79a085de`)
+      before edits, only routine revenue caches dirty. **Also checked c2393's handed-off lead
+      first and found it stale:** the 4 Actors it named as "not yet feature-diffed against
+      rivals' input schemas" (`website-screenshot-scraper`, `fda-recall-scraper`,
+      `apple-podcasts-scraper`, `hacker-news-scraper`) have in fact all had exactly that
+      comparison done, repeatedly and recently -- `hacker-news-scraper`'s README documents three
+      input-schema gaps closed against `ryanclinton` on 2026-10-21/22, `apple-podcasts-scraper`
+      and `website-screenshot-scraper` both carry live-schema-read diff paragraphs dated
+      2026-10-21/22/24, `fda-recall-scraper`'s "no remaining input-parity gap" line is dated
+      2026-09-18. c2393's framing (never diffed) does not match the files; corrected here so the
+      next idle QUALITY slot doesn't re-trust it.
+      **Main finding:** probed SAM.gov's actual search endpoint (`sam.gov/api/prod/sgs/v1/search/`,
+      unauthenticated, same one `main.js` already reads) with real curl requests before writing
+      any code. `solnum=<a real solicitation number>` added to a query changed `totalElements` by
+      exactly 0 -- the param is silently dropped, not applied; the fleet's own
+      `assertFilterNamesApplied`-style canary logic (a dropped name returns the unfiltered index,
+      a real one fails closed to 0) confirms the same conclusion from the other direction. So
+      `j0401`'s "solicitationNumber lookup" cannot be built by just adding a `solnum` query param
+      -- that would ship a filter that silently does nothing, charging for an unfiltered run while
+      claiming to be scoped. What DOES work, verified live: `q=<solicitation number>` (our
+      existing `keyword` field) full-text-matches it -- `q=SPRRA222R0016` returned exactly the 3
+      real rows carrying that `cleanSolicitationNumber` out of 2.5M total -- so a buyer can
+      already do this today via `keyword`, just without a guarantee against false-positive
+      substring hits elsewhere in the title/description. **Scoped follow-up filed below** for
+      whoever next wants to close this gap for real: a post-fetch exact-match filter (send the
+      value as `q`, then drop any fetched row whose own `cleanSolicitationNumber` isn't a
+      case-insensitive exact match, before `pushResult()`) -- same pre-charge shape as the c2392
+      date-window work, opportunities-index only. **Deliberately not implemented this cycle**:
+      wiring it in correctly (ignored-filter warnings on wd/cfda/exclusions, `guardedFilterNames`,
+      watch fingerprint, README, a real platform verification run) is a full build task in its own
+      right, the same size as c2392's date-window cycle, and guessing the param name was the part
+      that needed de-risking before anyone spends a build on it. Recorded in
+      `notes/LEARNINGS.md` (Cycle 2394) so the "guess `solnum` and ship it" mistake can't happen
+      blind. $0 spent (a handful of free curl probes), 0 code/README changes, 0 new Actors, no
+      owner email warranted.
+
+- [x] **DONE cycle 2395 (BUILD slot) -- shipped the c2394 follow-up: `solicitationNumber` exact-match
+      lookup on `sam-gov-opportunities-scraper`, build 0.1.23/0.1.75, platform-verified at row level.**
+      Preflight: nothing mechanically due (`checks-due`/`audit-due --all` both NONE DUE, soonest
+      `check-retired-disclosure` c2401); revenue unchanged (25/47/778/776-2/0/0/$0); inbox 10
+      checked, 0 new mail (same list as c2390-2394); services/site healthy; `HEAD == origin/main`
+      (`7a8a7acb`) before edits. Implemented exactly as scoped in the prior entry, as a pre-charge
+      post-fetch filter: the cleaned input (punctuation stripped, uppercased -- matching how SAM.gov
+      builds its own `cleanSolicitationNumber`) is sent as `q` to scope the walk (overriding
+      `keyword`, with a warning if both were given), then any fetched row whose own
+      `cleanSolicitationNumber` doesn't case-insensitively match is dropped before `pushResult()`,
+      counted as `solicitationNumberMismatch` or `solicitationNumberMissing`. Fails CLOSED (not
+      warn-and-ignore) on wd/cfda/exclusions, per LEARNINGS cycle 2392 lesson 5 (brand-new field,
+      nothing depends on it yet). Two bugs caught and fixed before shipping, both via live local
+      runs rather than reading the diff: (1) sending the RAW value as `q` measurably widens the walk
+      with a false positive (`q=SPRRA2-22-R-0016` -> 4 matches incl. one-letter-off neighbour row;
+      cleaned `q=SPRRA222R0016` -> exactly 3), so the cleaned form is what's sent upstream, not the
+      raw one; (2) the zero-match status message's `appliedFilters` list unconditionally named
+      `keyword` even when `solicitationNumber` had silently overridden it in the actual SAM.gov
+      request -- a real false-applied-filter claim, same class as c1637/c2391, caught by
+      deliberately constructing a genuine 0-match run and reading the live status message. Verified
+      live, not by reading the diff: exact lookup 3/3 rows all carrying the matching
+      `cleanSolicitationNumber` (confirmed again on the real Apify platform run, not just locally);
+      a weak 4-character substring lookup walked to the 10,000-row depth cap and correctly dropped
+      9,574 mismatches + 424 missing-field rows, delivering only the 2 true exact matches;
+      unsupported-dataType and punctuation-only inputs both stopped pre-request with 0 rows/0
+      charge. README (new bullet, input-table row, FAQ entry, sample-output field, two correction
+      paragraphs marking this half of the `j0401` gap closed), `.actor/input_schema.json`,
+      `.actor/dataset_schema.json` (new `cleanSolicitationNumber` output field) and
+      `registry.json` (summary + `output_fields`) all updated and pushed; site restarted,
+      `/tools/sam-gov-opportunities-scraper` 200 with new copy. `check-pricing` 0 drift;
+      `check-competitor-claims --only`/`check-meta-fields`/`check-blog-claims` 0 stale;
+      `check-registry-fields`/`check-readme-samples --only` 0 drift (both caught real omissions
+      during this cycle, fixed before commit). 7 reusable lessons in LEARNINGS (Cycle 2395).
+      ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors, no owner email warranted.
+
+- [x] **DONE cycle 2396 (QUALITY/GROWTH slot) -- PROBED all three of c2395's unscoped SAM.gov
+      rival-feature gaps live; no code shipped, which was the point.** Preflight: nothing
+      mechanically due (`checks-due`/`audit-due --all` both NONE DUE, soonest
+      `check-retired-disclosure` c2401 / `website-screenshot-scraper` audit c2417); revenue
+      unchanged in substance (25 Actors/47 users/778 runs30d/776-2 ok-bad/0 bkmk/0 rev/$0 booked,
+      same `revenue` caveats -- no earnings endpoint exists, $0 is an inference from absent buyer
+      signal); inbox 10 checked, 0 new mail (same list as c2390-2395, both owner threads
+      long-resolved, rest DMARC + vendor spam); services/site healthy (`/` and `/tools` both 200);
+      `HEAD == origin/main` (`1fb93e65`) and tree clean before edits. Full measurements in
+      LEARNINGS "Cycle 2396". Headline: **the no-filter baseline on `index=opp` is
+      `totalElements = 5,649,458`** -- that exact number is the fail-open tell for a dropped param
+      name, reuse it instead of re-deriving. Verdicts below, each now scoped enough to build
+      without further probing.
+
+- [x] **DONE cycle 2397 (BUILD slot, `2397%3==0`) -- shipped the c2396 follow-up: `notice_id` fast
+      path on `sam-gov-opportunities-scraper`'s `solicitationNumber` filter, build 0.1.76,
+      platform-verified at row level.** Preflight: nothing mechanically due (`checks-due`/
+      `audit-due --all` both NONE DUE, soonest `check-retired-disclosure` c2401); revenue unchanged
+      (25/47/778/776-2/0/0/$0); inbox 10 checked, 0 new mail (same list as c2390-2396); services/
+      site healthy; `HEAD == origin/main` (`5a48ea60`) before edits. Implemented exactly as scoped:
+      one `size=1` probe request with `notice_id=<raw user input>` before the real walk; a match
+      sets `noticeIdFastPathActive` and `buildSearchUrl` sends `notice_id=<raw>` for the whole walk
+      instead of `q=<clean>`; no match (0 rows) falls back to the pre-existing `q=<clean>` walk
+      unchanged. `matchesSolicitationNumber` (the post-fetch exact filter) still runs on every row
+      regardless of path, per the queue note -- `notice_id` is an efficiency win, never trusted
+      unchecked. **One correctness risk caught before shipping, not in the original scoping note:**
+      a naive `probeTotal > 0` check cannot tell "the raw value matched" apart from "SAM.gov
+      silently dropped the `notice_id` param name" (this endpoint fails OPEN on dropped names, per
+      c2396's own 5,649,458 baseline) -- a future drift would otherwise turn a 1-row exact lookup
+      into the whole unfiltered index, billed in full, while the probe still reads `> 0` and looks
+      like a hit. Fixed by adding `notice_id` to `guardedFilterNames()` (gated on
+      `noticeIdFastPathActive`, same canary mechanism every other server-side filter here already
+      gets): `assertFilterNamesApplied()` now probes `notice_id=<canary>` and throws before any row
+      is fetched if that ever returns non-zero. Verified live, not by reading the diff: local runs
+      confirmed (1) `1232SA27Q0007` (exact raw form) hits the fast path, matches `notice_id`
+      server-side, delivers 1/1 row in one page; (2) `1232sa27q0007` (lowercase) misses `notice_id`
+      and falls back to the `q=<clean>` walk, delivering the identical row; (3) `SPRRA2-22-R-0016`
+      hits the fast path (3 server-side matches) but the real walk's own `activeOnly` default then
+      narrows those 3 (no longer active) to 0 -- confirmed this is pre-existing `is_active`
+      behaviour, not a regression, by re-running with `activeOnly:false` and getting all 3 back;
+      (4) wage-determinations still fails closed pre-request on `solicitationNumber`, never reaching
+      the probe. Then one platform run on build 0.1.76 (`1232SA27Q0007`): 1/1 row delivered,
+      `notice_id fast path: matched server-side (1 row(s))` and the canary-verified log line both
+      present, dataset item pulled back over the API confirms `solicitationNumber`/
+      `cleanSolicitationNumber` both `"1232SA27Q0007"`. README updated (feature bullet, input-table
+      row, a new dated "Third follow-up" correction paragraph, and the FAQ entry rewritten -- it had
+      flatly claimed "SAM.gov's backend has no real exact-match parameter for this", which `notice_id`
+      now makes false, so leaving it would have been the same class of stale self-claim this fleet
+      keeps catching elsewhere); `RUN_SUMMARY` gained `noticeIdFastPath` (null when `solicitationNumber`
+      unset). No `dataset_schema.json`/`registry.json` change needed -- no dataset row field added,
+      and the registry summary's existing `solicitationNumber` description already covers this
+      transparently. `check-readme-samples`/`check-registry-fields`/`check-pricing` all 0 drift.
+      ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors, no owner email warranted.
+      **Still open:** `j0401`'s single-`noticeId`-by-id mode and `groupBy` aggregates (closed as
+      do-not-build), `tiger19935`'s `minAwardAmount`/`maxAwardAmount` (next item below, still
+      LOW-priority and buildable).
+
+- [x] **DONE cycle 2398 (BUILD slot, `2398%3==1`) -- shipped the c2396 follow-up:
+      `minAwardAmount`/`maxAwardAmount` on `sam-gov-opportunities-scraper`, build 0.1.77/0.1.78,
+      platform-verified at row level.** Preflight: nothing mechanically due (`checks-due`/
+      `audit-due --all` both NONE DUE, soonest `check-retired-disclosure` c2401); revenue
+      unchanged (25/47/778/776-2/0/0/$0); inbox 10 checked, 0 new mail (same list as c2390-2397,
+      both owner threads long-resolved, rest DMARC + vendor spam); services/site healthy; `HEAD ==
+      origin/main` (`0b609a4a`) before edits. Implemented exactly as scoped: a post-fetch range
+      filter inside the fetch walk, before `pushResult()`, reusing the existing
+      `postFetchFilterActive`/`...DroppedCount`/`...Text` shared helpers (now covering three
+      filters, not two) rather than adding a third parallel mechanism. `awardAmount` added to
+      `normalizeRow`'s output (`row.award?.amount`, null on every non-award notice type). Fails
+      CLOSED on `isWd`/`isCfda`/`isExclusions` (no award object exists there at all, same
+      LEARNINGS c2392 lesson-5 treatment as the other two post-fetch filters), and on an inverted
+      range (`minAwardAmount > maxAwardAmount`), both pre-request with 0 charge. Added to
+      `watchCriteria`'s fingerprint (changes which rows match) but deliberately NOT added as a
+      watched/change-blind field -- that would be new scope (watching award-amount edits) beyond
+      what was asked. Took the "gate to notice_type=a" queue suggestion as an ADVISORY log line
+      instead of a hard gate: a buyer filtering a broad query still gets a correct (if mostly
+      `awardAmountMissing`) result rather than a surprise refusal, with a one-line nudge to add
+      `noticeTypes: ["a"]`. **Verified by real runs, not by reading the diff:** a `noticeTypes:
+      ["a"]`-scoped local run delivered 20/20 rows all with `awardAmount` inside
+      [100000,500000], 115 out-of-range dropped, 0 missing; an unscoped run correctly dropped 6
+      out-of-range + 176 missing with the advisory note logged; an inverted range and an
+      unsupported dataType (`wage-determinations-dbra`) both failed pre-request with 0 rows/0
+      charge. One real Apify platform run (build 0.1.77, `minAwardAmount:150000,
+      maxAwardAmount:400000, noticeTypes:["a"]`): 8/8 delivered rows pulled back over the dataset
+      API (not trusted from the log) all fall inside [150000,400000], `RUN_SUMMARY.awardAmountDropped:17`/
+      `.awardAmountMissing:0` match. **One self-inflicted near-miss, caught and fixed before closing:**
+      the README FAQ's "since build N" self-reference was written before the first push (guessed
+      0.1.24, the package.json version) -- wrong value, since this fleet's "build N" convention is
+      the Apify platform build counter (sequential across pushes, independent of package.json
+      semver), not the semver string. Fixed to the real build number (0.1.77) and re-pushed
+      (0.1.78, a docs-only build) rather than leave a stale self-claim live -- the same bug class
+      this README has been corrected for before. `awardAmount` added to `.actor/dataset_schema.json`
+      and `registry.json` (`output_fields` + sample + summary sentence) by hand, NOT via
+      `bin/gen-output-schema` -- that script's field-presence union only covers types already
+      *seen* in the local scan, not fields entirely *absent* from it (e.g. wd/cfda/exclusions-only
+      fields), so running it from an opportunities-only local test would have silently deleted 47
+      real fields from the shared multi-dataType schema (75 -> 28). Caught before commit by
+      diffing field counts; reverted and hand-edited instead. **Worth a LEARNINGS entry** for
+      whoever next touches this Actor's schema with a narrow local test. README (feature bullet,
+      input-table row, FAQ entry, sample-output field) and `package.json` (0.1.23 -> 0.1.24)
+      updated. `check-pricing`/`check-registry-fields`/`check-readme-samples`/
+      `check-competitor-claims --only` all 0 drift. `/tools/sam-gov-opportunities-scraper`
+      re-confirmed 200 serving the new copy (grepped `minAwardAmount` live on the page). ~$0.01
+      spent (2 builds, one of them a docs-only self-reference fix + 1 capped platform run), 0 new
+      Actors, no owner email warranted. **Still open:** `j0401`'s single-notice-by-id mode (needs
+      `DETAIL_API` + 401-trap handling, build only if a buyer asks) and `groupBy` aggregates
+      (closed as do-not-build). `tiger19935`'s incumbent-award lookback (USAspending side, not yet
+      scoped) is the only unscoped item left from the c2391 rival-gap list.
+
+- [x] **DONE cycle 2400 (BUILD slot) -- SHIPPED `includeIncumbentAwards`/`incumbentYears` on
+      `sam-gov-opportunities-scraper` (build 0.1.79), closing the LAST open item on the c2391
+      rival-gap list.** c2399's scoping note (preserved below for the record) was accurate on both
+      gotchas; the build added three findings of its own, all in `notes/LEARNINGS.md` cycle 2400:
+      (1) USAspending's `agencies` filter returns **HTTP 200 with 0 results** for an unrecognised
+      agency name -- sending SAM.gov's own "VETERANS AFFAIRS, DEPARTMENT OF" through would have
+      reported "no incumbents" for every VA opportunity, so an unmatched name now DROPS to a
+      NAICS-only lookup labelled per row in `incumbentAwardsMatchedBy`; (2) the SAM<->USAspending
+      agency match key is the sorted significant-word set (`DEPT OF DEFENSE` == `Department of
+      Defense`), 13/13 real sampled names pass, and the no-anagram precondition is asserted in code
+      rather than claimed in a comment; (3) the second upstream got its own `lastIncumbentError`,
+      `incumbents-failed` reason and `RUN_SUMMARY.incumbentAwards.lastError` so a USAspending
+      outage is never reported as SAM.gov's fault. Verified locally (6-row run: 3 incumbents on
+      every row, 2 lookups / 4 cache hits proving the per-pair dedupe; `incumbentYears: 99` clamped
+      to 10; `exclusions` failed pre-request with 0 rows and 0 charge) and on the real Apify
+      platform (run `b5nphqMprIFwOscel`, build 0.1.79, dataset pulled back over the API: 3 rows
+      `naics+agency` with real EPA incumbents, 2 rows `no-naics` with `incumbentAwards: null` and
+      `detailLookupsFailed: 0` -- proving the null is a genuine missing NAICS, not a broken detail
+      call; `RUN_SUMMARY.incumbentAwards` = 1 lookup / 2 cache hits / 1 unique pair /
+      `rowsWithoutNaics: 2` / window 2021-10-29..2026-10-29 for `incumbentYears: 5`). Schema
+      hand-edited 76->79 fields per the c2398 union-schema lesson (NOT regenerated);
+      `registry.json` summary + `output_fields` updated and `check-registry-fields`/
+      `check-meta-fields` both clean; site re-confirmed serving the new copy. Build number was
+      predicted from the builds API before the README self-reference was written, so 0.1.79 was
+      correct on the first push -- ONE build (~$0.005) plus one capped platform run, no docs-only
+      re-push. **Also corrected a stale self-claim found in our own README** while editing: the
+      "Third follow-up" paragraph still listed `tiger19935`'s `minAwardAmount`/`maxAwardAmount` as
+      open, which c2398 had closed hours earlier.
+      **What is deliberately NOT in this build, if a buyer ever asks:** IDV vehicles (USAspending
+      rejects a request mixing award-type groups, so IDV_A..IDV_E would need a second request per
+      pair -- and the question answered is who performs the work, not who is on the vehicle);
+      sub-awards (`subawards: false`); and grants/loans. `INCUMBENTS_PER_LOOKUP` is hardcoded at 3
+      -- make it an input only if asked, since every extra award is free (same single request) but
+      widens the row.
+
+- [x] **SUPERSEDED by c2400 (scoping note kept for the record)
+      open item from the c2391 rival-gap list) -- `tiger19935`'s incumbent-award lookback on
+      `sam-gov-opportunities-scraper`.** Fetched `tiger19935/sam-gov-usaspending-contracts`'s LIVE
+      input schema (`GET /v2/acts/tiger19935~sam-gov-usaspending-contracts/builds/<id>`, build
+      0.1.1): `includeIncumbentAwards` (boolean) + `incumbentYears` (1-10, default 3) -- "For each
+      opportunity NAICS code, attach the largest recent USAspending awards (who won before) into
+      the field `incumbentAwards`. Matched by NAICS and, when the agency is recognised, by
+      top-tier agency. Not billed separately." Real buyer value: a capture manager sees who
+      currently holds the work before deciding whether to bid.
+      **Confirmed buildable with a live USAspending probe, not a guess:** `POST
+      api.usaspending.gov/api/v2/search/spending_by_award/` with `naics_codes: {require:
+      ["541511"]}`, `time_period`, `sort: "Award Amount"`, `order: "desc"`, `limit: 3` returned
+      real top-dollar awards (Northrop Grumman $1.27B, GDIT $902M, CACI $734M) -- the sort/filter
+      combo tiger19935's feature needs is real and already the exact mechanism
+      `us-federal-awards-scraper`'s `src/main.js` uses in production (same `naics_codes`,
+      `award_amounts`, `agencies`/`fundingAgencies` filter shapes, same `TOPTIER_AGENCY_NAMES`
+      fuzzy-match table for SAM.gov agency name -> USAspending top-tier agency name) -- reuse that
+      file's logic rather than re-deriving it.
+      **Two real gotchas found, both must be handled before shipping, neither obvious from the
+      rival's one-line description:**
+      1. **NAICS codes are NOT on the base search row.** Confirmed live (`curl .../sgs/v1/search/`
+         with `naics=541511` in the query -- the response row itself carries no `naics` key).
+         `sam-gov-opportunities-scraper`'s own `normalizeRow` already documents this:
+         `naicsCodes: null, // Detail-only fields, filled in only when enrichDetail is on`. So this
+         feature can only run on rows that already have `enrichDetail: true` set (an extra
+         per-row `DETAIL_API` call that already exists in this file) -- either force `enrichDetail`
+         on whenever `includeIncumbentAwards` is requested (extra latency/cost buyers should be
+         warned about in the README) or warn-and-skip rows without a NAICS code, same pattern as
+         the existing `awardAmountMissing` field.
+      2. **USAspending's `time_period` filters on the award's `action_date` (last
+         modification/obligation), NOT the award's own start date.** Measured live: a
+         `time_period` of 2023-10-29 to 2026-10-29 still returned a row with `"Start Date":
+         "2007-12-05"` -- a 2007 base contract with a recent option exercise/modification passes
+         a "last 3 years" filter. `incumbentYears` as a buyer-facing label like "look-back (years)"
+         reads as "awards that started recently", which is NOT what it measures -- the README must
+         say explicitly that the window is keyed to the award's most recent modification, not its
+         award date, or this becomes the same class of self-inflicted false claim this fleet keeps
+         correcting (c2391, c2393, c2398).
+      **Also worth doing for free while building:** many rows in one search result share the same
+      NAICS code (and often the same agency), so the USAspending lookup should be deduped per
+      unique NAICS+agency pair across the batch, not called once per opportunity row -- a broad
+      `keyword` search easily returns 50-200+ rows against a handful of distinct NAICS codes.
+      **Not done this cycle, deliberately:** this is a real cross-API enrichment feature (two
+      upstreams, a dedupe cache, a forced-`enrichDetail` interaction, and a README disclosure of
+      gotcha #2), the same size class as c2392's date-window build -- wiring and verifying it
+      belongs in a dedicated BUILD cycle, not rushed into this QUALITY/GROWTH slot. $0 spent (free
+      unauthenticated probes only), 0 code changes.
+
+
+
+- [x] **DONE cycle 2393 (QUALITY/GROWTH slot) -- re-derived the c2380 growing-niche candidate
+      list fresh with a broader grep and confirmed every real candidate is already freshly
+      resweapt, so no sweep was run (correctly, not for lack of trying).** Preflight: nothing
+      mechanically due (`checks-due`/`audit-due --all` both NONE DUE); revenue unchanged in
+      substance; inbox 10 checked, 0 new mail -- same list as c2390-2392 (both owner threads
+      long-resolved, rest DMARC + vendor spam); services/site healthy; `HEAD == origin/main`
+      `11b56bca` before edits. The previous "exhausted" calls (c2389/c2390) only grepped for the
+      narrow `N -> M ... listings` wording and found 1 match; broadening to any `N -> M` arrow
+      shape found **9** Actors with a recorded growth number: `ats-jobs-scraper`,
+      `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `sam-gov-opportunities-scraper`,
+      `federal-register-scraper`, `remote-jobs-scraper`, `trademark-search-scraper`,
+      `us-federal-awards-scraper`, `uk-find-a-tender-scraper`. Checked each one's own last inline
+      resweep date rather than assuming the grep alone proves staleness: `us-federal-awards-scraper`
+      was resweapt **yesterday** (2026-10-27, cycle 2303 -- 133->218 listings, 2 new undercutters
+      already disclosed and priced); `fec-campaign-finance-scraper` and `remote-jobs-scraper` were
+      both spot-resweapt **today** (cycles 2375/2376); `trademark-search-scraper`/
+      `federal-register-scraper`/`uk-find-a-tender-scraper` were done at c2384/c2389/c2380;
+      `clinicaltrials-scraper`'s last full pass (2026-10-09) shows the niche oscillating 120-128,
+      not a clean climb worth a dedicated resweep. **Every genuine candidate is covered; nothing
+      here was stale.** Also closed the loose end from c2385's note that `scrapesage/sam-gov-scraper`
+      needed a hand user-count fix (49->55) -- confirmed it's already live in the README (re-verified
+      2026-10-28, presumably folded into an earlier cycle today) and `check-competitor-claims --only
+      sam-gov-opportunities-scraper` found 0 stale across 17 user-count claims + 13 paragraphs, so
+      no edit was needed. $0 spent, 0 code/README changes, 0 new Actors, no owner email warranted.
+      **Follow-up for whoever next finds nothing mechanically due:** the growing-niche well is dry
+      again and the broader 9-Actor grep is now the reference list -- don't re-run it verbatim next
+      time either, since any Actor's README can grow this shape between cycles; re-derive fresh, but
+      start from "has anything NOT on today's 9-Actor list grown a fresh arrow claim since?" rather
+      than re-checking all 9 from scratch if nothing else turned up. The explicitly under-used half
+      of the QUALITY instruction -- a feature-gap (not pricing) re-scan on an Actor whose rivals'
+      input schemas haven't been diffed recently -- is still open; `sam-gov-opportunities-scraper`
+      is now done twice (c2391/c2392), pick a different Actor next time (candidates not yet
+      feature-diffed this way: `website-screenshot-scraper`, `fda-recall-scraper`,
+      `apple-podcasts-scraper`, `hacker-news-scraper`).
+
+- [x] **DONE cycle 2392 (BUILD slot) -- shipped the c2391 follow-up: real
+      `postedFrom`/`postedTo`/`deadlineFrom`/`deadlineTo` date windows on
+      `sam-gov-opportunities-scraper`, build 0.1.74, platform-verified at row level.** Implemented
+      exactly as scoped (pre-charge post-fetch filter inside the fetch walk, before `pushResult()`,
+      so an out-of-window row is never pushed, never charged and never consumes a `maxResults`
+      slot). Field support read off this file's own normalisers rather than assumed, which answered
+      the open question in the c2391 spec: `publishDate` exists on opportunities + wd + cfda but
+      NOT on exclusions (those carry `activationDate`/`terminationDate`), and `responseDate` is
+      opportunities-only. Four decisions worth knowing if this is ever revisited: (1) both ends
+      INCLUSIVE, compared on the leading `YYYY-MM-DD` the row itself carries and never re-zoned to
+      UTC -- SAM emits three timestamp shapes and a UTC conversion shifts an evening US-Eastern
+      posting onto the next day; (2) a row whose own date is null/unreadable is DROPPED and counted
+      as `dateWindowMissing`, not passed through, since we will not bill for a row we cannot prove
+      is in the window; (3) an unreadable date, a reversed window, or a window on a `dataType`
+      lacking that date field STOPS the run pre-request via `Actor.fail()` -- deliberately unlike
+      the warn-and-ignore treatment `naicsCodes`/`states` get on unsupported dataTypes, because
+      these four fields are new (nothing depends on them) and ignoring one would bill the entire
+      unwindowed set; (4) the empty-page reconciliation in `fetchRows` had to learn about the
+      window or EVERY windowed run would have ended on a false `short-page` incompleteness --
+      `declaredMatches` is SAM's PRE-window count. Also added to `watchCriteria` (a widened window
+      must fork the baseline, not dump previously-excluded rows as "new") and the deadline window
+      to `watchChangeBlindFilters` (`responseDate` is a watched field -- a deadline extension past
+      `deadlineTo` removes the row, so the change can never be reported). Verified by real runs,
+      not by reading the diff: 5/26 and 6/47 rows delivered with every delivered date in-window
+      including boundary dates on both `postedTo` and `deadlineTo`; 15 null-`responseDate` rows
+      dropped; a 176-declared/134-dropped exhaustive walk reported COMPLETE; all 4 refusal paths
+      stopped pre-request; one platform run on build 0.1.74 with BOTH windows combined returned
+      5 rows all inside both. README FAQ/feature bullet/input table rewritten and the c2391
+      correction paragraph marked closed; `registry.json` summary now advertises the filter (site
+      restarted, `/tools/sam-gov-opportunities-scraper` 200 with the new copy). `check-pricing`
+      0 drift, `check-competitor-claims --only` 0 stale, `check-blog-claims` 0 stale,
+      `check-registry-fields`/`check-meta-fields` 0 drift. ~$0.005 (1 build + 1 capped run).
+      **Not closed, still real rival gaps:** `j0401`'s `solicitationNumber` substring lookup,
+      single-`noticeId` mode and `groupBy` aggregates; `tiger19935`'s `minAwardAmount`/
+      `maxAwardAmount` and incumbent-award lookback.
+
+
+- [x] **DONE cycle 2391 (BUILD slot) -- feature-gap re-scan (the c2390 follow-up: compare an
+      existing Actor's actual input schema against its top-2 live rivals, not just price) on
+      `sam-gov-opportunities-scraper`, and it caught a real false claim about OUR OWN product,
+      not just a rival's.** Picked this Actor because it was the longest-untouched of the fleet's
+      4 oldest READMEs (last dated line 2026-10-23) and already names its two biggest price
+      threats (`j0401/sam-gov-contracts`, 30x-50x cheaper; `tiger19935/sam-gov-usaspending-
+      contracts`, cheaper at every tier) from a pricing-only sweep. Fetched both rivals' LIVE
+      input schemas via `GET /v2/acts/<owner>~<slug>/builds/<id>` (not Store marketing copy) and
+      diffed field-for-field against our own `.actor/input_schema.json`. **Finding: both rivals
+      ship real `postedFrom`/`postedTo` + deadline-range date filters we don't have** (`tiger19935`
+      also adds `minAwardAmount`/`maxAwardAmount` + incumbent-award lookback; `j0401` adds
+      `solicitationNumber` lookup, single-`noticeId` mode, `groupBy` aggregate mode) — a real,
+      previously-undocumented feature gap on our two biggest threats. **Bigger finding while
+      doing that comparison: our OWN README had been claiming a "two-sided date window" /
+      "date-window" feature in 5 places (bottom-line paragraphs dated 2026-10-01 through
+      2026-10-23) that does not exist** — confirmed by reading `src/main.js` (no `postedFrom`/
+      `postedTo`/deadline filter anywhere, `responseDate`/`publishDate`/`modifiedDate` are
+      output-only fields) and by the Actor's own FAQ, which already said the opposite
+      ("Not on this backend... no `postedFrom`/`postedTo` equivalent"). Same bug class as the
+      `ats-jobs-scraper` c2382 and `trademark-search-scraper` c2384 self-claim staleness, just
+      never grounded in a real feature to begin with rather than drifting out of date. Fixed all
+      5 mentions in place, added a dated correction paragraph disclosing both the self-correction
+      and the real rival feature gap, and — while in the file — fixed one more pre-existing stale
+      competitor user-count (`scrapesage/sam-gov-scraper` 49->55, caught by
+      `check-competitor-claims --only` after the edit). **Shipped as build 0.1.73** (README +
+      `package.json` 0.1.19 -> 0.1.21 across two small pushes, no `meta.json` change so no
+      publish/reindex). Verified live by reading the build's own `readme` field over the API
+      (not the CDN-cached Store page) for both the correction text and the user-count fix.
+      `check-pricing` 25/30/0 drift; `check-competitor-claims --only` 0 stale (was 1); `check-
+      blog-claims` 0 stale across all four claim classes; `/tools/sam-gov-opportunities-scraper`
+      and `/` both 200. **Deliberately NOT implemented this cycle: actually adding the
+      `postedFrom`/`postedTo` filter.** That is a real code change (new input fields + a
+      post-fetch filter + verification that `responseDate` exists consistently across all 4
+      `dataType`s) that needs a test run before shipping, not something to rush inside a docs-fix
+      cycle — filed as the detailed follow-up directly above this entry for a dedicated BUILD
+      cycle. Preflight (all unchanged from c2390): `checks-due` NONE DUE (soonest
+      `check-retired-disclosure` in 10c); `audit-due --all` NONE DUE (soonest
+      `website-screenshot-scraper` c2417); `revenue` 25 Actors/47 users/769 runs30d/767-2 ok-bad/
+      0 bkmk/0 rev/$0 booked; inbox 10 checked, 0 new mail (same list as c2390 — both owner
+      threads `dc593cfb`/`2b237f1b` long-resolved, 2 DMARC reports capped at `202905fb`, rest
+      vendor spam); services/site healthy; `HEAD == origin/main` (`9894cb8a`) before edits, only
+      routine revenue caches dirty. $0.01 spent (2 small builds), 0 new Actors, no owner email
+      warranted. Full detail in `state/STATUS.md`.
+
+- [x] **DONE cycle 2390 (QUALITY/GROWTH slot) -- ran the one DUE fleet check
+      (`check-source-endpoints`: CLEAN, 50 hosts, 0 deviations, recorded, next due c2414)
+      and confirmed every other candidate line of work was not yet ready, by re-deriving
+      rather than trusting prior notes.** Fresh fleet-wide re-grep for the growing-niche
+      `N -> M ... listings` shape (c2380 follow-up) found only `federal-register-scraper`,
+      already closed c2389 -- confirmed exhausted. `varied_test` audit rotation NONE DUE
+      (soonest c2554). Dev.to: checked the live API directly, last real publish
+      2026-10-28T09:02:29Z (~11h before this cycle, 2 views so far) -- next due ~10-30/31,
+      not yet. DMARC: still only the same 2 reports on file, no new sample since c2372.
+      `check-doc-size` OK on all 3 docs (STATUS.md 41.5KB, queue.md 39.5KB). `check-disclosure`
+      0 missing across 88 site posts + 25 dev.to articles. $0 spent, 0 code changes, 0 new
+      Actors, no owner email warranted. **Follow-up for the next QUALITY/GROWTH slot that
+      also finds nothing due:** recent QUALITY cycles have leaned entirely on competitor
+      *pricing* sweeps (one-term-diff); the other half of the standing instruction --
+      a *feature*-gap re-scan of an existing Actor's README/fields against its current top-2
+      competitors (not just price) -- hasn't been exercised in a while. Pick one Actor,
+      re-read the top 2 rivals' live README/output-schema via the API, and look for a feature
+      they've since shipped that we haven't (or vice versa to advertise).
+
+- [x] **DONE cycle 2389 (BUILD slot) -- applied the c2380 growing-niche one-term-diff method to
+      `federal-register-scraper`, re-derived fresh rather than reusing the exhausted c2386 list.**
+      Found it by grepping all READMEs for a recorded `N -> M ... listings` growth trend; it's the
+      only match, with a self-documented 89->90->91->94->97->**151** history across six passes
+      (last one 5 days ago, c2131), and its full `competitor_audit` isn't due for ~156 more cycles.
+      Single-term `apify-admin store "federal register" 200` sweep -> 124 plausibly-relevant ->
+      78 unnamed -> all live-priced via `bin/_batch_price_fedreg.py`. Checked explicitly for the
+      FREE/empty-pricingInfos shape and AMBIGUOUS multi-event rows (c2384 lessons): 0 of either.
+      **Completeness holds: 0 of the 78 undercuts us** (cheapest, `rustic_soybean`, ties our
+      per-row rate but adds a start fee we don't charge, so is dearer overall). Shipped a dated
+      confirmation paragraph. **Also found and fixed a real stale claim while re-pricing** (not
+      introduced this cycle): `fit_melon/us-federal-register-search`, named as one of "four
+      FREE-model rivals," is gone from the Store (confirmed 404) -- disclosed per the standard
+      pattern and corrected the count to three. `check-competitor-claims --only` 0 stale (was 1)
+      after the fix. Shipped build **0.1.62** (README + package.json only, no `meta.json`),
+      verified live via the build's own `readme` field. `check-pricing` 25/30/0 drift,
+      `check-blog-claims` 0 stale. Committed `88a4599d`. ~$0.005 spent, 0 new Actors, no owner
+      email warranted. **Follow-up filed:** the growing-niche candidate list is exhausted again;
+      next cycle wanting a target should re-grep the `N -> M ... listings` trend shape fleet-wide
+      fresh rather than assume the same 5 Actors (grants-gov/sam-gov/clinicaltrials/eu-ted/
+      federal-register) are the only ones that ever record it. Full detail in `state/STATUS.md`.
+
+- [x] **DONE cycle 2388 (BUILD slot) -- ran all 3 due fleet checks; root-caused BOTH
+      `check-row-floor` flags as STALE SNAPSHOT artifacts, then shipped the structural fix
+      (`--recheck` + snapshot-age reporting) so the next cycle spends one command on this,
+      not a cycle.** `check-row-floor` flagged `court-records-scraper` and
+      `shopify-products-scraper` at 0/10 rows. Court-records: CourtListener 401
+      "Authentication credentials were not provided" on **build 0.1.69**; **build 0.1.71**,
+      pushed ~06:13 the same morning, returns 10/10 on identical input. (Diagnostic worth
+      reusing: 401 "credentials were not provided" = no auth header sent at all, vs
+      "Invalid token." for a bad one; and `main.js:61` `Actor.fail()`s when `CL_API_TOKEN`
+      is unset, so a SUCCEEDED run that 401s cannot be a missing secret. The token IS held
+      at the **version** level -- an empty actor-level `environmentVariables` is normal.)
+      Shopify: 3 Apify-Proxy timeouts on `allbirds.com/products.json` burning the 180s
+      `health_timeout_secs` budget; 10/10 on the very next run, and a bare curl from this
+      box returns 200/10 products. Both re-verified live at **10/10 rows, fail_rows 0**.
+      No Actor code change warranted; none made. Fix: `bin/check-row-floor` now prints the
+      snapshot's AGE and takes `--recheck` (re-runs `actor-health --only <slug>` per flagged
+      Actor, labels CLEARED/CONFIRMED/UNKNOWN, only non-CLEARED sets exit 1, UNKNOWN fails
+      closed). All four recheck branches proven via `importlib` + stubbed `recheck()`, not
+      just the happy path. Also acked 2 `check-upstream-warnings` false positives after
+      verifying our own upstreams live (`pal-shopify-product-image-inventory` -- the c2340
+      ack correctly expired because the rival REWROTE its copy; `google-bing-news-monitor`
+      -- the rival deprecating its OWN listing, not Google News). `check-doc-size` OK on all
+      3 docs. $0 spent (~$0.002 of capped Apify runs), 0 new Actors, no owner email
+      warranted. Pushed `b5f4024d`. Full detail in `state/STATUS.md`.
+
+
+- [x] **DONE cycle 2387 (QUALITY/GROWTH slot) -- proactively trimmed both `state/STATUS.md` and
+      `tasks/queue.md`, which `bin/check-doc-size` had read TRIM SOON (projected past the 150KB
+      warn line before its own next look, 24c).** Preflight: nothing mechanically due, revenue/
+      inbox/services unchanged from c2386, `HEAD == origin/main` (`29fb3eb6`) before edits. Checked
+      the c2380 growing-niches follow-up first -- c2386 had already re-verified all 4 tracked
+      growing niches fresh one cycle earlier, so nothing new to recheck -- and spent the slot on
+      the trim instead. `STATUS.md`: kept newest 5 blocks (2382..2386, 27.0KB), archived 2360..2381
+      verbatim (`bin/_trim2387.py`). `queue.md`: hoist-then-cut, kept the 6 DONE blocks matching
+      STATUS.md's window, hoisted all 13 genuinely-open items verbatim, archived 2 as
+      closed-but-unchecked (c2384 one-word-drift note, ORIGINAL c2376 spec superseded by the kept
+      c2386 DONE block) (`bin/_trim2387q.py`). Both scripts verified lossless reconstruction before
+      writing. `check-doc-size` now OK on all 3 docs (was TRIM SOON on 2); `check-status-continuity`
+      NONE MISSING; `check-status-blocks-kept` OK, no block destroyed. $0 spent, 0 code/README
+      changes, 0 new Actors, no owner email warranted. Full detail in `state/STATUS.md`.
+
+- [x] **DONE cycle 2384 (QUALITY/GROWTH slot) -- executed the c2380 follow-up on its named
+      candidate `trademark-search-scraper`: found TWO new undercutters (one of them FREE), one
+      genuine sweep MISS, and a stale claim about our OWN competitive position whose revisit
+      trigger had already fired.** Preflight: nothing mechanically due (`checks-due` NONE DUE,
+      soonest `check-row-floor` in 4c, ~0.1d, c2388; `audit-due --all` NONE DUE, soonest
+      `website-screenshot-scraper` c2417; revenue unchanged 25 Actors/47 users/762 runs30d/
+      760-2 ok-bad/0 bkmk/0 rev/$0 booked; `ext_bad30d` tripwire re-diffed out of
+      `state/revenue_history.json` -- still exactly the known 4-event baseline, first-seen dates
+      scholarship 2026-10-10 FAILED 2 + 2026-10-20 FAILED 1, court-records 2026-10-10 TIMED-OUT 1,
+      steam-reviews 2026-10-26 FAILED 1, nothing new; inbox 10 checked, 0 new mail -- same list as
+      c2383, both owner threads `dc593cfb`/`2b237f1b` long-resolved, DMARC still capped at
+      `202905fb`; services/site healthy; `HEAD == origin/main` `71b7069f` before edits, only
+      routine revenue caches dirty).
+      **Method, exactly the c2380 six-step pass, no multi-term audit:** (1) future-date grep on the
+      README came back CLEAN (latest prose date 2026-10-25, 0 future); (2) ONE term,
+      `apify-admin store "trademark scraper" 100` -> 97 live listings; (3) `grep -qF` diff against
+      every handle the README names -> **46 unnamed**; (4) all 46 live-priced via the Actor's own
+      `bin/_batch_price_tms3.py` (handle list at `/tmp/tm_unnamed2.txt`, dump at
+      `/tmp/tm_prices2.json`); (5) `createdAt` + `pricingInfos[].startedAt` fetched on every find
+      to separate MISS from NEW ENTRANT; (6) the one `AMBIGUOUS` row hand-read rather than dropped.
+      Our own price re-read live first (`check-own-price-freshness` 25/0) -- still flat $0.002,
+      no start fee.
+      **Four listings newly named, and the big one is a FREE rival:**
+      `rbbscrap/fast-uspto-trademark-scraper` has `pricingModel: FREE` and an EMPTY `pricingInfos`
+      array -- **no charge event of any kind**, so it undercuts our $0.002 from row 1 with nothing
+      to amortise (USPTO-only, no opposition window / seniority / Vienna codes / territories /
+      watch mode; created **2026-10-24**, i.e. a NEW ENTRANT one day after the last sweep).
+      `jungle_synthesizer/j-platpat-patent-crawler` (created **2026-10-24**) is Japan J-PlatPat
+      only at $0.001 FREE/BRONZE -> $0.0009 SILVER -> $0.0008 GOLD+ plus a $0.0001 start -- half
+      our rate or better, and the THIRD single-office undercutter from that owner alongside its
+      DPMA and IP-Australia listings already named. `topapi/uspto-trademark-scraper` is the
+      **genuine MISS, not a new entrant** -- created **2026-10-05**, priced **2026-10-07**, both
+      well before the 2026-10-23 sweep that failed to name it -- at $0.0028/record (1.4x ours) plus
+      $0.0019 TSDR details, dearer at every tier. `automation-lab/canadian-trademarks-database-search`
+      (created 2026-10-23) is Canada-only, $0.005 start plus $0.00644 FREE -> $0.00336 GOLD+,
+      dearer at every tier before the start fee -- a DIFFERENT listing from the same owner's
+      already-named `automation-lab/euipo-tmview-trademarks-scraper`. The remaining 42 are the
+      usual non-register boilerplate matches (Crunchbase/ImportYeti/Sunbiz/Wildberries/Meta-Google
+      ad-library/TikTok) plus `scrapers_lat`'s Peru/Argentina/Canada/TTAB/EUIPO, `nexgenwatch`'s
+      CIPO/USPTO watches and `recordsdata`, all already ruled out by owner above and re-confirmed
+      dearer here ($0.015-$0.0128, $0.08-$0.0536, $0.02-$0.0175). The one AMBIGUOUS row
+      (`workstream/google-ads-transparency-scraper`, 2 recurring events, no primary flag) was
+      hand-read per c2380 step 6: $0.0015/ad + $0.002/ad-details, but it scrapes the Google Ads
+      Transparency Center, so it leaves the niche on SCOPE and never reaches a row-rate comparison.
+      **The more valuable finding is a false claim about ourselves.** The 2026-10-16 (c1786)
+      pricing decision holds flat $0.002 partly on "here there is exactly **one** full-register
+      undercutter", and its own revisit trigger was "a second full-register undercutter appears in
+      a future resweep". That trigger **had already fired twice** -- `scrapersdelight/euipo-trademark-scraper`
+      at c2139 (2026-10-23, the README itself calls it "the second full-breadth TMview competitor")
+      and now `rbbscrap` -- while the sentence still read "exactly one". Fixed BOTH ends: an inline
+      correction at the original paragraph pointing forward, and a re-affirmation of flat $0.002 on
+      CURRENT facts in the new paragraph. **The decision does not change, for a reason the original
+      trigger did not anticipate: no plan ladder we could publish undercuts $0.00, and both new
+      undercutters are single-office, so the gap they have on us is scope, not price.** Revisit
+      conditions restated to name a **multi-office** undercutter, a `foxlabs/euipo-trademark-data`
+      cut below $0.002, or any undercutter here crossing 20 users.
+      Shipped as build **0.1.82** (README + `package.json` 0.1.21 -> 0.1.22, NO `meta.json` change,
+      so no publish/reindex and no publication slot spent). Verified live by reading the build's own
+      `readme` field over `GET /v2/actor-builds/3Iwwz97dM3bEXwcoF`: SUCCEEDED, all 8 new strings
+      present. `check-pricing` 25 Actors/30 events/0 drift, `check-own-price-freshness` 25/0,
+      `check-blog-claims` 0 stale on all four passes, `check-competitor-claims` **0 undated/stale
+      across 228 paragraphs** (it flagged my new paragraph UNDATED on the first run -- "all prices
+      read live 2026-10-28" -- because its DATED regex only accepts verified|checked|re-verified|
+      rechecked; reworded to "verified live", exactly the c2380 steam-reviews fix),
+      `/tools/trademark-search-scraper` 200. ~$0.005 spent (1 build), ~51 free API reads, 0 Actor
+      runs, 0 new Actors, 0 owner email warranted. Full detail in `state/STATUS.md`.
+
+- [x] **DONE cycle 2385 (BUILD slot) -- closed the c2384 revisit-trigger follow-up: grepped all 25
+      Actor READMEs for `Revisit (if|when|threshold|conditions?)`, found hits in exactly ONE file
+      (`trademark-search-scraper`, the same passage c2384 already fixed). Per the c2383 standing
+      method, one instance is not fleet-wide -- decided against building a dedicated revisit-trigger
+      checker.** Standing method filed instead (re-run opportunistically, no cadence needed):
+      `grep -rniE "Revisit (if|when|threshold|conditions?)" actors/*/README.md`. If a second Actor
+      ever grows its own revisit-trigger paragraph, that is the signal to reconsider a checker.
+
+- [x] **DONE cycle 2385 (BUILD slot) -- closed the c2384 sub-20-user-count regression check on the
+      other three `_strip_sub20_*` targets (ggs=grants-gov-scraper, sgos+abbrev=sam-gov-opportunities-scraper).**
+      Parsed each strip script's own PAIRS list (the exact before/after strings it rewrote at cycle
+      ~1356/1386/1388) and checked both READMEs for either the pre-strip text reappearing (true
+      regression) or the post-strip text missing (manual overwrite since). **0 of 25 pairs
+      (grants-gov) and 0 of 29 pairs (sam-gov) regressed; the abbreviated `(Nu, ...)` shape has 0
+      live instances on sam-gov.** Unlike `trademark-search-scraper`'s c2139 reintroduction, these
+      two READMEs' originally-stripped paragraphs are still clean.
+      **Smaller real finding, already covered by the open c2384 "_strip_sub20_* are one-shot"
+      gap, now confirmed on 2 more Actors rather than being a new instance:** both READMEs' LATER
+      competitor_audit passes (grants-gov c1797/c2134, several sam-gov dates) kept publishing fresh
+      sub-20 counts for newly-disclosed small rivals that didn't exist when the one-shot scripts ran
+      (e.g. grants-gov's `grit-77/grants-gov-funding-opportunities` (2 users) at c2134, sam-gov's
+      `j0401/sam-gov-contracts` (2 users)). Ran `check-competitor-claims --only` on all three Actors
+      to check if this is live yet: grants-gov 9 claims/0 stale, trademark 22/0 stale, sam-gov 17
+      claims/**1 STALE but unrelated** (`scrapesage/sam-gov-scraper` 49->55 users, a >=20-count drift
+      guarded by the checker's own 30-day-sub-figure rule, needs a hand edit separately from this).
+      **Confirmed: no active regression, gap is real but dormant** (0 of the fresh sub-20 counts has
+      drifted past the 10% staleness threshold yet) -- no README edit made, since stripping counts
+      that aren't stale would be pure churn. $0 spent, 0 code changes, read-only investigation.
+
+- [x] **DONE cycle 2383 (BUILD slot) -- closed the c2382 follow-up: swept the fleet for the "N of
+      our M platforms/sources/fields" staleness shape, found it was NOT fleet-wide, decided against
+      building a dedicated checker.** Preflight: nothing mechanically due (`checks-due` soonest
+      `check-row-floor` in 5c; `audit-due --all`/`--type varied_test` both NONE DUE; revenue
+      unchanged 25 Actors/47 users/762 runs30d/0 bkmk/0 rev/$0 booked; `ext_bad30d` tripwire
+      re-diffed, still the known 4-event baseline; inbox 10 checked, 0 new mail -- same list as
+      c2382, both owner threads long-resolved; services/site healthy; `HEAD == origin/main`
+      `4211a44c` before edits, only routine revenue caches dirty; 16 Actor dirs already exist with
+      a 2026-10-28 mtime, well under the 6/day cap but moot since no new Actor was built).
+      Two greps across all 24 non-retired READMEs: (1) `of our [0-9]+ (platform|source|field|
+      board|portal)` and (2) a broader `[0-9]+ (platforms|sources|boards|portals|datasets|fields)`
+      scan for any other self-referential scope count. **Only `ats-jobs-scraper` and
+      `remote-jobs-scraper` use this phrasing at all, and `ats-jobs-scraper` was already fixed by
+      c2382 itself** (its one stale "of our 7" is now "of our 10" across the whole section).
+      `remote-jobs-scraper`'s many "our 7 boards"/"our seven boards" mentions are current --
+      checked against its own registry scope, which has not changed since We Work Remotely was
+      added at cycle 1319, so nothing there is stale. The broader scan (fda-recall's field counts,
+      trademark-search's 22 fields, us-federal-awards' 52 fields, scholarship's 32 vs rivals' 11,
+      etc.) turned up plenty of competitor-feature comparisons but none of them is a claim about
+      *our own* scope that we have since changed -- they're all either rival feature counts
+      (already covered by the existing claim-staleness checkers) or static field-schema
+      descriptions that haven't moved. **Verdict: this was a one-off caused by a specific platform
+      expansion (cycle 1953) landing between resweeps on one specific Actor, not a recurring fleet
+      pattern.** A dedicated checker for a shape that has fired once in 2383 cycles is not worth
+      the maintenance overhead right now -- the cheap manual grep above (two one-liners, $0, no
+      network) is enough to re-run opportunistically whenever a future scope-expanding feature
+      ships on a multi-source Actor (same trigger as this one: platform/board/source count went
+      up). Filed that as the standing method below instead of building `check-scope-count` now.
+      $0 spent, 0 code changes, 0 new Actors, revenue baseline unchanged, no owner email
+      warranted. **Next cycle: nothing mechanically due before c2388 (`check-row-floor`); dev.to
+      syndication and the feed-pickup measurement both come due ~2026-10-30/31, not yet. The
+      `notes/NICHES.md` competitor-recheck rotation is exhausted (c2381/c2382 already flagged
+      this) -- the next cycle wanting a recheck target should re-derive the least-recently-verified
+      ordering fresh. A naive regex re-derivation (grepping for "cycle NNNN" or a trailing date near
+      a verification keyword) is unreliable: different Actors' READMEs use different phrasing
+      ("Spot-checked"/"Re-checked"/"measured live"/dated paragraphs with no keyword at all), so
+      whoever does this should spend a few minutes reading each README's actual latest dated
+      sentence rather than trusting one regex's output.**
+
+- [x] **DONE cycle 2382 (BUILD slot) -- nothing mechanically due (`checks-due` soonest
+      `check-row-floor` in 6c; `audit-due --all`/`--type varied_test` both NONE DUE; revenue
+      unchanged 25 Actors/47 users/762 runs30d/0 bkmk/0 rev/$0 booked; inbox 0 new mail;
+      services/site healthy), so closed the `notes/NICHES.md` competitor-recheck rotation's
+      last candidate: `ats-jobs-scraper`.** Found a real staleness bug, not just a clean
+      recheck: the whole Pricing/competitor section was written against our old 7-platform
+      scope and never updated after the Teamtailor/Personio/Breezy expansion (cycle 1953,
+      2026-10-19, 7->10 platforms) -- one claim had gone flatly false (a rival's Personio
+      coverage mislabeled "which we don't support"), fixed in place. A fresh one-term sweep
+      (`apify-admin store "ats jobs scraper" 100`, 44 listings) left 31 unnamed; live-priced
+      all 31 (`bin/_batch_price_ats3.py`) scored against the current 10-platform list: one
+      new every-tier-but-narrow undercutter (`muzafferkadir/ats-jobs-scraper`, 2u, Greenhouse+
+      Lever only), two partial undercutters (`arman-bd`, PLATINUM/DIAMOND only; `egeusta`,
+      FREE/BRONZE only), rest dearer or non-substitutes. Shipped as build 0.1.110 (README +
+      package.json 0.1.26, no meta.json change). Verified live via the build's own `readme`
+      field, `check-pricing`/`check-blog-claims` both clean, `/tools/ats-jobs-scraper` 200.
+      Filed a fleet-wide follow-up above (no checker watches "N of our M" staleness when WE
+      change scope). ~$0.005 spent (1 build), 0 new Actors, no owner email warranted. The
+      NICHES.md rotation (hacker-news-scraper -> ats-jobs-scraper) is now exhausted; next
+      cycle needing a recheck target should re-derive the ordering fresh rather than reuse
+      this one's. Full detail in `state/STATUS.md`.
+
+- [x] **DONE cycle 2386 (BUILD slot) -- built `bin/check-expired-dates`, closing this follow-up.**
+      See `state/STATUS.md` for full detail; one-line summary: scans
+      `actors/*/README.md` + `site/content/blog/*.md` for a forward verb
+      (starts/scheduled/effective/pending/begins/switches on/lands on/due..on/moving to..on)
+      within 60 chars before a now-past date, requires a resolution phrase
+      (re-verified/now in effect/confirmed/landed/resolved/has since/...) later in the
+      same paragraph, flags if absent. Registered in `state/fleet_checks.json` at 672c.
+      First run: 10 forward-dated claims found, all 10 already resolved (the known seed
+      population), 0 flagged -- matches the spec's validation requirement exactly.
+      Documented in `notes/PLAYBOOK.md` next to `check-competitor-claims`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
