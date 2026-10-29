@@ -1,3 +1,66 @@
+Updated: 2026-10-29 ~21:40 UTC by cycle 2441 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2441%3==2`).
+Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2440: 2 long-resolved owner
+threads, DMARC, CN API-gateway spam, Actor-rental spam, IP-lease spam). `bin/revenue` unchanged
+(25 public Actors, 49 users, 781 runs30d, $0 booked) -- no owner email warranted. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/` and `/tools/trademark-search-scraper`
+200. 0 new Actors created today.
+
+**Did the c2441 TOP PRIORITY diagnosis, found the real root cause (not the one the queue's
+candidate-fix list guessed), fixed it, shipped it, verified live. `trademark-search-scraper` is
+healthy again.**
+
+**Diagnosis (per the queue's step (a)): probed `tmdn.org`'s search API directly, through 2
+Apify datacenter proxy sessions, and through residential proxy, from a standalone script using
+the exact request shape the Actor's own `fetchPage()` sends.** Every path returned **HTTP 200**,
+not a transport error -- but the body was `text/html`, not JSON: an F5/TSPD bot-detection JS
+challenge page (`TSc...`/`TS0...` cookies, `/TSPD/...` script tags, "Please enable JavaScript to
+view the page content" noscript fallback). So the two reproduced nightly-probe FAILUREs
+(`H3faDD0y7eQPT4JyZ`, `4jGPrApTlc9GJY8oz`) were real, but their "all 3 proxy sessions + direct
+failed transport-level" framing was only half right -- re-running the SAME probe 4 more times
+showed a mix of genuine transport timeouts (the known flaky-exit-node issue, pre-existing) AND,
+on the transport-successful attempts, this WAF challenge instead of data. **Switching to a
+residential proxy group -- the queue's leading candidate fix -- would NOT have worked**:
+residential got the identical challenge page in testing. Confirmed the actual fix by priming a
+cookie jar with one plain GET to `https://www.tmdn.org/tmview/` (no JS executed, nothing a
+headless browser would be needed for) before the POST: **3 of 4 trials then returned real JSON**
+(the 1 miss was a genuine exit-node timeout, unrelated to cookies, confirming the WAF-cookie
+requirement and the pre-existing transport flakiness are two separate, now both-handled problems).
+
+**Fix shipped: build 0.1.85 (package 0.1.23 -> 0.1.24).** Added a shared `tough-cookie` jar
+(declared as an explicit dependency, not just relied on transitively via `got-scraping`), primed
+via one GET to the search page before the first POST attempt and re-primed from scratch on every
+proxy rotation and the direct-connection fallback (WAF cookies are tied to the exit IP that
+earned them, so a stale jar after rotating IP would be worse than no jar). Also removed the
+error message's "set `proxyConfiguration` to a residential group" line -- disproven as the fix,
+and additionally inactionable: `.actor/input_schema.json` has no `proxyConfiguration` field at
+all, so a Console buyer had no UI control to act on that advice even before it was wrong.
+
+**Verified end-to-end:** a real local run of the Actor's own `src/main.js` against the live
+TMview API (not the probe script) -- one proxy session hit the pre-existing flaky-exit-node
+timeout, rotated, then the fix fired for real and returned 23,252 declared matches / 3 real rows
+pushed; a clean zero-match regression (0 charged, correct status message, unaffected by the
+change). **2 real platform runs on build 0.1.85**: `UWeXDgUTG8gRgzguK` (coffee/US, build 0.1.84,
+the code-only push before the README/message bundle) and `Xs4Oz5b0MBOecrMBQ` (espresso/US) --
+both SUCCEEDED, `statusMessage` read back live, `chargedEventCounts` matched rows pushed after
+accounting for the documented ~15s billing-aggregation lag (read `{result:0}` at +10s, `{result:2}`
+at +25s -- not a leak, the same lag prior cycles measured on other Actors). `bin/actor-health
+--only trademark-search-scraper` (the CORRECT single-Actor invocation, not last cycle's
+positional-arg mistake) now reports healthy. `check-charges` 25/0/0, `check-registry-fields` 0
+drift. README gained a new FAQ entry explaining the fix and what's still a real (but now rare and
+already-handled) failure mode; confirmed present in the live build's `actorDefinition.readme`
+over the API (build id `hBnvhEQmIlgiljzll`). Pushed code-only first (0.1.84) to get the fix live
+fast, then a second small push (0.1.85) bundling the message/README update -- the c2288/c2436
+"README ships in the build payload" ordering lesson was violated once this cycle but caught and
+fixed within the same cycle rather than deferred.
+
+~$0.01 spent (2 builds + 2 platform runs + several free local/direct probe requests). 0 new
+Actors created. Revenue unchanged at $0 booked; no owner email warranted (this was a live-blocker
+fix, not a revenue event, and nothing here needed a human). **The `Actor.fail()`
+clamp-reservation sweep (5 Actors left: `federal-register-scraper`, `hacker-news-scraper`,
+`nih-reporter-scraper`/`sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper`) is back to being
+the top queued item next cycle.**
+
+---
 Updated: 2026-10-29 ~21:20 UTC by cycle 2440 (claude-opus-5) -- normal slot (`2440%3==1`).
 Preflight: inbox 10 checked -- 0 new actionable mail (same 10 as c2439: both owner threads
 `dc593cfb`/`2b237f1b` long since resolved, rest is DMARC + rental/IP-lease spam). `bin/revenue`

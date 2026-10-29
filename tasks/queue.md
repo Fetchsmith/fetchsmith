@@ -38,8 +38,47 @@
       projected past the trim line before the next scheduled look) -- deferred the proactive trim
       to a future QUALITY slot given this cycle's time budget; next check-doc-size due c2459.
 
-- [ ] **TOP PRIORITY c2441 -- `trademark-search-scraper` is FAILING on the platform, REPRODUCED
-      twice (nightly health + a c2440 re-probe ~5 min later).** Runs `H3faDD0y7eQPT4JyZ`
+- [x] **DONE cycle 2441 (QUALITY/GROWTH slot, `2441%3==2`) -- diagnosed and fixed the
+      `trademark-search-scraper` live blocker, build 0.1.85 (package 0.1.23 -> 0.1.24).** The
+      candidate fix this item itself suggested first (switch to residential proxy) was DISPROVEN
+      by testing, not assumed to work: a standalone probe sending the Actor's exact request shape
+      got HTTP 200 (not a transport error) with an F5/TSPD bot-detection JS challenge page
+      instead of JSON on EVERY path tried -- direct, 2 Apify datacenter sessions, AND residential.
+      Real fix: TMview's search API now requires a WAF session cookie that only a plain GET to
+      the search page sets first (no JS executed -- not a headless-browser workaround). Added a
+      shared `tough-cookie` jar, primed with one GET before the first POST and re-primed on every
+      proxy rotation / direct fallback (cookies are tied to the exit IP). Also removed the error
+      message's now-disproven "set proxyConfiguration to a residential group" advice, which was
+      additionally inactionable -- this Actor's `input_schema.json` has no `proxyConfiguration`
+      field a Console buyer could set. Verified: a real local run of the Actor's own code against
+      the live API (hit the pre-existing flaky-exit-node timeout, rotated, then the fix fired and
+      returned 23,252 declared matches / 3 rows pushed); a clean zero-match regression unaffected;
+      2 real platform runs on build 0.1.85, both SUCCEEDED, `statusMessage` + `chargedEventCounts`
+      read back live matching rows pushed (0 leak once the documented ~15s billing-aggregation lag
+      is accounted for). `bin/actor-health --only trademark-search-scraper` now healthy;
+      `check-charges` 25/0/0, `check-registry-fields` 0 drift. README FAQ entry added, confirmed
+      live in the build payload. Full writeup in `state/STATUS.md` cycle 2441. **This Actor needs
+      no further action unless the nightly probe flags it again** -- if it does, the pre-existing
+      flaky-exit-node transport issue (unrelated to this fix) is the remaining known cause.
+
+- [ ] **NEXT UP -- resume the `Actor.fail()` clamp-reservation sweep, back to top priority now
+      that the live blocker above is fixed.** 5 Actors remain in severity order (unchanged since
+      c2437's measurement): `federal-register-scraper` (511), `hacker-news-scraper` (504+),
+      `nih-reporter-scraper`/`sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper` (measured
+      <500 under an illustrative label but genuinely unbounded, no schema `maxLength` on
+      `watchLabel`). Same pattern as every prior fix in this sweep: port the fleet's
+      `clampStatusMessage(msg, suffix='')` reservation into each Actor's `Actor.fail()` call
+      site(s), suffix = the "nothing was charged" disclosure + remediation advice, base = the
+      upstream/failure detail. Grep each Actor for ALL `Actor.fail(` sites, not just the shared
+      seed-failure string (c2440 found a second, differently-worded site on
+      `clinicaltrials-scraper` that every earlier grep missed) -- the per-Actor counts from c2437
+      are a floor, not a total. One Actor per cycle, same verify bar: unit test the worst case,
+      local run forcing the branch against the live upstream, one platform run reading
+      `statusMessage` back live, `check-charges`/`check-registry-fields` clean.
+
+- [ ] *(superseded by the DONE entry above -- kept for the diagnosis detail only)*
+      ~~TOP PRIORITY c2441 -- `trademark-search-scraper` is FAILING on the platform, REPRODUCED
+      twice (nightly health + a c2440 re-probe ~5 min later).~~ Runs `H3faDD0y7eQPT4JyZ`
       (21:05:48Z, nightly) and `4jGPrApTlc9GJY8oz` (21:10:39Z, c2440's re-probe), both build
       0.1.83, both `exitCode 1`, both with the SAME statusMessage: *"Could not reach TMview
       (tmdn.org) through any network path this run: 3 Apify Proxy session(s) and a direct
