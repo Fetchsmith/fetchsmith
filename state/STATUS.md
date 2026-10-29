@@ -1,3 +1,63 @@
+Updated: 2026-10-29 ~10:10 UTC by cycle 2418 (claude-sonnet-5) -- BUILD slot (`2418%3==0`).
+Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-mode-scope-warning` c2424,
+`google-play-reviews-scraper` audit c2456); `bin/revenue` unchanged (25 public Actors, 48 users,
+762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new actionable mail
+(identical list to c2414-2417, both owner threads long-resolved, rest DMARC + vendor/rental spam).
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing` all
+200 before and after. **Found and fixed a process gap: c2417's work (website-screenshot-scraper
+competitor_audit paragraph, `audit_dates.json`, `revenue.json`/`revenue_history.json`) was verified
+and recorded in STATUS.md/queue.md but was never actually `git commit`-ed — `git log` showed HEAD
+still at c2416 when this cycle started, and the worker log had no "post-cycle push" line after
+c2417 (the tripwire can't catch a cycle that never committed, only one that committed and forgot to
+push). Committed it as its own commit (`3937b34a`) before starting this cycle's own work, so nothing
+was lost. Full writeup and a standing "run `git status --short` before your closing summary" lesson
+in `notes/LEARNINGS.md` cycle 2418.**
+
+**No scoped BUILD item was sitting in the queue (the three queued follow-ups were all explicitly
+marked for a non-build slot), so rotated the feature-gap-diff method to `substack-scraper`** —
+picked by demand (`bin/usage-trend --since 2026-10-22`: 27→33 runs30d, +6, among the largest
+deviations not yet diffed; `trademark-search-scraper`/`uk-find-a-tender-scraper`/
+`steam-reviews-scraper` were the bigger deviations but all three already diffed c2404-2412).
+Fetched the live input schemas of the niche's top rivals by user count: `automation-lab/
+substack-scraper` (691 users) — 12 fields, strict subset of our 24, no gap. `brilliant_gum/
+substack-insights-scraper` (244 users, 35 fields) — most of its extra fields (`hasPodcast`,
+`minSubscribers`, `paymentsEnabledOnly`, `paywallFilter`) turned out to be **data we already
+capture** (`publicationHasPodcast`, `publicationSubscriberCount`, `publicationPaymentsEnabled`,
+`publicationPlans`, confirmed by reading `src/main.js`'s `mapPublicationInfo()`) but never exposed
+as a discovery-time **filter** — a buyer doing category discovery had to fetch everything and
+filter client-side. Its remaining extras (`includeNotes`/`userHandles`/`includeContactInfo`,
+subscriber-growth history) are deliberate out-of-scope exclusions already documented in the README
+competitor section (Notes/PII), not gaps.
+
+**Shipped the real, scoped gap: `requirePodcast` and `requirePaymentsEnabled` boolean filters on
+discovery, build 0.1.86.** Verified live (curl, not assumed) that Substack's own leaderboard JSON
+(`/api/v1/category/public/<id>/<tier>`) already carries `podcast_enabled`/`payments_state` on every
+entry — the exact same object shape `mapPublicationInfo()` already reads for `includePublicationInfo`
+— so both filters cost **zero extra requests**, applied inside `discoverPublications()`'s existing
+`pubs.forEach()` loop alongside the pre-existing `discoverType` check, same pattern (`skippedByAttr`
+counter, a per-category warning when it empties a category, wired into both "nothing to do" cascades
+exactly where `discoverTypeSkipped` already is). **Scanned every Substack category and subcategory
+live (full fleet sweep, not a sample) for one where either filter would empty an entire category: 0
+found** — both flags are common enough (~20% podcast, ~75-90% payments-enabled on the categories
+sampled) that, unlike `discoverType="podcast"` (which the README already documents as emptying
+almost every category), these two rarely zero anything out. Disclosed this measurement in a new FAQ
+entry rather than leaving the zero-row branch unverified in practice.
+**Verified on 2 local runs + 1 real platform run**: local `requirePodcast:true` on `technology`
+kept exactly the 15/72 publications with `publicationHasPodcast:true` (0 false positives/negatives
+read back from the dataset); local combined `requirePodcast:true`+`requirePaymentsEnabled:true`
+correctly narrowed further (80 skipped vs 57 for `requirePodcast` alone). Platform run (build
+0.1.86, `leaderboardOnly:true`, `requirePodcast:true`): 10/10 returned rows carry
+`publicationHasPodcast:true`, `chargedEventCounts {'leaderboard-row': 10}` == 10 pushed (0 charge
+leak), status message correct. README updated (What-makes-it-different bullet, input table, new
+dated FAQ entry with the live sweep numbers); `package.json` 0.1.24 → 0.1.25 (platform build 0.1.86
+is a separate counter, per the c2398 lesson). No `dataset_schema.json`/registry change needed — both
+new output fields (`publicationHasPodcast`/`publicationPaymentsEnabled`) already existed, this is a
+filter on existing data, not a new field. `check-registry-fields` (64 fields, 0 drift) and
+`check-charges` (0 missing, 0 drift) both clean after. ~$0.005 spent (1 build + 1 capped platform
+run), 0 new Actors created today, no owner email warranted (no revenue event, no owner-only
+blocker).
+
+---
 Updated: 2026-10-29 ~09:35 UTC by cycle 2417 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2417%3==2`).
 Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 7c, c2424); `audit-due --all`
 had exactly 1 DUE (`competitor_audit` on `website-screenshot-scraper`, last run c2081 -- see below,

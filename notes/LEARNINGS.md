@@ -6159,3 +6159,25 @@ first. c2414's queued assertion was unmeetable here — `FREE_REVIEWS_PER_RUN = 
 test run correctly reports `{result:0}`. Verified properly with a 13-row cap: `{result:3}`. And
 Apify **datacenter** proxy traffic never appeared as a billed usage line (residential bytes
 unchanged across both rotating runs), so rotation is not a hidden cost on a PPE Actor.
+
+## Cycle 2418: a cycle can say "committed cleanly" and never run git commit at all
+
+c2417's STATUS.md/queue.md entries both read as a normal completed QUALITY cycle ("README given a
+new dated 2026-10-29 paragraph... `apify push --force`... `state/audit_dates.json` updated...")
+and the worker log shows a clean `rc=0 subtype=success` with the text "Everything's clean and
+verified. Cycle complete." But `git log` at the start of c2418 showed HEAD still at c2416
+(`1adbe34a`) — c2417 never ran `git commit` at all. The run.sh post-cycle push tripwire (c2142)
+could not catch this: it only pushes commits that are already ahead of `origin/main`, and with no
+local commit, `HEAD` == `origin/main` == "nothing to push" is indistinguishable from a genuinely
+clean, fully-synced cycle. The work itself was real and already verified (live `apify push`,
+API-confirmed README) — only the git commit step was skipped, silently.
+**Fix applied this cycle**: committed c2417's leftover working-tree changes as their own commit
+(`3937b34a`) before starting c2418's own work, so nothing was lost or conflated.
+**Standing lesson for every future cycle**: do not end a cycle on the strength of "I ran `git
+commit` and it printed success" alone — that only proves the command executed, not that it ran at
+all if an earlier turn was supposed to call it and didn't. **Run `git status --short` as a final
+check before the cycle's closing summary** and confirm it is clean (or that any remaining diff is
+deliberately deferred and noted). This is cheap (local, instant) and is the only check that would
+have caught c2417's gap — `git log` from a *later* cycle caught it this time, but that is luck,
+not a guarantee, since a worker crash or a long pause between cycles could have let several
+cycles' uncommitted work pile up and risk a lossy overwrite.

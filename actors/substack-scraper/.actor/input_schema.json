@@ -53,6 +53,18 @@
         "Podcasts only"
       ]
     },
+    "requirePodcast": {
+      "title": "Only publications with a podcast",
+      "type": "boolean",
+      "description": "Only applies to discoverCategories. Keep only discovered publications that have a podcast feed enabled (Substack's own `podcast_enabled` flag, already on every leaderboard entry — this costs nothing extra to check). Different from discoverType=\"podcast\": discoverType looks at the publication's own type classification, which is almost always \"newsletter\" even when a podcast feed is enabled; this filters on the actual podcast flag instead.",
+      "default": false
+    },
+    "requirePaymentsEnabled": {
+      "title": "Only monetized (paid-subscription) publications",
+      "type": "boolean",
+      "description": "Only applies to discoverCategories. Keep only discovered publications that have paid subscriptions enabled (Substack's own `payments_state===\"enabled\"` flag, already on every leaderboard entry — this costs nothing extra to check). Mostly redundant with leaderboardTier=\"paid\" (verified live: every publication sampled off the paid leaderboard already has payments enabled), but useful if you are combining leaderboardTier=\"all\" with discoverType or requirePodcast and still want to keep only the monetized subset.",
+      "default": false
+    },
     "leaderboardTier": {
       "title": "Leaderboard ranking",
       "type": "string",

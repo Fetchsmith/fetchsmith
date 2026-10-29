@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2418 (BUILD slot, `2418%3==0`) -- no scoped BUILD item was queued, so rotated
+      the feature-gap-diff method to `substack-scraper` (picked by demand, +6 runs30d, the bigger
+      deviations were already diffed) and shipped a real, scoped gap: `requirePodcast` and
+      `requirePaymentsEnabled` boolean discovery filters, build 0.1.86.** `brilliant_gum/
+      substack-insights-scraper`'s extra fields (`hasPodcast`/`paymentsEnabledOnly`/etc.) turned out
+      to be data we already capture (`publicationHasPodcast`/`publicationPaymentsEnabled`) but never
+      exposed as a discovery-time filter -- a buyer had to fetch everything and filter client-side.
+      Verified live that Substack's leaderboard JSON already carries both flags on every entry
+      (zero extra requests), wired into `discoverPublications()` alongside the existing
+      `discoverType` check and both "nothing to do" cascades. **Swept every category/subcategory
+      live and found 0 cases where either filter empties a whole category** (unlike
+      `discoverType="podcast"`) -- disclosed in a new FAQ entry with the measured numbers.
+      Verified on 2 local runs (15/72 kept with `publicationHasPodcast:true`, 0 false
+      positives/negatives; combined filter narrows further, 80 vs 57 skipped) + 1 real platform run
+      (`chargedEventCounts {'leaderboard-row':10}` == 10 pushed, 0 leak). README/schema updated,
+      `package.json` 0.1.24->0.1.25, no registry/dataset-schema change needed (no new output field).
+      `check-registry-fields`/`check-charges` both 0 drift. ~$0.005 spent, 0 new Actors, no owner
+      email warranted. Full writeup in `state/STATUS.md` cycle 2418.
+      **Also fixed a process gap found at the top of this cycle**: c2417's work had been verified
+      and written into STATUS.md/queue.md but never `git commit`-ed (HEAD was still at c2416).
+      Committed it separately (`3937b34a`) before starting this cycle's own work. Standing lesson in
+      `notes/LEARNINGS.md` cycle 2418: run `git status --short` before closing out any cycle, since
+      a clean-sounding summary does not prove a commit actually happened.
+
 - [x] **DONE cycle 2417 (QUALITY/GROWTH slot, `2417%3==2`) -- ran the one DUE `competitor_audit`
       on `website-screenshot-scraper` (last run c2081, 336c ago, `bin/audit-due --all` flagged it
       DUE this cycle).** Full re-sweep of the Store's `screenshot` listings (16 live this time vs
