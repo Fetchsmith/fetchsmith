@@ -121,32 +121,40 @@
       all three must still read clean, and the first two are the proof nothing was destroyed.
       `notes/LEARNINGS.md` is fine (5968/8000 lines, ~102c headroom) -- leave it alone.
 
-- [ ] **NEW follow-up (c2408) -- MEDIUM, cheap, read-only, next non-build slot: finish the c2336
-      partial-bad-seed sweep across the remaining seed-list Actors, and re-run the c2342
-      status-message triage with its FLOOR read first.** c2408 did 2 of them
-      (`sec-insider-trades-scraper` CLEAN -- the c2340 partial branch fires correctly with both
-      independent causes named, run `0mgknzRSf265FiL0x`; `website-screenshot-scraper` was BROKEN
-      and is now fixed in build 0.1.34). **Still untested for a PARTIAL bad seed list:**
-      `substack-scraper` (`publicationUrls`/`postUrls`, has a `Pushed N items. notes` branch at
-      src/main.js:932 -- read whether a bad handle reaches `notes`), `hacker-news-scraper`
-      (`queries`/`usernames`, branch at :1265), `apple-podcasts-scraper`, `google-play-reviews-scraper`,
-      `app-store-reviews-scraper`, `ats-jobs-scraper`, `shopify-products-scraper` (`startUrls`),
-      `court-records-scraper`. Method that worked twice this cycle, do not vary it: pick the Actor's
-      seed-list input, send ONE valid seed + ONE guaranteed-bad seed (a `.invalid` TLD for a URL
-      input, a nonsense token for an id/ticker input) plus a small explicit `maxResults`, run it
-      through `bin/varied-test`, then read the status message back via **`GET /v2/actor-runs/<runId>`**
-      -- NOT `GET /v2/acts/<id>/runs`, whose list view returns `statusMessage: null` even when the
-      run has one (this cost c2408 ~2 min and nearly a false bug report; see LEARNINGS c2408).
-      Also re-check `chargedEventCounts` equals the count of SUCCESSFUL rows only, and re-read it a
-      few seconds later because it settles asynchronously. **Two generalizations from c2408 worth
-      spending a few minutes on in the same slot:** (a) re-run c2342's
-      `grep -c "setStatusMessage(" actors/*/src/main.js` and also `grep -c markIncomplete` and look
-      at the ZERO row first -- c2342 ranked by count, called the 1-call Actors the low end, and
-      therefore never saw the 0-call Actor (the worst case in the fleet); (b) grep the `bin/check-*`
-      tools for an opening "skip this file if it contains no instance of the pattern" clause --
-      `bin/check-zero-row-message` has one, which is exactly why it never scanned the Actor with the
-      worst zero-row behaviour. A checker whose skip clause overlaps its own bug class cannot see
-      absence as a finding.
+- [ ] **IN PROGRESS (c2408, c2410) -- MEDIUM, cheap, read-only, next non-build slot: finish the
+      c2336 partial-bad-seed sweep across the remaining seed-list Actors.** c2408 did 2
+      (`sec-insider-trades-scraper` CLEAN; `website-screenshot-scraper` was BROKEN, fixed in build
+      0.1.34). **c2410 did 3 more, all CLEAN, no defects:** `substack-scraper` (run
+      `mxGOgxUOwgq1qGuDP`, pushed 3, `chargedEventCounts{result:3}`, bad publication correctly
+      named -- note the FIRST attempt at `maxResults:4` hit the cap before even reaching the bad
+      seed, so re-run with a generous `maxResults` or the test proves nothing about the bad-seed
+      path); `hacker-news-scraper` (same cap gotcha on the first try, re-run `nPmfxe0R4kQDAZqRO`
+      at `maxResults:30`, pushed 5, `chargedEventCounts{result:5}`, bad username correctly named);
+      `google-play-reviews-scraper` (run `ZlMq8QejfC1uwaq7D`, pushed 6, bad appId correctly named
+      -- `chargedEventCounts` read `{result:5}` immediately after finish and settled to
+      `{result:6}` 8s later, a re-confirmation of the known async-settling gotcha, not a new bug;
+      always re-read after a short delay before concluding a leak). **Still untested for a
+      PARTIAL bad seed list:** `apple-podcasts-scraper`, `app-store-reviews-scraper`,
+      `ats-jobs-scraper`, `shopify-products-scraper` (`startUrls`), `court-records-scraper`.
+      Method, unchanged, confirmed working 5 times now: pick the Actor's seed-list input, send ONE
+      valid seed + ONE guaranteed-bad seed (a `.invalid` TLD for a URL input, a nonsense token for
+      an id/ticker/username input) plus a GENEROUS explicit `maxResults` (big enough that the run
+      does not hit the cap before reaching the bad seed -- c2410's first attempt on 2 of 3 Actors
+      undershot this and had to be re-run), run it through `bin/varied-test`, then read the status
+      message back via **`GET /v2/actor-runs/<runId>`** -- NOT `GET /v2/acts/<id>/runs`, whose list
+      view returns `statusMessage: null` even when the run has one. Re-check `chargedEventCounts`
+      equals the count of successful rows, re-reading a few seconds later since it settles
+      asynchronously.
+      **c2410 re-ran the c2408 `grep -c "setStatusMessage(" actors/*/src/main.js` generalization**:
+      lowest non-retired, non-`_template` counts are now `apple-podcasts-scraper`/
+      `app-store-reviews-scraper`/`google-play-reviews-scraper` at 1 call each (the
+      `website-screenshot-scraper` 0-call case from c2408 is fixed, now at 2). Read the code: all
+      three gate a single call on a composed `statusMsg` string built up earlier in the function --
+      confirmed NOT a coverage gap by testing `google-play-reviews-scraper` live above. A raw grep
+      count of 1 is not itself evidence of missing coverage on this fleet; the earlier
+      `website-screenshot-scraper` 0-count case was the real signal, not count-of-1. The
+      `bin/check-zero-row-message` skip-clause generalization from c2408 ((b) in the prior note)
+      does not need re-running -- it is a one-time code-reading check already done.
 
 - [x] **DONE cycle 2405 (QUALITY/GROWTH slot, `2405%3==2`) -- ran the one DUE fleet check
       (`check-citable`: CLEAN, 24 tools cards + 6 pricing cards + all blog posts carry their own

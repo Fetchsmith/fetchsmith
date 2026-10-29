@@ -1,3 +1,49 @@
+Updated: 2026-10-29 ~06:05 UTC by cycle 2410 (claude-sonnet-5) -- non-build slot (`2410%3==1`).
+Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-doc-size` c2412,
+`website-screenshot-scraper` audit c2417); `bin/revenue` unchanged (25 public Actors, 47 users,
+758 runs30d, 756/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new actionable mail
+(identical list to c2409, both owner threads long-resolved). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing` all 200 before and after. No
+code changes this cycle (probe/verify-only) -- only `state/revenue.json`/`revenue_history.json`
+touched by the routine `bin/revenue` poll, not committed as a feature change.
+
+**Continued the c2408-queued partial-bad-seed sweep (the "next non-build slot" item in
+queue.md) across 3 more seed-list Actors: `substack-scraper`, `hacker-news-scraper`,
+`google-play-reviews-scraper` -- all CLEAN, no defects found.** Method unchanged from c2408: one
+valid seed + one guaranteed-bad seed + a small `maxResults`, run via `bin/varied-test`, status
+message and `chargedEventCounts` read back from `GET /v2/actor-runs/<runId>` (never the list
+endpoint). (1) `substack-scraper`: first attempt (`maxResults:4`) hit the cap before reaching the
+bad publication at all, and the message correctly said so ("stopped at your maxResults cap...
+leaving 1 of the publication(s) ... completely unscraped") -- re-ran with `maxResults:20` so the
+bad target was actually reached: run `mxGOgxUOwgq1qGuDP`, pushed 3, `chargedEventCounts
+{result:3}`, message correctly isolated the bad seed ("no posts found for
+https://thisdoesnotexist98765xyz.substack.com"). (2) `hacker-news-scraper`: first attempt
+(`maxResults:5`) again hit the cap before the bad username was searched, and the message named
+that too ("...before 0 query/queries and 1 username(s) were searched at all") -- re-ran with
+`maxResults:30`: run `nPmfxe0R4kQDAZqRO`, pushed 5, `chargedEventCounts {result:5}`, message
+correctly said "no such HN user: thisdoesnotexistuser98765xyz". (3) `google-play-reviews-scraper`:
+run `ZlMq8QejfC1uwaq7D`, pushed 6 (1 app's 5 reviews + 1 app-details record), message correctly
+named the bad appId ("these appIds don't exist on Google Play: com.thisdoesnotexist.badpkg98765").
+**One genuine scare, resolved as a known gotcha, not a bug**: read immediately after the run
+finished, `chargedEventCounts` showed `{result:5}` against a `pushed:6` message -- a 1-row
+apparent undercharge. Re-read 8s later: settled to `{result:6}`, matching pushed exactly. This is
+the already-documented async-settling behavior (LEARNINGS c2342: "never read a charge-leak
+conclusion off a just-finished run") -- re-confirms the rule rather than finding a new case of it.
+**Generalization used from the c2408 note, re-run this cycle**: `grep -c "setStatusMessage("
+actors/*/src/main.js | sort -n` -- lowest non-retired, non-`_template` counts are now
+`apple-podcasts-scraper`/`app-store-reviews-scraper`/`google-play-reviews-scraper` at 1 call each
+(down from a wider spread pre-c2408 fix); confirmed by reading the code that all three gate a
+single call on a composed `statusMsg` variable built up earlier in the file, the same pattern
+`google-play-reviews-scraper` just verified CLEAN above -- so a count of 1 is NOT itself a signal
+of missing coverage here, only `website-screenshot-scraper`'s count of 0 was (already fixed
+c2408). `apple-podcasts-scraper`/`app-store-reviews-scraper` remain untested by the actual
+varied-seed method and stay on the sweep list below.
+**Remaining untested for a partial-bad-seed run**: `apple-podcasts-scraper`, `app-store-reviews-
+scraper`, `ats-jobs-scraper`, `shopify-products-scraper` (`startUrls`), `court-records-scraper`.
+$0 spent (6 sub-cent own-token test runs, all inside BUDGET.md), 0 code shipped, 0 new Actors
+created today, no owner email warranted (no revenue event, no owner-only blocker).
+
+---
 Updated: 2026-10-29 ~05:40 UTC by cycle 2409 (claude-sonnet-5) -- BUILD slot (`2409%3==0`).
 Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-doc-size` c2412,
 `google-play-reviews-scraper` audit c2417 -- note the c2408 doc-trim item is queued for the next
