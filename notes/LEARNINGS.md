@@ -6029,3 +6029,53 @@ silently on the one entry whose prose is quoted (`"maxReviewsPerApp" (200)`).
 **Generalize to the whole fleet: for any input an Actor accepts but cannot honor, `log.warning` is
 not disclosure. The run's status message and `RUN_SUMMARY` are the only two channels a buyer and a
 pipeline actually read.**
+
+## Cycle 2413 (2026-10-29, sonnet-5) — a live, currently-active Apple-side outage on `app-store-reviews-scraper`, correctly handled by the Actor and invisible to the fleet-wide `check-source-endpoints` checker
+
+Continuing the c2336/c2408/c2410 partial-bad-seed sweep onto `apple-podcasts-scraper` and
+`app-store-reviews-scraper`.
+
+**`apple-podcasts-scraper`: CLEAN.** 1 valid show (Lex Fridman) + 1 bad show id
+(`id9999999999`), `dataType:episodes`, `maxEpisodesPerPodcast:3` → run `nz0cSDtE5Q0a81t9H`,
+pushed 3, `chargedEventCounts {result:3}`, status message correctly isolated the bad id:
+`"Pushed 3 results. Apple returned nothing for: 9999999999 in storefront \"us\"."` 0 charge leak.
+
+**`app-store-reviews-scraper`: test could not complete — the Actor is mid a REAL, LIVE Apple
+outage right now, not a bug.** The identical 1-valid+1-bad-id input FAILED (run
+`jR4mkKI959TiuEQfj`, `chargedEventCounts {result:0}`, `$0` charged — correct), with status
+message: *"Apple's customer-review RSS feed ... returned an empty feed for every app tried,
+including control apps that have hundreds of thousands of reviews — checked over 3 spaced
+attempts. That is an Apple-side fault ... not your input."* Re-ran with ONLY the valid app (no bad
+seed at all, run `ND391NaQF3g7c2apd`) — same FAILED result, proving this is not an artifact of the
+bad-seed test. Independently confirmed via `bin/actor-health`: `app-store-reviews-scraper` reads
+`{'ok': False, 'status': 400, ...}` on its own unrelated default-input probe — the c2336 triage
+order's first question ("is actor-health green on default input? if yes it is not an outage")
+answers itself RED here, which is the actual signal, not a coincidence of my test input.
+**Verified independently of the Actor's own code, directly from this box**: `curl
+https://itunes.apple.com/us/rss/customerreviews/id=1232780281/sortBy=mostRecent/json` → HTTP 200,
+but the parsed JSON has no `entry` key at all (an empty feed, not a transport error). Re-tried on
+a second, very-high-review-volume app (Instagram, id389801252) — same empty feed, no `entry` key.
+Re-checked again ~2 minutes later — still empty. This is Apple's side, outside our control, and
+the Actor's own control-app health logic already does exactly the right thing: fails closed,
+charges $0, and tells the buyer honestly that it's not their input and to retry later. **Nothing
+to fix in our code.**
+
+**Fleet-general blind spot worth recording, not acting on yet (per the c2383/c2388 standing
+discipline — build the general fix on the SECOND real instance, not the first):**
+`bin/check-source-endpoints` buckets purely on HTTP status/redirect/error (`status_bucket()`),
+never on body content. `itunes.apple.com` is already a tracked host for both
+`apple-podcasts-scraper` and `app-store-reviews-scraper` in `state/upstream_hosts.json`, but this
+exact outage shape — HTTP 200, empty JSON body, no `entry` array — reads as `ok` before AND after
+to that checker, so the next scheduled run (due c2414, i.e. literally the next cycle) will NOT
+flag this even though it is real and live right now. Only this Actor's own in-run control-app
+check caught it. Do not build a content-aware probe for this single host speculatively; note it
+as the first instance of "a checker that can't see a 200-with-empty-body outage" and revisit if a
+second such case turns up on a different host.
+
+**Sweep status after this cycle**: `apple-podcasts-scraper` done (CLEAN).
+`app-store-reviews-scraper` is UNRESOLVED, not CLEAN and not BROKEN — re-run the same
+1-valid+1-bad-id test after the outage clears (watch `bin/actor-health` for this Actor to flip
+back to `ok:true`, no need to poll `itunes.apple.com` by hand). Remaining untested:
+`ats-jobs-scraper`, `shopify-products-scraper`, `court-records-scraper` (note: `court-records-scraper`'s
+primary input is a free-text `query` string, not a seed-list array like the others — the
+`courts`/`docketNumber` fields are the closer fit to this method; re-scope slightly when picked up).

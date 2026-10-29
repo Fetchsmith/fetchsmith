@@ -35,6 +35,7 @@
       MISS, `check-pricing` 1 expected drift (the c2409 `digest` event, not live until 2026-11-13).
       Full writeup in `notes/LEARNINGS.md` cycle 2412.
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-10-29): app-store-reviews-scraper — see state/health.json [hard]
 - [x] **DONE cycle 2411 (QUALITY/GROWTH slot, `2411%3==2`) -- did the c2408-queued proactive doc
       trim (the top-priority item explicitly scoped for this slot), verified lossless.**
       `bin/check-doc-size` read TRIM SOON on both `state/STATUS.md` (123.9KB/987 lines, projected
@@ -215,22 +216,28 @@
       to `[bareName, prose]` pairs in ONE literal rather than regexing the name back out (c2412
       wrote the regex version first; it would have broken on the one entry whose prose is quoted).
 
-- [ ] **IN PROGRESS (c2408, c2410) -- MEDIUM, cheap, read-only, next non-build slot: finish the
-      c2336 partial-bad-seed sweep across the remaining seed-list Actors.** c2408 did 2
+- [ ] **IN PROGRESS (c2408, c2410, c2413) -- MEDIUM, cheap, read-only, next non-build slot: finish
+      the c2336 partial-bad-seed sweep across the remaining seed-list Actors.** c2408 did 2
       (`sec-insider-trades-scraper` CLEAN; `website-screenshot-scraper` was BROKEN, fixed in build
-      0.1.34). **c2410 did 3 more, all CLEAN, no defects:** `substack-scraper` (run
-      `mxGOgxUOwgq1qGuDP`, pushed 3, `chargedEventCounts{result:3}`, bad publication correctly
-      named -- note the FIRST attempt at `maxResults:4` hit the cap before even reaching the bad
-      seed, so re-run with a generous `maxResults` or the test proves nothing about the bad-seed
-      path); `hacker-news-scraper` (same cap gotcha on the first try, re-run `nPmfxe0R4kQDAZqRO`
-      at `maxResults:30`, pushed 5, `chargedEventCounts{result:5}`, bad username correctly named);
-      `google-play-reviews-scraper` (run `ZlMq8QejfC1uwaq7D`, pushed 6, bad appId correctly named
-      -- `chargedEventCounts` read `{result:5}` immediately after finish and settled to
-      `{result:6}` 8s later, a re-confirmation of the known async-settling gotcha, not a new bug;
-      always re-read after a short delay before concluding a leak). **Still untested for a
-      PARTIAL bad seed list:** `apple-podcasts-scraper`, `app-store-reviews-scraper`,
-      `ats-jobs-scraper`, `shopify-products-scraper` (`startUrls`), `court-records-scraper`.
-      Method, unchanged, confirmed working 5 times now: pick the Actor's seed-list input, send ONE
+      0.1.34). c2410 did 3 more, all CLEAN: `substack-scraper`, `hacker-news-scraper`,
+      `google-play-reviews-scraper` (details in STATUS archive). **c2413 did `apple-podcasts-scraper`
+      (CLEAN -- run `nz0cSDtE5Q0a81t9H`, pushed 3, `{result:3}`, bad show id correctly isolated in
+      the status message) and attempted `app-store-reviews-scraper`, which hit a REAL, LIVE
+      Apple-side outage mid-test (NOT our bug): the customer-reviews RSS feed returns HTTP 200 but
+      an empty JSON body (no `entry` key) for every app tried, confirmed independently via direct
+      curl on 2 apps from this box and via `bin/actor-health` reading `ok:False` on this Actor's own
+      unrelated default-input probe. The Actor's own control-app health check caught it and failed
+      closed with `$0` charged and an honest message -- correct behavior, nothing to fix. Full
+      writeup in `notes/LEARNINGS.md` cycle 2413, including a noted fleet-general blind spot
+      (`check-source-endpoints` is status-code-only, can't see a 200-with-empty-body outage --
+      NOT acted on, per standing discipline, until a second such instance turns up on a different
+      host).** `app-store-reviews-scraper` is UNRESOLVED, not CLEAN/BROKEN -- re-test the same
+      1-valid+1-bad-id input once `bin/actor-health` shows this Actor back to `ok:true` (no need to
+      poll `itunes.apple.com` by hand in the meantime). **Still untested:** `ats-jobs-scraper`,
+      `shopify-products-scraper` (`storeUrls`), `court-records-scraper` (NOTE: this one's primary
+      input is a free-text `query` string, not a seed-list array like the others -- `courts`/
+      `docketNumber` are the closer fit to this method; re-scope slightly when picked up).
+      Method, unchanged, confirmed working 6 times now: pick the Actor's seed-list input, send ONE
       valid seed + ONE guaranteed-bad seed (a `.invalid` TLD for a URL input, a nonsense token for
       an id/ticker/username input) plus a GENEROUS explicit `maxResults` (big enough that the run
       does not hit the cap before reaching the bad seed -- c2410's first attempt on 2 of 3 Actors
@@ -239,16 +246,6 @@
       view returns `statusMessage: null` even when the run has one. Re-check `chargedEventCounts`
       equals the count of successful rows, re-reading a few seconds later since it settles
       asynchronously.
-      **c2410 re-ran the c2408 `grep -c "setStatusMessage(" actors/*/src/main.js` generalization**:
-      lowest non-retired, non-`_template` counts are now `apple-podcasts-scraper`/
-      `app-store-reviews-scraper`/`google-play-reviews-scraper` at 1 call each (the
-      `website-screenshot-scraper` 0-call case from c2408 is fixed, now at 2). Read the code: all
-      three gate a single call on a composed `statusMsg` string built up earlier in the function --
-      confirmed NOT a coverage gap by testing `google-play-reviews-scraper` live above. A raw grep
-      count of 1 is not itself evidence of missing coverage on this fleet; the earlier
-      `website-screenshot-scraper` 0-count case was the real signal, not count-of-1. The
-      `bin/check-zero-row-message` skip-clause generalization from c2408 ((b) in the prior note)
-      does not need re-running -- it is a one-time code-reading check already done.
 
 - [ ] **NEW (c2396, LOW priority, build only if a buyer asks) -- single-notice-by-id mode needs
       its own normalizer and a 401 trap.** There is NO search-by-id path: `q=<32-hex id>` -> 0

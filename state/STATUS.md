@@ -1,3 +1,42 @@
+Updated: 2026-10-29 ~07:45 UTC by cycle 2413 (claude-sonnet-5) -- non-build slot (`2413%3==1`).
+Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-source-endpoints` c2414,
+`website-screenshot-scraper` audit c2417); `bin/revenue` unchanged (25 public Actors, 47 users,
+758 runs30d, 756/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new actionable mail
+(identical list to c2412, both owner threads `dc593cfb`/`2b237f1b` long-resolved, rest is DMARC +
+vendor/rental spam). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/tools`, `/pricing`, `/tools/apple-podcasts-scraper`, `/tools/app-store-reviews-scraper` all 200
+before and after.
+
+**Continued the c2408/c2410-queued partial-bad-seed sweep onto `apple-podcasts-scraper`
+(CLEAN) and `app-store-reviews-scraper` (test blocked by a REAL, LIVE Apple-side outage, not a
+bug).** Method unchanged: 1 valid seed + 1 guaranteed-bad seed via `bin/varied-test`, status
+message read back via `GET /v2/actor-runs/<runId>`. **`apple-podcasts-scraper`**: 1 valid show
+(Lex Fridman) + 1 bad show id (`id9999999999`), `dataType:episodes` -> run `nz0cSDtE5Q0a81t9H`,
+pushed 3, `chargedEventCounts {result:3}`, message correctly isolated the bad id ("Apple returned
+nothing for: 9999999999 in storefront \"us\""). 0 charge leak, no defect.
+**`app-store-reviews-scraper`**: the same-shaped test FAILED (run `jR4mkKI959TiuEQfj`, `$0`
+charged, correct) with a message naming an Apple-side fault, not our input. Re-ran with ONLY the
+valid app (no bad seed at all, run `ND391NaQF3g7c2apd`) -- same FAILED result, ruling out the test
+itself as the cause. Confirmed three ways this is real and current, not a fluke: (1)
+`bin/actor-health` reads `{'ok': False, ...}` for this Actor on its own unrelated default-input
+probe; (2) direct `curl` from this box to Apple's customer-reviews RSS feed for 2 different apps
+(including a very-high-review-volume control) returns HTTP 200 but an empty JSON body (no `entry`
+key at all); (3) re-checked ~2 minutes later, still empty. **The Actor's own control-app health
+logic already does the right thing** -- fails closed, charges $0, tells the buyer honestly it's
+an Apple-side fault to retry later. Nothing to fix in our code. Noted (not acted on, per the
+c2383/c2388 standing discipline) that `bin/check-source-endpoints` is HTTP-status-bucket-only and
+structurally cannot see a "200 with an empty body" outage shape -- its next scheduled run (due
+c2414, i.e. next cycle) will read `itunes.apple.com` as unchanged `ok`, so this outage would stay
+invisible fleet-wide if the Actor's own in-run check weren't catching it. Full writeup in
+`notes/LEARNINGS.md` cycle 2413. **Sweep status**: `apple-podcasts-scraper` done (CLEAN);
+`app-store-reviews-scraper` UNRESOLVED (re-test once `bin/actor-health` shows it back to `ok:true`);
+still untested: `ats-jobs-scraper`, `shopify-products-scraper`, `court-records-scraper` (the last
+one's primary input is a free-text `query`, not a seed-list array -- re-scope slightly when
+picked up). $0 spent (3 sub-cent own-token test runs, all inside BUDGET.md), 0 code shipped, 0 new
+Actors created today, no owner email warranted (a live Apple-side outage correctly handled with
+$0 charged is not owner-fixable and not revenue).
+
+---
 Updated: 2026-10-29 ~07:20 UTC by cycle 2412 (claude-opus-5) -- BUILD slot (`2412%3==0`).
 Preflight: `checks-due` NONE DUE (soonest `check-source-endpoints` c2414); `audit-due --all` NONE
 DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue` unchanged (25 public Actors, 47
