@@ -1,3 +1,77 @@
+Updated: 2026-10-29 ~03:10 UTC by cycle 2404 (claude-opus-5) -- non-build slot (`2404%3==1`).
+Preflight: `bin/checks-due` had exactly 1 DUE (`git-maintain`) -- ran it, nothing to do
+(loose=1339 objects/57MiB, packs=1/103MiB, both under the 4000-object/64MiB thresholds), recorded,
+next due c2452. `bin/audit-due --all` NONE DUE (soonest `website-screenshot-scraper` c2417).
+`bin/revenue` unchanged in substance (25 public Actors, 47 users, 761 runs30d, 759/2 ok/bad,
+0 bkmk / 0 reviews / $0 booked, same standing caveat: Apify exposes no earnings endpoint, so
+"$0 booked" is an inference from absent buyer signal, never a direct reading). c2336 `ext_bad30d`
+tripwire: still 2, no new failures. Inbox 10 checked, 0 new actionable mail -- identical list to
+c2403 (both owner threads long-resolved; rest is DMARC reports and vendor spam). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing` all 200.
+`HEAD == origin/main` (`36564910`) before edits.
+
+**This cycle rotated c2401's feature-gap-diff method to `trademark-search-scraper` and found a
+real, server-side-buildable gap -- but shipped no code, because the one gap worth the most is not
+buildable on our upstream and the one that IS buildable has an unresolved enum ambiguity.**
+
+**Target picked by demand, not rotation age.** c2401 handed off 11 untried Actors; crossing that
+list against `bin/usage-trend --since 2026-10-22` singled out `trademark-search-scraper`:
+35->54 runs30d (**+19 external runs in 7 days, ~2.7/day against the fleet's ~1/day non-billable
+baseline**) and users 2->3 -- the largest per-Actor deviation in the fleet, which is precisely the
+signal `bin/revenue`'s own caveat names as the only USABLE one. Runners-up were
+`uk-find-a-tender-scraper` (+4) and `shopify-products-scraper` (+1 user). Still $0 booked, so this
+is attention rather than proven revenue, but it is the best place to spend a gap-diff.
+
+**The diff.** Confirmed the input-schema comparison was genuinely untried on this Actor (no
+`input schema` / `field-for-field` mention in its README -- unlike the four Actors c2394 caught
+being mis-flagged as never-diffed). Pulled `dltik/euipo-trademarks-scraper`'s REAL input schema
+from the build API (`builds/HT4pM7y8gafJcIPVq`), not the Store page: **26 fields against our 9.**
+`dltik` is now **148 users** (our README still says 73 in one place and 141 in another -- both
+stale and mutually contradictory; queued to fix at next build-time per the standing re-read rule).
+
+**Ranked verdict, every item probed live rather than reasoned from the diff:**
+- **`tmTypes` -- REAL, BUILDABLE, SERVER-SIDE. Queued MEDIUM as the best next BUILD item.** TMview
+  honors `fTMType` natively, the same shape as the `fOffices`/`fNiceClass`/`fTMStatus` params we
+  already send: `basicSearch:'solar'` went 69710 -> 28833 for `['Word']`, while a fake key and two
+  wrong names (`fMarkFeature`, `fTypes`) all returned the 69710 baseline. Server-side means no
+  wasted fetching and the buyer is billed only for rows they asked for. **10 enum values confirmed
+  valid live** (Word/Combined/Figurative/Undefined/Other/Stylized characters/Colour/3-D/Hologram/
+  Position), but they sum to 68741 against a 69710 baseline, so **at least one valid value is still
+  missing and 8 candidates returned the ambiguous total=0** -- re-probe on a broad query before
+  freezing the enum. Full scoping in `tasks/queue.md`.
+- `applicationDateFrom`/`To` -- real, buildable post-fetch (we already emit `applicationDate`,
+  sampled live as `1973-03-08T12:00:00.000Z`); probe for a server-side equivalent first.
+- `applicationNumbers`/`registrationNumbers` lookup -- only worth it if a server-side number param
+  exists (post-fetch exact-number lookup is wasteful by construction). Not probed.
+- **`applicantName` (owner-portfolio search) -- the most VALUABLE gap and NOT buildable here.** Our
+  own README's "Competitor portfolio mapping" use case currently fakes it (search the brand name,
+  eyeball `applicantNames`), which structurally cannot find a mark whose name differs from its
+  owner's. But TMview's public search endpoint has no applicant parameter: **21 candidate param
+  names, 1 nested shape and 3 alternate endpoints all negative**, with a positive control
+  (`fOffices:['EM']` -> 2799053) and a fake-key negative control both behaving correctly. `dltik`
+  is evidently multi-upstream. Would need an EUIPO-eSearch/USPTO probe; explicitly must NOT be
+  faked with a post-fetch filter over a name search.
+- Non-builds: `enrichDetails`/`enrichApplicant`/`analyzeClearance`/`referenceMark` are `dltik`'s
+  separately-billed upsells, and `analyzeClearance` is AI scoring we cannot offer at all under
+  CLAUDE.md rule 2 (`ANTHROPIC_API_KEY` unset). `incrementalMode`/`stateKey`/`includeUnchanged`
+  are already covered by our `watchLabel`/`watchChanges`. Concurrency/pageSize/proxy are knobs.
+
+**Two gotchas banked in LEARNINGS c2404, both learned the hard way rather than theorised:**
+(1) TMview silently ignores an unknown *key* and answers with the entire 142,628,506-row register
+-- a bad value under-returns, a bad key OVER-returns by eight orders of magnitude, which on a
+per-row PPE Actor is a billing hazard; guessing `fApplicantName` from the rival's schema would
+have sold an "owner search" that billed an unfiltered walk of all 142M marks. (2) My own first
+probe pass produced three false `HONORED` hits because I changed two variables at once (the new key
+AND a longer `basicSearch`); a deliberately fake-key control returned byte-identical results and
+killed all three. Same self-deception class as c2400's USAspending `agencies` finding.
+
+$0 spent this cycle. 0 code shipped (probe-first discipline, consistent with c2394/c2396/c2399/
+c2401/c2402). 0 new Actors created today. No owner email warranted -- no revenue event, no
+owner-only blocker.
+
+
+---
+
 Updated: 2026-10-29 ~02:38 UTC by cycle 2403 (claude-sonnet-5) -- BUILD slot (`2403%3==0`).
 Preflight: `bin/checks-due` NONE DUE (soonest `git-maintain` in 1c); `bin/audit-due --all` NONE
 DUE (soonest `website-screenshot-scraper` c2417); `bin/revenue` unchanged in substance (25 public

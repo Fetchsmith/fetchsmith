@@ -1,3 +1,99 @@
+- [x] **DONE cycle 2404 (non-build slot, `2404%3==1`) -- ran the one DUE fleet check
+      (`git-maintain`: loose=1339/57MiB, packs=1/103MiB, both under the 4000-object/64MiB
+      thresholds, nothing to do, recorded, next due c2452) and rotated the c2401 feature-gap-diff
+      method to `trademark-search-scraper` -- picked because it is BOTH on c2401's untried list
+      AND carries the fleet's strongest live demand deviation.** Preflight: `audit-due --all`
+      NONE DUE (soonest `website-screenshot-scraper` c2417); services/site healthy (`/`, `/tools`,
+      `/pricing` all 200); `HEAD == origin/main` (`36564910`) before edits; inbox 10 checked, 0 new
+      mail (identical list to c2403 -- both owner threads long-resolved, rest DMARC + vendor spam);
+      revenue unchanged in substance (25 Actors, 47 users, 761 runs30d, 759/2 ok/bad, 0 bkmk/0
+      rev/$0 booked, same standing no-earnings-endpoint caveat). c2336 `ext_bad30d` tripwire:
+      still 2, no new failures.
+      **Demand signal that drove the target pick (`bin/usage-trend --since 2026-10-22`):**
+      `trademark-search-scraper` went 35->54 runs30d (+19 in 7d, ~2.7/day against the fleet's ~1/day
+      non-billable baseline) and users 2->3 -- the largest per-Actor deviation in the fleet, which is
+      the one metric `bin/revenue`'s own caveat names as USABLE. Next two were `uk-find-a-tender`
+      (+4) and `shopify-products` (+1 user). Still $0 booked, so this is attention, not proven
+      revenue -- but it is the right place to spend a gap-diff.
+      **Confirmed the input-schema diff was genuinely untried here** (no `input schema`/
+      `field-for-field` mention anywhere in its README, unlike the 4 Actors c2394 caught being
+      mis-flagged as never-diffed). Fetched `dltik/euipo-trademarks-scraper`'s REAL input schema
+      via `GET /v2/acts/dltik~euipo-trademarks-scraper/builds/HT4pM7y8gafJcIPVq` (not the Store
+      page): **26 fields against our 9.** Note `dltik` is now **148 users**, not the 73/141 figures
+      our README still carries in two places -- see the follow-up below.
+      **Ranked gap verdict, each probed live rather than assumed:**
+      1. `tmTypes` (filter by mark type) -- **REAL, BUILDABLE, SERVER-SIDE, and the best next
+         build.** Probed: TMview honors `fTMType` natively, same shape as the `fTMStatus`/
+         `fNiceClass`/`fOffices` params we already send. `basicSearch:'solar'` baseline 69710 ->
+         28833 for `['Word']`. So it costs the buyer nothing extra and wastes no fetching -- it is
+         NOT a post-fetch filter. Fully scoped below.
+      2. `applicationDateFrom`/`applicationDateTo` -- REAL and buildable as a post-fetch filter;
+         we already emit `applicationDate` (sampled live, ISO form `1973-03-08T12:00:00.000Z`).
+         Same shape as the shipped `sam-gov minAwardAmount` / `remote-jobs locationKeyword`
+         filters. Not probed for a server-side equivalent -- do that first, as with `fTMType`.
+      3. `applicationNumbers`/`registrationNumbers` direct lookup -- we already emit both fields,
+         but an exact-number lookup done post-fetch is wasteful by construction, so this is only
+         worth building if TMview honors a server-side number param. NOT probed yet.
+      4. `applicantName` (owner-portfolio search) -- **REAL, HIGH-VALUE, and NOT BUILDABLE on our
+         current upstream. Do not attempt it without a new upstream.** This is the most valuable
+         gap found (owner-portfolio mapping is a top trademark use case, and our own README's
+         "Competitor portfolio mapping" use case currently *fakes* it by telling the buyer to
+         search the brand name and eyeball `applicantNames` -- which cannot find a mark whose name
+         differs from its owner's). But TMview's public `/tmview/api/search/results` exposes no
+         applicant parameter at all: **21 candidate param names, 1 nested shape and 3 alternate
+         endpoints all negative**, with a POSITIVE control (`fOffices:['EM']` -> 2799053, honored)
+         and a NEGATIVE control (fake key -> baseline) both behaving correctly. `dltik` must be
+         using a different upstream (its own `enrichApplicant` copy mentions resolving French
+         applicants live, so it is multi-upstream). Next step if ever wanted: probe EUIPO eSearch
+         and USPTO for a real owner-search endpoint -- do NOT ship an owner search backed by a
+         post-fetch filter over a name search, it would silently under-return.
+      5. Deliberate non-builds: `enrichDetails`/`enrichApplicant`/`analyzeClearance`/
+         `referenceMark` are `dltik`'s separately-billed upsells ($0.01/$0.005/$0.02) and
+         `analyzeClearance` is AI scoring -- which we cannot offer at all under CLAUDE.md rule 2
+         (no Claude in product runtime, `ANTHROPIC_API_KEY` unset). `incrementalMode`/`stateKey`/
+         `includeUnchanged` are already covered by our `watchLabel`/`watchChanges`.
+         `detailConcurrency`/`searchConcurrency`/`pageSize`/`proxyConfig` are knobs, not features.
+         `fuzzySearch` is a genuine difference in kind from our `matchMode` (phonetic vs
+         substring/whole-word) -- unprobed, lower value than 1-3.
+      **Two gotchas recorded in LEARNINGS c2404, both caught the hard way this cycle** -- TMview
+      silently ignores unknown params and answers with the WHOLE 142,628,506-row register, and my
+      own first probe pass produced three false "HONORED" hits that a fake-key negative control
+      killed. $0 spent, 0 code shipped (probe-first discipline, same as c2394/c2396/c2399/c2401/
+      c2402), 0 new Actors, no owner email warranted (no revenue event, no owner-only blocker).
+
+- [ ] **NEW follow-up (c2404, MEDIUM priority, fully scoped -- best next BUILD-cycle item).
+      Ship `tmTypes` on `trademark-search-scraper`: a server-side mark-type filter.**
+      Why it is worth doing: it closes a real `dltik` gap, it is server-side (so it costs no extra
+      fetching and the buyer is billed only for rows they wanted), it is the same code shape as
+      three params the Actor already sends, and it lands on the Actor with the fleet's strongest
+      live demand deviation (+19 runs/7d, users 2->3, measured c2404).
+      **Implementation (mirrors the existing `statuses`/`niceClasses`/`offices` handling exactly):**
+      add an `array` input `tmTypes` to `.actor/input_schema.json`, validate against the enum
+      below, and in the body builder at `src/main.js:462-470` add
+      `if (tmTypes.length) body.fTMType = tmTypes;` alongside the existing `fOffices`/`fNiceClass`/
+      `fTMStatus` lines. No output-field change, so no `dataset_schema.json`/registry change.
+      **Enum: 9 values CONFIRMED VALID live this cycle** against `basicSearch:'solar'` (total shown
+      is the filtered count, baseline 69710): `Word` 28833, `Combined` 26694, `Figurative` 5693,
+      `Undefined` 5475, `Other` 1299, `Stylized characters` 708, `Colour` 24, `3-D` 13,
+      `Hologram` 1, `Position` 1. Only 4 of these ever appeared in actual sampled rows
+      (`Word`/`Figurative`/`Combined`/`Undefined`), so trust the filter probe, not the row sample.
+      **MUST DO FIRST -- one unresolved ambiguity, do not skip it:** 8 candidate names returned
+      total=0 (`Three dimensional`, `Sound`, `Motion`, `Multimedia`, `Pattern`, `Olfactory`,
+      `Tracemark`) and 0 is AMBIGUOUS on this API -- it means either "invalid value" or "valid but
+      no 'solar' marks of that type", exactly the indistinguishable-empty failure class already
+      documented for `offices`/`statuses`/`niceClasses` in this same file. The 10 confirmed values
+      sum to 68741 against a 69710 baseline, so **969 rows are unaccounted for and at least one
+      valid type value is therefore still missing from the list.** Re-probe with a much broader
+      search (an office-only or single-letter query) before freezing the enum, and apply the
+      Actor's established pattern: warn-but-still-send on an unrecognised value (forward-compatible)
+      rather than silently narrowing the buyer's search to nothing.
+      **Also fix while in the file (same-cycle, cheap):** our README cites `dltik/
+      euipo-trademarks-scraper` at 73 users in one place and 141 in another; the live figure read
+      this cycle is **148**. Per the standing 20+-user rule both counts are publishable but both
+      are now stale, and the two numbers contradict each other. Per the c2383 standing method and
+      the "changes BOTH Actor code and listing copy" process lesson, re-read the count live at
+      build time and correct both mentions in the same push.
+
 - [x] **DONE cycle 2403 (BUILD slot) -- shipped the c2402 follow-up: a fixed "always-keep"
       worldwide-location exemption on `remote-jobs-scraper`'s `locationKeyword` filter, build
       0.1.88, platform-verified at row level.** Implemented exactly as scoped: `keep()`

@@ -5876,3 +5876,36 @@ a missing *behavior* that only shows up in the rival's prose description.** The 
 of this method (c2391/c2396/c2399/c2401) all diffed field lists; this is the first case where the
 field itself turned out equivalent but the documented matching *semantics* around it were not —
 worth reading a rival's field descriptions as closely as its field names on future rotations.
+
+## Cycle 2404 — two API-probing lessons from the TMview applicant-search probe
+
+**1. TMview's `/tmview/api/search/results` silently ignores unknown parameters and answers with
+the ENTIRE register (142,628,506 rows).** It does not 400, it does not warn — an unrecognised key
+is simply dropped and you get an unfiltered whole-register response. This is a worse variant of
+the already-documented "unrecognised *value* returns 0 rows" trap on `fOffices`/`fTMStatus`/
+`fNiceClass`: a bad *value* silently under-returns, but a bad *key* silently OVER-returns by eight
+orders of magnitude. On a per-row PPE Actor that is a billing hazard, not just a correctness one —
+guessing `fApplicantName` and shipping it would have sold buyers an "owner portfolio search" that
+actually bills them for an unfiltered walk of all 142M marks. **Rule: on this upstream, never add a
+new filter param without proving the total MOVES, and never infer a param exists from a rival's
+input schema — rivals may be on a different upstream entirely.**
+
+**2. When probing an API that ignores unknown keys, a positive control is not enough — you need a
+FAKE-KEY NEGATIVE CONTROL.** My first probe pass flagged `searchBy`/`searchType`/
+`basicSearchField` as `*** HONORED ***` because the response changed. It was a false positive of my
+own heuristic: I had also lengthened `basicSearch` from `"louis vuitton"` to the full
+`"LOUIS VUITTON MALLETIER"` in those requests, and the drop from 1760 to 10 came entirely from the
+longer NAME search. A control sending the same `basicSearch` with a deliberately fake key
+(`zzTotallyFakeKey`) returned byte-identical results, killing all three "hits". **Rule: change one
+variable per probe, and always include (a) a known-good key as a positive control and (b) a
+nonsense key as a negative control. Without (b), any API that ignores unknowns will manufacture
+fake positives for you.** This is the same class of self-deception as c2400's USAspending
+`agencies` finding (HTTP 200 + 0 results for an unrecognised agency name read as a real "no
+incumbents" answer) — both would have shipped a confidently wrong feature.
+
+**3. Method note that paid off: pick the gap-diff target by demand, not just by rotation age.**
+c2401 handed off a flat list of 11 untried Actors. Crossing that list against
+`bin/usage-trend --since` picked `trademark-search-scraper` (+19 external runs/7d, users 2->3 —
+the fleet's largest deviation) instead of an arbitrary pick, and it turned up a server-side
+buildable filter (`fTMType`) on the one Actor where a feature has the best chance of being seen.
+Do the cross-reference every time the rotation list is consulted.
