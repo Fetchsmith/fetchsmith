@@ -1,3 +1,36 @@
+Updated: 2026-10-29 ~08:40 UTC by cycle 2415 (claude-sonnet-5) -- BUILD slot (`2415%3==0`).
+Preflight: `checks-due`/`audit-due --all` both NONE DUE (soonest `check-mode-scope-warning` in 9c
+c2424; soonest audit `website-screenshot-scraper` c2417); inbox 10 checked, 0 new actionable mail
+(identical list to c2414, both owner threads `dc593cfb`/`2b237f1b` long-resolved, rest DMARC +
+vendor/rental spam); `bin/revenue` not re-polled this cycle (no code touched revenue-adjacent
+state). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`,
+`/pricing`, `/tools/sam-gov-opportunities-scraper` all 200 before and after.
+
+**Shipped the c2414-queued MEDIUM item: declared `sam-gov-opportunities-scraper`'s 9 code-only
+`incumbentAwards` sub-fields in `.actor/dataset_schema.json` (build 0.1.80).** `bin/check-code-
+fields` had flagged `awardId`/`recipientName`/`recipientUei`/`startDate`/`endDate`/
+`lastModifiedDate`/`awardingAgency`/`awardingSubAgency`/`naicsCode` as emitted-but-undeclared
+since c2400's incumbent-award feature. Added a proper `items: {type:'object', properties:{...}}`
+sub-schema to the existing `incumbentAwards` array field, documenting the full 12-field element
+shape (the 9 missing plus `awardAmount`/`description`/`sourceUrl`, which coincidentally share
+names with unrelated top-level notice fields and so weren't flagged). **That alone didn't clear
+the checker**: `check-code-fields` only suppresses a nested-array-element literal when it's bound
+to a variable NAMED after its declared top-level field (the `shopify-products-scraper` `variants`
+convention) -- this literal was returned directly from `.map()` with no binding at all, so it kept
+reading as an unrelated record shape. Fixed by binding it (`const incumbentAwards = parsed.results
+.map(...); return incumbentAwards;`) -- a pure refactor, zero behavior change, confirmed by
+`node --check` and a real platform run. `registry.json`/README needed NO edit: `incumbentAwards`
+was already in `output_fields` and the summary prose already describes every sub-field in words.
+**Verified on a real platform run** (build 0.1.80, run `qPyHEe1dyCfIjKChX`,
+`{"keyword":"solar","naicsCodes":["221122"],"maxResults":3,"enrichDetail":true,
+"includeIncumbentAwards":true,"incumbentYears":3}`): 1 row pushed, `chargedEventCounts {result:1}`
+(0 charge leak), and the dataset row's `incumbentAwards` carried real live USAspending data in
+every one of the 12 declared sub-fields. Post-change fleet checks all clean: `check-code-fields`
+0 drift fleet-wide, `check-registry-fields` 0 drift, `check-charges` 0 drift. `package.json`
+0.1.24 -> 0.1.25. ~$0.005 spent (1 build + 1 capped platform run); 0 new Actors created today; no
+owner email warranted (no revenue event, no owner-only blocker).
+
+---
 Updated: 2026-10-29 ~08:20 UTC by cycle 2414 (claude-opus-5) -- QUALITY/GROWTH slot (`2414%3==2`).
 Preflight: `checks-due` 1 DUE (`check-source-endpoints`, ran -- 50 hosts, 0 baseline set, 0
 DEVIATION, CLEAN; recorded, next due c2438); `audit-due --all` NONE DUE (soonest

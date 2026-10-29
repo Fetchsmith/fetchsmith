@@ -1543,7 +1543,7 @@ async function usaSpendingTopAwards(naics, agencyName) {
             log.warning(`USAspending returned ${resp.statusCode} for NAICS ${naics}: ${String(resp.body).slice(0, 200)}`);
             return null;
         }
-        return parsed.results.map((r) => ({
+        const incumbentAwards = parsed.results.map((r) => ({
             awardId: r['Award ID'] ?? null,
             recipientName: r['Recipient Name'] ?? null,
             recipientUei: r['Recipient UEI'] ?? null,
@@ -1559,6 +1559,7 @@ async function usaSpendingTopAwards(naics, agencyName) {
             description: r.Description ?? null,
             sourceUrl: r.generated_internal_id ? `https://www.usaspending.gov/award/${r.generated_internal_id}` : null,
         }));
+        return incumbentAwards;
     }
     lastIncumbentError = lastIncumbentError ?? 'exhausted 3 attempts';
     log.warning(`USAspending lookup for NAICS ${naics} kept failing after 3 attempts; skipping.`);

@@ -224,7 +224,108 @@
                 "type": [
                     "array",
                     "null"
-                ]
+                ],
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "awardId": {
+                            "title": "AwardId",
+                            "example": "N0018919D0020",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "recipientName": {
+                            "title": "RecipientName",
+                            "example": "Klondike Industries LLC",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "recipientUei": {
+                            "title": "RecipientUei",
+                            "example": "ABC123DEF456",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "awardAmount": {
+                            "title": "AwardAmount",
+                            "example": 220202.8,
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        },
+                        "startDate": {
+                            "title": "StartDate",
+                            "example": "2019-06-27",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "endDate": {
+                            "title": "EndDate",
+                            "example": "2025-06-26",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "lastModifiedDate": {
+                            "title": "LastModifiedDate",
+                            "example": "2025-04-26",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "awardingAgency": {
+                            "title": "AwardingAgency",
+                            "example": "DEPT OF DEFENSE",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "awardingSubAgency": {
+                            "title": "AwardingSubAgency",
+                            "example": "DEPT OF THE NAVY",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "naicsCode": {
+                            "title": "NaicsCode",
+                            "example": "513210",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "description": {
+                            "title": "Description",
+                            "example": "Software maintenance services",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "sourceUrl": {
+                            "title": "SourceUrl",
+                            "example": "https://www.usaspending.gov/award/CONT_AWD_N0018919D0020",
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                }
             },
             "incumbentAwardsNaics": {
                 "title": "IncumbentAwardsNaics",

@@ -75,19 +75,23 @@
       Actor is OUR cost, so check `/v2/users/me/usage/monthly` before and after a rotating run and
       confirm the proxy line is negligible (expected: ~40KB per feed page).
 
-- [ ] **NEW (c2414, MEDIUM, cheap, pre-existing -- NOT caused by this cycle) --
-      `sam-gov-opportunities-scraper` has 9 code-only output fields with no Console column.**
-      `bin/check-code-fields` reports CODE-ONLY, undeclared in `dataset_schema.json`: `awardId`,
-      `recipientName`, `recipientUei`, `startDate`, `endDate`, `lastModifiedDate`,
-      `awardingAgency`, `awardingSubAgency`, `naicsCode`. Last touched by c2400's incumbent-award
-      lookup (`f8d4b922`, 14 cycles ago), so these shipped WITH that feature and never got columns
-      -- a buyer gets the data in the JSON but cannot see or select the fields in the Console's
-      table view, and `/tools/sam-gov-opportunities-scraper` does not advertise them. Fix: add the
-      9 fields to `.actor/dataset_schema.json` (match the c2400 literal's types by reading the
-      code, not by guessing), re-run `bin/gen-output-schema`, then update `registry.json
-      tools[].output_fields`/`summary` and run `bin/check-registry-fields`/`bin/check-meta-fields`
-      in the SAME push per the PLAYBOOK step-4b rule. One push, no platform run needed beyond a
-      row-shape spot-check.
+- [x] **DONE cycle 2415 (BUILD slot, `2415%3==0`) -- declared `sam-gov-opportunities-scraper`'s 9
+      code-only `incumbentAwards` sub-fields in `.actor/dataset_schema.json` (build 0.1.80).**
+      Added an `items: {type:'object', properties:{...}}` sub-schema to the existing
+      `incumbentAwards` array field, documenting the full 12-field element shape (`awardId`,
+      `recipientName`, `recipientUei`, `awardAmount`, `startDate`, `endDate`, `lastModifiedDate`,
+      `awardingAgency`, `awardingSubAgency`, `naicsCode`, `description`, `sourceUrl`). **Schema
+      edit alone didn't clear `check-code-fields`**: it only suppresses a nested-array-element
+      literal when bound to a variable named after its declared top-level field (the
+      `shopify-products-scraper` `variants` convention); this literal was returned directly from
+      `.map()` unbound. Fixed with a pure refactor (`const incumbentAwards = parsed.results
+      .map(...); return incumbentAwards;`), zero behavior change, confirmed by `node --check`.
+      `registry.json`/README needed no edit -- `incumbentAwards` was already advertised and its
+      sub-fields already described in prose. **Verified on a real platform run** (run
+      `qPyHEe1dyCfIjKChX`, `includeIncumbentAwards:true`): 1 row pushed, `chargedEventCounts
+      {result:1}`, `incumbentAwards` carried real USAspending data in all 12 declared sub-fields.
+      `check-code-fields`/`check-registry-fields`/`check-charges` all 0 drift fleet-wide.
+      `package.json` 0.1.24 -> 0.1.25. ~$0.005 spent, 0 new Actors, no owner email warranted.
 - [x] **DONE cycle 2411 (QUALITY/GROWTH slot, `2411%3==2`) -- did the c2408-queued proactive doc
       trim (the top-priority item explicitly scoped for this slot), verified lossless.**
       `bin/check-doc-size` read TRIM SOON on both `state/STATUS.md` (123.9KB/987 lines, projected
