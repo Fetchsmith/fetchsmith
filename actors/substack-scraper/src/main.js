@@ -120,11 +120,20 @@ if (ignoredInputs.length) {
 const STATUS_MESSAGE_MAX = 1000;
 const ignoredSuffix = ignoredInputs.length
   ? ` NOTE — ${ignoredInputs.join(', ')} ${ignoredInputs.length === 1 ? 'was' : 'were'} IGNORED:`
-    + ' discovery filters need discoverCategories; see the log for what to do instead.'
+    + ' discovery filters need discoverCategories; see the log for what to do instead, and'
+    + ' RUN_SUMMARY.ignoredInputs.'
   : '';
 const withIgnored = (msg) => (ignoredSuffix
   ? msg.slice(0, STATUS_MESSAGE_MAX - ignoredSuffix.length) + ignoredSuffix
   : msg.slice(0, STATUS_MESSAGE_MAX));
+// Every other Actor fleet-wide carrying this ignoredInputs pattern (steam-reviews-scraper,
+// grants-gov-scraper, ats-jobs-scraper, ...) writes it to RUN_SUMMARY so a pipeline can assert
+// ignoredInputs.length === 0 with no status-message parsing and no presence check (always an
+// array, [] when clean). This Actor never had a RUN_SUMMARY at all until now (c2427) -- added
+// as its own scoped KV write, not folded into detection, since the array itself already existed.
+async function writeRunSummary() {
+  await Actor.setValue('RUN_SUMMARY', { ignoredInputs });
+}
 
 // Posts that come back without an article body are cheaper for us (no per-post detail request)
 // and are billed on their own, cheaper event — see the Pricing section of README.md.
@@ -857,6 +866,7 @@ if (leaderboardOnly) {
       + (notes.length ? ` NOTE — this result is incomplete: ${notes.join('; ')}.` : ''),
     ));
   }
+  await writeRunSummary();
   await Actor.exit();
 }
 // A publication can be reached by handle and by custom domain, and can sit in two categories.
@@ -1004,4 +1014,5 @@ if (!publicationTargets.length && !postTargets.length) {
 }
 
 log.info(`Done. Pushed ${pushed} items.`);
+await writeRunSummary();
 await Actor.exit();
