@@ -1458,12 +1458,21 @@ if (watchMode && seedFailure) {
 // measured live on this Actor (`2KyoZrB1CUMjk6kqc`, the plain-no-match message cut mid-word at
 // exactly 500, losing cause (3)). Same fleet-wide defect closed on grants-gov-scraper (0.1.67)
 // and fda-recall-scraper (0.1.68); applied here with the same shape, cycle 1762.
+// `suffix` is RESERVED out of the budget rather than appended after clamping (the clamp-reservation
+// sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428, fec-campaign-finance-scraper
+// cycle 2433): truncationNote()/lookupShortfallNote() are billing-relevant disclosures (a dropped
+// baseline id will be re-charged as "new"; a direct lookup that came up short names exactly which
+// ids got no row), and the `!complete` call site below can join a base long enough on its own
+// (worst case: a `lookup-request-failed` detail plus a 5-part lookupShortfallNote(), measured at
+// 345 chars alone) that the old append-after-clamp order could silently delete the disclosure
+// instead of the less-important base prose. The log keeps the full, unclamped text.
 const STATUS_MESSAGE_MAX = 500;
-const clampStatusMessage = (msg) => {
-    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
-    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
     const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
 };
 
 // Direct-lookup shortfall, in one clause reusable by the zero-row message and the delivering-run
@@ -1591,21 +1600,25 @@ if (!complete) {
     // `incompleteReason` is first-cause-wins, so on a direct lookup it names ONE of the things that
     // went wrong (e.g. 'max-results') and stays silent about the rest; the shortfall note
     // enumerates them all. truncationNote() and the note can never both be non-empty -- that one
-    // is watch-mode only, and watchMode requires `nctIds.length === 0`.
+    // is watch-mode only, and watchMode requires `nctIds.length === 0` -- so passing both combined
+    // as one suffix is safe: at most one of the two is ever non-empty, never their sum.
     await Actor.setStatusMessage(clampStatusMessage(
         `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
-        + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`
-        + truncationNote() + lookupShortfallNote(),
+        + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+        truncationNote() + lookupShortfallNote(),
     ));
 } else if (baselineTruncated > 0) {
     // A complete run that evicted baseline ids would otherwise show nothing in the console at all
-    // -- the shortfall is in a future bill, not in this run's row count.
-    await Actor.setStatusMessage(
-        (seeding
+    // -- the shortfall is in a future bill, not in this run's row count. This branch had NO clamp
+    // at all before cycle 2435: `watchLabel` is caller-supplied free text with no schema
+    // `maxLength`, so an unbounded label here relied entirely on Apify's own silent 500-char cut
+    // (no " ..." marker) to protect truncationNote()'s billing-relevant warning.
+    await Actor.setStatusMessage(clampStatusMessage(
+        seeding
             ? `Baseline run for watch label "${watchLabel}": ${watchSeen.size.toLocaleString('en-US')} stud(y/ies) recorded, 0 charged.`
-            : `Watch label "${watchLabel}": ${pushed.toLocaleString('en-US')} row(s) delivered.`)
-        + truncationNote(),
-    );
+            : `Watch label "${watchLabel}": ${pushed.toLocaleString('en-US')} row(s) delivered.`,
+        truncationNote(),
+    ));
 } else if (zeroRowMessage) {
     // clampStatusMessage() is a backstop only -- the compact plain-no-match wording above is
     // already written to fit whole; this guards the watch-label branch, whose length depends on
