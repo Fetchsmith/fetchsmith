@@ -152,6 +152,21 @@
             "description": "Make one extra request per opportunity to add NAICS codes, set-aside, place-of-performance state/country and point-of-contact (name/email/phone, published by the agency itself as part of the public notice). Slower. Opportunities only; ignored for wage determinations, assistance listings and exclusions (their search rows already carry the full record).",
             "default": false
         },
+        "includeIncumbentAwards": {
+            "title": "Attach incumbent awards (who holds this work now)",
+            "type": "boolean",
+            "description": "For each opportunity's NAICS code, attach the top 3 US federal contract awards by dollar value from **USAspending.gov** as `incumbentAwards` -- recipient name/UEI, amount, start and end dates, awarding agency and a usaspending.gov link -- so you can see who currently performs this work before deciding whether to bid. Matched on NAICS code and, when the notice's department maps to one of USAspending's top-tier agency names, on agency too (`incumbentAwardsMatchedBy` on every row tells you which). **Not billed separately** -- no extra per-result charge. Two things to know: (1) NAICS codes are not on SAM.gov's search row, so this turns **Enrich with detail call** on automatically (one extra request and ~200ms per row); (2) the look-back window matches each award's **last-modification date, not its start date**, so a long-running contract that began before the window but was recently modified is included -- that is intentional (it is still the incumbent), and every row carries both dates. Lookups are deduped per unique NAICS+agency pair, so 200 opportunities across 5 NAICS codes cost 5 requests, not 200. Definitive contract awards only (type A/B/C/D) -- not IDV vehicles, grants or loans. Opportunities only; the run stops with an explanation on other data types rather than billing you for rows that can never carry the field.",
+            "default": false
+        },
+        "incumbentYears": {
+            "title": "Incumbent look-back (years, by last modification)",
+            "type": "integer",
+            "description": "How far back to look for incumbent awards, in years, when **Attach incumbent awards** is on. 1 to 10, default 3; out-of-range values are clamped. This window is matched against each award's **last-modification/obligation date on USAspending, not its award or start date** (measured live) -- so a 3-year setting can legitimately return a contract that started in 2007 and was last modified in 2025. The exact window used is written to `RUN_SUMMARY.incumbentAwards.lastModifiedBetween`.",
+            "editor": "number",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 3
+        },
         "includeAttachments": {
             "title": "Include attachment download links",
             "type": "boolean",

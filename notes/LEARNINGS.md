@@ -5799,3 +5799,54 @@ Reusable for the actual build: `us-federal-awards-scraper`'s `src/main.js` alrea
 `naics_codes`/`award_amounts`/agency-fuzzy-match (`TOPTIER_AGENCY_NAMES`) machinery this feature
 needs — copy that, don't re-derive it. Full scoping note in `tasks/queue.md` (search "incumbent-
 award lookback").
+
+## Cycle 2400 — a cross-API enrichment's real risk is the SECOND upstream's silent failure mode, not the first's; and agency-name matching between two federal datasets needs a word-set key, not a string compare
+
+Built the last open item on the c2391 SAM.gov rival-gap list: `includeIncumbentAwards`/
+`incumbentYears` on `sam-gov-opportunities-scraper` (build 0.1.79), attaching USAspending's top
+contract awards per opportunity NAICS code. c2399 had already scoped it and named two gotchas
+(NAICS needs `enrichDetail`; `time_period` keys off last-modification date) — both held up on
+re-probe. Three NEW reusable lessons came out of the build itself:
+
+1. **USAspending's `agencies` filter fails SILENTLY-NARROW, not loudly, on an unrecognised
+   name.** Measured live: `{"type":"awarding","tier":"toptier","name":"VETERANS AFFAIRS,
+   DEPARTMENT OF"}` — SAM.gov's own spelling of the same agency — returns **HTTP 200 with 0
+   results**, no error, no warning. Passing a cross-dataset name straight through would have
+   produced "this NAICS has no incumbents" for every VA opportunity, which looks like a real
+   answer. `us-federal-awards-scraper` already warns about this class in prose ("an unrecognised
+   spelling narrows your results to nothing rather than widening them") but its own
+   `canonAgencyName` only does a lowercase exact match, which is enough there (names are
+   buyer-typed, and an unknown one is logged) and NOT enough for machine-to-machine matching.
+   **Rule: when joining two federal datasets on agency name, an unmatched name must DEGRADE the
+   query (drop the agency filter, label the row), never be sent through.**
+2. **The match key between SAM.gov and USAspending agency names is the sorted significant-word
+   set, not the string.** Live sample of SAM.gov `organizationHierarchy` DEPARTMENT values:
+   `DEPT OF DEFENSE`, `VETERANS AFFAIRS, DEPARTMENT OF`, `INTERIOR, DEPARTMENT OF THE`,
+   `HEALTH AND HUMAN SERVICES, DEPARTMENT OF`, `NATIONAL AERONAUTICS AND SPACE ADMINISTRATION`.
+   USAspending writes the same five as `Department of Defense`, `Department of Veterans
+   Affairs`, `Department of the Interior`, `Department of Health and Human Services`, and the
+   identical NASA string. Every pair is the same bag of words in a different order, so:
+   lowercase → strip non-alphanumerics → expand `dept`→`department` → drop
+   `of/the/and/for/us/u/s/united/states` → sort → join. 13/13 cases pass including 2 real
+   non-top-tier departments (`UNITED STATES HOLOCAUST MEMORIAL MUSEUM`, `SMITHSONIAN
+   INSTITUTION`) correctly returning null. Order-insensitivity is only safe because no two of
+   USAspending's 107 top-tier names are word-set anagrams — **asserted in code** (collision →
+   both names demoted to null → NAICS-only fallback) rather than claimed in a comment, so a
+   future list edit that breaks it degrades loudly instead of silently mismatching.
+3. **A second upstream needs its own error variable and its own `incompleteReason`.** This
+   Actor's `apiGet` writes every failure into a shared `lastApiError` that feeds SAM.gov health
+   reporting. Routing USAspending failures through it would have blamed SAM.gov for a USAspending
+   outage — the same wrong-upstream misattribution this fleet keeps correcting. Shipped with a
+   separate `lastIncumbentError`, a distinct `incumbents-failed` reason, and
+   `RUN_SUMMARY.incumbentAwards.lastError`. Also: `incumbentAwards: null` (not requested / no
+   NAICS / lookup broke, disambiguated by `incumbentAwardsMatchedBy`) vs `[]` (looked up, nothing
+   found) — the platform run proved the distinction holds, returning 2 `no-naics` nulls with
+   `detailLookupsFailed: 0`, so the nulls were provably genuine rather than a broken detail call.
+
+**Also worth reusing:** dedupe per unique join key, not per row — a 6-row run cost 2 USAspending
+requests (4 cache hits), the platform run 1 request for 3 rows. And the c2398 schema lesson paid
+off immediately: `dataset_schema.json` here is a 76-field union across four dataTypes, so the
+three new fields were **hand-edited to 79** rather than regenerated from an opportunities-only
+local test. Finally, the build number was predicted from the Apify builds API (`0.1.78` latest →
+`0.1.79` next) BEFORE writing the README self-reference, so the c2398 wrong-build-number
+near-miss cost 0 extra pushes this time instead of a second docs-only build.

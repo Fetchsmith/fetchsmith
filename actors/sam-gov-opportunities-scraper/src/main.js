@@ -848,6 +848,44 @@ if (isExclusions) {
         includeAttachments = false;
     }
 }
+// INCUMBENT AWARDS (`tiger19935` rival gap, scoped c2399, built c2400 -- see notes/LEARNINGS.md).
+// For each opportunity's NAICS code, attach the largest recent USAspending contract awards: "who
+// holds this work today", which is the first thing a capture manager wants before deciding to bid.
+// A SECOND upstream (api.usaspending.gov), not SAM.gov -- the same `spending_by_award` mechanism
+// already in production in us-federal-awards-scraper/src/main.js, reused rather than re-derived.
+let includeIncumbentAwards = input.includeIncumbentAwards === true;
+// 1-10, default 3, clamped (not failed) -- unlike min/maxAwardAmount this is a window WIDTH, not a
+// filter whose misreading would silently hand back an unfiltered billed set: any value in range
+// returns a correct, fully-disclosed answer, so the forgiving read is the right one here.
+const incumbentYears = Math.min(Math.max(Math.round(Number(input.incumbentYears ?? 3) || 3), 1), 10);
+// `award` + NAICS only exist on the opportunities row shape; wd/cfda/exclusions records come from
+// different endpoints entirely and carry neither, so there is nothing to look an incumbent up BY.
+// Fails CLOSED pre-request (0 charge) rather than warn-and-ignore, per LEARNINGS c2392 lesson 5:
+// the field is brand new, and delivering a billed row set whose paid-for `incumbentAwards` is null
+// on every row would look like "USAspending has nothing" instead of "this never ran".
+if (includeIncumbentAwards && (isWd || isCfda || isExclusions)) {
+    await Actor.fail(
+        `includeIncumbentAwards is not supported for dataType "${dataType}": SAM.gov's "${dataType}" records carry `
+        + 'no NAICS code (and are not contracting opportunities), so there is no key to match a prior award on. '
+        + 'Stopping before any row is delivered or charged. Use dataType "opportunities" for incumbent awards.',
+    );
+}
+// GOTCHA #1, confirmed live twice (c2399, re-confirmed c2400): NAICS codes are NOT on the SAM.gov
+// search row -- a raw row's key set is `_id/title/solicitationNumber/type/award/organizationHierarchy/
+// descriptions/...` with no `naics` at all, which is why `normalizeRow` sets `naicsCodes: null` and
+// only `enrichDetail`'s per-row DETAIL_API call fills it. So this feature CANNOT run without
+// enrichDetail, and it is forced on rather than warn-and-skipped: a buyer who asked for incumbents
+// and got `incumbentAwards: null` on every row because of an unrelated unticked box would be paying
+// for nothing. Said loudly, because it costs them an extra HTTP call + 200ms per row.
+if (includeIncumbentAwards && !enrichDetail) {
+    enrichDetail = true;
+    log.warning(
+        'includeIncumbentAwards needs each row\'s NAICS code, which is NOT on SAM.gov\'s search row -- it only '
+        + 'arrives via the per-row detail call -- so `enrichDetail` has been turned ON for you. That is one extra '
+        + 'HTTP request plus ~200ms per delivered row (and it also fills setAside / place of performance / '
+        + 'pointOfContact, at no extra charge). Set enrichDetail: true yourself to silence this.',
+    );
+}
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 200), 1), 10000); // 10k = confirmed backend depth cap (cycle 538)
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
@@ -879,6 +917,7 @@ log.info(`Starting SAM.gov ${ROW_NOUN} search (dataType=${dataType}, index=${SEA
     // stated next to the server-side filters rather than inferred from the Done line.
     ...(dateWindowActive ? { postedFrom, postedTo, deadlineFrom, deadlineTo } : {}),
     ...(solicitationNumberActive ? { solicitationNumber: solicitationNumberClean, noticeIdFastPath: noticeIdFastPathActive } : {}),
+    ...(includeIncumbentAwards ? { includeIncumbentAwards, incumbentYears } : {}),
 });
 
 function buildSearchUrl(page, size) {
@@ -1086,6 +1125,14 @@ function normalizeRow(row) {
         pointOfContact: null,
         // Attachment list, filled in only when includeAttachments is on (extra HTTP call per row).
         attachments: null,
+        // Filled in only when includeIncumbentAwards is on (a USAspending lookup per unique
+        // NAICS+agency pair). `[]` = looked up, USAspending holds no matching contract award;
+        // `null` = not requested, no NAICS code on the notice, or the lookup broke -- which of
+        // those is in `incumbentAwardsMatchedBy` ("naics+agency" | "naics" | "no-naics" |
+        // "lookup-failed" | null when the feature is off).
+        incumbentAwards: null,
+        incumbentAwardsNaics: null,
+        incumbentAwardsMatchedBy: null,
     };
 }
 
@@ -1318,6 +1365,237 @@ async function enrichOne(item) {
     item.pointOfContact = Array.isArray(d.pointOfContact)
         ? d.pointOfContact.map((c) => ({ name: c.fullName ?? null, email: c.email ?? null, phone: c.phone ?? null, type: c.type ?? null }))
         : null;
+    return item;
+}
+
+// ---------------------------------------------------------------------------
+// Incumbent-award lookup (second upstream: USAspending). See the input-parsing block above for
+// why enrichDetail is forced on; this half is the lookup itself.
+const USASPENDING_API = 'https://api.usaspending.gov/api/v2/search/spending_by_award/';
+// Definitive (A/B/C/D) contract awards only. USAspending rejects HTTP 400 on a request mixing
+// `award_type_codes` from more than one group, and IDV codes (IDV_A..IDV_E) are a separate group --
+// so including them would mean a SECOND request per NAICS pair. Skipped deliberately: an IDV is a
+// vehicle a buyer can be on, not the work itself, and "who is performing this today" is the
+// question being answered. Stated in the README so it is not mistaken for full coverage.
+const INCUMBENT_AWARD_TYPE_CODES = ['A', 'B', 'C', 'D'];
+const INCUMBENT_FIELDS = [
+    'Award ID', 'Recipient Name', 'Recipient UEI', 'Awarding Agency', 'Awarding Sub Agency',
+    'Award Amount', 'Start Date', 'End Date', 'Last Modified Date', 'NAICS', 'Description',
+    'generated_internal_id',
+];
+const INCUMBENTS_PER_LOOKUP = 3; // top 3 by dollar value per NAICS(+agency) pair
+
+// Calendar-year arithmetic, not `incumbentYears * 365` days -- 10 years of 365-day "years" is 2-3
+// days short of the date a buyer means by "10 years ago", and the window edge is a disclosed
+// number here (it goes into RUN_SUMMARY), so it should be the real one.
+function incumbentWindowEnd() { return new Date().toISOString().slice(0, 10); }
+function incumbentWindowStart() {
+    const d = new Date();
+    d.setUTCFullYear(d.getUTCFullYear() - incumbentYears);
+    return d.toISOString().slice(0, 10);
+}
+
+// USAspending's top-tier agency names, verbatim from /api/v2/references/toptier_agencies/ (the
+// same list us-federal-awards-scraper carries). The `agencies` filter compares these EXACTLY:
+// measured live c2400, sending SAM.gov's own spelling "VETERANS AFFAIRS, DEPARTMENT OF" returned
+// 0 rows with NO error -- it narrows silently to nothing instead of failing. That is why an
+// unmatched department name is DROPPED to a NAICS-only lookup below rather than sent through.
+const TOPTIER_AGENCY_NAMES = [
+    'Access Board', 'Administrative Conference of the U.S.', 'Advisory Council on Historic Preservation',
+    'African Development Foundation', 'Agency for International Development', 'American Battle Monuments Commission',
+    'Appalachian Regional Commission', 'Armed Forces Retirement Home', 'Commission of Fine Arts',
+    'Commission on Civil Rights', 'Committee for Purchase from People Who Are Blind or Severely Disabled',
+    'Commodity Futures Trading Commission', 'Consumer Financial Protection Bureau', 'Consumer Product Safety Commission',
+    'Corporation for National and Community Service', 'Corps of Engineers - Civil Works',
+    'Council of the Inspectors General on Integrity and Efficiency', 'Court Services and Offender Supervision Agency',
+    'Defense Nuclear Facilities Safety Board', 'Delta Regional Authority', 'Denali Commission',
+    'Department of Agriculture', 'Department of Commerce', 'Department of Defense', 'Department of Education',
+    'Department of Energy', 'Department of Health and Human Services', 'Department of Homeland Security',
+    'Department of Housing and Urban Development', 'Department of Justice', 'Department of Labor',
+    'Department of State', 'Department of Transportation', 'Department of Veterans Affairs',
+    'Department of the Interior', 'Department of the Treasury', 'District of Columbia Courts',
+    'Election Assistance Commission', 'Environmental Protection Agency', 'Equal Employment Opportunity Commission',
+    'Executive Office of the President', 'Export-Import Bank of the United States',
+    'Farm Credit System Insurance Corporation', 'Federal Communications Commission',
+    'Federal Deposit Insurance Corporation', 'Federal Election Commission',
+    'Federal Financial Institutions Examination Council', 'Federal Labor Relations Authority',
+    'Federal Maritime Commission', 'Federal Mediation and Conciliation Service',
+    'Federal Mine Safety and Health Review Commission', 'Federal Permitting Improvement Steering Council',
+    'Federal Trade Commission', 'General Services Administration', 'Government Accountability Office',
+    'Gulf Coast Ecosystem Restoration Council', 'Harry S Truman Scholarship Foundation',
+    'Institute of Museum and Library Services', 'Inter-American Foundation', 'International Trade Commission',
+    'James Madison Memorial Fellowship Foundation', 'Japan-United States Friendship Commission',
+    'John F. Kennedy Center for the Performing Arts', 'Marine Mammal Commission', 'Merit Systems Protection Board',
+    'Millennium Challenge Corporation', 'Morris K. Udall and Stewart L. Udall Foundation',
+    'National Aeronautics and Space Administration', 'National Archives and Records Administration',
+    'National Capital Planning Commission', 'National Council on Disability', 'National Credit Union Administration',
+    'National Endowment for the Arts', 'National Endowment for the Humanities', 'National Labor Relations Board',
+    'National Mediation Board', 'National Science Foundation', 'National Transportation Safety Board',
+    'Northern Border Regional Commission', 'Nuclear Regulatory Commission', 'Nuclear Waste Technical Review Board',
+    'Occupational Safety and Health Review Commission', 'Office of Government Ethics',
+    'Office of Navajo and Hopi Indian Relocation', 'Office of Personnel Management', 'Office of Special Counsel',
+    'Overseas Private Investment Corporation', 'Peace Corps', 'Pension Benefit Guaranty Corporation',
+    'Presidio Trust', 'Privacy and Civil Liberties Oversight Board', 'Public Buildings Reform Board',
+    'Railroad Retirement Board', 'Securities and Exchange Commission', 'Selective Service System',
+    'Small Business Administration', 'Social Security Administration', 'Southeast Crescent Regional Commission',
+    'Southwest Border Regional Commission', 'Surface Transportation Board', 'U.S. Agency for Global Media',
+    'U.S. Interagency Council on Homelessness', 'U.S. International Development Finance Corporation',
+    'United States Chemical Safety Board', 'United States Court of Appeals for Veterans Claims',
+    'United States Trade and Development Agency', 'Vietnam Education Foundation',
+];
+// SAM.gov and USAspending write the same agency three different ways, so a lowercase string
+// compare (which is all us-federal-awards-scraper needs, because ITS names are buyer-typed) does
+// not work here. Measured against the live SAM.gov DEPARTMENT values c2400, the real forms are:
+//   "DEPT OF DEFENSE"                        vs "Department of Defense"
+//   "VETERANS AFFAIRS, DEPARTMENT OF"        vs "Department of Veterans Affairs"
+//   "INTERIOR, DEPARTMENT OF THE"            vs "Department of the Interior"
+//   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF" vs "Department of Health and Human Services"
+// All four are the SAME bag of significant words in a different order, so the match key is the
+// sorted token set with filler words dropped and `dept` expanded. Order-insensitive matching is
+// safe for this list specifically: no two of USAspending's top-tier names are anagrams of each
+// other (asserted below, so a future list edit that broke that would be caught, not silent).
+const AGENCY_FILLER_WORDS = new Set(['of', 'the', 'and', 'for', 'us', 'u', 's', 'united', 'states']);
+function agencyKey(name) {
+    return String(name ?? '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .split(' ')
+        .map((w) => (w === 'dept' ? 'department' : w))
+        .filter((w) => w && !AGENCY_FILLER_WORDS.has(w))
+        .sort()
+        .join(' ');
+}
+const AGENCY_BY_KEY = new Map();
+for (const name of TOPTIER_AGENCY_NAMES) {
+    const key = agencyKey(name);
+    // A collision would make one of the two names silently unreachable; neither is more correct, so
+    // the honest resolution is to match NEITHER (both fall back to a NAICS-only lookup, which is a
+    // weaker but never a WRONG answer) and say so, rather than pick by list order.
+    if (AGENCY_BY_KEY.has(key)) AGENCY_BY_KEY.set(key, null);
+    else AGENCY_BY_KEY.set(key, name);
+}
+function matchToptierAgency(samName) {
+    if (!samName) return null;
+    return AGENCY_BY_KEY.get(agencyKey(samName)) ?? null;
+}
+// Proves the claim made in the comment above instead of asserting it in prose: with the current
+// list there are 0 key collisions, so order-insensitive matching loses nothing. Logged (not
+// thrown) because a collision degrades to a NAICS-only lookup, which is weaker but still correct.
+if (includeIncumbentAwards) {
+    const collided = [...AGENCY_BY_KEY.entries()].filter(([, v]) => v === null).length;
+    if (collided) {
+        log.warning(`${collided} USAspending top-tier agency name(s) share a word-set key and cannot be `
+            + 'matched unambiguously; opportunities from those agencies fall back to a NAICS-only incumbent lookup.');
+    }
+}
+
+let incumbentLookups = 0;        // USAspending requests actually made
+let incumbentCacheHits = 0;      // rows served from an already-fetched NAICS(+agency) pair
+let incumbentRowsNoNaics = 0;    // rows with no NAICS code at all -- nothing to look up
+let incumbentLookupsFailed = 0;  // USAspending request broke; that row's incumbentAwards is null
+let incumbentAgencyUnmatched = 0; // department name not in USAspending's top-tier list -> NAICS-only
+const incumbentCache = new Map(); // `${naics}|${agency ?? ''}` -> array (possibly empty) | null on failure
+// Deliberately NOT written into `lastApiError`/the SAM.gov retry path: that variable feeds this
+// Actor's SAM.gov health reporting, and blaming SAM.gov for a USAspending outage is exactly the
+// wrong-upstream misattribution this fleet keeps correcting. Kept separate, surfaced on its own.
+let lastIncumbentError = null;
+
+async function usaSpendingTopAwards(naics, agencyName) {
+    const filters = {
+        award_type_codes: INCUMBENT_AWARD_TYPE_CODES,
+        // GOTCHA #2 -- `time_period` filters on the award's ACTION/last-modification date, not its
+        // start date (measured live c2399 and re-confirmed c2400: a 3-year window still returns a
+        // contract that STARTED 2007-12-05, because it was modified 2025-04-26). Every row carries
+        // both `startDate` and `lastModifiedDate` so the buyer can see which is which, and the
+        // README/schema say so in those words. Calling this a "look-back" without that disclosure
+        // would be a false claim about our own output.
+        time_period: [{ start_date: incumbentWindowStart(), end_date: incumbentWindowEnd() }],
+        naics_codes: { require: [naics] },
+    };
+    if (agencyName) filters.agencies = [{ type: 'awarding', tier: 'toptier', name: agencyName }];
+    const body = {
+        filters, fields: INCUMBENT_FIELDS, sort: 'Award Amount', order: 'desc',
+        limit: INCUMBENTS_PER_LOOKUP, page: 1, subawards: false,
+    };
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+        if (!timeBudgetOk()) { lastIncumbentError = 'stopped before the run time budget ran out'; return null; }
+        let resp;
+        try {
+            resp = await gotScraping({
+                url: USASPENDING_API, method: 'POST', json: body, responseType: 'text',
+                throwHttpErrors: false, retry: { limit: 0 }, timeout: { request: 30000 },
+                headers: { accept: 'application/json' },
+            });
+        } catch (err) {
+            lastIncumbentError = `request error: ${err.message}`;
+            await sleep(Math.max(Math.min(attempt * 2000, remainingMs()), 0));
+            continue;
+        }
+        if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            lastIncumbentError = `HTTP ${resp.statusCode}`;
+            await sleep(Math.max(Math.min(attempt * 3000, remainingMs()), 0));
+            continue;
+        }
+        let parsed = null;
+        try { parsed = JSON.parse(resp.body); } catch { /* handled below */ }
+        if (resp.statusCode !== 200 || !Array.isArray(parsed?.results)) {
+            lastIncumbentError = `HTTP ${resp.statusCode}, non-JSON or unexpected body`;
+            log.warning(`USAspending returned ${resp.statusCode} for NAICS ${naics}: ${String(resp.body).slice(0, 200)}`);
+            return null;
+        }
+        return parsed.results.map((r) => ({
+            awardId: r['Award ID'] ?? null,
+            recipientName: r['Recipient Name'] ?? null,
+            recipientUei: r['Recipient UEI'] ?? null,
+            awardAmount: typeof r['Award Amount'] === 'number' ? r['Award Amount'] : null,
+            // Both dates on purpose -- see the `time_period` note above. `startDate` can predate
+            // the requested window by years; `lastModifiedDate` is what the window actually matched.
+            startDate: r['Start Date'] ?? null,
+            endDate: r['End Date'] ?? null,
+            lastModifiedDate: r['Last Modified Date'] ?? null,
+            awardingAgency: r['Awarding Agency'] ?? null,
+            awardingSubAgency: r['Awarding Sub Agency'] ?? null,
+            naicsCode: r.NAICS?.code ?? null,
+            description: r.Description ?? null,
+            sourceUrl: r.generated_internal_id ? `https://www.usaspending.gov/award/${r.generated_internal_id}` : null,
+        }));
+    }
+    lastIncumbentError = lastIncumbentError ?? 'exhausted 3 attempts';
+    log.warning(`USAspending lookup for NAICS ${naics} kept failing after 3 attempts; skipping.`);
+    return null;
+}
+
+async function attachIncumbentAwards(item) {
+    // enrichDetail is forced on when this feature is active, so `naicsCodes` is filled by the time
+    // this runs -- unless the detail call itself failed (null) or the notice genuinely carries no
+    // NAICS code (an empty array, common on sources-sought and some award notices). Both leave
+    // `incumbentAwards: null` with `incumbentAwardsMatchedBy: "no-naics"`, which is distinguishable
+    // from "looked up and found nothing" (`[]`) -- the same null-means-broken/empty-means-empty
+    // rule the attachments and detail fields already follow.
+    const naics = Array.isArray(item.naicsCodes) ? item.naicsCodes.find((c) => /^\d{2,6}$/.test(String(c))) : null;
+    if (!naics) {
+        incumbentRowsNoNaics += 1;
+        item.incumbentAwardsMatchedBy = 'no-naics';
+        return item;
+    }
+    const agency = matchToptierAgency(item.department) ?? matchToptierAgency(item.agency);
+    if (!agency) incumbentAgencyUnmatched += 1;
+    // Deduped per unique NAICS(+agency) pair across the whole result set, not once per row: a broad
+    // keyword search easily returns 50-200 rows against a handful of distinct NAICS codes, and the
+    // answer for a pair cannot differ between two rows that share it.
+    const key = `${naics}|${agency ?? ''}`;
+    if (incumbentCache.has(key)) {
+        incumbentCacheHits += 1;
+    } else {
+        incumbentLookups += 1;
+        incumbentCache.set(key, await usaSpendingTopAwards(naics, agency));
+        await sleep(200); // only after a real request, never on a cache hit
+    }
+    const awards = incumbentCache.get(key);
+    if (awards === null) incumbentLookupsFailed += 1;
+    item.incumbentAwards = awards;
+    item.incumbentAwardsNaics = naics;
+    item.incumbentAwardsMatchedBy = awards === null ? 'lookup-failed' : (agency ? 'naics+agency' : 'naics');
     return item;
 }
 
@@ -1797,6 +2075,14 @@ if (!seeding) {
     }
     if (enrichDetail) log.info(`Enriching up to ${results.length} row(s) with detail-call fields (naics, set-aside, place of performance, contacts) as each is reached...`);
     if (includeAttachments) log.info(`Fetching attachment lists for up to ${results.length} row(s) as each is reached...`);
+    if (includeIncumbentAwards) {
+        log.info(`Looking up incumbent awards on USAspending for up to ${results.length} row(s): top `
+            + `${INCUMBENTS_PER_LOOKUP} definitive contract award(s) by dollar value per unique NAICS+agency pair, `
+            + `modified between ${incumbentWindowStart()} and ${incumbentWindowEnd()} (incumbentYears=${incumbentYears}). `
+            + 'That window matches each award\'s LAST-MODIFICATION date, not its start date, so a long-running '
+            + 'contract that started earlier and was recently modified is included (by design -- it is still the '
+            + 'incumbent). Each row carries both dates.');
+    }
 
     let beforePush = 0;
     let index = 0;
@@ -1808,7 +2094,7 @@ if (!seeding) {
         // the loop genuinely can run into the deadline. Then stopping is the honest move: the
         // alternative is delivering (and CHARGING for) rows whose paid-for detail/attachment
         // fields are null for a reason that has nothing to do with SAM.gov.
-        if ((enrichDetail || includeAttachments) && !timeBudgetOk()) {
+        if ((enrichDetail || includeAttachments || includeIncumbentAwards) && !timeBudgetOk()) {
             rowsNotReached = results.length - index;
             log.warning(`Run time budget reached after ${index} enriched row(s); ${rowsNotReached} fetched row(s) not delivered.`);
             break;
@@ -1821,6 +2107,8 @@ if (!seeding) {
         // safety because nothing was pushed/charged until every row had been enriched first. Now a
         // hard kill loses only the not-yet-reached tail, same as a run with enrichment off.
         if (enrichDetail) { await enrichOne(item); await sleep(200); }
+        // Strictly after enrichOne: the NAICS code it fills is this lookup's only input.
+        if (includeIncumbentAwards) await attachIncumbentAwards(item);
         if (includeAttachments) { await fetchAttachments(item); await sleep(200); }
         if (watchMode && idOf(item) && watchSeen.has(idOf(item))) {
             const id = idOf(item);
@@ -1873,6 +2161,12 @@ if (!seeding) {
     // leaves `attachments: null`, not `[]` (a notice with genuinely zero files is `[]`).
     if (includeAttachments && attachmentLookupsFailed) {
         markIncomplete('attachments-failed', `${attachmentLookupsFailed} of ${index} attachment lookup(s) failed; their attachments field is null for that reason, not because the notice has none`);
+    }
+    // Same rule again, for the second upstream: a buyer who paid for incumbentAwards and got null
+    // because USAspending (not SAM.gov) was down has a shortfall, and the reason names the upstream
+    // that actually failed rather than leaving it to look like SAM.gov's fault.
+    if (includeIncumbentAwards && incumbentLookupsFailed) {
+        markIncomplete('incumbents-failed', `${incumbentLookupsFailed} of ${index} row(s) have incumbentAwards: null because a USAspending lookup failed (${lastIncumbentError ?? 'unknown error'}) -- NOT because USAspending holds no matching award, which is an empty array`);
     }
 
     // The push loop abandoning rows it had already fetched is invisible in the dataset: the run
@@ -2031,6 +2325,23 @@ const runSummary = {
     chargeLimitReached,
     detailLookupsFailed: enrichDetail ? detailLookupsFailed : null,
     attachmentLookupsFailed: includeAttachments ? attachmentLookupsFailed : null,
+    // Everything a pipeline needs to tell a thin incumbent result apart from a broken one, without
+    // reading the log: how many USAspending requests were really made (vs served from the per-pair
+    // cache), how many rows had no NAICS to look up, how many fell back to a NAICS-only match, and
+    // the exact window used -- stated with the field name that says what the window matches.
+    incumbentAwards: includeIncumbentAwards ? {
+        incumbentYears,
+        awardsPerLookup: INCUMBENTS_PER_LOOKUP,
+        awardTypeCodes: INCUMBENT_AWARD_TYPE_CODES,
+        lastModifiedBetween: { start: incumbentWindowStart(), end: incumbentWindowEnd() },
+        lookups: incumbentLookups,
+        cacheHits: incumbentCacheHits,
+        uniquePairs: incumbentCache.size,
+        rowsWithoutNaics: incumbentRowsNoNaics,
+        agencyUnmatchedNaicsOnly: incumbentAgencyUnmatched,
+        lookupsFailed: incumbentLookupsFailed,
+        lastError: lastIncumbentError,
+    } : null,
     watchLabel: watchMode ? watchLabel : null,
     watchSeeding: watchMode ? seeding : null,
     baselineSize: watchMode ? watchSeen.size : null,

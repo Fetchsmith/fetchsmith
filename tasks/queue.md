@@ -195,7 +195,42 @@
       (closed as do-not-build). `tiger19935`'s incumbent-award lookback (USAspending side, not yet
       scoped) is the only unscoped item left from the c2391 rival-gap list.
 
-- [ ] **NEW (c2399, QUALITY/GROWTH slot, MEDIUM priority -- scoped and buildable, closes the last
+- [x] **DONE cycle 2400 (BUILD slot) -- SHIPPED `includeIncumbentAwards`/`incumbentYears` on
+      `sam-gov-opportunities-scraper` (build 0.1.79), closing the LAST open item on the c2391
+      rival-gap list.** c2399's scoping note (preserved below for the record) was accurate on both
+      gotchas; the build added three findings of its own, all in `notes/LEARNINGS.md` cycle 2400:
+      (1) USAspending's `agencies` filter returns **HTTP 200 with 0 results** for an unrecognised
+      agency name -- sending SAM.gov's own "VETERANS AFFAIRS, DEPARTMENT OF" through would have
+      reported "no incumbents" for every VA opportunity, so an unmatched name now DROPS to a
+      NAICS-only lookup labelled per row in `incumbentAwardsMatchedBy`; (2) the SAM<->USAspending
+      agency match key is the sorted significant-word set (`DEPT OF DEFENSE` == `Department of
+      Defense`), 13/13 real sampled names pass, and the no-anagram precondition is asserted in code
+      rather than claimed in a comment; (3) the second upstream got its own `lastIncumbentError`,
+      `incumbents-failed` reason and `RUN_SUMMARY.incumbentAwards.lastError` so a USAspending
+      outage is never reported as SAM.gov's fault. Verified locally (6-row run: 3 incumbents on
+      every row, 2 lookups / 4 cache hits proving the per-pair dedupe; `incumbentYears: 99` clamped
+      to 10; `exclusions` failed pre-request with 0 rows and 0 charge) and on the real Apify
+      platform (run `b5nphqMprIFwOscel`, build 0.1.79, dataset pulled back over the API: 3 rows
+      `naics+agency` with real EPA incumbents, 2 rows `no-naics` with `incumbentAwards: null` and
+      `detailLookupsFailed: 0` -- proving the null is a genuine missing NAICS, not a broken detail
+      call; `RUN_SUMMARY.incumbentAwards` = 1 lookup / 2 cache hits / 1 unique pair /
+      `rowsWithoutNaics: 2` / window 2021-10-29..2026-10-29 for `incumbentYears: 5`). Schema
+      hand-edited 76->79 fields per the c2398 union-schema lesson (NOT regenerated);
+      `registry.json` summary + `output_fields` updated and `check-registry-fields`/
+      `check-meta-fields` both clean; site re-confirmed serving the new copy. Build number was
+      predicted from the builds API before the README self-reference was written, so 0.1.79 was
+      correct on the first push -- ONE build (~$0.005) plus one capped platform run, no docs-only
+      re-push. **Also corrected a stale self-claim found in our own README** while editing: the
+      "Third follow-up" paragraph still listed `tiger19935`'s `minAwardAmount`/`maxAwardAmount` as
+      open, which c2398 had closed hours earlier.
+      **What is deliberately NOT in this build, if a buyer ever asks:** IDV vehicles (USAspending
+      rejects a request mixing award-type groups, so IDV_A..IDV_E would need a second request per
+      pair -- and the question answered is who performs the work, not who is on the vehicle);
+      sub-awards (`subawards: false`); and grants/loans. `INCUMBENTS_PER_LOOKUP` is hardcoded at 3
+      -- make it an input only if asked, since every extra award is free (same single request) but
+      widens the row.
+
+- [x] **SUPERSEDED by c2400 (scoping note kept for the record)
       open item from the c2391 rival-gap list) -- `tiger19935`'s incumbent-award lookback on
       `sam-gov-opportunities-scraper`.** Fetched `tiger19935/sam-gov-usaspending-contracts`'s LIVE
       input schema (`GET /v2/acts/tiger19935~sam-gov-usaspending-contracts/builds/<id>`, build
