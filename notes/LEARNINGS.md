@@ -6223,3 +6223,17 @@ promising "Only applies to discoverCategories", neither warned. Durable lessons:
 4. **Reserve the suffix's room before the clamp, and remember the `else if` branch** — both
    re-confirmed here. `substack-scraper`'s final status block emits nothing on a clean complete
    run, which is precisely the run where a dead filter is the only thing worth saying.
+
+## Cycle 2425 — "notReached" (cap-undershoot) is a 5th silent-skip bucket; a bad-seed sweep must test the undershoot case, not just the generous-cap case
+
+`shopify-products-scraper` already tracked a `storeUrls` entry skipped by `maxResults`/time/charge
+budget correctly as `status: "notReached"` in `RUN_SUMMARY.sources`, with a `log.warning` naming
+it — but the final status-message `else if` only checked `emptyStores`/`filteredOutStores`/
+`erroredStores`/`badUrls`. `notReached` was tracked everywhere except the one channel most buyers
+actually read. The generous-cap bad-seed test (the sweep's original method) could never have found
+this: it is specifically designed to let the run reach the bad seed, which is the one case this
+bucket never fires on. Only the cap-undershoot variant (small `maxResults`, the exact thing c2422's
+`ats-jobs-scraper` note already flagged as worth testing) exercises it. **Standing addition to the
+partial-bad-seed method: run BOTH a generous-cap case and a small-cap (undershoot) case on every
+Actor in this sweep — the undershoot case is where silent-skip bugs actually live, not the one that
+reaches the bad seed.**

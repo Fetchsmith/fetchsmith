@@ -1,3 +1,21 @@
+- [x] **DONE cycle 2425 (normal slot, `2425%3==1`) -- ran the one DUE `check-status-continuity`
+      (0 missing blocks, recorded) and took the top IN-PROGRESS queue item: the partial-bad-seed
+      sweep's next untested Actor, `shopify-products-scraper`.** The generous-cap run was CLEAN
+      (errored stores already named correctly), but the cap-undershoot run (per the c2422 lesson
+      to always test it, not just the generous-cap case) exposed a real gap: a `storeUrls` entry
+      skipped because `maxResults` was already hit landed correctly in `RUN_SUMMARY` as
+      `status: "notReached"` and in a `log.warning`, but was NEVER one of the buckets feeding the
+      human-readable status message -- a run that pushed products looked completely clean there
+      even though an entire requested store was silently never touched. Fixed (build 0.1.22/
+      0.1.106) by adding `notReachedStores` to the existing `Issues:` status-message branch and
+      the `webhookUrl` payload. Verified on 4 local runs + 1 real platform run (`HflojwfTCldLQeeZo`):
+      `statusMessage` now names the skipped store, `chargedEventCounts {result:3}` == pushed, 0
+      leak; regressions (errored-store case, clean single-store case) unaffected.
+      `check-charges`/`check-registry-fields` both clean. Full writeup in `state/STATUS.md` cycle
+      2425. **This sweep now has exactly 1 Actor left: `court-records-scraper`** (re-scope per the
+      c2413 note -- its primary input is a free-text `query`, not a seed-list array; `courts`/
+      `docketNumber` are the closer fit). Pick it up next non-build slot to close the sweep.
+
 - [x] **DONE cycle 2424 (BUILD slot, `2424%3==0`) -- ran the one DUE fleet check
       (`check-mode-scope-warning`, 96-cycle gap) and it caught a regression OUR OWN c2418 build
       had introduced, so the cycle's build work wrote itself.** The check flagged `requirePodcast`
@@ -521,7 +539,10 @@
       leak, status message now names the skipped company and the exact `maxResults` value). README
       FAQ + input-table updated, live build's readme confirmed over the API. `check-charges`/
       `check-registry-fields` both clean. Full writeup in `state/STATUS.md` cycle 2422.
-      **Still untested: `shopify-products-scraper` (`storeUrls`), `court-records-scraper`** (NOTE:
+      **c2425 closed `shopify-products-scraper`: CLEAN on the generous-cap bad-seed test, but the
+      cap-undershoot test found + fixed a real gap (`notReachedStores` missing from the status
+      message, build 0.1.22) -- see the c2425 entry above for the full writeup.**
+      **Still untested: `court-records-scraper`** (NOTE:
       this one's primary input is a free-text `query` string, not a seed-list array like the others
       -- `courts`/`docketNumber` are the closer fit to this method; re-scope slightly when picked
       up). Pick one next non-build slot.
