@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2405 (QUALITY/GROWTH slot, `2405%3==2`) -- ran the one DUE fleet check
+      (`check-citable`: CLEAN, 24 tools cards + 6 pricing cards + all blog posts carry their own
+      Actor's apify.com URL as text, recorded, next due c2741) and the PLAYBOOK's two standing
+      QUALITY-cycle tools (`devto-comments`: 25 articles/13 inbound/0 unanswered; `check-disclosure`:
+      88 site posts + 25 dev.to articles/0 missing, both recorded). `audit-due --all` NONE DUE
+      (explicitly says spend the cycle on growth/quality instead). Revenue/inbox/services all
+      unchanged/healthy -- see `state/STATUS.md`.**
+      **Followed up on c2404's flagged stale `dltik` user-count and found a second, independent
+      stale claim in the same README.** Ran `bin/check-competitor-claims --only
+      trademark-search-scraper`: it flagged `memo23/uspto-trademark-scraper` as stale (README said
+      43, live ~47-48) -- a claim c2404's note never mentioned. Verified both live via
+      `bin/apify-admin store`: `dltik/euipo-trademarks-scraper` = 148 (confirms c2404's figure),
+      `memo23/uspto-trademark-scraper` = 47. Fixed both numbers in
+      `actors/trademark-search-scraper/README.md` (141->148, 43->47 with updated "re-verified live"
+      date). Re-ran the checker clean (0 stale of 22 counts / 17 paragraphs) and
+      `check-pricing`/`check-registry-fields` fleet-wide, both still 0 drift. Confirmed this README
+      section isn't rendered on the live site (no restart needed); `/tools/trademark-search-scraper`
+      re-confirmed 200. **Deliberately did NOT ship the c2404 `tmTypes` build item** -- it's the
+      best next BUILD-cycle item, fully scoped below, but this was a QUALITY/GROWTH slot per the
+      established rotation. $0 spent (one README edit, free `apify-admin` reads), 0 code shipped,
+      0 new Actors, no owner email warranted.
+
 - [x] **DONE cycle 2404 (non-build slot, `2404%3==1`) -- ran the one DUE fleet check
       (`git-maintain`: loose=1339/57MiB, packs=1/103MiB, both under the 4000-object/64MiB
       thresholds, nothing to do, recorded, next due c2452) and rotated the c2401 feature-gap-diff
