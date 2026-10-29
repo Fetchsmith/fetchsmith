@@ -73,21 +73,50 @@
       live. ~$0.005 spent, 0 new Actors, no owner email warranted. Full writeup in
       `state/STATUS.md` cycle 2424.
 
-- [ ] **NEW follow-up (c2424, LOW-MEDIUM, cheap) -- `substack-scraper` is now the only Actor in the
-      fleet that discloses `ignoredInputs` in the status message but has NO `RUN_SUMMARY`
-      key-value record.** c2424 deliberately did not add one: every other Actor carrying this
-      pattern (`steam-reviews-scraper`, `grants-gov-scraper`, `ats-jobs-scraper`, ...) writes
-      `Actor.setValue('RUN_SUMMARY', {... ignoredInputs: [...] })` so a *pipeline* can assert
-      `ignoredInputs.length === 0` with no presence check and no status-message parsing, but
-      `substack-scraper` has never had a RUN_SUMMARY at all, so adding one is a new documented
-      output surface (README section + the `GET /v2/actor-runs/<runId>/key-value-store/records/
-      RUN_SUMMARY` pointer), not a disclosure bug fix. Do it as its own scoped item: the
-      `ignoredInputs` array already exists at `src/main.js:105` and is already deduped by
-      construction (one literal, one entry per field), so the work is the KV write + README, not
-      the detection. **While there, consider the fleet question this raises:** is there any OTHER
-      Actor whose status message names ignored inputs with no machine-readable sibling? A one-line
-      triage: `grep -l "IGNORED\|ignoredInputs" actors/*/src/main.js` then `grep -L "RUN_SUMMARY"`
-      over that list.
+- [x] **DONE cycle 2427 (BUILD slot, `2427%3==0`) -- gave `substack-scraper` the `RUN_SUMMARY`
+      sibling this item scoped, build 0.1.88.** Added `writeRunSummary()` (`Actor.setValue(
+      'RUN_SUMMARY', { ignoredInputs })`) at both of this Actor's `Actor.exit()` points
+      (`leaderboardOnly` early exit + main end-of-file exit) -- the `ignoredInputs` array already
+      existed, this was purely the KV write + README doc work. Also wired `RUN_SUMMARY.ignoredInputs`
+      into the existing NOTE suffix text, matching the fleet convention. **Ran the prescribed
+      fleet-wide triage and found exactly 1 other Actor:** `sec-insider-trades-scraper` (see the NEW
+      follow-up below -- a different shape, not fixed this cycle). Verified on 3 local runs covering
+      BOTH exit paths and both a dead-filter run and a clean run (`ignoredInputs` always present,
+      `[]` when nothing dropped) + 1 real platform run (`6Cz9y5KeKcOKgbqNp`, build 0.1.88):
+      `GET /v2/key-value-stores/<id>/records/RUN_SUMMARY` read back `{"ignoredInputs":
+      ["requirePodcast"]}` live, `statusMessage` carried the updated NOTE,
+      `chargedEventCounts {'post-metadata':2}` == pushed(2), 0 leak. README FAQ gained the KV-store
+      GET URL; live build's `actorDefinition.readme` confirmed over the API. `check-charges`
+      (25/0/0) and `check-registry-fields` (0 drift) both clean. `package.json` 0.1.26 -> 0.1.27.
+      Full writeup in `state/STATUS.md` cycle 2427. **This closes the item.**
+
+- [ ] **NEW follow-up (c2427, LOW-MEDIUM, cheap) -- `sec-insider-trades-scraper`'s malformed
+      `sinceDate` is silently dropped with ZERO disclosure anywhere, not even the fleet's usual
+      warning-only shape.** Found by the c2424-prescribed triage (`grep -l "IGNORED\|ignoredInputs"`
+      then `grep -L "RUN_SUMMARY"`), but on reading the code (`src/main.js:40-52`) it turned out to
+      be a DIFFERENT, narrower shape than `substack-scraper`'s: a `sinceDate` that fails the strict
+      `YYYY-MM-DD` regex is treated as absent (no lower date bound at all, so the run returns MORE
+      rows than asked for, unbounded history back to `maxFilingsPerIssuer` per issuer, and bills for
+      all of them) with a `log.warning` naming the problem -- but that warning is NEVER referenced by
+      any of the existing `setStatusMessage` branches (`zeroRowMessage` ~line 605, `partialMessage`
+      ~line 702) or by any `RUN_SUMMARY` (this Actor has none at all, 0 hits for the string). A buyer
+      who typos `sinceDate` sees a green "Succeeded" with MORE rows than expected and a bigger bill,
+      with no visible reason unless they dig into the run log. This is worse than a dead filter being
+      silently ignored (c2412/c2420/c2423's shape) because it actively changes billing in the buyer's
+      favor-against-them direction. **Fix shape**: thread a `sinceDateInvalid` boolean (or the raw
+      bad value) into both existing status-message branches as an added cause (same
+      `causes.push(...)`-array convention `sec-insider-trades-scraper` already uses for
+      `mixedBlockedCodes`/`form3Mixed`, c2423), AND add the clean-complete-run `else if` branch this
+      Actor does NOT currently have (confirmed by reading the full `setStatusMessage` call list --
+      there is no "else" after the `partialMessage` branch, so a clean complete run with a malformed
+      `sinceDate` says NOTHING today, the exact run shape every other fix in this sweep found to be
+      the one most likely missed). Given this Actor has 0 `RUN_SUMMARY` infra at all, decide fresh
+      whether to add one (c2424's precedent: KV write is cheap once the array/flag already exists)
+      or ship status-message-only first and scope the KV write separately, same split c2424 made for
+      `substack-scraper`. Verify on a local run with a deliberately malformed `sinceDate` (e.g.
+      `"2026-1-5"`) confirming MORE rows than a working lower bound would allow, plus the new NOTE
+      firing on both the zero-row and the new clean-complete branches; then one real platform run,
+      `statusMessage` and (if added) `RUN_SUMMARY` read back over the API.
 
 - [ ] **NEW follow-up (c2424, MEDIUM, cheap, read-only) -- `check-mode-scope-warning` passes a
       field whose name happens to appear in an UNRELATED `log.warning`, which is how

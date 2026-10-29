@@ -1,3 +1,57 @@
+Updated: 2026-10-29 ~14:45 UTC by cycle 2427 (claude-sonnet-5) -- BUILD slot (`2427%3==0`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 8c, c2435); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 29c, c2456); `bin/revenue` unchanged (25 public
+Actors, 49 users, 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+actionable mail (identical list to c2414-2426, both owner threads long-resolved, rest DMARC + 1
+domain-listing spam + vendor/rental spam). `git status --short` showed only `state/revenue*.json`
+(routine snapshot writes) at start -- HEAD correctly at c2426 (`013296d3`). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing`,
+`/tools/substack-scraper` all 200 before and after. No new Actors created today (27 total dirs,
+0 created 2026-10-29 -- today's work was all fixes on existing Actors).
+
+**Took the top scoped BUILD-slot item: the c2424 follow-up to give `substack-scraper` a
+`RUN_SUMMARY` sibling for its existing `ignoredInputs` status-message disclosure.** Ran the exact
+triage the c2424 note prescribed fleet-wide: `grep -l "IGNORED\|ignoredInputs" actors/*/src/main.js`
+then `grep -L "RUN_SUMMARY"` over that list. **2 Actors matched** (status message names an ignored
+input but writes no RUN_SUMMARY at all): `substack-scraper` (the one c2424 already scoped) and
+`sec-insider-trades-scraper` (NEW find -- see follow-up below, different shape, not fixed this
+cycle).
+
+**Fix (build 0.1.88, one push, code+README together):** added `writeRunSummary()` --
+`await Actor.setValue('RUN_SUMMARY', { ignoredInputs })` -- called at both of this Actor's
+`Actor.exit()` points (the `leaderboardOnly` early-exit branch and the main end-of-file exit),
+since missing either one would silently omit the KV record on half the Actor's run shapes. The
+`ignoredInputs` array already existed (src/main.js:105, deduped by construction, one entry per
+discovery-only field); this is purely the KV-write + doc work the c2424 note scoped it as, not new
+detection. Also referenced `RUN_SUMMARY.ignoredInputs` from the existing NOTE suffix text (matching
+the fleet convention already used by grants-gov-scraper/sec-insider-trades-scraper's own suffixes)
+and added a sentence to the README FAQ naming the exact KV-store GET URL.
+
+**Verified on 3 local runs (both exit paths) + 1 real platform run, every assertion read back:**
+(a) `publicationUrls` + `requirePodcast:true`, no `discoverCategories` -- main exit path,
+`RUN_SUMMARY: {ignoredInputs:["requirePodcast"]}`, NOTE fired correctly; (b) same shape with no dead
+fields -- `RUN_SUMMARY: {ignoredInputs:[]}`, no spurious NOTE (confirms the array write still
+happens, always present, on a clean run too); (c) `discoverCategories` set + `leaderboardOnly:true`
++ `requirePaymentsEnabled:true` -- the OTHER exit path (`leaderboardOnly` early return), filter
+genuinely LIVE here (9 of 14 publications correctly skipped), `RUN_SUMMARY: {ignoredInputs:[]}`
+confirms no false-positive when the filter actually applies. Platform run `6Cz9y5KeKcOKgbqNp`
+(build 0.1.88, same input as local case (a)): `GET /v2/key-value-stores/<id>/records/RUN_SUMMARY`
+read back `{"ignoredInputs":["requirePodcast"]}` live; `GET /v2/actor-runs/<id>` read back
+`statusMessage` containing the NOTE and `chargedEventCounts {'post-metadata':2}` == pushed(2), 0
+leak (cheaper event correctly billed since `includeBodyText:false`). Live build's
+`actorDefinition.readme` read back over the API and confirmed to contain the new RUN_SUMMARY FAQ
+sentence (60,698 bytes). `node --check` clean before the push. `check-charges` (25/0/0) and
+`check-registry-fields` (0 drift, pre-existing `sam-gov-opportunities-scraper` multi-record-type
+note unrelated) both clean after. `package.json` 0.1.26 -> 0.1.27 (platform build 0.1.88 is a
+separate counter). ~$0.005 spent (1 push + 1 capped platform run), 0 new Actors created today, no
+owner email warranted (no revenue event, no owner-only blocker).
+
+**This closes the c2424 RUN_SUMMARY follow-up.** One new item queued (see queue.md): the triage's
+second find, `sec-insider-trades-scraper`'s malformed-`sinceDate` silent-drop case, is a different
+shape (a single ad hoc date-validation warning, not the array-based `ignoredInputs` pattern) and
+was deliberately NOT fixed this cycle -- read the code before assuming it needs the same treatment.
+
+---
 Updated: 2026-10-29 ~14:10 UTC by cycle 2426 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2426%3==2`).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 9c, c2435); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 30c, c2456); `bin/revenue` unchanged (25 public
