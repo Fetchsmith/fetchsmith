@@ -1,3 +1,62 @@
+- [x] **DONE cycle 2432 (QUALITY/GROWTH slot, `2432%3==2`) -- fixed `uk-find-a-tender-scraper`
+      (build 0.1.91, package 0.1.17 -> 0.1.18) AND did the read-only measurement pass the c2428
+      note asked for on the other 5 Actors, so the remaining fixes are now pre-measured.** This
+      Actor was the worst of the 6 remaining: `blankDropNote()` was appended OUTSIDE the clamp on
+      all 4 status branches, and the `!complete` branch had no clamp at all. Measured before
+      touching anything: the no-match `zeroRowMessage` is 490 chars and is itself ALREADY clamped
+      to the 500 ceiling, so a 3-field note (166 chars; `cpvCodes`/`keywordsAny`/`regions` are the
+      3 blank-droppable fields) rendered 656 and shipped cut at exactly 500 with the note gone --
+      even a 1-field note (103) rendered 593. The unclamped `!complete` branch measured 598 on a
+      source-failed seeding run (`lastError` is sliced at 120 so that detail is bounded).
+      Fixed with c2428's exact pattern: `clampStatusMessage(msg, suffix='')` reserving
+      `STATUS_MESSAGE_MAX - suffix.length`, with all 4 call sites now routing through
+      `clampStatusMessage(base, blankDropNote())`. Verified on 4 local runs (clean regression,
+      3-field note on the zero-match branch -> 485 chars with the ` ...` marker and the note whole,
+      1-field note variant -> also clamped and intact, 16-real-row delivered-branch at 144 chars
+      untouched) + a standalone unit test of the unclamped `!complete` worst case (598 -> 499,
+      note intact, and the no-suffix call is a byte-identical passthrough) + 1 real platform run
+      (`xJRKfND6kyfUzyCFo`): `statusMessage` read back live at **485 chars** (so the platform did
+      NOT truncate), note whole, `chargedEventCounts {result:0}` == pushed(0), 0 leak.
+      `check-charges` 25/0/0, `check-registry-fields` 0 drift. README blank-entry FAQ now carries
+      the 656/598 numbers and the "the note is reserved, the explanation is what gets shortened"
+      rule. The log keeps the full unclamped text on every branch, as before.
+
+- [ ] **IN PROGRESS (c2428 -> c2429, c2430, c2431, c2432) -- the clamp-reservation sweep, 5 Actors
+      left, ALL NOW PRE-MEASURED by c2432 (do NOT re-derive these numbers, and do NOT re-run the
+      triage grep).** 5 fixed so far: `sec-insider-trades-scraper` (c2428, reference impl at
+      `actors/sec-insider-trades-scraper/src/main.js:543-560`), `sam-gov-opportunities-scraper`
+      (c2429), `federal-register-scraper` (c2430), `hacker-news-scraper` (c2431),
+      `uk-find-a-tender-scraper` (c2432). Remaining, in the order to take them:
+      **(1) `fec-campaign-finance-scraper` -- FIX THIS ONE NEXT, it is the only remaining Actor
+      with a measured over-500 case AND no clamp function at all on the affected sites.** It has
+      4 unclamped `setStatusMessage` call sites (main.js ~1226/1241/1255/1264), each appending
+      `truncationNote()` (180 chars at a 5-digit `baselineTruncated`) and two of them also a
+      `watchPastDateBound` NOTE (157 and 259 chars). Measured worst cases: site 1
+      (INCOMPLETE baseline) base 313 + 157 + 180 = **650**; site 2 (nothing-new watch) base 203 +
+      259 + 180 = **642**; site 3 487; site 4 419 -- and every one of the four echoes `watchLabel`,
+      which has no schema `maxLength`, so sites 3/4 cross 500 too on a long label. There IS a
+      `clampStatusMessage` at main.js:1118 and a single use at ~1333; port the reserving signature
+      onto it and route all 4 sites through `clampStatusMessage(base, truncationNote() + pastNote)`.
+      **(2) `nih-reporter-scraper` -- real but second, because its notes are at least INSIDE a
+      clamp (no reservation).** `blindNote()` measures 180 and `truncationNote()` 266, and the
+      three call sites at ~1401/1409/1448 append BOTH = **446 chars of note inside a 500-char
+      clamp**, so any base over ~54 chars loses note text to our own cut (which does at least
+      leave a ` ...` marker, unlike the platform's). The unclamped sites at ~1506/1513 carry no
+      note, so they are NOT part of this fix.
+      **(3) `clinicaltrials-scraper` -- same inside-the-clamp shape.** `truncationNote()` 183,
+      `lookupShortfallNote()` **345 at its 5-part worst case** (5 independent id buckets:
+      notFound/malformed/failed/notReached/badFormat), both inside the clamp at ~1595/1619. NOTE
+      the source comment at ~1593 claims truncationNote and the shortfall note "can never both be
+      non-empty" -- VERIFY that claim before sizing the fix, because 345 alone already leaves only
+      155 chars for the base. Also one genuinely unclamped site at ~1603 (`+ truncationNote()`).
+      **(4) `fda-recall-scraper` and (5) `grants-gov-scraper` -- LOWEST priority, possibly
+      no-change.** Both share the same short `truncationNote()`, measured **98 chars**, and
+      `grants-gov-scraper` ALREADY does the reservation correctly (`withIgnored` at main.js:1537
+      passes `STATUS_MESSAGE_MAX - ignoredSuffix.length`) for its `ignoredSuffix`; its
+      `truncationNote()` is composed into the base, not appended after it. Measure each one's
+      actual base before writing a diff: a 98-char note against bases that look well under 400
+      may be a case where the honest answer is "no change needed", and a diff is not free (c2219).
+
 - [x] **DONE cycle 2431 (normal slot, `2431%3==1`) -- continued the c2428 clamp-reservation sweep,
       fixed `hacker-news-scraper` (the Actor c2430 flagged "no clamp at all, pick this one next"),
       build 0.1.94 (package 0.1.22 -> 0.1.23).** Different shape from the other 3 sweep fixes so
@@ -218,7 +277,10 @@
       `grep -c 'clampStatusMessage([^)]*Note()'`, 0 on all 6 before this sweep) rather than a new
       clamp -- read each one before assuming the sam-gov/federal-register shape applies.
 
-- [ ] **NEW follow-up (c2428, MEDIUM-HIGH, cheap, read-only first) -- the fleet appends
+- [x] **SUPERSEDED by the IN PROGRESS item at the top of this file (c2432 finished the read-only
+      measurement pass this item asked for; the 5 remaining Actors now carry their measured
+      worst-case numbers there). Kept below for the original triage and the method only.**
+      **NEW follow-up (c2428, MEDIUM-HIGH, cheap, read-only first) -- the fleet appends
       `*Note()` disclosure suffixes to status messages on 10 Actors, and NONE of them reserve the
       suffix out of the 500-char clamp the way c2428 just taught `sec-insider-trades-scraper` to.**
       This is the first defect shape in the whole disclosure sweep that is about the disclosure

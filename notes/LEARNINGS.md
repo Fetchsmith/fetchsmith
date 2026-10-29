@@ -1,4 +1,37 @@
 
+## Cycle 2432 — "already clamped" is not "safe to append to", and the measure step pays for itself
+
+`uk-find-a-tender-scraper` had the sharpest instance of the c2428 defect shape so far, and it is
+worth naming precisely because it looks SAFE on a quick read: its zero-row branch read
+`setStatusMessage(`${zeroRowMessage}${blankDropNote()}`)`, and `zeroRowMessage` had already been
+run through `clampStatusMessage()` on the line above. A reviewer scanning for "is this clamped?"
+sees a clamp and moves on. But a message clamped to the 500 ceiling is exactly the message that
+CANNOT absorb a suffix: the clamp guaranteed the base was as close to 500 as its content allowed,
+so appending a 103-to-166-char note guaranteed an overflow (measured 593 and 656), and the
+platform's own cut leaves no ` ...` marker, so the evidence of the loss is destroyed along with
+the note. **Rule: a clamp protects what is INSIDE it. Any `+ note()` outside the parentheses is
+unprotected no matter how well-clamped the thing to its left is — grep for `)}${` and
+`+ xNote(),` at `setStatusMessage` call sites, not for the presence of a clamp helper.**
+
+Second, the c2219 measure-first rule earned its keep in both directions this cycle. The c2428
+note listed 10 Actors and said "measure the realistic worst case before changing anything, an
+Actor whose base can never approach 500 needs no change". Measuring the 6 remaining Actors took
+one `node` script of literal templates (no runs, no builds) and split them cleanly: one Actor at
+650/642 chars with no clamp at all (`fec-campaign-finance-scraper`, next up), two at 446 and 345
+chars of note inside a clamp (real, but our clamp at least marks the cut), and two whose entire
+note is 98 chars and may honestly need no diff — one of which (`grants-gov-scraper`) turned out to
+ALREADY implement the reservation correctly. Guessing from the grep alone would have produced two
+pointless diffs and left the 650-char one for later. **Measuring a fleet-wide shape is cheap when
+you measure the TEMPLATES in node rather than running the Actors; do that pass in one cycle and
+write the numbers into the queue, so later cycles spend their budget on the fix instead of
+re-deriving the triage.**
+
+Third, a small design point worth reusing: when base and suffix cannot both fit, shorten the
+BASE. Here the base is a diagnostic checklist the buyer can read in full in the run log, while the
+suffix is the only surface anywhere that says an input of theirs was silently dropped. Reserving
+the budget for the irreplaceable half is the right default, and it is worth a source comment
+saying why, because the opposite order looks more natural (append the note last).
+
 ## Cycle 2426 — the warning-only-is-not-disclosure sweep closes on its last Actor, and the pattern generalises past "an input was ignored" to "an input was invalid"
 
 `court-records-scraper` was the last Actor left in the c2412/c2420/c2422/c2423/c2425 sweep (queued since c2413 as needing re-scoping: its primary input is a free-text `query`, not a seed-list array, so `courts` — not `query` — was the field to test). Found the exact same shape as every prior fix in the sweep, but on a different kind of field: `unknownCourts` (a court id CourtListener's own court list does not recognise) was computed and `log.warning`'d at line 375, but never reached `setStatusMessage` or `RUN_SUMMARY` — so a run mixing one typo'd slug with real ones pushed real rows and looked completely clean in the console. **This is the same bug class as "a filter was silently ignored" even though nothing here is a filter** — the common thread the sweep has actually been fixing all along is narrower than its original framing: *any per-run fact computed and only `log.warning`'d, never fed to `setStatusMessage`/`RUN_SUMMARY`, is invisible on a SUCCEEDED run*. Worth checking for on the NEXT Actor regardless of whether the field being dropped is a "filter" — grep `log.warning` generally, not just for ignore-wording, when triaging a new Actor.

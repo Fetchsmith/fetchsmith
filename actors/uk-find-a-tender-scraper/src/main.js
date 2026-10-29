@@ -1119,12 +1119,21 @@ if (watchMode && seedFailure) {
 // compact rendering of the same causes in the same order, written to fit whole rather than
 // relying on the clamp (a clamped message is still non-null and still loses its tail).
 // `watchLabel` has no schema maxLength, so the clamp stays as a backstop for that branch.
+// `suffix` is RESERVED out of the 500-char budget rather than appended after clamping (cycle
+// 2432, pattern from sec-insider-trades-scraper cycle 2428). The one suffix passed here is
+// blankDropNote(), the disclosure that part of what the buyer typed was ignored -- and it was
+// previously appended OUTSIDE the clamp on every branch, so the platform ate it with no marker.
+// Measured worst cases before this fix: the no-match zeroRowMessage (490 chars, already at the
+// clamp ceiling) plus a 3-field note (166) rendered 656, and the `!complete` branch -- which had
+// no clamp at all -- rendered 598 on a source-failed seeding run. Both shipped cut at exactly 500
+// with the note gone. The log keeps the full, unclamped text either way.
 const STATUS_MESSAGE_MAX = 500;
-const clampStatusMessage = (msg) => {
-    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
-    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = STATUS_MESSAGE_MAX - suffix.length;
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, budget - 4);
     const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
 };
 let zeroRowMessage = null;
 if (pushed === 0 && !seeding) {
@@ -1368,33 +1377,43 @@ if (digestMode && pushed > 0) {
 // A short run still SUCCEEDS (the rows it did get are real and already charged), so the status
 // message is the only place the Apify console itself shows the shortfall. There was no
 // setStatusMessage call anywhere in this Actor before cycle 651.
+// Every branch below routes through clampStatusMessage(base, blankDropNote()) so the note is
+// reserved out of the 500 chars instead of being appended past them (cycle 2432) -- the base text
+// is what gets shortened when the two cannot both fit, because a buyer can recover the full
+// checklist from the log but has no other surface telling them an input of theirs was dropped.
 if (!complete) {
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
         seeding
             ? `Baseline INCOMPLETE: ${watchSeen.size.toLocaleString('en-US')} notice(s) recorded — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.${blankDropNote()}`
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. Re-seed before scheduling, or the rest will be charged as new. See RUN_SUMMARY.`
             : `Incomplete: ${pushed.toLocaleString('en-US')} notice(s) delivered — ${incompleteReason}`
-              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.${blankDropNote()}`,
-    );
+              + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
+        blankDropNote(),
+    ));
 } else if (baselineTruncated > 0) {
     // A COMPLETE run can still have evicted ids at the baseline cap, and that costs the buyer money
     // on the NEXT run. Without this branch the console would show nothing at all for it.
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
         seeding
             ? `Baseline capped: ${baselineTruncated.toLocaleString('en-US')} oldest id(s) dropped at the `
-              + `${WATCH_KEEP.toLocaleString('en-US')}-notice limit — they will be charged again as new. Narrow the watch filters. See RUN_SUMMARY.${blankDropNote()}`
+              + `${WATCH_KEEP.toLocaleString('en-US')}-notice limit — they will be charged again as new. Narrow the watch filters. See RUN_SUMMARY.`
             : `${pushed.toLocaleString('en-US')} new notice(s) — but ${baselineTruncated.toLocaleString('en-US')} `
               + `already-delivered id(s) were dropped at the ${WATCH_KEEP.toLocaleString('en-US')}-notice baseline limit `
-              + `and will be charged again. Narrow the watch filters. See RUN_SUMMARY.${blankDropNote()}`,
-    );
+              + `and will be charged again. Narrow the watch filters. See RUN_SUMMARY.`,
+        blankDropNote(),
+    ));
 } else if (zeroRowMessage) {
-    await Actor.setStatusMessage(`${zeroRowMessage}${blankDropNote()}`);
+    // `zeroRowMessage` was already clamped to 500 on its own above (it has to be: the watch
+    // variant echoes an unbounded `watchLabel`), so re-clamping here with the note reserved is
+    // what keeps the two together -- the old `${zeroRowMessage}${blankDropNote()}` measured 656.
+    await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage, blankDropNote()));
 } else if (blankDropNote()) {
     // A complete, non-empty run that still silently ignored some of what the buyer typed: the
     // Console would otherwise show nothing at all for it.
-    await Actor.setStatusMessage(
-        `${pushed.toLocaleString('en-US')} notice(s) delivered.${blankDropNote()}`,
-    );
+    await Actor.setStatusMessage(clampStatusMessage(
+        `${pushed.toLocaleString('en-US')} notice(s) delivered.`,
+        blankDropNote(),
+    ));
 } else {
     log.info(
         `Complete: every notice both portal(s) (${cursors.map((c) => c.source.label).join(', ')}) had for these `
