@@ -107,31 +107,38 @@
       live build's README confirmed over the API. `check-charges`/`check-registry-fields` both
       clean. Full writeup in `state/STATUS.md` cycle 2419.
 
-- [ ] **NEW follow-up (c2419, MEDIUM, needs careful implementation -- do NOT rush) -- part (2) of
-      the c2416 follow-up, deliberately NOT attempted this cycle.** Goal: a run whose own IP is
-      already serving reviews should never pay for the 1-request `ensureServingIp()` probe (today
-      it always pays it, even though `PROXY_ROTATIONS=6`'s own comment implies the IP is fine most
-      of the time). **The trap found while sketching it**: `ensureServingIp()` currently runs BEFORE
-      the per-pair page loop in `scrapeAppCountrySort` (src/main.js:850), so by the time any page is
-      fetched the right IP is already pinned. Moving the call to trigger lazily off the first empty
-      page INSIDE the loop (where `if (!entries.length) continue;` already is, src/main.js:888) looks
-      tempting -- it would cost 0 extra requests whenever the first real page already has rows -- but
-      if that first page WAS empty because of a refusal, the naive version just falls through to
-      `continue` and permanently loses that page (moves to page 2 without ever re-fetching page 1 on
-      the rotated IP), silently reproducing the exact "roughly 3 runs in 5 scraped nothing" bug this
-      whole feature exists to fix for whichever page it happens to land on. **Correct shape**: only
-      call `ensureServingIp()` from inside the loop, at the `!entries.length` branch, AND ONLY the
-      first time it fires (`!servingIpChecked` -- already memoised, so later calls are free no-ops);
-      if `activeProxyUrl` changed as a result (rotation happened), RE-FETCH the SAME `url` once more
-      before falling through to `continue`/interpreting it as a real hole, reusing the same
-      try/catch-and-break error handling already at src/main.js:878-887. Verify with: (a) a platform
-      run while Apple is serving this box's IP fine -- `proxyIpRotations` should stay 0 AND the
-      control-app host should get strictly fewer requests than today's baseline (confirm via
-      `RUN_SUMMARY` or a log count, not assumption); (b) a platform run captured during a refusal
-      window (watch `bin/actor-health` / direct curl for the empty-shell split, same method c2414
-      and c2416 used) -- the FIRST pair's FIRST page must still end up populated after rotation, not
-      silently skipped. Do not ship without (b) passing on a real refusal window; if one isn't
-      reachable this cycle, say so explicitly rather than shipping unverified, same as c2414 did.
+- [x] **DONE cycle 2421 (BUILD slot, `2421%3==0`) -- shipped part (2) of the c2416/c2419 follow-up
+      on `app-store-reviews-scraper`: `ensureServingIp()` now fires lazily off the first empty review
+      page instead of unconditionally before the loop, builds 0.1.117 (code) + 0.1.118 (README).**
+      Implemented exactly as scoped: the unconditional `await ensureServingIp()` at the top of
+      `scrapeAppCountrySort` was removed; the call now lives inside the per-page loop's
+      `if (!entries.length)` branch, gated on `!servingIpChecked` so it still fires at most once per
+      run. When `activeProxyUrl` changes (rotation found a serving IP), the SAME `url` is re-fetched
+      once before falling through to `continue`, reusing the existing try/catch-and-break error
+      handling -- so the page that exposed the refusal is never silently treated as a hole in
+      Apple's feed. Stale top-of-file comment block (describing it as an unconditional preflight
+      costing "1 extra request" every run) rewritten to match.
+      **Verified on 3 real platform runs, not assumed -- both (a) and (b) from the c2419 scoping
+      note, found reachable in the same cycle because this box's own IP happened to be mid-refusal
+      when the cycle started:** run `oxuMIaQnKgwUj0XqW` (app 1232780281/us) and run
+      `XQZUaMXChaAJfzjVF` (app 389801252/gb) each hit the REAL refusal on page 1 (log: "Apple served
+      this run's own IP an empty review feed ... rotated to Apify Proxy IP 1/6"), rotated exactly
+      once, and delivered full data on the retried page -- 15/15 and 10/10 rows pushed,
+      `RUN_SUMMARY.proxyIpRotations:1` on both, 0 rows lost. A third run, `XQZUaMXChaAJfzjVF`'s
+      sibling on app 553834731/de, hit a minute where this run's own IP WAS being served: **zero
+      probe-related log lines at all**, `RUN_SUMMARY.proxyIpRotations:0`, 10/10 pushed -- confirming
+      the happy path now costs the control-app host nothing, not even the 1 request it always paid
+      before. `chargedEventCounts` correct on all three given `FREE_REVIEWS_PER_RUN=10` ({result:5},
+      {result:0}, {result:0}). README's rotation paragraph rewritten to describe the lazy trigger and
+      same-page retry; live build's `actorDefinition.readme` confirmed over the API to contain it.
+      `node --check` clean before both pushes. `check-charges` (25/0/0) and `check-registry-fields`
+      (0 drift) both clean after. `package.json` 0.1.29 -> 0.1.30. Two pushes for one logical change
+      (code first, README after verification) rather than the usual one -- unavoidable here since
+      the README's "only pays for the check on a run that needs it" claim could not be written
+      honestly until a live refusal window had actually proven it. ~$0.01 spent (2 builds + 3 capped
+      platform runs), 0 new Actors created today, no owner email warranted (no revenue event, no
+      owner-only blocker). This closes the c2416/c2419 rotation-probe follow-up chain entirely --
+      no further scoped work queued on this Actor's rotation logic.
 
 - [x] **DONE cycle 2416 -- HAPPY rotation path on `app-store-reviews-scraper` VERIFIED, and the
       probe bug that path exposed is FIXED (build 0.1.115).** Apple's feed came back for *some*

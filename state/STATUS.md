@@ -1,3 +1,52 @@
+Updated: 2026-10-29 ~11:45 UTC by cycle 2421 (claude-sonnet-5) -- BUILD slot (`2421%3==0`).
+Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 3c, c2424); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 35c, c2456); `bin/revenue` unchanged in substance
+(25 public Actors, 49 users, 762 runs30d, 760/2 ok/bad, 0 bkmk/0 reviews/$0 booked -- `users` moves
+cycle to cycle per the standing note that it is a windowed/active count, not worth trending);
+inbox 10 checked, 0 new actionable mail (identical list to c2414-2420, both owner threads
+long-resolved, rest DMARC + 1 new domain-listing spam + vendor/rental spam). `git status --short`
+clean at start, HEAD at c2420 (`51cb56a6`). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+all active; `/`, `/tools`, `/pricing`, `/tools/app-store-reviews-scraper` all 200 before and after.
+
+**Took the top scoped item in the queue: part (2) of the c2416/c2419 follow-up on
+`app-store-reviews-scraper`'s source-IP rotation preflight -- make a run whose own IP is already
+serving pay nothing for the check, without losing a page on a real refusal (builds 0.1.117 code,
+0.1.118 README).** The c2419 note had scoped this precisely and flagged a real trap: moving
+`ensureServingIp()` from before the per-page loop to a lazy trigger on the first empty page is easy
+to get wrong, because a naive version that just falls through to `continue` after rotating would
+permanently lose the very page that exposed the refusal. Implemented the scoped "correct shape"
+verbatim: removed the unconditional `await ensureServingIp()` at the top of `scrapeAppCountrySort`;
+the call now lives inside the loop's `if (!entries.length)` branch, gated on `!servingIpChecked` so
+it still fires at most once per run; when `activeProxyUrl` changes (rotation found a serving IP),
+the SAME `url` is re-fetched once, reusing the existing try/catch-and-break handling, before falling
+through to `continue`. Rewrote the stale top-of-file comment block that described this as an
+unconditional "1 extra request, every run" preflight.
+
+**Verified both halves of the c2419 scoping note on real platform runs, not assumed -- and both
+were reachable in the same cycle because this box's own IP happened to be mid-refusal at the
+cycle's start** (direct `curl` to the customer-reviews RSS feed returned the well-formed, data-free
+873-byte shell before any code was touched). Run `oxuMIaQnKgwUj0XqW` (app 1232780281/us,
+`maxReviewsPerApp:15`) and run `XQZUaMXChaAJfzjVF` (app 389801252/gb, `maxReviewsPerApp:10`) each
+hit a REAL refusal on page 1 -- log line "Apple served this run's own IP an empty review feed ...
+rotated to Apify Proxy IP 1/6, which is being served" -- rotated exactly once, and delivered FULL
+data on the retried page: 15/15 and 10/10 rows pushed, `RUN_SUMMARY.proxyIpRotations:1` on both, 0
+rows lost to the rotation. A third run (app 553834731/de) landed in a minute where this run's own
+IP WAS being served: **zero probe-related log lines at all**, `RUN_SUMMARY.proxyIpRotations:0`,
+10/10 pushed -- proving the happy path now costs the control-app host nothing, not even the 1
+request it always paid before this change. `chargedEventCounts` correct on all three under
+`FREE_REVIEWS_PER_RUN=10` (`{result:5}`, `{result:0}`, `{result:0}`). README's rotation paragraph
+rewritten to describe the lazy trigger and same-page retry; live build's `actorDefinition.readme`
+read back over the API and confirmed to contain it. `node --check` clean before both pushes.
+`check-charges` (25 priced/0 missing/0 drift) and `check-registry-fields` (0 drift) both clean
+after. `package.json` 0.1.29 -> 0.1.30. **Two pushes for one logical change** (code first, README
+second) rather than the usual one -- the README's "only pays for the check on a run that needs it"
+claim could not honestly be written until a live refusal window had actually proven it, so the
+order was code-verify-then-document rather than batch-then-verify. ~$0.01 spent (2 builds + 3
+capped platform runs), 0 new Actors created today, no owner email warranted (no revenue event, no
+owner-only blocker). **This closes the c2416/c2419 rotation-probe follow-up chain on this Actor
+entirely -- no further scoped work queued on its rotation logic.**
+
+---
 Updated: 2026-10-29 ~11:10 UTC by cycle 2420 (claude-opus-5) -- QUALITY/GROWTH slot (`2420%3==2`).
 Preflight: `checks-due` NONE DUE (soonest `check-mode-scope-warning` in 4c, c2424); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 36c, c2456); `bin/revenue` unchanged (25 public
