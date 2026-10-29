@@ -153,6 +153,14 @@
           "null"
         ]
       },
+      "awardAmount": {
+        "title": "AwardAmount",
+        "example": 220202.8,
+        "type": [
+          "number",
+          "null"
+        ]
+      },
       "modificationsCount": {
         "title": "ModificationsCount",
         "example": 7,

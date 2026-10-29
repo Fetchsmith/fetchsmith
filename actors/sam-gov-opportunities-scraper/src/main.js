@@ -649,18 +649,96 @@ if (solicitationNumberActive) {
     }
 }
 
+// AWARD AMOUNT RANGE (`tiger19935` rival gap, scoped c2396 -- see notes/LEARNINGS.md). Search rows
+// already carry a full `award` object -- `award.amount` is a plain number, present (but null) on
+// every non-award notice type and filled on award notices (`notice_type=a`) -- so, unlike the
+// single-notice-by-id mode also scoped at c2396, this needs no detail call. SAM.gov's own
+// `award_amount` query param is real but EXACT only (confirmed live: -> 55 rows, every one exactly
+// 100000); every range syntax tried (`100000-200000`, `[100000 TO 200000]`, comma pairs, `>100000`)
+// was rejected HTTP 400, and every from/to pair name (`award_amount_from`/`_to`/`_min`/`_max`) failed
+// OPEN at the unfiltered count. So, same family as the date window and solicitationNumber above,
+// this is a POST-FETCH range applied inside the fetch walk before pushResult().
+async function awardAmountInput(name) {
+    const raw = input[name];
+    if (raw === undefined || raw === null || raw === '') return null;
+    const n = Number(raw);
+    // Fails CLOSED, not warn-and-ignore, per LEARNINGS c2392 lesson 5: this field is brand new
+    // (nothing depends on it yet), so a value this Actor cannot apply must stop the run before any
+    // row is fetched or charged -- ignoring it would hand back the whole unfiltered set, billed in
+    // full, while looking narrowed to an award-value range.
+    if (!Number.isFinite(n) || n < 0) {
+        await Actor.fail(
+            `\`${name}\` must be a non-negative number (a dollar amount, e.g. 100000), got "${raw}". Stopping before `
+            + 'any row is delivered or charged. Fix the value, or remove the field to search without an award-amount range.',
+        );
+    }
+    return n;
+}
+const minAwardAmount = await awardAmountInput('minAwardAmount');
+const maxAwardAmount = await awardAmountInput('maxAwardAmount');
+if (minAwardAmount !== null && maxAwardAmount !== null && minAwardAmount > maxAwardAmount) {
+    await Actor.fail(
+        `\`minAwardAmount\` (${minAwardAmount}) is GREATER than \`maxAwardAmount\` (${maxAwardAmount}), so the range `
+        + 'is empty and this run could only ever return 0 rows no matter what SAM.gov holds. Swap the two values. '
+        + 'Stopping before any request so you are charged nothing.',
+    );
+}
+const awardAmountActive = minAwardAmount !== null || maxAwardAmount !== null;
+// `award` only exists on the opportunities search-row shape (normalizeRow) -- wd/cfda/exclusions
+// rows come from entirely different endpoints/normalisers and carry no award object at all, same
+// unsupported-dataType shape as solicitationNumber above.
+if (awardAmountActive && (isWd || isCfda || isExclusions)) {
+    await Actor.fail(
+        `minAwardAmount/maxAwardAmount ${minAwardAmount !== null && maxAwardAmount !== null ? 'are' : 'is'} not `
+        + `supported for dataType "${dataType}": SAM.gov's "${dataType}" records carry no award-amount field at `
+        + 'all, so there is nothing to compare your range against. Stopping before any row is delivered or charged '
+        + '-- ignoring it would hand you every record matching your other filters, billed in full, while looking '
+        + 'narrowed. Use dataType "opportunities" for an award-amount range.',
+    );
+}
+if (awardAmountActive) {
+    // `award.amount` is null by construction on every non-award notice type (presolicitation,
+    // solicitation, etc. have not been awarded yet), so an award-amount range on a run that is not
+    // already scoped to award notices will drop nearly everything as `awardAmountMissing` -- advisory
+    // only, since a buyer may legitimately want "whatever few award rows a broad keyword turns up".
+    if (!noticeTypes.length || !noticeTypes.every((t) => t === 'a')) {
+        log.info('minAwardAmount/maxAwardAmount is set, but noticeTypes is not scoped to award notices only '
+            + '("a") -- award.amount is null on every other notice type, so most fetched rows will be dropped as '
+            + 'having no award amount to compare. Add noticeTypes: ["a"] to scope the walk to award notices only '
+            + 'if that drop rate is not what you intended.');
+    }
+}
+let awardAmountDropped = 0;  // fetched row's award.amount is outside the requested range -- dropped, uncharged
+let awardAmountMissing = 0;  // fetched row has no award.amount at all (not yet awarded) -- dropped, uncharged
+function inAwardAmountRange(item) {
+    if (!awardAmountActive) return true;
+    const amount = item.awardAmount;
+    if (typeof amount !== 'number' || !Number.isFinite(amount)) { awardAmountMissing += 1; return false; }
+    if ((minAwardAmount !== null && amount < minAwardAmount) || (maxAwardAmount !== null && amount > maxAwardAmount)) {
+        awardAmountDropped += 1;
+        return false;
+    }
+    return true;
+}
+function awardAmountText() {
+    return `award amount $${(minAwardAmount ?? 0).toLocaleString('en-US')}..`
+        + `${maxAwardAmount !== null ? `$${maxAwardAmount.toLocaleString('en-US')}` : 'any'}`;
+}
+
 // Shared by every site below that reconciles SAM's declared total against what this run actually
 // delivered (same reconciliation requirement as the date window, LEARNINGS cycle 2392 lesson 2):
-// both filters drop fetched rows pre-charge, so both must be subtracted together or a run using
-// either (or both at once) reports a false shortfall for working exactly as designed.
-const postFetchFilterActive = dateWindowActive || solicitationNumberActive;
+// every post-fetch filter drops fetched rows pre-charge, so all of them must be subtracted together
+// or a run using any combination reports a false shortfall for working exactly as designed.
+const postFetchFilterActive = dateWindowActive || solicitationNumberActive || awardAmountActive;
 function postFetchFilterDroppedCount() {
-    return dateWindowDropped + dateWindowMissing + solicitationNumberMismatch + solicitationNumberMissing;
+    return dateWindowDropped + dateWindowMissing + solicitationNumberMismatch + solicitationNumberMissing
+        + awardAmountDropped + awardAmountMissing;
 }
 function postFetchFilterText() {
     const parts = [];
     if (dateWindowActive) parts.push(`your date window (${dateWindowText()})`);
     if (solicitationNumberActive) parts.push(`solicitationNumber "${solicitationNumberRaw}"`);
+    if (awardAmountActive) parts.push(`your ${awardAmountText()} range`);
     return parts.join(' and ');
 }
 
@@ -995,6 +1073,9 @@ function normalizeRow(row) {
         description: row.descriptions?.[0]?.content ?? null,
         awardeeName: row.award?.awardee?.name ?? null,
         awardeeUeiSAM: row.award?.awardee?.ueiSAM ?? null,
+        // Plain number on award notices (`notice_type=a`), null on every other notice type -- not
+        // yet awarded. Powers the minAwardAmount/maxAwardAmount post-fetch range below.
+        awardAmount: typeof row.award?.amount === 'number' ? row.award.amount : null,
         modificationsCount: row.modifications?.count ?? 0,
         sourceUrl: id ? `https://sam.gov/opp/${id}/view` : null,
         // Detail-only fields, filled in only when enrichDetail is on (extra HTTP call per row).
@@ -1281,6 +1362,8 @@ const watchCriteria = {
     // Same reasoning: a solicitation-number lookup changes WHICH rows match, so changing it (or
     // clearing it) must start a fresh baseline rather than dumping every previously-excluded row.
     solicitationNumber: solicitationNumberClean,
+    // Same reasoning again: an award-amount range changes WHICH rows match.
+    minAwardAmount, maxAwardAmount,
 };
 
 // Snapshot of the fields that can change on an already-delivered opportunity: `isActive`/
@@ -1641,6 +1724,8 @@ async function fetchRows(limit) {
             // number lookup is also a pre-charge filter, and ordering it before the dedupe guards
             // keeps duplicateRowsDropped meaning strictly "a repeat among rows that matched".
             if (!matchesSolicitationNumber(item)) continue;
+            // Same pre-dedupe placement and reasoning as the two filters above.
+            if (!inAwardAmountRange(item)) continue;
             const rowId = idOf(item);
             if (rowId) {
                 if (seenIds.has(rowId)) { duplicateRowsDropped += 1; continue; }
@@ -1881,6 +1966,10 @@ log.info(`Done. Pushed ${pushed} ${ROW_NOUN_PLURAL} (scanned ${scanned} row(s) o
     + (solicitationNumberActive
         ? ` solicitationNumber "${solicitationNumberRaw}": ${solicitationNumberMismatch} non-matching row(s) dropped`
           + `${solicitationNumberMissing > 0 ? ` and ${solicitationNumberMissing} with no solicitation number` : ''}, uncharged.`
+        : '')
+    + (awardAmountActive
+        ? ` ${awardAmountText()}: ${awardAmountDropped} out-of-range row(s) dropped`
+          + `${awardAmountMissing > 0 ? ` and ${awardAmountMissing} with no award amount` : ''}, uncharged.`
         : ''));
 
 // ---------------------------------------------------------------------------
@@ -1932,6 +2021,11 @@ const runSummary = {
     // request, no full-text walk) versus falling back to the q=<clean> walk. Null, not false,
     // when solicitationNumber was not set at all.
     noticeIdFastPath: solicitationNumberActive ? noticeIdFastPathActive : null,
+    // Same reconciliation role as the two filters above, for the award-amount range (cycle 2398):
+    // null, not 0, when neither minAwardAmount nor maxAwardAmount was given.
+    awardAmountRange: awardAmountActive ? { minAwardAmount, maxAwardAmount } : null,
+    awardAmountDropped: awardAmountActive ? awardAmountDropped : null,
+    awardAmountMissing: awardAmountActive ? awardAmountMissing : null,
     lastApiError,
     maxResults,
     chargeLimitReached,
@@ -2003,6 +2097,10 @@ if (!complete) {
     if (solicitationNumberActive) {
         appliedFilters.push(`solicitationNumber "${solicitationNumberRaw}", which dropped `
             + `${solicitationNumberMismatch + solicitationNumberMissing} fetched row(s)`);
+    }
+    if (awardAmountActive) {
+        appliedFilters.push(`your ${awardAmountText()} range, which dropped `
+            + `${awardAmountDropped + awardAmountMissing} fetched row(s)`);
     }
     await Actor.setStatusMessage(
         appliedFilters.length

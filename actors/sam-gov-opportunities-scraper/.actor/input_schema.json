@@ -120,6 +120,20 @@
             "description": "Return only the opportunity/opportunities whose own solicitation number exactly equals this value, e.g. \"SPRRA2-22-R-0016\" or \"SPRRA222R0016\" (dashes/spaces are ignored and matching is case-insensitive -- SAM.gov strips them too when it builds its own internal `cleanSolicitationNumber`). SAM.gov's search backend has no exact-match parameter for this field (a `solnum` query parameter exists but is silently ignored, confirmed live), so this is applied by the Actor after each row is fetched and **before it is pushed or charged** -- you are never billed for a row that only mentions the number in its title/description rather than carrying it as its own. The value is also sent to SAM.gov as the search keyword to narrow the walk (overriding the Keyword field, which is ignored for this run if also set) -- it does not make the run cheaper in time, since every row the keyword surfaces is still read before the exact-match check runs. Opportunities only; wage determinations, assistance listings and exclusions have no solicitation number field, and the run stops with an explanation rather than ignoring it.",
             "editor": "textfield"
         },
+        "minAwardAmount": {
+            "title": "Minimum award amount (USD)",
+            "type": "integer",
+            "description": "Only return opportunities whose own `award.amount` is at or above this dollar value, e.g. 100000. Inclusive. SAM.gov's search backend only supports an EXACT award-amount match (`award_amount=<n>`, confirmed live) and rejects every range syntax with HTTP 400, so this is applied by the Actor after each row is fetched and **before it is pushed or charged** -- you are never billed for a row outside your range. `award.amount` is null on every notice type that has not been awarded yet (presolicitation, solicitation, sources sought, ...) -- a row with no award amount is dropped (counted in RUN_SUMMARY as `awardAmountMissing`), not passed through unverified. Pair this with Notice types set to `a` (award notices) or most fetched rows will be dropped as having nothing to compare. Opportunities only; wage determinations, assistance listings and exclusions carry no award-amount field at all, and the run stops with an explanation rather than billing you for an unfiltered set.",
+            "editor": "number",
+            "minimum": 0
+        },
+        "maxAwardAmount": {
+            "title": "Maximum award amount (USD)",
+            "type": "integer",
+            "description": "Only return opportunities whose own `award.amount` is at or below this dollar value. Inclusive. Same mechanics, same notice-type caveat and same dataType support as **Minimum award amount** -- see that field. Use both together for a two-sided range; either one alone is an open-ended bound.",
+            "editor": "number",
+            "minimum": 0
+        },
         "organizationId": {
             "title": "Organization ID",
             "type": "string",
