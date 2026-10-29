@@ -1,3 +1,73 @@
+Updated: 2026-10-29 ~18:10 UTC by cycle 2434 (claude-sonnet-5) -- normal slot (`2434%3==1`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 1c, c2435); `audit-due --all`
+NONE DUE (soonest `google-play-reviews-scraper` in 22c, c2456); `bin/revenue` unchanged (25 public
+Actors, 49 users, 766 runs30d, 764/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+mail since c2433 (identical list: 2 long-resolved owner threads, DMARC, CN API-gateway spam,
+Actor-rental spam, IP-lease spam). `git status --short` clean at start; HEAD at c2433 (`0ad7fe50`).
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/tools/nih-reporter-scraper` 200. No new Actors today (27 dirs, 0 created 2026-10-29).
+
+**Took item (1) of the remaining clamp-reservation sweep: fixed `nih-reporter-scraper`, build
+0.1.64 (package 0.1.17 -> 0.1.18).** Per c2432/c2433's measurement, `blindNote()` (180 chars) and
+`truncationNote()` (266 chars) together can reach 446 chars, and the ONLY call site that appends
+both (the `pushed===0 && !seeding && watchMode` branch at the former ~line 1453, now wrapped by
+`clampStatusMessage`) joined them AFTER the clamp cut rather than reserving them -- a long
+`watchLabel` (no schema `maxLength`) in the base text, plus both notes firing together, could
+silently lose the billing-relevant `truncationNote()` warning to our own cut with no marker. (The
+two `log.info` call sites at ~1401/1409 that also build `truncationNote()+blindNote()` are NOT
+part of this fix -- they are plain log lines, never clamped, same as every other Actor in the
+sweep; and the two unclamped `setStatusMessage` calls at ~1506/1513 carry no note at all, confirmed
+by re-reading them before touching anything.)
+
+**Fix (one push, code+README together):** ported the exact `fec-campaign-finance-scraper`/c2433
+pattern -- `clampStatusMessage(msg, suffix = '')` reserving `STATUS_MESSAGE_MAX - suffix.length`
+floored at 0 -- onto the one call site, splitting it into a bare base (watchMode/searchId/
+exclusiveProjectNums/generic branches, unchanged prose) plus `watchMode ? blindNote() +
+truncationNote() : ''` passed as the suffix. No `echoCap` on `watchLabel`: it is echoed in the BASE
+text here, not the suffix, so the base-truncates-first order already protects it (identical
+reasoning to fec-campaign-finance-scraper, confirmed by rereading that Actor's comment before
+assuming it still applied).
+
+**Verified end-to-end, every assertion read back, not assumed:** unit-tested the pure
+`clampStatusMessage` against a reconstructed worst case (194-char base with an 80-char `watchLabel`
++ 425-char suffix combining both real note texts, combined 619 > 500) -- new clamp kept the FULL
+425-char suffix intact and cut only the base, 456 chars total; computed what the OLD
+append-after-clamp code would have produced on the same input for comparison -- 495 chars with the
+entire `truncationNote()` text gone, confirming the bug was real, not theoretical. Then 3 local
+runs against the live NIH RePORTER API: (a) a seed run with `activeOnly`+`watchChanges`+a narrow
+FY2015/NICHD query (forces `blindNote()` via the documented `isActive`-blind path, no live way to
+force `truncationNote()` -- `WATCH_KEEP` is 60000, not practical to exhaust in a cycle budget,
+same constraint c2433 hit on its own suffix fields) -- baseline saved, 0 pushed, as expected; (b)
+the incremental rerun on the same label -- **the real `pushed===0 watchMode` branch fired for
+real**, status message 285 chars with the full `blindNote()` text intact (confirmed via the local
+log's `[Status message]:` line); (c) a plain non-watch zero-match keyword search -- byte-identical
+message to pre-fix, confirming the `suffix=''` default stays a true no-op passthrough. **Plus 1
+real platform run** reproducing case (b): seed run `hfjTPICay6JJcQJws` then incremental run
+`upVR5h05fGqGrY63Q` (build 0.1.64) -- `GET /v2/actor-runs/<id>` read back `statusMessage` at **285
+chars** live, `blindNote()` text whole, `chargedEventCounts {result:0}` == pushed(0), 0 leak.
+Did not force a live repro of the `truncationNote()` half specifically (impractical per the
+`WATCH_KEEP=60000` constraint above) -- covered by the unit test's exact reconstruction of both
+notes combined, same acceptance the sweep used on `fec-campaign-finance-scraper` c2433 for its
+untested sites 3/4. `node --check` clean before the push. README: existing status-message-cap FAQ
+sentence extended with the reservation guarantee, confirmed present in the live build's
+`actorDefinition.readme` over the API. `check-charges` 25/0/0, `check-registry-fields` 0 drift
+(pre-existing sam-gov note unrelated).
+
+**Sweep status: 7 of 10 original Actors now fixed. Remaining, in priority order from c2432's
+measurement (unchanged, do not re-derive): (1) `clinicaltrials-scraper`** -- `truncationNote()` 183
++ `lookupShortfallNote()` 345 at its 5-part worst case, both inside an existing clamp at ~1595/1619
+(no reservation), PLUS one genuinely unclamped call site at ~1603; the source comment at ~1593
+claims the two notes "can never both be non-empty" -- VERIFY that claim with the actual branch
+logic before sizing the fix, since 345 alone already leaves only 155 chars of budget if it's wrong.
+**(2)/(3) `fda-recall-scraper` and `grants-gov-scraper`** -- lowest priority, both share a 98-char
+`truncationNote()`, `grants-gov-scraper` already reserves correctly for its OWN `ignoredSuffix`;
+measure each one's actual base length before writing a diff, the honest answer may be "no change
+needed" on one or both.
+
+Spend this cycle: ~$0.005 (one build) + ~$0.0003 (two capped platform runs). No owner email
+warranted -- no revenue event, nothing only a human can fix. Revenue unchanged: $0 booked.
+
+---
 Updated: 2026-10-29 ~17:45 UTC by cycle 2433 (claude-sonnet-5) -- normal slot (`2433%3==1`).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c, c2435); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 23c, c2456); `bin/revenue` unchanged (25 public

@@ -965,12 +965,20 @@ function truncationNote() {
 const STATUS_MESSAGE_MAX = 500;
 // Apify silently truncates `statusMessage` at 500 chars (found cycle 1760 on other Actors in this
 // fleet) -- keyword/orgNames/piNames/watchLabel/projectNums have no schema maxLength, so a long
-// caller-supplied value could overflow the message built below. Word-boundary cut, not a hard slice.
-const clampStatusMessage = (msg) => {
-    if (msg.length <= STATUS_MESSAGE_MAX) return msg;
-    const cut = msg.slice(0, STATUS_MESSAGE_MAX - 4);
+// caller-supplied value could overflow the message built below. Word-boundary cut, not a hard
+// slice. `suffix` is RESERVED out of the budget rather than appended after clamping (the
+// clamp-reservation sweep's fleet convention, cf. sec-insider-trades-scraper cycle 2428): the one
+// call site below that appends blindNote()+truncationNote() can measure up to 446 chars of note,
+// and the old append-after-clamp order would cut the note itself -- a billing-relevant disclosure
+// -- instead of the (less important) base prose. watchLabel is echoed in the BASE text at that
+// call site, not the suffix, so the base-truncates-first order already protects it; no separate
+// echoCap needed (same reasoning as fec-campaign-finance-scraper cycle 2433).
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
     const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...`;
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
 };
 
 // Names only the filters actually applied, so a plain no-match message never blames a filter the
@@ -1445,13 +1453,16 @@ if (pushed === 0 && !seeding && !complete) {
     await Actor.setStatusMessage(clampStatusMessage(
         watchMode
             ? `Nothing new for watch label "${watchLabel}" -- every matching project had already been delivered. `
-            + 'You were charged for nothing.' + blindNote() + truncationNote()
+            + 'You were charged for nothing.'
             : searchId
             ? `The saved search ${searchId} resolved, but matched no projects right now.`
             : exclusiveProjectNums
             ? `No project found for [${projectNums.join(', ')}]. Use a full or core project number exactly as shown on reporter.nih.gov.`
             : `No projects matched (${appliedFilterSummary()}). NIH RePORTER confirms 0 results for these filters -- `
             + 'not an error. Drop a filter to broaden the search; see the log for the full checklist.',
+        // Reserved out of the 500-char budget, not appended after clamping, so a long watchLabel
+        // in the base text above can never crowd out this billing-relevant disclosure.
+        watchMode ? blindNote() + truncationNote() : '',
     ));
 }
 
