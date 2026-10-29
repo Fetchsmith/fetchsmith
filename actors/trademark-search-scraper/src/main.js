@@ -3,11 +3,22 @@
 import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
+import { CookieJar } from 'tough-cookie';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
 const API = 'https://www.tmdn.org/tmview/api/search/results';
+// TMview's own search page -- a plain GET, no JS run -- sets the WAF session cookies
+// (`TSc...`/`TS0...`, an F5/TSPD bot-detection sensor) that the search API now requires.
+// Found cycle 2441: a bare POST to API with no cookie jar gets a 200 OK containing a JS
+// challenge page (content-type text/html) on EVERY transport path tried (direct, 2 different
+// Apify datacenter sessions, residential) -- not a transport failure, so proxy rotation alone
+// never fixes it. GET-then-POST with a shared cookie jar returned real JSON on 3/4 trials
+// across the same paths (the 1 miss was a genuine transport timeout, the pre-existing flaky-
+// exit-node issue below, unrelated to cookies). This is a plain HTTP cookie jar, not a headless
+// browser -- no JS is executed, the page's own script tags are never run.
+const SEARCH_PAGE = 'https://www.tmdn.org/tmview/';
 const PAGE_SIZE = 50; // verified server-side: pageSize 50 returns 50 rows
 
 const searchTerm = String(input.searchTerm ?? '').trim();
@@ -173,6 +184,25 @@ try {
   }
 } catch (e) { log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`); }
 
+// The WAF's session cookies are tied to the exit IP that earned them, so a fresh cookie jar is
+// needed every time proxyUrl changes (new proxy session, or dropping to direct) -- cookiesPrimed
+// tracks whether the CURRENT proxyUrl has a primed jar yet.
+let cookieJar = new CookieJar();
+let cookiesPrimed = false;
+async function primeCookies(requestTimeoutMs) {
+  await gotScraping({
+    url: SEARCH_PAGE,
+    method: 'GET',
+    cookieJar,
+    proxyUrl,
+    throwHttpErrors: false,
+    retry: { limit: 0 },
+    timeout: { request: requestTimeoutMs },
+    signal: AbortSignal.timeout(requestTimeoutMs),
+  });
+  cookiesPrimed = true;
+}
+
 // A single exit node that cannot reach TMview kills the whole run: measured 2026-09-21, every
 // request came back `The proxy responded with 590 UPSTREAM502` (a CONNECT-level failure, so
 // `throwHttpErrors:false` does not catch it and the run died on a raw stack trace) while the SAME
@@ -185,6 +215,8 @@ async function rotateProxy() {
   if (!proxyConfiguration) return false;
   try {
     proxyUrl = await proxyConfiguration.newUrl(`s${Date.now()}${Math.floor(Math.random() * 1e6)}`);
+    cookieJar = new CookieJar();
+    cookiesPrimed = false;
     return true;
   } catch (e) { log.warning(`Could not get another proxy session (${e.message}).`); return false; }
 }
@@ -518,6 +550,8 @@ async function fetchPage(page) {
         if (!proxyUrl) break; // already direct and it still failed — nothing left to try
         log.warning('Every Apify Proxy session tried failed to reach TMview — retrying once on a direct connection.');
         proxyUrl = undefined;
+        cookieJar = new CookieJar();
+        cookiesPrimed = false;
       } else {
         log.warning(`TMview request failed through the proxy (${lastErr.message}) — retrying on a different proxy session (${attempt}/${PROXY_ROTATIONS}).`);
       }
@@ -525,6 +559,9 @@ async function fetchPage(page) {
     let res;
     try {
       const requestTimeoutMs = Math.min(REQUEST_TIMEOUT_MS, budget);
+      if (!cookiesPrimed) {
+        await primeCookies(Math.min(10000, requestTimeoutMs));
+      }
       res = await gotScraping({
         url: API,
         method: 'POST',
@@ -533,6 +570,8 @@ async function fetchPage(page) {
         timeout: { request: requestTimeoutMs },
         retry: { limit: 0 },
         throwHttpErrors: false,
+        cookieJar,
+        headers: { referer: SEARCH_PAGE },
         proxyUrl,
         // got's own `timeout.request` does NOT fire while stuck in a hung proxy CONNECT:
         // got-scraping's H1 proxy agent issues CONNECT as its own untimed, uncancellable nested
@@ -577,8 +616,7 @@ async function fetchPage(page) {
   throw new Error(
     'Could not reach TMview (tmdn.org) through any network path this run: '
     + `${PROXY_ROTATIONS} Apify Proxy session(s) and a direct connection all failed transport-level — last error: ${lastErr?.message}. `
-    + 'TMview itself is frequently reachable when this happens, so it is usually the proxy route rather than an outage: '
-    + 're-run in a few minutes, or set "proxyConfiguration" to a residential group.',
+    + 'TMview itself is frequently reachable when this happens, so it is usually a flaky exit node rather than an outage — re-run in a few minutes.',
   );
 }
 
