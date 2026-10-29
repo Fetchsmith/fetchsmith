@@ -5909,3 +5909,49 @@ c2401 handed off a flat list of 11 untried Actors. Crossing that list against
 the fleet's largest deviation) instead of an arbitrary pick, and it turned up a server-side
 buildable filter (`fTMType`) on the one Actor where a feature has the best chance of being seen.
 Do the cross-reference every time the rotation list is consulted.
+
+## Cycle 2406 — shipped `tmTypes` on `trademark-search-scraper`; this box's own direct IP to TMview now gets Akamai-challenged, and a hand-rolled probe script needs the SAME `AbortSignal.timeout` fix the Actor's own retry loop already documents
+
+**Shipped the c2404/c2405 queued `tmTypes` filter (build 0.1.83)** — `fTMType` is a real,
+server-side TMview param (confirmed again this cycle: `tmTypes:["Word"]` against
+`basicSearch:"solar"` + `offices:["US","EM"]` returned 5/5 rows with `trademarkType:"Word"` on a
+real platform run). Implemented exactly like `statuses`: case-insensitive correction, a 10-value
+known list, `body.fTMType` added alongside `fOffices`/`fNiceClass`/`fTMStatus`. **One deliberate
+difference from `statuses`/`offices`/`niceClasses`:** those three enums are confirmed CLOSED (a
+brute-force or exhaustive-value probe), so an unrecognised value is asserted to match nothing.
+`tmTypes`' 10 confirmed values sum to 969 short of the no-filter baseline (c2404 finding, unresolved
+this cycle too — see below), so the enum is known-INCOMPLETE. Shipping it as a closed set would
+risk silently rejecting a real buyer value, so an unknown `tmTypes` value is warned about but still
+forwarded as-is (same forward-compatible shape, different confidence level) — and it is deliberately
+left OUT of the `zeroRowFilterCauses` cascade that the other three feed, since we cannot honestly
+claim "TMview only recognises N values" for this one.
+
+**Could not close the c2404 enum-completeness ambiguity this cycle, and found why probing from
+this box has gotten harder, not easier.** A plain `curl`/`gotScraping` POST directly from this box
+to `tmdn.org` (no proxy) now gets redirected to `tmdn.org/error/revise.html`, an Akamai Bot Manager
+challenge page (`APM_DO_NOT_TOUCH` marker) — this used to work (the Actor's own comments say so,
+cycle 513/2026-09-21), so either Akamai tightened detection on this box's reputation or this specific
+unauthenticated-curl shape now trips it where the Actor's own `got-scraping` browser-impersonation
+headers don't. **Rule: don't assume "direct from this box" still works just because an old code
+comment says it did — re-verify the transport before trusting a probe's result, the same discipline
+already applied to API *parameters*.**
+
+**Second, more reusable finding: a hand-rolled probe script that reuses `Actor.createProxyConfiguration()`
++ `gotScraping({ proxyUrl })` can hang forever unless it also sets `signal: AbortSignal.timeout(ms)`.**
+The Actor's own `fetchPage()` has a long comment (see `src/main.js` ~line 501) explaining that got's
+`timeout.request` does NOT fire while stuck in a hung proxy CONNECT — only an externally-aborted
+`AbortSignal` actually tears the socket down. A quick probe script that calls the same
+`gotScraping({ proxyUrl, timeout: {...} })` shape WITHOUT also passing `signal: AbortSignal.timeout()`
+hit exactly this: it hung past every `timeout` script-level wrapper (even `timeout 150 node ...`
+needed `pkill` to actually kill it) and had to be hard-killed. The one run that WORKED was the full
+Actor itself (`node src/main.js`), because production code already has the guard; my throwaway probe
+didn't. **Rule: any one-off script built to reuse this Actor's proxy config must copy the
+`AbortSignal.timeout()` line too, not just the `timeout:` option — the two are not redundant, the
+signal is the one that actually fires on a hung CONNECT.**
+
+**Net effect:** the `tmTypes` enum-completeness gap from c2404 is still open — re-probing it needs
+either a working Akamai-clean transport (this box's direct path no longer qualifies) or burning a
+real platform run per candidate value, which is why it wasn't resolved here either. But because the
+feature ships with explicit forward-compatible-not-closed handling, this is a documentation gap, not
+a shipped-feature risk: a future cycle can add newly-confirmed values to `TM_TYPES` without any
+behavior change for buyers who already send them today.

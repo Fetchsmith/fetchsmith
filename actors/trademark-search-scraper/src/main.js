@@ -102,6 +102,37 @@ if (unknownStatuses.length) {
     + 'rather than widening them. Fix the spelling or drop it.',
   );
 }
+// TMview's `fTMType` filter (verified live cycle 2404/2406 against `basicSearch:'solar'`,
+// baseline 69710): unlike `offices`/`niceClasses`/`statuses` above, this is NOT a confirmed-closed
+// set — 10 values are live-confirmed to each narrow the result count on their own, but they sum to
+// 68741, 969 short of the 69710 baseline, so at least one more valid value exists that this cycle's
+// probing could not reach (see `notes/LEARNINGS.md` cycle 2406). Treating this enum as complete
+// and silently narrowing an unlisted value the way `statuses` does would be a false claim — TMview
+// might accept it — so an unrecognised value here is warned about but NOT asserted to match
+// nothing, only "not one of the values we've confirmed."
+const TM_TYPES = [
+  'Word', 'Combined', 'Figurative', 'Undefined', 'Other', 'Stylized characters', 'Colour', '3-D',
+  'Hologram', 'Position',
+];
+const TM_TYPE_BY_LOWER = new Map(TM_TYPES.map((t) => [t.toLowerCase(), t]));
+const unknownTmTypes = [];
+const tmTypes = (Array.isArray(input.tmTypes) ? input.tmTypes : [])
+  .map((t) => String(t).trim()).filter(Boolean)
+  .map((t) => {
+    const canonical = TM_TYPE_BY_LOWER.get(t.toLowerCase());
+    if (!canonical) { unknownTmTypes.push(t); return t; }
+    if (canonical !== t) log.info(`Trademark type "${t}" matched TMview's "${canonical}" — TMview compares these case-sensitively, so it was corrected for you.`);
+    return canonical;
+  });
+// Forward-compatible: an unknown value is still sent (this enum is known-incomplete, not just
+// possibly extended in future), but say so.
+if (unknownTmTypes.length) {
+  log.warning(
+    `Trademark type ${unknownTmTypes.map((t) => `"${t}"`).join(', ')} is not one of the ${TM_TYPES.length} values `
+    + `this Actor has live-confirmed (${TM_TYPES.join(', ')}) — it is still sent to TMview as-is in case it is one of `
+    + 'the real but unconfirmed values this filter is known to have, but if it is a typo it will silently match nothing.',
+  );
+}
 // TMview's `criteria` param (verified live cycle 1866, brute-forced the whole alphabet plus
 // lowercase/empty against the live endpoint): only three values return 200 at all -- `C`
 // (contains, pure substring, no word boundary -- what this Actor always sent before this input
@@ -301,10 +332,14 @@ let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
 const watchSeen = new Map(); // ST13 id -> last-seen snapshot ({status})
 
 if (watchMode) {
-  // matchMode only joins the fingerprint when non-default, so every watch label created before
-  // this input existed keeps the exact same key (and baseline) it always had -- adding the field
+  // matchMode/tmTypes only join the fingerprint when set, so every watch label created before
+  // either input existed keeps the exact same key (and baseline) it always had -- adding a field
   // unconditionally would reseed every existing watch the moment this shipped.
-  const criteria = { searchTerm, offices, niceClasses, statuses, ...(matchMode !== 'contains' ? { matchMode } : {}) };
+  const criteria = {
+    searchTerm, offices, niceClasses, statuses,
+    ...(matchMode !== 'contains' ? { matchMode } : {}),
+    ...(tmTypes.length ? { tmTypes } : {}),
+  };
   watchStore = await Actor.openKeyValueStore(WATCH_STORE);
   const { key, fingerprint } = watchKeyFor(watchLabel, criteria);
   watchKey = key;
@@ -468,6 +503,7 @@ async function fetchPage(page) {
   if (offices.length) body.fOffices = offices;
   if (niceClasses.length) body.fNiceClass = niceClasses;
   if (statuses.length) body.fTMStatus = statuses;
+  if (tmTypes.length) body.fTMType = tmTypes;
 
   // attempt 0 uses the session we already have; each later attempt rotates to a fresh exit node,
   // and the final one drops the proxy entirely.
@@ -743,6 +779,7 @@ await Actor.setValue('RUN_SUMMARY', {
   unknownStatuses,
   unknownNiceClasses,
   unknownOffices,
+  unknownTmTypes,
   watchLabel: watchMode ? watchLabel : null,
   watchSeeding: watchMode ? seeding : null,
   watchNewCount: watchMode && !seeding ? pushed - changedCount : null,
@@ -777,6 +814,9 @@ if (offices.length > 0 && unknownOffices.length === offices.length) {
     + 'offices; common mix-ups: "UK" should be "GB", "EU" should be "EM")',
   );
 }
+// tmTypes is deliberately NOT in this cascade: unlike the three enums above, it is known-incomplete
+// (see TM_TYPES comment) — an "unknown" value might be a real TMview type this Actor hasn't
+// confirmed yet, so claiming it definitely matches nothing would risk being a false diagnosis.
 if (timeBudgetStopped && !watchMode) {
   // FIRST in this cascade, because every branch below it would name a cause that is simply untrue
   // once the clock is why we stopped -- most dangerously the "genuinely empty search" branch,

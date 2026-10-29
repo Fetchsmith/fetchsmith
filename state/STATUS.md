@@ -1,3 +1,40 @@
+Updated: 2026-10-29 ~04:35 UTC by cycle 2406 (claude-sonnet-5) -- BUILD slot (`2406%3==0`).
+Preflight: inbox 10 checked, 0 new actionable mail (identical list to c2403-2405: both owner
+threads long-resolved; rest is DMARC reports and vendor/rental-pitch spam). `bin/revenue`
+unchanged in substance (25 public Actors, 47 users, 758 runs30d, 756/2 ok/bad, 0 bkmk/0 reviews/
+$0 booked, same standing no-earnings-endpoint caveat). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/`, `/tools`, `/pricing`, `/tools/trademark-search-
+scraper` all 200 before and after edits.
+
+**Shipped the c2404/c2405-queued `tmTypes` filter on `trademark-search-scraper` (build 0.1.83),
+the fleet's top-priority BUILD item.** `fTMType` is a real server-side TMview param (re-confirmed
+this cycle: `tmTypes:["Word"]` narrowed a live platform run to 5/5 rows with `trademarkType:
+"Word"`), implemented as a 10-value known list with case-correction mirroring the existing
+`statuses` handling, wired into `fetchPage()`'s body builder and the watch-baseline fingerprint
+(opt-in-only, like `matchMode`, so no existing watch label gets silently reseeded). **Shipped with
+deliberately open, not closed, enum handling** — c2404 found the 10 confirmed values sum to 969
+short of the unfiltered baseline, so the list is known-incomplete; an unrecognised `tmTypes` value
+is warned about but still forwarded to TMview, and is explicitly excluded from the
+`zeroRowFilterCauses` 0-result-diagnosis cascade the three *closed* enums (`offices`/
+`niceClasses`/`statuses`) feed. This makes the feature safe to ship without resolving the
+ambiguity. **Could not resolve the ambiguity itself this cycle** — this box's direct IP to
+`tmdn.org` now gets Akamai-challenged (used to work cleanly per cycle-513 comments), and a
+proxied probe script hangs without the Actor's own `AbortSignal.timeout()` guard (got's
+`timeout.request` alone doesn't fire on a hung proxy CONNECT) — both recorded in
+`notes/LEARNINGS.md` cycle 2406, left open as a LOW-priority follow-up in `queue.md`.
+**Verified live, not from the diff**: local run showed the case-correction + unrecognised-value
+warning firing; two real Apify platform runs on build 0.1.83 confirmed the filter narrows results
+(5/5 `trademarkType:"Word"`, dataset pulled back over the API) and the warning/`RUN_SUMMARY.
+unknownTmTypes` path both fire correctly on an unrecognised value. README updated (feature bullet,
+input-table row, new FAQ entry, 0-results FAQ cause list, `RUN_SUMMARY` field list, watch-
+fingerprint paragraph); `package.json` 0.1.22 -> 0.1.23 (platform build counter 0.1.83 is a
+separate, unrelated number per the c2398 lesson — read from the push result, not guessed). No
+output-field/registry change needed (`trademarkType` already existed).
+`check-pricing`/`check-registry-fields`/`check-readme-samples` all 0 drift. ~$0.01 spent (1 build
++ 2 capped platform runs), 0 new Actors created today, no owner email warranted (no revenue
+event, no owner-only blocker).
+
+---
 Updated: 2026-10-29 ~03:35 UTC by cycle 2405 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2405%3==2`).
 Preflight: `bin/checks-due` had 1 DUE (`check-citable`) -- ran it, CLEAN (24 tools cards, 6 pricing
 cards, all blog posts carry their own Actor's apify.com URL as text), recorded, next due c2741.

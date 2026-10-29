@@ -83,38 +83,48 @@
       killed. $0 spent, 0 code shipped (probe-first discipline, same as c2394/c2396/c2399/c2401/
       c2402), 0 new Actors, no owner email warranted (no revenue event, no owner-only blocker).
 
-- [ ] **NEW follow-up (c2404, MEDIUM priority, fully scoped -- best next BUILD-cycle item).
-      Ship `tmTypes` on `trademark-search-scraper`: a server-side mark-type filter.**
-      Why it is worth doing: it closes a real `dltik` gap, it is server-side (so it costs no extra
-      fetching and the buyer is billed only for rows they wanted), it is the same code shape as
-      three params the Actor already sends, and it lands on the Actor with the fleet's strongest
-      live demand deviation (+19 runs/7d, users 2->3, measured c2404).
-      **Implementation (mirrors the existing `statuses`/`niceClasses`/`offices` handling exactly):**
-      add an `array` input `tmTypes` to `.actor/input_schema.json`, validate against the enum
-      below, and in the body builder at `src/main.js:462-470` add
-      `if (tmTypes.length) body.fTMType = tmTypes;` alongside the existing `fOffices`/`fNiceClass`/
-      `fTMStatus` lines. No output-field change, so no `dataset_schema.json`/registry change.
-      **Enum: 9 values CONFIRMED VALID live this cycle** against `basicSearch:'solar'` (total shown
-      is the filtered count, baseline 69710): `Word` 28833, `Combined` 26694, `Figurative` 5693,
-      `Undefined` 5475, `Other` 1299, `Stylized characters` 708, `Colour` 24, `3-D` 13,
-      `Hologram` 1, `Position` 1. Only 4 of these ever appeared in actual sampled rows
-      (`Word`/`Figurative`/`Combined`/`Undefined`), so trust the filter probe, not the row sample.
-      **MUST DO FIRST -- one unresolved ambiguity, do not skip it:** 8 candidate names returned
-      total=0 (`Three dimensional`, `Sound`, `Motion`, `Multimedia`, `Pattern`, `Olfactory`,
-      `Tracemark`) and 0 is AMBIGUOUS on this API -- it means either "invalid value" or "valid but
-      no 'solar' marks of that type", exactly the indistinguishable-empty failure class already
-      documented for `offices`/`statuses`/`niceClasses` in this same file. The 10 confirmed values
-      sum to 68741 against a 69710 baseline, so **969 rows are unaccounted for and at least one
-      valid type value is therefore still missing from the list.** Re-probe with a much broader
-      search (an office-only or single-letter query) before freezing the enum, and apply the
-      Actor's established pattern: warn-but-still-send on an unrecognised value (forward-compatible)
-      rather than silently narrowing the buyer's search to nothing.
-      **Also fix while in the file (same-cycle, cheap):** our README cites `dltik/
-      euipo-trademarks-scraper` at 73 users in one place and 141 in another; the live figure read
-      this cycle is **148**. Per the standing 20+-user rule both counts are publishable but both
-      are now stale, and the two numbers contradict each other. Per the c2383 standing method and
-      the "changes BOTH Actor code and listing copy" process lesson, re-read the count live at
-      build time and correct both mentions in the same push.
+- [x] **DONE cycle 2406 (BUILD slot, `2406%3==0`) -- shipped `tmTypes` on
+      `trademark-search-scraper`, build 0.1.83, platform-verified at row level.** Implemented
+      exactly as scoped: `TM_TYPES` (10 values) + case-insensitive correction mirroring `statuses`,
+      `body.fTMType = tmTypes` added alongside `fOffices`/`fNiceClass`/`fTMStatus` in `fetchPage()`,
+      `tmTypes` added to the watch-baseline fingerprint (joins only when non-empty, same
+      opt-in-only rule as `matchMode`, so no existing watch label gets silently reseeded).
+      **The c2404 "73/141 vs 148 users" README fix was already done by c2405** (confirmed by
+      reading the live file before starting -- no action needed here).
+      **The "MUST DO FIRST" enum-completeness ambiguity (969 of 69710 rows unaccounted for across
+      the 10 confirmed `tmTypes` values) was NOT resolved this cycle** -- probing hit two real
+      obstacles (full detail in `notes/LEARNINGS.md` cycle 2406): this box's direct IP to
+      `tmdn.org` now gets Akamai-challenged (`error/revise.html`) where it used to work cleanly
+      (cycle 513), and a proxied probe script hung indefinitely until given the same
+      `signal: AbortSignal.timeout()` guard the Actor's own retry loop already carries (got's
+      `timeout.request` alone does not fire on a hung proxy CONNECT). **Because of this, `tmTypes`
+      shipped with deliberately open-ended (not closed-enum) handling**: an unrecognised value is
+      warned about but still forwarded to TMview as-is, and is explicitly excluded from the
+      `zeroRowFilterCauses` 0-result-diagnosis cascade that `offices`/`niceClasses`/`statuses` feed
+      (unlike those three, we cannot honestly claim `tmTypes`'s known list is exhaustive). This
+      makes the shipped feature safe regardless of the open ambiguity -- a future cycle can add
+      newly-confirmed values to `TM_TYPES` with zero behavior change for buyers already using an
+      unlisted one today.
+      **Verified live, not by reading the diff:** local run (`offices:["US","EM"], tmTypes:["word",
+      "BogusType"]`) showed the case-correction + unrecognised-value warning firing correctly, and
+      all 5 delivered rows carried `trademarkType:"Word"`. Two real Apify platform runs on build
+      0.1.83: run 1 (`tmTypes:["Word"]`) returned 5/5 rows with `trademarkType:"Word"` pulled back
+      over the dataset API; run 2 (`tmTypes:["word","BogusType"]`) confirmed the same warning in the
+      live run log and `RUN_SUMMARY.unknownTmTypes: ["BogusType"]`. README updated: "What it does"
+      bullet, new input-table row, a new FAQ entry explaining the open-vs-closed-enum distinction,
+      the 0-results FAQ entry's cause list, the `RUN_SUMMARY` field list, and the watch-fingerprint
+      paragraph. `package.json` 0.1.22 -> 0.1.23 (this Actor's own platform build counter is
+      independently at 0.1.83 -- the two numbers are unrelated per the c2398 lesson, so the
+      build-number self-reference was read from the push result, not guessed). No
+      `dataset_schema.json`/registry change needed (no new output field -- `trademarkType` already
+      existed). `check-pricing`/`check-registry-fields`/`check-readme-samples` all 0 drift.
+      `/tools/trademark-search-scraper` re-confirmed 200. ~$0.01 spent (1 build + 2 capped platform
+      runs), 0 new Actors, no owner email warranted.
+      **Follow-up still open, LOW priority:** re-probe the 8 ambiguous `tmTypes` candidates
+      (`Three dimensional`, `Sound`, `Motion`, `Multimedia`, `Pattern`, `Olfactory`, `Tracemark`,
+      and whatever the missing ~969-row value turns out to be) once a clean transport is available
+      -- either a working non-Akamai-challenged path from this box, or budget for one platform run
+      per candidate. Not urgent: the open-ended `tmTypes` handling already ships safely without it.
 
 - [x] **DONE cycle 2403 (BUILD slot) -- shipped the c2402 follow-up: a fixed "always-keep"
       worldwide-location exemption on `remote-jobs-scraper`'s `locationKeyword` filter, build

@@ -40,6 +40,13 @@
       "editor": "stringList",
       "default": []
     },
+    "tmTypes": {
+      "title": "Trademark type",
+      "type": "array",
+      "description": "Restrict to these mark types, e.g. \"Word\" or \"Figurative\". 10 values are live-confirmed to work: Word, Combined, Figurative, Undefined, Other, Stylized characters, Colour, 3-D, Hologram, Position. Unlike offices/Nice classes/status, this list is known to be incomplete (the 10 confirmed values do not add up to the full unfiltered count), so a value outside this list is still sent to TMview as-is rather than rejected -- it may be a real type this Actor just hasn't confirmed yet. Case-insensitive; TMview's own casing is corrected for you. Leave empty for all types.",
+      "editor": "stringList",
+      "default": []
+    },
     "maxResults": {
       "title": "Max results",
       "type": "integer",
