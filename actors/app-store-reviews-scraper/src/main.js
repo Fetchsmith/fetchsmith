@@ -778,15 +778,16 @@ async function reviewFeedIsDown() {
   return true;
 }
 
-// Run ONCE, lazily, immediately before the first review page this run fetches: ask a control app
-// that always has hundreds of thousands of reviews whether THIS run's source IP is being served at
-// all (see the per-IP measurement above). If it is -- the common case -- nothing changes and the
-// whole run costs 1 extra request. If it is not, rotate through fresh Apify Proxy IPs until one
-// answers and pin it for the rest of the run, so the buyer gets their reviews instead of an
-// honest-but-useless "Apple-side fault, re-run later". Deliberately a PREFLIGHT rather than a
-// retry bolted onto reviewFeedIsDown: by the time that probe runs the walk has already decided
-// every pair was empty, and in watch mode a rotation discovered that late would still leave the
-// baseline seeded from a refused IP.
+// Run AT MOST ONCE per run, triggered lazily off the first page that comes back empty (c2421 --
+// see the call site in scrapeAppCountrySort): ask a control app that always has hundreds of
+// thousands of reviews whether THIS run's source IP is being served at all (see the per-IP
+// measurement above). A run whose own IP is serving fine never hits an empty page at all, so it
+// never pays this probe -- cost moved from "1 request, every run" to "1 request, only on a run that
+// already has a hole to explain". If the own IP is refused, rotate through fresh Apify Proxy IPs
+// until one answers and pin it for the rest of the run, so the buyer gets their reviews instead of
+// an honest-but-useless "Apple-side fault, re-run later". The caller re-fetches the SAME page on
+// the rotated IP before treating the empty page as a real hole -- firing this mid-loop instead of
+// as a true preflight would otherwise permanently lose whichever page happened to trigger it.
 let servingIpChecked = false;
 // Sweeps EVERY control app before calling an IP refused, because the empty-feed symptom is
 // per-(IP, app, minute), not per-IP: measured 2026-10-29, one Apify datacenter session served
@@ -855,9 +856,6 @@ async function ensureServingIp() {
 // It is called after the first page that actually returned entries, so a storefront Apple refuses
 // (`zz`, or an app absent from that storefront) now costs 1 request instead of 3.
 async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally, extra = {}, pairSeeding = false) {
-  // Memoised: the first review page of the run pays for the source-IP preflight, the rest inherit
-  // whatever IP it settled on.
-  await ensureServingIp();
   let got = 0;
   let hitCutoff = false;
   // Only "mostRecent" is date-ordered (verified live 2026-09-11: strictly descending across pages,
@@ -895,7 +893,32 @@ async function scrapeAppCountrySort(appId, country, sortBy, seen, getInfo, tally
       log.warning(`${appId}/${country} ${sortBy}: ${e.message} Stopping this app/storefront pair instead of requesting the remaining pages.`);
       break;
     }
-    if (!entries.length) continue; // a real hole in Apple's feed, not the end of it — keep paging
+    if (!entries.length) {
+      // Lazy, memoised trigger for the source-IP preflight (c2419 part 2): a run whose own IP is
+      // serving fine never reaches this branch on page 1 and so never pays the probe at all — the
+      // cost moves from "always, on the happy path" to "only when there is already a hole to
+      // explain". Checked here (not once up front) specifically because the only honest place to
+      // ask "is my IP refused?" is the first time Apple actually answers with nothing.
+      if (!servingIpChecked) {
+        const proxyUrlBeforeProbe = activeProxyUrl;
+        await ensureServingIp();
+        // activeProxyUrl changed => controlProbe found a serving IP and ensureServingIp pinned it.
+        // This SAME page was fetched on the refused IP, so it must be re-fetched on the new one
+        // before falling through to `continue` — otherwise the rotation would silently lose this
+        // page's rows (the exact bug this whole feature exists to prevent) and move on to page 2
+        // believing page 1 was a genuine hole in Apple's feed instead of a refused IP.
+        if (activeProxyUrl !== proxyUrlBeforeProbe) {
+          try {
+            ({ entries, clientClass } = await fetchPage(url));
+          } catch (e) {
+            tally.storefrontError = e.message;
+            log.warning(`${appId}/${country} ${sortBy}: ${e.message} Stopping this app/storefront pair instead of requesting the remaining pages.`);
+            break;
+          }
+        }
+      }
+      if (!entries.length) continue; // a real hole in Apple's feed, not the end of it — keep paging
+    }
     lastServedPage = page;
     lastPageFull = entries.length >= RSS_PAGE_SIZE;
     if (clientClass !== 'default') log.info(`${appId}/${country} ${sortBy} page ${page}: empty for the default client, recovered ${entries.length} reviews under the iOS client.`);
