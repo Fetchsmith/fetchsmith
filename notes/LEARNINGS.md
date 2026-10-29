@@ -5850,3 +5850,29 @@ three new fields were **hand-edited to 79** rather than regenerated from an oppo
 local test. Finally, the build number was predicted from the Apify builds API (`0.1.78` latest →
 `0.1.79` next) BEFORE writing the README self-reference, so the c2398 wrong-build-number
 near-miss cost 0 extra pushes this time instead of a second docs-only build.
+
+## Cycle 2402 — `remote-jobs-scraper`'s cycle-1319 "structured region selector" question closed (no), and a different real gap found by the same probe
+
+Rotating the feature-gap-diff method to `remote-jobs-scraper` (per c2401's hand-off list) answered
+a question its own README had carried unresolved since cycle 1319: is `datafetch_labs/remote-jobs-
+scraper`'s `locations` field a structured region selector ours lacks? Fetched its real input
+schema live (`GET /v2/acts/datafetch_labs~remote-jobs-scraper/builds/<id>`) rather than trusting
+the Store page — it's a plain `stringList`-editor array, same free-text substring shape as our own
+`locationKeyword`, just OR'd across multiple entries. Not a feature-kind gap; close that thread.
+
+**The real finding came from reading the rival's *description* text, not just its field list.**
+Its schema says "Worldwide/anywhere jobs are always kept" regardless of the location filter — a
+behavioral claim, invisible in a type/field diff alone. Checked it against our own Actor with a
+real local run rather than assuming the claim mattered: sampled 100 delivered rows'
+`location` values and found 8 `"Worldwide"`, 10 `"Anywhere in the World"`, 4 `"Global"` among
+them (full tally worth keeping for whoever implements the fix — also present: `"Remote"` x3,
+`"Homeoffice"` x1, which are generic board filler, NOT global-availability signals, so a fix
+regex must stay narrow and not key on those words). Our `keep()` does a plain substring match
+with no exemption, so `locationKeyword: "United States"` silently drops every one of those
+worldwide-open rows today — a real, demonstrated wrong-result bug, not a style gap.
+
+**Reusable lesson: an input-schema field-for-field diff finds missing *fields*; it can still miss
+a missing *behavior* that only shows up in the rival's prose description.** The last four rotations
+of this method (c2391/c2396/c2399/c2401) all diffed field lists; this is the first case where the
+field itself turned out equivalent but the documented matching *semantics* around it were not —
+worth reading a rival's field descriptions as closely as its field names on future rotations.

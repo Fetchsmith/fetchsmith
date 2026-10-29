@@ -1,3 +1,36 @@
+- [ ] **NEW (c2402, QUALITY/GROWTH slot, MEDIUM priority) -- scoped a real, data-confirmed gap on
+      `remote-jobs-scraper`'s `locationKeyword` filter; not shipped, needs a BUILD cycle.**
+      Rotated the feature-gap-diff method to `remote-jobs-scraper`, closing the one open item its
+      own README had flagged since cycle 1319 ("re-verify a structured region selector against
+      `datafetch_labs`'s actual input schema before conceding or closing it"). Fetched
+      `datafetch_labs/remote-jobs-scraper`'s real input schema via
+      `GET /v2/acts/datafetch_labs~remote-jobs-scraper/builds/WOJnNnFswvD603fQg` (13 fields).
+      **Verdict: it is NOT a structured region selector** -- `locations` is a plain
+      `stringList`-editor array (free text, same substring-matching shape as our own
+      `locationKeyword`), so cycle 1319's open question is answered and can close as "not a
+      feature gap in kind." **But comparing it surfaced a real, different, data-confirmed gap**:
+      the rival's schema documents "Worldwide/anywhere jobs are always kept" regardless of the
+      `locations` filter, and a local test run of our own Actor (`maxResults:10`, all 6
+      non-LinkedIn sources, see `storage/datasets/default/*.json` in the Actor dir) sampled real
+      `location` field values and found **8 rows literally `"Worldwide"`, 10 `"Anywhere in the
+      World"`, 4 `"Global"`** among 100 delivered rows. Our `keep()` (`src/main.js:929`) does
+      `row.location.toLowerCase().includes(locationKeyword)` with no exemption, so a buyer running
+      `locationKeyword: "United States"` to find US-open roles **silently drops every one of those
+      worldwide-open rows today** -- demonstrated, not assumed, with real sampled data in the same
+      run. **Scoped fix (small, no input-schema change needed):** add a fixed case-insensitive
+      "always-kept" check (`/\b(worldwide|anywhere in the world|global)\b/i` or similar, verify
+      against a larger sample first -- `"Remote"`/`"Homeoffice"` in the sample are NOT global
+      exemptions, they're board-generic filler text, so the pattern must stay narrow) in `keep()`
+      ahead of the `locationKeyword` substring check, mirroring the rival's documented behavior.
+      **Separately, lower priority:** the rival's `locations` field is an array (OR-matched), ours
+      is a single string -- upgrading `locationKeyword` to accept multiple comma-separated terms
+      would be a real but smaller usability win; do the worldwide-exemption fix first since it's
+      the one proven to produce a wrong (silently incomplete) result today, not just a convenience
+      gap. README's cycle-1319 paragraph (`src/README.md` "UPDATE (cycle 1319)...") needs a
+      follow-up correction noting the region-selector question is now closed and the worldwide-
+      exemption gap is the real finding. $0 spent, 0 code shipped this cycle (per the established
+      c2394/c2396/c2399 probe-before-build discipline), no owner email warranted.
+
 - [x] **DONE cycle 2401 (BUILD slot) -- ran the 2 DUE fleet checks (`check-retired-disclosure`
       0 issues, `check-real-fields` 0 drift, both recorded, next due c2737) and the c2336
       `ext_bad30d` tripwire (no new events beyond the known 4). With the SAM.gov rival-gap list
