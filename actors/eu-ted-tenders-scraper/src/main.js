@@ -526,7 +526,12 @@ function upstreamAdvice(statusCode, body) {
 // search field 'notice-type' in expert search") — surfacing it is what makes the failure fixable.
 function upstreamMessage(body) {
   if (!body || typeof body !== 'object') return null;
-  return body.message ?? body.error?.message ?? null;
+  const msg = body.message ?? body.error?.message ?? null;
+  // Capped like every other upstream-body interpolation in the fleet (cf.
+  // federal-register-scraper's `detail.slice(0, 120)`) -- TED's JSON error bodies are not bounded,
+  // and this value ends up inside a statusMessage/Actor.fail() string the clamp below reserves
+  // other, billing-critical prose around.
+  return msg == null ? null : String(msg).slice(0, 120);
 }
 
 // `timeBudgetHit` (the return value, not the module-level `timeBudgetStopped`) tells the
@@ -621,8 +626,11 @@ async function seedBaseline() {
     // A 200 carrying an error message yields no notices, which would otherwise read as
     // a clean end-of-results and save a short baseline as if it were complete.
     if (body.message) {
-      log.warning(`Baseline walk: TED API error on page ${seedPage}: ${body.message} — stopping baseline walk early.`);
-      seedError = `TED returned an API error on baseline page ${seedPage}: ${body.message}`;
+      // Capped at 120 chars (fleet convention) -- unlike every other upstream-body interpolation
+      // in this file this one had no `.slice()` at all, i.e. genuinely unbounded, not just large.
+      const capped = String(body.message).slice(0, 120);
+      log.warning(`Baseline walk: TED API error on page ${seedPage}: ${capped} — stopping baseline walk early.`);
+      seedError = `TED returned an API error on baseline page ${seedPage}: ${capped}`;
       break;
     }
     seedTotal = body.totalNoticeCount ?? 0;
@@ -659,8 +667,9 @@ while (!seeding && keepGoing && pushed < maxResults && (page - 1) * PAGE_SIZE < 
     // Recorded and broken out of rather than failed on the spot: Actor.fail() exits
     // the process immediately, which on an incremental watch run would discard the
     // baseline holding the rows this run already pushed and charged for (h287).
-    log.warning(`TED API error on page ${page}: ${body.message} — stopping the walk; results fetched so far are kept.`);
-    apiErrorMessage = body.message;
+    const cappedApiError = String(body.message).slice(0, 120);
+    log.warning(`TED API error on page ${page}: ${cappedApiError} — stopping the walk; results fetched so far are kept.`);
+    apiErrorMessage = cappedApiError;
     break;
   }
   total = body.totalNoticeCount ?? 0;
@@ -894,14 +903,32 @@ if (webhookUrl) {
   }
 }
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` (and the message passed to `Actor.fail()`, which sets
+// the same field) at 500 chars -- fleet-wide clamp-reservation sweep, cycle 2428 onward. `suffix`
+// is RESERVED out of the budget rather than appended after clamping: every branch below carries a
+// billing-critical disclosure (nothing was charged / rows already charged are kept and not
+// re-billed) that must never be the part silently dropped, so it goes in `suffix` while the
+// upstream-error prose (now capped at 120 chars above, but still potentially the longest part)
+// goes in `msg` and absorbs any further cut. Reference impl: fec-campaign-finance-scraper
+// main.js (same name, same shape).
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, Math.max(budget - 4, 0));
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+
 // Deferred to the very last statement on purpose (h287): Actor.fail() exits the process, so
 // failing any earlier would skip the watch-baseline save above — throwing away the record that
 // the rows this run already CHARGED for were delivered, and billing the buyer for them again on
 // the next run — and would skip the completion webhook for those same charged rows.
 if (seedError) {
-  await Actor.fail(
-    `The watch baseline could not be completed: ${seedError}. No baseline was saved (a partial one would `
-    + 'cause you to be charged twice for the same notices) and nothing was charged. '
+  await Actor.fail(clampStatusMessage(
+    `The watch baseline could not be completed: ${seedError}.`,
+    ' No baseline was saved (a partial one would cause you to be charged twice for the same '
+    + 'notices) and nothing was charged. '
     + (seedTimedOut
       // Distinct from the TED-outage advice below: re-running immediately will not help if the
       // query itself just needs more pages than one run's time budget allows.
@@ -910,14 +937,15 @@ if (seedError) {
       : seedErrorStatus == null
         ? 'If this looks like a TED-side outage or rate limit, please re-run in a few minutes.'
         : upstreamAdvice(seedErrorStatus, seedErrorBody)),
-  );
+  ));
 } else if (apiErrorMessage) {
-  await Actor.fail(
-    `TED API error: ${apiErrorMessage}. The walk stopped there, so this run is incomplete — the `
-    + `${pushed} notice(s) already in the dataset are valid and were kept`
+  await Actor.fail(clampStatusMessage(
+    `TED API error: ${apiErrorMessage}.`,
+    ` The walk stopped there, so this run is incomplete — the ${pushed} notice(s) already in the `
+    + 'dataset are valid and were kept'
     + (watchMode && !seeding ? ' and recorded in the watch baseline, so you will not be charged for them again' : '')
     + '. Please re-run in a few minutes.',
-  );
+  ));
 } else if (httpError) {
   // Moved here from an immediate `if (!pushed && httpError) await Actor.fail(...)` right after the
   // walk loop: that only ever fired on a ZERO-row run, so an HTTP error on page 2+ (after some
@@ -930,16 +958,18 @@ if (seedError) {
   const retried = TRANSIENT_STATUS.has(httpError)
     ? ` (retried ${HTTP_RETRY_DELAYS_MS.length} times)`
     : ''; // a 4xx is not in TRANSIENT_STATUS, so claiming retries here was simply false
-  await Actor.fail(
-    `TED's API returned HTTP ${httpError}${retried}, so the walk stopped there`
-    + (pushed
-      ? ` — the ${pushed} notice(s) already in the dataset are valid and were kept`
-        + (watchMode && !seeding ? ' and recorded in the watch baseline, so you will not be charged for them again' : '')
-        + '.'
-      : ', so no notices could be fetched.')
-    + (httpErrorMessage ? ` TED said: "${httpErrorMessage}".` : '')
-    + ` ${upstreamAdvice(httpError, httpErrorBody)}`,
-  );
+  // `httpErrorMessage` (already capped at 120 chars) stays in the base so it truncates first if
+  // the combination is still too long -- the "kept, not charged again" clause and the advice are
+  // the billing-critical part and go in the reserved suffix instead.
+  const base = `TED's API returned HTTP ${httpError}${retried}, so the walk stopped there.`
+    + (httpErrorMessage ? ` TED said: "${httpErrorMessage}".` : '');
+  const suffix = (pushed
+    ? ` The ${pushed} notice(s) already in the dataset are valid and were kept`
+      + (watchMode && !seeding ? ' and recorded in the watch baseline, so you will not be charged for them again' : '')
+      + '.'
+    : ' No notices could be fetched.')
+    + ` ${upstreamAdvice(httpError, httpErrorBody)}`;
+  await Actor.fail(clampStatusMessage(base, suffix));
 }
 
 await Actor.exit();

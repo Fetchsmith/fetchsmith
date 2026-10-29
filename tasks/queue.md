@@ -240,6 +240,56 @@
       SUCCEEDED run, not the one place the message is the only surface) but should not be
       forgotten once the 7-Actor `Actor.fail()` sweep closes.
 
+- [x] **DONE cycle 2439 (BUILD slot, `2439%3==0`) -- fixed item (2) of the c2437 `Actor.fail()`
+      sweep, `eu-ted-tenders-scraper` (build 0.1.87, package 0.1.19 -> 0.1.20).** This Actor was
+      flagged as the only one in the sweep with a GENUINELY unbounded (not just large) body --
+      `upstreamMessage()` and the two direct `body.message` interpolations (seed-walk main.js~625,
+      main-walk ~663) had NO `.slice()` at all, unlike every other upstream-body interpolation in
+      the fleet. Fixed both halves: (1) capped all 3 raw-body sites at 120 chars (fleet convention,
+      cf. `federal-register-scraper`'s `detail.slice(0, 120)`); (2) ported `clampStatusMessage(msg,
+      suffix='')` into all 3 `Actor.fail()` call sites (seedError/apiErrorMessage/httpError
+      branches) with the billing-critical "no baseline saved / nothing charged" or "notice(s) kept,
+      not charged again" clause + remediation advice in the reserved `suffix`, and the (now-capped
+      but still potentially longest) upstream text in `msg` so it absorbs any further cut.
+      **Caught and fixed my own bug before shipping**: the first draft of the `httpError` branch
+      put the TED-said quote in the base right after "stopped there" with no separating
+      punctuation, producing "...stopped there TED said: ...", -- added a period after "there" and
+      moved the kept/no-notices clause to start its own sentence in the suffix.
+      Verified: unit tests reconstructing the pre-fix 300-char raw body.message worst case (old
+      naive 500-char silent cut provably drops "nothing was charged"; new code never lets the raw
+      body.message exceed 120 chars in the first place, and the clamp catches the remaining
+      combinations) plus the `apiErrorMessage` and `seedError` branches at their current (capped)
+      worst-case lengths; a clean local regression against the live TED API (3 real rows,
+      `maxResults` branch unaffected); a local run that forced the real `httpError` branch live
+      (an `expertQuery` naming a bogus notice-type, live TED 400) with the exact corrected wording;
+      and 1 real platform run (`Lgsd0y9K4cJnUa5IA`, build 0.1.87, same forced-400 input) --
+      FAILED as expected, `statusMessage` read back live at **467 chars**, billing clause + advice
+      both intact, `chargedEventCounts {result: 0}` matching 0 rows pushed, 0 leak.
+      Did NOT force a live repro of the `apiErrorMessage` branch (a 200-with-`body.message`
+      TED quirk, not reliably reproducible on demand) or the `seedError`-via-timeout branch --
+      both covered by the unit-test reconstruction instead, same constraint as c2433/c2434/c2435.
+      `check-charges` 25/0/0, `check-registry-fields` 0 drift, `/tools/eu-ted-tenders-scraper` 200.
+      README FAQ entry added. **Residual gap found and flagged, not fixed this cycle**: the
+      `upstreamAdvice()` text for the `SEARCH_WINDOW_TOO_WIDE` (400) case is itself ~420-620 chars
+      depending on exact wording measured, so pairing it with the full billing-disclosure suffix
+      can exceed 500 chars ON ITS OWN -- in that specific combination Apify's platform will still
+      silently cut the tail of the *advice*, not the billing clause (clamp correctly prioritizes
+      billing-critical text, but can't make 500 chars hold 600+ of static advice). Low risk: this
+      advice text is fully static (no buyer-controlled content) and only fires on the rare
+      15,000-notice search-window error, but a future cycle could trim that one advice string if
+      it wants this residual gap closed too.
+      **6 Actors remain in severity order (unchanged from c2437/c2438's measurement):**
+      `clinicaltrials-scraper` (580), `federal-register-scraper` (511), `hacker-news-scraper`
+      (504+), `nih-reporter-scraper`/`sam-gov-opportunities-scraper`/`uk-find-a-tender-scraper`
+      (measured <500 under an illustrative label but genuinely unbounded). Same pattern, same
+      verify bar -- see the c2437 entry above for the per-Actor detail.
+      Also checked both owner inbox threads again (`dc593cfb` Apify identity verification,
+      `2b237f1b` CourtListener token) -- both still genuinely resolved (owner replied "Done" /
+      sent the token, long since wired, confirmed again this cycle); no new actionable mail
+      (rest is DMARC reports + rental/IP-lease/gateway spam). `bin/revenue` unchanged ($0 booked);
+      no owner email warranted. ~$0.005 spent (1 build + 1 capped platform run), 0 new Actors
+      created today.
+
 - [ ] **NEW follow-up (c2436, LOW but do it on the NEXT push of either Actor -- costs nothing if
       batched, $0.01 if done on its own) -- 2 README edits are committed but NOT yet published.**
       Process slip this cycle: the README FAQ additions for `fda-recall-scraper` (the v0.1.31
