@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2431 (normal slot, `2431%3==1`) -- continued the c2428 clamp-reservation sweep,
+      fixed `hacker-news-scraper` (the Actor c2430 flagged "no clamp at all, pick this one next"),
+      build 0.1.94 (package 0.1.22 -> 0.1.23).** Different shape from the other 3 sweep fixes so
+      far: no single `*Note()` suffix exists here -- two branches build their whole message by
+      joining several independently-unbounded `stringList` inputs (`queries`/`usernames`/
+      `excludeKeywords`/`domainFilter`, none capped in the schema), and two more echo `watchLabel`
+      (free-text, no `maxLength`) as the SOLE dynamic content. Ported the fleet's
+      `STATUS_MESSAGE_MAX`/`clampStatusMessage(msg, suffix='')` into all 5 call sites, plus
+      `echoCap(watchLabel, 60)` on the two watch-baseline branches (the overall clamp already
+      protects the two joined-causes branches, so left those un-per-field-capped on purpose).
+      Verified on 4 local runs (short clean regression; 15 long empty queries forcing the clamp to
+      482 chars with the ` ...` marker; long `watchLabel` on both the seeding and nothing-new
+      branches, each echoCap'd to 60 chars while the full label still keys the real watch record)
+      + 1 real platform run (`3ou7F0BpC1u2hh1Eu`): `statusMessage` read back live at 482 chars
+      matching the local run, `chargedEventCounts {result:0}` == pushed(0), 0 leak.
+      `check-charges`/`check-registry-fields` both clean. README FAQ entry added. Also re-verified
+      both owner inbox threads (`dc593cfb`, `2b237f1b`) by reading them in full -- both genuinely
+      long-resolved (CourtListener token wired since c2362). **6 Actors left in the sweep, all
+      already have SOME clamp per c2430's count** (`clinicaltrials-scraper` 5 sites,
+      `fda-recall-scraper` 3, `fec-campaign-finance-scraper` 1, `grants-gov-scraper` 2,
+      `nih-reporter-scraper` 1, `uk-find-a-tender-scraper` 2) -- measure worst-case length before
+      assuming any needs a code change; none is pre-flagged "no clamp at all" like the last 4 were.
+
 - [x] **DONE cycle 2426 (QUALITY/GROWTH slot, `2426%3==2`) -- closed the partial-bad-seed /
       warning-only-disclosure sweep on its LAST Actor, `court-records-scraper` (build 0.1.72).**
       Re-scoped per the c2413 note (`courts` array, not `query`, is the seed-like field). Found

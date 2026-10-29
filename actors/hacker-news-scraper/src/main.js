@@ -382,6 +382,27 @@ function evictionNote() {
     + 'and CHARGED FOR again next run unless you narrow the query/tags. See the RUN_SUMMARY key-value record.';
 }
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars with no marker (fleet-wide finding, see
+// LEARNINGS cycle 1760) -- this Actor had no clamp at all despite several status-message branches
+// below joining caller-supplied stringLists (queries/usernames/excludeKeywords/domainFilter -- none
+// capped by the input schema, confirmed in `.actor/input_schema.json`) or echoing watchLabel (a
+// free-text field with no maxLength) directly. `suffix` is reserved out of the budget rather than
+// appended after clamping, matching the rest of the fleet's `clampStatusMessage`, even though no
+// call site here currently needs a must-survive suffix -- ports cleanly if one is added later.
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = STATUS_MESSAGE_MAX - suffix.length;
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, budget - 4);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+
+// watchLabel is echoed verbatim into two status messages below with nothing else dynamic
+// alongside it, so capping it keeps those messages readable even though the overall clamp above
+// already protects against Apify's silent cut.
+const echoCap = (s, max) => (s.length > max ? `${s.slice(0, max)}...` : s);
+
 // True when an already-delivered item is about to be re-delivered because it cleared a milestone.
 // Read BEFORE pushResult() by the GitHub-enrichment gate, which has to decide whether the row is
 // worth spending a lookup on; pushResult() re-derives it rather than trusting a passed-in flag.
@@ -1205,9 +1226,9 @@ if (webhookUrl) {
 }
 
 if (pushed === 0 && watchMode && !seeding) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching item had already been delivered. That is the expected result most of the time; you were charged for nothing.`);
+  await Actor.setStatusMessage(clampStatusMessage(`Nothing new for watch label "${echoCap(watchLabel, 60)}" since its last run -- every matching item had already been delivered. That is the expected result most of the time; you were charged for nothing.`));
 } else if (pushed === 0 && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing item(s) recorded, 0 charged. Run again later to get only what's new.`);
+  await Actor.setStatusMessage(clampStatusMessage(`Baseline run for watch label "${echoCap(watchLabel, 60)}": ${watchSeen.size} existing item(s) recorded, 0 charged. Run again later to get only what's new.`));
 } else if (pushed === 0 && (queries.length || usernames.length)) {
   const reasons = [];
   if (erroredQueries.length) reasons.push(`the request to Algolia's HN Search API failed for: ${erroredQueries.join(', ')} (see log for the error)`);
@@ -1235,7 +1256,7 @@ if (pushed === 0 && watchMode && !seeding) {
   if (erroredUsers.length) reasons.push(`the user lookup failed for: ${erroredUsers.join(', ')} (see log for the error)`);
   if (notFoundUsers.length) reasons.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   if (timeBudgetExceeded) reasons.push('the run stopped early, approaching the platform run timeout, before any result could be delivered — narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) and try again');
-  await Actor.setStatusMessage(`No items returned — ${reasons.join('; ') || 'no queries or usernames provided'}.`);
+  await Actor.setStatusMessage(clampStatusMessage(`No items returned — ${reasons.join('; ') || 'no queries or usernames provided'}.`));
 } else if (emptyQueries.length || notFoundUsers.length || truncatedSummaries.length || notReachedSummaries.length || notReachedUsers.length || commentDepthUnresolved || githubEnrichSkipped) {
   // Until cycle 643 this branch fired ONLY on emptyQueries/notFoundUsers, so a run that
   // delivered a full 100 rows against 60,108 declared matches -- or that stopped at maxResults
@@ -1262,7 +1283,7 @@ if (pushed === 0 && watchMode && !seeding) {
   if (notFoundUsers.length) notes.push(`no such HN user: ${notFoundUsers.join(', ')}`);
   if (commentDepthUnresolved) notes.push(`could not resolve comment depth for ${commentDepthUnresolved} comment(s) (left commentDepth:null and NOT checked against maxCommentDepth=${maxCommentDepth} -- some may actually be deeper than requested)`);
   if (githubEnrichSkipped) notes.push(`GitHub enrichment skipped for ${githubEnrichSkipped} item(s) after hitting GitHub's rate limit or the ${GITHUB_LOOKUP_CAP}-lookup cap (githubRepo is set, but githubStars/githubLanguage/githubPushedAt etc are null)`);
-  await Actor.setStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} items. ${notes.join('; ')}.`));
 } else if (watchMode && !seeding && (baselineTruncated > 0 || commentDepthUnresolved || githubEnrichSkipped)) {
   // Otherwise-clean delivering run: none of the branches above fire, so without this the
   // baseline-eviction re-charge risk would be invisible in the Console (same gap found and
@@ -1289,7 +1310,7 @@ if (pushed === 0 && watchMode && !seeding) {
       + `${GITHUB_LOOKUP_CAP}-lookup cap (githubRepo is set, but githubStars/githubLanguage/githubPushedAt etc are null)`,
     );
   }
-  await Actor.setStatusMessage(`Pushed ${pushed} new item(s). WARNING: ${watchNotes.join('; ')}. See the RUN_SUMMARY key-value record.`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} new item(s). WARNING: ${watchNotes.join('; ')}. See the RUN_SUMMARY key-value record.`));
 }
 
 if (watchMode && seedFailure) {

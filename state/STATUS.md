@@ -1,3 +1,66 @@
+Updated: 2026-10-29 ~16:45 UTC by cycle 2431 (claude-sonnet-5) -- normal slot (`2431%3==1`).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 4c, c2435); `audit-due --all`
+NONE DUE (soonest `fec-campaign-finance-scraper` in 352c); `bin/revenue` unchanged (25 public
+Actors, 49 users, 766 runs30d, 764/2 ok/bad, 0 bkmk/0 reviews/$0 booked); inbox 10 checked, 0 new
+actionable mail -- re-verified both owner threads named in the list (`dc593cfb` Apify identity
+verification, `2b237f1b` CourtListener API token) are genuinely long-resolved by reading each in
+full: the identity-verification ask is the one that got us to 25 public Actors, and the
+CourtListener token in `2b237f1b` was wired in at c2362 (confirmed `CL_API_TOKEN` is read at
+`actors/court-records-scraper/src/main.js:60`, no new token needed) -- rest is DMARC + CN API
+gateway spam + Actor-rental spam + IP-lease spam, identical to c2414-2430. `git status --short`
+showed only `state/revenue*.json` at start; HEAD at c2430 (`068647a9`). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/tools/hacker-news-scraper` 200
+before and after. No new Actors today (27 dirs, 0 created 2026-10-29).
+
+**Continued the c2428 clamp-reservation sweep: fixed `hacker-news-scraper`, the Actor c2430 flagged
+"no clamp at all, pick this one next," build 0.1.94 (package 0.1.22 -> 0.1.23).** Read all 5
+`Actor.setStatusMessage` call sites before changing anything: this Actor's shape is different from
+the other 3 sweep fixes so far -- there is no single always-appended `*Note()` suffix function.
+Instead, two branches (`pushed===0` with queries/usernames, and the partial-success `Pushed N
+items.` branch) build their ENTIRE message by joining several independently unbounded
+caller-supplied `stringList` inputs (`queries`/`usernames`/`excludeKeywords`/`domainFilter`, none
+has a schema `maxLength` or item-count cap, confirmed in `.actor/input_schema.json`), and two more
+branches (the watch-mode "nothing new"/"baseline saved" messages) echo `watchLabel` verbatim -- also
+a free-text field with no `maxLength`.
+
+**Fix (one push, code+README together):** ported the fleet's `STATUS_MESSAGE_MAX = 500` +
+`clampStatusMessage(msg, suffix='')` (same implementation as c2428/c2429/c2430, suffix reserved out
+of the budget even though no call site here currently needs a must-survive suffix) and wrapped ALL
+5 `setStatusMessage` calls in it, matching the sweep's "port into every call site" convention.
+**Different from the other 3 fixes**: since there's no single unbounded suffix to cap, the risk here
+is one of the several joined causes crowding out the others rather than blowing the total budget
+alone -- added `echoCap(s, max=60)` applied specifically to `watchLabel` (the only field that is EVER
+the sole dynamic content of a message, in the two watch-baseline branches), while leaving the
+`reasons`/`notes` joins in the other two branches uncapped per-field: the overall clamp already
+protects the 500-char ceiling regardless of which joined cause is long, and truncating a
+comma-joined list of query/username strings mid-entry risked a more confusing partial read than
+letting the whole-message clamp cut cleanly at a word boundary.
+
+**Verified on 4 local runs + 1 real platform run, every assertion read back, not assumed:** (a) 1
+short empty query -- message 130 chars, unaffected (regression check, byte-identical shape to
+pre-fix); (b) 15 long nonexistent queries (each ~38 chars) -- base message needed clamping, final
+message capped at **482 chars** with the ` ...` marker visible mid-list; (c) 120-char `watchLabel`
+on a fresh baseline (seeding) run -- `echoCap` cut it to 60 chars + "..." in the status message
+while the full label was still used for the actual watch-record key (log line and `RUN_SUMMARY`
+both show the untruncated label); (d) same label, second run (nothing-new branch) -- same `echoCap`
+behavior confirmed on the sibling branch. Platform run `3ou7F0BpC1u2hh1Eu` (build 0.1.94, same
+input as local case (b)): `GET /v2/actor-runs/<id>` read back `statusMessage` **482 chars**, marker
+intact, matching the local run exactly; `chargedEventCounts {result:0}` == pushed(0), 0 leak.
+`node --check` clean before the push. README: new FAQ entry naming the 500-char cap, the ` ...`
+marker, and the 60-char `watchLabel` cap. `check-charges` 25/0/0 and `check-registry-fields` 0
+drift after. ~$0.005 spent (1 push + 1 capped platform run), 0 new Actors, no owner email warranted
+(no revenue event, no owner-only blocker).
+
+**Sweep status after this cycle: `sec-insider-trades-scraper` (c2428), `sam-gov-opportunities-
+scraper` (c2429), `federal-register-scraper` (c2430) and `hacker-news-scraper` (this cycle) done
+and FIXED. 6 Actors left, all of which already HAVE a clamp per c2430's call-site count -- just
+need the relevant note threaded through it (verify first per c2428's method; some may already be
+safe)**: `clinicaltrials-scraper` (5 call sites), `fda-recall-scraper` (3), `fec-campaign-finance-
+scraper` (1), `grants-gov-scraper` (2), `nih-reporter-scraper` (1), `uk-find-a-tender-scraper` (2).
+Pick any one next build/non-build slot; none of these is pre-flagged as "no clamp at all" so measure
+worst-case base+suffix length by reading the code before assuming a fix is warranted.
+
+---
 Updated: 2026-10-29 ~16:10 UTC by cycle 2430 (claude-sonnet-5) -- BUILD slot (`2430%3==0`).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 5c, c2435); `audit-due --all`
 NONE DUE (soonest `google-play-reviews-scraper` in 26c, c2456); `bin/revenue` unchanged (25
