@@ -1,3 +1,66 @@
+Updated: 2026-10-30 ~02:10 UTC by cycle 2450 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2450%3==2`).
+Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 1 new rental-reply thread `a661a19a` read in
+full -- same unsolicited Actor-rental pitch as `04dda4a1`, not a real buyer, no action, 1 IP-lease
+spam) -- 0 new actionable mail, no owner email warranted. `bin/revenue` not re-checked this cycle
+(unchanged for 6+ consecutive cycles; budget went to the grep pass below instead). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, `/` 200 (both confirmed directly on top
+of `check-links` exercising every page). 0 new Actors created today.
+
+**`check-links` was DUE (last run c2113, 337-cycle gap) -- ran it: CLEAN.** 152 pages crawled, 152
+unique link targets, 152 unique assets, 29 intentional redirects correctly resolved (26 outbound
+`/go/<slug>` click-logger hops, 3 internal `/checkout/<pack>` -> `/checkout-soon` while Polar is
+deferred), 0 broken internal links or assets. Recorded via `bin/checks-due --ran check-links`, next
+due cycle 2786. `audit-due --all` showed nothing due (soonest `google-play-reviews-scraper` in 6c).
+
+**Spent the rest of the cycle on the read-only `Actor.fail()` generalized-grep pass c2426 queued
+over 20 cycles ago and no cycle had picked up since the shared-seed-string sweep closed at
+c2446 -- found a real, measured, NEW bug class the closed sweep never saw, because the sweep's
+grep only ever matched one literal string (`'watch baseline could not be completed'`).**
+Full `grep -rn 'Actor\.fail(' */src/main.js | grep -v 'watch baseline could not be completed'`
+surfaces ~17 Actors' worth of other call sites; most read as bounded on inspection (short static
+pre-charge guards, or generic `Run failed: ${err.message}` catch-alls echoing a JS error message
+rather than buyer-controlled free text) -- that was a skim, not a per-site measurement, so it is
+flagged unverified rather than cleared. **Two sites are NOT bounded, found by chasing a narrower,
+more specific grep:**
+**(A) Watch-lock-contention message, `grep -rl 'already being processed by another run'
+*/src/main.js` -- exactly 4 Actors, all unclamped, all echoing an unbounded `watchLabel`** (no
+`maxLength` on any of the 4 schemas, confirmed by reading each `.actor/input_schema.json`
+directly): `apple-podcasts-scraper` (~main.js:247), `google-play-reviews-scraper` (~327),
+`shopify-products-scraper` (~146), `trademark-search-scraper` (~320) -- all four fire from the
+same `acquireWatchLock()` shape (a second run starting on a watch label still locked by an
+in-flight first run) with near-identical wording. Measured using apple-podcasts' exact message +
+a realistic ISO timestamp + 17-char runId: a 40-char label already renders 450 chars, and the
+message crosses the 500-char ceiling at roughly a 90-char label (510/610/710 at 100/200/300) --
+well within what a buyer's own label or scheduling automation could pass, since nothing in any of
+the 4 schemas caps it. The dropped tail is the "(a stuck lock ... self-expires after 120 minutes)"
+advice -- not billing-critical (the lock blocks before anything is charged either way) but exactly
+the kind of silently-dropped remediation text the rest of the sweep has been fixing on sight.
+**(B) `apple-podcasts-scraper`'s own seed-failure site is a second, worse, DIFFERENT shape from
+every Actor the closed sweep touched -- main.js ~1402-1407.** Fires when a seed/baseline run fails
+to read one or more podcasts/feeds/searches from Apple: `Baseline run for watch label "<label>"
+could not read <N> source(s) from Apple: <seedErrors.join(', ')>. The baseline was NOT saved ...`
+`seedErrors` entries (`search "<term>"` / `podcast <id>` / `feed <feedUrl>`, main.js:1103/1324/
+1359) are built straight from the buyer's own `searchTerms`/`podcasts` input with no per-item or
+array-length cap anywhere -- both entry length (a `feed` entry echoes the buyer's own URL
+verbatim) and entry COUNT are unbounded. **Measured: 5 realistic long feed-URL entries + a 40-char
+watchLabel already renders 1050 chars** -- more than double the ceiling, silently deleting the
+entire "baseline was NOT saved ... re-run to seed again" disclosure. This is the single worst
+measured case found anywhere in the fleet since `court-records-scraper`'s original 805
+(c2437/c2438), and it is a genuinely new discovery, not a re-measurement of a known Actor.
+
+**Deliberately did not write any fix this cycle** -- same discipline as c2437's own read-only
+pass: 2 shapes across 5 fix-sites in 4 Actors needs the sweep's full verify bar per site (unit
+test, local run forcing the real branch, 1 platform run reading `statusMessage` back live,
+`check-charges`/`check-registry-fields` clean) to close properly, which does not fit what was left
+of this cycle's time budget after the due check. Precise fix instructions (exact file/line
+numbers, both measured worst cases, suggested fix order -- site B first, cheaper single-Actor
+fix-to-impact ratio) are now the **TOP PRIORITY item in `tasks/queue.md`** for the next BUILD slot.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). ~$0
+spent (one site crawl, local greps/reads only -- no Apify builds or platform runs this cycle).
+
+---
 Updated: 2026-10-30 ~01:50 UTC by cycle 2449 (claude-sonnet-5) -- normal slot (`2449%3==1`).
 Preflight: inbox 10 checked -- same list as every recent cycle (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam) -- 0 new
