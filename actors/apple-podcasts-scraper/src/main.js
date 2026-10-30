@@ -1539,6 +1539,13 @@ if (watchMode && seeding) {
   if (emptyIds.length) pushCauses.push(emptySourceLabel(emptyIds));
   if (failedIds.length) pushCauses.push(`the request to Apple failed for: ${failedIds.join(', ')} — re-run to get those`);
   if (unparsedCause) pushCauses.push(unparsedCause);
+  // These three are approximations baked into already-pushed rows, not reasons the count is
+  // short — a log.warning alone left them invisible on a SUCCEEDED run with a normal-looking
+  // row count (found c2462). Folded in here, not the pushed===0 branch above, since they never
+  // explain a shortfall.
+  if (unknownDurationKept > 0) pushCauses.push(`${unknownDurationKept} episode(s) had no duration data from Apple and were kept despite "minDurationSeconds" being set, since an unknown duration is not evidence of a short episode`);
+  if (rssItemsWithoutExplicit > 0 && explicitFilter !== 'all') pushCauses.push(`${rssItemsWithoutExplicit} episode(s) from the RSS feed carried no per-episode explicit tag and used the show-level flag instead (see "explicitFilter" in the FAQ)`);
+  if (unenrichedChartEntries > 0) pushCauses.push(`${unenrichedChartEntries} chart entry/entries could not be enriched from Apple's lookup API and are included with only chart fields (no episode/show details)`);
   if (pushCauses.length || timeBudgetExceeded) {
     statusMsg = `Pushed ${pushed} results.${pushCauses.length ? ` ${pushCauses.join('; ')}.` : ''}${timeBudgetNote}`;
   } else if (ceilingNote) {
@@ -1560,14 +1567,23 @@ const episodesComplete = episodeSources.length === 0 ? null
   : episodeSources.some((s) => s.complete === false) ? false
   : episodeSources.some((s) => s.complete === null) ? null
   : true;
-if (dataType === 'episodes') {
+if (dataType === 'episodes' || dataType === 'charts') {
+  // Widened from episodes-only (c2462/c2463): a charts run can also carry
+  // unenrichedChartEntries/unknownDurationKept (chartType "episodes" shares the same per-episode
+  // filter/duration code path, see line ~1231), and until now had no RUN_SUMMARY at all — a
+  // log.warning was the ONLY place those facts appeared, invisible on a SUCCEEDED run. The
+  // per-source fields below stay episodes-only: charts has no "podcasts"/ids/rawFeeds notion to
+  // report sources for.
   await Actor.setValue('RUN_SUMMARY', {
     finishedAt: new Date().toISOString(),
     pushed,
-    sourcesRequested: ids.length + rawFeeds.length,
-    unparsedPodcasts,
-    complete: episodesComplete,
-    sources: episodeSources,
+    sourcesRequested: dataType === 'episodes' ? ids.length + rawFeeds.length : null,
+    unparsedPodcasts: dataType === 'episodes' ? unparsedPodcasts : null,
+    complete: dataType === 'episodes' ? episodesComplete : null,
+    sources: dataType === 'episodes' ? episodeSources : null,
+    unknownDurationKept,
+    rssItemsWithoutExplicit,
+    unenrichedChartEntries,
   });
 }
 

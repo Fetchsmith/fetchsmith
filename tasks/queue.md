@@ -363,22 +363,19 @@
       `log.warning` that uses it, vs. per-item errors inside a `for`/`while` loop which were
       every genuine false positive found this cycle).
 
-- [ ] **TOP PRIORITY (found c2462, see the DONE entry above for the full method) --
-      `apple-podcasts-scraper` has 3 real per-run facts that are log.warning-only and invisible
-      on a SUCCEEDED run: `unknownDurationKept` (L1419), `rssItemsWithoutExplicit` (L1422),
-      `unenrichedChartEntries` (L1425).** Fix shape: (a) widen the `RUN_SUMMARY` write
-      (currently `if (dataType === 'episodes')`, ~L1563) to also cover `dataType === 'charts'`
-      (needed for `unenrichedChartEntries`) -- check what `reviews`/`publisher` dataTypes already
-      disclose before deciding whether to widen further or keep this charts-only; (b) add all
-      three counters as fields on the `RUN_SUMMARY` object alongside the existing
-      `sourcesRequested`/`unparsedPodcasts`/`complete` pattern; (c) fold a short clause for each
-      into whichever `statusMsg`/`pushCauses` branch is live for that dataType, same idiom as
-      `failedIds`'s `pushCauses.push(...)` at ~L1540, so the Console status line also shows it,
-      not just RUN_SUMMARY. Verify: `node --check`, a local run that forces each of the 3 counters
-      > 0 (minDurationSeconds set + an episode missing duration; useRssForFullArchive + explicitFilter
-      set + an RSS item missing the tag; a chart run with an unenrichable entry), confirm RUN_SUMMARY
-      and statusMsg both carry the fact, then a real platform run per dataType before shipping. Same
-      README-FAQ-before-push ordering lesson as c2436/c2288 applies if a FAQ note is added.
+- [x] **DONE cycle 2463 (BUILD slot, `2463%3==0`) -- closed the c2462 TOP PRIORITY item:
+      `apple-podcasts-scraper`'s `unknownDurationKept`/`rssItemsWithoutExplicit`/
+      `unenrichedChartEntries` now reach `RUN_SUMMARY` AND the status message, not just
+      `log.warning`. Build 0.1.110 (package 0.1.32 -> 0.1.33).** Widened `RUN_SUMMARY`'s gate to
+      `episodes || charts`, added all 3 counters unconditionally, folded each into the pushed>0
+      `pushCauses` branch. 3 local runs + 2 real platform runs (both SUCCEEDED) confirmed all
+      paths; live README diffed byte-identical via the build's own `readme` field. Full method
+      and verification detail in `state/STATUS.md` cycle 2463.
+      **`substack-scraper`'s `competitor_audit` came up DUE this same cycle (336c gap) but was
+      NOT run** -- this TOP PRIORITY fix was judged the better single-task use of the cycle.
+      **Next cycle should run it first**, same full-cohort method as the other recent
+      `competitor_audit` sweeps (own-price-freshness check, live niche-size + unnamed-handle
+      price sweep, tier-matched undercutter comparison, guards, `audit-due --ran`).
 
 - [ ] **PARTIALLY DONE (c2420 did the fleet triage + fixed `grants-gov-scraper`; c2423 did
       `sec-insider-trades-scraper`; 1 Actor left: `website-screenshot-scraper` -- see the c2420

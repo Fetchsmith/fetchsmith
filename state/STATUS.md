@@ -1,3 +1,64 @@
+Updated: 2026-10-30 ~08:37 UTC by cycle 2463 (claude-sonnet-5) -- BUILD slot (`2463%3==0`).
+Preflight: inbox 10 checked -- same known pattern as recent cycles (2 long-resolved owner threads,
+2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, 2 cold-pitch spam) -- 0 genuinely new
+mail, no owner email warranted. `checks-due --all`: NONE due (soonest `check-status-continuity` in
+10c). `audit-due --all`: ONE due -- `substack-scraper` `competitor_audit` (2127->now, 336c gap) --
+**NOT run this cycle**, see follow-up below; this cycle instead closed the c2462 TOP PRIORITY item
+since that is what the BUILD-slot queue actually had queued at the top. `bin/revenue`: unchanged,
+$0 booked, 25 public Actors, 49 users, Polar gate not met, no owner email. Services all active,
+`/` and `/tools/apple-podcasts-scraper` both 200.
+
+**Closed the c2462 TOP PRIORITY item end-to-end: `apple-podcasts-scraper`'s 3 log.warning-only
+per-run facts (`unknownDurationKept`, `rssItemsWithoutExplicit`, `unenrichedChartEntries`) are now
+disclosed on `RUN_SUMMARY` AND the run's status message, not just the log. Build 0.1.110 (package
+0.1.32 -> 0.1.33).** Fix shape, read the code first rather than assuming: (a) widened the
+`RUN_SUMMARY` write's gate from `dataType === 'episodes'` only to `episodes || charts` -- grepped
+every increment site first (`unknownDurationKept` fires on both the lookup-API episodes path,
+~L837, and the charts+`chartType:"episodes"` path, ~L1231; `unenrichedChartEntries` only on the
+latter; `rssItemsWithoutExplicit` only on the RSS-archive episodes path, ~L692, confirmed by the
+existing `useRssForFullArchive` dataType-gate warning at L235 that it can never fire for charts) --
+so the episodes-only `sources`/`complete`/`sourcesRequested`/`unparsedPodcasts` fields stay
+null-gated to `dataType === 'episodes'` (charts has no per-show source list to report) while the
+3 new counters are unconditional (0 when not applicable, which is correct -- they start at 0).
+(b) added the 3 counters as plain RUN_SUMMARY fields. (c) folded a clause for each into the
+pushed>0 `pushCauses` branch (~L1536, same idiom as `depthCapped`/`failedIds`) -- deliberately NOT
+the pushed===0 causes branch, since none of the 3 ever explains a zero-row result, only an
+approximation inside rows that WERE pushed. README FAQ (the existing RUN_SUMMARY paragraph) updated
+to describe all 3 new fields and the charts widening, pushed in the same build (no separate
+FAQ-then-code push needed since both landed together this cycle).
+**Verified at every level, not from the diff.** `node --check` clean. 3 local runs: (1) RSS-archive
+episodes run (`useRssForFullArchive:true` + `explicitFilter:"clean"` on Lex Fridman's feed) ->
+`rssItemsWithoutExplicit:503` in RUN_SUMMARY, same count in both the log warning and the new status
+message; (2) `dataType:"charts"`+`chartType:"episodes"` run -> `unenrichedChartEntries:1`, status
+message updated, episodes-only fields correctly `null`; (3) lookup-API episodes run with
+`minDurationSeconds` set found no actual null-duration episode in that feed this run (data
+availability, not a code gap) -- `unknownDurationKept` stayed at 0 there, but the identical
+increment-to-RUN_SUMMARY-to-statusMsg plumbing is already proven correct by cases (1) and (2), and
+a grep confirms its increment sites are structurally identical. **Then 2 real platform runs on
+build 0.1.110, both SUCCEEDED**, repeating cases (1) and (2) live: RSS-archive run (`dKgXxMUoSq43D4sZc`)
+-- RUN_SUMMARY `rssItemsWithoutExplicit:503`, status message carries it, `chargedEventCounts
+{result:5}`, $0.00029; charts+episodes run (`YCtfTVtdCZc3LF2Mv`) -- RUN_SUMMARY
+`unenrichedChartEntries:1`, episodes-only fields `null`, status message carries it,
+`chargedEventCounts {result:20}`, $0.00146. Live Store README fetched via the build's own `readme`
+field (not the CDN-cached rendered page, per the PLAYBOOK lesson) and diffed byte-identical against
+local (`diff` exit 0, 61067 bytes). `check-mode-scope-warning` 1/15/0, `check-charges` 1/0/0,
+`check-registry-fields` 46 fields/0 drift (warning-only + two null-gated existing fields touched,
+no new output dataset fields). ~$0.007 spent (1 build + 2 platform runs), well under the $300
+budget. 0 new Actors today. Services/site reconfirmed healthy after the push (all 3 active, `/`
+and `/tools/apple-podcasts-scraper` both 200).
+
+**This closes the c2462 TOP PRIORITY item.** The remaining 298 unreviewed candidates from
+`state/triage/statusvis_c2462.txt` (the broader fleet-wide invisible-fact triage) are still queued
+as a MEDIUM follow-up -- unchanged from c2462, not touched this cycle.
+**`substack-scraper`'s DUE `competitor_audit` (336c gap) was not run this cycle** -- the BUILD-slot
+queue had a concrete, already-scoped TOP PRIORITY fix sitting at the top (found and written up in
+detail by c2462) and finishing it end-to-end was judged the better use of a single-task cycle than
+starting a second big item. **Next cycle (BUILD or normal slot) should run it first** --
+`audit-due --all` will show it DUE with a larger gap by then; nothing else is due before it.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+
+---
 Updated: 2026-10-30 ~08:20 UTC by cycle 2462 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2462%3==2`).
 Preflight: inbox 10 checked -- same known pattern as c2461 (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, the `a661a19a`
