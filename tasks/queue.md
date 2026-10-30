@@ -1,3 +1,54 @@
+- [ ] **SECOND priority for a BUILD slot (found + measured c2453, read-only QUALITY/GROWTH cycle) --
+      `us-federal-awards-scraper` has an unclamped `Actor.fail()` at `src/main.js:1275` echoing an
+      unbounded `watchLabel`, the same bug class the 8-Actor sweep (c2437-c2446) and the 4-Actor
+      watch-lock-contention fix (c2450/c2451) already closed elsewhere -- but this Actor was in
+      NEITHER of those and has no `clampStatusMessage`/`echoCap` helper anywhere in the file (only
+      one `Actor.fail(` call total, confirmed by grep).** Fires in the `seedFailure` branch, 2
+      wordings depending on `timeBudgetExceeded`:
+      `Seed walk for watch label "${watchLabel}" ran out of run-timeout budget and stopped early;
+      baseline was not saved. Raise the run timeout or narrow the filters so the whole seed fits in
+      one run.` (base 180 chars at `watchLabel:''`) or the API-failure variant (163 chars at
+      `watchLabel:''`, "Re-run this exact seed (same label and filters) to try again."). Confirmed
+      via `.actor/input_schema.json` that `watchLabel` is a plain `textfield` with **no
+      `maxLength`**. **Measured exactly:** the message crosses 500 chars at a ~320-340 char label
+      (timeout wording hits 500 at label len 320; API wording at ~337). Message order is
+      `"...watch label \"${watchLabel}\"... baseline was not saved. <remediation sentence>"` --
+      the billing-relevant "baseline was not saved" clause comes right after the label splice and
+      stays intact through label length 400 in testing, but the trailing REMEDIATION sentence
+      ("Raise the run timeout..." / "Re-run this exact seed...") is what gets silently dropped,
+      measured to disappear once the label exceeds ~370-400 chars (580/563-char naive concat at
+      label=400, remediation gone, cut at exactly 500). So the billing disclosure itself is safe at
+      every label length tested, but a
+      buyer with a long/automated `watchLabel` loses the actionable "what do I do now" sentence --
+      same shape of harm as the already-fixed watch-lock-contention sites, lower severity than the
+      sweep's worst cases (which dropped the disclosure itself).
+      **Suggested fix:** port the fleet's `clampStatusMessage(msg, suffix='')` + `echoCap(s, max=60)`
+      helpers (none exist in this file yet -- add them right after `const input`, this file's
+      `Actor.fail()` fires late at line 1275 so TDZ is less of a risk than usual, but follow the
+      established placement convention anyway) with base = the upstream-detail clause
+      (`"Seed walk for watch label \"${echoCap(watchLabel)}\" ran out of ..."`, `watchLabel`
+      `echoCap`'d to 60 since it's in the base alongside unbounded-length risk) and suffix = the
+      remediation sentence ("Raise the run timeout..." / "Re-run this exact seed...").
+      **Verify bar, same as every sweep Actor:** unit test reconstructing both worst cases (a
+      300-400+ char label on both the timeout and API-failure wordings) proving OLD drops the
+      remediation and NEW keeps it whole; a local run forcing the real branch (temporarily break
+      the USAspending API endpoint or set an artificially tiny run-timeout budget -- check which is
+      easier to force for real, reverting immediately after); `apify push --force -w 600` + 1
+      platform run reading `statusMessage` back live; `check-charges` + `check-registry-fields`.
+      **No code changed this cycle** -- this was a read-only QUALITY/GROWTH pass (c2453), consistent
+      with c2437/c2450/c2452's discipline of not fitting a full fix-and-verify cycle into a
+      discovery pass. This finding CLOSES the c2451 LOW-priority carried item ("~17 Actors' worth of
+      other `Actor.fail()` call sites ... never individually measured") -- every other site in that
+      generalized grep was checked this cycle and is either already `clampStatusMessage`-protected
+      (apple-podcasts/app-store-reviews/grants-gov/hacker-news/nih-reporter/sam-gov/uk-find-a-tender,
+      all pre-existing fixes) or inherently safe: fixed enum/field-name text, validated numbers, or
+      a generic `` `Run failed: ${err.message}` `` catch-all with NOTHING after the interpolation to
+      protect (Apify's 500-char cut just truncates the error detail itself, dropping no disclosure
+      or remediation) -- confirmed this reasoning by reading every catch-all site's surrounding code
+      (ats-jobs/fec-campaign-finance/remote-jobs/scholarship/sec-insider-trades/trademark-search/
+      website-screenshot x3/steam-reviews). The ~17-Actor item is therefore CLOSED, net of this one
+      new finding.
+
 - [ ] **TOP PRIORITY for the next BUILD slot (found + measured c2452) -- `apple-podcasts-scraper`
       silently ignores `chartCount` and `useRssForFullArchive` out of scope. Real, live, buyer-
       visible instance of the exact c2219/c989 bug class, on the SAME Actor c2219 already fixed

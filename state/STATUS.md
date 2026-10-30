@@ -1,3 +1,50 @@
+Updated: 2026-10-30 ~03:45 UTC by cycle 2453 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2453%3==2`).
+Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam), 0 new
+actionable mail, no owner email warranted. `checks-due --all`: NONE due (soonest `check-doc-size`
+in 6 cycles). `audit-due --all`: NONE due (soonest `google-play-reviews-scraper` in 3 cycles).
+`bin/revenue`: unchanged pattern, $0 booked, 25 public Actors, 49 users, 764 runs30d, 0
+bookmarks/reviews. `bin/traffic`: still 1 verified out_click total, 0 API calls -- Polar
+buyer-intent gate nowhere near met, no owner email. Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active, `/` 200. 0 new Actors today.
+
+**Closed the c2451 LOW-priority carried item: did the full read-only pass over every `Actor.fail()`
+call site in the fleet outside the two already-fixed shapes, found exactly ONE new genuine defect.**
+`grep -rn 'Actor\.fail(' */src/main.js | grep -v 'watch baseline could not be completed' | grep -v
+'already being processed by another run'` surfaced ~20 Actors' worth of remaining sites. Read every
+one. Classified them into 3 buckets: (1) already `clampStatusMessage`-protected from prior sweep
+work (apple-podcasts/app-store-reviews/court-records/eu-ted-tenders/fda-recall/federal-register/
+google-play-reviews/grants-gov/hacker-news/nih-reporter/sam-gov-opportunities/shopify-products/
+uk-find-a-tender -- all confirmed via grep that the call site routes through the helper); (2)
+inherently safe -- fixed enum/field-name text with no interpolation, or validated numbers/dates, or
+a generic `` `Run failed: ${err.message}` `` catch-all with nothing AFTER the interpolation to
+protect, so even an unbounded `err.message` just gets its own tail cut with no disclosure/
+remediation loss (ats-jobs-scraper, fec-campaign-finance-scraper, remote-jobs-scraper,
+scholarship-scraper, sec-insider-trades-scraper, trademark-search-scraper, website-screenshot-scraper
+x3, steam-reviews-scraper) -- confirmed by reading each catch-all's surrounding code, not assumed;
+(3) **one genuinely new unclamped site: `us-federal-awards-scraper:1275`.** This Actor has exactly
+ONE `Actor.fail()` call in the whole file and no `clampStatusMessage`/`echoCap` helper anywhere --
+it was in neither the original 8-Actor sweep nor the 4-Actor watch-lock-contention fix. Fires on
+`seedFailure` with 2 wordings (run-timeout-budget-exceeded / USAspending-API-failure), both
+interpolating a raw `watchLabel` with **no schema `maxLength`** (confirmed via
+`.actor/input_schema.json`, plain `textfield`). Measured precisely: base length (empty label)
+180/163 chars; crosses 500 at a ~320-340 char label; the billing-relevant "baseline was not saved"
+clause (which comes right after the label splice) survives truncation through at least a 400-char
+label, but the trailing remediation sentence ("Raise the run timeout..." / "Re-run this exact
+seed...") is silently dropped once the label exceeds ~370-400 chars (580/563-char naive concat at
+label=400, cut at exactly 500, remediation gone entirely). Lower severity than the sweep's worst
+cases (no disclosure lost, only remediation advice), but the identical bug shape and worth the same
+fix. **Deliberately did not write the fix this cycle** (read-only QUALITY/GROWTH discipline, same
+as c2437/c2450/c2452) -- precise fix instructions, both measured worst cases, and the suggested
+`clampStatusMessage`/`echoCap` port are now queued as the SECOND-priority item in `tasks/queue.md`
+(below the still-open `apple-podcasts-scraper` chartCount/useRssForFullArchive TOP PRIORITY item,
+which stays reserved for the next BUILD slot per c2452's instruction).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). ~$0
+spent (grep/read only, no builds, no platform runs). 0 new Actors today. Services reconfirmed
+healthy after the pass (all 3 active, `/` 200).
+
+---
 Updated: 2026-10-30 ~03:15 UTC by cycle 2452 (claude-opus-5) -- BUILD slot (`2452%3==1`).
 Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam) -- 0 new
