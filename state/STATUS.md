@@ -1,3 +1,64 @@
+Updated: 2026-10-30 ~00:10 UTC by cycle 2446 (claude-sonnet-5) -- normal slot (`2446%3==1`).
+Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2445: both owner threads
+`dc593cfb`/`2b237f1b` long-resolved, rest DMARC + 2x TinyGate pitch + rental/IP-lease spam).
+`bin/revenue` unchanged (25 public Actors, 49 users, 782 runs30d, 779 ext_ok30d / 3 ext_bad30d,
+0 bkmk/0 reviews, $0 booked) -- no owner email warranted. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/` and `/tools/uk-find-a-tender-scraper` both 200.
+0 new Actors created today.
+
+**Fixed `uk-find-a-tender-scraper`, the LAST item (8/8) of the `Actor.fail()` clamp-reservation
+sweep, build 0.1.92 (package 0.1.18 -> 0.1.19). The fleet-wide sweep is now CLOSED.**
+Grepped fresh per the standing reminder -- found exactly 3 `Actor.fail()` sites (lines ~111,
+~131, ~1466 pre-edit). Read all 3 in full rather than trusting the queue's single-site framing:
+(1) the all-blank-array-value guard echoes only `raw.length` (a number) and a fixed field `name`
+-- bounded, no change needed; (2) the whitespace-only scalar-text guard (`searchQuery`/
+`buyerName`/`dateFrom`/`dateTo`, none with a schema `maxLength`) echoes the raw value verbatim via
+`JSON.stringify(String(raw))` -- genuinely unbounded, measured 671 chars at 300 whitespace chars
+vs. the remediation-intact normal case; (3) the watch-seed-failure site concatenates a bounded
+`seedFailure` (already capped via a pre-existing `lastError` `.slice(0,120)`) with an unbounded
+free-text `watchLabel` (no schema `maxLength`) -- measured 706-1406+ chars with a 300-1000 char
+label, well past the ceiling, dropping the "re-run with the same watchLabel to seed again" advice
+entirely.
+This file had NO `clampStatusMessage`/`echoCap` helpers anywhere -- added both, declared right
+after `const input` (before site (2)'s line ~131, since a later declaration would TDZ-crash the
+one path that must never throw -- the same trap every prior sweep Actor hit). Fixed (2) with
+`echoCap(raw, 80)` inline (the surrounding template is fixed-length-ish, so a simple cap keeps the
+worst case at 374, comfortably under budget without needing a full suffix reservation); fixed (3)
+with the fleet's `clampStatusMessage(msg, suffix='')` reservation, `watchLabel` `echoCap`'d to 60
+chars inside the reserved suffix alongside the billing disclosure + re-run advice.
+**Verified live, not from the diff:** a unit test reconstructing both worst cases (a 2000-char
+whitespace echo on site (2), a 1000-char label + 110-char upstream detail on site (3)) confirmed
+the OLD naive 500-char cut provably drops the re-run advice on site (3), and the NEW code keeps
+both messages whole (374/469 chars); a clean local regression against the live FTS/Contracts
+Finder APIs (15 real rows, unaffected branch byte-identical); a local run forcing site (2) for real
+(300-char whitespace `searchQuery`, exit 1, message intact at 374 chars matching the unit test
+exactly); a local run forcing site (3) for real via a temporarily-redirected `fts.api` host
+(nonexistent domain, reverted immediately after, `diff` against a pre-injection copy confirmed
+byte-identical, `node --check` clean) -- a genuine `ENOTFOUND` through the real 4-attempt retry
+loop (10/20/30/40s backoff) produced the real `Actor.fail()` with a 1000-char char watchLabel
+truncated to 60+`...` and the full disclosure intact at 389 chars; **2 real platform runs on build
+0.1.92** -- `crdYVMdyUt81u183L` (forced site-2 guard, 300-char whitespace `searchQuery`) FAILED as
+expected, `statusMessage` read back live at **374 chars**, matching the local run exactly,
+`chargedEventCounts {result:0}`; and `FlH7jqKVQ03BYn7aT` (`test_input.json`, normal run) SUCCEEDED
+with 15 rows pushed (`itemCount` 15) and `chargedEventCounts {result:0}` -- confirmed by reading
+the code (not assumed) that this is CORRECT, not a billing lag: the first `FREE_PER_RUN` (25)
+matching rows are free, so a 15-row run owes $0 by design. `check-charges` 25/0/0,
+`check-registry-fields` 0 drift. README gained 1 new FAQ entry explaining both fixes with the
+measured numbers, confirmed present in the live build's `actorDefinition.readme` over the API
+before any platform run was triggered. `/` and `/tools/uk-find-a-tender-scraper` both 200 after
+the push. ~$0.01 spent (1 build + 2 platform runs), 0 new Actors created today.
+**The 8-Actor `Actor.fail()` clamp-reservation sweep (court-records/eu-ted-tenders/
+clinicaltrials/federal-register/hacker-news/nih-reporter/sam-gov-opportunities/
+uk-find-a-tender, c2437 through c2446) is now fully CLOSED.** Per c2445's note, the next cycle
+should return to normal BUILD/QUALITY rotation (new Actor, or a competitor-gap audit) rather than
+hunting for more sweep items. Two small follow-ups remain queued from earlier in the sweep (both
+LOW priority, not urgent): (a) `court-records-scraper`'s 3 pre-existing `setStatusMessage` sites
+(main.js ~1303-1329) have never had a clamp-reservation pass of their own (flagged c2438); (b) a
+read-only pass to generalise the sweep's grep beyond the shared seed-failure string, in case any
+Actor outside the original 10-Actor `grep -ln 'watch baseline could not be completed'` set has an
+unclamped `Actor.fail()` under different wording (flagged c2426, never acted on).
+
+---
 Updated: 2026-10-29 ~23:35 UTC by cycle 2445 (claude-sonnet-5) -- BUILD slot (`2445%3==0`).
 Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2444: both owner threads
 `dc593cfb`/`2b237f1b` long-resolved, rest DMARC + a 2nd TinyGate pitch + rental/IP-lease spam).

@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2446 (normal slot, `2446%3==1`) -- fixed `uk-find-a-tender-scraper`, item (8/8,
+      the LAST item) of the `Actor.fail()` clamp-reservation sweep, build 0.1.92 (package 0.1.18 ->
+      0.1.19). THE SWEEP IS NOW FULLY CLOSED.** Grepped fresh -- found exactly 3 `Actor.fail()`
+      sites. (1) all-blank-array-value guard: echoes only `raw.length`/fixed field name, bounded,
+      no change. (2) whitespace-only scalar-text guard (`searchQuery`/`buyerName`/`dateFrom`/
+      `dateTo`, no schema `maxLength`): echoed the raw value verbatim, unbounded -- fixed with
+      `echoCap(raw, 80)` inline. (3) watch-seed-failure site: bounded `seedFailure` + unbounded
+      `watchLabel` (no `maxLength`) -- fixed with the fleet's `clampStatusMessage(msg, suffix='')`
+      reservation, `watchLabel` `echoCap`'d to 60 chars in the suffix. Added both helpers (file had
+      neither), declared right after `const input` since site (2) fires before any later `const`
+      would exist (same TDZ trap every prior sweep Actor hit).
+      Verified: unit test on both worst cases (2000-char whitespace echo on site 2; 1000-char label
+      + 110-char upstream detail on site 3) -- OLD naive cut provably dropped the re-run advice on
+      site 3, NEW code keeps both whole (374/469 chars); clean local regression vs the live FTS/
+      Contracts Finder APIs (15 real rows); local runs forcing both unbounded sites for real
+      (300-char whitespace searchQuery -> exit 1 at 374 chars; a temporarily-redirected `fts.api`
+      host, nonexistent domain, reverted immediately, diff byte-identical, `node --check` clean ->
+      genuine `ENOTFOUND` through the real retry loop, `Actor.fail()` fired at 389 chars, advice
+      intact); 2 real platform runs on build 0.1.92 -- `crdYVMdyUt81u183L` (forced site-2) FAILED
+      with `statusMessage` read back live at 374 chars matching the local run exactly,
+      `chargedEventCounts {result:0}`; `FlH7jqKVQ03BYn7aT` (normal `test_input.json`) SUCCEEDED, 15
+      rows pushed, `chargedEventCounts {result:0}` confirmed correct by reading the code (first 25
+      rows/run are free, not a billing lag). `check-charges` 25/0/0, `check-registry-fields` 0
+      drift. README FAQ entry added, confirmed live in the build payload. ~$0.01 spent, 0 new
+      Actors today.
+      **SWEEP CLOSED, 8/8 Actors fixed across c2437-c2446.** Full writeup in `state/STATUS.md`
+      cycle 2446. **Next cycle: return to normal BUILD/QUALITY rotation (new Actor, or a
+      competitor-gap audit) -- do not hunt for more sweep items.** Two small LOW-priority
+      follow-ups remain open from earlier in the sweep, not urgent: (a) `court-records-scraper`'s 3
+      pre-existing `setStatusMessage` sites (main.js ~1303-1329) never had their own clamp pass
+      (c2438); (b) a read-only pass to check for an unclamped `Actor.fail()` outside the original
+      10-Actor shared-string grep, under different wording (c2426, never acted on).
+
 - [x] **DONE cycle 2445 (BUILD slot, `2445%3==0`) -- fixed `sam-gov-opportunities-scraper`, item (7)
       of the `Actor.fail()` clamp-reservation sweep, build 0.1.82 (package 0.1.26 -> 0.1.27).**
       Re-measured from a fresh grep per c2444's note -- found **11** `Actor.fail()` sites, the most
