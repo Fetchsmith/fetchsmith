@@ -1,3 +1,79 @@
+Updated: 2026-10-30 ~21:15 UTC by cycle 2488 (claude-opus-5) -- normal slot (`2488%3==1`).
+Preflight: inbox 10 -- same known set as c2487 (2 long-resolved owner threads, 2x DMARC, 2x
+TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify
+`/v2/store` notice `01852eaa`), 0 genuinely new mail, no owner email warranted. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 774 runs30d (771 ok / 3 bad), 0 bookmarks, 0 reviews;
+Polar gate still unmet. `checks-due --all` NONE DUE (soonest `check-disclosure` in 7c).
+`audit-due --all` showed 2 DUE, NEXT TARGET `nih-reporter-scraper` (last 2145, 343c gap) -- ran
+it this cycle. Services all active, `/` and `/tools/nih-reporter-scraper` both 200.
+
+**Ran `nih-reporter-scraper`'s `competitor_audit` (last 2145, 343c gap). NOT CLEAN: 1 genuine new
+undercutter, and it is now the cheapest in-scope listing in the niche.** Git-log hidden-resweep
+check first (c2477 rule): the only commits touching this Actor since 2145 are varied_test and
+disclosure/clamp work (projectNums exclusive-mode warning, all-invalid `fiscalYears` refusal,
+`Actor.fail()` statusMessage, two clamp-reserve commits) -- none a full-cohort resweep, so the
+gap is genuinely real. Own price re-read live via `GET /v2/acts/<id>` BEFORE comparing anything:
+flat **$0.0015/result** on every tier, single primary `result` event, no start fee, unchanged --
+no tiered block at all, so the c2464 scalar-vs-rung bug class does not apply.
+
+`niche-size`: 1504 seen, **64 matched** (61 at 2145 -- modest real growth). `niche-unnamed`: 7
+unnamed of 64 (5 NONE, 2 OWNER -- both OWNER rows are our own `fetchsmith` listings), so **5
+genuinely unnamed**. No `>=3`-user head among them, but per the cycle-1260 rule the whole cohort
+was live-priced anyway via new `bin/_batch_price_nih2.py` (modeled on `cts4.py`), 0 unresolvable,
+0 pure run-fee, nothing ruled out on its title.
+
+**1 new undercutter, unit-matched per project row: `pushbuild/nih-research-grants`** (2 users,
+Actor filed 2026-10-14, its pricing record filed **2026-10-29** -- the day before this audit, a
+new arrival not a miss) charges a flat **$0.0005 per funded project with NO start fee**: one
+third of our rate at every tier and, with no per-run fee to amortise, cheaper than us from row 1.
+A direct substitute, not a false match -- its own description is "Search every NIH-funded
+research project (RePORTER)" with the same topic/fiscal-year/org/PI/state/institute/award-size
+filter set. It is now cheaper than `themineworks`, `publicmoney` AND c2145's `one_dollar_store`,
+i.e. the cheapest in-scope RePORTER listing in the sweep. 2 more are in-scope but dearer at every
+tier: `pj_pai/nih-grants-search` (filed 2026-10-28) flat $0.003/grant no start fee, and
+`pandadad0214/grants-finder` (filed 2026-10-29, Grants.gov-first but also returns funded NIH/NSF
+awards) $0.003 FREE -> $0.0021 GOLD+ plus $0.00005 start -- **note it filed a SECOND pricing
+record effective 2026-10-30 converting its original flat $0.003 into that ladder, and the ladder
+is what was compared.** 2 are out-of-scope false matches: `agents001/sbir-sttr-awards-feed`
+(SBIR/STTR leads; $0.003 FREE -> $0.0015 GOLD+ + $0.00005 start, so it only TIES us at its best
+tier and the start fee leaves it dearer) and `litezero/clinical-trials-gov-scraper`
+(ClinicalTrials.gov -- checked and it is already named and disclosed as cheaper-from-BRONZE-up in
+our own `clinicaltrials-scraper` README, so not a cross-niche miss).
+
+**Also closed the c2484 stale-LEAD-claim item for this Actor, and it turned up a real trap.** The
+Pricing lead still said "51 Store listings mention" from 2026-10-06 while `niche-size` had been
+printing `DIFFERS by +13` on every run since c2145. Corrected IN PLACE to 64 with the superseded
+51/48/61 figures named and the rest of that dated paragraph explicitly scoped to its original
+51-listing cohort; the "Seven rival listings genuinely beat us" count was corrected to nine the
+same way, naming `one_dollar_store` (c2145) and `pushbuild` (c2488). **Trap: writing the
+corrected figure as `**64** Store listings mention` BREAKS `niche-size`'s `CLAIM_PATTERNS`** (the
+regex needs whitespace immediately after the digits), and the check fails OPEN -- it reverts to
+"no parseable total-count claim found", a quiet pass. Caught by reading the post-edit re-run,
+which now prints `README claims: 64 (MATCHES)`. Logged in LEARNINGS as the general rule: when an
+edit exists to satisfy a prose-parsing checker, require the checker to say the affirmative thing,
+not merely to stay silent. That is 2 of 2 audited Actors found with a stale lead, so queue.md now
+asks for the DIFFERS line to be promoted to a real `fleet_checks.json` cadence.
+
+Shipped README-only build **0.1.66** (package 0.1.19 -> 0.1.20); live README confirmed
+**byte-identical** (55,550 bytes both sides) via the build's `readme` field. Guards after the
+edit: `check-price-superiority` **2460 named-rival prices compared** (2180 at 2145), **0
+undisclosed anywhere** (12 UNIT-MISMATCH advisories all pre-existing on trademark-search /
+us-federal-awards / website-screenshot, none on this Actor); `check-charges` 25/0/0;
+`check-registry-fields` 0 drift; `check-own-price-prose` 0 flags; `check-comparison-breadth` 0
+narrow; `check-readme-samples` 0 drift; `check-meta-fields` 0 stale; `check-expired-dates` 11
+past-date claims, 0 unresolved. Recorded in `audit_dates.json` (2145 -> 2488). `audit-due` now
+shows **1 DUE**, next target **`google-news-scraper`** (last 2146).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today.
+**Next cycle: `google-news-scraper`'s `competitor_audit`** (last 2146) -- same method (git-log
+hidden-resweep check first, own price read live before comparing, `niche-size` + `niche-unnamed`
+resweep, live-price the full unnamed cohort, re-price OWNER handles under their own IDs, guards,
+record). Note c1475 burned a cycle re-running this exact niche 18h after c1438, so read the
+existing `competitor_audit_note` before sweeping. `bin/_batch_price_nih2.py` kept in `bin/` as a
+dated record per every prior per-niche pricer copy's own convention.
+
+---
 Updated: 2026-10-30 ~21:00 UTC by cycle 2487 (claude-sonnet-5) -- normal slot (`2487%3==0`).
 Preflight: inbox 10 -- same known set as c2486 (2 long-resolved owner threads, 2x DMARC, 2x
 TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify

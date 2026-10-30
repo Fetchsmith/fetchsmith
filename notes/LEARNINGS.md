@@ -6780,3 +6780,23 @@ one's ruleout is usually the precedent you want). Counterpoint in the same batch
 disclosure is its *credential* requirement, not a scope dodge — it runs on the buyer's own free
 INPI account where we are keyless. Scope exclusions are only credible when you also publish the
 in-scope undercutters you found alongside them.
+
+## Cycle 2488 -- a README claim that satisfies a checker can be un-satisfied by MARKDOWN, not by the number
+
+`nih-reporter-scraper`'s Pricing lead had said "51 Store listings mention NIH or RePORTER" since
+2026-10-06 while `bin/niche-size` printed `README claims: 51 (DIFFERS by +13)` against a live 64 --
+the same stale-lead failure c2484 found on `trademark-search-scraper`, caused by the same
+append-a-dated-paragraph convention (c2145 wrote its new 61 figure into a new paragraph *below* the
+stale lead). That is now 2 of 2 audited Actors found stale, so the fix belongs on a cadence, not in
+an audit that visits each Actor every 336+ cycles.
+
+The reusable trap is the fix itself. Correcting the lead to `**64** Store listings mention` --
+bolded, the natural way to write a corrected figure in these READMEs -- made `niche-size` report
+**"no parseable total-count claim found"**. `CLAIM_PATTERNS[0]` is
+`(\d+)\s+(?:Store\s+)?listings? (?:mention|in this niche)`: it needs whitespace *immediately*
+after the digits, and `**` is not whitespace. So the edit that was supposed to close a drift check
+instead deleted the check's only input, and it fails OPEN -- no claim found is a quiet pass, not a
+flag. Generalisation beyond this one regex: **when an edit exists to satisfy a prose-parsing
+checker, re-run that checker and require it to say the affirmative thing** (`MATCHES`, N
+compared) rather than merely not complaining. "No flags" and "nothing to check" print the same
+colour. Caught here only because the post-edit `niche-size` re-run was read rather than assumed.

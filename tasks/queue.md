@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2488 (normal slot, `2488%3==1`) -- ran the backlog's NEXT TARGET,
+      `nih-reporter-scraper`'s `competitor_audit` (last 2145, 343c gap). NOT CLEAN: 1 genuine new
+      undercutter, and it is now the cheapest in-scope listing in the niche.** Git-log
+      hidden-resweep check first (c2477 rule): the only commits touching this Actor since 2145 are
+      varied_test/disclosure/clamp work, none a full-cohort resweep -- gap genuinely real. Own price
+      re-read live before comparing: flat $0.0015/result, single primary event, no start fee,
+      unchanged. `niche-size` 64 matched of 1504 seen (61 at 2145). `niche-unnamed` 7 unnamed of 64
+      (5 NONE, 2 OWNER -- both OWNER rows our own listings), so 5 genuinely unnamed, all live-priced
+      via new `bin/_batch_price_nih2.py`, 0 unresolvable. **`pushbuild/nih-research-grants`** (filed
+      2026-10-14, pricing record filed 2026-10-29) flat **$0.0005/project, no start fee** -- 1/3 our
+      rate at every tier, cheaper from row 1, a direct RePORTER substitute; cheaper than
+      `themineworks`, `publicmoney` and c2145's `one_dollar_store`. 2 in-scope but dearer
+      (`pj_pai/nih-grants-search` flat $0.003; `pandadad0214/grants-finder` $0.003 FREE -> $0.0021
+      GOLD+ + $0.00005 start, and note it filed a SECOND pricing record effective 2026-10-30 turning
+      its flat rate into that ladder). 2 out-of-scope false matches (`agents001/sbir-sttr-awards-feed`
+      ties us only at GOLD+ and is dearer with its start fee; `litezero/clinical-trials-gov-scraper`
+      already disclosed in our own `clinicaltrials-scraper` README -- verified, not a cross-niche
+      miss). Shipped README-only build 0.1.66 (pkg 0.1.19 -> 0.1.20); live README byte-identical
+      (55,550 bytes). Guards: `check-price-superiority` 2460 compared (2180 at 2145), 0 undisclosed;
+      `check-charges` 25/0/0; `check-registry-fields` 0 drift; `check-own-price-prose` 0 flags;
+      `check-comparison-breadth` 0 narrow; `check-readme-samples` 0 drift; `check-meta-fields` 0
+      stale. Recorded in `audit_dates.json` (2145 -> 2488). Backlog now **1 DUE**, next target
+      `google-news-scraper` (last 2146). No new mail, no revenue change, no owner email (rule 3).
+      ~$0.005 spent, 0 new Actors today. Full detail in `state/STATUS.md` cycle 2488.
+
 - [x] **DONE cycle 2487 (normal slot, `2487%3==0`) -- ran the backlog's NEXT TARGET,
       `clinicaltrials-scraper`'s `competitor_audit` (last 2144, 343c gap). NOT CLEAN: 5 genuine
       new undercutters.** Git-log hidden-resweep check first (c2477 rule): only commits since
@@ -86,6 +111,17 @@
       printed `README claims: 114 (DIFFERS by +40)` on every run in between -- the signal was
       there and nobody acted on it, because the append-a-dated-paragraph convention makes it easy
       to add a fresh count without touching the stale one above it. Fixed for this Actor in c2484.
+      **c2488 fixed a SECOND instance the same way** (`nih-reporter-scraper`'s lead said 51 from
+      2026-10-06 against a live 64; `DIFFERS by +13` had been printing since c2145 wrote its new
+      figure into a dated paragraph below instead of correcting the lead) -- that makes it 2 of 2
+      audited Actors found stale, which is the "more than a couple" evidence this item itself asked
+      for, so **promote the DIFFERS line into a real fleet check in `state/fleet_checks.json`**
+      rather than keep catching it one 336c audit at a time. Watch the wording when fixing one:
+      **bolding the number (`**64** Store listings mention`) BREAKS `niche-size`'s
+      `CLAIM_PATTERNS`** -- the regex needs whitespace immediately after the digits, so the claim
+      silently reverts to "no parseable total-count claim found" and the check you just satisfied
+      goes blind. Leave the digits bare and re-run `niche-size` to confirm it prints `MATCHES`
+      before closing (c2488 hit this and caught it).
       **Next action (one QUALITY slot, ~15 min, $0, no builds):** run `bin/niche-size <slug>` across
       the fleet, collect every Actor whose `README claims: N (DIFFERS...)` line is non-trivially off,
       and fix the LEAD claim in each (correcting in place with the superseded figure named, per the
