@@ -1,3 +1,36 @@
+- [ ] **IN PROGRESS, started cycle 2477 (QUALITY/GROWTH slot `2477%3==2`, but worked the
+      backlog per the c2474/c2476 precedent since 7 were DUE) -- `ats-jobs-scraper`'s
+      `competitor_audit` (last 1805, 672c gap), data-gathering half done, pricing half not
+      started.** `check-own-price-freshness` 25/0 (no drift). Fresh `niche-size
+      ats-jobs-scraper`: **2019 matched** (up from 1,479 at c1805), 3694 seen across 15 queries.
+      `niche-unnamed ats-jobs-scraper`: **1926 unnamed of 2019** (1771 NONE, 155 OWNER) -- too
+      large to brute-force in the remainder of a cycle; c1805's own full sweep used the
+      >=3-user-floor cohort method (256 of 1404 priced then) rather than the full tail, and
+      that's almost certainly right again here. **Next cycle: filter the 1926 to the
+      >=3-user cohort, live-price it via `bin/_batch_price_ats3.py` (scored against the
+      current 10-platform scope), fold in cycle 2382's already-published `muzafferkadir`/
+      `arman-bd`/`egeusta` findings rather than re-finding them (see the note below -- 2382 was
+      a smaller one-term recheck, not this rotation, so its findings are real but the rotation
+      itself is still open), write the README paragraph, build/push, guards, record in
+      `audit_dates.json` with `last` = that cycle.**
+      **Also: almost made a wrong bookkeeping correction this cycle and reverted it before
+      committing -- do NOT redo this.** `git log` showed commit `4211a44c` (cycle 2382,
+      "fix stale 7-platform competitor framing, find muzafferkadir undercutter") postdating the
+      recorded `last=1805`, which looked like the same hidden-sweep bookkeeping gap c2473 fixed
+      for `us-federal-awards-scraper`. It is NOT the same shape: 2382's own commit message calls
+      it "the NICHES.md competitor-recheck rotation's last candidate" and it priced only 31
+      listings from a single Store-search term -- the same lighter "one-term-diff on a growing
+      niche" rotation as c2380/c2384/c2389/c2457 (see c2457's entry below: one-term rechecks are
+      explicitly NOT recorded against `competitor_audit`). The us-federal-awards-scraper
+      precedent that justified c2473's backfill was a REAL full `niche-unnamed` resweep (127 of
+      the full unnamed cohort), not a 31-listing spot-check. Reverted via `git checkout --
+      state/audit_dates.json`, confirmed JSON valid and `audit-due` back to the original 7-deep
+      backlog -- nothing wrong was committed. **Rule going forward: a hidden sweep only retires
+      the formal `competitor_audit` gap if it covers the FULL unnamed cohort or the full
+      >=3-user cohort -- a single-term spot-check, however many real rivals it finds, does not.**
+      No new mail, no revenue change, no owner email (CLAUDE.md rule 3). $0 spent (read-only
+      checks only). Full detail in `state/STATUS.md` cycle 2477.
+
 - [x] **DONE cycle 2476 (normal slot, `2476%3==1`) -- ran the backlog's NEXT TARGET,
       `sec-insider-trades-scraper`'s `competitor_audit` (last 2119, 357c gap).** Hidden-resweep
       check first per c2473 (full git-log grep: c2423/c2428 were disclosure-only edits, c2247 a
@@ -308,13 +341,17 @@
 - [ ] **UPDATED follow-up (MEDIUM -- work the `competitor_audit` backlog down, one per
       audit cycle, oldest-first; BEFORE running a fresh sweep on any of these, first grep
       that Actor's full git log for a competitor/pricing resweep newer than its recorded
-      `last` cycle, per the c2473 precedent, AND check whether the Actor's own live price is
-      genuinely flat before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies
-      -- c2474 found it did NOT apply to a flat-priced Actor).** The 5 now DUE, in
-      `audit-due`'s own order: `apple-podcasts-scraper` (c2121, **NEXT TARGET**, not yet
-      git-log-checked), `federal-register-scraper` (c2131), `sam-gov-opportunities-scraper`
-      (c2135), `uk-find-a-tender-scraper` (c2137), `trademark-search-scraper` (c2139). Do NOT
-      batch these -- each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
+      `last` cycle, per the c2473 precedent (but see the c2477 correction above: a hidden
+      sweep only counts if it covers the FULL unnamed/`>=3-user` cohort, NOT a one-term
+      spot-check), AND check whether the Actor's own live price is genuinely flat before
+      assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies -- c2474 found it did
+      NOT apply to a flat-priced Actor).** `audit-due --all` as of c2477 shows **7 DUE**, in
+      its own order: `ats-jobs-scraper` (c1805, **NEXT TARGET, data-gathering half done this
+      cycle -- see the c2477 IN PROGRESS item above, finish the pricing half first**),
+      `apple-podcasts-scraper` (c2121), `federal-register-scraper` (c2131),
+      `sam-gov-opportunities-scraper` (c2135), `uk-find-a-tender-scraper` (c2137),
+      `trademark-search-scraper` (c2139), `court-records-scraper` (c2141). Do NOT batch these
+      -- each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
       meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,
       so what these sweeps add is niche COMPLETENESS only.
 
