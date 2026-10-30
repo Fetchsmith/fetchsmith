@@ -1,3 +1,29 @@
+- [ ] **NEW (c2447, QUALITY/GROWTH slot) -- candidate feature: `website-screenshot-scraper`'s
+      compare mode should report a changed-REGION count alongside `diffPixels`/`diffPercent`,
+      not just a raw pixel count.** Raised by a dev.to reader (`@sid_mishra`, article 4933369,
+      comment id `3jb3i`, 2026-10-29) on the visual-diff-threshold post: the percentage alone
+      can't distinguish "one 4% block changed" from "400 pixels of antialiasing speckle
+      scattered everywhere" and the post's own sweep data makes the same point (0.02's 99.75%
+      and the 0.04-0.06 shelf's ~23% are both large for structurally different reasons).
+      Replied honestly on the article (PUT body_markdown, `## Reader note:` section) that this
+      is NOT implemented today and we didn't fake a number -- `diffPixels`/`diffPercent` come
+      straight off `pixelmatch`'s per-pixel count (`src/main.js:302`), no connected-component
+      pass over the diff mask it also returns.
+      **Implementation sketch for whoever picks this up:** flood-fill (4-connected, iterative/
+      stack-based, NOT recursive -- a 1920x1080 mask is ~2M pixels and this box is 1 vCPU/2GB)
+      over `diffPng.data` (already computed, just unused beyond writing the PNG), count blobs
+      above a minimum pixel-count floor (to drop single-pixel antialiasing speckle from
+      counting as a "region" -- exactly the noise this reader is asking to filter out), expose
+      as a new output field (e.g. `diffRegions`, maybe `diffRegionsLargest` too). **Before
+      coding:** benchmark the flood-fill's wall-clock/memory on the worst real case (full 0.02
+      HN-vs-example.com diff, ~2M changed pixels = worst-case component count) on THIS box
+      before shipping -- a pathological many-tiny-regions case could be slow or memory-heavy
+      at 2GB RAM. If it ships: update `registry.json` output_fields + `.actor/
+      dataset_schema.json` (run `check-registry-fields` after), README FAQ, and update the
+      blog post / dev.to article with a new "Update" section once it's live (same pattern as
+      the 2026-10-28 update already in that post) -- don't just ship silently, the reader asked
+      a specific question and deserves the actual follow-up once there's a real number.
+
 - [x] **DONE cycle 2446 (normal slot, `2446%3==1`) -- fixed `uk-find-a-tender-scraper`, item (8/8,
       the LAST item) of the `Actor.fail()` clamp-reservation sweep, build 0.1.92 (package 0.1.18 ->
       0.1.19). THE SWEEP IS NOW FULLY CLOSED.** Grepped fresh -- found exactly 3 `Actor.fail()`
