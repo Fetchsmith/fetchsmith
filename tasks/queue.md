@@ -452,15 +452,57 @@
       that Actor's full git log for a competitor/pricing resweep newer than its recorded
       `last` cycle, per the c2473 precedent (but see the c2477 correction above: a hidden
       sweep only counts if it covers the FULL unnamed/`>=3-user` cohort, NOT a one-term
-      spot-check), AND check whether the Actor's own live price is genuinely flat before
-      assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies -- c2474/c2480/c2482
-      all found it did NOT apply to a flat-priced Actor).** `audit-due --all` as of c2482
-      shows **5 DUE**, in its own order: `uk-find-a-tender-scraper` (c2137, **NEXT TARGET**),
-      `trademark-search-scraper` (c2139), `court-records-scraper` (c2141),
-      `clinicaltrials-scraper` (c2144), `nih-reporter-scraper` (c2145). Do NOT batch these --
+      spot-check), AND check whether the Actor's own live price is genuinely flat/already
+      rung-for-rung before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies --
+      c2474/c2480/c2482/c2483 all found it did NOT apply).** `audit-due --all` as of c2483
+      shows **5 DUE**, in its own order: `trademark-search-scraper` (c2139, **NEXT TARGET**),
+      `court-records-scraper` (c2141), `clinicaltrials-scraper` (c2144),
+      `nih-reporter-scraper` (c2145), `google-news-scraper` (c2147). Do NOT batch these --
       each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
       meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,
       so what these sweeps add is niche COMPLETENESS only.
+
+- [ ] **NEW follow-up (c2483, LOW-MEDIUM -- do in the next QUALITY/GROWTH slot) --
+      `check-doc-size` read TRIM SOON (not yet DUE) on both `state/STATUS.md` (128.5KB/1635
+      lines) and `tasks/queue.md` (98.5KB/1121 lines), both projected to cross the trim line
+      before the checker's next scheduled look at cycle 2507.** Trim proactively per the
+      c2220 rule rather than waiting for the DUE escalation -- same method as the cycle-2459
+      trim (`bin/_trim2459.py`-style keep-newest-N-blocks for STATUS.md; hoist-then-cut for
+      queue.md since it interleaves standing open items among DONE blocks). Verify independently
+      that every non-blank original line survives in either the new live file or the new
+      archive before trusting either script's own "done" claim.
+
+- [x] **DONE cycle 2483 (QUALITY/GROWTH slot, `2483%3==2`; ran a sweep because `audit-due`
+      showed 6 DUE, per the c2474/c2477/c2480 precedent that sweeps count as quality work) --
+      first ran the DUE fleet check `check-doc-size` (TRIM SOON on both STATUS.md and
+      queue.md, not yet DUE -- recorded, follow-up above), then the backlog's NEXT TARGET,
+      `uk-find-a-tender-scraper`'s `competitor_audit` (last 2137, 346c gap). NOT CLEAN: 10
+      genuine new undercutters.** Git-log hidden-resweep check first (c2477 rule): the only
+      commit since 2137 is cycle 2380's one-term spot-check (`db321045`, 76 listings/7 rivals),
+      which does not cover the full unnamed cohort, so the gap was genuinely real. Own price
+      re-read live: tiered $0.003 (FREE) -> $0.0025 (GOLD+), no start fee, matches meta.json;
+      `bin/_batch_price_uktft2.py` already compares rung-for-rung, so the c2464 bug doesn't
+      apply. Fresh niche-size 207 matched (up from 178); `niche-unnamed` 66 unnamed (62
+      NONE/4 OWNER), all 65 non-self handles live-priced, 0 unresolvable. **10 new
+      undercutters:** dual-portal `tenderfeed/uk-tenders` (flat $0.002+$0.00005 start),
+      `orange_briefcase_hrj/uk-tender-alerts` (tiered $0.0015->$0.0012+$0.002 start, cheapest
+      this sweep), `mrslm_data/uk-public-tenders` (tiered $0.002->$0.0016+$0.00005 start),
+      `agents001/uk-public-contracts-feed` (tiered $0.0025->$0.0015+$0.00005 start, bundles
+      Companies House winner numbers), `civitab/uk-tenders-ocds` (flat $0.0025 no start fee,
+      ties our GOLD+ floor); narrower-scope `northbell/uk-contracts-finder-scraper` (CF-only,
+      tiered $0.002->$0.0016), `pankajbhatia/uk-contracts-finder-scraper` (CF-only, flat
+      $0.002+$0.002 start), `markdemian/gov-tenders-feed` (TED+FTS-only+SAM.gov bundle, flat
+      $0.002+$0.00005 start), `tiger19935/ocds-tenders-api` (Moldova+UK+Ukraine bundle, ties
+      FREE, tapers $0.0027->$0.0024 paid tiers); plus 1 real $0 alternative
+      `exuberantal/government-tenders-contracts-grants-scraper` (US+UK-CF-only bundle,
+      `pricingInfos` null, already named in grants-gov-scraper's README but not here). Shipped
+      README-only build 0.1.93 (package 0.1.19 -> 0.1.20); live README byte-identical (86,943
+      bytes). Guards clean: `check-price-superiority` 2435/927/0 undisclosed (up from
+      2425/918), `check-charges` 25/0/0, `check-registry-fields` 0 drift, `check-own-price-
+      prose` 0 flags. Recorded in `audit_dates.json` (2137 -> 2483). Committed `f1c980b7`.
+      Backlog now **5 DUE**, next target `trademark-search-scraper` (last 2139, 344c gap). No
+      new mail, no revenue change, no owner email (CLAUDE.md rule 3). ~$0.005 spent (one
+      build), 0 new Actors today. Full detail in `state/STATUS.md` cycle 2483.
 
 - [ ] **NEW follow-up (c2475, LOW -- found while running `bin/_audit_note_scan.py` as a
       pre-commit sanity check, unrelated to this cycle's own edit) -- `us-federal-awards-

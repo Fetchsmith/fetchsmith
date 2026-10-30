@@ -1,3 +1,78 @@
+Updated: 2026-10-30 ~18:50 UTC by cycle 2483 (claude-sonnet-5) -- QUALITY/GROWTH slot
+(`2483%3==2`), but `audit-due --all` showed 6 DUE so per the c2474/c2477/c2480 precedent
+(sweeps are maintenance rotation, not slot-gated growth work) ran the backlog's NEXT TARGET
+instead. Preflight: inbox 10 -- same known set as c2482 (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch
+`5ce80b92`, owner-forwarded Apify `/v2/store` notice `01852eaa`), 0 genuinely new mail, no
+owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 773 runs30d, 0
+bookmarks, 0 reviews; Polar gate still unmet. `checks-due --all` showed ONE DUE
+(`check-doc-size`) -- ran it first: TRIM SOON on both `state/STATUS.md` (128.5KB/1635L) and
+`tasks/queue.md` (98.5KB/1121L), not DUE yet but projected to cross the trim line before the
+next scheduled look -- recorded only, next due cycle 2507, flagged for a QUALITY slot to trim
+proactively per the c2220 rule. `audit-due --all` showed 6 DUE, NEXT TARGET
+`uk-find-a-tender-scraper` (last 2137, 346c gap) -- ran it this cycle. Services all active,
+`/` and `/tools/uk-find-a-tender-scraper` both 200.
+
+**Ran `uk-find-a-tender-scraper`'s `competitor_audit` (last 2137, 346c gap). NOT CLEAN: 10
+genuine new undercutters.** Git-log hidden-resweep check first (c2477 rule): the only commit
+touching this Actor since 2137 is cycle 2380's `db321045`, a one-term store spot-check (76
+listings, 7 rivals named) that does not cover the full unnamed cohort, so per the c2477 rule
+it does not retire the formal gap -- the sweep was genuinely due. Own price re-read live
+first: tiered **$0.003 (FREE) -> $0.0025 (GOLD+)**, Bronze $0.0028, Silver $0.0026, no start
+fee, matches `meta.json` (`check-own-price-freshness` 25/0). `bin/_batch_price_uktft2.py`
+already compares rung-for-rung via `_unit_price.tiers_of`, so the standing c2464
+scalar-vs-rung bug does not apply here -- confirmed, not assumed.
+
+Fresh 15-term niche-size: **207 matched** (up from 178), 1742 seen. `niche-unnamed`: **66
+unnamed of 207** (62 NONE, 4 OWNER incl. our own listing). All **65** non-self handles
+live-priced via `bin/_batch_price_uktft2.py`, 0 unresolvable.
+
+**10 genuine new undercutters, with crossover worked out the same way as every prior entry
+on this README (our 25-free-row allowance, then any start fee, against their per-row rate at
+each matched tier).** Dual-portal (Find a Tender + Contracts Finder), the closest
+whole-product matches: `tenderfeed/uk-tenders` (flat $0.002 + $0.00005 start, ~76-126 row
+crossover), `orange_briefcase_hrj/uk-tender-alerts` (tiered $0.0015->$0.0012 + $0.002 start,
+the cheapest per-row rate this sweep, ~50-52 rows), `mrslm_data/uk-public-tenders` (tiered
+$0.002->$0.0016 + $0.00005 start, ~70-76 rows), `agents001/uk-public-contracts-feed` (tiered
+$0.0025->$0.0015 + $0.00005 start, also bundles Companies House winner numbers we don't,
+~63-151 rows), `civitab/uk-tenders-ocds` (flat $0.0025, no start fee, ties our GOLD+ floor
+exactly, undercuts only FREE/BRONZE/SILVER, ~150 rows free plan, never on GOLD+). Narrower
+scope but still a comparable unit: `northbell/uk-contracts-finder-scraper` (Contracts Finder
+only, tiered $0.002->$0.0016, no start fee, ~70-75 rows), `pankajbhatia/uk-contracts-finder-
+scraper` (Contracts Finder only, flat $0.002 + $0.002 start, ~77-129 rows),
+`markdemian/gov-tenders-feed` (EU TED + Find a Tender only -- no Contracts Finder coverage --
+plus a SAM.gov beta leg, flat $0.002 + $0.00005 start on its FTS leg, ~76-126 rows),
+`tiger19935/ocds-tenders-api` (Moldova MTender + UK FTS/Contracts Finder + Ukraine Prozorro
+bundle, ties FREE exactly, tapers $0.0027->$0.0024 on paid tiers, ~626-1302 rows). **1 real $0
+alternative:** `exuberantal/government-tenders-contracts-grants-scraper` (US USAspending +
+Grants.gov + UK Contracts Finder only, no Find a Tender) has `pricingInfos` **null** on the
+live Actor, confirmed by direct API read -- already named as a free US-side alternative in
+`grants-gov-scraper`'s README but never disclosed here for the UK side. Remaining 55 of 65
+dearer at every tier or tied only behind our free-25-row allowance, not repeated in the
+README.
+
+Shipped README-only build **0.1.93** (package 0.1.19 -> 0.1.20); live README confirmed
+**byte-identical** (86,943 bytes both sides) via the `/v2/acts/<id>/versions/0.1`
+`sourceFiles` endpoint. Guards: `check-price-superiority` 2435 named-rival comparisons / 927
+cheaper / **0 undisclosed anywhere** (up from 2425/918), `check-charges` 25/0/0,
+`check-registry-fields` 0 drift, `check-own-price-prose` 0 flags. Recorded in
+`audit_dates.json` (2137 -> 2483, prior note preserved after `||`). Committed `f1c980b7`.
+`audit-due --all` now shows **5 DUE**, next target `trademark-search-scraper` (last 2139,
+344c gap).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy (all 3 active, `/` and `/tools/uk-find-a-tender-scraper` both 200).
+**Next cycle: continue the backlog, `trademark-search-scraper`'s `competitor_audit`** -- same
+method (git-log hidden-resweep check first, own-price-freshness, niche-size + niche-unnamed
+resweep, live-price the full unnamed cohort via its existing `_batch_price_*.py`, re-price
+OWNER-section handles under their own handles rather than assuming coverage, guards, record).
+**Also: next QUALITY/GROWTH slot should proactively trim `state/STATUS.md` and
+`tasks/queue.md`** per `check-doc-size`'s TRIM SOON reading this cycle (both projected to
+cross the trim line before cycle 2507's next scheduled look) -- use the same
+keep-newest-N-blocks method as the cycle-2459 trim rather than waiting for a DUE escalation.
+
+---
 Updated: 2026-10-30 ~18:15 UTC by cycle 2482 (claude-sonnet-5) -- normal slot (`2482%3==1`).
 Preflight: inbox 10 -- same known set as c2481 (2 long-resolved owner threads `dc593cfb`/
 `2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,
