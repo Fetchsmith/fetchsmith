@@ -1,3 +1,52 @@
+Updated: 2026-10-30 ~16:40 UTC by cycle 2479 (claude-sonnet-5) -- normal slot (`2479%3==1`).
+Preflight: inbox 10 -- same known set as c2478 (2 long-resolved owner threads, 2x DMARC,
+2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify
+`/v2/store` notice `01852eaa` already triaged c2478), 0 genuinely new mail, no owner email
+warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 773 runs30d, 0 bookmarks, 0
+reviews; Polar gate still unmet. Services all active, `/` and `/tools/ats-jobs-scraper` both 200.
+
+**Finished the `ats-jobs-scraper` `competitor_audit` that cycle 2477 left half-done (data
+gathered, pricing not started) -- closes the backlog item open since cycle 1805 (674c gap).**
+Re-ran `niche-unnamed ats-jobs-scraper` fresh (matched c2477's numbers exactly: 2,019 matched,
+1,926 unnamed of 2,019 matched/2,019 seen -- 1,771 NONE, 155 OWNER), filtered to the
+**>=3-user cohort: 290 listings** (up from 256 at cycle 1805), and live-priced all 290 via
+`bin/_batch_price_ats3.py` (one `/tmp/ats_unnamed3.txt` handle list, 96s, 0 unresolvable).
+
+**13 genuine new undercutters, all single/dual-platform specialists narrower than our
+10-platform scope, plus one genuinely free whole-product match.** `tomstudio/ats-jobs-scraper`
+(3u) has **no pricing record at all** -- a real $0 competitor covering Workday/Greenhouse/
+Lever/Ashby "& more", the broadest-scope free listing found in this niche yet. **Ten beat us
+at every tier:** `jobo.world/ashby-jobs-scraper-api` (194u, the biggest new find by users) flat
+$0.00099/job; `deriverge/career-site-jobs-search` (3u, 14 ATS systems incl. ours) tiered
+$0.0005->$0.00025; `lepidata/new-jobs-feed` (3u) flat $0.0009; `pvalyou/job-postings` (3u,
+23 ATS systems) tiered $0.0008->$0.0005; `datahamster/smartrecruiters-workable-jobs` (3u)
+tiered $0.0005->$0.0004; `fetch_cat/smartrecruiters-jobs-scraper` (4u) + `fetch_cat/
+ashby-jobs-scraper` (3u) (distinct from this vendor's already-named/already-retracted
+listings) at ~$0.00002-0.00004; `miladamirzadeh/greenhouse-jobs-scraper` (3u) + `miladamirzadeh/
+ashby-jobs-scraper` (1u) -- both dropped to the FREE model since this vendor was last checked
+dearer-than-us at cycle 1401. **Two cross under everywhere except FREE** (tie $0.001):
+`deriverge/greenhouse-lever-workday-jobs-scraper` + `deriverge/workday-jobs-scraper` (3u each)
+tiered $0.001->$0.0005; `hipersoft/smartrecruiters-scraper` (3u, distinct from this vendor's
+already-named `hipersoft/ashby-scraper`). **One live FREE listing read and ruled out, not just
+counted:** `enosgb/ats-job-intelligence-api` (3u) is an AI hiring-signal/lead-gen classifier
+per its own description ("generate structured insights for lead generation"), the same
+lead-gen exclusion class this niche has already applied elsewhere (`enosgb/ats-job-scraper`
+itself, named) -- not a job-postings export, not a substitute. The other ~274 of 290 are
+dearer at every tier, narrower, or a different shape, consistent with every prior sweep. Cycle
+2382's already-published `muzafferkadir`/`arman-bd`/`egeusta` findings (a lighter one-term
+spot-check, not this rotation) were left as-is rather than re-found.
+
+Shipped README-only build **0.1.112** (package 0.1.27 -> 0.1.28); live source README confirmed
+byte-identical (77,863 bytes both sides) via the `/v2/acts/<id>/versions/0.1` endpoint. Guards:
+`check-charges` 25/0/0, `check-registry-fields` 0 drift, `check-own-price-prose` 0 flags,
+`check-price-superiority` fleet-wide 2,391 named-rival comparisons / 909 cheaper / **0
+undisclosed anywhere**. Recorded in `audit_dates.json` (`competitor_audit`: 1805 -> 2479,
+prior note preserved after `||`). `audit-due --all` now shows **6 DUE**, next target
+`apple-podcasts-scraper` (last 2121, 358c gap). Committed (`16657950`). ~$0.005 spent this
+cycle (one build), 0 new Actors today. No revenue event and nothing only the owner can fix,
+so no owner email (CLAUDE.md rule 3).
+
+---
 Updated: 2026-10-30 ~16:05 UTC by cycle 2478 (claude-sonnet-5) -- normal slot (`2478%3==0`).
 Preflight: inbox 10 -- found ONE genuinely new item, `01852eaa`, owner-forwarded mail from
 Apify ("Check your Store API calls by November 15") -- triaged in full below, everything else

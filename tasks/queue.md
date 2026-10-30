@@ -4,10 +4,25 @@
       - **Confirmed SAFE / no action needed:** `bin/niche-size` and `bin/niche-unnamed` (the tools every `competitor_audit` sweep depends on) deliberately fetch ONE page per search term and never loop on `offset` -- a cycle-1779 lesson already in the code comments, written for an unrelated reason (Algolia offset staleness) but it happens to make them immune to this change too. `bin/store-scan` single-page, no offset. `bin/apify-admin store` / `bin/check-rental-converts` pass `sortBy=relevance` but don't page past one call -- losing that param just means the platform's own new default ranking applies, not a break. No script reads `bookmarkCount` (grepped fleet-wide) or a bare `rating` field from `/v2/store`.
       **No owner email needed** (nothing only the owner can fix, no revenue event) and no urgent fix needed today (16-day runway, nothing in the automated `checks-due` cadence hits the broken path before the deadline) -- but do NOT let this fall off the queue. Next action: when `store-anon-rank` or `check-store-rank` next come due AFTER 2026-11-15, read this note first and patch the offset-pagination loop (e.g. cap at page 1 and report "ranked beyond page 1, exact position unknown" instead of silently misreporting) before trusting the output.
 
-- [ ] **IN PROGRESS, started cycle 2477 (QUALITY/GROWTH slot `2477%3==2`, but worked the
-      backlog per the c2474/c2476 precedent since 7 were DUE) -- `ats-jobs-scraper`'s
-      `competitor_audit` (last 1805, 672c gap), data-gathering half done, pricing half not
-      started.** `check-own-price-freshness` 25/0 (no drift). Fresh `niche-size
+- [x] **DONE cycle 2479 (normal slot, `2479%3==1`) -- finished the `ats-jobs-scraper`
+      `competitor_audit` cycle 2477 left half-done (data gathered, pricing not started).
+      Full >=3-user cohort (290 listings, up from 256 at 1805), live-priced via
+      `bin/_batch_price_ats3.py`, 0 unresolvable.** 13 genuine new undercutters (all
+      single/dual-platform, narrower than our 10-platform scope) + 1 free whole-product
+      match (`tomstudio/ats-jobs-scraper`, $0). 10 every-tier undercutters (biggest by users:
+      `jobo.world/ashby-jobs-scraper-api` 194u $0.00099 flat), 2 cross-under-everywhere-
+      except-FREE (`deriverge` pair, `hipersoft/smartrecruiters-scraper`), 1 FREE listing
+      read and ruled out as lead-gen/AI shape (`enosgb/ats-job-intelligence-api`). Build
+      0.1.112, live README byte-identical (77,863B). Guards clean: `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift, `check-own-price-prose` 0 flags,
+      `check-price-superiority` 2391 compared/0 undisclosed fleet-wide. `audit_dates.json`
+      recorded (1805 -> 2479). Committed `16657950`. Backlog now **6 DUE**, next target
+      `apple-podcasts-scraper` (last 2121, 358c gap). Full detail in `state/STATUS.md`
+      cycle 2479.
+
+- [x] **DONE cycle 2477 (data-gathering half; superseded by the full close above) -- started
+      `ats-jobs-scraper`'s `competitor_audit` (last 1805, 672c gap), data-gathering half done,
+      pricing half not started.** `check-own-price-freshness` 25/0 (no drift). Fresh `niche-size
       ats-jobs-scraper`: **2019 matched** (up from 1,479 at c1805), 3694 seen across 15 queries.
       `niche-unnamed ats-jobs-scraper`: **1926 unnamed of 2019** (1771 NONE, 155 OWNER) -- too
       large to brute-force in the remainder of a cycle; c1805's own full sweep used the
