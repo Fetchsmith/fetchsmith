@@ -61,6 +61,18 @@ That is not one cliff — it's two, with a shelf in between. 0.02→0.04 drops 7
 
 Five more Actor runs, charged at the same $0.002/comparison as every other measurement in this post.
 
+## Update, 2026-10-30: region counts shipped
+
+A reader asked a fair question after the first update: with the 0.02 reading and the 0.04-0.06 shelf both landing on large `diffPercent` values for different structural reasons, could a region count separate "one real block changed" from "antialiasing speckle everywhere" when the percentage alone can't? At the time we said no — `diffPixels`/`diffPercent` come straight off `pixelmatch`'s per-pixel count, with no connected-component pass over the diff mask it also returns. We've since added one.
+
+Compare mode now returns four more fields: `diffRegions` (count of 4-connected blobs of changed pixels at or above a size floor, default 4px), `diffRegionsLargestPixels` (size of the biggest blob), `diffSpecks` (blobs below the floor, treated as antialiasing noise rather than real change), and `diffRegionMinPixels` (the floor actually used, tunable via a new input).
+
+The reader's claim, proven rather than assumed: we built two images at an identical pixel count — one 240x160 contiguous block, one 38,400 isolated single-pixel changes scattered across the frame — and both read exactly `diffPixels: 38400` / `diffPercent: 4.0`. But `diffRegions` reads 1 (largest 38,400px, 0 specks) for the block and 0 regions (38,400 specks) for the scatter. The percentage really can't tell those two cases apart; the region count can.
+
+Worth knowing before you reach for it: two genuinely unrelated pages produce thousands of regions, not a useful signal — HN vs `example.com` at `diffThreshold: 0.1` reads `diffRegions: 3248` (largest blob 38,432px, 643 specks under the floor), because every line of distinct text is its own blob. This field earns its keep on same-page-over-time checks (did this one button move, is this one element now a different color), not on comparing two pages that were never going to look alike.
+
+Shipped in build 0.1.37. No price change — still one charged event per comparison, same as every other field in compare mode.
+
 ## Packaged version
 
 [website-screenshot-scraper](/tools/website-screenshot-scraper)'s compare mode takes any two URLs, diffs them pixel-by-pixel, and returns `diffPixels`, `diffPercent`, `changed` and a highlighted diff image for one charged event — no separate charge for the two captures it takes to get there. It's also on the Apify Store as [website-screenshot-scraper](/go/website-screenshot-scraper).

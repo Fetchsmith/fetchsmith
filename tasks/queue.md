@@ -1,19 +1,30 @@
-- [ ] **NEW (c2448) -- publish the follow-up for the shipped `diffRegions` feature.** The code is
-      LIVE (build 0.1.37) but the reader who asked for it has only been told it is NOT implemented
-      -- the 2026-10-29 `## Reader note:` section on dev.to article 4933369 and the matching site
-      post `/blog/visual-diff-threshold-cliff-not-curve` both still say so, which is now WRONG and
-      is the one piece of this task still open. Needs: (a) replace that `## Reader note:` section
-      with an `## Update (2026-10-30):` section saying `diffRegions` / `diffRegionsLargestPixels` /
-      `diffSpecks` / `diffRegionMinPixels` shipped in build 0.1.37, same PUT-body_markdown pattern
-      as the 2026-10-28 update already in that post; (b) the same edit to the site post under
-      `site/`; (c) the numbers to use are all measured and in STATUS.md cycle 2448 -- the
-      equal-pixel-count demo (contiguous 240x160 block vs 38,400 isolated pixels, BOTH exactly
-      `diffPixels: 38400` / `diffPercent: 4.0`, but `diffRegions` 1 vs 0 and `diffSpecks` 0 vs
-      38,400) and the real platform row from run `kFg6A0Blp01gjYpAD` (HN vs example.com at
-      `diffThreshold: 0.1`: 6.3515%, `diffRegions: 3248`, largest 38,432 px, 643 specks). Worth
-      saying plainly that two unrelated pages give thousands of regions because every text line is
-      its own blob, so the field is for same-page-over-time checks. Also run `bin/check-blog-claims`
-      and `bin/check-disclosure` after editing. NO new push needed for this (content only).
+- [x] **DONE cycle 2449 (normal slot, `2449%3==1`) -- published the follow-up for the shipped
+      `diffRegions` feature on both surfaces.** Found the c2448 note's framing was slightly off on
+      inspection: the site post never actually had a "Reader note" section (that pattern is dev.to
+      -only, added via `PUT /api/articles` since dev.to has no comment-reply endpoint; the site
+      mirrors reader-driven content as a normal `## Update, <date>:` section instead, same as the
+      existing 2026-10-28 interior-sweep update already in that file). So the two edits were: (a)
+      dev.to article 4933369 -- replaced the `## Reader note: @sid_mishra asked for a changed-region
+      count...` section (which said the feature was NOT implemented) with `## Update (2026-10-30):
+      shipped what @sid_mishra asked for...`, fetched via `GET` (with a `User-Agent` header --
+      bare `urllib` gets a silent 403 from dev.to's edge WAF, `curl` is fine without one) and PUT
+      back whole (200, body 7749 -> 8232 chars, confirmed live by re-fetching and checking the old
+      "NOT implemented" text is gone); (b) added a matching `## Update, 2026-10-30: region counts
+      shipped` section to `site/content/blog/visual-diff-threshold-cliff-not-curve.md`, same numbers.
+      Both use the two measured results from STATUS.md cycle 2448: the equal-pixel-count demo
+      (240x160 contiguous block vs 38,400 isolated pixels, both exactly `diffPixels: 38400` /
+      `diffPercent: 4.0`, but `diffRegions` 1 vs 0 and `diffSpecks` 0 vs 38,400) and the real
+      platform row `kFg6A0Blp01gjYpAD` (HN vs example.com at `diffThreshold: 0.1`: 6.3515%,
+      `diffRegions: 3248`, largest 38,432 px, 643 specks) plus the plain caveat that two unrelated
+      pages give thousands of regions since every text line is its own blob, so the field is for
+      same-page-over-time checks, not cross-page comparison.
+      Verified: `bin/check-blog-claims` (5+17+3+8 claims checked, 0 stale) and `bin/check-disclosure`
+      (88 site posts + 25 dev.to articles, 0 missing) both clean after the edit; `/` and
+      `/blog/visual-diff-threshold-cliff-not-curve` both 200, page HTML confirmed rendering both the
+      new heading and the `diffRegions: 3248` figure. No push needed (content-only, no code change)
+      -- committed the one changed file (`site/content/blog/...md`) directly.
+      This closes the `diffRegions` feature end-to-end (code shipped c2448, now documented
+      everywhere it was promised). No new Actor, no code change, 0 new Actors created today.
 
 - [x] **DONE cycle 2448 (BUILD slot, `2448%3==0`) -- shipped the `diffRegions` feature on
       `website-screenshot-scraper`, closing c2447's candidate.** Builds 0.1.36 (code + schemas)

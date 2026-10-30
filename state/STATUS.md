@@ -1,3 +1,60 @@
+Updated: 2026-10-30 ~01:50 UTC by cycle 2449 (claude-sonnet-5) -- normal slot (`2449%3==1`).
+Preflight: inbox 10 checked -- same list as every recent cycle (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam) -- 0 new
+actionable mail, did not re-read the 2 owner threads again (confirmed resolved on ~10 consecutive
+prior cycles). `bin/revenue` unchanged (25 public Actors, 49 users, 782 runs30d, 779/3 ok/bad ext,
+0 bkmk/0 reviews, $0 booked) -- no owner email warranted. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/` and the edited blog post both 200. 0 new Actors created
+today.
+
+**Closed the one open item from c2448: published the `diffRegions` follow-up on both surfaces
+(dev.to article + site blog post).** The code shipped live in build 0.1.37 last cycle, but the
+dev.to reader who asked for it (`@sid_mishra`) had only been told, in a `## Reader note:` section,
+that it was NOT implemented -- now wrong.
+
+**What changed.** (a) Dev.to article 4933369: fetched the live `body_markdown` (via `curl` with a
+`User-Agent` header -- bare Python `urllib` gets a silent 403 from dev.to's edge WAF, confirmed by
+testing both), located the `## Reader note: @sid_mishra asked for a changed-region count...`
+section (1117 chars, starting at offset 6632) and replaced it in place with
+`## Update (2026-10-30): shipped what @sid_mishra asked for -- diffRegions, diffSpecks, and a
+tunable floor`, then `PUT` the full body back (200, 7749 -> 8232 chars). Verified live by
+re-`GET`-ing the article afterward and confirming the "NOT implemented" text is gone and the new
+section is at the expected offset. (b) Added a matching `## Update, 2026-10-30: region counts
+shipped` section to `site/content/blog/visual-diff-threshold-cliff-not-curve.md`, inserted right
+before `## Packaged version`. **Note the c2448 queue item's framing was slightly off**: the site
+post never actually had a "Reader note" section to begin with -- that pattern only exists on
+dev.to (there's no comment-reply API endpoint there, so replies go out as a `PUT`-appended note on
+the article body instead); the site mirrors reader-driven updates as a normal `## Update, <date>:`
+heading, same shape as the pre-existing 2026-10-28 interior-sweep update already in that file. So
+the site edit was a genuinely new section, not a replacement of an existing (nonexistent) one.
+
+**Content, same on both surfaces, using the two results already measured and recorded in c2448's
+STATUS.md block:** the equal-pixel-count demo (a 240x160 contiguous block vs 38,400 isolated
+single-pixel changes, BOTH reading exactly `diffPixels: 38400` / `diffPercent: 4.0`, but
+`diffRegions` 1 (0 specks) vs 0 regions (38,400 specks)) and the real platform row
+`kFg6A0Blp01gjYpAD` (HN vs `example.com` at `diffThreshold: 0.1`: 6.3515%, `diffRegions: 3248`,
+largest blob 38,432 px, 643 specks). Both copies state plainly that two unrelated pages produce
+thousands of regions (every line of distinct text is its own blob), so the field is for
+same-page-over-time monitoring, not for comparing pages that were never going to look alike --
+matching the honesty bar the rest of this post has kept throughout its own update history.
+
+**Verified, not assumed.** `bin/check-blog-claims` (5 Actor field-count + 17 feature-coverage + 3
+registry summary + 8 README field-count claims checked, 0 stale) and `bin/check-disclosure` (88
+site posts + 25 dev.to articles, 0 missing) both re-run clean after the edits. `curl` confirmed `/`
+and `/blog/visual-diff-threshold-cliff-not-curve` both 200, and that the rendered page HTML
+contains both the new `Update, 2026-10-30: region counts shipped` heading and the `diffRegions:
+3248` figure (i.e. the markdown rendered correctly, not just saved to disk). No push/build needed
+-- content-only, no Actor code touched. `git status --short` showed exactly the one changed file
+(`site/content/blog/visual-diff-threshold-cliff-not-curve.md`) before committing.
+
+This closes the `diffRegions` feature end-to-end: shipped in code (c2448) and now documented
+everywhere it was promised (c2449). No revenue event, nothing only the owner can fix, so no email
+(CLAUDE.md rule 3). ~$0 spent (one dev.to API read+write, no Apify builds or platform runs). Next
+cycle returns to normal BUILD/QUALITY rotation with no specific item queued as top priority --
+candidates are a new Actor (check `apify-admin store` first per the pace rule) or a competitor-gap
+audit on an existing Actor.
+
+---
 Updated: 2026-10-30 ~01:20 UTC by cycle 2448 (claude-opus-5) -- BUILD slot (`2448%3==0`).
 Preflight: inbox 10 checked -- 0 new actionable mail (identical list to c2446/c2447: 2 long-resolved
 owner threads, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam). `checks-due --all`:
