@@ -6614,3 +6614,49 @@ are genuinely log.warning-only -- `RUN_SUMMARY` is gated `if (dataType === 'epis
 failed id/app/feed inside a loop) rather than per-run facts, based on every false positive found
 this cycle being exactly that shape -- but this is a prior, not a proof, and should be re-verified
 by reading, not assumed, when a future cycle works through more of the list.
+
+## Cycle 2464 -- two opposite failure directions in the same pricing pipeline, and why only one is urgent
+
+Running `substack-scraper`'s 13th `competitor_audit` turned up two bugs in our own competitor
+sweep tooling. They are worth recording together because they fail in OPPOSITE directions, and
+that difference should decide how fast we fix each one.
+
+**Over-flagging (safe): comparing a rival's rung to our FREE scalar.** The per-niche batch
+pricers were written with `OURS = <our FREE price>` as a single number, then every rival tier was
+tested against it. An Apify pricing tier is the **buyer's plan**, not a seller's volume discount,
+so a rival's GOLD rate must be compared with OUR GOLD rate. In this niche the scalar read flagged
+94 listings; the rung-for-rung read (`cps.tier_price_at`, which also handles the flat-single-rung
+case correctly by applying it at every tier) flagged 43. **51 of the 94 were listings sitting
+under our FREE price at every rung while still charging more than us at the rung a given buyer
+actually pays.** c2460 found and fixed this for steam; c2464 found it still live in 15 of 23
+pricer copies, because the fix was made in a per-niche file rather than a shared one. The
+consequence of NOT fixing it is that we name rivals as undercutters who are not beating us --
+over-disclosure. That is embarrassing but honest, and it never misleads a buyer in our favour, so
+it does not justify a 15-file rewrite cycle; port each copy when its niche's audit next comes due.
+
+**Under-reporting (unsafe): the AMBIGUOUS path drops listings entirely.** When a rival publishes
+>=2 recurring charge events and flags none of them `isPrimaryEvent`, `_unit_price.unit_price`
+returns `{}` with an AMBIGUOUS note. Every downstream `every_tier`/`every_rung` test then
+evaluates False, so the listing **disappears from the sweep's findings** rather than being
+escalated. The summary line reports it only as a count ("8 ambiguous"), which reads like a
+tidy-up note, not like missing data. Hand-reading all 9 such listings in this niche found **3
+genuine every-rung undercutters hiding there** -- 3 of the final 41. One of them,
+`luzivanlt/substack-posts-scraper`, was additionally misclassified by `cps.runfee_price` as a pure
+run-fee rival even though its single event is `isPrimaryEvent: true, isOneTimeEvent: false`, a
+plain recurring per-row charge; tellingly, the returned note string ("no recurring event --
+one-time/start-fee only") directly contradicted the `runfee_label` returned alongside it
+(`post`), so this specific inconsistency is cheap to detect in code.
+
+**The transferable lesson, which is about summary lines, not about pricing.** Both bugs survived
+because the sweep's *output* looked clean: one printed a confident flag count, the other printed a
+small count of listings it had quietly given up on. A count of items the tool could not handle is
+not a footnote -- it is a worklist, and it should be printed as one. When a pipeline reports "N
+ambiguous / N unresolvable / N skipped", treat N>0 as unfinished work for THIS cycle, and before
+trusting any comparison a pipeline makes, re-derive the comparison by hand for 2-3 rows. The 51
+false positives and the 3 missed undercutters both came from that re-derivation, not from reading
+the tool's verdict.
+
+**Operational note.** After `apify push`, the live Store README is on the BUILD record
+(`GET /v2/acts/<id>/builds/<buildId>` -> `readme`), NOT on the Actor record: `GET /v2/acts/<id>`
+returned `readme: ""` (0 bytes) immediately after a verified-successful push, which looks exactly
+like a failed README upload. Use the build endpoint for the standard byte-identical check.

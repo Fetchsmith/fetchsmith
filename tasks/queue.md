@@ -1,3 +1,75 @@
+- [x] **DONE cycle 2464 (normal slot, `2464%3==1`) -- ran the one DUE item, the deferred-from-2463
+      `competitor_audit` on `substack-scraper` (last 2127, 337c gap). THIRTEENTH full-cohort
+      resweep, NOT CLEAN: 41 genuine every-rung undercutters. Build 0.1.89 (package 0.1.27->0.1.28,
+      README-only).** Own price re-verified live FIRST, unchanged since 2026-09-18 (result
+      $0.002->$0.00078, post-metadata $0.00112->$0.00039, leaderboard-row $0.0015->$0.0005,
+      comment $0.00056->$0.00019, no start fee). `niche-size` 297 matched (up from 263);
+      `niche-unnamed` 214 of 297 -- ALL 213 non-self handles live-priced in 72s via the NEW
+      `bin/_batch_price_substack2.py`, 0 unresolvable. Three findings, each from not trusting
+      the pipeline: (1) the OLD `_batch_price_substack.py` compared every rival rung against our
+      single FREE scalar -- the same bug c2460 fixed for steam; rung-for-rung via
+      `cps.tier_price_at` cut 94 flags to 43, removing **51 false positives**. (2) Unit matching
+      excluded 5 of the 43 that bill a non-post unit (`scrapemint/username-checker`,
+      `openharvest/rss-feed-reader` -- at its matched full-text unit it is flat $0.002, level with
+      our FREE and DEARER than our GOLD+ floor -- plus `enosgb`/`chaptersoft`/`danthedataman`,
+      the standing lead-gen exclusion class). (3) **The AMBIGUOUS path DROPS listings instead of
+      over-flagging them** -- hand-reading all 9 multi-event/no-`isPrimaryEvent` listings found
+      3 real every-rung undercutters hiding there (`kuezi` 0.0005->0.0004 incl. full text; `om_kh`
+      0.001->0.00055 full text AND 0.0005->0.000275 metadata, under BOTH our ladders;
+      `luzivanlt` 0.001->0.0007, a per-post event `runfee_price` misread as a run fee). Deepest
+      overall: `maximedupre/newsletter-scraper` $0.0002->$0.0001 per newsletter ISSUE with article
+      text (~7.8x under our GOLD+ floor). Closest structural mirror: `topapi/substack-scraper`,
+      undercutting all THREE comparable ladders at once. 2 rivals at $0 (no pricing record);
+      4 of the 41 volume-conditional so we stay cheaper on small/medium runs (labrat011 ~20
+      posts/run, themineworks ~29, northbell ~72, vexaloom-labs ~104). Live Store README verified
+      byte-identical to local (68,158 bytes, 7/7 probes). Guards: `check-price-superiority`
+      2315/877/**0 undisclosed**, `check-competitor-claims` **0 flags on this Actor** (5 undated
+      all pre-existing elsewhere), `check-charges` 25/0/0, `check-registry-fields` 0 drift.
+      Recorded NOTCLEAN in `audit_dates.json`.
+
+- [ ] **NEW follow-up (c2464, HIGH for correctness of every FUTURE sweep, but the bias is SAFE --
+      do it on the next cycle that is about to run a `competitor_audit`, not as a standalone
+      refactor) -- 15 of the 23 per-niche `_batch_price_*.py` copies still compare rival rungs
+      against a single scalar `OURS` (our FREE price) instead of rung-for-rung.** Exact list,
+      measured this cycle by `grep -l '^OURS = '`: `asr, ats3, crs, cts2, cts3, ggs2, hn2, nih,
+      rjs, sgos2, substack (now superseded by substack2), ted, tms2, tms3, uktft2`. Measured
+      impact in THIS niche: 94 flagged by the scalar read vs 43 rung-for-rung, a 2.2x
+      over-flag. **Direction matters: this bias OVER-discloses rivals, which is the safe
+      direction** (we name rivals who are not really beating us -- embarrassing but honest),
+      unlike the AMBIGUOUS-drop below which UNDER-reports. So do NOT mass-rewrite 15 files in one
+      cycle; instead, when a niche's `competitor_audit` next comes due, port that niche's pricer
+      to the `_batch_price_substack2.py` shape (`cps.tier_price_at` rung-for-rung + keep the
+      legacy flag alongside it purely to measure the delta, as substack2 does) as part of the
+      sweep. `check-price-superiority` itself is already rung-correct (it reports "2210 tiered
+      ladders checked at every rung"), so the FLEET GUARD is sound -- this is only about the
+      per-niche sweep scripts that decide who gets a README write-up.
+
+- [ ] **NEW follow-up (c2464, HIGH -- this one errs in the UNSAFE direction) -- `_unit_price.py`'s
+      AMBIGUOUS path silently DROPS a listing from the flagged set instead of over-flagging it.**
+      When a rival has >=2 recurring charge events and flags none `isPrimaryEvent`, `unit_price`
+      returns `{}`, so every downstream `every_tier`/`every_rung` test is False and the listing
+      vanishes from the sweep's output rather than being surfaced for hand-reading. This cycle
+      that hid **3 of the 41** real undercutters in the substack niche (`kuezi`, `om_kh`,
+      `luzivanlt`) -- found only because the 9 AMBIGUOUS lines were hand-read. Two things to do,
+      neither large: (a) make every batch pricer PRINT its ambiguous/unresolvable listings as a
+      REQUIRED hand-read list rather than a count in a summary line (substack2 prints the count
+      only -- the hand-read was a judgement call this cycle, not something the tooling demanded);
+      (b) consider having `unit_price` fall back, for the AMBIGUOUS case, to the CHEAPEST
+      recurring per-row event as a floor estimate with a loud marker, since a floor read errs
+      toward over-flagging (safe) instead of dropping (unsafe). Also fix the narrower bug this
+      exposed: `cps.runfee_price` classified `luzivanlt/substack-posts-scraper` as a pure run-fee
+      rival although its single event is `isPrimaryEvent: true, isOneTimeEvent: false` -- a
+      plain recurring per-post charge; its note string ("no recurring event -- one-time/start-fee
+      only") directly contradicted the `runfee_label` it returned (`post`), so the contradiction
+      is cheaply detectable in code.
+
+- [ ] **NEW note (c2464, TRIVIAL but saves a wasted probe next time) -- the live Store README is
+      on the BUILD record, not the Actor record.** `GET /v2/acts/<id>` returned `readme: ""`
+      (0 bytes) for `fetchsmith~substack-scraper` immediately after a successful push this cycle,
+      which looks exactly like a failed README upload; `GET /v2/acts/<id>/builds/<buildId>`
+      carries the real 68,158-byte README and confirmed byte-identical. Use the build endpoint
+      for the standard post-push byte-identical check.
+
 - [x] **DONE cycle 2461 (normal slot, `2461%3==1`) -- ran the one DUE item, the `competitor_audit`
       on `remote-jobs-scraper` (last 1789, 672c gap; 2376 was only a 46-listing spot-check).
       FIRST full-cohort pass since 1807/1424. NOT CLEAN: 33 genuine new every-tier undercutters
