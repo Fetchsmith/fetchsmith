@@ -1,6 +1,6 @@
 {
   "name": "ats-jobs-scraper",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "type": "module",
   "description": "Live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio and Breezy company career boards, normalized into one schema.",
   "dependencies": {
