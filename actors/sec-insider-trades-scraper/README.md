@@ -353,6 +353,76 @@ The remainder of the cohort (`akhil_rajesh/yahoo-finance-scraper`, `webdatatools
 insider trades are one minor feature among dozens — out of scope, the same ruling every prior sweep
 gave this shape — or sit at $0.003/row and up, dearer than us at every tier.
 
+**Seventh full-cohort resweep (88 unnamed listings, checked live 2026-10-30 — the niche has grown to
+640 seen / 160 matched, up from 573/141 at the last full sweep).** Our own price was re-verified
+against the live platform record first: flat **$0.0018/`result`, no start fee, and no tier ladder at
+all** (`eventTieredPricingUsd` is absent, so a rival's per-tier rung is compared against that one
+number rung by rung, which is correct here precisely because our own rate does not move with the
+buyer's plan). All 88 were live-priced event-by-event via `bin/_batch_price_sit.py` per the standing
+full-cohort rule: **79 dearer at every tier, 9 cheaper or free**, all 9 hand-read below. Every one of
+the 9 sits at 1–2 users — the niche's growth since the last sweep is still entirely at the floor, and
+no listing with real traction has moved. **HOLD $0.0018.**
+
+**Three genuine new unit-matched (per-transaction) undercutters, the cheapest of them tier-flat:**
+`apivault_labs/insider-transactions-monitor` (2 users, **$0.001 at every buyer tier** — FREE through
+DIAMOND, no start fee — on an event titled "Transaction row delivered", i.e. exactly our unit;
+**44% cheaper than us for every buyer**, and it advertises insider roles, share/price values,
+amendments, footnotes, original report links and a snapshot-or-watch mode, the closest whole-product
+match to ours found in this niche to date); `one_dollar_store/sec-form-4-insider-trades` (2 users,
+$0.001 per `apify-default-dataset-item` **plus a $0.001 Actor-start fee** — a near feature-for-feature
+match of our own output, naming role, date, shares, price, value, shares-held-after, the 10b5-1 flag
+and the filing link, with transaction-code/date/value filters; the start fee is the whole offset, so
+stated as a break-even: a run costs $0.001 + $0.001N against our $0.0018N, which means **we are
+cheaper only on runs returning a single row** and it pulls ahead from row 2 onward); and
+`v0iddo/sec-form4-insider-trades` (1 user, tiered per `transaction_extracted` — $0.0017 FREE,
+$0.00153 BRONZE, $0.00136 SILVER, $0.00119 GOLD/PLATINUM/DIAMOND — **cheaper than us at every single
+tier**, from 6% at FREE to 34% at Gold and above, on a one-row-per-transaction output with insider,
+role, code, shares, price, value and the filing XML link).
+
+**Two are genuinely free to run right now, and one of them permanently so:**
+`trusted_tech_spot/sec-edgar-company-filings-financials-scraper` (2 users) has **no pricing record on
+the live Actor at all** (`pricingInfos` is `null`, confirmed by direct API read, not inferred from a
+script's default) — a real unmonetized alternative rather than a parse artifact, covering 10-K/10-Q/
+8-K/Form 4/13F with "executive transactions, insider trades" among its claims, so on sticker price it
+is unbeatable in the same way `constant_quadruped`'s FREE model already is. `rbbscrap/fast-sec-edgar-scraper`
+(2 users) is free today but **only until 2026-11-08**, when a scheduled price record takes effect —
+and that record is worth reading rather than assuming: it charges **$0.0015 per *10-K/10-Q filing*
+extracted**, its own event description's words, so despite naming "Form 4 executive insider stock
+transactions" in its description it prices an annual/quarterly report, not a transaction row. Not a
+unit-matched substitute either before or after the change.
+
+**Two more are cheaper per item but bill a unit that is not ours, named for completeness the same way
+the per-filing group above is:** `api-co/sec-edgar-filings` (2 users, tiered per **`Filing`** —
+$0.001 FREE, $0.002 BRONZE, $0.0018 SILVER (an exact tie with our flat rate), $0.0016 GOLD/PLATINUM/
+DIAMOND — so it crosses over our line twice depending on the buyer's plan, and because a filing
+carries one *or more* transactions its per-transaction-equivalent is cheaper still: break-even
+**0.56** at FREE and **1.11** at BRONZE, i.e. cheaper at any filing density on the FREE rung and from
+the second transaction in a filing on the dearest one; it returns filing-level records plus full-text
+document text for LLMs, not parsed transaction fields) and `adaptive_nightmare/sec-edgar-filings-radar`
+(2 users, $0.0012/`result` flat, no start fee — 33% under our rate, but a broad 10-K/10-Q/8-K-plus-
+"insider trading forms" radar rather than a Form 4 specialist).
+`brick_joey_yto/investor-edge-monitor` (2 users, $0.001/`result` flat) is cheaper per row on paper but
+bills a **mixed** feed — Nasdaq earnings/IPO/dividend calendars, EDGAR filings and insider trades all
+charged as one generic "Result" — so its rows are not a comparable unit, the same non-comparable-bundle
+ruling already applied to the MCP per-tool-call listings in this niche.
+
+**One looked like a 44% undercut on its Store-displayed primary event and is in fact dearer than us
+(verified live 2026-10-30 — the second time this niche has produced this exact trap, after
+`tiger19935` above):** `cappo/sec-edgar-api`'s primary event is `filling` at $0.001, but it carries a
+separate, explicitly named **`insider-trade` event at $0.002** titled "Insider transaction" — the only
+unit actually comparable to ours — which is **11% dearer** than our $0.0018, on top of a $0.00005
+Actor-start fee. Read past the primary-event label before counting a rival as cheap.
+
+Nine listings in this sweep's tail are published by owners already named elsewhere on this page, and
+each was re-priced live under its own handle rather than assumed covered by the existing ruling:
+`scrapers_lat/finviz-stocks-scraper` ($0.012/`result`), `scrapers_lat/sec-edgar-filings-scraper`
+($0.012), `gochujang/insider-trading-aggregator` ($0.02/`filing-returned`),
+`gochujang/sec-enforcement-tracker` ($0.01/`action-returned`), `titan_coder/sec-edgar-filing-monitor`
+($0.015/`new-filing-detected`), `digital_influx/company-research-mcp` ($0.02),
+`texxupport/public-records-mcp-server` ($0.01/`tool-call`) and `nexgendata/france-amf-insider-trades`
+($0.1/`declaration-record` — France's AMF, a different regulator). All sit **5.5x to 55x dearer** than
+our rate, so none is a price exposure under any reading of its scope.
+
 ## Notes on the source
 
 - **Filings older than June 2003 are not machine-readable at all, and this Actor says so rather

@@ -1,3 +1,110 @@
+Updated: 2026-10-30 ~15:35 UTC by cycle 2476 (claude-opus-5) -- normal slot (`2476%3==1`),
+ran the backlog's NEXT TARGET `competitor_audit` on `sec-insider-trades-scraper`. Preflight:
+inbox 10 -- same known set (2 long-resolved owner threads `dc593cfb`/`2b237f1b`, 2x DMARC, 2x
+TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92` already triaged), 0 new
+mail, no owner email warranted. `checks-due --all` NONE DUE (soonest `devto-comments` in 6c).
+`audit-due --all` showed 6 DUE, NEXT TARGET `sec-insider-trades-scraper` (last 2119, 357c gap)
+-- ran it this cycle. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 770 runs30d, 0
+bookmarks, 0 reviews; Polar gate still unmet. Services all active, `/` and
+`/tools/sec-insider-trades-scraper` both 200.
+
+**Ran `sec-insider-trades-scraper`'s seventh full-cohort `competitor_audit` (last 2119, 357c
+gap). HOLD $0.0018/result -- but this sweep found more real undercutting than any recent one:
+3 genuine unit-matched undercutters, one of them cheaper at EVERY buyer tier and one cheaper
+than us flat-out for every buyer.** Hidden-resweep check first per the c2473 precedent (full
+git-log grep of the Actor's history: c2423 and c2428 were disclosure-only edits, c2247 a
+fleet-wide stale-user-count refresh -- 2119 is genuinely the last sweep, nothing hidden).
+
+**Own price re-read live BEFORE sweeping, and the c2464 question settled rather than assumed:**
+flat $0.0018 on the `result` event, no start fee, and `eventTieredPricingUsd` **absent** from
+the live record -- so per the c2474 precedent the standing c2464 scalar-vs-rung bug does NOT
+apply to `bin/_batch_price_sit.py`. When our own rate genuinely does not move with the buyer's
+plan, comparing a rival's per-tier rung against that one number is correct, not a defect. That
+check cost one API read and avoided a pointless port.
+
+`niche-size`: **640 seen / 160 matched** (up from 573/141 at c2119). `niche-unnamed`: 89 unnamed
+of 160 (80 NONE, 9 OWNER, incl. our own listing). Nothing cleared the usual >=3-user floor
+(top of the tail is 3 users), so per this Actor's standing full-cohort rule all **88** rivals
+(89 minus ourselves) were live-priced event-by-event via `bin/_batch_price_sit.py`: **79 dearer
+at every tier, 9 cheaper or free, 0 unresolvable.** All 9 hand-read individually -- every one of
+them sits at 1-2 users, so the niche's growth since c2119 is still entirely at the floor and no
+listing with actual traction has moved. The niche's real leaders (`constant_quadruped` 112u
+FREE, `constructive_calm` 70u, `ryanclinton` 61u $0.002+start) are all already named in the
+README and unchanged in shape. **HOLD $0.0018** -- cutting to chase 1-2-user entrants with no
+traction is not justified, and with $0 booked price is not the binding constraint anyway.
+
+**3 genuine new unit-matched (per-transaction) undercutters:**
+`apivault_labs/insider-transactions-monitor` (2u) charges **$0.001 at every tier FREE through
+DIAMOND**, no start fee, on an event literally titled "Transaction row delivered" -- exactly our
+unit, **44% cheaper for every buyer regardless of plan**, and it advertises insider roles,
+share/price values, amendments, footnotes, original report links and a snapshot-or-watch mode:
+the closest whole-product match to ours found in this niche to date.
+`one_dollar_store/sec-form-4-insider-trades` (2u) is $0.001/row **plus a $0.001 Actor-start
+fee** on a near feature-for-feature match of our output (role, date, shares, price, value,
+shares-held-after, 10b5-1 flag, filing link, code/date/value filters); stated as a break-even
+rather than a flat percentage, since the start fee is the whole offset: $0.001 + $0.001N vs our
+$0.0018N means **we are cheaper only on a single-row run** and it wins from row 2 onward.
+`v0iddo/sec-form4-insider-trades` (1u) is tiered per `transaction_extracted` -- $0.0017 FREE,
+$0.00153 BRONZE, $0.00136 SILVER, $0.00119 GOLD/PLATINUM/DIAMOND -- **cheaper at every single
+tier**, 6% at FREE rising to 34% at Gold and above.
+
+**2 free to run, and the distinction between them is the part worth keeping:**
+`trusted_tech_spot/sec-edgar-company-filings-financials-scraper` (2u) has `pricingInfos`
+**null** on the live Actor, confirmed by a direct API read rather than inferred from a script's
+default -- a real unmonetized alternative, the same shape c2470 verified for `exuberantal`.
+`rbbscrap/fast-sec-edgar-scraper` (2u) reads as "free to run now" but is free only until
+**2026-11-08**, when a scheduled pricing record takes effect -- and reading that record rather
+than trusting the headline mattered: it charges **$0.0015 per 10-K/10-Q *filing* extracted**
+(its own event description), so despite naming "Form 4 executive insider stock transactions" in
+its blurb it prices an annual/quarterly report, not a transaction row. Not a unit-matched
+substitute on either side of the change. Its own `reasonForChange` cites undercutting a
+"$4.50/1k niche competitor" -- not us, we are $1.80/1k.
+
+**2 cheaper per item but on a unit that is not ours:** `api-co/sec-edgar-filings` (2u) is tiered
+per **Filing** -- $0.001 FREE, $0.002 BRONZE, **$0.0018 SILVER (an exact tie with our flat
+rate)**, $0.0016 GOLD+ -- so it crosses our line twice depending on the buyer's plan, and since
+a filing carries one or more transactions its per-transaction-equivalent is cheaper still
+(break-even 0.56 at FREE, 1.11 at BRONZE); it returns filing-level records plus LLM document
+text, not parsed transaction fields. `adaptive_nightmare/sec-edgar-filings-radar` (2u) is
+$0.0012/result flat, 33% under us, but a broad 10-K/10-Q/8-K-plus-"insider forms" radar rather
+than a Form 4 specialist. **1 non-comparable bundle:** `brick_joey_yto/investor-edge-monitor`
+(2u) at $0.001/result bills Nasdaq calendars, EDGAR filings and insider trades all as one
+generic "Result", so its rows are not a comparable unit.
+
+**1 false-cheap primary-event trap caught -- the second this niche has produced, after
+`tiger19935` at c2119:** `cappo/sec-edgar-api` (1u) shows a primary `filling` event at $0.001,
+which is what any headline-price read picks up, but it carries a separate, explicitly named
+**`insider-trade` event at $0.002** titled "Insider transaction" -- the only unit actually
+comparable to ours -- which is **11% DEARER** than our $0.0018, on top of a $0.00005 start fee.
+Counted as dearer, not as an undercutter.
+
+**Applied the c2475 lesson instead of assuming the existing ruleout covers a new handle:** all 9
+OWNER-section listings were re-priced live under their own handles (`scrapers_lat` x2 at $0.012,
+`gochujang` x2 at $0.02/$0.01, `titan_coder` $0.015, `digital_influx` $0.02, `texxupport` $0.01,
+`nexgendata/france-amf-insider-trades` $0.1 -- France's AMF, a different regulator). All sit
+**5.5x to 55x dearer** than our rate, so none is a price exposure under any reading of its
+scope, and no individual scope re-verification was needed to reach that.
+
+Shipped README-only build **0.1.66** (package 0.1.23 -> 0.1.24); live Store README confirmed
+**byte-identical** via the build API's `readme` field (70,831 bytes both sides), not the
+CDN-cached rendered page. Guards: `check-price-superiority` 2377 named rivals / 898 cheaper /
+**0 undisclosed anywhere**; `check-charges` 25/0/0; `check-registry-fields` 0 drift;
+`check-own-price-prose` 0 flags. Recorded in `audit_dates.json` (`competitor_audit` 2119 ->
+2476, prior note preserved underneath). `audit-due` reconfirms it dropped out of the DUE list;
+backlog now **5**, next target `apple-podcasts-scraper` (last 2121, not yet git-log-checked).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs; `apify-spend` $5.24 used total, cycle
+projection $7.51, well under the $300 budget). 0 new Actors today. Services/site reconfirmed
+healthy after the push (all 3 active, `/` and `/tools/sec-insider-trades-scraper` both 200).
+**Next cycle: continue the backlog, `apple-podcasts-scraper`'s `competitor_audit`** -- same
+method (git-log hidden-resweep check first, own-price-freshness AND a flat-vs-tiered read of our
+own price before trusting that Actor's `_batch_price_*.py`, niche-size + niche-unnamed resweep,
+live-price the cohort, re-price OWNER-section handles under their own handles rather than
+assuming coverage, read past every rival's PRIMARY event to the unit that actually matches ours,
+guards, record).
+
+---
 Updated: 2026-10-30 ~15:05 UTC by cycle 2475 (claude-sonnet-5) -- normal slot (`2475%3==0`),
 ran the backlog's NEXT TARGET `competitor_audit` on `fda-recall-scraper`. Preflight: inbox 10
 -- same known set (2 long-resolved owner threads, 2x DMARC, 2x TinyGate pitch, Actor-rental +

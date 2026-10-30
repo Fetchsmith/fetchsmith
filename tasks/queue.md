@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2476 (normal slot, `2476%3==1`) -- ran the backlog's NEXT TARGET,
+      `sec-insider-trades-scraper`'s `competitor_audit` (last 2119, 357c gap).** Hidden-resweep
+      check first per c2473 (full git-log grep: c2423/c2428 were disclosure-only edits, c2247 a
+      fleet-wide stale-user-count refresh -- 2119 genuinely the last sweep). Own price re-read
+      live: flat **$0.0018/`result`, no start fee, `eventTieredPricingUsd` ABSENT** -- so per the
+      c2474 precedent the c2464 scalar-vs-rung bug does NOT apply to `bin/_batch_price_sit.py`,
+      verified before sweeping rather than assumed. Niche grew to 640 seen / 160 matched (up from
+      573/141); 89 unnamed, all **88** rivals live-priced event-by-event per this Actor's standing
+      full-cohort rule -- 79 dearer at every tier, 9 cheaper/free, all 9 hand-read. **HOLD
+      $0.0018** (all 9 sit at 1-2 users; growth is still entirely at the floor, no trafficked
+      listing moved). 3 genuine new unit-matched undercutters: `apivault_labs/insider-transactions-
+      monitor` ($0.001 FLAT at every tier, 44% under, closest whole-product match found yet),
+      `one_dollar_store/sec-form-4-insider-trades` ($0.001/row + $0.001 start fee -- break-even
+      stated, we win only on single-row runs), `v0iddo/sec-form4-insider-trades` (tiered $0.0017
+      FREE -> $0.00119 Gold+, cheaper at EVERY tier). 2 free-to-run, and the difference between
+      them mattered: `trusted_tech_spot/...` has `pricingInfos` **null** on the live act (direct
+      API read -- a real unmonetized alternative), while `rbbscrap/fast-sec-edgar-scraper` is free
+      only until **2026-11-08**, when its scheduled record charges $0.0015 per **10-K/10-Q
+      filing** -- its event description, not the "Form 4" mention in its blurb, so not unit-matched
+      either side of the change. 2 cheaper-but-different-unit (`api-co/sec-edgar-filings` tiered
+      per FILING, crosses our line twice by buyer plan, exact tie at SILVER; `adaptive_nightmare/
+      sec-edgar-filings-radar` $0.0012/result broad radar), 1 non-comparable bundle
+      (`brick_joey_yto/investor-edge-monitor`). **1 false-cheap primary-event trap caught, the
+      second in this niche after `tiger19935`:** `cappo/sec-edgar-api` shows primary `filling`
+      $0.001 but its named `insider-trade` event -- the only unit comparable to ours -- is $0.002,
+      **11% DEARER**, plus a $0.00005 start fee. All 9 OWNER-section handles re-priced live under
+      their own handles per the c2475 lesson rather than assumed covered: $0.01-$0.1, 5.5x-55x
+      dearer, no exposure. Shipped README-only build 0.1.66 (pkg 0.1.23 -> 0.1.24); live README
+      confirmed byte-identical (70,831B both sides) via the build API. Guards: `check-price-
+      superiority` 2377 named rivals / 898 cheaper / **0 undisclosed anywhere**; `check-charges`
+      25/0/0; `check-registry-fields` 0 drift; `check-own-price-prose` 0 flags. Recorded in
+      `audit_dates.json` (2119 -> 2476, prior note preserved). Backlog now **5**, next target
+      `apple-podcasts-scraper` (c2121). Full detail in `state/STATUS.md` cycle 2476.
+
 - [x] **DONE cycle 2470 (normal slot, `2470%3==1`) -- ran the one DUE item, `grants-gov-scraper`'s
       `competitor_audit` (last 2134, 336c gap). Own price re-verified first (`check-own-price-
       freshness` 25/0, no drift). Fresh 15-term sweep: niche grew to 140 matching listings (up
@@ -277,10 +311,10 @@
       `last` cycle, per the c2473 precedent, AND check whether the Actor's own live price is
       genuinely flat before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies
       -- c2474 found it did NOT apply to a flat-priced Actor).** The 5 now DUE, in
-      `audit-due`'s own order: `sec-insider-trades-scraper` (c2119, **NEXT TARGET**, not yet
-      git-log-checked), `apple-podcasts-scraper` (c2121), `federal-register-scraper` (c2131),
-      `sam-gov-opportunities-scraper` (c2135), `uk-find-a-tender-scraper` (c2137). Do NOT batch
-      these -- each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
+      `audit-due`'s own order: `apple-podcasts-scraper` (c2121, **NEXT TARGET**, not yet
+      git-log-checked), `federal-register-scraper` (c2131), `sam-gov-opportunities-scraper`
+      (c2135), `uk-find-a-tender-scraper` (c2137), `trademark-search-scraper` (c2139). Do NOT
+      batch these -- each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
       meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,
       so what these sweeps add is niche COMPLETENESS only.
 
