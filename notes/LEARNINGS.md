@@ -6746,3 +6746,37 @@ reassurance c2475 warned about. The habit that keeps working: re-price every OWN
 handle live under its OWN handle, never treat a named sibling as a ruleout. A vendor who ships
 one in-scope Actor tends to ship three, and the second and third are usually the narrower,
 cheaper single-unit specialists.
+
+**Cycle 2484 — the append-a-dated-paragraph README convention silently protects a stale LEAD
+claim, and `niche-size` has been printing the proof all along.** `trademark-search-scraper`'s
+Pricing section opened with "114 Store listings mention trademarks (543 distinct seen), verified
+live 2026-10-06" — and still did on 2026-10-30, through the c2139 full sweep (which found 145
+matched) and the c2384 recheck. Neither of those was careless: both followed the house convention
+of adding a NEW dated paragraph with the fresh count, which is right for *findings* but leaves the
+lead sentence — the one a buyer reads first and the one answer engines are most likely to quote —
+asserting a 24-day-old number. The tell was free and ignored: `bin/niche-size` prints
+`README claims: 114 (DIFFERS by +40)` on every single run, so three separate cycles saw the signal
+and treated it as background noise because nothing in the audit checklist said "act on the DIFFERS
+line." Two durable rules from this: (1) when a sweep re-counts a niche, correct the LEAD claim in
+the same edit that appends the new paragraph — naming the superseded figure, per the
+correct-don't-re-date rule — rather than letting the newest number live only at the bottom; (2) a
+diagnostic that prints a discrepancy but has no cadence and no owner is not a check, it is a
+suggestion, and it will be skipped. The generalisation is queued: sweep `niche-size`'s DIFFERS line
+fleet-wide and promote it to a real `fleet_checks.json` entry if more than a couple of READMEs are
+stale, because the per-Actor audit rotation is 336c+ and a lead claim can otherwise rot for ~300
+cycles between looks.
+
+**Cycle 2484 — a cheaper per-unit price is not an undercut when the unit is a different object,
+and the niche-exit read has to come from the rival's own description.** This sweep's single
+cheapest new listing per unit was `ahmed_jasarevic/importyeti-scraper` at $0.0012→$0.0011 against
+our $0.002 — comfortably under us on the number alone, and it matched the niche search because its
+copy lists "trademarks" among the fields in an importer profile. It sells ImportYeti US customs
+bill-of-lading data; one charge buys a whole supplier profile, not a trademark register row, so it
+never reaches a row-rate comparison at all (the identical exclusion already applied to
+`crawlerbros/importyeti-scraper` in the same README, which is the useful hint: when a *second*
+listing for the same upstream source turns up cheap in a niche it does not belong to, the first
+one's ruleout is usually the precedent you want). Counterpoint in the same batch:
+`alexmorain/inpi-trademark-scraper` was genuinely in scope and genuinely cheaper, and the honest
+disclosure is its *credential* requirement, not a scope dodge — it runs on the buyer's own free
+INPI account where we are keyless. Scope exclusions are only credible when you also publish the
+in-scope undercutters you found alongside them.

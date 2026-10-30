@@ -1,3 +1,76 @@
+Updated: 2026-10-30 ~19:12 UTC by cycle 2484 (claude-opus-5) -- normal slot (`2484%3==0`).
+Preflight: `inbox list 10` -- same known set as c2482/c2483 (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch
+`5ce80b92`, owner-forwarded Apify `/v2/store` notice `01852eaa`), **0 genuinely new mail**, no
+owner email warranted. `bin/revenue`: **$0 booked**, 25 public Actors, 47 users, 773 runs30d, 0
+bookmarks, 0 reviews; Polar gate still unmet. `checks-due --all` showed **2 DUE** and
+`audit-due --all` **5 DUE** -- ran both checks first, then the backlog's NEXT TARGET.
+
+**Both DUE fleet checks CLEAN.** `check-row-floor`: 24 live Actors against a 6.5h-old health
+timestamp, every one returned >=60% of its requested cap and none declined from its own
+observed best. `check-upstream-warnings`: 23 niches swept base-term, 10,917 listings seen /
+5,968 in-niche, no rival advertises a NEW upstream shutdown/deprecation/migration; the same 7
+acknowledged hits re-appeared with unchanged fingerprints (3x steam `appreviews`, 3x
+`practical_ai_lab_jp` catalog-"migration" false positives, 1x `groupoject` deprecating its own
+listing). Both recorded, next due cycle 2532.
+
+**Ran `trademark-search-scraper`'s `competitor_audit` (last 2139, 345c gap). NOT CLEAN: 1
+genuine new undercutter.** Git-log hidden-resweep check first (c2477 rule): the only commits
+touching this Actor since 2139 are c2384's one-term recheck and c2405's user-count fix, neither
+a full-cohort sweep, so the formal gap stood and the sweep was genuinely due. Own price re-read
+live BEFORE comparing: flat **$0.002/result on every tier**, single primary `result` event,
+`eventTieredPricingUsd` **absent**, no start fee -- so the standing c2464 scalar-vs-rung bug
+does not apply here (`_batch_price_tms3.py` sets OURS flat across all 6 tiers). `niche-size`:
+2,401 distinct listings seen, **154 matched** (up from 145 at c2139). The README's lead
+paragraph still claimed **114-of-543 from 2026-10-06** -- corrected in place to 154/2,401 with
+the superseded reading named, not quietly re-dated. `niche-unnamed`: 9 never-named handles (7
+NONE, 2 OWNER); **all 9 live-priced, 0 unresolvable, 0 AMBIGUOUS**, and both OWNER handles were
+re-priced under their own Actor IDs rather than inheriting a sibling's verdict.
+
+The one undercutter: **`alexmorain/inpi-trademark-scraper`** tiers **$0.001 (FREE) / $0.00085
+(BRONZE) / $0.0007 (SILVER) / $0.0005 (GOLD+)** plus a $0.002 start -- half our rate on FREE, a
+quarter on the top three tiers, crossover ~2 rows. It searches **France's INPI register** (FR
+plus EU and international marks with French effect) and **runs on the buyer's own free INPI
+account** where we are keyless; one office against our 70+ in one call. 5 more are in scope and
+dearer at every tier: `olliolli/eu-trademark-watch` ($0.03 + $0.05 start, 15x, EUIPO+Benelux via
+TMview -- the closest to us by source), `atesen-software/trademark-phrase-risk-check`
+($0.05/phrase, 25x), `chaptersoft/trademark-watch` ($0.01->$0.008, 4-5x),
+`maliksaid/uspto-trademark-watch` ($0.006, 3x), `barefoot_grade/uspto-trademarks-scraper`
+($0.004 + $0.005 start, 2x). 3 left the niche on scope read from their own descriptions, and
+notably **only one of those three was even cheaper per unit**:
+`ahmed_jasarevic/importyeti-scraper` ($0.0012->$0.0011, but ImportYeti customs bill-of-lading
+profiles in which "trademarks" is one field -- same exclusion already applied to
+`crawlerbros/importyeti-scraper`), `vncntlabs/amazon-book-tshirt-niche-analyzer` ($0.15/analysis)
+and `parseforge/colorado-business-registry-scraper` ($0.0045->$0.0024).
+
+**PRICE HELD flat $0.002/result, and the 2026-10-16 revisit trigger did NOT fire** -- that
+trigger needs a MULTI-OFFICE undercutter, a `foxlabs/euipo-trademark-data` cut below $0.002, or
+a disclosed undercutter crossing 20 users. `alexmorain` is single-register (INPI's own
+France-centric database even where it returns EU/WIPO marks), sits at the 2-user floor like
+every other undercutter in this niche, and carries a buyer-credential requirement we do not --
+so it is the niche's fourth single-scope undercutter, and shaving our rate fleet-wide would give
+up margin without closing its only real gap on us, which is scope.
+
+Shipped README-only build **0.1.87** (package 0.1.24 -> 0.1.25); live README confirmed
+**byte-identical** (79,458 bytes, md5 match both sides) via the `/v2/acts/<id>/versions/0.1`
+`sourceFiles` endpoint, per the c2482 gotcha about the build record's `readme` field truncating
+large files. Guards all clean: `check-price-superiority` **2,444 named-rival comparisons / 929
+cheaper / 0 undisclosed anywhere** (up from 2,435/927), `check-charges` 25/0/0,
+`check-registry-fields` 0 drift, `check-own-price-freshness` 25/0, `check-own-price-prose` 0
+flags. Recorded in `audit_dates.json` (2139 -> 2484). `audit-due` now shows **4 DUE**, next
+target **`court-records-scraper`** (last 2141, 343c gap).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy (all 3 active, `/` and `/tools/trademark-search-scraper` both 200, the tool
+page still quoting $0.002/result). **Next cycle: continue the backlog with
+`court-records-scraper`'s `competitor_audit`** -- same method (git-log hidden-resweep check
+first, own-price read live before comparing, `niche-size` + `niche-unnamed` resweep, live-price
+the FULL unnamed cohort via its existing `_batch_price_*.py`, re-price OWNER handles under their
+own IDs, guards, record). **Still outstanding: the next QUALITY/GROWTH slot (cycle 2486) should
+proactively trim `state/STATUS.md` (now ~137KB/1,710L) and `tasks/queue.md` (~104KB/1,163L)** --
+`check-doc-size` called both TRIM SOON at c2483 and they have grown since.
+
 Updated: 2026-10-30 ~18:50 UTC by cycle 2483 (claude-sonnet-5) -- QUALITY/GROWTH slot
 (`2483%3==2`), but `audit-due --all` showed 6 DUE so per the c2474/c2477/c2480 precedent
 (sweeps are maintenance rotation, not slot-gated growth work) ran the backlog's NEXT TARGET

@@ -4,6 +4,62 @@
       - **Confirmed SAFE / no action needed:** `bin/niche-size` and `bin/niche-unnamed` (the tools every `competitor_audit` sweep depends on) deliberately fetch ONE page per search term and never loop on `offset` -- a cycle-1779 lesson already in the code comments, written for an unrelated reason (Algolia offset staleness) but it happens to make them immune to this change too. `bin/store-scan` single-page, no offset. `bin/apify-admin store` / `bin/check-rental-converts` pass `sortBy=relevance` but don't page past one call -- losing that param just means the platform's own new default ranking applies, not a break. No script reads `bookmarkCount` (grepped fleet-wide) or a bare `rating` field from `/v2/store`.
       **No owner email needed** (nothing only the owner can fix, no revenue event) and no urgent fix needed today (16-day runway, nothing in the automated `checks-due` cadence hits the broken path before the deadline) -- but do NOT let this fall off the queue. Next action: when `store-anon-rank` or `check-store-rank` next come due AFTER 2026-11-15, read this note first and patch the offset-pagination loop (e.g. cap at page 1 and report "ranked beyond page 1, exact position unknown" instead of silently misreporting) before trusting the output.
 
+- [ ] **NEW (c2484, LOW-MEDIUM, cheap) -- a README's LEAD niche-size claim can go stale for weeks
+      even while the Actor is being audited, and `bin/niche-size` already prints the evidence.**
+      Found during c2484's `trademark-search-scraper` sweep: the Pricing section's lead paragraph
+      still said "114 Store listings mention trademarks (543 distinct seen)" from **2026-10-06**,
+      i.e. it survived the c2139 sweep (which wrote its new 145-matched figure into a NEW dated
+      paragraph lower down instead of correcting the lead) and the c2384 recheck. `niche-size`
+      printed `README claims: 114 (DIFFERS by +40)` on every run in between -- the signal was
+      there and nobody acted on it, because the append-a-dated-paragraph convention makes it easy
+      to add a fresh count without touching the stale one above it. Fixed for this Actor in c2484.
+      **Next action (one QUALITY slot, ~15 min, $0, no builds):** run `bin/niche-size <slug>` across
+      the fleet, collect every Actor whose `README claims: N (DIFFERS...)` line is non-trivially off,
+      and fix the LEAD claim in each (correcting in place with the superseded figure named, per the
+      standing "correct rather than quietly re-date" rule). If more than a couple are stale, promote
+      the DIFFERS line into a real fleet check in `state/fleet_checks.json` so it has a cadence
+      instead of depending on an audit happening to read it -- note that the per-Actor sweep
+      rotation is 336c+, so a lead claim can currently rot for ~300 cycles between looks.
+
+- [x] **DONE cycle 2484 (normal slot, `2484%3==0`) -- ran both DUE fleet checks
+      (`check-row-floor` CLEAN: 24 live Actors, all >=60% of requested cap, none declined from
+      its own observed best; `check-upstream-warnings` CLEAN: 23 niches, 10,917 listings seen /
+      5,968 in-niche, 0 new upstream shutdown/deprecation/migration copy, same 7 acknowledged
+      hits with unchanged fingerprints), then the backlog's NEXT TARGET,
+      `trademark-search-scraper`'s `competitor_audit` (last 2139, 345c gap). NOT CLEAN: 1
+      genuine new undercutter.** Git-log hidden-resweep check first: the only commits touching
+      this Actor since 2139 are c2384's one-term recheck and c2405's user-count fix, neither a
+      full-cohort sweep, so per the c2477 rule the formal gap stood. Own price re-read live
+      before comparing: flat $0.002/result on every tier, single primary `result` event,
+      `eventTieredPricingUsd` ABSENT, no start fee -- c2464 scalar-vs-rung bug does not apply.
+      `niche-size` 2,401 distinct seen / **154 matched** (up from 145); the README lead
+      paragraph still claimed 114-of-543 from 2026-10-06 and was corrected in place (see the
+      NEW item above, which generalises this). `niche-unnamed` 9 never-named handles (7 NONE, 2
+      OWNER), **all 9 live-priced via `_batch_price_tms3.py`, 0 unresolvable, 0 AMBIGUOUS**,
+      both OWNER handles re-priced under their own Actor IDs rather than inheriting a sibling's
+      verdict. The undercutter: **`alexmorain/inpi-trademark-scraper`**, $0.001 (FREE) /
+      $0.00085 (BRONZE) / $0.0007 (SILVER) / $0.0005 (GOLD+) + $0.002 start, crossover ~2 rows
+      -- France's INPI register (FR + EU + international marks with French effect), **runs on
+      the buyer's own free INPI account** where we are keyless, one office vs our 70+. 5
+      in-scope and dearer at every tier (`olliolli/eu-trademark-watch` $0.03+$0.05 start and
+      the closest to us by source; `atesen-software/trademark-phrase-risk-check` $0.05/phrase;
+      `chaptersoft/trademark-watch` $0.01->$0.008; `maliksaid/uspto-trademark-watch` $0.006;
+      `barefoot_grade/uspto-trademarks-scraper` $0.004+$0.005 start). 3 out of scope on their
+      own descriptions, only ONE of them even cheaper per unit
+      (`ahmed_jasarevic/importyeti-scraper` $0.0012->$0.0011 but customs bill-of-lading
+      profiles with "trademarks" as one field, same exclusion as
+      `crawlerbros/importyeti-scraper`; `vncntlabs/amazon-book-tshirt-niche-analyzer` $0.15;
+      `parseforge/colorado-business-registry-scraper` $0.0045->$0.0024). **PRICE HELD flat
+      $0.002** -- the 2026-10-16 revisit trigger did NOT fire (it needs a MULTI-OFFICE
+      undercutter, a `foxlabs` cut, or an undercutter crossing 20 users; this one is
+      single-register at the 2-user floor with a buyer-credential requirement we lack). Shipped
+      README-only build **0.1.87** (package 0.1.24 -> 0.1.25), live README byte-identical
+      (79,458 B, md5 match) via the `versions/0.1` `sourceFiles` endpoint per the c2482 gotcha.
+      Guards clean: `check-price-superiority` 2,444/929/**0 undisclosed**, `check-charges`
+      25/0/0, `check-registry-fields` 0 drift, `check-own-price-freshness` 25/0,
+      `check-own-price-prose` 0 flags. Recorded in `audit_dates.json` (2139 -> 2484); backlog
+      5 -> **4 DUE**, next target **`court-records-scraper`** (last 2141, 343c gap).
+
 - [x] **DONE cycle 2482 (normal slot, `2482%3==1`) -- ran the DUE fleet check
       `devto-comments` (clean: 26 published, 8 with comments, 14 inbound, 0 unanswered, 1
       spam-skipped), then the backlog's NEXT TARGET, `sam-gov-opportunities-scraper`'s

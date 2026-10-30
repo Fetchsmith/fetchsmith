@@ -108,7 +108,7 @@ Apify's platform webhooks are configured separately per Task/Actor via the Conso
 ## Pricing
 `result` — charged per returned trademark record, from $0.002/result. The run start is free, and watch-mode baseline runs return and charge nothing.
 
-**Verified live 2026-10-06.** A 20-term Store sweep finds that 114 Store listings mention trademarks somewhere in their copy (543 distinct listings seen across the 20 queries); **89** of those are genuinely trademark products (the rest are unrelated scrapers — ZipRecruiter, Redfin, ImportYeti, TripAdvisor and the like — whose descriptions merely carry "all trademarks are the property of their owners" boilerplate). The in-effect price was pulled live for every one of the 89 — not just the leader, and not only the ones that happen to search the same register we do. Both figures grew on the 2026-10-06 re-sweep (from 108 mentions / 84 real trademark products on 2026-10-04); the earlier counts stood in this section until then and are corrected here rather than quietly re-dated. Previous re-checks corrected three statements (`parseforge`'s dearest-per-row superlative, `sian.agency`'s tier breakdown, and `automation-lab`'s FREE rate), added three multi-office listings that had never been named, and pinned the exact filed price changes at `jungle_synthesizer/euipo-trademark-scraper` and both `dev00` listings.
+**Niche size verified live 2026-10-30; the per-listing prices in this paragraph verified live 2026-10-06.** The same 20-term Store sweep now sees **2,401** distinct listings and **154** that mention trademarks somewhere in their copy, up from 145 on 2026-10-23 and from the 114-of-543 reading this paragraph carried from 2026-10-06 to 2026-10-30; the older figures are corrected here rather than quietly re-dated, and the sweeps dated below record what each re-count found. Of the 2026-10-06 reading's 114, **89** were genuinely trademark products (the rest are unrelated scrapers — ZipRecruiter, Redfin, ImportYeti, TripAdvisor and the like — whose descriptions merely carry "all trademarks are the property of their owners" boilerplate). The in-effect price was pulled live for every one of the 89 — not just the leader, and not only the ones that happen to search the same register we do. Both figures grew on the 2026-10-06 re-sweep (from 108 mentions / 84 real trademark products on 2026-10-04); the earlier counts stood in this section until then and are corrected here rather than quietly re-dated. Previous re-checks corrected three statements (`parseforge`'s dearest-per-row superlative, `sian.agency`'s tier breakdown, and `automation-lab`'s FREE rate), added three multi-office listings that had never been named, and pinned the exact filed price changes at `jungle_synthesizer/euipo-trademark-scraper` and both `dev00` listings.
 
 **The multi-office listings**, which is the only group doing the same job as this Actor (all prices below verified live 2026-10-03). `scrapers_lat/tmview-global-trademarks-scraper` is the closest structural match at 77 offices and tiers $0.015 (FREE) down to $0.012 (DIAMOND), 6–7.5× ours, in exchange for goods-and-services wording, opposition and register-event detail we do not return. `dltik` (148 users, `dltik/euipo-trademarks-scraper`, the busiest TMview-based listing) charges $0.01/result plus a $0.00005 start — 5× ours — and bills separately for detail enrichment ($0.01/mark), applicant→company resolution ($0.005) and AI brand-clearance scoring ($0.02), three things it does that this Actor does not; its US sibling `dltik/uspto-trademarks-scraper` has the same shape against one register. `parseforge/tmview-trademarks-scraper` (27 users) is the second-busiest TMview-based listing and the dearest of the TMview-based listings per row: $0.021/result (FREE) down to $0.019 (DIAMOND) **plus** a tiered $0.02–$0.0178 start fee, so a 50-row search costs about $1.07 there against $0.10 here. (An earlier version of this sentence called it "the dearest way to buy this data per row" outright. That was wrong and is corrected: `nexgendata/euipo-esearch-trademarks` at $0.10/trademark and `nexgendata/trademark-patent-search-api` at $0.05–$0.15/record, both named below, are dearer per row than parseforge — the superlative only ever held within the TMview-based group.) `hanamira` (81 users, `hanamira/patent-trademark-search`) is the single biggest trademark listing on the Store but mixes patents and trademarks rather than searching a register, and charges $0.004/result plus start — double our rate. `zinin/trademark-multiregistry` spans several registries at $0.01 (FREE) to $0.008 plus a $0.005 start, 4–5× ours. `jdepablos/trademark-watch-tmview` prices watching rather than rows, and its scheduled increase took effect **2026-10-01**: $0.035 per watched term plus $0.10 per match found, up from $0.02 per term. Our `watchLabel` mode charges only the $0.002 row rate, and only on marks you have not already been given.
 
@@ -455,6 +455,59 @@ pays us for remains 70+ offices in one result set plus opposition windows, senio
 Vienna codes, territories and watch mode. The revisit conditions are restated accordingly: tier
 if a **multi-office** listing (not a single-register one) undercuts our $0.002 at any tier, if
 `foxlabs/euipo-trademark-data` cuts below $0.002, or if any undercutter here crosses 20 users.
+
+**Fresh full-cohort sweep finds one genuine new undercutter (all prices verified live 2026-10-30,
+cycle 2484).** The 20-term sweep above now matches 154 listings, of which this section already
+named 150 handles; the nine it had never named were pulled live — every charge event, every plan
+tier, none unresolvable. Seven of the nine have an owner who appears nowhere else in this section;
+the other two belong to owners named above but are **distinct Actor IDs**, so they were re-priced
+under their own IDs rather than inheriting a sibling's verdict. Our own price was re-read live
+before the comparison and is unchanged: one `result` event at a flat $0.002 on every plan tier, no
+start fee. One of the nine undercuts us:
+
+- `alexmorain/inpi-trademark-scraper` tiers **$0.001 (FREE), $0.00085 (BRONZE), $0.0007 (SILVER),
+  $0.0005 (GOLD and above)** per mark plus a **$0.002 start fee** — half our rate on FREE and a
+  quarter of it on the top three tiers. It searches France's INPI register (French marks plus the
+  EU and international marks with effect in France) through INPI's own API, and its headline
+  feature is paging past the 200-per-page limit that otherwise drops 30–45% of a result set. Two
+  things keep it a narrow-scope undercutter rather than a replacement: it reaches one office's
+  register where this Actor searches 70+ in a single call, and **it runs on the buyer's own free
+  INPI account** — a credential you have to register for and keep, where nothing here needs a key.
+  Its $0.002 start equals exactly one row of ours, so on FREE the two cost the same at about **2
+  rows** and it is cheaper above that; on GOLD and above its start is repaid inside the first 2
+  rows. It is the niche's first French-register undercutter.
+
+Five of the nine are in scope and dearer than us at every tier. `olliolli/eu-trademark-watch` is
+the closest to us by source — EUIPO and Benelux via TMview, with similar-name, phonetic and Nice-
+class comparison plus opposition deadlines — at **$0.03/result plus a $0.05 start**, 15× our row
+rate before the start fee; `atesen-software/trademark-phrase-risk-check` is $0.05 per phrase
+checked (bulk print-on-demand phrase screening, not a register search by applicant or class), 25×
+ours; `chaptersoft/trademark-watch` tiers $0.01 (FREE) to $0.008 (GOLD+) per USPTO filing or
+similar-mark alert, 4–5× ours; `maliksaid/uspto-trademark-watch` is a flat $0.006 per watched
+filing or opposition event, 3× ours; `barefoot_grade/uspto-trademarks-scraper` is $0.004 per mark
+plus a $0.005 start, 2× ours before the start fee, and says in its own copy that it is "text
+matching only; no legal clearance or similarity scoring".
+
+Three of the nine leave the niche on scope, and the scope read was taken from each listing's own
+description rather than its title — the standing cycle-1212/1277 lesson. Only one of the three is
+even cheaper per unit: `ahmed_jasarevic/importyeti-scraper` tiers $0.0012 (FREE/BRONZE) to $0.0011
+(GOLD+) per importer profile, below our row rate, but it sells ImportYeti US customs bill-of-lading
+data in which "trademarks" is one field inside a supplier profile — not a trademark register search,
+so it never reaches a row-rate comparison (the same exclusion already applied to
+`crawlerbros/importyeti-scraper` above). The other two are dearer as well as out of scope:
+`vncntlabs/amazon-book-tshirt-niche-analyzer` is $0.15 per analysis of Amazon KDP/merch demand, and
+`parseforge/colorado-business-registry-scraper` tiers $0.0045 (FREE) to $0.0024 (DIAMOND) per
+Colorado business-entity record.
+
+**The price decision is unchanged, and the 2026-10-16 revisit trigger did not fire.** That trigger
+says to tier our flat rate if a **multi-office** listing undercuts $0.002 at any tier, if
+`foxlabs/euipo-trademark-data` cuts below $0.002, or if any disclosed undercutter crosses 20 users.
+`alexmorain/inpi-trademark-scraper` is a single-register listing (INPI's own database, France-
+centric even where it returns EU and WIPO marks), it is at the 2-user floor like every other
+undercutter in this niche, and it requires a buyer credential we do not — so it is the fourth
+single-scope undercutter rather than the multi-office one the trigger is watching for, and shaving
+our rate fleet-wide would give up margin without closing its only real gap on us, which is scope.
+Holding flat **$0.002/result, no start fee**.
 
 **Cheaper than us once a run is big enough to amortise their start fee** (all four verified 2026-10-03). `automation-lab` (66 users as of 2026-10-25, re-verified live 2026-10-09, `automation-lab/euipo-tmview-trademarks-scraper`) charges a $0.005 start plus $0.0000355/record (FREE, down to $0.00001 on DIAMOND), so any run returning more than about 3 records costs less there — and it also offers application-date bounds and several search terms per run, which this Actor currently does not. `fetch_cat/uspto-trademarks-scraper` is the same shape against USPTO only: $0.005 start plus $0.00002875/record (FREE, to $0.000015 on GOLD+), crossing us at about 3 rows. `sian.agency/uspto-trademark-scraper` (30 users) undercuts us only on the upper plans: its record price tiers from $0.009 (FREE, 4.5× ours) through $0.003 (BRONZE) and $0.00225 (SILVER) down to $0.0015 on **GOLD, PLATINUM and DIAMOND** — an earlier version of this sentence said PLATINUM and DIAMOND only, which understated by one plan — and on those three tiers its $0.005 start is repaid at about 10 rows; on FREE, BRONZE or SILVER it costs more than we do at every volume, and its start fee is itself tiered at **$0.05 on FREE** (not the $0.005 this section used to quote flat, which is the BRONZE-and-above figure). It never leaves the US register, but it adds availability checks, class suggestions and a detail event. `jungle_synthesizer/euipo-trademark-scraper` matches our $0.002 on FREE, and its $0.10 start fee means it undercuts us only on large runs on its top tiers. Its filed price change took effect at **09:23 UTC on 2026-10-04**, and it moves against the buyer, not for them: FREE/BRONZE ($0.002), SILVER ($0.0018) and GOLD ($0.0016) are untouched, while PLATINUM went $0.0014 → $0.0016 and DIAMOND $0.0012 → $0.0016. Before that moment its DIAMOND rate of $0.0012 beat ours above roughly 125 rows; from it, the three top tiers are flattened onto one $0.0016 price and the volume at which it undercuts us moves out to about **250 rows**. Both schedules were read live from the listing on 2026-10-04 and are filed exactly as described here.
 
