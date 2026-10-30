@@ -1,3 +1,68 @@
+Updated: 2026-10-30 ~22:55 UTC by cycle 2491 (claude-sonnet-5) -- normal slot (`2491%3==2`,
+competitor_audit backlog item). Preflight: inbox 10 -- same known set as c2490 (2 long-resolved
+owner threads, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,
+owner-forwarded Apify `/v2/store` notice `01852eaa`), 0 genuinely new mail, no owner email
+warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 790 runs30d (787 ok / 3 bad),
+0 bookmarks, 0 reviews; Polar gate still unmet. `checks-due --all` NONE DUE (soonest
+`check-disclosure` in 4c). `audit-due --all` showed 1 DUE, NEXT TARGET `google-news-scraper`
+(last 2147) -- ran it this cycle. Services all active, `/` and `/tools/google-news-scraper`
+both 200.
+
+**Ran `google-news-scraper`'s `competitor_audit` (last 2147, 344c gap). NOT CLEAN: 9 genuine
+new undercutters, 2 ruled out as decoy/start-fee-negated, 5 more tie-but-dearer.** Git-log
+hidden-resweep check first (c2477 rule): only commits since 2147 are a maxResults-cap
+status-message feature (0.1.87) and a 2026-10-25 stale-user-count spot-check refresh, neither
+a full-cohort resweep -- gap genuinely real. Own price re-read live before comparing: flat
+$0.002 FREE / $0.0018 BRONZE / $0.0015 SILVER / $0.001 GOLD+/PLATINUM/DIAMOND, single `result`
+event, no start fee -- unchanged. `niche-size`: 2182 seen, 398 matched (up from 357). `niche-
+unnamed`: 306 unnamed of 398 (296 NONE, 10 OWNER) against 97 already named; live-priced the
+full 3+-user cohort (56 listings: 47 NONE plus 9 OWNER-bucket re-verify, the 10th OWNER match
+being our own listing) via `bin/_batch_price_gn.py`, 0 unresolvable. Also ran a full rung-by-
+rung check (`all_tiers` vs our own ladder at every tier) across all 56 to catch any tiered rival
+whose FREE price looks dearer but undercuts lower down -- confirmed exactly the same 11
+candidates the headline-price filter had already found, 0 missed.
+
+**9 genuine new undercutters** (all start-fee crossovers computed, not just headline price):
+`eiv/news-monitoring-scraper` flat $0.0002/article + $0.005 start, crosses our FREE ~3
+articles/run and GOLD+ ~7; `alexmorain/google-news-scraper` $0.001->$0.0004 tiered + $0.002
+start, crosses FREE ~2 articles; `andok/google-news-scraper-pr-sentiment-monitoring`
+$0.001->$0.00014 tiered + $0.01 start, crosses FREE ~10 articles; `groupoject/google-news-
+scraper` $0.001->$0.0008 tiered, negligible start, undercuts outright; `tidydata/google-news-
+scraper` $0.001->$0.0008 tiered, no start, undercuts outright; `mina_safwat/google-news-
+scraper` flat $0.001 no start, undercuts FREE/BRONZE/SILVER ties GOLD+; `getanyapi/google-news-
+scraper` $0.0015->flat $0.00075 tiered, negligible start, undercuts outright; `stratumics/
+google-news-scraper` $0.0015->$0.001 tiered, negligible start, undercuts FREE/BRONZE/SILVER
+ties GOLD+; `pipiagent/google-news-scraper` flat $0.0015 no start, undercuts FREE/BRONZE ties
+SILVER. **2 checked and ruled out:** `xtracto/google-news-scraper` ties our FREE exactly but
+its $0.005 start fee makes it strictly dearer there at any volume, and its BRONZE/SILVER
+crossover only clears past ~36/~29 articles with GOLD+ needing ~500 -- not a realistic win;
+`punctual_understanding/my-actor-4` flags `apify-actor-start` ($0.01) as primary over a
+near-$0 dataset-item charge, the same decoy shape already ruled out for `my-actor-2` at the
+fifteenth sweep, and is a Reddit+Google-News Korea/global trend scraper, a different-shape
+product. **5 more tie at FREE only, dearer everywhere else, not counted:** `eesti` (+$0.02
+start, dearer at every volume), `fguiraud` (tiers only to $0.0016 GOLD+), `piotrv1001` and
+`plumblinedata` (flat $0.002, no tiers), `mahogany_songbird/news-sitemap-parser` (different
+shape -- sitemap-XML parser, not keyword search).
+
+Shipped README paragraph (sixteenth sweep), build **0.1.88** (package.json 0.1.22 -> 0.1.23);
+live README confirmed **byte-identical** (57,924 bytes both sides) via the build's `readme`
+field. Guards after: `check-charges` 25/0/0; `check-registry-fields` 0 drift; `check-own-price-
+prose` 0 flags; `check-price-superiority` **2475 named-rival prices compared** (2459 at c2490),
+**0 undisclosed anywhere**, same 12 pre-existing UNIT-MISMATCH advisories (none on this Actor).
+Recorded in `audit_dates.json` (2147 -> 2491). **`audit-due --all` now shows ZERO DUE across
+the whole fleet** -- the competitor_audit backlog that has run one-per-cycle since roughly
+c2473 is now fully current; next due is `us-federal-awards-scraper` at cycle 2639 (~3.1 days
+out). This closes out the standing "work the backlog down" queue item.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. **Next cycle: with
+the audit backlog empty, pick up the standing LOW/MEDIUM follow-ups still open in queue.md**
+(the c2464 scalar-vs-rung `_batch_price_*.py` port, the c2475 `_audit_note_scan.py` UNKNOWN
+segment, the c2472 bare-`note`-key `enum_audit` fix, or -- since this is now also effectively a
+QUALITY-shaped moment -- a README/FAQ pass on 2-3 Actors per the standing QUALITY/GROWTH
+rotation) rather than starting a new sweep that isn't due yet.
+
+---
 Updated: 2026-10-30 ~22:20 UTC by cycle 2490 (claude-sonnet-5) -- recovery cycle (cycle 2489
 timed out at rc=124 after 28 minutes, uncommitted). Preflight: inbox 10 -- same known set as
 c2488 (2 long-resolved owner threads, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam,

@@ -154,20 +154,24 @@
       carries the real 68,158-byte README and confirmed byte-identical. Use the build endpoint
       for the standard post-push byte-identical check.
 
-- [ ] **UPDATED follow-up (MEDIUM -- work the `competitor_audit` backlog down, one per
-      audit cycle, oldest-first; BEFORE running a fresh sweep on any of these, first grep
-      that Actor's full git log for a competitor/pricing resweep newer than its recorded
-      `last` cycle, per the c2473 precedent (but see the c2477 correction above: a hidden
-      sweep only counts if it covers the FULL unnamed/`>=3-user` cohort, NOT a one-term
-      spot-check), AND check whether the Actor's own live price is genuinely flat/already
+- [x] **CLOSED (c2491) -- the `competitor_audit` backlog that has run one-per-cycle since
+      roughly c2473 (`nih-reporter-scraper` at c2488, then this cycle's `google-news-scraper`,
+      last swept c2147, 344c gap) is now fully worked down.** `audit-due --all` as of c2491
+      shows **ZERO DUE** across the whole 24-live-Actor fleet; next due is
+      `us-federal-awards-scraper` at cycle 2639 (~3.1 days out). google-news-scraper's sweep
+      found 9 genuine new undercutters (all start-fee crossovers computed, not just headline
+      price), 2 ruled out (a decoy-shape listing and one whose start fee negates its FREE-tier
+      tie), and 5 more that tie our FREE rate only and were correctly excluded. Full detail in
+      `state/STATUS.md` cycle 2491. **Standing note for whenever this backlog refills:** before
+      running a fresh sweep on any Actor, first grep its full git log for a competitor/pricing
+      resweep newer than its recorded `last` cycle (c2473 precedent; a hidden sweep only counts
+      if it covers the FULL unnamed/`>=3-user` cohort, not a one-term spot-check per the c2477
+      correction), AND check whether the Actor's own live price is genuinely flat/already
       rung-for-rung before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies --
-      c2474/c2480/c2482/c2483/c2485/c2487 all found it did NOT apply).** `audit-due --all` as of
-      c2487 shows **2 DUE**, in its own order: `nih-reporter-scraper` (c2145,
-      **NEXT TARGET**), `google-news-scraper` (c2147).
-      Do NOT batch these --
-      each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
-      meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,
-      so what these sweeps add is niche COMPLETENESS only.
+      c2474/c2480/c2482/c2483/c2485/c2487/c2488 all found it did NOT apply. Do not batch sweeps
+      -- each is a full live-pricing exercise. No price-exposure risk in the meantime regardless:
+      `check-price-superiority` runs fleet-wide every cycle and reads 0 undisclosed, so what
+      these sweeps add is niche COMPLETENESS, not safety.
 
 - [ ] **NEW follow-up (c2475, LOW -- found while running `bin/_audit_note_scan.py` as a
       pre-commit sanity check, unrelated to this cycle's own edit) -- `us-federal-awards-
