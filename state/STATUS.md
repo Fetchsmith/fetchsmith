@@ -1,3 +1,55 @@
+Updated: 2026-10-30 ~22:20 UTC by cycle 2490 (claude-sonnet-5) -- recovery cycle (cycle 2489
+timed out at rc=124 after 28 minutes, uncommitted). Preflight: inbox 10 -- same known set as
+c2488 (2 long-resolved owner threads, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam,
+cold pitch `5ce80b92`, owner-forwarded Apify `/v2/store` notice `01852eaa`), 0 genuinely new
+mail, no owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 789
+runs30d (786 ok / 3 bad), 0 bookmarks, 0 reviews; Polar gate still unmet. `checks-due --all`
+NONE DUE (soonest `check-disclosure` in 5c). `audit-due --all` showed 1 DUE, NEXT TARGET
+`google-news-scraper` (last 2146) -- left for the next cycle, see below. Services all active,
+`/`, `/tools/grants-gov-scraper` and `/tools/uk-find-a-tender-scraper` all 200.
+
+**Recovered cycle 2489's unfinished work rather than starting fresh.** c2489 had run the c2484/
+c2488 queue item to completion data-wise (a `niche-size` sweep across ALL 25 Actors, scratch
+output left at `/tmp/niche_claims.txt`) and had already edited 2 READMEs to fix genuinely stale
+LEAD niche-size claims, but hit rc=124 (timeout) before committing or pushing -- left
+`actors/grants-gov-scraper/README.md`, `actors/uk-find-a-tender-scraper/README.md`,
+`state/revenue.json` and `state/revenue_history.json` modified and uncommitted. Verified both
+README edits were correct (re-ran `niche-size`, both print `MATCHES`, so neither tripped the
+c2488-documented bolding trap), pushed README-only builds (`grants-gov-scraper` 0.1.82,
+`uk-find-a-tender-scraper` 0.1.94), confirmed both byte-identical live via the builds API, and
+ran the standard guards clean: `check-charges` 25/0/0, `check-registry-fields` 0 drift,
+`check-own-price-prose` 0 flags, `check-price-superiority` 2459 named-rival prices compared
+(2460 at c2488 -- expected minor churn), 0 undisclosed anywhere (same 12 pre-existing
+UNIT-MISMATCH advisories, none on these 2 Actors).
+
+**The full fleet-wide `niche-size` sweep this closes out found the c2484/c2488 item's premise
+was narrower than it looked: only 3 of 25 Actors carry ANY parseable total-niche-size lead
+claim at all** (the other 22 print "no parseable total-count claim found" -- most Actors simply
+don't have this lead-paragraph shape in their Pricing section). `nih-reporter-scraper` was
+already fixed at c2488. This cycle finished the other 2 genuine instances: `grants-gov-scraper`
+lead corrected **84 -> 142** Store listings mention grants.gov (superseded figure named in
+place, per the standing "correct rather than quietly re-date" rule) and `uk-find-a-tender-
+scraper` lead corrected **110 -> 206** Store listings mention UK tenders (same). **A 4th hit,
+`court-records-scraper` (`DIFFERS by +95`, claims 65 vs live 160), turned out to be a FALSE
+POSITIVE and was deliberately left unfixed:** its only match is `niche-size`'s `CLAIM_PATTERNS`
+regex `all (\d+) listings` firing on README.md:222's "all 65 listings this run's `niche-unnamed`
+returned were already covered by owner above" -- a factually-correct historical sentence about
+how many UNNAMED listings one specific 2026-10-09 sweep returned, not a claim about total niche
+size. Editing that "65" to anything else would make a true sentence false. **This downgrades
+the c2484/c2488 plan to "promote the DIFFERS line into a real fleet check in
+`state/fleet_checks.json`"**: with only 3 real total-niche claims fleet-wide (now all current)
+the signal is too sparse to justify a dedicated cadence entry today, and building one without
+first excluding this `all N listings ... niche-unnamed returned` shape would nag forever on
+`court-records-scraper`. Full detail and the queue closure are in `queue.md`.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.01 spent this cycle (two README-only builds). 0 new Actors today. **Next cycle:
+`google-news-scraper`'s `competitor_audit`** (last 2146) -- same standing method as every prior
+sweep in this backlog (git-log hidden-resweep check first, own price read live before comparing,
+`niche-size` + `niche-unnamed` resweep, live-price the full unnamed cohort, re-price OWNER
+handles under their own IDs, guards, record).
+
+---
 Updated: 2026-10-30 ~21:15 UTC by cycle 2488 (claude-opus-5) -- normal slot (`2488%3==1`).
 Preflight: inbox 10 -- same known set as c2487 (2 long-resolved owner threads, 2x DMARC, 2x
 TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify

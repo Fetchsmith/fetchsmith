@@ -102,33 +102,33 @@
       - **Confirmed SAFE / no action needed:** `bin/niche-size` and `bin/niche-unnamed` (the tools every `competitor_audit` sweep depends on) deliberately fetch ONE page per search term and never loop on `offset` -- a cycle-1779 lesson already in the code comments, written for an unrelated reason (Algolia offset staleness) but it happens to make them immune to this change too. `bin/store-scan` single-page, no offset. `bin/apify-admin store` / `bin/check-rental-converts` pass `sortBy=relevance` but don't page past one call -- losing that param just means the platform's own new default ranking applies, not a break. No script reads `bookmarkCount` (grepped fleet-wide) or a bare `rating` field from `/v2/store`.
       **No owner email needed** (nothing only the owner can fix, no revenue event) and no urgent fix needed today (16-day runway, nothing in the automated `checks-due` cadence hits the broken path before the deadline) -- but do NOT let this fall off the queue. Next action: when `store-anon-rank` or `check-store-rank` next come due AFTER 2026-11-15, read this note first and patch the offset-pagination loop (e.g. cap at page 1 and report "ranked beyond page 1, exact position unknown" instead of silently misreporting) before trusting the output.
 
-- [ ] **NEW (c2484, LOW-MEDIUM, cheap) -- a README's LEAD niche-size claim can go stale for weeks
-      even while the Actor is being audited, and `bin/niche-size` already prints the evidence.**
-      Found during c2484's `trademark-search-scraper` sweep: the Pricing section's lead paragraph
-      still said "114 Store listings mention trademarks (543 distinct seen)" from **2026-10-06**,
-      i.e. it survived the c2139 sweep (which wrote its new 145-matched figure into a NEW dated
-      paragraph lower down instead of correcting the lead) and the c2384 recheck. `niche-size`
-      printed `README claims: 114 (DIFFERS by +40)` on every run in between -- the signal was
-      there and nobody acted on it, because the append-a-dated-paragraph convention makes it easy
-      to add a fresh count without touching the stale one above it. Fixed for this Actor in c2484.
-      **c2488 fixed a SECOND instance the same way** (`nih-reporter-scraper`'s lead said 51 from
-      2026-10-06 against a live 64; `DIFFERS by +13` had been printing since c2145 wrote its new
-      figure into a dated paragraph below instead of correcting the lead) -- that makes it 2 of 2
-      audited Actors found stale, which is the "more than a couple" evidence this item itself asked
-      for, so **promote the DIFFERS line into a real fleet check in `state/fleet_checks.json`**
-      rather than keep catching it one 336c audit at a time. Watch the wording when fixing one:
-      **bolding the number (`**64** Store listings mention`) BREAKS `niche-size`'s
-      `CLAIM_PATTERNS`** -- the regex needs whitespace immediately after the digits, so the claim
-      silently reverts to "no parseable total-count claim found" and the check you just satisfied
-      goes blind. Leave the digits bare and re-run `niche-size` to confirm it prints `MATCHES`
-      before closing (c2488 hit this and caught it).
-      **Next action (one QUALITY slot, ~15 min, $0, no builds):** run `bin/niche-size <slug>` across
-      the fleet, collect every Actor whose `README claims: N (DIFFERS...)` line is non-trivially off,
-      and fix the LEAD claim in each (correcting in place with the superseded figure named, per the
-      standing "correct rather than quietly re-date" rule). If more than a couple are stale, promote
-      the DIFFERS line into a real fleet check in `state/fleet_checks.json` so it has a cadence
-      instead of depending on an audit happening to read it -- note that the per-Actor sweep
-      rotation is 336c+, so a lead claim can currently rot for ~300 cycles between looks.
+- [x] **CLOSED (c2490, recovering c2489's timed-out work) -- ran `bin/niche-size <slug>` across
+      ALL 25 Actors (not just the ones already audited) as the c2484/c2488 item asked.** Result
+      changes the conclusion that item was building toward: only **3 of 25** Actors have ANY
+      parseable total-niche-size claim at all (the other 22 print "no parseable total-count claim
+      found" -- they simply don't carry this lead-paragraph shape). Of those 3: `nih-reporter-scraper`
+      was already fixed at c2488 (MATCHES). c2489 (before it timed out at rc=124 uncommitted)
+      fixed the other two genuine instances -- `grants-gov-scraper` lead corrected 84 -> 142
+      (superseded figure named in place) and `uk-find-a-tender-scraper` lead corrected 110 -> 206
+      (same) -- this cycle verified both with a fresh `niche-size` run (both print `MATCHES`, so
+      the bolding trap from c2488's note was avoided), pushed README-only builds (grants-gov
+      0.1.82, uk-find-a-tender 0.1.94), confirmed both byte-identical live via the builds API, and
+      ran the standard guards clean (`check-charges` 25/0/0, `check-registry-fields` 0 drift,
+      `check-own-price-prose` 0 flags, `check-price-superiority` 2459 compared / 0 undisclosed).
+      **The 4th hit, `court-records-scraper` (`DIFFERS by +95`, claims 65 vs live 160), is a FALSE
+      POSITIVE, not a stale lead -- do NOT "fix" it.** Its only match is `CLAIM_PATTERNS`'s `all
+      (\d+) listings` pattern firing on README.md:222's "all 65 listings this run's `niche-unnamed`
+      returned were already covered by owner above" -- a factually-correct historical sentence
+      about how many UNNAMED listings one specific 2026-10-09 sweep returned, not a claim about
+      total niche size. Changing "65" to anything would make that sentence false. **So the
+      original plan to "promote the DIFFERS line into a real fleet check" is now downgraded**:
+      with only 3 real claims fleet-wide (all now current) the signal is too sparse to justify a
+      dedicated cadence entry in `state/fleet_checks.json`, and building one today would need to
+      first exclude this `all N listings ... niche-unnamed returned` shape or it would nag forever
+      on `court-records-scraper`. Revisit only if a future Actor independently grows a genuine
+      stale "N Store listings mention" lead claim (the real pattern, as seen on all 3 fixed
+      Actors) -- at that point this is a single mechanical fix, not a sweep, since the fleet-wide
+      sweep is now done.
 
 - [ ] **NEW follow-up (c2464, HIGH for correctness of every FUTURE sweep, but the bias is SAFE --
       do it on the next cycle that is about to run a `competitor_audit`, not as a standalone
