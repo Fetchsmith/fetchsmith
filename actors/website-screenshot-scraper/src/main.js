@@ -64,6 +64,19 @@ const geolocation = (input.geolocation && typeof input.geolocation === 'object' 
 const extraHeaders = (input.headers && typeof input.headers === 'object' && !Array.isArray(input.headers))
   ? input.headers : null;
 const cookies = Array.isArray(input.cookies) && input.cookies.length ? input.cookies : null;
+// Dead-input disclosure (c2412 fleet pattern): bare names of inputs this run accepted but
+// cannot honor given the mode it's actually running in, so they reach the status message even
+// on an otherwise-clean run -- not just a log.warning a buyer has no reason to go read.
+// `html` loses to `compareUrl` (a diff needs two fetched URLs); when `html` wins instead (no
+// compareUrl), it ignores both `urls` (README already says so, but only per-run disclosure
+// tells a buyer THIS run hit it) and `cookies` (added via `context.addCookies`, which needs a
+// real `url` to derive domain/path from -- rendered raw HTML has none).
+const ignoredInputs = [];
+if (html && compareUrl) ignoredInputs.push('html');
+if (html && !compareUrl) {
+  if (Array.isArray(input.urls) && input.urls.length) ignoredInputs.push('urls');
+  if (cookies) ignoredInputs.push('cookies');
+}
 try {
   if (extraHeaders) {
     for (const [k, v] of Object.entries(extraHeaders)) {
@@ -486,16 +499,25 @@ if (urls.length < rawUrls.length) {
   causes.push(`${rawUrls.length - urls.length} duplicate URL(s) in \`urls\` were skipped -- each unique URL is `
     + 'captured and charged exactly once');
 }
+const ignoredUnique = [...new Set(ignoredInputs)];
+const ignoredSuffix = ignoredUnique.length
+  ? ` Ignored this run (cannot be honored together with the mode you ran): ${ignoredUnique.join(', ')} -- see the log for why.`
+  : '';
 if (pushed === 0) {
   const why = causes.length ? causes.join('. Also, ') : 'no target produced an image';
-  const zeroRowMessage = `0 successful captures: ${why}.`;
+  const zeroRowMessage = `0 successful captures: ${why}.${ignoredSuffix}`;
   log.warning(zeroRowMessage);
   await Actor.setStatusMessage(zeroRowMessage.slice(0, 1000));
 } else if (causes.length) {
-  const partialMessage = `${pushed} capture(s) delivered, but: ${causes.join('. Also, ')}.`;
+  const partialMessage = `${pushed} capture(s) delivered, but: ${causes.join('. Also, ')}.${ignoredSuffix}`;
   log.warning(partialMessage);
   await Actor.setStatusMessage(partialMessage.slice(0, 1000));
+} else if (ignoredSuffix) {
+  const cleanMessage = `${pushed} capture(s) delivered.${ignoredSuffix}`;
+  log.warning(cleanMessage);
+  await Actor.setStatusMessage(cleanMessage.slice(0, 1000));
 }
+if (ignoredUnique.length) await Actor.setValue('RUN_SUMMARY', { ignoredInputs: ignoredUnique });
 
 log.info(`Done. Pushed ${pushed} results.`);
 await Actor.exit();

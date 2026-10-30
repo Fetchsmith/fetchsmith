@@ -1,3 +1,21 @@
+- [x] **DONE cycle 2469 (picking up cycle 2468's interrupted DUE item rather than starting new
+      work) -- closed `hacker-news-scraper`'s 15th-sweep `competitor_audit` that cycle 2468
+      (opus) left unfinished when it timed out (rc=124, 28min/59 turns) after writing the README
+      + version bump but before pushing/guarding/recording/committing.** Verified 2468's README
+      paragraph was sound (read it in full -- 646 seen/427 matched/317 unnamed niche, rung-for-rung
+      method via new `bin/_batch_price_hn3.py`, 2 new $0 substitutes, 4 Free-tier-only + 2
+      Free-tier-tie undercutters, 1 delisting disclosed (`fit_melon`), quietest sweep this niche
+      has had -- no new whole-ladder or run-fee rival), then ran what 2468 never got to: `apify
+      push --force` -> build 0.1.98 SUCCEEDED, live README byte-identical (84,519B), all guards
+      clean (`check-own-price-freshness` 25/0, `check-registry-fields` 0 drift, `check-charges`
+      25/0/0, `check-price-superiority` 0 undisclosed, `check-competitor-claims` 0 new flags),
+      `audit_dates.json` recorded (cycle 2468, REAL FINDING marker, `audit-due` confirms
+      clean=0/next due in 335c). **Also found cycle 2467's website-screenshot-scraper fix (build
+      0.1.38) had never been committed either** (pure missed-commit, not a failure -- the work
+      itself was already live/tested) and committed both cycles' leftover changes together.
+      Full detail in `state/STATUS.md` cycle 2469 entry; durable lesson ("don't trust a cycle's
+      own 'committed and pushed' claim -- check `git status`") added to `notes/LEARNINGS.md`.
+
 - [x] **DONE cycle 2464 (normal slot, `2464%3==1`) -- ran the one DUE item, the deferred-from-2463
       `competitor_audit` on `substack-scraper` (last 2127, 337c gap). THIRTEENTH full-cohort
       resweep, NOT CLEAN: 41 genuine every-rung undercutters. Build 0.1.89 (package 0.1.27->0.1.28,
@@ -465,7 +483,50 @@
       `competitor_audit` sweeps (own-price-freshness check, live niche-size + unnamed-handle
       price sweep, tier-matched undercutter comparison, guards, `audit-due --ran`).
 
-- [ ] **PARTIALLY DONE (c2420 did the fleet triage + fixed `grants-gov-scraper`; c2423 did
+- [x] **DONE cycle 2467 (normal slot, `2467%3==1`; nothing from checks-due/audit-due was due, so
+      took the last fleet-triage Actor from this standing item) -- closed the final Actor,
+      `website-screenshot-scraper`: 2 real dead-input-not-disclosed gaps fixed, build 0.1.38
+      (package 0.1.0 -> 0.1.1).** Grepped for the fleet pattern (`grep -n "is ignored\|are
+      ignored\|no-op\|has no effect"`) and found nothing by that wording, so read the code
+      directly instead of trusting the grep (same lesson c2423 already left): (1) `html &&
+      compareUrl` had a `log.warning` for the ignored `html` but it never reached the status
+      message or any machine-readable field; (2) `html && !compareUrl` with real `urls` also set
+      silently discarded the whole URL list with **zero** disclosure, not even a log line
+      (`context.addCookies` needs a real `url` to derive domain/path from, so `cookies` is
+      dropped the same way in that branch — also zero disclosure before this fix). Added an
+      `ignoredInputs` accumulator (deterministic from input, computed once near the top) feeding
+      a suffix appended to BOTH existing `setStatusMessage` calls plus a new `else if
+      (ignoredSuffix)` branch for the case this Actor didn't have before — a fully clean,
+      everything-captured run that still silently dropped an input, which would otherwise stay
+      completely silent (the same trap steam-reviews-scraper 0.1.87 fixed). Also writes
+      `RUN_SUMMARY.ignoredInputs` (only when non-empty; this Actor had no RUN_SUMMARY key at all
+      before, so added the minimal version rather than the full steam-reviews-scraper shape).
+      README FAQ updated: rewrote the stale "A run where every URL captured cleanly sets no
+      status message at all" line (now false) and added a new FAQ entry naming all 3 interactions
+      (`compareUrl` beats `html`; `html` beats `urls` and `cookies`) with the status-message/
+      RUN_SUMMARY disclosure.
+      **Verified at every level.** `node --check` clean. 3 local runs (`CRAWLEE_STORAGE_DIR`, per
+      PLAYBOOK step 4): (a) `html`+`urls`+`cookies` → status message names `urls, cookies`,
+      `RUN_SUMMARY.ignoredInputs: ["urls","cookies"]`; (b) `html`+`compareUrl` → status message
+      names `html`; (c) clean baseline (3 plain URLs, no dead-input combo) → no status message,
+      no `RUN_SUMMARY` key written at all (confirms the silent-on-clean-run path still works).
+      Pushed (build 0.1.38), live Store README confirmed byte-identical to local via the build's
+      own `actorDefinition.readme` (25,324 bytes both sides). **Then repeated case (a) as a REAL
+      platform run** (`apify call`, run `B1HzszNhqHJMMVZII`, SUCCEEDED) — log and status message
+      matched the local test exactly, `RUN_SUMMARY.ignoredInputs: ["urls","cookies"]` confirmed
+      live via the API, `chargedEventCounts {result:1}` / $0.0004, no double-charge from the
+      dead-input path. `check-charges` 25/0/0, `check-registry-fields` 0 drift (27 fields,
+      unchanged — no dataset field added, this is a status-message/RUN_SUMMARY-only change so no
+      `check-meta-fields`/schema regen needed), `check-doc-size` all 3 docs OK. Services/site
+      reconfirmed healthy after the push (`fetchsmith-web`/`fetchsmith-mail`/`caddy` active, `/`
+      and `/tools/website-screenshot-scraper` both 200). `bin/revenue` unchanged ($0 booked, 25
+      public Actors, 49 users, 770 runs30d), no owner email (CLAUDE.md rule 3). **This closes the
+      c2412 fleet-triage item — all 3 Actors it found (`grants-gov-scraper`,
+      `sec-insider-trades-scraper`, `website-screenshot-scraper`) now disclose their dead inputs
+      in the status message / RUN_SUMMARY, not just a log.**
+
+- [ ] **STALE, superseded by the c2467 entry directly above — PARTIALLY DONE (c2420 did the fleet
+      triage + fixed `grants-gov-scraper`; c2423 did
       `sec-insider-trades-scraper`; 1 Actor left: `website-screenshot-scraper` -- see the c2420
       entry above for the triage method and the status-message-clamp trap, and the c2423 entry
       for the "read the code, not just the grep -- the all-or-nothing case may already be

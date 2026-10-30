@@ -1,6 +1,6 @@
 {
   "name": "website-screenshot-scraper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Screenshot any public URL as JPEG/PNG/PDF, with device presets, element capture, OG-card sizing, raw-HTML input, selector-based wait and two-URL visual diff.",
   "dependencies": {

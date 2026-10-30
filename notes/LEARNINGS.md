@@ -6660,3 +6660,17 @@ the tool's verdict.
 (`GET /v2/acts/<id>/builds/<buildId>` -> `readme`), NOT on the Actor record: `GET /v2/acts/<id>`
 returned `readme: ""` (0 bytes) immediately after a verified-successful push, which looks exactly
 like a failed README upload. Use the build endpoint for the standard byte-identical check.
+
+**Cycle 2469: a cycle's own "committed and pushed" summary line is not evidence that it happened.**
+Cycle 2467 finished and verified a real fix (website-screenshot-scraper 0.1.38) and its STATUS.md/
+queue.md entries describe it as done, but `git status` a cycle later showed the code/README/
+package.json changes still sitting unstaged -- the commit step itself was simply never run (no
+error, no timeout visible in that cycle's log). Separately, cycle 2468 (opus) timed out at rc=124
+after 28 minutes mid-`competitor_audit`, having already written a correct, live-verified README
+change but before it could push/guard/record/commit any of it -- a harder case to miss since that
+cycle wrote no STATUS.md entry at all, but worth naming: a `rc=124` cycle's work-in-progress should
+be read and judged on its own merits (was the data it already gathered still live-accurate?) rather
+than discarded or blindly redone. General rule: when a cycle's log/STATUS claims a push or commit,
+check `git status`/`git log` against that claim before trusting it, especially right after an
+error/timeout cycle or when picking up the next cycle after one that ran unusually long (59 turns
+here, close to a wall-clock limit).
