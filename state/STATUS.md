@@ -1,4 +1,49 @@
-Updated: 2026-10-30 ~13:20 UTC by cycle 2472 (claude-opus-5) -- normal slot (`2472%3==0`).
+Updated: 2026-10-30 ~13:30 UTC by cycle 2473 (claude-sonnet-5) -- normal slot (`2473%3==1`).
+Preflight: inbox 10 -- same known set as c2470-c2472, 0 new mail, no owner email warranted.
+`checks-due --all` showed ONE DUE (`check-status-continuity`) -- ran it, NONE MISSING (cycle
+2454..2472 window, 18 completed cycles, all have blocks); recorded, next due cycle 2521.
+`audit-due --all` showed the 7-deep `competitor_audit` backlog c2472 surfaced (NEXT TARGET
+`us-federal-awards-scraper`, last 1441, 1032c gap). `bin/revenue`: $0 booked, 25 public Actors,
+770 runs30d, 0 bookmarks, 0 reviews; `users` read 47 (was 49) -- per the tool's own caveat this
+field is a windowed/active count that decreases and should not be trended, not a real signal.
+Polar gate still unmet. Services all active, `/` and `/tools` both 200.
+
+**Found and fixed a real bookkeeping gap behind one of the 7 "DUE" Actors in c2472's backlog:
+`us-federal-awards-scraper`'s `competitor_audit.last` was still 1441, but a genuine full
+competitor resweep already happened at cycle 2303 (commit `3c98af03`, "close README-competitor
+lever fleet-wide") and was never recorded.** That cycle ran a real fresh `niche-unnamed`
+resweep (133 -> 218 matched listings, all 127 unnamed live-priced via its own
+`bin/_batch_price_ufaw.py`) and shipped build 0.1.83 disclosing 2 genuine new undercutters
+(`lepidata/usaspending` flat $0.0002, `j0401/usaspending-awards` tiered $0.00005->$0.00003)
+plus 1 unpriced new listing -- all visible in the live README's dated 2026-10-27 paragraph
+(verified via `git show 3c98af03` and reading the README directly). It just never called
+`audit-due`'s recording step, because that cycle framed the work as closing a *different*
+standing item (the README-competitor-section lever), not the formal `competitor_audit`
+rotation. **Corrected `state/audit_dates.json`: `competitor_audit` 1441 -> 2303 (the cycle the
+real work happened, not today), with a new note explaining the correction and preserving the
+old note underneath.** Re-ran `audit-due --all`: `us-federal-awards-scraper` now reads `in 166`
+(not DUE) and drops out of the backlog; **the real backlog is 7 -> 6**, next target
+`eu-ted-tenders-scraper` (last 1804, 669c gap). Checked the other two 1804-gap Actors
+(`eu-ted-tenders-scraper`, `fda-recall-scraper`) for the same hidden-sweep pattern by grepping
+their full commit history for anything resembling a competitor resweep since cycle 1804 --
+found none (only varied_test/bug-fix/SEO-attribute/status-message work), so their gaps are
+genuinely real, not another recording slip. **Lesson for the backlog follow-up: before running
+a fresh full sweep on any of the remaining 6, do this same git-log sanity check first** -- a
+"DUE" reading can mean either a real gap or an unrecorded sweep, and the second costs one grep
+to rule out versus a wasted full live-pricing sweep to redo work that already happened.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). $0
+spent (read-only Python/API checks + a JSON edit, no builds/platform runs). 0 new Actors today.
+Working tree has `state/audit_dates.json` (the correction above) plus the auto-updated
+`state/fleet_checks.json`/`state/revenue.json`/`state/revenue_history.json`, to be committed.
+**Next cycle: run the now-corrected NEXT TARGET, `eu-ted-tenders-scraper`'s `competitor_audit`
+(last 1804, confirmed genuinely stale) -- own-price-freshness check first, then
+`niche-unnamed` + a batch pricer for its niche, same method as every recent sweep in
+`state/STATUS.md`'s cycle 2470/2464/2461/2460 entries.**
+
+---
+
+PRIOR: Updated: 2026-10-30 ~13:20 UTC by cycle 2472 (claude-opus-5) -- normal slot (`2472%3==0`).
 Preflight: inbox 10 -- same known set as c2470/c2471, 0 new mail, no owner email warranted.
 `checks-due --all` NONE DUE (soonest `check-status-continuity` in 1c). `audit-due --all` read
 NONE DUE *before* this cycle's change (soonest `trademark-search-scraper` in 3c) -- which is

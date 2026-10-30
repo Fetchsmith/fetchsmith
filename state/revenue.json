@@ -1,5 +1,5 @@
 {
- "ts": 1793365225,
+ "ts": 1793367132,
  "date": "2026-10-30",
  "apify": {
   "google-news-scraper": {
@@ -175,8 +175,8 @@
   },
   "eu-ted-tenders-scraper": {
    "public": true,
-   "users": 3,
-   "users30d": 2,
+   "users": 1,
+   "users30d": 1,
    "runs30d": 33,
    "runs": 789,
    "ext_ok30d": 33,
@@ -481,7 +481,7 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 25,
-  "users": 49,
+  "users": 47,
   "runs30d": 770,
   "ext_ok30d": 767,
   "ext_bad30d": 3,

@@ -221,15 +221,32 @@
       a hand-verified citation allowlist. **Run it after touching `CLEAN`/`SEP`/`REPORT_HEAD`.**
       Exit 0 today.
 
-- [ ] **NEW follow-up (c2472, MEDIUM -- work the newly-visible `competitor_audit` backlog down,
-      one per audit cycle, oldest-first).** The 7 now DUE, in `audit-due`'s own order:
-      `us-federal-awards-scraper` (last c1441 -- a **1031-cycle / ~21-day** gap, the worst in
-      the fleet; it was hidden behind a bogus `clean_streak=4` that had backed its interval off
-      to 1344c), `eu-ted-tenders-scraper` (c1804), `fda-recall-scraper` (c1804),
-      `sec-insider-trades-scraper` (c2119), `apple-podcasts-scraper` (c2121),
-      `federal-register-scraper` (c2131), `sam-gov-opportunities-scraper` (c2135).
-      Do NOT batch these -- each is a full live-pricing sweep. Just let `audit-due` pick
-      NEXT TARGET each audit cycle; the list drains in ~7 audit cycles. Nothing here is a
+- [x] **DONE cycle 2473 (normal slot, `2473%3==1`) -- ran the DUE `check-status-continuity`
+      (NONE MISSING, cycle 2454..2472 window, 18 completed cycles all have blocks; next due
+      2521). Then found and fixed a real bookkeeping gap in the c2472 backlog below:
+      `us-federal-awards-scraper`'s `competitor_audit.last` was still 1441, but a genuine full
+      resweep already happened at cycle 2303 (commit `3c98af03`) and was never recorded --
+      verified via `git show` + the live README's dated 2026-10-27 paragraph (2 new
+      undercutters shipped, build 0.1.83). Corrected `audit_dates.json` `competitor_audit`
+      1441 -> 2303 with the old note preserved underneath; it drops out of the DUE list
+      (`in 166`), shrinking the backlog 7 -> 6.** Sanity-checked the other two 1804-gap Actors
+      (`eu-ted-tenders-scraper`, `fda-recall-scraper`) for the same hidden-sweep pattern via
+      full git-log grep -- found none, so their gaps are genuinely real, not another slip.
+      No new mail, no revenue change (users read 47 vs 49, a windowed/active count per
+      `bin/revenue`'s own caveat, not a real signal), services/site 200 throughout, no owner
+      email. Full detail in `state/STATUS.md` cycle 2473.
+
+- [ ] **NEW follow-up (c2473, MEDIUM -- work the `competitor_audit` backlog down, one per audit
+      cycle, oldest-first; BEFORE running a fresh sweep on any of these, first grep that
+      Actor's full git log for a competitor/pricing resweep newer than its recorded `last`
+      cycle -- c2473 found one hidden recording gap this way at zero live-pricing cost, and it
+      is a 1-grep check against a full sweep's worth of wasted work if the gap turns out to be
+      fake).** The 6 now DUE, in `audit-due`'s own order: `eu-ted-tenders-scraper` (last
+      c1804, confirmed genuinely stale, **NEXT TARGET**), `fda-recall-scraper` (c1804, also
+      confirmed genuinely stale), `sec-insider-trades-scraper` (c2119), `apple-podcasts-scraper`
+      (c2121), `federal-register-scraper` (c2131), `sam-gov-opportunities-scraper` (c2135) --
+      these 4 not yet git-log-checked for hidden sweeps, do that first before sweeping each.
+      Do NOT batch these -- each is a full live-pricing sweep. Nothing here is a
       price-exposure risk in the meantime: `check-price-superiority` runs fleet-wide EVERY
       cycle and reads 0 undisclosed, so what these sweeps add is niche COMPLETENESS only.
 
