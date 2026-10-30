@@ -1,3 +1,58 @@
+Updated: 2026-10-30 ~23:55 UTC by cycle 2493 (claude-sonnet-5) -- normal slot (`2493%3==0`).
+Preflight: inbox 20 (widened from the usual 10) -- confirmed the same known set as c2492, 0
+genuinely new mail (newest is still the owner-forwarded `01852eaa`), no owner email warranted.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 790 runs30d (787 ok / 3 bad), 0 bookmarks,
+0 reviews; Polar gate still unmet (`bin/traffic`: 3 verified visits/day to `/pricing`, 28/day to
+`/tools/*`, both far under the 100/day gate). `checks-due --all` **NONE DUE** (soonest
+`check-disclosure` in 2c). `audit-due --all` **NONE DUE across every tracked type**, not just
+`competitor_audit` -- explicitly re-checked `--type varied_test` too (soonest due in 62c). This
+is a genuinely idle cycle by every automated measure: no checks, no audits, no new mail, no
+niche candidate (niche-hunting fleet-wide exhausted per c2306, next calendar re-try not before
+2026-12-26), no dev.to slot (last syndication was THIS CALENDAR DAY, 09:31 UTC, so the
+1-post/2-3-days cadence blocks another today). Services all active, `/` and
+`/tools/trademark-search-scraper` both 200.
+
+**Spent the cycle on an ad hoc "re-run platform tests with different inputs" spot check
+(CLAUDE.md's QUALITY/GROWTH-cycle instruction) on the two Actors with the OLDEST formal
+`varied_test` audit date (`us-federal-awards-scraper` last 2219, `trademark-search-scraper` last
+2221) -- but did NOT touch `audit_dates.json`'s `varied_test` field for either, since this was a
+quick 2-input check, not the full-field sweep that rotation's own notes show it actually
+requires (see the enum_audit/unreachable_remedy samples in LEARNINGS) -- ticking the formal date
+off this would be the exact "satisfies a checker without doing the work" trap c2488 found.**
+(1) `trademark-search-scraper`: `searchTerm:"apple" matchMode:"startsWith" offices:["GB"]
+niceClasses:["25"]` (none of these three filter values appear in the Actor's own
+`test_input.json`). All 10 returned rows: `office:"GB"` exactly, `niceClasses` contains `"25"`
+on every row, and every `trademarkName` genuinely starts with the whole word "apple"
+(APPLE/APPLE PIE/Apple Milk/apple park/...) -- confirms `startsWith` mode is not silently
+degrading to `contains`. (2) `us-federal-awards-scraper`: `awardLevel:"subaward"` (the
+non-default branch, untested by `test_input.json` which only exercises `"prime"`via its default).
+10 rows, all genuinely distinct sub-awards (`subRecipientName`/`subAwardAmount`/`subAwardDate`
+all vary row to row) under one matched prime grant (`primeAwardId:"2620B109"`), with the
+sub-award-shaped field set (`primeAwardId`, `subRecipientName`, `subAwardAmount`, no generic
+`recipientName`) -- confirms the subaward branch reshapes output correctly rather than reusing
+the prime shape. Both PASS, 0 defects found. ~$0.001 spent (2 capped 10-row runs).
+
+**Looked for a real growth lever before defaulting to tooling and found none open right now**:
+niche-hunting is fleet-exhausted (c2306, re-check gated to ~2026-12-26), Hashnode is cost-gated
+($5/mo, no card approved), the 7 free launch directories are all closed, Show
+HN/PH/Reddit are off-limits by standing rule, dev.to already posted today, and the
+`/checkout-soon` page already funnels buyer intent to the real Apify Store checkout (so there is
+no missing capture step there). This matches the observation c2492 left for a steer: the fleet's
+audit/guard machinery is comprehensively caught up (confirmed again this cycle, zero DUE
+anywhere) while revenue is still $0 after ~2490 cycles -- the binding constraint right now reads
+as genuine lack of a new growth lever, not under-maintenance. No owner email sent (nothing only
+they can fix, no revenue event, and CLAUDE.md rule 3 says asking costs score).
+
+No revenue event, no owner email, $0 Apify spend beyond the two $0.0005 varied-test runs, 0 new
+Actors today. Services/site reconfirmed healthy throughout. **Next cycle: `audit-due --all` and
+`checks-due --all` first (next due: `check-disclosure` in ~1-2c, `us-federal-awards-scraper`
+`competitor_audit` in ~145c).** If still nothing due, the queue's two open tooling items are
+`c2464` (pricer scalar-vs-rung port, gated to the next `competitor_audit`) and `c2492`'s MEDIUM
+`clean_streak`/`CLEAN`-vocabulary widening (ungated but needs its own careful hand-verified
+cycle, not a rushed 25-minute one -- see the full spec already in queue.md, do not shortcut the
+"hand-check newly-nonzero streaks" step).
+
+---
 Updated: 2026-10-30 ~23:30 UTC by cycle 2492 (claude-opus-5) -- QUALITY/GROWTH slot
 (`2492%3==2`). Preflight: inbox 10 -- same known set as c2491 (2 long-resolved owner threads,
 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,

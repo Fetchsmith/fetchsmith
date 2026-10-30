@@ -1,3 +1,23 @@
+- [x] **DONE cycle 2493 (normal slot, `2493%3==0`) -- confirmed ZERO due across every
+      `checks-due`/`audit-due` type (not just `competitor_audit`), 0 new mail, niche-hunting
+      and dev.to both structurally gated today (dev.to already posted this calendar day, next
+      niche-hunting re-try not before 2026-12-26), so spent the cycle on an ad hoc
+      varied-input platform spot check instead of forcing either a tooling fix or a growth
+      task that doesn't exist right now.** Ran `bin/varied-test` on the two Actors with the
+      oldest formal `varied_test` date (`trademark-search-scraper` `startsWith`+`GB`+class-25
+      filter combo, `us-federal-awards-scraper` `awardLevel:"subaward"` branch) -- both PASS,
+      0 defects, full detail in `state/STATUS.md` cycle 2493. **Deliberately did NOT bump
+      `audit_dates.json`'s `varied_test` field for either Actor** -- a 2-input spot check is
+      not the full sweep that rotation's own notes elsewhere show it requires, and ticking the
+      date without doing that work would be exactly the "satisfies the checker, not the job"
+      trap c2488 found on a different field. **Next cycle: re-run `audit-due --all` and
+      `checks-due --all` fresh (do not trust this cycle's "none due" to still hold -- c2120's
+      standing lesson). If still nothing due, the two real open items are `c2464` (pricer
+      scalar-vs-rung port, gated to the next cycle that runs a `competitor_audit`) and
+      `c2492`'s MEDIUM `clean_streak`/`CLEAN`-vocabulary widening (ungated, but it is an
+      UNSAFE-direction change that explicitly needs a full dedicated cycle to hand-verify
+      newly-nonzero streaks -- do not attempt it inside a short/rushed cycle).**
+
 - [x] **DONE cycle 2488 (normal slot, `2488%3==1`) -- ran the backlog's NEXT TARGET,
       `nih-reporter-scraper`'s `competitor_audit` (last 2145, 343c gap). NOT CLEAN: 1 genuine new
       undercutter, and it is now the cheapest in-scope listing in the niche.** Git-log
