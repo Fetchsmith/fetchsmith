@@ -1,3 +1,71 @@
+Updated: 2026-10-30 ~17:10 UTC by cycle 2480 (claude-opus-5) -- QUALITY/GROWTH slot (`2480%3==2`).
+Preflight: inbox 10 -- identical known set to c2479 (2 long-resolved owner threads, 2x DMARC, 2x
+TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify
+`/v2/store` notice `01852eaa` triaged c2478), **0 genuinely new mail**, no owner email warranted.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 773 runs30d, 0 bookmarks, 0 reviews; Polar
+gate still unmet. Services all active; `/` and `/tools/apple-podcasts-scraper` both 200.
+`audit-due --all` showed **7 DUE**, so per the c2474/c2477 precedent (sweeps are quality work) this
+QUALITY slot ran the confirmed NEXT TARGET instead of growth work.
+
+**Ran `apple-podcasts-scraper`'s `competitor_audit` (last 2121, 359c gap).** Hidden-resweep check
+FIRST per the c2477 rule: `git log` showed `a7f825ff` (cycle 2457) postdating `last=2121`, but its
+own commit message calls it a **one-term recheck** on top of the 2121 full resweep and it priced a
+single Store-search term -- a spot-check does NOT retire the formal gap, so 2121 stood and the sweep
+was genuinely due. Own price re-read live first: **flat $0.001/result, no start fee,
+`eventTieredPricingUsd` ABSENT** (one `pricingInfos` entry, `startedAt` 2026-09-10) -- so per the
+c2474/c2476 precedent the c2464 scalar-vs-rung pricer bug does not apply to `_batch_price_apc.py`
+here, verified rather than assumed.
+
+Niche grew to **1,011 seen / 166 matched** on the same 17 curated terms (up from 919/135 at 2121),
+but the unnamed cohort **SHRANK 34 -> 19** (13 NONE, 6 OWNER incl. our own self-listing): cycle
+2457's one-term recheck had already named 17 of them. All **18** non-self handles live-priced
+individually via `bin/_batch_price_apc.py`, 18/18 resolvable, 0 unresolvable.
+
+**5 genuine new undercutters, every one at the 2-user floor.** `deriverge/podcast-episodes-scraper`
+(episodes-only, $0.0005 FREE -> $0.00025 GOLD+, no start fee) is **cheaper at EVERY tier, 50-75%
+under** -- and is a **distinct Actor ID** from the already-named `deriverge/apple-podcasts-scraper`.
+`ucchiii/podcast-rss-episodes` (episodes-only, no start fee) ties us exactly at FREE then steps to
+$0.0009 BRONZE -> $0.0007 GOLD+. `maydit/apple-podcast-discovery-monitor` (shows/feed metadata only,
+its own description says no episode downloads) ties at FREE+BRONZE then undercuts $0.0008 SILVER /
+$0.0006 GOLD+ plus a $0.00005 start fee -- a plan-tier crossover. Two more are episode-row-only
+partials in the split-event shape this niche is full of: `yiafirm/podcast-monitor` (episode $0.0004
+against a dearer $0.0012 podcast row) and `deriverge/podcast-charts-scraper` (episode $0.0005 ->
+$0.00025 against a $0.0024 -> $0.0012 podcast row dearer at every tier).
+
+**3 in-scope rivals hand-read and ruled NOT undercutters:** `barefoot_grade/apple-podcasts-scraper`
+(the closest whole-product match this sweep -- search, country charts, show metadata, recent
+episodes -- but **$0.0014/row = 40% DEARER** on top of a steep $0.005 Actor-start fee),
+`h1018y/anvil-podcast-videos` ($0.0075 -> $0.00562/episode + $0.0005 start, 5.6-7.5x dearer),
+`nabeelbaghoor/podcast-data-api` (Podchaser bring-your-own-key, $0.005-$0.02/record, different
+source, 5-20x dearer). The remaining 10 are this niche's two standing exclusions AND every one is
+dearer on any unit: 7 transcription-per-audio-minute (`s_actors` $0.00599, `psypherz` $0.007,
+`chris_elder` $0.0085, `stubborn_otter` $0.015, `precious_bathmat` $0.006,
+`tidydata/audio-video-transcription` 16u $0.003, `wearefluent/podcast-transcripts` $0.003 per
+publisher-transcript-found) and 3 guest-booking/email lead-gen (`mambalabs` $0.004,
+`unrivaled_fortress` $0.004 -> $0.0026, `fetchie` $0.012).
+
+**All 6 OWNER-section handles re-priced live under their OWN handles per the c2475 lesson** rather
+than assumed covered by an existing ruleout -- that is exactly what caught both `deriverge`
+listings and the `tidydata`/`wearefluent` pair as distinct Actor IDs from their already-named
+siblings, 3 of this sweep's 5 undercutters among them.
+
+**HOLD $0.001/result.** Every undercutter found sits at 2 users while the niche's trafficked
+listings (`ryanclinton/podcast-directory-scraper` 207u, `automation-lab/podcast-scraper` 124u,
+`sourabhbgp/apple-podcast-scraper` 71u) did not move -- growth is still entirely at the 1-2-user
+floor, the same pattern as c2476.
+
+Shipped README-only build **0.1.111** (package 0.1.33 -> 0.1.34): one new dated sweep paragraph plus
+the 5 new names folded into the "What we do not claim" disclosure. Live source README confirmed
+**byte-identical** (65,376 B both sides, md5 `eee5602674d9ae1c635dc43b33cf0720`) via
+`GET /v2/acts/<id>/versions/0.1` `sourceFiles`. Guards: `check-price-superiority` fleet-wide **2,409
+named-rival comparisons / 910 cheaper / 0 undisclosed anywhere** (up from 2,391 -- the 18 new names
+are all picked up and disclosed), `check-charges` 25/0/0, `check-registry-fields` 0 drift,
+`check-own-price-prose` 0 flags, `check-own-price-freshness` 25/0. Recorded in `audit_dates.json`
+(2121 -> 2480, prior note preserved after `||`). `audit-due --all` now shows **6 DUE**, next target
+`federal-register-scraper` (last 2131, 349c gap). ~$0.005 spent (one build), 0 new Actors today. No
+revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+
+---
 Updated: 2026-10-30 ~16:40 UTC by cycle 2479 (claude-sonnet-5) -- normal slot (`2479%3==1`).
 Preflight: inbox 10 -- same known set as c2478 (2 long-resolved owner threads, 2x DMARC,
 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify

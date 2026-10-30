@@ -4,6 +4,42 @@
       - **Confirmed SAFE / no action needed:** `bin/niche-size` and `bin/niche-unnamed` (the tools every `competitor_audit` sweep depends on) deliberately fetch ONE page per search term and never loop on `offset` -- a cycle-1779 lesson already in the code comments, written for an unrelated reason (Algolia offset staleness) but it happens to make them immune to this change too. `bin/store-scan` single-page, no offset. `bin/apify-admin store` / `bin/check-rental-converts` pass `sortBy=relevance` but don't page past one call -- losing that param just means the platform's own new default ranking applies, not a break. No script reads `bookmarkCount` (grepped fleet-wide) or a bare `rating` field from `/v2/store`.
       **No owner email needed** (nothing only the owner can fix, no revenue event) and no urgent fix needed today (16-day runway, nothing in the automated `checks-due` cadence hits the broken path before the deadline) -- but do NOT let this fall off the queue. Next action: when `store-anon-rank` or `check-store-rank` next come due AFTER 2026-11-15, read this note first and patch the offset-pagination loop (e.g. cap at page 1 and report "ranked beyond page 1, exact position unknown" instead of silently misreporting) before trusting the output.
 
+- [x] **DONE cycle 2480 (QUALITY/GROWTH slot, `2480%3==2`; ran a sweep because `audit-due`
+      showed 7 DUE, per the c2474/c2477 precedent that sweeps count as quality work) -- ran the
+      confirmed NEXT TARGET, `apple-podcasts-scraper`'s `competitor_audit` (last 2121, 359c gap).**
+      Hidden-resweep check first per the c2477 rule: `a7f825ff` (cycle 2457) postdates `last=2121`
+      but is a **one-term recheck**, not a full-cohort resweep, so it does not retire the formal gap
+      -- sweep was genuinely due. Own price re-read live FIRST: flat **$0.001/result, no start fee,
+      `eventTieredPricingUsd` ABSENT** -> the c2464 scalar-vs-rung pricer bug does not apply here
+      (c2474/c2476 precedent), verified not assumed. Niche grew to **1,011 seen / 166 matched** (up
+      from 919/135) but the unnamed cohort **SHRANK 34 -> 19** because c2457's one-term recheck had
+      already named 17 of them; all **18** non-self handles live-priced via `bin/_batch_price_apc.py`
+      (18/18 resolvable). **5 new undercutters, all at the 2-user floor:**
+      `deriverge/podcast-episodes-scraper` (episodes-only, $0.0005 -> $0.00025, no start fee,
+      **cheaper at EVERY tier, 50-75% under**), `ucchiii/podcast-rss-episodes` (tie at FREE then
+      $0.0009 -> $0.0007), `maydit/apple-podcast-discovery-monitor` (tie FREE+BRONZE, undercuts
+      $0.0008 SILVER / $0.0006 GOLD+ + $0.00005 start -- plan-tier crossover), plus episode-row-only
+      partials `yiafirm/podcast-monitor` ($0.0004/episode) and `deriverge/podcast-charts-scraper`
+      ($0.0005 -> $0.00025/episode). **3 in-scope rivals hand-read and ruled NOT undercutters:**
+      `barefoot_grade/apple-podcasts-scraper` (closest whole-product match this sweep but $0.0014/row
+      = 40% dearer + $0.005 start fee), `h1018y/anvil-podcast-videos` (5.6-7.5x dearer),
+      `nabeelbaghoor/podcast-data-api` (Podchaser BYO-key, 5-20x dearer). Remaining 10 are the
+      standing transcription-per-audio-minute (7) and guest-booking/email lead-gen (3) exclusions,
+      every one dearer on any unit. **All 6 OWNER-section handles re-priced under their own handles
+      per the c2475 lesson** -- that is what caught both `deriverge` listings and the
+      `tidydata`/`wearefluent` pair as distinct Actor IDs from their already-named siblings (3 of the
+      5 undercutters). **HOLD $0.001** (every undercutter at 2u; trafficked listings `ryanclinton`
+      207u / `automation-lab` 124u / `sourabhbgp` 71u did not move -- growth still entirely at the
+      1-2-user floor). Shipped README-only build **0.1.111** (pkg 0.1.33 -> 0.1.34), live README
+      **byte-identical** (65,376 B, md5 `eee5602674d9ae1c635dc43b33cf0720`) via the
+      `/v2/acts/<id>/versions/0.1` sourceFiles endpoint. Guards clean: `check-price-superiority`
+      2409 compared / 910 cheaper / **0 undisclosed fleet-wide** (up from 2391), `check-charges`
+      25/0/0, `check-registry-fields` 0 drift, `check-own-price-prose` 0 flags,
+      `check-own-price-freshness` 25/0. Recorded in `audit_dates.json` (2121 -> 2480). Backlog
+      **7 -> 6 DUE**, next target `federal-register-scraper` (last 2131, 349c gap). ~$0.005 spent,
+      0 new Actors, no new mail, no revenue event, no owner email (CLAUDE.md rule 3). Full detail in
+      `state/STATUS.md` cycle 2480.
+
 - [x] **DONE cycle 2479 (normal slot, `2479%3==1`) -- finished the `ats-jobs-scraper`
       `competitor_audit` cycle 2477 left half-done (data gathered, pricing not started).
       Full >=3-user cohort (290 listings, up from 256 at 1805), live-priced via

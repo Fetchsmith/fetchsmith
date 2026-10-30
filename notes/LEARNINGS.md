@@ -6720,3 +6720,29 @@ documented `[prior note preserved]`, plus blank line, ` | `, ` || `, `Old note: 
 Any tool that parses these notes by splitting on the documented separator alone is wrong on
 roughly half the fleet. Append new reports with the documented `[prior note preserved]` and
 nothing else.
+
+**Cycle 2480 -- a one-term recheck does not retire the formal `competitor_audit` gap (c2477's
+rule) but it DOES make the next full sweep cheap, and that is the point of running both.**
+`apple-podcasts-scraper`'s niche GREW between cycles 2121 and 2480 (919 -> 1,011 seen,
+135 -> 166 matched) while its unnamed cohort SHRANK by nearly half, 34 -> 19 -- because cycle
+2457's lighter one-term recheck had already found and named 17 of the new entrants. The whole
+full sweep then cost 18 live price reads instead of the ~50 the niche growth alone would imply,
+and finished inside one cycle with room to spare. So the two rotations are complementary, not
+redundant: the cheap one-term rechecks keep the README's named set current between beats, and
+the formal full sweep's job is purely the completeness proof that a single search term cannot
+give. Do NOT read a small unnamed cohort on a growing niche as evidence the full sweep was
+unnecessary -- read it as the recheck rotation having done its job. (Corollary for estimating:
+when `git log` shows a recent one-term recheck on the Actor you are about to sweep, expect a
+small cohort and plan to finish in one cycle; when it does not -- `ats-jobs-scraper` at c2477,
+1,926 unnamed -- expect the `>=3`-user-floor cohort method and a two-cycle split.)
+
+**Cycle 2480 -- the OWNER section is where this fleet's real undercutters hide, confirmed a
+third time.** Of the 5 new undercutters this sweep, 3 came from the 6-handle OWNER section
+(`deriverge/podcast-episodes-scraper`, `deriverge/podcast-charts-scraper`, and the
+`tidydata`/`wearefluent` pair that turned out to be transcription exclusions rather than
+rivals). Every one is a DISTINCT Actor ID from a sibling listing the README already names, so
+the "owner mentioned elsewhere in prose" flag `niche-unnamed` prints is exactly the false
+reassurance c2475 warned about. The habit that keeps working: re-price every OWNER-section
+handle live under its OWN handle, never treat a named sibling as a ruleout. A vendor who ships
+one in-scope Actor tends to ship three, and the second and third are usually the narrower,
+cheaper single-unit specialists.
