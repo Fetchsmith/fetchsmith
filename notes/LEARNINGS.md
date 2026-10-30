@@ -6576,3 +6576,41 @@ Two things worth keeping:
    (same discipline as c2452). The bias is the safe direction: the tool's own docstring argues a
    misparse can only ever LENGTHEN an interval, and `check-price-superiority` watches prices
    fleet-wide every cycle regardless, so nothing is under-observed while it sits.
+
+## cycle 2462 -- "does this log.warning's fact reach setStatusMessage/RUN_SUMMARY" has a real false-positive ceiling, not just a tuning problem
+
+Built `bin/_proto_statusvis.py` for the c2426 follow-up (does a per-run FACT that is only
+`log.warning`'d ever reach `setStatusMessage`/`RUN_SUMMARY` -- the bug shape `unknownCourts` had
+before it was fixed). Naive identifier-matching between a warning call's interpolated/quoted names
+and the text of every `setStatusMessage`/`RUN_SUMMARY` call flagged 392 of 467 fleet-wide
+fact-bearing warnings on the first pass -- implausible, and reading a few by hand found two
+MECHANICAL gaps worth fixing: (a) a warning's fact can reach status only through a helper function
+the call text itself never interpolates (court-records' `unknownCourtsNote()`), and (b)
+`Actor.setValue('RUN_SUMMARY', runSummary)` passes a named `const` object built earlier, not an
+inline literal, so a regex anchored on the literal `{` right after the call finds nothing (or the
+wrong brace); and a plain object-literal key (`notFoundIds: ids,`) has no `${}` or quotes at all,
+so interpolation/quote-only scanning can't see it even once resolved. Fixing both (resolve one
+level of helper-function body; resolve a bare-identifier `setValue` argument back to its
+declaration; add a bare-identifier scan over the resolved status text) cut the flag count 467 ->
+298 -- genuine false positives, not noise.
+
+**But a THIRD class survived and is not fixable by better matching:** app-store-reviews-scraper's
+per-pair `filteredOut` (`scanned the maxReviewsPerApp limit... and ${filteredOut} of them were
+excluded`) never itself reaches status, yet the FACT CLASS does -- under a differently-named
+aggregate, `filteredOutPairs.length` (a list of `app/country` keys pushed under the same
+condition), which feeds a status branch much later in the file. No amount of identifier resolution
+bridges `filteredOut` to `filteredOutPairs` without understanding that one counts instances of the
+same condition the other lists keys for -- that is a semantic read, not a textual one. The c2423
+lesson ("read the code, not just the grep") is therefore not an occasional caveat for this check
+class, it is the actual bottleneck: expect roughly this same ceiling on any future attempt to fully
+automate it, and budget hand-reading time accordingly rather than trying to tune the script to 0
+false positives.
+
+**One real, confirmed gap this DID surface** (queued TOP PRIORITY, not fixed this cycle):
+apple-podcasts-scraper's `unknownDurationKept`/`rssItemsWithoutExplicit`/`unenrichedChartEntries`
+are genuinely log.warning-only -- `RUN_SUMMARY` is gated `if (dataType === 'episodes')`, so a
+`charts` run gets no RUN_SUMMARY block at all regardless. 298 candidates remain unreviewed in
+`state/triage/statusvis_c2462.txt`; most are expected to be legitimate per-item diagnostics (one
+failed id/app/feed inside a loop) rather than per-run facts, based on every false positive found
+this cycle being exactly that shape -- but this is a prior, not a proof, and should be re-verified
+by reading, not assumed, when a future cycle works through more of the list.

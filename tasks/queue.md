@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2461 (normal slot, `2461%3==1`) -- ran the one DUE item, the `competitor_audit`
+      on `remote-jobs-scraper` (last 1789, 672c gap; 2376 was only a 46-listing spot-check).
+      FIRST full-cohort pass since 1807/1424. NOT CLEAN: 33 genuine new every-tier undercutters
+      + 4 partial/run-fee finds. Build 0.1.89 (package 0.1.43 -> 0.1.44).**
+      Own price re-verified live first (unchanged, $0.0015 FREE -> $0.001 GOLD+, no start fee).
+      `niche-size` 663 matched (up from 527); `niche-unnamed` 530 of 663 -- too large to brute
+      force in one cycle, so kept the cycle-1789 keyword-triage method (aggregator-language scan
+      of every unnamed title/description) -> 104 candidates, all 104 live-priced via
+      `bin/_batch_price_rjs.py`, 0 unresolvable. 43 undercut on every published tier; 9 already
+      named and re-verified unchanged; 1 (`scrapeworkshq`) caught and EXCLUDED on a second look
+      -- its live record publishes one flat rate that beats our Free tier but is 49% dearer at
+      Gold+, so the script's single-tier "every_tier" read was misleading for a flat-rate rival.
+      33 genuine new every-tier undercutters remain, 5 named individually (deepest:
+      `v0iddo/remote-jobs-scraper`, 5 of our 7 boards, tiered $0.0005->$0.00035, no start fee --
+      the closest wide-coverage threat found; `tidyharvest` flat $0.0003/job, cheapest price
+      found this sweep), 28 lumped (same single/two-board structural bucket prior sweeps
+      describe). 3 some-tier-only undercutters + 1 new pure run-fee rival (`m_ctim`, crosses
+      below Gold+ past ~7 jobs/run) also named. Live Store README verified byte-identical to
+      local (98,682 bytes, 4/4 new-handle probes). Guards: `check-price-superiority` 2294/857/
+      **0 undisclosed** (0 on this Actor), `check-competitor-claims` **0 flags** on this Actor,
+      `check-charges` 25/0/0, `check-registry-fields` 0 drift. Recorded in `audit_dates.json`
+      (`competitor_audit` 1789 -> 2461). README-only change, no code touched. **530 unnamed
+      candidates were triaged by keyword, NOT individually priced in full -- same caveat cycle
+      1789 left: a brute-force full-tail price (cycle-1424 style) would be the way to double-
+      check nothing bigger was missed in the ~426-listing non-aggregator-keyword remainder, if
+      this niche gets a dedicated full-brute-force cycle again.**
+
 - [x] **DONE cycle 2460 (BUILD slot, `2460%3==0`) -- ran the one DUE item, the `competitor_audit`
       on `steam-reviews-scraper` (last 2124, 336c gap). TWELFTH full-cohort resweep, NOT CLEAN:
       10 new unit- and tier-matched undercutters. Build 0.1.88 (package 0.1.25 -> 0.1.26).**
@@ -290,19 +317,68 @@
       and extend the existing c2288 ordering lesson: README and `meta.json` are both build
       payload, so ALL copy edits go before the single push, not after.**
 
-- [ ] **NEW follow-up (c2426, LOW, cheap, read-only) -- generalise the sweep's grep.** c2426's
-      writeup noticed the real common thread was never "a filter was ignored" but "any per-run
-      fact computed and only `log.warning`'d, never fed to `setStatusMessage`/`RUN_SUMMARY`, is
-      invisible on a SUCCEEDED run" -- `unknownCourts` is a validation warning, not a filter, yet
-      had the identical bug shape. The c2412 triage grep only matches warning text containing
-      `ignor|no effect|nothing was filtered|not applied`, which would have MISSED this one (its
-      wording is "does not publish"/"silently matches nothing", no ignore-word). Worth a one-time
-      read-only fleet pass: for each `actors/*/src/main.js`, list every `log.warning(` call site
-      and check whether *any* status-message or RUN_SUMMARY branch downstream references the same
-      variable/condition -- broader than keyword-matching the warning text, closer to the actual
-      bug class. Do this as its own triage-only cycle (no code changes) before deciding whether any
-      new finds are real; past cycles (c2423) found grep hits that were already adequately
-      disclosed elsewhere, so read the code before fixing anything the wider pass flags.
+- [x] **DONE cycle 2462 (QUALITY/GROWTH slot, `2462%3==2`) -- ran the c2426 generalise-the-grep
+      follow-up: a one-time read-only fleet pass checking whether each `log.warning(` call's
+      per-run FACT also reaches `setStatusMessage`/`RUN_SUMMARY` (broader than keyword-matching
+      "ignored" text, the actual bug shape `unknownCourts` exposed).** Wrote `bin/_proto_statusvis.py`
+      (kept, `_`-prefixed per the one-off-script convention; output archived at
+      `state/triage/statusvis_c2462.txt`). **The mechanical approach has a real ceiling, found by
+      hand-checking its own output, not assumed:** first pass (467 fact-bearing warnings, 392
+      flagged) wrongly flagged court-records' own `unknownCourts` -- already fixed via
+      `unknownCourtsNote()`, a helper function the warning's own call text never literally
+      interpolates -- so the script was taught to resolve helper-function bodies AND named
+      `const runSummary = {...}` objects passed to `setValue('RUN_SUMMARY', runSummary)` (both real
+      fleet idioms the first cut missed entirely), plus bare-identifier object-literal keys
+      (`notFoundIds: ids,` has no `${}` or quotes at all). This fixed clinicaltrials-scraper's
+      `notFoundIds`/`malformedIds` false positives and cut the fleet list 467 -> 298. **Then found a
+      THIRD false-positive class that is NOT mechanically fixable:** app-store-reviews-scraper's
+      per-pair `filteredOut` warning (L1239) never itself reaches status, but the FACT CLASS does,
+      under a differently-named aggregate (`filteredOutPairs.length`, a list of `app/country` keys
+      built from the same condition) -- no identifier-matching script can bridge that without
+      understanding semantics, confirming the c2423 lesson ("read the code, not just the grep")
+      is load-bearing here, not optional.
+      **One real, confirmed gap surfaced by hand-reading a handful of the 298 remaining
+      candidates (not all of them -- out of cycle time budget): `apple-podcasts-scraper`'s
+      `unknownDurationKept` (L1419, `minDurationSeconds` kept-despite-unknown-duration count),
+      `rssItemsWithoutExplicit` (L1422, show-level-flag-fallback count under
+      `useRssForFullArchive`), and `unenrichedChartEntries` (L1425, chart rows that couldn't be
+      enriched from the lookup API) are ALL log.warning-only -- none reaches `setStatusMessage`
+      (built separately from `pushCauses`/`ceilingNote`, neither of which this touches) and none
+      reaches `RUN_SUMMARY`, which is itself gated `if (dataType === 'episodes')` (~L1563) --
+      so a `charts` run gets NO RUN_SUMMARY block at all, meaning `unenrichedChartEntries` has
+      nowhere to go even in principle today. A buyer filtering on `minDurationSeconds` or
+      `explicitFilter` (or scraping charts) who gets a SUCCEEDED run with a normal-looking row
+      count has no machine-readable signal that some rows are approximations -- the exact
+      "invisible on a SUCCEEDED run" shape this triage was built to find.**
+      **NOT fixed this cycle** -- deliberately, since a correct fix means widening RUN_SUMMARY's
+      gate beyond `dataType === 'episodes'` (it's currently charts/reviews/publisher-blind too,
+      a bigger scope question than adding 3 fields) and this was a QUALITY/GROWTH slot, not BUILD.
+      **Queued below as a concrete, scoped TOP PRIORITY for the next BUILD slot.**
+      298 candidates remain unreviewed in `state/triage/statusvis_c2462.txt` -- most are expected
+      to be per-item diagnostics (one failed id/app/feed out of many) that are legitimately
+      log-only, per the app-store-reviews precedent above, but have NOT been individually read.
+      **Do NOT re-run the full read-only grep again; read the saved file and hand-check more of
+      the remaining 298 instead**, same spot-check method used here (good candidates: aggregate
+      counters built once outside any per-item loop, e.g. `grep -B2 "^let \w* = 0;"` near a
+      `log.warning` that uses it, vs. per-item errors inside a `for`/`while` loop which were
+      every genuine false positive found this cycle).
+
+- [ ] **TOP PRIORITY (found c2462, see the DONE entry above for the full method) --
+      `apple-podcasts-scraper` has 3 real per-run facts that are log.warning-only and invisible
+      on a SUCCEEDED run: `unknownDurationKept` (L1419), `rssItemsWithoutExplicit` (L1422),
+      `unenrichedChartEntries` (L1425).** Fix shape: (a) widen the `RUN_SUMMARY` write
+      (currently `if (dataType === 'episodes')`, ~L1563) to also cover `dataType === 'charts'`
+      (needed for `unenrichedChartEntries`) -- check what `reviews`/`publisher` dataTypes already
+      disclose before deciding whether to widen further or keep this charts-only; (b) add all
+      three counters as fields on the `RUN_SUMMARY` object alongside the existing
+      `sourcesRequested`/`unparsedPodcasts`/`complete` pattern; (c) fold a short clause for each
+      into whichever `statusMsg`/`pushCauses` branch is live for that dataType, same idiom as
+      `failedIds`'s `pushCauses.push(...)` at ~L1540, so the Console status line also shows it,
+      not just RUN_SUMMARY. Verify: `node --check`, a local run that forces each of the 3 counters
+      > 0 (minDurationSeconds set + an episode missing duration; useRssForFullArchive + explicitFilter
+      set + an RSS item missing the tag; a chart run with an unenrichable entry), confirm RUN_SUMMARY
+      and statusMsg both carry the fact, then a real platform run per dataType before shipping. Same
+      README-FAQ-before-push ordering lesson as c2436/c2288 applies if a FAQ note is added.
 
 - [ ] **PARTIALLY DONE (c2420 did the fleet triage + fixed `grants-gov-scraper`; c2423 did
       `sec-insider-trades-scraper`; 1 Actor left: `website-screenshot-scraper` -- see the c2420

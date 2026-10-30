@@ -1,0 +1,350 @@
+
+app-store-reviews-scraper  (14 candidate(s))
+  L125  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L127  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L132  idents=['mostHelpful', 'mostRecent', 'reviewsAfter']  ('"reviewsAfter" forces sort to "mostRecent" (Apple\'s "mostHelpful" feed is not date-ordered, so a historical cutoff can\'t be applied to i
+  L137  idents=['minVoteCount', 'minVoteSum', 'mostHelpful', 'mostRecent', 'reviewsAfter']  ('"minVoteSum"/"minVoteCount" filter on Apple\'s helpfulness votes, which are only populated on the "mostHelpful" feed — under sort "mostRec
+  L212  idents=['WATCH_EVENTS', 'unknownWatchEvents']  (`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`)
+  L322  idents=['mostHelpful', 'mostRecent', 'perApp']  (       `Watch mode with sort="mostHelpful": that feed is not date-ordered, so a brand-new review is not `       + `necessarily inside the f
+  L488  idents=['err']  (`Apify Proxy is unavailable to this run (${err.message}); review fetches can only use this run's own IP, which Apple may serve an empty fee
+  L823  idents=['err']  (`Source-IP preflight could not complete (${err.message}); continuing on this run's own IP.`)
+  L847  idents=['PROXY_ROTATIONS']  (`Apple served an empty review feed to this run's own IP and to all ${PROXY_ROTATIONS} rotated proxy IPs. This now looks like a real feed-wi
+  L1269  idents=['appId', 'fb', 'fb2']  (`${appId}/${fb} (fallback): Apple's public review RSS stopped serving at page ${fb2.feedStopPage} after a full page, so this pair returned 
+  L1273  idents=['appId', 'fb', 'fb2', 'perApp']  (             `${appId}/${fb} (fallback): scanned the maxReviewsPerApp limit of ${perApp} review(s) and ${fb2.filteredOut} `             + `
+  L1560  idents=['err']  (`Could not write RUN_SUMMARY to the key-value store (${err.message}); run result is unaffected.`)
+  L1599  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1602  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+apple-podcasts-scraper  (41 candidate(s))
+  L43  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L45  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L73  idents=['chartType', 'input', 'shows']  (`Unknown "chartType" value "${input.chartType}" — using "shows" (Apple's Top Shows chart). Valid values: shows, episodes.`)
+  L78  idents=['chartType', 'charts', 'input']  (`"chartType" only applies when "What to scrape" is "charts" — ignored for dataType "${input.dataType}".`)
+  L135  idents=['Object', 'chartGenre', 'input']  (`Unknown "chartGenre" value "${input.chartGenre}" — ignored, using the overall top chart. Valid values: ${Object.keys(CHART_GENRE_IDS).join
+  L140  idents=['chartGenre', 'country', 'episodes']  (`"chartGenre" ("${chartGenre}") is ignored for chartType "episodes" — Apple publishes Trending Episodes only as one overall chart per store
+  L149  idents=['chartCount', 'chartCountRequested', 'chartGenre']  (`"chartCount" ${chartCountRequested} exceeds Apple's cap for this chart (${chartGenre ? 200 : 100}) — fetching ${chartCount}. ${chartGenre 
+  L207  idents=['dataType', 'reviewOnlyIgnored', 'reviews']  (`${reviewOnlyIgnored.join(', ')} only applies to dataType "reviews" — ignored for dataType "${dataType}", so nothing was filtered out by it
+  L216  idents=['chartType', 'charts', 'dataType', 'episodeOnlyIgnored', 'episodes']  (dataType === 'charts'     ? `${episodeOnlyIgnored.join(', ')} only applies to dataType "charts" with chartType "episodes" — ignored for cha
+  L227  idents=['charts', 'chartsOnlyIgnored', 'dataType']  (`${chartsOnlyIgnored.join(', ')} only applies to dataType "charts" — ignored for dataType "${dataType}", so nothing was filtered out by it.
+  L236  idents=['dataType', 'episodes', 'useRssForFullArchive']  (`"useRssForFullArchive" only applies to dataType "episodes" — ignored for dataType "${dataType}".`)
+  L245  idents=['dataType', 'maxPodcastsPerPublisher', 'publisher']  (`Ignoring "maxPodcastsPerPublisher": it only applies to dataType "publisher" (how many shows to return per publisher lookup), and this run 
+  L255  idents=['dataType', 'episodes', 'watchLabel']  (`"watchLabel" only applies to dataType "episodes" — ignored for dataType "${dataType}".`)
+  L396  idents=['input', 'maxReleaseDate']  (     `This watch can never report a new episode: "maxReleaseDate" (${input.maxReleaseDate}) is an UPPER bound on `     + 'release date, and
+  L402  idents=['maxReleaseDate', 'minReleaseDate']  (     'What to do: drop "maxReleaseDate" from the watch run — watch mode already returns only what is new, so an '     + 'upper bound adds n
+  L596  idents=['Apple', 'EMPTY_RECONFIRM_DELAYS_MS', 'delay', 'i']  (`Apple's review feed came back empty on the first page — re-checking in ${delay / 1000}s (attempt ${i + 2}/${EMPTY_RECONFIRM_DELAYS_MS.leng
+  L878  idents=['coverage', 'dateEpisodeFiltersSet', 'got', 'inWindow', 'nonDateEpisodeFiltersSet']  (         `Walked all ${got} episode(s) in this show's RSS archive and your `         + `${nonDateEpisodeFiltersSet.join(' / ')} filter(s) r
+  L885  idents=['coverage', 'got']  (         `Walked all ${got} episode(s) in this show's RSS archive and none fell inside the requested `         + `minReleaseDate/maxRelease
+  L945  idents=['declaredCount', 'delivered', 'id', 'useRssForFullArchive']  (       `Podcast ${id}: Apple reports ${declaredCount} episode(s) (trackCount), but this show's own `       + `RSS feed only has ${delivered
+  L955  idents=['declaredCount', 'delivered', 'id', 'publisher', 'useRssForFullArchive']  (     `Podcast ${id}: Apple reports ${declaredCount} episode(s) (trackCount), but the lookup API only `     + `delivered ${delivered}. Apple
+  L981  idents=['id']  (`No RSS feed URL found for podcast ${id} — falling back to Apple's lookup API (max 200 episodes).`)
+  L991  idents=['e', 'id']  (`Episode lookup failed for ${id}: ${e.message}`)
+  L1010  idents=['e', 'feedUrl']  (`Could not fetch RSS feed "${feedUrl}": ${e.message}`)
+  L1046  idents=['e', 'id', 'page']  (`review page ${page} failed for ${id}: ${e.message}`)
+  L1132  idents=['country', 'term']  (`Search "${term}" returned no podcasts in storefront "${country}".`)
+  L1136  idents=['e', 'term']  (`Search "${term}" failed: ${e.message}`)
+  L1283  idents=['country', 'id']  (`No podcast found for ID ${id} in storefront "${country}".`)
+  L1285  idents=['e', 'id']  (`Lookup failed for ${id}: ${e.message}`)
+  L1298  idents=['country', 'id']  (`No podcasts found for publisher ID ${id} in storefront "${country}" — check this is an Apple Podcasts artist/publisher ID, not a show ID.`
+  L1305  idents=['e', 'id']  (`Publisher lookup failed for ${id}: ${e.message}`)
+  L1323  idents=['id', 'perPodcastReviews', 'r']  (           `Podcast ${id}: scanned the maxReviewsPerPodcast limit of ${perPodcastReviews} review(s) and ${r.filteredOut} of them `         
+  L1332  idents=['country', 'id', 'maxReviewsPerPodcast', 'perPodcastReviews', 'r']  (           `Podcast ${id}: Apple's public review feed stopped serving at page ${r.feedStopPage} after a FULL page, so this `           + `s
+  L1364  idents=['Apple', 'EMPTY_RECONFIRM_DELAYS_MS', 'RSS_VARIANTS', 'country', 'id', 'reviews']  (dataType === 'reviews'         ? `Apple's review feed for podcast ${id} in storefront "${country}" came back empty on ${EMPTY_RECONFIRM_DEL
+  L1378  idents=['Math', 'episodeFiltersSet', 'got', 'id', 'useRssForFullArchive']  (         `Podcast ${id}: Apple's lookup API returned ${got} episode(s) (its own most-recent-episode `         + `window, capped at ${Math.m
+  L1396  idents=['feedUrl']  (`Could not fetch RSS feed "${feedUrl}" (see the warning above) — that is a fetch failure, not evidence that the feed has no episodes. Re-ru
+  L1399  idents=['feedUrl']  (`RSS feed "${feedUrl}" was fetched successfully but contains no <item> episodes — check it's a valid podcast RSS feed URL.`)
+  L1419  idents=['unknownDurationKept']  (`minDurationSeconds is set: ${unknownDurationKept} episode(s) had no duration in Apple's own data and were kept rather than dropped, since 
+  L1422  idents=['rssItemsWithoutExplicit', 'useRssForFullArchive']  (`explicitFilter is set while "useRssForFullArchive" is on: ${rssItemsWithoutExplicit} episode(s) carried no per-episode <itunes:explicit> t
+  L1425  idents=['chart', 'itunes', 'unenrichedChartEntries']  (`${unenrichedChartEntries} chart entry/entries could not be enriched from Apple's lookup API (typically Apple-exclusive or subscriber-only 
+  L1606  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1609  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+ats-jobs-scraper  (12 candidate(s))
+  L140  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L142  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L183  idents=['WATCH_EVENTS', 'unknownWatchEvents']  (`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`)
+  L340  idents=['e']  (`Proxy unavailable (${e.message}) — continuing with a direct connection.`)
+  L1095  idents=['e', 'host', 'offset', 'raw', 'site']  (`${host}/${site}: page fetch at offset ${offset} failed after retries (${e.message}) -- returning the ${raw.length} posting(s) already fetc
+  L1352  idents=['employmentTypeKeyword', 'slug']  (`greenhouse:${slug} — Greenhouse boards do not publish employment type, so`         + ` employmentTypeKeyword ("${employmentTypeKeyword}") 
+  L1373  idents=['employmentTypeKeyword', 'slug']  (`workday:${slug} — Workday only publishes employment type as "Full time" or`         + ` "Part time", so employmentTypeKeyword ("${employme
+  L1430  idents=['c', 'notFoundCompanies']  (`Not found / not on this ATS (skipped, run not failed): ${notFoundCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`)
+  L1431  idents=['c', 'erroredCompanies']  (`Fetch errors (skipped, run not failed): ${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`)
+  L1481  idents=['WATCH_STORE', 'c', 'erroredCompanies']  (         `Baseline is INCOMPLETE for: ${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')} — those boards `         + 'failed to
+  L1662  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1665  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+clinicaltrials-scraper  (8 candidate(s))
+  L362  idents=['ageRangeFromUnit', 'ageRangeFromYears', 'ageRangeToUnit', 'ageRangeToYears']  (         `Age bounds use different units (from ${ageRangeFromYears} ${ageRangeFromUnit}, to ${ageRangeToYears} ${ageRangeToUnit}) — `      
+  L432  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L434  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L462  idents=['select', 'selects', 'site', 'siteScopeIgnored']  (         `${siteScopeIgnored.join(' and ')} ${siteScopeIgnored.length > 1 ? 'select' : 'selects'} STUDIES, `         + 'not sites -- Clinic
+  L889  idents=['detail', 'resp']  (`ClinicalTrials.gov API ${resp.statusCode}: ${detail}`)
+  L895  idents=['String']  (`ClinicalTrials.gov returned a non-JSON body: ${String(resp.body).slice(0, 200)}`)
+  L1687  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1690  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+court-records-scraper  (14 candidate(s))
+  L135  idents=['both', 'input']  (`Unknown recordType "${input.recordType}"; falling back to "both".`)
+  L150  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L152  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L181  idents=['input', 'published']  (`Unknown opinionStatus "${input.opinionStatus}"; falling back to "published".`)
+  L194  idents=['input', 'relevance']  (`Unknown sortBy "${input.sortBy}"; falling back to "relevance".`)
+  L285  idents=['o', 'r', 'rawType']  (             `startUrl has type="${rawType}", which this Actor does not support (only Opinions `             + '"o" and RECAP "r" are). Usi
+  L325  idents=['order_by', 'qp']  (                 `startUrl has order_by="${qp.get('order_by')}", which this Actor does not support (only Filing date `                 + 'a
+  L412  idents=['docketOnlyFilters']  (         `${docketOnlyFilters.join('/')} is set, so this run covers RECAP dockets only. CourtListener's opinion index `         + 'has no p
+  L427  idents=['opinionOnlyFilters']  (         `${opinionOnlyFilters.join('/')} is set, so this run covers opinions only. The RECAP docket index has no `         + 'authoring-ju
+  L507  idents=['detail', 'resp']  (`CourtListener ${resp.statusCode}: ${detail}`)
+  L512  idents=['String']  (`CourtListener returned a non-JSON body: ${String(resp.body).slice(0, 200)}`)
+  L559  idents=['opinionStatus', 'recordTypeRaw']  (`opinionStatus "${opinionStatus}" is set but recordType "${recordTypeRaw}" does not include opinions — ignored.`)
+  L1387  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1390  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+eu-ted-tenders-scraper  (11 candidate(s))
+  L49  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L51  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L350  idents=['WATCH_KEEP', 'baselineTruncated', 'baselineTruncatedTotal', 'new', 'watchLabel']  (       `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the `       + `${baselineTruncated} oldes
+  L605  idents=['pagesSeeded', 'watchSeen']  (`Baseline walk: run time budget reached after ${pagesSeeded} page(s) (${watchSeen.size} notice id(s) collected) — stopping baseline walk ea
+  L619  idents=['resp', 'seedPage', 'upstream']  (`Baseline walk: TED API returned ${resp.statusCode} on page ${seedPage}${upstream ? `: ${upstream}` : ''} — stopping baseline walk early.`)
+  L632  idents=['capped', 'seedPage']  (`Baseline walk: TED API error on page ${seedPage}: ${capped} — stopping baseline walk early.`)
+  L658  idents=['JSON', 'page', 'resp']  (`TED API returned ${resp.statusCode} on page ${page}: ${JSON.stringify(resp.body).slice(0, 300)}`)
+  L671  idents=['cappedApiError', 'page']  (`TED API error on page ${page}: ${cappedApiError} — stopping the walk; results fetched so far are kept.`)
+  L755  idents=['new', 'seedError', 'watchLabel']  (     `Baseline walk for watch label "${watchLabel}" was cut short (${seedError}), so NO baseline was saved and `     + 'this run FAILED. A 
+  L899  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L902  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+fda-recall-scraper  (11 candidate(s))
+  L60  idents=['Completed', 'Ongoing', 'Pending', 'Terminated']  (         'status "Pending" is a value in FDA\'s recall-status vocabulary but has never appeared in openFDA\'s '         + 'enforcement data
+  L105  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L107  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L191  idents=['RSS_UNSUPPORTED_REASONS']  (         `includePressReleases is on but was skipped this run: incompatible with ${RSS_UNSUPPORTED_REASONS.join(', ')} `         + '(the FD
+  L397  idents=['dateField', 'input', 'watchLabel']  (         `watchLabel "${watchLabel}" is combined with a fixed reportDateTo (${input.reportDateTo}), filtering on `         + `dateField="${
+  L548  idents=['String', 'productType']  (`openFDA ${productType} returned a non-JSON body: ${String(resp.body).slice(0, 200)}`)
+  L554  idents=['productType']  (`openFDA ${productType} kept erroring after 4 attempts; stopping this product type early.`)
+  L844  idents=['err']  (`firmRecallCount lookup failed (${err.message}); leaving firmRecallCount null on affected row(s) (logged once per run).`)
+  L989  idents=['resp']  (`FDA press-release RSS feed returned ${resp.statusCode}; skipping press releases this run.`)
+  L1552  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1555  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+fec-campaign-finance-scraper  (5 candidate(s))
+  L188  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L190  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L718  idents=['name']  (`Could not verify that the FEC API still honours the "${name}" filter (no usable count in probe response); continuing.`)
+  L1381  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1384  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+federal-register-scraper  (7 candidate(s))
+  L96  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L98  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L256  idents=['detail', 'resp']  (`Federal Register API ${resp.statusCode}: ${detail}`)
+  L261  idents=['String']  (`Federal Register returned a non-JSON body: ${String(resp.body).slice(0, 200)}`)
+  L757  idents=['PRESDOCU', 'executive_order', 'executive_order_number']  (         'order="executive_order_number" only sorts meaningfully within the Executive Order subset -- '         + 'every other document (in
+  L1088  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1091  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+google-news-scraper  (8 candidate(s))
+  L41  idents=['VALID_TOPICS', 'badTopics']  (`Ignoring unsupported topic(s) ${badTopics.join(', ')} — use one of: ${VALID_TOPICS.join(', ')}. For any other section, pass its feed URL i
+  L74  idents=['fixed', 'many', 'what']  (`${what} set, but there are no search queries — your ${fixed} ${many ? 'are fixed feeds' : 'is a fixed feed'}, so nothing is filtered out.`
+  L75  idents=['fixed', 'ies', 'many', 'queries', 'what', 'y']  (`${what} applied to your ${queries.length} search quer${queries.length > 1 ? 'ies' : 'y'} only — your other ${fixed} ${many ? 'are fixed fe
+  L116  idents=['VALID_PERIODS', 'rawPeriod']  (`Ignoring unsupported timePeriod "${rawPeriod}" — use one of: ${VALID_PERIODS.join(', ')}.`)
+  L147  idents=['dateFieldsPhrase', 'feedsPhrase', 'manyFeeds']  (`${dateFieldsPhrase} set, but there are no search queries — your ${feedsPhrase} ${manyFeeds ? 'are fixed feeds' : 'is a fixed feed'}, so no
+  L148  idents=['dateFieldsPhrase', 'feedsPhrase', 'ies', 'manyFeeds', 'queries', 'y']  (`${dateFieldsPhrase} applied to your ${queries.length} search quer${queries.length > 1 ? 'ies' : 'y'} only — your other ${feedsPhrase} ${ma
+  L236  idents=['e']  (`Proxy unavailable (${e.message}) — continuing with a direct connection.`)
+  L434  idents=['e', 'feed']  (`Feed failed (${feed.url}): ${e.message}`)
+
+google-play-reviews-scraper  (20 candidate(s))
+  L49  idents=['s']  (`Play Store URL has no "?id=" param, skipping: ${s}`)
+  L51  idents=['s']  (`Not a valid URL or package name, skipping: ${s}`)
+  L153  idents=['WATCH_EVENTS', 'unknownWatchEvents']  (`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`)
+  L162  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L164  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L269  idents=['input', 'watchLabel']  (     `watchLabel "${watchLabel}" is combined with a fixed untilDate (${input.untilDate}). `     + 'Once the real calendar date passes that 
+  L418  idents=['watchEvents', 'watchLabel']  ('"watchEvents" only applies when "watchLabel" is set — this run is a normal one-off scrape and returns every matching review.')
+  L425  idents=['NEWEST', 'maxReviewsPerApp', 'sortName']  (       `Watch mode with sort="${sortName}": a brand-new review is not necessarily inside the first `       + `${maxReviewsPerApp} rows of a
+  L438  idents=['WATCH_KEEP', 'baselineTruncated', 'baselineTruncatedTotal', 'new', 'watchLabel']  (       `The baseline for watch label "${watchLabel}" exceeded the ${WATCH_KEEP}-entry record cap; the `       + `${baselineTruncated} oldes
+  L534  idents=['term']  (`No app found for search term "${term}"`)
+  L538  idents=['e', 'term']  (`Search failed for "${term}": ${e.message}`)
+  L685  idents=['appId', 'e']  (`app() failed for ${appId}: ${e.message}`)
+  L691  idents=['appId', 'genres']  (`${appId}: cannot read its genre, and a "genres" filter is set — skipping this app instead of scraping it unfiltered.`)
+  L710  idents=['appId', 'data', 'fetchNum', 'ratingSortUnreachable']  (         `${appId}: maxReviewsPerApp (${fetchNum}) was reached and ${data.length - passCount} of the `         + `fetched reviews were remo
+  L793  idents=['appId', 'fetchNum', 'passCount']  (         `${appId}: all ${passCount} matching reviews in the fetched window of ${fetchNum} were new, so reviews `         + 'posted before 
+  L800  idents=['appId', 'country', 'lang']  (`${appId}: Google Play returned zero reviews for country="${country}" lang="${lang}" (try a different country/language, not a scrape failur
+  L803  idents=['appId', 'data']  (`${appId}: fetched ${data.length} reviews but your rating/keyword/appVersion/thumbsUp/reply/length/date filters removed all of them.`)
+  L807  idents=['appId', 'e']  (`reviews() failed for ${appId}: ${e.message}`)
+  L987  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L990  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+grants-gov-scraper  (8 candidate(s))
+  L73  idents=['String', 'path', 'resp']  (`Grants.gov ${path} returned ${resp.statusCode}, non-JSON or unexpected body: ${String(resp.body).slice(0, 200)}`)
+  L79  idents=['path']  (`Grants.gov ${path} kept failing after 4 attempts; stopping early.`)
+  L119  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L121  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L449  idents=['oppNumIgnoredPairs', 'oppNums']  (             `An exact opportunity-number lookup ignores ${oppNumIgnoredPairs.length} filter(s) you also set -- `             + `${oppNumIg
+  L1068  idents=['forecasted']  (         'closeDateFrom/closeDateTo (or closesWithinDays) is set while "forecasted" is in oppStatuses. '         + 'A forecast has no firm 
+  L1763  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1766  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+hacker-news-scraper  (11 candidate(s))
+  L121  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L123  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L594  idents=['repoFullName', 'status']  (`GitHub lookup failed for ${repoFullName}: HTTP ${status}.`)
+  L611  idents=['e', 'repoFullName']  (`GitHub lookup failed for ${repoFullName}: ${e.message}`)
+  L648  idents=['DEPTH_LOOKUP_CAP']  (`Reached the ${DEPTH_LOOKUP_CAP}-lookup cap for comment-depth resolution -- remaining comments this run keep commentDepth:null and are not 
+  L656  idents=['cur', 'e']  (`Comment-depth lookup failed for item ${cur}: ${e.message} -- leaving commentDepth null for this comment.`)
+  L911  idents=['lastErr', 'page', 'query']  (`Query failed (${query || '<none>'}, page ${page}) after 3 attempts: ${lastErr.message}`)
+  L1062  idents=['e', 'username']  (`User lookup failed (${username}): ${e.message}`)
+  L1067  idents=['username']  (`No such HN user: ${username}`)
+  L1221  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1224  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+nih-reporter-scraper  (13 candidate(s))
+  L161  idents=['String', 'path', 'resp']  (`NIH RePORTER ${path} returned ${resp.statusCode}: ${String(resp.body).slice(0, 200)}`)
+  L167  idents=['attempts', 'path']  (`NIH RePORTER ${path} kept failing after ${attempts} attempts; stopping early.`)
+  L351  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L353  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L482  idents=['IC_CODES', 'unknownIcs']  (         `Unrecognised agency/IC code(s): ${unknownIcs.join(', ')}. They are still sent as-is, but NIH RePORTER `         + `will simply ma
+  L490  idents=['ACTIVITY_CODES', 'unknownActivityCodes']  (         `Unrecognised activity code(s): ${unknownActivityCodes.join(', ')}. A well-formed-but-nonexistent activity `         + 'code is NO
+  L521  idents=['PQ', 'QC', 'missing', 'quebecAsked']  (         `orgStates asks for "${quebecAsked[0]}" but not "${missing}". NIH RePORTER codes Quebec orgs under BOTH `         + '"QC" and the 
+  L598  idents=['overridden']  (                 `startUrl is set, so the pasted saved search decides the filters and these inputs are IGNORED: `                 + `${over
+  L609  idents=['overridden']  (                 `projectNums is an exact-lookup mode, so these inputs are IGNORED: ${overridden.join(', ')}. `                 + 'Looking 
+  L1306  idents=['OFFSET_WALL', 'rootTotal']  (         `This saved search matches ${rootTotal} projects, but NIH RePORTER caps offset+limit at ${OFFSET_WALL} with no `         + `cursor
+  L1364  idents=['OFFSET_WALL', 't']  (`A sub-query still has ${t} matches and cannot be split further; taking its first ${OFFSET_WALL}.`)
+  L1578  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1581  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+remote-jobs-scraper  (9 candidate(s))
+  L158  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L160  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L179  idents=['WATCH_EVENTS', 'unknownWatchEvents']  (`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`)
+  L996  idents=['consequence', 'dated', 'deeper', 'postedAfter', 'src']  (     `${src}: feed only reaches back to ${dated[0]} but postedAfter is ` +     `${postedAfter.toISOString().slice(0, 10)} — ${consequence}.
+  L1019  idents=['jobTypeKeyword', 'src']  (`${src}: this board publishes no job-type field at all, so jobTypeKeyword `       + `("${jobTypeKeyword}") drops every posting on this boar
+  L1024  idents=['seniorityKeyword', 'src']  (`${src}: this board publishes no seniority field at all, so seniorityKeyword `       + `("${seniorityKeyword}") drops every posting on this
+  L1029  idents=['salaryFilterNames', 'src']  (`${src}: this board publishes no salary data at all, so ${salaryFilterNames.join('/')} `       + 'drops every posting on this board — it is
+  L1281  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1284  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+sam-gov-opportunities-scraper  (12 candidate(s))
+  L204  idents=['SET_ASIDE_CODES', 'SET_ASIDE_CODES_HISTORICAL', 'unknown', 'v']  (             `setAsideTypes value(s) ${unknown.map((v) => `"${v}"`).join(', ')} are not SAM.gov set-aside codes. `             + 'They are 
+  L325  idents=['String', 'resp', 'url']  (`SAM.gov ${url} returned ${resp.statusCode}, non-JSON or unexpected body: ${String(resp.body).slice(0, 200)}`)
+  L331  idents=['url']  (`SAM.gov ${url} kept failing after 4 attempts; skipping.`)
+  L870  idents=['exclusions', 'isActive', 'terminationDate']  (         'activeOnly has no effect on dataType "exclusions" -- SAM.gov\'s exclusions index does not support '         + 'server-side active
+  L933  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L935  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L1522  idents=['collided']  (`${collided} USAspending top-tier agency name(s) share a word-set key and cannot be `             + 'matched unambiguously; opportunities f
+  L1578  idents=['String', 'naics', 'resp']  (`USAspending returned ${resp.statusCode} for NAICS ${naics}: ${String(resp.body).slice(0, 200)}`)
+  L1600  idents=['naics']  (`USAspending lookup for NAICS ${naics} kept failing after 3 attempts; skipping.`)
+  L1806  idents=['responseDate']  (             'What to do: for isActive, pass activeOnly:false on the watch run (you get both active and inactive '             + 'rows back
+  L2522  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L2525  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+scholarship-scraper  (6 candidate(s))
+  L117  idents=['res', 'url']  (`HTTP ${res.statusCode} for ${url} — skipped.`)
+  L275  idents=['res']  (`bold.org's sitemap request returned HTTP ${res.statusCode} instead of the sitemap XML`             + ' — this looks like a site-side probl
+  L341  idents=['BLOCKED_MSG', 'pushed']  (`${BLOCKED_MSG} Stopping early and keeping the ${pushed} scholarship(s) already returned.`)
+  L354  idents=['url']  (`No scholarship data found on ${url} — page layout may have changed, or it is not a scholarship page.`)
+  L370  idents=['erroredUrls']  (`Fetch errors (skipped, run not failed): ${erroredUrls.join(', ')}`)
+  L373  idents=['filteredOut', 'seen']  (             `0 scholarships pushed. ${seen.size} record(s) were found but every one was removed by your filters `             + `(${filter
+
+sec-insider-trades-scraper  (10 candidate(s))
+  L143  idents=['res', 'url']  (`HTTP ${res.statusCode} for ${url}`)
+  L145  idents=['err', 'url']  (`Request error for ${url}: ${err.message}`)
+  L221  idents=['blocked']  (`includeDerivative is off but transactionCodes selects ${blocked.join('/')}, which SEC `       + 'only reports on derivative rows: those co
+  L271  idents=['raw']  (`Ticker "${raw}" not found in SEC's ticker->CIK map; skipping.`)
+  L449  idents=['iss', 'padded']  (`No submissions index for CIK ${padded} (${iss.input}).`)
+  L471  idents=['MAX_INDEX_PAGES', 'iss', 'picked']  (`${iss.input}: stopped after ${MAX_INDEX_PAGES} older index pages (reached `             + `${picked[picked.length - 1]?.filingDate ?? 'n/a
+  L497  idents=['f']  (`Could not fetch ownership XML for ${f.accessionNumber}.`)
+  L511  idents=['f']  (`${f.accessionNumber}: not machine-readable ownership XML -- likely a pre-June-2003 `           + 'legacy filing (EDGAR mandated the XML ow
+  L516  idents=['f']  (`${f.accessionNumber}: no transaction rows (holdings-only filing?).`)
+  L525  idents=['pushed']  (`Stopped early: run time budget reached after ${pushed} results.`)
+
+shopify-products-scraper  (18 candidate(s))
+  L75  idents=['WATCH_EVENTS', 'unknownWatchEvents']  (`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`)
+  L85  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L87  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L299  idents=['e']  (`Proxy unavailable (${e.message}) — continuing with a direct connection.`)
+  L446  idents=['ep']  (`${ep.origin}: zero products on page 1 — skipping the re-check, the run is out of time.`)
+  L449  idents=['EMPTY_PAGE_RETRIES', 'attempt', 'ep']  (`${ep.origin}: zero products on page 1 — re-checking (attempt ${attempt + 2}/${EMPTY_PAGE_RETRIES + 1}) in case Shopify served a transient 
+  L622  idents=['origin']  (`${origin}: skipping the /meta.json currency lookup — not enough run time left to spend on it. The \`currency\` field will be null for this
+  L629  idents=['origin', 'res']  (`${origin}/meta.json: answered HTTP ${res.statusCode}, so the \`currency\` field will be null for this store's rows. Prices themselves are 
+  L634  idents=['e', 'origin']  (`${origin}/meta.json: currency lookup failed (${e.message}) — the \`currency\` field will be null for this store's rows. Prices themselves 
+  L691  idents=['e', 'handle', 'origin']  (`${origin}/products/${handle}: could not parse the product page (${e.message}) — seoTitle/seoDescription/rating left null for this product.
+  L695  idents=['handle', 'jsRes', 'origin']  (`${origin}/products/${handle}.js: stock/subscription fields unavailable (${jsRes.reason.message}).`)
+  L712  idents=['e', 'handle', 'origin']  (`${origin}/products/${handle}.js: stock/subscription fields unavailable (${e.message}).`)
+  L776  idents=['raw']  (`Bad URL: ${raw}`)
+  L879  idents=['ep', 'perStore', 'seenBeforeFilter']  (`${ep.origin}: stopped after scanning ${seenBeforeFilter} products (maxProductsPerStore = ${perStore}). In watch mode that cap limits how d
+  L888  idents=['attempts', 'ep']  (`${ep.origin}: Shopify returned zero products for this URL${attempts} (empty store/collection, or products.json is disabled — not a scrape 
+  L1030  idents=['baselineForStore', 'delisted', 'gone', 'origin']  (         `${origin}: ${gone.length} of ${baselineForStore} baselined products are missing from a complete sweep. That is too large a share 
+  L1178  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1181  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+steam-reviews-scraper  (15 candidate(s))
+  L66  idents=['recent', 'sortBy']  (`Sort was "${sortBy}" but "Reviews after/before" requires chronological order — using "recent" instead.`)
+  L94  idents=['dayRange', 'recent']  (     `"Last N days" (${dayRange}) is ignored — Steam's review HTML page has no day-range control `     + '(the JSON API this Actor used to 
+  L132  idents=['purchaseType']  (`purchaseType ("${purchaseType}") is ignored — Steam's review HTML page has no purchase-type filter (the retired JSON API's steam-vs-non-st
+  L155  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L157  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L262  idents=['WATCH_EVENTS', 'unknownWatchEvents']  (`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`)
+  L346  idents=['perAppReviews', 'recent', 'sortBy', 'which']  (       `Watch mode with sortBy="${sortBy}": that is Steam's ${which} ordering, not a chronological one, so a `       + `brand-new review is
+  L646  idents=['appId', 'e']  (`appdetails failed for ${appId}: ${e.message}`)
+  L673  idents=['appId', 'e']  (`SteamSpy owner estimates failed for ${appId}: ${e.message} — ownersEstimate/steamSpyTags will be null in this row.`)
+  L717  idents=['appId', 'e', 'page']  (`review page ${page + 1} failed for ${appId}: ${e.message}`)
+  L834  idents=['country', 'term']  (`Search "${term}" matched no Steam games in country "${country}".`)
+  L837  idents=['e', 'term']  (`Search "${term}" failed: ${e.message}`)
+  L954  idents=['ownersMissing']  (`SteamSpy had no owner estimates for ${ownersMissing.length} app(s): ${ownersMissing.slice(0, 10).join(', ')}${ownersMissing.length > 10 ? 
+  L1294  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1297  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+substack-scraper  (14 candidate(s))
+  L53  idents=['all', 'newsletter', 'podcast', 'thread']  ('contentType="thread" requested — as of 2026-09-29, no publication we tested (spanning several genres and sizes) had any post of type "thre
+  L250  idents=['origin']  (`${origin}: skipping the publication-info lookup — not enough run time left to spend on it. The publicationXxx fields will be null for this
+  L279  idents=['origin']  (`Publication info not found in the homepage of ${origin} — returning null fields.`)
+  L283  idents=['e', 'origin']  (`Publication info failed for ${origin}: ${e.message} — returning null fields.`)
+  L472  idents=['e', 'origin', 'slug']  (`Could not fetch full post ${origin}/p/${slug}: ${e.message}`)
+  L489  idents=['e', 'post']  (`Comments failed for post ${post.id}: ${e.message}`)
+  L502  idents=['origin', 'post']  (       `Substack served 0 of ${post.comment_count} comments for ${origin}/p/${post.slug}`       + ' — subscriber-only posts keep their comm
+  L574  idents=['dropped', 'maxPostsPerPublication', 'origin']  (       `${origin}: scanned the maxPostsPerPublication limit of ${maxPostsPerPublication} post(s) and `       + `${dropped} of them were exc
+  L595  idents=['e']  (`Could not load Substack category list: ${e.message}`)
+  L615  idents=['w']  (`Unknown category "${w}" — skipped. Valid slugs come from substack.com/api/v1/categories (e.g. technology, business, finance, culture).`)
+  L712  idents=['cat', 'e', 'page']  (`Category "${cat.slug}" page ${page} failed: ${e.message}`)
+  L734  idents=['all', 'cat', 'discoverType', 'leaderboardTier', 'newsletter', 'podcast', 'skippedByType']  (`Category "${cat.slug}" (${leaderboardTier}): every one of the ${skippedByType} publication(s) on the leaderboard was dropped by discoverTy
+  L740  idents=['attrFilterLabel', 'cat', 'leaderboardTier', 'paid', 'podcast', 'skippedByAttr']  (`Category "${cat.slug}" (${leaderboardTier}): every one of the ${skippedByAttr} publication(s) on the leaderboard was dropped by ${attrFilt
+  L802  idents=['all', 'free', 'paid']  (       'leaderboardTier="free" is not a real Substack leaderboard filter — verified live, it returns'       + ' the exact same list as "all
+
+trademark-search-scraper  (7 candidate(s))
+  L182  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L184  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L198  idents=['e']  (`Proxy unavailable (${e.message}) — continuing with a direct connection.`)
+  L234  idents=['e']  (`Could not get another proxy session (${e.message}).`)
+  L435  idents=['statuses']  (     'What to do: drop "statuses" from the watch run and filter the delivered rows on your own side (every '     + 'row carries status), or
+  L994  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L997  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+uk-find-a-tender-scraper  (4 candidate(s))
+  L253  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L255  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L1473  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1476  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+us-federal-awards-scraper  (14 candidate(s))
+  L206  idents=['startUrl', 'unapplied']  (       `"startUrl" also had a ${unapplied.join(', ')} filter set on usaspending.gov, but this Actor `       + 'only carries the keyword and
+  L320  idents=['TOPTIER_AGENCY_NAMES', 'n', 'unknownAgencyNames']  (     `Agency name ${unknownAgencyNames.map((n) => `"${n}"`).join(', ')} is not one of USAspending's ${TOPTIER_AGENCY_NAMES.length} top-tier
+  L362  idents=['expiringAfterDays', 'expiringWithinDays']  ('"expiringAfterDays" requires "expiringWithinDays" to also be set -- ignoring "expiringAfterDays".')
+  L368  idents=['expiringAfterDays', 'expiringWithinDays', 'prime']  ('"expiringWithinDays"/"expiringAfterDays" only apply in awardLevel="prime" mode -- sub-award records carry no period-of-performance end dat
+  L392  idents=['includeOpportunityScore', 'prime']  ('"includeOpportunityScore" only applies in awardLevel="prime" mode -- sub-award records carry no period-of-performance end date to score re
+  L464  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not http(s); ignoring.`)
+  L466  idents=['webhookUrlRaw']  (`webhookUrl "${webhookUrlRaw}" is not a valid URL; ignoring.`)
+  L499  idents=['prime', 'watchChanges']  (     '"watchChanges" is only supported in awardLevel="prime" mode -- sub-award records have no '     + 'reliable drift signal to compare ag
+  L529  idents=['maxAwardAmount', 'minAwardAmount']  (       'watchChanges cannot see an amount change that crosses your own amount bound: '       + `${[minAwardAmount != null ? `minAwardAmount
+  L543  idents=['expiringAfterDays', 'expiringWithinDays']  (       `watchChanges cannot see a period-of-performance extension past your own window: expiringWithinDays=${expiringWithinDays}`       + `
+  L806  idents=['detail', 'resp']  (`USAspending API ${resp.statusCode}: ${detail}`)
+  L810  idents=['String']  (`USAspending returned a non-JSON body: ${String(resp.body).slice(0, 200)}`)
+  L1282  idents=['resp']  (`webhookUrl POST returned ${resp.statusCode}; run result is unaffected.`)
+  L1285  idents=['err']  (`webhookUrl POST failed (${err.message}); run result is unaffected.`)
+
+website-screenshot-scraper  (6 candidate(s))
+  L34  idents=['rawUrls']  (`Skipped ${rawUrls.length - urls.length} duplicate URL(s) in \`urls\` -- each unique URL is captured and charged exactly once.`)
+  L273  idents=['err', 'url']  (`Capture failed for ${url ?? 'raw HTML'}: ${err.message}`)
+  L387  idents=['diffPixels', 'rc', 'url']  (`Region count disabled for ${url}: derived ${rc.changedPixels} changed pixels but pixelmatch reported ${diffPixels}. diffPixels/diffPercent
+  L390  idents=['REGION_PIXEL_CAP', 'h', 'url', 'w']  (`Region count skipped for ${url}: ${w}x${h} (${w * h} px) is over the ${REGION_PIXEL_CAP} px limit. diffPixels/diffPercent are unaffected.`
+  L430  idents=['compareUrl', 'err', 'url']  (`Comparison failed for ${url} vs ${compareUrl}: ${err.message}`)
+  L443  idents=['html']  ('Compare mode ignores raw `html` input: a diff needs two fetched URLs.')
+
+_proto_statusvis: 467 fact-bearing warning(s) scanned fleet-wide, 298 candidate(s) (idents never appear in setStatusMessage/RUN_SUMMARY)

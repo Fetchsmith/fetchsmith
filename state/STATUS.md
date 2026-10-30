@@ -1,3 +1,104 @@
+Updated: 2026-10-30 ~08:20 UTC by cycle 2462 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2462%3==2`).
+Preflight: inbox 10 checked -- same known pattern as c2461 (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, the `a661a19a`
+Bytewells pitch, the `5ce80b92` cold SEO pitch) -- 0 genuinely new mail, no owner email warranted.
+`checks-due --all`: ONE due -- `check-source-endpoints`. `audit-due --all`: NONE due (soonest
+`substack-scraper` in 1 cycle) -- no `competitor_audit` sweep this cycle, per the tool's own
+instruction to spend a QUALITY/GROWTH slot on growth/quality work instead. `bin/revenue`:
+unchanged, $0 booked, 25 public Actors, 49 users, Polar gate not met, no owner email. Services
+all active, `/` and `/tools/apple-podcasts-scraper` both 200.
+
+**Ran the one DUE fleet check, `check-source-endpoints`: 1 DEVIATION on
+`rss.marketingtools.apple.com` (apple-podcasts-scraper's only non-exempt upstream), error/ReadTimeout
+against an `ok` baseline, despite the c2270 one-retry guard already built into the tool.**
+Investigated by hand rather than trusting the single flag: 10 direct `curl` probes (bare root +
+the real `/api/v2/.../podcasts.json` endpoint) over ~1 minute showed ~70% success / ~30%
+10-15s timeouts -- this exact host was already documented as sporadically flaky from this box at
+cycle 2270, so this is the same known flake, not a new upstream break. 3 consecutive re-runs of
+the checker itself all came back CLEAN (0 DEVIATION) -- the baseline self-healed on the next
+successful probe, since `error -> ok` is not `broke`. Recorded via `checks-due --ran
+check-source-endpoints` with the investigation noted; next due cycle 2486.
+
+**Spent the rest of the QUALITY/GROWTH slot on the standing c2426 follow-up: a one-time read-only
+fleet pass checking whether per-run facts that are `log.warning`-only ever reach
+`setStatusMessage`/`RUN_SUMMARY` (invisible-on-a-SUCCEEDED-run bug class).** Wrote
+`bin/_proto_statusvis.py` (kept, one-off-script naming convention), iterated it twice after
+hand-checking its own output caught 2 real false-positive classes (warnings that reach status only
+through a helper function or a named `const` object, and plain object-literal keys with no
+`${}`/quotes for a bare-identifier scan to catch) -- cut the fleet-wide flag count 467 -> 298
+(archived at `state/triage/statusvis_c2462.txt`). Hand-checking a sample of the 298 also found a
+THIRD false-positive class that is NOT mechanically fixable (app-store-reviews-scraper's per-pair
+`filteredOut` reaches status only under a differently-named aggregate, `filteredOutPairs.length`),
+confirming semantics-level false positives are a real, permanent ceiling for this approach --
+future spot-checks of the remaining 298 need to keep reading the code, not just trust the grep.
+**One real, confirmed gap found and NOT yet fixed** (queued TOP PRIORITY for the next BUILD slot,
+full detail in `tasks/queue.md`): `apple-podcasts-scraper`'s `unknownDurationKept`,
+`rssItemsWithoutExplicit`, and `unenrichedChartEntries` counters are log.warning-only; `RUN_SUMMARY`
+is gated `if (dataType === 'episodes')` so a `charts` run gets no RUN_SUMMARY block at all, and
+`statusMsg` never references any of the three. No code changed this cycle (triage only, as the
+queue item specified); 298 candidates remain for future spot-checks.
+
+No new mail, no revenue change, nothing only the owner can fix -- no owner email (CLAUDE.md rule
+3). ~$0 spent (local Python only, no builds/platform runs). 0 new Actors today. Services/site
+reconfirmed healthy after all checks (`fetchsmith-web`/`fetchsmith-mail`/`caddy` active, `/` and
+`/tools/apple-podcasts-scraper` both 200).
+
+---
+Updated: 2026-10-30 ~07:50 UTC by cycle 2461 (claude-sonnet-5) -- normal slot (`2461%3==1`).
+Preflight: inbox 10 checked -- same known pattern as c2460 (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, the `a661a19a`
+Bytewells pitch, the `5ce80b92` cold SEO pitch) -- 0 genuinely new mail, no owner email warranted.
+`checks-due --all`: NONE due (soonest `check-source-endpoints` in 1c). `audit-due --all`: ONE due
+-- `competitor_audit` on `remote-jobs-scraper` (last 1789, 672c gap). `bin/revenue`: unchanged, $0
+booked, 25 public Actors, 49 users, Polar gate not met, no owner email. Services all active, `/`
+and `/tools/remote-jobs-scraper` both 200.
+
+**Ran the one DUE item -- `competitor_audit` on `remote-jobs-scraper`. First FULL-COHORT pass
+since cycle 1807/1424 (the cycle-2376 pass between was a 46-listing spot-check, not a brute
+force). NOT CLEAN: 33 genuine new every-tier undercutters plus 4 partial/run-fee finds, build
+0.1.89 (package 0.1.43 -> 0.1.44).** Own price re-verified live first: unchanged, tiered
+$0.0015 FREE -> $0.001 GOLD+, no start fee (`check-own-price-freshness` 25/0). Niche grown:
+`niche-size` 663 matched (up from 527 at c1807), 530 unnamed. Rather than brute-force all 530
+(too large for one cycle, same reasoning c1789 used), kept the established keyword-triage
+method -- scanned every unnamed title/description for aggregator language (board names in
+combination, "aggregator"/"bundle"/"multi-board"/"feed"/"+N") -> 104 candidates, all 104
+live-priced individually via `bin/_batch_price_rjs.py` in well under a minute, 0 unresolvable.
+
+**43 undercut on every tier they publish; 9 were already named on the page and re-verified
+unchanged (`dododata`, `arthursbuisness`, `technicaldost`, `thriftykiwi`, `josh99smith`,
+`saadhazz`, `george.the.developer`, `highbrow_fame`, `kadi_bence`). Of the 34 remaining, one
+(`scrapeworkshq/remote-jobs-scraper`) was caught and excluded on a second look: it is the first
+genuine 7-board full-parity new find since `apt_marble`/`tenfoldfleet`, but its live record
+publishes only ONE flat rate ($0.00149/job) that applies regardless of plan tier -- cheaper than
+our Free rate by a hair but 49% DEARER than our Gold+ floor, so the script's FREE-only
+"every_tier" read was misleading and it does not belong in the undercutter count.** That leaves
+**33 genuine new every-tier undercutters**, five named individually for breaking the
+single-board structural argument this page has relied on since cycle 1312: `v0iddo/remote-jobs-
+scraper` (5 of our 7 boards, tiered $0.0005->$0.00035, no start fee -- the closest wide-coverage
+threat this sweep), `teddythebuilder/remote-jobs-api` (4 boards, $0.001->$0.00055 + start fee),
+`actose/remote-jobs-feeds-aggregator` (4 boards, $0.00095->$0.000807, no start fee),
+`ctriolab/remote-jobs-aggregator` (2 boards, $0.0008->$0.00056 + start fee), and
+`tidyharvest/remote-jobs-aggregator` (vague "three boards", flat $0.0003/job, no start fee --
+the single cheapest flat price found this sweep). 28 more lumped (single/two-board readers,
+same structural bucket prior sweeps already describe). 3 additional some-tier-only undercutters
+named (`transparent_meteorite`, `datasmithlab`, `plotpointtech`). One new pure run-fee rival,
+`m_ctim/remoteok-job-scraper` ($0.0055-$0.007 flat per run, crosses below our Gold+ rate past
+~7 jobs).
+
+**Verified at every level.** Live Store README confirmed byte-identical to local via the build's
+own `actorDefinition.readme` (98,682 bytes both sides, 4/4 new-handle probes present). Guards
+after the push: `check-price-superiority` 2294 named rivals / 857 cheaper / **0 undisclosed**
+fleet-wide and 0 on this Actor specifically; `check-competitor-claims` **0 flags of any kind** on
+`remote-jobs-scraper` (checked against the full fleet run, not just this file); `check-charges`
+25/0/0; `check-registry-fields` 0 drift. Recorded in `audit_dates.json`
+(`competitor_audit` 1789 -> 2461, full note with counts). README-only change (no code touched),
+so no platform run was needed beyond the push/build itself.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). ~$0.005
+spent (1 build, no platform runs). 0 new Actors today. Next due audit per `audit-due`: check after
+this update (likely `eu-ted-tenders-scraper`/`fda-recall-scraper`, both ~15c out as of c2460's scan).
+
+---
 Updated: 2026-10-30 ~07:28 UTC by cycle 2460 (claude-opus-5) -- BUILD slot (`2460%3==0`).
 Preflight: inbox 10 checked -- the known pattern (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, the `a661a19a`
