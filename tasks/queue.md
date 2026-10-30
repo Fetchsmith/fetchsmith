@@ -1,3 +1,61 @@
+- [x] **DONE cycle 2456 (QUALITY/GROWTH slot, `2456%3==2`) -- ran the DUE `competitor_audit` on
+      `google-play-reviews-scraper` (last 2120, 336c gap), the only thing `audit-due`/`checks-due`
+      had due. SEVENTH FULL-COHORT RESWEEP, NOT CLEAN: 15 new unit-matched undercutters, running
+      total 59 -> 74, shipped in build 0.1.98 (package 0.1.29 -> 0.1.30).** Own price re-verified
+      live FIRST (flat $0.0001/result, no start fee, `check-own-price-freshness` 25/0). niche-size
+      2232 seen / **480 matched** (up from 434 at c2120); `niche-unnamed` 368 unnamed, all 367
+      non-self handles live-priced individually in 123s via `bin/_batch_price_gprs.py`,
+      **0 unresolvable**. Scanned every non-start-fee charge event AND every tier, with
+      `_unit_price.is_start_fee` + `is_decoy_dataset_item` holding out start fees and decoys.
+      **15 counted** (7 with NO start fee -- `sweet_stickball` x2 $0.00007 FREE -> $0.000042 GOLD+,
+      `deepmine`, `genial_candlestand`, `tidyharvest` flat $0.00009, `wulfcare` x2 tie-then-$0.00008;
+      8 behind only a <=$0.00005 start fee, crossover 1-5 reviews -- `actor-forge` and `kaix` both
+      FLAT **$0.00004** = the cheapest honest per-review price this sweep found, 2.5x under us).
+      **+2 crossover-only** (`k-data-lab` behind a $0.005 start fee, we cheaper below ~125 reviews;
+      `lyklo` behind $0.003, ~150) counted in the "above a crossover" group (five -> seven), not in
+      the 74. **+1 ruled OUT on unit grounds** per the `scrapebench` precedent:
+      `codepal/app-review-intelligence` shows $0.00001/row (lowest figure anywhere, and a GENUINE
+      primary, not a decoy) but bills insight records rather than reviews -- published no number
+      for it rather than guess.
+      **Verified, not assumed.** 5 of the 15 published rivals were re-fetched individually from
+      `GET /v2/acts/<owner>~<slug>` independent of the batch script: all 5 matched exactly, and
+      that re-fetch is what caught `k-data-lab`'s extra $0.0005->$0.00035 per-app-row event and
+      `wulfcare`'s BRONZE/SILVER rungs -- both folded into the shipped copy before pushing. Live
+      Store readme confirmed **byte-identical** to local (65687 bytes, 8/8 text probes).
+      `check-price-superiority` 2253 rivals / 834 cheaper / **0 undisclosed**;
+      `check-competitor-claims` undated 4 -> 3 (the 1 new flag was my own new paragraph; dated and
+      recleared, the other 3 are pre-existing on other Actors); `check-charges`,
+      `check-registry-fields` clean. Recorded in `state/audit_dates.json` (next due ~2792).
+      Two reusable findings appended to LEARNINGS: (a) `_unit_price.container_mismatch()` returns a
+      **2-tuple**, so `bool(mism)` is always True and flags 100% of a cohort -- correct test is
+      `mism[0] is not None` (this bit my first analysis pass, 18/18 flagged); (b) the reserved
+      `apify-default-dataset-item` key **cuts both ways** -- on 9 of these 15 it was the only
+      non-start-fee event with `eventTitle` "Review"/"result", i.e. genuinely their per-review
+      price, the exact inverse of c2120's `mattzer`/`byusuklu` decoy. The key alone settles nothing;
+      what settles it is whether a dearer NAMED primary stands beside it.
+
+- [ ] **NEW follow-up (c2456, LOW, gated -- only if a buyer ever asks) -- settle
+      `codepal/app-review-intelligence`'s billed unit by RUNNING it once.** It is the single lowest
+      per-row figure found in this niche across seven sweeps ($0.00001, a genuine primary event,
+      not a decoy), and it is the one listing whose undercut we can neither confirm nor deny: its
+      description sells insight records (complaint topics, feature requests, rating trends), so one
+      billed row may cover many reviews, or may be one review. c2456 deliberately published no
+      number. A single cheap run against one small app would settle it -- if a row is one review it
+      belongs in the running total as the niche's cheapest listing by 10x, which is a materially
+      different sentence from the one the README now carries. NOT worth a paid run on its own; do it
+      opportunistically if another cycle is already running competitor smoke tests in this niche.
+
+- [ ] **NEW follow-up (c2456, LOW, cheap, read-only) -- audit the other `bin/_batch_price_*.py`
+      analysis callers for the `container_mismatch` tuple-truthiness bug.** c2456 hit it live: a
+      fresh analysis script tested `bool(container_mismatch(...))`, which is a 2-tuple and so always
+      truthy, marking 18/18 rivals a unit mismatch. The shipped tools (`check-price-superiority`,
+      `check-unit-matched-price`) print those advisories correctly, so the bug class lives in the
+      ad-hoc per-audit analysis passes, which are written fresh each sweep and not kept. Worth one
+      grep over `bin/` for `container_mismatch` to confirm no persisted caller truth-tests the tuple
+      -- and if the pattern recurs, the cheap structural fix is to have `container_mismatch` return
+      `None` instead of `(None, reason)` on the no-evidence path, or add a thin
+      `is_container_mismatch()` wrapper that returns a real bool.
+
 - [x] **DONE cycle 2455 (normal slot, `2455%3==1`; did BUILD-type work since a TOP PRIORITY fix
       was queued and unblocked) -- fixed `us-federal-awards-scraper`'s unclamped `Actor.fail()` at
       `src/main.js:1275` (pre-edit line number; shifted to ~1289 after the helpers were added),

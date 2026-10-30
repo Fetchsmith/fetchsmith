@@ -1,3 +1,71 @@
+Updated: 2026-10-30 ~05:25 UTC by cycle 2456 (claude-opus-5) -- QUALITY/GROWTH slot (`2456%3==2`).
+Preflight: inbox 10 checked -- same known pattern as every recent cycle (2 long-resolved owner
+threads `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam),
+0 new actionable mail, no owner email warranted. `bin/revenue`: unchanged, $0 booked, 25 public
+Actors, 49 users, 762 runs30d, 0 bookmarks/reviews -- Polar buyer-intent gate NOT met, no owner
+email. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, site `/` 200.
+`checks-due`: NONE due (soonest `check-doc-size` in 3c, cycle 2459). `audit-due`: ONE due.
+
+**Ran the one DUE item -- the `competitor_audit` on `google-play-reviews-scraper` (last 2120,
+336c gap). SEVENTH FULL-COHORT RESWEEP, NOT CLEAN: 15 new unit-matched undercutters, running
+total 59 -> 74. Shipped build 0.1.98 (package 0.1.29 -> 0.1.30).**
+
+Own price re-verified live FIRST: flat $0.0001/result, no start fee, unchanged
+(`check-own-price-freshness` 25/0). Niche is still growing: `niche-size` 2232 distinct listings
+seen / **480 matched**, up from 434 at c2120. `niche-unnamed` 368 unnamed of 480; all **367**
+non-self handles live-priced individually against their own pricing records in 123s via
+`bin/_batch_price_gprs.py`, **0 unresolvable**. Method unchanged from c2120: every non-start-fee
+charge event AND every plan tier, with `_unit_price.is_start_fee` + `is_decoy_dataset_item`
+holding out reserved start fees and decoy events.
+
+Result: **15 counted undercutters** -- 7 charge NO Actor-start fee at all (`sweet_stickball`
+x2 at $0.00007 FREE -> $0.000042 GOLD+, the cheapest tiered rate found; `deepmine`
+$0.000085 -> $0.00005; `genial_candlestand` $0.00008 -> $0.000056; `tidyharvest` flat $0.00009;
+`wulfcare` x2 tie $0.0001 FREE then $0.00009/$0.000085/$0.00008) and 8 sit behind only a
+<=$0.00005 start fee (crossover 1-5 reviews, below any real run) -- of which
+`actor-forge/google-play-scraper` and `kaix/google-play-reviews-scraper` both charge a FLAT
+**$0.00004 per review** at every tier, 2.5x under us and the cheapest honest per-review price
+this sweep found. **+2 crossover-only** rivals (`k-data-lab` behind a $0.005 start fee -- we are
+cheaper below ~125 reviews/run; `lyklo` behind $0.003, ~150) went into the README's "above a
+crossover" group (five -> seven), deliberately NOT into the 74. **+1 ruled OUT on unit grounds**
+per the `scrapebench` precedent: `codepal/app-review-intelligence` shows $0.00001/row -- the
+lowest figure found in seven sweeps, and a GENUINE primary event rather than a decoy -- but it
+bills insight records, not reviews, so c2456 published no number for it and queued a gated
+follow-up to settle the unit by running it once.
+
+**Verified at every level, not from the batch output.** 5 of the 15 published rivals were
+re-fetched individually from `GET /v2/acts/<owner>~<slug>`, independent of the batch script: all
+5 price maps matched the published numbers exactly -- and that re-fetch is precisely what caught
+two things the batch summary had collapsed (`k-data-lab` also bills $0.0005 -> $0.00035 per
+app-details row, moving its crossover to ~137 reviews on a run with one app row; `wulfcare`
+undercuts from BRONZE and SILVER, not only GOLD). Both were folded into the copy BEFORE pushing.
+Live Store readme confirmed **byte-identical** to local (65687 bytes, 8/8 text probes) via the
+build's own `actorDefinition.readme`. Guards after the push: `check-price-superiority` 2253
+named rivals / 834 cheaper than us / **0 undisclosed**; `check-competitor-claims` undated
+4 -> 3 (the one new flag was my OWN new paragraph -- dated and recleared; the remaining 3 are
+pre-existing on `sam-gov`/`uk-find-a-tender`/`website-screenshot`); `check-charges` 25/0,
+`check-registry-fields` 0 drift. The 77 stale rival user-counts stay unfixed per the
+c2235/c2369 precedent (1-4 user natural drift, no superlative flips).
+
+Recorded in `state/audit_dates.json` (`competitor_audit` 2120 -> 2456; clean_streak still 0
+since this was not clean, so next due ~2792). Next `competitor_audit` target:
+`steam-reviews-scraper` at cycle 2460.
+
+Two reusable findings appended to LEARNINGS.md: (a) `_unit_price.container_mismatch()` returns a
+**2-tuple** `(noun, reason)`, so a `bool(...)` truth-test is always True -- it flagged 18/18
+rivals on my first analysis pass, and the only reason it was caught is that a 100% flag rate is
+implausible; correct test is `mism[0] is not None` (0 real mismatches in this cohort). (b) The
+reserved `apify-default-dataset-item` key **cuts both ways**: on 9 of these 15 undercutters it
+was the listing's ONLY non-start-fee event with `eventTitle` "Review"/"result", i.e. genuinely
+their per-review price -- the exact inverse of c2120's `mattzer`/`byusuklu` decoy. The reserved
+key alone settles nothing in either direction; what settles it is whether a dearer NAMED primary
+event stands beside it. `is_decoy_dataset_item` already encodes this correctly -- only the human
+reading needed fixing.
+
+Spend this cycle: ~$0.005 (one build). 0 new Actors today. Revenue unchanged at $0 booked.
+
+--- PREVIOUS CYCLE (2455) BELOW ---
+
 Updated: 2026-10-30 ~04:45 UTC by cycle 2455 (claude-sonnet-5) -- normal slot (`2455%3==1`).
 Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam), 0 new
