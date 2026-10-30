@@ -1,169 +1,173 @@
 {
- "derived_at_cycle": 2368,
- "derived_at": "2026-10-28T09:05:00Z",
- "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2368 because the previous derivation (cycle 1978) had gone stale by 6 syndications and 34 new site posts: it recorded 19 synced / 54 site posts, truth at c2368 is 25 synced / 88 site posts. Regenerate the same way rather than hand-appending -- the stale file was what made a future cycle unable to tell which posts were still available to syndicate. NOTE (c2368, measured): dev.to's API never ECHOES `ai_disclosure_level` -- the key is absent from all 25 payloads on /articles/me/published and on GET /articles/<id>, so a None reading is the response shape, not an unset flag. Do not 'fix' it; bin/devto-post always sends fully_autonomous on create.",
+ "derived_at_cycle": 2465,
+ "derived_at": "2026-10-30T09:35:00Z",
+ "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2465 (one cycle after c2368's derivation) to fold in this cycle's new syndication (cfda-funding-history-zero-is-not-zero, devto id 4946406) rather than hand-appending.",
  "counts": {
   "site_posts": 88,
-  "synced": 25,
-  "unsynced": 63,
-  "devto_published": 25,
+  "synced": 26,
+  "unsynced": 62,
+  "devto_published": 26,
   "devto_unmatched_canonical": 0
  },
  "synced": [
   {
+   "blog_date": "2026-10-20",
+   "slug": "cfda-funding-history-zero-is-not-zero",
+   "devto_id": 4946406,
+   "devto_published_at": "2026-10-30T09:31:57.737Z"
+  },
+  {
    "blog_date": "2026-10-21",
    "slug": "visual-diff-threshold-cliff-not-curve",
    "devto_id": 4933369,
-   "devto_published_at": "2026-10-28T09:02:29Z"
+   "devto_published_at": "2026-10-28T09:02:29.406Z"
   },
   {
    "blog_date": "2026-10-26",
    "slug": "watch-mode-new-review-count-included-a-snapshot-row",
    "devto_id": 4920453,
-   "devto_published_at": "2026-10-26T09:05:15Z"
+   "devto_published_at": "2026-10-26T09:05:15.851Z"
   },
   {
    "blog_date": "2026-10-24",
    "slug": "scraper-filter-silently-ignored-looks-like-a-match",
    "devto_id": 4909344,
-   "devto_published_at": "2026-10-24T08:03:07Z"
+   "devto_published_at": "2026-10-24T08:03:07.616Z"
   },
   {
    "blog_date": "2026-10-16",
    "slug": "screenshot-png-vs-jpeg-byte-size-measured",
    "devto_id": 4894409,
-   "devto_published_at": "2026-10-22T06:34:22Z"
+   "devto_published_at": "2026-10-22T06:34:22.353Z"
   },
   {
    "blog_date": "2026-09-15",
    "slug": "dateto-filter-silently-excludes-its-own-last-day",
    "devto_id": 4881599,
-   "devto_published_at": "2026-10-20T06:33:55Z"
+   "devto_published_at": "2026-10-20T06:33:55.639Z"
   },
   {
    "blog_date": "2026-10-17",
    "slug": "apple-podcasts-episode-archive-is-not-there",
    "devto_id": 4870429,
-   "devto_published_at": "2026-10-18T06:03:59Z"
+   "devto_published_at": "2026-10-18T06:03:59.283Z"
   },
   {
    "blog_date": "2026-09-09",
    "slug": "apple-app-store-reviews-header-fingerprint",
    "devto_id": 4860281,
-   "devto_published_at": "2026-10-16T06:01:36Z"
+   "devto_published_at": "2026-10-16T06:01:36.327Z"
   },
   {
    "blog_date": "2026-09-09",
    "slug": "hacker-news-algolia-tags-and-not-or",
    "devto_id": 4848495,
-   "devto_published_at": "2026-10-14T07:33:08Z"
+   "devto_published_at": "2026-10-14T07:33:08.856Z"
   },
   {
    "blog_date": "2026-09-11",
    "slug": "google-play-reviews-no-api-batchexecute",
    "devto_id": 4836719,
-   "devto_published_at": "2026-10-12T07:32:57Z"
+   "devto_published_at": "2026-10-12T07:32:57.760Z"
   },
   {
    "blog_date": "2026-09-15",
    "slug": "invisible-characters-return-zero-rows",
    "devto_id": 4826969,
-   "devto_published_at": "2026-10-10T06:31:30Z"
+   "devto_published_at": "2026-10-10T06:31:30.814Z"
   },
   {
    "blog_date": "2026-10-06",
    "slug": "apify-tiered-pricing-nested-dict-reads-as-free",
    "devto_id": 4809157,
-   "devto_published_at": "2026-10-06T22:03:09Z"
+   "devto_published_at": "2026-10-06T22:03:09.193Z"
   },
   {
    "blog_date": "2026-09-24",
    "slug": "tmview-trademark-search-api-no-key",
    "devto_id": 4797175,
-   "devto_published_at": "2026-10-04T19:02:03Z"
+   "devto_published_at": "2026-10-04T19:02:03.528Z"
   },
   {
    "blog_date": "2026-09-24",
    "slug": "court-records-opinion-status-any-is-not-any",
    "devto_id": 4779767,
-   "devto_published_at": "2026-10-01T00:01:10Z"
+   "devto_published_at": "2026-10-01T00:01:10.939Z"
   },
   {
    "blog_date": "2026-09-24",
    "slug": "hacker-news-1000-hit-search-ceiling",
    "devto_id": 4771966,
-   "devto_published_at": "2026-09-29T14:03:14Z"
+   "devto_published_at": "2026-09-29T14:03:14.807Z"
   },
   {
    "blog_date": "2026-09-24",
    "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml",
    "devto_id": 4771257,
-   "devto_published_at": "2026-09-29T12:01:38Z"
+   "devto_published_at": "2026-09-29T12:01:38.210Z"
   },
   {
    "blog_date": "2026-09-24",
    "slug": "government-apis-fail-open-on-a-dropped-filter-name",
    "devto_id": 4753165,
-   "devto_published_at": "2026-09-27T01:02:07Z"
+   "devto_published_at": "2026-09-27T01:02:07.118Z"
   },
   {
    "blog_date": "2026-09-23",
    "slug": "sam-gov-key-free-federal-datasets-one-endpoint",
    "devto_id": 4737103,
-   "devto_published_at": "2026-09-25T00:00:43Z"
+   "devto_published_at": "2026-09-25T00:00:43.265Z"
   },
   {
    "blog_date": "2026-09-23",
    "slug": "watch-baseline-eviction-rebilling",
    "devto_id": 4719842,
-   "devto_published_at": "2026-09-23T00:01:26Z"
+   "devto_published_at": "2026-09-23T00:01:26.377Z"
   },
   {
    "blog_date": "2026-09-09",
    "slug": "http-only-vs-headless-browser-scraping-cost",
    "devto_id": 4702159,
-   "devto_published_at": "2026-09-21T00:01:36Z"
+   "devto_published_at": "2026-09-21T00:01:36.027Z"
   },
   {
    "blog_date": "2026-09-14",
    "slug": "shopify-inventory-barcode-per-product-json",
    "devto_id": 4689167,
-   "devto_published_at": "2026-09-19T00:06:22Z"
+   "devto_published_at": "2026-09-19T00:06:22.543Z"
   },
   {
    "blog_date": "2026-09-16",
    "slug": "incremental-api-watch-mode-four-traps",
    "devto_id": 4670994,
-   "devto_published_at": "2026-09-17T00:06:16Z"
+   "devto_published_at": "2026-09-17T00:06:16.066Z"
   },
   {
    "blog_date": "2026-09-13",
    "slug": "ats-job-board-json-apis-six-shapes",
    "devto_id": 4653994,
-   "devto_published_at": "2026-09-15T00:06:19Z"
+   "devto_published_at": "2026-09-15T00:06:19.507Z"
   },
   {
    "blog_date": "2026-09-10",
    "slug": "apple-podcasts-public-json-api",
    "devto_id": 4641373,
-   "devto_published_at": "2026-09-13T00:06:48Z"
+   "devto_published_at": "2026-09-13T00:06:48.301Z"
   },
   {
    "blog_date": "2026-09-09",
    "slug": "json-ld-article-extraction-fails-on-real-news-sites",
    "devto_id": 4627420,
-   "devto_published_at": "2026-09-11T00:32:33Z"
+   "devto_published_at": "2026-09-11T00:32:33.870Z"
   },
   {
    "blog_date": "2026-09-09",
    "slug": "decode-google-news-rss-redirect-links",
    "devto_id": 4610780,
-   "devto_published_at": "2026-09-09T03:31:11Z"
+   "devto_published_at": "2026-09-09T03:31:11.080Z"
   }
  ],
- "devto_unmatched_canonical": [],
  "unsynced_slugs_newest_first": [
-  "cfda-funding-history-zero-is-not-zero",
   "federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model",
   "ats-location-field-is-not-one-shape",
   "grants-gov-watchchanges-deadline-replay",
@@ -226,10 +230,5 @@
   "bold-org-nextjs-rsc-scholarship-data",
   "eu-ted-tenders-public-json-api",
   "shopify-catalog-products-json-no-login"
- ],
- "superseded_derivation": {
-  "derived_at_cycle": 1978,
-  "derived_at": "2026-10-20T06:34:00Z",
-  "synced_count": 22
- }
+ ]
 }

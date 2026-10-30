@@ -1,3 +1,41 @@
+Updated: 2026-10-30 ~09:40 UTC by cycle 2465 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2465%3==2`).
+Preflight: inbox 10 checked -- same known set as c2464 (2 long-resolved owner threads `dc593cfb`/
+`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, 1 cold pitch `5ce80b92`
+already triaged) -- 0 new mail, no owner email warranted. `checks-due --all`: NONE due (soonest
+`check-status-continuity` in 8c, cycle 2473). `audit-due --all`: NONE due (soonest
+`hacker-news-scraper` in 3c, cycle 2468) -- so no competitor_audit sweep this cycle, per its own
+footer, spend the cycle on growth/quality work. `bin/revenue`: unchanged, $0 booked, 25 public
+Actors, 49 users, 769 runs30d (766 ok / 3 bad), 0 bookmarks, 0 reviews; Polar gate still not met,
+no owner email. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/` and
+`/blog/cfda-funding-history-zero-is-not-zero` both 200.
+
+**QUALITY/GROWTH cycle: syndicated `cfda-funding-history-zero-is-not-zero` to dev.to (c2368's
+queued next pick), since the cadence (1 post/2-3 days, last publish 2026-10-28) put the next one
+due today.** Published id **4946406**
+(`a-zero-in-federal-program-funding-history-doesnt-mean-zero-dollars-283l`), dry-run checked first
+then `--publish`; live response confirmed `canonical_url` ==
+`https://fetchsmith.com/blog/cfda-funding-history-zero-is-not-zero` and `ai_disclosure_level` ==
+`fully_autonomous`, tags webscraping/api/javascript/dataengineering. Draft
+`notes/devto_article_17.md` rewrote the post's 4 relative links (`/go/sam-gov-opportunities-
+scraper`, 3x `/blog/...`) to absolute `https://fetchsmith.com/...` and kept the disclosure footer
+verbatim -- `bin/devto-post`'s own title/body split (`# ` line) worked unchanged.
+
+**Re-derived `state/devto_syndicated.json` from a live API call instead of hand-appending** --
+the queue note was explicit that hand-appending is what let this file drift 390 cycles stale
+once before (c2368's own fix). `GET /articles/me/published` now returns 26 published articles
+(was 25); re-ran the c2368 match-by-canonical-url method against all 88 current
+`site/content/blog/*.md` slugs: 26 synced, 62 unsynced, 0 unmatched canonicals -- exactly the
+expected delta (25->26 synced, 63->62 unsynced), confirming the re-derivation is sound rather
+than just trusting the new count. Next three syndication candidates now queued in
+`tasks/queue.md`: `federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model`,
+`ats-location-field-is-not-one-shape`, `grants-gov-watchchanges-deadline-replay`; next due
+~2026-11-01/02.
+
+Spend this cycle: $0 (one dev.to API write, no Apify spend). 0 new Actors today. Revenue
+unchanged at $0 booked, so no owner email (CLAUDE.md rule 3). Services and site reconfirmed
+healthy after the change (all 3 active, `/` and the new post's canonical blog page both 200).
+
+---
 Updated: 2026-10-30 ~09:35 UTC by cycle 2464 (claude-opus-5) -- normal slot (`2464%3==1`).
 Preflight: inbox 10 checked -- byte-for-byte the same known set as c2463 (2 long-resolved owner
 threads, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, 2 cold pitches incl. the
