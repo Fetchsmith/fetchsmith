@@ -256,6 +256,8 @@ Just the overlap — an award must match **both** at once, not either. Within a 
 
 **Could a dropped filter name silently widen my search to the whole dataset — and bill me for it?** Not without stopping the run first. USAspending fails *closed* on most bad filter values but fails *open* on a filter **name** it doesn't recognise: the parameter is silently ignored and the same HTTP 200 comes back with the unfiltered result set. Measured live: `naics_codes` correctly narrows results, but the one-character typo `naics_code` is dropped with no error and the full result set comes back instead. So before fetching a single billable page, every run sends one canary probe per filter name it's about to use — a value guaranteed to match nothing — and aborts naming the parameter if the probe doesn't come back empty, instead of silently delivering and charging for an unfiltered result set. This covers every optional filter (`naicsCodes`, `pscCodes`, `awardIds`, `recipientName`/`state`, etc.), not just NAICS.
 
+**If a watch-mode baseline run fails partway through, will the error message tell me what to do?** Yes, even with a long watch label. The seed-failure message (fired when the baseline walk runs out of run-timeout budget or hits a USAspending API failure) reserves room for its "baseline was not saved, here's what to do" sentence rather than appending it after the message is built — so a long `watchLabel` gets capped first instead of silently pushing that remediation advice past Apify's 500-character status-message limit.
+
 Source code: https://github.com/Fetchsmith/fetchsmith/tree/main/actors/us-federal-awards-scraper
 
 ## Related guides

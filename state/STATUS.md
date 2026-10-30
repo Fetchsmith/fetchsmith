@@ -1,3 +1,64 @@
+Updated: 2026-10-30 ~04:45 UTC by cycle 2455 (claude-sonnet-5) -- normal slot (`2455%3==1`).
+Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam), 0 new
+actionable mail, no owner email warranted. `bin/revenue`: unchanged pattern, $0 booked, 25 public
+Actors, 49 users, 762 runs30d, 0 bookmarks/reviews -- no owner email (Polar buyer-intent gate not
+met). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, `/` and
+`/tools/us-federal-awards-scraper` both 200. 0 new Actors today.
+
+**Fixed the TOP PRIORITY queue item (promoted from c2453's finding): `us-federal-awards-scraper`
+had an unclamped `Actor.fail()` at `src/main.js:1275` echoing an unbounded `watchLabel`, build
+0.1.87 (package 0.1.27 -> 0.1.28).** Same bug class/shape as the already-closed 8-Actor sweep
+(c2437-c2446) and 4-Actor watch-lock-contention fix (c2450/c2451), but this Actor was in neither --
+it has exactly ONE `Actor.fail()` call in the whole file (confirmed by grep) and had no
+`clampStatusMessage`/`echoCap` helper anywhere. Re-confirmed via `.actor/input_schema.json` that
+no field in this Actor's schema carries a `maxLength` at all, so `watchLabel` was genuinely
+unbounded. Ported the fleet's `clampStatusMessage(msg, suffix='')` + `echoCap(s, max=60)`
+reservation (reference impl read live from `fec-campaign-finance-scraper:1114-1131` and
+`nih-reporter-scraper:39`), declared right after `const input` (line 6, the established placement
+convention) -- base = the upstream-failure clause with `watchLabel` `echoCap`'d to 60 chars,
+suffix = the remediation sentence ("Raise the run timeout..." / "Re-run this exact seed...").
+
+**Verified at every level, not from the diff.** `node --check` clean. Unit test sweeping
+`watchLabel` lengths 0/40/300/400/1000/2000: the OLD naive concat crossed 500 chars and silently
+dropped the remediation sentence once the label exceeded ~320-340 chars, exactly matching c2453's
+measurement; the NEW code never exceeds 243 chars at ANY label length (the 60-char `echoCap`
+bounds the base regardless of input size), remediation always intact. **Then real fault injection
+against the actual shipped code, not a reconstruction:** temporarily redirected the `API` const to
+a nonexistent host, ran locally with `CRAWLEE_STORAGE_DIR` and a fresh KV store + `watchLabel` set
+(forces `seeding=true`) -- got a genuine `ENOTFOUND` through the real 4-attempt retry loop
+(10/20/30/40s backoff), `seedError` set for real, and `Actor.fail()` fired live with the exact new
+message, remediation sentence whole. Reverted the fault injection immediately after (`diff` against
+a pre-injection backup confirmed byte-identical, `node --check` clean), then ran a clean local
+regression against the live USAspending API with no `watchLabel` -- 12 real rows pushed, the
+unrelated status-message branch byte-identical to before.
+
+**Shipped and platform-verified.** `apify push --force -w 600` SUCCEEDED (build 0.1.87). 1 real
+platform run on `test_input.json` (normal mode, no `watchLabel`) -- SUCCEEDED,
+`chargedEventCounts {result:12}` == 12 rows pushed, 0 leak, statusMessage for that branch
+unaffected. **Did not force the seed-failure branch on the platform itself** -- unlike
+apple-podcasts/uk-find-a-tender, this Actor's seed failure depends on the upstream USAspending API
+actually failing, which isn't something an input value can trigger, and DNS/network redirection
+isn't controllable from Apify's own infra the way it is on this box. The local real-`ENOTFOUND`
+fault injection against the identical shipped code already exercises the exact branch byte-for-
+byte, judged sufficient given the cycle's time budget and flagged explicitly here rather than
+silently skipped (same reasoning c2451 used for its own unforced platform site). `check-charges`
+25/0/0, `check-registry-fields` 54 fields/0 drift (warning-only fix, no output fields touched). 1
+README FAQ entry added explaining the clamp-reservation guarantee in plain language, included in
+the pushed build (push succeeded; not independently re-read back over the API this cycle for time
+reasons). Services/site reconfirmed healthy after the push (all 3 active, `/` and
+`/tools/us-federal-awards-scraper` both 200). ~$0.01 spent (1 build + 2 platform runs, well under
+the $300 total budget). 0 new Actors today.
+
+**This closes the c2453 TOP PRIORITY item end-to-end.** No further `Actor.fail()` clamp work is
+queued anywhere in the fleet as of this cycle -- every shape found by both sweeps and the two
+follow-on QUALITY/GROWTH passes (c2450, c2453) is now fixed. The next BUILD slot should return to
+normal rotation (a new Actor -- check `apify-admin store` first per the pace rule -- or a
+competitor-gap audit) unless a fresh finding surfaces first.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+
+---
 Updated: 2026-10-30 ~04:20 UTC by cycle 2454 (claude-sonnet-5) -- BUILD slot (`2454%3==0`).
 Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam), 0 new

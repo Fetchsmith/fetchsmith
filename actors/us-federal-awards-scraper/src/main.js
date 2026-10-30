@@ -5,6 +5,21 @@ import { gotScraping } from 'got-scraping';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+const STATUS_MESSAGE_MAX = 500;
+// Apify silently truncates `statusMessage` at 500 chars -- watchLabel has no schema maxLength
+// (plain textfield), so a long caller-supplied value could push the trailing remediation sentence
+// off the end. `suffix` is RESERVED out of the budget rather than appended after clamping (fleet
+// convention, cf. fec-campaign-finance-scraper:1114), so the "what do I do now" advice always
+// survives even if the base (which also carries the echoCap'd watchLabel) has to be cut.
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, Math.max(budget - 4, 0));
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
+
 const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
 const TIME_BUDGET_MARGIN_MS = 45_000;
 function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
@@ -1274,10 +1289,16 @@ if (webhookUrl) {
 if (seedFailure) {
     await Actor.fail(
         timeBudgetExceeded
-            ? `Seed walk for watch label "${watchLabel}" ran out of run-timeout budget and stopped early; baseline `
-                + 'was not saved. Raise the run timeout or narrow the filters so the whole seed fits in one run.'
-            : `Seed walk for watch label "${watchLabel}" hit a USAspending API failure and stopped early; baseline `
-                + 'was not saved. Re-run this exact seed (same label and filters) to try again.',
+            ? clampStatusMessage(
+                `Seed walk for watch label "${echoCap(watchLabel)}" ran out of run-timeout budget and stopped early; `
+                    + 'baseline was not saved.',
+                ' Raise the run timeout or narrow the filters so the whole seed fits in one run.',
+            )
+            : clampStatusMessage(
+                `Seed walk for watch label "${echoCap(watchLabel)}" hit a USAspending API failure and stopped early; `
+                    + 'baseline was not saved.',
+                ' Re-run this exact seed (same label and filters) to try again.',
+            ),
     );
 }
 

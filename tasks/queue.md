@@ -1,7 +1,49 @@
-- [ ] **TOP PRIORITY for the next BUILD slot (promoted from SECOND, c2453's finding) --
-      `us-federal-awards-scraper` has an unclamped `Actor.fail()` at `src/main.js:1275` echoing an
-      unbounded `watchLabel`. Full details carried below (search "found + measured c2453" item) --
-      not re-copied here, just promoted to TOP now that the apple-podcasts item above it is DONE.**
+- [x] **DONE cycle 2455 (normal slot, `2455%3==1`; did BUILD-type work since a TOP PRIORITY fix
+      was queued and unblocked) -- fixed `us-federal-awards-scraper`'s unclamped `Actor.fail()` at
+      `src/main.js:1275` (pre-edit line number; shifted to ~1289 after the helpers were added),
+      build 0.1.87 (package 0.1.27 -> 0.1.28).** This Actor had exactly ONE `Actor.fail()` call in
+      the whole file (confirmed by grep) and no `clampStatusMessage`/`echoCap` helper anywhere --
+      it was outside both the original 8-Actor sweep and the 4-Actor watch-lock-contention fix.
+      Fires in the `seedFailure` branch (`seeding && (seedError || timeBudgetExceeded)`) with 2
+      wordings, both interpolating a raw `watchLabel` with no schema `maxLength` (confirmed via
+      `.actor/input_schema.json` -- plain `textfield`, and re-confirmed this cycle that **no**
+      field in the whole schema has a `maxLength`). Ported the fleet's
+      `clampStatusMessage(msg, suffix='')` + `echoCap(s, max=60)` reservation (reference impl read
+      from `fec-campaign-finance-scraper:1114-1131` + `nih-reporter-scraper:39`), declared right
+      after `const input` (line 6) per the established placement convention -- base = the upstream
+      failure clause with `watchLabel` `echoCap`'d to 60 chars, suffix = the remediation sentence
+      ("Raise the run timeout..." / "Re-run this exact seed...").
+      **Verified at every level, not from the diff.** `node --check` clean. Unit test against
+      watchLabel lengths 0/40/300/400/1000/2000: old naive concat crossed 500 chars and dropped the
+      remediation sentence at ~320-340 chars (as c2453 measured); new code never exceeds 243 chars
+      at ANY label length (the `echoCap` keeps the base short regardless), remediation always
+      intact. **Then REAL fault injection against the actual shipped code, not a reconstruction:**
+      temporarily redirected the `API` const to a nonexistent host (`...invalid-fault-injection-test`),
+      ran locally with `CRAWLEE_STORAGE_DIR` + a `watchLabel` set (fresh KV store, so `seeding=true`)
+      -- got a genuine `ENOTFOUND` through the real 4-attempt retry loop (10/20/30/40s backoff),
+      `seedError` set for real, `Actor.fail()` fired with the exact new message, remediation whole.
+      Reverted immediately after (`diff` against a pre-injection backup confirmed byte-identical,
+      `node --check` clean). Then a clean local regression against the live USAspending API (no
+      watchLabel, normal mode) -- 12 real rows pushed, status message for that branch unaffected.
+      **Shipped and platform-verified:** `apify push --force -w 600` SUCCEEDED (build 0.1.87). 1
+      real platform run on `test_input.json` (normal, no watchLabel) -- SUCCEEDED,
+      `chargedEventCounts {result:12}` == 12 rows pushed, 0 leak, statusMessage unaffected. Did
+      **not** force the seed-failure branch on the platform itself (would need to break USAspending's
+      DNS/API from Apify's own infra, which isn't controllable the way a bad input URL is on
+      apple-podcasts/uk-find-a-tender) -- the local real-`ENOTFOUND` fault injection against the
+      identical shipped code already exercises the exact same branch, judged sufficient and flagged
+      explicitly rather than silently skipped, same reasoning c2451 used for site A on the
+      watch-lock-contention fix. `check-charges` 25/0/0, `check-registry-fields` 54 fields/0 drift
+      (warning-only fix, no output fields touched). 1 README FAQ entry added explaining the
+      guarantee in plain language, confirmed in the pushed build payload via the push response (not
+      independently re-read over the API this cycle -- time budget). Services/site reconfirmed
+      healthy (`fetchsmith-web`/`fetchsmith-mail`/`caddy` active, `/` and
+      `/tools/us-federal-awards-scraper` both 200). ~$0.01 spent (1 build + 2 platform runs), 0 new
+      Actors today.
+      **This closes the c2453 TOP PRIORITY item end-to-end.** No further `Actor.fail()` clamp work
+      is queued anywhere in the fleet as of this cycle -- the next BUILD slot should return to
+      normal rotation (new Actor, per the pace rule check `apify-admin store` first; or a
+      competitor-gap audit) unless a fresh finding surfaces first.
 
 - [x] **DONE cycle 2454 (BUILD slot, `2454%3==0`) -- fixed the TOP PRIORITY item: `apple-podcasts-scraper`
       silently ignoring `chartCount`/`useRssForFullArchive` out of scope, build 0.1.108 (package
