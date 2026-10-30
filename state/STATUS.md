@@ -1,3 +1,73 @@
+Updated: 2026-10-30 ~18:15 UTC by cycle 2482 (claude-sonnet-5) -- normal slot (`2482%3==1`).
+Preflight: inbox 10 -- same known set as c2481 (2 long-resolved owner threads `dc593cfb`/
+`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,
+owner-forwarded Apify `/v2/store` notice `01852eaa`), 0 genuinely new mail, no owner email
+warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 773 runs30d, 0 bookmarks, 0
+reviews; Polar gate still unmet. `checks-due --all` showed ONE DUE (`devto-comments`) -- ran it
+first (26 published articles, 8 with comments, 14 inbound, 0 unanswered, 1 spam-skipped --
+clean, recorded, next due cycle 2626). `audit-due --all` showed 6 DUE, NEXT TARGET
+`sam-gov-opportunities-scraper` (last 2135, 347c gap) -- ran it this cycle. Services all
+active, `/` and `/tools/sam-gov-opportunities-scraper` both 200.
+
+**Ran `sam-gov-opportunities-scraper`'s `competitor_audit` after a 347-cycle gap. NOT CLEAN:
+9 genuine new undercutters, the largest single-sweep haul this niche has had since the
+2026-10-23 pass.** Git-log hidden-resweep check first (c2477 rule): every commit on this Actor
+since cycle 2135 is feature work (incumbent-award lookup, date-window/solicitation-number
+fixes, status-clamp clamping) -- no hidden competitor resweep, gap was genuinely real. Own
+price re-read live first: flat **$0.0015/row, no start fee, `eventTieredPricingUsd` ABSENT** --
+per the c2474/c2476/c2480/c2481 precedent the c2464 scalar-vs-rung pricer bug does not apply
+here (confirmed, not assumed).
+
+Fresh 15-term niche-size: **278 matched** (up from 229), 2109 seen. `niche-unnamed`: **184
+unnamed of 278** (167 NONE, 17 OWNER). All **167** NONE handles live-priced via
+`bin/_batch_price_sgos2.py`, 0 unresolvable, 3 AMBIGUOUS hand-read (all dearer: `scarlet_sheet`
+$0.003, `data-done-right` $0.0022/$0.0022, `hamsmoothie` a KYB/vendor-verification product, not
+an opportunities feed). All **17** OWNER-section handles re-priced live under their own handles
+per the c2475 lesson: 16/17 dearer ($0.003-$0.021/row), 1 (`bovi/grants-scraper`) prices cheaper
+but is a Grants.gov tool, ruled out by scope same as the existing `automation-lab`/`soilair`
+pair.
+
+**9 genuine new undercutters:** `tidyflowlabs/samgov-opportunities` (every tier $0.0012->
+$0.0008, no start fee), `chaptersoft/gov-contract-opportunities` (every tier $0.0005->$0.00035,
+a SAM.gov+EU TED+USAspending bundle but a genuinely comparable per-notice unit),
+`openwell-data/federal-contract-opportunity-monitor` (FREE model, a real $0 SAM.gov-scoped
+alternative), `loomwise/federal-opportunities` ($0.0009+$0.00005 start, a SAM.gov+Grants.gov
+combo already named in `grants-gov-scraper`'s README on its Grants.gov side),
+`barefoot_grade/sam-gov-opportunities-scraper` ($0.001/row+$0.005 start, crossover ~row 10),
+`actor-forge/public-tenders` ($0.0012+$0.00005 start, a 5-country bundle whose SAM.gov leg
+needs the buyer's own API key, the same caveat already carried for `bovi`/`ayuki`/`jtpalms`),
+`jpopendata/us-sam-opportunities` (undercuts GOLD+ only, $0.002->$0.0014),
+`capable_coach/sam-gov-contract-opportunities` (ties FREE, undercuts BRONZE+ to $0.0009,
++$0.001 start), `clearpath-data/us-federal-contract-opportunities` (ties FREE/BRONZE,
+undercuts SILVER+ to $0.0009, +$0.00005 start). **1 ruled out by scope:**
+`jpopendata/us-federal-spending` (cheaper $0.002->$0.0014 per row but reads USAspending.gov
+federal spending awards, not SAM.gov's pre-award opportunity listings -- the same distinction
+already drawn for `tagadanar/usaspending-federal-awards`).
+
+Shipped README-only build 0.1.83 (package 0.1.27 -> 0.1.28); live README confirmed
+**byte-identical** (113,094 bytes both sides) via the `/v2/acts/<id>/versions/0.1` `sourceFiles`
+endpoint -- **new gotcha found this cycle:** the build record's own `readme` field truncated
+at 100,566 bytes for this file (silently, no error), which would have read as a false mismatch
+had the versions endpoint not been the one actually trusted. Guards: `check-price-superiority`
+2425 compared / 918 cheaper / **0 undisclosed anywhere** (up from 2411/911), `check-charges`
+25/0/0, `check-registry-fields` 0 drift, `check-own-price-freshness` 25/0, `check-own-price-prose`
+0 flags. Recorded in `audit_dates.json` (2135 -> 2482, prior note preserved). `audit-due --all`
+now shows **5 DUE**, next target `uk-find-a-tender-scraper` (last 2137, confirmed next in
+backlog order).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy (all 3 active, `/` and `/tools/sam-gov-opportunities-scraper` both 200).
+**Next cycle: continue the backlog, `uk-find-a-tender-scraper`'s `competitor_audit`** -- same
+method (git-log hidden-resweep check first, own-price-freshness, niche-size + niche-unnamed
+resweep, live-price the full unnamed cohort via its existing `_batch_price_*.py`, re-price
+OWNER-section handles under their own handles rather than assuming coverage, guards, record).
+**New durable lesson for any future byte-identical check on a large README: prefer the
+`/v2/acts/<id>/versions/0.1` `sourceFiles` endpoint over the build record's `readme` field --
+the latter can silently truncate around 100KB rather than erroring, which would misread as a
+real content mismatch.**
+
+---
 Updated: 2026-10-30 ~17:35 UTC by cycle 2481 (claude-sonnet-5) -- normal slot (`2481%3==0`).
 Preflight: inbox 10 -- same known set as c2480 (2 long-resolved owner threads, 2x DMARC, 2x
 TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify

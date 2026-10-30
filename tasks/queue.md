@@ -4,6 +4,37 @@
       - **Confirmed SAFE / no action needed:** `bin/niche-size` and `bin/niche-unnamed` (the tools every `competitor_audit` sweep depends on) deliberately fetch ONE page per search term and never loop on `offset` -- a cycle-1779 lesson already in the code comments, written for an unrelated reason (Algolia offset staleness) but it happens to make them immune to this change too. `bin/store-scan` single-page, no offset. `bin/apify-admin store` / `bin/check-rental-converts` pass `sortBy=relevance` but don't page past one call -- losing that param just means the platform's own new default ranking applies, not a break. No script reads `bookmarkCount` (grepped fleet-wide) or a bare `rating` field from `/v2/store`.
       **No owner email needed** (nothing only the owner can fix, no revenue event) and no urgent fix needed today (16-day runway, nothing in the automated `checks-due` cadence hits the broken path before the deadline) -- but do NOT let this fall off the queue. Next action: when `store-anon-rank` or `check-store-rank` next come due AFTER 2026-11-15, read this note first and patch the offset-pagination loop (e.g. cap at page 1 and report "ranked beyond page 1, exact position unknown" instead of silently misreporting) before trusting the output.
 
+- [x] **DONE cycle 2482 (normal slot, `2482%3==1`) -- ran the DUE fleet check
+      `devto-comments` (clean: 26 published, 8 with comments, 14 inbound, 0 unanswered, 1
+      spam-skipped), then the backlog's NEXT TARGET, `sam-gov-opportunities-scraper`'s
+      `competitor_audit` (last 2135, 347c gap). NOT CLEAN: 9 genuine new undercutters, the
+      largest single-sweep haul this niche has had since 2026-10-23.** Git-log hidden-resweep
+      check first: all commits since 2135 are feature work (incumbent-award lookup, date-window/
+      solicitation-number/status-clamp fixes), gap was real. Own price re-read live: flat
+      $0.0015/row, no start fee, `eventTieredPricingUsd` ABSENT -- c2464 bug doesn't apply.
+      niche-size 278 matched (up from 229); `niche-unnamed` 184 unnamed (167 NONE/17 OWNER), all
+      167 NONE live-priced via `bin/_batch_price_sgos2.py` (0 unresolvable, 3 AMBIGUOUS hand-read,
+      all dearer), all 17 OWNER handles re-priced under their own IDs (16/17 dearer, 1 out of
+      scope). 9 new undercutters: `tidyflowlabs/samgov-opportunities` (every tier $0.0012->
+      $0.0008), `chaptersoft/gov-contract-opportunities` (every tier $0.0005->$0.00035),
+      `openwell-data/federal-contract-opportunity-monitor` (FREE, real $0), `loomwise/federal-
+      opportunities` ($0.0009+$0.00005 start), `barefoot_grade/sam-gov-opportunities-scraper`
+      ($0.001+$0.005 start, crossover ~row 10), `actor-forge/public-tenders` ($0.0012+$0.00005
+      start, SAM.gov needs buyer's own key), `jpopendata/us-sam-opportunities` (GOLD+ only),
+      `capable_coach/sam-gov-contract-opportunities` (BRONZE+), `clearpath-data/us-federal-
+      contract-opportunities` (SILVER+). 1 ruled out by scope (`jpopendata/us-federal-spending`,
+      USAspending awards not SAM.gov opportunities). Shipped README-only build 0.1.83 (package
+      0.1.27 -> 0.1.28). **New gotcha: the build record's own `readme` field silently truncated
+      at 100,566 bytes for this large file -- had to use the `/v2/acts/<id>/versions/0.1`
+      `sourceFiles` endpoint instead to get a true byte-identical check (113,094 bytes both
+      sides).** Guards clean: `check-price-superiority` 2425/918/0 undisclosed (up from
+      2411/911), `check-charges` 25/0/0, `check-registry-fields` 0 drift,
+      `check-own-price-freshness` 25/0, `check-own-price-prose` 0 flags. Recorded in
+      `audit_dates.json` (2135 -> 2482). Backlog now **5 DUE**, next target
+      `uk-find-a-tender-scraper` (last 2137, 345c gap). No new mail, no revenue change, no owner
+      email (CLAUDE.md rule 3). ~$0.005 spent (one build), 0 new Actors today. Full detail in
+      `state/STATUS.md` cycle 2482.
+
 - [x] **DONE cycle 2481 (normal slot, `2481%3==0`) -- ran the backlog's NEXT TARGET,
       `federal-register-scraper`'s eighth `competitor_audit` pass (last 2131, 349c gap). HOLD
       $0.0008/result, quietest sweep this Actor has had: 0 of 107 live-priced listings
@@ -422,14 +453,12 @@
       `last` cycle, per the c2473 precedent (but see the c2477 correction above: a hidden
       sweep only counts if it covers the FULL unnamed/`>=3-user` cohort, NOT a one-term
       spot-check), AND check whether the Actor's own live price is genuinely flat before
-      assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies -- c2474 found it did
-      NOT apply to a flat-priced Actor).** `audit-due --all` as of c2477 shows **7 DUE**, in
-      its own order: `ats-jobs-scraper` (c1805, **NEXT TARGET, data-gathering half done this
-      cycle -- see the c2477 IN PROGRESS item above, finish the pricing half first**),
-      `apple-podcasts-scraper` (c2121), `federal-register-scraper` (c2131),
-      `sam-gov-opportunities-scraper` (c2135), `uk-find-a-tender-scraper` (c2137),
-      `trademark-search-scraper` (c2139), `court-records-scraper` (c2141). Do NOT batch these
-      -- each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
+      assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies -- c2474/c2480/c2482
+      all found it did NOT apply to a flat-priced Actor).** `audit-due --all` as of c2482
+      shows **5 DUE**, in its own order: `uk-find-a-tender-scraper` (c2137, **NEXT TARGET**),
+      `trademark-search-scraper` (c2139), `court-records-scraper` (c2141),
+      `clinicaltrials-scraper` (c2144), `nih-reporter-scraper` (c2145). Do NOT batch these --
+      each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
       meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,
       so what these sweeps add is niche COMPLETENESS only.
 
