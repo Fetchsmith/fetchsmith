@@ -1,3 +1,31 @@
+- [x] **DONE cycle 2485 (normal slot, `2485%3==1`) -- ran the backlog's NEXT TARGET,
+      `court-records-scraper`'s `competitor_audit` (last 2141, 343c gap). NOT CLEAN: 2 genuine
+      new in-scope undercutters + 4 jurisdiction-excluded undercutters.** Git-log hidden-resweep
+      check first (c2477 rule): only commits since 2141 are disclosure-only/feature work (billing
+      clamp, unknown-court-id disclosure, mode-scope warning, closing 3 `check-competitor-claims`
+      flags), none a full-cohort resweep -- gap genuinely real. Own price re-read live: flat
+      $0.002/result, single primary `result` event, `eventTieredPricingUsd` absent, no start fee
+      -- c2464 scalar-vs-rung bug does not apply, `bin/_batch_price_crs.py`'s flat `OURS` already
+      matches. `niche-size` 160 matched (up from 156), 6,817 seen. `niche-unnamed` 67 unnamed (8
+      NONE, 59 OWNER incl. self), all 66 non-self handles live-priced, 0 unresolvable. 2 in-scope
+      undercutters: `rbbscrap/fast-courtlistener-docket-scraper` ($0 FREE model, federal PACER
+      dockets only, narrower than our dockets+opinions scope), `parseforge/
+      courtlistener-civil-cases-scraper` (dearer Free/Bronze/Silver, crosses under on
+      Platinum/Diamond, civil-dockets-only). 4 out-of-scope-but-cheaper on jurisdiction:
+      `orange_briefcase_hrj/austria-case-law-search` + `.../german-case-law-search` (new vendor,
+      Austria+Germany, every tier), `jungle_synthesizer/canlii-canadian-case-law-scraper` (Canada,
+      Silver up), `steadfetch/cendoj-jurisprudence-monitor` (5th Spanish CENDOJ rival, every
+      tier). 4 more NONE handles dearer/different-product (`nabeelbaghoor`, `groundplanes`,
+      `enterprising_hamster` [Poland, new country, dearer], `tudorlane/adverse-media-watch` [KYC
+      screening, not court records]). Remaining 57 of 66 dearer, already covered by an owner
+      named above. Shipped README-only build 0.1.74 (package 0.1.24 -> 0.1.25); live README
+      byte-identical (71,440 bytes). Guards clean: `check-price-superiority` 2454/933/0
+      undisclosed (up from 2444/929), `check-charges` 25/0/0, `check-registry-fields` 0 drift,
+      `check-own-price-prose` 0 flags. Recorded in `audit_dates.json` (2141 -> 2485). Backlog now
+      **3 DUE**, next target `clinicaltrials-scraper` (last 2144, 341c gap). No new mail, no
+      revenue change, no owner email (CLAUDE.md rule 3). ~$0.005 spent (one build), 0 new Actors
+      today. Full detail in `state/STATUS.md` cycle 2485.
+
 - [ ] **NEW (c2478, MEDIUM, deadline 2026-11-15 -- not urgent today, but must be checked again before that date and again shortly after) -- Apify is changing `GET /v2/store` search behavior on 2026-11-15** (forwarded by owner, inbox `01852eaa`, from Apify's own product-marketing mail): after that date, (1) search returns one page of up to 100 Actors and `offset`/`total` no longer work for paging, (2) `sortBy` is ignored, (3) category filtering can return different Actors, (4) `bookmarkCount` is removed from the payload and ratings move into `stats`. **Investigated this cycle which fleet tools actually call `/v2/store` (not Algolia) and are exposed:**
       - **`bin/store-anon-rank`** -- genuinely broken by this: it pages `/v2/store?search=` with `offset` to find our exact position (we sit anywhere from #29 to #354 on core terms per its cycle-2072 baseline), so after 2026-11-15 it can only see page 1 (first ~100) and will misreport "not found" for anything ranked deeper, the same false-negative shape its own docstring already warns about. `checks-due` has it next due cycle 2744 (~2026-11-05, before the change) so the next scheduled run is still safe, but the run AFTER that (~336 cycles later, after the deadline) needs the paging logic revisited first -- note it in that cycle rather than trusting a sudden empty-looking result. **Possible upside worth re-checking, not just a break:** cycle 2072's decisive finding was that Store search rank is gated on `totalUsers` (16 identically-named `grants-gov-scraper` listings proved it, 87 positions of spread with runs30d held equal) -- Apify's own mail says the new default **ranks by match-to-query instead**, which could remove exactly the cold-start penalty that finding is built on. Worth a fresh `store-anon-rank` read once the change is live, not just a mechanical pagination fix.
       - **`bin/check-store-rank`** -- same `offset`/`total` paging pattern (`--scan` loop), but its own docstring already labels this a MINOR, non-buyer-facing surface (the real buyer surface is Algolia via `bin/store-rank`, unaffected -- confirmed this cycle it hits `algolia.net` directly, not `/v2/store`). Lower priority; same "re-check before trusting a post-2026-11-15 run" caveat applies.
@@ -510,10 +538,10 @@
       sweep only counts if it covers the FULL unnamed/`>=3-user` cohort, NOT a one-term
       spot-check), AND check whether the Actor's own live price is genuinely flat/already
       rung-for-rung before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies --
-      c2474/c2480/c2482/c2483 all found it did NOT apply).** `audit-due --all` as of c2483
-      shows **5 DUE**, in its own order: `trademark-search-scraper` (c2139, **NEXT TARGET**),
-      `court-records-scraper` (c2141), `clinicaltrials-scraper` (c2144),
-      `nih-reporter-scraper` (c2145), `google-news-scraper` (c2147). Do NOT batch these --
+      c2474/c2480/c2482/c2483/c2485 all found it did NOT apply).** `audit-due --all` as of
+      c2485 shows **3 DUE**, in its own order: `clinicaltrials-scraper` (c2144,
+      **NEXT TARGET**), `nih-reporter-scraper` (c2145), `google-news-scraper` (c2147).
+      Do NOT batch these --
       each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
       meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,
       so what these sweeps add is niche COMPLETENESS only.

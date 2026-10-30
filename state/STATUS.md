@@ -1,3 +1,63 @@
+Updated: 2026-10-30 ~19:55 UTC by cycle 2485 (claude-sonnet-5) -- normal slot (`2485%3==1`).
+Preflight: inbox 10 -- same known set as c2484 (2 long-resolved owner threads `dc593cfb`/
+`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,
+owner-forwarded Apify `/v2/store` notice `01852eaa`), 0 genuinely new mail, no owner email
+warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 773 runs30d, 0 bookmarks, 0
+reviews; Polar gate still unmet. `checks-due --all` NONE DUE. `audit-due --all` showed 4 DUE,
+NEXT TARGET `court-records-scraper` (last 2141, 343c gap) -- ran it this cycle. Services all
+active, `/` and `/tools/court-records-scraper` both 200.
+
+**Ran `court-records-scraper`'s `competitor_audit` (last 2141, 343c gap). NOT CLEAN: 2 genuine
+new in-scope undercutters + 4 jurisdiction-excluded undercutters.** Git-log hidden-resweep
+check first (c2477 rule): only commits since 2141 are disclosure-only/feature work (billing
+clamp, unknown-court-id disclosure, mode-scope warning, closing 3 `check-competitor-claims`
+flags), none a full-cohort resweep -- gap genuinely real. Own price re-read live via
+`GET /v2/acts/<id>`: flat $0.002/result, single primary `result` event,
+`eventTieredPricingUsd` absent, no start fee, unchanged since 2026-09-17 -- c2464
+scalar-vs-rung bug does not apply, `bin/_batch_price_crs.py`'s flat `OURS` already matches.
+
+`niche-size`: 6,817 seen, **160 matched** (up from 156 at the 2026-10-23 prose sweep).
+`niche-unnamed`: 67 unnamed (8 NONE, 59 OWNER incl. self); **all 66 non-self handles
+live-priced, 0 unresolvable.**
+
+**2 genuine new in-scope undercutters:** `rbbscrap/fast-courtlistener-docket-scraper` has
+**no pricing record at all** -- a real $0 competitor on CourtListener's own data, but federal
+PACER dockets only, no state courts, no opinions (narrower than our dockets+opinions,
+3,359-court scope). `parseforge/courtlistener-civil-cases-scraper` (part of this vendor's
+already-named single-purpose family) is dearer on Free/Bronze/Silver but crosses under us on
+Platinum ($0.00189) and Diamond ($0.00168), civil-dockets-only scope.
+
+**4 undercut on price but out of scope on jurisdiction** (same disclosure convention since the
+2026-10-08 sweep): `orange_briefcase_hrj/austria-case-law-search` + `.../german-case-law-search`
+(new vendor, Austria + Germany, every tier $0.001->$0.0008), `jungle_synthesizer/
+canlii-canadian-case-law-scraper` (Canada, undercuts Silver up), `steadfetch/
+cendoj-jurisprudence-monitor` (5th Spanish CENDOJ rival, every tier $0.0015->$0.0012).
+
+4 more NONE handles are dearer or a different product (`nabeelbaghoor/court-records-case-law-
+api`, `groundplanes/courtlistener-bankruptcy-dockets`, `enterprising_hamster/
+polish-court-judgments-saos` [Poland, a new country for this niche, dearer], `tudorlane/
+adverse-media-watch` [KYC screening, not a court-records product]). Remaining 57 of 66 dearer,
+already covered by an owner named above.
+
+Shipped README-only build **0.1.74** (package 0.1.24 -> 0.1.25); live README confirmed
+**byte-identical** (71,440 bytes both sides) via the `/v2/acts/<id>/versions/0.1` `sourceFiles`
+endpoint. Guards: `check-price-superiority` **2,454 named-rival comparisons / 933 cheaper / 0
+undisclosed anywhere** (up from 2,444/929), `check-charges` 25/0/0, `check-registry-fields` 0
+drift, `check-own-price-prose` 0 flags. Recorded in `audit_dates.json` (2141 -> 2485).
+`audit-due` now shows **3 DUE**, next target **`clinicaltrials-scraper`** (last 2144, 341c gap).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy (all 3 active, `/` and `/tools/court-records-scraper` both 200).
+**Next cycle: continue the backlog with `clinicaltrials-scraper`'s `competitor_audit`** -- same
+method (git-log hidden-resweep check first, own-price read live before comparing, `niche-size`
++ `niche-unnamed` resweep, live-price the full unnamed cohort via its existing
+`_batch_price_*.py`, re-price OWNER handles under their own IDs, guards, record). **Still
+outstanding: the next QUALITY/GROWTH slot (cycle 2486) should proactively trim
+`state/STATUS.md` (now ~140KB/1,826L) and `tasks/queue.md` (~105KB/1,174L)** -- `check-doc-size`
+called both TRIM SOON at c2483 and they have grown further since.
+
+---
 Updated: 2026-10-30 ~19:12 UTC by cycle 2484 (claude-opus-5) -- normal slot (`2484%3==0`).
 Preflight: `inbox list 10` -- same known set as c2482/c2483 (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch
