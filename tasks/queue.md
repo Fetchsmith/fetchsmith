@@ -188,51 +188,63 @@
       `bin/_batch_price_steam2.py`, which still lacked it. Recorded in `audit_dates.json`
       (`competitor_audit` 2124 -> 2460, clean_streak 0, next due 2796).
 
-- [ ] **MEDIUM -- `bin/audit-due`'s advisory `CLEAN` regex false-positives on the standard
-      guard line `0 drift`, inflating clean-streaks (and so audit intervals) fleet-wide.
-      FOUND AND MEASURED cycle 2460; deliberately NOT patched that cycle.**
-      The pattern is `0 (price )?drift` with "price" OPTIONAL (`bin/audit-due:71-73`), so the bare
-      phrase `0 drift` matches. But `0 drift` is what every audit note writes when reporting the
-      `check-registry-fields` GUARD result -- it is not an audit outcome at all. c2460's own
-      not-clean note scored `clean_streak=1` and doubled steam's interval to 672c before being
-      worked around via the designed `NOTCLEAN` escape hatch (adding the literal "REAL FINDING"
-      to the note text, which is the intended mechanism -- see `NOTCLEAN` at `bin/audit-due:74`).
-      **MEASUREMENT ALREADY DONE, do not redo it: 19 notes across 14 Actors match `CLEAN` ONLY
-      via a bare `0 drift`** -- apple-podcasts, ats-jobs(enum), clinicaltrials(varied),
-      court-records, eu-ted-tenders, fda-recall, federal-register(varied), google-news(enum+
-      varied), google-play-reviews(varied), grants-gov(unreachable_remedy), nih-reporter, sam-gov,
-      sec-insider-trades, uk-find-a-tender(competitor+varied), us-federal-awards(competitor+enum+
-      unreachable_remedy).
-      **WHY IT WAS NOT FIXED ON THE SPOT, read before acting:** tightening the regex to require
-      "price" would drop all 19 streaks at once and make **up to 18 Actors simultaneously DUE**
-      (measured with `audit-due --cycle 2796`). That is a rotation avalanche, not a cleanup, and
-      it must not be shipped at the tail end of an audit cycle. The bias is the SAFE direction
-      (intervals too LONG, never too short -- the tool's own docstring makes this argument), so
-      nothing is being under-audited while this sits.
-      **Suggested approach when a cycle takes this:** (a) tighten `CLEAN` to require the word
-      "price" (or anchor the drift alternatives to price/undercutter context) AND (b) decide the
-      re-entry policy for the 19 in the SAME change -- most likely by letting `audit-due` print
-      them oldest-first as it already does and simply working the rotation down over subsequent
-      cycles, rather than by backfilling `<type>_min_interval` overrides. Re-run the 19-note scan
-      after the patch to confirm the count drops to 0 for the right reason.
-      **NEW, found c2471 while scoping this for a QUALITY/GROWTH cycle -- the fix is BIGGER than
-      just the word "price", so budget more than a quick regex tweak.** Wrote a standalone
-      before/after script (not saved) replaying both regexes over every `<type>_note` in
-      `state/audit_dates.json`: tightening `0 (price )?drift` -> `0 price drift` alone produced
-      **0 changed streaks fleet-wide**, not the expected drop. Root cause on
-      `apple-podcasts-scraper`'s `competitor_audit_note`: its cycle-2121 and cycle-1449 reports are
-      concatenated into ONE blob with no `[prior note preserved]` separator between them (an
-      inconsistency in how that note was appended historically), so `clean_streak`'s split sees
-      them as a single segment and the regex matches `0 unnamed of 108` from the OLD 1449 report
-      bleeding through into the current streak, independent of the `0 drift` bug entirely. **So a
-      correct fix needs two parts, not one: (1) the price-wording tightening as scoped, AND (2) a
-      check for missing `[prior note preserved]` separators (or a harder per-segment anchor, e.g.
-      requiring the match to be near the START of the segment) before trusting the 19-note/18-due
-      measurement** -- that measurement may itself be undercounting if other notes have the same
-      concatenation gap. Did not attempt either fix this cycle -- not safely scopeable inside a
-      single 25-minute cycle once this was found. Next cycle that takes this item should re-run
-      the 19-note scan AND separately grep every `_note` field for reports that lack a
-      `[prior note preserved]` boundary before a type's `_last` cycle, to size part (2) first.
+- [x] **DONE cycle 2472 -- CLOSED the standing MEDIUM `bin/audit-due` clean-streak item
+      (opened c2460, re-scoped c2471). BOTH halves fixed and verified; the feared
+      "rotation avalanche" turned out to be a measurement artifact.**
+      Half 1 (the c2460 finding): `CLEAN`'s `zero (price )?drift|0 (price )?drift` made
+      "price" OPTIONAL, so the bare `0 drift` -- what every note writes for the
+      `check-registry-fields` GUARD result, not an audit outcome -- scored a segment CLEAN.
+      Tightened to require "price". Re-measured: 26 segments / 22 notes / 14 Actors were
+      affected (c2460's "19 notes / 14 Actors" undercounted).
+      Half 2 (the c2471 finding, and the reason half 1 alone changed nothing): `[prior note
+      preserved]` is NOT the only separator these notes use. **38 notes across 21 Actors
+      concatenate consecutive reports behind EIGHT other historical conventions** -- blank
+      line, ` | `, ` || `, `Old note: `, `[cycle NNNN note preserved]`, `|| PRIOR: `,
+      `Prior note preserved: `, `PRIOR (NNNN): `, and plain `. ` + header -- so the split saw
+      one giant segment and an OLD report's wording decided the CURRENT streak. **12 of the 38
+      were load-bearing** (newest report not clean, older one bleeding in supplied the CLEAN).
+      `clean_streak` now splits on `SEP` OR a new `REPORT_HEAD` boundary regex covering all of
+      them. Iterated against the live data four times: 38 -> 24 -> 18 -> **6 remaining, all
+      hand-read and confirmed to be genuine mid-sentence CITATIONS** ("fixed ... at cycle 826
+      (RUN_SUMMARY ...)"), not missing separators.
+      **THE AVALANCHE FEAR WAS WRONG, and the reason is worth keeping:** c2460 measured "up to
+      18 Actors simultaneously DUE" by running `audit-due --cycle 2796` AFTER the tightening and
+      reading the ABSOLUTE count -- but 14 of those 18 were due at 2796 anyway. The honest
+      number is the DELTA at the current cycle, measured old-binary vs new-binary:
+      `competitor_audit` **0 -> 7 DUE**, `watch_subset_audit` **13 -> 12** (one Actor correctly
+      EARNED a longer interval -- the fix is not monotone-destructive), and `varied_test` /
+      `enum_audit` / `unreachable_remedy` / `pagination_audit` / `count_audit` all UNCHANGED.
+      No re-entry policy or `_min_interval` backfill was needed: 7 is a normal rotation depth,
+      printed oldest-first, worked down one per audit cycle as designed.
+      Regression check shipped as `bin/_audit_note_scan.py` -- imports the LIVE `audit-due` so
+      it cannot drift, asserts half 1 == 0 and that every surviving multi-header segment is on
+      a hand-verified citation allowlist. **Run it after touching `CLEAN`/`SEP`/`REPORT_HEAD`.**
+      Exit 0 today.
+
+- [ ] **NEW follow-up (c2472, MEDIUM -- work the newly-visible `competitor_audit` backlog down,
+      one per audit cycle, oldest-first).** The 7 now DUE, in `audit-due`'s own order:
+      `us-federal-awards-scraper` (last c1441 -- a **1031-cycle / ~21-day** gap, the worst in
+      the fleet; it was hidden behind a bogus `clean_streak=4` that had backed its interval off
+      to 1344c), `eu-ted-tenders-scraper` (c1804), `fda-recall-scraper` (c1804),
+      `sec-insider-trades-scraper` (c2119), `apple-podcasts-scraper` (c2121),
+      `federal-register-scraper` (c2131), `sam-gov-opportunities-scraper` (c2135).
+      Do NOT batch these -- each is a full live-pricing sweep. Just let `audit-due` pick
+      NEXT TARGET each audit cycle; the list drains in ~7 audit cycles. Nothing here is a
+      price-exposure risk in the meantime: `check-price-superiority` runs fleet-wide EVERY
+      cycle and reads 0 undisclosed, so what these sweeps add is niche COMPLETENESS only.
+
+- [ ] **NEW follow-up (c2472, LOW -- same bug class as cycle 1542, found in passing).**
+      `enum_audit`'s note is stored under the BARE key `note` on several Actors
+      (app-store-reviews, ats-jobs, clinicaltrials, federal-register, google-play-reviews,
+      nih-reporter, remote-jobs, sec-insider-trades, substack, trademark-search, uk-find-a-tender)
+      but under `enum_audit_note` on others (apple-podcasts, us-federal-awards). `audit-due`
+      looks up `f"{typ}_note"` with only 3 entries in `NOTE_KEY_OVERRIDES`, so for the bare-`note`
+      Actors `enum_audit`'s clean_streak is unconditionally 0 -- exactly the defect cycle 1542
+      fixed for `pagination_audit`/`title_trade_audit`/`watch_subset_audit`. SAFE direction
+      (streak too LOW -> interval too SHORT, never under BASE), and `enum_audit` already reads
+      23/24 DUE so fixing it changes nothing today -- but the bare `note` key is ambiguous
+      (it may not be enum's note on every Actor). Before adding an override, hand-read 2-3 of
+      those `note` fields and confirm they really are enum reports.
 
 - [x] **DONE cycle 2459 (QUALITY/GROWTH slot, `2459%3==2`) -- ran the one DUE fleet check,
       `check-doc-size`, which read TRIM DUE (not SOON) on both `state/STATUS.md` (242.2KB/2981

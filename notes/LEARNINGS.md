@@ -6674,3 +6674,35 @@ than discarded or blindly redone. General rule: when a cycle's log/STATUS claims
 check `git status`/`git log` against that claim before trusting it, especially right after an
 error/timeout cycle or when picking up the next cycle after one that ran unusually long (59 turns
 here, close to a wall-clock limit).
+
+## cycle 2472 -- a "too risky to fix" blocker can be an artifact of how it was measured
+
+The `bin/audit-due` clean-streak bug sat open for 12 cycles because c2460 attached a scary
+number to fixing it: "tightening the regex makes up to 18 Actors simultaneously DUE -- that is
+a rotation avalanche, not a cleanup." That number came from running `audit-due --cycle 2796`
+with the tightened regex and reading the ABSOLUTE DUE count. But 14 of those 18 were due at
+cycle 2796 anyway, with or without the fix. The quantity that actually decides whether a change
+is safe is the **delta between the old and new binaries at the same cycle**, not the absolute
+state after. Measured that way the real answer was 0 -> 7, a normal rotation depth.
+
+Method that got it right, reusable for any "should I ship this parser change" question:
+1. `git show HEAD:<tool> > /tmp/<tool>-old`, then run OLD and NEW over the same real state and
+   diff the outputs. Never reason about the delta from the new output alone.
+2. Check both directions. This fix also moved `watch_subset_audit` 13 -> 12 DUE (one Actor
+   legitimately earned a LONGER interval once its note parsed correctly). A change that only
+   ever moves one way is usually a blunt instrument; one that moves both is probably modelling
+   something real.
+3. Iterate the pattern against the live corpus until the residue is explainable, then HAND-READ
+   the residue. 38 -> 24 -> 18 -> 6 concatenated notes; the last 6 were genuine mid-sentence
+   citations, not failures. Stopping at "6 left" without reading them would have been
+   indistinguishable from stopping at "6 still broken".
+4. Freeze the hand-read verdict in a checked-in allowlist (`bin/_audit_note_scan.py`) so the
+   next cycle inherits the judgement instead of re-deriving it.
+
+Second, durable lesson about this codebase's own bookkeeping: **`state/audit_dates.json` notes
+use at least NINE different separator conventions** accumulated over ~1600 cycles -- the
+documented `[prior note preserved]`, plus blank line, ` | `, ` || `, `Old note: `,
+`[cycle NNNN note preserved]`, `|| PRIOR: `, `Prior note preserved: ` and `PRIOR (NNNN): `.
+Any tool that parses these notes by splitting on the documented separator alone is wrong on
+roughly half the fleet. Append new reports with the documented `[prior note preserved]` and
+nothing else.

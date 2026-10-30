@@ -44,9 +44,10 @@ Skip-list: set `<type>_skip_until_date` to an ISO date (YYYY-MM-DD).
 CLEAN STREAK IS ADVISORY, derived by regex from the `<type>_note` text (or
 NOTE_KEY_OVERRIDES's actual key, for the 3 types whose note field doesn't follow
 that convention), which is newest-first and separated by `[prior note
-preserved]`. It only ever LENGTHENS an interval, never shortens one below BASE,
-so a misparse cannot cause an Actor to be audited too eagerly -- the failure
-mode is a delayed audit, caught by --all.
+preserved]` OR (cycle 2472) by a line-anchored `cycle NNNN:` report header, which
+is what roughly half these notes historically used instead. It only ever LENGTHENS
+an interval, never shortens one below BASE, so a misparse cannot cause an Actor to
+be audited too eagerly -- the failure mode is a delayed audit, caught by --all.
 
 CLOSED TYPES (cycle 1620): `<type>_closed` = "<reason>" on any one Actor retires that
 type permanently -- this tool prints the reason and produces no backlog at all. Use it
@@ -68,10 +69,36 @@ CYCLES_PER_DAY = 48          # cron is every 30 minutes
 BASE = 7 * CYCLES_PER_DAY    # 336 cycles == 7 days
 CAP = 28 * CYCLES_PER_DAY    # 1344 cycles == 28 days
 
+# cycle 2472: the drift alternatives used to read `zero (price )?drift` /
+# `0 (price )?drift`, i.e. with "price" OPTIONAL. But the bare phrase `0 drift` is
+# what every audit note writes when reporting the `check-registry-fields` GUARD
+# result ("check-registry-fields 0 drift") -- a guard outcome, not an audit outcome.
+# 26 segments across 22 notes / 14 Actors were scored CLEAN on that phrase alone,
+# inflating their back-off intervals. "price" is now required.
 CLEAN = re.compile(r"clean (no-op|resweep|negative)|0 unnamed|0 new undercutter|"
-                   r"0 undercutters|zero (price )?drift|0 (price )?drift|"
+                   r"0 undercutters|zero price drift|0 price drift|"
                    r"no undercutter|0 real price drift", re.I)
 NOTCLEAN = re.compile(r"FIX SHIPPED|TOOL BUG|REAL FINDING", re.I)
+
+SEP = "[prior note preserved]"
+# cycle 2472, second half of the same bug: `[prior note preserved]` is NOT the only
+# separator these notes actually use. 38 notes across 21 Actors concatenate
+# consecutive reports behind FIVE other historical conventions -- a blank line, ` | `,
+# ` || `, `Old note: `, and `[cycle NNNN note preserved]` -- each followed by a fresh
+# `cycle NNNN:` / `cycle NNNN (...)` header. The old single-separator split therefore
+# saw one giant segment and let an OLD report's wording decide the CURRENT streak
+# (12 of the 38 were load-bearing: the newest report was not clean, an older one
+# bleeding into it was). Splitting on any of those boundaries makes the streak read
+# only the newest report. Deliberately requires a boundary token: notes cite other
+# cycles mid-sentence constantly ("the cycle 1449 report", "c2124 price file") and
+# those must not split. If a boundary over-matches anyway the newest segment only
+# gets SHORTER, i.e. less likely to score CLEAN -- the safe direction, floored at BASE.
+_LABEL = (r"(?:old\s+note|prior(?:\s+note)?(?:\s+preserved)?(?:\s*\(\d+\))?)"
+          r"\s*:?\s*")
+_BOUND = r"(?:\n\s*|\s*\|\|?\s*|\[[^\]]*preserved\]\s*|(?<=\.)\s+)"
+REPORT_HEAD = re.compile(
+    r"(?:" + _BOUND + r"(?:" + _LABEL + r")?|" + _LABEL + r")"
+    r"(?=cycle \d{3,4}\s*(?::|\())", re.I)
 
 # cycle 1542: these 3 types' note field does NOT follow the `<type>_note`
 # convention (checked live against state/audit_dates.json's own key list) --
@@ -87,12 +114,20 @@ NOTE_KEY_OVERRIDES = {
 }
 
 
+def note_segments(note):
+    """One segment per report, newest first (see SEP / REPORT_HEAD above)."""
+    out = []
+    for chunk in str(note).split(SEP):
+        out.extend(s for s in REPORT_HEAD.split(chunk) if s.strip())
+    return out
+
+
 def clean_streak(note):
     """Count leading newest-first note segments that report a clean audit."""
     if not note:
         return 0
     n = 0
-    for seg in str(note).split("[prior note preserved]"):
+    for seg in note_segments(note):
         if CLEAN.search(seg) and not NOTCLEAN.search(seg):
             n += 1
         else:
