@@ -141,7 +141,11 @@ if (chartGenre && chartType === 'episodes') {
   chartGenre = null;
 }
 const chartCount = Math.min(chartCountRequested, chartGenre ? 200 : 100);
-if (chartCount < chartCountRequested) {
+// Gated on dataType "charts" too — otherwise a non-charts run with an explicit chartCount above
+// the cap got this clamp warning AND the chartsOnlyIgnored warning back to back, contradicting
+// each other in the log (one saying "fetching 100", the other "ignored, nothing was filtered").
+// Found live cycle 2454 testing the chartsOnlyIgnored warning this cycle added.
+if (dataType === 'charts' && chartCount < chartCountRequested) {
   log.warning(`"chartCount" ${chartCountRequested} exceeds Apple's cap for this chart (${chartGenre ? 200 : 100}) — fetching ${chartCount}. ${chartGenre ? '' : 'Apple\'s overall chart endpoint returns an error, not a shorter list, above 100.'}`);
 }
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
@@ -212,6 +216,24 @@ if (episodeOnlyIgnored.length) {
   log.warning(dataType === 'charts'
     ? `${episodeOnlyIgnored.join(', ')} only applies to dataType "charts" with chartType "episodes" — ignored for chartType "${chartType}", so nothing was filtered out by it.`
     : `${episodeOnlyIgnored.join(', ')} only applies to dataType "episodes" (or "charts" with chartType "episodes") — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
+}
+// `chartCount` carries a schema default (50), same c2204 trap as `sort`/`maxPodcastsPerPublisher`
+// above — compare against the default value, not bare presence, so a non-charts run that never
+// touched the field doesn't get warned on every single run.
+const chartsOnlyIgnored = dataType === 'charts' ? [] : [
+  input.chartCount !== undefined && Number(input.chartCount) !== 50 ? '"chartCount"' : null,
+].filter(Boolean);
+if (chartsOnlyIgnored.length) {
+  log.warning(`${chartsOnlyIgnored.join(', ')} only applies to dataType "charts" — ignored for dataType "${dataType}", so nothing was filtered out by it.`);
+}
+// `useRssForFullArchive` carries a schema default of `false`, so unlike `chartCount` a plain
+// `=== true` test is already non-default-safe. Gated on dataType "episodes" specifically, NOT
+// `episodeFiltersApply` — the field is read only inside `scrapeEpisodes()` (~line 948), which is
+// called only from the dataType==="episodes" branch; the charts+episodes path enriches chart rows
+// via `getShowEpisodeBundle()` instead and never calls `scrapeEpisodes()`, so the field is dead
+// there too (confirmed by grepping every call site of `scrapeEpisodes(`).
+if (input.useRssForFullArchive === true && dataType !== 'episodes') {
+  log.warning(`"useRssForFullArchive" only applies to dataType "episodes" — ignored for dataType "${dataType}".`);
 }
 // `maxPodcastsPerPublisher` carries a schema default (200), and Apify merges that default into
 // `input` on every run that omits the field (cycle 2204's exact trap, found live on this same

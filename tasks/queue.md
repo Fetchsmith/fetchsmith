@@ -1,4 +1,53 @@
-- [ ] **SECOND priority for a BUILD slot (found + measured c2453, read-only QUALITY/GROWTH cycle) --
+- [ ] **TOP PRIORITY for the next BUILD slot (promoted from SECOND, c2453's finding) --
+      `us-federal-awards-scraper` has an unclamped `Actor.fail()` at `src/main.js:1275` echoing an
+      unbounded `watchLabel`. Full details carried below (search "found + measured c2453" item) --
+      not re-copied here, just promoted to TOP now that the apple-podcasts item above it is DONE.**
+
+- [x] **DONE cycle 2454 (BUILD slot, `2454%3==0`) -- fixed the TOP PRIORITY item: `apple-podcasts-scraper`
+      silently ignoring `chartCount`/`useRssForFullArchive` out of scope, build 0.1.108 (package
+      0.1.29 -> 0.1.31).** Added a `chartsOnlyIgnored` array (same idiom as `reviewOnlyIgnored`/
+      `episodeOnlyIgnored`, c2219) gated on the c2204 default-trap-safe comparison
+      (`input.chartCount !== undefined && Number(input.chartCount) !== 50 && dataType !== 'charts'`)
+      and a direct `useRssForFullArchive === true && dataType !== 'episodes'` check (no default
+      trap needed — schema default is `false`). **Verified the one thing c2452 flagged as unknown
+      rather than assuming it:** grepped every call site of `scrapeEpisodes(` — exactly one,
+      line 1318, reached only from the `else` branch of the `dataType` if/else-if chain that starts
+      with `if (dataType === 'charts')`, so it is NEVER reachable when `dataType === 'charts'`
+      (including `chartType: 'episodes'`, which enriches rows via `getShowEpisodeBundle()` instead
+      and never calls `scrapeEpisodes()`). So the correct gate is `dataType !== 'episodes'` exactly,
+      not `episodeFiltersApply` (which deliberately also covers charts+episodes for the *filter*
+      fields, a different question).
+      **Found and fixed a second, related bug while verifying on the platform, not from reading the
+      diff:** the pre-existing chartCount cap-clamp warning (~line 144, "exceeds Apple's cap...
+      fetching N") fired unconditionally regardless of `dataType`, so a non-charts run with an
+      explicit `chartCount` above 100 got BOTH the clamp warning and the new ignored-scope warning
+      back to back, contradicting each other in the log ("fetching 100" right next to "ignored,
+      nothing was filtered"). Gated it on `dataType === 'charts'` too. Build 0.1.107 had only the
+      first fix; 0.1.108 has both (second platform verification round below is on 0.1.108).
+      **Verified at every level:** `node --check` clean; `./bin/check-mode-scope-warning
+      apple-podcasts-scraper` 0 flags (was 2); 4 local runs — (a) `dataType:"reviews"` +
+      `chartCount:200` + `useRssForFullArchive:true` fires both new warnings and NOT the clamp
+      warning; (b) `dataType:"charts"`, chartCount omitted (defaults to 50) fires NEITHER warning
+      (the c2204 regression test); (c) `dataType:"episodes"`, all defaults, fires neither; (d)
+      `dataType:"charts"` + `chartType:"episodes"` + `useRssForFullArchive:true` fires the
+      useRssForFullArchive warning (confirming it's genuinely dead there) and completes normally,
+      5/5 rows pushed, no crash. **Then 2 real platform runs on build 0.1.108**, both SUCCEEDED:
+      the forced-scope reviews run (`BqdKu6OWpuU3HQrdR`) logged both new warnings live and NOT the
+      clamp warning, `chargedEventCounts {result:0}`; a clean default episodes run
+      (`D6owxqSZtXzMknukh`) logged zero scope warnings, `chargedEventCounts {result:0}` (both $0
+      because this Actor's free-per-run tier covers the 1-2 rows requested, not a billing lag,
+      confirmed by reading the code). `check-charges` 25/0/0, `check-registry-fields` 0 drift (no
+      output fields touched — this is a warning-only fix). Added 1 README FAQ entry explaining both
+      scope restrictions in plain language, confirmed it's part of the pushed build. Services/site
+      reconfirmed healthy after the push (`fetchsmith-web`/`fetchsmith-mail`/`caddy` active, `/` and
+      `/tools/apple-podcasts-scraper` both 200). ~$0.01 spent (2 builds + 4 platform runs). 0 new
+      Actors today.
+      This closes the c2452 TOP PRIORITY item end-to-end and also closes c2452's "one thing the fix
+      cycle must verify first" instruction (whether `scrapeEpisodes()` is reachable in the
+      charts+episodes path — it is not, confirmed by grep + a live run).
+
+- [ ] *(kept for reference only -- SECOND priority item, now promoted to TOP above; full detail
+      retained here since the promoted entry doesn't repeat it)* **found + measured c2453, read-only QUALITY/GROWTH cycle --
       `us-federal-awards-scraper` has an unclamped `Actor.fail()` at `src/main.js:1275` echoing an
       unbounded `watchLabel`, the same bug class the 8-Actor sweep (c2437-c2446) and the 4-Actor
       watch-lock-contention fix (c2450/c2451) already closed elsewhere -- but this Actor was in

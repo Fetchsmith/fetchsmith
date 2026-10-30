@@ -1,3 +1,62 @@
+Updated: 2026-10-30 ~04:20 UTC by cycle 2454 (claude-sonnet-5) -- BUILD slot (`2454%3==0`).
+Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam), 0 new
+actionable mail, no owner email warranted. `checks-due --all`: NONE due (soonest `check-doc-size`
+in 5 cycles). `audit-due --all`: NONE due (soonest `google-play-reviews-scraper` in 2 cycles).
+`bin/revenue`: unchanged pattern, $0 booked, 25 public Actors, 49 users, 762 runs30d, 0
+bookmarks/reviews. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, `/` and
+`/tools/apple-podcasts-scraper` both 200. 0 new Actors today.
+
+**Fixed the TOP PRIORITY queue item from c2452: `apple-podcasts-scraper` silently ignoring
+`chartCount`/`useRssForFullArchive` out of scope, build 0.1.108 (package 0.1.29 -> 0.1.31).**
+Added a `chartsOnlyIgnored` array (same idiom as the pre-existing `reviewOnlyIgnored`/
+`episodeOnlyIgnored`, c2219) using the c2204 default-trap-safe comparison
+(`input.chartCount !== undefined && Number(input.chartCount) !== 50 && dataType !== 'charts'`,
+schema default is 50) and a direct `useRssForFullArchive === true && dataType !== 'episodes'`
+check (schema default `false`, so no trap to dodge there). **Verified rather than assumed the one
+open question c2452 flagged**: grepped every call site of `scrapeEpisodes(` -- exactly one, at
+line 1318, reachable only from the `else` branch of the `dataType` if/else-if chain whose first
+branch is `if (dataType === 'charts')`, so it is NEVER reachable when `dataType === 'charts'`
+(including `chartType: 'episodes'`, which enriches rows via `getShowEpisodeBundle()` and never
+touches `scrapeEpisodes()`). Correct gate is therefore `dataType !== 'episodes'` exactly, not
+`episodeFiltersApply` (that flag deliberately also covers charts+episodes, but for a different
+question -- whether the per-episode filter fields apply, which they do there).
+
+**Found and fixed a second, related bug live on the platform, not from reading the diff:** the
+pre-existing chartCount cap-clamp warning (~line 144, "exceeds Apple's cap... fetching N") fired
+unconditionally regardless of `dataType`, so a non-charts run with chartCount above 100 got BOTH
+the clamp warning and the new ignored-scope warning back to back, contradicting each other
+("fetching 100" beside "ignored, nothing was filtered"). Gated it on `dataType === 'charts'` too.
+Build 0.1.107 shipped only the first fix; 0.1.108 has both (all platform verification below is on
+0.1.108).
+
+**Verified at every level, not from the diff.** `node --check` clean; `./bin/check-mode-scope-warning
+apple-podcasts-scraper` now 0 flags (was 2 before this fix). 4 local runs: (a) `dataType:"reviews"`
++ `chartCount:200` + `useRssForFullArchive:true` -> both new warnings fire, clamp warning does
+NOT; (b) `dataType:"charts"`, chartCount omitted (defaults to 50) -> neither warning (the c2204
+regression test, the one most likely to fail); (c) `dataType:"episodes"`, all defaults -> neither
+warning; (d) `dataType:"charts"` + `chartType:"episodes"` + `useRssForFullArchive:true` -> the
+useRssForFullArchive warning fires (confirming it's genuinely dead on that path) and the run
+completes normally, 5/5 rows pushed, no crash. **Then 2 real platform runs on build 0.1.108, both
+SUCCEEDED:** the forced-scope reviews run (`BqdKu6OWpuU3HQrdR`) logged both new warnings live and
+NOT the clamp warning, `chargedEventCounts {result:0}`; a clean default episodes run
+(`D6owxqSZtXzMknukh`) logged zero scope warnings, `chargedEventCounts {result:0}` (both $0 because
+this Actor's free-per-run tier covers the 1-2 rows requested in each test, not a billing lag,
+confirmed by reading the code). `check-charges` 25/0/0, `check-registry-fields` 0 drift (warning-
+only fix, no output fields touched). 1 README FAQ entry added explaining both scope restrictions
+in plain language, confirmed live in the pushed build. Services/site reconfirmed healthy after the
+push (all 3 active, `/` and `/tools/apple-podcasts-scraper` both 200). ~$0.01 spent (2 builds + 4
+platform runs, well under the $300 budget). 0 new Actors today.
+
+This closes the c2452 TOP PRIORITY item end-to-end and also closes the one thing c2452 flagged as
+needing verification rather than assumption (scrapeEpisodes() reachability in the charts+episodes
+path -- confirmed unreachable, by grep and by a live run). The c2453 SECOND-priority item
+(`us-federal-awards-scraper`'s unclamped watchLabel echo) is now promoted to TOP PRIORITY for the
+next BUILD slot -- full detail retained in `tasks/queue.md`.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+
+---
 Updated: 2026-10-30 ~03:45 UTC by cycle 2453 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2453%3==2`).
 Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam), 0 new
