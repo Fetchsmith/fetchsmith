@@ -1,6 +1,6 @@
 {
   "name": "uk-find-a-tender-scraper",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "type": "module",
   "description": "Scrape UK Find a Tender public contract notices via the official free OCDS API",
   "dependencies": {

@@ -5,6 +5,25 @@ import { createHash } from 'node:crypto';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
+// Apify silently cuts `statusMessage` at ~500 chars with no marker. Declared up here (not next to
+// its first real use further down) because the all-blank-filter-value guards below (textFilterInput)
+// call Actor.fail() before any later `const` would exist yet -- a declaration after them would throw
+// a temporal-dead-zone ReferenceError on the one path that must never crash (same trap hit on
+// clinicaltrials-scraper/federal-register-scraper/nih-reporter-scraper/sam-gov-opportunities-scraper).
+// `suffix` is RESERVED out of the budget rather than appended after clamping, so the billing-relevant
+// clause (what was/wasn't charged, what to do next) can never be the part silently dropped.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg, suffix = '') => {
+    const budget = STATUS_MESSAGE_MAX - suffix.length;
+    if (msg.length <= budget) return msg + suffix;
+    const cut = msg.slice(0, budget - 4);
+    const lastSpace = cut.lastIndexOf(' ');
+    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+// For echoing buyer-controlled free text inline (no schema maxLength to rely on) without letting
+// it alone blow the 500-char ceiling.
+const echoCap = (s, max) => (s.length > max ? `${s.slice(0, max).trimEnd()}...` : s);
+
 // Soft run-timeout budget (timeout-guard rollout). Every retry/throttle sleep below is capped at
 // the time this run actually has left, so a slow or rate-limiting portal can never park the run
 // inside a sleep until the platform kills it mid-walk -- a hard kill writes no RUN_SUMMARY, no
@@ -128,11 +147,13 @@ async function textFilterInput(name) {
     if (raw == null) return null;
     const normalised = String(raw).normalize('NFC').toLowerCase().trim();
     if (String(raw).length && !normalised) {
+        // `raw` has no schema maxLength -- echoCap it so a very long whitespace-only value can
+        // never push the "stopping before any row is charged" clause past the 500-char ceiling.
         await Actor.fail(
-            `\`${name}\` is whitespace-only (${JSON.stringify(String(raw))}), so the \`${name}\` filter would have `
-            + `been dropped entirely and this run would have returned notices UNFILTERED by ${name} -- every notice `
-            + `both portals published in the window, pushed and charged at $0.003 each. Stopping before any `
-            + `unfiltered row is delivered or charged. Put a real value in \`${name}\`, or remove the field.`,
+            `\`${name}\` is whitespace-only (${JSON.stringify(echoCap(String(raw), 80))}), so the \`${name}\` filter `
+            + `would have been dropped entirely and this run would have returned notices UNFILTERED by ${name} -- `
+            + `every notice both portals published in the window, pushed and charged at $0.003 each. Stopping `
+            + `before any unfiltered row is delivered or charged. Put a real value in \`${name}\`, or remove the field.`,
         );
     }
     return normalised || null;
@@ -1127,14 +1148,8 @@ if (watchMode && seedFailure) {
 // clamp ceiling) plus a 3-field note (166) rendered 656, and the `!complete` branch -- which had
 // no clamp at all -- rendered 598 on a source-failed seeding run. Both shipped cut at exactly 500
 // with the note gone. The log keeps the full, unclamped text either way.
-const STATUS_MESSAGE_MAX = 500;
-const clampStatusMessage = (msg, suffix = '') => {
-    const budget = STATUS_MESSAGE_MAX - suffix.length;
-    if (msg.length <= budget) return msg + suffix;
-    const cut = msg.slice(0, budget - 4);
-    const lastSpace = cut.lastIndexOf(' ');
-    return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
-};
+// (`STATUS_MESSAGE_MAX`/`clampStatusMessage` now declared near the top of the file -- the
+// textFilterInput Actor.fail() guard above needs it long before this point would exist.)
 let zeroRowMessage = null;
 if (pushed === 0 && !seeding) {
     if (timeBudgetExceeded) {
@@ -1463,10 +1478,15 @@ if (webhookUrl) {
 }
 
 if (watchMode && seedFailure) {
-    await Actor.fail(
-        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}. No baseline was saved `
-        + `for watch label "${watchLabel}" -- re-run with the same watchLabel to seed again.`,
-    );
+    // `seedFailure` itself is bounded (built from fixed labels, numbers and a `.slice(0,120)`
+    // upstream error), but `watchLabel` has no schema maxLength -- reserve the billing-safety
+    // disclosure + re-run advice as a suffix so an oversized label can never silently delete it
+    // (the bug class this whole fleet-wide sweep has been closing).
+    await Actor.fail(clampStatusMessage(
+        `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}.`,
+        ` No baseline was saved for watch label "${echoCap(watchLabel, 60)}" -- re-run with the same `
+        + 'watchLabel to seed again.',
+    ));
 }
 
 await Actor.exit();
