@@ -1,3 +1,52 @@
+Updated: 2026-10-30 ~12:35 UTC by cycle 2471 (claude-sonnet-5) -- QUALITY/GROWTH slot
+(`2471%3==2`). Preflight: inbox 10 checked -- same known set as c2470 (2 long-resolved owner
+threads, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, 1 cold pitch `5ce80b92`
+already triaged) -- 0 new mail, no owner email warranted. `checks-due --all`/`audit-due --all`:
+NONE due anywhere (soonest `check-status-continuity` in 2c, soonest audit `trademark-search-
+scraper` in 4c) -- confirms this cycle should spend on growth/quality work per PLAYBOOK, not a
+sweep. Dev.to cadence not due either (last published c2465, 2026-10-30; next ~2026-11-01/02).
+`bin/revenue`: unchanged, $0 booked, 25 public Actors, 49 users, 770 runs30d, 0 bookmarks, 0
+reviews; Polar gate still not met, no owner email. Services all active; `/` and
+`/tools/remote-jobs-scraper` both 200.
+
+**Ran the c2336 standing `ext_bad30d` tripwire (not run in several recent cycles' narration) --
+found ONE genuinely NEW event beyond the known baseline: `remote-jobs-scraper` TIMED-OUT 1,
+first seen in the 2026-10-29 snapshot.** Triaged per the queue's own order: (1) `actor-health`
+green on default input (10 items, 0 fail_rows) -- not an outage. (2) Checked the TIMED-OUT axis
+directly rather than assuming it closed: `main.js` has `Actor.getEnv().timeoutAt` wired into a
+real `remainingMs()` check called in the pagination loops (L36), with explicit "approaching the
+run timeout" stop/disclosure points for both `arbeitnow` and `himalayas` sources (L737/L807) plus
+a third generic one (L1292), and per-request `gotScraping` timeouts (45s x2, 10s x1) so no single
+hung request can silently eat the whole budget. Guard looks structurally sound; reads as the same
+one-off class as the court-records/google-news baseline entries (likely a buyer-set run timeout
+too short for their own `maxPagesPerSource`/source-count choice), not a code gap -- but **not
+fully proven**, since the specific failed run's own log was not pulled (no run ID on hand). If
+TIMED-OUT recurs on this Actor, pull that run's log before re-concluding "one-off" again. Recorded
+the new baseline (6 lifetime events now) in `tasks/queue.md` so the next cycle can tell NEW from
+carried without re-deriving.
+
+**Scoped (did not attempt) the standing MEDIUM `bin/audit-due` CLEAN-regex item and found the fix
+is bigger than previously measured.** Wrote a before/after regex replay over every
+`<type>_note` in `state/audit_dates.json`: tightening `0 (price )?drift` -> `0 price drift` alone
+produced **0 changed streaks fleet-wide**, not the expected ~19-note drop recorded at c2460.
+Root cause on `apple-podcasts-scraper`'s `competitor_audit_note`: its cycle-2121 and cycle-1449
+reports are concatenated into one blob with no `[prior note preserved]` separator between them,
+so `clean_streak`'s segment split never isolates the current report -- the regex matches `0
+unnamed of 108` bleeding through from the OLD 1449 report, unrelated to the `0 drift` bug the
+item was scoped around. A correct fix needs the price-wording tightening AND a check for missing
+`[prior note preserved]` separators (the c2460 19-note/18-due measurement may itself be an
+undercount if other notes have the same gap) -- not safely scopeable inside this cycle's time
+budget once found. Full detail and next-step instructions written into the item in
+`tasks/queue.md`; left un-patched rather than shipping a partial fix.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). $0
+spent this cycle (read-only Python/API checks only, no builds/platform runs). 0 new Actors today.
+Working tree has `state/health.json`/`state/revenue.json`/`state/revenue_history.json` (auto-
+updated by `bin/revenue`/health checks) plus the `tasks/queue.md` edits above, to be committed.
+Next cycle: return to normal checks-due/audit-due rotation (nothing due for several cycles, so
+likely another growth pick, or re-run the `ext_bad30d` tripwire again for drift).
+
+---
 Updated: 2026-10-30 ~12:10 UTC by cycle 2470 (claude-sonnet-5) -- normal slot (`2470%3==1`),
 ran the one DUE `competitor_audit` (`grants-gov-scraper`). Preflight: inbox 10 checked -- same
 known set as recent cycles (2 long-resolved owner threads re-verified, see below; 2x DMARC, 2x

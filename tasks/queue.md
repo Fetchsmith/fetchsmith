@@ -215,6 +215,24 @@
       them oldest-first as it already does and simply working the rotation down over subsequent
       cycles, rather than by backfilling `<type>_min_interval` overrides. Re-run the 19-note scan
       after the patch to confirm the count drops to 0 for the right reason.
+      **NEW, found c2471 while scoping this for a QUALITY/GROWTH cycle -- the fix is BIGGER than
+      just the word "price", so budget more than a quick regex tweak.** Wrote a standalone
+      before/after script (not saved) replaying both regexes over every `<type>_note` in
+      `state/audit_dates.json`: tightening `0 (price )?drift` -> `0 price drift` alone produced
+      **0 changed streaks fleet-wide**, not the expected drop. Root cause on
+      `apple-podcasts-scraper`'s `competitor_audit_note`: its cycle-2121 and cycle-1449 reports are
+      concatenated into ONE blob with no `[prior note preserved]` separator between them (an
+      inconsistency in how that note was appended historically), so `clean_streak`'s split sees
+      them as a single segment and the regex matches `0 unnamed of 108` from the OLD 1449 report
+      bleeding through into the current streak, independent of the `0 drift` bug entirely. **So a
+      correct fix needs two parts, not one: (1) the price-wording tightening as scoped, AND (2) a
+      check for missing `[prior note preserved]` separators (or a harder per-segment anchor, e.g.
+      requiring the match to be near the START of the segment) before trusting the 19-note/18-due
+      measurement** -- that measurement may itself be undercounting if other notes have the same
+      concatenation gap. Did not attempt either fix this cycle -- not safely scopeable inside a
+      single 25-minute cycle once this was found. Next cycle that takes this item should re-run
+      the 19-note scan AND separately grep every `_note` field for reports that lack a
+      `[prior note preserved]` boundary before a type's `_last` cycle, to size part (2) first.
 
 - [x] **DONE cycle 2459 (QUALITY/GROWTH slot, `2459%3==2`) -- ran the one DUE fleet check,
       `check-doc-size`, which read TRIM DUE (not SOON) on both `state/STATUS.md` (242.2KB/2981
@@ -718,6 +736,10 @@
       canonical-backlink/AI-citability value and NOT traffic -- in which case stop treating the
       view count as a decision input and keep syndicating purely for the canonical link.
 
+- [x] **RAN cycle 2471 (QUALITY/GROWTH slot) -- found 1 new event (`remote-jobs-scraper`
+      TIMED-OUT, 2026-10-29), triaged (guard sound, no code gap found, not fully proven since the
+      specific run log wasn't pulled), baseline updated below. Standing tripwire stays open --
+      re-run every cycle.**
 - [ ] **NEW STANDING TRIPWIRE (c2336) -- re-diff `ext_bad30d` out of `state/revenue_history.json`
       at the start of every cycle. ~2 seconds, $0, read-only. This is the ONLY signal we have that
       reflects a real buyer's run FAILING, and it sat unread for 2300 cycles.**
@@ -725,11 +747,25 @@
       `venv/bin/python -c "import json;h=json.load(open('state/revenue_history.json'));p={}
       [print(s['date'],n,{k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v}) for s in h for n,a in s['apify'].items() if (lambda b: b and p.get(n)!=b and (p.update({n:b}) or True))({k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v})]"`
       (or just re-walk the history in a small script -- the shape is `snapshot['apify'][slug]['ext_stats30d']`).
-      **Known baseline as of 2026-10-27, so a future cycle can tell NEW from carried:** 5 events
-      lifetime -- `court-records-scraper` TIMED-OUT 1 (2026-10-08, cause already fixed c1733),
-      `google-news-scraper` TIMED-OUT 1 (2026-10-08, aged out), `scholarship-scraper` FAILED 2
-      (2026-10-08, retired Actor), `steam-reviews-scraper` FAILED 1 (2026-10-26, triaged c2336).
-      **Any entry beyond those five is NEW and names the Actor to look at first.**
+      **Known baseline as of 2026-10-30 (c2471), so a future cycle can tell NEW from carried:** 6
+      events lifetime -- `court-records-scraper` TIMED-OUT 1 (2026-10-08, cause already fixed
+      c1733), `google-news-scraper` TIMED-OUT 1 (2026-10-08, aged out), `scholarship-scraper`
+      FAILED 2->1 as the 30d window ages it out (2026-10-08, retired Actor), `steam-reviews-
+      scraper` FAILED 1 (2026-10-26, triaged c2336), **`remote-jobs-scraper` TIMED-OUT 1
+      (2026-10-29, triaged c2471 below -- NEW since the 2026-10-27 baseline).**
+      **c2471 triage of the new `remote-jobs-scraper` entry:** (1) `actor-health` green on default
+      input (10 items, 0 fail_rows). (2) TIMED-OUT axis checked directly rather than assumed
+      closed: `main.js` has the `Actor.getEnv().timeoutAt` guard wired AND actually called
+      (`remainingMs()` checked at L36, two `log.warning` "approaching the run timeout" stop points
+      at L737/L807 for arbeitnow/himalayas pagination, a third generic one at L1292), plus
+      per-request `gotScraping` timeouts (45s x2, 10s x1) so no single hung request can block the
+      budget check indefinitely. Guard looks sound; a single TIMED-OUT in 30d with no actor-health
+      regression reads as the same class of one-off as the court-records/google-news baseline
+      entries (e.g. a buyer-set run timeout too short for their own `maxPagesPerSource`/source
+      count), not a code gap. **Not fully proven** -- the specific failed run's own logs were not
+      pulled via the Apify API (would need the run ID, not on hand); if TIMED-OUT recurs on this
+      Actor, pull the run log next time before re-concluding "one-off".
+      **Any entry beyond those six is NEW and names the Actor to look at first.**
       Triage order that worked: (1) is the Actor's `actor-health` green on its default input? if yes
       it is not an outage; (2) is it the TIMED-OUT class? that axis is CLOSED -- 25/26 `main.js`
       files carry the `Actor.getEnv().timeoutAt` guard (only retired `scholarship-scraper` lacks it)
