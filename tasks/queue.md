@@ -1,59 +1,48 @@
-- [ ] **TOP PRIORITY for the next BUILD slot -- NEW `Actor.fail()` clamp bug class found cycle 2450
-      (QUALITY/GROWTH slot), answering c2426's long-open ask to generalize the sweep's grep beyond
-      the shared seed-failure string. Read-only this cycle on purpose -- same pattern as c2437, fix
-      next.** The closed 8-Actor sweep (c2437-c2446) only ever grepped
-      `'watch baseline could not be completed'`. Two DIFFERENT unclamped `Actor.fail()` message
-      shapes exist elsewhere and were invisible to that grep:
-      **(A) Watch-lock-contention site, `grep -rl 'already being processed by another run'
-      */src/main.js` -- exactly 4 Actors, ALL unclamped, ALL echo an unbounded `watchLabel` (no
-      schema `maxLength` on any of the 4, confirmed by reading each `.actor/input_schema.json`):
-      `apple-podcasts-scraper` (main.js ~247), `google-play-reviews-scraper` (~327),
-      `shopify-products-scraper` (~146), `trademark-search-scraper` (~320).** Identical message
-      shape in all 4 (`acquireWatchLock`, fires when a second run starts on the same watch label
-      while the first is still in flight): `Watch label "<label>" is already being processed by
-      another run (started <ISO ts>, run <runId>). Running ... would read the same baseline twice
-      and charge you twice ... Wait for the other run to finish and try again (a stuck lock ...
-      self-expires after 120 minutes).` **Measured (apple-podcasts' exact wording, a typical
-      ISO timestamp + 17-char runId): a 40-char label already renders 450 chars; the message
-      crosses the 500-char ceiling at roughly a 90-char label** (510 at 100, 610 at 200, 710 at
-      300) -- so Apify's silent cut would drop the "self-expires after 120 minutes" advice and
-      leave a buyer thinking the lock is permanent. Nothing in any of the 4 schemas stops a buyer
-      (or their own scheduling automation) from passing a label well past 90 chars.
-      **(B) `apple-podcasts-scraper`'s OWN seed-failure site is a second, worse, DIFFERENT shape
-      from the swept Actors' shared string -- main.js ~1402-1407, fires when a seed/baseline run
-      fails to read one or more podcasts/feeds/searches from Apple:**
-      `Baseline run for watch label "<label>" could not read <N> source(s) from Apple:
-      <seedErrors.join(', ')>. The baseline was NOT saved ... Nothing was returned or charged for
-      this run; re-run it on the same watch label to seed again.` `seedErrors` entries are
-      `search "<term>"` / `podcast <id>` / `feed <feedUrl>` built straight from the buyer's own
-      `searchTerms`/`podcasts` input (main.js:1103/1324/1359) -- no per-item or array-length cap
-      anywhere, so both the per-item length (a `feed` entry echoes the buyer's own feed URL
-      verbatim) and the item COUNT are unbounded. **Measured: just 5 realistic long feed-URL
-      entries + a 40-char watchLabel already renders 1050 chars** -- more than double the ceiling,
-      silently deleting the entire "baseline was NOT saved" + re-run-advice sentence, which is the
-      exact billing-safety disclosure this whole sweep exists to protect. This is the single worst
-      measured case found since `court-records-scraper`'s original 805 (c2437/c2438).
-      **Fix next BUILD slot, same pattern and verify bar as the closed sweep:** port
-      `clampStatusMessage(msg, suffix='')` into site (B) first (worse, and single-Actor, so
-      cheapest fix-to-impact ratio) -- base = the `could not read N source(s): <echoCap'd list>`
-      clause, suffix = "baseline was NOT saved ... re-run to seed again". Then site (A) across all
-      4 Actors -- same message body in each, so once worded once it is near-mechanical to port 4
-      times: base = `Watch label "<echoCap'd label>" is already being processed...`, suffix = the
-      "wait for the other run ... self-expires after 120 minutes" sentence. `watchLabel` needs
-      `echoCap()` in BOTH sites since c2444's caveat applies if either message's base ever loses
-      its spaces near the label (it doesn't currently, but cap it anyway per the fleet convention
-      of capping any buyer-controlled echo regardless of base/suffix position). Verify per-Actor
-      with a unit test reconstructing the measured worst case, a local run forcing the real branch
-      (two concurrent local runs on the same `watchLabel`/`storeKey` for site A; a bad podcast ID
-      or unreachable feed URL for site B), 1 real platform run reading `statusMessage` back live,
-      and `check-charges`/`check-registry-fields` clean. 5 fix-sites total across 4 Actors (1 of
-      the 4 -- apple-podcasts -- needs both A and B fixed). **Do not assume these are the only two
-      remaining shapes** -- `grep -rn 'Actor\.fail(' */src/main.js | grep -v 'watch baseline could
-      not be completed'` still lists ~17 Actors' worth of OTHER call sites, most of which are
-      short static pre-charge validation guards or generic `Run failed: ${err.message}` catch-alls
-      that read as bounded on inspection this cycle (JS error messages, not buyer-echoed free
-      text) -- but that was a skim, not a per-site measurement, so treat it as unverified rather
-      than cleared.
+- [x] **DONE cycle 2451 (BUILD slot, `2451%3==0`) -- fixed all 5 fix-sites in the 2 new
+      `Actor.fail()` clamp shapes c2450 found (sites A+B), closing that queue item.** Ported the
+      fleet's `clampStatusMessage(msg, suffix='')` + `echoCap(s, max=60)` reservation pattern into
+      4 Actors that had neither helper yet (none of the 4 were touched by the original c2437-c2446
+      sweep, so both consts were added fresh, placed right after `const input` in each file --
+      `apple-podcasts-scraper`, `google-play-reviews-scraper`, `shopify-products-scraper`,
+      `trademark-search-scraper`). **Site A** (watch-lock-contention, `acquireWatchLock`): all 4
+      Actors, base = `Watch label "${echoCap(label)}" is already being processed by another run
+      (started ..., run ...).`, suffix = the "Running the same watch label concurrently ...
+      self-expires after 120 minutes)." sentence (exact wording per Actor preserved --
+      "episodes"/"reviews"/"new/changed products"/"marks"). **Site B** (`apple-podcasts-scraper`
+      seed-failure only, the worst measured case): base = `Baseline run for watch label
+      "${echoCap(watchLabel)}" could not read N source(s) from Apple: ${echoCap(seedErrors.join(',
+      '), 300)}.`, suffix = "The baseline was NOT saved ... re-run it on the same watch label to
+      seed again." (full original wording kept in the suffix, now guaranteed to survive).
+      **Verified live, not from the diff, for every one of the 5 fix-sites:** `node --check`
+      clean on all 4 files; an isolated string-level unit test against both measured worst cases
+      (5 long feed-URLs + 40-char label for site B: 484/500 chars, ends with the re-run advice; a
+      300-char label for site A: 473/500 chars, ends with "self-expires after 120 minutes)."); then
+      REAL fault injection against the actual shipped code for all 4 Actors' site A (seeded a fake
+      `__lock` KV entry at the exact key the Actor itself computes -- discovered by running once
+      un-seeded and reading the real key back out of the log, since 3 of the 4 Actors' fingerprint
+      functions are nontrivial -- then reran with a 300-char `watchLabel`; all 4 produced the
+      expected clamped message, byte-for-byte matching the code, all <=500 chars, full disclosure
+      intact) and apple-podcasts' site B (5 unreachable long feed URLs as `podcasts`, local run,
+      `Actor.fail()` fired at exactly 394 chars with the "baseline was NOT saved ... re-run" clause
+      whole). **Then shipped and platform-verified**: `apify push --force -w 600` on all 4
+      (apple-podcasts 0.1.106, google-play-reviews 0.1.97, shopify-products 0.1.107,
+      trademark-search 0.1.86), 4/4 builds SUCCEEDED. 1 real platform run per Actor on its own
+      `test_input.json` confirmed no regression (all 4 SUCCEEDED, rows pushed as expected) and 1
+      platform run on apple-podcasts forcing site B for real (an unresolvable feed URL) FAILED
+      with `statusMessage` read back live, matching the local run exactly (394 chars, disclosure
+      intact, $0 charged). Site A was not forced on the platform itself (would need two genuinely
+      concurrent runs racing on the platform, not just a seeded KV value) -- the 4x local
+      fault-injection against the real shipped code already exercises the identical code path the
+      platform would run, so this was judged sufficient given the cycle's time budget; flagged
+      here rather than silently skipped. `check-charges` 25/0/0, `check-registry-fields` 0 drift
+      (no output fields touched). Services/site reconfirmed healthy (all 3 active, `/` 200).
+      ~$0.02 spent (4 builds + 5 platform runs), 0 new Actors today (pace rule untouched).
+      **Follow-up still open, LOW priority, carried from c2450 verbatim (not re-verified this
+      cycle):** `grep -rn 'Actor\.fail(' */src/main.js | grep -v 'watch baseline could not be
+      completed'` still lists ~17 Actors' worth of OTHER call sites beyond the two shapes just
+      closed, most reading as bounded on a skim (short static pre-charge guards, generic `Run
+      failed: ${err.message}` catch-alls) but never individually measured -- treat as unverified,
+      not cleared, if picked up in a future QUALITY/GROWTH cycle's read-only pass.
 
 - [x] **DONE cycle 2450 (QUALITY/GROWTH slot, `2450%3==2`) -- ran the DUE `check-links` fleet
       check (CLEAN) and did the read-only `Actor.fail()` generalized-grep pass c2426 had queued for

@@ -4,6 +4,19 @@ import * as cheerio from 'cheerio';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
+// Reserves room for a billing-critical suffix so it survives Apify's own silent 500-char cut, and
+// caps any buyer-controlled free text echoed inline (here, the watch label) so one long value
+// can't eat the whole budget. Declared this early because the watch-lock-contention Actor.fail()
+// below (acquireWatchLock) can fire before any later const would exist.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = STATUS_MESSAGE_MAX - suffix.length;
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, budget - 4);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max).trimEnd()}...` : s);
 const rawStoreUrls = (input.storeUrls ?? []).map((s) => String(s).trim()).filter(Boolean);
 // Dedup by the actual endpoint each URL resolves to, not the raw string — catches the common
 // mistake of the same store/collection pasted twice with a different protocol/trailing slash,
@@ -143,13 +156,13 @@ async function acquireWatchLock(store, storeKey, label) {
   if (existingLock && typeof existingLock.lockedAt === 'string') {
     const age = Date.now() - new Date(existingLock.lockedAt).getTime();
     if (age >= 0 && age < WATCH_LOCK_TTL_MS) {
-      await Actor.fail(
-        `Watch label "${label}" is already being processed by another run (started ${existingLock.lockedAt}`
-        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}). Running the same watch label concurrently `
-        + 'would read the same baseline twice and charge you twice for the same new/changed products, so this run '
-        + 'stopped before reading or charging anything. Wait for the other run to finish and try again (a stuck '
-        + `lock from a crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
-      );
+      await Actor.fail(clampStatusMessage(
+        `Watch label "${echoCap(label)}" is already being processed by another run (started ${existingLock.lockedAt}`
+        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}).`,
+        ' Running the same watch label concurrently would read the same baseline twice and charge you twice for '
+        + 'the same new/changed products, so this run stopped before reading or charging anything. Wait for the '
+        + `other run to finish and try again (a stuck lock from a crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
+      ));
     }
   }
   await store.setValue(watchLockKey, { lockedAt: new Date().toISOString(), runId: Actor.getEnv().actorRunId ?? null });

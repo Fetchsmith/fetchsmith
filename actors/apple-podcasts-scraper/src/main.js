@@ -5,6 +5,20 @@ import * as cheerio from 'cheerio';
 
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
+// Reserves room for a billing-critical suffix (a disclosure that must survive even if Apify's own
+// silent 500-char cut would otherwise land mid-sentence) and caps any buyer-controlled free text
+// echoed inline (watchLabel, upstream error text) so one long value can't eat the whole budget.
+// Declared this early because the watch-lock-contention Actor.fail() below (acquireWatchLock) can
+// fire before any later const would exist.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = STATUS_MESSAGE_MAX - suffix.length;
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, budget - 4);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max).trimEnd()}...` : s);
 let podcasts = (input.podcasts ?? []).map((p) => String(p).trim()).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
 const dataType = ['episodes', 'reviews', 'podcasts', 'charts', 'publisher'].includes(input.dataType) ? input.dataType : 'episodes';
@@ -244,13 +258,13 @@ async function acquireWatchLock(storeKey) {
   if (existingLock && typeof existingLock.lockedAt === 'string') {
     const age = Date.now() - new Date(existingLock.lockedAt).getTime();
     if (age >= 0 && age < WATCH_LOCK_TTL_MS) {
-      await Actor.fail(
-        `Watch label "${watchLabel}" is already being processed by another run (started ${existingLock.lockedAt}`
-        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}). Running the same watch label concurrently `
-        + 'would read the same baseline twice and charge you twice for the same new episodes, so this run stopped '
-        + `before reading or charging anything. Wait for the other run to finish and try again (a stuck lock from a `
-        + `crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
-      );
+      await Actor.fail(clampStatusMessage(
+        `Watch label "${echoCap(watchLabel)}" is already being processed by another run (started ${existingLock.lockedAt}`
+        + `${existingLock.runId ? `, run ${existingLock.runId}` : ''}).`,
+        ' Running the same watch label concurrently would read the same baseline twice and charge you twice for '
+        + 'the same new episodes, so this run stopped before reading or charging anything. Wait for the other run '
+        + `to finish and try again (a stuck lock from a crashed run self-expires after ${Math.round(WATCH_LOCK_TTL_MS / 60000)} minutes).`,
+      ));
     }
   }
   await watchStore.setValue(watchLockKey, { lockedAt: new Date().toISOString(), runId: Actor.getEnv().actorRunId ?? null });
@@ -1401,12 +1415,13 @@ log.info(`Done. Pushed ${pushed} ${dataType === 'podcasts' || dataType === 'publ
 // failing there would make a large input impossible to baseline at all.
 if (watchMode && seedErrors.length) {
   await releaseWatchLock();
-  await Actor.fail(
-    `Baseline run for watch label "${watchLabel}" could not read ${seedErrors.length} source(s) from Apple: `
-    + `${seedErrors.join(', ')}. The baseline was NOT saved — saving it would record those podcasts as `
-    + 'already-seen when they were never read, and you could be charged later for episodes that already '
-    + 'exist today. Nothing was returned or charged for this run; re-run it on the same watch label to seed again.',
-  );
+  await Actor.fail(clampStatusMessage(
+    `Baseline run for watch label "${echoCap(watchLabel)}" could not read ${seedErrors.length} source(s) from `
+    + `Apple: ${echoCap(seedErrors.join(', '), 300)}.`,
+    ' The baseline was NOT saved — saving it would record those podcasts as already-seen when they were never '
+    + 'read, and you could be charged later for episodes that already exist today. Nothing was returned or '
+    + 'charged for this run; re-run it on the same watch label to seed again.',
+  ));
 } else if (watchMode) {
   await saveWatchRecord(seeding ? 'seeded' : 'incremental');
   await releaseWatchLock();

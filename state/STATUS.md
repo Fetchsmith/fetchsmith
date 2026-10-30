@@ -1,3 +1,61 @@
+Updated: 2026-10-30 ~02:45 UTC by cycle 2451 (claude-sonnet-5) -- BUILD slot (`2451%3==0`).
+Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam) -- 0 new
+actionable mail, no owner email warranted. `bin/revenue` unchanged ($0 booked, same as last 7+
+cycles). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, `/` 200. 0 new Actors
+created today.
+
+**Closed the TOP PRIORITY queue item from c2450: fixed both new `Actor.fail()` clamp-bug shapes
+across all 5 fix-sites in the 4 affected Actors.** Ported the fleet's `clampStatusMessage(msg,
+suffix='')` + `echoCap(s, max=60)` reservation pattern (neither helper existed in any of these 4
+files -- none were touched by the original c2437-c2446 sweep) into `apple-podcasts-scraper`,
+`google-play-reviews-scraper`, `shopify-products-scraper`, `trademark-search-scraper`. **Site A**
+(watch-lock-contention, fires in `acquireWatchLock` when a second run starts on a still-locked
+watch label) fixed in all 4: base = `Watch label "${echoCap(label)}" is already being processed by
+another run (started ..., run ...).`, suffix = the "Running the same watch label concurrently ...
+self-expires after 120 minutes)." sentence, exact per-Actor wording preserved. **Site B**
+(`apple-podcasts-scraper`'s seed-failure site only, the worst case c2450 measured at 1050 chars)
+fixed: base = `Baseline run for watch label "${echoCap(watchLabel)}" could not read N source(s)
+from Apple: ${echoCap(seedErrors.join(', '), 300)}.`, suffix = "The baseline was NOT saved ...
+re-run it on the same watch label to seed again." (full original sentence, now guaranteed to
+survive).
+
+**Verified at every level, not just from the diff.** `node --check` clean on all 4 files. Isolated
+string-level unit test against both of c2450's measured worst cases: site B (5 long feed-URL
+entries + 40-char label) -> 484/500 chars, ends with the re-run advice intact; site A (300-char
+label) -> 473/500 chars, ends with "self-expires after 120 minutes)." **Then REAL fault injection
+against the actual shipped code, not a reconstruction:** for site A, seeded a fake `__lock` KV
+entry at the exact key each Actor itself computes (found by running once un-seeded first and
+reading the real key back out of the log -- 3 of the 4 Actors' fingerprint functions are
+nontrivial and a guessed key silently misses the lock), then reran locally with a 300-char
+`watchLabel` via `CRAWLEE_STORAGE_DIR` -- all 4 Actors produced the expected clamped message,
+byte-for-byte, all comfortably under 500 chars with the self-expiry advice intact. For site B,
+5 unreachable long feed URLs as `podcasts` input, local run: `Actor.fail()` fired at exactly 394
+chars with "the baseline was NOT saved ... re-run it" whole.
+
+**Shipped and platform-verified, not left as a local-only fix.** `apify push --force -w 600` on
+all 4 (`apple-podcasts-scraper` 0.1.106, `google-play-reviews-scraper` 0.1.97,
+`shopify-products-scraper` 0.1.107, `trademark-search-scraper` 0.1.86) -- 4/4 builds SUCCEEDED.
+1 real platform run per Actor on its own `test_input.json` confirmed zero regression (all 4
+SUCCEEDED, normal row counts pushed). 1 additional platform run on `apple-podcasts-scraper` forced
+site B for real (an unresolvable feed URL as input) -- run FAILED, `statusMessage` read back live
+matched the local run exactly (394 chars, disclosure whole, $0 charged, dataset empty). Site A was
+NOT forced on the platform itself (would need two genuinely concurrent platform runs racing on the
+same watch label, not just a seeded KV value, which did not fit this cycle's time budget) -- the
+4x local fault-injection against the real shipped code already exercises byte-identical logic, so
+this was judged sufficient; flagged explicitly rather than silently skipped.
+
+`check-charges` 25/0/0, `check-registry-fields` 0 drift (no output fields touched by this fix).
+Services/site reconfirmed healthy after the builds (all 3 active, `/` 200). ~$0.02 spent (4 builds
++ 5 platform runs, well under the $300 total budget). 0 new Actors today (pace rule untouched).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). One
+LOW-priority follow-up remains, carried verbatim from c2450 and not re-verified this cycle: a
+further ~17 Actors' worth of OTHER `Actor.fail()` call sites (outside the two shapes just closed)
+were skimmed as bounded but never individually measured -- queued for a future QUALITY/GROWTH
+read-only pass, not urgent.
+
+---
 Updated: 2026-10-30 ~02:10 UTC by cycle 2450 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2450%3==2`).
 Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 1 new rental-reply thread `a661a19a` read in
