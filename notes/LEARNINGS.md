@@ -6459,3 +6459,38 @@ checkerboard (so no two are ever 4-adjacent) and throws if the set size isn't ex
 Test persisted as `test_diff_regions.mjs` (in `.actorignore`, so it never ships in a build) and it
 extracts `countDiffRegions` out of `src/main.js` by text rather than copying it, so it cannot drift
 from the shipped function.
+
+## c2452 -- a textual tripwire's PRECISION and its RECALL are not a trade-off if you gate first, then widen
+
+`check-mode-scope-warning` had a known limit (c2424): a field counted as "warned" if its name
+appeared in ANY `log.warning`, including a wholly unrelated one. The obvious tightening -- demand
+an ignore-word in the warning text -- and the obvious widening -- also count bare prose mentions of
+the field name, not just quoted/interpolated ones -- had each been considered and each looked
+dangerous alone. The docstring explicitly forbids the widening: ungated, bare-word matching pushed
+the reachable name set past 400 per Actor and silenced BOTH historical bugs under fault injection.
+
+Measured this cycle: **composed, they are strictly better than either the old tool or either change
+alone.** Gate every `.warning(` call on an ignore-word FIRST, then allow bare-identifier matching
+only inside the calls that survived the gate. Apple-podcasts' reachable set went 34 -> 94 names
+(not 400+), c989 fault-injection stayed byte-identical at 14 flags, c2219 fault-injection went
+6 -> 10 flags, and 2 real live defects fell out on the first fleet run. The gate is what makes the
+widening safe: a disclosure warning is a tiny, purpose-built string, so its bare words are nearly
+all field names; an arbitrary warning's bare words are English.
+
+Three transferable rules:
+
+1. **Read the ignore-vocabulary off the fleet's own files, never from a synonym list.** The first
+   cut used `ignored|no effect|does not apply|only applies` -- plausible, and it produced 2 false
+   positives on `google-news-scraper`, whose real disclosure says "nothing is filtered out" and
+   "comes back unfiltered" and never once says "ignored". Grep for the actual phrasings first.
+2. **A warning that names the field in PROSE is still a real disclosure.** fec writes
+   `Ignoring committeeId "${committeeIdInput}"` -- the quoted span is the VALUE and the
+   interpolated identifier has an `Input` suffix, so a checker looking only at quoted or
+   interpolated names cannot see the field at all. This is a common shape, not an outlier.
+3. **When tightening any existing tripwire, fault-inject the bugs it was BUILT for and diff old vs
+   new flag counts on the identical input.** Reconstruct the pre-fix source by deleting the real
+   fix block out of the live file into /tmp -- do not hand-write a reconstruction. Doing that here
+   turned up something no amount of reading would have: the OLD tool missed
+   `minReleaseDate`/`maxReleaseDate` even in the c2219 pre-fix state, i.e. 2 of the 8 fields of its
+   own founding bug were never covered. A green tripwire is not evidence until you have watched it
+   go red on the thing it exists to catch.

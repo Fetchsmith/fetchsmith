@@ -94,6 +94,23 @@ SCOPE_PATTERNS = [
     re.compile(r'^\s*Optional,\s*\w+\s+[\'"][A-Za-z]+[\'"]\s+only\b', re.I),
 ]
 
+# A warning that is actually DISCLOSING an ignored field, as opposed to any other warning that
+# happens to mention the field's name. Added cycle 2452, closing the c2424 limit: fec's
+# `committeeId` and apple-podcasts' `discoverType`/`leaderboardTier` all read as "warned" purely
+# because an UNRELATED warning elsewhere in the file interpolated the same identifier (fec's is
+# `candidate name lookup failed for committee ${committeeId}`, a network-error message). Gating on
+# an ignore-word first means only disclosure warnings donate names at all.
+#
+# The vocabulary is the FLEET'S OWN, read off the live files rather than guessed -- in particular
+# google-news-scraper discloses a dropped date window with "nothing is filtered out" / "comes back
+# unfiltered" and never says "ignored", so a list of ignore-synonyms alone produced 2 false
+# positives on it (measured this cycle, before these two alternatives were added).
+IGNORE_WORD = re.compile(
+    r"ignor|no effect|does ?n[o']t apply|only applies|not applicable|only used|"
+    r"nothing (?:is|was|will be) filtered|unfiltered|"
+    r"(?:is|are|was|were) skipped|will be skipped",
+    re.I)
+
 QUOTED = re.compile(r'[\'"`]([A-Za-z_][A-Za-z0-9_]*)[\'"`]')
 
 
@@ -205,8 +222,24 @@ def warned_names(main_src):
     """
     names = set()
     for call, loop_header in warning_calls(main_src):
+        # Not a disclosure warning -> it cannot be the thing that tells the buyer the field was
+        # ignored, so it donates no names (cycle 2452; see IGNORE_WORD).
+        if not IGNORE_WORD.search(call + ' ' + loop_header):
+            continue
         names.update(QUOTED.findall(call))
         names.update(INTERP_IDENT.findall(call))
+        # BARE prose mentions count too, but ONLY inside a call the gate above already accepted.
+        # The docstring's warning about bare-word matching (400+ names per Actor, both historical
+        # bugs silenced) was measured on UNGATED calls; gated, the reachable set stays small and
+        # this is what rescues fec's real disclosure, which names the field in prose only
+        # (`Ignoring committeeId "${committeeIdInput}"` -- the quoted span is the VALUE, and the
+        # interpolated identifier is `committeeIdInput`, so neither stricter source sees it).
+        # Re-measured against both historical bugs under fault-injection before shipping: c989
+        # (fec) 14 flags, identical to the old tool; c2219 (apple-podcasts) 10 flags vs the old
+        # tool's 6 -- the gated version additionally catches `minReleaseDate`/`maxReleaseDate`,
+        # two of the eight fields c2219 actually fixed that the old tool missed even in the
+        # pre-fix state.
+        names.update(IDENT.findall(call))
         names.update(QUOTED.findall(loop_header))
         seeds = set(INTERP_IDENT.findall(call)) | set(IDENT.findall(loop_header))
         texts, seen_idents = [], set()

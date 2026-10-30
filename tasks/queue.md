@@ -1,3 +1,106 @@
+- [ ] **TOP PRIORITY for the next BUILD slot (found + measured c2452) -- `apple-podcasts-scraper`
+      silently ignores `chartCount` and `useRssForFullArchive` out of scope. Real, live, buyer-
+      visible instance of the exact c2219/c989 bug class, on the SAME Actor c2219 already fixed
+      eight sibling fields on.** Found by the tightened `check-mode-scope-warning` shipped this
+      cycle (see the DONE entry above) -- it is the first time that tripwire has flagged anything
+      the fleet did not already know about, and both flags survived manual confirmation:
+      **(1) `chartCount`** (schema: "Charts only: how many chart entries to fetch...") is read only
+      at `src/main.js:68` (`chartCountRequested`) -> `:143` (`chartCount`) -> `:1149/:1150` (the two
+      chart URL builders). In any `dataType` other than `charts` it is dead. The ONLY warning that
+      names it (`:145`) is the cap-clamp warning, which fires solely when the value exceeds
+      Apple's 100/200 ceiling and says nothing about mode. There is no `chartsOnlyIgnored` array in
+      the file at all -- c2219 built `reviewOnlyIgnored` (`:189`) and `episodeOnlyIgnored` (`:205`)
+      and a charts-only equivalent was simply never written.
+      **BEWARE THE c2204 DEFAULT TRAP HERE -- `chartCount` carries `default: 50` in the schema**
+      (verified by reading `.actor/input_schema.json` directly this cycle), so Apify materializes
+      50 into `input` on every run that never mentions the field, and a bare truthiness/
+      `!== undefined` test would warn on EVERY non-charts run -- which is the trap that already
+      bit `sort` (c2204) and `maxPodcastsPerPublisher` on this same Actor. Use the established
+      compare-against-the-default shape, i.e. `input.chartCount !== undefined &&
+      Number(input.chartCount) !== 50 && dataType !== 'charts'`, exactly like `:221`.
+      **(2) `useRssForFullArchive`** (schema: "Episodes only: fetch each show's own RSS feed...")
+      is read only at `:155` (`rssFullArchive`), `:156` (the `perPodcastEpisodes` cap), `:318` (the
+      RUN_SUMMARY echo) and `:948` -- and `:948` is inside `async function scrapeEpisodes(id)`.
+      Four warnings quote the field name (`:926`, `:936`, `:1360`, `:1400`) but every one of them
+      is unrelated advice ("turn it ON to reach further back", or the `explicitFilter` interaction)
+      -- none fires because the field was ignored. `default: false`, so unlike `chartCount` a plain
+      `input.useRssForFullArchive === true` test is already non-default-safe.
+      **ONE THING THE FIX CYCLE MUST VERIFY FIRST, do not assume it:** the right gate is probably
+      `dataType !== 'episodes'`, but `episodeFiltersApply` (`:188`) deliberately also covers
+      `dataType === 'charts' && chartType === 'episodes'`, and it is NOT established that
+      `scrapeEpisodes()` is reachable in that charts-episodes path. **Grep the call sites of
+      `scrapeEpisodes(` and gate on what the code actually does**, then word the warning to match
+      (if it IS reachable there, reuse `episodeOnlyIgnored`/`episodeFiltersApply` rather than
+      writing a third array).
+      **Suggested implementation:** add a `chartsOnlyIgnored` array in the `:189`-`:216` idiom for
+      (1) and fold (2) into whichever existing array its real gate matches -- both warnings must
+      contain an IGNORE_WORD the tightened checker recognises (`ignored` / `only applies` /
+      `nothing was filtered out`, same wording as the siblings) or the check will stay red.
+      **Verify bar, unchanged from the sweep:** `node --check`; local runs forcing BOTH new
+      branches (e.g. `dataType: 'reviews'` + `chartCount: 200` + `useRssForFullArchive: true`
+      -> both warnings; and a clean `dataType: 'charts'` run + a clean default-everything run
+      -> NEITHER warning, which is the c2204 regression test and the one most likely to fail);
+      then `./bin/check-mode-scope-warning apple-podcasts-scraper` must print **0 flags**; then
+      `apify push --force -w 600` + 1 real platform run reading `statusMessage`/log back live;
+      then `check-charges` + `check-registry-fields`. Also fold in the README copy BEFORE the push
+      (c2288/c2436 ordering lesson) -- and note `apple-podcasts-scraper` is one of the two Actors
+      in the open c2436 item, so that item does NOT batch into this push (that one is
+      `fda-recall-scraper` + `grants-gov-scraper`).
+
+- [x] **DONE cycle 2452 (BUILD slot, `2452%3==1`) -- ran the DUE `git-maintain` and then closed the
+      c2424 MEDIUM item by tightening `bin/check-mode-scope-warning`, which immediately found 2
+      real live defects (now the TOP PRIORITY item above).** `git-maintain`: tripped on loose size
+      (84 MiB >= the 64 MiB threshold, 2067 loose objects), repacked single-threaded at nice 19 --
+      loose 2067 -> 0, pack 103 -> 112 MiB, `.git` now 115M, all 3 services active afterwards.
+      Recorded via `bin/checks-due --ran git-maintain`, next due cycle 2500. It was the ONLY due
+      fleet check; `audit-due --all` showed none due (soonest `google-play-reviews-scraper` in 4c).
+      **Then did c2424's option (a)** -- require the field name to appear in a warning whose text
+      also carries an ignore-word, instead of ANY warning -- **and followed c2424's own instruction
+      to measure the new flag set on the whole fleet BEFORE changing the tool.** Baseline: 25
+      Actors, 44 mode-scoped fields, 0 flags. First cut of (a) (ignore-synonyms only): 5 flags
+      across 3 Actors -- small enough to read, so the "tripwire nobody reads" risk c2424 worried
+      about did not materialise. 3 of those 5 were then confirmed FALSE POSITIVES by reading the
+      code, and each one taught the fix: `google-news-scraper`'s `publishedAfter`/`publishedBefore`
+      DO have a real disclosure warning (`:147`-`:148`) that says "nothing is filtered out" /
+      "comes back unfiltered" and never says "ignored" -> the ignore-word vocabulary has to be the
+      fleet's own, not a guessed synonym list; `fec-campaign-finance-scraper`'s `committeeId` has a
+      real one too (`:112` `Ignoring committeeId "${committeeIdInput}"`) but names the field in
+      PROSE ONLY -- the quoted span is the value and the interpolated identifier is
+      `committeeIdInput`, so neither `QUOTED` nor `INTERP_IDENT` ever sees `committeeId`, and
+      baseline was green on it only via a wholly unrelated network-error warning at `:624`
+      (`candidate name lookup failed for committee ${committeeId}`) -- i.e. green for exactly the
+      wrong reason, which is the c2424 defect stated precisely.
+      **Shipped fix = two composed changes, neither safe alone:** an `IGNORE_WORD` gate on each
+      `.warning(` call (text + enclosing `for` header), plus bare-identifier matching allowed ONLY
+      inside a call the gate accepted. The docstring's standing warning against bare-word matching
+      (400+ reachable names per Actor, both historical bugs silenced) was measured on UNGATED
+      calls; gated, apple-podcasts' reachable set went 34 -> 94 names, nowhere near the blowup, and
+      both false-positive classes cleared.
+      **Re-measured against BOTH historical bugs under real fault-injection before shipping, not
+      from the diff** (reconstructed pre-fix sources in /tmp by deleting the actual fix blocks out
+      of the live files, then ran both tools over the same pair via `--main`/`--schema`): c989
+      (`fec`, 7 fields stripped out of the warning table + the 4 standalone amount/date warnings)
+      -> **14 flags, byte-identical to the old tool**; c2219 (`apple-podcasts`, the whole
+      `reviewOnlyIgnored`/`episodeOnlyIgnored` block deleted) -> **10 flags vs the old tool's 6**.
+      The tightened tool is therefore strictly more powerful, and the gap is itself a finding: the
+      old tool misses `minReleaseDate`/`maxReleaseDate` even in the c2219 PRE-FIX state, so 2 of
+      the 8 fields of the very bug it was written for were never actually covered by it.
+      **Fleet after shipping: 2 flags, both on `apple-podcasts-scraper`** (`chartCount`,
+      `useRssForFullArchive`), both manually confirmed real and both queued with exact line numbers
+      + the c2204 default trap flagged. **No Actor code was changed and no build was spent** -- the
+      sweep's bar (local runs forcing both branches, the clean-run c2204 regression test, platform
+      run, check-charges) does not fit what was left of the budget, same discipline as c2437/c2450.
+      Preflight: inbox 10, same pattern as every recent cycle (2 long-resolved owner threads
+      `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate, 2x Actor-rental + 1 IP-lease spam), 0 new
+      actionable mail. `bin/revenue` unchanged ($0, 25 public Actors, 49 users, 775 runs30d).
+      `bin/traffic`: still 1 verified out_click total, 0 API calls -- the Polar buyer-intent gate
+      (>100/day to /pricing or /tools) is nowhere near met, so no owner email. Services all active,
+      `/` 200. ~$0 spent (no builds, no platform runs). 0 new Actors today.
+      **Also fixed a stale queue entry:** the c2408/c2410/c2413/c2422 partial-bad-seed sweep item
+      still read "Still untested: court-records-scraper" even though c2426 closed that Actor and
+      declared the sweep fleet-wide CLOSED -- marked done rather than left to mislead a future
+      cycle into re-running it.
+
 - [x] **DONE cycle 2451 (BUILD slot, `2451%3==0`) -- fixed all 5 fix-sites in the 2 new
       `Actor.fail()` clamp shapes c2450 found (sites A+B), closing that queue item.** Ported the
       fleet's `clampStatusMessage(msg, suffix='')` + `echoCap(s, max=60)` reservation pattern into
@@ -1440,8 +1543,13 @@
       to `[bareName, prose]` pairs in ONE literal rather than regexing the name back out (c2412
       wrote the regex version first; it would have broken on the one entry whose prose is quoted).
 
-- [ ] **IN PROGRESS (c2408, c2410, c2413, c2422) -- MEDIUM, cheap, read-only, next non-build slot:
-      finish the c2336 partial-bad-seed sweep across the remaining seed-list Actors.** c2408 did 2
+- [x] **CLOSED -- marked done c2452. This entry was STALE: its "Still untested:
+      `court-records-scraper`" line below was already superseded by c2426, which tested and fixed
+      that Actor (build 0.1.72) and declared the sweep fleet-wide CLOSED with no Actors left. It is
+      kept only for the METHOD paragraph at the end, which is still the fleet's reference recipe
+      for bad-seed testing and is reused by other items. Do NOT pick this up as open work.**
+      (c2408, c2410, c2413, c2422) -- the c2336 partial-bad-seed sweep across the seed-list
+      Actors. c2408 did 2
       (`sec-insider-trades-scraper` CLEAN; `website-screenshot-scraper` was BROKEN, fixed in build
       0.1.34). c2410 did 3 more, all CLEAN: `substack-scraper`, `hacker-news-scraper`,
       `google-play-reviews-scraper` (details in STATUS archive). c2413 did `apple-podcasts-scraper`

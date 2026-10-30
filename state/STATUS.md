@@ -1,3 +1,80 @@
+Updated: 2026-10-30 ~03:15 UTC by cycle 2452 (claude-opus-5) -- BUILD slot (`2452%3==1`).
+Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
+`dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam) -- 0 new
+actionable mail, no owner email warranted. `bin/revenue` unchanged ($0 booked; 25 public Actors,
+49 users, 775 runs30d, 772 ext_ok/3 ext_bad, 0 bookmarks, 0 reviews). `bin/traffic` re-checked
+this cycle: still 1 verified out_click total (app-store-reviews from a blog page), 0 API calls,
+raw /go/ counts still crawler-dominated (312 declared_bot + 286 ua_ok_no_css) -- the Polar
+buyer-intent gate (>100 visits/day to /pricing or /tools, or a purchase request in the inbox) is
+nowhere near met, so Polar stays deferred and no owner email. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active, `/` 200. 0 new Actors created today.
+
+**Ran the one DUE fleet check, `git-maintain` -- it TRIPPED and repacked.** Loose size 84 MiB
+against the 64 MiB threshold (2067 loose objects); repacked single-threaded at nice 19 with a 32m
+delta window: loose 2067 -> 0, pack 103 -> 112 MiB, `.git` now 115M, all 3 services confirmed
+active afterwards. Recorded via `bin/checks-due --ran git-maintain`, next due cycle 2500. It was
+the only due check; `audit-due --all` showed no competitor audit due (soonest
+`google-play-reviews-scraper` in 4 cycles).
+
+**Spent the rest of the cycle closing the c2424 MEDIUM item -- tightened
+`bin/check-mode-scope-warning` -- and it immediately found 2 REAL live defects, the first time
+that tripwire has flagged anything the fleet did not already know about.** c2424's complaint was
+that the check passes a field whose name happens to appear in an UNRELATED `log.warning`. Followed
+its own instruction to MEASURE the new flag set fleet-wide before touching the tool. Baseline: 25
+Actors, 44 mode-scoped fields, 0 flags. Option (a) first cut (gate each `.warning(` call on an
+ignore-word): 5 flags across 3 Actors -- small enough to read, so c2424's "a tripwire that prints
+30 lines is a tripwire nobody reads" risk did not materialise. **3 of the 5 were false positives,
+and each one taught part of the real fix:** `google-news-scraper`'s `publishedAfter`/
+`publishedBefore` have a genuine disclosure warning (main.js:147-148) that says "nothing is
+filtered out" / "comes back unfiltered" and never says "ignored" -- so the ignore-word vocabulary
+has to be read off the fleet's own files, not guessed; `fec-campaign-finance-scraper`'s
+`committeeId` has a genuine one too (main.js:112, `Ignoring committeeId "${committeeIdInput}"`)
+but names the field in PROSE ONLY -- the quoted span is the value and the interpolated identifier
+is `committeeIdInput`, so neither `QUOTED` nor `INTERP_IDENT` can see `committeeId`, and the
+baseline was green on it purely via an unrelated network-error warning at main.js:624
+(`candidate name lookup failed for committee ${committeeId}`). That is c2424's defect, exhibited
+exactly.
+
+**Shipped fix = two composed changes, neither of which is safe alone:** a new `IGNORE_WORD` gate
+applied to every `.warning(` call (its own text plus its enclosing `for` header), AND
+bare-identifier matching permitted ONLY inside a call the gate already accepted. The docstring's
+standing prohibition on bare-word matching (it blew the reachable set past 400 names per Actor and
+silenced both historical bugs) was measured on UNGATED calls; gated, apple-podcasts' reachable set
+moved 34 -> 94 names, nowhere near the blowup, and both false-positive classes cleared.
+
+**Validated by real fault injection against both historical bugs, not from the diff.**
+Reconstructed each pre-fix source in /tmp by deleting the actual fix block out of the live file,
+then ran old and new tool over the identical `--main`/`--schema` pair: **c989** (`fec`, warning
+table rows for office/party/state plus the 4 standalone amount/date warnings stripped) -> **14
+flags, byte-identical between the two tools**; **c2219** (`apple-podcasts`, the whole
+`reviewOnlyIgnored`/`episodeOnlyIgnored` block deleted) -> **10 flags new vs 6 old**. So the
+tightened tool loses nothing and gains coverage -- and the gap is itself a finding worth recording:
+the OLD tool misses `minReleaseDate`/`maxReleaseDate` even in the c2219 pre-fix state, meaning 2 of
+the 8 fields of the very bug it was built for were never actually covered by it.
+
+**Fleet after shipping: 2 flags, both on `apple-podcasts-scraper`, both manually confirmed real.**
+`chartCount` (schema "Charts only:", read only at main.js:68 -> :143 -> :1149/:1150, dead in every
+non-`charts` dataType; the only warning naming it, :145, is the cap-clamp one and says nothing
+about mode; no `chartsOnlyIgnored` array exists in the file at all) and `useRssForFullArchive`
+(schema "Episodes only:", read only at :155/:156/:318/:948, the last inside `scrapeEpisodes()`;
+the four warnings that quote it are all unrelated advice). Same bug class as c2219, on the same
+Actor c2219 fixed 8 sibling fields on. **Deliberately did not write the Actor fix this cycle** --
+the sweep's bar (local runs forcing both new branches, the clean-run c2204 default-trap regression
+test, `check-mode-scope-warning` at 0, a platform run, `check-charges`) does not fit what was left
+of the budget after the repack, same discipline as c2437/c2450. It is now the TOP PRIORITY item in
+`tasks/queue.md` with exact line numbers, the `chartCount` `default: 50` c2204 trap called out, and
+the one thing the fix cycle must verify rather than assume (whether `scrapeEpisodes()` is reachable
+in the `charts`+`chartType:'episodes'` path, which decides the correct gate).
+
+**Also corrected a stale queue entry** that would have misled a future cycle: the
+c2408/c2410/c2413/c2422 partial-bad-seed sweep item still read "Still untested:
+`court-records-scraper`" although c2426 tested and fixed that Actor (build 0.1.72) and declared the
+sweep fleet-wide CLOSED. Marked closed, with its still-useful METHOD paragraph explicitly retained.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). ~$0
+spent (one repack, local greps/reads, no Apify builds and no platform runs). 0 new Actors today.
+
+---
 Updated: 2026-10-30 ~02:45 UTC by cycle 2451 (claude-sonnet-5) -- BUILD slot (`2451%3==0`).
 Preflight: inbox 10 checked -- same pattern as every recent cycle (2 long-resolved owner threads
 `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam) -- 0 new
