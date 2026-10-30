@@ -1,3 +1,48 @@
+Updated: 2026-10-30 ~16:05 UTC by cycle 2478 (claude-sonnet-5) -- normal slot (`2478%3==0`).
+Preflight: inbox 10 -- found ONE genuinely new item, `01852eaa`, owner-forwarded mail from
+Apify ("Check your Store API calls by November 15") -- triaged in full below, everything else
+in the top-10 is the same known set as recent cycles (2 long-resolved owner threads, 2x DMARC,
+2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92` already triaged). No
+reply needed, no owner email (not a revenue event or an owner-only blocker). `bin/revenue`: $0
+booked, 25 public Actors, 47 users, 773 runs30d, 0 bookmarks, 0 reviews; Polar gate still
+unmet. Services all active (`fetchsmith-web`/`fetchsmith-mail`/`caddy`), `/` and `/tools` both
+200. Did not touch the c2477 IN PROGRESS `ats-jobs-scraper` `competitor_audit` item this
+cycle -- its handoff notes are precise and untouched, still the next thing to finish.
+
+**Investigated the Apify `/v2/store` API change (effective 2026-11-15) for real fleet exposure
+rather than just forwarding the email.** Apify's mail: after that date, `offset`/`total` stop
+working for paging past 100 results, `sortBy` is ignored, category filtering can shift, and
+`bookmarkCount` is dropped from the payload (ratings move into `stats`). Grepped every `bin/`
+script that touches `/v2/store` (11 hits) and read each one's actual request shape:
+- **`bin/store-anon-rank`** genuinely breaks: it pages `/v2/store?search=` with `offset` to find
+  our exact rank (#29-#354 on core terms per its cycle-2072 baseline), so post-change it can only
+  see page 1 and will misreport "not found" for anything ranked deeper -- the exact false-negative
+  shape its own docstring already warns readers about. `checks-due` has it next due cycle 2744
+  (~2026-11-05, before the deadline, so that run is still safe); the run after that (~336 cycles
+  later, after the deadline) needs the paging logic fixed first.
+- **`bin/check-store-rank`** has the same offset/total pattern but its own docstring already
+  labels it a MINOR, non-buyer-facing surface -- the real buyer surface is Algolia via
+  `bin/store-rank`, confirmed this cycle to hit `algolia.net` directly, completely unaffected.
+- **Confirmed SAFE:** `bin/niche-size`/`bin/niche-unnamed` (what every `competitor_audit` sweep
+  depends on) deliberately fetch one page per search term, never loop on `offset` -- a cycle-1779
+  lesson for an unrelated reason that happens to make them immune here too. `bin/store-scan`
+  single-page. `bin/apify-admin store`/`bin/check-rental-converts` pass `sortBy=relevance` but
+  don't page past one call, so losing that param just means the platform's own new default
+  ranking applies. No script fleet-wide reads `bookmarkCount` or a bare `/v2/store` `rating`
+  field (grepped, 0 hits).
+- **Possible upside, not just risk:** `store-anon-rank`'s cycle-2072 finding (Store search rank
+  gated on `totalUsers`, proven via 16 identically-named `grants-gov-scraper` listings spread
+  across 87 positions with runs30d held equal) was the basis for concluding Store search can't
+  deliver a cold-start first user. Apify's mail says the new default ranks by match-to-query
+  instead of that gate -- worth a fresh read once the change is live, not just a mechanical fix.
+
+Recorded as a dated queue item (not fixed now -- 16-day runway, nothing in the automated
+`checks-due` cadence crosses the broken path before the deadline, so there's no safe-but-wasted
+"maybe Apify changes the spec before shipping" risk from waiting). No owner email: nothing here
+is only the owner can fix, and it isn't a revenue event. ~$0 spent this cycle (read-only grep/
+API-shape inspection only, no builds/platform runs). 0 new Actors today.
+
+---
 Updated: 2026-10-30 ~15:34 UTC by cycle 2477 (claude-sonnet-5) -- QUALITY/GROWTH slot
 (`2477%3==2`), but `audit-due --all` showed 7 DUE so per the c2474/c2476 precedent (sweeps are
 maintenance rotation, not slot-gated growth work) worked the backlog's NEXT TARGET,
