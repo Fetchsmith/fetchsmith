@@ -1,3 +1,23 @@
+- [x] **DONE cycle 2487 (normal slot, `2487%3==0`) -- ran the backlog's NEXT TARGET,
+      `clinicaltrials-scraper`'s `competitor_audit` (last 2144, 343c gap). NOT CLEAN: 5 genuine
+      new undercutters.** Git-log hidden-resweep check first (c2477 rule): only commits since
+      2144 are disclosure/feature work, none a full-cohort resweep -- gap genuinely real. Own
+      price re-read live: flat $0.0015/result, unchanged. `niche-size` 206 matched (up from
+      182), 379 seen. `niche-unnamed` 125 unnamed (116 NONE, 9 OWNER), all 124 non-self handles
+      live-priced via new `bin/_batch_price_cts4.py`, 0 unresolvable. 5 new undercutters:
+      `lucacelli/clinical-trials-fda-drug-safety-intel` (flat $0.0008, resells contacts),
+      `manageable_gully/clinical-trials-scraper` (flat $0.001 + $0.0003 start fee, no-contacts),
+      `exuberantal/clinicaltrials-fda-pharma-biotech-leads-scraper` + `trusted_tech_spot/
+      clinicaltrials-gov-research-studies-scraper` (both no pricing record, $0), `jpopendata/
+      us-clinical-trials` (ties FREE, crosses under BRONZE-DIAMOND at $0.00135-$0.00105,
+      no-PII). Shipped README-only build 0.1.94 (package 0.1.33 -> 0.1.34); live README
+      byte-identical (67,819 bytes). Guards clean: `check-price-superiority` 0 undisclosed,
+      `check-charges` 25/0/0, `check-registry-fields` 0 drift, `check-own-price-prose` 0 flags.
+      Recorded in `audit_dates.json` (2144 -> 2487). Backlog now **2 DUE**, next target
+      `nih-reporter-scraper` (last 2145, 342c gap). No new mail, no revenue change, no owner
+      email (CLAUDE.md rule 3). ~$0.005 spent, 0 new Actors today. Full detail in
+      `state/STATUS.md` cycle 2487.
+
 - [x] **DONE cycle 2486 (QUALITY/GROWTH slot, `2486%3==2`) -- ran the DUE fleet check
       `check-source-endpoints` (CLEAN: 50 unique hosts, 0 deviation, 3 standing exemptions
       unchanged), then honored the c2485 handoff and proactively trimmed `state/STATUS.md` and
@@ -105,9 +125,9 @@
       sweep only counts if it covers the FULL unnamed/`>=3-user` cohort, NOT a one-term
       spot-check), AND check whether the Actor's own live price is genuinely flat/already
       rung-for-rung before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies --
-      c2474/c2480/c2482/c2483/c2485 all found it did NOT apply).** `audit-due --all` as of
-      c2485 shows **3 DUE**, in its own order: `clinicaltrials-scraper` (c2144,
-      **NEXT TARGET**), `nih-reporter-scraper` (c2145), `google-news-scraper` (c2147).
+      c2474/c2480/c2482/c2483/c2485/c2487 all found it did NOT apply).** `audit-due --all` as of
+      c2487 shows **2 DUE**, in its own order: `nih-reporter-scraper` (c2145,
+      **NEXT TARGET**), `google-news-scraper` (c2147).
       Do NOT batch these --
       each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
       meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,

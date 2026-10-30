@@ -1,3 +1,58 @@
+Updated: 2026-10-30 ~21:00 UTC by cycle 2487 (claude-sonnet-5) -- normal slot (`2487%3==0`).
+Preflight: inbox 10 -- same known set as c2486 (2 long-resolved owner threads, 2x DMARC, 2x
+TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify
+`/v2/store` notice `01852eaa`), 0 genuinely new mail, no owner email warranted. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 773 runs30d, 0 bookmarks, 0 reviews; Polar gate still
+unmet. `checks-due --all` NONE DUE. `audit-due --all` showed 3 DUE, NEXT TARGET
+`clinicaltrials-scraper` (last 2144, 342c gap) -- ran it this cycle. Services all active, `/`
+and `/tools/clinicaltrials-scraper` both 200.
+
+**Ran `clinicaltrials-scraper`'s `competitor_audit` (last 2144, 343c gap). NOT CLEAN: 5 genuine
+new undercutters.** Git-log hidden-resweep check first (c2477 rule): only commits since 2144
+are disclosure/feature work (billing clamp, `Actor.fail()` reserve, dedupe fix, `whyStopped`
+shipped, facility-scope disclosure), none a full-cohort resweep -- gap genuinely real. Own price
+re-read live via `GET /v2/acts/<id>`: flat $0.0015/result, single primary `result` event, no
+start fee, unchanged -- c2464 scalar-vs-rung bug does not apply (flat, not scalar-vs-rung).
+
+`niche-size`: 379 seen, **206 matched** (up from 182 at 2144). `niche-unnamed`: 125 unnamed (116
+NONE, 9 OWNER), README named 87 handles. A `>=3`-user head exists (6 listings; `atomus/
+leads-finder`, 209 users, excluded as a generic B2B lead-finder out of scope on product), so
+per the cycle-1260 rule the full 124-listing unnamed cohort (125 minus our own listing) was
+live-priced via new `bin/_batch_price_cts4.py` (modeled on `cts3.py`), 0 unresolvable, 0 pure
+run-fee.
+
+**5 new undercutters, all unit-matched per study/result row:** `lucacelli/
+clinical-trials-fda-drug-safety-intel` flat **$0.0008**, no start fee -- but resells biotech
+sponsor/contact data, closer to the PII-reselling shape we deliberately don't ship;
+`manageable_gully/clinical-trials-scraper` flat **$0.001** ("$1/1k studies") plus a $0.0003
+start fee, explicitly "No contact persons" same stance as us; `exuberantal/
+clinicaltrials-fda-pharma-biotech-leads-scraper` and `trusted_tech_spot/
+clinicaltrials-gov-research-studies-scraper` both carry **no pricing record at all** ($0 today,
+can be priced any time without notice); `jpopendata/us-clinical-trials` ties us exactly at FREE
+($0.0015) then crosses under at **$0.00135 (BRONZE) down to $0.00105 (GOLD+/PLATINUM/DIAMOND)**
+-- explicitly "No investigator names or contacts," same no-PII stance as us. All 5 read from
+each rival's own live pricing record and disclosed in a new 2026-10-30 cycle-update paragraph
+in the README Pricing section.
+
+Shipped README-only build **0.1.94** (package 0.1.33 -> 0.1.34); live README confirmed
+**byte-identical** (67,819 bytes both sides) via the `/v2/acts/<id>/builds/<buildId>` `readme`
+field (note: this build's response had `readme` as a direct string field, not nested under
+`sourceFiles` the way c2464 found on a different Actor -- the shape apparently varies by
+request/build state, so check both before concluding a byte mismatch is real). Guards:
+`check-price-superiority` 0 undisclosed anywhere, `check-charges` 25/0/0, `check-registry-fields`
+0 drift, `check-own-price-prose` 0 flags. Recorded in `audit_dates.json` (2144 -> 2487).
+`audit-due` now shows **2 DUE**, next target **`nih-reporter-scraper`** (last 2145, 342c gap).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy (all 3 active, `/` and `/tools/clinicaltrials-scraper` both 200).
+**Next cycle: continue the backlog with `nih-reporter-scraper`'s `competitor_audit`** -- same
+method (git-log hidden-resweep check first, own-price read live before comparing, `niche-size`
++ `niche-unnamed` resweep, live-price the full unnamed cohort, re-price OWNER handles under
+their own IDs, guards, record). `bin/_batch_price_cts4.py` kept in `bin/` as a dated record per
+every prior per-niche pricer copy's own convention.
+
+---
 Updated: 2026-10-30 ~20:10 UTC by cycle 2486 (claude-sonnet-5) -- QUALITY/GROWTH slot
 (`2486%3==2`). Preflight: inbox 10 -- same known set as c2485 (2 long-resolved owner threads,
 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,
