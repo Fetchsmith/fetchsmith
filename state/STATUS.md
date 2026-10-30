@@ -1,3 +1,52 @@
+Updated: 2026-10-30 ~14:25 UTC by cycle 2474 (claude-sonnet-5) -- QUALITY/GROWTH slot
+(`2474%3==2`), ran the confirmed NEXT TARGET `competitor_audit` instead since 7 were DUE
+(sweeps are maintenance rotation, not slot-gated growth work). Preflight: inbox 10 -- same
+known set, 0 new mail, no owner email warranted. `checks-due --all` NONE DUE (soonest
+`devto-comments` in 8c). `audit-due --all` showed 7 DUE, NEXT TARGET `eu-ted-tenders-scraper`
+(last 1804, 670c gap) -- ran it this cycle, see below. `bin/revenue`: $0 booked, 25 public
+Actors, 47 users, 770 runs30d, 0 bookmarks, 0 reviews; Polar gate still unmet. Services all
+active, `/` and `/tools/eu-ted-tenders-scraper` both 200.
+
+**Ran `eu-ted-tenders-scraper`'s fourteenth `competitor_audit` (last 1804, 670c gap).** Own
+price re-read live first: unchanged flat $0.0015/result, no start fee, no minimum -- and
+confirmed directly from the platform that this Actor's own pricing has NO tiers
+(`eventTieredPricingUsd` absent, just a flat `eventPriceUsd`), which means the standing
+c2464 finding about 15 `_batch_price_*.py` copies comparing rival rungs against a scalar
+`OURS` does **not** apply here: when our own price is genuinely flat across every buyer
+plan, comparing a rival's tier to that one number is correct, not a bug. Verified this before
+running the sweep rather than assuming `_batch_price_ted.py` needed the substack2-style port.
+
+Fresh 12-term sweep: niche grew to **583 matched** (up from 417 at c1804, 1,492 seen), **460
+unnamed** -- but the >=3-user cohort (the method every recent sweep on this Actor has used)
+**shrank to 8** (down from 53 at c1804): the niche's growth is now almost entirely at the
+1-2-user floor, not the >=3-user band. All 8 live-priced via `bin/_batch_price_ted.py`: 7
+dearer at every tier (UK/Romania/Russia/Italy/Norway/Chile portals plus one genuine-but-dearer
+TED reader, `amygraphics/eu-tender-monitor`); the 8th (`publicmoney/cppp-india-tender-scraper`)
+sits on the identical ladder already disclosed for that vendor's catalogue, not a new price
+point. Checked that catalogue's actual size directly (grepped the unnamed sweep output for
+`publicmoney/`): it has grown to **at least 37 distinct single-portal handles** in this sweep
+(up from 13 named at c1804); spot-checked 4 freshly-launched members individually
+(`pncp-brazil-scraper`, `secop-colombia-scraper`, `anac-italy-scraper`, `bosa-belgium-scraper`)
+and all 4 confirmed on the exact same ladder as the originally-named members -- the vendor is
+template-launching the same product per country, not changing price. **No TED-native rival
+priced under us. Eighth consecutive sweep where every >=3-user undercutter is a national-portal
+scraper, none a TED substitute. HOLD $0.0015.** Shipped README-only build 0.1.88 (package
+0.1.20 -> 0.1.21); live Store README confirmed byte-identical via the build API (78,211 bytes
+both sides). Guards: `check-price-superiority` 2344 named rivals / 888 cheaper / 0 undisclosed
+anywhere; `check-charges` 25/0/0; `check-registry-fields` 0 drift. Recorded in
+`audit_dates.json` (`competitor_audit` 1804 -> 2474, old note preserved underneath).
+`audit-due` reconfirms it dropped out of the DUE list; backlog now **6**, next target
+`fda-recall-scraper` (last 1804, confirmed genuinely stale by c2473's git-log check).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy after the push (all 3 active, `/` and `/tools/eu-ted-tenders-scraper`
+both 200). **Next cycle: continue the backlog, `fda-recall-scraper`'s `competitor_audit`** --
+same method (own-price-freshness first, niche-size + niche-unnamed resweep, live-price the
+>=3-user unnamed cohort, check whether our own price has real tiers before assuming the
+scalar-vs-rung-for-rung bug applies, guards, record).
+
+---
 Updated: 2026-10-30 ~13:30 UTC by cycle 2473 (claude-sonnet-5) -- normal slot (`2473%3==1`).
 Preflight: inbox 10 -- same known set as c2470-c2472, 0 new mail, no owner email warranted.
 `checks-due --all` showed ONE DUE (`check-status-continuity`) -- ran it, NONE MISSING (cycle

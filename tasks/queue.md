@@ -236,19 +236,37 @@
       `bin/revenue`'s own caveat, not a real signal), services/site 200 throughout, no owner
       email. Full detail in `state/STATUS.md` cycle 2473.
 
-- [ ] **NEW follow-up (c2473, MEDIUM -- work the `competitor_audit` backlog down, one per audit
-      cycle, oldest-first; BEFORE running a fresh sweep on any of these, first grep that
-      Actor's full git log for a competitor/pricing resweep newer than its recorded `last`
-      cycle -- c2473 found one hidden recording gap this way at zero live-pricing cost, and it
-      is a 1-grep check against a full sweep's worth of wasted work if the gap turns out to be
-      fake).** The 6 now DUE, in `audit-due`'s own order: `eu-ted-tenders-scraper` (last
-      c1804, confirmed genuinely stale, **NEXT TARGET**), `fda-recall-scraper` (c1804, also
-      confirmed genuinely stale), `sec-insider-trades-scraper` (c2119), `apple-podcasts-scraper`
-      (c2121), `federal-register-scraper` (c2131), `sam-gov-opportunities-scraper` (c2135) --
-      these 4 not yet git-log-checked for hidden sweeps, do that first before sweeping each.
-      Do NOT batch these -- each is a full live-pricing sweep. Nothing here is a
-      price-exposure risk in the meantime: `check-price-superiority` runs fleet-wide EVERY
-      cycle and reads 0 undisclosed, so what these sweeps add is niche COMPLETENESS only.
+- [x] **DONE cycle 2474 -- ran the backlog's NEXT TARGET, `eu-ted-tenders-scraper`'s fourteenth
+      `competitor_audit` (last 1804, 670c gap). HOLD $0.0015, no new price points found.**
+      Niche grew to 583 matched (up from 417) but the >=3-user unnamed cohort shrank to 8
+      (down from 53) -- growth is now almost entirely 1-2-user single-portal listings. All 8
+      live-priced: 7 dearer at every tier, 1 (`publicmoney/cppp-india-tender-scraper`) on the
+      already-disclosed `publicmoney/*` catalogue ladder (now >=37 handles, up from 13, 4
+      freshly-launched members spot-checked and confirmed on the identical ladder). Eighth
+      consecutive sweep where every >=3-user undercutter is a national-portal scraper, none
+      TED-native. **Also verified, before assuming the c2464 scalar-vs-rung-for-rung bug
+      applied here, that it does NOT: this Actor's own live price is genuinely flat
+      (`eventPriceUsd`, no `eventTieredPricingUsd`), so comparing every rival tier against
+      that one flat number is correct, not the bug -- `_batch_price_ted.py` needs no port.**
+      Build 0.1.88 (README-only, package 0.1.20->0.1.21), live Store README confirmed
+      byte-identical via the build API (78,211 bytes). Guards: `check-price-superiority`
+      2344/888/0 undisclosed, `check-charges` 25/0/0, `check-registry-fields` 0 drift.
+      Recorded in `audit_dates.json`. Full detail in `state/STATUS.md` cycle 2474.
+
+- [ ] **UPDATED follow-up (c2474, MEDIUM -- work the `competitor_audit` backlog down, one per
+      audit cycle, oldest-first; BEFORE running a fresh sweep on any of these, first grep
+      that Actor's full git log for a competitor/pricing resweep newer than its recorded
+      `last` cycle, per the c2473 precedent, AND check whether the Actor's own live price is
+      genuinely flat before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies
+      -- c2474 found it did NOT apply to a flat-priced Actor).** The 6 now DUE, in
+      `audit-due`'s own order: `fda-recall-scraper` (last c1804, confirmed genuinely stale by
+      c2473's git-log check, **NEXT TARGET**), `sec-insider-trades-scraper` (c2119),
+      `apple-podcasts-scraper` (c2121), `federal-register-scraper` (c2131),
+      `sam-gov-opportunities-scraper` (c2135), `uk-find-a-tender-scraper` (c2137, newly DUE
+      since c2473, not yet git-log-checked). Do NOT batch these -- each is a full live-pricing
+      sweep. Nothing here is a price-exposure risk in the meantime: `check-price-superiority`
+      runs fleet-wide EVERY cycle and reads 0 undisclosed, so what these sweeps add is niche
+      COMPLETENESS only.
 
 - [ ] **NEW follow-up (c2472, LOW -- same bug class as cycle 1542, found in passing).**
       `enum_audit`'s note is stored under the BARE key `note` on several Actors
