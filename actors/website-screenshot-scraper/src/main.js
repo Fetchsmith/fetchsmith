@@ -45,6 +45,12 @@ const waitUntil = ['load', 'domcontentloaded', 'networkidle'].includes(input.wai
 const delayMs = Math.min(Math.max(Number(input.delayMs ?? 0), 0), 15000);
 const waitForSelector = typeof input.waitForSelector === 'string' && input.waitForSelector.trim() ? input.waitForSelector.trim() : null;
 const diffThreshold = Math.min(Math.max(Number(input.diffThreshold ?? 0.1), 0), 1);
+// How big a blob of changed pixels has to be before it counts as a changed REGION (see
+// `countDiffRegions`). The default of 4 drops isolated 1-3 px antialiasing speckle, which is the
+// noise that makes a raw `diffPercent` hard to act on; raise it to ignore bigger cosmetic churn,
+// set it to 1 to count literally every blob. Clamped so a 0 / negative / non-numeric value can't
+// turn every single changed pixel into its own "region".
+const diffRegionMinPixels = Math.min(Math.max(Math.round(Number(input.diffRegionMinPixels ?? 4)) || 4, 1), 10_000);
 const colorScheme = ['light', 'dark', 'no-preference'].includes(input.colorScheme) ? input.colorScheme : 'light';
 const locale = typeof input.locale === 'string' && input.locale.trim() ? input.locale.trim() : undefined;
 const timezoneId = typeof input.timezoneId === 'string' && input.timezoneId.trim() ? input.timezoneId.trim() : undefined;
@@ -279,6 +285,76 @@ function cropRGBA(src, srcW, srcH, w, h) {
   return out;
 }
 
+// Count connected regions of changed pixels in the diff image pixelmatch already wrote.
+// `diffPixels`/`diffPercent` alone cannot tell "one 4% block changed" from "400 antialiasing
+// specks scattered all over the page" -- both read as the same percentage -- so report the blob
+// count too. Reads pixelmatch's own output rather than re-comparing: with `includeAA: true` the AA
+// branch is unreachable, so every counted difference is drawn in `diffColor` and every matching
+// pixel goes through `drawGrayPixel` (which writes r === g === b). That makes "not grayscale" an
+// exact test for "this pixel was counted in diffPixels" -- asserted against `diffPixels` at the
+// call site rather than trusted, so a pixelmatch change that breaks the assumption is visible.
+const REGION_PIXEL_CAP = 40_000_000; // ~40 MP; refuse rather than thrash a 2 GB box
+// 4-connected, iterative (an explicit stack, never recursion -- a full-page mask is millions of
+// pixels and would blow the call stack). Pixels are marked seen when PUSHED, not when popped, so
+// each pixel enters the stack at most once and the stack grows on demand instead of preallocating
+// 4 bytes per pixel up front. Measured on this box before shipping (1 vCPU / 2 GB): a 1920x1080
+// all-changed mask is 222 ms / +11 MB, a 1920x1080 checkerboard (~1M single-px blobs, the
+// pathological component count) 34 ms, and a 1920x10000 all-changed full page 930 ms with a
+// 38 MB peak stack.
+function countDiffRegions(diffData, w, h, minRegionPixels) {
+  const n = w * h;
+  if (!n || n > REGION_PIXEL_CAP) return null;
+
+  const CHANGED = 1;
+  const SEEN = 2;
+  const state = new Uint8Array(n);
+  let changedPixels = 0;
+  for (let i = 0; i < n; i++) {
+    const p = i * 4;
+    if (diffData[p] !== diffData[p + 1] || diffData[p + 1] !== diffData[p + 2]) {
+      state[i] = CHANGED;
+      changedPixels++;
+    }
+  }
+
+  let stack = new Int32Array(1024);
+  let top = 0;
+  const push = (i) => {
+    if (top === stack.length) {
+      const grown = new Int32Array(Math.min(stack.length * 2, n + 1));
+      grown.set(stack);
+      stack = grown;
+    }
+    stack[top++] = i;
+    state[i] = SEEN;
+  };
+
+  let regions = 0;
+  let largestRegionPixels = 0;
+  let specks = 0;
+  for (let start = 0; start < n; start++) {
+    if (state[start] !== CHANGED) continue;
+    push(start);
+    let size = 0;
+    while (top > 0) {
+      const i = stack[--top];
+      size++;
+      const x = i % w;
+      if (x > 0 && state[i - 1] === CHANGED) push(i - 1);
+      if (x < w - 1 && state[i + 1] === CHANGED) push(i + 1);
+      if (i >= w && state[i - w] === CHANGED) push(i - w);
+      if (i + w < n && state[i + w] === CHANGED) push(i + w);
+    }
+    if (size >= minRegionPixels) {
+      regions++;
+      if (size > largestRegionPixels) largestRegionPixels = size;
+    } else {
+      specks++;
+    }
+  }
+  return { regions, largestRegionPixels, specks, changedPixels };
+}
+
 async function compareOne(browser, url, index) {
   try {
     // One IP for BOTH sides of the pair: a geo-routed or per-IP-personalised page rendered through
@@ -301,6 +377,18 @@ async function compareOne(browser, url, index) {
     const diffPng = new PNG({ width: w, height: h });
     const diffPixels = pixelmatch(a, b, diffPng.data, w, h, { threshold: diffThreshold, includeAA: true });
     const diffBuf = PNG.sync.write(diffPng);
+
+    // Region count off the mask pixelmatch just drew. If the derived changed-pixel count ever
+    // disagrees with pixelmatch's own `diffPixels`, the colour assumption documented on
+    // `countDiffRegions` no longer holds -- say so and report nulls instead of a wrong number.
+    const rc = countDiffRegions(diffPng.data, w, h, diffRegionMinPixels);
+    let regionStats = rc;
+    if (rc && rc.changedPixels !== diffPixels) {
+      log.warning(`Region count disabled for ${url}: derived ${rc.changedPixels} changed pixels but pixelmatch reported ${diffPixels}. diffPixels/diffPercent are unaffected.`);
+      regionStats = null;
+    } else if (!rc) {
+      log.warning(`Region count skipped for ${url}: ${w}x${h} (${w * h} px) is over the ${REGION_PIXEL_CAP} px limit. diffPixels/diffPercent are unaffected.`);
+    }
 
     const base = await storeBuffer(baseBuf, 'screenshot', index, 'png');
     const cmp = await storeBuffer(cmpBuf, 'compare', index, 'png');
@@ -326,6 +414,12 @@ async function compareOne(browser, url, index) {
       comparedPixels,
       diffPercent: comparedPixels ? Number(((diffPixels / comparedPixels) * 100).toFixed(4)) : null,
       changed: diffPixels > 0,
+      // Null (not 0) when the count could not be produced, so "no regions found" and "not
+      // measured" stay distinguishable.
+      diffRegions: regionStats ? regionStats.regions : null,
+      diffRegionsLargestPixels: regionStats ? regionStats.largestRegionPixels : null,
+      diffSpecks: regionStats ? regionStats.specks : null,
+      diffRegionMinPixels,
       baselineWidth: basePng.width,
       baselineHeight: basePng.height,
       compareWidth: cmpPng.width,
@@ -334,7 +428,7 @@ async function compareOne(browser, url, index) {
     });
   } catch (err) {
     log.warning(`Comparison failed for ${url} vs ${compareUrl}: ${err.message}`);
-    await pushError(url, err.message, { compareUrl, diffPixels: null, diffPercent: null, changed: null, diffImageUrl: null });
+    await pushError(url, err.message, { compareUrl, diffPixels: null, diffPercent: null, changed: null, diffImageUrl: null, diffRegions: null, diffRegionsLargestPixels: null, diffSpecks: null, diffRegionMinPixels: null });
     return true;
   }
 }

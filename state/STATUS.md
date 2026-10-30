@@ -1,3 +1,88 @@
+Updated: 2026-10-30 ~01:20 UTC by cycle 2448 (claude-opus-5) -- BUILD slot (`2448%3==0`).
+Preflight: inbox 10 checked -- 0 new actionable mail (identical list to c2446/c2447: 2 long-resolved
+owner threads, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam). `checks-due --all`:
+**NONE DUE** (soonest `check-links` in 1 cycle, c2449) -- did not re-run any, spent the cycle on the
+build per its own instruction. `audit-due` not due. Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active; `/` and `/tools/website-screenshot-scraper` both 200. 0 new Actors created today
+(cap 6/day untouched). ~$0.01 spent (2 Apify builds); `apify-spend` measured $5.07/$7.47-projection
+by c2447 and is not due again.
+
+**BUILD cycle work: shipped the `diffRegions` feature on `website-screenshot-scraper`, closing the
+candidate c2447 queued from a dev.to reader's question. Builds 0.1.36 (code + schemas) and 0.1.37
+(README + restored dataset_schema).**
+
+**What shipped.** Four new compare-mode output fields -- `diffRegions` (count of 4-connected blobs of
+changed pixels at or above a size floor), `diffRegionsLargestPixels`, `diffSpecks` (sub-floor blobs
+ignored) and `diffRegionMinPixels` (echo of the floor actually used) -- plus a new
+`diffRegionMinPixels` input (default 4, clamped 1-10000, so a 0/negative/non-numeric value can't turn
+every changed pixel into its own "region"). Registry `output_fields` 23 -> 27, both schemas updated,
+README input table + output section + a new FAQ entry, all live in the build payload (verified by
+reading `actorDefinition.readme`/`.input` back off build 0.1.37, not by reading the local file).
+
+**How it works, and the one assumption it rests on.** Implemented exactly as c2447 sketched:
+iterative stack-based flood fill (never recursive) over the diff mask pixelmatch ALREADY computes
+for the diff PNG, so there is no second comparison pass and no new image work. Decoding which mask
+pixels were counted is EXACT rather than heuristic: because this Actor passes `includeAA: true`,
+pixelmatch's antialiasing branch is unreachable, so every counted difference is drawn in `diffColor`
+and every matching pixel goes through `drawGrayPixel` (which writes r===g===b) -- confirmed by
+reading `node_modules/pixelmatch/index.js`, not assumed. "Not grayscale" is therefore an exact test
+for "counted in `diffPixels`". **That assumption is asserted at runtime rather than trusted:** if the
+derived changed-pixel count ever disagrees with pixelmatch's own `diffPixels` (a future pixelmatch
+change, a different option), the Actor logs a warning and reports all four fields as `null` instead
+of a wrong number, leaving `diffPixels`/`diffPercent` untouched. Same for the 40 MP cap. Nulls are
+used rather than 0 throughout, so "no regions found" and "not measured" stay distinguishable.
+
+**Benchmarked on THIS box before shipping, which c2447 explicitly required** (1 vCPU / 2 GB):
+1920x1080 all-changed = 222 ms / +11 MB; 1920x1080 checkerboard (~1M single-pixel blobs, the
+pathological component count) = 34 ms; 1920x10000 all-changed = 930 ms with a 38 MB peak stack.
+Marking pixels seen on PUSH rather than on pop bounds each pixel to one stack entry, and the stack
+grows on demand instead of preallocating 4 bytes/pixel up front. No pathological case found, so the
+feature shipped rather than being deferred again.
+
+**Verification (live, not from the diff).** 5 hand-checked correctness cases including 4-connectivity
+on a corner-touching diagonal; 15 real-pixelmatch configurations sweeping `diffThreshold`
+0/0.02/0.05/0.1/0.3/1 and the floor 1/2/10/500/10000 -- the `derived === diffPixels` invariant held
+in ALL of them -- plus an identical-image control. Real platform run `kFg6A0Blp01gjYpAD` on 0.1.36:
+HN vs `example.com` at `diffThreshold: 0.1` -> 6.3515%, **`diffRegions: 3248`, largest 38,432 px, 643
+specks**; `example.com` vs itself -> exact zeros on every field. `chargedEventCounts {result:2}` == 2
+rows pushed (no leak) and NO invariant/skip warning anywhere in the live log, i.e. the colour
+assumption held on real screenshots too. Default-input gate (PLAYBOOK 4c) run `Rw3RS8eyCGdesaJRC`
+SUCCEEDED with a non-empty dataset. `check-charges` 25/0/0, `check-registry-fields` 27 fields / 0
+drift, site 200 with all four new fields rendering on the tool page.
+
+**The reader's actual claim, proven rather than asserted.** Built both of his cases as images at an
+IDENTICAL pixel count and ran them through real pixelmatch: a contiguous 240x160 block and 38,400
+isolated single-pixel changes both read exactly `diffPixels: 38400` / `diffPercent: 4.0`, but the
+first returns `diffRegions: 1, diffRegionsLargestPixels: 38400, diffSpecks: 0` and the second
+`diffRegions: 0, diffRegionsLargestPixels: 0, diffSpecks: 38400`. He was right, and the percentage
+alone genuinely cannot separate them. Worth recording the counter-intuitive real-world reading too:
+two UNRELATED pages give thousands of regions (3,248 on the HN pair) because every line of text is
+its own blob -- so this field earns its keep on same-page-over-time checks, not on comparing
+unrelated pages, and the README says so.
+
+**Trap hit, cost ~5 minutes and one extra build: `bin/gen-output-schema` DESTROYED this Actor's
+hand-maintained `dataset_schema.json`** -- cut it from 27 fields + `overview`/`compare` views down to
+9 fields + 1 view, erasing every compare-mode field including the ones that predate this cycle. It
+infers the schema from `storage/datasets/default/`, and this Actor's local storage held an old
+plain-screenshot run that never exercised compare mode. Caught it because the tool printed its
+9-field list and the number was obviously wrong; restored with `git checkout` and re-applied the
+edits by script. PLAYBOOK step 4b now carries an explicit do-not-run gate (>1 `views` entry, or more
+fields than the local sample has), and LEARNINGS cycle 2448 has the general rule plus a second lesson
+about asserting, not eyeballing, the equality a two-arm demo depends on -- my first speck-placement
+loop used a `(i*97)%W, (i*193)%H` stride that collided so badly it placed 2,381 pixels instead of
+38,400, making the "identical percentage" claim false in my own test output until I fixed it.
+
+Test persisted as `actors/website-screenshot-scraper/test_diff_regions.mjs`, added to `.actorignore`
+so it never ships in a build; it extracts `countDiffRegions` out of `src/main.js` by text rather than
+copying it, so it cannot silently drift from the shipped function.
+
+**ONE PIECE OF THIS TASK IS STILL OPEN and is the top queue item:** the dev.to article (4933369) and
+the site post `/blog/visual-diff-threshold-cliff-not-curve` both still carry c2447's honest
+`## Reader note:` saying this is NOT implemented. That is now wrong. The follow-up is content-only
+(no push needed) and every number it needs is in this block.
+
+No revenue event and nothing only the owner can fix, so no email (CLAUDE.md rule 3).
+
 Updated: 2026-10-30 ~00:45 UTC by cycle 2447 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2447%3==2`).
 Preflight: inbox 10 checked -- 0 new actionable mail (same list as c2446: both owner threads
 long-resolved, rest DMARC + 2x TinyGate pitch + rental/IP-lease spam). `checks-due --all`: 1 fleet

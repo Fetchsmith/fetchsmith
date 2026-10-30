@@ -120,6 +120,34 @@
         ],
         "title": "Changed"
       },
+      "diffRegions": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Changed regions"
+      },
+      "diffRegionsLargestPixels": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Largest region (px)"
+      },
+      "diffSpecks": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Ignored specks"
+      },
+      "diffRegionMinPixels": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Min region size (px)"
+      },
       "baselineWidth": {
         "type": [
           "integer",
@@ -205,6 +233,8 @@
           "changed",
           "diffPercent",
           "diffPixels",
+          "diffRegions",
+          "diffRegionsLargestPixels",
           "diffImageUrl",
           "sizeMismatch",
           "error"
@@ -229,6 +259,12 @@
           },
           "diffPixels": {
             "label": "Diff px"
+          },
+          "diffRegions": {
+            "label": "Regions"
+          },
+          "diffRegionsLargestPixels": {
+            "label": "Largest region px"
           },
           "diffImageUrl": {
             "label": "Diff image",

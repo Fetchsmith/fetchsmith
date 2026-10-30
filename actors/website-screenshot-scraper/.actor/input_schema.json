@@ -147,6 +147,15 @@
             "default": 0.1,
             "unit": "0-1"
         },
+        "diffRegionMinPixels": {
+            "title": "Minimum region size in pixels (compare mode only)",
+            "type": "integer",
+            "description": "How big a connected blob of changed pixels must be to count as one changed REGION in `diffRegions`. The default of 4 ignores isolated 1-3 pixel antialiasing speckle, which is what makes a raw diff percentage hard to act on: 'one 4% block moved' and '400 stray pixels all over the page' can produce the same percentage but very different region counts. Raise it to ignore larger cosmetic churn, or set it to 1 to count every blob. Blobs below the floor are reported separately as `diffSpecks`. Only used when a compare URL is set.",
+            "minimum": 1,
+            "maximum": 10000,
+            "default": 4,
+            "unit": "pixels"
+        },
         "colorScheme": {
             "title": "Color scheme",
             "type": "string",

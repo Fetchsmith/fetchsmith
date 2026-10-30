@@ -31,6 +31,7 @@ Capture a screenshot or PDF of any public URL using a real Chromium browser. Dev
 | `waitForSelector` | string | CSS selector to wait for (up to 10s) before capturing, e.g. `.chart-loaded` |
 | `compareUrl` | string | Turns on visual diff mode: pixel-compare every URL in `urls` against this one (always PNG, one charge per comparison) |
 | `diffThreshold` | number | Diff sensitivity 0-1 (default 0.1). Lower is stricter; 0.02 catches antialiasing shifts, 0.3+ only large colour blocks |
+| `diffRegionMinPixels` | integer | Minimum connected-blob size counted as a changed *region* in `diffRegions` (default 4, 1-10000). Blobs below it are reported as `diffSpecks` instead |
 | `colorScheme` | string | `light` (default), `dark`, or `no-preference` — emulates the OS dark-mode setting for pages that use `prefers-color-scheme` |
 | `hasTouch` | boolean | Override touch-support emulation (default: on for iPhone/Pixel/iPad presets, off otherwise) |
 | `locale` | string | BCP 47 locale to emulate, e.g. `fr-FR` (affects `navigator.language`, number/date formatting) |
@@ -77,10 +78,14 @@ With `compareUrl` set, each row carries the same fields plus the comparison:
   "compareScreenshotKey": "compare-1792575281762-2.png",
   "diffImageUrl": "https://api.apify.com/v2/key-value-stores/.../records/diff-1792575281915-2.png",
   "diffScreenshotKey": "diff-1792575281915-2.png",
-  "diffPixels": 129232,
+  "diffPixels": 131704,
   "comparedPixels": 2073600,
-  "diffPercent": 6.2323,
+  "diffPercent": 6.3515,
   "changed": true,
+  "diffRegions": 3248,
+  "diffRegionsLargestPixels": 38432,
+  "diffSpecks": 643,
+  "diffRegionMinPixels": 4,
   "baselineWidth": 1920,
   "baselineHeight": 1215,
   "compareWidth": 1920,
@@ -88,7 +93,9 @@ With `compareUrl` set, each row carries the same fields plus the comparison:
   "sizeMismatch": true
 }
 ```
-Real row from run `54YvM4KAyrUjhlEdq` (build 0.1.17, 2026-10-21): Hacker News compared against `example.com` at the default `diffThreshold: 0.1`. The same run compared `example.com` against itself and returned `diffPixels: 0`, `changed: false`, `sizeMismatch: false` — an unchanged page reads as exactly zero, not as rendering noise.
+Real row from run `kFg6A0Blp01gjYpAD` (build 0.1.36, 2026-10-30): Hacker News compared against `example.com` at the default `diffThreshold: 0.1`. The same run compared `example.com` against itself and returned `diffPixels: 0`, `diffPercent: 0`, `changed: false`, `diffRegions: 0`, `diffSpecks: 0`, `sizeMismatch: false` — an unchanged page reads as exactly zero on every field, not as rendering noise. The 3,248 regions on the HN pair are what two *unrelated* pages look like: every line of text is its own blob. Region counts are most useful on the same page over time, where a real regression is a handful of regions and noise is `diffRegions: 0` with a non-zero `diffSpecks`.
+
+**How many regions changed, not just how many pixels.** A percentage alone cannot tell *one block moved* from *speckle everywhere*: we built both cases as images with an identical pixel count and ran them through the same diff — a single contiguous 240x160 block and 38,400 isolated one-pixel changes both read **`diffPercent: 4.0`, `diffPixels: 38400`**, but the first returns `diffRegions: 1, diffRegionsLargestPixels: 38400, diffSpecks: 0` and the second `diffRegions: 0, diffRegionsLargestPixels: 0, diffSpecks: 38400`. So `diffRegions` counts connected blobs of changed pixels (4-connected) of at least `diffRegionMinPixels` (default 4), `diffRegionsLargestPixels` is the size of the biggest one, and `diffSpecks` counts the sub-floor blobs that were ignored — which is the number you want when deciding whether a non-zero diff is a real regression or just font/antialiasing noise. A high `diffPercent` with `diffRegions: 1` is one big structural change; a high `diffPercent` with `diffRegions: 0` and a large `diffSpecks` is rendering noise. All four fields are `null` (never `0`) if the count could not be produced, so "no regions found" and "not measured" stay distinguishable.
 
 `changed` is simply `diffPixels > 0` at your chosen `diffThreshold`. `diffPercent` is measured over `comparedPixels`, which is the overlapping top-left region of the two captures: full-page screenshots of two pages rarely have identical heights, so when the dimensions differ the Actor diffs the overlap and sets `sizeMismatch: true` (with all four dimensions in the row) rather than failing the comparison. For a like-for-like comparison of two long pages, set `fullPage: false` or a fixed `viewportWidth`/`viewportHeight` so both captures are the same size.
 
@@ -171,6 +178,8 @@ their last-dated mentions above.
 **What if the same URL appears twice in my `urls` list?** It is captured once and charged once. As of build 0.1.32 the Actor de-duplicates the list before any browser work starts and logs `Skipped N duplicate URL(s) in \`urls\` -- each unique URL is captured and charged exactly once.` Before that build, a list pasted from a spreadsheet export, a sitemap dump or two concatenated lists would capture the same page twice and bill two `result` events for a byte-identical screenshot. Matching is on the exact URL string after trimming surrounding whitespace, so `https://x.com/a` and ` https://x.com/a ` collapse. It deliberately does **not** fold case or trailing slashes — `/Path` vs `/path` and `/x` vs `/x/` are treated as different URLs and both captured, because many servers genuinely serve different content at those, and silently dropping one you meant to capture would be the worse failure.
 
 **How do I check whether a deploy changed a page?** Put the production URL in `urls` and the staging/preview URL in `compareUrl`. You get one row per pair with `diffPercent`, `diffPixels` and a diff image where every changed pixel is highlighted. For a *time*-based check (same URL, before vs after), screenshot it now, then on a later run compare the live URL against the stored baseline image's URL. Note the Actor compares two live URLs, not a URL against an uploaded image file.
+
+**Is this diff one real change or noise everywhere?** Read `diffRegions` next to `diffPercent`. `diffRegions` is the count of connected blobs of changed pixels at least `diffRegionMinPixels` (default 4) in size, `diffRegionsLargestPixels` is the biggest blob, and `diffSpecks` is how many sub-floor blobs were dropped. Two diffs with the same percentage can be structurally opposite — a single moved card (`diffRegions: 1`, one large `diffRegionsLargestPixels`) versus antialiasing speckle spread over the whole page (`diffRegions: 0` with a large `diffSpecks`) — and the percentage cannot separate them. Raise `diffRegionMinPixels` to ignore bigger cosmetic churn, or set it to `1` to count every blob including single pixels. Added 2026-10-30 after a reader asked for exactly this on our `diffThreshold` write-up.
 
 **Why do I get a non-zero diff on a page I did not change?** Fonts, antialiasing, lazy-loaded images, carousels, ad slots, timestamps and animations all shift between two loads of the same page. Raise `diffThreshold` (0.2-0.3) to ignore rendering noise, set `waitForSelector` so both captures happen at the same render state, and prefer `fullPage: false` for pages with infinite scroll. A sub-0.1% diff on a dynamic page is usually noise, not a regression.
 

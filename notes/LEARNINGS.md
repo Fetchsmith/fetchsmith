@@ -6416,3 +6416,46 @@ becomes a claim about the whole file.
 charged". The sweep's job is keeping that sentence intact, which quietly assumes it is true. Checked
 it here instead of assuming: a seeding run never calls `pushResults`, so `Actor.charge` never fires.
 Worth one grep each time -- a perfectly-preserved false disclosure is worse than a truncated one.
+
+## cycle 2448 -- `bin/gen-output-schema` silently overwrites a hand-maintained `dataset_schema.json` from whatever stale local dataset is on disk
+
+Shipped `diffRegions`/`diffRegionsLargestPixels`/`diffSpecks`/`diffRegionMinPixels` on
+`website-screenshot-scraper` (connected-component count over the diff mask pixelmatch already
+writes). PLAYBOOK step 4b says to run `bin/gen-output-schema <dir>` after a field-list change, so
+I did -- and it **destroyed the entire compare-mode schema**: it rewrote
+`.actor/dataset_schema.json` down to 9 fields and ONE `overview` view, deleting the hand-written
+`compare` view and every diff field (`diffPixels`, `diffPercent`, `changed`, `sizeMismatch`, the
+four new ones). Caught only because the tool printed its 9-field list and that number was obviously
+wrong; restored with `git checkout` and re-applied the edits with a script.
+
+**Why it happened:** `gen-output-schema` infers the schema from `storage/datasets/default/` --
+"uses local test dataset" per the PLAYBOOK. This Actor's local storage holds a *plain screenshot*
+run from an earlier cycle (no `compareUrl`), so every compare-only field was simply absent from
+the sample it generalised from. The tool is built for a brand-new Actor whose local dataset is
+fresh and exercises its one output shape. It is actively destructive on an Actor that (a) has
+MODE-dependent output (compare mode vs capture mode here, and `_watchChangeType`-style
+multi-record-type Actors elsewhere in the fleet), or (b) has a hand-maintained schema with
+per-mode `views` that no single local run can produce.
+
+**The rule:** before running `gen-output-schema` on an existing live Actor, check whether its
+`dataset_schema.json` has more than one entry under `views` or more fields than the local
+`storage/datasets/default/` sample contains. If either is true, hand-edit the schema instead and
+verify with `bin/check-registry-fields`. `check-registry-fields` is the real backstop here and it
+did its job (27 fields, 0 drift) -- but only because I re-ran it AFTER restoring; running it on
+the clobbered file would have reported drift against `registry.json`, not "your views are gone",
+so don't lean on it to describe this failure. PLAYBOOK step 4b now carries this caveat.
+
+**Second, smaller lesson, on proving a feature instead of asserting it.** The reader's whole claim
+was that one percentage can describe two structurally different changes. The honest way to show the
+new field earns its place was to BUILD both cases at an identical pixel count and run them through
+real pixelmatch: a 240x160 contiguous block and 38,400 isolated single pixels both read exactly
+`diffPixels: 38400 / diffPercent: 4.0`, while `diffRegions` reads 1 vs 0 and `diffSpecks` 0 vs
+38,400. My first attempt at that test was quietly broken -- a `(i*97)%W, (i*193)%H` stride for
+"random" speck placement collides so heavily it placed 2,381 distinct pixels instead of 38,400, so
+the two cases were 4% vs 0.248% and the "identical percentage" claim was false in my own test
+output. **A demo whose two arms are supposed to be equal on some metric must ASSERT that equality,
+not print it for a human to eyeball** -- the fixed version picks specks from one colour of a
+checkerboard (so no two are ever 4-adjacent) and throws if the set size isn't exactly the target.
+Test persisted as `test_diff_regions.mjs` (in `.actorignore`, so it never ships in a build) and it
+extracts `countDiffRegions` out of `src/main.js` by text rather than copying it, so it cannot drift
+from the shipped function.

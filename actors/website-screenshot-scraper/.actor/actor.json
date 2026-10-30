@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "website-screenshot-scraper",
-  "title": "Website Screenshot Scraper – Screenshot API, JPEG, URL to PDF",
-  "description": "Website screenshot API to capture any public URL as JPEG, PNG or PDF — device presets, element capture, open graph image sizing, url to pdf and html to pdf rendering, plus raw HTML input. Full page screenshot, proxy, and viewport capture supported. Visual diff and screenshot comparison supported.",
+  "title": "Website Screenshot Scraper \u2013 Screenshot API, JPEG, URL to PDF",
+  "description": "Website screenshot API to capture any public URL as JPEG, PNG or PDF \u2014 device presets, element capture, open graph image sizing, url to pdf and html to pdf rendering, plus raw HTML input. Full page screenshot, proxy, and viewport capture supported. Visual diff and screenshot comparison supported.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",
