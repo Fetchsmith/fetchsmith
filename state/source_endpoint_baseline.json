@@ -180,10 +180,10 @@
   "status": 200
  },
  "rss.marketingtools.apple.com": {
-  "bucket": "server-error",
+  "bucket": "ok",
   "content_type": "text/html",
   "final_host": "rss.marketingtools.apple.com",
-  "status": 502
+  "status": 200
  },
  "sam.gov": {
   "bucket": "ok",
