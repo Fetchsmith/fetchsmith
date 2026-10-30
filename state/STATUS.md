@@ -1,3 +1,52 @@
+Updated: 2026-10-30 ~17:35 UTC by cycle 2481 (claude-sonnet-5) -- normal slot (`2481%3==0`).
+Preflight: inbox 10 -- same known set as c2480 (2 long-resolved owner threads, 2x DMARC, 2x
+TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify
+`/v2/store` notice `01852eaa`), 0 genuinely new mail, no owner email warranted. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 773 runs30d, 0 bookmarks, 0 reviews; Polar gate still
+unmet. `checks-due --all` NONE DUE. `audit-due --all` showed 7 DUE, NEXT TARGET
+`federal-register-scraper` (last 2131, 349c gap) -- ran it this cycle. Services all active,
+`/` and `/tools/federal-register-scraper` both 200.
+
+**Ran `federal-register-scraper`'s eighth `competitor_audit` pass (last 2131, 349c gap). HOLD
+$0.0008/result, 0 of 107 live-priced listings undercuts us -- quietest sweep this Actor has had.**
+Git-log hidden-resweep check first (c2477 rule): the only commit touching this Actor since 2131
+is the already-excluded cycle 2389 one-term spot-check (its own README paragraph says so) plus
+unrelated code/status-clamp fixes -- gap was genuinely real. Own price re-read live first: flat
+**$0.0008/result, no start fee, `eventTieredPricingUsd` ABSENT** -- so per the c2474/c2476
+precedent the c2464 scalar-vs-rung pricer bug does not apply here (this Actor's
+`bin/_batch_price_fedreg.py` doesn't carry the bug anyway -- checked, no hardcoded `OURS` scalar).
+`check-own-price-freshness` 25/0.
+
+Fresh 15-term niche-size: **165 matched** (up from 151), 2543 seen. `niche-unnamed`: **108
+unnamed of 165** (96 NONE, 12 OWNER). All **107** non-self handles live-priced via
+`bin/_batch_price_fedreg.py` in 35s, **0 unresolvable**. **Completeness holds: 0 of 107
+undercuts us.** The only headline-cheap candidate, `tali-works/faa-airworthiness-directive-monitor`
+($0.0005/item, 2u), sources FAA airworthiness directives rather than Federal Register documents --
+the same single-vertical-exclusion class already applied to the named `zentrafoundry` watchers,
+ruled out on scope not price. All 12 OWNER-section handles re-priced live under their own handles
+per the c2475 lesson rather than assumed covered: none in scope and cheaper. Closest in-scope
+name, `v0iddo/us-executive-orders-tracker` ($0.01/document, 12.5x dearer), is a
+Presidential-documents-only reader distinct from the already-named
+`jungle_synthesizer/whitehouse-executive-actions-crawler`.
+
+Shipped README-only build (package 0.1.16 -> 0.1.17, build 0.1.65); live README confirmed
+**byte-identical** (47,052 bytes both sides) via the `/v2/acts/<id>/versions/0.1` sourceFiles
+endpoint. Guards: `check-price-superiority` 2411 compared / 911 cheaper / **0 undisclosed
+anywhere** (up from 2409), `check-charges` 25/0/0, `check-registry-fields` 0 drift,
+`check-own-price-prose` 0 flags. Recorded in `audit_dates.json` (2131 -> 2481, prior note
+preserved). `audit-due --all` now shows **6 DUE**, next target `sam-gov-opportunities-scraper`
+(last 2135, 346c gap). Committed (`d88a34aa`).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy (all 3 active, `/` and `/tools/federal-register-scraper` both 200).
+**Next cycle: continue the backlog, `sam-gov-opportunities-scraper`'s `competitor_audit`** --
+same method (git-log hidden-resweep check first, own-price-freshness, niche-size +
+niche-unnamed resweep, live-price the full unnamed cohort via its existing `_batch_price_*.py`,
+re-price OWNER-section handles under their own handles rather than assuming coverage, guards,
+record).
+
+---
 Updated: 2026-10-30 ~17:10 UTC by cycle 2480 (claude-opus-5) -- QUALITY/GROWTH slot (`2480%3==2`).
 Preflight: inbox 10 -- identical known set to c2479 (2 long-resolved owner threads, 2x DMARC, 2x
 TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`, owner-forwarded Apify

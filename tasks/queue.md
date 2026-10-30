@@ -4,6 +4,27 @@
       - **Confirmed SAFE / no action needed:** `bin/niche-size` and `bin/niche-unnamed` (the tools every `competitor_audit` sweep depends on) deliberately fetch ONE page per search term and never loop on `offset` -- a cycle-1779 lesson already in the code comments, written for an unrelated reason (Algolia offset staleness) but it happens to make them immune to this change too. `bin/store-scan` single-page, no offset. `bin/apify-admin store` / `bin/check-rental-converts` pass `sortBy=relevance` but don't page past one call -- losing that param just means the platform's own new default ranking applies, not a break. No script reads `bookmarkCount` (grepped fleet-wide) or a bare `rating` field from `/v2/store`.
       **No owner email needed** (nothing only the owner can fix, no revenue event) and no urgent fix needed today (16-day runway, nothing in the automated `checks-due` cadence hits the broken path before the deadline) -- but do NOT let this fall off the queue. Next action: when `store-anon-rank` or `check-store-rank` next come due AFTER 2026-11-15, read this note first and patch the offset-pagination loop (e.g. cap at page 1 and report "ranked beyond page 1, exact position unknown" instead of silently misreporting) before trusting the output.
 
+- [x] **DONE cycle 2481 (normal slot, `2481%3==0`) -- ran the backlog's NEXT TARGET,
+      `federal-register-scraper`'s eighth `competitor_audit` pass (last 2131, 349c gap). HOLD
+      $0.0008/result, quietest sweep this Actor has had: 0 of 107 live-priced listings
+      undercuts us.** Git-log hidden-resweep check first (c2477 rule): only the already-excluded
+      c2389 one-term spot-check touched this Actor since 2131, gap was real. Own price re-read
+      live: flat $0.0008/result, no start fee, `eventTieredPricingUsd` ABSENT (confirmed
+      `bin/_batch_price_fedreg.py` has no hardcoded `OURS` scalar either, so the c2464 bug doesn't
+      apply). Fresh niche-size: 165 matched (up from 151). `niche-unnamed`: 108 unnamed (96 NONE,
+      12 OWNER), all 107 non-self handles live-priced, 0 unresolvable. Only headline-cheap
+      candidate (`tali-works/faa-airworthiness-directive-monitor`, $0.0005/item) ruled out on
+      scope -- FAA ADs, not Federal Register documents. All 12 OWNER-section handles re-priced
+      live under their own handles per the c2475 lesson; none in scope and cheaper (closest,
+      `v0iddo/us-executive-orders-tracker`, is 12.5x dearer). Shipped README-only build (package
+      0.1.16 -> 0.1.17, build 0.1.65), live README byte-identical (47,052 bytes). Guards:
+      `check-price-superiority` 2411/911/0 undisclosed, `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift, `check-own-price-prose` 0 flags. Recorded in
+      `audit_dates.json` (2131 -> 2481). Committed `d88a34aa`. Backlog now **6 DUE**, next target
+      `sam-gov-opportunities-scraper` (last 2135, 346c gap). No new mail, no revenue change, no
+      owner email (CLAUDE.md rule 3). ~$0.005 spent (one build), 0 new Actors today. Full detail
+      in `state/STATUS.md` cycle 2481.
+
 - [x] **DONE cycle 2480 (QUALITY/GROWTH slot, `2480%3==2`; ran a sweep because `audit-due`
       showed 7 DUE, per the c2474/c2477 precedent that sweeps count as quality work) -- ran the
       confirmed NEXT TARGET, `apple-podcasts-scraper`'s `competitor_audit` (last 2121, 359c gap).**
