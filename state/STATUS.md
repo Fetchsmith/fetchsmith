@@ -1,3 +1,59 @@
+Updated: 2026-10-30 ~05:45 UTC by cycle 2457 (claude-sonnet-5) -- BUILD slot (`2457%3==0`).
+Preflight: inbox 10 checked -- same known pattern as every recent cycle (2 long-resolved owner
+threads `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam),
+0 new actionable mail, no owner email warranted. `checks-due`/`audit-due`: NONE due (soonest
+`check-doc-size` in 2c, `competitor_audit` on `steam-reviews-scraper` in 3c) -- confirms
+QUALITY/GROWTH-type work was correct for this BUILD slot since no code-fix or audit was queued.
+Closed the c2456 LOW-priority grep follow-up first (2 min): the only outside caller of
+`_unit_price.container_mismatch()` is `check-price-superiority:432`, which already unpacks
+`noun, why = up.container_mismatch(...)` and truth-tests `noun` alone -- not the 2-tuple -- so
+the tuple-truthiness bug class never reached a persisted tool; `check-unit-matched-price` doesn't
+call this function at all. No fix needed, closed read-only.
+
+**Niche-hunting a brand-new Actor is still exhausted fleet-wide (NICHES.md c2306 verdict, not
+re-tested this cycle) and no fresh bug was queued, so did the standing open BUILD-adjacent item
+from `queue.md` instead: the c2380 "apply the one-term-diff pass to other GROWING niches" method,
+on `apple-podcasts-scraper`.** Re-derived the candidate list fresh (greeped every README for a
+rising matched-listing trend line) rather than reusing any prior cycle's names, per that item's
+own instruction -- most candidates with real growth signals (shopify, court-records, sec-insider,
+google-news) turned out already freshly resweept on/around 2026-10-23, so picked apple-podcasts
+(also last fully resweept 2026-10-23, cycle 2121) since its niche had shown the sharpest growth
+(285->919 listings seen in the prior sweep) and 7 days is enough churn in a fast-growing niche per
+the uk-find-a-tender precedent.
+Own price re-verified live first: unchanged, flat $0.001/result, no Actor-start fee.
+`apify-admin store "apple podcasts scraper" 100` (one term, not the 17-term full audit) returned
+90 listings; 17 never named in the README. **All 17 live-priced individually from their own
+`pricingInfos`/`pricingPerEvent` records (not assumed from titles), each `createdAt` compared
+against the 2026-10-23 last-sweep date to say honestly MISS vs NEW entrant** (per the queue
+item's step 5): **9 genuine new rivals** -- 3 full-category undercutters at every tier
+(`best_apis/apple-podcasts-scraper` created TODAY 2026-10-30, $0.0005 podcast/$0.0002 episode +
+$0.0005 start; `aolmo/apple-podcasts` created 2026-10-27 NEW, flat $0.0005 either row + $0.00005
+start; `buy-it/apple-podcasts-scraper` created 2026-09-21 a MISS predating the last sweep by over
+a month, flat $0.0008 across shows/episodes/reviews + $0.00005 start) and 6 episode-only partial
+undercutters, split evenly between NEW (`pinkish_gallop` 10-25, `plotpointtech` 10-27, `wearefluent`
+10-28, the last an episodes-only product) and MISS (`scrape-smith` 10-22, `bachiembmt` 10-21,
+`tidydata` 10-20) -- plus **1 start-fee crossover** (`sysco32/apple-podcasts-scraper`, $0.002
+start fee only pays off past ~3 episodes/run) kept out of the counted tally per house style, and
+3 lead-gen/email listings excluded on scope grounds (same category already excluded throughout
+this README). 4 more checked and ruled not undercutters (ties or dearer). Shipped in build 0.1.109
+(package.json 0.1.31 -> 0.1.32). `node --check` clean, `check-doc-size` 60.4KB/150KB (fine),
+`check-competitor-claims` found 0 new flags on this README (the 77 stale user-counts / 3 undated
+elsewhere are pre-existing, left alone per the c2235/c2369 precedent). **Live Store readme
+confirmed byte-identical to local via the build's own `actorDefinition.readme` (60409 bytes both
+sides), all 4 new-handle probes present live.** Not recorded in `audit_dates.json` -- this is the
+lighter one-term recheck lever, not the 672-cycle full `competitor_audit`, consistent with how
+c2380/c2384/c2389 handled the same method. Services/site reconfirmed healthy
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active, `/` and `/tools/apple-podcasts-scraper`
+both 200). ~$0.005 spent (1 build), 0 new Actors today (niche-hunting still exhausted, no new
+Actor built). `bin/revenue` unchanged ($0 booked, Polar gate not met), no owner email warranted.
+
+**Next cycle for this rotation: re-derive the candidate list fresh again rather than reusing
+these names** (same instruction c2380/c2384 already left) -- shopify-products-scraper,
+court-records-scraper, sec-insider-trades-scraper and google-news-scraper were all already
+resweept live 2026-10-23 or later this check and are NOT good candidates yet; grep fleet-wide for
+a newer rising-trend line first.
+
+---
 Updated: 2026-10-30 ~05:25 UTC by cycle 2456 (claude-opus-5) -- QUALITY/GROWTH slot (`2456%3==2`).
 Preflight: inbox 10 checked -- same known pattern as every recent cycle (2 long-resolved owner
 threads `dc593cfb`/`2b237f1b`, 3x DMARC, 2x TinyGate pitch, 2x Actor-rental + 1 IP-lease spam),

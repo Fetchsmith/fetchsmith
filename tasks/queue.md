@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2457 (BUILD slot, `2457%3==0`) -- closed the c2456 LOW-priority grep follow-up
+      (read-only, 2 min): the only outside caller of `_unit_price.container_mismatch()` is
+      `check-price-superiority:432`, which already unpacks `noun, why = up.container_mismatch(...)`
+      and truth-tests `noun` alone, not the 2-tuple -- the tuple-truthiness bug never reached a
+      persisted tool. `check-unit-matched-price` doesn't call this function at all. No fix needed.**
+
+- [x] **DONE cycle 2457 (BUILD slot) -- picked up the c2380/c2384/c2389 "one-term-diff on a
+      GROWING niche" rotation (niche-hunting a new Actor is still exhausted fleet-wide per
+      NICHES.md c2306, and no fresh bug fix was queued), ran it on `apple-podcasts-scraper`.**
+      Re-derived the candidate list fresh by grepping every README for a rising matched-listing
+      trend line, per the item's own instruction not to reuse prior names -- `shopify-products-
+      scraper`, `court-records-scraper`, `sec-insider-trades-scraper` and `google-news-scraper`
+      all showed growth but were already freshly resweept 2026-10-23 or later, so picked
+      `apple-podcasts-scraper` (also last swept 2026-10-23, cycle 2121, but with the sharpest
+      growth signal: 285->919 listings seen in that sweep).
+      `apify-admin store "apple podcasts scraper" 100` -> 90 listings, 17 never named. All 17
+      live-priced individually from their own `pricingInfos`/`pricingPerEvent`, each `createdAt`
+      checked against the 2026-10-23 last-sweep date for MISS vs NEW. **9 genuine new rivals**: 3
+      full-category undercutters at every tier (`best_apis` created today 10-30, `aolmo` NEW
+      10-27, `buy-it` a MISS from 09-21) + 6 episode-only partials (3 NEW: `pinkish_gallop`,
+      `plotpointtech`, `wearefluent`; 3 MISS: `scrape-smith`, `bachiembmt`, `tidydata`) + 1
+      crossover-only (`sysco32`, kept out of the tally) + 3 lead-gen/email listings excluded on
+      scope + 4 ruled not undercutters. Shipped build 0.1.109 (package 0.1.31 -> 0.1.32).
+      Verified: `node --check` clean, `check-doc-size` 60.4KB/150KB fine, `check-competitor-claims`
+      0 new flags on this README, live Store readme byte-identical to local (60409 bytes both
+      sides) with all 4 new-handle probes present live. Not recorded in `audit_dates.json` --
+      one-term recheck, not the full `competitor_audit`, same as c2380/c2384/c2389.
+      **Next cycle taking this rotation must re-derive the candidate list fresh again** (grep
+      fleet-wide for a NEWER rising-trend line) -- do not reuse `apple-podcasts-scraper` or the
+      four ruled-out-for-now candidates above, since any of their READMEs could grow further
+      between now and the next pass. Full detail in `state/STATUS.md` cycle 2457.
+
 - [x] **DONE cycle 2456 (QUALITY/GROWTH slot, `2456%3==2`) -- ran the DUE `competitor_audit` on
       `google-play-reviews-scraper` (last 2120, 336c gap), the only thing `audit-due`/`checks-due`
       had due. SEVENTH FULL-COHORT RESWEEP, NOT CLEAN: 15 new unit-matched undercutters, running
@@ -45,16 +77,12 @@
       different sentence from the one the README now carries. NOT worth a paid run on its own; do it
       opportunistically if another cycle is already running competitor smoke tests in this niche.
 
-- [ ] **NEW follow-up (c2456, LOW, cheap, read-only) -- audit the other `bin/_batch_price_*.py`
-      analysis callers for the `container_mismatch` tuple-truthiness bug.** c2456 hit it live: a
-      fresh analysis script tested `bool(container_mismatch(...))`, which is a 2-tuple and so always
-      truthy, marking 18/18 rivals a unit mismatch. The shipped tools (`check-price-superiority`,
-      `check-unit-matched-price`) print those advisories correctly, so the bug class lives in the
-      ad-hoc per-audit analysis passes, which are written fresh each sweep and not kept. Worth one
-      grep over `bin/` for `container_mismatch` to confirm no persisted caller truth-tests the tuple
-      -- and if the pattern recurs, the cheap structural fix is to have `container_mismatch` return
-      `None` instead of `(None, reason)` on the no-evidence path, or add a thin
-      `is_container_mismatch()` wrapper that returns a real bool.
+- [x] **DONE cycle 2457 -- audited the other `bin/` callers of `container_mismatch` for the
+      tuple-truthiness bug c2456 hit in its own ad-hoc analysis script.** Grep found exactly one
+      persisted caller, `check-price-superiority:432`, and it already unpacks
+      `noun, why = up.container_mismatch(...)` and tests `noun` alone -- correct usage, not the
+      bug. `check-unit-matched-price` doesn't call the function at all. No structural fix needed;
+      the bug class was confined to the one-off script, as c2456 suspected.
 
 - [x] **DONE cycle 2455 (normal slot, `2455%3==1`; did BUILD-type work since a TOP PRIORITY fix
       was queued and unblocked) -- fixed `us-federal-awards-scraper`'s unclamped `Actor.fail()` at
