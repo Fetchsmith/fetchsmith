@@ -160,7 +160,25 @@ _RUN_SCOPE_RE = re.compile(r"\b(start|run|scan)\b", re.I)
 #  that being volume information, so "ladder = real per-row metering" is not actually true in
 #  general -- only true in the absence of a stronger signal. Whole-phrase match, not a single
 #  word, to avoid the same false-positive risk "job" had in _RUN_SCOPE_RE.
-_ONCE_PER_RUN_RE = re.compile(r"once per run", re.I)
+#
+#  Cycle 2466 (substack-scraper audit) tightened this: bare "once per run" is ambiguous
+#  informal English. `luzivanlt/substack-posts-scraper`'s ONLY event, named/titled "Post",
+#  isPrimaryEvent=True, isOneTimeEvent=False, with a real 4-distinct-value descending ladder
+#  (0.001 -> 0.0007), carries the description "Each post is charged once per run" -- which
+#  reads as "each post triggers this charge (once, not twice), during the run", i.e. a
+#  per-ROW event, the opposite of hridayrungta's case. The bare regex misread it as a flat
+#  run-scoped fee, which both dropped it from `unit_price` (recurring={}, "no recurring event")
+#  and made `cps.runfee_price` sum it as a $0.001 flat per-run charge -- hiding a real
+#  every-rung undercutter (confirmed live: this IS its only charge, so there is no other event
+#  for a human to fall back on). hridayrungta's actual flat-fee sentence carries the explicit
+#  volume-independence disclaimer "regardless of how many ... it finds" -- that disclaimer,
+#  not "once per run" alone, is the real signal a charge is volume-independent, so now require
+#  both phrases to co-occur. Re-verified live cycle 2466: hridayrungta/substack-scraper's
+#  `actor-started` text still matches (has "regardless of how many"); luzivanlt's does not.
+_ONCE_PER_RUN_RE = re.compile(
+    r"once per run.{0,120}?(?:regardless|no matter|irrespective) of how many"
+    r"|(?:regardless|no matter|irrespective) of how many.{0,120}?once per run",
+    re.I)
 
 
 def is_start_fee(key, ev):
@@ -204,10 +222,15 @@ def is_start_fee(key, ev):
     tier (no volume discount offered) is syntactically identical and must stay recurring.
 
     Cycle 2127 added a third override, checked before the ladder-shape heuristic: an explicit
-    `eventDescription` saying "once per run" (see _ONCE_PER_RUN_RE above) settles it regardless
-    of ladder shape, because a one-time fee can tier by plan without that implying per-row
-    metering -- the ladder-shape heuristic below is a fallback for when the owner left no
-    description, not a rule that overrides what Apify's own schema already states outright.
+    `eventDescription` saying "once per run" WITH a volume-independence disclaimer
+    ("regardless/no matter/irrespective of how many", see _ONCE_PER_RUN_RE above) settles it
+    regardless of ladder shape, because a one-time fee can tier by plan without that implying
+    per-row metering. Cycle 2466 narrowed the phrase match to require that disclaimer after
+    finding bare "once per run" is ambiguous informal English -- `luzivanlt/substack-posts-
+    scraper`'s per-POST event ("Each post is charged once per run") used the same three words
+    to mean the opposite thing. The ladder-shape heuristic below is a fallback for when the
+    owner left no description, not a rule that overrides what Apify's own schema already
+    states outright.
     """
     if key == START_FEE_KEY:
         return True

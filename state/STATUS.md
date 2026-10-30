@@ -1,3 +1,49 @@
+Updated: 2026-10-30 ~10:10 UTC by cycle 2466 (claude-sonnet-5) -- BUILD slot (`2466%3==0`).
+Preflight: inbox 10 checked -- same known set as c2465 (2 long-resolved owner threads, 2x DMARC,
+2x TinyGate pitch, Actor-rental + IP-lease spam, 1 cold pitch `5ce80b92` already triaged) -- 0 new
+mail, no owner email warranted. `checks-due --all`: NONE due (soonest `check-status-continuity` in
+7c, cycle 2473). `audit-due --all`: NONE due (soonest `hacker-news-scraper` in 2c, cycle 2468) --
+so no competitor_audit sweep, no new Actor build (0 created today, well under the 6/day cap, but
+nothing in the queue justified a new build this cycle either). `bin/revenue`: unchanged, $0
+booked, 25 public Actors, 49 users, 770 runs30d (767 ok / 3 bad), 0 bookmarks, 0 reviews; Polar
+gate still not met, no owner email. Services all active; `/` and `/tools/substack-scraper` both
+200.
+
+**Fixed the narrower code bug inside c2464's "AMBIGUOUS path drops listings" finding, in shared
+`bin/_unit_price.py` (used by every `_batch_price_*.py` audit script and `check-price-
+superiority`), rather than building a new Actor.** `luzivanlt/substack-posts-scraper` wasn't
+actually hitting the no-primary-flag AMBIGUOUS branch c2464 thought it was -- its ONLY event
+(`post`, `isPrimaryEvent: true`, `isOneTimeEvent: false`, real 4-value descending ladder
+$0.001->$0.0007) was being swallowed by `_ONCE_PER_RUN_RE` matching the bare phrase "once per
+run" in its description ("Each post is charged once per run"). That phrase is ambiguous informal
+English: `hridayrungta/substack-scraper`'s actual flat-fee event (the cycle-2127 case that
+motivated the regex) carries an explicit volume-independence disclaimer ("regardless of how many
+... it finds") that luzivanlt's per-post description lacks. **Tightened the regex to require that
+disclaimer co-occur with "once per run".** Verified: (1) live-refetched both handles' real
+`eventDescription` from the Apify API -- hridayrungta still matches (unchanged), luzivanlt no
+longer does; (2) replayed luzivanlt's real event payload through `is_start_fee`/`unit_price` --
+now correctly returns the `$0.001->$0.0007` ladder as "primary event" instead of `{}`, and
+`cps.runfee_price` no longer sums it as a flat run fee (the exact contradiction c2464 flagged is
+gone); (3) `bin/_unit_price_selftest.py` before/after produced the byte-identical 27-moved
+baseline across all 24 replayable cohorts (eventDescription isn't in the replay fixture, so this
+is a clean no-regression signal) plus a clean module smoke-load. `om_kh/substack-scraper` was
+checked too and is NOT this bug -- its `post` event genuinely has a unique primary flag; the
+README's `post-with-text` figure comes from the separate multi-event scan, working as designed.
+**No README change needed anywhere**: the live `substack-scraper` README already hand-describes
+`luzivanlt` correctly (c2464 caught the tool's bug by hand at write time and wrote the honest
+number), so this fix brings the tool in line with what's already published -- the next sweep
+won't need the same manual rescue. The broader no-primary-at-all AMBIGUOUS-drop bucket (e.g.
+`kuezi/substack-scraper`, still confirmed live via the selftest) is deliberately still open --
+queued in `tasks/queue.md` to do alongside a future `competitor_audit`, same rollout pattern as
+the c2460 rung-for-rung fix.
+
+Spend this cycle: $0 (local Python + a handful of read-only Apify API GETs, no builds/platform
+runs). 0 new Actors today. Revenue unchanged at $0 booked, so no owner email (CLAUDE.md rule 3).
+Services and site reconfirmed healthy (`/` and `/tools/substack-scraper` both 200); working tree
+has `bin/_unit_price.py` plus the auto-updated `state/revenue.json`/`state/revenue_history.json`
+from `bin/revenue`, to be committed.
+
+---
 Updated: 2026-10-30 ~09:40 UTC by cycle 2465 (claude-sonnet-5) -- QUALITY/GROWTH slot (`2465%3==2`).
 Preflight: inbox 10 checked -- same known set as c2464 (2 long-resolved owner threads `dc593cfb`/
 `2b237f1b`, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, 1 cold pitch `5ce80b92`

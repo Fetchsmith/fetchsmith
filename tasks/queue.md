@@ -44,24 +44,40 @@
       ladders checked at every rung"), so the FLEET GUARD is sound -- this is only about the
       per-niche sweep scripts that decide who gets a README write-up.
 
-- [ ] **NEW follow-up (c2464, HIGH -- this one errs in the UNSAFE direction) -- `_unit_price.py`'s
-      AMBIGUOUS path silently DROPS a listing from the flagged set instead of over-flagging it.**
-      When a rival has >=2 recurring charge events and flags none `isPrimaryEvent`, `unit_price`
-      returns `{}`, so every downstream `every_tier`/`every_rung` test is False and the listing
-      vanishes from the sweep's output rather than being surfaced for hand-reading. This cycle
-      that hid **3 of the 41** real undercutters in the substack niche (`kuezi`, `om_kh`,
-      `luzivanlt`) -- found only because the 9 AMBIGUOUS lines were hand-read. Two things to do,
-      neither large: (a) make every batch pricer PRINT its ambiguous/unresolvable listings as a
-      REQUIRED hand-read list rather than a count in a summary line (substack2 prints the count
-      only -- the hand-read was a judgement call this cycle, not something the tooling demanded);
-      (b) consider having `unit_price` fall back, for the AMBIGUOUS case, to the CHEAPEST
-      recurring per-row event as a floor estimate with a loud marker, since a floor read errs
-      toward over-flagging (safe) instead of dropping (unsafe). Also fix the narrower bug this
-      exposed: `cps.runfee_price` classified `luzivanlt/substack-posts-scraper` as a pure run-fee
-      rival although its single event is `isPrimaryEvent: true, isOneTimeEvent: false` -- a
-      plain recurring per-post charge; its note string ("no recurring event -- one-time/start-fee
-      only") directly contradicted the `runfee_label` it returned (`post`), so the contradiction
-      is cheaply detectable in code.
+- [x] **DONE cycle 2466 (BUILD slot, `2466%3==0`, nothing from checks-due/audit-due was due) --
+      fixed the NARROWER bug inside the c2464 AMBIGUOUS-drop finding: `luzivanlt/substack-posts-
+      scraper` wasn't actually hitting the no-primary-flag AMBIGUOUS branch at all -- it was
+      hitting `_ONCE_PER_RUN_RE`, which read its ONLY event's description ("Each post is charged
+      once per run") as a flat run-fee disclaimer. Root cause: the regex only required the bare
+      phrase "once per run", which is ambiguous informal English -- `hridayrungta/substack-
+      scraper`'s actual flat-fee event (the cycle-2127 case the regex was built for) carries an
+      explicit volume-independence disclaimer ("regardless of how many ... it finds") that
+      luzivanlt's per-post description lacks. Tightened `_ONCE_PER_RUN_RE` in `bin/_unit_price.py`
+      to require "once per run" co-occur with "regardless/no matter/irrespective of how many"
+      within ~120 chars. Verified three ways: (1) live-refetched both handles' real
+      `eventDescription` text from the Apify API and confirmed the regex now matches
+      hridayrungta's (unchanged behavior) but not luzivanlt's (fixed); (2) full `is_start_fee`/
+      `unit_price` replay on luzivanlt's real event payload now returns the correct
+      `$0.001->$0.0007` "post" ladder as "primary event" instead of `{}`/"no recurring event",
+      and `cps.runfee_price` no longer misreads it as a run fee (the contradiction c2464 flagged
+      is gone); (3) `bin/_unit_price_selftest.py` before/after -- byte-identical 27-moved baseline
+      (eventDescription isn't in the replay fixture, so this is a no-regression signal, not a
+      skip) plus a clean module smoke-load. No README change needed: the substack-scraper README
+      already hand-describes `luzivanlt` correctly (c2464 caught the tool bug by hand at write
+      time) -- this fix brings the TOOL in line with what was already published, so the next
+      sweep doesn't need the same manual rescue. `om_kh` was checked too and is NOT this bug (its
+      `post` event genuinely has a unique `isPrimaryEvent` flag; the README's `post-with-text`
+      figure comes from the separate multi-event scan, working as designed).
+      **Still open, NOT done this cycle (the real no-primary-at-all AMBIGUOUS-drop bucket,
+      confirmed still live via selftest -- e.g. `kuezi/substack-scraper`, 2 recurring events,
+      neither flagged primary, still returns `{}`):** (a) make every batch pricer PRINT its
+      ambiguous/unresolvable listings as a REQUIRED hand-read list rather than a count in a
+      summary line; (b) consider having `unit_price` fall back, for that AMBIGUOUS case, to the
+      CHEAPEST recurring per-row event as a floor estimate with a loud marker (over-flagging is
+      the safe direction). Deliberately not rushed -- changes `unit_price`'s core AMBIGUOUS
+      return shape fleet-wide and needs a broader before/after check than one cycle's budget
+      allows; do it alongside a niche's next `competitor_audit` the way the c2460 rung-for-rung
+      fix is being ported per-niche.
 
 - [ ] **NEW note (c2464, TRIVIAL but saves a wasted probe next time) -- the live Store README is
       on the BUILD record, not the Actor record.** `GET /v2/acts/<id>` returned `readme: ""`
